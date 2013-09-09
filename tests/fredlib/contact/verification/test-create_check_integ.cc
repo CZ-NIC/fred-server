@@ -50,37 +50,38 @@ struct fixture_has_ctx {
     Fred::OperationContext ctx;
 };
 
-struct fixture_get_registrar_handle : public virtual fixture_has_ctx
+struct setup_get_registrar_handle
 {
     std::string registrar_handle;
 
-    fixture_get_registrar_handle() {
+    setup_get_registrar_handle(Fred::OperationContext& _ctx) {
         registrar_handle = static_cast<std::string>(
-            ctx.get_conn().exec("SELECT handle FROM registrar LIMIT 1;")[0][0] );
+            _ctx.get_conn().exec("SELECT handle FROM registrar LIMIT 1;")[0][0] );
 
         BOOST_REQUIRE(registrar_handle.empty() != true);
     }
 };
 
-struct fixture_create_contact : public fixture_get_registrar_handle, public virtual fixture_has_ctx {
+struct setup_contact : public setup_get_registrar_handle {
     std::string contact_handle;
 
-    fixture_create_contact() {
+    setup_contact(Fred::OperationContext& _ctx)
+        : setup_get_registrar_handle(_ctx)
+    {
         contact_handle = "CREATE_CNT_CHECK_" + RandomDataGenerator().xnumstring(6);
         Fred::CreateContact create(contact_handle, registrar_handle);
-        create.exec(ctx);
-        ctx.commit_transaction();
+        create.exec(_ctx);
     }
 };
 
-struct fixture_create_nonexistent_contact_handle : public virtual fixture_has_ctx {
+struct setup_nonexistent_contact_handle {
     std::string contact_handle;
 
-    fixture_create_nonexistent_contact_handle() {
+    setup_nonexistent_contact_handle(Fred::OperationContext& _ctx) {
         Database::Result res;
         do {
             contact_handle = "CREATE_CNT_CHECK_" + RandomDataGenerator().xnumstring(10);
-            res = ctx.get_conn().exec(
+            res = _ctx.get_conn().exec(
                 "SELECT name "
                 "   FROM object_registry "
                 "   WHERE name='"+contact_handle+"'"
@@ -89,47 +90,44 @@ struct fixture_create_nonexistent_contact_handle : public virtual fixture_has_ct
     }
 };
 
-struct fixture_create_testsuite : public virtual fixture_has_ctx {
+struct setup_testsuite {
     long testsuite_id;
     std::string testsuite_name;
     std::string testsuite_description;
 
-    fixture_create_testsuite() {
+    setup_testsuite(Fred::OperationContext& _ctx) {
         testsuite_name = "CREATE_CNT_CHECK_" + RandomDataGenerator().xnumstring(6) + "_TESTSUITE_NAME";
         testsuite_description = testsuite_name + "_DESCRIPTION abrakadabra";
         testsuite_id = static_cast<long>(
-            ctx.get_conn().exec(
+            _ctx.get_conn().exec(
                 "INSERT INTO enum_contact_testsuite "
                 "   (name, description)"
                 "   VALUES ('"+testsuite_name+"', '"+testsuite_description+"')"
                 "   RETURNING id;"
             )[0][0]);
-        ctx.commit_transaction();
     }
 };
 
-struct fixture_create_nonexistent_testsuite_name : public virtual fixture_has_ctx {
+struct setup_nonexistent_testsuite_name {
     std::string testsuite_name;
 
-    fixture_create_nonexistent_testsuite_name() {
+    setup_nonexistent_testsuite_name(Fred::OperationContext& _ctx) {
         Database::Result res;
         do {
             testsuite_name = "CREATE_CNT_CHECK_" + RandomDataGenerator().xnumstring(10) + "_TESTSUITE_NAME";
-            res = ctx.get_conn().exec(
+            res = _ctx.get_conn().exec(
                 "SELECT name FROM enum_contact_testsuite WHERE name='"+testsuite_name+"';" );
         } while(res.size() != 0);
     }
 };
 
-struct fixture_create_logd_request_id {
+struct setup_logd_request_id {
     long long logd_request_id;
 
-    fixture_create_logd_request_id() {
+    setup_logd_request_id() {
         logd_request_id = RandomDataGenerator().xuint();
     }
 };
-
-struct fixture_mandatory_input : public fixture_create_contact, public fixture_create_testsuite {};
 
 /**
  executing CreateContactCheck with only mandatory setup
@@ -137,9 +135,12 @@ struct fixture_mandatory_input : public fixture_create_contact, public fixture_c
  @pre valid testsuite name
  @post correct values present in InfoContactCheckOutput::to_string()
  */
-BOOST_FIXTURE_TEST_CASE(test_Exec_mandatory_setup, fixture_mandatory_input)
+BOOST_FIXTURE_TEST_CASE(test_Exec_mandatory_setup, fixture_has_ctx)
 {
-    Fred::CreateContactCheck create_check(contact_handle, testsuite_name);
+    setup_contact contact(ctx);
+    setup_testsuite testsuite(ctx);
+
+    Fred::CreateContactCheck create_check(contact.contact_handle, testsuite.testsuite_name);
     std::string handle;
     std::string timezone = "UTC";
 
@@ -228,8 +229,8 @@ BOOST_FIXTURE_TEST_CASE(test_Exec_mandatory_setup, fixture_mandatory_input)
 
     // testsuite_id
     BOOST_CHECK_MESSAGE(
-        result_data.testsuite_name == testsuite_name,
-        "testsuite name differs in CreateContactCheck ("+ testsuite_name +") & InfoContactCheck ("+ testsuite_name +")"
+        result_data.testsuite_name == testsuite.testsuite_name,
+        "testsuite name differs in CreateContactCheck ("+ testsuite.testsuite_name +") & InfoContactCheck ("+ testsuite.testsuite_name +")"
     );
 
     // create_time
@@ -245,17 +246,19 @@ BOOST_FIXTURE_TEST_CASE(test_Exec_mandatory_setup, fixture_mandatory_input)
     );
 }
 
-struct fixture_all_input : public fixture_mandatory_input, public fixture_create_logd_request_id {};
-
 /**
  executing CreateContactCheck with full mandatory + optional setup
  @pre valid contact handle
  @pre valid testsuite name
  @post correct values present in InfoContactCheckOutput::to_string()
  */
-BOOST_FIXTURE_TEST_CASE(test_Exec_optional_setup, fixture_all_input)
+BOOST_FIXTURE_TEST_CASE(test_Exec_optional_setup, fixture_has_ctx)
 {
-    Fred::CreateContactCheck create_check(contact_handle, testsuite_name, logd_request_id);
+    setup_contact contact(ctx);
+    setup_testsuite testsuite(ctx);
+    setup_logd_request_id logd_request;
+
+    Fred::CreateContactCheck create_check(contact.contact_handle, testsuite.testsuite_name, logd_request.logd_request_id);
     std::string handle;
     std::string timezone = "UTC";
 
@@ -338,14 +341,14 @@ BOOST_FIXTURE_TEST_CASE(test_Exec_optional_setup, fixture_all_input)
     // logd_request_id
 
     BOOST_CHECK_MESSAGE(
-        static_cast<long long>(result_data.check_state_history.begin()->logd_request_id) == logd_request_id,
-        std::string("logd_request_id differs in CreateContactCheck (")+ boost::lexical_cast<std::string>(logd_request_id) +") & InfoContactCheck ("+ result_data.check_state_history.begin()->logd_request_id.print_quoted() +")"
+        static_cast<long long>(result_data.check_state_history.begin()->logd_request_id) == logd_request.logd_request_id,
+        std::string("logd_request_id differs in CreateContactCheck (")+ boost::lexical_cast<std::string>(logd_request.logd_request_id) +") & InfoContactCheck ("+ result_data.check_state_history.begin()->logd_request_id.print_quoted() +")"
     );
 
     // testsuite_id
     BOOST_CHECK_MESSAGE(
-        result_data.testsuite_name == testsuite_name,
-        "testsuite name differs in CreateContactCheck ("+ testsuite_name +") & InfoContactCheck ("+ testsuite_name +")"
+        result_data.testsuite_name == testsuite.testsuite_name,
+        "testsuite name differs in CreateContactCheck ("+ testsuite.testsuite_name +") & InfoContactCheck ("+ testsuite.testsuite_name +")"
     );
 
     // create_time
@@ -361,16 +364,18 @@ BOOST_FIXTURE_TEST_CASE(test_Exec_optional_setup, fixture_all_input)
     );
 }
 
-struct fixture_nonexistent_contact_handle_valid_testsuite_name : public fixture_create_nonexistent_contact_handle, fixture_create_testsuite {};
 /**
  setting nonexistent contact handle value and executing operation
  @pre nonexistent contact handle
  @pre valid testsuite name
  @post Fred::CreateContactCheck::ExceptionUnknownContactHandle
 */
-BOOST_FIXTURE_TEST_CASE(test_Exec_nonexistent_contact_handle, fixture_nonexistent_contact_handle_valid_testsuite_name)
+BOOST_FIXTURE_TEST_CASE(test_Exec_nonexistent_contact_handle, fixture_has_ctx)
 {
-    Fred::CreateContactCheck create_check(contact_handle, testsuite_name);
+    setup_nonexistent_contact_handle contact(ctx);
+    setup_testsuite testsuite(ctx);
+
+    Fred::CreateContactCheck create_check(contact.contact_handle, testsuite.testsuite_name);
     std::string handle;
 
     bool caught_the_right_exception = false;
@@ -387,16 +392,18 @@ BOOST_FIXTURE_TEST_CASE(test_Exec_nonexistent_contact_handle, fixture_nonexisten
     }
 }
 
-struct fixture_valid_contact_handle_nonexistent_testsuite_name : public fixture_create_contact, fixture_create_nonexistent_testsuite_name {};
 /**
  setting nonexistent testsuite name value and executing operation
  @pre valid contact handle
  @pre nonexistent testsuite name
  @post Fred::CreateContactCheck::ExceptionUnknownTestsuiteName
  */
-BOOST_FIXTURE_TEST_CASE(test_Exec_nonexistent_testsuite_name, fixture_valid_contact_handle_nonexistent_testsuite_name)
+BOOST_FIXTURE_TEST_CASE(test_Exec_nonexistent_testsuite_name, fixture_has_ctx)
 {
-    Fred::CreateContactCheck create_check(contact_handle, testsuite_name);
+    setup_contact contact(ctx);
+    setup_nonexistent_testsuite_name testsuite(ctx);
+
+    Fred::CreateContactCheck create_check(contact.contact_handle, testsuite.testsuite_name);
     std::string handle;
 
     bool caught_the_right_exception = false;
