@@ -47,33 +47,34 @@ BOOST_AUTO_TEST_SUITE(TestCreateContactTest_integ)
 
 const std::string server_name = "test-contact_verification-create_test_integ";
 
-struct fixture_has_ctx {
+struct fixture_ctx {
     Fred::OperationContext ctx;
 };
 
-struct fixture_create_check : public virtual fixture_has_ctx {
+struct setup_check {
     std::string check_handle_;
     Optional<long long> logd_request_;
 
-    fixture_create_check(
+    setup_check(
+        Fred::OperationContext& _ctx,
         Optional<long long> _logd_request = Optional<long long>()
     )
         : logd_request_(_logd_request)
     {
         // registrar
         std::string registrar_handle = static_cast<std::string>(
-            ctx.get_conn().exec("SELECT handle FROM registrar LIMIT 1;")[0][0] );
+            _ctx.get_conn().exec("SELECT handle FROM registrar LIMIT 1;")[0][0] );
 
         BOOST_REQUIRE(registrar_handle.empty() != true);
 
         // contact
         std::string contact_handle = "CREATE_CNT_CHECK_" + RandomDataGenerator().xnumstring(6);
         Fred::CreateContact create_contact(contact_handle, registrar_handle);
-        create_contact.exec(ctx);
+        create_contact.exec(_ctx);
 
         // testsuite
         std::string testsuite_name = "CREATE_CNT_CHECK_" + RandomDataGenerator().xnumstring(6) + "_TESTSUITE_NAME";
-        ctx.get_conn().exec(
+        _ctx.get_conn().exec(
             "INSERT INTO enum_contact_testsuite "
             "   (name, description)"
             "   VALUES ('"+testsuite_name+"', 'description some text')"
@@ -82,14 +83,14 @@ struct fixture_create_check : public virtual fixture_has_ctx {
 
         // check
         Fred::CreateContactCheck create_check(contact_handle, testsuite_name, logd_request_);
-        check_handle_ = create_check.exec(ctx);
+        check_handle_ = create_check.exec(_ctx);
     }
 };
 
-struct fixture_create_nonexistent_check_handle : public virtual fixture_has_ctx {
+struct setup_nonexistent_check_handle {
     std::string check_handle;
 
-    fixture_create_nonexistent_check_handle() {
+    setup_nonexistent_check_handle(Fred::OperationContext& _ctx) {
         struct BOOST { struct UUIDS { struct RANDOM_GENERATOR {
             static std::string generate() {
                 srand(time(NULL));
@@ -132,7 +133,7 @@ struct fixture_create_nonexistent_check_handle : public virtual fixture_has_ctx 
         Database::Result res;
         do {
             check_handle = boost::lexical_cast<std::string>(BOOST::UUIDS::RANDOM_GENERATOR::generate());
-            res = ctx.get_conn().exec(
+            res = _ctx.get_conn().exec(
                 "SELECT handle "
                 "   FROM contact_check "
                 "   WHERE handle='"+check_handle+"';"
@@ -141,16 +142,16 @@ struct fixture_create_nonexistent_check_handle : public virtual fixture_has_ctx 
     }
 };
 
-struct fixture_create_testdef : public virtual fixture_has_ctx {
+struct setup_testdef {
     long testdef_id_;
     std::string testdef_name_;
     std::string testdef_description_;
 
-    fixture_create_testdef() {
+    setup_testdef(Fred::OperationContext& _ctx) {
         testdef_name_ = "CREATE_CNT_TEST_" + RandomDataGenerator().xnumstring(6) + "_NAME";
         testdef_description_ = testdef_name_ + "_DESCRIPTION";
         testdef_id_ = static_cast<long>(
-            ctx.get_conn().exec(
+            _ctx.get_conn().exec(
                 "INSERT INTO enum_contact_test "
                 "   (name, description) "
                 "   VALUES ('"+testdef_name_+"', '"+testdef_description_+"') "
@@ -159,28 +160,26 @@ struct fixture_create_testdef : public virtual fixture_has_ctx {
     }
 };
 
-struct fixture_create_nonexistent_testdef_name : public virtual fixture_has_ctx {
+struct setup_nonexistent_testdef_name {
     std::string testdef_name;
 
-    fixture_create_nonexistent_testdef_name() {
+    setup_nonexistent_testdef_name(Fred::OperationContext& _ctx) {
         Database::Result res;
         do {
             testdef_name = "CREATE_CNT_TEST_" + RandomDataGenerator().xnumstring(10) + "_TEST_NAME";
-            res = ctx.get_conn().exec(
+            res = _ctx.get_conn().exec(
                 "SELECT name FROM enum_contact_testsuite WHERE name='"+testdef_name+"';" );
         } while(res.size() != 0);
     }
 };
 
-struct fixture_create_logd_request_id {
+struct setup_logd_request_id {
     long long logd_request_id;
 
-    fixture_create_logd_request_id() {
+    setup_logd_request_id() {
         logd_request_id = RandomDataGenerator().xuint();
     }
 };
-
-struct fixture_mandatory_input : public fixture_create_check, public fixture_create_testdef {};
 
 /**
  executing CreateContactCheck with only mandatory setup
@@ -188,9 +187,12 @@ struct fixture_mandatory_input : public fixture_create_check, public fixture_cre
  @pre existing test name
  @post correct values present in InfoContactCheckOutput::to_string()
  */
-BOOST_FIXTURE_TEST_CASE(test_Exec_mandatory_setup, fixture_mandatory_input)
+BOOST_FIXTURE_TEST_CASE(test_Exec_mandatory_setup, fixture_ctx)
 {
-    Fred::CreateContactTest create_test(check_handle_, testdef_name_);
+    setup_check check(ctx);
+    setup_testdef testdef(ctx);
+
+    Fred::CreateContactTest create_test(check.check_handle_, testdef.testdef_name_);
     std::string timezone = "UTC";
 
     try {
@@ -203,7 +205,7 @@ BOOST_FIXTURE_TEST_CASE(test_Exec_mandatory_setup, fixture_mandatory_input)
         BOOST_FAIL(std::string("failed to create test (3):") + exp.what());
     }
 
-    Fred::InfoContactCheck info_check(check_handle_);
+    Fred::InfoContactCheck info_check(check.check_handle_);
     Fred::InfoContactCheckOutput result_data;
 
     try {
@@ -217,7 +219,7 @@ BOOST_FIXTURE_TEST_CASE(test_Exec_mandatory_setup, fixture_mandatory_input)
     }
 
     BOOST_REQUIRE(result_data.tests.size() == 1);
-    BOOST_CHECK_EQUAL(result_data.tests.front().test_name, testdef_name_);
+    BOOST_CHECK_EQUAL(result_data.tests.front().test_name, testdef.testdef_name_);
 
     // create_time is reasonable
     ptime now = second_clock::universal_time();
@@ -245,17 +247,19 @@ BOOST_FIXTURE_TEST_CASE(test_Exec_mandatory_setup, fixture_mandatory_input)
         result_data.tests.front().local_create_time );
 }
 
-struct fixture_all_input : public fixture_create_check, fixture_create_testdef, fixture_create_logd_request_id {};
-
 /**
  executing CreateContactCheck with full mandatory + optional setup
  @pre valid contact handle
  @pre existing test name
  @post correct values present in InfoContactCheckOutput::to_string()
  */
-BOOST_FIXTURE_TEST_CASE(test_Exec_optional_setup, fixture_all_input)
+BOOST_FIXTURE_TEST_CASE(test_Exec_optional_setup, fixture_ctx)
 {
-    Fred::CreateContactTest create_test(check_handle_, testdef_name_, fixture_create_logd_request_id::logd_request_id);
+    setup_check check(ctx);
+    setup_testdef testdef(ctx);
+    setup_logd_request_id logd_request;
+
+    Fred::CreateContactTest create_test(check.check_handle_, testdef.testdef_name_, logd_request.logd_request_id);
     std::string timezone = "UTC";
 
     try {
@@ -268,7 +272,7 @@ BOOST_FIXTURE_TEST_CASE(test_Exec_optional_setup, fixture_all_input)
         BOOST_FAIL(std::string("failed to create test (3):") + exp.what());
     }
 
-    Fred::InfoContactCheck info_check(check_handle_);
+    Fred::InfoContactCheck info_check(check.check_handle_);
     Fred::InfoContactCheckOutput result_data;
 
     try {
@@ -282,7 +286,7 @@ BOOST_FIXTURE_TEST_CASE(test_Exec_optional_setup, fixture_all_input)
     }
 
     BOOST_REQUIRE(result_data.tests.size() == 1);
-    BOOST_CHECK_EQUAL(result_data.tests.front().test_name, testdef_name_);
+    BOOST_CHECK_EQUAL(result_data.tests.front().test_name, testdef.testdef_name_);
 
     // create_time is reasonable
     ptime now = second_clock::universal_time();
@@ -303,23 +307,24 @@ BOOST_FIXTURE_TEST_CASE(test_Exec_optional_setup, fixture_all_input)
     BOOST_CHECK_EQUAL(
         result_data.tests.front().state_history.front().status_name,
         Fred::ContactTestStatus::RUNNING);
-    BOOST_CHECK_EQUAL(result_data.tests.front().state_history.front().logd_request_id, fixture_create_logd_request_id::logd_request_id);
+    BOOST_CHECK_EQUAL(result_data.tests.front().state_history.front().logd_request_id, logd_request.logd_request_id);
     BOOST_CHECK(result_data.tests.front().state_history.front().error_msg.isnull() );
     BOOST_CHECK_EQUAL(
         result_data.tests.front().state_history.front().local_update_time,
         result_data.tests.front().local_create_time );
 }
 
-struct fixture_nonexistent_contact_handle_valid_testsuite_name : public fixture_create_nonexistent_check_handle, fixture_create_testdef {};
 /**
  setting nonexistent check handle and existing status values and executing operation
  @pre nonexistent check handle
  @pre existing status name
  @post ExceptionUnknownCheckHandle
 */
-BOOST_FIXTURE_TEST_CASE(test_Exec_nonexistent_check_handle, fixture_nonexistent_contact_handle_valid_testsuite_name)
+BOOST_FIXTURE_TEST_CASE(test_Exec_nonexistent_check_handle, fixture_ctx)
 {
-    Fred::CreateContactTest create_test(check_handle, testdef_name_);
+    setup_nonexistent_check_handle check(ctx);
+    setup_testdef testdef(ctx);
+    Fred::CreateContactTest create_test(check.check_handle, testdef.testdef_name_);
 
     bool caught_the_right_exception = false;
     try {
@@ -335,16 +340,18 @@ BOOST_FIXTURE_TEST_CASE(test_Exec_nonexistent_check_handle, fixture_nonexistent_
     }
 }
 
-struct fixture_valid_contact_handle_nonexistent_testsuite_name : public fixture_create_check, fixture_create_nonexistent_testdef_name {};
 /**
  setting existing check handle and nonexistent test values and executing operation
  @pre existing check handle
  @pre nonexistent test name
  @post ExceptionUnknownTestName
  */
-BOOST_FIXTURE_TEST_CASE(test_Exec_nonexistent_test_name, fixture_valid_contact_handle_nonexistent_testsuite_name)
+BOOST_FIXTURE_TEST_CASE(test_Exec_nonexistent_test_name, fixture_ctx)
 {
-    Fred::CreateContactTest create_test(check_handle_, testdef_name);
+    setup_check check(ctx);
+    setup_nonexistent_testdef_name testdef(ctx);
+
+    Fred::CreateContactTest create_test(check.check_handle_, testdef.testdef_name);
 
     bool caught_the_right_exception = false;
     try {
