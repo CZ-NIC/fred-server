@@ -29,6 +29,11 @@
 #include <boost/function.hpp>
 #include <boost/lambda/lambda.hpp>
 #include <boost/lambda/if.hpp>
+/* WARNING: for unknown reason the function works only when boost/lambda/bind.hpp is included.
+ * Otherwise type of T in boost::lambda::if_then_else_return is unknown and therefore no operator==() can be called.
+ * Based on stack-overflow discussion: http://stackoverflow.com/questions/2559246/help-with-boostlambda-expression
+ * I suspect that boost/bind is used if boost/lambda/bind is not included.
+ */
 #include <boost/lambda/bind.hpp>
 
 /**
