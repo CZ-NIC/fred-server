@@ -18,7 +18,7 @@
 
 /**
  *  @file
- *  optional nullable comparison
+ *  optional and nullable values (of the same type) comparison
  */
 
 #ifndef OPTIONAL_NULLABLE_EQUAL_H_454434343413
@@ -30,6 +30,13 @@
 #include <boost/lambda/lambda.hpp>
 #include <boost/lambda/if.hpp>
 #include <boost/lambda/bind.hpp>
+
+/**
+ * compares Nullable<T> and Optional<T>
+ * Suitable for those situations when var IS NULL <==> var IS NOT SET (in the "if and only if" meaning)
+ * @param T Underlying type for both template specialization (obviously must be the same).
+ * @param comparator Functor for custom comparison on uderlying type (e. g. way to insensitive comparison of std::strings). Default argument uses the type T operator==().
+ */
 
 template<class T>
 bool equal( const Nullable<T>& lhs,
@@ -45,6 +52,10 @@ bool equal( const Nullable<T>& lhs,
     return false;
 }
 
+/**
+ * compares Optional<T> and Nullable<T>
+ * Identical to the Nullable<T> == Optional<T> version.
+ */
 template<class T>
 bool equal( const Optional<T>& lhs,
             const Nullable<T>& rhs,
