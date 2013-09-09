@@ -104,30 +104,29 @@ namespace Fred
         Database::Result test_res = _ctx.get_conn().exec_params(
             "SELECT id "
             "   FROM enum_contact_test "
-            "   WHERE name=$1::varchar"
+            "   WHERE name=$1::varchar "
             "   FOR SHARE;",
             Database::query_param_list(test_name_)
         );
         if(test_res.size() != 1) {
             throw ExceptionUnknownTestName();
         }
-        long test_id = static_cast<long>(check_res[0]["id"]);
+        long test_id = static_cast<long>(test_res[0]["id"]);
 
         try {
-            Database::Result update_contact_check_res = _ctx.get_conn().exec_params(
+            Database::Result update_contact_test_res = _ctx.get_conn().exec_params(
                 "UPDATE contact_test_result SET ( "
-                "    enum_contact_test_status_id,"
-                "    logd_request_id,"
-                "    error_msg"
-                ") = ("
-                "    $1::int,"
-                "    $2::bigint,"
-                "    $3::varchar"
-                ")"
-                "WHERE contact_check_id="
-                "    $4::bigint"
-                "AND enum_contact_test_id="
-                "    $5::int",
+                "    enum_contact_test_status_id, "
+                "    logd_request_id, "
+                "    error_msg "
+                ") = ( "
+                "    $1::int, "
+                "    $2::bigint, "
+                "    $3::varchar "
+                ") "
+                "WHERE contact_check_id=$4::bigint "
+                "   AND enum_contact_test_id=$5::int "
+                "RETURNING id;",
                 Database::query_param_list
                     (status_id)
                     (logd_request_id_)
@@ -136,7 +135,7 @@ namespace Fred
                     (test_id)
             );
 
-            if (update_contact_check_res.size() != 1) {
+            if (update_contact_test_res.size() != 1) {
                BOOST_THROW_EXCEPTION(Fred::InternalError("contact_test update failed"));
             }
         } catch(const std::exception& _exc) {
