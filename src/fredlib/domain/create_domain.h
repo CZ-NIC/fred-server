@@ -17,7 +17,7 @@
  */
 
 /**
- *  @file create_domain.h
+ *  @file
  *  create domain
  */
 
@@ -40,15 +40,24 @@
 namespace Fred
 {
 
+    /**
+    * Create of the domain.
+    * Created instance is modifiable by chainable methods i.e. methods returning instance reference.
+    * Data set into instance by constructor and methods serve as input data of the create.
+    * Create is executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
+    * When exception is thrown, changes to database are considered incosistent and should be rolled back by caller.
+    * In case of wrong input data or other predictable and superable failure the instance of @ref CreateDomain::Exception is thrown with appropriate attributes set.
+    * In case of other unsuperable failures and inconstistencies the instance of @ref InternalError or other exception is thrown.
+    */
     class CreateDomain
     {
-        const std::string fqdn_;//domain identifier
-        const std::string registrar_;//registrar identifier
-        Optional<std::string> authinfo_;//set authinfo
-        const std::string registrant_;//set registrant
-        Optional<Nullable<std::string> > nsset_;//set nsset to NULL or value
-        Optional<Nullable<std::string> > keyset_;//set keyset
-        std::vector<std::string> admin_contacts_; //set admin contacts
+        const std::string fqdn_;/**< fully qualified domain name */
+        const std::string registrar_;/**< handle of registrar performing the create */
+        Optional<std::string> authinfo_;/**< transfer password */
+        const std::string registrant_;/**< registrant contact handle*/
+        Optional<Nullable<std::string> > nsset_;/**< nsset handle or NULL if missing */
+        Optional<Nullable<std::string> > keyset_;/**< keyset handle or NULL if missing */
+        std::vector<std::string> admin_contacts_; /**< admin contact handles */
         Optional<unsigned> expiration_period_;//for exdate in months
         Optional<boost::gregorian::date> enum_validation_expiration_;//the expiration date of the ENUM domain validation, have to be set for enum domain, otherwise unused
         Optional<bool> enum_publish_flag_;//flag for publishing ENUM number and associated contact in public directory
