@@ -53,89 +53,34 @@ typedef Fred::InfoContactCheckOutput InfoContactCheckOutput;
 
 struct fixture_has_ctx {
     Fred::OperationContext ctx;
-    ~fixture_has_ctx() {
-        ctx.commit_transaction();
-    }
 };
 
-struct eval {
-    static void exec(const InfoContactCheckOutput& data_pre_update, const InfoContactCheckOutput& data_post_update, const std::string& old_status, const std::string& new_status, Optional<long long> old_logd_request, Optional<long long> new_logd_request) {
-        // everything is the same except the last state in history
-        BOOST_CHECK_EQUAL( data_pre_update.contact_history_id, data_post_update.contact_history_id );
-        BOOST_CHECK_EQUAL( data_pre_update.handle, data_post_update.handle );
-        BOOST_CHECK_EQUAL( data_pre_update.local_create_time, data_post_update.local_create_time );
-        BOOST_CHECK_EQUAL( data_pre_update.testsuite_name, data_post_update.testsuite_name );
-        {
-            BOOST_CHECK_EQUAL( data_pre_update.tests.size(), data_post_update.tests .size());
-            std::vector<ContactTestResultData>::const_iterator post_it = data_post_update.tests.begin();
-            for(std::vector<ContactTestResultData>::const_iterator it = data_pre_update.tests.begin(); it != data_pre_update.tests.end(); ++it, ++post_it) {
-                BOOST_CHECK_EQUAL(it->to_string(), post_it->to_string());
-            }
-        }
-
-        if(old_status != new_status || old_logd_request != new_logd_request) {
-            BOOST_CHECK_EQUAL( data_pre_update.check_state_history.size() + 1, data_post_update.check_state_history.size() );
-            for(
-                std::vector<ContactCheckState>::const_iterator it = data_pre_update.check_state_history.begin(), post_it = data_post_update.check_state_history.begin();
-                it != data_pre_update.check_state_history.end();
-                ++it, ++post_it)
-            {
-                BOOST_CHECK_MESSAGE(
-                    it->to_string() == post_it->to_string(),
-                    data_pre_update.to_string() + "\n" + data_post_update.to_string()
-                    );
-            }
-
-            // new state in history
-            // update_time is reasonable
-            ptime now = second_clock::universal_time();
-            ptime update_time_min = now - minutes(1);
-            ptime update_time_max = now + minutes(1);
-
-            BOOST_CHECK_MESSAGE(
-                data_post_update.check_state_history.back().local_update_time > update_time_min,
-                "invalid contact_check.create_time: " + boost::posix_time::to_simple_string(data_post_update.check_state_history.back().local_update_time)
-                + " 'now' is:" + boost::posix_time::to_simple_string(now) );
-            BOOST_CHECK_MESSAGE(
-                data_post_update.check_state_history.back().local_update_time < update_time_max,
-                "invalid contact_check.create_time: " + boost::posix_time::to_simple_string(data_post_update.check_state_history.back().local_update_time)
-                + " 'now' is:" + boost::posix_time::to_simple_string(now) );
-            BOOST_CHECK_EQUAL(data_post_update.check_state_history.back().status_name, new_status);
-            BOOST_CHECK_EQUAL(data_post_update.check_state_history.back().logd_request_id, new_logd_request);
-        } else {
-            BOOST_CHECK_EQUAL( data_pre_update.check_state_history.size(), data_post_update.check_state_history.size() );
-            std::vector<ContactCheckState>::const_iterator post_it = data_post_update.check_state_history.begin();
-            for(std::vector<ContactCheckState>::const_iterator it = data_pre_update.check_state_history.begin(); it != data_pre_update.check_state_history.end(); ++it, ++post_it) {
-                BOOST_CHECK_EQUAL(it->to_string(), post_it->to_string());
-            }
-        }
-    }
-};
-
-struct fixture_create_check : public virtual fixture_has_ctx {
+struct setup_check {
     std::string check_handle_;
+    std::string status_;
     Optional<long long> logd_request_;
 
-    fixture_create_check(
-        const std::string& _status,
+    setup_check(
+        Fred::OperationContext& _ctx,
         Optional<long long> _logd_request = Optional<long long>()
-    )
-        : logd_request_(_logd_request)
+    ) :
+        status_(Fred::ContactCheckStatus::ENQUEUED),
+        logd_request_(_logd_request)
     {
         // registrar
         std::string registrar_handle = static_cast<std::string>(
-            ctx.get_conn().exec("SELECT handle FROM registrar LIMIT 1;")[0][0] );
+            _ctx.get_conn().exec("SELECT handle FROM registrar LIMIT 1;")[0][0] );
 
         BOOST_REQUIRE(registrar_handle.empty() != true);
 
         // contact
         std::string contact_handle = "CREATE_CNT_CHECK_" + RandomDataGenerator().xnumstring(6);
         Fred::CreateContact create_contact(contact_handle, registrar_handle);
-        create_contact.exec(ctx);
+        create_contact.exec(_ctx);
 
         // testsuite
         std::string testsuite_name = "CREATE_CNT_CHECK_" + RandomDataGenerator().xnumstring(6) + "_TESTSUITE_NAME";
-        ctx.get_conn().exec(
+        _ctx.get_conn().exec(
             "INSERT INTO enum_contact_testsuite "
             "   (name, description)"
             "   VALUES ('"+testsuite_name+"', 'description some text')"
@@ -144,11 +89,11 @@ struct fixture_create_check : public virtual fixture_has_ctx {
 
         // check
         Fred::CreateContactCheck create_check(contact_handle, testsuite_name, logd_request_);
-        check_handle_ = create_check.exec(ctx);
+        check_handle_ = create_check.exec(_ctx);
     }
 };
 
-struct fixture_create_update_check : public fixture_create_check {
+struct setup_create_update_check : public setup_check {
     std::string old_status_;
     std::string new_status_;
     Optional<long long> old_logd_request_;
@@ -157,23 +102,24 @@ struct fixture_create_update_check : public fixture_create_check {
     Fred::InfoContactCheckOutput data_post_update_;
     std::string timezone_;
 
-    fixture_create_update_check(
+    setup_create_update_check(
+        Fred::OperationContext& _ctx,
         const std::string& _new_status,
         Optional<long long> _old_logd_request,
         Optional<long long> _new_logd_request,
         const std::string& _timezone = "UTC"
-    )
-     : old_status_(Fred::ContactCheckStatus::ENQUEUED),
-       old_logd_request_(_old_logd_request),
-       fixture_create_check(Fred::ContactCheckStatus::ENQUEUED, _old_logd_request),
-       new_status_(_new_status),
-       new_logd_request_(_new_logd_request),
-       timezone_(_timezone)
+    ) :
+        setup_check(_ctx, _old_logd_request),
+        old_status_(Fred::ContactCheckStatus::ENQUEUED),
+        new_status_(_new_status),
+        old_logd_request_(_old_logd_request),
+        new_logd_request_(_new_logd_request),
+        timezone_(_timezone)
     {
         Fred::InfoContactCheck info_check(check_handle_);
 
         try {
-            data_pre_update_ = info_check.exec(ctx, timezone_);
+            data_pre_update_ = info_check.exec(_ctx, timezone_);
         } catch(const Fred::InternalError& exp) {
            BOOST_FAIL("non-existent check (1):" + boost::diagnostic_information(exp) + exp.what() );
         } catch(const boost::exception& exp) {
@@ -184,7 +130,7 @@ struct fixture_create_update_check : public fixture_create_check {
 
         Fred::UpdateContactCheck update(check_handle_, new_status_, new_logd_request_);
         try {
-            update.exec(ctx);
+            update.exec(_ctx);
         } catch(const Fred::InternalError& exp) {
             BOOST_FAIL("failed to update check (1):" + boost::diagnostic_information(exp) + exp.what() );
         } catch(const boost::exception& exp) {
@@ -194,7 +140,7 @@ struct fixture_create_update_check : public fixture_create_check {
         }
 
         try {
-            data_post_update_ = info_check.exec(ctx, timezone_);
+            data_post_update_ = info_check.exec(_ctx, timezone_);
         } catch(const Fred::InternalError& exp) {
             BOOST_FAIL("non-existent check (1):" + boost::diagnostic_information(exp) + exp.what() );
         } catch(const boost::exception& exp) {
@@ -202,13 +148,10 @@ struct fixture_create_update_check : public fixture_create_check {
         } catch(const std::exception& exp) {
             BOOST_FAIL(std::string("non-existent check (3):") + exp.what());
         }
-
-        eval::exec(data_pre_update_, data_post_update_, old_status_, new_status_, old_logd_request_, new_logd_request_);
     }
 };
 
-struct fixture_create_update_update_check : public virtual fixture_has_ctx {
-    std::string check_handle_;
+struct setup_create_update_update_check : public setup_check {
     std::string status1_;
     std::string status2_;
     std::string status3_;
@@ -220,50 +163,28 @@ struct fixture_create_update_update_check : public virtual fixture_has_ctx {
     Fred::InfoContactCheckOutput data_post_update_;
     std::string timezone_;
 
-    fixture_create_update_update_check(
+    setup_create_update_update_check(
+        Fred::OperationContext& _ctx,
         const std::string& _status2,
         const std::string& _status3,
         Optional<long long> _logd_request1,
         Optional<long long> _logd_request2,
         Optional<long long> _logd_request3,
         const std::string& _timezone = "UTC"
-    )
-     : status1_(Fred::ContactCheckStatus::ENQUEUED),
-       status2_(_status2),
-       status3_(_status3),
-       logd_request1_(_logd_request1),
-       logd_request2_(_logd_request2),
-       logd_request3_(_logd_request3),
-       timezone_(_timezone)
+    ) :
+        setup_check(_ctx, _logd_request1),
+        status1_(Fred::ContactCheckStatus::ENQUEUED),
+        status2_(_status2),
+        status3_(_status3),
+        logd_request1_(_logd_request1),
+        logd_request2_(_logd_request2),
+        logd_request3_(_logd_request3),
+        timezone_(_timezone)
     {
-        // registrar
-        std::string registrar_handle = static_cast<std::string>(
-            ctx.get_conn().exec("SELECT handle FROM registrar LIMIT 1;")[0][0] );
-
-        BOOST_REQUIRE(registrar_handle.empty() != true);
-
-        // contact
-        std::string contact_handle = "CREATE_CNT_CHECK_" + RandomDataGenerator().xnumstring(6);
-        Fred::CreateContact create_contact(contact_handle, registrar_handle);
-        create_contact.exec(ctx);
-
-        // testsuite
-        std::string testsuite_name = "CREATE_CNT_CHECK_" + RandomDataGenerator().xnumstring(6) + "_TESTSUITE_NAME";
-        ctx.get_conn().exec(
-            "INSERT INTO enum_contact_testsuite "
-            "   (name, description)"
-            "   VALUES ('"+testsuite_name+"', 'description some text')"
-            "   RETURNING id;"
-        );
-
-        // check
-        Fred::CreateContactCheck create_check(contact_handle, testsuite_name, logd_request1_);
-        check_handle_ = create_check.exec(ctx);
-
         Fred::InfoContactCheck info_check(check_handle_);
 
         try {
-            data_post_create_ = info_check.exec(ctx, timezone_);
+            data_post_create_ = info_check.exec(_ctx, timezone_);
         } catch(const Fred::InternalError& exp) {
            BOOST_FAIL("non-existent check (1):" + boost::diagnostic_information(exp) + exp.what() );
         } catch(const boost::exception& exp) {
@@ -274,7 +195,7 @@ struct fixture_create_update_update_check : public virtual fixture_has_ctx {
 
         Fred::UpdateContactCheck reset(check_handle_, status2_, logd_request2_);
         try {
-            reset.exec(ctx);
+            reset.exec(_ctx);
         } catch(const Fred::InternalError& exp) {
             BOOST_FAIL("failed to update check (1):" + boost::diagnostic_information(exp) + exp.what() );
         } catch(const boost::exception& exp) {
@@ -284,7 +205,7 @@ struct fixture_create_update_update_check : public virtual fixture_has_ctx {
         }
 
         try {
-            data_post_reset_ = info_check.exec(ctx, timezone_);
+            data_post_reset_ = info_check.exec(_ctx, timezone_);
         } catch(const Fred::InternalError& exp) {
             BOOST_FAIL("non-existent check (1):" + boost::diagnostic_information(exp) + exp.what() );
         } catch(const boost::exception& exp) {
@@ -295,7 +216,7 @@ struct fixture_create_update_update_check : public virtual fixture_has_ctx {
 
         Fred::UpdateContactCheck update(check_handle_, status3_, logd_request3_);
         try {
-            update.exec(ctx);
+            update.exec(_ctx);
         } catch(const Fred::InternalError& exp) {
             BOOST_FAIL("failed to update check (1):" + boost::diagnostic_information(exp) + exp.what() );
         } catch(const boost::exception& exp) {
@@ -305,7 +226,7 @@ struct fixture_create_update_update_check : public virtual fixture_has_ctx {
         }
 
         try {
-            data_post_update_ = info_check.exec(ctx, timezone_);
+            data_post_update_ = info_check.exec(_ctx, timezone_);
         } catch(const Fred::InternalError& exp) {
             BOOST_FAIL("non-existent check (1):" + boost::diagnostic_information(exp) + exp.what() );
         } catch(const boost::exception& exp) {
@@ -313,15 +234,13 @@ struct fixture_create_update_update_check : public virtual fixture_has_ctx {
         } catch(const std::exception& exp) {
             BOOST_FAIL(std::string("non-existent check (3):") + exp.what());
         }
-
-        eval::exec(data_post_reset_, data_post_update_, status2_, status3_, logd_request2_, logd_request3_);
     }
 };
 
-struct fixture_create_nonexistent_check_handle : public virtual fixture_has_ctx {
-    std::string check_handle;
+struct setup_nonexistent_check_handle {
+    std::string check_handle_;
 
-    fixture_create_nonexistent_check_handle() {
+    setup_nonexistent_check_handle(Fred::OperationContext& _ctx) {
         struct BOOST { struct UUIDS { struct RANDOM_GENERATOR {
             static std::string generate() {
                 srand(time(NULL));
@@ -363,66 +282,122 @@ struct fixture_create_nonexistent_check_handle : public virtual fixture_has_ctx 
 
         Database::Result res;
         do {
-            check_handle = boost::lexical_cast<std::string>(BOOST::UUIDS::RANDOM_GENERATOR::generate());
-            res = ctx.get_conn().exec(
+            check_handle_ = boost::lexical_cast<std::string>(BOOST::UUIDS::RANDOM_GENERATOR::generate());
+            res = _ctx.get_conn().exec(
                 "SELECT handle "
                 "   FROM contact_check "
-                "   WHERE handle='"+check_handle+"';"
+                "   WHERE handle='"+check_handle_+"';"
             );
         } while(res.size() != 0);
     }
 };
 
-struct fixture_create_nonexistent_status_name : public virtual fixture_has_ctx {
-    std::string status_name;
+struct setup_nonexistent_status_name {
+    std::string status_name_;
 
-    fixture_create_nonexistent_status_name() {
+    setup_nonexistent_status_name(Fred::OperationContext& _ctx) {
         Database::Result res;
         do {
-            status_name = "STATUS_" + RandomDataGenerator().xnumstring(10) + "_TESTSUITE_NAME";
-            res = ctx.get_conn().exec(
+            status_name_ = "STATUS_" + RandomDataGenerator().xnumstring(10);
+            res = _ctx.get_conn().exec(
                 "SELECT name "
                 "   FROM enum_contact_check_status "
-                "   WHERE name='"+status_name+"';" );
+                "   WHERE name='"+status_name_+"';" );
         } while(res.size() != 0);
     }
 };
 
-struct fixture_create_status : public virtual fixture_has_ctx {
-    std::string status_name;
+struct setup_create_status {
+    std::string status_name_;
 
-    fixture_create_status() {
+    setup_create_status(Fred::OperationContext& _ctx) {
         Database::Result res;
-        status_name = "STATUS_" + RandomDataGenerator().xnumstring(10) + "_TESTSUITE_NAME";
-        res = ctx.get_conn().exec(
+        status_name_ = "STATUS_" + RandomDataGenerator().xnumstring(10);
+        res = _ctx.get_conn().exec(
             "INSERT "
             "   INTO enum_contact_check_status "
             "   (id, name, description ) "
-            "   VALUES (" + RandomDataGenerator().xnumstring(6) + ", '"+status_name+"', '"+status_name+"_desc') "
+            "   VALUES (" + RandomDataGenerator().xnumstring(6) + ", '"+status_name_+"', '"+status_name_+"_desc') "
             "   RETURNING id;" );
 
         BOOST_REQUIRE(res.size()==1);
     }
 };
 
+void check(const InfoContactCheckOutput& data_pre_update, const InfoContactCheckOutput& data_post_update, const std::string& old_status, const std::string& new_status, Optional<long long> old_logd_request, Optional<long long> new_logd_request) {
+    // everything is the same except the last state in history
+    BOOST_CHECK_EQUAL( data_pre_update.contact_history_id, data_post_update.contact_history_id );
+    BOOST_CHECK_EQUAL( data_pre_update.handle, data_post_update.handle );
+    BOOST_CHECK_EQUAL( data_pre_update.local_create_time, data_post_update.local_create_time );
+    BOOST_CHECK_EQUAL( data_pre_update.testsuite_name, data_post_update.testsuite_name );
+    {
+        BOOST_CHECK_EQUAL( data_pre_update.tests.size(), data_post_update.tests .size());
+        std::vector<ContactTestResultData>::const_iterator post_it = data_post_update.tests.begin();
+        for(std::vector<ContactTestResultData>::const_iterator it = data_pre_update.tests.begin(); it != data_pre_update.tests.end(); ++it, ++post_it) {
+            BOOST_CHECK_EQUAL(it->to_string(), post_it->to_string());
+        }
+    }
+
+    if(old_status != new_status || old_logd_request != new_logd_request) {
+        BOOST_CHECK_EQUAL( data_pre_update.check_state_history.size() + 1, data_post_update.check_state_history.size() );
+        for(
+            std::vector<ContactCheckState>::const_iterator it = data_pre_update.check_state_history.begin(), post_it = data_post_update.check_state_history.begin();
+            it != data_pre_update.check_state_history.end();
+            ++it, ++post_it)
+        {
+            BOOST_CHECK_MESSAGE(
+                it->to_string() == post_it->to_string(),
+                data_pre_update.to_string() + "\n" + data_post_update.to_string()
+                );
+        }
+
+        // new state in history
+        // update_time is reasonable
+        ptime now = second_clock::universal_time();
+        ptime update_time_min = now - minutes(1);
+        ptime update_time_max = now + minutes(1);
+
+        BOOST_CHECK_MESSAGE(
+            data_post_update.check_state_history.back().local_update_time > update_time_min,
+            "invalid contact_check.create_time: " + boost::posix_time::to_simple_string(data_post_update.check_state_history.back().local_update_time)
+            + " 'now' is:" + boost::posix_time::to_simple_string(now) );
+        BOOST_CHECK_MESSAGE(
+            data_post_update.check_state_history.back().local_update_time < update_time_max,
+            "invalid contact_check.create_time: " + boost::posix_time::to_simple_string(data_post_update.check_state_history.back().local_update_time)
+            + " 'now' is:" + boost::posix_time::to_simple_string(now) );
+        BOOST_CHECK_EQUAL(data_post_update.check_state_history.back().status_name, new_status);
+        BOOST_CHECK_EQUAL(data_post_update.check_state_history.back().logd_request_id, new_logd_request);
+    } else {
+        BOOST_CHECK_EQUAL( data_pre_update.check_state_history.size(), data_post_update.check_state_history.size() );
+        std::vector<ContactCheckState>::const_iterator post_it = data_post_update.check_state_history.begin();
+        for(std::vector<ContactCheckState>::const_iterator it = data_pre_update.check_state_history.begin(); it != data_pre_update.check_state_history.end(); ++it, ++post_it) {
+            BOOST_CHECK_EQUAL(it->to_string(), post_it->to_string());
+        }
+    }
+}
 
 /**
  @pre handle of existing contact_check with status=X and logd_request=1
  @post correct values present in InfoContactCheck output
  @post no change in history values in InfoContactCheck output
  */
-BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_request1_to_statusX_logd_request1)
+BOOST_FIXTURE_TEST_CASE(test_Update_statusX_logd_request1_to_statusX_logd_request1, fixture_has_ctx)
 {
     Optional<long long> logd_request_id1 = RandomDataGenerator().xuint();
     Optional<long long> logd_request_id2 = RandomDataGenerator().xuint();
     Optional<long long> logd_request_id3 = RandomDataGenerator().xuint();
 
-    fixture_create_update_check(
+    setup_create_update_check testcase1(
+        ctx,
         Fred::ContactCheckStatus::ENQUEUED,
         logd_request_id1, logd_request_id1);
-    fixture_create_update_update_check(
+    check(testcase1.data_pre_update_, testcase1.data_post_update_, testcase1.old_status_, testcase1.new_status_, testcase1.old_logd_request_, testcase1.new_logd_request_);
+
+    setup_create_update_update_check testcase2(
+        ctx,
         Fred::ContactCheckStatus::RUNNING, Fred::ContactCheckStatus::RUNNING,
         logd_request_id2, logd_request_id3, logd_request_id3);
+    check(testcase2.data_post_reset_, testcase2.data_post_update_, testcase2.status2_, testcase2.status3_, testcase2.logd_request2_, testcase2.logd_request3_);
 }
 
 /**
@@ -431,18 +406,23 @@ BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_request1_to_statusX_logd_request1)
  @post correct values present in InfoContactCheck output
  @post correct new record in history in InfoContactCheck output
  */
-BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_request1_to_statusY_logd_request1)
+BOOST_FIXTURE_TEST_CASE(test_Update_statusX_logd_request1_to_statusY_logd_request1, fixture_has_ctx)
 {
     Optional<long long> logd_request_id1 = RandomDataGenerator().xuint();
     Optional<long long> logd_request_id2 = RandomDataGenerator().xuint();
     Optional<long long> logd_request_id3 = RandomDataGenerator().xuint();
 
-    fixture_create_update_check(
+    setup_create_update_check testcase1(
+        ctx,
         Fred::ContactCheckStatus::RUNNING,
         logd_request_id1, logd_request_id1);
-    fixture_create_update_update_check(
+    check(testcase1.data_pre_update_, testcase1.data_post_update_, testcase1.old_status_, testcase1.new_status_, testcase1.old_logd_request_, testcase1.new_logd_request_);
+
+    setup_create_update_update_check testcase2(
+        ctx,
         Fred::ContactCheckStatus::RUNNING, Fred::ContactCheckStatus::TO_BE_DECIDED,
         logd_request_id2, logd_request_id3, logd_request_id3);
+    check(testcase2.data_post_reset_, testcase2.data_post_update_, testcase2.status2_, testcase2.status3_, testcase2.logd_request2_, testcase2.logd_request3_);
 }
 
 /**
@@ -450,17 +430,22 @@ BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_request1_to_statusY_logd_request1)
  @post correct values present in InfoContactCheck output
  @post correct new record in history in InfoContactCheck output
  */
-BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_request1_to_statusX_logd_requestNULL)
+BOOST_FIXTURE_TEST_CASE(test_Update_statusX_logd_request1_to_statusX_logd_requestNULL, fixture_has_ctx)
 {
     Optional<long long> logd_request_id1 = RandomDataGenerator().xuint();
     Optional<long long> logd_request_id2 = RandomDataGenerator().xuint();
 
-    fixture_create_update_check(
+    setup_create_update_check testcase1(
+        ctx,
         Fred::ContactCheckStatus::ENQUEUED,
         logd_request_id1, Optional<long long>());
-    fixture_create_update_update_check(
+    check(testcase1.data_pre_update_, testcase1.data_post_update_, testcase1.old_status_, testcase1.new_status_, testcase1.old_logd_request_, testcase1.new_logd_request_);
+
+    setup_create_update_update_check testcase2(
+        ctx,
         Fred::ContactCheckStatus::RUNNING, Fred::ContactCheckStatus::RUNNING,
         Optional<long long>(), logd_request_id2, Optional<long long>());
+    check(testcase2.data_post_reset_, testcase2.data_post_update_, testcase2.status2_, testcase2.status3_, testcase2.logd_request2_, testcase2.logd_request3_);
 }
 
 /**
@@ -469,17 +454,22 @@ BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_request1_to_statusX_logd_requestNU
  @post correct values present in InfoContactCheck output
  @post correct new record in history in InfoContactCheck output
  */
-BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_request1_to_statusY_logd_requestNULL)
+BOOST_FIXTURE_TEST_CASE(test_Update_statusX_logd_request1_to_statusY_logd_requestNULL, fixture_has_ctx)
 {
     Optional<long long> logd_request_id1 = RandomDataGenerator().xuint();
     Optional<long long> logd_request_id2 = RandomDataGenerator().xuint();
 
-    fixture_create_update_check(
+    setup_create_update_check testcase1(
+        ctx,
         Fred::ContactCheckStatus::RUNNING,
         logd_request_id1, Optional<long long>());
-    fixture_create_update_update_check(
+    check(testcase1.data_pre_update_, testcase1.data_post_update_, testcase1.old_status_, testcase1.new_status_, testcase1.old_logd_request_, testcase1.new_logd_request_);
+
+    setup_create_update_update_check testcase2(
+        ctx,
         Fred::ContactCheckStatus::RUNNING, Fred::ContactCheckStatus::TO_BE_DECIDED,
         Optional<long long>(), logd_request_id2, Optional<long long>());
+    check(testcase2.data_post_reset_, testcase2.data_post_update_, testcase2.status2_, testcase2.status3_, testcase2.logd_request2_, testcase2.logd_request3_);
 }
 
 /**
@@ -488,18 +478,23 @@ BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_request1_to_statusY_logd_requestNU
  @post correct values present in InfoContactCheck output
  @post no change in history values in InfoContactCheck output
  */
-BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusX_logd_request1)
+BOOST_FIXTURE_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusX_logd_request1, fixture_has_ctx)
 {
     Optional<long long> logd_request_id1 = RandomDataGenerator().xuint();
     Optional<long long> logd_request_id2 = RandomDataGenerator().xuint();
     Optional<long long> logd_request_id3 = RandomDataGenerator().xuint();
 
-    fixture_create_update_check(
+    setup_create_update_check testcase1(
+        ctx,
         Fred::ContactCheckStatus::ENQUEUED,
         Optional<long long>(), logd_request_id1 );
-    fixture_create_update_update_check(
+    check(testcase1.data_pre_update_, testcase1.data_post_update_, testcase1.old_status_, testcase1.new_status_, testcase1.old_logd_request_, testcase1.new_logd_request_);
+
+    setup_create_update_update_check testcase2(
+        ctx,
         Fred::ContactCheckStatus::RUNNING, Fred::ContactCheckStatus::RUNNING,
         logd_request_id2, Optional<long long>(), logd_request_id3);
+    check(testcase2.data_post_reset_, testcase2.data_post_update_, testcase2.status2_, testcase2.status3_, testcase2.logd_request2_, testcase2.logd_request3_);
 }
 
 /**
@@ -509,18 +504,23 @@ BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusX_logd_reques
  @post correct values present in InfoContactCheck output
  @post correct new record in history in InfoContactCheck output
  */
-BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusY_logd_request1)
+BOOST_FIXTURE_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusY_logd_request1, fixture_has_ctx)
 {
     Optional<long long> logd_request_id1 = RandomDataGenerator().xuint();
     Optional<long long> logd_request_id2 = RandomDataGenerator().xuint();
     Optional<long long> logd_request_id3 = RandomDataGenerator().xuint();
 
-    fixture_create_update_check(
+    setup_create_update_check testcase1(
+        ctx,
         Fred::ContactCheckStatus::RUNNING,
         Optional<long long>(), logd_request_id1 );
-    fixture_create_update_update_check(
+    check(testcase1.data_pre_update_, testcase1.data_post_update_, testcase1.old_status_, testcase1.new_status_, testcase1.old_logd_request_, testcase1.new_logd_request_);
+
+    setup_create_update_update_check testcase2(
+        ctx,
         Fred::ContactCheckStatus::RUNNING, Fred::ContactCheckStatus::TO_BE_DECIDED,
         logd_request_id2, Optional<long long>(), logd_request_id3);
+    check(testcase2.data_post_reset_, testcase2.data_post_update_, testcase2.status2_, testcase2.status3_, testcase2.logd_request2_, testcase2.logd_request3_);
 }
 
 /**
@@ -528,16 +528,21 @@ BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusY_logd_reques
  @post correct values present in InfoContactCheck output
  @post no change in history in InfoContactCheck output
  */
-BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusX_logd_requestNULL)
+BOOST_FIXTURE_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusX_logd_requestNULL, fixture_has_ctx)
 {
     Optional<long long> logd_request_id1 = RandomDataGenerator().xuint();
 
-    fixture_create_update_check(
+    setup_create_update_check testcase1(
+        ctx,
         Fred::ContactCheckStatus::ENQUEUED,
         Optional<long long>(), Optional<long long>() );
-    fixture_create_update_update_check(
+    check(testcase1.data_pre_update_, testcase1.data_post_update_, testcase1.old_status_, testcase1.new_status_, testcase1.old_logd_request_, testcase1.new_logd_request_);
+
+    setup_create_update_update_check testcase2(
+        ctx,
         Fred::ContactCheckStatus::RUNNING, Fred::ContactCheckStatus::RUNNING,
         logd_request_id1, Optional<long long>(), Optional<long long>());
+    check(testcase2.data_post_reset_, testcase2.data_post_update_, testcase2.status2_, testcase2.status3_, testcase2.logd_request2_, testcase2.logd_request3_);
 }
 
 /**
@@ -546,28 +551,35 @@ BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusX_logd_reques
  @post correct values present in InfoContactCheck output
  @post correct new record in history in InfoContactCheck output
  */
-BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusY_logd_requestNULL)
+BOOST_FIXTURE_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusY_logd_requestNULL, fixture_has_ctx)
 {
     Optional<long long> logd_request_id1 = RandomDataGenerator().xuint();
 
-    fixture_create_update_check(
+    setup_create_update_check testcase1(
+        ctx,
         Fred::ContactCheckStatus::RUNNING,
         Optional<long long>(), Optional<long long>() );
-    fixture_create_update_update_check(
+    check(testcase1.data_pre_update_, testcase1.data_post_update_, testcase1.old_status_, testcase1.new_status_, testcase1.old_logd_request_, testcase1.new_logd_request_);
+
+    setup_create_update_update_check testcase2(
+        ctx,
         Fred::ContactCheckStatus::RUNNING, Fred::ContactCheckStatus::TO_BE_DECIDED,
         logd_request_id1, Optional<long long>(), Optional<long long>());
+    check(testcase2.data_post_reset_, testcase2.data_post_update_, testcase2.status2_, testcase2.status3_, testcase2.logd_request2_, testcase2.logd_request3_);
 }
 
-struct fixture_nonexistent_check_handle_existing_status_name : public fixture_create_nonexistent_check_handle, fixture_create_status {};
 /**
  setting nonexistent check handle and existing status values and executing operation
  @pre nonexistent check handle
  @pre existing status name
  @post ExceptionUnknownCheckHandle
  */
-BOOST_FIXTURE_TEST_CASE(test_Exec_nonexistent_check_handle, fixture_nonexistent_check_handle_existing_status_name)
+BOOST_FIXTURE_TEST_CASE(test_Exec_nonexistent_check_handle, fixture_has_ctx)
 {
-    Fred::UpdateContactCheck dummy(check_handle, Fred::ContactCheckStatus::RUNNING);
+    setup_nonexistent_check_handle handle(ctx);
+    setup_create_status status(ctx);
+
+    Fred::UpdateContactCheck dummy(handle.check_handle_, status.status_name_);
 
     bool caught_the_right_exception = false;
     try {
@@ -589,12 +601,12 @@ BOOST_FIXTURE_TEST_CASE(test_Exec_nonexistent_check_handle, fixture_nonexistent_
  @pre nonexistent status name
  @post ExceptionUnknownStatusName
  */
-BOOST_FIXTURE_TEST_CASE(test_Exec_nonexistent_status_name, fixture_create_nonexistent_status_name)
+BOOST_FIXTURE_TEST_CASE(test_Exec_nonexistent_status_name, fixture_has_ctx)
 {
-    fixture_create_status status;
-    fixture_create_check check(status.status_name);
+    setup_check check(ctx);
+    setup_nonexistent_status_name nonexistent_status(ctx);
 
-    Fred::UpdateContactCheck dummy(check.check_handle_, status_name);
+    Fred::UpdateContactCheck dummy(check.check_handle_, nonexistent_status.status_name_);
 
     bool caught_the_right_exception = false;
     try {
