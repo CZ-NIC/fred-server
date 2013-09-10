@@ -58,7 +58,7 @@ namespace Fred
             , const Optional<Nullable<std::string> >& nsset
             , const Optional<Nullable<std::string> >& keyset
             , const std::vector<std::string>& admin_contacts
-            , const Optional<unsigned>& expiration_period
+            , const Optional<boost::gregorian::date>& expiration_date
             , const Optional<boost::gregorian::date>& enum_validation_expiration
             , const Optional<bool>& enum_publish_flag
             , const Optional<unsigned long long> logd_request_id
@@ -70,7 +70,7 @@ namespace Fred
     , nsset_(nsset)
     , keyset_(keyset)
     , admin_contacts_(admin_contacts)
-    , expiration_period_(expiration_period)
+    , expiration_date_(expiration_date)
     , enum_validation_expiration_(enum_validation_expiration)
     , enum_publish_flag_(enum_publish_flag)
     , logd_request_id_(logd_request_id.isset()
@@ -114,9 +114,9 @@ namespace Fred
         return *this;
     }
 
-    CreateDomain& CreateDomain::set_expiration_period(unsigned expiration_period)
+    CreateDomain& CreateDomain::set_expiration_date(const Optional<boost::gregorian::date>& expiration_date)
     {
-        expiration_period_ = expiration_period;
+        expiration_date_ = expiration_date;
         return *this;
     }
 
@@ -199,7 +199,7 @@ namespace Fred
 
             if (zone.is_enum)//check ENUM specific parameters
             {
-                if((!enum_validation_expiration_.isset()) || (enum_validation_expiration_.get_value().is_special()))
+                if((!enum_validation_expiration_.isset()))
                     BOOST_THROW_EXCEPTION(InternalError("enum_validation_expiration not set for ENUM domain"));
             }
             else
@@ -210,33 +210,12 @@ namespace Fred
                     BOOST_THROW_EXCEPTION(InternalError("enum_publish_flag set for not-ENUM domain"));
             }
 
-            //expiration_period
-            unsigned expiration_period = 0;//in months
-            {
-                if(expiration_period_.isset())
-                {
-                    expiration_period = expiration_period_;
-                }
-                else
-                {
-                    //get default
-                    Database::Result ex_period_min_res = ctx.get_conn().exec_params(
-                        "SELECT ex_period_min FROM zone WHERE id=$1::bigint FOR SHARE"
-                        , Database::query_param_list(zone.id));
-
-                    if (ex_period_min_res.size() == 0)
-                    {
-                        BOOST_THROW_EXCEPTION(InternalError("ex_period_min for zone not found"));
-                    }
-
-                    expiration_period = static_cast<unsigned>(ex_period_min_res[0][0]);
-                }
-            }//expiration_period
-
             CreateObjectOutput create_object_output = CreateObject("domain", no_root_dot_fqdn, registrar_, authinfo_, logd_request_id_).exec(ctx);
 
+            //expiration_period
+            unsigned expiration_period = zone.ex_period_min;//in months
+
             //get crdate and exdate and lock row from object_registry
-            boost::gregorian::date expiration_date;
             {
                 Database::Result reg_date_res = ctx.get_conn().exec_params(
                     "SELECT crdate::timestamp AT TIME ZONE 'UTC' AT TIME ZONE $1::text "
@@ -251,7 +230,10 @@ namespace Fred
                 }
 
                 timestamp = boost::posix_time::time_from_string(std::string(reg_date_res[0][0]));
-                expiration_date = boost::gregorian::from_simple_string(std::string(reg_date_res[0][1]));
+                if(!expiration_date_.isset())
+                {
+                    expiration_date_ = boost::gregorian::from_simple_string(std::string(reg_date_res[0][1]));
+                }
             }
 
             Exception create_domain_exception;
@@ -301,9 +283,16 @@ namespace Fred
                 val_sql << val_separator.get() << "$" << params.size() <<"::integer";
 
                 //expiration_date
-                params.push_back(expiration_date);
-                col_sql << col_separator.get() << "exdate";
-                val_sql << val_separator.get() << "$" << params.size() <<"::date";
+                if(expiration_date_.get_value().is_special())
+                {
+                    create_domain_exception.set_invalid_expiration_date(expiration_date_.get_value());
+                }
+                else //if expiration_date_ ok
+                {
+                    params.push_back(expiration_date_.get_value());
+                    col_sql << col_separator.get() << "exdate";
+                    val_sql << val_separator.get() << "$" << params.size() <<"::date";
+                }
 
                 //set registrant
                 params.push_back(registrant_id);
@@ -478,6 +467,12 @@ namespace Fred
                 }//if admin contacts
             }
 
+            //check valexdate if set
+            if(enum_validation_expiration_.isset() && enum_validation_expiration_.get_value().is_special())
+            {
+                create_domain_exception.set_invalid_enum_validation_expiration_date(enum_validation_expiration_.get_value());
+            }
+
             //check exception
             if(create_domain_exception.throw_me())
                 BOOST_THROW_EXCEPTION(create_domain_exception);
@@ -563,7 +558,7 @@ namespace Fred
         if(!i.admin_contacts_.empty()) os << " admin_contacts: ";
         for(std::vector<std::string>::const_iterator ci = i.admin_contacts_.begin()
                 ; ci != i.admin_contacts_.end() ; ++ci ) os << *ci;
-        os << " expiration_period: " << i.expiration_period_.print_quoted()
+        os << " expiration_date: " << i.expiration_date_.print_quoted()
             << " enum_validation_expiration: " << i.enum_validation_expiration_.print_quoted()
             << " enum_publish_flag: " << i.enum_publish_flag_.print_quoted()
             << " logd_request_id: " << i.logd_request_id_.print_quoted();

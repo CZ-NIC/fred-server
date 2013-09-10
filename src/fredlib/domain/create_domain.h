@@ -58,7 +58,7 @@ namespace Fred
         Optional<Nullable<std::string> > nsset_;/**< nsset handle or NULL if missing */
         Optional<Nullable<std::string> > keyset_;/**< keyset handle or NULL if missing */
         std::vector<std::string> admin_contacts_; /**< admin contact handles */
-        Optional<unsigned> expiration_period_;//for exdate in months
+        Optional<boost::gregorian::date> expiration_date_;//domain expiration date
         Optional<boost::gregorian::date> enum_validation_expiration_;//the expiration date of the ENUM domain validation, have to be set for enum domain, otherwise unused
         Optional<bool> enum_publish_flag_;//flag for publishing ENUM number and associated contact in public directory
         Nullable<unsigned long long> logd_request_id_; //id of the new entry in log_entry database table, id is used in other calls to logging within current request
@@ -66,7 +66,8 @@ namespace Fred
     public:
         DECLARE_EXCEPTION_DATA(unknown_zone_fqdn, std::string);
         DECLARE_EXCEPTION_DATA(invalid_fqdn_syntax, std::string);
-
+        DECLARE_EXCEPTION_DATA(invalid_expiration_date, boost::gregorian::date);
+        DECLARE_EXCEPTION_DATA(invalid_enum_validation_expiration_date, boost::gregorian::date);
         DECLARE_VECTOR_OF_EXCEPTION_DATA(unknown_admin_contact_handle, std::string);
         DECLARE_VECTOR_OF_EXCEPTION_DATA(already_set_admin_contact_handle, std::string);
         DECLARE_VECTOR_OF_EXCEPTION_DATA(unknown_technical_contact_handle, std::string);
@@ -82,6 +83,8 @@ namespace Fred
         , ExceptionData_vector_of_already_set_admin_contact_handle<Exception>
         , ExceptionData_unknown_registrar_handle<Exception>
         , ExceptionData_invalid_fqdn_syntax<Exception>
+        , ExceptionData_invalid_expiration_date<Exception>
+        , ExceptionData_invalid_enum_validation_expiration_date<Exception>
         {};
 
         CreateDomain(const std::string& fqdn
@@ -94,7 +97,7 @@ namespace Fred
                 , const Optional<Nullable<std::string> >& nsset
                 , const Optional<Nullable<std::string> >& keyset
                 , const std::vector<std::string>& admin_contacts
-                , const Optional<unsigned>& expiration_period
+                , const Optional<boost::gregorian::date>& expiration_date
                 , const Optional<boost::gregorian::date>& enum_validation_expiration
                 , const Optional<bool>& enum_publish_flag
                 , const Optional<unsigned long long> logd_request_id);
@@ -105,7 +108,7 @@ namespace Fred
         CreateDomain& set_keyset(const Nullable<std::string>& keyset);
         CreateDomain& set_keyset(const std::string& keyset);
         CreateDomain& set_admin_contacts(const std::vector<std::string>& admin_contacts);
-        CreateDomain& set_expiration_period(unsigned expiration_period);
+        CreateDomain& set_expiration_date(const Optional<boost::gregorian::date>& expiration_date);
         CreateDomain& set_enum_validation_expiration(const boost::gregorian::date& valexdate);
         CreateDomain& set_enum_publish_flag(bool enum_publish_flag);
         CreateDomain& set_logd_request_id(unsigned long long logd_request_id);
