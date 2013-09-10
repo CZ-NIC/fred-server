@@ -171,7 +171,7 @@ namespace Fred
 
 
     std::ostream& operator<<(std::ostream& os, const InfoContactCheck& i) {
-        os << "#InfoContactCheck handle_: " << i.handle_;
+        os << "#InfoContactCheck check_handle_: " << i.handle_;
 
         return os;
     }
