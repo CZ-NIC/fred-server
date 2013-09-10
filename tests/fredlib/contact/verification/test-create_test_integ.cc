@@ -160,6 +160,21 @@ struct setup_testdef {
     }
 };
 
+struct setup_testdef_in_testsuite_of_check {
+    setup_testdef_in_testsuite_of_check(Fred::OperationContext& _ctx, const std::string testdef_name, const std::string check_handle) {
+    BOOST_REQUIRE(
+        _ctx.get_conn().exec(
+            "INSERT INTO contact_testsuite_map "
+            "   (enum_contact_test_id, enum_contact_testsuite_id) "
+            "   VALUES ("
+            "       (SELECT id FROM enum_contact_test WHERE name='"+testdef_name+"' ), "
+            "       (SELECT enum_contact_testsuite_id FROM contact_check WHERE handle='"+check_handle+"') "
+            "   ) "
+            "   RETURNING enum_contact_test_id;"
+        ).size() == 1);
+    }
+};
+
 struct setup_nonexistent_testdef_name {
     std::string testdef_name;
 
@@ -191,6 +206,7 @@ BOOST_FIXTURE_TEST_CASE(test_Exec_mandatory_setup, fixture_ctx)
 {
     setup_check check(ctx);
     setup_testdef testdef(ctx);
+    setup_testdef_in_testsuite_of_check(ctx, testdef.testdef_name_, check.check_handle_);
 
     Fred::CreateContactTest create_test(check.check_handle_, testdef.testdef_name_);
     std::string timezone = "UTC";
@@ -257,6 +273,7 @@ BOOST_FIXTURE_TEST_CASE(test_Exec_optional_setup, fixture_ctx)
 {
     setup_check check(ctx);
     setup_testdef testdef(ctx);
+    setup_testdef_in_testsuite_of_check(ctx, testdef.testdef_name_, check.check_handle_);
     setup_logd_request_id logd_request;
 
     Fred::CreateContactTest create_test(check.check_handle_, testdef.testdef_name_, logd_request.logd_request_id);
@@ -324,6 +341,7 @@ BOOST_FIXTURE_TEST_CASE(test_Exec_nonexistent_check_handle, fixture_ctx)
 {
     setup_nonexistent_check_handle check(ctx);
     setup_testdef testdef(ctx);
+
     Fred::CreateContactTest create_test(check.check_handle, testdef.testdef_name_);
 
     bool caught_the_right_exception = false;
@@ -367,5 +385,32 @@ BOOST_FIXTURE_TEST_CASE(test_Exec_nonexistent_test_name, fixture_ctx)
     }
 }
 
+/**
+ setting existing check handle and nonexistent test values and executing operation
+ @pre existing check handle
+ @pre existent test name not in testsuite of this check
+ @post ExceptionUnknownTestName
+ */
+BOOST_FIXTURE_TEST_CASE(test_Exec_test_name_not_in_suite, fixture_ctx)
+{
+    setup_check check(ctx);
+    setup_testdef testdef(ctx);
+    // deliberately OMITTING setup_testdef_in_testsuite_of_check(...)
+
+    Fred::CreateContactTest create_test(check.check_handle_, testdef.testdef_name_);
+
+    bool caught_the_right_exception = false;
+    try {
+        create_test.exec(ctx);
+    } catch(const Fred::CreateContactTest::ExceptionTestNotInMyTestsuite& exp) {
+        caught_the_right_exception = true;
+    } catch(...) {
+        BOOST_FAIL("incorrect exception caught");
+    }
+
+    if(! caught_the_right_exception) {
+        BOOST_FAIL("should have caught the exception");
+    }
+}
 
 BOOST_AUTO_TEST_SUITE_END();

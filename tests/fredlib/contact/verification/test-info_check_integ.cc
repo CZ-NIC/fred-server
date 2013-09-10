@@ -222,6 +222,21 @@ struct setup_testdef {
     }
 };
 
+struct setup_testdef_in_testsuite_of_check {
+    setup_testdef_in_testsuite_of_check(Fred::OperationContext& _ctx, const std::string testdef_name, const std::string check_handle) {
+    BOOST_REQUIRE(
+        _ctx.get_conn().exec(
+            "INSERT INTO contact_testsuite_map "
+            "   (enum_contact_test_id, enum_contact_testsuite_id) "
+            "   VALUES ("
+            "       (SELECT id FROM enum_contact_test WHERE name='"+testdef_name+"' ), "
+            "       (SELECT enum_contact_testsuite_id FROM contact_check WHERE handle='"+check_handle+"') "
+            "   ) "
+            "   RETURNING enum_contact_test_id;"
+        ).size() == 1);
+    }
+};
+
 /**
  setting existing check handle and executing operation
  @pre existing check handle with some tests and history
@@ -282,6 +297,8 @@ BOOST_FIXTURE_TEST_CASE(test_Exec, fixture_has_ctx)
         tests_status_history.at(i).push_back(Fred::ContactTestStatus::RUNNING);
         tests_logd_request_history.at(i).push_back(Optional<long long>(setup_logd_request_id().logd_request_id));
         tests_error_msg_history.at(i).push_back(Optional<string>());
+
+        setup_testdef_in_testsuite_of_check(ctx, test_names.at(i), check.check_handle_);
 
         Fred::CreateContactTest create_test(
             check.check_handle_,

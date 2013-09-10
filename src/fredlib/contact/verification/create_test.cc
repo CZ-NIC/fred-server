@@ -82,10 +82,23 @@ namespace Fred
             Database::query_param_list(test_name_)(check_handle_)
         );
         if(testinsuite_res.size() != 1) {
+            // is the test really unknown? ... (see ...or below)
+            Database::Result test_res = _ctx.get_conn().exec_params(
+                "SELECT id "
+                "   FROM enum_contact_test "
+                "   WHERE name=$1::varchar"
+                "   FOR SHARE;",
+                Database::query_param_list(test_name_)
+            );
+            if(test_res.size() != 1) {
+                throw ExceptionUnknownTestName();
+            }
+
+            // ...or was it that i just don't have it in my suite?
             throw ExceptionTestNotInMyTestsuite();
         }
 
-        // using solo select for easy checking of existence (subselect would be strange)
+
         Database::Result test_res = _ctx.get_conn().exec_params(
             "SELECT id "
             "   FROM enum_contact_test "

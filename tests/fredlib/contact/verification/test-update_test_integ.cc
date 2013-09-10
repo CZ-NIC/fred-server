@@ -164,6 +164,21 @@ struct setup_testdef {
     }
 };
 
+struct setup_testdef_in_testsuite_of_check {
+    setup_testdef_in_testsuite_of_check(Fred::OperationContext& _ctx, const std::string testdef_name, const std::string check_handle) {
+    BOOST_REQUIRE(
+        _ctx.get_conn().exec(
+            "INSERT INTO contact_testsuite_map "
+            "   (enum_contact_test_id, enum_contact_testsuite_id) "
+            "   VALUES ("
+            "       (SELECT id FROM enum_contact_test WHERE name='"+testdef_name+"' ), "
+            "       (SELECT enum_contact_testsuite_id FROM contact_check WHERE handle='"+check_handle+"') "
+            "   ) "
+            "   RETURNING enum_contact_test_id;"
+        ).size() == 1);
+    }
+};
+
 struct setup_nonexistent_testdef_name {
     std::string testdef_name_;
 
@@ -194,6 +209,7 @@ struct setup_test : public setup_check {
         status_(Fred::ContactTestStatus::RUNNING),
         logd_request_(_logd_request)
     {
+        setup_testdef_in_testsuite_of_check(_ctx, testdef_name_, check_handle_);
         Fred::CreateContactTest create_test(check_handle_, testdef_name_, logd_request_);
         create_test.exec(_ctx);
     }
