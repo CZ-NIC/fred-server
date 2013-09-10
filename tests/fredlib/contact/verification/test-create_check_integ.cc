@@ -187,8 +187,8 @@ BOOST_FIXTURE_TEST_CASE(test_Exec_mandatory_setup, fixture_has_ctx)
 
     Database::Result contact_history_validity_interval = ctx.get_conn().exec_params(
         "SELECT "
-        "   valid_from AT TIME ZONE 'utc' AT TIME ZONE $1::varchar AS valid_from_, "
-        "   valid_to  AT TIME ZONE 'utc' AT TIME ZONE $1::varchar AS valid_to_ "
+        "   valid_from AT TIME ZONE 'utc' AT TIME ZONE $1::text AS valid_from_, "
+        "   valid_to  AT TIME ZONE 'utc' AT TIME ZONE $1::text AS valid_to_ "
         "   FROM history "
         "   WHERE id=$2::int; ",
         Database::query_param_list
@@ -213,9 +213,13 @@ BOOST_FIXTURE_TEST_CASE(test_Exec_mandatory_setup, fixture_has_ctx)
                 static_cast<std::string>(
                     contact_history_validity_interval[0]["valid_to_"] ));
 
+    /* WARNING - "...OR EQUAL"
+     * part of comparison is present because the contact is created in the same transaction
+     * and therefore has the same value of NOW() time function in postgres
+     */
     BOOST_CHECK_MESSAGE(
-        from_time < result_data.local_create_time &&
-        ( to_time > result_data.local_create_time || to_is_null),
+        from_time <= result_data.local_create_time &&
+        ( to_time >= result_data.local_create_time || to_is_null),
         "invalid history_id - not valid at check create_time." +
         result_data.to_string()
     );
@@ -331,9 +335,13 @@ BOOST_FIXTURE_TEST_CASE(test_Exec_optional_setup, fixture_has_ctx)
                 static_cast<std::string>(
                     contact_history_validity_interval[0]["valid_to_"] ));
 
+    /* WARNING - "...OR EQUAL"
+         * part of comparison is present because the contact is created in the same transaction
+         * and therefore has the same value of NOW() time function in postgres
+         */
     BOOST_CHECK_MESSAGE(
-        from_time < result_data.local_create_time &&
-        ( to_time > result_data.local_create_time || to_is_null),
+        from_time <= result_data.local_create_time &&
+        ( to_time >= result_data.local_create_time || to_is_null),
         "invalid history_id - not valid at check create_time." +
         result_data.to_string()
     );
