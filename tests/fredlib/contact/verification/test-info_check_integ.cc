@@ -223,7 +223,7 @@ struct setup_testdef {
 };
 
 /**
- setting nonexistent check handle and existing status values and executing operation
+ setting existing check handle and executing operation
  @pre existing check handle with some tests and history
  @post correct data in InfoContactCheckOutput
  */
@@ -374,7 +374,7 @@ BOOST_FIXTURE_TEST_CASE(test_Exec, fixture_has_ctx)
 }
 
 /**
- setting nonexistent check handle and existing status values and executing operation
+ setting nonexistent check handle and executing operation
  @pre nonexistent check handle
  @post ExceptionUnknownCheckHandle
  */
