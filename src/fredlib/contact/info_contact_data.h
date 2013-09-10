@@ -38,7 +38,7 @@
 namespace Fred
 {
     /**
-     * Common data of the contact.
+     * Common data of contact.
      * Current or history state of the contact.
      */
     struct InfoContactData

@@ -35,13 +35,13 @@
 namespace Fred
 {
     /**
-    * Update of the contact.
+    * Update of contact.
     * Created instance is modifiable by chainable methods i.e. methods returning instance reference.
     * Data set into instance by constructor and methods serve as input data of the update.
     * Update is executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
     * When exception is thrown, changes to database are considered incosistent and should be rolled back by the caller.
-    * In case of wrong input data or other predictable and superable failure, the instance of @ref UpdateContact::Exception is thrown with appropriate attributes set.
-    * In case of other unsuperable failures and inconstistencies, the instance of @ref InternalError or other exception is thrown.
+    * In case of wrong input data or other predictable and superable failure, an instance of @ref UpdateContact::Exception is thrown with appropriate attributes set.
+    * In case of other unsuperable failures and inconstistencies, an instance of @ref InternalError or other exception is thrown.
     */
     class UpdateContact
     {

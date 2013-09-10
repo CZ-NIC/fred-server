@@ -41,13 +41,13 @@ namespace Fred
 {
 
     /**
-    * Create of the domain.
+    * Create of domain.
     * Created instance is modifiable by chainable methods i.e. methods returning instance reference.
     * Data set into instance by constructor and methods serve as input data of the create.
     * Create is executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
     * When exception is thrown, changes to database are considered incosistent and should be rolled back by the caller.
-    * In case of wrong input data or other predictable and superable failure, the instance of @ref CreateDomain::Exception is thrown with appropriate attributes set.
-    * In case of other unsuperable failures and inconstistencies, the instance of @ref InternalError or other exception is thrown.
+    * In case of wrong input data or other predictable and superable failure, an instance of @ref CreateDomain::Exception is thrown with appropriate attributes set.
+    * In case of other unsuperable failures and inconstistencies, an instance of @ref InternalError or other exception is thrown.
     */
     class CreateDomain
     {
@@ -58,10 +58,10 @@ namespace Fred
         Optional<Nullable<std::string> > nsset_;/**< nsset handle or NULL if missing */
         Optional<Nullable<std::string> > keyset_;/**< keyset handle or NULL if missing */
         std::vector<std::string> admin_contacts_; /**< admin contact handles */
-        Optional<boost::gregorian::date> expiration_date_;//domain expiration date
-        Optional<boost::gregorian::date> enum_validation_expiration_;//the expiration date of the ENUM domain validation, have to be set for enum domain, otherwise unused
-        Optional<bool> enum_publish_flag_;//flag for publishing ENUM number and associated contact in public directory
-        Nullable<unsigned long long> logd_request_id_; //id of the new entry in log_entry database table, id is used in other calls to logging within current request
+        Optional<boost::gregorian::date> expiration_date_;/**< the expiration date of the domain */
+        Optional<boost::gregorian::date> enum_validation_expiration_;/**< the expiration date of the ENUM domain validation, prohibited for non-ENUM domains */
+        Optional<bool> enum_publish_flag_;/**< flag for publishing ENUM number and associated contact in public directory, prohibited for non-ENUM domains */
+        Nullable<unsigned long long> logd_request_id_; /**< id of the record in logger database, id is used in other calls to logging within current request */
 
     public:
         DECLARE_EXCEPTION_DATA(unknown_zone_fqdn, std::string);
