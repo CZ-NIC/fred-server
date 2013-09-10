@@ -1671,7 +1671,8 @@ tests_test_server_SOURCES = \
 		tests/fredlib/contact/verification/test-create_test_integ.cc \
 		tests/fredlib/contact/verification/test-update_test_unit.cc \
 		tests/fredlib/contact/verification/test-update_test_integ.cc \
-		tests/fredlib/contact/verification/test-info_check_unit.cc
+		tests/fredlib/contact/verification/test-info_check_unit.cc \
+		tests/fredlib/contact/verification/test-info_check_integ.cc
 		
 tests_test_server_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS) \
