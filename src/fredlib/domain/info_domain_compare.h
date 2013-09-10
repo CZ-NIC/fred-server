@@ -41,12 +41,36 @@
 
 namespace Fred
 {
+    /**
+    * Equality of the domain data with domain history data operator.
+    * @param lhs is the domain data
+    * @param rhs is the domain history data
+    * @return true if equal, false if not
+    */
     bool operator==(const InfoDomainOutput& lhs, const InfoDomainHistoryOutput& rhs);
 
+    /**
+    * Equality of domain history data with the domain data operator.
+    * @param lhs is the domain history data
+    * @param rhs is the domain data
+    * @return true if equal, false if not
+    */
     bool operator==(const InfoDomainHistoryOutput& lhs, const InfoDomainOutput& rhs);
 
+    /**
+    * Inequality of domain data with the domain history data operator.
+    * @param lhs is the domain data
+    * @param rhs is the domain history data
+    * @return true if not equal, false if equal
+    */
     bool operator!=(const InfoDomainOutput& lhs, const InfoDomainHistoryOutput& rhs);
 
+    /**
+    * Inequality of domain history data with the domain data operator.
+    * @param lhs is the domain history data
+    * @param rhs is the domain data
+    * @return true if not equal, false if equal
+    */
     bool operator!=(const InfoDomainHistoryOutput& lhs, const InfoDomainOutput& rhs);
 
 }//namespace Fred
