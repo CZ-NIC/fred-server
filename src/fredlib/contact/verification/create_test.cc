@@ -70,6 +70,21 @@ namespace Fred
         }
         long check_id = static_cast<long>(check_res[0]["id"]);
 
+        // get test is in testsuite of this check
+        Database::Result testinsuite_res = _ctx.get_conn().exec_params(
+            "SELECT c_t.id "
+            "   FROM enum_contact_test AS c_t "
+            "       JOIN contact_testsuite_map AS c_t_m ON c_t.id = c_t_m.enum_contact_test_id "
+            "       JOIN contact_check AS c_c ON c_t_m.enum_contact_testsuite_id = c_c.enum_contact_testsuite_id "
+            "   WHERE c_t.name=$1::varchar "
+            "       AND c_c.handle=$2::uuid "
+            "   FOR SHARE OF c_t_m;",
+            Database::query_param_list(test_name_)(check_handle_)
+        );
+        if(testinsuite_res.size() != 1) {
+            throw ExceptionTestNotInMyTestsuite();
+        }
+
         // using solo select for easy checking of existence (subselect would be strange)
         Database::Result test_res = _ctx.get_conn().exec_params(
             "SELECT id "
