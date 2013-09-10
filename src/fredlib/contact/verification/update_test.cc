@@ -136,7 +136,19 @@ namespace Fred
             );
 
             if (update_contact_test_res.size() != 1) {
-               BOOST_THROW_EXCEPTION(Fred::InternalError("contact_test update failed"));
+                // is specified record existing at all?
+                if( _ctx.get_conn().exec_params(
+                       "SELECT id "
+                       "    FROM contact_test_result "
+                       "    WHERE contact_check_id=$1::bigint "
+                       "        AND enum_contact_test_id=$2::int;",
+                       Database::query_param_list(check_id)(test_id)
+                    ).size() != 1
+                ) {
+                    throw ExceptionUnknownCheckTestPair();
+                }
+                // ok, it exists but we have problem non-the-less...
+                BOOST_THROW_EXCEPTION(Fred::InternalError("contact_test update failed"));
             }
         } catch(const std::exception& _exc) {
 

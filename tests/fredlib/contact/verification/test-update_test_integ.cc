@@ -607,6 +607,37 @@ BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_check_handle)
 }
 
 /**
+ setting nonexistent check handle, existing test and existing status values and executing operation
+ @pre existent check handle
+ @pre existing test name
+ @pre nonexistent check, test pair record in contact_test_result
+ @pre existing status name
+ @post ExceptionUnknownCheckHandle
+ */
+BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_check_test_pair)
+{
+    Fred::OperationContext ctx;
+    setup_check check(ctx);
+    setup_testdef testdef(ctx);
+    setup_status status(ctx);
+
+    Fred::UpdateContactTest dummy(check.check_handle_, testdef.testdef_name_, status.status_name_);
+
+    bool caught_the_right_exception = false;
+    try {
+        dummy.exec(ctx);
+    } catch(const Fred::UpdateContactTest::ExceptionUnknownCheckTestPair& exp) {
+        caught_the_right_exception = true;
+    } catch(...) {
+        BOOST_FAIL("incorrect exception caught");
+    }
+
+    if(! caught_the_right_exception) {
+        BOOST_FAIL("should have caught the exception");
+    }
+}
+
+/**
  setting existing check handle and nonexistent status values and executing operation
  @pre existing check handle
  @pre nonexistent test name

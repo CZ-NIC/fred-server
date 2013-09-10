@@ -48,6 +48,9 @@ namespace Fred
             struct ExceptionUnknownTestName : virtual Fred::OperationException {
                 const char* what() const throw() {return "unknown test name";}
             };
+            struct ExceptionUnknownCheckTestPair : virtual Fred::OperationException {
+                const char* what() const throw() {return "unknown check_handle, test_name pair";}
+            };
             struct ExceptionUnknownStatusName : virtual Fred::OperationException {
                 const char* what() const throw() {return "unknown status name";}
             };
