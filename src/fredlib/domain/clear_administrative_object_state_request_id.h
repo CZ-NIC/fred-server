@@ -17,56 +17,50 @@
  */
 
 /**
- *  @file create_administrative_object_state_restore_request_id.h
- *  create administrative object state restore request
+ *  @file clear_administrative_object_state_request_id.h
+ *  clear all administrative object state requests
  */
 
 /*
-administrativni nastaveni stavu blokovani objektu, (insert do object_state_request) CreateAdministrativeObjectStateRestoreRequestId
-  M handle objektu,
+administrativni zruseni vsech stavu blokovani objektu, (update do object_state_request) ClearAdministrativeObjectStateRequestId
+  M id objektu,
   M typ objektu,
-  M seznam stavu (jmena)
-  od
-  do
-  poznamka
+  duvod
 */
 
-#ifndef CREATE_ADMINISTRATIVE_OBJECT_STATE_RESTORE_REQUEST_ID_H_
-#define CREATE_ADMINISTRATIVE_OBJECT_STATE_RESTORE_REQUEST_ID_H_
+#ifndef CLEAR_ADMINISTRATIVE_OBJECT_STATE_REQUEST_ID_H_
+#define CLEAR_ADMINISTRATIVE_OBJECT_STATE_REQUEST_ID_H_
 
-#include "fredlib/domain/create_object_state_request_id.h"
+#include "fredlib/domain/clear_object_state_request_id.h"
 
 namespace Fred
 {
 
-    class CreateAdministrativeObjectStateRestoreRequestId
+    class ClearAdministrativeObjectStateRequestId
     {
     public:
-        CreateAdministrativeObjectStateRestoreRequestId(ObjectId _object_id);
-        CreateAdministrativeObjectStateRestoreRequestId(ObjectId _object_id,
+        ClearAdministrativeObjectStateRequestId(ObjectId _object_id);
+        ClearAdministrativeObjectStateRequestId(ObjectId _object_id,
             const std::string &_reason
             );
-        CreateAdministrativeObjectStateRestoreRequestId& set_reason(const std::string &_reason);
+        ClearAdministrativeObjectStateRequestId& set_reason(const std::string &_reason);
         void exec(OperationContext &_ctx);
 
     //exception impl
         DECLARE_EXCEPTION_DATA(object_id_not_found, ObjectId);
-        DECLARE_EXCEPTION_DATA(state_not_found, std::string);
         DECLARE_EXCEPTION_DATA(server_blocked_absent, ObjectId);
 
         struct Exception
         :   virtual Fred::OperationException,
             ExceptionData_object_id_not_found<Exception>,
-            ExceptionData_state_not_found<Exception>,
             ExceptionData_server_blocked_absent<Exception>
         {};
 
     private:
-        ObjectStateId check_server_blocked_status_present(OperationContext &_ctx) const;
         const ObjectId object_id_;
         Optional< std::string > reason_;
-    };//class CreateAdministrativeObjectStateRestoreRequestId
+    };//class ClearAdministrativeObjectStateRequestId
 
 }//namespace Fred
 
-#endif//CREATE_ADMINISTRATIVE_OBJECT_STATE_RESTORE_REQUEST_ID_H_
+#endif//CLEAR_ADMINISTRATIVE_OBJECT_STATE_REQUEST_ID_H_

@@ -30,6 +30,7 @@
 #include "fredlib/domain/create_administrative_object_state_restore_request_id.h"
 #include "fredlib/domain/create_domain_name_blacklist.h"
 #include "fredlib/domain/create_domain_name_blacklist_id.h"
+#include "fredlib/domain/clear_administrative_object_state_request_id.h"
 #include "fredlib/domain/update_domain.h"
 #include "fredlib/domain/delete_domain.h"
 #include "fredlib/domain/copy_contact.h"
@@ -551,54 +552,56 @@ namespace Registry
             const std::string &_reason,
             unsigned long long _log_req_id)
         {
-            if (!_remove_admin_c) {
-                this->restorePreAdministrativeBlockStatesId(_domain_list, _new_owner, _reason, _log_req_id);
-                return;
-            }
             EX_DOMAIN_ID_NOT_BLOCKED domain_id_not_blocked;
             try {
                 Fred::OperationContext ctx;
                 for (IdlDomainIdList::const_iterator pDomainId = _domain_list.begin(); pDomainId != _domain_list.end(); ++pDomainId) {
                     const Fred::ObjectId object_id = *pDomainId;
                     try {
-                        Fred::CreateAdministrativeObjectStateRestoreRequestId create_object_state_restore_request(object_id, _reason);
-                        create_object_state_restore_request.exec(ctx);
-                        Fred::PerformObjectStateRequest(object_id).exec(ctx);
-                        Database::query_param_list param(object_id);
-                        Database::Result registrar_fqdn_result = ctx.get_conn().exec_params(
-                            "SELECT reg.handle,oreg.name "
-                            "FROM object_registry oreg "
-                            "JOIN registrar reg ON oreg.crid=reg.id "
-                            "WHERE oreg.id=$1::bigint", param);
-                        if (registrar_fqdn_result.size() <= 0) {
-                            std::string errmsg("|| not found:object_id: ");
-                            errmsg += boost::lexical_cast< std::string >(object_id);
-                            errmsg += " |";
-                            EX_INTERNAL_SERVER_ERROR ex;
-                            ex.what = errmsg;
-                            throw ex;
+                        if (_remove_admin_c) {
+                            Fred::CreateAdministrativeObjectStateRestoreRequestId create_object_state_restore_request(object_id, _reason);
+                            create_object_state_restore_request.exec(ctx);
+                            Fred::PerformObjectStateRequest(object_id).exec(ctx);
+                            Database::query_param_list param(object_id);
+                            Database::Result registrar_fqdn_result = ctx.get_conn().exec_params(
+                                "SELECT reg.handle,oreg.name "
+                                "FROM object_registry oreg "
+                                "JOIN registrar reg ON oreg.crid=reg.id "
+                                "WHERE oreg.id=$1::bigint", param);
+                            if (registrar_fqdn_result.size() <= 0) {
+                                std::string errmsg("|| not found:object_id: ");
+                                errmsg += boost::lexical_cast< std::string >(object_id);
+                                errmsg += " |";
+                                EX_INTERNAL_SERVER_ERROR ex;
+                                ex.what = errmsg;
+                                throw ex;
+                            }
+                            const Database::Row &row = registrar_fqdn_result[0];
+                            const std::string registrar = static_cast< std::string >(row[0]);
+                            const std::string domain = static_cast< std::string >(row[1]);
+                            Fred::UpdateDomain update_domain(domain, registrar);
+                            if (!_new_owner.isnull() && !static_cast< std::string >(_new_owner).empty()) {
+                                update_domain.set_registrant(_new_owner);
+                            }
+                            if (0 < _log_req_id) {
+                                update_domain.set_logd_request_id(_log_req_id);
+                            }
+                            Database::Result admin_name_result = ctx.get_conn().exec_params(
+                                "SELECT rc.name "
+                                "FROM domain_contact_map dcm "
+                                "JOIN object_registry rc ON rc.id=dcm.contactid "
+                                "WHERE dcm.domainid=$1::bigint", param);
+                            for (::size_t idx = 0; idx < admin_name_result.size(); ++idx) {
+                                const Database::Row &row = admin_name_result[idx];
+                                const std::string admin_name = static_cast< std::string >(row[0]);
+                                update_domain.rem_admin_contact(admin_name);
+                            }
+                            update_domain.exec(ctx);
                         }
-                        const Database::Row &row = registrar_fqdn_result[0];
-                        const std::string registrar = static_cast< std::string >(row[0]);
-                        const std::string domain = static_cast< std::string >(row[1]);
-                        Fred::UpdateDomain update_domain(domain, registrar);
-                        if (!_new_owner.isnull() && !static_cast< std::string >(_new_owner).empty()) {
-                            update_domain.set_registrant(_new_owner);
+                        else {
+                            Fred::ClearAdministrativeObjectStateRequestId(object_id, _reason).exec(ctx);
+                            Fred::PerformObjectStateRequest(object_id).exec(ctx);
                         }
-                        if (0 < _log_req_id) {
-                            update_domain.set_logd_request_id(_log_req_id);
-                        }
-                        Database::Result admin_name_result = ctx.get_conn().exec_params(
-                            "SELECT rc.name "
-                            "FROM domain_contact_map dcm "
-                            "JOIN object_registry rc ON rc.id=dcm.contactid "
-                            "WHERE dcm.domainid=$1::bigint", param);
-                        for (::size_t idx = 0; idx < admin_name_result.size(); ++idx) {
-                            const Database::Row &row = admin_name_result[idx];
-                            const std::string admin_name = static_cast< std::string >(row[0]);
-                            update_domain.rem_admin_contact(admin_name);
-                        }
-                        update_domain.exec(ctx);
                     }
                     catch (const Fred::CreateAdministrativeObjectStateRestoreRequestId::Exception &e) {
                         if (e.is_set_server_blocked_absent()) {

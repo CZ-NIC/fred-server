@@ -25,6 +25,7 @@
 #define CLEAR_OBJECT_STATE_REQUEST_ID_H_
 
 #include "fredlib/domain/create_object_state_request.h"
+#include <vector>
 
 namespace Fred
 {
@@ -37,7 +38,8 @@ pozadavek na zruseni vsech stavu objektu (update object_state_request)
     {
     public:
         ClearObjectStateRequestId(ObjectId _object_id);
-        void exec(OperationContext &_ctx);
+        typedef std::vector< ObjectId > Requests;
+        Requests exec(OperationContext &_ctx);
 
     //exception impl
         DECLARE_EXCEPTION_DATA(object_id_not_found, ObjectId);

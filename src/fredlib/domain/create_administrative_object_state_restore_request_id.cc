@@ -22,6 +22,7 @@
  */
 
 #include "fredlib/domain/create_administrative_object_state_restore_request_id.h"
+#include "fredlib/domain/clear_administrative_object_state_request_id.h"
 #include "fredlib/domain/get_blocking_status_desc_list.h"
 #include "fredlib/opcontext.h"
 #include "fredlib/db_settings.h"
@@ -42,14 +43,14 @@ namespace Fred
     {}
 
     CreateAdministrativeObjectStateRestoreRequestId::CreateAdministrativeObjectStateRestoreRequestId(ObjectId _object_id,
-        const std::string &_notice)
+        const std::string &_reason)
     :   object_id_(_object_id),
-        notice_(_notice)
+        reason_(_reason)
     {}
 
-    CreateAdministrativeObjectStateRestoreRequestId& CreateAdministrativeObjectStateRestoreRequestId::set_notice(const std::string &_notice)
+    CreateAdministrativeObjectStateRestoreRequestId& CreateAdministrativeObjectStateRestoreRequestId::set_reason(const std::string &_reason)
     {
-        notice_ = _notice;
+        reason_ = _reason;
         return *this;
     }
 
@@ -130,7 +131,7 @@ namespace Fred
                 previous_status_list.insert((*pName)[0]);
             }
         }
-        ClearObjectStateRequestId(object_id_).exec(_ctx);
+        ClearAdministrativeObjectStateRequestId(object_id_, reason_).exec(_ctx);
         if (!previous_status_list.empty()) {
             CreateObjectStateRequestId(object_id_, previous_status_list).exec(_ctx);
         }

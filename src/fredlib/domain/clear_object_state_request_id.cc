@@ -39,7 +39,7 @@ namespace Fred
     :   object_id_(_object_id)
     {}
 
-    void ClearObjectStateRequestId::exec(OperationContext &_ctx)
+    ClearObjectStateRequestId::Requests ClearObjectStateRequestId::exec(OperationContext &_ctx)
     {
         //get object type
         ObjectType object_type = 0;
@@ -67,8 +67,11 @@ namespace Fred
         }
         LockMultipleObjectStateRequestLock(status_all, object_id_).exec(_ctx);
 
-        std::ostringstream cmd;
-        cmd <<
+        enum ResultColumnIndex
+        {
+            REQUEST_ID_IDX = 0,
+        };
+        Database::Result cmd_result = _ctx.get_conn().exec_params(
             "UPDATE object_state_request "
             "SET canceled=CURRENT_TIMESTAMP "
             "WHERE canceled is NULL AND "
@@ -76,19 +79,17 @@ namespace Fred
                   "valid_from<=CURRENT_TIMESTAMP AND "
                   "(valid_to IS NULL OR "
                    "CURRENT_TIMESTAMP<valid_to) "
-            "RETURNING id";
-        enum ResultColumnIndex
-        {
-            REQUEST_ID_IDX = 0,
-        };
-        Database::Result cmd_result = _ctx.get_conn().exec_params(cmd.str(), param);
+            "RETURNING id", param);
+        Requests result;
         if (0 < cmd_result.size()) {
             std::string rid = "ClearObjectStateRequest::exec canceled request id:";
             for (Database::Result::Iterator pRow = cmd_result.begin(); pRow != cmd_result.end(); ++pRow) {
                 rid += " " + std::string((*pRow)[REQUEST_ID_IDX]);
+                result.push_back(static_cast< Fred::ObjectId >((*pRow)[REQUEST_ID_IDX]));
             }
             _ctx.get_log().debug(rid);
         }
+        return result;
     }//ClearObjectStateRequestId::exec
 
 }//namespace Fred
