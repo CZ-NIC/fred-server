@@ -43,17 +43,17 @@ namespace Fred
      */
     struct InfoContactData
     {
-        unsigned long long crhistoryid;/**< first historyid of the contact history*/
-        unsigned long long historyid;/**< last historyid of the contact history*/
-        Nullable<boost::posix_time::ptime> delete_time; /**< contact delete time*/
+        unsigned long long crhistoryid;/**< first historyid of contact history*/
+        unsigned long long historyid;/**< last historyid of contact history*/
+        Nullable<boost::posix_time::ptime> delete_time; /**< contact delete time in UTC*/
         std::string handle;/**< contact handle */
         std::string roid;/**< registry object identifier of the contact */
         std::string sponsoring_registrar_handle;/**< registrar administering the contact */
         std::string create_registrar_handle;/**< registrar that created the contact */
         Nullable<std::string> update_registrar_handle;/**< registrar which last time changed the contact */
-        boost::posix_time::ptime creation_time;/**< creation time of the contact*/
-        Nullable<boost::posix_time::ptime> update_time; /**< last update time of the contact */
-        Nullable<boost::posix_time::ptime> transfer_time; /**<last transfer time */
+        boost::posix_time::ptime creation_time;/**< creation time of the contact in UTC*/
+        Nullable<boost::posix_time::ptime> update_time; /**< last update time of the contact in UTC*/
+        Nullable<boost::posix_time::ptime> transfer_time; /**<last transfer time in UTC*/
         std::string authinfopw;/**< password for transfer */
         Nullable<std::string> name ;/**< name of contact person */
         Nullable<std::string> organization;/**< full trade name of organization */
@@ -96,7 +96,7 @@ namespace Fred
         bool operator==(const InfoContactData& rhs) const;
 
         /**
-        * Equality of the contact data structure operator.
+        * Inequality of the contact data structure operator.
         * @param rhs is right hand side of the contact data comparison
         * @return true if not equal, false if equal
         */
