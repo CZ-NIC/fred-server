@@ -233,6 +233,9 @@ struct setup_nonexistent_status_name {
     }
 };
 
+/**
+ * implementation of testcases when updated test has just been created
+ */
 struct setup_create_update_test : public setup_test {
     std::string old_status_;
     std::string new_status_;
@@ -300,6 +303,9 @@ struct setup_create_update_test : public setup_test {
     }
 };
 
+/**
+ * implementation of testcases when updated test has already been updated before
+ */
 struct setup_create_update_update_test : public virtual setup_test {
     const std::string status1_;
     std::string status2_;
@@ -394,6 +400,17 @@ struct setup_create_update_update_test : public virtual setup_test {
     }
 };
 
+/**
+ * testing logic for whole testsuite
+ * @param data_pre_update check (yes, whole check) data before update operation has been executed
+ * @param data_post_update check (yes, whole check) data after update operation has been executed
+ * @param old_status status of test before update operation has been executed
+ * @param new_status status set in update operation (input param of UpdateContactTest operation)
+ * @param old_logd_request logd request related to test before update operation has been executed
+ * @param new_logd_request logd request related to test set in update operation (input param of UpdateContactTest operation)
+ * @param old_error_msg error message related to test before update operation has been executed
+ * @param new_error_msg error message related to test set in update operation (input param of UpdateContactTest operation)
+ */
 void check(const std::string& testname, const InfoContactCheckOutput& data_pre_update, const InfoContactCheckOutput& data_post_update, const std::string& old_status, const std::string& new_status, Optional<long long> old_logd_request, Optional<long long> new_logd_request, Optional<std::string> old_error_msg, Optional<std::string> new_error_msg) {
     // everything is the same except the last state in history
     BOOST_CHECK_EQUAL( data_pre_update.contact_history_id, data_post_update.contact_history_id );

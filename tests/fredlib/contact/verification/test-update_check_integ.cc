@@ -98,6 +98,9 @@ struct setup_check {
     }
 };
 
+/**
+ * implementation of testcases when updated check has just been created
+ */
 struct setup_create_update_check : public setup_check {
     std::string old_status_;
     std::string new_status_;
@@ -156,6 +159,9 @@ struct setup_create_update_check : public setup_check {
     }
 };
 
+/**
+ * implementation of testcases when updated check has already been updated before
+ */
 struct setup_create_update_update_check : public setup_check {
     std::string status1_;
     std::string status2_;
@@ -329,6 +335,15 @@ struct setup_status {
     }
 };
 
+/**
+ * testing logic for whole testsuite
+ * @param data_pre_update check data before update operation has been executed
+ * @param data_post_update check data after update operation has been executed
+ * @param old_status status of check before update operation has been executed
+ * @param new_status status set in update operation (input param of UpdateContactCheck operation)
+ * @param old_logd_request logd request related to check before update operation has been executed
+ * @param new_logd_request logd request related to check set in update operation (input param of UpdateContactCheck operation)
+ */
 void check(const InfoContactCheckOutput& data_pre_update, const InfoContactCheckOutput& data_post_update, const std::string& old_status, const std::string& new_status, Optional<long long> old_logd_request, Optional<long long> new_logd_request) {
     // everything is the same except the last state in history
     BOOST_CHECK_EQUAL( data_pre_update.contact_history_id, data_post_update.contact_history_id );
