@@ -312,10 +312,10 @@ struct setup_nonexistent_status_name {
     }
 };
 
-struct setup_create_status {
+struct setup_status {
     std::string status_name_;
 
-    setup_create_status(Fred::OperationContext& _ctx) {
+    setup_status(Fred::OperationContext& _ctx) {
         Database::Result res;
         status_name_ = "STATUS_" + RandomDataGenerator().xnumstring(10);
         res = _ctx.get_conn().exec(
@@ -388,6 +388,8 @@ void check(const InfoContactCheckOutput& data_pre_update, const InfoContactCheck
  */
 BOOST_FIXTURE_TEST_CASE(test_Update_statusX_logd_request1_to_statusX_logd_request1, fixture_has_ctx)
 {
+    setup_status status(ctx);
+
     Optional<long long> logd_request_id1 = RandomDataGenerator().xuint();
     Optional<long long> logd_request_id2 = RandomDataGenerator().xuint();
     Optional<long long> logd_request_id3 = RandomDataGenerator().xuint();
@@ -400,7 +402,7 @@ BOOST_FIXTURE_TEST_CASE(test_Update_statusX_logd_request1_to_statusX_logd_reques
 
     setup_create_update_update_check testcase2(
         ctx,
-        Fred::ContactCheckStatus::RUNNING, Fred::ContactCheckStatus::RUNNING,
+        status.status_name_, status.status_name_,
         logd_request_id2, logd_request_id3, logd_request_id3);
     check(testcase2.data_post_reset_, testcase2.data_post_update_, testcase2.status2_, testcase2.status3_, testcase2.logd_request2_, testcase2.logd_request3_);
 }
@@ -413,19 +415,22 @@ BOOST_FIXTURE_TEST_CASE(test_Update_statusX_logd_request1_to_statusX_logd_reques
  */
 BOOST_FIXTURE_TEST_CASE(test_Update_statusX_logd_request1_to_statusY_logd_request1, fixture_has_ctx)
 {
+    setup_status status1(ctx);
+    setup_status status2(ctx);
+
     Optional<long long> logd_request_id1 = RandomDataGenerator().xuint();
     Optional<long long> logd_request_id2 = RandomDataGenerator().xuint();
     Optional<long long> logd_request_id3 = RandomDataGenerator().xuint();
 
     setup_create_update_check testcase1(
         ctx,
-        Fred::ContactCheckStatus::RUNNING,
+        status2.status_name_,
         logd_request_id1, logd_request_id1);
     check(testcase1.data_pre_update_, testcase1.data_post_update_, testcase1.old_status_, testcase1.new_status_, testcase1.old_logd_request_, testcase1.new_logd_request_);
 
     setup_create_update_update_check testcase2(
         ctx,
-        Fred::ContactCheckStatus::RUNNING, Fred::ContactCheckStatus::TO_BE_DECIDED,
+        status1.status_name_, status2.status_name_,
         logd_request_id2, logd_request_id3, logd_request_id3);
     check(testcase2.data_post_reset_, testcase2.data_post_update_, testcase2.status2_, testcase2.status3_, testcase2.logd_request2_, testcase2.logd_request3_);
 }
@@ -437,6 +442,8 @@ BOOST_FIXTURE_TEST_CASE(test_Update_statusX_logd_request1_to_statusY_logd_reques
  */
 BOOST_FIXTURE_TEST_CASE(test_Update_statusX_logd_request1_to_statusX_logd_requestNULL, fixture_has_ctx)
 {
+    setup_status status(ctx);
+
     Optional<long long> logd_request_id1 = RandomDataGenerator().xuint();
     Optional<long long> logd_request_id2 = RandomDataGenerator().xuint();
 
@@ -448,7 +455,7 @@ BOOST_FIXTURE_TEST_CASE(test_Update_statusX_logd_request1_to_statusX_logd_reques
 
     setup_create_update_update_check testcase2(
         ctx,
-        Fred::ContactCheckStatus::RUNNING, Fred::ContactCheckStatus::RUNNING,
+        status.status_name_, status.status_name_,
         Optional<long long>(), logd_request_id2, Optional<long long>());
     check(testcase2.data_post_reset_, testcase2.data_post_update_, testcase2.status2_, testcase2.status3_, testcase2.logd_request2_, testcase2.logd_request3_);
 }
@@ -461,18 +468,21 @@ BOOST_FIXTURE_TEST_CASE(test_Update_statusX_logd_request1_to_statusX_logd_reques
  */
 BOOST_FIXTURE_TEST_CASE(test_Update_statusX_logd_request1_to_statusY_logd_requestNULL, fixture_has_ctx)
 {
+    setup_status status1(ctx);
+    setup_status status2(ctx);
+
     Optional<long long> logd_request_id1 = RandomDataGenerator().xuint();
     Optional<long long> logd_request_id2 = RandomDataGenerator().xuint();
 
     setup_create_update_check testcase1(
         ctx,
-        Fred::ContactCheckStatus::RUNNING,
+        status1.status_name_,
         logd_request_id1, Optional<long long>());
     check(testcase1.data_pre_update_, testcase1.data_post_update_, testcase1.old_status_, testcase1.new_status_, testcase1.old_logd_request_, testcase1.new_logd_request_);
 
     setup_create_update_update_check testcase2(
         ctx,
-        Fred::ContactCheckStatus::RUNNING, Fred::ContactCheckStatus::TO_BE_DECIDED,
+        status1.status_name_, status2.status_name_,
         Optional<long long>(), logd_request_id2, Optional<long long>());
     check(testcase2.data_post_reset_, testcase2.data_post_update_, testcase2.status2_, testcase2.status3_, testcase2.logd_request2_, testcase2.logd_request3_);
 }
@@ -485,6 +495,8 @@ BOOST_FIXTURE_TEST_CASE(test_Update_statusX_logd_request1_to_statusY_logd_reques
  */
 BOOST_FIXTURE_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusX_logd_request1, fixture_has_ctx)
 {
+    setup_status status(ctx);
+
     Optional<long long> logd_request_id1 = RandomDataGenerator().xuint();
     Optional<long long> logd_request_id2 = RandomDataGenerator().xuint();
     Optional<long long> logd_request_id3 = RandomDataGenerator().xuint();
@@ -497,7 +509,7 @@ BOOST_FIXTURE_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusX_logd_req
 
     setup_create_update_update_check testcase2(
         ctx,
-        Fred::ContactCheckStatus::RUNNING, Fred::ContactCheckStatus::RUNNING,
+        status.status_name_, status.status_name_,
         logd_request_id2, Optional<long long>(), logd_request_id3);
     check(testcase2.data_post_reset_, testcase2.data_post_update_, testcase2.status2_, testcase2.status3_, testcase2.logd_request2_, testcase2.logd_request3_);
 }
@@ -511,19 +523,22 @@ BOOST_FIXTURE_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusX_logd_req
  */
 BOOST_FIXTURE_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusY_logd_request1, fixture_has_ctx)
 {
+    setup_status status1(ctx);
+    setup_status status2(ctx);
+
     Optional<long long> logd_request_id1 = RandomDataGenerator().xuint();
     Optional<long long> logd_request_id2 = RandomDataGenerator().xuint();
     Optional<long long> logd_request_id3 = RandomDataGenerator().xuint();
 
     setup_create_update_check testcase1(
         ctx,
-        Fred::ContactCheckStatus::RUNNING,
+        status1.status_name_,
         Optional<long long>(), logd_request_id1 );
     check(testcase1.data_pre_update_, testcase1.data_post_update_, testcase1.old_status_, testcase1.new_status_, testcase1.old_logd_request_, testcase1.new_logd_request_);
 
     setup_create_update_update_check testcase2(
         ctx,
-        Fred::ContactCheckStatus::RUNNING, Fred::ContactCheckStatus::TO_BE_DECIDED,
+        status1.status_name_, status2.status_name_,
         logd_request_id2, Optional<long long>(), logd_request_id3);
     check(testcase2.data_post_reset_, testcase2.data_post_update_, testcase2.status2_, testcase2.status3_, testcase2.logd_request2_, testcase2.logd_request3_);
 }
@@ -535,6 +550,7 @@ BOOST_FIXTURE_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusY_logd_req
  */
 BOOST_FIXTURE_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusX_logd_requestNULL, fixture_has_ctx)
 {
+    setup_status status(ctx);
     Optional<long long> logd_request_id1 = RandomDataGenerator().xuint();
 
     setup_create_update_check testcase1(
@@ -545,7 +561,7 @@ BOOST_FIXTURE_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusX_logd_req
 
     setup_create_update_update_check testcase2(
         ctx,
-        Fred::ContactCheckStatus::RUNNING, Fred::ContactCheckStatus::RUNNING,
+        status.status_name_, status.status_name_,
         logd_request_id1, Optional<long long>(), Optional<long long>());
     check(testcase2.data_post_reset_, testcase2.data_post_update_, testcase2.status2_, testcase2.status3_, testcase2.logd_request2_, testcase2.logd_request3_);
 }
@@ -558,17 +574,19 @@ BOOST_FIXTURE_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusX_logd_req
  */
 BOOST_FIXTURE_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusY_logd_requestNULL, fixture_has_ctx)
 {
+    setup_status status1(ctx);
+    setup_status status2(ctx);
     Optional<long long> logd_request_id1 = RandomDataGenerator().xuint();
 
     setup_create_update_check testcase1(
         ctx,
-        Fred::ContactCheckStatus::RUNNING,
+        status1.status_name_,
         Optional<long long>(), Optional<long long>() );
     check(testcase1.data_pre_update_, testcase1.data_post_update_, testcase1.old_status_, testcase1.new_status_, testcase1.old_logd_request_, testcase1.new_logd_request_);
 
     setup_create_update_update_check testcase2(
         ctx,
-        Fred::ContactCheckStatus::RUNNING, Fred::ContactCheckStatus::TO_BE_DECIDED,
+        status1.status_name_, status2.status_name_,
         logd_request_id1, Optional<long long>(), Optional<long long>());
     check(testcase2.data_post_reset_, testcase2.data_post_update_, testcase2.status2_, testcase2.status3_, testcase2.logd_request2_, testcase2.logd_request3_);
 }
@@ -582,7 +600,7 @@ BOOST_FIXTURE_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusY_logd_req
 BOOST_FIXTURE_TEST_CASE(test_Exec_nonexistent_check_handle, fixture_has_ctx)
 {
     setup_nonexistent_check_handle handle(ctx);
-    setup_create_status status(ctx);
+    setup_status status(ctx);
 
     Fred::UpdateContactCheck dummy(handle.check_handle_, status.status_name_);
 
