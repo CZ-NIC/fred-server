@@ -18,7 +18,7 @@
 
 /**
  *  @info_domain_compare.cc
- *  comparsion of domain info
+ *  comparison of domain info
  */
 
 #include <string>

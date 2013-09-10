@@ -18,7 +18,7 @@
 
 /**
  *  @info_keyset_compare.h
- *  comparsion of keyset info
+ *  comparison of keyset info
  */
 
 #ifndef INFO_KEYSET_COMPARE_H_

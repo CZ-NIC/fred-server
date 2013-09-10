@@ -18,7 +18,7 @@
 
 /**
  *  @info_nsset_compare.cc
- *  comparsion of nsset info
+ *  comparison of nsset info
  */
 
 #include <string>

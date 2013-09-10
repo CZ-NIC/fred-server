@@ -18,7 +18,7 @@
 
 /**
  *  @file
- *  comparsion of contact info
+ *  comparison of contact info
  */
 
 #ifndef INFO_CONTACT_COMPARE_H_

@@ -18,7 +18,7 @@
 
 /**
  *  @info_keyset_compare.cc
- *  comparsion of keyset info
+ *  comparison of keyset info
  */
 
 #include <string>

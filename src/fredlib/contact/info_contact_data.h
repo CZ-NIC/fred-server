@@ -82,7 +82,7 @@ namespace Fred
         Nullable<bool> disclosenotifyemail;/**< whether to reveal notify email */
 
     private:
-        bool print_diff_;/**< whether to print debug diff made by contact comparsion operators @ref operator==  and @ref operator!=*/
+        bool print_diff_;/**< whether to print debug diff made by contact comparison operators @ref operator==  and @ref operator!=*/
     public:
         /**
         * Constructor of the contact data structure.
@@ -90,20 +90,20 @@ namespace Fred
         InfoContactData();
         /**
         * Equality of the contact data structure operator.
-        * @param rhs is right hand side of the contact data comparsion
+        * @param rhs is right hand side of the contact data comparison
         * @return true if equal, false if not
         */
         bool operator==(const InfoContactData& rhs) const;
 
         /**
         * Equality of the contact data structure operator.
-        * @param rhs is right hand side of the contact data comparsion
+        * @param rhs is right hand side of the contact data comparison
         * @return true if not equal, false if equal
         */
         bool operator!=(const InfoContactData& rhs) const;
 
         /**
-        * Set comparsion operators to print debug diff.
+        * Set comparison operators to print debug diff.
         * @param print_diff is value set to @ref print_diff_ attribute
         */
         void set_diff_print(bool print_diff = true);

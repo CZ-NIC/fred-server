@@ -59,7 +59,7 @@ namespace Fred
         /**
         * Equality of the contact data structure.
         * Compares only data of the contact, not the timestamps.
-        * @param rhs is right hand side of the contact data comparsion
+        * @param rhs is right hand side of the contact data comparison
         * @return true if equal, false if not
         */
         bool operator==(const InfoContactOutput& rhs) const
@@ -70,7 +70,7 @@ namespace Fred
         /**
         * Inequality of the contact data structure.
         * Compares only data of the contact, not the timestamps.
-        * @param rhs is right hand side of the contact data comparsion
+        * @param rhs is right hand side of the contact data comparison
         * @return true if not equal, false if equal
         */
         bool operator!=(const InfoContactOutput& rhs) const

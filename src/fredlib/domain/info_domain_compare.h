@@ -17,8 +17,8 @@
  */
 
 /**
- *  @info_domain_compare.h
- *  comparsion of domain info
+ *  @file
+ *  comparison of domain info
  */
 
 #ifndef INFO_DOMAIN_COMPARE_H_

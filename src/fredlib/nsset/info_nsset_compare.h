@@ -18,7 +18,7 @@
 
 /**
  *  @info_nsset_compare.h
- *  comparsion of nsset info
+ *  comparison of nsset info
  */
 
 #ifndef INFO_NSSET_COMPARE_H_
