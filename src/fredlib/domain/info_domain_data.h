@@ -17,7 +17,7 @@
  */
 
 /**
- *  @file info_domain_data.h
+ *  @file
  *  common domain info data
  */
 
@@ -37,37 +37,58 @@
 
 namespace Fred
 {
+    /**
+     * Common data of domain.
+     * Current or history state of the domain.
+     */
     struct InfoDomainData
     {
-        std::string roid;//domain identifier
-        std::string fqdn;//domain name
-        std::string registrant_handle;//domain owner
-        Nullable<std::string> nsset_handle;//nsset might not be set
-        Nullable<std::string> keyset_handle;//keyset might not be set
-        std::string sponsoring_registrar_handle;//registrar which have right for change
-        std::string create_registrar_handle;//registrar which created domain
-        Nullable<std::string> update_registrar_handle;//registrar which last time changed domain
-        boost::posix_time::ptime creation_time;//time of domain creation
-        Nullable<boost::posix_time::ptime> update_time; //last update time
-        Nullable<boost::posix_time::ptime> transfer_time; //last transfer time
-        boost::gregorian::date expiration_date; //domain expiration date
-        std::string authinfopw;//password for domain transfer
-        std::vector<std::string> admin_contacts;//list of administrative contacts
-        Nullable<ENUMValidationExtension > enum_domain_validation;//enum domain validation info
-        boost::posix_time::ptime outzone_time; //domain outzone time
-        boost::posix_time::ptime cancel_time; //domain cancel time
-        Nullable<boost::posix_time::ptime> delete_time; //domain delete time
-        unsigned long long historyid;//last historyid
-        unsigned long long crhistoryid;//first historyid
+        std::string roid;/**< registry object identifier of domain */
+        std::string fqdn;/**< fully qualified domain name */
+        std::string registrant_handle;/**< registrant contact handle, owner of domain*/
+        Nullable<std::string> nsset_handle;/**< nsset handle or NULL if missing */
+        Nullable<std::string> keyset_handle;/**< keyset handle or NULL if missing */
+        std::string sponsoring_registrar_handle;/**< handle of registrar administering domain */
+        std::string create_registrar_handle;/**< handle of registrar which created domain */
+        Nullable<std::string> update_registrar_handle;/**< handle of registrar which last time changed domain*/
+        boost::posix_time::ptime creation_time;/**< time of domain creation in UTC*/
+        Nullable<boost::posix_time::ptime> update_time; /**< time of last update time in UTC*/
+        Nullable<boost::posix_time::ptime> transfer_time; /**< time of last transfer in UTC*/
+        boost::gregorian::date expiration_date; /**< domain expiration local date */
+        std::string authinfopw;/**< password for domain transfer */
+        std::vector<std::string> admin_contacts;/**< list of administrating contact handles */
+        Nullable<ENUMValidationExtension > enum_domain_validation;/**< ENUM domain validation extension info */
+        boost::posix_time::ptime outzone_time; /**< domain outzone time in regular_day_procedure_zone from table enum_parameters */
+        boost::posix_time::ptime cancel_time; /**< domain cancel time in regular_day_procedure_zone from table enum_parameters */
+        Nullable<boost::posix_time::ptime> delete_time;/**< domain delete time in UTC*/
+        unsigned long long historyid;/**< last historyid of domain history*/
+        unsigned long long crhistoryid;/**< first historyid of domain history*/
 
     private:
-        bool print_diff_;
+        bool print_diff_;/**< whether to print debug diff made by domain comparison operators @ref operator==  and @ref operator!=*/
     public:
 
+        /**
+        * Constructor of domain data structure.
+        */
         InfoDomainData();
+        /**
+        * Equality of domain data structure operator.
+        * @param rhs is right hand side of domain data comparison
+        * @return true if equal, false if not
+        */
         bool operator==(const InfoDomainData& rhs) const;
+        /**
+        * Equality of the contact data structure operator.
+        * @param rhs is right hand side of the contact data comparison
+        * @return true if not equal, false if equal
+        */
         bool operator!=(const InfoDomainData& rhs) const;
 
+        /**
+        * Set comparison operators to print debug diff.
+        * @param print_diff is value set to @ref print_diff_ attribute
+        */
         void set_diff_print(bool print_diff = true);
 
     };
