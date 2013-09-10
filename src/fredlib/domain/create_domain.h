@@ -65,6 +65,10 @@ namespace Fred
 
     public:
         DECLARE_EXCEPTION_DATA(unknown_zone_fqdn, std::string);
+        DECLARE_EXCEPTION_DATA(unknown_registrar_handle, std::string);
+        DECLARE_EXCEPTION_DATA(unknown_registrant_handle, std::string);
+        DECLARE_EXCEPTION_DATA(unknown_nsset_handle, Nullable<std::string>);
+        DECLARE_EXCEPTION_DATA(unknown_keyset_handle, Nullable<std::string>);
         DECLARE_EXCEPTION_DATA(invalid_fqdn_syntax, std::string);
         DECLARE_EXCEPTION_DATA(invalid_expiration_date, boost::gregorian::date);
         DECLARE_EXCEPTION_DATA(invalid_enum_validation_expiration_date, boost::gregorian::date);
