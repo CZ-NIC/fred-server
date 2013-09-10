@@ -39,7 +39,7 @@
 namespace Fred
 {
     /**
-    * Element of the contact history data.
+    * Element of contact history data.
     */
     struct InfoContactHistoryOutput
     {
@@ -58,7 +58,7 @@ namespace Fred
     };
 
     /**
-    * The contact history info.
+    * Contact history info.
     * Contact registry object identifier to get history info about the contact is set via constructor.
     * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
     * When exception is thrown, changes to database are considered incosistent and should be rolled back by the caller.
