@@ -42,7 +42,7 @@
 namespace Fred
 {
     /**
-    * Info of the contact data structure.
+    * Contact info data structure.
     */
     struct InfoContactOutput
     {
@@ -58,7 +58,7 @@ namespace Fred
 
         /**
         * Equality of the contact data structure.
-        * Compares only data of the contact, not the timestamps.
+        * Compares only data of the contact @ref info_contact_data, not the timestamps.
         * @param rhs is right hand side of the contact data comparison
         * @return true if equal, false if not
         */
