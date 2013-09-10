@@ -89,9 +89,32 @@ namespace Fred
         , ExceptionData_invalid_enum_validation_expiration_date<Exception>
         {};
 
+        /**
+        * Create domain constructor with mandatory parameters.
+        * @param fqdn sets fully qualified domain name into @ref fqdn_ attribute
+        * @param registrar sets registrar handle into @ref registrar_ attribute
+        * @param registrant sets registrant contact handle into @ref registrant_ attribute
+        */
         CreateDomain(const std::string& fqdn
                 , const std::string& registrar
                 , const std::string& registrant);
+
+        /**
+        * Create domain constructor with all parameters.
+        * @param fqdn sets fully qualified domain name into @ref fqdn_ attribute
+        * @param registrar sets registrar handle into @ref registrar_ attribute
+        * @param registrant sets registrant contact handle into @ref registrant_ attribute
+        * @param authinfo sets transfer password into @ref authinfo_ attribute
+        * @param nsset sets nsset handle or NULL in case of no nsset into @ref nsset_ attribute
+        * @param keyset sets keyset handle or NULL in case of no keyset into @ref keyset_ attribute
+        * @param admin_contacts sets admin contact handles to be added into @ref admin_contacts_ attribute
+        * @param expiration_date sets domain expiration date into @ref expiration_date_ attribute
+        * @param enum_validation_expiration sets the expiration date of the ENUM domain validation into @ref expiration_date_ attribute
+        * , it is prohibited to set this parameter for non-ENUM domains
+        * @param enum_publish_flag sets flag for publishing ENUM number and associated contact in public directory into @ref enum_publish_flag_ attribute
+        * , it is prohibited to set this parameter for non-ENUM domains
+        * @param logd_request_id sets logger request id into @ref logd_request_id_ attribute
+        */
         CreateDomain(const std::string& fqdn
                 , const std::string& registrar
                 , const std::string& registrant
@@ -104,19 +127,98 @@ namespace Fred
                 , const Optional<bool>& enum_publish_flag
                 , const Optional<unsigned long long> logd_request_id);
 
+        /**
+        * Sets domain transfer password.
+        * @param authinfo sets transfer password into @ref authinfo_ attribute
+        * @return operation instance reference to allow method chaining
+        */
         CreateDomain& set_authinfo(const std::string& authinfo);
+
+        /**
+        * Sets domain nsset.
+        * @param nsset sets nsset handle or NULL in case of no nsset into @ref nsset_ attribute
+        * @return operation instance reference to allow method chaining
+        */
         CreateDomain& set_nsset(const Nullable<std::string>& nsset);
+
+        /**
+        * Sets domain nsset handle.
+        * @param nsset sets nsset handle into @ref nsset_ attribute
+        * @return operation instance reference to allow method chaining
+        */
         CreateDomain& set_nsset(const std::string& nsset);
+
+        /**
+        * Sets domain keyset for update.
+        * @param keyset sets keyset handle or NULL in case of no keyset into @ref keyset_ attribute
+        * @return operation instance reference to allow method chaining
+        */
         CreateDomain& set_keyset(const Nullable<std::string>& keyset);
+
+        /**
+        * Sets domain keyset handle.
+        * @param nsset sets keyset handle into @ref keyset_ attribute
+        * @return operation instance reference to allow method chaining
+        */
         CreateDomain& set_keyset(const std::string& keyset);
+
+        /**
+        * Sets admin contact handles.
+        * @param admin_contacts sets vector of admin contact handles into @ref admin_contacts_ attribute
+        * @return operation instance reference to allow method chaining
+        */
         CreateDomain& set_admin_contacts(const std::vector<std::string>& admin_contacts);
+
+        /**
+        * Sets domain expiration date.
+        * @param exdate sets domain expiration date into @ref expiration_date_ attribute
+        * @return operation instance reference to allow method chaining
+        */
         CreateDomain& set_expiration_date(const Optional<boost::gregorian::date>& expiration_date);
+
+        /**
+        * Sets expiration date of the ENUM domain validation.
+        * @param valexdate sets the expiration date of the ENUM domain validation into @ref expiration_date_ attribute
+        * , it is prohibited to set this parameter for non-ENUM domains
+        * @return operation instance reference to allow method chaining
+        */
         CreateDomain& set_enum_validation_expiration(const boost::gregorian::date& valexdate);
+
+        /**
+        * Sets flag for publishing ENUM number and associated contact in public directory.
+        * @param enum_publish_flag sets flag for publishing ENUM number and associated contact in public directory into @ref enum_publish_flag_ attribute
+        * , it is prohibited to set this parameter for non-ENUM domains
+        * @return operation instance reference to allow method chaining
+        */
         CreateDomain& set_enum_publish_flag(bool enum_publish_flag);
+
+        /**
+        * Sets logger request id
+        * @param logd_request_id sets logger request id into @ref logd_request_id_ attribute
+        * @return operation instance reference to allow method chaining
+        */
         CreateDomain& set_logd_request_id(unsigned long long logd_request_id);
+
+        /**
+        * Executes create
+        * @param ctx contains reference to database and logging interface
+        * @param returned_timestamp_pg_time_zone_name is postgresql time zone name of the returned timestamp
+        * @return timestamp of the contact creation
+        */
         boost::posix_time::ptime exec(OperationContext& ctx, const std::string& returned_timestamp_pg_time_zone_name = "Europe/Prague");
 
+        /**
+        * Dumps state of the instance into stream
+        * @param os contains output stream reference
+        * @param i reference of instance to be dumped into the stream
+        * @return output stream reference
+        */
         friend std::ostream& operator<<(std::ostream& os, const CreateDomain& i);
+
+        /**
+        * Dumps state of the instance into the string
+        * @return string with description of the instance state
+        */
         std::string to_string();
     };//CreateDomain
 }
