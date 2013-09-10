@@ -17,7 +17,7 @@
  */
 
 /**
- *  @file info_domain.cc
+ *  @file
  *  domain info
  */
 
