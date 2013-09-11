@@ -107,7 +107,7 @@ namespace Fred
         * @param authinfo sets transfer password into @ref authinfo_ attribute
         * @param nsset sets nsset handle or NULL in case of no nsset into @ref nsset_ attribute
         * @param keyset sets keyset handle or NULL in case of no keyset into @ref keyset_ attribute
-        * @param admin_contacts sets admin contact handles to be added into @ref admin_contacts_ attribute
+        * @param admin_contacts sets admin contact handles into @ref admin_contacts_ attribute
         * @param expiration_date sets domain expiration date into @ref expiration_date_ attribute
         * @param enum_validation_expiration sets the expiration date of the ENUM domain validation into @ref expiration_date_ attribute
         * , it is prohibited to set this parameter for non-ENUM domains
