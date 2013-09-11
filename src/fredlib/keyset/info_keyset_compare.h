@@ -17,7 +17,7 @@
  */
 
 /**
- *  @info_keyset_compare.h
+ *  @file
  *  comparison of keyset info
  */
 

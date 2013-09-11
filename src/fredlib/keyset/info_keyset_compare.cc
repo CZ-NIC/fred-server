@@ -17,7 +17,7 @@
  */
 
 /**
- *  @info_keyset_compare.cc
+ *  @file
  *  comparison of keyset info
  */
 
@@ -38,21 +38,45 @@
 namespace Fred
 {
 
+    /**
+    * Equality of the keyset data with keyset history data operator.
+    * @param lhs is the keyset data
+    * @param rhs is the keyset history data
+    * @return true if equal, false if not
+    */
     bool operator==(const InfoKeysetOutput& lhs, const InfoKeysetHistoryOutput& rhs)
     {
             return lhs.info_keyset_data == rhs.info_keyset_data;
     }
 
+    /**
+    * Equality of keyset history data with the keyset data operator.
+    * @param lhs is the keyset history data
+    * @param rhs is the keyset data
+    * @return true if equal, false if not
+    */
     bool operator==(const InfoKeysetHistoryOutput& lhs, const InfoKeysetOutput& rhs)
     {
         return operator==(rhs,lhs);
     }
 
+    /**
+    * Inequality of keyset data with the keyset history data operator.
+    * @param lhs is the keyset data
+    * @param rhs is the keyset history data
+    * @return true if not equal, false if equal
+    */
     bool operator!=(const InfoKeysetOutput& lhs, const InfoKeysetHistoryOutput& rhs)
     {
         return !operator==(lhs,rhs);
     }
 
+    /**
+    * Inequality of keyset history data with the keyset data operator.
+    * @param lhs is the keyset history data
+    * @param rhs is the keyset data
+    * @return true if not equal, false if equal
+    */
     bool operator!=(const InfoKeysetHistoryOutput& lhs, const InfoKeysetOutput& rhs)
     {
         return !operator==(rhs,lhs);
