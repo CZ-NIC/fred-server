@@ -38,31 +38,55 @@
 
 namespace Fred
 {
+
+    /**
+     * Common data of keyset.
+     * Current or history state of the keyset.
+     */
     struct InfoKeysetData
     {
-        unsigned long long crhistoryid;//first historyid
-        unsigned long long historyid;//last historyid
-        Nullable<boost::posix_time::ptime> delete_time; //keyset delete time
-        std::string handle;//keyset identifier
-        std::string roid;//keyset identifier
-        std::string sponsoring_registrar_handle;//registrar which have right for change
-        std::string create_registrar_handle;//registrar which created domain
-        Nullable<std::string> update_registrar_handle;//registrar which last time changed domain
-        boost::posix_time::ptime creation_time;//time of creation
-        Nullable<boost::posix_time::ptime> update_time; //last update time
-        Nullable<boost::posix_time::ptime> transfer_time; //last transfer time
-        std::string authinfopw;//password for transfer
-        std::vector<DnsKey> dns_keys; //dns keys
-        std::vector<std::string> tech_contacts;//list of technical contacts
+        unsigned long long crhistoryid;/**< first historyid of keyset history*/
+        unsigned long long historyid;/**< last historyid of keyset history*/
+        Nullable<boost::posix_time::ptime> delete_time; /**< keyset delete time in UTC*/
+        std::string handle;/**< keyset handle */
+        std::string roid;/**< registry object identifier of the keyset */
+        std::string sponsoring_registrar_handle;/**< registrar administering the keyset */
+        std::string create_registrar_handle;/**< registrar that created the keyset */
+        Nullable<std::string> update_registrar_handle;/**< registrar which last time changed the keyset */
+        boost::posix_time::ptime creation_time;/**< creation time of the keyset in UTC*/
+        Nullable<boost::posix_time::ptime> update_time; /**< last update time of the keyset in UTC*/
+        Nullable<boost::posix_time::ptime> transfer_time; /**<last transfer time in UTC*/
+        std::string authinfopw;/**< password for transfer */
+        std::vector<DnsKey> dns_keys;/**< DNS keys */
+        std::vector<std::string> tech_contacts;/**< list of technical contact handles */
 
     private:
-        bool print_diff_;
+        bool print_diff_;/**< whether to print debug diff made by keyset comparison operators @ref operator==  and @ref operator!=*/
     public:
 
+        /**
+        * Constructor of the keyset data structure.
+        */
         InfoKeysetData();
+
+        /**
+        * Equality of the keyset data structure operator.
+        * @param rhs is right hand side of the keyset data comparison
+        * @return true if equal, false if not
+        */
         bool operator==(const InfoKeysetData& rhs) const;
+
+        /**
+        * Inequality of the keyset data structure operator.
+        * @param rhs is right hand side of the keyset data comparison
+        * @return true if not equal, false if equal
+        */
         bool operator!=(const InfoKeysetData& rhs) const;
 
+        /**
+        * Set comparison operators to print debug diff.
+        * @param print_diff is value set to @ref print_diff_ attribute
+        */
         void set_diff_print(bool print_diff = true);
 
     };
