@@ -32,6 +32,7 @@ CLEANFILES = \
 		config/server.conf \
 		config/hpmail.conf \
 		init-scripts/fred-server \
+		doxy.conf \
 		src/corba/MessagesSK.cc \
 		src/corba/MessagesDynSK.cc \
 		src/corba/MessagesSK.h \
@@ -168,6 +169,7 @@ noinst_HEADERS = \
 		src/corba/common_wrappers.h \
 		src/corba/contact_verification/corba_conversion.h \
 		util/optional_value.h \
+		util/optional_nullable_equal.h \
 		util/output_indenter.h
 
 
@@ -1660,8 +1662,18 @@ tests_test_server_SOURCES = \
 		tests/test-info-contact.cc \
 		tests/test-delete-domain.cc \
 		tests/test-create-domain.cc \
-		tests/test-domain-name.cc
-
+		tests/test-domain-name.cc \
+		tests/fredlib/contact/verification/test-create_check_unit.cc \
+		tests/fredlib/contact/verification/test-create_check_integ.cc \ 
+		tests/fredlib/contact/verification/test-update_check_unit.cc \
+		tests/fredlib/contact/verification/test-update_check_integ.cc \
+		tests/fredlib/contact/verification/test-create_test_unit.cc \
+		tests/fredlib/contact/verification/test-create_test_integ.cc \
+		tests/fredlib/contact/verification/test-update_test_unit.cc \
+		tests/fredlib/contact/verification/test-update_test_integ.cc \
+		tests/fredlib/contact/verification/test-info_check_unit.cc \
+		tests/fredlib/contact/verification/test-info_check_integ.cc
+		
 tests_test_server_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS) \
 		$(BOOST_LDFLAGS) \

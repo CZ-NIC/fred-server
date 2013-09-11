@@ -17,8 +17,8 @@
  */
 
 /**
- *  @file create_check.h
- *  create contact check
+ *  @file
+ *  (get) info (about) contact check
  */
 
 #ifndef CONTACT_VERIFICATION_INFO_CHECK_11537653419_
@@ -61,27 +61,47 @@ namespace Fred
             Nullable<std::string>    error_msg;
             boost::posix_time::ptime local_update_time;
             Nullable<long long>      logd_request_id;
+
+            std::string to_string(const std::string& _each_line_prefix = "\t") const;
+            bool operator==(const ContactTestResultState& rhs) const {
+                return this->to_string() == rhs.to_string();
+            };
         };
 
         struct ContactTestResultData {
             std::string                         test_name;
             boost::posix_time::ptime            local_create_time;
             std::vector<ContactTestResultState> state_history;  /* current state is also included */
+
+            std::string to_string(const std::string& _each_line_prefix = "\t") const;
+            bool operator==(const ContactTestResultData& rhs) const {
+                return this->to_string() == rhs.to_string();
+            };
         };
 
         struct ContactCheckState {
             std::string              status_name;
             boost::posix_time::ptime local_update_time;
             Nullable<long long>      logd_request_id;
+
+            std::string to_string(const std::string& _each_line_prefix = "\t") const;
+            bool operator==(const ContactCheckState& rhs) const {
+                return this->to_string() == rhs.to_string();
+            };
         };
 
 
         std::string                        handle;
         std::string                        testsuite_name;
         long                               contact_history_id;
-        boost::posix_time::ptime           utc_create_time;
+        boost::posix_time::ptime           local_create_time;
         std::vector<ContactCheckState>     check_state_history; /* current state is also included */
         std::vector<ContactTestResultData> tests;
+
+        std::string to_string(const std::string& _each_line_prefix = "\t") const;
+        bool operator==(const InfoContactCheckOutput& rhs) const {
+            return this->to_string() == rhs.to_string();
+        };
     };
 
     /**
@@ -91,6 +111,10 @@ namespace Fred
             std::string handle_;
 
         public:
+            struct ExceptionUnknownCheckHandle : virtual Fred::OperationException {
+                const char* what() const throw() {return "unknown check handle";}
+            };
+
             /**
              * constructor with only parameter
              * @param _handle     identifies which contact_check to update by it's handle.
@@ -106,6 +130,18 @@ namespace Fred
             // serialization
             friend std::ostream& operator<<(std::ostream& _os, const InfoContactCheck& _i);
             std::string to_string() const;
+
+        private:
+            /**
+             * Get data for tests of specific check.
+             * @param _check_id     specifies check which tests data should be retrieved
+             */
+            static std::vector<InfoContactCheckOutput::ContactTestResultData> get_test_data(OperationContext& _ctx, long long _check_id, const std::string& _output_timezone = "Europe/Prague");
+            /**
+             * Get data for historical states (explicitly: except the current state) of specific check.
+             * @param _check_id     specifies check which history should be retrieved
+             */
+            static std::vector<InfoContactCheckOutput::ContactCheckState> get_check_historical_states(OperationContext& _ctx, long long _check_id, const std::string& _output_timezone = "Europe/Prague");
     };
 }
 #endif // #include guard end

@@ -41,6 +41,13 @@ namespace Fred
             Nullable<long long> logd_request_id_;
 
         public:
+            struct ExceptionUnknownContactHandle : virtual Fred::OperationException {
+                const char* what() const throw() {return "unknown contact handle";}
+            };
+            struct ExceptionUnknownTestsuiteName : virtual Fred::OperationException {
+                const char* what() const throw() {return "unknown testsuite name";}
+            };
+
             /**
              * constructor only with mandatory parameters
              * @param _contact_handle   identifies contact to be checked - current "snapshot" of historical data is used during check.
@@ -67,13 +74,6 @@ namespace Fred
              * Call with another value for re-set, no need to unset first.
              */
             CreateContactCheck& set_logd_request_id(long long _logd_request_id);
-            /**
-             * unsetter of optional logd_request_id
-             * Erases set value. Is idempotent.
-             * If no value is set at exec() run no logd_request is reffered to by this record after creation.
-             */
-            CreateContactCheck& unset_logd_request_id();
-
 
             /**
              * Commits operation.

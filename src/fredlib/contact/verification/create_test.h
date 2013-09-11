@@ -41,6 +41,16 @@ namespace Fred
         Nullable<long long> logd_request_id_;
 
     public:
+        struct ExceptionUnknownCheckHandle : virtual Fred::OperationException {
+            const char* what() const throw() {return "unknown check handle";}
+        };
+        struct ExceptionUnknownTestName : virtual Fred::OperationException {
+            const char* what() const throw() {return "unknown test name";}
+        };
+        struct ExceptionTestNotInMyTestsuite : virtual Fred::OperationException {
+            const char* what() const throw() {return "test is not in testsuite of this check";}
+        };
+
         /**
          * constructor only with mandatory parameters
          * @param _check_handle     identifies which contact_check this test belongs to (by check's handle).
@@ -67,12 +77,6 @@ namespace Fred
          * Call with another value for re-set, no need to unset first.
          */
         CreateContactTest& set_logd_request_id(long long _logd_request_id);
-        /**
-         * unsetter of optional logd_request_id
-         * Erases set value. Is idempotent.
-         * If no value is set at exec() run no logd_request is reffered to by this record after creation.
-         */
-        CreateContactTest& unset_logd_request_id();
 
         // exec
         void exec(OperationContext& ctx);

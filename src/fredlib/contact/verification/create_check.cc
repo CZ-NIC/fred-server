@@ -25,9 +25,11 @@
 #include <boost/algorithm/string/join.hpp>
 /* TODO - FIXME - only temporary for uuid mockup */
 #include  <cstdlib>
+#include "util/random_data_generator.h"
 
 #include "fredlib/contact/verification/create_check.h"
 #include "fredlib/contact/verification/enum_check_status.h"
+
 
 namespace Fred
 {
@@ -60,11 +62,6 @@ namespace Fred
         return *this;
     }
 
-    CreateContactCheck& CreateContactCheck::unset_logd_request_id() {
-        logd_request_id_ = Nullable<long long>();
-        return *this;
-    }
-
     std::string CreateContactCheck::exec(OperationContext& _ctx) {
         /* TODO - FIXME
            temporary ugliness - waiting for boost 1.42 to use boost::uuid
@@ -81,11 +78,12 @@ namespace Fred
 
         struct BOOST { struct UUIDS { struct RANDOM_GENERATOR {
             static std::string generate() {
-                std::string bytes;
+                srand(time(NULL));
+                std::vector<unsigned char> bytes;
 
                 // generate random 128bits = 16 bytes
                 for (int i = 0; i < 16; ++i) {
-                    bytes += static_cast<char>(rand()%256);
+                    bytes.push_back( RandomDataGenerator().xletter()%256 );
                 }
                 /* some specific uuid rules
                  * http://www.cryptosys.net/pki/Uuid.c.html
@@ -98,8 +96,10 @@ namespace Fred
 
                 // converting raw bytes to hex string representation
                 std::string result;
-                for (std::string::iterator it = bytes.begin(); it != bytes.end(); ++it) {
-                    sprintf(hex_rep,"%x",*it);
+                for (std::vector<unsigned char>::iterator it = bytes.begin(); it != bytes.end(); ++it) {
+                    sprintf(hex_rep,"%02x",*it);
+                    // conversion target is hhhh - so in case it gets wrong just cut off the tail
+                    hex_rep[2] = 0;
                     result += hex_rep;
                 }
 
@@ -108,6 +108,7 @@ namespace Fred
                 result.insert(13, "-");
                 result.insert(18, "-");
                 result.insert(23, "-");
+
                 return result;
             }
         }; }; };
@@ -116,8 +117,34 @@ namespace Fred
 
         std::string handle = boost::lexical_cast<std::string>(BOOST::UUIDS::RANDOM_GENERATOR::generate());
 
+        // using solo select for easy checking of existence (subselect would be strange)
+        Database::Result contact_history_res = _ctx.get_conn().exec_params(
+            "SELECT historyid"
+            "   FROM object_registry"
+            "   WHERE name=$1::varchar "
+            "       AND type=1 "
+            "   FOR SHARE;", // prevent deletion
+            Database::query_param_list(contact_handle_)
+        );
+        if(contact_history_res.size() != 1) {
+            throw ExceptionUnknownContactHandle();
+        }
+        long contact_history_id = static_cast<long>(contact_history_res[0]["historyid"]);
+
+        Database::Result testsuite_res = _ctx.get_conn().exec_params(
+            "SELECT id "
+            "   FROM enum_contact_testsuite "
+            "   WHERE name=$1::varchar "
+            "   FOR SHARE;",
+            Database::query_param_list(testsuite_name_)
+        );
+        if(testsuite_res.size() != 1) {
+            throw ExceptionUnknownTestsuiteName();
+        }
+        long testsuite_id = static_cast<long>(testsuite_res[0]["id"]);
+
         try {
-            Database::Result insert_contact_check_res = _ctx.get_conn().exec_params(
+            _ctx.get_conn().exec_params(
                 "INSERT INTO contact_check ( "
                 "   handle,"
                 "   contact_history_id,"
@@ -127,29 +154,31 @@ namespace Fred
                 ")"
                 "VALUES ("
                 "   $1::uuid,"
-                "   (SELECT o_h.historyid"
-                "       FROM object_registry AS o_r"
-                "           LEFT JOIN object_history AS o_h USING(id)"
-                "           LEFT JOIN h AS ON o_h.historyid = h.id"
-                "       WHERE o_r.name=$2::varchar"
-                "       AND h.next IS NULL),"
-                "   (SELECT id FROM enum_contact_testsuite WHERE name=$3::varchar),"
+                "   $2::int,"
+                "   $3::int,"
                 "   (SELECT id FROM enum_contact_check_status WHERE name=$4::varchar),"
                 "   $5::bigint"
                 ");",
                 Database::query_param_list
                     (handle)
-                    (contact_handle_)
-                    (testsuite_name_)
+                    (contact_history_id)
+                    (testsuite_id)
                     (Fred::ContactCheckStatus::ENQUEUED)
                     (logd_request_id_)
             );
+        } catch(const std::exception& _exc) {
 
-            if (insert_contact_check_res.size() != 1) {
-                BOOST_THROW_EXCEPTION(Fred::InternalError("contact_check creation failed"));
+            std::string what_string(_exc.what());
+
+            if(what_string.find("fk_contact_check_contact_history_id") != std::string::npos) {
+                throw ExceptionUnknownContactHandle();
             }
-        } catch(ExceptionStack& ex) {
-            ex.add_exception_stack_info( to_string() );
+
+            if(what_string.find("contact_check_fk_Enum_contact_testsuite_id") != std::string::npos) {
+                throw ExceptionUnknownTestsuiteName();
+            }
+
+            // problem was elsewhere so let it propagate
             throw;
         }
 
