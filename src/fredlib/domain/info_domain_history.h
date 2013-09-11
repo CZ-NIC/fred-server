@@ -97,14 +97,14 @@ namespace Fred
         * @param history_timestamp sets timestamp of history state we want to get @ref history_timestamp_ attribute
         * @return operation instance reference to allow method chaining
         */
-        InfoDomainHistory& set_history_timestamp(boost::posix_time::ptime history_timestamp);//set history timestamp
+        InfoDomainHistory& set_history_timestamp(boost::posix_time::ptime history_timestamp);
 
         /**
         * Sets domain lock flag.
         * @param lock sets lock domain flag into @ref lock_ attribute
         * @return operation instance reference to allow method chaining
         */
-        InfoDomainHistory& set_lock(bool lock = true);//set lock object_registry row for domain
+        InfoDomainHistory& set_lock(bool lock = true);
 
         /**
         * Executes getting history info about the domain.

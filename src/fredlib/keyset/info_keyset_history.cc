@@ -17,7 +17,7 @@
  */
 
 /**
- *  @file info_keyset_history.cc
+ *  @file
  *  keyset history info
  */
 
