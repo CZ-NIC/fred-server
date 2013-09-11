@@ -96,9 +96,9 @@ namespace Fred
             valid_to_);
         const ObjectId object_id = createObjectStateRequest.exec(_ctx);
         if (reason_.isset()) {
-            Database::Result request_id_res = _ctx.get_conn().exec_params(
-                "INSERT INTO object_state_request_reason (object_state_request_id,state_on,reason) "
-                    "SELECT osr.id,true,$1 "
+            _ctx.get_conn().exec_params(
+                "INSERT INTO object_state_request_reason (object_state_request_id,reason_creation,reason_cancellation) "
+                    "SELECT osr.id,$1::text,NULL "
                     "FROM object_state_request osr "
                     "JOIN enum_object_states eos ON eos.id=osr.state_id "
                     "WHERE osr.valid_from<=CURRENT_TIMESTAMP AND "
@@ -110,6 +110,21 @@ namespace Fred
                     "ORDER BY osr.id DESC LIMIT 1",
                 Database::query_param_list(reason_.get_value())
                                           (object_id));
+        }
+        else {
+            _ctx.get_conn().exec_params(
+                "INSERT INTO object_state_request_reason (object_state_request_id,reason_creation,reason_cancellation) "
+                    "SELECT osr.id,NULL,NULL "
+                    "FROM object_state_request osr "
+                    "JOIN enum_object_states eos ON eos.id=osr.state_id "
+                    "WHERE osr.valid_from<=CURRENT_TIMESTAMP AND "
+                          "(osr.valid_to IS NULL OR "
+                           "CURRENT_TIMESTAMP<=osr.valid_to) AND "
+                          "osr.canceled IS NULL AND "
+                          "osr.object_id=$1::integer AND "
+                          "eos.name='serverBlocked' "
+                    "ORDER BY osr.id DESC LIMIT 1",
+                Database::query_param_list(object_id));
         }
         return object_id;
     }//CreateAdministrativeObjectBlockRequest::exec
