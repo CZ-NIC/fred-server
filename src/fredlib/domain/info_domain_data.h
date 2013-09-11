@@ -79,7 +79,7 @@ namespace Fred
         */
         bool operator==(const InfoDomainData& rhs) const;
         /**
-        * Equality of the contact data structure operator.
+        * Inequality of the contact data structure operator.
         * @param rhs is right hand side of the contact data comparison
         * @return true if not equal, false if equal
         */
