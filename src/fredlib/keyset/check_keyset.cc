@@ -17,7 +17,7 @@
  */
 
 /**
- *  @file check_keyset.cc
+ *  @file
  *  keyset check
  */
 
