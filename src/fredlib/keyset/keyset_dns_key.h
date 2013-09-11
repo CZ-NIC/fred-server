@@ -52,7 +52,7 @@ public:
     virtual ~DnsKey(){}
 
     /**
-     * Constructor initializing all attributes.
+     * Constructor initializing all attributes. Removes whitespaces from @ref _key parameter.
      * @param _flags sets @ref flags_ field
      * @param _protocol sets @ref protocol_ field
      * @param _alg sets @ref alg_ field
