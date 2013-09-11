@@ -17,8 +17,8 @@
  */
 
 /**
- *  @file create_check.h
- *  create contact check
+ *  @file
+ *  (get) info (about) contact check
  */
 
 #ifndef CONTACT_VERIFICATION_INFO_CHECK_11537653419_
