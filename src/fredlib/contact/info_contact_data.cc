@@ -17,7 +17,7 @@
  */
 
 /**
- *  @file info_contact_data.cc
+ *  @file
  *  common contact info data
  */
 

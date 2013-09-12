@@ -17,7 +17,7 @@
  */
 
 /**
- *  @file info_domain_history.cc
+ *  @file
  *  domain history info
  */
 

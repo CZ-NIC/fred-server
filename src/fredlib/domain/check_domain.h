@@ -17,7 +17,7 @@
  */
 
 /**
- *  @file check_domain.h
+ *  @file
  *  domain check
  */
 
@@ -40,7 +40,7 @@ namespace Fred
         const std::string fqdn_;/**< domain identifier */
     public:
         /**
-        * check domain ctor.
+        * check domain constructor
         * @param fqdn a fully qualified domain name.
         */
         CheckDomain(const std::string& fqdn);

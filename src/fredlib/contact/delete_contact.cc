@@ -17,7 +17,7 @@
  */
 
 /**
- *  @file delete_contact.cc
+ *  @file
  *  contact delete
  */
 
@@ -96,9 +96,9 @@ namespace Fred
 
     }//DeleteContact::exec
 
-    std::ostream& operator<<(std::ostream& os, const DeleteContact& dc)
+    std::ostream& operator<<(std::ostream& os, const DeleteContact& i)
     {
-        return os << "#DeleteContact handle: " << dc.handle_
+        return os << "#DeleteContact handle: " << i.handle_
                 ;
     }
     std::string DeleteContact::to_string()

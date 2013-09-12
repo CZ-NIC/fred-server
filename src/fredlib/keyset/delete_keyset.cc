@@ -17,7 +17,7 @@
  */
 
 /**
- *  @file delete_keyset.cc
+ *  @file
  *  keyset delete
  */
 

@@ -17,7 +17,7 @@
  */
 
 /**
- *  @file info_nsset_history.cc
+ *  @file
  *  nsset history info
  */
 

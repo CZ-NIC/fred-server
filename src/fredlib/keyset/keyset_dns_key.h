@@ -17,7 +17,7 @@
  */
 
 /**
- *  @file keyset_dns_key.h
+ *  @file
  *  keyset dns key
  */
 
@@ -36,15 +36,28 @@
 namespace Fred
 {
 
+/**
+ * Container for DNSKEY record data as specified in RFC4034.
+ */
 class DnsKey
 {
-    unsigned short flags_;
-    unsigned short protocol_;
-    unsigned short alg_;
-    std::string key_;//base64 encoding
+    unsigned short flags_;/**< the flags field */
+    unsigned short protocol_;/**< the protocol field, only valid value is 3*/
+    unsigned short alg_;/**< the algorithm field identifies the public key's cryptographic algorithm, values can be found in RFC 4034 Apendix A.1. */
+    std::string key_;/**< the public key field in base64 encoding */
 public:
+    /**
+     * Empty destructor.
+     */
     virtual ~DnsKey(){}
 
+    /**
+     * Constructor initializing all attributes. Removes whitespaces from @ref _key parameter.
+     * @param _flags sets @ref flags_ field
+     * @param _protocol sets @ref protocol_ field
+     * @param _alg sets @ref alg_ field
+     * @param _key sets @ref key_ field in base64 encoding
+     */
     DnsKey(unsigned short _flags
             , unsigned short _protocol
             , unsigned short _alg
@@ -58,6 +71,9 @@ public:
         key_.erase(std::remove_if(key_.begin(), key_.end(), isspace), key_.end());
     }
 
+    /**
+     * Default constructor. Sets integral attributes to zero and key to empty string.
+     */
     DnsKey()
     : flags_(0)
     , protocol_(0)
@@ -65,26 +81,45 @@ public:
     //, key_("")
     {}
 
+    /**
+     * Flags field getter.
+     * @return flags field viz @ref flags_
+     */
     unsigned short get_flags()
     {
         return flags_;
     }
 
+    /**
+     * Protocol field getter.
+     * @return protocol field viz @ref protocol_
+     */
     unsigned short get_protocol()
     {
         return protocol_;
     }
-
+    /**
+     * Algorithm field getter.
+     * @return algorithm field viz @ref alg_
+     */
     unsigned short get_alg()
     {
         return alg_;
     }
 
+    /**
+     * Key field getter.
+     * @return public key field viz @ref key_
+     */
     std::string get_key()
     {
         return key_;
     }
-
+    /**
+    * Equality of DNSKEY data operator.
+    * @param rhs is right hand side of DNSKEY data comparison
+    * @return true if equal, false if not
+    */
     bool operator==(const DnsKey& rhs) const
     {
         return (flags_ == rhs.flags_)
@@ -94,11 +129,19 @@ public:
             ;
     }
 
+    /**
+    * Inequality of DNSKEY data operator.
+    * @param rhs is right hand side of DNSKEY data comparison
+    * @return true if not equal, false if equal
+    */
     bool operator!=(const DnsKey& rhs) const
     {
         return !this->operator ==(rhs);
     }
-
+    /**
+     * Exchanges the data of the instance by the data of instance given in parameter.
+     * @param dk is reference to instance whose content is swapped with this instance
+     */
     void swap(DnsKey& dk) //throw()
     {
         std::swap(this->flags_, dk.flags_);
@@ -107,27 +150,43 @@ public:
         std::swap(this->key_, dk.key_);
     }
 
+    /**
+     * Assignment of new data given in parameter, replacing current instance data. Using copy and @swap.
+     * @param dk is reference to instance whose content is assigned into this instance
+     * @return reference to self
+     */
     DnsKey& operator=(const DnsKey& dk)
     {
         if (this != &dk)
             DnsKey(dk).swap (*this); //copy and swap
         return *this;
     }
-
+    /**
+     * Conversion to string.
+     * @return textual description of the content
+     */
     operator std::string() const
     {
         std::stringstream ret;
-
         ret << "flags:" << flags_ << " protocol:" << protocol_ << " alg:" << alg_ << " key:" << key_ ;
-
         return ret.str();
     }
 
+    /**
+     * Comparison of instances converted to std::string
+     * @param rhs is right hand side instance of the comparison
+     */
     bool operator<(const DnsKey& rhs) const
     {
         return static_cast<std::string>(*this) < static_cast<std::string>(rhs);
     }
 
+    /**
+    * Dumps state of the instance into stream
+    * @param os contains output stream reference
+    * @param i reference of instance to be dumped into the stream
+    * @return output stream reference
+    */
     friend std::ostream& operator<<(std::ostream& os, const DnsKey& i)
     {
         return os << "DnsKey " << static_cast<std::string>(i);

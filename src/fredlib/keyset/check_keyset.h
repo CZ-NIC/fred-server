@@ -17,7 +17,7 @@
  */
 
 /**
- *  @file check_keyset.h
+ *  @file
  *  keyset check
  */
 
@@ -41,20 +41,20 @@ namespace Fred
     public:
 
         /**
-        * check keyset ctor.
+        * Check keyset constructor.
         * @param handle a keyset identifier.
         */
         CheckKeyset(const std::string& handle);
 
         /**
-        * check keyset handle syntax.
+        * Check keyset handle syntax.
         * @param ctx an operation context with database and logging interface.
         * @return true if invalid, false if ok
         */
         bool is_invalid_handle();
 
         /**
-        * check if keyset handle is registered.
+        * Check if keyset handle is registered.
         * @param ctx an operation context with database and logging interface.
         * @param conflicting_handle_out an conflicting keyset identifier reference used for output if true is returned.
         * @return true if registered, false if not
@@ -62,28 +62,28 @@ namespace Fred
         bool is_registered(OperationContext& ctx, std::string& conflicting_handle_out);
 
         /**
-        * check if keyset handle is registered.
+        * Check if keyset handle is registered.
         * @param ctx an operation context with database and logging interface.
         * @return true if registered, false if not
         */
         bool is_registered(OperationContext& ctx);
 
         /**
-        * check if keyset handle is in protection period.
+        * Check if keyset handle is in protection period.
         * @param ctx an operation context with database and logging interface.
         * @return true if protected, false if not
         */
         bool is_protected(OperationContext& ctx);
 
         /**
-        * check if keyset handle is free for registration.
+        * Check if keyset handle is free for registration.
         * @param ctx an operation context with database and logging interface.
         * @return true if protected, false if not
         */
         bool is_free(OperationContext& ctx);
 
         /**
-        * dump state of the instance to output stream.
+        * Dump state of the instance to output stream.
         * @param os an output stream.
         * @param i the instance
         * @return output stream reference for chaining of calls
@@ -91,7 +91,7 @@ namespace Fred
         friend std::ostream& operator<<(std::ostream& os, const CheckKeyset& i);
 
         /**
-        * dump state of the instance to std::string using operator<<.
+        * Dump state of the instance to std::string using operator<<.
         * @see operator<<
         * @return string with description of instance state
         */

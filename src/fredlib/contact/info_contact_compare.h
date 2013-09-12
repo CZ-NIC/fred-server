@@ -17,8 +17,8 @@
  */
 
 /**
- *  @info_contact_compare.h
- *  comparsion of contact info
+ *  @file
+ *  comparison of contact info
  */
 
 #ifndef INFO_CONTACT_COMPARE_H_
@@ -41,12 +41,36 @@
 
 namespace Fred
 {
+    /**
+    * Equality of the contact data with contact history data operator.
+    * @param lhs is the contact data
+    * @param rhs is the contact history data
+    * @return true if equal, false if not
+    */
     bool operator==(const InfoContactOutput& lhs, const InfoContactHistoryOutput& rhs);
 
+    /**
+    * Equality of contact history data with the contact data operator.
+    * @param lhs is the contact history data
+    * @param rhs is the contact data
+    * @return true if equal, false if not
+    */
     bool operator==(const InfoContactHistoryOutput& lhs, const InfoContactOutput& rhs);
 
+    /**
+    * Inequality of contact data with the contact history data operator.
+    * @param lhs is the contact data
+    * @param rhs is the contact history data
+    * @return true if not equal, false if equal
+    */
     bool operator!=(const InfoContactOutput& lhs, const InfoContactHistoryOutput& rhs);
 
+    /**
+    * Inequality of contact history data with the contact data operator.
+    * @param lhs is the contact history data
+    * @param rhs is the contact data
+    * @return true if not equal, false if equal
+    */
     bool operator!=(const InfoContactHistoryOutput& lhs, const InfoContactOutput& rhs);
 
 }//namespace Fred

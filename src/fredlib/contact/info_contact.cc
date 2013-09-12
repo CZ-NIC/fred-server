@@ -17,7 +17,7 @@
  */
 
 /**
- *  @file info_contact.cc
+ *  @file
  *  contact info
  */
 
@@ -192,10 +192,10 @@ namespace Fred
         return contact_info_output;
     }//InfoContact::exec
 
-    std::ostream& operator<<(std::ostream& os, const InfoContact& ic)
+    std::ostream& operator<<(std::ostream& os, const InfoContact& i)
     {
-        return os << "#InfoContact handle: " << ic.handle_
-                << " lock: " << ic.lock_
+        return os << "#InfoContact handle: " << i.handle_
+                << " lock: " << i.lock_
                 ;
     }
     std::string InfoContact::to_string()
