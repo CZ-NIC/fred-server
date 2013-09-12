@@ -45,9 +45,9 @@ namespace Fred
      */
     struct InfoKeysetData
     {
-        unsigned long long crhistoryid;/**< first historyid of keyset history*/
-        unsigned long long historyid;/**< last historyid of keyset history*/
-        Nullable<boost::posix_time::ptime> delete_time; /**< keyset delete time in UTC*/
+        unsigned long long crhistoryid;/**< first historyid of keyset history */
+        unsigned long long historyid;/**< last historyid of keyset history */
+        Nullable<boost::posix_time::ptime> delete_time; /**< keyset delete time in UTC */
         std::string handle;/**< keyset handle */
         std::string roid;/**< registry object identifier of the keyset */
         std::string sponsoring_registrar_handle;/**< registrar administering the keyset */
