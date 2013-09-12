@@ -17,7 +17,7 @@
  */
 
 /**
- *  @file nsset_dns_host.h
+ *  @file
  *  nsset dns host
  */
 
@@ -35,27 +35,52 @@
 namespace Fred
 {
 
+    /**
+     * Nameserver data container.
+     */
     class DnsHost
     {
-        std::string fqdn_;
-        std::vector<std::string> inet_addr_;
+        std::string fqdn_;/**< fully qualified name of the nameserver host*/
+        std::vector<std::string> inet_addr_;/**< list of IPv4 or IPv6 addresses of the nameserver host*/
     public:
+
+        /**
+         * Empty destructor.
+         */
         virtual ~DnsHost(){}
+
+        /**
+         * Constructor initializing all attributes.
+         * @param _fqdn sets nameserver name into @ref fqdn_ attribute
+         * @param _inet_addr sets addresses of the nameserver into @ref inet_addr_ attribute.
+         */
         DnsHost(const std::string& _fqdn, const std::vector<std::string>& _inet_addr)
         : fqdn_(_fqdn)
         , inet_addr_(_inet_addr)
         {}
 
+        /**
+         * Nameserver name getter.
+         * @return name of nameserver viz @ref fqdn_
+         */
         std::string get_fqdn() const
         {
             return fqdn_;
         }
 
+        /**
+         * Nameserver addresses getter.
+         * @return addresses of nameserver field viz @ref inet_addr_
+         */
         std::vector<std::string> get_inet_addr() const
         {
             return inet_addr_;
         }
 
+        /**
+         * Conversion to string.
+         * @return textual description of the content
+         */
         operator std::string() const
         {
             std::stringstream ret;
