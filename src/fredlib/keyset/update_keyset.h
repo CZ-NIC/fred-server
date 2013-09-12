@@ -54,7 +54,7 @@ namespace Fred
         Optional<std::string> sponsoring_registrar_;/**< handle of registrar administering the object */
         Optional<std::string> authinfo_;/**< transfer password */
         std::vector<std::string> add_tech_contact_; /**< technical contact handles to be added */
-        std::vector<std::string> rem_tech_contact_; /**< technical contact handles to be added */
+        std::vector<std::string> rem_tech_contact_; /**< technical contact handles to be removed */
         std::vector<DnsKey> add_dns_key_; /**< DNS keys to be added */
         std::vector<DnsKey> rem_dns_key_; /**< DNS keys to be removed */
         Nullable<unsigned long long> logd_request_id_; /**< id of the record in logger database, id is used in other calls to logging within current request */
