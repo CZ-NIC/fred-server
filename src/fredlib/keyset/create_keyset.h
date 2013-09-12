@@ -85,6 +85,7 @@ namespace Fred
         * @param registrar sets registrar handle into @ref registrar_ attribute
         * @param authinfo sets transfer password into @ref authinfo_ attribute
         * @param dns_keys sets DNS keys into @ref dns_keys_ attribute
+        * @param tech_contact sets list of technical contact handles into @ref tech_contacts_ attribute
         * @param logd_request_id sets logger request id into @ref logd_request_id_ attribute
         */
         CreateKeyset(const std::string& handle
@@ -111,7 +112,7 @@ namespace Fred
 
         /**
         * Sets keyset technical contacts.
-        * @param dns_keys sets DNS keys into @ref dns_keys_ attribute
+        * @param tech_contacts sets list of technical contact handles into @ref tech_contacts_ attribute
         * @return operation instance reference to allow method chaining
         */
         CreateKeyset& set_tech_contacts(const std::vector<std::string>& tech_contacts);
