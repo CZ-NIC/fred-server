@@ -17,7 +17,7 @@
  */
 
 /**
- *  @file delete_nsset.cc
+ *  @file
  *  nsset delete
  */
 
