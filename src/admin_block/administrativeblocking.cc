@@ -412,26 +412,32 @@ namespace Registry
                         Fred::CreateAdministrativeObjectStateRestoreRequestId create_object_state_restore_request(object_id, _reason);
                         create_object_state_restore_request.exec(ctx);
                         Fred::PerformObjectStateRequest(object_id).exec(ctx);
-                        if (!_new_owner.isnull() && !static_cast< std::string >(_new_owner).empty()) {
-                            Database::query_param_list param(object_id);
-                            Database::Result registrar_fqdn_result = ctx.get_conn().exec_params(
-                                "SELECT reg.handle,oreg.name "
-                                "FROM object_registry oreg "
-                                "JOIN registrar reg ON oreg.crid=reg.id "
-                                "WHERE oreg.id=$1::bigint", param);
-                            if (registrar_fqdn_result.size() <= 0) {
-                                std::string errmsg("|| not found:object_id: ");
-                                errmsg += boost::lexical_cast< std::string >(object_id);
-                                errmsg += " |";
-                                EX_INTERNAL_SERVER_ERROR ex;
-                                ex.what = errmsg;
-                                throw ex;
-                            }
-                            const Database::Row &row = registrar_fqdn_result[0];
+                        Database::Result registrar_fqdn_expired_result = ctx.get_conn().exec_params(
+                            "SELECT reg.handle,oreg.name,CASE WHEN d.exdate<CURRENT_DATE THEN CURRENT_DATE ELSE NULL END "
+                            "FROM object_registry oreg "
+                            "JOIN registrar reg ON oreg.crid=reg.id "
+                            "LEFT JOIN domain d ON d.id=oreg.id "
+                            "WHERE oreg.id=$1::bigint", Database::query_param_list(object_id));
+                        if (registrar_fqdn_expired_result.size() <= 0) {
+                            std::ostringstream msg;
+                            msg << "object_id " << object_id << " not found";
+                            EX_INTERNAL_SERVER_ERROR ex;
+                            ex.what = msg.str();
+                            throw ex;
+                        }
+                        const Database::Row &row = registrar_fqdn_expired_result[0];
+                        const std::string set_expire_today = static_cast< std::string >(row[2]);
+                        const bool new_owner_is_set = !(_new_owner.isnull() || static_cast< std::string >(_new_owner).empty());
+                        if (new_owner_is_set || !set_expire_today.empty()) {
                             const std::string registrar = static_cast< std::string >(row[0]);
                             const std::string domain = static_cast< std::string >(row[1]);
                             Fred::UpdateDomain update_domain(domain, registrar);
-                            update_domain.set_registrant(_new_owner);
+                            if (new_owner_is_set) {
+                                update_domain.set_registrant(_new_owner);
+                            }
+                            if (!set_expire_today.empty()) {
+                                update_domain.set_domain_expiration(boost::gregorian::from_string(set_expire_today));
+                            }
                             if (0 < _log_req_id) {
                                 update_domain.set_logd_request_id(_log_req_id);
                             }
@@ -560,27 +566,32 @@ namespace Registry
                     try {
                         Fred::ClearAdministrativeObjectStateRequestId(object_id, _reason).exec(ctx);
                         Fred::PerformObjectStateRequest(object_id).exec(ctx);
+                        Database::query_param_list param(object_id);
+                        Database::Result registrar_fqdn_expired_result = ctx.get_conn().exec_params(
+                            "SELECT reg.handle,oreg.name,CASE WHEN d.exdate<CURRENT_DATE THEN CURRENT_DATE ELSE NULL END "
+                            "FROM object_registry oreg "
+                            "JOIN registrar reg ON oreg.crid=reg.id "
+                            "LEFT JOIN domain d ON d.id=oreg.id "
+                            "WHERE oreg.id=$1::bigint", param);
+                        if (registrar_fqdn_expired_result.size() <= 0) {
+                            std::ostringstream msg;
+                            msg << "object_id " << object_id << " not found";
+                            EX_INTERNAL_SERVER_ERROR ex;
+                            ex.what = msg.str();
+                            throw ex;
+                        }
+                        const Database::Row &row = registrar_fqdn_expired_result[0];
+                        const std::string set_expire_today = static_cast< std::string >(row[2]);
                         const bool set_new_owner = !_new_owner.isnull() && !static_cast< std::string >(_new_owner).empty();
-                        if (_remove_admin_c || set_new_owner) {
-                            Database::query_param_list param(object_id);
-                            Database::Result registrar_fqdn_result = ctx.get_conn().exec_params(
-                                "SELECT reg.handle,oreg.name "
-                                "FROM object_registry oreg "
-                                "JOIN registrar reg ON oreg.crid=reg.id "
-                                "WHERE oreg.id=$1::bigint", param);
-                            if (registrar_fqdn_result.size() <= 0) {
-                                std::ostringstream msg;
-                                msg << "object_id " << object_id << " not found";
-                                EX_INTERNAL_SERVER_ERROR ex;
-                                ex.what = msg.str();
-                                throw ex;
-                            }
-                            const Database::Row &row = registrar_fqdn_result[0];
+                        if (_remove_admin_c || set_new_owner || !set_expire_today.empty()) {
                             const std::string registrar = static_cast< std::string >(row[0]);
                             const std::string domain = static_cast< std::string >(row[1]);
                             Fred::UpdateDomain update_domain(domain, registrar);
                             if (set_new_owner) {
                                 update_domain.set_registrant(_new_owner);
+                            }
+                            if (!set_expire_today.empty()) {
+                                update_domain.set_domain_expiration(boost::gregorian::from_string(set_expire_today));
                             }
                             if (0 < _log_req_id) {
                                 update_domain.set_logd_request_id(_log_req_id);
