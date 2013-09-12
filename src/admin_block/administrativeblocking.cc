@@ -33,6 +33,7 @@
 #include "fredlib/domain/clear_administrative_object_state_request_id.h"
 #include "fredlib/domain/update_domain.h"
 #include "fredlib/domain/delete_domain.h"
+#include "fredlib/domain/info_domain.h"
 #include "fredlib/domain/copy_contact.h"
 #include <memory>
 #include <map>
@@ -68,12 +69,6 @@ namespace Registry
 
         namespace
         {
-            struct DomainInfo
-            {
-                std::string registrar_handle;
-                Fred::ObjectId owner_id;
-            };
-
             struct OwnerCopy
             {
                 std::string old_owner_handle;
@@ -81,7 +76,7 @@ namespace Registry
                 std::string new_owner_handle;
             };
 
-            typedef std::map< Fred::ObjectId, DomainInfo > DomainIdDomainInfo;
+            typedef std::map< Fred::ObjectId, Fred::ObjectId > DomainIdOwnerId;
             typedef std::map< Fred::ObjectId, OwnerCopy > OwnerIdOwnerCopy;
 
             static const std::string owner_copy_suffix = "-ABC_"; //AdministrativeBlockingCopy
@@ -125,31 +120,58 @@ namespace Registry
                 return new_owner_handle;
             }
 
-            void copy_domain_owners(
-                const IdlDomainIdList &_domain_list,
-                DomainIdDomainInfo &_domain_id_domain_info,
-                OwnerIdOwnerCopy &_owner_id_owner_copy,
-                unsigned long long _log_req_id,
-                Fred::OperationContext &_ctx)
+            std::string get_sys_registrar(Fred::OperationContext &_ctx)
             {
                 Database::Result sys_registrar_res = _ctx.get_conn().exec(
                     "SELECT handle "
                     "FROM registrar "
                     "WHERE system IS true");
-                if (sys_registrar_res.size() != 1) {
-                    if (sys_registrar_res.size() == 0) {
-                        throw std::runtime_error("system registrar not found");
-                    }
-                    throw std::runtime_error("too many system registrars");
+                if (sys_registrar_res.size() == 1) {
+                    return static_cast< std::string >(sys_registrar_res[0][0]);
                 }
-                const std::string sys_registrar_handle = static_cast< std::string >(sys_registrar_res[0][0]);
+                if (sys_registrar_res.size() == 0) {
+                    throw std::runtime_error("system registrar not found");
+                }
+                throw std::runtime_error("too many system registrars");
+            }
+
+            std::string get_object_handle(Fred::OperationContext &_ctx, Fred::ObjectId _object_id, bool _lock = true);
+            
+            std::string get_object_handle(Fred::OperationContext &_ctx, Fred::ObjectId _object_id, bool _lock)
+            {
+                const std::string query = _lock ?
+                                              "SELECT name "
+                                              "FROM object_registry "
+                                              "WHERE id=$1::integer " 
+                                              "FOR UPDATE"
+                                          :
+                                              "SELECT name "
+                                              "FROM object_registry "
+                                              "WHERE id=$1::integer";
+                Database::Result handle_res = _ctx.get_conn().exec_params(query, Database::query_param_list(_object_id));
+                if (handle_res.size() == 1) {
+                    return static_cast< std::string >(handle_res[0][0]);
+                }
+                if (handle_res.size() == 0) {
+                    throw std::runtime_error("object not found");
+                }
+                throw std::runtime_error("too many objects");
+            }
+
+            void copy_domain_owners(
+                const std::string &_sys_registrar_handle,
+                const IdlDomainIdList &_domain_list,
+                DomainIdOwnerId &_domain_id_owner_id,
+                OwnerIdOwnerCopy &_owner_id_owner_copy,
+                unsigned long long _log_req_id,
+                Fred::OperationContext &_ctx)
+            {
                 std::ostringstream query;
                 for (IdlDomainIdList::const_iterator pObjectId = _domain_list.begin(); pObjectId != _domain_list.end(); ++pObjectId) {
                     if (query.str().empty()) {
-                        query << "SELECT d.id,d.registrant,obr.name,r.handle "
+                        query << "SELECT d.id,d.registrant,obr.name "
                                  "FROM domain d "
                                  "JOIN object_registry obr ON obr.id=d.registrant "
-                                 "JOIN registrar r ON r.id=obr.crid "
                                  "WHERE d.id IN (";
                     }
                     else {
@@ -157,24 +179,22 @@ namespace Registry
                     }
                     query << (*pObjectId);
                 }
-                query << ")";
+                query << ") FOR UPDATE OF obr";
                 Database::Result domain_info_res = _ctx.get_conn().exec(query.str());
                 for (unsigned idx = 0; idx < domain_info_res.size(); ++idx) {
                     OwnerCopy item;
-                    const std::string domain_registrar = static_cast< std::string >(domain_info_res[idx][3]);
                     const Fred::ObjectId old_owner_id = static_cast< Fred::ObjectId >(domain_info_res[idx][1]);
                     if (_owner_id_owner_copy.find(old_owner_id) == _owner_id_owner_copy.end()) {
                         _owner_id_owner_copy[old_owner_id].old_owner_handle = static_cast< std::string >(domain_info_res[idx][2]);
                     }
                     const Fred::ObjectId domain_id = static_cast< Fred::ObjectId >(domain_info_res[idx][0]);
-                    _domain_id_domain_info[domain_id].registrar_handle = domain_registrar;
-                    _domain_id_domain_info[domain_id].owner_id = old_owner_id;
+                    _domain_id_owner_id[domain_id] = old_owner_id;
                 }
                 for (OwnerIdOwnerCopy::iterator pOwnerCopy = _owner_id_owner_copy.begin(); pOwnerCopy != _owner_id_owner_copy.end(); ++pOwnerCopy) {
                     pOwnerCopy->second.new_owner_handle = get_copy_owner_handle(pOwnerCopy->second.old_owner_handle, _log_req_id, _ctx);
                     Fred::CopyContact copy_contact(pOwnerCopy->second.old_owner_handle,
                                                    pOwnerCopy->second.new_owner_handle,
-                                                   sys_registrar_handle,
+                                                   _sys_registrar_handle,
                                                    _log_req_id);
                     pOwnerCopy->second.new_owner_id = copy_contact.exec(_ctx);
                 }
@@ -241,8 +261,9 @@ namespace Registry
                 IdlOwnerChangeList result;
                 Fred::OperationContext ctx;
                 Fred::StatusList contact_status_list;
-                DomainIdDomainInfo domain_id_domain_info;
+                DomainIdOwnerId domain_id_owner_id;
                 OwnerIdOwnerCopy owner_id_owner_copy;
+                const std::string sys_registrar = get_sys_registrar(ctx);
                 if ((_owner_block_mode == OWNER_BLOCK_MODE_BLOCK_OWNER) ||
                     (_owner_block_mode == OWNER_BLOCK_MODE_BLOCK_OWNER_COPY)) {
                     Fred::GetObjectStateIdMap::StateIdMap state_id;
@@ -252,7 +273,7 @@ namespace Registry
                         contact_status_list.insert(pState->first);
                     }
                     if (_owner_block_mode == OWNER_BLOCK_MODE_BLOCK_OWNER_COPY) {
-                        copy_domain_owners(_domain_list, domain_id_domain_info, owner_id_owner_copy, _log_req_id, ctx);
+                        copy_domain_owners(sys_registrar, _domain_list, domain_id_owner_id, owner_id_owner_copy, _log_req_id, ctx);
                     }
                     else if (_owner_block_mode == OWNER_BLOCK_MODE_BLOCK_OWNER) {
                         check_owner_has_no_other_domains(_domain_list, ctx);
@@ -279,7 +300,8 @@ namespace Registry
                                 "SELECT rc.id,rc.name "
                                 "FROM domain d "
                                 "JOIN object_registry rc ON rc.id=d.registrant "
-                                "WHERE d.id=$1::bigint", param);
+                                "WHERE d.id=$1::bigint "
+                                "FOR UPDATE OF rc", param);
                             if (registrant_result.size() <= 0) {
                                 domain_id_not_found.what.insert(object_id);
                                 continue;
@@ -304,13 +326,13 @@ namespace Registry
                             IdlOwnerChange result_item;
                             result_item.domain_id = object_id;
                             result_item.domain_handle = domain;
-                            result_item.old_owner_id = domain_id_domain_info[object_id].owner_id;
+                            result_item.old_owner_id = domain_id_owner_id[object_id];
                             const OwnerCopy &owner_copy = owner_id_owner_copy[result_item.old_owner_id];
                             result_item.old_owner_handle = owner_copy.old_owner_handle;
                             result_item.new_owner_handle = owner_copy.new_owner_handle;
                             result_item.new_owner_id = owner_copy.new_owner_id;
                             if (!contact_status_list.empty()) {
-                                Fred::UpdateDomain update_domain(domain, domain_id_domain_info[object_id].registrar_handle);
+                                Fred::UpdateDomain update_domain(domain, sys_registrar);
                                 update_domain.set_registrant(result_item.new_owner_handle);
                                 if (0 < _log_req_id) {
                                     update_domain.set_logd_request_id(_log_req_id);
@@ -406,37 +428,25 @@ namespace Registry
             EX_DOMAIN_ID_NOT_BLOCKED domain_id_not_blocked;
             try {
                 Fred::OperationContext ctx;
+                const std::string sys_registrar = get_sys_registrar(ctx);
                 for (IdlDomainIdList::const_iterator pDomainId = _domain_list.begin(); pDomainId != _domain_list.end(); ++pDomainId) {
                     const Fred::ObjectId object_id = *pDomainId;
                     try {
                         Fred::CreateAdministrativeObjectStateRestoreRequestId create_object_state_restore_request(object_id, _reason);
                         create_object_state_restore_request.exec(ctx);
                         Fred::PerformObjectStateRequest(object_id).exec(ctx);
-                        Database::Result registrar_fqdn_expired_result = ctx.get_conn().exec_params(
-                            "SELECT reg.handle,oreg.name,CASE WHEN d.exdate<CURRENT_DATE THEN CURRENT_DATE ELSE NULL END "
-                            "FROM object_registry oreg "
-                            "JOIN registrar reg ON oreg.crid=reg.id "
-                            "LEFT JOIN domain d ON d.id=oreg.id "
-                            "WHERE oreg.id=$1::bigint", Database::query_param_list(object_id));
-                        if (registrar_fqdn_expired_result.size() <= 0) {
-                            std::ostringstream msg;
-                            msg << "object_id " << object_id << " not found";
-                            EX_INTERNAL_SERVER_ERROR ex;
-                            ex.what = msg.str();
-                            throw ex;
-                        }
-                        const Database::Row &row = registrar_fqdn_expired_result[0];
-                        const std::string set_expire_today = static_cast< std::string >(row[2]);
+                        const std::string fqdn = get_object_handle(ctx, object_id);
+                        const boost::gregorian::date expiration_date = Fred::InfoDomain(fqdn, sys_registrar).exec(ctx).info_domain_data.expiration_date;
+                        const boost::gregorian::date today(boost::gregorian::day_clock::universal_day());
+                        const bool set_expire_today = expiration_date < today;
                         const bool new_owner_is_set = !(_new_owner.isnull() || static_cast< std::string >(_new_owner).empty());
-                        if (new_owner_is_set || !set_expire_today.empty()) {
-                            const std::string registrar = static_cast< std::string >(row[0]);
-                            const std::string domain = static_cast< std::string >(row[1]);
-                            Fred::UpdateDomain update_domain(domain, registrar);
+                        if (new_owner_is_set || set_expire_today) {
+                            Fred::UpdateDomain update_domain(fqdn, sys_registrar);
                             if (new_owner_is_set) {
                                 update_domain.set_registrant(_new_owner);
                             }
-                            if (!set_expire_today.empty()) {
-                                update_domain.set_domain_expiration(boost::gregorian::from_string(set_expire_today));
+                            if (set_expire_today) {
+                                update_domain.set_domain_expiration(today);
                             }
                             if (0 < _log_req_id) {
                                 update_domain.set_logd_request_id(_log_req_id);
@@ -561,51 +571,32 @@ namespace Registry
             EX_DOMAIN_ID_NOT_BLOCKED domain_id_not_blocked;
             try {
                 Fred::OperationContext ctx;
+                const std::string sys_registrar = get_sys_registrar(ctx);
                 for (IdlDomainIdList::const_iterator pDomainId = _domain_list.begin(); pDomainId != _domain_list.end(); ++pDomainId) {
                     const Fred::ObjectId object_id = *pDomainId;
                     try {
                         Fred::ClearAdministrativeObjectStateRequestId(object_id, _reason).exec(ctx);
                         Fred::PerformObjectStateRequest(object_id).exec(ctx);
-                        Database::query_param_list param(object_id);
-                        Database::Result registrar_fqdn_expired_result = ctx.get_conn().exec_params(
-                            "SELECT reg.handle,oreg.name,CASE WHEN d.exdate<CURRENT_DATE THEN CURRENT_DATE ELSE NULL END "
-                            "FROM object_registry oreg "
-                            "JOIN registrar reg ON oreg.crid=reg.id "
-                            "LEFT JOIN domain d ON d.id=oreg.id "
-                            "WHERE oreg.id=$1::bigint", param);
-                        if (registrar_fqdn_expired_result.size() <= 0) {
-                            std::ostringstream msg;
-                            msg << "object_id " << object_id << " not found";
-                            EX_INTERNAL_SERVER_ERROR ex;
-                            ex.what = msg.str();
-                            throw ex;
-                        }
-                        const Database::Row &row = registrar_fqdn_expired_result[0];
-                        const std::string set_expire_today = static_cast< std::string >(row[2]);
+                        const std::string fqdn = get_object_handle(ctx, object_id);
+                        const Fred::InfoDomainData info_domain_data = Fred::InfoDomain(fqdn, sys_registrar).exec(ctx).info_domain_data;
+                        const boost::gregorian::date today(boost::gregorian::day_clock::universal_day());
+                        const bool set_expire_today = info_domain_data.expiration_date < today;
                         const bool set_new_owner = !_new_owner.isnull() && !static_cast< std::string >(_new_owner).empty();
-                        if (_remove_admin_c || set_new_owner || !set_expire_today.empty()) {
-                            const std::string registrar = static_cast< std::string >(row[0]);
-                            const std::string domain = static_cast< std::string >(row[1]);
-                            Fred::UpdateDomain update_domain(domain, registrar);
+                        if (_remove_admin_c || set_new_owner || set_expire_today) {
+                            Fred::UpdateDomain update_domain(fqdn, sys_registrar);
                             if (set_new_owner) {
                                 update_domain.set_registrant(_new_owner);
                             }
-                            if (!set_expire_today.empty()) {
-                                update_domain.set_domain_expiration(boost::gregorian::from_string(set_expire_today));
+                            if (set_expire_today) {
+                                update_domain.set_domain_expiration(today);
                             }
                             if (0 < _log_req_id) {
                                 update_domain.set_logd_request_id(_log_req_id);
                             }
                             if (_remove_admin_c) {
-                                Database::Result admin_name_result = ctx.get_conn().exec_params(
-                                    "SELECT rc.name "
-                                    "FROM domain_contact_map dcm "
-                                    "JOIN object_registry rc ON rc.id=dcm.contactid "
-                                    "WHERE dcm.domainid=$1::bigint", param);
-                                for (::size_t idx = 0; idx < admin_name_result.size(); ++idx) {
-                                    const Database::Row &row = admin_name_result[idx];
-                                    const std::string admin_name = static_cast< std::string >(row[0]);
-                                    update_domain.rem_admin_contact(admin_name);
+                                for (std::vector< std::string >::const_iterator pAdmin = info_domain_data.admin_contacts.begin();
+                                     pAdmin != info_domain_data.admin_contacts.end(); ++pAdmin) {
+                                    update_domain.rem_admin_contact(*pAdmin);
                                 }
                             }
                             update_domain.exec(ctx);
