@@ -17,7 +17,7 @@
  */
 
 /**
- *  @info_nsset_compare.cc
+ *  @file
  *  comparison of nsset info
  */
 

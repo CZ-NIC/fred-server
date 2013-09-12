@@ -41,12 +41,36 @@
 
 namespace Fred
 {
+    /**
+    * Equality of the keyset data with keyset history data operator.
+    * @param lhs is the keyset data
+    * @param rhs is the keyset history data
+    * @return true if equal, false if not
+    */
     bool operator==(const InfoKeysetOutput& lhs, const InfoKeysetHistoryOutput& rhs);
 
+    /**
+    * Equality of keyset history data with the keyset data operator.
+    * @param lhs is the keyset history data
+    * @param rhs is the keyset data
+    * @return true if equal, false if not
+    */
     bool operator==(const InfoKeysetHistoryOutput& lhs, const InfoKeysetOutput& rhs);
 
+    /**
+    * Inequality of keyset data with the keyset history data operator.
+    * @param lhs is the keyset data
+    * @param rhs is the keyset history data
+    * @return true if not equal, false if equal
+    */
     bool operator!=(const InfoKeysetOutput& lhs, const InfoKeysetHistoryOutput& rhs);
 
+    /**
+    * Inequality of keyset history data with the keyset data operator.
+    * @param lhs is the keyset history data
+    * @param rhs is the keyset data
+    * @return true if not equal, false if equal
+    */
     bool operator!=(const InfoKeysetHistoryOutput& lhs, const InfoKeysetOutput& rhs);
 
 }//namespace Fred

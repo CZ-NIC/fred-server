@@ -17,7 +17,7 @@
  */
 
 /**
- *  @info_nsset_compare.h
+ *  @file
  *  comparison of nsset info
  */
 
@@ -41,12 +41,36 @@
 
 namespace Fred
 {
+    /**
+    * Equality of the nsset data with nsset history data operator.
+    * @param lhs is the nsset data
+    * @param rhs is the nsset history data
+    * @return true if equal, false if not
+    */
     bool operator==(const InfoNssetOutput& lhs, const InfoNssetHistoryOutput& rhs);
 
+    /**
+    * Equality of nsset history data with the nsset data operator.
+    * @param lhs is the nsset history data
+    * @param rhs is the nsset data
+    * @return true if equal, false if not
+    */
     bool operator==(const InfoNssetHistoryOutput& lhs, const InfoNssetOutput& rhs);
 
+    /**
+    * Inequality of nsset data with the nsset history data operator.
+    * @param lhs is the nsset data
+    * @param rhs is the nsset history data
+    * @return true if not equal, false if equal
+    */
     bool operator!=(const InfoNssetOutput& lhs, const InfoNssetHistoryOutput& rhs);
 
+    /**
+    * Inequality of nsset history data with the nsset data operator.
+    * @param lhs is the nsset history data
+    * @param rhs is the nsset data
+    * @return true if not equal, false if equal
+    */
     bool operator!=(const InfoNssetHistoryOutput& lhs, const InfoNssetOutput& rhs);
 
 }//namespace Fred

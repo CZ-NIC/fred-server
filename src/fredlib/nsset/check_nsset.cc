@@ -17,7 +17,7 @@
  */
 
 /**
- *  @file check_nsset.cc
+ *  @file
  *  nsset check
  */
 
