@@ -17,7 +17,7 @@
  */
 
 /**
- *  @file info_nsset_data.cc
+ *  @file
  *  common nsset info data
  */
 

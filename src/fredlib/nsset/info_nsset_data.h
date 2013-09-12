@@ -17,7 +17,7 @@
  */
 
 /**
- *  @file info_nsset_data.h
+ *  @file
  *  common nsset info data
  */
 
@@ -38,33 +38,55 @@
 
 namespace Fred
 {
+    /**
+     * Common data of nsset.
+     * Current or history state of the nsset.
+     */
     struct InfoNssetData
     {
-
-        unsigned long long crhistoryid;//first historyid
-        unsigned long long historyid;//last historyid
-        Nullable<boost::posix_time::ptime> delete_time; //nsset delete time
-        std::string handle;//nsset identifier
-        std::string roid;//nsset identifier
-        std::string sponsoring_registrar_handle;//registrar which have right for change
-        std::string create_registrar_handle;//registrar which created domain
-        Nullable<std::string> update_registrar_handle;//registrar which last time changed domain
-        boost::posix_time::ptime creation_time;//time of creation
-        Nullable<boost::posix_time::ptime> update_time; //last update time
-        Nullable<boost::posix_time::ptime> transfer_time; //last transfer time
-        std::string authinfopw;//password for transfer
-        Nullable<short> tech_check_level; //nsset tech check level
-        std::vector<DnsHost> dns_hosts; //dns hosts
-        std::vector<std::string> tech_contacts;//list of technical contacts
+        unsigned long long crhistoryid;/**< first historyid of nsset history */
+        unsigned long long historyid;/**< last historyid of nsset history */
+        Nullable<boost::posix_time::ptime> delete_time; /**< nsset delete time in UTC */
+        std::string handle;/**< nsset handle */
+        std::string roid;/**< registry object identifier of the nsset */
+        std::string sponsoring_registrar_handle;/**< registrar administering the nsset */
+        std::string create_registrar_handle;/**< registrar that created the nsset */
+        Nullable<std::string> update_registrar_handle;/**< registrar which last time changed the nsset */
+        boost::posix_time::ptime creation_time;/**< creation time of the nsset in UTC*/
+        Nullable<boost::posix_time::ptime> update_time; /**< last update time of the nsset in UTC*/
+        Nullable<boost::posix_time::ptime> transfer_time; /**<last transfer time in UTC*/
+        std::string authinfopw;/**< password for transfer */
+        Nullable<short> tech_check_level; /**< nsset level of technical checks */
+        std::vector<DnsHost> dns_hosts; /**< DNS hosts */
+        std::vector<std::string> tech_contacts;/**< list of technical contact handles */
 
     private:
-        bool print_diff_;
+        bool print_diff_;/**< whether to print debug diff made by nsset comparison operators @ref operator==  and @ref operator!=*/
     public:
 
+        /**
+        * Constructor of the nsset data structure.
+        */
         InfoNssetData();
+
+        /**
+        * Equality of the nsset data structure operator.
+        * @param rhs is right hand side of the nsset data comparison
+        * @return true if equal, false if not
+        */
         bool operator==(const InfoNssetData& rhs) const;
+
+        /**
+        * Inequality of the nsset data structure operator.
+        * @param rhs is right hand side of the nsset data comparison
+        * @return true if not equal, false if equal
+        */
         bool operator!=(const InfoNssetData& rhs) const;
 
+        /**
+        * Set comparison operators to print debug diff.
+        * @param print_diff is value set to @ref print_diff_ attribute
+        */
         void set_diff_print(bool print_diff = true);
 
     };
