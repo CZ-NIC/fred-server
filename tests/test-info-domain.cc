@@ -153,7 +153,7 @@ BOOST_AUTO_TEST_CASE(info_domain)
                 , Nullable<std::string>(test_nsset_handle)//const Optional<Nullable<std::string> >& nsset
                 , Nullable<std::string>(test_keyset_handle)//const Optional<Nullable<std::string> >& keyset
                 , Util::vector_of<std::string>(admin_contact2_handle)//const std::vector<std::string>& admin_contacts
-                , boost::gregorian::day_clock::local_day()+boost::gregorian::months::months_duration(12)//const Optional<boost::gregorian::date>& expiration_date
+                , boost::gregorian::day_clock::local_day()+boost::gregorian::months(12)//const Optional<boost::gregorian::date>& expiration_date
                 , Optional<boost::gregorian::date>()
                 , Optional<bool>()
                 , 0//const Optional<unsigned long long> logd_request_id
