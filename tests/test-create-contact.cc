@@ -117,6 +117,25 @@ struct create_contact_fixture
 };
 
 /**
+ * test CreateContact print state to string
+ */
+BOOST_AUTO_TEST_CASE(create_contact_print_state)
+{
+
+    Fred::CreateContact cc("TEST-CREATE-CONTACT-HANDLE", "REGISTRAR-TEST-HANDLE");
+    cc.set_authinfo("testauthinfo").set_logd_request_id(0);
+
+    BOOST_MESSAGE(cc.to_string());
+
+    std::stringstream ss;
+    ss  << cc;
+
+    BOOST_MESSAGE(ss.str());
+
+    BOOST_CHECK(cc.to_string().compare(ss.str()) == 0);
+}
+
+/**
  * test CreateContact with wrong registrar
  */
 BOOST_FIXTURE_TEST_CASE(create_contact_wrong_registrar, create_contact_fixture)

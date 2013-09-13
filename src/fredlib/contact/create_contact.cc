@@ -536,44 +536,39 @@ namespace Fred
         return timestamp;
     }
 
-    std::ostream& operator<<(std::ostream& os, const CreateContact& i)
-    {
-        return os << "#CreateContact handle: " << i.handle_
-                << " registrar: " << i.registrar_
-                << " authinfo: " << i.authinfo_.print_quoted()
-                << " name: " << i.name_.print_quoted()
-                << " organization: " << i.organization_.print_quoted()
-                << " street1: " << i.street1_.print_quoted()
-                << " street2: " << i.street2_.print_quoted()
-                << " street3: " << i.street3_.print_quoted()
-                << " city: " << i.city_.print_quoted()
-                << " stateorprovince: " << i.stateorprovince_.print_quoted()
-                << " postalcode: " << i.postalcode_.print_quoted()
-                << " country: " << i.country_.print_quoted()
-                << " telephone: " << i.telephone_.print_quoted()
-                << " fax: " << i.fax_.print_quoted()
-                << " email: " << i.email_.print_quoted()
-                << " notifyemail_: " << i.notifyemail_.print_quoted()
-                << " vat: " << i.vat_.print_quoted()
-                << " ssntype: " << i.ssntype_.print_quoted()
-                << " ssn: " << i.ssn_.print_quoted()
-                << " disclosename: " << i.disclosename_.print_quoted()
-                << " discloseorganization: " << i.discloseorganization_.print_quoted()
-                << " discloseaddress: " << i.discloseaddress_.print_quoted()
-                << " disclosetelephone: " << i.disclosetelephone_.print_quoted()
-                << " disclosefax: " << i.disclosefax_.print_quoted()
-                << " discloseemail: " << i.discloseemail_.print_quoted()
-                << " disclosevat: " << i.disclosevat_.print_quoted()
-                << " discloseident: " << i.discloseident_.print_quoted()
-                << " disclosenotifyemail: " << i.disclosenotifyemail_.print_quoted()
-                << " logd_request_id: " << i.logd_request_id_.print_quoted()
-                ;
-    }
-
-    std::string CreateContact::to_string()
+    std::string CreateContact::to_string() const
     {
         std::stringstream ss;
-        ss << *this;
+        ss << "#CreateContact handle: " << this->handle_
+            << " registrar: " << this->registrar_
+            << " authinfo: " << this->authinfo_.print_quoted()
+            << " name: " << this->name_.print_quoted()
+            << " organization: " << this->organization_.print_quoted()
+            << " street1: " << this->street1_.print_quoted()
+            << " street2: " << this->street2_.print_quoted()
+            << " street3: " << this->street3_.print_quoted()
+            << " city: " << this->city_.print_quoted()
+            << " stateorprovince: " << this->stateorprovince_.print_quoted()
+            << " postalcode: " << this->postalcode_.print_quoted()
+            << " country: " << this->country_.print_quoted()
+            << " telephone: " << this->telephone_.print_quoted()
+            << " fax: " << this->fax_.print_quoted()
+            << " email: " << this->email_.print_quoted()
+            << " notifyemail_: " << this->notifyemail_.print_quoted()
+            << " vat: " << this->vat_.print_quoted()
+            << " ssntype: " << this->ssntype_.print_quoted()
+            << " ssn: " << this->ssn_.print_quoted()
+            << " disclosename: " << this->disclosename_.print_quoted()
+            << " discloseorganization: " << this->discloseorganization_.print_quoted()
+            << " discloseaddress: " << this->discloseaddress_.print_quoted()
+            << " disclosetelephone: " << this->disclosetelephone_.print_quoted()
+            << " disclosefax: " << this->disclosefax_.print_quoted()
+            << " discloseemail: " << this->discloseemail_.print_quoted()
+            << " disclosevat: " << this->disclosevat_.print_quoted()
+            << " discloseident: " << this->discloseident_.print_quoted()
+            << " disclosenotifyemail: " << this->disclosenotifyemail_.print_quoted()
+            << " logd_request_id: " << this->logd_request_id_.print_quoted()
+            ;
         return ss.str();
     }
 
