@@ -40,11 +40,19 @@ BOOST_AUTO_TEST_CASE(BasicTemplate)
         Util::is_equal(opt, null),
         "Unset Optional should equal to NULLed Nullable." );
 
+    BOOST_CHECK_MESSAGE(
+        Util::is_equal(null, opt),
+        "NULLed Nullable should equal to Unset Optional." );
+
     null = 5;
 
     BOOST_CHECK_MESSAGE(
         Util::is_equal(opt, null) == false,
         "Unset Optional should not equal to Nullable set to value." );
+
+    BOOST_CHECK_MESSAGE(
+        Util::is_equal(null, opt) == false,
+        "Nullable set to value should not equal to Unset Optional." );
 
     opt = 5;
 
@@ -52,11 +60,29 @@ BOOST_AUTO_TEST_CASE(BasicTemplate)
         Util::is_equal(opt, null),
         "Optional and Nullable set to the same value should equal." );
 
+    BOOST_CHECK_MESSAGE(
+        Util::is_equal(null, opt),
+        "Nullable and Optional set to the same value should equal." );
+
     Nullable<int> null2;
 
     BOOST_CHECK_MESSAGE(
         Util::is_equal(opt, null2) == false,
-        "Optional set to value should not equal to Nullable set NULL." );
+        "Optional set to value should not equal to Nullable set to NULL." );
+
+    BOOST_CHECK_MESSAGE(
+        Util::is_equal(null2, opt) == false,
+        "Nullable set to NULL should not equal to Optional set to value." );
+
+    null = 2;
+
+    BOOST_CHECK_MESSAGE(
+        Util::is_equal(opt, null) == false,
+        "Optional and Nullable set to different values should not equal." );
+
+    BOOST_CHECK_MESSAGE(
+        Util::is_equal(null, opt) == false,
+        "Nullable and Optional set to different values should not equal." );
 }
 
 BOOST_AUTO_TEST_SUITE_END();
