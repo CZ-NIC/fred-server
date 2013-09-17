@@ -31,13 +31,12 @@ namespace Util
 {
     /**
      * compares Nullable<T> and Optional<T>
-     * Suitable for those situations when var IS NULL <==> var IS NOT SET (in the "if and only if" meaning)
+     * IS NULL <==> var IS NOT SET (in the "if and only if" meaning)
+     * operator== of type T is used when Nullable is NOT NULL and Optional is set
      * @param T Underlying type for both template specialization (obviously must be the same).
      */
-
     template<class T>
-    bool is_equal( const Nullable<T>& lhs, const Optional<T>& rhs
-    ) {
+    bool is_equal( const Nullable<T>& lhs, const Optional<T>& rhs ) {
         if( lhs.isnull() && !rhs.isset() ) {
             return true;
         }
@@ -49,11 +48,12 @@ namespace Util
 
     /**
      * compares Optional<T> and Nullable<T>
-     * Identical to the Nullable<T> == Optional<T> version.
+     * IS NULL <==> var IS NOT SET (in the "if and only if" meaning)
+     * operator== of type T is used when Nullable is NOT NULL and Optional is set
+     * @param T Underlying type for both template specialization (obviously must be the same).
      */
     template<class T>
-    bool is_equal( const Optional<T>& lhs, const Nullable<T>& rhs )
-    {
+    bool is_equal( const Optional<T>& lhs, const Nullable<T>& rhs ) {
         if( rhs.isnull() && !lhs.isset() ) {
             return true;
         }
