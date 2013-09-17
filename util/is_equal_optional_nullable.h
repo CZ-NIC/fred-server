@@ -24,8 +24,11 @@
 #ifndef OPTIONAL_NULLABLE_EQUAL_H_454434343413
 #define OPTIONAL_NULLABLE_EQUAL_H_454434343413
 
+#include <boost/algorithm/string.hpp>
+
 #include "util/optional_value.h"
 #include "db/nullable.h"
+
 
 namespace Util
 {
@@ -64,7 +67,7 @@ namespace Util
     }
 
     /**
-     * compares Nullable<T> and Nullable<T>
+     * compares Nullable<T> parameters using operator== of type T.
      * @param T Underlying type for Nullable templates.
      * @return true when both sides are NULL
      * or result of type T operator== when both sides are NOT NULL
@@ -77,6 +80,42 @@ namespace Util
         }
         if( !lhs.isnull() && !rhs.isnull() ) {
             return static_cast<T>(lhs) == static_cast<T>(rhs);
+        }
+        return false;
+    }
+
+    /**
+     * compares Nullable<T> parameters using boost::algorithm::to_upper_copy and operator== of type T.
+     * @param T Underlying type for Nullable templates.
+     * @return true when both sides are NULL
+     * or result of type T operator== comparison of T converted using boost::algorithm::to_upper_copy when both sides are NOT NULL
+     * or false when one side is NULL and other is not
+     */
+    template<class T>
+    bool is_equal_upper( const Nullable<T>& lhs, const Nullable<T>& rhs ) {
+        if( lhs.isnull() && rhs.isnull() ) {
+            return true;
+        }
+        if( !lhs.isnull() && !rhs.isnull() ) {
+            return boost::algorithm::to_upper_copy(static_cast<T>(lhs)) == boost::algorithm::to_upper_copy(static_cast<T>(rhs));
+        }
+        return false;
+    }
+
+    /**
+     * compares Nullable<T> parameters using boost::algorithm::to_lower_copy and operator== of type T.
+     * @param T Underlying type for Nullable templates.
+     * @return true when both sides are NULL
+     * or result of type T operator== comparison of T converted using boost::algorithm::to_lower_copy when both sides are NOT NULL
+     * or false when one side is NULL and other is not
+     */
+    template<class T>
+    bool is_equal_lower( const Nullable<T>& lhs, const Nullable<T>& rhs ) {
+        if( lhs.isnull() && rhs.isnull() ) {
+            return true;
+        }
+        if( !lhs.isnull() && !rhs.isnull() ) {
+            return boost::algorithm::to_lower_copy(static_cast<T>(lhs)) == boost::algorithm::to_lower_copy(static_cast<T>(rhs));
         }
         return false;
     }

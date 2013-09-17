@@ -84,7 +84,9 @@ BOOST_AUTO_TEST_CASE(BasicTemplate)
         Util::is_equal(null, opt) == false,
         "Nullable and Optional set to different values should not equal." );
 }
-
+/**
+ * test Util::is_equal comparison for both Nullable<T>
+ */
 BOOST_AUTO_TEST_CASE(test_nullable_comparisons)
 {
     BOOST_CHECK(Util::is_equal(Nullable<std::string>(), Nullable<std::string>()));//both null
@@ -93,5 +95,32 @@ BOOST_AUTO_TEST_CASE(test_nullable_comparisons)
     BOOST_CHECK(!Util::is_equal(Nullable<std::string>(), Nullable<std::string>("")));//one null, other not
     BOOST_CHECK(!Util::is_equal(Nullable<std::string>(""), Nullable<std::string>()));//one null, other not
 }
+
+/**
+ * test Util::is_equal upper-case comparison for both Nullable<T>
+ */
+BOOST_AUTO_TEST_CASE(test_nullable_uppercase_comparisons)
+{
+    BOOST_CHECK(Util::is_equal_upper(Nullable<std::string>(), Nullable<std::string>()));//both null
+    BOOST_CHECK(Util::is_equal_upper(Nullable<std::string>("Test"), Nullable<std::string>("test")));//both not null, same uppercase value
+    BOOST_CHECK(Util::is_equal_upper(Nullable<std::string>("test"), Nullable<std::string>("Test")));//both not null, same uppercase value
+    BOOST_CHECK(!Util::is_equal_upper(Nullable<std::string>("Test1"), Nullable<std::string>("test2")));//both not null, different value
+    BOOST_CHECK(!Util::is_equal_upper(Nullable<std::string>(), Nullable<std::string>("")));//one null, other not
+    BOOST_CHECK(!Util::is_equal_upper(Nullable<std::string>(""), Nullable<std::string>()));//one null, other not
+}
+
+/**
+ * test Util::is_equal lower-case comparison for both Nullable<T>
+ */
+BOOST_AUTO_TEST_CASE(test_nullable_lowercase_comparisons)
+{
+    BOOST_CHECK(Util::is_equal_upper(Nullable<std::string>(), Nullable<std::string>()));//both null
+    BOOST_CHECK(Util::is_equal_upper(Nullable<std::string>("Test"), Nullable<std::string>("test")));//both not null, same uppercase value
+    BOOST_CHECK(Util::is_equal_upper(Nullable<std::string>("test"), Nullable<std::string>("Test")));//both not null, same uppercase value
+    BOOST_CHECK(!Util::is_equal_upper(Nullable<std::string>("Test1"), Nullable<std::string>("test2")));//both not null, different value
+    BOOST_CHECK(!Util::is_equal_upper(Nullable<std::string>(), Nullable<std::string>("")));//one null, other not
+    BOOST_CHECK(!Util::is_equal_upper(Nullable<std::string>(""), Nullable<std::string>()));//one null, other not
+}
+
 
 BOOST_AUTO_TEST_SUITE_END();
