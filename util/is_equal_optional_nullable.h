@@ -62,6 +62,25 @@ namespace Util
         }
         return false;
     }
+
+    /**
+     * compares Nullable<T> and Nullable<T>
+     * @param T Underlying type for Nullable templates.
+     * @return true when both sides are NULL
+     * or result of type T operator== when both sides are NOT NULL
+     * or false when one side is NULL and other is not
+     */
+    template<class T>
+    bool is_equal( const Nullable<T>& lhs, const Nullable<T>& rhs ) {
+        if( lhs.isnull() && rhs.isnull() ) {
+            return true;
+        }
+        if( !lhs.isnull() && !rhs.isnull() ) {
+            return static_cast<T>(lhs) == static_cast<T>(rhs);
+        }
+        return false;
+    }
+
 }
 #endif // #include guard end
 
