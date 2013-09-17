@@ -58,7 +58,7 @@ namespace Util
             return true;
         }
         if( !rhs.isnull() && lhs.isset() ) {
-            return static_cast<T>(lhs) == lhs.get_value();
+            return lhs.get_value() == static_cast<T>(rhs);
         }
         return false;
     }
