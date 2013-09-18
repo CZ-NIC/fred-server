@@ -145,6 +145,35 @@ BOOST_AUTO_TEST_CASE(info_contact_data)
     printable_test(i);
 }
 
+/**
+ * test InfoContactHistoryOutput print to string
+ */
+BOOST_AUTO_TEST_CASE(info_contact_history_output)
+{
+    Fred::InfoContactData icd;
+    icd.handle = "TEST-INFO-CONTACT-HANDLE";
+    icd.creation_time = boost::posix_time::microsec_clock::universal_time();
+    icd.delete_time = boost::posix_time::microsec_clock::universal_time();
+    icd.disclosename = true;
+
+    Fred::InfoContactHistoryOutput i;
+    i.history_valid_from = boost::posix_time::microsec_clock::universal_time();
+    i.history_valid_to = boost::posix_time::microsec_clock::universal_time();
+    i.info_contact_data = icd;
+    i.logd_request_id = 1;
+    i.next_historyid = 2;
+    printable_test(i);
+}
+
+/**
+ * test InfoContactHistory print to string
+ */
+BOOST_AUTO_TEST_CASE(info_contact_history)
+{
+    printable_test(
+    Fred::InfoContactHistory("TEST-CONTACT-ROID", boost::posix_time::microsec_clock::universal_time())
+    );
+}
 
 BOOST_AUTO_TEST_SUITE_END();//TestPrintable
 
