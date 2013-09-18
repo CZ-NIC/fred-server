@@ -211,7 +211,7 @@ RequestObjectRef& RequestImpl::addRequestObjectRef()
   RequestObjectRef *tmp = new RequestObjectRefImpl(true);
   tmp->setName("RequestObjectRef");
   
-  tmp->joinOn(new Join(Column("request_id", tmp->joinRequestObjectRefTable()), SQL_OP_EQ, Column("id", joinRequestTable())));  
+  tmp->joinOn(new Join(Column("id", joinRequestTable()), SQL_OP_EQ, Column("request_id", tmp->joinRequestObjectRefTable())));
   add(tmp);
   return *tmp;
 }
