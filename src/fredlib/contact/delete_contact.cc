@@ -96,16 +96,12 @@ namespace Fred
 
     }//DeleteContact::exec
 
-    std::ostream& operator<<(std::ostream& os, const DeleteContact& i)
+    std::string DeleteContact::to_string() const
     {
-        return os << "#DeleteContact handle: " << i.handle_
-                ;
-    }
-    std::string DeleteContact::to_string()
-    {
-        std::stringstream ss;
-        ss << *this;
-        return ss.str();
+        return Util::format_operation_state("DeleteContact",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("handle",handle_))
+        );
     }
 
 

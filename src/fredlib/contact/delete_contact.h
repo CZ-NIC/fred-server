@@ -28,6 +28,7 @@
 
 #include "fredlib/opexception.h"
 #include "fredlib/opcontext.h"
+#include "util/printable.h"
 
 namespace Fred
 {
@@ -39,7 +40,7 @@ namespace Fred
     * In case of wrong input data or other predictable and superable failure, an instance of @ref DeleteContact::Exception is thrown with appropriate attributes set.
     * In case of other unsuperable failures and inconstistencies, an instance of @ref InternalError or other exception is thrown.
     */
-    class DeleteContact
+    class DeleteContact : public Util::Printable
     {
         const std::string handle_;/**< contact identifier */
     public:
@@ -65,18 +66,10 @@ namespace Fred
         void exec(OperationContext& ctx);
 
         /**
-        * Dumps state of the instance into stream
-        * @param os contains output stream reference
-        * @param i reference of instance to be dumped into the stream
-        * @return output stream reference
-        */
-        friend std::ostream& operator<<(std::ostream& os, const DeleteContact& i);
-
-        /**
         * Dumps state of the instance into the string
         * @return string with description of the instance state
         */
-        std::string to_string();
+        std::string to_string() const;
     };//class DeleteContact
 
 }//namespace Fred
