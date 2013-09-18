@@ -56,7 +56,7 @@ namespace Util
     };
 
     std::string format_operation_state(const std::string& operation_name,
-        const std::vector<std::pair<std::string, std::string> > key_value_list)
+        const std::vector<std::pair<std::string, std::string> >& key_value_list)
     {
         std::string s;
         SeparatorWithDataIntoStringFunctor add_to_ss(s," ");
@@ -68,7 +68,7 @@ namespace Util
     }
 
     std::string format_data_structure(const std::string& data_structure_name,
-        const std::vector<std::pair<std::string, std::string> > key_value_list)
+        const std::vector<std::pair<std::string, std::string> >& key_value_list)
     {
         std::string s;
         SeparatorWithDataIntoStringFunctor add_to_ss(s," ");

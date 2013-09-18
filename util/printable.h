@@ -74,7 +74,7 @@ namespace Util
      * @return description of operation state using implemented format
      */
     std::string format_operation_state(const std::string& operation_name,
-        const std::vector<std::pair<std::string, std::string> > key_value_list);
+        const std::vector<std::pair<std::string, std::string> >& key_value_list);
 
     /**
      * Print data of data-structure into the string.
@@ -83,7 +83,7 @@ namespace Util
      * @return description of the data-structure state using implemented format
      */
     std::string format_data_structure(const std::string& data_structure_name,
-        const std::vector<std::pair<std::string, std::string> > key_value_list);
+        const std::vector<std::pair<std::string, std::string> >& key_value_list);
 
 }//namespace Util
 
