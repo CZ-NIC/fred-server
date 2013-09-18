@@ -36,7 +36,7 @@
 #include <boost/noncopyable.hpp>
 #include <boost/lexical_cast.hpp>
 
-namespace Fred
+namespace Util
 {
 
     /**
