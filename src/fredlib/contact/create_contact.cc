@@ -538,38 +538,38 @@ namespace Fred
 
     std::string CreateContact::to_string() const
     {
-        std::stringstream ss;
-        ss << "#CreateContact handle: " << this->handle_
-            << " registrar: " << this->registrar_
-            << " authinfo: " << this->authinfo_.print_quoted()
-            << " name: " << this->name_.print_quoted()
-            << " organization: " << this->organization_.print_quoted()
-            << " street1: " << this->street1_.print_quoted()
-            << " street2: " << this->street2_.print_quoted()
-            << " street3: " << this->street3_.print_quoted()
-            << " city: " << this->city_.print_quoted()
-            << " stateorprovince: " << this->stateorprovince_.print_quoted()
-            << " postalcode: " << this->postalcode_.print_quoted()
-            << " country: " << this->country_.print_quoted()
-            << " telephone: " << this->telephone_.print_quoted()
-            << " fax: " << this->fax_.print_quoted()
-            << " email: " << this->email_.print_quoted()
-            << " notifyemail_: " << this->notifyemail_.print_quoted()
-            << " vat: " << this->vat_.print_quoted()
-            << " ssntype: " << this->ssntype_.print_quoted()
-            << " ssn: " << this->ssn_.print_quoted()
-            << " disclosename: " << this->disclosename_.print_quoted()
-            << " discloseorganization: " << this->discloseorganization_.print_quoted()
-            << " discloseaddress: " << this->discloseaddress_.print_quoted()
-            << " disclosetelephone: " << this->disclosetelephone_.print_quoted()
-            << " disclosefax: " << this->disclosefax_.print_quoted()
-            << " discloseemail: " << this->discloseemail_.print_quoted()
-            << " disclosevat: " << this->disclosevat_.print_quoted()
-            << " discloseident: " << this->discloseident_.print_quoted()
-            << " disclosenotifyemail: " << this->disclosenotifyemail_.print_quoted()
-            << " logd_request_id: " << this->logd_request_id_.print_quoted()
-            ;
-        return ss.str();
+        return Util::format_operation_state("CreateContact",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("handle",handle_))
+        (std::make_pair("registrar",registrar_))
+        (std::make_pair("authinfo",authinfo_.print_quoted()))
+        (std::make_pair("name",name_.print_quoted()))
+        (std::make_pair("organization",organization_.print_quoted()))
+        (std::make_pair("street1",street1_.print_quoted()))
+        (std::make_pair("street2",street2_.print_quoted()))
+        (std::make_pair("street3",street3_.print_quoted()))
+        (std::make_pair("city",city_.print_quoted()))
+        (std::make_pair("stateorprovince",stateorprovince_.print_quoted()))
+        (std::make_pair("postalcode",postalcode_.print_quoted()))
+        (std::make_pair("country",country_.print_quoted()))
+        (std::make_pair("telephone",telephone_.print_quoted()))
+        (std::make_pair("fax",fax_.print_quoted()))
+        (std::make_pair("email",email_.print_quoted()))
+        (std::make_pair("notifyemail_",notifyemail_.print_quoted()))
+        (std::make_pair("vat",vat_.print_quoted()))
+        (std::make_pair("ssntype",ssntype_.print_quoted()))
+        (std::make_pair("ssn",ssn_.print_quoted()))
+        (std::make_pair("disclosename",disclosename_.print_quoted()))
+        (std::make_pair("discloseorganization",discloseorganization_.print_quoted()))
+        (std::make_pair("discloseaddress",discloseaddress_.print_quoted()))
+        (std::make_pair("disclosetelephone",disclosetelephone_.print_quoted()))
+        (std::make_pair("disclosefax",disclosefax_.print_quoted()))
+        (std::make_pair("discloseemail",discloseemail_.print_quoted()))
+        (std::make_pair("disclosevat",disclosevat_.print_quoted()))
+        (std::make_pair("discloseident",discloseident_.print_quoted()))
+        (std::make_pair("disclosenotifyemail",disclosenotifyemail_.print_quoted()))
+        (std::make_pair("logd_request_id",logd_request_id_.print_quoted()))
+        );
     }
 
 }//namespace Fred

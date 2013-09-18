@@ -236,7 +236,9 @@ sbin_PROGRAMS = \
 util_libutil_a_SOURCES = \
 		util/random.cc \
 		util/util.cc \
-		util/output_indenter.cc
+		util/output_indenter.cc \
+		util/printable.h \
+		util/printable.cc
 #
 # util/libutil.a
 
