@@ -44,7 +44,7 @@ namespace Fred
     /**
     * Contact info data structure.
     */
-    struct InfoContactOutput
+    struct InfoContactOutput : public Util::Printable
     {
         InfoContactData info_contact_data;/**< data of the contact */
         boost::posix_time::ptime utc_timestamp;/**< timestamp of getting the contact data in UTC */
@@ -78,6 +78,12 @@ namespace Fred
             return !this->operator ==(rhs);
         }
 
+        /**
+        * Dumps state of the instance into the string
+        * @return string with description of the instance state
+        */
+        std::string to_string() const;
+
     };
     /**
     * Info of contact.
@@ -87,7 +93,7 @@ namespace Fred
     * In case of wrong input data or other predictable and superable failure, the instance of @ref InfoContact::Exception is thrown with appropriate attributes set.
     * In case of other unsuperable failures and inconstistencies, the instance of @ref InternalError or other exception is thrown.
     */
-    class InfoContact
+    class InfoContact : public Util::Printable
     {
         const std::string handle_;/**< contact identifier */
         bool lock_;/**< lock object_registry row flag*/
@@ -121,18 +127,10 @@ namespace Fred
         InfoContactOutput exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
 
         /**
-        * Dumps state of the instance into stream
-        * @param os contains output stream reference
-        * @param i reference of instance to be dumped into the stream
-        * @return output stream reference
-        */
-        friend std::ostream& operator<<(std::ostream& os, const InfoContact& i);
-
-        /**
         * Dumps state of the instance into the string
         * @return string with description of the instance state
         */
-        std::string to_string();
+        std::string to_string() const;
     };//class InfoContact
 }//namespace Fred
 

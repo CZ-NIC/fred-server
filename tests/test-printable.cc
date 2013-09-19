@@ -175,5 +175,35 @@ BOOST_AUTO_TEST_CASE(info_contact_history)
     );
 }
 
+/**
+ * test InfoContactOutput print to string
+ */
+BOOST_AUTO_TEST_CASE(info_contact_output)
+{
+    Fred::InfoContactData icd;
+    icd.handle = "TEST-INFO-CONTACT-HANDLE";
+    icd.creation_time = boost::posix_time::microsec_clock::universal_time();
+    icd.delete_time = boost::posix_time::microsec_clock::universal_time();
+    icd.disclosename = true;
+
+    Fred::InfoContactOutput i;
+    i.utc_timestamp = boost::posix_time::microsec_clock::universal_time();
+    i.local_timestamp = boost::posix_time::microsec_clock::local_time();
+    i.info_contact_data = icd;
+    printable_test(i);
+}
+
+
+/**
+ * test InfoContact print to string
+ */
+BOOST_AUTO_TEST_CASE(info_contact)
+{
+    printable_test(
+    Fred::InfoContact("TEST-CONTACT-HANDLE")
+    );
+}
+
+
 BOOST_AUTO_TEST_SUITE_END();//TestPrintable
 
