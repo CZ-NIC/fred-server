@@ -535,46 +535,41 @@ namespace Fred
         return history_id;
     }
 
-    std::ostream& operator<<(std::ostream& os, const UpdateContact& i)
+    std::string UpdateContact::to_string() const
     {
-        return os << "#UpdateContact handle: " << i.handle_
-                << " registrar: " << i.registrar_
-                << " sponsoring_registrar: " << i.sponsoring_registrar_.print_quoted()
-                << " authinfo: " << i.authinfo_.print_quoted()
-                << " name: " << i.name_.print_quoted()
-                << " organization: " << i.organization_.print_quoted()
-                << " street1: " << i.street1_.print_quoted()
-                << " street2: " << i.street2_.print_quoted()
-                << " street3: " << i.street3_.print_quoted()
-                << " city: " << i.city_.print_quoted()
-                << " stateorprovince: " << i.stateorprovince_.print_quoted()
-                << " postalcode: " << i.postalcode_.print_quoted()
-                << " country: " << i.country_.print_quoted()
-                << " telephone: " << i.telephone_.print_quoted()
-                << " fax: " << i.fax_.print_quoted()
-                << " email: " << i.email_.print_quoted()
-                << " notifyemail_: " << i.notifyemail_.print_quoted()
-                << " vat: " << i.vat_.print_quoted()
-                << " ssntype: " << i.ssntype_.print_quoted()
-                << " ssn: " << i.ssn_.print_quoted()
-                << " disclosename: " << i.disclosename_.print_quoted()
-                << " discloseorganization: " << i.discloseorganization_.print_quoted()
-                << " discloseaddress: " << i.discloseaddress_.print_quoted()
-                << " disclosetelephone: " << i.disclosetelephone_.print_quoted()
-                << " disclosefax: " << i.disclosefax_.print_quoted()
-                << " discloseemail: " << i.discloseemail_.print_quoted()
-                << " disclosevat: " << i.disclosevat_.print_quoted()
-                << " discloseident: " << i.discloseident_.print_quoted()
-                << " disclosenotifyemail: " << i.disclosenotifyemail_.print_quoted()
-                << " logd_request_id: " << i.logd_request_id_.print_quoted()
-                ;
-    }
-
-    std::string UpdateContact::to_string()
-    {
-        std::stringstream ss;
-        ss << *this;
-        return ss.str();
+        return Util::format_operation_state("UpdateContact",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("handle",handle_))
+        (std::make_pair("registrar",registrar_))
+        (std::make_pair("sponsoring_registrar",sponsoring_registrar_.print_quoted()))
+        (std::make_pair("authinfo",authinfo_.print_quoted()))
+        (std::make_pair("name",name_.print_quoted()))
+        (std::make_pair("organization",organization_.print_quoted()))
+        (std::make_pair("street1",street1_.print_quoted()))
+        (std::make_pair("street2",street2_.print_quoted()))
+        (std::make_pair("street3",street3_.print_quoted()))
+        (std::make_pair("city",city_.print_quoted()))
+        (std::make_pair("stateorprovince",stateorprovince_.print_quoted()))
+        (std::make_pair("postalcode",postalcode_.print_quoted()))
+        (std::make_pair("country",country_.print_quoted()))
+        (std::make_pair("telephone",telephone_.print_quoted()))
+        (std::make_pair("fax",fax_.print_quoted()))
+        (std::make_pair("email",email_.print_quoted()))
+        (std::make_pair("notifyemail_",notifyemail_.print_quoted()))
+        (std::make_pair("vat",vat_.print_quoted()))
+        (std::make_pair("ssntype",ssntype_.print_quoted()))
+        (std::make_pair("ssn",ssn_.print_quoted()))
+        (std::make_pair("disclosename",disclosename_.print_quoted()))
+        (std::make_pair("discloseorganization",discloseorganization_.print_quoted()))
+        (std::make_pair("discloseaddress",discloseaddress_.print_quoted()))
+        (std::make_pair("disclosetelephone",disclosetelephone_.print_quoted()))
+        (std::make_pair("disclosefax",disclosefax_.print_quoted()))
+        (std::make_pair("discloseemail",discloseemail_.print_quoted()))
+        (std::make_pair("disclosevat",disclosevat_.print_quoted()))
+        (std::make_pair("discloseident",discloseident_.print_quoted()))
+        (std::make_pair("disclosenotifyemail",disclosenotifyemail_.print_quoted()))
+        (std::make_pair("logd_request_id",logd_request_id_.print_quoted()))
+        );
     }
 
 }//namespace Fred

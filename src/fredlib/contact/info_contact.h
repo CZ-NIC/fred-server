@@ -35,6 +35,7 @@
 #include "fredlib/opcontext.h"
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
+#include "util/printable.h"
 
 #include "fredlib/contact/info_contact_data.h"
 

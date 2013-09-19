@@ -47,6 +47,7 @@
 #include "time_clock.h"
 #include "fredlib/registrar.h"
 #include "fredlib/contact/create_contact.h"
+#include "fredlib/contact/update_contact.h"
 #include "fredlib/contact/delete_contact.h"
 #include "fredlib/contact/check_contact.h"
 #include "fredlib/nsset/create_nsset.h"
@@ -201,6 +202,18 @@ BOOST_AUTO_TEST_CASE(info_contact)
 {
     printable_test(
     Fred::InfoContact("TEST-CONTACT-HANDLE")
+    );
+}
+
+/**
+ * test UpdateContact print to string
+ */
+BOOST_AUTO_TEST_CASE(update_contact)
+{
+    printable_test(
+    Fred::UpdateContact("TEST-UPDATE-CONTACT-HANDLE", "REGISTRAR-UP-TEST-HANDLE")
+    .set_sponsoring_registrar("REGISTRAR-SP-TEST-HANDLE")
+    .set_authinfo("testauthinfo").set_logd_request_id(0)
     );
 }
 
