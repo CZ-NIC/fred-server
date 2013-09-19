@@ -250,6 +250,17 @@ BOOST_AUTO_TEST_CASE(check_domain)
     );
 }
 
+/**
+ * test InfoDomainData print to string
+ */
+BOOST_AUTO_TEST_CASE(info_domain_data)
+{
+    Fred::InfoDomainData i;
+    i.admin_contacts = Util::vector_of<std::string>("admin1")("admin2")("admin3");
+    i.expiration_date = boost::gregorian::day_clock::local_day();
+    printable_test(i);
+}
+
 
 BOOST_AUTO_TEST_SUITE_END();//TestPrintable
 
