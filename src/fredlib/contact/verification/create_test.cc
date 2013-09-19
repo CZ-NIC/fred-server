@@ -128,7 +128,7 @@ namespace Fred
                 Database::query_param_list
                     (check_id)
                     (test_id)
-                    (Fred::ContactTestStatus::RUNNING)
+                    (Fred::ContactTestStatus::ENQUEUED)
                     (logd_request_id_)
             );
 
