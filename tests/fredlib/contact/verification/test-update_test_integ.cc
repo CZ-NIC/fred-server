@@ -206,7 +206,7 @@ struct setup_test : public setup_check {
     ) :
         setup_check(_ctx),
         testdef_name_(_testdef_name),
-        status_(Fred::ContactTestStatus::RUNNING),
+        status_(Fred::ContactTestStatus::ENQUEUED),
         logd_request_(_logd_request)
     {
         setup_testdef_in_testsuite_of_check(_ctx, testdef_name_, check_handle_);
@@ -273,7 +273,7 @@ struct setup_create_update_test : public setup_test {
         const std::string& _timezone = "UTC"
     ) :
         setup_test(_ctx, _testdef_name, _old_logd_request),
-        old_status_(Fred::ContactTestStatus::RUNNING),
+        old_status_(Fred::ContactTestStatus::ENQUEUED),
         new_status_(_new_status),
         old_logd_request_(_old_logd_request),
         new_logd_request_(_new_logd_request),
@@ -517,7 +517,7 @@ BOOST_AUTO_TEST_CASE(test_Update)
 
     std::vector<std::string> status_post_created;
     std::vector<std::pair<std::string, std::string> > status_post_reset;
-    status_post_created.push_back(Fred::ContactTestStatus::RUNNING);
+    status_post_created.push_back(Fred::ContactTestStatus::ENQUEUED);
     status_post_reset.push_back(std::make_pair(status1.status_name_, status1.status_name_));
     status_post_created.push_back(status1.status_name_);
     status_post_reset.push_back(std::make_pair(status1.status_name_, status2.status_name_));

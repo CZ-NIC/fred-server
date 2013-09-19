@@ -294,7 +294,7 @@ BOOST_FIXTURE_TEST_CASE(test_Exec, fixture_has_ctx)
     // building check tests
     for(int i=0; i<test_count; ++i) {
         test_names.push_back(setup_testdef(ctx).testdef_name_);
-        tests_status_history.at(i).push_back(Fred::ContactTestStatus::RUNNING);
+        tests_status_history.at(i).push_back(Fred::ContactTestStatus::ENQUEUED);
         tests_logd_request_history.at(i).push_back(Optional<long long>(setup_logd_request_id().logd_request_id));
         tests_error_msg_history.at(i).push_back(Optional<string>());
 
