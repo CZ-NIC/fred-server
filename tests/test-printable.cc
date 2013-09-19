@@ -54,6 +54,7 @@
 #include "fredlib/keyset/create_keyset.h"
 #include "fredlib/domain/create_domain.h"
 #include "fredlib/domain/delete_domain.h"
+#include "fredlib/domain/check_domain.h"
 #include "fredlib/keyset/info_keyset.h"
 #include "fredlib/keyset/info_keyset_history.h"
 #include "fredlib/keyset/info_keyset_compare.h"
@@ -238,6 +239,17 @@ BOOST_AUTO_TEST_CASE(delete_domain)
     Fred::DeleteDomain("TEST-DELETE-CONTACT-HANDLE")
     );
 }
+
+/**
+ * test CheckDomain print to string
+ */
+BOOST_AUTO_TEST_CASE(check_domain)
+{
+    printable_test(
+    Fred::CheckDomain("test-fred.cz")
+    );
+}
+
 
 BOOST_AUTO_TEST_SUITE_END();//TestPrintable
 
