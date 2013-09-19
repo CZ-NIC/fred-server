@@ -194,7 +194,6 @@ BOOST_AUTO_TEST_CASE(info_contact_output)
     printable_test(i);
 }
 
-
 /**
  * test InfoContact print to string
  */
@@ -213,6 +212,18 @@ BOOST_AUTO_TEST_CASE(update_contact)
     printable_test(
     Fred::UpdateContact("TEST-UPDATE-CONTACT-HANDLE", "REGISTRAR-UP-TEST-HANDLE")
     .set_sponsoring_registrar("REGISTRAR-SP-TEST-HANDLE")
+    .set_authinfo("testauthinfo").set_logd_request_id(0)
+    );
+}
+
+/**
+ * test CreateDomain print to string
+ */
+BOOST_AUTO_TEST_CASE(create_domain)
+{
+    printable_test(
+    Fred::CreateDomain("TEST-CREATE-CONTACT-HANDLE", "REGISTRAR-TEST-HANDLE", "REGISTRANT-TEST-HANDLE")
+    .set_admin_contacts(Util::vector_of<std::string>("admin1")("admin2")("admin3"))
     .set_authinfo("testauthinfo").set_logd_request_id(0)
     );
 }

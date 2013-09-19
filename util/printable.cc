@@ -47,11 +47,17 @@ namespace Util
         {}
         void operator()(const std::pair<std::string,std::string>& string_pair_to_be_added_into_string)
         {
-            s_+=separator_;
-            s_+=string_pair_to_be_added_into_string.first;
-            s_+=":";
-            s_+=separator_;
-            s_+=string_pair_to_be_added_into_string.second;
+            if (!string_pair_to_be_added_into_string.first.empty())
+            {
+                s_+=separator_;
+                s_+=string_pair_to_be_added_into_string.first;
+                s_+=":";
+            }
+            if (!string_pair_to_be_added_into_string.second.empty())
+            {
+                s_+=separator_;
+                s_+=string_pair_to_be_added_into_string.second;
+            }
         }
     };
 
