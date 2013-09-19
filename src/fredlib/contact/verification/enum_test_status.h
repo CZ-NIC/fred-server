@@ -32,6 +32,7 @@ namespace Fred
      */
     namespace ContactTestStatus
     {
+        const std::string ENQUEUED      = "enqueued";
         const std::string RUNNING       = "running";
         const std::string MANUAL        = "manual";
         const std::string OK            = "ok";
