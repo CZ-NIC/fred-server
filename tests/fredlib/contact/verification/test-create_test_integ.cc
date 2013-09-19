@@ -255,7 +255,7 @@ BOOST_FIXTURE_TEST_CASE(test_Exec_mandatory_setup, fixture_ctx)
     BOOST_REQUIRE(result_data.tests.front().state_history.size() == 1);
     BOOST_CHECK_EQUAL(
         result_data.tests.front().state_history.front().status_name,
-        Fred::ContactTestStatus::RUNNING);
+        Fred::ContactTestStatus::ENQUEUED);
     BOOST_CHECK(result_data.tests.front().state_history.front().logd_request_id.isnull() );
     BOOST_CHECK(result_data.tests.front().state_history.front().error_msg.isnull() );
     BOOST_CHECK_EQUAL(
@@ -323,7 +323,7 @@ BOOST_FIXTURE_TEST_CASE(test_Exec_optional_setup, fixture_ctx)
     BOOST_REQUIRE(result_data.tests.front().state_history.size() == 1);
     BOOST_CHECK_EQUAL(
         result_data.tests.front().state_history.front().status_name,
-        Fred::ContactTestStatus::RUNNING);
+        Fred::ContactTestStatus::ENQUEUED);
     BOOST_CHECK_EQUAL(result_data.tests.front().state_history.front().logd_request_id, logd_request.logd_request_id);
     BOOST_CHECK(result_data.tests.front().state_history.front().error_msg.isnull() );
     BOOST_CHECK_EQUAL(

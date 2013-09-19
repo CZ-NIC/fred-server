@@ -18,11 +18,12 @@
 
 /**
  *  @file
- *  enum test status
+ *  enum testsuite names
+ *  There can be another testsuites as well but content of this enum is mandatory and should be always present in database.
  */
 
-#ifndef CONTACT_VERIFICATION_TEST_STATUS_35891112386_
-#define CONTACT_VERIFICATION_TEST_STATUS_35891112386_
+#ifndef CONTACT_VERIFICATION_TESTSUITE_NAME_2133867786_
+#define CONTACT_VERIFICATION_TESTSUITE_NAME_2133867786_
 
 namespace Fred
 {
@@ -30,13 +31,10 @@ namespace Fred
      * Available statuses for Contact test.
      * Should be in sync with enum_contact_test_status.name in db.
      */
-    namespace ContactTestStatus
+    namespace TestsuiteName
     {
-        const std::string ENQUEUED      = "enqueued";
-        const std::string RUNNING       = "running";
+        const std::string AUTOMATIC     = "automatic";
         const std::string MANUAL        = "manual";
-        const std::string OK            = "ok";
-        const std::string FAIL          = "fail";
     }
 }
 #endif // #include guard end
