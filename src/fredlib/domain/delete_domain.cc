@@ -96,16 +96,12 @@ namespace Fred
 
     }//DeleteDomain::exec
 
-    std::ostream& operator<<(std::ostream& os, const DeleteDomain& dd)
+    std::string DeleteDomain::to_string() const
     {
-        return os << "#DeleteDomain fqdn: " << dd.fqdn_
-                ;
-    }
-    std::string DeleteDomain::to_string()
-    {
-        std::stringstream ss;
-        ss << *this;
-        return ss.str();
+        return Util::format_operation_state("DeleteDomain",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("fqdn",fqdn_))
+        );
     }
 
 

@@ -53,6 +53,7 @@
 #include "fredlib/nsset/create_nsset.h"
 #include "fredlib/keyset/create_keyset.h"
 #include "fredlib/domain/create_domain.h"
+#include "fredlib/domain/delete_domain.h"
 #include "fredlib/keyset/info_keyset.h"
 #include "fredlib/keyset/info_keyset_history.h"
 #include "fredlib/keyset/info_keyset_compare.h"
@@ -228,6 +229,15 @@ BOOST_AUTO_TEST_CASE(create_domain)
     );
 }
 
+/**
+ * test DeleteDomain print to string
+ */
+BOOST_AUTO_TEST_CASE(delete_domain)
+{
+    printable_test(
+    Fred::DeleteDomain("TEST-DELETE-CONTACT-HANDLE")
+    );
+}
 
 BOOST_AUTO_TEST_SUITE_END();//TestPrintable
 
