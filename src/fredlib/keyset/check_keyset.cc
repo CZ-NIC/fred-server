@@ -30,6 +30,7 @@
 
 #include "fredlib/opcontext.h"
 #include "fredlib/db_settings.h"
+#include "util/printable.h"
 
 
 namespace Fred
@@ -105,16 +106,11 @@ namespace Fred
         return true;//meaning ok
     }
 
-    std::ostream& operator<<(std::ostream& os, const CheckKeyset& i)
+    std::string CheckKeyset::to_string() const
     {
-        return os << "#CheckKeyset handle: " << i.handle_
-                ;
-    }
-    std::string CheckKeyset::to_string()
-    {
-        std::stringstream ss;
-        ss << *this;
-        return ss.str();
+        return Util::format_operation_state("CheckKeyset",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("handle",handle_)));
     }
 
 }//namespace Fred

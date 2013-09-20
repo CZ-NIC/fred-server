@@ -53,6 +53,7 @@
 #include "fredlib/nsset/create_nsset.h"
 #include "fredlib/keyset/create_keyset.h"
 #include "fredlib/keyset/delete_keyset.h"
+#include "fredlib/keyset/check_keyset.h"
 #include "fredlib/domain/create_domain.h"
 #include "fredlib/domain/delete_domain.h"
 #include "fredlib/domain/check_domain.h"
@@ -355,6 +356,16 @@ BOOST_AUTO_TEST_CASE(delete_keyset)
 {
     printable_test(
     Fred::DeleteKeyset("TEST-DEL-KEYSET-HANDLE")
+    );
+}
+
+/**
+ * test CheckKeyset print to string
+ */
+BOOST_AUTO_TEST_CASE(check_keyset)
+{
+    printable_test(
+    Fred::CheckKeyset("TEST-CHECK-KEYSET-HANDLE")
     );
 }
 
