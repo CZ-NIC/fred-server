@@ -85,6 +85,32 @@ namespace Util
     std::string format_data_structure(const std::string& data_structure_name,
         const std::vector<std::pair<std::string, std::string> >& key_value_list);
 
+    /**
+     * Print vector of elements into the string. Values from input vector have to have conversion to string.
+     * @param IN is input vector element type
+     * @param in is input vector
+     * @return description of input vector using implemented format
+     */
+    template<class IN> std::string format_vector(const std::vector<IN>& in)
+    {
+        std::string out;
+        typename std::vector<IN>::const_iterator i = in.begin();
+
+        if(i != in.end())
+        {
+            out += *i;
+            ++i;
+        }
+
+        for(; i != in.end(); ++i)
+        {
+            out += " ";
+            out += *i;
+        }
+        return out;
+    }
+
+
 }//namespace Util
 
 #endif //PRINTABLE_H_

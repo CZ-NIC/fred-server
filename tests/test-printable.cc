@@ -345,6 +345,9 @@ BOOST_AUTO_TEST_CASE(create_keyset)
     printable_test(
     Fred::CreateKeyset("TEST-CREATE-KEYSET-HANDLE", "REGISTRAR-TEST-HANDLE")
     .set_tech_contacts(Util::vector_of<std::string>("admin1")("admin2")("admin3"))
+    .set_dns_keys(Util::vector_of<Fred::DnsKey>
+        (Fred::DnsKey(257, 3, 5, "test1"))
+        (Fred::DnsKey(257, 3, 5, "test2")))
     .set_authinfo("testauthinfo").set_logd_request_id(0)
     );
 }
@@ -367,6 +370,18 @@ BOOST_AUTO_TEST_CASE(check_keyset)
     printable_test(
     Fred::CheckKeyset("TEST-CHECK-KEYSET-HANDLE")
     );
+}
+
+/**
+ * test InfoKeysetData print to string
+ */
+BOOST_AUTO_TEST_CASE(info_keyset_data)
+{
+    Fred::InfoKeysetData i;
+    i.handle = "TEST-INFO-KEYSET-HANDLE";
+    i.creation_time = boost::posix_time::microsec_clock::universal_time();
+    i.delete_time = boost::posix_time::microsec_clock::universal_time();
+    printable_test(i);
 }
 
 

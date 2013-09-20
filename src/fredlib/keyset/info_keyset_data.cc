@@ -35,6 +35,7 @@
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
 #include "util/util.h"
+#include "util/printable.h"
 #include "fredlib/keyset/info_keyset_data.h"
 
 namespace Fred
@@ -126,9 +127,9 @@ namespace Fred
                 , std::inserter(rhs_lhs, rhs_lhs.end()));
 
             std::cout << "dns_keys differ\nlhs - rhs: ";
-            std::copy(lhs_rhs.begin(),lhs_rhs.end(),std::ostream_iterator<std::string>(std::cout, " "));
+            std::copy(lhs_rhs.begin(),lhs_rhs.end(),std::ostream_iterator<DnsKey>(std::cout, " "));
             std::cout << "\nrhs - lhs: ";
-            std::copy(rhs_lhs.begin(),rhs_lhs.end(),std::ostream_iterator<std::string>(std::cout, " "));
+            std::copy(rhs_lhs.begin(),rhs_lhs.end(),std::ostream_iterator<DnsKey>(std::cout, " "));
             std::cout << std::endl;
         }
 
@@ -199,6 +200,27 @@ namespace Fred
     void InfoKeysetData::set_diff_print(bool print_diff)
     {
         print_diff_ = print_diff;
+    }
+
+    std::string InfoKeysetData::to_string() const
+    {
+        return Util::format_data_structure("InfoKeysetData",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("crhistoryid",boost::lexical_cast<std::string>(crhistoryid)))
+        (std::make_pair("historyid",boost::lexical_cast<std::string>(historyid)))
+        (std::make_pair("delete_time",delete_time.print_quoted()))
+        (std::make_pair("handle",handle))
+        (std::make_pair("roid",roid))
+        (std::make_pair("sponsoring_registrar_handle",sponsoring_registrar_handle))
+        (std::make_pair("create_registrar_handle",create_registrar_handle))
+        (std::make_pair("update_registrar_handle",update_registrar_handle.print_quoted()))
+        (std::make_pair("creation_time",boost::lexical_cast<std::string>(creation_time)))
+        (std::make_pair("update_time",update_time.print_quoted()))
+        (std::make_pair("transfer_time",transfer_time.print_quoted()))
+        (std::make_pair("authinfopw",authinfopw))
+        (std::make_pair("dns_keys", Util::format_vector(dns_keys)))
+        (std::make_pair("tech_contacts",Util::format_vector(tech_contacts)))
+        );
     }
 
 }//namespace Fred

@@ -279,7 +279,8 @@ namespace Fred
         (std::make_pair("handle",handle_))
         (std::make_pair("registrar",registrar_))
         (std::make_pair("authinfo",authinfo_.print_quoted()))
-        (std::make_pair("tech_contacts",boost::algorithm::join(tech_contacts_, " ")))
+        (std::make_pair("dns_keys", Util::format_vector(dns_keys_)))
+        (std::make_pair("tech_contacts",Util::format_vector(tech_contacts_)))
         (std::make_pair("logd_request_id",logd_request_id_.print_quoted()))
         );
     }

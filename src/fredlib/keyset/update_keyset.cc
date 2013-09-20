@@ -386,11 +386,11 @@ namespace Fred
 
         if(!i.add_dns_key_.empty()) os << " add_dns_key: ";
         for(std::vector<DnsKey>::const_iterator ci = i.add_dns_key_.begin()
-                ; ci != i.add_dns_key_.end() ; ++ci ) os << static_cast<std::string>(*ci);
+                ; ci != i.add_dns_key_.end() ; ++ci ) os << (*ci).to_string();
 
         if(!i.rem_dns_key_.empty()) os << " rem_dns_key: ";
         for(std::vector<DnsKey>::const_iterator ci = i.rem_dns_key_.begin()
-                ; ci != i.rem_dns_key_.end() ; ++ci ) os << static_cast<std::string>(*ci);
+                ; ci != i.rem_dns_key_.end() ; ++ci ) os << (*ci).to_string();
 
         os << " logd_request_id: " << i.logd_request_id_.print_quoted();
         return os;

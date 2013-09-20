@@ -96,9 +96,8 @@ namespace Fred
         bool is_available(OperationContext& ctx);
 
         /**
-        * dump state of the instance to std::string using operator<<.
-        * @see operator<<
-        * @return string with description of instance state
+        * Dumps state of the instance into the string
+        * @return string with description of the instance state
         */
         std::string to_string() const;
     };//class CheckDomain

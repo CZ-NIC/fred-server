@@ -36,7 +36,7 @@ namespace Fred
     /**
     * Checking of keyset properties.
     */
-    class CheckKeyset  : public Util::Printable
+    class CheckKeyset : public Util::Printable
     {
         const std::string handle_;/**< keyset identifier */
     public:
@@ -84,9 +84,8 @@ namespace Fred
         bool is_free(OperationContext& ctx);
 
         /**
-        * Dump state of the instance to std::string using operator<<.
-        * @see operator<<
-        * @return string with description of instance state
+        * Dumps state of the instance into the string
+        * @return string with description of the instance state
         */
         std::string to_string() const;
     };//class CheckKeyset

@@ -556,7 +556,7 @@ namespace Fred
         (std::make_pair("registrant",registrant_))
         (std::make_pair("nsset",nsset_.isset() ? nsset_.get_value().print_quoted() : nsset_.print_quoted()))
         (std::make_pair("keyset",keyset_.isset() ? keyset_.get_value().print_quoted() : keyset_.print_quoted()))
-        (std::make_pair("admin_contacts",boost::algorithm::join(admin_contacts_," ")))
+        (std::make_pair("admin_contacts",Util::format_vector(admin_contacts_)))
         (std::make_pair("expiration_date",expiration_date_.print_quoted()))
         (std::make_pair("enum_validation_expiration",enum_validation_expiration_.print_quoted()))
         (std::make_pair("enum_publish_flag",enum_publish_flag_.print_quoted()))
