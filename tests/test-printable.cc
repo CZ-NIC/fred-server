@@ -52,6 +52,7 @@
 #include "fredlib/contact/check_contact.h"
 #include "fredlib/nsset/create_nsset.h"
 #include "fredlib/keyset/create_keyset.h"
+#include "fredlib/keyset/delete_keyset.h"
 #include "fredlib/domain/create_domain.h"
 #include "fredlib/domain/delete_domain.h"
 #include "fredlib/domain/check_domain.h"
@@ -344,6 +345,16 @@ BOOST_AUTO_TEST_CASE(create_keyset)
     Fred::CreateKeyset("TEST-CREATE-KEYSET-HANDLE", "REGISTRAR-TEST-HANDLE")
     .set_tech_contacts(Util::vector_of<std::string>("admin1")("admin2")("admin3"))
     .set_authinfo("testauthinfo").set_logd_request_id(0)
+    );
+}
+
+/**
+ * test DeleteKeyset print to string
+ */
+BOOST_AUTO_TEST_CASE(delete_keyset)
+{
+    printable_test(
+    Fred::DeleteKeyset("TEST-DEL-KEYSET-HANDLE")
     );
 }
 
