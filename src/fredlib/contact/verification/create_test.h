@@ -50,6 +50,9 @@ namespace Fred
         struct ExceptionTestNotInMyTestsuite : virtual Fred::OperationException {
             const char* what() const throw() {return "test is not in testsuite of this check";}
         };
+        struct ExceptionCheckTestPairAlreadyExists : virtual Fred::OperationException {
+            const char* what() const throw() {return "given check test pair already exists";}
+        };
 
         /**
          * constructor only with mandatory parameters

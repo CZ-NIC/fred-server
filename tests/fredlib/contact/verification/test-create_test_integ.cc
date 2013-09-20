@@ -197,9 +197,9 @@ struct setup_logd_request_id {
 };
 
 /**
- executing CreateContactCheck with only mandatory setup
- @pre valid contact handle
- @pre existing test name
+ executing CreateContactTest with only mandatory setup
+ @pre existing check handle
+ @pre existing test name in testsuite of given check
  @post correct values present in InfoContactCheckOutput::to_string()
  */
 BOOST_FIXTURE_TEST_CASE(test_Exec_mandatory_setup, fixture_ctx)
@@ -264,9 +264,9 @@ BOOST_FIXTURE_TEST_CASE(test_Exec_mandatory_setup, fixture_ctx)
 }
 
 /**
- executing CreateContactCheck with full mandatory + optional setup
- @pre valid contact handle
- @pre existing test name
+ executing CreateContactTest with full mandatory + optional setup
+ @pre existing check handle
+ @pre existing test name in testsuite of given check
  @post correct values present in InfoContactCheckOutput::to_string()
  */
 BOOST_FIXTURE_TEST_CASE(test_Exec_optional_setup, fixture_ctx)
@@ -334,7 +334,7 @@ BOOST_FIXTURE_TEST_CASE(test_Exec_optional_setup, fixture_ctx)
 /**
  setting nonexistent check handle and existing status values and executing operation
  @pre nonexistent check handle
- @pre existing status name
+ @pre existing test name
  @post ExceptionUnknownCheckHandle
 */
 BOOST_FIXTURE_TEST_CASE(test_Exec_nonexistent_check_handle, fixture_ctx)
@@ -386,9 +386,9 @@ BOOST_FIXTURE_TEST_CASE(test_Exec_nonexistent_test_name, fixture_ctx)
 }
 
 /**
- setting existing check handle and nonexistent test values and executing operation
+ * setting existing check handle and nonexistent test values and executing operation
  @pre existing check handle
- @pre existent test name not in testsuite of this check
+ @pre test name not in testsuite of this check
  @post ExceptionUnknownTestName
  */
 BOOST_FIXTURE_TEST_CASE(test_Exec_test_name_not_in_suite, fixture_ctx)
@@ -413,4 +413,34 @@ BOOST_FIXTURE_TEST_CASE(test_Exec_test_name_not_in_suite, fixture_ctx)
     }
 }
 
+/**
+ setting existing check handle and existing test from check's testsuite which combination is already created values and executing operation
+ @pre existing check handle
+ @pre existing test name in testsuite of this check
+ @pre already existing record related to given check and test
+ @post ExceptionCheckTestPairAlreadyExists
+ */
+BOOST_FIXTURE_TEST_CASE(test_Exec_violating_unique_check_test_pair, fixture_ctx)
+{
+    setup_check check(ctx);
+    setup_testdef testdef(ctx);
+    setup_testdef_in_testsuite_of_check(ctx, testdef.testdef_name_, check.check_handle_);
+
+    Fred::CreateContactTest create_test(check.check_handle_, testdef.testdef_name_);
+    // preparation - the original previously existing record
+    create_test.exec(ctx);
+
+    bool caught_the_right_exception = false;
+    try {
+        create_test.exec(ctx);
+    } catch(const Fred::CreateContactTest::ExceptionCheckTestPairAlreadyExists& exp) {
+        caught_the_right_exception = true;
+    } catch(...) {
+        BOOST_FAIL("incorrect exception caught");
+    }
+
+    if(! caught_the_right_exception) {
+        BOOST_FAIL("should have caught the exception");
+    }
+}
 BOOST_AUTO_TEST_SUITE_END();
