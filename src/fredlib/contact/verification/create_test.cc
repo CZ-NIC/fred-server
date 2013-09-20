@@ -144,6 +144,10 @@ namespace Fred
                 throw ExceptionUnknownTestName();
             }
 
+            if(what_string.find("idx_contact_test_result_unique_check_test_pair") != std::string::npos) {
+                throw ExceptionCheckTestPairAlreadyExists();
+            }
+
             // problem was elsewhere so let it propagate
             throw;
         }
