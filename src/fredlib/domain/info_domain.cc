@@ -204,18 +204,25 @@ namespace Fred
         return domain_info_output;
     }//InfoDomain::exec
 
-    std::ostream& operator<<(std::ostream& os, const InfoDomain& i)
+    std::string InfoDomain::to_string() const
     {
-        return os << "#InfoDomain fqdn: " << i.fqdn_
-                << " lock: " << i.lock_
-                ;
+        return Util::format_operation_state("InfoDomain",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("fqdn",fqdn_))
+        (std::make_pair("lock",lock_ ? "true":"false"))
+        );
     }
-    std::string InfoDomain::to_string()
+
+    std::string InfoDomainOutput::to_string() const
     {
-        std::stringstream ss;
-        ss << *this;
-        return ss.str();
+        return Util::format_data_structure("InfoDomainOutput",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("info_domain_data",info_domain_data.to_string()))
+        (std::make_pair("utc_timestamp",boost::lexical_cast<std::string>(utc_timestamp)))
+        (std::make_pair("local_timestamp",boost::lexical_cast<std::string>(local_timestamp)))
+        );
     }
+
 
 }//namespace Fred
 

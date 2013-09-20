@@ -201,11 +201,6 @@ namespace Fred
         );
     }
 
-    InfoContactData info_contact_data;/**< data of the contact */
-    boost::posix_time::ptime utc_timestamp;/**< timestamp of getting the contact data in UTC */
-    boost::posix_time::ptime local_timestamp;/**< timestamp of getting the contact data in local time zone viz @ref local_timestamp_pg_time_zone_name */
-
-
     std::string InfoContactOutput::to_string() const
     {
         return Util::format_data_structure("InfoContactOutput",
@@ -215,8 +210,6 @@ namespace Fred
         (std::make_pair("local_timestamp",boost::lexical_cast<std::string>(local_timestamp)))
         );
     }
-
-
 
 }//namespace Fred
 
