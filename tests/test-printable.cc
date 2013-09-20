@@ -335,6 +335,18 @@ BOOST_AUTO_TEST_CASE(update_domain)
     );
 }
 
+/**
+ * test CreateKeyset print to string
+ */
+BOOST_AUTO_TEST_CASE(create_keyset)
+{
+    printable_test(
+    Fred::CreateKeyset("TEST-CREATE-KEYSET-HANDLE", "REGISTRAR-TEST-HANDLE")
+    .set_tech_contacts(Util::vector_of<std::string>("admin1")("admin2")("admin3"))
+    .set_authinfo("testauthinfo").set_logd_request_id(0)
+    );
+}
+
 
 BOOST_AUTO_TEST_SUITE_END();//TestPrintable
 

@@ -33,6 +33,7 @@
 #include "fredlib/opcontext.h"
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
+#include "util/printable.h"
 
 #include "fredlib/keyset/keyset_dns_key.h"
 
@@ -48,7 +49,7 @@ namespace Fred
     * In case of wrong input data or other predictable and superable failure, an instance of @ref CreateKeyset::Exception is thrown with appropriate attributes set.
     * In case of other unsuperable failures and inconstistencies, an instance of @ref InternalError or other exception is thrown.
     */
-    class CreateKeyset
+    class CreateKeyset : public Util::Printable
     {
         const std::string handle_;/**< keyset identifier */
         const std::string registrar_;/**< handle of registrar performing the create */
@@ -133,18 +134,10 @@ namespace Fred
         boost::posix_time::ptime exec(OperationContext& ctx, const std::string& returned_timestamp_pg_time_zone_name = "Europe/Prague");
 
         /**
-        * Dumps state of the instance into stream
-        * @param os contains output stream reference
-        * @param i reference of instance to be dumped into the stream
-        * @return output stream reference
-        */
-        friend std::ostream& operator<<(std::ostream& os, const CreateKeyset& i);
-
-        /**
         * Dumps state of the instance into the string
         * @return string with description of the instance state
         */
-        std::string to_string();
+        std::string to_string() const;
     };//CreateKeyset
 }
 #endif // CREATE_KEYSET_H_
