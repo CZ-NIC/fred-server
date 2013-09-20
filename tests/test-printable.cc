@@ -55,6 +55,7 @@
 #include "fredlib/domain/create_domain.h"
 #include "fredlib/domain/delete_domain.h"
 #include "fredlib/domain/check_domain.h"
+#include "fredlib/domain/update_domain.h"
 #include "fredlib/keyset/info_keyset.h"
 #include "fredlib/keyset/info_keyset_history.h"
 #include "fredlib/keyset/info_keyset_compare.h"
@@ -224,7 +225,7 @@ BOOST_AUTO_TEST_CASE(update_contact)
 BOOST_AUTO_TEST_CASE(create_domain)
 {
     printable_test(
-    Fred::CreateDomain("TEST-CREATE-CONTACT-HANDLE", "REGISTRAR-TEST-HANDLE", "REGISTRANT-TEST-HANDLE")
+    Fred::CreateDomain("test-fred.cz", "REGISTRAR-TEST-HANDLE", "REGISTRANT-TEST-HANDLE")
     .set_admin_contacts(Util::vector_of<std::string>("admin1")("admin2")("admin3"))
     .set_authinfo("testauthinfo").set_logd_request_id(0)
     );
@@ -317,6 +318,20 @@ BOOST_AUTO_TEST_CASE(info_domain)
 {
     printable_test(
     Fred::InfoDomain("fred.cz")
+    );
+}
+
+/**
+ * test UpdateDomain print to string
+ */
+BOOST_AUTO_TEST_CASE(update_domain)
+{
+    printable_test(
+    Fred::UpdateDomain("test-fred.cz", "REGISTRAR-TEST-HANDLE")
+    .add_admin_contact("admin1")
+    .add_admin_contact("admin2")
+    .add_admin_contact("admin3")
+    .set_authinfo("testauthinfo").set_logd_request_id(0)
     );
 }
 

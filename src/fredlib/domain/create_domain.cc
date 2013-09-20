@@ -548,30 +548,20 @@ namespace Fred
 
     std::string CreateDomain::to_string() const
     {
-
-        std::vector<std::pair<std::string,std::string> > op_state
-        = Util::vector_of<std::pair<std::string,std::string> >
+        return Util::format_operation_state("CreateDomain",
+        Util::vector_of<std::pair<std::string,std::string> >
         (std::make_pair("fqdn",fqdn_))
         (std::make_pair("registrar",registrar_))
         (std::make_pair("authinfo",authinfo_.print_quoted()))
         (std::make_pair("registrant",registrant_))
         (std::make_pair("nsset",nsset_.isset() ? nsset_.get_value().print_quoted() : nsset_.print_quoted()))
         (std::make_pair("keyset",keyset_.isset() ? keyset_.get_value().print_quoted() : keyset_.print_quoted()))
-        ;
-
-        if(!admin_contacts_.empty()) op_state.push_back(std::make_pair("admin_contacts",""));
-        for(std::vector<std::string>::const_iterator ci = admin_contacts_.begin()
-                ; ci != admin_contacts_.end() ; ++ci )
-        {
-            op_state.push_back(std::make_pair("",*ci));
-        }
-
-        op_state.push_back(std::make_pair("expiration_date",expiration_date_.print_quoted()));
-        op_state.push_back(std::make_pair("enum_validation_expiration",enum_validation_expiration_.print_quoted()));
-        op_state.push_back(std::make_pair("enum_publish_flag",enum_publish_flag_.print_quoted()));
-        op_state.push_back(std::make_pair("logd_request_id",logd_request_id_.print_quoted()));
-
-        return Util::format_operation_state("CreateDomain",op_state);
+        (std::make_pair("admin_contacts",boost::algorithm::join(admin_contacts_," ")))
+        (std::make_pair("expiration_date",expiration_date_.print_quoted()))
+        (std::make_pair("enum_validation_expiration",enum_validation_expiration_.print_quoted()))
+        (std::make_pair("enum_publish_flag",enum_publish_flag_.print_quoted()))
+        (std::make_pair("logd_request_id",logd_request_id_.print_quoted()))
+        );
     }
 
 

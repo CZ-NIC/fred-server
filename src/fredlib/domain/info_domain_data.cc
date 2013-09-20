@@ -214,8 +214,8 @@ namespace Fred
 
     std::string InfoDomainData::to_string() const
     {
-        std::vector<std::pair<std::string,std::string> > data
-        = Util::vector_of<std::pair<std::string,std::string> >
+        return Util::format_data_structure("InfoDomainData",
+        Util::vector_of<std::pair<std::string,std::string> >
         (std::make_pair("roid",roid))
         (std::make_pair("fqdn",fqdn))
         (std::make_pair("registrant_handle",registrant_handle))
@@ -228,21 +228,17 @@ namespace Fred
         (std::make_pair("update_time",update_time.print_quoted()))
         (std::make_pair("transfer_time",transfer_time.print_quoted()))
         (std::make_pair("expiration_date",boost::lexical_cast<std::string>(expiration_date)))
-        (std::make_pair("authinfopw",authinfopw));
-        if(!admin_contacts.empty()) data.push_back(std::make_pair("admin_contacts",""));
-        for(std::vector<std::string>::const_iterator ci = admin_contacts.begin()
-                ; ci != admin_contacts.end() ; ++ci )
-        {
-            data.push_back(std::make_pair("",*ci));
-        }
-        data.push_back(std::make_pair("enum_domain_validation",enum_domain_validation.print_quoted()));
-        data.push_back(std::make_pair("outzone_time",boost::lexical_cast<std::string>(outzone_time)));
-        data.push_back(std::make_pair("cancel_time",boost::lexical_cast<std::string>(cancel_time)));
-        data.push_back(std::make_pair("delete_time",delete_time.print_quoted()));
-        data.push_back(std::make_pair("crhistoryid",boost::lexical_cast<std::string>(crhistoryid)));
-        data.push_back(std::make_pair("historyid",boost::lexical_cast<std::string>(historyid)));
+        (std::make_pair("authinfopw",authinfopw))
+        (std::make_pair("admin_contacts",boost::algorithm::join(admin_contacts," ")))
+        (std::make_pair("enum_domain_validation",enum_domain_validation.print_quoted()))
+        (std::make_pair("outzone_time",boost::lexical_cast<std::string>(outzone_time)))
+        (std::make_pair("cancel_time",boost::lexical_cast<std::string>(cancel_time)))
+        (std::make_pair("delete_time",delete_time.print_quoted()))
+        (std::make_pair("crhistoryid",boost::lexical_cast<std::string>(crhistoryid)))
+        (std::make_pair("historyid",boost::lexical_cast<std::string>(historyid)))
+        );
 
-        return Util::format_data_structure("InfoDomainData",data);
+
     }
 
 

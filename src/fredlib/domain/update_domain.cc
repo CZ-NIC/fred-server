@@ -36,6 +36,7 @@
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
 #include "util/util.h"
+#include "util/printable.h"
 
 namespace Fred
 {
@@ -557,35 +558,24 @@ namespace Fred
         return history_id;
     }//UpdateDomain::exec
 
-    std::ostream& operator<<(std::ostream& os, const UpdateDomain& i)
+    std::string UpdateDomain::to_string() const
     {
-        os << "#UpdateDomain fqdn: " << i.fqdn_
-            << " registrar: " << i.registrar_
-            << " sponsoring_registrar: " << i.sponsoring_registrar_.print_quoted()
-            << " registrant: " << i.registrant_.print_quoted()
-            << " authinfo: " << i.authinfo_.print_quoted()
-            << " nsset: " << (i.nsset_.isset() ? i.nsset_.get_value().print_quoted() : i.nsset_.print_quoted())
-            << " keyset: " << (i.keyset_.isset() ? i.keyset_.get_value().print_quoted() : i.keyset_.print_quoted())
-            ;
-        if(!i.add_admin_contact_.empty()) os << " add_admin_contact: ";
-        for(std::vector<std::string>::const_iterator ci = i.add_admin_contact_.begin()
-                ; ci != i.add_admin_contact_.end() ; ++ci ) os << *ci;
-        if(!i.rem_admin_contact_.empty()) os << " rem_admin_contact: ";
-                for(std::vector<std::string>::const_iterator ci = i.rem_admin_contact_.begin()
-                        ; ci != i.rem_admin_contact_.end() ; ++ci ) os << *ci;
-
-        os << " expiration_date: " << i.expiration_date_.print_quoted()
-        << " enum_validation_expiration: " << i.enum_validation_expiration_.print_quoted()
-        << " enum_publish_flag: " << i.enum_publish_flag_.print_quoted()
-        << " logd_request_id: " << i.logd_request_id_.print_quoted();
-        return os;
-    }
-
-    std::string UpdateDomain::to_string()
-    {
-        std::stringstream ss;
-        ss << *this;
-        return ss.str();
+        return Util::format_operation_state("UpdateDomain",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("fqdn",fqdn_))
+        (std::make_pair("registrar",registrar_))
+        (std::make_pair("sponsoring_registrar",sponsoring_registrar_.print_quoted()))
+        (std::make_pair("registrant",registrant_.print_quoted()))
+        (std::make_pair("authinfo",authinfo_.print_quoted()))
+        (std::make_pair("nsset",nsset_.isset() ? nsset_.get_value().print_quoted() : nsset_.print_quoted()))
+        (std::make_pair("keyset",keyset_.isset() ? keyset_.get_value().print_quoted() : keyset_.print_quoted()))
+        (std::make_pair("add_admin_contact", boost::algorithm::join(add_admin_contact_, " ")))
+        (std::make_pair("rem_admin_contact", boost::algorithm::join(rem_admin_contact_, " ")))
+        (std::make_pair("expiration_date",expiration_date_.print_quoted()))
+        (std::make_pair("enum_validation_expiration",enum_validation_expiration_.print_quoted()))
+        (std::make_pair("enum_publish_flag",enum_publish_flag_.print_quoted()))
+        (std::make_pair("logd_request_id",logd_request_id_.print_quoted()))
+        );
     }
 
 }//namespace Fred
