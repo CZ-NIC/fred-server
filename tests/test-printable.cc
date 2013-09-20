@@ -261,6 +261,36 @@ BOOST_AUTO_TEST_CASE(info_domain_data)
     printable_test(i);
 }
 
+/**
+ * test InfoDomainHistoryOutput print to string
+ */
+BOOST_AUTO_TEST_CASE(info_domain_history_output)
+{
+    Fred::InfoDomainData id;
+    id.fqdn = "test-fred.cz";
+    id.creation_time = boost::posix_time::microsec_clock::universal_time();
+    id.delete_time = boost::posix_time::microsec_clock::universal_time();
+    id.keyset_handle=Nullable<std::string>("TEST-KEYSET");
+
+    Fred::InfoDomainHistoryOutput ih;
+    ih.history_valid_from = boost::posix_time::microsec_clock::universal_time();
+    ih.history_valid_to = boost::posix_time::microsec_clock::universal_time();
+    ih.info_domain_data = id;
+    ih.logd_request_id = 1;
+    ih.next_historyid = 2;
+    printable_test(ih);
+}
+
+/**
+ * test InfoDomainHistory print to string
+ */
+BOOST_AUTO_TEST_CASE(info_domain_history)
+{
+    printable_test(
+    Fred::InfoDomainHistory("test-fred.cz", boost::posix_time::microsec_clock::universal_time())
+    );
+}
+
 
 BOOST_AUTO_TEST_SUITE_END();//TestPrintable
 

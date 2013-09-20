@@ -37,6 +37,7 @@
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
 #include "util/util.h"
+#include "util/printable.h"
 
 namespace Fred
 {
@@ -233,19 +234,28 @@ namespace Fred
         return domain_history_res;
     }//InfoDomainHistory::exec
 
-    std::ostream& operator<<(std::ostream& os, const InfoDomainHistory& i)
+    std::string InfoDomainHistory::to_string() const
     {
-        return os << "#InfoDomainHistory roid: " << i.roid_
-                << " history_timestamp: " << i.history_timestamp_.print_quoted()
-                << " lock: " << i.lock_
-                ;
+        return Util::format_operation_state("InfoDomainHistory",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("roid",roid_))
+        (std::make_pair("history_timestamp",history_timestamp_.print_quoted()))
+        (std::make_pair("lock",lock_ ? "true":"false"))
+        );
     }
-    std::string InfoDomainHistory::to_string()
+
+    std::string InfoDomainHistoryOutput::to_string() const
     {
-        std::stringstream ss;
-        ss << *this;
-        return ss.str();
+        return Util::format_data_structure("InfoDomainHistoryOutput",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("info_domain_data",info_domain_data.to_string()))
+        (std::make_pair("next_historyid",next_historyid.print_quoted()))
+        (std::make_pair("history_valid_from",boost::lexical_cast<std::string>(history_valid_from)))
+        (std::make_pair("history_valid_to",history_valid_to.print_quoted()))
+        (std::make_pair("logd_request_id",logd_request_id.print_quoted()))
+        );
     }
+
 
 
 }//namespace Fred
