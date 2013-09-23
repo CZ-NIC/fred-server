@@ -61,6 +61,7 @@
 #include "fredlib/keyset/info_keyset.h"
 #include "fredlib/keyset/info_keyset_history.h"
 #include "fredlib/keyset/info_keyset_compare.h"
+#include "fredlib/keyset/update_keyset.h"
 #include "fredlib/nsset/info_nsset.h"
 #include "fredlib/nsset/info_nsset_history.h"
 #include "fredlib/nsset/info_nsset_compare.h"
@@ -440,6 +441,20 @@ BOOST_AUTO_TEST_CASE(info_keyset)
 {
     printable_test(
     Fred::InfoKeyset("TEST-KEYSET-HANDLE")
+    );
+}
+
+/**
+ * test UpdateKeyset print to string
+ */
+BOOST_AUTO_TEST_CASE(update_keyset)
+{
+    printable_test(
+    Fred::UpdateKeyset("TEST-KEYSET-HANDLE", "REGISTRAR-TEST-HANDLE")
+    .add_tech_contact("admin1")
+    .add_tech_contact("admin2")
+    .add_tech_contact("admin3")
+    .set_authinfo("testauthinfo").set_logd_request_id(0)
     );
 }
 
