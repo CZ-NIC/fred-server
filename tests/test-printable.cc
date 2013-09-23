@@ -458,6 +458,22 @@ BOOST_AUTO_TEST_CASE(update_keyset)
     );
 }
 
+/**
+ * test CreateNsset print to string
+ */
+BOOST_AUTO_TEST_CASE(create_nsset)
+{
+    printable_test(
+    Fred::CreateNsset("TEST-CREATE-NSSET-HANDLE", "REGISTRAR-TEST-HANDLE")
+    .set_tech_contacts(Util::vector_of<std::string>("admin1")("admin2")("admin3"))
+    .set_dns_hosts(Util::vector_of<Fred::DnsHost>
+        (Fred::DnsHost("test1dns.cz", Util::vector_of<std::string>("6.6.6.6")("7.7.7.7")))
+        (Fred::DnsHost("test2dns.cz", Util::vector_of<std::string>("6.6.6.6")("7.7.7.7")))
+        )
+    .set_authinfo("testauthinfo").set_logd_request_id(0)
+    );
+}
+
 
 BOOST_AUTO_TEST_SUITE_END();//TestPrintable
 

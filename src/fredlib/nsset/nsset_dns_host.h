@@ -31,6 +31,7 @@
 #include "fredlib/opcontext.h"
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
+#include "util/printable.h"
 
 namespace Fred
 {
@@ -38,7 +39,7 @@ namespace Fred
     /**
      * Nameserver data container.
      */
-    class DnsHost
+    class DnsHost : public Util::Printable
     {
         std::string fqdn_;/**< fully qualified name of the nameserver host*/
         std::vector<std::string> inet_addr_;/**< list of IPv4 or IPv6 addresses of the nameserver host*/
@@ -83,12 +84,20 @@ namespace Fred
          */
         operator std::string() const
         {
-            std::stringstream ret;
-            ret << "DnsHost fqdn: " << fqdn_;
-            if(!inet_addr_.empty()) ret << " inet_addr:";
-            for(std::vector<std::string>::const_iterator ci = inet_addr_.begin()
-                ; ci != inet_addr_.end(); ++ci) ret << " " << *ci;
-            return ret.str();
+            return to_string();
+        }
+
+        /**
+        * Dumps state of the instance into the string
+        * @return string with description of the instance state
+        */
+        std::string to_string() const
+        {
+            return Util::format_data_structure("DnsHost",
+            Util::vector_of<std::pair<std::string,std::string> >
+            (std::make_pair("fqdn",fqdn_))
+            (std::make_pair("inet_addr",Util::format_vector(inet_addr_)))
+            );
         }
 
     };

@@ -325,28 +325,17 @@ namespace Fred
         return timestamp;
     }
 
-    std::ostream& operator<<(std::ostream& os, const CreateNsset& i)
+    std::string CreateNsset::to_string() const
     {
-        os << "#CreateNsset handle: " << i.handle_
-            << " registrar: " << i.registrar_
-            << " authinfo: " << i.authinfo_.print_quoted()
-            << " tech_check_level: " << i.tech_check_level_.print_quoted()
-            ;
-        if(!i.dns_hosts_.empty()) os << " dns_hosts: ";
-        for(std::vector<DnsHost>::const_iterator ci = i.dns_hosts_.begin()
-                ; ci != i.dns_hosts_.end() ; ++ci ) os << static_cast<std::string>(*ci);
-        if(!i.tech_contacts_.empty()) os << " tech_contacts: ";
-        for(std::vector<std::string>::const_iterator ci = i.tech_contacts_.begin()
-                ; ci != i.tech_contacts_.end() ; ++ci ) os << *ci;
-        os << " logd_request_id: " << i.logd_request_id_.print_quoted();
-        return os;
-    }
-
-    std::string CreateNsset::to_string()
-    {
-        std::stringstream ss;
-        ss << *this;
-        return ss.str();
+        return Util::format_operation_state("CreateNsset",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("handle",handle_))
+        (std::make_pair("registrar",registrar_))
+        (std::make_pair("authinfo",authinfo_.print_quoted()))
+        (std::make_pair("dns_hosts", Util::format_vector(dns_hosts_)))
+        (std::make_pair("tech_contacts",Util::format_vector(tech_contacts_)))
+        (std::make_pair("logd_request_id",logd_request_id_.print_quoted()))
+        );
     }
 
 
