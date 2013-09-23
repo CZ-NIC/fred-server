@@ -415,6 +415,34 @@ BOOST_AUTO_TEST_CASE(info_keyset_history)
     );
 }
 
+/**
+ * test InfoKeysetOutput print to string
+ */
+BOOST_AUTO_TEST_CASE(info_keyset_output)
+{
+    Fred::InfoKeysetData d;
+    d.handle = "TEST-INFO-KEYSET-HANDLE";
+    d.creation_time = boost::posix_time::microsec_clock::universal_time();
+    d.delete_time = boost::posix_time::microsec_clock::universal_time();
+    d.tech_contacts = Util::vector_of<std::string>("tech1")("tech2")("tech3");
+
+    Fred::InfoKeysetOutput i;
+    i.utc_timestamp = boost::posix_time::microsec_clock::universal_time();
+    i.local_timestamp = boost::posix_time::microsec_clock::local_time();
+    i.info_keyset_data = d;
+    printable_test(i);
+}
+
+/**
+ * test InfoKeyset print to string
+ */
+BOOST_AUTO_TEST_CASE(info_keyset)
+{
+    printable_test(
+    Fred::InfoKeyset("TEST-KEYSET-HANDLE")
+    );
+}
+
 
 BOOST_AUTO_TEST_SUITE_END();//TestPrintable
 
