@@ -106,16 +106,11 @@ namespace Fred
 
     }//DeleteNsset::exec
 
-    std::ostream& operator<<(std::ostream& os, const DeleteNsset& i)
+    std::string DeleteNsset::to_string() const
     {
-        return os << "#DeleteNsset handle: " << i.handle_
-                ;
-    }
-    std::string DeleteNsset::to_string()
-    {
-        std::stringstream ss;
-        ss << *this;
-        return ss.str();
+        return Util::format_operation_state("DeleteNsset",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("handle",handle_)));
     }
 
 

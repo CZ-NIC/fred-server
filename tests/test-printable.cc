@@ -65,6 +65,7 @@
 #include "fredlib/nsset/info_nsset.h"
 #include "fredlib/nsset/info_nsset_history.h"
 #include "fredlib/nsset/info_nsset_compare.h"
+#include "fredlib/nsset/delete_nsset.h"
 #include "fredlib/domain/info_domain.h"
 #include "fredlib/domain/info_domain_history.h"
 #include "fredlib/domain/info_domain_compare.h"
@@ -471,6 +472,16 @@ BOOST_AUTO_TEST_CASE(create_nsset)
         (Fred::DnsHost("test2dns.cz", Util::vector_of<std::string>("6.6.6.6")("7.7.7.7")))
         )
     .set_authinfo("testauthinfo").set_logd_request_id(0)
+    );
+}
+
+/**
+ * test DeleteNsset print to string
+ */
+BOOST_AUTO_TEST_CASE(delete_nsset)
+{
+    printable_test(
+    Fred::DeleteNsset("TEST-DEL-NSSET-HANDLE")
     );
 }
 
