@@ -385,5 +385,36 @@ BOOST_AUTO_TEST_CASE(info_keyset_data)
 }
 
 
+/**
+ * test InfoKeysetHistoryOutput print to string
+ */
+BOOST_AUTO_TEST_CASE(info_keyset_history_output)
+{
+    Fred::InfoKeysetData d;
+    d.handle = "TEST-INFO-KEYSET-HANDLE";
+    d.creation_time = boost::posix_time::microsec_clock::universal_time();
+    d.delete_time = boost::posix_time::microsec_clock::universal_time();
+    d.tech_contacts = Util::vector_of<std::string>("tech1")("tech2")("tech3");
+
+    Fred::InfoKeysetHistoryOutput i;
+    i.history_valid_from = boost::posix_time::microsec_clock::universal_time();
+    i.history_valid_to = boost::posix_time::microsec_clock::universal_time();
+    i.info_keyset_data = d;
+    i.logd_request_id = 1;
+    i.next_historyid = 2;
+    printable_test(i);
+}
+
+/**
+ * test InfoKeysetHistory print to string
+ */
+BOOST_AUTO_TEST_CASE(info_keyset_history)
+{
+    printable_test(
+    Fred::InfoKeysetHistory("TEST-KEYSET-ROID", boost::posix_time::microsec_clock::universal_time())
+    );
+}
+
+
 BOOST_AUTO_TEST_SUITE_END();//TestPrintable
 
