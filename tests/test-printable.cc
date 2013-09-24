@@ -553,6 +553,34 @@ BOOST_AUTO_TEST_CASE(info_nsset_history)
     );
 }
 
+/**
+ * test InfoNssetOutput print to string
+ */
+BOOST_AUTO_TEST_CASE(info_nsset_output)
+{
+    Fred::InfoNssetData d;
+    d.handle = "TEST-INFO-NSSET-HANDLE";
+    d.creation_time = boost::posix_time::microsec_clock::universal_time();
+    d.delete_time = boost::posix_time::microsec_clock::universal_time();
+    d.tech_contacts = Util::vector_of<std::string>("tech1")("tech2")("tech3");
+
+    Fred::InfoNssetOutput i;
+    i.utc_timestamp = boost::posix_time::microsec_clock::universal_time();
+    i.local_timestamp = boost::posix_time::microsec_clock::local_time();
+    i.info_nsset_data = d;
+    printable_test(i);
+}
+
+/**
+ * test InfoNsset print to string
+ */
+BOOST_AUTO_TEST_CASE(info_nsset)
+{
+    printable_test(
+    Fred::InfoNsset("TEST-NSSET-HANDLE")
+    );
+}
+
 
 BOOST_AUTO_TEST_SUITE_END();//TestPrintable
 

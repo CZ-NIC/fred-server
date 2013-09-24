@@ -35,6 +35,7 @@
 #include "fredlib/opcontext.h"
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
+#include "util/printable.h"
 
 #include "fredlib/nsset/info_nsset_data.h"
 
@@ -44,7 +45,7 @@ namespace Fred
     /**
     * Nsset info data structure.
     */
-    struct InfoNssetOutput
+    struct InfoNssetOutput : public Util::Printable
     {
         InfoNssetData info_nsset_data;/**< data of the nsset */
         boost::posix_time::ptime utc_timestamp;/**< timestamp of getting the nsset data in UTC */
@@ -79,6 +80,11 @@ namespace Fred
             return !this->operator ==(rhs);
         }
 
+        /**
+        * Dumps state of the instance into the string
+        * @return string with description of the instance state
+        */
+        std::string to_string() const;
     };
 
 
@@ -90,7 +96,7 @@ namespace Fred
     * In case of wrong input data or other predictable and superable failure, the instance of @ref InfoNsset::Exception is thrown with appropriate attributes set.
     * In case of other unsuperable failures and inconstistencies, the instance of @ref InternalError or other exception is thrown.
     */
-    class InfoNsset
+    class InfoNsset  : public Util::Printable
     {
         const std::string handle_;/**< nsset identifier */
         bool lock_;/**< lock object_registry row flag*/
@@ -123,18 +129,10 @@ namespace Fred
         InfoNssetOutput exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");
 
         /**
-        * Dumps state of the instance into stream
-        * @param os contains output stream reference
-        * @param i reference of instance to be dumped into the stream
-        * @return output stream reference
-        */
-        friend std::ostream& operator<<(std::ostream& os, const InfoNsset& i);
-
-        /**
         * Dumps state of the instance into the string
         * @return string with description of the instance state
         */
-        std::string to_string();
+        std::string to_string() const;
     };//class InfoNsset
 
 }//namespace Fred
