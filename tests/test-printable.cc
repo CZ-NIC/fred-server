@@ -384,6 +384,10 @@ BOOST_AUTO_TEST_CASE(info_keyset_data)
     i.handle = "TEST-INFO-KEYSET-HANDLE";
     i.creation_time = boost::posix_time::microsec_clock::universal_time();
     i.delete_time = boost::posix_time::microsec_clock::universal_time();
+    i.tech_contacts = Util::vector_of<std::string>("tech1")("tech2")("tech3");
+    i.dns_keys = Util::vector_of<Fred::DnsKey>
+    (Fred::DnsKey(257, 3, 5, "test1"))
+    (Fred::DnsKey(257, 3, 5, "test2"));
     printable_test(i);
 }
 
@@ -398,6 +402,9 @@ BOOST_AUTO_TEST_CASE(info_keyset_history_output)
     d.creation_time = boost::posix_time::microsec_clock::universal_time();
     d.delete_time = boost::posix_time::microsec_clock::universal_time();
     d.tech_contacts = Util::vector_of<std::string>("tech1")("tech2")("tech3");
+    d.dns_keys = Util::vector_of<Fred::DnsKey>
+    (Fred::DnsKey(257, 3, 5, "test1"))
+    (Fred::DnsKey(257, 3, 5, "test2"));
 
     Fred::InfoKeysetHistoryOutput i;
     i.history_valid_from = boost::posix_time::microsec_clock::universal_time();
@@ -510,6 +517,42 @@ BOOST_AUTO_TEST_CASE(info_nsset_data)
     (Fred::DnsHost("test2dns.cz", Util::vector_of<std::string>("6.6.6.6")("7.7.7.7")));
     printable_test(i);
 }
+
+/**
+ * test InfoKeysetHistoryOutput print to string
+ */
+BOOST_AUTO_TEST_CASE(info_nsset_history_output)
+{
+    Fred::InfoNssetData d;
+    d.handle = "TEST-INFO-NSSET-HANDLE";
+    d.creation_time = boost::posix_time::microsec_clock::universal_time();
+    d.delete_time = boost::posix_time::microsec_clock::universal_time();
+    d.tech_contacts = Util::vector_of<std::string>("tech1")("tech2")("tech3");
+    d.dns_hosts = Util::vector_of<Fred::DnsHost>
+        (Fred::DnsHost("test1dns.cz", Util::vector_of<std::string>("6.6.6.6")("7.7.7.7")))
+        (Fred::DnsHost("test2dns.cz", Util::vector_of<std::string>("6.6.6.6")("7.7.7.7")));
+    d.tech_check_level = 2;
+
+    Fred::InfoNssetHistoryOutput i;
+    i.history_valid_from = boost::posix_time::microsec_clock::universal_time();
+    i.history_valid_to = boost::posix_time::microsec_clock::universal_time();
+    i.info_nsset_data = d;
+    i.logd_request_id = 1;
+    i.next_historyid = 2;
+    printable_test(i);
+}
+
+
+/**
+ * test InfoNssetHistory print to string
+ */
+BOOST_AUTO_TEST_CASE(info_nsset_history)
+{
+    printable_test(
+    Fred::InfoNssetHistory("TEST-NSSET-ROID", boost::posix_time::microsec_clock::universal_time())
+    );
+}
+
 
 BOOST_AUTO_TEST_SUITE_END();//TestPrintable
 
