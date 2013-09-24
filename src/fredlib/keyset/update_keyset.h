@@ -48,7 +48,7 @@ namespace Fred
     * In case of wrong input data or other predictable and superable failure, an instance of @ref UpdateKeyset::Exception is thrown with appropriate attributes set.
     * In case of other unsuperable failures and inconstistencies, an instance of @ref InternalError or other exception is thrown.
     */
-    class UpdateKeyset  : public Util::Printable
+    class UpdateKeyset : public Util::Printable
     {
         const std::string handle_;/**< keyset identifier */
         const std::string registrar_;/**< handle of registrar performing the update */

@@ -67,6 +67,7 @@
 #include "fredlib/nsset/info_nsset_compare.h"
 #include "fredlib/nsset/delete_nsset.h"
 #include "fredlib/nsset/check_nsset.h"
+#include "fredlib/nsset/update_nsset.h"
 #include "fredlib/domain/info_domain.h"
 #include "fredlib/domain/info_domain_history.h"
 #include "fredlib/domain/info_domain_compare.h"
@@ -578,6 +579,24 @@ BOOST_AUTO_TEST_CASE(info_nsset)
 {
     printable_test(
     Fred::InfoNsset("TEST-NSSET-HANDLE")
+    );
+}
+
+/**
+ * test UpdateNsset print to string
+ */
+BOOST_AUTO_TEST_CASE(update_nsset)
+{
+    printable_test(
+    Fred::UpdateNsset("TEST-NSSET-HANDLE", "REGISTRAR-TEST-HANDLE")
+    .add_tech_contact("tech1")
+    .add_tech_contact("tech2")
+    .add_tech_contact("tech3")
+    .add_dns(Fred::DnsHost("test1dns.cz", Util::vector_of<std::string>("6.6.6.6")("7.7.7.7")))
+    .add_dns(Fred::DnsHost("test2dns.cz", Util::vector_of<std::string>("6.6.6.6")("7.7.7.7")))
+    .rem_dns("test1dns.cz")
+    .set_tech_check_level(2)
+    .set_authinfo("testauthinfo").set_logd_request_id(0)
     );
 }
 
