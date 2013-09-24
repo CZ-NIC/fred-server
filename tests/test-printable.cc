@@ -496,6 +496,20 @@ BOOST_AUTO_TEST_CASE(check_nsset)
     );
 }
 
+/**
+ * test InfoNssetData print to string
+ */
+BOOST_AUTO_TEST_CASE(info_nsset_data)
+{
+    Fred::InfoNssetData i;
+    i.handle = "TEST-INFO-NSSET-HANDLE";
+    i.creation_time = boost::posix_time::microsec_clock::universal_time();
+    i.delete_time = boost::posix_time::microsec_clock::universal_time();
+    i.dns_hosts = Util::vector_of<Fred::DnsHost>
+    (Fred::DnsHost("test1dns.cz", Util::vector_of<std::string>("6.6.6.6")("7.7.7.7")))
+    (Fred::DnsHost("test2dns.cz", Util::vector_of<std::string>("6.6.6.6")("7.7.7.7")));
+    printable_test(i);
+}
 
 BOOST_AUTO_TEST_SUITE_END();//TestPrintable
 
