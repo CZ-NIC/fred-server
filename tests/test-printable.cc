@@ -66,6 +66,7 @@
 #include "fredlib/nsset/info_nsset_history.h"
 #include "fredlib/nsset/info_nsset_compare.h"
 #include "fredlib/nsset/delete_nsset.h"
+#include "fredlib/nsset/check_nsset.h"
 #include "fredlib/domain/info_domain.h"
 #include "fredlib/domain/info_domain_history.h"
 #include "fredlib/domain/info_domain_compare.h"
@@ -482,6 +483,16 @@ BOOST_AUTO_TEST_CASE(delete_nsset)
 {
     printable_test(
     Fred::DeleteNsset("TEST-DEL-NSSET-HANDLE")
+    );
+}
+
+/**
+ * test CheckNsset print to string
+ */
+BOOST_AUTO_TEST_CASE(check_nsset)
+{
+    printable_test(
+    Fred::CheckNsset("TEST-CHECK-NSSET-HANDLE")
     );
 }
 
