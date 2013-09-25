@@ -79,15 +79,6 @@ namespace Fred
         }
 
         /**
-         * Conversion to string.
-         * @return textual description of the content
-         */
-        operator std::string() const
-        {
-            return to_string();
-        }
-
-        /**
         * Dumps state of the instance into the string
         * @return string with description of the instance state
         */

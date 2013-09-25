@@ -162,14 +162,6 @@ public:
             DnsKey(dk).swap (*this); //copy and swap
         return *this;
     }
-    /**
-     * Conversion to string.
-     * @return textual description of the content
-     */
-    operator std::string() const
-    {
-        return to_string();
-    }
 
     /**
      * Comparison of instances converted to std::string

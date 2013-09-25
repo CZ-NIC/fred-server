@@ -74,6 +74,7 @@
 #include "fredlib/contact/info_contact.h"
 #include "fredlib/contact/info_contact_history.h"
 #include "fredlib/contact/info_contact_compare.h"
+#include "fredlib/contact/merge_contact.h"
 
 
 #include "util/util.h"
