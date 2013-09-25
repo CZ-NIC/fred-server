@@ -37,6 +37,8 @@
 #include <boost/noncopyable.hpp>
 #include <boost/lexical_cast.hpp>
 
+#include "util/util.h"
+
 namespace Util
 {
 
@@ -86,6 +88,65 @@ namespace Util
         const std::vector<std::pair<std::string, std::string> >& key_value_list);
 
     /**
+     * Types of conversions to std::string detectable by @ref ConversionToString template
+     */
+    struct TypeOfCoversionToString{enum Type{NONE,METHOD_TO_STRING, CONVERTIBLE_TO_STRING};};
+
+    /**
+     * Template detecting types of conversions to std::string
+     * @param T examined type
+     * @return result member set to detected type of conversion viz @ref TypeOfCoversionToString
+     */
+    template <typename T> class ConversionToString
+    {
+        typedef struct Tmp1 {char tmp[1];} none_;
+        typedef struct Tmp2 {char tmp[2];} to_string_;
+        typedef struct Tmp3 {char tmp[3];} convertible_to_string_;
+
+        template<typename U, std::string (U::*)() const> struct RETURNING_STRING_CONST_MEMBER_PTR {};
+        template<typename U> static to_string_ Test1(RETURNING_STRING_CONST_MEMBER_PTR<U, &U::to_string>*);
+        template<typename U> static none_ Test1(...);
+
+        static T MakeT();
+        static convertible_to_string_ Test2(const std::string&);
+        static none_ Test2(...);
+
+    public:
+        /**
+         * template parameter type
+         */
+        typedef T value_type;
+
+        /**
+         * Detected type of conversion
+         */
+        static const TypeOfCoversionToString::Type result
+            = (sizeof(Test1<T>(0)) == sizeof(to_string_))
+                ? TypeOfCoversionToString::METHOD_TO_STRING
+            : (sizeof(Test2(MakeT())) == sizeof(convertible_to_string_))
+                ? TypeOfCoversionToString::CONVERTIBLE_TO_STRING
+                    : TypeOfCoversionToString::NONE;
+    };
+
+    /**
+     * Overload of conversion to std::string using to_string() method
+     */
+    template <class T> std::string printable_conversion_to_string(const T& t,
+            EnumType<TypeOfCoversionToString::METHOD_TO_STRING>)
+    {
+        return t.to_string();
+    };
+
+    /**
+     * Overload of conversion to std::string using implicit conversion
+     */
+    template <class T> std::string printable_conversion_to_string(const T& t,
+            EnumType<TypeOfCoversionToString::CONVERTIBLE_TO_STRING>)
+    {
+        return t;
+    };
+
+    /**
      * Print vector of elements into the string. Values from input vector have to have conversion to string.
      * @param IN is input vector element type
      * @param in is input vector
@@ -98,14 +159,14 @@ namespace Util
 
         if(i != in.end())
         {
-            out += *i;
+            out += printable_conversion_to_string(*i,EnumType<ConversionToString<IN>::result >());
             ++i;
         }
 
         for(; i != in.end(); ++i)
         {
             out += " ";
-            out += *i;
+            out += printable_conversion_to_string(*i,EnumType<ConversionToString<IN>::result >());
         }
         return out;
     }

@@ -600,6 +600,34 @@ BOOST_AUTO_TEST_CASE(update_nsset)
     );
 }
 
+struct Empty{};
+struct HavingToString{
+    std::string to_string() const {return "test";}
+};
+struct HavingStreamOp{
+    friend std::ostream& operator<<(std::ostream& os, const HavingStreamOp& i)
+    {return os << "test";}
+};
+struct HavingConversionToString{
+    operator std::string() const {return "test";}
+};
 
+/**
+ * test possible conversions to string
+ */
+BOOST_AUTO_TEST_CASE(test_string_conversion)
+{
+    BOOST_CHECK(Util::ConversionToString<HavingToString>::result == Util::TypeOfCoversionToString::METHOD_TO_STRING);
+    BOOST_CHECK(Util::ConversionToString<Empty>::result != Util::TypeOfCoversionToString::METHOD_TO_STRING);
+    BOOST_CHECK(Util::ConversionToString<HavingConversionToString>::result != Util::TypeOfCoversionToString::METHOD_TO_STRING);
+
+    BOOST_CHECK(Util::ConversionToString<HavingToString>::result != Util::TypeOfCoversionToString::CONVERTIBLE_TO_STRING);
+    BOOST_CHECK(Util::ConversionToString<Empty>::result != Util::TypeOfCoversionToString::CONVERTIBLE_TO_STRING);
+    BOOST_CHECK(Util::ConversionToString<HavingConversionToString>::result == Util::TypeOfCoversionToString::CONVERTIBLE_TO_STRING);
+
+    BOOST_CHECK(Util::ConversionToString<std::string>::result != Util::TypeOfCoversionToString::NONE);
+    BOOST_CHECK(Util::ConversionToString<std::string>::result != Util::TypeOfCoversionToString::METHOD_TO_STRING);
+    BOOST_CHECK(Util::ConversionToString<std::string>::result == Util::TypeOfCoversionToString::CONVERTIBLE_TO_STRING);
+}
 BOOST_AUTO_TEST_SUITE_END();//TestPrintable
 

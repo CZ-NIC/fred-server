@@ -100,6 +100,17 @@ inline std::string escape2(std::string _input) {
 
 std::string make_svtrid(unsigned long long request_id);
 
-}
+
+/**
+ * Makes type from enum value
+ * @param VALUE is value of the enum
+ */
+template <int VALUE>
+struct EnumType
+{
+   enum { value = VALUE };
+};
+
+}//namespace Util
 
 #endif /*UTIL_H_*/
