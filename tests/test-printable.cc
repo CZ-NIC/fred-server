@@ -75,6 +75,8 @@
 #include "fredlib/contact/info_contact_history.h"
 #include "fredlib/contact/info_contact_compare.h"
 #include "fredlib/contact/merge_contact.h"
+#include "fredlib/contact/merge_contact_email_notification_data.h"
+#include "fredlib/contact/merge_contact_selection.h"
 
 
 #include "util/util.h"
@@ -630,5 +632,269 @@ BOOST_AUTO_TEST_CASE(test_string_conversion)
     BOOST_CHECK(Util::ConversionToString<std::string>::result != Util::TypeOfCoversionToString::METHOD_TO_STRING);
     BOOST_CHECK(Util::ConversionToString<std::string>::result == Util::TypeOfCoversionToString::CONVERTIBLE_TO_STRING);
 }
-BOOST_AUTO_TEST_SUITE_END();//TestPrintable
 
+
+
+/**
+ * test MergeContact print to string
+ */
+BOOST_AUTO_TEST_CASE(merge_contact)
+{
+    printable_test(
+    Fred::MergeContact("TEST-SRC-CONTACT", "TEST-DST-CONTACT", "REGISTRAR-HANDLE").set_logd_request_id(1)
+    );
+}
+
+/**
+ * test MergeContactOutput print to string
+ */
+BOOST_AUTO_TEST_CASE(merge_contact_output)
+{
+    printable_test(
+    Fred::MergeContactOutput
+              (
+                  Fred::MergeContactLockedContactId(
+                          0 //unsigned long long _src_contact_id
+                          , 0 // unsigned long long _src_contact_historyid
+                          , "TEST_CONTACT1" // const std::string& _src_contact_roid
+                          , "REG-SPONSORING"
+                          , 0 // unsigned long long _dst_contact_id
+                          , 0 // unsigned long long _dst_contact_historyid
+                          , "TEST_CONTACT5" //const std::string& _dst_contact_roid
+                          , "REG-SPONSORING"
+                  )
+                  , Util::vector_of<Fred::MergeContactUpdateDomainRegistrant>
+                      (Fred::MergeContactUpdateDomainRegistrant("domain.cz", 0, "REG-SPONSORING"
+                          , "REGISTRANT_CONTACT", Optional<unsigned long long>()))
+
+                  , Util::vector_of<Fred::MergeContactUpdateDomainAdminContact>
+                      (Fred::MergeContactUpdateDomainAdminContact("domain.cz", 0, "REG-SPONSORING"
+                          , "REM_ADMIN_CONTACT", "ADD_ADMIN_CONTACT", Optional<unsigned long long>()))
+
+                  , Util::vector_of<Fred::MergeContactUpdateNssetTechContact>
+                      (Fred::MergeContactUpdateNssetTechContact("NSSET_HANDLE", 0, "REG-SPONSORING"
+                          , "REM_TECH_CONTACT", "ADD_TECH_CONTACT", Optional<unsigned long long>()))
+
+                  , Util::vector_of<Fred::MergeContactUpdateKeysetTechContact>
+                      (Fred::MergeContactUpdateKeysetTechContact("KEYSET_HANDLE", 0, "REG-SPONSORING"
+                          , "REM_TECH_CONTACT", "ADD_TECH_CONTACT", Optional<unsigned long long>()))
+
+              )//MergeContactOutput
+    );
+}
+
+/**
+ * test MergeContactEmailNotificationData print to string
+ */
+BOOST_AUTO_TEST_CASE(merge_contact_email_notification_data)
+{
+    printable_test(
+            Fred::MergeContactEmailNotificationData(Util::vector_of<Fred::MergeContactEmailNotificationInput>
+                    (Fred::MergeContactEmailNotificationInput("TEST_CONTACT1", "TEST_CONTACT2", Fred::MergeContactOutput
+                        (
+                            Fred::MergeContactLockedContactId(
+                                0 //unsigned long long _src_contact_id
+                                , 0 // unsigned long long _src_contact_historyid
+                                , "TEST_CONTACT1" // const std::string& _src_contact_roid
+                                , "REG-SPONSORING"
+                                , 0 // unsigned long long _dst_contact_id
+                                , 0 // unsigned long long _dst_contact_historyid
+                                , "TEST_CONTACT2" //const std::string& _dst_contact_roid
+                                , "REG-SPONSORING"
+                            )
+                            , Util::vector_of<Fred::MergeContactUpdateDomainRegistrant>
+                                (Fred::MergeContactUpdateDomainRegistrant("domain.cz", 0, "REG-SPONSORING"
+                                    , "REGISTRANT_CONTACT", Optional<unsigned long long>()))
+
+                            , Util::vector_of<Fred::MergeContactUpdateDomainAdminContact>
+                                (Fred::MergeContactUpdateDomainAdminContact("domain.cz", 0, "REG-SPONSORING"
+                                    , "REM_ADMIN_CONTACT", "ADD_ADMIN_CONTACT", Optional<unsigned long long>()))
+
+                            , Util::vector_of<Fred::MergeContactUpdateNssetTechContact>
+                                (Fred::MergeContactUpdateNssetTechContact("NSSET_HANDLE", 0, "REG-SPONSORING"
+                                    , "REM_TECH_CONTACT", "ADD_TECH_CONTACT", Optional<unsigned long long>()))
+
+                            , Util::vector_of<Fred::MergeContactUpdateKeysetTechContact>
+                                (Fred::MergeContactUpdateKeysetTechContact("KEYSET_HANDLE", 0, "REG-SPONSORING"
+                                    , "REM_TECH_CONTACT", "ADD_TECH_CONTACT", Optional<unsigned long long>()))
+
+                        )//MergeContactOutput
+                    )//MergeContactEmailNotificationInput
+                  )//vector_of
+                  (Fred::MergeContactEmailNotificationInput("TEST_CONTACT3", "TEST_CONTACT2", Fred::MergeContactOutput
+                      (
+                          Fred::MergeContactLockedContactId(
+                                  0 //unsigned long long _src_contact_id
+                                  , 0 // unsigned long long _src_contact_historyid
+                                  , "TEST_CONTACT3" // const std::string& _src_contact_roid
+                                  , "REG-SPONSORING"
+                                  , 0 // unsigned long long _dst_contact_id
+                                  , 0 // unsigned long long _dst_contact_historyid
+                                  , "TEST_CONTACT2" //const std::string& _dst_contact_roid
+                                  , "REG-SPONSORING"
+                          )
+                          , Util::vector_of<Fred::MergeContactUpdateDomainRegistrant>
+                              (Fred::MergeContactUpdateDomainRegistrant("domain.cz", 0, "REG-SPONSORING"
+                                  , "REGISTRANT_CONTACT", Optional<unsigned long long>()))
+
+                          , Util::vector_of<Fred::MergeContactUpdateDomainAdminContact>
+                              (Fred::MergeContactUpdateDomainAdminContact("domain.cz", 0, "REG-SPONSORING"
+                                  , "REM_ADMIN_CONTACT", "ADD_ADMIN_CONTACT", Optional<unsigned long long>()))
+
+                          , Util::vector_of<Fred::MergeContactUpdateNssetTechContact>
+                              (Fred::MergeContactUpdateNssetTechContact("NSSET_HANDLE", 0, "REG-SPONSORING"
+                                  , "REM_TECH_CONTACT", "ADD_TECH_CONTACT", Optional<unsigned long long>()))
+
+                          , Util::vector_of<Fred::MergeContactUpdateKeysetTechContact>
+                              (Fred::MergeContactUpdateKeysetTechContact("KEYSET_HANDLE", 0, "REG-SPONSORING"
+                                  , "REM_TECH_CONTACT", "ADD_TECH_CONTACT", Optional<unsigned long long>()))
+
+                      )//MergeContactOutput
+                    )//MergeContactEmailNotificationInput
+                  )//vector_of
+                  (Fred::MergeContactEmailNotificationInput("TEST_CONTACT2", "TEST_CONTACT4", Fred::MergeContactOutput
+                      (
+                          Fred::MergeContactLockedContactId(
+                                  0 //unsigned long long _src_contact_id
+                                  , 0 // unsigned long long _src_contact_historyid
+                                  , "TEST_CONTACT2" // const std::string& _src_contact_roid
+                                  , "REG-SPONSORING"
+                                  , 0 // unsigned long long _dst_contact_id
+                                  , 0 // unsigned long long _dst_contact_historyid
+                                  , "TEST_CONTACT4" //const std::string& _dst_contact_roid
+                                  , "REG-SPONSORING"
+                          )
+                          , Util::vector_of<Fred::MergeContactUpdateDomainRegistrant>
+                              (Fred::MergeContactUpdateDomainRegistrant("domain.cz", 0, "REG-SPONSORING"
+                                , "REGISTRANT_CONTACT", Optional<unsigned long long>()))
+
+                          , Util::vector_of<Fred::MergeContactUpdateDomainAdminContact>
+                              (Fred::MergeContactUpdateDomainAdminContact("domain.cz", 0, "REG-SPONSORING"
+                                , "REM_ADMIN_CONTACT", "ADD_ADMIN_CONTACT", Optional<unsigned long long>()))
+
+                          , Util::vector_of<Fred::MergeContactUpdateNssetTechContact>
+                              (Fred::MergeContactUpdateNssetTechContact("NSSET_HANDLE", 0, "REG-SPONSORING"
+                                  , "REM_TECH_CONTACT", "ADD_TECH_CONTACT", Optional<unsigned long long>()))
+
+                          , Util::vector_of<Fred::MergeContactUpdateKeysetTechContact>
+                              (Fred::MergeContactUpdateKeysetTechContact("KEYSET_HANDLE", 0, "REG-SPONSORING"
+                                  , "REM_TECH_CONTACT", "ADD_TECH_CONTACT", Optional<unsigned long long>()))
+
+                        )//MergeContactOutput
+                    )//MergeContactEmailNotificationInput
+                  )//vector_of
+
+
+                  (Fred::MergeContactEmailNotificationInput("TEST_CONTACT1", "TEST_CONTACT5", Fred::MergeContactOutput
+                      (
+                          Fred::MergeContactLockedContactId(
+                                  0 //unsigned long long _src_contact_id
+                                  , 0 // unsigned long long _src_contact_historyid
+                                  , "TEST_CONTACT1" // const std::string& _src_contact_roid
+                                  , "REG-SPONSORING"
+                                  , 0 // unsigned long long _dst_contact_id
+                                  , 0 // unsigned long long _dst_contact_historyid
+                                  , "TEST_CONTACT5" //const std::string& _dst_contact_roid
+                                  , "REG-SPONSORING"
+                          )
+                          , Util::vector_of<Fred::MergeContactUpdateDomainRegistrant>
+                              (Fred::MergeContactUpdateDomainRegistrant("domain.cz", 0, "REG-SPONSORING"
+                                  , "REGISTRANT_CONTACT", Optional<unsigned long long>()))
+
+                          , Util::vector_of<Fred::MergeContactUpdateDomainAdminContact>
+                              (Fred::MergeContactUpdateDomainAdminContact("domain.cz", 0, "REG-SPONSORING"
+                                  , "REM_ADMIN_CONTACT", "ADD_ADMIN_CONTACT", Optional<unsigned long long>()))
+
+                          , Util::vector_of<Fred::MergeContactUpdateNssetTechContact>
+                              (Fred::MergeContactUpdateNssetTechContact("NSSET_HANDLE", 0, "REG-SPONSORING"
+                                  , "REM_TECH_CONTACT", "ADD_TECH_CONTACT", Optional<unsigned long long>()))
+
+                          , Util::vector_of<Fred::MergeContactUpdateKeysetTechContact>
+                              (Fred::MergeContactUpdateKeysetTechContact("KEYSET_HANDLE", 0, "REG-SPONSORING"
+                                  , "REM_TECH_CONTACT", "ADD_TECH_CONTACT", Optional<unsigned long long>()))
+
+                      )//MergeContactOutput
+                    )//MergeContactEmailNotificationInput
+                  )//vector_of
+
+                  (Fred::MergeContactEmailNotificationInput("TEST_CONTACT5", "TEST_CONTACT4", Fred::MergeContactOutput
+                      (
+                          Fred::MergeContactLockedContactId(
+                              0 //unsigned long long _src_contact_id
+                              , 0 // unsigned long long _src_contact_historyid
+                              , "TEST_CONTACT5" // const std::string& _src_contact_roid
+                              , "REG-SPONSORING"
+                              , 0 // unsigned long long _dst_contact_id
+                              , 0 // unsigned long long _dst_contact_historyid
+                              , "TEST_CONTACT4" //const std::string& _dst_contact_roid
+                              , "REG-SPONSORING"
+                          )
+                          , Util::vector_of<Fred::MergeContactUpdateDomainRegistrant>
+                              (Fred::MergeContactUpdateDomainRegistrant("domain.cz", 0, "REG-SPONSORING"
+                                  , "REGISTRANT_CONTACT", Optional<unsigned long long>()))
+
+                          , Util::vector_of<Fred::MergeContactUpdateDomainAdminContact>
+                              (Fred::MergeContactUpdateDomainAdminContact("domain.cz", 0, "REG-SPONSORING"
+                                  , "REM_ADMIN_CONTACT", "ADD_ADMIN_CONTACT", Optional<unsigned long long>()))
+
+                          , Util::vector_of<Fred::MergeContactUpdateNssetTechContact>
+                              (Fred::MergeContactUpdateNssetTechContact("NSSET_HANDLE", 0, "REG-SPONSORING"
+                                  , "REM_TECH_CONTACT", "ADD_TECH_CONTACT", Optional<unsigned long long>()))
+
+                          , Util::vector_of<Fred::MergeContactUpdateKeysetTechContact>
+                              (Fred::MergeContactUpdateKeysetTechContact("KEYSET_HANDLE", 0, "REG-SPONSORING"
+                                  , "REM_TECH_CONTACT", "ADD_TECH_CONTACT", Optional<unsigned long long>()))
+
+                      )//MergeContactOutput
+                    )//MergeContactEmailNotificationInput
+                  )//vector_of
+                )//MergeContactEmailNotificationData
+    );
+}
+
+/**
+ * test MergeContactNotificationEmailAddr  print to string
+ */
+BOOST_AUTO_TEST_CASE(merge_contact_email_notification_email_addr)
+{
+    Fred::MergeContactNotificationEmail ed1;
+    ed1.dst_contact_handle = "DST-CONTACT-HANDLE";
+    ed1.dst_contact_roid = "DST-CONTACT-ROID";
+    ed1.keyset_tech_list = Util::vector_of<std::string>("Keyset1")("Keyset2");
+
+    Fred::MergeContactNotificationEmail ed2 = ed1;
+
+    printable_test(
+            Fred::MergeContactNotificationEmailAddr(
+                Util::vector_of<Fred::MergeContactNotificationEmail>
+                (ed1)(ed2)
+        )//MergeContactNotificationEmailAddr
+    );
+}
+
+/**
+ * test MergeContactSelectionprint to string
+ */
+
+BOOST_AUTO_TEST_CASE(merge_contact_selection)
+{
+    printable_test(
+    Fred::MergeContactSelection(
+        Util::vector_of<std::string>("CONTACT1")("CONTACT2")
+        , Util::vector_of<Fred::ContactSelectionFilterType>
+        ("mcs_filter_identified_contact")("mcs_filter_not_regcznic"))
+    );
+}
+
+/**
+ * test MergeContactSelectionOutput print to string
+ */
+BOOST_AUTO_TEST_CASE(merge_contact_selection_output)
+{
+    printable_test(
+    Fred::MergeContactSelectionOutput("HANDLE", "FILTER")
+    );
+}
+
+
+BOOST_AUTO_TEST_SUITE_END();//TestPrintable

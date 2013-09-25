@@ -429,20 +429,15 @@ namespace Fred
         return MergeContactOutput();
     }//MergeContact::exec
 
-    std::ostream& operator<<(std::ostream& os, const MergeContact& i)
+    std::string MergeContact::to_string() const
     {
-        return os << "#MergeContact src_contact_handle_: " << i.src_contact_handle_
-                << " dst_contact_handle_: " << i.dst_contact_handle_
-                << " registrar_: " << i.registrar_
-                << " logd_request_id_: " << i.logd_request_id_.print_quoted()
-                ;
-    }
-
-    std::string MergeContact::to_string()
-    {
-        std::stringstream ss;
-        ss << *this;
-        return ss.str();
+        return Util::format_operation_state("MergeContact",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("src_contact_handle",src_contact_handle_))
+        (std::make_pair("dst_contact_handle",dst_contact_handle_))
+        (std::make_pair("registrar",registrar_))
+        (std::make_pair("logd_request_id",logd_request_id_.print_quoted()))
+        );
     }
 
 }//namespace Fred

@@ -30,12 +30,13 @@
 
 #include "fredlib/opexception.h"
 #include "fredlib/opcontext.h"
+#include "util/printable.h"
 #include "fredlib/contact/merge_contact.h"
 
 
 namespace Fred
 {
-    struct MergeContactEmailNotificationInput
+    struct MergeContactEmailNotificationInput : public Util::Printable
     {
         std::string src_contact_handle;//source contact identifier
         std::string dst_contact_handle;//destination contact identifier
@@ -48,17 +49,23 @@ namespace Fred
         , dst_contact_handle(_dst_contact_handle)
         , merge_output(_merge_output)
         {}
-        friend std::ostream& operator<<(std::ostream& os, const MergeContactEmailNotificationInput& i)
+
+        /**
+        * Dumps state of the instance into the string
+        * @return string with description of the instance state
+        */
+        std::string to_string() const
         {
-            return os << "MergeContactEmailNotificationInput"
-                    " src_contact_handle: " << i.src_contact_handle
-                << " dst_contact_handle: " << i.dst_contact_handle
-                << " merge_output: " << i.merge_output
-            ;
+            return Util::format_data_structure("MergeContactEmailNotificationInput",
+            Util::vector_of<std::pair<std::string,std::string> >
+            (std::make_pair("src_contact_handle",src_contact_handle))
+            (std::make_pair("dst_contact_handle",dst_contact_handle))
+            (std::make_pair("merge_output",merge_output.to_string()))
+            );
         }
     };
 
-    struct MergeContactNotificationEmail
+    struct MergeContactNotificationEmail : public Util::Printable
     {
         std::string dst_contact_handle;
         std::string dst_contact_roid;
@@ -68,29 +75,24 @@ namespace Fred
         std::vector<std::string> keyset_tech_list;
         std::vector<std::string> removed_list;
         std::vector<std::string> removed_roid_list;
-        friend std::ostream& operator<<(std::ostream& os, const MergeContactNotificationEmail& i)
+
+        /**
+        * Dumps state of the instance into the string
+        * @return string with description of the instance state
+        */
+        std::string to_string() const
         {
-            os << "MergeContactNotificationEmail dst_contact_handle: " << i.dst_contact_handle
-                    << " dst_contact_roid: " << i.dst_contact_roid;
-            if(!i.domain_registrant_list.empty()) os << " ";
-            for(std::vector<std::string>::const_iterator ci = i.domain_registrant_list.begin()
-                    ; ci != i.domain_registrant_list.end() ;  ++ci) os << *ci;
-            if(!i.domain_admin_list.empty()) os << " ";
-            for(std::vector<std::string>::const_iterator ci = i.domain_admin_list.begin()
-                    ; ci != i.domain_admin_list.end() ;  ++ci) os << *ci;
-            if(!i.nsset_tech_list.empty()) os << " ";
-            for(std::vector<std::string>::const_iterator ci = i.nsset_tech_list.begin()
-                    ; ci != i.nsset_tech_list.end() ;  ++ci) os << *ci;
-            if(!i.keyset_tech_list.empty()) os << " ";
-            for(std::vector<std::string>::const_iterator ci = i.keyset_tech_list.begin()
-                    ; ci != i.keyset_tech_list.end() ;  ++ci) os << *ci;
-            if(!i.removed_list.empty()) os << " ";
-            for(std::vector<std::string>::const_iterator ci = i.removed_list.begin()
-                    ; ci != i.removed_list.end() ;  ++ci) os << *ci;
-            if(!i.removed_roid_list.empty()) os << " ";
-            for(std::vector<std::string>::const_iterator ci = i.removed_roid_list.begin()
-                    ; ci != i.removed_roid_list.end() ;  ++ci) os << *ci;
-            return os;
+            return Util::format_data_structure("MergeContactNotificationEmail",
+            Util::vector_of<std::pair<std::string,std::string> >
+            (std::make_pair("dst_contact_handle",dst_contact_handle))
+            (std::make_pair("dst_contact_roid",dst_contact_roid))
+            (std::make_pair("domain_registrant_list",Util::format_vector(domain_registrant_list)))
+            (std::make_pair("domain_admin_list",Util::format_vector(domain_admin_list)))
+            (std::make_pair("nsset_tech_list",Util::format_vector(nsset_tech_list)))
+            (std::make_pair("keyset_tech_list",Util::format_vector(keyset_tech_list)))
+            (std::make_pair("removed_list",Util::format_vector(removed_list)))
+            (std::make_pair("removed_roid_list",Util::format_vector(removed_roid_list)))
+            );
         }
     };
 
@@ -105,7 +107,7 @@ namespace Fred
         std::set<std::string> removed_roid_list;
     };
 
-    class MergeContactEmailNotificationData
+    class MergeContactEmailNotificationData  : public Util::Printable
     {
         std::vector<MergeContactEmailNotificationInput> merge_contact_data_;
 
@@ -124,8 +126,11 @@ namespace Fred
         MergeContactEmailNotificationData(const std::vector<MergeContactEmailNotificationInput>& merge_contact_data_);
         std::vector<MergeContactNotificationEmail> exec(OperationContext& ctx);
 
-        friend std::ostream& operator<<(std::ostream& os, const MergeContactEmailNotificationData& i);
-        std::string to_string();
+        /**
+        * Dumps state of the instance into the string
+        * @return string with description of the instance state
+        */
+        std::string to_string() const;
 
     };//class MergeContactEmailNotificationData
 
@@ -135,7 +140,7 @@ namespace Fred
         MergeContactNotificationEmail email_data;
     };
 
-    class MergeContactNotificationEmailAddr
+    class MergeContactNotificationEmailAddr : public Util::Printable
     {
         const std::vector<MergeContactNotificationEmail> email_data_;
     public:
@@ -148,8 +153,11 @@ namespace Fred
         MergeContactNotificationEmailAddr(const std::vector<MergeContactNotificationEmail>& email_data);
         std::vector<MergeContactNotificationEmailWithAddr> exec(OperationContext& ctx);
 
-        friend std::ostream& operator<<(std::ostream& os, const MergeContactNotificationEmailAddr& ich);
-        std::string to_string();
+        /**
+        * Dumps state of the instance into the string
+        * @return string with description of the instance state
+        */
+        std::string to_string() const;
     };
 
 }//namespace Fred
