@@ -18,6 +18,7 @@
 
 #include "admin/contact/verification/test_impl/test_utils.h"
 #include "fredlib/contact/info_contact_history.h"
+
 #include "fredlib/opcontext.h"
 
 namespace Admin
