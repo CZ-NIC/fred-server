@@ -33,7 +33,7 @@ namespace Admin
             /**
              * @return final status of the test
              */
-            virtual std::string run(const long& _history_id) const = 0;
+            virtual std::string run(long _history_id) const = 0;
             virtual std::string get_name() const = 0;
             virtual ~ContactVerificationTest() {};
     };
