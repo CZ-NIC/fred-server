@@ -43,9 +43,11 @@ namespace Fred
     {}
 
     CreateAdministrativeObjectStateRestoreRequestId::CreateAdministrativeObjectStateRestoreRequestId(ObjectId _object_id,
-        const std::string &_reason)
+        const std::string &_reason,
+        const Optional<unsigned long long> _logd_request_id)
     :   object_id_(_object_id),
-        reason_(_reason)
+        reason_(_reason),
+        logd_request_id_(_logd_request_id)
     {}
 
     CreateAdministrativeObjectStateRestoreRequestId& CreateAdministrativeObjectStateRestoreRequestId::set_reason(const std::string &_reason)
@@ -54,6 +56,12 @@ namespace Fred
         return *this;
     }
 
+    CreateAdministrativeObjectStateRestoreRequestId& CreateAdministrativeObjectStateRestoreRequestId::set_logd_request_id(unsigned long long _logd_request_id)
+    {
+        logd_request_id_ = _logd_request_id;
+        return *this;
+    }
+    
     void CreateAdministrativeObjectStateRestoreRequestId::exec(OperationContext &_ctx)
     {
         //get object type
