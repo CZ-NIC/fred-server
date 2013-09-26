@@ -264,7 +264,7 @@ namespace Registry
                          "WHERE obr.id IN ($" << param.size() << "::bigint";
                 for (++pDomainId; pDomainId != _domain_list.end(); ++pDomainId) {
                     param(*pDomainId);
-                    query << "," << param.size() << "::bigint";
+                    query << ",$" << param.size() << "::bigint";
                 }
                 query << ") AND obr.erdate IS NULL "
                          "FOR UPDATE OF obr";
@@ -477,6 +477,8 @@ namespace Registry
             EX_DOMAIN_ID_NOT_BLOCKED domain_id_not_blocked;
             try {
                 Fred::OperationContext ctx;
+                DomainIdHandle domain_id_handle;
+                get_domain_handle(_domain_list, domain_id_handle, ctx);
                 const std::string sys_registrar = get_sys_registrar(ctx);
                 for (IdlDomainIdList::const_iterator pDomainId = _domain_list.begin(); pDomainId != _domain_list.end(); ++pDomainId) {
                     const Fred::ObjectId object_id = *pDomainId;
@@ -507,6 +509,7 @@ namespace Registry
                         if (e.is_set_server_blocked_absent()) {
                             EX_DOMAIN_ID_NOT_BLOCKED::Item e_item;
                             e_item.domain_id = e.get_server_blocked_absent();
+                            e_item.domain_handle = domain_id_handle[e_item.domain_id];
                             domain_id_not_blocked.what.insert(e_item);
                         }
                         else if (e.is_set_object_id_not_found()) {
@@ -530,6 +533,9 @@ namespace Registry
                     throw domain_id_not_blocked;
                 }
                 ctx.commit_transaction();
+            }
+            catch (const EX_DOMAIN_ID_NOT_FOUND&) {
+                throw;
             }
             catch (const EX_DOMAIN_ID_NOT_BLOCKED&) {
                 throw;
@@ -624,6 +630,8 @@ namespace Registry
             EX_DOMAIN_ID_NOT_BLOCKED domain_id_not_blocked;
             try {
                 Fred::OperationContext ctx;
+                DomainIdHandle domain_id_handle;
+                get_domain_handle(_domain_list, domain_id_handle, ctx);
                 const std::string sys_registrar = get_sys_registrar(ctx);
                 for (IdlDomainIdList::const_iterator pDomainId = _domain_list.begin(); pDomainId != _domain_list.end(); ++pDomainId) {
                     const Fred::ObjectId object_id = *pDomainId;
@@ -659,6 +667,7 @@ namespace Registry
                         if (e.is_set_server_blocked_absent()) {
                             EX_DOMAIN_ID_NOT_BLOCKED::Item e_item;
                             e_item.domain_id = e.get_server_blocked_absent();
+                            e_item.domain_handle = domain_id_handle[e_item.domain_id];
                             domain_id_not_blocked.what.insert(e_item);
                         }
                         else if (e.is_set_object_id_not_found()) {
@@ -696,6 +705,9 @@ namespace Registry
                 }
                 ctx.commit_transaction();
             }
+            catch (const EX_DOMAIN_ID_NOT_FOUND&) {
+                throw;
+            }
             catch (const EX_DOMAIN_ID_NOT_BLOCKED&) {
                 throw;
             }
@@ -732,6 +744,9 @@ namespace Registry
                 }
                 ctx.commit_transaction();
             }
+            catch (const EX_DOMAIN_ID_NOT_FOUND&) {
+                throw;
+            }
             catch (const std::exception &e) {
                 EX_INTERNAL_SERVER_ERROR ex;
                 ex.what = e.what();
@@ -753,6 +768,9 @@ namespace Registry
                     create_domain_name_blacklist.exec(ctx);
                 }
                 ctx.commit_transaction();
+            }
+            catch (const EX_DOMAIN_ID_NOT_FOUND&) {
+                throw;
             }
             catch (const std::exception &e) {
                 EX_INTERNAL_SERVER_ERROR ex;

@@ -146,6 +146,9 @@ namespace Registry
                                                               reason,
                                                               log_req_id);
             }
+            catch (const EX_DOMAIN_ID_NOT_FOUND &e) {
+                throw corba_wrap_exception(e);
+            }
             catch (const EX_DOMAIN_ID_NOT_BLOCKED &e) {
                 throw corba_wrap_exception(e);
             }
@@ -179,6 +182,9 @@ namespace Registry
                                          remove_admin_c,
                                          reason,
                                          log_req_id);
+            }
+            catch (const EX_DOMAIN_ID_NOT_FOUND &e) {
+                throw corba_wrap_exception(e);
             }
             catch (const EX_DOMAIN_ID_NOT_BLOCKED &e) {
                 throw corba_wrap_exception(e);
@@ -234,6 +240,9 @@ namespace Registry
                                            corba_unwrap_nullable_date(blacklist_to_date),
                                            with_delete,
                                            log_req_id);
+            }
+            catch (const EX_DOMAIN_ID_NOT_FOUND &e) {
+                throw corba_wrap_exception(e);
             }
             catch (const EX_INTERNAL_SERVER_ERROR &e) {
                 throw corba_wrap_exception(e);
