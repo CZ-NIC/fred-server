@@ -161,4 +161,20 @@ struct ContactMergeArgs
 };
 
 
+/**
+ * parameters for appropriate command options Handle#CLASS_NAME#Grp
+ */
+
+struct ContactVerificationFillQueueAutomaticTestsuiteArgs {
+    unsigned max_queue_lenght;
+
+    ContactVerificationFillQueueAutomaticTestsuiteArgs( ) { }
+
+    ContactVerificationFillQueueAutomaticTestsuiteArgs( unsigned _max_queue_lenght )
+        : max_queue_lenght(_max_queue_lenght)
+    { }
+};
+
+
+
 #endif // CONTACT_PARAMS_H_

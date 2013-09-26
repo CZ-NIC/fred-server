@@ -2434,4 +2434,38 @@ public:
 };//class HandleDomainNameValidationByZoneArgsGrp
 
 
+/**
+ * admin client contact_verification_fill_queue_automatic_testsuite options handler
+ */
+class HandleContactVerificationFillQueueAutomaticTestsuiteArgsGrp : public HandleCommandGrpArgs {
+    private:
+        const char* name() const { return "contact_verification_fill_queue_automatic_testsuite"; }
+        typedef boost::program_options::options_description options_description;
+
+    public:
+        ContactVerificationFillQueueAutomaticTestsuiteArgs params;
+
+        CommandDescription get_command_option() { return CommandDescription(name()); }
+
+        boost::shared_ptr<options_description> get_options_description() {
+            boost::shared_ptr<options_description> cfg_opts( new options_description(name()) );
+            cfg_opts->add_options()(name(), "fill contact checks queue by automatic testsuite checks");
+            cfg_opts->add_options()("max_queue_length",
+                boost::program_options::value<Checked::ulong>()
+                    ->default_value(100)
+                    ->notifier(save_arg<unsigned>(params.max_queue_lenght)),
+                    "maximum length of queue");
+
+            return cfg_opts;
+        }
+
+        std::size_t handle( int argc, char* argv[],  FakedArgs &fa, std::size_t option_group_index) {
+            boost::program_options::variables_map vm;
+            handler_parse_args(get_options_description(), vm, argc, argv, fa);
+
+            return option_group_index;
+        }
+};
+
+
 #endif //HANDLE_ADMINCLIENTSELECTION_ARGS_H_

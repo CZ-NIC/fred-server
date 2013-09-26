@@ -1672,7 +1672,7 @@ tests_test_server_SOURCES = \
 		tests/test-create-domain.cc \
 		tests/test-domain-name.cc \
 		tests/fredlib/contact/verification/test-create_check_unit.cc \
-		tests/fredlib/contact/verification/test-create_check_integ.cc \ 
+		tests/fredlib/contact/verification/test-create_check_integ.cc \
 		tests/fredlib/contact/verification/test-update_check_unit.cc \
 		tests/fredlib/contact/verification/test-update_check_integ.cc \
 		tests/fredlib/contact/verification/test-create_test_unit.cc \

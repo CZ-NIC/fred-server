@@ -25,6 +25,8 @@
 #define CONTACT_CLIENT_IMPL_H_
 
 #include <boost/date_time/gregorian/gregorian.hpp>
+#include <boost/foreach.hpp>
+
 #include "cfg/config_handler_decl.h"
 #include "cfg/handle_database_args.h"
 #include "cfg/handle_corbanameservice_args.h"
@@ -37,6 +39,7 @@
 #include "admin/contact/merge_contact.h"
 #include "admin/contact/merge_contact_reporting.h"
 #include "corba/logger_client_impl.h"
+#include "admin/contact/verification/fill_automatic_check_queue.h"
 
 
 /**
@@ -225,6 +228,41 @@ struct contact_merge_impl
 
         return;
     }
+};
+
+
+
+/**
+ * admin client implementation of contact verification check queue filling by automatic testsuite checks
+ */
+struct contact_verification_fill_queue_automatic_testsuite_impl
+{
+  void operator()() const
+  {
+      Logging::Context log("contact_verification_fill_queue_automatic_testsuite");
+
+      ContactVerificationFillQueueAutomaticTestsuiteArgs params = CfgArgGroups::instance()
+          ->get_handler_ptr_by_type<HandleContactVerificationFillQueueAutomaticTestsuiteArgsGrp>()->params;
+
+      typedef boost::tuple<std::string, std::string, long long> check_data_type;
+
+      std::vector<check_data_type> enqueued_checks = Admin::fill_automatic_check_queue(params.max_queue_lenght);
+
+      if(enqueued_checks.size() > 0) {
+          std::cout << "enqueued check handles:" << std::endl;
+
+          BOOST_FOREACH(const check_data_type& info, enqueued_checks) {
+              std::cout
+                << "check handle: "       << info.get<0>() << "\t"
+                << "contact handle: "     << info.get<1>() << "\t"
+                << "contact history id: " << info.get<2>() << std::endl;
+          }
+      } else {
+          std::cout << "no checks enqueued" << std::endl;
+      }
+
+      return ;
+  }
 };
 
 
