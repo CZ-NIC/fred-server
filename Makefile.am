@@ -1503,7 +1503,11 @@ src_cli_admin_fred_admin_SOURCES = \
 		src/admin/contact/merge_contact_reporting.cc \
 		src/admin/contact/merge_contact_reporting.h \
 		src/cli_admin/domain_name_validation_params.h \
-		src/cli_admin/domain_name_validation_init.h
+		src/cli_admin/domain_name_validation_init.h \
+		src/admin/contact/verification/fill_automatic_check_queue.h \
+		src/admin/contact/verification/fill_automatic_check_queue.cc \
+		src/admin/contact/verification/run_first_enqueued_check.h \
+		src/admin/contact/verification/run_first_enqueued_check.cc
 
 src_cli_admin_fred_admin_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS)
