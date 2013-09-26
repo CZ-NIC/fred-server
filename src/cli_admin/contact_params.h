@@ -176,5 +176,21 @@ struct ContactVerificationFillQueueAutomaticTestsuiteArgs {
 };
 
 
+/**
+ * parameters for appropriate command options Handle#CLASS_NAME#Grp
+ */
+
+struct ContactVerificationEnqueueCheckArgs {
+    std::string contact_handle;
+    std::string testsuite_name;
+
+    ContactVerificationEnqueueCheckArgs( ) { }
+
+    ContactVerificationEnqueueCheckArgs( const std::string& _contact_handle, const std::string& _testsuite_name )
+    : contact_handle(_contact_handle),
+      testsuite_name(_testsuite_name)
+    { }
+};
+
 
 #endif // CONTACT_PARAMS_H_

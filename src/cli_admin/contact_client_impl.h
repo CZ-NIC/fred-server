@@ -40,6 +40,7 @@
 #include "admin/contact/merge_contact_reporting.h"
 #include "corba/logger_client_impl.h"
 #include "admin/contact/verification/fill_automatic_check_queue.h"
+#include "fredlib/contact/verification/create_check.h"
 
 
 /**
@@ -265,5 +266,41 @@ struct contact_verification_fill_queue_automatic_testsuite_impl
   }
 };
 
+
+
+/**
+ * admin client implementation of contact verification check enqueueing
+ */
+struct contact_verification_enqueue_check_impl
+{
+  void operator()() const
+  {
+      Logging::Context log("contact_verification_enqueue_check ");
+
+      ContactVerificationEnqueueCheckArgs params = CfgArgGroups::instance()
+        ->get_handler_ptr_by_type<HandleContactVerificationEnqueueCheckArgsGrp>()->params;
+
+      Fred::OperationContext ctx;
+      std::string check_handle;
+      try {
+          check_handle = Fred::CreateContactCheck(params.contact_handle, params.testsuite_name)
+              .exec(ctx);
+          ctx.commit_transaction();
+      } catch (Fred::CreateContactCheck::ExceptionUnknownContactHandle& e) {
+          throw ReturnCode(
+              std::string("given contact handle (") + params.contact_handle + ") is unknown",
+              1);
+      } catch (Fred::CreateContactCheck::ExceptionUnknownTestsuiteName& e) {
+          throw ReturnCode(
+              std::string("given testsuite name (") + params.testsuite_name + ") is unknown",
+              1);
+      }
+
+      // if no exception was translated to throw (and the check was really created)...
+      std::cout << "enqueued check with handle: " << check_handle << std::endl;
+
+      return ;
+  }
+};
 
 #endif // CONTACT_CLIENT_IMPL_H_

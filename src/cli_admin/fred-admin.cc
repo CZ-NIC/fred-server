@@ -135,6 +135,7 @@ CommandHandlerPtrVector chpv = boost::assign::list_of
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleInitDomainNameValidationCheckersArgsGrp),init_domain_name_validation_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleDomainNameValidationByZoneArgsGrp),set_zone_domain_name_validation_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleContactVerificationFillQueueAutomaticTestsuiteArgsGrp), contact_verification_fill_queue_automatic_testsuite_impl()))
+    (CommandHandlerParam(HandleCommandArgsPtr(new HandleContactVerificationEnqueueCheckArgsGrp), contact_verification_enqueue_check_impl()))
     ;
 
 CommandOptionGroups cog(chpv);
