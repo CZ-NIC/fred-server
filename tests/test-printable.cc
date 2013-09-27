@@ -607,6 +607,16 @@ struct Empty{};
 struct HavingToString{
     std::string to_string() const {return "test";}
 };
+struct HavingToStringDev1{
+    std::string to_string(int) const {return "test";}
+};
+struct HavingToStringDev2{
+    void to_string() const {}
+};
+struct HavingToStringDev3{
+    std::string to_string() {return "test";}
+};
+
 struct HavingStreamOp{
     friend std::ostream& operator<<(std::ostream& os, const HavingStreamOp& i)
     {return os << "test";}
@@ -631,6 +641,10 @@ BOOST_AUTO_TEST_CASE(test_string_conversion)
     BOOST_CHECK(Util::ConversionToString<std::string>::result != Util::TypeOfCoversionToString::NONE);
     BOOST_CHECK(Util::ConversionToString<std::string>::result != Util::TypeOfCoversionToString::METHOD_TO_STRING);
     BOOST_CHECK(Util::ConversionToString<std::string>::result == Util::TypeOfCoversionToString::CONVERTIBLE_TO_STRING);
+
+    BOOST_CHECK(Util::ConversionToString<HavingToStringDev1>::result != Util::TypeOfCoversionToString::METHOD_TO_STRING);
+    BOOST_CHECK(Util::ConversionToString<HavingToStringDev2>::result != Util::TypeOfCoversionToString::METHOD_TO_STRING);
+    BOOST_CHECK(Util::ConversionToString<HavingToStringDev3>::result != Util::TypeOfCoversionToString::METHOD_TO_STRING);
 }
 
 
