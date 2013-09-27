@@ -625,8 +625,12 @@ struct HavingConversionToString{
     operator std::string() const {return "test";}
 };
 
+struct HavingConversionToStringDev1{
+    operator std::string() {return "test";}
+};
+
 /**
- * test possible conversions to string
+ * test possible conversions to string with to_string exact signature match
  */
 BOOST_AUTO_TEST_CASE(test_string_conversion)
 {
@@ -634,17 +638,23 @@ BOOST_AUTO_TEST_CASE(test_string_conversion)
     BOOST_CHECK(Util::ConversionToString<Empty>::result != Util::TypeOfCoversionToString::METHOD_TO_STRING);
     BOOST_CHECK(Util::ConversionToString<HavingConversionToString>::result != Util::TypeOfCoversionToString::METHOD_TO_STRING);
 
+    //check conversion to string
     BOOST_CHECK(Util::ConversionToString<HavingToString>::result != Util::TypeOfCoversionToString::CONVERTIBLE_TO_STRING);
     BOOST_CHECK(Util::ConversionToString<Empty>::result != Util::TypeOfCoversionToString::CONVERTIBLE_TO_STRING);
     BOOST_CHECK(Util::ConversionToString<HavingConversionToString>::result == Util::TypeOfCoversionToString::CONVERTIBLE_TO_STRING);
+    BOOST_CHECK(Util::ConversionToString<HavingConversionToStringDev1>::result == Util::TypeOfCoversionToString::CONVERTIBLE_TO_STRING);
 
+    //check string is recognized as convertible to string
     BOOST_CHECK(Util::ConversionToString<std::string>::result != Util::TypeOfCoversionToString::NONE);
     BOOST_CHECK(Util::ConversionToString<std::string>::result != Util::TypeOfCoversionToString::METHOD_TO_STRING);
     BOOST_CHECK(Util::ConversionToString<std::string>::result == Util::TypeOfCoversionToString::CONVERTIBLE_TO_STRING);
 
+    //check signature detection
     BOOST_CHECK(Util::ConversionToString<HavingToStringDev1>::result != Util::TypeOfCoversionToString::METHOD_TO_STRING);
     BOOST_CHECK(Util::ConversionToString<HavingToStringDev2>::result != Util::TypeOfCoversionToString::METHOD_TO_STRING);
     BOOST_CHECK(Util::ConversionToString<HavingToStringDev3>::result != Util::TypeOfCoversionToString::METHOD_TO_STRING);
+
+
 }
 
 
