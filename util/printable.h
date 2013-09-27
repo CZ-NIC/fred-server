@@ -94,7 +94,7 @@ namespace Util
 
     /**
      * Template detecting types of conversions to std::string
-     * Using SFINAE. Might be later replaced by the Boost Type Traits Introspection library.
+     * Using SFINAE. Might be later replaced by the Boost Type Traits Introspection library or C++ 11 type_traits.
      * @param T examined type
      * @return result member set to detected type of conversion viz @ref TypeOfCoversionToString
      */
