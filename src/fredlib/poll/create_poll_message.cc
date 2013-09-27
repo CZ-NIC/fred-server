@@ -68,6 +68,13 @@ unsigned long long CreatePollMessage::exec(Fred::OperationContext &_ctx)
     return mid;
 }
 
+std::string CreatePollMessage::to_string() const
+{
+    return Util::format_operation_state("CreatePollMessage",
+    Util::vector_of<std::pair<std::string,std::string> >
+    (std::make_pair("registrar_handle",registrar_handle_))
+    (std::make_pair("msg_type",msg_type_)));
+}
 
 }
 }
