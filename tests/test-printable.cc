@@ -79,6 +79,7 @@
 #include "fredlib/contact/merge_contact_selection.h"
 #include "fredlib/poll/create_delete_contact_poll_message.h"
 #include "fredlib/poll/create_poll_message.h"
+#include "fredlib/poll/create_update_object_poll_message.h"
 
 
 #include "util/util.h"
@@ -941,5 +942,15 @@ BOOST_AUTO_TEST_CASE(create_poll_message)
 {
     printable_test(Fred::Poll::CreatePollMessage("REGISTRAR","MSG-TYPE"));
 }
+
+/**
+ * test CreateUpdateObjectPollMessage print to string
+ */
+
+BOOST_AUTO_TEST_CASE(create_update_object_poll_message)
+{
+    printable_test(Fred::Poll::CreateUpdateObjectPollMessage(0));
+}
+
 
 BOOST_AUTO_TEST_SUITE_END();//TestPrintable
