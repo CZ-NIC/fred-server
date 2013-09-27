@@ -1509,7 +1509,9 @@ src_cli_admin_fred_admin_SOURCES = \
 		src/admin/contact/verification/run_first_enqueued_check.h \
 		src/admin/contact/verification/run_first_enqueued_check.cc \
 		src/admin/contact/verification/run_all_enqueued_checks.h \
-		src/admin/contact/verification/run_all_enqueued_checks.cc
+		src/admin/contact/verification/run_all_enqueued_checks.cc \
+		src/admin/contact/verification/create_test_impl_prototypes.h \
+		src/admin/contact/verification/create_test_impl_prototypes.cc
 
 src_cli_admin_fred_admin_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS)
