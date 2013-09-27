@@ -77,9 +77,11 @@
 #include "fredlib/contact/merge_contact.h"
 #include "fredlib/contact/merge_contact_email_notification_data.h"
 #include "fredlib/contact/merge_contact_selection.h"
+#include "fredlib/poll/create_delete_contact_poll_message.h"
 
 
 #include "util/util.h"
+#include "util/printable.h"
 
 #include "random_data_generator.h"
 #include "concurrent_queue.h"
@@ -921,5 +923,13 @@ BOOST_AUTO_TEST_CASE(merge_contact_selection_output)
     );
 }
 
+/**
+ * test CreateDeleteContactPollMessage print to string
+ */
+
+BOOST_AUTO_TEST_CASE(create_delete_contact_poll_message)
+{
+    printable_test(Fred::Poll::CreateDeleteContactPollMessage(0));
+}
 
 BOOST_AUTO_TEST_SUITE_END();//TestPrintable

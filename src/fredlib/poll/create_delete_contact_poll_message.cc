@@ -42,6 +42,12 @@ void CreateDeleteContactPollMessage::exec(Fred::OperationContext &_ctx)
 
 }
 
+std::string CreateDeleteContactPollMessage::to_string() const
+{
+    return Util::format_operation_state("CreateDeleteContactPollMessage",
+    Util::vector_of<std::pair<std::string,std::string> >
+    (std::make_pair("history_id",boost::lexical_cast<std::string>(history_id_))));
+}
 
 }
 }
