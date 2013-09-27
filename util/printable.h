@@ -94,23 +94,26 @@ namespace Util
 
     /**
      * Template detecting types of conversions to std::string
-     * Using SFINAE.
+     * Using SFINAE. Might be later replaced by the Boost Type Traits Introspection library.
      * @param T examined type
      * @return result member set to detected type of conversion viz @ref TypeOfCoversionToString
      */
     template <typename T> class ConversionToString
     {
-        typedef struct Tmp1 {char tmp[1];} none_;
-        typedef struct Tmp2 {char tmp[2];} to_string_;
-        typedef struct Tmp3 {char tmp[3];} convertible_to_string_;
+        //return types have to differ in size
+        struct NoConversionDetected {char setting_different_type_size[1];};
+        struct Method_to_string_Detected {char setting_different_type_size[2];};
+        struct ImplicitConversionDetected {char setting_different_type_size[3];};
 
-        template<typename U, std::string (U::*)() const> struct RETURNING_STRING_CONST_MEMBER_PTR {};
-        template<typename U> static to_string_ Test1(RETURNING_STRING_CONST_MEMBER_PTR<U, &U::to_string>*);
-        template<typename U> static none_ Test1(...);
+        //detection of method std::string T::to_string() const
+        template<typename U, std::string (U::*)() const> struct MemberReturning_string_SignatureSpecificationUsingMemberPointer {};
+        template<typename U> static Method_to_string_Detected detect_to_string_method(MemberReturning_string_SignatureSpecificationUsingMemberPointer<U, &U::to_string>*);
+        template<typename U> static NoConversionDetected detect_to_string_method(...);
 
-        static T MakeT();
-        static convertible_to_string_ Test2(const std::string&);
-        static none_ Test2(...);
+        //detection of T conversion to std::string
+        static T makeT();//T constructor might not be accessible, so using this factory declaration instead
+        static ImplicitConversionDetected detect_conversion_to_string(const std::string&);
+        static NoConversionDetected detect_conversion_to_string(...);
 
     public:
         /**
@@ -122,9 +125,9 @@ namespace Util
          * Detected type of conversion
          */
         static const TypeOfConversionToString::Type result
-            = (sizeof(Test1<T>(0)) == sizeof(to_string_))
+            = (sizeof(detect_to_string_method<T>(0)) == sizeof(Method_to_string_Detected))
                 ? TypeOfConversionToString::METHOD_TO_STRING
-            : (sizeof(Test2(MakeT())) == sizeof(convertible_to_string_))
+            : (sizeof(detect_conversion_to_string(makeT())) == sizeof(ImplicitConversionDetected))
                 ? TypeOfConversionToString::CONVERTIBLE_TO_STRING
                     : TypeOfConversionToString::NONE;
     };
