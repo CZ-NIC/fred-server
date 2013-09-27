@@ -28,6 +28,7 @@
 
 #include "fredlib/opexception.h"
 #include "fredlib/opcontext.h"
+#include "util/printable.h"
 
 namespace Fred
 {
@@ -35,7 +36,7 @@ namespace Fred
     /**
     * Checking of nsset properties.
     */
-    class CheckNsset
+    class CheckNsset : public Util::Printable
     {
         const std::string handle_;/**< nsset identifier */
     public:
@@ -81,21 +82,11 @@ namespace Fred
         * @return true if protected, false if not
         */
         bool is_free(OperationContext& ctx);
-
         /**
-        * Dump state of the instance to output stream.
-        * @param os an output stream.
-        * @param i the instance
-        * @return output stream reference for chaining of calls
+        * Dumps state of the instance into the string
+        * @return string with description of the instance state
         */
-        friend std::ostream& operator<<(std::ostream& os, const CheckNsset& i);
-
-        /**
-        * Dump state of the instance to std::string using operator<<.
-        * @see operator<<
-        * @return string with description of instance state
-        */
-        std::string to_string();
+        std::string to_string() const;
     };//class CheckNsset
 
 }//namespace Fred

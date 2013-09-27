@@ -212,6 +212,35 @@ namespace Fred
         print_diff_ = print_diff;
     }
 
+    std::string InfoDomainData::to_string() const
+    {
+        return Util::format_data_structure("InfoDomainData",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("roid",roid))
+        (std::make_pair("fqdn",fqdn))
+        (std::make_pair("registrant_handle",registrant_handle))
+        (std::make_pair("nsset_handle",nsset_handle.print_quoted()))
+        (std::make_pair("keyset_handle",keyset_handle.print_quoted()))
+        (std::make_pair("sponsoring_registrar_handle",sponsoring_registrar_handle))
+        (std::make_pair("create_registrar_handle",create_registrar_handle))
+        (std::make_pair("update_registrar_handle",update_registrar_handle.print_quoted()))
+        (std::make_pair("creation_time",boost::lexical_cast<std::string>(creation_time)))
+        (std::make_pair("update_time",update_time.print_quoted()))
+        (std::make_pair("transfer_time",transfer_time.print_quoted()))
+        (std::make_pair("expiration_date",boost::lexical_cast<std::string>(expiration_date)))
+        (std::make_pair("authinfopw",authinfopw))
+        (std::make_pair("admin_contacts",Util::format_vector(admin_contacts)))
+        (std::make_pair("enum_domain_validation",enum_domain_validation.print_quoted()))
+        (std::make_pair("outzone_time",boost::lexical_cast<std::string>(outzone_time)))
+        (std::make_pair("cancel_time",boost::lexical_cast<std::string>(cancel_time)))
+        (std::make_pair("delete_time",delete_time.print_quoted()))
+        (std::make_pair("crhistoryid",boost::lexical_cast<std::string>(crhistoryid)))
+        (std::make_pair("historyid",boost::lexical_cast<std::string>(historyid)))
+        );
+
+
+    }
+
 
 }//namespace Fred
 

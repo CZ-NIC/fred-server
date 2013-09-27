@@ -105,16 +105,11 @@ namespace Fred
 
     }//DeleteKeyset::exec
 
-    std::ostream& operator<<(std::ostream& os, const DeleteKeyset& i)
+    std::string DeleteKeyset::to_string() const
     {
-        return os << "#DeleteKeyset handle: " << i.handle_
-                ;
-    }
-    std::string DeleteKeyset::to_string()
-    {
-        std::stringstream ss;
-        ss << *this;
-        return ss.str();
+        return Util::format_operation_state("DeleteKeyset",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("handle",handle_)));
     }
 
 

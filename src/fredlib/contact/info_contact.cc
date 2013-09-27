@@ -192,19 +192,24 @@ namespace Fred
         return contact_info_output;
     }//InfoContact::exec
 
-    std::ostream& operator<<(std::ostream& os, const InfoContact& i)
+    std::string InfoContact::to_string() const
     {
-        return os << "#InfoContact handle: " << i.handle_
-                << " lock: " << i.lock_
-                ;
-    }
-    std::string InfoContact::to_string()
-    {
-        std::stringstream ss;
-        ss << *this;
-        return ss.str();
+        return Util::format_operation_state("InfoContact",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("handle",handle_))
+        (std::make_pair("lock",lock_ ? "true":"false"))
+        );
     }
 
+    std::string InfoContactOutput::to_string() const
+    {
+        return Util::format_data_structure("InfoContactOutput",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("info_contact_data",info_contact_data.to_string()))
+        (std::make_pair("utc_timestamp",boost::lexical_cast<std::string>(utc_timestamp)))
+        (std::make_pair("local_timestamp",boost::lexical_cast<std::string>(local_timestamp)))
+        );
+    }
 
 }//namespace Fred
 

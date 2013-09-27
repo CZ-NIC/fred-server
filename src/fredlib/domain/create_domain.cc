@@ -546,31 +546,24 @@ namespace Fred
         return timestamp;
     }
 
-    std::ostream& operator<<(std::ostream& os, const CreateDomain& i)
+    std::string CreateDomain::to_string() const
     {
-        os << "#CreateDomain fqdn: " << i.fqdn_
-            << " registrar: " << i.registrar_
-            << " authinfo: " << i.authinfo_.print_quoted()
-            << " registrant: " << i.registrant_
-            << " nsset: " << (i.nsset_.isset() ? i.nsset_.get_value().print_quoted() : i.nsset_.print_quoted())
-            << " keyset: " << (i.keyset_.isset() ? i.keyset_.get_value().print_quoted() : i.keyset_.print_quoted())
-            ;
-        if(!i.admin_contacts_.empty()) os << " admin_contacts: ";
-        for(std::vector<std::string>::const_iterator ci = i.admin_contacts_.begin()
-                ; ci != i.admin_contacts_.end() ; ++ci ) os << *ci;
-        os << " expiration_date: " << i.expiration_date_.print_quoted()
-            << " enum_validation_expiration: " << i.enum_validation_expiration_.print_quoted()
-            << " enum_publish_flag: " << i.enum_publish_flag_.print_quoted()
-            << " logd_request_id: " << i.logd_request_id_.print_quoted();
-        return os;
+        return Util::format_operation_state("CreateDomain",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("fqdn",fqdn_))
+        (std::make_pair("registrar",registrar_))
+        (std::make_pair("authinfo",authinfo_.print_quoted()))
+        (std::make_pair("registrant",registrant_))
+        (std::make_pair("nsset",nsset_.isset() ? nsset_.get_value().print_quoted() : nsset_.print_quoted()))
+        (std::make_pair("keyset",keyset_.isset() ? keyset_.get_value().print_quoted() : keyset_.print_quoted()))
+        (std::make_pair("admin_contacts",Util::format_vector(admin_contacts_)))
+        (std::make_pair("expiration_date",expiration_date_.print_quoted()))
+        (std::make_pair("enum_validation_expiration",enum_validation_expiration_.print_quoted()))
+        (std::make_pair("enum_publish_flag",enum_publish_flag_.print_quoted()))
+        (std::make_pair("logd_request_id",logd_request_id_.print_quoted()))
+        );
     }
 
-    std::string CreateDomain::to_string()
-    {
-        std::stringstream ss;
-        ss << *this;
-        return ss.str();
-    }
 
 }//namespace Fred
 

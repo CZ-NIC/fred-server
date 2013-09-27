@@ -369,38 +369,19 @@ namespace Fred
         return history_id;
     }//UpdateKeyset::exec
 
-    std::ostream& operator<<(std::ostream& os, const UpdateKeyset& i)
+    std::string UpdateKeyset::to_string() const
     {
-        os << "#UpdateKeyset handle: " << i.handle_
-            << " registrar: " << i.registrar_
-            << " sponsoring_registrar: " << i.sponsoring_registrar_.print_quoted()
-            << " authinfo: " << i.authinfo_.print_quoted();
-
-        if(!i.add_tech_contact_.empty()) os << " add_tech_contact: ";
-        for(std::vector<std::string>::const_iterator ci = i.add_tech_contact_.begin()
-                ; ci != i.add_tech_contact_.end() ; ++ci ) os << *ci;
-
-        if(!i.rem_tech_contact_.empty()) os << " rem_tech_contact: ";
-        for(std::vector<std::string>::const_iterator ci = i.rem_tech_contact_.begin()
-                ; ci != i.rem_tech_contact_.end() ; ++ci ) os << *ci;
-
-        if(!i.add_dns_key_.empty()) os << " add_dns_key: ";
-        for(std::vector<DnsKey>::const_iterator ci = i.add_dns_key_.begin()
-                ; ci != i.add_dns_key_.end() ; ++ci ) os << static_cast<std::string>(*ci);
-
-        if(!i.rem_dns_key_.empty()) os << " rem_dns_key: ";
-        for(std::vector<DnsKey>::const_iterator ci = i.rem_dns_key_.begin()
-                ; ci != i.rem_dns_key_.end() ; ++ci ) os << static_cast<std::string>(*ci);
-
-        os << " logd_request_id: " << i.logd_request_id_.print_quoted();
-        return os;
+        return Util::format_operation_state("UpdateKeyset",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("handle",handle_))
+        (std::make_pair("registrar",registrar_))
+        (std::make_pair("sponsoring_registrar",sponsoring_registrar_.print_quoted()))
+        (std::make_pair("authinfo",authinfo_.print_quoted()))
+        (std::make_pair("add_tech_contact",Util::format_vector(add_tech_contact_)))
+        (std::make_pair("rem_tech_contact",Util::format_vector(rem_tech_contact_)))
+        (std::make_pair("add_dns_key", Util::format_vector(add_dns_key_)))
+        (std::make_pair("rem_dns_key", Util::format_vector(rem_dns_key_)))
+        (std::make_pair("logd_request_id",logd_request_id_.print_quoted()))
+        );
     }
-
-    std::string UpdateKeyset::to_string()
-    {
-        std::stringstream ss;
-        ss << *this;
-        return ss.str();
-    }
-
 }//namespace Fred

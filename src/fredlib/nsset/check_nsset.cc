@@ -105,16 +105,11 @@ namespace Fred
         return true;//meaning ok
     }
 
-    std::ostream& operator<<(std::ostream& os, const CheckNsset& i)
+    std::string CheckNsset::to_string() const
     {
-        return os << "#CheckNsset handle: " << i.handle_
-                ;
-    }
-    std::string CheckNsset::to_string()
-    {
-        std::stringstream ss;
-        ss << *this;
-        return ss.str();
+        return Util::format_operation_state("CheckNsset",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("handle",handle_)));
     }
 
 }//namespace Fred

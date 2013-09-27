@@ -268,19 +268,13 @@ namespace Fred
         return true;//meaning ok
     }
 
-
-    std::ostream& operator<<(std::ostream& os, const CheckDomain& i)
+    std::string CheckDomain::to_string() const
     {
-        return os << "#CheckDomain fqdn: " << i.fqdn_
-                ;
+        return Util::format_operation_state("CheckDomain",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("fqdn",fqdn_))
+        );
     }
-    std::string CheckDomain::to_string()
-    {
-        std::stringstream ss;
-        ss << *this;
-        return ss.str();
-    }
-
 
 }//namespace Fred
 

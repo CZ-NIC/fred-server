@@ -34,6 +34,7 @@
 #include "fredlib/opcontext.h"
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
+#include "util/printable.h"
 #include "fredlib/domain/info_domain_data.h"
 
 namespace Fred
@@ -42,7 +43,7 @@ namespace Fred
     /**
     * Element of domain history data.
     */
-    struct InfoDomainHistoryOutput
+    struct InfoDomainHistoryOutput : public Util::Printable
     {
         InfoDomainData info_domain_data;/**< data of the domain */
 
@@ -56,6 +57,12 @@ namespace Fred
         */
         InfoDomainHistoryOutput()
         {}
+
+        /**
+        * Dumps state of the instance into the string
+        * @return string with description of the instance state
+        */
+        std::string to_string() const;
     };
 
     /**
@@ -66,7 +73,7 @@ namespace Fred
     * In case of wrong input data or other predictable and superable failure, the instance of @ref InfoDomainHistory::Exception is thrown with appropriate attributes set.
     * In case of other unsuperable failures and inconstistencies, the instance of @ref InternalError or other exception is thrown.
     */
-    class InfoDomainHistory
+    class InfoDomainHistory  : public Util::Printable
     {
         const std::string roid_;/**< registry object identifier of the domain */
         Optional<boost::posix_time::ptime> history_timestamp_;/**< timestamp of history state we want to get (in time zone set in @ref local_timestamp_pg_time_zone_name parameter) */
@@ -115,18 +122,10 @@ namespace Fred
         std::vector<InfoDomainHistoryOutput> exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
 
         /**
-        * Dumps state of the instance into stream
-        * @param os contains output stream reference
-        * @param i reference of instance to be dumped into the stream
-        * @return output stream reference
-        */
-        friend std::ostream& operator<<(std::ostream& os, const InfoDomainHistory& i);
-
-        /**
         * Dumps state of the instance into the string
         * @return string with description of the instance state
         */
-        std::string to_string();
+        std::string to_string() const;
 
     };//class InfoDomainHistory
 

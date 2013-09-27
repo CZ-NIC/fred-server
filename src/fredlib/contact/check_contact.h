@@ -28,6 +28,7 @@
 
 #include "fredlib/opexception.h"
 #include "fredlib/opcontext.h"
+#include "util/printable.h"
 
 namespace Fred
 {
@@ -35,7 +36,7 @@ namespace Fred
     /**
     * Checking of contact properties.
     */
-    class CheckContact
+    class CheckContact : public Util::Printable
     {
         const std::string handle_;/**< contact identifier */
     public:
@@ -83,19 +84,10 @@ namespace Fred
         bool is_free(OperationContext& ctx);
 
         /**
-        * Dumps state of the instance to output stream.
-        * @param os an output stream.
-        * @param i the instance
-        * @return output stream reference for chaining of calls
+        * Dumps state of the instance into the string
+        * @return string with description of the instance state
         */
-        friend std::ostream& operator<<(std::ostream& os, const CheckContact& i);
-
-        /**
-        * Dumps state of the instance to std::string using operator<<.
-        * @see operator<<
-        * @return string with description of instance state
-        */
-        std::string to_string();
+        std::string to_string() const;
     };//class CheckContact
 
 }//namespace Fred

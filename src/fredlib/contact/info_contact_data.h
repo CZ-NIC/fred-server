@@ -31,9 +31,10 @@
 #include <boost/date_time/posix_time/ptime.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
 
+
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
-
+#include "util/printable.h"
 
 namespace Fred
 {
@@ -41,7 +42,7 @@ namespace Fred
      * Common data of contact.
      * Current or history state of the contact.
      */
-    struct InfoContactData
+    struct InfoContactData : public Util::Printable
     {
         unsigned long long crhistoryid;/**< first historyid of contact history*/
         unsigned long long historyid;/**< last historyid of contact history*/
@@ -107,6 +108,12 @@ namespace Fred
         * @param print_diff is value set to @ref print_diff_ attribute
         */
         void set_diff_print(bool print_diff = true);
+
+        /**
+        * Dumps state of the instance into the string
+        * @return string with description of the instance state
+        */
+        std::string to_string() const;
     };
 
 }//namespace Fred

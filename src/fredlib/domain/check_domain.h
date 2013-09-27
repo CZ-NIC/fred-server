@@ -29,13 +29,14 @@
 #include "fredlib/opexception.h"
 #include "fredlib/opcontext.h"
 #include "fredlib/zone/zone.h"
+#include "util/printable.h"
 
 namespace Fred
 {
     /**
     * Checking of domain properties.
     */
-    class CheckDomain
+    class CheckDomain : public Util::Printable
     {
         const std::string fqdn_;/**< domain identifier */
     public:
@@ -95,19 +96,10 @@ namespace Fred
         bool is_available(OperationContext& ctx);
 
         /**
-        * dump state of the instance to output stream.
-        * @param os an output stream.
-        * @param i the instance
-        * @return output stream reference for chaining of calls
+        * Dumps state of the instance into the string
+        * @return string with description of the instance state
         */
-        friend std::ostream& operator<<(std::ostream& os, const CheckDomain& i);
-
-        /**
-        * dump state of the instance to std::string using operator<<.
-        * @see operator<<
-        * @return string with description of instance state
-        */
-        std::string to_string();
+        std::string to_string() const;
     };//class CheckDomain
 
 }//namespace Fred

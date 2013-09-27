@@ -228,20 +228,27 @@ namespace Fred
         return contact_history_res;
     }//InfoContactHistory::exec
 
-    std::ostream& operator<<(std::ostream& os, const InfoContactHistory& i)
+    std::string InfoContactHistory::to_string() const
     {
-        return os << "#InfoContactHistory roid: " << i.roid_
-                << " history_timestamp: " << i.history_timestamp_.print_quoted()
-                << " lock: " << i.lock_
-                ;
-    }
-    std::string InfoContactHistory::to_string()
-    {
-        std::stringstream ss;
-        ss << *this;
-        return ss.str();
+        return Util::format_operation_state("InfoContactHistory",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("roid",roid_))
+        (std::make_pair("history_timestamp",history_timestamp_.print_quoted()))
+        (std::make_pair("lock",lock_ ? "true":"false"))
+        );
     }
 
+    std::string InfoContactHistoryOutput::to_string() const
+    {
+        return Util::format_data_structure("InfoContactHistoryOutput",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("info_contact_data",info_contact_data.to_string()))
+        (std::make_pair("next_historyid",next_historyid.print_quoted()))
+        (std::make_pair("history_valid_from",boost::lexical_cast<std::string>(history_valid_from)))
+        (std::make_pair("history_valid_to",history_valid_to.print_quoted()))
+        (std::make_pair("logd_request_id",logd_request_id.print_quoted()))
+        );
+    }
 
 }//namespace Fred
 

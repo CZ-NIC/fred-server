@@ -169,7 +169,8 @@ noinst_HEADERS = \
 		src/corba/common_wrappers.h \
 		src/corba/contact_verification/corba_conversion.h \
 		util/optional_value.h \
-		util/output_indenter.h
+		util/output_indenter.h \
+		util/printable.h
 
 
 noinst_LIBRARIES = \
@@ -235,7 +236,9 @@ sbin_PROGRAMS = \
 util_libutil_a_SOURCES = \
 		util/random.cc \
 		util/util.cc \
-		util/output_indenter.cc
+		util/output_indenter.cc \
+		util/printable.h \
+		util/printable.cc
 #
 # util/libutil.a
 
@@ -1672,7 +1675,8 @@ tests_test_server_SOURCES = \
 		tests/test-domain-name.cc \
 		tests/test-check-handle.cc \
 		tests/test-delete-keyset.cc \
-		tests/test-update-contact.cc
+		tests/test-update-contact.cc \
+		tests/test-printable.cc
 
 tests_test_server_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS) \

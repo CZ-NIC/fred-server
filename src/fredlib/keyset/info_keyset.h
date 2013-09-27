@@ -35,7 +35,7 @@
 #include "fredlib/opcontext.h"
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
-
+#include "util/printable.h"
 #include "fredlib/keyset/info_keyset_data.h"
 
 
@@ -44,7 +44,7 @@ namespace Fred
     /**
     * Keyset info data structure.
     */
-    struct InfoKeysetOutput
+    struct InfoKeysetOutput : public Util::Printable
     {
         InfoKeysetData info_keyset_data;/**< data of the keyset */
         boost::posix_time::ptime utc_timestamp;/**< timestamp of getting the keyset data in UTC */
@@ -78,6 +78,11 @@ namespace Fred
             return !this->operator ==(rhs);
         }
 
+        /**
+        * Dumps state of the instance into the string
+        * @return string with description of the instance state
+        */
+        std::string to_string() const;
     };
 
     /**
@@ -88,7 +93,7 @@ namespace Fred
     * In case of wrong input data or other predictable and superable failure, the instance of @ref InfoKeyset::Exception is thrown with appropriate attributes set.
     * In case of other unsuperable failures and inconstistencies, the instance of @ref InternalError or other exception is thrown.
     */
-    class InfoKeyset
+    class InfoKeyset : public Util::Printable
     {
         const std::string handle_;/**< keyset identifier */
         bool lock_;/**< lock object_registry row flag*/
@@ -122,19 +127,10 @@ namespace Fred
         InfoKeysetOutput exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
 
         /**
-        * Dumps state of the instance into stream
-        * @param os contains output stream reference
-        * @param i reference of instance to be dumped into the stream
-        * @return output stream reference
-        */
-        friend std::ostream& operator<<(std::ostream& os, const InfoKeyset& i);
-
-        /**
         * Dumps state of the instance into the string
         * @return string with description of the instance state
         */
-        std::string to_string();
-
+        std::string to_string() const;
     };//class InfoKeyset
 
 }//namespace Fred

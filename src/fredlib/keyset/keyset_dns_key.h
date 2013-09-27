@@ -32,6 +32,7 @@
 #include "fredlib/opcontext.h"
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
+#include "util/printable.h"
 
 namespace Fred
 {
@@ -39,7 +40,7 @@ namespace Fred
 /**
  * Container for DNSKEY record data as specified in RFC4034.
  */
-class DnsKey
+class DnsKey  : public Util::Printable
 {
     unsigned short flags_;/**< the flags field */
     unsigned short protocol_;/**< the protocol field, only valid value is 3*/
@@ -161,16 +162,6 @@ public:
             DnsKey(dk).swap (*this); //copy and swap
         return *this;
     }
-    /**
-     * Conversion to string.
-     * @return textual description of the content
-     */
-    operator std::string() const
-    {
-        std::stringstream ret;
-        ret << "flags:" << flags_ << " protocol:" << protocol_ << " alg:" << alg_ << " key:" << key_ ;
-        return ret.str();
-    }
 
     /**
      * Comparison of instances converted to std::string
@@ -178,20 +169,23 @@ public:
      */
     bool operator<(const DnsKey& rhs) const
     {
-        return static_cast<std::string>(*this) < static_cast<std::string>(rhs);
+        return to_string() < rhs.to_string();
     }
 
     /**
-    * Dumps state of the instance into stream
-    * @param os contains output stream reference
-    * @param i reference of instance to be dumped into the stream
-    * @return output stream reference
+    * Dumps state of the instance into the string
+    * @return string with description of the instance state
     */
-    friend std::ostream& operator<<(std::ostream& os, const DnsKey& i)
+    std::string to_string() const
     {
-        return os << "DnsKey " << static_cast<std::string>(i);
+        return Util::format_data_structure("DnsKey",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("flags",boost::lexical_cast<std::string>(flags_)))
+        (std::make_pair("protocol",boost::lexical_cast<std::string>(protocol_)))
+        (std::make_pair("alg",boost::lexical_cast<std::string>(alg_)))
+        (std::make_pair("key",key_))
+        );
     }
-
 }; //class DnsKey
 
 

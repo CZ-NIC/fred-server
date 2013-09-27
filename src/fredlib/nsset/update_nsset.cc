@@ -426,39 +426,21 @@ namespace Fred
         return history_id;
     }//UpdateNsset::exec
 
-    std::ostream& operator<<(std::ostream& os, const UpdateNsset& i)
+    std::string UpdateNsset::to_string() const
     {
-        os << "#UpdateNsset handle: " << i.handle_
-            << " registrar: " << i.registrar_
-            << " sponsoring_registrar: " << i.sponsoring_registrar_.print_quoted()
-            << " authinfo: " << i.authinfo_.print_quoted();
-
-        if(!i.add_dns_.empty()) os << " add_dns_host: ";
-        for(std::vector<DnsHost>::const_iterator ci = i.add_dns_.begin()
-                ; ci != i.add_dns_.end() ; ++ci ) os << static_cast<std::string>(*ci);
-
-        if(!i.rem_dns_.empty()) os << " rem_dns_key: ";
-        for(std::vector<std::string>::const_iterator ci = i.rem_dns_.begin()
-                ; ci != i.rem_dns_.end() ; ++ci ) os << static_cast<std::string>(*ci);
-
-        if(!i.add_tech_contact_.empty()) os << " add_tech_contact: ";
-        for(std::vector<std::string>::const_iterator ci = i.add_tech_contact_.begin()
-                ; ci != i.add_tech_contact_.end() ; ++ci ) os << *ci;
-
-        if(!i.rem_tech_contact_.empty()) os << " rem_tech_contact: ";
-        for(std::vector<std::string>::const_iterator ci = i.rem_tech_contact_.begin()
-                ; ci != i.rem_tech_contact_.end() ; ++ci ) os << *ci;
-
-        os << " tech_check_level: " << i.tech_check_level_.print_quoted()
-        << " logd_request_id: " << i.logd_request_id_.print_quoted();
-        return os;
-    }
-
-    std::string UpdateNsset::to_string()
-    {
-        std::stringstream ss;
-        ss << *this;
-        return ss.str();
+        return Util::format_operation_state("UpdateNsset",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("handle",handle_))
+        (std::make_pair("registrar",registrar_))
+        (std::make_pair("sponsoring_registrar",sponsoring_registrar_.print_quoted()))
+        (std::make_pair("authinfo",authinfo_.print_quoted()))
+        (std::make_pair("add_tech_contact",Util::format_vector(add_tech_contact_)))
+        (std::make_pair("rem_tech_contact",Util::format_vector(rem_tech_contact_)))
+        (std::make_pair("add_dns_host", Util::format_vector(add_dns_)))
+        (std::make_pair("rem_dns_host", Util::format_vector(rem_dns_)))
+        (std::make_pair("tech_check_level",tech_check_level_.print_quoted()))
+        (std::make_pair("logd_request_id",logd_request_id_.print_quoted()))
+        );
     }
 
 

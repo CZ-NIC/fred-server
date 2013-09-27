@@ -235,18 +235,26 @@ namespace Fred
         return nsset_history_res;
     }//InfoNssetHistory::exec
 
-    std::ostream& operator<<(std::ostream& os, const InfoNssetHistory& i)
+    std::string InfoNssetHistoryOutput::to_string() const
     {
-        return os << "#InfoNssetHistory roid: " << i.roid_
-            << " history_timestamp: " << i.history_timestamp_.print_quoted()
-            << " lock: " << i.lock_;
+        return Util::format_data_structure("InfoNssetHistoryOutput",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("info_nsset_data",info_nsset_data.to_string()))
+        (std::make_pair("next_historyid",next_historyid.print_quoted()))
+        (std::make_pair("history_valid_from",boost::lexical_cast<std::string>(history_valid_from)))
+        (std::make_pair("history_valid_to",history_valid_to.print_quoted()))
+        (std::make_pair("logd_request_id",logd_request_id.print_quoted()))
+        );
     }
 
-    std::string InfoNssetHistory::to_string()
+    std::string InfoNssetHistory::to_string() const
     {
-        std::stringstream ss;
-        ss << *this;
-        return ss.str();
+        return Util::format_operation_state("InfoNssetHistory",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("roid",roid_))
+        (std::make_pair("history_timestamp",history_timestamp_.print_quoted()))
+        (std::make_pair("lock",lock_ ? "true":"false"))
+        );
     }
 
 }//namespace Fred

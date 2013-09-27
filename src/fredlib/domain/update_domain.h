@@ -33,6 +33,7 @@
 #include "fredlib/opcontext.h"
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
+#include "util/printable.h"
 
 namespace Fred
 {
@@ -45,7 +46,7 @@ namespace Fred
     * In case of wrong input data or other predictable and superable failure, an instance of @ref UpdateDomain::Exception is thrown with appropriate attributes set.
     * In case of other unsuperable failures and inconstistencies, an instance of @ref InternalError or other exception is thrown.
     */
-    class UpdateDomain
+    class UpdateDomain  : public Util::Printable
     {
         const std::string fqdn_;/**< fully qualified domain name */
         const std::string registrar_;/**< handle of registrar performing the update */
@@ -246,18 +247,10 @@ namespace Fred
         unsigned long long exec(OperationContext& ctx);//return new history_id
 
         /**
-        * Dumps state of the instance into stream
-        * @param os contains output stream reference
-        * @param i reference of instance to be dumped into the stream
-        * @return output stream reference
-        */
-        friend std::ostream& operator<<(std::ostream& os, const UpdateDomain& i);
-
-        /**
         * Dumps state of the instance into the string
         * @return string with description of the instance state
         */
-        std::string to_string();
+        std::string to_string() const;
     };//class UpdateDomain
 
 }//namespace Fred

@@ -34,6 +34,7 @@
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
 #include "fredlib/domain/enum_validation_extension.h"
+#include "util/printable.h"
 
 namespace Fred
 {
@@ -41,7 +42,7 @@ namespace Fred
      * Common data of domain.
      * Current or history state of the domain.
      */
-    struct InfoDomainData
+    struct InfoDomainData : public Util::Printable
     {
         std::string roid;/**< registry object identifier of domain */
         std::string fqdn;/**< fully qualified domain name */
@@ -91,6 +92,11 @@ namespace Fred
         */
         void set_diff_print(bool print_diff = true);
 
+        /**
+        * Dumps state of the instance into the string
+        * @return string with description of the instance state
+        */
+        std::string to_string() const;
     };
 
 }//namespace Fred

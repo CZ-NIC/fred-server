@@ -103,16 +103,12 @@ namespace Fred
         return true;//meaning ok
     }
 
-    std::ostream& operator<<(std::ostream& os, const CheckContact& i)
+    std::string CheckContact::to_string() const
     {
-        return os << "#CheckContact handle: " << i.handle_
-                ;
-    }
-    std::string CheckContact::to_string()
-    {
-        std::stringstream ss;
-        ss << *this;
-        return ss.str();
+        return Util::format_operation_state("CheckContact",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("handle",handle_))
+        );
     }
 
 

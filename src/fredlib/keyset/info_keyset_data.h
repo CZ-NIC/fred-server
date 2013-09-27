@@ -33,6 +33,7 @@
 
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
+#include "util/printable.h"
 
 #include "fredlib/keyset/keyset_dns_key.h"
 
@@ -43,7 +44,7 @@ namespace Fred
      * Common data of keyset.
      * Current or history state of the keyset.
      */
-    struct InfoKeysetData
+    struct InfoKeysetData : public Util::Printable
     {
         unsigned long long crhistoryid;/**< first historyid of keyset history */
         unsigned long long historyid;/**< last historyid of keyset history */
@@ -89,6 +90,11 @@ namespace Fred
         */
         void set_diff_print(bool print_diff = true);
 
+        /**
+        * Dumps state of the instance into the string
+        * @return string with description of the instance state
+        */
+        std::string to_string() const;
     };
 
 }//namespace Fred
