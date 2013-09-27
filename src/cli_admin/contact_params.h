@@ -193,4 +193,19 @@ struct ContactVerificationEnqueueCheckArgs {
 };
 
 
+/**
+ * parameters for appropriate command options Handle#CLASS_NAME#Grp
+ */
+
+struct ContactVerificationStartEnqueuedChecksArgs {
+    unsigned limit;
+
+    ContactVerificationStartEnqueuedChecksArgs( ) { }
+
+    ContactVerificationStartEnqueuedChecksArgs( unsigned _limit )
+    : limit(_limit)
+    { }
+};
+
+
 #endif // CONTACT_PARAMS_H_

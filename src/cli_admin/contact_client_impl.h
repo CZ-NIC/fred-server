@@ -41,6 +41,8 @@
 #include "corba/logger_client_impl.h"
 #include "admin/contact/verification/fill_automatic_check_queue.h"
 #include "fredlib/contact/verification/create_check.h"
+#include "admin/contact/verification/run_all_enqueued_checks.h"
+#include "admin/contact/verification/create_test_impl_prototypes.h"
 
 
 /**
@@ -302,5 +304,31 @@ struct contact_verification_enqueue_check_impl
       return ;
   }
 };
+
+
+/**
+ * admin client implementation of enqueued contact verification check starting
+ */
+struct contact_verification_start_enqueued_checks_impl
+{
+  void operator()() const
+  {
+      Logging::Context log("contact_verification_start_enqueued_checks");
+
+      std::vector<std::string> started_checks = Admin::run_all_enqueued_checks(Admin::create_test_impl_prototypes());
+
+      if(started_checks.size() > 0) {
+          std::cout << "started checks:" << std::endl;
+
+          BOOST_FOREACH(const std::string& handle, started_checks) {
+              std::cout << "check handle: " << handle << std::endl;
+          }
+      } else {
+          std::cout << "no checks started" << std::endl;
+      }
+      return ;
+  }
+};
+
 
 #endif // CONTACT_CLIENT_IMPL_H_
