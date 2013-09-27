@@ -90,10 +90,11 @@ namespace Util
     /**
      * Types of conversions to std::string detectable by @ref ConversionToString template
      */
-    struct TypeOfCoversionToString{enum Type{NONE,METHOD_TO_STRING, CONVERTIBLE_TO_STRING};};
+    struct TypeOfConversionToString{enum Type{NONE,METHOD_TO_STRING, CONVERTIBLE_TO_STRING};};
 
     /**
      * Template detecting types of conversions to std::string
+     * Using SFINAE.
      * @param T examined type
      * @return result member set to detected type of conversion viz @ref TypeOfCoversionToString
      */
@@ -120,19 +121,19 @@ namespace Util
         /**
          * Detected type of conversion
          */
-        static const TypeOfCoversionToString::Type result
+        static const TypeOfConversionToString::Type result
             = (sizeof(Test1<T>(0)) == sizeof(to_string_))
-                ? TypeOfCoversionToString::METHOD_TO_STRING
+                ? TypeOfConversionToString::METHOD_TO_STRING
             : (sizeof(Test2(MakeT())) == sizeof(convertible_to_string_))
-                ? TypeOfCoversionToString::CONVERTIBLE_TO_STRING
-                    : TypeOfCoversionToString::NONE;
+                ? TypeOfConversionToString::CONVERTIBLE_TO_STRING
+                    : TypeOfConversionToString::NONE;
     };
 
     /**
      * Overload of conversion to std::string using to_string() method
      */
     template <class T> std::string printable_conversion_to_string(const T& t,
-            EnumType<TypeOfCoversionToString::METHOD_TO_STRING>)
+            EnumType<TypeOfConversionToString::METHOD_TO_STRING>)
     {
         return t.to_string();
     };
@@ -141,7 +142,7 @@ namespace Util
      * Overload of conversion to std::string using implicit conversion
      */
     template <class T> std::string printable_conversion_to_string(const T& t,
-            EnumType<TypeOfCoversionToString::CONVERTIBLE_TO_STRING>)
+            EnumType<TypeOfConversionToString::CONVERTIBLE_TO_STRING>)
     {
         return t;
     };
