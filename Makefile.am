@@ -1517,7 +1517,9 @@ src_cli_admin_fred_admin_SOURCES = \
 		src/admin/contact/verification/test_impl/test_email_syntax.h \
 		src/admin/contact/verification/test_impl/test_email_syntax.cc \
 		src/admin/contact/verification/test_impl/test_name_syntax.h \
-		src/admin/contact/verification/test_impl/test_name_syntax.cc
+		src/admin/contact/verification/test_impl/test_name_syntax.cc \
+		src/admin/contact/verification/test_impl/test_phone_syntax.h \
+		src/admin/contact/verification/test_impl/test_phone_syntax.cc
 		
 src_cli_admin_fred_admin_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS)
@@ -1678,7 +1680,7 @@ tests_test_server_SOURCES = \
 		tests/test-create-domain.cc \
 		tests/test-domain-name.cc \
 		tests/fredlib/contact/verification/test-create_check_unit.cc \
-		tests/fredlib/contact/verification/test-create_check_integ.cc \ 
+		tests/fredlib/contact/verification/test-create_check_integ.cc \
 		tests/fredlib/contact/verification/test-update_check_unit.cc \
 		tests/fredlib/contact/verification/test-update_check_integ.cc \
 		tests/fredlib/contact/verification/test-create_test_unit.cc \
