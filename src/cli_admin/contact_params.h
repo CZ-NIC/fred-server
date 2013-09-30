@@ -161,4 +161,51 @@ struct ContactMergeArgs
 };
 
 
+/**
+ * parameters for appropriate command options Handle#CLASS_NAME#Grp
+ */
+
+struct ContactVerificationFillQueueAutomaticTestsuiteArgs {
+    unsigned max_queue_lenght;
+
+    ContactVerificationFillQueueAutomaticTestsuiteArgs( ) { }
+
+    ContactVerificationFillQueueAutomaticTestsuiteArgs( unsigned _max_queue_lenght )
+        : max_queue_lenght(_max_queue_lenght)
+    { }
+};
+
+
+/**
+ * parameters for appropriate command options Handle#CLASS_NAME#Grp
+ */
+
+struct ContactVerificationEnqueueCheckArgs {
+    std::string contact_handle;
+    std::string testsuite_name;
+
+    ContactVerificationEnqueueCheckArgs( ) { }
+
+    ContactVerificationEnqueueCheckArgs( const std::string& _contact_handle, const std::string& _testsuite_name )
+    : contact_handle(_contact_handle),
+      testsuite_name(_testsuite_name)
+    { }
+};
+
+
+/**
+ * parameters for appropriate command options Handle#CLASS_NAME#Grp
+ */
+
+struct ContactVerificationStartEnqueuedChecksArgs {
+    unsigned limit;
+
+    ContactVerificationStartEnqueuedChecksArgs( ) { }
+
+    ContactVerificationStartEnqueuedChecksArgs( unsigned _limit )
+    : limit(_limit)
+    { }
+};
+
+
 #endif // CONTACT_PARAMS_H_
