@@ -51,9 +51,9 @@ namespace Fred
         return *this;
     }
 
-    InfoContactOutput InfoContact::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
+    InfoContactOut InfoContact::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
     {
-        InfoContactOutput contact_info_output;
+        InfoContactOut contact_info_output;
 
         try
         {
@@ -201,9 +201,9 @@ namespace Fred
         );
     }
 
-    std::string InfoContactOutput::to_string() const
+    std::string InfoContactOut::to_string() const
     {
-        return Util::format_data_structure("InfoContactOutput",
+        return Util::format_data_structure("InfoContactOut",
         Util::vector_of<std::pair<std::string,std::string> >
         (std::make_pair("info_contact_data",info_contact_data.to_string()))
         (std::make_pair("utc_timestamp",boost::lexical_cast<std::string>(utc_timestamp)))

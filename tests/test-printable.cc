@@ -193,7 +193,7 @@ BOOST_AUTO_TEST_CASE(info_contact_history)
 }
 
 /**
- * test InfoContactOutput print to string
+ * test InfoContactOut print to string
  */
 BOOST_AUTO_TEST_CASE(info_contact_output)
 {
@@ -203,7 +203,7 @@ BOOST_AUTO_TEST_CASE(info_contact_output)
     icd.delete_time = boost::posix_time::microsec_clock::universal_time();
     icd.disclosename = true;
 
-    Fred::InfoContactOutput i;
+    Fred::InfoContactOut i;
     i.utc_timestamp = boost::posix_time::microsec_clock::universal_time();
     i.local_timestamp = boost::posix_time::microsec_clock::local_time();
     i.info_contact_data = icd;

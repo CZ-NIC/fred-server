@@ -47,7 +47,7 @@ namespace Fred
     * @param rhs is the contact history data
     * @return true if equal, false if not
     */
-    bool operator==(const InfoContactOutput& lhs, const InfoContactHistoryOutput& rhs);
+    bool operator==(const InfoContactOut& lhs, const InfoContactHistoryOutput& rhs);
 
     /**
     * Equality of contact history data with the contact data operator.
@@ -55,7 +55,7 @@ namespace Fred
     * @param rhs is the contact data
     * @return true if equal, false if not
     */
-    bool operator==(const InfoContactHistoryOutput& lhs, const InfoContactOutput& rhs);
+    bool operator==(const InfoContactHistoryOutput& lhs, const InfoContactOut& rhs);
 
     /**
     * Inequality of contact data with the contact history data operator.
@@ -63,7 +63,7 @@ namespace Fred
     * @param rhs is the contact history data
     * @return true if not equal, false if equal
     */
-    bool operator!=(const InfoContactOutput& lhs, const InfoContactHistoryOutput& rhs);
+    bool operator!=(const InfoContactOut& lhs, const InfoContactHistoryOutput& rhs);
 
     /**
     * Inequality of contact history data with the contact data operator.
@@ -71,7 +71,7 @@ namespace Fred
     * @param rhs is the contact data
     * @return true if not equal, false if equal
     */
-    bool operator!=(const InfoContactHistoryOutput& lhs, const InfoContactOutput& rhs);
+    bool operator!=(const InfoContactHistoryOutput& lhs, const InfoContactOut& rhs);
 
 }//namespace Fred
 

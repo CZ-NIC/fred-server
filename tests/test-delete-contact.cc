@@ -123,7 +123,7 @@ struct test_contact_fixture
 BOOST_FIXTURE_TEST_CASE(delete_contact, test_contact_fixture )
 {
     Fred::OperationContext ctx;
-    Fred::InfoContactOutput contact_info1 = Fred::InfoContact(test_contact_handle).exec(ctx);
+    Fred::InfoContactOut contact_info1 = Fred::InfoContact(test_contact_handle).exec(ctx);
     BOOST_CHECK(contact_info1.info_contact_data.delete_time.isnull());
 
     Fred::DeleteContact(test_contact_handle).exec(ctx);
@@ -134,7 +134,7 @@ BOOST_FIXTURE_TEST_CASE(delete_contact, test_contact_fixture )
 
     BOOST_CHECK(!contact_history_info1.at(0).info_contact_data.delete_time.isnull());
 
-    Fred::InfoContactOutput contact_info1_with_change = contact_info1;
+    Fred::InfoContactOut contact_info1_with_change = contact_info1;
     contact_info1_with_change.info_contact_data.delete_time = contact_history_info1.at(0).info_contact_data.delete_time;
 
     BOOST_CHECK(contact_info1_with_change == contact_history_info1.at(0));
