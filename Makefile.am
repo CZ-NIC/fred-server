@@ -1515,8 +1515,10 @@ src_cli_admin_fred_admin_SOURCES = \
 		src/admin/contact/verification/test_impl/test_utils.h \
 		src/admin/contact/verification/test_impl/test_utils.cc \
 		src/admin/contact/verification/test_impl/test_email_syntax.h \
-		src/admin/contact/verification/test_impl/test_email_syntax.cc
-
+		src/admin/contact/verification/test_impl/test_email_syntax.cc \
+		src/admin/contact/verification/test_impl/test_name_syntax.h \
+		src/admin/contact/verification/test_impl/test_name_syntax.cc
+		
 src_cli_admin_fred_admin_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS)
 
