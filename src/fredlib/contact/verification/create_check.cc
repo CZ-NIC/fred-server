@@ -122,8 +122,7 @@ namespace Fred
             "SELECT historyid"
             "   FROM object_registry"
             "   WHERE name=$1::varchar "
-            "       AND type=1 "
-            "   FOR SHARE;", // prevent deletion
+            "       AND type=1; ",
             Database::query_param_list(contact_handle_)
         );
         if(contact_history_res.size() != 1) {
@@ -134,8 +133,7 @@ namespace Fred
         Database::Result testsuite_res = _ctx.get_conn().exec_params(
             "SELECT id "
             "   FROM enum_contact_testsuite "
-            "   WHERE name=$1::varchar "
-            "   FOR SHARE;",
+            "   WHERE name=$1::varchar; ",
             Database::query_param_list(testsuite_name_)
         );
         if(testsuite_res.size() != 1) {

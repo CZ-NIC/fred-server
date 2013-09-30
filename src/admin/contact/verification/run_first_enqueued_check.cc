@@ -192,7 +192,7 @@ namespace  Admin {
                 "   WHERE c_ch.handle = $1::uuid "
                 "       AND enum_status.name = $2::varchar "
                 "   LIMIT 1 "
-                "   FOR UPDATE; ",
+                "   FOR UPDATE OF c_t_r; ",
                 Database::query_param_list
                     (_check_handle)
                     (Fred::ContactTestStatus::ENQUEUED)
