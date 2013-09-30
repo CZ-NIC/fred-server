@@ -21,22 +21,18 @@
  *  contact verification tests interface
  */
 
-#ifndef CONTACT_VERIFICATION_TEST_INTF_11637813419_
-#define CONTACT_VERIFICATION_TEST_INTF_11637813419_
+#ifndef CONTACT_VERIFICATION_TEST_UTILS_1134354419_
+#define CONTACT_VERIFICATION_TEST_UTILS_1134354419_
 
-#include <string>
+#include "fredlib/contact/info_contact_data.h"
 
 namespace Admin
 {
-    class ContactVerificationTest {
-        public:
-            /**
-             * @return final status of the test
-             */
-            virtual std::string run(long _history_id) const = 0;
-            virtual std::string get_name() const = 0;
-            virtual ~ContactVerificationTest() {};
-    };
+namespace Utils
+{
+    Fred::InfoContactData get_contact_data(long _history_id);
+
+}
 }
 
 #endif // #include guard end

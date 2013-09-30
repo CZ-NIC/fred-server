@@ -18,25 +18,30 @@
 
 /**
  *  @file
- *  contact verification tests interface
+ *  contact verification test for telephone (syntax only)
  */
 
-#ifndef CONTACT_VERIFICATION_TEST_INTF_11637813419_
-#define CONTACT_VERIFICATION_TEST_INTF_11637813419_
+#ifndef CONTACT_VERIFICATION_TEST_PHONE_SYNTAX_976844345676_
+#define CONTACT_VERIFICATION_TEST_PHONE_SYNTAX_976844345676_
 
-#include <string>
+#include <boost/regex.hpp>
+
+#include "admin/contact/verification/test_impl/test_interface.h"
 
 namespace Admin
 {
-    class ContactVerificationTest {
+    class ContactVerificationTestPhoneSyntax: public ContactVerificationTest {
+            const boost::regex PHONE_PATTERN;
+
         public:
-            /**
-             * @return final status of the test
-             */
-            virtual std::string run(long _history_id) const = 0;
-            virtual std::string get_name() const = 0;
-            virtual ~ContactVerificationTest() {};
+            ContactVerificationTestPhoneSyntax()
+                // first draft of pattern - see ticket #9588
+                : PHONE_PATTERN ("^\\+[0-9]{1,3}\\.[0-9]{1,14}$") {}
+
+            virtual std::string run(long _history_id) const;
+            virtual std::string get_name() const { return "phone_syntax"; }
     };
 }
+
 
 #endif // #include guard end

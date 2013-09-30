@@ -18,25 +18,23 @@
 
 /**
  *  @file
- *  contact verification tests interface
+ *  contact verification test for name (syntax only)
  */
 
-#ifndef CONTACT_VERIFICATION_TEST_INTF_11637813419_
-#define CONTACT_VERIFICATION_TEST_INTF_11637813419_
+#ifndef CONTACT_VERIFICATION_TEST_NAME_SYNTAX_124898987441_
+#define CONTACT_VERIFICATION_TEST_NAME_SYNTAX_124898987441_
 
-#include <string>
+#include "admin/contact/verification/test_impl/test_interface.h"
 
 namespace Admin
 {
-    class ContactVerificationTest {
+    class ContactVerificationTestNameSyntax: public ContactVerificationTest {
+
         public:
-            /**
-             * @return final status of the test
-             */
-            virtual std::string run(long _history_id) const = 0;
-            virtual std::string get_name() const = 0;
-            virtual ~ContactVerificationTest() {};
+            virtual std::string run(long _history_id) const;
+            virtual std::string get_name() const { return "name_syntax"; }
     };
 }
+
 
 #endif // #include guard end

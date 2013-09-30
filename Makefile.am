@@ -1511,8 +1511,16 @@ src_cli_admin_fred_admin_SOURCES = \
 		src/admin/contact/verification/run_all_enqueued_checks.h \
 		src/admin/contact/verification/run_all_enqueued_checks.cc \
 		src/admin/contact/verification/create_test_impl_prototypes.h \
-		src/admin/contact/verification/create_test_impl_prototypes.cc
-
+		src/admin/contact/verification/create_test_impl_prototypes.cc \
+		src/admin/contact/verification/test_impl/test_utils.h \
+		src/admin/contact/verification/test_impl/test_utils.cc \
+		src/admin/contact/verification/test_impl/test_email_syntax.h \
+		src/admin/contact/verification/test_impl/test_email_syntax.cc \
+		src/admin/contact/verification/test_impl/test_name_syntax.h \
+		src/admin/contact/verification/test_impl/test_name_syntax.cc \
+		src/admin/contact/verification/test_impl/test_phone_syntax.h \
+		src/admin/contact/verification/test_impl/test_phone_syntax.cc
+		
 src_cli_admin_fred_admin_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS)
 
