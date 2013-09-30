@@ -65,9 +65,9 @@ namespace Fred
         return *this;
     }
 
-    std::vector<InfoContactHistoryOutput> InfoContactHistory::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
+    std::vector<InfoContactOutput> InfoContactHistory::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
     {
-        std::vector<InfoContactHistoryOutput> contact_history_res;
+        std::vector<InfoContactOutput> contact_history_res;
 
         try
         {
@@ -124,7 +124,7 @@ namespace Fred
                 contact_history_res.reserve(res.size());//alloc
                 for(Database::Result::size_type i = 0; i < res.size(); ++i)
                 {
-                    InfoContactHistoryOutput contact_history_output;
+                    InfoContactOutput contact_history_output;
 
                     contact_history_output.info_contact_data.roid = static_cast<std::string>(res[i][1]);//cobr.roid
 
@@ -238,9 +238,9 @@ namespace Fred
         );
     }
 
-    std::string InfoContactHistoryOutput::to_string() const
+    std::string InfoContactOutput::to_string() const
     {
-        return Util::format_data_structure("InfoContactHistoryOutput",
+        return Util::format_data_structure("InfoContactOutput",
         Util::vector_of<std::pair<std::string,std::string> >
         (std::make_pair("info_contact_data",info_contact_data.to_string()))
         (std::make_pair("next_historyid",next_historyid.print_quoted()))

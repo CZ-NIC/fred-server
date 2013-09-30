@@ -118,7 +118,7 @@ BOOST_FIXTURE_TEST_CASE(update_contact, update_contact_fixture )
 {
     Fred::OperationContext ctx;
     Fred::InfoContactOut info_data_1 = Fred::InfoContact(test_contact_handle).exec(ctx);
-    std::vector<Fred::InfoContactHistoryOutput> history_info_data_1 = Fred::InfoContactHistory(info_data_1.info_contact_data.roid).exec(ctx);
+    std::vector<Fred::InfoContactOutput> history_info_data_1 = Fred::InfoContactHistory(info_data_1.info_contact_data.roid).exec(ctx);
 
     //update_registrar_handle check
     BOOST_CHECK(info_data_1.info_contact_data.update_registrar_handle.isnull());
@@ -138,7 +138,7 @@ BOOST_FIXTURE_TEST_CASE(update_contact, update_contact_fixture )
     Fred::UpdateContact(test_contact_handle, registrar_handle).exec(ctx);
 
     Fred::InfoContactOut info_data_2 = Fred::InfoContact(test_contact_handle).exec(ctx);
-    std::vector<Fred::InfoContactHistoryOutput> history_info_data_2 = Fred::InfoContactHistory(info_data_1.info_contact_data.roid).exec(ctx);
+    std::vector<Fred::InfoContactOutput> history_info_data_2 = Fred::InfoContactHistory(info_data_1.info_contact_data.roid).exec(ctx);
 
     Fred::InfoContactOut info_data_1_with_changes = info_data_1;
 
@@ -200,7 +200,7 @@ BOOST_FIXTURE_TEST_CASE(update_contact, update_contact_fixture )
             ).exec(ctx);
 
     Fred::InfoContactOut info_data_3 = Fred::InfoContact(test_contact_handle).exec(ctx);
-    std::vector<Fred::InfoContactHistoryOutput> history_info_data_3 = Fred::InfoContactHistory(info_data_1.info_contact_data.roid).exec(ctx);
+    std::vector<Fred::InfoContactOutput> history_info_data_3 = Fred::InfoContactHistory(info_data_1.info_contact_data.roid).exec(ctx);
 
     Fred::InfoContactOut info_data_2_with_changes = info_data_2;
 
@@ -263,7 +263,7 @@ BOOST_FIXTURE_TEST_CASE(update_contact, update_contact_fixture )
                 ).exec(ctx);
 
     Fred::InfoContactOut info_data_4 = Fred::InfoContact(test_contact_handle).exec(ctx);
-    std::vector<Fred::InfoContactHistoryOutput> history_info_data_4 = Fred::InfoContactHistory(info_data_1.info_contact_data.roid).exec(ctx);
+    std::vector<Fred::InfoContactOutput> history_info_data_4 = Fred::InfoContactHistory(info_data_1.info_contact_data.roid).exec(ctx);
 
     Fred::InfoContactOut info_data_3_with_changes = info_data_3;
 
@@ -356,7 +356,7 @@ BOOST_FIXTURE_TEST_CASE(update_contact, update_contact_fixture )
     .exec(ctx);
 
     Fred::InfoContactOut info_data_5 = Fred::InfoContact(test_contact_handle).exec(ctx);
-    std::vector<Fred::InfoContactHistoryOutput> history_info_data_5 = Fred::InfoContactHistory(info_data_1.info_contact_data.roid).exec(ctx);
+    std::vector<Fred::InfoContactOutput> history_info_data_5 = Fred::InfoContactHistory(info_data_1.info_contact_data.roid).exec(ctx);
 
     Fred::InfoContactOut info_data_4_with_changes = info_data_4;
 

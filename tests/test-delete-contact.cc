@@ -129,7 +129,7 @@ BOOST_FIXTURE_TEST_CASE(delete_contact, test_contact_fixture )
     Fred::DeleteContact(test_contact_handle).exec(ctx);
     ctx.commit_transaction();
 
-    std::vector<Fred::InfoContactHistoryOutput> contact_history_info1 = Fred::InfoContactHistory(
+    std::vector<Fred::InfoContactOutput> contact_history_info1 = Fred::InfoContactHistory(
         contact_info1.info_contact_data.roid).exec(ctx);
 
     BOOST_CHECK(!contact_history_info1.at(0).info_contact_data.delete_time.isnull());

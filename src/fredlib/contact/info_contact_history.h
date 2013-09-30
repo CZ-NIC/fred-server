@@ -42,7 +42,7 @@ namespace Fred
     /**
     * Element of contact history data.
     */
-    struct InfoContactHistoryOutput : public Util::Printable
+    struct InfoContactOutput : public Util::Printable
     {
         InfoContactData info_contact_data;/**< data of the contact */
 
@@ -54,7 +54,7 @@ namespace Fred
         /**
         * Empty constructor of the contact history data structure.
         */
-        InfoContactHistoryOutput()
+        InfoContactOutput()
         {}
 
         /**
@@ -118,7 +118,7 @@ namespace Fred
         * @param local_timestamp_pg_time_zone_name is postgresql time zone name of the returned data
         * @return history info data about the contact
         */
-        std::vector<InfoContactHistoryOutput> exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
+        std::vector<InfoContactOutput> exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
 
         /**
         * Dumps state of the instance into the string

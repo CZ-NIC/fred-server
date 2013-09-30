@@ -585,7 +585,7 @@ struct merge_contact_n_fixture
         }
 
         Fred::InfoContactOut info_src_contact_1 = Fred::InfoContact(src_contact_handle).exec(ctx);
-        std::vector<Fred::InfoContactHistoryOutput> info_src_contact_history_1 = Fred::InfoContactHistory(
+        std::vector<Fred::InfoContactOutput> info_src_contact_history_1 = Fred::InfoContactHistory(
                 info_src_contact_1.info_contact_data.roid).exec(ctx);
         BOOST_CHECK(info_src_contact_history_1.at(0).info_contact_data.delete_time.isnull());//check src contact is not deleted
 
@@ -663,7 +663,7 @@ struct merge_contact_n_fixture
             BOOST_CHECK(info_domain_admin_with_change == info_domain_admin_2.at(i));
         }
 
-        std::vector<Fred::InfoContactHistoryOutput> info_src_contact_history_2 = Fred::InfoContactHistory(
+        std::vector<Fred::InfoContactOutput> info_src_contact_history_2 = Fred::InfoContactHistory(
             info_src_contact_1.info_contact_data.roid).exec(ctx);
         BOOST_CHECK(!info_src_contact_history_2.at(0).info_contact_data.delete_time.isnull());//check src contact is deleted
 
@@ -706,7 +706,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contact, merge_contact_domain_fixture)
     Fred::InfoNssetOutput info_nsset_1 = Fred::InfoNsset(test_nsset_handle).exec(ctx);
 
     Fred::InfoContactOut info_src_contact_1 = Fred::InfoContact(src_contact_handle).exec(ctx);
-    std::vector<Fred::InfoContactHistoryOutput> info_src_contact_history_1 = Fred::InfoContactHistory(
+    std::vector<Fred::InfoContactOutput> info_src_contact_history_1 = Fred::InfoContactHistory(
             info_src_contact_1.info_contact_data.roid).exec(ctx);
     BOOST_CHECK(info_src_contact_history_1.at(0).info_contact_data.delete_time.isnull());//check src contact is not deleted
 
@@ -749,7 +749,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contact, merge_contact_domain_fixture)
     info_nsset_with_change.info_nsset_data.update_time = info_nsset_2.info_nsset_data.update_time;
     BOOST_CHECK(info_nsset_with_change == info_nsset_2);
 
-    std::vector<Fred::InfoContactHistoryOutput> info_src_contact_history_2 = Fred::InfoContactHistory(
+    std::vector<Fred::InfoContactOutput> info_src_contact_history_2 = Fred::InfoContactHistory(
         info_src_contact_1.info_contact_data.roid).exec(ctx);
     BOOST_CHECK(!info_src_contact_history_2.at(0).info_contact_data.delete_time.isnull());//check src contact is deleted
 }
