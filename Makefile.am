@@ -1692,6 +1692,8 @@ tests_test_server_SOURCES = \
 		tests/fredlib/contact/verification/test-info_check_integ.cc \
 		src/admin/contact/verification/run_first_enqueued_check.cc \
 		src/admin/contact/verification/run_all_enqueued_checks.cc \
+		tests/admin/contact/verification/setup_utils.h \
+		tests/admin/contact/verification/setup_utils.cc \
 		tests/admin/contact/verification/test-check_status_derivation.cc
 		
 tests_test_server_LDFLAGS = \
