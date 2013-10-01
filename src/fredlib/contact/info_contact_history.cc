@@ -170,7 +170,7 @@ namespace Fred
         return *this;
     }
 
-    std::vector<InfoContactOutput> HistoryInfoContactByHistoryid::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
+    InfoContactOutput HistoryInfoContactByHistoryid::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
     {
         std::vector<InfoContactOutput> contact_history_res;
 
@@ -193,7 +193,7 @@ namespace Fred
             ex.add_exception_stack_info(to_string());
             throw;
         }
-        return contact_history_res;
+        return contact_history_res.at(0);
     }//HistoryInfoContactByHistoryid::exec
 
     std::string HistoryInfoContactByHistoryid::to_string() const
