@@ -90,7 +90,7 @@ namespace Fred
     * Info of contact.
     * Contact handle to get info about is set via constructor.
     * Info is executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
-    * When exception is thrown, changes to database are considered incosistent and should be rolled back by the caller.
+    * When exception is thrown, changes to database are considered inconsistent and should be rolled back by the caller.
     * In case of wrong input data or other predictable and superable failure, the instance of @ref InfoContact::Exception is thrown with appropriate attributes set.
     * In case of other unsuperable failures and inconstistencies, the instance of @ref InternalError or other exception is thrown.
     */
