@@ -265,6 +265,8 @@ namespace  Admin {
 
         bool has_some_ok = false;
         bool has_some_fail = false;
+        bool has_some_error = false;
+        bool has_some_running = false;
         bool has_some_other = false;
 
         BOOST_FOREACH(const std::string& status, _test_statuses) {
@@ -272,6 +274,10 @@ namespace  Admin {
                 has_some_ok = true;
             } else if(status == Fred::ContactTestStatus::FAIL) {
                 has_some_fail = true;
+            } else if(status == Fred::ContactTestStatus::ERROR) {
+                has_some_error = true;
+            } else if(status == Fred::ContactTestStatus::RUNNING) {
+                has_some_running = true;
             } else {
                 has_some_other = true;
             }
@@ -279,10 +285,14 @@ namespace  Admin {
 
         /* NOTE: checking if has_some_ok relates to the situation of empty vector
          * let's play it safe and don't say that check is ok*/
-        if(has_some_ok && !has_some_fail && !has_some_other) {
+        if(has_some_ok && !has_some_fail && !has_some_error && !has_some_running && !has_some_other) {
             return Fred::ContactCheckStatus::OK;
-        } else if(has_some_fail && !has_some_other) {
+        } else if(has_some_fail && !has_some_error && !has_some_running && !has_some_other ) {
             return Fred::ContactCheckStatus::FAIL;
+        } else if(has_some_error) {
+            return Fred::ContactCheckStatus::TO_BE_DECIDED;
+        } else if( !has_some_error && has_some_running ) {
+            return Fred::ContactCheckStatus::RUNNING;
         } else {
             return Fred::ContactCheckStatus::TO_BE_DECIDED;
         }
