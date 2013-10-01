@@ -64,12 +64,12 @@ namespace Fred
                 " , (CURRENT_TIMESTAMP AT TIME ZONE 'UTC' AT TIME ZONE $1::text)::timestamp AS local_timestamp  "// local zone timestamp 1
                 " , cobr.crhistoryid "//first historyid 2
                 " , cobr.historyid "// last historyid 3
-                " , cobr.erdate "// contact delete time 4
+                " , (cobr.erdate AT TIME ZONE 'UTC' AT TIME ZONE $1::text)"// contact delete time 4
                 " , cobr.id,cobr.name,cobr.roid " //contact 5-7
                 " , o.clid,clr.handle "//sponzoring registrar 8-9
                 " , cobr.crid, crr.handle "//creating registrar 10-11
                 " , o.upid, upr.handle "//updated by registrar 12-13
-                " , cobr.crdate,o.trdate,o.update "//registration dates 14-16
+                " , cobr.crdate AT TIME ZONE 'UTC' AT TIME ZONE $1::text ,o.trdate AT TIME ZONE 'UTC' AT TIME ZONE $1::text,o.update AT TIME ZONE 'UTC' AT TIME ZONE $1::text"//registration dates 14-16
                 " , o.authinfopw "//authinfo 17
                 " , c.name, c.organization, c.street1, c.street2, c.street3, c.city, c.stateorprovince, c.postalcode, c.country "// contact data 18-26
                 " , c.telephone, c.fax, c.email , c.notifyemail, c.vat, c.ssn, est.type "// 27-33
