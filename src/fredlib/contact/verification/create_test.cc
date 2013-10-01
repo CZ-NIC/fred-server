@@ -61,8 +61,7 @@ namespace Fred
         Database::Result check_res = _ctx.get_conn().exec_params(
             "SELECT id "
             "   FROM contact_check "
-            "   WHERE handle=$1::uuid "
-            "   FOR SHARE;",
+            "   WHERE handle=$1::uuid; ",
             Database::query_param_list(check_handle_)
         );
         if(check_res.size() != 1) {
@@ -77,8 +76,7 @@ namespace Fred
             "       JOIN contact_testsuite_map AS c_t_m ON c_t.id = c_t_m.enum_contact_test_id "
             "       JOIN contact_check AS c_c ON c_t_m.enum_contact_testsuite_id = c_c.enum_contact_testsuite_id "
             "   WHERE c_t.name=$1::varchar "
-            "       AND c_c.handle=$2::uuid "
-            "   FOR SHARE OF c_t_m;",
+            "       AND c_c.handle=$2::uuid; ",
             Database::query_param_list(test_name_)(check_handle_)
         );
         if(testinsuite_res.size() != 1) {
@@ -86,8 +84,7 @@ namespace Fred
             Database::Result test_res = _ctx.get_conn().exec_params(
                 "SELECT id "
                 "   FROM enum_contact_test "
-                "   WHERE name=$1::varchar"
-                "   FOR SHARE;",
+                "   WHERE name=$1::varchar; ",
                 Database::query_param_list(test_name_)
             );
             if(test_res.size() != 1) {
@@ -102,8 +99,7 @@ namespace Fred
         Database::Result test_res = _ctx.get_conn().exec_params(
             "SELECT id "
             "   FROM enum_contact_test "
-            "   WHERE name=$1::varchar"
-            "   FOR SHARE;",
+            "   WHERE name=$1::varchar; ",
             Database::query_param_list(test_name_)
         );
         if(test_res.size() != 1) {
