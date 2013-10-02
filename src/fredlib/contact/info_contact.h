@@ -40,7 +40,7 @@
 namespace Fred
 {
     /**
-    * Element of contact history data.
+    * Element of contact info data.
     */
     struct InfoContactOutput : public Util::Printable
     {
@@ -54,7 +54,7 @@ namespace Fred
         Nullable<unsigned long long> logd_request_id; /**< id of the request that changed contact data*/
 
         /**
-        * Empty constructor of the contact history data structure.
+        * Empty constructor of the contact info data structure.
         */
         InfoContactOutput()
         {}
@@ -180,7 +180,7 @@ namespace Fred
     };//class InfoContactById
 
     /**
-    * Contact history info.
+    * Contact history info by registry object identifier  and optional time.
     * Contact registry object identifier to get history info about the contact is set via constructor.
     * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
     * When exception is thrown, changes to database are considered inconsistent and should be rolled back by the caller.
@@ -244,7 +244,7 @@ namespace Fred
     };//class InfoContactHistory
 
     /**
-    * Contact info by id with history.
+    * Contact info by id including history.
     * Contact id to get info about the contact is set via constructor.
     * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
     * When exception is thrown, changes to database are considered inconsistent and should be rolled back by the caller.
