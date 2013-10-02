@@ -48,7 +48,6 @@
 #include "fredlib/nsset/update_nsset.h"
 #include "fredlib/contact/delete_contact.h"
 #include "fredlib/contact/create_contact.h"
-#include "fredlib/contact/info_contact.h"
 #include "fredlib/domain/create_domain.h"
 #include "fredlib/nsset/create_nsset.h"
 #include "fredlib/nsset/delete_nsset.h"

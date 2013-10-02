@@ -51,11 +51,9 @@
 #include "fredlib/contact/delete_contact.h"
 #include "fredlib/contact/create_contact.h"
 #include "fredlib/contact/info_contact_history.h"
-#include "fredlib/contact/info_contact_compare.h"
 #include "fredlib/nsset/create_nsset.h"
 #include "fredlib/keyset/create_keyset.h"
 #include "fredlib/domain/create_domain.h"
-#include "fredlib/contact/info_contact.h"
 #include "fredlib/opexception.h"
 #include "util/util.h"
 

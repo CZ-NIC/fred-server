@@ -56,7 +56,6 @@
 #include "fredlib/keyset/create_keyset.h"
 #include "fredlib/domain/create_domain.h"
 #include "fredlib/domain/delete_domain.h"
-#include "fredlib/contact/info_contact.h"
 #include "fredlib/domain/info_domain.h"
 #include "fredlib/opexception.h"
 #include "util/util.h"
