@@ -47,7 +47,7 @@
 #include "fredlib/registrar.h"
 #include "fredlib/contact/create_contact.h"
 #include "fredlib/contact/update_contact.h"
-#include "fredlib/contact/info_contact_history.h"
+#include "fredlib/contact/info_contact.h"
 #include "fredlib/opexception.h"
 #include "util/util.h"
 

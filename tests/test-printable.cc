@@ -71,7 +71,7 @@
 #include "fredlib/domain/info_domain.h"
 #include "fredlib/domain/info_domain_history.h"
 #include "fredlib/domain/info_domain_compare.h"
-#include "fredlib/contact/info_contact_history.h"
+#include "fredlib/contact/info_contact.h"
 #include "fredlib/contact/merge_contact.h"
 #include "fredlib/contact/merge_contact_email_notification_data.h"
 #include "fredlib/contact/merge_contact_selection.h"
@@ -163,7 +163,7 @@ BOOST_AUTO_TEST_CASE(info_contact_data)
 /**
  * test InfoContactOutput print to string
  */
-BOOST_AUTO_TEST_CASE(info_contact_history_output)
+BOOST_AUTO_TEST_CASE(info_contact_output)
 {
     Fred::InfoContactData icd;
     icd.handle = "TEST-INFO-CONTACT-HANDLE";

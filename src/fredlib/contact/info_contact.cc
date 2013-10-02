@@ -17,8 +17,8 @@
  */
 
 /**
- *  @file info_contact_history.cc
- *  contact history info
+ *  @file
+ *  contact info
  */
 
 #include <string>
@@ -30,7 +30,7 @@
 #include <boost/date_time/posix_time/time_period.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
 
-#include "fredlib/contact/info_contact_history.h"
+#include "fredlib/contact/info_contact.h"
 #include "fredlib/object/object.h"
 
 #include "fredlib/opcontext.h"

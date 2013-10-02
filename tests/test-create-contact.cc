@@ -62,7 +62,7 @@
 #include "fredlib/domain/info_domain.h"
 #include "fredlib/domain/info_domain_history.h"
 #include "fredlib/domain/info_domain_compare.h"
-#include "fredlib/contact/info_contact_history.h"
+#include "fredlib/contact/info_contact.h"
 
 
 #include "util/util.h"

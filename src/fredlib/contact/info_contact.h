@@ -18,7 +18,7 @@
 
 /**
  *  @file
- *  contact history info
+ *  contact info
  */
 
 #ifndef INFO_CONTACT_HISTORY_H_

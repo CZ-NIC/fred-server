@@ -50,7 +50,7 @@
 #include "fredlib/keyset/update_keyset.h"
 #include "fredlib/contact/delete_contact.h"
 #include "fredlib/contact/create_contact.h"
-#include "fredlib/contact/info_contact_history.h"
+#include "fredlib/contact/info_contact.h"
 #include "fredlib/nsset/create_nsset.h"
 #include "fredlib/keyset/create_keyset.h"
 #include "fredlib/domain/create_domain.h"
