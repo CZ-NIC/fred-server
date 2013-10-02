@@ -193,32 +193,25 @@ BOOST_AUTO_TEST_CASE(info_contact_history)
 }
 
 /**
- * test InfoContactOut print to string
+ * test InfoContactByHandle print to string
  */
-BOOST_AUTO_TEST_CASE(info_contact_output)
+BOOST_AUTO_TEST_CASE(info_contact_by_handle)
 {
-    Fred::InfoContactData icd;
-    icd.handle = "TEST-INFO-CONTACT-HANDLE";
-    icd.creation_time = boost::posix_time::microsec_clock::universal_time();
-    icd.delete_time = boost::posix_time::microsec_clock::universal_time();
-    icd.disclosename = true;
-
-    Fred::InfoContactOut i;
-    i.utc_timestamp = boost::posix_time::microsec_clock::universal_time();
-    i.local_timestamp = boost::posix_time::microsec_clock::local_time();
-    i.info_contact_data = icd;
-    printable_test(i);
+    printable_test(
+    Fred::InfoContactByHandle("TEST-CONTACT-HANDLE")
+    );
 }
 
 /**
- * test InfoContact print to string
+ * test InfoContactById print to string
  */
-BOOST_AUTO_TEST_CASE(info_contact)
+BOOST_AUTO_TEST_CASE(info_contact_by_id)
 {
     printable_test(
-    Fred::InfoContact("TEST-CONTACT-HANDLE")
+    Fred::InfoContactById(1)
     );
 }
+
 
 /**
  * test UpdateContact print to string

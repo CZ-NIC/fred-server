@@ -121,14 +121,8 @@ struct test_contact_fixture
 BOOST_FIXTURE_TEST_CASE(info_contact, test_contact_fixture )
 {
     Fred::OperationContext ctx;
-    Fred::InfoContactOut contact_info1 = Fred::InfoContact(test_contact_handle).exec(ctx);
-    Fred::InfoContactOut contact_info2 = Fred::InfoContact(test_contact_handle).set_lock().exec(ctx);
-
-    /*
-    Fred::InfoContactOut empty_contact_info;
-    empty_contact_info.info_contact_data.set_diff_print();
-    empty_contact_info == contact_info1;
-    */
+    Fred::InfoContactOutput contact_info1 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
+    Fred::InfoContactOutput contact_info2 = Fred::InfoContactByHandle(test_contact_handle).set_lock().exec(ctx);
 
     std::vector<Fred::InfoContactOutput> contact_history_info1 = Fred::InfoContactHistory(
         contact_info1.info_contact_data.roid).exec(ctx);
