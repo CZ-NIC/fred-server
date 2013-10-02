@@ -85,10 +85,10 @@ const std::string server_name = "test-info-domain";
 
 
 /**
- * test InfoDomain
+ * test OldInfoDomain
  * basic InfoDomainOut comparison
   */
-BOOST_AUTO_TEST_CASE(info_domain)
+BOOST_AUTO_TEST_CASE(old_info_domain)
 {
     std::string registrar_handle = "REG-FRED_A";
     Fred::OperationContext ctx;
@@ -159,8 +159,8 @@ BOOST_AUTO_TEST_CASE(info_domain)
                 , 0//const Optional<unsigned long long> logd_request_id
                 ).exec(ctx);
 
-    Fred::InfoDomainOut info_data_1 = Fred::InfoDomain(test_domain_handle).exec(ctx);
-    Fred::InfoDomainOut info_data_2 = Fred::InfoDomain(test_domain_handle).exec(ctx);
+    Fred::InfoDomainOut info_data_1 = Fred::OldInfoDomain(test_domain_handle).exec(ctx);
+    Fred::InfoDomainOut info_data_2 = Fred::OldInfoDomain(test_domain_handle).exec(ctx);
     BOOST_CHECK(info_data_1 == info_data_2);
 
 
@@ -180,7 +180,7 @@ BOOST_AUTO_TEST_CASE(info_domain)
             , Optional<unsigned long long>() //request_id not set
             ).exec(ctx);
 
-    Fred::InfoDomainOut info_data_3 = Fred::InfoDomain(test_domain_handle).exec(ctx);
+    Fred::InfoDomainOut info_data_3 = Fred::OldInfoDomain(test_domain_handle).exec(ctx);
     BOOST_CHECK(info_data_1 != info_data_3);
 
 }//info_domain

@@ -41,18 +41,18 @@
 
 namespace Fred
 {
-    InfoDomain::InfoDomain(const std::string& fqdn)
+    OldInfoDomain::OldInfoDomain(const std::string& fqdn)
     : fqdn_(fqdn)
     , lock_(false)
     {}
 
-    InfoDomain& InfoDomain::set_lock(bool lock)//set lock object_registry row for domain
+    OldInfoDomain& OldInfoDomain::set_lock(bool lock)//set lock object_registry row for domain
     {
         lock_ = lock;
         return *this;
     }
 
-    InfoDomainOut InfoDomain::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
+    InfoDomainOut OldInfoDomain::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
     {
         InfoDomainOut domain_info_output;
 
@@ -202,9 +202,9 @@ namespace Fred
         }
 
         return domain_info_output;
-    }//InfoDomain::exec
+    }//OldInfoDomain::exec
 
-    std::string InfoDomain::to_string() const
+    std::string OldInfoDomain::to_string() const
     {
         return Util::format_operation_state("InfoDomain",
         Util::vector_of<std::pair<std::string,std::string> >

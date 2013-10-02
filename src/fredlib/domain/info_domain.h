@@ -93,7 +93,7 @@ namespace Fred
     * In case of wrong input data or other predictable and superable failure, the instance of @ref InfoDomain::Exception is thrown with appropriate attributes set.
     * In case of other unsuperable failures and inconstistencies, the instance of @ref InternalError or other exception is thrown.
     */
-    class InfoDomain : public Util::Printable
+    class OldInfoDomain : public Util::Printable
     {
         const std::string fqdn_;/**< fully qualified domain name */
         bool lock_;/**< lock object_registry row flag*/
@@ -111,14 +111,14 @@ namespace Fred
         * Info domain constructor with mandatory parameter.
         * @param fqdn sets fully qualified domain name into @ref fqdn_ attribute
         */
-        InfoDomain(const std::string& fqdn);
+        OldInfoDomain(const std::string& fqdn);
 
         /**
         * Sets domain lock flag.
         * @param lock sets lock domain flag into @ref lock_ attribute
         * @return operation instance reference to allow method chaining
         */
-        InfoDomain& set_lock(bool lock = true);
+        OldInfoDomain& set_lock(bool lock = true);
 
         /**
         * Executes getting info about the domain.

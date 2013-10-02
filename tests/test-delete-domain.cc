@@ -195,7 +195,7 @@ BOOST_FIXTURE_TEST_CASE(delete_domain, delete_domain_fixture )
 {
     Fred::OperationContext ctx;
 
-    Fred::InfoDomainOut domain_info1 = Fred::InfoDomain(test_domain_fqdn).exec(ctx);
+    Fred::InfoDomainOut domain_info1 = Fred::OldInfoDomain(test_domain_fqdn).exec(ctx);
     BOOST_CHECK(domain_info1.info_domain_data.delete_time.isnull());
 
     Fred::DeleteDomain(test_domain_fqdn).exec(ctx);
@@ -249,7 +249,7 @@ BOOST_FIXTURE_TEST_CASE(delete_enum_domain, delete_enum_domain_fixture )
 {
     Fred::OperationContext ctx;
 
-    Fred::InfoDomainOut domain_info1 = Fred::InfoDomain(test_domain_fqdn).exec(ctx);
+    Fred::InfoDomainOut domain_info1 = Fred::OldInfoDomain(test_domain_fqdn).exec(ctx);
     BOOST_CHECK(domain_info1.info_domain_data.delete_time.isnull());
 
     Fred::DeleteDomain(test_domain_fqdn).exec(ctx);

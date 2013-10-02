@@ -336,12 +336,12 @@ BOOST_AUTO_TEST_CASE(info_domain_output)
 }
 
 /**
- * test InfoDomain print to string
+ * test OldInfoDomain print to string
  */
 BOOST_AUTO_TEST_CASE(info_domain)
 {
     printable_test(
-    Fred::InfoDomain("fred.cz")
+    Fred::OldInfoDomain("fred.cz")
     );
 }
 
