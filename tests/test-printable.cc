@@ -318,7 +318,7 @@ BOOST_AUTO_TEST_CASE(info_domain_history)
 
 
 /**
- * test InfoDomainOutput print to string
+ * test InfoDomainOut print to string
  */
 BOOST_AUTO_TEST_CASE(info_domain_output)
 {
@@ -328,7 +328,7 @@ BOOST_AUTO_TEST_CASE(info_domain_output)
     id.delete_time = boost::posix_time::microsec_clock::universal_time();
     id.keyset_handle=Nullable<std::string>("TEST-KEYSET");
 
-    Fred::InfoDomainOutput i;
+    Fred::InfoDomainOut i;
     i.utc_timestamp = boost::posix_time::microsec_clock::universal_time();
     i.local_timestamp = boost::posix_time::microsec_clock::local_time();
     i.info_domain_data = id;

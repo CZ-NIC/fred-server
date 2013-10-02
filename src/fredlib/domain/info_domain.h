@@ -44,7 +44,7 @@ namespace Fred
     /**
     * Domain info data structure.
     */
-    struct InfoDomainOutput : public Util::Printable
+    struct InfoDomainOut : public Util::Printable
     {
         InfoDomainData info_domain_data;/**< data of the domain */
         boost::posix_time::ptime utc_timestamp;/**< timestamp of getting the domain data in UTC */
@@ -53,7 +53,7 @@ namespace Fred
         /**
         * Empty constructor of the domain data structure.
         */
-        InfoDomainOutput()
+        InfoDomainOut()
         {}
 
         /**
@@ -62,7 +62,7 @@ namespace Fred
         * @param rhs is right hand side of the domain data comparison
         * @return true if equal, false if not
         */
-        bool operator==(const InfoDomainOutput& rhs) const
+        bool operator==(const InfoDomainOut& rhs) const
         {
             return info_domain_data == rhs.info_domain_data;
         }
@@ -72,7 +72,7 @@ namespace Fred
         * @param rhs is right hand side of the domain data comparison
         * @return true if not equal, false if equal
         */
-        bool operator!=(const InfoDomainOutput& rhs) const
+        bool operator!=(const InfoDomainOut& rhs) const
         {
             return !this->operator ==(rhs);
         }
@@ -126,7 +126,7 @@ namespace Fred
         * @param local_timestamp_pg_time_zone_name is postgresql time zone name of the returned data
         * @return info data about the domain
         */
-        InfoDomainOutput exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");
+        InfoDomainOut exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");
 
         /**
         * Dumps state of the instance into the string

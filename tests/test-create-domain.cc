@@ -246,7 +246,7 @@ BOOST_FIXTURE_TEST_CASE(create_domain_set_exdate, create_domain_fixture)
         BOOST_ERROR(boost::diagnostic_information(ex));
     }
     Fred::OperationContext ctx;
-    Fred::InfoDomainOutput info_data_1 = Fred::InfoDomain(test_domain_handle).exec(ctx);
+    Fred::InfoDomainOut info_data_1 = Fred::InfoDomain(test_domain_handle).exec(ctx);
     BOOST_CHECK(info_data_1.info_domain_data.expiration_date == exdate);
 }
 
@@ -292,7 +292,7 @@ BOOST_FIXTURE_TEST_CASE(create_domain_set_valexdate, create_domain_fixture)
         BOOST_ERROR(boost::diagnostic_information(ex));
     }
     Fred::OperationContext ctx;
-    Fred::InfoDomainOutput info_data_1 = Fred::InfoDomain(test_enum_domain).exec(ctx);
+    Fred::InfoDomainOut info_data_1 = Fred::InfoDomain(test_enum_domain).exec(ctx);
     BOOST_CHECK(static_cast<Fred::ENUMValidationExtension>(info_data_1.info_domain_data.enum_domain_validation)
             .validation_expiration == valexdate);
 }

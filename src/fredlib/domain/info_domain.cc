@@ -52,9 +52,9 @@ namespace Fred
         return *this;
     }
 
-    InfoDomainOutput InfoDomain::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
+    InfoDomainOut InfoDomain::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
     {
-        InfoDomainOutput domain_info_output;
+        InfoDomainOut domain_info_output;
 
         try
         {
@@ -213,9 +213,9 @@ namespace Fred
         );
     }
 
-    std::string InfoDomainOutput::to_string() const
+    std::string InfoDomainOut::to_string() const
     {
-        return Util::format_data_structure("InfoDomainOutput",
+        return Util::format_data_structure("InfoDomainOut",
         Util::vector_of<std::pair<std::string,std::string> >
         (std::make_pair("info_domain_data",info_domain_data.to_string()))
         (std::make_pair("utc_timestamp",boost::lexical_cast<std::string>(utc_timestamp)))

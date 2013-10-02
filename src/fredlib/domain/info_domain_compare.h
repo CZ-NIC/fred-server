@@ -47,7 +47,7 @@ namespace Fred
     * @param rhs is the domain history data
     * @return true if equal, false if not
     */
-    bool operator==(const InfoDomainOutput& lhs, const InfoDomainHistoryOutput& rhs);
+    bool operator==(const InfoDomainOut& lhs, const InfoDomainHistoryOutput& rhs);
 
     /**
     * Equality of domain history data with the domain data operator.
@@ -55,7 +55,7 @@ namespace Fred
     * @param rhs is the domain data
     * @return true if equal, false if not
     */
-    bool operator==(const InfoDomainHistoryOutput& lhs, const InfoDomainOutput& rhs);
+    bool operator==(const InfoDomainHistoryOutput& lhs, const InfoDomainOut& rhs);
 
     /**
     * Inequality of domain data with the domain history data operator.
@@ -63,7 +63,7 @@ namespace Fred
     * @param rhs is the domain history data
     * @return true if not equal, false if equal
     */
-    bool operator!=(const InfoDomainOutput& lhs, const InfoDomainHistoryOutput& rhs);
+    bool operator!=(const InfoDomainOut& lhs, const InfoDomainHistoryOutput& rhs);
 
     /**
     * Inequality of domain history data with the domain data operator.
@@ -71,7 +71,7 @@ namespace Fred
     * @param rhs is the domain data
     * @return true if not equal, false if equal
     */
-    bool operator!=(const InfoDomainHistoryOutput& lhs, const InfoDomainOutput& rhs);
+    bool operator!=(const InfoDomainHistoryOutput& lhs, const InfoDomainOut& rhs);
 
 }//namespace Fred
 
