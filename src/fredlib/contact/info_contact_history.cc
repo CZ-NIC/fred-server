@@ -42,6 +42,59 @@
 namespace Fred
 {
 
+    InfoContactByHandle::InfoContactByHandle(const std::string& handle)
+        : handle_(handle)
+        , lock_(false)
+    {}
+
+    InfoContactByHandle& InfoContactByHandle::set_lock(bool lock)//set lock object_registry row for contact
+    {
+        lock_ = lock;
+        return *this;
+    }
+
+    InfoContactOutput InfoContactByHandle::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
+    {
+        std::vector<InfoContactOutput> contact_res;
+
+        try
+        {
+            contact_res = InfoContactImpl()
+                    .set_handle(handle_)
+                    .set_lock(lock_)
+                    .set_history_query(false)
+                    .exec(ctx,local_timestamp_pg_time_zone_name);
+
+            if (contact_res.empty())
+            {
+                BOOST_THROW_EXCEPTION(Exception().set_unknown_contact_handle(handle_));
+            }
+
+            if (contact_res.size() > 1)
+            {
+                BOOST_THROW_EXCEPTION(InternalError("query result size > 1"));
+            }
+
+        }//try
+        catch(ExceptionStack& ex)
+        {
+            ex.add_exception_stack_info(to_string());
+            throw;
+        }
+        return contact_res.at(0);
+    }//InfoContactByHandle::exec
+
+    std::string InfoContactByHandle::to_string() const
+    {
+        return Util::format_operation_state("InfoContactByHandle",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("handle", handle_))
+        (std::make_pair("lock",lock_ ? "true":"false"))
+        );
+    }
+
+
+
     InfoContactById::InfoContactById(unsigned long long id)
         : id_(id)
         , lock_(false)
