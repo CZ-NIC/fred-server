@@ -93,8 +93,6 @@ namespace Fred
         );
     }
 
-
-
     InfoContactById::InfoContactById(unsigned long long id)
         : id_(id)
         , lock_(false)
