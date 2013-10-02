@@ -129,6 +129,92 @@ namespace Fred
 
     };//class InfoDomainHistory
 
+    /**
+    * Domain info implementation.
+    * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
+    * When exception is thrown, changes to database are considered inconsistent and should be rolled back by the caller.
+    */
+    class InfoDomain
+    {
+        Optional<std::string> fqdn_;/**< fully qualified domain name */
+        Optional<std::string> domain_roid_;/**< registry object identifier of the domain */
+        Optional<unsigned long long> domain_id_;/**< object id of the domain */
+        Optional<unsigned long long> domain_historyid_;/**< history id of the domain */
+        Optional<boost::posix_time::ptime> history_timestamp_;/**< timestamp of history state we want to get (in time zone set in @ref local_timestamp_pg_time_zone_name parameter) */
+        bool history_query_;/**< flag to query history records of the domain */
+        bool lock_;/**< lock object_registry row for domain */
+
+    public:
+
+        /**
+        * Default constructor.
+        * Sets @ref history_query_ and @ref lock_ to false
+        */
+        InfoDomain();
+
+        /**
+        * Sets fully qualified domain name.
+        * @param fqdn sets fully qualified domain name we want to get @ref fqdn_ attribute
+        * @return operation instance reference to allow method chaining
+        */
+        InfoDomain& set_fqdn(const std::string& fqdn);
+
+        /**
+        * Sets registry object identifier of the domain.
+        * @param domain_roid sets registry object identifier of the domain we want to get @ref domain_roid_ attribute
+        * @return operation instance reference to allow method chaining
+        */
+        InfoDomain& set_roid(const std::string& domain_roid);
+
+        /**
+        * Sets database identifier of the domain.
+        * @param domain_id sets object identifier of the domain we want to get @ref domain_id_ attribute
+        * @return operation instance reference to allow method chaining
+        */
+        InfoDomain& set_id(unsigned long long domain_id);
+
+        /**
+        * Sets history identifier of the domain.
+        * @param domain_historyid sets history identifier of the domain we want to get @ref domain_historyid_ attribute
+        * @return operation instance reference to allow method chaining
+        */
+        InfoDomain& set_historyid(unsigned long long domain_historyid);
+
+        /**
+        * Sets timestamp of history state we want to get.
+        * @param history_timestamp sets timestamp of history state we want to get @ref history_timestamp_ attribute
+        * @return operation instance reference to allow method chaining
+        */
+        InfoDomain& set_history_timestamp(boost::posix_time::ptime history_timestamp);
+
+        /**
+        * Sets history query flag.
+        * @param history_query sets history query flag into @ref history query_ attribute
+        * @return operation instance reference to allow method chaining
+        */
+        InfoDomain& set_history_query(bool history_query);
+
+
+        /**
+        * Sets domain lock flag.
+        * @param lock sets lock domain flag into @ref lock_ attribute
+        * @return operation instance reference to allow method chaining
+        */
+        InfoDomain& set_lock(bool lock = true);
+
+        /**
+        * Executes getting info about the domain.
+        * @param ctx contains reference to database and logging interface
+        * @param local_timestamp_pg_time_zone_name is postgresql time zone name of the returned data
+        * @return info data about the domain
+        */
+        std::vector<InfoDomainOutput> exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "UTC");//return data
+
+    };//class InfoDomain
+
+
+
+
 }//namespace Fred
 
 #endif//INFO_DOMAIN_HISTORY_H_
