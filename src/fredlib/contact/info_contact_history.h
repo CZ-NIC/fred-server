@@ -154,7 +154,7 @@ namespace Fred
         * Info contact constructor with mandatory parameter.
         * @param id sets object id of the contact into @ref id_ attribute
         */
-        InfoContactById(unsigned long long id);
+        explicit InfoContactById(unsigned long long id);
 
         /**
         * Sets contact lock flag.
@@ -267,7 +267,7 @@ namespace Fred
         * Info contact history constructor with mandatory parameter.
         * @param id sets object id of the contact into @ref id_ attribute
         */
-        HistoryInfoContactById(unsigned long long id);
+        explicit HistoryInfoContactById(unsigned long long id);
 
         /**
         * Sets contact lock flag.
@@ -316,7 +316,7 @@ namespace Fred
         * Info contact history constructor with mandatory parameter.
         * @param historyid sets object historyid of the contact into @ref historyid_ attribute
         */
-        HistoryInfoContactByHistoryid(unsigned long long historyid);
+        explicit HistoryInfoContactByHistoryid(unsigned long long historyid);
 
         /**
         * Sets contact lock flag.
