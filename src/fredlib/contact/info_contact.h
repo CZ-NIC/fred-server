@@ -349,13 +349,13 @@ namespace Fred
     */
     class InfoContact
     {
-        Optional<std::string> contact_handle_;
-        Optional<std::string> contact_roid_;
-        Optional<unsigned long long> contact_id_;
-        Optional<unsigned long long> contact_historyid_;
-        Optional<boost::posix_time::ptime> history_timestamp_;
-        bool history_query_;
-        bool lock_;
+        Optional<std::string> contact_handle_;/**< handle of the contact */
+        Optional<std::string> contact_roid_;/**< registry object identifier of the contact */
+        Optional<unsigned long long> contact_id_;/**< object id of the contact */
+        Optional<unsigned long long> contact_historyid_;/**< history id of the contact */
+        Optional<boost::posix_time::ptime> history_timestamp_;/**< timestamp of history state we want to get (in time zone set in @ref local_timestamp_pg_time_zone_name parameter) */
+        bool history_query_;/**< flag to query history records of the contact */
+        bool lock_;/**< lock object_registry row for contact */
 
     public:
         /**
