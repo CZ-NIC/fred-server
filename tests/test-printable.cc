@@ -210,6 +210,26 @@ BOOST_AUTO_TEST_CASE(info_contact_by_id)
     );
 }
 
+/**
+ * test HistoryInfoContactById print to string
+ */
+BOOST_AUTO_TEST_CASE(history_info_contact_by_id)
+{
+    printable_test(
+    Fred::HistoryInfoContactById(1)
+    );
+}
+
+/**
+ * test HistoryInfoContactByHistoryid print to string
+ */
+BOOST_AUTO_TEST_CASE(history_info_contact_by_historyid)
+{
+    printable_test(
+    Fred::HistoryInfoContactByHistoryid(1)
+    );
+}
+
 
 /**
  * test UpdateContact print to string
