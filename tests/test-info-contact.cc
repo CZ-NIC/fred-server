@@ -131,11 +131,19 @@ BOOST_FIXTURE_TEST_CASE(info_contact, test_contact_fixture )
 
     std::vector<Fred::InfoContactOutput> contact_history_info2 = Fred::HistoryInfoContactById(contact_history_info1.at(0).info_contact_data.id).exec(ctx);
 
-    BOOST_CHECK(contact_history_info1.at(0).info_contact_data == contact_history_info2.at(0).info_contact_data);
+    BOOST_CHECK(contact_history_info1.at(0) == contact_history_info2.at(0));
 
     Fred::InfoContactOutput contact_history_info3 = Fred::HistoryInfoContactByHistoryid(contact_history_info1.at(0).info_contact_data.historyid).exec(ctx);
 
-    BOOST_CHECK(contact_history_info1.at(0).info_contact_data == contact_history_info3.info_contact_data);
+    BOOST_CHECK(contact_history_info1.at(0) == contact_history_info3);
+
+    Fred::InfoContactOutput contact_history_info4 = Fred::InfoContactById(contact_history_info1.at(0).info_contact_data.id).exec(ctx);
+
+    BOOST_CHECK(contact_history_info1.at(0) == contact_history_info4);
+
+    Fred::InfoContactOutput contact_history_info5 = Fred::InfoContactByHandle(contact_history_info1.at(0).info_contact_data.handle).exec(ctx);
+
+    BOOST_CHECK(contact_history_info1.at(0) == contact_history_info5);
 
 }
 
