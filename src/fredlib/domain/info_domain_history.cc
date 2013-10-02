@@ -66,9 +66,9 @@ namespace Fred
         return *this;
     }
 
-    std::vector<InfoDomainHistoryOutput> InfoDomainHistory::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
+    std::vector<InfoDomainOutput> InfoDomainHistory::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
     {
-        std::vector<InfoDomainHistoryOutput> domain_history_res;
+        std::vector<InfoDomainOutput> domain_history_res;
 
         try
         {
@@ -138,7 +138,7 @@ namespace Fred
                 for(Database::Result::size_type i = 0; i < res.size(); ++i)
                 {
                     unsigned long long domain_id = 0;//domain id
-                    InfoDomainHistoryOutput domain_history_output;
+                    InfoDomainOutput domain_history_output;
 
                     domain_id = static_cast<unsigned long long>(res[i][0]);//dobr.id
 
@@ -244,9 +244,9 @@ namespace Fred
         );
     }
 
-    std::string InfoDomainHistoryOutput::to_string() const
+    std::string InfoDomainOutput::to_string() const
     {
-        return Util::format_data_structure("InfoDomainHistoryOutput",
+        return Util::format_data_structure("InfoDomainOutput",
         Util::vector_of<std::pair<std::string,std::string> >
         (std::make_pair("info_domain_data",info_domain_data.to_string()))
         (std::make_pair("next_historyid",next_historyid.print_quoted()))

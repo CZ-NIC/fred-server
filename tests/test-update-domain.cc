@@ -231,7 +231,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     Fred::OperationContext ctx;
 
     Fred::InfoDomainOut info_data_1 = Fred::InfoDomain(test_domain_handle).exec(ctx);
-    std::vector<Fred::InfoDomainHistoryOutput> history_info_data_1 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid).exec(ctx);
+    std::vector<Fred::InfoDomainOutput> history_info_data_1 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid).exec(ctx);
 
     //update_registrar_handle check
     BOOST_CHECK(info_data_1.info_domain_data.update_registrar_handle.isnull());
@@ -260,7 +260,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
             ).exec(ctx);
 
     Fred::InfoDomainOut info_data_2 = Fred::InfoDomain(test_domain_handle).exec(ctx);
-    std::vector<Fred::InfoDomainHistoryOutput> history_info_data_2 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid).exec(ctx);
+    std::vector<Fred::InfoDomainOutput> history_info_data_2 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid).exec(ctx);
 
     Fred::InfoDomainOut info_data_1_with_changes = info_data_1;
 
@@ -321,7 +321,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     .exec(ctx);
 
     Fred::InfoDomainOut info_data_3 = Fred::InfoDomain(test_domain_handle).exec(ctx);
-    std::vector<Fred::InfoDomainHistoryOutput> history_info_data_3 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid).exec(ctx);
+    std::vector<Fred::InfoDomainOutput> history_info_data_3 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid).exec(ctx);
 
     Fred::InfoDomainOut info_data_2_with_changes = info_data_2;
 
@@ -377,7 +377,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     Fred::UpdateDomain(test_domain_handle, registrar_handle).set_authinfo("testauthinfo").exec(ctx);
 
     Fred::InfoDomainOut info_data_4 = Fred::InfoDomain(test_domain_handle).exec(ctx);
-    std::vector<Fred::InfoDomainHistoryOutput> history_info_data_4 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid).exec(ctx);
+    std::vector<Fred::InfoDomainOutput> history_info_data_4 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid).exec(ctx);
 
     Fred::InfoDomainOut info_data_3_with_changes = info_data_3;
 
@@ -415,7 +415,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     Fred::UpdateDomain(test_domain_handle, registrar_handle).set_registrant(registrant_contact_handle).exec(ctx);
 
     Fred::InfoDomainOut info_data_5 = Fred::InfoDomain(test_domain_handle).exec(ctx);
-    std::vector<Fred::InfoDomainHistoryOutput> history_info_data_5 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid).exec(ctx);
+    std::vector<Fred::InfoDomainOutput> history_info_data_5 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid).exec(ctx);
 
     Fred::InfoDomainOut info_data_4_with_changes = info_data_4;
 
@@ -454,7 +454,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     Fred::UpdateDomain(test_domain_handle, registrar_handle).add_admin_contact(admin_contact1_handle).exec(ctx);
 
     Fred::InfoDomainOut info_data_6 = Fred::InfoDomain(test_domain_handle).exec(ctx);
-    std::vector<Fred::InfoDomainHistoryOutput> history_info_data_6 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid).exec(ctx);
+    std::vector<Fred::InfoDomainOutput> history_info_data_6 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid).exec(ctx);
 
     Fred::InfoDomainOut info_data_5_with_changes = info_data_5;
 
@@ -493,7 +493,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     Fred::UpdateDomain(test_domain_handle, registrar_handle).rem_admin_contact(admin_contact_handle).exec(ctx);
 
     Fred::InfoDomainOut info_data_7 = Fred::InfoDomain(test_domain_handle).exec(ctx);
-    std::vector<Fred::InfoDomainHistoryOutput> history_info_data_7 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid).exec(ctx);
+    std::vector<Fred::InfoDomainOutput> history_info_data_7 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid).exec(ctx);
 
     Fred::InfoDomainOut info_data_6_with_changes = info_data_6;
 
@@ -536,7 +536,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     Fred::UpdateDomain(test_domain_handle, registrar_handle).set_nsset(test_nsset_handle).exec(ctx);
 
     Fred::InfoDomainOut info_data_8 = Fred::InfoDomain(test_domain_handle).exec(ctx);
-    std::vector<Fred::InfoDomainHistoryOutput> history_info_data_8 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid).exec(ctx);
+    std::vector<Fred::InfoDomainOutput> history_info_data_8 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid).exec(ctx);
 
     Fred::InfoDomainOut info_data_7_with_changes = info_data_7;
 
@@ -577,7 +577,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     Fred::UpdateDomain(test_domain_handle, registrar_handle).set_nsset(Nullable<std::string>()).exec(ctx);
 
     Fred::InfoDomainOut info_data_9 = Fred::InfoDomain(test_domain_handle).exec(ctx);
-    std::vector<Fred::InfoDomainHistoryOutput> history_info_data_9 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid).exec(ctx);
+    std::vector<Fred::InfoDomainOutput> history_info_data_9 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid).exec(ctx);
 
     Fred::InfoDomainOut info_data_8_with_changes = info_data_8;
 
@@ -619,7 +619,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     Fred::UpdateDomain(test_domain_handle, registrar_handle).set_nsset(test_nsset_handle).exec(ctx);
 
     Fred::InfoDomainOut info_data_10 = Fred::InfoDomain(test_domain_handle).exec(ctx);
-    std::vector<Fred::InfoDomainHistoryOutput> history_info_data_10 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid).exec(ctx);
+    std::vector<Fred::InfoDomainOutput> history_info_data_10 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid).exec(ctx);
 
     Fred::InfoDomainOut info_data_9_with_changes = info_data_9;
 
@@ -662,7 +662,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     Fred::UpdateDomain(test_domain_handle, registrar_handle).unset_nsset().exec(ctx);
 
     Fred::InfoDomainOut info_data_11 = Fred::InfoDomain(test_domain_handle).exec(ctx);
-    std::vector<Fred::InfoDomainHistoryOutput> history_info_data_11 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid).exec(ctx);
+    std::vector<Fred::InfoDomainOutput> history_info_data_11 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid).exec(ctx);
 
     Fred::InfoDomainOut info_data_10_with_changes = info_data_10;
 
@@ -706,7 +706,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     Fred::UpdateDomain(test_domain_handle, registrar_handle).set_nsset(Nullable<std::string>(test_nsset_handle)).exec(ctx);
 
     Fred::InfoDomainOut info_data_12 = Fred::InfoDomain(test_domain_handle).exec(ctx);
-    std::vector<Fred::InfoDomainHistoryOutput> history_info_data_12 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid).exec(ctx);
+    std::vector<Fred::InfoDomainOutput> history_info_data_12 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid).exec(ctx);
 
     Fred::InfoDomainOut info_data_11_with_changes = info_data_11;
 
@@ -751,7 +751,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     Fred::UpdateDomain(test_domain_handle, registrar_handle).set_nsset(test_nsset_handle).exec(ctx);
 
     Fred::InfoDomainOut info_data_13 = Fred::InfoDomain(test_domain_handle).exec(ctx);
-    std::vector<Fred::InfoDomainHistoryOutput> history_info_data_13 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid).exec(ctx);
+    std::vector<Fred::InfoDomainOutput> history_info_data_13 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid).exec(ctx);
 
     Fred::InfoDomainOut info_data_12_with_changes = info_data_12;
 
@@ -797,7 +797,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     Fred::UpdateDomain(test_domain_handle, registrar_handle).set_keyset(Nullable<std::string>()).exec(ctx);
 
     Fred::InfoDomainOut info_data_14 = Fred::InfoDomain(test_domain_handle).exec(ctx);
-    std::vector<Fred::InfoDomainHistoryOutput> history_info_data_14 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid).exec(ctx);
+    std::vector<Fred::InfoDomainOutput> history_info_data_14 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid).exec(ctx);
 
     Fred::InfoDomainOut info_data_13_with_changes = info_data_13;
 
@@ -844,7 +844,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     Fred::UpdateDomain(test_domain_handle, registrar_handle).set_keyset(test_keyset_handle).exec(ctx);
 
     Fred::InfoDomainOut info_data_15 = Fred::InfoDomain(test_domain_handle).exec(ctx);
-    std::vector<Fred::InfoDomainHistoryOutput> history_info_data_15 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid).exec(ctx);
+    std::vector<Fred::InfoDomainOutput> history_info_data_15 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid).exec(ctx);
 
     Fred::InfoDomainOut info_data_14_with_changes = info_data_14;
 
@@ -892,7 +892,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     Fred::UpdateDomain(test_domain_handle, registrar_handle).unset_keyset().exec(ctx);
 
     Fred::InfoDomainOut info_data_16 = Fred::InfoDomain(test_domain_handle).exec(ctx);
-    std::vector<Fred::InfoDomainHistoryOutput> history_info_data_16 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid).exec(ctx);
+    std::vector<Fred::InfoDomainOutput> history_info_data_16 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid).exec(ctx);
 
     Fred::InfoDomainOut info_data_15_with_changes = info_data_15;
 
@@ -941,7 +941,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     Fred::UpdateDomain(test_domain_handle, registrar_handle).set_keyset(Nullable<std::string>(test_keyset_handle)).exec(ctx);
 
     Fred::InfoDomainOut info_data_17 = Fred::InfoDomain(test_domain_handle).exec(ctx);
-    std::vector<Fred::InfoDomainHistoryOutput> history_info_data_17 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid).exec(ctx);
+    std::vector<Fred::InfoDomainOutput> history_info_data_17 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid).exec(ctx);
 
     Fred::InfoDomainOut info_data_16_with_changes = info_data_16;
 
@@ -992,7 +992,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
 
 
     Fred::InfoDomainOut info_data_18 = Fred::InfoDomain(test_domain_handle).exec(ctx);
-    std::vector<Fred::InfoDomainHistoryOutput> history_info_data_18 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid).exec(ctx);
+    std::vector<Fred::InfoDomainOutput> history_info_data_18 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid).exec(ctx);
 
     Fred::InfoDomainOut info_data_17_with_changes = info_data_17;
 
@@ -1300,7 +1300,7 @@ BOOST_FIXTURE_TEST_CASE(info_domain_history_test, update_domain_fixture)
 
     Fred::InfoDomainOut info_data_2 = Fred::InfoDomain(test_domain_handle).exec(ctx);
 
-    std::vector<Fred::InfoDomainHistoryOutput> history_info_data = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid).exec(ctx);
+    std::vector<Fred::InfoDomainOutput> history_info_data = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid).exec(ctx);
 
     BOOST_CHECK(history_info_data.at(0) == info_data_2);
     BOOST_CHECK(history_info_data.at(1) == info_data_1);

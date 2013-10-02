@@ -43,7 +43,7 @@ namespace Fred
     /**
     * Element of domain history data.
     */
-    struct InfoDomainHistoryOutput : public Util::Printable
+    struct InfoDomainOutput : public Util::Printable
     {
         InfoDomainData info_domain_data;/**< data of the domain */
 
@@ -55,7 +55,7 @@ namespace Fred
         /**
         * Empty constructor of the domain history data structure.
         */
-        InfoDomainHistoryOutput()
+        InfoDomainOutput()
         {}
 
         /**
@@ -119,7 +119,7 @@ namespace Fred
         * @param local_timestamp_pg_time_zone_name is postgresql time zone name of the returned data
         * @return history info data about the domain
         */
-        std::vector<InfoDomainHistoryOutput> exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
+        std::vector<InfoDomainOutput> exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
 
         /**
         * Dumps state of the instance into the string

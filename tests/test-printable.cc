@@ -287,7 +287,7 @@ BOOST_AUTO_TEST_CASE(info_domain_data)
 }
 
 /**
- * test InfoDomainHistoryOutput print to string
+ * test InfoDomainOutput print to string
  */
 BOOST_AUTO_TEST_CASE(info_domain_history_output)
 {
@@ -297,7 +297,7 @@ BOOST_AUTO_TEST_CASE(info_domain_history_output)
     id.delete_time = boost::posix_time::microsec_clock::universal_time();
     id.keyset_handle=Nullable<std::string>("TEST-KEYSET");
 
-    Fred::InfoDomainHistoryOutput ih;
+    Fred::InfoDomainOutput ih;
     ih.history_valid_from = boost::posix_time::microsec_clock::universal_time();
     ih.history_valid_to = boost::posix_time::microsec_clock::universal_time();
     ih.info_domain_data = id;
