@@ -81,6 +81,7 @@ namespace Fred
         Nullable<bool> disclosevat;/**< whether to reveal taxpayer identification number */
         Nullable<bool> discloseident;/**< whether to reveal unambiguous identification number */
         Nullable<bool> disclosenotifyemail;/**< whether to reveal notify email */
+        unsigned long long id;/**< id of the contact object*/
 
     private:
         bool print_diff_;/**< whether to print debug diff made by contact comparison operators @ref operator==  and @ref operator!=*/

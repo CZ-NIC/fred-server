@@ -45,6 +45,7 @@ namespace Fred
     InfoContactData::InfoContactData()
     : crhistoryid(0)
     , historyid(0)
+    , id(0)
     , print_diff_(false)
     {}
 
@@ -280,6 +281,10 @@ namespace Fred
         }
         if(print_diff_ && !result_disclosenotifyemail) std::cout << "disclosenotifyemail: " << disclosenotifyemail.print_quoted() << " != "<< rhs.disclosenotifyemail.print_quoted() << std::endl;
 
+        bool result_id = (id == rhs.id);
+        if(print_diff_ && !result_id) std::cout << "id: " << id << " != "<< rhs.id << std::endl;
+
+
         return  result_roid
                 && result_handle
                 && result_sponsoring_registrar_handle
@@ -317,6 +322,7 @@ namespace Fred
                 && result_disclosevat
                 && result_discloseident
                 && result_disclosenotifyemail
+                && result_id
                 ;
     }
 

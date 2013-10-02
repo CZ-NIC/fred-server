@@ -44,7 +44,6 @@ namespace Fred
     */
     struct InfoContactOutput : public Util::Printable
     {
-        unsigned long long id;/**< id of the contact object*/
         InfoContactData info_contact_data;/**< data of the contact */
         boost::posix_time::ptime utc_timestamp;/**< timestamp of getting the contact data in UTC */
         boost::posix_time::ptime local_timestamp;/**< timestamp of getting the contact data in local time zone viz @ref local_timestamp_pg_time_zone_name */
@@ -58,7 +57,6 @@ namespace Fred
         * Empty constructor of the contact history data structure.
         */
         InfoContactOutput()
-        :id(0)
         {}
 
         /**

@@ -218,7 +218,6 @@ namespace Fred
     {
         return Util::format_data_structure("InfoContactOutput",
         Util::vector_of<std::pair<std::string,std::string> >
-        (std::make_pair("id",boost::lexical_cast<std::string>(id)))
         (std::make_pair("info_contact_data",info_contact_data.to_string()))
         (std::make_pair("next_historyid",next_historyid.print_quoted()))
         (std::make_pair("history_valid_from",boost::lexical_cast<std::string>(history_valid_from)))
@@ -469,7 +468,7 @@ namespace Fred
         {
             InfoContactOutput info_contact_output;
 
-            info_contact_output.id = static_cast<unsigned long long>(query_result[i][0]);//cobr.id
+            info_contact_output.info_contact_data.id = static_cast<unsigned long long>(query_result[i][0]);//cobr.id
             info_contact_output.info_contact_data.roid = static_cast<std::string>(query_result[i][1]);//cobr.roid
 
             info_contact_output.info_contact_data.handle = static_cast<std::string>(query_result[i][2]);//cobr.name
