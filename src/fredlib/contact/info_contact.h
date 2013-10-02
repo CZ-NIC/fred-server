@@ -347,7 +347,7 @@ namespace Fred
     * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
     * When exception is thrown, changes to database are considered inconsistent and should be rolled back by the caller.
     */
-    class InfoContactImpl
+    class InfoContact
     {
         Optional<std::string> contact_handle_;
         Optional<std::string> contact_roid_;
@@ -362,56 +362,56 @@ namespace Fred
          * Default constructor.
          * Sets @ref history_query_ and @ref lock_ to false
          */
-        InfoContactImpl();
+        InfoContact();
 
         /**
         * Sets handle of the contact.
         * @param contact_handle sets handle of the contact we want to get @ref contact_handle_ attribute
         * @return operation instance reference to allow method chaining
         */
-        InfoContactImpl& set_handle(const std::string& contact_handle);
+        InfoContact& set_handle(const std::string& contact_handle);
 
         /**
         * Sets registry object identifier of the contact.
         * @param contact_roid sets registry object identifier of the contact we want to get @ref contact_roid_ attribute
         * @return operation instance reference to allow method chaining
         */
-        InfoContactImpl& set_roid(const std::string& contact_roid);
+        InfoContact& set_roid(const std::string& contact_roid);
 
         /**
         * Sets database identifier of the contact.
         * @param contact_id sets object identifier of the contact we want to get @ref contact_id_ attribute
         * @return operation instance reference to allow method chaining
         */
-        InfoContactImpl& set_id(unsigned long long contact_id);
+        InfoContact& set_id(unsigned long long contact_id);
 
         /**
         * Sets history identifier of the contact.
         * @param contact_historyid sets history identifier of the contact we want to get @ref contact_historyid_ attribute
         * @return operation instance reference to allow method chaining
         */
-        InfoContactImpl& set_historyid(unsigned long long contact_historyid);
+        InfoContact& set_historyid(unsigned long long contact_historyid);
 
         /**
         * Sets timestamp of the history state we want to get.
         * @param history_timestamp sets timestamp of history state we want to get @ref history_timestamp_ attribute
         * @return operation instance reference to allow method chaining
         */
-        InfoContactImpl& set_history_timestamp(const boost::posix_time::ptime& history_timestamp);
+        InfoContact& set_history_timestamp(const boost::posix_time::ptime& history_timestamp);
 
         /**
         * Sets history query flag.
         * @param history_query sets history query flag into @ref history query_ attribute
         * @return operation instance reference to allow method chaining
         */
-        InfoContactImpl& set_history_query(bool history_query);
+        InfoContact& set_history_query(bool history_query);
 
         /**
         * Sets the contact lock flag.
         * @param lock sets lock contact flag into @ref lock_ attribute
         * @return operation instance reference to allow method chaining
         */
-        InfoContactImpl& set_lock(bool lock = true);
+        InfoContact& set_lock(bool lock = true);
 
         /**
         * Executes getting info about the contact.
@@ -422,7 +422,7 @@ namespace Fred
         std::vector<InfoContactOutput> exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "UTC");//return data
 
 
-    };//classInfoContactImpl
+    };//classInfoContact
 }//namespace Fred
 
 #endif//INFO_CONTACT_HISTORY_H_

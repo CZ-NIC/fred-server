@@ -59,7 +59,7 @@ namespace Fred
 
         try
         {
-            contact_res = InfoContactImpl()
+            contact_res = InfoContact()
                     .set_handle(handle_)
                     .set_lock(lock_)
                     .set_history_query(false)
@@ -110,7 +110,7 @@ namespace Fred
 
         try
         {
-            contact_res = InfoContactImpl()
+            contact_res = InfoContact()
                     .set_id(id_)
                     .set_lock(lock_)
                     .set_history_query(false)
@@ -174,7 +174,7 @@ namespace Fred
 
         try
         {
-            contact_history_res = InfoContactImpl()
+            contact_history_res = InfoContact()
                     .set_roid(roid_)
                     .set_lock(lock_)
                     .set_history_query(true)
@@ -243,7 +243,7 @@ namespace Fred
 
         try
         {
-            contact_history_res = InfoContactImpl()
+            contact_history_res = InfoContact()
                     .set_id(id_)
                     .set_lock(lock_)
                     .set_history_query(true)
@@ -289,7 +289,7 @@ namespace Fred
 
         try
         {
-            contact_history_res = InfoContactImpl()
+            contact_history_res = InfoContact()
                     .set_historyid(historyid_)
                     .set_lock(lock_)
                     .set_history_query(true)
@@ -323,54 +323,54 @@ namespace Fred
         );
     }
 
-    InfoContactImpl::InfoContactImpl()
+    InfoContact::InfoContact()
         : history_query_(false)
         , lock_(false)
         {}
 
-    InfoContactImpl& InfoContactImpl::set_handle(const std::string& contact_handle)
+    InfoContact& InfoContact::set_handle(const std::string& contact_handle)
     {
         contact_handle_ = contact_handle;
         return *this;
     }
 
-    InfoContactImpl& InfoContactImpl::set_roid(const std::string& contact_roid)
+    InfoContact& InfoContact::set_roid(const std::string& contact_roid)
     {
         contact_roid_ = contact_roid;
         return *this;
     }
 
-    InfoContactImpl& InfoContactImpl::set_id(unsigned long long contact_id)
+    InfoContact& InfoContact::set_id(unsigned long long contact_id)
     {
         contact_id_ = contact_id;
         return *this;
     }
 
-    InfoContactImpl& InfoContactImpl::set_historyid(unsigned long long contact_historyid)
+    InfoContact& InfoContact::set_historyid(unsigned long long contact_historyid)
     {
         contact_historyid_ = contact_historyid;
         return *this;
     }
 
-    InfoContactImpl& InfoContactImpl::set_history_timestamp(const boost::posix_time::ptime& history_timestamp)
+    InfoContact& InfoContact::set_history_timestamp(const boost::posix_time::ptime& history_timestamp)
     {
         history_timestamp_ = history_timestamp;
         return *this;
     }
 
-    InfoContactImpl& InfoContactImpl::set_history_query(bool history_query)
+    InfoContact& InfoContact::set_history_query(bool history_query)
     {
         history_query_ = history_query;
         return *this;
     }
 
-    InfoContactImpl& InfoContactImpl::set_lock(bool lock)
+    InfoContact& InfoContact::set_lock(bool lock)
     {
         lock_ = lock;
         return *this;
     }
 
-    std::vector<InfoContactOutput> InfoContactImpl::exec(OperationContext& ctx
+    std::vector<InfoContactOutput> InfoContact::exec(OperationContext& ctx
             , const std::string& local_timestamp_pg_time_zone_name
         )
     {
