@@ -203,6 +203,17 @@ namespace Fred
         );
     }
 
+
+    bool InfoContactOutput::operator==(const InfoContactOutput& rhs) const
+    {
+        return info_contact_data == rhs.info_contact_data;
+    }
+
+    bool InfoContactOutput::operator!=(const InfoContactOutput& rhs) const
+    {
+        return !this->operator ==(rhs);
+    }
+
     std::string InfoContactOutput::to_string() const
     {
         return Util::format_data_structure("InfoContactOutput",
