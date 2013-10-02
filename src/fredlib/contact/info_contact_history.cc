@@ -41,6 +41,58 @@
 
 namespace Fred
 {
+
+    InfoContactById::InfoContactById(unsigned long long id)
+        : id_(id)
+        , lock_(false)
+    {}
+
+    InfoContactById& InfoContactById::set_lock(bool lock)//set lock object_registry row for contact
+    {
+        lock_ = lock;
+        return *this;
+    }
+
+    InfoContactOutput InfoContactById::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
+    {
+        std::vector<InfoContactOutput> contact_res;
+
+        try
+        {
+            contact_res = InfoContactImpl()
+                    .set_id(id_)
+                    .set_lock(lock_)
+                    .set_history_query(false)
+                    .exec(ctx,local_timestamp_pg_time_zone_name);
+
+            if (contact_res.empty())
+            {
+                BOOST_THROW_EXCEPTION(Exception().set_unknown_object_id(id_));
+            }
+
+            if (contact_res.size() > 1)
+            {
+                BOOST_THROW_EXCEPTION(InternalError("query result size > 1"));
+            }
+
+        }//try
+        catch(ExceptionStack& ex)
+        {
+            ex.add_exception_stack_info(to_string());
+            throw;
+        }
+        return contact_res.at(0);
+    }//InfoContactById::exec
+
+    std::string InfoContactById::to_string() const
+    {
+        return Util::format_operation_state("InfoContactById",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("id",boost::lexical_cast<std::string>(id_)))
+        (std::make_pair("lock",lock_ ? "true":"false"))
+        );
+    }
+
     InfoContactHistory::InfoContactHistory(const std::string& roid
             , const Optional<boost::posix_time::ptime>& history_timestamp)
         : roid_(roid)
@@ -185,6 +237,11 @@ namespace Fred
             if (contact_history_res.empty())
             {
                 BOOST_THROW_EXCEPTION(Exception().set_unknown_object_historyid(historyid_));
+            }
+
+            if (contact_history_res.size() > 1)
+            {
+                BOOST_THROW_EXCEPTION(InternalError("query result size > 1"));
             }
 
         }//try
