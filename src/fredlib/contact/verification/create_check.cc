@@ -17,7 +17,7 @@
  */
 
 /**
- *  @file create_check.cc
+ *  @file
  *  create contact check
  */
 
@@ -28,6 +28,7 @@
 #include "util/random_data_generator.h"
 
 #include "fredlib/contact/verification/create_check.h"
+#include "fredlib/contact/verification/create_test.h"
 #include "fredlib/contact/verification/enum_check_status.h"
 
 
@@ -178,6 +179,26 @@ namespace Fred
 
             // problem was elsewhere so let it propagate
             throw;
+        }
+
+        // create tests
+        Database::Result testnames_res = _ctx.get_conn().exec_params(
+            "SELECT enum_test.name AS name_ "
+            "   FROM enum_contact_test          AS enum_test "
+            "       JOIN contact_testsuite_map  AS c_map "
+            "           ON enum_test.id = c_map.enum_contact_test_id "
+            "   WHERE c_map.enum_contact_testsuite_id=$1::bigint; ",
+            Database::query_param_list(testsuite_id)
+        );
+        if(testnames_res.size() == 0) {
+            throw ExceptionEmptyTestsuite();
+        }
+
+        for(Database::Result::Iterator it = testnames_res.begin(); it != testnames_res.end(); ++it) {
+            Fred::CreateContactTest(
+                handle,
+                static_cast<std::string>( (*it)["name_"] )
+            ).exec(_ctx);
         }
 
         return handle;

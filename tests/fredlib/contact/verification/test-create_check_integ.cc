@@ -33,6 +33,8 @@
 #include "util/db/nullable.h"
 #include "random_data_generator.h"
 
+#include "tests/fredlib/contact/verification/setup_utils.h"
+
 //not using UTF defined main
 #define BOOST_TEST_NO_MAIN
 
@@ -45,89 +47,6 @@
 BOOST_AUTO_TEST_SUITE(TestCreateContactCheck_integ)
 
 const std::string server_name = "test-contact_verification-create_check_integ";
-
-struct fixture_has_ctx {
-    Fred::OperationContext ctx;
-};
-
-struct setup_get_registrar_handle
-{
-    std::string registrar_handle;
-
-    setup_get_registrar_handle(Fred::OperationContext& _ctx) {
-        registrar_handle = static_cast<std::string>(
-            _ctx.get_conn().exec("SELECT handle FROM registrar LIMIT 1;")[0][0] );
-
-        BOOST_REQUIRE(registrar_handle.empty() != true);
-    }
-};
-
-struct setup_contact : public setup_get_registrar_handle {
-    std::string contact_handle;
-
-    setup_contact(Fred::OperationContext& _ctx)
-        : setup_get_registrar_handle(_ctx)
-    {
-        contact_handle = "CREATE_CNT_CHECK_" + RandomDataGenerator().xnumstring(6);
-        Fred::CreateContact create(contact_handle, registrar_handle);
-        create.exec(_ctx);
-    }
-};
-
-struct setup_nonexistent_contact_handle {
-    std::string contact_handle;
-
-    setup_nonexistent_contact_handle(Fred::OperationContext& _ctx) {
-        Database::Result res;
-        do {
-            contact_handle = "CREATE_CNT_CHECK_" + RandomDataGenerator().xnumstring(10);
-            res = _ctx.get_conn().exec(
-                "SELECT name "
-                "   FROM object_registry "
-                "   WHERE name='"+contact_handle+"'"
-                "       AND type=1;" );
-        } while(res.size() != 0);
-    }
-};
-
-struct setup_testsuite {
-    long testsuite_id;
-    std::string testsuite_name;
-    std::string testsuite_description;
-
-    setup_testsuite(Fred::OperationContext& _ctx) {
-        testsuite_name = "CREATE_CNT_CHECK_" + RandomDataGenerator().xnumstring(6) + "_TESTSUITE_NAME";
-        testsuite_description = testsuite_name + "_DESCRIPTION abrakadabra";
-        testsuite_id = static_cast<long>(
-            _ctx.get_conn().exec(
-                "INSERT INTO enum_contact_testsuite "
-                "   (name, description)"
-                "   VALUES ('"+testsuite_name+"', '"+testsuite_description+"')"
-                "   RETURNING id;"
-            )[0][0]);
-    }
-};
-
-struct setup_nonexistent_testsuite_name {
-    std::string testsuite_name;
-
-    setup_nonexistent_testsuite_name(Fred::OperationContext& _ctx) {
-        Database::Result res;
-        do {
-            testsuite_name = "CREATE_CNT_CHECK_" + RandomDataGenerator().xnumstring(10) + "_TESTSUITE_NAME";
-            res = _ctx.get_conn().exec(
-                "SELECT name FROM enum_contact_testsuite WHERE name='"+testsuite_name+"';" );
-        } while(res.size() != 0);
-    }
-};
-
-struct setup_logd_request_id {
-    long long logd_request_id;
-
-    setup_logd_request_id() {
-        logd_request_id = RandomDataGenerator().xuint();
-    }
-};
 
 /**
  executing CreateContactCheck with only mandatory setup
