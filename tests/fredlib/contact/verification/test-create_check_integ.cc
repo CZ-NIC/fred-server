@@ -44,6 +44,7 @@
 #include "boost/date_time/posix_time/posix_time.hpp"
 #include "boost/date_time/local_time_adjustor.hpp"
 
+BOOST_AUTO_TEST_SUITE(TestContactVerification)
 BOOST_AUTO_TEST_SUITE(TestCreateContactCheck_integ)
 
 const std::string server_name = "test-contact_verification-create_check_integ";
@@ -376,4 +377,5 @@ BOOST_FIXTURE_TEST_CASE(test_Exec_empty_testsuite_name, fixture_has_ctx)
 }
 
 
+BOOST_AUTO_TEST_SUITE_END();
 BOOST_AUTO_TEST_SUITE_END();

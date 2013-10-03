@@ -53,6 +53,7 @@
 #include  <cstdlib>
 #include "util/random_data_generator.h"
 
+BOOST_AUTO_TEST_SUITE(TestContactVerification)
 BOOST_AUTO_TEST_SUITE(TestUpdateContactTest_integ)
 
 const std::string server_name = "test-contact_verification-update_test_integ";
@@ -512,4 +513,5 @@ BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_status_name)
     }
 }
 
+BOOST_AUTO_TEST_SUITE_END();
 BOOST_AUTO_TEST_SUITE_END();

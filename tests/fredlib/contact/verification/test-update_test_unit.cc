@@ -35,6 +35,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/test/unit_test.hpp>
 
+BOOST_AUTO_TEST_SUITE(TestContactVerification)
 BOOST_AUTO_TEST_SUITE(TestUpdateContactTest_unit)
 
 const std::string server_name = "test-contact_verification-update_test_unit";
@@ -220,4 +221,5 @@ BOOST_AUTO_TEST_CASE(test_Setter_reset)
     }
 }
 
+BOOST_AUTO_TEST_SUITE_END();
 BOOST_AUTO_TEST_SUITE_END();

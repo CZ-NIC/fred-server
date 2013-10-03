@@ -45,6 +45,7 @@
 #include "boost/date_time/posix_time/posix_time.hpp"
 #include "boost/date_time/local_time_adjustor.hpp"
 
+BOOST_AUTO_TEST_SUITE(TestContactVerification)
 BOOST_AUTO_TEST_SUITE(TestCreateContactTest_integ)
 
 const std::string server_name = "test-contact_verification-create_test_integ";
@@ -320,4 +321,5 @@ BOOST_FIXTURE_TEST_CASE(test_Exec_violating_unique_check_test_pair, fixture_has_
         BOOST_FAIL("should have caught the exception");
     }
 }
+BOOST_AUTO_TEST_SUITE_END();
 BOOST_AUTO_TEST_SUITE_END();
