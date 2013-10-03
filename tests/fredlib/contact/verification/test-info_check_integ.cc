@@ -38,6 +38,8 @@
 #include "util/optional_nullable_equal.h"
 #include "random_data_generator.h"
 
+#include "tests/fredlib/contact/verification/setup_utils.h"
+
 //not using UTF defined main
 #define BOOST_TEST_NO_MAIN
 
@@ -54,188 +56,6 @@
 BOOST_AUTO_TEST_SUITE(TestInfoContactCheck_integ)
 
 const std::string server_name = "test-contact_verification-info_check_integ";
-
-struct fixture_has_ctx {
-    Fred::OperationContext ctx;
-};
-
-struct setup_check {
-    std::string check_handle_;
-    std::string status_;
-    Optional<long long> logd_request_;
-
-    setup_check(
-        Fred::OperationContext& _ctx,
-        Optional<long long> _logd_request = Optional<long long>()
-    ) :
-        status_(Fred::ContactCheckStatus::ENQUEUED),
-        logd_request_(_logd_request)
-    {
-        // registrar
-        std::string registrar_handle = static_cast<std::string>(
-            _ctx.get_conn().exec("SELECT handle FROM registrar LIMIT 1;")[0][0] );
-
-        BOOST_REQUIRE(registrar_handle.empty() != true);
-
-        // contact
-        std::string contact_handle = "CREATE_CNT_CHECK_" + RandomDataGenerator().xnumstring(6);
-        Fred::CreateContact create_contact(contact_handle, registrar_handle);
-        create_contact.exec(_ctx);
-
-        // testsuite
-        std::string testsuite_name = "CREATE_CNT_CHECK_" + RandomDataGenerator().xnumstring(6) + "_TESTSUITE_NAME";
-        _ctx.get_conn().exec(
-            "INSERT INTO enum_contact_testsuite "
-            "   (name, description)"
-            "   VALUES ('"+testsuite_name+"', 'description some text')"
-            "   RETURNING id;"
-        );
-
-        // check
-        Fred::CreateContactCheck create_check(contact_handle, testsuite_name, logd_request_);
-        check_handle_ = create_check.exec(_ctx);
-        BOOST_REQUIRE(check_handle_.empty() != true );
-    }
-};
-
-struct setup_check_status {
-    std::string status_name_;
-
-    setup_check_status(Fred::OperationContext& _ctx) {
-        Database::Result res;
-        status_name_ = "STATUS_" + RandomDataGenerator().xnumstring(10);
-        res = _ctx.get_conn().exec(
-            "INSERT "
-            "   INTO enum_contact_check_status "
-            "   (id, name, description ) "
-            "   VALUES (" + RandomDataGenerator().xnumstring(6) + ", '"+status_name_+"', '"+status_name_+"_desc') "
-            "   RETURNING id;" );
-
-        BOOST_REQUIRE(res.size()==1);
-    }
-};
-
-struct setup_test_status {
-    std::string status_name_;
-
-    setup_test_status(Fred::OperationContext& _ctx)
-    {
-        Database::Result res;
-        status_name_ = "STATUS_" + RandomDataGenerator().xnumstring(10);
-        res = _ctx.get_conn().exec(
-            "INSERT "
-            "   INTO enum_contact_test_status "
-            "   (id, name, description ) "
-            "   VALUES (" + RandomDataGenerator().xnumstring(6) + ", '"+status_name_+"', '"+status_name_+"_desc') "
-            "   RETURNING id;" );
-
-        BOOST_REQUIRE(res.size()==1);
-    }
-};
-
-struct setup_logd_request_id {
-    long long logd_request_id;
-
-    setup_logd_request_id() {
-        logd_request_id = RandomDataGenerator().xuint();
-    }
-};
-
-struct setup_error_msg {
-    std::string error_msg;
-
-    setup_error_msg() {
-        error_msg = "ERROR_MSG_" + RandomDataGenerator().xnumstring(20);
-    }
-};
-
-struct setup_nonexistent_check_handle {
-    std::string check_handle_;
-
-    setup_nonexistent_check_handle(Fred::OperationContext& _ctx) {
-        struct BOOST { struct UUIDS { struct RANDOM_GENERATOR {
-            static std::string generate() {
-                srand(time(NULL));
-                std::vector<unsigned char> bytes;
-
-                // generate random 128bits = 16 bytes
-                for (int i = 0; i < 16; ++i) {
-                    bytes.push_back( RandomDataGenerator().xletter()%256 );
-                }
-                /* some specific uuid rules
-                 * http://www.cryptosys.net/pki/Uuid.c.html
-                 */
-                bytes.at(6) = static_cast<char>(0x40 | (bytes.at(6) & 0xf));
-                bytes.at(8) = static_cast<char>(0x80 | (bytes.at(8) & 0x3f));
-
-                // buffer for hex representation of one byte + terminating zero
-                char hex_rep[3];
-
-                // converting raw bytes to hex string representation
-                std::string result;
-                for (std::vector<unsigned char>::iterator it = bytes.begin(); it != bytes.end(); ++it) {
-                    sprintf(hex_rep,"%02x",*it);
-                    // conversion target is hhhh - so in case it gets wrong just cut off the tail
-                    hex_rep[2] = 0;
-                    result += hex_rep;
-                }
-
-                // hyphens for canonical form
-                result.insert(8, "-");
-                result.insert(13, "-");
-                result.insert(18, "-");
-                result.insert(23, "-");
-
-                return result;
-            }
-        }; }; };
-
-        /* end of temporary ugliness - please cut and replace between ASAP*/
-
-        Database::Result res;
-        do {
-            check_handle_ = boost::lexical_cast<std::string>(BOOST::UUIDS::RANDOM_GENERATOR::generate());
-            res = _ctx.get_conn().exec(
-                "SELECT handle "
-                "   FROM contact_check "
-                "   WHERE handle='"+check_handle_+"';"
-            );
-        } while(res.size() != 0);
-    }
-};
-
-struct setup_testdef {
-    long testdef_id_;
-    std::string testdef_name_;
-    std::string testdef_description_;
-
-    setup_testdef(Fred::OperationContext& _ctx) {
-        testdef_name_ = "CREATE_CNT_TEST_" + RandomDataGenerator().xnumstring(6) + "_NAME";
-        testdef_description_ = testdef_name_ + "_DESCRIPTION";
-        testdef_id_ = static_cast<long>(
-            _ctx.get_conn().exec(
-                "INSERT INTO enum_contact_test "
-                "   (name, description) "
-                "   VALUES ('"+testdef_name_+"', '"+testdef_description_+"') "
-                "   RETURNING id;"
-            )[0][0]);
-    }
-};
-
-struct setup_testdef_in_testsuite_of_check {
-    setup_testdef_in_testsuite_of_check(Fred::OperationContext& _ctx, const std::string testdef_name, const std::string check_handle) {
-    BOOST_REQUIRE(
-        _ctx.get_conn().exec(
-            "INSERT INTO contact_testsuite_map "
-            "   (enum_contact_test_id, enum_contact_testsuite_id) "
-            "   VALUES ("
-            "       (SELECT id FROM enum_contact_test WHERE name='"+testdef_name+"' ), "
-            "       (SELECT enum_contact_testsuite_id FROM contact_check WHERE handle='"+check_handle+"') "
-            "   ) "
-            "   RETURNING enum_contact_test_id;"
-        ).size() == 1);
-    }
-};
 
 /**
  setting existing check handle and executing operation
@@ -292,7 +112,38 @@ BOOST_FIXTURE_TEST_CASE(test_Exec, fixture_has_ctx)
     }
 
     // building check tests
-    for(int i=0; i<test_count; ++i) {
+    // first test is already created in check by setup
+
+    test_names.push_back(check.testsuite_.test.testdef_name_);
+
+    tests_status_history.front().push_back(Fred::ContactTestStatus::ENQUEUED);
+    tests_logd_request_history.front().push_back(Optional<long long>());
+    tests_error_msg_history.front().push_back(Optional<string>());
+
+    // starting from 1 because first history step is already CREATEd
+    for(int j=1; j<tests_history_steps.at(0); ++j) {
+        tests_status_history.at(0).push_back(setup_test_status(ctx).status_name_);
+        tests_logd_request_history.at(0).push_back(Optional<long long>(setup_logd_request_id().logd_request_id));
+        tests_error_msg_history.at(0).push_back(Optional<string>(setup_error_msg().error_msg));
+
+        Fred::UpdateContactTest update_test(
+            check.check_handle_,
+            test_names.at(0),
+            tests_status_history.at(0).at(j),
+            tests_logd_request_history.at(0).at(j),
+            tests_error_msg_history.at(0).at(j) );
+
+        try {
+            update_test.exec(ctx);
+        } catch(const Fred::InternalError& exp) {
+           BOOST_FAIL("failed to update test (1):" + boost::diagnostic_information(exp) + exp.what() );
+        } catch(const boost::exception& exp) {
+           BOOST_FAIL("failed to update test (2):" + boost::diagnostic_information(exp));
+        } catch(const std::exception& exp) {
+           BOOST_FAIL(string("failed to update test (3):") + exp.what());
+        }
+    }
+    for(int i=1; i<test_count; ++i) {
         test_names.push_back(setup_testdef(ctx).testdef_name_);
         tests_status_history.at(i).push_back(Fred::ContactTestStatus::ENQUEUED);
         tests_logd_request_history.at(i).push_back(Optional<long long>(setup_logd_request_id().logd_request_id));
@@ -303,7 +154,7 @@ BOOST_FIXTURE_TEST_CASE(test_Exec, fixture_has_ctx)
         Fred::CreateContactTest create_test(
             check.check_handle_,
             test_names.at(i),
-            tests_logd_request_history.at(i).back() );
+            tests_logd_request_history.at(i).at(0) );
 
         try {
             create_test.exec(ctx);
@@ -324,9 +175,9 @@ BOOST_FIXTURE_TEST_CASE(test_Exec, fixture_has_ctx)
             Fred::UpdateContactTest update_test(
                 check.check_handle_,
                 test_names.at(i),
-                tests_status_history.at(i).back(),
-                tests_logd_request_history.at(i).back(),
-                tests_error_msg_history.at(i).back() );
+                tests_status_history.at(i).at(j),
+                tests_logd_request_history.at(i).at(j),
+                tests_error_msg_history.at(i).at(j) );
 
             try {
                 update_test.exec(ctx);
@@ -367,7 +218,9 @@ BOOST_FIXTURE_TEST_CASE(test_Exec, fixture_has_ctx)
 
     for(int i=0; i<test_count; ++i) {
         for(int j=0; j<tests_history_steps.at(i); ++j) {
-            BOOST_CHECK_EQUAL(tests_status_history.at(i).at(j), info.tests.at(i).state_history.at(j).status_name);
+            BOOST_CHECK_EQUAL(
+                tests_status_history.at(i).at(j),
+                info.tests.at(i).state_history.at(j).status_name);
             BOOST_CHECK_MESSAGE(
                 equal(
                     tests_logd_request_history.at(i).at(j),
@@ -399,7 +252,7 @@ BOOST_FIXTURE_TEST_CASE(test_Exec_nonexistent_check_handle, fixture_has_ctx)
 {
     setup_nonexistent_check_handle handle(ctx);
 
-    Fred::InfoContactCheck dummy(handle.check_handle_);
+    Fred::InfoContactCheck dummy(handle.check_handle);
 
     bool caught_the_right_exception = false;
     try {
