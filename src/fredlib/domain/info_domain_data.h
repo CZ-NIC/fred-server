@@ -64,6 +64,7 @@ namespace Fred
         Nullable<boost::posix_time::ptime> delete_time;/**< domain delete time in UTC*/
         unsigned long long historyid;/**< last historyid of domain history*/
         unsigned long long crhistoryid;/**< first historyid of domain history*/
+        unsigned long long id;/**< id of the domain object*/
 
     private:
         bool print_diff_;/**< whether to print debug diff made by domain comparison operators @ref operator==  and @ref operator!=*/

@@ -47,6 +47,9 @@ namespace Fred
     {
         InfoDomainData info_domain_data;/**< data of the domain */
 
+        boost::posix_time::ptime utc_timestamp;/**< timestamp of getting the domain data in UTC */
+        boost::posix_time::ptime local_timestamp;/**< timestamp of getting the domain data in local time zone viz @ref local_timestamp_pg_time_zone_name */
+
         Nullable<unsigned long long> next_historyid; /**< next historyid of the domain history*/
         boost::posix_time::ptime history_valid_from;/**< history data valid from time */
         Nullable<boost::posix_time::ptime> history_valid_to;/**< history data valid to time, null means open end */
