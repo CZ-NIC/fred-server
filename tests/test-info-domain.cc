@@ -84,46 +84,58 @@ BOOST_AUTO_TEST_SUITE(TestInfoDomain)
 const std::string server_name = "test-info-domain";
 
 
-/**
- * test OldInfoDomain
- * basic InfoDomainOut comparison
-  */
-BOOST_AUTO_TEST_CASE(old_info_domain)
+struct test_domain_fixture
 {
-    std::string registrar_handle = "REG-FRED_A";
-    Fred::OperationContext ctx;
-    std::string xmark = RandomDataGenerator().xnumstring(6);
+    std::string registrar_handle;
+    std::string xmark;
+    std::string admin_contact_handle;
+    std::string admin_contact1_handle;
+    std::string admin_contact2_handle;
+    std::string registrant_contact_handle;
+    std::string test_nsset_handle;
+    std::string test_keyset_handle;
+    std::string test_fqdn;
 
-    std::string admin_contact_handle = std::string("TEST-ADMIN-CONTACT-HANDLE")+xmark;
-    Fred::CreateContact(admin_contact_handle,registrar_handle)
-        .set_name(std::string("TEST-ADMIN-CONTACT NAME")+xmark)
-        .set_disclosename(true)
-        .set_street1(std::string("STR1")+xmark)
-        .set_city("Praha").set_postalcode("11150").set_country("CZ")
-        .set_discloseaddress(true)
-        .exec(ctx);
+    test_domain_fixture()
+    :xmark(RandomDataGenerator().xnumstring(6))
+    , admin_contact_handle(std::string("TEST-ADMIN-CONTACT-HANDLE")+xmark)
+    , admin_contact1_handle(std::string("TEST-ADMIN-CONTACT2-HANDLE")+xmark)
+    , admin_contact2_handle(std::string("TEST-ADMIN-CONTACT3-HANDLE")+xmark)
+    , registrant_contact_handle(std::string("TEST-REGISTRANT-CONTACT-HANDLE")+xmark)
+    , test_nsset_handle(std::string("TEST-NSSET-HANDLE")+xmark)
+    , test_keyset_handle(std::string("TEST-KEYSET-HANDLE")+xmark)
+    , test_fqdn(std::string("fredinfo")+xmark+".cz")
+    {
+        Fred::OperationContext ctx;
+        registrar_handle = static_cast<std::string>(ctx.get_conn().exec(
+                "SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]);
+        BOOST_CHECK(!registrar_handle.empty());//expecting existing system registrar
 
-    std::string admin_contact1_handle = std::string("TEST-ADMIN-CONTACT2-HANDLE")+xmark;
-    Fred::CreateContact(admin_contact1_handle,registrar_handle)
-        .set_name(std::string("TEST-ADMIN-CONTACT2 NAME")+xmark)
-        .set_disclosename(true)
-        .set_street1(std::string("STR1")+xmark)
-        .set_city("Praha").set_postalcode("11150").set_country("CZ")
-        .set_discloseaddress(true)
-        .exec(ctx);
+        Fred::CreateContact(admin_contact_handle,registrar_handle)
+            .set_name(std::string("TEST-ADMIN-CONTACT NAME")+xmark)
+            .set_disclosename(true)
+            .set_street1(std::string("STR1")+xmark)
+            .set_city("Praha").set_postalcode("11150").set_country("CZ")
+            .set_discloseaddress(true)
+            .exec(ctx);
 
-    std::string admin_contact2_handle = std::string("TEST-ADMIN-CONTACT3-HANDLE")+xmark;
-    Fred::CreateContact(admin_contact2_handle,registrar_handle)
-        .set_name(std::string("TEST-ADMIN-CONTACT3 NAME")+xmark)
-        .set_disclosename(true)
-        .set_street1(std::string("STR1")+xmark)
-        .set_city("Praha").set_postalcode("11150").set_country("CZ")
-        .set_discloseaddress(true)
-        .exec(ctx);
+        Fred::CreateContact(admin_contact1_handle,registrar_handle)
+            .set_name(std::string("TEST-ADMIN-CONTACT2 NAME")+xmark)
+            .set_disclosename(true)
+            .set_street1(std::string("STR1")+xmark)
+            .set_city("Praha").set_postalcode("11150").set_country("CZ")
+            .set_discloseaddress(true)
+            .exec(ctx);
 
+        Fred::CreateContact(admin_contact2_handle,registrar_handle)
+            .set_name(std::string("TEST-ADMIN-CONTACT3 NAME")+xmark)
+            .set_disclosename(true)
+            .set_street1(std::string("STR1")+xmark)
+            .set_city("Praha").set_postalcode("11150").set_country("CZ")
+            .set_discloseaddress(true)
+            .exec(ctx);
 
-    std::string registrant_contact_handle = std::string("TEST-REGISTRANT-CONTACT-HANDLE")+xmark;
-    Fred::CreateContact(registrant_contact_handle,registrar_handle)
+        Fred::CreateContact(registrant_contact_handle,registrar_handle)
             .set_name(std::string("TEST-REGISTRANT-CONTACT NAME")+xmark)
             .set_disclosename(true)
             .set_street1(std::string("STR1")+xmark)
@@ -131,57 +143,66 @@ BOOST_AUTO_TEST_CASE(old_info_domain)
             .set_discloseaddress(true)
             .exec(ctx);
 
-    std::string test_nsset_handle = std::string("TEST-NSSET-HANDLE")+xmark;
-    Fred::CreateNsset(test_nsset_handle, registrar_handle)
-        .set_dns_hosts(Util::vector_of<Fred::DnsHost>
+        Fred::CreateNsset(test_nsset_handle, registrar_handle)
+            .set_dns_hosts(Util::vector_of<Fred::DnsHost>
             (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.3")("127.1.1.3"))) //add_dns
             (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.4")("127.1.1.4"))) //add_dns
-            )
-            .exec(ctx);
-
-    std::string test_keyset_handle = std::string("TEST-KEYSET-HANDLE")+xmark;
-    Fred::CreateKeyset(test_keyset_handle, registrar_handle)
-            .set_tech_contacts(Util::vector_of<std::string>(admin_contact2_handle))
-            .exec(ctx);
-
-
-    std::string test_domain_handle = std::string("fredinfo")+xmark+".cz";
-    Fred::CreateDomain(test_domain_handle//const std::string& fqdn
-                , registrar_handle//const std::string& registrar
-                , registrant_contact_handle//const std::string& registrant
-                , Optional<std::string>("testpasswd")//const Optional<std::string>& authinfo
-                , Nullable<std::string>(test_nsset_handle)//const Optional<Nullable<std::string> >& nsset
-                , Nullable<std::string>(test_keyset_handle)//const Optional<Nullable<std::string> >& keyset
-                , Util::vector_of<std::string>(admin_contact2_handle)//const std::vector<std::string>& admin_contacts
-                , boost::gregorian::day_clock::local_day()+boost::gregorian::months(12)//const Optional<boost::gregorian::date>& expiration_date
-                , Optional<boost::gregorian::date>()
-                , Optional<bool>()
-                , 0//const Optional<unsigned long long> logd_request_id
-                ).exec(ctx);
-
-    Fred::InfoDomainOut info_data_1 = Fred::OldInfoDomain(test_domain_handle).exec(ctx);
-    Fred::InfoDomainOut info_data_2 = Fred::OldInfoDomain(test_domain_handle).exec(ctx);
-    BOOST_CHECK(info_data_1 == info_data_2);
-
-
-    //call update using big ctor
-    Fred::UpdateDomain(test_domain_handle//fqdn
-            , registrar_handle//registrar
-            , Optional<std::string>()//sponsoring registrar
-            , registrant_contact_handle //registrant - owner
-            , std::string("testauthinfo1") //authinfo
-            , Nullable<std::string>()//unset nsset - set to null
-            , Optional<Nullable<std::string> >()//dont change keyset
-            , Util::vector_of<std::string> (admin_contact1_handle)(registrant_contact_handle) //add admin contacts
-            , Util::vector_of<std::string> (admin_contact2_handle) //remove admin contacts
-            , Optional<boost::gregorian::date>()//exdate
-            , Optional<boost::gregorian::date>()//valexdate
-            , Optional<bool>()
-            , Optional<unsigned long long>() //request_id not set
             ).exec(ctx);
 
-    Fred::InfoDomainOut info_data_3 = Fred::OldInfoDomain(test_domain_handle).exec(ctx);
-    BOOST_CHECK(info_data_1 != info_data_3);
+        Fred::CreateKeyset(test_keyset_handle, registrar_handle)
+                .set_tech_contacts(Util::vector_of<std::string>(admin_contact2_handle))
+                .exec(ctx);
+
+        Fred::CreateDomain(test_fqdn//const std::string& fqdn
+                    , registrar_handle//const std::string& registrar
+                    , registrant_contact_handle//const std::string& registrant
+                    , Optional<std::string>("testpasswd")//const Optional<std::string>& authinfo
+                    , Nullable<std::string>(test_nsset_handle)//const Optional<Nullable<std::string> >& nsset
+                    , Nullable<std::string>(test_keyset_handle)//const Optional<Nullable<std::string> >& keyset
+                    , Util::vector_of<std::string>(admin_contact2_handle)//const std::vector<std::string>& admin_contacts
+                    , boost::gregorian::day_clock::local_day()+boost::gregorian::months(12)//const Optional<boost::gregorian::date>& expiration_date
+                    , Optional<boost::gregorian::date>()
+                    , Optional<bool>()
+                    , 0//const Optional<unsigned long long> logd_request_id
+                    ).exec(ctx);
+
+        ctx.commit_transaction();//commit fixture
+        {
+            Fred::OperationContext ctx1;
+            //call update using big ctor
+            Fred::UpdateDomain(test_fqdn//fqdn
+                    , registrar_handle//registrar
+                    , Optional<std::string>()//sponsoring registrar
+                    , registrant_contact_handle //registrant - owner
+                    , std::string("testauthinfo1") //authinfo
+                    , Nullable<std::string>()//unset nsset - set to null
+                    , Optional<Nullable<std::string> >()//dont change keyset
+                    , Util::vector_of<std::string> (admin_contact1_handle)(registrant_contact_handle) //add admin contacts
+                    , Util::vector_of<std::string> (admin_contact2_handle) //remove admin contacts
+                    , Optional<boost::gregorian::date>()//exdate
+                    , Optional<boost::gregorian::date>()//valexdate
+                    , Optional<bool>()
+                    , Optional<unsigned long long>() //request_id not set
+                    ).exec(ctx1);
+
+
+            ctx1.commit_transaction();
+        }
+    }
+    ~test_domain_fixture()
+    {}
+};
+
+/**
+ * test InfoDomain
+ */
+BOOST_FIXTURE_TEST_CASE(info_domain, test_domain_fixture )
+{
+    Fred::OperationContext ctx;
+
+    Fred::InfoDomainOut info_data_1 = Fred::OldInfoDomain(test_fqdn).exec(ctx);
+    Fred::InfoDomainOut info_data_2 = Fred::OldInfoDomain(test_fqdn).exec(ctx);
+    BOOST_CHECK(info_data_1 == info_data_2);
 
 }//info_domain
 
