@@ -426,7 +426,7 @@ namespace Fred
         if(contact_handle_.isset())
         {
             params.push_back(contact_handle_);
-            sql << " AND cobr.name = $"<< params.size() <<"::text ";
+            sql << " AND cobr.name = UPPER($"<< params.size() <<"::text) ";
         }
 
 
