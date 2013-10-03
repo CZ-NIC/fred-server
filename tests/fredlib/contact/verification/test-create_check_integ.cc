@@ -51,7 +51,7 @@ const std::string server_name = "test-contact_verification-create_check_integ";
 /**
  executing CreateContactCheck with only mandatory setup
  @pre valid contact handle
- @pre valid testsuite name
+ @pre valid testsuite name including one existing test
  @post correct values present in InfoContactCheckOutput::to_string()
  */
 BOOST_FIXTURE_TEST_CASE(test_Exec_mandatory_setup, fixture_has_ctx)
@@ -172,7 +172,7 @@ BOOST_FIXTURE_TEST_CASE(test_Exec_mandatory_setup, fixture_has_ctx)
 /**
  executing CreateContactCheck with full mandatory + optional setup
  @pre valid contact handle
- @pre valid testsuite name
+ @pre valid testsuite name including one existing test
  @post correct values present in InfoContactCheckOutput::to_string()
  */
 BOOST_FIXTURE_TEST_CASE(test_Exec_optional_setup, fixture_has_ctx)
@@ -346,5 +346,34 @@ BOOST_FIXTURE_TEST_CASE(test_Exec_nonexistent_testsuite_name, fixture_has_ctx)
         BOOST_FAIL("should have caught the exception");
     }
 }
+
+/**
+ setting name of a testsuite containing no tests and executing operation
+ @pre valid contact handle
+ @pre name of a testsuite containing no tests
+ @post Fred::CreateContactCheck::ExceptionEmptyTestsuite
+ */
+BOOST_FIXTURE_TEST_CASE(test_Exec_empty_testsuite_name, fixture_has_ctx)
+{
+    setup_contact contact(ctx);
+    setup_empty_testsuite testsuite(ctx);
+
+    Fred::CreateContactCheck create_check(contact.contact_handle, testsuite.testsuite_name);
+    std::string handle;
+
+    bool caught_the_right_exception = false;
+    try {
+        handle = create_check.exec(ctx);
+    } catch(const Fred::CreateContactCheck::ExceptionEmptyTestsuite& exp) {
+        caught_the_right_exception = true;
+    } catch(...) {
+        BOOST_FAIL("incorrect exception caught");
+    }
+
+    if(! caught_the_right_exception) {
+        BOOST_FAIL("should have caught the exception");
+    }
+}
+
 
 BOOST_AUTO_TEST_SUITE_END();
