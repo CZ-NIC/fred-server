@@ -1503,8 +1503,24 @@ src_cli_admin_fred_admin_SOURCES = \
 		src/admin/contact/merge_contact_reporting.cc \
 		src/admin/contact/merge_contact_reporting.h \
 		src/cli_admin/domain_name_validation_params.h \
-		src/cli_admin/domain_name_validation_init.h
-
+		src/cli_admin/domain_name_validation_init.h \
+		src/admin/contact/verification/fill_automatic_check_queue.h \
+		src/admin/contact/verification/fill_automatic_check_queue.cc \
+		src/admin/contact/verification/run_first_enqueued_check.h \
+		src/admin/contact/verification/run_first_enqueued_check.cc \
+		src/admin/contact/verification/run_all_enqueued_checks.h \
+		src/admin/contact/verification/run_all_enqueued_checks.cc \
+		src/admin/contact/verification/create_test_impl_prototypes.h \
+		src/admin/contact/verification/create_test_impl_prototypes.cc \
+		src/admin/contact/verification/test_impl/test_utils.h \
+		src/admin/contact/verification/test_impl/test_utils.cc \
+		src/admin/contact/verification/test_impl/test_email_syntax.h \
+		src/admin/contact/verification/test_impl/test_email_syntax.cc \
+		src/admin/contact/verification/test_impl/test_name_syntax.h \
+		src/admin/contact/verification/test_impl/test_name_syntax.cc \
+		src/admin/contact/verification/test_impl/test_phone_syntax.h \
+		src/admin/contact/verification/test_impl/test_phone_syntax.cc
+		
 src_cli_admin_fred_admin_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS)
 
@@ -1664,7 +1680,7 @@ tests_test_server_SOURCES = \
 		tests/test-create-domain.cc \
 		tests/test-domain-name.cc \
 		tests/fredlib/contact/verification/test-create_check_unit.cc \
-		tests/fredlib/contact/verification/test-create_check_integ.cc \ 
+		tests/fredlib/contact/verification/test-create_check_integ.cc \
 		tests/fredlib/contact/verification/test-update_check_unit.cc \
 		tests/fredlib/contact/verification/test-update_check_integ.cc \
 		tests/fredlib/contact/verification/test-create_test_unit.cc \

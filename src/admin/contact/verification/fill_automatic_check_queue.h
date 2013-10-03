@@ -18,27 +18,27 @@
 
 /**
  *  @file
- *  enum test status
+ *  push back contact verification checks to queue up to it's at maximal length
  */
 
-#ifndef CONTACT_VERIFICATION_TEST_STATUS_35891112386_
-#define CONTACT_VERIFICATION_TEST_STATUS_35891112386_
+#ifndef ADMIN_CONTACT_VERIFICATION_FILL_QUEUE_H_12513457488
+#define ADMIN_CONTACT_VERIFICATION_FILL_QUEUE_H_12513457488
 
-namespace Fred
-{
+#include <vector>
+#include <string>
+
+#include "fredlib/contact/verification/create_check.h"
+
+namespace Admin {
+
     /**
-     * Available statuses for Contact test.
-     * Should be in sync with enum_contact_test_status.name in db.
+     * fill contact verification queue by check with automatic testsuite
+     *
+     * @param _max_queue_length Will not add any check above this limit.
      */
-    namespace ContactTestStatus
-    {
-        const std::string ENQUEUED      = "enqueued";
-        const std::string RUNNING       = "running";
-        const std::string ERROR         = "error";
-        const std::string MANUAL        = "manual";
-        const std::string OK            = "ok";
-        const std::string FAIL          = "fail";
-    }
-}
-#endif // #include guard end
+    std::vector< boost::tuple<std::string, std::string, long long> > fill_automatic_check_queue(unsigned _max_queue_length);
 
+}
+
+
+#endif // #include guard end

@@ -78,8 +78,7 @@ namespace Fred
         Database::Result status_res = _ctx.get_conn().exec_params(
             "SELECT id "
             "   FROM enum_contact_test_status "
-            "   WHERE name=$1::varchar "
-            "   FOR SHARE;",
+            "   WHERE name=$1::varchar; ",
             Database::query_param_list(status_name_)
         );
         if(status_res.size() != 1) {
@@ -91,8 +90,7 @@ namespace Fred
         Database::Result check_res = _ctx.get_conn().exec_params(
             "SELECT id "
             "   FROM contact_check "
-            "   WHERE handle=$1::uuid "
-            "   FOR SHARE;",
+            "   WHERE handle=$1::uuid; ",
             Database::query_param_list(check_handle_)
         );
         if(check_res.size() != 1) {
@@ -104,8 +102,7 @@ namespace Fred
         Database::Result test_res = _ctx.get_conn().exec_params(
             "SELECT id "
             "   FROM enum_contact_test "
-            "   WHERE name=$1::varchar "
-            "   FOR SHARE;",
+            "   WHERE name=$1::varchar; ",
             Database::query_param_list(test_name_)
         );
         if(test_res.size() != 1) {

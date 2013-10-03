@@ -18,27 +18,21 @@
 
 /**
  *  @file
- *  enum test status
+ *  contact verification tests interface
  */
 
-#ifndef CONTACT_VERIFICATION_TEST_STATUS_35891112386_
-#define CONTACT_VERIFICATION_TEST_STATUS_35891112386_
+#ifndef CONTACT_VERIFICATION_TEST_UTILS_1134354419_
+#define CONTACT_VERIFICATION_TEST_UTILS_1134354419_
 
-namespace Fred
+#include "fredlib/contact/info_contact_data.h"
+
+namespace Admin
 {
-    /**
-     * Available statuses for Contact test.
-     * Should be in sync with enum_contact_test_status.name in db.
-     */
-    namespace ContactTestStatus
-    {
-        const std::string ENQUEUED      = "enqueued";
-        const std::string RUNNING       = "running";
-        const std::string ERROR         = "error";
-        const std::string MANUAL        = "manual";
-        const std::string OK            = "ok";
-        const std::string FAIL          = "fail";
-    }
-}
-#endif // #include guard end
+namespace Utils
+{
+    Fred::InfoContactData get_contact_data(long _history_id);
 
+}
+}
+
+#endif // #include guard end

@@ -18,27 +18,23 @@
 
 /**
  *  @file
- *  enum test status
+ *  contact verification test for name (syntax only)
  */
 
-#ifndef CONTACT_VERIFICATION_TEST_STATUS_35891112386_
-#define CONTACT_VERIFICATION_TEST_STATUS_35891112386_
+#ifndef CONTACT_VERIFICATION_TEST_NAME_SYNTAX_124898987441_
+#define CONTACT_VERIFICATION_TEST_NAME_SYNTAX_124898987441_
 
-namespace Fred
+#include "admin/contact/verification/test_impl/test_interface.h"
+
+namespace Admin
 {
-    /**
-     * Available statuses for Contact test.
-     * Should be in sync with enum_contact_test_status.name in db.
-     */
-    namespace ContactTestStatus
-    {
-        const std::string ENQUEUED      = "enqueued";
-        const std::string RUNNING       = "running";
-        const std::string ERROR         = "error";
-        const std::string MANUAL        = "manual";
-        const std::string OK            = "ok";
-        const std::string FAIL          = "fail";
-    }
-}
-#endif // #include guard end
+    class ContactVerificationTestNameSyntax: public ContactVerificationTest {
 
+        public:
+            virtual std::string run(long _history_id) const;
+            virtual std::string get_name() const { return "name_syntax"; }
+    };
+}
+
+
+#endif // #include guard end

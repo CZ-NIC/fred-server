@@ -18,27 +18,25 @@
 
 /**
  *  @file
- *  enum test status
+ *  contact verification tests interface
  */
 
-#ifndef CONTACT_VERIFICATION_TEST_STATUS_35891112386_
-#define CONTACT_VERIFICATION_TEST_STATUS_35891112386_
+#ifndef CONTACT_VERIFICATION_TEST_INTF_11637813419_
+#define CONTACT_VERIFICATION_TEST_INTF_11637813419_
 
-namespace Fred
+#include <string>
+
+namespace Admin
 {
-    /**
-     * Available statuses for Contact test.
-     * Should be in sync with enum_contact_test_status.name in db.
-     */
-    namespace ContactTestStatus
-    {
-        const std::string ENQUEUED      = "enqueued";
-        const std::string RUNNING       = "running";
-        const std::string ERROR         = "error";
-        const std::string MANUAL        = "manual";
-        const std::string OK            = "ok";
-        const std::string FAIL          = "fail";
-    }
+    class ContactVerificationTest {
+        public:
+            /**
+             * @return final status of the test
+             */
+            virtual std::string run(long _history_id) const = 0;
+            virtual std::string get_name() const = 0;
+            virtual ~ContactVerificationTest() {};
+    };
 }
-#endif // #include guard end
 
+#endif // #include guard end

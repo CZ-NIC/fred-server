@@ -25,6 +25,8 @@
 #define CONTACT_CLIENT_IMPL_H_
 
 #include <boost/date_time/gregorian/gregorian.hpp>
+#include <boost/foreach.hpp>
+
 #include "cfg/config_handler_decl.h"
 #include "cfg/handle_database_args.h"
 #include "cfg/handle_corbanameservice_args.h"
@@ -37,6 +39,10 @@
 #include "admin/contact/merge_contact.h"
 #include "admin/contact/merge_contact_reporting.h"
 #include "corba/logger_client_impl.h"
+#include "admin/contact/verification/fill_automatic_check_queue.h"
+#include "fredlib/contact/verification/create_check.h"
+#include "admin/contact/verification/run_all_enqueued_checks.h"
+#include "admin/contact/verification/create_test_impl_prototypes.h"
 
 
 /**
@@ -225,6 +231,103 @@ struct contact_merge_impl
 
         return;
     }
+};
+
+
+
+/**
+ * admin client implementation of contact verification check queue filling by automatic testsuite checks
+ */
+struct contact_verification_fill_queue_automatic_testsuite_impl
+{
+  void operator()() const
+  {
+      Logging::Context log("contact_verification_fill_queue_automatic_testsuite");
+
+      ContactVerificationFillQueueAutomaticTestsuiteArgs params = CfgArgGroups::instance()
+          ->get_handler_ptr_by_type<HandleContactVerificationFillQueueAutomaticTestsuiteArgsGrp>()->params;
+
+      typedef boost::tuple<std::string, std::string, long long> check_data_type;
+
+      std::vector<check_data_type> enqueued_checks = Admin::fill_automatic_check_queue(params.max_queue_lenght);
+
+      if(enqueued_checks.size() > 0) {
+          std::cout << "enqueued check handles:" << std::endl;
+
+          BOOST_FOREACH(const check_data_type& info, enqueued_checks) {
+              std::cout
+                << "check handle: "       << info.get<0>() << "\t"
+                << "contact handle: "     << info.get<1>() << "\t"
+                << "contact history id: " << info.get<2>() << std::endl;
+          }
+      } else {
+          std::cout << "no checks enqueued" << std::endl;
+      }
+
+      return ;
+  }
+};
+
+
+
+/**
+ * admin client implementation of contact verification check enqueueing
+ */
+struct contact_verification_enqueue_check_impl
+{
+  void operator()() const
+  {
+      Logging::Context log("contact_verification_enqueue_check ");
+
+      ContactVerificationEnqueueCheckArgs params = CfgArgGroups::instance()
+        ->get_handler_ptr_by_type<HandleContactVerificationEnqueueCheckArgsGrp>()->params;
+
+      Fred::OperationContext ctx;
+      std::string check_handle;
+      try {
+          check_handle = Fred::CreateContactCheck(params.contact_handle, params.testsuite_name)
+              .exec(ctx);
+          ctx.commit_transaction();
+      } catch (Fred::CreateContactCheck::ExceptionUnknownContactHandle& e) {
+          throw ReturnCode(
+              std::string("given contact handle (") + params.contact_handle + ") is unknown",
+              1);
+      } catch (Fred::CreateContactCheck::ExceptionUnknownTestsuiteName& e) {
+          throw ReturnCode(
+              std::string("given testsuite name (") + params.testsuite_name + ") is unknown",
+              1);
+      }
+
+      // if no exception was translated to throw (and the check was really created)...
+      std::cout << "enqueued check with handle: " << check_handle << std::endl;
+
+      return ;
+  }
+};
+
+
+/**
+ * admin client implementation of enqueued contact verification check starting
+ */
+struct contact_verification_start_enqueued_checks_impl
+{
+  void operator()() const
+  {
+      Logging::Context log("contact_verification_start_enqueued_checks");
+
+      std::vector<std::string> started_checks = Admin::run_all_enqueued_checks(Admin::create_test_impl_prototypes());
+
+      if(started_checks.size() > 0) {
+          std::cout << "started checks:" << std::endl;
+
+          BOOST_FOREACH(const std::string& handle, started_checks) {
+              std::cout << "check handle: " << handle << std::endl;
+          }
+      } else {
+          std::cout << "no checks started" << std::endl;
+      }
+      return ;
+  }
 };
 
 
