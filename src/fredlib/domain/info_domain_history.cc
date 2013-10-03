@@ -42,6 +42,108 @@
 namespace Fred
 {
 
+    InfoDomainByHandle::InfoDomainByHandle(const std::string& fqdn)
+        : fqdn_(fqdn)
+        , lock_(false)
+    {}
+
+    InfoDomainByHandle& InfoDomainByHandle::set_lock(bool lock)//set lock object_registry row for domain
+    {
+        lock_ = lock;
+        return *this;
+    }
+
+    InfoDomainOutput InfoDomainByHandle::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
+    {
+        std::vector<InfoDomainOutput> domain_res;
+
+        try
+        {
+            domain_res = InfoDomain()
+                    .set_fqdn(fqdn_)
+                    .set_lock(lock_)
+                    .set_history_query(false)
+                    .exec(ctx,local_timestamp_pg_time_zone_name);
+
+            if (domain_res.empty())
+            {
+                BOOST_THROW_EXCEPTION(Exception().set_unknown_fqdn(fqdn_));
+            }
+
+            if (domain_res.size() > 1)
+            {
+                BOOST_THROW_EXCEPTION(InternalError("query result size > 1"));
+            }
+
+        }//try
+        catch(ExceptionStack& ex)
+        {
+            ex.add_exception_stack_info(to_string());
+            throw;
+        }
+        return domain_res.at(0);
+    }//InfoDomainByHandle::exec
+
+    std::string InfoDomainByHandle::to_string() const
+    {
+        return Util::format_operation_state("InfoDomainByHandle",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("handle", fqdn_))
+        (std::make_pair("lock",lock_ ? "true":"false"))
+        );
+    }
+
+    InfoDomainById::InfoDomainById(unsigned long long id)
+        : id_(id)
+        , lock_(false)
+    {}
+
+    InfoDomainById& InfoDomainById::set_lock(bool lock)//set lock object_registry row for domain
+    {
+        lock_ = lock;
+        return *this;
+    }
+
+    InfoDomainOutput InfoDomainById::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
+    {
+        std::vector<InfoDomainOutput> domain_res;
+
+        try
+        {
+            domain_res = InfoDomain()
+                    .set_id(id_)
+                    .set_lock(lock_)
+                    .set_history_query(false)
+                    .exec(ctx,local_timestamp_pg_time_zone_name);
+
+            if (domain_res.empty())
+            {
+                BOOST_THROW_EXCEPTION(Exception().set_unknown_object_id(id_));
+            }
+
+            if (domain_res.size() > 1)
+            {
+                BOOST_THROW_EXCEPTION(InternalError("query result size > 1"));
+            }
+
+        }//try
+        catch(ExceptionStack& ex)
+        {
+            ex.add_exception_stack_info(to_string());
+            throw;
+        }
+        return domain_res.at(0);
+    }//InfoDomainById::exec
+
+    std::string InfoDomainById::to_string() const
+    {
+        return Util::format_operation_state("InfoDomainById",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("id",boost::lexical_cast<std::string>(id_)))
+        (std::make_pair("lock",lock_ ? "true":"false"))
+        );
+    }
+
     InfoDomainHistory::InfoDomainHistory(const std::string& roid
             , const Optional<boost::posix_time::ptime>& history_timestamp)
         : roid_(roid)
