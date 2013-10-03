@@ -71,9 +71,9 @@ BOOST_FIXTURE_TEST_CASE(test_Exec, fixture_has_ctx)
 
     setup_check check(ctx);
 
-    unsigned check_history_steps = 5;
-    unsigned test_count = 5;
-    vector<unsigned> tests_history_steps;
+    int check_history_steps = 5;
+    int test_count = 5;
+    vector<int> tests_history_steps;
     for(int i=0; i<test_count; ++i) {
         tests_history_steps.push_back(RandomDataGenerator().xnum1_6());
     }
