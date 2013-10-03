@@ -56,7 +56,6 @@
 #include "fredlib/keyset/create_keyset.h"
 #include "fredlib/domain/create_domain.h"
 #include "fredlib/domain/delete_domain.h"
-#include "fredlib/domain/info_domain.h"
 #include "fredlib/opexception.h"
 #include "util/util.h"
 
@@ -195,7 +194,7 @@ BOOST_FIXTURE_TEST_CASE(delete_domain, delete_domain_fixture )
 {
     Fred::OperationContext ctx;
 
-    Fred::InfoDomainOut domain_info1 = Fred::OldInfoDomain(test_domain_fqdn).exec(ctx);
+    Fred::InfoDomainOutput domain_info1 = Fred::InfoDomainByHandle(test_domain_fqdn).exec(ctx);
     BOOST_CHECK(domain_info1.info_domain_data.delete_time.isnull());
 
     Fred::DeleteDomain(test_domain_fqdn).exec(ctx);
@@ -206,7 +205,7 @@ BOOST_FIXTURE_TEST_CASE(delete_domain, delete_domain_fixture )
 
     BOOST_CHECK(!domain_history_info1.at(0).info_domain_data.delete_time.isnull());
 
-    Fred::InfoDomainOut domain_info1_with_change = domain_info1;
+    Fred::InfoDomainOutput domain_info1_with_change = domain_info1;
     domain_info1_with_change.info_domain_data.delete_time = domain_history_info1.at(0).info_domain_data.delete_time;
 
     BOOST_CHECK(domain_info1_with_change == domain_history_info1.at(0));
@@ -249,7 +248,7 @@ BOOST_FIXTURE_TEST_CASE(delete_enum_domain, delete_enum_domain_fixture )
 {
     Fred::OperationContext ctx;
 
-    Fred::InfoDomainOut domain_info1 = Fred::OldInfoDomain(test_domain_fqdn).exec(ctx);
+    Fred::InfoDomainOutput domain_info1 = Fred::InfoDomainByHandle(test_domain_fqdn).exec(ctx);
     BOOST_CHECK(domain_info1.info_domain_data.delete_time.isnull());
 
     Fred::DeleteDomain(test_domain_fqdn).exec(ctx);
@@ -260,7 +259,7 @@ BOOST_FIXTURE_TEST_CASE(delete_enum_domain, delete_enum_domain_fixture )
 
     BOOST_CHECK(!domain_history_info1.at(0).info_domain_data.delete_time.isnull());
 
-    Fred::InfoDomainOut domain_info1_with_change = domain_info1;
+    Fred::InfoDomainOutput domain_info1_with_change = domain_info1;
     domain_info1_with_change.info_domain_data.delete_time = domain_history_info1.at(0).info_domain_data.delete_time;
 
     BOOST_CHECK(domain_info1_with_change == domain_history_info1.at(0));

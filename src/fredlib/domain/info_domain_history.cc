@@ -195,7 +195,10 @@ namespace Fred
                 " , oh.clid, clr.handle "//sponsoring registrar 15-16
                 " , dobr.crid, crr.handle "//creating registrar 16-18
                 " , oh.upid, upr.handle "//last updated by registrar 19-20
-                " , dobr.crdate, oh.trdate, oh.update, dh.exdate "//registration dates 21-24
+                " , (dobr.crdate AT TIME ZONE 'UTC') AT TIME ZONE 'Europe/Prague' "//registration dates 21
+                " , (oh.trdate AT TIME ZONE 'UTC') AT TIME ZONE 'Europe/Prague' "//registration dates 22
+                " , (oh.update AT TIME ZONE 'UTC') AT TIME ZONE 'Europe/Prague' "//registration dates 23
+                " , (dh.exdate AT TIME ZONE 'UTC') AT TIME ZONE 'Europe/Prague' "//registration dates 24
                 " , oh.authinfopw "//transfer passwd 25
                 " , evh.exdate, evh.publish "//enumval_history 26-27
                 //outzone data and cancel date from enum_parameters compute 28-29
@@ -358,6 +361,17 @@ namespace Fred
         (std::make_pair("logd_request_id",logd_request_id.print_quoted()))
         );
     }
+
+    bool InfoDomainOutput::operator==(const InfoDomainOutput& rhs) const
+    {
+        return info_domain_data == rhs.info_domain_data;
+    }
+
+    bool InfoDomainOutput::operator!=(const InfoDomainOutput& rhs) const
+    {
+        return !this->operator ==(rhs);
+    }
+
 
     InfoDomain::InfoDomain()
     : history_query_(false)
@@ -604,9 +618,9 @@ namespace Fred
             {
                 adm_params.push_back(info_domain_output.info_domain_data.id);
                 adm_sql << " FROM domain_contact_map dcm "
-                " JOIN object_registry dobr ON dcm.contactid = cobr.id AND cobr.erdate IS NULL "
+                " JOIN object_registry cobr ON dcm.contactid = cobr.id AND cobr.erdate IS NULL "
                 " JOIN enum_object_type ceot ON ceot.id = cobr.type AND ceot.name='contact'::text "
-                " WHERE dcm.domainid = $"<< params.size() <<"::bigint ";
+                " WHERE dcm.domainid = $"<< adm_params.size() <<"::bigint ";
             }
             adm_sql << " AND dcm.role = 1 "// admin contact
             " ORDER BY cobr.name ";

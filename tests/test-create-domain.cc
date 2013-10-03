@@ -57,7 +57,6 @@
 #include "fredlib/nsset/info_nsset.h"
 #include "fredlib/nsset/info_nsset_history.h"
 #include "fredlib/nsset/info_nsset_compare.h"
-#include "fredlib/domain/info_domain.h"
 #include "fredlib/domain/info_domain_history.h"
 #include "fredlib/domain/info_domain_compare.h"
 #include "fredlib/contact/info_contact.h"
@@ -246,7 +245,7 @@ BOOST_FIXTURE_TEST_CASE(create_domain_set_exdate, create_domain_fixture)
         BOOST_ERROR(boost::diagnostic_information(ex));
     }
     Fred::OperationContext ctx;
-    Fred::InfoDomainOut info_data_1 = Fred::OldInfoDomain(test_domain_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_1 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
     BOOST_CHECK(info_data_1.info_domain_data.expiration_date == exdate);
 }
 
@@ -292,7 +291,7 @@ BOOST_FIXTURE_TEST_CASE(create_domain_set_valexdate, create_domain_fixture)
         BOOST_ERROR(boost::diagnostic_information(ex));
     }
     Fred::OperationContext ctx;
-    Fred::InfoDomainOut info_data_1 = Fred::OldInfoDomain(test_enum_domain).exec(ctx);
+    Fred::InfoDomainOutput info_data_1 = Fred::InfoDomainByHandle(test_enum_domain).exec(ctx);
     BOOST_CHECK(static_cast<Fred::ENUMValidationExtension>(info_data_1.info_domain_data.enum_domain_validation)
             .validation_expiration == valexdate);
 }
