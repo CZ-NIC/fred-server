@@ -559,9 +559,9 @@ namespace Fred
             info_contact_output.info_contact_data.disclosenotifyemail = query_result[i][45].isnull() ? Nullable<bool>()
                     : Nullable<bool> (static_cast<bool>(query_result[i][45]));
 
-            info_contact_output.utc_timestamp = query_result[i][0].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
+            info_contact_output.utc_timestamp = query_result[i][46].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
             : boost::posix_time::time_from_string(static_cast<std::string>(query_result[0][46]));// utc timestamp
-            info_contact_output.local_timestamp = query_result[i][1].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
+            info_contact_output.local_timestamp = query_result[i][47].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
             : boost::posix_time::time_from_string(static_cast<std::string>(query_result[0][47]));//local zone timestamp
 
             result.push_back(info_contact_output);
