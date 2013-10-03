@@ -44,6 +44,7 @@ namespace Fred
     InfoDomainData::InfoDomainData()
     : historyid(0)
     , crhistoryid(0)
+    , id(0)
     , print_diff_(false)
     {}
 

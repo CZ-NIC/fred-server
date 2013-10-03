@@ -202,6 +202,7 @@ BOOST_FIXTURE_TEST_CASE(info_domain, test_domain_fixture )
 
     Fred::InfoDomainOut info_data_1 = Fred::OldInfoDomain(test_fqdn).exec(ctx);
     Fred::InfoDomainOut info_data_2 = Fred::OldInfoDomain(test_fqdn).exec(ctx);
+    info_data_1.info_domain_data.set_diff_print();
     BOOST_CHECK(info_data_1 == info_data_2);
 
 }//info_domain
