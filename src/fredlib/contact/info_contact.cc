@@ -372,13 +372,8 @@ namespace Fred
         return *this;
     }
 
-    std::vector<InfoContactOutput> InfoContact::exec(OperationContext& ctx
-            , const std::string& local_timestamp_pg_time_zone_name
-        )
+    std::pair<std::string, Database::QueryParams> InfoContact::make_query(const std::string& local_timestamp_pg_time_zone_name)
     {
-        std::vector<InfoContactOutput> result;
-
-        //query params
         Database::QueryParams params;
         std::ostringstream sql;
 
@@ -424,13 +419,11 @@ namespace Fred
         " WHERE "
         " cobr.type = (SELECT id FROM enum_object_type eot WHERE eot.name='contact'::text) ";
 
-
         if(contact_handle_.isset())
         {
             params.push_back(contact_handle_);
             sql << " AND cobr.name = UPPER($"<< params.size() <<"::text) ";
         }
-
 
         if(contact_roid_.isset())
         {
@@ -454,7 +447,7 @@ namespace Fred
         {
             params.push_back(history_timestamp_);
             sql << " AND h.valid_from <= ($"<< params.size() <<"::timestamp AT TIME ZONE $1::text) AT TIME ZONE 'UTC' "
-            " AND ($"<< params.size() <<"::timestamp AT TIME ZONE $1::text) AT TIME ZONE 'UTC' < h.valid_to ";
+            " AND (($"<< params.size() <<"::timestamp AT TIME ZONE $1::text) AT TIME ZONE 'UTC' < h.valid_to OR h.valid_to IS NULL)";
         }
 
         sql << " ORDER BY h.id DESC ";
@@ -464,7 +457,18 @@ namespace Fred
             sql << " FOR UPDATE of cobr ";
         }
 
-        Database::Result query_result = ctx.get_conn().exec_params(sql.str(),params);
+        return std::make_pair(sql.str(), params);
+    }
+
+    std::vector<InfoContactOutput> InfoContact::exec(OperationContext& ctx
+            , const std::string& local_timestamp_pg_time_zone_name
+        )
+    {
+        std::vector<InfoContactOutput> result;
+
+        std::pair<std::string, Database::QueryParams> query = make_query(local_timestamp_pg_time_zone_name);
+
+        Database::Result query_result = ctx.get_conn().exec_params(query.first,query.second);
         result.reserve(query_result.size());//alloc
         for(Database::Result::size_type i = 0; i < query_result.size(); ++i)
         {
@@ -572,8 +576,21 @@ namespace Fred
         return result;
     }
 
+    std::string InfoContact::explain_analyze(OperationContext& ctx, std::vector<InfoContactOutput>& result
+            , const std::string& local_timestamp_pg_time_zone_name)
+    {
+        result = exec(ctx,local_timestamp_pg_time_zone_name);
+        std::pair<std::string, Database::QueryParams> query = make_query(local_timestamp_pg_time_zone_name);
+        std::string query_plan("\nEXPLAIN ANALYZE ");
+        query_plan += query.first;
+        query_plan += "\n\nParams: ";
+        query_plan += Util::format_vector(query.second);
+        query_plan += "\n\nPlan:\n";
 
-
+        Database::Result query_result = ctx.get_conn().exec_params(std::string("EXPLAIN ANALYZE ") + query.first,query.second);
+        for(Database::Result::size_type i = 0; i < query_result.size(); ++i) query_plan += std::string(query_result[i][0])+"\n";
+        return query_plan;
+    }
 
 }//namespace Fred
 

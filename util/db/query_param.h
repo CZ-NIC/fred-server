@@ -144,7 +144,7 @@ public:
         buffer_ = boost::lexical_cast<std::string>(t);
     }
 
-   std::string print_buffer() const
+    std::string print_buffer() const
     {
         std::string ret = "not set";
         if (null_)
@@ -176,6 +176,11 @@ public:
         }//if not null
         return ret;
     }//print_buffer
+
+    std::string to_string() const
+    {
+        return print_buffer();
+    }
 
     //getters
     const QueryParamData& get_data() const
