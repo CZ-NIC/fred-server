@@ -160,9 +160,12 @@ BOOST_FIXTURE_TEST_CASE(info_contact, test_contact_fixture )
 
         std::vector<Fred::InfoContactOutput> output;
         BOOST_MESSAGE(i.explain_analyze(ctx,output));
-        if((contact_info1 != output.at(0)))
-            output.at(0).info_contact_data.set_diff_print();
-        BOOST_CHECK(output.at(0) == contact_info1);//unsafe in case of parallel operation
+        if((j & (1 << 0)) || (j & (1 << 1)) || (j & (1 << 2)))//check if selective
+        {
+            if((contact_info1 != output.at(0)))
+                output.at(0).info_contact_data.set_diff_print();
+            BOOST_CHECK(output.at(0) == contact_info1);//unsafe in case of parallel operation
+        }
     }
 
 }
