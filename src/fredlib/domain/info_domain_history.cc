@@ -170,172 +170,28 @@ namespace Fred
 
     std::vector<InfoDomainOutput> InfoDomainHistory::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
     {
-        std::vector<InfoDomainOutput> domain_history_res;
+        std::vector<InfoDomainOutput> domain_res;
 
         try
         {
-            //info about domain history by roid and optional history timestamp
-            if(!roid_.empty())
+            domain_res = InfoDomain()
+                    .set_roid(roid_)
+                    .set_lock(lock_)
+                    .set_history_query(true)
+                    .exec(ctx,local_timestamp_pg_time_zone_name);
+
+            if (domain_res.empty())
             {
-                //query params
-                Database::QueryParams params;
-                params.push_back(roid_);
-                if (history_timestamp_.isset())
-                {
-                    params.push_back(history_timestamp_);
-                    params.push_back(local_timestamp_pg_time_zone_name);
-                }
+                BOOST_THROW_EXCEPTION(Exception().set_unknown_registry_object_identifier(roid_));
+            }
 
-                Database::Result res = ctx.get_conn().exec_params(
-                std::string("SELECT dobr.id, dobr.roid, dobr.name, dobr.erdate " //domain 0-3
-                ", oh.historyid, h.id , h.next, h.valid_from, h.valid_to " //historyid 4-8
-                " , cor.id, cor.name " //registrant 9-10
-                " , dh.nsset, nobr.name "//nsset id and nsset handle 11-12
-                " , dh.keyset, kobr.name " //keyset id and keyset handle 13-14
-                " , oh.clid, clr.handle "//sponsoring registrar 15-16
-                " , dobr.crid, crr.handle "//creating registrar 16-18
-                " , oh.upid, upr.handle "//last updated by registrar 19-20
-                " , (dobr.crdate AT TIME ZONE 'UTC') AT TIME ZONE 'Europe/Prague' "//registration dates 21
-                " , (oh.trdate AT TIME ZONE 'UTC') AT TIME ZONE 'Europe/Prague' "//registration dates 22
-                " , (oh.update AT TIME ZONE 'UTC') AT TIME ZONE 'Europe/Prague' "//registration dates 23
-                " , (dh.exdate AT TIME ZONE 'UTC') AT TIME ZONE 'Europe/Prague' "//registration dates 24
-                " , oh.authinfopw "//transfer passwd 25
-                " , evh.exdate, evh.publish "//enumval_history 26-27
-                //outzone data and cancel date from enum_parameters compute 28-29
-                " ,(((dh.exdate + (SELECT val || ' day' FROM enum_parameters WHERE id = 4)::interval)::timestamp "
-                " + (SELECT val || ' hours' FROM enum_parameters WHERE name = 'regular_day_procedure_period')::interval) "
-                " AT TIME ZONE (SELECT val FROM enum_parameters WHERE name = 'regular_day_procedure_zone'))::timestamp as outzonedate "
-                " ,(((dh.exdate + (SELECT val || ' day' FROM enum_parameters WHERE id = 6)::interval)::timestamp "
-                " + (SELECT val || ' hours' FROM enum_parameters WHERE name = 'regular_day_procedure_period')::interval) "
-                " AT TIME ZONE (SELECT val FROM enum_parameters WHERE name = 'regular_day_procedure_zone'))::timestamp as canceldate "
-                " , dobr.crhistoryid " //first historyid 30
-                " , h.request_id " //logd request_id 31
-                " FROM object_registry dobr "
-                " JOIN object_history oh ON oh.id = dobr.id "
-                " JOIN domain_history dh ON dh.historyid = oh.historyid "
-                " JOIN history h ON h.id = dh.historyid "
-                " JOIN object_registry cor ON dh.registrant=cor.id "
-                " JOIN registrar clr ON clr.id = oh.clid "
-                " JOIN registrar crr ON crr.id = dobr.crid "
-                " LEFT JOIN object_registry nobr ON nobr.id = dh.nsset "
-                " AND nobr.type = ( SELECT id FROM enum_object_type eot WHERE eot.name='nsset'::text) "
-                " LEFT JOIN object_registry kobr ON kobr.id = dh.keyset "
-                " AND kobr.type = ( SELECT id FROM enum_object_type eot WHERE eot.name='keyset'::text) "
-                " LEFT JOIN registrar upr ON upr.id = oh.upid "
-                " LEFT JOIN  enumval_history evh ON evh.domainid = dh.id AND evh.historyid = h.id"
-                " WHERE "
-                " dobr.roid = $1::text "
-                " AND dobr.type = (SELECT id FROM enum_object_type eot WHERE eot.name='domain'::text) ")
-                + (history_timestamp_.isset()
-                    ? " AND h.valid_from <= ($2::timestamp AT TIME ZONE $3::text) AT TIME ZONE 'UTC' "
-                      " AND ($2::timestamp AT TIME ZONE $3::text) AT TIME ZONE 'UTC' < h.valid_to "
-                    : std::string())
-                + std::string(" ORDER BY h.id DESC ")
-                + (lock_ ? std::string(" FOR UPDATE of dobr ") : std::string())
-                , params);
-
-                if (res.size() == 0)
-                {
-                    BOOST_THROW_EXCEPTION(Exception().set_unknown_registry_object_identifier(roid_));
-                }
-
-                domain_history_res.reserve(res.size());//alloc
-                for(Database::Result::size_type i = 0; i < res.size(); ++i)
-                {
-                    InfoDomainOutput domain_history_output;
-
-                    domain_history_output.info_domain_data.id = static_cast<unsigned long long>(res[i][0]);//dobr.id
-
-                    domain_history_output.info_domain_data.roid = static_cast<std::string>(res[i][1]);//dobr.roid
-
-                    domain_history_output.info_domain_data.fqdn = static_cast<std::string>(res[i][2]);//dobr.name
-
-                    domain_history_output.info_domain_data.delete_time = res[i][3].isnull() ? Nullable<boost::posix_time::ptime>()
-                    : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(res[i][3])));//dobr.erdate
-
-                    domain_history_output.info_domain_data.historyid = static_cast<unsigned long long>(res[i][4]);//oh.historyid
-
-                    domain_history_output.next_historyid = res[i][6].isnull() ? Nullable<unsigned long long>()
-                    : Nullable<unsigned long long>(static_cast<unsigned long long>(res[i][6]));//h.next
-
-                    domain_history_output.history_valid_from = boost::posix_time::time_from_string(static_cast<std::string>(res[i][7]));//h.valid_from
-
-                    domain_history_output.history_valid_to = res[i][8].isnull() ? Nullable<boost::posix_time::ptime>()
-                    : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(res[i][8])));//h.valid_to
-
-                    domain_history_output.info_domain_data.registrant_handle = static_cast<std::string>(res[i][10]);//cor.name
-
-                    domain_history_output.info_domain_data.nsset_handle = res[i][12].isnull() ? Nullable<std::string>()
-                    : Nullable<std::string> (static_cast<std::string>(res[i][12]));//nobr.name
-
-                    domain_history_output.info_domain_data.keyset_handle = res[i][14].isnull() ? Nullable<std::string>()
-                    : Nullable<std::string> (static_cast<std::string>(res[i][14]));//kobr.name
-
-                    domain_history_output.info_domain_data.sponsoring_registrar_handle = static_cast<std::string>(res[i][16]);//clr.handle
-
-                    domain_history_output.info_domain_data.create_registrar_handle = static_cast<std::string>(res[i][18]);//crr.handle
-
-                    domain_history_output.info_domain_data.update_registrar_handle = res[i][20].isnull() ? Nullable<std::string>()
-                    : Nullable<std::string> (static_cast<std::string>(res[i][20]));//upr.handle
-
-                    domain_history_output.info_domain_data.creation_time = boost::posix_time::time_from_string(static_cast<std::string>(res[i][21]));//dobr.crdate
-
-                    domain_history_output.info_domain_data.transfer_time = res[i][22].isnull() ? Nullable<boost::posix_time::ptime>()
-                    : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(res[i][22])));//oh.trdate
-
-                    domain_history_output.info_domain_data.update_time = res[i][23].isnull() ? Nullable<boost::posix_time::ptime>()
-                    : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(res[i][23])));//oh.update
-
-                    domain_history_output.info_domain_data.expiration_date = res[i][24].isnull() ? boost::gregorian::date()
-                    : boost::gregorian::from_string(static_cast<std::string>(res[i][24]));//dh.exdate
-
-                    domain_history_output.info_domain_data.authinfopw = static_cast<std::string>(res[i][25]);//oh.authinfopw
-
-                    domain_history_output.info_domain_data.enum_domain_validation = (res[i][26].isnull() || res[i][27].isnull())
-                    ? Nullable<ENUMValidationExtension>()
-                    : Nullable<ENUMValidationExtension>(ENUMValidationExtension(
-                        boost::gregorian::from_string(static_cast<std::string>(res[i][26]))
-                        ,static_cast<bool>(res[i][27])));
-
-                    domain_history_output.info_domain_data.outzone_time = res[i][28].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
-                    : boost::posix_time::time_from_string(static_cast<std::string>(res[i][28]));//outzonedate
-
-                    domain_history_output.info_domain_data.cancel_time = res[i][29].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
-                    : boost::posix_time::time_from_string(static_cast<std::string>(res[i][29]));//canceldate
-
-                    domain_history_output.info_domain_data.crhistoryid = static_cast<unsigned long long>(res[i][30]);//dobr.crhistoryid
-
-                    domain_history_output.logd_request_id = res[i][31].isnull() ? Nullable<unsigned long long>()
-                        : Nullable<unsigned long long>(static_cast<unsigned long long>(res[i][31]));
-
-                    //list of historic administrative contacts
-                    Database::Result admin_contact_res = ctx.get_conn().exec_params(
-                        "SELECT dcmh.historyid, cobr.name "
-                        " FROM domain_contact_map_history dcmh "
-                        " JOIN object_registry cobr ON dcmh.contactid = cobr.id "
-                        " JOIN enum_object_type ceot ON ceot.id = cobr.type AND ceot.name='contact'::text "
-                        " WHERE dcmh.domainid = $1::bigint "
-                        " AND dcmh.historyid = $2::bigint "
-                        " AND dcmh.role = 1 "// admin contact
-                        " ORDER BY dcmh.historyid , cobr.name "
-                    , Database::query_param_list(domain_history_output.info_domain_data.id)(domain_history_output.info_domain_data.historyid));
-
-                    domain_history_output.info_domain_data.admin_contacts.reserve(admin_contact_res.size());
-                    for(Database::Result::size_type j = 0; j < admin_contact_res.size(); ++j)
-                    {
-                        domain_history_output.info_domain_data.admin_contacts.push_back(static_cast<std::string>(admin_contact_res[j][1]));
-                    }
-
-                    domain_history_res.push_back(domain_history_output);
-                }//for res
-            }//if roid
         }//try
         catch(ExceptionStack& ex)
         {
             ex.add_exception_stack_info(to_string());
             throw;
         }
-        return domain_history_res;
+        return domain_res;
     }//InfoDomainHistory::exec
 
     std::string InfoDomainHistory::to_string() const
@@ -441,7 +297,7 @@ namespace Fred
         " , (dobr.crdate AT TIME ZONE 'UTC') AT TIME ZONE $1::text "//registration dates 21
         " , (obj.trdate AT TIME ZONE 'UTC') AT TIME ZONE $1::text "//registration dates 22
         " , (obj.update AT TIME ZONE 'UTC') AT TIME ZONE $1::text "//registration dates 23
-        " , (dt.exdate AT TIME ZONE 'UTC') AT TIME ZONE $1::text "//registration dates 24
+        " , dt.exdate "//registration dates 24
         " , obj.authinfopw "//transfer passwd 25
         " , evh.exdate, evh.publish "//enumval_history 26-27
         //outzone data and cancel date from enum_parameters compute 28-29
