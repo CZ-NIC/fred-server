@@ -69,8 +69,6 @@
 #include "fredlib/nsset/check_nsset.h"
 #include "fredlib/nsset/update_nsset.h"
 #include "fredlib/domain/info_domain.h"
-#include "fredlib/domain/info_domain_history.h"
-#include "fredlib/domain/info_domain_compare.h"
 #include "fredlib/contact/info_contact.h"
 #include "fredlib/contact/merge_contact.h"
 #include "fredlib/contact/merge_contact_email_notification_data.h"
@@ -78,7 +76,6 @@
 #include "fredlib/poll/create_delete_contact_poll_message.h"
 #include "fredlib/poll/create_poll_message.h"
 #include "fredlib/poll/create_update_object_poll_message.h"
-
 
 #include "util/util.h"
 #include "util/printable.h"
@@ -314,25 +311,6 @@ BOOST_AUTO_TEST_CASE(info_domain_history)
     printable_test(
     Fred::InfoDomainHistory("test-fred.cz", boost::posix_time::microsec_clock::universal_time())
     );
-}
-
-
-/**
- * test InfoDomainOut print to string
- */
-BOOST_AUTO_TEST_CASE(info_domain_output)
-{
-    Fred::InfoDomainData id;
-    id.fqdn = "test-fred.cz";
-    id.creation_time = boost::posix_time::microsec_clock::universal_time();
-    id.delete_time = boost::posix_time::microsec_clock::universal_time();
-    id.keyset_handle=Nullable<std::string>("TEST-KEYSET");
-
-    Fred::InfoDomainOut i;
-    i.utc_timestamp = boost::posix_time::microsec_clock::universal_time();
-    i.local_timestamp = boost::posix_time::microsec_clock::local_time();
-    i.info_domain_data = id;
-    printable_test(i);
 }
 
 /**

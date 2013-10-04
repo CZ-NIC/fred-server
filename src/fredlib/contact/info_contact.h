@@ -21,8 +21,8 @@
  *  contact info
  */
 
-#ifndef INFO_CONTACT_HISTORY_H_
-#define INFO_CONTACT_HISTORY_H_
+#ifndef INFO_CONTACT_H_
+#define INFO_CONTACT_H_
 
 #include <string>
 #include <vector>
@@ -425,4 +425,4 @@ namespace Fred
     };//classInfoContact
 }//namespace Fred
 
-#endif//INFO_CONTACT_HISTORY_H_
+#endif//INFO_CONTACT_H_
