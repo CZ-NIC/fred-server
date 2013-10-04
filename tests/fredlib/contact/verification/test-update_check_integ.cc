@@ -34,6 +34,8 @@
 #include "util/optional_value.h"
 #include "random_data_generator.h"
 
+#include "tests/fredlib/contact/verification/setup_utils.h"
+
 //not using UTF defined main
 #define BOOST_TEST_NO_MAIN
 
@@ -47,6 +49,7 @@
 #include  <cstdlib>
 #include "util/random_data_generator.h"
 
+BOOST_AUTO_TEST_SUITE(TestContactVerification)
 BOOST_AUTO_TEST_SUITE(TestUpdateContactCheck_integ)
 
 const std::string server_name = "test-contact_verification-update_check_integ";
@@ -55,48 +58,6 @@ typedef Fred::InfoContactCheckOutput::ContactCheckState ContactCheckState;
 typedef Fred::InfoContactCheckOutput::ContactTestResultData ContactTestResultData;
 typedef Fred::InfoContactCheckOutput::ContactTestResultState ContactTestResultState;
 typedef Fred::InfoContactCheckOutput InfoContactCheckOutput;
-
-struct fixture_has_ctx {
-    Fred::OperationContext ctx;
-};
-
-struct setup_check {
-    std::string check_handle_;
-    std::string status_;
-    Optional<long long> logd_request_;
-
-    setup_check(
-        Fred::OperationContext& _ctx,
-        Optional<long long> _logd_request = Optional<long long>()
-    ) :
-        status_(Fred::ContactCheckStatus::ENQUEUED),
-        logd_request_(_logd_request)
-    {
-        // registrar
-        std::string registrar_handle = static_cast<std::string>(
-            _ctx.get_conn().exec("SELECT handle FROM registrar LIMIT 1;")[0][0] );
-
-        BOOST_REQUIRE(registrar_handle.empty() != true);
-
-        // contact
-        std::string contact_handle = "CREATE_CNT_CHECK_" + RandomDataGenerator().xnumstring(6);
-        Fred::CreateContact create_contact(contact_handle, registrar_handle);
-        create_contact.exec(_ctx);
-
-        // testsuite
-        std::string testsuite_name = "CREATE_CNT_CHECK_" + RandomDataGenerator().xnumstring(6) + "_TESTSUITE_NAME";
-        _ctx.get_conn().exec(
-            "INSERT INTO enum_contact_testsuite "
-            "   (name, description)"
-            "   VALUES ('"+testsuite_name+"', 'description some text')"
-            "   RETURNING id;"
-        );
-
-        // check
-        Fred::CreateContactCheck create_check(contact_handle, testsuite_name, logd_request_);
-        check_handle_ = create_check.exec(_ctx);
-    }
-};
 
 /**
  * implementation of testcases when updated check has just been created
@@ -248,92 +209,6 @@ struct setup_create_update_update_check : public setup_check {
     }
 };
 
-struct setup_nonexistent_check_handle {
-    std::string check_handle_;
-
-    setup_nonexistent_check_handle(Fred::OperationContext& _ctx) {
-        struct BOOST { struct UUIDS { struct RANDOM_GENERATOR {
-            static std::string generate() {
-                srand(time(NULL));
-                std::vector<unsigned char> bytes;
-
-                // generate random 128bits = 16 bytes
-                for (int i = 0; i < 16; ++i) {
-                    bytes.push_back( RandomDataGenerator().xletter()%256 );
-                }
-                /* some specific uuid rules
-                 * http://www.cryptosys.net/pki/Uuid.c.html
-                 */
-                bytes.at(6) = static_cast<char>(0x40 | (bytes.at(6) & 0xf));
-                bytes.at(8) = static_cast<char>(0x80 | (bytes.at(8) & 0x3f));
-
-                // buffer for hex representation of one byte + terminating zero
-                char hex_rep[3];
-
-                // converting raw bytes to hex string representation
-                std::string result;
-                for (std::vector<unsigned char>::iterator it = bytes.begin(); it != bytes.end(); ++it) {
-                    sprintf(hex_rep,"%02x",*it);
-                    // conversion target is hhhh - so in case it gets wrong just cut off the tail
-                    hex_rep[2] = 0;
-                    result += hex_rep;
-                }
-
-                // hyphens for canonical form
-                result.insert(8, "-");
-                result.insert(13, "-");
-                result.insert(18, "-");
-                result.insert(23, "-");
-
-                return result;
-            }
-        }; }; };
-
-        /* end of temporary ugliness - please cut and replace between ASAP*/
-
-        Database::Result res;
-        do {
-            check_handle_ = boost::lexical_cast<std::string>(BOOST::UUIDS::RANDOM_GENERATOR::generate());
-            res = _ctx.get_conn().exec(
-                "SELECT handle "
-                "   FROM contact_check "
-                "   WHERE handle='"+check_handle_+"';"
-            );
-        } while(res.size() != 0);
-    }
-};
-
-struct setup_nonexistent_status_name {
-    std::string status_name_;
-
-    setup_nonexistent_status_name(Fred::OperationContext& _ctx) {
-        Database::Result res;
-        do {
-            status_name_ = "STATUS_" + RandomDataGenerator().xnumstring(10);
-            res = _ctx.get_conn().exec(
-                "SELECT name "
-                "   FROM enum_contact_check_status "
-                "   WHERE name='"+status_name_+"';" );
-        } while(res.size() != 0);
-    }
-};
-
-struct setup_status {
-    std::string status_name_;
-
-    setup_status(Fred::OperationContext& _ctx) {
-        Database::Result res;
-        status_name_ = "STATUS_" + RandomDataGenerator().xnumstring(10);
-        res = _ctx.get_conn().exec(
-            "INSERT "
-            "   INTO enum_contact_check_status "
-            "   (id, name, description ) "
-            "   VALUES (" + RandomDataGenerator().xnumstring(6) + ", '"+status_name_+"', '"+status_name_+"_desc') "
-            "   RETURNING id;" );
-
-        BOOST_REQUIRE(res.size()==1);
-    }
-};
 
 /**
  * testing logic for whole testsuite
@@ -403,7 +278,7 @@ void check(const InfoContactCheckOutput& data_pre_update, const InfoContactCheck
  */
 BOOST_FIXTURE_TEST_CASE(test_Update_statusX_logd_request1_to_statusX_logd_request1, fixture_has_ctx)
 {
-    setup_status status(ctx);
+    setup_check_status status(ctx);
 
     Optional<long long> logd_request_id1 = RandomDataGenerator().xuint();
     Optional<long long> logd_request_id2 = RandomDataGenerator().xuint();
@@ -430,8 +305,8 @@ BOOST_FIXTURE_TEST_CASE(test_Update_statusX_logd_request1_to_statusX_logd_reques
  */
 BOOST_FIXTURE_TEST_CASE(test_Update_statusX_logd_request1_to_statusY_logd_request1, fixture_has_ctx)
 {
-    setup_status status1(ctx);
-    setup_status status2(ctx);
+    setup_check_status status1(ctx);
+    setup_check_status status2(ctx);
 
     Optional<long long> logd_request_id1 = RandomDataGenerator().xuint();
     Optional<long long> logd_request_id2 = RandomDataGenerator().xuint();
@@ -457,7 +332,7 @@ BOOST_FIXTURE_TEST_CASE(test_Update_statusX_logd_request1_to_statusY_logd_reques
  */
 BOOST_FIXTURE_TEST_CASE(test_Update_statusX_logd_request1_to_statusX_logd_requestNULL, fixture_has_ctx)
 {
-    setup_status status(ctx);
+    setup_check_status status(ctx);
 
     Optional<long long> logd_request_id1 = RandomDataGenerator().xuint();
     Optional<long long> logd_request_id2 = RandomDataGenerator().xuint();
@@ -483,8 +358,8 @@ BOOST_FIXTURE_TEST_CASE(test_Update_statusX_logd_request1_to_statusX_logd_reques
  */
 BOOST_FIXTURE_TEST_CASE(test_Update_statusX_logd_request1_to_statusY_logd_requestNULL, fixture_has_ctx)
 {
-    setup_status status1(ctx);
-    setup_status status2(ctx);
+    setup_check_status status1(ctx);
+    setup_check_status status2(ctx);
 
     Optional<long long> logd_request_id1 = RandomDataGenerator().xuint();
     Optional<long long> logd_request_id2 = RandomDataGenerator().xuint();
@@ -510,7 +385,7 @@ BOOST_FIXTURE_TEST_CASE(test_Update_statusX_logd_request1_to_statusY_logd_reques
  */
 BOOST_FIXTURE_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusX_logd_request1, fixture_has_ctx)
 {
-    setup_status status(ctx);
+    setup_check_status status(ctx);
 
     Optional<long long> logd_request_id1 = RandomDataGenerator().xuint();
     Optional<long long> logd_request_id2 = RandomDataGenerator().xuint();
@@ -538,8 +413,8 @@ BOOST_FIXTURE_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusX_logd_req
  */
 BOOST_FIXTURE_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusY_logd_request1, fixture_has_ctx)
 {
-    setup_status status1(ctx);
-    setup_status status2(ctx);
+    setup_check_status status1(ctx);
+    setup_check_status status2(ctx);
 
     Optional<long long> logd_request_id1 = RandomDataGenerator().xuint();
     Optional<long long> logd_request_id2 = RandomDataGenerator().xuint();
@@ -565,7 +440,7 @@ BOOST_FIXTURE_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusY_logd_req
  */
 BOOST_FIXTURE_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusX_logd_requestNULL, fixture_has_ctx)
 {
-    setup_status status(ctx);
+    setup_check_status status(ctx);
     Optional<long long> logd_request_id1 = RandomDataGenerator().xuint();
 
     setup_create_update_check testcase1(
@@ -589,8 +464,8 @@ BOOST_FIXTURE_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusX_logd_req
  */
 BOOST_FIXTURE_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusY_logd_requestNULL, fixture_has_ctx)
 {
-    setup_status status1(ctx);
-    setup_status status2(ctx);
+    setup_check_status status1(ctx);
+    setup_check_status status2(ctx);
     Optional<long long> logd_request_id1 = RandomDataGenerator().xuint();
 
     setup_create_update_check testcase1(
@@ -615,9 +490,9 @@ BOOST_FIXTURE_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusY_logd_req
 BOOST_FIXTURE_TEST_CASE(test_Exec_nonexistent_check_handle, fixture_has_ctx)
 {
     setup_nonexistent_check_handle handle(ctx);
-    setup_status status(ctx);
+    setup_check_status status(ctx);
 
-    Fred::UpdateContactCheck dummy(handle.check_handle_, status.status_name_);
+    Fred::UpdateContactCheck dummy(handle.check_handle, status.status_name_);
 
     bool caught_the_right_exception = false;
     try {
@@ -642,7 +517,7 @@ BOOST_FIXTURE_TEST_CASE(test_Exec_nonexistent_check_handle, fixture_has_ctx)
 BOOST_FIXTURE_TEST_CASE(test_Exec_nonexistent_status_name, fixture_has_ctx)
 {
     setup_check check(ctx);
-    setup_nonexistent_status_name nonexistent_status(ctx);
+    setup_nonexistent_check_status_name nonexistent_status(ctx);
 
     Fred::UpdateContactCheck dummy(check.check_handle_, nonexistent_status.status_name_);
 
@@ -660,4 +535,5 @@ BOOST_FIXTURE_TEST_CASE(test_Exec_nonexistent_status_name, fixture_has_ctx)
     }
 }
 
+BOOST_AUTO_TEST_SUITE_END();
 BOOST_AUTO_TEST_SUITE_END();
