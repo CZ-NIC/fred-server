@@ -31,8 +31,8 @@ namespace  Admin {
      * @param _check_id check whose tests are tried to lock (and whose missing tests are created if necessary)
      * @return locked test name
      */
-    static std::string lazy_create_running_test(const std::string& _check_handle);
-    static void try_create_next_test(Fred::OperationContext& _ctx, const std::string& _check_handle);
+    static std::string lazy_get_locked_running_test(Fred::OperationContext& _ctx, const std::string& _check_handle);
+    static void update_some_enqueued_test_to_running(const std::string& _check_handle);
 
     /**
      * Updating check status based on tests results
@@ -63,10 +63,12 @@ namespace  Admin {
             Fred::InfoContactCheck(check_handle).exec(ctx_locked_check) );
 
         std::vector<std::string> test_statuses;
+        Fred::OperationContext ctx_locked_test;
+
         try {
             while(true) {
                 // can throw exception_locking_failed
-                std::string test_name = lazy_create_running_test(check_handle);
+                std::string test_name = lazy_get_locked_running_test(ctx_locked_test, check_handle);
 
                 try {
                     test_statuses.push_back(
@@ -83,9 +85,8 @@ namespace  Admin {
                     throw;
                 }
 
-                Fred::OperationContext ctx_post_testrun;
-                Fred::UpdateContactTest(check_handle, test_name, test_statuses.back()).exec(ctx_post_testrun);
-                ctx_post_testrun.commit_transaction();
+                Fred::UpdateContactTest(check_handle, test_name, test_statuses.back()).exec(ctx_locked_test);
+                ctx_locked_test.commit_transaction();
             }
         } catch (ExceptionCheckTestsuiteFullyCreated&) {
             // just breaking the loop to get to the end
@@ -177,13 +178,13 @@ namespace  Admin {
         }
     }
 
-    std::string lazy_create_running_test(const std::string& _check_handle) {
+    std::string lazy_get_locked_running_test(Fred::OperationContext& _ctx, const std::string& _check_handle) {
         std::string locked_test_name;
 
         while(true) {
-            Fred::OperationContext ctx_locked_test;
+            Fred::OperationContext _ctx;
 
-            Database::Result locked_test_res = ctx_locked_test.get_conn().exec_params(
+            Database::Result locked_test_res = _ctx.get_conn().exec_params(
                 "SELECT enum_test.name AS test_name_ "
                 "   FROM contact_test_result AS c_t_r "
                 "       JOIN enum_contact_test_status AS enum_status ON c_t_r.enum_contact_test_status_id = enum_status.id "
@@ -192,21 +193,17 @@ namespace  Admin {
                 "   WHERE c_ch.handle = $1::uuid "
                 "       AND enum_status.name = $2::varchar "
                 "   LIMIT 1 "
-                "   FOR SHARE OF enum_test; ",
+                "   FOR UPDATE OF enum_test; ",
                 Database::query_param_list
                     (_check_handle)
-                    (Fred::ContactTestStatus::ENQUEUED)
+                    (Fred::ContactTestStatus::RUNNING)
             );
 
             if(locked_test_res.size() == 1) {
-                locked_test_name = static_cast<std::string>(locked_test_res[0]["test_name_"]);
-                Fred::UpdateContactTest(_check_handle, locked_test_name, Fred::ContactTestStatus::RUNNING).exec(ctx_locked_test);
-                ctx_locked_test.commit_transaction();
-
-                break;
+                return static_cast<std::string>(locked_test_res[0]["test_name_"]);
             } else if(locked_test_res.size() == 0) {
                 try {
-                    try_create_next_test(ctx_locked_test, _check_handle);
+                    update_some_enqueued_test_to_running(_check_handle);
                 } catch(ExceptionCheckTestsuiteFullyCreated&) {
                     throw;
                 }
@@ -220,47 +217,40 @@ namespace  Admin {
         return locked_test_name;
     }
 
-    void try_create_next_test(Fred::OperationContext& _ctx, const std::string& _check_handle) {
+    void update_some_enqueued_test_to_running(const std::string& _check_handle) {
+        Fred::OperationContext ctx;
+        Database::Result locked_test_name;
+
         while(true) {
             /* idea is to get test_name which
              * a) is in testsuite of given check
              * b) is not "instantiated" as a record in contact_test_result for given check
              */
-            Database::Result locked_test_name = _ctx.get_conn().exec_params(
-                "SELECT enum_test.name AS test_name_ "
-                "   FROM enum_contact_test AS enum_test "
-                "       JOIN contact_testsuite_map AS map_ ON map_.enum_contact_test_id = enum_test.id "
-                "       JOIN contact_check AS c_ch ON c_ch.enum_contact_testsuite_id = map_.enum_contact_testsuite_id "
-                "   WHERE c_ch.handle = $1::uuid "
-                "       AND NOT EXISTS "
-                "           (SELECT * "
-                "               FROM contact_test_result "
-                "                   JOIN contact_check ON contact_test_result.contact_check_id = contact_check.id "
-                "               WHERE contact_check.handle = $1::uuid "
-                "                   AND contact_test_result.enum_contact_test_id = enum_test.id "
-                "           ) "
+            locked_test_name = ctx.get_conn().exec_params(
+                "SELECT c_t_r.name AS test_name_ "
+                "   FROM contact_test_result AS c_t_r "
+                "       JOIN enum_contact_test_status AS enum_status ON c_t_r.enum_contact_test_status_id = enum_status.id "
+                "   WHERE c_t_r.contact_check_id = $1::uuid "
+                "       AND enum_status.name = $2::varchar "
                 "   LIMIT 1 "
                 "   FOR SHARE OF enum_test; ",
-                Database::query_param_list(_check_handle)
+                Database::query_param_list(_check_handle)(Fred::ContactTestStatus::ENQUEUED)
             );
 
             if(locked_test_name.size() == 0) {
                 throw ExceptionCheckTestsuiteFullyCreated();
             } else if(locked_test_name.size() != 1) {
                 throw Fred::InternalError("invalid count of returned records");
-            }
-
-            try {
-                Fred::CreateContactTest(
+            } else {
+                Fred::UpdateContactTest(
                     _check_handle,
-                    static_cast<std::string>( locked_test_name[0]["test_name_"] )
-                ).exec(_ctx);
-            } catch (Fred::CreateContactTest::ExceptionCheckTestPairAlreadyExists& ) {
-                /* Well, this might look controversial. Reason for swallowing the exception is that
-                 * it just means someone created such test before SELECT test_name and CreateContactTest.exec
-                 * in this procedure.
-                 */
-                continue;
+                    static_cast<std::string>( locked_test_name[0]["test_name_"] ),
+                    Fred::ContactTestStatus::RUNNING
+                ).exec(ctx);
+
+                ctx.commit_transaction();
+
+                break;
             }
         }
     }
