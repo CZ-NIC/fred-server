@@ -144,13 +144,14 @@ struct test_domain_fixture
             .exec(ctx);
 
         Fred::CreateNsset(test_nsset_handle, registrar_handle)
+            .set_tech_contacts(Util::vector_of<std::string>(admin_contact_handle))
             .set_dns_hosts(Util::vector_of<Fred::DnsHost>
             (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.3")("127.1.1.3"))) //add_dns
             (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.4")("127.1.1.4"))) //add_dns
             ).exec(ctx);
 
         Fred::CreateKeyset(test_keyset_handle, registrar_handle)
-                .set_tech_contacts(Util::vector_of<std::string>(admin_contact2_handle))
+        .set_tech_contacts(Util::vector_of<std::string>(admin_contact_handle))
                 .exec(ctx);
 
         Fred::CreateDomain(test_fqdn//const std::string& fqdn
@@ -212,6 +213,28 @@ BOOST_FIXTURE_TEST_CASE(info_domain, test_domain_fixture )
     BOOST_CHECK(info_data_1 == info_data_5);
     Fred::InfoDomainOutput info_data_6 = Fred::HistoryInfoDomainByHistoryid(info_data_1.info_domain_data.historyid).exec(ctx);
     BOOST_CHECK(info_data_1 == info_data_6);
+
+    //impl
+    for( int j = 0; j < (1 << 7); ++j)
+    {
+        Fred::InfoDomain i;
+        if(j & (1 << 0)) i.set_fqdn(info_data_1.info_domain_data.fqdn);
+        if(j & (1 << 1)) i.set_roid(info_data_1.info_domain_data.roid);
+        if(j & (1 << 2)) i.set_id(info_data_1.info_domain_data.id);
+        if(j & (1 << 3)) i.set_history_timestamp(info_data_1.info_domain_data.creation_time);
+        if(j & (1 << 4)) i.set_lock(true);
+        if(j & (1 << 5)) i.set_history_timestamp(info_data_1.info_domain_data.creation_time);
+        if(j & (1 << 6)) i.set_history_query(true);
+
+        std::vector<Fred::InfoDomainOutput> output;
+        BOOST_MESSAGE(i.explain_analyze(ctx,output));
+        if((j & (1 << 0)) || (j & (1 << 1)) || (j & (1 << 2)))//check if selective
+        {
+            if((info_data_1 != output.at(0)))
+                output.at(0).info_domain_data.set_diff_print();
+            BOOST_CHECK(output.at(0) == info_data_1);
+        }
+    }
 
 }//info_domain
 

@@ -373,10 +373,8 @@ namespace Fred
         return *this;
     }
 
-    std::vector<InfoDomainOutput> InfoDomain::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)//return data
+    std::pair<std::string, Database::QueryParams> InfoDomain::make_domain_query(const std::string& local_timestamp_pg_time_zone_name)
     {
-        std::vector<InfoDomainOutput> result;
-
         //query params
         Database::QueryParams params;
         std::ostringstream sql;
@@ -466,7 +464,7 @@ namespace Fred
         {
             params.push_back(history_timestamp_);
             sql << " AND h.valid_from <= ($"<< params.size() <<"::timestamp AT TIME ZONE $1::text) AT TIME ZONE 'UTC' "
-            " AND ($"<< params.size() <<"::timestamp AT TIME ZONE $1::text) AT TIME ZONE 'UTC' < h.valid_to ";
+            " AND (($"<< params.size() <<"::timestamp AT TIME ZONE $1::text) AT TIME ZONE 'UTC' < h.valid_to OR h.valid_to IS NULL)";
         }
 
         sql << " ORDER BY h.id DESC ";
@@ -476,7 +474,49 @@ namespace Fred
             sql << " FOR UPDATE of dobr ";
         }
 
-        Database::Result query_result = ctx.get_conn().exec_params(sql.str(),params);
+
+        return std::make_pair(sql.str(), params);
+
+    }
+
+    std::pair<std::string, Database::QueryParams> InfoDomain::make_admin_query(unsigned long long id, unsigned long long historyid)
+    {
+        //admin contacts
+        Database::QueryParams params;
+        std::ostringstream sql;
+
+        sql << "SELECT cobr.name ";
+        if(history_query_)
+        {
+            params.push_back(id);
+            sql << " FROM domain_contact_map_history dcm "
+                    " JOIN object_registry cobr ON dcm.contactid = cobr.id "
+                    " JOIN enum_object_type ceot ON ceot.id = cobr.type AND ceot.name='contact'::text "
+                    " WHERE dcm.domainid = $"<< params.size() <<"::bigint ";
+            params.push_back(historyid);
+            sql << " AND dcm.historyid = $"<< params.size() <<"::bigint ";
+        }
+        else
+        {
+            params.push_back(id);
+            sql << " FROM domain_contact_map dcm "
+            " JOIN object_registry cobr ON dcm.contactid = cobr.id AND cobr.erdate IS NULL "
+            " JOIN enum_object_type ceot ON ceot.id = cobr.type AND ceot.name='contact'::text "
+            " WHERE dcm.domainid = $"<< params.size() <<"::bigint ";
+        }
+        sql << " AND dcm.role = 1 "// admin contact
+        " ORDER BY cobr.name ";
+
+        return std::make_pair(sql.str(), params);
+    }
+
+    std::vector<InfoDomainOutput> InfoDomain::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)//return data
+    {
+        std::vector<InfoDomainOutput> result;
+
+        std::pair<std::string, Database::QueryParams> domain_query = make_domain_query(local_timestamp_pg_time_zone_name);
+        Database::Result query_result = ctx.get_conn().exec_params(domain_query.first,domain_query.second);
+
         result.reserve(query_result.size());//alloc
 
         for(Database::Result::size_type i = 0; i < query_result.size(); ++i)
@@ -552,35 +592,12 @@ namespace Fred
             info_domain_output.local_timestamp = query_result[i][33].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
             : boost::posix_time::time_from_string(static_cast<std::string>(query_result[0][33]));//local zone timestamp
 
-
             //admin contacts
-            Database::QueryParams adm_params;
-            std::ostringstream adm_sql;
-
-            adm_sql << "SELECT cobr.name ";
-            if(history_query_)
-            {
-                adm_params.push_back(info_domain_output.info_domain_data.id);
-                adm_sql << " FROM domain_contact_map_history dcm "
-                        " JOIN object_registry cobr ON dcm.contactid = cobr.id "
-                        " JOIN enum_object_type ceot ON ceot.id = cobr.type AND ceot.name='contact'::text "
-                        " WHERE dcm.domainid = $"<< adm_params.size() <<"::bigint ";
-                adm_params.push_back(info_domain_output.info_domain_data.historyid);
-                adm_sql << " AND dcm.historyid = $"<< adm_params.size() <<"::bigint ";
-            }
-            else
-            {
-                adm_params.push_back(info_domain_output.info_domain_data.id);
-                adm_sql << " FROM domain_contact_map dcm "
-                " JOIN object_registry cobr ON dcm.contactid = cobr.id AND cobr.erdate IS NULL "
-                " JOIN enum_object_type ceot ON ceot.id = cobr.type AND ceot.name='contact'::text "
-                " WHERE dcm.domainid = $"<< adm_params.size() <<"::bigint ";
-            }
-            adm_sql << " AND dcm.role = 1 "// admin contact
-            " ORDER BY cobr.name ";
+            std::pair<std::string, Database::QueryParams> admin_query = make_admin_query(
+                    info_domain_output.info_domain_data.id, info_domain_output.info_domain_data.historyid);
 
             //list of administrative contacts
-            Database::Result admin_contact_res = ctx.get_conn().exec_params(adm_sql.str(), adm_params);
+            Database::Result admin_contact_res = ctx.get_conn().exec_params(admin_query.first, admin_query.second);
             info_domain_output.info_domain_data.admin_contacts.reserve(admin_contact_res.size());
             for(Database::Result::size_type j = 0; j < admin_contact_res.size(); ++j)
             {
@@ -591,6 +608,36 @@ namespace Fred
         }//for res
 
         return result;
+    }
+
+    std::string InfoDomain::explain_analyze(OperationContext& ctx, std::vector<InfoDomainOutput>& result
+            , const std::string& local_timestamp_pg_time_zone_name)
+    {
+        result = exec(ctx,local_timestamp_pg_time_zone_name);
+        std::pair<std::string, Database::QueryParams> domain_query = make_domain_query(local_timestamp_pg_time_zone_name);
+        std::string query_plan("\nDomain query: EXPLAIN ANALYZE ");
+        query_plan += domain_query.first;
+        query_plan += "\n\nParams: ";
+        query_plan += Util::format_vector(domain_query.second);
+        query_plan += "\n\nPlan:\n";
+        Database::Result domain_query_result = ctx.get_conn().exec_params(
+            std::string("EXPLAIN ANALYZE ") + domain_query.first,domain_query.second);
+        for(Database::Result::size_type i = 0; i < domain_query_result.size(); ++i)
+            query_plan += std::string(domain_query_result[i][0])+"\n";
+
+        std::pair<std::string, Database::QueryParams> admin_query = make_admin_query(
+                result.at(0).info_domain_data.id, result.at(0).info_domain_data.historyid);
+        query_plan += "\nAdmin query: EXPLAIN ANALYZE ";
+        query_plan += admin_query.first;
+        query_plan += "\n\nParams: ";
+        query_plan += Util::format_vector(admin_query.second);
+        query_plan += "\n\nPlan:\n";
+        Database::Result admin_query_result = ctx.get_conn().exec_params(
+                std::string("EXPLAIN ANALYZE ") + domain_query.first,domain_query.second);
+        for(Database::Result::size_type i = 0; i < admin_query_result.size(); ++i)
+                query_plan += std::string(admin_query_result[i][0])+"\n";
+
+        return query_plan;
     }
 
 }//namespace Fred

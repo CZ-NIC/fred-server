@@ -372,6 +372,8 @@ namespace Fred
         bool history_query_;/**< flag to query history records of the domain */
         bool lock_;/**< lock object_registry row for domain */
 
+        std::pair<std::string, Database::QueryParams> make_domain_query(const std::string& local_timestamp_pg_time_zone_name);/**< info query generator @return pair of query string with query params*/
+        std::pair<std::string, Database::QueryParams> make_admin_query(unsigned long long id, unsigned long long historyid);/**< info query generator @return pair of query string with query params*/
     public:
 
         /**
@@ -437,6 +439,16 @@ namespace Fred
         * @return info data about the domain
         */
         std::vector<InfoDomainOutput> exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "UTC");//return data
+
+        /**
+        * Executes explain analyze and getting info about the domain for testing purposes.
+        * @param ctx contains reference to database and logging interface
+        * @param local_timestamp_pg_time_zone_name is postgresql time zone name of the returned data and history_timestamp
+        * @param result info data about the domain
+        * @return query and plan
+        */
+        std::string explain_analyze(OperationContext& ctx, std::vector<InfoDomainOutput>& result, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return query plan
+
 
     };//class InfoDomain
 
