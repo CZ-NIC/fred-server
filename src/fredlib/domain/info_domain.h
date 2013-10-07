@@ -82,10 +82,6 @@ namespace Fred
         bool operator!=(const InfoDomainOutput& rhs) const;
     };
 
-
-
-
-
     /**
     * Domain info by fully qualified domain name.
     * Domain fully qualified name to get info about is set via constructor.
@@ -183,17 +179,6 @@ namespace Fred
         std::string to_string() const;
 
     };//class InfoDomainById
-
-
-
-
-
-
-
-
-
-
-
 
     /**
     * Domain history info.
@@ -448,12 +433,7 @@ namespace Fred
         * @return query and plan
         */
         std::string explain_analyze(OperationContext& ctx, std::vector<InfoDomainOutput>& result, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return query plan
-
-
     };//class InfoDomain
-
-
-
 
 }//namespace Fred
 
