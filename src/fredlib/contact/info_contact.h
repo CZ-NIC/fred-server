@@ -49,8 +49,8 @@ namespace Fred
         boost::posix_time::ptime local_timestamp;/**< timestamp of getting the contact data in local time zone viz @ref local_timestamp_pg_time_zone_name */
 
         Nullable<unsigned long long> next_historyid; /**< next historyid of the contact history*/
-        boost::posix_time::ptime history_valid_from;/**< history data valid from time */
-        Nullable<boost::posix_time::ptime> history_valid_to;/**< history data valid to time, null means open end */
+        boost::posix_time::ptime history_valid_from;/**< history data valid from time in local time zone viz @ref local_timestamp_pg_time_zone_name*/
+        Nullable<boost::posix_time::ptime> history_valid_to;/**< history data valid to time in local time zone viz @ref local_timestamp_pg_time_zone_name, null means open end */
         Nullable<unsigned long long> logd_request_id; /**< id of the request that changed contact data*/
 
         /**

@@ -383,7 +383,8 @@ namespace Fred
 
         sql << "SELECT dobr.id, dobr.roid, dobr.name " //domain 0-2
         " , (dobr.erdate AT TIME ZONE 'UTC' ) AT TIME ZONE $1::text " //domain 3
-        ", obj.id, h.id , h.next, h.valid_from, h.valid_to " //historyid 4-8
+        " , obj.id, h.id , h.next, (h.valid_from AT TIME ZONE 'UTC') AT TIME ZONE $1::text "
+        " , (h.valid_to AT TIME ZONE 'UTC') AT TIME ZONE $1::text " //historyid 4-8
         " , cor.id, cor.name " //registrant 9-10
         " , dt.nsset, nobr.name "//nsset id and nsset handle 11-12
         " , dt.keyset, kobr.name " //keyset id and keyset handle 13-14
