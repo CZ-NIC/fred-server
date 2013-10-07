@@ -390,9 +390,9 @@ BOOST_AUTO_TEST_CASE(info_keyset_data)
 
 
 /**
- * test InfoKeysetHistoryOutput print to string
+ * test InfoKeysetOutput print to string
  */
-BOOST_AUTO_TEST_CASE(info_keyset_history_output)
+BOOST_AUTO_TEST_CASE(info_keyset_output)
 {
     Fred::InfoKeysetData d;
     d.handle = "TEST-INFO-KEYSET-HANDLE";
@@ -403,7 +403,7 @@ BOOST_AUTO_TEST_CASE(info_keyset_history_output)
     (Fred::DnsKey(257, 3, 5, "test1"))
     (Fred::DnsKey(257, 3, 5, "test2"));
 
-    Fred::InfoKeysetHistoryOutput i;
+    Fred::InfoKeysetOutput i;
     i.history_valid_from = boost::posix_time::microsec_clock::universal_time();
     i.history_valid_to = boost::posix_time::microsec_clock::universal_time();
     i.info_keyset_data = d;
@@ -423,9 +423,9 @@ BOOST_AUTO_TEST_CASE(info_keyset_history)
 }
 
 /**
- * test InfoKeysetOutput print to string
+ * test InfoKeysetOut print to string
  */
-BOOST_AUTO_TEST_CASE(info_keyset_output)
+BOOST_AUTO_TEST_CASE(info_keyset_out)
 {
     Fred::InfoKeysetData d;
     d.handle = "TEST-INFO-KEYSET-HANDLE";
@@ -433,7 +433,7 @@ BOOST_AUTO_TEST_CASE(info_keyset_output)
     d.delete_time = boost::posix_time::microsec_clock::universal_time();
     d.tech_contacts = Util::vector_of<std::string>("tech1")("tech2")("tech3");
 
-    Fred::InfoKeysetOutput i;
+    Fred::InfoKeysetOut i;
     i.utc_timestamp = boost::posix_time::microsec_clock::universal_time();
     i.local_timestamp = boost::posix_time::microsec_clock::local_time();
     i.info_keyset_data = d;
@@ -446,7 +446,7 @@ BOOST_AUTO_TEST_CASE(info_keyset_output)
 BOOST_AUTO_TEST_CASE(info_keyset)
 {
     printable_test(
-    Fred::InfoKeyset("TEST-KEYSET-HANDLE")
+    Fred::OldInfoKeyset("TEST-KEYSET-HANDLE")
     );
 }
 
@@ -516,7 +516,7 @@ BOOST_AUTO_TEST_CASE(info_nsset_data)
 }
 
 /**
- * test InfoKeysetHistoryOutput print to string
+ * test InfoNssetHistoryOutput print to string
  */
 BOOST_AUTO_TEST_CASE(info_nsset_history_output)
 {

@@ -40,9 +40,9 @@ namespace Fred
 {
 
     /**
-    * Element of keyset history data.
+    * Element of keyset info data.
     */
-    struct InfoKeysetHistoryOutput : public Util::Printable
+    struct InfoKeysetOutput : public Util::Printable
     {
         InfoKeysetData info_keyset_data;/**< data of the keyset */
 
@@ -52,9 +52,9 @@ namespace Fred
         Nullable<unsigned long long> logd_request_id; /**< id of the request that changed keyset data*/
 
         /**
-        * Empty constructor of the keyset history data structure.
+        * Empty constructor of the keyset info data structure.
         */
-        InfoKeysetHistoryOutput()
+        InfoKeysetOutput()
         {}
 
         /**
@@ -117,7 +117,7 @@ namespace Fred
         * @param local_timestamp_pg_time_zone_name is postgresql time zone name of the returned data
         * @return history info data about the keyset
         */
-        std::vector<InfoKeysetHistoryOutput> exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
+        std::vector<InfoKeysetOutput> exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
 
         /**
         * Dumps state of the instance into the string

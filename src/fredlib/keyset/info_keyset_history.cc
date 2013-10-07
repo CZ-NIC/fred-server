@@ -67,9 +67,9 @@ namespace Fred
         return *this;
     }
 
-    std::vector<InfoKeysetHistoryOutput> InfoKeysetHistory::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
+    std::vector<InfoKeysetOutput> InfoKeysetHistory::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
     {
-        std::vector<InfoKeysetHistoryOutput> keyset_history_res;
+        std::vector<InfoKeysetOutput> keyset_history_res;
 
         try
         {
@@ -122,7 +122,7 @@ namespace Fred
                 for(Database::Result::size_type i = 0; i < res.size(); ++i)
                 {
                     unsigned long long keyset_id = 0;//keyset id
-                    InfoKeysetHistoryOutput keyset_history_output;
+                    InfoKeysetOutput keyset_history_output;
 
                     keyset_id = static_cast<unsigned long long>(res[i][0]);//kobr.id
 
@@ -216,9 +216,9 @@ namespace Fred
         return keyset_history_res;
     }//InfoKeysetHistory::exec
 
-    std::string InfoKeysetHistoryOutput::to_string() const
+    std::string InfoKeysetOutput::to_string() const
     {
-        return Util::format_data_structure("InfoKeysetHistoryOutput",
+        return Util::format_data_structure("InfoKeysetOutput",
         Util::vector_of<std::pair<std::string,std::string> >
         (std::make_pair("info_keyset_data",info_keyset_data.to_string()))
         (std::make_pair("next_historyid",next_historyid.print_quoted()))

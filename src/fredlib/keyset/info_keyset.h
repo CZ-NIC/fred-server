@@ -44,7 +44,7 @@ namespace Fred
     /**
     * Keyset info data structure.
     */
-    struct InfoKeysetOutput : public Util::Printable
+    struct InfoKeysetOut : public Util::Printable
     {
         InfoKeysetData info_keyset_data;/**< data of the keyset */
         boost::posix_time::ptime utc_timestamp;/**< timestamp of getting the keyset data in UTC */
@@ -53,7 +53,7 @@ namespace Fred
         /**
          * Empty constructor.
          */
-        InfoKeysetOutput()
+        InfoKeysetOut()
         {}
 
         /**
@@ -62,7 +62,7 @@ namespace Fred
         * @param rhs is right hand side of the keyset data comparison
         * @return true if equal, false if not
         */
-        bool operator==(const InfoKeysetOutput& rhs) const
+        bool operator==(const InfoKeysetOut& rhs) const
         {
             return info_keyset_data == rhs.info_keyset_data;
         }
@@ -73,7 +73,7 @@ namespace Fred
         * @param rhs is right hand side of the keyset data comparison
         * @return true if not equal, false if equal
         */
-        bool operator!=(const InfoKeysetOutput& rhs) const
+        bool operator!=(const InfoKeysetOut& rhs) const
         {
             return !this->operator ==(rhs);
         }
@@ -93,7 +93,7 @@ namespace Fred
     * In case of wrong input data or other predictable and superable failure, the instance of @ref InfoKeyset::Exception is thrown with appropriate attributes set.
     * In case of other unsuperable failures and inconstistencies, the instance of @ref InternalError or other exception is thrown.
     */
-    class InfoKeyset : public Util::Printable
+    class OldInfoKeyset : public Util::Printable
     {
         const std::string handle_;/**< keyset identifier */
         bool lock_;/**< lock object_registry row flag*/
@@ -109,14 +109,14 @@ namespace Fred
         * Info keyset constructor with mandatory parameter.
         * @param handle sets keyset identifier into @ref handle_ attribute
         */
-        InfoKeyset(const std::string& handle);
+        OldInfoKeyset(const std::string& handle);
 
         /**
         * Sets keyset lock flag.
         * @param lock sets lock keyset flag into @ref lock_ attribute
         * @return operation instance reference to allow method chaining
         */
-        InfoKeyset& set_lock(bool lock = true);
+        OldInfoKeyset& set_lock(bool lock = true);
 
         /**
         * Executes getting info about the keyset.
@@ -124,7 +124,7 @@ namespace Fred
         * @param local_timestamp_pg_time_zone_name is postgresql time zone name of the returned data
         * @return info data about the keyset
         */
-        InfoKeysetOutput exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
+        InfoKeysetOut exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
 
         /**
         * Dumps state of the instance into the string

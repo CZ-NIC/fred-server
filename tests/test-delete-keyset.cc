@@ -130,18 +130,18 @@ BOOST_FIXTURE_TEST_CASE(delete_keyset, delete_keyset_fixture )
 {
     Fred::OperationContext ctx;
 
-    Fred::InfoKeysetOutput keyset_info1 = Fred::InfoKeyset(test_keyset_handle).exec(ctx);
+    Fred::InfoKeysetOut keyset_info1 = Fred::OldInfoKeyset(test_keyset_handle).exec(ctx);
     BOOST_CHECK(keyset_info1.info_keyset_data.delete_time.isnull());
 
     Fred::DeleteKeyset(test_keyset_handle).exec(ctx);
     ctx.commit_transaction();
 
-    std::vector<Fred::InfoKeysetHistoryOutput> keyset_history_info1 = Fred::InfoKeysetHistory(
+    std::vector<Fred::InfoKeysetOutput> keyset_history_info1 = Fred::InfoKeysetHistory(
     keyset_info1.info_keyset_data.roid).exec(ctx);
 
     BOOST_CHECK(!keyset_history_info1.at(0).info_keyset_data.delete_time.isnull());
 
-    Fred::InfoKeysetOutput keyset_info1_with_change = keyset_info1;
+    Fred::InfoKeysetOut keyset_info1_with_change = keyset_info1;
     keyset_info1_with_change.info_keyset_data.delete_time = keyset_history_info1.at(0).info_keyset_data.delete_time;
 
     BOOST_CHECK(keyset_info1_with_change == keyset_history_info1.at(0));

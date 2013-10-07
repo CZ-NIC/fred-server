@@ -44,7 +44,7 @@ namespace Fred
     * @param rhs is the keyset history data
     * @return true if equal, false if not
     */
-    bool operator==(const InfoKeysetOutput& lhs, const InfoKeysetHistoryOutput& rhs)
+    bool operator==(const InfoKeysetOut& lhs, const InfoKeysetOutput& rhs)
     {
             return lhs.info_keyset_data == rhs.info_keyset_data;
     }
@@ -55,7 +55,7 @@ namespace Fred
     * @param rhs is the keyset data
     * @return true if equal, false if not
     */
-    bool operator==(const InfoKeysetHistoryOutput& lhs, const InfoKeysetOutput& rhs)
+    bool operator==(const InfoKeysetOutput& lhs, const InfoKeysetOut& rhs)
     {
         return operator==(rhs,lhs);
     }
@@ -66,7 +66,7 @@ namespace Fred
     * @param rhs is the keyset history data
     * @return true if not equal, false if equal
     */
-    bool operator!=(const InfoKeysetOutput& lhs, const InfoKeysetHistoryOutput& rhs)
+    bool operator!=(const InfoKeysetOut& lhs, const InfoKeysetOutput& rhs)
     {
         return !operator==(lhs,rhs);
     }
@@ -77,7 +77,7 @@ namespace Fred
     * @param rhs is the keyset data
     * @return true if not equal, false if equal
     */
-    bool operator!=(const InfoKeysetHistoryOutput& lhs, const InfoKeysetOutput& rhs)
+    bool operator!=(const InfoKeysetOutput& lhs, const InfoKeysetOut& rhs)
     {
         return !operator==(rhs,lhs);
     }

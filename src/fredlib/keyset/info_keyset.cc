@@ -40,20 +40,20 @@
 
 namespace Fred
 {
-    InfoKeyset::InfoKeyset(const std::string& handle)
+    OldInfoKeyset::OldInfoKeyset(const std::string& handle)
     : handle_(handle)
     , lock_(false)
     {}
 
-    InfoKeyset& InfoKeyset::set_lock(bool lock)//set lock object_registry row
+    OldInfoKeyset& OldInfoKeyset::set_lock(bool lock)//set lock object_registry row
     {
         lock_ = lock;
         return *this;
     }
 
-    InfoKeysetOutput InfoKeyset::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
+    InfoKeysetOut OldInfoKeyset::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
     {
-        InfoKeysetOutput keyset_info_output;
+        InfoKeysetOut keyset_info_output;
 
         try
         {
@@ -179,7 +179,7 @@ namespace Fred
         return keyset_info_output;
     }//InfoKeyset::exec
 
-    std::string InfoKeyset::to_string() const
+    std::string OldInfoKeyset::to_string() const
     {
         return Util::format_operation_state("InfoKeyset",
         Util::vector_of<std::pair<std::string,std::string> >
@@ -188,9 +188,9 @@ namespace Fred
         );
     }
 
-    std::string InfoKeysetOutput::to_string() const
+    std::string InfoKeysetOut::to_string() const
     {
-        return Util::format_data_structure("InfoKeysetOutput",
+        return Util::format_data_structure("InfoKeysetOut",
         Util::vector_of<std::pair<std::string,std::string> >
         (std::make_pair("info_keyset_data",info_keyset_data.to_string()))
         (std::make_pair("utc_timestamp",boost::lexical_cast<std::string>(utc_timestamp)))
