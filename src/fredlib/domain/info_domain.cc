@@ -634,7 +634,7 @@ namespace Fred
         query_plan += Util::format_vector(admin_query.second);
         query_plan += "\n\nPlan:\n";
         Database::Result admin_query_result = ctx.get_conn().exec_params(
-                std::string("EXPLAIN ANALYZE ") + domain_query.first,domain_query.second);
+                std::string("EXPLAIN ANALYZE ") + admin_query.first,admin_query.second);
         for(Database::Result::size_type i = 0; i < admin_query_result.size(); ++i)
                 query_plan += std::string(admin_query_result[i][0])+"\n";
 
