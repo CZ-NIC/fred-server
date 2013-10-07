@@ -589,9 +589,9 @@ namespace Fred
                 : Nullable<unsigned long long>(static_cast<unsigned long long>(query_result[i][31]));
 
             info_domain_output.utc_timestamp = query_result[i][32].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
-            : boost::posix_time::time_from_string(static_cast<std::string>(query_result[0][32]));// utc timestamp
+            : boost::posix_time::time_from_string(static_cast<std::string>(query_result[i][32]));// utc timestamp
             info_domain_output.local_timestamp = query_result[i][33].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
-            : boost::posix_time::time_from_string(static_cast<std::string>(query_result[0][33]));//local zone timestamp
+            : boost::posix_time::time_from_string(static_cast<std::string>(query_result[i][33]));//local zone timestamp
 
             //admin contacts
             std::pair<std::string, Database::QueryParams> admin_query = make_admin_query(
