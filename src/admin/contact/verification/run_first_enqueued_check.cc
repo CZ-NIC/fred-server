@@ -73,8 +73,8 @@ namespace  Admin {
 
                 try {
                     test_result_status = _tests.at(test_name)->run(check_info.contact_history_id);
-                    if(test_result_status == Fred::ContactTestStatus::ENQUEUED) {
-                        throw Fred::InternalError("malfunction in implementation of test " + test_name + ", run() returned ENQUEUED status");
+                    if( test_result_status == Fred::ContactTestStatus::ENQUEUED || test_result_status == Fred::ContactTestStatus::RUNNING ) {
+                        throw Fred::InternalError("malfunction in implementation of test " + test_name + ", run() returned bad status");
                     }
                     test_statuses.push_back(test_result_status);
                 } catch(...) {
@@ -292,7 +292,8 @@ namespace  Admin {
         } else if(has_some_error) {
             return Fred::ContactCheckStatus::TO_BE_DECIDED;
         } else if( !has_some_error && has_some_running ) {
-            return Fred::ContactCheckStatus::RUNNING;
+            // NOTE: it's important not to set RUNNING - leads to endless loop
+            return Fred::ContactCheckStatus::TO_BE_DECIDED;
         } else {
             return Fred::ContactCheckStatus::TO_BE_DECIDED;
         }
