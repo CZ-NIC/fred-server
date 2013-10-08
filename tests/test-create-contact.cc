@@ -54,8 +54,6 @@
 #include "fredlib/keyset/create_keyset.h"
 #include "fredlib/domain/create_domain.h"
 #include "fredlib/keyset/info_keyset.h"
-#include "fredlib/keyset/info_keyset_history.h"
-#include "fredlib/keyset/info_keyset_compare.h"
 #include "fredlib/nsset/info_nsset.h"
 #include "fredlib/nsset/info_nsset_history.h"
 #include "fredlib/nsset/info_nsset_compare.h"

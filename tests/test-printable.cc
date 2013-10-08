@@ -59,8 +59,6 @@
 #include "fredlib/domain/check_domain.h"
 #include "fredlib/domain/update_domain.h"
 #include "fredlib/keyset/info_keyset.h"
-#include "fredlib/keyset/info_keyset_history.h"
-#include "fredlib/keyset/info_keyset_compare.h"
 #include "fredlib/keyset/update_keyset.h"
 #include "fredlib/nsset/info_nsset.h"
 #include "fredlib/nsset/info_nsset_history.h"
@@ -395,6 +393,7 @@ BOOST_AUTO_TEST_CASE(info_keyset_data)
 BOOST_AUTO_TEST_CASE(info_keyset_output)
 {
     Fred::InfoKeysetData d;
+    d.id = 1;
     d.handle = "TEST-INFO-KEYSET-HANDLE";
     d.creation_time = boost::posix_time::microsec_clock::universal_time();
     d.delete_time = boost::posix_time::microsec_clock::universal_time();
@@ -406,6 +405,8 @@ BOOST_AUTO_TEST_CASE(info_keyset_output)
     Fred::InfoKeysetOutput i;
     i.history_valid_from = boost::posix_time::microsec_clock::universal_time();
     i.history_valid_to = boost::posix_time::microsec_clock::universal_time();
+    i.utc_timestamp = boost::posix_time::microsec_clock::universal_time();
+    i.local_timestamp = boost::posix_time::microsec_clock::local_time();
     i.info_keyset_data = d;
     i.logd_request_id = 1;
     i.next_historyid = 2;
@@ -423,30 +424,12 @@ BOOST_AUTO_TEST_CASE(info_keyset_history)
 }
 
 /**
- * test InfoKeysetOut print to string
+ * test InfoKeysetByHandle print to string
  */
-BOOST_AUTO_TEST_CASE(info_keyset_out)
-{
-    Fred::InfoKeysetData d;
-    d.handle = "TEST-INFO-KEYSET-HANDLE";
-    d.creation_time = boost::posix_time::microsec_clock::universal_time();
-    d.delete_time = boost::posix_time::microsec_clock::universal_time();
-    d.tech_contacts = Util::vector_of<std::string>("tech1")("tech2")("tech3");
-
-    Fred::InfoKeysetOut i;
-    i.utc_timestamp = boost::posix_time::microsec_clock::universal_time();
-    i.local_timestamp = boost::posix_time::microsec_clock::local_time();
-    i.info_keyset_data = d;
-    printable_test(i);
-}
-
-/**
- * test InfoKeyset print to string
- */
-BOOST_AUTO_TEST_CASE(info_keyset)
+BOOST_AUTO_TEST_CASE(info_keyset_by_handle)
 {
     printable_test(
-    Fred::OldInfoKeyset("TEST-KEYSET-HANDLE")
+    Fred::InfoKeysetByHandle("TEST-KEYSET-HANDLE")
     );
 }
 

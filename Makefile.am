@@ -703,10 +703,6 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/keyset/info_keyset_data.cc \
 		src/fredlib/keyset/info_keyset.h \
 		src/fredlib/keyset/info_keyset.cc \
-		src/fredlib/keyset/info_keyset_history.h \
-		src/fredlib/keyset/info_keyset_history.cc \
-		src/fredlib/keyset/info_keyset_compare.h \
-		src/fredlib/keyset/info_keyset_compare.cc \
 		src/fredlib/contact/delete_contact.h \
 		src/fredlib/contact/delete_contact.cc \
 		src/fredlib/contact/info_contact_data.h \

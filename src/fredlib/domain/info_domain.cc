@@ -228,7 +228,6 @@ namespace Fred
         return !this->operator ==(rhs);
     }
 
-
     HistoryInfoDomainById::HistoryInfoDomainById(unsigned long long id)
         : id_(id)
         , lock_(false)
