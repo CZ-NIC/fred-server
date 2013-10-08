@@ -1679,6 +1679,7 @@ tests_test_server_SOURCES = \
 		tests/test-delete-domain.cc \
 		tests/test-create-domain.cc \
 		tests/test-domain-name.cc \
+		tests/fredlib/contact/verification/setup_utils.h \
 		tests/fredlib/contact/verification/test-create_check_unit.cc \
 		tests/fredlib/contact/verification/test-create_check_integ.cc \
 		tests/fredlib/contact/verification/test-update_check_unit.cc \

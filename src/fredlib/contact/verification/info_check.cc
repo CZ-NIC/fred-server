@@ -124,8 +124,7 @@ namespace Fred
                 "    ON check_.enum_contact_testsuite_id = testsuite.id "
                 "JOIN enum_contact_check_status AS status "
                 "    ON check_.enum_contact_check_status_id = status.id "
-                "WHERE check_.handle=$2::uuid "
-                "FOR UPDATE OF check_;",
+                "WHERE check_.handle=$2::uuid; ",
                 Database::query_param_list(_output_timezone)(handle_) );
 
             if (contact_check_data.size() != 1) {
@@ -205,8 +204,7 @@ namespace Fred
             "JOIN enum_contact_test_status AS status "
             "    ON test.enum_contact_test_status_id = status.id "
             "WHERE test.contact_check_id=$2::bigint "
-            "ORDER BY id_ ASC "
-            "FOR UPDATE OF test;",
+            "ORDER BY id_ ASC; ",
             Database::query_param_list(_output_timezone)(_check_id));
 
         if(contact_test_result.size() == 0) {
@@ -305,7 +303,6 @@ namespace Fred
             "JOIN enum_contact_check_status AS status "
             "    ON history.enum_contact_check_status_id = status.id "
             "WHERE history.contact_check_id=$2::bigint "
-            ""
             "ORDER BY update_time_ ASC, history.id ASC;",
             Database::query_param_list(_output_timezone)(_check_id) );
 
