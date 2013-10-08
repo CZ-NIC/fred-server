@@ -63,17 +63,22 @@ namespace  Admin {
             Fred::InfoContactCheck(check_handle).exec(ctx_locked_check) );
 
         std::vector<std::string> test_statuses;
-        Fred::OperationContext ctx_locked_test;
+        std::string test_result_status;
 
         try {
             while(true) {
+                Fred::OperationContext ctx_locked_test;
                 // can throw exception_locking_failed
                 std::string test_name = lazy_get_locked_running_test(ctx_locked_test, check_handle);
 
                 try {
-                    test_statuses.push_back(
-                        _tests.at(test_name)->run(check_info.contact_history_id) );
+                    test_result_status = _tests.at(test_name)->run(check_info.contact_history_id);
+                    if(test_result_status == Fred::ContactTestStatus::ENQUEUED) {
+                        throw Fred::InternalError("malfunction in implementation of test " + test_name + ", run() returned ENQUEUED status");
+                    }
+                    test_statuses.push_back(test_result_status);
                 } catch(...) {
+                    ctx_locked_test.get_conn().exec("ROLLBACK;");
                     Fred::OperationContext ctx_testrun_error;
                     test_statuses.push_back(Fred::ContactTestStatus::ERROR);
                     Fred::UpdateContactTest(check_handle, test_name, test_statuses.back()).exec(ctx_testrun_error);
@@ -124,7 +129,7 @@ namespace  Admin {
                 "       JOIN enum_contact_check_status AS enum_status ON c_ch.enum_contact_check_status_id = enum_status.id "
                 "   WHERE enum_status.name = $1::varchar "
                 "   LIMIT 1 "
-                "   FOR UPDATE; ",
+                "   FOR UPDATE OF c_ch; ",
                 Database::query_param_list(Fred::ContactCheckStatus::RUNNING)
             );
 
@@ -152,7 +157,7 @@ namespace  Admin {
             "   WHERE c_ch.enum_contact_check_status_id = "
             "       ( SELECT id FROM enum_contact_check_status WHERE name = $1::varchar ) "
             "   LIMIT 1 "
-            "   FOR UPDATE;",
+            "   FOR UPDATE OF c_ch;",
             Database::query_param_list(Fred::ContactCheckStatus::ENQUEUED)
         );
 
@@ -179,10 +184,7 @@ namespace  Admin {
     }
 
     std::string lazy_get_locked_running_test(Fred::OperationContext& _ctx, const std::string& _check_handle) {
-        std::string locked_test_name;
-
         while(true) {
-            Fred::OperationContext _ctx;
 
             Database::Result locked_test_res = _ctx.get_conn().exec_params(
                 "SELECT enum_test.name AS test_name_ "
@@ -213,38 +215,42 @@ namespace  Admin {
                 throw Fred::InternalError("invalid count of returned records");
             }
         }
-
-        return locked_test_name;
     }
 
     void update_some_enqueued_test_to_running(const std::string& _check_handle) {
-        Fred::OperationContext ctx;
-        Database::Result locked_test_name;
+        Database::Result locked_testname_res;
 
         while(true) {
+            Fred::OperationContext ctx;
             /* idea is to get test_name which
              * a) is in testsuite of given check
              * b) is not "instantiated" as a record in contact_test_result for given check
              */
-            locked_test_name = ctx.get_conn().exec_params(
-                "SELECT c_t_r.name AS test_name_ "
+            locked_testname_res = ctx.get_conn().exec_params(
+                "SELECT enum_test.name AS test_name_ "
                 "   FROM contact_test_result AS c_t_r "
-                "       JOIN enum_contact_test_status AS enum_status ON c_t_r.enum_contact_test_status_id = enum_status.id "
-                "   WHERE c_t_r.contact_check_id = $1::uuid "
+                "       JOIN enum_contact_test_status AS enum_status "
+                "           ON c_t_r.enum_contact_test_status_id = enum_status.id "
+                "       JOIN enum_contact_test AS enum_test "
+                "           ON c_t_r.enum_contact_test_id = enum_test.id "
+                "       JOIN contact_check AS c_ch ON c_t_r.contact_check_id = c_ch.id "
+                "   WHERE c_ch.handle = $1::uuid "
                 "       AND enum_status.name = $2::varchar "
                 "   LIMIT 1 "
-                "   FOR SHARE OF enum_test; ",
-                Database::query_param_list(_check_handle)(Fred::ContactTestStatus::ENQUEUED)
+                "   FOR UPDATE OF c_t_r; ",
+                Database::query_param_list
+                    (_check_handle)
+                    (Fred::ContactTestStatus::ENQUEUED)
             );
 
-            if(locked_test_name.size() == 0) {
+            if(locked_testname_res.size() == 0) {
                 throw ExceptionCheckTestsuiteFullyCreated();
-            } else if(locked_test_name.size() != 1) {
+            } else if(locked_testname_res.size() != 1) {
                 throw Fred::InternalError("invalid count of returned records");
             } else {
                 Fred::UpdateContactTest(
                     _check_handle,
-                    static_cast<std::string>( locked_test_name[0]["test_name_"] ),
+                    static_cast<std::string>( locked_testname_res[0]["test_name_"] ),
                     Fred::ContactTestStatus::RUNNING
                 ).exec(ctx);
 
