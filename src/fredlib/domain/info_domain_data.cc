@@ -241,6 +241,7 @@ namespace Fred
         (std::make_pair("delete_time",delete_time.print_quoted()))
         (std::make_pair("crhistoryid",boost::lexical_cast<std::string>(crhistoryid)))
         (std::make_pair("historyid",boost::lexical_cast<std::string>(historyid)))
+        (std::make_pair("id",boost::lexical_cast<std::string>(id)))
         );
 
 
