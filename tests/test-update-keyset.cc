@@ -148,18 +148,19 @@ struct update_keyset_fixture
 */
 BOOST_FIXTURE_TEST_CASE(info_keyset, update_keyset_fixture )
 {
-    Fred::InfoKeysetOutput keyset_info1 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
     std::vector<Fred::InfoKeysetOutput> keyset_res;
-    keyset_res = Fred::InfoKeyset()
-                        .set_handle(test_keyset_handle)
-                        .set_lock(false)
-                        .set_history_query(false)
-                        .explain_analyze(ctx,keyset_res,"Europe/Prague");
 
-    //Fred::InfoKeysetOutput keyset_info1 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
-    //Fred::InfoKeysetOutput keyset_info2 = Fred::InfoKeysetByHandle(test_keyset_handle).set_lock().exec(ctx);
+    BOOST_MESSAGE(Fred::InfoKeyset()
+                .set_handle(test_keyset_handle)
+                .set_lock(false)
+                .set_history_query(false)
+                .explain_analyze(ctx,keyset_res,"Europe/Prague")
+                );
 
-    //BOOST_CHECK(keyset_info1 == keyset_info2);
+    Fred::InfoKeysetOutput keyset_info1 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
+    Fred::InfoKeysetOutput keyset_info2 = Fred::InfoKeysetByHandle(test_keyset_handle).set_lock().exec(ctx);
+
+    BOOST_CHECK(keyset_info1 == keyset_info2);
 }
 
 /**

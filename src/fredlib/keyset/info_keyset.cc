@@ -594,10 +594,10 @@ namespace Fred
             info_keyset_output.info_keyset_data.tech_contacts.reserve(dns_keys_res.size());
             for(Database::Result::size_type j = 0; j < dns_keys_res.size(); ++j)
             {
-                unsigned short flags = static_cast<unsigned int>(dns_keys_res[j][2]);//d.flags
-                unsigned short protocol = static_cast<unsigned int>(dns_keys_res[j][3]);//d.protocol
-                unsigned short alg = static_cast<unsigned int>(dns_keys_res[j][4]);//d.alg
-                std::string key = static_cast<std::string>(dns_keys_res[j][5]);//d.key
+                unsigned short flags = static_cast<unsigned int>(dns_keys_res[j][1]);//d.flags
+                unsigned short protocol = static_cast<unsigned int>(dns_keys_res[j][2]);//d.protocol
+                unsigned short alg = static_cast<unsigned int>(dns_keys_res[j][3]);//d.alg
+                std::string key = static_cast<std::string>(dns_keys_res[j][4]);//d.key
                 info_keyset_output.info_keyset_data.dns_keys.push_back(DnsKey(flags, protocol, alg, key));
             }
 
