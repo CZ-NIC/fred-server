@@ -142,7 +142,6 @@ BOOST_FIXTURE_TEST_CASE(delete_keyset, delete_keyset_fixture )
     Fred::InfoKeysetOutput keyset_info1_with_change = keyset_info1;
     keyset_info1_with_change.info_keyset_data.delete_time = keyset_history_info1.at(0).info_keyset_data.delete_time;
 
-    keyset_info1_with_change.info_keyset_data.set_diff_print();
     BOOST_CHECK(keyset_info1_with_change == keyset_history_info1.at(0));
 
     BOOST_CHECK(!keyset_history_info1.at(0).info_keyset_data.delete_time.isnull());
