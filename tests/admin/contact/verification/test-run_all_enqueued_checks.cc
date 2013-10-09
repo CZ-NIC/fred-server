@@ -226,7 +226,7 @@ BOOST_AUTO_TEST_CASE(test_Incorrect_test_return_handling)
 
 /**
  when an exception is thrown during test execution status of that test is ERROR and status of check is TO_BE_DECIDED
- @pre existing testsuite containing dummy test throwing an exceptino
+ @pre existing testsuite containing dummy test throwing an exception
  @post test status ERROR
  @post check status TO_BE_DECIDED
  @post exception is propagated further up
