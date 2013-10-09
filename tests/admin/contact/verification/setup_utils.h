@@ -32,6 +32,7 @@
 #include "fredlib/contact/verification/info_check.h"
 #include "fredlib/contact/verification/enum_check_status.h"
 #include "fredlib/contact/create_contact.h"
+#include "fredlib/contact/delete_contact.h"
 #include "fredlib/db_settings.h"
 #include "util/db/nullable.h"
 #include "random_data_generator.h"
@@ -135,6 +136,52 @@ namespace AdminTests {
             // check
             Fred::CreateContactCheck create_check(contact_handle_, testsuite_name);
             check_handle_ = create_check.exec(_ctx);
+        }
+    };
+
+    void delete_all_checks_etc();
+
+    struct contact_garbage_collector {
+        std::vector<std::string> handles_to_preserve_;
+        bool already_run;
+
+        contact_garbage_collector()
+            : already_run(false)
+        {
+            Fred::OperationContext ctx;
+
+            Database::Result pre_existing_res = ctx.get_conn().exec(
+                "SELECT o_r.name AS contact_handle_ "
+                "   FROM object_registry AS o_r "
+                "       JOIN contact USING(id)");
+
+            for(Database::Result::Iterator it = pre_existing_res.begin(); it != pre_existing_res.end(); ++it) {
+                handles_to_preserve_.push_back( static_cast<std::string>( (*it)["contact_handle_"] ) );
+            }
+        }
+
+        void clean() {
+            Fred::OperationContext ctx;
+
+            Database::Result to_delete_res = ctx.get_conn().exec(
+                "SELECT o_r.name AS contact_handle_ "
+                "   FROM object_registry AS o_r "
+                "       JOIN contact USING(id)"
+                "   WHERE o_r.name "
+                "       NOT IN ('" + boost::algorithm::join(handles_to_preserve_, "', '")+ "'); ");
+
+            for(Database::Result::Iterator it = to_delete_res.begin(); it != to_delete_res.end(); ++it) {
+                Fred::DeleteContact(static_cast<std::string>( (*it)["contact_handle_"] )).exec(ctx);
+            }
+
+            ctx.commit_transaction();
+            already_run = true;
+        }
+
+        ~contact_garbage_collector() {
+            if(!already_run) {
+                clean();
+            }
         }
     };
 }

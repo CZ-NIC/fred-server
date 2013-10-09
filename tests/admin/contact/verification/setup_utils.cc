@@ -40,4 +40,14 @@ namespace AdminTests {
             throw std::exception();
         }
     }
+
+    void delete_all_checks_etc() {
+        Fred::OperationContext ctx;
+        ctx.get_conn().exec("DELETE FROM contact_test_result_history;");
+        ctx.get_conn().exec("DELETE FROM contact_check_history;");
+        ctx.get_conn().exec("DELETE FROM contact_test_result;");
+        ctx.get_conn().exec("DELETE FROM contact_check;");
+
+        ctx.commit_transaction();
+    }
 }
