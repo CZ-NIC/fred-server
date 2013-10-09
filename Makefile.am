@@ -1689,7 +1689,10 @@ tests_test_server_SOURCES = \
 		tests/fredlib/contact/verification/test-update_test_unit.cc \
 		tests/fredlib/contact/verification/test-update_test_integ.cc \
 		tests/fredlib/contact/verification/test-info_check_unit.cc \
-		tests/fredlib/contact/verification/test-info_check_integ.cc
+		tests/fredlib/contact/verification/test-info_check_integ.cc \
+		src/admin/contact/verification/run_first_enqueued_check.cc \
+		src/admin/contact/verification/run_all_enqueued_checks.cc \
+		tests/admin/contact/verification/test-check_status_derivation.cc
 		
 tests_test_server_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS) \
