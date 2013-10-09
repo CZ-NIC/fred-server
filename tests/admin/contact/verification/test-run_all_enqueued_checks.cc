@@ -91,9 +91,9 @@ void test_Resulting_check_status_impl(std::vector<std::string> _test_statuses, c
 namespace Test = Fred::ContactTestStatus;
 namespace Check = Fred::ContactCheckStatus;
 
-BOOST_AUTO_TEST_SUITE(TestCheckStatusDerivation)
+BOOST_AUTO_TEST_SUITE(TestRunEnqueuedChecks)
 
-const std::string server_name = "test-contact_verification_integration-check_status_derivation";
+const std::string server_name = "test-contact_verification_integration-run_all_enqueued_checks";
 
 /**
  enqueueing and running check (with dummy tests) checking statuses after tests completed
