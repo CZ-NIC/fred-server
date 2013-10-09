@@ -18,7 +18,7 @@
 
 /**
  *  @file
- *  keyset history info
+ *  keyset info
  */
 
 #include <string>
@@ -636,7 +636,7 @@ namespace Fred
 
         std::pair<std::string, Database::QueryParams> dns_keys_query = make_dns_keys_query(
                 result.at(0).info_keyset_data.id, result.at(0).info_keyset_data.historyid);
-        query_plan += "\nTech contact query: EXPLAIN ANALYZE ";
+        query_plan += "\nDNS keys query: EXPLAIN ANALYZE ";
         query_plan += dns_keys_query.first;
         query_plan += "\n\nParams: ";
         query_plan += Util::format_vector(dns_keys_query.second);

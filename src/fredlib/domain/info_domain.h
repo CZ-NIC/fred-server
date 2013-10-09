@@ -68,14 +68,14 @@ namespace Fred
         std::string to_string() const;
 
         /**
-        * Equality of the domain info data structure operator. Compares only InfoContactData member.
+        * Equality of the domain info data structure operator. Compares only InfoDomainData member.
         * @param rhs is right hand side of the domain data comparison
         * @return true if equal, false if not
         */
         bool operator==(const InfoDomainOutput& rhs) const;
 
         /**
-        * Inequality of the domain info data structure operator. Compares only InfoContactData member.
+        * Inequality of the domain info data structure operator. Compares only InfoDomainData member.
         * @param rhs is right hand side of the domain data comparison
         * @return true if not equal, false if equal
         */

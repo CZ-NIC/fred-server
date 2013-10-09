@@ -18,11 +18,11 @@
 
 /**
  *  @file
- *  keyset history info
+ *  keyset info
  */
 
-#ifndef INFO_KEYSET_HISTORY_H_
-#define INFO_KEYSET_HISTORY_H_
+#ifndef INFO_KEYSET_H_
+#define INFO_KEYSET_H_
 
 #include <string>
 #include <vector>
@@ -67,14 +67,14 @@ namespace Fred
         std::string to_string() const;
 
         /**
-        * Equality of the keyset info data structure operator. Compares only InfoContactData member.
+        * Equality of the keyset info data structure operator. Compares only InfoKeysetData member.
         * @param rhs is right hand side of the keyset data comparison
         * @return true if equal, false if not
         */
         bool operator==(const InfoKeysetOutput& rhs) const;
 
         /**
-        * Inequality of the keyset info data structure operator. Compares only InfoContactData member.
+        * Inequality of the keyset info data structure operator. Compares only InfoKeysetData member.
         * @param rhs is right hand side of the keyset data comparison
         * @return true if not equal, false if equal
         */
@@ -437,4 +437,4 @@ namespace Fred
 
 }//namespace Fred
 
-#endif//INFO_KEYSET_HISTORY_H_
+#endif//INFO_KEYSET_H_

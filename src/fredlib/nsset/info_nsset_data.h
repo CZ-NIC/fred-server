@@ -47,6 +47,7 @@ namespace Fred
     {
         unsigned long long crhistoryid;/**< first historyid of nsset history */
         unsigned long long historyid;/**< last historyid of nsset history */
+        unsigned long long id;/**< id of the nsset object*/
         Nullable<boost::posix_time::ptime> delete_time; /**< nsset delete time in UTC */
         std::string handle;/**< nsset handle */
         std::string roid;/**< registry object identifier of the nsset */
