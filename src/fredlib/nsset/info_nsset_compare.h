@@ -47,7 +47,7 @@ namespace Fred
     * @param rhs is the nsset history data
     * @return true if equal, false if not
     */
-    bool operator==(const InfoNssetOutput& lhs, const InfoNssetHistoryOutput& rhs);
+    bool operator==(const InfoNssetOut& lhs, const InfoNssetOutput& rhs);
 
     /**
     * Equality of nsset history data with the nsset data operator.
@@ -55,7 +55,7 @@ namespace Fred
     * @param rhs is the nsset data
     * @return true if equal, false if not
     */
-    bool operator==(const InfoNssetHistoryOutput& lhs, const InfoNssetOutput& rhs);
+    bool operator==(const InfoNssetOutput& lhs, const InfoNssetOut& rhs);
 
     /**
     * Inequality of nsset data with the nsset history data operator.
@@ -63,7 +63,7 @@ namespace Fred
     * @param rhs is the nsset history data
     * @return true if not equal, false if equal
     */
-    bool operator!=(const InfoNssetOutput& lhs, const InfoNssetHistoryOutput& rhs);
+    bool operator!=(const InfoNssetOut& lhs, const InfoNssetOutput& rhs);
 
     /**
     * Inequality of nsset history data with the nsset data operator.
@@ -71,7 +71,7 @@ namespace Fred
     * @param rhs is the nsset data
     * @return true if not equal, false if equal
     */
-    bool operator!=(const InfoNssetHistoryOutput& lhs, const InfoNssetOutput& rhs);
+    bool operator!=(const InfoNssetOutput& lhs, const InfoNssetOut& rhs);
 
 }//namespace Fred
 

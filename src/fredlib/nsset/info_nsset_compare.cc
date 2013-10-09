@@ -38,22 +38,22 @@
 namespace Fred
 {
 
-    bool operator==(const InfoNssetOutput& lhs, const InfoNssetHistoryOutput& rhs)
+    bool operator==(const InfoNssetOut& lhs, const InfoNssetOutput& rhs)
     {
             return lhs.info_nsset_data == rhs.info_nsset_data;
     }
 
-    bool operator==(const InfoNssetHistoryOutput& lhs, const InfoNssetOutput& rhs)
+    bool operator==(const InfoNssetOutput& lhs, const InfoNssetOut& rhs)
     {
         return operator==(rhs,lhs);
     }
 
-    bool operator!=(const InfoNssetOutput& lhs, const InfoNssetHistoryOutput& rhs)
+    bool operator!=(const InfoNssetOut& lhs, const InfoNssetOutput& rhs)
     {
         return !operator==(lhs,rhs);
     }
 
-    bool operator!=(const InfoNssetHistoryOutput& lhs, const InfoNssetOutput& rhs)
+    bool operator!=(const InfoNssetOutput& lhs, const InfoNssetOut& rhs)
     {
         return !operator==(rhs,lhs);
     }

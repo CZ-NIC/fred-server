@@ -43,7 +43,7 @@ namespace Fred
     /**
     * Element of nsset history data.
     */
-    struct InfoNssetHistoryOutput : public Util::Printable
+    struct InfoNssetOutput : public Util::Printable
     {
         InfoNssetData info_nsset_data;/**< data of the nsset */
 
@@ -55,7 +55,7 @@ namespace Fred
         /**
         * Empty constructor of the nsset history data structure.
         */
-        InfoNssetHistoryOutput()
+        InfoNssetOutput()
         {}
 
         /**
@@ -120,7 +120,7 @@ namespace Fred
         * @param local_timestamp_pg_time_zone_name is postgresql time zone name of the returned data
         * @return history info data about the nsset
         */
-        std::vector<InfoNssetHistoryOutput> exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");
+        std::vector<InfoNssetOutput> exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");
 
         /**
         * Dumps state of the instance into the string

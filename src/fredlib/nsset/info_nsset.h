@@ -45,7 +45,7 @@ namespace Fred
     /**
     * Nsset info data structure.
     */
-    struct InfoNssetOutput : public Util::Printable
+    struct InfoNssetOut : public Util::Printable
     {
         InfoNssetData info_nsset_data;/**< data of the nsset */
         boost::posix_time::ptime utc_timestamp;/**< timestamp of getting the nsset data in UTC */
@@ -54,7 +54,7 @@ namespace Fred
         /**
          * Empty constructor.
          */
-        InfoNssetOutput()
+        InfoNssetOut()
         {}
 
         /**
@@ -64,7 +64,7 @@ namespace Fred
         * @return true if equal, false if not
         */
 
-        bool operator==(const InfoNssetOutput& rhs) const
+        bool operator==(const InfoNssetOut& rhs) const
         {
             return info_nsset_data == rhs.info_nsset_data;
         }
@@ -75,7 +75,7 @@ namespace Fred
         * @param rhs is right hand side of the nsset data comparison
         * @return true if not equal, false if equal
         */
-        bool operator!=(const InfoNssetOutput& rhs) const
+        bool operator!=(const InfoNssetOut& rhs) const
         {
             return !this->operator ==(rhs);
         }
@@ -93,10 +93,10 @@ namespace Fred
     * Nsset fully qualified name to get info about is set via constructor.
     * Info is executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
     * When exception is thrown, changes to database are considered incosistent and should be rolled back by the caller.
-    * In case of wrong input data or other predictable and superable failure, the instance of @ref InfoNsset::Exception is thrown with appropriate attributes set.
+    * In case of wrong input data or other predictable and superable failure, the instance of @ref OldInfoNsset::Exception is thrown with appropriate attributes set.
     * In case of other unsuperable failures and inconstistencies, the instance of @ref InternalError or other exception is thrown.
     */
-    class InfoNsset  : public Util::Printable
+    class OldInfoNsset  : public Util::Printable
     {
         const std::string handle_;/**< nsset identifier */
         bool lock_;/**< lock object_registry row flag*/
@@ -111,14 +111,14 @@ namespace Fred
         * Info nsset constructor with mandatory parameter.
         * @param handle sets nsset identifier into @ref handle_ attribute
         */
-        InfoNsset(const std::string& handle);
+        OldInfoNsset(const std::string& handle);
 
         /**
         * Sets nsset lock flag.
         * @param lock sets lock nsset flag into @ref lock_ attribute
         * @return operation instance reference to allow method chaining
         */
-        InfoNsset& set_lock(bool lock = true);
+        OldInfoNsset& set_lock(bool lock = true);
 
         /**
         * Executes getting info about the nsset.
@@ -126,14 +126,14 @@ namespace Fred
         * @param local_timestamp_pg_time_zone_name is postgresql time zone name of the returned data
         * @return info data about the nsset
         */
-        InfoNssetOutput exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");
+        InfoNssetOut exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");
 
         /**
         * Dumps state of the instance into the string
         * @return string with description of the instance state
         */
         std::string to_string() const;
-    };//class InfoNsset
+    };//class OldInfoNsset
 
 }//namespace Fred
 

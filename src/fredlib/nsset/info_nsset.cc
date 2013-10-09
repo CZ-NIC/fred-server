@@ -40,20 +40,20 @@
 
 namespace Fred
 {
-    InfoNsset::InfoNsset(const std::string& handle)
+    OldInfoNsset::OldInfoNsset(const std::string& handle)
     : handle_(handle)
     , lock_(false)
     {}
 
-    InfoNsset& InfoNsset::set_lock(bool lock)//set lock object_registry row
+    OldInfoNsset& OldInfoNsset::set_lock(bool lock)//set lock object_registry row
     {
         lock_ = lock;
         return *this;
     }
 
-    InfoNssetOutput InfoNsset::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
+    InfoNssetOut OldInfoNsset::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
     {
-        InfoNssetOutput nsset_info_output;
+        InfoNssetOut nsset_info_output;
 
         try
         {
@@ -196,9 +196,9 @@ namespace Fred
             throw;
         }
         return nsset_info_output;
-    }//InfoNsset::exec
+    }//OldInfoNsset::exec
 
-    std::string InfoNsset::to_string() const
+    std::string OldInfoNsset::to_string() const
     {
         return Util::format_operation_state("InfoNsset",
         Util::vector_of<std::pair<std::string,std::string> >
@@ -207,9 +207,9 @@ namespace Fred
         );
     }
 
-    std::string InfoNssetOutput::to_string() const
+    std::string InfoNssetOut::to_string() const
     {
-        return Util::format_data_structure("InfoNssetOutput",
+        return Util::format_data_structure("InfoNssetOut",
         Util::vector_of<std::pair<std::string,std::string> >
         (std::make_pair("info_nsset_data",info_nsset_data.to_string()))
         (std::make_pair("utc_timestamp",boost::lexical_cast<std::string>(utc_timestamp)))

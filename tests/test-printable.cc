@@ -499,7 +499,7 @@ BOOST_AUTO_TEST_CASE(info_nsset_data)
 }
 
 /**
- * test InfoNssetHistoryOutput print to string
+ * test InfoNssetOutput print to string
  */
 BOOST_AUTO_TEST_CASE(info_nsset_history_output)
 {
@@ -513,7 +513,7 @@ BOOST_AUTO_TEST_CASE(info_nsset_history_output)
         (Fred::DnsHost("test2dns.cz", Util::vector_of<std::string>("6.6.6.6")("7.7.7.7")));
     d.tech_check_level = 2;
 
-    Fred::InfoNssetHistoryOutput i;
+    Fred::InfoNssetOutput i;
     i.history_valid_from = boost::posix_time::microsec_clock::universal_time();
     i.history_valid_to = boost::posix_time::microsec_clock::universal_time();
     i.info_nsset_data = d;
@@ -534,7 +534,7 @@ BOOST_AUTO_TEST_CASE(info_nsset_history)
 }
 
 /**
- * test InfoNssetOutput print to string
+ * test InfoNssetOut print to string
  */
 BOOST_AUTO_TEST_CASE(info_nsset_output)
 {
@@ -544,7 +544,7 @@ BOOST_AUTO_TEST_CASE(info_nsset_output)
     d.delete_time = boost::posix_time::microsec_clock::universal_time();
     d.tech_contacts = Util::vector_of<std::string>("tech1")("tech2")("tech3");
 
-    Fred::InfoNssetOutput i;
+    Fred::InfoNssetOut i;
     i.utc_timestamp = boost::posix_time::microsec_clock::universal_time();
     i.local_timestamp = boost::posix_time::microsec_clock::local_time();
     i.info_nsset_data = d;
@@ -557,7 +557,7 @@ BOOST_AUTO_TEST_CASE(info_nsset_output)
 BOOST_AUTO_TEST_CASE(info_nsset)
 {
     printable_test(
-    Fred::InfoNsset("TEST-NSSET-HANDLE")
+    Fred::OldInfoNsset("TEST-NSSET-HANDLE")
     );
 }
 

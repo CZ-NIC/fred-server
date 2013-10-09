@@ -65,9 +65,9 @@ namespace Fred
         return *this;
     }
 
-    std::vector<InfoNssetHistoryOutput> InfoNssetHistory::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
+    std::vector<InfoNssetOutput> InfoNssetHistory::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
     {
-        std::vector<InfoNssetHistoryOutput> nsset_history_res;
+        std::vector<InfoNssetOutput> nsset_history_res;
 
         try
         {
@@ -121,7 +121,7 @@ namespace Fred
                 for(Database::Result::size_type i = 0; i < res.size(); ++i)
                 {
                     unsigned long long nsset_id = 0;//nsset id
-                    InfoNssetHistoryOutput nsset_history_output;
+                    InfoNssetOutput nsset_history_output;
 
                     nsset_id = static_cast<unsigned long long>(res[i][0]);//nobr.id
 
@@ -235,9 +235,9 @@ namespace Fred
         return nsset_history_res;
     }//InfoNssetHistory::exec
 
-    std::string InfoNssetHistoryOutput::to_string() const
+    std::string InfoNssetOutput::to_string() const
     {
-        return Util::format_data_structure("InfoNssetHistoryOutput",
+        return Util::format_data_structure("InfoNssetOutput",
         Util::vector_of<std::pair<std::string,std::string> >
         (std::make_pair("info_nsset_data",info_nsset_data.to_string()))
         (std::make_pair("next_historyid",next_historyid.print_quoted()))
