@@ -683,7 +683,7 @@ namespace Fred
             sql << " FROM host_ipaddr_map him "
             " WHERE him.hostid = $"<< params.size() <<"::bigint ";
         }
-        sql << " ORDER BY h.fqdn ";
+        sql << " ORDER BY him.ipaddr ";
 
 
         return std::make_pair(sql.str(), params);
