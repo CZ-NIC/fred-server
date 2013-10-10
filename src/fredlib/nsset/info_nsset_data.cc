@@ -182,6 +182,9 @@ namespace Fred
         }
         if(print_diff_ && !result_delete_time) std::cout << "delete_time: " << delete_time.print_quoted() << " != "<< rhs.delete_time.print_quoted() << std::endl;
 
+        bool result_id = (id == rhs.id);
+        if(print_diff_ && !result_id) std::cout << "id: " << id << " != "<< rhs.id << std::endl;
+
         return  result_roid
                 && result_handle
                 && result_sponsoring_registrar_handle
@@ -197,6 +200,7 @@ namespace Fred
                 && result_dns_hosts
                 && result_tech_contacts
                 && result_delete_time
+                && result_id
                 ;
     }
 

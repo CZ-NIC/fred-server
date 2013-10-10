@@ -48,8 +48,6 @@
 #include "fredlib/contact/create_contact.h"
 #include "fredlib/contact/update_contact.h"
 #include "fredlib/contact/info_contact.h"
-#include "fredlib/contact/info_contact_history.h"
-#include "fredlib/contact/info_contact_compare.h"
 #include "fredlib/opexception.h"
 #include "util/util.h"
 
@@ -117,8 +115,8 @@ struct update_contact_fixture
 BOOST_FIXTURE_TEST_CASE(update_contact, update_contact_fixture )
 {
     Fred::OperationContext ctx;
-    Fred::InfoContactOutput info_data_1 = Fred::InfoContact(test_contact_handle).exec(ctx);
-    std::vector<Fred::InfoContactHistoryOutput> history_info_data_1 = Fred::InfoContactHistory(info_data_1.info_contact_data.roid).exec(ctx);
+    Fred::InfoContactOutput info_data_1 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
+    std::vector<Fred::InfoContactOutput> history_info_data_1 = Fred::InfoContactHistory(info_data_1.info_contact_data.roid).exec(ctx);
 
     //update_registrar_handle check
     BOOST_CHECK(info_data_1.info_contact_data.update_registrar_handle.isnull());
@@ -137,8 +135,8 @@ BOOST_FIXTURE_TEST_CASE(update_contact, update_contact_fixture )
     //empty update
     Fred::UpdateContact(test_contact_handle, registrar_handle).exec(ctx);
 
-    Fred::InfoContactOutput info_data_2 = Fred::InfoContact(test_contact_handle).exec(ctx);
-    std::vector<Fred::InfoContactHistoryOutput> history_info_data_2 = Fred::InfoContactHistory(info_data_1.info_contact_data.roid).exec(ctx);
+    Fred::InfoContactOutput info_data_2 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
+    std::vector<Fred::InfoContactOutput> history_info_data_2 = Fred::InfoContactHistory(info_data_1.info_contact_data.roid).exec(ctx);
 
     Fred::InfoContactOutput info_data_1_with_changes = info_data_1;
 
@@ -199,8 +197,8 @@ BOOST_FIXTURE_TEST_CASE(update_contact, update_contact_fixture )
             , Optional<unsigned long long>() //logd_request_id
             ).exec(ctx);
 
-    Fred::InfoContactOutput info_data_3 = Fred::InfoContact(test_contact_handle).exec(ctx);
-    std::vector<Fred::InfoContactHistoryOutput> history_info_data_3 = Fred::InfoContactHistory(info_data_1.info_contact_data.roid).exec(ctx);
+    Fred::InfoContactOutput info_data_3 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
+    std::vector<Fred::InfoContactOutput> history_info_data_3 = Fred::InfoContactHistory(info_data_1.info_contact_data.roid).exec(ctx);
 
     Fred::InfoContactOutput info_data_2_with_changes = info_data_2;
 
@@ -262,8 +260,8 @@ BOOST_FIXTURE_TEST_CASE(update_contact, update_contact_fixture )
                 , Optional<unsigned long long>(0) //logd_request_id
                 ).exec(ctx);
 
-    Fred::InfoContactOutput info_data_4 = Fred::InfoContact(test_contact_handle).exec(ctx);
-    std::vector<Fred::InfoContactHistoryOutput> history_info_data_4 = Fred::InfoContactHistory(info_data_1.info_contact_data.roid).exec(ctx);
+    Fred::InfoContactOutput info_data_4 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
+    std::vector<Fred::InfoContactOutput> history_info_data_4 = Fred::InfoContactHistory(info_data_1.info_contact_data.roid).exec(ctx);
 
     Fred::InfoContactOutput info_data_3_with_changes = info_data_3;
 
@@ -355,8 +353,8 @@ BOOST_FIXTURE_TEST_CASE(update_contact, update_contact_fixture )
     .set_logd_request_id(4)
     .exec(ctx);
 
-    Fred::InfoContactOutput info_data_5 = Fred::InfoContact(test_contact_handle).exec(ctx);
-    std::vector<Fred::InfoContactHistoryOutput> history_info_data_5 = Fred::InfoContactHistory(info_data_1.info_contact_data.roid).exec(ctx);
+    Fred::InfoContactOutput info_data_5 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
+    std::vector<Fred::InfoContactOutput> history_info_data_5 = Fred::InfoContactHistory(info_data_1.info_contact_data.roid).exec(ctx);
 
     Fred::InfoContactOutput info_data_4_with_changes = info_data_4;
 
@@ -434,7 +432,7 @@ BOOST_FIXTURE_TEST_CASE(update_contact_wrong_registrar, update_contact_fixture)
 {
     Fred::OperationContext ctx;
     std::string bad_registrar_handle = registrar_handle+xmark;
-    Fred::InfoContactOutput info_data_1 = Fred::InfoContact(test_contact_handle).exec(ctx);
+    Fred::InfoContactOutput info_data_1 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
 
     try
     {
@@ -448,7 +446,7 @@ BOOST_FIXTURE_TEST_CASE(update_contact_wrong_registrar, update_contact_fixture)
         BOOST_CHECK(ex.get_unknown_registrar_handle().compare(bad_registrar_handle) == 0);
     }
 
-    Fred::InfoContactOutput info_data_2 = Fred::InfoContact(test_contact_handle).exec(ctx);
+    Fred::InfoContactOutput info_data_2 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
     BOOST_CHECK(info_data_1 == info_data_2);
     BOOST_CHECK(info_data_2.info_contact_data.delete_time.isnull());
 }
@@ -460,7 +458,7 @@ BOOST_FIXTURE_TEST_CASE(update_contact_wrong_sponsoring_registrar, update_contac
 {
     Fred::OperationContext ctx;
     std::string bad_registrar_handle = registrar_handle+xmark;
-    Fred::InfoContactOutput info_data_1 = Fred::InfoContact(test_contact_handle).exec(ctx);
+    Fred::InfoContactOutput info_data_1 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
 
     try
     {
@@ -475,7 +473,7 @@ BOOST_FIXTURE_TEST_CASE(update_contact_wrong_sponsoring_registrar, update_contac
         BOOST_CHECK(ex.get_unknown_sponsoring_registrar_handle().compare(bad_registrar_handle) == 0);
     }
 
-    Fred::InfoContactOutput info_data_2 = Fred::InfoContact(test_contact_handle).exec(ctx);
+    Fred::InfoContactOutput info_data_2 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
     BOOST_CHECK(info_data_1 == info_data_2);
     BOOST_CHECK(info_data_2.info_contact_data.delete_time.isnull());
 }
@@ -487,7 +485,7 @@ BOOST_FIXTURE_TEST_CASE(update_contact_wrong_sponsoring_registrar, update_contac
 BOOST_FIXTURE_TEST_CASE(update_contact_wrong_ssntype, update_contact_fixture)
 {
     Fred::OperationContext ctx;
-    Fred::InfoContactOutput info_data_1 = Fred::InfoContact(test_contact_handle).exec(ctx);
+    Fred::InfoContactOutput info_data_1 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
 
     try
     {
@@ -503,7 +501,7 @@ BOOST_FIXTURE_TEST_CASE(update_contact_wrong_ssntype, update_contact_fixture)
         BOOST_CHECK(ex.get_unknown_ssntype().compare("bad-ssntype") == 0);
     }
 
-    Fred::InfoContactOutput info_data_2 = Fred::InfoContact(test_contact_handle).exec(ctx);
+    Fred::InfoContactOutput info_data_2 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
     BOOST_CHECK(info_data_1 == info_data_2);
     BOOST_CHECK(info_data_2.info_contact_data.delete_time.isnull());
 }
@@ -514,7 +512,7 @@ BOOST_FIXTURE_TEST_CASE(update_contact_wrong_ssntype, update_contact_fixture)
 BOOST_FIXTURE_TEST_CASE(update_contact_wrong_country, update_contact_fixture)
 {
     Fred::OperationContext ctx;
-    Fred::InfoContactOutput info_data_1 = Fred::InfoContact(test_contact_handle).exec(ctx);
+    Fred::InfoContactOutput info_data_1 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
 
     try
     {
@@ -530,7 +528,7 @@ BOOST_FIXTURE_TEST_CASE(update_contact_wrong_country, update_contact_fixture)
         BOOST_CHECK(ex.get_unknown_country().compare("bad-country") == 0);
     }
 
-    Fred::InfoContactOutput info_data_2 = Fred::InfoContact(test_contact_handle).exec(ctx);
+    Fred::InfoContactOutput info_data_2 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
     BOOST_CHECK(info_data_1 == info_data_2);
     BOOST_CHECK(info_data_2.info_contact_data.delete_time.isnull());
 }

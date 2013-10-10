@@ -48,13 +48,10 @@
 #include "fredlib/nsset/update_nsset.h"
 #include "fredlib/contact/delete_contact.h"
 #include "fredlib/contact/create_contact.h"
-#include "fredlib/contact/info_contact.h"
 #include "fredlib/domain/create_domain.h"
 #include "fredlib/nsset/create_nsset.h"
 #include "fredlib/nsset/delete_nsset.h"
 #include "fredlib/nsset/info_nsset.h"
-#include "fredlib/nsset/info_nsset_history.h"
-#include "fredlib/nsset/info_nsset_compare.h"
 #include "fredlib/opexception.h"
 #include "util/util.h"
 
@@ -131,13 +128,13 @@ BOOST_FIXTURE_TEST_CASE(delete_nsset, delete_nsset_fixture )
 {
     Fred::OperationContext ctx;
 
-    Fred::InfoNssetOutput nsset_info1 = Fred::InfoNsset(test_nsset_handle).exec(ctx);
+    Fred::InfoNssetOutput nsset_info1 = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
     BOOST_CHECK(nsset_info1.info_nsset_data.delete_time.isnull());
 
     Fred::DeleteNsset(test_nsset_handle).exec(ctx);
     ctx.commit_transaction();
 
-    std::vector<Fred::InfoNssetHistoryOutput> nsset_history_info1 = Fred::InfoNssetHistory(
+    std::vector<Fred::InfoNssetOutput> nsset_history_info1 = Fred::InfoNssetHistory(
     nsset_info1.info_nsset_data.roid).exec(ctx);
 
     BOOST_CHECK(!nsset_history_info1.at(0).info_nsset_data.delete_time.isnull());

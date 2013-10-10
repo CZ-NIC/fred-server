@@ -59,28 +59,19 @@
 #include "fredlib/domain/check_domain.h"
 #include "fredlib/domain/update_domain.h"
 #include "fredlib/keyset/info_keyset.h"
-#include "fredlib/keyset/info_keyset_history.h"
-#include "fredlib/keyset/info_keyset_compare.h"
 #include "fredlib/keyset/update_keyset.h"
 #include "fredlib/nsset/info_nsset.h"
-#include "fredlib/nsset/info_nsset_history.h"
-#include "fredlib/nsset/info_nsset_compare.h"
 #include "fredlib/nsset/delete_nsset.h"
 #include "fredlib/nsset/check_nsset.h"
 #include "fredlib/nsset/update_nsset.h"
 #include "fredlib/domain/info_domain.h"
-#include "fredlib/domain/info_domain_history.h"
-#include "fredlib/domain/info_domain_compare.h"
 #include "fredlib/contact/info_contact.h"
-#include "fredlib/contact/info_contact_history.h"
-#include "fredlib/contact/info_contact_compare.h"
 #include "fredlib/contact/merge_contact.h"
 #include "fredlib/contact/merge_contact_email_notification_data.h"
 #include "fredlib/contact/merge_contact_selection.h"
 #include "fredlib/poll/create_delete_contact_poll_message.h"
 #include "fredlib/poll/create_poll_message.h"
 #include "fredlib/poll/create_update_object_poll_message.h"
-
 
 #include "util/util.h"
 #include "util/printable.h"
@@ -163,9 +154,9 @@ BOOST_AUTO_TEST_CASE(info_contact_data)
 }
 
 /**
- * test InfoContactHistoryOutput print to string
+ * test InfoContactOutput print to string
  */
-BOOST_AUTO_TEST_CASE(info_contact_history_output)
+BOOST_AUTO_TEST_CASE(info_contact_output)
 {
     Fred::InfoContactData icd;
     icd.handle = "TEST-INFO-CONTACT-HANDLE";
@@ -173,7 +164,7 @@ BOOST_AUTO_TEST_CASE(info_contact_history_output)
     icd.delete_time = boost::posix_time::microsec_clock::universal_time();
     icd.disclosename = true;
 
-    Fred::InfoContactHistoryOutput i;
+    Fred::InfoContactOutput i;
     i.history_valid_from = boost::posix_time::microsec_clock::universal_time();
     i.history_valid_to = boost::posix_time::microsec_clock::universal_time();
     i.info_contact_data = icd;
@@ -193,32 +184,45 @@ BOOST_AUTO_TEST_CASE(info_contact_history)
 }
 
 /**
- * test InfoContactOutput print to string
+ * test InfoContactByHandle print to string
  */
-BOOST_AUTO_TEST_CASE(info_contact_output)
+BOOST_AUTO_TEST_CASE(info_contact_by_handle)
 {
-    Fred::InfoContactData icd;
-    icd.handle = "TEST-INFO-CONTACT-HANDLE";
-    icd.creation_time = boost::posix_time::microsec_clock::universal_time();
-    icd.delete_time = boost::posix_time::microsec_clock::universal_time();
-    icd.disclosename = true;
-
-    Fred::InfoContactOutput i;
-    i.utc_timestamp = boost::posix_time::microsec_clock::universal_time();
-    i.local_timestamp = boost::posix_time::microsec_clock::local_time();
-    i.info_contact_data = icd;
-    printable_test(i);
+    printable_test(
+    Fred::InfoContactByHandle("TEST-CONTACT-HANDLE")
+    );
 }
 
 /**
- * test InfoContact print to string
+ * test InfoContactById print to string
  */
-BOOST_AUTO_TEST_CASE(info_contact)
+BOOST_AUTO_TEST_CASE(info_contact_by_id)
 {
     printable_test(
-    Fred::InfoContact("TEST-CONTACT-HANDLE")
+    Fred::InfoContactById(1)
     );
 }
+
+/**
+ * test HistoryInfoContactById print to string
+ */
+BOOST_AUTO_TEST_CASE(history_info_contact_by_id)
+{
+    printable_test(
+    Fred::HistoryInfoContactById(1)
+    );
+}
+
+/**
+ * test HistoryInfoContactByHistoryid print to string
+ */
+BOOST_AUTO_TEST_CASE(history_info_contact_by_historyid)
+{
+    printable_test(
+    Fred::HistoryInfoContactByHistoryid(1)
+    );
+}
+
 
 /**
  * test UpdateContact print to string
@@ -276,7 +280,7 @@ BOOST_AUTO_TEST_CASE(info_domain_data)
 }
 
 /**
- * test InfoDomainHistoryOutput print to string
+ * test InfoDomainOutput print to string
  */
 BOOST_AUTO_TEST_CASE(info_domain_history_output)
 {
@@ -286,7 +290,7 @@ BOOST_AUTO_TEST_CASE(info_domain_history_output)
     id.delete_time = boost::posix_time::microsec_clock::universal_time();
     id.keyset_handle=Nullable<std::string>("TEST-KEYSET");
 
-    Fred::InfoDomainHistoryOutput ih;
+    Fred::InfoDomainOutput ih;
     ih.history_valid_from = boost::posix_time::microsec_clock::universal_time();
     ih.history_valid_to = boost::posix_time::microsec_clock::universal_time();
     ih.info_domain_data = id;
@@ -305,32 +309,13 @@ BOOST_AUTO_TEST_CASE(info_domain_history)
     );
 }
 
-
 /**
- * test InfoDomainOutput print to string
- */
-BOOST_AUTO_TEST_CASE(info_domain_output)
-{
-    Fred::InfoDomainData id;
-    id.fqdn = "test-fred.cz";
-    id.creation_time = boost::posix_time::microsec_clock::universal_time();
-    id.delete_time = boost::posix_time::microsec_clock::universal_time();
-    id.keyset_handle=Nullable<std::string>("TEST-KEYSET");
-
-    Fred::InfoDomainOutput i;
-    i.utc_timestamp = boost::posix_time::microsec_clock::universal_time();
-    i.local_timestamp = boost::posix_time::microsec_clock::local_time();
-    i.info_domain_data = id;
-    printable_test(i);
-}
-
-/**
- * test InfoDomain print to string
+ * test InfoDomainByHandle print to string
  */
 BOOST_AUTO_TEST_CASE(info_domain)
 {
     printable_test(
-    Fred::InfoDomain("fred.cz")
+    Fred::InfoDomainByHandle("fred.cz")
     );
 }
 
@@ -401,11 +386,12 @@ BOOST_AUTO_TEST_CASE(info_keyset_data)
 
 
 /**
- * test InfoKeysetHistoryOutput print to string
+ * test InfoKeysetOutput print to string
  */
-BOOST_AUTO_TEST_CASE(info_keyset_history_output)
+BOOST_AUTO_TEST_CASE(info_keyset_output)
 {
     Fred::InfoKeysetData d;
+    d.id = 1;
     d.handle = "TEST-INFO-KEYSET-HANDLE";
     d.creation_time = boost::posix_time::microsec_clock::universal_time();
     d.delete_time = boost::posix_time::microsec_clock::universal_time();
@@ -414,9 +400,11 @@ BOOST_AUTO_TEST_CASE(info_keyset_history_output)
     (Fred::DnsKey(257, 3, 5, "test1"))
     (Fred::DnsKey(257, 3, 5, "test2"));
 
-    Fred::InfoKeysetHistoryOutput i;
+    Fred::InfoKeysetOutput i;
     i.history_valid_from = boost::posix_time::microsec_clock::universal_time();
     i.history_valid_to = boost::posix_time::microsec_clock::universal_time();
+    i.utc_timestamp = boost::posix_time::microsec_clock::universal_time();
+    i.local_timestamp = boost::posix_time::microsec_clock::local_time();
     i.info_keyset_data = d;
     i.logd_request_id = 1;
     i.next_historyid = 2;
@@ -434,30 +422,12 @@ BOOST_AUTO_TEST_CASE(info_keyset_history)
 }
 
 /**
- * test InfoKeysetOutput print to string
+ * test InfoKeysetByHandle print to string
  */
-BOOST_AUTO_TEST_CASE(info_keyset_output)
-{
-    Fred::InfoKeysetData d;
-    d.handle = "TEST-INFO-KEYSET-HANDLE";
-    d.creation_time = boost::posix_time::microsec_clock::universal_time();
-    d.delete_time = boost::posix_time::microsec_clock::universal_time();
-    d.tech_contacts = Util::vector_of<std::string>("tech1")("tech2")("tech3");
-
-    Fred::InfoKeysetOutput i;
-    i.utc_timestamp = boost::posix_time::microsec_clock::universal_time();
-    i.local_timestamp = boost::posix_time::microsec_clock::local_time();
-    i.info_keyset_data = d;
-    printable_test(i);
-}
-
-/**
- * test InfoKeyset print to string
- */
-BOOST_AUTO_TEST_CASE(info_keyset)
+BOOST_AUTO_TEST_CASE(info_keyset_by_handle)
 {
     printable_test(
-    Fred::InfoKeyset("TEST-KEYSET-HANDLE")
+    Fred::InfoKeysetByHandle("TEST-KEYSET-HANDLE")
     );
 }
 
@@ -527,9 +497,9 @@ BOOST_AUTO_TEST_CASE(info_nsset_data)
 }
 
 /**
- * test InfoKeysetHistoryOutput print to string
+ * test InfoNssetOutput print to string
  */
-BOOST_AUTO_TEST_CASE(info_nsset_history_output)
+BOOST_AUTO_TEST_CASE(info_nsset_output)
 {
     Fred::InfoNssetData d;
     d.handle = "TEST-INFO-NSSET-HANDLE";
@@ -541,7 +511,7 @@ BOOST_AUTO_TEST_CASE(info_nsset_history_output)
         (Fred::DnsHost("test2dns.cz", Util::vector_of<std::string>("6.6.6.6")("7.7.7.7")));
     d.tech_check_level = 2;
 
-    Fred::InfoNssetHistoryOutput i;
+    Fred::InfoNssetOutput i;
     i.history_valid_from = boost::posix_time::microsec_clock::universal_time();
     i.history_valid_to = boost::posix_time::microsec_clock::universal_time();
     i.info_nsset_data = d;
@@ -562,30 +532,12 @@ BOOST_AUTO_TEST_CASE(info_nsset_history)
 }
 
 /**
- * test InfoNssetOutput print to string
- */
-BOOST_AUTO_TEST_CASE(info_nsset_output)
-{
-    Fred::InfoNssetData d;
-    d.handle = "TEST-INFO-NSSET-HANDLE";
-    d.creation_time = boost::posix_time::microsec_clock::universal_time();
-    d.delete_time = boost::posix_time::microsec_clock::universal_time();
-    d.tech_contacts = Util::vector_of<std::string>("tech1")("tech2")("tech3");
-
-    Fred::InfoNssetOutput i;
-    i.utc_timestamp = boost::posix_time::microsec_clock::universal_time();
-    i.local_timestamp = boost::posix_time::microsec_clock::local_time();
-    i.info_nsset_data = d;
-    printable_test(i);
-}
-
-/**
- * test InfoNsset print to string
+ * test InfoNssetByHandle print to string
  */
 BOOST_AUTO_TEST_CASE(info_nsset)
 {
     printable_test(
-    Fred::InfoNsset("TEST-NSSET-HANDLE")
+    Fred::InfoNssetByHandle("TEST-NSSET-HANDLE")
     );
 }
 

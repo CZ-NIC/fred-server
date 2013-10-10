@@ -50,14 +50,11 @@
 #include "fredlib/keyset/update_keyset.h"
 #include "fredlib/contact/delete_contact.h"
 #include "fredlib/contact/create_contact.h"
-#include "fredlib/domain/info_domain_history.h"
-#include "fredlib/domain/info_domain_compare.h"
+#include "fredlib/domain/info_domain.h"
 #include "fredlib/nsset/create_nsset.h"
 #include "fredlib/keyset/create_keyset.h"
 #include "fredlib/domain/create_domain.h"
 #include "fredlib/domain/delete_domain.h"
-#include "fredlib/contact/info_contact.h"
-#include "fredlib/domain/info_domain.h"
 #include "fredlib/opexception.h"
 #include "util/util.h"
 
@@ -196,13 +193,13 @@ BOOST_FIXTURE_TEST_CASE(delete_domain, delete_domain_fixture )
 {
     Fred::OperationContext ctx;
 
-    Fred::InfoDomainOutput domain_info1 = Fred::InfoDomain(test_domain_fqdn).exec(ctx);
+    Fred::InfoDomainOutput domain_info1 = Fred::InfoDomainByHandle(test_domain_fqdn).exec(ctx);
     BOOST_CHECK(domain_info1.info_domain_data.delete_time.isnull());
 
     Fred::DeleteDomain(test_domain_fqdn).exec(ctx);
     ctx.commit_transaction();
 
-    std::vector<Fred::InfoDomainHistoryOutput> domain_history_info1 = Fred::InfoDomainHistory(
+    std::vector<Fred::InfoDomainOutput> domain_history_info1 = Fred::InfoDomainHistory(
     domain_info1.info_domain_data.roid).exec(ctx);
 
     BOOST_CHECK(!domain_history_info1.at(0).info_domain_data.delete_time.isnull());
@@ -250,13 +247,13 @@ BOOST_FIXTURE_TEST_CASE(delete_enum_domain, delete_enum_domain_fixture )
 {
     Fred::OperationContext ctx;
 
-    Fred::InfoDomainOutput domain_info1 = Fred::InfoDomain(test_domain_fqdn).exec(ctx);
+    Fred::InfoDomainOutput domain_info1 = Fred::InfoDomainByHandle(test_domain_fqdn).exec(ctx);
     BOOST_CHECK(domain_info1.info_domain_data.delete_time.isnull());
 
     Fred::DeleteDomain(test_domain_fqdn).exec(ctx);
     ctx.commit_transaction();
 
-    std::vector<Fred::InfoDomainHistoryOutput> domain_history_info1 = Fred::InfoDomainHistory(
+    std::vector<Fred::InfoDomainOutput> domain_history_info1 = Fred::InfoDomainHistory(
     domain_info1.info_domain_data.roid).exec(ctx);
 
     BOOST_CHECK(!domain_history_info1.at(0).info_domain_data.delete_time.isnull());

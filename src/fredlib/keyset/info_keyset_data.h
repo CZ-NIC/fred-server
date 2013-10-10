@@ -48,15 +48,16 @@ namespace Fred
     {
         unsigned long long crhistoryid;/**< first historyid of keyset history */
         unsigned long long historyid;/**< last historyid of keyset history */
-        Nullable<boost::posix_time::ptime> delete_time; /**< keyset delete time in UTC */
+        unsigned long long id;/**< id of the keyset object*/
+        Nullable<boost::posix_time::ptime> delete_time; /**< keyset delete time in local time zone viz @ref local_timestamp_pg_time_zone_name */
         std::string handle;/**< keyset handle */
         std::string roid;/**< registry object identifier of the keyset */
         std::string sponsoring_registrar_handle;/**< registrar administering the keyset */
         std::string create_registrar_handle;/**< registrar that created the keyset */
         Nullable<std::string> update_registrar_handle;/**< registrar which last time changed the keyset */
-        boost::posix_time::ptime creation_time;/**< creation time of the keyset in UTC*/
-        Nullable<boost::posix_time::ptime> update_time; /**< last update time of the keyset in UTC*/
-        Nullable<boost::posix_time::ptime> transfer_time; /**<last transfer time in UTC*/
+        boost::posix_time::ptime creation_time;/**< creation time of the keyset in local time zone viz @ref local_timestamp_pg_time_zone_name*/
+        Nullable<boost::posix_time::ptime> update_time; /**< last update time of the keyset in local time zone viz @ref local_timestamp_pg_time_zone_name*/
+        Nullable<boost::posix_time::ptime> transfer_time; /**<last transfer time in local time zone viz @ref local_timestamp_pg_time_zone_name*/
         std::string authinfopw;/**< password for transfer */
         std::vector<DnsKey> dns_keys;/**< DNS keys */
         std::vector<std::string> tech_contacts;/**< list of technical contact handles */

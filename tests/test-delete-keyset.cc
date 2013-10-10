@@ -48,13 +48,10 @@
 #include "fredlib/keyset/update_keyset.h"
 #include "fredlib/contact/delete_contact.h"
 #include "fredlib/contact/create_contact.h"
-#include "fredlib/contact/info_contact.h"
 #include "fredlib/domain/create_domain.h"
 #include "fredlib/keyset/create_keyset.h"
 #include "fredlib/keyset/delete_keyset.h"
 #include "fredlib/keyset/info_keyset.h"
-#include "fredlib/keyset/info_keyset_history.h"
-#include "fredlib/keyset/info_keyset_compare.h"
 #include "fredlib/opexception.h"
 #include "util/util.h"
 
@@ -131,13 +128,13 @@ BOOST_FIXTURE_TEST_CASE(delete_keyset, delete_keyset_fixture )
 {
     Fred::OperationContext ctx;
 
-    Fred::InfoKeysetOutput keyset_info1 = Fred::InfoKeyset(test_keyset_handle).exec(ctx);
+    Fred::InfoKeysetOutput keyset_info1 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
     BOOST_CHECK(keyset_info1.info_keyset_data.delete_time.isnull());
 
     Fred::DeleteKeyset(test_keyset_handle).exec(ctx);
     ctx.commit_transaction();
 
-    std::vector<Fred::InfoKeysetHistoryOutput> keyset_history_info1 = Fred::InfoKeysetHistory(
+    std::vector<Fred::InfoKeysetOutput> keyset_history_info1 = Fred::InfoKeysetHistory(
     keyset_info1.info_keyset_data.roid).exec(ctx);
 
     BOOST_CHECK(!keyset_history_info1.at(0).info_keyset_data.delete_time.isnull());

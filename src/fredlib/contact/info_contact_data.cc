@@ -45,6 +45,7 @@ namespace Fred
     InfoContactData::InfoContactData()
     : crhistoryid(0)
     , historyid(0)
+    , id(0)
     , print_diff_(false)
     {}
 
@@ -280,6 +281,10 @@ namespace Fred
         }
         if(print_diff_ && !result_disclosenotifyemail) std::cout << "disclosenotifyemail: " << disclosenotifyemail.print_quoted() << " != "<< rhs.disclosenotifyemail.print_quoted() << std::endl;
 
+        bool result_id = (id == rhs.id);
+        if(print_diff_ && !result_id) std::cout << "id: " << id << " != "<< rhs.id << std::endl;
+
+
         return  result_roid
                 && result_handle
                 && result_sponsoring_registrar_handle
@@ -317,6 +322,7 @@ namespace Fred
                 && result_disclosevat
                 && result_discloseident
                 && result_disclosenotifyemail
+                && result_id
                 ;
     }
 
@@ -336,6 +342,7 @@ namespace Fred
         Util::vector_of<std::pair<std::string,std::string> >
         (std::make_pair("crhistoryid",boost::lexical_cast<std::string>(crhistoryid)))
         (std::make_pair("historyid",boost::lexical_cast<std::string>(historyid)))
+        (std::make_pair("id",boost::lexical_cast<std::string>(id)))
         (std::make_pair("delete_time",delete_time.print_quoted()))
         (std::make_pair("handle",handle))
         (std::make_pair("roid",roid))

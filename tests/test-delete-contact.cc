@@ -50,12 +50,10 @@
 #include "fredlib/keyset/update_keyset.h"
 #include "fredlib/contact/delete_contact.h"
 #include "fredlib/contact/create_contact.h"
-#include "fredlib/contact/info_contact_history.h"
-#include "fredlib/contact/info_contact_compare.h"
+#include "fredlib/contact/info_contact.h"
 #include "fredlib/nsset/create_nsset.h"
 #include "fredlib/keyset/create_keyset.h"
 #include "fredlib/domain/create_domain.h"
-#include "fredlib/contact/info_contact.h"
 #include "fredlib/opexception.h"
 #include "util/util.h"
 
@@ -123,13 +121,13 @@ struct test_contact_fixture
 BOOST_FIXTURE_TEST_CASE(delete_contact, test_contact_fixture )
 {
     Fred::OperationContext ctx;
-    Fred::InfoContactOutput contact_info1 = Fred::InfoContact(test_contact_handle).exec(ctx);
+    Fred::InfoContactOutput contact_info1 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
     BOOST_CHECK(contact_info1.info_contact_data.delete_time.isnull());
 
     Fred::DeleteContact(test_contact_handle).exec(ctx);
     ctx.commit_transaction();
 
-    std::vector<Fred::InfoContactHistoryOutput> contact_history_info1 = Fred::InfoContactHistory(
+    std::vector<Fred::InfoContactOutput> contact_history_info1 = Fred::InfoContactHistory(
         contact_info1.info_contact_data.roid).exec(ctx);
 
     BOOST_CHECK(!contact_history_info1.at(0).info_contact_data.delete_time.isnull());

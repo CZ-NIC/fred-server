@@ -44,6 +44,7 @@ namespace Fred
     InfoDomainData::InfoDomainData()
     : historyid(0)
     , crhistoryid(0)
+    , id(0)
     , print_diff_(false)
     {}
 
@@ -179,6 +180,9 @@ namespace Fred
         }
         if(print_diff_ && !result_delete_time) std::cout << "delete_time: " << delete_time.print_quoted() << " != "<< rhs.delete_time.print_quoted() << std::endl;
 
+        bool result_id = (id == rhs.id);
+        if(print_diff_ && !result_id) std::cout << "id: " << id << " != "<< rhs.id << std::endl;
+
         return  result_roid
                 && result_fqdn
                 && result_registrant_handle
@@ -199,6 +203,7 @@ namespace Fred
                 && result_enum_domain_validation
                 && result_admin_contacts
                 && result_delete_time
+                && result_id
                 ;
     }
 
@@ -236,6 +241,7 @@ namespace Fred
         (std::make_pair("delete_time",delete_time.print_quoted()))
         (std::make_pair("crhistoryid",boost::lexical_cast<std::string>(crhistoryid)))
         (std::make_pair("historyid",boost::lexical_cast<std::string>(historyid)))
+        (std::make_pair("id",boost::lexical_cast<std::string>(id)))
         );
 
 

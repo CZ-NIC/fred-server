@@ -50,12 +50,10 @@
 #include "fredlib/keyset/update_keyset.h"
 #include "fredlib/contact/delete_contact.h"
 #include "fredlib/contact/create_contact.h"
-#include "fredlib/contact/info_contact_history.h"
-#include "fredlib/contact/info_contact_compare.h"
+#include "fredlib/contact/info_contact.h"
 #include "fredlib/nsset/create_nsset.h"
 #include "fredlib/keyset/create_keyset.h"
 #include "fredlib/domain/create_domain.h"
-#include "fredlib/contact/info_contact.h"
 #include "fredlib/opexception.h"
 #include "util/util.h"
 
@@ -121,19 +119,55 @@ struct test_contact_fixture
 BOOST_FIXTURE_TEST_CASE(info_contact, test_contact_fixture )
 {
     Fred::OperationContext ctx;
-    Fred::InfoContactOutput contact_info1 = Fred::InfoContact(test_contact_handle).exec(ctx);
-    Fred::InfoContactOutput contact_info2 = Fred::InfoContact(test_contact_handle).set_lock().exec(ctx);
+    Fred::InfoContactOutput contact_info1 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
+    Fred::InfoContactOutput contact_info2 = Fred::InfoContactByHandle(test_contact_handle).set_lock().exec(ctx);
 
-    /*
-    Fred::InfoContactOutput empty_contact_info;
-    empty_contact_info.info_contact_data.set_diff_print();
-    empty_contact_info == contact_info1;
-    */
-
-    std::vector<Fred::InfoContactHistoryOutput> contact_history_info1 = Fred::InfoContactHistory(
+    std::vector<Fred::InfoContactOutput> contact_history_info1 = Fred::InfoContactHistory(
         contact_info1.info_contact_data.roid).exec(ctx);
 
     BOOST_CHECK(contact_info1 == contact_info2);
+
+    BOOST_MESSAGE(std::string("test contact id: ") + boost::lexical_cast<std::string>(contact_history_info1.at(0).info_contact_data.id));
+
+    //wrappers
+    std::vector<Fred::InfoContactOutput> contact_history_info2 = Fred::HistoryInfoContactById(contact_history_info1.at(0).info_contact_data.id).exec(ctx);
+
+    BOOST_CHECK(contact_history_info1.at(0) == contact_history_info2.at(0));
+
+    Fred::InfoContactOutput contact_history_info3 = Fred::HistoryInfoContactByHistoryid(contact_history_info1.at(0).info_contact_data.historyid).exec(ctx);
+
+    BOOST_CHECK(contact_history_info1.at(0) == contact_history_info3);
+
+    Fred::InfoContactOutput contact_history_info4 = Fred::InfoContactById(contact_history_info1.at(0).info_contact_data.id).exec(ctx);
+
+    BOOST_CHECK(contact_history_info1.at(0) == contact_history_info4);
+
+    Fred::InfoContactOutput contact_history_info5 = Fred::InfoContactByHandle(contact_history_info1.at(0).info_contact_data.handle).exec(ctx);
+
+    BOOST_CHECK(contact_history_info1.at(0) == contact_history_info5);
+
+    //impl
+    for( int j = 0; j < (1 << 7); ++j)
+    {
+        Fred::InfoContact i;
+        if(j & (1 << 0)) i.set_handle(contact_info1.info_contact_data.handle);
+        if(j & (1 << 1)) i.set_roid(contact_info1.info_contact_data.roid);
+        if(j & (1 << 2)) i.set_id(contact_info1.info_contact_data.id);
+        if(j & (1 << 3)) i.set_historyid(contact_info1.info_contact_data.historyid);
+        if(j & (1 << 4)) i.set_lock(true);
+        if(j & (1 << 5)) i.set_history_timestamp(contact_info1.info_contact_data.creation_time);
+        if(j & (1 << 6)) i.set_history_query(true);
+
+        std::vector<Fred::InfoContactOutput> output;
+        BOOST_MESSAGE(i.explain_analyze(ctx,output));
+        if((j & (1 << 0)) || (j & (1 << 1)) || (j & (1 << 2)) || (j & (1 << 3)))//check if selective
+        {
+            if((contact_info1 != output.at(0)))
+                output.at(0).info_contact_data.set_diff_print();
+            BOOST_CHECK(output.at(0) == contact_info1);
+        }
+    }
+
 }
 
 BOOST_AUTO_TEST_SUITE_END();//TestInfoContact

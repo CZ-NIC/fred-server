@@ -683,21 +683,13 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/domain/info_domain_data.cc \
 		src/fredlib/domain/info_domain.h \
 		src/fredlib/domain/info_domain.cc \
-		src/fredlib/domain/info_domain_history.h \
-		src/fredlib/domain/info_domain_history.cc \
-		src/fredlib/domain/info_domain_compare.h \
-		src/fredlib/domain/info_domain_compare.cc \
 		src/fredlib/domain/enum_validation_extension.h \
 		src/fredlib/nsset/update_nsset.h \
 		src/fredlib/nsset/update_nsset.cc \
 		src/fredlib/nsset/info_nsset.h \
 		src/fredlib/nsset/info_nsset.cc \
-		src/fredlib/nsset/info_nsset_history.h \
-		src/fredlib/nsset/info_nsset_history.cc \
 		src/fredlib/nsset/info_nsset_data.h \
 		src/fredlib/nsset/info_nsset_data.cc \
-		src/fredlib/nsset/info_nsset_compare.h \
-		src/fredlib/nsset/info_nsset_compare.cc \
 		src/fredlib/keyset/update_keyset.h \
 		src/fredlib/keyset/keyset_dns_key.h \
 		src/fredlib/keyset/update_keyset.cc \
@@ -707,20 +699,12 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/keyset/info_keyset_data.cc \
 		src/fredlib/keyset/info_keyset.h \
 		src/fredlib/keyset/info_keyset.cc \
-		src/fredlib/keyset/info_keyset_history.h \
-		src/fredlib/keyset/info_keyset_history.cc \
-		src/fredlib/keyset/info_keyset_compare.h \
-		src/fredlib/keyset/info_keyset_compare.cc \
 		src/fredlib/contact/delete_contact.h \
 		src/fredlib/contact/delete_contact.cc \
 		src/fredlib/contact/info_contact_data.h \
 		src/fredlib/contact/info_contact_data.cc \
 		src/fredlib/contact/info_contact.h \
 		src/fredlib/contact/info_contact.cc \
-		src/fredlib/contact/info_contact_history.h \
-		src/fredlib/contact/info_contact_history.cc \
-		src/fredlib/contact/info_contact_compare.h \
-		src/fredlib/contact/info_contact_compare.cc \
 		src/fredlib/object/object.h \
 		src/fredlib/object/object.cc \
 		src/fredlib/poll/create_poll_message.h \
@@ -1676,7 +1660,9 @@ tests_test_server_SOURCES = \
 		tests/test-check-handle.cc \
 		tests/test-delete-keyset.cc \
 		tests/test-update-contact.cc \
-		tests/test-printable.cc
+		tests/test-printable.cc \
+		tests/test-info-keyset.cc \
+		tests/test-info-nsset.cc
 
 tests_test_server_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS) \
