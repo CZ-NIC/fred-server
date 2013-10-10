@@ -38,6 +38,7 @@
 #include "util/printable.h"
 
 #include "fredlib/nsset/info_nsset_data.h"
+#include "fredlib/nsset/info_nsset_history.h"
 
 
 namespace Fred

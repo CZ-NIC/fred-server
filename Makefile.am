@@ -1665,7 +1665,8 @@ tests_test_server_SOURCES = \
 		tests/test-delete-keyset.cc \
 		tests/test-update-contact.cc \
 		tests/test-printable.cc \
-		tests/test-info-keyset.cc
+		tests/test-info-keyset.cc \
+		tests/test-info-nsset.cc
 
 tests_test_server_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS) \
