@@ -56,8 +56,6 @@
 #include "fredlib/domain/create_domain.h"
 #include "fredlib/keyset/info_keyset.h"
 #include "fredlib/nsset/info_nsset.h"
-#include "fredlib/nsset/info_nsset_history.h"
-#include "fredlib/nsset/info_nsset_compare.h"
 #include "fredlib/domain/info_domain.h"
 #include "fredlib/contact/info_contact.h"
 

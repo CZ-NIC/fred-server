@@ -61,8 +61,6 @@
 #include "fredlib/keyset/info_keyset.h"
 #include "fredlib/keyset/update_keyset.h"
 #include "fredlib/nsset/info_nsset.h"
-#include "fredlib/nsset/info_nsset_history.h"
-#include "fredlib/nsset/info_nsset_compare.h"
 #include "fredlib/nsset/delete_nsset.h"
 #include "fredlib/nsset/check_nsset.h"
 #include "fredlib/nsset/update_nsset.h"
@@ -501,7 +499,7 @@ BOOST_AUTO_TEST_CASE(info_nsset_data)
 /**
  * test InfoNssetOutput print to string
  */
-BOOST_AUTO_TEST_CASE(info_nsset_history_output)
+BOOST_AUTO_TEST_CASE(info_nsset_output)
 {
     Fred::InfoNssetData d;
     d.handle = "TEST-INFO-NSSET-HANDLE";
@@ -534,30 +532,12 @@ BOOST_AUTO_TEST_CASE(info_nsset_history)
 }
 
 /**
- * test InfoNssetOut print to string
- */
-BOOST_AUTO_TEST_CASE(info_nsset_output)
-{
-    Fred::InfoNssetData d;
-    d.handle = "TEST-INFO-NSSET-HANDLE";
-    d.creation_time = boost::posix_time::microsec_clock::universal_time();
-    d.delete_time = boost::posix_time::microsec_clock::universal_time();
-    d.tech_contacts = Util::vector_of<std::string>("tech1")("tech2")("tech3");
-
-    Fred::InfoNssetOut i;
-    i.utc_timestamp = boost::posix_time::microsec_clock::universal_time();
-    i.local_timestamp = boost::posix_time::microsec_clock::local_time();
-    i.info_nsset_data = d;
-    printable_test(i);
-}
-
-/**
- * test InfoNsset print to string
+ * test InfoNssetByHandle print to string
  */
 BOOST_AUTO_TEST_CASE(info_nsset)
 {
     printable_test(
-    Fred::OldInfoNsset("TEST-NSSET-HANDLE")
+    Fred::InfoNssetByHandle("TEST-NSSET-HANDLE")
     );
 }
 

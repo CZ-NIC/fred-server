@@ -52,8 +52,6 @@
 #include "fredlib/nsset/create_nsset.h"
 #include "fredlib/nsset/delete_nsset.h"
 #include "fredlib/nsset/info_nsset.h"
-#include "fredlib/nsset/info_nsset_history.h"
-#include "fredlib/nsset/info_nsset_compare.h"
 #include "fredlib/opexception.h"
 #include "util/util.h"
 
@@ -130,7 +128,7 @@ BOOST_FIXTURE_TEST_CASE(delete_nsset, delete_nsset_fixture )
 {
     Fred::OperationContext ctx;
 
-    Fred::InfoNssetOut nsset_info1 = Fred::OldInfoNsset(test_nsset_handle).exec(ctx);
+    Fred::InfoNssetOutput nsset_info1 = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
     BOOST_CHECK(nsset_info1.info_nsset_data.delete_time.isnull());
 
     Fred::DeleteNsset(test_nsset_handle).exec(ctx);
@@ -141,7 +139,7 @@ BOOST_FIXTURE_TEST_CASE(delete_nsset, delete_nsset_fixture )
 
     BOOST_CHECK(!nsset_history_info1.at(0).info_nsset_data.delete_time.isnull());
 
-    Fred::InfoNssetOut nsset_info1_with_change = nsset_info1;
+    Fred::InfoNssetOutput nsset_info1_with_change = nsset_info1;
     nsset_info1_with_change.info_nsset_data.delete_time = nsset_history_info1.at(0).info_nsset_data.delete_time;
 
     BOOST_CHECK(nsset_info1_with_change == nsset_history_info1.at(0));
