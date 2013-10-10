@@ -16,10 +16,10 @@ namespace  Admin {
     static std::vector<std::string> select_oldest_checked_contacts(Fred::OperationContext& _ctx, unsigned _max_queue_length);
 
     std::vector< boost::tuple<std::string, std::string, long long> > fill_automatic_check_queue(unsigned _max_queue_length) {
-        Fred::OperationContext ctx;
+        Fred::OperationContext ctx1;
 
         // how many enqueued checks are there?
-        Database::Result queue_count_res = ctx.get_conn().exec_params(
+        Database::Result queue_count_res = ctx1.get_conn().exec_params(
             "SELECT COUNT(c_ch.id) as count_ "
             "   FROM contact_check AS c_ch "
             "       JOIN enum_contact_check_status AS enum_status ON c_ch.enum_contact_check_status_id = enum_status.id "
@@ -35,15 +35,18 @@ namespace  Admin {
 
         std::vector< boost::tuple<std::string, std::string, long long> > result;
 
+        std::vector<std::string> to_enqueue;
+        std::string temp_handle;
+
         if(checks_to_enqueue_count > 0) {
             result.reserve(checks_to_enqueue_count);
 
             // enqueuing never checked contacts with priority
-            std::vector<std::string> to_enqueue = select_never_checked_contacts(ctx, checks_to_enqueue_count);
-            std::string temp_handle;
+            to_enqueue = select_never_checked_contacts(ctx1, checks_to_enqueue_count);
+
             BOOST_FOREACH(const std::string& contact_name, to_enqueue) {
-                temp_handle = Fred::CreateContactCheck(contact_name, Fred::TestsuiteName::AUTOMATIC).exec(ctx);
-                Fred::InfoContactCheckOutput info = Fred::InfoContactCheck(temp_handle).exec(ctx);
+                temp_handle = Fred::CreateContactCheck(contact_name, Fred::TestsuiteName::AUTOMATIC).exec(ctx1);
+                Fred::InfoContactCheckOutput info = Fred::InfoContactCheck(temp_handle).exec(ctx1);
 
                 result.push_back(
                     boost::make_tuple(
@@ -53,42 +56,50 @@ namespace  Admin {
                     )
                 );
             }
+
+            ctx1.commit_transaction();
+
             checks_to_enqueue_count -= to_enqueue.size();
             to_enqueue.empty();
+        }
 
+        if(checks_to_enqueue_count > 0) {
             /* Filling the queue until it's full even if that means planning several consecutive runs of checks.
              *
              * Never checked contacts cannot be used for this as checks for those are all planned before these "repeated" checks
              * and once those are gone the only non-empty set is contacts ready for repeated check.
              */
-            while(checks_to_enqueue_count > 0) {
-                to_enqueue = select_oldest_checked_contacts(ctx, checks_to_enqueue_count);
 
-                /* just a safety measure
-                 * should never be triggered but if something goes wrong then it's better than undless loop
-                 */
-                if(to_enqueue.empty()) {
-                    break;
-                }
+            Fred::OperationContext ctx2;
+            to_enqueue = select_oldest_checked_contacts(ctx2, checks_to_enqueue_count);
+            ctx2.get_conn().exec("ROLLBACK");
 
-                BOOST_FOREACH(const std::string& contact_name, to_enqueue) {
-                    temp_handle = Fred::CreateContactCheck(contact_name, Fred::TestsuiteName::AUTOMATIC).exec(ctx);
-                    Fred::InfoContactCheckOutput info = Fred::InfoContactCheck(temp_handle).exec(ctx);
-
-                    result.push_back(
-                        boost::make_tuple(
-                            temp_handle,
-                            contact_name,
-                            info.contact_history_id
-                        )
-                    );
-                }
-                checks_to_enqueue_count -= to_enqueue.size();
-                to_enqueue.empty();
+            if(to_enqueue.empty()) {
+                throw Fred::InternalError("can't find checked contacts");
             }
-        }
 
-        ctx.commit_transaction();
+            std::vector<std::string>::iterator contact_handle_it = to_enqueue.begin();
+            Fred::OperationContext ctx3;
+
+            for(; checks_to_enqueue_count > 0; --checks_to_enqueue_count) {
+                temp_handle = Fred::CreateContactCheck(*contact_handle_it, Fred::TestsuiteName::AUTOMATIC).exec(ctx3);
+                Fred::InfoContactCheckOutput info = Fred::InfoContactCheck(temp_handle).exec(ctx3);
+
+                result.push_back(
+                    boost::make_tuple(
+                        temp_handle,
+                        *contact_handle_it,
+                        info.contact_history_id
+                    )
+                );
+
+                ++contact_handle_it;
+                if(contact_handle_it == to_enqueue.end() ) {
+                    contact_handle_it = to_enqueue.begin();
+                }
+            }
+            ctx3.commit_transaction();
+        }
 
         return result;
     }
@@ -128,7 +139,7 @@ namespace  Admin {
             "           SELECT o_r.name AS name_, MAX(c_ch.update_time) AS last_update_ "
             "               FROM contact_check AS c_ch "
             "                   JOIN contact_history AS c_h ON c_ch.contact_history_id = c_h.historyid "
-            "                   JOIN object_registry AS o_r ON c_ch.id = o_r.id "
+            "                   JOIN object_registry AS o_r ON c_h.id = o_r.id "
             "               GROUP BY name_ "
             "       ) AS filtered_ ON obj_reg.name = filtered_.name_ "
             "   WHERE obj_reg.type = 1 "
