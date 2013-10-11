@@ -143,7 +143,7 @@ namespace  Admin {
             "               GROUP BY name_ "
             "       ) AS filtered_ ON obj_reg.name = filtered_.name_ "
             "   WHERE obj_reg.type = 1 "
-            "   ORDER BY filtered_.last_update_ DESC "
+            "   ORDER BY filtered_.last_update_ ASC "
             "   LIMIT $1::integer "
             "   FOR SHARE OF obj_reg; ",
             Database::query_param_list(_max_queue_length)
