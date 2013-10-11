@@ -39,13 +39,13 @@
 
 namespace Fred
 {
-    UpdateContact::UpdateContact(const std::string& handle
+    UpdateContactByHandle::UpdateContactByHandle(const std::string& handle
                 , const std::string& registrar)
     : handle_(handle)
     , registrar_(registrar)
     {}
 
-    UpdateContact::UpdateContact(const std::string& handle
+    UpdateContactByHandle::UpdateContactByHandle(const std::string& handle
             , const std::string& registrar
             , const Optional<std::string>& sponsoring_registrar
             , const Optional<std::string>& authinfo
@@ -110,175 +110,175 @@ namespace Fred
             : Nullable<unsigned long long>())//is NULL if not set
     {}
 
-    UpdateContact& UpdateContact::set_sponsoring_registrar(const std::string& sponsoring_registrar)
+    UpdateContactByHandle& UpdateContactByHandle::set_sponsoring_registrar(const std::string& sponsoring_registrar)
     {
         sponsoring_registrar_ = sponsoring_registrar;
         return *this;
     }
 
-    UpdateContact& UpdateContact::set_authinfo(const std::string& authinfo)
+    UpdateContactByHandle& UpdateContactByHandle::set_authinfo(const std::string& authinfo)
     {
         authinfo_ = authinfo;
         return *this;
     }
 
-    UpdateContact& UpdateContact::set_name(const std::string& name)
+    UpdateContactByHandle& UpdateContactByHandle::set_name(const std::string& name)
     {
         name_ = name;
         return *this;
     }
 
-    UpdateContact& UpdateContact::set_organization(const std::string& organization)
+    UpdateContactByHandle& UpdateContactByHandle::set_organization(const std::string& organization)
     {
         organization_ = organization;
         return *this;
     }
 
-    UpdateContact& UpdateContact::set_street1(const std::string& street1)
+    UpdateContactByHandle& UpdateContactByHandle::set_street1(const std::string& street1)
     {
         street1_ = street1;
         return *this;
     }
 
-    UpdateContact& UpdateContact::set_street2(const std::string& street2)
+    UpdateContactByHandle& UpdateContactByHandle::set_street2(const std::string& street2)
     {
         street2_ = street2;
         return *this;
     }
 
-    UpdateContact& UpdateContact::set_street3(const std::string& street3)
+    UpdateContactByHandle& UpdateContactByHandle::set_street3(const std::string& street3)
     {
         street3_ = street3;
         return *this;
     }
 
-    UpdateContact& UpdateContact::set_city(const std::string& city)
+    UpdateContactByHandle& UpdateContactByHandle::set_city(const std::string& city)
     {
         city_ = city;
         return *this;
     }
 
-    UpdateContact& UpdateContact::set_stateorprovince(const std::string& stateorprovince)
+    UpdateContactByHandle& UpdateContactByHandle::set_stateorprovince(const std::string& stateorprovince)
     {
         stateorprovince_ = stateorprovince;
         return *this;
     }
 
-    UpdateContact& UpdateContact::set_postalcode(const std::string& postalcode)
+    UpdateContactByHandle& UpdateContactByHandle::set_postalcode(const std::string& postalcode)
     {
         postalcode_ = postalcode;
         return *this;
     }
 
-    UpdateContact& UpdateContact::set_country(const std::string& country)
+    UpdateContactByHandle& UpdateContactByHandle::set_country(const std::string& country)
     {
         country_ = country;
         return *this;
     }
 
-    UpdateContact& UpdateContact::set_telephone(const std::string& telephone)
+    UpdateContactByHandle& UpdateContactByHandle::set_telephone(const std::string& telephone)
     {
         telephone_ = telephone;
         return *this;
     }
 
-    UpdateContact& UpdateContact::set_fax(const std::string& fax)
+    UpdateContactByHandle& UpdateContactByHandle::set_fax(const std::string& fax)
     {
         fax_ = fax;
         return *this;
     }
 
-    UpdateContact& UpdateContact::set_email(const std::string& email)
+    UpdateContactByHandle& UpdateContactByHandle::set_email(const std::string& email)
     {
         email_ = email;
         return *this;
     }
 
-    UpdateContact& UpdateContact::set_notifyemail(const std::string& notifyemail)
+    UpdateContactByHandle& UpdateContactByHandle::set_notifyemail(const std::string& notifyemail)
     {
         notifyemail_ = notifyemail;
         return *this;
     }
 
-    UpdateContact& UpdateContact::set_vat(const std::string& vat)
+    UpdateContactByHandle& UpdateContactByHandle::set_vat(const std::string& vat)
     {
         vat_ = vat;
         return *this;
     }
 
-    UpdateContact& UpdateContact::set_ssntype(const std::string& ssntype)
+    UpdateContactByHandle& UpdateContactByHandle::set_ssntype(const std::string& ssntype)
     {
         ssntype_ = ssntype;
         return *this;
     }
 
-    UpdateContact& UpdateContact::set_ssn(const std::string& ssn)
+    UpdateContactByHandle& UpdateContactByHandle::set_ssn(const std::string& ssn)
     {
         ssn_ = ssn;
         return *this;
     }
 
-    UpdateContact& UpdateContact::set_disclosename(const bool disclosename)
+    UpdateContactByHandle& UpdateContactByHandle::set_disclosename(const bool disclosename)
     {
         disclosename_ = disclosename;
         return *this;
     }
 
-    UpdateContact& UpdateContact::set_discloseorganization(const bool discloseorganization)
+    UpdateContactByHandle& UpdateContactByHandle::set_discloseorganization(const bool discloseorganization)
     {
         discloseorganization_ = discloseorganization;
         return *this;
     }
 
-    UpdateContact& UpdateContact::set_discloseaddress(const bool discloseaddress)
+    UpdateContactByHandle& UpdateContactByHandle::set_discloseaddress(const bool discloseaddress)
     {
         discloseaddress_ = discloseaddress;
         return *this;
     }
 
-    UpdateContact& UpdateContact::set_disclosetelephone(const bool disclosetelephone)
+    UpdateContactByHandle& UpdateContactByHandle::set_disclosetelephone(const bool disclosetelephone)
     {
         disclosetelephone_ = disclosetelephone;
         return *this;
     }
 
-    UpdateContact& UpdateContact::set_disclosefax(const bool disclosefax)
+    UpdateContactByHandle& UpdateContactByHandle::set_disclosefax(const bool disclosefax)
     {
         disclosefax_ = disclosefax;
         return *this;
     }
 
-    UpdateContact& UpdateContact::set_discloseemail(const bool discloseemail)
+    UpdateContactByHandle& UpdateContactByHandle::set_discloseemail(const bool discloseemail)
     {
         discloseemail_ = discloseemail;
         return *this;
     }
 
-    UpdateContact& UpdateContact::set_disclosevat(const bool disclosevat)
+    UpdateContactByHandle& UpdateContactByHandle::set_disclosevat(const bool disclosevat)
     {
         disclosevat_ = disclosevat;
         return *this;
     }
 
-    UpdateContact& UpdateContact::set_discloseident(const bool discloseident)
+    UpdateContactByHandle& UpdateContactByHandle::set_discloseident(const bool discloseident)
     {
         discloseident_ = discloseident;
         return *this;
     }
 
-    UpdateContact& UpdateContact::set_disclosenotifyemail(const bool disclosenotifyemail)
+    UpdateContactByHandle& UpdateContactByHandle::set_disclosenotifyemail(const bool disclosenotifyemail)
     {
         disclosenotifyemail_ = disclosenotifyemail;
         return *this;
     }
 
-    UpdateContact& UpdateContact::set_logd_request_id(unsigned long long logd_request_id)
+    UpdateContactByHandle& UpdateContactByHandle::set_logd_request_id(unsigned long long logd_request_id)
     {
         logd_request_id_ = logd_request_id;
         return *this;
     }
 
-    unsigned long long UpdateContact::exec(OperationContext& ctx)
+    unsigned long long UpdateContactByHandle::exec(OperationContext& ctx)
     {
         unsigned long long history_id = 0;
 
@@ -535,7 +535,7 @@ namespace Fred
         return history_id;
     }
 
-    std::string UpdateContact::to_string() const
+    std::string UpdateContactByHandle::to_string() const
     {
         return Util::format_operation_state("UpdateContact",
         Util::vector_of<std::pair<std::string,std::string> >

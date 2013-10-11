@@ -108,11 +108,11 @@ struct update_contact_fixture
 
 
 /**
- * test UpdateContact
- * test UpdateContact construction and methods calls with precreated data
+ * test UpdateContactByHandle
+ * test UpdateContactByHandle construction and methods calls with precreated data
  * calls in test shouldn't throw
  */
-BOOST_FIXTURE_TEST_CASE(update_contact, update_contact_fixture )
+BOOST_FIXTURE_TEST_CASE(update_contact_by_handle, update_contact_fixture )
 {
     Fred::OperationContext ctx;
     Fred::InfoContactOutput info_data_1 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
@@ -133,7 +133,7 @@ BOOST_FIXTURE_TEST_CASE(update_contact, update_contact_fixture )
     BOOST_CHECK(history_info_data_1.at(0).info_contact_data.crhistoryid == info_data_1.info_contact_data.historyid);
 
     //empty update
-    Fred::UpdateContact(test_contact_handle, registrar_handle).exec(ctx);
+    Fred::UpdateContactByHandle(test_contact_handle, registrar_handle).exec(ctx);
 
     Fred::InfoContactOutput info_data_2 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
     std::vector<Fred::InfoContactOutput> history_info_data_2 = Fred::InfoContactHistory(info_data_1.info_contact_data.roid).exec(ctx);
@@ -165,7 +165,7 @@ BOOST_FIXTURE_TEST_CASE(update_contact, update_contact_fixture )
     BOOST_CHECK(history_info_data_2.at(1).next_historyid == history_info_data_2.at(0).info_contact_data.historyid);
     BOOST_CHECK(history_info_data_2.at(0).info_contact_data.crhistoryid == info_data_2.info_contact_data.crhistoryid);
 
-    Fred::UpdateContact(test_contact_handle//handle
+    Fred::UpdateContactByHandle(test_contact_handle//handle
             , registrar_handle//registrar
             , Optional<std::string>()//sponsoring registrar
             , Optional<std::string>()//authinfo
@@ -228,7 +228,7 @@ BOOST_FIXTURE_TEST_CASE(update_contact, update_contact_fixture )
     BOOST_CHECK(history_info_data_3.at(1).next_historyid == history_info_data_3.at(0).info_contact_data.historyid);
     BOOST_CHECK(history_info_data_3.at(0).info_contact_data.crhistoryid == info_data_3.info_contact_data.crhistoryid);
 
-    Fred::UpdateContact(test_contact_handle//handle
+    Fred::UpdateContactByHandle(test_contact_handle//handle
             , registrar_handle//registrar
                 , Optional<std::string>(registrar_handle)//sponsoring registrar
                 , Optional<std::string>("passwd")//authinfo
@@ -324,7 +324,7 @@ BOOST_FIXTURE_TEST_CASE(update_contact, update_contact_fixture )
     BOOST_CHECK(history_info_data_4.at(1).next_historyid == history_info_data_4.at(0).info_contact_data.historyid);
     BOOST_CHECK(history_info_data_4.at(0).info_contact_data.crhistoryid == info_data_4.info_contact_data.crhistoryid);
 
-    Fred::UpdateContact(test_contact_handle, registrar_handle)
+    Fred::UpdateContactByHandle(test_contact_handle, registrar_handle)
     .set_sponsoring_registrar(registrar_handle)
     .set_authinfo("passw")
     .set_name("Test Name")
@@ -403,22 +403,22 @@ BOOST_FIXTURE_TEST_CASE(update_contact, update_contact_fixture )
     BOOST_CHECK(history_info_data_5.at(0).info_contact_data.crhistoryid == info_data_5.info_contact_data.crhistoryid);
 
     ctx.commit_transaction();
-}//update_contact
+}//update_contact_by_handle
 
 /**
- * test UpdateContact with wrong handle
+ * test UpdateContactByHandle with wrong handle
  */
 
-BOOST_FIXTURE_TEST_CASE(update_contact_wrong_handle, update_contact_fixture )
+BOOST_FIXTURE_TEST_CASE(update_contact_by_handle_wrong_handle, update_contact_fixture )
 {
     std::string bad_test_contact_handle = std::string("bad")+test_contact_handle;
     try
     {
         Fred::OperationContext ctx;//new connection to rollback on error
-        Fred::UpdateContact(bad_test_contact_handle, registrar_handle).exec(ctx);
+        Fred::UpdateContactByHandle(bad_test_contact_handle, registrar_handle).exec(ctx);
         ctx.commit_transaction();
     }
-    catch(const Fred::UpdateContact::Exception& ex)
+    catch(const Fred::UpdateContactByHandle::Exception& ex)
     {
         BOOST_CHECK(ex.is_set_unknown_contact_handle());
         BOOST_CHECK(static_cast<std::string>(ex.get_unknown_contact_handle()).compare(bad_test_contact_handle) == 0);
@@ -426,9 +426,9 @@ BOOST_FIXTURE_TEST_CASE(update_contact_wrong_handle, update_contact_fixture )
 }
 
 /**
- * test UpdateContact with wrong registrar
+ * test UpdateContactByHandle with wrong registrar
  */
-BOOST_FIXTURE_TEST_CASE(update_contact_wrong_registrar, update_contact_fixture)
+BOOST_FIXTURE_TEST_CASE(update_contact_by_handle_wrong_registrar, update_contact_fixture)
 {
     Fred::OperationContext ctx;
     std::string bad_registrar_handle = registrar_handle+xmark;
@@ -437,10 +437,10 @@ BOOST_FIXTURE_TEST_CASE(update_contact_wrong_registrar, update_contact_fixture)
     try
     {
         Fred::OperationContext ctx;//new connection to rollback on error
-        Fred::UpdateContact(test_contact_handle, bad_registrar_handle).exec(ctx);
+        Fred::UpdateContactByHandle(test_contact_handle, bad_registrar_handle).exec(ctx);
         ctx.commit_transaction();
     }
-    catch(const Fred::UpdateContact::Exception& ex)
+    catch(const Fred::UpdateContactByHandle::Exception& ex)
     {
         BOOST_CHECK(ex.is_set_unknown_registrar_handle());
         BOOST_CHECK(ex.get_unknown_registrar_handle().compare(bad_registrar_handle) == 0);
@@ -452,9 +452,9 @@ BOOST_FIXTURE_TEST_CASE(update_contact_wrong_registrar, update_contact_fixture)
 }
 
 /**
- * test UpdateContact with wrong sponsoring registrar
+ * test UpdateContactByHandle with wrong sponsoring registrar
  */
-BOOST_FIXTURE_TEST_CASE(update_contact_wrong_sponsoring_registrar, update_contact_fixture)
+BOOST_FIXTURE_TEST_CASE(update_contact_by_handle_wrong_sponsoring_registrar, update_contact_fixture)
 {
     Fred::OperationContext ctx;
     std::string bad_registrar_handle = registrar_handle+xmark;
@@ -463,11 +463,11 @@ BOOST_FIXTURE_TEST_CASE(update_contact_wrong_sponsoring_registrar, update_contac
     try
     {
         Fred::OperationContext ctx;//new connection to rollback on error
-        Fred::UpdateContact(test_contact_handle, registrar_handle)
+        Fred::UpdateContactByHandle(test_contact_handle, registrar_handle)
             .set_sponsoring_registrar(bad_registrar_handle).exec(ctx);
         ctx.commit_transaction();
     }
-    catch(const Fred::UpdateContact::Exception& ex)
+    catch(const Fred::UpdateContactByHandle::Exception& ex)
     {
         BOOST_CHECK(ex.is_set_unknown_sponsoring_registrar_handle());
         BOOST_CHECK(ex.get_unknown_sponsoring_registrar_handle().compare(bad_registrar_handle) == 0);
@@ -480,9 +480,9 @@ BOOST_FIXTURE_TEST_CASE(update_contact_wrong_sponsoring_registrar, update_contac
 
 
 /**
- * test UpdateContact with wrong ssntype
+ * test UpdateContactByHandle with wrong ssntype
  */
-BOOST_FIXTURE_TEST_CASE(update_contact_wrong_ssntype, update_contact_fixture)
+BOOST_FIXTURE_TEST_CASE(update_contact_by_handle_wrong_ssntype, update_contact_fixture)
 {
     Fred::OperationContext ctx;
     Fred::InfoContactOutput info_data_1 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
@@ -490,12 +490,12 @@ BOOST_FIXTURE_TEST_CASE(update_contact_wrong_ssntype, update_contact_fixture)
     try
     {
         Fred::OperationContext ctx;//new connection to rollback on error
-        Fred::UpdateContact(test_contact_handle, registrar_handle)
+        Fred::UpdateContactByHandle(test_contact_handle, registrar_handle)
         .set_ssntype("bad-ssntype")
         .exec(ctx);
         ctx.commit_transaction();
     }
-    catch(const Fred::UpdateContact::Exception& ex)
+    catch(const Fred::UpdateContactByHandle::Exception& ex)
     {
         BOOST_CHECK(ex.is_set_unknown_ssntype());
         BOOST_CHECK(ex.get_unknown_ssntype().compare("bad-ssntype") == 0);
@@ -507,9 +507,9 @@ BOOST_FIXTURE_TEST_CASE(update_contact_wrong_ssntype, update_contact_fixture)
 }
 
 /**
- * test UpdateContact with wrong country
+ * test UpdateContactByHandle with wrong country
  */
-BOOST_FIXTURE_TEST_CASE(update_contact_wrong_country, update_contact_fixture)
+BOOST_FIXTURE_TEST_CASE(update_contact_by_handle_wrong_country, update_contact_fixture)
 {
     Fred::OperationContext ctx;
     Fred::InfoContactOutput info_data_1 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
@@ -517,12 +517,12 @@ BOOST_FIXTURE_TEST_CASE(update_contact_wrong_country, update_contact_fixture)
     try
     {
         Fred::OperationContext ctx;//new connection to rollback on error
-        Fred::UpdateContact(test_contact_handle, registrar_handle)
+        Fred::UpdateContactByHandle(test_contact_handle, registrar_handle)
         .set_country("bad-country")
         .exec(ctx);
         ctx.commit_transaction();
     }
-    catch(const Fred::UpdateContact::Exception& ex)
+    catch(const Fred::UpdateContactByHandle::Exception& ex)
     {
         BOOST_CHECK(ex.is_set_unknown_country());
         BOOST_CHECK(ex.get_unknown_country().compare("bad-country") == 0);
