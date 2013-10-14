@@ -533,5 +533,52 @@ BOOST_FIXTURE_TEST_CASE(update_contact_by_handle_wrong_country, update_contact_f
     BOOST_CHECK(info_data_2.info_contact_data.delete_time.isnull());
 }
 
+class UpdateContact
+{
+    Fred::InfoContact select_contact_;
+    std::string registrar_;
+    Optional<std::string> name_;
+    //...
+public:
+    //init ctor
+    UpdateContact(const Fred::InfoContact& select_contact
+            , const std::string& registrar)
+    : select_contact_(select_contact)
+    , registrar_(registrar)
+    {}
+
+    UpdateContact& set_name(const std::string& name)
+    {
+        name_ = name;
+        return *this;
+    };
+
+    void exec(Fred::OperationContext& ctx)
+    {
+        Fred::InfoContactOutput contact = select_contact_.exec(ctx).at(0);
+        //update contact
+        std::ostringstream oss;
+        oss << "contact.id: " << contact.info_contact_data.id;
+        BOOST_MESSAGE(oss.str());
+    }
+protected:
+    ~UpdateContact(){}
+};
+
+class UpdateContactById : public UpdateContact
+{
+public:
+    UpdateContactById(unsigned long long id, const std::string& registrar)
+    : UpdateContact(Fred::InfoContact().set_id(id).set_history_query(false), registrar)
+    {}
+};
+
+
+
+BOOST_AUTO_TEST_CASE(tmpl_update)
+{
+    Fred::OperationContext ctx;
+    UpdateContactById(1,"reg-1").set_name("new name").exec(ctx);
+}
 
 BOOST_AUTO_TEST_SUITE_END();//TestUpdateContact
