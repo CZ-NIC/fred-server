@@ -91,6 +91,7 @@ void test_Resulting_check_status_impl(std::vector<std::string> _test_statuses, c
 namespace Test = Fred::ContactTestStatus;
 namespace Check = Fred::ContactCheckStatus;
 
+BOOST_AUTO_TEST_SUITE(TestContactVerification)
 BOOST_FIXTURE_TEST_SUITE(TestRunEnqueuedChecks, AdminTests::contact_garbage_collector)
 
 const std::string server_name = "test-contact_verification_integration-run_all_enqueued_checks";
@@ -275,4 +276,5 @@ BOOST_AUTO_TEST_CASE(test_Throwing_test_handling)
     AdminTests::delete_all_checks_etc();
 }
 
+BOOST_AUTO_TEST_SUITE_END();
 BOOST_AUTO_TEST_SUITE_END();
