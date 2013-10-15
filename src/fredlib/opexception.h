@@ -317,5 +317,13 @@ DECLARE_EXCEPTION_DATA(already_set_admin_contact_handle, std::string);
 DECLARE_EXCEPTION_DATA(unknown_technical_contact_handle, std::string);
 DECLARE_EXCEPTION_DATA(already_set_technical_contact_handle, std::string);
 
+/**
+* ExceptionTraits template is meant to map operations types to exceptions types.
+*  @param T is type of derived operation or other custom type.
+*  Exception types are expected in specializations of the template for type T.
+ */
+template <class T> struct ExceptionTraits;
+
+
 }//namespace Fred
 #endif // OPEXCEPTION_H_
