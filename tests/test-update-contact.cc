@@ -643,4 +643,13 @@ BOOST_AUTO_TEST_CASE(tmpl_update)
     UpdateContactById(1,"reg-1").set_name("new name").exec(ctx);
 }
 #endif//0
+
+BOOST_FIXTURE_TEST_CASE(update_contact_by_id, update_contact_fixture )
+{
+    Fred::OperationContext ctx;
+    Fred::InfoContactOutput info_data_1 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
+    Fred::UpdateContactById(info_data_1.info_contact_data.id,registrar_handle).set_street3("test street 3").exec(ctx);
+    ctx.commit_transaction();
+}
+
 BOOST_AUTO_TEST_SUITE_END();//TestUpdateContact

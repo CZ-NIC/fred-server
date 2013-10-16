@@ -904,5 +904,13 @@ BOOST_AUTO_TEST_CASE(create_update_object_poll_message)
     printable_test(Fred::Poll::CreateUpdateObjectPollMessage(0));
 }
 
+/**
+ * test UpdateContactById print to string
+ */
+
+BOOST_AUTO_TEST_CASE(update_contact_by_id)
+{
+    printable_test(Fred::UpdateContactById(5,"REGISTRAR-TEST").set_street3("test street 3"));
+}
 
 BOOST_AUTO_TEST_SUITE_END();//TestPrintable

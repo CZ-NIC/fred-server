@@ -33,6 +33,9 @@
 #include "util/db/nullable.h"
 #include "util/printable.h"
 
+#include "fredlib/contact/info_contact.h"
+#include "fredlib/registrar/registrar_impl.h"
+
 namespace Fred
 {
     /**
@@ -377,6 +380,640 @@ namespace Fred
         std::string to_string() const;
 
     };//UpdateContactByHandle
+
+
+
+    /**
+    * Update of contact, implementation template.
+    * Created instance is modifiable by chainable methods i.e. methods returning instance reference.
+    * Data set into instance by constructor and methods serve as input data of the update.
+    * Update is executed by @ref exec  method on contact instance identified by @ref InfoContactOutput parameter and using database connection supplied in @ref OperationContext parameter.
+    * When exception is thrown, changes to database are considered inconsistent and should be rolled back by the caller.
+    * In case of wrong input data or other predictable and superable failure, i.e. good path error, an instance of @ref UpdateContact::ExceptionType is set or set and thrown depending on the fatality of the error.
+    * In case of other unsuperable failures and inconstistencies, i.e. bad path error, an instance of @ref InternalError or other exception is thrown.
+    */
+    template <class DERIVED>
+    class UpdateContact : public virtual Util::Printable
+    {
+    public:
+        typedef typename Fred::ExceptionTraits<DERIVED>::Exception ExceptionType;/**< exception type inherited before this implementation */
+    private:
+        ExceptionType* ex_accum_ptr_;/**< exception pointer for accumulation of non-fatal good path errors, fatal good path errors shall be reported immediately by throwing its own instance of ExceptionType*/
+
+        const std::string registrar_;/**< handle of registrar performing the update */
+        Optional<std::string> sponsoring_registrar_;/**< handle of registrar administering the object */
+        Optional<std::string> authinfo_;/**< transfer password */
+        Optional<std::string> name_ ;/**< name of contact person */
+        Optional<std::string> organization_;/**< full trade name of organization */
+        Optional<std::string> street1_;/**< part of address */
+        Optional<std::string> street2_;/**< part of address */
+        Optional<std::string> street3_;/**< part of address*/
+        Optional<std::string> city_;/**< part of address - city */
+        Optional<std::string> stateorprovince_;/**< part of address - region */
+        Optional<std::string> postalcode_;/**< part of address - postal code */
+        Optional<std::string> country_;/**< two character country code or country name */
+        Optional<std::string> telephone_;/**<  telephone number */
+        Optional<std::string> fax_;/**< fax number */
+        Optional<std::string> email_;/**< e-mail address */
+        Optional<std::string> notifyemail_;/**< to this e-mail address will be send message in case of any change in domain or nsset affecting contact */
+        Optional<std::string> vat_;/**< taxpayer identification number */
+        Optional<std::string> ssntype_;/**< type of identification from enum_ssntype table */
+        Optional<std::string> ssn_;/**< unambiguous identification number e.g. social security number, identity card number, date of birth */
+        Optional<bool> disclosename_;/**< whether to reveal contact name */
+        Optional<bool> discloseorganization_;/**< whether to reveal organization */
+        Optional<bool> discloseaddress_;/**< whether to reveal address */
+        Optional<bool> disclosetelephone_;/**< whether to reveal phone number */
+        Optional<bool> disclosefax_;/**< whether to reveal fax number */
+        Optional<bool> discloseemail_;/**< whether to reveal email address */
+        Optional<bool> disclosevat_;/**< whether to reveal taxpayer identification number */
+        Optional<bool> discloseident_;/**< whether to reveal unambiguous identification number */
+        Optional<bool> disclosenotifyemail_;/**< whether to reveal notify email */
+        Nullable<unsigned long long> logd_request_id_; /**< id of the new entry in log_entry database table, id is used in other calls to logging within current request */
+
+    protected:
+        /**
+         * Empty destructor meant to be called by derived class.
+         */
+        ~UpdateContact(){}
+    public:
+        /**
+        * Update contact constructor with mandatory parameter.
+        * @param registrar sets registrar handle into @ref registrar_ attribute
+        */
+        UpdateContact(const std::string& registrar)
+        : ex_accum_ptr_()
+        , registrar_(registrar)
+        {}
+
+        /**
+        * Update contact constructor with all parameters except exception pointer.
+        * @param registrar sets registrar handle into @ref registrar_ attribute
+        * @param sponsoring_registrar sets sponsoring registrar handle into @ref sponsoring_registrar_ attribute
+        * @param authinfo sets transfer password into @ref authinfo_ attribute
+        * @param name sets name of contact person into @ref name_ attribute
+        * @param organization sets full trade name of organization into @ref organization_ attribute
+        * @param street1 sets part of address into @ref street1_ attribute
+        * @param street2 sets part of address into @ref street2_ attribute
+        * @param street3 sets part of address into @ref street3_ attribute
+        * @param city sets part of address - city into @ref city_ attribute
+        * @param stateorprovince sets part of address - region into @ref stateorprovince_ attribute
+        * @param postalcode sets part of address - postal code into @ref postalcode_ attribute
+        * @param country sets two character country code or country name  into @ref country_ attribute
+        * @param telephone sets telephone number into @ref telephone_ attribute
+        * @param fax sets fax number into @ref fax_ attribute
+        * @param email sets e-mail address into @ref email_ attribute
+        * @param notifyemail sets e-mail address for notifications into @ref notifyemail_ attribute
+        * @param vat sets taxpayer identification number into @ref vat_ attribute
+        * @param ssntype sets type of identification into @ref ssntype_ attribute
+        * @param ssn sets unambiguous identification number into @ref ssn_ attribute
+        * @param disclosename sets whether to reveal contact name into @ref disclosename_ attribute
+        * @param discloseorganization sets whether to reveal organization name into @ref discloseorganization_ attribute
+        * @param discloseaddress sets whether to reveal contact address into @ref discloseaddress_ attribute
+        * @param disclosetelephone sets whether to reveal telephone number into @ref disclosetelephone_ attribute
+        * @param disclosefax sets whether to reveal fax number into @ref disclosefax_ attribute
+        * @param discloseemail sets whether to reveal e-mail address into @ref discloseemail_ attribute
+        * @param disclosevat sets whether to reveal taxpayer identification number into @ref disclosevat_ attribute
+        * @param discloseident sets whether to reveal unambiguous identification number into @ref discloseident_ attribute
+        * @param disclosenotifyemail sets whether to reveal e-mail address for notifications into @ref disclosenotifyemail_ attribute
+        * @param logd_request_id sets logger request id into @ref logd_request_id_ attribute
+        */
+        UpdateContact(const std::string& registrar
+                , const Optional<std::string>& sponsoring_registrar
+                , const Optional<std::string>& authinfo
+                , const Optional<std::string>& name
+                , const Optional<std::string>& organization
+                , const Optional<std::string>& street1
+                , const Optional<std::string>& street2
+                , const Optional<std::string>& street3
+                , const Optional<std::string>& city
+                , const Optional<std::string>& stateorprovince
+                , const Optional<std::string>& postalcode
+                , const Optional<std::string>& country
+                , const Optional<std::string>& telephone
+                , const Optional<std::string>& fax
+                , const Optional<std::string>& email
+                , const Optional<std::string>& notifyemail
+                , const Optional<std::string>& vat
+                , const Optional<std::string>& ssntype
+                , const Optional<std::string>& ssn
+                , const Optional<bool>& disclosename
+                , const Optional<bool>& discloseorganization
+                , const Optional<bool>& discloseaddress
+                , const Optional<bool>& disclosetelephone
+                , const Optional<bool>& disclosefax
+                , const Optional<bool>& discloseemail
+                , const Optional<bool>& disclosevat
+                , const Optional<bool>& discloseident
+                , const Optional<bool>& disclosenotifyemail
+                , const Optional<unsigned long long> logd_request_id
+                )
+        : ex_accum_ptr_()
+        , registrar_(registrar)
+        , sponsoring_registrar_(sponsoring_registrar)
+        , authinfo_(authinfo)
+        , name_(name)
+        , organization_(organization)
+        , street1_(street1)
+        , street2_(street2)
+        , street3_(street3)
+        , city_(city)
+        , stateorprovince_(stateorprovince)
+        , postalcode_(postalcode)
+        , country_(country)
+        , telephone_(telephone)
+        , fax_(fax)
+        , email_(email)
+        , notifyemail_(notifyemail)
+        , vat_(vat)
+        , ssntype_(ssntype)
+        , ssn_(ssn)
+        , disclosename_(disclosename)
+        , discloseorganization_(discloseorganization)
+        , discloseaddress_(discloseaddress)
+        , disclosetelephone_(disclosetelephone)
+        , disclosefax_(disclosefax)
+        , discloseemail_(discloseemail)
+        , disclosevat_(disclosevat)
+        , discloseident_(discloseident)
+        , disclosenotifyemail_(disclosenotifyemail)
+        , logd_request_id_(logd_request_id.isset()
+                ? Nullable<unsigned long long>(logd_request_id.get_value())
+                : Nullable<unsigned long long>())//is NULL if not set
+        {}
+
+
+        /**
+        * Sets exception pointer.
+        * @param ex_accum_ptr sets pointer to exception instance into @ref ex_accum_ptr_ attribute
+        * @return operation instance reference to allow method chaining
+        */
+        DERIVED& set_exception(ExceptionType* ex_accum_ptr)
+        {
+            ex_accum_ptr_ = ex_accum_ptr;
+            return static_cast<DERIVED&>(*this);
+        }
+
+        /**
+        * Sets contact sponsoring registrar.
+        * @param sponsoring_registrar sets sponsoring registrar handle into @ref sponsoring_registrar_ attribute
+        * @return operation instance reference to allow method chaining
+        */
+        DERIVED& set_sponsoring_registrar(const std::string& sponsoring_registrar)
+        {
+            sponsoring_registrar_ = sponsoring_registrar;
+            return static_cast<DERIVED&>(*this);
+        }
+
+        /**
+        * Sets contact transfer password.
+        * @param authinfo sets transfer password into @ref authinfo_ attribute
+        * @return operation instance reference to allow method chaining
+        */
+        DERIVED& set_authinfo(const std::string& authinfo)
+        {
+            authinfo_ = authinfo;
+            return static_cast<DERIVED&>(*this);
+        }
+
+        /**
+        * Sets contact name.
+        * @param name sets name of contact person into @ref name_ attribute
+        * @return operation instance reference to allow method chaining
+        */
+        DERIVED& set_name(const std::string& name)
+        {
+            name_ = name;
+            return static_cast<DERIVED&>(*this);
+        }
+
+        /**
+        * Sets contact organization name.
+        * @param organization sets full trade name of organization into @ref organization_ attribute
+        * @return operation instance reference to allow method chaining
+        */
+        DERIVED& set_organization(const std::string& organization)
+        {
+            organization_ = organization;
+            return static_cast<DERIVED&>(*this);
+        }
+
+        /**
+        * Sets contact street1 part of address.
+        * @param street1 sets part of address into @ref street1_ attribute
+        * @return operation instance reference to allow method chaining
+        */
+        DERIVED& set_street1(const std::string& street1)
+        {
+            street1_ = street1;
+            return static_cast<DERIVED&>(*this);
+        }
+
+        /**
+        * Sets contact street2 part of address.
+        * @param street2 sets part of address into @ref street2_ attribute
+        * @return operation instance reference to allow method chaining
+        */
+        DERIVED& set_street2(const std::string& street2)
+        {
+            street2_ = street2;
+            return static_cast<DERIVED&>(*this);
+        }
+
+        /**
+        * Sets contact street3 part of address.
+        * @param street3 sets part of address into @ref street3_ attribute
+        * @return operation instance reference to allow method chaining
+        */
+        DERIVED& set_street3(const std::string& street3)
+        {
+            street3_ = street3;
+            return static_cast<DERIVED&>(*this);
+        }
+
+        /**
+        * Sets contact city part of address.
+        * @param city sets part of address - city into @ref city_ attribute
+        * @return operation instance reference to allow method chaining
+        */
+        DERIVED& set_city(const std::string& city)
+        {
+            city_ = city;
+            return static_cast<DERIVED&>(*this);
+        }
+
+        /**
+        * Sets contact region part of address.
+        * @param stateorprovince sets part of address - region into @ref stateorprovince_ attribute
+        * @return operation instance reference to allow method chaining
+        */
+        DERIVED& set_stateorprovince(const std::string& stateorprovince)
+        {
+            stateorprovince_ = stateorprovince;
+            return static_cast<DERIVED&>(*this);
+        }
+
+        /**
+        * Sets contact postal code part of address.
+        * @param postalcode sets part of address - postal code into @ref postalcode_ attribute
+        * @return operation instance reference to allow method chaining
+        */
+        DERIVED& set_postalcode(const std::string& postalcode)
+        {
+            postalcode_ = postalcode;
+            return static_cast<DERIVED&>(*this);
+        }
+
+        /**
+        * Sets contact country part of address.
+        * @param country sets two character country code or country name into @ref country_ attribute
+        * @return operation instance reference to allow method chaining
+        */
+        DERIVED& set_country(const std::string& country)
+        {
+            country_ = country;
+            return static_cast<DERIVED&>(*this);
+        }
+
+        /**
+        * Sets contact telephone number.
+        * @param telephone sets telephone number into @ref telephone_ attribute
+        * @return operation instance reference to allow method chaining
+        */
+        DERIVED& set_telephone(const std::string& telephone)
+        {
+            telephone_ = telephone;
+            return static_cast<DERIVED&>(*this);
+        }
+
+        /**
+        * Sets contact fax number.
+        * @param fax sets fax number into @ref fax_ attribute
+        * @return operation instance reference to allow method chaining
+        */
+        DERIVED& set_fax(const std::string& fax)
+        {
+            fax_ = fax;
+            return static_cast<DERIVED&>(*this);
+        }
+
+        /**
+        * Sets contact e-mail address.
+        * @param email sets e-mail address into @ref email_ attribute
+        * @return operation instance reference to allow method chaining
+        */
+        DERIVED& set_email(const std::string& email)
+        {
+            email_ = email;
+            return static_cast<DERIVED&>(*this);
+        }
+
+        /**
+        * Sets contact e-mail address for notifications.
+        * @param notifyemail sets e-mail address for notifications into @ref notifyemail_ attribute
+        * @return operation instance reference to allow method chaining
+        */
+        DERIVED& set_notifyemail(const std::string& notifyemail)
+        {
+            notifyemail_ = notifyemail;
+            return static_cast<DERIVED&>(*this);
+        }
+
+        /**
+        * Sets contact taxpayer identification number.
+        * @param vat sets taxpayer identification number into @ref vat_ attribute
+        * @return operation instance reference to allow method chaining
+        */
+        DERIVED& set_vat(const std::string& vat)
+        {
+            vat_ = vat;
+            return static_cast<DERIVED&>(*this);
+        }
+
+        /**
+        * Sets contact type of identification.
+        * @param ssntype sets type of identification into @ref ssntype_ attribute
+        * @return operation instance reference to allow method chaining
+        */
+        DERIVED& set_ssntype(const std::string& ssntype)
+        {
+            ssntype_ = ssntype;
+            return static_cast<DERIVED&>(*this);
+        }
+
+        /**
+        * Sets contact type of identification.
+        * @param ssn sets unambiguous identification number into @ref ssn_ attribute
+        * @return operation instance reference to allow method chaining
+        */
+        DERIVED& set_ssn(const std::string& ssn)
+        {
+            ssn_ = ssn;
+            return static_cast<DERIVED&>(*this);
+        }
+
+        /**
+        * Sets whether to reveal contact name.
+        * @param disclosename sets whether to reveal contact name into @ref disclosename_ attribute
+        * @return operation instance reference to allow method chaining
+        */
+        DERIVED& set_disclosename(const bool disclosename)
+        {
+            disclosename_ = disclosename;
+            return static_cast<DERIVED&>(*this);
+        }
+
+        /**
+        * Sets whether to reveal organization name.
+        * @param discloseorganization sets whether to reveal organization name into @ref discloseorganization_ attribute
+        * @return operation instance reference to allow method chaining
+        */
+        DERIVED& set_discloseorganization(const bool discloseorganization)
+        {
+            discloseorganization_ = discloseorganization;
+            return static_cast<DERIVED&>(*this);
+        }
+
+        /**
+        * Sets whether to reveal address.
+        * @param discloseaddress sets whether to reveal contact address into @ref discloseaddress_ attribute
+        * @return operation instance reference to allow method chaining
+        */
+        DERIVED& set_discloseaddress(const bool discloseaddress)
+        {
+            discloseaddress_ = discloseaddress;
+            return static_cast<DERIVED&>(*this);
+        }
+
+        /**
+        * Sets whether to reveal telephone number.
+        * @param disclosetelephone sets whether to reveal telephone number into @ref disclosetelephone_ attribute
+        * @return operation instance reference to allow method chaining
+        */
+        DERIVED& set_disclosetelephone(const bool disclosetelephone)
+        {
+            disclosetelephone_ = disclosetelephone;
+            return static_cast<DERIVED&>(*this);
+        }
+
+        /**
+        * Sets whether to reveal fax number.
+        * @param disclosefax sets whether to reveal fax number into @ref disclosefax_ attribute
+        * @return operation instance reference to allow method chaining
+        */
+        DERIVED& set_disclosefax(const bool disclosefax)
+        {
+            disclosefax_ = disclosefax;
+            return static_cast<DERIVED&>(*this);
+        }
+
+        /**
+        * Sets whether to reveal e-mail address.
+        * @param discloseemail sets whether to reveal e-mail address into @ref discloseemail_ attribute
+        * @return operation instance reference to allow method chaining
+        */
+        DERIVED& set_discloseemail(const bool discloseemail)
+        {
+            discloseemail_ = discloseemail;
+            return static_cast<DERIVED&>(*this);
+        }
+
+        /**
+        * Sets whether to reveal taxpayer identification number.
+        * @param disclosevat sets whether to reveal taxpayer identification number into @ref disclosevat_ attribute
+        * @return operation instance reference to allow method chaining
+        */
+        DERIVED& set_disclosevat(const bool disclosevat)
+        {
+            disclosevat_ = disclosevat;
+            return static_cast<DERIVED&>(*this);
+        }
+
+        /**
+        * Sets whether to reveal unambiguous identification number.
+        * @param discloseident sets whether to reveal unambiguous identification number into @ref discloseident_ attribute
+        * @return operation instance reference to allow method chaining
+        */
+        DERIVED& set_discloseident(const bool discloseident)
+        {
+            discloseident_ = discloseident;
+            return static_cast<DERIVED&>(*this);
+        }
+
+        /**
+        * Sets whether to reveal e-mail address for notifications.
+        * @param disclosenotifyemail sets whether to reveal e-mail address for notifications into @ref disclosenotifyemail_ attribute
+        * @return operation instance reference to allow method chaining
+        */
+        DERIVED& set_disclosenotifyemail(const bool disclosenotifyemail)
+        {
+            disclosenotifyemail_ = disclosenotifyemail;
+            return static_cast<DERIVED&>(*this);
+        }
+
+        /**
+        * Sets logger request id
+        * @param logd_request_id sets logger request id into @ref logd_request_id_ attribute
+        * @return operation instance reference to allow method chaining
+        */
+        DERIVED& set_logd_request_id(unsigned long long logd_request_id)
+        {
+            logd_request_id_ = logd_request_id;
+            return static_cast<DERIVED&>(*this);
+        }
+
+        /**
+        * Executes update
+        * @param ctx contains reference to database and logging interface
+        * @param contact designated for the update
+        * @return new history_id
+        */
+        unsigned long long exec(OperationContext& ctx, const InfoContactOutput& contact)
+        {
+            Registrar::get_registrar_id_by_handle(ctx, registrar_
+                    , static_cast<ExceptionType*>(0), &ExceptionType::set_unknown_registrar_handle);
+
+            ExceptionType update_contact_exception;
+
+            return 0;//dummy
+        }
+
+        /**
+        * Dumps state of the instance into the string
+        * @return string with description of the instance state
+        */
+        std::string to_string() const
+        {
+            return Util::format_operation_state("UpdateContact",
+            Util::vector_of<std::pair<std::string,std::string> >
+            (std::make_pair("ex_accum_ptr",boost::lexical_cast<std::string>(ex_accum_ptr_)))
+            (std::make_pair("registrar",registrar_))
+            (std::make_pair("sponsoring_registrar",sponsoring_registrar_.print_quoted()))
+            (std::make_pair("authinfo",authinfo_.print_quoted()))
+            (std::make_pair("name",name_.print_quoted()))
+            (std::make_pair("organization",organization_.print_quoted()))
+            (std::make_pair("street1",street1_.print_quoted()))
+            (std::make_pair("street2",street2_.print_quoted()))
+            (std::make_pair("street3",street3_.print_quoted()))
+            (std::make_pair("city",city_.print_quoted()))
+            (std::make_pair("stateorprovince",stateorprovince_.print_quoted()))
+            (std::make_pair("postalcode",postalcode_.print_quoted()))
+            (std::make_pair("country",country_.print_quoted()))
+            (std::make_pair("telephone",telephone_.print_quoted()))
+            (std::make_pair("fax",fax_.print_quoted()))
+            (std::make_pair("email",email_.print_quoted()))
+            (std::make_pair("notifyemail_",notifyemail_.print_quoted()))
+            (std::make_pair("vat",vat_.print_quoted()))
+            (std::make_pair("ssntype",ssntype_.print_quoted()))
+            (std::make_pair("ssn",ssn_.print_quoted()))
+            (std::make_pair("disclosename",disclosename_.print_quoted()))
+            (std::make_pair("discloseorganization",discloseorganization_.print_quoted()))
+            (std::make_pair("discloseaddress",discloseaddress_.print_quoted()))
+            (std::make_pair("disclosetelephone",disclosetelephone_.print_quoted()))
+            (std::make_pair("disclosefax",disclosefax_.print_quoted()))
+            (std::make_pair("discloseemail",discloseemail_.print_quoted()))
+            (std::make_pair("disclosevat",disclosevat_.print_quoted()))
+            (std::make_pair("discloseident",discloseident_.print_quoted()))
+            (std::make_pair("disclosenotifyemail",disclosenotifyemail_.print_quoted()))
+            (std::make_pair("logd_request_id",logd_request_id_.print_quoted()))
+            );
+        }
+
+    };//UpdateContact
+
+    /**
+     * Update of contact identified by database id.
+     * Forward declaration of derived composite class.
+     */
+    class UpdateContactById;
+
+    /**
+     * Exception type for @ref UpdateContactById.
+     */
+    template <>
+    struct ExceptionTraits<UpdateContactById>
+    {
+        DECLARE_EXCEPTION_DATA(unknown_contact_id, unsigned long long);/**< exception members for unknown contact database id generated by macro @ref DECLARE_EXCEPTION_DATA*/
+        DECLARE_EXCEPTION_DATA(unknown_ssntype, std::string);/**< exception members for unknown type of identification of the contact generated by macro @ref DECLARE_EXCEPTION_DATA*/
+        DECLARE_EXCEPTION_DATA(unknown_registrar_handle, std::string);/**< exception members for unknown registrar generated by macro @ref DECLARE_EXCEPTION_DATA*/
+        DECLARE_EXCEPTION_DATA(unknown_country, std::string);/**< exception members for unknown country generated by macro @ref DECLARE_EXCEPTION_DATA*/
+        DECLARE_EXCEPTION_DATA(unknown_sponsoring_registrar_handle, std::string);/**< exception members for unknown sponsoring registrar generated by macro @ref DECLARE_EXCEPTION_DATA*/
+        struct Exception
+        : virtual Fred::OperationException
+          , ExceptionData_unknown_contact_id<Exception>
+          , ExceptionData_unknown_registrar_handle<Exception>
+          , ExceptionData_unknown_sponsoring_registrar_handle<Exception>
+          , ExceptionData_unknown_ssntype<Exception>
+          , ExceptionData_unknown_country<Exception>
+        {};
+    protected:
+        /**
+         * Empty destructor meant to be called by derived class.
+         */
+        ~ExceptionTraits(){}
+    };
+
+
+    class UpdateContactById  : public virtual Util::Printable,
+        public ExceptionTraits<UpdateContactById>,
+        public UpdateContact<UpdateContactById>
+    {
+        unsigned long long id_;
+        Fred::InfoContactById select_contact_by_id_;
+    public:
+
+        typedef Fred::ExceptionTraits<UpdateContactById>::Exception ExceptionType;/**< Exception type inherited via @ref ExceptionTraits */
+
+
+        UpdateContactById(unsigned long long id, const std::string& registrar)
+        : UpdateContact<UpdateContactById>(registrar)
+        , id_(id)
+        , select_contact_by_id_(Fred::InfoContactById(id_).set_lock())
+        {}
+
+        void exec(Fred::OperationContext& ctx)
+        {
+            ExceptionType update_exception;
+            Fred::InfoContactOutput contact;
+            try
+            {
+                contact = select_contact_by_id_.exec(ctx);
+            }
+            catch(const Fred::InfoContactById::Exception& info_exception)
+            {
+                update_exception.set_unknown_contact_id(
+                        info_exception.get_unknown_object_id());
+            }
+
+            if(update_exception.throw_me())
+            {
+                BOOST_THROW_EXCEPTION(update_exception);
+            }
+
+            UpdateContact<UpdateContactById>::set_exception(&update_exception);
+            UpdateContact<UpdateContactById>::exec(ctx,contact);
+
+            if(update_exception.throw_me())
+            {
+                BOOST_THROW_EXCEPTION(update_exception);
+            }
+        }
+
+        /**
+        * Dumps state of the instance into the string
+        * @return string with description of the instance state
+        */
+        std::string to_string() const
+        {
+            return Util::format_operation_state("UpdateContactById",
+            Util::vector_of<std::pair<std::string,std::string> >
+            (std::make_pair("id",boost::lexical_cast<std::string>(id_)))
+            (std::make_pair("select_contact_by_id", select_contact_by_id_.to_string()))//member operation
+            (std::make_pair("UpdateContact<UpdateContactById>",UpdateContact<UpdateContactById>::to_string()))//parent operation
+            );
+        }
+    };
+
+
 }//namespace Fred
 
 #endif//UPDATE_CONTACT_H_
