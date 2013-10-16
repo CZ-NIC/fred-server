@@ -35,6 +35,7 @@
 
 #include "fredlib/contact/info_contact.h"
 #include "fredlib/registrar/registrar_impl.h"
+#include "fredlib/object/object.h"
 
 namespace Fred
 {
@@ -869,12 +870,12 @@ namespace Fred
         */
         unsigned long long exec(OperationContext& ctx, const InfoContactOutput& contact)
         {
+            unsigned long long history_id = 0;
+
             Registrar::get_registrar_id_by_handle(ctx, registrar_
-                    , static_cast<ExceptionType*>(0), &ExceptionType::set_unknown_registrar_handle);
+                , static_cast<ExceptionType*>(0), &ExceptionType::set_unknown_registrar_handle);
 
-            ExceptionType update_contact_exception;
-
-            return 0;//dummy
+            return history_id;
         }
 
         /**
@@ -970,32 +971,45 @@ namespace Fred
         , select_contact_by_id_(Fred::InfoContactById(id_).set_lock())
         {}
 
-        void exec(Fred::OperationContext& ctx)
+        unsigned long long exec(Fred::OperationContext& ctx)
         {
-            ExceptionType update_exception;
-            Fred::InfoContactOutput contact;
+            unsigned long long history_id = 0;//to return
+
             try
             {
-                contact = select_contact_by_id_.exec(ctx);
-            }
-            catch(const Fred::InfoContactById::Exception& info_exception)
+                ExceptionType update_exception;
+                Fred::InfoContactOutput contact;
+                try
+                {
+                    contact = select_contact_by_id_.exec(ctx);
+                }
+                catch(const Fred::InfoContactById::Exception& info_exception)
+                {
+                    update_exception.set_unknown_contact_id(
+                            info_exception.get_unknown_object_id());
+                }
+
+                if(update_exception.throw_me())
+                {
+                    BOOST_THROW_EXCEPTION(update_exception);
+                }
+
+                UpdateContact<UpdateContactById>::set_exception(&update_exception);
+                history_id = UpdateContact<UpdateContactById>::exec(ctx,contact);
+
+                if(update_exception.throw_me())
+                {
+                    BOOST_THROW_EXCEPTION(update_exception);
+                }
+
+            }//try
+            catch(ExceptionStack& ex)
             {
-                update_exception.set_unknown_contact_id(
-                        info_exception.get_unknown_object_id());
+                ex.add_exception_stack_info(to_string());
+                throw;
             }
 
-            if(update_exception.throw_me())
-            {
-                BOOST_THROW_EXCEPTION(update_exception);
-            }
-
-            UpdateContact<UpdateContactById>::set_exception(&update_exception);
-            UpdateContact<UpdateContactById>::exec(ctx,contact);
-
-            if(update_exception.throw_me())
-            {
-                BOOST_THROW_EXCEPTION(update_exception);
-            }
+            return history_id;
         }
 
         /**

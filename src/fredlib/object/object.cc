@@ -374,6 +374,22 @@ namespace Fred
         return ss.str();
     }
 
+
+    void check_object_type(OperationContext& ctx, const std::string& obj_type)
+    {
+        Database::Result object_type_res = ctx.get_conn().exec_params(
+            "SELECT id FROM enum_object_type WHERE name = $1::text FOR SHARE"
+            , Database::query_param_list(obj_type));
+        if(object_type_res.size() == 0)//obj_type not found
+        {
+            BOOST_THROW_EXCEPTION(InternalError(std::string("object type: ") + obj_type + " was not found"));
+        }
+        if (object_type_res.size() != 1)//too many
+        {
+            BOOST_THROW_EXCEPTION(InternalError("failed to get object type"));
+        }
+    }
+
     InsertHistory::InsertHistory(const Nullable<unsigned long long>& logd_request_id
         , unsigned long long object_id)
     : logd_request_id_(logd_request_id)

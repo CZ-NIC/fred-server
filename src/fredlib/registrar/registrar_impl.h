@@ -45,7 +45,7 @@ namespace Registrar
     * , or set unknown registrar_handle into given external exception instance and return 0
     * , or throw InternalError or some other exception in case of failure.
     */
-    template <class EXCEPTION, class EXCEPTION_SETTER>
+    template <class EXCEPTION, typename EXCEPTION_SETTER>
     unsigned long long get_registrar_id_by_handle(OperationContext& ctx, const std::string& registrar_handle
             , EXCEPTION* ex_ptr, EXCEPTION_SETTER ex_setter)
     {//check registrar
