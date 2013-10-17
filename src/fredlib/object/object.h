@@ -31,7 +31,6 @@
 
 #include "fredlib/opexception.h"
 #include "fredlib/opcontext.h"
-#include "fredlib/registrar/registrar_impl.h"
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
 #include "util/printable.h"
@@ -81,6 +80,9 @@ namespace Fred
         std::string to_string();
     };
 
+    /**
+     * Updates some common parts of registry object.
+     */
     class UpdateObject : public virtual Util::Printable
     {
         const std::string handle_;//object identifier

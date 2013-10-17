@@ -871,20 +871,17 @@ namespace Fred
         {
             unsigned long long history_id = 0;
 
-            /*
             try
             {
-                history_id = UpdateObject(
-                    contact.info_contact_data.handle,"contact", registrar_
-                    , sponsoring_registrar_, authinfo_, logd_request_id_
-                    ).exec(ctx);
+                history_id = UpdateObject(contact.info_contact_data.handle,
+                    "contact",registrar_,sponsoring_registrar_, authinfo_,
+                    logd_request_id_).exec(ctx);
             }
             catch(const UpdateObject::Exception& ex)
             {
                 if(ex.is_set_unknown_object_handle())
                 {
-                    ex_accum_ptr_->set_unknown_contact_id(
-                            contact.info_contact_data.id);
+                    ex_accum_ptr_->set_unknown_contact_id(contact.info_contact_data.id);
                 }
 
                 if(ex.is_set_unknown_object_type()) throw;//kind of internal error
@@ -902,7 +899,6 @@ namespace Fred
                             ex.get_unknown_sponsoring_registrar_handle());
                 }
             }
-            */
 
             return history_id;
         }
