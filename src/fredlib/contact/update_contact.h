@@ -901,11 +901,6 @@ namespace Fred
                             ex.get_unknown_sponsoring_registrar_handle());
                 }
             }
-            //check exception
-            if(ex_accum_ptr_->throw_me())
-            {
-                BOOST_THROW_EXCEPTION(*ex_accum_ptr_);
-            }
 
             //update contact
             {
@@ -964,7 +959,7 @@ namespace Fred
 
                 if(country_.isset())
                 {
-                    params.push_back(Contact::get_country_code<ExceptionType>(country_, ctx));
+                    params.push_back(Contact::get_country_code(country_, ctx, ex_accum_ptr_, &ExceptionType::set_unknown_country));
                     sql << set_separator.get() << "country = $" << params.size() << "::text ";
                 }
 
@@ -1000,7 +995,7 @@ namespace Fred
 
                 if(ssntype_.isset())
                 {
-                    params.push_back(Contact::get_ssntype_id<ExceptionType>(ssntype_,ctx));
+                    params.push_back(Contact::get_ssntype_id(ssntype_,ctx, ex_accum_ptr_, &ExceptionType::set_unknown_ssntype));
                     sql << set_separator.get() << "ssntype = $" << params.size() << "::integer ";
                 }
 
@@ -1067,6 +1062,13 @@ namespace Fred
                 params.push_back(contact.info_contact_data.id);
                 sql <<" WHERE id = $" << params.size() << "::integer  RETURNING id";
 
+                //check exception
+                if(ex_accum_ptr_->throw_me())
+                {
+                    BOOST_THROW_EXCEPTION(*ex_accum_ptr_);
+                }
+
+                //execute update of the contact
                 if(params.size() > 1)
                 {
                     Database::Result update_contact_res = ctx.get_conn().exec_params(sql.str(), params);

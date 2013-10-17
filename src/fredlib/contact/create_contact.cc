@@ -366,7 +366,8 @@ namespace Fred
 
                 if(country_.isset())
                 {
-                    params.push_back(Contact::get_country_code<Exception>(country_, ctx));
+                    params.push_back(Contact::get_country_code(country_, ctx,
+                        static_cast<Exception*>(0), &Exception::set_unknown_country));
                     col_sql << col_separator.get() << "country";
                     val_sql << val_separator.get() << "$" << params.size() <<"::text";
                 }
@@ -408,7 +409,7 @@ namespace Fred
 
                 if(ssntype_.isset())
                 {
-                    params.push_back(Contact::get_ssntype_id<Exception>(ssntype_,ctx));
+                    params.push_back(Contact::get_ssntype_id(ssntype_,ctx, static_cast<Exception*>(0), &Exception::set_unknown_ssntype));
                     col_sql << col_separator.get() << "ssntype";
                     val_sql << val_separator.get() << "$" << params.size() <<"::integer";
                 }
