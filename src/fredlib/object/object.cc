@@ -225,79 +225,26 @@ namespace Fred
         try
         {
             //check registrar
-            unsigned long long registrar_id = Registrar::get_registrar_id_by_handle(ctx, registrar_
-                    , static_cast<Exception*>(0), &Exception::set_unknown_registrar_handle);
-/*
-            {
-                Database::Result registrar_res = ctx.get_conn().exec_params(
-                    "SELECT id FROM registrar WHERE handle = UPPER($1::text) FOR SHARE"
-                    , Database::query_param_list(registrar_));
-                if(registrar_res.size() == 0)
-                {
-                    BOOST_THROW_EXCEPTION(Exception().set_unknown_registrar_handle(registrar_));
-                }
-                if (registrar_res.size() != 1)
-                {
-                    BOOST_THROW_EXCEPTION(InternalError("failed to get registrar"));
-                }
-                registrar_id = static_cast<unsigned long long>(registrar_res[0][0]);
-            }
-*/
-            //check object type
-            {
-                Database::Result object_type_res = ctx.get_conn().exec_params(
-                    "SELECT id FROM enum_object_type WHERE name = $1::text FOR SHARE"
-                    , Database::query_param_list(obj_type_));
-                if(object_type_res.size() == 0)
-                {
-                    BOOST_THROW_EXCEPTION(Exception().set_unknown_object_type(obj_type_));
-                }
-                if (object_type_res.size() != 1)
-                {
-                    BOOST_THROW_EXCEPTION(InternalError("failed to get object type"));
-                }
-            }
+            unsigned long long registrar_id = Registrar::get_registrar_id_by_handle(
+                ctx, registrar_, static_cast<Exception*>(0)//set throw
+                , &Exception::set_unknown_registrar_handle);
 
-            unsigned long long object_id = 0;
-            {
-                Database::Result object_id_res = ctx.get_conn().exec_params(
-                "SELECT oreg.id FROM object_registry oreg "
-                " JOIN enum_object_type eot ON eot.id = oreg.type AND eot.name = $2::text "
-                " WHERE oreg.name = CASE WHEN $2::text = 'domain'::text THEN LOWER($1::text) "
-                " ELSE UPPER($1::text) END AND oreg.erdate IS NULL "
-                " FOR UPDATE OF oreg"
-                , Database::query_param_list(handle_)(obj_type_));
+            Exception update_object_exception;
 
-                if(object_id_res.size() == 0)
-                {
-                    BOOST_THROW_EXCEPTION(Exception().set_unknown_object_handle(handle_));
-                }
-                if (object_id_res.size() != 1)
-                {
-                    BOOST_THROW_EXCEPTION(InternalError("failed to get object handle"));
-                }
-                object_id = static_cast<unsigned long long> (object_id_res[0][0]);
-            }
+            //get object id with lock
+            unsigned long long object_id = get_object_id_by_handle_and_type_with_lock(
+                ctx,handle_,obj_type_,&update_object_exception,
+                &Exception::set_unknown_object_handle, &Exception::set_unknown_object_type);
 
             //check sponsoring registrar
-            unsigned long long sponsoring_registrar_id = 0;
-            if(sponsoring_registrar_.isset())
+            unsigned long long sponsoring_registrar_id = Registrar::get_registrar_id_by_handle(
+                ctx, registrar_, &update_object_exception,
+                &Exception::set_unknown_sponsoring_registrar_handle);
+
+            //check exception
+            if(update_object_exception.throw_me())
             {
-                Database::Result registrar_res = ctx.get_conn().exec_params(
-                    "SELECT id FROM registrar WHERE handle = UPPER($1::text) FOR SHARE"
-                    , Database::query_param_list(sponsoring_registrar_));
-                if(registrar_res.size() == 0)//if not found and callback is set
-                {
-                    BOOST_THROW_EXCEPTION(Exception().set_unknown_sponsoring_registrar_handle(sponsoring_registrar_));
-                }
-                else if (registrar_res.size() != 1)//if not found
-                {
-                    BOOST_THROW_EXCEPTION(InternalError("failed to get registrar"));
-                }
-                else //if found save id
-                {
-                    sponsoring_registrar_id = static_cast<unsigned long long>(registrar_res[0][0]);
-                }
+                BOOST_THROW_EXCEPTION(update_object_exception);
             }
 
             Database::QueryParams params;//query params
@@ -362,21 +309,6 @@ namespace Fred
         (std::make_pair("authinfo",authinfo_.print_quoted()))
         (std::make_pair("logd_request_id",logd_request_id_.print_quoted()))
         );
-    }
-
-    void check_object_type(OperationContext& ctx, const std::string& obj_type)
-    {
-        Database::Result object_type_res = ctx.get_conn().exec_params(
-            "SELECT id FROM enum_object_type WHERE name = $1::text FOR SHARE"
-            , Database::query_param_list(obj_type));
-        if(object_type_res.size() == 0)//obj_type not found
-        {
-            BOOST_THROW_EXCEPTION(InternalError(std::string("object type: ") + obj_type + " was not found"));
-        }
-        if (object_type_res.size() != 1)//too many
-        {
-            BOOST_THROW_EXCEPTION(InternalError("failed to get object type"));
-        }
     }
 
     InsertHistory::InsertHistory(const Nullable<unsigned long long>& logd_request_id

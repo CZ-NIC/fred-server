@@ -40,6 +40,7 @@ namespace Registrar
     * @param ctx contains reference to database and logging interface
     * @param registrar_handle registrar handle to look for
     * @param ex_ptr is  pointer to given exception instance to be set (don't throw), if ex_ptr is 0, new exception instance is created, set and thrown
+    * @param ex_setter is EXCEPTION member function pointer used to report unknown registrar_handle
     * @return database id of registrar
     * , or throw @ref EXCEPTION if registrar was not found and external exception instance was not provided
     * , or set unknown registrar_handle into given external exception instance and return 0

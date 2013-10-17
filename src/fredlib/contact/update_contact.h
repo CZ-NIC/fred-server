@@ -34,6 +34,7 @@
 #include "util/printable.h"
 
 #include "fredlib/contact/info_contact.h"
+#include "fredlib/contact/contact_enum.h"
 #include "fredlib/object/object.h"
 
 namespace Fred
@@ -871,6 +872,7 @@ namespace Fred
         {
             unsigned long long history_id = 0;
 
+            //update object
             try
             {
                 history_id = UpdateObject(contact.info_contact_data.handle,
@@ -899,6 +901,202 @@ namespace Fred
                             ex.get_unknown_sponsoring_registrar_handle());
                 }
             }
+            //check exception
+            if(ex_accum_ptr_->throw_me())
+            {
+                BOOST_THROW_EXCEPTION(*ex_accum_ptr_);
+            }
+
+            //update contact
+            {
+                Database::QueryParams params;//query params
+                std::stringstream sql;
+                Util::HeadSeparator set_separator("SET ",", ");
+                sql <<"UPDATE contact ";
+
+                if(name_.isset())
+                {
+                    params.push_back(name_.get_value());
+                    sql << set_separator.get() << "name = $" << params.size() << "::text ";
+                }
+
+                if(organization_.isset())
+                {
+                    params.push_back(organization_.get_value());
+                    sql << set_separator.get() << "organization = $" << params.size() << "::text ";
+                }
+
+                if(street1_.isset())
+                {
+                    params.push_back(street1_.get_value());
+                    sql << set_separator.get() << "street1 = $" << params.size() << "::text ";
+                }
+
+                if(street2_.isset())
+                {
+                    params.push_back(street2_.get_value());
+                    sql << set_separator.get() << "street2 = $" << params.size() << "::text ";
+                }
+
+                if(street3_.isset())
+                {
+                    params.push_back(street3_.get_value());
+                    sql << set_separator.get() << "street3 = $" << params.size() << "::text ";
+                }
+
+                if(city_.isset())
+                {
+                    params.push_back(city_.get_value());
+                    sql << set_separator.get() << "city = $" << params.size() << "::text ";
+                }
+
+                if(stateorprovince_.isset())
+                {
+                    params.push_back(stateorprovince_.get_value());
+                    sql << set_separator.get() << "stateorprovince = $" << params.size() << "::text ";
+                }
+
+                if(postalcode_.isset())
+                {
+                    params.push_back(postalcode_.get_value());
+                    sql << set_separator.get() << "postalcode = $" << params.size() << "::text ";
+                }
+
+                if(country_.isset())
+                {
+                    params.push_back(Contact::get_country_code<ExceptionType>(country_, ctx));
+                    sql << set_separator.get() << "country = $" << params.size() << "::text ";
+                }
+
+                if(telephone_.isset())
+                {
+                    params.push_back(telephone_.get_value());
+                    sql << set_separator.get() << "telephone = $" << params.size() << "::text ";
+                }
+
+                if(fax_.isset())
+                {
+                    params.push_back(fax_.get_value());
+                    sql << set_separator.get() << "fax = $" << params.size() << "::text ";
+                }
+
+                if(email_.isset())
+                {
+                    params.push_back(email_.get_value());
+                    sql << set_separator.get() << "email = $" << params.size() << "::text ";
+                }
+
+                if(notifyemail_.isset())
+                {
+                    params.push_back(notifyemail_.get_value());
+                    sql << set_separator.get() << "notifyemail = $" << params.size() << "::text ";
+                }
+
+                if(vat_.isset())
+                {
+                    params.push_back(vat_.get_value());
+                    sql << set_separator.get() << "vat = $" << params.size() << "::text ";
+                }
+
+                if(ssntype_.isset())
+                {
+                    params.push_back(Contact::get_ssntype_id<ExceptionType>(ssntype_,ctx));
+                    sql << set_separator.get() << "ssntype = $" << params.size() << "::integer ";
+                }
+
+                if(ssn_.isset())
+                {
+                    params.push_back(ssn_.get_value());
+                    sql << set_separator.get() << "ssn = $" << params.size() << "::text ";
+                }
+
+                if(disclosename_.isset())
+                {
+                    params.push_back(disclosename_.get_value());
+                    sql << set_separator.get() << "disclosename = $" << params.size() << "::boolean ";
+                }
+
+                if(discloseorganization_.isset())
+                {
+                    params.push_back(discloseorganization_.get_value());
+                    sql << set_separator.get() << "discloseorganization = $" << params.size() << "::boolean ";
+                }
+
+                if(discloseaddress_.isset())
+                {
+                    params.push_back(discloseaddress_.get_value());
+                    sql << set_separator.get() << "discloseaddress = $" << params.size() << "::boolean ";
+                }
+
+                if(disclosetelephone_.isset())
+                {
+                    params.push_back(disclosetelephone_.get_value());
+                    sql << set_separator.get() << "disclosetelephone = $" << params.size() << "::boolean ";
+                }
+
+                if(disclosefax_.isset())
+                {
+                    params.push_back(disclosefax_.get_value());
+                    sql << set_separator.get() << "disclosefax = $" << params.size() << "::boolean ";
+                }
+
+                if(discloseemail_.isset())
+                {
+                    params.push_back(discloseemail_.get_value());
+                    sql << set_separator.get() << "discloseemail = $" << params.size() << "::boolean ";
+                }
+
+                if(disclosevat_.isset())
+                {
+                    params.push_back(disclosevat_.get_value());
+                    sql << set_separator.get() << "disclosevat = $" << params.size() << "::boolean ";
+                }
+
+                if(discloseident_.isset())
+                {
+                    params.push_back(discloseident_.get_value());
+                    sql << set_separator.get() << "discloseident = $" << params.size() << "::boolean ";
+                }
+
+                if(disclosenotifyemail_.isset())
+                {
+                    params.push_back(disclosenotifyemail_.get_value());
+                    sql << set_separator.get() << "disclosenotifyemail = $" << params.size() << "::boolean ";
+                }
+
+                params.push_back(contact.info_contact_data.id);
+                sql <<" WHERE id = $" << params.size() << "::integer  RETURNING id";
+
+                if(params.size() > 1)
+                {
+                    Database::Result update_contact_res = ctx.get_conn().exec_params(sql.str(), params);
+                    if(update_contact_res.size() != 1)
+                    {
+                        BOOST_THROW_EXCEPTION(InternalError("failed to update contact"));
+                    }
+                }
+            }//update contact
+
+            //save history
+            {
+                //contact_history
+                ctx.get_conn().exec_params(
+                    "INSERT INTO contact_history(historyid,id "
+                    " , name, organization, street1, street2, street3, city, stateorprovince, postalcode "
+                    " , country, telephone, fax, email, notifyemail, vat, ssntype, ssn "
+                    " , disclosename, discloseorganization, discloseaddress, disclosetelephone "
+                    " , disclosefax, discloseemail, disclosevat, discloseident, disclosenotifyemail "
+                    " ) "
+                    " SELECT $1::bigint, id "
+                    " , name, organization, street1, street2, street3, city, stateorprovince, postalcode "
+                    " , country, telephone, fax, email, notifyemail, vat, ssntype, ssn "
+                    " , disclosename, discloseorganization, discloseaddress, disclosetelephone "
+                    " , disclosefax, discloseemail, disclosevat, discloseident, disclosenotifyemail "
+                    " FROM contact "
+                    " WHERE id = $2::integer"
+                    , Database::query_param_list(history_id)(contact.info_contact_data.id));
+
+            }//save history
 
             return history_id;
         }
