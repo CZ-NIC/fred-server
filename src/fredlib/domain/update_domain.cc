@@ -228,12 +228,35 @@ namespace Fred
 
         Exception update_domain_exception;
 
-        //update object
-        history_id = Fred::UpdateObject(no_root_dot_fqdn,"domain", registrar_
-            , sponsoring_registrar_, authinfo_, logd_request_id_
-            , boost::bind(&Exception::set_unknown_sponsoring_registrar_handle,&update_domain_exception,_1)
-            ).exec(ctx);
+        try
+        {
+            //update object
+            history_id = Fred::UpdateObject(no_root_dot_fqdn,"domain", registrar_
+                , sponsoring_registrar_, authinfo_, logd_request_id_
+                ).exec(ctx);
+        }
+        catch(const Fred::UpdateObject::Exception& ex)
+        {
+            if(ex.is_set_unknown_object_handle())
+            {
+                update_domain_exception.set_unknown_domain_fqdn(
+                        ex.get_unknown_object_handle());
+            }
 
+            if(ex.is_set_unknown_object_type()) throw;//kind of internal error
+
+            if(ex.is_set_unknown_registrar_handle())
+            {
+                update_domain_exception.set_unknown_registrar_handle(
+                        ex.get_unknown_registrar_handle());
+            }
+
+            if(ex.is_set_unknown_sponsoring_registrar_handle())
+            {
+                update_domain_exception.set_unknown_sponsoring_registrar_handle(
+                        ex.get_unknown_sponsoring_registrar_handle());
+            }
+        }
         //update domain
         if(nsset_.isset() || keyset_.isset() || registrant_.isset() || expiration_date_.isset())
         {

@@ -21,8 +21,8 @@
  *  common object
  */
 
-#ifndef OBJECT_H_
-#define OBJECT_H_
+#ifndef OBJECT__H_
+#define OBJECT__H_
 
 #include <string>
 
@@ -34,6 +34,7 @@
 #include "fredlib/registrar/registrar_impl.h"
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
+#include "util/printable.h"
 
 namespace Fred
 {
@@ -80,7 +81,7 @@ namespace Fred
         std::string to_string();
     };
 
-    class UpdateObject
+    class UpdateObject : public virtual Util::Printable
     {
         const std::string handle_;//object identifier
         const std::string obj_type_;//object type name
@@ -88,9 +89,6 @@ namespace Fred
         Optional<std::string> sponsoring_registrar_;//set registrar administering the object
         Optional<std::string> authinfo_;//set authinfo
         Nullable<unsigned long long> logd_request_id_;//logger request_id
-
-        boost::function<void (const std::string& unknown_sponsoring_registrar_handle)>
-            callback_unknown_sponsoring_registrar_handle_;//exception callback
 
     public:
         DECLARE_EXCEPTION_DATA(unknown_object_handle, std::string);
@@ -114,20 +112,14 @@ namespace Fred
             , const Optional<std::string>& sponsoring_registrar
             , const Optional<std::string>& authinfo
             , const Nullable<unsigned long long>& logd_request_id
-            , const boost::function<void (const std::string& unknown_sponsoring_registrar_handle)>&
-                callback_unknown_sponsoring_registrar_handle
         );
         UpdateObject& set_sponsoring_registrar(const std::string& sponsoring_registrar);
         UpdateObject& set_authinfo(const std::string& authinfo);
         UpdateObject& set_logd_request_id(const Nullable<unsigned long long>& logd_request_id);
 
-        UpdateObject& set_callback_unknown_sponsoring_registrar_handle(
-            const boost::function<void (const std::string& unknown_sponsoring_registrar_handle)>& callback_unknown_sponsoring_registrar_handle);
-
         unsigned long long exec(OperationContext& ctx);//return history_id
 
-        friend std::ostream& operator<<(std::ostream& os, const UpdateObject& i);
-        std::string to_string();
+        std::string to_string() const;
     };
 
     class InsertHistory

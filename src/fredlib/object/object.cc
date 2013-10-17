@@ -24,6 +24,7 @@
 #include <string>
 
 #include "fredlib/object/object.h"
+#include "fredlib/registrar/registrar_impl.h"
 
 #include "fredlib/opexception.h"
 #include "fredlib/opcontext.h"
@@ -191,16 +192,13 @@ namespace Fred
         , const std::string& registrar
         , const Optional<std::string>& sponsoring_registrar
         , const Optional<std::string>& authinfo
-        , const Nullable<unsigned long long>& logd_request_id
-        , const boost::function<void (const std::string& unknown_sponsoring_registrar_handle)>&
-            callback_unknown_sponsoring_registrar_handle)
+        , const Nullable<unsigned long long>& logd_request_id)
     : handle_(handle)
     , obj_type_(obj_type)
     , registrar_(registrar)
     , sponsoring_registrar_(sponsoring_registrar)
     , authinfo_(authinfo)
     , logd_request_id_(logd_request_id)
-    , callback_unknown_sponsoring_registrar_handle_(callback_unknown_sponsoring_registrar_handle)
     {}
 
     UpdateObject& UpdateObject::set_sponsoring_registrar(const std::string& sponsoring_registrar)
@@ -221,20 +219,15 @@ namespace Fred
         return *this;
     }
 
-    UpdateObject& UpdateObject::set_callback_unknown_sponsoring_registrar_handle(
-        const boost::function<void (const std::string& unknown_sponsoring_registrar_handle)>& callback_unknown_sponsoring_registrar_handle)
-    {
-        callback_unknown_sponsoring_registrar_handle_ = callback_unknown_sponsoring_registrar_handle;
-        return *this;
-    }
-
     unsigned long long UpdateObject::exec(OperationContext& ctx)
     {
         unsigned long long history_id = 0;
         try
         {
             //check registrar
-            unsigned long long registrar_id = 0;
+            unsigned long long registrar_id = Registrar::get_registrar_id_by_handle(ctx, registrar_
+                    , static_cast<Exception*>(0), &Exception::set_unknown_registrar_handle);
+/*
             {
                 Database::Result registrar_res = ctx.get_conn().exec_params(
                     "SELECT id FROM registrar WHERE handle = UPPER($1::text) FOR SHARE"
@@ -249,7 +242,7 @@ namespace Fred
                 }
                 registrar_id = static_cast<unsigned long long>(registrar_res[0][0]);
             }
-
+*/
             //check object type
             {
                 Database::Result object_type_res = ctx.get_conn().exec_params(
@@ -293,10 +286,9 @@ namespace Fred
                 Database::Result registrar_res = ctx.get_conn().exec_params(
                     "SELECT id FROM registrar WHERE handle = UPPER($1::text) FOR SHARE"
                     , Database::query_param_list(sponsoring_registrar_));
-                if(registrar_res.size() == 0 && callback_unknown_sponsoring_registrar_handle_)//if not found and callback is set
+                if(registrar_res.size() == 0)//if not found and callback is set
                 {
-                    callback_unknown_sponsoring_registrar_handle_(sponsoring_registrar_);
-                    sponsoring_registrar_ = Optional<std::string>();//unset wrong sponsoring_registrar_ to continue
+                    BOOST_THROW_EXCEPTION(Exception().set_unknown_sponsoring_registrar_handle(sponsoring_registrar_));
                 }
                 else if (registrar_res.size() != 1)//if not found
                 {
@@ -355,25 +347,22 @@ namespace Fred
         return history_id;
     }
 
-    std::ostream& operator<<(std::ostream& os, const UpdateObject& i)
+    /**
+    * Dumps state of the instance into the string
+    * @return string with description of the instance state
+    */
+    std::string UpdateObject::to_string() const
     {
-        os << "#UpdateObject obj_type: " << i.obj_type_
-            << " handle: " << i.handle_
-            << " registrar: " << i.registrar_
-            << " sponsoring registrar: " << i.sponsoring_registrar_.print_quoted()
-            << " authinfo: " << i.authinfo_.print_quoted()
-            << " logd_request_id: " << i.logd_request_id_.print_quoted()
-            ;
-        return os;
+        return Util::format_operation_state("UpdateObject",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("obj_type",obj_type_))
+        (std::make_pair("handle",handle_))
+        (std::make_pair("registrar",registrar_))
+        (std::make_pair("sponsoring_registrar",sponsoring_registrar_.print_quoted()))
+        (std::make_pair("authinfo",authinfo_.print_quoted()))
+        (std::make_pair("logd_request_id",logd_request_id_.print_quoted()))
+        );
     }
-
-    std::string UpdateObject::to_string()
-    {
-        std::stringstream ss;
-        ss << *this;
-        return ss.str();
-    }
-
 
     void check_object_type(OperationContext& ctx, const std::string& obj_type)
     {

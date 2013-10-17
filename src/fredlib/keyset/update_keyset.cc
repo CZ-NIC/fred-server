@@ -152,10 +152,34 @@ namespace Fred
 
             Exception update_keyset_exception;
 
-            history_id = Fred::UpdateObject(handle_,"keyset", registrar_
-                , sponsoring_registrar_, authinfo_, logd_request_id_
-                , boost::bind(&Exception::set_unknown_sponsoring_registrar_handle,&update_keyset_exception,_1)
-            ).exec(ctx);
+            try
+            {
+                history_id = Fred::UpdateObject(handle_,"keyset", registrar_
+                    , sponsoring_registrar_, authinfo_, logd_request_id_
+                ).exec(ctx);
+            }
+            catch(const Fred::UpdateObject::Exception& ex)
+            {
+                if(ex.is_set_unknown_object_handle())
+                {
+                    update_keyset_exception.set_unknown_keyset_handle(
+                            ex.get_unknown_object_handle());
+                }
+
+                if(ex.is_set_unknown_object_type()) throw;//kind of internal error
+
+                if(ex.is_set_unknown_registrar_handle())
+                {
+                    update_keyset_exception.set_unknown_registrar_handle(
+                            ex.get_unknown_registrar_handle());
+                }
+
+                if(ex.is_set_unknown_sponsoring_registrar_handle())
+                {
+                    update_keyset_exception.set_unknown_sponsoring_registrar_handle(
+                            ex.get_unknown_sponsoring_registrar_handle());
+                }
+            }
 
             //add tech contacts
             if(!add_tech_contact_.empty())

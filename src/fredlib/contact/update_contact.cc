@@ -323,16 +323,39 @@ namespace Fred
 
             Exception update_contact_exception;
 
-            history_id = Fred::UpdateObject(handle_,"contact", registrar_
-                , sponsoring_registrar_, authinfo_, logd_request_id_
-                , boost::bind(&Exception::set_unknown_sponsoring_registrar_handle,&update_contact_exception,_1)
-            ).exec(ctx);
+            try
+            {
+                history_id = Fred::UpdateObject(handle_,"contact", registrar_
+                    , sponsoring_registrar_, authinfo_, logd_request_id_
+                ).exec(ctx);
+            }
+            catch(const Fred::UpdateObject::Exception& ex)
+            {
+                if(ex.is_set_unknown_object_handle())
+                {
+                    update_contact_exception.set_unknown_contact_handle(
+                            ex.get_unknown_object_handle());
+                }
+
+                if(ex.is_set_unknown_object_type()) throw;//kind of internal error
+
+                if(ex.is_set_unknown_registrar_handle())
+                {
+                    update_contact_exception.set_unknown_registrar_handle(
+                            ex.get_unknown_registrar_handle());
+                }
+
+                if(ex.is_set_unknown_sponsoring_registrar_handle())
+                {
+                    update_contact_exception.set_unknown_sponsoring_registrar_handle(
+                            ex.get_unknown_sponsoring_registrar_handle());
+                }
+            }
 
             if(update_contact_exception.throw_me())
             {
                 BOOST_THROW_EXCEPTION(update_contact_exception);
             }
-
 
             //update contact
             {
