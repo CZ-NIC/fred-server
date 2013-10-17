@@ -31,7 +31,7 @@ namespace Admin
     class ContactVerificationTestNameSyntax: public ContactVerificationTest {
 
         public:
-            virtual std::string run(long _history_id) const;
+            virtual ContactVerificationTest::T_run_result run(long _history_id) const;
             virtual std::string get_name() const { return "name_syntax"; }
     };
 }

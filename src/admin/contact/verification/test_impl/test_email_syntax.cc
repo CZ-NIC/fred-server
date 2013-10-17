@@ -28,7 +28,7 @@
 #include "fredlib/contact/info_contact_data.h"
 
 namespace Admin {
-    std::string ContactVerificationTestEmailSyntax::run(long _history_id) const {
+    ContactVerificationTest::T_run_result ContactVerificationTestEmailSyntax::run(long _history_id) const {
         /* TODO this is only temporary hack before new version of InfoContactHistory is available
          * see ticket #9544
          */
@@ -40,9 +40,9 @@ namespace Admin {
                 static_cast<std::string>(contact_data.email),
                 EMAIL_PATTERN )
         ) {
-            return Fred::ContactTestStatus::OK;
+            return T_run_result(Fred::ContactTestStatus::OK, Optional<string>() );
         }
 
-        return Fred::ContactTestStatus::FAIL;
+        return T_run_result (Fred::ContactTestStatus::FAIL, string("invalid e-mail format") );
     }
 }

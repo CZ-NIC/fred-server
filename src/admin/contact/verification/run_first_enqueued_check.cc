@@ -72,7 +72,7 @@ namespace  Admin {
                 std::string test_name = lazy_get_locked_running_test(ctx_locked_test, check_handle);
 
                 try {
-                    test_result_status = _tests.at(test_name)->run(check_info.contact_history_id);
+                    test_result_status = _tests.at(test_name)->run(check_info.contact_history_id).first;
                     if( test_result_status == Fred::ContactTestStatus::ENQUEUED || test_result_status == Fred::ContactTestStatus::RUNNING ) {
                         throw Fred::InternalError("malfunction in implementation of test " + test_name + ", run() returned bad status");
                     }

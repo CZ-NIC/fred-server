@@ -38,7 +38,7 @@ namespace Admin
                 // first draft of pattern - see ticket #9588
                 : PHONE_PATTERN ("^\\+[0-9]{1,3}\\.[0-9]{1,14}$") {}
 
-            virtual std::string run(long _history_id) const;
+            virtual ContactVerificationTest::T_run_result run(long _history_id) const;
             virtual std::string get_name() const { return "phone_syntax"; }
     };
 }
