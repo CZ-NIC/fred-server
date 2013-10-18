@@ -62,7 +62,7 @@ namespace AdminTests {
                      )[0]["id"]
                 );
             }
-            std::string run(long _history_id) const { return return_status; }
+            ContactVerificationTest::T_run_result run(long _history_id) const { return std::make_pair(return_status, return_status); }
             std::string get_name() const { return name; }
     };
 
@@ -89,9 +89,8 @@ namespace AdminTests {
                 id_ = static_cast<long>(res[0]["id_"]);
             }
 
-            std::string run(long _history_id) const {
+            ContactVerificationTest::T_run_result run(long _history_id) const {
                 throw std::runtime_error("not exactly a feature");
-                return "SHOULD_HAVE_THROWN_AN_EXCEPTION";
             }
             std::string get_name() const { return name_; }
     };

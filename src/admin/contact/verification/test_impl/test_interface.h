@@ -25,16 +25,22 @@
 #define CONTACT_VERIFICATION_TEST_INTF_11637813419_
 
 #include <string>
+#include <sstream>
+#include "util/optional_value.h"
 
 namespace Admin
 {
+    using std::string;
+    using std::pair;
+
     class ContactVerificationTest {
         public:
+            typedef pair<string, Optional<string> > T_run_result;
             /**
              * @return final status of the test
              */
-            virtual std::string run(long _history_id) const = 0;
-            virtual std::string get_name() const = 0;
+            virtual T_run_result run(long _history_id) const = 0;
+            virtual string get_name() const = 0;
             virtual ~ContactVerificationTest() {};
     };
 }

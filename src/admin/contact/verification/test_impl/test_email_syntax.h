@@ -53,7 +53,7 @@ namespace Admin
                 boost::regex::icase
             ) {}
 
-            virtual std::string run(long _history_id) const;
+            virtual ContactVerificationTest::T_run_result run(long _history_id) const;
             virtual std::string get_name() const { return "email_syntax"; }
     };
 }
