@@ -69,7 +69,7 @@
 
 //test-contact-verification.cc
 
-BOOST_AUTO_TEST_SUITE(TestContactVerification)
+BOOST_AUTO_TEST_SUITE(TestContactVerification_old)
 
 const std::string server_name = "test-contact-verification";
 
