@@ -92,7 +92,7 @@ T_testimpl_map create_dummy_automatic_testsuite() {
 
     Fred::OperationContext ctx;
     boost::shared_ptr<Admin::ContactVerificationTest> temp_ptr
-        (new AdminTests::DummyTestReturning(ctx, Check::OK));
+        (new AdminTests::DummyTestReturning(ctx, Test::OK));
 
     test_impls[temp_ptr->get_name()] = temp_ptr;
 
@@ -158,8 +158,6 @@ parameter of fill_automatic_check_queue must correctly affect number of newly en
  */
 BOOST_AUTO_TEST_CASE(test_Max_queue_lenght_parameter)
 {
-    clean_queue();
-
     create_dummy_automatic_testsuite();
     T_enq_ch enqueued;
 
@@ -184,8 +182,6 @@ BOOST_AUTO_TEST_CASE(test_Max_queue_lenght_parameter)
  */
 BOOST_AUTO_TEST_CASE(test_Try_fill_full_queue)
 {
-    clean_queue();
-
     create_dummy_automatic_testsuite();
 
     T_enq_ch enqueued;
@@ -200,8 +196,6 @@ BOOST_AUTO_TEST_CASE(test_Try_fill_full_queue)
     enqueued = Admin::fill_automatic_check_queue(101);
     BOOST_CHECK_EQUAL(get_queue_length(), 101);
     BOOST_CHECK_EQUAL(enqueued.size(), 0);
-
-    AdminTests::delete_all_checks_etc();
 }
 
 /**
@@ -266,7 +260,6 @@ BOOST_AUTO_TEST_CASE(test_Enqueueing_never_checked_contacts)
         }
     };
 
-    AdminTests::delete_all_checks_etc();
     setup_already_checked_contacts(50);
 
     // make set of new, never checked contacts
@@ -305,8 +298,6 @@ BOOST_AUTO_TEST_CASE(test_Enqueueing_never_checked_contacts)
 
     enqueued_checks = Admin::fill_automatic_check_queue(50);
     BOOST_CHECK_EQUAL(enqueued_checks.size(), 0);
-
-    AdminTests::delete_all_checks_etc();
 }
 
 /**
@@ -317,9 +308,6 @@ BOOST_AUTO_TEST_CASE(test_Enqueueing_never_checked_contacts)
  */
 BOOST_AUTO_TEST_CASE(test_Enqueueing_already_checked_contacts)
 {
-    clean_queue();
-    AdminTests::delete_all_checks_etc();
-
     setup_already_checked_contacts(20);
 
     std::vector<std::string> handles;
@@ -353,9 +341,6 @@ BOOST_AUTO_TEST_CASE(test_Enqueueing_already_checked_contacts)
 
         ++it_checked;
     }
-
-    clean_queue();
-    AdminTests::delete_all_checks_etc();
 }
 
 BOOST_AUTO_TEST_SUITE_END();

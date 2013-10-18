@@ -147,6 +147,7 @@ namespace AdminTests {
         contact_garbage_collector()
             : already_run(false)
         {
+            delete_all_checks_etc();
             Fred::OperationContext ctx;
 
             Database::Result pre_existing_res = ctx.get_conn().exec(
@@ -181,6 +182,7 @@ namespace AdminTests {
             if(!already_run) {
                 clean();
             }
+            delete_all_checks_etc();
         }
     };
 }

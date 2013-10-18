@@ -197,8 +197,6 @@ BOOST_AUTO_TEST_CASE(test_Resulting_check_status)
 
     statuses = boost::assign::list_of(Test::FAIL)(Test::MANUAL)(Test::SKIPPED)(Test::FAIL)(Test::ERROR)(Test::OK);
     test_Resulting_check_status_impl(statuses, Check::TO_BE_DECIDED);
-
-    AdminTests::delete_all_checks_etc();
 }
 
 /**
@@ -261,8 +259,6 @@ BOOST_AUTO_TEST_CASE(test_Incorrect_test_return_handling)
 
         BOOST_CHECK_EQUAL(caught_the_right_exception, true);
     }
-
-    AdminTests::delete_all_checks_etc();
 }
 
 /**
@@ -308,8 +304,6 @@ BOOST_AUTO_TEST_CASE(test_Throwing_test_handling)
     BOOST_CHECK_EQUAL(final_check_state.tests.front().state_history.back().status_name, Test::ERROR);
 
     BOOST_CHECK_EQUAL(final_check_state.check_state_history.back().status_name, Check::TO_BE_DECIDED);
-
-    AdminTests::delete_all_checks_etc();
 }
 
 BOOST_AUTO_TEST_SUITE_END();
