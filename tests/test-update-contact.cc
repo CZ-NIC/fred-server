@@ -466,6 +466,7 @@ BOOST_FIXTURE_TEST_CASE(update_contact_by_handle_wrong_sponsoring_registrar, upd
         Fred::UpdateContactByHandle(test_contact_handle, registrar_handle)
             .set_sponsoring_registrar(bad_registrar_handle).exec(ctx);
         ctx.commit_transaction();
+        BOOST_ERROR("no exception thrown");
     }
     catch(const Fred::UpdateContactByHandle::Exception& ex)
     {

@@ -237,9 +237,13 @@ namespace Fred
                 &Exception::set_unknown_object_handle, &Exception::set_unknown_object_type);
 
             //check sponsoring registrar
-            unsigned long long sponsoring_registrar_id = Registrar::get_registrar_id_by_handle(
-                ctx, registrar_, &update_object_exception,
-                &Exception::set_unknown_sponsoring_registrar_handle);
+            unsigned long long sponsoring_registrar_id = 0;
+            if(sponsoring_registrar_.isset())
+            {
+                sponsoring_registrar_id = Registrar::get_registrar_id_by_handle(
+                    ctx, sponsoring_registrar_, &update_object_exception,
+                    &Exception::set_unknown_sponsoring_registrar_handle);
+            }
 
             //check exception
             if(update_object_exception.throw_me())
