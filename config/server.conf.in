@@ -78,6 +78,7 @@ session_timeout = 300
 session_registrar_max = 5
 # clear keyset when update domain command is changing nsset
 epp_update_domain_keyset_clear = true
+epp_operations_charging = @EPP_OPERATIONS_CHARGING@
 
 ##
 # ADIFD specific settings
@@ -117,11 +118,4 @@ demo_mode = false
 hostname = demo.contactverification.cz
 # demo_mode = true - uses constant PINs (do not use on production)
 demo_mode = false
-
-
-##
-# Registrars charging configuration
-##
-[registrars_charging]
-charging_of_epp_create_and_renew_domain_disabled = @REGISTRARS_CHARGING_DISABLED@
 

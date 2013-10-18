@@ -57,7 +57,6 @@
 #include "cfg/handle_rifd_args.h"
 #include "cfg/handle_contactverification_args.h"
 #include "cfg/handle_mojeid_args.h"
-#include "cfg/handle_registrars_charging_args.h"
 
 
 #endif // TESTSERVER_H_

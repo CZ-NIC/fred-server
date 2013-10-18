@@ -4,7 +4,6 @@
 
 #include "cfg/handle_registry_args.h"
 #include "cfg/handle_rifd_args.h"
-#include "cfg/handle_registrars_charging_args.h"
 #include "cfg/handle_corbanameservice_args.h"
 #include "mailer_manager.h"
 #include "corba/EPP.hh"

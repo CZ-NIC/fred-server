@@ -666,7 +666,7 @@ ccReg_EPP_i::ccReg_EPP_i(
     , unsigned rifd_session_timeout
     , unsigned rifd_session_registrar_max
     , bool rifd_epp_update_domain_keyset_clear
-    , bool charging_of_epp_create_and_renew_domain_disabled
+    , bool rifd_epp_operations_charging
 )
 
     : database(_db),
@@ -686,7 +686,7 @@ ccReg_EPP_i::ccReg_EPP_i(
     , rifd_session_timeout_(rifd_session_timeout)
     , rifd_session_registrar_max_(rifd_session_registrar_max)
     , rifd_epp_update_domain_keyset_clear_(rifd_epp_update_domain_keyset_clear)
-    , charging_of_epp_create_and_renew_domain_disabled_(charging_of_epp_create_and_renew_domain_disabled),
+    , rifd_epp_operations_charging_(rifd_epp_operations_charging),
 
     db_disconnect_guard_(),
     regMan(),
@@ -5433,7 +5433,7 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
 
                             }
 
-                            if(!charging_of_epp_create_and_renew_domain_disabled_)
+                            if(rifd_epp_operations_charging_)
                             {
                                 std::auto_ptr<Fred::Invoicing::Manager> invMan(
                                         Fred::Invoicing::Manager::create());
@@ -5692,7 +5692,7 @@ ccReg_EPP_i::DomainRenew(const char *fqdn, const char* curExpDate,
                         CORBA::string_free(exDate);
                         exDate = CORBA::string_dup(action.getDB()->GetDomainExDate(id) );
 
-                        if(!charging_of_epp_create_and_renew_domain_disabled_)
+                        if(rifd_epp_operations_charging_)
                         {
                             std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
                             if (invMan->chargeDomainRenew(zone, action.getRegistrar(),

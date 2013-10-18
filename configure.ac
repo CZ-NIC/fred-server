@@ -209,10 +209,10 @@ AC_ARG_WITH([hp_login_note], [AS_HELP_STRING([--with-hp_login_note],
 AS_AC_TEST_CORBA_PORTS()
 
 # charging registrars disabled configuration
-AC_ARG_WITH([registrars_charging_disabled], [AS_HELP_STRING([--with-registrars_charging_disabled],
-            [Registrars charging disabled [true]])],
-            [AC_SUBST([REGISTRARS_CHARGING_DISABLED], [$withval])],
-            [AC_SUBST([REGISTRARS_CHARGING_DISABLED], [true])])
+AC_ARG_WITH([epp_operations_charging], [AS_HELP_STRING([--with-epp-operations-charging],
+            [Turn on/off EPP operations charging [false]])],
+            [AC_SUBST([EPP_OPERATIONS_CHARGING], [$withval])],
+            [AC_SUBST([EPP_OPERATIONS_CHARGING], [false])])
 
 
 #expand paths for bindir, sbindir and datarootdir variable

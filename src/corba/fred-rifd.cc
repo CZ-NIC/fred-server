@@ -54,7 +54,6 @@
 #include "cfg/handle_registry_args.h"
 #include "cfg/handle_corbanameservice_args.h"
 #include "cfg/handle_rifd_args.h"
-#include "cfg/handle_registrars_charging_args.h"
 
 using namespace std;
 
@@ -71,7 +70,6 @@ boost::assign::list_of
     (HandleArgsPtr(new HandleCorbaNameServiceArgs))
     (HandleArgsPtr(new HandleRegistryArgs))
     (HandleArgsPtr(new HandleRifdArgs))
-    (HandleArgsPtr(new HandleRegistrarsChargingArgs))
     ;
 
 int main(int argc, char *argv[])
@@ -97,8 +95,6 @@ int main(int argc, char *argv[])
             ->get_handler_ptr_by_type<HandleRegistryArgs>();
         HandleRifdArgs* rifd_args_ptr = CfgArgs::instance()
             ->get_handler_ptr_by_type<HandleRifdArgs>();
-        HandleRegistrarsChargingArgs* registrars_charging_args_ptr = CfgArgs::instance()
-            ->get_handler_ptr_by_type<HandleRegistrarsChargingArgs>();
 
         std::auto_ptr<ccReg_EPP_i> myccReg_EPP_i ( new ccReg_EPP_i(
                     db_args_ptr->get_conn_info()
@@ -115,7 +111,7 @@ int main(int argc, char *argv[])
                     , rifd_args_ptr->rifd_session_timeout
                     , rifd_args_ptr->rifd_session_registrar_max
                     , rifd_args_ptr->rifd_epp_update_domain_keyset_clear
-                    , registrars_charging_args_ptr->charging_of_epp_create_and_renew_domain_disabled
+                    , rifd_args_ptr->rifd_epp_operations_charging
             ));
 
             // create session use values from config
