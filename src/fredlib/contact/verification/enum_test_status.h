@@ -34,6 +34,7 @@ namespace Fred
     {
         const std::string ENQUEUED      = "enqueued";
         const std::string RUNNING       = "running";
+        const std::string SKIPPED       = "skipped";
         const std::string ERROR         = "error";
         const std::string MANUAL        = "manual";
         const std::string OK            = "ok";
