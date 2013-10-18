@@ -236,21 +236,6 @@ namespace Fred
                 ctx,handle_,obj_type_,&update_object_exception,
                 &Exception::set_unknown_object_handle, &Exception::set_unknown_object_type);
 
-            //check sponsoring registrar
-            unsigned long long sponsoring_registrar_id = 0;
-            if(sponsoring_registrar_.isset())
-            {
-                sponsoring_registrar_id = Registrar::get_registrar_id_by_handle(
-                    ctx, sponsoring_registrar_, &update_object_exception,
-                    &Exception::set_unknown_sponsoring_registrar_handle);
-            }
-
-            //check exception
-            if(update_object_exception.throw_me())
-            {
-                BOOST_THROW_EXCEPTION(update_object_exception);
-            }
-
             Database::QueryParams params;//query params
             std::stringstream sql;
             params.push_back(registrar_id);
@@ -260,6 +245,10 @@ namespace Fred
 
             if(sponsoring_registrar_.isset())
             {
+                //check sponsoring registrar
+                unsigned long long sponsoring_registrar_id = Registrar::get_registrar_id_by_handle(
+                    ctx, sponsoring_registrar_, &update_object_exception,
+                    &Exception::set_unknown_sponsoring_registrar_handle);
                 params.push_back(sponsoring_registrar_id);
                 sql << " , clid = $" << params.size() << "::integer ";//set sponsoring registrar
             }
@@ -272,6 +261,12 @@ namespace Fred
 
             params.push_back(object_id);
             sql <<" WHERE id = $" << params.size() << "::integer ";
+
+            //check exception
+            if(update_object_exception.throw_me())
+            {
+                BOOST_THROW_EXCEPTION(update_object_exception);
+            }
 
             ctx.get_conn().exec_params(sql.str(), params);
 

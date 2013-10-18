@@ -418,7 +418,7 @@ BOOST_FIXTURE_TEST_CASE(update_contact_by_handle_wrong_handle, update_contact_fi
         Fred::UpdateContactByHandle(bad_test_contact_handle, registrar_handle).exec(ctx);
         ctx.commit_transaction();
     }
-    catch(const Fred::UpdateContactByHandle::Exception& ex)
+    catch(const Fred::UpdateContactByHandle::ExceptionType& ex)
     {
         BOOST_CHECK(ex.is_set_unknown_contact_handle());
         BOOST_CHECK(static_cast<std::string>(ex.get_unknown_contact_handle()).compare(bad_test_contact_handle) == 0);
@@ -440,7 +440,7 @@ BOOST_FIXTURE_TEST_CASE(update_contact_by_handle_wrong_registrar, update_contact
         Fred::UpdateContactByHandle(test_contact_handle, bad_registrar_handle).exec(ctx);
         ctx.commit_transaction();
     }
-    catch(const Fred::UpdateContactByHandle::Exception& ex)
+    catch(const Fred::UpdateContactByHandle::ExceptionType& ex)
     {
         BOOST_CHECK(ex.is_set_unknown_registrar_handle());
         BOOST_CHECK(ex.get_unknown_registrar_handle().compare(bad_registrar_handle) == 0);
@@ -468,7 +468,7 @@ BOOST_FIXTURE_TEST_CASE(update_contact_by_handle_wrong_sponsoring_registrar, upd
         ctx.commit_transaction();
         BOOST_ERROR("no exception thrown");
     }
-    catch(const Fred::UpdateContactByHandle::Exception& ex)
+    catch(const Fred::UpdateContactByHandle::ExceptionType& ex)
     {
         BOOST_CHECK(ex.is_set_unknown_sponsoring_registrar_handle());
         BOOST_CHECK(ex.get_unknown_sponsoring_registrar_handle().compare(bad_registrar_handle) == 0);
@@ -496,7 +496,7 @@ BOOST_FIXTURE_TEST_CASE(update_contact_by_handle_wrong_ssntype, update_contact_f
         .exec(ctx);
         ctx.commit_transaction();
     }
-    catch(const Fred::UpdateContactByHandle::Exception& ex)
+    catch(const Fred::UpdateContactByHandle::ExceptionType& ex)
     {
         BOOST_CHECK(ex.is_set_unknown_ssntype());
         BOOST_CHECK(ex.get_unknown_ssntype().compare("bad-ssntype") == 0);
@@ -523,7 +523,7 @@ BOOST_FIXTURE_TEST_CASE(update_contact_by_handle_wrong_country, update_contact_f
         .exec(ctx);
         ctx.commit_transaction();
     }
-    catch(const Fred::UpdateContactByHandle::Exception& ex)
+    catch(const Fred::UpdateContactByHandle::ExceptionType& ex)
     {
         BOOST_CHECK(ex.is_set_unknown_country());
         BOOST_CHECK(ex.get_unknown_country().compare("bad-country") == 0);
