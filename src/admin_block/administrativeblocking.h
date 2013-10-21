@@ -136,6 +136,7 @@ namespace Registry
             void updateBlockDomainsId(
                 const IdlDomainIdList &_domain_list,
                 const Fred::StatusList &_status_list,
+                const Nullable< boost::gregorian::date > &_block_to_date,
                 const std::string &_reason,
                 unsigned long long _log_req_id);
 

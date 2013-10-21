@@ -553,12 +553,19 @@ namespace Registry
         void BlockingImpl::updateBlockDomainsId(
             const IdlDomainIdList &_domain_list,
             const Fred::StatusList &_status_list,
+            const Nullable< boost::gregorian::date > &_block_to_date,
             const std::string &_reason,
             unsigned long long _log_req_id)
         {
             EX_DOMAIN_ID_NOT_FOUND domain_id_not_found;
             EX_UNKNOWN_STATUS unknown_status;
             try {
+                boost::posix_time::ptime block_time_limit;
+                if (!_block_to_date.isnull()) {
+                    // block to date 12:00:00 https://admin.nic.cz/ticket/6314#comment:50
+                    block_time_limit = boost::posix_time::ptime(static_cast< boost::gregorian::date >(_block_to_date),
+                                                                boost::posix_time::time_duration(12, 0, 0));
+                }
                 Fred::OperationContext ctx;
                 for (IdlDomainIdList::const_iterator pDomainId = _domain_list.begin(); pDomainId != _domain_list.end(); ++pDomainId) {
                     const Fred::ObjectId object_id = *pDomainId;
@@ -567,6 +574,9 @@ namespace Registry
                         create_object_state_restore_request.exec(ctx);
                         Fred::PerformObjectStateRequest(object_id).exec(ctx);
                         Fred::CreateAdministrativeObjectBlockRequestId create_object_state_request(object_id, _status_list);
+                        if (!_block_to_date.isnull()) {
+                            create_object_state_request.set_valid_to(block_time_limit);
+                        }
                         create_object_state_request.set_reason(_reason);
                         create_object_state_request.exec(ctx);
                         Fred::PerformObjectStateRequest(object_id).exec(ctx);

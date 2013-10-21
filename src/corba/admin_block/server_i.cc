@@ -112,6 +112,7 @@ namespace Registry
             try {
                 bimpl_->updateBlockDomainsId(corba_unwrap_domain_id_list(domain_list),
                                              corba_unwrap_status_list(status_list),
+                                             corba_unwrap_nullable_date(block_to_date),
                                              reason,
                                              log_req_id);
             }

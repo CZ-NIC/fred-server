@@ -1641,7 +1641,8 @@ tools_logd_migration_migrate_log_LDADD = \
 #
 SERVER_TESTS = \
 		tests/test-server \
-		tests/test-exception
+		tests/test-exception \
+		tests/test-blocking
 
 
 # tests/test_server
@@ -1773,6 +1774,92 @@ tests_test_server_LDADD = \
 		$(BOOST_SYSTEM_LIB)
 #
 # tests/test_server
+
+
+# tests/test_blocking
+#
+tests_test_blocking_SOURCES = \
+		tests/test-server.cc \
+		tests/test-server.h \
+		src/corba/admin/filter_impl.cc \
+		src/corba/admin/filter_impl.h \
+		tests/tests-common.cc \
+		tests/tests-common.h \
+		src/corba/epp_corba_client_impl.cc \
+		src/corba/epp_corba_client_impl.h \
+		src/contact_verification/contact_verification_impl.cc \
+		src/contact_verification/contact_verification_impl.h \
+		src/fredlib/contact_verification/cancel_contact_verification.cc \
+		src/fredlib/contact_verification/cancel_contact_verification.h \
+		src/mojeid/mojeid_validators.cc \
+		src/mojeid/mojeid_validators.h \
+		src/mojeid/request.h \
+		src/mojeid/mojeid_contact_transfer_request_impl.h \
+		src/mojeid/mojeid_contact_transfer_request_impl.cc \
+		src/mojeid/public_request_verification_impl.cc \
+		src/mojeid/public_request_verification_impl.h \
+		src/mojeid/mojeid.cc \
+		src/mojeid/mojeid.h \
+		src/mojeid/mojeid_notifier.cc \
+		src/mojeid/mojeid_notifier.h \
+		tests/checks.h \
+		tests/test-copy-contact.cc
+#		tests/test-create-object-state-request-id.cc
+
+tests_test_blocking_LDFLAGS = \
+		$(POSTGRESQL_LDFLAGS) \
+		$(BOOST_LDFLAGS) \
+		$(AM_LDFLAGS)
+
+tests_test_blocking_LDADD = \
+		src/fredlib/notifier/libnotifier.a \
+		src/fredlib/contact_verification/libcontact_verification.a \
+		src/corba/admin/libadmin_impl.a \
+		src/corba/epp/libepp_impl.a \
+		src/corba/libcorba.a \
+		src/corba/whois/libwhois_impl.a \
+		src/fredlib/public_request/libpublic_request.a \
+		src/fredlib/libfred.a \
+		src/fredlib/messages/libmessages.a \
+		src/model/libmodel.a \
+		util/db/libdb.a \
+		util/types/libtypes.a \
+		src/old_utils/liboldutils.a \
+		src/fredlib/requests/librequests.a \
+		src/fredlib/banking/libbanking.a \
+		util/log/liblog.a \
+		util/libutil.a \
+		src/corba/libcorbamessages.a \
+		src/corba/libcorbamessages.a \
+		src/corba/libcorbamojeid.a \
+		src/corba/libcorbazone.a \
+		src/corba/libfilemanager.a \
+		src/corba/libmailer.a \
+		src/corba/libcorbazonegenerator.a \
+		src/corba/libcorbaadministrativeblocking.a \
+		src/corba/libcorbaepp.a \
+		src/corba/libcorbatechcheck.a \
+		src/corba/libcorbalogger.a \
+		src/corba/libcorbaadmin.a \
+		src/corba/libcorbawhois.a \
+		src/corba/libcorbaregistry.a \
+		src/corba/libcorbafilters.a \
+		src/corba/libcorbadatatypes.a \
+		src/corba/libmailer.a \
+		-lmpdec -lm \
+		$(BOOST_PROGRAM_OPTIONS_LIB) \
+		$(BOOST_DATE_TIME_LIB) \
+		$(BOOST_REGEX_LIB) \
+		$(OMNIORB4_LIBS) \
+		$(LIBIDN_CFLAGS) \
+		$(LIBIDN_LIBS) \
+		$(BOOST_THREAD_LIB) \
+		$(BOOST_SERIALIZATION_LIB) \
+		$(XML2_LIBS) \
+		$(POSTGRESQL_LIB) \
+		$(BOOST_SYSTEM_LIB)
+#
+# tests/test_blocking
 
 
 # non-corba tests with overloaded global operator new

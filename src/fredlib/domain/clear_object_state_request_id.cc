@@ -59,7 +59,9 @@ namespace Fred
         Database::Result status_result = _ctx.get_conn().exec_params(
             "SELECT id "
             "FROM enum_object_states "
-            "WHERE $1::integer=ANY(types)",
+            "WHERE $1::bigint=ANY(types) AND "
+                  "manual AND "
+                  "name LIKE 'server%'",
             Database::query_param_list(object_type));
         MultipleObjectStateId status_all;
         for (Database::Result::Iterator pRow = status_result.begin(); pRow != status_result.end(); ++pRow) {
@@ -75,10 +77,16 @@ namespace Fred
             "UPDATE object_state_request "
             "SET canceled=CURRENT_TIMESTAMP "
             "WHERE canceled is NULL AND "
-                  "object_id=$1::integer AND "
+                  "object_id=$1::bigint AND "
                   "valid_from<=CURRENT_TIMESTAMP AND "
                   "(valid_to IS NULL OR "
-                   "CURRENT_TIMESTAMP<valid_to) "
+                   "CURRENT_TIMESTAMP<valid_to) AND "
+                  "(SELECT 0 "
+                   "FROM enum_object_states eos "
+                   "WHERE eos.id=state_id AND "
+                         "eos.manual AND "
+                         "eos.name LIKE 'server%' "
+                   "LIMIT 1) IS NOT NULL "
             "RETURNING id", param);
         Requests result;
         if (0 < cmd_result.size()) {

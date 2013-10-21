@@ -26,6 +26,7 @@
 #include "fredlib/domain/get_object_state_id_map.h"
 #include "fredlib/contact/info_contact.h"
 #include "fredlib/contact/create_contact.h"
+#include "fredlib/object/object.h"
 #include "fredlib/opcontext.h"
 #include "fredlib/db_settings.h"
 #include "util/optional_value.h"
@@ -76,18 +77,36 @@ namespace Fred
 
     ObjectId CopyContact::exec(OperationContext &_ctx)
     {
-        Database::Result src_registrar_res = _ctx.get_conn().exec_params(
-            "SELECT r.handle "
-            "FROM object_registry obr "
-            "JOIN registrar r ON r.id=obr.crid "
-            "WHERE obr.type=$1::integer AND obr.name=UPPER($2::text) AND obr.erdate IS NULL",
+        Database::Result check_args_res = _ctx.get_conn().exec_params(
+            "SELECT "
+                   "(SELECT 1 " // src_contact_handle exist ? 1 : NULL
+                    "FROM object_registry "
+                    "WHERE type=$1::integer AND name=UPPER($2::text) AND erdate IS NULL),"
+                   "(SELECT 1 " // dst_contact_handle exist ? 1 : NULL
+                    "FROM object_registry "
+                    "WHERE type=$1::integer AND name=UPPER($3::text) AND erdate IS NULL),"
+                   "(SELECT 1 " // dst_registrar_handle exist ? 1 : NULL
+                    "FROM registrar "
+                    "WHERE handle=UPPER($4::text))",
             Database::query_param_list
-                (OBJECT_TYPE_ID_CONTACT)(src_contact_handle_));
-        if (src_registrar_res.size() != 1) {
-            BOOST_THROW_EXCEPTION(Exception().set_src_contact_handle_not_found(src_contact_handle_));
+                (OBJECT_TYPE_ID_CONTACT)(src_contact_handle_)(dst_contact_handle_)(dst_registrar_handle_));
+        if (check_args_res.size() == 1) {
+            Exception ex;
+            if (check_args_res[0][0].isnull()) {
+                ex.set_src_contact_handle_not_found(src_contact_handle_);
+            }
+            if (!check_args_res[0][1].isnull()) {
+                ex.set_dst_contact_handle_already_exist(dst_contact_handle_);
+            }
+            if (check_args_res[0][2].isnull()) {
+                ex.set_create_contact_failed(std::string("dst_registrar_handle ") + dst_registrar_handle_.get_value() + " doesn't exist");
+            }
+            if (ex.throw_me()) {
+                BOOST_THROW_EXCEPTION(ex);
+            }
         }
-        const std::string src_registrar_handle = src_registrar_res[0][0];
-        Fred::InfoContact info_contact(src_contact_handle_, src_registrar_handle);
+
+        Fred::InfoContact info_contact(src_contact_handle_, dst_registrar_handle_);
         Fred::InfoContactOutput old_contact = info_contact.exec(_ctx);
         Fred::CreateContact create_contact(dst_contact_handle_, dst_registrar_handle_,
           to_optional(old_contact.info_contact_data.authinfopw),
@@ -117,7 +136,12 @@ namespace Fred
           to_optional(old_contact.info_contact_data.discloseident),
           to_optional(old_contact.info_contact_data.disclosenotifyemail),
           to_optional(request_id_));
-        create_contact.exec(_ctx);
+        try {
+            create_contact.exec(_ctx);
+        }
+        catch (const Fred::CreateObject::Exception &e) {
+            BOOST_THROW_EXCEPTION(Exception().set_dst_contact_handle_already_exist(dst_contact_handle_));
+        }
         Database::Result dst_contact_id_res = _ctx.get_conn().exec_params(
             "SELECT id "
             "FROM object_registry "
