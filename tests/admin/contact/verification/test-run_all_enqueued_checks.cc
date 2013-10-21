@@ -31,6 +31,8 @@
 #include <boost/foreach.hpp>
 
 #include "tests/admin/contact/verification/setup_utils.h"
+#include "tests/fredlib/contact/verification/setup_utils.h"
+
 
 //not using UTF defined main
 #define BOOST_TEST_NO_MAIN
@@ -92,7 +94,7 @@ namespace Test = Fred::ContactTestStatus;
 namespace Check = Fred::ContactCheckStatus;
 
 BOOST_AUTO_TEST_SUITE(TestContactVerification)
-BOOST_FIXTURE_TEST_SUITE(TestRunEnqueuedChecks, AdminTests::contact_garbage_collector)
+BOOST_FIXTURE_TEST_SUITE(TestRunEnqueuedChecks, autoclean_contact_verification_db)
 
 const std::string server_name = "test-contact_verification_integration-run_all_enqueued_checks";
 

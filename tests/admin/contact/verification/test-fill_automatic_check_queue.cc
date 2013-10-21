@@ -147,7 +147,7 @@ struct setup_already_checked_contacts {
 };
 
 BOOST_AUTO_TEST_SUITE(TestContactVerification)
-BOOST_FIXTURE_TEST_SUITE(TestFillAutomaticQueue, AdminTests::contact_garbage_collector)
+BOOST_FIXTURE_TEST_SUITE(TestFillAutomaticQueue, autoclean_contact_verification_db)
 
 const std::string server_name = "test-contact_verification_integration-fill_automatic_check_queue";
 
