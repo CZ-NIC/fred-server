@@ -41,19 +41,4 @@ namespace AdminTests {
             throw std::exception();
         }
     }
-
-    void delete_all_checks_etc() {
-        Fred::OperationContext ctx;
-        ctx.get_conn().exec("DELETE FROM contact_test_result_history;");
-        ctx.get_conn().exec("DELETE FROM contact_check_history;");
-        ctx.get_conn().exec("DELETE FROM contact_test_result;");
-        ctx.get_conn().exec("DELETE FROM contact_check;");
-        ctx.get_conn().exec("DELETE FROM contact_testsuite_map;");
-        ctx.get_conn().exec("DELETE FROM enum_contact_test;");
-        ctx.get_conn().exec("DELETE FROM enum_contact_testsuite "
-                            "   WHERE name != '"+ Fred::TestsuiteName::AUTOMATIC+"' "
-                            "   AND name != '"+ Fred::TestsuiteName::MANUAL+"';");
-
-        ctx.commit_transaction();
-    }
 }

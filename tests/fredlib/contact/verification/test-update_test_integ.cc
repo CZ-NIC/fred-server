@@ -54,7 +54,7 @@
 #include "util/random_data_generator.h"
 
 BOOST_AUTO_TEST_SUITE(TestContactVerification)
-BOOST_AUTO_TEST_SUITE(TestUpdateContactTest_integ)
+BOOST_FIXTURE_TEST_SUITE(TestUpdateContactTest_integ, autoclean_contact_verification_db)
 
 const std::string server_name = "test-contact_verification-update_test_integ";
 

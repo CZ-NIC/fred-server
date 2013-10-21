@@ -45,7 +45,7 @@
 #include "boost/date_time/local_time_adjustor.hpp"
 
 BOOST_AUTO_TEST_SUITE(TestContactVerification)
-BOOST_AUTO_TEST_SUITE(TestCreateContactCheck_integ)
+BOOST_FIXTURE_TEST_SUITE(TestCreateContactCheck_integ, autoclean_contact_verification_db)
 
 const std::string server_name = "test-contact_verification-create_check_integ";
 
@@ -55,8 +55,10 @@ const std::string server_name = "test-contact_verification-create_check_integ";
  @pre valid testsuite name including one existing test
  @post correct values present in InfoContactCheckOutput::to_string()
  */
-BOOST_FIXTURE_TEST_CASE(test_Exec_mandatory_setup, fixture_has_ctx)
+BOOST_AUTO_TEST_CASE(test_Exec_mandatory_setup)
 {
+    Fred::OperationContext ctx;
+
     setup_contact contact(ctx);
     setup_testsuite testsuite(ctx);
 
@@ -176,8 +178,10 @@ BOOST_FIXTURE_TEST_CASE(test_Exec_mandatory_setup, fixture_has_ctx)
  @pre valid testsuite name including one existing test
  @post correct values present in InfoContactCheckOutput::to_string()
  */
-BOOST_FIXTURE_TEST_CASE(test_Exec_optional_setup, fixture_has_ctx)
+BOOST_AUTO_TEST_CASE(test_Exec_optional_setup)
 {
+    Fred::OperationContext ctx;
+
     setup_contact contact(ctx);
     setup_testsuite testsuite(ctx);
     setup_logd_request_id logd_request;
@@ -298,8 +302,10 @@ BOOST_FIXTURE_TEST_CASE(test_Exec_optional_setup, fixture_has_ctx)
  @pre valid testsuite name
  @post Fred::CreateContactCheck::ExceptionUnknownContactHandle
 */
-BOOST_FIXTURE_TEST_CASE(test_Exec_nonexistent_contact_handle, fixture_has_ctx)
+BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_contact_handle)
 {
+    Fred::OperationContext ctx;
+
     setup_nonexistent_contact_handle contact(ctx);
     setup_testsuite testsuite(ctx);
 
@@ -326,8 +332,10 @@ BOOST_FIXTURE_TEST_CASE(test_Exec_nonexistent_contact_handle, fixture_has_ctx)
  @pre nonexistent testsuite name
  @post Fred::CreateContactCheck::ExceptionUnknownTestsuiteName
  */
-BOOST_FIXTURE_TEST_CASE(test_Exec_nonexistent_testsuite_name, fixture_has_ctx)
+BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_testsuite_name)
 {
+    Fred::OperationContext ctx;
+
     setup_contact contact(ctx);
     setup_nonexistent_testsuite_name testsuite(ctx);
 
@@ -354,8 +362,10 @@ BOOST_FIXTURE_TEST_CASE(test_Exec_nonexistent_testsuite_name, fixture_has_ctx)
  @pre name of a testsuite containing no tests
  @post Fred::CreateContactCheck::ExceptionEmptyTestsuite
  */
-BOOST_FIXTURE_TEST_CASE(test_Exec_empty_testsuite_name, fixture_has_ctx)
+BOOST_AUTO_TEST_CASE(test_Exec_empty_testsuite_name)
 {
+    Fred::OperationContext ctx;
+
     setup_contact contact(ctx);
     setup_empty_testsuite testsuite(ctx);
 

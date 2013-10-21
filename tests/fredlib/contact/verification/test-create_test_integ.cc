@@ -46,7 +46,7 @@
 #include "boost/date_time/local_time_adjustor.hpp"
 
 BOOST_AUTO_TEST_SUITE(TestContactVerification)
-BOOST_AUTO_TEST_SUITE(TestCreateContactTest_integ)
+BOOST_FIXTURE_TEST_SUITE(TestCreateContactTest_integ, autoclean_contact_verification_db)
 
 const std::string server_name = "test-contact_verification-create_test_integ";
 
@@ -56,8 +56,10 @@ const std::string server_name = "test-contact_verification-create_test_integ";
  @pre existing test name in testsuite of given check
  @post correct values present in InfoContactCheckOutput::to_string()
  */
-BOOST_FIXTURE_TEST_CASE(test_Exec_mandatory_setup, fixture_has_ctx)
+BOOST_AUTO_TEST_CASE(test_Exec_mandatory_setup)
 {
+    Fred::OperationContext ctx;
+
     setup_check check(ctx);
     setup_testdef testdef(ctx);
     setup_testdef_in_testsuite_of_check(ctx, testdef.testdef_name_, check.check_handle_);
@@ -135,8 +137,10 @@ BOOST_FIXTURE_TEST_CASE(test_Exec_mandatory_setup, fixture_has_ctx)
  @pre existing test name in testsuite of given check
  @post correct values present in InfoContactCheckOutput::to_string()
  */
-BOOST_FIXTURE_TEST_CASE(test_Exec_optional_setup, fixture_has_ctx)
+BOOST_AUTO_TEST_CASE(test_Exec_optional_setup)
 {
+    Fred::OperationContext ctx;
+
     setup_check check(ctx);
     setup_testdef testdef(ctx);
     setup_testdef_in_testsuite_of_check(ctx, testdef.testdef_name_, check.check_handle_);
@@ -215,8 +219,10 @@ BOOST_FIXTURE_TEST_CASE(test_Exec_optional_setup, fixture_has_ctx)
  @pre existing test name
  @post ExceptionUnknownCheckHandle
 */
-BOOST_FIXTURE_TEST_CASE(test_Exec_nonexistent_check_handle, fixture_has_ctx)
+BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_check_handle)
 {
+    Fred::OperationContext ctx;
+
     setup_nonexistent_check_handle check(ctx);
     setup_testdef testdef(ctx);
 
@@ -242,8 +248,10 @@ BOOST_FIXTURE_TEST_CASE(test_Exec_nonexistent_check_handle, fixture_has_ctx)
  @pre nonexistent test name
  @post ExceptionUnknownTestName
  */
-BOOST_FIXTURE_TEST_CASE(test_Exec_nonexistent_test_name, fixture_has_ctx)
+BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_test_name)
 {
+    Fred::OperationContext ctx;
+
     setup_check check(ctx);
     setup_nonexistent_testdef_name testdef(ctx);
 
@@ -269,8 +277,10 @@ BOOST_FIXTURE_TEST_CASE(test_Exec_nonexistent_test_name, fixture_has_ctx)
  @pre test name not in testsuite of this check
  @post ExceptionUnknownTestName
  */
-BOOST_FIXTURE_TEST_CASE(test_Exec_test_name_not_in_suite, fixture_has_ctx)
+BOOST_AUTO_TEST_CASE(test_Exec_test_name_not_in_suite)
 {
+    Fred::OperationContext ctx;
+
     setup_check check(ctx);
     setup_testdef testdef(ctx);
     // deliberately OMITTING setup_testdef_in_testsuite_of_check(...)
@@ -298,8 +308,10 @@ BOOST_FIXTURE_TEST_CASE(test_Exec_test_name_not_in_suite, fixture_has_ctx)
  @pre already existing record related to given check and test
  @post ExceptionCheckTestPairAlreadyExists
  */
-BOOST_FIXTURE_TEST_CASE(test_Exec_violating_unique_check_test_pair, fixture_has_ctx)
+BOOST_AUTO_TEST_CASE(test_Exec_violating_unique_check_test_pair)
 {
+    Fred::OperationContext ctx;
+
     setup_check check(ctx);
     setup_testdef testdef(ctx);
     setup_testdef_in_testsuite_of_check(ctx, testdef.testdef_name_, check.check_handle_);

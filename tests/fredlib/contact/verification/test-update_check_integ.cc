@@ -50,7 +50,7 @@
 #include "util/random_data_generator.h"
 
 BOOST_AUTO_TEST_SUITE(TestContactVerification)
-BOOST_AUTO_TEST_SUITE(TestUpdateContactCheck_integ)
+BOOST_FIXTURE_TEST_SUITE(TestUpdateContactCheck_integ, autoclean_contact_verification_db)
 
 const std::string server_name = "test-contact_verification-update_check_integ";
 
@@ -276,8 +276,10 @@ void check(const InfoContactCheckOutput& data_pre_update, const InfoContactCheck
  @post correct values present in InfoContactCheck output
  @post no change in history values in InfoContactCheck output
  */
-BOOST_FIXTURE_TEST_CASE(test_Update_statusX_logd_request1_to_statusX_logd_request1, fixture_has_ctx)
+BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_request1_to_statusX_logd_request1)
 {
+    Fred::OperationContext ctx;
+
     setup_check_status status(ctx);
 
     Optional<long long> logd_request_id1 = RandomDataGenerator().xuint();
@@ -303,8 +305,10 @@ BOOST_FIXTURE_TEST_CASE(test_Update_statusX_logd_request1_to_statusX_logd_reques
  @post correct values present in InfoContactCheck output
  @post correct new record in history in InfoContactCheck output
  */
-BOOST_FIXTURE_TEST_CASE(test_Update_statusX_logd_request1_to_statusY_logd_request1, fixture_has_ctx)
+BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_request1_to_statusY_logd_request1)
 {
+    Fred::OperationContext ctx;
+
     setup_check_status status1(ctx);
     setup_check_status status2(ctx);
 
@@ -330,8 +334,10 @@ BOOST_FIXTURE_TEST_CASE(test_Update_statusX_logd_request1_to_statusY_logd_reques
  @post correct values present in InfoContactCheck output
  @post correct new record in history in InfoContactCheck output
  */
-BOOST_FIXTURE_TEST_CASE(test_Update_statusX_logd_request1_to_statusX_logd_requestNULL, fixture_has_ctx)
+BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_request1_to_statusX_logd_requestNULL)
 {
+    Fred::OperationContext ctx;
+
     setup_check_status status(ctx);
 
     Optional<long long> logd_request_id1 = RandomDataGenerator().xuint();
@@ -356,8 +362,10 @@ BOOST_FIXTURE_TEST_CASE(test_Update_statusX_logd_request1_to_statusX_logd_reques
  @post correct values present in InfoContactCheck output
  @post correct new record in history in InfoContactCheck output
  */
-BOOST_FIXTURE_TEST_CASE(test_Update_statusX_logd_request1_to_statusY_logd_requestNULL, fixture_has_ctx)
+BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_request1_to_statusY_logd_requestNULL)
 {
+    Fred::OperationContext ctx;
+
     setup_check_status status1(ctx);
     setup_check_status status2(ctx);
 
@@ -383,8 +391,10 @@ BOOST_FIXTURE_TEST_CASE(test_Update_statusX_logd_request1_to_statusY_logd_reques
  @post correct values present in InfoContactCheck output
  @post no change in history values in InfoContactCheck output
  */
-BOOST_FIXTURE_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusX_logd_request1, fixture_has_ctx)
+BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusX_logd_request1)
 {
+    Fred::OperationContext ctx;
+
     setup_check_status status(ctx);
 
     Optional<long long> logd_request_id1 = RandomDataGenerator().xuint();
@@ -411,8 +421,10 @@ BOOST_FIXTURE_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusX_logd_req
  @post correct values present in InfoContactCheck output
  @post correct new record in history in InfoContactCheck output
  */
-BOOST_FIXTURE_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusY_logd_request1, fixture_has_ctx)
+BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusY_logd_request1)
 {
+    Fred::OperationContext ctx;
+
     setup_check_status status1(ctx);
     setup_check_status status2(ctx);
 
@@ -438,8 +450,10 @@ BOOST_FIXTURE_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusY_logd_req
  @post correct values present in InfoContactCheck output
  @post no change in history in InfoContactCheck output
  */
-BOOST_FIXTURE_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusX_logd_requestNULL, fixture_has_ctx)
+BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusX_logd_requestNULL)
 {
+    Fred::OperationContext ctx;
+
     setup_check_status status(ctx);
     Optional<long long> logd_request_id1 = RandomDataGenerator().xuint();
 
@@ -462,8 +476,10 @@ BOOST_FIXTURE_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusX_logd_req
  @post correct values present in InfoContactCheck output
  @post correct new record in history in InfoContactCheck output
  */
-BOOST_FIXTURE_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusY_logd_requestNULL, fixture_has_ctx)
+BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusY_logd_requestNULL)
 {
+    Fred::OperationContext ctx;
+
     setup_check_status status1(ctx);
     setup_check_status status2(ctx);
     Optional<long long> logd_request_id1 = RandomDataGenerator().xuint();
@@ -487,8 +503,10 @@ BOOST_FIXTURE_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusY_logd_req
  @pre existing status name
  @post ExceptionUnknownCheckHandle
  */
-BOOST_FIXTURE_TEST_CASE(test_Exec_nonexistent_check_handle, fixture_has_ctx)
+BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_check_handle)
 {
+    Fred::OperationContext ctx;
+
     setup_nonexistent_check_handle handle(ctx);
     setup_check_status status(ctx);
 
@@ -514,8 +532,10 @@ BOOST_FIXTURE_TEST_CASE(test_Exec_nonexistent_check_handle, fixture_has_ctx)
  @pre nonexistent status name
  @post ExceptionUnknownStatusName
  */
-BOOST_FIXTURE_TEST_CASE(test_Exec_nonexistent_status_name, fixture_has_ctx)
+BOOST_FIXTURE_TEST_CASE(test_Exec_nonexistent_status_name, autoclean_contact_verification_db)
 {
+    Fred::OperationContext ctx;
+
     setup_check check(ctx);
     setup_nonexistent_check_status_name nonexistent_status(ctx);
 

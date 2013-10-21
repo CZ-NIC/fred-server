@@ -3,10 +3,8 @@
 
 #include "fredlib/contact/verification/create_check.h"
 #include "fredlib/contact/verification/create_test.h"
-
-struct fixture_has_ctx {
-    Fred::OperationContext ctx;
-};
+#include "fredlib/contact/verification/enum_testsuite_name.h"
+#include "fredlib/contact/delete_contact.h"
 
 struct setup_get_registrar_handle
 {
@@ -344,6 +342,58 @@ struct setup_nonexistent_test_status_name {
                 "   FROM enum_contact_test_status "
                 "   WHERE name='"+status_name_+"';" );
         } while(res.size() != 0);
+    }
+};
+
+struct autoclean_contact_verification_db {
+    std::vector<std::string> handles_to_preserve_;
+
+    autoclean_contact_verification_db() {
+        Fred::OperationContext ctx;
+
+        Database::Result pre_existing_res = ctx.get_conn().exec(
+            "SELECT o_r.name AS contact_handle_ "
+            "   FROM object_registry AS o_r "
+            "       JOIN contact USING(id)");
+
+        for(Database::Result::Iterator it = pre_existing_res.begin(); it != pre_existing_res.end(); ++it) {
+            handles_to_preserve_.push_back( static_cast<std::string>( (*it)["contact_handle_"] ) );
+        }
+
+        clean();
+    }
+
+    void clean() {
+        Fred::OperationContext ctx;
+
+        Database::Result to_delete_res = ctx.get_conn().exec(
+            "SELECT o_r.name AS contact_handle_ "
+            "   FROM object_registry AS o_r "
+            "       JOIN contact USING(id)"
+            "   WHERE o_r.name "
+            "       NOT IN ('" + boost::algorithm::join(handles_to_preserve_, "', '")+ "'); ");
+
+        for(Database::Result::Iterator it = to_delete_res.begin(); it != to_delete_res.end(); ++it) {
+            Fred::DeleteContact(static_cast<std::string>( (*it)["contact_handle_"] )).exec(ctx);
+        }
+
+        ctx.get_conn().exec("DELETE FROM contact_test_result_history;");
+        ctx.get_conn().exec("DELETE FROM contact_check_history;");
+        ctx.get_conn().exec("DELETE FROM contact_test_result;");
+        ctx.get_conn().exec("DELETE FROM contact_check;");
+        ctx.get_conn().exec("DELETE FROM contact_testsuite_map;");
+        ctx.get_conn().exec("DELETE FROM enum_contact_test;");
+        ctx.get_conn().exec("DELETE FROM enum_contact_testsuite "
+                            "   WHERE name != '"+ Fred::TestsuiteName::AUTOMATIC+"' "
+                            "   AND name != '"+ Fred::TestsuiteName::MANUAL+"';");
+        ctx.get_conn().exec("DELETE FROM enum_contact_test_status WHERE id > 7;");
+        ctx.get_conn().exec("DELETE FROM enum_contact_check_status WHERE id > 6;");
+
+        ctx.commit_transaction();
+    }
+
+    ~autoclean_contact_verification_db() {
+        clean();
     }
 };
 

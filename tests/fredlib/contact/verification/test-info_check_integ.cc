@@ -54,7 +54,7 @@
 #include "util/random_data_generator.h"
 
 BOOST_AUTO_TEST_SUITE(TestContactVerification)
-BOOST_AUTO_TEST_SUITE(TestInfoContactCheck_integ)
+BOOST_FIXTURE_TEST_SUITE(TestInfoContactCheck_integ, autoclean_contact_verification_db)
 
 const std::string server_name = "test-contact_verification-info_check_integ";
 
@@ -63,11 +63,13 @@ const std::string server_name = "test-contact_verification-info_check_integ";
  @pre existing check handle with some tests and history
  @post correct data in InfoContactCheckOutput
  */
-BOOST_FIXTURE_TEST_CASE(test_Exec, fixture_has_ctx)
+BOOST_AUTO_TEST_CASE(test_Exec)
 {
     using std::map;
     using std::vector;
     using std::string;
+
+    Fred::OperationContext ctx;
 
     setup_check check(ctx);
 
@@ -249,8 +251,10 @@ BOOST_FIXTURE_TEST_CASE(test_Exec, fixture_has_ctx)
  @pre nonexistent check handle
  @post ExceptionUnknownCheckHandle
  */
-BOOST_FIXTURE_TEST_CASE(test_Exec_nonexistent_check_handle, fixture_has_ctx)
+BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_check_handle)
 {
+    Fred::OperationContext ctx;
+
     setup_nonexistent_check_handle handle(ctx);
 
     Fred::InfoContactCheck dummy(handle.check_handle);
