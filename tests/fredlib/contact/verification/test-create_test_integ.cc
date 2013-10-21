@@ -60,9 +60,9 @@ BOOST_AUTO_TEST_CASE(test_Exec_mandatory_setup)
 {
     Fred::OperationContext ctx;
 
-    setup_check check(ctx);
-    setup_testdef testdef(ctx);
-    setup_testdef_in_testsuite_of_check(ctx, testdef.testdef_name_, check.check_handle_);
+    setup_check check;
+    setup_testdef testdef;
+    setup_testdef_in_testsuite_of_check(testdef.testdef_name_, check.check_handle_);
 
     Fred::CreateContactTest create_test(check.check_handle_, testdef.testdef_name_);
     std::string timezone = "UTC";
@@ -141,9 +141,9 @@ BOOST_AUTO_TEST_CASE(test_Exec_optional_setup)
 {
     Fred::OperationContext ctx;
 
-    setup_check check(ctx);
-    setup_testdef testdef(ctx);
-    setup_testdef_in_testsuite_of_check(ctx, testdef.testdef_name_, check.check_handle_);
+    setup_check check;
+    setup_testdef testdef;
+    setup_testdef_in_testsuite_of_check(testdef.testdef_name_, check.check_handle_);
     setup_logd_request_id logd_request;
 
     Fred::CreateContactTest create_test(check.check_handle_, testdef.testdef_name_, logd_request.logd_request_id);
@@ -223,8 +223,8 @@ BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_check_handle)
 {
     Fred::OperationContext ctx;
 
-    setup_nonexistent_check_handle check(ctx);
-    setup_testdef testdef(ctx);
+    setup_nonexistent_check_handle check;
+    setup_testdef testdef;
 
     Fred::CreateContactTest create_test(check.check_handle, testdef.testdef_name_);
 
@@ -252,8 +252,8 @@ BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_test_name)
 {
     Fred::OperationContext ctx;
 
-    setup_check check(ctx);
-    setup_nonexistent_testdef_name testdef(ctx);
+    setup_check check;
+    setup_nonexistent_testdef_name testdef;
 
     Fred::CreateContactTest create_test(check.check_handle_, testdef.testdef_name);
 
@@ -281,8 +281,8 @@ BOOST_AUTO_TEST_CASE(test_Exec_test_name_not_in_suite)
 {
     Fred::OperationContext ctx;
 
-    setup_check check(ctx);
-    setup_testdef testdef(ctx);
+    setup_check check;
+    setup_testdef testdef;
     // deliberately OMITTING setup_testdef_in_testsuite_of_check(...)
 
     Fred::CreateContactTest create_test(check.check_handle_, testdef.testdef_name_);
@@ -312,9 +312,9 @@ BOOST_AUTO_TEST_CASE(test_Exec_violating_unique_check_test_pair)
 {
     Fred::OperationContext ctx;
 
-    setup_check check(ctx);
-    setup_testdef testdef(ctx);
-    setup_testdef_in_testsuite_of_check(ctx, testdef.testdef_name_, check.check_handle_);
+    setup_check check;
+    setup_testdef testdef;
+    setup_testdef_in_testsuite_of_check(testdef.testdef_name_, check.check_handle_);
 
     Fred::CreateContactTest create_test(check.check_handle_, testdef.testdef_name_);
     // preparation - the original previously existing record

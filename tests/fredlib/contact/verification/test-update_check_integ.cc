@@ -72,13 +72,12 @@ struct setup_create_update_check : public setup_check {
     std::string timezone_;
 
     setup_create_update_check(
-        Fred::OperationContext& _ctx,
         const std::string& _new_status,
         Optional<long long> _old_logd_request,
         Optional<long long> _new_logd_request,
         const std::string& _timezone = "UTC"
     ) :
-        setup_check(_ctx, _old_logd_request),
+        setup_check(_old_logd_request),
         old_status_(Fred::ContactCheckStatus::ENQUEUED),
         new_status_(_new_status),
         old_logd_request_(_old_logd_request),
@@ -86,9 +85,9 @@ struct setup_create_update_check : public setup_check {
         timezone_(_timezone)
     {
         Fred::InfoContactCheck info_check(check_handle_);
-
+        Fred::OperationContext ctx;
         try {
-            data_pre_update_ = info_check.exec(_ctx, timezone_);
+            data_pre_update_ = info_check.exec(ctx, timezone_);
         } catch(const Fred::InternalError& exp) {
            BOOST_FAIL("non-existent check (1):" + boost::diagnostic_information(exp) + exp.what() );
         } catch(const boost::exception& exp) {
@@ -99,7 +98,7 @@ struct setup_create_update_check : public setup_check {
 
         Fred::UpdateContactCheck update(check_handle_, new_status_, new_logd_request_);
         try {
-            update.exec(_ctx);
+            update.exec(ctx);
         } catch(const Fred::InternalError& exp) {
             BOOST_FAIL("failed to update check (1):" + boost::diagnostic_information(exp) + exp.what() );
         } catch(const boost::exception& exp) {
@@ -109,7 +108,7 @@ struct setup_create_update_check : public setup_check {
         }
 
         try {
-            data_post_update_ = info_check.exec(_ctx, timezone_);
+            data_post_update_ = info_check.exec(ctx, timezone_);
         } catch(const Fred::InternalError& exp) {
             BOOST_FAIL("non-existent check (1):" + boost::diagnostic_information(exp) + exp.what() );
         } catch(const boost::exception& exp) {
@@ -136,7 +135,6 @@ struct setup_create_update_update_check : public setup_check {
     std::string timezone_;
 
     setup_create_update_update_check(
-        Fred::OperationContext& _ctx,
         const std::string& _status2,
         const std::string& _status3,
         Optional<long long> _logd_request1,
@@ -144,7 +142,7 @@ struct setup_create_update_update_check : public setup_check {
         Optional<long long> _logd_request3,
         const std::string& _timezone = "UTC"
     ) :
-        setup_check(_ctx, _logd_request1),
+        setup_check(_logd_request1),
         status1_(Fred::ContactCheckStatus::ENQUEUED),
         status2_(_status2),
         status3_(_status3),
@@ -155,8 +153,9 @@ struct setup_create_update_update_check : public setup_check {
     {
         Fred::InfoContactCheck info_check(check_handle_);
 
+        Fred::OperationContext ctx;
         try {
-            data_post_create_ = info_check.exec(_ctx, timezone_);
+            data_post_create_ = info_check.exec(ctx, timezone_);
         } catch(const Fred::InternalError& exp) {
            BOOST_FAIL("non-existent check (1):" + boost::diagnostic_information(exp) + exp.what() );
         } catch(const boost::exception& exp) {
@@ -167,7 +166,7 @@ struct setup_create_update_update_check : public setup_check {
 
         Fred::UpdateContactCheck reset(check_handle_, status2_, logd_request2_);
         try {
-            reset.exec(_ctx);
+            reset.exec(ctx);
         } catch(const Fred::InternalError& exp) {
             BOOST_FAIL("failed to update check (1):" + boost::diagnostic_information(exp) + exp.what() );
         } catch(const boost::exception& exp) {
@@ -177,7 +176,7 @@ struct setup_create_update_update_check : public setup_check {
         }
 
         try {
-            data_post_reset_ = info_check.exec(_ctx, timezone_);
+            data_post_reset_ = info_check.exec(ctx, timezone_);
         } catch(const Fred::InternalError& exp) {
             BOOST_FAIL("non-existent check (1):" + boost::diagnostic_information(exp) + exp.what() );
         } catch(const boost::exception& exp) {
@@ -188,7 +187,7 @@ struct setup_create_update_update_check : public setup_check {
 
         Fred::UpdateContactCheck update(check_handle_, status3_, logd_request3_);
         try {
-            update.exec(_ctx);
+            update.exec(ctx);
         } catch(const Fred::InternalError& exp) {
             BOOST_FAIL("failed to update check (1):" + boost::diagnostic_information(exp) + exp.what() );
         } catch(const boost::exception& exp) {
@@ -198,7 +197,7 @@ struct setup_create_update_update_check : public setup_check {
         }
 
         try {
-            data_post_update_ = info_check.exec(_ctx, timezone_);
+            data_post_update_ = info_check.exec(ctx, timezone_);
         } catch(const Fred::InternalError& exp) {
             BOOST_FAIL("non-existent check (1):" + boost::diagnostic_information(exp) + exp.what() );
         } catch(const boost::exception& exp) {
@@ -278,22 +277,18 @@ void check(const InfoContactCheckOutput& data_pre_update, const InfoContactCheck
  */
 BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_request1_to_statusX_logd_request1)
 {
-    Fred::OperationContext ctx;
-
-    setup_check_status status(ctx);
+    setup_check_status status;
 
     Optional<long long> logd_request_id1 = RandomDataGenerator().xuint();
     Optional<long long> logd_request_id2 = RandomDataGenerator().xuint();
     Optional<long long> logd_request_id3 = RandomDataGenerator().xuint();
 
     setup_create_update_check testcase1(
-        ctx,
         Fred::ContactCheckStatus::ENQUEUED,
         logd_request_id1, logd_request_id1);
     check(testcase1.data_pre_update_, testcase1.data_post_update_, testcase1.old_status_, testcase1.new_status_, testcase1.old_logd_request_, testcase1.new_logd_request_);
 
     setup_create_update_update_check testcase2(
-        ctx,
         status.status_name_, status.status_name_,
         logd_request_id2, logd_request_id3, logd_request_id3);
     check(testcase2.data_post_reset_, testcase2.data_post_update_, testcase2.status2_, testcase2.status3_, testcase2.logd_request2_, testcase2.logd_request3_);
@@ -307,23 +302,19 @@ BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_request1_to_statusX_logd_request1)
  */
 BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_request1_to_statusY_logd_request1)
 {
-    Fred::OperationContext ctx;
-
-    setup_check_status status1(ctx);
-    setup_check_status status2(ctx);
+    setup_check_status status1;
+    setup_check_status status2;
 
     Optional<long long> logd_request_id1 = RandomDataGenerator().xuint();
     Optional<long long> logd_request_id2 = RandomDataGenerator().xuint();
     Optional<long long> logd_request_id3 = RandomDataGenerator().xuint();
 
     setup_create_update_check testcase1(
-        ctx,
         status2.status_name_,
         logd_request_id1, logd_request_id1);
     check(testcase1.data_pre_update_, testcase1.data_post_update_, testcase1.old_status_, testcase1.new_status_, testcase1.old_logd_request_, testcase1.new_logd_request_);
 
     setup_create_update_update_check testcase2(
-        ctx,
         status1.status_name_, status2.status_name_,
         logd_request_id2, logd_request_id3, logd_request_id3);
     check(testcase2.data_post_reset_, testcase2.data_post_update_, testcase2.status2_, testcase2.status3_, testcase2.logd_request2_, testcase2.logd_request3_);
@@ -336,21 +327,17 @@ BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_request1_to_statusY_logd_request1)
  */
 BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_request1_to_statusX_logd_requestNULL)
 {
-    Fred::OperationContext ctx;
-
-    setup_check_status status(ctx);
+    setup_check_status status;
 
     Optional<long long> logd_request_id1 = RandomDataGenerator().xuint();
     Optional<long long> logd_request_id2 = RandomDataGenerator().xuint();
 
     setup_create_update_check testcase1(
-        ctx,
         Fred::ContactCheckStatus::ENQUEUED,
         logd_request_id1, Optional<long long>());
     check(testcase1.data_pre_update_, testcase1.data_post_update_, testcase1.old_status_, testcase1.new_status_, testcase1.old_logd_request_, testcase1.new_logd_request_);
 
     setup_create_update_update_check testcase2(
-        ctx,
         status.status_name_, status.status_name_,
         Optional<long long>(), logd_request_id2, Optional<long long>());
     check(testcase2.data_post_reset_, testcase2.data_post_update_, testcase2.status2_, testcase2.status3_, testcase2.logd_request2_, testcase2.logd_request3_);
@@ -364,22 +351,18 @@ BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_request1_to_statusX_logd_requestNU
  */
 BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_request1_to_statusY_logd_requestNULL)
 {
-    Fred::OperationContext ctx;
-
-    setup_check_status status1(ctx);
-    setup_check_status status2(ctx);
+    setup_check_status status1;
+    setup_check_status status2;
 
     Optional<long long> logd_request_id1 = RandomDataGenerator().xuint();
     Optional<long long> logd_request_id2 = RandomDataGenerator().xuint();
 
     setup_create_update_check testcase1(
-        ctx,
         status1.status_name_,
         logd_request_id1, Optional<long long>());
     check(testcase1.data_pre_update_, testcase1.data_post_update_, testcase1.old_status_, testcase1.new_status_, testcase1.old_logd_request_, testcase1.new_logd_request_);
 
     setup_create_update_update_check testcase2(
-        ctx,
         status1.status_name_, status2.status_name_,
         Optional<long long>(), logd_request_id2, Optional<long long>());
     check(testcase2.data_post_reset_, testcase2.data_post_update_, testcase2.status2_, testcase2.status3_, testcase2.logd_request2_, testcase2.logd_request3_);
@@ -393,22 +376,18 @@ BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_request1_to_statusY_logd_requestNU
  */
 BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusX_logd_request1)
 {
-    Fred::OperationContext ctx;
-
-    setup_check_status status(ctx);
+    setup_check_status status;
 
     Optional<long long> logd_request_id1 = RandomDataGenerator().xuint();
     Optional<long long> logd_request_id2 = RandomDataGenerator().xuint();
     Optional<long long> logd_request_id3 = RandomDataGenerator().xuint();
 
     setup_create_update_check testcase1(
-        ctx,
         Fred::ContactCheckStatus::ENQUEUED,
         Optional<long long>(), logd_request_id1 );
     check(testcase1.data_pre_update_, testcase1.data_post_update_, testcase1.old_status_, testcase1.new_status_, testcase1.old_logd_request_, testcase1.new_logd_request_);
 
     setup_create_update_update_check testcase2(
-        ctx,
         status.status_name_, status.status_name_,
         logd_request_id2, Optional<long long>(), logd_request_id3);
     check(testcase2.data_post_reset_, testcase2.data_post_update_, testcase2.status2_, testcase2.status3_, testcase2.logd_request2_, testcase2.logd_request3_);
@@ -423,23 +402,19 @@ BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusX_logd_reques
  */
 BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusY_logd_request1)
 {
-    Fred::OperationContext ctx;
-
-    setup_check_status status1(ctx);
-    setup_check_status status2(ctx);
+    setup_check_status status1;
+    setup_check_status status2;
 
     Optional<long long> logd_request_id1 = RandomDataGenerator().xuint();
     Optional<long long> logd_request_id2 = RandomDataGenerator().xuint();
     Optional<long long> logd_request_id3 = RandomDataGenerator().xuint();
 
     setup_create_update_check testcase1(
-        ctx,
         status1.status_name_,
         Optional<long long>(), logd_request_id1 );
     check(testcase1.data_pre_update_, testcase1.data_post_update_, testcase1.old_status_, testcase1.new_status_, testcase1.old_logd_request_, testcase1.new_logd_request_);
 
     setup_create_update_update_check testcase2(
-        ctx,
         status1.status_name_, status2.status_name_,
         logd_request_id2, Optional<long long>(), logd_request_id3);
     check(testcase2.data_post_reset_, testcase2.data_post_update_, testcase2.status2_, testcase2.status3_, testcase2.logd_request2_, testcase2.logd_request3_);
@@ -452,19 +427,15 @@ BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusY_logd_reques
  */
 BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusX_logd_requestNULL)
 {
-    Fred::OperationContext ctx;
-
-    setup_check_status status(ctx);
+    setup_check_status status;
     Optional<long long> logd_request_id1 = RandomDataGenerator().xuint();
 
     setup_create_update_check testcase1(
-        ctx,
         Fred::ContactCheckStatus::ENQUEUED,
         Optional<long long>(), Optional<long long>() );
     check(testcase1.data_pre_update_, testcase1.data_post_update_, testcase1.old_status_, testcase1.new_status_, testcase1.old_logd_request_, testcase1.new_logd_request_);
 
     setup_create_update_update_check testcase2(
-        ctx,
         status.status_name_, status.status_name_,
         logd_request_id1, Optional<long long>(), Optional<long long>());
     check(testcase2.data_post_reset_, testcase2.data_post_update_, testcase2.status2_, testcase2.status3_, testcase2.logd_request2_, testcase2.logd_request3_);
@@ -478,20 +449,16 @@ BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusX_logd_reques
  */
 BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusY_logd_requestNULL)
 {
-    Fred::OperationContext ctx;
-
-    setup_check_status status1(ctx);
-    setup_check_status status2(ctx);
+    setup_check_status status1;
+    setup_check_status status2;
     Optional<long long> logd_request_id1 = RandomDataGenerator().xuint();
 
     setup_create_update_check testcase1(
-        ctx,
         status1.status_name_,
         Optional<long long>(), Optional<long long>() );
     check(testcase1.data_pre_update_, testcase1.data_post_update_, testcase1.old_status_, testcase1.new_status_, testcase1.old_logd_request_, testcase1.new_logd_request_);
 
     setup_create_update_update_check testcase2(
-        ctx,
         status1.status_name_, status2.status_name_,
         logd_request_id1, Optional<long long>(), Optional<long long>());
     check(testcase2.data_post_reset_, testcase2.data_post_update_, testcase2.status2_, testcase2.status3_, testcase2.logd_request2_, testcase2.logd_request3_);
@@ -507,8 +474,8 @@ BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_check_handle)
 {
     Fred::OperationContext ctx;
 
-    setup_nonexistent_check_handle handle(ctx);
-    setup_check_status status(ctx);
+    setup_nonexistent_check_handle handle;
+    setup_check_status status;
 
     Fred::UpdateContactCheck dummy(handle.check_handle, status.status_name_);
 
@@ -536,8 +503,8 @@ BOOST_FIXTURE_TEST_CASE(test_Exec_nonexistent_status_name, autoclean_contact_ver
 {
     Fred::OperationContext ctx;
 
-    setup_check check(ctx);
-    setup_nonexistent_check_status_name nonexistent_status(ctx);
+    setup_check check;
+    setup_nonexistent_check_status_name nonexistent_status;
 
     Fred::UpdateContactCheck dummy(check.check_handle_, nonexistent_status.status_name_);
 

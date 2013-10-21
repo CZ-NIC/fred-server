@@ -57,17 +57,17 @@ const std::string server_name = "test-contact_verification-create_check_integ";
  */
 BOOST_AUTO_TEST_CASE(test_Exec_mandatory_setup)
 {
-    Fred::OperationContext ctx;
-
-    setup_contact contact(ctx);
-    setup_testsuite testsuite(ctx);
+    setup_contact contact;
+    setup_testsuite testsuite;
 
     Fred::CreateContactCheck create_check(contact.contact_handle, testsuite.testsuite_name);
     std::string handle;
     std::string timezone = "UTC";
 
     try {
-        handle = create_check.exec(ctx);
+        Fred::OperationContext ctx1;
+        handle = create_check.exec(ctx1);
+        ctx1.commit_transaction();
     } catch(const Fred::InternalError& exp) {
         BOOST_FAIL("failed to create check (1):" + boost::diagnostic_information(exp) + exp.what() );
     } catch(const boost::exception& exp) {
@@ -79,8 +79,9 @@ BOOST_AUTO_TEST_CASE(test_Exec_mandatory_setup)
     Fred::InfoContactCheck info_check(handle);
     Fred::InfoContactCheckOutput result_data;
 
+    Fred::OperationContext ctx2;
     try {
-        result_data = info_check.exec(ctx, timezone);
+        result_data = info_check.exec(ctx2, timezone);
     } catch(const Fred::InternalError& exp) {
         BOOST_FAIL("non-existent check (1):" + boost::diagnostic_information(exp) + exp.what() );
     } catch(const boost::exception& exp) {
@@ -106,8 +107,8 @@ BOOST_AUTO_TEST_CASE(test_Exec_mandatory_setup)
         + " 'now' is:" + boost::posix_time::to_simple_string(now) );
 
     // contact_history_id is correct regarding the create_time
-
-    Database::Result contact_history_validity_interval = ctx.get_conn().exec_params(
+    Fred::OperationContext ctx3;
+    Database::Result contact_history_validity_interval = ctx3.get_conn().exec_params(
         "SELECT "
         "   valid_from AT TIME ZONE 'utc' AT TIME ZONE $1::text AS valid_from_, "
         "   valid_to  AT TIME ZONE 'utc' AT TIME ZONE $1::text AS valid_to_ "
@@ -129,11 +130,12 @@ BOOST_AUTO_TEST_CASE(test_Exec_mandatory_setup)
 
     boost::posix_time::ptime to_time;
     bool to_is_null = contact_history_validity_interval[0]["valid_to_"].isnull();
-    if(to_is_null == false)
+    if(to_is_null == false) {
         to_time =
             boost::posix_time::time_from_string(
                 static_cast<std::string>(
                     contact_history_validity_interval[0]["valid_to_"] ));
+    }
 
     /* WARNING - "...OR EQUAL"
      * part of comparison is present because the contact is created in the same transaction
@@ -143,7 +145,9 @@ BOOST_AUTO_TEST_CASE(test_Exec_mandatory_setup)
         from_time <= result_data.local_create_time &&
         ( to_time >= result_data.local_create_time || to_is_null),
         "invalid history_id - not valid at check create_time." +
-        result_data.to_string()
+        result_data.to_string() +
+        "expected interval is: " + boost::posix_time::to_simple_string(from_time)
+        + " - " + boost::posix_time::to_simple_string(to_time) + "\n"
     );
 
     // logd_request_id
@@ -180,16 +184,15 @@ BOOST_AUTO_TEST_CASE(test_Exec_mandatory_setup)
  */
 BOOST_AUTO_TEST_CASE(test_Exec_optional_setup)
 {
-    Fred::OperationContext ctx;
-
-    setup_contact contact(ctx);
-    setup_testsuite testsuite(ctx);
+    setup_contact contact;
+    setup_testsuite testsuite;
     setup_logd_request_id logd_request;
 
     Fred::CreateContactCheck create_check(contact.contact_handle, testsuite.testsuite_name, logd_request.logd_request_id);
     std::string handle;
     std::string timezone = "UTC";
 
+    Fred::OperationContext ctx;
     try {
         handle = create_check.exec(ctx);
     } catch(const Fred::InternalError& exp) {
@@ -306,8 +309,8 @@ BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_contact_handle)
 {
     Fred::OperationContext ctx;
 
-    setup_nonexistent_contact_handle contact(ctx);
-    setup_testsuite testsuite(ctx);
+    setup_nonexistent_contact_handle contact;
+    setup_testsuite testsuite;
 
     Fred::CreateContactCheck create_check(contact.contact_handle, testsuite.testsuite_name);
     std::string handle;
@@ -336,8 +339,8 @@ BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_testsuite_name)
 {
     Fred::OperationContext ctx;
 
-    setup_contact contact(ctx);
-    setup_nonexistent_testsuite_name testsuite(ctx);
+    setup_contact contact;
+    setup_nonexistent_testsuite_name testsuite;
 
     Fred::CreateContactCheck create_check(contact.contact_handle, testsuite.testsuite_name);
     std::string handle;
@@ -366,8 +369,8 @@ BOOST_AUTO_TEST_CASE(test_Exec_empty_testsuite_name)
 {
     Fred::OperationContext ctx;
 
-    setup_contact contact(ctx);
-    setup_empty_testsuite testsuite(ctx);
+    setup_contact contact;
+    setup_empty_testsuite testsuite;
 
     Fred::CreateContactCheck create_check(contact.contact_handle, testsuite.testsuite_name);
     std::string handle;

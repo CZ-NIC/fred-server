@@ -5,14 +5,19 @@
 #include "fredlib/contact/verification/create_test.h"
 #include "fredlib/contact/verification/enum_testsuite_name.h"
 #include "fredlib/contact/delete_contact.h"
+#include "fredlib/contact/info_contact.h"
 
 struct setup_get_registrar_handle
 {
     std::string registrar_handle;
 
-    setup_get_registrar_handle(Fred::OperationContext& _ctx) {
+    setup_get_registrar_handle( ) {
+        Fred::OperationContext ctx;
+
         registrar_handle = static_cast<std::string>(
-            _ctx.get_conn().exec("SELECT handle FROM registrar LIMIT 1;")[0][0] );
+            ctx.get_conn().exec("SELECT handle FROM registrar LIMIT 1;")[0][0] );
+
+        ctx.commit_transaction();
 
         if(registrar_handle.empty()) {
             throw std::runtime_error("no registrar found");
@@ -23,28 +28,37 @@ struct setup_get_registrar_handle
 struct setup_contact : public setup_get_registrar_handle {
     std::string contact_handle;
 
-    setup_contact(Fred::OperationContext& _ctx)
-        : setup_get_registrar_handle(_ctx)
-    {
-        contact_handle = "CREATE_CNT_CHECK_" + RandomDataGenerator().xnumstring(15);
+    setup_contact() {
+        Fred::OperationContext ctx;
+
+        contact_handle = "CONTACT_" + RandomDataGenerator().xnumstring(15);
         Fred::CreateContact create(contact_handle, registrar_handle);
-        create.exec(_ctx);
+        create.exec(ctx);
+
+        ctx.commit_transaction();
+
+        Fred::OperationContext ctx_check;
+        Fred::InfoContact(contact_handle, registrar_handle).exec(ctx_check);
     }
 };
 
 struct setup_nonexistent_contact_handle {
     std::string contact_handle;
 
-    setup_nonexistent_contact_handle(Fred::OperationContext& _ctx) {
+    setup_nonexistent_contact_handle() {
+        Fred::OperationContext ctx;
+
         Database::Result res;
         do {
-            contact_handle = "CREATE_CNT_CHECK_" + RandomDataGenerator().xnumstring(15);
-            res = _ctx.get_conn().exec(
+            contact_handle = "NONEX_CONTACT_" + RandomDataGenerator().xnumstring(15);
+            res = ctx.get_conn().exec(
                 "SELECT name "
                 "   FROM object_registry "
                 "   WHERE name='"+contact_handle+"'"
                 "       AND type=1;" );
         } while(res.size() != 0);
+
+        ctx.commit_transaction();
     }
 };
 
@@ -53,35 +67,43 @@ struct setup_testdef {
     std::string testdef_name_;
     std::string testdef_description_;
 
-    setup_testdef(Fred::OperationContext& _ctx) {
-        testdef_name_ = "CREATE_CNT_TEST_" + RandomDataGenerator().xnumstring(15) + "_NAME";
+    setup_testdef() {
+        Fred::OperationContext ctx;
+
+        testdef_name_ = "TEST_" + RandomDataGenerator().xnumstring(15);
         testdef_description_ = testdef_name_ + "_DESCRIPTION";
         testdef_id_ = static_cast<long>(
-            _ctx.get_conn().exec(
+            ctx.get_conn().exec(
                 "INSERT INTO enum_contact_test "
                 "   (name, description) "
                 "   VALUES ('"+testdef_name_+"', '"+testdef_description_+"') "
                 "   RETURNING id;"
             )[0][0]);
+
+        ctx.commit_transaction();
     }
 };
 
 struct setup_nonexistent_testdef_name {
     std::string testdef_name;
 
-    setup_nonexistent_testdef_name(Fred::OperationContext& _ctx) {
+    setup_nonexistent_testdef_name() {
+        Fred::OperationContext ctx;
+
         Database::Result res;
         do {
-            testdef_name = "CREATE_CNT_TEST_" + RandomDataGenerator().xnumstring(15) + "_TEST_NAME";
-            res = _ctx.get_conn().exec(
+            testdef_name = "NONEX_TEST_" + RandomDataGenerator().xnumstring(15);
+            res = ctx.get_conn().exec(
                 "SELECT name FROM enum_contact_testsuite WHERE name='"+testdef_name+"';" );
         } while(res.size() != 0);
     }
 };
 
 struct setup_testdef_in_testsuite {
-    setup_testdef_in_testsuite(Fred::OperationContext& _ctx, const std::string& testdef_name, const std::string& testsuite_name) {
-        Database::Result res = _ctx.get_conn().exec(
+    setup_testdef_in_testsuite(const std::string& testdef_name, const std::string& testsuite_name) {
+        Fred::OperationContext ctx;
+
+        Database::Result res = ctx.get_conn().exec(
             "INSERT INTO contact_testsuite_map "
             "   (enum_contact_test_id, enum_contact_testsuite_id) "
             "   VALUES ("
@@ -90,16 +112,21 @@ struct setup_testdef_in_testsuite {
             "   ) "
             "   RETURNING enum_contact_test_id;");
 
+        ctx.commit_transaction();
+
         if(res.size() != 1) {
             throw std::runtime_error("inserting testdef to testsuite");
         }
+
     }
 };
 
 struct setup_testdef_in_testsuite_of_check {
-    setup_testdef_in_testsuite_of_check(Fred::OperationContext& _ctx, const std::string testdef_name, const std::string check_handle) {
+    setup_testdef_in_testsuite_of_check(const std::string testdef_name, const std::string check_handle) {
+        Fred::OperationContext ctx;
+
         Database::Result res =
-            _ctx.get_conn().exec(
+            ctx.get_conn().exec(
                 "INSERT INTO contact_testsuite_map "
                 "   (enum_contact_test_id, enum_contact_testsuite_id) "
                 "   VALUES ("
@@ -108,6 +135,8 @@ struct setup_testdef_in_testsuite_of_check {
                 "   ) "
                 "   RETURNING enum_contact_test_id;"
             );
+
+        ctx.commit_transaction();
 
         if(res.size() != 1) {
             throw std::runtime_error("inserting testdef to testsuite");
@@ -122,41 +151,46 @@ struct setup_empty_testsuite {
     std::string testsuite_name;
     std::string testsuite_description;
 
-    setup_empty_testsuite(Fred::OperationContext& _ctx) {
-        testsuite_name = "CREATE_CNT_CHECK_" + RandomDataGenerator().xnumstring(15) + "_TESTSUITE_NAME";
-        testsuite_description = testsuite_name + "_DESCRIPTION abrakadabra";
+    setup_empty_testsuite() {
+        Fred::OperationContext ctx;
+
+        testsuite_name = "TESTSUITE_" + RandomDataGenerator().xnumstring(15) ;
+        testsuite_description = testsuite_name + "_DESCRIPTION";
         testsuite_id = static_cast<long>(
-            _ctx.get_conn().exec(
+            ctx.get_conn().exec(
                 "INSERT INTO enum_contact_testsuite "
                 "   (name, description)"
                 "   VALUES ('"+testsuite_name+"', '"+testsuite_description+"')"
                 "   RETURNING id;"
             )[0][0]);
+
+        ctx.commit_transaction();
     }
 };
 
 struct setup_testsuite : setup_empty_testsuite {
     setup_testdef test;
 
-    setup_testsuite(Fred::OperationContext& _ctx)
-    : setup_empty_testsuite(_ctx),
-      test(_ctx)
-    {
+    setup_testsuite() {
         // at least one test
-        setup_testdef_in_testsuite(_ctx, test.testdef_name_, testsuite_name);
+        setup_testdef_in_testsuite(test.testdef_name_, testsuite_name);
     }
 };
 
 struct setup_nonexistent_testsuite_name {
     std::string testsuite_name;
 
-    setup_nonexistent_testsuite_name(Fred::OperationContext& _ctx) {
+    setup_nonexistent_testsuite_name() {
+        Fred::OperationContext ctx;
+
         Database::Result res;
         do {
-            testsuite_name = "CREATE_CNT_CHECK_" + RandomDataGenerator().xnumstring(15) + "_TESTSUITE_NAME";
-            res = _ctx.get_conn().exec(
+            testsuite_name = "NONEX_TESTSUITE_" + RandomDataGenerator().xnumstring(15);
+            res = ctx.get_conn().exec(
                 "SELECT name FROM enum_contact_testsuite WHERE name='"+testsuite_name+"';" );
         } while(res.size() != 0);
+
+        ctx.commit_transaction();
     }
 };
 
@@ -171,15 +205,19 @@ struct setup_logd_request_id {
 struct setup_check_status {
     std::string status_name_;
 
-    setup_check_status(Fred::OperationContext& _ctx) {
+    setup_check_status() {
+        Fred::OperationContext ctx;
+
         Database::Result res;
         status_name_ = "STATUS_" + RandomDataGenerator().xnumstring(15);
-        res = _ctx.get_conn().exec(
+        res = ctx.get_conn().exec(
             "INSERT "
             "   INTO enum_contact_check_status "
             "   (id, name, description ) "
             "   VALUES (" + RandomDataGenerator().xnumstring(9) + ", '"+status_name_+"', '"+status_name_+"_desc') "
             "   RETURNING id;" );
+
+        ctx.commit_transaction();
 
         if(res.size()!=1) {
             throw std::runtime_error("creating check status failed");
@@ -190,17 +228,19 @@ struct setup_check_status {
 struct setup_test_status {
     std::string status_name_;
 
-    setup_test_status(Fred::OperationContext& _ctx)
-    {
+    setup_test_status() {
+        Fred::OperationContext ctx;
+
         Database::Result res;
         status_name_ = "STATUS_" + RandomDataGenerator().xnumstring(15);
-        res = _ctx.get_conn().exec(
+        res = ctx.get_conn().exec(
             "INSERT "
             "   INTO enum_contact_test_status "
             "   (id, name, description ) "
             "   VALUES (" + RandomDataGenerator().xnumstring(9) + ", '"+status_name_+"', '"+status_name_+"_desc') "
             "   RETURNING id;" );
 
+        ctx.commit_transaction();
         if(res.size()!=1) {
             throw std::runtime_error("creating test status failed");
         }
@@ -221,13 +261,8 @@ struct setup_check {
     setup_contact contact_;
     setup_testsuite testsuite_;
 
-    setup_check(
-        Fred::OperationContext& _ctx,
-        Optional<long long> _logd_request = Optional<long long>()
-    )
-        : logd_request_(_logd_request),
-          contact_(_ctx),
-          testsuite_(_ctx)
+    setup_check(Optional<long long> _logd_request = Optional<long long>() )
+        : logd_request_(_logd_request)
     {
         // check
         Fred::CreateContactCheck create_check(
@@ -236,14 +271,16 @@ struct setup_check {
             logd_request_
         );
 
-        check_handle_ = create_check.exec(_ctx);
+        Fred::OperationContext ctx;
+        check_handle_ = create_check.exec(ctx);
+        ctx.commit_transaction();
     }
 };
 
 struct setup_nonexistent_check_handle {
     std::string check_handle;
 
-    setup_nonexistent_check_handle(Fred::OperationContext& _ctx) {
+    setup_nonexistent_check_handle() {
         struct BOOST { struct UUIDS { struct RANDOM_GENERATOR {
             static std::string generate() {
                 srand(time(NULL));
@@ -282,11 +319,12 @@ struct setup_nonexistent_check_handle {
         }; }; };
 
         /* end of temporary ugliness - please cut and replace between ASAP*/
+        Fred::OperationContext ctx;
 
         Database::Result res;
         do {
             check_handle = boost::lexical_cast<std::string>(BOOST::UUIDS::RANDOM_GENERATOR::generate());
-            res = _ctx.get_conn().exec(
+            res = ctx.get_conn().exec(
                 "SELECT handle "
                 "   FROM contact_check "
                 "   WHERE handle='"+check_handle+"';"
@@ -298,11 +336,13 @@ struct setup_nonexistent_check_handle {
 struct setup_nonexistent_check_status_name {
     std::string status_name_;
 
-    setup_nonexistent_check_status_name(Fred::OperationContext& _ctx) {
+    setup_nonexistent_check_status_name() {
+        Fred::OperationContext ctx;
+
         Database::Result res;
         do {
             status_name_ = "STATUS_" + RandomDataGenerator().xnumstring(15);
-            res = _ctx.get_conn().exec(
+            res = ctx.get_conn().exec(
                 "SELECT name "
                 "   FROM enum_contact_check_status "
                 "   WHERE name='"+status_name_+"';" );
@@ -315,17 +355,18 @@ struct setup_test : public setup_check {
     Optional<long long> logd_request_;
 
     setup_test(
-        Fred::OperationContext& _ctx,
         std::string _testdef_name,
         Optional<long long> _logd_request = Optional<long long>()
     ) :
-        setup_check(_ctx),
         testdef_name_(_testdef_name),
         logd_request_(_logd_request)
     {
-        setup_testdef_in_testsuite_of_check(_ctx, testdef_name_, check_handle_);
+        setup_testdef_in_testsuite_of_check(testdef_name_, check_handle_);
         Fred::CreateContactTest create_test(check_handle_, testdef_name_, logd_request_);
-        create_test.exec(_ctx);
+
+        Fred::OperationContext ctx;
+        create_test.exec(ctx);
+        ctx.commit_transaction();
     }
 
 };
@@ -333,11 +374,13 @@ struct setup_test : public setup_check {
 struct setup_nonexistent_test_status_name {
     std::string status_name_;
 
-    setup_nonexistent_test_status_name(Fred::OperationContext& _ctx) {
+    setup_nonexistent_test_status_name() {
         Database::Result res;
+
+        Fred::OperationContext ctx;
         do {
             status_name_ = "STATUS_" + RandomDataGenerator().xnumstring(15);
-            res = _ctx.get_conn().exec(
+            res = ctx.get_conn().exec(
                 "SELECT name "
                 "   FROM enum_contact_test_status "
                 "   WHERE name='"+status_name_+"';" );

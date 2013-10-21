@@ -124,7 +124,7 @@ struct setup_already_checked_contacts {
         }
 
         for(int i=0; i < count_ - pre_existing_count; ++i) {
-           setup_contact contact(ctx);
+           setup_contact contact;
            handles_.push_back(contact.contact_handle);
         }
         ctx.commit_transaction();
@@ -263,12 +263,10 @@ BOOST_AUTO_TEST_CASE(test_Enqueueing_never_checked_contacts)
     setup_already_checked_contacts(50);
 
     // make set of new, never checked contacts
-    Fred::OperationContext ctx;
     std::vector<std::string> never_checked_contacts;
     for(int i=0; i<50; ++i) {
-        never_checked_contacts.push_back(setup_contact(ctx).contact_handle);
+        never_checked_contacts.push_back(setup_contact().contact_handle);
     }
-    ctx.commit_transaction();
 
     // test scenarios
     T_enq_ch enqueued_checks = Admin::fill_automatic_check_queue(10);
