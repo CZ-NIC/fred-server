@@ -51,7 +51,7 @@ namespace AdminTests {
             DummyTestReturning (Fred::OperationContext& _ctx, const std::string _return_status)
             : return_status(_return_status)
             {
-                name = "DUMMY_TEST_" + return_status + "_" + RandomDataGenerator().xnumstring(10);
+                name = "DUMMY_TEST_" + return_status + "_" + RandomDataGenerator().xnumstring(15);
                 description = name + "_DESCRIPTION";
                 id = static_cast<long>(
                      _ctx.get_conn().exec(
@@ -74,7 +74,7 @@ namespace AdminTests {
 
         public:
             DummyThrowingTest (Fred::OperationContext& _ctx) {
-                name_ = "DUMMY_THROWING_TEST_" + RandomDataGenerator().xnumstring(10);
+                name_ = "DUMMY_THROWING_TEST_" + RandomDataGenerator().xnumstring(15);
                 description_ = name_ + "_DESCRIPTION";
                 Database::Result res = _ctx.get_conn().exec(
                     "INSERT INTO enum_contact_test "
@@ -100,7 +100,7 @@ namespace AdminTests {
         std::string testsuite_name;
 
         setup_testsuite(Fred::OperationContext& _ctx) {
-            testsuite_name = "TESTSUITE_" + RandomDataGenerator().xnumstring(10);
+            testsuite_name = "TESTSUITE_" + RandomDataGenerator().xnumstring(15);
             _ctx.get_conn().exec(
                 "INSERT INTO enum_contact_testsuite "
                 "   (name, description)"
@@ -128,7 +128,7 @@ namespace AdminTests {
             std::string registrar_handle = static_cast<std::string>(registrar_res[0]["handle"]);
 
             // contact
-            contact_handle_ = "CREATE_CNT_CHECK_" + RandomDataGenerator().xnumstring(6);
+            contact_handle_ = "CREATE_CNT_CHECK_" + RandomDataGenerator().xnumstring(15);
             Fred::CreateContact create_contact(contact_handle_, registrar_handle);
             create_contact.exec(_ctx);
 

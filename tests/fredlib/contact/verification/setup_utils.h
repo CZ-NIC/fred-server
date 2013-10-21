@@ -26,7 +26,7 @@ struct setup_contact : public setup_get_registrar_handle {
     setup_contact(Fred::OperationContext& _ctx)
         : setup_get_registrar_handle(_ctx)
     {
-        contact_handle = "CREATE_CNT_CHECK_" + RandomDataGenerator().xnumstring(6);
+        contact_handle = "CREATE_CNT_CHECK_" + RandomDataGenerator().xnumstring(15);
         Fred::CreateContact create(contact_handle, registrar_handle);
         create.exec(_ctx);
     }
@@ -38,7 +38,7 @@ struct setup_nonexistent_contact_handle {
     setup_nonexistent_contact_handle(Fred::OperationContext& _ctx) {
         Database::Result res;
         do {
-            contact_handle = "CREATE_CNT_CHECK_" + RandomDataGenerator().xnumstring(10);
+            contact_handle = "CREATE_CNT_CHECK_" + RandomDataGenerator().xnumstring(15);
             res = _ctx.get_conn().exec(
                 "SELECT name "
                 "   FROM object_registry "
@@ -54,7 +54,7 @@ struct setup_testdef {
     std::string testdef_description_;
 
     setup_testdef(Fred::OperationContext& _ctx) {
-        testdef_name_ = "CREATE_CNT_TEST_" + RandomDataGenerator().xnumstring(6) + "_NAME";
+        testdef_name_ = "CREATE_CNT_TEST_" + RandomDataGenerator().xnumstring(15) + "_NAME";
         testdef_description_ = testdef_name_ + "_DESCRIPTION";
         testdef_id_ = static_cast<long>(
             _ctx.get_conn().exec(
@@ -72,7 +72,7 @@ struct setup_nonexistent_testdef_name {
     setup_nonexistent_testdef_name(Fred::OperationContext& _ctx) {
         Database::Result res;
         do {
-            testdef_name = "CREATE_CNT_TEST_" + RandomDataGenerator().xnumstring(10) + "_TEST_NAME";
+            testdef_name = "CREATE_CNT_TEST_" + RandomDataGenerator().xnumstring(15) + "_TEST_NAME";
             res = _ctx.get_conn().exec(
                 "SELECT name FROM enum_contact_testsuite WHERE name='"+testdef_name+"';" );
         } while(res.size() != 0);
@@ -123,7 +123,7 @@ struct setup_empty_testsuite {
     std::string testsuite_description;
 
     setup_empty_testsuite(Fred::OperationContext& _ctx) {
-        testsuite_name = "CREATE_CNT_CHECK_" + RandomDataGenerator().xnumstring(6) + "_TESTSUITE_NAME";
+        testsuite_name = "CREATE_CNT_CHECK_" + RandomDataGenerator().xnumstring(15) + "_TESTSUITE_NAME";
         testsuite_description = testsuite_name + "_DESCRIPTION abrakadabra";
         testsuite_id = static_cast<long>(
             _ctx.get_conn().exec(
@@ -153,7 +153,7 @@ struct setup_nonexistent_testsuite_name {
     setup_nonexistent_testsuite_name(Fred::OperationContext& _ctx) {
         Database::Result res;
         do {
-            testsuite_name = "CREATE_CNT_CHECK_" + RandomDataGenerator().xnumstring(10) + "_TESTSUITE_NAME";
+            testsuite_name = "CREATE_CNT_CHECK_" + RandomDataGenerator().xnumstring(15) + "_TESTSUITE_NAME";
             res = _ctx.get_conn().exec(
                 "SELECT name FROM enum_contact_testsuite WHERE name='"+testsuite_name+"';" );
         } while(res.size() != 0);
@@ -173,12 +173,12 @@ struct setup_check_status {
 
     setup_check_status(Fred::OperationContext& _ctx) {
         Database::Result res;
-        status_name_ = "STATUS_" + RandomDataGenerator().xnumstring(10);
+        status_name_ = "STATUS_" + RandomDataGenerator().xnumstring(15);
         res = _ctx.get_conn().exec(
             "INSERT "
             "   INTO enum_contact_check_status "
             "   (id, name, description ) "
-            "   VALUES (" + RandomDataGenerator().xnumstring(6) + ", '"+status_name_+"', '"+status_name_+"_desc') "
+            "   VALUES (" + RandomDataGenerator().xnumstring(9) + ", '"+status_name_+"', '"+status_name_+"_desc') "
             "   RETURNING id;" );
 
         if(res.size()!=1) {
@@ -193,12 +193,12 @@ struct setup_test_status {
     setup_test_status(Fred::OperationContext& _ctx)
     {
         Database::Result res;
-        status_name_ = "STATUS_" + RandomDataGenerator().xnumstring(10);
+        status_name_ = "STATUS_" + RandomDataGenerator().xnumstring(15);
         res = _ctx.get_conn().exec(
             "INSERT "
             "   INTO enum_contact_test_status "
             "   (id, name, description ) "
-            "   VALUES (" + RandomDataGenerator().xnumstring(6) + ", '"+status_name_+"', '"+status_name_+"_desc') "
+            "   VALUES (" + RandomDataGenerator().xnumstring(9) + ", '"+status_name_+"', '"+status_name_+"_desc') "
             "   RETURNING id;" );
 
         if(res.size()!=1) {
@@ -301,7 +301,7 @@ struct setup_nonexistent_check_status_name {
     setup_nonexistent_check_status_name(Fred::OperationContext& _ctx) {
         Database::Result res;
         do {
-            status_name_ = "STATUS_" + RandomDataGenerator().xnumstring(10);
+            status_name_ = "STATUS_" + RandomDataGenerator().xnumstring(15);
             res = _ctx.get_conn().exec(
                 "SELECT name "
                 "   FROM enum_contact_check_status "
@@ -336,7 +336,7 @@ struct setup_nonexistent_test_status_name {
     setup_nonexistent_test_status_name(Fred::OperationContext& _ctx) {
         Database::Result res;
         do {
-            status_name_ = "STATUS_" + RandomDataGenerator().xnumstring(10);
+            status_name_ = "STATUS_" + RandomDataGenerator().xnumstring(15);
             res = _ctx.get_conn().exec(
                 "SELECT name "
                 "   FROM enum_contact_test_status "
