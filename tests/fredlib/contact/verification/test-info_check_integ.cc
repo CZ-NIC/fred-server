@@ -69,8 +69,6 @@ BOOST_AUTO_TEST_CASE(test_Exec)
     using std::vector;
     using std::string;
 
-    Fred::OperationContext ctx;
-
     setup_check check;
 
     int check_history_steps = 5;
@@ -104,7 +102,9 @@ BOOST_AUTO_TEST_CASE(test_Exec)
             check.check_handle_, check_status_history.back(),
             check_logd_request_history.back() );
         try {
-            update_check.exec(ctx);
+            Fred::OperationContext ctx1;
+            update_check.exec(ctx1);
+            ctx1.commit_transaction();
         } catch(const Fred::InternalError& exp) {
             BOOST_FAIL("failed to update check (1):" + boost::diagnostic_information(exp) + exp.what() );
         } catch(const boost::exception& exp) {
@@ -137,7 +137,9 @@ BOOST_AUTO_TEST_CASE(test_Exec)
             tests_error_msg_history.at(0).at(j) );
 
         try {
-            update_test.exec(ctx);
+            Fred::OperationContext ctx2;
+            update_test.exec(ctx2);
+            ctx2.commit_transaction();
         } catch(const Fred::InternalError& exp) {
            BOOST_FAIL("failed to update test (1):" + boost::diagnostic_information(exp) + exp.what() );
         } catch(const boost::exception& exp) {
@@ -160,7 +162,9 @@ BOOST_AUTO_TEST_CASE(test_Exec)
             tests_logd_request_history.at(i).at(0) );
 
         try {
-            create_test.exec(ctx);
+            Fred::OperationContext ctx3;
+            create_test.exec(ctx3);
+            ctx3.commit_transaction();
         } catch(const Fred::InternalError& exp) {
             BOOST_FAIL("failed to create test (1):" + boost::diagnostic_information(exp) + exp.what() );
         } catch(const boost::exception& exp) {
@@ -183,7 +187,9 @@ BOOST_AUTO_TEST_CASE(test_Exec)
                 tests_error_msg_history.at(i).at(j) );
 
             try {
-                update_test.exec(ctx);
+                Fred::OperationContext ctx4;
+                update_test.exec(ctx4);
+                ctx4.commit_transaction();
             } catch(const Fred::InternalError& exp) {
                BOOST_FAIL("failed to update test (1):" + boost::diagnostic_information(exp) + exp.what() );
             } catch(const boost::exception& exp) {
@@ -197,7 +203,8 @@ BOOST_AUTO_TEST_CASE(test_Exec)
     Fred::InfoContactCheck info_op(check.check_handle_);
     Fred::InfoContactCheckOutput info;
     try {
-        info = info_op.exec(ctx);
+        Fred::OperationContext ctx5;
+        info = info_op.exec(ctx5);
     } catch(const Fred::InternalError& exp) {
         BOOST_FAIL("failed to update test (1):" + boost::diagnostic_information(exp) + exp.what() );
     } catch(const boost::exception& exp) {
@@ -253,15 +260,14 @@ BOOST_AUTO_TEST_CASE(test_Exec)
  */
 BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_check_handle)
 {
-    Fred::OperationContext ctx;
-
     setup_nonexistent_check_handle handle;
 
     Fred::InfoContactCheck dummy(handle.check_handle);
 
     bool caught_the_right_exception = false;
     try {
-        dummy.exec(ctx);
+        Fred::OperationContext ctx1;
+        dummy.exec(ctx1);
     } catch(const Fred::InfoContactCheck::ExceptionUnknownCheckHandle& exp) {
         caught_the_right_exception = true;
     } catch(...) {

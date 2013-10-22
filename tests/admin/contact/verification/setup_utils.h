@@ -48,19 +48,22 @@ namespace AdminTests {
             std::string return_status;
 
         public:
-            DummyTestReturning (Fred::OperationContext& _ctx, const std::string _return_status)
+            DummyTestReturning (const std::string _return_status)
             : return_status(_return_status)
             {
                 name = "DUMMY_TEST_" + return_status + "_" + RandomDataGenerator().xnumstring(15);
                 description = name + "_DESCRIPTION";
+
+                Fred::OperationContext ctx;
                 id = static_cast<long>(
-                     _ctx.get_conn().exec(
+                     ctx.get_conn().exec(
                          "INSERT INTO enum_contact_test "
                          "   (name, description) "
                          "   VALUES ('" + name + "', '" + description + "') "
                          "   RETURNING id;"
                      )[0]["id"]
                 );
+                ctx.commit_transaction();
             }
             ContactVerificationTest::T_run_result run(long _history_id) const { return std::make_pair(return_status, return_status); }
             std::string get_name() const { return name; }
@@ -73,10 +76,12 @@ namespace AdminTests {
         long id_;
 
         public:
-            DummyThrowingTest (Fred::OperationContext& _ctx) {
+            DummyThrowingTest () {
+                Fred::OperationContext ctx;
+
                 name_ = "DUMMY_THROWING_TEST_" + RandomDataGenerator().xnumstring(15);
                 description_ = name_ + "_DESCRIPTION";
-                Database::Result res = _ctx.get_conn().exec(
+                Database::Result res = ctx.get_conn().exec(
                     "INSERT INTO enum_contact_test "
                     "   (name, description) "
                     "   VALUES ('" + name_ + "', '" + description_ + "') "
@@ -85,6 +90,7 @@ namespace AdminTests {
                 if(res.size()==0) {
                     throw std::runtime_error("failed to create dummy throwing test");
                 }
+                ctx.commit_transaction();
 
                 id_ = static_cast<long>(res[0]["id_"]);
             }
@@ -99,27 +105,33 @@ namespace AdminTests {
     struct setup_testsuite {
         std::string testsuite_name;
 
-        setup_testsuite(Fred::OperationContext& _ctx) {
+        setup_testsuite() {
             testsuite_name = "TESTSUITE_" + RandomDataGenerator().xnumstring(15);
-            _ctx.get_conn().exec(
+            Fred::OperationContext ctx;
+            Database::Result res = ctx.get_conn().exec(
                 "INSERT INTO enum_contact_testsuite "
                 "   (name, description)"
                 "   VALUES ('"+ testsuite_name +"', 'description some text')"
                 "   RETURNING id;"
             );
+            if(res.size()==0) {
+                throw std::runtime_error("failed to create testsuite");
+            }
+            ctx.commit_transaction();
         }
 
     };
 
-    void setup_testdef_in_testsuite (Fred::OperationContext& _ctx, const std::string testdef_name, const std::string testsuite_name );
+    void setup_testdef_in_testsuite (const std::string testdef_name, const std::string testsuite_name );
 
     struct setup_check {
         std::string check_handle_;
         std::string contact_handle_;
 
-        setup_check(Fred::OperationContext& _ctx, const std::string& testsuite_name) {
+        setup_check(const std::string& testsuite_name) {
             // registrar
-            Database::Result registrar_res = _ctx.get_conn().exec("SELECT handle FROM registrar LIMIT 1;");
+            Fred::OperationContext ctx1;
+            Database::Result registrar_res = ctx1.get_conn().exec("SELECT handle FROM registrar LIMIT 1;");
 
             if(registrar_res.size() == 0) {
                 throw std::exception();
@@ -130,11 +142,15 @@ namespace AdminTests {
             // contact
             contact_handle_ = "CREATE_CNT_CHECK_" + RandomDataGenerator().xnumstring(15);
             Fred::CreateContact create_contact(contact_handle_, registrar_handle);
-            create_contact.exec(_ctx);
+            Fred::OperationContext ctx2;
+            create_contact.exec(ctx2);
+            ctx2.commit_transaction();
 
             // check
             Fred::CreateContactCheck create_check(contact_handle_, testsuite_name);
-            check_handle_ = create_check.exec(_ctx);
+            Fred::OperationContext ctx3;
+            check_handle_ = create_check.exec(ctx3);
+            ctx3.commit_transaction();
         }
     };
 

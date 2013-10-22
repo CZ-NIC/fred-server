@@ -26,9 +26,10 @@
 
 namespace AdminTests {
 
-    void setup_testdef_in_testsuite (Fred::OperationContext& _ctx, const std::string testdef_name, const std::string testsuite_name ) {
+    void setup_testdef_in_testsuite (const std::string testdef_name, const std::string testsuite_name ) {
+        Fred::OperationContext ctx;
         if(
-            _ctx.get_conn().exec(
+            ctx.get_conn().exec(
                 "INSERT INTO contact_testsuite_map "
                 "   (enum_contact_test_id, enum_contact_testsuite_id) "
                 "   VALUES ("
@@ -40,5 +41,6 @@ namespace AdminTests {
         ) {
             throw std::exception();
         }
+        ctx.commit_transaction();
     }
 }

@@ -58,8 +58,6 @@ const std::string server_name = "test-contact_verification-create_test_integ";
  */
 BOOST_AUTO_TEST_CASE(test_Exec_mandatory_setup)
 {
-    Fred::OperationContext ctx;
-
     setup_check check;
     setup_testdef testdef;
     setup_testdef_in_testsuite_of_check(testdef.testdef_name_, check.check_handle_);
@@ -71,7 +69,8 @@ BOOST_AUTO_TEST_CASE(test_Exec_mandatory_setup)
     Fred::InfoContactCheckOutput pre_create_test_data;
 
     try {
-        pre_create_test_data = info_check.exec(ctx, timezone);
+        Fred::OperationContext ctx1;
+        pre_create_test_data = info_check.exec(ctx1, timezone);
     } catch(const Fred::InternalError& exp) {
         BOOST_FAIL("non-existent check (1):" + boost::diagnostic_information(exp) + exp.what() );
     } catch(const boost::exception& exp) {
@@ -81,7 +80,9 @@ BOOST_AUTO_TEST_CASE(test_Exec_mandatory_setup)
     }
 
     try {
-        create_test.exec(ctx);
+        Fred::OperationContext ctx2;
+        create_test.exec(ctx2);
+        ctx2.commit_transaction();
     } catch(const Fred::InternalError& exp) {
         BOOST_FAIL("failed to create test (1):" + boost::diagnostic_information(exp) + exp.what() );
     } catch(const boost::exception& exp) {
@@ -93,7 +94,8 @@ BOOST_AUTO_TEST_CASE(test_Exec_mandatory_setup)
     Fred::InfoContactCheckOutput result_data;
 
     try {
-        result_data = info_check.exec(ctx, timezone);
+        Fred::OperationContext ctx3;
+        result_data = info_check.exec(ctx3, timezone);
     } catch(const Fred::InternalError& exp) {
         BOOST_FAIL("non-existent check (1):" + boost::diagnostic_information(exp) + exp.what() );
     } catch(const boost::exception& exp) {
@@ -139,8 +141,6 @@ BOOST_AUTO_TEST_CASE(test_Exec_mandatory_setup)
  */
 BOOST_AUTO_TEST_CASE(test_Exec_optional_setup)
 {
-    Fred::OperationContext ctx;
-
     setup_check check;
     setup_testdef testdef;
     setup_testdef_in_testsuite_of_check(testdef.testdef_name_, check.check_handle_);
@@ -153,7 +153,8 @@ BOOST_AUTO_TEST_CASE(test_Exec_optional_setup)
     Fred::InfoContactCheckOutput pre_create_test_data;
 
     try {
-        pre_create_test_data = info_check.exec(ctx, timezone);
+        Fred::OperationContext ctx1;
+        pre_create_test_data = info_check.exec(ctx1, timezone);
     } catch(const Fred::InternalError& exp) {
         BOOST_FAIL("non-existent check (1):" + boost::diagnostic_information(exp) + exp.what() );
     } catch(const boost::exception& exp) {
@@ -163,7 +164,9 @@ BOOST_AUTO_TEST_CASE(test_Exec_optional_setup)
     }
 
     try {
-        create_test.exec(ctx);
+        Fred::OperationContext ctx2;
+        create_test.exec(ctx2);
+        ctx2.commit_transaction();
     } catch(const Fred::InternalError& exp) {
         BOOST_FAIL("failed to create test (1):" + boost::diagnostic_information(exp) + exp.what() );
     } catch(const boost::exception& exp) {
@@ -175,7 +178,8 @@ BOOST_AUTO_TEST_CASE(test_Exec_optional_setup)
     Fred::InfoContactCheckOutput result_data;
 
     try {
-        result_data = info_check.exec(ctx, timezone);
+        Fred::OperationContext ctx3;
+        result_data = info_check.exec(ctx3, timezone);
     } catch(const Fred::InternalError& exp) {
         BOOST_FAIL("non-existent check (1):" + boost::diagnostic_information(exp) + exp.what() );
     } catch(const boost::exception& exp) {
@@ -221,8 +225,6 @@ BOOST_AUTO_TEST_CASE(test_Exec_optional_setup)
 */
 BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_check_handle)
 {
-    Fred::OperationContext ctx;
-
     setup_nonexistent_check_handle check;
     setup_testdef testdef;
 
@@ -230,7 +232,9 @@ BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_check_handle)
 
     bool caught_the_right_exception = false;
     try {
-        create_test.exec(ctx);
+        Fred::OperationContext ctx1;
+        create_test.exec(ctx1);
+        ctx1.commit_transaction();
     } catch(const Fred::CreateContactTest::ExceptionUnknownCheckHandle& exp) {
         caught_the_right_exception = true;
     } catch(...) {
@@ -250,8 +254,6 @@ BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_check_handle)
  */
 BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_test_name)
 {
-    Fred::OperationContext ctx;
-
     setup_check check;
     setup_nonexistent_testdef_name testdef;
 
@@ -259,7 +261,9 @@ BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_test_name)
 
     bool caught_the_right_exception = false;
     try {
+        Fred::OperationContext ctx;
         create_test.exec(ctx);
+        ctx.commit_transaction();
     } catch(const Fred::CreateContactTest::ExceptionUnknownTestName& exp) {
         caught_the_right_exception = true;
     } catch(...) {
@@ -279,8 +283,6 @@ BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_test_name)
  */
 BOOST_AUTO_TEST_CASE(test_Exec_test_name_not_in_suite)
 {
-    Fred::OperationContext ctx;
-
     setup_check check;
     setup_testdef testdef;
     // deliberately OMITTING setup_testdef_in_testsuite_of_check(...)
@@ -289,7 +291,9 @@ BOOST_AUTO_TEST_CASE(test_Exec_test_name_not_in_suite)
 
     bool caught_the_right_exception = false;
     try {
+        Fred::OperationContext ctx;
         create_test.exec(ctx);
+        ctx.commit_transaction();
     } catch(const Fred::CreateContactTest::ExceptionTestNotInMyTestsuite& exp) {
         caught_the_right_exception = true;
     } catch(...) {
@@ -310,19 +314,21 @@ BOOST_AUTO_TEST_CASE(test_Exec_test_name_not_in_suite)
  */
 BOOST_AUTO_TEST_CASE(test_Exec_violating_unique_check_test_pair)
 {
-    Fred::OperationContext ctx;
-
     setup_check check;
     setup_testdef testdef;
     setup_testdef_in_testsuite_of_check(testdef.testdef_name_, check.check_handle_);
 
     Fred::CreateContactTest create_test(check.check_handle_, testdef.testdef_name_);
     // preparation - the original previously existing record
-    create_test.exec(ctx);
+    Fred::OperationContext ctx1;
+    create_test.exec(ctx1);
+    ctx1.commit_transaction();
 
     bool caught_the_right_exception = false;
     try {
-        create_test.exec(ctx);
+        Fred::OperationContext ctx2;
+        create_test.exec(ctx2);
+        ctx2.commit_transaction();
     } catch(const Fred::CreateContactTest::ExceptionCheckTestPairAlreadyExists& exp) {
         caught_the_right_exception = true;
     } catch(...) {

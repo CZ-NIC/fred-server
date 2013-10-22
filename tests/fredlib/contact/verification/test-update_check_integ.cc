@@ -85,9 +85,9 @@ struct setup_create_update_check : public setup_check {
         timezone_(_timezone)
     {
         Fred::InfoContactCheck info_check(check_handle_);
-        Fred::OperationContext ctx;
         try {
-            data_pre_update_ = info_check.exec(ctx, timezone_);
+            Fred::OperationContext ctx1;
+            data_pre_update_ = info_check.exec(ctx1, timezone_);
         } catch(const Fred::InternalError& exp) {
            BOOST_FAIL("non-existent check (1):" + boost::diagnostic_information(exp) + exp.what() );
         } catch(const boost::exception& exp) {
@@ -98,7 +98,9 @@ struct setup_create_update_check : public setup_check {
 
         Fred::UpdateContactCheck update(check_handle_, new_status_, new_logd_request_);
         try {
-            update.exec(ctx);
+            Fred::OperationContext ctx2;
+            update.exec(ctx2);
+            ctx2.commit_transaction();
         } catch(const Fred::InternalError& exp) {
             BOOST_FAIL("failed to update check (1):" + boost::diagnostic_information(exp) + exp.what() );
         } catch(const boost::exception& exp) {
@@ -108,7 +110,8 @@ struct setup_create_update_check : public setup_check {
         }
 
         try {
-            data_post_update_ = info_check.exec(ctx, timezone_);
+            Fred::OperationContext ctx3;
+            data_post_update_ = info_check.exec(ctx3, timezone_);
         } catch(const Fred::InternalError& exp) {
             BOOST_FAIL("non-existent check (1):" + boost::diagnostic_information(exp) + exp.what() );
         } catch(const boost::exception& exp) {
@@ -153,9 +156,9 @@ struct setup_create_update_update_check : public setup_check {
     {
         Fred::InfoContactCheck info_check(check_handle_);
 
-        Fred::OperationContext ctx;
         try {
-            data_post_create_ = info_check.exec(ctx, timezone_);
+            Fred::OperationContext ctx1;
+            data_post_create_ = info_check.exec(ctx1, timezone_);
         } catch(const Fred::InternalError& exp) {
            BOOST_FAIL("non-existent check (1):" + boost::diagnostic_information(exp) + exp.what() );
         } catch(const boost::exception& exp) {
@@ -166,7 +169,9 @@ struct setup_create_update_update_check : public setup_check {
 
         Fred::UpdateContactCheck reset(check_handle_, status2_, logd_request2_);
         try {
-            reset.exec(ctx);
+            Fred::OperationContext ctx2;
+            reset.exec(ctx2);
+            ctx2.commit_transaction();
         } catch(const Fred::InternalError& exp) {
             BOOST_FAIL("failed to update check (1):" + boost::diagnostic_information(exp) + exp.what() );
         } catch(const boost::exception& exp) {
@@ -176,7 +181,8 @@ struct setup_create_update_update_check : public setup_check {
         }
 
         try {
-            data_post_reset_ = info_check.exec(ctx, timezone_);
+            Fred::OperationContext ctx3;
+            data_post_reset_ = info_check.exec(ctx3, timezone_);
         } catch(const Fred::InternalError& exp) {
             BOOST_FAIL("non-existent check (1):" + boost::diagnostic_information(exp) + exp.what() );
         } catch(const boost::exception& exp) {
@@ -187,7 +193,9 @@ struct setup_create_update_update_check : public setup_check {
 
         Fred::UpdateContactCheck update(check_handle_, status3_, logd_request3_);
         try {
-            update.exec(ctx);
+            Fred::OperationContext ctx4;
+            update.exec(ctx4);
+            ctx4.commit_transaction();
         } catch(const Fred::InternalError& exp) {
             BOOST_FAIL("failed to update check (1):" + boost::diagnostic_information(exp) + exp.what() );
         } catch(const boost::exception& exp) {
@@ -197,7 +205,8 @@ struct setup_create_update_update_check : public setup_check {
         }
 
         try {
-            data_post_update_ = info_check.exec(ctx, timezone_);
+            Fred::OperationContext ctx5;
+            data_post_update_ = info_check.exec(ctx5, timezone_);
         } catch(const Fred::InternalError& exp) {
             BOOST_FAIL("non-existent check (1):" + boost::diagnostic_information(exp) + exp.what() );
         } catch(const boost::exception& exp) {
@@ -472,8 +481,6 @@ BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusY_logd_reques
  */
 BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_check_handle)
 {
-    Fred::OperationContext ctx;
-
     setup_nonexistent_check_handle handle;
     setup_check_status status;
 
@@ -481,7 +488,9 @@ BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_check_handle)
 
     bool caught_the_right_exception = false;
     try {
+        Fred::OperationContext ctx;
         dummy.exec(ctx);
+        ctx.commit_transaction();
     } catch(const Fred::UpdateContactCheck::ExceptionUnknownCheckHandle& exp) {
         caught_the_right_exception = true;
     } catch(...) {
@@ -501,8 +510,6 @@ BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_check_handle)
  */
 BOOST_FIXTURE_TEST_CASE(test_Exec_nonexistent_status_name, autoclean_contact_verification_db)
 {
-    Fred::OperationContext ctx;
-
     setup_check check;
     setup_nonexistent_check_status_name nonexistent_status;
 
@@ -510,7 +517,9 @@ BOOST_FIXTURE_TEST_CASE(test_Exec_nonexistent_status_name, autoclean_contact_ver
 
     bool caught_the_right_exception = false;
     try {
+        Fred::OperationContext ctx;
         dummy.exec(ctx);
+        ctx.commit_transaction();
     } catch(const Fred::UpdateContactCheck::ExceptionUnknownStatusName& exp) {
         caught_the_right_exception = true;
     } catch(...) {

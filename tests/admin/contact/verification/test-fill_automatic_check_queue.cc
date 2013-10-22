@@ -92,11 +92,11 @@ T_testimpl_map create_dummy_automatic_testsuite() {
 
     Fred::OperationContext ctx;
     boost::shared_ptr<Admin::ContactVerificationTest> temp_ptr
-        (new AdminTests::DummyTestReturning(ctx, Test::OK));
+        (new AdminTests::DummyTestReturning(Test::OK));
 
     test_impls[temp_ptr->get_name()] = temp_ptr;
 
-    AdminTests::setup_testdef_in_testsuite(ctx, temp_ptr->get_name(), Fred::TestsuiteName::AUTOMATIC);
+    AdminTests::setup_testdef_in_testsuite(temp_ptr->get_name(), Fred::TestsuiteName::AUTOMATIC);
     ctx.commit_transaction();
 
     return test_impls;
@@ -127,7 +127,6 @@ struct setup_already_checked_contacts {
            setup_contact contact;
            handles_.push_back(contact.contact_handle);
         }
-        ctx.commit_transaction();
 
         clean_queue();
         empty_automatic_testsuite();
