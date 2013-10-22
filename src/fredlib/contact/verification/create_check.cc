@@ -187,7 +187,8 @@ namespace Fred
             "   FROM enum_contact_test          AS enum_test "
             "       JOIN contact_testsuite_map  AS c_map "
             "           ON enum_test.id = c_map.enum_contact_test_id "
-            "   WHERE c_map.enum_contact_testsuite_id=$1::bigint; ",
+            "   WHERE c_map.enum_contact_testsuite_id=$1::bigint"
+            "   ORDER by enum_test.id ASC; ",
             Database::query_param_list(testsuite_id)
         );
         if(testnames_res.size() == 0) {
