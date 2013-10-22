@@ -304,18 +304,14 @@ protected:\
 }\
 
 ///common exception data tags
-DECLARE_EXCEPTION_DATA(unknown_contact_handle, std::string);
-DECLARE_EXCEPTION_DATA(unknown_registrar_handle, std::string);
-DECLARE_EXCEPTION_DATA(unknown_registry_object_identifier, std::string);
-DECLARE_EXCEPTION_DATA(unknown_domain_fqdn, std::string);
-DECLARE_EXCEPTION_DATA(unknown_nsset_handle, Nullable<std::string>);
-DECLARE_EXCEPTION_DATA(unknown_keyset_handle, Nullable<std::string>);
-DECLARE_EXCEPTION_DATA(unknown_registrant_handle, std::string);
-DECLARE_EXCEPTION_DATA(unknown_object_type, std::string);
-DECLARE_EXCEPTION_DATA(unknown_admin_contact_handle, std::string);
-DECLARE_EXCEPTION_DATA(already_set_admin_contact_handle, std::string);
-DECLARE_EXCEPTION_DATA(unknown_technical_contact_handle, std::string);
-DECLARE_EXCEPTION_DATA(already_set_technical_contact_handle, std::string);
+
+/**
+* ExceptionTraits template is meant to map operations types to exceptions types.
+*  @param T is type of derived operation or other custom type.
+*  Exception types are expected in specializations of the template for type T.
+ */
+template <class T> struct ExceptionTraits;
+
 
 }//namespace Fred
 #endif // OPEXCEPTION_H_

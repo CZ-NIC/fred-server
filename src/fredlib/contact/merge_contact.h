@@ -336,6 +336,7 @@ namespace Fred
     public:
         DECLARE_EXCEPTION_DATA(unknown_source_contact_handle, std::string);
         DECLARE_EXCEPTION_DATA(unknown_destination_contact_handle, std::string);
+        DECLARE_EXCEPTION_DATA(unknown_registrar_handle, std::string);
         struct InvalidContacts
         {
             std::string source_handle;

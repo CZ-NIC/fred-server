@@ -24,6 +24,7 @@
 #include <string>
 
 #include "fredlib/object/object.h"
+#include "fredlib/registrar/registrar_impl.h"
 
 #include "fredlib/opexception.h"
 #include "fredlib/opcontext.h"
@@ -191,16 +192,13 @@ namespace Fred
         , const std::string& registrar
         , const Optional<std::string>& sponsoring_registrar
         , const Optional<std::string>& authinfo
-        , const Nullable<unsigned long long>& logd_request_id
-        , const boost::function<void (const std::string& unknown_sponsoring_registrar_handle)>&
-            callback_unknown_sponsoring_registrar_handle)
+        , const Nullable<unsigned long long>& logd_request_id)
     : handle_(handle)
     , obj_type_(obj_type)
     , registrar_(registrar)
     , sponsoring_registrar_(sponsoring_registrar)
     , authinfo_(authinfo)
     , logd_request_id_(logd_request_id)
-    , callback_unknown_sponsoring_registrar_handle_(callback_unknown_sponsoring_registrar_handle)
     {}
 
     UpdateObject& UpdateObject::set_sponsoring_registrar(const std::string& sponsoring_registrar)
@@ -221,92 +219,22 @@ namespace Fred
         return *this;
     }
 
-    UpdateObject& UpdateObject::set_callback_unknown_sponsoring_registrar_handle(
-        const boost::function<void (const std::string& unknown_sponsoring_registrar_handle)>& callback_unknown_sponsoring_registrar_handle)
-    {
-        callback_unknown_sponsoring_registrar_handle_ = callback_unknown_sponsoring_registrar_handle;
-        return *this;
-    }
-
     unsigned long long UpdateObject::exec(OperationContext& ctx)
     {
         unsigned long long history_id = 0;
         try
         {
             //check registrar
-            unsigned long long registrar_id = 0;
-            {
-                Database::Result registrar_res = ctx.get_conn().exec_params(
-                    "SELECT id FROM registrar WHERE handle = UPPER($1::text) FOR SHARE"
-                    , Database::query_param_list(registrar_));
-                if(registrar_res.size() == 0)
-                {
-                    BOOST_THROW_EXCEPTION(Exception().set_unknown_registrar_handle(registrar_));
-                }
-                if (registrar_res.size() != 1)
-                {
-                    BOOST_THROW_EXCEPTION(InternalError("failed to get registrar"));
-                }
-                registrar_id = static_cast<unsigned long long>(registrar_res[0][0]);
-            }
+            unsigned long long registrar_id = Registrar::get_registrar_id_by_handle(
+                ctx, registrar_, static_cast<Exception*>(0)//set throw
+                , &Exception::set_unknown_registrar_handle);
 
-            //check object type
-            {
-                Database::Result object_type_res = ctx.get_conn().exec_params(
-                    "SELECT id FROM enum_object_type WHERE name = $1::text FOR SHARE"
-                    , Database::query_param_list(obj_type_));
-                if(object_type_res.size() == 0)
-                {
-                    BOOST_THROW_EXCEPTION(Exception().set_unknown_object_type(obj_type_));
-                }
-                if (object_type_res.size() != 1)
-                {
-                    BOOST_THROW_EXCEPTION(InternalError("failed to get object type"));
-                }
-            }
+            Exception update_object_exception;
 
-            unsigned long long object_id = 0;
-            {
-                Database::Result object_id_res = ctx.get_conn().exec_params(
-                "SELECT oreg.id FROM object_registry oreg "
-                " JOIN enum_object_type eot ON eot.id = oreg.type AND eot.name = $2::text "
-                " WHERE oreg.name = CASE WHEN $2::text = 'domain'::text THEN LOWER($1::text) "
-                " ELSE UPPER($1::text) END AND oreg.erdate IS NULL "
-                " FOR UPDATE OF oreg"
-                , Database::query_param_list(handle_)(obj_type_));
-
-                if(object_id_res.size() == 0)
-                {
-                    BOOST_THROW_EXCEPTION(Exception().set_unknown_object_handle(handle_));
-                }
-                if (object_id_res.size() != 1)
-                {
-                    BOOST_THROW_EXCEPTION(InternalError("failed to get object handle"));
-                }
-                object_id = static_cast<unsigned long long> (object_id_res[0][0]);
-            }
-
-            //check sponsoring registrar
-            unsigned long long sponsoring_registrar_id = 0;
-            if(sponsoring_registrar_.isset())
-            {
-                Database::Result registrar_res = ctx.get_conn().exec_params(
-                    "SELECT id FROM registrar WHERE handle = UPPER($1::text) FOR SHARE"
-                    , Database::query_param_list(sponsoring_registrar_));
-                if(registrar_res.size() == 0 && callback_unknown_sponsoring_registrar_handle_)//if not found and callback is set
-                {
-                    callback_unknown_sponsoring_registrar_handle_(sponsoring_registrar_);
-                    sponsoring_registrar_ = Optional<std::string>();//unset wrong sponsoring_registrar_ to continue
-                }
-                else if (registrar_res.size() != 1)//if not found
-                {
-                    BOOST_THROW_EXCEPTION(InternalError("failed to get registrar"));
-                }
-                else //if found save id
-                {
-                    sponsoring_registrar_id = static_cast<unsigned long long>(registrar_res[0][0]);
-                }
-            }
+            //get object id with lock
+            unsigned long long object_id = get_object_id_by_handle_and_type_with_lock(
+                ctx,handle_,obj_type_,&update_object_exception,
+                &Exception::set_unknown_object_handle, &Exception::set_unknown_object_type);
 
             Database::QueryParams params;//query params
             std::stringstream sql;
@@ -317,6 +245,10 @@ namespace Fred
 
             if(sponsoring_registrar_.isset())
             {
+                //check sponsoring registrar
+                unsigned long long sponsoring_registrar_id = Registrar::get_registrar_id_by_handle(
+                    ctx, sponsoring_registrar_, &update_object_exception,
+                    &Exception::set_unknown_sponsoring_registrar_handle);
                 params.push_back(sponsoring_registrar_id);
                 sql << " , clid = $" << params.size() << "::integer ";//set sponsoring registrar
             }
@@ -329,6 +261,12 @@ namespace Fred
 
             params.push_back(object_id);
             sql <<" WHERE id = $" << params.size() << "::integer ";
+
+            //check exception
+            if(update_object_exception.throw_me())
+            {
+                BOOST_THROW_EXCEPTION(update_object_exception);
+            }
 
             ctx.get_conn().exec_params(sql.str(), params);
 
@@ -355,23 +293,21 @@ namespace Fred
         return history_id;
     }
 
-    std::ostream& operator<<(std::ostream& os, const UpdateObject& i)
+    /**
+    * Dumps state of the instance into the string
+    * @return string with description of the instance state
+    */
+    std::string UpdateObject::to_string() const
     {
-        os << "#UpdateObject obj_type: " << i.obj_type_
-            << " handle: " << i.handle_
-            << " registrar: " << i.registrar_
-            << " sponsoring registrar: " << i.sponsoring_registrar_.print_quoted()
-            << " authinfo: " << i.authinfo_.print_quoted()
-            << " logd_request_id: " << i.logd_request_id_.print_quoted()
-            ;
-        return os;
-    }
-
-    std::string UpdateObject::to_string()
-    {
-        std::stringstream ss;
-        ss << *this;
-        return ss.str();
+        return Util::format_operation_state("UpdateObject",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("obj_type",obj_type_))
+        (std::make_pair("handle",handle_))
+        (std::make_pair("registrar",registrar_))
+        (std::make_pair("sponsoring_registrar",sponsoring_registrar_.print_quoted()))
+        (std::make_pair("authinfo",authinfo_.print_quoted()))
+        (std::make_pair("logd_request_id",logd_request_id_.print_quoted()))
+        );
     }
 
     InsertHistory::InsertHistory(const Nullable<unsigned long long>& logd_request_id

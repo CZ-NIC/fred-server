@@ -34,7 +34,9 @@
 namespace Fred {
 namespace Contact {
 
-template <class EXCEPTION> unsigned long long get_ssntype_id(const Optional<std::string>& ssntype, OperationContext& ctx)
+template <class EXCEPTION, typename EXCEPTION_SETTER>
+unsigned long long get_ssntype_id(const Optional<std::string>& ssntype, OperationContext& ctx
+        , EXCEPTION* ex_ptr, EXCEPTION_SETTER ex_setter)
 {
     unsigned long long ssntype_id = 0;
     if(ssntype.isset())
@@ -44,7 +46,16 @@ template <class EXCEPTION> unsigned long long get_ssntype_id(const Optional<std:
             , Database::query_param_list(ssntype.get_value()));
         if(ssntype_res.size() == 0)
         {
-            BOOST_THROW_EXCEPTION(EXCEPTION().set_unknown_ssntype(ssntype.get_value()));
+            //BOOST_THROW_EXCEPTION(EXCEPTION().set_unknown_ssntype(ssntype.get_value()));
+            if(ex_ptr == 0)//make new exception instance, set data and throw
+            {
+                BOOST_THROW_EXCEPTION((EXCEPTION().*ex_setter)(ssntype.get_value()));
+            }
+            else//set unknown ssntype to given exception instance (don't throw) and return
+            {
+                (ex_ptr->*ex_setter)(ssntype.get_value());
+                return 0;
+            }
         }
         if(ssntype_res.size() != 1)
         {
@@ -56,7 +67,9 @@ template <class EXCEPTION> unsigned long long get_ssntype_id(const Optional<std:
     return ssntype_id;
 }
 
-template <class EXCEPTION> std::string get_country_code(const Optional<std::string>& country, OperationContext& ctx)
+template <class EXCEPTION, typename EXCEPTION_SETTER>
+std::string get_country_code(const Optional<std::string>& country, OperationContext& ctx
+        , EXCEPTION* ex_ptr, EXCEPTION_SETTER ex_setter)
 {
     std::string country_code;
     if(country.isset())
@@ -66,7 +79,16 @@ template <class EXCEPTION> std::string get_country_code(const Optional<std::stri
             , Database::query_param_list(country.get_value()));
         if(country_code_res.size() == 0)
         {
-            BOOST_THROW_EXCEPTION(EXCEPTION().set_unknown_country(country.get_value()));
+            //BOOST_THROW_EXCEPTION(EXCEPTION().set_unknown_country(country.get_value()));
+            if(ex_ptr == 0)//make new exception instance, set data and throw
+            {
+                BOOST_THROW_EXCEPTION((EXCEPTION().*ex_setter)(country.get_value()));
+            }
+            else//set unknown country to given exception instance (don't throw) and return ""
+            {
+                (ex_ptr->*ex_setter)(country.get_value());
+                return "";
+            }
         }
         if(country_code_res.size() != 1)
         {
