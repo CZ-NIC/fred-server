@@ -538,12 +538,43 @@ BOOST_FIXTURE_TEST_CASE(update_contact_by_handle_wrong_country, update_contact_f
     BOOST_CHECK(info_data_2.info_contact_data.delete_time.isnull());
 }
 
+/**
+ * test UpdateContactById
+ */
+
 BOOST_FIXTURE_TEST_CASE(update_contact_by_id, update_contact_fixture )
 {
     Fred::OperationContext ctx;
     Fred::InfoContactOutput info_data_1 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
     Fred::UpdateContactById(info_data_1.info_contact_data.id,registrar_handle).set_street3("test street 3").exec(ctx);
     ctx.commit_transaction();
+}
+
+/**
+ * test UpdateContactById with wrong database id
+ */
+BOOST_FIXTURE_TEST_CASE(update_contact_by_id_wrong_id, update_contact_fixture)
+{
+    Fred::OperationContext ctx;
+    Fred::InfoContactOutput info_data_1 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
+
+    try
+    {
+        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::UpdateContactById(0, registrar_handle)
+        .exec(ctx);
+        ctx.commit_transaction();
+        BOOST_ERROR("no exception thrown");
+    }
+    catch(const Fred::UpdateContactById::ExceptionType& ex)
+    {
+        BOOST_CHECK(ex.is_set_unknown_contact_id());
+        BOOST_CHECK(ex.get_unknown_contact_id() == 0);
+    }
+
+    Fred::InfoContactOutput info_data_2 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
+    BOOST_CHECK(info_data_1 == info_data_2);
+    BOOST_CHECK(info_data_2.info_contact_data.delete_time.isnull());
 }
 
 BOOST_AUTO_TEST_SUITE_END();//TestUpdateContact
