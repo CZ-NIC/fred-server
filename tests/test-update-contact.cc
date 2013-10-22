@@ -417,6 +417,7 @@ BOOST_FIXTURE_TEST_CASE(update_contact_by_handle_wrong_handle, update_contact_fi
         Fred::OperationContext ctx;//new connection to rollback on error
         Fred::UpdateContactByHandle(bad_test_contact_handle, registrar_handle).exec(ctx);
         ctx.commit_transaction();
+        BOOST_ERROR("no exception thrown");
     }
     catch(const Fred::UpdateContactByHandle::ExceptionType& ex)
     {
@@ -439,6 +440,7 @@ BOOST_FIXTURE_TEST_CASE(update_contact_by_handle_wrong_registrar, update_contact
         Fred::OperationContext ctx;//new connection to rollback on error
         Fred::UpdateContactByHandle(test_contact_handle, bad_registrar_handle).exec(ctx);
         ctx.commit_transaction();
+        BOOST_ERROR("no exception thrown");
     }
     catch(const Fred::UpdateContactByHandle::ExceptionType& ex)
     {
@@ -495,6 +497,7 @@ BOOST_FIXTURE_TEST_CASE(update_contact_by_handle_wrong_ssntype, update_contact_f
         .set_ssntype("bad-ssntype")
         .exec(ctx);
         ctx.commit_transaction();
+        BOOST_ERROR("no exception thrown");
     }
     catch(const Fred::UpdateContactByHandle::ExceptionType& ex)
     {
@@ -522,6 +525,7 @@ BOOST_FIXTURE_TEST_CASE(update_contact_by_handle_wrong_country, update_contact_f
         .set_country("bad-country")
         .exec(ctx);
         ctx.commit_transaction();
+        BOOST_ERROR("no exception thrown");
     }
     catch(const Fred::UpdateContactByHandle::ExceptionType& ex)
     {
