@@ -214,7 +214,7 @@ BOOST_FIXTURE_TEST_CASE(copy_contact, copy_contact_fixture)
 /**
  * test CopyContactBad
  * ...
- * calls in test shouldn't throw
+ * calls in test should throw
  */
 BOOST_FIXTURE_TEST_CASE(copy_contact_bad, copy_contact_fixture)
 {
@@ -225,7 +225,7 @@ BOOST_FIXTURE_TEST_CASE(copy_contact_bad, copy_contact_fixture)
         ctx.commit_transaction();
         BOOST_CHECK(false);
     }
-    catch(const Fred::CopyContact::Exception& ex) {
+    catch(const Fred::CopyContact::Exception &ex) {
         BOOST_CHECK(ex.is_set_src_contact_handle_not_found());
         BOOST_CHECK(ex.get_src_contact_handle_not_found().compare(bad_src_contact_handle) == 0);
     }
@@ -237,7 +237,7 @@ BOOST_FIXTURE_TEST_CASE(copy_contact_bad, copy_contact_fixture)
         ctx.commit_transaction();
         BOOST_CHECK(false);
     }
-    catch(const Fred::CopyContact::Exception& ex) {
+    catch(const Fred::CopyContact::Exception &ex) {
         BOOST_CHECK(ex.is_set_dst_contact_handle_already_exist());
         BOOST_CHECK(ex.get_dst_contact_handle_already_exist().compare(bad_dst_contact_handle) == 0);
     }
@@ -249,7 +249,7 @@ BOOST_FIXTURE_TEST_CASE(copy_contact_bad, copy_contact_fixture)
         ctx.commit_transaction();
         BOOST_CHECK(false);
     }
-    catch(const Fred::CopyContact::Exception& ex) {
+    catch(const Fred::CopyContact::Exception &ex) {
         BOOST_CHECK(ex.is_set_create_contact_failed());
     }
 }

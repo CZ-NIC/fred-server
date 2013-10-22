@@ -63,6 +63,13 @@ namespace Fred
         return *this;
     }
 
+    namespace
+    {
+    
+    void check_valid_status(OperationContext &_ctx, ObjectId _object_id, const StatusList &_status_list);
+
+    } // unnamed namespace
+
     std::string CreateObjectStateRequestId::exec(OperationContext &_ctx)
     {
         std::string object_state_names;
@@ -112,6 +119,7 @@ namespace Fred
             if (object_type_result.size() <= 0) {
                 BOOST_THROW_EXCEPTION(Exception().set_object_id_not_found(object_id_));
             }
+            check_valid_status(_ctx, object_id_, status_list_);
             const Database::Row &row = object_type_result[0];
             object_type = static_cast< ObjectType >(row[0]);
             handle_name = static_cast< std::string >(row[1]);
@@ -245,5 +253,49 @@ namespace Fred
         _ctx.get_conn().exec_params(cmd.str(), param);
         return handle_name;
     }//CreateObjectStateRequestId::exec
+
+    namespace
+    {
+    
+    void check_valid_status(OperationContext &_ctx, ObjectId _object_id, const StatusList &_status_list)
+    {
+        if (_status_list.empty()) {
+            return;
+        }
+        Database::query_param_list param(_object_id);
+        std::ostringstream query;
+        query << "SELECT eos.name "
+          "FROM enum_object_states eos "
+          "JOIN object_registry obr ON obr.type=ANY(types) "
+          "WHERE obr.id=$1::bigint AND "
+          "eos.manual AND "
+          "eos.name IN ($2::text";
+        StatusList::const_iterator pStatus = _status_list.begin();
+        param(*pStatus);
+        ++pStatus;
+        while (pStatus != _status_list.end()) {
+            param(*pStatus);
+            query << ",$" << param.size() << "::text";
+            ++pStatus;
+        }
+        query << ")";
+        Database::Result state_result = _ctx.get_conn().exec_params(query.str(), param);
+        if (state_result.size() == _status_list.size()) {
+            return;
+        }
+        CreateObjectStateRequestId::Exception e;
+        StatusList correct_status_list;
+        for (::size_t idx = 0; idx < state_result.size(); ++idx) {
+            correct_status_list.insert(static_cast< std::string >(state_result[idx][0]));
+        }
+        for (StatusList::const_iterator pStatus = _status_list.begin(); pStatus != _status_list.end(); ++pStatus) {
+            if (correct_status_list.find(*pStatus) == correct_status_list.end()) {
+                e.add_state_not_found(*pStatus);
+            }
+        }
+        BOOST_THROW_EXCEPTION(e);
+    }
+
+    } // unnamed namespace
 
 }//namespace Fred
