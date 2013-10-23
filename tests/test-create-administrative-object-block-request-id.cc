@@ -43,7 +43,7 @@
 #include "setup_server_decl.h"
 #include "time_clock.h"
 #include "fredlib/registrar.h"
-#include "fredlib/domain/create_object_state_request_id.h"
+#include "fredlib/domain/create_administrative_object_block_request_id.h"
 #include "fredlib/opexception.h"
 #include "util/util.h"
 
@@ -76,14 +76,14 @@
 #include "cfg/config_handler_decl.h"
 #include <boost/test/unit_test.hpp>
 
-BOOST_AUTO_TEST_SUITE(TestCreateObjectStateTequestId)
+BOOST_AUTO_TEST_SUITE(TestCreateAdministrativeObjectBlockRequestId)
 
-const std::string server_name = "test-create-object-state-request-id";
+const std::string server_name = "test-create-administrative-object-block-request-id";
 
 #define LOGME(WHAT) \
 std::cout << __FILE__ << "(" << __LINE__ << "): " << WHAT << " [in " << __PRETTY_FUNCTION__ << "]" << std::endl
 
-struct create_object_state_request_id_fixture
+struct create_administrative_object_block_request_id_fixture
 {
     std::string registrar_handle;
     std::string xmark;
@@ -93,11 +93,11 @@ struct create_object_state_request_id_fixture
     Fred::ObjectId test_domain_id;
     Fred::StatusList status_list;
 
-    create_object_state_request_id_fixture()
-    :xmark(RandomDataGenerator().xnumstring(6))
-    , admin_contact2_handle(std::string("TEST-OSR-ADMIN-CONTACT-HANDLE") + xmark)
-    , registrant_contact_handle(std::string("TEST-OSR-REGISTRANT-CONTACT-HANDLE") + xmark)
-    , test_domain_fqdn ( std::string("fred")+xmark+".cz")
+    create_administrative_object_block_request_id_fixture()
+    :   xmark(RandomDataGenerator().xnumstring(6)),
+        admin_contact2_handle(std::string("TEST-OSR-ADMIN-CONTACT-HANDLE") + xmark),
+        registrant_contact_handle(std::string("TEST-OSR-REGISTRANT-CONTACT-HANDLE") + xmark),
+        test_domain_fqdn ( std::string("fred")+xmark+".cz")
     {
         Fred::OperationContext ctx;
         registrar_handle = static_cast<std::string>(ctx.get_conn().exec(
@@ -105,7 +105,7 @@ struct create_object_state_request_id_fixture
         BOOST_CHECK(!registrar_handle.empty());//expecting existing system registrar
 
         Fred::CreateContact(admin_contact2_handle,registrar_handle)
-            .set_name(std::string("TEST-OSR-ADMIN-CONTACT NAME")+xmark)
+            .set_name(std::string("TEST-AOB-ADMIN-CONTACT NAME")+xmark)
             .set_disclosename(true)
             .set_street1(std::string("STR1")+xmark)
             .set_city("Praha").set_postalcode("11150").set_country("CZ")
@@ -128,7 +128,7 @@ struct create_object_state_request_id_fixture
         .set_admin_contacts(Util::vector_of<std::string>(admin_contact2_handle))
         .exec(ctx);
 
-        Database::Result status_result = ctx.get_conn().exec("SELECT name FROM enum_object_states WHERE manual AND 3=ANY(types)");
+        Database::Result status_result = ctx.get_conn().exec("SELECT name FROM enum_object_states WHERE manual AND 3=ANY(types) AND name!='serverBlocked'");
         for (::size_t idx = 0; idx < status_result.size(); ++idx) {
             status_list.insert(status_result[idx][0]);
         }
@@ -140,20 +140,20 @@ struct create_object_state_request_id_fixture
                   "erdate IS NULL", Database::query_param_list(test_domain_fqdn))[0][0]);
         ctx.commit_transaction();
     }
-    ~create_object_state_request_id_fixture()
+    ~create_administrative_object_block_request_id_fixture()
     {}
 };
 
 /**
- * test CreateObjectStateRequestId
+ * test CreateAdministrativeObjectBlockRequestId
  * ...
  * calls in test shouldn't throw
  */
-BOOST_FIXTURE_TEST_CASE(create_object_state_request_id, create_object_state_request_id_fixture)
+BOOST_FIXTURE_TEST_CASE(create_administrative_object_block_request_id, create_administrative_object_block_request_id_fixture)
 {
     {
         Fred::OperationContext ctx;
-        const std::string handle = Fred::CreateObjectStateRequestId(test_domain_id, status_list).exec(ctx);
+        const std::string handle = Fred::CreateAdministrativeObjectBlockRequestId(test_domain_id, status_list).exec(ctx);
         BOOST_CHECK(handle == test_domain_fqdn);
         ctx.commit_transaction();
     }
@@ -169,36 +169,24 @@ BOOST_FIXTURE_TEST_CASE(create_object_state_request_id, create_object_state_requ
               "obr.erdate IS NULL AND "
               "osr.canceled IS NULL AND "
               "eos.manual", Database::query_param_list(test_domain_id));
-    BOOST_CHECK(status_list.size() <= status_result.size());
+    BOOST_CHECK((status_list.size() + 1) <= status_result.size()); // status_list + 'serverBlocked'
     Fred::StatusList domain_status_list;
     for (::size_t idx = 0; idx < status_result.size(); ++idx) {
         domain_status_list.insert(static_cast< std::string >(status_result[idx][0]));
     }
+    BOOST_CHECK(domain_status_list.find("serverBlocked") != domain_status_list.end());
     for (Fred::StatusList::const_iterator pStatus = status_list.begin(); pStatus != status_list.end(); ++pStatus) {
         BOOST_CHECK(domain_status_list.find(*pStatus) != domain_status_list.end());
     }
 }
 
 /**
- * test CreateObjectStateRequestIdBad
+ * test CreateAdministrativeObjectBlockRequestIdBad
  * ...
  * calls in test shouldn't throw
  */
-BOOST_FIXTURE_TEST_CASE(create_object_state_request_id_bad, create_object_state_request_id_fixture)
+BOOST_FIXTURE_TEST_CASE(create_administrative_object_block_request_id_bad, create_administrative_object_block_request_id_fixture)
 {
-    Fred::ObjectId not_used_id;
-    try {
-        Fred::OperationContext ctx;//new connection to rollback on error
-        not_used_id = static_cast< Fred::ObjectId >(ctx.get_conn().exec("SELECT (MAX(id)+1000)*2 FROM object_registry")[0][0]);
-        Fred::CreateObjectStateRequestId(not_used_id, status_list).exec(ctx);
-        ctx.commit_transaction();
-        BOOST_CHECK(false);
-    }
-    catch(const Fred::CreateObjectStateRequestId::Exception &ex) {
-        BOOST_CHECK(ex.is_set_object_id_not_found());
-        BOOST_CHECK(ex.get_object_id_not_found() == not_used_id);
-    }
-
     Fred::StatusList bad_status_list = status_list;
     try {
         Fred::OperationContext ctx;//new connection to rollback on error
@@ -207,44 +195,36 @@ BOOST_FIXTURE_TEST_CASE(create_object_state_request_id_bad, create_object_state_
             bad_status_list.insert(status_result[idx][0]);
         }
         bad_status_list.insert(std::string("BadStatus") + xmark);
-        Fred::CreateObjectStateRequestId(test_domain_id, bad_status_list).exec(ctx);
+        Fred::CreateAdministrativeObjectBlockRequestId(test_domain_id, bad_status_list).exec(ctx);
         ctx.commit_transaction();
         BOOST_CHECK(false);
     }
-    catch(const Fred::CreateObjectStateRequestId::Exception &ex) {
+    catch(const Fred::CreateAdministrativeObjectBlockRequestId::Exception &ex) {
         BOOST_CHECK(ex.is_set_vector_of_state_not_found());
         BOOST_CHECK(ex.get_vector_of_state_not_found().size() == (bad_status_list.size() - status_list.size()));
     }
 
-    try {
-        Fred::OperationContext ctx;
-        Fred::CreateObjectStateRequestId(test_domain_id, status_list).set_valid_to(boost::posix_time::ptime(boost::gregorian::date(2005, 7, 31))).exec(ctx);
-        ctx.commit_transaction();
-        BOOST_CHECK(false);
-    }
-    catch(const Fred::CreateObjectStateRequestId::Exception &ex) {
-        BOOST_CHECK(ex.is_set_out_of_turn());
-    }
-
+    Fred::StatusList status_list_a;
+    Fred::StatusList status_list_b = status_list;
+    status_list_a.insert(*status_list_b.begin());
+    status_list_b.erase(status_list_b.begin());
     {
-        Fred::OperationContext ctx;
-        Fred::CreateObjectStateRequestId(test_domain_id, status_list).
-            set_valid_from(boost::posix_time::ptime(boost::gregorian::date(2005, 7, 31))).
-            set_valid_to(  boost::posix_time::ptime(boost::gregorian::date(2007, 7, 31))).exec(ctx);
+        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::CreateAdministrativeObjectBlockRequestId(test_domain_id, status_list_a).exec(ctx);
+        Fred::PerformObjectStateRequest(test_domain_id).exec(ctx);
         ctx.commit_transaction();
     }
-
     try {
-        Fred::OperationContext ctx;
-        Fred::CreateObjectStateRequestId(test_domain_id, status_list).
-            set_valid_from(boost::posix_time::ptime(boost::gregorian::date(2006, 7, 31))).
-            set_valid_to(  boost::posix_time::ptime(boost::gregorian::date(2008, 7, 31))).exec(ctx);
+        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::CreateAdministrativeObjectBlockRequestId(test_domain_id, status_list_b).exec(ctx);
         ctx.commit_transaction();
         BOOST_CHECK(false);
     }
-    catch(const Fred::CreateObjectStateRequestId::Exception &ex) {
-        BOOST_CHECK(ex.is_set_overlayed_time_intervals());
+    catch(const Fred::CreateAdministrativeObjectBlockRequestId::Exception &ex) {
+        BOOST_CHECK(ex.is_set_server_blocked_present());
+        BOOST_CHECK(ex.get_server_blocked_present() == test_domain_id);
     }
+
 }
 
-BOOST_AUTO_TEST_SUITE_END();//TestCreateObjectStateRequestId
+BOOST_AUTO_TEST_SUITE_END();//TestCreateAdministrativeObjectBlockRequestId

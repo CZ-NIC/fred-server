@@ -1804,10 +1804,13 @@ tests_test_blocking_SOURCES = \
 		src/mojeid/mojeid_notifier.h \
 		src/fredlib/domain/create_object_state_request_id.cc \
 		src/fredlib/domain/create_object_state_request.cc \
+		src/fredlib/domain/create_administrative_object_block_request_id.cc \
 		src/fredlib/domain/get_object_state_id_map.cc \
+		src/fredlib/domain/get_blocking_status_desc_list.cc \
 		tests/checks.h \
 		tests/test-copy-contact.cc \
-		tests/test-create-object-state-request-id.cc
+		tests/test-create-object-state-request-id.cc \
+		tests/test-create-administrative-object-block-request-id.cc
 
 tests_test_blocking_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS) \
