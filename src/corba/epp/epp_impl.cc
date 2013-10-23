@@ -7354,7 +7354,7 @@ ccReg_EPP_i::ObjectSendAuthInfo(
 
             // static check of fqdn format (no db)
             try {
-                zm->parseDomainName(FQDN, dev_null);
+                zm->parseDomainName(FQDN, dev_null, false);
             } catch(Fred::Zone::INVALID_DOMAIN_NAME&) {
                 zone = -1;
                 code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
