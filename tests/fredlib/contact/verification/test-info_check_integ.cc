@@ -48,6 +48,7 @@
 #include <boost/exception/diagnostic_information.hpp>
 #include "boost/date_time/posix_time/posix_time.hpp"
 #include "boost/date_time/local_time_adjustor.hpp"
+#include "boost/foreach.hpp"
 
 /* TODO - FIXME - only temporary for uuid mockup */
 #include  <cstdlib>
@@ -69,7 +70,8 @@ BOOST_AUTO_TEST_CASE(test_Exec)
     using std::vector;
     using std::string;
 
-    setup_check check;
+    setup_testsuite suite;
+    setup_check check(suite.testsuite_name);
 
     int check_history_steps = 5;
     int test_count = 5;
@@ -117,7 +119,10 @@ BOOST_AUTO_TEST_CASE(test_Exec)
     // building check tests
     // first test is already created in check by setup
 
-    test_names.push_back(check.testsuite_.test.testdef_name_);
+    //test_names.push_back(check.testsuite_name_.test.testdef_name_);
+    BOOST_FOREACH (const setup_testdef& def, suite.testdefs) {
+        test_names.push_back(def.testdef_name_);
+    }
 
     tests_status_history.front().push_back(Fred::ContactTestStatus::ENQUEUED);
     tests_logd_request_history.front().push_back(Optional<long long>());

@@ -92,11 +92,11 @@ T_testimpl_map create_dummy_automatic_testsuite() {
 
     Fred::OperationContext ctx;
     boost::shared_ptr<Admin::ContactVerificationTest> temp_ptr
-        (new AdminTests::DummyTestReturning(Test::OK));
+        (new DummyTestReturning(Test::OK));
 
     test_impls[temp_ptr->get_name()] = temp_ptr;
 
-    AdminTests::setup_testdef_in_testsuite(temp_ptr->get_name(), Fred::TestsuiteName::AUTOMATIC);
+    setup_testdef_in_testsuite(temp_ptr->get_name(), Fred::TestsuiteName::AUTOMATIC);
     ctx.commit_transaction();
 
     return test_impls;

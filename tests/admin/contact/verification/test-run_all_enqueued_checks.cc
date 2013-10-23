@@ -37,24 +37,23 @@
 //not using UTF defined main
 #define BOOST_TEST_NO_MAIN
 
-namespace AdminTests {
-    struct dummy_testsuite : public setup_testsuite {
 
-        std::map< std::string, boost::shared_ptr<Admin::ContactVerificationTest> > test_impls_;
+struct dummy_testsuite : public setup_empty_testsuite {
 
-        dummy_testsuite (const std::vector<std::string>& _test_return_statuses) {
-            BOOST_FOREACH(const std::string& status, _test_return_statuses) {
-                boost::shared_ptr<Admin::ContactVerificationTest> temp_ptr(new AdminTests::DummyTestReturning(status));
-                test_impls_[temp_ptr->get_name()] = temp_ptr;
-                setup_testdef_in_testsuite(temp_ptr->get_name(), testsuite_name);
-            }
+    std::map< std::string, boost::shared_ptr<Admin::ContactVerificationTest> > test_impls_;
+
+    dummy_testsuite (const std::vector<std::string>& _test_return_statuses) {
+        BOOST_FOREACH(const std::string& status, _test_return_statuses) {
+            boost::shared_ptr<Admin::ContactVerificationTest> temp_ptr(new DummyTestReturning(status));
+            test_impls_[temp_ptr->get_name()] = temp_ptr;
+            setup_testdef_in_testsuite(temp_ptr->get_name(), testsuite_name);
         }
-    };
-}
+    }
+};
 
 void test_Resulting_check_status_impl(std::vector<std::string> _test_statuses, const std::string& _resulting_check_status) {
-    AdminTests::dummy_testsuite suite(_test_statuses);
-    AdminTests::setup_check check(suite.testsuite_name);
+    dummy_testsuite suite(_test_statuses);
+    setup_check check(suite.testsuite_name);
 
     try {
         Admin::run_all_enqueued_checks( const_cast<const std::map< std::string, boost::shared_ptr<Admin::ContactVerificationTest> >& > (suite.test_impls_) );
@@ -80,9 +79,6 @@ void test_Resulting_check_status_impl(std::vector<std::string> _test_statuses, c
         ++it_test, ++it_status
     ) {
         BOOST_CHECK_EQUAL(it_test->state_history.back().status_name, *it_status);
-        if(it_test->state_history.back().status_name != *it_status) {
-            exit(5);
-        }
     }
 
     BOOST_CHECK_EQUAL(final_check_state.check_state_history.back().status_name, _resulting_check_status);
@@ -211,15 +207,15 @@ BOOST_AUTO_TEST_CASE(test_Incorrect_test_return_handling)
         Fred::OperationContext ctx;
 
         boost::shared_ptr<Admin::ContactVerificationTest> temp_ptr(
-            new AdminTests::DummyTestReturning(Test::ENQUEUED));
+            new DummyTestReturning(Test::ENQUEUED));
 
         std::map< std::string, boost::shared_ptr<Admin::ContactVerificationTest> > test_impls_;
         test_impls_[temp_ptr->get_name()] = temp_ptr;
 
-        AdminTests::setup_testsuite testsuite;
-        AdminTests::setup_testdef_in_testsuite(temp_ptr->get_name(), testsuite.testsuite_name);
+        setup_empty_testsuite testsuite;
+        setup_testdef_in_testsuite(temp_ptr->get_name(), testsuite.testsuite_name);
 
-        AdminTests::setup_check check(testsuite.testsuite_name);
+        setup_check check(testsuite.testsuite_name);
 
         ctx.commit_transaction();
 
@@ -238,14 +234,14 @@ BOOST_AUTO_TEST_CASE(test_Incorrect_test_return_handling)
         Fred::OperationContext ctx;
 
         boost::shared_ptr<Admin::ContactVerificationTest> temp_ptr(
-            new AdminTests::DummyTestReturning(Test::RUNNING));
+            new DummyTestReturning(Test::RUNNING));
 
         std::map< std::string, boost::shared_ptr<Admin::ContactVerificationTest> > test_impls_;
         test_impls_[temp_ptr->get_name()] = temp_ptr;
 
-        AdminTests::setup_testsuite testsuite;
-        AdminTests::setup_testdef_in_testsuite(temp_ptr->get_name(), testsuite.testsuite_name);
-        AdminTests::setup_check check(testsuite.testsuite_name);
+        setup_empty_testsuite testsuite;
+        setup_testdef_in_testsuite(temp_ptr->get_name(), testsuite.testsuite_name);
+        setup_check check(testsuite.testsuite_name);
 
         bool caught_the_right_exception = false;
         try {
@@ -267,14 +263,14 @@ BOOST_AUTO_TEST_CASE(test_Incorrect_test_return_handling)
  */
 BOOST_AUTO_TEST_CASE(test_Throwing_test_handling)
 {
-    boost::shared_ptr<Admin::ContactVerificationTest> temp_ptr(new AdminTests::DummyThrowingTest);
+    boost::shared_ptr<Admin::ContactVerificationTest> temp_ptr(new DummyThrowingTest);
 
     std::map< std::string, boost::shared_ptr<Admin::ContactVerificationTest> > test_impls_;
     test_impls_[temp_ptr->get_name()] = temp_ptr;
 
-    AdminTests::setup_testsuite testsuite;
-    AdminTests::setup_testdef_in_testsuite(temp_ptr->get_name(), testsuite.testsuite_name);
-    AdminTests::setup_check check(testsuite.testsuite_name);
+    setup_empty_testsuite testsuite;
+    setup_testdef_in_testsuite(temp_ptr->get_name(), testsuite.testsuite_name);
+    setup_check check(testsuite.testsuite_name);
 
     bool caught_some_exception = false;
     try {

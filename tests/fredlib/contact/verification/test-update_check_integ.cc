@@ -62,7 +62,7 @@ typedef Fred::InfoContactCheckOutput InfoContactCheckOutput;
 /**
  * implementation of testcases when updated check has just been created
  */
-struct setup_create_update_check : public setup_check {
+struct setup_create_update_check {
     std::string old_status_;
     std::string new_status_;
     Optional<long long> old_logd_request_;
@@ -77,14 +77,18 @@ struct setup_create_update_check : public setup_check {
         Optional<long long> _new_logd_request,
         const std::string& _timezone = "UTC"
     ) :
-        setup_check(_old_logd_request),
         old_status_(Fred::ContactCheckStatus::ENQUEUED),
         new_status_(_new_status),
         old_logd_request_(_old_logd_request),
         new_logd_request_(_new_logd_request),
         timezone_(_timezone)
     {
-        Fred::InfoContactCheck info_check(check_handle_);
+        setup_empty_testsuite suite;
+        setup_testdef testdef;
+        setup_testdef_in_testsuite(testdef.testdef_name_, suite.testsuite_name);
+        setup_check check(suite.testsuite_name, _old_logd_request);
+
+        Fred::InfoContactCheck info_check(check.check_handle_);
         try {
             Fred::OperationContext ctx1;
             data_pre_update_ = info_check.exec(ctx1, timezone_);
@@ -96,7 +100,7 @@ struct setup_create_update_check : public setup_check {
            BOOST_FAIL(std::string("non-existent check (3):") + exp.what());
         }
 
-        Fred::UpdateContactCheck update(check_handle_, new_status_, new_logd_request_);
+        Fred::UpdateContactCheck update(check.check_handle_, new_status_, new_logd_request_);
         try {
             Fred::OperationContext ctx2;
             update.exec(ctx2);
@@ -125,7 +129,7 @@ struct setup_create_update_check : public setup_check {
 /**
  * implementation of testcases when updated check has already been updated before
  */
-struct setup_create_update_update_check : public setup_check {
+struct setup_create_update_update_check  {
     std::string status1_;
     std::string status2_;
     std::string status3_;
@@ -145,7 +149,6 @@ struct setup_create_update_update_check : public setup_check {
         Optional<long long> _logd_request3,
         const std::string& _timezone = "UTC"
     ) :
-        setup_check(_logd_request1),
         status1_(Fred::ContactCheckStatus::ENQUEUED),
         status2_(_status2),
         status3_(_status3),
@@ -154,20 +157,25 @@ struct setup_create_update_update_check : public setup_check {
         logd_request3_(_logd_request3),
         timezone_(_timezone)
     {
-        Fred::InfoContactCheck info_check(check_handle_);
+        setup_empty_testsuite suite;
+        setup_testdef testdef;
+        setup_testdef_in_testsuite(testdef.testdef_name_, suite.testsuite_name);
+        setup_check check(suite.testsuite_name, _logd_request1);
+
+        Fred::InfoContactCheck info_check(check.check_handle_);
 
         try {
             Fred::OperationContext ctx1;
             data_post_create_ = info_check.exec(ctx1, timezone_);
         } catch(const Fred::InternalError& exp) {
-           BOOST_FAIL("non-existent check (1):" + boost::diagnostic_information(exp) + exp.what() );
+            BOOST_FAIL("non-existent check (1):" + boost::diagnostic_information(exp) + exp.what() );
         } catch(const boost::exception& exp) {
-           BOOST_FAIL("non-existent check (2):" + boost::diagnostic_information(exp));
+            BOOST_FAIL("non-existent check (2):" + boost::diagnostic_information(exp));
         } catch(const std::exception& exp) {
-           BOOST_FAIL(std::string("non-existent check (3):") + exp.what());
+            BOOST_FAIL(std::string("non-existent check (3):") + exp.what());
         }
 
-        Fred::UpdateContactCheck reset(check_handle_, status2_, logd_request2_);
+        Fred::UpdateContactCheck reset(check.check_handle_, status2_, logd_request2_);
         try {
             Fred::OperationContext ctx2;
             reset.exec(ctx2);
@@ -191,7 +199,7 @@ struct setup_create_update_update_check : public setup_check {
             BOOST_FAIL(std::string("non-existent check (3):") + exp.what());
         }
 
-        Fred::UpdateContactCheck update(check_handle_, status3_, logd_request3_);
+        Fred::UpdateContactCheck update(check.check_handle_, status3_, logd_request3_);
         try {
             Fred::OperationContext ctx4;
             update.exec(ctx4);
@@ -510,7 +518,8 @@ BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_check_handle)
  */
 BOOST_FIXTURE_TEST_CASE(test_Exec_nonexistent_status_name, autoclean_contact_verification_db)
 {
-    setup_check check;
+    setup_testsuite suite;
+    setup_check check(suite.testsuite_name);
     setup_nonexistent_check_status_name nonexistent_status;
 
     Fred::UpdateContactCheck dummy(check.check_handle_, nonexistent_status.status_name_);

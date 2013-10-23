@@ -1693,7 +1693,6 @@ tests_test_server_SOURCES = \
 		src/admin/contact/verification/run_first_enqueued_check.cc \
 		src/admin/contact/verification/run_all_enqueued_checks.cc \
 		tests/admin/contact/verification/setup_utils.h \
-		tests/admin/contact/verification/setup_utils.cc \
 		tests/admin/contact/verification/test-run_all_enqueued_checks.cc \
 		src/admin/contact/verification/fill_automatic_check_queue.cc \
 		tests/admin/contact/verification/test-fill_automatic_check_queue.cc

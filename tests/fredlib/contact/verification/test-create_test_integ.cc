@@ -58,7 +58,8 @@ const std::string server_name = "test-contact_verification-create_test_integ";
  */
 BOOST_AUTO_TEST_CASE(test_Exec_mandatory_setup)
 {
-    setup_check check;
+    setup_testsuite suite;
+    setup_check check(suite.testsuite_name);
     setup_testdef testdef;
     setup_testdef_in_testsuite_of_check(testdef.testdef_name_, check.check_handle_);
 
@@ -141,7 +142,8 @@ BOOST_AUTO_TEST_CASE(test_Exec_mandatory_setup)
  */
 BOOST_AUTO_TEST_CASE(test_Exec_optional_setup)
 {
-    setup_check check;
+    setup_testsuite suite;
+    setup_check check(suite.testsuite_name);
     setup_testdef testdef;
     setup_testdef_in_testsuite_of_check(testdef.testdef_name_, check.check_handle_);
     setup_logd_request_id logd_request;
@@ -254,7 +256,8 @@ BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_check_handle)
  */
 BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_test_name)
 {
-    setup_check check;
+    setup_testsuite suite;
+    setup_check check(suite.testsuite_name);
     setup_nonexistent_testdef_name testdef;
 
     Fred::CreateContactTest create_test(check.check_handle_, testdef.testdef_name);
@@ -283,7 +286,8 @@ BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_test_name)
  */
 BOOST_AUTO_TEST_CASE(test_Exec_test_name_not_in_suite)
 {
-    setup_check check;
+    setup_testsuite suite;
+    setup_check check(suite.testsuite_name);
     setup_testdef testdef;
     // deliberately OMITTING setup_testdef_in_testsuite_of_check(...)
 
@@ -314,7 +318,8 @@ BOOST_AUTO_TEST_CASE(test_Exec_test_name_not_in_suite)
  */
 BOOST_AUTO_TEST_CASE(test_Exec_violating_unique_check_test_pair)
 {
-    setup_check check;
+    setup_testsuite suite;
+    setup_check check(suite.testsuite_name);
     setup_testdef testdef;
     setup_testdef_in_testsuite_of_check(testdef.testdef_name_, check.check_handle_);
 
