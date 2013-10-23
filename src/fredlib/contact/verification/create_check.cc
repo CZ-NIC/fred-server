@@ -123,7 +123,8 @@ namespace Fred
             "SELECT historyid"
             "   FROM object_registry"
             "   WHERE name=$1::varchar "
-            "       AND type=1; ",
+            "       AND type=1 "
+            "       AND erdate IS NULL; ",
             Database::query_param_list(contact_handle_)
         );
         if(contact_history_res.size() != 1) {
