@@ -5162,7 +5162,7 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
         LOG( NOTICE_LOG , "Domain::checkAvail  fqdn [%s]" , (const char * ) fqdn );
 
         dType = dman->checkAvail( FQDN , dConflict);
-        const Fred::Zone::Zone* temp_zone;
+        const Fred::Zone::Zone* temp_zone = NULL;
 
         LOG( NOTICE_LOG , "domain type %d" , dType );
         switch (dType) {
@@ -7327,7 +7327,7 @@ ccReg_EPP_i::ObjectSendAuthInfo(
     std::auto_ptr<Fred::Zone::Manager> zm( Fred::Zone::Manager::create() );
     std::vector<std::string> dev_null;
 
-    const Fred::Zone::Zone* temp_zone;
+    const Fred::Zone::Zone* temp_zone = NULL;
 
     switch (act) {
         case EPP_ContactSendAuthInfo:
