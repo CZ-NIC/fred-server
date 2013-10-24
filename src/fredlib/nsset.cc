@@ -674,8 +674,10 @@ public:
    															 bool glue, 
    															 bool allowIDN) const {
     try {
-      // test according to database limit
-      if (hostname.length()> 255) return 1;
+      // 255 - 2 = 253 (difference between wire and textual representation of fqdn)
+      // fix for #9673, we don't care about possible trailing dot here because it
+      // is forbidden in actual implementation
+      if (hostname.length() > 253) return 1;
       // parse hostname (will throw exception on invalid)
       Zone::DomainName name;
       zm->parseDomainName(hostname,name,allowIDN);
