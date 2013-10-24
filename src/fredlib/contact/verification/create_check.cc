@@ -197,9 +197,14 @@ namespace Fred
         }
 
         for(Database::Result::Iterator it = testnames_res.begin(); it != testnames_res.end(); ++it) {
+            Optional<long long> conv_logd_request_id
+                = (logd_request_id_.isnull())
+                    ? Optional<long long>()
+                    : Optional<long long>(static_cast<long long>(logd_request_id_));
             Fred::CreateContactTest(
                 handle,
-                static_cast<std::string>( (*it)["name_"] )
+                static_cast<std::string>( (*it)["name_"] ),
+                conv_logd_request_id
             ).exec(_ctx);
         }
 
