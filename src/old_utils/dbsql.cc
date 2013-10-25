@@ -808,13 +808,12 @@ int DB::GetDomainID(
 int DB::GetHostID(
   const char *fqdn, int nssetID)
 {
-  char sqlString[128];
   int hostID=0;
+  std::stringstream sql;
 
-  snprintf(sqlString, sizeof(sqlString), "SELECT id FROM HOST WHERE fqdn=\'%s\' AND nssetid=%d;",
-      fqdn, nssetID);
+  sql << "SELECT id FROM HOST WHERE fqdn = '" << Escape2(fqdn) << "' AND nssetid = " << nssetID <<  ";";
 
-  if (ExecSelect(sqlString) ) {
+  if (ExecSelect(sql.str().c_str()) ) {
     if (GetSelectRows() == 1) {
       hostID = atoi(GetFieldValue( 0, 0) );
       LOG( SQL_LOG , "CheckHost fqdn=\'%s\' nssetid=%d  -> hostID %d" , fqdn , nssetID , hostID );
