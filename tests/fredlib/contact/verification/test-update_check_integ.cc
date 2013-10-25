@@ -516,7 +516,7 @@ BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_check_handle)
  @pre nonexistent status name
  @post ExceptionUnknownStatusName
  */
-BOOST_FIXTURE_TEST_CASE(test_Exec_nonexistent_status_name, autoclean_contact_verification_db)
+BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_status_name)
 {
     setup_testsuite suite;
     setup_check check(suite.testsuite_name);
