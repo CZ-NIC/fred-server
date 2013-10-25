@@ -31,33 +31,29 @@
 #include <boost/foreach.hpp>
 
 #include "tests/admin/contact/verification/setup_utils.h"
+#include "tests/fredlib/contact/verification/setup_utils.h"
+
 
 //not using UTF defined main
 #define BOOST_TEST_NO_MAIN
 
-namespace AdminTests {
-    struct dummy_testsuite : public setup_testsuite {
 
-        std::map< std::string, boost::shared_ptr<Admin::ContactVerificationTest> > test_impls_;
+struct dummy_testsuite : public setup_empty_testsuite {
 
-        dummy_testsuite (Fred::OperationContext& _ctx, const std::vector<std::string>& _test_return_statuses)
-            : setup_testsuite(_ctx)
-        {
-            BOOST_FOREACH(const std::string& status, _test_return_statuses) {
-                boost::shared_ptr<Admin::ContactVerificationTest> temp_ptr(new AdminTests::DummyTestReturning(_ctx, status));
-                test_impls_[temp_ptr->get_name()] = temp_ptr;
-                setup_testdef_in_testsuite(_ctx, temp_ptr->get_name(), testsuite_name);
-            }
+    std::map< std::string, boost::shared_ptr<Admin::ContactVerificationTest> > test_impls_;
+
+    dummy_testsuite (const std::vector<std::string>& _test_return_statuses) {
+        BOOST_FOREACH(const std::string& status, _test_return_statuses) {
+            boost::shared_ptr<Admin::ContactVerificationTest> temp_ptr(new DummyTestReturning(status));
+            test_impls_[temp_ptr->get_name()] = temp_ptr;
+            setup_testdef_in_testsuite(temp_ptr->get_name(), testsuite_name);
         }
-    };
-}
+    }
+};
 
 void test_Resulting_check_status_impl(std::vector<std::string> _test_statuses, const std::string& _resulting_check_status) {
-    Fred::OperationContext ctx1;
-    AdminTests::dummy_testsuite suite(ctx1, _test_statuses);
-    AdminTests::setup_check check(ctx1, suite.testsuite_name);
-
-    ctx1.commit_transaction();
+    dummy_testsuite suite(_test_statuses);
+    setup_check check(suite.testsuite_name);
 
     try {
         Admin::run_all_enqueued_checks( const_cast<const std::map< std::string, boost::shared_ptr<Admin::ContactVerificationTest> >& > (suite.test_impls_) );
@@ -92,7 +88,7 @@ namespace Test = Fred::ContactTestStatus;
 namespace Check = Fred::ContactCheckStatus;
 
 BOOST_AUTO_TEST_SUITE(TestContactVerification)
-BOOST_FIXTURE_TEST_SUITE(TestRunEnqueuedChecks, AdminTests::contact_garbage_collector)
+BOOST_FIXTURE_TEST_SUITE(TestRunEnqueuedChecks, autoclean_contact_verification_db)
 
 const std::string server_name = "test-contact_verification_integration-run_all_enqueued_checks";
 
@@ -115,11 +111,32 @@ BOOST_AUTO_TEST_CASE(test_Resulting_check_status)
     statuses = boost::assign::list_of(Test::OK)(Test::OK)(Test::OK)(Test::OK)(Test::OK);
     test_Resulting_check_status_impl(statuses, Check::OK);
 
+    statuses = boost::assign::list_of(Test::OK)(Test::SKIPPED);
+    test_Resulting_check_status_impl(statuses, Check::OK);
+
+    statuses = boost::assign::list_of(Test::OK)(Test::OK)(Test::OK)(Test::OK)(Test::SKIPPED);
+    test_Resulting_check_status_impl(statuses, Check::OK);
+
+    statuses = boost::assign::list_of(Test::OK)(Test::SKIPPED)(Test::OK)(Test::OK)(Test::OK)(Test::OK)(Test::OK);
+    test_Resulting_check_status_impl(statuses, Check::OK);
+
     // resulting in fail
     statuses = boost::assign::list_of(Test::FAIL);
     test_Resulting_check_status_impl(statuses, Check::FAIL);
 
     statuses = boost::assign::list_of(Test::FAIL)(Test::FAIL)(Test::FAIL)(Test::FAIL);
+    test_Resulting_check_status_impl(statuses, Check::FAIL);
+
+    statuses = boost::assign::list_of(Test::FAIL)(Test::SKIPPED);
+    test_Resulting_check_status_impl(statuses, Check::FAIL);
+
+    statuses = boost::assign::list_of(Test::FAIL)(Test::FAIL)(Test::SKIPPED)(Test::FAIL)(Test::FAIL);
+    test_Resulting_check_status_impl(statuses, Check::FAIL);
+
+    statuses = boost::assign::list_of(Test::FAIL)(Test::FAIL)(Test::FAIL)(Test::FAIL)(Test::SKIPPED);
+    test_Resulting_check_status_impl(statuses, Check::FAIL);
+
+    statuses = boost::assign::list_of(Test::FAIL)(Test::SKIPPED)(Test::FAIL)(Test::FAIL)(Test::FAIL)(Test::FAIL)(Test::FAIL);
     test_Resulting_check_status_impl(statuses, Check::FAIL);
 
     statuses = boost::assign::list_of(Test::FAIL)(Test::OK)(Test::OK)(Test::OK)(Test::OK);
@@ -129,6 +146,15 @@ BOOST_AUTO_TEST_CASE(test_Resulting_check_status)
     test_Resulting_check_status_impl(statuses, Check::FAIL);
 
     statuses = boost::assign::list_of(Test::OK)(Test::OK)(Test::FAIL)(Test::OK)(Test::OK)(Test::OK);
+    test_Resulting_check_status_impl(statuses, Check::FAIL);
+
+    statuses = boost::assign::list_of(Test::FAIL)(Test::SKIPPED)(Test::OK)(Test::OK)(Test::OK)(Test::OK);
+    test_Resulting_check_status_impl(statuses, Check::FAIL);
+
+    statuses = boost::assign::list_of(Test::OK)(Test::OK)(Test::SKIPPED)(Test::OK)(Test::SKIPPED)(Test::OK)(Test::OK)(Test::OK)(Test::FAIL);
+    test_Resulting_check_status_impl(statuses, Check::FAIL);
+
+    statuses = boost::assign::list_of(Test::OK)(Test::SKIPPED)(Test::FAIL)(Test::OK)(Test::OK)(Test::SKIPPED)(Test::OK);
     test_Resulting_check_status_impl(statuses, Check::FAIL);
 
     // resulting in to_be_decided
@@ -162,7 +188,11 @@ BOOST_AUTO_TEST_CASE(test_Resulting_check_status)
     statuses = boost::assign::list_of(Test::FAIL)(Test::FAIL)(Test::MANUAL)(Test::FAIL)(Test::FAIL);
     test_Resulting_check_status_impl(statuses, Check::TO_BE_DECIDED);
 
-    AdminTests::delete_all_checks_etc();
+    statuses = boost::assign::list_of(Test::SKIPPED);
+    test_Resulting_check_status_impl(statuses, Check::TO_BE_DECIDED);
+
+    statuses = boost::assign::list_of(Test::FAIL)(Test::MANUAL)(Test::SKIPPED)(Test::FAIL)(Test::ERROR)(Test::OK);
+    test_Resulting_check_status_impl(statuses, Check::TO_BE_DECIDED);
 }
 
 /**
@@ -177,15 +207,15 @@ BOOST_AUTO_TEST_CASE(test_Incorrect_test_return_handling)
         Fred::OperationContext ctx;
 
         boost::shared_ptr<Admin::ContactVerificationTest> temp_ptr(
-            new AdminTests::DummyTestReturning(ctx, Test::ENQUEUED));
+            new DummyTestReturning(Test::ENQUEUED));
 
         std::map< std::string, boost::shared_ptr<Admin::ContactVerificationTest> > test_impls_;
         test_impls_[temp_ptr->get_name()] = temp_ptr;
 
-        AdminTests::setup_testsuite testsuite(ctx);
-        AdminTests::setup_testdef_in_testsuite(ctx, temp_ptr->get_name(), testsuite.testsuite_name);
+        setup_empty_testsuite testsuite;
+        setup_testdef_in_testsuite(temp_ptr->get_name(), testsuite.testsuite_name);
 
-        AdminTests::setup_check check(ctx, testsuite.testsuite_name);
+        setup_check check(testsuite.testsuite_name);
 
         ctx.commit_transaction();
 
@@ -204,17 +234,14 @@ BOOST_AUTO_TEST_CASE(test_Incorrect_test_return_handling)
         Fred::OperationContext ctx;
 
         boost::shared_ptr<Admin::ContactVerificationTest> temp_ptr(
-            new AdminTests::DummyTestReturning(ctx, Test::RUNNING));
+            new DummyTestReturning(Test::RUNNING));
 
         std::map< std::string, boost::shared_ptr<Admin::ContactVerificationTest> > test_impls_;
         test_impls_[temp_ptr->get_name()] = temp_ptr;
 
-        AdminTests::setup_testsuite testsuite(ctx);
-        AdminTests::setup_testdef_in_testsuite(ctx, temp_ptr->get_name(), testsuite.testsuite_name);
-
-        AdminTests::setup_check check(ctx, testsuite.testsuite_name);
-
-        ctx.commit_transaction();
+        setup_empty_testsuite testsuite;
+        setup_testdef_in_testsuite(temp_ptr->get_name(), testsuite.testsuite_name);
+        setup_check check(testsuite.testsuite_name);
 
         bool caught_the_right_exception = false;
         try {
@@ -225,8 +252,6 @@ BOOST_AUTO_TEST_CASE(test_Incorrect_test_return_handling)
 
         BOOST_CHECK_EQUAL(caught_the_right_exception, true);
     }
-
-    AdminTests::delete_all_checks_etc();
 }
 
 /**
@@ -238,19 +263,14 @@ BOOST_AUTO_TEST_CASE(test_Incorrect_test_return_handling)
  */
 BOOST_AUTO_TEST_CASE(test_Throwing_test_handling)
 {
-    Fred::OperationContext ctx;
-
-    boost::shared_ptr<Admin::ContactVerificationTest> temp_ptr(new AdminTests::DummyThrowingTest(ctx));
+    boost::shared_ptr<Admin::ContactVerificationTest> temp_ptr(new DummyThrowingTest);
 
     std::map< std::string, boost::shared_ptr<Admin::ContactVerificationTest> > test_impls_;
     test_impls_[temp_ptr->get_name()] = temp_ptr;
 
-    AdminTests::setup_testsuite testsuite(ctx);
-    AdminTests::setup_testdef_in_testsuite(ctx, temp_ptr->get_name(), testsuite.testsuite_name);
-
-    AdminTests::setup_check check(ctx, testsuite.testsuite_name);
-
-    ctx.commit_transaction();
+    setup_empty_testsuite testsuite;
+    setup_testdef_in_testsuite(temp_ptr->get_name(), testsuite.testsuite_name);
+    setup_check check(testsuite.testsuite_name);
 
     bool caught_some_exception = false;
     try {
@@ -272,8 +292,6 @@ BOOST_AUTO_TEST_CASE(test_Throwing_test_handling)
     BOOST_CHECK_EQUAL(final_check_state.tests.front().state_history.back().status_name, Test::ERROR);
 
     BOOST_CHECK_EQUAL(final_check_state.check_state_history.back().status_name, Check::TO_BE_DECIDED);
-
-    AdminTests::delete_all_checks_etc();
 }
 
 BOOST_AUTO_TEST_SUITE_END();

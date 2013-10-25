@@ -92,11 +92,11 @@ T_testimpl_map create_dummy_automatic_testsuite() {
 
     Fred::OperationContext ctx;
     boost::shared_ptr<Admin::ContactVerificationTest> temp_ptr
-        (new AdminTests::DummyTestReturning(ctx, Check::OK));
+        (new DummyTestReturning(Test::OK));
 
     test_impls[temp_ptr->get_name()] = temp_ptr;
 
-    AdminTests::setup_testdef_in_testsuite(ctx, temp_ptr->get_name(), Fred::TestsuiteName::AUTOMATIC);
+    setup_testdef_in_testsuite(temp_ptr->get_name(), Fred::TestsuiteName::AUTOMATIC);
     ctx.commit_transaction();
 
     return test_impls;
@@ -124,10 +124,9 @@ struct setup_already_checked_contacts {
         }
 
         for(int i=0; i < count_ - pre_existing_count; ++i) {
-           setup_contact contact(ctx);
+           setup_contact contact;
            handles_.push_back(contact.contact_handle);
         }
-        ctx.commit_transaction();
 
         clean_queue();
         empty_automatic_testsuite();
@@ -147,7 +146,7 @@ struct setup_already_checked_contacts {
 };
 
 BOOST_AUTO_TEST_SUITE(TestContactVerification)
-BOOST_FIXTURE_TEST_SUITE(TestFillAutomaticQueue, AdminTests::contact_garbage_collector)
+BOOST_FIXTURE_TEST_SUITE(TestFillAutomaticQueue, autoclean_contact_verification_db)
 
 const std::string server_name = "test-contact_verification_integration-fill_automatic_check_queue";
 
@@ -158,8 +157,6 @@ parameter of fill_automatic_check_queue must correctly affect number of newly en
  */
 BOOST_AUTO_TEST_CASE(test_Max_queue_lenght_parameter)
 {
-    clean_queue();
-
     create_dummy_automatic_testsuite();
     T_enq_ch enqueued;
 
@@ -184,8 +181,6 @@ BOOST_AUTO_TEST_CASE(test_Max_queue_lenght_parameter)
  */
 BOOST_AUTO_TEST_CASE(test_Try_fill_full_queue)
 {
-    clean_queue();
-
     create_dummy_automatic_testsuite();
 
     T_enq_ch enqueued;
@@ -200,8 +195,6 @@ BOOST_AUTO_TEST_CASE(test_Try_fill_full_queue)
     enqueued = Admin::fill_automatic_check_queue(101);
     BOOST_CHECK_EQUAL(get_queue_length(), 101);
     BOOST_CHECK_EQUAL(enqueued.size(), 0);
-
-    AdminTests::delete_all_checks_etc();
 }
 
 /**
@@ -266,16 +259,13 @@ BOOST_AUTO_TEST_CASE(test_Enqueueing_never_checked_contacts)
         }
     };
 
-    AdminTests::delete_all_checks_etc();
     setup_already_checked_contacts(50);
 
     // make set of new, never checked contacts
-    Fred::OperationContext ctx;
     std::vector<std::string> never_checked_contacts;
     for(int i=0; i<50; ++i) {
-        never_checked_contacts.push_back(setup_contact(ctx).contact_handle);
+        never_checked_contacts.push_back(setup_contact().contact_handle);
     }
-    ctx.commit_transaction();
 
     // test scenarios
     T_enq_ch enqueued_checks = Admin::fill_automatic_check_queue(10);
@@ -305,8 +295,6 @@ BOOST_AUTO_TEST_CASE(test_Enqueueing_never_checked_contacts)
 
     enqueued_checks = Admin::fill_automatic_check_queue(50);
     BOOST_CHECK_EQUAL(enqueued_checks.size(), 0);
-
-    AdminTests::delete_all_checks_etc();
 }
 
 /**
@@ -317,9 +305,6 @@ BOOST_AUTO_TEST_CASE(test_Enqueueing_never_checked_contacts)
  */
 BOOST_AUTO_TEST_CASE(test_Enqueueing_already_checked_contacts)
 {
-    clean_queue();
-    AdminTests::delete_all_checks_etc();
-
     setup_already_checked_contacts(20);
 
     std::vector<std::string> handles;
@@ -353,9 +338,6 @@ BOOST_AUTO_TEST_CASE(test_Enqueueing_already_checked_contacts)
 
         ++it_checked;
     }
-
-    clean_queue();
-    AdminTests::delete_all_checks_etc();
 }
 
 BOOST_AUTO_TEST_SUITE_END();

@@ -266,6 +266,7 @@ namespace  Admin {
         bool has_some_ok = false;
         bool has_some_fail = false;
         bool has_some_error = false;
+        bool has_some_skipped = false;  // mainly to prevent from counting SKIPPED as OTHER
         bool has_some_running = false;
         bool has_some_other = false;
 
@@ -274,6 +275,8 @@ namespace  Admin {
                 has_some_ok = true;
             } else if(status == Fred::ContactTestStatus::FAIL) {
                 has_some_fail = true;
+            } else if(status == Fred::ContactTestStatus::SKIPPED) {
+                has_some_skipped = true;
             } else if(status == Fred::ContactTestStatus::ERROR) {
                 has_some_error = true;
             } else if(status == Fred::ContactTestStatus::RUNNING) {
@@ -283,8 +286,10 @@ namespace  Admin {
             }
         }
 
-        /* NOTE: checking if has_some_ok relates to the situation of empty vector
-         * let's play it safe and don't say that check is ok*/
+        /* NOTE: checking if has_some_ok == true handles the improbably but possible
+         * case of empty test statuses vector
+         * NOTE: skipped test is ok - if it shouldn't be ok, than FAIL or ERROR are more appropriate
+         */
         if(has_some_ok && !has_some_fail && !has_some_error && !has_some_running && !has_some_other) {
             return Fred::ContactCheckStatus::OK;
         } else if(has_some_fail && !has_some_error && !has_some_running && !has_some_other ) {

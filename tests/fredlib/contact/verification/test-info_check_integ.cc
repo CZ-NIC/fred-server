@@ -48,13 +48,14 @@
 #include <boost/exception/diagnostic_information.hpp>
 #include "boost/date_time/posix_time/posix_time.hpp"
 #include "boost/date_time/local_time_adjustor.hpp"
+#include "boost/foreach.hpp"
 
 /* TODO - FIXME - only temporary for uuid mockup */
 #include  <cstdlib>
 #include "util/random_data_generator.h"
 
 BOOST_AUTO_TEST_SUITE(TestContactVerification)
-BOOST_AUTO_TEST_SUITE(TestInfoContactCheck_integ)
+BOOST_FIXTURE_TEST_SUITE(TestInfoContactCheck_integ, autoclean_contact_verification_db)
 
 const std::string server_name = "test-contact_verification-info_check_integ";
 
@@ -63,13 +64,14 @@ const std::string server_name = "test-contact_verification-info_check_integ";
  @pre existing check handle with some tests and history
  @post correct data in InfoContactCheckOutput
  */
-BOOST_FIXTURE_TEST_CASE(test_Exec, fixture_has_ctx)
+BOOST_AUTO_TEST_CASE(test_Exec)
 {
     using std::map;
     using std::vector;
     using std::string;
 
-    setup_check check(ctx);
+    setup_testsuite suite;
+    setup_check check(suite.testsuite_name);
 
     int check_history_steps = 5;
     int test_count = 5;
@@ -95,14 +97,16 @@ BOOST_FIXTURE_TEST_CASE(test_Exec, fixture_has_ctx)
 
     // building check history
     for(int i=1; i<check_history_steps; ++i) {
-        check_status_history.push_back(setup_check_status(ctx).status_name_);
+        check_status_history.push_back(setup_check_status().status_name_);
         check_logd_request_history.push_back(setup_logd_request_id().logd_request_id);
 
         Fred::UpdateContactCheck update_check(
             check.check_handle_, check_status_history.back(),
             check_logd_request_history.back() );
         try {
-            update_check.exec(ctx);
+            Fred::OperationContext ctx1;
+            update_check.exec(ctx1);
+            ctx1.commit_transaction();
         } catch(const Fred::InternalError& exp) {
             BOOST_FAIL("failed to update check (1):" + boost::diagnostic_information(exp) + exp.what() );
         } catch(const boost::exception& exp) {
@@ -115,7 +119,10 @@ BOOST_FIXTURE_TEST_CASE(test_Exec, fixture_has_ctx)
     // building check tests
     // first test is already created in check by setup
 
-    test_names.push_back(check.testsuite_.test.testdef_name_);
+    //test_names.push_back(check.testsuite_name_.test.testdef_name_);
+    BOOST_FOREACH (const setup_testdef& def, suite.testdefs) {
+        test_names.push_back(def.testdef_name_);
+    }
 
     tests_status_history.front().push_back(Fred::ContactTestStatus::ENQUEUED);
     tests_logd_request_history.front().push_back(Optional<long long>());
@@ -123,7 +130,7 @@ BOOST_FIXTURE_TEST_CASE(test_Exec, fixture_has_ctx)
 
     // starting from 1 because first history step is already CREATEd
     for(int j=1; j<tests_history_steps.at(0); ++j) {
-        tests_status_history.at(0).push_back(setup_test_status(ctx).status_name_);
+        tests_status_history.at(0).push_back(setup_test_status().status_name_);
         tests_logd_request_history.at(0).push_back(Optional<long long>(setup_logd_request_id().logd_request_id));
         tests_error_msg_history.at(0).push_back(Optional<string>(setup_error_msg().error_msg));
 
@@ -135,7 +142,9 @@ BOOST_FIXTURE_TEST_CASE(test_Exec, fixture_has_ctx)
             tests_error_msg_history.at(0).at(j) );
 
         try {
-            update_test.exec(ctx);
+            Fred::OperationContext ctx2;
+            update_test.exec(ctx2);
+            ctx2.commit_transaction();
         } catch(const Fred::InternalError& exp) {
            BOOST_FAIL("failed to update test (1):" + boost::diagnostic_information(exp) + exp.what() );
         } catch(const boost::exception& exp) {
@@ -145,12 +154,12 @@ BOOST_FIXTURE_TEST_CASE(test_Exec, fixture_has_ctx)
         }
     }
     for(int i=1; i<test_count; ++i) {
-        test_names.push_back(setup_testdef(ctx).testdef_name_);
+        test_names.push_back(setup_testdef().testdef_name_);
         tests_status_history.at(i).push_back(Fred::ContactTestStatus::ENQUEUED);
         tests_logd_request_history.at(i).push_back(Optional<long long>(setup_logd_request_id().logd_request_id));
         tests_error_msg_history.at(i).push_back(Optional<string>());
 
-        setup_testdef_in_testsuite_of_check(ctx, test_names.at(i), check.check_handle_);
+        setup_testdef_in_testsuite_of_check(test_names.at(i), check.check_handle_);
 
         Fred::CreateContactTest create_test(
             check.check_handle_,
@@ -158,7 +167,9 @@ BOOST_FIXTURE_TEST_CASE(test_Exec, fixture_has_ctx)
             tests_logd_request_history.at(i).at(0) );
 
         try {
-            create_test.exec(ctx);
+            Fred::OperationContext ctx3;
+            create_test.exec(ctx3);
+            ctx3.commit_transaction();
         } catch(const Fred::InternalError& exp) {
             BOOST_FAIL("failed to create test (1):" + boost::diagnostic_information(exp) + exp.what() );
         } catch(const boost::exception& exp) {
@@ -169,7 +180,7 @@ BOOST_FIXTURE_TEST_CASE(test_Exec, fixture_has_ctx)
 
         // starting from 1 because first history step is already CREATEd
         for(int j=1; j<tests_history_steps.at(i); ++j) {
-            tests_status_history.at(i).push_back(setup_test_status(ctx).status_name_);
+            tests_status_history.at(i).push_back(setup_test_status().status_name_);
             tests_logd_request_history.at(i).push_back(Optional<long long>(setup_logd_request_id().logd_request_id));
             tests_error_msg_history.at(i).push_back(Optional<string>(setup_error_msg().error_msg));
 
@@ -181,7 +192,9 @@ BOOST_FIXTURE_TEST_CASE(test_Exec, fixture_has_ctx)
                 tests_error_msg_history.at(i).at(j) );
 
             try {
-                update_test.exec(ctx);
+                Fred::OperationContext ctx4;
+                update_test.exec(ctx4);
+                ctx4.commit_transaction();
             } catch(const Fred::InternalError& exp) {
                BOOST_FAIL("failed to update test (1):" + boost::diagnostic_information(exp) + exp.what() );
             } catch(const boost::exception& exp) {
@@ -195,7 +208,8 @@ BOOST_FIXTURE_TEST_CASE(test_Exec, fixture_has_ctx)
     Fred::InfoContactCheck info_op(check.check_handle_);
     Fred::InfoContactCheckOutput info;
     try {
-        info = info_op.exec(ctx);
+        Fred::OperationContext ctx5;
+        info = info_op.exec(ctx5);
     } catch(const Fred::InternalError& exp) {
         BOOST_FAIL("failed to update test (1):" + boost::diagnostic_information(exp) + exp.what() );
     } catch(const boost::exception& exp) {
@@ -249,15 +263,16 @@ BOOST_FIXTURE_TEST_CASE(test_Exec, fixture_has_ctx)
  @pre nonexistent check handle
  @post ExceptionUnknownCheckHandle
  */
-BOOST_FIXTURE_TEST_CASE(test_Exec_nonexistent_check_handle, fixture_has_ctx)
+BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_check_handle)
 {
-    setup_nonexistent_check_handle handle(ctx);
+    setup_nonexistent_check_handle handle;
 
     Fred::InfoContactCheck dummy(handle.check_handle);
 
     bool caught_the_right_exception = false;
     try {
-        dummy.exec(ctx);
+        Fred::OperationContext ctx1;
+        dummy.exec(ctx1);
     } catch(const Fred::InfoContactCheck::ExceptionUnknownCheckHandle& exp) {
         caught_the_right_exception = true;
     } catch(...) {

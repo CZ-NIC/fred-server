@@ -54,7 +54,7 @@
 #include "util/random_data_generator.h"
 
 BOOST_AUTO_TEST_SUITE(TestContactVerification)
-BOOST_AUTO_TEST_SUITE(TestUpdateContactTest_integ)
+BOOST_FIXTURE_TEST_SUITE(TestUpdateContactTest_integ, autoclean_contact_verification_db)
 
 const std::string server_name = "test-contact_verification-update_test_integ";
 
@@ -67,7 +67,8 @@ typedef Fred::InfoContactCheckOutput::ContactTestResultState ContactTestState;
 /**
  * implementation of testcases when updated test has just been created
  */
-struct setup_create_update_test : public setup_test {
+struct setup_create_update_test {
+    std::string test_name_;
     std::string old_status_;
     std::string new_status_;
     Optional<long long> old_logd_request_;
@@ -79,15 +80,12 @@ struct setup_create_update_test : public setup_test {
     std::string timezone_;
 
     setup_create_update_test(
-        Fred::OperationContext& _ctx,
-        const std::string& _testdef_name,
         const std::string& _new_status,
         Optional<long long> _old_logd_request,
         Optional<long long> _new_logd_request,
         Optional<std::string> _new_error_msg,
         const std::string& _timezone = "UTC"
     ) :
-        setup_test(_ctx, _testdef_name, _old_logd_request),
         old_status_(Fred::ContactTestStatus::ENQUEUED),
         new_status_(_new_status),
         old_logd_request_(_old_logd_request),
@@ -96,10 +94,17 @@ struct setup_create_update_test : public setup_test {
         new_error_msg_(_new_error_msg),
         timezone_(_timezone)
     {
-        Fred::InfoContactCheck info_check(check_handle_);
+        setup_empty_testsuite suite;
+        setup_testdef testdef;
+        setup_testdef_in_testsuite(testdef.testdef_name_, suite.testsuite_name);
+        setup_check check(suite.testsuite_name, old_logd_request_);
+        test_name_ = testdef.testdef_name_;
+
+        Fred::InfoContactCheck info_check(check.check_handle_);
 
         try {
-            data_pre_update_ = info_check.exec(_ctx, timezone_);
+            Fred::OperationContext ctx1;
+            data_pre_update_ = info_check.exec(ctx1, timezone_);
         } catch(const Fred::InternalError& exp) {
            BOOST_FAIL("non-existent test (1):" + boost::diagnostic_information(exp) + exp.what() );
         } catch(const boost::exception& exp) {
@@ -108,22 +113,25 @@ struct setup_create_update_test : public setup_test {
            BOOST_FAIL(std::string("non-existent test (3):") + exp.what());
         }
 
-        Fred::UpdateContactTest update(check_handle_, testdef_name_, new_status_, new_logd_request_, new_error_msg_);
+        Fred::UpdateContactTest update(check.check_handle_, test_name_, new_status_, new_logd_request_, new_error_msg_);
         try {
-            update.exec(_ctx);
+            Fred::OperationContext ctx2;
+            update.exec(ctx2);
+            ctx2.commit_transaction();
         } catch(const Fred::InternalError& exp) {
             BOOST_FAIL("failed to update test (1):" + boost::diagnostic_information(exp) + exp.what() );
         } catch(const boost::exception& exp) {
             BOOST_FAIL("failed to update test (2):" + boost::diagnostic_information(exp)
                 +"\n" + data_pre_update_.to_string()
-                +"\n" + testdef_name_
+                +"\n" + testdef.testdef_name_
                 +"\n" + new_status_);
         } catch(const std::exception& exp) {
             BOOST_FAIL(std::string("failed to update test (3):") + exp.what());
         }
 
         try {
-            data_post_update_ = info_check.exec(_ctx, timezone_);
+            Fred::OperationContext ctx3;
+            data_post_update_ = info_check.exec(ctx3, timezone_);
         } catch(const Fred::InternalError& exp) {
             BOOST_FAIL("non-existent test (1):" + boost::diagnostic_information(exp) + exp.what() );
         } catch(const boost::exception& exp) {
@@ -137,7 +145,8 @@ struct setup_create_update_test : public setup_test {
 /**
  * implementation of testcases when updated test has already been updated before
  */
-struct setup_create_update_update_test : public virtual setup_test {
+struct setup_create_update_update_test {
+    std::string test_name_;
     const std::string status1_;
     std::string status2_;
     std::string status3_;
@@ -153,8 +162,6 @@ struct setup_create_update_update_test : public virtual setup_test {
     std::string timezone_;
 
     setup_create_update_update_test(
-        Fred::OperationContext& _ctx,
-        const std::string& _test_name,
         const std::string& _status2,
         const std::string& _status3,
         Optional<long long> _logd_request1,
@@ -164,7 +171,6 @@ struct setup_create_update_update_test : public virtual setup_test {
         Optional<std::string> _error_msg3,
         const std::string& _timezone = "UTC"
     ) :
-        setup_test(_ctx, _test_name, _logd_request1),
         status1_(Fred::ContactCheckStatus::ENQUEUED),
         status2_(_status2),
         status3_(_status3),
@@ -175,10 +181,17 @@ struct setup_create_update_update_test : public virtual setup_test {
         error_msg3_(_error_msg3),
         timezone_(_timezone)
     {
-        Fred::InfoContactCheck info_check(check_handle_);
+        setup_testsuite suite;
+        setup_testdef testdef;
+        setup_testdef_in_testsuite(testdef.testdef_name_, suite.testsuite_name);
+        setup_check check(suite.testsuite_name);
+        test_name_ = testdef.testdef_name_;
+
+        Fred::InfoContactCheck info_check(check.check_handle_);
 
         try {
-            data_post_create_ = info_check.exec(_ctx, timezone_);
+            Fred::OperationContext ctx1;
+            data_post_create_ = info_check.exec(ctx1, timezone_);
         } catch(const Fred::InternalError& exp) {
            BOOST_FAIL("non-existent test (1):" + boost::diagnostic_information(exp) + exp.what() );
         } catch(const boost::exception& exp) {
@@ -187,9 +200,11 @@ struct setup_create_update_update_test : public virtual setup_test {
            BOOST_FAIL(std::string("non-existent test (3):") + exp.what());
         }
 
-        Fred::UpdateContactTest reset(check_handle_, testdef_name_, status2_, logd_request2_, error_msg2_);
+        Fred::UpdateContactTest reset(check.check_handle_, test_name_, status2_, logd_request2_, error_msg2_);
         try {
-            reset.exec(_ctx);
+            Fred::OperationContext ctx2;
+            reset.exec(ctx2);
+            ctx2.commit_transaction();
         } catch(const Fred::InternalError& exp) {
             BOOST_FAIL("failed to update test (1):" + boost::diagnostic_information(exp) + exp.what() );
         } catch(const boost::exception& exp) {
@@ -199,7 +214,8 @@ struct setup_create_update_update_test : public virtual setup_test {
         }
 
         try {
-            data_post_reset_ = info_check.exec(_ctx, timezone_);
+            Fred::OperationContext ctx3;
+            data_post_reset_ = info_check.exec(ctx3, timezone_);
         } catch(const Fred::InternalError& exp) {
             BOOST_FAIL("non-existent test (1):" + boost::diagnostic_information(exp) + exp.what() );
         } catch(const boost::exception& exp) {
@@ -208,9 +224,11 @@ struct setup_create_update_update_test : public virtual setup_test {
             BOOST_FAIL(std::string("non-existent test (3):") + exp.what());
         }
 
-        Fred::UpdateContactTest update(check_handle_, testdef_name_, status3_, logd_request3_, error_msg3_);
+        Fred::UpdateContactTest update(check.check_handle_, testdef.testdef_name_, status3_, logd_request3_, error_msg3_);
         try {
-            update.exec(_ctx);
+            Fred::OperationContext ctx4;
+            update.exec(ctx4);
+            ctx4.commit_transaction();
         } catch(const Fred::InternalError& exp) {
             BOOST_FAIL("failed to update test (1):" + boost::diagnostic_information(exp) + exp.what() );
         } catch(const boost::exception& exp) {
@@ -220,7 +238,8 @@ struct setup_create_update_update_test : public virtual setup_test {
         }
 
         try {
-            data_post_update_ = info_check.exec(_ctx, timezone_);
+            Fred::OperationContext ctx5;
+            data_post_update_ = info_check.exec(ctx5, timezone_);
         } catch(const Fred::InternalError& exp) {
             BOOST_FAIL("non-existent test (1):" + boost::diagnostic_information(exp) + exp.what() );
         } catch(const boost::exception& exp) {
@@ -325,10 +344,8 @@ void check(const std::string& testname, const InfoContactCheckOutput& data_pre_u
  */
 BOOST_AUTO_TEST_CASE(test_Update)
 {
-    Fred::OperationContext ctx;
-
-    setup_test_status status1(ctx);
-    setup_test_status status2(ctx);
+    setup_test_status status1;
+    setup_test_status status2;
 
     std::vector<std::string> status_post_created;
     std::vector<std::pair<std::string, std::string> > status_post_reset;
@@ -371,9 +388,8 @@ BOOST_AUTO_TEST_CASE(test_Update)
     BOOST_FOREACH(const std::string& status, status_post_created) {
         BOOST_FOREACH(logd_request_pair& logd_request, logd_request_post_created) {
             BOOST_FOREACH(const Optional<std::string>& error_msg, error_msg_post_created) {
-                setup_testdef def(ctx);
-                setup_create_update_test testcase(ctx, def.testdef_name_, status, logd_request.first, logd_request.second, error_msg );
-                check(testcase.testdef_name_, testcase.data_pre_update_, testcase.data_post_update_, testcase.old_status_, testcase.new_status_, testcase.old_logd_request_, testcase.new_logd_request_, testcase.old_error_msg_, testcase.new_error_msg_);
+                setup_create_update_test testcase(status, logd_request.first, logd_request.second, error_msg );
+                check(testcase.test_name_, testcase.data_pre_update_, testcase.data_post_update_, testcase.old_status_, testcase.new_status_, testcase.old_logd_request_, testcase.new_logd_request_, testcase.old_error_msg_, testcase.new_error_msg_);
             }
         }
     }
@@ -383,9 +399,8 @@ BOOST_AUTO_TEST_CASE(test_Update)
     BOOST_FOREACH(pair_string& status, status_post_reset) {
         BOOST_FOREACH(logd_request_tuple& logd_request, logd_request_post_reset) {
             BOOST_FOREACH(pair_optional_string& error_msg, error_msg_post_reset) {
-                setup_testdef def(ctx);
-                setup_create_update_update_test testcase(ctx, def.testdef_name_, status.first, status.second, logd_request.get<0>(), logd_request.get<1>(), logd_request.get<2>(), error_msg.first, error_msg.second );
-                check(testcase.testdef_name_, testcase.data_post_reset_, testcase.data_post_update_, testcase.status2_, testcase.status3_, testcase.logd_request2_, testcase.logd_request3_, testcase.error_msg2_, testcase.error_msg3_);
+                setup_create_update_update_test testcase(status.first, status.second, logd_request.get<0>(), logd_request.get<1>(), logd_request.get<2>(), error_msg.first, error_msg.second );
+                check(testcase.test_name_, testcase.data_post_reset_, testcase.data_post_update_, testcase.status2_, testcase.status3_, testcase.logd_request2_, testcase.logd_request3_, testcase.error_msg2_, testcase.error_msg3_);
             }
         }
     }
@@ -400,16 +415,17 @@ BOOST_AUTO_TEST_CASE(test_Update)
  */
 BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_check_handle)
 {
-    Fred::OperationContext ctx;
-    setup_nonexistent_check_handle check(ctx);
-    setup_testdef testdef(ctx);
-    setup_test_status status(ctx);
+    setup_nonexistent_check_handle check;
+    setup_testdef testdef;
+    setup_test_status status;
 
     Fred::UpdateContactTest dummy(check.check_handle, testdef.testdef_name_, status.status_name_);
 
     bool caught_the_right_exception = false;
     try {
+        Fred::OperationContext ctx;
         dummy.exec(ctx);
+        ctx.commit_transaction();
     } catch(const Fred::UpdateContactTest::ExceptionUnknownCheckHandle& exp) {
         caught_the_right_exception = true;
     } catch(...) {
@@ -431,16 +447,18 @@ BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_check_handle)
  */
 BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_check_test_pair)
 {
-    Fred::OperationContext ctx;
-    setup_check check(ctx);
-    setup_testdef testdef(ctx);
-    setup_test_status status(ctx);
+    setup_testsuite suite;
+    setup_check check(suite.testsuite_name);
+    setup_testdef testdef;
+    setup_test_status status;
 
     Fred::UpdateContactTest dummy(check.check_handle_, testdef.testdef_name_, status.status_name_);
 
     bool caught_the_right_exception = false;
     try {
+        Fred::OperationContext ctx;
         dummy.exec(ctx);
+        ctx.commit_transaction();
     } catch(const Fred::UpdateContactTest::ExceptionUnknownCheckTestPair& exp) {
         caught_the_right_exception = true;
     } catch(...) {
@@ -461,16 +479,18 @@ BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_check_test_pair)
  */
 BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_test_name)
 {
-    Fred::OperationContext ctx;
-    setup_check check(ctx);
-    setup_nonexistent_testdef_name test(ctx);
-    setup_test_status status(ctx);
+    setup_testsuite suite;
+    setup_check check(suite.testsuite_name);
+    setup_nonexistent_testdef_name test;
+    setup_test_status status;
 
     Fred::UpdateContactTest dummy(check.check_handle_, test.testdef_name, status.status_name_);
 
     bool caught_the_right_exception = false;
     try {
+        Fred::OperationContext ctx;
         dummy.exec(ctx);
+        ctx.commit_transaction();
     } catch(const Fred::UpdateContactTest::ExceptionUnknownTestName& exp) {
         caught_the_right_exception = true;
     } catch(...) {
@@ -492,16 +512,19 @@ BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_test_name)
  */
 BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_status_name)
 {
-    Fred::OperationContext ctx;
-    setup_testdef testdef(ctx);
-    setup_test test(ctx, testdef.testdef_name_);
-    setup_nonexistent_test_status_name status(ctx);
+    setup_empty_testsuite suite;
+    setup_testdef testdef;
+    setup_testdef_in_testsuite(testdef.testdef_name_, suite.testsuite_name);
+    setup_check check(suite.testsuite_name);
+    setup_nonexistent_test_status_name status;
 
-    Fred::UpdateContactTest dummy(test.check_handle_, test.testdef_name_, status.status_name_);
+    Fred::UpdateContactTest dummy(check.check_handle_, testdef.testdef_name_, status.status_name_);
 
     bool caught_the_right_exception = false;
     try {
+        Fred::OperationContext ctx;
         dummy.exec(ctx);
+        ctx.commit_transaction();
     } catch(const Fred::UpdateContactTest::ExceptionUnknownStatusName& exp) {
         caught_the_right_exception = true;
     } catch(...) {
