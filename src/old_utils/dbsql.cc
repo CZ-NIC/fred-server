@@ -242,7 +242,7 @@ DB::GetDSRecordId(
         << " WHERE keysetid=" << keysetId
         << " AND keytag=" << keyTag
         << " AND alg=" << alg
-        << " AND digest='" << digest << "'";
+        << " AND digest='" << Escape2(digest) << "'";
     if (maxSigLife != -1)
         query << " AND maxsiglife=" << maxSigLife;
 
@@ -272,7 +272,7 @@ DB::GetDSRecordId(
         << " FROM dsrecord"
         << " WHERE keytag=" << keyTag
         << " AND alg=" << alg
-        << " AND digest='" << digest << "'";
+        << " AND digest='" << Escape2(digest) << "'";
     if (maxSigLife != -1)
         query << " AND maxsiglife=" << maxSigLife;
 
@@ -321,7 +321,7 @@ DB::GetDNSKeyId(
         << " AND flags=" << flags
         << " AND protocol=" << protocol
         << " AND alg=" << alg
-        << " AND key='" << key << "'";
+        << " AND key='" << Escape2(key) << "'";
     if (ExecSelect(query.str().c_str())) {
         if (GetSelectRows() > 0) {
             id = atoi(GetFieldValue(0, 0));
@@ -349,7 +349,7 @@ DB::GetDNSKeyId(
         << " WHERE flags=" << flags
         << " AND protocol=" << protocol
         << " AND alg=" << alg
-        << " AND key='" << key << "'";
+        << " AND key='" << Escape2(key) << "'";
     if (ExecSelect(query.str().c_str())) {
         id = atoi(GetFieldValue(0, 0));
         if (id != 0) {
