@@ -43,7 +43,7 @@ namespace Fred
 {
     /**
      * Diff of contact data.
-     * Data of the contact difference.
+     * Data of the contact difference with the same members as contact data but in optional pairs. Optional pair member is set in case of difference in compared contact data.
      */
     struct InfoContactDiff : public Util::Printable
     {
@@ -87,7 +87,7 @@ namespace Fred
         Optional<std::pair<unsigned long long,unsigned long long> > id;/**< id of the contact object*/
 
         /**
-        * Constructor of the contact data structure.
+        * Constructor of the contact data diff structure.
         */
         InfoContactDiff();
 
