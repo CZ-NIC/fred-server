@@ -51,6 +51,7 @@
 #include "fredlib/contact/delete_contact.h"
 #include "fredlib/contact/create_contact.h"
 #include "fredlib/contact/info_contact.h"
+#include "fredlib/contact/info_contact_diff.h"
 #include "fredlib/nsset/create_nsset.h"
 #include "fredlib/keyset/create_keyset.h"
 #include "fredlib/domain/create_domain.h"
@@ -167,6 +168,26 @@ BOOST_FIXTURE_TEST_CASE(info_contact, test_contact_fixture )
             BOOST_CHECK(output.at(0) == contact_info1);
         }
     }
+
+}
+
+/**
+ * test call InfoContactDiff
+*/
+BOOST_FIXTURE_TEST_CASE(info_contact_diff, test_contact_fixture )
+{
+    Fred::OperationContext ctx;
+    Fred::InfoContactOutput contact_info1 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
+    Fred::InfoContactOutput contact_info2 = Fred::InfoContactByHandle(test_contact_handle).set_lock().exec(ctx);
+
+    Fred::InfoContactDiff test_diff;
+
+    //differing data
+    test_diff.id = std::make_pair(1ull,2ull);
+    test_diff.delete_time = std::make_pair(Nullable<boost::posix_time::ptime>()
+            ,Nullable<boost::posix_time::ptime>(boost::posix_time::second_clock::local_time()));
+
+    BOOST_MESSAGE(test_diff.to_string());
 
 }
 
