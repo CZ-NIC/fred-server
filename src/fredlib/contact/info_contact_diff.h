@@ -47,44 +47,46 @@ namespace Fred
      */
     struct InfoContactDiff : public Util::Printable
     {
-        Optional<std::pair<unsigned long long,unsigned long long> > crhistoryid;/**< first historyid of contact history*/
-        Optional<std::pair<unsigned long long,unsigned long long> > historyid;/**< last historyid of contact history*/
-        Optional<std::pair<Nullable<boost::posix_time::ptime>, Nullable<boost::posix_time::ptime> > > delete_time; /**< contact delete time in set local zone*/
-        Optional<std::pair<std::string,std::string> > handle;/**< contact handle */
-        Optional<std::pair<std::string,std::string> > roid;/**< registry object identifier of the contact */
-        Optional<std::pair<std::string,std::string> > sponsoring_registrar_handle;/**< registrar administering the contact */
-        Optional<std::pair<std::string,std::string> > create_registrar_handle;/**< registrar that created the contact */
-        Optional<std::pair<Nullable<std::string>, Nullable<std::string> > > update_registrar_handle;/**< registrar which last time changed the contact */
-        Optional<std::pair<boost::posix_time::ptime,boost::posix_time::ptime> > creation_time;/**< creation time of the contact in set local zone*/
-        Optional<std::pair<Nullable<boost::posix_time::ptime>, Nullable<boost::posix_time::ptime> > > update_time; /**< last update time of the contact in set local zone*/
-        Optional<std::pair<Nullable<boost::posix_time::ptime>, Nullable<boost::posix_time::ptime> > > transfer_time; /**<last transfer time in set local zone*/
-        Optional<std::pair<std::string,std::string> > authinfopw;/**< password for transfer */
-        Optional<std::pair<Nullable<std::string>, Nullable<std::string> > > name ;/**< name of contact person */
-        Optional<std::pair<Nullable<std::string>, Nullable<std::string> > > organization;/**< full trade name of organization */
-        Optional<std::pair<Nullable<std::string>, Nullable<std::string> > > street1;/**< part of address */
-        Optional<std::pair<Nullable<std::string>, Nullable<std::string> > > street2;/**< part of address */
-        Optional<std::pair<Nullable<std::string>, Nullable<std::string> > > street3;/**< part of address*/
-        Optional<std::pair<Nullable<std::string>, Nullable<std::string> > > city;/**< part of address - city */
-        Optional<std::pair<Nullable<std::string>, Nullable<std::string> > > stateorprovince;/**< part of address - region */
-        Optional<std::pair<Nullable<std::string>, Nullable<std::string> > > postalcode;/**< part of address - postal code */
-        Optional<std::pair<Nullable<std::string>, Nullable<std::string> > > country;/**< two character country code or country name */
-        Optional<std::pair<Nullable<std::string>, Nullable<std::string> > > telephone;/**<  telephone number */
-        Optional<std::pair<Nullable<std::string>, Nullable<std::string> > > fax;/**< fax number */
-        Optional<std::pair<Nullable<std::string>, Nullable<std::string> > > email;/**< e-mail address */
-        Optional<std::pair<Nullable<std::string>, Nullable<std::string> > > notifyemail;/**< to this e-mail address will be send message in case of any change in domain or nsset affecting contact */
-        Optional<std::pair<Nullable<std::string>, Nullable<std::string> > > vat;/**< taxpayer identification number */
-        Optional<std::pair<Nullable<std::string>, Nullable<std::string> > > ssntype;/**< type of identification from enumssntype table */
-        Optional<std::pair<Nullable<std::string>, Nullable<std::string> > > ssn;/**< unambiguous identification number e.g. social security number, identity card number, date of birth */
-        Optional<std::pair<Nullable<bool>, Nullable<bool> > > disclosename;/**< whether to reveal contact name */
-        Optional<std::pair<Nullable<bool>, Nullable<bool> > > discloseorganization;/**< whether to reveal organization */
-        Optional<std::pair<Nullable<bool>, Nullable<bool> > > discloseaddress;/**< whether to reveal address */
-        Optional<std::pair<Nullable<bool>, Nullable<bool> > > disclosetelephone;/**< whether to reveal phone number */
-        Optional<std::pair<Nullable<bool>, Nullable<bool> > > disclosefax;/**< whether to reveal fax number */
-        Optional<std::pair<Nullable<bool>, Nullable<bool> > > discloseemail;/**< whether to reveal email address */
-        Optional<std::pair<Nullable<bool>, Nullable<bool> > > disclosevat;/**< whether to reveal taxpayer identification number */
-        Optional<std::pair<Nullable<bool>, Nullable<bool> > > discloseident;/**< whether to reveal unambiguous identification number */
-        Optional<std::pair<Nullable<bool>, Nullable<bool> > > disclosenotifyemail;/**< whether to reveal notify email */
-        Optional<std::pair<unsigned long long,unsigned long long> > id;/**< id of the contact object*/
+        template <class T> struct DiffMemeber { typedef Optional<std::pair<T,T> > Type;};
+
+        DiffMemeber<unsigned long long>::Type crhistoryid;/**< first historyid of contact history*/
+        DiffMemeber<unsigned long long>::Type historyid;/**< last historyid of contact history*/
+        DiffMemeber<Nullable<boost::posix_time::ptime> >::Type delete_time; /**< contact delete time in set local zone*/
+        DiffMemeber<std::string>::Type handle;/**< contact handle */
+        DiffMemeber<std::string>::Type roid;/**< registry object identifier of the contact */
+        DiffMemeber<std::string>::Type sponsoring_registrar_handle;/**< registrar administering the contact */
+        DiffMemeber<std::string>::Type create_registrar_handle;/**< registrar that created the contact */
+        DiffMemeber<Nullable<std::string> >::Type update_registrar_handle;/**< registrar which last time changed the contact */
+        DiffMemeber<boost::posix_time::ptime>::Type creation_time;/**< creation time of the contact in set local zone*/
+        DiffMemeber<Nullable<boost::posix_time::ptime> >::Type update_time; /**< last update time of the contact in set local zone*/
+        DiffMemeber<Nullable<boost::posix_time::ptime> >::Type transfer_time; /**<last transfer time in set local zone*/
+        DiffMemeber<std::string>::Type authinfopw;/**< password for transfer */
+        DiffMemeber<Nullable<std::string> >::Type name ;/**< name of contact person */
+        DiffMemeber<Nullable<std::string> >::Type organization;/**< full trade name of organization */
+        DiffMemeber<Nullable<std::string> >::Type street1;/**< part of address */
+        DiffMemeber<Nullable<std::string> >::Type street2;/**< part of address */
+        DiffMemeber<Nullable<std::string> >::Type street3;/**< part of address*/
+        DiffMemeber<Nullable<std::string> >::Type city;/**< part of address - city */
+        DiffMemeber<Nullable<std::string> >::Type stateorprovince;/**< part of address - region */
+        DiffMemeber<Nullable<std::string> >::Type postalcode;/**< part of address - postal code */
+        DiffMemeber<Nullable<std::string> >::Type country;/**< two character country code or country name */
+        DiffMemeber<Nullable<std::string> >::Type telephone;/**<  telephone number */
+        DiffMemeber<Nullable<std::string> >::Type fax;/**< fax number */
+        DiffMemeber<Nullable<std::string> >::Type email;/**< e-mail address */
+        DiffMemeber<Nullable<std::string> >::Type notifyemail;/**< to this e-mail address will be send message in case of any change in domain or nsset affecting contact */
+        DiffMemeber<Nullable<std::string> >::Type vat;/**< taxpayer identification number */
+        DiffMemeber<Nullable<std::string> >::Type ssntype;/**< type of identification from enumssntype table */
+        DiffMemeber<Nullable<std::string> >::Type ssn;/**< unambiguous identification number e.g. social security number, identity card number, date of birth */
+        DiffMemeber<Nullable<bool> >::Type disclosename;/**< whether to reveal contact name */
+        DiffMemeber<Nullable<bool> >::Type discloseorganization;/**< whether to reveal organization */
+        DiffMemeber<Nullable<bool> >::Type discloseaddress;/**< whether to reveal address */
+        DiffMemeber<Nullable<bool> >::Type disclosetelephone;/**< whether to reveal phone number */
+        DiffMemeber<Nullable<bool> >::Type disclosefax;/**< whether to reveal fax number */
+        DiffMemeber<Nullable<bool> >::Type discloseemail;/**< whether to reveal email address */
+        DiffMemeber<Nullable<bool> >::Type disclosevat;/**< whether to reveal taxpayer identification number */
+        DiffMemeber<Nullable<bool> >::Type discloseident;/**< whether to reveal unambiguous identification number */
+        DiffMemeber<Nullable<bool> >::Type disclosenotifyemail;/**< whether to reveal notify email */
+        DiffMemeber<unsigned long long>::Type id;/**< id of the contact object*/
 
         /**
         * Constructor of the contact data diff structure.
