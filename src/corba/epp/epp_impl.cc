@@ -7310,7 +7310,7 @@ ccReg_EPP_i::ObjectSendAuthInfo(
         short act, const char * table, const char *fname, const char *name,
         const ccReg::EppParams &params)
 {
-    int zone;
+    int zone = 0;
     int id = 0;
     std::string FQDN(name);
     boost::to_lower(FQDN);
