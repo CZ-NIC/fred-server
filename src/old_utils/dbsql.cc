@@ -242,7 +242,7 @@ DB::GetDSRecordId(
         << " WHERE keysetid=" << keysetId
         << " AND keytag=" << keyTag
         << " AND alg=" << alg
-        << " AND digest='" << digest << "'";
+        << " AND digest='" << Escape2(digest) << "'";
     if (maxSigLife != -1)
         query << " AND maxsiglife=" << maxSigLife;
 
@@ -272,7 +272,7 @@ DB::GetDSRecordId(
         << " FROM dsrecord"
         << " WHERE keytag=" << keyTag
         << " AND alg=" << alg
-        << " AND digest='" << digest << "'";
+        << " AND digest='" << Escape2(digest) << "'";
     if (maxSigLife != -1)
         query << " AND maxsiglife=" << maxSigLife;
 
@@ -321,7 +321,7 @@ DB::GetDNSKeyId(
         << " AND flags=" << flags
         << " AND protocol=" << protocol
         << " AND alg=" << alg
-        << " AND key='" << key << "'";
+        << " AND key='" << Escape2(key) << "'";
     if (ExecSelect(query.str().c_str())) {
         if (GetSelectRows() > 0) {
             id = atoi(GetFieldValue(0, 0));
@@ -349,7 +349,7 @@ DB::GetDNSKeyId(
         << " WHERE flags=" << flags
         << " AND protocol=" << protocol
         << " AND alg=" << alg
-        << " AND key='" << key << "'";
+        << " AND key='" << Escape2(key) << "'";
     if (ExecSelect(query.str().c_str())) {
         id = atoi(GetFieldValue(0, 0));
         if (id != 0) {
@@ -808,13 +808,12 @@ int DB::GetDomainID(
 int DB::GetHostID(
   const char *fqdn, int nssetID)
 {
-  char sqlString[128];
   int hostID=0;
+  std::stringstream sql;
 
-  snprintf(sqlString, sizeof(sqlString), "SELECT id FROM HOST WHERE fqdn=\'%s\' AND nssetid=%d;",
-      fqdn, nssetID);
+  sql << "SELECT id FROM HOST WHERE fqdn = '" << Escape2(fqdn) << "' AND nssetid = " << nssetID <<  ";";
 
-  if (ExecSelect(sqlString) ) {
+  if (ExecSelect(sql.str().c_str()) ) {
     if (GetSelectRows() == 1) {
       hostID = atoi(GetFieldValue( 0, 0) );
       LOG( SQL_LOG , "CheckHost fqdn=\'%s\' nssetid=%d  -> hostID %d" , fqdn , nssetID , hostID );

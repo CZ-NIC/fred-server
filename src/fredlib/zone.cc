@@ -25,6 +25,7 @@
 #include "types.h"
 #include <ctype.h>
 #include <idna.h>
+#include <boost/algorithm/string.hpp>
 
 #include "model_zone.h"
 #include "model_zone_ns.h"
@@ -187,15 +188,32 @@ namespace Fred
 
 
       /// compare if domain belongs to this zone (according to suffix)
-      bool isDomainApplicable(const std::string& domain) const
+      bool isDomainApplicable(const std::string& fqdn) const
       {
-          const std::string& fqdn = ModelZone::getFqdn();
-        std::string copy = domain;
-        for (unsigned i=0; i<copy.length(); i++)
-          copy[i] = tolower(copy[i]);
-        unsigned l = fqdn.length();
-        if (copy.length() < l) return false;
-        return copy.compare(copy.length()-l,l,fqdn) == 0;
+          typedef std::string string;
+          // make local copies for normalization (to lower case)
+          string zone_fqdn ( ModelZone::getFqdn() );
+          string domain_fqdn (fqdn);
+
+          boost::to_lower(domain_fqdn);
+          boost::to_lower(zone_fqdn);
+
+          int domain_length = domain_fqdn.length();
+          int zone_length = zone_fqdn.length();
+
+          if (domain_length <= zone_length) {
+              return false;
+          }
+
+          // substr starts one char before zone length (must include the dot)
+          if( domain_fqdn.substr(domain_length - zone_length - 1)
+              ==
+              string(".") + zone_fqdn
+          ) {
+              return true;
+          } else {
+              return false;
+          }
       }
 
       /// max. number of labels in fqdn
