@@ -1299,7 +1299,7 @@ struct create_geneppoperation_fixture
                                 , zone_id
                                 , registrar_id
                                 , 0 //object_id
-                                , boost::posix_time::second_clock::local_time() //crdate //local timestamp
+                                , boost::posix_time::second_clock::universal_time() //crdate //utc timestamp
                                 , first_day_of_last_month//date_from //local date
                                 , last_day_of_last_month// date_to //local date
                                 , Decimal ("900000"));
@@ -1320,7 +1320,7 @@ struct create_geneppoperation_fixture
                                   , zone_id
                                   , registrar_id
                                   , 0 //object_id
-                                  , boost::posix_time::second_clock::local_time() //crdate //local timestamp
+                                  , boost::posix_time::second_clock::universal_time() //crdate //utc timestamp
                                 , first_day_of_last_month//date_from //local date
                                 , last_day_of_last_month// date_to //local date
                                   , Decimal ("800000"));
@@ -1345,7 +1345,7 @@ struct create_geneppoperation_fixture
                                   , zone_id
                                   , registrar_id
                                   , 0 //object_id
-                                  , boost::posix_time::second_clock::local_time() //crdate //local timestamp
+                                  , boost::posix_time::second_clock::universal_time() //crdate //utc timestamp
                                 , first_day_of_last_month//date_from //local date
                                 , last_day_of_last_month// date_to //local date
                                   , Decimal ("700000"));
@@ -1368,7 +1368,7 @@ struct create_geneppoperation_fixture
                                   , zone_id
                                   , registrar_id
                                   , 0 //object_id
-                                  , boost::posix_time::second_clock::local_time() //crdate //local timestamp
+                                  , boost::posix_time::second_clock::universal_time() //crdate //utc timestamp
                                 , first_day_of_last_month//date_from //local date
                                 , last_day_of_last_month// date_to //local date
                                   , Decimal ("600000"));
@@ -1390,7 +1390,7 @@ struct create_geneppoperation_fixture
                               , zone_id
                               , registrar_id
                               , 0 //object_id
-                              , boost::posix_time::second_clock::local_time() //crdate //local timestamp
+                              , boost::posix_time::second_clock::universal_time() //crdate //utc timestamp
                             , first_day_of_last_month//date_from //local date
                             , last_day_of_last_month// date_to //local date
                               , Decimal ("500000"));
