@@ -132,6 +132,12 @@ namespace Fred
         return *this;
     }
 
+    UpdateDomain& UpdateDomain::set_domain_expiration(const boost::gregorian::date& exdate)
+    {
+        expiration_date_ = exdate;
+        return *this;
+    }
+
     UpdateDomain& UpdateDomain::set_enum_validation_expiration(const boost::gregorian::date& valexdate)
     {
         enum_validation_expiration_ = valexdate;
@@ -218,7 +224,7 @@ namespace Fred
         Exception update_domain_exception;
 
         //update domain
-        if(nsset_.isset() || keyset_.isset() || registrant_.isset())
+        if(nsset_.isset() || keyset_.isset() || registrant_.isset() || expiration_date_.isset())
         {
             Database::QueryParams params;//query params
             std::stringstream sql;
@@ -323,6 +329,16 @@ namespace Fred
                 sql << set_separator.get() << " registrant = $"
                     << params.size() << "::integer ";
             }//if change registrant
+
+            if(expiration_date_.isset())
+            {
+                if(expiration_date_.get_value().is_special()) {
+                    update_domain_exception.set_invalid_expiration_date(expiration_date_.get_value());
+                }
+                params.push_back(expiration_date_.get_value());
+                sql << set_separator.get() << " exdate = $"
+                    << params.size() << "::date ";
+            }//if change exdate
 
             //check exception
             if(update_domain_exception.throw_me())
@@ -559,7 +575,8 @@ namespace Fred
                 for(std::vector<std::string>::const_iterator ci = i.rem_admin_contact_.begin()
                         ; ci != i.rem_admin_contact_.end() ; ++ci ) os << *ci;
 
-        os << " logd_request_id: " << i.logd_request_id_.print_quoted();
+        os << " expiration_date: " << i.expiration_date_.print_quoted()
+           << " logd_request_id: " << i.logd_request_id_.print_quoted();
         return os;
     }
 

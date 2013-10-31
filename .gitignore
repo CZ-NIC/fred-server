@@ -90,6 +90,8 @@ src/corba/ZoneSK.cc
 src/corba/_dataTypes.hh
 src/corba/_dataTypesDynSK.cc
 src/corba/_dataTypesSK.cc
+/src/fred-server/
+src/nbproject/
 /.settings
 /.autotools
 doc/html
