@@ -25,6 +25,7 @@ public:
     : string_(str) {}
 };//class EppString
 
+class EPPAction;
 
 //
 //  class implementing IDL interface ccReg::EPP
@@ -57,13 +58,15 @@ private:
   unsigned rifd_session_registrar_max_;
   bool rifd_epp_update_domain_keyset_clear_;
   bool rifd_epp_operations_charging_;
-
+  const bool allow_idn_;
 
   DBSharedPtr  db_disconnect_guard_;
   std::auto_ptr<Fred::Manager> regMan;
 
 
   void extractEnumDomainExtension(std::string&, ccReg::Disclose &publish, const ccReg::ExtensionList&);
+  // is IDN allowed? implements logic: system registrator has always IDN allowed
+  bool idn_allowed(EPPAction& action) const;
 
 public:
   struct DB_CONNECT_FAILED : public std::runtime_error
@@ -87,6 +90,7 @@ public:
           , unsigned rifd_session_registrar_max
           , bool rifd_epp_update_domain_keyset_clear
           , bool rifd_epp_operations_charging
+          , bool _allow_idn
           );
   virtual ~ccReg_EPP_i();
 
@@ -117,7 +121,6 @@ public:
   int GetRegistrarID(unsigned long long clientID);
   // get uses language
   int GetRegistrarLang(unsigned long long clientID);
-  //  get number of active sessions
 
   // send    exception ServerIntError
   void ServerInternalError(const char *fce, const char *svTRID="DUMMY-SVTRID");

@@ -112,6 +112,7 @@ int main(int argc, char *argv[])
                     , rifd_args_ptr->rifd_session_registrar_max
                     , rifd_args_ptr->rifd_epp_update_domain_keyset_clear
                     , rifd_args_ptr->rifd_epp_operations_charging
+                    , rifd_args_ptr->allow_idn
             ));
 
             // create session use values from config

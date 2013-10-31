@@ -79,6 +79,7 @@ std::auto_ptr<ccReg_EPP_i> create_epp_backend_object()
                 , rifd_args_ptr->rifd_session_registrar_max
                 , rifd_args_ptr->rifd_epp_update_domain_keyset_clear
                 , rifd_args_ptr->rifd_epp_operations_charging
+                , rifd_args_ptr->allow_idn
         ));
 
     EPP_backend_init( ret_epp.get(), rifd_args_ptr);

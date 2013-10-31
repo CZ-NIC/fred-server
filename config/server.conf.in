@@ -79,6 +79,7 @@ session_registrar_max = 5
 # clear keyset when update domain command is changing nsset
 epp_update_domain_keyset_clear = true
 epp_operations_charging = @EPP_OPERATIONS_CHARGING@
+allow_idn = false
 
 ##
 # ADIFD specific settings
