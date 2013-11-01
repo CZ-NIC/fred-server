@@ -51,7 +51,6 @@ namespace Fred
         Util::vector_of<std::pair<std::string,std::string> >
         (std::make_pair("crhistoryid", crhistoryid.print_quoted()))
         (std::make_pair("historyid", historyid.print_quoted()))
-        (std::make_pair("id", id.print_quoted()))
         (std::make_pair("delete_time", delete_time.print_quoted()))
         (std::make_pair("handle", handle.print_quoted()))
         (std::make_pair("roid", roid.print_quoted()))
@@ -87,7 +86,52 @@ namespace Fred
         (std::make_pair("disclosevat", disclosevat.print_quoted()))
         (std::make_pair("discloseident", discloseident.print_quoted()))
         (std::make_pair("disclosenotifyemail", disclosenotifyemail.print_quoted()))
+        (std::make_pair("id", id.print_quoted()))
         );//format_data_structure InfoContactDiff
+    }
+
+    bool InfoContactDiff::is_empty() const
+    {
+        return
+            !( crhistoryid.isset()
+            || historyid.isset()
+            || delete_time.isset()
+            || handle.isset()
+            || roid.isset()
+            || sponsoring_registrar_handle.isset()
+            || create_registrar_handle.isset()
+            || update_registrar_handle.isset()
+            || creation_time.isset()
+            || update_time.isset()
+            || transfer_time.isset()
+            || authinfopw.isset()
+            || name.isset()
+            || organization.isset()
+            || street1.isset()
+            || street2.isset()
+            || street3.isset()
+            || city.isset()
+            || stateorprovince.isset()
+            || postalcode.isset()
+            || country.isset()
+            || telephone.isset()
+            || fax.isset()
+            || email.isset()
+            || notifyemail.isset()
+            || vat.isset()
+            || ssntype.isset()
+            || ssn.isset()
+            || disclosename.isset()
+            || discloseorganization.isset()
+            || discloseaddress.isset()
+            || disclosetelephone.isset()
+            || disclosefax.isset()
+            || discloseemail.isset()
+            || disclosevat.isset()
+            || discloseident.isset()
+            || disclosenotifyemail.isset()
+            || id.isset()
+            );
     }
 
     InfoContactDiff diff_contact_data(const InfoContactData& first, const InfoContactData& second)
@@ -105,11 +149,6 @@ namespace Fred
             diff.historyid = std::make_pair(first.historyid,second.historyid);
         }
 
-        if(first.id != second.id)
-        {
-            diff.id = std::make_pair(first.id,second.id);
-        }
-
         if(!Util::is_equal(first.delete_time, second.delete_time))
         {
             diff.delete_time = std::make_pair(first.delete_time,second.delete_time);
@@ -117,7 +156,8 @@ namespace Fred
 
         if(first.handle.compare(second.handle) != 0)
         {
-            diff.handle = std::make_pair(first.handle,second.handle);
+            diff.handle = std::make_pair(boost::algorithm::to_upper_copy(first.handle)
+                , boost::algorithm::to_upper_copy(second.handle));
         }
 
         if(first.roid.compare(second.roid) != 0)
@@ -125,19 +165,21 @@ namespace Fred
             diff.roid = std::make_pair(first.roid,second.roid);
         }
 
-        if(first.sponsoring_registrar_handle.compare(second.sponsoring_registrar_handle) != 0)
+        if(boost::algorithm::to_upper_copy(first.sponsoring_registrar_handle)
+            .compare(boost::algorithm::to_upper_copy(second.sponsoring_registrar_handle)) != 0)
         {
             diff.sponsoring_registrar_handle = std::make_pair(first.sponsoring_registrar_handle
                     ,second.sponsoring_registrar_handle);
         }
 
-        if(first.create_registrar_handle.compare(second.create_registrar_handle) != 0)
+        if(boost::algorithm::to_upper_copy(first.create_registrar_handle)
+        .compare(boost::algorithm::to_upper_copy(second.create_registrar_handle)) != 0)
         {
             diff.create_registrar_handle = std::make_pair(first.create_registrar_handle
                     ,second.create_registrar_handle);
         }
 
-        if(!Util::is_equal(first.update_registrar_handle, second.update_registrar_handle))
+        if(!Util::is_equal_upper(first.update_registrar_handle, second.update_registrar_handle))
         {
             diff.update_registrar_handle = std::make_pair(first.update_registrar_handle
                     ,second.update_registrar_handle);
@@ -290,6 +332,11 @@ namespace Fred
             diff.disclosenotifyemail = std::make_pair(first.disclosenotifyemail,second.disclosenotifyemail);
         }
 
+        if(first.id != second.id)
+        {
+            diff.id = std::make_pair(first.id,second.id);
+        }
+
         return diff;
     }
 
@@ -297,3 +344,43 @@ namespace Fred
 }//namespace Fred
 
 
+/*members
+            crhistoryid
+            historyid
+            delete_time
+            handle
+            roid
+            sponsoring_registrar_handle
+            create_registrar_handle
+            update_registrar_handle
+            creation_time
+            update_time
+            transfer_time
+            authinfopw
+            name
+            organization
+            street1
+            street2
+            street3
+            city
+            stateorprovince
+            postalcode
+            country
+            telephone
+            fax
+            email
+            notifyemail
+            vat
+            ssntype
+            ssn
+            disclosename
+            discloseorganization
+            discloseaddress
+            disclosetelephone
+            disclosefax
+            discloseemail
+            disclosevat
+            discloseident
+            disclosenotifyemail
+            id
+ */

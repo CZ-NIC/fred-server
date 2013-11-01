@@ -98,6 +98,12 @@ namespace Fred
         * @return string with description of the instance state
         */
         std::string to_string() const;
+
+        /**
+        * Check if some data is set into the instance
+        * @return false if instance contains differing data and true if not
+        */
+        bool is_empty() const;
     };
 
     /**
