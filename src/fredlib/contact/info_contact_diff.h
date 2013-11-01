@@ -100,6 +100,14 @@ namespace Fred
         std::string to_string() const;
     };
 
+    /**
+     * Diff data of the contact.
+     * @param first
+     * @param second
+     * @return diff of given contact
+     */
+    InfoContactDiff diff_contact_data(const InfoContactData& first, const InfoContactData& second);
+
 }//namespace Fred
 
 #endif//INFO_CONTACT_DIFF_H_

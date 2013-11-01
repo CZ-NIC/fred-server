@@ -41,7 +41,6 @@
 
 namespace Fred
 {
-
     InfoContactDiff::InfoContactDiff()
     {}
 
@@ -88,6 +87,56 @@ namespace Fred
         (std::make_pair("discloseident", discloseident.print_quoted()))
         (std::make_pair("disclosenotifyemail", disclosenotifyemail.print_quoted()))
         );//format_data_structure InfoContactDiff
+    }
+
+    InfoContactDiff diff_contact_data(const InfoContactData& first, const InfoContactData& second)
+    {
+        Fred::InfoContactDiff diff;
+
+        //differing data
+        diff.crhistoryid = std::make_pair(1ull,2ull);
+        diff.historyid = std::make_pair(1ull,2ull);
+        diff.id = std::make_pair(1ull,2ull);
+        diff.delete_time = std::make_pair(Nullable<boost::posix_time::ptime>()
+                ,Nullable<boost::posix_time::ptime>(boost::posix_time::second_clock::local_time()));
+        diff.handle = std::make_pair(std::string("testhandle1"),std::string("testhandle2"));
+        diff.roid = std::make_pair(std::string("testroid1"),std::string("testroid2"));
+        diff.sponsoring_registrar_handle = std::make_pair(std::string("testspreg1"),std::string("testspreg2"));
+        diff.create_registrar_handle = std::make_pair(std::string("testcrreg1"),std::string("testcrreg2"));
+        diff.update_registrar_handle = std::make_pair(Nullable<std::string>("testcrreg1"),Nullable<std::string>());
+        diff.creation_time = std::make_pair(boost::posix_time::ptime(),boost::posix_time::second_clock::local_time());
+        diff.update_time = std::make_pair(Nullable<boost::posix_time::ptime>()
+                ,Nullable<boost::posix_time::ptime>(boost::posix_time::second_clock::local_time()));
+        diff.transfer_time = std::make_pair(Nullable<boost::posix_time::ptime>()
+                    ,Nullable<boost::posix_time::ptime>(boost::posix_time::second_clock::local_time()));
+        diff.authinfopw = std::make_pair(std::string("testpass1"),std::string("testpass2"));
+        diff.name = std::make_pair(Nullable<std::string>(),Nullable<std::string>("testname2"));
+        diff.organization = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
+        diff.street1 = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
+        diff.street2 = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
+        diff.street3 = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
+        diff.city = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
+        diff.stateorprovince = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
+        diff.postalcode = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
+        diff.country = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
+        diff.telephone = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
+        diff.fax = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
+        diff.email = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
+        diff.notifyemail = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
+        diff.vat = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
+        diff.ssntype = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
+        diff.ssn = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
+        diff.disclosename= std::make_pair(Nullable<bool>(),Nullable<bool>(true));
+        diff.discloseorganization= std::make_pair(Nullable<bool>(),Nullable<bool>(false));
+        diff.discloseaddress= std::make_pair(Nullable<bool>(),Nullable<bool>(false));
+        diff.disclosetelephone= std::make_pair(Nullable<bool>(),Nullable<bool>(false));
+        diff.disclosefax= std::make_pair(Nullable<bool>(),Nullable<bool>(false));
+        diff.discloseemail= std::make_pair(Nullable<bool>(),Nullable<bool>(false));
+        diff.disclosevat= std::make_pair(Nullable<bool>(),Nullable<bool>(false));
+        diff.discloseident= std::make_pair(Nullable<bool>(),Nullable<bool>(false));
+        diff.disclosenotifyemail= std::make_pair(Nullable<bool>(),Nullable<bool>(false));
+
+        return diff;
     }
 
 
