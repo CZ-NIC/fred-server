@@ -37,6 +37,7 @@
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
 #include "util/util.h"
+#include "util/is_equal_optional_nullable.h"
 #include "fredlib/contact/info_contact_diff.h"
 
 namespace Fred
@@ -94,47 +95,200 @@ namespace Fred
         Fred::InfoContactDiff diff;
 
         //differing data
-        diff.crhistoryid = std::make_pair(1ull,2ull);
-        diff.historyid = std::make_pair(1ull,2ull);
-        diff.id = std::make_pair(1ull,2ull);
-        diff.delete_time = std::make_pair(Nullable<boost::posix_time::ptime>()
-                ,Nullable<boost::posix_time::ptime>(boost::posix_time::second_clock::local_time()));
-        diff.handle = std::make_pair(std::string("testhandle1"),std::string("testhandle2"));
-        diff.roid = std::make_pair(std::string("testroid1"),std::string("testroid2"));
-        diff.sponsoring_registrar_handle = std::make_pair(std::string("testspreg1"),std::string("testspreg2"));
-        diff.create_registrar_handle = std::make_pair(std::string("testcrreg1"),std::string("testcrreg2"));
-        diff.update_registrar_handle = std::make_pair(Nullable<std::string>("testcrreg1"),Nullable<std::string>());
-        diff.creation_time = std::make_pair(boost::posix_time::ptime(),boost::posix_time::second_clock::local_time());
-        diff.update_time = std::make_pair(Nullable<boost::posix_time::ptime>()
-                ,Nullable<boost::posix_time::ptime>(boost::posix_time::second_clock::local_time()));
-        diff.transfer_time = std::make_pair(Nullable<boost::posix_time::ptime>()
-                    ,Nullable<boost::posix_time::ptime>(boost::posix_time::second_clock::local_time()));
-        diff.authinfopw = std::make_pair(std::string("testpass1"),std::string("testpass2"));
-        diff.name = std::make_pair(Nullable<std::string>(),Nullable<std::string>("testname2"));
-        diff.organization = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
-        diff.street1 = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
-        diff.street2 = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
-        diff.street3 = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
-        diff.city = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
-        diff.stateorprovince = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
-        diff.postalcode = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
-        diff.country = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
-        diff.telephone = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
-        diff.fax = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
-        diff.email = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
-        diff.notifyemail = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
-        diff.vat = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
-        diff.ssntype = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
-        diff.ssn = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
-        diff.disclosename= std::make_pair(Nullable<bool>(),Nullable<bool>(true));
-        diff.discloseorganization= std::make_pair(Nullable<bool>(),Nullable<bool>(false));
-        diff.discloseaddress= std::make_pair(Nullable<bool>(),Nullable<bool>(false));
-        diff.disclosetelephone= std::make_pair(Nullable<bool>(),Nullable<bool>(false));
-        diff.disclosefax= std::make_pair(Nullable<bool>(),Nullable<bool>(false));
-        diff.discloseemail= std::make_pair(Nullable<bool>(),Nullable<bool>(false));
-        diff.disclosevat= std::make_pair(Nullable<bool>(),Nullable<bool>(false));
-        diff.discloseident= std::make_pair(Nullable<bool>(),Nullable<bool>(false));
-        diff.disclosenotifyemail= std::make_pair(Nullable<bool>(),Nullable<bool>(false));
+        if(first.crhistoryid != second.crhistoryid)
+        {
+            diff.crhistoryid = std::make_pair(first.crhistoryid,second.crhistoryid);
+        }
+
+        if(first.historyid != second.historyid)
+        {
+            diff.historyid = std::make_pair(first.historyid,second.historyid);
+        }
+
+        if(first.id != second.id)
+        {
+            diff.id = std::make_pair(first.id,second.id);
+        }
+
+        if(!Util::is_equal(first.delete_time, second.delete_time))
+        {
+            diff.delete_time = std::make_pair(first.delete_time,second.delete_time);
+        }
+
+        if(first.handle.compare(second.handle) != 0)
+        {
+            diff.handle = std::make_pair(first.handle,second.handle);
+        }
+
+        if(first.roid.compare(second.roid) != 0)
+        {
+            diff.roid = std::make_pair(first.roid,second.roid);
+        }
+
+        if(first.sponsoring_registrar_handle.compare(second.sponsoring_registrar_handle) != 0)
+        {
+            diff.sponsoring_registrar_handle = std::make_pair(first.sponsoring_registrar_handle
+                    ,second.sponsoring_registrar_handle);
+        }
+
+        if(first.create_registrar_handle.compare(second.create_registrar_handle) != 0)
+        {
+            diff.create_registrar_handle = std::make_pair(first.create_registrar_handle
+                    ,second.create_registrar_handle);
+        }
+
+        if(!Util::is_equal(first.update_registrar_handle, second.update_registrar_handle))
+        {
+            diff.update_registrar_handle = std::make_pair(first.update_registrar_handle
+                    ,second.update_registrar_handle);
+        }
+
+        if(first.creation_time != second.creation_time)
+        {
+            diff.creation_time = std::make_pair(first.creation_time,second.creation_time);
+        }
+
+        if(!Util::is_equal(first.update_time, second.update_time))
+        {
+            diff.update_time = std::make_pair(first.update_time
+                    ,second.update_time);
+        }
+
+        if(!Util::is_equal(first.transfer_time, second.transfer_time))
+        {
+            diff.transfer_time = std::make_pair(first.transfer_time
+                    ,second.transfer_time);
+        }
+
+        if(first.authinfopw.compare(second.authinfopw) != 0)
+        {
+            diff.authinfopw = std::make_pair(first.authinfopw,second.authinfopw);
+        }
+
+        if(!Util::is_equal(first.name, second.name))
+        {
+            diff.name = std::make_pair(first.name,second.name);
+        }
+
+        if(!Util::is_equal(first.organization, second.organization))
+        {
+            diff.organization = std::make_pair(first.organization,second.organization);
+        }
+
+        if(!Util::is_equal(first.street1, second.street1))
+        {
+            diff.street1 = std::make_pair(first.street1,second.street1);
+        }
+
+        if(!Util::is_equal(first.street2, second.street2))
+        {
+            diff.street2 = std::make_pair(first.street2,second.street2);
+        }
+
+        if(!Util::is_equal(first.street3, second.street3))
+        {
+            diff.street3 = std::make_pair(first.street3,second.street3);
+        }
+
+        if(!Util::is_equal(first.city, second.city))
+        {
+            diff.city = std::make_pair(first.city,second.city);
+        }
+
+        if(!Util::is_equal(first.stateorprovince, second.stateorprovince))
+        {
+            diff.stateorprovince = std::make_pair(first.stateorprovince,second.stateorprovince);
+        }
+
+        if(!Util::is_equal(first.postalcode, second.postalcode))
+        {
+            diff.postalcode = std::make_pair(first.postalcode,second.postalcode);
+        }
+
+        if(!Util::is_equal(first.country, second.country))
+        {
+            diff.country = std::make_pair(first.country,second.country);
+        }
+
+        if(!Util::is_equal(first.telephone, second.telephone))
+        {
+            diff.telephone = std::make_pair(first.telephone,second.telephone);
+        }
+
+        if(!Util::is_equal(first.fax, second.fax))
+        {
+            diff.fax = std::make_pair(first.fax,second.fax);
+        }
+
+        if(!Util::is_equal(first.email, second.email))
+        {
+            diff.email = std::make_pair(first.email,second.email);
+        }
+
+        if(!Util::is_equal(first.notifyemail, second.notifyemail))
+        {
+            diff.notifyemail = std::make_pair(first.notifyemail,second.notifyemail);
+        }
+
+        if(!Util::is_equal(first.vat, second.vat))
+        {
+            diff.vat = std::make_pair(first.vat,second.vat);
+        }
+
+        if(!Util::is_equal(first.ssntype, second.ssntype))
+        {
+            diff.ssntype = std::make_pair(first.ssntype,second.ssntype);
+        }
+
+        if(!Util::is_equal(first.ssn, second.ssn))
+        {
+            diff.ssn = std::make_pair(first.ssn,second.ssn);
+        }
+
+        if(first.disclosename != second.disclosename)
+        {
+            diff.disclosename = std::make_pair(first.disclosename,second.disclosename);
+        }
+
+        if(first.discloseorganization != second.discloseorganization)
+        {
+            diff.discloseorganization = std::make_pair(first.discloseorganization,second.discloseorganization);
+        }
+
+        if(first.discloseaddress != second.discloseaddress)
+        {
+            diff.discloseaddress = std::make_pair(first.discloseaddress,second.discloseaddress);
+        }
+
+        if(first.disclosetelephone != second.disclosetelephone)
+        {
+            diff.disclosetelephone = std::make_pair(first.disclosetelephone,second.disclosetelephone);
+        }
+
+        if(first.disclosefax != second.disclosefax)
+        {
+            diff.disclosefax = std::make_pair(first.disclosefax,second.disclosefax);
+        }
+
+        if(first.discloseemail != second.discloseemail)
+        {
+            diff.discloseemail = std::make_pair(first.discloseemail,second.discloseemail);
+        }
+
+        if(first.disclosevat != second.disclosevat)
+        {
+            diff.disclosevat = std::make_pair(first.disclosevat,second.disclosevat);
+        }
+
+        if(first.discloseident != second.discloseident)
+        {
+            diff.discloseident = std::make_pair(first.discloseident,second.discloseident);
+        }
+
+        if(first.disclosenotifyemail != second.disclosenotifyemail)
+        {
+            diff.disclosenotifyemail = std::make_pair(first.disclosenotifyemail,second.disclosenotifyemail);
+        }
 
         return diff;
     }
