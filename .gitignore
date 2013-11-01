@@ -47,6 +47,9 @@ missing
 src/corba/Admin.hh
 src/corba/AdminDynSK.cc
 src/corba/AdminSK.cc
+src/corba/AdminContactVerificationSK.cc
+src/corba/AdminContactVerificationDynSK.cc
+src/corba/AdminContactVerification.hh
 src/corba/ContactVerification.hh
 src/corba/ContactVerificationSK.cc
 src/corba/ContactVerificationDynSK.cc
