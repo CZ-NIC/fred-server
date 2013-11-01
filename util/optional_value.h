@@ -26,6 +26,7 @@
 
 #include <utility>
 #include <string>
+#include <sstream>
 
 namespace arbitrary_pair_ostream_support
 {
