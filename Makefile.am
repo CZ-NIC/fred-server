@@ -222,6 +222,7 @@ noinst_LIBRARIES = \
 		src/fredlib/public_request/libpublic_request.a \
 		src/fredlib/contact_verification/libcontact_verification.a \
 		src/corba/libcorbacontactverification.a \
+		src/corba/libcorbaadmincontactverification.a \
 		src/corba/util/libcorbautil.a
 
 
@@ -1306,8 +1307,10 @@ src_corba_fred_adifd_SOURCES = \
 		src/mojeid/mojeid_validators.h \
 		src/mojeid/mojeid_contact_transfer_request_impl.cc \
 		src/mojeid/public_request_verification_impl.cc \
+		src/corba/admin_contact_verification/server_i.h \
+		src/corba/admin_contact_verification/server_i.cc \
 		src/corba/fred-adifd.cc
-
+		
 src_corba_fred_adifd_LDADD = \
 		src/corba/admin/libadmin_impl.a \
 		src/corba/libcorbaadmin.a \
@@ -1319,6 +1322,7 @@ src_corba_fred_adifd_LDADD = \
 		src/corba/libcorba.a \
 		src/corba/libcorbalogger.a \
 		src/corba/libcorbaepp.a \
+		src/corba/libcorbaadmincontactverification.a \
 		src/corba/libfilemanager.a \
 		src/fredlib/requests/librequests.a \
 		src/fredlib/contact_verification/libcontact_verification.a \
