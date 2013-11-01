@@ -97,7 +97,11 @@ CLEANFILES = \
 		src/corba/ZoneGenerator.hh \
 		src/corba/ContactVerificationSK.cc \
 		src/corba/ContactVerificationDynSK.cc \
-		src/corba/ContactVerification.hh
+		src/corba/ContactVerification.hh \
+		src/corba/AdminContactVerificationSK.cc \
+		src/corba/AdminContactVerificationDynSK.cc \
+		src/corba/AdminContactVerificationSK.h \
+		src/corba/AdminContactVerification.hh
 
 
 
@@ -976,7 +980,8 @@ BUILT_SOURCES = \
 		src/corba/TechCheckSK.cc \
 		src/corba/EPPSK.cc \
 		src/corba/ZoneGeneratorSK.cc \
-		src/corba/ContactVerificationSK.cc
+		src/corba/ContactVerificationSK.cc \
+		src/corba/AdminContactVerificationSK.cc
 
 
 # src/corba/libcorba.a
@@ -1086,6 +1091,12 @@ nodist_src_corba_libcorbacontactverification_a_SOURCES = \
 		src/corba/ContactVerificationSK.cc \
 		src/corba/ContactVerificationDynSK.cc \
 		src/corba/ContactVerification.hh
+		
+nodist_src_corba_libcorbaadmincontactverification_a_SOURCES = \
+		src/corba/AdminContactVerificationSK.cc \
+		src/corba/AdminContactVerificationDynSK.cc \
+		src/corba/AdminContactVerificationSK.h \
+		src/corba/AdminContactVerification.hh
 
 #
 # nodist corba libs
@@ -1143,6 +1154,9 @@ src/corba/ZoneGeneratorSK.cc: $(IDLDIR)/ZoneGenerator.idl $(IDLDIR)/_dataTypes.i
 
 src/corba/ContactVerificationSK.cc: $(IDLDIR)/ContactVerification.idl
 		omniidl -bcxx -Wba -C$(top_builddir)/src/corba $(IDLDIR)/ContactVerification.idl
+
+src/corba/AdminContactVerificationSK.cc: $(IDLDIR)/AdminContactVerification.idl $(IDLDIR)/_dataTypes.idl
+		omniidl -bcxx -Wba -C$(top_builddir)/src/corba $(IDLDIR)/AdminContactVerification.idl
 #
 # idl build
 
