@@ -1576,7 +1576,7 @@ ccReg::Response* ccReg_EPP_i::PollAcknowledgement(
  ***********************************************************************/
 
 ccReg::Response* ccReg_EPP_i::PollRequest(
-  CORBA::String_out msgID, CORBA::Short& count, ccReg::timestamp_out qDate,
+  CORBA::String_out msgID, CORBA::ULongLong& count, ccReg::timestamp_out qDate,
   ccReg::PollType& type, CORBA::Any_OUT_arg msg, const ccReg::EppParams &params
   )
 {
