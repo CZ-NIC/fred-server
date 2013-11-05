@@ -248,21 +248,24 @@ public:
                        " LEFT JOIN domain d ON d.registrant = tmp.contact_id"
                        " LEFT JOIN object_registry oreg ON oreg.id = d.id"
                    " ) t"
-                   " GROUP BY t.contact_id")),
+                   " GROUP BY t.contact_id"
+                   " ORDER BY t.contact_id")),
           linked_data_nsset_(conn_.exec(
                   " SELECT tmp.contact_id AS id, "
                    " array_filter_null(array_accum(DISTINCT noreg.name)) AS arr_nssets"
                    " FROM tmp_reminder tmp"
                    " LEFT JOIN nsset_contact_map ncm ON ncm.contactid = tmp.contact_id"
                    " LEFT JOIN object_registry noreg ON noreg.id = ncm.nssetid"
-                   " GROUP BY tmp.contact_id")),
+                   " GROUP BY tmp.contact_id"
+                   " ORDER BY tmp.contact_id")),
           linked_data_keyset_(conn_.exec(
                   "SELECT tmp.contact_id AS id, "
                   " array_filter_null(array_accum(DISTINCT koreg.name)) AS arr_keysets "
                   " FROM tmp_reminder tmp "
                   " LEFT JOIN keyset_contact_map kcm ON kcm.contactid = tmp.contact_id "
                   " LEFT JOIN object_registry koreg ON koreg.id = kcm.keysetid"
-                  " GROUP BY tmp.contact_id"))
+                  " GROUP BY tmp.contact_id"
+                  " ORDER BY tmp.contact_id"))
     {
         if (contact_data_.size() != linked_data_domain_.size()
              && contact_data_.size() != linked_data_nsset_.size()

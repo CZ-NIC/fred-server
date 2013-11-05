@@ -202,12 +202,13 @@ public:
   }
   /// check handle of domain without contacting database
   virtual CheckAvailType checkHandle(const std::string& fqdn, 
-                                     bool allowIDN = false) const = 0;
+                                     bool allowIDN) const = 0;
   /// check availability of domain  
   virtual CheckAvailType checkAvail(const std::string& fqdn, 
-                                    NameIdPair& conflictFqdn, 
-                                    bool lock = false,
-                                    bool allowIDN = false) const throw (SQL_ERROR) = 0;
+                                    NameIdPair& conflictFqdn,
+                                    bool allowIDN,
+                                    bool lock = false
+                                    ) const throw (SQL_ERROR) = 0;
   /// return current count of domains by zone
   virtual unsigned long getDomainCount(const std::string& zone) const = 0;
   /// return current count of signed domains by zone
