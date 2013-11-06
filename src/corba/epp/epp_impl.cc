@@ -1514,7 +1514,7 @@ ccReg::Response* ccReg_EPP_i::GetTransaction(
  ***********************************************************************/
 
 ccReg::Response* ccReg_EPP_i::PollAcknowledgement(
-  const char* msgID, CORBA::Short& count, CORBA::String_out newmsgID,
+  const char* msgID, CORBA::ULongLong& count, CORBA::String_out newmsgID,
   const ccReg::EppParams &params)
 {
   Logging::Context::clear();
