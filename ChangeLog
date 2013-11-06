@@ -1,3 +1,16 @@
+2013-11-06 Jan Zima, Michal Strnad, Jan Korous, Jiri Sadek (2.16.0)
+
+  * new interface for administrative blocking/unblocking domains (and holders)
+
+  * epp operation charging has now configuration option
+
+  * serveral idn support fixes/enhancements (still mostly for experimental purpose due to lack of
+    definition of allowed character sets)
+      - configuration option
+      - enabled for system registrar
+
+  * fix logger object references filter
+
 2013-10-25 Jan Korous, Jiri Sadek (2.15.2)
 
   * fix zone name resolution
