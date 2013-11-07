@@ -45,13 +45,11 @@ namespace Fred
     CreateDomainNameBlacklist::CreateDomainNameBlacklist(const std::string &_domain,
         const std::string &_reason,
             const Optional< Time > &_valid_from,
-            const Optional< Time > &_valid_to,
-            const Optional< UserId > &_creator)
+            const Optional< Time > &_valid_to)
     :   domain_(_domain),
         reason_(_reason),
         valid_from_(_valid_from),
-        valid_to_(_valid_to),
-        creator_(_creator)
+        valid_to_(_valid_to)
     {}
 
     CreateDomainNameBlacklist& CreateDomainNameBlacklist::set_valid_from(const Time &_valid_from)
@@ -66,12 +64,6 @@ namespace Fred
         return *this;
     }
     
-    CreateDomainNameBlacklist& CreateDomainNameBlacklist::set_creator(UserId _creator)
-    {
-        creator_ = _creator;
-        return *this;
-    }
-
     namespace
     {
 
@@ -153,21 +145,9 @@ namespace Fred
             BOOST_THROW_EXCEPTION(Exception().set_already_blacklisted_domain(domain_));
         }
 
-        if (creator_.isset()) {
-            Database::Result creator_result = _ctx.get_conn().exec_params(
-                "SELECT 1 "
-                "FROM \"user\" "
-                "WHERE id=$1::integer "
-                "LIMIT 1",
-                Database::query_param_list(creator_.get_value()));
-            if (creator_result.size() <= 0) {
-                BOOST_THROW_EXCEPTION(Exception().set_creator_not_found(creator_.get_value()));
-            }
-        }
-
         std::ostringstream cmd;
         cmd << "INSERT INTO domain_blacklist "
-                   "(regexp,reason,valid_from,valid_to,creator) "
+                   "(regexp,reason,valid_from,valid_to) "
                "VALUES "
                    "($1::text,$2::text";
         Database::query_param_list param(domain_);
@@ -182,13 +162,6 @@ namespace Fred
         if (valid_to_.isset()) {
             param(valid_to_.get_value());
             cmd << ",$" << param.size() << "::timestamp";
-        }
-        else {
-            cmd << ",NULL";
-        }
-        if (creator_.isset()) {
-            param(creator_.get_value());
-            cmd << ",$" << param.size() << "::integer";
         }
         else {
             cmd << ",NULL";
