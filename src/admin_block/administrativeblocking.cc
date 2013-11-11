@@ -512,10 +512,8 @@ namespace Registry
                             e_item.domain_handle = domain_id_handle[e_item.domain_id];
                             domain_id_not_blocked.what.insert(e_item);
                         }
-                        else if (e.is_set_object_id_not_found()) {
-                            std::ostringstream o;
-                            o << "Fred::CreateAdministrativeObjectStateRestoreRequestId::Exception object_id_not_found " << e.get_object_id_not_found();
-                            throw std::runtime_error(o.str());
+                        else {
+                            throw;
                         }
                     }
                     catch (const Fred::UpdateDomain::Exception &e) {
