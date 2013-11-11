@@ -170,7 +170,7 @@ noinst_HEADERS = \
 		src/corba/contact_verification/corba_conversion.h \
 		util/optional_value.h \
 		util/output_indenter.h \
-		util/printable.h
+		util/is_equal_optional_nullable.h
 
 
 noinst_LIBRARIES = \
@@ -703,6 +703,8 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/contact/delete_contact.cc \
 		src/fredlib/contact/info_contact_data.h \
 		src/fredlib/contact/info_contact_data.cc \
+		src/fredlib/contact/info_contact_diff.h \
+		src/fredlib/contact/info_contact_diff.cc \
 		src/fredlib/contact/info_contact.h \
 		src/fredlib/contact/info_contact.cc \
 		src/fredlib/object/object.h \
@@ -1665,7 +1667,8 @@ tests_test_server_SOURCES = \
 		tests/test-update-contact.cc \
 		tests/test-printable.cc \
 		tests/test-info-keyset.cc \
-		tests/test-info-nsset.cc
+		tests/test-info-nsset.cc \
+		tests/util/test-is-equal-optional-nullable.cc
 
 tests_test_server_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS) \

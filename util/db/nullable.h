@@ -62,7 +62,10 @@ public:
 
     friend std::ostream& operator<<(std::ostream& os, const Nullable<T>& v)
     {
-        return os << static_cast<T>(v);
+        if (v.isnull())
+            return os << "[NULL]";
+        else
+            return os << static_cast<T>(v);
     }
 
     std::string print_quoted() const

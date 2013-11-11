@@ -51,6 +51,7 @@
 #include "fredlib/contact/delete_contact.h"
 #include "fredlib/contact/create_contact.h"
 #include "fredlib/contact/info_contact.h"
+#include "fredlib/contact/info_contact_diff.h"
 #include "fredlib/nsset/create_nsset.h"
 #include "fredlib/keyset/create_keyset.h"
 #include "fredlib/domain/create_domain.h"
@@ -72,6 +73,11 @@
 #include "cfg/handle_database_args.h"
 #include "cfg/handle_threadgroup_args.h"
 #include "cfg/handle_corbanameservice_args.h"
+
+/**
+ *  @file
+ *  test contact info
+ */
 
 //not using UTF defined main
 #define BOOST_TEST_NO_MAIN
@@ -167,6 +173,71 @@ BOOST_FIXTURE_TEST_CASE(info_contact, test_contact_fixture )
             BOOST_CHECK(output.at(0) == contact_info1);
         }
     }
+
+}
+
+/**
+ * test call InfoContactDiff
+*/
+BOOST_FIXTURE_TEST_CASE(info_contact_diff, test_contact_fixture )
+{
+    Fred::OperationContext ctx;
+    Fred::InfoContactOutput contact_info1 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
+    Fred::InfoContactOutput contact_info2 = Fred::InfoContactByHandle(test_contact_handle).set_lock().exec(ctx);
+
+    Fred::InfoContactDiff test_diff, test_empty_diff;
+
+    //differing data
+    test_diff.crhistoryid = std::make_pair(1ull,2ull);
+    test_diff.historyid = std::make_pair(1ull,2ull);
+    test_diff.id = std::make_pair(1ull,2ull);
+    test_diff.delete_time = std::make_pair(Nullable<boost::posix_time::ptime>()
+            ,Nullable<boost::posix_time::ptime>(boost::posix_time::second_clock::local_time()));
+    test_diff.handle = std::make_pair(std::string("testhandle1"),std::string("testhandle2"));
+    test_diff.roid = std::make_pair(std::string("testroid1"),std::string("testroid2"));
+    test_diff.sponsoring_registrar_handle = std::make_pair(std::string("testspreg1"),std::string("testspreg2"));
+    test_diff.create_registrar_handle = std::make_pair(std::string("testcrreg1"),std::string("testcrreg2"));
+    test_diff.update_registrar_handle = std::make_pair(Nullable<std::string>("testcrreg1"),Nullable<std::string>());
+    test_diff.creation_time = std::make_pair(boost::posix_time::ptime(),boost::posix_time::second_clock::local_time());
+    test_diff.update_time = std::make_pair(Nullable<boost::posix_time::ptime>()
+            ,Nullable<boost::posix_time::ptime>(boost::posix_time::second_clock::local_time()));
+    test_diff.transfer_time = std::make_pair(Nullable<boost::posix_time::ptime>()
+                ,Nullable<boost::posix_time::ptime>(boost::posix_time::second_clock::local_time()));
+    test_diff.authinfopw = std::make_pair(std::string("testpass1"),std::string("testpass2"));
+    test_diff.name = std::make_pair(Nullable<std::string>(),Nullable<std::string>("testname2"));
+    test_diff.organization = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
+    test_diff.street1 = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
+    test_diff.street2 = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
+    test_diff.street3 = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
+    test_diff.city = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
+    test_diff.stateorprovince = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
+    test_diff.postalcode = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
+    test_diff.country = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
+    test_diff.telephone = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
+    test_diff.fax = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
+    test_diff.email = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
+    test_diff.notifyemail = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
+    test_diff.vat = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
+    test_diff.ssntype = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
+    test_diff.ssn = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
+    test_diff.disclosename= std::make_pair(Nullable<bool>(),Nullable<bool>(true));
+    test_diff.discloseorganization= std::make_pair(Nullable<bool>(),Nullable<bool>(false));
+    test_diff.discloseaddress= std::make_pair(Nullable<bool>(),Nullable<bool>(false));
+    test_diff.disclosetelephone= std::make_pair(Nullable<bool>(),Nullable<bool>(false));
+    test_diff.disclosefax= std::make_pair(Nullable<bool>(),Nullable<bool>(false));
+    test_diff.discloseemail= std::make_pair(Nullable<bool>(),Nullable<bool>(false));
+    test_diff.disclosevat= std::make_pair(Nullable<bool>(),Nullable<bool>(false));
+    test_diff.discloseident= std::make_pair(Nullable<bool>(),Nullable<bool>(false));
+    test_diff.disclosenotifyemail= std::make_pair(Nullable<bool>(),Nullable<bool>(false));
+
+    BOOST_MESSAGE(test_diff.to_string());
+    BOOST_MESSAGE(test_empty_diff.to_string());
+
+    BOOST_MESSAGE(Fred::diff_contact_data(contact_info1.info_contact_data,contact_info1.info_contact_data).to_string());
+
+    //because of changes to Nullable::operator<<
+    BOOST_CHECK(ctx.get_conn().exec_params("select $1::text", Database::query_param_list(Database::QPNull))[0][0].isnull());
+    BOOST_CHECK(ctx.get_conn().exec_params("select $1::text", Database::query_param_list(Nullable<std::string>()))[0][0].isnull());
 
 }
 
