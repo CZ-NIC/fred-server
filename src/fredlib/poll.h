@@ -151,8 +151,8 @@ namespace Fred
      public:
       virtual ~Manager() {}
       /// return count of messages in queue for registrar
-      virtual unsigned long getMessageCount(std::string registrar) const = 0;
-      virtual unsigned long getMessageCount(TID registrar) const = 0;
+      virtual unsigned long long getMessageCount(std::string registrar) const = 0;
+      virtual unsigned long long getMessageCount(TID registrar) const = 0;
       /// return next unseen and unexpired message for registrar
       virtual Message* getNextMessage(std::string registrar) = 0; // const = 0;
       virtual Message* getNextMessage(TID registrar) = 0; // const = 0;

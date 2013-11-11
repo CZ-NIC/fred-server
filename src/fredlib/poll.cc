@@ -796,11 +796,11 @@ public:
   ManagerImpl(DBSharedPtr _db) :
     db(_db) {
   }
-  unsigned long getMessageCount(std::string registrar) const
+  unsigned long long getMessageCount(std::string registrar) const
   {
       return getMessageCount(db->GetRegistrarID(registrar.c_str()));
   }
-  unsigned long getMessageCount(TID registrar) const {
+  unsigned long long getMessageCount(TID registrar) const {
     ListImpl l(db);
     prepareListWithNext(l, registrar);
     l.makeRealCount();
