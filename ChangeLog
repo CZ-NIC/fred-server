@@ -1,3 +1,30 @@
+2013-11-11 Jan Zima, Michal Strnad, Jan Korous, Jiri Sadek (2.16.0)
+
+  * new interface for administrative blocking/unblocking domains (and holders)
+
+  * epp operation charging has now configuration option
+
+  * serveral idn support fixes/enhancements (still mostly for experimental purpose due to lack of
+    definition of allowed character sets)
+      - configuration option
+      - enabled for system registrar
+
+  * fix logger object references filter
+
+  * fix epp poll req/ack commands - overflow of count values
+
+2013-10-25 Jan Korous, Jiri Sadek (2.15.2)
+
+  * fix zone name resolution
+
+  * fix nsset host fqdn length
+
+  * fix epp keyset command input value escaping in sql
+
+2013-09-25 Jiri Sadek (2.15.1)
+
+  * whois (contact) reminder - fix sql for postgresql >= 8.4
+
 2013-08-07 Jiri Sadek (2.15.0)
 
   * mojeid - managing of disclose flags removed from interface

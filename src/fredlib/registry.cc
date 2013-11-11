@@ -182,9 +182,9 @@ public:
     bool isDomain = true;
     std::string fqdn = isEnum ? ch.newHandle : handle;
      if (allowIDN)
-       fqdn = m_zone_manager->encodeIDN(fqdn);
+       fqdn = m_zone_manager->utf8_to_punycode(fqdn);
     NameIdPair conflictFQDN;
-    switch (m_domain_manager->checkAvail(fqdn, conflictFQDN, false, allowIDN)) {
+    switch (m_domain_manager->checkAvail(fqdn, conflictFQDN, allowIDN, false )) {
       case Domain::CA_INVALID_HANDLE:
         isDomain = false;
         break;
@@ -212,7 +212,7 @@ public:
     }
     ch.conflictHandle = conflictFQDN.name;
     if (allowIDN)
-       ch.conflictHandle = m_zone_manager->decodeIDN(ch.conflictHandle);
+       ch.conflictHandle = m_zone_manager->punycode_to_utf8(ch.conflictHandle);
     if (isDomain) {
       if (!isEnum)
         ch.type = m_zone_manager->checkEnumDomainSuffix(fqdn) ? HT_ENUM_DOMAIN

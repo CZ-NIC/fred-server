@@ -367,7 +367,9 @@ namespace Fred
             if(expiration_date_.isset())
             {
                 if(expiration_date_.get_value().is_special())
+                {
                     update_domain_exception.set_invalid_expiration_date(expiration_date_.get_value());
+                }
 
                 params.push_back(expiration_date_.get_value());
                 sql << set_separator.get() << " exdate = $"

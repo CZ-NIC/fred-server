@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
-AC_INIT([fred-server], [2.15.0])
+AC_INIT([fred-server], [2.16.0])
 AC_CONFIG_SRCDIR(src/corba/fred-rifd.cc)
 AC_CONFIG_HEADER([config.h])
 AC_CONFIG_MACRO_DIR([m4])
@@ -190,6 +190,11 @@ AC_ARG_WITH([msgdport], [AS_HELP_STRING([--with-msgdport],
 			[CORBA fred-msgd port [2228]])],
 			[AC_SUBST([MSGDPORT], [$withval])],
 			[AC_SUBST([MSGDPORT], [2228])])
+#abfd port
+AC_ARG_WITH([abfdport], [AS_HELP_STRING([--with-abfdport],
+			[CORBA fred-abfd port [2229]])],
+			[AC_SUBST([ABFDPORT], [$withval])],
+			[AC_SUBST([ABFDPORT], [2229])])
 
 
 #hp login name
@@ -211,6 +216,13 @@ AC_ARG_WITH([hp_login_note], [AS_HELP_STRING([--with-hp_login_note],
 			[AC_SUBST([HP_LOGIN_NOTE], [test_fred])])
 
 AS_AC_TEST_CORBA_PORTS()
+
+# charging registrars disabled configuration
+AC_ARG_WITH([epp_operations_charging], [AS_HELP_STRING([--with-epp-operations-charging],
+            [Turn on/off EPP operations charging [false]])],
+            [AC_SUBST([EPP_OPERATIONS_CHARGING], [$withval])],
+            [AC_SUBST([EPP_OPERATIONS_CHARGING], [false])])
+
 
 #expand paths for bindir, sbindir and datarootdir variable
 AS_AC_EXPAND([BINDIR], [$bindir])

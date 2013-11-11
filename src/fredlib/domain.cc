@@ -107,7 +107,7 @@ public:
     ObjectImpl(_id, _history_id, _crDate, _trDate, _upDate, _erDate, _registrar,
                _registrarHandle, _createRegistrar, _createRegistrarHandle,
                _updateRegistrar, _updateRegistrarHandle, _authPw, _roid),
-        fqdn(_fqdn), fqdnIDN(zm->decodeIDN(fqdn)), zone(_zone), nsset(_nsset), nssetHandle(_nssetHandle),
+        fqdn(_fqdn), fqdnIDN(zm->punycode_to_utf8(fqdn)), zone(_zone), nsset(_nsset), nssetHandle(_nssetHandle),
         registrant(_registrant), registrantHandle(_registrantHandle), 
         registrantName(_registrantName), registrantOrganization(_registrantOrganization),
         registrantPhone(_registrantPhone),exDate(_exDate),
@@ -1270,9 +1270,9 @@ public:
   }
   /// interface method implementation  
   CheckAvailType checkAvail(const std::string& _fqdn,
-  												  NameIdPair& conflictFqdn,
-  												  bool lock,
-  												  bool allowIDN) const throw (SQL_ERROR) {
+                            NameIdPair& conflictFqdn,
+                            bool allowIDN,
+                            bool lock) const throw (SQL_ERROR) {
     std::string fqdn = _fqdn;
     boost::algorithm::to_lower(fqdn);
     // clear output

@@ -24,7 +24,8 @@
 #include <sstream>
 #include "types.h"
 #include <ctype.h>
-#include <idna.h>
+#include <boost/algorithm/string.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include "model_zone.h"
 #include "model_zone_ns.h"
@@ -187,15 +188,32 @@ namespace Fred
 
 
       /// compare if domain belongs to this zone (according to suffix)
-      bool isDomainApplicable(const std::string& domain) const
+      bool isDomainApplicable(const std::string& fqdn) const
       {
-          const std::string& fqdn = ModelZone::getFqdn();
-        std::string copy = domain;
-        for (unsigned i=0; i<copy.length(); i++)
-          copy[i] = tolower(copy[i]);
-        unsigned l = fqdn.length();
-        if (copy.length() < l) return false;
-        return copy.compare(copy.length()-l,l,fqdn) == 0;
+          typedef std::string string;
+          // make local copies for normalization (to lower case)
+          string zone_fqdn ( ModelZone::getFqdn() );
+          string domain_fqdn (fqdn);
+
+          boost::to_lower(domain_fqdn);
+          boost::to_lower(zone_fqdn);
+
+          int domain_length = domain_fqdn.length();
+          int zone_length = zone_fqdn.length();
+
+          if (domain_length <= zone_length) {
+              return false;
+          }
+
+          // substr starts one char before zone length (must include the dot)
+          if( domain_fqdn.substr(domain_length - zone_length - 1)
+              ==
+              string(".") + zone_fqdn
+          ) {
+              return true;
+          } else {
+              return false;
+          }
       }
 
       /// max. number of labels in fqdn
@@ -821,7 +839,7 @@ namespace Fred
           if (part.empty()) {
             // first character of every label has to be letter or digit
             // digit is not in RFC 1034 but it's required in ENUM domains
-            if (!IS_NUMBER(fqdn[i]) && !IS_LETTER(fqdn[i]))
+            if (!IS_NUMBER(fqdn.at(i)) && !IS_LETTER(fqdn.at(i)))
               throw INVALID_DOMAIN_NAME();
           }
           else {
@@ -833,16 +851,30 @@ namespace Fred
               // length of part should be < 64
               if (part.length() > 63)
                 throw INVALID_DOMAIN_NAME();
+              // if there is punycode present and allowed, it must be valid
+              if( allowIDN && part.compare(0, 4, "xn--") == 0 ) {
+                  if( is_valid_punycode(part) == false ) {
+                      throw INVALID_DOMAIN_NAME();
+                  }
+              }
               domain.push_back(part);
               part.clear();
               continue;
             }
             else {
-              if (fqdn[i] == '-') {
-                // dash '-' is acceptable only if last character wasn't dash
-                if (part[part.length()-1] == '-' &&
-                    (!allowIDN || part != "xn-"))
-                  throw INVALID_DOMAIN_NAME();
+              if (fqdn.at(i) == '-') {
+                // only single hyphen '-' is generaly acceptable (specific .cz rule)
+                if (*part.rbegin() == '-') {
+                    // exceptions are:
+                    // idn (in form of punycode)...
+                    if( !allowIDN ) {
+                        throw INVALID_DOMAIN_NAME();
+                    // ...in ACE prefix (xn--) or ELSEWHERE ("--" can be produced during encoding)
+                    // therefore we don't check it here but check validity of the whole punycode label above
+                    } else if ( (i == 3 && part != "xn-") || (i >= 4 && part.compare(0, 4, "xn--") != 0) ) {
+                        throw INVALID_DOMAIN_NAME();
+                    }
+                }
               }
               else {
                 // other character could be only number or letter
@@ -852,7 +884,7 @@ namespace Fred
             }
           }
           // add character into part
-          part += fqdn[i];
+          part += fqdn.at(i);
         }
         // last part cannot be empty
         if (part.empty()) throw INVALID_DOMAIN_NAME();
@@ -1329,12 +1361,27 @@ namespace Fred
             try
             {
                 Database::Connection conn = Database::Manager::acquire();
+                Database::Transaction tx(conn);
 
                 Database::Result res_op = conn.exec_params(
                         "SELECT id FROM enum_operation WHERE operation=$1::text"
                         , Database::query_param_list(operation));
-                if(res_op.size() == 0) throw std::runtime_error("addPrice: operation not found");
+                if(res_op.size() != 1) throw std::runtime_error("addPrice: operation not found");
                 int operationId = res_op[0][0];
+
+                Database::Result update_result = conn.exec_params(
+                    "UPDATE price_list SET valid_to=$1::timestamp "
+                    " WHERE id = (SELECT id FROM price_list WHERE zone_id=$2::integer AND operation_id=$3::integer "
+                    " AND valid_from <= $1::timestamp AND  valid_from <= current_timestamp "
+                    " AND (valid_to IS NULL or valid_to>current_timestamp) ORDER BY valid_from DESC LIMIT 1) "
+                    " RETURNING id"
+                    , Database::query_param_list(validFrom.iso_str())(zoneId)(operationId));
+                if (update_result.size() > 1)
+                {
+                    throw std::runtime_error("update price_list.valid_to failed");
+                }
+
+                tx.commit();
 
             	ModelPriceList pl;
             	pl.setZoneId(zoneId);
@@ -1385,24 +1432,59 @@ namespace Fred
           }//catch (...)
       }//addPrice
 
-      virtual std::string encodeIDN(const std::string& fqdn) const
-      {
-        std::string result;
-        char *p;
-        idna_to_ascii_8z(fqdn.c_str(), &p, 0);
-        result = p ? p : fqdn;
-        if (p) free(p);
-        return result;
+      virtual bool is_valid_punycode(const std::string& fqdn) const {
+          // TODO - prepared for proper check, current implementation is not strict enough
+
+          std::string dev_null;
+          try {
+              dev_null = punycode_to_utf8(fqdn);
+              utf8_to_punycode(dev_null);
+          } catch (const idn_conversion_fail& ) {
+              return false;
+          }
+
+          return true;
       }
 
-      virtual std::string decodeIDN(const std::string& fqdn) const
+
+      virtual std::string utf8_to_punycode(const std::string& fqdn) const
       {
-        std::string result;
-        char *p;
-        idna_to_unicode_8z8z(fqdn.c_str(), &p, 0);
-        result = p ? p : fqdn;
-        if (p) free(p);
-        return result;
+          char *p;
+
+          if(idna_to_ascii_8z(fqdn.c_str(), &p, 0) == IDNA_SUCCESS) {
+              std::string result( p );
+              if (p != NULL) {
+                  free(p);
+              }
+              return result;
+
+          } else {
+
+              if (p != NULL) {
+                  free(p);
+              }
+              throw idn_conversion_fail();
+          }
+      }
+
+      virtual std::string punycode_to_utf8(const std::string& fqdn) const
+      {
+          char *p;
+
+          if(idna_to_unicode_8z8z(fqdn.c_str(), &p, 0) == IDNA_SUCCESS) {
+              std::string result( p );
+              if (p != NULL) {
+                  free(p);
+              }
+              return result;
+
+          } else {
+
+              if (p != NULL) {
+                  free(p);
+              }
+              throw idn_conversion_fail();
+          }
       }
 /*
       virtual ZoneList *getList()

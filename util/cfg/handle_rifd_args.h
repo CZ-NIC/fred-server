@@ -47,6 +47,8 @@ public:
     unsigned rifd_session_timeout;
     unsigned rifd_session_registrar_max;
     bool rifd_epp_update_domain_keyset_clear;
+    bool rifd_epp_operations_charging;
+    bool allow_idn;
 
     boost::shared_ptr<po::options_description>
     get_options_description()
@@ -65,7 +67,13 @@ public:
                  "RIFD maximum number active sessions per registrar")
                 ("rifd.epp_update_domain_keyset_clear",
                  po::value<bool>()->default_value(false),
-                 "EPP command update domain will also clear keyset when changing NSSET");
+                 "EPP command update domain will also clear keyset when changing NSSET")
+                ("rifd.epp_operations_charging",
+                 po::value<bool>()->default_value(false),
+                 "Turns on/off EPP operations credit charging")
+                 ("rifd.allow_idn",
+                 po::value<bool>()->default_value(false),
+                 "allow IDN");
 
         return opts_descs;
     }//get_options_description
@@ -78,6 +86,8 @@ public:
         rifd_session_timeout = vm["rifd.session_timeout"].as<unsigned>();
         rifd_session_registrar_max = vm["rifd.session_registrar_max"].as<unsigned>();
         rifd_epp_update_domain_keyset_clear = vm["rifd.epp_update_domain_keyset_clear"].as<bool>();
+        rifd_epp_operations_charging = vm["rifd.epp_operations_charging"].as<bool>();
+        allow_idn = vm["rifd.allow_idn"].as<bool>();
     }//handle
 };
 
