@@ -100,16 +100,23 @@ BOOST_AUTO_TEST_SUITE(TestOperationException)
 const std::string server_name = "test-opexception";
 
 ///exception instance for tests
+template <class DERIVED_EXCEPTION> struct ExceptionTemplate1
+: ExceptionData_unknown_contact_handle<DERIVED_EXCEPTION>
+, ExceptionData_unknown_registrar_handle<DERIVED_EXCEPTION>
+{};
+
 struct TestException
 : virtual Fred::OperationException
-  , ExceptionData_unknown_contact_handle<TestException>
-  , ExceptionData_unknown_registrar_handle<TestException>
-  , ExceptionData_testing_int_data<TestException>
-  , ExceptionData_testing_unsigned_int_data<TestException>
-  , ExceptionData_vector_of_contact1_handle<TestException>
-  , ExceptionData_vector_of_contact2_handle<TestException>
-  , ExceptionData_vector_of_contact3_handle<TestException>
+, ExceptionTemplate1<TestException>
+//, ExceptionData_unknown_contact_handle<TestException>
+//, ExceptionData_unknown_registrar_handle<TestException>
+, ExceptionData_testing_int_data<TestException>
+, ExceptionData_testing_unsigned_int_data<TestException>
+, ExceptionData_vector_of_contact1_handle<TestException>
+, ExceptionData_vector_of_contact2_handle<TestException>
+, ExceptionData_vector_of_contact3_handle<TestException>
 {};
+
 
 BOOST_AUTO_TEST_CASE(throwTestExceptionCallback)
 {
