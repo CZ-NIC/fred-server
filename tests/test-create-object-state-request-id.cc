@@ -51,8 +51,6 @@
 #include "fredlib/domain/create_domain.h"
 #include "fredlib/domain/delete_domain.h"
 #include "fredlib/domain/info_domain.h"
-#include "fredlib/domain/info_domain_history.h"
-#include "fredlib/domain/info_domain_compare.h"
 
 #include "fredlib/contact_verification/contact.h"
 #include "fredlib/object_states.h"

@@ -120,13 +120,13 @@ BOOST_FIXTURE_TEST_CASE(copy_contact, copy_contact_fixture)
 {
     Fred::OperationContext ctx;
 
-    const Fred::InfoContactData src_contact_info = Fred::InfoContact(src_contact_handle, sys_registrar_handle).exec(ctx).info_contact_data;
+    const Fred::InfoContactData src_contact_info = Fred::InfoContactByHandle(src_contact_handle).exec(ctx).info_contact_data;
     BOOST_CHECK(src_contact_info.delete_time.isnull());
 
     Fred::CopyContact(src_contact_handle, dst_contact_handle, sys_registrar_handle, 0).exec(ctx);
     ctx.commit_transaction();
 
-    const Fred::InfoContactData dst_contact_info = Fred::InfoContact(dst_contact_handle, sys_registrar_handle).exec(ctx).info_contact_data;
+    const Fred::InfoContactData dst_contact_info = Fred::InfoContactByHandle(dst_contact_handle).exec(ctx).info_contact_data;
 
     BOOST_CHECK(src_contact_info.roid != dst_contact_info.roid);
     BOOST_CHECK(boost::algorithm::to_upper_copy(src_contact_info.handle).compare(boost::algorithm::to_upper_copy(dst_contact_info.handle)) != 0);
