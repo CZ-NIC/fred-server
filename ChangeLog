@@ -1,4 +1,4 @@
-2013-11-06 Jan Zima, Michal Strnad, Jan Korous, Jiri Sadek (2.16.0)
+2013-11-11 Jan Zima, Michal Strnad, Jan Korous, Jiri Sadek (2.16.0)
 
   * new interface for administrative blocking/unblocking domains (and holders)
 
@@ -10,6 +10,8 @@
       - enabled for system registrar
 
   * fix logger object references filter
+
+  * fix epp poll req/ack commands - overflow of count values
 
 2013-10-25 Jan Korous, Jiri Sadek (2.15.2)
 
