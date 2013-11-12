@@ -78,38 +78,14 @@ namespace Fred
         try
         {
             //check registrar
-            unsigned long long registrar_id = 0;
-            {
-                Database::Result registrar_res = ctx.get_conn().exec_params(
-                    "SELECT id FROM registrar WHERE handle = UPPER($1::text) FOR SHARE"
-                    , Database::query_param_list(registrar_));
-                if(registrar_res.size() == 0)
-                {
-                    BOOST_THROW_EXCEPTION(Exception().set_unknown_registrar_handle(registrar_));
-                }
-                if (registrar_res.size() != 1)
-                {
-                    BOOST_THROW_EXCEPTION(InternalError("failed to get registrar"));
-                }
-                registrar_id = static_cast<unsigned long long>(registrar_res[0][0]);
-            }
+            unsigned long long registrar_id = Registrar::get_registrar_id_by_handle(
+                ctx, registrar_, static_cast<Exception*>(0)//set throw
+                , &Exception::set_unknown_registrar_handle);
 
             //check object type
-            unsigned long long object_type_id = 0;
-            {
-                Database::Result object_type_res = ctx.get_conn().exec_params(
-                    "SELECT id FROM enum_object_type WHERE name = $1::text FOR SHARE"
-                    , Database::query_param_list(object_type_));
-                if(object_type_res.size() == 0)
-                {
-                    BOOST_THROW_EXCEPTION(Exception().set_unknown_object_type(object_type_));
-                }
-                if (object_type_res.size() != 1)
-                {
-                    BOOST_THROW_EXCEPTION(InternalError("failed to get object type"));
-                }
-                object_type_id = static_cast<unsigned long long>(object_type_res[0][0]);
-            }
+            unsigned long long object_type_id = get_object_type_id(ctx, object_type_
+                    , static_cast<Exception*>(0)//set throw
+                    , &Exception::set_unknown_object_type);
 
             //create object
             Database::Result id_res = ctx.get_conn().exec_params(
@@ -160,24 +136,21 @@ namespace Fred
         return output;
     }
 
-    std::ostream& operator<<(std::ostream& os, const CreateObject& i)
+    /**
+    * Dumps state of the instance into the string
+    * @return string with description of the instance state
+    */
+    std::string CreateObject::to_string() const
     {
-        os << "#CreateObject object_type: " << i.object_type_
-            << " handle: " << i.handle_
-            << " registrar: " << i.registrar_
-            << " authinfo: " << i.authinfo_.print_quoted()
-            << " logd_request_id: " << i.logd_request_id_.print_quoted()
-            ;
-        return os;
+        return Util::format_operation_state("CreateObject",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("object_type",object_type_))
+        (std::make_pair("handle",handle_))
+        (std::make_pair("registrar",registrar_))
+        (std::make_pair("authinfo",authinfo_.print_quoted()))
+        (std::make_pair("logd_request_id",logd_request_id_.print_quoted()))
+        );
     }
-
-    std::string CreateObject::to_string()
-    {
-        std::stringstream ss;
-        ss << *this;
-        return ss.str();
-    }
-
 
     UpdateObject::UpdateObject(const std::string& handle
         , const std::string& obj_type
