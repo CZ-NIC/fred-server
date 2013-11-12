@@ -17,7 +17,7 @@
  */
 
 /**
- *  @file contact_enum.h
+ *  @file
  *  templates for contact enums
  */
 
@@ -34,6 +34,16 @@
 namespace Fred {
 namespace Contact {
 
+/**
+* Gets "type of identification" database id and locks row for reading.
+* @param ssntype is "type of identification" to get
+* @param ctx contains reference to database and logging interface
+* @param ex_ptr is pointer to exception instance to set in case of failure,
+* if 0, new exception instance is created, set and thrown in case of failure,
+* if not 0, refered exception instance is only set
+* @param ex_setter is exception member pointer used to set data into exception in case of failure
+* @return "type of identification" database id locked for reading
+*/
 template <class EXCEPTION, typename EXCEPTION_SETTER>
 unsigned long long get_ssntype_id(const Optional<std::string>& ssntype, OperationContext& ctx
         , EXCEPTION* ex_ptr, EXCEPTION_SETTER ex_setter)
@@ -67,6 +77,16 @@ unsigned long long get_ssntype_id(const Optional<std::string>& ssntype, Operatio
     return ssntype_id;
 }
 
+/**
+* Gets two character country code and locks row for reading.
+* @param country is name of the country or country code
+* @param ctx contains reference to database and logging interface
+* @param ex_ptr is pointer to exception instance to set in case of failure,
+* if 0, new exception instance is created, set and thrown in case of failure,
+* if not 0, refered exception instance is only set
+* @param ex_setter is exception member pointer used to set data into exception in case of failure
+* @return two character country code locked for reading
+*/
 template <class EXCEPTION, typename EXCEPTION_SETTER>
 std::string get_country_code(const Optional<std::string>& country, OperationContext& ctx
         , EXCEPTION* ex_ptr, EXCEPTION_SETTER ex_setter)
