@@ -145,24 +145,34 @@ namespace Fred
                     BOOST_THROW_EXCEPTION(ExceptionType().set_unknown_registrar_handle(
                             update_contact_exception.get_unknown_registrar_handle()));
                 }
-                else if(update_contact_exception.is_set_unknown_contact_handle())
-                {   //non-fatal good path, update can continue to check input
-                    update_exception.set_unknown_contact_id(id_);
-                }
-                else if(update_contact_exception.is_set_unknown_sponsoring_registrar_handle())
-                {   //non-fatal good path, update can continue to check input
-                    update_exception.set_unknown_sponsoring_registrar_handle(
-                            update_contact_exception.get_unknown_sponsoring_registrar_handle());
-                }
-                else if(update_contact_exception.is_set_unknown_ssntype())
-                {   //non-fatal good path, update can continue to check input
-                    update_exception.set_unknown_ssntype(
-                            update_contact_exception.get_unknown_ssntype());
-                }
-                else if(update_contact_exception.is_set_unknown_country())
-                {   //non-fatal good path, update can continue to check input
-                    update_exception.set_unknown_country(
-                            update_contact_exception.get_unknown_country());
+                else if(update_contact_exception.is_set_unknown_contact_handle()
+                    ||  update_contact_exception.is_set_unknown_sponsoring_registrar_handle()
+                    ||  update_contact_exception.is_set_unknown_ssntype()
+                    ||  update_contact_exception.is_set_unknown_country()
+                    )//non-fatal good path, update can continue to check input
+                {
+                    if(update_contact_exception.is_set_unknown_contact_handle())
+                    {
+                        update_exception.set_unknown_contact_id(id_);
+                    }
+
+                    if(update_contact_exception.is_set_unknown_sponsoring_registrar_handle())
+                    {
+                        update_exception.set_unknown_sponsoring_registrar_handle(
+                                update_contact_exception.get_unknown_sponsoring_registrar_handle());
+                    }
+
+                    if(update_contact_exception.is_set_unknown_ssntype())
+                    {
+                        update_exception.set_unknown_ssntype(
+                                update_contact_exception.get_unknown_ssntype());
+                    }
+
+                    if(update_contact_exception.is_set_unknown_country())
+                    {
+                        update_exception.set_unknown_country(
+                                update_contact_exception.get_unknown_country());
+                    }
                 }
                 else throw;//rethrow unexpected
             }
@@ -297,24 +307,34 @@ namespace Fred
                     BOOST_THROW_EXCEPTION(ExceptionType().set_unknown_registrar_handle(
                             update_contact_exception.get_unknown_registrar_handle()));
                 }
-                else if(update_contact_exception.is_set_unknown_contact_handle())
-                {   //non-fatal good path, update can continue to check input
-                    update_exception.set_unknown_contact_handle(handle_);
-                }
-                else if(update_contact_exception.is_set_unknown_sponsoring_registrar_handle())
-                {   //non-fatal good path, update can continue to check input
-                    update_exception.set_unknown_sponsoring_registrar_handle(
-                            update_contact_exception.get_unknown_sponsoring_registrar_handle());
-                }
-                else if(update_contact_exception.is_set_unknown_ssntype())
-                {   //non-fatal good path, update can continue to check input
-                    update_exception.set_unknown_ssntype(
-                            update_contact_exception.get_unknown_ssntype());
-                }
-                else if(update_contact_exception.is_set_unknown_country())
-                {   //non-fatal good path, update can continue to check input
-                    update_exception.set_unknown_country(
-                            update_contact_exception.get_unknown_country());
+                else if(update_contact_exception.is_set_unknown_contact_handle()
+                    ||  update_contact_exception.is_set_unknown_sponsoring_registrar_handle()
+                    ||  update_contact_exception.is_set_unknown_ssntype()
+                    ||  update_contact_exception.is_set_unknown_country()
+                        )//non-fatal good path, update can continue to check input
+                {
+                    if(update_contact_exception.is_set_unknown_contact_handle())
+                    {
+                        update_exception.set_unknown_contact_handle(handle_);
+                    }
+
+                    if(update_contact_exception.is_set_unknown_sponsoring_registrar_handle())
+                    {   //non-fatal good path, update can continue to check input
+                        update_exception.set_unknown_sponsoring_registrar_handle(
+                                update_contact_exception.get_unknown_sponsoring_registrar_handle());
+                    }
+
+                    if(update_contact_exception.is_set_unknown_ssntype())
+                    {   //non-fatal good path, update can continue to check input
+                        update_exception.set_unknown_ssntype(
+                                update_contact_exception.get_unknown_ssntype());
+                    }
+
+                    if(update_contact_exception.is_set_unknown_country())
+                    {   //non-fatal good path, update can continue to check input
+                        update_exception.set_unknown_country(
+                                update_contact_exception.get_unknown_country());
+                    }
                 }
                 else throw;//rethrow unexpected
             }

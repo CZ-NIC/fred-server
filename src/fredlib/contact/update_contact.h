@@ -571,16 +571,18 @@ namespace Fred
                     //fatal good path, need valid registrar performing update
                     BOOST_THROW_EXCEPTION(Exception().set_unknown_registrar_handle(ex.get_unknown_registrar_handle()));
                 }
-                else if(ex.is_set_unknown_object_handle())
+                else if(ex.is_set_unknown_object_handle()
+                    || ex.is_set_unknown_sponsoring_registrar_handle())//non-fatal good path, update can continue to check input
                 {
-                    //non-fatal good path, update can continue to check input
-                    update_contact_exception.set_unknown_contact_handle(contact.info_contact_data.handle);
-                }
-                else if(ex.is_set_unknown_sponsoring_registrar_handle())
-                {
-                    //non-fatal good path, update can continue to check input
-                    update_contact_exception.set_unknown_sponsoring_registrar_handle(
-                            ex.get_unknown_sponsoring_registrar_handle());
+                    if(ex.is_set_unknown_object_handle())
+                    {
+                        update_contact_exception.set_unknown_contact_handle(contact.info_contact_data.handle);
+                    }
+                    if(ex.is_set_unknown_sponsoring_registrar_handle())
+                    {
+                        update_contact_exception.set_unknown_sponsoring_registrar_handle(
+                                ex.get_unknown_sponsoring_registrar_handle());
+                    }
                 }
                 else throw;//rethrow unexpected
             }
