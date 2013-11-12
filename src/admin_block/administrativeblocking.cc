@@ -512,10 +512,8 @@ namespace Registry
                             e_item.domain_handle = domain_id_handle[e_item.domain_id];
                             domain_id_not_blocked.what.insert(e_item);
                         }
-                        else if (e.is_set_object_id_not_found()) {
-                            std::ostringstream o;
-                            o << "Fred::CreateAdministrativeObjectStateRestoreRequestId::Exception object_id_not_found " << e.get_object_id_not_found();
-                            throw std::runtime_error(o.str());
+                        else {
+                            throw;
                         }
                     }
                     catch (const Fred::UpdateDomain::Exception &e) {
@@ -738,10 +736,18 @@ namespace Registry
             unsigned long long _log_req_id)
         {
             try {
+                boost::posix_time::ptime blacklist_to_limit;
+                if (!_blacklist_to_date.isnull()) {
+                    blacklist_to_limit = boost::posix_time::ptime(static_cast< boost::gregorian::date >(_blacklist_to_date),
+                                                                  boost::posix_time::time_duration(12, 0, 0));
+                }
                 Fred::OperationContext ctx;
                 for (IdlDomainIdList::const_iterator pDomainId = _domain_list.begin(); pDomainId != _domain_list.end(); ++pDomainId) {
                     const Fred::ObjectId object_id = *pDomainId;
                     Fred::CreateDomainNameBlacklistId create_domain_name_blacklist(object_id, _reason);
+                    if (!_blacklist_to_date.isnull()) {
+                        create_domain_name_blacklist.set_valid_to(blacklist_to_limit);
+                    }
                     create_domain_name_blacklist.exec(ctx);
                     Database::Result object_handle_res = ctx.get_conn().exec_params(
                         "SELECT name "
@@ -771,10 +777,18 @@ namespace Registry
             unsigned long long _log_req_id)
         {
             try {
+                boost::posix_time::ptime blacklist_to_limit;
+                if (!_blacklist_to_date.isnull()) {
+                    blacklist_to_limit = boost::posix_time::ptime(static_cast< boost::gregorian::date >(_blacklist_to_date),
+                                                                  boost::posix_time::time_duration(12, 0, 0));
+                }
                 Fred::OperationContext ctx;
                 for (IdlDomainIdList::const_iterator pDomainId = _domain_list.begin(); pDomainId != _domain_list.end(); ++pDomainId) {
                     const Fred::ObjectId object_id = *pDomainId;
                     Fred::CreateDomainNameBlacklistId create_domain_name_blacklist(object_id, "blacklistDomainsId() call");
+                    if (!_blacklist_to_date.isnull()) {
+                        create_domain_name_blacklist.set_valid_to(blacklist_to_limit);
+                    }
                     create_domain_name_blacklist.exec(ctx);
                 }
                 ctx.commit_transaction();

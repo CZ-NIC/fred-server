@@ -29,8 +29,6 @@
 namespace Fred
 {
 
-    typedef unsigned long long UserId;
-
     class CreateDomainNameBlacklistId
     {
     public:
@@ -40,25 +38,21 @@ namespace Fred
         CreateDomainNameBlacklistId(ObjectId _object_id,
             const std::string &_reason,
             const Optional< Time > &_valid_from,
-            const Optional< Time > &_valid_to,
-            const Optional< UserId > &_creator);
+            const Optional< Time > &_valid_to);
         CreateDomainNameBlacklistId& set_valid_from(const Time &_valid_from);
         CreateDomainNameBlacklistId& set_valid_to(const Time &_valid_to);
-        CreateDomainNameBlacklistId& set_creator(UserId _creator);
         void exec(OperationContext &_ctx);
 
     //exception impl
         DECLARE_EXCEPTION_DATA(object_id_not_found, ObjectId);
         DECLARE_EXCEPTION_DATA(already_blacklisted_domain, ObjectId);
         DECLARE_EXCEPTION_DATA(out_of_turn, std::string);
-        DECLARE_EXCEPTION_DATA(creator_not_found, UserId);
 
         struct Exception
         :   virtual Fred::OperationException,
             ExceptionData_object_id_not_found<Exception>,
             ExceptionData_already_blacklisted_domain<Exception>,
-            ExceptionData_out_of_turn<Exception>,
-            ExceptionData_creator_not_found<Exception>
+            ExceptionData_out_of_turn<Exception>
         {};
 
     private:
@@ -66,9 +60,7 @@ namespace Fred
         const std::string reason_;
         Optional< Time > valid_from_;
         Optional< Time > valid_to_;
-        Optional< UserId > creator_;
     };//class CreateDomainNameBlacklistId
-
 
 }//namespace Fred
 
