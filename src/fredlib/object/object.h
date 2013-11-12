@@ -46,7 +46,10 @@ namespace Fred
         , history_id(0)
         {}
     };
-    class CreateObject
+    /**
+     * Creates common part of registry object.
+     */
+    class CreateObject : public virtual Util::Printable
     {
         const std::string object_type_;//object type name
         const std::string handle_;//object identifier
@@ -76,8 +79,7 @@ namespace Fred
         CreateObject& set_logd_request_id(const Nullable<unsigned long long>& logd_request_id);
         CreateObjectOutput exec(OperationContext& ctx);
 
-        friend std::ostream& operator<<(std::ostream& os, const CreateObject& i);
-        std::string to_string();
+        std::string to_string() const;
     };
 
     /**
@@ -124,7 +126,7 @@ namespace Fred
         std::string to_string() const;
     };
 
-    class InsertHistory
+    class InsertHistory : public virtual Util::Printable
     {
         Nullable<unsigned long long> logd_request_id_; //id of the new entry in log_entry database table, id is used in other calls to logging within current request
         unsigned long long object_id_;
@@ -132,22 +134,25 @@ namespace Fred
         InsertHistory(const Nullable<unsigned long long>& logd_request_id, unsigned long long object_id);
         unsigned long long exec(OperationContext& ctx);
 
-        friend std::ostream& operator<<(std::ostream& os, const InsertHistory& i);
-        std::string to_string();
+        std::string to_string() const;
     };
 
     /**
-    * Check existence and lock object type for read.
+    * Check existence, get database id and lock object type for read.
     * @param EXCEPTION is type of exception used for reporting when object type is not found, deducible from type of @ref ex_ptr parameter
     * @param EXCEPTION_SETTER is EXCEPTION member function pointer used to report unknown object type
     * @param ctx contains reference to database and logging interface
     * @param obj_type is object type to look for in enum_object_type table
     * @param ex_ptr is  pointer to given exception instance to be set (don't throw), if ex_ptr is 0, new exception instance is created, set and thrown
     * @param ex_setter is EXCEPTION member function pointer used to report unknown obj_type
+    * @return database id of the object type
+    * , or throw @ref EXCEPTION if object type was not found and external exception instance was not provided
+    * , or set unknown object type into given external exception instance and return 0
+    * , or throw InternalError or some other exception in case of failure.
     */
 
     template <class EXCEPTION, typename EXCEPTION_SETTER>
-    void check_object_type(OperationContext& ctx, const std::string& obj_type
+    unsigned long long get_object_type_id(OperationContext& ctx, const std::string& obj_type
             , EXCEPTION* ex_ptr, EXCEPTION_SETTER ex_setter)
     {
         Database::Result object_type_res = ctx.get_conn().exec_params(
@@ -162,13 +167,14 @@ namespace Fred
             else//set unknown handle to given exception instance (don't throw) and return 0
             {
                 (ex_ptr->*ex_setter)(obj_type);
-                return;
+                return 0;
             }
         }
         if (object_type_res.size() != 1)//too many
         {
             BOOST_THROW_EXCEPTION(InternalError("failed to get object type"));
         }
+        return  static_cast<unsigned long long> (object_type_res[0][0]);
     }
 
 
@@ -193,7 +199,7 @@ namespace Fred
             , const std::string& object_handle, const std::string& object_type
             , EXCEPTION* ex_ptr, EXCEPTION_OBJECT_HANDLE_SETTER ex_handle_setter, EXCEPTION_OBJECT_TYPE_SETTER ex_type_setter)
     {
-        check_object_type(ctx, object_type, static_cast<EXCEPTION*>(0), ex_type_setter);
+        get_object_type_id(ctx, object_type, static_cast<EXCEPTION*>(0), ex_type_setter);
 
         Database::Result object_id_res = ctx.get_conn().exec_params(
         "SELECT oreg.id FROM object_registry oreg "
@@ -222,7 +228,7 @@ namespace Fred
         return  static_cast<unsigned long long> (object_id_res[0][0]);
     }
 
-    class DeleteObject
+    class DeleteObject : public virtual Util::Printable
     {
         const std::string handle_;//object identifier
         const std::string obj_type_;//object type name
@@ -238,8 +244,7 @@ namespace Fred
                 , const std::string& obj_type);
         void exec(OperationContext& ctx);
 
-        friend std::ostream& operator<<(std::ostream& os, const DeleteObject& i);
-        std::string to_string();
+        std::string to_string() const;
     };
 
 }//namespace Fred

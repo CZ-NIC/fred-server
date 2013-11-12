@@ -278,22 +278,31 @@ namespace Fred
 
         try
         {
-            //check registrar
+            Exception create_contact_exception;
+            CreateObjectOutput create_object_output;
+            try
             {
-                Database::Result registrar_res = ctx.get_conn().exec_params(
-                    "SELECT id FROM registrar WHERE handle = UPPER($1::text) FOR SHARE"
-                    , Database::query_param_list(registrar_));
-                if(registrar_res.size() == 0)
-                {
-                    BOOST_THROW_EXCEPTION(Exception().set_unknown_registrar_handle(registrar_));
-                }
-                if (registrar_res.size() != 1)
-                {
-                    BOOST_THROW_EXCEPTION(InternalError("failed to get registrar"));
-                }
-
+                create_object_output = CreateObject(
+                        "contact", handle_, registrar_, authinfo_, logd_request_id_)
+                        .exec(ctx);
             }
-            CreateObjectOutput create_object_output = CreateObject("contact", handle_, registrar_, authinfo_, logd_request_id_).exec(ctx);
+            catch(const CreateObject::Exception& create_object_exception)
+            {
+                //CreateObject implementation sets only one member at once into Exception instance
+                if(create_object_exception.is_set_unknown_registrar_handle())
+                {
+                    //fatal good path, need valid registrar performing create
+                    BOOST_THROW_EXCEPTION(Exception().set_unknown_registrar_handle(
+                            create_object_exception.get_unknown_registrar_handle()));
+                }
+                else if(create_object_exception.is_set_invalid_object_handle())
+                {   //non-fatal good path, create can continue to check input
+                    create_contact_exception.set_invalid_contact_handle(
+                            create_object_exception.get_invalid_object_handle());
+                }
+                else throw;//rethrow unexpected
+            }
+
             //create contact
             {
                 Database::QueryParams params;//query params
@@ -367,7 +376,7 @@ namespace Fred
                 if(country_.isset())
                 {
                     params.push_back(Contact::get_country_code(country_, ctx,
-                        static_cast<Exception*>(0), &Exception::set_unknown_country));
+                            &create_contact_exception, &Exception::set_unknown_country));
                     col_sql << col_separator.get() << "country";
                     val_sql << val_separator.get() << "$" << params.size() <<"::text";
                 }
@@ -409,7 +418,8 @@ namespace Fred
 
                 if(ssntype_.isset())
                 {
-                    params.push_back(Contact::get_ssntype_id(ssntype_,ctx, static_cast<Exception*>(0), &Exception::set_unknown_ssntype));
+                    params.push_back(Contact::get_ssntype_id(ssntype_,ctx,
+                            &create_contact_exception, &Exception::set_unknown_ssntype));
                     col_sql << col_separator.get() << "ssntype";
                     val_sql << val_separator.get() << "$" << params.size() <<"::integer";
                 }
@@ -486,6 +496,12 @@ namespace Fred
 
                 col_sql <<")";
                 val_sql << ")";
+
+                if(create_contact_exception.throw_me())
+                {
+                    BOOST_THROW_EXCEPTION(create_contact_exception);
+                }
+
                 //insert into contact
                 ctx.get_conn().exec_params(col_sql.str() + val_sql.str(), params);
 
