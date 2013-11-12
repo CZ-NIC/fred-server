@@ -321,19 +321,13 @@ namespace Fred
         return history_id;
     }
 
-    std::ostream& operator<<(std::ostream& os, const InsertHistory& i)
+    std::string InsertHistory::to_string() const
     {
-        os << "#InsertHistory logd_request_id: " << i.logd_request_id_.print_quoted()
-            << " object_id: " << i.object_id_
-            ;
-        return os;
-    }
-
-    std::string InsertHistory::to_string()
-    {
-        std::stringstream ss;
-        ss << *this;
-        return ss.str();
+        return Util::format_operation_state("InsertHistory",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("object_id",boost::lexical_cast<std::string>(object_id_)))
+        (std::make_pair("logd_request_id",logd_request_id_.print_quoted()))
+        );
     }
 
     DeleteObject::DeleteObject(const std::string& handle
@@ -407,19 +401,12 @@ namespace Fred
         }
     }
 
-    std::ostream& operator<<(std::ostream& os, const DeleteObject& i)
+    std::string DeleteObject::to_string() const
     {
-        os << "#DeleteObject obj_type: " << i.obj_type_
-            << " handle: " << i.handle_
-            ;
-        return os;
-    }
-
-    std::string DeleteObject::to_string()
-    {
-        std::stringstream ss;
-        ss << *this;
-        return ss.str();
+        return Util::format_operation_state("DeleteObject",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("obj_type",obj_type_))
+        );
     }
 
 }//namespace Fred

@@ -126,7 +126,7 @@ namespace Fred
         std::string to_string() const;
     };
 
-    class InsertHistory
+    class InsertHistory : public virtual Util::Printable
     {
         Nullable<unsigned long long> logd_request_id_; //id of the new entry in log_entry database table, id is used in other calls to logging within current request
         unsigned long long object_id_;
@@ -134,8 +134,7 @@ namespace Fred
         InsertHistory(const Nullable<unsigned long long>& logd_request_id, unsigned long long object_id);
         unsigned long long exec(OperationContext& ctx);
 
-        friend std::ostream& operator<<(std::ostream& os, const InsertHistory& i);
-        std::string to_string();
+        std::string to_string() const;
     };
 
     /**
@@ -229,7 +228,7 @@ namespace Fred
         return  static_cast<unsigned long long> (object_id_res[0][0]);
     }
 
-    class DeleteObject
+    class DeleteObject : public virtual Util::Printable
     {
         const std::string handle_;//object identifier
         const std::string obj_type_;//object type name
@@ -245,8 +244,7 @@ namespace Fred
                 , const std::string& obj_type);
         void exec(OperationContext& ctx);
 
-        friend std::ostream& operator<<(std::ostream& os, const DeleteObject& i);
-        std::string to_string();
+        std::string to_string() const;
     };
 
 }//namespace Fred
