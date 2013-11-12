@@ -121,19 +121,19 @@ namespace Registry
                 return new_owner_handle;
             }
 
-            std::string get_sys_registrar(Fred::OperationContext &_ctx)
+            std::string get_sys_registrar(Fred::OperationContext &_ctx, bool &_is_system)
             {
                 Database::Result sys_registrar_res = _ctx.get_conn().exec(
-                    "SELECT handle "
-                    "FROM registrar "
-                    "WHERE system IS true");
+                    "SELECT handle,system "
+                    "FROM registrar ORDER BY system DESC,id LIMIT 1");
                 if (sys_registrar_res.size() == 1) {
+                    _is_system = static_cast< bool >(sys_registrar_res[0][1]);
                     return static_cast< std::string >(sys_registrar_res[0][0]);
                 }
                 if (sys_registrar_res.size() == 0) {
-                    throw std::runtime_error("system registrar not found");
+                    throw std::runtime_error("no registrar found");
                 }
-                throw std::runtime_error("too many system registrars");
+                throw std::runtime_error("SELECT with LIMIT 1 return more then 1 row");
             }
 
             std::string get_object_handle(Fred::OperationContext &_ctx, Fred::ObjectId _object_id, bool _lock = true);
@@ -307,7 +307,8 @@ namespace Registry
                 Fred::StatusList contact_status_list;
                 DomainIdOwnerId domain_id_owner_id;
                 OwnerIdOwnerCopy owner_id_owner_copy;
-                const std::string sys_registrar = get_sys_registrar(ctx);
+                bool is_sys_registrar;
+                std::string sys_registrar;
                 if ((_owner_block_mode == OWNER_BLOCK_MODE_BLOCK_OWNER) ||
                     (_owner_block_mode == OWNER_BLOCK_MODE_BLOCK_OWNER_COPY)) {
                     Fred::GetObjectStateIdMap::StateIdMap state_id;
@@ -317,6 +318,14 @@ namespace Registry
                         contact_status_list.insert(pState->first);
                     }
                     if (_owner_block_mode == OWNER_BLOCK_MODE_BLOCK_OWNER_COPY) {
+                        if (sys_registrar.empty()) {
+                            sys_registrar = get_sys_registrar(ctx, is_sys_registrar);
+                        }
+                        if (!is_sys_registrar) {
+                            EX_INTERNAL_SERVER_ERROR e;
+                            e.what = "system registrar not found";
+                            throw e;
+                        }
                         copy_domain_owners(sys_registrar, _domain_list, domain_id_owner_id, owner_id_owner_copy, _log_req_id, ctx);
                     }
                     else if (_owner_block_mode == OWNER_BLOCK_MODE_BLOCK_OWNER) {
@@ -376,6 +385,14 @@ namespace Registry
                             result_item.new_owner_handle = owner_copy.new_owner_handle;
                             result_item.new_owner_id = owner_copy.new_owner_id;
                             if (!contact_status_list.empty()) {
+                                if (sys_registrar.empty()) {
+                                    sys_registrar = get_sys_registrar(ctx, is_sys_registrar);
+                                }
+                                if (!is_sys_registrar) {
+                                    EX_INTERNAL_SERVER_ERROR e;
+                                    e.what = "system registrar not found";
+                                    throw e;
+                                }
                                 Fred::UpdateDomain update_domain(domain, sys_registrar);
                                 update_domain.set_registrant(result_item.new_owner_handle);
                                 if (0 < _log_req_id) {
@@ -479,7 +496,8 @@ namespace Registry
                 Fred::OperationContext ctx;
                 DomainIdHandle domain_id_handle;
                 get_domain_handle(_domain_list, domain_id_handle, ctx);
-                const std::string sys_registrar = get_sys_registrar(ctx);
+                bool is_sys_registrar;
+                std::string sys_registrar;
                 for (IdlDomainIdList::const_iterator pDomainId = _domain_list.begin(); pDomainId != _domain_list.end(); ++pDomainId) {
                     const Fred::ObjectId object_id = *pDomainId;
                     try {
@@ -487,11 +505,22 @@ namespace Registry
                         create_object_state_restore_request.exec(ctx);
                         Fred::PerformObjectStateRequest(object_id).exec(ctx);
                         const std::string fqdn = get_object_handle(ctx, object_id);
+                        if (sys_registrar.empty()) {
+                            sys_registrar = get_sys_registrar(ctx, is_sys_registrar);
+                        }
                         const boost::gregorian::date expiration_date = Fred::InfoDomain(fqdn, sys_registrar).exec(ctx).info_domain_data.expiration_date;
                         const boost::gregorian::date today(boost::gregorian::day_clock::universal_day());
                         const bool set_expire_today = expiration_date < today;
                         const bool new_owner_is_set = !(_new_owner.isnull() || static_cast< std::string >(_new_owner).empty());
                         if (new_owner_is_set || set_expire_today) {
+                            if (sys_registrar.empty()) {
+                                sys_registrar = get_sys_registrar(ctx, is_sys_registrar);
+                            }
+                            if (!is_sys_registrar) {
+                                EX_INTERNAL_SERVER_ERROR e;
+                                e.what = "system registrar not found";
+                                throw e;
+                            }
                             Fred::UpdateDomain update_domain(fqdn, sys_registrar);
                             if (new_owner_is_set) {
                                 update_domain.set_registrant(_new_owner);
@@ -640,18 +669,30 @@ namespace Registry
                 Fred::OperationContext ctx;
                 DomainIdHandle domain_id_handle;
                 get_domain_handle(_domain_list, domain_id_handle, ctx);
-                const std::string sys_registrar = get_sys_registrar(ctx);
+                bool is_sys_registrar;
+                std::string sys_registrar;
                 for (IdlDomainIdList::const_iterator pDomainId = _domain_list.begin(); pDomainId != _domain_list.end(); ++pDomainId) {
                     const Fred::ObjectId object_id = *pDomainId;
                     try {
                         Fred::ClearAdministrativeObjectStateRequestId(object_id, _reason).exec(ctx);
                         Fred::PerformObjectStateRequest(object_id).exec(ctx);
                         const std::string fqdn = get_object_handle(ctx, object_id);
+                        if (sys_registrar.empty()) {
+                            sys_registrar = get_sys_registrar(ctx, is_sys_registrar);
+                        }
                         const Fred::InfoDomainData info_domain_data = Fred::InfoDomain(fqdn, sys_registrar).exec(ctx).info_domain_data;
                         const boost::gregorian::date today(boost::gregorian::day_clock::universal_day());
                         const bool set_expire_today = info_domain_data.expiration_date < today;
                         const bool set_new_owner = !_new_owner.isnull() && !static_cast< std::string >(_new_owner).empty();
                         if (_remove_admin_c || set_new_owner || set_expire_today) {
+                            if (sys_registrar.empty()) {
+                                sys_registrar = get_sys_registrar(ctx, is_sys_registrar);
+                            }
+                            if (!is_sys_registrar) {
+                                EX_INTERNAL_SERVER_ERROR e;
+                                e.what = "system registrar not found";
+                                throw e;
+                            }
                             Fred::UpdateDomain update_domain(fqdn, sys_registrar);
                             if (set_new_owner) {
                                 update_domain.set_registrant(_new_owner);
