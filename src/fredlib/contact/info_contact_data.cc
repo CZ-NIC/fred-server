@@ -47,31 +47,16 @@ namespace Fred
     : crhistoryid(0)
     , historyid(0)
     , id(0)
-    , print_diff_(false)
     {}
 
     bool InfoContactData::operator==(const InfoContactData& rhs) const
     {
-        InfoContactDiff diff = diff_contact_data(*this, rhs);
-
-        if(print_diff_)
-        {
-            std::cout << "\nInfoContactData::operator== print_diff\n"
-                    << (diff.is_empty() ? std::string() : diff.to_string())
-                    << std::endl;
-        }
-
-        return diff.is_empty();
+        return diff_contact_data(*this, rhs).is_empty();
     }
 
     bool InfoContactData::operator!=(const InfoContactData& rhs) const
     {
         return !this->operator ==(rhs);
-    }
-
-    void InfoContactData::set_diff_print(bool print_diff)
-    {
-        print_diff_ = print_diff;
     }
 
     std::string InfoContactData::to_string() const

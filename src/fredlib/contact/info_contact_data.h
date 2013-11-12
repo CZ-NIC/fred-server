@@ -83,8 +83,6 @@ namespace Fred
         Nullable<bool> disclosenotifyemail;/**< whether to reveal notify email */
         unsigned long long id;/**< id of the contact object*/
 
-    private:
-        bool print_diff_;/**< whether to print debug diff made by contact comparison operators @ref operator==  and @ref operator!=*/
     public:
         /**
         * Constructor of the contact data structure.
@@ -103,12 +101,6 @@ namespace Fred
         * @return true if not equal, false if equal
         */
         bool operator!=(const InfoContactData& rhs) const;
-
-        /**
-        * Set comparison operators to print debug diff.
-        * @param print_diff is value set to @ref print_diff_ attribute
-        */
-        void set_diff_print(bool print_diff = true);
 
         /**
         * Dumps state of the instance into the string

@@ -169,7 +169,10 @@ BOOST_FIXTURE_TEST_CASE(info_contact, test_contact_fixture )
         if((j & (1 << 0)) || (j & (1 << 1)) || (j & (1 << 2)) || (j & (1 << 3)))//check if selective
         {
             if((contact_info1 != output.at(0)))
-                output.at(0).info_contact_data.set_diff_print();
+            {
+                BOOST_MESSAGE(Fred::diff_contact_data(contact_info1.info_contact_data
+                        , output.at(0).info_contact_data).to_string());
+            }
             BOOST_CHECK(output.at(0) == contact_info1);
         }
     }
