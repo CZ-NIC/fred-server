@@ -115,6 +115,24 @@ namespace Fred
             }
             return 0 < blacklisted_result.size();
         }
+
+        std::string fqdn_to_regexp(const std::string &_fqdn)
+        {
+            std::string regexp = "^";
+            for (std::string::const_iterator pC = _fqdn.begin(); pC != _fqdn.end(); ++pC) {
+                switch (*pC ) {
+                case '.':
+                    regexp += std::string("\\") + *pC;
+                    break;
+                default:
+                    regexp += *pC;
+                    break;
+                }
+            }
+            regexp += "$";
+            return regexp;
+        }
+
     }
 
     void CreateDomainNameBlacklistId::exec(OperationContext &_ctx)
@@ -141,7 +159,7 @@ namespace Fred
             }
         }
 
-        std::string domain;
+        std::string domain_regexp;
         {
             Database::query_param_list param(object_id_);
             Database::Result object_type_result = _ctx.get_conn().exec_params(
@@ -152,10 +170,10 @@ namespace Fred
                 BOOST_THROW_EXCEPTION(Exception().set_object_id_not_found(object_id_));
             }
             const Database::Row &row = object_type_result[0];
-            domain = static_cast< std::string >(row[0]);
+            domain_regexp = fqdn_to_regexp(static_cast< std::string >(row[0]));
         }
 
-        if (is_blacklisted(_ctx.get_conn(), domain, valid_from_, valid_to_)) {
+        if (is_blacklisted(_ctx.get_conn(), domain_regexp, valid_from_, valid_to_)) {
             BOOST_THROW_EXCEPTION(Exception().set_already_blacklisted_domain(object_id_));
         }
 
@@ -164,7 +182,7 @@ namespace Fred
                    "(regexp,reason,valid_from,valid_to) "
                "VALUES "
                    "($1::text,$2::text";
-        Database::query_param_list param(domain);
+        Database::query_param_list param(domain_regexp);
         param(reason_);
         if (valid_from_.isset()) {
             param(valid_from_.get_value());
