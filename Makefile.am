@@ -689,6 +689,8 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/domain/update_domain.cc \
 		src/fredlib/domain/info_domain_data.h \
 		src/fredlib/domain/info_domain_data.cc \
+		src/fredlib/domain/info_domain_diff.h \
+		src/fredlib/domain/info_domain_diff.cc \
 		src/fredlib/domain/info_domain.h \
 		src/fredlib/domain/info_domain.cc \
 		src/fredlib/domain/enum_validation_extension.h \
