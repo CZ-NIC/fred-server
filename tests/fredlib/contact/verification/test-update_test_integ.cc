@@ -98,6 +98,7 @@ struct setup_create_update_test {
         setup_testdef testdef;
         setup_testdef_in_testsuite(testdef.testdef_name_, suite.testsuite_name);
         setup_check check(suite.testsuite_name, old_logd_request_);
+        setup_test(check.check_handle_, testdef.testdef_name_, old_logd_request_);
         test_name_ = testdef.testdef_name_;
 
         Fred::InfoContactCheck info_check(check.check_handle_);
@@ -186,6 +187,7 @@ struct setup_create_update_update_test {
         setup_testdef_in_testsuite(testdef.testdef_name_, suite.testsuite_name);
         setup_check check(suite.testsuite_name);
         test_name_ = testdef.testdef_name_;
+        setup_test(check.check_handle_, test_name_, _logd_request1);
 
         Fred::InfoContactCheck info_check(check.check_handle_);
 
