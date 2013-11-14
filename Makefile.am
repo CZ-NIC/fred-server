@@ -707,6 +707,8 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/keyset/create_keyset.h \
 		src/fredlib/keyset/info_keyset_data.h \
 		src/fredlib/keyset/info_keyset_data.cc \
+		src/fredlib/keyset/info_keyset_diff.h \
+		src/fredlib/keyset/info_keyset_diff.cc \
 		src/fredlib/keyset/info_keyset.h \
 		src/fredlib/keyset/info_keyset.cc \
 		src/fredlib/contact/delete_contact.h \

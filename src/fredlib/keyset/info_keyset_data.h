@@ -62,10 +62,6 @@ namespace Fred
         std::vector<DnsKey> dns_keys;/**< DNS keys */
         std::vector<std::string> tech_contacts;/**< list of technical contact handles */
 
-    private:
-        bool print_diff_;/**< whether to print debug diff made by keyset comparison operators @ref operator==  and @ref operator!=*/
-    public:
-
         /**
         * Constructor of the keyset data structure.
         */
@@ -84,12 +80,6 @@ namespace Fred
         * @return true if not equal, false if equal
         */
         bool operator!=(const InfoKeysetData& rhs) const;
-
-        /**
-        * Set comparison operators to print debug diff.
-        * @param print_diff is value set to @ref print_diff_ attribute
-        */
-        void set_diff_print(bool print_diff = true);
 
         /**
         * Dumps state of the instance into the string

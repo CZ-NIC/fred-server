@@ -46,6 +46,7 @@
 #include "time_clock.h"
 #include "fredlib/registrar.h"
 #include "fredlib/keyset/info_keyset.h"
+#include "fredlib/keyset/info_keyset_diff.h"
 #include "fredlib/domain/update_domain.h"
 #include "fredlib/nsset/update_nsset.h"
 #include "fredlib/keyset/update_keyset.h"
@@ -187,7 +188,10 @@ BOOST_FIXTURE_TEST_CASE(info_keyset, info_keyset_fixture )
         if((j & (1 << 0)) || (j & (1 << 1)) || (j & (1 << 2)) || (j & (1 << 3)))//check if selective
         {
             if((info_data_1 != output.at(0)))
-                output.at(0).info_keyset_data.set_diff_print();
+            {
+                BOOST_MESSAGE(Fred::diff_keyset_data(info_data_1.info_keyset_data
+                        , output.at(0).info_keyset_data).to_string());
+            }
             BOOST_CHECK(output.at(0) == info_data_1);
         }
     }
