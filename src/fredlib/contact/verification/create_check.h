@@ -49,9 +49,6 @@ namespace Fred
             struct ExceptionUnknownTestsuiteName : virtual Fred::OperationException {
                 const char* what() const throw() {return "unknown testsuite name";}
             };
-            struct ExceptionEmptyTestsuite : virtual Fred::OperationException {
-                const char* what() const throw() {return "empty testsuite";}
-            };
 
             /**
              * constructor only with mandatory parameters
