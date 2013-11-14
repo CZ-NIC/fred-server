@@ -166,7 +166,7 @@ namespace  Admin {
         Fred::OperationContext ctx;
 
         Database::Result locked_check_res = ctx.get_conn().exec_params(
-            "SELECT c_ch.id AS id_, c_ch.handle AS handle_ "
+            "SELECT c_ch.handle AS handle_ "
             "   FROM contact_check AS c_ch "
             "   WHERE c_ch.enum_contact_check_status_id = "
             "       ( SELECT id FROM enum_contact_check_status WHERE name = $1::varchar ) "
@@ -179,16 +179,10 @@ namespace  Admin {
             throw ExceptionNoEnqueuedChecksAvailable();
         }
 
-        Database::Result updated_check_res = ctx.get_conn().exec_params(
-            "UPDATE contact_check "
-            "   SET enum_contact_check_status_id = "
-            "       ( SELECT id FROM enum_contact_check_status WHERE name = $2::varchar ) "
-            "   WHERE id = $1::bigint "
-            "   RETURNING id ; ",
-            Database::query_param_list
-                ( static_cast<long long>(locked_check_res[0]["id_"]) )
-                ( Fred::ContactCheckStatus::RUNNING )
-        );
+        std::string check_handle(static_cast<std::string>( locked_check_res[0]["handle_"] ));
+
+        Fred::UpdateContactCheck(check_handle, Fred::ContactCheckStatus::RUNNING, _logd_request_id)
+            .exec(ctx);
 
         // instantiate tests in db
 
@@ -199,31 +193,27 @@ namespace  Admin {
             "           ON enum_test.id = c_map.enum_contact_test_id "
             "       JOIN contact_check          AS check_ "
             "           ON check_.enum_contact_testsuite_id = c_map.enum_contact_testsuite_id "
-            "   WHERE check_.id=$1::bigint "
+            "   WHERE check_.handle=$1::uuid "
             "   ORDER by enum_test.id ASC; ",
-            Database::query_param_list( static_cast<long long>(locked_check_res[0]["id_"]))
+            Database::query_param_list(check_handle)
         );
         if(testnames_res.size() == 0) {
             throw Fred::InternalError(
                 std::string("testsuite of check(id=")
-                + static_cast<std::string>( locked_check_res[0]["handle_"] )
+                + check_handle
                 + ") contains no tests");
         }
 
         for(Database::Result::Iterator it = testnames_res.begin(); it != testnames_res.end(); ++it) {
             Fred::CreateContactTest(
-                static_cast<std::string>( locked_check_res[0]["handle_"] ),
+                check_handle,
                 static_cast<std::string>( (*it)["name_"] )
             )
             .set_logd_request_id(_logd_request_id)
             .exec(ctx);
         }
 
-        if(updated_check_res.size() == 1) {
-            ctx.commit_transaction();
-        } else {
-            throw Fred::InternalError("failed to update check to running status");
-        }
+        ctx.commit_transaction();
     }
 
     std::string lazy_get_locked_running_test(Fred::OperationContext& _ctx, const std::string& _check_handle, Optional<long long> _logd_request_id) {
