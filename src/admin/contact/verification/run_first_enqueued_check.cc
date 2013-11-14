@@ -14,21 +14,24 @@ namespace  Admin {
 
     /**
      * Lock some contact_check with running status.
-     * If no existing check can be be locked check with status enqueued is looked for, it's status updated and locking is retried.
+     * If no existing running check can be be locked check with status enqueued is looked for, it's status updated and locking is retried.
      * Iterates until some contact_check is locked succesfully or there is neither any lockable check with running status nor check with enqueued status.
      *
      * @return locked check id
      */
     static std::string lazy_get_locked_running_check(Fred::OperationContext& _ctx);
+    /**
+     * Important side-effect: tests of this check are created in db with status enqueued.
+     */
     static void update_some_enqueued_check_to_running(void);
 
     /**
-     * Lock some contact_test with enqueued status related to given check.
-     * If no existing test can be be locked tries to create new test from testsuite of given check
-     * (with testname not yet existing for given check_id.testsuite) and locking is retried.
-     * Iterates until some contact_test is locked succesfully or all tests from testsuite of given check are created (and can't be locked).
+     * Lock some contact_test with running status related to given check.
+     * If no existing running test can be be locked function tries to upgrade status of some existing test from enqueued to running
+     * and locking is retried.
+     * Iterates until some contact_test is locked succesfully or all tests of given check are already running (and can't be locked).
      *
-     * @param _check_id check whose tests are tried to lock (and whose missing tests are created if necessary)
+     * @param _check_id check whose tests are tried to lock
      * @return locked test name
      */
     static std::string lazy_get_locked_running_test(Fred::OperationContext& _ctx, const std::string& _check_handle);
