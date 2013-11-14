@@ -34,6 +34,7 @@
 
 #include "fredlib/opcontext.h"
 #include "fredlib/db_settings.h"
+#include "util/random.h"
 
 namespace Fred
 {
@@ -400,6 +401,61 @@ namespace Fred
         if(!dry_run)
         {
             DeleteContact(src_contact_handle_).exec(ctx);
+            /* XXX: following code block generates new authinfo for destination contact (#9877)
+             * !!!should be replaced with UpdateContact operation when present!!! */
+            {
+                Database::Result r_dst_contact_id = ctx.get_conn().exec_params(
+                        "SELECT id FROM object_registry oreg WHERE type = 1"
+                        " AND erdate is null AND name = $1::text",
+                        Database::query_param_list(dst_contact_handle_));
+                unsigned long long dst_contact_id = 0;
+                if (r_dst_contact_id.size() == 1) {
+                    dst_contact_id = static_cast<unsigned long long>(r_dst_contact_id[0][0]);
+                }
+                if (dst_contact_id == 0) {
+                    throw std::runtime_error("destination contact id look up failed");
+                }
+                std::string new_authinfo =  Random::string_from(8, "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789");
+                ctx.get_conn().exec_params(
+                    "UPDATE object SET upid = (SELECT id FROM registrar WHERE handle = $1::text), update = now(), authinfopw = $2::text"
+                    " WHERE id = $3::integer",
+                    Database::query_param_list(registrar_)(new_authinfo)(dst_contact_id));
+
+                Database::Result rhistory = ctx.get_conn().exec_params(
+                        "INSERT INTO history (id, request_id)"
+                        " VALUES (DEFAULT, $1::bigint) RETURNING id",
+                        Database::query_param_list(logd_request_id_));
+                unsigned long long history_id = 0;
+                if (rhistory.size() == 1) {
+                    history_id = static_cast<unsigned long long>(rhistory[0][0]);
+                }
+                if (history_id == 0) {
+                    throw std::runtime_error("cannot save new history");
+                }
+
+                ctx.get_conn().exec_params("UPDATE object_registry SET historyid = $1::integer"
+                        " WHERE id = $2::integer",
+                        Database::query_param_list(history_id)(dst_contact_id));
+
+                Database::Result robject_history = ctx.get_conn().exec_params(
+                        "INSERT INTO object_history (historyid, id, clid, upid, trdate, update, authinfopw)"
+                        " SELECT $1::integer, o.id, o.clid, o.upid, o.trdate, o.update, o.authinfopw"
+                        " FROM object o"
+                        " WHERE o.id = $2::integer",
+                        Database::query_param_list(history_id)(dst_contact_id));
+
+                Database::Result rcontact_history = ctx.get_conn().exec_params(
+                        "INSERT INTO contact_history (historyid, id, name, organization, street1, street2, street3,"
+                        " city, stateorprovince, postalcode, country, telephone, fax, email, disclosename,"
+                        " discloseorganization, discloseaddress, disclosetelephone, disclosefax, discloseemail,"
+                        " notifyemail, vat, ssn, ssntype, disclosevat, discloseident, disclosenotifyemail)"
+                        " SELECT $1::integer, c.id, c.name, c.organization, c.street1, c.street2, c.street3,"
+                        " c.city, c.stateorprovince, c.postalcode, c.country, c.telephone, c.fax, c.email,"
+                        " c.disclosename, c.discloseorganization, c.discloseaddress, c.disclosetelephone, c.disclosefax,"
+                        " c.discloseemail, c.notifyemail, c.vat, c.ssn, c.ssntype, c.disclosevat, c.discloseident,"
+                        " c.disclosenotifyemail FROM contact c WHERE c.id = $2::integer",
+                        Database::query_param_list(history_id)(dst_contact_id));
+            }
         }
 
         return output;
