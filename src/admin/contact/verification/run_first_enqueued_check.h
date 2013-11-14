@@ -34,7 +34,6 @@
 
 namespace Admin {
     struct ExceptionNoEnqueuedChecksAvailable : public std::exception {};
-    struct ExceptionCheckTestsuiteFullyCreated : public std::exception {};
 
     /**
      * Randomly (by happenstance, not even pseudo-random) selects some enqueued check and execute it (by running it's tests).

@@ -84,10 +84,7 @@ BOOST_AUTO_TEST_CASE(test_Exec)
     vector<Optional<long long> > check_logd_request_history;
 
     vector<string> test_names;
-    // strange type?
-    //   map - because related to individial test...
-    //   map<     vector<           >::iterator - ...because relation in map is given by test_names
-    //                                                vector<             > - because HISTORY value
+
     vector<vector<string> >                 tests_status_history(test_count);
     vector<vector<Optional<long long> > >   tests_logd_request_history(test_count);
     vector<vector<Optional<string> > >      tests_error_msg_history(test_count);
@@ -117,11 +114,13 @@ BOOST_AUTO_TEST_CASE(test_Exec)
     }
 
     // building check tests
-    // first test is already created in check by setup
 
     //test_names.push_back(check.testsuite_name_.test.testdef_name_);
     BOOST_FOREACH (const setup_testdef& def, suite.testdefs) {
         test_names.push_back(def.testdef_name_);
+        Fred::OperationContext ctx;
+        Fred::CreateContactTest(check.check_handle_, def.testdef_name_).exec(ctx);
+        ctx.commit_transaction();
     }
 
     tests_status_history.front().push_back(Fred::ContactTestStatus::ENQUEUED);

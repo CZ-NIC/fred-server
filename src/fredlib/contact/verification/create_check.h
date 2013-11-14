@@ -34,7 +34,6 @@ namespace Fred
     /**
      * Creates:
      *  - new record in contact_check table with status @ref ContactCheckStatus::ENQUEUED
-     *  - new records in contact_test_results table (according the testsuite) with status @ref ContactTestStatus::ENQUEUED
      */
     class CreateContactCheck
     {
@@ -48,9 +47,6 @@ namespace Fred
             };
             struct ExceptionUnknownTestsuiteName : virtual Fred::OperationException {
                 const char* what() const throw() {return "unknown testsuite name";}
-            };
-            struct ExceptionEmptyTestsuite : virtual Fred::OperationException {
-                const char* what() const throw() {return "empty testsuite";}
             };
 
             /**

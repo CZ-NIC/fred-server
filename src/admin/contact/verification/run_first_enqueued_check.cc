@@ -14,21 +14,24 @@ namespace  Admin {
 
     /**
      * Lock some contact_check with running status.
-     * If no existing check can be be locked check with status enqueued is looked for, it's status updated and locking is retried.
+     * If no existing running check can be be locked check with status enqueued is looked for, it's status updated and locking is retried.
      * Iterates until some contact_check is locked succesfully or there is neither any lockable check with running status nor check with enqueued status.
      *
      * @return locked check id
      */
     static std::string lazy_get_locked_running_check(Fred::OperationContext& _ctx);
+    /**
+     * Important side-effect: tests of this check are created in db with status enqueued.
+     */
     static void update_some_enqueued_check_to_running(void);
 
     /**
-     * Lock some contact_test with enqueued status related to given check.
-     * If no existing test can be be locked tries to create new test from testsuite of given check
-     * (with testname not yet existing for given check_id.testsuite) and locking is retried.
-     * Iterates until some contact_test is locked succesfully or all tests from testsuite of given check are created (and can't be locked).
+     * Lock some contact_test with running status related to given check.
+     * If no existing running test can be be locked function tries to upgrade status of some existing test from enqueued to running
+     * and locking is retried.
+     * Iterates until some contact_test is locked succesfully or all tests of given check are already running (and can't be locked).
      *
-     * @param _check_id check whose tests are tried to lock (and whose missing tests are created if necessary)
+     * @param _check_id check whose tests are tried to lock
      * @return locked test name
      */
     static std::string lazy_get_locked_running_test(Fred::OperationContext& _ctx, const std::string& _check_handle);
@@ -44,6 +47,9 @@ namespace  Admin {
      */
     static void post_run_hooks(const std::string& _check_handle);
 
+
+    // technicality - way how to "return" from nested function
+    struct _ExceptionAllTestsAlreadyRunning : public std::exception {};
 
     /**
      * main function and the only one visible to the outer world
@@ -93,7 +99,7 @@ namespace  Admin {
                 Fred::UpdateContactTest(check_handle, test_name, test_statuses.back()).exec(ctx_locked_test);
                 ctx_locked_test.commit_transaction();
             }
-        } catch (ExceptionCheckTestsuiteFullyCreated&) {
+        } catch (_ExceptionAllTestsAlreadyRunning&) {
             // just breaking the loop to get to the end
             // definitely not re-throwing this exception
         } catch (...) {
@@ -152,7 +158,7 @@ namespace  Admin {
         Fred::OperationContext ctx;
 
         Database::Result locked_check_res = ctx.get_conn().exec_params(
-            "SELECT c_ch.id AS id_ "
+            "SELECT c_ch.id AS id_, c_ch.handle AS handle_ "
             "   FROM contact_check AS c_ch "
             "   WHERE c_ch.enum_contact_check_status_id = "
             "       ( SELECT id FROM enum_contact_check_status WHERE name = $1::varchar ) "
@@ -175,6 +181,33 @@ namespace  Admin {
                 ( static_cast<long long>(locked_check_res[0]["id_"]) )
                 ( Fred::ContactCheckStatus::RUNNING )
         );
+
+        // instantiate tests in db
+
+        Database::Result testnames_res = ctx.get_conn().exec_params(
+            "SELECT enum_test.name AS name_ "
+            "   FROM enum_contact_test          AS enum_test "
+            "       JOIN contact_testsuite_map  AS c_map "
+            "           ON enum_test.id = c_map.enum_contact_test_id "
+            "       JOIN contact_check          AS check_ "
+            "           ON check_.enum_contact_testsuite_id = c_map.enum_contact_testsuite_id "
+            "   WHERE check_.id=$1::bigint "
+            "   ORDER by enum_test.id ASC; ",
+            Database::query_param_list( static_cast<long long>(locked_check_res[0]["id_"]))
+        );
+        if(testnames_res.size() == 0) {
+            throw Fred::InternalError(
+                std::string("testsuite of check(id=")
+                + static_cast<std::string>( locked_check_res[0]["handle_"] )
+                + ") contains no tests");
+        }
+
+        for(Database::Result::Iterator it = testnames_res.begin(); it != testnames_res.end(); ++it) {
+            Fred::CreateContactTest(
+                static_cast<std::string>( locked_check_res[0]["handle_"] ),
+                static_cast<std::string>( (*it)["name_"] )
+            ).exec(ctx);
+        }
 
         if(updated_check_res.size() == 1) {
             ctx.commit_transaction();
@@ -206,7 +239,7 @@ namespace  Admin {
             } else if(locked_test_res.size() == 0) {
                 try {
                     update_some_enqueued_test_to_running(_check_handle);
-                } catch(ExceptionCheckTestsuiteFullyCreated&) {
+                } catch(_ExceptionAllTestsAlreadyRunning&) {
                     throw;
                 }
                 /* in next attempt to lock test (in next iteration) the chances are better
@@ -223,8 +256,8 @@ namespace  Admin {
         while(true) {
             Fred::OperationContext ctx;
             /* idea is to get test_name which
-             * a) is in testsuite of given check
-             * b) is not "instantiated" as a record in contact_test_result for given check
+             * a) is related to check
+             * b) has status ENQUEUED
              */
             locked_testname_res = ctx.get_conn().exec_params(
                 "SELECT enum_test.name AS test_name_ "
@@ -244,7 +277,7 @@ namespace  Admin {
             );
 
             if(locked_testname_res.size() == 0) {
-                throw ExceptionCheckTestsuiteFullyCreated();
+                throw _ExceptionAllTestsAlreadyRunning();
             } else if(locked_testname_res.size() != 1) {
                 throw Fred::InternalError("invalid count of returned records");
             } else {
