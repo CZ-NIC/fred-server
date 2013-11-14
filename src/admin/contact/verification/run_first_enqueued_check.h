@@ -41,7 +41,9 @@ namespace Admin {
      * @param _tests map of test objects denoted by their name
      * @return handle of selected and executed check
      */
-    std::string run_first_enqueued_check(const std::map<std::string, boost::shared_ptr<Admin::ContactVerificationTest> >& _tests);
+    std::string run_first_enqueued_check(
+        const std::map<std::string, boost::shared_ptr<Admin::ContactVerificationTest> >& _tests,
+        Optional<long long> _logd_request_id);
 
 }
 

@@ -15,7 +15,7 @@ namespace  Admin {
     static std::vector<std::string> select_never_checked_contacts(Fred::OperationContext& _ctx, unsigned _max_queue_length);
     static std::vector<std::string> select_oldest_checked_contacts(Fred::OperationContext& _ctx, unsigned _max_queue_length);
 
-    std::vector< boost::tuple<std::string, std::string, long long> > fill_automatic_check_queue(unsigned _max_queue_length) {
+    std::vector< boost::tuple<std::string, std::string, long long> > fill_automatic_check_queue(unsigned _max_queue_length, Optional<long long> _logd_request_id) {
         Fred::OperationContext ctx1;
 
         // how many enqueued checks are there?
@@ -45,7 +45,12 @@ namespace  Admin {
             to_enqueue = select_never_checked_contacts(ctx1, checks_to_enqueue_count);
 
             BOOST_FOREACH(const std::string& contact_name, to_enqueue) {
-                temp_handle = Fred::CreateContactCheck(contact_name, Fred::TestsuiteName::AUTOMATIC).exec(ctx1);
+                temp_handle = Fred::CreateContactCheck(
+                    contact_name,
+                    Fred::TestsuiteName::AUTOMATIC,
+                    _logd_request_id
+                ).exec(ctx1);
+
                 Fred::InfoContactCheckOutput info = Fred::InfoContactCheck(temp_handle).exec(ctx1);
 
                 result.push_back(
@@ -82,7 +87,13 @@ namespace  Admin {
             Fred::OperationContext ctx3;
 
             for(; checks_to_enqueue_count > 0; --checks_to_enqueue_count) {
-                temp_handle = Fred::CreateContactCheck(*contact_handle_it, Fred::TestsuiteName::AUTOMATIC).exec(ctx3);
+                temp_handle = Fred::CreateContactCheck(
+                    *contact_id_it,
+                    Fred::TestsuiteName::AUTOMATIC
+                )
+                .set_logd_request_id(_logd_request_id)
+                .exec(ctx3);
+
                 Fred::InfoContactCheckOutput info = Fred::InfoContactCheck(temp_handle).exec(ctx3);
 
                 result.push_back(

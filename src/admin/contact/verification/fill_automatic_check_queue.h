@@ -36,7 +36,9 @@ namespace Admin {
      *
      * @param _max_queue_length Will not add any check above this limit.
      */
-    std::vector< boost::tuple<std::string, std::string, long long> > fill_automatic_check_queue(unsigned _max_queue_length);
+    std::vector< boost::tuple<std::string, std::string, long long> > fill_automatic_check_queue(
+        unsigned _max_queue_length,
+        Optional<long long> _logd_request_id = Optional<long long>());
 
 }
 
