@@ -35,19 +35,19 @@
 namespace Fred
 {
     CreateContactCheck::CreateContactCheck(
-        const std::string& _contact_handle,
+        long long           _contact_id,
         const std::string& _testsuite_name
     ) :
-        contact_handle_(_contact_handle),
+        contact_id_(_contact_id),
         testsuite_name_(_testsuite_name)
     { }
 
     CreateContactCheck::CreateContactCheck(
-        const std::string&  _contact_handle,
+        long long           _contact_id,
         const std::string&  _testsuite_name,
         Optional<long long> _logd_request_id
     ) :
-        contact_handle_(_contact_handle),
+        contact_id_(_contact_id),
         testsuite_name_(_testsuite_name),
         logd_request_id_(
             ( _logd_request_id.isset() )
@@ -122,10 +122,10 @@ namespace Fred
         Database::Result contact_history_res = _ctx.get_conn().exec_params(
             "SELECT historyid"
             "   FROM object_registry"
-            "   WHERE name=$1::varchar "
+            "   WHERE name=$1::integer "
             "       AND type=1 "
             "       AND erdate IS NULL; ",
-            Database::query_param_list(contact_handle_)
+            Database::query_param_list(contact_id_)
         );
         if(contact_history_res.size() != 1) {
             throw ExceptionUnknownContactHandle();
@@ -187,9 +187,9 @@ namespace Fred
 
     std::ostream& operator<<(std::ostream& os, const CreateContactCheck& i) {
         os << "#CreateContactCheck"
-            << " contact_handle_: "  << i.contact_handle_
-            << " testsuite_name_: "  << i.testsuite_name_
-            << " logd_request_id_: " << i.logd_request_id_.print_quoted();
+            << " contact_id_: "         << i.contact_id_
+            << " testsuite_name_: "     << i.testsuite_name_
+            << " logd_request_id_: "    << i.logd_request_id_.print_quoted();
 
         return os;
     }
