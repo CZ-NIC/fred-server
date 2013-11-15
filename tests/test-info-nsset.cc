@@ -46,6 +46,7 @@
 #include "time_clock.h"
 #include "fredlib/registrar.h"
 #include "fredlib/nsset/info_nsset.h"
+#include "fredlib/nsset/info_nsset_diff.h"
 #include "fredlib/domain/update_domain.h"
 #include "fredlib/nsset/update_nsset.h"
 #include "fredlib/contact/delete_contact.h"
@@ -176,7 +177,10 @@ BOOST_FIXTURE_TEST_CASE(info_nsset, info_nsset_fixture )
         if((j & (1 << 0)) || (j & (1 << 1)) || (j & (1 << 2)) || (j & (1 << 3)))//check if selective
         {
             if((info_data_1 != output.at(0)))
-                output.at(0).info_nsset_data.set_diff_print();
+            {
+                BOOST_MESSAGE(Fred::diff_nsset_data(info_data_1.info_nsset_data
+                        , output.at(0).info_nsset_data).to_string());
+            }
             BOOST_CHECK(output.at(0) == info_data_1);
         }
     }

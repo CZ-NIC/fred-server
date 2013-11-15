@@ -700,6 +700,8 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/nsset/info_nsset.cc \
 		src/fredlib/nsset/info_nsset_data.h \
 		src/fredlib/nsset/info_nsset_data.cc \
+		src/fredlib/nsset/info_nsset_diff.h \
+		src/fredlib/nsset/info_nsset_diff.cc \
 		src/fredlib/keyset/update_keyset.h \
 		src/fredlib/keyset/keyset_dns_key.h \
 		src/fredlib/keyset/update_keyset.cc \

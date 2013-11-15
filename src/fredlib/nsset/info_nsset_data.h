@@ -62,10 +62,6 @@ namespace Fred
         std::vector<DnsHost> dns_hosts; /**< DNS hosts */
         std::vector<std::string> tech_contacts;/**< list of technical contact handles */
 
-    private:
-        bool print_diff_;/**< whether to print debug diff made by nsset comparison operators @ref operator==  and @ref operator!=*/
-    public:
-
         /**
         * Constructor of the nsset data structure.
         */
@@ -84,12 +80,6 @@ namespace Fred
         * @return true if not equal, false if equal
         */
         bool operator!=(const InfoNssetData& rhs) const;
-
-        /**
-        * Set comparison operators to print debug diff.
-        * @param print_diff is value set to @ref print_diff_ attribute
-        */
-        void set_diff_print(bool print_diff = true);
 
         /**
         * Dumps state of the instance into the string
