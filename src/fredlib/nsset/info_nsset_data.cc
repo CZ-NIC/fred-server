@@ -44,6 +44,7 @@ namespace Fred
     InfoNssetData::InfoNssetData()
     : crhistoryid(0)
     , historyid(0)
+    , id(0)
     {}
 
     bool InfoNssetData::operator==(const InfoNssetData& rhs) const
