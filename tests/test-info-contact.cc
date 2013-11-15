@@ -236,12 +236,15 @@ BOOST_FIXTURE_TEST_CASE(info_contact_diff, test_contact_fixture )
     BOOST_MESSAGE(test_diff.to_string());
     BOOST_MESSAGE(test_empty_diff.to_string());
 
-    BOOST_MESSAGE(Fred::diff_contact_data(contact_info1.info_contact_data,contact_info1.info_contact_data).to_string());
+    BOOST_CHECK(!test_diff.is_empty());
+    BOOST_CHECK(test_empty_diff.is_empty());
+
+    BOOST_MESSAGE(Fred::diff_contact_data(contact_info1.info_contact_data,contact_info2.info_contact_data).to_string());
 
     //because of changes to Nullable::operator<<
     BOOST_CHECK(ctx.get_conn().exec_params("select $1::text", Database::query_param_list(Database::QPNull))[0][0].isnull());
     BOOST_CHECK(ctx.get_conn().exec_params("select $1::text", Database::query_param_list(Nullable<std::string>()))[0][0].isnull());
-
 }
+
 
 BOOST_AUTO_TEST_SUITE_END();//TestInfoContact

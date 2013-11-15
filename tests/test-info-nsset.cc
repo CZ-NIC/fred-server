@@ -56,6 +56,8 @@
 #include "fredlib/opexception.h"
 #include "util/util.h"
 
+#include "fredlib/nsset/info_nsset_diff.h"
+
 #include "fredlib/contact_verification/contact.h"
 #include "fredlib/object_states.h"
 #include "contact_verification/contact_verification_impl.h"
@@ -188,5 +190,48 @@ BOOST_FIXTURE_TEST_CASE(info_nsset, info_nsset_fixture )
 
     ctx.commit_transaction();
 }
+
+/**
+ * test call InfoNssetDiff
+*/
+BOOST_FIXTURE_TEST_CASE(info_nsset_diff, info_nsset_fixture )
+{
+    Fred::OperationContext ctx;
+    Fred::InfoNssetOutput nsset_info1 = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
+    Fred::InfoNssetOutput nsset_info2 = Fred::InfoNssetByHandle(test_nsset_handle).set_lock().exec(ctx);
+
+    Fred::InfoNssetDiff test_diff, test_empty_diff;
+
+    //differing data
+    test_diff.crhistoryid = std::make_pair(1ull,2ull);
+    test_diff.historyid = std::make_pair(1ull,2ull);
+    test_diff.id = std::make_pair(1ull,2ull);
+    test_diff.delete_time = std::make_pair(Nullable<boost::posix_time::ptime>()
+            ,Nullable<boost::posix_time::ptime>(boost::posix_time::second_clock::local_time()));
+    test_diff.handle = std::make_pair(std::string("test1"),std::string("test2"));
+    test_diff.roid = std::make_pair(std::string("testroid1"),std::string("testroid2"));
+    test_diff.sponsoring_registrar_handle = std::make_pair(std::string("testspreg1"),std::string("testspreg2"));
+    test_diff.create_registrar_handle = std::make_pair(std::string("testcrreg1"),std::string("testcrreg2"));
+    test_diff.update_registrar_handle = std::make_pair(Nullable<std::string>("testcrreg1"),Nullable<std::string>());
+    test_diff.creation_time = std::make_pair(boost::posix_time::ptime(),boost::posix_time::second_clock::local_time());
+    test_diff.update_time = std::make_pair(Nullable<boost::posix_time::ptime>()
+            ,Nullable<boost::posix_time::ptime>(boost::posix_time::second_clock::local_time()));
+    test_diff.transfer_time = std::make_pair(Nullable<boost::posix_time::ptime>()
+                ,Nullable<boost::posix_time::ptime>(boost::posix_time::second_clock::local_time()));
+    test_diff.authinfopw = std::make_pair(std::string("testpass1"),std::string("testpass2"));
+
+    BOOST_MESSAGE(test_diff.to_string());
+    BOOST_MESSAGE(test_empty_diff.to_string());
+
+    BOOST_CHECK(!test_diff.is_empty());
+    BOOST_CHECK(test_empty_diff.is_empty());
+
+    BOOST_MESSAGE(Fred::diff_nsset_data(nsset_info1.info_nsset_data,nsset_info2.info_nsset_data).to_string());
+
+    //because of changes to Nullable::operator<<
+    BOOST_CHECK(ctx.get_conn().exec_params("select $1::text", Database::query_param_list(Database::QPNull))[0][0].isnull());
+    BOOST_CHECK(ctx.get_conn().exec_params("select $1::text", Database::query_param_list(Nullable<std::string>()))[0][0].isnull());
+}
+
 
 BOOST_AUTO_TEST_SUITE_END();//TestInfoNsset
