@@ -689,6 +689,8 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/domain/update_domain.cc \
 		src/fredlib/domain/info_domain_data.h \
 		src/fredlib/domain/info_domain_data.cc \
+		src/fredlib/domain/info_domain_diff.h \
+		src/fredlib/domain/info_domain_diff.cc \
 		src/fredlib/domain/info_domain.h \
 		src/fredlib/domain/info_domain.cc \
 		src/fredlib/domain/enum_validation_extension.h \
@@ -698,6 +700,8 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/nsset/info_nsset.cc \
 		src/fredlib/nsset/info_nsset_data.h \
 		src/fredlib/nsset/info_nsset_data.cc \
+		src/fredlib/nsset/info_nsset_diff.h \
+		src/fredlib/nsset/info_nsset_diff.cc \
 		src/fredlib/keyset/update_keyset.h \
 		src/fredlib/keyset/keyset_dns_key.h \
 		src/fredlib/keyset/update_keyset.cc \
@@ -705,6 +709,8 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/keyset/create_keyset.h \
 		src/fredlib/keyset/info_keyset_data.h \
 		src/fredlib/keyset/info_keyset_data.cc \
+		src/fredlib/keyset/info_keyset_diff.h \
+		src/fredlib/keyset/info_keyset_diff.cc \
 		src/fredlib/keyset/info_keyset.h \
 		src/fredlib/keyset/info_keyset.cc \
 		src/fredlib/contact/delete_contact.h \

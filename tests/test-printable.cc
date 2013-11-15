@@ -72,6 +72,10 @@
 #include "fredlib/poll/create_delete_contact_poll_message.h"
 #include "fredlib/poll/create_poll_message.h"
 #include "fredlib/poll/create_update_object_poll_message.h"
+#include "fredlib/contact/info_contact_diff.h"
+#include "fredlib/domain/info_domain_diff.h"
+#include "fredlib/keyset/info_keyset_diff.h"
+#include "fredlib/nsset/info_nsset_diff.h"
 
 #include "util/util.h"
 #include "util/printable.h"
@@ -911,6 +915,54 @@ BOOST_AUTO_TEST_CASE(create_update_object_poll_message)
 BOOST_AUTO_TEST_CASE(update_contact_by_id)
 {
     printable_test(Fred::UpdateContactById(5,"REGISTRAR-TEST").set_street3("test street 3"));
+}
+
+/**
+ * test InfoContactDiff print to string
+ */
+
+BOOST_AUTO_TEST_CASE(info_contact_diff)
+{
+    Fred::InfoContactData d;
+    d.authinfopw ="test";
+    Fred::InfoContactDiff diff = Fred::diff_contact_data(Fred::InfoContactData(),d);
+    printable_test(diff);
+}
+
+/**
+ * test InfoDOmainDiff print to string
+ */
+
+BOOST_AUTO_TEST_CASE(info_domain_diff)
+{
+    Fred::InfoDomainData d;
+    d.authinfopw ="test";
+    Fred::InfoDomainDiff diff = Fred::diff_domain_data(Fred::InfoDomainData(),d);
+    printable_test(diff);
+}
+
+/**
+ * test InfoNssetDiff print to string
+ */
+
+BOOST_AUTO_TEST_CASE(info_nsset_diff)
+{
+    Fred::InfoNssetData d;
+    d.authinfopw ="test";
+    Fred::InfoNssetDiff diff = Fred::diff_nsset_data(Fred::InfoNssetData(),d);
+    printable_test(diff);
+}
+
+/**
+ * test InfoKeysetDiff print to string
+ */
+
+BOOST_AUTO_TEST_CASE(info_keyset_diff)
+{
+    Fred::InfoKeysetData d;
+    d.authinfopw ="test";
+    Fred::InfoKeysetDiff diff = Fred::diff_keyset_data(Fred::InfoKeysetData(),d);
+    printable_test(diff);
 }
 
 BOOST_AUTO_TEST_SUITE_END();//TestPrintable
