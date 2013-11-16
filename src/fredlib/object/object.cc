@@ -83,9 +83,7 @@ namespace Fred
                 , &Exception::set_unknown_registrar_handle);
 
             //check object type
-            unsigned long long object_type_id = get_object_type_id(ctx, object_type_
-                    , static_cast<Exception*>(0)//set throw
-                    , &Exception::set_unknown_object_type);
+            unsigned long long object_type_id = get_object_type_id(ctx, object_type_);
 
             //create object
             Database::Result id_res = ctx.get_conn().exec_params(
@@ -207,7 +205,7 @@ namespace Fred
             //get object id with lock
             unsigned long long object_id = get_object_id_by_handle_and_type_with_lock(
                 ctx,handle_,obj_type_,&update_object_exception,
-                &Exception::set_unknown_object_handle, &Exception::set_unknown_object_type);
+                &Exception::set_unknown_object_handle);
 
             Database::QueryParams params;//query params
             std::stringstream sql;
@@ -341,19 +339,7 @@ namespace Fred
         try
         {
             //check object type
-            {
-                Database::Result object_type_res = ctx.get_conn().exec_params(
-                    "SELECT id FROM enum_object_type WHERE name = $1::text FOR SHARE"
-                    , Database::query_param_list(obj_type_));
-                if(object_type_res.size() == 0)
-                {
-                    BOOST_THROW_EXCEPTION(Exception().set_unknown_object_type(obj_type_));
-                }
-                if (object_type_res.size() != 1)
-                {
-                    BOOST_THROW_EXCEPTION(InternalError("failed to get object type"));
-                }
-            }
+            get_object_type_id(ctx, obj_type_);
 
             unsigned long long object_id = 0;
             {
@@ -407,6 +393,18 @@ namespace Fred
         Util::vector_of<std::pair<std::string,std::string> >
         (std::make_pair("obj_type",obj_type_))
         );
+    }
+
+    unsigned long long get_object_type_id(OperationContext& ctx, const std::string& obj_type)
+    {
+        Database::Result object_type_res = ctx.get_conn().exec_params(
+            "SELECT id FROM enum_object_type WHERE name = $1::text FOR SHARE"
+            , Database::query_param_list(obj_type));
+        if (object_type_res.size() != 1)
+        {
+            BOOST_THROW_EXCEPTION(InternalError("failed to get object type"));
+        }
+        return  static_cast<unsigned long long> (object_type_res[0][0]);
     }
 
 }//namespace Fred

@@ -562,11 +562,7 @@ namespace Fred
             }
             catch(const UpdateObject::Exception& ex)
             {
-                if(ex.is_set_unknown_object_type())
-                {   //bad implementation or database
-                    BOOST_THROW_EXCEPTION(InternalError(std::string("invalid object type: ") + ex.get_unknown_object_type()));
-                }
-                else if(ex.is_set_unknown_registrar_handle())
+                if(ex.is_set_unknown_registrar_handle())
                 {
                     //fatal good path, need valid registrar performing update
                     BOOST_THROW_EXCEPTION(Exception().set_unknown_registrar_handle(ex.get_unknown_registrar_handle()));

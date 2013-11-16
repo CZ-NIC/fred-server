@@ -166,8 +166,6 @@ namespace Fred
                             ex.get_unknown_object_handle());
                 }
 
-                if(ex.is_set_unknown_object_type()) throw;//kind of internal error
-
                 if(ex.is_set_unknown_registrar_handle())
                 {
                     update_keyset_exception.set_unknown_registrar_handle(
