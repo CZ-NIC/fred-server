@@ -26,7 +26,7 @@
 
 #include "fredlib/nsset/update_nsset.h"
 #include "fredlib/object/object.h"
-
+#include "fredlib/registrar/registrar_impl.h"
 #include "fredlib/opcontext.h"
 #include "fredlib/db_settings.h"
 #include "util/optional_value.h"
@@ -120,43 +120,15 @@ namespace Fred
 
         try
         {
-
         //check registrar
-        {
-            Database::Result registrar_res = ctx.get_conn().exec_params(
-                "SELECT id FROM registrar WHERE handle = UPPER($1::text) FOR SHARE"
-                , Database::query_param_list(registrar_));
-            if(registrar_res.size() == 0)
-            {
-                BOOST_THROW_EXCEPTION(Exception().set_unknown_registrar_handle(registrar_));
-            }
-            if (registrar_res.size() != 1)
-            {
-                BOOST_THROW_EXCEPTION(InternalError("failed to get registrar"));
-            }
-        }
+        Registrar::get_registrar_id_by_handle(
+            ctx, registrar_, static_cast<Exception*>(0)//set throw
+            , &Exception::set_unknown_registrar_handle);
 
-        //get nsset_id
-        unsigned long long nsset_id =0;
-        {
-            Database::Result nsset_id_res = ctx.get_conn().exec_params(
-                "SELECT oreg.id FROM nsset n "
-                " JOIN object_registry oreg ON n.id = oreg.id "
-                " JOIN enum_object_type eot ON eot.id = oreg.type "
-                " WHERE eot.name = 'nsset' AND oreg.name = UPPER($1::text) AND oreg.erdate IS NULL "
-                " FOR UPDATE OF oreg "
-                , Database::query_param_list(handle_));
-
-            if (nsset_id_res.size() == 0)
-            {
-                BOOST_THROW_EXCEPTION(Exception().set_unknown_nsset_handle(handle_));
-            }
-            if (nsset_id_res.size() != 1)
-            {
-                BOOST_THROW_EXCEPTION(InternalError("failed to get nsset"));
-            }
-            nsset_id = static_cast<unsigned long long>(nsset_id_res[0][0]);
-        }
+        //lock row and get nsset_id
+        unsigned long long nsset_id =get_object_id_by_handle_and_type_with_lock(
+                ctx,handle_,"nsset",static_cast<Exception*>(0),
+                &Exception::set_unknown_nsset_handle);
 
         Exception update_nsset_exception;
 
@@ -213,27 +185,10 @@ namespace Fred
             for(std::vector<std::string>::iterator i = add_tech_contact_.begin(); i != add_tech_contact_.end(); ++i)
             {
                 //lock object_registry row for update
-                unsigned long long tech_contact_id = 0;
-                {
-                    Database::Result lock_res = ctx.get_conn().exec_params(
-                        "SELECT oreg.id FROM enum_object_type eot"
-                        " JOIN object_registry oreg ON oreg.type = eot.id "
-                        " JOIN contact c ON oreg.id = c.id "
-                        " AND oreg.name = UPPER($1::text) AND oreg.erdate IS NULL "
-                        " WHERE eot.name = 'contact' FOR UPDATE OF oreg"
-                        , Database::query_param_list(*i));
-
-                    if (lock_res.size() == 0)
-                    {
-                        update_nsset_exception.add_unknown_technical_contact_handle(*i);
-                        continue;//for add_tech_contact_
-                    }
-                    if (lock_res.size() != 1)
-                    {
-                        BOOST_THROW_EXCEPTION(InternalError("failed to get technical contact"));
-                    }
-                    tech_contact_id = static_cast<unsigned long long> (lock_res[0][0]);
-                }
+                unsigned long long tech_contact_id = get_object_id_by_handle_and_type_with_lock(
+                        ctx,*i,"contact",&update_nsset_exception,
+                        &Exception::add_unknown_technical_contact_handle);
+                if(tech_contact_id == 0) continue;
 
                 Database::QueryParams params_i = params;//query params
                 std::stringstream sql_i;
@@ -275,27 +230,10 @@ namespace Fred
             for(std::vector<std::string>::iterator i = rem_tech_contact_.begin(); i != rem_tech_contact_.end(); ++i)
             {
                 //lock object_registry row for update
-                unsigned long long tech_contact_id = 0;
-                {
-                    Database::Result lock_res = ctx.get_conn().exec_params(
-                        "SELECT oreg.id FROM enum_object_type eot"
-                        " JOIN object_registry oreg ON oreg.type = eot.id "
-                        " JOIN contact c ON oreg.id = c.id "
-                        " AND oreg.name = UPPER($1::text) AND oreg.erdate IS NULL "
-                        " WHERE eot.name = 'contact' FOR UPDATE OF oreg"
-                        , Database::query_param_list(*i));
-
-                    if (lock_res.size() == 0)
-                    {
-                        update_nsset_exception.add_unknown_technical_contact_handle(*i);
-                        continue;//for rem_tech_contact_
-                    }
-                    if (lock_res.size() != 1)
-                    {
-                        BOOST_THROW_EXCEPTION(InternalError("failed to get technical contact"));
-                    }
-                    tech_contact_id = static_cast<unsigned long long> (lock_res[0][0]);
-                }
+                unsigned long long tech_contact_id = get_object_id_by_handle_and_type_with_lock(
+                        ctx,*i,"contact",&update_nsset_exception,
+                        &Exception::add_unknown_technical_contact_handle);
+                if(tech_contact_id == 0) continue;
 
                 Database::QueryParams params_i = params;//query params
                 std::stringstream sql_i;

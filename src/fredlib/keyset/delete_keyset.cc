@@ -41,27 +41,9 @@ namespace Fred
         try
         {
             //lock object_registry row for update and get keyset_id
-            unsigned long long keyset_id =0;
-            {
-                Database::Result lock_res = ctx.get_conn().exec_params(
-                    "SELECT oreg.id FROM enum_object_type eot"
-                    " JOIN object_registry oreg ON oreg.type = eot.id "
-                    " JOIN keyset k ON k.id = oreg.id "
-                    " AND oreg.name = UPPER($1::text) AND oreg.erdate IS NULL "
-                    " WHERE eot.name = 'keyset' FOR UPDATE OF oreg"
-                    , Database::query_param_list(handle_));
-
-                if (lock_res.size() == 0)
-                {
-                    BOOST_THROW_EXCEPTION(Exception().set_unknown_keyset_handle(handle_));
-                }
-                if (lock_res.size() != 1)
-                {
-                    BOOST_THROW_EXCEPTION(InternalError("failed to get keyset"));
-                }
-
-                keyset_id = lock_res[0][0];
-            }
+            unsigned long long keyset_id = get_object_id_by_handle_and_type_with_lock(
+                    ctx,handle_,"keyset",static_cast<Exception*>(0),
+                    &Exception::set_unknown_keyset_handle);
 
             //check if object is linked
             Database::Result linked_result = ctx.get_conn().exec_params(

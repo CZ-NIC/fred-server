@@ -411,6 +411,6 @@ std::vector<std::string> get_domain_name_validation_config_for_zone(Fred::Operat
 
 
 
-}//namespace Fred
 }//namespace Domain
+}//namespace Fred
 
