@@ -40,7 +40,7 @@
 namespace Test = Fred::ContactTestStatus;
 namespace Check = Fred::ContactCheckStatus;
 
-typedef std::vector< boost::tuple<std::string, std::string, long long> > T_enq_ch;
+typedef std::vector< boost::tuple<std::string, long long, long long> > T_enq_ch;
 typedef std::map<std::string, boost::shared_ptr<Admin::ContactVerificationTest> > T_testimpl_map;
 
 void clean_queue() {
@@ -105,7 +105,7 @@ T_testimpl_map create_dummy_automatic_testsuite() {
 struct setup_already_checked_contacts {
 
     int count_;
-    std::vector<std::string> handles_;
+    std::vector<long long> ids_;
 
     setup_already_checked_contacts(int _count)
         : count_(_count)
@@ -115,33 +115,33 @@ struct setup_already_checked_contacts {
 
         int pre_existing_count = 0;
         Database::Result pre_existing_res = ctx.get_conn().exec(
-            "SELECT o_r.name AS contact_handle_ "
+            "SELECT o_r.id AS contact_id_ "
             "   FROM object_registry AS o_r "
             "       JOIN contact USING(id); ");
         for(Database::Result::Iterator it = pre_existing_res.begin(); it != pre_existing_res.end(); ++it) {
-            handles_.push_back( static_cast<std::string>( (*it)["contact_handle_"] ) );
+            ids_.push_back( static_cast<long long>( (*it)["contact_id_"] ) );
             pre_existing_count++;
         }
 
         for(int i=0; i < count_ - pre_existing_count; ++i) {
            setup_contact contact;
-           handles_.push_back(contact.contact_handle);
+           ids_.push_back(contact.contact_id_);
         }
 
         clean_queue();
         empty_automatic_testsuite();
 
         T_testimpl_map dummy_testsuite = create_dummy_automatic_testsuite();
-        std::vector<std::string> started_checks;
+        std::vector<std::string> started_check_handles;
         for(int i=1; i <= count_; ++i) {
             T_enq_ch enqueued_checks = Admin::fill_automatic_check_queue(1);
             BOOST_CHECK_EQUAL( enqueued_checks.size(), 1);
-            started_checks.push_back(
+            started_check_handles.push_back(
                 Admin::run_all_enqueued_checks(dummy_testsuite).front()
             );
         }
 
-        BOOST_CHECK_EQUAL( started_checks.size(), count_);
+        BOOST_CHECK_EQUAL( started_check_handles.size(), count_);
     }
 };
 
@@ -216,13 +216,13 @@ BOOST_AUTO_TEST_CASE(test_Enqueueing_never_checked_contacts)
 
         static void enqueued_in_never_checked(
             const T_enq_ch& _enqueued_checks,
-            const std::vector<std::string>& _never_checked_contacts
+            const std::vector<long long>& _never_checked_contacts_ids
         ) {
             bool is_enqueued;
             for(T_enq_ch::const_iterator it_enqueued = _enqueued_checks.begin(); it_enqueued != _enqueued_checks.end(); ++it_enqueued) {
                 is_enqueued = false;
 
-                for(std::vector<std::string>::const_iterator it_never_ch = _never_checked_contacts.begin(); it_never_ch != _never_checked_contacts.end(); ++it_never_ch) {
+                for(std::vector<long long>::const_iterator it_never_ch = _never_checked_contacts_ids.begin(); it_never_ch != _never_checked_contacts_ids.end(); ++it_never_ch) {
                     if(it_enqueued->get<1>() == *it_never_ch) {
                         is_enqueued = true;
                     }
@@ -233,11 +233,11 @@ BOOST_AUTO_TEST_CASE(test_Enqueueing_never_checked_contacts)
 
         static void update_never_checked(
             const T_enq_ch& _enqueued_checks,
-            std::vector<std::string>& _never_checked_contacts
+            std::vector<long long>& _never_checked_contacts_ids
         ) {
-            std::map<std::string, int> never_checked_copy;
-            for(std::vector<std::string>::const_iterator it = _never_checked_contacts.begin();
-               it != _never_checked_contacts.end();
+            std::map<long long, int> never_checked_copy;
+            for(std::vector<long long>::const_iterator it = _never_checked_contacts_ids.begin();
+               it != _never_checked_contacts_ids.end();
                ++it) {
                never_checked_copy[*it] = 1;
             }
@@ -247,24 +247,24 @@ BOOST_AUTO_TEST_CASE(test_Enqueueing_never_checked_contacts)
             }
 
 
-            std::vector<std::string> result;
-            for(std::map<std::string, int>::const_iterator it = never_checked_copy.begin();
+            std::vector<long long> result;
+            for(std::map<long long, int>::const_iterator it = never_checked_copy.begin();
                 it != never_checked_copy.end();
                 ++it
             ) {
                 result.push_back(it->first);
             }
 
-            _never_checked_contacts = result;
+            _never_checked_contacts_ids = result;
         }
     };
 
     setup_already_checked_contacts(50);
 
     // make set of new, never checked contacts
-    std::vector<std::string> never_checked_contacts;
+    std::vector<long long> never_checked_contacts;
     for(int i=0; i<50; ++i) {
-        never_checked_contacts.push_back(setup_contact().contact_handle);
+        never_checked_contacts.push_back(setup_contact().contact_id_);
     }
 
     // test scenarios
@@ -307,28 +307,28 @@ BOOST_AUTO_TEST_CASE(test_Enqueueing_already_checked_contacts)
 {
     setup_already_checked_contacts(20);
 
-    std::vector<std::string> handles;
+    std::vector<long long> ids;
 
     Fred::OperationContext ctx;
 
     Database::Result already_checked_res = ctx.get_conn().exec_params(
-        "SELECT o_r.name AS contact_handle_, MAX(c_ch.update_time) AS last_update_ "
+        "SELECT o_r.id AS contact_id_, MAX(c_ch.update_time) AS last_update_ "
         "   FROM contact_check AS c_ch "
         "       JOIN object_history AS o_h ON c_ch.contact_history_id = o_h.historyid "
         "       JOIN object_registry AS o_r ON o_h.id = o_r.id "
-        "   GROUP BY contact_handle_ "
+        "   GROUP BY contact_id_ "
         "   ORDER by last_update_ ASC "
-        "   LIMIT $1::int ",
+        "   LIMIT $1::integer ",
         Database::query_param_list(20) );
 
     BOOST_CHECK_EQUAL(already_checked_res.size(), 20);
 
     for(Database::Result::Iterator it = already_checked_res.begin(); it != already_checked_res.end(); ++it) {
-        handles.push_back( static_cast<std::string>( (*it)["contact_handle_"] ) );
+        ids.push_back( static_cast<long long>( (*it)["contact_id_"] ) );
     }
 
     T_enq_ch enqueued_checks;
-    std::vector<std::string>::const_iterator it_checked = handles.begin();
+    std::vector<long long>::const_iterator it_checked = ids.begin();
 
     for(int i = 1; i<=20; ++i) {
         enqueued_checks.clear();

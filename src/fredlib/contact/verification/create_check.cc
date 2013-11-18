@@ -120,9 +120,9 @@ namespace Fred
 
         // using solo select for easy checking of existence (subselect would be strange)
         Database::Result contact_history_res = _ctx.get_conn().exec_params(
-            "SELECT historyid"
-            "   FROM object_registry"
-            "   WHERE name=$1::integer "
+            "SELECT historyid "
+            "   FROM object_registry "
+            "   WHERE id=$1::integer "
             "       AND type=1 "
             "       AND erdate IS NULL; ",
             Database::query_param_list(contact_id_)
