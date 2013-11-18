@@ -12,10 +12,10 @@
 
 namespace  Admin {
 
-    static std::vector<std::string> select_never_checked_contacts(Fred::OperationContext& _ctx, unsigned _max_queue_length);
-    static std::vector<std::string> select_oldest_checked_contacts(Fred::OperationContext& _ctx, unsigned _max_queue_length);
+    static std::vector<long long> select_never_checked_contacts(Fred::OperationContext& _ctx, unsigned _max_queue_length);
+    static std::vector<long long> select_oldest_checked_contacts(Fred::OperationContext& _ctx, unsigned _max_queue_length);
 
-    std::vector< boost::tuple<std::string, std::string, long long> > fill_automatic_check_queue(unsigned _max_queue_length, Optional<long long> _logd_request_id) {
+    std::vector< boost::tuple<std::string, long long, long long> > fill_automatic_check_queue(unsigned _max_queue_length, Optional<long long> _logd_request_id) {
         Fred::OperationContext ctx1;
 
         // how many enqueued checks are there?
@@ -33,9 +33,9 @@ namespace  Admin {
 
         int checks_to_enqueue_count = static_cast<int>(_max_queue_length) - static_cast<int>(queue_count_res[0]["count_"]);
 
-        std::vector< boost::tuple<std::string, std::string, long long> > result;
+        std::vector< boost::tuple<std::string, long long, long long> > result;
 
-        std::vector<std::string> to_enqueue;
+        std::vector<long long> to_enqueue;
         std::string temp_handle;
 
         if(checks_to_enqueue_count > 0) {
@@ -44,9 +44,9 @@ namespace  Admin {
             // enqueuing never checked contacts with priority
             to_enqueue = select_never_checked_contacts(ctx1, checks_to_enqueue_count);
 
-            BOOST_FOREACH(const std::string& contact_name, to_enqueue) {
+            BOOST_FOREACH(long long contact_id, to_enqueue) {
                 temp_handle = Fred::CreateContactCheck(
-                    contact_name,
+                    contact_id,
                     Fred::TestsuiteName::AUTOMATIC,
                     _logd_request_id
                 ).exec(ctx1);
@@ -56,7 +56,7 @@ namespace  Admin {
                 result.push_back(
                     boost::make_tuple(
                         temp_handle,
-                        contact_name,
+                        contact_id,
                         info.contact_history_id
                     )
                 );
@@ -83,7 +83,7 @@ namespace  Admin {
                 throw Fred::InternalError("can't find checked contacts");
             }
 
-            std::vector<std::string>::iterator contact_handle_it = to_enqueue.begin();
+            std::vector<long long>::iterator contact_id_it = to_enqueue.begin();
             Fred::OperationContext ctx3;
 
             for(; checks_to_enqueue_count > 0; --checks_to_enqueue_count) {
@@ -99,14 +99,14 @@ namespace  Admin {
                 result.push_back(
                     boost::make_tuple(
                         temp_handle,
-                        *contact_handle_it,
+                        *contact_id_it,
                         info.contact_history_id
                     )
                 );
 
-                ++contact_handle_it;
-                if(contact_handle_it == to_enqueue.end() ) {
-                    contact_handle_it = to_enqueue.begin();
+                ++contact_id_it;
+                if(contact_id_it == to_enqueue.end() ) {
+                    contact_id_it = to_enqueue.begin();
                 }
             }
             ctx3.commit_transaction();
@@ -115,9 +115,9 @@ namespace  Admin {
         return result;
     }
 
-    std::vector<std::string> select_never_checked_contacts(Fred::OperationContext& _ctx, unsigned _max_queue_length) {
+    std::vector<long long> select_never_checked_contacts(Fred::OperationContext& _ctx, unsigned _max_queue_length) {
         Database::Result never_checked_contacts_res = _ctx.get_conn().exec_params(
-            "SELECT o_r.name AS contact_handle_ "
+            "SELECT id AS contact_id_ "
             "   FROM contact AS c "
             "       JOIN object_registry AS o_r USING(id) "
             "       JOIN contact_history AS c_h USING(id) "
@@ -128,7 +128,7 @@ namespace  Admin {
             Database::query_param_list(_max_queue_length)
         );
 
-        std::vector<std::string> result;
+        std::vector<long long> result;
 
         if(never_checked_contacts_res.size() == 0) {
             return result;
@@ -136,15 +136,15 @@ namespace  Admin {
         result.reserve(never_checked_contacts_res.size());
 
         for(Database::Result::Iterator it = never_checked_contacts_res.begin(); it != never_checked_contacts_res.end(); ++it) {
-            result.push_back( static_cast<std::string>( (*it)["contact_handle_"]) );
+            result.push_back( static_cast<long long>( (*it)["contact_id_"]) );
         }
 
         return result;
     }
 
-    std::vector<std::string> select_oldest_checked_contacts(Fred::OperationContext& _ctx, unsigned _max_queue_length) {
+    std::vector<long long> select_oldest_checked_contacts(Fred::OperationContext& _ctx, unsigned _max_queue_length) {
         Database::Result oldest_checked_contacts_res = _ctx.get_conn().exec_params(
-            "SELECT obj_reg.name AS contact_handle_ "
+            "SELECT obj_reg.id AS contact_id_ "
             "   FROM object_registry AS obj_reg "
             "       JOIN ("
             "           SELECT o_r.name AS name_, MAX(c_ch.update_time) AS last_update_ "
@@ -160,7 +160,7 @@ namespace  Admin {
             Database::query_param_list(_max_queue_length)
         );
 
-        std::vector<std::string> result;
+        std::vector<long long> result;
 
         if(oldest_checked_contacts_res.size() == 0) {
             return result;
@@ -168,7 +168,7 @@ namespace  Admin {
         result.reserve(oldest_checked_contacts_res.size());
 
         for(Database::Result::Iterator it = oldest_checked_contacts_res.begin(); it != oldest_checked_contacts_res.end(); ++it) {
-            result.push_back( static_cast<std::string>( (*it)["contact_handle_"] ) );
+            result.push_back( static_cast<long long>( (*it)["contact_id_"] ) );
         }
 
         return result;
