@@ -181,13 +181,15 @@ struct ContactVerificationFillQueueAutomaticTestsuiteArgs {
  */
 
 struct ContactVerificationEnqueueCheckArgs {
-    std::string contact_handle;
+    long long contact_id;
     std::string testsuite_name;
 
-    ContactVerificationEnqueueCheckArgs( ) { }
+    ContactVerificationEnqueueCheckArgs( )
+    : contact_id(0)
+    { }
 
-    ContactVerificationEnqueueCheckArgs( const std::string& _contact_handle, const std::string& _testsuite_name )
-    : contact_handle(_contact_handle),
+    ContactVerificationEnqueueCheckArgs( long long _contact_id, const std::string& _testsuite_name )
+    : contact_id(_contact_id),
       testsuite_name(_testsuite_name)
     { }
 };

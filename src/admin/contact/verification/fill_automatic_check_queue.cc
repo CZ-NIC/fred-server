@@ -117,7 +117,7 @@ namespace  Admin {
 
     std::vector<long long> select_never_checked_contacts(Fred::OperationContext& _ctx, unsigned _max_queue_length) {
         Database::Result never_checked_contacts_res = _ctx.get_conn().exec_params(
-            "SELECT id AS contact_id_ "
+            "SELECT o_r.id AS contact_id_ "
             "   FROM contact AS c "
             "       JOIN object_registry AS o_r USING(id) "
             "       JOIN contact_history AS c_h USING(id) "

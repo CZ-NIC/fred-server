@@ -2485,9 +2485,9 @@ class HandleContactVerificationEnqueueCheckArgsGrp : public HandleCommandGrpArgs
             boost::shared_ptr<options_description> cfg_opts( new options_description(name()) );
             cfg_opts->add_options()(name(), "enqueue check for specified contact with specified testsuite");
             cfg_opts->add_options()("contact_handle",
-                boost::program_options::value<Checked::string>()
-                    ->notifier(save_arg<std::string>(params.contact_handle)),
-                    "contact handle");
+                boost::program_options::value<Checked::ulonglong>()
+                    ->notifier(save_arg<long long>(params.contact_id)),
+                    "contact id");
             cfg_opts->add_options()("testsuite_name",
                 boost::program_options::value<Checked::string>()
                     ->notifier(save_arg<std::string>(params.testsuite_name)),
