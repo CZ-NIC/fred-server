@@ -19,11 +19,11 @@ namespace  Admin {
      *
      * @return locked check id
      */
-    static std::string lazy_get_locked_running_check(Fred::OperationContext& _ctx);
+    static std::string lazy_get_locked_running_check(Fred::OperationContext& _ctx, Optional<long long> _logd_request_id);
     /**
      * Important side-effect: tests of this check are created in db with status enqueued.
      */
-    static void update_some_enqueued_check_to_running(void);
+    static void update_some_enqueued_check_to_running(Optional<long long> _logd_request_id);
 
     /**
      * Lock some contact_test with running status related to given check.
@@ -34,8 +34,8 @@ namespace  Admin {
      * @param _check_id check whose tests are tried to lock
      * @return locked test name
      */
-    static std::string lazy_get_locked_running_test(Fred::OperationContext& _ctx, const std::string& _check_handle);
-    static void update_some_enqueued_test_to_running(const std::string& _check_handle);
+    static std::string lazy_get_locked_running_test(Fred::OperationContext& _ctx, const std::string& _check_handle, Optional<long long> _logd_request_id);
+    static void update_some_enqueued_test_to_running(const std::string& _check_handle, Optional<long long> _logd_request_id);
 
     /**
      * Updating check status based on tests results
@@ -54,11 +54,11 @@ namespace  Admin {
     /**
      * main function and the only one visible to the outer world
      */
-    std::string run_first_enqueued_check(const std::map<std::string, boost::shared_ptr<Admin::ContactVerificationTest> >& _tests) {
+    std::string run_first_enqueued_check(const std::map<std::string, boost::shared_ptr<Admin::ContactVerificationTest> >& _tests, Optional<long long> _logd_request_id) {
         Fred::OperationContext ctx_locked_check;
         std::string check_handle;
         try {
-            check_handle = lazy_get_locked_running_check(ctx_locked_check);
+            check_handle = lazy_get_locked_running_check(ctx_locked_check, _logd_request_id);
         } catch (ExceptionNoEnqueuedChecksAvailable&) {
             throw;
         }
@@ -75,7 +75,7 @@ namespace  Admin {
             while(true) {
                 Fred::OperationContext ctx_locked_test;
                 // can throw exception_locking_failed
-                std::string test_name = lazy_get_locked_running_test(ctx_locked_test, check_handle);
+                std::string test_name = lazy_get_locked_running_test(ctx_locked_test, check_handle, _logd_request_id);
 
                 try {
                     test_result_status = _tests.at(test_name)->run(check_info.contact_history_id).first;
@@ -87,7 +87,9 @@ namespace  Admin {
                     ctx_locked_test.get_conn().exec("ROLLBACK;");
                     Fred::OperationContext ctx_testrun_error;
                     test_statuses.push_back(Fred::ContactTestStatus::ERROR);
-                    Fred::UpdateContactTest(check_handle, test_name, test_statuses.back()).exec(ctx_testrun_error);
+                    Fred::UpdateContactTest(check_handle, test_name, test_statuses.back())
+                        .set_logd_request_id(_logd_request_id)
+                        .exec(ctx_testrun_error);
                     // TODO log problem
                     ctx_testrun_error.get_log();
                     ctx_testrun_error.commit_transaction();
@@ -96,7 +98,9 @@ namespace  Admin {
                     throw;
                 }
 
-                Fred::UpdateContactTest(check_handle, test_name, test_statuses.back()).exec(ctx_locked_test);
+                Fred::UpdateContactTest(check_handle, test_name, test_statuses.back())
+                    .set_logd_request_id(_logd_request_id)
+                    .exec(ctx_locked_test);
                 ctx_locked_test.commit_transaction();
             }
         } catch (_ExceptionAllTestsAlreadyRunning&) {
@@ -104,9 +108,11 @@ namespace  Admin {
             // definitely not re-throwing this exception
         } catch (...) {
             Fred::UpdateContactCheck(
-                        check_handle,
-                        evaluate_check_status_after_tests_finished(test_statuses)
-                    ).exec(ctx_locked_check);
+                check_handle,
+                evaluate_check_status_after_tests_finished(test_statuses)
+            )
+            .set_logd_request_id(_logd_request_id)
+            .exec(ctx_locked_check);
 
             ctx_locked_check.commit_transaction();
 
@@ -118,7 +124,9 @@ namespace  Admin {
         Fred::UpdateContactCheck(
             check_handle,
             evaluate_check_status_after_tests_finished(test_statuses)
-        ).exec(ctx_locked_check);
+        )
+        .set_logd_request_id(_logd_request_id)
+        .exec(ctx_locked_check);
 
         ctx_locked_check.commit_transaction();
 
@@ -127,7 +135,7 @@ namespace  Admin {
         return check_handle;
     }
 
-    std::string lazy_get_locked_running_check(Fred::OperationContext& _ctx) {
+    std::string lazy_get_locked_running_check(Fred::OperationContext& _ctx, Optional<long long> _logd_request_id) {
         while(true) {
             Database::Result locked_check_res = _ctx.get_conn().exec_params(
                 "SELECT c_ch.handle AS check_handle_ "
@@ -143,7 +151,7 @@ namespace  Admin {
                 return static_cast<std::string>(locked_check_res[0]["check_handle_"]);
             } else if(locked_check_res.size() == 0) {
                 try {
-                    update_some_enqueued_check_to_running();
+                    update_some_enqueued_check_to_running(_logd_request_id);
                 } catch(ExceptionNoEnqueuedChecksAvailable&) {
                     throw;
                 }
@@ -154,11 +162,11 @@ namespace  Admin {
             }
         }
     }
-    void update_some_enqueued_check_to_running(void) {
+    void update_some_enqueued_check_to_running(Optional<long long> _logd_request_id) {
         Fred::OperationContext ctx;
 
         Database::Result locked_check_res = ctx.get_conn().exec_params(
-            "SELECT c_ch.id AS id_, c_ch.handle AS handle_ "
+            "SELECT c_ch.handle AS handle_ "
             "   FROM contact_check AS c_ch "
             "   WHERE c_ch.enum_contact_check_status_id = "
             "       ( SELECT id FROM enum_contact_check_status WHERE name = $1::varchar ) "
@@ -171,16 +179,10 @@ namespace  Admin {
             throw ExceptionNoEnqueuedChecksAvailable();
         }
 
-        Database::Result updated_check_res = ctx.get_conn().exec_params(
-            "UPDATE contact_check "
-            "   SET enum_contact_check_status_id = "
-            "       ( SELECT id FROM enum_contact_check_status WHERE name = $2::varchar ) "
-            "   WHERE id = $1::bigint "
-            "   RETURNING id ; ",
-            Database::query_param_list
-                ( static_cast<long long>(locked_check_res[0]["id_"]) )
-                ( Fred::ContactCheckStatus::RUNNING )
-        );
+        std::string check_handle(static_cast<std::string>( locked_check_res[0]["handle_"] ));
+
+        Fred::UpdateContactCheck(check_handle, Fred::ContactCheckStatus::RUNNING, _logd_request_id)
+            .exec(ctx);
 
         // instantiate tests in db
 
@@ -191,32 +193,30 @@ namespace  Admin {
             "           ON enum_test.id = c_map.enum_contact_test_id "
             "       JOIN contact_check          AS check_ "
             "           ON check_.enum_contact_testsuite_id = c_map.enum_contact_testsuite_id "
-            "   WHERE check_.id=$1::bigint "
+            "   WHERE check_.handle=$1::uuid "
             "   ORDER by enum_test.id ASC; ",
-            Database::query_param_list( static_cast<long long>(locked_check_res[0]["id_"]))
+            Database::query_param_list(check_handle)
         );
         if(testnames_res.size() == 0) {
             throw Fred::InternalError(
                 std::string("testsuite of check(id=")
-                + static_cast<std::string>( locked_check_res[0]["handle_"] )
+                + check_handle
                 + ") contains no tests");
         }
 
         for(Database::Result::Iterator it = testnames_res.begin(); it != testnames_res.end(); ++it) {
             Fred::CreateContactTest(
-                static_cast<std::string>( locked_check_res[0]["handle_"] ),
+                check_handle,
                 static_cast<std::string>( (*it)["name_"] )
-            ).exec(ctx);
+            )
+            .set_logd_request_id(_logd_request_id)
+            .exec(ctx);
         }
 
-        if(updated_check_res.size() == 1) {
-            ctx.commit_transaction();
-        } else {
-            throw Fred::InternalError("failed to update check to running status");
-        }
+        ctx.commit_transaction();
     }
 
-    std::string lazy_get_locked_running_test(Fred::OperationContext& _ctx, const std::string& _check_handle) {
+    std::string lazy_get_locked_running_test(Fred::OperationContext& _ctx, const std::string& _check_handle, Optional<long long> _logd_request_id) {
         while(true) {
 
             Database::Result locked_test_res = _ctx.get_conn().exec_params(
@@ -238,7 +238,7 @@ namespace  Admin {
                 return static_cast<std::string>(locked_test_res[0]["test_name_"]);
             } else if(locked_test_res.size() == 0) {
                 try {
-                    update_some_enqueued_test_to_running(_check_handle);
+                    update_some_enqueued_test_to_running(_check_handle, _logd_request_id);
                 } catch(_ExceptionAllTestsAlreadyRunning&) {
                     throw;
                 }
@@ -250,7 +250,7 @@ namespace  Admin {
         }
     }
 
-    void update_some_enqueued_test_to_running(const std::string& _check_handle) {
+    void update_some_enqueued_test_to_running(const std::string& _check_handle, Optional<long long> _logd_request_id) {
         Database::Result locked_testname_res;
 
         while(true) {
@@ -285,7 +285,9 @@ namespace  Admin {
                     _check_handle,
                     static_cast<std::string>( locked_testname_res[0]["test_name_"] ),
                     Fred::ContactTestStatus::RUNNING
-                ).exec(ctx);
+                )
+                .set_logd_request_id(_logd_request_id)
+                .exec(ctx);
 
                 ctx.commit_transaction();
 
