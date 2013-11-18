@@ -128,7 +128,7 @@ namespace Fred
             Database::query_param_list(contact_id_)
         );
         if(contact_history_res.size() != 1) {
-            throw ExceptionUnknownContactHandle();
+            throw ExceptionUnknownContactId();
         }
         long contact_history_id = static_cast<long>(contact_history_res[0]["historyid"]);
 
@@ -171,7 +171,7 @@ namespace Fred
             std::string what_string(_exc.what());
 
             if(what_string.find("fk_contact_check_contact_history_id") != std::string::npos) {
-                throw ExceptionUnknownContactHandle();
+                throw ExceptionUnknownContactId();
             }
 
             if(what_string.find("contact_check_fk_Enum_contact_testsuite_id") != std::string::npos) {

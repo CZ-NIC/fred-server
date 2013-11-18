@@ -42,8 +42,8 @@ namespace Fred
             Nullable<long long> logd_request_id_;
 
         public:
-            struct ExceptionUnknownContactHandle : virtual Fred::OperationException {
-                const char* what() const throw() {return "unknown contact handle";}
+            struct ExceptionUnknownContactId : virtual Fred::OperationException {
+                const char* what() const throw() {return "unknown contact id";}
             };
             struct ExceptionUnknownTestsuiteName : virtual Fred::OperationException {
                 const char* what() const throw() {return "unknown testsuite name";}

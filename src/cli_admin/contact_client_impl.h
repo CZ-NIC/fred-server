@@ -288,7 +288,7 @@ struct contact_verification_enqueue_check_impl
           check_handle = Fred::CreateContactCheck(params.contact_id, params.testsuite_name)
               .exec(ctx);
           ctx.commit_transaction();
-      } catch (Fred::CreateContactCheck::ExceptionUnknownContactHandle& e) {
+      } catch (Fred::CreateContactCheck::ExceptionUnknownContactId& e) {
           throw ReturnCode(
               std::string("given contact id (") + boost::lexical_cast<std::string>(params.contact_id) + ") is unknown",
               1);
