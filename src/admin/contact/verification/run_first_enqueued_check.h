@@ -30,18 +30,18 @@
 
 #include <boost/shared_ptr.hpp>
 
+#include "util/optional_value.h"
+
 #include "admin/contact/verification/test_impl/test_interface.h"
 
 namespace Admin {
-    struct ExceptionNoEnqueuedChecksAvailable : public std::exception {};
-
     /**
      * Randomly (by happenstance, not even pseudo-random) selects some enqueued check and execute it (by running it's tests).
      *
      * @param _tests map of test objects denoted by their name
      * @return handle of selected and executed check
      */
-    std::string run_first_enqueued_check(
+    Optional<std::string> run_first_enqueued_check(
         const std::map<std::string, boost::shared_ptr<Admin::ContactVerificationTest> >& _tests,
         Optional<long long> _logd_request_id);
 
