@@ -50,17 +50,18 @@ namespace  Admin {
 
     // technicality - way how to "return" from nested function
     struct _ExceptionAllTestsAlreadyRunning : public std::exception {};
+    struct ExceptionNoEnqueuedChecksAvailable : public std::exception {};
 
     /**
      * main function and the only one visible to the outer world
      */
-    std::string run_first_enqueued_check(const std::map<std::string, boost::shared_ptr<Admin::ContactVerificationTest> >& _tests, Optional<long long> _logd_request_id) {
+    Optional<std::string> run_first_enqueued_check(const std::map<std::string, boost::shared_ptr<Admin::ContactVerificationTest> >& _tests, Optional<long long> _logd_request_id) {
         Fred::OperationContext ctx_locked_check;
-        std::string check_handle;
+        Optional<std::string> check_handle;
         try {
             check_handle = lazy_get_locked_running_check(ctx_locked_check, _logd_request_id);
         } catch (ExceptionNoEnqueuedChecksAvailable&) {
-            throw;
+            return check_handle;
         }
 
         /* right now this is just a query for history_id
