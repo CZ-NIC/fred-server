@@ -6,6 +6,7 @@
 #include "fredlib/contact/verification/enum_testsuite_name.h"
 #include "fredlib/contact/delete_contact.h"
 #include "fredlib/contact/info_contact.h"
+#include "util/random.h"
 
 struct setup_get_registrar_handle
 {
@@ -28,6 +29,8 @@ struct setup_get_registrar_handle
 struct setup_contact {
     std::string contact_handle;
     setup_get_registrar_handle registrar;
+    Fred::InfoContactOutput data_;
+    long long contact_id_;
 
     setup_contact() {
         // prevent name collisions
@@ -49,7 +52,15 @@ struct setup_contact {
         }
 
         Fred::OperationContext ctx_check;
-        Fred::InfoContact(contact_handle, registrar.registrar_handle).exec(ctx_check);
+        data_ = Fred::InfoContact(contact_handle, registrar.registrar_handle).exec(ctx_check);
+
+        contact_id_ = static_cast<long long>(
+            ctx_check.get_conn().exec(
+                "SELECT id "
+                "   FROM contact "
+                "   JOIN object_registry AS o_r USING(id) "
+                "   WHERE o_r.name='" + contact_handle + "' "
+            )[0][0]);
     }
 };
 
@@ -58,7 +69,7 @@ struct setup_nonexistent_contact_handle {
 
     setup_nonexistent_contact_handle() {
         Database::Result res;
-        // prevent name collisions
+        // guarantee non-existence
         do {
             Fred::OperationContext ctx;
             contact_handle = "NONEX_CONTACT_" + RandomDataGenerator().xnumstring(15);
@@ -67,6 +78,23 @@ struct setup_nonexistent_contact_handle {
                 "   FROM object_registry "
                 "   WHERE name='"+contact_handle+"'"
                 "       AND type=1;" );
+        } while(res.size() != 0);
+    }
+};
+
+struct setup_nonexistent_contact_id {
+    long long contact_id_;
+
+    setup_nonexistent_contact_id() {
+        Database::Result res;
+        // guarantee non-existence
+        do {
+            Fred::OperationContext ctx;
+            contact_id_ = Random::integer(0, 2147000000);
+            res = ctx.get_conn().exec(
+                "SELECT id "
+                "   FROM contact "
+                "   WHERE id='" + boost::lexical_cast<std::string>(contact_id_) + "'" );
         } while(res.size() != 0);
     }
 };
@@ -323,7 +351,7 @@ struct setup_check {
     {
         // check
         Fred::CreateContactCheck create_check(
-            contact_.contact_handle,
+            contact_.contact_id_,
             _testsuite_name,
             logd_request_
         );

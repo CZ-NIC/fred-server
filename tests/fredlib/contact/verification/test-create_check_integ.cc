@@ -60,7 +60,7 @@ BOOST_AUTO_TEST_CASE(test_Exec_mandatory_setup)
     setup_contact contact;
     setup_testsuite testsuite;
 
-    Fred::CreateContactCheck create_check(contact.contact_handle, testsuite.testsuite_name);
+    Fred::CreateContactCheck create_check(contact.contact_id_, testsuite.testsuite_name);
     std::string handle;
     std::string timezone = "UTC";
 
@@ -189,7 +189,7 @@ BOOST_AUTO_TEST_CASE(test_Exec_optional_setup)
     setup_testsuite testsuite;
     setup_logd_request_id logd_request;
 
-    Fred::CreateContactCheck create_check(contact.contact_handle, testsuite.testsuite_name, logd_request.logd_request_id);
+    Fred::CreateContactCheck create_check(contact.contact_id_, testsuite.testsuite_name, logd_request.logd_request_id);
     std::string handle;
     std::string timezone = "UTC";
 
@@ -309,12 +309,12 @@ BOOST_AUTO_TEST_CASE(test_Exec_optional_setup)
  @pre valid testsuite name
  @post Fred::CreateContactCheck::ExceptionUnknownContactHandle
 */
-BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_contact_handle)
+BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_contact_id)
 {
-    setup_nonexistent_contact_handle contact;
+    setup_nonexistent_contact_id contact;
     setup_testsuite testsuite;
 
-    Fred::CreateContactCheck create_check(contact.contact_handle, testsuite.testsuite_name);
+    Fred::CreateContactCheck create_check(contact.contact_id_, testsuite.testsuite_name);
     std::string handle;
 
     bool caught_the_right_exception = false;
@@ -322,7 +322,7 @@ BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_contact_handle)
         Fred::OperationContext ctx;
         handle = create_check.exec(ctx);
         ctx.commit_transaction();
-    } catch(const Fred::CreateContactCheck::ExceptionUnknownContactHandle& exp) {
+    } catch(const Fred::CreateContactCheck::ExceptionUnknownContactId& exp) {
         caught_the_right_exception = true;
     } catch(...) {
         BOOST_FAIL("incorrect exception caught");
@@ -344,7 +344,7 @@ BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_testsuite_name)
     setup_contact contact;
     setup_nonexistent_testsuite_name testsuite;
 
-    Fred::CreateContactCheck create_check(contact.contact_handle, testsuite.testsuite_name);
+    Fred::CreateContactCheck create_check(contact.contact_id_, testsuite.testsuite_name);
     std::string handle;
 
     bool caught_the_right_exception = false;
