@@ -22,6 +22,7 @@
  */
 
 #include "admin/contact/verification/run_all_enqueued_checks.h"
+#include "admin/contact/verification/fill_automatic_check_queue.h"
 #include "fredlib/contact/verification/info_check.h"
 #include "fredlib/contact/verification/enum_test_status.h"
 #include "fredlib/opexception.h"
@@ -32,6 +33,7 @@
 
 #include "tests/admin/contact/verification/setup_utils.h"
 #include "tests/fredlib/contact/verification/setup_utils.h"
+#include "util/random.h"
 
 
 //not using UTF defined main
@@ -292,6 +294,89 @@ BOOST_AUTO_TEST_CASE(test_Throwing_test_handling)
     BOOST_CHECK_EQUAL(final_check_state.tests.front().state_history.back().status_name, Test::ERROR);
 
     BOOST_CHECK_EQUAL(final_check_state.check_state_history.back().status_name, Check::TO_BE_DECIDED);
+}
+
+/**
+checks/tests created/changed at once has same logd_request_id
+@pre enqueued check
+@post InfoContactCheck output has same logd_request_ids for changes on check and tests done by same operation
+*/
+BOOST_AUTO_TEST_CASE(test_Logd_request_id_of_related_changes)
+{
+    typedef Fred::InfoContactCheckOutput::ContactCheckState ContactCheckState;
+    typedef Fred::InfoContactCheckOutput::ContactTestResultData ContactTestResultData;
+    typedef Fred::InfoContactCheckOutput::ContactTestResultState ContactTestResultState;
+
+    // creating checkdef
+    Fred::OperationContext ctx1;
+
+    boost::shared_ptr<Admin::ContactVerificationTest> temp_ptr1(
+        new DummyTestReturning(Test::OK));
+
+    boost::shared_ptr<Admin::ContactVerificationTest> temp_ptr2(
+        new DummyTestReturning(Test::FAIL));
+
+    boost::shared_ptr<Admin::ContactVerificationTest> temp_ptr3(
+        new DummyTestReturning(Test::MANUAL));
+
+    std::map< std::string, boost::shared_ptr<Admin::ContactVerificationTest> > test_impls_;
+    test_impls_[temp_ptr1->get_name()] = temp_ptr1;
+    test_impls_[temp_ptr2->get_name()] = temp_ptr2;
+    test_impls_[temp_ptr3->get_name()] = temp_ptr3;
+
+    setup_empty_testsuite testsuite;
+    setup_testdef_in_testsuite(temp_ptr1->get_name(), testsuite.testsuite_name);
+    setup_testdef_in_testsuite(temp_ptr2->get_name(), testsuite.testsuite_name);
+    setup_testdef_in_testsuite(temp_ptr3->get_name(), testsuite.testsuite_name);
+
+    setup_check check(testsuite.testsuite_name);
+
+    ctx1.commit_transaction();
+
+    // effectively creates tests and updates check at once
+    Admin::fill_automatic_check_queue(1);
+    long long logd_request_id = Random::integer(0, 2147483647);
+    Admin::run_all_enqueued_checks(test_impls_, logd_request_id);
+
+    Fred::InfoContactCheck info_op(check.check_handle_);
+    Fred::InfoContactCheckOutput info;
+    try {
+        Fred::OperationContext ctx2;
+        info = info_op.exec(ctx2);
+    } catch(const Fred::InternalError& exp) {
+        BOOST_FAIL("failed to get check info (1):" + boost::diagnostic_information(exp) + exp.what() );
+    } catch(const boost::exception& exp) {
+        BOOST_FAIL("failed to get check info (2):" + boost::diagnostic_information(exp));
+    } catch(const std::exception& exp) {
+        BOOST_FAIL(std::string("failed to get check info (3):") + exp.what());
+    }
+
+    bool first_check_state = true;
+    for( std::vector<ContactCheckState>::const_iterator
+            it = info.check_state_history.begin();
+            it != info.check_state_history.end();
+            ++it
+    ) {
+        if(first_check_state) {
+            first_check_state = false;
+            continue;
+        }
+
+        BOOST_CHECK_EQUAL(static_cast<long long>(it->logd_request_id), logd_request_id);
+    }
+    for( std::vector<ContactTestResultData>::const_iterator
+            test_it = info.tests.begin();
+            test_it != info.tests.end();
+            ++test_it
+    ) {
+        for( std::vector<ContactTestResultState>::const_iterator
+                state_it = test_it->state_history.begin();
+                state_it != test_it->state_history.end();
+                ++state_it
+        ) {
+            BOOST_CHECK_EQUAL(static_cast<long long>(state_it->logd_request_id), logd_request_id);
+        }
+    }
 }
 
 BOOST_AUTO_TEST_SUITE_END();
