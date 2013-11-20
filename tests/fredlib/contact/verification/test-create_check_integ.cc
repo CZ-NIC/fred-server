@@ -69,11 +69,11 @@ BOOST_AUTO_TEST_CASE(test_Exec_mandatory_setup)
         handle = create_check.exec(ctx1);
         ctx1.commit_transaction();
     } catch(const Fred::InternalError& exp) {
-        BOOST_FAIL("failed to create check (1):" + boost::diagnostic_information(exp) + exp.what() );
+        BOOST_FAIL("exception (1):" + boost::diagnostic_information(exp) + exp.what() );
     } catch(const boost::exception& exp) {
-        BOOST_FAIL("failed to create check (2):" + boost::diagnostic_information(exp));
+        BOOST_FAIL("exception (2):" + boost::diagnostic_information(exp));
     } catch(const std::exception& exp) {
-        BOOST_FAIL(std::string("failed to create check (3):") + exp.what());
+        BOOST_FAIL(std::string("exception (3):") + exp.what());
     }
 
     Fred::InfoContactCheck info_check(handle);
@@ -84,11 +84,11 @@ BOOST_AUTO_TEST_CASE(test_Exec_mandatory_setup)
         Fred::OperationContext ctx2;
         result_data = info_check.exec(ctx2, timezone);
     } catch(const Fred::InternalError& exp) {
-        BOOST_FAIL("non-existent check (1):" + boost::diagnostic_information(exp) + exp.what() );
+        BOOST_FAIL("exception (1):" + boost::diagnostic_information(exp) + exp.what() );
     } catch(const boost::exception& exp) {
-        BOOST_FAIL("non-existent check (2):" + boost::diagnostic_information(exp));
+        BOOST_FAIL("exception (2):" + boost::diagnostic_information(exp));
     } catch(const std::exception& exp) {
-        BOOST_FAIL(std::string("non-existent check (3):") + exp.what());
+        BOOST_FAIL(std::string("exception (3):") + exp.what());
     }
 
     // create_time is reasonable
@@ -198,11 +198,11 @@ BOOST_AUTO_TEST_CASE(test_Exec_optional_setup)
         handle = create_check.exec(ctx1);
         ctx1.commit_transaction();
     } catch(const Fred::InternalError& exp) {
-        BOOST_FAIL("failed to create check (1):" + boost::diagnostic_information(exp) + exp.what() );
+        BOOST_FAIL("exception (1):" + boost::diagnostic_information(exp) + exp.what() );
     } catch(const boost::exception& exp) {
-        BOOST_FAIL("failed to create check (2):" + boost::diagnostic_information(exp));
+        BOOST_FAIL("exception (2):" + boost::diagnostic_information(exp));
     } catch(const std::exception& exp) {
-        BOOST_FAIL(std::string("failed to create check (3):") + exp.what());
+        BOOST_FAIL(std::string("exception (3):") + exp.what());
     }
 
     Fred::InfoContactCheck info_check(handle);
@@ -212,11 +212,11 @@ BOOST_AUTO_TEST_CASE(test_Exec_optional_setup)
         Fred::OperationContext ctx2;
         result_data = info_check.exec(ctx2, timezone);
     } catch(const Fred::InternalError& exp) {
-        BOOST_FAIL("non-existent check (1):" + boost::diagnostic_information(exp) + exp.what() );
+        BOOST_FAIL("exception (1):" + boost::diagnostic_information(exp) + exp.what() );
     } catch(const boost::exception& exp) {
-        BOOST_FAIL("non-existent check (2):" + boost::diagnostic_information(exp));
+        BOOST_FAIL("exception (2):" + boost::diagnostic_information(exp));
     } catch(const std::exception& exp) {
-        BOOST_FAIL(std::string("non-existent check (3):") + exp.what());
+        BOOST_FAIL(std::string("exception (3):") + exp.what());
     }
 
     // create_time is reasonable
