@@ -25,6 +25,7 @@
 #define OPTIONAL_VALUE_H_
 
 #include <string>
+#include <sstream>
 
 //simple optional value template
 template<typename T>

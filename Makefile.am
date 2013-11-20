@@ -169,7 +169,7 @@ noinst_HEADERS = \
 		src/corba/common_wrappers.h \
 		src/corba/contact_verification/corba_conversion.h \
 		util/optional_value.h \
-		util/optional_nullable_equal.h \
+		util/is_equal_optional_nullable.h \
 		util/output_indenter.h
 
 
@@ -1695,8 +1695,9 @@ tests_test_server_SOURCES = \
 		tests/admin/contact/verification/setup_utils.h \
 		tests/admin/contact/verification/test-run_all_enqueued_checks.cc \
 		src/admin/contact/verification/fill_automatic_check_queue.cc \
-		tests/admin/contact/verification/test-fill_automatic_check_queue.cc
-		
+		tests/admin/contact/verification/test-fill_automatic_check_queue.cc \
+		tests/util/test-is-equal-optional-nullable.cc
+
 tests_test_server_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS) \
 		$(BOOST_LDFLAGS) \
