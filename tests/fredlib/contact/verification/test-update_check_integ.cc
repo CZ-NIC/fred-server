@@ -93,11 +93,11 @@ struct setup_create_update_check {
             Fred::OperationContext ctx1;
             data_pre_update_ = info_check.exec(ctx1, timezone_);
         } catch(const Fred::InternalError& exp) {
-           BOOST_FAIL("non-existent check (1):" + boost::diagnostic_information(exp) + exp.what() );
+           BOOST_FAIL("exception (1):" + boost::diagnostic_information(exp) + exp.what() );
         } catch(const boost::exception& exp) {
-           BOOST_FAIL("non-existent check (2):" + boost::diagnostic_information(exp));
+           BOOST_FAIL("exception (2):" + boost::diagnostic_information(exp));
         } catch(const std::exception& exp) {
-           BOOST_FAIL(std::string("non-existent check (3):") + exp.what());
+           BOOST_FAIL(std::string("exception (3):") + exp.what());
         }
 
         Fred::UpdateContactCheck update(check.check_handle_, new_status_, new_logd_request_);
@@ -106,22 +106,22 @@ struct setup_create_update_check {
             update.exec(ctx2);
             ctx2.commit_transaction();
         } catch(const Fred::InternalError& exp) {
-            BOOST_FAIL("failed to update check (1):" + boost::diagnostic_information(exp) + exp.what() );
+            BOOST_FAIL("exception (1):" + boost::diagnostic_information(exp) + exp.what() );
         } catch(const boost::exception& exp) {
-            BOOST_FAIL("failed to update check (2):" + boost::diagnostic_information(exp));
+            BOOST_FAIL("exception (2):" + boost::diagnostic_information(exp));
         } catch(const std::exception& exp) {
-            BOOST_FAIL(std::string("failed to update check (3):") + exp.what());
+            BOOST_FAIL(std::string("exception (3):") + exp.what());
         }
 
         try {
             Fred::OperationContext ctx3;
             data_post_update_ = info_check.exec(ctx3, timezone_);
         } catch(const Fred::InternalError& exp) {
-            BOOST_FAIL("non-existent check (1):" + boost::diagnostic_information(exp) + exp.what() );
+            BOOST_FAIL("exception (1):" + boost::diagnostic_information(exp) + exp.what() );
         } catch(const boost::exception& exp) {
-            BOOST_FAIL("non-existent check (2):" + boost::diagnostic_information(exp));
+            BOOST_FAIL("exception (2):" + boost::diagnostic_information(exp));
         } catch(const std::exception& exp) {
-            BOOST_FAIL(std::string("non-existent check (3):") + exp.what());
+            BOOST_FAIL(std::string("exception (3):") + exp.what());
         }
     }
 };
@@ -168,11 +168,11 @@ struct setup_create_update_update_check  {
             Fred::OperationContext ctx1;
             data_post_create_ = info_check.exec(ctx1, timezone_);
         } catch(const Fred::InternalError& exp) {
-            BOOST_FAIL("non-existent check (1):" + boost::diagnostic_information(exp) + exp.what() );
+            BOOST_FAIL("exception (1):" + boost::diagnostic_information(exp) + exp.what() );
         } catch(const boost::exception& exp) {
-            BOOST_FAIL("non-existent check (2):" + boost::diagnostic_information(exp));
+            BOOST_FAIL("exception (2):" + boost::diagnostic_information(exp));
         } catch(const std::exception& exp) {
-            BOOST_FAIL(std::string("non-existent check (3):") + exp.what());
+            BOOST_FAIL(std::string("exception (3):") + exp.what());
         }
 
         Fred::UpdateContactCheck reset(check.check_handle_, status2_, logd_request2_);
@@ -181,22 +181,22 @@ struct setup_create_update_update_check  {
             reset.exec(ctx2);
             ctx2.commit_transaction();
         } catch(const Fred::InternalError& exp) {
-            BOOST_FAIL("failed to update check (1):" + boost::diagnostic_information(exp) + exp.what() );
+            BOOST_FAIL("exception (1):" + boost::diagnostic_information(exp) + exp.what() );
         } catch(const boost::exception& exp) {
-            BOOST_FAIL("failed to update check (2):" + boost::diagnostic_information(exp));
+            BOOST_FAIL("exception (2):" + boost::diagnostic_information(exp));
         } catch(const std::exception& exp) {
-            BOOST_FAIL(std::string("failed to update check (3):") + exp.what());
+            BOOST_FAIL(std::string("exception (3):") + exp.what());
         }
 
         try {
             Fred::OperationContext ctx3;
             data_post_reset_ = info_check.exec(ctx3, timezone_);
         } catch(const Fred::InternalError& exp) {
-            BOOST_FAIL("non-existent check (1):" + boost::diagnostic_information(exp) + exp.what() );
+            BOOST_FAIL("exception (1):" + boost::diagnostic_information(exp) + exp.what() );
         } catch(const boost::exception& exp) {
-            BOOST_FAIL("non-existent check (2):" + boost::diagnostic_information(exp));
+            BOOST_FAIL("exception (2):" + boost::diagnostic_information(exp));
         } catch(const std::exception& exp) {
-            BOOST_FAIL(std::string("non-existent check (3):") + exp.what());
+            BOOST_FAIL(std::string("exception (3):") + exp.what());
         }
 
         Fred::UpdateContactCheck update(check.check_handle_, status3_, logd_request3_);
@@ -205,22 +205,22 @@ struct setup_create_update_update_check  {
             update.exec(ctx4);
             ctx4.commit_transaction();
         } catch(const Fred::InternalError& exp) {
-            BOOST_FAIL("failed to update check (1):" + boost::diagnostic_information(exp) + exp.what() );
+            BOOST_FAIL("exception (1):" + boost::diagnostic_information(exp) + exp.what() );
         } catch(const boost::exception& exp) {
-            BOOST_FAIL("failed to update check (2):" + boost::diagnostic_information(exp));
+            BOOST_FAIL("exception (2):" + boost::diagnostic_information(exp));
         } catch(const std::exception& exp) {
-            BOOST_FAIL(std::string("failed to update check (3):") + exp.what());
+            BOOST_FAIL(std::string("exception (3):") + exp.what());
         }
 
         try {
             Fred::OperationContext ctx5;
             data_post_update_ = info_check.exec(ctx5, timezone_);
         } catch(const Fred::InternalError& exp) {
-            BOOST_FAIL("non-existent check (1):" + boost::diagnostic_information(exp) + exp.what() );
+            BOOST_FAIL("exception (1):" + boost::diagnostic_information(exp) + exp.what() );
         } catch(const boost::exception& exp) {
-            BOOST_FAIL("non-existent check (2):" + boost::diagnostic_information(exp));
+            BOOST_FAIL("exception (2):" + boost::diagnostic_information(exp));
         } catch(const std::exception& exp) {
-            BOOST_FAIL(std::string("non-existent check (3):") + exp.what());
+            BOOST_FAIL(std::string("exception (3):") + exp.what());
         }
     }
 };

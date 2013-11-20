@@ -105,11 +105,11 @@ BOOST_AUTO_TEST_CASE(test_Exec)
             update_check.exec(ctx1);
             ctx1.commit_transaction();
         } catch(const Fred::InternalError& exp) {
-            BOOST_FAIL("failed to update check (1):" + boost::diagnostic_information(exp) + exp.what() );
+            BOOST_FAIL("exception (1):" + boost::diagnostic_information(exp) + exp.what() );
         } catch(const boost::exception& exp) {
-            BOOST_FAIL("failed to update check (2):" + boost::diagnostic_information(exp));
+            BOOST_FAIL("exception (2):" + boost::diagnostic_information(exp));
         } catch(const std::exception& exp) {
-            BOOST_FAIL(string("failed to update check (3):") + exp.what());
+            BOOST_FAIL(string("exception (3):") + exp.what());
         }
     }
 
@@ -145,11 +145,11 @@ BOOST_AUTO_TEST_CASE(test_Exec)
             update_test.exec(ctx2);
             ctx2.commit_transaction();
         } catch(const Fred::InternalError& exp) {
-           BOOST_FAIL("failed to update test (1):" + boost::diagnostic_information(exp) + exp.what() );
+           BOOST_FAIL("exception (1):" + boost::diagnostic_information(exp) + exp.what() );
         } catch(const boost::exception& exp) {
-           BOOST_FAIL("failed to update test (2):" + boost::diagnostic_information(exp));
+           BOOST_FAIL("exception (2):" + boost::diagnostic_information(exp));
         } catch(const std::exception& exp) {
-           BOOST_FAIL(string("failed to update test (3):") + exp.what());
+           BOOST_FAIL(string("exception (3):") + exp.what());
         }
     }
     for(int i=1; i<test_count; ++i) {
@@ -170,11 +170,11 @@ BOOST_AUTO_TEST_CASE(test_Exec)
             create_test.exec(ctx3);
             ctx3.commit_transaction();
         } catch(const Fred::InternalError& exp) {
-            BOOST_FAIL("failed to create test (1):" + boost::diagnostic_information(exp) + exp.what() );
+            BOOST_FAIL("exception (1):" + boost::diagnostic_information(exp) + exp.what() );
         } catch(const boost::exception& exp) {
-            BOOST_FAIL("failed to create test (2):" + boost::diagnostic_information(exp));
+            BOOST_FAIL("exception (2):" + boost::diagnostic_information(exp));
         } catch(const std::exception& exp) {
-            BOOST_FAIL(string("failed to create test (3):") + exp.what());
+            BOOST_FAIL(string("exception (3):") + exp.what());
         }
 
         // starting from 1 because first history step is already CREATEd
@@ -195,11 +195,11 @@ BOOST_AUTO_TEST_CASE(test_Exec)
                 update_test.exec(ctx4);
                 ctx4.commit_transaction();
             } catch(const Fred::InternalError& exp) {
-               BOOST_FAIL("failed to update test (1):" + boost::diagnostic_information(exp) + exp.what() );
+               BOOST_FAIL("exception (1):" + boost::diagnostic_information(exp) + exp.what() );
             } catch(const boost::exception& exp) {
-               BOOST_FAIL("failed to update test (2):" + boost::diagnostic_information(exp));
+               BOOST_FAIL("exception (2):" + boost::diagnostic_information(exp));
             } catch(const std::exception& exp) {
-               BOOST_FAIL(string("failed to update test (3):") + exp.what());
+               BOOST_FAIL(string("exception (3):") + exp.what());
             }
         }
     }
@@ -210,11 +210,11 @@ BOOST_AUTO_TEST_CASE(test_Exec)
         Fred::OperationContext ctx5;
         info = info_op.exec(ctx5);
     } catch(const Fred::InternalError& exp) {
-        BOOST_FAIL("failed to update test (1):" + boost::diagnostic_information(exp) + exp.what() );
+        BOOST_FAIL("exception (1):" + boost::diagnostic_information(exp) + exp.what() );
     } catch(const boost::exception& exp) {
-        BOOST_FAIL("failed to update test (2):" + boost::diagnostic_information(exp));
+        BOOST_FAIL("exception (2):" + boost::diagnostic_information(exp));
     } catch(const std::exception& exp) {
-        BOOST_FAIL(string("failed to update test (3):") + exp.what());
+        BOOST_FAIL(string("exception (3):") + exp.what());
     }
 
     for(int i=0; i<check_history_steps; ++i) {
