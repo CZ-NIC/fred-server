@@ -80,7 +80,7 @@ namespace  Admin {
             ctx2.get_conn().exec("ROLLBACK");
 
             if(to_enqueue.empty()) {
-                throw Fred::InternalError("can't find checked contacts");
+                throw Fred::InternalError("can't find any checked contact although there should be some");
             }
 
             std::vector<long long>::iterator contact_id_it = to_enqueue.begin();
