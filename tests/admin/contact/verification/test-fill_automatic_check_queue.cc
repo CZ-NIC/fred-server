@@ -158,9 +158,12 @@ void create_check_for_all_unchecked_contacts() {
         "SELECT o_r.id AS contact_id_ "
         "   FROM contact AS c "
         "       JOIN object_registry AS o_r USING(id) "
-        "       JOIN contact_history AS c_h USING(id) "
-        "       LEFT JOIN contact_check AS c_ch ON c_ch.contact_history_id = c_h.historyid "    // left join not null trick
-        "   WHERE c_ch.handle IS NULL "
+        "   WHERE NOT EXISTS ( "
+        "       SELECT * "
+        "           FROM contact_history AS c_h "
+        "           JOIN contact_check AS c_ch ON c_ch.contact_history_id = c_h.historyid "
+        "       WHERE o_r.id = c_h.id "
+        "   ) "
     );
 
     std::string handle;
