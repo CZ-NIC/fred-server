@@ -280,7 +280,7 @@ namespace  Admin {
             if(locked_testname_res.size() == 0) {
                 throw _ExceptionAllTestsAlreadyRunning();
             } else if(locked_testname_res.size() != 1) {
-                throw Fred::InternalError("invalid count of returned records");
+                throw Fred::InternalError("invalid count of locked tests ( >1)");
             } else {
                 Fred::UpdateContactTest(
                     _check_handle,

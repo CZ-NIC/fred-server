@@ -116,7 +116,22 @@ namespace Fred
 
         /* end of temporary ugliness - please cut and replace between ASAP*/
 
-        std::string handle = boost::lexical_cast<std::string>(BOOST::UUIDS::RANDOM_GENERATOR::generate());
+        Fred::OperationContext ctx_unique;
+        std::string unique_test_query =
+                "SELECT handle "
+                "   FROM contact_check "
+                "   WHERE handle=$1::uuid ";
+        // generate handle over and over until it is unique
+        std::string handle;
+        do {
+            handle = boost::lexical_cast<std::string>(BOOST::UUIDS::RANDOM_GENERATOR::generate());
+        } while(
+            ctx_unique.get_conn().exec_params(
+                unique_test_query,
+                Database::query_param_list(handle)
+                )
+            .size() != 0
+        );
 
         // using solo select for easy checking of existence (subselect would be strange)
         Database::Result contact_history_res = _ctx.get_conn().exec_params(

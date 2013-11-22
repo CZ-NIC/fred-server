@@ -26,6 +26,8 @@
 #include "fredlib/contact/verification/enum_check_status.h"
 #include "fredlib/contact/verification/enum_test_status.h"
 #include "fredlib/contact/verification/enum_testsuite_name.h"
+#include "fredlib/contact/verification/create_check.h"
+#include "fredlib/contact/verification/update_check.h"
 
 #include <boost/test/unit_test.hpp>
 #include <boost/assign/list_of.hpp>
@@ -145,6 +147,49 @@ struct setup_already_checked_contacts {
     }
 };
 
+void create_check_for_all_unchecked_contacts() {
+    Fred::OperationContext ctx;
+
+    setup_testdef testdef;
+    setup_empty_testsuite suite;
+    setup_testdef_in_testsuite(testdef.testdef_name_, suite.testsuite_name);
+
+    Database::Result never_checked_contacts_res = ctx.get_conn().exec(
+        "SELECT o_r.id AS contact_id_ "
+        "   FROM contact AS c "
+        "       JOIN object_registry AS o_r USING(id) "
+        "   WHERE NOT EXISTS ( "
+        "       SELECT * "
+        "           FROM contact_history AS c_h "
+        "           JOIN contact_check AS c_ch ON c_ch.contact_history_id = c_h.historyid "
+        "       WHERE o_r.id = c_h.id "
+        "   ) "
+    );
+
+    std::string handle;
+    for(Database::Result::Iterator it = never_checked_contacts_res.begin();
+        it != never_checked_contacts_res.end();
+        ++it
+    ) {
+        Fred::OperationContext ctx1;
+        handle = Fred::CreateContactCheck(
+            static_cast<long long>( (*it)["contact_id_"] ),
+            suite.testsuite_name
+        )
+        .exec(ctx1);
+        ctx1.commit_transaction();
+
+        Fred::OperationContext ctx2;
+        Fred::UpdateContactCheck(
+            handle,
+            Fred::ContactCheckStatus::OK
+        )
+        .exec(ctx2);
+        ctx2.commit_transaction();
+    }
+
+}
+
 BOOST_AUTO_TEST_SUITE(TestContactVerification)
 BOOST_FIXTURE_TEST_SUITE(TestFillAutomaticQueue, autoclean_contact_verification_db)
 
@@ -259,6 +304,7 @@ BOOST_AUTO_TEST_CASE(test_Enqueueing_never_checked_contacts)
         }
     };
 
+    create_check_for_all_unchecked_contacts();
     setup_already_checked_contacts(50);
 
     // make set of new, never checked contacts
@@ -305,13 +351,16 @@ BOOST_AUTO_TEST_CASE(test_Enqueueing_never_checked_contacts)
  */
 BOOST_AUTO_TEST_CASE(test_Enqueueing_already_checked_contacts)
 {
+    // IMPORTANT: check the rest of them AFTER - otherwise their checks would be OLDER!!!
     setup_already_checked_contacts(20);
+
+    create_check_for_all_unchecked_contacts();
 
     std::vector<long long> ids;
 
     Fred::OperationContext ctx;
 
-    Database::Result already_checked_res = ctx.get_conn().exec_params(
+    Database::Result oldest_checked_res = ctx.get_conn().exec_params(
         "SELECT o_r.id AS contact_id_, MAX(c_ch.update_time) AS last_update_ "
         "   FROM contact_check AS c_ch "
         "       JOIN object_history AS o_h ON c_ch.contact_history_id = o_h.historyid "
@@ -321,9 +370,9 @@ BOOST_AUTO_TEST_CASE(test_Enqueueing_already_checked_contacts)
         "   LIMIT $1::integer ",
         Database::query_param_list(20) );
 
-    BOOST_CHECK_EQUAL(already_checked_res.size(), 20);
+    BOOST_CHECK_EQUAL(oldest_checked_res.size(), 20);
 
-    for(Database::Result::Iterator it = already_checked_res.begin(); it != already_checked_res.end(); ++it) {
+    for(Database::Result::Iterator it = oldest_checked_res.begin(); it != oldest_checked_res.end(); ++it) {
         ids.push_back( static_cast<long long>( (*it)["contact_id_"] ) );
     }
 

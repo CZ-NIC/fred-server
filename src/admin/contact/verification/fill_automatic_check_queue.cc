@@ -80,7 +80,7 @@ namespace  Admin {
             ctx2.get_conn().exec("ROLLBACK");
 
             if(to_enqueue.empty()) {
-                throw Fred::InternalError("can't find checked contacts");
+                throw Fred::InternalError("can't find any checked contact although there should be some");
             }
 
             std::vector<long long>::iterator contact_id_it = to_enqueue.begin();
@@ -120,9 +120,12 @@ namespace  Admin {
             "SELECT o_r.id AS contact_id_ "
             "   FROM contact AS c "
             "       JOIN object_registry AS o_r USING(id) "
-            "       JOIN contact_history AS c_h USING(id) "
-            "       LEFT JOIN contact_check AS c_ch ON c_ch.contact_history_id = c_h.historyid "    // left join not null trick
-            "   WHERE c_ch.handle IS NULL "
+            "   WHERE NOT EXISTS ( "
+            "       SELECT * "
+            "           FROM contact_history AS c_h "
+            "           JOIN contact_check AS c_ch ON c_ch.contact_history_id = c_h.historyid "
+            "           WHERE c_h.id = o_r.id "
+            "   ) "
             "   LIMIT $1::integer "
             "   FOR SHARE OF o_r; ",
             Database::query_param_list(_max_queue_length)
