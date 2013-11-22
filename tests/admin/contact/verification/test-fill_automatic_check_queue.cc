@@ -182,7 +182,7 @@ void create_check_for_all_unchecked_contacts() {
         Fred::OperationContext ctx2;
         Fred::UpdateContactCheck(
             handle,
-            Fred::ContactCheckStatus::OK
+            Fred::ContactCheckStatus::AUTO_OK
         )
         .exec(ctx2);
         ctx2.commit_transaction();

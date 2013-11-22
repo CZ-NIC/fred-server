@@ -327,16 +327,16 @@ namespace  Admin {
          * NOTE: skipped test is ok - if it shouldn't be ok, than FAIL or ERROR are more appropriate
          */
         if(has_some_ok && !has_some_fail && !has_some_error && !has_some_running && !has_some_other) {
-            return Fred::ContactCheckStatus::OK;
+            return Fred::ContactCheckStatus::AUTO_OK;
         } else if(has_some_fail && !has_some_error && !has_some_running && !has_some_other ) {
-            return Fred::ContactCheckStatus::FAIL;
+            return Fred::ContactCheckStatus::AUTO_FAIL;
         } else if(has_some_error) {
-            return Fred::ContactCheckStatus::TO_BE_DECIDED;
+            return Fred::ContactCheckStatus::AUTO_TO_BE_DECIDED;
         } else if( !has_some_error && has_some_running ) {
             // NOTE: it's important not to set RUNNING - leads to endless loop
-            return Fred::ContactCheckStatus::TO_BE_DECIDED;
+            return Fred::ContactCheckStatus::AUTO_TO_BE_DECIDED;
         } else {
-            return Fred::ContactCheckStatus::TO_BE_DECIDED;
+            return Fred::ContactCheckStatus::AUTO_TO_BE_DECIDED;
         }
     }
 

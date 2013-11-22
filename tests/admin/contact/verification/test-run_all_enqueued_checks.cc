@@ -108,93 +108,93 @@ BOOST_AUTO_TEST_CASE(test_Resulting_check_status)
 
     // resulting in ok
     statuses = boost::assign::list_of(Test::OK);
-    test_Resulting_check_status_impl(statuses, Check::OK);
+    test_Resulting_check_status_impl(statuses, Check::AUTO_OK);
 
     statuses = boost::assign::list_of(Test::OK)(Test::OK)(Test::OK)(Test::OK)(Test::OK);
-    test_Resulting_check_status_impl(statuses, Check::OK);
+    test_Resulting_check_status_impl(statuses, Check::AUTO_OK);
 
     statuses = boost::assign::list_of(Test::OK)(Test::SKIPPED);
-    test_Resulting_check_status_impl(statuses, Check::OK);
+    test_Resulting_check_status_impl(statuses, Check::AUTO_OK);
 
     statuses = boost::assign::list_of(Test::OK)(Test::OK)(Test::OK)(Test::OK)(Test::SKIPPED);
-    test_Resulting_check_status_impl(statuses, Check::OK);
+    test_Resulting_check_status_impl(statuses, Check::AUTO_OK);
 
     statuses = boost::assign::list_of(Test::OK)(Test::SKIPPED)(Test::OK)(Test::OK)(Test::OK)(Test::OK)(Test::OK);
-    test_Resulting_check_status_impl(statuses, Check::OK);
+    test_Resulting_check_status_impl(statuses, Check::AUTO_OK);
 
     // resulting in fail
     statuses = boost::assign::list_of(Test::FAIL);
-    test_Resulting_check_status_impl(statuses, Check::FAIL);
+    test_Resulting_check_status_impl(statuses, Check::AUTO_FAIL);
 
     statuses = boost::assign::list_of(Test::FAIL)(Test::FAIL)(Test::FAIL)(Test::FAIL);
-    test_Resulting_check_status_impl(statuses, Check::FAIL);
+    test_Resulting_check_status_impl(statuses, Check::AUTO_FAIL);
 
     statuses = boost::assign::list_of(Test::FAIL)(Test::SKIPPED);
-    test_Resulting_check_status_impl(statuses, Check::FAIL);
+    test_Resulting_check_status_impl(statuses, Check::AUTO_FAIL);
 
     statuses = boost::assign::list_of(Test::FAIL)(Test::FAIL)(Test::SKIPPED)(Test::FAIL)(Test::FAIL);
-    test_Resulting_check_status_impl(statuses, Check::FAIL);
+    test_Resulting_check_status_impl(statuses, Check::AUTO_FAIL);
 
     statuses = boost::assign::list_of(Test::FAIL)(Test::FAIL)(Test::FAIL)(Test::FAIL)(Test::SKIPPED);
-    test_Resulting_check_status_impl(statuses, Check::FAIL);
+    test_Resulting_check_status_impl(statuses, Check::AUTO_FAIL);
 
     statuses = boost::assign::list_of(Test::FAIL)(Test::SKIPPED)(Test::FAIL)(Test::FAIL)(Test::FAIL)(Test::FAIL)(Test::FAIL);
-    test_Resulting_check_status_impl(statuses, Check::FAIL);
+    test_Resulting_check_status_impl(statuses, Check::AUTO_FAIL);
 
     statuses = boost::assign::list_of(Test::FAIL)(Test::OK)(Test::OK)(Test::OK)(Test::OK);
-    test_Resulting_check_status_impl(statuses, Check::FAIL);
+    test_Resulting_check_status_impl(statuses, Check::AUTO_FAIL);
 
     statuses = boost::assign::list_of(Test::OK)(Test::OK)(Test::OK)(Test::OK)(Test::OK)(Test::OK)(Test::FAIL);
-    test_Resulting_check_status_impl(statuses, Check::FAIL);
+    test_Resulting_check_status_impl(statuses, Check::AUTO_FAIL);
 
     statuses = boost::assign::list_of(Test::OK)(Test::OK)(Test::FAIL)(Test::OK)(Test::OK)(Test::OK);
-    test_Resulting_check_status_impl(statuses, Check::FAIL);
+    test_Resulting_check_status_impl(statuses, Check::AUTO_FAIL);
 
     statuses = boost::assign::list_of(Test::FAIL)(Test::SKIPPED)(Test::OK)(Test::OK)(Test::OK)(Test::OK);
-    test_Resulting_check_status_impl(statuses, Check::FAIL);
+    test_Resulting_check_status_impl(statuses, Check::AUTO_FAIL);
 
     statuses = boost::assign::list_of(Test::OK)(Test::OK)(Test::SKIPPED)(Test::OK)(Test::SKIPPED)(Test::OK)(Test::OK)(Test::OK)(Test::FAIL);
-    test_Resulting_check_status_impl(statuses, Check::FAIL);
+    test_Resulting_check_status_impl(statuses, Check::AUTO_FAIL);
 
     statuses = boost::assign::list_of(Test::OK)(Test::SKIPPED)(Test::FAIL)(Test::OK)(Test::OK)(Test::SKIPPED)(Test::OK);
-    test_Resulting_check_status_impl(statuses, Check::FAIL);
+    test_Resulting_check_status_impl(statuses, Check::AUTO_FAIL);
 
     // resulting in to_be_decided
     statuses = boost::assign::list_of(Test::ERROR);
-    test_Resulting_check_status_impl(statuses, Check::TO_BE_DECIDED);
+    test_Resulting_check_status_impl(statuses, Check::AUTO_TO_BE_DECIDED);
 
     statuses = boost::assign::list_of(Test::OK)(Test::ERROR);
-    test_Resulting_check_status_impl(statuses, Check::TO_BE_DECIDED);
+    test_Resulting_check_status_impl(statuses, Check::AUTO_TO_BE_DECIDED);
 
     statuses = boost::assign::list_of(Test::OK)(Test::OK)(Test::OK)(Test::ERROR)(Test::OK)(Test::OK);
-    test_Resulting_check_status_impl(statuses, Check::TO_BE_DECIDED);
+    test_Resulting_check_status_impl(statuses, Check::AUTO_TO_BE_DECIDED);
 
     statuses = boost::assign::list_of(Test::FAIL)(Test::ERROR);
-    test_Resulting_check_status_impl(statuses, Check::TO_BE_DECIDED);
+    test_Resulting_check_status_impl(statuses, Check::AUTO_TO_BE_DECIDED);
 
     statuses = boost::assign::list_of(Test::FAIL)(Test::FAIL)(Test::ERROR)(Test::FAIL)(Test::FAIL);
-    test_Resulting_check_status_impl(statuses, Check::TO_BE_DECIDED);
+    test_Resulting_check_status_impl(statuses, Check::AUTO_TO_BE_DECIDED);
 
     statuses = boost::assign::list_of(Test::MANUAL);
-    test_Resulting_check_status_impl(statuses, Check::TO_BE_DECIDED);
+    test_Resulting_check_status_impl(statuses, Check::AUTO_TO_BE_DECIDED);
 
     statuses = boost::assign::list_of(Test::OK)(Test::MANUAL);
-    test_Resulting_check_status_impl(statuses, Check::TO_BE_DECIDED);
+    test_Resulting_check_status_impl(statuses, Check::AUTO_TO_BE_DECIDED);
 
     statuses = boost::assign::list_of(Test::OK)(Test::OK)(Test::OK)(Test::MANUAL)(Test::OK)(Test::OK);
-    test_Resulting_check_status_impl(statuses, Check::TO_BE_DECIDED);
+    test_Resulting_check_status_impl(statuses, Check::AUTO_TO_BE_DECIDED);
 
     statuses = boost::assign::list_of(Test::FAIL)(Test::MANUAL);
-    test_Resulting_check_status_impl(statuses, Check::TO_BE_DECIDED);
+    test_Resulting_check_status_impl(statuses, Check::AUTO_TO_BE_DECIDED);
 
     statuses = boost::assign::list_of(Test::FAIL)(Test::FAIL)(Test::MANUAL)(Test::FAIL)(Test::FAIL);
-    test_Resulting_check_status_impl(statuses, Check::TO_BE_DECIDED);
+    test_Resulting_check_status_impl(statuses, Check::AUTO_TO_BE_DECIDED);
 
     statuses = boost::assign::list_of(Test::SKIPPED);
-    test_Resulting_check_status_impl(statuses, Check::TO_BE_DECIDED);
+    test_Resulting_check_status_impl(statuses, Check::AUTO_TO_BE_DECIDED);
 
     statuses = boost::assign::list_of(Test::FAIL)(Test::MANUAL)(Test::SKIPPED)(Test::FAIL)(Test::ERROR)(Test::OK);
-    test_Resulting_check_status_impl(statuses, Check::TO_BE_DECIDED);
+    test_Resulting_check_status_impl(statuses, Check::AUTO_TO_BE_DECIDED);
 }
 
 /**
@@ -293,7 +293,7 @@ BOOST_AUTO_TEST_CASE(test_Throwing_test_handling)
 
     BOOST_CHECK_EQUAL(final_check_state.tests.front().state_history.back().status_name, Test::ERROR);
 
-    BOOST_CHECK_EQUAL(final_check_state.check_state_history.back().status_name, Check::TO_BE_DECIDED);
+    BOOST_CHECK_EQUAL(final_check_state.check_state_history.back().status_name, Check::AUTO_TO_BE_DECIDED);
 }
 
 /**

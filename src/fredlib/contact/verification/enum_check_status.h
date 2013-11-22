@@ -32,12 +32,14 @@ namespace Fred
      */
     namespace ContactCheckStatus
     {
-        const std::string ENQUEUED      = "enqueued";
-        const std::string RUNNING       = "running";
-        const std::string TO_BE_DECIDED = "to_be_decided";
-        const std::string OK            = "ok";
-        const std::string FAIL          = "fail";
-        const std::string INVALIDATED   = "invalidated";
+        const std::string ENQUEUED              = "enqueued";
+        const std::string RUNNING               = "running";
+        const std::string AUTO_TO_BE_DECIDED    = "auto_to_be_decided";
+        const std::string AUTO_OK               = "auto_ok";
+        const std::string AUTO_FAIL             = "auto_fail";
+        const std::string OK                    = "ok";
+        const std::string FAIL                  = "fail";
+        const std::string INVALIDATED           = "invalidated";
     }
 }
 #endif // #include guard end
