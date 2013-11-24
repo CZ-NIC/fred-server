@@ -33,6 +33,7 @@
 #include "fredlib/domain/check_domain.h"
 #include "fredlib/zone/zone.h"
 #include "fredlib/object/object.h"
+#include "fredlib/registrar/registrar_impl.h"
 
 #include "fredlib/opcontext.h"
 #include "fredlib/db_settings.h"
@@ -145,19 +146,9 @@ namespace Fred
         try
         {
             //check registrar
-            {
-                Database::Result registrar_res = ctx.get_conn().exec_params(
-                    "SELECT id FROM registrar WHERE handle = UPPER($1::text) FOR SHARE"
-                    , Database::query_param_list(registrar_));
-                if(registrar_res.size() == 0)
-                {
-                    BOOST_THROW_EXCEPTION(Exception().set_unknown_registrar_handle(registrar_));
-                }
-                if (registrar_res.size() != 1)
-                {
-                    BOOST_THROW_EXCEPTION(InternalError("failed to get registrar"));
-                }
-            }
+            Registrar::get_registrar_id_by_handle(
+                ctx, registrar_, static_cast<Exception*>(0)//set throw
+                , &Exception::set_unknown_registrar_handle);
 
             //check general domain name syntax
             if(!Domain::general_domain_name_syntax_check(fqdn_))
@@ -239,29 +230,9 @@ namespace Fred
             Exception create_domain_exception;
 
             //lock registrant object_registry row for update and get id
-            unsigned long long registrant_id = 0;
-            {
-                Database::Result registrant_res = ctx.get_conn().exec_params(
-                    "SELECT oreg.id FROM enum_object_type eot"
-                    " JOIN object_registry oreg ON oreg.type = eot.id "
-                    " JOIN contact c ON oreg.id = c.id "
-                    " AND oreg.name = UPPER($1::text) AND oreg.erdate IS NULL "
-                    " WHERE eot.name = 'contact' FOR UPDATE OF oreg"
-                    , Database::query_param_list(registrant_));
-
-                if (registrant_res.size() == 0)
-                {
-                    create_domain_exception.set_unknown_registrant_handle(registrant_);
-                }
-                if (registrant_res.size() > 1)
-                {
-                    BOOST_THROW_EXCEPTION(InternalError("failed to get registrant"));
-                }
-                if (registrant_res.size() == 1)
-                {
-                    registrant_id = static_cast<unsigned long long>(registrant_res[0][0]);
-                }
-            }
+            unsigned long long registrant_id = get_object_id_by_handle_and_type_with_lock(
+                    ctx,registrant_,"contact",&create_domain_exception,
+                    &Exception::set_unknown_registrant_handle);
 
             //create domain
             {
@@ -312,32 +283,13 @@ namespace Fred
                     }
                     else
                     {//value case query, lock nsset object_registry row for update and get id
-                        unsigned long long nsset_id = 0;
-                        {
-                            Database::Result lock_nsset_res = ctx.get_conn().exec_params(
-                                "SELECT oreg.id FROM enum_object_type eot"
-                                " JOIN object_registry oreg ON oreg.type = eot.id "
-                                " JOIN nsset n ON oreg.id = n.id "
-                                " AND oreg.name = UPPER($1::text) AND oreg.erdate IS NULL "
-                                " WHERE eot.name = 'nsset' FOR UPDATE OF oreg"
-                                , Database::query_param_list(new_nsset_value));
+                        unsigned long long nsset_id = get_object_id_by_handle_and_type_with_lock(
+                            ctx,new_nsset_value,"nsset",&create_domain_exception,
+                            &Exception::set_unknown_nsset_handle);
 
-                            if (lock_nsset_res.size() == 0)
-                            {
-                                create_domain_exception.set_unknown_nsset_handle(new_nsset_value);
-                            }
-                            if (lock_nsset_res.size() > 1)
-                            {
-                                BOOST_THROW_EXCEPTION(InternalError("failed to get nsset"));
-                            }
-                            if (lock_nsset_res.size() == 1)
-                            {
-                                nsset_id = static_cast<unsigned long long>(lock_nsset_res[0][0]);
-                            }
+                        params.push_back(nsset_id);//id
+                        val_sql << val_separator.get() << "$" << params.size() <<"::integer";
 
-                            params.push_back(nsset_id);//id
-                            val_sql << val_separator.get() << "$" << params.size() <<"::integer";
-                        }
                     }
                 }//if nsset
 
@@ -354,30 +306,13 @@ namespace Fred
                     }
                     else
                     {//value case query, lock keyset object_registry row for update and get id
-                        unsigned long long keyset_id = 0;
-                        {
-                            Database::Result lock_keyset_res = ctx.get_conn().exec_params(
-                                "SELECT oreg.id FROM enum_object_type eot"
-                                " JOIN object_registry oreg ON oreg.type = eot.id "
-                                " JOIN keyset k ON oreg.id = k.id "
-                                " AND oreg.name = UPPER($1::text) AND oreg.erdate IS NULL "
-                                " WHERE eot.name = 'keyset' FOR UPDATE OF oreg"
-                                , Database::query_param_list(new_keyset_value));
+                        unsigned long long keyset_id = get_object_id_by_handle_and_type_with_lock(
+                                ctx,new_keyset_value,"keyset",&create_domain_exception,
+                                &Exception::set_unknown_keyset_handle);
 
-                            if (lock_keyset_res.size() == 0)
-                            {
-                                create_domain_exception.set_unknown_keyset_handle(new_keyset_value);
-                            }
-                            if (lock_keyset_res.size() > 1)
-                            {
-                                BOOST_THROW_EXCEPTION(InternalError("failed to get keyset"));
-                            }
+                        params.push_back(keyset_id);//id
+                        val_sql << val_separator.get() << "$" << params.size() <<"::integer";
 
-                            keyset_id = static_cast<unsigned long long>(lock_keyset_res[0][0]);
-
-                            params.push_back(keyset_id);//id
-                            val_sql << val_separator.get() << "$" << params.size() <<"::integer";
-                        }
                     }
                 }//if keyset
 
@@ -407,27 +342,10 @@ namespace Fred
                     for(std::vector<std::string>::iterator i = admin_contacts_.begin(); i != admin_contacts_.end(); ++i)
                     {
                         //lock admin contact object_registry row for update and get id
-                        unsigned long long admin_contact_id = 0;
-                        {
-                            Database::Result lock_res = ctx.get_conn().exec_params(
-                                "SELECT oreg.id FROM enum_object_type eot"
-                                " JOIN object_registry oreg ON oreg.type = eot.id "
-                                " JOIN contact c ON oreg.id = c.id "
-                                " AND oreg.name = UPPER($1::text) AND oreg.erdate IS NULL "
-                                " WHERE eot.name = 'contact' FOR UPDATE OF oreg"
-                                , Database::query_param_list(*i));
-
-                            if (lock_res.size() == 0)
-                            {
-                                create_domain_exception.add_unknown_admin_contact_handle(*i);
-                                continue;//for admin_contacts_
-                            }
-                            if (lock_res.size() != 1)
-                            {
-                                BOOST_THROW_EXCEPTION(InternalError("failed to get admin contact"));
-                            }
-                                admin_contact_id = static_cast<unsigned long long>(lock_res[0][0]);
-                        }
+                        unsigned long long admin_contact_id = get_object_id_by_handle_and_type_with_lock(
+                                ctx,*i,"contact",&create_domain_exception,
+                                &Exception::add_unknown_admin_contact_handle);
+                        if(admin_contact_id == 0) continue;
 
                         Database::QueryParams params_i = params;//query params
                         std::stringstream sql_i;

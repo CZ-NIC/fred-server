@@ -27,7 +27,7 @@
 
 #include "fredlib/keyset/update_keyset.h"
 #include "fredlib/object/object.h"
-
+#include "fredlib/registrar/registrar_impl.h"
 #include "fredlib/opcontext.h"
 #include "fredlib/db_settings.h"
 #include "util/optional_value.h"
@@ -114,41 +114,14 @@ namespace Fred
         try
         {
             //check registrar
-            {
-                Database::Result registrar_res = ctx.get_conn().exec_params(
-                    "SELECT id FROM registrar WHERE handle = UPPER($1::text) FOR SHARE"
-                    , Database::query_param_list(registrar_));
-                if(registrar_res.size() == 0)
-                {
-                    BOOST_THROW_EXCEPTION(Exception().set_unknown_registrar_handle(registrar_));
-                }
-                if (registrar_res.size() != 1)
-                {
-                    BOOST_THROW_EXCEPTION(InternalError("failed to get registrar"));
-                }
-            }
+            Registrar::get_registrar_id_by_handle(
+                ctx, registrar_, static_cast<Exception*>(0)//set throw
+                , &Exception::set_unknown_registrar_handle);
 
             //lock row and get keyset_id
-            unsigned long long keyset_id =0;
-            {
-                Database::Result keyset_id_res = ctx.get_conn().exec_params(
-                    "SELECT oreg.id FROM keyset k "
-                    " JOIN object_registry oreg ON k.id = oreg.id "
-                    " JOIN enum_object_type eot ON eot.id = oreg.type "
-                    " WHERE eot.name = 'keyset' AND oreg.name = UPPER($1::text) AND oreg.erdate IS NULL "
-                    " FOR UPDATE OF oreg "
-                    , Database::query_param_list(handle_));
-
-                if (keyset_id_res.size() == 0)
-                {
-                    BOOST_THROW_EXCEPTION(Exception().set_unknown_keyset_handle(handle_));
-                }
-                if (keyset_id_res.size() != 1)
-                {
-                    BOOST_THROW_EXCEPTION(InternalError("failed to get keyset"));
-                }
-                keyset_id = keyset_id_res[0][0];
-            }
+            unsigned long long keyset_id =get_object_id_by_handle_and_type_with_lock(
+                    ctx,handle_,"keyset",static_cast<Exception*>(0),
+                    &Exception::set_unknown_keyset_handle);
 
             Exception update_keyset_exception;
 
@@ -165,8 +138,6 @@ namespace Fred
                     update_keyset_exception.set_unknown_keyset_handle(
                             ex.get_unknown_object_handle());
                 }
-
-                if(ex.is_set_unknown_object_type()) throw;//kind of internal error
 
                 if(ex.is_set_unknown_registrar_handle())
                 {
@@ -194,27 +165,10 @@ namespace Fred
                 for(std::vector<std::string>::iterator i = add_tech_contact_.begin(); i != add_tech_contact_.end(); ++i)
                 {
                     //lock object_registry row for update
-                    unsigned long long tech_contact_id = 0;
-                    {
-                        Database::Result lock_res = ctx.get_conn().exec_params(
-                            "SELECT oreg.id FROM enum_object_type eot "
-                            " JOIN object_registry oreg ON oreg.type = eot.id "
-                            " JOIN contact c ON oreg.id = c.id "
-                            " AND oreg.name = UPPER($1::text) AND oreg.erdate IS NULL "
-                            " WHERE eot.name = 'contact' FOR UPDATE OF oreg "
-                            , Database::query_param_list(*i));
-
-                        if (lock_res.size() == 0)
-                        {
-                            update_keyset_exception.add_unknown_technical_contact_handle(*i);
-                            continue;//for add_tech_contact_
-                        }
-                        if (lock_res.size() != 1)
-                        {
-                            BOOST_THROW_EXCEPTION(InternalError("failed to get technical contact"));
-                        }
-                        tech_contact_id = static_cast<unsigned long long> (lock_res[0][0]);
-                    }
+                    unsigned long long tech_contact_id = get_object_id_by_handle_and_type_with_lock(
+                            ctx,*i,"contact",&update_keyset_exception,
+                            &Exception::add_unknown_technical_contact_handle);
+                    if(tech_contact_id == 0) continue;
 
                     Database::QueryParams params_i = params;//query params
                     std::stringstream sql_i;
@@ -256,27 +210,10 @@ namespace Fred
 
                 for(std::vector<std::string>::iterator i = rem_tech_contact_.begin(); i != rem_tech_contact_.end(); ++i)
                 {
-                    unsigned long long tech_contact_id = 0;
-                    {
-                        Database::Result lock_res = ctx.get_conn().exec_params(
-                            "SELECT oreg.id FROM enum_object_type eot "
-                            " JOIN object_registry oreg ON oreg.type = eot.id "
-                            " JOIN contact c ON oreg.id = c.id "
-                            " AND oreg.name = UPPER($1::text) AND oreg.erdate IS NULL "
-                            " WHERE eot.name = 'contact' FOR UPDATE OF oreg "
-                            , Database::query_param_list(*i));
-
-                        if (lock_res.size() == 0)
-                        {
-                            update_keyset_exception.add_unknown_technical_contact_handle(*i);
-                            continue;//for rem_tech_contact_
-                        }
-                        if (lock_res.size() != 1)
-                        {
-                            BOOST_THROW_EXCEPTION(InternalError("failed to get technical contact"));
-                        }
-                        tech_contact_id = static_cast<unsigned long long> (lock_res[0][0]);
-                    }
+                    unsigned long long tech_contact_id = get_object_id_by_handle_and_type_with_lock(
+                            ctx,*i,"contact",&update_keyset_exception,
+                            &Exception::add_unknown_technical_contact_handle);
+                    if(tech_contact_id == 0) continue;
 
                     Database::QueryParams params_i = params;//query params
                     std::stringstream sql_i;
