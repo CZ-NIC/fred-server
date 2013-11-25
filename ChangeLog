@@ -13,6 +13,10 @@
 
   * fix epp poll req/ack commands - overflow of count values
 
+2013-11-15 Jiri Sadek (2.15.3)
+
+  * contact merge - generate new authinfo for destination contact
+
 2013-10-25 Jan Korous, Jiri Sadek (2.15.2)
 
   * fix zone name resolution
