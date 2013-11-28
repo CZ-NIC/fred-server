@@ -43,6 +43,7 @@
 #include "setup_server_decl.h"
 #include "time_clock.h"
 #include "fredlib/registrar.h"
+#include "fredlib/domain/create_administrative_object_block_request_id.h"
 #include "fredlib/domain/create_administrative_object_state_restore_request_id.h"
 #include "fredlib/opexception.h"
 #include "util/util.h"
@@ -92,12 +93,14 @@ struct create_administrative_object_state_restore_request_id_fixture
     std::string test_domain_fqdn;
     Fred::ObjectId test_domain_id;
     Fred::StatusList status_list;
+    const Fred::ObjectId logd_request_id;
 
     create_administrative_object_state_restore_request_id_fixture()
     :   xmark(RandomDataGenerator().xnumstring(6)),
-        admin_contact2_handle(std::string("TEST-OSR-ADMIN-CONTACT-HANDLE") + xmark),
-        registrant_contact_handle(std::string("TEST-OSR-REGISTRANT-CONTACT-HANDLE") + xmark),
-        test_domain_fqdn ( std::string("fred")+xmark+".cz")
+        admin_contact2_handle(std::string("TEST-CAOSRR-ADMIN-CONTACT-HANDLE") + xmark),
+        registrant_contact_handle(std::string("TEST-CAOSRR-REGISTRANT-CONTACT-HANDLE") + xmark),
+        test_domain_fqdn(std::string("fred") + xmark + ".cz"),
+        logd_request_id(23456)
     {
         Fred::OperationContext ctx;
         registrar_handle = static_cast<std::string>(ctx.get_conn().exec(
@@ -105,7 +108,7 @@ struct create_administrative_object_state_restore_request_id_fixture
         BOOST_CHECK(!registrar_handle.empty());//expecting existing system registrar
 
         Fred::CreateContact(admin_contact2_handle,registrar_handle)
-            .set_name(std::string("TEST-AOB-ADMIN-CONTACT NAME")+xmark)
+            .set_name(std::string("TEST-CAOSRR-ADMIN-CONTACT NAME")+xmark)
             .set_disclosename(true)
             .set_street1(std::string("STR1")+xmark)
             .set_city("Praha").set_postalcode("11150").set_country("CZ")
@@ -113,20 +116,16 @@ struct create_administrative_object_state_restore_request_id_fixture
             .exec(ctx);
 
         Fred::CreateContact(registrant_contact_handle,registrar_handle)
-                .set_name(std::string("TEST-REGISTRANT-CONTACT NAME")+xmark)
-                .set_disclosename(true)
-                .set_street1(std::string("STR1")+xmark)
-                .set_city("Praha").set_postalcode("11150").set_country("CZ")
-                .set_discloseaddress(true)
-                .exec(ctx);
+            .set_name(std::string("TEST-REGISTRANT-CONTACT NAME")+xmark)
+            .set_disclosename(true)
+            .set_street1(std::string("STR1")+xmark)
+            .set_city("Praha").set_postalcode("11150").set_country("CZ")
+            .set_discloseaddress(true)
+            .exec(ctx);
 
-        Fred::CreateDomain(
-                test_domain_fqdn //const std::string& fqdn
-                , registrar_handle //const std::string& registrar
-                , registrant_contact_handle //registrant
-                )
-        .set_admin_contacts(Util::vector_of<std::string>(admin_contact2_handle))
-        .exec(ctx);
+        Fred::CreateDomain(test_domain_fqdn, registrar_handle, registrant_contact_handle)
+            .set_admin_contacts(Util::vector_of<std::string>(admin_contact2_handle))
+            .exec(ctx);
 
         Database::Result status_result = ctx.get_conn().exec("SELECT name FROM enum_object_states WHERE manual AND 3=ANY(types) AND name!='serverBlocked'");
         for (::size_t idx = 0; idx < status_result.size(); ++idx) {
@@ -138,6 +137,9 @@ struct create_administrative_object_state_restore_request_id_fixture
             "WHERE name=$1::text AND "
                   "type=3 AND "
                   "erdate IS NULL", Database::query_param_list(test_domain_fqdn))[0][0]);
+        const std::string handle = Fred::CreateAdministrativeObjectBlockRequestId(test_domain_id, status_list).exec(ctx);
+        BOOST_CHECK(handle == test_domain_fqdn);
+        Fred::PerformObjectStateRequest(test_domain_id).exec(ctx);
         ctx.commit_transaction();
     }
     ~create_administrative_object_state_restore_request_id_fixture()
@@ -149,82 +151,87 @@ struct create_administrative_object_state_restore_request_id_fixture
  * ...
  * calls in test shouldn't throw
  */
-//BOOST_FIXTURE_TEST_CASE(create_administrative_object_state_restore_request_id, create_administrative_object_state_restore_request_id_fixture)
-//{
-//    {
-//        Fred::OperationContext ctx;
-//        const std::string handle = Fred::CreateAdministrativeObjectStateRestoreRequestId(test_domain_id, status_list).exec(ctx);
-//        BOOST_CHECK(handle == test_domain_fqdn);
-//        ctx.commit_transaction();
-//    }
-//    Fred::OperationContext ctx;
-//    Database::Result status_result = ctx.get_conn().exec_params(
-//        "SELECT eos.name "
-//        "FROM object_state_request osr "
-//        "JOIN object_registry obr ON obr.id=osr.object_id "
-//        "JOIN enum_object_states eos ON (eos.id=osr.state_id AND obr.type=ANY(eos.types)) "
-//        "WHERE osr.object_id=$1::bigint AND "
-//              "osr.valid_from<=CURRENT_TIMESTAMP AND "
-//              "(osr.valid_to IS NULL OR CURRENT_TIMESTAMP<valid_to) AND "
-//              "obr.erdate IS NULL AND "
-//              "osr.canceled IS NULL AND "
-//              "eos.manual", Database::query_param_list(test_domain_id));
-//    BOOST_CHECK((status_list.size() + 1) <= status_result.size()); // status_list + 'serverBlocked'
-//    Fred::StatusList domain_status_list;
-//    for (::size_t idx = 0; idx < status_result.size(); ++idx) {
-//        domain_status_list.insert(static_cast< std::string >(status_result[idx][0]));
-//    }
-//    BOOST_CHECK(domain_status_list.find("serverBlocked") != domain_status_list.end());
-//    for (Fred::StatusList::const_iterator pStatus = status_list.begin(); pStatus != status_list.end(); ++pStatus) {
-//        BOOST_CHECK(domain_status_list.find(*pStatus) != domain_status_list.end());
-//    }
-//}
-//
+BOOST_FIXTURE_TEST_CASE(create_administrative_object_state_restore_request_id, create_administrative_object_state_restore_request_id_fixture)
+{
+    const std::string query =
+        "SELECT eos.name "
+        "FROM object_state os "
+        "JOIN enum_object_states eos ON (eos.id=os.state_id) "
+        "WHERE os.object_id=$1::bigint AND "
+              "os.valid_from<=CURRENT_TIMESTAMP AND "
+              "(os.valid_to IS NULL OR CURRENT_TIMESTAMP<valid_to)";
+    const Database::query_param_list param(test_domain_id);
+
+    Fred::StatusList status_list_before;
+    Fred::StatusList status_list_after;
+    Database::Result status_result;
+    {
+        Fred::OperationContext ctx;
+        status_result = ctx.get_conn().exec_params(query, param);
+        for (::size_t idx = 0; idx < status_result.size(); ++idx) {
+            status_list_before.insert(static_cast< std::string >(status_result[idx][0]));
+        }
+        Fred::CreateAdministrativeObjectStateRestoreRequestId(test_domain_id, "test CreateAdministrativeObjectStateRestoreRequestId operation", logd_request_id).exec(ctx);
+        BOOST_CHECK(true);
+        Fred::PerformObjectStateRequest(test_domain_id).exec(ctx);
+        ctx.commit_transaction();
+    }
+    Fred::OperationContext ctx;
+    status_result = ctx.get_conn().exec_params(query, param);
+    for (::size_t idx = 0; idx < status_result.size(); ++idx) {
+        status_list_after.insert(static_cast< std::string >(status_result[idx][0]));
+    }
+    BOOST_CHECK(status_list_before.size() == (status_list_after.size() + status_list.size() + 1));
+    Fred::StatusList status_list_sum = status_list; // status_list_after + status_list + "serverBlocked"
+    status_list_sum.insert("serverBlocked");
+    for (Fred::StatusList::const_iterator pStatus = status_list_after.begin(); pStatus != status_list_after.end(); ++pStatus) {
+        status_list_sum.insert(*pStatus);
+    }
+    bool success = true;
+    for (Fred::StatusList::const_iterator pStatus = status_list_sum.begin(); pStatus != status_list_sum.end(); ++pStatus) {
+        if (status_list_before.find(*pStatus) == status_list_before.end()) {
+            success = false;
+            break;
+        }
+    }
+    BOOST_CHECK(success); // status_list_before == status_list_sum
+}
+
 ///**
 // * test CreateAdministrativeObjectStateRestoreRequestIdBad
 // * ...
 // * calls in test shouldn't throw
 // */
-//BOOST_FIXTURE_TEST_CASE(create_administrative_object_state_restore_request_id_bad, create_administrative_object_state_restore_request_id_fixture)
-//{
-//    Fred::StatusList bad_status_list = status_list;
-//    try {
-//        Fred::OperationContext ctx;//new connection to rollback on error
-//        Database::Result status_result = ctx.get_conn().exec("SELECT name FROM enum_object_states WHERE NOT (manual AND 3=ANY(types))");
-//        for (::size_t idx = 0; idx < status_result.size(); ++idx) {
-//            bad_status_list.insert(status_result[idx][0]);
-//        }
-//        bad_status_list.insert(std::string("BadStatus") + xmark);
-//        Fred::CreateAdministrativeObjectStateRestoreRequestId(test_domain_id, bad_status_list).exec(ctx);
-//        ctx.commit_transaction();
-//        BOOST_CHECK(false);
-//    }
-//    catch(const Fred::CreateAdministrativeObjectStateRestoreRequestId::Exception &ex) {
-//        BOOST_CHECK(ex.is_set_vector_of_state_not_found());
-//        BOOST_CHECK(ex.get_vector_of_state_not_found().size() == (bad_status_list.size() - status_list.size()));
-//    }
-//
-//    Fred::StatusList status_list_a;
-//    Fred::StatusList status_list_b = status_list;
-//    status_list_a.insert(*status_list_b.begin());
-//    status_list_b.erase(status_list_b.begin());
-//    {
-//        Fred::OperationContext ctx;//new connection to rollback on error
-//        Fred::CreateAdministrativeObjectStateRestoreRequestId(test_domain_id, status_list_a).exec(ctx);
-//        Fred::PerformObjectStateRequest(test_domain_id).exec(ctx);
-//        ctx.commit_transaction();
-//    }
-//    try {
-//        Fred::OperationContext ctx;//new connection to rollback on error
-//        Fred::CreateAdministrativeObjectStateRestoreRequestId(test_domain_id, status_list_b).exec(ctx);
-//        ctx.commit_transaction();
-//        BOOST_CHECK(false);
-//    }
-//    catch(const Fred::CreateAdministrativeObjectStateRestoreRequestId::Exception &ex) {
-//        BOOST_CHECK(ex.is_set_server_blocked_present());
-//        BOOST_CHECK(ex.get_server_blocked_present() == test_domain_id);
-//    }
-//
-//}
+BOOST_FIXTURE_TEST_CASE(create_administrative_object_state_restore_request_id_bad, create_administrative_object_state_restore_request_id_fixture)
+{
+    Fred::ObjectId not_used_id;
+    try {
+        Fred::OperationContext ctx;//new connection to rollback on error
+        not_used_id = static_cast< Fred::ObjectId >(ctx.get_conn().exec("SELECT (MAX(id)+1000)*2 FROM object_registry")[0][0]);
+        Fred::CreateAdministrativeObjectStateRestoreRequestId(not_used_id, "test CreateAdministrativeObjectStateRestoreRequestId operation", logd_request_id).exec(ctx);
+        ctx.commit_transaction();
+        BOOST_CHECK(false);
+    }
+    catch(const Fred::CreateAdministrativeObjectStateRestoreRequestId::Exception &ex) {
+        BOOST_CHECK(ex.is_set_object_id_not_found());
+        BOOST_CHECK(ex.get_object_id_not_found() == not_used_id);
+    }
+
+    {
+        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::CreateAdministrativeObjectStateRestoreRequestId(test_domain_id, "test CreateAdministrativeObjectStateRestoreRequestId operation", logd_request_id).exec(ctx);
+        ctx.commit_transaction();
+    }
+    try {
+        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::CreateAdministrativeObjectStateRestoreRequestId(test_domain_id, "test CreateAdministrativeObjectStateRestoreRequestId operation", logd_request_id).exec(ctx);
+        ctx.commit_transaction();
+        BOOST_CHECK(false);
+    }
+    catch(const Fred::CreateAdministrativeObjectStateRestoreRequestId::Exception &ex) {
+        BOOST_CHECK(ex.is_set_server_blocked_absent());
+        BOOST_CHECK(ex.get_server_blocked_absent() == test_domain_id);
+    }
+}
 
 BOOST_AUTO_TEST_SUITE_END();//TestCreateAdministrativeObjectStateRestoreRequestId
