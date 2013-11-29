@@ -32,6 +32,10 @@
 #include "test-common-registry.h"
 #include "types/money.h"
 #include "fredlib/invoicing/invoice.h"
+#include "fredlib/domain/create_domain.h"
+#include "fredlib/domain/info_domain.h"
+#include "fredlib/contact/create_contact.h"
+#include "fredlib/nsset/create_nsset.h"
 
 #include "test-invoice-common.h"
 
@@ -305,19 +309,8 @@ BOOST_AUTO_TEST_CASE(archiveAccountInvoice)
 
     BOOST_MESSAGE(registrar_handle);
 
-    //try get epp reference
-    ccReg::EPP_var epp_ref;
-    epp_ref = ccReg::EPP::_narrow(CorbaContainer::get_instance()->nsresolve("EPP"));
 
-    //login
-    CORBA::ULongLong clientId = 0;
-    ccReg::Response_var r;
-
-
-
-
-
-    for(unsigned long long iter_account = 0; iter_account < 1000000 ; ++iter_account)
+    for(unsigned long long iter_account = 0; iter_account < 2 ; ++iter_account)
     {
         //add credit
         unsigned long long invoiceid = 0;
@@ -331,91 +324,109 @@ BOOST_AUTO_TEST_CASE(archiveAccountInvoice)
                 , price
                 , boost::posix_time::ptime(taxdate), out_credit);//price
         BOOST_CHECK_EQUAL(invoiceid != 0,true);
+        Fred::Credit::add_credit_to_invoice( registrar_inv_id,  zone_cz_id, out_credit, invoiceid);
 
-        {//epp
-            CORBA::String_var registrar_handle_var = CORBA::string_dup(registrar_handle.c_str());
-            CORBA::String_var passwd_var = CORBA::string_dup("");
-            CORBA::String_var new_passwd_var = CORBA::string_dup("");
-            CORBA::String_var cltrid_var = CORBA::string_dup("omg");
-            CORBA::String_var xml_var = CORBA::string_dup("<omg/>");
-            CORBA::String_var cert_var = CORBA::string_dup("");
+        try
+        {//create domain
 
-            r = epp_ref->ClientLogin(
-                registrar_handle_var,passwd_var,new_passwd_var,cltrid_var,
-                xml_var,clientId,0,cert_var,ccReg::EN);
-
-            if (r->code != 1000 || !clientId) {
-                std::cerr << "Cannot connect: " << r->code << std::endl;
-                throw std::runtime_error("Cannot connect ");
-            }
-
-            //for (int i =0 ; i < 10; i+=2)
+            for(unsigned long long i = 0; i < 3 ; ++i)
             {
-                std::string test_domain_fqdn("invarchtest");
                 std::string time_string(TimeStamp::microsec());
+                time_string += "i";
+                time_string += boost::lexical_cast<std::string>(i);
+                std::string xmark(time_string);
+                std::string admin_contact2_handle(std::string("TEST-ADMIN-CONTACT3-HANDLE")+xmark);
+                std::string registrant_contact_handle(std::string("TEST-REGISTRANT-CONTACT-HANDLE") + xmark);
+
+                Fred::OperationContext ctx;
+
+                Fred::CreateContact(admin_contact2_handle,registrar_handle)
+                    .set_name(std::string("TEST-ADMIN-CONTACT3 NAME")+xmark)
+                    .set_disclosename(true)
+                    .set_street1(std::string("STR1")+xmark)
+                    .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                    .set_discloseaddress(true)
+                    .exec(ctx);
+
+                Fred::CreateContact(registrant_contact_handle,registrar_handle)
+                    .set_name(std::string("TEST-REGISTRANT-CONTACT NAME")+xmark)
+                    .set_disclosename(true)
+                    .set_street1(std::string("STR1")+xmark)
+                    .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                    .set_discloseaddress(true)
+                    .exec(ctx);
+
+                std::string test_nsset_handle("invarchtestnsset");
+                test_nsset_handle += time_string;
+                Fred::CreateNsset(test_nsset_handle, registrar_handle)
+                   .set_dns_hosts(Util::vector_of<Fred::DnsHost>
+                       (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.3")("127.1.1.3"))) //add_dns
+                       (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.4")("127.1.1.4"))) //add_dns
+                       )
+                       .set_tech_contacts(Util::vector_of<std::string>(admin_contact2_handle))
+                       .exec(ctx);
+
+                std::string test_domain_fqdn("invarchtest");
                 test_domain_fqdn += time_string;
                 test_domain_fqdn += ".cz";
 
-
-
-
-                ccReg::Period_str period;
-                period.count = 1;
-                period.unit = ccReg::unit_year;
-                ccReg::EppParams epp_params;
-                epp_params.requestID = clientId;
-                epp_params.loginID = clientId;
-                epp_params.clTRID = "";
-                epp_params.XML = "";
-                CORBA::String_var crdate;
-                CORBA::String_var exdate;
-
                 BOOST_MESSAGE(test_domain_fqdn);
 
-                r = epp_ref->DomainCreate(
-                        test_domain_fqdn.c_str(), // fqdn
-                        "KONTAKT",                // contact
-                        "",                       // nsset
-                        "",                       // keyset
-                        "",                       // authinfo
-                        period,                   // reg. period
-                        ccReg::AdminContact(),    // admin contact list
-                        crdate,                   // create datetime (output)
-                        exdate,                   // expiration date (output)
-                        epp_params,               // common call params
-                        ccReg::ExtensionList());
+                Fred::CreateDomain(test_domain_fqdn, registrar_handle, registrant_contact_handle)
+                .set_admin_contacts(Util::vector_of<std::string>(admin_contact2_handle))
+                .set_nsset(test_nsset_handle)
+                .set_expiration_period(12)//1year
+                .exec(ctx);
 
-/*
+                unsigned long long domain_id = static_cast<unsigned long long>(
+                        ctx.get_conn().exec_params("select id from object_registry where name = $1::text"
+                        , Database::query_param_list(test_domain_fqdn))[0][0]);
 
-                ccReg::EppParams epp_params_renew;
-                epp_params_renew.requestID = clientId;
-                epp_params_renew.loginID = clientId;
-                epp_params_renew.clTRID = "";
-                epp_params_renew.XML = "";
+                ctx.commit_transaction();
 
-                period.unit = ccReg::unit_year;
-                period.count = 3;
-                CORBA::String_var exdate1;
-                r = epp_ref->DomainRenew(
-                        (test_domain_fqdn+".cz").c_str(), // fqdn
-                        exdate,//curExpDate
-                        period, //Period_str
-                        exdate1,//out timestamp exDate,
-                        epp_params_renew,//in EppParams params,
-                        ccReg::ExtensionList()//in ExtensionList ext
-                        );
-*/
+                invMan->charge_operation_auto_price(
+                                 "CreateDomain"
+                                 , zone_cz_id
+                                 , registrar_inv_id
+                                 , domain_id //object_id
+                                 , boost::posix_time::second_clock::universal_time() //crdate //utc timestamp
+                                 , day_clock::local_day() - boost::gregorian::months(1)//date_from //local date
+                                 , boost::gregorian::date()// date_to //local date
+                                 , Decimal ("1"));//1 year
+
+                invMan->charge_operation_auto_price(
+                                 "RenewDomain"
+                                 , zone_cz_id
+                                 , registrar_inv_id
+                                 , domain_id //object_id
+                                 , boost::posix_time::second_clock::universal_time() //crdate //utc timestamp
+                                 , day_clock::local_day() - boost::gregorian::months(1)//date_from //local date
+                                 , day_clock::local_day() + boost::gregorian::months(11)// date_to //local date
+                                 , Decimal ("1"));//1 year
+
+
+
             }
-
-            ccReg::EppParams par_logout;
-                   par_logout.clTRID = "system_delete_logout";
-                   par_logout.XML = "<system_delete_logout/>";
-                   par_logout.loginID = clientId;
-
-            r = epp_ref->ClientLogout(par_logout);
-
+            invMan->charge_operation_auto_price(
+                      "GeneralEppOperation"
+                      , zone_cz_id
+                      , registrar_inv_id
+                      , 0 //object_id
+                      , boost::posix_time::second_clock::universal_time() //crdate //utc timestamp
+                      , day_clock::local_day() - boost::gregorian::months(12) - boost::gregorian::months(1)//date_from //local date
+                      , day_clock::local_day()// date_to //local date
+                      , Decimal ("90"));
         }
-
+        catch(boost::exception& ex)
+        {
+            BOOST_MESSAGE(boost::diagnostic_information(ex));
+            throw;
+        }
+        catch(std::exception& ex)
+        {
+            BOOST_MESSAGE(ex.what());
+            throw;
+        }
 
         {//account invoice
             boost::gregorian::date todate( day_clock::local_day() );
