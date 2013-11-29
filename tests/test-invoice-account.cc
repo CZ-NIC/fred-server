@@ -273,6 +273,165 @@ BOOST_AUTO_TEST_CASE( createAccountInvoice_request1 )
 
 }
 
+BOOST_AUTO_TEST_CASE(archiveAccountInvoice)
+{
+    init_corba_container();
+    Database::Connection conn = Database::Manager::acquire();
+    HandleCorbaNameServiceArgs* ns_args_ptr=CfgArgs::instance()->
+            get_handler_ptr_by_type<HandleCorbaNameServiceArgs>();
+    HandleRegistryArgs* registry_args_ptr = CfgArgs::instance()
+               ->get_handler_ptr_by_type<HandleRegistryArgs>();
+    std::string corbaNS =ns_args_ptr->nameservice_host
+            + ":"
+            + boost::lexical_cast<std::string>(ns_args_ptr->nameservice_port);
+    std::auto_ptr<Fred::Document::Manager> docMan(
+              Fred::Document::Manager::create(
+                  registry_args_ptr->docgen_path
+                  , registry_args_ptr->docgen_template_path
+                  , registry_args_ptr->fileclient_path
+                  , corbaNS)
+              );
+    //manager init
+    MailerManager mailMan(CorbaContainer::get_instance()->getNS());
+    std::auto_ptr<Fred::Invoicing::Manager> invMan(
+        Fred::Invoicing::Manager::create(
+        docMan.get(),&mailMan));
+    FileManagerClient fm_client(
+             CorbaContainer::get_instance()->getNS());
+    unsigned long long zone_cz_id = conn.exec("select id from zone where fqdn='cz'")[0][0];
+    Fred::Registrar::Registrar::AutoPtr registrar = createTestRegistrarClass();
+    std::string registrar_handle =     registrar->getHandle();
+    unsigned long long registrar_inv_id = registrar->getId();
+
+    BOOST_MESSAGE(registrar_handle);
+
+    //try get epp reference
+    ccReg::EPP_var epp_ref;
+    epp_ref = ccReg::EPP::_narrow(CorbaContainer::get_instance()->nsresolve("EPP"));
+
+    //login
+    CORBA::ULongLong clientId = 0;
+    ccReg::Response_var r;
+
+
+
+
+
+    for(unsigned long long iter_account = 0; iter_account < 1000000 ; ++iter_account)
+    {
+        //add credit
+        unsigned long long invoiceid = 0;
+        Database::Date taxdate;
+        taxdate = Database::Date(2010,1,1);
+        Money price = std::string("1000.00");//money
+        Money out_credit;
+        invoiceid = invMan->createDepositInvoice(taxdate//taxdate
+                , zone_cz_id//zone
+                , registrar_inv_id//registrar
+                , price
+                , boost::posix_time::ptime(taxdate), out_credit);//price
+        BOOST_CHECK_EQUAL(invoiceid != 0,true);
+
+        {//epp
+            CORBA::String_var registrar_handle_var = CORBA::string_dup(registrar_handle.c_str());
+            CORBA::String_var passwd_var = CORBA::string_dup("");
+            CORBA::String_var new_passwd_var = CORBA::string_dup("");
+            CORBA::String_var cltrid_var = CORBA::string_dup("omg");
+            CORBA::String_var xml_var = CORBA::string_dup("<omg/>");
+            CORBA::String_var cert_var = CORBA::string_dup("");
+
+            r = epp_ref->ClientLogin(
+                registrar_handle_var,passwd_var,new_passwd_var,cltrid_var,
+                xml_var,clientId,0,cert_var,ccReg::EN);
+
+            if (r->code != 1000 || !clientId) {
+                std::cerr << "Cannot connect: " << r->code << std::endl;
+                throw std::runtime_error("Cannot connect ");
+            }
+
+            //for (int i =0 ; i < 10; i+=2)
+            {
+                std::string test_domain_fqdn("invarchtest");
+                std::string time_string(TimeStamp::microsec());
+                test_domain_fqdn += time_string;
+                test_domain_fqdn += ".cz";
+
+
+
+
+                ccReg::Period_str period;
+                period.count = 1;
+                period.unit = ccReg::unit_year;
+                ccReg::EppParams epp_params;
+                epp_params.requestID = clientId;
+                epp_params.loginID = clientId;
+                epp_params.clTRID = "";
+                epp_params.XML = "";
+                CORBA::String_var crdate;
+                CORBA::String_var exdate;
+
+                BOOST_MESSAGE(test_domain_fqdn);
+
+                r = epp_ref->DomainCreate(
+                        test_domain_fqdn.c_str(), // fqdn
+                        "KONTAKT",                // contact
+                        "",                       // nsset
+                        "",                       // keyset
+                        "",                       // authinfo
+                        period,                   // reg. period
+                        ccReg::AdminContact(),    // admin contact list
+                        crdate,                   // create datetime (output)
+                        exdate,                   // expiration date (output)
+                        epp_params,               // common call params
+                        ccReg::ExtensionList());
+
+/*
+
+                ccReg::EppParams epp_params_renew;
+                epp_params_renew.requestID = clientId;
+                epp_params_renew.loginID = clientId;
+                epp_params_renew.clTRID = "";
+                epp_params_renew.XML = "";
+
+                period.unit = ccReg::unit_year;
+                period.count = 3;
+                CORBA::String_var exdate1;
+                r = epp_ref->DomainRenew(
+                        (test_domain_fqdn+".cz").c_str(), // fqdn
+                        exdate,//curExpDate
+                        period, //Period_str
+                        exdate1,//out timestamp exDate,
+                        epp_params_renew,//in EppParams params,
+                        ccReg::ExtensionList()//in ExtensionList ext
+                        );
+*/
+            }
+
+            ccReg::EppParams par_logout;
+                   par_logout.clTRID = "system_delete_logout";
+                   par_logout.XML = "<system_delete_logout/>";
+                   par_logout.loginID = clientId;
+
+            r = epp_ref->ClientLogout(par_logout);
+
+        }
+
+
+        {//account invoice
+            boost::gregorian::date todate( day_clock::local_day() );
+            boost::gregorian::date fromdate( todate - months(1) );
+            boost::gregorian::date taxdate(todate);
+
+
+            invMan->createAccountInvoice( registrar_handle, std::string("cz")
+                , taxdate
+                , fromdate //from_date not set
+                , todate, boost::posix_time::ptime(todate));
+        }
+        //call archive invoices and get processed invoice ids
+        InvoiceIdVect inv_id_vect = invMan->archiveInvoices(true);
+    }
+}
 
 BOOST_AUTO_TEST_CASE( createAccountInvoice_request2 )
 {

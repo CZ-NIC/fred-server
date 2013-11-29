@@ -174,7 +174,7 @@ namespace Fred
         LOGGER(PACKAGE).debug(boost::format("running shell command: %1%") % cmd.str());
 
         //if (system(cmd.str().c_str())) throw Generator::ERROR();
-        SubProcessOutput output = ShellCmd(cmd.str(), 60).execute();
+        SubProcessOutput output = ShellCmd(cmd.str(), 3600).execute();
         if (!output.stderr.empty())
         {
             LOGGER(PACKAGE).error(output.stderr);
