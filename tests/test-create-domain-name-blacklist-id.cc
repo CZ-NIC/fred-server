@@ -81,9 +81,6 @@ BOOST_AUTO_TEST_SUITE(TestCreateDomainNameBlacklistId)
 
 const std::string server_name = "test-create-domain-name-blacklist-id";
 
-#define LOGME(WHAT) \
-std::cout << __FILE__ << "(" << __LINE__ << "): " << WHAT << " [in " << __PRETTY_FUNCTION__ << "]" << std::endl
-
 struct create_domain_name_blacklist_id_fixture
 {
     std::string registrar_handle;

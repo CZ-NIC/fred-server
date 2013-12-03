@@ -81,9 +81,6 @@ BOOST_AUTO_TEST_SUITE(TestCancelObjectStateRequestId)
 
 const std::string server_name = "test-cancel-object-state-request-id";
 
-#define LOGME(WHAT) \
-std::cout << __FILE__ << "(" << __LINE__ << "): " << WHAT << " [in " << __PRETTY_FUNCTION__ << "]" << std::endl
-
 struct cancel_object_state_request_id_fixture
 {
     std::string registrar_handle;

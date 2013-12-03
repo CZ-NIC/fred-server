@@ -81,9 +81,6 @@ BOOST_AUTO_TEST_SUITE(TestCreateAdministrativeObjectStateRestoreRequestId)
 
 const std::string server_name = "test-create-administrative-object-state-restore-request-id";
 
-#define LOGME(WHAT) \
-std::cout << __FILE__ << "(" << __LINE__ << "): " << WHAT << " [in " << __PRETTY_FUNCTION__ << "]" << std::endl
-
 struct create_administrative_object_state_restore_request_id_fixture
 {
     std::string registrar_handle;
