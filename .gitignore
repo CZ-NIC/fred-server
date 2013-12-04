@@ -90,5 +90,8 @@ src/corba/_dataTypesSK.cc
 src/corba/DateTime.hh
 src/corba/DateTimeDynSK.cc
 src/corba/DateTimeSK.cc
+src/corba/NullableTypes.hh
+src/corba/NullableTypesSK.cc
+src/corba/NullableTypesDynSK.cc
 /.settings
 /.autotools
