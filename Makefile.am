@@ -57,6 +57,9 @@ CLEANFILES = \
 		src/corba/_dataTypesDynSK.cc \
 		src/corba/_dataTypesSK.h \
 		src/corba/_dataTypes.hh \
+		src/corba/DateTimeSK.cc \
+		src/corba/DateTimeDynSK.cc \
+		src/corba/DateTime.hh \
 		src/corba/FiltersSK.cc \
 		src/corba/FiltersDynSK.cc \
 		src/corba/FiltersSK.h \
@@ -926,6 +929,7 @@ BUILT_SOURCES = \
 		src/corba/FileManagerSK.cc \
 		src/corba/MailerSK.cc \
 		src/corba/ZoneSK.cc \
+		src/corba/DateTimeSK.cc \
 		src/corba/_dataTypesSK.cc \
 		src/corba/FiltersSK.cc src/corba/RegistrySK.cc \
 		src/corba/WhoisSK.cc \
@@ -990,7 +994,10 @@ nodist_src_corba_libcorbazone_a_SOURCES = \
 nodist_src_corba_libcorbadatatypes_a_SOURCES = \
 		src/corba/_dataTypesSK.cc \
 		src/corba/_dataTypesDynSK.cc \
-		src/corba/_dataTypes.hh
+		src/corba/_dataTypes.hh \
+		src/corba/DateTimeSK.cc \
+		src/corba/DateTimeDynSK.cc \
+		src/corba/DateTime.hh
 
 nodist_src_corba_libcorbafilters_a_SOURCES = \
 		src/corba/FiltersSK.cc \
@@ -1058,6 +1065,9 @@ src/corba/MailerSK.cc: $(IDLDIR)/Mailer.idl $(IDLDIR)/_dataTypes.idl
 src/corba/ZoneSK.cc: $(IDLDIR)/Zone.idl
 		omniidl -bcxx -Wba -C$(top_builddir)/src/corba $(IDLDIR)/Zone.idl
 
+src/corba/DateTimeSK.cc: $(IDLDIR)/DateTime.idl
+		omniidl -bcxx -Wba -C$(top_builddir)/src/corba $(IDLDIR)/DateTime.idl
+			
 src/corba/_dataTypesSK.cc: $(IDLDIR)/_dataTypes.idl
 		omniidl -bcxx -Wba -C$(top_builddir)/src/corba $(IDLDIR)/_dataTypes.idl
 

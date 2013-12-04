@@ -87,5 +87,8 @@ src/corba/ZoneSK.cc
 src/corba/_dataTypes.hh
 src/corba/_dataTypesDynSK.cc
 src/corba/_dataTypesSK.cc
+src/corba/DateTime.hh
+src/corba/DateTimeDynSK.cc
+src/corba/DateTimeSK.cc
 /.settings
 /.autotools
