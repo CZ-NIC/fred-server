@@ -177,7 +177,10 @@ noinst_HEADERS = \
 		src/corba/common_wrappers.h \
 		src/corba/contact_verification/corba_conversion.h \
 		util/optional_value.h \
-		util/output_indenter.h
+		util/output_indenter.h \
+		src/corba/util/corba_conversions_datetime.h \
+		src/corba/util/corba_conversions_nullable_types.h \
+		src/corba/util/corba_conversions_string.h
 
 
 noinst_LIBRARIES = \
@@ -216,7 +219,8 @@ noinst_LIBRARIES = \
 		src/corba/libcorbazonegenerator.a \
 		src/fredlib/public_request/libpublic_request.a \
 		src/fredlib/contact_verification/libcontact_verification.a \
-		src/corba/libcorbacontactverification.a
+		src/corba/libcorbacontactverification.a \
+		src/corba/util/libcorbautil.a
 
 
 noinst_PROGRAMS = \
@@ -552,6 +556,15 @@ util_decimal_libmpdec_a_SOURCES = \
 		util/decimal/mpdecimal-2.2/vcdiv64.asm
 #
 # util/decimal/libmpdec.a
+
+# src/corba/util/libcorbautil.a
+#
+src_corba_util_libcorbautil_a_SOURCES = \
+		src/corba/util/corba_conversions_datetime.cc \
+		src/corba/util/corba_conversions_nullable_types.cc \
+		src/corba/util/corba_conversions_string.cc
+#
+# src/corba/util/libcorbautil.a
 
 
 # src/old_utils/liboldutils.a
