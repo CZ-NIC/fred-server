@@ -124,6 +124,32 @@ endif
 
 
 noinst_HEADERS = \
+		include/fredlib/check_contact.h \
+		include/fredlib/check_domain.h \
+		include/fredlib/check_keyset.h \
+		include/fredlib/check_nsset.h \
+		include/fredlib/contact.h \
+		include/fredlib/create_contact.h \
+		include/fredlib/create_domain.h \
+		include/fredlib/create_keyset.h \
+		include/fredlib/create_nsset.h \
+		include/fredlib/delete_contact.h \
+		include/fredlib/delete_domain.h \
+		include/fredlib/delete_keyset.h \
+		include/fredlib/delete_nsset.h \
+		include/fredlib/domain.h \
+		include/fredlib/fredlib.h \
+		include/fredlib/info_contact.h \
+		include/fredlib/info_domain.h \
+		include/fredlib/info_keyset.h \
+		include/fredlib/info_nsset.h \
+		include/fredlib/keyset.h \
+		include/fredlib/merge_contact.h \
+		include/fredlib/nsset.h \
+		include/fredlib/update_contact.h \
+		include/fredlib/update_domain.h \
+		include/fredlib/update_keyset.h \
+		include/fredlib/update_nsset.h \
 		util/util.h \
 		util/singleton.h \
 		util/time_clock.h \
