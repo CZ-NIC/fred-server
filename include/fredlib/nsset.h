@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
+ * along with FRED.  If not, see <http://www.gnu.org/licenses/".
  */
 
 /**
@@ -24,10 +24,10 @@
 #ifndef NSSET_H_1dcf8d7b8966442e9dbd8ea99b95b709
 #define NSSET_H_1dcf8d7b8966442e9dbd8ea99b95b709
 
-#include <fredlib/create_nsset.h>
-#include <fredlib/delete_nsset.h>
-#include <fredlib/update_nsset.h>
-#include <fredlib/info_nsset.h>
-#include <fredlib/check_nsset.h>
+#include "src/fredlib/nsset/create_nsset.h"
+#include "src/fredlib/nsset/delete_nsset.h"
+#include "src/fredlib/nsset/update_nsset.h"
+#include "src/fredlib/nsset/info_nsset.h"
+#include "src/fredlib/nsset/check_nsset.h"
 
 #endif//NSSET_H_1dcf8d7b8966442e9dbd8ea99b95b709

@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
+ * along with FRED.  If not, see <http://www.gnu.org/licenses/".
  */
 
 /**
@@ -24,10 +24,10 @@
 #ifndef KEYSET_H_ff36d63fd7fe402cbe22a06b6d3a9bda
 #define KEYSET_H_ff36d63fd7fe402cbe22a06b6d3a9bda
 
-#include <fredlib/create_keyset.h>
-#include <fredlib/delete_keyset.h>
-#include <fredlib/update_keyset.h>
-#include <fredlib/info_keyset.h>
-#include <fredlib/check_keyset.h>
+#include "src/fredlib/keyset/create_keyset.h"
+#include "src/fredlib/keyset/delete_keyset.h"
+#include "src/fredlib/keyset/update_keyset.h"
+#include "src/fredlib/keyset/info_keyset.h"
+#include "src/fredlib/keyset/check_keyset.h"
 
 #endif//KEYSET_H_ff36d63fd7fe402cbe22a06b6d3a9bda

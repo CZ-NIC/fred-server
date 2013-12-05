@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
+ * along with FRED.  If not, see <http://www.gnu.org/licenses/".
  */
 
 /**
@@ -24,10 +24,10 @@
 #ifndef DOMAIN_H_667281396d9f45ee9fd5c40388b9c739
 #define DOMAIN_H_667281396d9f45ee9fd5c40388b9c739
 
-#include <fredlib/create_domain.h>
-#include <fredlib/delete_domain.h>
-#include <fredlib/update_domain.h>
-#include <fredlib/info_domain.h>
-#include <fredlib/check_domain.h>
+#include "src/fredlib/domain/create_domain.h"
+#include "src/fredlib/domain/delete_domain.h"
+#include "src/fredlib/domain/update_domain.h"
+#include "src/fredlib/domain/info_domain.h"
+#include "src/fredlib/domain/check_domain.h"
 
 #endif//DOMAIN_H_667281396d9f45ee9fd5c40388b9c739

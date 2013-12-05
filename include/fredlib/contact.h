@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
+ * along with FRED.  If not, see <http://www.gnu.org/licenses/".
  */
 
 /**
@@ -24,11 +24,11 @@
 #ifndef CONTACT_H_daee387211374c29b8c9cb44464bcb0a
 #define CONTACT_H_daee387211374c29b8c9cb44464bcb0a
 
-#include <fredlib/create_contact.h>
-#include <fredlib/delete_contact.h>
-#include <fredlib/update_contact.h>
-#include <fredlib/info_contact.h>
-#include <fredlib/check_contact.h>
-#include <fredlib/merge_contact.h>
+#include "src/fredlib/contact/create_contact.h"
+#include "src/fredlib/contact/delete_contact.h"
+#include "src/fredlib/contact/update_contact.h"
+#include "src/fredlib/contact/info_contact.h"
+#include "src/fredlib/contact/check_contact.h"
+#include "src/fredlib/contact/merge_contact.h"
 
 #endif//CONTACT_H_daee387211374c29b8c9cb44464bcb0a
