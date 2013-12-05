@@ -26,8 +26,8 @@
 
 #include <string>
 
-#include "fredlib/opexception.h"
-#include "fredlib/opcontext.h"
+#include "src/fredlib/opexception.h"
+#include "src/fredlib/opcontext.h"
 #include "util/printable.h"
 
 namespace Fred

@@ -1,9 +1,9 @@
 #include <memory>
 #include "countrycode.h"
 #include "messages.h"
-#include "corba/mailer_manager.h"
-#include "old_utils/dbsql.h"
-#include "fredlib/registry.h"
+#include "src/corba/mailer_manager.h"
+#include "src/old_utils/dbsql.h"
+#include "src/fredlib/registry.h"
 
 #include <vector>
 #include <stdexcept>

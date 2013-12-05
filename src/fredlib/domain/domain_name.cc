@@ -31,8 +31,8 @@
 #include <boost/foreach.hpp>
 #include <boost/algorithm/string.hpp>
 
-#include "fredlib/opcontext.h"
-#include "fredlib/zone/zone.h"
+#include "src/fredlib/opcontext.h"
+#include "src/fredlib/zone/zone.h"
 #include "util/factory.h"
 #include "util/factory_check.h"
 

@@ -27,15 +27,15 @@
 #include <string>
 #include <vector>
 
-#include "fredlib/opexception.h"
-#include "fredlib/opcontext.h"
+#include "src/fredlib/opexception.h"
+#include "src/fredlib/opcontext.h"
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
 #include "util/printable.h"
 
-#include "fredlib/contact/info_contact.h"
-#include "fredlib/contact/contact_enum.h"
-#include "fredlib/object/object.h"
+#include "src/fredlib/contact/info_contact.h"
+#include "src/fredlib/contact/contact_enum.h"
+#include "src/fredlib/object/object.h"
 
 namespace Fred
 {

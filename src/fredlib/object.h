@@ -10,8 +10,8 @@
 #include <set>
 #include <map>
 
-#include "common_object.h"
-#include "db_settings.h"
+#include "src/fredlib/common_object.h"
+#include "src/fredlib/db_settings.h"
 
 using namespace boost::posix_time;
 using namespace boost::gregorian;

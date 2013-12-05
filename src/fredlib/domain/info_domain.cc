@@ -29,11 +29,11 @@
 #include <boost/date_time/posix_time/time_period.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
 
-#include "fredlib/domain/info_domain.h"
-#include "fredlib/object/object.h"
+#include "src/fredlib/domain/info_domain.h"
+#include "src/fredlib/object/object.h"
 
-#include "fredlib/opcontext.h"
-#include "fredlib/db_settings.h"
+#include "src/fredlib/opcontext.h"
+#include "src/fredlib/db_settings.h"
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
 #include "util/util.h"

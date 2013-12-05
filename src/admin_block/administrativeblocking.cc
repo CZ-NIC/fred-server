@@ -22,19 +22,19 @@
  */
 
 #include "administrativeblocking.h"
-#include "fredlib/domain/get_blocking_status_desc_list.h"
-#include "fredlib/domain/get_object_state_id_map.h"
-#include "fredlib/domain/create_administrative_object_block_request.h"
-#include "fredlib/domain/create_administrative_object_block_request_id.h"
-#include "fredlib/domain/create_administrative_object_state_restore_request.h"
-#include "fredlib/domain/create_administrative_object_state_restore_request_id.h"
-#include "fredlib/domain/create_domain_name_blacklist.h"
-#include "fredlib/domain/create_domain_name_blacklist_id.h"
-#include "fredlib/domain/clear_administrative_object_state_request_id.h"
-#include "fredlib/domain/update_domain.h"
-#include "fredlib/domain/delete_domain.h"
-#include "fredlib/domain/info_domain.h"
-#include "fredlib/domain/copy_contact.h"
+#include "src/fredlib/domain/get_blocking_status_desc_list.h"
+#include "src/fredlib/domain/get_object_state_id_map.h"
+#include "src/fredlib/domain/create_administrative_object_block_request.h"
+#include "src/fredlib/domain/create_administrative_object_block_request_id.h"
+#include "src/fredlib/domain/create_administrative_object_state_restore_request.h"
+#include "src/fredlib/domain/create_administrative_object_state_restore_request_id.h"
+#include "src/fredlib/domain/create_domain_name_blacklist.h"
+#include "src/fredlib/domain/create_domain_name_blacklist_id.h"
+#include "src/fredlib/domain/clear_administrative_object_state_request_id.h"
+#include "src/fredlib/domain/update_domain.h"
+#include "src/fredlib/domain/delete_domain.h"
+#include "src/fredlib/domain/info_domain.h"
+#include "src/fredlib/domain/copy_contact.h"
 #include <memory>
 #include <map>
 

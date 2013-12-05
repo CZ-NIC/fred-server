@@ -19,13 +19,13 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include "db_settings.h"
-#include "file.h"
-#include "invoicing/invoice.h"
-#include "bank_manager.h"
+#include "src/fredlib/db_settings.h"
+#include "src/fredlib/file.h"
+#include "src/fredlib/invoicing/invoice.h"
+#include "src/fredlib/banking/bank_manager.h"
 // #include "bank.h"
 #include "mail.h"
-#include "model/model_filters.h"
+#include "src/model/model_filters.h"
 
 // #define CONNECTION_STRING       "host=localhost dbname=fred user=fred port=6655"
 #define CONNECTION_STRING       "host=localhost dbname=fred user=fred"

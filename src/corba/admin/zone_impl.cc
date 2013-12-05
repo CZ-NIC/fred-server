@@ -1,13 +1,13 @@
-#include <corba/Zone.hh>
+#include "src/corba/Zone.hh"
 
 #include "zone_impl.h"
 
 #include "common.h"
 #include "log/logger.h"
 #include "log/context.h"
-#include "fredlib/zone.h"
+#include "src/fredlib/zone.h"
 
-#include "corba/connection_releaser.h"
+#include "src/corba/connection_releaser.h"
 
     bool ccReg_ZoneIf_i::createZone
     (

@@ -35,7 +35,7 @@
 #include "util/db/nullable.h"
 #include "util/printable.h"
 
-#include "fredlib/keyset/keyset_dns_key.h"
+#include "src/fredlib/keyset/keyset_dns_key.h"
 
 namespace Fred
 {

@@ -45,13 +45,13 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/assign/list_of.hpp>
 
-#include "db_settings.h"
-#include "corba_wrapper_decl.h"
+#include "src/fredlib/db_settings.h"
+#include "util/corba_wrapper_decl.h"
 #include "log/logger.h"
 #include "log/context.h"
 #include "random_data_generator.h"
 
-#include "corba/Messages.hh"
+#include "src/corba/Messages.hh"
 
 #include "cfg/handle_general_args.h"
 #include "cfg/handle_database_args.h"

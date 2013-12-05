@@ -5,9 +5,9 @@
 #include "cfg/handle_registry_args.h"
 #include "cfg/handle_rifd_args.h"
 #include "cfg/handle_corbanameservice_args.h"
-#include "mailer_manager.h"
-#include "corba/EPP.hh"
-#include "corba/epp/epp_impl.h"
+#include "src/corba/mailer_manager.h"
+#include "src/corba/EPP.hh"
+#include "src/corba/epp/epp_impl.h"
 
 
 // thrown in case test has failed (something than CAN go wrong, not an error in test)

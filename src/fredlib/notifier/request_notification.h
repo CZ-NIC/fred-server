@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <string>
-#include "fredlib/common_diff.h"
+#include "src/fredlib/common_diff.h"
 
 
 namespace Fred {

@@ -25,11 +25,11 @@
 
 #include <boost/regex.hpp>
 
-#include "fredlib/nsset/check_nsset.h"
-#include "fredlib/object/check_handle.h"
+#include "src/fredlib/nsset/check_nsset.h"
+#include "src/fredlib/object/check_handle.h"
 
-#include "fredlib/opcontext.h"
-#include "fredlib/db_settings.h"
+#include "src/fredlib/opcontext.h"
+#include "src/fredlib/db_settings.h"
 
 
 namespace Fred

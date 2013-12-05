@@ -41,8 +41,8 @@
 #include "random_data_generator.h"
 #include "concurrent_queue.h"
 
-#include "mojeid/mojeid.h"
-#include "mojeid/mojeid_contact_states.h"
+#include "src/mojeid/mojeid.h"
+#include "src/mojeid/mojeid_contact_states.h"
 
 #include "setup_server_decl.h"
 
@@ -62,10 +62,10 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/lexical_cast.hpp>
 
-#include "mailer_manager.h"
-#include "fredlib/contact_verification/contact.h"
-#include "fredlib/object_states.h"
-#include "contact_verification/contact_verification_impl.h"
+#include "src/corba/mailer_manager.h"
+#include "src/fredlib/contact_verification/contact.h"
+#include "src/fredlib/object_states.h"
+#include "src/contact_verification/contact_verification_impl.h"
 
 #include "checks.h"
 

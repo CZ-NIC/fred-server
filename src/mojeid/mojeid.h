@@ -24,8 +24,8 @@
 #ifndef MOJEID_H_
 #define MOJEID_H_
 
-#include "fredlib/contact_verification/contact.h"
-#include "fredlib/contact_verification/contact_verification_validators.h"
+#include "src/fredlib/contact_verification/contact.h"
+#include "src/fredlib/contact_verification/contact_verification_validators.h"
 
 #include <string>
 #include <vector>
@@ -34,9 +34,9 @@
 
 #include "cfg/handle_registry_args.h"
 #include "cfg/handle_mojeid_args.h"
-#include "fredlib/mailer.h"
-#include "mojeid/request.h"
-#include "mojeid/mojeid_identification.h"
+#include "src/fredlib/mailer.h"
+#include "src/mojeid/request.h"
+#include "src/mojeid/mojeid_identification.h"
 
 
 namespace Registry

@@ -40,7 +40,7 @@
 #include <boost/function.hpp>
 #include <boost/exception/all.hpp>
 
-#include "fredlib/db_settings.h"
+#include "src/fredlib/db_settings.h"
 #include "util/db/nullable.h"
 
 namespace Fred

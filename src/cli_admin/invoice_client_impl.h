@@ -27,9 +27,9 @@
 #include "cfg/handle_database_args.h"
 #include "cfg/handle_corbanameservice_args.h"
 #include "cfg/handle_registry_args.h"
-#include "cli_admin/handle_adminclientselection_args.h"
+#include "handle_adminclientselection_args.h"
 #include "log/context.h"
-#include "cli_admin/invoiceclient.h"
+#include "invoiceclient.h"
 
 
 /**

@@ -1,7 +1,7 @@
-#include "admin/contact/merge_contact.h"
-#include "admin/contact/merge_contact_logger.h"
-#include "fredlib/poll/create_update_object_poll_message.h"
-#include "fredlib/poll/create_delete_contact_poll_message.h"
+#include "src/admin/contact/merge_contact.h"
+#include "src/admin/contact/merge_contact_logger.h"
+#include "src/fredlib/poll/create_update_object_poll_message.h"
+#include "src/fredlib/poll/create_delete_contact_poll_message.h"
 
 
 namespace Admin {

@@ -17,7 +17,7 @@
  */
 
 #include "chargeclient.h"
-#include "invoicing/invoice.h"
+#include "src/fredlib/invoicing/invoice.h"
 #include "util/util.h"
 
 namespace Admin {

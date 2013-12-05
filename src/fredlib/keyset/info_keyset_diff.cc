@@ -38,7 +38,7 @@
 #include "util/db/nullable.h"
 #include "util/util.h"
 #include "util/is_equal_optional_nullable.h"
-#include "fredlib/keyset/info_keyset_diff.h"
+#include "src/fredlib/keyset/info_keyset_diff.h"
 
 namespace Fred
 {

@@ -32,10 +32,10 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/regex.hpp>
 
-#include "fredlib/contact/merge_contact_selection.h"
-#include "fredlib/opcontext.h"
-#include "fredlib/db_settings.h"
-#include "fredlib/object_states.h"
+#include "src/fredlib/contact/merge_contact_selection.h"
+#include "src/fredlib/opcontext.h"
+#include "src/fredlib/db_settings.h"
+#include "src/fredlib/object_states.h"
 
 #include "util/util.h"
 

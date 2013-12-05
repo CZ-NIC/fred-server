@@ -1,7 +1,7 @@
 #ifndef DOMAIN_DIFF_H__
 #define DOMAIN_DIFF_H__
 
-#include "domain.h"
+#include "src/fredlib/domain.h"
 #include "common_diff.h"
 
 namespace Fred {

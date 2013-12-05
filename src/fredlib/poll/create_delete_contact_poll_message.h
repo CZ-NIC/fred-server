@@ -1,8 +1,8 @@
 #ifndef CREATE_DELETE_CONTACT_POLL_MESSAGE_H__
 #define CREATE_DELETE_CONTACT_POLL_MESSAGE_H__
 
-#include "fredlib/opcontext.h"
-#include "fredlib/opexception.h"
+#include "src/fredlib/opcontext.h"
+#include "src/fredlib/opexception.h"
 #include "util/printable.h"
 
 

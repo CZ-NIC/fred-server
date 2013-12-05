@@ -18,8 +18,8 @@
 
 #include "commonclient.h"
 #include "domainclient.h"
-#include "fredlib/registry.h"
-#include "corba_wrapper_decl.h"
+#include "src/fredlib/registry.h"
+#include "util/corba_wrapper_decl.h"
 #include "cfg/faked_args.h"
 #include "cfg/config_handler_decl.h"
 #include "cfg/handle_corbanameservice_args.h"

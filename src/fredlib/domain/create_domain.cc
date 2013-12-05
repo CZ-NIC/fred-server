@@ -28,15 +28,15 @@
 
 #include <boost/algorithm/string.hpp>
 
-#include "fredlib/domain/create_domain.h"
-#include "fredlib/domain/domain_name.h"
-#include "fredlib/domain/check_domain.h"
-#include "fredlib/zone/zone.h"
-#include "fredlib/object/object.h"
-#include "fredlib/registrar/registrar_impl.h"
+#include "src/fredlib/domain/create_domain.h"
+#include "src/fredlib/domain/domain_name.h"
+#include "src/fredlib/domain/check_domain.h"
+#include "src/fredlib/zone/zone.h"
+#include "src/fredlib/object/object.h"
+#include "src/fredlib/registrar/registrar_impl.h"
 
-#include "fredlib/opcontext.h"
-#include "fredlib/db_settings.h"
+#include "src/fredlib/opcontext.h"
+#include "src/fredlib/db_settings.h"
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
 #include "util/util.h"

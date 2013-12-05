@@ -20,12 +20,12 @@
 #include <algorithm>
 #include <boost/shared_ptr.hpp>
 
-#include "old_utils/dbsql.h"
+#include "src/old_utils/dbsql.h"
 #include "registry.h"
 #include "zone.h"
-#include "domain.h"
+#include "src/fredlib/domain.h"
 #include "filter.h"
-#include "db_settings.h"
+#include "src/fredlib/db_settings.h"
 #include "log/logger.h"
 
 namespace Fred {

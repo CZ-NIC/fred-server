@@ -25,15 +25,15 @@
 
 #include <boost/algorithm/string.hpp>
 
-#include "fredlib/contact/merge_contact.h"
+#include "src/fredlib/contact/merge_contact.h"
 
-#include "fredlib/domain/update_domain.h"
-#include "fredlib/nsset/update_nsset.h"
-#include "fredlib/keyset/update_keyset.h"
-#include "fredlib/contact/delete_contact.h"
+#include "src/fredlib/domain/update_domain.h"
+#include "src/fredlib/nsset/update_nsset.h"
+#include "src/fredlib/keyset/update_keyset.h"
+#include "src/fredlib/contact/delete_contact.h"
 
-#include "fredlib/opcontext.h"
-#include "fredlib/db_settings.h"
+#include "src/fredlib/opcontext.h"
+#include "src/fredlib/db_settings.h"
 
 namespace Fred
 {

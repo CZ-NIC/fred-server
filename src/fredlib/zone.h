@@ -7,14 +7,14 @@
 #include <vector>
 #include <stdexcept>
 
-#include "common_impl_new.h"
-#include "common_object.h"
-#include "object.h"
+#include "src/fredlib/common_impl_new.h"
+#include "src/fredlib/common_object.h"
+#include "src/fredlib/object.h"
 #include "types/data_types.h"
 #include "types/money.h"
 #include "decimal.h"
-#include "types.h" 
-#include "exceptions.h"
+#include "src/fredlib/types.h" 
+#include "src/fredlib/exceptions.h"
 #include <boost/shared_ptr.hpp>
 #include <idna.h>
 /// forward declaration for database connection

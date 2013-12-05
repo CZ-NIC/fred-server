@@ -36,7 +36,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/assign/list_of.hpp>
 
-#include "db_settings.h"
+#include "src/fredlib/db_settings.h"
 #include "log/logger.h"
 #include "log/context.h"
 #include "random_data_generator.h"

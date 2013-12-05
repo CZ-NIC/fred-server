@@ -44,20 +44,20 @@
 
 #include "setup_server_decl.h"
 #include "time_clock.h"
-#include "fredlib/registrar.h"
-#include "fredlib/domain/update_domain.h"
-#include "fredlib/domain/create_domain.h"
-#include "fredlib/opexception.h"
+#include "src/fredlib/registrar.h"
+#include "src/fredlib/domain/update_domain.h"
+#include "src/fredlib/domain/create_domain.h"
+#include "src/fredlib/opexception.h"
 #include "util/util.h"
 
-#include "fredlib/contact_verification/contact.h"
-#include "fredlib/object_states.h"
-#include "contact_verification/contact_verification_impl.h"
+#include "src/fredlib/contact_verification/contact.h"
+#include "src/fredlib/object_states.h"
+#include "src/contact_verification/contact_verification_impl.h"
 #include "random_data_generator.h"
 #include "concurrent_queue.h"
 
 
-#include "fredlib/db_settings.h"
+#include "src/fredlib/db_settings.h"
 
 #include "cfg/handle_general_args.h"
 #include "cfg/handle_server_args.h"

@@ -2,9 +2,9 @@
 #define MERGE_CONTACT_AUTO_PROC_H__
 
 #include "util/types/optional.h"
-#include "fredlib/logger_client.h"
-#include "fredlib/mailer.h"
-#include "fredlib/contact/merge_contact_selection.h"
+#include "src/fredlib/logger_client.h"
+#include "src/fredlib/mailer.h"
+#include "src/fredlib/contact/merge_contact_selection.h"
 
 
 

@@ -38,7 +38,7 @@
 #include "util/db/nullable.h"
 #include "util/util.h"
 #include "util/is_equal_optional_nullable.h"
-#include "fredlib/nsset/info_nsset_diff.h"
+#include "src/fredlib/nsset/info_nsset_diff.h"
 
 namespace Fred
 {

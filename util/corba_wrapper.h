@@ -31,9 +31,9 @@
 #include <memory>
 
 #include <omniORB4/CORBA.h>
-#include "corba/nameservice.h"
+#include "src/corba/nameservice.h"
 
-#include "corba_wrapper_decl.h"
+#include "util/corba_wrapper_decl.h"
 
 //static init
 CorbaContainer::CorbaContainerPtr CorbaContainer::instance_ptr(0);

@@ -22,8 +22,8 @@
  */
 
 #include "contact_identification_impl.h"
-#include "object_states.h"
-#include "public_request/public_request_impl.h"
+#include "src/fredlib/object_states.h"
+#include "src/fredlib/public_request/public_request_impl.h"
 
 namespace Fred {
 namespace Contact {

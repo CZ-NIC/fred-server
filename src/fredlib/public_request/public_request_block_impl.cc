@@ -1,6 +1,6 @@
 #include "public_request_impl.h"
 #include "public_request_block_impl.h"
-#include "object_states.h"
+#include "src/fredlib/object_states.h"
 #include "factory.h"
 #include "util.h"
 #include "types/stringify.h"

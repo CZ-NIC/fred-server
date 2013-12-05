@@ -3,8 +3,8 @@
 
 #include <boost/thread/thread.hpp>
 #include <src/corba/EPP.hh>
-#include "corba_wrapper_decl.h"
-#include "fredlib/epp_corba_client.h"
+#include "util/corba_wrapper_decl.h"
+#include "src/fredlib/epp_corba_client.h"
 
 class EppCorbaClientImpl : public EppCorbaClient
 {

@@ -23,12 +23,12 @@
 
 #include <string>
 
-#include "fredlib/object/object.h"
-#include "fredlib/registrar/registrar_impl.h"
+#include "src/fredlib/object/object.h"
+#include "src/fredlib/registrar/registrar_impl.h"
 
-#include "fredlib/opexception.h"
-#include "fredlib/opcontext.h"
-#include "fredlib/db_settings.h"
+#include "src/fredlib/opexception.h"
+#include "src/fredlib/opcontext.h"
+#include "src/fredlib/db_settings.h"
 #include "util/optional_value.h"
 
 #include "util/log/log.h"

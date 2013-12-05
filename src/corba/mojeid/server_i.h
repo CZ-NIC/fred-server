@@ -25,7 +25,7 @@
 #define SERVER_I_H_
 
 #include "src/corba/corba_auto_garbaged_list.h"
-#include <MojeID.hh>
+#include "src/corba/MojeID.hh"
 #include <memory>
 #include <string>
 #include <vector>
