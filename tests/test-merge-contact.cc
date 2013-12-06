@@ -575,9 +575,11 @@ struct merge_contact_n_fixture
             info_domain_admin_1.push_back(Fred::InfoDomainByHandle(merge_contact_n_domain_admin_fixture::get_handle(i)).exec(ctx));
         }
 
+        Fred::InfoContactOutput info_dst_contact_1 = Fred::InfoContactByHandle(dst_contact_handle).exec(ctx);
         Fred::InfoContactOutput info_src_contact_1 = Fred::InfoContactByHandle(src_contact_handle).exec(ctx);
         std::vector<Fred::InfoContactOutput> info_src_contact_history_1 = Fred::InfoContactHistory(
                 info_src_contact_1.info_contact_data.roid).exec(ctx);
+
         BOOST_CHECK(info_src_contact_history_1.at(0).info_contact_data.delete_time.isnull());//check src contact is not deleted
 
         //merge
@@ -658,6 +660,8 @@ struct merge_contact_n_fixture
             info_src_contact_1.info_contact_data.roid).exec(ctx);
         BOOST_CHECK(!info_src_contact_history_2.at(0).info_contact_data.delete_time.isnull());//check src contact is deleted
 
+        Fred::InfoContactOutput info_dst_contact_2 = Fred::InfoContactByHandle(dst_contact_handle).exec(ctx);
+        BOOST_CHECK(info_dst_contact_1.info_contact_data.authinfopw != info_dst_contact_2.info_contact_data.authinfopw); //check dst contact has new authinfo
     }
 };
 
@@ -696,9 +700,11 @@ BOOST_FIXTURE_TEST_CASE(merge_contact, merge_contact_domain_fixture)
     Fred::InfoKeysetOutput info_keyset_1 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
     Fred::InfoNssetOutput info_nsset_1 = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
 
+    Fred::InfoContactOutput info_dst_contact_1 = Fred::InfoContactByHandle(dst_contact_handle).exec(ctx);
     Fred::InfoContactOutput info_src_contact_1 = Fred::InfoContactByHandle(src_contact_handle).exec(ctx);
     std::vector<Fred::InfoContactOutput> info_src_contact_history_1 = Fred::InfoContactHistory(
             info_src_contact_1.info_contact_data.roid).exec(ctx);
+
     BOOST_CHECK(info_src_contact_history_1.at(0).info_contact_data.delete_time.isnull());//check src contact is not deleted
 
     //merge
@@ -743,6 +749,9 @@ BOOST_FIXTURE_TEST_CASE(merge_contact, merge_contact_domain_fixture)
     std::vector<Fred::InfoContactOutput> info_src_contact_history_2 = Fred::InfoContactHistory(
         info_src_contact_1.info_contact_data.roid).exec(ctx);
     BOOST_CHECK(!info_src_contact_history_2.at(0).info_contact_data.delete_time.isnull());//check src contact is deleted
+
+    Fred::InfoContactOutput info_dst_contact_2 = Fred::InfoContactByHandle(dst_contact_handle).exec(ctx);
+    BOOST_CHECK(info_dst_contact_1.info_contact_data.authinfopw != info_dst_contact_2.info_contact_data.authinfopw); //check dst contact has new authinfo
 }
 
 /**

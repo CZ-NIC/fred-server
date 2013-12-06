@@ -37,8 +37,7 @@ namespace Fred
         typedef unsigned long long Id;
         DomainNameBlacklistItem() {}
         DomainNameBlacklistItem(Id _id, const std::string &_domain, const Time &_valid_from,
-            const Optional< Time > &_valid_to, const std::string &_reason,
-            const Optional< UserId > &_creator);
+            const Optional< Time > &_valid_to, const std::string &_reason);
         DomainNameBlacklistItem(const DomainNameBlacklistItem &_src);
         ~DomainNameBlacklistItem() {}
         DomainNameBlacklistItem& operator=(const DomainNameBlacklistItem &_src);
@@ -47,14 +46,12 @@ namespace Fred
         const Time& get_valid_from() const { return valid_from_; }
         const Optional< Time >& get_valid_to() const { return valid_to_; }
         const std::string& get_reason() const { return reason_; }
-        const Optional< UserId >& get_creator() const { return creator_; }
     private:
         Id id_;
         std::string domain_;
         Time valid_from_;
         Optional< Time > valid_to_;
         std::string reason_;
-        Optional< UserId > creator_;
     };
 
     typedef std::vector< DomainNameBlacklistItem > DomainNameBlacklist;

@@ -132,7 +132,8 @@ namespace Fred
                 "JOIN object_state os ON (os.object_id=oss.object_id AND "
                                          "os.valid_from<oss.valid_from AND "
                                          "(os.valid_to IS NULL OR oss.valid_from<=os.valid_to)) "
-                "JOIN enum_object_states eos ON eos.id=os.state_id",
+                "JOIN enum_object_states eos ON eos.id=os.state_id "
+                "WHERE eos.manual AND name LIKE 'server%'",
                 Database::query_param_list(start_object_state_id));
             for (Database::Result::Iterator pName = previous_status_list_result.begin();
                  pName != previous_status_list_result.end(); ++pName) {

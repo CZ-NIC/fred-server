@@ -34,6 +34,118 @@
 
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/db_settings.h"
+#include "util/random.h"
+
+/*
+ * XXX: #9877 - temoporary (and partial implementation of update contact - authinfo change only)
+ * this class should be deleted where full UpdateContact...(...) operation is present
+ */
+namespace Fred
+{
+    class UpdateContactByHandle
+    {
+    private:
+        const std::string handle_;
+        const std::string registrar_;
+        Optional<std::string> authinfo_;
+        Nullable<unsigned long long> logd_request_id_;
+
+
+    public:
+        UpdateContactByHandle(const std::string &_handle, const std::string _registrar)
+            : handle_(_handle),
+              registrar_(_registrar)
+        {
+        }
+
+
+        UpdateContactByHandle& set_authinfo(const std::string &_authinfo)
+        {
+            authinfo_ = _authinfo;
+            return *this;
+        }
+
+
+        UpdateContactByHandle& set_logd_request_id(unsigned long long _logd_request_id)
+        {
+            logd_request_id_ = _logd_request_id;
+            return *this;
+        }
+
+
+        void exec(OperationContext &ctx)
+        {
+            Database::Result r_dst_contact_id = ctx.get_conn().exec_params(
+                    "SELECT id FROM object_registry oreg WHERE type = 1"
+                    " AND erdate is null AND name = $1::text",
+                    Database::query_param_list(handle_));
+            unsigned long long dst_contact_id = 0;
+            if (r_dst_contact_id.size() == 1) {
+                dst_contact_id = static_cast<unsigned long long>(r_dst_contact_id[0][0]);
+            }
+            if (dst_contact_id == 0) {
+                throw std::runtime_error("destination contact id look up failed");
+            }
+
+            /* update object table */
+            {
+                Database::QueryParams p_update_object;
+                std::stringstream s_update_object;
+
+                p_update_object.push_back(registrar_);
+                s_update_object << "UPDATE object SET upid = "
+                    "(SELECT id FROM registrar WHERE handle = $" <<  p_update_object.size() << "::text), update = now()";
+                if (authinfo_.isset())
+                {
+                    p_update_object.push_back(authinfo_.get_value());
+                    s_update_object << ", authinfopw = $" << p_update_object.size() << "::text";
+                }
+                p_update_object.push_back(dst_contact_id);
+                s_update_object << " WHERE id = $" << p_update_object.size() << "::integer";
+
+                ctx.get_conn().exec_params(s_update_object.str(), p_update_object);
+            }
+
+            /* insert into history tables */
+            {
+                Database::Result rhistory = ctx.get_conn().exec_params(
+                        "INSERT INTO history (id, request_id)"
+                        " VALUES (DEFAULT, $1::bigint) RETURNING id",
+                        Database::query_param_list(logd_request_id_));
+                unsigned long long history_id = 0;
+                if (rhistory.size() == 1) {
+                    history_id = static_cast<unsigned long long>(rhistory[0][0]);
+                }
+                if (history_id == 0) {
+                    throw std::runtime_error("cannot save new history");
+                }
+
+                ctx.get_conn().exec_params("UPDATE object_registry SET historyid = $1::integer"
+                        " WHERE id = $2::integer",
+                        Database::query_param_list(history_id)(dst_contact_id));
+
+                Database::Result robject_history = ctx.get_conn().exec_params(
+                        "INSERT INTO object_history (historyid, id, clid, upid, trdate, update, authinfopw)"
+                        " SELECT $1::integer, o.id, o.clid, o.upid, o.trdate, o.update, o.authinfopw"
+                        " FROM object o"
+                        " WHERE o.id = $2::integer",
+                        Database::query_param_list(history_id)(dst_contact_id));
+
+                Database::Result rcontact_history = ctx.get_conn().exec_params(
+                        "INSERT INTO contact_history (historyid, id, name, organization, street1, street2, street3,"
+                        " city, stateorprovince, postalcode, country, telephone, fax, email, disclosename,"
+                        " discloseorganization, discloseaddress, disclosetelephone, disclosefax, discloseemail,"
+                        " notifyemail, vat, ssn, ssntype, disclosevat, discloseident, disclosenotifyemail)"
+                        " SELECT $1::integer, c.id, c.name, c.organization, c.street1, c.street2, c.street3,"
+                        " c.city, c.stateorprovince, c.postalcode, c.country, c.telephone, c.fax, c.email,"
+                        " c.disclosename, c.discloseorganization, c.discloseaddress, c.disclosetelephone, c.disclosefax,"
+                        " c.discloseemail, c.notifyemail, c.vat, c.ssn, c.ssntype, c.disclosevat, c.discloseident,"
+                        " c.disclosenotifyemail FROM contact c WHERE c.id = $2::integer",
+                        Database::query_param_list(history_id)(dst_contact_id));
+            }
+        }
+    };
+}
 
 namespace Fred
 {
@@ -377,6 +489,12 @@ namespace Fred
         if(!dry_run)
         {
             DeleteContact(src_contact_handle_).exec(ctx);
+            /* #9877 - change authinfo of destination contact */
+            std::string new_authinfo =  Random::string_from(8, "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789");
+            UpdateContactByHandle(dst_contact_handle_, registrar_)
+                .set_logd_request_id(logd_request_id_)
+                .set_authinfo(new_authinfo)
+                .exec(ctx);
         }
 
         return output;
