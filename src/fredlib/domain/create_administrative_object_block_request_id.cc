@@ -22,6 +22,7 @@
  */
 
 #include "fredlib/domain/create_administrative_object_block_request_id.h"
+#include "fredlib/domain/clear_object_state_request_id.h"
 #include "fredlib/domain/get_blocking_status_desc_list.h"
 #include "fredlib/opcontext.h"
 #include "fredlib/db_settings.h"
@@ -86,6 +87,7 @@ namespace Fred
     {
         this->check_administrative_block_status_only(_ctx);
         this->check_server_blocked_status_absent(_ctx);
+        ClearObjectStateRequestId(object_id_).exec(_ctx);
         StatusList status_list = status_list_;
         status_list.insert("serverBlocked");
         CreateObjectStateRequestId createObjectStateRequestId(object_id_,

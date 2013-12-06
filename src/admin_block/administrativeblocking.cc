@@ -776,6 +776,7 @@ namespace Registry
             const std::string &_reason,
             unsigned long long _log_req_id)
         {
+            EX_DOMAIN_ID_NOT_FOUND domain_id_not_found;
             try {
                 boost::posix_time::ptime blacklist_to_limit;
                 if (!_blacklist_to_date.isnull()) {
@@ -789,15 +790,36 @@ namespace Registry
                     if (!_blacklist_to_date.isnull()) {
                         create_domain_name_blacklist.set_valid_to(blacklist_to_limit);
                     }
-                    create_domain_name_blacklist.exec(ctx);
-                    Database::Result object_handle_res = ctx.get_conn().exec_params(
-                        "SELECT name "
-                        "FROM object_registry "
-                        "WHERE id=$1::bigint", Database::query_param_list(object_id));
-                    if (object_handle_res.size() == 1) {
-                        const std::string domain = static_cast< std::string >(object_handle_res[0][0]);
-                        Fred::DeleteDomain(domain).exec(ctx);
+                    try {
+                        create_domain_name_blacklist.exec(ctx);
+                        Database::Result object_handle_res = ctx.get_conn().exec_params(
+                            "SELECT name "
+                            "FROM object_registry "
+                            "WHERE id=$1::bigint", Database::query_param_list(object_id));
+                        if (object_handle_res.size() == 1) {
+                            const std::string domain = static_cast< std::string >(object_handle_res[0][0]);
+                            Fred::DeleteDomain(domain).exec(ctx);
+                        }
                     }
+                    catch (const Fred::CreateDomainNameBlacklistId::Exception &e) {
+                        if (e.is_set_object_id_not_found()) {
+                            domain_id_not_found.what.insert(e.get_object_id_not_found());
+                        }
+                        else {
+                            throw;
+                        }
+                    }
+                    catch (const Fred::DeleteDomain::Exception &e) {
+                        if (e.is_set_unknown_domain_fqdn()) {
+                            domain_id_not_found.what.insert(object_id);
+                        }
+                        else {
+                            throw;
+                        }
+                    }
+                }
+                if (!domain_id_not_found.what.empty()) {
+                    throw domain_id_not_found;
                 }
                 ctx.commit_transaction();
             }
