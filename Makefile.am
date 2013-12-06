@@ -757,6 +757,8 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/contact/verification/update_check.cc \
 		src/fredlib/contact/verification/info_check.h \
 		src/fredlib/contact/verification/info_check.cc \
+		src/fredlib/contact/verification/list_checks.h \
+		src/fredlib/contact/verification/list_checks.cc \
 		src/fredlib/contact/verification/create_test.h \
 		src/fredlib/contact/verification/create_test.cc \
 		src/fredlib/contact/verification/update_test.h \
