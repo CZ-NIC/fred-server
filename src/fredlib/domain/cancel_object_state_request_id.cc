@@ -71,8 +71,9 @@ namespace Fred
 
         GetObjectStateIdMap get_object_state_id_map(status_list_, object_type);
         typedef GetObjectStateIdMap::StateIdMap StateIdMap;
-        StateIdMap &state_id_map = get_object_state_id_map.exec(_ctx);
-        {
+        StateIdMap state_id_map;
+        try {
+            state_id_map = get_object_state_id_map.exec(_ctx);
             MultipleObjectStateId state_id;
             for (StateIdMap::const_iterator pStateId = state_id_map.begin();
                  pStateId != state_id_map.end(); ++pStateId) {
@@ -80,6 +81,11 @@ namespace Fred
             }
             
             LockMultipleObjectStateRequestLock(state_id, object_id_).exec(_ctx);
+        }
+        catch (const GetObjectStateIdMap::Exception &ex) {
+            if (ex.is_set_state_not_found()) {
+                BOOST_THROW_EXCEPTION(Exception().set_state_not_found(ex.get_state_not_found()));
+            }
         }
 
         std::ostringstream cmd;

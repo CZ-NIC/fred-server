@@ -140,7 +140,15 @@ namespace Fred
                 previous_status_list.insert((*pName)[0]);
             }
         }
-        ClearAdministrativeObjectStateRequestId(object_id_, reason_).exec(_ctx);
+        try {
+            ClearAdministrativeObjectStateRequestId(object_id_, reason_).exec(_ctx);
+        }
+        catch (const ClearAdministrativeObjectStateRequestId::Exception &ex) {
+            if (ex.is_set_server_blocked_absent()) {
+                BOOST_THROW_EXCEPTION(Exception().set_server_blocked_absent(ex.get_server_blocked_absent()));
+            }
+            throw;
+        }
         if (!previous_status_list.empty()) {
             CreateObjectStateRequestId(object_id_, previous_status_list).exec(_ctx);
         }
