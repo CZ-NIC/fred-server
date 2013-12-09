@@ -35,6 +35,15 @@ namespace Corba {
         return Nullable<unsigned long long>();
     }
 
+    Optional<unsigned long long> unwrap_nullable_ulonglong_to_optional(const Registry::NullableULongLong * in) {
+        if ( in != NULL ) {
+            return Optional<unsigned long long>(static_cast<unsigned long long>(in->_value()));
+        }
+
+        // else
+        return Optional<unsigned long long>();
+    }
+
     Nullable<std::string> unwrap_nullable_string(const Registry::NullableString * in) {
 
         if (in != NULL) {
@@ -45,6 +54,19 @@ namespace Corba {
         }
         else {
             return Nullable<std::string>();
+        }
+    }
+
+    Optional<std::string> unwrap_nullable_string_to_optional(const Registry::NullableString * in) {
+
+        if (in != NULL) {
+            return Optional<std::string>(
+                std::string(
+                    static_cast<const char *>(in->_value()))
+            );
+        }
+        else {
+            return Optional<std::string>();
         }
     }
 }
