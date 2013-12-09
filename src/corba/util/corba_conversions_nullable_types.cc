@@ -34,4 +34,17 @@ namespace Corba {
         // else
         return Nullable<unsigned long long>();
     }
+
+    Nullable<std::string> unwrap_nullable_string(const Registry::NullableString * in) {
+
+        if (in != NULL) {
+            return Nullable<std::string>(
+                std::string(
+                    static_cast<const char *>(in->_value()))
+            );
+        }
+        else {
+            return Nullable<std::string>();
+        }
+    }
 }

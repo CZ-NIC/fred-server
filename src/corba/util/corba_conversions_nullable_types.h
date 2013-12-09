@@ -14,6 +14,8 @@ namespace Corba {
     Registry::NullableULongLong* wrap_nullable_ulonglong(const Nullable<unsigned long long>& in);
 
     Nullable<unsigned long long> unwrap_nullable_ulonglong(const Registry::NullableULongLong * in);
+
+    Nullable<std::string> unwrap_nullable_string(const Registry::NullableString * in);
 }
 
 #endif // end of #include guard
