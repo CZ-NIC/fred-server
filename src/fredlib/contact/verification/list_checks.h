@@ -1,0 +1,110 @@
+/*
+ * Copyright (C) 2013  CZ.NIC, z.s.p.o.
+ *
+ * This file is part of FRED.
+ *
+ * FRED is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 2 of the License.
+ *
+ * FRED is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/**
+ *  @file
+ *  (get) list (of) contact check
+ */
+
+#ifndef CONTACT_VERIFICATION_LIST_CHECKS_213454867445_
+#define CONTACT_VERIFICATION_LIST_CHECKS_213454867445_
+
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <vector>
+
+#include "fredlib/opexception.h"
+#include "fredlib/opcontext.h"
+#include "util/optional_value.h"
+
+namespace Fred
+{
+    /**
+     * Return structure of operation @ref ListContactCheck.
+     * All times are returned as local @ref ListContactChecks::exec().
+     */
+    struct ListChecksItem {
+        std::string                         check_handle;
+        std::string                         testsuite_name;
+        unsigned long long                  contact_history_id;
+        boost::posix_time::ptime            local_create_time;
+        boost::posix_time::ptime            local_update_time;
+        Optional<boost::posix_time::ptime>  local_tests_finished_time;
+        Optional<boost::posix_time::ptime>  local_relevant_contact_update_time;
+        std::string                         status_name;
+
+        std::string to_string(const std::string& _each_line_prefix = "\t") const;
+    };
+
+    /**
+     * Get list of existing record in contact_check table. Has no sideeffects.
+     */
+    class ListContactChecks {
+            unsigned long           max_item_count_;
+            Optional<std::string>   testsuite_name_;
+            Optional<unsigned long long>     contact_id_;
+
+        public:
+            struct ExceptionUnknownContactId : virtual Fred::OperationException {
+                const char* what() const throw() {return "unknown contact id";}
+            };
+            struct ExceptionUnknownTestsuiteName : virtual Fred::OperationException {
+                const char* what() const throw() {return "unknown testsuite name";}
+            };
+
+            /**
+             * constructor with only mandatory parameter
+             * @param _max_item_count     how many records shall be returned at most.
+             */
+            ListContactChecks( unsigned long _max_item_count);
+
+            /**
+             * constructor with all available parameters including optional ones
+             * @param _max_item_count   how many records shall be returned at most.
+             * @param _testsuite_name   filter: only checks with given testsuite are returned
+             * @param _contact_id       filter: only checks of given contact (connected by historyid) are returned
+             */
+            ListContactChecks(
+                unsigned long           _max_item_count,
+                Optional<std::string>   _testsuite_name_,
+                Optional<unsigned long long>     _contact_id
+            );
+
+            /**
+             * setter of optional testsuite_name
+             * Call with another value for re-set, no need to unset first.
+             */
+            ListContactChecks& set_testsuite_name(const std::string& _testsuite_name);
+
+            /**
+             * setter of optional contact_id
+             * Call with another value for re-set, no need to unset first.
+             */
+            ListContactChecks& set_contact_id(unsigned long long _contact_id);
+
+            /**
+             * commit operation
+             * @param _output_timezone Postgres time zone input type (as string e. g. "Europe/Prague") for conversion to local time values.
+             * @return Data of existing check in InfoContactCheckOutput structured.
+             */
+            std::vector<ListChecksItem> exec(OperationContext& _ctx, const std::string& _output_timezone = "Europe/Prague");
+            // serialization
+            friend std::ostream& operator<<(std::ostream& _os, const ListContactChecks& _i);
+            std::string to_string() const;
+    };
+}
+#endif // #include guard end

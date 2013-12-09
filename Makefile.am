@@ -757,6 +757,8 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/contact/verification/update_check.cc \
 		src/fredlib/contact/verification/info_check.h \
 		src/fredlib/contact/verification/info_check.cc \
+		src/fredlib/contact/verification/list_checks.h \
+		src/fredlib/contact/verification/list_checks.cc \
 		src/fredlib/contact/verification/create_test.h \
 		src/fredlib/contact/verification/create_test.cc \
 		src/fredlib/contact/verification/update_test.h \
@@ -1690,6 +1692,8 @@ tests_test_server_SOURCES = \
 		tests/fredlib/contact/verification/test-update_test_integ.cc \
 		tests/fredlib/contact/verification/test-info_check_unit.cc \
 		tests/fredlib/contact/verification/test-info_check_integ.cc \
+		tests/fredlib/contact/verification/test-list_checks_unit.cc \
+		tests/fredlib/contact/verification/test-list_checks_integ.cc \
 		src/admin/contact/verification/run_first_enqueued_check.cc \
 		src/admin/contact/verification/run_all_enqueued_checks.cc \
 		tests/admin/contact/verification/setup_utils.h \
