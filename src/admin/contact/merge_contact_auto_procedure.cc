@@ -257,6 +257,12 @@ void MergeContactAutoProcedure::exec()
     OutputIndenter indenter(2, 0, ' ');
     std::ostream &out_stream = std::cout;
 
+    if (this->get_verbose_level() > 0) {
+        out_stream << format_header(str(boost::format("REGISTRAR: %1%")
+            % (registrar_.is_value_set() ? registrar_.get_value(): std::string("n/a"))), indenter);
+    }
+
+
     /* find any contact duplicates set (optionally for specific registrar only) */
     std::set<std::string> any_dup_set = Fred::Contact::FindAnyContactDuplicates().set_registrar(registrar_).exec(octx);
     while (any_dup_set.size() >= 2)
