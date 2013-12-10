@@ -113,6 +113,7 @@ struct ContactMergeDuplicateAutoArgs
     optional_ushort verbose;
 
     ContactMergeDuplicateAutoArgs()
+    : dry_run(true)
     {
     }
 
