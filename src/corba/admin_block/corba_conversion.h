@@ -233,6 +233,20 @@ Registry::Administrative::DOMAIN_ID_NOT_BLOCKED corba_wrap_exception(const Regis
     return ex;
 }
 
+Registry::Administrative::CONTACT_BLOCK_PROHIBITED corba_wrap_exception(const Registry::Administrative::EX_CONTACT_BLOCK_PROHIBITED &_e)
+{
+    Registry::Administrative::CONTACT_BLOCK_PROHIBITED ex;
+    ex.what.length(_e.what.size());
+    int n = 0;
+    for (Registry::Administrative::EX_CONTACT_BLOCK_PROHIBITED::Type::const_iterator pItem = _e.what.begin();
+         pItem != _e.what.end(); ++n, ++pItem) {
+        Registry::Administrative::ContactIdHandle &item = ex.what[n];
+        item.contactId = pItem->contact_id;
+        item.contactHandle = corba_wrap_string(pItem->contact_handle);
+    }
+    return ex;
+}
+
 Registry::Administrative::NEW_OWNER_DOES_NOT_EXISTS corba_wrap_exception(const Registry::Administrative::EX_NEW_OWNER_DOES_NOT_EXISTS &_e)
 {
     return Registry::Administrative::NEW_OWNER_DOES_NOT_EXISTS(corba_wrap_string(_e.what));
