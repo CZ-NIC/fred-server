@@ -246,6 +246,45 @@ namespace Registry
                 throw ex;
             }
 
+            void check_owner_is_blockable(
+                const IdlDomainIdList &_domain_list,
+                Fred::OperationContext &_ctx)
+            {
+                if (_domain_list.empty()) {
+                    return;
+                }
+                IdlDomainIdList::const_iterator pDomainId = _domain_list.begin();
+                Database::query_param_list param(*pDomainId);
+                std::ostringstream set_of_domain_id;
+                set_of_domain_id << "($" << param.size() << "::bigint";
+                for (++pDomainId; pDomainId != _domain_list.end(); ++pDomainId) {
+                    param(*pDomainId);
+                    set_of_domain_id << ",$" << param.size() << "::bigint";
+                }
+                set_of_domain_id << ")";
+                Database::Result check_res = _ctx.get_conn().exec_params(
+                    "SELECT obr.id,obr.name "
+                    "FROM domain d "
+                    "JOIN object_registry obr ON (obr.id=d.registrant AND obr.type=1) "
+                    "JOIN object_state os ON os.object_id=d.registrant "
+                    "JOIN enum_object_states eos ON (eos.id=os.state_id AND eos.name='mojeidContact') "
+                    "WHERE obr.erdate IS NULL AND "
+                          "os.valid_from<=CURRENT_TIMESTAMP AND (CURRENT_TIMESTAMP<os.valid_to OR os.valid_to IS NULL) AND "
+                          "d.id IN " + set_of_domain_id.str() + " "
+                    "GROUP BY obr.id,obr.name", param);
+                if (check_res.size() <= 0) {
+                    return;
+                }
+                EX_CONTACT_BLOCK_PROHIBITED ex;
+                for (unsigned idx = 0; idx < check_res.size(); ++idx) {
+                    EX_CONTACT_BLOCK_PROHIBITED::Item contact;
+                    contact.contact_id = static_cast< Fred::ObjectId >(check_res[idx][0]);
+                    contact.contact_handle = static_cast< std::string >(check_res[idx][1]);
+                    ex.what.insert(contact);
+                }
+                throw ex;
+            }
+
             DomainIdHandle& get_domain_handle(
                 const IdlDomainIdList &_domain_list,
                 DomainIdHandle &_result,
@@ -299,6 +338,7 @@ namespace Registry
             EX_DOMAIN_ID_NOT_FOUND domain_id_not_found;
             EX_UNKNOWN_STATUS unknown_status;
             EX_DOMAIN_ID_ALREADY_BLOCKED domain_id_already_blocked;
+            EX_CONTACT_BLOCK_PROHIBITED contact_block_prohibited;
             try {
                 IdlOwnerChangeList result;
                 Fred::OperationContext ctx;
@@ -330,6 +370,7 @@ namespace Registry
                     }
                     else if (_owner_block_mode == OWNER_BLOCK_MODE_BLOCK_OWNER) {
                         check_owner_has_no_other_domains(_domain_list, ctx);
+                        check_owner_is_blockable(_domain_list, ctx);
                     }
                 }
                 StringSet contact_blocked;
@@ -476,6 +517,9 @@ namespace Registry
                 throw;
             }
             catch (const EX_OWNER_HAS_OTHER_DOMAIN&) {
+                throw;
+            }
+            catch (const EX_CONTACT_BLOCK_PROHIBITED&) {
                 throw;
             }
             catch (const std::exception &e) {
