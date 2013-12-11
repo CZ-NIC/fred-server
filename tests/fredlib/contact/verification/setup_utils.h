@@ -6,7 +6,9 @@
 #include "fredlib/contact/verification/enum_testsuite_name.h"
 #include "fredlib/contact/delete_contact.h"
 #include "fredlib/contact/info_contact.h"
+#include "fredlib/contact/create_contact.h"
 #include "util/random.h"
+#include "util/random_data_generator.h"
 
 struct setup_get_registrar_handle
 {
