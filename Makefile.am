@@ -57,6 +57,12 @@ CLEANFILES = \
 		src/corba/_dataTypesDynSK.cc \
 		src/corba/_dataTypesSK.h \
 		src/corba/_dataTypes.hh \
+		src/corba/DateTimeSK.cc \
+		src/corba/DateTimeDynSK.cc \
+		src/corba/DateTime.hh \
+		src/corba/NullableTypesSK.cc \
+		src/corba/NullableTypesDynSK.cc \
+		src/corba/NullableTypes.hh \
 		src/corba/FiltersSK.cc \
 		src/corba/FiltersDynSK.cc \
 		src/corba/FiltersSK.h \
@@ -91,7 +97,11 @@ CLEANFILES = \
 		src/corba/ZoneGenerator.hh \
 		src/corba/ContactVerificationSK.cc \
 		src/corba/ContactVerificationDynSK.cc \
-		src/corba/ContactVerification.hh
+		src/corba/ContactVerification.hh \
+		src/corba/AdminContactVerificationSK.cc \
+		src/corba/AdminContactVerificationDynSK.cc \
+		src/corba/AdminContactVerificationSK.h \
+		src/corba/AdminContactVerification.hh
 
 
 
@@ -170,7 +180,10 @@ noinst_HEADERS = \
 		src/corba/contact_verification/corba_conversion.h \
 		util/optional_value.h \
 		util/is_equal_optional_nullable.h \
-		util/output_indenter.h
+		util/output_indenter.h \
+		src/corba/util/corba_conversions_datetime.h \
+		src/corba/util/corba_conversions_nullable_types.h \
+		src/corba/util/corba_conversions_string.h
 
 
 noinst_LIBRARIES = \
@@ -197,6 +210,7 @@ noinst_LIBRARIES = \
 		util/hp/libhp.a \
 		src/fredlib/notifier/libnotifier.a \
 		src/corba/libcorbadatatypes.a \
+		src/corba/libcorbanullabletypes.a \
 		src/corba/libcorbafilters.a \
 		src/corba/libcorbaregistry.a \
 		src/corba/libcorbawhois.a \
@@ -207,7 +221,9 @@ noinst_LIBRARIES = \
 		src/corba/libcorbazonegenerator.a \
 		src/fredlib/public_request/libpublic_request.a \
 		src/fredlib/contact_verification/libcontact_verification.a \
-		src/corba/libcorbacontactverification.a
+		src/corba/libcorbacontactverification.a \
+		src/corba/libcorbaadmincontactverification.a \
+		src/corba/util/libcorbautil.a
 
 
 noinst_PROGRAMS = \
@@ -489,6 +505,69 @@ util_hp_crc32_LDADD = \
 		$(BOOST_DATE_TIME_LIB)
 #
 # util/hp/crc32
+
+
+# util/decimal/libmpdec.a
+#
+MPD_HEADER = @MPD_HEADER@
+MPD_WARN = @MPD_WARN@
+MPD_CONFIG = @MPD_CONFIG@
+
+util_decimal_libmpdec_a_CFLAGS = \
+		-I $(top_srcdir)/util/decimal/mpdecimal-2.2 \
+		-I $(top_builddir)/util/decimal/mpdecimal-2.2 \
+		$(CONFIGURE_CFLAGS)
+
+util_decimal_libmpdec_a_SOURCES = \
+		util/decimal/mpdecimal-2.2/basearith.c \
+		util/decimal/mpdecimal-2.2/context.c \
+		util/decimal/mpdecimal-2.2/constants.c \
+		util/decimal/mpdecimal-2.2/convolute.c \
+		util/decimal/mpdecimal-2.2/crt.c \
+		util/decimal/mpdecimal-2.2/mpdecimal.c \
+		util/decimal/mpdecimal-2.2/mpsignal.c \
+		util/decimal/mpdecimal-2.2/difradix2.c \
+		util/decimal/mpdecimal-2.2/fnt.c \
+		util/decimal/mpdecimal-2.2/fourstep.c \
+		util/decimal/mpdecimal-2.2/io.c \
+		util/decimal/mpdecimal-2.2/memory.c \
+		util/decimal/mpdecimal-2.2/numbertheory.c \
+		util/decimal/mpdecimal-2.2/sixstep.c \
+		util/decimal/mpdecimal-2.2/transpose.c \
+		util/decimal/mpdecimal-2.2/mptypes.h \
+		util/decimal/mpdecimal-2.2/umodarith.h \
+		util/decimal/mpdecimal-2.2/basearith.h \
+		util/decimal/mpdecimal-2.2/fnt.h \
+		util/decimal/mpdecimal-2.2/memory.h \
+		util/decimal/mpdecimal-2.2/mpdecimal32vc.h \
+		util/decimal/mpdecimal-2.2/convolute.h \
+		util/decimal/mpdecimal-2.2/difradix2.h \
+		util/decimal/mpdecimal-2.2/io.h \
+		util/decimal/mpdecimal-2.2/mpdecimal64vc.h \
+		util/decimal/mpdecimal-2.2/numbertheory.h \
+		util/decimal/mpdecimal-2.2/vccompat.h \
+		util/decimal/mpdecimal-2.2/constants.h \
+		util/decimal/mpdecimal-2.2/transpose.h \
+		util/decimal/mpdecimal-2.2/bits.h \
+		util/decimal/mpdecimal-2.2/fourstep.h \
+		util/decimal/mpdecimal-2.2/sixstep.h \
+		util/decimal/mpdecimal-2.2/vcstdint.h \
+		util/decimal/mpdecimal-2.2/crt.h \
+		util/decimal/mpdecimal-2.2/docstrings.h \
+		util/decimal/mpdecimal-2.2/mptest.h \
+		util/decimal/mpdecimal-2.2/typearith.h \
+		util/decimal/mpdecimal-2.2/vcdiv64.asm
+#
+# util/decimal/libmpdec.a
+
+# src/corba/util/libcorbautil.a
+#
+src_corba_util_libcorbautil_a_SOURCES = \
+		src/corba/util/corba_conversions_datetime.cc \
+		src/corba/util/corba_conversions_nullable_types.cc \
+		src/corba/util/corba_conversions_string.cc
+#
+# src/corba/util/libcorbautil.a
 
 
 # src/old_utils/liboldutils.a
@@ -892,6 +971,8 @@ BUILT_SOURCES = \
 		src/corba/FileManagerSK.cc \
 		src/corba/MailerSK.cc \
 		src/corba/ZoneSK.cc \
+		src/corba/DateTimeSK.cc \
+		src/corba/NullableTypesSK.cc \
 		src/corba/_dataTypesSK.cc \
 		src/corba/FiltersSK.cc src/corba/RegistrySK.cc \
 		src/corba/WhoisSK.cc \
@@ -900,7 +981,8 @@ BUILT_SOURCES = \
 		src/corba/TechCheckSK.cc \
 		src/corba/EPPSK.cc \
 		src/corba/ZoneGeneratorSK.cc \
-		src/corba/ContactVerificationSK.cc
+		src/corba/ContactVerificationSK.cc \
+		src/corba/AdminContactVerificationSK.cc
 
 
 # src/corba/libcorba.a
@@ -956,7 +1038,15 @@ nodist_src_corba_libcorbazone_a_SOURCES = \
 nodist_src_corba_libcorbadatatypes_a_SOURCES = \
 		src/corba/_dataTypesSK.cc \
 		src/corba/_dataTypesDynSK.cc \
-		src/corba/_dataTypes.hh
+		src/corba/_dataTypes.hh \
+		src/corba/DateTimeSK.cc \
+		src/corba/DateTimeDynSK.cc \
+		src/corba/DateTime.hh
+		
+nodist_src_corba_libcorbanullabletypes_a_SOURCES = \
+		src/corba/NullableTypesSK.cc \
+		src/corba/NullableTypesDynSK.cc \
+		src/corba/NullableTypes.hh
 
 nodist_src_corba_libcorbafilters_a_SOURCES = \
 		src/corba/FiltersSK.cc \
@@ -1002,6 +1092,12 @@ nodist_src_corba_libcorbacontactverification_a_SOURCES = \
 		src/corba/ContactVerificationSK.cc \
 		src/corba/ContactVerificationDynSK.cc \
 		src/corba/ContactVerification.hh
+		
+nodist_src_corba_libcorbaadmincontactverification_a_SOURCES = \
+		src/corba/AdminContactVerificationSK.cc \
+		src/corba/AdminContactVerificationDynSK.cc \
+		src/corba/AdminContactVerificationSK.h \
+		src/corba/AdminContactVerification.hh
 
 #
 # nodist corba libs
@@ -1023,6 +1119,12 @@ src/corba/MailerSK.cc: $(IDLDIR)/Mailer.idl $(IDLDIR)/_dataTypes.idl
 
 src/corba/ZoneSK.cc: $(IDLDIR)/Zone.idl
 		omniidl -bcxx -Wba -C$(top_builddir)/src/corba $(IDLDIR)/Zone.idl
+
+src/corba/DateTimeSK.cc: $(IDLDIR)/DateTime.idl
+		omniidl -bcxx -Wba -C$(top_builddir)/src/corba $(IDLDIR)/DateTime.idl
+
+src/corba/NullableTypesSK.cc: $(IDLDIR)/NullableTypes.idl
+		omniidl -bcxx -Wba -C$(top_builddir)/src/corba $(IDLDIR)/NullableTypes.idl
 
 src/corba/_dataTypesSK.cc: $(IDLDIR)/_dataTypes.idl
 		omniidl -bcxx -Wba -C$(top_builddir)/src/corba $(IDLDIR)/_dataTypes.idl
@@ -1053,6 +1155,9 @@ src/corba/ZoneGeneratorSK.cc: $(IDLDIR)/ZoneGenerator.idl $(IDLDIR)/_dataTypes.i
 
 src/corba/ContactVerificationSK.cc: $(IDLDIR)/ContactVerification.idl
 		omniidl -bcxx -Wba -C$(top_builddir)/src/corba $(IDLDIR)/ContactVerification.idl
+
+src/corba/AdminContactVerificationSK.cc: $(IDLDIR)/AdminContactVerification.idl $(IDLDIR)/_dataTypes.idl
+		omniidl -bcxx -Wba -C$(top_builddir)/src/corba $(IDLDIR)/AdminContactVerification.idl
 #
 # idl build
 
@@ -1202,8 +1307,12 @@ src_corba_fred_adifd_SOURCES = \
 		src/mojeid/mojeid_validators.h \
 		src/mojeid/mojeid_contact_transfer_request_impl.cc \
 		src/mojeid/public_request_verification_impl.cc \
+		src/corba/admin_contact_verification/server_i.h \
+		src/corba/admin_contact_verification/server_i.cc \
+		src/fredlib/contact/util.h \
+		src/fredlib/contact/util.cc \
 		src/corba/fred-adifd.cc
-
+		
 src_corba_fred_adifd_LDADD = \
 		src/corba/admin/libadmin_impl.a \
 		src/corba/libcorbaadmin.a \
@@ -1212,9 +1321,12 @@ src_corba_fred_adifd_LDADD = \
 		src/corba/libcorbazone.a \
 		src/corba/libmailer.a \
 		src/corba/libcorbadatatypes.a \
+		src/corba/libcorbanullabletypes.a \
+		src/corba/util/libcorbautil.a \
 		src/corba/libcorba.a \
 		src/corba/libcorbalogger.a \
 		src/corba/libcorbaepp.a \
+		src/corba/libcorbaadmincontactverification.a \
 		src/corba/libfilemanager.a \
 		src/fredlib/requests/librequests.a \
 		src/fredlib/contact_verification/libcontact_verification.a \
