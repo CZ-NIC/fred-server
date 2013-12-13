@@ -4,6 +4,8 @@
 #include "corba/NullableTypes.hh"
 #include "util/db/nullable.h"
 #include "util/optional_value.h"
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time/gregorian/gregorian_types.hpp>
 
 /**
  *  @file
@@ -13,6 +15,9 @@
 namespace Corba {
     Registry::NullableULongLong* wrap_nullable_ulonglong(const Nullable<long long>& in);
     Registry::NullableULongLong* wrap_nullable_ulonglong(const Nullable<unsigned long long>& in);
+
+    Registry::NullableDate* wrap_nullable_date(const Nullable<boost::gregorian::date>& in);
+    Registry::NullableDateTime* wrap_nullable_datetime(const Nullable<boost::posix_time::ptime>& in);
 
     Nullable<unsigned long long> unwrap_nullable_ulonglong(const Registry::NullableULongLong * in);
     Optional<unsigned long long> unwrap_nullable_ulonglong_to_optional(const Registry::NullableULongLong * in);
