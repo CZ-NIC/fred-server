@@ -24,14 +24,14 @@
 #define CORBA_ADMIN_CONTACT_VERIFICATION_SERVER_I_H_85445454532330
 
 // generated from idl
-#include <AdminContactVerification.hh>
+#include "corba/AdminContactVerification.hh"
 
 namespace Registry
 {
     namespace AdminContactVerification
     {
         /// corba interface
-        class Server_i : public POA_Registry::AdminContactVerification::Server {
+        class Server_i : public POA_Registry::AdminContactVerification::Server  {
             private:
                 // do not copy
                 Server_i(const Server_i&); // no definition
@@ -41,20 +41,20 @@ namespace Registry
                 Server_i() {};
                 virtual ~Server_i(){};
 
-                //   Methods corresponding to IDL attributes and operations
-                virtual InfoContactCheck* getInfoContactCheck(const char* check_handle);
+                // Methods corresponding to IDL attributes and operations
+                virtual ContactCheckDetail* getContactCheckDetail(const char* check_handle);
+                virtual ContactCheckList* getContactCheckList(NullableString* testsuite, NullableULongLong* contact_id, ::CORBA::ULong max_item_count);
 
-                virtual void updateContactCheckTests(const char* check_handle, const TestResultUpdateSeq& changes);
+                virtual void updateContactCheckTests(const char* check_handle, const TestUpdateSeq& changes, ::CORBA::ULongLong logd_request_id);
 
-                virtual void resolveContactCheckStatus(const char* check_handle, const char* status);
+                virtual void resolveContactCheckStatus(const char* check_handle, const char* status, ::CORBA::ULongLong logd_request_id);
 
-                virtual void enqueueContactCheck(::CORBA::ULongLong contact_id, const char* testsuite_handle);
+                virtual void enqueueContactCheck(::CORBA::ULongLong contact_id, const char* testsuite_handle, ::CORBA::ULongLong logd_request_id);
 
-                virtual ContactTestDefSeq* listTestSuiteDefs(const char* lang);
-
+                virtual ContactTestStatusDefSeq* listTestStatusDefs(const char* lang);
                 virtual ContactCheckStatusDefSeq* listCheckStatusDefs(const char* lang);
-
-                virtual ContactTestResultStatusDefSeq* listTestResultStatusDefs(const char* lang);
+                virtual ContactTestDefSeq* listTestDefs(const char* lang, Registry::NullableString* testsuite_handle);
+                virtual ContactTestSuiteDefSeq* listTestSuiteDefs(const char* lang);
         };
     }
 }

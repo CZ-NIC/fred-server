@@ -1309,6 +1309,8 @@ src_corba_fred_adifd_SOURCES = \
 		src/mojeid/public_request_verification_impl.cc \
 		src/corba/admin_contact_verification/server_i.h \
 		src/corba/admin_contact_verification/server_i.cc \
+		src/fredlib/contact/util.h \
+		src/fredlib/contact/util.cc \
 		src/corba/fred-adifd.cc
 		
 src_corba_fred_adifd_LDADD = \
@@ -1319,6 +1321,8 @@ src_corba_fred_adifd_LDADD = \
 		src/corba/libcorbazone.a \
 		src/corba/libmailer.a \
 		src/corba/libcorbadatatypes.a \
+		src/corba/libcorbanullabletypes.a \
+		src/corba/util/libcorbautil.a \
 		src/corba/libcorba.a \
 		src/corba/libcorbalogger.a \
 		src/corba/libcorbaepp.a \
