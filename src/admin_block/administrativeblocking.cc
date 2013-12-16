@@ -30,7 +30,7 @@
 #include "fredlib/domain/create_administrative_object_state_restore_request_id.h"
 #include "fredlib/domain/create_domain_name_blacklist.h"
 #include "fredlib/domain/create_domain_name_blacklist_id.h"
-#include "fredlib/domain/clear_administrative_object_state_request_id.h"
+#include "fredlib/domain/clear_admin_object_state_request_id.h"
 #include "fredlib/domain/update_domain.h"
 #include "fredlib/domain/delete_domain.h"
 #include "fredlib/domain/info_domain.h"
