@@ -27,7 +27,7 @@
 #include "fredlib/domain/create_administrative_object_block_request.h"
 #include "fredlib/domain/create_admin_object_block_request_id.h"
 #include "fredlib/domain/create_administrative_object_state_restore_request.h"
-#include "fredlib/domain/create_administrative_object_state_restore_request_id.h"
+#include "fredlib/domain/create_admin_object_state_restore_request_id.h"
 #include "fredlib/domain/create_domain_name_blacklist.h"
 #include "fredlib/domain/create_domain_name_blacklist_id.h"
 #include "fredlib/domain/clear_admin_object_state_request_id.h"
