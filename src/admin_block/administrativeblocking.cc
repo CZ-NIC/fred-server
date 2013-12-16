@@ -545,7 +545,7 @@ namespace Registry
                 for (IdlDomainIdList::const_iterator pDomainId = _domain_list.begin(); pDomainId != _domain_list.end(); ++pDomainId) {
                     const Fred::ObjectId object_id = *pDomainId;
                     try {
-                        Fred::CreateAdministrativeObjectStateRestoreRequestId create_object_state_restore_request(object_id, _reason, _log_req_id);
+                        Fred::CreateAdminObjectStateRestoreRequestId create_object_state_restore_request(object_id, _reason, _log_req_id);
                         create_object_state_restore_request.exec(ctx);
                         Fred::PerformObjectStateRequest(object_id).exec(ctx);
                         const std::string fqdn = get_object_handle(ctx, object_id);
@@ -578,7 +578,7 @@ namespace Registry
                             update_domain.exec(ctx);
                         }
                     }
-                    catch (const Fred::CreateAdministrativeObjectStateRestoreRequestId::Exception &e) {
+                    catch (const Fred::CreateAdminObjectStateRestoreRequestId::Exception &e) {
                         if (e.is_set_server_blocked_absent()) {
                             EX_DOMAIN_ID_NOT_BLOCKED::Item e_item;
                             e_item.domain_id = e.get_server_blocked_absent();
@@ -641,7 +641,7 @@ namespace Registry
                 for (IdlDomainIdList::const_iterator pDomainId = _domain_list.begin(); pDomainId != _domain_list.end(); ++pDomainId) {
                     const Fred::ObjectId object_id = *pDomainId;
                     try {
-                        Fred::CreateAdministrativeObjectStateRestoreRequestId create_object_state_restore_request(object_id, _reason, _log_req_id);
+                        Fred::CreateAdminObjectStateRestoreRequestId create_object_state_restore_request(object_id, _reason, _log_req_id);
                         create_object_state_restore_request.exec(ctx);
                         Fred::PerformObjectStateRequest(object_id).exec(ctx);
                         Fred::CreateAdminObjectBlockRequestId create_object_state_request(object_id, _status_list);

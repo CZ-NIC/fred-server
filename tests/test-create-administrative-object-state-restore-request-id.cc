@@ -77,11 +77,11 @@
 #include "cfg/config_handler_decl.h"
 #include <boost/test/unit_test.hpp>
 
-BOOST_AUTO_TEST_SUITE(TestCreateAdministrativeObjectStateRestoreRequestId)
+BOOST_AUTO_TEST_SUITE(TestCreateAdminObjectStateRestoreRequestId)
 
-const std::string server_name = "test-create-administrative-object-state-restore-request-id";
+const std::string server_name = "test-create-admin-object-state-restore-request-id";
 
-struct create_administrative_object_state_restore_request_id_fixture
+struct create_admin_object_state_restore_request_id_fixture
 {
     std::string registrar_handle;
     std::string xmark;
@@ -92,7 +92,7 @@ struct create_administrative_object_state_restore_request_id_fixture
     Fred::StatusList status_list;
     const Fred::ObjectId logd_request_id;
 
-    create_administrative_object_state_restore_request_id_fixture()
+    create_admin_object_state_restore_request_id_fixture()
     :   xmark(RandomDataGenerator().xnumstring(6)),
         admin_contact2_handle(std::string("TEST-CAOSRR-ADMIN-CONTACT-HANDLE") + xmark),
         registrant_contact_handle(std::string("TEST-CAOSRR-REGISTRANT-CONTACT-HANDLE") + xmark),
@@ -139,16 +139,16 @@ struct create_administrative_object_state_restore_request_id_fixture
         Fred::PerformObjectStateRequest(test_domain_id).exec(ctx);
         ctx.commit_transaction();
     }
-    ~create_administrative_object_state_restore_request_id_fixture()
+    ~create_admin_object_state_restore_request_id_fixture()
     {}
 };
 
 /**
- * test CreateAdministrativeObjectStateRestoreRequestId
+ * test CreateAdminObjectStateRestoreRequestId
  * ...
  * calls in test shouldn't throw
  */
-BOOST_FIXTURE_TEST_CASE(create_administrative_object_state_restore_request_id, create_administrative_object_state_restore_request_id_fixture)
+BOOST_FIXTURE_TEST_CASE(create_admin_object_state_restore_request_id, create_admin_object_state_restore_request_id_fixture)
 {
     const std::string query =
         "SELECT eos.name "
@@ -168,7 +168,7 @@ BOOST_FIXTURE_TEST_CASE(create_administrative_object_state_restore_request_id, c
         for (::size_t idx = 0; idx < status_result.size(); ++idx) {
             status_list_before.insert(static_cast< std::string >(status_result[idx][0]));
         }
-        Fred::CreateAdministrativeObjectStateRestoreRequestId(test_domain_id, "test CreateAdministrativeObjectStateRestoreRequestId operation", logd_request_id).exec(ctx);
+        Fred::CreateAdminObjectStateRestoreRequestId(test_domain_id, "test CreateAdminObjectStateRestoreRequestId operation", logd_request_id).exec(ctx);
         BOOST_CHECK(true);
         Fred::PerformObjectStateRequest(test_domain_id).exec(ctx);
         ctx.commit_transaction();
@@ -195,40 +195,40 @@ BOOST_FIXTURE_TEST_CASE(create_administrative_object_state_restore_request_id, c
 }
 
 ///**
-// * test CreateAdministrativeObjectStateRestoreRequestIdBad
+// * test CreateAdminObjectStateRestoreRequestIdBad
 // * ...
 // * calls in test shouldn't throw
 // */
-BOOST_FIXTURE_TEST_CASE(create_administrative_object_state_restore_request_id_bad, create_administrative_object_state_restore_request_id_fixture)
+BOOST_FIXTURE_TEST_CASE(create_admin_object_state_restore_request_id_bad, create_admin_object_state_restore_request_id_fixture)
 {
     Fred::ObjectId not_used_id;
     try {
         Fred::OperationContext ctx;//new connection to rollback on error
         not_used_id = static_cast< Fred::ObjectId >(ctx.get_conn().exec("SELECT (MAX(id)+1000)*2 FROM object_registry")[0][0]);
-        Fred::CreateAdministrativeObjectStateRestoreRequestId(not_used_id, "test CreateAdministrativeObjectStateRestoreRequestId operation", logd_request_id).exec(ctx);
+        Fred::CreateAdminObjectStateRestoreRequestId(not_used_id, "test CreateAdminObjectStateRestoreRequestId operation", logd_request_id).exec(ctx);
         ctx.commit_transaction();
         BOOST_CHECK(false);
     }
-    catch(const Fred::CreateAdministrativeObjectStateRestoreRequestId::Exception &ex) {
+    catch(const Fred::CreateAdminObjectStateRestoreRequestId::Exception &ex) {
         BOOST_CHECK(ex.is_set_object_id_not_found());
         BOOST_CHECK(ex.get_object_id_not_found() == not_used_id);
     }
 
     {
         Fred::OperationContext ctx;//new connection to rollback on error
-        Fred::CreateAdministrativeObjectStateRestoreRequestId(test_domain_id, "test CreateAdministrativeObjectStateRestoreRequestId operation", logd_request_id).exec(ctx);
+        Fred::CreateAdminObjectStateRestoreRequestId(test_domain_id, "test CreateAdminObjectStateRestoreRequestId operation", logd_request_id).exec(ctx);
         ctx.commit_transaction();
     }
     try {
         Fred::OperationContext ctx;//new connection to rollback on error
-        Fred::CreateAdministrativeObjectStateRestoreRequestId(test_domain_id, "test CreateAdministrativeObjectStateRestoreRequestId operation", logd_request_id).exec(ctx);
+        Fred::CreateAdminObjectStateRestoreRequestId(test_domain_id, "test CreateAdminObjectStateRestoreRequestId operation", logd_request_id).exec(ctx);
         ctx.commit_transaction();
         BOOST_CHECK(false);
     }
-    catch(const Fred::CreateAdministrativeObjectStateRestoreRequestId::Exception &ex) {
+    catch(const Fred::CreateAdminObjectStateRestoreRequestId::Exception &ex) {
         BOOST_CHECK(ex.is_set_server_blocked_absent());
         BOOST_CHECK(ex.get_server_blocked_absent() == test_domain_id);
     }
 }
 
-BOOST_AUTO_TEST_SUITE_END();//TestCreateAdministrativeObjectStateRestoreRequestId
+BOOST_AUTO_TEST_SUITE_END();//TestCreateAdminObjectStateRestoreRequestId
