@@ -718,7 +718,7 @@ namespace Registry
                 for (IdlDomainIdList::const_iterator pDomainId = _domain_list.begin(); pDomainId != _domain_list.end(); ++pDomainId) {
                     const Fred::ObjectId object_id = *pDomainId;
                     try {
-                        Fred::ClearAdministrativeObjectStateRequestId(object_id, _reason).exec(ctx);
+                        Fred::ClearAdminObjectStateRequestId(object_id, _reason).exec(ctx);
                         Fred::PerformObjectStateRequest(object_id).exec(ctx);
                         const std::string fqdn = get_object_handle(ctx, object_id);
                         if (sys_registrar.empty()) {
@@ -756,7 +756,7 @@ namespace Registry
                             update_domain.exec(ctx);
                         }
                     }
-                    catch (const Fred::ClearAdministrativeObjectStateRequestId::Exception &e) {
+                    catch (const Fred::ClearAdminObjectStateRequestId::Exception &e) {
                         if (e.is_set_server_blocked_absent()) {
                             EX_DOMAIN_ID_NOT_BLOCKED::Item e_item;
                             e_item.domain_id = e.get_server_blocked_absent();
@@ -769,7 +769,7 @@ namespace Registry
                             throw ex;
                         }
                         else {
-                            throw std::runtime_error("Fred::ClearAdministrativeObjectStateRequestId::Exception");
+                            throw std::runtime_error("Fred::ClearAdminObjectStateRequestId::Exception");
                         }
                     }
                     catch (const Fred::UpdateDomain::Exception &e) {

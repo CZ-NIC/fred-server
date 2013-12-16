@@ -22,7 +22,7 @@
  */
 
 #include "fredlib/domain/create_administrative_object_state_restore_request_id.h"
-#include "fredlib/domain/clear_administrative_object_state_request_id.h"
+#include "fredlib/domain/clear_admin_object_state_request_id.h"
 #include "fredlib/domain/get_blocking_status_desc_list.h"
 #include "fredlib/opcontext.h"
 #include "fredlib/db_settings.h"
@@ -141,9 +141,9 @@ namespace Fred
             }
         }
         try {
-            ClearAdministrativeObjectStateRequestId(object_id_, reason_).exec(_ctx);
+            ClearAdminObjectStateRequestId(object_id_, reason_).exec(_ctx);
         }
-        catch (const ClearAdministrativeObjectStateRequestId::Exception &ex) {
+        catch (const ClearAdminObjectStateRequestId::Exception &ex) {
             if (ex.is_set_server_blocked_absent()) {
                 BOOST_THROW_EXCEPTION(Exception().set_server_blocked_absent(ex.get_server_blocked_absent()));
             }
