@@ -1815,10 +1815,10 @@ tests_test_blocking_SOURCES = \
 		tests/checks.h \
 		tests/test-copy-contact.cc \
 		tests/test-create-object-state-request-id.cc \
-		tests/test-create-administrative-object-block-request-id.cc \
-		tests/test-create-administrative-object-state-restore-request-id.cc \
+		tests/test-create-admin-object-block-request-id.cc \
+		tests/test-create-admin-object-state-restore-request-id.cc \
 		tests/test-cancel-object-state-request-id.cc \
-		tests/test-clear-administrative-object-state-request-id.cc \
+		tests/test-clear-admin-object-state-request-id.cc \
 		tests/test-create-domain-name-blacklist-id.cc
 
 tests_test_blocking_LDFLAGS = \
