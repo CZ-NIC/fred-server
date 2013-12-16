@@ -17,11 +17,11 @@
  */
 
 /**
- *  @file create_administrative_object_block_request_id.cc
+ *  @file create_admin_object_block_request_id.cc
  *  create administrative object block request
  */
 
-#include "fredlib/domain/create_administrative_object_block_request_id.h"
+#include "fredlib/domain/create_admin_object_block_request_id.h"
 #include "fredlib/domain/clear_object_state_request_id.h"
 #include "fredlib/domain/get_blocking_status_desc_list.h"
 #include "fredlib/opcontext.h"
@@ -37,13 +37,13 @@
 namespace Fred
 {
 
-    CreateAdministrativeObjectBlockRequestId::CreateAdministrativeObjectBlockRequestId(ObjectId _object_id,
+    CreateAdminObjectBlockRequestId::CreateAdminObjectBlockRequestId(ObjectId _object_id,
         const StatusList &_status_list)
     :   object_id_(_object_id),
         status_list_(_status_list)
     {}
 
-    CreateAdministrativeObjectBlockRequestId::CreateAdministrativeObjectBlockRequestId(ObjectId _object_id,
+    CreateAdminObjectBlockRequestId::CreateAdminObjectBlockRequestId(ObjectId _object_id,
         const StatusList &_status_list,
         const Optional< Time > &_valid_from,
         const Optional< Time > &_valid_to,
@@ -59,31 +59,31 @@ namespace Fred
         : Nullable<unsigned long long>())//is NULL if not set
     {}
 
-    CreateAdministrativeObjectBlockRequestId& CreateAdministrativeObjectBlockRequestId::set_valid_from(const Time &_valid_from)
+    CreateAdminObjectBlockRequestId& CreateAdminObjectBlockRequestId::set_valid_from(const Time &_valid_from)
     {
         valid_from_ = _valid_from;
         return *this;
     }
 
-    CreateAdministrativeObjectBlockRequestId& CreateAdministrativeObjectBlockRequestId::set_valid_to(const Time &_valid_to)
+    CreateAdminObjectBlockRequestId& CreateAdminObjectBlockRequestId::set_valid_to(const Time &_valid_to)
     {
         valid_to_ = _valid_to;
         return *this;
     }
 
-    CreateAdministrativeObjectBlockRequestId& CreateAdministrativeObjectBlockRequestId::set_reason(const std::string &_reason)
+    CreateAdminObjectBlockRequestId& CreateAdminObjectBlockRequestId::set_reason(const std::string &_reason)
     {
         reason_ = _reason;
         return *this;
     }
 
-    CreateAdministrativeObjectBlockRequestId& CreateAdministrativeObjectBlockRequestId::set_logd_request_id(unsigned long long _logd_request_id)
+    CreateAdminObjectBlockRequestId& CreateAdminObjectBlockRequestId::set_logd_request_id(unsigned long long _logd_request_id)
     {
         logd_request_id_ = _logd_request_id;
         return *this;
     }
     
-    std::string CreateAdministrativeObjectBlockRequestId::exec(OperationContext &_ctx)
+    std::string CreateAdminObjectBlockRequestId::exec(OperationContext &_ctx)
     {
         this->check_administrative_block_status_only(_ctx);
         this->check_server_blocked_status_absent(_ctx);
@@ -127,9 +127,9 @@ namespace Fred
                 Database::query_param_list(object_id_));
         }
         return handle_name;
-    }//CreateAdministrativeObjectBlockRequestId::exec
+    }//CreateAdminObjectBlockRequestId::exec
 
-    void CreateAdministrativeObjectBlockRequestId::check_administrative_block_status_only(OperationContext &_ctx) const
+    void CreateAdminObjectBlockRequestId::check_administrative_block_status_only(OperationContext &_ctx) const
     {
         if (status_list_.empty()) {
             BOOST_THROW_EXCEPTION(Exception().set_vector_of_state_not_found(std::vector< std::string >()));
@@ -155,7 +155,7 @@ namespace Fred
         }
     }
 
-    void CreateAdministrativeObjectBlockRequestId::check_server_blocked_status_absent(OperationContext &_ctx) const
+    void CreateAdminObjectBlockRequestId::check_server_blocked_status_absent(OperationContext &_ctx) const
     {
         static TID serverBlockedId = 0;
         if (serverBlockedId == 0) {

@@ -134,7 +134,7 @@ struct create_administrative_object_state_restore_request_id_fixture
             "WHERE name=$1::text AND "
                   "type=3 AND "
                   "erdate IS NULL", Database::query_param_list(test_domain_fqdn))[0][0]);
-        const std::string handle = Fred::CreateAdministrativeObjectBlockRequestId(test_domain_id, status_list).exec(ctx);
+        const std::string handle = Fred::CreateAdminObjectBlockRequestId(test_domain_id, status_list).exec(ctx);
         BOOST_CHECK(handle == test_domain_fqdn);
         Fred::PerformObjectStateRequest(test_domain_id).exec(ctx);
         ctx.commit_transaction();

@@ -21,8 +21,8 @@
  *  Create request for administrative blocking of object.
  */
 
-#ifndef CREATE_ADMINISTRATIVE_OBJECT_BLOCK_REQUEST_ID_H_
-#define CREATE_ADMINISTRATIVE_OBJECT_BLOCK_REQUEST_ID_H_
+#ifndef CREATE_ADMIN_OBJECT_BLOCK_REQUEST_ID_H_
+#define CREATE_ADMIN_OBJECT_BLOCK_REQUEST_ID_H_
 
 #include "fredlib/domain/create_object_state_request_id.h"
 
@@ -39,7 +39,7 @@ namespace Fred
     * with appropriate attributes set.
     * In case of other unsuperable failures and inconstistencies, an instance of @ref InternalError or other exception is thrown.
     */
-    class CreateAdministrativeObjectBlockRequestId
+    class CreateAdminObjectBlockRequestId
     {
     public:
         typedef CreateObjectStateRequest::Time Time; /**< common @ref Fred::CreateObjectStateRequestId::Time "time" type */
@@ -49,7 +49,7 @@ namespace Fred
         * @param _object_id sets domain id into @ref object_id_ attribute
         * @param _status_list sets states into @ref status_list_ attribute
         */
-        CreateAdministrativeObjectBlockRequestId(ObjectId _object_id,
+        CreateAdminObjectBlockRequestId(ObjectId _object_id,
             const StatusList &_status_list);
 
         /**
@@ -61,7 +61,7 @@ namespace Fred
         * @param _reason sets reason of blocking into @ref reason_ attribute
         * @param _logd_request_id sets sets logger request id into @ref logd_request_id_ attribute
         */
-        CreateAdministrativeObjectBlockRequestId(ObjectId _object_id,
+        CreateAdminObjectBlockRequestId(ObjectId _object_id,
             const StatusList &_status_list,
             const Optional< Time > &_valid_from,
             const Optional< Time > &_valid_to,
@@ -74,28 +74,28 @@ namespace Fred
         * @param _valid_from sets time into @ref valid_from_ attribute
         * @return operation instance reference to allow method chaining
         */
-        CreateAdministrativeObjectBlockRequestId& set_valid_from(const Time &_valid_from);
+        CreateAdminObjectBlockRequestId& set_valid_from(const Time &_valid_from);
 
         /**
         * Sets time of validity finishes
         * @param _valid_to sets time into @ref valid_to_ attribute
         * @return operation instance reference to allow method chaining
         */
-        CreateAdministrativeObjectBlockRequestId& set_valid_to(const Time &_valid_to);
+        CreateAdminObjectBlockRequestId& set_valid_to(const Time &_valid_to);
 
         /**
         * Sets reason of blocking
         * @param _reason sets reason of blocking into @ref reason_ attribute
         * @return operation instance reference to allow method chaining
         */
-        CreateAdministrativeObjectBlockRequestId& set_reason(const std::string &_reason);
+        CreateAdminObjectBlockRequestId& set_reason(const std::string &_reason);
 
         /**
         * Sets logger request id
         * @param _logd_request_id sets logger request id into @ref logd_request_id_ attribute
         * @return operation instance reference to allow method chaining
         */
-        CreateAdministrativeObjectBlockRequestId& set_logd_request_id(unsigned long long _logd_request_id);
+        CreateAdminObjectBlockRequestId& set_logd_request_id(unsigned long long _logd_request_id);
 
         /**
         * Executes creation
@@ -125,9 +125,9 @@ namespace Fred
         Optional< Time > valid_to_; /**< status is valid until this time */
         Optional< std::string > reason_; /**< reason of administrative blocking */
         Nullable<unsigned long long> logd_request_id_; /**< id of the record in logger database, id is used in other calls to logging within current request */
-    };//class CreateAdministrativeObjectBlockRequestId
+    };//class CreateAdminObjectBlockRequestId
 
 
 }//namespace Fred
 
-#endif//CREATE_ADMINISTRATIVE_OBJECT_BLOCK_REQUEST_ID_H_
+#endif//CREATE_ADMIN_OBJECT_BLOCK_REQUEST_ID_H_

@@ -383,7 +383,7 @@ namespace Registry
                 for (IdlDomainIdList::const_iterator pObjectId = _domain_list.begin(); pObjectId != _domain_list.end(); ++pObjectId) {
                     try {
                         const Fred::ObjectId object_id = *pObjectId;
-                        Fred::CreateAdministrativeObjectBlockRequestId create_object_block_request(object_id, _status_list);
+                        Fred::CreateAdminObjectBlockRequestId create_object_block_request(object_id, _status_list);
                         create_object_block_request.set_reason(_reason);
                         if (!_block_to_date.isnull()) {
                             create_object_block_request.set_valid_to(block_time_limit);
@@ -405,7 +405,7 @@ namespace Registry
                             const std::string registrant = static_cast< std::string >(row[1]);
                             if ((contact_blocked.find(registrant) == contact_blocked.end()) && !contact_status_list.empty()) {
                                 contact_blocked.insert(registrant);
-                                Fred::CreateAdministrativeObjectBlockRequestId block_owner_request(registrant_id, contact_status_list);
+                                Fred::CreateAdminObjectBlockRequestId block_owner_request(registrant_id, contact_status_list);
                                 block_owner_request.set_reason(_reason);
                                 if (!_block_to_date.isnull()) {
                                     block_owner_request.set_valid_to(block_time_limit);
@@ -463,7 +463,7 @@ namespace Registry
                             throw std::runtime_error("Fred::CreateObjectStateRequestId::Exception");
                         }
                     }
-                    catch (const Fred::CreateAdministrativeObjectBlockRequestId::Exception &e) {
+                    catch (const Fred::CreateAdminObjectBlockRequestId::Exception &e) {
                         if (e.is_set_server_blocked_present()) {
                             EX_DOMAIN_ID_ALREADY_BLOCKED::Item e_item;
                             e_item.domain_id = e.get_server_blocked_present();
@@ -478,14 +478,14 @@ namespace Registry
                             }
                         }
                         else {
-                            throw std::runtime_error("Fred::CreateAdministrativeObjectBlockRequestId::Exception");
+                            throw std::runtime_error("Fred::CreateAdminObjectBlockRequestId::Exception");
                         }
                     }
                 }
                 if (_owner_block_mode == OWNER_BLOCK_MODE_BLOCK_OWNER_COPY) {
                     for (OwnerIdOwnerCopy::const_iterator pOwnerCopy = owner_id_owner_copy.begin();
                          pOwnerCopy != owner_id_owner_copy.end(); ++pOwnerCopy) {
-                        Fred::CreateAdministrativeObjectBlockRequestId block_owner_request(pOwnerCopy->second.new_owner_id,
+                        Fred::CreateAdminObjectBlockRequestId block_owner_request(pOwnerCopy->second.new_owner_id,
                                                                                            contact_status_list);
                         block_owner_request.set_reason(_reason);
                         if (!_block_to_date.isnull()) {
@@ -644,7 +644,7 @@ namespace Registry
                         Fred::CreateAdministrativeObjectStateRestoreRequestId create_object_state_restore_request(object_id, _reason, _log_req_id);
                         create_object_state_restore_request.exec(ctx);
                         Fred::PerformObjectStateRequest(object_id).exec(ctx);
-                        Fred::CreateAdministrativeObjectBlockRequestId create_object_state_request(object_id, _status_list);
+                        Fred::CreateAdminObjectBlockRequestId create_object_state_request(object_id, _status_list);
                         if (!_block_to_date.isnull()) {
                             create_object_state_request.set_valid_to(block_time_limit);
                         }
@@ -667,7 +667,7 @@ namespace Registry
                             throw std::runtime_error("Fred::CreateObjectStateRequestId::Exception");
                         }
                     }
-                    catch (const Fred::CreateAdministrativeObjectBlockRequestId::Exception &e) {
+                    catch (const Fred::CreateAdminObjectBlockRequestId::Exception &e) {
                         if (e.is_set_vector_of_state_not_found()) {
                             std::vector< std::string > state_not_found = e.get_vector_of_state_not_found();
                             for (std::vector< std::string >::const_iterator pStat = state_not_found.begin();
@@ -676,7 +676,7 @@ namespace Registry
                             }
                         }
                         else {
-                            throw std::runtime_error("Fred::CreateAdministrativeObjectBlockRequestId::Exception");
+                            throw std::runtime_error("Fred::CreateAdminObjectBlockRequestId::Exception");
                         }
                     }
                 }

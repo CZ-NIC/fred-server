@@ -76,7 +76,7 @@
 #include "cfg/config_handler_decl.h"
 #include <boost/test/unit_test.hpp>
 
-BOOST_AUTO_TEST_SUITE(TestCreateAdministrativeObjectBlockRequestId)
+BOOST_AUTO_TEST_SUITE(TestCreateAdminObjectBlockRequestId)
 
 const std::string server_name = "test-create-administrative-object-block-request-id";
 
@@ -142,7 +142,7 @@ struct create_administrative_object_block_request_id_fixture
 };
 
 /**
- * test CreateAdministrativeObjectBlockRequestId
+ * test CreateAdminObjectBlockRequestId
  * ...
  * calls in test shouldn't throw
  */
@@ -150,7 +150,7 @@ BOOST_FIXTURE_TEST_CASE(create_administrative_object_block_request_id, create_ad
 {
     {
         Fred::OperationContext ctx;
-        const std::string handle = Fred::CreateAdministrativeObjectBlockRequestId(test_domain_id, status_list).exec(ctx);
+        const std::string handle = Fred::CreateAdminObjectBlockRequestId(test_domain_id, status_list).exec(ctx);
         BOOST_CHECK(handle == test_domain_fqdn);
         ctx.commit_transaction();
     }
@@ -178,7 +178,7 @@ BOOST_FIXTURE_TEST_CASE(create_administrative_object_block_request_id, create_ad
 }
 
 /**
- * test CreateAdministrativeObjectBlockRequestIdBad
+ * test CreateAdminObjectBlockRequestIdBad
  * ...
  * calls in test shouldn't throw
  */
@@ -192,11 +192,11 @@ BOOST_FIXTURE_TEST_CASE(create_administrative_object_block_request_id_bad, creat
             bad_status_list.insert(status_result[idx][0]);
         }
         bad_status_list.insert(std::string("BadStatus") + xmark);
-        Fred::CreateAdministrativeObjectBlockRequestId(test_domain_id, bad_status_list).exec(ctx);
+        Fred::CreateAdminObjectBlockRequestId(test_domain_id, bad_status_list).exec(ctx);
         ctx.commit_transaction();
         BOOST_CHECK(false);
     }
-    catch(const Fred::CreateAdministrativeObjectBlockRequestId::Exception &ex) {
+    catch(const Fred::CreateAdminObjectBlockRequestId::Exception &ex) {
         BOOST_CHECK(ex.is_set_vector_of_state_not_found());
         BOOST_CHECK(ex.get_vector_of_state_not_found().size() == (bad_status_list.size() - status_list.size()));
     }
@@ -207,21 +207,21 @@ BOOST_FIXTURE_TEST_CASE(create_administrative_object_block_request_id_bad, creat
     status_list_b.erase(status_list_b.begin());
     {
         Fred::OperationContext ctx;//new connection to rollback on error
-        Fred::CreateAdministrativeObjectBlockRequestId(test_domain_id, status_list_a).exec(ctx);
+        Fred::CreateAdminObjectBlockRequestId(test_domain_id, status_list_a).exec(ctx);
         Fred::PerformObjectStateRequest(test_domain_id).exec(ctx);
         ctx.commit_transaction();
     }
     try {
         Fred::OperationContext ctx;//new connection to rollback on error
-        Fred::CreateAdministrativeObjectBlockRequestId(test_domain_id, status_list_b).exec(ctx);
+        Fred::CreateAdminObjectBlockRequestId(test_domain_id, status_list_b).exec(ctx);
         ctx.commit_transaction();
         BOOST_CHECK(false);
     }
-    catch(const Fred::CreateAdministrativeObjectBlockRequestId::Exception &ex) {
+    catch(const Fred::CreateAdminObjectBlockRequestId::Exception &ex) {
         BOOST_CHECK(ex.is_set_server_blocked_present());
         BOOST_CHECK(ex.get_server_blocked_present() == test_domain_id);
     }
 
 }
 
-BOOST_AUTO_TEST_SUITE_END();//TestCreateAdministrativeObjectBlockRequestId
+BOOST_AUTO_TEST_SUITE_END();//TestCreateAdminObjectBlockRequestId
