@@ -1317,6 +1317,7 @@ BOOST_AUTO_TEST_SUITE(OneObject)
 
 struct merge_admin_contacts_fixture
 {
+    std::string sys_registrar_handle;
     std::string registrar_handle;
     std::string xmark;
     std::string contact_handle_1;
@@ -1326,14 +1327,16 @@ struct merge_admin_contacts_fixture
     : xmark(RandomDataGenerator().xnumstring(6))
     , contact_handle_1(std::string("TEST-MC-CONTACT-1")+xmark)
     , contact_handle_2(std::string("TEST-MC-CONTACT-2")+xmark)
-
     {
         Fred::OperationContext ctx;
 
-        registrar_handle = static_cast<std::string>(ctx.get_conn().exec(
+        sys_registrar_handle = static_cast<std::string>(ctx.get_conn().exec(
             "SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]);
+        registrar_handle = static_cast<std::string>(ctx.get_conn().exec(
+                    "SELECT handle FROM registrar WHERE system = FALSE ORDER BY id LIMIT 1")[0][0]);
 
-        BOOST_CHECK(!registrar_handle.empty());//expecting existing system registrar
+        BOOST_CHECK(!sys_registrar_handle.empty());//expecting existing system registrar
+        BOOST_CHECK(!registrar_handle.empty());//expecting existing non-system registrar
 
         Fred::CreateContact(contact_handle_1,registrar_handle)
             .set_name("COMMON NAME")
@@ -1344,7 +1347,7 @@ struct merge_admin_contacts_fixture
             .exec(ctx);
         BOOST_TEST_MESSAGE(std::string("test contact_handle_1: ") + contact_handle_1);
 
-        Fred::InfoContactOutput  ic = Fred::InfoContact(contact_handle_1,registrar_handle).exec(ctx);
+        Fred::InfoContactOutput  ic = Fred::InfoContact(contact_handle_1,sys_registrar_handle).exec(ctx);
 
         BOOST_TEST_MESSAGE(std::string("test contact_handle_1 roid: ") + ic.info_contact_data.roid);
 
@@ -1444,7 +1447,7 @@ struct merge_admin_contact_domain_fixture
 
         Fred::CreateDomain(
                 test_domain_handle //const std::string& fqdn
-                , registrar_handle //const std::string& registrar
+                , sys_registrar_handle //const std::string& registrar
                 , contact_handle_1 //registrant
                 )
         .set_nsset(test_nsset_handle).set_keyset(test_keyset_handle)
@@ -1467,7 +1470,7 @@ BOOST_FIXTURE_TEST_CASE(test_merge_domain_admin_contacts, merge_admin_contact_do
     try
     {
         Fred::OperationContext ctx;
-        Fred::MergeContactOutput merge_data = Fred::MergeContact(contact_handle_1, contact_handle_2, registrar_handle).exec(ctx);
+        Fred::MergeContactOutput merge_data = Fred::MergeContact(contact_handle_1, contact_handle_2, sys_registrar_handle).exec(ctx);
         BOOST_MESSAGE(merge_data);
         ctx.commit_transaction();
     }
@@ -1485,7 +1488,7 @@ BOOST_FIXTURE_TEST_CASE(test_merge_nsset_tech_contacts, merge_tech_contact_nsset
     try
     {
         Fred::OperationContext ctx;
-        Fred::MergeContactOutput merge_data = Fred::MergeContact(contact_handle_1, contact_handle_2, registrar_handle).exec(ctx);
+        Fred::MergeContactOutput merge_data = Fred::MergeContact(contact_handle_1, contact_handle_2, sys_registrar_handle).exec(ctx);
         BOOST_MESSAGE(merge_data);
         ctx.commit_transaction();
     }
@@ -1503,7 +1506,7 @@ BOOST_FIXTURE_TEST_CASE(test_merge_keyset_tech_contacts, merge_tech_contact_keys
     try
     {
         Fred::OperationContext ctx;
-        Fred::MergeContactOutput merge_data = Fred::MergeContact(contact_handle_1, contact_handle_2, registrar_handle).exec(ctx);
+        Fred::MergeContactOutput merge_data = Fred::MergeContact(contact_handle_1, contact_handle_2, sys_registrar_handle).exec(ctx);
         BOOST_MESSAGE(merge_data);
         ctx.commit_transaction();
     }
