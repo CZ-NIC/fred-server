@@ -362,7 +362,8 @@ namespace Fred
                     {
                         //look for already set: admin contact
                         //if found ignore exception, if not found rethrow exception
-                        if(ex.is_set_vector_of_already_set_admin_contact_handle())
+                        if(ex.is_set_vector_of_already_set_admin_contact_handle()
+                            && (ex.get_vector_of_already_set_admin_contact_handle().at(0) == dst_contact_handle_))//check colliding contact handle
                         {
                             //only remove source admin contact, dest admin contact is already there
                             ctx.get_conn().exec("ROLLBACK TO SAVEPOINT merge_contact_update_domain");
@@ -421,7 +422,8 @@ namespace Fred
                     {
                         //look for already set: tech contact
                         //if found ignore exception, if not found rethrow exception
-                        if(ex.is_set_vector_of_already_set_technical_contact_handle())
+                        if(ex.is_set_vector_of_already_set_technical_contact_handle()
+                            && (ex.get_vector_of_already_set_technical_contact_handle().at(0) == dst_contact_handle_))//check colliding contact handle
                         {
                             //only remove source tech contact, dest tech contact is already there
                             ctx.get_conn().exec("ROLLBACK TO SAVEPOINT merge_contact_update_nsset");
@@ -478,7 +480,8 @@ namespace Fred
                     }
                     catch(UpdateKeyset::Exception& ex)
                     {
-                        if(ex.is_set_vector_of_already_set_technical_contact_handle())
+                        if(ex.is_set_vector_of_already_set_technical_contact_handle()
+                            && (ex.get_vector_of_already_set_technical_contact_handle().at(0) == dst_contact_handle_))//check colliding contact handle
                         {
                             //only remove source tech contact, dest tech contact is already there
                             ctx.get_conn().exec("ROLLBACK TO SAVEPOINT merge_contact_update_keyset");
