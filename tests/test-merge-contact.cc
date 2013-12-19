@@ -1470,7 +1470,21 @@ BOOST_FIXTURE_TEST_CASE(test_merge_domain_admin_contacts, merge_admin_contact_do
     try
     {
         Fred::OperationContext ctx;
+        Fred::InfoDomainOutput domain_info_1 = Fred::InfoDomain(test_domain_handle, sys_registrar_handle).exec(ctx);
         Fred::MergeContactOutput merge_data = Fred::MergeContact(contact_handle_1, contact_handle_2, sys_registrar_handle).exec(ctx);
+        Fred::InfoDomainOutput domain_info_2 = Fred::InfoDomain(test_domain_handle, sys_registrar_handle).exec(ctx);
+        BOOST_CHECK(domain_info_1 != domain_info_2);
+
+        //src contact is not admin
+        BOOST_CHECK(std::find(domain_info_2.info_domain_data.admin_contacts.begin()
+        , domain_info_2.info_domain_data.admin_contacts.end()
+        , contact_handle_1) == domain_info_2.info_domain_data.admin_contacts.end());
+
+        //dst contact is admin
+        BOOST_CHECK(std::find(domain_info_2.info_domain_data.admin_contacts.begin()
+        , domain_info_2.info_domain_data.admin_contacts.end()
+        , contact_handle_2) != domain_info_2.info_domain_data.admin_contacts.end());
+
         BOOST_MESSAGE(merge_data);
         ctx.commit_transaction();
     }
@@ -1488,7 +1502,22 @@ BOOST_FIXTURE_TEST_CASE(test_merge_nsset_tech_contacts, merge_tech_contact_nsset
     try
     {
         Fred::OperationContext ctx;
+        Fred::InfoNssetOutput nsset_info_1 = Fred::InfoNsset(test_nsset_handle, sys_registrar_handle).exec(ctx);
         Fred::MergeContactOutput merge_data = Fred::MergeContact(contact_handle_1, contact_handle_2, sys_registrar_handle).exec(ctx);
+        Fred::InfoNssetOutput nsset_info_2 = Fred::InfoNsset(test_nsset_handle, sys_registrar_handle).exec(ctx);
+
+        BOOST_CHECK(nsset_info_1 != nsset_info_2);
+
+        //src contact is not admin
+        BOOST_CHECK(std::find(nsset_info_2.info_nsset_data.tech_contacts.begin()
+        , nsset_info_2.info_nsset_data.tech_contacts.end()
+        , contact_handle_1) == nsset_info_2.info_nsset_data.tech_contacts.end());
+
+        //dst contact is admin
+        BOOST_CHECK(std::find(nsset_info_2.info_nsset_data.tech_contacts.begin()
+        , nsset_info_2.info_nsset_data.tech_contacts.end()
+        , contact_handle_2) != nsset_info_2.info_nsset_data.tech_contacts.end());
+
         BOOST_MESSAGE(merge_data);
         ctx.commit_transaction();
     }
@@ -1506,7 +1535,22 @@ BOOST_FIXTURE_TEST_CASE(test_merge_keyset_tech_contacts, merge_tech_contact_keys
     try
     {
         Fred::OperationContext ctx;
+        Fred::InfoKeysetOutput keyset_info_1 = Fred::InfoKeyset(test_keyset_handle, sys_registrar_handle).exec(ctx);
         Fred::MergeContactOutput merge_data = Fred::MergeContact(contact_handle_1, contact_handle_2, sys_registrar_handle).exec(ctx);
+        Fred::InfoKeysetOutput keyset_info_2 = Fred::InfoKeyset(test_keyset_handle, sys_registrar_handle).exec(ctx);
+
+        BOOST_CHECK(keyset_info_1 != keyset_info_2);
+
+        //src contact is not admin
+        BOOST_CHECK(std::find(keyset_info_2.info_keyset_data.tech_contacts.begin()
+        , keyset_info_2.info_keyset_data.tech_contacts.end()
+        , contact_handle_1) == keyset_info_2.info_keyset_data.tech_contacts.end());
+
+        //dst contact is admin
+        BOOST_CHECK(std::find(keyset_info_2.info_keyset_data.tech_contacts.begin()
+        , keyset_info_2.info_keyset_data.tech_contacts.end()
+        , contact_handle_2) != keyset_info_2.info_keyset_data.tech_contacts.end());
+
         BOOST_MESSAGE(merge_data);
         ctx.commit_transaction();
     }
