@@ -96,7 +96,7 @@ namespace Fred
         {}
         friend std::ostream& operator<<(std::ostream& os, const MergeContactUpdateDomainAdminContact& i)
         {
-            return os << "MergeContactUpdateDomainRegistrant fqdn: " << i.fqdn
+            return os << "MergeContactUpdateDomainAdminContact fqdn: " << i.fqdn
                     << " domain_id: " << i.domain_id
                     << " sponsoring_registrar: " << i.sponsoring_registrar
                     << " rem_admin_contact: " << i.rem_admin_contact
@@ -134,7 +134,7 @@ namespace Fred
             {}
         friend std::ostream& operator<<(std::ostream& os, const MergeContactUpdateNssetTechContact& i)
         {
-            return os << "MergeContactUpdateDomainRegistrant handle: " << i.handle
+            return os << "MergeContactUpdateNssetTechContact handle: " << i.handle
                     << " nsset_id: " << i.nsset_id
                     << " sponsoring_registrar: " << i.sponsoring_registrar
                     << " rem_tech_contact: " << i.rem_tech_contact
@@ -172,7 +172,7 @@ namespace Fred
         {}
         friend std::ostream& operator<<(std::ostream& os, const MergeContactUpdateKeysetTechContact& i)
         {
-            return os << "MergeContactUpdateDomainRegistrant handle: " << i.handle
+            return os << "MergeContactUpdateKeysetTechContact handle: " << i.handle
                     << " keyset_id: " << i.keyset_id
                     << " sponsoring_registrar: " << i.sponsoring_registrar
                     << " rem_tech_contact: " << i.rem_tech_contact
