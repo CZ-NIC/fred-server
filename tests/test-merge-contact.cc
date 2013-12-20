@@ -1340,7 +1340,7 @@ struct merge_admin_contacts_fixture
             .exec(ctx);
         BOOST_TEST_MESSAGE(std::string("test contact_handle_1: ") + contact_handle_1);
 
-        Fred::InfoContactOutput  ic = Fred::InfoContact(contact_handle_1,sys_registrar_handle).exec(ctx);
+        Fred::InfoContactOutput  ic = Fred::InfoContactByHandle(contact_handle_1).exec(ctx);
 
         BOOST_TEST_MESSAGE(std::string("test contact_handle_1 roid: ") + ic.info_contact_data.roid);
 
@@ -1463,9 +1463,9 @@ BOOST_FIXTURE_TEST_CASE(test_merge_domain_admin_contacts, merge_admin_contact_do
     try
     {
         Fred::OperationContext ctx;
-        Fred::InfoDomainOutput domain_info_1 = Fred::InfoDomain(test_domain_handle, sys_registrar_handle).exec(ctx);
+        Fred::InfoDomainOutput domain_info_1 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
         Fred::MergeContactOutput merge_data = Fred::MergeContact(contact_handle_1, contact_handle_2, sys_registrar_handle).exec(ctx);
-        Fred::InfoDomainOutput domain_info_2 = Fred::InfoDomain(test_domain_handle, sys_registrar_handle).exec(ctx);
+        Fred::InfoDomainOutput domain_info_2 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
         BOOST_CHECK(domain_info_1 != domain_info_2);
 
         //src contact is not admin
@@ -1495,9 +1495,9 @@ BOOST_FIXTURE_TEST_CASE(test_merge_nsset_tech_contacts, merge_tech_contact_nsset
     try
     {
         Fred::OperationContext ctx;
-        Fred::InfoNssetOutput nsset_info_1 = Fred::InfoNsset(test_nsset_handle, sys_registrar_handle).exec(ctx);
+        Fred::InfoNssetOutput nsset_info_1 = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
         Fred::MergeContactOutput merge_data = Fred::MergeContact(contact_handle_1, contact_handle_2, sys_registrar_handle).exec(ctx);
-        Fred::InfoNssetOutput nsset_info_2 = Fred::InfoNsset(test_nsset_handle, sys_registrar_handle).exec(ctx);
+        Fred::InfoNssetOutput nsset_info_2 = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
 
         BOOST_CHECK(nsset_info_1 != nsset_info_2);
 
@@ -1528,9 +1528,9 @@ BOOST_FIXTURE_TEST_CASE(test_merge_keyset_tech_contacts, merge_tech_contact_keys
     try
     {
         Fred::OperationContext ctx;
-        Fred::InfoKeysetOutput keyset_info_1 = Fred::InfoKeyset(test_keyset_handle, sys_registrar_handle).exec(ctx);
+        Fred::InfoKeysetOutput keyset_info_1 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
         Fred::MergeContactOutput merge_data = Fred::MergeContact(contact_handle_1, contact_handle_2, sys_registrar_handle).exec(ctx);
-        Fred::InfoKeysetOutput keyset_info_2 = Fred::InfoKeyset(test_keyset_handle, sys_registrar_handle).exec(ctx);
+        Fred::InfoKeysetOutput keyset_info_2 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
 
         BOOST_CHECK(keyset_info_1 != keyset_info_2);
 
