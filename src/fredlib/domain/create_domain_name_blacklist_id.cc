@@ -165,7 +165,8 @@ namespace Fred
             Database::Result object_type_result = _ctx.get_conn().exec_params(
                 "SELECT name "
                 "FROM object_registry "
-                "WHERE id=$1::bigint", param);
+                "WHERE id=$1::bigint AND "
+                      "erdate IS NULL", param);
             if (object_type_result.size() <= 0) {
                 BOOST_THROW_EXCEPTION(Exception().set_object_id_not_found(object_id_));
             }

@@ -194,16 +194,6 @@ namespace Fred
             , add_tech_contact(_add_tech_contact)
             , history_id(_history_id)
         {}
-        friend std::ostream& operator<<(std::ostream& os, const MergeContactUpdateKeysetTechContact& i)
-        {
-            return os << "MergeContactUpdateDomainRegistrant handle: " << i.handle
-                    << " keyset_id: " << i.keyset_id
-                    << " sponsoring_registrar: " << i.sponsoring_registrar
-                    << " rem_tech_contact: " << i.rem_tech_contact
-                    << " add_tech_contact: " << i.add_tech_contact
-                    << " history_id: " << i.history_id.print_quoted()
-                    ;
-        }
 
         /**
         * Dumps state of the instance into the string

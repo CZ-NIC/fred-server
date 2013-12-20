@@ -103,6 +103,16 @@ namespace Registry
             Type what;
         };
 
+        struct EX_CONTACT_BLOCK_PROHIBITED {
+            struct Item {
+                unsigned long long contact_id;
+                std::string contact_handle;
+                bool operator<(const struct Item &_b) const { return contact_id < _b.contact_id; }
+            };
+            typedef std::set< struct Item > Type;
+            Type what;
+        };
+
         struct EX_NEW_OWNER_DOES_NOT_EXISTS
         {
             std::string what;
