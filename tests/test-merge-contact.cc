@@ -59,6 +59,10 @@
 #include "src/fredlib/nsset/info_nsset.h"
 #include "src/fredlib/domain/info_domain.h"
 #include "src/fredlib/contact/info_contact.h"
+#include "src/fredlib/contact/info_contact_diff.h"
+#include "src/fredlib/domain/info_domain_diff.h"
+#include "src/fredlib/nsset/info_nsset_diff.h"
+#include "src/fredlib/keyset/info_keyset_diff.h"
 
 #include "util/util.h"
 
@@ -1441,7 +1445,7 @@ struct merge_admin_contact_domain_fixture
         Fred::CreateDomain(
                 test_domain_handle //const std::string& fqdn
                 , sys_registrar_handle //const std::string& registrar
-                , contact_handle_1 //registrant
+                , contact_handle_2 //registrant
                 )
         .set_nsset(test_nsset_handle).set_keyset(test_keyset_handle)
         .set_admin_contacts(Util::vector_of<std::string>(contact_handle_1)(contact_handle_2))
@@ -1477,6 +1481,10 @@ BOOST_FIXTURE_TEST_CASE(test_merge_domain_admin_contacts, merge_admin_contact_do
         BOOST_CHECK(std::find(domain_info_2.info_domain_data.admin_contacts.begin()
         , domain_info_2.info_domain_data.admin_contacts.end()
         , contact_handle_2) != domain_info_2.info_domain_data.admin_contacts.end());
+
+        //check only admin contacts changed
+        domain_info_1.info_domain_data.admin_contacts = domain_info_2.info_domain_data.admin_contacts;
+        BOOST_CHECK(Fred::diff_domain_data(domain_info_1.info_domain_data, domain_info_2.info_domain_data).is_empty());
 
         BOOST_MESSAGE(merge_data);
         ctx.commit_transaction();
