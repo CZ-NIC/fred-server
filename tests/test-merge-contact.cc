@@ -1484,6 +1484,9 @@ BOOST_FIXTURE_TEST_CASE(test_merge_domain_admin_contacts, merge_admin_contact_do
 
         //check only admin contacts changed
         domain_info_1.info_domain_data.admin_contacts = domain_info_2.info_domain_data.admin_contacts;
+
+        BOOST_MESSAGE(Fred::diff_domain_data(domain_info_1.info_domain_data, domain_info_2.info_domain_data).to_string());
+
         BOOST_CHECK(Fred::diff_domain_data(domain_info_1.info_domain_data, domain_info_2.info_domain_data).is_empty());
 
         BOOST_MESSAGE(merge_data);
@@ -1521,6 +1524,9 @@ BOOST_FIXTURE_TEST_CASE(test_merge_nsset_tech_contacts, merge_tech_contact_nsset
 
         //check only tech contacts changed
         nsset_info_1.info_nsset_data.tech_contacts = nsset_info_2.info_nsset_data.tech_contacts;
+
+        BOOST_MESSAGE(Fred::diff_nsset_data(nsset_info_1.info_nsset_data, nsset_info_2.info_nsset_data).to_string());
+
         BOOST_CHECK(Fred::diff_nsset_data(nsset_info_1.info_nsset_data, nsset_info_2.info_nsset_data).is_empty());
 
         BOOST_MESSAGE(merge_data);
@@ -1558,6 +1564,9 @@ BOOST_FIXTURE_TEST_CASE(test_merge_keyset_tech_contacts, merge_tech_contact_keys
 
         //check only tech contacts changed
         keyset_info_1.info_keyset_data.tech_contacts = keyset_info_2.info_keyset_data.tech_contacts;
+
+        BOOST_MESSAGE(Fred::diff_keyset_data(keyset_info_1.info_keyset_data, keyset_info_2.info_keyset_data).to_string());
+
         BOOST_CHECK(Fred::diff_keyset_data(keyset_info_1.info_keyset_data, keyset_info_2.info_keyset_data).is_empty());
 
         BOOST_MESSAGE(merge_data);
