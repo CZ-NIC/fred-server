@@ -59,6 +59,10 @@
 #include "src/fredlib/nsset/info_nsset.h"
 #include "src/fredlib/domain/info_domain.h"
 #include "src/fredlib/contact/info_contact.h"
+#include "src/fredlib/contact/info_contact_diff.h"
+#include "src/fredlib/domain/info_domain_diff.h"
+#include "src/fredlib/nsset/info_nsset_diff.h"
+#include "src/fredlib/keyset/info_keyset_diff.h"
 
 #include "util/util.h"
 
@@ -1441,7 +1445,7 @@ struct merge_admin_contact_domain_fixture
         Fred::CreateDomain(
                 test_domain_handle //const std::string& fqdn
                 , sys_registrar_handle //const std::string& registrar
-                , contact_handle_1 //registrant
+                , contact_handle_2 //registrant
                 )
         .set_nsset(test_nsset_handle).set_keyset(test_keyset_handle)
         .set_admin_contacts(Util::vector_of<std::string>(contact_handle_1)(contact_handle_2))
@@ -1478,6 +1482,16 @@ BOOST_FIXTURE_TEST_CASE(test_merge_domain_admin_contacts, merge_admin_contact_do
         , domain_info_2.info_domain_data.admin_contacts.end()
         , contact_handle_2) != domain_info_2.info_domain_data.admin_contacts.end());
 
+        //check unrelated data not changed
+        domain_info_1.info_domain_data.admin_contacts = domain_info_2.info_domain_data.admin_contacts;
+        domain_info_1.info_domain_data.historyid = domain_info_2.info_domain_data.historyid;
+        domain_info_1.info_domain_data.update_time = domain_info_2.info_domain_data.update_time;
+        domain_info_1.info_domain_data.update_registrar_handle = domain_info_2.info_domain_data.update_registrar_handle;
+
+        BOOST_MESSAGE(Fred::diff_domain_data(domain_info_1.info_domain_data, domain_info_2.info_domain_data).to_string());
+
+        BOOST_CHECK(Fred::diff_domain_data(domain_info_1.info_domain_data, domain_info_2.info_domain_data).is_empty());
+
         BOOST_MESSAGE(merge_data);
         ctx.commit_transaction();
     }
@@ -1511,6 +1525,16 @@ BOOST_FIXTURE_TEST_CASE(test_merge_nsset_tech_contacts, merge_tech_contact_nsset
         , nsset_info_2.info_nsset_data.tech_contacts.end()
         , contact_handle_2) != nsset_info_2.info_nsset_data.tech_contacts.end());
 
+        //check unrelated data not changed
+        nsset_info_1.info_nsset_data.tech_contacts = nsset_info_2.info_nsset_data.tech_contacts;
+        nsset_info_1.info_nsset_data.historyid = nsset_info_2.info_nsset_data.historyid;
+        nsset_info_1.info_nsset_data.update_time = nsset_info_2.info_nsset_data.update_time;
+        nsset_info_1.info_nsset_data.update_registrar_handle = nsset_info_2.info_nsset_data.update_registrar_handle;
+
+        BOOST_MESSAGE(Fred::diff_nsset_data(nsset_info_1.info_nsset_data, nsset_info_2.info_nsset_data).to_string());
+
+        BOOST_CHECK(Fred::diff_nsset_data(nsset_info_1.info_nsset_data, nsset_info_2.info_nsset_data).is_empty());
+
         BOOST_MESSAGE(merge_data);
         ctx.commit_transaction();
     }
@@ -1543,6 +1567,16 @@ BOOST_FIXTURE_TEST_CASE(test_merge_keyset_tech_contacts, merge_tech_contact_keys
         BOOST_CHECK(std::find(keyset_info_2.info_keyset_data.tech_contacts.begin()
         , keyset_info_2.info_keyset_data.tech_contacts.end()
         , contact_handle_2) != keyset_info_2.info_keyset_data.tech_contacts.end());
+
+        //check unrelated data not changed
+        keyset_info_1.info_keyset_data.tech_contacts = keyset_info_2.info_keyset_data.tech_contacts;
+        keyset_info_1.info_keyset_data.historyid = keyset_info_2.info_keyset_data.historyid;
+        keyset_info_1.info_keyset_data.update_time = keyset_info_2.info_keyset_data.update_time;
+        keyset_info_1.info_keyset_data.update_registrar_handle = keyset_info_2.info_keyset_data.update_registrar_handle;
+
+        BOOST_MESSAGE(Fred::diff_keyset_data(keyset_info_1.info_keyset_data, keyset_info_2.info_keyset_data).to_string());
+
+        BOOST_CHECK(Fred::diff_keyset_data(keyset_info_1.info_keyset_data, keyset_info_2.info_keyset_data).is_empty());
 
         BOOST_MESSAGE(merge_data);
         ctx.commit_transaction();
