@@ -1519,6 +1519,10 @@ BOOST_FIXTURE_TEST_CASE(test_merge_nsset_tech_contacts, merge_tech_contact_nsset
         , nsset_info_2.info_nsset_data.tech_contacts.end()
         , contact_handle_2) != nsset_info_2.info_nsset_data.tech_contacts.end());
 
+        //check only tech contacts changed
+        nsset_info_1.info_nsset_data.tech_contacts = nsset_info_2.info_nsset_data.tech_contacts;
+        BOOST_CHECK(Fred::diff_nsset_data(nsset_info_1.info_nsset_data, nsset_info_2.info_nsset_data).is_empty());
+
         BOOST_MESSAGE(merge_data);
         ctx.commit_transaction();
     }
@@ -1551,6 +1555,10 @@ BOOST_FIXTURE_TEST_CASE(test_merge_keyset_tech_contacts, merge_tech_contact_keys
         BOOST_CHECK(std::find(keyset_info_2.info_keyset_data.tech_contacts.begin()
         , keyset_info_2.info_keyset_data.tech_contacts.end()
         , contact_handle_2) != keyset_info_2.info_keyset_data.tech_contacts.end());
+
+        //check only tech contacts changed
+        keyset_info_1.info_keyset_data.tech_contacts = keyset_info_2.info_keyset_data.tech_contacts;
+        BOOST_CHECK(Fred::diff_keyset_data(keyset_info_1.info_keyset_data, keyset_info_2.info_keyset_data).is_empty());
 
         BOOST_MESSAGE(merge_data);
         ctx.commit_transaction();
