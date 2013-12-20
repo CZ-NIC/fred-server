@@ -1482,8 +1482,11 @@ BOOST_FIXTURE_TEST_CASE(test_merge_domain_admin_contacts, merge_admin_contact_do
         , domain_info_2.info_domain_data.admin_contacts.end()
         , contact_handle_2) != domain_info_2.info_domain_data.admin_contacts.end());
 
-        //check only admin contacts changed
+        //check unrelated data not changed
         domain_info_1.info_domain_data.admin_contacts = domain_info_2.info_domain_data.admin_contacts;
+        domain_info_1.info_domain_data.historyid = domain_info_2.info_domain_data.historyid;
+        domain_info_1.info_domain_data.update_time = domain_info_2.info_domain_data.update_time;
+        domain_info_1.info_domain_data.update_registrar_handle = domain_info_2.info_domain_data.update_registrar_handle;
 
         BOOST_MESSAGE(Fred::diff_domain_data(domain_info_1.info_domain_data, domain_info_2.info_domain_data).to_string());
 
@@ -1522,8 +1525,11 @@ BOOST_FIXTURE_TEST_CASE(test_merge_nsset_tech_contacts, merge_tech_contact_nsset
         , nsset_info_2.info_nsset_data.tech_contacts.end()
         , contact_handle_2) != nsset_info_2.info_nsset_data.tech_contacts.end());
 
-        //check only tech contacts changed
+        //check unrelated data not changed
         nsset_info_1.info_nsset_data.tech_contacts = nsset_info_2.info_nsset_data.tech_contacts;
+        nsset_info_1.info_nsset_data.historyid = nsset_info_2.info_nsset_data.historyid;
+        nsset_info_1.info_nsset_data.update_time = nsset_info_2.info_nsset_data.update_time;
+        nsset_info_1.info_nsset_data.update_registrar_handle = nsset_info_2.info_nsset_data.update_registrar_handle;
 
         BOOST_MESSAGE(Fred::diff_nsset_data(nsset_info_1.info_nsset_data, nsset_info_2.info_nsset_data).to_string());
 
@@ -1562,8 +1568,11 @@ BOOST_FIXTURE_TEST_CASE(test_merge_keyset_tech_contacts, merge_tech_contact_keys
         , keyset_info_2.info_keyset_data.tech_contacts.end()
         , contact_handle_2) != keyset_info_2.info_keyset_data.tech_contacts.end());
 
-        //check only tech contacts changed
+        //check unrelated data not changed
         keyset_info_1.info_keyset_data.tech_contacts = keyset_info_2.info_keyset_data.tech_contacts;
+        keyset_info_1.info_keyset_data.historyid = keyset_info_2.info_keyset_data.historyid;
+        keyset_info_1.info_keyset_data.update_time = keyset_info_2.info_keyset_data.update_time;
+        keyset_info_1.info_keyset_data.update_registrar_handle = keyset_info_2.info_keyset_data.update_registrar_handle;
 
         BOOST_MESSAGE(Fred::diff_keyset_data(keyset_info_1.info_keyset_data, keyset_info_2.info_keyset_data).to_string());
 
