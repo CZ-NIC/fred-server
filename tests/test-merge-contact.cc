@@ -45,30 +45,30 @@
 
 #include "setup_server_decl.h"
 #include "time_clock.h"
-#include "fredlib/registrar.h"
-#include "fredlib/contact/merge_contact.h"
-#include "fredlib/contact/merge_contact_selection.h"
-#include "fredlib/contact/merge_contact_email_notification_data.h"
-#include "fredlib/contact/create_contact.h"
+#include "src/fredlib/registrar.h"
+#include "src/fredlib/contact/merge_contact.h"
+#include "src/fredlib/contact/merge_contact_selection.h"
+#include "src/fredlib/contact/merge_contact_email_notification_data.h"
+#include "src/fredlib/contact/create_contact.h"
 
-#include "fredlib/contact/create_contact.h"
-#include "fredlib/nsset/create_nsset.h"
-#include "fredlib/keyset/create_keyset.h"
-#include "fredlib/domain/create_domain.h"
-#include "fredlib/keyset/info_keyset.h"
-#include "fredlib/nsset/info_nsset.h"
-#include "fredlib/domain/info_domain.h"
-#include "fredlib/contact/info_contact.h"
+#include "src/fredlib/contact/create_contact.h"
+#include "src/fredlib/nsset/create_nsset.h"
+#include "src/fredlib/keyset/create_keyset.h"
+#include "src/fredlib/domain/create_domain.h"
+#include "src/fredlib/keyset/info_keyset.h"
+#include "src/fredlib/nsset/info_nsset.h"
+#include "src/fredlib/domain/info_domain.h"
+#include "src/fredlib/contact/info_contact.h"
 
 #include "util/util.h"
 
-#include "fredlib/contact_verification/contact.h"
-#include "fredlib/object_states.h"
-#include "contact_verification/contact_verification_impl.h"
+#include "src/fredlib/contact_verification/contact.h"
+#include "src/fredlib/object_states.h"
+#include "src/contact_verification/contact_verification_impl.h"
 #include "random_data_generator.h"
 #include "concurrent_queue.h"
 
-#include "fredlib/db_settings.h"
+#include "src/fredlib/db_settings.h"
 
 #include "cfg/handle_general_args.h"
 #include "cfg/handle_server_args.h"
@@ -575,9 +575,11 @@ struct merge_contact_n_fixture
             info_domain_admin_1.push_back(Fred::InfoDomainByHandle(merge_contact_n_domain_admin_fixture::get_handle(i)).exec(ctx));
         }
 
+        Fred::InfoContactOutput info_dst_contact_1 = Fred::InfoContactByHandle(dst_contact_handle).exec(ctx);
         Fred::InfoContactOutput info_src_contact_1 = Fred::InfoContactByHandle(src_contact_handle).exec(ctx);
         std::vector<Fred::InfoContactOutput> info_src_contact_history_1 = Fred::InfoContactHistory(
                 info_src_contact_1.info_contact_data.roid).exec(ctx);
+
         BOOST_CHECK(info_src_contact_history_1.at(0).info_contact_data.delete_time.isnull());//check src contact is not deleted
 
         //merge
@@ -658,6 +660,8 @@ struct merge_contact_n_fixture
             info_src_contact_1.info_contact_data.roid).exec(ctx);
         BOOST_CHECK(!info_src_contact_history_2.at(0).info_contact_data.delete_time.isnull());//check src contact is deleted
 
+        Fred::InfoContactOutput info_dst_contact_2 = Fred::InfoContactByHandle(dst_contact_handle).exec(ctx);
+        BOOST_CHECK(info_dst_contact_1.info_contact_data.authinfopw != info_dst_contact_2.info_contact_data.authinfopw); //check dst contact has new authinfo
     }
 };
 
@@ -696,9 +700,11 @@ BOOST_FIXTURE_TEST_CASE(merge_contact, merge_contact_domain_fixture)
     Fred::InfoKeysetOutput info_keyset_1 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
     Fred::InfoNssetOutput info_nsset_1 = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
 
+    Fred::InfoContactOutput info_dst_contact_1 = Fred::InfoContactByHandle(dst_contact_handle).exec(ctx);
     Fred::InfoContactOutput info_src_contact_1 = Fred::InfoContactByHandle(src_contact_handle).exec(ctx);
     std::vector<Fred::InfoContactOutput> info_src_contact_history_1 = Fred::InfoContactHistory(
             info_src_contact_1.info_contact_data.roid).exec(ctx);
+
     BOOST_CHECK(info_src_contact_history_1.at(0).info_contact_data.delete_time.isnull());//check src contact is not deleted
 
     //merge
@@ -743,6 +749,9 @@ BOOST_FIXTURE_TEST_CASE(merge_contact, merge_contact_domain_fixture)
     std::vector<Fred::InfoContactOutput> info_src_contact_history_2 = Fred::InfoContactHistory(
         info_src_contact_1.info_contact_data.roid).exec(ctx);
     BOOST_CHECK(!info_src_contact_history_2.at(0).info_contact_data.delete_time.isnull());//check src contact is deleted
+
+    Fred::InfoContactOutput info_dst_contact_2 = Fred::InfoContactByHandle(dst_contact_handle).exec(ctx);
+    BOOST_CHECK(info_dst_contact_1.info_contact_data.authinfopw != info_dst_contact_2.info_contact_data.authinfopw); //check dst contact has new authinfo
 }
 
 /**

@@ -33,7 +33,7 @@
 
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
-#include "fredlib/domain/enum_validation_extension.h"
+#include "src/fredlib/domain/enum_validation_extension.h"
 #include "util/printable.h"
 
 namespace Fred

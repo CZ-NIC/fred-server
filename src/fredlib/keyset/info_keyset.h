@@ -30,11 +30,11 @@
 #include <boost/date_time/posix_time/ptime.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
 
-#include "fredlib/opexception.h"
-#include "fredlib/opcontext.h"
+#include "src/fredlib/opexception.h"
+#include "src/fredlib/opcontext.h"
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
-#include "fredlib/keyset/info_keyset_data.h"
+#include "src/fredlib/keyset/info_keyset_data.h"
 #include "util/printable.h"
 namespace Fred
 {

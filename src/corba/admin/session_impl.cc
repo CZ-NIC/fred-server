@@ -2,25 +2,25 @@
 #include <memory>
 #include <iomanip>
 #include <algorithm>
-#include <corba/Admin.hh>
+#include "src/corba/Admin.hh"
 
 #include "session_impl.h"
-#include "old_utils/log.h"
-#include "old_utils/dbsql.h"
-#include "fredlib/registry.h"
-#include "fredlib/notify.h"
-#include "fredlib/registrar.h"
+#include "src/old_utils/log.h"
+#include "src/old_utils/dbsql.h"
+#include "src/fredlib/registry.h"
+#include "src/fredlib/notify.h"
+#include "src/fredlib/registrar.h"
 #include "usertype_conv.h"
 #include "common.h"
-#include "fredlib/public_request/public_request_authinfo_impl.h"
-#include "fredlib/public_request/public_request_block_impl.h"
-#include "mojeid/public_request_verification_impl.h"
+#include "src/fredlib/public_request/public_request_authinfo_impl.h"
+#include "src/fredlib/public_request/public_request_block_impl.h"
+#include "src/mojeid/public_request_verification_impl.h"
 #include "src/contact_verification/public_request_contact_verification_impl.h"
 #include "log/logger.h"
 #include "log/context.h"
 #include "util.h"
 
-#include "corba/connection_releaser.h"
+#include "src/corba/connection_releaser.h"
 
 
 ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,

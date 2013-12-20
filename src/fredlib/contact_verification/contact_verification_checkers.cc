@@ -1,5 +1,5 @@
 #include "log/logger.h"
-#include "fredlib/db_settings.h"
+#include "src/fredlib/db_settings.h"
 #include "contact_verification_checkers.h"
 
 #include <boost/algorithm/string.hpp>

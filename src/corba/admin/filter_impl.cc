@@ -1,17 +1,17 @@
 #include <math.h>
 #include <memory>
 #include <iomanip>
-#include <corba/Filters.hh>
+#include "src/corba/Filters.hh"
 #include <algorithm>
 #include <boost/utility.hpp>
 
 #include "common.h"
 #include "filter_impl.h"
-#include "old_utils/log.h"
-#include "old_utils/dbsql.h"
-#include "fredlib/notify.h"
-#include "fredlib/filter.h"
-#include "corba/mailer_manager.h"
+#include "src/old_utils/log.h"
+#include "src/old_utils/dbsql.h"
+#include "src/fredlib/notify.h"
+#include "src/fredlib/filter.h"
+#include "src/corba/mailer_manager.h"
 
 #include "log/logger.h"
 

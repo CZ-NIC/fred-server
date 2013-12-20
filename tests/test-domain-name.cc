@@ -44,15 +44,15 @@
 
 #include "setup_server_decl.h"
 #include "time_clock.h"
-#include "fredlib/registrar.h"
-#include "fredlib/domain/domain_name.h"
+#include "src/fredlib/registrar.h"
+#include "src/fredlib/domain/domain_name.h"
 #include "util/util.h"
 
 #include "random_data_generator.h"
 #include "concurrent_queue.h"
 
 
-#include "fredlib/db_settings.h"
+#include "src/fredlib/db_settings.h"
 
 #include "cfg/handle_general_args.h"
 #include "cfg/handle_server_args.h"

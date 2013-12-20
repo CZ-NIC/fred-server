@@ -25,10 +25,10 @@
 #include <string>
 
 #include "messages_filemanager.h"
-#include "corba_wrapper_decl.h"
+#include "util/corba_wrapper_decl.h"
 
-#include <corba/FileManager.hh>
-#include "file_manager_client.h"
+#include "src/corba/FileManager.hh"
+#include "src/corba/file_manager_client.h"
 
 unsigned long long save_file(std::vector<char>& file_buffer
         , const std::string file_name, const std::string file_mime_type

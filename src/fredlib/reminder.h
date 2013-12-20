@@ -4,7 +4,7 @@
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <stdexcept>
 
-#include "mailer.h"
+#include "src/fredlib/mailer.h"
 
 
 namespace Fred {

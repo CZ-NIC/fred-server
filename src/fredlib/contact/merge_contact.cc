@@ -17,7 +17,7 @@
  */
 
 /**
- *  @file merge_contact.cc
+ *  @file
  *  contact merge
  */
 
@@ -25,15 +25,17 @@
 
 #include <boost/algorithm/string.hpp>
 
-#include "fredlib/contact/merge_contact.h"
+#include "src/fredlib/contact/merge_contact.h"
 
-#include "fredlib/domain/update_domain.h"
-#include "fredlib/nsset/update_nsset.h"
-#include "fredlib/keyset/update_keyset.h"
-#include "fredlib/contact/delete_contact.h"
+#include "src/fredlib/domain/update_domain.h"
+#include "src/fredlib/nsset/update_nsset.h"
+#include "src/fredlib/keyset/update_keyset.h"
+#include "src/fredlib/contact/delete_contact.h"
+#include "src/fredlib/contact/update_contact.h"
+#include "src/fredlib/opcontext.h"
+#include "src/fredlib/db_settings.h"
+#include "util/random.h"
 
-#include "fredlib/opcontext.h"
-#include "fredlib/db_settings.h"
 
 namespace Fred
 {
@@ -377,6 +379,12 @@ namespace Fred
         if(!dry_run)
         {
             DeleteContact(src_contact_handle_).exec(ctx);
+            /* #9877 - change authinfo of destination contact */
+            std::string new_authinfo =  Random::string_from(8, "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789");
+            UpdateContactByHandle(dst_contact_handle_, registrar_)
+                .set_logd_request_id(logd_request_id_)
+                .set_authinfo(new_authinfo)
+                .exec(ctx);
         }
 
         return output;

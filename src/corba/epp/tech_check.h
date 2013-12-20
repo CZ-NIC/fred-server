@@ -6,8 +6,8 @@
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
 
-#include "corba/TechCheck.hh"
-#include "corba/nameservice.h"
+#include "src/corba/TechCheck.hh"
+#include "src/corba/nameservice.h"
 
 class TechCheckManager {
  public:

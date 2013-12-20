@@ -32,7 +32,7 @@
 #include <boost/date_time/posix_time/ptime.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
 
-#include "fredlib/nsset/info_nsset_data.h"
+#include "src/fredlib/nsset/info_nsset_data.h"
 
 #include "util/optional_value.h"
 #include "util/db/nullable.h"

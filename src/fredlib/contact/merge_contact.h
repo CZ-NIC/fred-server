@@ -28,8 +28,8 @@
 #include <vector>
 #include <boost/lexical_cast.hpp>
 
-#include "fredlib/opexception.h"
-#include "fredlib/opcontext.h"
+#include "src/fredlib/opexception.h"
+#include "src/fredlib/opcontext.h"
 #include "util/optional_value.h"
 #include "util/printable.h"
 

@@ -26,9 +26,9 @@
 #include <map>
 #include <set>
 
-#include "fredlib/opexception.h"
-#include "fredlib/opcontext.h"
-#include "fredlib/contact/merge_contact_email_notification_data.h"
+#include "src/fredlib/opexception.h"
+#include "src/fredlib/opcontext.h"
+#include "src/fredlib/contact/merge_contact_email_notification_data.h"
 
 
 namespace Fred

@@ -1,8 +1,8 @@
 #ifndef ADMIN_MERGE_CONTACT_H__
 #define ADMIN_MERGE_CONTACT_H__
 
-#include "fredlib/contact/merge_contact.h"
-#include "fredlib/logger_client.h"
+#include "src/fredlib/contact/merge_contact.h"
+#include "src/fredlib/logger_client.h"
 #include "util/types/optional.h"
 
 

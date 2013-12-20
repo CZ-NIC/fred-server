@@ -29,13 +29,13 @@
 
 #include "boost/date_time/posix_time/posix_time.hpp"
 
-#include "fredlib/opexception.h"
-#include "fredlib/opcontext.h"
+#include "src/fredlib/opexception.h"
+#include "src/fredlib/opcontext.h"
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
 #include "util/printable.h"
 
-#include "fredlib/nsset/nsset_dns_host.h"
+#include "src/fredlib/nsset/nsset_dns_host.h"
 
 namespace Fred
 {

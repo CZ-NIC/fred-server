@@ -25,10 +25,10 @@
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/archive/xml_oarchive.hpp>
 
-#include "common_object.h"
-#include "object.h"
+#include "src/fredlib/common_object.h"
+#include "src/fredlib/object.h"
 #include "filter.h"
-#include "model/model_filters.h"
+#include "src/model/model_filters.h"
 #include "log/logger.h"
 
 namespace Fred {

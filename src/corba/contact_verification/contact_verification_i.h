@@ -25,7 +25,7 @@
 #ifndef CONTACT_VERIFICATION_I_H__
 #define CONTACT_VERIFICATION_I_H__
 
-#include <ContactVerification.hh>
+#include "src/corba/ContactVerification.hh"
 #include <memory>
 #include <string>
 

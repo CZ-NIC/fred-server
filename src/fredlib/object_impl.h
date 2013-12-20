@@ -1,9 +1,9 @@
 #ifndef OBJECT_IMPL_H_
 #define OBJECT_IMPL_H_
 
-#include "object.h"
-#include "common_impl.h"
-#include "db_settings.h"
+#include "src/fredlib/object.h"
+#include "src/fredlib/common_impl.h"
+#include "src/fredlib/db_settings.h"
 
 class DB;
 namespace Fred {

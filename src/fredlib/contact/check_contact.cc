@@ -25,11 +25,11 @@
 
 #include <boost/regex.hpp>
 
-#include "fredlib/contact/check_contact.h"
-#include "fredlib/object/check_handle.h"
+#include "src/fredlib/contact/check_contact.h"
+#include "src/fredlib/object/check_handle.h"
 
-#include "fredlib/opcontext.h"
-#include "fredlib/db_settings.h"
+#include "src/fredlib/opcontext.h"
+#include "src/fredlib/db_settings.h"
 
 namespace Fred
 {

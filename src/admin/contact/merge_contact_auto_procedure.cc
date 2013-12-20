@@ -1,9 +1,9 @@
-#include "admin/contact/merge_contact_auto_procedure.h"
-#include "admin/contact/merge_contact.h"
-#include "admin/contact/merge_contact_reporting.h"
-#include "fredlib/contact/merge_contact.h"
-#include "fredlib/contact/find_contact_duplicates.h"
-#include "fredlib/contact/merge_contact_email_notification_data.h"
+#include "src/admin/contact/merge_contact_auto_procedure.h"
+#include "src/admin/contact/merge_contact.h"
+#include "src/admin/contact/merge_contact_reporting.h"
+#include "src/fredlib/contact/merge_contact.h"
+#include "src/fredlib/contact/find_contact_duplicates.h"
+#include "src/fredlib/contact/merge_contact_email_notification_data.h"
 #include "util/util.h"
 
 #include <boost/algorithm/string/join.hpp>

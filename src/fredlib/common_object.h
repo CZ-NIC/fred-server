@@ -1,10 +1,10 @@
 #ifndef _COMMON_OBJECT_H_
 #define _COMMON_OBJECT_H_
 
-#include "types.h"
-#include "exceptions.h"
-#include "model/model_filters.h"
-#include "db_settings.h"
+#include "src/fredlib/types.h"
+#include "src/fredlib/exceptions.h"
+#include "src/model/model_filters.h"
+#include "src/fredlib/db_settings.h"
 
 namespace Fred {
 

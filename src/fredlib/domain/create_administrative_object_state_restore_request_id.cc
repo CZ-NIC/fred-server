@@ -21,15 +21,15 @@
  *  create administrative object state restore request
  */
 
-#include "fredlib/domain/create_administrative_object_state_restore_request_id.h"
-#include "fredlib/domain/clear_administrative_object_state_request_id.h"
-#include "fredlib/domain/get_blocking_status_desc_list.h"
-#include "fredlib/opcontext.h"
-#include "fredlib/db_settings.h"
+#include "src/fredlib/domain/create_administrative_object_state_restore_request_id.h"
+#include "src/fredlib/domain/clear_administrative_object_state_request_id.h"
+#include "src/fredlib/domain/get_blocking_status_desc_list.h"
+#include "src/fredlib/opcontext.h"
+#include "src/fredlib/db_settings.h"
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
 #include "util/util.h"
-#include "fredlib/object.h"
+#include "src/fredlib/object.h"
 #include "clear_object_state_request_id.h"
 
 #include <boost/algorithm/string.hpp>
@@ -132,14 +132,23 @@ namespace Fred
                 "JOIN object_state os ON (os.object_id=oss.object_id AND "
                                          "os.valid_from<oss.valid_from AND "
                                          "(os.valid_to IS NULL OR oss.valid_from<=os.valid_to)) "
-                "JOIN enum_object_states eos ON eos.id=os.state_id",
+                "JOIN enum_object_states eos ON eos.id=os.state_id "
+                "WHERE eos.manual AND name LIKE 'server%'",
                 Database::query_param_list(start_object_state_id));
             for (Database::Result::Iterator pName = previous_status_list_result.begin();
                  pName != previous_status_list_result.end(); ++pName) {
                 previous_status_list.insert((*pName)[0]);
             }
         }
-        ClearAdministrativeObjectStateRequestId(object_id_, reason_).exec(_ctx);
+        try {
+            ClearAdministrativeObjectStateRequestId(object_id_, reason_).exec(_ctx);
+        }
+        catch (const ClearAdministrativeObjectStateRequestId::Exception &ex) {
+            if (ex.is_set_server_blocked_absent()) {
+                BOOST_THROW_EXCEPTION(Exception().set_server_blocked_absent(ex.get_server_blocked_absent()));
+            }
+            throw;
+        }
         if (!previous_status_list.empty()) {
             CreateObjectStateRequestId(object_id_, previous_status_list).exec(_ctx);
         }

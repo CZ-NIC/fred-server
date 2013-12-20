@@ -2,18 +2,18 @@
 #define REGISTER_H_
 
 #include <string>
-#include "domain.h"
-#include "registrar.h"
-#include "contact.h"
-#include "nsset.h"
-#include "keyset.h"
-#include "public_request/public_request.h"
-#include "invoicing/invoice.h"
-#include "bank_manager.h"
+#include "src/fredlib/domain.h"
+#include "src/fredlib/registrar.h"
+#include "src/fredlib/contact.h"
+#include "src/fredlib/nsset.h"
+#include "src/fredlib/keyset.h"
+#include "src/fredlib/public_request/public_request.h"
+#include "src/fredlib/invoicing/invoice.h"
+#include "src/fredlib/banking/bank_manager.h"
 #include "mail.h"
-#include "file.h"
+#include "src/fredlib/file.h"
 #include "filter.h"
-#include "messages/messages_impl.h"
+#include "src/fredlib/messages/messages_impl.h"
 
 /// forward declared parameter type
 class DB;

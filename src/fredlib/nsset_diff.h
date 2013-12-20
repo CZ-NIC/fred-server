@@ -1,7 +1,7 @@
 #ifndef NSSET_DIFF_H__
 #define NSSET_DIFF_H__
 
-#include "nsset.h"
+#include "src/fredlib/nsset.h"
 #include "common_diff.h"
 
 namespace Fred {

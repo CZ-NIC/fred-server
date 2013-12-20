@@ -27,11 +27,11 @@
 
 #include <boost/algorithm/string.hpp>
 
-#include "fredlib/nsset/create_nsset.h"
-#include "fredlib/object/object.h"
-#include "fredlib/registrar/registrar_impl.h"
-#include "fredlib/opcontext.h"
-#include "fredlib/db_settings.h"
+#include "src/fredlib/nsset/create_nsset.h"
+#include "src/fredlib/object/object.h"
+#include "src/fredlib/registrar/registrar_impl.h"
+#include "src/fredlib/opcontext.h"
+#include "src/fredlib/db_settings.h"
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
 #include "util/util.h"

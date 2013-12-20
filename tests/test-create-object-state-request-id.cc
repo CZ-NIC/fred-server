@@ -42,24 +42,24 @@
 
 #include "setup_server_decl.h"
 #include "time_clock.h"
-#include "fredlib/registrar.h"
-#include "fredlib/domain/create_object_state_request_id.h"
-#include "fredlib/opexception.h"
+#include "src/fredlib/registrar.h"
+#include "src/fredlib/domain/create_object_state_request_id.h"
+#include "src/fredlib/opexception.h"
 #include "util/util.h"
 
-#include "fredlib/contact/create_contact.h"
-#include "fredlib/domain/create_domain.h"
-#include "fredlib/domain/delete_domain.h"
-#include "fredlib/domain/info_domain.h"
+#include "src/fredlib/contact/create_contact.h"
+#include "src/fredlib/domain/create_domain.h"
+#include "src/fredlib/domain/delete_domain.h"
+#include "src/fredlib/domain/info_domain.h"
 
-#include "fredlib/contact_verification/contact.h"
-#include "fredlib/object_states.h"
-#include "contact_verification/contact_verification_impl.h"
+#include "src/fredlib/contact_verification/contact.h"
+#include "src/fredlib/object_states.h"
+#include "src/contact_verification/contact_verification_impl.h"
 #include "random_data_generator.h"
 #include "concurrent_queue.h"
 
 
-#include "fredlib/db_settings.h"
+#include "src/fredlib/db_settings.h"
 
 #include "cfg/handle_general_args.h"
 #include "cfg/handle_server_args.h"
@@ -77,9 +77,6 @@
 BOOST_AUTO_TEST_SUITE(TestCreateObjectStateTequestId)
 
 const std::string server_name = "test-create-object-state-request-id";
-
-#define LOGME(WHAT) \
-std::cout << __FILE__ << "(" << __LINE__ << "): " << WHAT << " [in " << __PRETTY_FUNCTION__ << "]" << std::endl
 
 struct create_object_state_request_id_fixture
 {
@@ -102,7 +99,7 @@ struct create_object_state_request_id_fixture
             "SELECT handle FROM registrar WHERE system ORDER BY id LIMIT 1")[0][0]);
         BOOST_CHECK(!registrar_handle.empty());//expecting existing system registrar
 
-        Fred::CreateContact(admin_contact2_handle,registrar_handle)
+        Fred::CreateContact(admin_contact2_handle, registrar_handle)
             .set_name(std::string("TEST-OSR-ADMIN-CONTACT NAME")+xmark)
             .set_disclosename(true)
             .set_street1(std::string("STR1")+xmark)
@@ -110,21 +107,17 @@ struct create_object_state_request_id_fixture
             .set_discloseaddress(true)
             .exec(ctx);
 
-        Fred::CreateContact(registrant_contact_handle,registrar_handle)
-                .set_name(std::string("TEST-REGISTRANT-CONTACT NAME")+xmark)
-                .set_disclosename(true)
-                .set_street1(std::string("STR1")+xmark)
-                .set_city("Praha").set_postalcode("11150").set_country("CZ")
-                .set_discloseaddress(true)
-                .exec(ctx);
+        Fred::CreateContact(registrant_contact_handle, registrar_handle)
+            .set_name(std::string("TEST-REGISTRANT-CONTACT NAME")+xmark)
+            .set_disclosename(true)
+            .set_street1(std::string("STR1")+xmark)
+            .set_city("Praha").set_postalcode("11150").set_country("CZ")
+            .set_discloseaddress(true)
+            .exec(ctx);
 
-        Fred::CreateDomain(
-                test_domain_fqdn //const std::string& fqdn
-                , registrar_handle //const std::string& registrar
-                , registrant_contact_handle //registrant
-                )
-        .set_admin_contacts(Util::vector_of<std::string>(admin_contact2_handle))
-        .exec(ctx);
+        Fred::CreateDomain(test_domain_fqdn, registrar_handle, registrant_contact_handle)
+            .set_admin_contacts(Util::vector_of<std::string>(admin_contact2_handle))
+            .exec(ctx);
 
         Database::Result status_result = ctx.get_conn().exec("SELECT name FROM enum_object_states WHERE manual AND 3=ANY(types)");
         for (::size_t idx = 0; idx < status_result.size(); ++idx) {

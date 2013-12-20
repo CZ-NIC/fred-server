@@ -7,8 +7,8 @@
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
 
-#include "corba/Mailer.hh"
-#include "fredlib/mailer.h"
+#include "src/corba/Mailer.hh"
+#include "src/fredlib/mailer.h"
 #include "nameservice.h"
 
 using namespace boost::posix_time;

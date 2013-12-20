@@ -26,7 +26,7 @@
 
 #include <string>
 
-#include "fredlib/opcontext.h"
+#include "src/fredlib/opcontext.h"
 
 namespace Fred
 {

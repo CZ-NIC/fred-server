@@ -2,7 +2,7 @@
 #define ZONE_IMPL_H_
 
 #include <string>
-#include "fredlib/zone.h"
+#include "src/fredlib/zone.h"
 
 class ccReg_ZoneIf_i:
     public POA_ccReg::ZoneIf,

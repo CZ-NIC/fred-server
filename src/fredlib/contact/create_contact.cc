@@ -28,12 +28,12 @@
 
 #include <boost/algorithm/string.hpp>
 
-#include "fredlib/contact/create_contact.h"
-#include "fredlib/object/object.h"
-#include "fredlib/contact/contact_enum.h"
+#include "src/fredlib/contact/create_contact.h"
+#include "src/fredlib/object/object.h"
+#include "src/fredlib/contact/contact_enum.h"
 
-#include "fredlib/opcontext.h"
-#include "fredlib/db_settings.h"
+#include "src/fredlib/opcontext.h"
+#include "src/fredlib/db_settings.h"
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
 #include "util/util.h"

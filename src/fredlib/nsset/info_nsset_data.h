@@ -35,7 +35,7 @@
 #include "util/db/nullable.h"
 #include "util/printable.h"
 
-#include "fredlib/nsset/nsset_dns_host.h"
+#include "src/fredlib/nsset/nsset_dns_host.h"
 
 namespace Fred
 {

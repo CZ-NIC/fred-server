@@ -22,7 +22,7 @@
 #include "zone.h"
 #include <iostream>
 #include <sstream>
-#include "types.h"
+#include "src/fredlib/types.h"
 #include <ctype.h>
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>

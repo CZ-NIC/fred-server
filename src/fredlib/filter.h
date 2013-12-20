@@ -1,10 +1,10 @@
 #ifndef REGISTER_FILTER_H_
 #define REGISTER_FILTER_H_
 
-#include "common_impl.h"
-#include "types.h"
-#include "db_settings.h"
-#include "model/model_filters.h"
+#include "src/fredlib/common_impl.h"
+#include "src/fredlib/types.h"
+#include "src/fredlib/db_settings.h"
+#include "src/model/model_filters.h"
 
 namespace Fred {
 namespace Filter {

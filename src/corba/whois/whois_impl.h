@@ -4,10 +4,10 @@
 #include <memory>
 #include <string>
 
-#include "fredlib/registry.h"
-//#include "old_utils/dbsql.h"
+#include "src/fredlib/registry.h"
+//#include "src/old_utils/dbsql.h"
 
-#include "Whois.hh"
+#include "src/corba/Whois.hh"
 
 class ccReg_Whois_i : public POA_ccReg::Whois,
   public PortableServer::RefCountServantBase

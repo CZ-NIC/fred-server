@@ -21,10 +21,10 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include "fredlib/db_settings.h"
+#include "src/fredlib/db_settings.h"
 #include "util/types/optional.h"
-#include "fredlib/contact_verification/contact.h"
-#include "mojeid/public_request_verification_impl.h"
+#include "src/fredlib/contact_verification/contact.h"
+#include "src/mojeid/public_request_verification_impl.h"
 
     ///check public request on contact, report args of the check, return public request id
     static unsigned long long check_public_request_on_contact(Fred::Contact::Verification::Contact& fcvc

@@ -14,14 +14,14 @@
 
 #include "time_clock.h"
 
-#include "requests/request_impl.h"
-#include "requests/request.h"
-#include "requests/request_manager.h"
-#include "requests/model_request_property_name.h"
-#include "requests/model_request_property_value.h"
+#include "src/fredlib/requests/request_impl.h"
+#include "src/fredlib/requests/request.h"
+#include "src/fredlib/requests/request_manager.h"
+#include "src/fredlib/requests/model_request_property_name.h"
+#include "src/fredlib/requests/model_request_property_value.h"
 
-#include "corba_wrapper_decl.h"
-#include <corba/Logger.hh>
+#include "util/corba_wrapper_decl.h"
+#include "src/corba/Logger.hh"
 
 #include "cfg/handle_general_args.h"
 #include "cfg/handle_database_args.h"

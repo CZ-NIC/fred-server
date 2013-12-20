@@ -21,15 +21,15 @@
  *  create domain name blacklist
  */
 
-#include "fredlib/domain/create_domain_name_blacklist_id.h"
-#include "fredlib/domain/get_blocking_status_desc_list.h"
-#include "fredlib/domain/get_object_state_id_map.h"
-#include "fredlib/opcontext.h"
-#include "fredlib/db_settings.h"
+#include "src/fredlib/domain/create_domain_name_blacklist_id.h"
+#include "src/fredlib/domain/get_blocking_status_desc_list.h"
+#include "src/fredlib/domain/get_object_state_id_map.h"
+#include "src/fredlib/opcontext.h"
+#include "src/fredlib/db_settings.h"
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
 #include "util/util.h"
-#include "fredlib/object.h"
+#include "src/fredlib/object.h"
 
 #include <boost/algorithm/string.hpp>
 
@@ -45,13 +45,11 @@ namespace Fred
     CreateDomainNameBlacklistId::CreateDomainNameBlacklistId(ObjectId _object_id,
         const std::string &_reason,
             const Optional< Time > &_valid_from,
-            const Optional< Time > &_valid_to,
-            const Optional< UserId > &_creator)
+            const Optional< Time > &_valid_to)
     :   object_id_(_object_id),
         reason_(_reason),
         valid_from_(_valid_from),
-        valid_to_(_valid_to),
-        creator_(_creator)
+        valid_to_(_valid_to)
     {}
 
     CreateDomainNameBlacklistId& CreateDomainNameBlacklistId::set_valid_from(const Time &_valid_from)
@@ -63,12 +61,6 @@ namespace Fred
     CreateDomainNameBlacklistId& CreateDomainNameBlacklistId::set_valid_to(const Time &_valid_to)
     {
         valid_to_ = _valid_to;
-        return *this;
-    }
-    
-    CreateDomainNameBlacklistId& CreateDomainNameBlacklistId::set_creator(UserId _creator)
-    {
-        creator_ = _creator;
         return *this;
     }
 
@@ -123,6 +115,24 @@ namespace Fred
             }
             return 0 < blacklisted_result.size();
         }
+
+        std::string fqdn_to_regexp(const std::string &_fqdn)
+        {
+            std::string regexp = "^";
+            for (std::string::const_iterator pC = _fqdn.begin(); pC != _fqdn.end(); ++pC) {
+                switch (*pC ) {
+                case '.':
+                    regexp += std::string("\\") + *pC;
+                    break;
+                default:
+                    regexp += *pC;
+                    break;
+                }
+            }
+            regexp += "$";
+            return regexp;
+        }
+
     }
 
     void CreateDomainNameBlacklistId::exec(OperationContext &_ctx)
@@ -149,7 +159,7 @@ namespace Fred
             }
         }
 
-        std::string domain;
+        std::string domain_regexp;
         {
             Database::query_param_list param(object_id_);
             Database::Result object_type_result = _ctx.get_conn().exec_params(
@@ -160,31 +170,19 @@ namespace Fred
                 BOOST_THROW_EXCEPTION(Exception().set_object_id_not_found(object_id_));
             }
             const Database::Row &row = object_type_result[0];
-            domain = static_cast< std::string >(row[0]);
+            domain_regexp = fqdn_to_regexp(static_cast< std::string >(row[0]));
         }
 
-        if (is_blacklisted(_ctx.get_conn(), domain, valid_from_, valid_to_)) {
+        if (is_blacklisted(_ctx.get_conn(), domain_regexp, valid_from_, valid_to_)) {
             BOOST_THROW_EXCEPTION(Exception().set_already_blacklisted_domain(object_id_));
-        }
-
-        if (creator_.isset()) {
-            Database::Result creator_result = _ctx.get_conn().exec_params(
-                "SELECT 1 "
-                "FROM \"user\" "
-                "WHERE id=$1::integer "
-                "LIMIT 1",
-                Database::query_param_list(creator_.get_value()));
-            if (creator_result.size() <= 0) {
-                BOOST_THROW_EXCEPTION(Exception().set_creator_not_found(creator_.get_value()));
-            }
         }
 
         std::ostringstream cmd;
         cmd << "INSERT INTO domain_blacklist "
-                   "(regexp,reason,valid_from,valid_to,creator) "
+                   "(regexp,reason,valid_from,valid_to) "
                "VALUES "
                    "($1::text,$2::text";
-        Database::query_param_list param(domain);
+        Database::query_param_list param(domain_regexp);
         param(reason_);
         if (valid_from_.isset()) {
             param(valid_from_.get_value());
@@ -196,13 +194,6 @@ namespace Fred
         if (valid_to_.isset()) {
             param(valid_to_.get_value());
             cmd << ",$" << param.size() << "::timestamp";
-        }
-        else {
-            cmd << ",NULL";
-        }
-        if (creator_.isset()) {
-            param(creator_.get_value());
-            cmd << ",$" << param.size() << "::integer";
         }
         else {
             cmd << ",NULL";

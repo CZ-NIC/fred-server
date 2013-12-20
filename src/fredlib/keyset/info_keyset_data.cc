@@ -36,8 +36,8 @@
 #include "util/db/nullable.h"
 #include "util/util.h"
 #include "util/printable.h"
-#include "fredlib/keyset/info_keyset_data.h"
-#include "fredlib/keyset/info_keyset_diff.h"
+#include "src/fredlib/keyset/info_keyset_data.h"
+#include "src/fredlib/keyset/info_keyset_diff.h"
 
 namespace Fred
 {

@@ -38,7 +38,7 @@
 #include "util/db/nullable.h"
 #include "util/util.h"
 #include "util/is_equal_optional_nullable.h"
-#include "fredlib/contact/info_contact_diff.h"
+#include "src/fredlib/contact/info_contact_diff.h"
 
 namespace Fred
 {

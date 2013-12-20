@@ -23,13 +23,13 @@
 
 #include <string>
 
-#include "fredlib/domain/delete_domain.h"
-#include "fredlib/domain/domain_name.h"
-#include "fredlib/object/object.h"
-#include "fredlib/registrar/registrar_impl.h"
-#include "fredlib/opcontext.h"
-#include "fredlib/db_settings.h"
-#include "fredlib/object_states.h"
+#include "src/fredlib/domain/delete_domain.h"
+#include "src/fredlib/domain/domain_name.h"
+#include "src/fredlib/object/object.h"
+#include "src/fredlib/registrar/registrar_impl.h"
+#include "src/fredlib/opcontext.h"
+#include "src/fredlib/db_settings.h"
+#include "src/fredlib/object_states.h"
 
 namespace Fred
 {

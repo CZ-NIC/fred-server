@@ -1,7 +1,7 @@
 #ifndef CONTACT_DIFF_H__
 #define CONTACT_DIFF_H__
 
-#include "contact.h"
+#include "src/fredlib/contact.h"
 #include "common_diff.h"
 
 namespace Fred {

@@ -4,8 +4,8 @@
 
 #include "bank_payment_impl.h"
 #include "bank_payment_list.h"
-#include "common_impl_new.h"
-#include "db_settings.h"
+#include "src/fredlib/common_impl_new.h"
+#include "src/fredlib/db_settings.h"
 #include "types/money.h"
 
 namespace Fred {

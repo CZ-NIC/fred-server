@@ -21,15 +21,15 @@
  *  cancel object state request
  */
 
-#include "fredlib/domain/cancel_object_state_request_id.h"
-#include "fredlib/domain/get_blocking_status_desc_list.h"
-#include "fredlib/domain/get_object_state_id_map.h"
-#include "fredlib/opcontext.h"
-#include "fredlib/db_settings.h"
+#include "src/fredlib/domain/cancel_object_state_request_id.h"
+#include "src/fredlib/domain/get_blocking_status_desc_list.h"
+#include "src/fredlib/domain/get_object_state_id_map.h"
+#include "src/fredlib/opcontext.h"
+#include "src/fredlib/db_settings.h"
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
 #include "util/util.h"
-#include "fredlib/object.h"
+#include "src/fredlib/object.h"
 
 #include <boost/algorithm/string.hpp>
 
@@ -71,8 +71,9 @@ namespace Fred
 
         GetObjectStateIdMap get_object_state_id_map(status_list_, object_type);
         typedef GetObjectStateIdMap::StateIdMap StateIdMap;
-        StateIdMap &state_id_map = get_object_state_id_map.exec(_ctx);
-        {
+        StateIdMap state_id_map;
+        try {
+            state_id_map = get_object_state_id_map.exec(_ctx);
             MultipleObjectStateId state_id;
             for (StateIdMap::const_iterator pStateId = state_id_map.begin();
                  pStateId != state_id_map.end(); ++pStateId) {
@@ -80,6 +81,11 @@ namespace Fred
             }
             
             LockMultipleObjectStateRequestLock(state_id, object_id_).exec(_ctx);
+        }
+        catch (const GetObjectStateIdMap::Exception &ex) {
+            if (ex.is_set_state_not_found()) {
+                BOOST_THROW_EXCEPTION(Exception().set_state_not_found(ex.get_state_not_found()));
+            }
         }
 
         std::ostringstream cmd;

@@ -21,18 +21,18 @@
  *  copy contact
  */
 
-#include "fredlib/domain/copy_contact.h"
-#include "fredlib/domain/get_blocking_status_desc_list.h"
-#include "fredlib/domain/get_object_state_id_map.h"
-#include "fredlib/contact/info_contact.h"
-#include "fredlib/contact/create_contact.h"
-#include "fredlib/object/object.h"
-#include "fredlib/opcontext.h"
-#include "fredlib/db_settings.h"
+#include "src/fredlib/domain/copy_contact.h"
+#include "src/fredlib/domain/get_blocking_status_desc_list.h"
+#include "src/fredlib/domain/get_object_state_id_map.h"
+#include "src/fredlib/contact/info_contact.h"
+#include "src/fredlib/contact/create_contact.h"
+#include "src/fredlib/object/object.h"
+#include "src/fredlib/opcontext.h"
+#include "src/fredlib/db_settings.h"
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
 #include "util/util.h"
-#include "fredlib/object.h"
+#include "src/fredlib/object.h"
 
 #include <boost/algorithm/string.hpp>
 

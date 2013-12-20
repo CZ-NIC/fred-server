@@ -18,7 +18,7 @@
 
 #include "commonclient.h"
 #include "contactclient.h"
-#include "fredlib/registry.h"
+#include "src/fredlib/registry.h"
 
 namespace Admin {
 
