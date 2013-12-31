@@ -37,7 +37,7 @@ namespace Admin
         public:
             typedef pair<string, Optional<string> > T_run_result;
             /**
-             * @return final status of the test
+             * @return final status of the test and optional error message
              */
             virtual T_run_result run(long _history_id) const = 0;
             virtual string get_name() const = 0;
