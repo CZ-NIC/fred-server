@@ -70,7 +70,8 @@ namespace  Admin {
             Fred::InfoContactCheck(check_handle).exec(ctx_locked_check) );
 
         std::vector<std::string> test_statuses;
-        std::string test_result_status;
+        std::vector<Optional<std::string> > error_messages;
+        ContactVerificationTest::T_run_result temp_result;
 
         try {
             while(true) {
@@ -79,19 +80,24 @@ namespace  Admin {
                 std::string test_name = lazy_get_locked_running_test(ctx_locked_test, check_handle, _logd_request_id);
 
                 try {
-                    test_result_status = _tests.at(test_name)->run(check_info.contact_history_id).first;
-                    if( test_result_status == Fred::ContactTestStatus::ENQUEUED || test_result_status == Fred::ContactTestStatus::RUNNING ) {
+                    temp_result = _tests.at(test_name)->run(check_info.contact_history_id);
+
+                    test_statuses.push_back(temp_result.first);
+                    error_messages.push_back(temp_result.second);
+
+                    if( test_statuses.back() == Fred::ContactTestStatus::ENQUEUED
+                        || test_statuses.back() == Fred::ContactTestStatus::RUNNING
+                    ) {
                         throw Fred::InternalError("malfunction in implementation of test " + test_name + ", run() returned bad status");
                     }
-                    test_statuses.push_back(test_result_status);
                 } catch(...) {
                     ctx_locked_test.get_conn().exec("ROLLBACK;");
                     ctx_locked_test.commit_transaction();
 
                     Fred::OperationContext ctx_testrun_error;
                     test_statuses.push_back(Fred::ContactTestStatus::ERROR);
-                    Fred::UpdateContactTest(check_handle, test_name, test_statuses.back())
-                        .set_logd_request_id(_logd_request_id)
+                    error_messages.push_back(Optional<std::string>("exception in test implementation"));
+                    Fred::UpdateContactTest(check_handle, test_name, test_statuses.back(), _logd_request_id, error_messages.back())
                         .exec(ctx_testrun_error);
                     // TODO log problem
                     ctx_testrun_error.get_log();
@@ -100,9 +106,7 @@ namespace  Admin {
                     // let it propagate so the check can be updated to reflect this situation
                     throw;
                 }
-
-                Fred::UpdateContactTest(check_handle, test_name, test_statuses.back())
-                    .set_logd_request_id(_logd_request_id)
+                Fred::UpdateContactTest(check_handle, test_name, test_statuses.back(), _logd_request_id, error_messages.back())
                     .exec(ctx_locked_test);
                 ctx_locked_test.commit_transaction();
             }

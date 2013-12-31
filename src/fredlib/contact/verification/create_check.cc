@@ -135,17 +135,18 @@ namespace Fred
 
         // using solo select for easy checking of existence (subselect would be strange)
         Database::Result contact_history_res = _ctx.get_conn().exec_params(
-            "SELECT historyid "
-            "   FROM object_registry "
-            "   WHERE id=$1::integer "
-            "       AND type=1 "
-            "       AND erdate IS NULL; ",
-            Database::query_param_list(contact_id_)
+            "SELECT obj_reg.historyid AS historyid_ "
+            "   FROM object_registry AS obj_reg "
+            "       JOIN enum_object_type AS e_o_t ON obj_reg.type = e_o_t.id "
+            "   WHERE obj_reg.id=$1::integer "
+            "       AND e_o_t.name = $2::varchar "
+            "       AND obj_reg.erdate IS NULL; ",
+            Database::query_param_list(contact_id_)("contact")
         );
         if(contact_history_res.size() != 1) {
             throw ExceptionUnknownContactId();
         }
-        long contact_history_id = static_cast<long>(contact_history_res[0]["historyid"]);
+        long contact_history_id = static_cast<long>(contact_history_res[0]["historyid_"]);
 
         Database::Result testsuite_res = _ctx.get_conn().exec_params(
             "SELECT id "
