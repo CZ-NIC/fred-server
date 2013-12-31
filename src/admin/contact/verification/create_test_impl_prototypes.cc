@@ -25,7 +25,8 @@ namespace  Admin {
         }
 
         {
-            boost::shared_ptr<Admin::ContactVerificationTest> temp_ptr(new Admin::ContactVerificationTestCzAddress);
+            boost::shared_ptr<Admin::ContactVerificationTest> temp_ptr(new
+                Admin::ContactVerificationTestCzAddress("/opt/jkorous/src/fred/repo.git/fred/scripts/root/share/contact_verification/cz_address.xml"));
             result[temp_ptr->get_name()] = temp_ptr;
         }
 
