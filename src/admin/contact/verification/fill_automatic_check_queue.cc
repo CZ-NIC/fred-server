@@ -156,11 +156,12 @@ namespace  Admin {
             "                   JOIN object_registry AS o_r ON c_h.id = o_r.id "
             "               GROUP BY name_ "
             "       ) AS filtered_ ON obj_reg.name = filtered_.name_ "
-            "   WHERE obj_reg.type = 1 "
+            "       JOIN enum_object_type AS e_o_t ON obj_reg.type = e_o_t.id "
+            "   WHERE e_o_t.name = $1::varchar "
             "   ORDER BY filtered_.last_update_ ASC "
-            "   LIMIT $1::integer "
+            "   LIMIT $2::integer "
             "   FOR SHARE OF obj_reg; ",
-            Database::query_param_list(_max_queue_length)
+            Database::query_param_list("contact")(_max_queue_length)
         );
 
         std::vector<long long> result;
