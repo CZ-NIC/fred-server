@@ -135,7 +135,7 @@ namespace Fred
 
         // using solo select for easy checking of existence (subselect would be strange)
         Database::Result contact_history_res = _ctx.get_conn().exec_params(
-            "SELECT obj_reg.historyid_ AS historyid_ "
+            "SELECT obj_reg.historyid AS historyid_ "
             "   FROM object_registry AS obj_reg "
             "       JOIN enum_object_type AS e_o_t ON obj_reg.type = e_o_t.id "
             "   WHERE obj_reg.id=$1::integer "
