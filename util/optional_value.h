@@ -61,6 +61,14 @@ public:
         return *this;
     }//assignment
 
+    Optional& operator=(const T& rhs)
+    {
+        value_ = rhs;
+        isset_ = true;
+
+        return *this;
+    }//assignment
+
     operator T() const
     {
         return value_;
