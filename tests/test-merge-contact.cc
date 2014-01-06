@@ -1311,9 +1311,256 @@ struct contact_merge_duplicate_auto_fixture
     ~contact_merge_duplicate_auto_fixture(){}
 };
 
-
-
 BOOST_AUTO_TEST_CASE(create_merge_contact_data){(void)contact_merge_duplicate_auto_fixture(10,10,10,10);}
+
+BOOST_AUTO_TEST_SUITE(OneObject)
+
+struct merge_admin_contacts_fixture
+{
+    std::string sys_registrar_handle;
+    std::string registrar_handle;
+    std::string xmark;
+    std::string contact_handle_1;
+    std::string contact_handle_2;
+
+    merge_admin_contacts_fixture()
+    : xmark(RandomDataGenerator().xnumstring(6))
+    , contact_handle_1(std::string("TEST-MC-CONTACT-1")+xmark)
+    , contact_handle_2(std::string("TEST-MC-CONTACT-2")+xmark)
+    {
+        Fred::OperationContext ctx;
+
+        sys_registrar_handle = static_cast<std::string>(ctx.get_conn().exec(
+            "SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]);
+        registrar_handle = static_cast<std::string>(ctx.get_conn().exec(
+                    "SELECT handle FROM registrar WHERE system = FALSE ORDER BY id LIMIT 1")[0][0]);
+
+        BOOST_CHECK(!sys_registrar_handle.empty());//expecting existing system registrar
+        BOOST_CHECK(!registrar_handle.empty());//expecting existing non-system registrar
+
+        Fred::CreateContact(contact_handle_1,registrar_handle)
+            .set_name("COMMON NAME")
+            .set_disclosename(true)
+            .set_street1(std::string("STR1")+xmark)
+            .set_city("Praha").set_postalcode("11150").set_country("CZ")
+            .set_discloseaddress(true)
+            .exec(ctx);
+        BOOST_TEST_MESSAGE(std::string("test contact_handle_1: ") + contact_handle_1);
+
+        Fred::InfoContactOutput  ic = Fred::InfoContact(contact_handle_1,sys_registrar_handle).exec(ctx);
+
+        BOOST_TEST_MESSAGE(std::string("test contact_handle_1 roid: ") + ic.info_contact_data.roid);
+
+        Fred::CreateContact(contact_handle_2,registrar_handle)
+            .set_name("COMMON NAME")
+            .set_disclosename(true)
+            .set_street1(std::string("STR1")+xmark)
+            .set_city("Praha").set_postalcode("11150").set_country("CZ")
+            .set_discloseaddress(true)
+            .exec(ctx);
+
+        BOOST_TEST_MESSAGE(std::string("test contact_handle_2: ") + contact_handle_2);
+
+        ctx.commit_transaction();
+    }
+
+    ~merge_admin_contacts_fixture(){}
+};
+
+struct merge_tech_contact_nsset_fixture
+    : virtual merge_admin_contacts_fixture
+{
+    std::string test_nsset_handle;
+
+    merge_tech_contact_nsset_fixture()
+    : test_nsset_handle(std::string("TEST-MC-TECH-NSSET-HANDLE")+xmark)
+    {
+        Fred::OperationContext ctx;
+
+        Fred::CreateNsset(test_nsset_handle, registrar_handle)
+            .set_dns_hosts(Util::vector_of<Fred::DnsHost>
+                (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.3")("127.1.1.3"))) //add_dns
+                (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.4")("127.1.1.4"))) //add_dns
+                )
+                .set_tech_contacts(Util::vector_of<std::string>(contact_handle_1)(contact_handle_2))
+                .exec(ctx);
+
+        BOOST_TEST_MESSAGE(std::string("test nsset: ")+ test_nsset_handle);
+
+        ctx.commit_transaction();
+    }
+
+    ~merge_tech_contact_nsset_fixture(){}
+};
+
+struct merge_tech_contact_keyset_fixture
+    : virtual merge_admin_contacts_fixture
+{
+    std::string test_keyset_handle;
+
+    merge_tech_contact_keyset_fixture()
+    : test_keyset_handle (std::string("TEST-MC-TECH-KEYSET-HANDLE")+xmark)
+    {
+        Fred::OperationContext ctx;
+
+        Fred::CreateKeyset(test_keyset_handle, registrar_handle)
+                .set_tech_contacts(Util::vector_of<std::string>(contact_handle_1)(contact_handle_2))
+                .exec(ctx);
+
+        BOOST_TEST_MESSAGE(std::string("test keyset: ")+ test_keyset_handle);
+
+        ctx.commit_transaction();
+    }
+
+    ~merge_tech_contact_keyset_fixture(){}
+};
+
+struct merge_admin_contact_domain_fixture
+    : virtual merge_admin_contacts_fixture
+{
+    std::string test_nsset_handle;
+    std::string test_keyset_handle;
+    std::string test_domain_handle;
+
+    merge_admin_contact_domain_fixture()
+    : test_nsset_handle(std::string("TEST-MC-ADMIN-NSSET-HANDLE")+xmark)
+    , test_keyset_handle (std::string("TEST-MC-ADMIN-KEYSET-HANDLE")+xmark)
+    , test_domain_handle(std::string("testmerge-admins"+xmark+".cz"))
+    {
+        Fred::OperationContext ctx;
+
+        Fred::CreateNsset(test_nsset_handle, registrar_handle)
+            .set_dns_hosts(Util::vector_of<Fred::DnsHost>
+                (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.3")("127.1.1.3"))) //add_dns
+                (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.4")("127.1.1.4"))) //add_dns
+                )
+                .set_tech_contacts(Util::vector_of<std::string>(contact_handle_1))
+                .exec(ctx);
+
+        BOOST_TEST_MESSAGE(std::string("test nsset: ")+ test_nsset_handle);
+
+        Fred::CreateKeyset(test_keyset_handle, registrar_handle)
+                .set_tech_contacts(Util::vector_of<std::string>(contact_handle_1))
+                .exec(ctx);
+
+        BOOST_TEST_MESSAGE(std::string("test keyset: ")+ test_keyset_handle);
+
+        Fred::CreateDomain(
+                test_domain_handle //const std::string& fqdn
+                , sys_registrar_handle //const std::string& registrar
+                , contact_handle_1 //registrant
+                )
+        .set_nsset(test_nsset_handle).set_keyset(test_keyset_handle)
+        .set_admin_contacts(Util::vector_of<std::string>(contact_handle_1)(contact_handle_2))
+        .exec(ctx);
+
+        BOOST_TEST_MESSAGE(std::string("test domain: ")+ test_domain_handle);
+
+        ctx.commit_transaction();
+    }
+
+    ~merge_admin_contact_domain_fixture(){}
+};
+
+/**
+ * test merge contacts used with the one domain
+ */
+BOOST_FIXTURE_TEST_CASE(test_merge_domain_admin_contacts, merge_admin_contact_domain_fixture)
+{
+    try
+    {
+        Fred::OperationContext ctx;
+        Fred::InfoDomainOutput domain_info_1 = Fred::InfoDomain(test_domain_handle, sys_registrar_handle).exec(ctx);
+        Fred::MergeContactOutput merge_data = Fred::MergeContact(contact_handle_1, contact_handle_2, sys_registrar_handle).exec(ctx);
+        Fred::InfoDomainOutput domain_info_2 = Fred::InfoDomain(test_domain_handle, sys_registrar_handle).exec(ctx);
+        BOOST_CHECK(domain_info_1 != domain_info_2);
+
+        //src contact is not admin
+        BOOST_CHECK(std::find(domain_info_2.info_domain_data.admin_contacts.begin()
+        , domain_info_2.info_domain_data.admin_contacts.end()
+        , contact_handle_1) == domain_info_2.info_domain_data.admin_contacts.end());
+
+        //dst contact is admin
+        BOOST_CHECK(std::find(domain_info_2.info_domain_data.admin_contacts.begin()
+        , domain_info_2.info_domain_data.admin_contacts.end()
+        , contact_handle_2) != domain_info_2.info_domain_data.admin_contacts.end());
+
+        BOOST_MESSAGE(merge_data);
+        ctx.commit_transaction();
+    }
+    catch(boost::exception& ex)
+    {
+        BOOST_FAIL(boost::diagnostic_information(ex));
+    }
+}
+
+/**
+ * test merge contacts used with the one nsset
+ */
+BOOST_FIXTURE_TEST_CASE(test_merge_nsset_tech_contacts, merge_tech_contact_nsset_fixture)
+{
+    try
+    {
+        Fred::OperationContext ctx;
+        Fred::InfoNssetOutput nsset_info_1 = Fred::InfoNsset(test_nsset_handle, sys_registrar_handle).exec(ctx);
+        Fred::MergeContactOutput merge_data = Fred::MergeContact(contact_handle_1, contact_handle_2, sys_registrar_handle).exec(ctx);
+        Fred::InfoNssetOutput nsset_info_2 = Fred::InfoNsset(test_nsset_handle, sys_registrar_handle).exec(ctx);
+
+        BOOST_CHECK(nsset_info_1 != nsset_info_2);
+
+        //src contact is not admin
+        BOOST_CHECK(std::find(nsset_info_2.info_nsset_data.tech_contacts.begin()
+        , nsset_info_2.info_nsset_data.tech_contacts.end()
+        , contact_handle_1) == nsset_info_2.info_nsset_data.tech_contacts.end());
+
+        //dst contact is admin
+        BOOST_CHECK(std::find(nsset_info_2.info_nsset_data.tech_contacts.begin()
+        , nsset_info_2.info_nsset_data.tech_contacts.end()
+        , contact_handle_2) != nsset_info_2.info_nsset_data.tech_contacts.end());
+
+        BOOST_MESSAGE(merge_data);
+        ctx.commit_transaction();
+    }
+    catch(boost::exception& ex)
+    {
+        BOOST_FAIL(boost::diagnostic_information(ex));
+    }
+}
+
+/**
+ * test merge contacts used with the one keyset
+ */
+BOOST_FIXTURE_TEST_CASE(test_merge_keyset_tech_contacts, merge_tech_contact_keyset_fixture)
+{
+    try
+    {
+        Fred::OperationContext ctx;
+        Fred::InfoKeysetOutput keyset_info_1 = Fred::InfoKeyset(test_keyset_handle, sys_registrar_handle).exec(ctx);
+        Fred::MergeContactOutput merge_data = Fred::MergeContact(contact_handle_1, contact_handle_2, sys_registrar_handle).exec(ctx);
+        Fred::InfoKeysetOutput keyset_info_2 = Fred::InfoKeyset(test_keyset_handle, sys_registrar_handle).exec(ctx);
+
+        BOOST_CHECK(keyset_info_1 != keyset_info_2);
+
+        //src contact is not admin
+        BOOST_CHECK(std::find(keyset_info_2.info_keyset_data.tech_contacts.begin()
+        , keyset_info_2.info_keyset_data.tech_contacts.end()
+        , contact_handle_1) == keyset_info_2.info_keyset_data.tech_contacts.end());
+
+        //dst contact is admin
+        BOOST_CHECK(std::find(keyset_info_2.info_keyset_data.tech_contacts.begin()
+        , keyset_info_2.info_keyset_data.tech_contacts.end()
+        , contact_handle_2) != keyset_info_2.info_keyset_data.tech_contacts.end());
+
+        BOOST_MESSAGE(merge_data);
+        ctx.commit_transaction();
+    }
+    catch(boost::exception& ex)
+    {
+        BOOST_FAIL(boost::diagnostic_information(ex));
+    }
+}
+
+BOOST_AUTO_TEST_SUITE_END();//OneObject
 
 BOOST_AUTO_TEST_SUITE_END();//TestMergeContact
 

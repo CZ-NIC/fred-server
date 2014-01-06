@@ -350,23 +350,28 @@ namespace Fred
                 {
                     try
                     {
+                        ctx.get_conn().exec("SAVEPOINT merge_contact_update_domain");
                         UpdateDomain ud (tmp.fqdn, registrar_ );
                         ud.rem_admin_contact(src_contact_handle_)
                         .add_admin_contact(dst_contact_handle_);
                         if(logd_request_id_.isset()) ud.set_logd_request_id(logd_request_id_);
                         tmp.history_id = ud.exec(ctx);
+                        ctx.get_conn().exec("RELEASE SAVEPOINT merge_contact_update_domain");
                     }
                     catch(UpdateDomain::Exception& ex)
                     {
                         //look for already set: admin contact
                         //if found ignore exception, if not found rethrow exception
-                        if(ex.is_set_vector_of_already_set_admin_contact_handle())
+                        if(ex.is_set_vector_of_already_set_admin_contact_handle()
+                            && (ex.get_vector_of_already_set_admin_contact_handle().at(0) == dst_contact_handle_))//check colliding contact handle
                         {
                             //only remove source admin contact, dest admin contact is already there
+                            ctx.get_conn().exec("ROLLBACK TO SAVEPOINT merge_contact_update_domain");
                             UpdateDomain ud (tmp.fqdn, registrar_ );
                             ud.rem_admin_contact(src_contact_handle_);
                             if(logd_request_id_.isset()) ud.set_logd_request_id(logd_request_id_);
                             tmp.history_id = ud.exec(ctx);
+                            ctx.get_conn().exec("RELEASE SAVEPOINT merge_contact_update_domain");
                         }
                         else
                         {
@@ -405,23 +410,28 @@ namespace Fred
                 {
                     try
                     {
+                        ctx.get_conn().exec("SAVEPOINT merge_contact_update_nsset");
                         UpdateNsset un(tmp.handle, registrar_ );
                         un.rem_tech_contact(src_contact_handle_)
                         .add_tech_contact(dst_contact_handle_);
                         if(logd_request_id_.isset()) un.set_logd_request_id(logd_request_id_);
                         tmp.history_id = un.exec(ctx);
+                        ctx.get_conn().exec("RELEASE SAVEPOINT merge_contact_update_nsset");
                     }
                     catch(UpdateNsset::Exception& ex)
                     {
                         //look for already set: tech contact
                         //if found ignore exception, if not found rethrow exception
-                        if(ex.is_set_vector_of_already_set_technical_contact_handle())
+                        if(ex.is_set_vector_of_already_set_technical_contact_handle()
+                            && (ex.get_vector_of_already_set_technical_contact_handle().at(0) == dst_contact_handle_))//check colliding contact handle
                         {
                             //only remove source tech contact, dest tech contact is already there
+                            ctx.get_conn().exec("ROLLBACK TO SAVEPOINT merge_contact_update_nsset");
                             UpdateNsset un(tmp.handle, registrar_ );
                             un.rem_tech_contact(src_contact_handle_);
                             if(logd_request_id_.isset()) un.set_logd_request_id(logd_request_id_);
                             tmp.history_id = un.exec(ctx);
+                            ctx.get_conn().exec("RELEASE SAVEPOINT merge_contact_update_nsset");
                         }
                         else
                         {
@@ -460,21 +470,26 @@ namespace Fred
                 {
                     try
                     {
+                        ctx.get_conn().exec("SAVEPOINT merge_contact_update_keyset");
                         UpdateKeyset uk(tmp.handle, registrar_);
                         uk.rem_tech_contact(src_contact_handle_)
                         .add_tech_contact(dst_contact_handle_);
                         if(logd_request_id_.isset()) uk.set_logd_request_id(logd_request_id_);
                         tmp.history_id = uk.exec(ctx);
+                        ctx.get_conn().exec("RELEASE SAVEPOINT merge_contact_update_keyset");
                     }
                     catch(UpdateKeyset::Exception& ex)
                     {
-                        if(ex.is_set_vector_of_already_set_technical_contact_handle())
+                        if(ex.is_set_vector_of_already_set_technical_contact_handle()
+                            && (ex.get_vector_of_already_set_technical_contact_handle().at(0) == dst_contact_handle_))//check colliding contact handle
                         {
                             //only remove source tech contact, dest tech contact is already there
+                            ctx.get_conn().exec("ROLLBACK TO SAVEPOINT merge_contact_update_keyset");
                             UpdateKeyset uk(tmp.handle, registrar_);
                             uk.rem_tech_contact(src_contact_handle_);
                             if(logd_request_id_.isset()) uk.set_logd_request_id(logd_request_id_);
                             tmp.history_id = uk.exec(ctx);
+                            ctx.get_conn().exec("RELEASE SAVEPOINT merge_contact_update_keyset");
                         }
                         else
                         {
