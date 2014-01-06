@@ -1620,8 +1620,8 @@ src_cli_admin_fred_admin_SOURCES = \
 		src/admin/contact/merge_contact_reporting.h \
 		src/cli_admin/domain_name_validation_params.h \
 		src/cli_admin/domain_name_validation_init.h \
-		src/admin/contact/verification/fill_automatic_check_queue.h \
-		src/admin/contact/verification/fill_automatic_check_queue.cc \
+		src/admin/contact/verification/fill_check_queue.h \
+		src/admin/contact/verification/fill_check_queue.cc \
 		src/admin/contact/verification/run_first_enqueued_check.h \
 		src/admin/contact/verification/run_first_enqueued_check.cc \
 		src/admin/contact/verification/run_all_enqueued_checks.h \
@@ -1800,6 +1800,7 @@ tests_test_server_SOURCES = \
 		tests/test-create-domain.cc \
 		tests/test-domain-name.cc \
 		tests/fredlib/contact/verification/setup_utils.h \
+		tests/fredlib/contact/verification/setup_utils.cc \
 		tests/fredlib/contact/verification/test-create_check_unit.cc \
 		tests/fredlib/contact/verification/test-create_check_integ.cc \
 		tests/fredlib/contact/verification/test-update_check_unit.cc \
@@ -1816,8 +1817,8 @@ tests_test_server_SOURCES = \
 		src/admin/contact/verification/run_all_enqueued_checks.cc \
 		tests/admin/contact/verification/setup_utils.h \
 		tests/admin/contact/verification/test-run_all_enqueued_checks.cc \
-		src/admin/contact/verification/fill_automatic_check_queue.cc \
-		tests/admin/contact/verification/test-fill_automatic_check_queue.cc \
+		src/admin/contact/verification/fill_check_queue.cc \
+		tests/admin/contact/verification/test-fill_check_queue.cc \
 		tests/util/test-is-equal-optional-nullable.cc
 
 tests_test_server_LDFLAGS = \

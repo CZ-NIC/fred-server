@@ -22,7 +22,7 @@
  */
 
 #include "admin/contact/verification/run_all_enqueued_checks.h"
-#include "admin/contact/verification/fill_automatic_check_queue.h"
+#include "admin/contact/verification/fill_check_queue.h"
 #include "fredlib/contact/verification/info_check.h"
 #include "fredlib/contact/verification/enum_test_status.h"
 #include "fredlib/opexception.h"
@@ -334,7 +334,7 @@ BOOST_AUTO_TEST_CASE(test_Logd_request_id_of_related_changes)
     ctx1.commit_transaction();
 
     // effectively creates tests and updates check at once
-    Admin::fill_automatic_check_queue(1);
+    Admin::ContactVerificationQueue::fill_check_queue(testsuite.testsuite_name, 1).exec();
     long long logd_request_id = Random::integer(0, 2147483647);
     Admin::run_all_enqueued_checks(test_impls_, logd_request_id);
 
