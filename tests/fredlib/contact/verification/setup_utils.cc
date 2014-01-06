@@ -1,3 +1,5 @@
+#include <boost/algorithm/string/join.hpp>
+
 #include "tests/fredlib/contact/verification/setup_utils.h"
 
 #include "fredlib/contact/verification/create_check.h"
@@ -432,79 +434,332 @@ autoclean_contact_verification_db::T_foreign_keys autoclean_contact_verification
 autoclean_contact_verification_db::autoclean_contact_verification_db() {
     Fred::OperationContext ctx;
 
+    /*
     Database::Result pre_existing_res = ctx.get_conn().exec(
-        "SELECT o_r.name AS contact_handle_ "
-        "   FROM object_registry AS o_r "
-        "       JOIN contact USING(id)");
+        "SELECT o_r.id AS object_id_ "
+        "   FROM object_registry AS o_r ");
 
     for(Database::Result::Iterator it = pre_existing_res.begin(); it != pre_existing_res.end(); ++it) {
-        handles_to_preserve_.push_back( static_cast<std::string>( (*it)["contact_handle_"] ) );
+        object_ids_to_preserve_.push_back( static_cast<unsigned long long>( (*it)["object_id_"] ) );
     }
+    */
+    object_ids_to_preserve_.push_back(1);
+    object_ids_to_preserve_.push_back(2);
+    object_ids_to_preserve_.push_back(3);
+    object_ids_to_preserve_.push_back(4);
 
     if(foreign_keys.empty()) {
-        foreign_keys.push_back(
-            boost::make_tuple(
-                "object_id_fkey",
-                "object", "id",
-                "object_registry", "id"
-            )
-        );
+        foreign_keys.push_back( boost::make_tuple(
+            "object_id_fkey",
+            "object", "id",
+            "object_registry", "id"
+        ));
 
-        foreign_keys.push_back(
-            boost::make_tuple(
-                "object_history_id_fkey",
-                "object_history", "id",
-                "object_registry", "id"
-            )
-        );
+        foreign_keys.push_back( boost::make_tuple(
+            "object_history_id_fkey",
+            "object_history", "id",
+            "object_registry", "id"
+        ));
 
-        foreign_keys.push_back(
-            boost::make_tuple(
-                "contact_history_id_fkey",
-                "contact_history", "id",
-                "object_registry", "id"
-            )
-        );
+        foreign_keys.push_back( boost::make_tuple(
+            "contact_history_id_fkey",
+            "contact_history", "id",
+            "object_registry", "id"
+        ));
 
-        foreign_keys.push_back(
-            boost::make_tuple(
-                "domain_contact_map_history_contactid_fkey",
-                "domain_contact_map_history", "domainid",
-                "object_registry", "id"
-            )
-        );
+        foreign_keys.push_back( boost::make_tuple(
+            "domain_history_id_fkey",
+            "domain_history", "id",
+            "object_registry", "id"
+        ));
 
-        foreign_keys.push_back(
-            boost::make_tuple(
-                "nsset_contact_map_history_contactid_fkey",
-                "nsset_contact_map_history", "nssetid",
-                "object_registry", "id"
-            )
-        );
+        foreign_keys.push_back( boost::make_tuple(
+            "nsset_history_id_fkey",
+            "nsset_history", "id",
+            "object_registry", "id"
+        ));
 
-        foreign_keys.push_back(
-            boost::make_tuple(
-                "keyset_contact_map_history_contactid_fkey",
-                "keyset_contact_map_history", "keysetid",
-                "object_registry", "id"
-            )
-        );
+        foreign_keys.push_back( boost::make_tuple(
+            "domain_contact_map_history_contactid_fkey",
+            "domain_contact_map_history", "domainid",
+            "object_registry", "id"
+        ));
 
-        foreign_keys.push_back(
-            boost::make_tuple(
-                "object_state_object_id_fkey",
-                "object_state", "object_id",
-                "object_registry", "id"
-            )
-        );
+        foreign_keys.push_back( boost::make_tuple(
+            "nsset_contact_map_history_contactid_fkey",
+            "nsset_contact_map_history", "contactid",
+            "object_registry", "id"
+        ));
 
-        foreign_keys.push_back(
-            boost::make_tuple(
-                "contact_id_fkey",
-                "contact", "id",
-                "object", "id"
-            )
-        );
+        foreign_keys.push_back( boost::make_tuple(
+            "nsset_contact_map_history_nssetid_fkey",
+            "nsset_contact_map_history", "nssetid",
+            "object_registry", "id"
+        ));
+
+        foreign_keys.push_back( boost::make_tuple(
+            "nsset_contact_map_contactid_fkey",
+            "nsset_contact_map", "contactid",
+            "contact", "id"
+        ));
+
+        foreign_keys.push_back( boost::make_tuple(
+            "keyset_contact_map_history_contactid_fkey",
+            "keyset_contact_map_history", "keysetid",
+            "object_registry", "id"
+        ));
+
+        foreign_keys.push_back( boost::make_tuple(
+            "object_state_object_id_fkey",
+            "object_state", "object_id",
+            "object_registry", "id"
+        ));
+
+        foreign_keys.push_back( boost::make_tuple(
+            "object_state_request_object_id_fkey",
+            "object_state_request", "object_id",
+            "object_registry", "id"
+        ));
+
+        foreign_keys.push_back( boost::make_tuple(
+            "contact_id_fkey",
+            "contact", "id",
+            "object", "id"
+        ));
+
+        foreign_keys.push_back( boost::make_tuple(
+            "nsset_id_fkey",
+            "nsset", "id",
+            "object", "id"
+        ));
+
+        foreign_keys.push_back( boost::make_tuple(
+            "domain_id_fkey",
+            "domain", "id",
+            "object", "id"
+        ));
+
+        foreign_keys.push_back( boost::make_tuple(
+            "invoice_operation_object_id_fkey",
+            "invoice_operation", "object_id",
+            "object_registry", "id"
+        ));
+
+        foreign_keys.push_back( boost::make_tuple(
+            "public_request_objects_map_object_id_fkey",
+            "public_request_objects_map", "object_id",
+            "object_registry", "id"
+        ));
+
+        foreign_keys.push_back( boost::make_tuple(
+            "host_history_nssetid_fkey",
+            "host_history", "nssetid",
+            "object_registry", "id"
+        ));
+
+        foreign_keys.push_back( boost::make_tuple(
+            "host_ipaddr_map_history_nssetid_fkey",
+            "host_ipaddr_map_history", "nssetid",
+            "object_registry", "id"
+        ));
+
+        foreign_keys.push_back( boost::make_tuple(
+            "domain_contact_map_history_domainid_fkey",
+            "domain_contact_map_history", "domainid",
+            "object_registry", "id"
+        ));
+
+        foreign_keys.push_back( boost::make_tuple(
+            "enumval_history_domainid_fkey",
+            "enumval_history", "domainid",
+            "object_registry", "id"
+        ));
+
+        foreign_keys.push_back( boost::make_tuple(
+            "genzone_domain_history_domain_id_fkey",
+            "genzone_domain_history", "domain_id",
+            "object_registry", "id"
+        ));
+
+        foreign_keys.push_back( boost::make_tuple(
+            "keyset_history_id_fkey",
+            "keyset_history", "id",
+            "object_registry", "id"
+        ));
+
+        foreign_keys.push_back( boost::make_tuple(
+            "keyset_contact_map_history_keysetid_fkey",
+            "keyset_contact_map_history", "keysetid",
+            "object_registry", "id"
+        ));
+
+        foreign_keys.push_back( boost::make_tuple(
+            "keyset_contact_map_history_keysetid_fkey",
+            "keyset_contact_map_history", "keysetid",
+            "object_registry", "id"
+        ));
+
+        foreign_keys.push_back(boost::make_tuple(
+            "reminder_contact_message_map_contact_id_fkey",
+            "reminder_contact_message_map", "contact_id",
+            "object_registry", "id"
+        ));
+
+        foreign_keys.push_back(boost::make_tuple(
+            "invoice_operation_charge_map_invoice_operation_id_fkey",
+            "invoice_operation_charge_map", "invoice_operation_id",
+            "invoice_operation", "id"
+        ));
+
+        foreign_keys.push_back(boost::make_tuple(
+            "public_request_state_request_map_state_request_id_fkey",
+            "public_request_state_request_map", "state_request_id",
+            "object_state_request", "id"
+        ));
+
+        foreign_keys.push_back(boost::make_tuple(
+            "check_nsset_nsset_hid_fkey",
+            "check_nsset", "nsset_hid",
+            "nsset_history", "historyid"
+        ));
+
+        foreign_keys.push_back(boost::make_tuple(
+            "check_result_checkid_fkey",
+            "check_result", "checkid",
+            "check_nsset", "id"
+        ));
+
+        foreign_keys.push_back(boost::make_tuple(
+            "poll_techcheck_cnid_fkey",
+            "poll_techcheck", "cnid",
+            "check_nsset", "id"
+        ));
+
+        foreign_keys.push_back(boost::make_tuple(
+            "keyset_id_fkey",
+            "keyset", "id",
+            "object", "id"
+        ));
+
+        foreign_keys.push_back(boost::make_tuple(
+            "nsset_id_fkey",
+            "nsset", "id",
+            "object", "id"
+        ));
+
+        foreign_keys.push_back(boost::make_tuple(
+            "contact_id_fkey",
+            "contact", "id",
+            "object", "id"
+        ));
+
+        foreign_keys.push_back(boost::make_tuple(
+            "domain_id_fkey",
+            "domain", "id",
+            "object", "id"
+        ));
+
+        foreign_keys.push_back(boost::make_tuple(
+            "dnskey_keysetid_fkey",
+            "dnskey", "keysetid",
+            "keyset", "id"
+        ));
+
+        foreign_keys.push_back(boost::make_tuple(
+            "domain_keyset_fkey",
+            "domain", "keyset",
+            "keyset", "id"
+        ));
+
+        foreign_keys.push_back(boost::make_tuple(
+            "dsrecord_keysetid_fkey",
+            "dsrecord", "keysetid",
+            "keyset", "id"
+        ));
+
+        foreign_keys.push_back(boost::make_tuple(
+            "keyset_contact_map_keysetid_fkey",
+            "keyset_contact_map", "keysetid",
+            "keyset", "id"
+        ));
+
+        foreign_keys.push_back(boost::make_tuple(
+            "host_nssetid_fkey",
+            "host", "nssetid",
+            "nsset", "id"
+        ));
+
+        foreign_keys.push_back(boost::make_tuple(
+            "nsset_contact_map_nssetid_fkey",
+            "nsset_contact_map", "nssetid",
+            "nsset", "id"
+        ));
+
+        foreign_keys.push_back(boost::make_tuple(
+            "dnssec_domainid_fkey",
+            "dnssec", "domainid",
+            "domain", "id"
+        ));
+
+        foreign_keys.push_back(boost::make_tuple(
+            "domain_contact_map_domainid_fkey",
+            "domain_contact_map", "domainid",
+            "domain", "id"
+        ));
+
+        foreign_keys.push_back(boost::make_tuple(
+            "enumval_domainid_fkey",
+            "enumval", "domainid",
+            "domain", "id"
+        ));
+
+        foreign_keys.push_back(boost::make_tuple(
+            "object_state_ohid_from_fkey",
+            "object_state", "ohid_from",
+            "object_history", "historyid"
+        ));
+
+        foreign_keys.push_back(boost::make_tuple(
+            "object_state_ohid_to_fkey",
+            "object_state", "ohid_to",
+            "object_history", "historyid"
+        ));
+
+        foreign_keys.push_back(boost::make_tuple(
+            "poll_eppaction_objid_fkey",
+            "poll_eppaction", "objid",
+            "object_history", "historyid"
+        ));
+
+        foreign_keys.push_back(boost::make_tuple(
+            "notify_letters_state_id_fkey",
+            "notify_letters", "state_id",
+            "object_state", "id"
+        ));
+
+        foreign_keys.push_back(boost::make_tuple(
+            "notify_statechange_state_id_fkey",
+            "notify_statechange", "state_id",
+            "object_state", "id"
+        ));
+
+        foreign_keys.push_back(boost::make_tuple(
+            "poll_statechange_stateid_fkey",
+            "poll_statechange", "stateid",
+            "object_state", "id"
+        ));
+
+        foreign_keys.push_back(boost::make_tuple(
+            "poll_eppaction_objid_fkey",
+            "poll_eppaction", "objid",
+            "object_history", "historyid"
+        ));
+
+        foreign_keys.push_back(boost::make_tuple(
+            "domain_contact_map_contactid_fkey",
+            "domain_contact_map", "contactid",
+            "contact", "id"
+        ));
     }
 
     clean(ctx);
@@ -588,12 +843,26 @@ void autoclean_contact_verification_db::clean(Fred::OperationContext& _ctx) {
 
     set_cascading_fkeys(_ctx);
 
+    std::vector<std::string> string_ids_to_preserve;
+    for(std::vector<unsigned long long>::const_iterator it = object_ids_to_preserve_.begin();
+        it != object_ids_to_preserve_.end();
+        ++it
+    ) {
+        string_ids_to_preserve.push_back(
+            boost::lexical_cast<std::string>(*it)
+        );
+    }
+
+
     _ctx.get_conn()
         .exec(
             "DELETE "
             "   FROM object_registry "
-            "   WHERE type = 1 "
-            "   AND name NOT IN ('" + boost::join(handles_to_preserve_, "', '")+"')");
+            "   WHERE id NOT IN ("
+            + boost::join(
+                string_ids_to_preserve,
+                ", ")
+            +")");
 
     restore_fkeys(_ctx);
 }

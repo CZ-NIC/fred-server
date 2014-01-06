@@ -142,7 +142,8 @@ struct setup_nonexistent_test_status_name {
 };
 
 class autoclean_contact_verification_db {
-    std::vector<std::string> handles_to_preserve_;
+    std::vector<unsigned long long> object_ids_to_preserve_;
+
     public:
         typedef
             std::vector<
