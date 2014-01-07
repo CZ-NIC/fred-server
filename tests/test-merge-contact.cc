@@ -68,6 +68,8 @@
 #include "fredlib/contact/info_contact_history.h"
 #include "fredlib/contact/info_contact_compare.h"
 
+#include "src/fredlib/registrar/get_registrar_handles.h"
+
 
 #include "util/util.h"
 
@@ -1165,5 +1167,13 @@ BOOST_AUTO_TEST_CASE(merge_contact_notification_email_addr)
     BOOST_CHECK(notif_emails.at(0).notification_email_addr == "mntf@nic.cz");
 
 }
+
+BOOST_AUTO_TEST_CASE(get_registrar_handles_except_excluded)
+{
+    std::vector<std::string> registrars = Fred::Registrar::GetRegistrarHandles(Util::vector_of<std::string>("REG-FRED_B")).exec();
+    BOOST_CHECK(std::find(registrars.begin(),registrars.end(),std::string("REG-FRED_A")) != registrars.end());
+    BOOST_CHECK(std::find(registrars.begin(),registrars.end(),std::string("REG-FRED_B")) == registrars.end());
+}
+
 BOOST_AUTO_TEST_SUITE_END();//TestMergeContact
 
