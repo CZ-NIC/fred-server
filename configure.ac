@@ -232,6 +232,9 @@ AS_AC_EXPAND([SYSCONFDIR], [$sysconfdir])
 AS_AC_EXPAND([LOCALSTATEDIR], [$localstatedir])
 AS_AC_EXPAND([PREFIX], [$prefix])
 
+#doxygen preprocessor config
+AS_AC_EXPAND([BOOST_INCLUDE_DOXYGEN_PATH],[`echo $BOOST_CPPFLAGS | sed 's/-I//g' | sed 's/-pthread//g'`])
+
 #put context name into config.h file
 AC_DEFINE_UNQUOTED([CONFIG_FILE], [["]$SYSCONFDIR/fred/server.conf["]], [location of fred config file])
 
@@ -444,5 +447,6 @@ AC_CONFIG_FILES([Makefile
                  config/server.conf
                  config/hpmail.conf
                  init-scripts/fred-server
+                 doxy.conf
                  ])
 AC_OUTPUT

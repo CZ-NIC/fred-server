@@ -25,3 +25,13 @@
  *
  * Here will be information about troubleshooting.
  */
+
+/**
+ * @namespace Fred
+ * domain registry library.
+ */
+
+/**
+ * @namespace Registry
+ * .
+ */

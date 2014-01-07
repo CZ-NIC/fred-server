@@ -9,14 +9,14 @@
 #include <map>
 #include <vector>
 
-#include "common_impl_new.h"
-#include "common_object.h"
-#include "object.h"
-#include "types.h"
-#include "exceptions.h" 
-#include "db_settings.h"
-#include "model/model_filters.h"
-#include "old_utils/dbsql.h"
+#include "src/fredlib/common_impl_new.h"
+#include "src/fredlib/common_object.h"
+#include "src/fredlib/object.h"
+#include "src/fredlib/types.h"
+#include "src/fredlib/exceptions.h" 
+#include "src/fredlib/db_settings.h"
+#include "src/model/model_filters.h"
+#include "src/old_utils/dbsql.h"
 #include "decimal/decimal.h"
 #include "types/money.h"
 

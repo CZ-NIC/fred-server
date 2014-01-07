@@ -11,11 +11,11 @@
 #include <boost/thread/condition.hpp>
 
 #include "session_impl.h"
-#include "corba/mailer_manager.h"
-#include "fredlib/registry.h"
-#include "fredlib/invoicing/invoice.h"
-#include "old_utils/dbsql.h"
-#include "model/model_filters.h"
+#include "src/corba/mailer_manager.h"
+#include "src/fredlib/registry.h"
+#include "src/fredlib/invoicing/invoice.h"
+#include "src/old_utils/dbsql.h"
+#include "src/model/model_filters.h"
 #include "bankinginvoicing_impl.h"
 
 class NameService;

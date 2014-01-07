@@ -2,10 +2,10 @@
 #define CORBA_CONVERT_H_
 
 #include "db/nullable.h"
-#include "corba/common_wrappers.h"
-#include "fredlib/domain/get_blocking_status_desc_list.h"
-#include "admin_block/administrativeblocking.h"
-#include <AdministrativeBlocking.hh>
+#include "src/corba/common_wrappers.h"
+#include "src/fredlib/domain/get_blocking_status_desc_list.h"
+#include "src/admin_block/administrativeblocking.h"
+#include "src/corba/AdministrativeBlocking.hh"
 
 #include <string>
 #include <memory>

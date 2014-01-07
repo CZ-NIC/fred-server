@@ -1,10 +1,10 @@
 #ifndef _COMMON_IMPL_NEW_H_
 #define _COMMON_IMPL_NEW_H_
 
-#include "db_settings.h"
-#include "common_new.h"
-#include "model/model_filters.h"
-#include "exceptions.h"
+#include "src/fredlib/db_settings.h"
+#include "src/fredlib/common_new.h"
+#include "src/model/model_filters.h"
+#include "src/fredlib/exceptions.h"
 
 #include "log/logger.h"
 #include "log/context.h"

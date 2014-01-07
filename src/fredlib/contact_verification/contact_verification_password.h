@@ -27,7 +27,7 @@
 #include <map>
 #include <string>
 
-#include "public_request/public_request_impl.h"
+#include "src/fredlib/public_request/public_request_impl.h"
 
 namespace Fred {
 namespace PublicRequest {

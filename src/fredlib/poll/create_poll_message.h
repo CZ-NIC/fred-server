@@ -1,16 +1,16 @@
 #ifndef CREATE_POLL_MESSAGE_H__
 #define CREATE_POLL_MESSAGE_H__
 
-#include "fredlib/opcontext.h"
-#include "fredlib/opexception.h"
+#include "src/fredlib/opcontext.h"
+#include "src/fredlib/opexception.h"
 #include "util/types/optional.h"
-
+#include "util/printable.h"
 
 namespace Fred {
 namespace Poll {
 
 
-class CreatePollMessage
+class CreatePollMessage : public Util::Printable
 {
 public:
     CreatePollMessage(
@@ -26,6 +26,12 @@ public:
     , ExceptionData_registrar_not_found<Exception>
     , ExceptionData_poll_message_type_not_found<Exception>
     {};
+
+    /**
+    * Dumps state of the instance into the string
+    * @return string with description of the instance state
+    */
+    std::string to_string() const;
 
 private:
     std::string registrar_handle_;

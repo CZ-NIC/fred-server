@@ -22,8 +22,8 @@
  */
 
 #include "messages_impl.h"
-#include "db_settings.h"
-#include "model/model_filters.h"
+#include "src/fredlib/db_settings.h"
+#include "src/model/model_filters.h"
 #include "log/logger.h"
 #include "log/context.h"
 
@@ -31,7 +31,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/algorithm/string.hpp>
 
-#include "fredlib/db_settings.h"
+#include "src/fredlib/db_settings.h"
 
 namespace Fred
 {

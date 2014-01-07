@@ -30,9 +30,9 @@
 #include <boost/function.hpp>
 #include <boost/assign.hpp>
 
-#include "fredlib/object_states.h"
-#include "fredlib/contact_verification/contact.h"
-#include "mojeid/mojeid_contact_states.h"
+#include "src/fredlib/object_states.h"
+#include "src/fredlib/contact_verification/contact.h"
+#include "src/mojeid/mojeid_contact_states.h"
 
 class DiscloseFlagPolicy
 : public boost::noncopyable

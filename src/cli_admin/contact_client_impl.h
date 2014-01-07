@@ -30,13 +30,13 @@
 #include "cfg/handle_corbanameservice_args.h"
 #include "handle_adminclientselection_args.h"
 #include "log/context.h"
-#include "cli_admin/contactclient.h"
+#include "contactclient.h"
 #include "commonclient.h"
-#include "fredlib/reminder.h"
-#include "admin/contact/merge_contact_auto_procedure.h"
-#include "admin/contact/merge_contact.h"
-#include "admin/contact/merge_contact_reporting.h"
-#include "corba/logger_client_impl.h"
+#include "src/fredlib/reminder.h"
+#include "src/admin/contact/merge_contact_auto_procedure.h"
+#include "src/admin/contact/merge_contact.h"
+#include "src/admin/contact/merge_contact_reporting.h"
+#include "src/corba/logger_client_impl.h"
 
 
 /**

@@ -22,9 +22,9 @@
 #include <boost/program_options.hpp>
 #include <iostream>
 
-#include "fredlib/registry.h"
+#include "src/fredlib/registry.h"
 
-#include "corba/admin/admin_impl.h"
+#include "src/corba/admin/admin_impl.h"
 #include "baseclient.h"
 
 #include "enumparam_params.h"

@@ -17,8 +17,8 @@
  */
 
 #include "notify.h"
-#include "old_utils/dbsql.h"
-#include "old_utils/log.h"
+#include "src/old_utils/dbsql.h"
+#include "src/old_utils/log.h"
 #include "sql.h"
 
 #include <sstream>

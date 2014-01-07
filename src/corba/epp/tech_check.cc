@@ -19,7 +19,7 @@
 #include "tech_check.h"
 #include "log/logger.h"
 
-#include "old_utils/log.h"
+#include "src/old_utils/log.h"
 
 TechCheckManager::TechCheckManager(NameService *ns) : ns_ptr(ns)
 {

@@ -26,9 +26,9 @@
 #include "util/cfg/handle_mojeid_args.h"
 #include "server_i.h"
 #include "corba_conversion.h"
-#include "mojeid/mojeid.h"
-#include "mailer_manager.h"
-#include <MojeID.hh>
+#include "src/mojeid/mojeid.h"
+#include "src/corba/mailer_manager.h"
+#include "src/corba/MojeID.hh"
 #include <string>
 
 

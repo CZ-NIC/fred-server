@@ -30,6 +30,7 @@
 #include <string.h>
 
 #include <boost/algorithm/string.hpp>
+#include <boost/bind.hpp>
 #include <boost/function.hpp>
 #include <boost/format.hpp>
 #include <boost/shared_ptr.hpp>
@@ -45,34 +46,25 @@
 
 #include "setup_server_decl.h"
 #include "time_clock.h"
-#include "fredlib/registrar.h"
-#include "fredlib/contact/merge_contact.h"
-#include "fredlib/contact/merge_contact_selection.h"
-#include "fredlib/contact/merge_contact_email_notification_data.h"
-#include "fredlib/contact/create_contact.h"
-#include "fredlib/nsset/create_nsset.h"
-#include "fredlib/keyset/create_keyset.h"
-#include "fredlib/domain/create_domain.h"
-#include "fredlib/keyset/info_keyset.h"
-#include "fredlib/keyset/info_keyset_history.h"
-#include "fredlib/keyset/info_keyset_compare.h"
-#include "fredlib/nsset/info_nsset.h"
-#include "fredlib/nsset/info_nsset_history.h"
-#include "fredlib/nsset/info_nsset_compare.h"
-#include "fredlib/domain/info_domain.h"
-#include "fredlib/domain/info_domain_history.h"
-#include "fredlib/domain/info_domain_compare.h"
-#include "fredlib/contact/info_contact.h"
-#include "fredlib/contact/info_contact_history.h"
-#include "fredlib/contact/info_contact_compare.h"
-
+#include "src/fredlib/registrar.h"
+#include "src/fredlib/contact/merge_contact.h"
+#include "src/fredlib/contact/merge_contact_selection.h"
+#include "src/fredlib/contact/merge_contact_email_notification_data.h"
+#include "src/fredlib/contact/create_contact.h"
+#include "src/fredlib/nsset/create_nsset.h"
+#include "src/fredlib/keyset/create_keyset.h"
+#include "src/fredlib/domain/create_domain.h"
+#include "src/fredlib/keyset/info_keyset.h"
+#include "src/fredlib/nsset/info_nsset.h"
+#include "src/fredlib/domain/info_domain.h"
+#include "src/fredlib/contact/info_contact.h"
 
 #include "util/util.h"
 
 #include "random_data_generator.h"
 #include "concurrent_queue.h"
 
-#include "fredlib/db_settings.h"
+#include "src/fredlib/db_settings.h"
 
 #include "cfg/handle_general_args.h"
 #include "cfg/handle_server_args.h"
@@ -108,16 +100,52 @@ BOOST_AUTO_TEST_SUITE(TestOperationException)
 const std::string server_name = "test-opexception";
 
 ///exception instance for tests
+template <class DERIVED_EXCEPTION> struct ExceptionTemplate1
+: ExceptionData_unknown_contact_handle<DERIVED_EXCEPTION>
+, ExceptionData_unknown_registrar_handle<DERIVED_EXCEPTION>
+{};
+
 struct TestException
 : virtual Fred::OperationException
-  , ExceptionData_unknown_contact_handle<TestException>
-  , ExceptionData_unknown_registrar_handle<TestException>
-  , ExceptionData_testing_int_data<TestException>
-  , ExceptionData_testing_unsigned_int_data<TestException>
-  , ExceptionData_vector_of_contact1_handle<TestException>
-  , ExceptionData_vector_of_contact2_handle<TestException>
-  , ExceptionData_vector_of_contact3_handle<TestException>
+, ExceptionTemplate1<TestException>
+//, ExceptionData_unknown_contact_handle<TestException>
+//, ExceptionData_unknown_registrar_handle<TestException>
+, ExceptionData_testing_int_data<TestException>
+, ExceptionData_testing_unsigned_int_data<TestException>
+, ExceptionData_vector_of_contact1_handle<TestException>
+, ExceptionData_vector_of_contact2_handle<TestException>
+, ExceptionData_vector_of_contact3_handle<TestException>
 {};
+
+
+BOOST_AUTO_TEST_CASE(throwTestExceptionCallback)
+{
+    try
+    {
+        //instance of the client's Exception
+        TestException ex;
+
+        //callback interface
+        boost::function<void (const std::string& unknown_registrar_handle)> f;
+
+        //exception setter assignment into callback parameter
+        f = boost::bind(&TestException::set_unknown_registrar_handle,&ex,_1);
+
+        //implementation callback call
+        f("test_registrar");
+
+        //client checking exception instance
+        if(ex.throw_me())
+        {
+            BOOST_THROW_EXCEPTION(ex);
+        }
+    }
+    catch(const TestException& ex)
+    {
+        BOOST_TEST_MESSAGE( boost::diagnostic_information(ex));
+        BOOST_CHECK(ex.is_set_unknown_registrar_handle());
+    }
+}
 
 BOOST_AUTO_TEST_CASE(throwTestException)
 {

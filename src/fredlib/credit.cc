@@ -21,7 +21,7 @@
  *  credit implementation
  */
 
-#include "credit.h"
+#include "src/fredlib/credit.h"
 
 
 namespace Fred

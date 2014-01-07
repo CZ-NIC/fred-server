@@ -26,14 +26,14 @@
 #include "cfg/config_handler_decl.h"
 #include "cfg/handle_database_args.h"
 #include "cfg/handle_corbanameservice_args.h"
-#include "cli_admin/handle_adminclientselection_args.h"
+#include "handle_adminclientselection_args.h"
 
-#include "cli_admin/domain_name_validation_params.h"
+#include "domain_name_validation_params.h"
 #include "log/context.h"
 #include "util/factory.h"
 #include "util/factory_check.h"
 
-#include "fredlib/domain/domain_name.h"
+#include "src/fredlib/domain/domain_name.h"
 
 
 /**

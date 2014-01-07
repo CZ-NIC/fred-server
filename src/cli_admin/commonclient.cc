@@ -21,7 +21,7 @@
 
 #include "commonclient.h"
 
-#include "corba_wrapper_decl.h"
+#include "util/corba_wrapper_decl.h"
 #include "cfg/faked_args.h"
 #include "cfg/config_handler_decl.h"
 #include "cfg/handle_corbanameservice_args.h"

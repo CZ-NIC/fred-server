@@ -4,9 +4,9 @@
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
 
-#include "corba/FileManager.hh"
+#include "src/corba/FileManager.hh"
 #include "nameservice.h"
-#include "fredlib/file_transferer.h"
+#include "src/fredlib/file_transferer.h"
 
 
 class FileManagerClient : public Fred::File::Transferer

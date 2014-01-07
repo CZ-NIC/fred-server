@@ -42,22 +42,22 @@
 
 #include "setup_server_decl.h"
 #include "time_clock.h"
-#include "fredlib/registrar.h"
-#include "fredlib/domain/copy_contact.h"
-#include "fredlib/opexception.h"
+#include "src/fredlib/registrar.h"
+#include "src/fredlib/domain/copy_contact.h"
+#include "src/fredlib/opexception.h"
 #include "util/util.h"
 
-#include "fredlib/contact/create_contact.h"
-#include "fredlib/contact/info_contact.h"
+#include "src/fredlib/contact/create_contact.h"
+#include "src/fredlib/contact/info_contact.h"
 
-#include "fredlib/contact_verification/contact.h"
-#include "fredlib/object_states.h"
-#include "contact_verification/contact_verification_impl.h"
+#include "src/fredlib/contact_verification/contact.h"
+#include "src/fredlib/object_states.h"
+#include "src/contact_verification/contact_verification_impl.h"
 #include "random_data_generator.h"
 #include "concurrent_queue.h"
 
 
-#include "fredlib/db_settings.h"
+#include "src/fredlib/db_settings.h"
 
 #include "cfg/handle_general_args.h"
 #include "cfg/handle_server_args.h"
@@ -120,13 +120,13 @@ BOOST_FIXTURE_TEST_CASE(copy_contact, copy_contact_fixture)
 {
     Fred::OperationContext ctx;
 
-    const Fred::InfoContactData src_contact_info = Fred::InfoContact(src_contact_handle, sys_registrar_handle).exec(ctx).info_contact_data;
+    const Fred::InfoContactData src_contact_info = Fred::InfoContactByHandle(src_contact_handle).exec(ctx).info_contact_data;
     BOOST_CHECK(src_contact_info.delete_time.isnull());
 
     Fred::CopyContact(src_contact_handle, dst_contact_handle, sys_registrar_handle, 0).exec(ctx);
     ctx.commit_transaction();
 
-    const Fred::InfoContactData dst_contact_info = Fred::InfoContact(dst_contact_handle, sys_registrar_handle).exec(ctx).info_contact_data;
+    const Fred::InfoContactData dst_contact_info = Fred::InfoContactByHandle(dst_contact_handle).exec(ctx).info_contact_data;
 
     BOOST_CHECK(src_contact_info.roid != dst_contact_info.roid);
     BOOST_CHECK(boost::algorithm::to_upper_copy(src_contact_info.handle).compare(boost::algorithm::to_upper_copy(dst_contact_info.handle)) != 0);

@@ -19,7 +19,7 @@
 #include "commonclient.h"
 #include "registrarclient.h"
 
-#include "corba/file_manager_client.h"
+#include "src/corba/file_manager_client.h"
 #include "types/money.h"
 
 #include <string>

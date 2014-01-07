@@ -28,11 +28,11 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/assign/list_of.hpp>
 
-#include "corba/file_manager_client.h"
+#include "src/corba/file_manager_client.h"
 
 #include "commonclient.h"
 #include "notifyclient.h"
-#include "fredlib/info_buffer.h"
+#include "src/fredlib/info_buffer.h"
 
 #include "cfg/faked_args.h"
 #include "cfg/handle_args.h"
@@ -40,7 +40,7 @@
 #include "cfg/handle_general_args.h"
 #include "hp/handle_hpmail_args.h"
 
-#include "fredlib/db_settings.h"
+#include "src/fredlib/db_settings.h"
 
 using namespace Database;
 

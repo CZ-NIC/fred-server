@@ -23,9 +23,9 @@
 #include <boost/program_options.hpp>
 
 
-#include "fredlib/registry.h"
-#include "corba/admin/admin_impl.h"
-#include "corba/mailer_manager.h"
+#include "src/fredlib/registry.h"
+#include "src/corba/admin/admin_impl.h"
+#include "src/corba/mailer_manager.h"
 #include "baseclient.h"
 
 #include "file_params.h"

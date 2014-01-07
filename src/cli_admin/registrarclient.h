@@ -22,10 +22,10 @@
 #include <boost/program_options.hpp>
 #include <iostream>
 
-#include "old_utils/dbsql.h"
-#include "fredlib/registry.h"
+#include "src/old_utils/dbsql.h"
+#include "src/fredlib/registry.h"
 
-#include "corba/admin/admin_impl.h"
+#include "src/corba/admin/admin_impl.h"
 #include "baseclient.h"
 
 #include "registrar_params.h"

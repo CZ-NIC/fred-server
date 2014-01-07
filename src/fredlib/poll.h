@@ -3,12 +3,12 @@
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
-#include "types.h"
+#include "src/fredlib/types.h"
 #include "types/money.h"
-#include "exceptions.h"
-#include "common_object.h"
+#include "src/fredlib/exceptions.h"
+#include "src/fredlib/common_object.h"
 #include <ostream>
-#include "old_utils/dbsql.h"
+#include "src/old_utils/dbsql.h"
 #include "logger_client.h"
 
 using namespace boost::posix_time;

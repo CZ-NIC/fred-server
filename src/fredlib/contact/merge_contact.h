@@ -26,15 +26,17 @@
 
 #include <string>
 #include <vector>
+#include <boost/lexical_cast.hpp>
 
-#include "fredlib/opexception.h"
-#include "fredlib/opcontext.h"
+#include "src/fredlib/opexception.h"
+#include "src/fredlib/opcontext.h"
 #include "util/optional_value.h"
+#include "util/printable.h"
 
 namespace Fred
 {
 
-    struct MergeContactUpdateDomainRegistrant
+    struct MergeContactUpdateDomainRegistrant : public Util::Printable
     {
         std::string fqdn;
         unsigned long long domain_id;
@@ -57,18 +59,25 @@ namespace Fred
             , set_registrant(_set_registrant)
             , history_id(_history_id)
         {}
-        friend std::ostream& operator<<(std::ostream& os, const MergeContactUpdateDomainRegistrant& i)
+
+        /**
+        * Dumps state of the instance into the string
+        * @return string with description of the instance state
+        */
+        std::string to_string() const
         {
-            return os << "MergeContactUpdateDomainRegistrant fqdn: " << i.fqdn
-                << " domain_id: " << i.domain_id
-                << " sponsoring_registrar: " << i.sponsoring_registrar
-                << " set_registrant: " << i.set_registrant
-                << " history_id: " << i.history_id.print_quoted()
-                    ;
+            return Util::format_data_structure("MergeContactUpdateDomainRegistrant",
+            Util::vector_of<std::pair<std::string,std::string> >
+            (std::make_pair("fqdn",fqdn))
+            (std::make_pair("domain_id",boost::lexical_cast<std::string>(domain_id)))
+            (std::make_pair("sponsoring_registrar",sponsoring_registrar))
+            (std::make_pair("set_registrant",set_registrant))
+            (std::make_pair("history_id",history_id.print_quoted()))
+            );
         }
     };
 
-    struct MergeContactUpdateDomainAdminContact
+    struct MergeContactUpdateDomainAdminContact : public Util::Printable
     {
         std::string fqdn;
         unsigned long long domain_id;
@@ -94,19 +103,26 @@ namespace Fred
             , add_admin_contact(_add_admin_contact)
             , history_id(_history_id)
         {}
-        friend std::ostream& operator<<(std::ostream& os, const MergeContactUpdateDomainAdminContact& i)
+
+        /**
+        * Dumps state of the instance into the string
+        * @return string with description of the instance state
+        */
+        std::string to_string() const
         {
-            return os << "MergeContactUpdateDomainAdminContact fqdn: " << i.fqdn
-                    << " domain_id: " << i.domain_id
-                    << " sponsoring_registrar: " << i.sponsoring_registrar
-                    << " rem_admin_contact: " << i.rem_admin_contact
-                    << " add_admin_contact: " << i.add_admin_contact
-                    << " history_id: " << i.history_id.print_quoted()
-                    ;
+            return Util::format_data_structure("MergeContactUpdateDomainAdminContact",
+            Util::vector_of<std::pair<std::string,std::string> >
+            (std::make_pair("fqdn",fqdn))
+            (std::make_pair("domain_id",boost::lexical_cast<std::string>(domain_id)))
+            (std::make_pair("sponsoring_registrar",sponsoring_registrar))
+            (std::make_pair("rem_admin_contact",rem_admin_contact))
+            (std::make_pair("add_admin_contact",add_admin_contact))
+            (std::make_pair("history_id",history_id.print_quoted()))
+            );
         }
     };
 
-    struct MergeContactUpdateNssetTechContact
+    struct MergeContactUpdateNssetTechContact : public Util::Printable
     {
         std::string handle;
         unsigned long long nsset_id;
@@ -132,19 +148,27 @@ namespace Fred
             , add_tech_contact(_add_tech_contact)
             , history_id(_history_id)
             {}
-        friend std::ostream& operator<<(std::ostream& os, const MergeContactUpdateNssetTechContact& i)
+
+        /**
+        * Dumps state of the instance into the string
+        * @return string with description of the instance state
+        */
+        std::string to_string() const
         {
-            return os << "MergeContactUpdateNssetTechContact handle: " << i.handle
-                    << " nsset_id: " << i.nsset_id
-                    << " sponsoring_registrar: " << i.sponsoring_registrar
-                    << " rem_tech_contact: " << i.rem_tech_contact
-                    << " add_tech_contact: " << i.add_tech_contact
-                    << " history_id: " << i.history_id.print_quoted()
-                    ;
+            return Util::format_data_structure("MergeContactUpdateNssetTechContact",
+            Util::vector_of<std::pair<std::string,std::string> >
+            (std::make_pair("handle",handle))
+            (std::make_pair("nsset_id",boost::lexical_cast<std::string>(nsset_id)))
+            (std::make_pair("sponsoring_registrar",sponsoring_registrar))
+            (std::make_pair("rem_tech_contact",rem_tech_contact))
+            (std::make_pair("add_tech_contact",add_tech_contact))
+            (std::make_pair("history_id",history_id.print_quoted()))
+            );
         }
+
     };
 
-    struct MergeContactUpdateKeysetTechContact
+    struct MergeContactUpdateKeysetTechContact : public Util::Printable
     {
         std::string handle;
         unsigned long long keyset_id;
@@ -170,19 +194,27 @@ namespace Fred
             , add_tech_contact(_add_tech_contact)
             , history_id(_history_id)
         {}
-        friend std::ostream& operator<<(std::ostream& os, const MergeContactUpdateKeysetTechContact& i)
+
+        /**
+        * Dumps state of the instance into the string
+        * @return string with description of the instance state
+        */
+        std::string to_string() const
         {
-            return os << "MergeContactUpdateKeysetTechContact handle: " << i.handle
-                    << " keyset_id: " << i.keyset_id
-                    << " sponsoring_registrar: " << i.sponsoring_registrar
-                    << " rem_tech_contact: " << i.rem_tech_contact
-                    << " add_tech_contact: " << i.add_tech_contact
-                    << " history_id: " << i.history_id.print_quoted()
-                    ;
+            return Util::format_data_structure("MergeContactUpdateKeysetTechContact",
+            Util::vector_of<std::pair<std::string,std::string> >
+            (std::make_pair("handle",handle))
+            (std::make_pair("keyset_id",boost::lexical_cast<std::string>(keyset_id)))
+            (std::make_pair("sponsoring_registrar",sponsoring_registrar))
+            (std::make_pair("rem_tech_contact",rem_tech_contact))
+            (std::make_pair("add_tech_contact",add_tech_contact))
+            (std::make_pair("history_id",history_id.print_quoted()))
+            );
         }
+
     };
 
-    struct MergeContactLockedContactId
+    struct MergeContactLockedContactId : public Util::Printable
     {
         unsigned long long src_contact_id;
         unsigned long long src_contact_historyid;
@@ -219,22 +251,28 @@ namespace Fred
         , dst_contact_roid(_dst_contact_roid)
         , dst_contact_sponsoring_registrar(_dst_contact_sponsoring_registrar)
         {}
-        friend std::ostream& operator<<(std::ostream& os, const MergeContactLockedContactId& i)
+
+        /**
+        * Dumps state of the instance into the string
+        * @return string with description of the instance state
+        */
+        std::string to_string() const
         {
-            return os << "MergeContactLockedContactId"
-                    " src_contact_id: " << i.src_contact_id
-                << " src_contact_historyid: " << i.src_contact_historyid
-                << " src_contact_roid: " << i.src_contact_roid
-                << " src_contact_sponsoring_registrar: " << i.src_contact_sponsoring_registrar
-                << " dst_contact_id: " << i.dst_contact_id
-                << " dst_contact_historyid: " << i.dst_contact_historyid
-                << " dst_contact_roid: " << i.dst_contact_roid
-                << "dst_contact_sponsoring_registrar: " << i.dst_contact_sponsoring_registrar
-            ;
+            return Util::format_data_structure("MergeContactLockedContactId",
+            Util::vector_of<std::pair<std::string,std::string> >
+            (std::make_pair("src_contact_id",boost::lexical_cast<std::string>(src_contact_id)))
+            (std::make_pair("src_contact_historyid",boost::lexical_cast<std::string>(src_contact_historyid)))
+            (std::make_pair("src_contact_roid",src_contact_roid))
+            (std::make_pair("src_contact_sponsoring_registrar",boost::lexical_cast<std::string>(src_contact_sponsoring_registrar)))
+            (std::make_pair("dst_contact_id",boost::lexical_cast<std::string>(dst_contact_id)))
+            (std::make_pair("dst_contact_historyid",boost::lexical_cast<std::string>(dst_contact_historyid)))
+            (std::make_pair("dst_contact_roid",dst_contact_roid))
+            (std::make_pair("dst_contact_sponsoring_registrar",dst_contact_sponsoring_registrar))
+            );
         }
     };
 
-    struct MergeContactOutput
+    struct MergeContactOutput : public Util::Printable
     {
         MergeContactLockedContactId contactid;
         std::vector<MergeContactUpdateDomainRegistrant> update_domain_registrant;
@@ -255,26 +293,26 @@ namespace Fred
         , update_nsset_tech_contact(_update_nsset_tech_contact)
         , update_keyset_tech_contact(_update_keyset_tech_contact)
         {}
-        friend std::ostream& operator<<(std::ostream& os, const MergeContactOutput& i)
+
+        /**
+        * Dumps state of the instance into the string
+        * @return string with description of the instance state
+        */
+        std::string to_string() const
         {
-            os << "MergeContactOutput contactid: " << i.contactid;
-            if(!i.update_domain_registrant.empty()) os << " ";
-            for(std::vector<MergeContactUpdateDomainRegistrant>::const_iterator ci = i.update_domain_registrant.begin()
-                    ; ci != i.update_domain_registrant.end() ;  ++ci) os << *ci;
-            if(!i.update_domain_admin_contact.empty()) os << " ";
-            for(std::vector<MergeContactUpdateDomainAdminContact>::const_iterator ci = i.update_domain_admin_contact.begin()
-                    ; ci != i.update_domain_admin_contact.end() ;  ++ci) os << *ci;
-            if(!i.update_nsset_tech_contact.empty()) os << " ";
-            for(std::vector<MergeContactUpdateNssetTechContact>::const_iterator ci = i.update_nsset_tech_contact.begin()
-                    ; ci != i.update_nsset_tech_contact.end() ;  ++ci) os << *ci;
-            if(!i.update_keyset_tech_contact.empty()) os << " ";
-            for(std::vector<MergeContactUpdateKeysetTechContact>::const_iterator ci = i.update_keyset_tech_contact.begin()
-                    ; ci != i.update_keyset_tech_contact.end() ;  ++ci) os << *ci;
-            return os;
+            return Util::format_data_structure("MergeContactOutput",
+            Util::vector_of<std::pair<std::string,std::string> >
+            (std::make_pair("contactid",contactid.to_string()))
+            (std::make_pair("update_domain_registrant",Util::format_vector(update_domain_registrant)))
+            (std::make_pair("update_domain_admin_contact",Util::format_vector(update_domain_admin_contact)))
+            (std::make_pair("update_nsset_tech_contact",Util::format_vector(update_nsset_tech_contact)))
+            (std::make_pair("update_keyset_tech_contact",Util::format_vector(update_keyset_tech_contact)))
+            );
         }
+
     };
 
-    class MergeContact
+    class MergeContact  : public Util::Printable
     {
         const std::string src_contact_handle_;//source contact identifier
         const std::string dst_contact_handle_;//destination contact identifier
@@ -288,6 +326,7 @@ namespace Fred
     public:
         DECLARE_EXCEPTION_DATA(unknown_source_contact_handle, std::string);
         DECLARE_EXCEPTION_DATA(unknown_destination_contact_handle, std::string);
+        DECLARE_EXCEPTION_DATA(unknown_registrar_handle, std::string);
         struct InvalidContacts
         {
             std::string source_handle;
@@ -315,8 +354,7 @@ namespace Fred
         MergeContact& set_logd_request_id(unsigned long long logd_request_id);
         MergeContactOutput exec_dry_run(OperationContext& ctx);//history_id not set in output
         MergeContactOutput exec(OperationContext& ctx);
-        friend std::ostream& operator<<(std::ostream& os, const MergeContact& i);
-        std::string to_string();
+        std::string to_string() const;
     };//class MergeContact
 
 }//namespace Fred

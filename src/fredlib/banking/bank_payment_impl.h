@@ -2,10 +2,10 @@
 #define BANK_PAYMENT_IMPL_H_
 
 #include "bank_common.h"
-#include "bank_payment.h"
-#include "common_impl_new.h"
+#include "src/fredlib/banking/bank_payment.h"
+#include "src/fredlib/common_impl_new.h"
 #include "model_bank_payment.h"
-#include "db_settings.h"
+#include "src/fredlib/db_settings.h"
 #include "types/money.h"
 
 namespace Fred {

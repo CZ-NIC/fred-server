@@ -1,7 +1,7 @@
 #ifndef PUBLIC_REQUEST_VERIFICATION_IMPL_H_
 #define PUBLIC_REQUEST_VERIFICATION_IMPL_H_
 
-#include "public_request/public_request.h"
+#include "src/fredlib/public_request/public_request.h"
 #include "factory.h"
 
 

@@ -1,11 +1,11 @@
 #include "public_request_impl.h"
 #include "log/logger.h"
 #include "util.h"
-#include "db_settings.h"
+#include "src/fredlib/db_settings.h"
 #include "types/convert_sql_db_types.h"
 #include "types/sqlize.h"
 #include "random.h"
-#include "object_states.h"
+#include "src/fredlib/object_states.h"
 
 #include <boost/utility.hpp>
 #include <boost/lexical_cast.hpp>

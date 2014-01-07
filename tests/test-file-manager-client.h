@@ -41,17 +41,17 @@
 #include <boost/date_time.hpp>
 #include <boost/assign/list_of.hpp>
 
-#include "corba_wrapper_decl.h"
+#include "util/corba_wrapper_decl.h"
 #include "log/logger.h"
 #include "log/context.h"
 
 #include "random_data_generator.h"
 #include "concurrent_queue.h"
-#include "common.h"
+#include "types/common.h"
 
 #include "cfg/handle_general_args.h"
 #include "cfg/handle_corbanameservice_args.h"
-#include "file_manager_client.h"
+#include "src/corba/file_manager_client.h"
 
 //not using UTF defined main
 #define BOOST_TEST_NO_MAIN

@@ -27,8 +27,8 @@
 #include "request_manager.h"
 
 // for PartitioningTweak
-#include "model/log_filter.h"
-#include "db_settings.h"
+#include "src/model/log_filter.h"
+#include "src/fredlib/db_settings.h"
 
 
 using namespace Database::Filters;

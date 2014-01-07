@@ -33,7 +33,7 @@
 #include <boost/utility.hpp>
 #include <omniORB4/CORBA.h>
 
-#include "corba/nameservice.h"
+#include "src/corba/nameservice.h"
 
 #include <boost/thread/thread.hpp>
 

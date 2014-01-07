@@ -8,11 +8,11 @@
 #ifndef SESSION_H_
 #define SESSION_H_
 
-#include "object.h"
-#include "db_settings.h"
+#include "src/fredlib/object.h"
+#include "src/fredlib/db_settings.h"
 
-#include "model/model_filters.h"
-#include "model/log_filter.h"
+#include "src/model/model_filters.h"
+#include "src/model/log_filter.h"
 #include "model_session.h"
 
 namespace Fred {

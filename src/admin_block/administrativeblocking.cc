@@ -22,19 +22,19 @@
  */
 
 #include "administrativeblocking.h"
-#include "fredlib/domain/get_blocking_status_desc_list.h"
-#include "fredlib/domain/get_object_state_id_map.h"
-#include "fredlib/domain/create_administrative_object_block_request.h"
-#include "fredlib/domain/create_administrative_object_block_request_id.h"
-#include "fredlib/domain/create_administrative_object_state_restore_request.h"
-#include "fredlib/domain/create_administrative_object_state_restore_request_id.h"
-#include "fredlib/domain/create_domain_name_blacklist.h"
-#include "fredlib/domain/create_domain_name_blacklist_id.h"
-#include "fredlib/domain/clear_administrative_object_state_request_id.h"
-#include "fredlib/domain/update_domain.h"
-#include "fredlib/domain/delete_domain.h"
-#include "fredlib/domain/info_domain.h"
-#include "fredlib/domain/copy_contact.h"
+#include "src/fredlib/domain/get_blocking_status_desc_list.h"
+#include "src/fredlib/domain/get_object_state_id_map.h"
+#include "src/fredlib/domain/create_administrative_object_block_request.h"
+#include "src/fredlib/domain/create_administrative_object_block_request_id.h"
+#include "src/fredlib/domain/create_administrative_object_state_restore_request.h"
+#include "src/fredlib/domain/create_administrative_object_state_restore_request_id.h"
+#include "src/fredlib/domain/create_domain_name_blacklist.h"
+#include "src/fredlib/domain/create_domain_name_blacklist_id.h"
+#include "src/fredlib/domain/clear_administrative_object_state_request_id.h"
+#include "src/fredlib/domain/update_domain.h"
+#include "src/fredlib/domain/delete_domain.h"
+#include "src/fredlib/domain/info_domain.h"
+#include "src/fredlib/domain/copy_contact.h"
 #include <memory>
 #include <map>
 
@@ -549,10 +549,13 @@ namespace Registry
                         create_object_state_restore_request.exec(ctx);
                         Fred::PerformObjectStateRequest(object_id).exec(ctx);
                         const std::string fqdn = get_object_handle(ctx, object_id);
+
                         if (sys_registrar.empty()) {
                             sys_registrar = get_sys_registrar(ctx, is_sys_registrar);
                         }
-                        const boost::gregorian::date expiration_date = Fred::InfoDomain(fqdn, sys_registrar).exec(ctx).info_domain_data.expiration_date;
+
+                        const boost::gregorian::date expiration_date = Fred::InfoDomainByHandle(fqdn).exec(ctx).info_domain_data.expiration_date;
+
                         const boost::gregorian::date today(boost::gregorian::day_clock::universal_day());
                         const bool set_expire_today = expiration_date < today;
                         const bool new_owner_is_set = !(_new_owner.isnull() || static_cast< std::string >(_new_owner).empty());
@@ -721,10 +724,12 @@ namespace Registry
                         Fred::ClearAdministrativeObjectStateRequestId(object_id, _reason).exec(ctx);
                         Fred::PerformObjectStateRequest(object_id).exec(ctx);
                         const std::string fqdn = get_object_handle(ctx, object_id);
+
                         if (sys_registrar.empty()) {
                             sys_registrar = get_sys_registrar(ctx, is_sys_registrar);
                         }
-                        const Fred::InfoDomainData info_domain_data = Fred::InfoDomain(fqdn, sys_registrar).exec(ctx).info_domain_data;
+                        const Fred::InfoDomainData info_domain_data = Fred::InfoDomainByHandle(fqdn).exec(ctx).info_domain_data;
+
                         const boost::gregorian::date today(boost::gregorian::day_clock::universal_day());
                         const bool set_expire_today = info_domain_data.expiration_date < today;
                         const bool set_new_owner = !_new_owner.isnull() && !static_cast< std::string >(_new_owner).empty();
@@ -782,8 +787,8 @@ namespace Registry
                             throw std::runtime_error("Fred::UpdateDomain::Exception");
                         }
                     }
-                    catch (const Fred::InfoDomain::Exception &e) {
-                        if (e.is_set_unknown_domain_fqdn()) {
+                    catch (const Fred::InfoDomainByHandle::Exception &e) {
+                        if (e.is_set_unknown_fqdn()) {
                             EX_INTERNAL_SERVER_ERROR ex;
                             ex.what = "domain doesn't exist"; 
                             throw ex;

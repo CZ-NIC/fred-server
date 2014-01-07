@@ -19,9 +19,9 @@
 
 #include "bankclient.h"
 #include "commonclient.h"
-#include "bank_manager.h"
-#include "fredlib/registry.h"
-#include "corba/file_manager_client.h"
+#include "src/fredlib/banking/bank_manager.h"
+#include "src/fredlib/registry.h"
+#include "src/corba/file_manager_client.h"
 
 #include <iostream>
 #include <fstream>

@@ -24,7 +24,7 @@
 #include <stdexcept>
 
 #include "contact_verification_password.h"
-#include "fredlib/db_settings.h"
+#include "src/fredlib/db_settings.h"
 #include "log/logger.h"
 #include "util/map_at.h"
 
