@@ -39,7 +39,7 @@
 #include "admin/contact/merge_contact.h"
 #include "admin/contact/merge_contact_reporting.h"
 #include "corba/logger_client_impl.h"
-#include "admin/contact/verification/fill_automatic_check_queue.h"
+#include "admin/contact/verification/fill_check_queue.h"
 #include "fredlib/contact/verification/create_check.h"
 #include "admin/contact/verification/run_all_enqueued_checks.h"
 #include "admin/contact/verification/create_test_impl_prototypes.h"
@@ -249,7 +249,9 @@ struct contact_verification_fill_queue_automatic_testsuite_impl
 
       typedef boost::tuple<std::string, long long, long long> check_data_type;
 
-      std::vector<check_data_type> enqueued_checks = Admin::fill_automatic_check_queue(params.max_queue_lenght);
+      std::vector<check_data_type> enqueued_checks =
+          Admin::ContactVerificationQueue::fill_check_queue("automatic", params.max_queue_lenght)
+          .exec();
 
       if(enqueued_checks.size() > 0) {
           std::cout << "enqueued check handles:" << std::endl;

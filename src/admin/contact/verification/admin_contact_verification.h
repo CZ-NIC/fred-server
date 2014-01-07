@@ -21,5 +21,5 @@
  * interface for clients
  */
 
-#include "admin/contact/verification/fill_automatic_check_queue.h"
+#include "admin/contact/verification/fill_check_queue.h"
 #include "admin/contact/verification/run_all_enqueued_checks.h"
