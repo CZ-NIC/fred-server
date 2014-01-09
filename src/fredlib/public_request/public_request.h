@@ -249,6 +249,10 @@ public:
           const std::string &_password,
           const unsigned long long &_request_id) = 0;
 
+  virtual bool checkAlreadyProcessedPublicRequest(
+          unsigned long long &_contact_id,
+          const std::vector<Type> &_request_type_list) = 0;
+
   virtual std::string getPublicRequestAuthIdentification(
           unsigned long long &_contact_id,
           const std::vector<Type> &_request_type_list) = 0;
