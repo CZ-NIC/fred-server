@@ -36,10 +36,16 @@ namespace Fred
 namespace Registrar
 {
 
-    GetRegistrarHandles::GetRegistrarHandles(const std::vector<std::string>& excluded_registrar_handles)
-    : excluded_registrar_handles_(excluded_registrar_handles)
+    GetRegistrarHandles::GetRegistrarHandles()
+    : excluded_registrar_handles_()
     , read_lock_(false)
     {}
+
+    GetRegistrarHandles& GetRegistrarHandles::set_exclude_registrars(const std::vector<std::string>& _exclude_registrars)
+    {
+        excluded_registrar_handles_ = _exclude_registrars;
+        return *this;
+    }
 
     GetRegistrarHandles& GetRegistrarHandles::set_read_lock(bool read_lock)
     {

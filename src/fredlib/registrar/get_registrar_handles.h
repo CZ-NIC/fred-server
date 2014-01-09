@@ -45,10 +45,15 @@ namespace Registrar
         bool read_lock_;/**< lock registrar row for read */
     public:
         /**
-        * GetRegistrarHandles constructor with mandatory parameter.
-        * @param excluded_registrar_handles sets excluded registrar handles into @ref excluded_registrar_handles_ attribute
+        * GetRegistrarHandles constructor
         */
-        GetRegistrarHandles(const std::vector<std::string>& excluded_registrar_handles);
+        GetRegistrarHandles();
+
+        /**
+        * Sets list of registrar handles which has to be omitted in result list
+        * @param exclude_registrars sets excluded registrar handles into @ref excluded_registrar_handles_ attribute
+        */
+        GetRegistrarHandles& set_exclude_registrars(const std::vector<std::string>& _exclude_registrars);
 
         /**
         * Sets registrar read lock flag, effective only with shared db connection.

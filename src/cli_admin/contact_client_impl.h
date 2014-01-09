@@ -142,8 +142,7 @@ struct contact_merge_duplicate_auto_impl
         }
         else
         {
-            registrar_handles = Fred::Registrar::GetRegistrarHandles(
-                    params.except_registrar).exec();
+            registrar_handles = Fred::Registrar::GetRegistrarHandles().set_exclude_registrars(params.except_registrar).exec();
         }
 
         for(std::vector<std::string>::const_iterator ci = registrar_handles.begin()
