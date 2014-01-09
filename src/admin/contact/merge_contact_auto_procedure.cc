@@ -243,6 +243,18 @@ void MergeContactAutoProcedure::exec()
     if (system_registrar_result.size() == 0) {
         throw std::runtime_error("no system registrar found");
     }
+
+    //check registrar
+    Database::Result registrar_res = octx.get_conn().exec_params(
+        "SELECT id FROM registrar WHERE handle = UPPER($1::text)"
+        , Database::query_param_list(registrar_.get_value()));
+
+    if(registrar_res.size() == 0)//registrar not found
+    {
+        throw std::runtime_error(std::string("registrar: '")
+            + registrar_.get_value()+"' not found");
+    }
+
     std::string system_registrar = static_cast<std::string>(system_registrar_result[0][0]);
 
     /* filter for best contact selection */
@@ -256,6 +268,12 @@ void MergeContactAutoProcedure::exec()
     MergeContactOperationSummary all_merge_operation_info;
     OutputIndenter indenter(2, 0, ' ');
     std::ostream &out_stream = std::cout;
+
+    if (this->get_verbose_level() > 0) {
+        out_stream << format_header(str(boost::format("REGISTRAR: %1%")
+            % (registrar_.is_value_set() ? registrar_.get_value(): std::string("n/a"))), indenter);
+    }
+
 
     /* find any contact duplicates set (optionally for specific registrar only) */
     std::set<std::string> any_dup_set = Fred::Contact::FindAnyContactDuplicates().set_registrar(registrar_).exec(octx);

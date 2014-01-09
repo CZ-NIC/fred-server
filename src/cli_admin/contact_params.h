@@ -115,7 +115,8 @@ struct ContactMergeDuplicateAutoArgs
 
     ContactMergeDuplicateAutoArgs()
     : dry_run(true)
-    {}
+    {
+    }
 
     ContactMergeDuplicateAutoArgs(
             const optional_string &_registrar,
