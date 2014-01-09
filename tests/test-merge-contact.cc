@@ -1170,6 +1170,11 @@ BOOST_AUTO_TEST_CASE(merge_contact_notification_email_addr)
 
 BOOST_AUTO_TEST_CASE(get_registrar_handles_except_excluded)
 {
+    std::vector<std::string> all_registrars = Fred::Registrar::GetRegistrarHandles().exec();
+    std::vector<std::string> all_excluded_registrars = Fred::Registrar::GetRegistrarHandles().set_exclude_registrars(all_registrars).exec();
+    BOOST_CHECK(!all_registrars.empty());
+    BOOST_CHECK(all_excluded_registrars.empty());
+
     std::vector<std::string> registrars = Fred::Registrar::GetRegistrarHandles().set_exclude_registrars(Util::vector_of<std::string>("REG-FRED_B")).exec();
     BOOST_CHECK(std::find(registrars.begin(),registrars.end(),std::string("REG-FRED_A")) != registrars.end());
     BOOST_CHECK(std::find(registrars.begin(),registrars.end(),std::string("REG-FRED_B")) == registrars.end());
