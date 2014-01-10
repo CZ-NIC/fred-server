@@ -24,7 +24,7 @@
 #ifndef CANCEL_OBJECT_STATE_REQUEST_ID_H_
 #define CANCEL_OBJECT_STATE_REQUEST_ID_H_
 
-#include "fredlib/domain/create_object_state_request.h"
+#include "fredlib/object_state/create_object_state_request.h"
 
 namespace Fred
 {

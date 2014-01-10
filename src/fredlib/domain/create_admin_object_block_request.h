@@ -34,7 +34,7 @@ administrativni nastaveni stavu blokovani objektu, (insert do object_state_reque
 #ifndef CREATE_ADMIN_OBJECT_BLOCK_REQUEST_H_
 #define CREATE_ADMIN_OBJECT_BLOCK_REQUEST_H_
 
-#include "fredlib/domain/create_object_state_request.h"
+#include "fredlib/object_state/create_object_state_request.h"
 
 namespace Fred
 {

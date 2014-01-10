@@ -44,7 +44,7 @@
 #include "time_clock.h"
 #include "fredlib/registrar.h"
 #include "fredlib/domain/create_admin_object_block_request_id.h"
-#include "fredlib/domain/create_admin_object_state_restore_request_id.h"
+#include "fredlib/object_state/create_admin_object_state_restore_request_id.h"
 #include "fredlib/opexception.h"
 #include "util/util.h"
 

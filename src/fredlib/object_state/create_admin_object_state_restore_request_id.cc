@@ -17,11 +17,13 @@
  */
 
 /**
- *  @file create_admin_object_state_restore_request.cc
+ *  @file create_admin_object_state_restore_request_id.cc
  *  create administrative object state restore request
  */
 
-#include "fredlib/domain/create_admin_object_state_restore_request.h"
+#include "fredlib/object_state/create_admin_object_state_restore_request_id.h"
+#include "fredlib/object_state/clear_admin_object_state_request_id.h"
+#include "fredlib/object_state/clear_object_state_request_id.h"
 #include "fredlib/domain/get_blocking_status_desc_list.h"
 #include "fredlib/opcontext.h"
 #include "fredlib/db_settings.h"
@@ -29,7 +31,6 @@
 #include "util/db/nullable.h"
 #include "util/util.h"
 #include "fredlib/object.h"
-#include "clear_object_state_request.h"
 
 #include <boost/algorithm/string.hpp>
 #include <set>
@@ -37,30 +38,48 @@
 namespace Fred
 {
 
-    CreateAdminObjectStateRestoreRequest::CreateAdminObjectStateRestoreRequest(const std::string &_object_handle,
-        ObjectType _object_type)
-    :   object_handle_(_object_handle),
-        object_type_(_object_type)
+    CreateAdminObjectStateRestoreRequestId::CreateAdminObjectStateRestoreRequestId(ObjectId _object_id)
+    :   object_id_(_object_id)
     {}
 
-    CreateAdminObjectStateRestoreRequest::CreateAdminObjectStateRestoreRequest(const std::string &_object_handle,
-        ObjectType _object_type,
-        const std::string &_notice)
-    :   object_handle_(_object_handle),
-        object_type_(_object_type),
-        notice_(_notice)
+    CreateAdminObjectStateRestoreRequestId::CreateAdminObjectStateRestoreRequestId(ObjectId _object_id,
+        const std::string &_reason,
+        const Optional<unsigned long long> _logd_request_id)
+    :   object_id_(_object_id),
+        reason_(_reason),
+        logd_request_id_(_logd_request_id)
     {}
 
-    CreateAdminObjectStateRestoreRequest& CreateAdminObjectStateRestoreRequest::set_notice(const std::string &_notice)
+    CreateAdminObjectStateRestoreRequestId& CreateAdminObjectStateRestoreRequestId::set_reason(const std::string &_reason)
     {
-        notice_ = _notice;
+        reason_ = _reason;
         return *this;
     }
 
-    ObjectId CreateAdminObjectStateRestoreRequest::exec(OperationContext &_ctx)
+    CreateAdminObjectStateRestoreRequestId& CreateAdminObjectStateRestoreRequestId::set_logd_request_id(unsigned long long _logd_request_id)
     {
+        logd_request_id_ = _logd_request_id;
+        return *this;
+    }
+    
+    void CreateAdminObjectStateRestoreRequestId::exec(OperationContext &_ctx)
+    {
+        //get object type
+        ObjectType object_type = 0;
+        Database::query_param_list param(object_id_);
+        {
+            Database::Result object_type_result = _ctx.get_conn().exec_params(
+                "SELECT type "
+                "FROM object_registry "
+                "WHERE id=$1::bigint", param);
+            if (object_type_result.size() <= 0) {
+                BOOST_THROW_EXCEPTION(Exception().set_object_id_not_found(object_id_));
+            }
+            const Database::Row &row = object_type_result[0];
+            object_type = static_cast< ObjectType >(row[0]);
+        }
+
         const ObjectStateId server_blocked_id = this->check_server_blocked_status_present(_ctx);
-        const ObjectId object_id = GetObjectId(object_handle_, object_type_).exec(_ctx);
         enum ResultColumnIndex
         {
             OBJECT_STATE_ID_IDX = 0,
@@ -77,7 +96,7 @@ namespace Fred
                    ")=os.valid_from,false) " // FOLLOW_UP
             "FROM object_state os "
             "WHERE os.object_id=$1::bigint AND os.state_id=$2::bigint ORDER BY os.valid_from DESC",
-            Database::query_param_list(object_id)(server_blocked_id));
+            Database::query_param_list(object_id_)(server_blocked_id));
         Database::Result::Iterator pRow = block_history.begin();
         // seek on actual serverBlocked
         while (pRow != block_history.end()) {
@@ -99,12 +118,12 @@ namespace Fred
                 "SELECT id "
                 "FROM enum_object_states "
                 "WHERE $1::integer=ANY(types)",
-                Database::query_param_list(object_type_));
+                Database::query_param_list(object_type));
             MultipleObjectStateId status_all;
             for (Database::Result::Iterator pStatusRow = status_result.begin(); pStatusRow != status_result.end(); ++pStatusRow) {
                 status_all.insert((*pStatusRow)[0]);
             }
-            LockMultipleObjectStateRequestLock(status_all, object_id).exec(_ctx);
+            LockMultipleObjectStateRequestLock(status_all, object_id_).exec(_ctx);
 
             const TID start_object_state_id = (*pRow)[OBJECT_STATE_ID_IDX];
             Database::Result previous_status_list_result = _ctx.get_conn().exec_params(
@@ -113,23 +132,30 @@ namespace Fred
                 "JOIN object_state os ON (os.object_id=oss.object_id AND "
                                          "os.valid_from<oss.valid_from AND "
                                          "(os.valid_to IS NULL OR oss.valid_from<=os.valid_to)) "
-                "JOIN enum_object_states eos ON eos.id=os.state_id",
+                "JOIN enum_object_states eos ON eos.id=os.state_id "
+                "WHERE eos.manual AND name LIKE 'server%'",
                 Database::query_param_list(start_object_state_id));
             for (Database::Result::Iterator pName = previous_status_list_result.begin();
                  pName != previous_status_list_result.end(); ++pName) {
                 previous_status_list.insert((*pName)[0]);
             }
         }
-        ClearObjectStateRequest(object_handle_, object_type_).exec(_ctx);
-        if (!previous_status_list.empty()) {
-            CreateObjectStateRequest(object_handle_, object_type_, previous_status_list).exec(_ctx);
+        try {
+            ClearAdminObjectStateRequestId(object_id_, reason_).exec(_ctx);
         }
-        return object_id;
+        catch (const ClearAdminObjectStateRequestId::Exception &ex) {
+            if (ex.is_set_server_blocked_absent()) {
+                BOOST_THROW_EXCEPTION(Exception().set_server_blocked_absent(ex.get_server_blocked_absent()));
+            }
+            throw;
+        }
+        if (!previous_status_list.empty()) {
+            CreateObjectStateRequestId(object_id_, previous_status_list).exec(_ctx);
+        }
     }
 
-    ObjectStateId CreateAdminObjectStateRestoreRequest::check_server_blocked_status_present(OperationContext &_ctx) const
+    ObjectStateId CreateAdminObjectStateRestoreRequestId::check_server_blocked_status_present(OperationContext &_ctx) const
     {
-        const ObjectId object_id = GetObjectId(object_handle_, object_type_).exec(_ctx);
         static ObjectStateId server_blocked_id = 0;
         if (server_blocked_id == 0) {
             Database::Result obj_state_res = _ctx.get_conn().exec(
@@ -144,7 +170,7 @@ namespace Fred
             _ctx.get_log().debug("serverBlockedId = " + boost::lexical_cast< std::string >(server_blocked_id));
         }
         _ctx.get_log().debug("LockObjectStateRequestLock call");
-        LockObjectStateRequestLock(server_blocked_id, object_id).exec(_ctx);
+        LockObjectStateRequestLock(server_blocked_id, object_id_).exec(_ctx);
         _ctx.get_log().debug("LockObjectStateRequestLock success");
         Database::Result rcheck = _ctx.get_conn().exec_params(
             "SELECT 1 "
@@ -156,12 +182,12 @@ namespace Fred
                    "CURRENT_TIMESTAMP<valid_to) "
                   "LIMIT 1",
             Database::query_param_list
-                (object_id)
+                (object_id_)
                 (server_blocked_id));
         if (0 < rcheck.size()) {
             return server_blocked_id;
         }
-        BOOST_THROW_EXCEPTION(Exception().set_server_blocked_absent(object_handle_));
+        BOOST_THROW_EXCEPTION(Exception().set_server_blocked_absent(object_id_));
     }
 
 }//namespace Fred

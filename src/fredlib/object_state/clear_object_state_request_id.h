@@ -17,43 +17,42 @@
  */
 
 /**
- *  @file clear_object_state_request.h
+ *  @file clear_object_state_request_id.h
  *  clear object state request
  */
 
-#ifndef CLEAR_OBJECT_STATE_REQUEST_H_
-#define CLEAR_OBJECT_STATE_REQUEST_H_
+#ifndef CLEAR_OBJECT_STATE_REQUEST_ID_H_
+#define CLEAR_OBJECT_STATE_REQUEST_ID_H_
 
-#include "fredlib/domain/create_object_state_request.h"
+#include "fredlib/object_state/create_object_state_request.h"
+#include <vector>
 
 namespace Fred
 {
 
 /*
 pozadavek na zruseni vsech stavu objektu (update object_state_request)
-  M handle objektu,
-  M typ objektu,
+  M id objektu,
 */
-    class ClearObjectStateRequest
+    class ClearObjectStateRequestId
     {
     public:
-        ClearObjectStateRequest(const std::string &_object_handle,
-            ObjectType _object_type);
-        ObjectId exec(OperationContext &_ctx);
+        ClearObjectStateRequestId(ObjectId _object_id);
+        typedef std::vector< ObjectId > Requests;
+        Requests exec(OperationContext &_ctx);
 
     //exception impl
-        DECLARE_EXCEPTION_DATA(handle_not_found, std::string);
+        DECLARE_EXCEPTION_DATA(object_id_not_found, ObjectId);
 
         struct Exception
         :   virtual Fred::OperationException,
-            ExceptionData_handle_not_found<Exception>
+            ExceptionData_object_id_not_found<Exception>
         {};
     private:
-        const std::string object_handle_;
-        const ObjectType object_type_;
+        const ObjectId object_id_;
     };//class ClearObjectStateRequest
 
 
 }//namespace Fred
 
-#endif//CLEAR_OBJECT_STATE_REQUEST_H_
+#endif//CLEAR_OBJECT_STATE_REQUEST_ID_H_

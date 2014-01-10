@@ -17,13 +17,13 @@
  */
 
 /**
- *  @file create_object_state_request_id.cc
+ *  @file create_object_state_request.cc
  *  create object state request
  */
 
-#include "fredlib/domain/create_object_state_request_id.h"
+#include "fredlib/object_state/create_object_state_request.h"
 #include "fredlib/domain/get_blocking_status_desc_list.h"
-#include "fredlib/domain/get_object_state_id_map.h"
+#include "fredlib/object_state/get_object_state_id_map.h"
 #include "fredlib/opcontext.h"
 #include "fredlib/db_settings.h"
 #include "util/optional_value.h"
@@ -35,42 +35,39 @@
 
 namespace Fred
 {
-    CreateObjectStateRequestId::CreateObjectStateRequestId(ObjectId _object_id,
+    CreateObjectStateRequest::CreateObjectStateRequest(const std::string &_object_handle,
+        ObjectType _object_type,
         const StatusList &_status_list)
-    :   object_id_(_object_id),
+    :   object_handle_(_object_handle),
+        object_type_(_object_type),
         status_list_(_status_list)
     {}
 
-    CreateObjectStateRequestId::CreateObjectStateRequestId(ObjectId _object_id,
+    CreateObjectStateRequest::CreateObjectStateRequest(const std::string &_object_handle,
+        ObjectType _object_type,
         const StatusList &_status_list,
         const Optional< Time > &_valid_from,
         const Optional< Time > &_valid_to)
-    :   object_id_(_object_id),
+    :   object_handle_(_object_handle),
+        object_type_(_object_type),
         status_list_(_status_list),
         valid_from_(_valid_from),
         valid_to_(_valid_to)
     {}
 
-    CreateObjectStateRequestId& CreateObjectStateRequestId::set_valid_from(const Time &_valid_from)
+    CreateObjectStateRequest& CreateObjectStateRequest::set_valid_from(const Time &_valid_from)
     {
         valid_from_ = _valid_from;
         return *this;
     }
 
-    CreateObjectStateRequestId& CreateObjectStateRequestId::set_valid_to(const Time &_valid_to)
+    CreateObjectStateRequest& CreateObjectStateRequest::set_valid_to(const Time &_valid_to)
     {
         valid_to_ = _valid_to;
         return *this;
     }
 
-    namespace
-    {
-    
-    void check_valid_status(OperationContext &_ctx, ObjectId _object_id, const StatusList &_status_list);
-
-    } // unnamed namespace
-
-    std::string CreateObjectStateRequestId::exec(OperationContext &_ctx)
+    ObjectId CreateObjectStateRequest::exec(OperationContext &_ctx)
     {
         std::string object_state_names;
 
@@ -80,7 +77,8 @@ namespace Fred
         }
 
         _ctx.get_log().debug(std::string(
-            "CreateObjectStateRequestId::exec object id: ") + boost::lexical_cast< std::string >(object_id_)
+            "CreateObjectStateRequest::exec object name: ") + object_handle_
+            + " object type: " + boost::lexical_cast< std::string >(object_type_)
             + " object state name: " + object_state_names
             + " valid from: " + boost::posix_time::to_iso_string(valid_from_)
             + " valid to: " + boost::posix_time::to_iso_string(valid_to_));
@@ -107,25 +105,10 @@ namespace Fred
             }
         }
 
-        //get object type
-        ObjectType object_type = 0;
-        std::string handle_name;
-        Database::query_param_list param(object_id_);
-        {
-            Database::Result object_type_result = _ctx.get_conn().exec_params(
-                "SELECT type,name "
-                "FROM object_registry "
-                "WHERE id=$1::bigint", param);
-            if (object_type_result.size() <= 0) {
-                BOOST_THROW_EXCEPTION(Exception().set_object_id_not_found(object_id_));
-            }
-            check_valid_status(_ctx, object_id_, status_list_);
-            const Database::Row &row = object_type_result[0];
-            object_type = static_cast< ObjectType >(row[0]);
-            handle_name = static_cast< std::string >(row[1]);
-        }
+        //get object
+        const ObjectId object_id = GetObjectId(object_handle_, object_type_).exec(_ctx);
 
-        GetObjectStateIdMap get_object_state_id_map(status_list_, object_type);
+        GetObjectStateIdMap get_object_state_id_map(status_list_, object_type_);
         typedef GetObjectStateIdMap::StateIdMap StateIdMap;
         const StateIdMap &state_id_map = get_object_state_id_map.exec(_ctx);
         {
@@ -135,7 +118,7 @@ namespace Fred
                 state_id.insert(pStateId->second);
             }
             
-            LockMultipleObjectStateRequestLock(state_id, object_id_).exec(_ctx);
+            LockMultipleObjectStateRequestLock(state_id, object_id).exec(_ctx);
         }
 
         std::string object_state_id_set;
@@ -153,6 +136,7 @@ namespace Fred
         object_state_id_set += ")";
 
         std::string new_valid_column;
+        Database::query_param_list param(object_id);
         if (valid_from_.isset()) {
             if (valid_to_.isset()) { // <from,to)
                 new_valid_column = "$2::timestamp AS new_valid_from,$3::timestamp AS new_valid_to";
@@ -200,7 +184,7 @@ namespace Fred
                                                             ? boost::posix_time::ptime(boost::posix_time::pos_infin)
                                                             : static_cast< const boost::posix_time::ptime& >(row[3]);
             std::string errmsg("object:");
-            errmsg += boost::lexical_cast< std::string >(object_id_) + " "
+            errmsg += object_handle_ + " "
                       "<" + boost::posix_time::to_iso_string(obj_valid_from) + ", " +
                       boost::posix_time::to_iso_string(obj_valid_to) + ") - "
                       "<" + boost::posix_time::to_iso_string(new_valid_from) + ", " +
@@ -209,7 +193,7 @@ namespace Fred
         }
 
         param.clear();
-        param(object_id_) // $1
+        param(object_id) // $1
              (valid_to_.isset() // $2
                              ? Database::QueryParam(valid_to_.get_value())
                              : Database::QPNull);
@@ -251,51 +235,91 @@ namespace Fred
         }
 
         _ctx.get_conn().exec_params(cmd.str(), param);
-        return handle_name;
-    }//CreateObjectStateRequestId::exec
+        return object_id;
+    }//CreateObjectStateRequest::exec
 
-    namespace
+    PerformObjectStateRequest::PerformObjectStateRequest()
+    {}
+
+    PerformObjectStateRequest::PerformObjectStateRequest(const Optional< ObjectId > &_object_id)
+    :   object_id_(_object_id)
+    {}
+
+    PerformObjectStateRequest& PerformObjectStateRequest::set_object_id(ObjectId _object_id)
     {
-    
-    void check_valid_status(OperationContext &_ctx, ObjectId _object_id, const StatusList &_status_list)
-    {
-        if (_status_list.empty()) {
-            return;
-        }
-        Database::query_param_list param(_object_id);
-        std::ostringstream query;
-        query << "SELECT eos.name "
-          "FROM enum_object_states eos "
-          "JOIN object_registry obr ON obr.type=ANY(types) "
-          "WHERE obr.id=$1::bigint AND "
-          "eos.manual AND "
-          "eos.name IN ($2::text";
-        StatusList::const_iterator pStatus = _status_list.begin();
-        param(*pStatus);
-        ++pStatus;
-        while (pStatus != _status_list.end()) {
-            param(*pStatus);
-            query << ",$" << param.size() << "::text";
-            ++pStatus;
-        }
-        query << ")";
-        Database::Result state_result = _ctx.get_conn().exec_params(query.str(), param);
-        if (state_result.size() == _status_list.size()) {
-            return;
-        }
-        CreateObjectStateRequestId::Exception e;
-        StatusList correct_status_list;
-        for (::size_t idx = 0; idx < state_result.size(); ++idx) {
-            correct_status_list.insert(static_cast< std::string >(state_result[idx][0]));
-        }
-        for (StatusList::const_iterator pStatus = _status_list.begin(); pStatus != _status_list.end(); ++pStatus) {
-            if (correct_status_list.find(*pStatus) == correct_status_list.end()) {
-                e.add_state_not_found(*pStatus);
-            }
-        }
-        BOOST_THROW_EXCEPTION(e);
+        object_id_ = _object_id;
+        return *this;
     }
 
-    } // unnamed namespace
+    void PerformObjectStateRequest::exec(OperationContext &_ctx)
+    {
+        _ctx.get_conn().exec_params(
+            "SELECT update_object_states($1::integer)",
+            Database::query_param_list
+                (object_id_));
+    }
+
+    LockObjectStateRequestLock::LockObjectStateRequestLock(ObjectStateId _state_id, ObjectId _object_id)
+    :   state_id_(_state_id),
+        object_id_(_object_id)
+    {}
+
+    void LockObjectStateRequestLock::exec(OperationContext &_ctx)
+    {
+        {//insert separately
+            typedef std::auto_ptr< Database::StandaloneConnection > StandaloneConnectionPtr;
+            Database::StandaloneManager sm = Database::StandaloneManager(
+                new Database::StandaloneConnectionFactory(Database::Manager::getConnectionString()));
+            StandaloneConnectionPtr conn_standalone(sm.acquire());
+            conn_standalone->exec_params(
+                "INSERT INTO object_state_request_lock (id,state_id,object_id) "
+                "VALUES (DEFAULT, $1::bigint, $2::bigint)",
+                Database::query_param_list(state_id_)(object_id_));
+        }
+
+        _ctx.get_conn().exec_params("SELECT lock_object_state_request_lock($1::bigint, $2::bigint)",
+            Database::query_param_list(state_id_)(object_id_));
+    }
+
+    LockMultipleObjectStateRequestLock::LockMultipleObjectStateRequestLock(
+        const MultipleObjectStateId &_state_id, ObjectId _object_id)
+    :   state_id_(_state_id),
+        object_id_(_object_id)
+    {}
+
+    void LockMultipleObjectStateRequestLock::exec(OperationContext &_ctx)
+    {
+        typedef std::auto_ptr< Database::StandaloneConnection > StandaloneConnectionPtr;
+        Database::StandaloneManager sm = Database::StandaloneManager(
+            new Database::StandaloneConnectionFactory(Database::Manager::getConnectionString()));
+        StandaloneConnectionPtr conn_standalone(sm.acquire());
+        for (MultipleObjectStateId::const_iterator pStateId = state_id_.begin(); pStateId != state_id_.end(); ++pStateId) {
+            Database::query_param_list param(*pStateId);
+            param(object_id_);
+            conn_standalone->exec_params("INSERT INTO object_state_request_lock (state_id,object_id) "
+                                         "VALUES ($1::bigint,$2::bigint)", param);
+            _ctx.get_conn().exec_params("SELECT lock_object_state_request_lock($1::bigint,$2::bigint)", param);
+        }
+    }
+
+    GetObjectId::GetObjectId(const std::string &_object_handle, ObjectType _object_type)
+    :   object_handle_(_object_handle),
+        object_type_(_object_type)
+    {}
+
+    ObjectId GetObjectId::exec(OperationContext &_ctx)
+    {
+        Database::Result obj_id_res = _ctx.get_conn().exec_params(
+            "SELECT id FROM object_registry "
+            "WHERE type=$1::integer AND name=$2::text AND erdate IS NULL",
+            Database::query_param_list
+                (object_type_)(object_handle_));
+
+        if (obj_id_res.size() != 1) {
+            BOOST_THROW_EXCEPTION(Exception().set_handle_not_found(object_handle_));
+        }
+
+        return obj_id_res[0][0];
+    }
 
 }//namespace Fred

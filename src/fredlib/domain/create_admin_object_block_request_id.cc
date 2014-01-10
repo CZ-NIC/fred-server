@@ -22,7 +22,7 @@
  */
 
 #include "fredlib/domain/create_admin_object_block_request_id.h"
-#include "fredlib/domain/clear_object_state_request_id.h"
+#include "fredlib/object_state/clear_object_state_request_id.h"
 #include "fredlib/domain/get_blocking_status_desc_list.h"
 #include "fredlib/opcontext.h"
 #include "fredlib/db_settings.h"

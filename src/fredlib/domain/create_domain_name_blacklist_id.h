@@ -24,7 +24,7 @@
 #ifndef CREATE_DOMAIN_NAME_BLACKLIST_ID_H_
 #define CREATE_DOMAIN_NAME_BLACKLIST_ID_H_
 
-#include "create_object_state_request.h"
+#include "fredlib/object_state/create_object_state_request.h"
 
 namespace Fred
 {

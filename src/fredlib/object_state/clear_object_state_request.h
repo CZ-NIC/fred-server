@@ -17,49 +17,43 @@
  */
 
 /**
- *  @file cancel_object_state_request.h
- *  cancel object state request
+ *  @file clear_object_state_request.h
+ *  clear object state request
  */
 
-#ifndef CANCEL_OBJECT_STATE_REQUEST_H_
-#define CANCEL_OBJECT_STATE_REQUEST_H_
+#ifndef CLEAR_OBJECT_STATE_REQUEST_H_
+#define CLEAR_OBJECT_STATE_REQUEST_H_
 
-#include "fredlib/domain/create_object_state_request.h"
+#include "fredlib/object_state/create_object_state_request.h"
 
 namespace Fred
 {
 
 /*
-pozadavek na zruseni stavu objektu (update object_state_request)
+pozadavek na zruseni vsech stavu objektu (update object_state_request)
   M handle objektu,
   M typ objektu,
-  M seznam stavu (jmena)
 */
-    class CancelObjectStateRequest
+    class ClearObjectStateRequest
     {
     public:
-        typedef boost::posix_time::ptime Time;
-        CancelObjectStateRequest(const std::string &_object_handle,
-            ObjectType _object_type,
-            const StatusList &_status_list);
+        ClearObjectStateRequest(const std::string &_object_handle,
+            ObjectType _object_type);
         ObjectId exec(OperationContext &_ctx);
 
     //exception impl
         DECLARE_EXCEPTION_DATA(handle_not_found, std::string);
-        DECLARE_EXCEPTION_DATA(state_not_found, std::string);
 
         struct Exception
         :   virtual Fred::OperationException,
-            ExceptionData_handle_not_found<Exception>,
-            ExceptionData_state_not_found<Exception>
+            ExceptionData_handle_not_found<Exception>
         {};
     private:
         const std::string object_handle_;
         const ObjectType object_type_;
-        const StatusList status_list_; //list of status names to be canceled
-    };//class CancelObjectStateRequest
+    };//class ClearObjectStateRequest
 
 
 }//namespace Fred
 
-#endif//CANCEL_OBJECT_STATE_REQUEST_H_
+#endif//CLEAR_OBJECT_STATE_REQUEST_H_

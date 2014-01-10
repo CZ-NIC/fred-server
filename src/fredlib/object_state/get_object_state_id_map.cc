@@ -21,7 +21,7 @@
  *  get object state id map
  */
 
-#include "fredlib/domain/get_object_state_id_map.h"
+#include "fredlib/object_state/get_object_state_id_map.h"
 #include "fredlib/opcontext.h"
 #include "fredlib/db_settings.h"
 #include "util/optional_value.h"

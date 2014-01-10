@@ -29,7 +29,7 @@ ziska seznam vsech stavu blokovani objektu GetBlockingStatusDescList
 #ifndef GET_BLOCKING_STATUS_DESC_LIST_H_
 #define GET_BLOCKING_STATUS_DESC_LIST_H_
 
-#include "fredlib/domain/create_object_state_request.h"
+#include "fredlib/object_state/create_object_state_request.h"
 #include "fredlib/opexception.h"
 #include "fredlib/opcontext.h"
 #include "util/optional_value.h"
