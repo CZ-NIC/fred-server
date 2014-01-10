@@ -34,7 +34,7 @@
 #include "fredlib/domain/update_domain.h"
 #include "fredlib/domain/delete_domain.h"
 #include "fredlib/domain/info_domain.h"
-#include "fredlib/domain/copy_contact.h"
+#include "fredlib/contact/copy_contact.h"
 #include <memory>
 #include <map>
 
