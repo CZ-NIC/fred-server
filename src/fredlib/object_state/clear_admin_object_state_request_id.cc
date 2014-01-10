@@ -22,14 +22,14 @@
  */
 
 #include "fredlib/object_state/clear_admin_object_state_request_id.h"
-#include "fredlib/domain/get_blocking_status_desc_list.h"
+#include "fredlib/object_state/get_blocking_status_desc_list.h"
+#include "fredlib/object_state/clear_object_state_request_id.h"
 #include "fredlib/opcontext.h"
 #include "fredlib/db_settings.h"
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
 #include "util/util.h"
 #include "fredlib/object.h"
-#include "clear_object_state_request_id.h"
 
 #include <boost/algorithm/string.hpp>
 #include <set>

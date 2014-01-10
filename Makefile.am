@@ -1206,8 +1206,8 @@ src_corba_fred_adifd_SOURCES = \
 		src/corba/fred-adifd.cc \
 		src/admin_block/administrativeblocking.cc \
 		src/admin_block/administrativeblocking.h \
-		src/fredlib/domain/get_blocking_status_desc_list.cc \
-		src/fredlib/domain/get_blocking_status_desc_list.h \
+		src/fredlib/object_state/get_blocking_status_desc_list.cc \
+		src/fredlib/object_state/get_blocking_status_desc_list.h \
 		src/fredlib/object_state/cancel_object_state_request.cc \
 		src/fredlib/object_state/cancel_object_state_request.h \
 		src/fredlib/object_state/cancel_object_state_request_id.cc \
@@ -1218,10 +1218,10 @@ src_corba_fred_adifd_SOURCES = \
 		src/fredlib/object_state/create_object_state_request_id.h \
 		src/fredlib/object_state/get_object_state_id_map.cc \
 		src/fredlib/object_state/get_object_state_id_map.h \
-		src/fredlib/domain/create_admin_object_block_request.cc \
-		src/fredlib/domain/create_admin_object_block_request.h \
-		src/fredlib/domain/create_admin_object_block_request_id.cc \
-		src/fredlib/domain/create_admin_object_block_request_id.h \
+		src/fredlib/object_state/create_admin_object_block_request.cc \
+		src/fredlib/object_state/create_admin_object_block_request.h \
+		src/fredlib/object_state/create_admin_object_block_request_id.cc \
+		src/fredlib/object_state/create_admin_object_block_request_id.h \
 		src/fredlib/object_state/create_admin_object_state_restore_request.cc \
 		src/fredlib/object_state/create_admin_object_state_restore_request.h \
 		src/fredlib/object_state/create_admin_object_state_restore_request_id.cc \
@@ -1806,11 +1806,11 @@ tests_test_blocking_SOURCES = \
 		src/fredlib/object_state/clear_object_state_request_id.cc \
 		src/fredlib/object_state/create_object_state_request_id.cc \
 		src/fredlib/object_state/create_object_state_request.cc \
-		src/fredlib/domain/create_admin_object_block_request_id.cc \
+		src/fredlib/object_state/create_admin_object_block_request_id.cc \
 		src/fredlib/object_state/create_admin_object_state_restore_request_id.cc \
 		src/fredlib/object_state/cancel_object_state_request_id.cc \
 		src/fredlib/object_state/get_object_state_id_map.cc \
-		src/fredlib/domain/get_blocking_status_desc_list.cc \
+		src/fredlib/object_state/get_blocking_status_desc_list.cc \
 		src/fredlib/domain/create_domain_name_blacklist_id.cc \
 		tests/checks.h \
 		tests/test-copy-contact.cc \

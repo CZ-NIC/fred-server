@@ -21,8 +21,8 @@
  *  create administrative object block request
  */
 
-#include "fredlib/domain/create_admin_object_block_request.h"
-#include "fredlib/domain/get_blocking_status_desc_list.h"
+#include "fredlib/object_state/create_admin_object_block_request.h"
+#include "fredlib/object_state/get_blocking_status_desc_list.h"
 #include "fredlib/opcontext.h"
 #include "fredlib/db_settings.h"
 #include "util/optional_value.h"
