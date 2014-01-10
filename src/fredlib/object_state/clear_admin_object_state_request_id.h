@@ -17,46 +17,50 @@
  */
 
 /**
- *  @file cancel_object_state_request_id.h
- *  cancel object state request
+ *  @file clear_admin_object_state_request_id.h
+ *  clear all administrative object state requests
  */
 
-#ifndef CANCEL_OBJECT_STATE_REQUEST_ID_H_
-#define CANCEL_OBJECT_STATE_REQUEST_ID_H_
+/*
+administrativni zruseni vsech stavu blokovani objektu, (update do object_state_request) ClearAdminObjectStateRequestId
+  M id objektu,
+  M typ objektu,
+  duvod
+*/
 
-#include "fredlib/domain/create_object_state_request.h"
+#ifndef CLEAR_ADMIN_OBJECT_STATE_REQUEST_ID_H_
+#define CLEAR_ADMIN_OBJECT_STATE_REQUEST_ID_H_
+
+#include "fredlib/object_state/clear_object_state_request_id.h"
 
 namespace Fred
 {
 
-/*
-pozadavek na zruseni stavu objektu (update object_state_request)
-  M id objektu,
-  M seznam stavu (jmena)
-*/
-    class CancelObjectStateRequestId
+    class ClearAdminObjectStateRequestId
     {
     public:
-        typedef boost::posix_time::ptime Time;
-        CancelObjectStateRequestId(ObjectId _object_id,
-            const StatusList &_status_list);
+        ClearAdminObjectStateRequestId(ObjectId _object_id);
+        ClearAdminObjectStateRequestId(ObjectId _object_id,
+            const std::string &_reason
+            );
+        ClearAdminObjectStateRequestId& set_reason(const std::string &_reason);
         void exec(OperationContext &_ctx);
 
     //exception impl
         DECLARE_EXCEPTION_DATA(object_id_not_found, ObjectId);
-        DECLARE_EXCEPTION_DATA(state_not_found, std::string);
+        DECLARE_EXCEPTION_DATA(server_blocked_absent, ObjectId);
 
         struct Exception
         :   virtual Fred::OperationException,
             ExceptionData_object_id_not_found<Exception>,
-            ExceptionData_state_not_found<Exception>
+            ExceptionData_server_blocked_absent<Exception>
         {};
+
     private:
         const ObjectId object_id_;
-        const StatusList status_list_; //list of status names to be canceled
-    };//class CancelObjectStateRequestId
-
+        Optional< std::string > reason_;
+    };//class ClearAdminObjectStateRequestId
 
 }//namespace Fred
 
-#endif//CANCEL_OBJECT_STATE_REQUEST_ID_H_
+#endif//CLEAR_ADMINISTRATIVE_OBJECT_STATE_REQUEST_ID_H_

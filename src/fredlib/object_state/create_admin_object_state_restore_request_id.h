@@ -21,10 +21,10 @@
  *  create administrative object state restore request
  */
 
-#ifndef CREATE_ADMINISTRATIVE_OBJECT_STATE_RESTORE_REQUEST_ID_H_
-#define CREATE_ADMINISTRATIVE_OBJECT_STATE_RESTORE_REQUEST_ID_H_
+#ifndef CREATE_ADMIN_OBJECT_STATE_RESTORE_REQUEST_ID_H_
+#define CREATE_ADMIN_OBJECT_STATE_RESTORE_REQUEST_ID_H_
 
-#include "fredlib/domain/create_object_state_request_id.h"
+#include "fredlib/object_state/create_object_state_request_id.h"
 
 namespace Fred
 {
@@ -39,7 +39,7 @@ namespace Fred
     * with appropriate attributes set.
     * In case of other unsuperable failures and inconstistencies, an instance of @ref InternalError or other exception is thrown.
     */
-    class CreateAdministrativeObjectStateRestoreRequestId
+    class CreateAdminObjectStateRestoreRequestId
     {
     public:
 
@@ -47,7 +47,7 @@ namespace Fred
         * Constructor with mandatory parameters.
         * @param _object_id sets domain id into @ref object_id_ attribute
         */
-        CreateAdministrativeObjectStateRestoreRequestId(ObjectId _object_id);
+        CreateAdminObjectStateRestoreRequestId(ObjectId _object_id);
 
         /**
         * Constructor with all parameters.
@@ -55,7 +55,7 @@ namespace Fred
         * @param _reason sets reason of restoring into @ref reason_ attribute
         * @param _logd_request_id sets sets logger request id into @ref logd_request_id_ attribute
         */
-        CreateAdministrativeObjectStateRestoreRequestId(ObjectId _object_id,
+        CreateAdminObjectStateRestoreRequestId(ObjectId _object_id,
             const std::string &_reason,
             const Optional<unsigned long long> _logd_request_id
             );
@@ -65,14 +65,14 @@ namespace Fred
         * @param _reason sets reason of restoring into @ref reason_ attribute
         * @return operation instance reference to allow method chaining
         */
-        CreateAdministrativeObjectStateRestoreRequestId& set_reason(const std::string &_reason);
+        CreateAdminObjectStateRestoreRequestId& set_reason(const std::string &_reason);
 
         /**
         * Sets logger request id
         * @param _logd_request_id sets logger request id into @ref logd_request_id_ attribute
         * @return operation instance reference to allow method chaining
         */
-        CreateAdministrativeObjectStateRestoreRequestId& set_logd_request_id(unsigned long long _logd_request_id);
+        CreateAdminObjectStateRestoreRequestId& set_logd_request_id(unsigned long long _logd_request_id);
 
         /**
         * Executes creation
@@ -100,8 +100,8 @@ namespace Fred
         const ObjectId object_id_; /**< domain integer identificator */
         Optional< std::string > reason_; /**< reason of administrative restoring */
         Nullable< unsigned long long > logd_request_id_; /**< id of the record in logger database, id is used in other calls to logging within current request */
-    };//class CreateAdministrativeObjectStateRestoreRequestId
+    };//class CreateAdminObjectStateRestoreRequestId
 
 }//namespace Fred
 
-#endif//CREATE_ADMINISTRATIVE_OBJECT_STATE_RESTORE_REQUEST_ID_H_
+#endif//CREATE_ADMIN_OBJECT_STATE_RESTORE_REQUEST_ID_H_

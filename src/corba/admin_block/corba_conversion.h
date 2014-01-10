@@ -3,7 +3,7 @@
 
 #include "db/nullable.h"
 #include "corba/common_wrappers.h"
-#include "fredlib/domain/get_blocking_status_desc_list.h"
+#include "fredlib/object_state/get_blocking_status_desc_list.h"
 #include "admin_block/administrativeblocking.h"
 #include <AdministrativeBlocking.hh>
 

@@ -30,7 +30,7 @@ ziska relaci stav blokovani objektu -> id stavu blokovani objektu
 #ifndef GET_OBJECT_STATE_ID_MAP_H_
 #define GET_OBJECT_STATE_ID_MAP_H_
 
-#include "fredlib/domain/create_object_state_request.h"
+#include "fredlib/object_state/create_object_state_request.h"
 #include "fredlib/opexception.h"
 #include "fredlib/opcontext.h"
 #include "util/optional_value.h"

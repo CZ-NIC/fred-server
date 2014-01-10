@@ -43,7 +43,7 @@
 #include "setup_server_decl.h"
 #include "time_clock.h"
 #include "fredlib/registrar.h"
-#include "fredlib/domain/copy_contact.h"
+#include "fredlib/contact/copy_contact.h"
 #include "fredlib/opexception.h"
 #include "util/util.h"
 

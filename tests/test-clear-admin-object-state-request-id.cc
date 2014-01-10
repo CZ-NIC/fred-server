@@ -43,9 +43,9 @@
 #include "setup_server_decl.h"
 #include "time_clock.h"
 #include "fredlib/registrar.h"
-#include "fredlib/domain/cancel_object_state_request_id.h"
-#include "fredlib/domain/create_object_state_request_id.h"
-#include "fredlib/domain/clear_administrative_object_state_request_id.h"
+#include "fredlib/object_state/cancel_object_state_request_id.h"
+#include "fredlib/object_state/create_object_state_request_id.h"
+#include "fredlib/object_state/clear_admin_object_state_request_id.h"
 #include "fredlib/opexception.h"
 #include "util/util.h"
 
@@ -78,11 +78,11 @@
 #include "cfg/config_handler_decl.h"
 #include <boost/test/unit_test.hpp>
 
-BOOST_AUTO_TEST_SUITE(TestClearAdministrativeObjectStateRequestId)
+BOOST_AUTO_TEST_SUITE(TestClearAdminObjectStateRequestId)
 
-const std::string server_name = "test-clear-administrative-object-state-request-id";
+const std::string server_name = "test-clear-admin-object-state-request-id";
 
-struct clear_administrative_object_state_request_id_fixture
+struct clear_admin_object_state_request_id_fixture
 {
     std::string registrar_handle;
     std::string xmark;
@@ -92,7 +92,7 @@ struct clear_administrative_object_state_request_id_fixture
     Fred::ObjectId test_domain_id;
     Fred::StatusList status_list;
 
-    clear_administrative_object_state_request_id_fixture()
+    clear_admin_object_state_request_id_fixture()
     :xmark(RandomDataGenerator().xnumstring(6))
     , admin_contact2_handle(std::string("TEST-CAOSR-ADMIN-CONTACT-HANDLE") + xmark)
     , registrant_contact_handle(std::string("TEST-CAOSR-REGISTRANT-CONTACT-HANDLE") + xmark)
@@ -141,20 +141,20 @@ struct clear_administrative_object_state_request_id_fixture
         Fred::PerformObjectStateRequest(test_domain_id).exec(ctx);
         ctx.commit_transaction();
     }
-    ~clear_administrative_object_state_request_id_fixture()
+    ~clear_admin_object_state_request_id_fixture()
     {}
 };
 
 /**
- * test ClearAdministrativeObjectStateRequestId
+ * test ClearAdminObjectStateRequestId
  * ...
  * calls in test shouldn't throw
  */
-BOOST_FIXTURE_TEST_CASE(clear_administrative_object_state_request_id, clear_administrative_object_state_request_id_fixture)
+BOOST_FIXTURE_TEST_CASE(clear_admin_object_state_request_id, clear_admin_object_state_request_id_fixture)
 {
     {
         Fred::OperationContext ctx;
-        Fred::ClearAdministrativeObjectStateRequestId(test_domain_id).exec(ctx);
+        Fred::ClearAdminObjectStateRequestId(test_domain_id).exec(ctx);
         ctx.commit_transaction();
     }
     Fred::OperationContext ctx;
@@ -187,21 +187,21 @@ BOOST_FIXTURE_TEST_CASE(clear_administrative_object_state_request_id, clear_admi
 }
 
 /**
- * test ClearAdministrativeObjectStateRequestIdBad
+ * test ClearAdminObjectStateRequestIdBad
  * ...
  * calls in test should throw
  */
-BOOST_FIXTURE_TEST_CASE(clear_administrative_object_state_request_id_bad, clear_administrative_object_state_request_id_fixture)
+BOOST_FIXTURE_TEST_CASE(clear_admin_object_state_request_id_bad, clear_admin_object_state_request_id_fixture)
 {
     Fred::ObjectId not_used_id;
     try {
         Fred::OperationContext ctx;//new connection to rollback on error
         not_used_id = static_cast< Fred::ObjectId >(ctx.get_conn().exec("SELECT (MAX(id)+1000)*2 FROM object_registry")[0][0]);
-        Fred::ClearAdministrativeObjectStateRequestId(not_used_id).exec(ctx);
+        Fred::ClearAdminObjectStateRequestId(not_used_id).exec(ctx);
         ctx.commit_transaction();
         BOOST_CHECK(false);
     }
-    catch(const Fred::ClearAdministrativeObjectStateRequestId::Exception &ex) {
+    catch(const Fred::ClearAdminObjectStateRequestId::Exception &ex) {
         BOOST_CHECK(ex.is_set_object_id_not_found());
         BOOST_CHECK(ex.get_object_id_not_found() == not_used_id);
     }
@@ -216,14 +216,14 @@ BOOST_FIXTURE_TEST_CASE(clear_administrative_object_state_request_id_bad, clear_
     }
     try {
         Fred::OperationContext ctx;//new connection to rollback on error
-        Fred::ClearAdministrativeObjectStateRequestId(test_domain_id).exec(ctx);
+        Fred::ClearAdminObjectStateRequestId(test_domain_id).exec(ctx);
         ctx.commit_transaction();
         BOOST_CHECK(false);
     }
-    catch(const Fred::ClearAdministrativeObjectStateRequestId::Exception &ex) {
+    catch(const Fred::ClearAdminObjectStateRequestId::Exception &ex) {
         BOOST_CHECK(ex.is_set_server_blocked_absent());
         BOOST_CHECK(ex.get_server_blocked_absent() == test_domain_id);
     }
 }
 
-BOOST_AUTO_TEST_SUITE_END();//TestClearAdministrativeObjectStateRequestId
+BOOST_AUTO_TEST_SUITE_END();//TestClearAdminObjectStateRequestId

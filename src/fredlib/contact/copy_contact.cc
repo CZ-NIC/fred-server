@@ -21,9 +21,9 @@
  *  copy contact
  */
 
-#include "fredlib/domain/copy_contact.h"
-#include "fredlib/domain/get_blocking_status_desc_list.h"
-#include "fredlib/domain/get_object_state_id_map.h"
+#include "fredlib/contact/copy_contact.h"
+#include "fredlib/object_state/get_blocking_status_desc_list.h"
+#include "fredlib/object_state/get_object_state_id_map.h"
 #include "fredlib/contact/info_contact.h"
 #include "fredlib/contact/create_contact.h"
 #include "fredlib/object/object.h"

@@ -17,19 +17,19 @@
  */
 
 /**
- *  @file clear_administrative_object_state_request_id.cc
+ *  @file clear_admin_object_state_request_id.cc
  *  clear all administrative object state requests
  */
 
-#include "fredlib/domain/clear_administrative_object_state_request_id.h"
-#include "fredlib/domain/get_blocking_status_desc_list.h"
+#include "fredlib/object_state/clear_admin_object_state_request_id.h"
+#include "fredlib/object_state/get_blocking_status_desc_list.h"
+#include "fredlib/object_state/clear_object_state_request_id.h"
 #include "fredlib/opcontext.h"
 #include "fredlib/db_settings.h"
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
 #include "util/util.h"
 #include "fredlib/object.h"
-#include "clear_object_state_request_id.h"
 
 #include <boost/algorithm/string.hpp>
 #include <set>
@@ -37,23 +37,23 @@
 namespace Fred
 {
 
-    ClearAdministrativeObjectStateRequestId::ClearAdministrativeObjectStateRequestId(ObjectId _object_id)
+    ClearAdminObjectStateRequestId::ClearAdminObjectStateRequestId(ObjectId _object_id)
     :   object_id_(_object_id)
     {}
 
-    ClearAdministrativeObjectStateRequestId::ClearAdministrativeObjectStateRequestId(ObjectId _object_id,
+    ClearAdminObjectStateRequestId::ClearAdminObjectStateRequestId(ObjectId _object_id,
         const std::string &_reason)
     :   object_id_(_object_id),
         reason_(_reason)
     {}
 
-    ClearAdministrativeObjectStateRequestId& ClearAdministrativeObjectStateRequestId::set_reason(const std::string &_reason)
+    ClearAdminObjectStateRequestId& ClearAdminObjectStateRequestId::set_reason(const std::string &_reason)
     {
         reason_ = _reason;
         return *this;
     }
 
-    void ClearAdministrativeObjectStateRequestId::exec(OperationContext &_ctx)
+    void ClearAdminObjectStateRequestId::exec(OperationContext &_ctx)
     {
         try {
             ClearObjectStateRequestId::Requests requests = ClearObjectStateRequestId(object_id_).exec(_ctx);
