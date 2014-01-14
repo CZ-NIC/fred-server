@@ -46,6 +46,7 @@ public:
 template <typename ELEMENT_TYPE > struct vector_of
     : public std::vector<ELEMENT_TYPE>
 {
+    //appends one element
     vector_of(const ELEMENT_TYPE& t)
     {
         (*this)(t);
@@ -53,6 +54,16 @@ template <typename ELEMENT_TYPE > struct vector_of
     vector_of& operator()(const ELEMENT_TYPE& t)
     {
         this->push_back(t);
+        return *this;
+    }
+    //appends vector of the same elements
+    vector_of(const std::vector<ELEMENT_TYPE>& v)
+    {
+        (*this)(v);
+    }
+    vector_of& operator()(const std::vector<ELEMENT_TYPE>& v)
+    {
+        this->insert(this->end(), v.begin(), v.end());
         return *this;
     }
 };
