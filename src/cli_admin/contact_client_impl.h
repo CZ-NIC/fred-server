@@ -26,6 +26,7 @@
 
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/foreach.hpp>
+#include <boost/algorithm/string.hpp>
 
 #include "cfg/config_handler_decl.h"
 #include "cfg/handle_database_args.h"
@@ -236,21 +237,52 @@ struct contact_merge_impl
 
 
 /**
- * admin client implementation of contact verification check queue filling by automatic testsuite checks
+ * admin client implementation of contact verification check queue filling
  */
-struct contact_verification_fill_queue_automatic_testsuite_impl
+struct contact_verification_fill_queue_impl
 {
   void operator()() const
   {
-      Logging::Context log("contact_verification_fill_queue_automatic_testsuite");
+      Logging::Context log("contact_verification_fill_queue");
 
-      ContactVerificationFillQueueAutomaticTestsuiteArgs params = CfgArgGroups::instance()
-          ->get_handler_ptr_by_type<HandleContactVerificationFillQueueAutomaticTestsuiteArgsGrp>()->params;
+      ContactVerificationFillQueueArgs params = CfgArgGroups::instance()
+          ->get_handler_ptr_by_type<HandleContactVerificationFillQueueArgsGrp>()->params;
 
       typedef boost::tuple<std::string, long long, long long> check_data_type;
 
-      std::vector<check_data_type> enqueued_checks =
-          Admin::ContactVerificationQueue::fill_check_queue("automatic", params.max_queue_lenght)
+      Admin::ContactVerificationQueue::contact_filter filter;
+
+      if(params.contact_roles.empty() == false) {
+          BOOST_FOREACH(const std::string& role, params.contact_roles) {
+              if(boost::iequals(role, "domain_owner")) {
+                  filter.roles.insert(Admin::ContactVerificationQueue::owner);
+              } else if(boost::iequals(role, "admin")) {
+                  filter.roles.insert(Admin::ContactVerificationQueue::admin_c);
+              } else if(boost::iequals(role, "technical")) {
+                  filter.roles.insert(Admin::ContactVerificationQueue::tech_c);
+              } else {
+                  throw ReturnCode(
+                      "unknown role: \"" + role + "\"\n" +
+                      "valid roles are: domain_owner, admin, techical", 1);
+              }
+          }
+      }
+
+      if(params.contact_states.empty() == false) {
+          BOOST_FOREACH(const std::string& state, params.contact_states) {
+              filter.states.insert(state);
+          }
+      }
+
+      if(params.country_code.length() > 0) {
+          filter.country_code = params.country_code;
+      }
+
+      std::vector<check_data_type> enqueued_checks;
+
+      enqueued_checks =
+          Admin::ContactVerificationQueue::fill_check_queue(params.testsuite_name, params.max_queue_lenght)
+          .set_contact_filter(filter)
           .exec();
 
       if(enqueued_checks.size() > 0) {

@@ -2437,24 +2437,45 @@ public:
 /**
  * admin client contact_verification_fill_queue_automatic_testsuite options handler
  */
-class HandleContactVerificationFillQueueAutomaticTestsuiteArgsGrp : public HandleCommandGrpArgs {
+class HandleContactVerificationFillQueueArgsGrp : public HandleCommandGrpArgs {
     private:
-        const char* name() const { return "contact_verification_fill_queue_automatic_testsuite"; }
+        const char* name() const { return "contact_verification_fill_queue"; }
         typedef boost::program_options::options_description options_description;
 
     public:
-        ContactVerificationFillQueueAutomaticTestsuiteArgs params;
+        ContactVerificationFillQueueArgs params;
 
         CommandDescription get_command_option() { return CommandDescription(name()); }
 
         boost::shared_ptr<options_description> get_options_description() {
             boost::shared_ptr<options_description> cfg_opts( new options_description(name()) );
-            cfg_opts->add_options()(name(), "fill contact checks queue by automatic testsuite checks");
+            cfg_opts->add_options()(name(), "fill contact checks queue");
+
             cfg_opts->add_options()("max_queue_length",
                 boost::program_options::value<Checked::ulong>()
                     ->default_value(100)
                     ->notifier(save_arg<unsigned>(params.max_queue_lenght)),
                     "maximum length of queue");
+
+            cfg_opts->add_options()("testsuite_name",
+                boost::program_options::value<Checked::string>()
+                    ->notifier(save_arg<std::string>(params.testsuite_name)),
+                    "testsuite name");
+
+            cfg_opts->add_options()("country_code",
+                boost::program_options::value<Checked::string>()
+                    ->notifier(save_arg<std::string>(params.country_code)),
+                    "country code");
+
+            cfg_opts->add_options()("contact_role",
+                boost::program_options::value<std::vector<std::string> >()->multitoken()
+                    ->notifier(save_arg<std::vector<std::string> >(params.contact_roles)),
+                    "contact role");
+
+            cfg_opts->add_options()("contact_state",
+                boost::program_options::value<std::vector<std::string> >()->multitoken()
+                    ->notifier(save_arg<std::vector<std::string> >(params.contact_states)),
+                    "contact state");
 
             return cfg_opts;
         }
