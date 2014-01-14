@@ -86,7 +86,7 @@ namespace ContactVerificationQueue {
             }
 
             if(_filter.roles.count(admin_c) == 1) {
-                joins.push_back("JOIN domain_contact_map AS d_c_m ON d_c_m.registrant = "+_contact_alias+".id");
+                joins.push_back("JOIN domain_contact_map AS d_c_m ON d_c_m.contactid = "+_contact_alias+".id");
                 conditions.push_back("d_c_m.role = 1");
             }
 
