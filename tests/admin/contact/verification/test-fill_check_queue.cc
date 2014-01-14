@@ -657,7 +657,7 @@ BOOST_AUTO_TEST_CASE(test_Enqueueing_filtered_contacts_state)
     testdata.push_back(boost::make_tuple("DE", ssc::linked,      ssc::owner,  false));
 
     Admin::ContactVerificationQueue::contact_filter filter;
-    filter.states.push_back("validatedContact");
+    filter.states.insert("validatedContact");
     filter.country_code = "DE";
 
     process_filtered_contacts_testcase(testdata, filter);
@@ -727,7 +727,7 @@ BOOST_AUTO_TEST_CASE(test_Enqueueing_filtered_contacts_combined)
     Admin::ContactVerificationQueue::contact_filter filter;
     filter.roles.insert(Admin::ContactVerificationQueue::tech_c);
     filter.country_code = "JP";
-    filter.states.push_back("validatedContact");
+    filter.states.insert("validatedContact");
 
     process_filtered_contacts_testcase(testdata, filter);
 }

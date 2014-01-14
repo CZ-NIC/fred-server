@@ -42,7 +42,7 @@ namespace ContactVerificationQueue {
 
     struct contact_filter {
         Optional<std::string>           country_code;
-        std::vector<std::string>        states;
+        std::set<std::string>           states;
         std::set<allowed_contact_roles> roles;
     };
 

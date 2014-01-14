@@ -25,6 +25,7 @@
 #define CONTACT_PARAMS_H_
 
 #include "util/types/optional.h"
+#include "admin/contact/verification/fill_check_queue.h"
 
 /**
  * \class ContactListArgs
@@ -165,13 +166,29 @@ struct ContactMergeArgs
  * parameters for appropriate command options Handle#CLASS_NAME#Grp
  */
 
-struct ContactVerificationFillQueueAutomaticTestsuiteArgs {
-    unsigned max_queue_lenght;
+struct ContactVerificationFillQueueArgs {
+    std::string             testsuite_name;
+    unsigned                max_queue_lenght;
+    std::string             country_code;
+    std::vector<std::string>   contact_states;
+    std::vector<std::string>   contact_roles;
 
-    ContactVerificationFillQueueAutomaticTestsuiteArgs( ) { }
+    ContactVerificationFillQueueArgs( )
+        : max_queue_lenght(0)
+    { }
 
-    ContactVerificationFillQueueAutomaticTestsuiteArgs( unsigned _max_queue_lenght )
-        : max_queue_lenght(_max_queue_lenght)
+    ContactVerificationFillQueueArgs(
+        std::string             _testsuite_name,
+        unsigned                _max_queue_lenght,
+        std::string             _country_code,
+        std::vector<std::string>   _contact_states,
+        std::vector<std::string>   _contact_roles
+    ) :
+        testsuite_name(_testsuite_name),
+        max_queue_lenght(_max_queue_lenght),
+        country_code(_country_code),
+        contact_states(_contact_states),
+        contact_roles(_contact_roles)
     { }
 };
 
@@ -185,12 +202,11 @@ struct ContactVerificationEnqueueCheckArgs {
     std::string testsuite_name;
 
     ContactVerificationEnqueueCheckArgs( )
-    : contact_id(0)
+        : contact_id(0)
     { }
 
     ContactVerificationEnqueueCheckArgs( long long _contact_id, const std::string& _testsuite_name )
-    : contact_id(_contact_id),
-      testsuite_name(_testsuite_name)
+        : contact_id(_contact_id), testsuite_name(_testsuite_name)
     { }
 };
 
@@ -202,10 +218,12 @@ struct ContactVerificationEnqueueCheckArgs {
 struct ContactVerificationStartEnqueuedChecksArgs {
     unsigned limit;
 
-    ContactVerificationStartEnqueuedChecksArgs( ) { }
+    ContactVerificationStartEnqueuedChecksArgs( )
+        : limit(0)
+    { }
 
     ContactVerificationStartEnqueuedChecksArgs( unsigned _limit )
-    : limit(_limit)
+        : limit(_limit)
     { }
 };
 
