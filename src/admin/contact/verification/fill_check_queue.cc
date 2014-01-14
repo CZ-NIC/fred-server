@@ -4,6 +4,7 @@
 #include <boost/tuple/tuple.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string/join.hpp>
+#include <boost/algorithm/string/case_conv.hpp>
 
 #include "admin/contact/verification/fill_check_queue.h"
 #include "fredlib/opcontext.h"
@@ -71,9 +72,11 @@ namespace ContactVerificationQueue {
             joins.push_back("JOIN object_state AS o_s ON o_s.object_id = "+_contact_alias+".id");
             joins.push_back("JOIN enum_object_states AS enum_o_s ON o_s.state_id = enum_o_s.id");
             conditions.push_back(
-                "string_to_array(enum_o_s.name, ',') <@ string_to_array('"
-                + ctx.get_conn().escape(boost::join(_filter.states, "', '"))
-                + "', ',')");
+                boost::to_lower_copy(
+                    "string_to_array(lower(enum_o_s.name), ',') <@ string_to_array('"
+                    + ctx.get_conn().escape(boost::join(_filter.states, "', '"))
+                    + "', ',')"
+                    ));
             conditions.push_back("o_s.valid_to IS NULL");
         }
 
