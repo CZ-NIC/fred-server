@@ -281,7 +281,10 @@ struct contact_verification_fill_queue_impl
       std::vector<check_data_type> enqueued_checks;
 
       enqueued_checks =
-          Admin::ContactVerificationQueue::fill_check_queue(params.testsuite_name, params.max_queue_lenght)
+          Admin::ContactVerificationQueue::fill_check_queue(
+              boost::to_lower_copy(params.testsuite_name),
+              params.max_queue_lenght
+          )
           .set_contact_filter(filter)
           .exec();
 
