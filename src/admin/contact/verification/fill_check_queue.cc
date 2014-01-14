@@ -337,10 +337,9 @@ namespace ContactVerificationQueue {
                 for(; checks_to_enqueue_count > 0; --checks_to_enqueue_count) {
                     temp_handle = Fred::CreateContactCheck(
                         *contact_id_it,
-                        testsuite_name_
-                    )
-                    .set_logd_request_id(logd_request_id_)
-                    .exec(ctx2);
+                        testsuite_name_,
+                        logd_request_id_
+                    ).exec(ctx2);
 
                     Fred::InfoContactCheckOutput info = Fred::InfoContactCheck(temp_handle).exec(ctx2);
 
