@@ -74,6 +74,7 @@ namespace ContactVerificationQueue {
                 "string_to_array(enum_o_s.name, ',') <@ string_to_array('"
                 + ctx.get_conn().escape(boost::join(_filter.states, "', '"))
                 + "', ',')");
+            conditions.push_back("o_s.valid_to IS NULL");
         }
 
         if(_filter.roles.empty() == false) {
