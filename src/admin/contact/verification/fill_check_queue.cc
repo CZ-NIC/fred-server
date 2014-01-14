@@ -58,12 +58,12 @@ namespace ContactVerificationQueue {
         Fred::OperationContext ctx;
         if(_filter.country_code.isset()) {
             conditions.push_back(
-                _contact_alias+".country = '"
+                _contact_alias+".country = upper('"
                 + ctx.get_conn().escape(
                     static_cast<string>(
                         _filter.country_code
                     )
-                ) + "'"
+                ) + "')"
             );
         }
 
