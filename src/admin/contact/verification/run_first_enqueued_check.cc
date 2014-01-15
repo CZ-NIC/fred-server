@@ -113,12 +113,16 @@ namespace  Admin {
             // just breaking the loop to get to the end
             // definitely not re-throwing this exception
         } catch (...) {
-            Fred::UpdateContactCheck(
+            Fred::UpdateContactCheck update_operation(
                 check_handle,
                 evaluate_check_status_after_tests_finished(test_statuses)
-            )
-            .set_logd_request_id(_logd_request_id)
-            .exec(ctx_locked_check);
+            );
+
+            if(_logd_request_id.isset()) {
+                update_operation.set_logd_request_id(_logd_request_id.get_value());
+            }
+
+            update_operation.exec(ctx_locked_check);
 
             ctx_locked_check.commit_transaction();
 
@@ -127,12 +131,16 @@ namespace  Admin {
             throw;
         }
 
-        Fred::UpdateContactCheck(
+        Fred::UpdateContactCheck update_operation(
             check_handle,
             evaluate_check_status_after_tests_finished(test_statuses)
-        )
-        .set_logd_request_id(_logd_request_id)
-        .exec(ctx_locked_check);
+        );
+
+        if(_logd_request_id.isset()) {
+            update_operation.set_logd_request_id(_logd_request_id.get_value());
+        }
+
+        update_operation.exec(ctx_locked_check);
 
         ctx_locked_check.commit_transaction();
 
@@ -187,8 +195,16 @@ namespace  Admin {
 
         std::string check_handle(static_cast<std::string>( locked_check_res[0]["handle_"] ));
 
-        Fred::UpdateContactCheck(check_handle, Fred::ContactCheckStatus::RUNNING, _logd_request_id)
-            .exec(ctx);
+        Fred::UpdateContactCheck update_operation(
+            check_handle,
+            Fred::ContactCheckStatus::RUNNING);
+
+        if(_logd_request_id.isset()) {
+            update_operation.set_logd_request_id(_logd_request_id.get_value());
+        }
+
+        update_operation.exec(ctx);
+
 
         // instantiate tests in db
 
@@ -213,10 +229,9 @@ namespace  Admin {
         for(Database::Result::Iterator it = testnames_res.begin(); it != testnames_res.end(); ++it) {
             Fred::CreateContactTest(
                 check_handle,
-                static_cast<std::string>( (*it)["name_"] )
-            )
-            .set_logd_request_id(_logd_request_id)
-            .exec(ctx);
+                static_cast<std::string>( (*it)["name_"] ),
+                _logd_request_id
+            ).exec(ctx);
         }
 
         ctx.commit_transaction();
@@ -287,13 +302,16 @@ namespace  Admin {
             } else if(locked_testname_res.size() != 1) {
                 throw Fred::InternalError("invalid count of locked tests ( >1)");
             } else {
-                Fred::UpdateContactTest(
+                Fred::UpdateContactTest update_operation(
                     _check_handle,
                     static_cast<std::string>( locked_testname_res[0]["test_name_"] ),
-                    Fred::ContactTestStatus::RUNNING
-                )
-                .set_logd_request_id(_logd_request_id)
-                .exec(ctx);
+                    Fred::ContactTestStatus::RUNNING);
+
+                if(_logd_request_id.isset()) {
+                    update_operation.set_logd_request_id(_logd_request_id.get_value());
+                }
+
+                update_operation.exec(ctx);
 
                 ctx.commit_transaction();
 
