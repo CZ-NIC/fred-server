@@ -19,6 +19,7 @@
 #include <boost/regex.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
+#include <boost/algorithm/string/trim.hpp>
 
 #include "admin/contact/verification/test_impl/test_phone_syntax.h"
 #include "admin/contact/verification/test_impl/test_utils.h"
@@ -34,9 +35,16 @@ namespace Admin {
 
         Fred::InfoContactData contact_data = Admin::Utils::get_contact_data(_history_id);
 
+        std::string trimmed_telephone(static_cast<std::string>(contact_data.telephone));
+        boost::algorithm::trim(trimmed_telephone);
+
+        if(trimmed_telephone.empty()) {
+            return T_run_result(Fred::ContactTestStatus::SKIPPED, string("optional telephone is empty") );
+        }
+
         if ( boost::regex_match(
                 // if Nullable is NULL then this casts returns empty string
-                static_cast<std::string>(contact_data.telephone),
+                trimmed_telephone,
                 PHONE_PATTERN )
         ) {
             return T_run_result(Fred::ContactTestStatus::OK, Optional<string>() );

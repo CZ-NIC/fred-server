@@ -75,7 +75,7 @@ namespace Admin
             ~ContactVerificationTestCzAddress();
 
             virtual ContactVerificationTest::T_run_result run(long _history_id) const;
-            virtual std::string get_name() const { return "cz_address"; }
+            virtual std::string get_name() const { return "cz_address_existence"; }
     };
 }
 
