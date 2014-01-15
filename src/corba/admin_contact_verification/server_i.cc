@@ -256,16 +256,19 @@ namespace Registry
             ctx.commit_transaction();
         }
 
-        void Server_i::enqueueContactCheck(::CORBA::ULongLong contact_id, const char* testsuite_handle, ::CORBA::ULongLong logd_request_id){
+        char* Server_i::enqueueContactCheck(::CORBA::ULongLong contact_id, const char* testsuite_handle, ::CORBA::ULongLong logd_request_id){
             Fred::OperationContext ctx;
 
-            Fred::CreateContactCheck(
+            std::string created_handle;
+            created_handle = Fred::CreateContactCheck(
                 contact_id,
                 Corba::unwrap_string(testsuite_handle),
                 logd_request_id
             ).exec(ctx);
 
             ctx.commit_transaction();
+
+            return CORBA::string_dup(created_handle.c_str());
         }
 
         ContactTestStatusDefSeq* Server_i::listTestStatusDefs(const char* lang) {
