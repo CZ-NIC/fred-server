@@ -117,14 +117,14 @@ namespace Fred
 
                     "    "+ check_alias +".create_time "
                     "        AT TIME ZONE 'utc' "                                   /* conversion from 'utc' ... */
-                    "        AT TIME ZONE $1::text              AS create_time_, "  /* ... to _output_timezone */
+                    "        AT TIME ZONE $"+timezone_param_order+"::text              AS create_time_, "  /* ... to _output_timezone */
 
                     "    "+ check_alias +".contact_history_id   AS contact_history_id_, "
                     "    "+ enum_testsuite_alias +".name        AS testsuite_name_, "
 
                     "    "+ check_alias +".update_time "
                     "        AT TIME ZONE 'utc' "                                   /* conversion from 'utc' ... */
-                    "        AT TIME ZONE $1::text              AS update_time_, "  /* ... to _output_timezone */
+                    "        AT TIME ZONE $"+timezone_param_order+"::text              AS update_time_, "  /* ... to _output_timezone */
 
                     "    status.name                            AS status_name_ "
 
