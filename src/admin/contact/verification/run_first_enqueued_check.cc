@@ -96,8 +96,15 @@ namespace  Admin {
                     Fred::OperationContext ctx_testrun_error;
                     test_statuses.push_back(Fred::ContactTestStatus::ERROR);
                     error_messages.push_back(Optional<std::string>("exception in test implementation"));
-                    Fred::UpdateContactTest(check_handle, test_name, test_statuses.back(), _logd_request_id, error_messages.back())
-                        .exec(ctx_testrun_error);
+
+                    Fred::UpdateContactTest(
+                        check_handle,
+                        test_name,
+                        test_statuses.back(),
+                        _logd_request_id,
+                        error_messages.back()
+                    ).exec(ctx_testrun_error);
+
                     // TODO log problem
                     ctx_testrun_error.get_log();
                     ctx_testrun_error.commit_transaction();
@@ -105,8 +112,14 @@ namespace  Admin {
                     // let it propagate so the check can be updated to reflect this situation
                     throw;
                 }
-                Fred::UpdateContactTest(check_handle, test_name, test_statuses.back(), _logd_request_id, error_messages.back())
-                    .exec(ctx_locked_test);
+                Fred::UpdateContactTest(
+                    check_handle,
+                    test_name,
+                    test_statuses.back(),
+                    _logd_request_id,
+                    error_messages.back()
+                ).exec(ctx_locked_test);
+
                 ctx_locked_test.commit_transaction();
             }
         } catch (_ExceptionAllTestsAlreadyRunning&) {
