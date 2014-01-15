@@ -92,7 +92,6 @@ namespace  Admin {
                     }
                 } catch(...) {
                     ctx_locked_test.get_conn().exec("ROLLBACK;");
-                    ctx_locked_test.commit_transaction();
 
                     Fred::OperationContext ctx_testrun_error;
                     test_statuses.push_back(Fred::ContactTestStatus::ERROR);
