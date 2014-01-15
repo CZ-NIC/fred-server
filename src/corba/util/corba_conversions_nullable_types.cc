@@ -12,7 +12,7 @@ namespace Corba {
             return new Registry::NullableULongLong(temp);
         }
 
-        return new Registry::NullableULongLong;
+        return NULL;
     }
 
     Registry::NullableULongLong* wrap_nullable_ulonglong(const Nullable<unsigned long long>& in) {
@@ -22,7 +22,7 @@ namespace Corba {
                 static_cast<unsigned long long>(in));
         }
 
-        return new Registry::NullableULongLong;
+        return NULL;
     }
 
     Registry::NullableDate* wrap_nullable_date(const Nullable<boost::gregorian::date>& in) {
