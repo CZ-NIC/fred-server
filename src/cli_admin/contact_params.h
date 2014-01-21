@@ -216,14 +216,13 @@ struct ContactVerificationEnqueueCheckArgs {
  */
 
 struct ContactVerificationStartEnqueuedChecksArgs {
-    unsigned limit;
+    std::string cz_address_mvcr_xml_path;
 
-    ContactVerificationStartEnqueuedChecksArgs( )
-        : limit(0)
+    ContactVerificationStartEnqueuedChecksArgs()
     { }
 
-    ContactVerificationStartEnqueuedChecksArgs( unsigned _limit )
-        : limit(_limit)
+    ContactVerificationStartEnqueuedChecksArgs( const std::string& _cz_address_mvcr_xml_path )
+        : cz_address_mvcr_xml_path(_cz_address_mvcr_xml_path)
     { }
 };
 

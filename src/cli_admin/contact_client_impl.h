@@ -385,7 +385,8 @@ struct contact_verification_start_enqueued_checks_impl
                   ).release()
               ),
               // returns shared_ptr
-              Fred::Messages::create_manager()
+              Fred::Messages::create_manager(),
+              CfgArgGroups::instance()->get_handler_ptr_by_type<HandleContactVerificationStartEnqueuedChecksArgsGrp>()->params.cz_address_mvcr_xml_path
           )
       );
 
