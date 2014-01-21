@@ -61,6 +61,9 @@ namespace Zone {
     ///lock zone for share and get zone data
     Data get_zone(OperationContext& ctx, const std::string& zone_name);
 
+    ///remove trailing dot from domain name
+    std::string rem_trailing_dot(const std::string& fqdn);
+
 }//namespace Zone
 }//namespace Fred
 
