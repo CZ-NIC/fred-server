@@ -88,7 +88,7 @@ namespace Fred
     * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
     * When exception is thrown, changes to database are considered inconsistent and should be rolled back by the caller.
     * In case of wrong input data or other predictable and superable failure, the instance of @ref InfoNssetByHandle::Exception is thrown with appropriate attributes set.
-    * In case of other insuperable failures and inconstistencies, the instance of @ref InternalError or other exception is thrown.
+    * In case of other insuperable failures and inconsistencies, the instance of @ref InternalError or other exception is thrown.
     */
     class InfoNssetByHandle : public Util::Printable
     {
@@ -137,7 +137,7 @@ namespace Fred
     * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
     * When exception is thrown, changes to database are considered inconsistent and should be rolled back by the caller.
     * In case of wrong input data or other predictable and superable failure, the instance of @ref InfoNssetById::Exception is thrown with appropriate attributes set.
-    * In case of other insuperable failures and inconstistencies, the instance of @ref InternalError or other exception is thrown.
+    * In case of other insuperable failures and inconsistencies, the instance of @ref InternalError or other exception is thrown.
     */
     class InfoNssetById : public Util::Printable
     {
@@ -186,7 +186,7 @@ namespace Fred
     * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
     * When exception is thrown, changes to database are considered incosistent and should be rolled back by the caller.
     * In case of wrong input data or other predictable and superable failure, the instance of @ref InfoNssetHistory::Exception is thrown with appropriate attributes set.
-    * In case of other insuperable failures and inconstistencies, the instance of @ref InternalError or other exception is thrown.
+    * In case of other insuperable failures and inconsistencies, the instance of @ref InternalError or other exception is thrown.
     */
     class InfoNssetHistory : public Util::Printable
     {
@@ -250,7 +250,7 @@ namespace Fred
     * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
     * When exception is thrown, changes to database are considered inconsistent and should be rolled back by the caller.
     * In case of wrong input data or other predictable and superable failure, the instance of @ref HistoryInfoNssetById::Exception is thrown with appropriate attributes set.
-    * In case of other insuperable failures and inconstistencies, the instance of @ref InternalError or other exception is thrown.
+    * In case of other insuperable failures and inconsistencies, the instance of @ref InternalError or other exception is thrown.
     */
     class HistoryInfoNssetById : public Util::Printable
     {
@@ -299,7 +299,7 @@ namespace Fred
     * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
     * When exception is thrown, changes to database are considered inconsistent and should be rolled back by the caller.
     * In case of wrong input data or other predictable and superable failure, the instance of @ref HistoryInfoNssetByHistoryid::Exception is thrown with appropriate attributes set.
-    * In case of other insuperable failures and inconstistencies, the instance of @ref InternalError or other exception is thrown.
+    * In case of other insuperable failures and inconsistencies, the instance of @ref InternalError or other exception is thrown.
     */
     class HistoryInfoNssetByHistoryid : public Util::Printable
     {
