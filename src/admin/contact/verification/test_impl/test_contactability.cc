@@ -44,80 +44,12 @@ namespace Admin {
         return "<![CDATA[" + _input + "]]>";
     }
 
-    ContactVerificationTest::T_run_result ContactVerificationTestContactability::run(long _history_id) const {
-        /* TODO this is only temporary hack before new version of InfoContactHistory is available
-         * see ticket #9544
-         */
-        Fred::InfoContactData contact_data = Admin::Utils::get_contact_data(_history_id);
-        std::string contact_email = boost::algorithm::trim_copy(static_cast<std::string>(contact_data.email));
-
-        bool error = false;
-        std::string error_msg;
-        try {
-            send_email(contact_data.handle, contact_email);
-        } catch(...) {
-            error = true;
-            error_msg += "failed to send email";
-        }
-
-        try {
-            Fred::Messages::PostalAddress address;
-
-            address.name    = (contact_data.name.isnull())              ? "" : static_cast<std::string>(contact_data.name);
-            address.org     = (contact_data.organization.isnull())      ? "" : static_cast<std::string>(contact_data.organization);
-            address.street1 = (contact_data.street1.isnull())           ? "" : static_cast<std::string>(contact_data.street1);
-            address.street2 = (contact_data.street2.isnull())           ? "" : static_cast<std::string>(contact_data.street2);
-            address.street3 = (contact_data.street3.isnull())           ? "" : static_cast<std::string>(contact_data.street3);
-            address.city    = (contact_data.city.isnull())              ? "" : static_cast<std::string>(contact_data.city);
-            address.state   = (contact_data.stateorprovince.isnull())   ? "" : static_cast<std::string>(contact_data.stateorprovince);
-            address.code    = (contact_data.postalcode.isnull())        ? "" : static_cast<std::string>(contact_data.postalcode);
-            address.country = (contact_data.country.isnull())           ? "" : static_cast<std::string>(contact_data.country);
-
-            send_letter(
-                contact_data.handle,
-                /* TODO tady ma bejt contact_id. bude to po zamergovani novych fredlib operaci z mastera */
-                10,
-                contact_data.historyid,
-                address,
-                contact_email);
-        } catch(...) {
-            error = true;
-            error_msg += "failed to send letter";
-        }
-
-        if(error) {
-            return T_run_result (Fred::ContactTestStatus::ERROR, error_msg );
-        } else {
-            return T_run_result (Fred::ContactTestStatus::MANUAL, string() );
-        }
-    }
-
-    void ContactVerificationTestContactability::send_email(
-        const std::string&          _contact_handle,
-        const std::string&          _contact_email
+    unsigned long long ContactVerificationTestContactability::generate_pdf(
+        const std::string&                      _contact_handle,
+        unsigned long                           _contact_history_id,
+        const std::string&                      _contact_email,
+        const Fred::Messages::PostalAddress&    _contact_address
     ) const {
-        std::map<std::string, std::string> param_values;
-        param_values["contact_handle"] = _contact_handle;
-
-        unsigned long long mid = email_manager_->sendEmail(
-            "",
-            _contact_email,
-            "",
-            email_template_name_,
-            param_values,
-            Fred::Mailer::Handles(),
-            Fred::Mailer::Attachments(),
-            ""
-        );
-    }
-
-    void ContactVerificationTestContactability::send_letter(
-            const std::string&                      _contact_handle,
-            unsigned long                           _contact_id,
-            unsigned long                           _contact_history_id,
-            const Fred::Messages::PostalAddress&    _contact_address,
-            const std::string&                      _contact_email
-    )  const {
         std::string xmldata;
         boost::posix_time::ptime now(second_clock::local_time());
         boost::posix_time::ptime deadline(now + deadline_interval_);
@@ -157,19 +89,117 @@ namespace Admin {
             + boost::lexical_cast<std::string>(_contact_history_id)
             + ".pdf");
 
-        unsigned long long file_id = document_file_manager_
+        return document_file_manager_
             ->generateDocumentAndSave(
                 letter_doc_type_,
                 xmldata_stream,
                 filename,
                 letter_file_type_,
                 "");
+    }
+
+    ContactVerificationTest::T_run_result ContactVerificationTestContactability::run(long _history_id) const {
+        /* TODO this is only temporary hack before new version of InfoContactHistory is available
+         * see ticket #9544
+         */
+        Fred::InfoContactData contact_data = Admin::Utils::get_contact_data(_history_id);
+        std::string contact_email = boost::algorithm::trim_copy(static_cast<std::string>(contact_data.email));
+
+        Fred::Messages::PostalAddress address;
+        address.name    = (contact_data.name.isnull())              ? "" : static_cast<std::string>(contact_data.name);
+        address.org     = (contact_data.organization.isnull())      ? "" : static_cast<std::string>(contact_data.organization);
+        address.street1 = (contact_data.street1.isnull())           ? "" : static_cast<std::string>(contact_data.street1);
+        address.street2 = (contact_data.street2.isnull())           ? "" : static_cast<std::string>(contact_data.street2);
+        address.street3 = (contact_data.street3.isnull())           ? "" : static_cast<std::string>(contact_data.street3);
+        address.city    = (contact_data.city.isnull())              ? "" : static_cast<std::string>(contact_data.city);
+        address.state   = (contact_data.stateorprovince.isnull())   ? "" : static_cast<std::string>(contact_data.stateorprovince);
+        address.code    = (contact_data.postalcode.isnull())        ? "" : static_cast<std::string>(contact_data.postalcode);
+        address.country = (contact_data.country.isnull())           ? "" : static_cast<std::string>(contact_data.country);
+
+
+        unsigned long long generated_pdf_id;
+
+        try {
+            generated_pdf_id = generate_pdf(
+                contact_data.handle,
+                contact_data.historyid,
+                contact_email,
+                address
+                );
+        } catch(...) {
+            return T_run_result (Fred::ContactTestStatus::ERROR, std::string("failed to generate pdf file") );
+        }
+
+        bool error = false;
+        std::string error_msg;
+
+        try {
+            send_email(
+                contact_data.handle,
+                contact_email,
+                generated_pdf_id);
+        } catch(...) {
+            error = true;
+            error_msg += "failed to send email";
+        }
+
+        try {
+            send_letter(
+                /* TODO tady ma bejt contact_id. bude to po zamergovani novych fredlib operaci z mastera */
+                10,
+                contact_data.handle,
+                contact_data.historyid,
+                address,
+                generated_pdf_id);
+        } catch(...) {
+            error = true;
+            error_msg += "failed to send letter";
+        }
+
+        if(error) {
+            return T_run_result (Fred::ContactTestStatus::ERROR, error_msg );
+        } else {
+            return T_run_result (Fred::ContactTestStatus::MANUAL, string() );
+        }
+    }
+
+    void ContactVerificationTestContactability::send_email(
+        const std::string&          _contact_handle,
+        const std::string&          _contact_email,
+        unsigned long long          _attached_pdf_id
+    ) const {
+
+        std::map<std::string, std::string> param_values;
+        param_values["contact_handle"] = _contact_handle;
+
+        Fred::Mailer::Attachments attachements;
+        attachements.push_back(_attached_pdf_id);
+
+        unsigned long long mid = email_manager_->sendEmail(
+            "",
+            _contact_email,
+            "",
+            email_template_name_,
+            param_values,
+            Fred::Mailer::Handles(),
+            attachements,
+            ""
+        );
+    }
+
+    void ContactVerificationTestContactability::send_letter(
+        unsigned long                           _contact_id,
+        const std::string&                      _contact_handle,
+        unsigned long                           _contact_history_id,
+        const Fred::Messages::PostalAddress&    _contact_address,
+        unsigned long long                      _pdf_file_id
+    ) const {
 
         unsigned long long message_id = letter_manager_
             ->save_letter_to_send(
                 _contact_handle.c_str(),
                 _contact_address,
-                file_id,
+                _pdf_file_id,
                 letter_message_type_.c_str(),
                 _contact_id,
                 _contact_history_id,

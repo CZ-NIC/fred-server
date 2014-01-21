@@ -54,17 +54,25 @@ namespace Admin
 
         const static std::string                    email_template_name_;
 
+        unsigned long long generate_pdf(
+            const std::string&                      _contact_handle,
+            unsigned long                           _contact_history_id,
+            const std::string&                      _contact_email,
+            const Fred::Messages::PostalAddress&    _contact_address
+        ) const;
+
         void send_email(
             const std::string&          _contact_handle,
-            const std::string&          _contact_email
+            const std::string&          _contact_email,
+            unsigned long long          _attached_pdf_id
         ) const;
 
         void send_letter(
-            const std::string&                      _contact_handle,
             unsigned long                           _contact_id,
+            const std::string&                      _contact_handle,
             unsigned long                           _contact_history_id,
             const Fred::Messages::PostalAddress&    _contact_address,
-            const std::string&                      _contact_email
+            unsigned long long                      _pdf_file_id
         ) const;
 
         public:
