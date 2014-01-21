@@ -2535,11 +2535,19 @@ class HandleContactVerificationStartEnqueuedChecksArgsGrp : public HandleCommand
         typedef boost::program_options::options_description options_description;
 
     public:
+        ContactVerificationStartEnqueuedChecksArgs params;
+
         CommandDescription get_command_option() { return CommandDescription(name()); }
 
         boost::shared_ptr<options_description> get_options_description() {
             boost::shared_ptr<options_description> cfg_opts( new options_description(name()) );
             cfg_opts->add_options()(name(), "start enqueued checks");
+
+            cfg_opts->add_options()("cz_address_mvcr_xml_path",
+                boost::program_options::value<Checked::string>()
+                    ->required()
+                    ->notifier(save_arg<std::string>(params.cz_address_mvcr_xml_path)),
+                "cz_address_mvcr_xml_path");
 
             return cfg_opts;
         }
