@@ -30,14 +30,21 @@
 
 #include "admin/contact/verification/test_impl/test_interface.h"
 
+#include "fredlib/mailer.h"
+#include "fredlib/documents.h"
+#include "fredlib/messages/messages_impl.h"
+
 namespace Admin {
 
     /**
      * @return mapping of testnames to test implementation instances
      */
-    std::map<std::string, boost::shared_ptr<Admin::ContactVerificationTest> > create_test_impl_prototypes(void);
+    std::map<std::string, boost::shared_ptr<Admin::ContactVerificationTest> > create_test_impl_prototypes(
+        boost::shared_ptr<Fred::Mailer::Manager>   _mailer_manager,
+        boost::shared_ptr<Fred::Document::Manager> _document_manager,
+        boost::shared_ptr<Fred::Messages::Manager> _message_manager
+    );
 
 }
-
 
 #endif // #include guard end

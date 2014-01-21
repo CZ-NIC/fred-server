@@ -27,9 +27,11 @@
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/foreach.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/make_shared.hpp>
 
 #include "cfg/config_handler_decl.h"
 #include "cfg/handle_database_args.h"
+#include "cfg/handle_registry_args.h"
 #include "cfg/handle_corbanameservice_args.h"
 #include "handle_adminclientselection_args.h"
 #include "log/context.h"
@@ -45,6 +47,9 @@
 #include "admin/contact/verification/run_all_enqueued_checks.h"
 #include "admin/contact/verification/create_test_impl_prototypes.h"
 
+#include "fredlib/mailer.h"
+#include "fredlib/documents.h"
+#include "fredlib/messages/messages_impl.h"
 
 /**
  * \class contact_list_impl
@@ -352,7 +357,37 @@ struct contact_verification_start_enqueued_checks_impl
   {
       Logging::Context log("contact_verification_start_enqueued_checks");
 
-      std::vector<std::string> started_checks = Admin::run_all_enqueued_checks(Admin::create_test_impl_prototypes());
+      FakedArgs orb_fa = CfgArgGroups::instance()->fa;
+      HandleCorbaNameServiceArgsGrp* ns_args_ptr=CfgArgGroups::instance()->
+         get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>();
+
+      CorbaContainer::set_instance(
+          orb_fa.get_argc(),
+          orb_fa.get_argv(),
+          ns_args_ptr->get_nameservice_host(),
+          ns_args_ptr->get_nameservice_port(),
+          ns_args_ptr->get_nameservice_context()
+      );
+
+      std::vector<std::string> started_checks = Admin::run_all_enqueued_checks(
+          Admin::create_test_impl_prototypes(
+              boost::shared_ptr<Fred::Mailer::Manager>(
+                  new MailerManager(
+                      CorbaContainer::get_instance()->getNS()
+                  )
+              ),
+              boost::shared_ptr<Fred::Document::Manager>(
+                  Fred::Document::Manager::create(
+                      CfgArgGroups::instance()->get_handler_ptr_by_type<HandleRegistryArgsGrp>()->get_docgen_path(),
+                      CfgArgGroups::instance()->get_handler_ptr_by_type<HandleRegistryArgsGrp>()->get_docgen_template_path(),
+                      CfgArgGroups::instance()->get_handler_ptr_by_type<HandleRegistryArgsGrp>()->get_fileclient_path(),
+                      CfgArgGroups::instance()->get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>()->get_nameservice_host_port()
+                  ).release()
+              ),
+              // returns shared_ptr
+              Fred::Messages::create_manager()
+          )
+      );
 
       if(started_checks.size() > 0) {
           std::cout << "started checks:" << std::endl;
@@ -363,7 +398,6 @@ struct contact_verification_start_enqueued_checks_impl
       } else {
           std::cout << "no checks started" << std::endl;
       }
-      return ;
   }
 };
 
