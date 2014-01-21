@@ -114,10 +114,10 @@ namespace Fred
             diff.delete_time = std::make_pair(first.delete_time,second.delete_time);
         }
 
-        if(first.handle.compare(second.handle) != 0)
+        if(boost::algorithm::to_upper_copy(first.handle)
+            .compare(boost::algorithm::to_upper_copy(second.handle)) != 0)
         {
-            diff.handle = std::make_pair(boost::algorithm::to_lower_copy(first.handle)
-                , boost::algorithm::to_lower_copy(second.handle));
+            diff.handle = std::make_pair(first.handle, second.handle);
         }
 
         if(first.roid.compare(second.roid) != 0)
