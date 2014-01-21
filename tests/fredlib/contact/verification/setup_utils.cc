@@ -574,13 +574,13 @@ autoclean_contact_verification_db::autoclean_contact_verification_db() {
             "enumval_history", "domainid",
             "object_registry", "id"
         ));
-
+/*
         foreign_keys.push_back( boost::make_tuple(
             "genzone_domain_history_domain_id_fkey",
             "genzone_domain_history", "domain_id",
             "object_registry", "id"
         ));
-
+*/
         foreign_keys.push_back( boost::make_tuple(
             "keyset_history_id_fkey",
             "keyset_history", "id",
@@ -694,13 +694,13 @@ autoclean_contact_verification_db::autoclean_contact_verification_db() {
             "nsset_contact_map", "nssetid",
             "nsset", "id"
         ));
-
+/*
         foreign_keys.push_back(boost::make_tuple(
             "dnssec_domainid_fkey",
             "dnssec", "domainid",
             "domain", "id"
         ));
-
+*/
         foreign_keys.push_back(boost::make_tuple(
             "domain_contact_map_domainid_fkey",
             "domain_contact_map", "domainid",
