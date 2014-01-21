@@ -38,7 +38,7 @@ namespace Fred
     * Delete is executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
     * When exception is thrown, changes to database are considered incosistent and should be rolled back by the caller.
     * In case of wrong input data or other predictable and superable failure, an instance of @ref DeleteKeyset::Exception is thrown with appropriate attributes set.
-    * In case of other unsuperable failures and inconstistencies, an instance of @ref InternalError or other exception is thrown.
+    * In case of other insuperable failures and inconstistencies, an instance of @ref InternalError or other exception is thrown.
     */
     class DeleteKeyset : public Util::Printable
     {

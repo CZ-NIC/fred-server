@@ -88,7 +88,7 @@ namespace Fred
     * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
     * When exception is thrown, changes to database are considered inconsistent and should be rolled back by the caller.
     * In case of wrong input data or other predictable and superable failure, the instance of @ref InfoDomainByHandle::Exception is thrown with appropriate attributes set.
-    * In case of other unsuperable failures and inconstistencies, the instance of @ref InternalError or other exception is thrown.
+    * In case of other insuperable failures and inconstistencies, the instance of @ref InternalError or other exception is thrown.
     */
     class InfoDomainByHandle : public Util::Printable
     {
@@ -137,7 +137,7 @@ namespace Fred
     * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
     * When exception is thrown, changes to database are considered inconsistent and should be rolled back by the caller.
     * In case of wrong input data or other predictable and superable failure, the instance of @ref InfoDomainById::Exception is thrown with appropriate attributes set.
-    * In case of other unsuperable failures and inconstistencies, the instance of @ref InternalError or other exception is thrown.
+    * In case of other insuperable failures and inconstistencies, the instance of @ref InternalError or other exception is thrown.
     */
     class InfoDomainById : public Util::Printable
     {
@@ -186,7 +186,7 @@ namespace Fred
     * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
     * When exception is thrown, changes to database are considered incosistent and should be rolled back by the caller.
     * In case of wrong input data or other predictable and superable failure, the instance of @ref InfoDomainHistory::Exception is thrown with appropriate attributes set.
-    * In case of other unsuperable failures and inconstistencies, the instance of @ref InternalError or other exception is thrown.
+    * In case of other insuperable failures and inconstistencies, the instance of @ref InternalError or other exception is thrown.
     */
     class InfoDomainHistory  : public Util::Printable
     {
@@ -250,7 +250,7 @@ namespace Fred
     * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
     * When exception is thrown, changes to database are considered inconsistent and should be rolled back by the caller.
     * In case of wrong input data or other predictable and superable failure, the instance of @ref HistoryInfoDomainById::Exception is thrown with appropriate attributes set.
-    * In case of other unsuperable failures and inconstistencies, the instance of @ref InternalError or other exception is thrown.
+    * In case of other insuperable failures and inconstistencies, the instance of @ref InternalError or other exception is thrown.
     */
     class HistoryInfoDomainById : public Util::Printable
     {
@@ -299,7 +299,7 @@ namespace Fred
     * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
     * When exception is thrown, changes to database are considered inconsistent and should be rolled back by the caller.
     * In case of wrong input data or other predictable and superable failure, the instance of @ref HistoryInfoDomainByHistoryid::Exception is thrown with appropriate attributes set.
-    * In case of other unsuperable failures and inconstistencies, the instance of @ref InternalError or other exception is thrown.
+    * In case of other insuperable failures and inconstistencies, the instance of @ref InternalError or other exception is thrown.
     */
     class HistoryInfoDomainByHistoryid : public Util::Printable
     {
