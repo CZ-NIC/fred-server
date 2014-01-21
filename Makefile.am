@@ -1637,7 +1637,9 @@ src_cli_admin_fred_admin_SOURCES = \
 		src/admin/contact/verification/test_impl/test_phone_syntax.h \
 		src/admin/contact/verification/test_impl/test_phone_syntax.cc \
 		src/admin/contact/verification/test_impl/test_cz_address_exists.h \
-		src/admin/contact/verification/test_impl/test_cz_address_exists.cc
+		src/admin/contact/verification/test_impl/test_cz_address_exists.cc \
+		src/admin/contact/verification/test_impl/test_contactability.h \
+		src/admin/contact/verification/test_impl/test_contactability.cc
 		
 src_cli_admin_fred_admin_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS) \
