@@ -24,13 +24,8 @@
 #ifndef INFO_CONTACT_DIFF_H_
 #define INFO_CONTACT_DIFF_H_
 
+#include <algorithm>
 #include <string>
-#include <vector>
-#include <set>
-#include <utility>
-
-#include <boost/date_time/posix_time/ptime.hpp>
-#include <boost/date_time/gregorian/gregorian.hpp>
 
 #include "info_contact_data.h"
 

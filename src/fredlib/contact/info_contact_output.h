@@ -25,14 +25,9 @@
 #define INFO_CONTACT_OUTPUT_H_
 
 #include <string>
-#include <vector>
 
 #include <boost/date_time/posix_time/ptime.hpp>
-#include <boost/date_time/gregorian/gregorian.hpp>
 
-#include "src/fredlib/opexception.h"
-#include "src/fredlib/opcontext.h"
-#include "util/optional_value.h"
 #include "util/db/nullable.h"
 #include "util/printable.h"
 #include "info_contact_data.h"

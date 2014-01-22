@@ -25,14 +25,9 @@
 #define INFO_CONTACT_DATA_H_
 
 #include <string>
-#include <vector>
-#include <set>
 
 #include <boost/date_time/posix_time/ptime.hpp>
-#include <boost/date_time/gregorian/gregorian.hpp>
 
-
-#include "util/optional_value.h"
 #include "util/db/nullable.h"
 #include "util/printable.h"
 

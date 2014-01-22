@@ -21,18 +21,8 @@
  *  common contact info data
  */
 
-#include <iterator>
 #include <algorithm>
 #include <string>
-#include <vector>
-#include <set>
-#include <iostream>
-
-#include <boost/algorithm/string.hpp>
-#include <boost/date_time/posix_time/ptime.hpp>
-#include <boost/date_time/posix_time/time_period.hpp>
-#include <boost/date_time/gregorian/gregorian.hpp>
-#include <boost/lexical_cast.hpp>
 
 #include "util/optional_value.h"
 #include "util/db/nullable.h"

@@ -22,21 +22,10 @@
  */
 
 #include <string>
-#include <sstream>
-#include <vector>
 
-#include <boost/algorithm/string.hpp>
-#include <boost/date_time/posix_time/ptime.hpp>
-#include <boost/date_time/posix_time/time_period.hpp>
-#include <boost/date_time/gregorian/gregorian.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include "info_contact_output.h"
-#include "src/fredlib/object/object.h"
-
-#include "src/fredlib/opcontext.h"
-#include "src/fredlib/db_settings.h"
-#include "util/optional_value.h"
-#include "util/db/nullable.h"
 #include "util/util.h"
 
 namespace Fred
