@@ -21,21 +21,11 @@
  *  common domain info data
  */
 
-#include <iterator>
 #include <algorithm>
 #include <string>
-#include <vector>
-#include <set>
 
-#include <boost/algorithm/string.hpp>
-#include <boost/date_time/posix_time/ptime.hpp>
-#include <boost/date_time/posix_time/time_period.hpp>
-#include <boost/date_time/gregorian/gregorian.hpp>
-
-#include "util/optional_value.h"
-#include "util/db/nullable.h"
+#include <boost/lexical_cast.hpp>
 #include "util/util.h"
-#include "enum_validation_extension.h"
 #include "info_domain_data.h"
 #include "info_domain_diff.h"
 
@@ -84,10 +74,7 @@ namespace Fred
         (std::make_pair("historyid",boost::lexical_cast<std::string>(historyid)))
         (std::make_pair("id",boost::lexical_cast<std::string>(id)))
         );
-
-
     }
-
 
 }//namespace Fred
 

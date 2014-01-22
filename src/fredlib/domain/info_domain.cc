@@ -31,12 +31,9 @@
 
 #include "info_domain.h"
 #include "info_domain_impl.h"
-#include "src/fredlib/object/object.h"
 
 #include "src/fredlib/opcontext.h"
-#include "src/fredlib/db_settings.h"
-#include "util/optional_value.h"
-#include "util/db/nullable.h"
+#include "src/fredlib/opexception.h"
 #include "util/util.h"
 #include "util/printable.h"
 
