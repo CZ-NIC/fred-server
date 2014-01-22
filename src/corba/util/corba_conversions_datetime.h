@@ -1,7 +1,7 @@
 #ifndef CORBA_UTIL_CORBA_CONVERSIONS_DATETIME_687431534534
 #define CORBA_UTIL_CORBA_CONVERSIONS_DATETIME_687431534534
 
-#include "corba/DateTime.hh"
+#include "src/corba/DateTime.hh"
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time/gregorian/gregorian_types.hpp>
 

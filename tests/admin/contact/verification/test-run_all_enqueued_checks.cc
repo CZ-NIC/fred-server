@@ -21,11 +21,11 @@
  *  integration tests for admin/contact/verification/run_all_enqueued_checks.cc
  */
 
-#include "admin/contact/verification/run_all_enqueued_checks.h"
-#include "admin/contact/verification/fill_check_queue.h"
-#include "fredlib/contact/verification/info_check.h"
-#include "fredlib/contact/verification/enum_test_status.h"
-#include "fredlib/opexception.h"
+#include "src/admin/contact/verification/run_all_enqueued_checks.h"
+#include "src/admin/contact/verification/fill_check_queue.h"
+#include "src/fredlib/contact/verification/info_check.h"
+#include "src/fredlib/contact/verification/enum_test_status.h"
+#include "src/fredlib/opexception.h"
 
 #include <boost/test/unit_test.hpp>
 #include <boost/assign/list_of.hpp>

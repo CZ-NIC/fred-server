@@ -24,11 +24,11 @@
 #ifndef CONTACT_VERIFICATION_TEST_CONTACTABILITY_42567645497_
 #define CONTACT_VERIFICATION_TEST_CONTACTABILITY_42567645497_
 
-#include "admin/contact/verification/test_impl/test_interface.h"
+#include "src/admin/contact/verification/test_impl/test_interface.h"
 
-#include "fredlib/mailer.h"
-#include "fredlib/messages/messages_impl.h"
-#include "fredlib/documents.h"
+#include "src/fredlib/mailer.h"
+#include "src/fredlib/messages/messages_impl.h"
+#include "src/fredlib/documents.h"
 
 #include <string>
 #include <utility>

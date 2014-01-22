@@ -1,6 +1,6 @@
 #include "src/fredlib/contact/util.h"
 
-#include "fredlib/opcontext.h"
+#include "src/fredlib/opcontext.h"
 
 std::pair<std::string, unsigned long long> Fred::ContactUtil::contact_hid_to_handle_id_pair(unsigned long long hid) {
     Fred::OperationContext ctx;

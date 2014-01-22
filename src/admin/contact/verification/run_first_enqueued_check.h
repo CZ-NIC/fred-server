@@ -32,7 +32,7 @@
 
 #include "util/optional_value.h"
 
-#include "admin/contact/verification/test_impl/test_interface.h"
+#include "src/admin/contact/verification/test_impl/test_interface.h"
 
 namespace Admin {
     /**

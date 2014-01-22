@@ -54,7 +54,7 @@
 #include "cfg/handle_corbanameservice_args.h"
 #include "cfg/handle_adifd_args.h"
 
-#include "admin_contact_verification/server_i.h"
+#include "src/corba/admin_contact_verification/server_i.h"
 
 using namespace std;
 

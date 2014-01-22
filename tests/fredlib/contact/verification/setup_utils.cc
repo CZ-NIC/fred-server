@@ -2,13 +2,13 @@
 
 #include "tests/fredlib/contact/verification/setup_utils.h"
 
-#include "fredlib/contact/verification/create_check.h"
-#include "fredlib/contact/verification/create_test.h"
-#include "fredlib/contact/verification/enum_testsuite_name.h"
-#include "fredlib/contact/verification/enum_check_status.h"
-#include "fredlib/contact/verification/enum_test_status.h"
-#include "fredlib/contact/create_contact.h"
-#include "fredlib/contact/delete_contact.h"
+#include "src/fredlib/contact/verification/create_check.h"
+#include "src/fredlib/contact/verification/create_test.h"
+#include "src/fredlib/contact/verification/enum_testsuite_name.h"
+#include "src/fredlib/contact/verification/enum_check_status.h"
+#include "src/fredlib/contact/verification/enum_test_status.h"
+#include "src/fredlib/contact/create_contact.h"
+#include "src/fredlib/contact/delete_contact.h"
 #include "util/random.h"
 #include "util/random_data_generator.h"
 

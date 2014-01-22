@@ -16,13 +16,13 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "admin/contact/verification/test_impl/test_cz_address_exists.h"
-#include "admin/contact/verification/test_impl/test_utils.h"
-#include "fredlib/contact/verification/enum_test_status.h"
+#include "src/admin/contact/verification/test_impl/test_cz_address_exists.h"
+#include "src/admin/contact/verification/test_impl/test_utils.h"
+#include "src/fredlib/contact/verification/enum_test_status.h"
 
-#include "fredlib/opexception.h"
+#include "src/fredlib/opexception.h"
 
-#include "fredlib/contact/info_contact_data.h"
+#include "src/fredlib/contact/info_contact_data.h"
 
 #include "util/util.h"
 

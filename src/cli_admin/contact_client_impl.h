@@ -29,27 +29,27 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/make_shared.hpp>
 
-#include "cfg/config_handler_decl.h"
-#include "cfg/handle_database_args.h"
-#include "cfg/handle_registry_args.h"
-#include "cfg/handle_corbanameservice_args.h"
-#include "handle_adminclientselection_args.h"
-#include "log/context.h"
-#include "contactclient.h"
-#include "commonclient.h"
+#include "util/cfg/config_handler_decl.h"
+#include "util/cfg/handle_database_args.h"
+#include "util/cfg/handle_registry_args.h"
+#include "util/cfg/handle_corbanameservice_args.h"
+#include "src/cli_admin/handle_adminclientselection_args.h"
+#include "util/log/context.h"
+#include "src/cli_admin/contactclient.h"
+#include "src/cli_admin/commonclient.h"
 #include "src/fredlib/reminder.h"
 #include "src/admin/contact/merge_contact_auto_procedure.h"
 #include "src/admin/contact/merge_contact.h"
 #include "src/admin/contact/merge_contact_reporting.h"
 #include "src/corba/logger_client_impl.h"
-#include "admin/contact/verification/fill_check_queue.h"
-#include "fredlib/contact/verification/create_check.h"
-#include "admin/contact/verification/run_all_enqueued_checks.h"
-#include "admin/contact/verification/create_test_impl_prototypes.h"
+#include "src/admin/contact/verification/fill_check_queue.h"
+#include "src/fredlib/contact/verification/create_check.h"
+#include "src/admin/contact/verification/run_all_enqueued_checks.h"
+#include "src/admin/contact/verification/create_test_impl_prototypes.h"
 
-#include "fredlib/mailer.h"
-#include "fredlib/documents.h"
-#include "fredlib/messages/messages_impl.h"
+#include "src/fredlib/mailer.h"
+#include "src/fredlib/documents.h"
+#include "src/fredlib/messages/messages_impl.h"
 
 /**
  * \class contact_list_impl

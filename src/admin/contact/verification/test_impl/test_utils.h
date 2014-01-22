@@ -24,7 +24,7 @@
 #ifndef CONTACT_VERIFICATION_TEST_UTILS_1134354419_
 #define CONTACT_VERIFICATION_TEST_UTILS_1134354419_
 
-#include "fredlib/contact/info_contact_data.h"
+#include "src/fredlib/contact/info_contact_data.h"
 
 namespace Admin
 {

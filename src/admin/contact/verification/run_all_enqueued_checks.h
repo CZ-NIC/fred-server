@@ -29,7 +29,7 @@
 #include <map>
 #include <boost/shared_ptr.hpp>
 
-#include "admin/contact/verification/test_impl/test_interface.h"
+#include "src/admin/contact/verification/test_impl/test_interface.h"
 
 namespace Admin {
 

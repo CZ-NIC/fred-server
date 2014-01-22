@@ -24,7 +24,7 @@
 #define CORBA_ADMIN_CONTACT_VERIFICATION_SERVER_I_H_85445454532330
 
 // generated from idl
-#include "corba/AdminContactVerification.hh"
+#include "src/corba/AdminContactVerification.hh"
 
 namespace Registry
 {

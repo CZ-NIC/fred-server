@@ -24,7 +24,7 @@
 #ifndef CONTACT_VERIFICATION_TEST_CZ_ADDRESS_53151278990_
 #define CONTACT_VERIFICATION_TEST_CZ_ADDRESS_53151278990_
 
-#include "admin/contact/verification/test_impl/test_interface.h"
+#include "src/admin/contact/verification/test_impl/test_interface.h"
 
 #include <string>
 #include <vector>

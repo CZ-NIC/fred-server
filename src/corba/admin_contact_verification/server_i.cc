@@ -21,21 +21,21 @@
  *  implementation of admin contact verification wrapper over corba
  */
 
-#include "corba/admin_contact_verification/server_i.h"
+#include "src/corba/admin_contact_verification/server_i.h"
 
 #include <vector>
 #include <utility>
 
-#include "fredlib/contact/util.h"
-#include "fredlib/contact/verification/create_check.h"
-#include "fredlib/contact/verification/update_check.h"
-#include "fredlib/contact/verification/info_check.h"
-#include "fredlib/contact/verification/list_checks.h"
-#include "fredlib/contact/verification/list_enum_objects.h"
-#include "fredlib/contact/verification/update_test.h"
-#include "corba/util/corba_conversions_datetime.h"
-#include "corba/util/corba_conversions_string.h"
-#include "corba/util/corba_conversions_nullable_types.h"
+#include "src/fredlib/contact/util.h"
+#include "src/fredlib/contact/verification/create_check.h"
+#include "src/fredlib/contact/verification/update_check.h"
+#include "src/fredlib/contact/verification/info_check.h"
+#include "src/fredlib/contact/verification/list_checks.h"
+#include "src/fredlib/contact/verification/list_enum_objects.h"
+#include "src/fredlib/contact/verification/update_test.h"
+#include "src/corba/util/corba_conversions_datetime.h"
+#include "src/corba/util/corba_conversions_string.h"
+#include "src/corba/util/corba_conversions_nullable_types.h"
 
 namespace Corba {
     static void wrap_check_detail(const Fred::InfoContactCheckOutput& in, Registry::AdminContactVerification::ContactCheckDetail_var& out) {

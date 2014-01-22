@@ -25,8 +25,8 @@
 #include <utility>
 #include <string>
 
-#include "fredlib/contact/verification/list_checks.h"
-#include "fredlib/db_settings.h"
+#include "src/fredlib/contact/verification/list_checks.h"
+#include "src/fredlib/db_settings.h"
 #include "util/db/nullable.h"
 
 //not using UTF defined main

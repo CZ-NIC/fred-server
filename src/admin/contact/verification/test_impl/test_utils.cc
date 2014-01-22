@@ -16,10 +16,10 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "admin/contact/verification/test_impl/test_utils.h"
-#include "fredlib/contact/info_contact_history.h"
+#include "src/admin/contact/verification/test_impl/test_utils.h"
+#include "src/fredlib/contact/info_contact_history.h"
 
-#include "fredlib/opcontext.h"
+#include "src/fredlib/opcontext.h"
 
 namespace Admin
 {

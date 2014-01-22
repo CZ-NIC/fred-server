@@ -1,4 +1,4 @@
-#include "corba/util/corba_conversions_string.h"
+#include "src/corba/util/corba_conversions_string.h"
 
 namespace Corba {
     CORBA::String_member wrap_string(const std::string& in) {

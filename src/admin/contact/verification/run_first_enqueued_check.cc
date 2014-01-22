@@ -1,12 +1,12 @@
-#include "admin/contact/verification/run_first_enqueued_check.h"
-#include "fredlib/contact/verification/enum_check_status.h"
-#include "fredlib/contact/verification/enum_test_status.h"
-#include "fredlib/contact/verification/create_test.h"
-#include "fredlib/contact/verification/update_test.h"
-#include "fredlib/contact/verification/create_check.h"
-#include "fredlib/contact/verification/update_check.h"
-#include "fredlib/contact/verification/info_check.h"
-#include "fredlib/opexception.h"
+#include "src/admin/contact/verification/run_first_enqueued_check.h"
+#include "src/fredlib/contact/verification/enum_check_status.h"
+#include "src/fredlib/contact/verification/enum_test_status.h"
+#include "src/fredlib/contact/verification/create_test.h"
+#include "src/fredlib/contact/verification/update_test.h"
+#include "src/fredlib/contact/verification/create_check.h"
+#include "src/fredlib/contact/verification/update_check.h"
+#include "src/fredlib/contact/verification/info_check.h"
+#include "src/fredlib/opexception.h"
 
 #include <boost/foreach.hpp>
 

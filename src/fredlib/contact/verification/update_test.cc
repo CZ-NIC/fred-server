@@ -21,7 +21,8 @@
  *  update contact test
  */
 
-#include "fredlib/contact/verification/update_test.h"
+#include "src/fredlib/contact/verification/update_test.h"
+
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string/join.hpp>
 

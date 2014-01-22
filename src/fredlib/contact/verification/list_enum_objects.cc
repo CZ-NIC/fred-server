@@ -21,9 +21,9 @@
  *  functions for listing of various auxiliary enumerated objects realted to admin contact verification
  */
 
-#include "fredlib/contact/verification/list_enum_objects.h"
-#include "fredlib/opcontext.h"
-#include "fredlib/opexception.h"
+#include "src/fredlib/contact/verification/list_enum_objects.h"
+#include "src/fredlib/opcontext.h"
+#include "src/fredlib/opexception.h"
 
 namespace Fred
 {

@@ -24,7 +24,7 @@
 #ifndef CONTACT_VERIFICATION_TEST_NAME_SYNTAX_124898987441_
 #define CONTACT_VERIFICATION_TEST_NAME_SYNTAX_124898987441_
 
-#include "admin/contact/verification/test_impl/test_interface.h"
+#include "src/admin/contact/verification/test_impl/test_interface.h"
 
 namespace Admin
 {

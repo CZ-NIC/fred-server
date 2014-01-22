@@ -1,9 +1,9 @@
-#include "admin/contact/verification/create_test_impl_prototypes.h"
-#include "admin/contact/verification/test_impl/test_name_syntax.h"
-#include "admin/contact/verification/test_impl/test_email_syntax.h"
-#include "admin/contact/verification/test_impl/test_phone_syntax.h"
-#include "admin/contact/verification/test_impl/test_cz_address_exists.h"
-#include "admin/contact/verification/test_impl/test_contactability.h"
+#include "src/admin/contact/verification/create_test_impl_prototypes.h"
+#include "src/admin/contact/verification/test_impl/test_name_syntax.h"
+#include "src/admin/contact/verification/test_impl/test_email_syntax.h"
+#include "src/admin/contact/verification/test_impl/test_phone_syntax.h"
+#include "src/admin/contact/verification/test_impl/test_cz_address_exists.h"
+#include "src/admin/contact/verification/test_impl/test_contactability.h"
 
 #include <boost/make_shared.hpp>
 
