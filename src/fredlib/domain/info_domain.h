@@ -28,60 +28,15 @@
 #include <vector>
 
 #include <boost/date_time/posix_time/ptime.hpp>
-#include <boost/date_time/gregorian/gregorian.hpp>
 
 #include "src/fredlib/opexception.h"
 #include "src/fredlib/opcontext.h"
 #include "util/optional_value.h"
-#include "util/db/nullable.h"
 #include "util/printable.h"
-#include "src/fredlib/domain/info_domain_data.h"
+#include "info_domain_output.h"
 
 namespace Fred
 {
-
-    /**
-    * Element of domain info data.
-    */
-    struct InfoDomainOutput : public Util::Printable
-    {
-        InfoDomainData info_domain_data;/**< data of the domain */
-
-        boost::posix_time::ptime utc_timestamp;/**< timestamp of getting the domain data in UTC */
-        boost::posix_time::ptime local_timestamp;/**< timestamp of getting the domain data in local time zone viz @ref local_timestamp_pg_time_zone_name */
-
-        Nullable<unsigned long long> next_historyid; /**< next historyid of the domain history*/
-        boost::posix_time::ptime history_valid_from;/**< history data valid from time, in local time zone viz @ref local_timestamp_pg_time_zone_name */
-        Nullable<boost::posix_time::ptime> history_valid_to;/**< history data valid to time in local time zone viz @ref local_timestamp_pg_time_zone_name, null means open end */
-        Nullable<unsigned long long> logd_request_id; /**< id of the request that changed domain data*/
-
-        /**
-        * Empty constructor of the domain history data structure.
-        */
-        InfoDomainOutput()
-        {}
-
-        /**
-        * Dumps state of the instance into the string
-        * @return string with description of the instance state
-        */
-        std::string to_string() const;
-
-        /**
-        * Equality of the domain info data structure operator. Compares only InfoDomainData member.
-        * @param rhs is right hand side of the domain data comparison
-        * @return true if equal, false if not
-        */
-        bool operator==(const InfoDomainOutput& rhs) const;
-
-        /**
-        * Inequality of the domain info data structure operator. Compares only InfoDomainData member.
-        * @param rhs is right hand side of the domain data comparison
-        * @return true if not equal, false if equal
-        */
-        bool operator!=(const InfoDomainOutput& rhs) const;
-    };
-
     /**
     * Domain info by fully qualified domain name.
     * Domain fully qualified name to get info about is set via constructor.
@@ -341,99 +296,6 @@ namespace Fred
         std::string to_string() const;
 
     };//class HistoryInfoDomainByHistoryid
-
-    /**
-    * Domain info implementation.
-    * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
-    * When exception is thrown, changes to database are considered inconsistent and should be rolled back by the caller.
-    */
-    class InfoDomain
-    {
-        Optional<std::string> fqdn_;/**< fully qualified domain name */
-        Optional<std::string> domain_roid_;/**< registry object identifier of the domain */
-        Optional<unsigned long long> domain_id_;/**< object id of the domain */
-        Optional<unsigned long long> domain_historyid_;/**< history id of the domain */
-        Optional<boost::posix_time::ptime> history_timestamp_;/**< timestamp of history state we want to get (in time zone set in @ref local_timestamp_pg_time_zone_name parameter) */
-        bool history_query_;/**< flag to query history records of the domain */
-        bool lock_;/**< lock object_registry row for domain */
-
-        std::pair<std::string, Database::QueryParams> make_domain_query(const std::string& local_timestamp_pg_time_zone_name);/**< info query generator @return pair of query string with query params*/
-        std::pair<std::string, Database::QueryParams> make_admin_query(unsigned long long id, unsigned long long historyid);/**< info query generator @return pair of query string with query params*/
-    public:
-
-        /**
-        * Default constructor.
-        * Sets @ref history_query_ and @ref lock_ to false
-        */
-        InfoDomain();
-
-        /**
-        * Sets fully qualified domain name.
-        * @param fqdn sets fully qualified domain name we want to get @ref fqdn_ attribute
-        * @return operation instance reference to allow method chaining
-        */
-        InfoDomain& set_fqdn(const std::string& fqdn);
-
-        /**
-        * Sets registry object identifier of the domain.
-        * @param domain_roid sets registry object identifier of the domain we want to get @ref domain_roid_ attribute
-        * @return operation instance reference to allow method chaining
-        */
-        InfoDomain& set_roid(const std::string& domain_roid);
-
-        /**
-        * Sets database identifier of the domain.
-        * @param domain_id sets object identifier of the domain we want to get @ref domain_id_ attribute
-        * @return operation instance reference to allow method chaining
-        */
-        InfoDomain& set_id(unsigned long long domain_id);
-
-        /**
-        * Sets history identifier of the domain.
-        * @param domain_historyid sets history identifier of the domain we want to get @ref domain_historyid_ attribute
-        * @return operation instance reference to allow method chaining
-        */
-        InfoDomain& set_historyid(unsigned long long domain_historyid);
-
-        /**
-        * Sets timestamp of history state we want to get.
-        * @param history_timestamp sets timestamp of history state we want to get @ref history_timestamp_ attribute
-        * @return operation instance reference to allow method chaining
-        */
-        InfoDomain& set_history_timestamp(boost::posix_time::ptime history_timestamp);
-
-        /**
-        * Sets history query flag.
-        * @param history_query sets history query flag into @ref history query_ attribute
-        * @return operation instance reference to allow method chaining
-        */
-        InfoDomain& set_history_query(bool history_query);
-
-
-        /**
-        * Sets domain lock flag.
-        * @param lock sets lock domain flag into @ref lock_ attribute
-        * @return operation instance reference to allow method chaining
-        */
-        InfoDomain& set_lock(bool lock = true);
-
-        /**
-        * Executes getting info about the domain.
-        * @param ctx contains reference to database and logging interface
-        * @param local_timestamp_pg_time_zone_name is postgresql time zone name of the returned data
-        * @return info data about the domain
-        */
-        std::vector<InfoDomainOutput> exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "UTC");//return data
-
-        /**
-        * Executes explain analyze and getting info about the domain for testing purposes.
-        * @param ctx contains reference to database and logging interface
-        * @param local_timestamp_pg_time_zone_name is postgresql time zone name of the returned data and history_timestamp
-        * @param result info data about the domain
-        * @return query and plan
-        */
-        std::string explain_analyze(OperationContext& ctx, std::vector<InfoDomainOutput>& result, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return query plan
-    };//class InfoDomain
 
 }//namespace Fred
 

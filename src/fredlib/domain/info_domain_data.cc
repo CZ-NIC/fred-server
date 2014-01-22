@@ -35,9 +35,9 @@
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
 #include "util/util.h"
-#include "src/fredlib/domain/enum_validation_extension.h"
-#include "src/fredlib/domain/info_domain_data.h"
-#include "src/fredlib/domain/info_domain_diff.h"
+#include "enum_validation_extension.h"
+#include "info_domain_data.h"
+#include "info_domain_diff.h"
 
 namespace Fred
 {

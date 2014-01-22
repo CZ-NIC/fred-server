@@ -47,6 +47,7 @@
 #include "src/fredlib/registrar.h"
 #include "src/fredlib/domain/info_domain.h"
 #include "src/fredlib/domain/info_domain_diff.h"
+#include "src/fredlib/domain/info_domain_impl.h"
 #include "src/fredlib/domain/update_domain.h"
 #include "src/fredlib/nsset/update_nsset.h"
 #include "src/fredlib/keyset/update_keyset.h"
