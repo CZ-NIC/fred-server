@@ -28,9 +28,8 @@
 #include "src/fredlib/contact/verification/enum_testsuite_name.h"
 #include "src/fredlib/contact/verification/create_check.h"
 #include "src/fredlib/contact/verification/update_check.h"
-#include "src/fredlib/nsset/create_nsset.h"
-#include "src/fredlib/nsset/update_nsset.h"
-#include "src/fredlib/domain/create_domain.h"
+#include <fredlib/nsset.h>
+#include <fredlib/domain.h>
 #include "src/fredlib/object_states.h"
 
 #include <algorithm>

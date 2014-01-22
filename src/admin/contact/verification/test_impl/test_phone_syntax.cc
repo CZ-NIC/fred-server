@@ -24,7 +24,7 @@
 #include "src/admin/contact/verification/test_impl/test_phone_syntax.h"
 #include "src/fredlib/contact/verification/enum_test_status.h"
 
-#include "src/fredlib/contact/info_contact.h"
+#include <fredlib/contact.h>
 
 namespace Admin {
     ContactVerificationTest::T_run_result ContactVerificationTestPhoneSyntax::run(long _history_id) const {

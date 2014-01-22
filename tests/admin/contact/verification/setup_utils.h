@@ -31,8 +31,7 @@
 #include "src/fredlib/contact/verification/create_check.h"
 #include "src/fredlib/contact/verification/info_check.h"
 #include "src/fredlib/contact/verification/enum_check_status.h"
-#include "src/fredlib/contact/create_contact.h"
-#include "src/fredlib/contact/delete_contact.h"
+#include <fredlib/contact.h>
 #include "src/fredlib/db_settings.h"
 #include "util/db/nullable.h"
 #include "util/random_data_generator.h"

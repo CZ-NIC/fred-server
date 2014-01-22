@@ -21,7 +21,7 @@
 
 #include "src/fredlib/opexception.h"
 
-#include "src/fredlib/contact/info_contact.h"
+#include <fredlib/contact.h>
 
 #include "util/util.h"
 

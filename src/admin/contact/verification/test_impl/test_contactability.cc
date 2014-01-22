@@ -19,7 +19,7 @@
 #include "src/admin/contact/verification/test_impl/test_contactability.h"
 #include "src/fredlib/contact/verification/enum_test_status.h"
 
-#include "src/fredlib/contact/info_contact.h"
+#include <fredlib/contact.h>
 
 #include "util/util.h"
 
