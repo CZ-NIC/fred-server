@@ -5,8 +5,8 @@
 #include <boost/thread/thread.hpp>
 #include <boost/date_time/posix_time/ptime.hpp>
 #include <src/corba/Logger.hh>
-#include "corba_wrapper_decl.h"
-#include "fredlib/logger_client.h"
+#include "util/corba_wrapper_decl.h"
+#include "src/fredlib/logger_client.h"
 
 namespace Fred {
 namespace Logger {

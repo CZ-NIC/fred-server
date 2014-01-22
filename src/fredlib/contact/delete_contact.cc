@@ -17,18 +17,18 @@
  */
 
 /**
- *  @file delete_contact.cc
+ *  @file
  *  contact delete
  */
 
 #include <string>
 
-#include "fredlib/contact/delete_contact.h"
-#include "fredlib/object/object.h"
+#include "src/fredlib/contact/delete_contact.h"
+#include "src/fredlib/object/object.h"
 
-#include "fredlib/opcontext.h"
-#include "fredlib/db_settings.h"
-#include "fredlib/object_states.h"
+#include "src/fredlib/opcontext.h"
+#include "src/fredlib/db_settings.h"
+#include "src/fredlib/object_states.h"
 
 namespace Fred
 {
@@ -41,27 +41,9 @@ namespace Fred
         try
         {
             //lock object_registry row for update and get contact_id
-            unsigned long long contact_id =0;
-            {
-                Database::Result lock_res = ctx.get_conn().exec_params(
-                    "SELECT oreg.id FROM enum_object_type eot"
-                    " JOIN object_registry oreg ON oreg.type = eot.id "
-                    " JOIN contact c ON c.id = oreg.id "
-                    " AND oreg.name = UPPER($1::text) AND oreg.erdate IS NULL "
-                    " WHERE eot.name = 'contact' FOR UPDATE OF oreg"
-                    , Database::query_param_list(handle_));
-
-                if (lock_res.size() == 0)
-                {
-                    BOOST_THROW_EXCEPTION(Exception().set_unknown_contact_handle(handle_));
-                }
-                if (lock_res.size() != 1)
-                {
-                    BOOST_THROW_EXCEPTION(InternalError("failed to get contact"));
-                }
-
-                contact_id = lock_res[0][0];
-            }
+            unsigned long long contact_id = get_object_id_by_handle_and_type_with_lock(
+                ctx,handle_,"contact",static_cast<Exception*>(0),
+                &Exception::set_unknown_contact_handle);
 
             //check if object is linked
             Database::Result linked_result = ctx.get_conn().exec_params(
@@ -96,16 +78,12 @@ namespace Fred
 
     }//DeleteContact::exec
 
-    std::ostream& operator<<(std::ostream& os, const DeleteContact& dc)
+    std::string DeleteContact::to_string() const
     {
-        return os << "#DeleteContact handle: " << dc.handle_
-                ;
-    }
-    std::string DeleteContact::to_string()
-    {
-        std::stringstream ss;
-        ss << *this;
-        return ss.str();
+        return Util::format_operation_state("DeleteContact",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("handle",handle_))
+        );
     }
 
 

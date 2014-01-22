@@ -26,9 +26,9 @@
 #include <map>
 #include <set>
 
-#include "fredlib/opexception.h"
-#include "fredlib/opcontext.h"
-#include "fredlib/contact/merge_contact_email_notification_data.h"
+#include "src/fredlib/opexception.h"
+#include "src/fredlib/opcontext.h"
+#include "src/fredlib/contact/merge_contact_email_notification_data.h"
 
 
 namespace Fred
@@ -210,20 +210,12 @@ namespace Fred
         return result;
     }
 
-
-    std::ostream& operator<<(std::ostream& os, const MergeContactEmailNotificationData& i)
+    std::string MergeContactEmailNotificationData::to_string() const
     {
-        os << "#MergeContactEmailNotificationData";
-        if(!i.merge_contact_data_.empty()) os << " ";
-        for(std::vector<MergeContactEmailNotificationInput>::const_iterator ci = i.merge_contact_data_.begin()
-                ; ci != i.merge_contact_data_.end() ;  ++ci) os << *ci;
-        return os;
-    }
-    std::string MergeContactEmailNotificationData::to_string()
-    {
-        std::stringstream ss;
-        ss << *this;
-        return ss.str();
+        return Util::format_operation_state("MergeContactEmailNotificationData",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("merge_contact_data",Util::format_vector(merge_contact_data_)))
+        );
     }
 
     MergeContactNotificationEmailAddr::MergeContactNotificationEmailAddr(
@@ -275,20 +267,12 @@ namespace Fred
         return result;
     }
 
-    std::ostream& operator<<(std::ostream& os, const MergeContactNotificationEmailAddr& i)
+    std::string MergeContactNotificationEmailAddr::to_string() const
     {
-
-        os << "#MergeContactNotificationEmailAddr";
-        if(!i.email_data_.empty()) os << " ";
-        for(std::vector<MergeContactNotificationEmail>::const_iterator ci = i.email_data_.begin()
-                ; ci != i.email_data_.end() ;  ++ci) os << *ci;
-        return os;
-    }
-    std::string MergeContactNotificationEmailAddr::to_string()
-    {
-        std::stringstream ss;
-        ss << *this;
-        return ss.str();
+        return Util::format_operation_state("MergeContactNotificationEmailAddr",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("email_data",Util::format_vector(email_data_)))
+        );
     }
 
 }//namespace Fred

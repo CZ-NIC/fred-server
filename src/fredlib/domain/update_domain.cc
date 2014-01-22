@@ -17,7 +17,7 @@
  */
 
 /**
- *  @file update_domain.cc
+ *  @file
  *  domain update
  */
 
@@ -27,15 +27,16 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
 
-#include "fredlib/domain/update_domain.h"
-#include "fredlib/domain/domain_name.h"
-#include "fredlib/object/object.h"
-
-#include "fredlib/opcontext.h"
-#include "fredlib/db_settings.h"
+#include "src/fredlib/domain/update_domain.h"
+#include "src/fredlib/domain/domain_name.h"
+#include "src/fredlib/object/object.h"
+#include "src/fredlib/registrar/registrar_impl.h"
+#include "src/fredlib/opcontext.h"
+#include "src/fredlib/db_settings.h"
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
 #include "util/util.h"
+#include "util/printable.h"
 
 namespace Fred
 {
@@ -47,30 +48,40 @@ namespace Fred
 
     UpdateDomain::UpdateDomain(const std::string& fqdn
             , const std::string& registrar
+            , const Optional<std::string>& sponsoring_registrar
             , const Optional<std::string>& registrant
             , const Optional<std::string>& authinfo
             , const Optional<Nullable<std::string> >& nsset
             , const Optional<Nullable<std::string> >& keyset
             , const std::vector<std::string>& add_admin_contact
             , const std::vector<std::string>& rem_admin_contact
+            , const Optional<boost::gregorian::date>& expiration_date
             , const Optional<boost::gregorian::date>& enum_validation_expiration
             , const Optional<bool>& enum_publish_flag
             , const Optional<unsigned long long> logd_request_id
             )
     : fqdn_(fqdn)
     , registrar_(registrar)
+    , sponsoring_registrar_(sponsoring_registrar)
     , registrant_(registrant)
     , authinfo_(authinfo)
     , nsset_(nsset)
     , keyset_(keyset)
     , add_admin_contact_(add_admin_contact)
     , rem_admin_contact_(rem_admin_contact)
+    , expiration_date_(expiration_date)
     , enum_validation_expiration_(enum_validation_expiration)
     , enum_publish_flag_(enum_publish_flag)
     , logd_request_id_(logd_request_id.isset()
         ? Nullable<unsigned long long>(logd_request_id.get_value())
         : Nullable<unsigned long long>())//is NULL if not set
     {}
+
+    UpdateDomain& UpdateDomain::set_sponsoring_registrar(const std::string& sponsoring_registrar)
+    {
+        sponsoring_registrar_ = sponsoring_registrar;
+        return *this;
+    }
 
     UpdateDomain& UpdateDomain::set_registrant(const std::string& registrant)
     {
@@ -132,6 +143,12 @@ namespace Fred
         return *this;
     }
 
+    UpdateDomain& UpdateDomain::set_domain_expiration(const boost::gregorian::date& exdate)
+    {
+        expiration_date_ = exdate;
+        return *this;
+    }
+
     UpdateDomain& UpdateDomain::set_enum_validation_expiration(const boost::gregorian::date& valexdate)
     {
         enum_validation_expiration_ = valexdate;
@@ -156,21 +173,9 @@ namespace Fred
         try
         {
             //check registrar exists
-            //TODO: check registrar access
-            {
-                Database::Result res = ctx.get_conn().exec_params(
-                        "SELECT id FROM registrar WHERE handle = UPPER($1::text) FOR SHARE"
-                    , Database::query_param_list(registrar_));
-
-                if (res.size() == 0)
-                {
-                    BOOST_THROW_EXCEPTION(Exception().set_unknown_registrar_handle(registrar_));
-                }
-                if (res.size() != 1)
-                {
-                    BOOST_THROW_EXCEPTION(InternalError("failed to get registrar"));
-                }
-            }
+            Registrar::get_registrar_id_by_handle(
+                ctx, registrar_, static_cast<Exception*>(0)//set throw
+                , &Exception::set_unknown_registrar_handle);
 
             //remove optional root dot from fqdn
             std::string no_root_dot_fqdn = Fred::Domain::rem_trailing_dot(fqdn_);
@@ -206,19 +211,40 @@ namespace Fred
             if(enum_validation_expiration_.isset())
                 BOOST_THROW_EXCEPTION(InternalError("enum_validation_expiration set for non-ENUM domain"));
             if(enum_publish_flag_.isset())
-                BOOST_THROW_EXCEPTION(InternalError("enum_publish_flag set for not-ENUM domain"));
+                BOOST_THROW_EXCEPTION(InternalError("enum_publish_flag set for non-ENUM domain"));
         }
-        if (is_enum_zone && enum_validation_expiration_.isset()
-                && enum_validation_expiration_.get_value().is_special())
-                BOOST_THROW_EXCEPTION(InternalError("enum_validation_expiration requested for ENUM domain is not valid date"));
-
-        //update object
-        Fred::UpdateObject(no_root_dot_fqdn,"domain", registrar_, authinfo_).exec(ctx);
 
         Exception update_domain_exception;
 
+        try
+        {
+            //update object
+            history_id = Fred::UpdateObject(no_root_dot_fqdn,"domain", registrar_
+                , sponsoring_registrar_, authinfo_, logd_request_id_
+                ).exec(ctx);
+        }
+        catch(const Fred::UpdateObject::Exception& ex)
+        {
+            if(ex.is_set_unknown_object_handle())
+            {
+                update_domain_exception.set_unknown_domain_fqdn(
+                        ex.get_unknown_object_handle());
+            }
+
+            if(ex.is_set_unknown_registrar_handle())
+            {
+                update_domain_exception.set_unknown_registrar_handle(
+                        ex.get_unknown_registrar_handle());
+            }
+
+            if(ex.is_set_unknown_sponsoring_registrar_handle())
+            {
+                update_domain_exception.set_unknown_sponsoring_registrar_handle(
+                        ex.get_unknown_sponsoring_registrar_handle());
+            }
+        }
         //update domain
-        if(nsset_.isset() || keyset_.isset() || registrant_.isset())
+        if(nsset_.isset() || keyset_.isset() || registrant_.isset() || expiration_date_.isset())
         {
             Database::QueryParams params;//query params
             std::stringstream sql;
@@ -236,26 +262,10 @@ namespace Fred
                 else
                 {
                     //lock nsset object_registry row for update and get id
-                    unsigned long long nsset_id = 0;
-                    Database::Result lock_res = ctx.get_conn().exec_params(
-                        "SELECT oreg.id FROM enum_object_type eot"
-                        " JOIN object_registry oreg ON oreg.type = eot.id "
-                        " AND oreg.name = UPPER($1::text) AND oreg.erdate IS NULL "
-                        " WHERE eot.name = 'nsset' FOR UPDATE OF oreg"
-                        , Database::query_param_list(nsset_.get_value()));
-                    if (lock_res.size() == 0)
-                    {
-                        update_domain_exception.set_unknown_nsset_handle(nsset_.get_value());
-                    }
-                    if (lock_res.size() > 1)
-                    {
-                        BOOST_THROW_EXCEPTION(InternalError("failed to get nsset"));
-                    }
+                    unsigned long long nsset_id = get_object_id_by_handle_and_type_with_lock(
+                            ctx,new_nsset_value,"nsset",&update_domain_exception,
+                            &Exception::set_unknown_nsset_handle);
 
-                    if (lock_res.size() == 1)
-                    {
-                        nsset_id = static_cast<unsigned long long>(lock_res[0][0]);
-                    }
                     params.push_back(nsset_id); //nsset update
                 }
                 sql << set_separator.get() << " nsset = $"
@@ -272,25 +282,10 @@ namespace Fred
                 else
                 {
                     //lock keyset object_registry row for update and get id
-                    unsigned long long keyset_id = 0;
-                    Database::Result lock_res = ctx.get_conn().exec_params(
-                        "SELECT oreg.id FROM enum_object_type eot"
-                        " JOIN object_registry oreg ON oreg.type = eot.id "
-                        " AND oreg.name = UPPER($1::text) AND oreg.erdate IS NULL "
-                        " WHERE eot.name = 'keyset' FOR UPDATE OF oreg"
-                        , Database::query_param_list(keyset_.get_value()));
-                    if (lock_res.size() == 0)
-                    {
-                        update_domain_exception.set_unknown_keyset_handle(keyset_.get_value());
-                    }
-                    if (lock_res.size() > 1)
-                    {
-                        BOOST_THROW_EXCEPTION(InternalError("failed to get keyset"));
-                    }
-                    if (lock_res.size() == 1)
-                    {
-                        keyset_id = static_cast<unsigned long long>(lock_res[0][0]);
-                    }
+                    unsigned long long keyset_id = get_object_id_by_handle_and_type_with_lock(
+                            ctx,new_keyset_value,"keyset",&update_domain_exception,
+                            &Exception::set_unknown_keyset_handle);
+
                     params.push_back(keyset_id); //keyset update
                 }
                 sql << set_separator.get() << " keyset = $"
@@ -300,29 +295,26 @@ namespace Fred
             if(registrant_.isset())//change registrant
             {
                 //lock object_registry row for update
-                unsigned long long registrant_id = 0;
-                Database::Result lock_res = ctx.get_conn().exec_params(
-                    "SELECT oreg.id FROM enum_object_type eot"
-                    " JOIN object_registry oreg ON oreg.type = eot.id "
-                    " AND oreg.name = UPPER($1::text) AND oreg.erdate IS NULL "
-                    " WHERE eot.name = 'contact' FOR UPDATE OF oreg"
-                    , Database::query_param_list(registrant_.get_value()));
-                if (lock_res.size() == 0)
-                {
-                    update_domain_exception.set_unknown_registrant_handle(registrant_.get_value());
-                }
-                if (lock_res.size() > 1)
-                {
-                    BOOST_THROW_EXCEPTION(InternalError("failed to get registrant"));
-                }
-                if (lock_res.size() == 1)
-                {
-                    registrant_id = static_cast<unsigned long long>(lock_res[0][0]);
-                }
+                unsigned long long registrant_id = get_object_id_by_handle_and_type_with_lock(
+                        ctx,registrant_.get_value(),"contact",&update_domain_exception,
+                        &Exception::set_unknown_registrant_handle);
+
                 params.push_back(registrant_id);
                 sql << set_separator.get() << " registrant = $"
                     << params.size() << "::integer ";
             }//if change registrant
+
+            if(expiration_date_.isset())
+            {
+                if(expiration_date_.get_value().is_special())
+                {
+                    update_domain_exception.set_invalid_expiration_date(expiration_date_.get_value());
+                }
+
+                params.push_back(expiration_date_.get_value());
+                sql << set_separator.get() << " exdate = $"
+                    << params.size() << "::date ";
+            }//if change exdate
 
             //check exception
             if(update_domain_exception.throw_me())
@@ -352,25 +344,10 @@ namespace Fred
             {
                 //lock object_registry row for update and get id
 
-                unsigned long long admin_contact_id = 0;
-                Database::Result lock_res = ctx.get_conn().exec_params(
-                    "SELECT oreg.id FROM enum_object_type eot"
-                    " JOIN object_registry oreg ON oreg.type = eot.id "
-                    " AND oreg.name = UPPER($1::text) AND oreg.erdate IS NULL "
-                    " WHERE eot.name = 'contact' FOR UPDATE OF oreg"
-                    , Database::query_param_list(*i));
-
-                if (lock_res.size() == 0)
-                {
-                    update_domain_exception.add_unknown_admin_contact_handle(*i);
-                    continue;//for add_admin_contact_
-                }
-                if (lock_res.size() > 1)
-                {
-                    BOOST_THROW_EXCEPTION(InternalError("failed to get admin contact"));
-                }
-
-                admin_contact_id = static_cast<unsigned long long>(lock_res[0][0]);
+                unsigned long long admin_contact_id = get_object_id_by_handle_and_type_with_lock(
+                        ctx,*i,"contact",&update_domain_exception,
+                        &Exception::add_unknown_admin_contact_handle);
+                if(admin_contact_id == 0) continue;
 
                 Database::QueryParams params_i = params;//query params
                 std::stringstream sql_i;
@@ -412,25 +389,10 @@ namespace Fred
             {
                 //lock object_registry row for update and get id
 
-                unsigned long long admin_contact_id = 0;
-                Database::Result lock_res = ctx.get_conn().exec_params(
-                    "SELECT oreg.id FROM enum_object_type eot"
-                    " JOIN object_registry oreg ON oreg.type = eot.id "
-                    " AND oreg.name = UPPER($1::text) AND oreg.erdate IS NULL "
-                    " WHERE eot.name = 'contact' FOR UPDATE OF oreg"
-                    , Database::query_param_list(*i));
-
-                if (lock_res.size() == 0)
-                {
-                    update_domain_exception.add_unknown_admin_contact_handle(*i);
-                    continue;//for rem_admin_contact_
-                }
-                if (lock_res.size() > 1)
-                {
-                    BOOST_THROW_EXCEPTION(InternalError("failed to get admin contact"));
-                }
-
-                admin_contact_id = static_cast<unsigned long long>(lock_res[0][0]);
+                unsigned long long admin_contact_id = get_object_id_by_handle_and_type_with_lock(
+                        ctx,*i,"contact",&update_domain_exception,
+                        &Exception::add_unknown_admin_contact_handle);
+                if(admin_contact_id == 0) continue;
 
                 Database::QueryParams params_i = params;//query params
                 std::stringstream sql_i;
@@ -453,9 +415,16 @@ namespace Fred
             }//for i
         }//if delete admin contacts
 
+        //check valexdate if set
+        if(enum_validation_expiration_.isset() && enum_validation_expiration_.get_value().is_special())
+        {
+            update_domain_exception.set_invalid_enum_validation_expiration_date(enum_validation_expiration_.get_value());
+        }
+
         //check exception
         if(update_domain_exception.throw_me())
             BOOST_THROW_EXCEPTION(update_domain_exception);
+
 
         //update enumval
         if(enum_validation_expiration_.isset() || enum_publish_flag_.isset())
@@ -492,25 +461,6 @@ namespace Fred
 
         //save history
         {
-            history_id = Fred::InsertHistory(logd_request_id_).exec(ctx);
-
-            //object_history
-            ctx.get_conn().exec_params(
-                "INSERT INTO object_history(historyid,id,clid, upid, trdate, update, authinfopw) "
-                " SELECT $1::bigint, id,clid, upid, trdate, update, authinfopw FROM object "
-                " WHERE id = $2::integer"
-                , Database::query_param_list(history_id)(domain_id));
-
-            //object_registry historyid
-            Database::Result update_historyid_res = ctx.get_conn().exec_params(
-                "UPDATE object_registry SET historyid = $1::bigint "
-                    " WHERE id = $2::integer RETURNING id"
-                    , Database::query_param_list(history_id)(domain_id));
-            if (update_historyid_res.size() != 1)
-            {
-                BOOST_THROW_EXCEPTION(Fred::InternalError("update historyid failed"));
-            }
-
             //domain_history
             ctx.get_conn().exec_params(
                 "INSERT INTO domain_history(historyid,id,zone, registrant, nsset, exdate, keyset) "
@@ -543,31 +493,24 @@ namespace Fred
         return history_id;
     }//UpdateDomain::exec
 
-    std::ostream& operator<<(std::ostream& os, const UpdateDomain& i)
+    std::string UpdateDomain::to_string() const
     {
-        os << "#UpdateDomain fqdn: " << i.fqdn_
-            << " registrar: " << i.registrar_
-            << " registrant: " << i.registrant_.print_quoted()
-            << " authinfo: " << i.authinfo_.print_quoted()
-            << " nsset: " << (i.nsset_.isset() ? i.nsset_.get_value().print_quoted() : i.nsset_.print_quoted())
-            << " keyset: " << (i.keyset_.isset() ? i.keyset_.get_value().print_quoted() : i.keyset_.print_quoted())
-            ;
-        if(!i.add_admin_contact_.empty()) os << " add_admin_contact: ";
-        for(std::vector<std::string>::const_iterator ci = i.add_admin_contact_.begin()
-                ; ci != i.add_admin_contact_.end() ; ++ci ) os << *ci;
-        if(!i.rem_admin_contact_.empty()) os << " rem_admin_contact: ";
-                for(std::vector<std::string>::const_iterator ci = i.rem_admin_contact_.begin()
-                        ; ci != i.rem_admin_contact_.end() ; ++ci ) os << *ci;
-
-        os << " logd_request_id: " << i.logd_request_id_.print_quoted();
-        return os;
-    }
-
-    std::string UpdateDomain::to_string()
-    {
-        std::stringstream ss;
-        ss << *this;
-        return ss.str();
+        return Util::format_operation_state("UpdateDomain",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("fqdn",fqdn_))
+        (std::make_pair("registrar",registrar_))
+        (std::make_pair("sponsoring_registrar",sponsoring_registrar_.print_quoted()))
+        (std::make_pair("registrant",registrant_.print_quoted()))
+        (std::make_pair("authinfo",authinfo_.print_quoted()))
+        (std::make_pair("nsset",nsset_.isset() ? nsset_.get_value().print_quoted() : nsset_.print_quoted()))
+        (std::make_pair("keyset",keyset_.isset() ? keyset_.get_value().print_quoted() : keyset_.print_quoted()))
+        (std::make_pair("add_admin_contact", Util::format_vector(add_admin_contact_)))
+        (std::make_pair("rem_admin_contact", Util::format_vector(rem_admin_contact_)))
+        (std::make_pair("expiration_date",expiration_date_.print_quoted()))
+        (std::make_pair("enum_validation_expiration",enum_validation_expiration_.print_quoted()))
+        (std::make_pair("enum_publish_flag",enum_publish_flag_.print_quoted()))
+        (std::make_pair("logd_request_id",logd_request_id_.print_quoted()))
+        );
     }
 
 }//namespace Fred

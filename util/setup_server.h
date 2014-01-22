@@ -27,15 +27,15 @@
 #include <string>
 #include <boost/any.hpp>
 #include "log/logger.h"
-#include "corba_wrapper_decl.h"
+#include "util/corba_wrapper_decl.h"
 #include "cfg/faked_args.h"
 #include "cfg/config_handler.h"
 #include "cfg/handle_logging_args.h"
 #include "cfg/handle_server_args.h"
 #include "cfg/handle_corbanameservice_args.h"
 
-#include "pidfile.h"
-#include "daemonize.h"
+#include "src/corba/pidfile.h"
+#include "src/corba/daemonize.h"
 
 void setup_logging(CfgArgs * cfg_instance_ptr)
 {

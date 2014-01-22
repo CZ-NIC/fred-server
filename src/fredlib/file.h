@@ -1,10 +1,10 @@
 #ifndef _FILE_H_
 #define _FILE_H_
 
-#include "common_impl_new.h"
-#include "db_settings.h"
-#include "file_transferer.h"
-#include "model/model_filters.h"
+#include "src/fredlib/common_impl_new.h"
+#include "src/fredlib/db_settings.h"
+#include "src/fredlib/file_transferer.h"
+#include "src/model/model_filters.h"
 #include "model_files.h"
 
 namespace Fred {

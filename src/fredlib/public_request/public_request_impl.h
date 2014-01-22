@@ -2,7 +2,7 @@
 #define PUBLIC_REQUEST_IMPL_H_
 
 #include "public_request.h"
-#include "common_impl.h"
+#include "src/fredlib/common_impl.h"
 
 namespace Fred {
 namespace PublicRequest {

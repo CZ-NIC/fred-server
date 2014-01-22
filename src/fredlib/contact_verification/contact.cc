@@ -1,6 +1,6 @@
 #include "contact.h"
 #include "random.h"
-#include "fredlib/db_settings.h"
+#include "src/fredlib/db_settings.h"
 
 
 namespace Fred {

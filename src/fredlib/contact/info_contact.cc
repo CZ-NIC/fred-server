@@ -17,11 +17,12 @@
  */
 
 /**
- *  @file info_contact.cc
+ *  @file
  *  contact info
  */
 
 #include <string>
+#include <sstream>
 #include <vector>
 
 #include <boost/algorithm/string.hpp>
@@ -29,179 +30,49 @@
 #include <boost/date_time/posix_time/time_period.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
 
-#include "fredlib/contact/info_contact.h"
-#include "fredlib/object/object.h"
+#include "src/fredlib/contact/info_contact.h"
+#include "src/fredlib/object/object.h"
 
-#include "fredlib/opcontext.h"
-#include "fredlib/db_settings.h"
+#include "src/fredlib/opcontext.h"
+#include "src/fredlib/db_settings.h"
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
 #include "util/util.h"
 
 namespace Fred
 {
-    InfoContact::InfoContact(const std::string& handle
-            , const std::string& registrar)
-    : handle_(handle)
-    , registrar_(registrar)
-    , lock_(false)
+
+    InfoContactByHandle::InfoContactByHandle(const std::string& handle)
+        : handle_(handle)
+        , lock_(false)
     {}
 
-    InfoContact& InfoContact::set_lock(bool lock)//set lock object_registry row
+    InfoContactByHandle& InfoContactByHandle::set_lock(bool lock)//set lock object_registry row for contact
     {
         lock_ = lock;
         return *this;
     }
 
-    InfoContactOutput InfoContact::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
+    InfoContactOutput InfoContactByHandle::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
     {
-        InfoContactOutput contact_info_output;
+        std::vector<InfoContactOutput> contact_res;
 
         try
         {
-            //check registrar exists
-            //TODO: check registrar access
+            contact_res = InfoContact()
+                    .set_handle(handle_)
+                    .set_lock(lock_)
+                    .set_history_query(false)
+                    .exec(ctx,local_timestamp_pg_time_zone_name);
+
+            if (contact_res.empty())
             {
-                Database::Result res = ctx.get_conn().exec_params(
-                        "SELECT id FROM registrar WHERE handle = UPPER($1::text) FOR SHARE"
-                    , Database::query_param_list(registrar_));
-
-                if (res.size() == 0)
-                {
-                    BOOST_THROW_EXCEPTION(Exception().set_unknown_registrar_handle(registrar_));
-                }
-                if (res.size() != 1)
-                {
-                    BOOST_THROW_EXCEPTION(InternalError("failed to get registrar"));
-                }
-
+                BOOST_THROW_EXCEPTION(Exception().set_unknown_contact_handle(handle_));
             }
 
-
-            //info about contact and optionally lock object_registry row for update
+            if (contact_res.size() > 1)
             {
-                Database::Result res = ctx.get_conn().exec_params(std::string(
-                "SELECT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC')::timestamp AS utc_timestamp "// utc timestamp 0
-                " , (CURRENT_TIMESTAMP AT TIME ZONE 'UTC' AT TIME ZONE $1::text)::timestamp AS local_timestamp  "// local zone timestamp 1
-                " , cobr.crhistoryid "//first historyid 2
-                " , cobr.historyid "// last historyid 3
-                " , cobr.erdate "// contact delete time 4
-                " , cobr.id,cobr.name,cobr.roid " //contact 5-7
-                " , o.clid,clr.handle "//sponzoring registrar 8-9
-                " , cobr.crid, crr.handle "//creating registrar 10-11
-                " , o.upid, upr.handle "//updated by registrar 12-13
-                " , cobr.crdate,o.trdate,o.update "//registration dates 14-16
-                " , o.authinfopw "//authinfo 17
-                " , c.name, c.organization, c.street1, c.street2, c.street3, c.city, c.stateorprovince, c.postalcode, c.country "// contact data 18-26
-                " , c.telephone, c.fax, c.email , c.notifyemail, c.vat, c.ssn, est.type "// 27-33
-                " , c.disclosename, c.discloseorganization, c.discloseaddress, c.disclosetelephone, c.disclosefax "// 34-38
-                " , c.discloseemail, c.disclosevat, c.discloseident, c.disclosenotifyemail "// 39-42
-                " FROM object_registry cobr "
-                " JOIN contact c ON cobr.id=c.id "
-                " JOIN object o ON c.id=o.id "
-                " JOIN registrar clr ON clr.id = o.clid "
-                " JOIN registrar crr ON crr.id = cobr.crid "
-                " LEFT JOIN registrar upr ON upr.id = o.upid "
-                " LEFT JOIN enum_ssntype est ON est.id = c.ssntype "
-                " WHERE cobr.name=UPPER($2::text) AND cobr.erdate IS NULL "
-                " AND cobr.type = ( SELECT id FROM enum_object_type eot WHERE eot.name='contact'::text)")
-                + (lock_ ? std::string(" FOR UPDATE OF cobr") : std::string(""))
-                , Database::query_param_list(local_timestamp_pg_time_zone_name)(handle_));
-
-                if (res.size() == 0)
-                {
-                    BOOST_THROW_EXCEPTION(Exception().set_unknown_contact_handle(handle_));
-                }
-                if (res.size() != 1)
-                {
-                    BOOST_THROW_EXCEPTION(InternalError("failed to get contact"));
-                }
-
-                contact_info_output.utc_timestamp = res[0][0].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
-                : boost::posix_time::time_from_string(static_cast<std::string>(res[0][0]));// utc timestamp
-
-                contact_info_output.local_timestamp = res[0][1].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
-                : boost::posix_time::time_from_string(static_cast<std::string>(res[0][1]));//local zone timestamp
-
-                contact_info_output.info_contact_data.crhistoryid = static_cast<unsigned long long>(res[0][2]);//cobr.crhistoryid
-
-                contact_info_output.info_contact_data.historyid = static_cast<unsigned long long>(res[0][3]);//cobr.historyid
-
-                contact_info_output.info_contact_data.delete_time = res[0][4].isnull() ? Nullable<boost::posix_time::ptime>()
-                    : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(res[0][4])));//cobr.erdate
-
-                contact_info_output.info_contact_data.handle = static_cast<std::string>(res[0][6]);//cobr.name
-
-                contact_info_output.info_contact_data.roid = static_cast<std::string>(res[0][7]);//cobr.roid
-
-                contact_info_output.info_contact_data.sponsoring_registrar_handle = static_cast<std::string>(res[0][9]);//clr.handle
-
-                contact_info_output.info_contact_data.create_registrar_handle = static_cast<std::string>(res[0][11]);//crr.handle
-
-                contact_info_output.info_contact_data.update_registrar_handle = res[0][13].isnull() ? Nullable<std::string>()
-                    : Nullable<std::string> (static_cast<std::string>(res[0][13]));//upr.handle
-
-                contact_info_output.info_contact_data.creation_time = boost::posix_time::time_from_string(static_cast<std::string>(res[0][14]));//cobr.crdate
-
-                contact_info_output.info_contact_data.transfer_time = res[0][15].isnull() ? Nullable<boost::posix_time::ptime>()
-                : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(res[0][15])));//o.trdate
-
-                contact_info_output.info_contact_data.update_time = res[0][16].isnull() ? Nullable<boost::posix_time::ptime>()
-                : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(res[0][16])));//o.update
-
-                contact_info_output.info_contact_data.authinfopw = static_cast<std::string>(res[0][17]);//o.authinfopw
-
-
-                contact_info_output.info_contact_data.name = res[0][18].isnull() ? Nullable<std::string>()
-                        : Nullable<std::string> (static_cast<std::string>(res[0][18]));
-                contact_info_output.info_contact_data.organization = res[0][19].isnull() ? Nullable<std::string>()
-                        : Nullable<std::string> (static_cast<std::string>(res[0][19]));
-                contact_info_output.info_contact_data.street1 = res[0][20].isnull() ? Nullable<std::string>()
-                        : Nullable<std::string> (static_cast<std::string>(res[0][20]));
-                contact_info_output.info_contact_data.street2 = res[0][21].isnull() ? Nullable<std::string>()
-                        : Nullable<std::string> (static_cast<std::string>(res[0][21]));
-                contact_info_output.info_contact_data.street3 = res[0][22].isnull() ? Nullable<std::string>()
-                        : Nullable<std::string> (static_cast<std::string>(res[0][22]));
-                contact_info_output.info_contact_data.city = res[0][23].isnull() ? Nullable<std::string>()
-                        : Nullable<std::string> (static_cast<std::string>(res[0][23]));
-                contact_info_output.info_contact_data.stateorprovince = res[0][24].isnull() ? Nullable<std::string>()
-                        : Nullable<std::string> (static_cast<std::string>(res[0][24]));
-                contact_info_output.info_contact_data.postalcode = res[0][25].isnull() ? Nullable<std::string>()
-                        : Nullable<std::string> (static_cast<std::string>(res[0][25]));
-                contact_info_output.info_contact_data.country = res[0][26].isnull() ? Nullable<std::string>()
-                        : Nullable<std::string> (static_cast<std::string>(res[0][26]));
-                contact_info_output.info_contact_data.telephone = res[0][27].isnull() ? Nullable<std::string>()
-                        : Nullable<std::string> (static_cast<std::string>(res[0][27]));
-                contact_info_output.info_contact_data.fax = res[0][28].isnull() ? Nullable<std::string>()
-                        : Nullable<std::string> (static_cast<std::string>(res[0][28]));
-                contact_info_output.info_contact_data.email = res[0][29].isnull() ? Nullable<std::string>()
-                        : Nullable<std::string> (static_cast<std::string>(res[0][29]));
-                contact_info_output.info_contact_data.notifyemail = res[0][30].isnull() ? Nullable<std::string>()
-                        : Nullable<std::string> (static_cast<std::string>(res[0][30]));
-                contact_info_output.info_contact_data.vat = res[0][31].isnull() ? Nullable<std::string>()
-                        : Nullable<std::string> (static_cast<std::string>(res[0][31]));
-                contact_info_output.info_contact_data.ssn = res[0][32].isnull() ? Nullable<std::string>()
-                        : Nullable<std::string> (static_cast<std::string>(res[0][32]));
-                contact_info_output.info_contact_data.ssntype = res[0][33].isnull() ? Nullable<std::string>()
-                        : Nullable<std::string> (static_cast<std::string>(res[0][33]));
-                contact_info_output.info_contact_data.disclosename = res[0][34].isnull() ? Nullable<bool>()
-                        : Nullable<bool> (static_cast<bool>(res[0][34]));
-                contact_info_output.info_contact_data.discloseorganization = res[0][35].isnull() ? Nullable<bool>()
-                        : Nullable<bool> (static_cast<bool>(res[0][35]));
-                contact_info_output.info_contact_data.discloseaddress = res[0][36].isnull() ? Nullable<bool>()
-                        : Nullable<bool> (static_cast<bool>(res[0][36]));
-                contact_info_output.info_contact_data.disclosetelephone = res[0][37].isnull() ? Nullable<bool>()
-                        : Nullable<bool> (static_cast<bool>(res[0][37]));
-                contact_info_output.info_contact_data.disclosefax = res[0][38].isnull() ? Nullable<bool>()
-                        : Nullable<bool> (static_cast<bool>(res[0][38]));
-                contact_info_output.info_contact_data.discloseemail = res[0][39].isnull() ? Nullable<bool>()
-                        : Nullable<bool> (static_cast<bool>(res[0][39]));
-                contact_info_output.info_contact_data.disclosevat = res[0][40].isnull() ? Nullable<bool>()
-                        : Nullable<bool> (static_cast<bool>(res[0][40]));
-                contact_info_output.info_contact_data.discloseident = res[0][41].isnull() ? Nullable<bool>()
-                        : Nullable<bool> (static_cast<bool>(res[0][41]));
-                contact_info_output.info_contact_data.disclosenotifyemail = res[0][42].isnull() ? Nullable<bool>()
-                        : Nullable<bool> (static_cast<bool>(res[0][42]));
+                BOOST_THROW_EXCEPTION(InternalError("query result size > 1"));
             }
 
         }//try
@@ -210,23 +81,516 @@ namespace Fred
             ex.add_exception_stack_info(to_string());
             throw;
         }
-        return contact_info_output;
-    }//InfoContact::exec
+        return contact_res.at(0);
+    }//InfoContactByHandle::exec
 
-    std::ostream& operator<<(std::ostream& os, const InfoContact& ic)
+    std::string InfoContactByHandle::to_string() const
     {
-        return os << "#InfoContact handle: " << ic.handle_
-                << " registrar: " << ic.registrar_
-                << " lock: " << ic.lock_
-                ;
-    }
-    std::string InfoContact::to_string()
-    {
-        std::stringstream ss;
-        ss << *this;
-        return ss.str();
+        return Util::format_operation_state("InfoContactByHandle",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("handle", handle_))
+        (std::make_pair("lock",lock_ ? "true":"false"))
+        );
     }
 
+    InfoContactById::InfoContactById(unsigned long long id)
+        : id_(id)
+        , lock_(false)
+    {}
+
+    InfoContactById& InfoContactById::set_lock(bool lock)//set lock object_registry row for contact
+    {
+        lock_ = lock;
+        return *this;
+    }
+
+    InfoContactOutput InfoContactById::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
+    {
+        std::vector<InfoContactOutput> contact_res;
+
+        try
+        {
+            contact_res = InfoContact()
+                    .set_id(id_)
+                    .set_lock(lock_)
+                    .set_history_query(false)
+                    .exec(ctx,local_timestamp_pg_time_zone_name);
+
+            if (contact_res.empty())
+            {
+                BOOST_THROW_EXCEPTION(Exception().set_unknown_object_id(id_));
+            }
+
+            if (contact_res.size() > 1)
+            {
+                BOOST_THROW_EXCEPTION(InternalError("query result size > 1"));
+            }
+
+        }//try
+        catch(ExceptionStack& ex)
+        {
+            ex.add_exception_stack_info(to_string());
+            throw;
+        }
+        return contact_res.at(0);
+    }//InfoContactById::exec
+
+    std::string InfoContactById::to_string() const
+    {
+        return Util::format_operation_state("InfoContactById",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("id",boost::lexical_cast<std::string>(id_)))
+        (std::make_pair("lock",lock_ ? "true":"false"))
+        );
+    }
+
+    InfoContactHistory::InfoContactHistory(const std::string& roid
+            , const Optional<boost::posix_time::ptime>& history_timestamp)
+        : roid_(roid)
+        , history_timestamp_(history_timestamp)
+        , lock_(false)
+    {}
+
+    InfoContactHistory::InfoContactHistory(const std::string& roid)
+    : roid_(roid)
+    , lock_(false)
+    {}
+
+    InfoContactHistory& InfoContactHistory::set_history_timestamp(boost::posix_time::ptime history_timestamp)//set history timestamp
+    {
+        history_timestamp_ = history_timestamp;
+        return *this;
+    }
+
+    InfoContactHistory& InfoContactHistory::set_lock(bool lock)//set lock object_registry row for contact
+    {
+        lock_ = lock;
+        return *this;
+    }
+
+    std::vector<InfoContactOutput> InfoContactHistory::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
+    {
+        std::vector<InfoContactOutput> contact_history_res;
+
+        try
+        {
+            contact_history_res = InfoContact()
+                    .set_roid(roid_)
+                    .set_lock(lock_)
+                    .set_history_query(true)
+                    .exec(ctx,local_timestamp_pg_time_zone_name);
+
+            if (contact_history_res.empty())
+            {
+                BOOST_THROW_EXCEPTION(Exception().set_unknown_registry_object_identifier(roid_));
+            }
+        }//try
+        catch(ExceptionStack& ex)
+        {
+            ex.add_exception_stack_info(to_string());
+            throw;
+        }
+        return contact_history_res;
+    }//InfoContactHistory::exec
+
+    std::string InfoContactHistory::to_string() const
+    {
+        return Util::format_operation_state("InfoContactHistory",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("roid",roid_))
+        (std::make_pair("history_timestamp",history_timestamp_.print_quoted()))
+        (std::make_pair("lock",lock_ ? "true":"false"))
+        );
+    }
+
+
+    bool InfoContactOutput::operator==(const InfoContactOutput& rhs) const
+    {
+        return info_contact_data == rhs.info_contact_data;
+    }
+
+    bool InfoContactOutput::operator!=(const InfoContactOutput& rhs) const
+    {
+        return !this->operator ==(rhs);
+    }
+
+    std::string InfoContactOutput::to_string() const
+    {
+        return Util::format_data_structure("InfoContactOutput",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("info_contact_data",info_contact_data.to_string()))
+        (std::make_pair("utc_timestamp",boost::lexical_cast<std::string>(utc_timestamp)))
+        (std::make_pair("local_timestamp",boost::lexical_cast<std::string>(local_timestamp)))
+        (std::make_pair("next_historyid",next_historyid.print_quoted()))
+        (std::make_pair("history_valid_from",boost::lexical_cast<std::string>(history_valid_from)))
+        (std::make_pair("history_valid_to",history_valid_to.print_quoted()))
+        (std::make_pair("logd_request_id",logd_request_id.print_quoted()))
+        );
+    }
+
+    HistoryInfoContactById::HistoryInfoContactById(unsigned long long id)
+        : id_(id)
+        , lock_(false)
+    {}
+
+    HistoryInfoContactById& HistoryInfoContactById::set_lock(bool lock)//set lock object_registry row for contact
+    {
+        lock_ = lock;
+        return *this;
+    }
+
+    std::vector<InfoContactOutput> HistoryInfoContactById::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
+    {
+        std::vector<InfoContactOutput> contact_history_res;
+
+        try
+        {
+            contact_history_res = InfoContact()
+                    .set_id(id_)
+                    .set_lock(lock_)
+                    .set_history_query(true)
+                    .exec(ctx,local_timestamp_pg_time_zone_name);
+
+            if (contact_history_res.empty())
+            {
+                BOOST_THROW_EXCEPTION(Exception().set_unknown_object_id(id_));
+            }
+
+        }//try
+        catch(ExceptionStack& ex)
+        {
+            ex.add_exception_stack_info(to_string());
+            throw;
+        }
+        return contact_history_res;
+    }//HistoryInfoContactById::exec
+
+    std::string HistoryInfoContactById::to_string() const
+    {
+        return Util::format_operation_state("HistoryInfoContactById",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("id",boost::lexical_cast<std::string>(id_)))
+        (std::make_pair("lock",lock_ ? "true":"false"))
+        );
+    }
+
+    HistoryInfoContactByHistoryid::HistoryInfoContactByHistoryid(unsigned long long historyid)
+        : historyid_(historyid)
+        , lock_(false)
+    {}
+
+    HistoryInfoContactByHistoryid& HistoryInfoContactByHistoryid::set_lock(bool lock)//set lock object_registry row for contact
+    {
+        lock_ = lock;
+        return *this;
+    }
+
+    InfoContactOutput HistoryInfoContactByHistoryid::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
+    {
+        std::vector<InfoContactOutput> contact_history_res;
+
+        try
+        {
+            contact_history_res = InfoContact()
+                    .set_historyid(historyid_)
+                    .set_lock(lock_)
+                    .set_history_query(true)
+                    .exec(ctx,local_timestamp_pg_time_zone_name);
+
+            if (contact_history_res.empty())
+            {
+                BOOST_THROW_EXCEPTION(Exception().set_unknown_object_historyid(historyid_));
+            }
+
+            if (contact_history_res.size() > 1)
+            {
+                BOOST_THROW_EXCEPTION(InternalError("query result size > 1"));
+            }
+
+        }//try
+        catch(ExceptionStack& ex)
+        {
+            ex.add_exception_stack_info(to_string());
+            throw;
+        }
+        return contact_history_res.at(0);
+    }//HistoryInfoContactByHistoryid::exec
+
+    std::string HistoryInfoContactByHistoryid::to_string() const
+    {
+        return Util::format_operation_state("HistoryInfoContactByHistoryid",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("historyid",boost::lexical_cast<std::string>(historyid_)))
+        (std::make_pair("lock",lock_ ? "true":"false"))
+        );
+    }
+
+    InfoContact::InfoContact()
+        : history_query_(false)
+        , lock_(false)
+        {}
+
+    InfoContact& InfoContact::set_handle(const std::string& contact_handle)
+    {
+        contact_handle_ = contact_handle;
+        return *this;
+    }
+
+    InfoContact& InfoContact::set_roid(const std::string& contact_roid)
+    {
+        contact_roid_ = contact_roid;
+        return *this;
+    }
+
+    InfoContact& InfoContact::set_id(unsigned long long contact_id)
+    {
+        contact_id_ = contact_id;
+        return *this;
+    }
+
+    InfoContact& InfoContact::set_historyid(unsigned long long contact_historyid)
+    {
+        contact_historyid_ = contact_historyid;
+        return *this;
+    }
+
+    InfoContact& InfoContact::set_history_timestamp(const boost::posix_time::ptime& history_timestamp)
+    {
+        history_timestamp_ = history_timestamp;
+        return *this;
+    }
+
+    InfoContact& InfoContact::set_history_query(bool history_query)
+    {
+        history_query_ = history_query;
+        return *this;
+    }
+
+    InfoContact& InfoContact::set_lock(bool lock)
+    {
+        lock_ = lock;
+        return *this;
+    }
+
+    std::pair<std::string, Database::QueryParams> InfoContact::make_query(const std::string& local_timestamp_pg_time_zone_name)
+    {
+        Database::QueryParams params;
+        std::ostringstream sql;
+
+        params.push_back(local_timestamp_pg_time_zone_name);//refered as $1
+
+        //query to get info and lock object_registry row for update if set
+        sql << "SELECT cobr.id, cobr.roid, cobr.name "//contact 0-2
+        " , (cobr.erdate AT TIME ZONE 'UTC' ) AT TIME ZONE $1::text " //contact 3
+        " , obj.id, h.id , h.next, (h.valid_from AT TIME ZONE 'UTC') AT TIME ZONE $1::text "//history 4-7
+        " , (h.valid_to AT TIME ZONE 'UTC') AT TIME ZONE $1::text "//history 8
+        " , obj.clid, clr.handle "//sponsoring registrar 9-10
+        " , cobr.crid, crr.handle "//creating registrar 11-12
+        " , obj.upid, upr.handle "//last updated by registrar 13-14
+        " , (cobr.crdate AT TIME ZONE 'UTC') AT TIME ZONE $1::text "//registration dates 15
+        " , (obj.trdate AT TIME ZONE 'UTC') AT TIME ZONE $1::text "//registration dates 16
+        " , (obj.update AT TIME ZONE 'UTC') AT TIME ZONE $1::text "//registration dates 17
+        " , obj.authinfopw "//transfer passwd 18
+        " , cobr.crhistoryid "//first historyid 19
+        " , h.request_id "//logd request_id 20
+        " , ct.name, ct.organization, ct.street1, ct.street2, ct.street3, ct.city, ct.stateorprovince, ct.postalcode, ct.country "//contact data
+        " , ct.telephone, ct.fax, ct.email , ct.notifyemail, ct.vat, ct.ssn, est.type "
+        " , ct.disclosename, ct.discloseorganization, ct.discloseaddress, ct.disclosetelephone, ct.disclosefax "
+        " , ct.discloseemail, ct.disclosevat, ct.discloseident, ct.disclosenotifyemail "
+        " , (CURRENT_TIMESTAMP AT TIME ZONE 'UTC')::timestamp AS utc_timestamp "// utc timestamp 46
+        " , (CURRENT_TIMESTAMP AT TIME ZONE 'UTC' AT TIME ZONE $1::text)::timestamp AS local_timestamp  "// local zone timestamp 47
+        " FROM object_registry cobr ";
+        if(history_query_)
+        {
+            sql << " JOIN object_history obj ON obj.id = cobr.id "
+            " JOIN contact_history ct ON ct.historyid = obj.historyid "
+            " JOIN history h ON h.id = ct.historyid ";
+        }
+        else
+        {
+            sql << " JOIN object obj ON obj.id = cobr.id "
+            " JOIN contact ct ON ct.id = obj.id "
+            " JOIN history h ON h.id = cobr.historyid ";
+        }
+        sql << " JOIN registrar clr ON clr.id = obj.clid "
+        " JOIN registrar crr ON crr.id = cobr.crid "
+        " LEFT JOIN registrar upr ON upr.id = obj.upid "
+        " LEFT JOIN enum_ssntype est ON est.id = ct.ssntype "
+        " WHERE "
+        " cobr.type = (SELECT id FROM enum_object_type eot WHERE eot.name='contact'::text) ";
+
+        if(contact_handle_.isset())
+        {
+            params.push_back(contact_handle_);
+            sql << " AND cobr.name = UPPER($"<< params.size() <<"::text) ";
+        }
+
+        if(contact_roid_.isset())
+        {
+            params.push_back(contact_roid_);
+            sql << " AND cobr.roid = $"<< params.size() <<"::text ";
+        }
+
+        if(contact_id_.isset())
+        {
+            params.push_back(contact_id_);
+            sql << " AND cobr.id = $"<< params.size() <<"::bigint ";
+        }
+
+        if(contact_historyid_.isset())
+        {
+            params.push_back(contact_historyid_);
+            sql << " AND h.id = $"<< params.size() <<"::bigint ";
+        }
+
+        if(history_timestamp_.isset())
+        {
+            params.push_back(history_timestamp_);
+            sql << " AND h.valid_from <= ($"<< params.size() <<"::timestamp AT TIME ZONE $1::text) AT TIME ZONE 'UTC' "
+            " AND (($"<< params.size() <<"::timestamp AT TIME ZONE $1::text) AT TIME ZONE 'UTC' < h.valid_to OR h.valid_to IS NULL)";
+        }
+
+        sql << " ORDER BY h.id DESC ";
+
+        if(lock_)
+        {
+            sql << " FOR UPDATE of cobr ";
+        }
+
+        return std::make_pair(sql.str(), params);
+    }
+
+    std::vector<InfoContactOutput> InfoContact::exec(OperationContext& ctx
+            , const std::string& local_timestamp_pg_time_zone_name
+        )
+    {
+        std::vector<InfoContactOutput> result;
+
+        std::pair<std::string, Database::QueryParams> query = make_query(local_timestamp_pg_time_zone_name);
+
+        Database::Result query_result = ctx.get_conn().exec_params(query.first,query.second);
+        result.reserve(query_result.size());//alloc
+        for(Database::Result::size_type i = 0; i < query_result.size(); ++i)
+        {
+            InfoContactOutput info_contact_output;
+
+            info_contact_output.info_contact_data.id = static_cast<unsigned long long>(query_result[i][0]);//cobr.id
+            info_contact_output.info_contact_data.roid = static_cast<std::string>(query_result[i][1]);//cobr.roid
+
+            info_contact_output.info_contact_data.handle = static_cast<std::string>(query_result[i][2]);//cobr.name
+
+            info_contact_output.info_contact_data.delete_time = query_result[i][3].isnull() ? Nullable<boost::posix_time::ptime>()
+            : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(query_result[i][3])));//cobr.erdate
+
+            info_contact_output.info_contact_data.historyid = static_cast<unsigned long long>(query_result[i][5]);//h.id
+
+            info_contact_output.next_historyid = query_result[i][6].isnull() ? Nullable<unsigned long long>()
+            : Nullable<unsigned long long>(static_cast<unsigned long long>(query_result[i][6]));//h.next
+
+            info_contact_output.history_valid_from = boost::posix_time::time_from_string(static_cast<std::string>(query_result[i][7]));//h.valid_from
+
+            info_contact_output.history_valid_to = query_result[i][8].isnull() ? Nullable<boost::posix_time::ptime>()
+            : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(query_result[i][8])));//h.valid_to
+
+            info_contact_output.info_contact_data.sponsoring_registrar_handle = static_cast<std::string>(query_result[i][10]);//clr.handle
+
+            info_contact_output.info_contact_data.create_registrar_handle = static_cast<std::string>(query_result[i][12]);//crr.handle
+
+            info_contact_output.info_contact_data.update_registrar_handle = query_result[i][14].isnull() ? Nullable<std::string>()
+            : Nullable<std::string> (static_cast<std::string>(query_result[i][14]));//upr.handle
+
+            info_contact_output.info_contact_data.creation_time = boost::posix_time::time_from_string(static_cast<std::string>(query_result[i][15]));//cobr.crdate
+
+            info_contact_output.info_contact_data.transfer_time = query_result[i][16].isnull() ? Nullable<boost::posix_time::ptime>()
+            : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(query_result[i][16])));//obj.trdate
+
+            info_contact_output.info_contact_data.update_time = query_result[i][17].isnull() ? Nullable<boost::posix_time::ptime>()
+            : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(query_result[i][17])));//obj.update
+
+            info_contact_output.info_contact_data.authinfopw = static_cast<std::string>(query_result[i][18]);//obj.authinfopw
+
+            info_contact_output.info_contact_data.crhistoryid = static_cast<unsigned long long>(query_result[i][19]);//cobr.crhistoryid
+
+            info_contact_output.logd_request_id = query_result[i][20].isnull() ? Nullable<unsigned long long>()
+                : Nullable<unsigned long long>(static_cast<unsigned long long>(query_result[i][20]));
+
+            info_contact_output.info_contact_data.name = query_result[i][21].isnull() ? Nullable<std::string>()
+                    : Nullable<std::string> (static_cast<std::string>(query_result[i][21]));
+            info_contact_output.info_contact_data.organization = query_result[i][22].isnull() ? Nullable<std::string>()
+                    : Nullable<std::string> (static_cast<std::string>(query_result[i][22]));
+            info_contact_output.info_contact_data.street1 = query_result[i][23].isnull() ? Nullable<std::string>()
+                    : Nullable<std::string> (static_cast<std::string>(query_result[i][23]));
+            info_contact_output.info_contact_data.street2 = query_result[i][24].isnull() ? Nullable<std::string>()
+                    : Nullable<std::string> (static_cast<std::string>(query_result[i][24]));
+            info_contact_output.info_contact_data.street3 = query_result[i][25].isnull() ? Nullable<std::string>()
+                    : Nullable<std::string> (static_cast<std::string>(query_result[i][25]));
+            info_contact_output.info_contact_data.city = query_result[i][26].isnull() ? Nullable<std::string>()
+                    : Nullable<std::string> (static_cast<std::string>(query_result[i][26]));
+            info_contact_output.info_contact_data.stateorprovince = query_result[i][27].isnull() ? Nullable<std::string>()
+                    : Nullable<std::string> (static_cast<std::string>(query_result[i][27]));
+            info_contact_output.info_contact_data.postalcode = query_result[i][28].isnull() ? Nullable<std::string>()
+                    : Nullable<std::string> (static_cast<std::string>(query_result[i][28]));
+            info_contact_output.info_contact_data.country = query_result[i][29].isnull() ? Nullable<std::string>()
+                    : Nullable<std::string> (static_cast<std::string>(query_result[i][29]));
+            info_contact_output.info_contact_data.telephone = query_result[i][30].isnull() ? Nullable<std::string>()
+                    : Nullable<std::string> (static_cast<std::string>(query_result[i][30]));
+            info_contact_output.info_contact_data.fax = query_result[i][31].isnull() ? Nullable<std::string>()
+                    : Nullable<std::string> (static_cast<std::string>(query_result[i][31]));
+            info_contact_output.info_contact_data.email = query_result[i][32].isnull() ? Nullable<std::string>()
+                    : Nullable<std::string> (static_cast<std::string>(query_result[i][32]));
+            info_contact_output.info_contact_data.notifyemail = query_result[i][33].isnull() ? Nullable<std::string>()
+                    : Nullable<std::string> (static_cast<std::string>(query_result[i][33]));
+            info_contact_output.info_contact_data.vat = query_result[i][34].isnull() ? Nullable<std::string>()
+                    : Nullable<std::string> (static_cast<std::string>(query_result[i][34]));
+            info_contact_output.info_contact_data.ssn = query_result[i][35].isnull() ? Nullable<std::string>()
+                    : Nullable<std::string> (static_cast<std::string>(query_result[i][35]));
+            info_contact_output.info_contact_data.ssntype = query_result[i][36].isnull() ? Nullable<std::string>()
+                    : Nullable<std::string> (static_cast<std::string>(query_result[i][36]));
+            info_contact_output.info_contact_data.disclosename = query_result[i][37].isnull() ? Nullable<bool>()
+                    : Nullable<bool> (static_cast<bool>(query_result[i][37]));
+            info_contact_output.info_contact_data.discloseorganization = query_result[i][38].isnull() ? Nullable<bool>()
+                    : Nullable<bool> (static_cast<bool>(query_result[i][38]));
+            info_contact_output.info_contact_data.discloseaddress = query_result[i][39].isnull() ? Nullable<bool>()
+                    : Nullable<bool> (static_cast<bool>(query_result[i][39]));
+            info_contact_output.info_contact_data.disclosetelephone = query_result[i][40].isnull() ? Nullable<bool>()
+                    : Nullable<bool> (static_cast<bool>(query_result[i][40]));
+            info_contact_output.info_contact_data.disclosefax = query_result[i][41].isnull() ? Nullable<bool>()
+                    : Nullable<bool> (static_cast<bool>(query_result[i][41]));
+            info_contact_output.info_contact_data.discloseemail = query_result[i][42].isnull() ? Nullable<bool>()
+                    : Nullable<bool> (static_cast<bool>(query_result[i][42]));
+            info_contact_output.info_contact_data.disclosevat = query_result[i][43].isnull() ? Nullable<bool>()
+                    : Nullable<bool> (static_cast<bool>(query_result[i][43]));
+            info_contact_output.info_contact_data.discloseident = query_result[i][44].isnull() ? Nullable<bool>()
+                    : Nullable<bool> (static_cast<bool>(query_result[i][44]));
+            info_contact_output.info_contact_data.disclosenotifyemail = query_result[i][45].isnull() ? Nullable<bool>()
+                    : Nullable<bool> (static_cast<bool>(query_result[i][45]));
+
+            info_contact_output.utc_timestamp = query_result[i][46].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
+            : boost::posix_time::time_from_string(static_cast<std::string>(query_result[i][46]));// utc timestamp
+            info_contact_output.local_timestamp = query_result[i][47].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
+            : boost::posix_time::time_from_string(static_cast<std::string>(query_result[i][47]));//local zone timestamp
+
+            result.push_back(info_contact_output);
+        }//for res
+
+        return result;
+    }
+
+    std::string InfoContact::explain_analyze(OperationContext& ctx, std::vector<InfoContactOutput>& result
+            , const std::string& local_timestamp_pg_time_zone_name)
+    {
+        result = exec(ctx,local_timestamp_pg_time_zone_name);
+        std::pair<std::string, Database::QueryParams> query = make_query(local_timestamp_pg_time_zone_name);
+        std::string query_plan("\nEXPLAIN ANALYZE ");
+        query_plan += query.first;
+        query_plan += "\n\nParams: ";
+        query_plan += Util::format_vector(query.second);
+        query_plan += "\n\nPlan:\n";
+
+        Database::Result query_result = ctx.get_conn().exec_params(std::string("EXPLAIN ANALYZE ") + query.first,query.second);
+        for(Database::Result::size_type i = 0; i < query_result.size(); ++i) query_plan += std::string(query_result[i][0])+"\n";
+        return query_plan;
+    }
 
 }//namespace Fred
 

@@ -3,7 +3,7 @@
 
 
 #include "cfg/handle_registry_args.h"
-#include "fredlib/mailer.h"
+#include "src/fredlib/mailer.h"
 
 #include <string>
 #include <vector>

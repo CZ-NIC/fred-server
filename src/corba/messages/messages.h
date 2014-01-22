@@ -24,7 +24,7 @@
 #ifndef MESSAGES_H_
 #define MESSAGES_H_
 
-#include "messages/messages_impl.h"
+#include "src/fredlib/messages/messages_impl.h"
 
 #include <memory>
 #include <iostream>
@@ -48,11 +48,11 @@
 
 #include "log/logger.h"
 #include "log/context.h"
-#include "corba/connection_releaser.h"
+#include "src/corba/connection_releaser.h"
 
 
 //code for implementing IDL interfaces in file /usr/local/share/idl/fred//Messages.idl
-#include "corba/Messages.hh"
+#include "src/corba/Messages.hh"
 
 //class implementing IDL interface Registry::Messages
 class Registry_Messages_i: public POA_Registry::Messages

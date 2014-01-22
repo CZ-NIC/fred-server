@@ -2,7 +2,7 @@
 #define	_PAGETABLE_STATEMENTS_H
 
 #include "pagetable_impl.h"
-#include "bank_statement_list.h"
+#include "src/fredlib/banking/bank_statement_list.h"
 
 class ccReg_Statements_i: public ccReg_PageTable_i,
                           public PortableServer::RefCountServantBase

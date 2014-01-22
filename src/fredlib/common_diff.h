@@ -6,7 +6,7 @@
 #include <memory>
 
 #include "types/stringify.h"
-#include "object.h"
+#include "src/fredlib/object.h"
 
 
 namespace Fred {

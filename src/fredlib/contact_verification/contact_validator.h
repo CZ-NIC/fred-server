@@ -1,7 +1,7 @@
 #ifndef CONTACT_VALIDATOR_H__
 #define CONTACT_VALIDATOR_H__
 
-#include "contact_verification/contact.h"
+#include "src/fredlib/contact_verification/contact.h"
 #include "util/log/logger.h"
 
 #include <boost/function.hpp>

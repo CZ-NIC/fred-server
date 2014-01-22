@@ -19,8 +19,8 @@
 #include <math.h>
 #include "commonclient.h"
 #include "invoiceclient.h"
-#include "credit.h"
-#include "fredlib/invoicing/invoice.h"
+#include "src/fredlib/credit.h"
+#include "src/fredlib/invoicing/invoice.h"
 #include "../fredlib/model_zone.h"
 #include "types/money.h"
 namespace Admin {

@@ -1,15 +1,15 @@
 #ifndef CREATE_UPDATE_OBJECT_POLL_MESSAGE_H__
 #define CREATE_UPDATE_OBJECT_POLL_MESSAGE_H__
 
-#include "fredlib/opcontext.h"
-#include "fredlib/opexception.h"
-
+#include "src/fredlib/opcontext.h"
+#include "src/fredlib/opexception.h"
+#include "util/printable.h"
 
 namespace Fred {
 namespace Poll {
 
 
-class CreateUpdateObjectPollMessage
+class CreateUpdateObjectPollMessage : public Util::Printable
 {
 public:
     typedef unsigned long long ObjectHistoryId;
@@ -23,6 +23,12 @@ public:
     : virtual Fred::OperationException
     , ExceptionData_object_history_not_found<Exception>
     {};
+
+    /**
+    * Dumps state of the instance into the string
+    * @return string with description of the instance state
+    */
+    std::string to_string() const;
 
 private:
     ObjectHistoryId history_id_;

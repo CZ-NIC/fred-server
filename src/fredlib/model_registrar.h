@@ -1,7 +1,7 @@
 #ifndef MODEL_REGISTRAR_H_
 #define MODEL_REGISTRAR_H_
 
-#include "db_settings.h"
+#include "src/fredlib/db_settings.h"
 #include "model.h"
 
 //class ModelRegistrarAcl;

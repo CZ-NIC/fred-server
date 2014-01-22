@@ -1,12 +1,12 @@
 #ifndef _BANK_MANAGER_H_
 #define _BANK_MANAGER_H_
 
-#include "bank_payment.h"
+#include "src/fredlib/banking/bank_payment.h"
 #include "bank_payment_list.h"
 #include "bank_statement.h"
 #include "bank_statement_list.h"
-#include "file.h"
-#include "db_settings.h"
+#include "src/fredlib/file.h"
+#include "src/fredlib/db_settings.h"
 
 namespace Fred {
 namespace Banking {

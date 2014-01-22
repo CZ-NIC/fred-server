@@ -17,7 +17,7 @@
  */
 
 /**
- *  @file update_keyset.cc
+ *  @file
  *  keyset update
  */
 
@@ -25,11 +25,11 @@
 #include <vector>
 #include <algorithm>
 
-#include "fredlib/keyset/update_keyset.h"
-#include "fredlib/object/object.h"
-
-#include "fredlib/opcontext.h"
-#include "fredlib/db_settings.h"
+#include "src/fredlib/keyset/update_keyset.h"
+#include "src/fredlib/object/object.h"
+#include "src/fredlib/registrar/registrar_impl.h"
+#include "src/fredlib/opcontext.h"
+#include "src/fredlib/db_settings.h"
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
 #include "util/log/log.h"
@@ -44,6 +44,7 @@ namespace Fred
 
     UpdateKeyset::UpdateKeyset(const std::string& handle
             , const std::string& registrar
+            , const Optional<std::string>& sponsoring_registrar
             , const Optional<std::string>& authinfo
             , const std::vector<std::string>& add_tech_contact
             , const std::vector<std::string>& rem_tech_contact
@@ -53,6 +54,7 @@ namespace Fred
             )
     : handle_(handle)
     , registrar_(registrar)
+    , sponsoring_registrar_(sponsoring_registrar)
     , authinfo_(authinfo)
     , add_tech_contact_(add_tech_contact)
     , rem_tech_contact_(rem_tech_contact)
@@ -62,6 +64,12 @@ namespace Fred
         ? Nullable<unsigned long long>(logd_request_id.get_value())
         : Nullable<unsigned long long>())//is NULL if not set
     {}
+
+    UpdateKeyset& UpdateKeyset::set_sponsoring_registrar(const std::string& sponsoring_registrar)
+    {
+        sponsoring_registrar_ = sponsoring_registrar;
+        return *this;
+    }
 
     UpdateKeyset& UpdateKeyset::set_authinfo(const std::string& authinfo)
     {
@@ -106,45 +114,43 @@ namespace Fred
         try
         {
             //check registrar
-            {
-                Database::Result registrar_res = ctx.get_conn().exec_params(
-                    "SELECT id FROM registrar WHERE handle = UPPER($1::text) FOR SHARE"
-                    , Database::query_param_list(registrar_));
-                if(registrar_res.size() == 0)
-                {
-                    BOOST_THROW_EXCEPTION(Exception().set_unknown_registrar_handle(registrar_));
-                }
-                if (registrar_res.size() != 1)
-                {
-                    BOOST_THROW_EXCEPTION(InternalError("failed to get registrar"));
-                }
-            }
+            Registrar::get_registrar_id_by_handle(
+                ctx, registrar_, static_cast<Exception*>(0)//set throw
+                , &Exception::set_unknown_registrar_handle);
 
             //lock row and get keyset_id
-            unsigned long long keyset_id =0;
-            {
-                Database::Result keyset_id_res = ctx.get_conn().exec_params(
-                    "SELECT oreg.id FROM keyset k "
-                    " JOIN object_registry oreg ON k.id = oreg.id "
-                    " JOIN enum_object_type eot ON eot.id = oreg.type "
-                    " WHERE eot.name = 'keyset' AND oreg.name = UPPER($1::text) AND oreg.erdate IS NULL "
-                    " FOR UPDATE OF oreg "
-                    , Database::query_param_list(handle_));
-
-                if (keyset_id_res.size() == 0)
-                {
-                    BOOST_THROW_EXCEPTION(Exception().set_unknown_keyset_handle(handle_));
-                }
-                if (keyset_id_res.size() != 1)
-                {
-                    BOOST_THROW_EXCEPTION(InternalError("failed to get keyset"));
-                }
-                keyset_id = keyset_id_res[0][0];
-            }
-
-            Fred::UpdateObject(handle_,"keyset", registrar_, authinfo_).exec(ctx);
+            unsigned long long keyset_id =get_object_id_by_handle_and_type_with_lock(
+                    ctx,handle_,"keyset",static_cast<Exception*>(0),
+                    &Exception::set_unknown_keyset_handle);
 
             Exception update_keyset_exception;
+
+            try
+            {
+                history_id = Fred::UpdateObject(handle_,"keyset", registrar_
+                    , sponsoring_registrar_, authinfo_, logd_request_id_
+                ).exec(ctx);
+            }
+            catch(const Fred::UpdateObject::Exception& ex)
+            {
+                if(ex.is_set_unknown_object_handle())
+                {
+                    update_keyset_exception.set_unknown_keyset_handle(
+                            ex.get_unknown_object_handle());
+                }
+
+                if(ex.is_set_unknown_registrar_handle())
+                {
+                    update_keyset_exception.set_unknown_registrar_handle(
+                            ex.get_unknown_registrar_handle());
+                }
+
+                if(ex.is_set_unknown_sponsoring_registrar_handle())
+                {
+                    update_keyset_exception.set_unknown_sponsoring_registrar_handle(
+                            ex.get_unknown_sponsoring_registrar_handle());
+                }
+            }
 
             //add tech contacts
             if(!add_tech_contact_.empty())
@@ -159,27 +165,10 @@ namespace Fred
                 for(std::vector<std::string>::iterator i = add_tech_contact_.begin(); i != add_tech_contact_.end(); ++i)
                 {
                     //lock object_registry row for update
-                    unsigned long long tech_contact_id = 0;
-                    {
-                        Database::Result lock_res = ctx.get_conn().exec_params(
-                            "SELECT oreg.id FROM enum_object_type eot "
-                            " JOIN object_registry oreg ON oreg.type = eot.id "
-                            " JOIN contact c ON oreg.id = c.id "
-                            " AND oreg.name = UPPER($1::text) AND oreg.erdate IS NULL "
-                            " WHERE eot.name = 'contact' FOR UPDATE OF oreg "
-                            , Database::query_param_list(*i));
-
-                        if (lock_res.size() == 0)
-                        {
-                            update_keyset_exception.add_unknown_technical_contact_handle(*i);
-                            continue;//for add_tech_contact_
-                        }
-                        if (lock_res.size() != 1)
-                        {
-                            BOOST_THROW_EXCEPTION(InternalError("failed to get technical contact"));
-                        }
-                        tech_contact_id = static_cast<unsigned long long> (lock_res[0][0]);
-                    }
+                    unsigned long long tech_contact_id = get_object_id_by_handle_and_type_with_lock(
+                            ctx,*i,"contact",&update_keyset_exception,
+                            &Exception::add_unknown_technical_contact_handle);
+                    if(tech_contact_id == 0) continue;
 
                     Database::QueryParams params_i = params;//query params
                     std::stringstream sql_i;
@@ -221,27 +210,10 @@ namespace Fred
 
                 for(std::vector<std::string>::iterator i = rem_tech_contact_.begin(); i != rem_tech_contact_.end(); ++i)
                 {
-                    unsigned long long tech_contact_id = 0;
-                    {
-                        Database::Result lock_res = ctx.get_conn().exec_params(
-                            "SELECT oreg.id FROM enum_object_type eot "
-                            " JOIN object_registry oreg ON oreg.type = eot.id "
-                            " JOIN contact c ON oreg.id = c.id "
-                            " AND oreg.name = UPPER($1::text) AND oreg.erdate IS NULL "
-                            " WHERE eot.name = 'contact' FOR UPDATE OF oreg "
-                            , Database::query_param_list(*i));
-
-                        if (lock_res.size() == 0)
-                        {
-                            update_keyset_exception.add_unknown_technical_contact_handle(*i);
-                            continue;//for rem_tech_contact_
-                        }
-                        if (lock_res.size() != 1)
-                        {
-                            BOOST_THROW_EXCEPTION(InternalError("failed to get technical contact"));
-                        }
-                        tech_contact_id = static_cast<unsigned long long> (lock_res[0][0]);
-                    }
+                    unsigned long long tech_contact_id = get_object_id_by_handle_and_type_with_lock(
+                            ctx,*i,"contact",&update_keyset_exception,
+                            &Exception::add_unknown_technical_contact_handle);
+                    if(tech_contact_id == 0) continue;
 
                     Database::QueryParams params_i = params;//query params
                     std::stringstream sql_i;
@@ -320,25 +292,6 @@ namespace Fred
 
             //save history
             {
-                history_id = Fred::InsertHistory(logd_request_id_).exec(ctx);
-
-                //object_history
-                ctx.get_conn().exec_params(
-                    "INSERT INTO object_history(historyid,id,clid, upid, trdate, update, authinfopw) "
-                    " SELECT $1::bigint, id,clid, upid, trdate, update, authinfopw FROM object "
-                    " WHERE id = $2::integer"
-                    , Database::query_param_list(history_id)(keyset_id));
-
-                //object_registry historyid
-                Database::Result update_historyid_res = ctx.get_conn().exec_params(
-                    "UPDATE object_registry SET historyid = $1::bigint "
-                        " WHERE id = $2::integer  RETURNING id"
-                        , Database::query_param_list(history_id)(keyset_id));
-                if (update_historyid_res.size() != 1)
-                {
-                    BOOST_THROW_EXCEPTION(Fred::InternalError("update historyid failed"));
-                }
-
                 //keyset_history
                 ctx.get_conn().exec_params(
                     "INSERT INTO keyset_history(historyid,id) "
@@ -377,37 +330,19 @@ namespace Fred
         return history_id;
     }//UpdateKeyset::exec
 
-    std::ostream& operator<<(std::ostream& os, const UpdateKeyset& i)
+    std::string UpdateKeyset::to_string() const
     {
-        os << "#UpdateKeyset handle: " << i.handle_
-            << " registrar: " << i.registrar_
-            << " authinfo: " << i.authinfo_.print_quoted();
-
-        if(!i.add_tech_contact_.empty()) os << " add_tech_contact: ";
-        for(std::vector<std::string>::const_iterator ci = i.add_tech_contact_.begin()
-                ; ci != i.add_tech_contact_.end() ; ++ci ) os << *ci;
-
-        if(!i.rem_tech_contact_.empty()) os << " rem_tech_contact: ";
-        for(std::vector<std::string>::const_iterator ci = i.rem_tech_contact_.begin()
-                ; ci != i.rem_tech_contact_.end() ; ++ci ) os << *ci;
-
-        if(!i.add_dns_key_.empty()) os << " add_dns_key: ";
-        for(std::vector<DnsKey>::const_iterator ci = i.add_dns_key_.begin()
-                ; ci != i.add_dns_key_.end() ; ++ci ) os << static_cast<std::string>(*ci);
-
-        if(!i.rem_dns_key_.empty()) os << " rem_dns_key: ";
-        for(std::vector<DnsKey>::const_iterator ci = i.rem_dns_key_.begin()
-                ; ci != i.rem_dns_key_.end() ; ++ci ) os << static_cast<std::string>(*ci);
-
-        os << " logd_request_id: " << i.logd_request_id_.print_quoted();
-        return os;
+        return Util::format_operation_state("UpdateKeyset",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("handle",handle_))
+        (std::make_pair("registrar",registrar_))
+        (std::make_pair("sponsoring_registrar",sponsoring_registrar_.print_quoted()))
+        (std::make_pair("authinfo",authinfo_.print_quoted()))
+        (std::make_pair("add_tech_contact",Util::format_vector(add_tech_contact_)))
+        (std::make_pair("rem_tech_contact",Util::format_vector(rem_tech_contact_)))
+        (std::make_pair("add_dns_key", Util::format_vector(add_dns_key_)))
+        (std::make_pair("rem_dns_key", Util::format_vector(rem_dns_key_)))
+        (std::make_pair("logd_request_id",logd_request_id_.print_quoted()))
+        );
     }
-
-    std::string UpdateKeyset::to_string()
-    {
-        std::stringstream ss;
-        ss << *this;
-        return ss.str();
-    }
-
 }//namespace Fred

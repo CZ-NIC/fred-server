@@ -46,17 +46,17 @@
 
 
 #include "types/money.h"
-//#include "fredlib/registrar.h"
-#include "fredlib/invoicing/invoice.h"
+//#include "src/fredlib/registrar.h"
+#include "src/fredlib/invoicing/invoice.h"
 
-#include "poll.h"
+#include "src/fredlib/poll.h"
 #include "time_clock.h"
-#include "credit.h"
-#include "file_manager_client.h"
-#include "fredlib/banking/bank_common.h"
-#include "exceptions.h"
+#include "src/fredlib/credit.h"
+#include "src/corba/file_manager_client.h"
+#include "src/fredlib/banking/bank_common.h"
+#include "src/fredlib/exceptions.h"
 
-#include "corba/Admin.hh"
+#include "src/corba/Admin.hh"
 
 #include "test-common-threaded.h"
 
@@ -67,7 +67,7 @@
 #include "cfg/config_handler_decl.h"
 #include <boost/test/unit_test.hpp>
 
-#include "bank_payment_impl.h"
+#include "src/fredlib/banking/bank_payment_impl.h"
 
 
 BOOST_AUTO_TEST_SUITE(TestInvoice)
@@ -1193,7 +1193,7 @@ void testCharge2InvoicesWorker(Database::ID zone_id, unsigned op, unsigned perio
               , zone_cz_id
               , reg->getId()
               , 0 //object_id
-              , boost::posix_time::second_clock::local_time() //crdate //local timestamp
+              , boost::posix_time::second_clock::universal_time() //crdate //utc timestamp
               , exdate.get() - boost::gregorian::months(1)//date_from //local date
               , exdate.get()// date_to //local date
               , Decimal ("900000"));
@@ -1507,7 +1507,7 @@ BOOST_AUTO_TEST_CASE(make_debt)
          , zone_id
          , reg_id
          , 0 //object_id
-         , boost::posix_time::second_clock::local_time() //crdate //local timestamp
+         , boost::posix_time::second_clock::universal_time() //crdate //utc timestamp
          , today - boost::gregorian::months(1)//date_from //local date
          , today // date_to //local date
          , postpaid_op_price )
@@ -1558,7 +1558,7 @@ BOOST_AUTO_TEST_CASE(lower_debt)
          , zone_id
          , reg_id
          , 0 //object_id
-         , boost::posix_time::second_clock::local_time() //crdate //local timestamp
+         , boost::posix_time::second_clock::universal_time() //crdate //utc timestamp
          , today - boost::gregorian::months(1)//date_from //local date
          , today // date_to //local date
          , postpaid_operation )
@@ -1784,7 +1784,7 @@ BOOST_AUTO_TEST_CASE(registrar_outzone_exactly)
          , zone_id
          , registrar->getId()
          , 0 //object_id
-         , boost::posix_time::second_clock::local_time() //crdate //local timestamp
+         , boost::posix_time::second_clock::universal_time() //crdate //utc timestamp
          , today - boost::gregorian::months(1)//date_from //local date
          , today // date_to //local date
          , Decimal("10000") )
@@ -1856,7 +1856,7 @@ BOOST_AUTO_TEST_CASE(registrar_outzone_too_much)
              , zone_id
              , registrar->getId()
              , 0 //object_id
-             , boost::posix_time::second_clock::local_time() //crdate //local timestamp
+             , boost::posix_time::second_clock::universal_time() //crdate //utc timestamp
              , today - boost::gregorian::months(1)//date_from //local date
              , today // date_to //local date
              , Decimal("10000") )

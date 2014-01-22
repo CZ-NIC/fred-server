@@ -1,7 +1,7 @@
 #ifndef _COMMON_NEW_H_
 #define _COMMON_NEW_H_
 
-#include "model/model_filters.h"
+#include "src/model/model_filters.h"
 
 namespace Fred {
 

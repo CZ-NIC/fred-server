@@ -21,15 +21,15 @@
 #include <sstream>
 
 #include "notifier.h"
-#include "old_utils/log.h"
+#include "src/old_utils/log.h"
 #include "log/logger.h"
 
 // mailer manager
-#include "fredlib/mailer.h"
-#include "fredlib/contact_diff.h"
-#include "fredlib/domain_diff.h"
-#include "fredlib/nsset_diff.h"
-#include "fredlib/keyset_diff.h"
+#include "src/fredlib/mailer.h"
+#include "src/fredlib/contact_diff.h"
+#include "src/fredlib/domain_diff.h"
+#include "src/fredlib/nsset_diff.h"
+#include "src/fredlib/keyset_diff.h"
 
 
 //#include "notifier_changes.h"

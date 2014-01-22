@@ -1,7 +1,7 @@
 #ifndef _MODEL_ZONE_H_
 #define _MODEL_ZONE_H_
 
-#include "db_settings.h"
+#include "src/fredlib/db_settings.h"
 #include "model.h"
 
 class ModelZone:

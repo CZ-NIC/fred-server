@@ -19,7 +19,7 @@
 #ifndef CONNECTION_RELEASER_H_
 #define CONNECTION_RELEASER_H_
 
-#include "fredlib/db_settings.h"
+#include "src/fredlib/db_settings.h"
 #include "log/logger.h"
 
 /*

@@ -28,7 +28,7 @@
 
 #include "decimal/decimal.h"
 #include "types/money.h"
-#include "db_settings.h"
+#include "src/fredlib/db_settings.h"
 #include "log/logger.h"
 #include "log/context.h"
 

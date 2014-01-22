@@ -18,12 +18,12 @@
 
 #include <algorithm>
 #include "sql.h"
-#include "poll.h"
-#include "invoicing/invoice.h"
-#include "common_impl.h"
-#include "old_utils/dbsql.h"
-#include "domain.h"
-#include "registrar.h"
+#include "src/fredlib/poll.h"
+#include "src/fredlib/invoicing/invoice.h"
+#include "src/fredlib/common_impl.h"
+#include "src/old_utils/dbsql.h"
+#include "src/fredlib/domain.h"
+#include "src/fredlib/registrar.h"
 #include "util/util.h"
 
 namespace Fred {
@@ -796,11 +796,11 @@ public:
   ManagerImpl(DBSharedPtr _db) :
     db(_db) {
   }
-  unsigned long getMessageCount(std::string registrar) const
+  unsigned long long getMessageCount(std::string registrar) const
   {
       return getMessageCount(db->GetRegistrarID(registrar.c_str()));
   }
-  unsigned long getMessageCount(TID registrar) const {
+  unsigned long long getMessageCount(TID registrar) const {
     ListImpl l(db);
     prepareListWithNext(l, registrar);
     l.makeRealCount();

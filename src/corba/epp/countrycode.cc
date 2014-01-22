@@ -20,7 +20,7 @@
 
 #include "countrycode.h"
 #include <algorithm>
-#include "fredlib/db_settings.h"
+#include "src/fredlib/db_settings.h"
 #include "log/logger.h"
 
 CountryCode::CountryCode()

@@ -22,7 +22,7 @@
  */
 
 
-#include "fredlib/zone/zone.h"
+#include "src/fredlib/zone/zone.h"
 
 
 namespace Fred {
@@ -31,7 +31,7 @@ namespace Zone {
     Data get_zone(OperationContext& ctx, const std::string& zone_name)
     {
         Database::Result zone_res = ctx.get_conn().exec_params(
-            "SELECT id, enum_zone, fqdn  FROM zone WHERE fqdn=lower($1::text) FOR SHARE"
+            "SELECT id, enum_zone, fqdn, dots_max, ex_period_min, ex_period_max FROM zone WHERE fqdn=lower($1::text) FOR SHARE"
             , Database::query_param_list(zone_name));
 
         if(zone_res.size() == 1)
@@ -39,6 +39,9 @@ namespace Zone {
             return Data(static_cast<unsigned long long>(zone_res[0][0])// zone.id
                 , static_cast<bool>(zone_res[0][1])//is_enum_zone
                 , static_cast<std::string>(zone_res[0][2])//zone_name
+                , static_cast<unsigned>(zone_res[0][3])//dots_max
+                , static_cast<unsigned>(zone_res[0][4])//ex_period_min
+                , static_cast<unsigned>(zone_res[0][5])//ex_period_max
                 );
         }
         throw std::runtime_error("not found");

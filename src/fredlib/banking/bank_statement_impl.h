@@ -5,8 +5,8 @@
 #include "bank_statement.h"
 #include "model_bank_statement.h"
 #include "bank_payment_impl.h"
-#include "common_impl_new.h"
-#include "db_settings.h"
+#include "src/fredlib/common_impl_new.h"
+#include "src/fredlib/db_settings.h"
 #include "types/money.h"
 
 
