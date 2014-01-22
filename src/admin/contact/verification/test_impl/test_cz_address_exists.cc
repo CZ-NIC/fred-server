@@ -17,12 +17,11 @@
  */
 
 #include "src/admin/contact/verification/test_impl/test_cz_address_exists.h"
-#include "src/admin/contact/verification/test_impl/test_utils.h"
 #include "src/fredlib/contact/verification/enum_test_status.h"
 
 #include "src/fredlib/opexception.h"
 
-#include "src/fredlib/contact/info_contact_data.h"
+#include "src/fredlib/contact/info_contact.h"
 
 #include "util/util.h"
 
@@ -85,11 +84,9 @@ namespace Admin {
         using std::string;
         using std::vector;
 
-        /* TODO this is only temporary hack before new version of InfoContactHistory is available
-         * see ticket #9544
-         */
+        Fred::OperationContext ctx;
+        const Fred::InfoContactData& contact_data = Fred::HistoryInfoContactByHistoryid(_history_id).exec(ctx).info_contact_data;
 
-        Fred::InfoContactData contact_data = Admin::Utils::get_contact_data(_history_id);
         // can use boost to_lower because in there should be no utf8 chars in country_code
         string country =  boost::algorithm::to_lower_copy(boost::algorithm::trim_copy(static_cast<std::string>(contact_data.country)));
 

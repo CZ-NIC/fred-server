@@ -516,7 +516,8 @@ setup_special_contact::setup_special_contact(
     }
 
     Fred::OperationContext ctx_check;
-    data_ = Fred::InfoContact(contact_handle_, registrar_.registrar_handle).exec(ctx_check);
+    data_ = Fred::InfoContactByHandle(contact_handle_)
+        .exec(ctx_check);
 
     contact_id_ = static_cast<long long>(
         ctx_check.get_conn().exec(

@@ -22,18 +22,14 @@
 #include <boost/foreach.hpp>
 
 #include "src/admin/contact/verification/test_impl/test_email_syntax.h"
-#include "src/admin/contact/verification/test_impl/test_utils.h"
 #include "src/fredlib/contact/verification/enum_test_status.h"
 
-#include "src/fredlib/contact/info_contact_data.h"
+#include "src/fredlib/contact/info_contact.h"
 
 namespace Admin {
     ContactVerificationTest::T_run_result ContactVerificationTestEmailSyntax::run(long _history_id) const {
-        /* TODO this is only temporary hack before new version of InfoContactHistory is available
-         * see ticket #9544
-         */
-
-        Fred::InfoContactData contact_data = Admin::Utils::get_contact_data(_history_id);
+        Fred::OperationContext ctx;
+        const Fred::InfoContactData& contact_data = Fred::HistoryInfoContactByHistoryid(_history_id).exec(ctx).info_contact_data;
 
         if ( boost::regex_match(
                 // if Nullable email is NULL then this casts returns empty string
