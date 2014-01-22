@@ -37,8 +37,8 @@
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
 #include "util/util.h"
-#include "src/fredlib/contact/info_contact_data.h"
-#include "src/fredlib/contact/info_contact_diff.h"
+#include "info_contact_data.h"
+#include "info_contact_diff.h"
 
 namespace Fred
 {
@@ -103,7 +103,6 @@ namespace Fred
         (std::make_pair("disclosenotifyemail",disclosenotifyemail.print_quoted()))
         );
     }
-
 
 }//namespace Fred
 
