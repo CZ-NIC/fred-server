@@ -17,7 +17,7 @@
  */
 
 /**
- *  @file info_keyset_data.h
+ *  @file
  *  common keyset info data
  */
 
@@ -25,17 +25,13 @@
 #define INFO_KEYSET_DATA_H_
 
 #include <string>
-#include <vector>
-#include <set>
 
 #include <boost/date_time/posix_time/ptime.hpp>
-#include <boost/date_time/gregorian/gregorian.hpp>
 
-#include "util/optional_value.h"
 #include "util/db/nullable.h"
 #include "util/printable.h"
 
-#include "src/fredlib/keyset/keyset_dns_key.h"
+#include "keyset_dns_key.h"
 
 namespace Fred
 {

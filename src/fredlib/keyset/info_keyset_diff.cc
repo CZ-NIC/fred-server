@@ -18,27 +18,19 @@
 
 /**
  *  @file
- * keyset info data diff
+ *  keyset info data diff
  */
 
-#include <iterator>
 #include <algorithm>
 #include <string>
 #include <vector>
 #include <set>
-#include <iostream>
 
 #include <boost/algorithm/string.hpp>
-#include <boost/date_time/posix_time/ptime.hpp>
-#include <boost/date_time/posix_time/time_period.hpp>
-#include <boost/date_time/gregorian/gregorian.hpp>
-#include <boost/lexical_cast.hpp>
 
-#include "util/optional_value.h"
-#include "util/db/nullable.h"
 #include "util/util.h"
 #include "util/is_equal_optional_nullable.h"
-#include "src/fredlib/keyset/info_keyset_diff.h"
+#include "info_keyset_diff.h"
 
 namespace Fred
 {
@@ -215,26 +207,3 @@ namespace Fred
     }
 
 }//namespace Fred
-
-/*
- members
-
-    crhistoryid
-    historyid
-    delete_time
-    handle
-    roid
-    sponsoring_registrar_handle
-    create_registrar_handle
-    update_registrar_handle
-    creation_time
-    update_time
-    transfer_time
-    authinfopw
-
-std::vector<DnsKey> dns_keys
-std::vector<std::string> tech_contacts
-
-id
-*/
-

@@ -30,10 +30,8 @@
 #include <utility>
 
 #include <boost/date_time/posix_time/ptime.hpp>
-#include <boost/date_time/gregorian/gregorian.hpp>
 
-#include "src/fredlib/keyset/info_keyset_data.h"
-
+#include "info_keyset_data.h"
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
 #include "util/printable.h"

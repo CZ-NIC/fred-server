@@ -17,27 +17,19 @@
  */
 
 /**
- *  @file info_keyset_data.cc
+ *  @file
  *  common keyset info data
  */
 
-#include <iterator>
 #include <algorithm>
 #include <string>
-#include <vector>
-#include <set>
 
-#include <boost/algorithm/string.hpp>
-#include <boost/date_time/posix_time/ptime.hpp>
-#include <boost/date_time/posix_time/time_period.hpp>
-#include <boost/date_time/gregorian/gregorian.hpp>
+#include <boost/lexical_cast.hpp>
 
-#include "util/optional_value.h"
-#include "util/db/nullable.h"
 #include "util/util.h"
 #include "util/printable.h"
-#include "src/fredlib/keyset/info_keyset_data.h"
-#include "src/fredlib/keyset/info_keyset_diff.h"
+#include "info_keyset_data.h"
+#include "info_keyset_diff.h"
 
 namespace Fred
 {
