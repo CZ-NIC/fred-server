@@ -25,6 +25,7 @@
 
 #include "src/fredlib/domain/delete_domain.h"
 #include "src/fredlib/domain/domain_name.h"
+#include "src/fredlib/zone/zone.h"
 #include "src/fredlib/object/object.h"
 #include "src/fredlib/registrar/registrar_impl.h"
 #include "src/fredlib/opcontext.h"
@@ -41,7 +42,7 @@ namespace Fred
         try
         {
             //remove optional root dot from fqdn
-            std::string no_root_dot_fqdn = Fred::Domain::rem_trailing_dot(fqdn_);
+            std::string no_root_dot_fqdn = Fred::Zone::rem_trailing_dot(fqdn_);
 
             //get domain_id and lock object_registry row for update
             unsigned long long domain_id = get_object_id_by_handle_and_type_with_lock(

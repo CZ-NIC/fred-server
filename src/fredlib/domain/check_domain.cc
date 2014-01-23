@@ -45,7 +45,7 @@ namespace Fred
             if(!Domain::general_domain_name_syntax_check(fqdn_)) return true;
 
             //remove optional root dot from fqdn
-            std::string no_root_dot_fqdn = Fred::Domain::rem_trailing_dot(fqdn_);
+            std::string no_root_dot_fqdn = Fred::Zone::rem_trailing_dot(fqdn_);
 
             //get zone
             Zone::Data zone;
@@ -89,7 +89,7 @@ namespace Fred
         try
         {
             //remove optional root dot from fqdn
-            std::string no_root_dot_fqdn = Fred::Domain::rem_trailing_dot(fqdn_);
+            std::string no_root_dot_fqdn = Fred::Zone::rem_trailing_dot(fqdn_);
 
             //zone
             Zone::Data zone;
@@ -122,7 +122,7 @@ namespace Fred
         try
         {
             //remove optional root dot from fqdn
-            std::string no_root_dot_fqdn = Fred::Domain::rem_trailing_dot(fqdn_);
+            std::string no_root_dot_fqdn = Fred::Zone::rem_trailing_dot(fqdn_);
 
             //get zone
             Zone::Data zone;
@@ -161,7 +161,7 @@ namespace Fred
         try
         {
             //remove optional root dot from fqdn
-            std::string no_root_dot_fqdn = Fred::Domain::rem_trailing_dot(fqdn_);
+            std::string no_root_dot_fqdn = Fred::Zone::rem_trailing_dot(fqdn_);
 
             //check blacklist regexp for match with fqdn
             Database::Result bl_res  = ctx.get_conn().exec_params(
@@ -187,7 +187,7 @@ namespace Fred
         try
         {
             //remove optional root dot from fqdn
-            std::string no_root_dot_fqdn = Fred::Domain::rem_trailing_dot(fqdn_);
+            std::string no_root_dot_fqdn = Fred::Zone::rem_trailing_dot(fqdn_);
 
             //get zone
             Zone::Data zone;

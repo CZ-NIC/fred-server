@@ -21,24 +21,17 @@
  * domain info data diff
  */
 
-#include <iterator>
 #include <algorithm>
 #include <string>
 #include <vector>
 #include <set>
-#include <iostream>
 
 #include <boost/algorithm/string.hpp>
-#include <boost/date_time/posix_time/ptime.hpp>
-#include <boost/date_time/posix_time/time_period.hpp>
-#include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/lexical_cast.hpp>
 
-#include "util/optional_value.h"
-#include "util/db/nullable.h"
 #include "util/util.h"
 #include "util/is_equal_optional_nullable.h"
-#include "src/fredlib/domain/info_domain_diff.h"
+#include "info_domain_diff.h"
 
 namespace Fred
 {
@@ -124,10 +117,9 @@ namespace Fred
             diff.delete_time = std::make_pair(first.delete_time,second.delete_time);
         }
 
-        if(first.fqdn.compare(second.fqdn) != 0)
+        if(boost::algorithm::to_lower_copy(first.fqdn).compare(boost::algorithm::to_lower_copy(second.fqdn)) != 0)
         {
-            diff.fqdn = std::make_pair(boost::algorithm::to_lower_copy(first.fqdn)
-                , boost::algorithm::to_lower_copy(second.fqdn));
+            diff.fqdn = std::make_pair(first.fqdn, second.fqdn);
         }
 
         if(first.roid.compare(second.roid) != 0)
@@ -214,24 +206,6 @@ namespace Fred
 
         if(lhs_admin_contacts != rhs_admin_contacts)
         {
-            /* code to extract difference would look like this:
-            std::set<std::string> lhs_rhs;
-            std::set<std::string> rhs_lhs;
-
-            std::set_difference(lhs_admin_contacts.begin(), lhs_admin_contacts.end()
-                , rhs_admin_contacts.begin(), rhs_admin_contacts.end()
-                , std::inserter(lhs_rhs, lhs_rhs.end()));
-
-            std::set_difference(rhs_admin_contacts.begin(), rhs_admin_contacts.end()
-                , lhs_admin_contacts.begin(), lhs_admin_contacts.end()
-                , std::inserter(rhs_lhs, rhs_lhs.end()));
-
-            std::cout << "admin_contacts differ\nlhs - rhs: ";
-            std::copy(lhs_rhs.begin(),lhs_rhs.end(),std::ostream_iterator<std::string>(std::cout, " "));
-            std::cout << "\nrhs - lhs: ";
-            std::copy(rhs_lhs.begin(),rhs_lhs.end(),std::ostream_iterator<std::string>(std::cout, " "));
-            std::cout << std::endl;
-            */
             diff.admin_contacts = std::make_pair(first.admin_contacts,second.admin_contacts);
         }
 
@@ -259,31 +233,3 @@ namespace Fred
     }
 
 }//namespace Fred
-
-/*
- members
-
-    crhistoryid
-    historyid
-    delete_time
-    handle
-    roid
-    sponsoring_registrar_handle
-    create_registrar_handle
-    update_registrar_handle
-    creation_time
-    update_time
-    transfer_time
-    authinfopw
-
-    registrant_handle
-    nsset_handle
-    keyset_handle
-    expiration_date
-    admin_contacts
-    enum_domain_validation
-    outzone_time
-    cancel_time
-
-    id
-*/

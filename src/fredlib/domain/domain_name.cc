@@ -88,11 +88,6 @@ bool general_domain_name_syntax_check(const std::string& fqdn)
     return true;
 }
 
-std::string rem_trailing_dot(const std::string& fqdn)
-{
-    if(!fqdn.empty() && fqdn.at(fqdn.size()-1) == '.') return fqdn.substr(0,fqdn.size()-1);
-    return fqdn;
-}
 
 //domain name validator
 DomainNameValidator& DomainNameValidator::set_zone_name(const DomainName& _zone_name) {
@@ -118,7 +113,7 @@ void DomainName::init(const char* const _fqdn) {
         throw ExceptionInvalidFqdn();
     }
 
-    temp_fqdn = rem_trailing_dot(temp_fqdn);
+    temp_fqdn = Fred::Zone::rem_trailing_dot(temp_fqdn);
     boost::split(labels_,temp_fqdn , boost::is_any_of("."));
 }
 

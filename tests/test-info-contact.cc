@@ -52,6 +52,7 @@
 #include "src/fredlib/contact/create_contact.h"
 #include "src/fredlib/contact/info_contact.h"
 #include "src/fredlib/contact/info_contact_diff.h"
+#include "src/fredlib/contact/info_contact_impl.h"
 #include "src/fredlib/nsset/create_nsset.h"
 #include "src/fredlib/keyset/create_keyset.h"
 #include "src/fredlib/domain/create_domain.h"

@@ -21,24 +21,14 @@
  * contact info data diff
  */
 
-#include <iterator>
 #include <algorithm>
 #include <string>
-#include <vector>
-#include <set>
-#include <iostream>
 
 #include <boost/algorithm/string.hpp>
-#include <boost/date_time/posix_time/ptime.hpp>
-#include <boost/date_time/posix_time/time_period.hpp>
-#include <boost/date_time/gregorian/gregorian.hpp>
-#include <boost/lexical_cast.hpp>
 
-#include "util/optional_value.h"
-#include "util/db/nullable.h"
 #include "util/util.h"
 #include "util/is_equal_optional_nullable.h"
-#include "src/fredlib/contact/info_contact_diff.h"
+#include "info_contact_diff.h"
 
 namespace Fred
 {
@@ -154,10 +144,10 @@ namespace Fred
             diff.delete_time = std::make_pair(first.delete_time,second.delete_time);
         }
 
-        if(first.handle.compare(second.handle) != 0)
+        if(boost::algorithm::to_upper_copy(first.handle)
+            .compare(boost::algorithm::to_upper_copy(second.handle)) != 0)
         {
-            diff.handle = std::make_pair(boost::algorithm::to_upper_copy(first.handle)
-                , boost::algorithm::to_upper_copy(second.handle));
+            diff.handle = std::make_pair(first.handle, second.handle);
         }
 
         if(first.roid.compare(second.roid) != 0)

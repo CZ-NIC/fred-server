@@ -47,12 +47,10 @@
 #include "src/fredlib/registrar.h"
 #include "src/fredlib/nsset/info_nsset.h"
 #include "src/fredlib/nsset/info_nsset_diff.h"
-#include "src/fredlib/domain/update_domain.h"
+#include "src/fredlib/nsset/info_nsset_impl.h"
 #include "src/fredlib/nsset/update_nsset.h"
-#include "src/fredlib/contact/delete_contact.h"
 #include "src/fredlib/contact/create_contact.h"
 #include "src/fredlib/nsset/create_nsset.h"
-#include "src/fredlib/domain/create_domain.h"
 #include "src/fredlib/opexception.h"
 #include "util/util.h"
 

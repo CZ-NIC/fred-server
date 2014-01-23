@@ -29,6 +29,7 @@
 
 #include "src/fredlib/domain/update_domain.h"
 #include "src/fredlib/domain/domain_name.h"
+#include "src/fredlib/zone/zone.h"
 #include "src/fredlib/object/object.h"
 #include "src/fredlib/registrar/registrar_impl.h"
 #include "src/fredlib/opcontext.h"
@@ -178,7 +179,7 @@ namespace Fred
                 , &Exception::set_unknown_registrar_handle);
 
             //remove optional root dot from fqdn
-            std::string no_root_dot_fqdn = Fred::Domain::rem_trailing_dot(fqdn_);
+            std::string no_root_dot_fqdn = Fred::Zone::rem_trailing_dot(fqdn_);
 
         //get domain_id, ENUM flag and lock object_registry row for update
         unsigned long long domain_id =0;
