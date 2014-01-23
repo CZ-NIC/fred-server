@@ -706,6 +706,10 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/nsset/info_nsset_data.cc \
 		src/fredlib/nsset/info_nsset_diff.h \
 		src/fredlib/nsset/info_nsset_diff.cc \
+		src/fredlib/nsset/info_nsset_impl.cc \
+		src/fredlib/nsset/info_nsset_impl.h \
+		src/fredlib/nsset/info_nsset_output.cc \
+		src/fredlib/nsset/info_nsset_output.h \
 		src/fredlib/keyset/update_keyset.h \
 		src/fredlib/keyset/keyset_dns_key.h \
 		src/fredlib/keyset/update_keyset.cc \
@@ -784,6 +788,7 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/keyset/delete_keyset.h \
 		src/fredlib/registrar/registrar_impl.h \
 		src/fredlib/registrar/registrar_impl.cc
+
 
 #
 # src/fredlib/libfred.a
