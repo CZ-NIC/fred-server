@@ -43,14 +43,14 @@ const std::string server_name = "test-contact_verification-create_test_unit";
 /**
  passing mandatory values to constructor
  @pre valid check handle
- @pre valid test name
+ @pre valid test handle
  @post correct values present in to_string() output
  */
 BOOST_AUTO_TEST_CASE(test_Ctor_mandatory)
 {
     typedef std::pair<std::string, std::string> testcase_set;
     std::vector< testcase_set > testdata;
-    testdata.push_back( std::make_pair("handle15747", "testname32174") );
+    testdata.push_back( std::make_pair("handle15747", "testhandle32174") );
 
     for( std::vector<testcase_set>::iterator it = testdata.begin(); it != testdata.end(); ++it) {
         Fred::CreateContactTest dummy(it->first, it->second);
@@ -59,15 +59,15 @@ BOOST_AUTO_TEST_CASE(test_Ctor_mandatory)
             serialized.find("check_handle_: " + it->first ) != std::string::npos,
             "Cannot find handle \"" + it->first + "\" in " + serialized + ".");
         BOOST_CHECK_MESSAGE(
-            serialized.find("test_name_: " + it->second ) != std::string::npos,
-            "Cannot find testname \"" + it->second + "\" in " + serialized + ".");
+            serialized.find("test_handle_: " + it->second ) != std::string::npos,
+            "Cannot find test handle \"" + it->second + "\" in " + serialized + ".");
     }
 }
 
 /**
  passing mandatory and optional values to constructor
  @pre valid check handle
- @pre valid test name
+ @pre valid test handle
  @pre valid logd request id
  @post correct values present in to_string() output
  */
@@ -75,7 +75,7 @@ BOOST_AUTO_TEST_CASE(test_Ctor_optional)
 {
     typedef boost::tuple<std::string, std::string, long long> testcase_set;
     std::vector<testcase_set> testdata;
-    testdata.push_back( boost::make_tuple("handle33440", "testname24274", 678643) );
+    testdata.push_back( boost::make_tuple("handle33440", "testhandle24274", 678643) );
 
     for( std::vector<testcase_set>::iterator it = testdata.begin(); it != testdata.end(); ++it) {
         Fred::CreateContactTest dummy(it->get<0>(), it->get<1>(), it->get<2>());
@@ -84,8 +84,8 @@ BOOST_AUTO_TEST_CASE(test_Ctor_optional)
             serialized.find("check_handle_: " + it->get<0>() ) != std::string::npos,
             "Cannot find handle \"" + it->get<0>() + "\" in " + serialized + ".");
         BOOST_CHECK_MESSAGE(
-            serialized.find("test_name_: " + it->get<1>() ) != std::string::npos,
-            "Cannot find testname \"" + it->get<1>() + "\" in " + serialized + ".");
+            serialized.find("test_handle_: " + it->get<1>() ) != std::string::npos,
+            "Cannot find test handle \"" + it->get<1>() + "\" in " + serialized + ".");
         BOOST_CHECK_MESSAGE(
             serialized.find("logd_request_id_: " + Nullable<long long>( it->get<2>() ).print_quoted() ) != std::string::npos,
             "Cannot find logd request id \"" + Nullable<long long>( it->get<2>() ).print_quoted() + "\" in " + serialized + ".");
@@ -95,7 +95,7 @@ BOOST_AUTO_TEST_CASE(test_Ctor_optional)
 /**
  passing mandatory values to constructor and optional values to setter
  @pre valid check handle
- @pre valid test name
+ @pre valid test handle
  @pre valid logd request id
  @post correct values present in to_string() output
  */
@@ -103,7 +103,7 @@ BOOST_AUTO_TEST_CASE(test_Setter)
 {
     typedef boost::tuple<std::string, std::string, long long> testcase_set;
     std::vector<testcase_set> testdata;
-    testdata.push_back( boost::make_tuple("handle33440", "testname24274", 678643) );
+    testdata.push_back( boost::make_tuple("handle33440", "testhandle24274", 678643) );
 
     for( std::vector<testcase_set>::iterator it = testdata.begin(); it != testdata.end(); ++it) {
         Fred::CreateContactTest dummy(it->get<0>(), it->get<1>());
@@ -114,8 +114,8 @@ BOOST_AUTO_TEST_CASE(test_Setter)
             serialized.find("check_handle_: " + it->get<0>() ) != std::string::npos,
             "Cannot find handle \"" + it->get<0>() + "\" in " + serialized + ".");
         BOOST_CHECK_MESSAGE(
-            serialized.find("test_name_: " + it->get<1>() ) != std::string::npos,
-            "Cannot find testname \"" + it->get<1>() + "\" in " + serialized + ".");
+            serialized.find("test_handle_: " + it->get<1>() ) != std::string::npos,
+            "Cannot find testhandle \"" + it->get<1>() + "\" in " + serialized + ".");
         BOOST_CHECK_MESSAGE(
             serialized.find("logd_request_id_: " + Nullable<long long>( it->get<2>() ).print_quoted() ) != std::string::npos,
             "Cannot find logd request id \"" + Nullable<long long>( it->get<2>() ).print_quoted() + "\" in " + serialized + ".");
@@ -125,7 +125,7 @@ BOOST_AUTO_TEST_CASE(test_Setter)
 /**
  passing mandatory and optional values to constructor and resetting optional values by setter
  @pre valid check handle
- @pre valid test name
+ @pre valid test handle
  @pre valid logd request id
  @post correct values present in to_string() output
  */
@@ -133,7 +133,7 @@ BOOST_AUTO_TEST_CASE(test_Ctor_versus_Setter)
 {
     typedef boost::tuple<std::string, std::string, long long> testcase_set;
     std::vector<testcase_set> testdata;
-    testdata.push_back( boost::make_tuple("handle33440", "testname24274", 678643) );
+    testdata.push_back( boost::make_tuple("handle33440", "testhandle24274", 678643) );
 
     for( std::vector<testcase_set>::iterator it = testdata.begin(); it != testdata.end(); ++it) {
         Fred::CreateContactTest etalon(it->get<0>(), it->get<1>(), it->get<2>());
@@ -150,7 +150,7 @@ BOOST_AUTO_TEST_CASE(test_Ctor_versus_Setter)
 /**
  passing optional value to setter and resetting it by second call to another value
  @pre valid check handle
- @pre valid test name
+ @pre valid test handle
  @pre valid logd request id
  @pre another valid logd request id
  @post correct values present in to_string() output
@@ -159,7 +159,7 @@ BOOST_AUTO_TEST_CASE(test_Setter_reset)
 {
     typedef boost::tuple<std::string, std::string, long long, long long> testcase_set;
     std::vector<testcase_set> testdata;
-    testdata.push_back( boost::make_tuple("handle33440", "testname24274", 678643, 354315) );
+    testdata.push_back( boost::make_tuple("handle33440", "testhandle24274", 678643, 354315) );
 
     for( std::vector<testcase_set>::iterator it = testdata.begin(); it != testdata.end(); ++it) {
         Fred::CreateContactTest dummy(it->get<0>(), it->get<1>());
@@ -171,8 +171,8 @@ BOOST_AUTO_TEST_CASE(test_Setter_reset)
             serialized.find("check_handle_: " + it->get<0>() ) != std::string::npos,
             "Cannot find handle \"" + it->get<0>() + "\" in " + serialized + ".");
         BOOST_CHECK_MESSAGE(
-            serialized.find("test_name_: " + it->get<1>() ) != std::string::npos,
-            "Cannot find testname \"" + it->get<1>() + "\" in " + serialized + ".");
+            serialized.find("test_handle_: " + it->get<1>() ) != std::string::npos,
+            "Cannot find testhandle \"" + it->get<1>() + "\" in " + serialized + ".");
         BOOST_CHECK_MESSAGE(
             serialized.find("logd_request_id_: " + Nullable<long long>( it->get<2>() ).print_quoted() ) == std::string::npos,
             "Found invalid logd request id \"" + Nullable<long long>( it->get<2>() ).print_quoted() + "\" in " + serialized + ".");

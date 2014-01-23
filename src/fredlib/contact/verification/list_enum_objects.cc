@@ -31,11 +31,14 @@ namespace Fred
         try {
             Fred::OperationContext ctx;
 
-            // TODO lang
-            Database::Result names_res = ctx.get_conn().exec(
+            Database::Result names_res = ctx.get_conn().exec_params(
                 "SELECT "
-                "   name, description "
-                "   FROM enum_contact_test_status ");
+                "   handle, name, description "
+                "   FROM enum_contact_test_status AS status "
+                "       JOIN enum_contact_test_status_localization USING (id) "
+                "   WHERE lang = $1::varchar",
+                Database::query_param_list(lang)
+            );
 
             std::vector<test_result_status> result;
 
@@ -44,8 +47,8 @@ namespace Fred
             for(Database::Result::Iterator it = names_res.begin(); it != names_res.end(); ++it) {
                result.push_back(
                    test_result_status(
+                       static_cast<std::string>( (*it)["handle"] ),
                        static_cast<std::string>( (*it)["name"] ),
-                       static_cast<std::string>( (*it)["name"] ), // TODO tady casem preklad
                        static_cast<std::string>( (*it)["description"] )
                    )
                );
@@ -62,11 +65,13 @@ namespace Fred
         try {
             Fred::OperationContext ctx;
 
-            // TODO lang
-            Database::Result names_res = ctx.get_conn().exec(
+            Database::Result names_res = ctx.get_conn().exec_params(
                 "SELECT "
-                "   name, description "
-                "   FROM enum_contact_check_status ");
+                "   handle, name, description "
+                "   FROM enum_contact_check_status "
+                "       JOIN enum_contact_check_status_localization USING (id) ",
+                Database::query_param_list(lang)
+            );
 
             std::vector<check_status> result;
 
@@ -75,8 +80,8 @@ namespace Fred
             for(Database::Result::Iterator it = names_res.begin(); it != names_res.end(); ++it) {
                 result.push_back(
                     check_status(
+                        static_cast<std::string>( (*it)["handle"] ),
                         static_cast<std::string>( (*it)["name"] ),
-                        static_cast<std::string>( (*it)["name"] ), // TODO tady casem preklad
                         static_cast<std::string>( (*it)["description"] )
                     )
                 );
@@ -93,26 +98,40 @@ namespace Fred
         try {
             Fred::OperationContext ctx;
 
-            // TODO lang
+            Database::QueryParams params;
+            params.push_back(lang);
+            std::string lang_position = boost::lexical_cast<std::string>(params.size());
+
             std::string query =
                 "SELECT "
-                "   enum_c_t.name           AS name_, "
-                "   enum_c_t.description    AS description_"
-                "   FROM enum_contact_test AS enum_c_t ";
-            Database::Result names_res;
-            if(testsuite_name.empty()) {
-                names_res = ctx.get_conn().exec(query);
-            } else {
+                "   enum_c_t.handle             AS handle_, "
+                "   enum_c_t_loc.name           AS name_, "
+                "   enum_c_t_loc.description    AS description_ "
+                "   FROM enum_contact_test AS enum_c_t "
+                "       JOIN enum_contact_test_localization AS enum_c_t_loc USING(id) ";
+
+            if(testsuite_name.empty() == false) {
+                params.push_back(testsuite_name);
+                std::string testsuite_position = boost::lexical_cast<std::string>(params.size());
+
                 query +=
                         "   JOIN contact_testsuite_map AS c_t_m ON c_t_m.enum_contact_test_id = enum_c_t.id "
                         "   JOIN enum_contact_testsuite AS enum_c_tst ON c_t_m.enum_contact_testsuite_id = enum_c_tst.id "
-                        // TODO tady se asi bude menit sloupec ve where
-                        "   WHERE enum_c_tst.name = $1::varchar";
-                names_res = ctx.get_conn().exec_params(
-                    query,
-                    Database::query_param_list(testsuite_name)
-                );
+                        "   WHERE enum_c_tst.handle = $"+testsuite_position+"::varchar ";
+                query +=
+                        "       AND ";
+            } else {
+                query +=
+                        "   WHERE ";
             }
+            query +=
+                "       enum_c_t_loc.lang = $"+lang_position+"::varchar ";
+
+
+            Database::Result names_res = ctx.get_conn().exec_params(
+                query,
+                params
+            );
 
             std::vector<test_definition> result;
 
@@ -121,8 +140,8 @@ namespace Fred
             for(Database::Result::Iterator it = names_res.begin(); it != names_res.end(); ++it) {
                 result.push_back(
                     test_definition(
+                        static_cast<std::string>( (*it)["handle_"] ),
                         static_cast<std::string>( (*it)["name_"] ),
-                        static_cast<std::string>( (*it)["name_"] ), // TODO tady casem preklad
                         static_cast<std::string>( (*it)["description_"] )
                     )
                 );
@@ -139,11 +158,13 @@ namespace Fred
         try {
             Fred::OperationContext ctx;
 
-            // TODO lang
-            Database::Result names_res = ctx.get_conn().exec(
+            Database::Result names_res = ctx.get_conn().exec_params(
                 "SELECT "
-                "   name, description "
-                "   FROM enum_contact_testsuite ");
+                "   handle, name, description "
+                "   FROM enum_contact_testsuite "
+                "       JOIN enum_contact_testsuite_localization "
+                "   WHERE lang = $1::varchar ",
+                Database::query_param_list(lang));
 
             std::vector<testsuite_definition> result;
 
@@ -152,8 +173,8 @@ namespace Fred
             for(Database::Result::Iterator it = names_res.begin(); it != names_res.end(); ++it) {
                 result.push_back(
                     testsuite_definition(
+                        static_cast<std::string>( (*it)["handle"] ),
                         static_cast<std::string>( (*it)["name"] ),
-                        static_cast<std::string>( (*it)["name"] ), // TODO tady casem preklad
                         static_cast<std::string>( (*it)["description"] )
                     )
                 );

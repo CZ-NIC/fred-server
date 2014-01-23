@@ -36,19 +36,19 @@ namespace Fred
 {
     CreateContactCheck::CreateContactCheck(
         long long           _contact_id,
-        const std::string& _testsuite_name
+        const std::string& _testsuite_handle
     ) :
         contact_id_(_contact_id),
-        testsuite_name_(_testsuite_name)
+        testsuite_handle_(_testsuite_handle)
     { }
 
     CreateContactCheck::CreateContactCheck(
         long long           _contact_id,
-        const std::string&  _testsuite_name,
+        const std::string&  _testsuite_handle,
         Optional<long long> _logd_request_id
     ) :
         contact_id_(_contact_id),
-        testsuite_name_(_testsuite_name),
+        testsuite_handle_(_testsuite_handle),
         logd_request_id_(
             ( _logd_request_id.isset() )
                 ?
@@ -151,11 +151,11 @@ namespace Fred
         Database::Result testsuite_res = _ctx.get_conn().exec_params(
             "SELECT id "
             "   FROM enum_contact_testsuite "
-            "   WHERE name=$1::varchar; ",
-            Database::query_param_list(testsuite_name_)
+            "   WHERE handle=$1::varchar; ",
+            Database::query_param_list(testsuite_handle_)
         );
         if(testsuite_res.size() != 1) {
-            throw ExceptionUnknownTestsuiteName();
+            throw ExceptionUnknownTestsuiteHandle();
         }
         long testsuite_id = static_cast<long>(testsuite_res[0]["id"]);
 
@@ -172,7 +172,7 @@ namespace Fred
                 "   $1::uuid,"
                 "   $2::int,"
                 "   $3::int,"
-                "   (SELECT id FROM enum_contact_check_status WHERE name=$4::varchar),"
+                "   (SELECT id FROM enum_contact_check_status WHERE handle=$4::varchar),"
                 "   $5::bigint"
                 ");",
                 Database::query_param_list
@@ -191,7 +191,7 @@ namespace Fred
             }
 
             if(what_string.find("contact_check_fk_Enum_contact_testsuite_id") != std::string::npos) {
-                throw ExceptionUnknownTestsuiteName();
+                throw ExceptionUnknownTestsuiteHandle();
             }
 
             // problem was elsewhere so let it propagate
@@ -204,7 +204,7 @@ namespace Fred
     std::ostream& operator<<(std::ostream& os, const CreateContactCheck& i) {
         os << "#CreateContactCheck"
             << " contact_id_: "         << i.contact_id_
-            << " testsuite_name_: "     << i.testsuite_name_
+            << " testsuite_handle_: "     << i.testsuite_handle_
             << " logd_request_id_: "    << i.logd_request_id_.print_quoted();
 
         return os;

@@ -48,7 +48,7 @@ BOOST_AUTO_TEST_CASE(test_Exec_max_count)
 /**
  testing filters on testsuite and/or contact
  @pre existing check handles related to various testsuites and contacts
- @pre existing testsuite name
+ @pre existing testsuite handle
  @pre existing contact id
  @post correct values present in exec() output
  */
@@ -60,7 +60,7 @@ BOOST_AUTO_TEST_CASE(test_Exec_filters)
 /**
  testing filters on testsuite and/or contact
  @pre existing check handles related to various testsuites and contacts
- @pre non-existent testsuite name
+ @pre non-existent testsuite handle
  @pre non-existent contact id
  @post empty exec() output (and no exception thrown)
  */

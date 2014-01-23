@@ -38,35 +38,35 @@ namespace Fred
     class CreateContactCheck
     {
             long long           contact_id_;
-            std::string         testsuite_name_;
+            std::string         testsuite_handle_;
             Nullable<long long> logd_request_id_;
 
         public:
             struct ExceptionUnknownContactId : virtual Fred::OperationException {
                 const char* what() const throw() {return "unknown contact id";}
             };
-            struct ExceptionUnknownTestsuiteName : virtual Fred::OperationException {
-                const char* what() const throw() {return "unknown testsuite name";}
+            struct ExceptionUnknownTestsuiteHandle : virtual Fred::OperationException {
+                const char* what() const throw() {return "unknown testsuite handle";}
             };
 
             /**
              * constructor only with mandatory parameters
              * @param _contact_id       identifies contact to be checked - current "snapshot" of historical data is used during check.
-             * @param _testsuite_name   denotes set (by it's name) of tests to be run when this check is started.
+             * @param _testsuite_handle   denotes set (by it's handle) of tests to be run when this check is started.
              */
             CreateContactCheck(
                 long long          _contact_id,
-                const std::string& _testsuite_name
+                const std::string& _testsuite_handle
             );
             /**
              * constructor with all available parameters including optional ones
              * @param _contact_id       identifies contact to be checked - current "snapshot" of historical data is used during check.
-             * @param _testsuite_name   denotes set (by it's name) of tests to be run when this check is started.
+             * @param _testsuite_name   denotes set (by it's handle) of tests to be run when this check is started.
              * @param _logd_request_id  identifies (by id) optional log entry in logd related to this operation.
              */
             CreateContactCheck(
                 long long           _contact_id,
-                const std::string&  _testsuite_name,
+                const std::string&  _testsuite_handle,
                 Optional<long long> _logd_request_id
             );
 

@@ -39,7 +39,7 @@ namespace Fred
      *
      * consists of:
      * + handle
-     * + testsuite name
+     * + testsuite handle
      * + contact history id
      * + create time
      * + check state history []
@@ -47,7 +47,7 @@ namespace Fred
      *    + update time
      *    + logd request id
      * + test result data []
-     *    + test name
+     *    + test handle
      *    + create time
      *    + test state history []
      *       + status
@@ -57,7 +57,7 @@ namespace Fred
      */
     struct InfoContactCheckOutput {
         struct ContactTestResultState {
-            std::string              status_name;
+            std::string              status_handle;
             Nullable<std::string>    error_msg;
             boost::posix_time::ptime local_update_time;
             Nullable<long long>      logd_request_id;
@@ -69,7 +69,7 @@ namespace Fred
         };
 
         struct ContactTestResultData {
-            std::string                         test_name;
+            std::string                         test_handle;
             boost::posix_time::ptime            local_create_time;
             std::vector<ContactTestResultState> state_history;  /* current state is also included */
 
@@ -80,7 +80,7 @@ namespace Fred
         };
 
         struct ContactCheckState {
-            std::string              status_name;
+            std::string              status_handle;
             boost::posix_time::ptime local_update_time;
             Nullable<long long>      logd_request_id;
 
@@ -92,7 +92,7 @@ namespace Fred
 
 
         std::string                        handle;
-        std::string                        testsuite_name;
+        std::string                        testsuite_handle;
         long                               contact_history_id;
         boost::posix_time::ptime           local_create_time;
         std::vector<ContactCheckState>     check_state_history; /* current state is also included */

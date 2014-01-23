@@ -334,7 +334,7 @@ struct contact_verification_enqueue_check_impl
           throw ReturnCode(
               std::string("given contact id (") + boost::lexical_cast<std::string>(params.contact_id) + ") is unknown",
               1);
-      } catch (Fred::CreateContactCheck::ExceptionUnknownTestsuiteName& e) {
+      } catch (Fred::CreateContactCheck::ExceptionUnknownTestsuiteHandle& e) {
           throw ReturnCode(
               std::string("given testsuite name (") + params.testsuite_name + ") is unknown",
               1);

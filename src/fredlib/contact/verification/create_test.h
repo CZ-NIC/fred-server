@@ -37,15 +37,15 @@ namespace Fred
     class CreateContactTest
     {
         std::string         check_handle_;
-        std::string         test_name_;
+        std::string         test_handle_;
         Nullable<long long> logd_request_id_;
 
     public:
         struct ExceptionUnknownCheckHandle : virtual Fred::OperationException {
             const char* what() const throw() {return "unknown check handle";}
         };
-        struct ExceptionUnknownTestName : virtual Fred::OperationException {
-            const char* what() const throw() {return "unknown test name";}
+        struct ExceptionUnknownTestHandle : virtual Fred::OperationException {
+            const char* what() const throw() {return "unknown test handle";}
         };
         struct ExceptionTestNotInMyTestsuite : virtual Fred::OperationException {
             const char* what() const throw() {return "test is not in testsuite of this check";}
@@ -57,21 +57,21 @@ namespace Fred
         /**
          * constructor only with mandatory parameters
          * @param _check_handle     identifies which contact_check this test belongs to (by check's handle).
-         * @param _test_name        denotes type of test (by it's name) to be run. Allowed values are in enum_contact_test.name in database.
+         * @param _test_name        denotes type of test (by it's handle) to be run. Allowed values are in enum_contact_test.name in database.
          */
         CreateContactTest(
             const std::string& _check_handle,
-            const std::string& _test_name
+            const std::string& _test_handle
         );
         /**
          * constructor with all available parameters including optional ones
          * @param _check_handle     identifies which contact_check this test belongs to (by check's handle).
-         * @param _test_name        denotes type of test (by it's name) to be run. Allowed values are in enum_contact_test.name in database.
+         * @param _test_name        denotes type of test (by it's handle) to be run. Allowed values are in enum_contact_test.name in database.
          * @param _logd_request_id  identifies (by id) optional log entry in logd related to this operation.
          */
         CreateContactTest(
             const std::string&  _check_handle,
-            const std::string&  _test_name,
+            const std::string&  _test_handle,
             Optional<long long> _logd_request_id
         );
 

@@ -42,7 +42,7 @@
 
 
 class DummyTestReturning: public Admin::ContactVerificationTest {
-        std::string name;
+        std::string handle;
         std::string description;
         long id;
         std::string return_status;
@@ -54,15 +54,15 @@ class DummyTestReturning: public Admin::ContactVerificationTest {
             // prevent name collisions
             while(true) {
                 try {
-                    name = "DUMMY_TEST_" + return_status + "_" + RandomDataGenerator().xnumstring(15);
-                    description = name + "_DESCRIPTION";
+                    handle = "DUMMY_TEST_" + return_status + "_" + RandomDataGenerator().xnumstring(15);
+                    description = handle + "_DESCRIPTION";
 
                     Fred::OperationContext ctx;
                     id = static_cast<long>(
                          ctx.get_conn().exec(
                              "INSERT INTO enum_contact_test "
-                             "   (name, description) "
-                             "   VALUES ('" + name + "', '" + description + "') "
+                             "   (id, handle) "
+                             "   VALUES ("+RandomDataGenerator().xnumstring(9)+", '" + handle + "') "
                              "   RETURNING id;"
                          )[0]["id"]
                     );
@@ -74,12 +74,12 @@ class DummyTestReturning: public Admin::ContactVerificationTest {
             }
         }
         ContactVerificationTest::T_run_result run(long _history_id) const { return std::make_pair(return_status, return_status); }
-        std::string get_name() const { return name; }
+        std::string get_name() const { return handle; }
 };
 
 /* Jack the Thrower */
 class DummyThrowingTest: public Admin::ContactVerificationTest {
-    std::string name_;
+    std::string handle_;
     std::string description_;
     long id_;
 
@@ -91,12 +91,12 @@ class DummyThrowingTest: public Admin::ContactVerificationTest {
                 try {
                     Fred::OperationContext ctx;
 
-                    name_ = "DUMMY_THROWING_TEST_" + RandomDataGenerator().xnumstring(15);
-                    description_ = name_ + "_DESCRIPTION";
+                    handle_ = "DUMMY_THROWING_TEST_" + RandomDataGenerator().xnumstring(15);
+                    description_ = handle_ + "_DESCRIPTION";
                     res = ctx.get_conn().exec(
                         "INSERT INTO enum_contact_test "
-                        "   (name, description) "
-                        "   VALUES ('" + name_ + "', '" + description_ + "') "
+                        "   (id, handle) "
+                        "   VALUES ("+RandomDataGenerator().xnumstring(9)+", '" + handle_ + "') "
                         "   RETURNING id AS id_; ");
 
                     if(res.size()==0) {
@@ -115,7 +115,7 @@ class DummyThrowingTest: public Admin::ContactVerificationTest {
         ContactVerificationTest::T_run_result run(long _history_id) const {
             throw std::runtime_error("not exactly a feature");
         }
-        std::string get_name() const { return name_; }
+        std::string get_name() const { return handle_; }
 };
 
 #endif // #include guard end

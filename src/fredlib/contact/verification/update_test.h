@@ -36,8 +36,8 @@ namespace Fred
      */
     class UpdateContactTest {
             std::string           check_handle_;
-            std::string           test_name_;
-            std::string           status_name_;
+            std::string           test_handle_;
+            std::string           status_handle_;
             Nullable<long long>   logd_request_id_;
             Nullable<std::string> error_msg_;
 
@@ -45,14 +45,14 @@ namespace Fred
             struct ExceptionUnknownCheckHandle : virtual Fred::OperationException {
                 const char* what() const throw() {return "unknown check handle";}
             };
-            struct ExceptionUnknownTestName : virtual Fred::OperationException {
-                const char* what() const throw() {return "unknown test name";}
+            struct ExceptionUnknownTestHandle : virtual Fred::OperationException {
+                const char* what() const throw() {return "unknown test handle";}
             };
             struct ExceptionUnknownCheckTestPair : virtual Fred::OperationException {
-                const char* what() const throw() {return "unknown check_handle, test_name pair";}
+                const char* what() const throw() {return "unknown check_handle, test_handle pair";}
             };
-            struct ExceptionUnknownStatusName : virtual Fred::OperationException {
-                const char* what() const throw() {return "unknown status name";}
+            struct ExceptionUnknownStatusHandle : virtual Fred::OperationException {
+                const char* what() const throw() {return "unknown status handle";}
             };
 
             /**
@@ -62,8 +62,8 @@ namespace Fred
              * @param _status_name      denotes status to be set by it's name. Allowed values are in enum_test_status.h or enum_contact_test_status.name in database.
              */
             UpdateContactTest( const std::string&    _check_handle,
-                               const std::string&    _test_name,
-                               const std::string&    _status_name);
+                               const std::string&    _test_handle,
+                               const std::string&    _status_handle);
             /**
              * constructor with all available parameters including optional ones
              * @param _check_handle     identifies which contact_check this test belongs to (by check's handle).
@@ -72,8 +72,8 @@ namespace Fred
              * @param _error_msg        optional error message (free text string) describing test state.
              */
             UpdateContactTest( const std::string&    _check_handle,
-                               const std::string&    _test_name,
-                               const std::string&    _status_name,
+                               const std::string&    _test_handle,
+                               const std::string&    _status_handle,
                                Optional<long long>   _logd_request_id,
                                Optional<std::string> _error_msg);
 

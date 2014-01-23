@@ -36,15 +36,15 @@ namespace Fred
      */
     class UpdateContactCheck {
             std::string         check_handle_;
-            std::string         status_name_;
+            std::string         status_handle_;
             Nullable<long long> logd_request_id_;
 
         public:
             struct ExceptionUnknownCheckHandle : virtual Fred::OperationException {
                 const char* what() const throw() {return "unknown check handle";}
             };
-            struct ExceptionUnknownStatusName : virtual Fred::OperationException {
-                const char* what() const throw() {return "unknown status name";}
+            struct ExceptionUnknownStatusHandle : virtual Fred::OperationException {
+                const char* what() const throw() {return "unknown status handle";}
             };
 
             /**
@@ -53,7 +53,7 @@ namespace Fred
              * @param _status_name      denotes status to be set. Allowed values are in enum_check_status.h or enum_contact_check_status in database.
              */
             UpdateContactCheck( const std::string& _check_handle,
-                                const std::string& _status_name);
+                                const std::string& _status_handle);
 
             /**
              * constructor with all available parameters including optional ones
@@ -62,9 +62,8 @@ namespace Fred
              * @param _logd_request_id  denotes entry in log_entry (by id) database table related to this update.
              */
             UpdateContactCheck( const std::string&  _check_handle,
-                                const std::string&  _status_name,
-                                Optional<long long> _logd_request_id
-            );
+                                const std::string&  _status_handle,
+                                Optional<long long> _logd_request_id);
 
             /**
              * setter of optional logd_request_id

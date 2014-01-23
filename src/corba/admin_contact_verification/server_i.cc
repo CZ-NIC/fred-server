@@ -48,7 +48,7 @@ namespace Corba {
         std::pair<std::string, unsigned long long> contact_data = Fred::ContactUtil::contact_hid_to_handle_id_pair(in.contact_history_id);
 
         out->check_handle =         Corba::wrap_string(in.handle);
-        out->test_suite_handle =    Corba::wrap_string(in.testsuite_name);
+        out->test_suite_handle =    Corba::wrap_string(in.testsuite_handle);
         out->contact_handle =       Corba::wrap_string(contact_data.first);
         out->contact_id =           contact_data.second;
         out->checked_contact_hid =  in.contact_history_id;
@@ -61,7 +61,7 @@ namespace Corba {
             check_it != in.check_state_history.end();
             ++check_it, ++check_seq_i
         ) {
-            out->status_history[check_seq_i].status =           Corba::wrap_string(check_it->status_name);
+            out->status_history[check_seq_i].status =           Corba::wrap_string(check_it->status_handle);
             out->status_history[check_seq_i].update =           Corba::wrap_time(check_it->local_update_time);
             out->status_history[check_seq_i].logd_request_id =  Corba::wrap_nullable_ulonglong(check_it->logd_request_id);
         }
@@ -79,7 +79,7 @@ namespace Corba {
             // TODO vyresit jaka data kontaktu ktery test kontroluje
             // TODO vyresit jake casy jdou ven
 
-            out->test_list[test_seq_i].test_handle = Corba::wrap_string(test_it->test_name);
+            out->test_list[test_seq_i].test_handle = Corba::wrap_string(test_it->test_handle);
             out->test_list[test_seq_i].created = Corba::wrap_time(test_it->local_create_time);
 
             out->test_list[test_seq_i].status_history.length(test_it->state_history.size());
@@ -90,7 +90,7 @@ namespace Corba {
                 ++testhistory_it, ++testhistory_seq_i
             ) {
                 out->test_list[test_seq_i].status_history[testhistory_seq_i].status
-                    = Corba::wrap_string(testhistory_it->status_name);
+                    = Corba::wrap_string(testhistory_it->status_handle);
 
                 out->test_list[test_seq_i].status_history[testhistory_seq_i].err_msg
                     = (testhistory_it->error_msg.isnull())
@@ -114,7 +114,7 @@ namespace Corba {
         long list_index = 0;
         for(std::vector<Fred::ListChecksItem>::const_iterator it = in.begin(); it != in.end(); ++it, ++list_index) {
             out->operator[](list_index).check_handle =          Corba::wrap_string(it->check_handle);
-            out->operator[](list_index).test_suite_handle =     Corba::wrap_string(it->testsuite_name);
+            out->operator[](list_index).test_suite_handle =     Corba::wrap_string(it->testsuite_handle);
 
             contact_data = Fred::ContactUtil::contact_hid_to_handle_id_pair(it->contact_history_id);
 
@@ -122,7 +122,7 @@ namespace Corba {
             out->operator[](list_index).contact_id =            contact_data.second;
             out->operator[](list_index).checked_contact_hid =   it->contact_history_id;
             out->operator[](list_index).created =               Corba::wrap_time(it->local_create_time);
-            out->operator[](list_index).current_status =        Corba::wrap_string(it->status_name);
+            out->operator[](list_index).current_status =        Corba::wrap_string(it->status_handle);
 
             out->operator[](list_index).created =               Corba::wrap_time(it->local_create_time);
 

@@ -25,7 +25,7 @@
 #include "src/admin/contact/verification/fill_check_queue.h"
 #include "src/fredlib/contact/verification/enum_check_status.h"
 #include "src/fredlib/contact/verification/enum_test_status.h"
-#include "src/fredlib/contact/verification/enum_testsuite_name.h"
+#include "src/fredlib/contact/verification/enum_testsuite_handle.h"
 #include "src/fredlib/contact/verification/create_check.h"
 #include "src/fredlib/contact/verification/update_check.h"
 #include <fredlib/nsset.h>
@@ -57,13 +57,13 @@ void clean_queue() {
     ctx.get_conn().exec_params(
         "DELETE FROM contact_test_result "
         "   WHERE enum_contact_test_status_id = "
-        "       (SELECT id FROM enum_contact_test_status WHERE name=$1::varchar);",
+        "       (SELECT id FROM enum_contact_test_status WHERE handle=$1::varchar);",
         Database::query_param_list(Test::ENQUEUED) );
 
     ctx.get_conn().exec_params(
         "DELETE FROM contact_check "
         "   WHERE enum_contact_check_status_id = "
-        "       (SELECT id FROM enum_contact_check_status WHERE name=$1::varchar);",
+        "       (SELECT id FROM enum_contact_check_status WHERE handle=$1::varchar);",
         Database::query_param_list(Check::ENQUEUED) );
 
     ctx.commit_transaction();
@@ -75,7 +75,7 @@ int get_queue_length() {
         "SELECT COUNT(id) AS count_ "
         "   FROM contact_check "
         "   WHERE enum_contact_check_status_id = "
-        "       (SELECT id FROM enum_contact_check_status WHERE name=$1::varchar);",
+        "       (SELECT id FROM enum_contact_check_status WHERE handle=$1::varchar);",
         Database::query_param_list(Test::ENQUEUED) );
 
     if(res.size() != 1) {
@@ -90,8 +90,8 @@ void empty_automatic_testsuite() {
     ctx.get_conn().exec_params(
         "DELETE FROM contact_testsuite_map "
         "   WHERE enum_contact_testsuite_id = "
-        "       (SELECT id FROM enum_contact_testsuite WHERE name=$1::varchar);",
-        Database::query_param_list(Fred::TestsuiteName::AUTOMATIC) );
+        "       (SELECT id FROM enum_contact_testsuite WHERE handle=$1::varchar);",
+        Database::query_param_list(Fred::TestsuiteHandle::AUTOMATIC) );
 
     ctx.commit_transaction();
 }
@@ -105,7 +105,7 @@ T_testimpl_map create_dummy_automatic_testsuite() {
 
     test_impls[temp_ptr->get_name()] = temp_ptr;
 
-    setup_testdef_in_testsuite(temp_ptr->get_name(), Fred::TestsuiteName::AUTOMATIC);
+    setup_testdef_in_testsuite(temp_ptr->get_name(), Fred::TestsuiteHandle::AUTOMATIC);
     ctx.commit_transaction();
 
     return test_impls;
@@ -143,7 +143,7 @@ struct setup_already_checked_contacts {
         T_testimpl_map dummy_testsuite = create_dummy_automatic_testsuite();
         std::vector<std::string> started_check_handles;
         for(int i=1; i <= count_; ++i) {
-            T_enq_ch enqueued_checks = Admin::ContactVerificationQueue::fill_check_queue(Fred::TestsuiteName::AUTOMATIC, 1).exec();
+            T_enq_ch enqueued_checks = Admin::ContactVerificationQueue::fill_check_queue(Fred::TestsuiteHandle::AUTOMATIC, 1).exec();
             BOOST_CHECK_EQUAL( enqueued_checks.size(), 1);
             started_check_handles.push_back(
                 Admin::run_all_enqueued_checks(dummy_testsuite).front()
@@ -154,11 +154,11 @@ struct setup_already_checked_contacts {
     }
 };
 
-void create_check_for_all_unchecked_contacts(const std::string& testsuite_name) {
+void create_check_for_all_unchecked_contacts(const std::string& testsuite_handle) {
     Fred::OperationContext ctx;
 
     setup_testdef testdef;
-    setup_testdef_in_testsuite(testdef.testdef_name_, testsuite_name);
+    setup_testdef_in_testsuite(testdef.testdef_handle_, testsuite_handle);
 
     Database::Result never_checked_contacts_res = ctx.get_conn().exec(
         "SELECT o_r.id AS contact_id_ "
@@ -180,7 +180,7 @@ void create_check_for_all_unchecked_contacts(const std::string& testsuite_name) 
         Fred::OperationContext ctx1;
         handle = Fred::CreateContactCheck(
             static_cast<long long>( (*it)["contact_id_"] ),
-            testsuite_name
+            testsuite_handle
         )
         .exec(ctx1);
         ctx1.commit_transaction();
@@ -212,15 +212,15 @@ BOOST_AUTO_TEST_CASE(test_Max_queue_lenght_parameter)
     create_dummy_automatic_testsuite();
     T_enq_ch enqueued;
 
-    enqueued = Admin::ContactVerificationQueue::fill_check_queue(Fred::TestsuiteName::AUTOMATIC, 10).exec();
+    enqueued = Admin::ContactVerificationQueue::fill_check_queue(Fred::TestsuiteHandle::AUTOMATIC, 10).exec();
     BOOST_CHECK_EQUAL(get_queue_length(), 10);
     BOOST_CHECK_EQUAL(enqueued.size(), 10);
 
-    enqueued = Admin::ContactVerificationQueue::fill_check_queue(Fred::TestsuiteName::AUTOMATIC, 30).exec();
+    enqueued = Admin::ContactVerificationQueue::fill_check_queue(Fred::TestsuiteHandle::AUTOMATIC, 30).exec();
     BOOST_CHECK_EQUAL(get_queue_length(), 30);
     BOOST_CHECK_EQUAL(enqueued.size(), 20);
 
-    enqueued = Admin::ContactVerificationQueue::fill_check_queue(Fred::TestsuiteName::AUTOMATIC, 20).exec();
+    enqueued = Admin::ContactVerificationQueue::fill_check_queue(Fred::TestsuiteHandle::AUTOMATIC, 20).exec();
     BOOST_CHECK_EQUAL(get_queue_length(), 30);
     BOOST_CHECK_EQUAL(enqueued.size(), 0);
 
@@ -238,14 +238,14 @@ BOOST_AUTO_TEST_CASE(test_Try_fill_full_queue)
 
     T_enq_ch enqueued;
 
-    enqueued = Admin::ContactVerificationQueue::fill_check_queue(Fred::TestsuiteName::AUTOMATIC, 101).exec();
+    enqueued = Admin::ContactVerificationQueue::fill_check_queue(Fred::TestsuiteHandle::AUTOMATIC, 101).exec();
     BOOST_CHECK_EQUAL(enqueued.size(), 101);
 
-    enqueued = Admin::ContactVerificationQueue::fill_check_queue(Fred::TestsuiteName::AUTOMATIC, 101).exec();
+    enqueued = Admin::ContactVerificationQueue::fill_check_queue(Fred::TestsuiteHandle::AUTOMATIC, 101).exec();
     BOOST_CHECK_EQUAL(get_queue_length(), 101);
     BOOST_CHECK_EQUAL(enqueued.size(), 0);
 
-    enqueued = Admin::ContactVerificationQueue::fill_check_queue(Fred::TestsuiteName::AUTOMATIC, 101).exec();
+    enqueued = Admin::ContactVerificationQueue::fill_check_queue(Fred::TestsuiteHandle::AUTOMATIC, 101).exec();
     BOOST_CHECK_EQUAL(get_queue_length(), 101);
     BOOST_CHECK_EQUAL(enqueued.size(), 0);
 }
@@ -314,7 +314,7 @@ BOOST_AUTO_TEST_CASE(test_Enqueueing_never_checked_contacts)
 
     create_dummy_automatic_testsuite();
 
-    create_check_for_all_unchecked_contacts(Fred::TestsuiteName::AUTOMATIC);
+    create_check_for_all_unchecked_contacts(Fred::TestsuiteHandle::AUTOMATIC);
     setup_already_checked_contacts(50);
 
     // make set of new, never checked contacts
@@ -324,32 +324,32 @@ BOOST_AUTO_TEST_CASE(test_Enqueueing_never_checked_contacts)
     }
 
     // test scenarios
-    T_enq_ch enqueued_checks = Admin::ContactVerificationQueue::fill_check_queue(Fred::TestsuiteName::AUTOMATIC, 10).exec();
+    T_enq_ch enqueued_checks = Admin::ContactVerificationQueue::fill_check_queue(Fred::TestsuiteHandle::AUTOMATIC, 10).exec();
     BOOST_CHECK_EQUAL(enqueued_checks.size(), 10);
     nested::enqueued_in_never_checked(enqueued_checks, never_checked_contacts);
     nested::update_never_checked(enqueued_checks, never_checked_contacts);
 
-    enqueued_checks = Admin::ContactVerificationQueue::fill_check_queue(Fred::TestsuiteName::AUTOMATIC, 20).exec();
+    enqueued_checks = Admin::ContactVerificationQueue::fill_check_queue(Fred::TestsuiteHandle::AUTOMATIC, 20).exec();
     BOOST_CHECK_EQUAL(enqueued_checks.size(), 10);
     nested::enqueued_in_never_checked(enqueued_checks, never_checked_contacts);
     nested::update_never_checked(enqueued_checks, never_checked_contacts);
 
-    enqueued_checks = Admin::ContactVerificationQueue::fill_check_queue(Fred::TestsuiteName::AUTOMATIC, 30).exec();
+    enqueued_checks = Admin::ContactVerificationQueue::fill_check_queue(Fred::TestsuiteHandle::AUTOMATIC, 30).exec();
     BOOST_CHECK_EQUAL(enqueued_checks.size(), 10);
     nested::enqueued_in_never_checked(enqueued_checks, never_checked_contacts);
     nested::update_never_checked(enqueued_checks, never_checked_contacts);
 
-    enqueued_checks = Admin::ContactVerificationQueue::fill_check_queue(Fred::TestsuiteName::AUTOMATIC, 40).exec();
+    enqueued_checks = Admin::ContactVerificationQueue::fill_check_queue(Fred::TestsuiteHandle::AUTOMATIC, 40).exec();
     BOOST_CHECK_EQUAL(enqueued_checks.size(), 10);
     nested::enqueued_in_never_checked(enqueued_checks, never_checked_contacts);
     nested::update_never_checked(enqueued_checks, never_checked_contacts);
 
-    enqueued_checks = Admin::ContactVerificationQueue::fill_check_queue(Fred::TestsuiteName::AUTOMATIC, 50).exec();
+    enqueued_checks = Admin::ContactVerificationQueue::fill_check_queue(Fred::TestsuiteHandle::AUTOMATIC, 50).exec();
     BOOST_CHECK_EQUAL(enqueued_checks.size(), 10);
     nested::enqueued_in_never_checked(enqueued_checks, never_checked_contacts);
     nested::update_never_checked(enqueued_checks, never_checked_contacts);
 
-    enqueued_checks = Admin::ContactVerificationQueue::fill_check_queue(Fred::TestsuiteName::AUTOMATIC, 50).exec();
+    enqueued_checks = Admin::ContactVerificationQueue::fill_check_queue(Fred::TestsuiteHandle::AUTOMATIC, 50).exec();
     BOOST_CHECK_EQUAL(enqueued_checks.size(), 0);
 }
 
@@ -364,7 +364,7 @@ BOOST_AUTO_TEST_CASE(test_Enqueueing_already_checked_contacts)
     // IMPORTANT: check the rest of them AFTER - otherwise their checks would be OLDER!!!
     setup_already_checked_contacts(20);
 
-    create_check_for_all_unchecked_contacts(Fred::TestsuiteName::AUTOMATIC);
+    create_check_for_all_unchecked_contacts(Fred::TestsuiteHandle::AUTOMATIC);
 
     std::vector<long long> ids;
 
@@ -376,7 +376,7 @@ BOOST_AUTO_TEST_CASE(test_Enqueueing_already_checked_contacts)
         "       JOIN object_history AS o_h ON c_ch.contact_history_id = o_h.historyid "
         "       JOIN object_registry AS o_r ON o_h.id = o_r.id "
         "       JOIN enum_contact_testsuite AS enum_c_t ON c_ch.enum_contact_testsuite_id = enum_c_t.id "
-        "   WHERE enum_c_t.name='" + Fred::TestsuiteName::AUTOMATIC + "' "
+        "   WHERE enum_c_t.handle='" + Fred::TestsuiteHandle::AUTOMATIC + "' "
         "   GROUP BY contact_id_ "
         "   ORDER by last_update_ ASC "
         "   LIMIT $1::integer ",
@@ -393,7 +393,7 @@ BOOST_AUTO_TEST_CASE(test_Enqueueing_already_checked_contacts)
 
     for(int i = 1; i<=20; ++i) {
         enqueued_checks.clear();
-        enqueued_checks = Admin::ContactVerificationQueue::fill_check_queue(Fred::TestsuiteName::AUTOMATIC, i).exec();
+        enqueued_checks = Admin::ContactVerificationQueue::fill_check_queue(Fred::TestsuiteHandle::AUTOMATIC, i).exec();
         BOOST_CHECK_EQUAL(enqueued_checks.size(), 1);
         BOOST_CHECK_EQUAL(enqueued_checks.back().get<1>(), *it_checked);
 
@@ -430,7 +430,7 @@ struct setup_special_contact {
 void setup_contact_as_technical(const setup_special_contact& contact_) {
     // create nsset
     std::string nsset_handle_;
-    // prevent name collisions
+    // prevent handle collisions
     while(true) {
         try {
             Fred::OperationContext ctx1;
@@ -579,7 +579,7 @@ void process_filtered_contacts_testcase(
     }
 
     std::vector< boost::tuple<std::string, long long, long long> > enqueued_contacts;
-    enqueued_contacts = Admin::ContactVerificationQueue::fill_check_queue(Fred::TestsuiteName::AUTOMATIC, 10)
+    enqueued_contacts = Admin::ContactVerificationQueue::fill_check_queue(Fred::TestsuiteHandle::AUTOMATIC, 10)
         .set_contact_filter(filter)
         .exec();
 

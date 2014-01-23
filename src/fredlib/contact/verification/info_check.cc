@@ -35,7 +35,7 @@ namespace Fred
 
         result =
             _each_line_prefix + "<InfoContactCheckOutput::ContactTestResultState> {" + "\n"
-            + _each_line_prefix + _each_line_prefix + " status_name: " +      status_name + "\n"
+            + _each_line_prefix + _each_line_prefix + " status_handle: " +    status_handle + "\n"
             + _each_line_prefix + _each_line_prefix + " error_msg: " +        error_msg.print_quoted() + "\n"
             + _each_line_prefix + _each_line_prefix + " local_update_time:" + boost::posix_time::to_simple_string(local_update_time) + "\n"
             + _each_line_prefix + _each_line_prefix + " logd_request_id:" +   logd_request_id.print_quoted()
@@ -49,7 +49,7 @@ namespace Fred
 
         result =
             _each_line_prefix + "<InfoContactCheckOutput::ContactTestResultData> {" + "\n"
-            + _each_line_prefix + _each_line_prefix + " test_name: " +         test_name + "\n"
+            + _each_line_prefix + _each_line_prefix + " test_handle: " +       test_handle + "\n"
             + _each_line_prefix + _each_line_prefix + " local_create_time: " + boost::posix_time::to_simple_string(local_create_time) + "\n"
             + _each_line_prefix + _each_line_prefix + " state_history: \n";
 
@@ -66,7 +66,7 @@ namespace Fred
 
         result =
             _each_line_prefix + "<InfoContactCheckOutput::ContactCheckState> {" + "\n"
-            + _each_line_prefix + _each_line_prefix + "status_name: " +      status_name + "\n"
+            + _each_line_prefix + _each_line_prefix + "status_handle: " +    status_handle + "\n"
             + _each_line_prefix + _each_line_prefix + "local_update_time:" + boost::posix_time::to_simple_string(local_update_time) + "\n"
             + _each_line_prefix + _each_line_prefix + "logd_request_id:" +   logd_request_id.print_quoted()
             + "\n" + _each_line_prefix + "}\n";
@@ -80,7 +80,7 @@ namespace Fred
         result =
             _each_line_prefix + "<InfoContactCheckOutput> {" + "\n"
             + _each_line_prefix + _each_line_prefix + "handle: " +             handle + "\n"
-            + _each_line_prefix + _each_line_prefix + "testsuite_name: " +     testsuite_name + "\n"
+            + _each_line_prefix + _each_line_prefix + "testsuite_handle: " +   testsuite_handle + "\n"
             + _each_line_prefix + _each_line_prefix + "contact_history_id: " + boost::lexical_cast<std::string>(contact_history_id) + "\n"
             + _each_line_prefix + _each_line_prefix + "local_create_time:" +   boost::posix_time::to_simple_string(local_create_time) + "\n"
             + _each_line_prefix + _each_line_prefix + "check_state_history: \n";
@@ -114,12 +114,12 @@ namespace Fred
                 "        AT TIME ZONE 'utc' "                       /* conversion from 'utc' ... */
                 "        AT TIME ZONE $1::text AS create_time_, "   /* ... to _output_timezone */
                 "    check_.contact_history_id AS contact_history_id_, "
-                "    testsuite.name            AS testsuite_name_, "
-                "    check_.logd_request_id     AS logd_request_id_, "
+                "    testsuite.handle          AS testsuite_handle_, "
+                "    check_.logd_request_id    AS logd_request_id_, "
                 "    check_.update_time "
                 "        AT TIME ZONE 'utc' "
                 "        AT TIME ZONE $1::text AS update_time_, "   /* conversion from 'utc' ... */
-                "    status.name               AS status_name_ "    /* ... to _output_timezone */
+                "    status.handle             AS status_handle_ "    /* ... to _output_timezone */
                 "FROM contact_check AS check_ "
                 "JOIN enum_contact_testsuite AS testsuite "
                 "    ON check_.enum_contact_testsuite_id = testsuite.id "
@@ -145,7 +145,7 @@ namespace Fred
             result.handle = handle_;
             result.local_create_time = boost::posix_time::time_from_string(static_cast<std::string>(contact_check_data[0]["create_time_"]));
             result.contact_history_id = static_cast<long>(contact_check_data[0]["contact_history_id_"]);
-            result.testsuite_name = static_cast<std::string>(contact_check_data[0]["testsuite_name_"]);
+            result.testsuite_handle = static_cast<std::string>(contact_check_data[0]["testsuite_handle_"]);
             long long temp_check_id = contact_check_data[0]["id_"]; /* only used within this function, output contains handle instead */
 
             // check tests data
@@ -157,7 +157,7 @@ namespace Fred
             // add current state to check history
             InfoContactCheckOutput::ContactCheckState temp_check_history_state;
             temp_check_history_state.logd_request_id = contact_check_data[0]["logd_request_id_"];
-            temp_check_history_state.status_name = static_cast<std::string>( contact_check_data[0]["status_name_"]);
+            temp_check_history_state.status_handle = static_cast<std::string>( contact_check_data[0]["status_handle_"]);
             temp_check_history_state.local_update_time = boost::posix_time::time_from_string(static_cast<std::string>( contact_check_data[0]["update_time_"]));
             result.check_state_history.push_back(temp_check_history_state);
 
@@ -192,13 +192,13 @@ namespace Fred
             "    test.create_time "
             "        AT TIME ZONE 'utc' "                       /* conversion from 'utc' ... */
             "        AT TIME ZONE $1::text AS create_time_, "   /* ... to _output_timezone */
-            "    testdef.name              AS test_name_, "
+            "    testdef.handle            AS test_handle_, "
             "    test.error_msg            AS error_msg_, "
             "    test.logd_request_id      AS logd_request_id_, "
             "    test.update_time "
             "        AT TIME ZONE 'utc' "                       /* conversion from 'utc' ... */
             "        AT TIME ZONE $1::text AS update_time_, "   /* ... to _output_timezone */
-            "    status.name               AS status_name_ "
+            "    status.handle             AS status_handle_ "
             "FROM contact_test_result AS test "
             "JOIN enum_contact_test AS testdef "
             "    ON test.enum_contact_test_id = testdef.id "
@@ -232,7 +232,7 @@ namespace Fred
             "    history.update_time "
             "        AT TIME ZONE 'utc' "                     /* conversion from 'utc' ... */
             "        AT TIME ZONE $1::text AS update_time_, " /* ... to _output_timezone */
-            "    status.name               AS status_name_ "
+            "    status.handle             AS status_handle_ "
             "FROM contact_test_result_history AS history "
             "JOIN enum_contact_test_status AS status "
             "    ON history.enum_contact_test_status_id = status.id "
@@ -251,7 +251,7 @@ namespace Fred
 
             InfoContactCheckOutput::ContactTestResultData temp_test_data;
             temp_test_data.local_create_time = boost::posix_time::time_from_string(static_cast<std::string>( (*it_tests)["create_time_"]));
-            temp_test_data.test_name = static_cast<std::string>( (*it_tests)["test_name_"]);
+            temp_test_data.test_handle = static_cast<std::string>( (*it_tests)["test_handle_"]);
 
             // for each history state of this test (NOTE - states are clustered by test id)
             while( it_test_histories != contact_test_history_result.end() ) {
@@ -263,7 +263,7 @@ namespace Fred
                 temp_test_history_state.error_msg = (*it_test_histories)["error_msg_"]; // nullable has it's own implicit casting
                 temp_test_history_state.local_update_time = boost::posix_time::time_from_string(static_cast<std::string>( (*it_test_histories)["update_time_"]));
                 temp_test_history_state.logd_request_id = (*it_test_histories)["logd_request_id_"]; // nullable has it's own implicit casting
-                temp_test_history_state.status_name = static_cast<std::string>( (*it_test_histories)["status_name_"]);
+                temp_test_history_state.status_handle = static_cast<std::string>( (*it_test_histories)["status_handle_"]);
 
                 // add to this test history
                 temp_test_data.state_history.push_back(temp_test_history_state);
@@ -274,7 +274,7 @@ namespace Fred
             temp_test_current_state.error_msg = (*it_tests)["error_msg_"]; // nullable has it's own implicit casting
             temp_test_current_state.local_update_time = boost::posix_time::time_from_string(static_cast<std::string>( (*it_tests)["update_time_"]));
             temp_test_current_state.logd_request_id = (*it_tests)["logd_request_id_"]; // nullable has it's own implicit casting
-            temp_test_current_state.status_name = static_cast<std::string>( (*it_tests)["status_name_"]);
+            temp_test_current_state.status_handle = static_cast<std::string>( (*it_tests)["status_handle_"]);
 
             // add to this test history
             temp_test_data.state_history.push_back(temp_test_current_state);
@@ -299,7 +299,7 @@ namespace Fred
             "    history.update_time "
             "        AT TIME ZONE 'utc' "                       /* conversion from 'utc' ... */
             "        AT TIME ZONE $1::text AS update_time_, "   /* ... to _output_timezone */
-            "    status.name               AS status_name_ "
+            "    status.handle             AS status_handle_ "
             "FROM contact_check_history AS history "
             "JOIN enum_contact_check_status AS status "
             "    ON history.enum_contact_check_status_id = status.id "
@@ -319,7 +319,7 @@ namespace Fred
            InfoContactCheckOutput::ContactCheckState temp_check_history_state;
 
            temp_check_history_state.logd_request_id = (*it_check_history)["logd_request_id_"];
-           temp_check_history_state.status_name = static_cast<std::string>( (*it_check_history)["status_name_"]);
+           temp_check_history_state.status_handle = static_cast<std::string>( (*it_check_history)["status_handle_"]);
            temp_check_history_state.local_update_time = boost::posix_time::time_from_string(static_cast<std::string>( (*it_check_history)["update_time_"]));
 
            result.push_back(temp_check_history_state);

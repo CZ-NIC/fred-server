@@ -81,8 +81,8 @@ BOOST_AUTO_TEST_CASE(test_Ctor_optional)
             serialized.find("max_item_count_: " + boost::lexical_cast<std::string>(it->get<0>()) ) != std::string::npos,
             "Cannot find max item count \"" + boost::lexical_cast<std::string>(it->get<0>()) + "\" in " + serialized + ".");
         BOOST_CHECK_MESSAGE(
-            serialized.find("testsuite_name_: " + it->get<1>().print_quoted() ) != std::string::npos,
-            "Cannot find testsuite name \"" + it->get<1>().print_quoted() + "\" in " + serialized + ".");
+            serialized.find("testsuite_handle_: " + it->get<1>().print_quoted() ) != std::string::npos,
+            "Cannot find testsuite handle \"" + it->get<1>().print_quoted() + "\" in " + serialized + ".");
         BOOST_CHECK_MESSAGE(
             serialized.find("contact_id_: " + it->get<2>().print_quoted() ) != std::string::npos,
             "Cannot find contact id \"" + it->get<2>().print_quoted() + "\" in " + serialized + ".");
@@ -104,7 +104,7 @@ BOOST_AUTO_TEST_CASE(test_Setter)
 
     for( std::vector<testcase_set>::iterator it = testdata.begin(); it != testdata.end(); ++it) {
         Fred::ListContactChecks dummy(it->get<0>());
-        dummy.set_testsuite_name(it->get<1>());
+        dummy.set_testsuite_handle(it->get<1>());
         dummy.set_contact_id(it->get<2>());
 
         std::string serialized = dummy.to_string();
@@ -112,8 +112,8 @@ BOOST_AUTO_TEST_CASE(test_Setter)
             serialized.find("max_item_count_: " + boost::lexical_cast<std::string>(it->get<0>()) ) != std::string::npos,
             "Cannot find max item count \"" + boost::lexical_cast<std::string>(it->get<0>()) + "\" in " + serialized + ".");
         BOOST_CHECK_MESSAGE(
-            serialized.find("testsuite_name_: " + it->get<1>().print_quoted() ) != std::string::npos,
-            "Cannot find testsuite name \"" + it->get<1>().print_quoted() + "\" in " + serialized + ".");
+            serialized.find("testsuite_handle_: " + it->get<1>().print_quoted() ) != std::string::npos,
+            "Cannot find testsuite handle \"" + it->get<1>().print_quoted() + "\" in " + serialized + ".");
         BOOST_CHECK_MESSAGE(
             serialized.find("contact_id_: " + it->get<2>().print_quoted() ) != std::string::npos,
             "Cannot find contact id \"" + it->get<2>().print_quoted() + "\" in " + serialized + ".");
@@ -142,7 +142,7 @@ BOOST_AUTO_TEST_CASE(test_Ctor_versus_Setter)
 
     for( std::vector<testcase_set>::iterator it = testdata.begin(); it != testdata.end(); ++it) {
         Fred::ListContactChecks dummy(it->get<0>(), it->get<1>(), it->get<2>());
-        dummy.set_testsuite_name(it->get<3>());
+        dummy.set_testsuite_handle(it->get<3>());
         dummy.set_contact_id(it->get<4>());
 
         std::string serialized = dummy.to_string();
@@ -150,8 +150,8 @@ BOOST_AUTO_TEST_CASE(test_Ctor_versus_Setter)
             serialized.find("max_item_count_: " + boost::lexical_cast<std::string>(it->get<0>()) ) != std::string::npos,
             "Cannot find max item count \"" + boost::lexical_cast<std::string>(it->get<0>()) + "\" in " + serialized + ".");
         BOOST_CHECK_MESSAGE(
-            serialized.find("testsuite_name_: " + it->get<3>().print_quoted() ) != std::string::npos,
-            "Cannot find testsuite name \"" + it->get<3>().print_quoted() + "\" in " + serialized + ".");
+            serialized.find("testsuite_handle_: " + it->get<3>().print_quoted() ) != std::string::npos,
+            "Cannot find testsuite handle \"" + it->get<3>().print_quoted() + "\" in " + serialized + ".");
         BOOST_CHECK_MESSAGE(
             serialized.find("contact_id_: " + it->get<4>().print_quoted() ) != std::string::npos,
             "Cannot find contact id \"" + it->get<4>().print_quoted() + "\" in " + serialized + ".");
@@ -180,10 +180,10 @@ BOOST_AUTO_TEST_CASE(test_Setter_reset)
 
     for( std::vector<testcase_set>::iterator it = testdata.begin(); it != testdata.end(); ++it) {
         Fred::ListContactChecks dummy(it->get<0>());
-        dummy.set_testsuite_name(it->get<1>());
+        dummy.set_testsuite_handle(it->get<1>());
         dummy.set_contact_id(it->get<2>());
 
-        dummy.set_testsuite_name(it->get<3>());
+        dummy.set_testsuite_handle(it->get<3>());
         dummy.set_contact_id(it->get<4>());
 
         std::string serialized = dummy.to_string();
@@ -191,8 +191,8 @@ BOOST_AUTO_TEST_CASE(test_Setter_reset)
             serialized.find("max_item_count_: " + boost::lexical_cast<std::string>(it->get<0>()) ) != std::string::npos,
             "Cannot find max item count \"" + boost::lexical_cast<std::string>(it->get<0>()) + "\" in " + serialized + ".");
         BOOST_CHECK_MESSAGE(
-            serialized.find("testsuite_name_: " + it->get<3>().print_quoted() ) != std::string::npos,
-            "Cannot find testsuite name \"" + it->get<3>().print_quoted() + "\" in " + serialized + ".");
+            serialized.find("testsuite_handle_: " + it->get<3>().print_quoted() ) != std::string::npos,
+            "Cannot find testsuite handle \"" + it->get<3>().print_quoted() + "\" in " + serialized + ".");
         BOOST_CHECK_MESSAGE(
             serialized.find("contact_id_: " + it->get<4>().print_quoted() ) != std::string::npos,
             "Cannot find contact id \"" + it->get<4>().print_quoted() + "\" in " + serialized + ".");

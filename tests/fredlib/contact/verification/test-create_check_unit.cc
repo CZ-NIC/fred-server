@@ -43,7 +43,7 @@ const std::string server_name = "test-contact_verification-create_check_unit";
 /**
  passing mandatory values to constructor
  @pre valid contact handle
- @pre valid testsuite name
+ @pre valid testsuite handle
  @post correct values present in to_string() output
  */
 BOOST_AUTO_TEST_CASE(test_Ctor_mandatory)
@@ -59,15 +59,15 @@ BOOST_AUTO_TEST_CASE(test_Ctor_mandatory)
             serialized.find("contact_id_: " + boost::lexical_cast<std::string>(it->first) ) != std::string::npos,
             "Cannot find handle \"" + boost::lexical_cast<std::string>(it->first) + "\" in " + serialized + ".");
         BOOST_CHECK_MESSAGE(
-            serialized.find("testsuite_name_: " + it->second ) != std::string::npos,
-            "Cannot find testname \"" + it->second + "\" in " + serialized + ".");
+            serialized.find("testsuite_handle_: " + it->second ) != std::string::npos,
+            "Cannot find testhandle \"" + it->second + "\" in " + serialized + ".");
     }
 }
 
 /**
  passing mandatory and optional values to constructor
  @pre valid contact handle
- @pre valid testsuite name
+ @pre valid testsuite handle
  @pre valid logd request id
  @post correct values present in to_string() output
  */
@@ -84,8 +84,8 @@ BOOST_AUTO_TEST_CASE(test_Ctor_optional)
             serialized.find("contact_id_: " + boost::lexical_cast<std::string>(it->get<0>()) ) != std::string::npos,
             "Cannot find handle \"" + boost::lexical_cast<std::string>(it->get<0>()) + "\" in " + serialized + ".");
         BOOST_CHECK_MESSAGE(
-            serialized.find("testsuite_name_: " + it->get<1>() ) != std::string::npos,
-            "Cannot find testname \"" + it->get<1>() + "\" in " + serialized + ".");
+            serialized.find("testsuite_handle_: " + it->get<1>() ) != std::string::npos,
+            "Cannot find testhandle \"" + it->get<1>() + "\" in " + serialized + ".");
         BOOST_CHECK_MESSAGE(
             serialized.find("logd_request_id_: " + Nullable<long long>( it->get<2>() ).print_quoted() ) != std::string::npos,
             "Cannot find logd request id \"" + Nullable<long long>( it->get<2>() ).print_quoted() + "\" in " + serialized + ".");
@@ -95,7 +95,7 @@ BOOST_AUTO_TEST_CASE(test_Ctor_optional)
 /**
  passing mandatory values to constructor and optional values to setter
  @pre valid contact handle
- @pre valid testsuite name
+ @pre valid testsuite handle
  @pre valid logd request id
  @post correct values present in to_string() output
  */
@@ -114,8 +114,8 @@ BOOST_AUTO_TEST_CASE(test_Setter)
             serialized.find("contact_id_: " + boost::lexical_cast<std::string>(it->get<0>()) ) != std::string::npos,
             "Cannot find handle \"" + boost::lexical_cast<std::string>(it->get<0>()) + "\" in " + serialized + ".");
         BOOST_CHECK_MESSAGE(
-            serialized.find("testsuite_name_: " + it->get<1>() ) != std::string::npos,
-            "Cannot find testname \"" + it->get<1>() + "\" in " + serialized + ".");
+            serialized.find("testsuite_handle_: " + it->get<1>() ) != std::string::npos,
+            "Cannot find testhandle \"" + it->get<1>() + "\" in " + serialized + ".");
         BOOST_CHECK_MESSAGE(
             serialized.find("logd_request_id_: " + Nullable<long long>( it->get<2>() ).print_quoted() ) != std::string::npos,
             "Cannot find logd request id \"" + Nullable<long long>( it->get<2>() ).print_quoted() + "\" in " + serialized + ".");
@@ -125,7 +125,7 @@ BOOST_AUTO_TEST_CASE(test_Setter)
 /**
  passing mandatory and optional values to constructor and resetting optional values by setter
  @pre valid contact handle
- @pre valid testsuite name
+ @pre valid testsuite handle
  @pre valid logd request id
  @post correct values present in to_string() output
  */
@@ -150,7 +150,7 @@ BOOST_AUTO_TEST_CASE(test_Ctor_versus_Setter)
 /**
  passing optional value to setter and resetting it by second call to another value
  @pre valid contact handle
- @pre valid testsuite name
+ @pre valid testsuite handle
  @pre valid logd request id
  @pre another valid logd request id
  @post correct values present in to_string() output
@@ -171,8 +171,8 @@ BOOST_AUTO_TEST_CASE(test_Setter_reset)
             serialized.find("contact_id_: " + boost::lexical_cast<std::string>(it->get<0>()) ) != std::string::npos,
             "Cannot find handle \"" + boost::lexical_cast<std::string>(it->get<0>()) + "\" in " + serialized + ".");
         BOOST_CHECK_MESSAGE(
-            serialized.find("testsuite_name_: " + it->get<1>() ) != std::string::npos,
-            "Cannot find testname \"" + it->get<1>() + "\" in " + serialized + ".");
+            serialized.find("testsuite_handle_: " + it->get<1>() ) != std::string::npos,
+            "Cannot find testhandle \"" + it->get<1>() + "\" in " + serialized + ".");
         BOOST_CHECK_MESSAGE(
                     serialized.find("logd_request_id_: " + Nullable<long long>( it->get<2>() ).print_quoted() ) == std::string::npos,
                     "Found invalid logd request id \"" + Nullable<long long>( it->get<2>() ).print_quoted() + "\" in " + serialized + ".");

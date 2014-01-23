@@ -71,7 +71,7 @@ BOOST_AUTO_TEST_CASE(test_Exec)
     using std::string;
 
     setup_testsuite suite;
-    setup_check check(suite.testsuite_name);
+    setup_check check(suite.testsuite_handle);
 
     int check_history_steps = 5;
     int test_count = 5;
@@ -83,7 +83,7 @@ BOOST_AUTO_TEST_CASE(test_Exec)
     vector<string> check_status_history;
     vector<Optional<long long> > check_logd_request_history;
 
-    vector<string> test_names;
+    vector<string> test_handles;
 
     vector<vector<string> >                 tests_status_history(test_count);
     vector<vector<Optional<long long> > >   tests_logd_request_history(test_count);
@@ -94,7 +94,7 @@ BOOST_AUTO_TEST_CASE(test_Exec)
 
     // building check history
     for(int i=1; i<check_history_steps; ++i) {
-        check_status_history.push_back(setup_check_status().status_name_);
+        check_status_history.push_back(setup_check_status().status_handle);
         check_logd_request_history.push_back(setup_logd_request_id().logd_request_id);
 
         Fred::UpdateContactCheck update_check(
@@ -115,11 +115,11 @@ BOOST_AUTO_TEST_CASE(test_Exec)
 
     // building check tests
 
-    //test_names.push_back(check.testsuite_name_.test.testdef_name_);
+    //test_handles.push_back(check.testsuite_handle_.test.testdef_handle_);
     BOOST_FOREACH (const setup_testdef& def, suite.testdefs) {
-        test_names.push_back(def.testdef_name_);
+        test_handles.push_back(def.testdef_handle_);
         Fred::OperationContext ctx;
-        Fred::CreateContactTest(check.check_handle_, def.testdef_name_).exec(ctx);
+        Fred::CreateContactTest(check.check_handle_, def.testdef_handle_).exec(ctx);
         ctx.commit_transaction();
     }
 
@@ -129,13 +129,13 @@ BOOST_AUTO_TEST_CASE(test_Exec)
 
     // starting from 1 because first history step is already CREATEd
     for(int j=1; j<tests_history_steps.at(0); ++j) {
-        tests_status_history.at(0).push_back(setup_test_status().status_name_);
+        tests_status_history.at(0).push_back(setup_test_status().status_handle_);
         tests_logd_request_history.at(0).push_back(Optional<long long>(setup_logd_request_id().logd_request_id));
         tests_error_msg_history.at(0).push_back(Optional<string>(setup_error_msg().error_msg));
 
         Fred::UpdateContactTest update_test(
             check.check_handle_,
-            test_names.at(0),
+            test_handles.at(0),
             tests_status_history.at(0).at(j),
             tests_logd_request_history.at(0).at(j),
             tests_error_msg_history.at(0).at(j) );
@@ -153,16 +153,16 @@ BOOST_AUTO_TEST_CASE(test_Exec)
         }
     }
     for(int i=1; i<test_count; ++i) {
-        test_names.push_back(setup_testdef().testdef_name_);
+        test_handles.push_back(setup_testdef().testdef_handle_);
         tests_status_history.at(i).push_back(Fred::ContactTestStatus::ENQUEUED);
         tests_logd_request_history.at(i).push_back(Optional<long long>(setup_logd_request_id().logd_request_id));
         tests_error_msg_history.at(i).push_back(Optional<string>());
 
-        setup_testdef_in_testsuite_of_check(test_names.at(i), check.check_handle_);
+        setup_testdef_in_testsuite_of_check(test_handles.at(i), check.check_handle_);
 
         Fred::CreateContactTest create_test(
             check.check_handle_,
-            test_names.at(i),
+            test_handles.at(i),
             tests_logd_request_history.at(i).at(0) );
 
         try {
@@ -179,13 +179,13 @@ BOOST_AUTO_TEST_CASE(test_Exec)
 
         // starting from 1 because first history step is already CREATEd
         for(int j=1; j<tests_history_steps.at(i); ++j) {
-            tests_status_history.at(i).push_back(setup_test_status().status_name_);
+            tests_status_history.at(i).push_back(setup_test_status().status_handle_);
             tests_logd_request_history.at(i).push_back(Optional<long long>(setup_logd_request_id().logd_request_id));
             tests_error_msg_history.at(i).push_back(Optional<string>(setup_error_msg().error_msg));
 
             Fred::UpdateContactTest update_test(
                 check.check_handle_,
-                test_names.at(i),
+                test_handles.at(i),
                 tests_status_history.at(i).at(j),
                 tests_logd_request_history.at(i).at(j),
                 tests_error_msg_history.at(i).at(j) );
@@ -218,7 +218,7 @@ BOOST_AUTO_TEST_CASE(test_Exec)
     }
 
     for(int i=0; i<check_history_steps; ++i) {
-        BOOST_CHECK_EQUAL(check_status_history.at(i), info.check_state_history.at(i).status_name);
+        BOOST_CHECK_EQUAL(check_status_history.at(i), info.check_state_history.at(i).status_handle);
         BOOST_CHECK_MESSAGE(
             equal(
                 check_logd_request_history.at(i),
@@ -234,7 +234,7 @@ BOOST_AUTO_TEST_CASE(test_Exec)
         for(int j=0; j<tests_history_steps.at(i); ++j) {
             BOOST_CHECK_EQUAL(
                 tests_status_history.at(i).at(j),
-                info.tests.at(i).state_history.at(j).status_name);
+                info.tests.at(i).state_history.at(j).status_handle);
             BOOST_CHECK_MESSAGE(
                 equal(
                     tests_logd_request_history.at(i).at(j),
