@@ -10,7 +10,7 @@
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/contact/verification/create_check.h"
 #include "src/fredlib/contact/verification/info_check.h"
-#include "src/fredlib/contact/verification/enum_testsuite_name.h"
+#include "src/fredlib/contact/verification/enum_testsuite_handle.h"
 #include "src/fredlib/contact/verification/enum_check_status.h"
 
 namespace  Admin {
@@ -108,7 +108,7 @@ namespace ContactVerificationQueue {
     static std::vector<long long> select_never_checked_contacts(
         Fred::OperationContext& _ctx,
         unsigned                _max_count,
-        const std::string&      _testsuite_name,
+        const std::string&      _testsuite_handle,
         contact_filter          _filter
     ) {
         using std::string;
@@ -142,7 +142,7 @@ namespace ContactVerificationQueue {
             "           JOIN contact_check AS c_ch ON c_ch.contact_history_id = c_h.historyid "
             // using correct testsuite (IMPORTANT)
             "           JOIN enum_contact_testsuite AS enum_c_t ON c_ch.enum_contact_testsuite_id = enum_c_t.id "
-            "       WHERE enum_c_t.name = '"+_ctx.get_conn().escape(_testsuite_name)+"'"
+            "       WHERE enum_c_t.handle = '"+_ctx.get_conn().escape(_testsuite_handle)+"'"
         );
 
         Database::Result never_checked_contacts_res = _ctx.get_conn().exec_params(
@@ -175,7 +175,7 @@ namespace ContactVerificationQueue {
     static std::vector<long long> select_oldest_checked_contacts(
         Fred::OperationContext& _ctx,
         unsigned                _max_count,
-        const std::string&      _testsuite_name,
+        const std::string&      _testsuite_handle,
         contact_filter          _filter
     ) {
         using std::string;
@@ -211,7 +211,7 @@ namespace ContactVerificationQueue {
             "           JOIN contact_check AS c_ch ON c_ch.contact_history_id = c_h.historyid "
             // using correct testsuite (IMPORTANT)
             "           JOIN enum_contact_testsuite AS enum_c_t ON c_ch.enum_contact_testsuite_id = enum_c_t.id "
-            "       WHERE enum_c_t.name = '"+_ctx.get_conn().escape(_testsuite_name)+"'"
+            "       WHERE enum_c_t.handle = '"+_ctx.get_conn().escape(_testsuite_handle)+"'"
             "       GROUP BY contact_id_ "
         );
 
@@ -241,9 +241,9 @@ namespace ContactVerificationQueue {
         return result;
     }
 
-    fill_check_queue::fill_check_queue(std::string _testsuite_name, unsigned _max_queue_length)
+    fill_check_queue::fill_check_queue(std::string _testsuite_handle, unsigned _max_queue_length)
     :
-        testsuite_name_(_testsuite_name),
+        testsuite_handle_(_testsuite_handle),
         max_queue_length_(_max_queue_length)
     { }
 
@@ -266,7 +266,7 @@ namespace ContactVerificationQueue {
             "SELECT COUNT(c_ch.id) as count_ "
             "   FROM contact_check AS c_ch "
             "       JOIN enum_contact_check_status AS enum_status ON c_ch.enum_contact_check_status_id = enum_status.id "
-            "   WHERE enum_status.name = $1::varchar",
+            "   WHERE enum_status.handle = $1::varchar",
             Database::query_param_list(Fred::ContactCheckStatus::ENQUEUED)
         );
 
@@ -288,14 +288,14 @@ namespace ContactVerificationQueue {
             to_enqueue = select_never_checked_contacts(
                 ctx1,
                 checks_to_enqueue_count,
-                testsuite_name_,
+                testsuite_handle_,
                 filter_
             );
 
             BOOST_FOREACH(long long contact_id, to_enqueue) {
                 temp_handle = Fred::CreateContactCheck(
                     contact_id,
-                    testsuite_name_,
+                    testsuite_handle_,
                     logd_request_id_
                 ).exec(ctx1);
 
@@ -327,7 +327,7 @@ namespace ContactVerificationQueue {
             to_enqueue = select_oldest_checked_contacts(
                 ctx2,
                 checks_to_enqueue_count,
-                testsuite_name_,
+                testsuite_handle_,
                 filter_
             );
 
@@ -337,7 +337,7 @@ namespace ContactVerificationQueue {
                 for(; checks_to_enqueue_count > 0; --checks_to_enqueue_count) {
                     temp_handle = Fred::CreateContactCheck(
                         *contact_id_it,
-                        testsuite_name_,
+                        testsuite_handle_,
                         logd_request_id_
                     ).exec(ctx2);
 

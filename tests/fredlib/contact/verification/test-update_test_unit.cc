@@ -43,8 +43,8 @@ const std::string server_name = "test-contact_verification-update_test_unit";
 /**
  passing mandatory values to constructor
  @pre valid check handle
- @pre valid test name
- @pre valid status name
+ @pre valid test handle
+ @pre valid status handle
  @post correct values present in to_string() output
  */
 BOOST_AUTO_TEST_CASE(test_Ctor_mandatory)
@@ -60,19 +60,19 @@ BOOST_AUTO_TEST_CASE(test_Ctor_mandatory)
             serialized.find("check_handle_: " + it->get<0>() ) != std::string::npos,
             "Cannot find handle \"" + it->get<0>() + "\" in " + serialized + ".");
         BOOST_CHECK_MESSAGE(
-            serialized.find("test_name_: " + it->get<1>() ) != std::string::npos,
-            "Cannot find testname \"" + it->get<1>() + "\" in " + serialized + ".");
+            serialized.find("test_handle_: " + it->get<1>() ) != std::string::npos,
+            "Cannot find test handle \"" + it->get<1>() + "\" in " + serialized + ".");
         BOOST_CHECK_MESSAGE(
-            serialized.find("status_name_: " + it->get<2>() ) != std::string::npos,
-            "Cannot find status \"" + it->get<2>() + "\" in " + serialized + ".");
+            serialized.find("status_handle_: " + it->get<2>() ) != std::string::npos,
+            "Cannot find status handle \"" + it->get<2>() + "\" in " + serialized + ".");
     }
 }
 
 /**
  passing mandatory and optional values to constructor
  @pre valid check handle
- @pre valid test name
- @pre valid status name
+ @pre valid test handle
+ @pre valid status handle
  @pre valid logd request id
  @pre valid error message
  @post correct values present in to_string() output
@@ -90,11 +90,11 @@ BOOST_AUTO_TEST_CASE(test_Ctor_optional)
             serialized.find("check_handle_: " + it->get<0>() ) != std::string::npos,
             "Cannot find handle \"" + it->get<0>() + "\" in " + serialized + ".");
         BOOST_CHECK_MESSAGE(
-            serialized.find("test_name_: " + it->get<1>() ) != std::string::npos,
-            "Cannot find testname \"" + it->get<1>() + "\" in " + serialized + ".");
+            serialized.find("test_handle_: " + it->get<1>() ) != std::string::npos,
+            "Cannot find test handle \"" + it->get<1>() + "\" in " + serialized + ".");
         BOOST_CHECK_MESSAGE(
-            serialized.find("status_name_: " + it->get<2>() ) != std::string::npos,
-            "Cannot find status \"" + it->get<2>() + "\" in " + serialized + ".");
+            serialized.find("status_handle_: " + it->get<2>() ) != std::string::npos,
+            "Cannot find status handle \"" + it->get<2>() + "\" in " + serialized + ".");
         BOOST_CHECK_MESSAGE(
             serialized.find("logd_request_id_: " + Nullable<long long>( it->get<3>() ).print_quoted() ) != std::string::npos,
             "Cannot find logd request id \"" + Nullable<long long>( it->get<3>() ).print_quoted() + "\" in " + serialized + ".");
@@ -107,8 +107,8 @@ BOOST_AUTO_TEST_CASE(test_Ctor_optional)
 /**
  passing mandatory values to constructor and optional values to setter
  @pre valid check handle
- @pre valid test name
- @pre valid status name
+ @pre valid test handle
+ @pre valid status handle
  @pre valid logd request id
  @pre valid error message
  @post correct values present in to_string() output
@@ -129,11 +129,11 @@ BOOST_AUTO_TEST_CASE(test_Setter)
             serialized.find("check_handle_: " + it->get<0>() ) != std::string::npos,
             "Cannot find handle \"" + it->get<0>() + "\" in " + serialized + ".");
         BOOST_CHECK_MESSAGE(
-            serialized.find("test_name_: " + it->get<1>() ) != std::string::npos,
-            "Cannot find testname \"" + it->get<1>() + "\" in " + serialized + ".");
+            serialized.find("test_handle_: " + it->get<1>() ) != std::string::npos,
+            "Cannot find test handle \"" + it->get<1>() + "\" in " + serialized + ".");
         BOOST_CHECK_MESSAGE(
-            serialized.find("status_name_: " + it->get<2>() ) != std::string::npos,
-            "Cannot find status \"" + it->get<2>() + "\" in " + serialized + ".");
+            serialized.find("status_handle_: " + it->get<2>() ) != std::string::npos,
+            "Cannot find status handle \"" + it->get<2>() + "\" in " + serialized + ".");
         BOOST_CHECK_MESSAGE(
             serialized.find("logd_request_id_: " + Nullable<long long>( it->get<3>() ).print_quoted() ) != std::string::npos,
             "Cannot find logd request id \"" + Nullable<long long>( it->get<3>() ).print_quoted() + "\" in " + serialized + ".");
@@ -146,8 +146,8 @@ BOOST_AUTO_TEST_CASE(test_Setter)
 /**
  passing mandatory and optional values to constructor and resetting optional values by setter
  @pre valid check handle
- @pre valid test name
- @pre valid status name
+ @pre valid test handle
+ @pre valid status handle
  @pre valid logd request id
  @pre valid error message
  @post correct values present in to_string() output
@@ -174,8 +174,8 @@ BOOST_AUTO_TEST_CASE(test_Ctor_versus_Setter)
 /**
  passing optional value to setter and resetting it by second call to another value
  @pre valid check handle
- @pre valid test name
- @pre valid status name
+ @pre valid test handle
+ @pre valid status handle
  @pre valid logd request id
  @pre valid error message
  @pre another valid logd request id
@@ -200,11 +200,11 @@ BOOST_AUTO_TEST_CASE(test_Setter_reset)
             serialized.find("check_handle_: " + it->get<0>() ) != std::string::npos,
             "Cannot find handle \"" + it->get<0>() + "\" in " + serialized + ".");
         BOOST_CHECK_MESSAGE(
-            serialized.find("test_name_: " + it->get<1>() ) != std::string::npos,
-            "Cannot find testname \"" + it->get<1>() + "\" in " + serialized + ".");
+            serialized.find("test_handle_: " + it->get<1>() ) != std::string::npos,
+            "Cannot find test handle \"" + it->get<1>() + "\" in " + serialized + ".");
         BOOST_CHECK_MESSAGE(
-            serialized.find("status_name_: " + it->get<2>() ) != std::string::npos,
-            "Cannot find status \"" + it->get<2>() + "\" in " + serialized + ".");
+            serialized.find("status_handle_: " + it->get<2>() ) != std::string::npos,
+            "Cannot find status handle \"" + it->get<2>() + "\" in " + serialized + ".");
         BOOST_CHECK_MESSAGE(
             serialized.find("logd_request_id_: " + Nullable<long long>( it->get<5>() ).print_quoted() ) != std::string::npos,
             "Cannot find logd request id \"" + Nullable<long long>( it->get<5>() ).print_quoted() + "\" in " + serialized + ".");

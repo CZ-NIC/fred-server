@@ -39,13 +39,13 @@ namespace Fred
      */
     struct ListChecksItem {
         std::string                         check_handle;
-        std::string                         testsuite_name;
+        std::string                         testsuite_handle;
         unsigned long long                  contact_history_id;
         boost::posix_time::ptime            local_create_time;
         boost::posix_time::ptime            local_update_time;
         Optional<boost::posix_time::ptime>  local_tests_finished_time;
         Optional<boost::posix_time::ptime>  local_relevant_contact_update_time;
-        std::string                         status_name;
+        std::string                         status_handle;
 
         std::string to_string(const std::string& _each_line_prefix = "\t") const;
     };
@@ -54,8 +54,8 @@ namespace Fred
      * Get list of existing record in contact_check table. Has no sideeffects.
      */
     class ListContactChecks {
-            unsigned long           max_item_count_;
-            Optional<std::string>   testsuite_name_;
+            unsigned long                    max_item_count_;
+            Optional<std::string>            testsuite_handle_;
             Optional<unsigned long long>     contact_id_;
 
         public:
@@ -79,16 +79,16 @@ namespace Fred
              * @param _contact_id       filter: only checks of given contact (connected by historyid) are returned
              */
             ListContactChecks(
-                unsigned long           _max_item_count,
-                Optional<std::string>   _testsuite_name_,
-                Optional<unsigned long long>     _contact_id
+                unsigned long                   _max_item_count,
+                Optional<std::string>           _testsuite_handle,
+                Optional<unsigned long long>    _contact_id
             );
 
             /**
              * setter of optional testsuite_name
              * Call with another value for re-set, no need to unset first.
              */
-            ListContactChecks& set_testsuite_name(const std::string& _testsuite_name);
+            ListContactChecks& set_testsuite_handle(const std::string& _testsuite_handle);
 
             /**
              * setter of optional contact_id

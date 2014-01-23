@@ -28,7 +28,7 @@ namespace Fred
 {
     /**
      * Available statuses for Contact check.
-     * Should be in sync with enum_contact_check_status.name in db.
+     * Should be in sync with enum_contact_check_status.handle in db.
      */
     namespace ContactCheckStatus
     {

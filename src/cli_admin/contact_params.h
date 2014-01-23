@@ -167,7 +167,7 @@ struct ContactMergeArgs
  */
 
 struct ContactVerificationFillQueueArgs {
-    std::string             testsuite_name;
+    std::string             testsuite_handle;
     unsigned                max_queue_lenght;
     std::string             country_code;
     std::vector<std::string>   contact_states;
@@ -184,7 +184,7 @@ struct ContactVerificationFillQueueArgs {
         std::vector<std::string>   _contact_states,
         std::vector<std::string>   _contact_roles
     ) :
-        testsuite_name(_testsuite_name),
+        testsuite_handle(_testsuite_name),
         max_queue_lenght(_max_queue_lenght),
         country_code(_country_code),
         contact_states(_contact_states),
@@ -199,14 +199,14 @@ struct ContactVerificationFillQueueArgs {
 
 struct ContactVerificationEnqueueCheckArgs {
     long long contact_id;
-    std::string testsuite_name;
+    std::string testsuite_handle;
 
     ContactVerificationEnqueueCheckArgs( )
         : contact_id(0)
     { }
 
     ContactVerificationEnqueueCheckArgs( long long _contact_id, const std::string& _testsuite_name )
-        : contact_id(_contact_id), testsuite_name(_testsuite_name)
+        : contact_id(_contact_id), testsuite_handle(_testsuite_name)
     { }
 };
 

@@ -39,10 +39,10 @@ namespace Fred
         result =
             _each_line_prefix + "<ListChecksItem> {" + "\n"
             + _each_line_prefix + _each_line_prefix + " check_handle: " +       check_handle + "\n"
-            + _each_line_prefix + _each_line_prefix + " testsuite_name: " +     testsuite_name + "\n"
+            + _each_line_prefix + _each_line_prefix + " testsuite_handle: " +   testsuite_handle + "\n"
             + _each_line_prefix + _each_line_prefix + " contact_history_id:" +  boost::lexical_cast<std::string>(contact_history_id) + "\n"
             + _each_line_prefix + _each_line_prefix + " local_create_time: " +  boost::posix_time::to_simple_string(local_create_time) + "\n"
-            + _each_line_prefix + _each_line_prefix + " status_name:" +         status_name + "\n"
+            + _each_line_prefix + _each_line_prefix + " status_handle:" +       status_handle + "\n"
             + _each_line_prefix + "}\n";
 
         return result;
@@ -53,17 +53,17 @@ namespace Fred
     { }
 
     ListContactChecks::ListContactChecks(
-        unsigned long           _max_item_count,
-        Optional<std::string>   _testsuite_name_,
+        unsigned long                    _max_item_count,
+        Optional<std::string>            _testsuite_handle,
         Optional<unsigned long long>     _contact_id
     ) :
         max_item_count_(_max_item_count),
-        testsuite_name_(_testsuite_name_),
+        testsuite_handle_(_testsuite_handle),
         contact_id_(_contact_id)
     { }
 
-    ListContactChecks& ListContactChecks::set_testsuite_name(const std::string& _testsuite_name) {
-        testsuite_name_ = _testsuite_name;
+    ListContactChecks& ListContactChecks::set_testsuite_handle(const std::string& _testsuite_handle) {
+        testsuite_handle_ = _testsuite_handle;
 
         return *this;
     }
@@ -88,14 +88,14 @@ namespace Fred
                 std::vector<std::string> wheres;
                 Database::QueryParams params;
 
-                if(testsuite_name_.isset()) {
+                if(testsuite_handle_.isset()) {
                     // enum_contact_testsuite is already used by the fixed part of query
                     //joins.push_back();
 
                     wheres.push_back(
-                        " AND "+ enum_testsuite_alias +".name = $" + boost::lexical_cast<std::string>(params.size()+1) + "::varchar " );
+                        " AND "+ enum_testsuite_alias +".handle = $" + boost::lexical_cast<std::string>(params.size()+1) + "::varchar " );
 
-                    params.push_back(testsuite_name_.get_value());
+                    params.push_back(testsuite_handle_.get_value());
                 }
 
                 if(contact_id_.isset()) {
@@ -120,13 +120,13 @@ namespace Fred
                     "        AT TIME ZONE $"+timezone_param_order+"::text              AS create_time_, "  /* ... to _output_timezone */
 
                     "    "+ check_alias +".contact_history_id   AS contact_history_id_, "
-                    "    "+ enum_testsuite_alias +".name        AS testsuite_name_, "
+                    "    "+ enum_testsuite_alias +".handle      AS testsuite_handle_, "
 
                     "    "+ check_alias +".update_time "
                     "        AT TIME ZONE 'utc' "                                   /* conversion from 'utc' ... */
                     "        AT TIME ZONE $"+timezone_param_order+"::text              AS update_time_, "  /* ... to _output_timezone */
 
-                    "    status.name                            AS status_name_ "
+                    "    status.handle                          AS status_handle_ "
 
                     "FROM contact_check AS "+ check_alias +" "
                     "   JOIN enum_contact_testsuite     AS "+ enum_testsuite_alias +" "
@@ -156,8 +156,8 @@ namespace Fred
                    temp_item.local_tests_finished_time = Optional<boost::posix_time::ptime>();
                    // TODO - doimplementovat
                    temp_item.local_relevant_contact_update_time = Optional<boost::posix_time::ptime>();
-                   temp_item.status_name = static_cast<std::string>( (*it)["status_name_"] );
-                   temp_item.testsuite_name  = static_cast<std::string>( (*it)["testsuite_name_"] );
+                   temp_item.status_handle = static_cast<std::string>( (*it)["status_handle_"] );
+                   temp_item.testsuite_handle  = static_cast<std::string>( (*it)["testsuite_handle_"] );
 
                    checks.insert(std::make_pair(temp_item.check_handle, temp_item));
                 }
@@ -188,7 +188,7 @@ namespace Fred
                     "   WHERE"
                     "       "+ check_alias +".handle = ANY($1::uuid[]) "
                     "       AND"
-                    "       (enum_c_s.name = ANY($2::varchar[]) "
+                    "       (enum_c_s.handle = ANY($2::varchar[]) "
                     "           OR    "
                     "       c_c_h.contact_check_id IS NULL)"
                     "   GROUP BY "+ check_alias +".handle",
@@ -227,7 +227,7 @@ namespace Fred
     std::ostream& operator<<(std::ostream& os, const ListContactChecks& i) {
         os  << "#ListContactChecks "
                 << " max_item_count_: "  << i.max_item_count_
-                << " testsuite_name_: "  << i.testsuite_name_.print_quoted()
+                << " testsuite_handle_: " << i.testsuite_handle_.print_quoted()
                 << " contact_id_: "      << i.contact_id_.print_quoted();
 
         return os;

@@ -55,18 +55,18 @@ namespace ContactVerificationQueue {
 
     class fill_check_queue {
         private:
-            std::string         testsuite_name_;
+            std::string         testsuite_handle_;
             unsigned            max_queue_length_;
             contact_filter      filter_;
             Optional<long long> logd_request_id_;
 
         public:
             /**
-             * @param _testsuite_name Testsuite to be used for newly enqueued checks.
+             * @param _testsuite_handle Testsuite to be used for newly enqueued checks.
              * @param _max_queue_length Will not add any check above this limit.
              */
             fill_check_queue(
-                std::string _testsuite_name,
+                std::string _testsuite_handle,
                 unsigned _max_queue_length);
 
             fill_check_queue& set_contact_filter(Optional<contact_filter> _filter);

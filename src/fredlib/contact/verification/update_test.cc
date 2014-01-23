@@ -31,23 +31,23 @@ namespace Fred
    UpdateContactTest::UpdateContactTest(
         const std::string& _check_handle,
         const std::string& _test_name,
-        const std::string& _status_name
+        const std::string& _status_handle
     ) :
         check_handle_(_check_handle),
-        test_name_(_test_name),
-        status_name_(_status_name)
+        test_handle_(_test_name),
+        status_handle_(_status_handle)
     { }
 
     UpdateContactTest::UpdateContactTest(
         const std::string&    _check_handle,
-        const std::string&    _test_name,
-        const std::string&    _status_name,
+        const std::string&    _test_handle,
+        const std::string&    _status_handle,
         Optional<long long>   _logd_request_id,
         Optional<std::string> _error_msg
     ) :
         check_handle_(_check_handle),
-        test_name_(_test_name),
-        status_name_(_status_name),
+        test_handle_(_test_handle),
+        status_handle_(_status_handle),
         logd_request_id_(
             ( _logd_request_id.isset() )
                 ?
@@ -79,11 +79,11 @@ namespace Fred
         Database::Result status_res = _ctx.get_conn().exec_params(
             "SELECT id "
             "   FROM enum_contact_test_status "
-            "   WHERE name=$1::varchar; ",
-            Database::query_param_list(status_name_)
+            "   WHERE handle=$1::varchar; ",
+            Database::query_param_list(status_handle_)
         );
         if(status_res.size() != 1) {
-            throw ExceptionUnknownStatusName();
+            throw ExceptionUnknownStatusHandle();
         }
         long status_id = static_cast<long>(status_res[0]["id"]);
 
@@ -103,11 +103,11 @@ namespace Fred
         Database::Result test_res = _ctx.get_conn().exec_params(
             "SELECT id "
             "   FROM enum_contact_test "
-            "   WHERE name=$1::varchar; ",
-            Database::query_param_list(test_name_)
+            "   WHERE handle=$1::varchar; ",
+            Database::query_param_list(test_handle_)
         );
         if(test_res.size() != 1) {
-            throw ExceptionUnknownTestName();
+            throw ExceptionUnknownTestHandle();
         }
         long test_id = static_cast<long>(test_res[0]["id"]);
 
@@ -157,11 +157,11 @@ namespace Fred
             }
 
             if(what_string.find("contact_test_result_fk_Enum_contact_test_id") != std::string::npos) {
-                throw ExceptionUnknownTestName();
+                throw ExceptionUnknownTestHandle();
             }
 
             if(what_string.find("contact_test_result_history_fk_Enum_contact_test_status_id") != std::string::npos) {
-                throw ExceptionUnknownStatusName();
+                throw ExceptionUnknownStatusHandle();
             }
 
             // problem was elsewhere so let it propagate
@@ -172,8 +172,8 @@ namespace Fred
     std::ostream& operator<<(std::ostream& os, const UpdateContactTest& i) {
         os << "#UpdateContactTest "
             << " check_handle_: "    << i.check_handle_
-            << " test_name_: "       << i.test_name_
-            << " status_name_: "     << i.status_name_
+            << " test_handle_: "       << i.test_handle_
+            << " status_handle_: "     << i.status_handle_
             << " logd_request_id_: " << i.logd_request_id_.print_quoted()
             << " error_msg_: "       << i.error_msg_.print_quoted();
 

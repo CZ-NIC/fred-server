@@ -2457,10 +2457,10 @@ class HandleContactVerificationFillQueueArgsGrp : public HandleCommandGrpArgs {
                     ->notifier(save_arg<unsigned>(params.max_queue_lenght)),
                     "maximum length of queue");
 
-            cfg_opts->add_options()("testsuite_name",
+            cfg_opts->add_options()("testsuite_handle",
                 boost::program_options::value<Checked::string>()
-                    ->notifier(save_arg<std::string>(params.testsuite_name)),
-                    "testsuite name");
+                    ->notifier(save_arg<std::string>(params.testsuite_handle)),
+                    "testsuite handle");
 
             cfg_opts->add_options()("country_code",
                 boost::program_options::value<Checked::string>()
@@ -2509,10 +2509,10 @@ class HandleContactVerificationEnqueueCheckArgsGrp : public HandleCommandGrpArgs
                 boost::program_options::value<Checked::ulonglong>()
                     ->notifier(save_arg<long long>(params.contact_id)),
                     "contact id");
-            cfg_opts->add_options()("testsuite_name",
+            cfg_opts->add_options()("testsuite_handle",
                 boost::program_options::value<Checked::string>()
-                    ->notifier(save_arg<std::string>(params.testsuite_name)),
-                    "testsuite name");
+                    ->notifier(save_arg<std::string>(params.testsuite_handle)),
+                    "testsuite handle");
 
             return cfg_opts;
         }

@@ -48,14 +48,14 @@ struct dummy_testsuite : public setup_empty_testsuite {
         BOOST_FOREACH(const std::string& status, _test_return_statuses) {
             boost::shared_ptr<Admin::ContactVerificationTest> temp_ptr(new DummyTestReturning(status));
             test_impls_[temp_ptr->get_name()] = temp_ptr;
-            setup_testdef_in_testsuite(temp_ptr->get_name(), testsuite_name);
+            setup_testdef_in_testsuite(temp_ptr->get_name(), testsuite_handle);
         }
     }
 };
 
 void test_Resulting_check_status_impl(std::vector<std::string> _test_statuses, const std::string& _resulting_check_status) {
     dummy_testsuite suite(_test_statuses);
-    setup_check check(suite.testsuite_name);
+    setup_check check(suite.testsuite_handle);
 
     try {
         Admin::run_all_enqueued_checks( const_cast<const std::map< std::string, boost::shared_ptr<Admin::ContactVerificationTest> >& > (suite.test_impls_) );
@@ -80,10 +80,10 @@ void test_Resulting_check_status_impl(std::vector<std::string> _test_statuses, c
         it_test != final_check_state.tests.end();
         ++it_test, ++it_status
     ) {
-        BOOST_CHECK_EQUAL(it_test->state_history.back().status_name, *it_status);
+        BOOST_CHECK_EQUAL(it_test->state_history.back().status_handle, *it_status);
     }
 
-    BOOST_CHECK_EQUAL(final_check_state.check_state_history.back().status_name, _resulting_check_status);
+    BOOST_CHECK_EQUAL(final_check_state.check_state_history.back().status_handle, _resulting_check_status);
 }
 
 namespace Test = Fred::ContactTestStatus;
@@ -215,9 +215,9 @@ BOOST_AUTO_TEST_CASE(test_Incorrect_test_return_handling)
         test_impls_[temp_ptr->get_name()] = temp_ptr;
 
         setup_empty_testsuite testsuite;
-        setup_testdef_in_testsuite(temp_ptr->get_name(), testsuite.testsuite_name);
+        setup_testdef_in_testsuite(temp_ptr->get_name(), testsuite.testsuite_handle);
 
-        setup_check check(testsuite.testsuite_name);
+        setup_check check(testsuite.testsuite_handle);
 
         ctx.commit_transaction();
 
@@ -242,8 +242,8 @@ BOOST_AUTO_TEST_CASE(test_Incorrect_test_return_handling)
         test_impls_[temp_ptr->get_name()] = temp_ptr;
 
         setup_empty_testsuite testsuite;
-        setup_testdef_in_testsuite(temp_ptr->get_name(), testsuite.testsuite_name);
-        setup_check check(testsuite.testsuite_name);
+        setup_testdef_in_testsuite(temp_ptr->get_name(), testsuite.testsuite_handle);
+        setup_check check(testsuite.testsuite_handle);
 
         bool caught_the_right_exception = false;
         try {
@@ -271,8 +271,8 @@ BOOST_AUTO_TEST_CASE(test_Throwing_test_handling)
     test_impls_[temp_ptr->get_name()] = temp_ptr;
 
     setup_empty_testsuite testsuite;
-    setup_testdef_in_testsuite(temp_ptr->get_name(), testsuite.testsuite_name);
-    setup_check check(testsuite.testsuite_name);
+    setup_testdef_in_testsuite(temp_ptr->get_name(), testsuite.testsuite_handle);
+    setup_check check(testsuite.testsuite_handle);
 
     bool caught_some_exception = false;
     try {
@@ -291,9 +291,9 @@ BOOST_AUTO_TEST_CASE(test_Throwing_test_handling)
         BOOST_FAIL("exception during Fred::InfoContactCheck");
     }
 
-    BOOST_CHECK_EQUAL(final_check_state.tests.front().state_history.back().status_name, Test::ERROR);
+    BOOST_CHECK_EQUAL(final_check_state.tests.front().state_history.back().status_handle, Test::ERROR);
 
-    BOOST_CHECK_EQUAL(final_check_state.check_state_history.back().status_name, Check::AUTO_TO_BE_DECIDED);
+    BOOST_CHECK_EQUAL(final_check_state.check_state_history.back().status_handle, Check::AUTO_TO_BE_DECIDED);
 }
 
 /**
@@ -325,16 +325,16 @@ BOOST_AUTO_TEST_CASE(test_Logd_request_id_of_related_changes)
     test_impls_[temp_ptr3->get_name()] = temp_ptr3;
 
     setup_empty_testsuite testsuite;
-    setup_testdef_in_testsuite(temp_ptr1->get_name(), testsuite.testsuite_name);
-    setup_testdef_in_testsuite(temp_ptr2->get_name(), testsuite.testsuite_name);
-    setup_testdef_in_testsuite(temp_ptr3->get_name(), testsuite.testsuite_name);
+    setup_testdef_in_testsuite(temp_ptr1->get_name(), testsuite.testsuite_handle);
+    setup_testdef_in_testsuite(temp_ptr2->get_name(), testsuite.testsuite_handle);
+    setup_testdef_in_testsuite(temp_ptr3->get_name(), testsuite.testsuite_handle);
 
-    setup_check check(testsuite.testsuite_name);
+    setup_check check(testsuite.testsuite_handle);
 
     ctx1.commit_transaction();
 
     // effectively creates tests and updates check at once
-    Admin::ContactVerificationQueue::fill_check_queue(testsuite.testsuite_name, 1).exec();
+    Admin::ContactVerificationQueue::fill_check_queue(testsuite.testsuite_handle, 1).exec();
     long long logd_request_id = Random::integer(0, 2147483647);
     Admin::run_all_enqueued_checks(test_impls_, logd_request_id);
 

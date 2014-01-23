@@ -85,8 +85,8 @@ struct setup_create_update_check {
     {
         setup_empty_testsuite suite;
         setup_testdef testdef;
-        setup_testdef_in_testsuite(testdef.testdef_name_, suite.testsuite_name);
-        setup_check check(suite.testsuite_name, _old_logd_request);
+        setup_testdef_in_testsuite(testdef.testdef_handle_, suite.testsuite_handle);
+        setup_check check(suite.testsuite_handle, _old_logd_request);
 
         Fred::InfoContactCheck info_check(check.check_handle_);
         try {
@@ -159,8 +159,8 @@ struct setup_create_update_update_check  {
     {
         setup_empty_testsuite suite;
         setup_testdef testdef;
-        setup_testdef_in_testsuite(testdef.testdef_name_, suite.testsuite_name);
-        setup_check check(suite.testsuite_name, _logd_request1);
+        setup_testdef_in_testsuite(testdef.testdef_handle_, suite.testsuite_handle);
+        setup_check check(suite.testsuite_handle, _logd_request1);
 
         Fred::InfoContactCheck info_check(check.check_handle_);
 
@@ -240,7 +240,7 @@ void check(const InfoContactCheckOutput& data_pre_update, const InfoContactCheck
     BOOST_CHECK_EQUAL( data_pre_update.contact_history_id, data_post_update.contact_history_id );
     BOOST_CHECK_EQUAL( data_pre_update.handle, data_post_update.handle );
     BOOST_CHECK_EQUAL( data_pre_update.local_create_time, data_post_update.local_create_time );
-    BOOST_CHECK_EQUAL( data_pre_update.testsuite_name, data_post_update.testsuite_name );
+    BOOST_CHECK_EQUAL( data_pre_update.testsuite_handle, data_post_update.testsuite_handle );
     {
         BOOST_CHECK_EQUAL( data_pre_update.tests.size(), data_post_update.tests .size());
         std::vector<ContactTestResultData>::const_iterator post_it = data_post_update.tests.begin();
@@ -276,7 +276,7 @@ void check(const InfoContactCheckOutput& data_pre_update, const InfoContactCheck
             data_post_update.check_state_history.back().local_update_time < update_time_max,
             "invalid contact_check.create_time: " + boost::posix_time::to_simple_string(data_post_update.check_state_history.back().local_update_time)
             + " 'now' is:" + boost::posix_time::to_simple_string(now) );
-        BOOST_CHECK_EQUAL(data_post_update.check_state_history.back().status_name, new_status);
+        BOOST_CHECK_EQUAL(data_post_update.check_state_history.back().status_handle, new_status);
         BOOST_CHECK_EQUAL(data_post_update.check_state_history.back().logd_request_id, new_logd_request);
     } else {
         BOOST_CHECK_EQUAL( data_pre_update.check_state_history.size(), data_post_update.check_state_history.size() );
@@ -306,14 +306,14 @@ BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_request1_to_statusX_logd_request1)
     check(testcase1.data_pre_update_, testcase1.data_post_update_, testcase1.old_status_, testcase1.new_status_, testcase1.old_logd_request_, testcase1.new_logd_request_);
 
     setup_create_update_update_check testcase2(
-        status.status_name_, status.status_name_,
+        status.status_handle, status.status_handle,
         logd_request_id2, logd_request_id3, logd_request_id3);
     check(testcase2.data_post_reset_, testcase2.data_post_update_, testcase2.status2_, testcase2.status3_, testcase2.logd_request2_, testcase2.logd_request3_);
 }
 
 /**
  @pre handle of existing contact_check with status=X and logd_request=1
- @pre existing status name Y different from status X set to check right now
+ @pre existing status handle Y different from status X set to check right now
  @post correct values present in InfoContactCheck output
  @post correct new record in history in InfoContactCheck output
  */
@@ -327,12 +327,12 @@ BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_request1_to_statusY_logd_request1)
     Optional<long long> logd_request_id3 = RandomDataGenerator().xuint();
 
     setup_create_update_check testcase1(
-        status2.status_name_,
+        status2.status_handle,
         logd_request_id1, logd_request_id1);
     check(testcase1.data_pre_update_, testcase1.data_post_update_, testcase1.old_status_, testcase1.new_status_, testcase1.old_logd_request_, testcase1.new_logd_request_);
 
     setup_create_update_update_check testcase2(
-        status1.status_name_, status2.status_name_,
+        status1.status_handle, status2.status_handle,
         logd_request_id2, logd_request_id3, logd_request_id3);
     check(testcase2.data_post_reset_, testcase2.data_post_update_, testcase2.status2_, testcase2.status3_, testcase2.logd_request2_, testcase2.logd_request3_);
 }
@@ -355,14 +355,14 @@ BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_request1_to_statusX_logd_requestNU
     check(testcase1.data_pre_update_, testcase1.data_post_update_, testcase1.old_status_, testcase1.new_status_, testcase1.old_logd_request_, testcase1.new_logd_request_);
 
     setup_create_update_update_check testcase2(
-        status.status_name_, status.status_name_,
+        status.status_handle, status.status_handle,
         Optional<long long>(), logd_request_id2, Optional<long long>());
     check(testcase2.data_post_reset_, testcase2.data_post_update_, testcase2.status2_, testcase2.status3_, testcase2.logd_request2_, testcase2.logd_request3_);
 }
 
 /**
  @pre handle of existing contact_check with status=X and logd_request=1
- @pre existing status name Y different from status X set to check right now
+ @pre existing status handle Y different from status X set to check right now
  @post correct values present in InfoContactCheck output
  @post correct new record in history in InfoContactCheck output
  */
@@ -375,12 +375,12 @@ BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_request1_to_statusY_logd_requestNU
     Optional<long long> logd_request_id2 = RandomDataGenerator().xuint();
 
     setup_create_update_check testcase1(
-        status1.status_name_,
+        status1.status_handle,
         logd_request_id1, Optional<long long>());
     check(testcase1.data_pre_update_, testcase1.data_post_update_, testcase1.old_status_, testcase1.new_status_, testcase1.old_logd_request_, testcase1.new_logd_request_);
 
     setup_create_update_update_check testcase2(
-        status1.status_name_, status2.status_name_,
+        status1.status_handle, status2.status_handle,
         Optional<long long>(), logd_request_id2, Optional<long long>());
     check(testcase2.data_post_reset_, testcase2.data_post_update_, testcase2.status2_, testcase2.status3_, testcase2.logd_request2_, testcase2.logd_request3_);
 }
@@ -405,14 +405,14 @@ BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusX_logd_reques
     check(testcase1.data_pre_update_, testcase1.data_post_update_, testcase1.old_status_, testcase1.new_status_, testcase1.old_logd_request_, testcase1.new_logd_request_);
 
     setup_create_update_update_check testcase2(
-        status.status_name_, status.status_name_,
+        status.status_handle, status.status_handle,
         logd_request_id2, Optional<long long>(), logd_request_id3);
     check(testcase2.data_post_reset_, testcase2.data_post_update_, testcase2.status2_, testcase2.status3_, testcase2.logd_request2_, testcase2.logd_request3_);
 }
 
 /**
  @pre handle of existing contact_check with status=X and logd_request=NULL
- @pre existing status name Y different from status X set to check right now
+ @pre existing status handle Y different from status X set to check right now
  @pre valid logd request 1
  @post correct values present in InfoContactCheck output
  @post correct new record in history in InfoContactCheck output
@@ -427,12 +427,12 @@ BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusY_logd_reques
     Optional<long long> logd_request_id3 = RandomDataGenerator().xuint();
 
     setup_create_update_check testcase1(
-        status1.status_name_,
+        status1.status_handle,
         Optional<long long>(), logd_request_id1 );
     check(testcase1.data_pre_update_, testcase1.data_post_update_, testcase1.old_status_, testcase1.new_status_, testcase1.old_logd_request_, testcase1.new_logd_request_);
 
     setup_create_update_update_check testcase2(
-        status1.status_name_, status2.status_name_,
+        status1.status_handle, status2.status_handle,
         logd_request_id2, Optional<long long>(), logd_request_id3);
     check(testcase2.data_post_reset_, testcase2.data_post_update_, testcase2.status2_, testcase2.status3_, testcase2.logd_request2_, testcase2.logd_request3_);
 }
@@ -453,14 +453,14 @@ BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusX_logd_reques
     check(testcase1.data_pre_update_, testcase1.data_post_update_, testcase1.old_status_, testcase1.new_status_, testcase1.old_logd_request_, testcase1.new_logd_request_);
 
     setup_create_update_update_check testcase2(
-        status.status_name_, status.status_name_,
+        status.status_handle, status.status_handle,
         logd_request_id1, Optional<long long>(), Optional<long long>());
     check(testcase2.data_post_reset_, testcase2.data_post_update_, testcase2.status2_, testcase2.status3_, testcase2.logd_request2_, testcase2.logd_request3_);
 }
 
 /**
  @pre handle of existing contact_check with status=X and logd_request=NULL
- @pre existing status name Y different from status X set to check right now
+ @pre existing status handle Y different from status X set to check right now
  @post correct values present in InfoContactCheck output
  @post correct new record in history in InfoContactCheck output
  */
@@ -471,12 +471,12 @@ BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusY_logd_reques
     Optional<long long> logd_request_id1 = RandomDataGenerator().xuint();
 
     setup_create_update_check testcase1(
-        status1.status_name_,
+        status1.status_handle,
         Optional<long long>(), Optional<long long>() );
     check(testcase1.data_pre_update_, testcase1.data_post_update_, testcase1.old_status_, testcase1.new_status_, testcase1.old_logd_request_, testcase1.new_logd_request_);
 
     setup_create_update_update_check testcase2(
-        status1.status_name_, status2.status_name_,
+        status1.status_handle, status2.status_handle,
         logd_request_id1, Optional<long long>(), Optional<long long>());
     check(testcase2.data_post_reset_, testcase2.data_post_update_, testcase2.status2_, testcase2.status3_, testcase2.logd_request2_, testcase2.logd_request3_);
 }
@@ -484,7 +484,7 @@ BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusY_logd_reques
 /**
  setting nonexistent check handle and existing status values and executing operation
  @pre nonexistent check handle
- @pre existing status name
+ @pre existing status handle
  @post ExceptionUnknownCheckHandle
  */
 BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_check_handle)
@@ -492,7 +492,7 @@ BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_check_handle)
     setup_nonexistent_check_handle handle;
     setup_check_status status;
 
-    Fred::UpdateContactCheck dummy(handle.check_handle, status.status_name_);
+    Fred::UpdateContactCheck dummy(handle.check_handle, status.status_handle);
 
     bool caught_the_right_exception = false;
     try {
@@ -513,23 +513,23 @@ BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_check_handle)
 /**
  setting existing check handle and nonexistent status values and executing operation
  @pre existing check handle
- @pre nonexistent status name
- @post ExceptionUnknownStatusName
+ @pre nonexistent status handle
+ @post ExceptionUnknownStatusHandle
  */
-BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_status_name)
+BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_status_handle)
 {
     setup_testsuite suite;
-    setup_check check(suite.testsuite_name);
-    setup_nonexistent_check_status_name nonexistent_status;
+    setup_check check(suite.testsuite_handle);
+    setup_nonexistent_check_status_handle nonexistent_status;
 
-    Fred::UpdateContactCheck dummy(check.check_handle_, nonexistent_status.status_name_);
+    Fred::UpdateContactCheck dummy(check.check_handle_, nonexistent_status.status_handle);
 
     bool caught_the_right_exception = false;
     try {
         Fred::OperationContext ctx;
         dummy.exec(ctx);
         ctx.commit_transaction();
-    } catch(const Fred::UpdateContactCheck::ExceptionUnknownStatusName& exp) {
+    } catch(const Fred::UpdateContactCheck::ExceptionUnknownStatusHandle& exp) {
         caught_the_right_exception = true;
     } catch(...) {
         BOOST_FAIL("incorrect exception caught");

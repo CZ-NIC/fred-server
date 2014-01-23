@@ -29,19 +29,19 @@ namespace Fred
 {
     CreateContactTest::CreateContactTest(
         const std::string& _check_handle,
-        const std::string& _test_name
+        const std::string& _test_handle
     ) :
         check_handle_(_check_handle),
-        test_name_(_test_name)
+        test_handle_(_test_handle)
     { }
 
     CreateContactTest::CreateContactTest(
         const std::string&  _check_handle,
-        const std::string&  _test_name,
+        const std::string&  _test_handle,
         Optional<long long> _logd_request_id
     ) :
         check_handle_(_check_handle),
-        test_name_(_test_name),
+        test_handle_(_test_handle),
         logd_request_id_(
             ( _logd_request_id.isset() )
                 ?
@@ -75,20 +75,20 @@ namespace Fred
             "   FROM enum_contact_test AS c_t "
             "       JOIN contact_testsuite_map AS c_t_m ON c_t.id = c_t_m.enum_contact_test_id "
             "       JOIN contact_check AS c_c ON c_t_m.enum_contact_testsuite_id = c_c.enum_contact_testsuite_id "
-            "   WHERE c_t.name=$1::varchar "
+            "   WHERE c_t.handle=$1::varchar "
             "       AND c_c.handle=$2::uuid; ",
-            Database::query_param_list(test_name_)(check_handle_)
+            Database::query_param_list(test_handle_)(check_handle_)
         );
         if(testinsuite_res.size() != 1) {
             // is the test really unknown? ... (see ...or below)
             Database::Result test_res = _ctx.get_conn().exec_params(
                 "SELECT id "
                 "   FROM enum_contact_test "
-                "   WHERE name=$1::varchar; ",
-                Database::query_param_list(test_name_)
+                "   WHERE handle=$1::varchar; ",
+                Database::query_param_list(test_handle_)
             );
             if(test_res.size() != 1) {
-                throw ExceptionUnknownTestName();
+                throw ExceptionUnknownTestHandle();
             }
 
             // ...or was it that i just don't have it in my suite?
@@ -99,11 +99,11 @@ namespace Fred
         Database::Result test_res = _ctx.get_conn().exec_params(
             "SELECT id "
             "   FROM enum_contact_test "
-            "   WHERE name=$1::varchar; ",
-            Database::query_param_list(test_name_)
+            "   WHERE handle=$1::varchar; ",
+            Database::query_param_list(test_handle_)
         );
         if(test_res.size() != 1) {
-            throw ExceptionUnknownTestName();
+            throw ExceptionUnknownTestHandle();
         }
         long test_id = static_cast<long>(test_res[0]["id"]);
 
@@ -118,7 +118,7 @@ namespace Fred
                 "VALUES ("
                 "   $1::bigint,"
                 "   $2::int,"
-                "   (SELECT id FROM enum_contact_test_status WHERE name=$3::varchar),"
+                "   (SELECT id FROM enum_contact_test_status WHERE handle=$3::varchar),"
                 "   $4::bigint"
                 ");",
                 Database::query_param_list
@@ -137,7 +137,7 @@ namespace Fred
             }
 
             if(what_string.find("contact_test_result_fk_Enum_contact_test_id") != std::string::npos) {
-                throw ExceptionUnknownTestName();
+                throw ExceptionUnknownTestHandle();
             }
 
             if(what_string.find("idx_contact_test_result_unique_check_test_pair") != std::string::npos) {
@@ -152,7 +152,7 @@ namespace Fred
     std::ostream& operator<<(std::ostream& os, const CreateContactTest& i) {
         os << "#CreateContactTest"
             << " check_handle_: "    << i.check_handle_
-            << " test_name_: "       << i.test_name_
+            << " test_handle_: "       << i.test_handle_
             << " logd_request_id_: " << i.logd_request_id_.print_quoted();
 
         return os;

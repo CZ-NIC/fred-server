@@ -32,7 +32,7 @@ namespace  Admin {
      * Iterates until some contact_test is locked succesfully or all tests of given check are already running (and can't be locked).
      *
      * @param _check_id check whose tests are tried to lock
-     * @return locked test name
+     * @return locked test handle
      */
     static std::string lazy_get_locked_running_test(Fred::OperationContext& _ctx, const std::string& _check_handle, Optional<long long> _logd_request_id);
     static void update_some_enqueued_test_to_running(const std::string& _check_handle, Optional<long long> _logd_request_id);
@@ -77,10 +77,10 @@ namespace  Admin {
             while(true) {
                 Fred::OperationContext ctx_locked_test;
                 // can throw exception_locking_failed
-                std::string test_name = lazy_get_locked_running_test(ctx_locked_test, check_handle, _logd_request_id);
+                std::string test_handle = lazy_get_locked_running_test(ctx_locked_test, check_handle, _logd_request_id);
 
                 try {
-                    temp_result = _tests.at(test_name)->run(check_info.contact_history_id);
+                    temp_result = _tests.at(test_handle)->run(check_info.contact_history_id);
 
                     test_statuses.push_back(temp_result.first);
                     error_messages.push_back(temp_result.second);
@@ -88,7 +88,7 @@ namespace  Admin {
                     if( test_statuses.back() == Fred::ContactTestStatus::ENQUEUED
                         || test_statuses.back() == Fred::ContactTestStatus::RUNNING
                     ) {
-                        throw Fred::InternalError("malfunction in implementation of test " + test_name + ", run() returned bad status");
+                        throw Fred::InternalError("malfunction in implementation of test " + test_handle + ", run() returned bad status");
                     }
                 } catch(...) {
                     ctx_locked_test.get_conn().exec("ROLLBACK;");
@@ -99,7 +99,7 @@ namespace  Admin {
 
                     Fred::UpdateContactTest(
                         check_handle,
-                        test_name,
+                        test_handle,
                         test_statuses.back(),
                         _logd_request_id,
                         error_messages.back()
@@ -114,7 +114,7 @@ namespace  Admin {
                 }
                 Fred::UpdateContactTest(
                     check_handle,
-                    test_name,
+                    test_handle,
                     test_statuses.back(),
                     _logd_request_id,
                     error_messages.back()
@@ -168,7 +168,7 @@ namespace  Admin {
                 "SELECT c_ch.handle AS check_handle_ "
                 "   FROM contact_check AS c_ch "
                 "       JOIN enum_contact_check_status AS enum_status ON c_ch.enum_contact_check_status_id = enum_status.id "
-                "   WHERE enum_status.name = $1::varchar "
+                "   WHERE enum_status.handle = $1::varchar "
                 "   LIMIT 1 "
                 "   FOR UPDATE OF c_ch; ",
                 Database::query_param_list(Fred::ContactCheckStatus::RUNNING)
@@ -196,7 +196,7 @@ namespace  Admin {
             "SELECT c_ch.handle AS handle_ "
             "   FROM contact_check AS c_ch "
             "   WHERE c_ch.enum_contact_check_status_id = "
-            "       ( SELECT id FROM enum_contact_check_status WHERE name = $1::varchar ) "
+            "       ( SELECT id FROM enum_contact_check_status WHERE handle = $1::varchar ) "
             "   LIMIT 1 "
             "   FOR UPDATE OF c_ch;",
             Database::query_param_list(Fred::ContactCheckStatus::ENQUEUED)
@@ -221,8 +221,8 @@ namespace  Admin {
 
         // instantiate tests in db
 
-        Database::Result testnames_res = ctx.get_conn().exec_params(
-            "SELECT enum_test.name AS name_ "
+        Database::Result testhandles_res = ctx.get_conn().exec_params(
+            "SELECT enum_test.handle            AS handle_ "
             "   FROM enum_contact_test          AS enum_test "
             "       JOIN contact_testsuite_map  AS c_map "
             "           ON enum_test.id = c_map.enum_contact_test_id "
@@ -232,17 +232,17 @@ namespace  Admin {
             "   ORDER by enum_test.id ASC; ",
             Database::query_param_list(check_handle)
         );
-        if(testnames_res.size() == 0) {
+        if(testhandles_res.size() == 0) {
             throw Fred::InternalError(
                 std::string("testsuite of check(id=")
                 + check_handle
                 + ") contains no tests");
         }
 
-        for(Database::Result::Iterator it = testnames_res.begin(); it != testnames_res.end(); ++it) {
+        for(Database::Result::Iterator it = testhandles_res.begin(); it != testhandles_res.end(); ++it) {
             Fred::CreateContactTest(
                 check_handle,
-                static_cast<std::string>( (*it)["name_"] ),
+                static_cast<std::string>( (*it)["handle_"] ),
                 _logd_request_id
             ).exec(ctx);
         }
@@ -254,13 +254,13 @@ namespace  Admin {
         while(true) {
 
             Database::Result locked_test_res = _ctx.get_conn().exec_params(
-                "SELECT enum_test.name AS test_name_ "
+                "SELECT enum_test.handle AS test_handle_ "
                 "   FROM contact_test_result AS c_t_r "
                 "       JOIN enum_contact_test_status AS enum_status ON c_t_r.enum_contact_test_status_id = enum_status.id "
                 "       JOIN contact_check AS c_ch ON c_t_r.contact_check_id = c_ch.id "
                 "       JOIN enum_contact_test AS enum_test ON enum_test.id = c_t_r.enum_contact_test_id "
                 "   WHERE c_ch.handle = $1::uuid "
-                "       AND enum_status.name = $2::varchar "
+                "       AND enum_status.handle = $2::varchar "
                 "   LIMIT 1 "
                 "   FOR UPDATE OF enum_test; ",
                 Database::query_param_list
@@ -269,7 +269,7 @@ namespace  Admin {
             );
 
             if(locked_test_res.size() == 1) {
-                return static_cast<std::string>(locked_test_res[0]["test_name_"]);
+                return static_cast<std::string>(locked_test_res[0]["test_handle_"]);
             } else if(locked_test_res.size() == 0) {
                 try {
                     update_some_enqueued_test_to_running(_check_handle, _logd_request_id);
@@ -285,16 +285,16 @@ namespace  Admin {
     }
 
     void update_some_enqueued_test_to_running(const std::string& _check_handle, Optional<long long> _logd_request_id) {
-        Database::Result locked_testname_res;
+        Database::Result locked_testhandle_res;
 
         while(true) {
             Fred::OperationContext ctx;
-            /* idea is to get test_name which
+            /* idea is to get test_handle which
              * a) is related to check
              * b) has status ENQUEUED
              */
-            locked_testname_res = ctx.get_conn().exec_params(
-                "SELECT enum_test.name AS test_name_ "
+            locked_testhandle_res = ctx.get_conn().exec_params(
+                "SELECT enum_test.handle AS test_handle_ "
                 "   FROM contact_test_result AS c_t_r "
                 "       JOIN enum_contact_test_status AS enum_status "
                 "           ON c_t_r.enum_contact_test_status_id = enum_status.id "
@@ -302,7 +302,7 @@ namespace  Admin {
                 "           ON c_t_r.enum_contact_test_id = enum_test.id "
                 "       JOIN contact_check AS c_ch ON c_t_r.contact_check_id = c_ch.id "
                 "   WHERE c_ch.handle = $1::uuid "
-                "       AND enum_status.name = $2::varchar "
+                "       AND enum_status.handle = $2::varchar "
                 "   LIMIT 1 "
                 "   FOR UPDATE OF c_t_r; ",
                 Database::query_param_list
@@ -310,14 +310,14 @@ namespace  Admin {
                     (Fred::ContactTestStatus::ENQUEUED)
             );
 
-            if(locked_testname_res.size() == 0) {
+            if(locked_testhandle_res.size() == 0) {
                 throw _ExceptionAllTestsAlreadyRunning();
-            } else if(locked_testname_res.size() != 1) {
+            } else if(locked_testhandle_res.size() != 1) {
                 throw Fred::InternalError("invalid count of locked tests ( >1)");
             } else {
                 Fred::UpdateContactTest update_operation(
                     _check_handle,
-                    static_cast<std::string>( locked_testname_res[0]["test_name_"] ),
+                    static_cast<std::string>( locked_testhandle_res[0]["test_handle_"] ),
                     Fred::ContactTestStatus::RUNNING);
 
                 if(_logd_request_id.isset()) {

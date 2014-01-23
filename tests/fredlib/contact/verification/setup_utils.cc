@@ -4,7 +4,7 @@
 
 #include "src/fredlib/contact/verification/create_check.h"
 #include "src/fredlib/contact/verification/create_test.h"
-#include "src/fredlib/contact/verification/enum_testsuite_name.h"
+#include "src/fredlib/contact/verification/enum_testsuite_handle.h"
 #include "src/fredlib/contact/verification/enum_check_status.h"
 #include "src/fredlib/contact/verification/enum_test_status.h"
 #include "src/fredlib/contact/create_contact.h"
@@ -26,7 +26,7 @@ setup_get_registrar_handle::setup_get_registrar_handle( ) {
 }
 
 setup_contact::setup_contact() {
-    // prevent name collisions
+    // prevent handle collisions
     while(true) {
         try {
             Fred::OperationContext ctx;
@@ -84,18 +84,17 @@ setup_nonexistent_contact_id::setup_nonexistent_contact_id() {
 }
 
 setup_testdef::setup_testdef() {
-    // prevent name collisions
+    // prevent handle collisions
     while(true) {
         try {
             Fred::OperationContext ctx;
 
-            testdef_name_ = "TEST_" + RandomDataGenerator().xnumstring(15);
-            testdef_description_ = testdef_name_ + "_DESCRIPTION";
+            testdef_handle_ = "TEST_" + RandomDataGenerator().xnumstring(15);
             testdef_id_ = static_cast<long>(
                 ctx.get_conn().exec(
                     "INSERT INTO enum_contact_test "
-                    "   (name, description) "
-                    "   VALUES ('"+testdef_name_+"', '"+testdef_description_+"') "
+                    "   (id, handle) "
+                    "   VALUES ("+RandomDataGenerator().xnumstring(9)+", '"+testdef_handle_+"') "
                     "   RETURNING id;"
                 )[0][0]);
 
@@ -107,27 +106,27 @@ setup_testdef::setup_testdef() {
     }
 }
 
-setup_nonexistent_testdef_name::setup_nonexistent_testdef_name() {
+setup_nonexistent_testdef_handle::setup_nonexistent_testdef_handle() {
     Database::Result res;
-    // prevent name collisions
+    // prevent handle collisions
     do {
         Fred::OperationContext ctx;
 
-        testdef_name = "NONEX_TEST_" + RandomDataGenerator().xnumstring(15);
+        testdef_handle = "NONEX_TEST_" + RandomDataGenerator().xnumstring(15);
         res = ctx.get_conn().exec(
-            "SELECT name FROM enum_contact_testsuite WHERE name='"+testdef_name+"';" );
+            "SELECT handle FROM enum_contact_testsuite WHERE handle='"+testdef_handle+"';" );
     } while(res.size() != 0);
 }
 
-setup_testdef_in_testsuite::setup_testdef_in_testsuite(const std::string& testdef_name, const std::string& testsuite_name) {
+setup_testdef_in_testsuite::setup_testdef_in_testsuite(const std::string& testdef_handle, const std::string& testsuite_handle) {
     Fred::OperationContext ctx;
 
     Database::Result res = ctx.get_conn().exec(
         "INSERT INTO contact_testsuite_map "
         "   (enum_contact_test_id, enum_contact_testsuite_id) "
         "   VALUES ("
-        "       (SELECT id FROM enum_contact_test WHERE name='"+testdef_name+"' ), "
-        "       (SELECT id FROM enum_contact_testsuite WHERE name='"+testsuite_name+"') "
+        "       (SELECT id FROM enum_contact_test WHERE handle='"+testdef_handle+"' ), "
+        "       (SELECT id FROM enum_contact_testsuite WHERE handle='"+testsuite_handle+"') "
         "   ) "
         "   RETURNING enum_contact_test_id;");
 
@@ -139,7 +138,7 @@ setup_testdef_in_testsuite::setup_testdef_in_testsuite(const std::string& testde
 
 }
 
-setup_testdef_in_testsuite_of_check::setup_testdef_in_testsuite_of_check(const std::string testdef_name, const std::string check_handle) {
+setup_testdef_in_testsuite_of_check::setup_testdef_in_testsuite_of_check(const std::string testdef_handle, const std::string check_handle) {
     Fred::OperationContext ctx;
 
     Database::Result res =
@@ -147,7 +146,7 @@ setup_testdef_in_testsuite_of_check::setup_testdef_in_testsuite_of_check(const s
             "INSERT INTO contact_testsuite_map "
             "   (enum_contact_test_id, enum_contact_testsuite_id) "
             "   VALUES ("
-            "       (SELECT id FROM enum_contact_test WHERE name='"+testdef_name+"' ), "
+            "       (SELECT id FROM enum_contact_test WHERE handle='"+testdef_handle+"' ), "
             "       (SELECT enum_contact_testsuite_id FROM contact_check WHERE handle='"+check_handle+"') "
             "   ) "
             "   RETURNING enum_contact_test_id;"
@@ -161,18 +160,17 @@ setup_testdef_in_testsuite_of_check::setup_testdef_in_testsuite_of_check(const s
 }
 
 setup_empty_testsuite::setup_empty_testsuite() {
-    // prevent name collisions
+    // prevent handle collisions
     while(true) {
         try {
             Fred::OperationContext ctx;
 
-            testsuite_name = "TESTSUITE_" + RandomDataGenerator().xnumstring(15) ;
-            testsuite_description = testsuite_name + "_DESCRIPTION";
+            testsuite_handle = "TESTSUITE_" + RandomDataGenerator().xnumstring(15) ;
             testsuite_id = static_cast<long>(
                 ctx.get_conn().exec(
                     "INSERT INTO enum_contact_testsuite "
-                    "   (name, description)"
-                    "   VALUES ('"+testsuite_name+"', '"+testsuite_description+"')"
+                    "   (id, handle)"
+                    "   VALUES ("+RandomDataGenerator().xnumstring(9)+", '"+testsuite_handle+"')"
                     "   RETURNING id;"
                 )[0][0]);
 
@@ -184,37 +182,44 @@ setup_empty_testsuite::setup_empty_testsuite() {
     }
 }
 
-setup_empty_testsuite::setup_empty_testsuite(const std::string& _testsuite_name)
-    : testsuite_name(_testsuite_name)
+setup_empty_testsuite::setup_empty_testsuite(const std::string& _testsuite_handle)
+    : testsuite_handle(_testsuite_handle)
 {
-    Fred::OperationContext ctx;
+    // prevent handle collisions
+    while(true) {
+        try {
+            Fred::OperationContext ctx;
 
-    testsuite_description = testsuite_name + "_DESCRIPTION";
-    testsuite_id = static_cast<long>(
-        ctx.get_conn().exec(
-            "INSERT INTO enum_contact_testsuite "
-            "   (name, description)"
-            "   VALUES ('"+testsuite_name+"', '"+testsuite_description+"')"
-            "   RETURNING id;"
-        )[0][0]);
+            testsuite_id = static_cast<long>(
+                ctx.get_conn().exec(
+                    "INSERT INTO enum_contact_testsuite "
+                    "   (id, handle)"
+                    "   VALUES ("+RandomDataGenerator().xnumstring(9)+", '"+testsuite_handle+"')"
+                    "   RETURNING id;"
+                )[0][0]);
 
-    ctx.commit_transaction();
+            ctx.commit_transaction();
+        } catch (Database::ResultFailed& ) {
+            continue;
+        }
+        break;
+    }
 }
 
 setup_testsuite::setup_testsuite() {
     testdefs.push_back(setup_testdef());
-    setup_testdef_in_testsuite(testdefs.front().testdef_name_, testsuite_name);
+    setup_testdef_in_testsuite(testdefs.front().testdef_handle_, testsuite_handle);
 }
 
-setup_nonexistent_testsuite_name::setup_nonexistent_testsuite_name() {
+setup_nonexistent_testsuite_handle::setup_nonexistent_testsuite_handle() {
     Database::Result res;
-    // prevent name collisions
+    // prevent handle collisions
     do {
         Fred::OperationContext ctx;
 
-        testsuite_name = "NONEX_TESTSUITE_" + RandomDataGenerator().xnumstring(15);
+        testsuite_handle = "NONEX_TESTSUITE_" + RandomDataGenerator().xnumstring(15);
         res = ctx.get_conn().exec(
-            "SELECT name FROM enum_contact_testsuite WHERE name='"+testsuite_name+"';" );
+            "SELECT handle FROM enum_contact_testsuite WHERE handle='"+testsuite_handle+"';" );
     } while(res.size() != 0);
 
 }
@@ -225,17 +230,17 @@ setup_logd_request_id::setup_logd_request_id() {
 
 setup_check_status::setup_check_status() {
     Database::Result res;
-    // prevent name collisions
+    // prevent handle collisions
     while(true) {
         try {
             Fred::OperationContext ctx;
 
-            status_name_ = "STATUS_" + RandomDataGenerator().xnumstring(15);
+            status_handle = "STATUS_" + RandomDataGenerator().xnumstring(15);
             res = ctx.get_conn().exec(
                 "INSERT "
                 "   INTO enum_contact_check_status "
-                "   (id, name, description ) "
-                "   VALUES (" + RandomDataGenerator().xnumstring(9) + ", '"+status_name_+"', '"+status_name_+"_desc') "
+                "   (id, handle) "
+                "   VALUES (" + RandomDataGenerator().xnumstring(9) + ", '"+status_handle+"') "
                 "   RETURNING id;" );
 
             ctx.commit_transaction();
@@ -250,21 +255,28 @@ setup_check_status::setup_check_status() {
     }
 }
 
-setup_check_status::setup_check_status(const std::string& _name)
-    : status_name_(_name)
+setup_check_status::setup_check_status(const std::string& _handle)
+    : status_handle(_handle)
 {
     Database::Result res;
-    Fred::OperationContext ctx;
 
-    res = ctx.get_conn().exec(
-        "INSERT "
-        "   INTO enum_contact_check_status "
-        "   (id, name, description ) "
-        "   VALUES (" + RandomDataGenerator().xnumstring(9) + ", '"+status_name_+"', '"+status_name_+"_desc') "
-        "   RETURNING id;" );
+    while(true) {
+        try {
+            Fred::OperationContext ctx;
 
-    ctx.commit_transaction();
+            res = ctx.get_conn().exec(
+                "INSERT "
+                "   INTO enum_contact_check_status "
+                "   (id, handle ) "
+                "   VALUES (" + RandomDataGenerator().xnumstring(9) + ", '"+status_handle+"') "
+                "   RETURNING id;" );
 
+            ctx.commit_transaction();
+        } catch (Database::ResultFailed& ) {
+        continue;
+    }
+    break;
+            }
     if(res.size()!=1) {
         throw std::runtime_error("creating check status failed");
     }
@@ -272,17 +284,17 @@ setup_check_status::setup_check_status(const std::string& _name)
 
 setup_test_status::setup_test_status() {
     Database::Result res;
-    // prevent name collisions
+    // prevent handle collisions
     while(true) {
         try {
             Fred::OperationContext ctx;
 
-            status_name_ = "STATUS_" + RandomDataGenerator().xnumstring(15);
+            status_handle_ = "STATUS_" + RandomDataGenerator().xnumstring(15);
             res = ctx.get_conn().exec(
                 "INSERT "
                 "   INTO enum_contact_test_status "
-                "   (id, name, description ) "
-                "   VALUES (" + RandomDataGenerator().xnumstring(9) + ", '"+status_name_+"', '"+status_name_+"_desc') "
+                "   (id, handle ) "
+                "   VALUES (" + RandomDataGenerator().xnumstring(9) + ", '"+status_handle_+"') "
                 "   RETURNING id;" );
 
             ctx.commit_transaction();
@@ -296,22 +308,28 @@ setup_test_status::setup_test_status() {
     }
 }
 
-setup_test_status::setup_test_status(const std::string& _name)
-    : status_name_(_name)
+setup_test_status::setup_test_status(const std::string& _handle)
+    : status_handle_(_handle)
 {
     Database::Result res;
 
-    Fred::OperationContext ctx;
+    while(true) {
+        try {
+            Fred::OperationContext ctx;
 
-    res = ctx.get_conn().exec(
-        "INSERT "
-        "   INTO enum_contact_test_status "
-        "   (id, name, description ) "
-        "   VALUES (" + RandomDataGenerator().xnumstring(9) + ", '" + status_name_ + "', '" + status_name_ + "_desc') "
-        "   RETURNING id;" );
+            res = ctx.get_conn().exec(
+                "INSERT "
+                "   INTO enum_contact_test_status "
+                "   (id, handle ) "
+                "   VALUES (" + RandomDataGenerator().xnumstring(9) + ", '" + status_handle_ + "') "
+                "   RETURNING id;" );
 
-    ctx.commit_transaction();
-
+            ctx.commit_transaction();
+        } catch (Database::ResultFailed& ) {
+            continue;
+        }
+        break;
+    }
     if(res.size()!=1) {
         throw std::runtime_error("creating test status failed");
     }
@@ -321,13 +339,13 @@ setup_error_msg::setup_error_msg() {
     error_msg = "ERROR_MSG_" + RandomDataGenerator().xnumstring(20);
 }
 
-setup_check::setup_check(const std::string& _testsuite_name, Optional<long long> _logd_request)
+setup_check::setup_check(const std::string& _testsuite_handle, Optional<long long> _logd_request)
     : logd_request_(_logd_request)
 {
     // check
     Fred::CreateContactCheck create_check(
         contact_.contact_id_,
-        _testsuite_name,
+        _testsuite_handle,
         logd_request_
     );
 
@@ -388,44 +406,44 @@ setup_nonexistent_check_handle::setup_nonexistent_check_handle() {
     } while(res.size() != 0);
 }
 
-setup_nonexistent_check_status_name::setup_nonexistent_check_status_name() {
+setup_nonexistent_check_status_handle::setup_nonexistent_check_status_handle() {
     Fred::OperationContext ctx;
-    // prevent name collisions
+    // prevent handle collisions
     Database::Result res;
     do {
-        status_name_ = "STATUS_" + RandomDataGenerator().xnumstring(15);
+        status_handle = "STATUS_" + RandomDataGenerator().xnumstring(15);
         res = ctx.get_conn().exec(
-            "SELECT name "
+            "SELECT handle "
             "   FROM enum_contact_check_status "
-            "   WHERE name='"+status_name_+"';" );
+            "   WHERE handle='"+status_handle+"';" );
     } while(res.size() != 0);
 }
 
 setup_test::setup_test(
     const std::string& _check_handle,
-    const std::string& _testdef_name,
+    const std::string& _testdef_handle,
     Optional<long long> _logd_request
 ) :
-    testdef_name_(_testdef_name),
+    testdef_handle_(_testdef_handle),
     logd_request_(_logd_request)
 {
-    Fred::CreateContactTest create_test(_check_handle, testdef_name_, logd_request_);
+    Fred::CreateContactTest create_test(_check_handle, testdef_handle_, logd_request_);
 
     Fred::OperationContext ctx;
     create_test.exec(ctx);
     ctx.commit_transaction();
 }
 
-setup_nonexistent_test_status_name::setup_nonexistent_test_status_name() {
+setup_nonexistent_test_status_handle::setup_nonexistent_test_status_handle() {
     Database::Result res;
-    // prevent name collisions
+    // prevent handle collisions
     do {
         Fred::OperationContext ctx;
-        status_name_ = "STATUS_" + RandomDataGenerator().xnumstring(15);
+        status_handle = "STATUS_" + RandomDataGenerator().xnumstring(15);
         res = ctx.get_conn().exec(
-            "SELECT name "
+            "SELECT handle "
             "   FROM enum_contact_test_status "
-            "   WHERE name='"+status_name_+"';" );
+            "   WHERE handle='"+status_handle+"';" );
     } while(res.size() != 0);
 }
 
@@ -784,7 +802,7 @@ autoclean_contact_verification_db::autoclean_contact_verification_db() {
     check_statuses.push_back(setup_check_status(Fred::ContactCheckStatus::FAIL));
     check_statuses.push_back(setup_check_status(Fred::ContactCheckStatus::INVALIDATED));
 
-    setup_empty_testsuite testsuite(Fred::TestsuiteName::AUTOMATIC);
+    setup_empty_testsuite testsuite(Fred::TestsuiteHandle::AUTOMATIC);
 }
 
 void autoclean_contact_verification_db::set_cascading_fkeys(Fred::OperationContext& _ctx) {
@@ -837,6 +855,10 @@ void autoclean_contact_verification_db::clean(Fred::OperationContext& _ctx) {
             "   enum_contact_testsuite, "
             "   enum_contact_test_status, "
             "   enum_contact_check_status, "
+            "   enum_contact_test_localization, "
+            "   enum_contact_testsuite_localization, "
+            "   enum_contact_test_status_localization, "
+            "   enum_contact_check_status_localization, "
             "   contact_check_message_map,"
             "   contact_check_object_state_map, "
             "   contact_check_poll_message_map");

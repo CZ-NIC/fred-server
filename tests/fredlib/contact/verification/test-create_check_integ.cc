@@ -52,7 +52,7 @@ const std::string server_name = "test-contact_verification-create_check_integ";
 /**
  executing CreateContactCheck with only mandatory setup
  @pre valid contact handle
- @pre valid testsuite name including one existing test
+ @pre valid testsuite handle including one existing test
  @post correct values present in InfoContactCheckOutput::to_string()
  */
 BOOST_AUTO_TEST_CASE(test_Exec_mandatory_setup)
@@ -60,7 +60,7 @@ BOOST_AUTO_TEST_CASE(test_Exec_mandatory_setup)
     setup_contact contact;
     setup_testsuite testsuite;
 
-    Fred::CreateContactCheck create_check(contact.contact_id_, testsuite.testsuite_name);
+    Fred::CreateContactCheck create_check(contact.contact_id_, testsuite.testsuite_handle);
     std::string handle;
     std::string timezone = "UTC";
 
@@ -160,8 +160,8 @@ BOOST_AUTO_TEST_CASE(test_Exec_mandatory_setup)
 
     // testsuite_id
     BOOST_CHECK_MESSAGE(
-        result_data.testsuite_name == testsuite.testsuite_name,
-        "testsuite name differs in CreateContactCheck ("+ testsuite.testsuite_name +") & InfoContactCheck ("+ testsuite.testsuite_name +")"
+        result_data.testsuite_handle == testsuite.testsuite_handle,
+        "testsuite handle differs in CreateContactCheck ("+ testsuite.testsuite_handle +") & InfoContactCheck ("+ testsuite.testsuite_handle +")"
     );
 
     // create_time
@@ -170,17 +170,17 @@ BOOST_AUTO_TEST_CASE(test_Exec_mandatory_setup)
          "create_time ("+ boost::posix_time::to_simple_string(result_data.local_create_time) +") differs from first update_time ("+ boost::posix_time::to_simple_string(result_data.check_state_history.begin()->local_update_time) +")"
     );
 
-    // status name is 'enqueued'
+    // status handle is 'enqueued'
     BOOST_CHECK_MESSAGE(
-         result_data.check_state_history.begin()->status_name == Fred::ContactCheckStatus::ENQUEUED,
-         "status of create check ("+ result_data.check_state_history.begin()->status_name +")should be enqueued"
+         result_data.check_state_history.begin()->status_handle == Fred::ContactCheckStatus::ENQUEUED,
+         "status of create check ("+ result_data.check_state_history.begin()->status_handle +")should be enqueued"
     );
 }
 
 /**
  executing CreateContactCheck with full mandatory + optional setup
  @pre valid contact handle
- @pre valid testsuite name including one existing test
+ @pre valid testsuite handle including one existing test
  @post correct values present in InfoContactCheckOutput::to_string()
  */
 BOOST_AUTO_TEST_CASE(test_Exec_optional_setup)
@@ -189,7 +189,7 @@ BOOST_AUTO_TEST_CASE(test_Exec_optional_setup)
     setup_testsuite testsuite;
     setup_logd_request_id logd_request;
 
-    Fred::CreateContactCheck create_check(contact.contact_id_, testsuite.testsuite_name, logd_request.logd_request_id);
+    Fred::CreateContactCheck create_check(contact.contact_id_, testsuite.testsuite_handle, logd_request.logd_request_id);
     std::string handle;
     std::string timezone = "UTC";
 
@@ -286,8 +286,8 @@ BOOST_AUTO_TEST_CASE(test_Exec_optional_setup)
 
     // testsuite_id
     BOOST_CHECK_MESSAGE(
-        result_data.testsuite_name == testsuite.testsuite_name,
-        "testsuite name differs in CreateContactCheck ("+ testsuite.testsuite_name +") & InfoContactCheck ("+ testsuite.testsuite_name +")"
+        result_data.testsuite_handle == testsuite.testsuite_handle,
+        "testsuite handle differs in CreateContactCheck ("+ testsuite.testsuite_handle +") & InfoContactCheck ("+ testsuite.testsuite_handle +")"
     );
 
     // create_time
@@ -296,17 +296,17 @@ BOOST_AUTO_TEST_CASE(test_Exec_optional_setup)
          "create_time ("+ boost::posix_time::to_simple_string(result_data.local_create_time) +") differs from first update_time ("+ boost::posix_time::to_simple_string(result_data.check_state_history.begin()->local_update_time) +")"
     );
 
-    // status name is 'enqueued'
+    // status handle is 'enqueued'
     BOOST_CHECK_MESSAGE(
-         result_data.check_state_history.begin()->status_name == Fred::ContactCheckStatus::ENQUEUED,
-         "status of create check ("+ result_data.check_state_history.begin()->status_name +")should be enqueued"
+         result_data.check_state_history.begin()->status_handle == Fred::ContactCheckStatus::ENQUEUED,
+         "status of create check ("+ result_data.check_state_history.begin()->status_handle +")should be enqueued"
     );
 }
 
 /**
  setting nonexistent contact handle value and executing operation
  @pre nonexistent contact handle
- @pre valid testsuite name
+ @pre valid testsuite handle
  @post Fred::CreateContactCheck::ExceptionUnknownContactHandle
 */
 BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_contact_id)
@@ -314,7 +314,7 @@ BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_contact_id)
     setup_nonexistent_contact_id contact;
     setup_testsuite testsuite;
 
-    Fred::CreateContactCheck create_check(contact.contact_id_, testsuite.testsuite_name);
+    Fred::CreateContactCheck create_check(contact.contact_id_, testsuite.testsuite_handle);
     std::string handle;
 
     bool caught_the_right_exception = false;
@@ -334,17 +334,17 @@ BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_contact_id)
 }
 
 /**
- setting nonexistent testsuite name value and executing operation
+ setting nonexistent testsuite handle value and executing operation
  @pre valid contact handle
- @pre nonexistent testsuite name
- @post Fred::CreateContactCheck::ExceptionUnknownTestsuiteName
+ @pre nonexistent testsuite handle
+ @post Fred::CreateContactCheck::ExceptionUnknownTestsuiteHandle
  */
-BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_testsuite_name)
+BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_testsuite_handle)
 {
     setup_contact contact;
-    setup_nonexistent_testsuite_name testsuite;
+    setup_nonexistent_testsuite_handle testsuite;
 
-    Fred::CreateContactCheck create_check(contact.contact_id_, testsuite.testsuite_name);
+    Fred::CreateContactCheck create_check(contact.contact_id_, testsuite.testsuite_handle);
     std::string handle;
 
     bool caught_the_right_exception = false;
@@ -352,7 +352,7 @@ BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_testsuite_name)
         Fred::OperationContext ctx;
         handle = create_check.exec(ctx);
         ctx.commit_transaction();
-    } catch(const Fred::CreateContactCheck::ExceptionUnknownTestsuiteName& exp) {
+    } catch(const Fred::CreateContactCheck::ExceptionUnknownTestsuiteHandle& exp) {
         caught_the_right_exception = true;
     } catch(...) {
         BOOST_FAIL("incorrect exception caught");

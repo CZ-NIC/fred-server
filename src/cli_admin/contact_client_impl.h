@@ -287,7 +287,7 @@ struct contact_verification_fill_queue_impl
 
       enqueued_checks =
           Admin::ContactVerificationQueue::fill_check_queue(
-              boost::to_lower_copy(params.testsuite_name),
+              boost::to_lower_copy(params.testsuite_handle),
               params.max_queue_lenght
           )
           .set_contact_filter(filter)
@@ -327,16 +327,16 @@ struct contact_verification_enqueue_check_impl
       Fred::OperationContext ctx;
       std::string check_handle;
       try {
-          check_handle = Fred::CreateContactCheck(params.contact_id, params.testsuite_name)
+          check_handle = Fred::CreateContactCheck(params.contact_id, params.testsuite_handle)
               .exec(ctx);
           ctx.commit_transaction();
       } catch (Fred::CreateContactCheck::ExceptionUnknownContactId& e) {
           throw ReturnCode(
               std::string("given contact id (") + boost::lexical_cast<std::string>(params.contact_id) + ") is unknown",
               1);
-      } catch (Fred::CreateContactCheck::ExceptionUnknownTestsuiteName& e) {
+      } catch (Fred::CreateContactCheck::ExceptionUnknownTestsuiteHandle& e) {
           throw ReturnCode(
-              std::string("given testsuite name (") + params.testsuite_name + ") is unknown",
+              std::string("given testsuite handle (") + params.testsuite_handle + ") is unknown",
               1);
       }
 

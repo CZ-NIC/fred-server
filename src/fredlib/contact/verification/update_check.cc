@@ -29,19 +29,19 @@ namespace Fred
 {
     UpdateContactCheck::UpdateContactCheck(
         const std::string& _check_handle,
-        const std::string& _status_name
+        const std::string& _status_handle
     ) :
         check_handle_(_check_handle),
-        status_name_(_status_name)
+        status_handle_(_status_handle)
     { }
 
     UpdateContactCheck::UpdateContactCheck(
         const std::string&  _check_handle,
-        const std::string&  _status_name,
+        const std::string&  _status_handle,
         Optional<long long> _logd_request_id
     ) :
         check_handle_(_check_handle),
-        status_name_(_status_name),
+        status_handle_(_status_handle),
         logd_request_id_(
             ( _logd_request_id.isset() )
                 ?
@@ -62,11 +62,11 @@ namespace Fred
         Database::Result status_res = _ctx.get_conn().exec_params(
             "SELECT id "
             "   FROM enum_contact_check_status "
-            "   WHERE name=$1::varchar; ",
-            Database::query_param_list(status_name_)
+            "   WHERE handle=$1::varchar; ",
+            Database::query_param_list(status_handle_)
         );
         if(status_res.size() != 1) {
-            throw ExceptionUnknownStatusName();
+            throw ExceptionUnknownStatusHandle();
         }
         long status_id = static_cast<long>(status_res[0]["id"]);
 
@@ -103,7 +103,7 @@ namespace Fred
             std::string what_string(_exc.what());
 
             if(what_string.find("contact_check_fk_Enum_contact_check_status_id") != std::string::npos) {
-                throw ExceptionUnknownStatusName();
+                throw ExceptionUnknownStatusHandle();
             }
 
             // problem was elsewhere so let it propagate
@@ -115,7 +115,7 @@ namespace Fred
         os << "#UpdateContactCheck "
             << " check_handle_: "    << i.check_handle_
             << " logd_request_id_: " << i.logd_request_id_.print_quoted()
-            << " status_name_: "     << i.status_name_;
+            << " status_handle_: "   << i.status_handle_;
 
         return os;
     }

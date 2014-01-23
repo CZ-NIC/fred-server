@@ -22,16 +22,16 @@
  *  There can be another testsuites as well but content of this enum is mandatory and should be always present in database.
  */
 
-#ifndef CONTACT_VERIFICATION_TESTSUITE_NAME_2133867786_
-#define CONTACT_VERIFICATION_TESTSUITE_NAME_2133867786_
+#ifndef CONTACT_VERIFICATION_TESTSUITE_HANDLE_2133867786_
+#define CONTACT_VERIFICATION_TESTSUITE_HANDLE_2133867786_
 
 namespace Fred
 {
     /**
-     * Available statuses for Contact test.
-     * Should be in sync with enum_contact_test_status.name in db.
+     * Available testsuites defined by their handles.
+     * Should be in sync with enum_contact_testsuite.handle in db.
      */
-    namespace TestsuiteName
+    namespace TestsuiteHandle
     {
         const std::string AUTOMATIC     = "automatic";
         const std::string MANUAL        = "manual";

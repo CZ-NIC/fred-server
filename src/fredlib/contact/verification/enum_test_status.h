@@ -28,7 +28,7 @@ namespace Fred
 {
     /**
      * Available statuses for Contact test.
-     * Should be in sync with enum_contact_test_status.name in db.
+     * Should be in sync with enum_contact_test_status.handle in db.
      */
     namespace ContactTestStatus
     {
