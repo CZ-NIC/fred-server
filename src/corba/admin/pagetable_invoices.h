@@ -2,7 +2,7 @@
 #define PAGETABLE_INVOICES_H_
 
 #include "pagetable_impl.h"
-#include "fredlib/invoicing/invoice.h"
+#include "src/fredlib/invoicing/invoice.h"
 
 class ccReg_Invoices_i : public ccReg_PageTable_i,
                          public PortableServer::RefCountServantBase {

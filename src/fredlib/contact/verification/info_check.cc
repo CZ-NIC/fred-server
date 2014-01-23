@@ -21,7 +21,8 @@
  *  get info about contact check
  */
 
-#include "fredlib/contact/verification/info_check.h"
+#include "src/fredlib/contact/verification/info_check.h"
+
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string/join.hpp>
 #include <string>

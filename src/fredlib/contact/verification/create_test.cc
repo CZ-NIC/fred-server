@@ -20,10 +20,10 @@
  *  @file
  *  create contact test
  */
-#include <boost/algorithm/string/join.hpp>
+#include "src/fredlib/contact/verification/create_test.h"
+#include "src/fredlib/contact/verification/enum_test_status.h"
 
-#include "fredlib/contact/verification/create_test.h"
-#include "fredlib/contact/verification/enum_test_status.h"
+#include <boost/algorithm/string/join.hpp>
 
 namespace Fred
 {

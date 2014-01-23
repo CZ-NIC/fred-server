@@ -7,15 +7,16 @@
 #include <vector>
 #include <stdexcept>
 
-#include "common_impl_new.h"
-#include "common_object.h"
-#include "object.h"
+#include "src/fredlib/common_impl_new.h"
+#include "src/fredlib/common_object.h"
+#include "src/fredlib/object.h"
 #include "types/data_types.h"
 #include "types/money.h"
 #include "decimal.h"
-#include "types.h" 
-#include "exceptions.h"
+#include "src/fredlib/types.h" 
+#include "src/fredlib/exceptions.h"
 #include <boost/shared_ptr.hpp>
+#include <idna.h>
 /// forward declaration for database connection
 class DB;
 
@@ -202,16 +203,19 @@ namespace Fred
       virtual Fred::Zone::Zone* findId(Database::ID id) const =0;
     };
 
+    class idn_conversion_fail : public std::exception {};
     /// holder for zones managed by registry
     class Manager
     {
      public:
       /// destruktor
       virtual ~Manager() {}
+      /// check Punycode validity
+      virtual bool is_valid_punycode(const std::string& fqdn) const = 0;
       /// encode UTF8 domain name into IDN ascii string
-      virtual std::string encodeIDN(const std::string& fqdn) const = 0;
+      virtual std::string utf8_to_punycode(const std::string& fqdn) const = 0;
       /// decode IDN ascii domain name into UTF8 string
-      virtual std::string decodeIDN(const std::string& fqdn) const = 0;      
+      virtual std::string punycode_to_utf8(const std::string& fqdn) const = 0;
       /// tokenize domain name into sequence
       virtual void parseDomainName(
         const std::string& fqdn, DomainName& domain, bool allowIDN

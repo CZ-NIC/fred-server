@@ -21,17 +21,16 @@
  *  integration tests for admin/contact/verification/fill_automatic_check_queue.cc
  */
 
-#include "admin/contact/verification/run_all_enqueued_checks.h"
-#include "admin/contact/verification/fill_check_queue.h"
-#include "fredlib/contact/verification/enum_check_status.h"
-#include "fredlib/contact/verification/enum_test_status.h"
-#include "fredlib/contact/verification/enum_testsuite_name.h"
-#include "fredlib/contact/verification/create_check.h"
-#include "fredlib/contact/verification/update_check.h"
-#include "fredlib/nsset/create_nsset.h"
-#include "fredlib/nsset/update_nsset.h"
-#include "fredlib/domain/create_domain.h"
-#include "fredlib/object_states.h"
+#include "src/admin/contact/verification/run_all_enqueued_checks.h"
+#include "src/admin/contact/verification/fill_check_queue.h"
+#include "src/fredlib/contact/verification/enum_check_status.h"
+#include "src/fredlib/contact/verification/enum_test_status.h"
+#include "src/fredlib/contact/verification/enum_testsuite_name.h"
+#include "src/fredlib/contact/verification/create_check.h"
+#include "src/fredlib/contact/verification/update_check.h"
+#include <fredlib/nsset.h>
+#include <fredlib/domain.h>
+#include "src/fredlib/object_states.h"
 
 #include <algorithm>
 
@@ -516,7 +515,8 @@ setup_special_contact::setup_special_contact(
     }
 
     Fred::OperationContext ctx_check;
-    data_ = Fred::InfoContact(contact_handle_, registrar_.registrar_handle).exec(ctx_check);
+    data_ = Fred::InfoContactByHandle(contact_handle_)
+        .exec(ctx_check);
 
     contact_id_ = static_cast<long long>(
         ctx_check.get_conn().exec(

@@ -26,9 +26,9 @@
 #include "cfg/config_handler_decl.h"
 #include "cfg/handle_database_args.h"
 #include "cfg/handle_corbanameservice_args.h"
-#include "cli_admin/handle_adminclientselection_args.h"
+#include "handle_adminclientselection_args.h"
 
-#include "cli_admin/fileclient.h"
+#include "fileclient.h"
 
 /**
  * \class file_list_impl

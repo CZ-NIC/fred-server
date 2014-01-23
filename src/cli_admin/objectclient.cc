@@ -22,15 +22,15 @@
 #include <omniORB4/CORBA.h>
 #include "commonclient.h"
 #include "objectclient.h"
-#include "fredlib/registry.h"
-#include "fredlib/poll.h"
+#include "src/fredlib/registry.h"
+#include "src/fredlib/poll.h"
 #include "log/logger.h"
-#include "corba/nameservice.h"
+#include "src/corba/nameservice.h"
 #include <stdexcept>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/algorithm/string.hpp>
 
-#include "fredlib/object_states.h"
+#include "src/fredlib/object_states.h"
 
 namespace Admin {
 

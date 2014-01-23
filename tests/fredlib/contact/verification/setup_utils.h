@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-#include "fredlib/contact/info_contact.h"
+#include "src/fredlib/contact/info_contact.h"
 
 struct setup_get_registrar_handle
 {

@@ -2,8 +2,8 @@
 #define BLACKLIST_H_
 
 #include <string>
-#include "exceptions.h"
-#include "old_utils/dbsql.h"
+#include "src/fredlib/exceptions.h"
+#include "src/old_utils/dbsql.h"
 
 namespace Fred
 {

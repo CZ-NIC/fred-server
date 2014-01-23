@@ -26,9 +26,9 @@
 #include <iostream>
 
 
-#include "corba/admin/admin_impl.h"
-#include "old_utils/dbsql.h"
-#include "fredlib/registry.h"
+#include "src/corba/admin/admin_impl.h"
+#include "src/old_utils/dbsql.h"
+#include "src/fredlib/registry.h"
 #include "baseclient.h"
 
 #include "notify_params.h"

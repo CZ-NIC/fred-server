@@ -22,7 +22,7 @@
 #include <boost/algorithm/string/trim.hpp>
 
 #include "mailer_manager.h"
-#include "old_utils/log.h"
+#include "src/old_utils/log.h"
 #include "log/logger.h"
 
 MailerManager::MailerManager(NameService *ns) : ns_ptr(ns)

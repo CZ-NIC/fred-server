@@ -17,7 +17,7 @@
  */
 
 /**
- *  @file nsset_dns_host.h
+ *  @file
  *  nsset dns host
  */
 
@@ -27,43 +27,68 @@
 #include <string>
 #include <vector>
 
-#include "fredlib/opexception.h"
-#include "fredlib/opcontext.h"
+#include "src/fredlib/opexception.h"
+#include "src/fredlib/opcontext.h"
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
+#include "util/printable.h"
 
 namespace Fred
 {
 
-    class DnsHost
+    /**
+     * Nameserver data container.
+     */
+    class DnsHost : public Util::Printable
     {
-        std::string fqdn_;
-        std::vector<std::string> inet_addr_;
+        std::string fqdn_;/**< fully qualified name of the nameserver host*/
+        std::vector<std::string> inet_addr_;/**< list of IPv4 or IPv6 addresses of the nameserver host*/
     public:
+
+        /**
+         * Empty destructor.
+         */
         virtual ~DnsHost(){}
+
+        /**
+         * Constructor initializing all attributes.
+         * @param _fqdn sets nameserver name into @ref fqdn_ attribute
+         * @param _inet_addr sets addresses of the nameserver into @ref inet_addr_ attribute.
+         */
         DnsHost(const std::string& _fqdn, const std::vector<std::string>& _inet_addr)
         : fqdn_(_fqdn)
         , inet_addr_(_inet_addr)
         {}
 
+        /**
+         * Nameserver name getter.
+         * @return name of nameserver viz @ref fqdn_
+         */
         std::string get_fqdn() const
         {
             return fqdn_;
         }
 
+        /**
+         * Nameserver addresses getter.
+         * @return addresses of nameserver field viz @ref inet_addr_
+         */
         std::vector<std::string> get_inet_addr() const
         {
             return inet_addr_;
         }
 
-        operator std::string() const
+        /**
+        * Dumps state of the instance into the string
+        * @return string with description of the instance state
+        */
+        std::string to_string() const
         {
-            std::stringstream ret;
-            ret << "DnsHost fqdn: " << fqdn_;
-            if(!inet_addr_.empty()) ret << " inet_addr:";
-            for(std::vector<std::string>::const_iterator ci = inet_addr_.begin()
-                ; ci != inet_addr_.end(); ++ci) ret << " " << *ci;
-            return ret.str();
+            return Util::format_data_structure("DnsHost",
+            Util::vector_of<std::pair<std::string,std::string> >
+            (std::make_pair("fqdn",fqdn_))
+            (std::make_pair("inet_addr",Util::format_vector(inet_addr_)))
+            );
         }
 
     };

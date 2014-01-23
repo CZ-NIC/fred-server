@@ -2,8 +2,8 @@
 #define MOJEID_NOTIFIER_H__
 
 #include <boost/shared_ptr.hpp>
-#include "fredlib/mailer.h"
-#include "fredlib/notifier/ntf_except.h"
+#include "src/fredlib/mailer.h"
+#include "src/fredlib/notifier/ntf_except.h"
 
 
 namespace Fred {

@@ -19,19 +19,19 @@
 #include <memory>
 #include <iomanip>
 #include <stdexcept>
-#include <corba/Whois.hh>
+#include "src/corba/Whois.hh"
 
-#include "common.h"
+#include "src/corba/admin/common.h"
 #include "whois_impl.h"
-#include "old_utils/log.h"
-#include "old_utils/dbsql.h"
-#include "fredlib/registry.h"
+#include "src/old_utils/log.h"
+#include "src/old_utils/dbsql.h"
+#include "src/fredlib/registry.h"
 
 #include "log/logger.h"
 #include "log/context.h"
 #include "util/random.h"
 
-#include "corba/connection_releaser.h"
+#include "src/corba/connection_releaser.h"
 
 
 static const std::string create_ctx_name(const std::string &_name)
@@ -690,7 +690,7 @@ ccReg::DomainDetails* ccReg_Whois_i::getDomainsByInverseKey(const char* key,
             }
 
             if (dm->isDeletePending(
-                        r->getZoneManager()->encodeIDN(d->getFQDN())) == false)
+                        r->getZoneManager()->utf8_to_punycode(d->getFQDN())) == false)
             {
                 unsigned int l = dlist->length();
                 dlist->length(l + 1);
@@ -756,7 +756,7 @@ ccReg::NSSetDetails* ccReg_Whois_i::getNSSetsByInverseKey(const char* key,
         Fred::NSSet::Manager *nm = r->getNSSetManager();
         std::auto_ptr<Fred::NSSet::List> nl(nm->createList());
         switch (type) {
-        case ccReg::NIKT_NS : nl->setHostNameFilter(zm->encodeIDN(key)); break;
+        case ccReg::NIKT_NS : nl->setHostNameFilter(zm->utf8_to_punycode(key)); break;
         case ccReg::NIKT_TECH : nl->setAdminFilter(key); break;
         }
         nl->setLimit(limit);
@@ -880,7 +880,7 @@ ccReg::DomainDetail* ccReg_Whois_i::getDomainByFQDN(const char* fqdn)
                     , registry_restricted_handles_));
         Fred::Domain::Manager *dm = r->getDomainManager();
 
-        if (dm->isDeletePending(r->getZoneManager()->encodeIDN(fqdn)))
+        if (dm->isDeletePending(r->getZoneManager()->utf8_to_punycode(fqdn)))
         {
             const Fred::StatusDesc *dc = registry_manager_->getStatusDesc("deleteCandidate");
             if (!dc) {
@@ -898,7 +898,7 @@ ccReg::DomainDetail* ccReg_Whois_i::getDomainByFQDN(const char* fqdn)
         {
             std::auto_ptr<Fred::Domain::List> dl(dm->createList());
             dl->setWildcardExpansion(false);
-            dl->setFQDNFilter(r->getZoneManager()->encodeIDN(fqdn));
+            dl->setFQDNFilter(r->getZoneManager()->utf8_to_punycode(fqdn));
             dl->reload();
 
             if (dl->getCount() != 1) {

@@ -3,7 +3,7 @@
 
 #include "contact_validator.h"
 #include "contact_verification_checkers.h"
-#include "contact.h"
+#include "src/fredlib/contact.h"
 
 
 namespace Fred {

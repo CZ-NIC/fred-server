@@ -1,7 +1,7 @@
-#include "corba/mailer_manager.h"
+#include "src/corba/mailer_manager.h"
 #include "action.h"
-#include "old_utils/dbsql.h"
-#include "fredlib/registry.h"
+#include "src/old_utils/dbsql.h"
+#include "src/fredlib/registry.h"
 
 // type of object  1 contact  2 nsset 3 domain 4 keyset
 #define OBJECT_CONTACT 1

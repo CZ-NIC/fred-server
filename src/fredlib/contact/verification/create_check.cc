@@ -21,16 +21,16 @@
  *  create contact check
  */
 
+#include "util/random_data_generator.h"
+
+#include "src/fredlib/contact/verification/create_check.h"
+#include "src/fredlib/contact/verification/create_test.h"
+#include "src/fredlib/contact/verification/enum_check_status.h"
+
 #include <boost/assign/list_of.hpp>
 #include <boost/algorithm/string/join.hpp>
 /* TODO - FIXME - only temporary for uuid mockup */
 #include  <cstdlib>
-#include "util/random_data_generator.h"
-
-#include "fredlib/contact/verification/create_check.h"
-#include "fredlib/contact/verification/create_test.h"
-#include "fredlib/contact/verification/enum_check_status.h"
-
 
 namespace Fred
 {

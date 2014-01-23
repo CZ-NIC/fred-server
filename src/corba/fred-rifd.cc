@@ -22,10 +22,10 @@
  */
 
 #include "config.h"
-#include "EPP.hh"
-#include "TechCheck.hh"
-#include "epp/epp_impl.h"
-#include "corba/mailer_manager.h"
+#include "src/corba/EPP.hh"
+#include "src/corba/TechCheck.hh"
+#include "src/corba/epp/epp_impl.h"
+#include "src/corba/mailer_manager.h"
 
 #include <iostream>
 #include <stdexcept>
@@ -39,11 +39,11 @@
 #include <boost/date_time.hpp>
 #include <boost/assign/list_of.hpp>
 
-#include "fredlib/db_settings.h"
-#include "corba_wrapper.h"
+#include "src/fredlib/db_settings.h"
+#include "util/corba_wrapper.h"
 #include "log/logger.h"
 #include "log/context.h"
-#include "corba/connection_releaser.h"
+#include "src/corba/connection_releaser.h"
 #include "setup_server.h"
 
 #include "cfg/config_handler.h"
@@ -111,6 +111,8 @@ int main(int argc, char *argv[])
                     , rifd_args_ptr->rifd_session_timeout
                     , rifd_args_ptr->rifd_session_registrar_max
                     , rifd_args_ptr->rifd_epp_update_domain_keyset_clear
+                    , rifd_args_ptr->rifd_epp_operations_charging
+                    , rifd_args_ptr->allow_idn
             ));
 
             // create session use values from config

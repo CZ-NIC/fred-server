@@ -21,11 +21,11 @@
  *  operation context
  */
 
-#include "fredlib/opcontext.h"
+#include "src/fredlib/opcontext.h"
 
 #include <string>
 
-#include "fredlib/db_settings.h"
+#include "src/fredlib/db_settings.h"
 #include "util/log/log.h"
 
 namespace Fred

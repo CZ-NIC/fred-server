@@ -1,11 +1,11 @@
 #ifndef CONTACT_VERIFICATION_CORBA_CONVERTION_H_
 #define CONTACT_VERIFICATION_CORBA_CONVERTION_H_
 
-#include "corba/ContactVerification.hh"
-#include "corba/common_wrappers.h"
+#include "src/corba/ContactVerification.hh"
+#include "src/corba/common_wrappers.h"
 
-#include "fredlib/contact_verification/contact.h"
-#include "fredlib/contact_verification/contact_verification_validators.h"
+#include "src/fredlib/contact_verification/contact.h"
+#include "src/fredlib/contact_verification/contact_verification_validators.h"
 
 #include <string>
 #include <boost/algorithm/string.hpp>

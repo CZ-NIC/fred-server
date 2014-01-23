@@ -25,13 +25,13 @@
 #include <utility>
 #include <string>
 
-#include "fredlib/contact/verification/create_check.h"
-#include "fredlib/contact/verification/info_check.h"
-#include "fredlib/contact/verification/enum_check_status.h"
-#include "fredlib/contact/create_contact.h"
-#include "fredlib/db_settings.h"
+#include "src/fredlib/contact/verification/create_check.h"
+#include "src/fredlib/contact/verification/info_check.h"
+#include "src/fredlib/contact/verification/enum_check_status.h"
+#include "src/fredlib/contact/create_contact.h"
+#include "src/fredlib/db_settings.h"
 #include "util/db/nullable.h"
-#include "random_data_generator.h"
+#include "util/random_data_generator.h"
 
 #include "tests/fredlib/contact/verification/setup_utils.h"
 

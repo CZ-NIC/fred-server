@@ -46,16 +46,16 @@
 #include "cfg/handle_registry_args.h"
 #include "cfg/handle_rifd_args.h"
 
-#include "fredlib/registrar.h"
-#include "fredlib/invoicing/invoice.h"
-#include "mailer_manager.h"
+#include "src/fredlib/registrar.h"
+#include "src/fredlib/invoicing/invoice.h"
+#include "src/corba/mailer_manager.h"
 #include "time_clock.h"
-#include "credit.h"
-#include "file_manager_client.h"
-#include "fredlib/banking/bank_common.h"
-#include "corba/Admin.hh"
-#include "corba/EPP.hh"
-#include "epp/epp_impl.h"
+#include "src/fredlib/credit.h"
+#include "src/corba/file_manager_client.h"
+#include "src/fredlib/banking/bank_common.h"
+#include "src/corba/Admin.hh"
+#include "src/corba/EPP.hh"
+#include "src/corba/epp/epp_impl.h"
 #include "types/money.h"
 
 #include "decimal/decimal.h"
@@ -1299,7 +1299,7 @@ struct create_geneppoperation_fixture
                                 , zone_id
                                 , registrar_id
                                 , 0 //object_id
-                                , boost::posix_time::second_clock::local_time() //crdate //local timestamp
+                                , boost::posix_time::second_clock::universal_time() //crdate //utc timestamp
                                 , first_day_of_last_month//date_from //local date
                                 , last_day_of_last_month// date_to //local date
                                 , Decimal ("900000"));
@@ -1320,7 +1320,7 @@ struct create_geneppoperation_fixture
                                   , zone_id
                                   , registrar_id
                                   , 0 //object_id
-                                  , boost::posix_time::second_clock::local_time() //crdate //local timestamp
+                                  , boost::posix_time::second_clock::universal_time() //crdate //utc timestamp
                                 , first_day_of_last_month//date_from //local date
                                 , last_day_of_last_month// date_to //local date
                                   , Decimal ("800000"));
@@ -1345,7 +1345,7 @@ struct create_geneppoperation_fixture
                                   , zone_id
                                   , registrar_id
                                   , 0 //object_id
-                                  , boost::posix_time::second_clock::local_time() //crdate //local timestamp
+                                  , boost::posix_time::second_clock::universal_time() //crdate //utc timestamp
                                 , first_day_of_last_month//date_from //local date
                                 , last_day_of_last_month// date_to //local date
                                   , Decimal ("700000"));
@@ -1368,7 +1368,7 @@ struct create_geneppoperation_fixture
                                   , zone_id
                                   , registrar_id
                                   , 0 //object_id
-                                  , boost::posix_time::second_clock::local_time() //crdate //local timestamp
+                                  , boost::posix_time::second_clock::universal_time() //crdate //utc timestamp
                                 , first_day_of_last_month//date_from //local date
                                 , last_day_of_last_month// date_to //local date
                                   , Decimal ("600000"));
@@ -1390,7 +1390,7 @@ struct create_geneppoperation_fixture
                               , zone_id
                               , registrar_id
                               , 0 //object_id
-                              , boost::posix_time::second_clock::local_time() //crdate //local timestamp
+                              , boost::posix_time::second_clock::universal_time() //crdate //utc timestamp
                             , first_day_of_last_month//date_from //local date
                             , last_day_of_last_month// date_to //local date
                               , Decimal ("500000"));

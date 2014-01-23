@@ -1,10 +1,10 @@
 #ifndef MAIL_H_
 #define MAIL_H_
 
-#include "common_object.h"
-#include "object.h"
-#include "db_settings.h"
-#include "model/model_filters.h"
+#include "src/fredlib/common_object.h"
+#include "src/fredlib/object.h"
+#include "src/fredlib/db_settings.h"
+#include "src/model/model_filters.h"
 
 namespace Fred {
 namespace Mail {

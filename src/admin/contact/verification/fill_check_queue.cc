@@ -6,12 +6,12 @@
 #include <boost/algorithm/string/join.hpp>
 #include <boost/algorithm/string/case_conv.hpp>
 
-#include "admin/contact/verification/fill_check_queue.h"
-#include "fredlib/opcontext.h"
-#include "fredlib/contact/verification/create_check.h"
-#include "fredlib/contact/verification/info_check.h"
-#include "fredlib/contact/verification/enum_testsuite_name.h"
-#include "fredlib/contact/verification/enum_check_status.h"
+#include "src/admin/contact/verification/fill_check_queue.h"
+#include "src/fredlib/opcontext.h"
+#include "src/fredlib/contact/verification/create_check.h"
+#include "src/fredlib/contact/verification/info_check.h"
+#include "src/fredlib/contact/verification/enum_testsuite_name.h"
+#include "src/fredlib/contact/verification/enum_check_status.h"
 
 namespace  Admin {
 namespace ContactVerificationQueue {

@@ -45,34 +45,25 @@
 
 #include "setup_server_decl.h"
 #include "time_clock.h"
-#include "fredlib/registrar.h"
-#include "fredlib/contact/merge_contact.h"
-#include "fredlib/contact/merge_contact_selection.h"
-#include "fredlib/contact/merge_contact_email_notification_data.h"
-#include "fredlib/contact/create_contact.h"
-#include "fredlib/nsset/create_nsset.h"
-#include "fredlib/keyset/create_keyset.h"
-#include "fredlib/domain/create_domain.h"
-#include "fredlib/keyset/info_keyset.h"
-#include "fredlib/keyset/info_keyset_history.h"
-#include "fredlib/keyset/info_keyset_compare.h"
-#include "fredlib/nsset/info_nsset.h"
-#include "fredlib/nsset/info_nsset_history.h"
-#include "fredlib/nsset/info_nsset_compare.h"
-#include "fredlib/domain/info_domain.h"
-#include "fredlib/domain/info_domain_history.h"
-#include "fredlib/domain/info_domain_compare.h"
-#include "fredlib/contact/info_contact.h"
-#include "fredlib/contact/info_contact_history.h"
-#include "fredlib/contact/info_contact_compare.h"
-
+#include "src/fredlib/registrar.h"
+#include "src/fredlib/contact/merge_contact.h"
+#include "src/fredlib/contact/merge_contact_selection.h"
+#include "src/fredlib/contact/merge_contact_email_notification_data.h"
+#include "src/fredlib/contact/create_contact.h"
+#include "src/fredlib/nsset/create_nsset.h"
+#include "src/fredlib/keyset/create_keyset.h"
+#include "src/fredlib/domain/create_domain.h"
+#include "src/fredlib/keyset/info_keyset.h"
+#include "src/fredlib/nsset/info_nsset.h"
+#include "src/fredlib/domain/info_domain.h"
+#include "src/fredlib/contact/info_contact.h"
 
 #include "util/util.h"
 
 #include "random_data_generator.h"
 #include "concurrent_queue.h"
 
-#include "fredlib/db_settings.h"
+#include "src/fredlib/db_settings.h"
 
 #include "cfg/handle_general_args.h"
 #include "cfg/handle_server_args.h"
@@ -116,12 +107,15 @@ struct create_contact_fixture
     {}
 };
 
+DECLARE_EXCEPTION_DATA(unknown_registrar_handle, std::string);
+
 /**
  * test CreateContact with wrong registrar
  */
 BOOST_FIXTURE_TEST_CASE(create_contact_wrong_registrar, create_contact_fixture)
 {
     Fred::OperationContext ctx;
+
     std::string bad_registrar_handle = registrar_handle+xmark;
     BOOST_CHECK_EXCEPTION(
     try
@@ -133,7 +127,7 @@ BOOST_FIXTURE_TEST_CASE(create_contact_wrong_registrar, create_contact_fixture)
     }
     catch(const Fred::CreateContact::Exception& ex)
     {
-        ex << Fred::ErrorInfo_unknown_registrar_handle("modifying const EX& by operator<<");
+        ex << ErrorInfo_unknown_registrar_handle("modifying const EX& by operator<<");
         //ex.set_internal_error("unable to modify const EX& by setter - ok");
         BOOST_TEST_MESSAGE( boost::diagnostic_information(ex));
         BOOST_CHECK(ex.is_set_unknown_registrar_handle());

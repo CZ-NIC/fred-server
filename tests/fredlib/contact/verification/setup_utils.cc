@@ -2,13 +2,13 @@
 
 #include "tests/fredlib/contact/verification/setup_utils.h"
 
-#include "fredlib/contact/verification/create_check.h"
-#include "fredlib/contact/verification/create_test.h"
-#include "fredlib/contact/verification/enum_testsuite_name.h"
-#include "fredlib/contact/verification/enum_check_status.h"
-#include "fredlib/contact/verification/enum_test_status.h"
-#include "fredlib/contact/create_contact.h"
-#include "fredlib/contact/delete_contact.h"
+#include "src/fredlib/contact/verification/create_check.h"
+#include "src/fredlib/contact/verification/create_test.h"
+#include "src/fredlib/contact/verification/enum_testsuite_name.h"
+#include "src/fredlib/contact/verification/enum_check_status.h"
+#include "src/fredlib/contact/verification/enum_test_status.h"
+#include "src/fredlib/contact/create_contact.h"
+#include "src/fredlib/contact/delete_contact.h"
 #include "util/random.h"
 #include "util/random_data_generator.h"
 
@@ -45,7 +45,7 @@ setup_contact::setup_contact() {
     }
 
     Fred::OperationContext ctx_check;
-    data_ = Fred::InfoContact(contact_handle, registrar.registrar_handle).exec(ctx_check);
+    data_ = Fred::InfoContactByHandle(contact_handle).exec(ctx_check);
 
     contact_id_ = static_cast<long long>(
         ctx_check.get_conn().exec(

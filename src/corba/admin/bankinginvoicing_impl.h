@@ -2,8 +2,8 @@
 #define _BANKING_IMPL_H_
 
 #include <string>
-#include "fredlib/invoicing/invoice.h"
-#include "corba/nameservice.h"
+#include "src/fredlib/invoicing/invoice.h"
+#include "src/corba/nameservice.h"
 
 class ccReg_BankingInvoicing_i:
     public POA_ccReg::BankingInvoicing,

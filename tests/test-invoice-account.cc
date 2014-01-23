@@ -31,19 +31,19 @@
 
 #include "test-common-registry.h"
 #include "types/money.h"
-#include "fredlib/invoicing/invoice.h"
+#include "src/fredlib/invoicing/invoice.h"
 
 #include "test-invoice-common.h"
 
 #include <boost/test/unit_test.hpp>
 
 #include "time_clock.h"
-#include "credit.h"
-#include "file_manager_client.h"
+#include "src/fredlib/credit.h"
+#include "src/corba/file_manager_client.h"
 
 #include "util/corba_wrapper_decl.h"
 
-#include "fredlib/banking/bank_common.h"
+#include "src/fredlib/banking/bank_common.h"
 
 
 using namespace Fred::Invoicing;
@@ -222,7 +222,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoice_request1 )
                          , zone_cz_id
                          , registrar_inv_id
                          , 0 //object_id
-                         , boost::posix_time::second_clock::local_time() //crdate //local timestamp
+                         , boost::posix_time::second_clock::universal_time() //crdate //utc timestamp
                          , todate - boost::gregorian::months(1)//date_from //local date
                          , todate// date_to //local date
                          , Decimal ("100000"));
@@ -425,7 +425,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoice_request2 )
                          , zone_cz_id
                          , registrar_inv_id
                          , 0 //object_id
-                         , boost::posix_time::second_clock::local_time() //crdate //local timestamp
+                         , boost::posix_time::second_clock::universal_time() //crdate //utc timestamp
                          , todate - boost::gregorian::months(1)//date_from //local date
                          , todate// date_to //local date
                          , Decimal ("490000"));

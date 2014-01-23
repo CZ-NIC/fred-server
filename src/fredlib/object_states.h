@@ -1,7 +1,7 @@
 #ifndef OBJECT_STATES_H_
 #define OBJECT_STATES_H_
 
-#include "fredlib/db_settings.h"
+#include "src/fredlib/db_settings.h"
 #include "util/types/optional.h"
 
 

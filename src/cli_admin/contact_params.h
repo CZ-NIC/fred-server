@@ -25,7 +25,7 @@
 #define CONTACT_PARAMS_H_
 
 #include "util/types/optional.h"
-#include "admin/contact/verification/fill_check_queue.h"
+#include "src/admin/contact/verification/fill_check_queue.h"
 
 /**
  * \class ContactListArgs

@@ -3,12 +3,12 @@
 
 #include <string>
 #include <stdexcept>
-#include "types.h"
-#include "domain.h"
-#include "contact.h"
-#include "nsset.h"
-#include "keyset.h"
-#include "exceptions.h" 
+#include "src/fredlib/types.h"
+#include "src/fredlib/domain.h"
+#include "src/fredlib/contact.h"
+#include "src/fredlib/nsset.h"
+#include "src/fredlib/keyset.h"
+#include "src/fredlib/exceptions.h" 
 
 namespace Fred
 {

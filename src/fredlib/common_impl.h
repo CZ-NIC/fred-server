@@ -4,9 +4,9 @@
 #include <sstream>
 #include <vector>
 
-#include "common_object.h"
-#include "db_settings.h"
-#include "old_utils/dbsql.h"
+#include "src/fredlib/common_object.h"
+#include "src/fredlib/db_settings.h"
+#include "src/old_utils/dbsql.h"
 
 namespace Fred {
 

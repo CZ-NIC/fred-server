@@ -1,7 +1,7 @@
 #ifndef CONATACT_VERIFICATION_PUBLIC_REQUEST_IMPL_H_
 #define CONATACT_VERIFICATION_PUBLIC_REQUEST_IMPL_H_
 
-#include "public_request/public_request.h"
+#include "src/fredlib/public_request/public_request.h"
 #include "factory.h"
 
 

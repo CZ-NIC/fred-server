@@ -4,7 +4,7 @@
 
 #include <boost/lexical_cast.hpp>
 
-#include "file_manager_client.h"
+#include "src/corba/file_manager_client.h"
 #include "log/logger.h"
 
 

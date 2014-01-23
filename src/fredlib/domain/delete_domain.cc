@@ -23,13 +23,13 @@
 
 #include <string>
 
-#include "fredlib/domain/delete_domain.h"
-#include "fredlib/domain/domain_name.h"
-#include "fredlib/object/object.h"
-
-#include "fredlib/opcontext.h"
-#include "fredlib/db_settings.h"
-#include "fredlib/object_states.h"
+#include "src/fredlib/domain/delete_domain.h"
+#include "src/fredlib/domain/domain_name.h"
+#include "src/fredlib/object/object.h"
+#include "src/fredlib/registrar/registrar_impl.h"
+#include "src/fredlib/opcontext.h"
+#include "src/fredlib/db_settings.h"
+#include "src/fredlib/object_states.h"
 
 namespace Fred
 {
@@ -44,27 +44,9 @@ namespace Fred
             std::string no_root_dot_fqdn = Fred::Domain::rem_trailing_dot(fqdn_);
 
             //get domain_id and lock object_registry row for update
-            unsigned long long domain_id =0;
-            {
-                Database::Result domain_id_res = ctx.get_conn().exec_params(
-                    "SELECT oreg.id FROM domain d "
-                    " JOIN object_registry oreg ON d.id = oreg.id "
-                    " JOIN enum_object_type eot ON oreg.type = eot.id AND eot.name = 'domain' "
-                    " WHERE oreg.name = LOWER($1::text) AND oreg.erdate IS NULL "
-                    " FOR UPDATE OF oreg"
-                    , Database::query_param_list(no_root_dot_fqdn));
-
-                if (domain_id_res.size() == 0)
-                {
-                    BOOST_THROW_EXCEPTION(Exception().set_unknown_domain_fqdn(fqdn_));
-                }
-                if (domain_id_res.size() != 1)
-                {
-                    BOOST_THROW_EXCEPTION(InternalError("failed to get domain"));
-                }
-
-                domain_id = domain_id_res[0][0];
-            }
+            unsigned long long domain_id = get_object_id_by_handle_and_type_with_lock(
+                    ctx,no_root_dot_fqdn,"domain",static_cast<Exception*>(0),
+                    &Exception::set_unknown_domain_fqdn);
 
             ctx.get_conn().exec_params("DELETE FROM domain_contact_map WHERE domainid = $1::integer"
                 , Database::query_param_list(domain_id));//delete 0..n rows, nothing to be checked in result
@@ -96,16 +78,12 @@ namespace Fred
 
     }//DeleteDomain::exec
 
-    std::ostream& operator<<(std::ostream& os, const DeleteDomain& dd)
+    std::string DeleteDomain::to_string() const
     {
-        return os << "#DeleteDomain fqdn: " << dd.fqdn_
-                ;
-    }
-    std::string DeleteDomain::to_string()
-    {
-        std::stringstream ss;
-        ss << *this;
-        return ss.str();
+        return Util::format_operation_state("DeleteDomain",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("fqdn",fqdn_))
+        );
     }
 
 

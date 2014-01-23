@@ -1,7 +1,7 @@
 #ifndef CORBA_UTIL_CORBA_CONVERSIONS_NULLABLE_TYPES_1234757910447
 #define CORBA_UTIL_CORBA_CONVERSIONS_NULLABLE_TYPES_1234757910447
 
-#include "corba/NullableTypes.hh"
+#include "src/corba/NullableTypes.hh"
 #include "util/db/nullable.h"
 #include "util/optional_value.h"
 #include <boost/date_time/posix_time/posix_time.hpp>

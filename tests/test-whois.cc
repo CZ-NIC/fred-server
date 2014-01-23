@@ -38,7 +38,7 @@
 
 #include "setup_server_decl.h"
 #include "time_clock.h"
-#include "fredlib/registrar.h"
+#include "src/fredlib/registrar.h"
 
 #include "cfg/handle_general_args.h"
 #include "cfg/handle_server_args.h"
@@ -48,7 +48,7 @@
 #include "cfg/handle_corbanameservice_args.h"
 
 
-#include "whois/whois_impl.h"
+#include "src/corba/whois/whois_impl.h"
 
 //not using UTF defined main
 #define BOOST_TEST_NO_MAIN

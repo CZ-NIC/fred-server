@@ -99,6 +99,8 @@ src/corba/DateTimeSK.cc
 src/corba/NullableTypes.hh
 src/corba/NullableTypesSK.cc
 src/corba/NullableTypesDynSK.cc
+/src/fred-server/
+src/nbproject/
 /.settings
 /.autotools
 doc/html
