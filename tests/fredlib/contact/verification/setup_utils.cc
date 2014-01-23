@@ -855,6 +855,10 @@ void autoclean_contact_verification_db::clean(Fred::OperationContext& _ctx) {
             "   enum_contact_testsuite, "
             "   enum_contact_test_status, "
             "   enum_contact_check_status, "
+            "   enum_contact_test_localization, "
+            "   enum_contact_testsuite_localization, "
+            "   enum_contact_test_status_localization, "
+            "   enum_contact_check_status_localization, "
             "   contact_check_message_map,"
             "   contact_check_object_state_map, "
             "   contact_check_poll_message_map");
