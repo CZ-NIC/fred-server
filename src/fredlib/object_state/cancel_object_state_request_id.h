@@ -17,51 +17,46 @@
  */
 
 /**
- *  @file create_domain_name_blacklist_id.h
- *  create domain name blacklist
+ *  @file cancel_object_state_request_id.h
+ *  cancel object state request
  */
 
-#ifndef CREATE_DOMAIN_NAME_BLACKLIST_ID_H_
-#define CREATE_DOMAIN_NAME_BLACKLIST_ID_H_
+#ifndef CANCEL_OBJECT_STATE_REQUEST_ID_H_
+#define CANCEL_OBJECT_STATE_REQUEST_ID_H_
 
 #include "src/fredlib/object_state/create_object_state_request.h"
 
 namespace Fred
 {
 
-    class CreateDomainNameBlacklistId
+/*
+pozadavek na zruseni stavu objektu (update object_state_request)
+  M id objektu,
+  M seznam stavu (jmena)
+*/
+    class CancelObjectStateRequestId
     {
     public:
         typedef boost::posix_time::ptime Time;
-        CreateDomainNameBlacklistId(ObjectId _object_id,
-            const std::string &_reason);
-        CreateDomainNameBlacklistId(ObjectId _object_id,
-            const std::string &_reason,
-            const Optional< Time > &_valid_from,
-            const Optional< Time > &_valid_to);
-        CreateDomainNameBlacklistId& set_valid_from(const Time &_valid_from);
-        CreateDomainNameBlacklistId& set_valid_to(const Time &_valid_to);
+        CancelObjectStateRequestId(ObjectId _object_id,
+            const StatusList &_status_list);
         void exec(OperationContext &_ctx);
 
     //exception impl
         DECLARE_EXCEPTION_DATA(object_id_not_found, ObjectId);
-        DECLARE_EXCEPTION_DATA(already_blacklisted_domain, ObjectId);
-        DECLARE_EXCEPTION_DATA(out_of_turn, std::string);
+        DECLARE_EXCEPTION_DATA(state_not_found, std::string);
 
         struct Exception
         :   virtual Fred::OperationException,
             ExceptionData_object_id_not_found<Exception>,
-            ExceptionData_already_blacklisted_domain<Exception>,
-            ExceptionData_out_of_turn<Exception>
+            ExceptionData_state_not_found<Exception>
         {};
-
     private:
-        ObjectId object_id_;
-        const std::string reason_;
-        Optional< Time > valid_from_;
-        Optional< Time > valid_to_;
-    };//class CreateDomainNameBlacklistId
+        const ObjectId object_id_;
+        const StatusList status_list_; //list of status names to be canceled
+    };//class CancelObjectStateRequestId
+
 
 }//namespace Fred
 
-#endif//CREATE_DOMAIN_NAME_BLACKLIST_H_
+#endif//CANCEL_OBJECT_STATE_REQUEST_ID_H_

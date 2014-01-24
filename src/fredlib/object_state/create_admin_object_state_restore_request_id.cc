@@ -17,20 +17,20 @@
  */
 
 /**
- *  @file create_administrative_object_state_restore_request_id.cc
+ *  @file create_admin_object_state_restore_request_id.cc
  *  create administrative object state restore request
  */
 
-#include "src/fredlib/domain/create_administrative_object_state_restore_request_id.h"
-#include "src/fredlib/domain/clear_administrative_object_state_request_id.h"
-#include "src/fredlib/domain/get_blocking_status_desc_list.h"
+#include "src/fredlib/object_state/create_admin_object_state_restore_request_id.h"
+#include "src/fredlib/object_state/clear_admin_object_state_request_id.h"
+#include "src/fredlib/object_state/clear_object_state_request_id.h"
+#include "src/fredlib/object_state/get_blocking_status_desc_list.h"
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/db_settings.h"
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
 #include "util/util.h"
 #include "src/fredlib/object.h"
-#include "clear_object_state_request_id.h"
 
 #include <boost/algorithm/string.hpp>
 #include <set>
@@ -38,11 +38,11 @@
 namespace Fred
 {
 
-    CreateAdministrativeObjectStateRestoreRequestId::CreateAdministrativeObjectStateRestoreRequestId(ObjectId _object_id)
+    CreateAdminObjectStateRestoreRequestId::CreateAdminObjectStateRestoreRequestId(ObjectId _object_id)
     :   object_id_(_object_id)
     {}
 
-    CreateAdministrativeObjectStateRestoreRequestId::CreateAdministrativeObjectStateRestoreRequestId(ObjectId _object_id,
+    CreateAdminObjectStateRestoreRequestId::CreateAdminObjectStateRestoreRequestId(ObjectId _object_id,
         const std::string &_reason,
         const Optional<unsigned long long> _logd_request_id)
     :   object_id_(_object_id),
@@ -50,19 +50,19 @@ namespace Fred
         logd_request_id_(_logd_request_id)
     {}
 
-    CreateAdministrativeObjectStateRestoreRequestId& CreateAdministrativeObjectStateRestoreRequestId::set_reason(const std::string &_reason)
+    CreateAdminObjectStateRestoreRequestId& CreateAdminObjectStateRestoreRequestId::set_reason(const std::string &_reason)
     {
         reason_ = _reason;
         return *this;
     }
 
-    CreateAdministrativeObjectStateRestoreRequestId& CreateAdministrativeObjectStateRestoreRequestId::set_logd_request_id(unsigned long long _logd_request_id)
+    CreateAdminObjectStateRestoreRequestId& CreateAdminObjectStateRestoreRequestId::set_logd_request_id(unsigned long long _logd_request_id)
     {
         logd_request_id_ = _logd_request_id;
         return *this;
     }
     
-    void CreateAdministrativeObjectStateRestoreRequestId::exec(OperationContext &_ctx)
+    void CreateAdminObjectStateRestoreRequestId::exec(OperationContext &_ctx)
     {
         //get object type
         ObjectType object_type = 0;
@@ -141,9 +141,9 @@ namespace Fred
             }
         }
         try {
-            ClearAdministrativeObjectStateRequestId(object_id_, reason_).exec(_ctx);
+            ClearAdminObjectStateRequestId(object_id_, reason_).exec(_ctx);
         }
-        catch (const ClearAdministrativeObjectStateRequestId::Exception &ex) {
+        catch (const ClearAdminObjectStateRequestId::Exception &ex) {
             if (ex.is_set_server_blocked_absent()) {
                 BOOST_THROW_EXCEPTION(Exception().set_server_blocked_absent(ex.get_server_blocked_absent()));
             }
@@ -154,7 +154,7 @@ namespace Fred
         }
     }
 
-    ObjectStateId CreateAdministrativeObjectStateRestoreRequestId::check_server_blocked_status_present(OperationContext &_ctx) const
+    ObjectStateId CreateAdminObjectStateRestoreRequestId::check_server_blocked_status_present(OperationContext &_ctx) const
     {
         static ObjectStateId server_blocked_id = 0;
         if (server_blocked_id == 0) {

@@ -17,45 +17,36 @@
  */
 
 /**
- *  @file create_administrative_object_block_request.h
+ *  @file create_admin_object_block_request.h
  *  create administrative object block request
  */
 
-/*
-administrativni nastaveni stavu blokovani objektu, (insert do object_state_request) CreateAdministrativeObjectBlockRequest
-  M handle objektu,
-  M typ objektu,
-  M seznam stavu (jmena)
-  od
-  do
-  duvod blokace
-*/
 
-#ifndef CREATE_ADMINISTRATIVE_OBJECT_BLOCK_REQUEST_H_
-#define CREATE_ADMINISTRATIVE_OBJECT_BLOCK_REQUEST_H_
+#ifndef CREATE_ADMIN_OBJECT_BLOCK_REQUEST_H_
+#define CREATE_ADMIN_OBJECT_BLOCK_REQUEST_H_
 
-#include "src/fredlib/domain/create_object_state_request.h"
+#include "src/fredlib/object_state/create_object_state_request.h"
 
 namespace Fred
 {
 
-    class CreateAdministrativeObjectBlockRequest
+    class CreateAdminObjectBlockRequest
     {
     public:
         typedef CreateObjectStateRequest::Time Time;
-        CreateAdministrativeObjectBlockRequest(const std::string &_object_handle,
+        CreateAdminObjectBlockRequest(const std::string &_object_handle,
             ObjectType _object_type,
             const StatusList &_status_list);
-        CreateAdministrativeObjectBlockRequest(const std::string &_object_handle,
+        CreateAdminObjectBlockRequest(const std::string &_object_handle,
             ObjectType _object_type,
             const StatusList &_status_list,
             const Optional< Time > &_valid_from,
             const Optional< Time > &_valid_to,
             const std::string &_reason
             );
-        CreateAdministrativeObjectBlockRequest& set_valid_from(const Time &_valid_from);
-        CreateAdministrativeObjectBlockRequest& set_valid_to(const Time &_valid_to);
-        CreateAdministrativeObjectBlockRequest& set_reason(const std::string &_reason);
+        CreateAdminObjectBlockRequest& set_valid_from(const Time &_valid_from);
+        CreateAdminObjectBlockRequest& set_valid_to(const Time &_valid_to);
+        CreateAdminObjectBlockRequest& set_reason(const std::string &_reason);
         ObjectId exec(OperationContext &_ctx);
 
     //exception impl
@@ -78,9 +69,9 @@ namespace Fred
         Optional< Time > valid_from_;
         Optional< Time > valid_to_;
         Optional< std::string > reason_;
-    };//class CreateAdministrativeObjectBlockRequest
+    };//class CreateAdminObjectBlockRequest
 
 
 }//namespace Fred
 
-#endif//CREATE_ADMINISTRATIVE_OBJECT_BLOCK_REQUEST_H_
+#endif//CREATE_ADMIN_OBJECT_BLOCK_REQUEST_H_

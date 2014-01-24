@@ -17,38 +17,29 @@
  */
 
 /**
- *  @file create_administrative_object_state_restore_request.h
+ *  @file create_admin_object_state_restore_request.h
  *  create administrative object state restore request
  */
 
-/*
-administrativni nastaveni stavu blokovani objektu, (insert do object_state_request) CreateAdministrativeObjectStateRestoreRequest
-  M handle objektu,
-  M typ objektu,
-  M seznam stavu (jmena)
-  od
-  do
-  poznamka
-*/
 
-#ifndef CREATE_ADMINISTRATIVE_OBJECT_STATE_RESTORE_REQUEST_H_
-#define CREATE_ADMINISTRATIVE_OBJECT_STATE_RESTORE_REQUEST_H_
+#ifndef CREATE_ADMIN_OBJECT_STATE_RESTORE_REQUEST_H_
+#define CREATE_ADMIN_OBJECT_STATE_RESTORE_REQUEST_H_
 
-#include "src/fredlib/domain/create_object_state_request.h"
+#include "src/fredlib/object_state/create_object_state_request.h"
 
 namespace Fred
 {
 
-    class CreateAdministrativeObjectStateRestoreRequest
+    class CreateAdminObjectStateRestoreRequest
     {
     public:
-        CreateAdministrativeObjectStateRestoreRequest(const std::string &_object_handle,
+        CreateAdminObjectStateRestoreRequest(const std::string &_object_handle,
             ObjectType _object_type);
-        CreateAdministrativeObjectStateRestoreRequest(const std::string &_object_handle,
+        CreateAdminObjectStateRestoreRequest(const std::string &_object_handle,
             ObjectType _object_type,
             const std::string &_notice
             );
-        CreateAdministrativeObjectStateRestoreRequest& set_notice(const std::string &_notice);
+        CreateAdminObjectStateRestoreRequest& set_notice(const std::string &_notice);
         ObjectId exec(OperationContext &_ctx);
 
     //exception impl
@@ -65,7 +56,7 @@ namespace Fred
         const std::string object_handle_;
         const ObjectType object_type_;
         Optional< std::string > notice_;
-    };//class CreateAdministrativeObjectStateRestoreRequest
+    };//class CreateAdminObjectStateRestoreRequest
 
 }//namespace Fred
 

@@ -683,8 +683,8 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/reminder.h \
 		src/fredlib/opcontext.cc \
 		src/fredlib/opcontext.h \
-		src/fredlib/domain/copy_contact.h \
-		src/fredlib/domain/copy_contact.cc \
+		src/fredlib/contact/copy_contact.h \
+		src/fredlib/contact/copy_contact.cc \
 		src/fredlib/domain/update_domain.h \
 		src/fredlib/domain/update_domain.cc \
 		src/fredlib/domain/info_domain_data.h \
@@ -1221,40 +1221,40 @@ src_corba_fred_adifd_SOURCES = \
 		src/corba/fred-adifd.cc \
 		src/admin_block/administrativeblocking.cc \
 		src/admin_block/administrativeblocking.h \
-		src/fredlib/domain/get_blocking_status_desc_list.cc \
-		src/fredlib/domain/get_blocking_status_desc_list.h \
-		src/fredlib/domain/cancel_object_state_request.cc \
-		src/fredlib/domain/cancel_object_state_request.h \
-		src/fredlib/domain/cancel_object_state_request_id.cc \
-		src/fredlib/domain/cancel_object_state_request_id.h \
-		src/fredlib/domain/create_object_state_request.cc \
-		src/fredlib/domain/create_object_state_request.h \
-		src/fredlib/domain/create_object_state_request_id.cc \
-		src/fredlib/domain/create_object_state_request_id.h \
-		src/fredlib/domain/get_object_state_id_map.cc \
-		src/fredlib/domain/get_object_state_id_map.h \
-		src/fredlib/domain/create_administrative_object_block_request.cc \
-		src/fredlib/domain/create_administrative_object_block_request.h \
-		src/fredlib/domain/create_administrative_object_block_request_id.cc \
-		src/fredlib/domain/create_administrative_object_block_request_id.h \
-		src/fredlib/domain/create_administrative_object_state_restore_request.cc \
-		src/fredlib/domain/create_administrative_object_state_restore_request.h \
-		src/fredlib/domain/create_administrative_object_state_restore_request_id.cc \
-		src/fredlib/domain/create_administrative_object_state_restore_request_id.h \
-	        src/fredlib/domain/clear_administrative_object_state_request_id.cc \
-	        src/fredlib/domain/clear_administrative_object_state_request_id.h \
-		src/fredlib/domain/clear_object_state_request.cc \
-		src/fredlib/domain/clear_object_state_request.h \
-		src/fredlib/domain/clear_object_state_request_id.cc \
-		src/fredlib/domain/clear_object_state_request_id.h \
+		src/fredlib/object_state/get_blocking_status_desc_list.cc \
+		src/fredlib/object_state/get_blocking_status_desc_list.h \
+		src/fredlib/object_state/cancel_object_state_request.cc \
+		src/fredlib/object_state/cancel_object_state_request.h \
+		src/fredlib/object_state/cancel_object_state_request_id.cc \
+		src/fredlib/object_state/cancel_object_state_request_id.h \
+		src/fredlib/object_state/create_object_state_request.cc \
+		src/fredlib/object_state/create_object_state_request.h \
+		src/fredlib/object_state/create_object_state_request_id.cc \
+		src/fredlib/object_state/create_object_state_request_id.h \
+		src/fredlib/object_state/get_object_state_id_map.cc \
+		src/fredlib/object_state/get_object_state_id_map.h \
+		src/fredlib/object_state/create_admin_object_block_request.cc \
+		src/fredlib/object_state/create_admin_object_block_request.h \
+		src/fredlib/object_state/create_admin_object_block_request_id.cc \
+		src/fredlib/object_state/create_admin_object_block_request_id.h \
+		src/fredlib/object_state/create_admin_object_state_restore_request.cc \
+		src/fredlib/object_state/create_admin_object_state_restore_request.h \
+		src/fredlib/object_state/create_admin_object_state_restore_request_id.cc \
+		src/fredlib/object_state/create_admin_object_state_restore_request_id.h \
+		src/fredlib/object_state/clear_admin_object_state_request_id.cc \
+		src/fredlib/object_state/clear_admin_object_state_request_id.h \
+		src/fredlib/object_state/clear_object_state_request.cc \
+		src/fredlib/object_state/clear_object_state_request.h \
+		src/fredlib/object_state/clear_object_state_request_id.cc \
+		src/fredlib/object_state/clear_object_state_request_id.h \
 		src/fredlib/domain/create_domain_name_blacklist.cc \
 		src/fredlib/domain/create_domain_name_blacklist.h \
 		src/fredlib/domain/create_domain_name_blacklist_id.cc \
 		src/fredlib/domain/create_domain_name_blacklist_id.h \
 		src/fredlib/domain/update_domain.cc \
 		src/fredlib/domain/update_domain.h \
-		src/fredlib/domain/copy_contact.cc \
-		src/fredlib/domain/copy_contact.h \
+		src/fredlib/contact/copy_contact.cc \
+		src/fredlib/contact/copy_contact.h \
 		src/fredlib/contact/info_contact_data.h \
 		src/fredlib/contact/info_contact_data.cc \
 		src/fredlib/contact/info_contact.h \
@@ -1826,23 +1826,23 @@ tests_test_blocking_SOURCES = \
 		src/mojeid/mojeid.h \
 		src/mojeid/mojeid_notifier.cc \
 		src/mojeid/mojeid_notifier.h \
-		src/fredlib/domain/clear_administrative_object_state_request_id.cc \
-		src/fredlib/domain/clear_object_state_request_id.cc \
-		src/fredlib/domain/create_object_state_request_id.cc \
-		src/fredlib/domain/create_object_state_request.cc \
-		src/fredlib/domain/create_administrative_object_block_request_id.cc \
-		src/fredlib/domain/create_administrative_object_state_restore_request_id.cc \
-		src/fredlib/domain/cancel_object_state_request_id.cc \
-		src/fredlib/domain/get_object_state_id_map.cc \
-		src/fredlib/domain/get_blocking_status_desc_list.cc \
+		src/fredlib/object_state/clear_admin_object_state_request_id.cc \
+		src/fredlib/object_state/clear_object_state_request_id.cc \
+		src/fredlib/object_state/create_object_state_request_id.cc \
+		src/fredlib/object_state/create_object_state_request.cc \
+		src/fredlib/object_state/create_admin_object_block_request_id.cc \
+		src/fredlib/object_state/create_admin_object_state_restore_request_id.cc \
+		src/fredlib/object_state/cancel_object_state_request_id.cc \
+		src/fredlib/object_state/get_object_state_id_map.cc \
+		src/fredlib/object_state/get_blocking_status_desc_list.cc \
 		src/fredlib/domain/create_domain_name_blacklist_id.cc \
 		tests/checks.h \
 		tests/test-copy-contact.cc \
 		tests/test-create-object-state-request-id.cc \
-		tests/test-create-administrative-object-block-request-id.cc \
-		tests/test-create-administrative-object-state-restore-request-id.cc \
+		tests/test-create-admin-object-block-request-id.cc \
+		tests/test-create-admin-object-state-restore-request-id.cc \
 		tests/test-cancel-object-state-request-id.cc \
-		tests/test-clear-administrative-object-state-request-id.cc \
+		tests/test-clear-admin-object-state-request-id.cc \
 		tests/test-create-domain-name-blacklist-id.cc
 
 tests_test_blocking_LDFLAGS = \
