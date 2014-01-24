@@ -24,7 +24,24 @@
 #ifndef OPTIONAL_VALUE_H_
 #define OPTIONAL_VALUE_H_
 
+#include <utility>
 #include <string>
+#include <sstream>
+
+#include "util/printable.h"
+
+namespace arbitrary_pair_ostream_support
+{
+    template<class T1, class T2> std::ostream& operator<<(std::ostream& os, const std::pair<T1, T2>& input_pair)
+    {
+        return os << "first: " << input_pair.first << " second: " << input_pair.second;
+    }
+
+    template<class T1, class T2> std::ostream& operator<<(std::ostream& os, const std::pair<std::vector<T1>, std::vector<T2> >& input_pair)
+    {
+        return os << "first: " << Util::format_vector(input_pair.first) << " second: " << Util::format_vector(input_pair.second);
+    }
+}
 
 //simple optional value template
 template<typename T>
@@ -77,6 +94,7 @@ public:
 
     friend std::ostream& operator<<(std::ostream& os, const Optional<T>& ov)
     {
+        using namespace arbitrary_pair_ostream_support;
         return os << ov.get_value();
     }
 

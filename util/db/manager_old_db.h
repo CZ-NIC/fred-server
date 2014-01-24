@@ -1,8 +1,8 @@
 #ifndef MANAGER_OLD_DB_H_
 #define MANAGER_OLD_DB_H_
 
-#include "old_utils/dbsql.h"
-#include "fredlib/db_settings.h"
+#include "src/old_utils/dbsql.h"
+#include "src/fredlib/db_settings.h"
 
 namespace Database {
 

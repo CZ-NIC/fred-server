@@ -1,9 +1,9 @@
 #include <memory>
 #include "countrycode.h"
 #include "messages.h"
-#include "corba/mailer_manager.h"
-#include "old_utils/dbsql.h"
-#include "fredlib/registry.h"
+#include "src/corba/mailer_manager.h"
+#include "src/old_utils/dbsql.h"
+#include "src/fredlib/registry.h"
 
 #include <vector>
 #include <stdexcept>
@@ -207,8 +207,8 @@ public:
 
   // methods corresponding to defined IDL attributes and operations
   ccReg::Response* GetTransaction(CORBA::Short errCode, CORBA::ULongLong clientID, ccReg::TID requestId, const char* clTRID, const ccReg::XmlErrors& errorCodes, ccReg::ErrorStrings_out errStrings);
-  ccReg::Response* PollAcknowledgement(const char* msgID, CORBA::Short& count, CORBA::String_out newmsgID, const ccReg::EppParams &params);
-  ccReg::Response* PollRequest(CORBA::String_out msgID, CORBA::Short& count, ccReg::timestamp_out qDate, ccReg::PollType& type, CORBA::Any_OUT_arg msg, const ccReg::EppParams &params);
+  ccReg::Response* PollAcknowledgement(const char* msgID, CORBA::ULongLong& count, CORBA::String_out newmsgID, const ccReg::EppParams &params);
+  ccReg::Response* PollRequest(CORBA::String_out msgID, CORBA::ULongLong& count, ccReg::timestamp_out qDate, ccReg::PollType& type, CORBA::Any_OUT_arg msg, const ccReg::EppParams &params);
   void PollRequestGetUpdateDomainDetails(CORBA::ULongLong _poll_id, ccReg::Domain_out _old_data, ccReg::Domain_out _new_data, const ccReg::EppParams &params);
   void PollRequestGetUpdateNSSetDetails(CORBA::ULongLong _poll_id, ccReg::NSSet_out _old_data, ccReg::NSSet_out _new_data, const ccReg::EppParams &params);
   void PollRequestGetUpdateKeySetDetails(CORBA::ULongLong _poll_id, ccReg::KeySet_out _old_data, ccReg::KeySet_out _new_data, const ccReg::EppParams &params);

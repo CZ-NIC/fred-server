@@ -24,9 +24,9 @@
 #ifndef CREATE_OBJECT_STATE_REQUEST_H_
 #define CREATE_OBJECT_STATE_REQUEST_H_
 
-#include "fredlib/opexception.h"
-#include "fredlib/opcontext.h"
-#include "fredlib/types.h"
+#include "src/fredlib/opexception.h"
+#include "src/fredlib/opcontext.h"
+#include "src/fredlib/types.h"
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
 

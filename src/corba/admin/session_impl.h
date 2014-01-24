@@ -30,18 +30,18 @@
 #include "pagetable_messages.h"
 
 #include "user_impl.h"
-#include "corba/mailer_manager.h"
-#include "corba/file_manager_client.h"
-#include "fredlib/registry.h"
-#include "fredlib/requests/request_manager.h"
-#include "old_utils/dbsql.h"
-#include "model/model_filters.h"
+#include "src/corba/mailer_manager.h"
+#include "src/corba/file_manager_client.h"
+#include "src/fredlib/registry.h"
+#include "src/fredlib/requests/request_manager.h"
+#include "src/old_utils/dbsql.h"
+#include "src/model/model_filters.h"
 
 //#include "conf/manager.h"
 
 #include "settings.h"
 
-#include <corba/Logger.hh>
+#include "src/corba/Logger.hh"
 
 
 using namespace boost::posix_time;

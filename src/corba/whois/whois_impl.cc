@@ -19,19 +19,19 @@
 #include <memory>
 #include <iomanip>
 #include <stdexcept>
-#include <corba/Whois.hh>
+#include "src/corba/Whois.hh"
 
-#include "common.h"
+#include "src/corba/admin/common.h"
 #include "whois_impl.h"
-#include "old_utils/log.h"
-#include "old_utils/dbsql.h"
-#include "fredlib/registry.h"
+#include "src/old_utils/log.h"
+#include "src/old_utils/dbsql.h"
+#include "src/fredlib/registry.h"
 
 #include "log/logger.h"
 #include "log/context.h"
 #include "util/random.h"
 
-#include "corba/connection_releaser.h"
+#include "src/corba/connection_releaser.h"
 
 
 static const std::string create_ctx_name(const std::string &_name)

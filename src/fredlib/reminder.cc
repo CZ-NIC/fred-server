@@ -6,7 +6,7 @@
 #include <boost/algorithm/string/trim.hpp>
 
 #include "reminder.h"
-#include "db_settings.h"
+#include "src/fredlib/db_settings.h"
 #include "log/logger.h"
 #include "log/context.h"
 #include "file_lock.h"

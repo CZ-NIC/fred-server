@@ -34,7 +34,7 @@
 
 #include "faked_args.h"
 #include "handle_args.h"
-#include "fredlib/db_settings.h"
+#include "src/fredlib/db_settings.h"
 
 /**
  * \class HandleDatabaseArgs

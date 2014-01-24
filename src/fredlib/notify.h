@@ -1,17 +1,17 @@
 #ifndef _NOTIFY_H_
 #define _NOTIFY_H_
 
-#include "mailer.h"
-#include "contact.h"
-#include "nsset.h"
-#include "domain.h"
-#include "keyset.h"
-#include "documents.h"
-#include "exceptions.h"
-#include "registrar.h"
-#include "file_transferer.h"
-#include "messages/messages_impl.h"
-#include "old_utils/dbsql.h"
+#include "src/fredlib/mailer.h"
+#include "src/fredlib/contact.h"
+#include "src/fredlib/nsset.h"
+#include "src/fredlib/domain.h"
+#include "src/fredlib/keyset.h"
+#include "src/fredlib/documents.h"
+#include "src/fredlib/exceptions.h"
+#include "src/fredlib/registrar.h"
+#include "src/fredlib/file_transferer.h"
+#include "src/fredlib/messages/messages_impl.h"
+#include "src/old_utils/dbsql.h"
 
 
 namespace Fred

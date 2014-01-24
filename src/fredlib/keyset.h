@@ -3,11 +3,11 @@
 
 #include <string>
 #include <vector>
-#include "object.h"
-#include "exceptions.h"
-#include "db_settings.h"
-#include "model/model_filters.h"
-#include "old_utils/dbsql.h"
+#include "src/fredlib/object.h"
+#include "src/fredlib/exceptions.h"
+#include "src/fredlib/db_settings.h"
+#include "src/model/model_filters.h"
+#include "src/old_utils/dbsql.h"
 
 /// forward declared parameter type
 class DB;

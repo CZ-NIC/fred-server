@@ -44,31 +44,28 @@
 
 #include "setup_server_decl.h"
 #include "time_clock.h"
-#include "fredlib/registrar.h"
-#include "fredlib/domain/update_domain.h"
-#include "fredlib/nsset/update_nsset.h"
-#include "fredlib/keyset/update_keyset.h"
-#include "fredlib/contact/delete_contact.h"
-#include "fredlib/contact/create_contact.h"
-#include "fredlib/domain/info_domain_history.h"
-#include "fredlib/domain/info_domain_compare.h"
-#include "fredlib/nsset/create_nsset.h"
-#include "fredlib/keyset/create_keyset.h"
-#include "fredlib/domain/create_domain.h"
-#include "fredlib/domain/delete_domain.h"
-#include "fredlib/contact/info_contact.h"
-#include "fredlib/domain/info_domain.h"
-#include "fredlib/opexception.h"
+#include "src/fredlib/registrar.h"
+#include "src/fredlib/domain/update_domain.h"
+#include "src/fredlib/nsset/update_nsset.h"
+#include "src/fredlib/keyset/update_keyset.h"
+#include "src/fredlib/contact/delete_contact.h"
+#include "src/fredlib/contact/create_contact.h"
+#include "src/fredlib/domain/info_domain.h"
+#include "src/fredlib/nsset/create_nsset.h"
+#include "src/fredlib/keyset/create_keyset.h"
+#include "src/fredlib/domain/create_domain.h"
+#include "src/fredlib/domain/delete_domain.h"
+#include "src/fredlib/opexception.h"
 #include "util/util.h"
 
-#include "fredlib/contact_verification/contact.h"
-#include "fredlib/object_states.h"
-#include "contact_verification/contact_verification_impl.h"
+#include "src/fredlib/contact_verification/contact.h"
+#include "src/fredlib/object_states.h"
+#include "src/contact_verification/contact_verification_impl.h"
 #include "random_data_generator.h"
 #include "concurrent_queue.h"
 
 
-#include "fredlib/db_settings.h"
+#include "src/fredlib/db_settings.h"
 
 #include "cfg/handle_general_args.h"
 #include "cfg/handle_server_args.h"
@@ -196,14 +193,14 @@ BOOST_FIXTURE_TEST_CASE(delete_domain, delete_domain_fixture )
 {
     Fred::OperationContext ctx;
 
-    Fred::InfoDomainOutput domain_info1 = Fred::InfoDomain(test_domain_fqdn, registrar_handle).exec(ctx);
+    Fred::InfoDomainOutput domain_info1 = Fred::InfoDomainByHandle(test_domain_fqdn).exec(ctx);
     BOOST_CHECK(domain_info1.info_domain_data.delete_time.isnull());
 
     Fred::DeleteDomain(test_domain_fqdn).exec(ctx);
     ctx.commit_transaction();
 
-    std::vector<Fred::InfoDomainHistoryOutput> domain_history_info1 = Fred::InfoDomainHistory(
-    domain_info1.info_domain_data.roid, registrar_handle).exec(ctx);
+    std::vector<Fred::InfoDomainOutput> domain_history_info1 = Fred::InfoDomainHistory(
+    domain_info1.info_domain_data.roid).exec(ctx);
 
     BOOST_CHECK(!domain_history_info1.at(0).info_domain_data.delete_time.isnull());
 
@@ -250,14 +247,14 @@ BOOST_FIXTURE_TEST_CASE(delete_enum_domain, delete_enum_domain_fixture )
 {
     Fred::OperationContext ctx;
 
-    Fred::InfoDomainOutput domain_info1 = Fred::InfoDomain(test_domain_fqdn, registrar_handle).exec(ctx);
+    Fred::InfoDomainOutput domain_info1 = Fred::InfoDomainByHandle(test_domain_fqdn).exec(ctx);
     BOOST_CHECK(domain_info1.info_domain_data.delete_time.isnull());
 
     Fred::DeleteDomain(test_domain_fqdn).exec(ctx);
     ctx.commit_transaction();
 
-    std::vector<Fred::InfoDomainHistoryOutput> domain_history_info1 = Fred::InfoDomainHistory(
-    domain_info1.info_domain_data.roid, registrar_handle).exec(ctx);
+    std::vector<Fred::InfoDomainOutput> domain_history_info1 = Fred::InfoDomainHistory(
+    domain_info1.info_domain_data.roid).exec(ctx);
 
     BOOST_CHECK(!domain_history_info1.at(0).info_domain_data.delete_time.isnull());
 

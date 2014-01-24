@@ -30,7 +30,7 @@
 #include "util.h"
 #include "log.h"
 #include "log/logger.h"
-#include "corba/epp/action.h"
+#include "src/corba/epp/action.h"
 
 #include "util/random_data_generator.h"
 

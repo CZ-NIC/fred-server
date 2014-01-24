@@ -1,6 +1,6 @@
 #include "mojeid_notifier.h"
-#include "fredlib/notifier/request_ntf_handler_contact.h"
-#include "fredlib/notifier/request_ntf_sender_email.h"
+#include "src/fredlib/notifier/request_ntf_handler_contact.h"
+#include "src/fredlib/notifier/request_ntf_sender_email.h"
 
 
 namespace Fred {

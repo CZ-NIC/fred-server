@@ -16,6 +16,11 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ *  @file test-update-domain.cc
+ *  UpdateDomain tests
+ */
+
 #include <memory>
 #include <iostream>
 #include <string>
@@ -44,29 +49,27 @@
 
 #include "setup_server_decl.h"
 #include "time_clock.h"
-#include "fredlib/registrar.h"
-#include "fredlib/domain/update_domain.h"
-#include "fredlib/nsset/update_nsset.h"
-#include "fredlib/keyset/update_keyset.h"
-#include "fredlib/contact/delete_contact.h"
-#include "fredlib/contact/create_contact.h"
-#include "fredlib/nsset/create_nsset.h"
-#include "fredlib/keyset/create_keyset.h"
-#include "fredlib/domain/create_domain.h"
-#include "fredlib/domain/info_domain.h"
-#include "fredlib/domain/info_domain_history.h"
-#include "fredlib/domain/info_domain_compare.h"
-#include "fredlib/opexception.h"
+#include "src/fredlib/registrar.h"
+#include "src/fredlib/domain/update_domain.h"
+#include "src/fredlib/nsset/update_nsset.h"
+#include "src/fredlib/keyset/update_keyset.h"
+#include "src/fredlib/contact/delete_contact.h"
+#include "src/fredlib/contact/create_contact.h"
+#include "src/fredlib/nsset/create_nsset.h"
+#include "src/fredlib/keyset/create_keyset.h"
+#include "src/fredlib/domain/create_domain.h"
+#include "src/fredlib/domain/info_domain.h"
+#include "src/fredlib/opexception.h"
 #include "util/util.h"
 
-#include "fredlib/contact_verification/contact.h"
-#include "fredlib/object_states.h"
-#include "contact_verification/contact_verification_impl.h"
+#include "src/fredlib/contact_verification/contact.h"
+#include "src/fredlib/object_states.h"
+#include "src/contact_verification/contact_verification_impl.h"
 #include "random_data_generator.h"
 #include "concurrent_queue.h"
 
 
-#include "fredlib/db_settings.h"
+#include "src/fredlib/db_settings.h"
 
 #include "cfg/handle_general_args.h"
 #include "cfg/handle_server_args.h"
@@ -108,12 +111,16 @@ struct update_domain_fixture
     std::string admin_contact2_handle;
     std::string registrant_contact_handle;
     std::string test_domain_handle;
+    std::string test_enum_domain;
 
     update_domain_fixture()
-    : xmark(RandomDataGenerator().xnumstring(6))
+    : xmark(RandomDataGenerator().xnumstring(9))
     , admin_contact2_handle(std::string("TEST-ADMIN-CONTACT3-HANDLE")+xmark)
     , registrant_contact_handle(std::string("TEST-REGISTRANT-CONTACT-HANDLE") + xmark)
     , test_domain_handle ( std::string("fred")+xmark+".cz")
+    , test_enum_domain ( std::string()+xmark.at(0)+'.'+xmark.at(1)+'.'+xmark.at(2)+'.'
+                                        +xmark.at(3)+'.'+xmark.at(4)+'.'+xmark.at(5)+'.'
+                                        +xmark.at(6)+'.'+xmark.at(7)+'.'+xmark.at(8)+".0.2.4.e164.arpa")
     {
         Fred::OperationContext ctx;
         registrar_handle = static_cast<std::string>(ctx.get_conn().exec(
@@ -143,6 +150,17 @@ struct update_domain_fixture
                 )
         .set_admin_contacts(Util::vector_of<std::string>(admin_contact2_handle))
         .exec(ctx);
+
+        Fred::CreateDomain(
+                test_enum_domain//const std::string& fqdn
+                , registrar_handle //const std::string& registrar
+                , registrant_contact_handle //registrant
+                )
+        .set_admin_contacts(Util::vector_of<std::string>(admin_contact2_handle))
+        .set_enum_validation_expiration(boost::gregorian::from_string("2012-01-21"))
+        .set_enum_publish_flag(false)
+        .exec(ctx);
+
         ctx.commit_transaction();
     }
     ~update_domain_fixture()
@@ -210,8 +228,8 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
 {
     Fred::OperationContext ctx;
 
-    Fred::InfoDomainOutput info_data_1 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
-    std::vector<Fred::InfoDomainHistoryOutput> history_info_data_1 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid, registrar_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_1 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+    std::vector<Fred::InfoDomainOutput> history_info_data_1 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid).exec(ctx);
 
     //update_registrar_handle check
     BOOST_CHECK(info_data_1.info_domain_data.update_registrar_handle.isnull());
@@ -226,19 +244,21 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     //call update using big ctor
     Fred::UpdateDomain(test_domain_handle//fqdn
             , registrar_handle//registrar
+            , Optional<std::string>(registrar_handle)//sponsoring registrar
             , registrant_contact_handle //registrant - owner
             , std::string("testauthinfo1") //authinfo
             , Nullable<std::string>()//unset nsset - set to null
             , Optional<Nullable<std::string> >()//dont change keyset
             , Util::vector_of<std::string> (admin_contact1_handle)(registrant_contact_handle) //add admin contacts
             , Util::vector_of<std::string> (admin_contact2_handle) //remove admin contacts
-            , Optional<boost::gregorian::date>()
-            , Optional<bool>()
+            , Optional<boost::gregorian::date>()//exdate
+            , Optional<boost::gregorian::date>()//enumvalexdate
+            , Optional<bool>()//enum publish
             , Optional<unsigned long long>() //request_id not set
             ).exec(ctx);
 
-    Fred::InfoDomainOutput info_data_2 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
-    std::vector<Fred::InfoDomainHistoryOutput> history_info_data_2 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid, registrar_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_2 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+    std::vector<Fred::InfoDomainOutput> history_info_data_2 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid).exec(ctx);
 
     Fred::InfoDomainOutput info_data_1_with_changes = info_data_1;
 
@@ -254,6 +274,10 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     //updated update_registrar_handle
     BOOST_CHECK(registrar_handle == std::string(info_data_2.info_domain_data.update_registrar_handle));
     info_data_1_with_changes.info_domain_data.update_registrar_handle = registrar_handle;
+
+    //updated sponsoring_registrar_handle
+    BOOST_CHECK(registrar_handle == std::string(info_data_2.info_domain_data.sponsoring_registrar_handle));
+    info_data_1_with_changes.info_domain_data.sponsoring_registrar_handle = registrar_handle;
 
     //updated registrant_handle
     BOOST_CHECK(registrant_contact_handle == std::string(info_data_2.info_domain_data.registrant_handle));
@@ -286,6 +310,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
 
     //call update using small ctor and set custom params
     Fred::UpdateDomain(test_domain_handle, registrar_handle)
+    .set_sponsoring_registrar(registrar_handle)
     .set_authinfo("testauthinfo")
     .set_registrant(registrant_contact_handle)
     .add_admin_contact(admin_contact_handle)
@@ -293,9 +318,8 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     .rem_admin_contact(admin_contact1_handle)
     .exec(ctx);
 
-
-    Fred::InfoDomainOutput info_data_3 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
-    std::vector<Fred::InfoDomainHistoryOutput> history_info_data_3 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid, registrar_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_3 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+    std::vector<Fred::InfoDomainOutput> history_info_data_3 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid).exec(ctx);
 
     Fred::InfoDomainOutput info_data_2_with_changes = info_data_2;
 
@@ -310,6 +334,9 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
 
     //updated update_registrar_handle
     BOOST_CHECK(registrar_handle == std::string(info_data_3.info_domain_data.update_registrar_handle));
+
+    //updated sponsoring_registrar_handle
+    BOOST_CHECK(registrar_handle == std::string(info_data_3.info_domain_data.sponsoring_registrar_handle));
 
     //updated registrant_handle
     BOOST_CHECK(registrant_contact_handle == std::string(info_data_3.info_domain_data.registrant_handle));
@@ -347,8 +374,8 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     //call update using small ctor and set one custom param
     Fred::UpdateDomain(test_domain_handle, registrar_handle).set_authinfo("testauthinfo").exec(ctx);
 
-    Fred::InfoDomainOutput info_data_4 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
-    std::vector<Fred::InfoDomainHistoryOutput> history_info_data_4 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid, registrar_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_4 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+    std::vector<Fred::InfoDomainOutput> history_info_data_4 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid).exec(ctx);
 
     Fred::InfoDomainOutput info_data_3_with_changes = info_data_3;
 
@@ -385,8 +412,8 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     //call update using small ctor and set one custom param
     Fred::UpdateDomain(test_domain_handle, registrar_handle).set_registrant(registrant_contact_handle).exec(ctx);
 
-    Fred::InfoDomainOutput info_data_5 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
-    std::vector<Fred::InfoDomainHistoryOutput> history_info_data_5 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid, registrar_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_5 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+    std::vector<Fred::InfoDomainOutput> history_info_data_5 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid).exec(ctx);
 
     Fred::InfoDomainOutput info_data_4_with_changes = info_data_4;
 
@@ -424,8 +451,8 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     //call update using small ctor and set one custom param
     Fred::UpdateDomain(test_domain_handle, registrar_handle).add_admin_contact(admin_contact1_handle).exec(ctx);
 
-    Fred::InfoDomainOutput info_data_6 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
-    std::vector<Fred::InfoDomainHistoryOutput> history_info_data_6 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid, registrar_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_6 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+    std::vector<Fred::InfoDomainOutput> history_info_data_6 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid).exec(ctx);
 
     Fred::InfoDomainOutput info_data_5_with_changes = info_data_5;
 
@@ -463,8 +490,8 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     //call update using small ctor and set one custom param
     Fred::UpdateDomain(test_domain_handle, registrar_handle).rem_admin_contact(admin_contact_handle).exec(ctx);
 
-    Fred::InfoDomainOutput info_data_7 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
-    std::vector<Fred::InfoDomainHistoryOutput> history_info_data_7 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid, registrar_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_7 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+    std::vector<Fred::InfoDomainOutput> history_info_data_7 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid).exec(ctx);
 
     Fred::InfoDomainOutput info_data_6_with_changes = info_data_6;
 
@@ -506,8 +533,8 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     //call update using small ctor and set one custom param
     Fred::UpdateDomain(test_domain_handle, registrar_handle).set_nsset(test_nsset_handle).exec(ctx);
 
-    Fred::InfoDomainOutput info_data_8 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
-    std::vector<Fred::InfoDomainHistoryOutput> history_info_data_8 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid, registrar_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_8 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+    std::vector<Fred::InfoDomainOutput> history_info_data_8 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid).exec(ctx);
 
     Fred::InfoDomainOutput info_data_7_with_changes = info_data_7;
 
@@ -547,8 +574,8 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     //call update using small ctor and set one custom param
     Fred::UpdateDomain(test_domain_handle, registrar_handle).set_nsset(Nullable<std::string>()).exec(ctx);
 
-    Fred::InfoDomainOutput info_data_9 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
-    std::vector<Fred::InfoDomainHistoryOutput> history_info_data_9 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid, registrar_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_9 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+    std::vector<Fred::InfoDomainOutput> history_info_data_9 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid).exec(ctx);
 
     Fred::InfoDomainOutput info_data_8_with_changes = info_data_8;
 
@@ -589,8 +616,8 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     //call update using small ctor and set one custom param
     Fred::UpdateDomain(test_domain_handle, registrar_handle).set_nsset(test_nsset_handle).exec(ctx);
 
-    Fred::InfoDomainOutput info_data_10 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
-    std::vector<Fred::InfoDomainHistoryOutput> history_info_data_10 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid, registrar_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_10 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+    std::vector<Fred::InfoDomainOutput> history_info_data_10 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid).exec(ctx);
 
     Fred::InfoDomainOutput info_data_9_with_changes = info_data_9;
 
@@ -632,8 +659,8 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     //call update using small ctor and set one custom param
     Fred::UpdateDomain(test_domain_handle, registrar_handle).unset_nsset().exec(ctx);
 
-    Fred::InfoDomainOutput info_data_11 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
-    std::vector<Fred::InfoDomainHistoryOutput> history_info_data_11 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid, registrar_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_11 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+    std::vector<Fred::InfoDomainOutput> history_info_data_11 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid).exec(ctx);
 
     Fred::InfoDomainOutput info_data_10_with_changes = info_data_10;
 
@@ -676,8 +703,8 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     //call update using small ctor and set one custom param
     Fred::UpdateDomain(test_domain_handle, registrar_handle).set_nsset(Nullable<std::string>(test_nsset_handle)).exec(ctx);
 
-    Fred::InfoDomainOutput info_data_12 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
-    std::vector<Fred::InfoDomainHistoryOutput> history_info_data_12 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid, registrar_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_12 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+    std::vector<Fred::InfoDomainOutput> history_info_data_12 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid).exec(ctx);
 
     Fred::InfoDomainOutput info_data_11_with_changes = info_data_11;
 
@@ -721,8 +748,8 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     //call update using small ctor and set one custom param
     Fred::UpdateDomain(test_domain_handle, registrar_handle).set_nsset(test_nsset_handle).exec(ctx);
 
-    Fred::InfoDomainOutput info_data_13 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
-    std::vector<Fred::InfoDomainHistoryOutput> history_info_data_13 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid, registrar_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_13 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+    std::vector<Fred::InfoDomainOutput> history_info_data_13 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid).exec(ctx);
 
     Fred::InfoDomainOutput info_data_12_with_changes = info_data_12;
 
@@ -767,8 +794,8 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     //call update using small ctor and set one custom param
     Fred::UpdateDomain(test_domain_handle, registrar_handle).set_keyset(Nullable<std::string>()).exec(ctx);
 
-    Fred::InfoDomainOutput info_data_14 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
-    std::vector<Fred::InfoDomainHistoryOutput> history_info_data_14 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid, registrar_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_14 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+    std::vector<Fred::InfoDomainOutput> history_info_data_14 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid).exec(ctx);
 
     Fred::InfoDomainOutput info_data_13_with_changes = info_data_13;
 
@@ -814,8 +841,8 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     //call update using small ctor and set one custom param
     Fred::UpdateDomain(test_domain_handle, registrar_handle).set_keyset(test_keyset_handle).exec(ctx);
 
-    Fred::InfoDomainOutput info_data_15 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
-    std::vector<Fred::InfoDomainHistoryOutput> history_info_data_15 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid, registrar_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_15 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+    std::vector<Fred::InfoDomainOutput> history_info_data_15 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid).exec(ctx);
 
     Fred::InfoDomainOutput info_data_14_with_changes = info_data_14;
 
@@ -862,8 +889,8 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     //call update using small ctor and set one custom param
     Fred::UpdateDomain(test_domain_handle, registrar_handle).unset_keyset().exec(ctx);
 
-    Fred::InfoDomainOutput info_data_16 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
-    std::vector<Fred::InfoDomainHistoryOutput> history_info_data_16 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid, registrar_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_16 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+    std::vector<Fred::InfoDomainOutput> history_info_data_16 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid).exec(ctx);
 
     Fred::InfoDomainOutput info_data_15_with_changes = info_data_15;
 
@@ -911,8 +938,8 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     //call update using small ctor and set one custom param
     Fred::UpdateDomain(test_domain_handle, registrar_handle).set_keyset(Nullable<std::string>(test_keyset_handle)).exec(ctx);
 
-    Fred::InfoDomainOutput info_data_17 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
-    std::vector<Fred::InfoDomainHistoryOutput> history_info_data_17 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid, registrar_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_17 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+    std::vector<Fred::InfoDomainOutput> history_info_data_17 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid).exec(ctx);
 
     Fred::InfoDomainOutput info_data_16_with_changes = info_data_16;
 
@@ -962,8 +989,8 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     Fred::UpdateDomain(test_domain_handle, registrar_handle).set_logd_request_id(3).exec(ctx);
 
 
-    Fred::InfoDomainOutput info_data_18 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
-    std::vector<Fred::InfoDomainHistoryOutput> history_info_data_18 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid, registrar_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_18 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+    std::vector<Fred::InfoDomainOutput> history_info_data_18 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid).exec(ctx);
 
     Fred::InfoDomainOutput info_data_17_with_changes = info_data_17;
 
@@ -1052,7 +1079,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_wrong_registrar, update_domain_fixture)
     Fred::OperationContext ctx;
     std::string bad_registrar_handle = registrar_handle+xmark;
 
-    Fred::InfoDomainOutput info_data_1 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_1 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
 
     try
     {
@@ -1066,10 +1093,38 @@ BOOST_FIXTURE_TEST_CASE(update_domain_wrong_registrar, update_domain_fixture)
         BOOST_CHECK(ex.get_unknown_registrar_handle().compare(bad_registrar_handle) == 0);
     }
 
-    Fred::InfoDomainOutput info_data_2 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_2 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
     BOOST_CHECK(info_data_1 == info_data_2);
     BOOST_CHECK(info_data_2.info_domain_data.delete_time.isnull());
 
+}
+
+/**
+ * test UpdateDomain with wrong sponsoring registrar
+ */
+BOOST_FIXTURE_TEST_CASE(update_domain_wrong_sponsoring_registrar, update_domain_fixture)
+{
+    Fred::OperationContext ctx;
+    std::string bad_registrar_handle = registrar_handle+xmark;
+
+    Fred::InfoDomainOutput info_data_1 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+
+    try
+    {
+        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::UpdateDomain(test_domain_handle, registrar_handle)
+            .set_sponsoring_registrar(bad_registrar_handle).exec(ctx);
+        ctx.commit_transaction();
+    }
+    catch(const Fred::UpdateDomain::Exception& ex)
+    {
+        BOOST_CHECK(ex.is_set_unknown_sponsoring_registrar_handle());
+        BOOST_CHECK(ex.get_unknown_sponsoring_registrar_handle().compare(bad_registrar_handle) == 0);
+    }
+
+    Fred::InfoDomainOutput info_data_2 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+    BOOST_CHECK(info_data_1 == info_data_2);
+    BOOST_CHECK(info_data_2.info_domain_data.delete_time.isnull());
 }
 
 /**
@@ -1080,7 +1135,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_wrong_registrant, update_domain_fixture)
     Fred::OperationContext ctx;
     std::string bad_registrant_handle = registrant_contact_handle+xmark;
 
-    Fred::InfoDomainOutput info_data_1 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_1 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
 
     try
     {
@@ -1098,7 +1153,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_wrong_registrant, update_domain_fixture)
         BOOST_CHECK(ex.get_unknown_registrant_handle().compare(bad_registrant_handle) == 0);
     }
 
-    Fred::InfoDomainOutput info_data_2 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_2 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
     BOOST_CHECK(info_data_1 == info_data_2);
     BOOST_CHECK(info_data_2.info_domain_data.delete_time.isnull());
 }
@@ -1111,7 +1166,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_add_wrong_admin, update_domain_fixture)
     Fred::OperationContext ctx;
     std::string bad_admin_contact_handle = admin_contact2_handle+xmark;
 
-    Fred::InfoDomainOutput info_data_1 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_1 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
 
     try
     {
@@ -1127,7 +1182,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_add_wrong_admin, update_domain_fixture)
         BOOST_CHECK(ex.get_vector_of_unknown_admin_contact_handle().at(0).compare(bad_admin_contact_handle) == 0);
     }
 
-    Fred::InfoDomainOutput info_data_2 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_2 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
     BOOST_CHECK(info_data_1 == info_data_2);
     BOOST_CHECK(info_data_2.info_domain_data.delete_time.isnull());
 
@@ -1139,7 +1194,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_add_wrong_admin, update_domain_fixture)
 BOOST_FIXTURE_TEST_CASE(update_domain_add_already_added_admin, update_domain_fixture)
 {
     Fred::OperationContext ctx;
-    Fred::InfoDomainOutput info_data_1 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_1 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
 
     try
     {
@@ -1156,7 +1211,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_add_already_added_admin, update_domain_fix
         BOOST_CHECK(ex.get_vector_of_already_set_admin_contact_handle().at(0).compare(admin_contact2_handle) == 0);
     }
 
-    Fred::InfoDomainOutput info_data_2 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_2 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
     BOOST_CHECK(info_data_1 == info_data_2);
     BOOST_CHECK(info_data_2.info_domain_data.delete_time.isnull());
 
@@ -1170,7 +1225,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_rem_wrong_admin, update_domain_fixture)
     Fred::OperationContext ctx;
     std::string bad_admin_contact_handle = admin_contact2_handle+xmark;
 
-    Fred::InfoDomainOutput info_data_1 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_1 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
 
     try
     {
@@ -1186,7 +1241,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_rem_wrong_admin, update_domain_fixture)
         BOOST_CHECK(ex.get_vector_of_unknown_admin_contact_handle().at(0).compare(bad_admin_contact_handle) == 0);
     }
 
-    Fred::InfoDomainOutput info_data_2 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_2 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
     BOOST_CHECK(info_data_1 == info_data_2);
     BOOST_CHECK(info_data_2.info_domain_data.delete_time.isnull());
 
@@ -1200,7 +1255,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_rem_unassigned_admin, update_domain_fixtur
     Fred::OperationContext ctx;
     std::string bad_admin_contact_handle = registrant_contact_handle;
 
-    Fred::InfoDomainOutput info_data_1 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_1 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
 
     try
     {
@@ -1216,7 +1271,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_rem_unassigned_admin, update_domain_fixtur
         BOOST_CHECK(ex.get_vector_of_unassigned_admin_contact_handle().at(0).compare(bad_admin_contact_handle) == 0);
     }
 
-    Fred::InfoDomainOutput info_data_2 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_2 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
     BOOST_CHECK(info_data_1 == info_data_2);
     BOOST_CHECK(info_data_2.info_domain_data.delete_time.isnull());
 
@@ -1232,7 +1287,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_rem_unassigned_admin, update_domain_fixtur
 BOOST_FIXTURE_TEST_CASE(info_domain_history_test, update_domain_fixture)
 {
     Fred::OperationContext ctx;
-    Fred::InfoDomainOutput info_data_1 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_1 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
     //call update
     {
         Fred::OperationContext ctx;//new connection to rollback on error
@@ -1241,9 +1296,9 @@ BOOST_FIXTURE_TEST_CASE(info_domain_history_test, update_domain_fixture)
         ctx.commit_transaction();
     }
 
-    Fred::InfoDomainOutput info_data_2 = Fred::InfoDomain(test_domain_handle, registrar_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_2 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
 
-    std::vector<Fred::InfoDomainHistoryOutput> history_info_data = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid, registrar_handle).exec(ctx);
+    std::vector<Fred::InfoDomainOutput> history_info_data = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid).exec(ctx);
 
     BOOST_CHECK(history_info_data.at(0) == info_data_2);
     BOOST_CHECK(history_info_data.at(1) == info_data_1);
@@ -1256,6 +1311,174 @@ BOOST_FIXTURE_TEST_CASE(info_domain_history_test, update_domain_fixture)
 
     BOOST_CHECK(history_info_data.at(1).info_domain_data.crhistoryid == history_info_data.at(1).info_domain_data.historyid);
 
+}
+
+/**
+ * test UpdateDomain set exdate
+ */
+BOOST_FIXTURE_TEST_CASE(update_domain_set_exdate, update_domain_fixture)
+{
+    Fred::OperationContext ctx;
+    Fred::InfoDomainOutput info_data_1 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+
+    boost::gregorian::date exdate(boost::gregorian::from_string("2010-12-20"));
+
+    try
+    {
+        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::UpdateDomain(test_domain_handle, registrar_handle)
+        .set_domain_expiration(exdate)
+        .exec(ctx);
+        ctx.commit_transaction();
+    }
+    catch(const Fred::UpdateDomain::Exception& ex)
+    {
+        BOOST_ERROR(boost::diagnostic_information(ex));
+    }
+
+    Fred::InfoDomainOutput info_data_2 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+    BOOST_CHECK(info_data_2.info_domain_data.expiration_date == exdate);
+}
+
+/**
+ * test UpdateDomain set invalid exdate
+ */
+BOOST_FIXTURE_TEST_CASE(update_domain_set_wrong_exdate, update_domain_fixture)
+{
+    Fred::OperationContext ctx;
+    Fred::InfoDomainOutput info_data_1 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+
+    boost::gregorian::date exdate;
+
+    try
+    {
+        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::UpdateDomain(test_domain_handle, registrar_handle)
+        .set_domain_expiration(exdate)
+        .exec(ctx);
+        ctx.commit_transaction();
+    }
+    catch(const Fred::UpdateDomain::Exception& ex)
+    {
+        BOOST_CHECK(ex.is_set_invalid_expiration_date());
+        BOOST_CHECK(ex.get_invalid_expiration_date().is_special());
+    }
+
+    Fred::InfoDomainOutput info_data_2 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+    BOOST_CHECK(info_data_1 == info_data_2);
+    BOOST_CHECK(info_data_2.info_domain_data.delete_time.isnull());
+}
+
+/**
+ * test UpdateDomain set ENUM valexdate to ENUM domain
+ */
+BOOST_FIXTURE_TEST_CASE(update_domain_set_valexdate, update_domain_fixture)
+{
+    Fred::OperationContext ctx;
+    Fred::InfoDomainOutput info_data_1 = Fred::InfoDomainByHandle(test_enum_domain).exec(ctx);
+
+    boost::gregorian::date valexdate(boost::gregorian::from_string("2010-12-20"));
+
+    try
+    {
+        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::UpdateDomain(test_enum_domain, registrar_handle)
+        .set_enum_validation_expiration(valexdate)
+        .exec(ctx);
+        ctx.commit_transaction();
+    }
+    catch(const Fred::UpdateDomain::Exception& ex)
+    {
+        BOOST_ERROR(boost::diagnostic_information(ex));
+    }
+
+    Fred::InfoDomainOutput info_data_2 = Fred::InfoDomainByHandle(test_enum_domain).exec(ctx);
+    BOOST_CHECK(static_cast<Fred::ENUMValidationExtension>(info_data_2.info_domain_data.enum_domain_validation)
+            .validation_expiration == valexdate);
+    BOOST_CHECK(info_data_2.info_domain_data.delete_time.isnull());
+}
+
+/**
+ * test UpdateDomain set invalid ENUM valexdate to ENUM domain
+ */
+BOOST_FIXTURE_TEST_CASE(update_domain_set_wrong_valexdate, update_domain_fixture)
+{
+    Fred::OperationContext ctx;
+    Fred::InfoDomainOutput info_data_1 = Fred::InfoDomainByHandle(test_enum_domain).exec(ctx);
+
+    boost::gregorian::date valexdate;
+
+    try
+    {
+        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::UpdateDomain(test_enum_domain, registrar_handle)
+        .set_enum_validation_expiration(valexdate)
+        .exec(ctx);
+        ctx.commit_transaction();
+    }
+    catch(const Fred::UpdateDomain::Exception& ex)
+    {
+        BOOST_CHECK(ex.is_set_invalid_enum_validation_expiration_date());
+        BOOST_CHECK(ex.get_invalid_enum_validation_expiration_date().is_special());
+    }
+
+    Fred::InfoDomainOutput info_data_2 = Fred::InfoDomainByHandle(test_enum_domain).exec(ctx);
+    BOOST_CHECK(info_data_1 == info_data_2);
+    BOOST_CHECK(info_data_2.info_domain_data.delete_time.isnull());
+}
+
+/**
+ * test UpdateDomain set ENUM valexdate to non-ENUM domain
+ */
+BOOST_FIXTURE_TEST_CASE(update_domain_set_valexdate_wrong_domain, update_domain_fixture)
+{
+    Fred::OperationContext ctx;
+    Fred::InfoDomainOutput info_data_1 = Fred::InfoDomainByHandle(test_enum_domain).exec(ctx);
+
+    boost::gregorian::date valexdate(boost::gregorian::from_string("2010-12-20"));
+
+    try
+    {
+        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::UpdateDomain(test_domain_handle, registrar_handle)
+        .set_enum_validation_expiration(valexdate)
+        .exec(ctx);
+        ctx.commit_transaction();
+    }
+    catch(const Fred::InternalError& ex)
+    {
+        BOOST_MESSAGE(ex.what());
+    }
+
+    Fred::InfoDomainOutput info_data_2 = Fred::InfoDomainByHandle(test_enum_domain).exec(ctx);
+    BOOST_CHECK(info_data_1 == info_data_2);
+    BOOST_CHECK(info_data_2.info_domain_data.delete_time.isnull());
+}
+
+/**
+ * test UpdateDomain set ENUM publish flag to non-ENUM domain
+ */
+BOOST_FIXTURE_TEST_CASE(update_domain_set_publish_wrong_domain, update_domain_fixture)
+{
+    Fred::OperationContext ctx;
+    Fred::InfoDomainOutput info_data_1 = Fred::InfoDomainByHandle(test_enum_domain).exec(ctx);
+
+    try
+    {
+        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::UpdateDomain(test_domain_handle, registrar_handle)
+        .set_enum_publish_flag(true)
+        .exec(ctx);
+        ctx.commit_transaction();
+    }
+    catch(const Fred::InternalError& ex)
+    {
+        BOOST_MESSAGE(ex.what());
+    }
+
+    Fred::InfoDomainOutput info_data_2 = Fred::InfoDomainByHandle(test_enum_domain).exec(ctx);
+    BOOST_CHECK(info_data_1 == info_data_2);
+    BOOST_CHECK(info_data_2.info_domain_data.delete_time.isnull());
 }
 
 

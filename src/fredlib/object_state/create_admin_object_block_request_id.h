@@ -24,7 +24,7 @@
 #ifndef CREATE_ADMIN_OBJECT_BLOCK_REQUEST_ID_H_
 #define CREATE_ADMIN_OBJECT_BLOCK_REQUEST_ID_H_
 
-#include "fredlib/object_state/create_object_state_request_id.h"
+#include "src/fredlib/object_state/create_object_state_request_id.h"
 
 namespace Fred
 {

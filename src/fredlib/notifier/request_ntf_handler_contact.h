@@ -2,7 +2,7 @@
 #define REQUEST_NTF_HANDLER_CONTACT_H__
 
 #include "request_notification.h"
-#include "fredlib/contact_diff.h"
+#include "src/fredlib/contact_diff.h"
 
 
 namespace Fred {

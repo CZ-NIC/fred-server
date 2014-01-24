@@ -36,8 +36,8 @@
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/lexical_cast.hpp>
 
-#include "fredlib/db_settings.h"
-#include "model/model_filters.h"
+#include "src/fredlib/db_settings.h"
+#include "src/model/model_filters.h"
 #include "types/stringify.h"
 
 namespace Fred

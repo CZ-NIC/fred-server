@@ -25,7 +25,7 @@
 #define SETUP_SERVER_DECL_H_
 
 #include "cfg/config_handler_decl.h"
-#include "corba_wrapper_decl.h"
+#include "util/corba_wrapper_decl.h"
 
 void setup_logging(CfgArgs * cfg_instance_ptr);
 void run_server(CfgArgs * cfg_instance_ptr , CorbaContainer* corba_instance_ptr );

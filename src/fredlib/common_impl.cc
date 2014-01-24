@@ -18,9 +18,9 @@
 
 #include <algorithm>
 
-#include "common_impl.h"
-#include "old_utils/dbsql.h"
-#include "old_utils/log.h"
+#include "src/fredlib/common_impl.h"
+#include "src/old_utils/dbsql.h"
+#include "src/old_utils/log.h"
 #include "log/logger.h"
 
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=

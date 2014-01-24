@@ -21,15 +21,15 @@
  *  create domain name blacklist
  */
 
-#include "fredlib/domain/create_domain_name_blacklist_id.h"
-#include "fredlib/object_state/get_blocking_status_desc_list.h"
-#include "fredlib/object_state/get_object_state_id_map.h"
-#include "fredlib/opcontext.h"
-#include "fredlib/db_settings.h"
+#include "src/fredlib/domain/create_domain_name_blacklist_id.h"
+#include "src/fredlib/object_state/get_blocking_status_desc_list.h"
+#include "src/fredlib/object_state/get_object_state_id_map.h"
+#include "src/fredlib/opcontext.h"
+#include "src/fredlib/db_settings.h"
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
 #include "util/util.h"
-#include "fredlib/object.h"
+#include "src/fredlib/object.h"
 
 #include <boost/algorithm/string.hpp>
 

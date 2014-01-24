@@ -31,19 +31,19 @@
 
 #include "test-common-registry.h"
 #include "types/money.h"
-#include "fredlib/invoicing/invoice.h"
+#include "src/fredlib/invoicing/invoice.h"
 
 #include "test-invoice-common.h"
 
 #include <boost/test/unit_test.hpp>
 
 #include "time_clock.h"
-#include "credit.h"
-#include "file_manager_client.h"
+#include "src/fredlib/credit.h"
+#include "src/corba/file_manager_client.h"
 
 #include "util/corba_wrapper_decl.h"
 
-#include "fredlib/banking/bank_common.h"
+#include "src/fredlib/banking/bank_common.h"
 
 
 using namespace Fred::Invoicing;

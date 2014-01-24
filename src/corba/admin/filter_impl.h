@@ -6,10 +6,10 @@
 #include <map>
 #include <vector>
 
-#include "corba/mailer_manager.h"
-#include "fredlib/registry.h"
-#include "old_utils/dbsql.h"
-#include "model/model_filters.h"
+#include "src/corba/mailer_manager.h"
+#include "src/fredlib/registry.h"
+#include "src/old_utils/dbsql.h"
+#include "src/model/model_filters.h"
 
 class FilterBaseImpl;
 class FilterIteratorImpl : virtual public POA_ccReg::Filters::Iterator

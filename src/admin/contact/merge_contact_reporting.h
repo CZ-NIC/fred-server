@@ -2,7 +2,7 @@
 #define ADMIN_MERGE_CONTACT_REPORTING_H__
 
 #include "util/output_indenter.h"
-#include "fredlib/contact/merge_contact.h"
+#include "src/fredlib/contact/merge_contact.h"
 
 #include <map>
 #include <string>

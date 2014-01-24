@@ -1,7 +1,7 @@
 #ifndef FIND_CONTACT_DUPLICATES
 #define FIND_CONTACT_DUPLICATES
 
-#include "fredlib/opcontext.h"
+#include "src/fredlib/opcontext.h"
 #include "util/types/optional.h"
 
 #include <set>

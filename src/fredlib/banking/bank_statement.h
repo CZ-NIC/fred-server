@@ -19,9 +19,9 @@
 #ifndef BANK_STATEMENT_H_
 #define BANK_STATEMENT_H_
 
-#include "exceptions.h"
-#include "common_new.h"
-#include "bank_payment.h"
+#include "src/fredlib/exceptions.h"
+#include "src/fredlib/common_new.h"
+#include "src/fredlib/banking/bank_payment.h"
 #include "types/money.h"
 
 namespace Fred {

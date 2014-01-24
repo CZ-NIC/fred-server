@@ -22,6 +22,7 @@
  */
 
 #include <string>
+#include <vector>
 
 #include <algorithm>
 #include <functional>
@@ -31,10 +32,10 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/regex.hpp>
 
-#include "fredlib/contact/merge_contact_selection.h"
-#include "fredlib/opcontext.h"
-#include "fredlib/db_settings.h"
-#include "fredlib/object_states.h"
+#include "src/fredlib/contact/merge_contact_selection.h"
+#include "src/fredlib/opcontext.h"
+#include "src/fredlib/db_settings.h"
+#include "src/fredlib/object_states.h"
 
 #include "util/util.h"
 
@@ -91,22 +92,16 @@ namespace Fred
         }
     }
 
-    std::ostream& operator<<(std::ostream& os, const MergeContactSelection& i)
+    std::string MergeContactSelection::to_string() const
     {
-        os << "#MergeContactSelection";
-        if(!i.contact_handle_.empty()) os << " contact handles:";
-        for (std::vector<std::string>::const_iterator ci = i.contact_handle_.begin()
-                ; ci != i.contact_handle_.end() ; ++ci) os << " " <<*ci;
-        if(!i.ff_.empty()) os << " selection filters:";
-        for(std::vector<std::pair<std::string, boost::shared_ptr<ContactSelectionFilterBase> > >::const_iterator ci = i.ff_.begin()
-                ; ci != i.ff_.end() ; ++ci) os << " " << ci->first;
-        return os;
-    }
-    std::string MergeContactSelection::to_string()
-    {
-        std::stringstream ss;
-        ss << *this;
-        return ss.str();
+        std::vector<std::pair<std::string,std::string> > data;
+
+        data.push_back((std::make_pair("contact_handle",Util::format_vector(contact_handle_))));
+        std::ostringstream os;
+        for(std::vector<std::pair<std::string, boost::shared_ptr<ContactSelectionFilterBase> > >::const_iterator ci = ff_.begin()
+                ; ci != ff_.end() ; ++ci) os << " " << ci->first;
+        data.push_back((std::make_pair("selection filters",os.str())));
+        return Util::format_operation_state("MergeContactSelection",data);
     }
 //class MergeContactSelection
 

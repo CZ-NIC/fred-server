@@ -21,18 +21,18 @@
  *  copy contact
  */
 
-#include "fredlib/contact/copy_contact.h"
-#include "fredlib/object_state/get_blocking_status_desc_list.h"
-#include "fredlib/object_state/get_object_state_id_map.h"
-#include "fredlib/contact/info_contact.h"
-#include "fredlib/contact/create_contact.h"
-#include "fredlib/object/object.h"
-#include "fredlib/opcontext.h"
-#include "fredlib/db_settings.h"
+#include "src/fredlib/contact/copy_contact.h"
+#include "src/fredlib/object_state/get_blocking_status_desc_list.h"
+#include "src/fredlib/object_state/get_object_state_id_map.h"
+#include "src/fredlib/contact/info_contact.h"
+#include "src/fredlib/contact/create_contact.h"
+#include "src/fredlib/object/object.h"
+#include "src/fredlib/opcontext.h"
+#include "src/fredlib/db_settings.h"
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
 #include "util/util.h"
-#include "fredlib/object.h"
+#include "src/fredlib/object.h"
 
 #include <boost/algorithm/string.hpp>
 
@@ -106,7 +106,7 @@ namespace Fred
             }
         }
 
-        Fred::InfoContact info_contact(src_contact_handle_, dst_registrar_handle_);
+        Fred::InfoContactByHandle info_contact(src_contact_handle_);
         Fred::InfoContactOutput old_contact = info_contact.exec(_ctx);
         Fred::CreateContact create_contact(dst_contact_handle_, dst_registrar_handle_,
           to_optional(old_contact.info_contact_data.authinfopw),

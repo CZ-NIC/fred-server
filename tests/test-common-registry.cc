@@ -38,12 +38,12 @@
 #include <boost/algorithm/string.hpp>
 
 
-#include "poll.h"
+#include "src/fredlib/poll.h"
 #include "time_clock.h"
-#include "credit.h"
-#include "file_manager_client.h"
-#include "fredlib/banking/bank_common.h"
-#include "exceptions.h"
+#include "src/fredlib/credit.h"
+#include "src/corba/file_manager_client.h"
+#include "src/fredlib/banking/bank_common.h"
+#include "src/fredlib/exceptions.h"
 
 
 

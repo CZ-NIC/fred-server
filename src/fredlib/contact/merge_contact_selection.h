@@ -27,11 +27,12 @@
 #include <string>
 #include <vector>
 
-#include "fredlib/opexception.h"
-#include "fredlib/opcontext.h"
+#include "src/fredlib/opexception.h"
+#include "src/fredlib/opcontext.h"
 #include "util/log/log.h"
 #include "util/factory.h"
 #include "util/factory_check.h"
+#include "util/printable.h"
 
 namespace Fred
 {
@@ -56,7 +57,7 @@ namespace Fred
     };
 
 
-    struct MergeContactSelectionOutput
+    struct MergeContactSelectionOutput : public Util::Printable
     {
         std::string handle;
         ContactSelectionFilterType filter;
@@ -66,11 +67,19 @@ namespace Fred
                 const ContactSelectionFilterType &_filter)
             : handle(_handle),
               filter(_filter)
+        {}
+
+        std::string to_string() const
         {
+            return Util::format_data_structure("MergeContactSelectionOutput",
+            Util::vector_of<std::pair<std::string,std::string> >
+            (std::make_pair("handle",handle))
+            (std::make_pair("filter",filter))
+            );
         }
     };
 
-    class MergeContactSelection
+    class MergeContactSelection : public Util::Printable
     {
         std::vector<std::string> contact_handle_;//contact handle vector
         std::vector<std::pair<std::string, boost::shared_ptr<ContactSelectionFilterBase> > > ff_;//filter functor ptr vector
@@ -96,8 +105,7 @@ namespace Fred
                 , const std::vector<ContactSelectionFilterType>& filter);
         MergeContactSelectionOutput exec(OperationContext& ctx);
 
-        friend std::ostream& operator<<(std::ostream& os, const MergeContactSelection& i);
-        std::string to_string();
+        std::string to_string() const;
     };//class MergeContactSelection
 
 

@@ -17,7 +17,7 @@
  */
 
 #include "info_buffer.h"
-#include "old_utils/dbsql.h"
+#include "src/old_utils/dbsql.h"
 
 namespace Fred
 {

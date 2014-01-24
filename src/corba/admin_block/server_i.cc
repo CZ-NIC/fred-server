@@ -25,7 +25,7 @@
 
 #include "server_i.h"
 #include "corba_conversion.h"
-#include "admin_block/administrativeblocking.h"
+#include "src/admin_block/administrativeblocking.h"
 #include <string>
 
 

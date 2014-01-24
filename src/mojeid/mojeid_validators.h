@@ -24,7 +24,7 @@
 #ifndef MOJEID_VALIDATORS_H_
 #define MOJEID_VALIDATORS_H_
 
-#include "fredlib/contact_verification/contact_verification_validators.h"
+#include "src/fredlib/contact_verification/contact_verification_validators.h"
 
 
 namespace Fred {

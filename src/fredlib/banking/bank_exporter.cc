@@ -1,6 +1,6 @@
 #include "bank_exporter.h"
 #include "bank_statement.h"
-#include "bank_payment.h"
+#include "src/fredlib/banking/bank_payment.h"
 
 namespace Fred {
 namespace Banking {

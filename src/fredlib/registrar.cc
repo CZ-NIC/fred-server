@@ -26,14 +26,14 @@
 #include <stdexcept>
 
 
-#include "registrar.h"
-#include "common_impl.h"
+#include "src/fredlib/registrar.h"
+#include "src/fredlib/common_impl.h"
 //#include "sql.h"
-#include "old_utils/dbsql.h"
-#include "old_utils/log.h"
+#include "src/old_utils/dbsql.h"
+#include "src/old_utils/log.h"
 #include "types/money.h"
 
-#include "model/model_filters.h"
+#include "src/model/model_filters.h"
 #include "log/logger.h"
 #include "log/context.h"
 
@@ -47,10 +47,10 @@
 #include "subprocess.h"
 
 // for getRequestFeeParametres
-#include "invoicing/invoice.h"
+#include "src/fredlib/invoicing/invoice.h"
 
-#include "domain.h"
-#include "credit.h"
+#include "src/fredlib/domain.h"
+#include "src/fredlib/credit.h"
 
 namespace Fred {
 namespace Registrar {

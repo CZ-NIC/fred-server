@@ -4,8 +4,8 @@
 #include <boost/date_time.hpp>
 #include "types/money.h"
 
-#include "fredlib/registrar.h"
-#include "fredlib/invoicing/invoice.h"
+#include "src/fredlib/registrar.h"
+#include "src/fredlib/invoicing/invoice.h"
 
 static std::string zone_registrar_credit_query (
         "SELECT credit FROM registrar_credit"

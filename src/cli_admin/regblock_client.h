@@ -2,7 +2,7 @@
 #include "cfg/handle_corbanameservice_args.h"
 #include "src/cli_admin/handle_adminclientselection_args.h"
 #include "log/context.h"
-#include "epp_corba_client_impl.h"
+#include "src/corba/epp_corba_client_impl.h"
 #include "regblock_client_impl.h"
 
 struct block_registrar_id_impl

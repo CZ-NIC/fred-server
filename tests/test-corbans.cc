@@ -46,7 +46,7 @@
 #include "cfg/handle_corbanameservice_args.h"
 
 
-#include "whois/whois_impl.h"
+#include "src/corba/whois/whois_impl.h"
 
 //not using UTF defined main
 #define BOOST_TEST_NO_MAIN

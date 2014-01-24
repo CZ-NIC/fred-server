@@ -21,20 +21,11 @@
  *  create administrative object block request
  */
 
-/*
-administrativni nastaveni stavu blokovani objektu, (insert do object_state_request) CreateAdminObjectBlockRequest
-  M handle objektu,
-  M typ objektu,
-  M seznam stavu (jmena)
-  od
-  do
-  duvod blokace
-*/
 
 #ifndef CREATE_ADMIN_OBJECT_BLOCK_REQUEST_H_
 #define CREATE_ADMIN_OBJECT_BLOCK_REQUEST_H_
 
-#include "fredlib/object_state/create_object_state_request.h"
+#include "src/fredlib/object_state/create_object_state_request.h"
 
 namespace Fred
 {

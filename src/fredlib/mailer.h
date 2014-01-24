@@ -5,7 +5,7 @@
 #include <vector>
 #include <string>
 #include <stdexcept>
-#include "types.h"
+#include "src/fredlib/types.h"
 
 namespace Fred
 {

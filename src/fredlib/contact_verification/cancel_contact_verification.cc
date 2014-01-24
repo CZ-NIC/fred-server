@@ -18,8 +18,8 @@
 
 #include "log/logger.h"
 #include "log/context.h"
-#include "fredlib/db_settings.h"
-#include "object_states.h"
+#include "src/fredlib/db_settings.h"
+#include "src/fredlib/object_states.h"
 #include "cancel_contact_verification.h"
 
 namespace Fred {

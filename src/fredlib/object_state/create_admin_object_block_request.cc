@@ -21,14 +21,14 @@
  *  create administrative object block request
  */
 
-#include "fredlib/object_state/create_admin_object_block_request.h"
-#include "fredlib/object_state/get_blocking_status_desc_list.h"
-#include "fredlib/opcontext.h"
-#include "fredlib/db_settings.h"
+#include "src/fredlib/object_state/create_admin_object_block_request.h"
+#include "src/fredlib/object_state/get_blocking_status_desc_list.h"
+#include "src/fredlib/opcontext.h"
+#include "src/fredlib/db_settings.h"
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
 #include "util/util.h"
-#include "fredlib/object.h"
+#include "src/fredlib/object.h"
 
 #include <boost/algorithm/string.hpp>
 #include <set>
