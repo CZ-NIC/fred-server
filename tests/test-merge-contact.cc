@@ -63,6 +63,7 @@
 #include "src/fredlib/domain/info_domain_diff.h"
 #include "src/fredlib/nsset/info_nsset_diff.h"
 #include "src/fredlib/keyset/info_keyset_diff.h"
+#include "src/fredlib/registrar/get_registrar_handles.h"
 
 #include "util/util.h"
 
@@ -1588,6 +1589,18 @@ BOOST_FIXTURE_TEST_CASE(test_merge_keyset_tech_contacts, merge_tech_contact_keys
 }
 
 BOOST_AUTO_TEST_SUITE_END();//OneObject
+
+BOOST_AUTO_TEST_CASE(get_registrar_handles_except_excluded)
+{
+    std::vector<std::string> all_registrars = Fred::Registrar::GetRegistrarHandles().exec();
+    std::vector<std::string> all_excluded_registrars = Fred::Registrar::GetRegistrarHandles().set_exclude_registrars(all_registrars).exec();
+    BOOST_CHECK(!all_registrars.empty());
+    BOOST_CHECK(all_excluded_registrars.empty());
+
+    std::vector<std::string> registrars = Fred::Registrar::GetRegistrarHandles().set_exclude_registrars(Util::vector_of<std::string>("REG-FRED_B")).exec();
+    BOOST_CHECK(std::find(registrars.begin(),registrars.end(),std::string("REG-FRED_A")) != registrars.end());
+    BOOST_CHECK(std::find(registrars.begin(),registrars.end(),std::string("REG-FRED_B")) == registrars.end());
+}
 
 BOOST_AUTO_TEST_SUITE_END();//TestMergeContact
 

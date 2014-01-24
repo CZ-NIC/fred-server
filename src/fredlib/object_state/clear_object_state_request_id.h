@@ -24,7 +24,7 @@
 #ifndef CLEAR_OBJECT_STATE_REQUEST_ID_H_
 #define CLEAR_OBJECT_STATE_REQUEST_ID_H_
 
-#include "src/fredlib/domain/create_object_state_request.h"
+#include "src/fredlib/object_state/create_object_state_request.h"
 #include <vector>
 
 namespace Fred

@@ -17,19 +17,19 @@
  */
 
 /**
- *  @file create_administrative_object_state_restore_request.cc
+ *  @file create_admin_object_state_restore_request.cc
  *  create administrative object state restore request
  */
 
-#include "src/fredlib/domain/create_administrative_object_state_restore_request.h"
-#include "src/fredlib/domain/get_blocking_status_desc_list.h"
+#include "src/fredlib/object_state/create_admin_object_state_restore_request.h"
+#include "src/fredlib/object_state/clear_object_state_request.h"
+#include "src/fredlib/object_state/get_blocking_status_desc_list.h"
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/db_settings.h"
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
 #include "util/util.h"
 #include "src/fredlib/object.h"
-#include "clear_object_state_request.h"
 
 #include <boost/algorithm/string.hpp>
 #include <set>
@@ -37,13 +37,13 @@
 namespace Fred
 {
 
-    CreateAdministrativeObjectStateRestoreRequest::CreateAdministrativeObjectStateRestoreRequest(const std::string &_object_handle,
+    CreateAdminObjectStateRestoreRequest::CreateAdminObjectStateRestoreRequest(const std::string &_object_handle,
         ObjectType _object_type)
     :   object_handle_(_object_handle),
         object_type_(_object_type)
     {}
 
-    CreateAdministrativeObjectStateRestoreRequest::CreateAdministrativeObjectStateRestoreRequest(const std::string &_object_handle,
+    CreateAdminObjectStateRestoreRequest::CreateAdminObjectStateRestoreRequest(const std::string &_object_handle,
         ObjectType _object_type,
         const std::string &_notice)
     :   object_handle_(_object_handle),
@@ -51,13 +51,13 @@ namespace Fred
         notice_(_notice)
     {}
 
-    CreateAdministrativeObjectStateRestoreRequest& CreateAdministrativeObjectStateRestoreRequest::set_notice(const std::string &_notice)
+    CreateAdminObjectStateRestoreRequest& CreateAdminObjectStateRestoreRequest::set_notice(const std::string &_notice)
     {
         notice_ = _notice;
         return *this;
     }
 
-    ObjectId CreateAdministrativeObjectStateRestoreRequest::exec(OperationContext &_ctx)
+    ObjectId CreateAdminObjectStateRestoreRequest::exec(OperationContext &_ctx)
     {
         const ObjectStateId server_blocked_id = this->check_server_blocked_status_present(_ctx);
         const ObjectId object_id = GetObjectId(object_handle_, object_type_).exec(_ctx);
@@ -127,7 +127,7 @@ namespace Fred
         return object_id;
     }
 
-    ObjectStateId CreateAdministrativeObjectStateRestoreRequest::check_server_blocked_status_present(OperationContext &_ctx) const
+    ObjectStateId CreateAdminObjectStateRestoreRequest::check_server_blocked_status_present(OperationContext &_ctx) const
     {
         const ObjectId object_id = GetObjectId(object_handle_, object_type_).exec(_ctx);
         static ObjectStateId server_blocked_id = 0;

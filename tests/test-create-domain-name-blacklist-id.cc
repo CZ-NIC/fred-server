@@ -43,7 +43,7 @@
 #include "setup_server_decl.h"
 #include "time_clock.h"
 #include "src/fredlib/registrar.h"
-#include "src/fredlib/domain/create_object_state_request_id.h"
+#include "src/fredlib/object_state/create_object_state_request_id.h"
 #include "src/fredlib/domain/create_domain_name_blacklist_id.h"
 #include "src/fredlib/opexception.h"
 #include "util/util.h"

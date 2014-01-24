@@ -25,7 +25,7 @@
 #define ADMINISTRATIVEBLOCKING_H_
 
 #include "db/nullable.h"
-#include "src/fredlib/domain/get_blocking_status_desc_list.h"
+#include "src/fredlib/object_state/get_blocking_status_desc_list.h"
 #include <string>
 #include <list>
 #include <set>

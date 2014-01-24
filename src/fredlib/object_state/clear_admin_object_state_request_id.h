@@ -17,33 +17,33 @@
  */
 
 /**
- *  @file clear_administrative_object_state_request_id.h
+ *  @file clear_admin_object_state_request_id.h
  *  clear all administrative object state requests
  */
 
 /*
-administrativni zruseni vsech stavu blokovani objektu, (update do object_state_request) ClearAdministrativeObjectStateRequestId
+administrativni zruseni vsech stavu blokovani objektu, (update do object_state_request) ClearAdminObjectStateRequestId
   M id objektu,
   M typ objektu,
   duvod
 */
 
-#ifndef CLEAR_ADMINISTRATIVE_OBJECT_STATE_REQUEST_ID_H_
-#define CLEAR_ADMINISTRATIVE_OBJECT_STATE_REQUEST_ID_H_
+#ifndef CLEAR_ADMIN_OBJECT_STATE_REQUEST_ID_H_
+#define CLEAR_ADMIN_OBJECT_STATE_REQUEST_ID_H_
 
-#include "src/fredlib/domain/clear_object_state_request_id.h"
+#include "src/fredlib/object_state/clear_object_state_request_id.h"
 
 namespace Fred
 {
 
-    class ClearAdministrativeObjectStateRequestId
+    class ClearAdminObjectStateRequestId
     {
     public:
-        ClearAdministrativeObjectStateRequestId(ObjectId _object_id);
-        ClearAdministrativeObjectStateRequestId(ObjectId _object_id,
+        ClearAdminObjectStateRequestId(ObjectId _object_id);
+        ClearAdminObjectStateRequestId(ObjectId _object_id,
             const std::string &_reason
             );
-        ClearAdministrativeObjectStateRequestId& set_reason(const std::string &_reason);
+        ClearAdminObjectStateRequestId& set_reason(const std::string &_reason);
         void exec(OperationContext &_ctx);
 
     //exception impl
@@ -59,7 +59,7 @@ namespace Fred
     private:
         const ObjectId object_id_;
         Optional< std::string > reason_;
-    };//class ClearAdministrativeObjectStateRequestId
+    };//class ClearAdminObjectStateRequestId
 
 }//namespace Fred
 
