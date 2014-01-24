@@ -163,7 +163,7 @@ namespace Fred
                 "SELECT "
                 "   handle, name, description "
                 "   FROM enum_contact_testsuite "
-                "       JOIN enum_contact_testsuite_localization "
+                "       JOIN enum_contact_testsuite_localization USING (id) "
                 "   WHERE lang = $1::varchar ",
                 Database::query_param_list(lang));
 
