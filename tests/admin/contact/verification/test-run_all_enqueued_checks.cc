@@ -30,6 +30,7 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/assign/list_of.hpp>
 #include <boost/foreach.hpp>
+#include <map>
 
 #include "tests/admin/contact/verification/setup_utils.h"
 #include "tests/fredlib/contact/verification/setup_utils.h"
@@ -75,12 +76,36 @@ void test_Resulting_check_status_impl(std::vector<std::string> _test_statuses, c
 
     BOOST_CHECK_EQUAL(_test_statuses.size(), final_check_state.tests.size());
 
-    std::vector<std::string>::const_iterator it_status = _test_statuses.begin();
+    std::map<std::string, int> occurences;
+    for(std::vector<std::string>::const_iterator it = _test_statuses.begin();
+        it != _test_statuses.end();
+        ++it
+    ) {
+        if(occurences.find(*it) == occurences.end()) {
+            occurences[*it] = 1;
+        } else {
+            occurences[*it]++;
+        }
+    }
+
+    // decreasing related occurences so in case of equality should get map with zeroed members
     for(std::vector<Fred::InfoContactCheckOutput::ContactTestResultData>::const_iterator it_test = final_check_state.tests.begin();
         it_test != final_check_state.tests.end();
-        ++it_test, ++it_status
+        ++it_test
     ) {
-        BOOST_CHECK_EQUAL(it_test->state_history.back().status_handle, *it_status);
+        occurences[it_test->state_history.back().status_handle]--;
+    }
+
+    for(std::map<std::string, int>::const_iterator it = occurences.begin();
+        it != occurences.end();
+        ++it
+    ) {
+        BOOST_CHECK_MESSAGE(
+            it->second == 0,
+            boost::lexical_cast<std::string>(it->second)
+            + " difference in expected and resulting occurences of status "
+            + it->first
+        );
     }
 
     BOOST_CHECK_EQUAL(final_check_state.check_state_history.back().status_handle, _resulting_check_status);

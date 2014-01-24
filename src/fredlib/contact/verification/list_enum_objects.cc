@@ -69,7 +69,8 @@ namespace Fred
                 "SELECT "
                 "   handle, name, description "
                 "   FROM enum_contact_check_status "
-                "       JOIN enum_contact_check_status_localization USING (id) ",
+                "       JOIN enum_contact_check_status_localization USING (id) "
+                "   WHERE lang = $1::varchar",
                 Database::query_param_list(lang)
             );
 
@@ -162,7 +163,7 @@ namespace Fred
                 "SELECT "
                 "   handle, name, description "
                 "   FROM enum_contact_testsuite "
-                "       JOIN enum_contact_testsuite_localization "
+                "       JOIN enum_contact_testsuite_localization USING (id) "
                 "   WHERE lang = $1::varchar ",
                 Database::query_param_list(lang));
 

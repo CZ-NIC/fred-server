@@ -18,23 +18,31 @@ namespace  Admin {
         std::map< std::string, boost::shared_ptr<Admin::ContactVerificationTest> > result;
 
         {
-            boost::shared_ptr<Admin::ContactVerificationTest> temp_ptr(new Admin::ContactVerificationTestNameSyntax);
+            boost::shared_ptr<Admin::ContactVerificationTest> temp_ptr
+                = boost::make_shared<Admin::ContactVerificationTestNameSyntax>();
+
             result[temp_ptr->get_name()] = temp_ptr;
         }
 
         {
-            boost::shared_ptr<Admin::ContactVerificationTest> temp_ptr(new Admin::ContactVerificationTestEmailSyntax);
+            boost::shared_ptr<Admin::ContactVerificationTest> temp_ptr
+                = boost::make_shared<Admin::ContactVerificationTestEmailSyntax>();
+
             result[temp_ptr->get_name()] = temp_ptr;
         }
 
         {
-            boost::shared_ptr<Admin::ContactVerificationTest> temp_ptr(new Admin::ContactVerificationTestPhoneSyntax);
+            boost::shared_ptr<Admin::ContactVerificationTest> temp_ptr
+                = boost::make_shared<Admin::ContactVerificationTestPhoneSyntax>();
+
             result[temp_ptr->get_name()] = temp_ptr;
         }
 
         {
-            boost::shared_ptr<Admin::ContactVerificationTest> temp_ptr(new
-                Admin::ContactVerificationTestCzAddress(_cz_address_dataset_path));
+            boost::shared_ptr<Admin::ContactVerificationTest> temp_ptr
+                = boost::make_shared<Admin::ContactVerificationTestCzAddress>(
+                    _cz_address_dataset_path );
+
             result[temp_ptr->get_name()] = temp_ptr;
         }
 
