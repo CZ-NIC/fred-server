@@ -214,7 +214,7 @@ BOOST_FIXTURE_TEST_CASE(delete_domain, delete_domain_fixture )
     BOOST_CHECK(domain_history_info1.at(0).next_historyid.isnull());
     BOOST_CHECK(!domain_history_info1.at(0).history_valid_from.is_not_a_date_time());
     BOOST_CHECK(!domain_history_info1.at(0).history_valid_to.isnull());
-    BOOST_CHECK(domain_history_info1.at(0).history_valid_from <= domain_history_info1.at(0).history_valid_to);
+    BOOST_CHECK(domain_history_info1.at(0).history_valid_from <= domain_history_info1.at(0).history_valid_to.get_value());
 
     BOOST_CHECK(static_cast<bool>(ctx.get_conn().exec_params(
         "select erdate is not null from object_registry where name = $1::text"
@@ -268,7 +268,7 @@ BOOST_FIXTURE_TEST_CASE(delete_enum_domain, delete_enum_domain_fixture )
     BOOST_CHECK(domain_history_info1.at(0).next_historyid.isnull());
     BOOST_CHECK(!domain_history_info1.at(0).history_valid_from.is_not_a_date_time());
     BOOST_CHECK(!domain_history_info1.at(0).history_valid_to.isnull());
-    BOOST_CHECK(domain_history_info1.at(0).history_valid_from <= domain_history_info1.at(0).history_valid_to);
+    BOOST_CHECK(domain_history_info1.at(0).history_valid_from <= domain_history_info1.at(0).history_valid_to.get_value());
 
     BOOST_CHECK(static_cast<bool>(ctx.get_conn().exec_params(
         "select erdate is not null from object_registry where name = $1::text"

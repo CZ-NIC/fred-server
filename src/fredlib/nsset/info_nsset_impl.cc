@@ -306,8 +306,8 @@ namespace Fred
             info_nsset_output.info_nsset_data.update_time = query_result[i][17].isnull() ? Nullable<boost::posix_time::ptime>()
             : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(query_result[i][17])));//oh.update
 
-            info_nsset_output.info_nsset_data.tech_check_level = query_result[i][18].isnull() ? Nullable<unsigned long long>()
-                       : Nullable<unsigned long long>(static_cast<unsigned long long>(query_result[i][18]));//nt.checklevel
+            info_nsset_output.info_nsset_data.tech_check_level = query_result[i][18].isnull() ? Nullable<short>()
+                       : Nullable<short>(static_cast<short>(query_result[i][18]));//nt.checklevel
 
             info_nsset_output.info_nsset_data.authinfopw = static_cast<std::string>(query_result[i][19]);//oh.authinfopw
 

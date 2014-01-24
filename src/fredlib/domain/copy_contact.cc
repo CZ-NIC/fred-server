@@ -61,7 +61,7 @@ namespace Fred
         template< class T >
         Optional< T > to_optional(const Nullable< T > &_n)
         {
-            return _n.isnull() ? Optional< T >() : Optional< T >(_n);
+            return _n.isnull() ? Optional< T >() : Optional< T >(_n.get_value());
         }
 
         Optional< std::string > to_optional(const std::string &_n)

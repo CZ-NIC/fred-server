@@ -44,7 +44,7 @@ namespace Util
             return true;
         }
         if( !lhs.isnull() && rhs.isset() ) {
-            return static_cast<T>(lhs) == rhs.get_value();
+            return lhs.get_value() == rhs.get_value();
         }
         return false;
     }
@@ -61,7 +61,7 @@ namespace Util
             return true;
         }
         if( !rhs.isnull() && lhs.isset() ) {
-            return lhs.get_value() == static_cast<T>(rhs);
+            return lhs.get_value() == rhs.get_value();
         }
         return false;
     }
@@ -79,7 +79,7 @@ namespace Util
             return true;
         }
         if( !lhs.isnull() && !rhs.isnull() ) {
-            return static_cast<T>(lhs) == static_cast<T>(rhs);
+            return lhs.get_value() == rhs.get_value();
         }
         return false;
     }
@@ -97,7 +97,7 @@ namespace Util
             return true;
         }
         if( !lhs.isnull() && !rhs.isnull() ) {
-            return boost::algorithm::to_upper_copy(static_cast<T>(lhs)) == boost::algorithm::to_upper_copy(static_cast<T>(rhs));
+            return boost::algorithm::to_upper_copy(lhs.get_value()) == boost::algorithm::to_upper_copy(rhs.get_value());
         }
         return false;
     }
@@ -115,7 +115,7 @@ namespace Util
             return true;
         }
         if( !lhs.isnull() && !rhs.isnull() ) {
-            return boost::algorithm::to_lower_copy(static_cast<T>(lhs)) == boost::algorithm::to_lower_copy(static_cast<T>(rhs));
+            return boost::algorithm::to_lower_copy(lhs.get_value()) == boost::algorithm::to_lower_copy(rhs.get_value());
         }
         return false;
     }

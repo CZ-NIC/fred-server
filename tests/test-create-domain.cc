@@ -287,7 +287,7 @@ BOOST_FIXTURE_TEST_CASE(create_domain_set_valexdate, create_domain_fixture)
     }
     Fred::OperationContext ctx;
     Fred::InfoDomainOutput info_data_1 = Fred::InfoDomainByHandle(test_enum_domain).exec(ctx);
-    BOOST_CHECK(static_cast<Fred::ENUMValidationExtension>(info_data_1.info_domain_data.enum_domain_validation)
+    BOOST_CHECK(info_data_1.info_domain_data.enum_domain_validation.get_value()
             .validation_expiration == valexdate);
 }
 

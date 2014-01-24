@@ -145,7 +145,7 @@ BOOST_FIXTURE_TEST_CASE(update_contact_by_handle, update_contact_fixture )
     info_data_1_with_changes.info_contact_data.historyid = info_data_2.info_contact_data.historyid;
 
     //updated update_registrar_handle
-    BOOST_CHECK(registrar_handle == std::string(info_data_2.info_contact_data.update_registrar_handle));
+    BOOST_CHECK(registrar_handle == info_data_2.info_contact_data.update_registrar_handle.get_value());
     info_data_1_with_changes.info_contact_data.update_registrar_handle = registrar_handle;
 
     //updated update_time
@@ -162,7 +162,7 @@ BOOST_FIXTURE_TEST_CASE(update_contact_by_handle, update_contact_fixture )
     BOOST_CHECK(history_info_data_2.at(1).info_contact_data == history_info_data_1.at(0).info_contact_data);
 
     //check historyid
-    BOOST_CHECK(history_info_data_2.at(1).next_historyid == history_info_data_2.at(0).info_contact_data.historyid);
+    BOOST_CHECK(history_info_data_2.at(1).next_historyid.get_value() == history_info_data_2.at(0).info_contact_data.historyid);
     BOOST_CHECK(history_info_data_2.at(0).info_contact_data.crhistoryid == info_data_2.info_contact_data.crhistoryid);
 
     Fred::UpdateContactByHandle(test_contact_handle//handle
@@ -207,7 +207,7 @@ BOOST_FIXTURE_TEST_CASE(update_contact_by_handle, update_contact_fixture )
     info_data_2_with_changes.info_contact_data.historyid = info_data_3.info_contact_data.historyid;
 
     //updated update_registrar_handle
-    BOOST_CHECK(registrar_handle == std::string(info_data_3.info_contact_data.update_registrar_handle));
+    BOOST_CHECK(registrar_handle == info_data_3.info_contact_data.update_registrar_handle.get_value());
     info_data_2_with_changes.info_contact_data.update_registrar_handle = registrar_handle;
 
     //updated update_time
@@ -225,7 +225,7 @@ BOOST_FIXTURE_TEST_CASE(update_contact_by_handle, update_contact_fixture )
     BOOST_CHECK(history_info_data_3.at(1).info_contact_data == history_info_data_2.at(0).info_contact_data);
 
     //check historyid
-    BOOST_CHECK(history_info_data_3.at(1).next_historyid == history_info_data_3.at(0).info_contact_data.historyid);
+    BOOST_CHECK(history_info_data_3.at(1).next_historyid.get_value() == history_info_data_3.at(0).info_contact_data.historyid);
     BOOST_CHECK(history_info_data_3.at(0).info_contact_data.crhistoryid == info_data_3.info_contact_data.crhistoryid);
 
     Fred::UpdateContactByHandle(test_contact_handle//handle
@@ -270,7 +270,7 @@ BOOST_FIXTURE_TEST_CASE(update_contact_by_handle, update_contact_fixture )
     info_data_3_with_changes.info_contact_data.historyid = info_data_4.info_contact_data.historyid;
 
     //updated update_registrar_handle
-    BOOST_CHECK(registrar_handle == std::string(info_data_4.info_contact_data.update_registrar_handle));
+    BOOST_CHECK(registrar_handle == info_data_4.info_contact_data.update_registrar_handle.get_value());
     info_data_3_with_changes.info_contact_data.update_registrar_handle = registrar_handle;
 
     //updated sponsoring_registrar_handle
@@ -321,7 +321,7 @@ BOOST_FIXTURE_TEST_CASE(update_contact_by_handle, update_contact_fixture )
     BOOST_CHECK(history_info_data_4.at(1).info_contact_data == history_info_data_3.at(0).info_contact_data);
 
     //check historyid
-    BOOST_CHECK(history_info_data_4.at(1).next_historyid == history_info_data_4.at(0).info_contact_data.historyid);
+    BOOST_CHECK(history_info_data_4.at(1).next_historyid.get_value() == history_info_data_4.at(0).info_contact_data.historyid);
     BOOST_CHECK(history_info_data_4.at(0).info_contact_data.crhistoryid == info_data_4.info_contact_data.crhistoryid);
 
     Fred::UpdateContactByHandle(test_contact_handle, registrar_handle)
@@ -363,7 +363,7 @@ BOOST_FIXTURE_TEST_CASE(update_contact_by_handle, update_contact_fixture )
     info_data_4_with_changes.info_contact_data.historyid = info_data_5.info_contact_data.historyid;
 
     //updated update_registrar_handle
-    BOOST_CHECK(registrar_handle == std::string(info_data_5.info_contact_data.update_registrar_handle));
+    BOOST_CHECK(registrar_handle == info_data_5.info_contact_data.update_registrar_handle.get_value());
     info_data_4_with_changes.info_contact_data.update_registrar_handle = registrar_handle;
 
     //updated sponsoring_registrar_handle
@@ -383,7 +383,7 @@ BOOST_FIXTURE_TEST_CASE(update_contact_by_handle, update_contact_fixture )
     info_data_4_with_changes.info_contact_data.fax = std::string("");
 
     //check logd request_id
-    BOOST_CHECK(4 == history_info_data_5.at(0).logd_request_id);
+    BOOST_CHECK(4 == history_info_data_5.at(0).logd_request_id.get_value());
 
     //check changes made by last update
     BOOST_CHECK(info_data_4_with_changes == info_data_5);
@@ -399,7 +399,7 @@ BOOST_FIXTURE_TEST_CASE(update_contact_by_handle, update_contact_fixture )
     BOOST_CHECK(history_info_data_5.at(1).info_contact_data == history_info_data_4.at(0).info_contact_data);
 
     //check historyid
-    BOOST_CHECK(history_info_data_5.at(1).next_historyid == history_info_data_5.at(0).info_contact_data.historyid);
+    BOOST_CHECK(history_info_data_5.at(1).next_historyid.get_value() == history_info_data_5.at(0).info_contact_data.historyid);
     BOOST_CHECK(history_info_data_5.at(0).info_contact_data.crhistoryid == info_data_5.info_contact_data.crhistoryid);
 
     ctx.commit_transaction();

@@ -264,7 +264,7 @@ namespace Fred
                 {
                     //lock nsset object_registry row for update and get id
                     unsigned long long nsset_id = get_object_id_by_handle_and_type_with_lock(
-                            ctx,new_nsset_value,"nsset",&update_domain_exception,
+                            ctx,new_nsset_value.get_value(),"nsset",&update_domain_exception,
                             &Exception::set_unknown_nsset_handle);
 
                     params.push_back(nsset_id); //nsset update
@@ -284,7 +284,7 @@ namespace Fred
                 {
                     //lock keyset object_registry row for update and get id
                     unsigned long long keyset_id = get_object_id_by_handle_and_type_with_lock(
-                            ctx,new_keyset_value,"keyset",&update_domain_exception,
+                            ctx,new_keyset_value.get_value(),"keyset",&update_domain_exception,
                             &Exception::set_unknown_keyset_handle);
 
                     params.push_back(keyset_id); //keyset update
