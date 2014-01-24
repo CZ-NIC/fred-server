@@ -38,6 +38,7 @@
 #include "src/admin/contact/merge_contact_reporting.h"
 #include "src/corba/logger_client_impl.h"
 
+#include "src/fredlib/registrar/get_registrar_handles.h"
 
 /**
  * \class contact_list_impl
@@ -93,7 +94,6 @@ struct contact_reminder_impl
   }
 };
 
-
 /**
  * \class contact_merge_duplicate_auto_impl
  * \brief functor to run automatic contact duplicates merge procedure
@@ -129,15 +129,38 @@ struct contact_merge_duplicate_auto_impl
         ContactMergeDuplicateAutoArgs params = CfgArgGroups::instance()->
             get_handler_ptr_by_type<HandleAdminClientContactMergeDuplicateAutoArgsGrp>()->params;
 
-        Admin::MergeContactAutoProcedure(
-                *(mm.get()),
-                *(logger_client.get()), params.registrar,
-                params.limit, params.dry_run, params.verbose)
-            .set_selection_filter_order(params.selection_filter_order).exec();
+        if((!params.registrar.empty()) && (!params.except_registrar.empty()))
+        {
+            throw std::runtime_error("unable to use --registrar option with --except_registrar option");
+        }
 
+        std::vector<std::string> registrar_handles;
+
+        if(!params.registrar.empty())
+        {
+            registrar_handles=params.registrar;
+        }
+        else
+        {
+            registrar_handles = Fred::Registrar::GetRegistrarHandles().set_exclude_registrars(params.except_registrar).exec();
+        }
+
+        for(std::vector<std::string>::const_iterator ci = registrar_handles.begin()
+            ; ci != registrar_handles.end(); ++ci)
+        {
+            Admin::MergeContactAutoProcedure(
+                    *(mm.get()),
+                    *(logger_client.get()))
+                .set_registrar(*ci)
+                .set_limit(params.limit)
+                .set_dry_run(params.dry_run)
+                .set_verbose(params.verbose)
+                .set_selection_filter_order(params.selection_filter_order)
+            .exec();
+        }
         return;
     }
-};
+};//struct contact_merge_duplicate_auto_impl
 
 
 /**

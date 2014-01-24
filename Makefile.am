@@ -771,8 +771,9 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/keyset/delete_keyset.cc \
 		src/fredlib/keyset/delete_keyset.h \
 		src/fredlib/registrar/registrar_impl.h \
-		src/fredlib/registrar/registrar_impl.cc
-
+		src/fredlib/registrar/registrar_impl.cc \
+		src/fredlib/registrar/get_registrar_handles.cc \
+		src/fredlib/registrar/get_registrar_handles.h
 #
 # src/fredlib/libfred.a
 
