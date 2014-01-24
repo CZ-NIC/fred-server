@@ -188,7 +188,12 @@ noinst_HEADERS = \
 		util/output_indenter.h \
 		src/corba/util/corba_conversions_datetime.h \
 		src/corba/util/corba_conversions_nullable_types.h \
-		src/corba/util/corba_conversions_string.h
+		src/corba/util/corba_conversions_string.h \
+		src/fredlib/contact/verification/enum_testsuite_handle.h \
+		src/fredlib/contact/verification/enum_check_status.h \
+		src/fredlib/contact/verification/enum_test_status.h \
+		src/admin/contact/verification/test_impl/test_interface.h \
+		util/optional_nullable_equal.h
 
 
 noinst_LIBRARIES = \
