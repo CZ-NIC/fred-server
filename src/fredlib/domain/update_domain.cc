@@ -255,7 +255,7 @@ namespace Fred
 
             if(nsset_.isset())//change nsset
             {
-                Nullable<std::string> new_nsset_value = nsset_;
+                Nullable<std::string> new_nsset_value = nsset_.get_value();
                 if(new_nsset_value.isnull())
                 {
                     params.push_back(Database::NullQueryParam);//NULL, no nsset
@@ -275,7 +275,7 @@ namespace Fred
 
             if(keyset_.isset())//change keyset
             {
-                Nullable<std::string> new_keyset_value = keyset_;
+                Nullable<std::string> new_keyset_value = keyset_.get_value();
                 if(new_keyset_value.isnull())
                 {
                     params.push_back(Database::NullQueryParam);//NULL, no nsset

@@ -77,11 +77,6 @@ public:
         return *this;
     }//assignment
 
-    operator T() const
-    {
-        return value_;
-    }
-
     T get_value() const
     {
         return value_;

@@ -218,7 +218,7 @@ namespace Fred
             {
                 //check sponsoring registrar
                 unsigned long long sponsoring_registrar_id = Registrar::get_registrar_id_by_handle(
-                    ctx, sponsoring_registrar_, &update_object_exception,
+                    ctx, sponsoring_registrar_.get_value(), &update_object_exception,
                     &Exception::set_unknown_sponsoring_registrar_handle);
                 params.push_back(sponsoring_registrar_id);
                 sql << " , clid = $" << params.size() << "::integer ";//set sponsoring registrar

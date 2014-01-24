@@ -273,7 +273,7 @@ namespace Fred
                 //nsset
                 if(nsset_.isset())
                 {
-                    Nullable<std::string> new_nsset_value = nsset_;
+                    Nullable<std::string> new_nsset_value = nsset_.get_value();
                     col_sql << col_separator.get() << "nsset";
 
                     if(new_nsset_value.isnull())
@@ -296,7 +296,7 @@ namespace Fred
                 //keyset
                 if(keyset_.isset())
                 {
-                    Nullable<std::string> new_keyset_value = keyset_;
+                    Nullable<std::string> new_keyset_value = keyset_.get_value();
                     col_sql << col_separator.get() << "keyset";
 
                     if(new_keyset_value.isnull())

@@ -80,8 +80,8 @@ namespace Fred
             "CreateObjectStateRequest::exec object name: ") + object_handle_
             + " object type: " + boost::lexical_cast< std::string >(object_type_)
             + " object state name: " + object_state_names
-            + " valid from: " + boost::posix_time::to_iso_string(valid_from_)
-            + " valid to: " + boost::posix_time::to_iso_string(valid_to_));
+            + " valid from: " + boost::posix_time::to_iso_string(valid_from_.get_value())
+            + " valid to: " + boost::posix_time::to_iso_string(valid_to_.get_value()));
 
         //check time
         if (valid_to_.isset()) {

@@ -47,7 +47,7 @@ namespace Fred
         const Optional<unsigned long long> _logd_request_id)
     :   object_id_(_object_id),
         reason_(_reason),
-        logd_request_id_(_logd_request_id)
+        logd_request_id_(_logd_request_id.get_value())
     {}
 
     CreateAdministrativeObjectStateRestoreRequestId& CreateAdministrativeObjectStateRestoreRequestId::set_reason(const std::string &_reason)
@@ -141,7 +141,7 @@ namespace Fred
             }
         }
         try {
-            ClearAdministrativeObjectStateRequestId(object_id_, reason_).exec(_ctx);
+            ClearAdministrativeObjectStateRequestId(object_id_, reason_.get_value()).exec(_ctx);
         }
         catch (const ClearAdministrativeObjectStateRequestId::Exception &ex) {
             if (ex.is_set_server_blocked_absent()) {

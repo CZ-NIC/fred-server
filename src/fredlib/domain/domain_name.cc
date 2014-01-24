@@ -189,7 +189,7 @@ bool DomainNameValidator::exec(const DomainName& _fqdn, int top_labels_to_skip) 
             if(ctx_.isset() == false) {
                 throw ExceptionCtxNotSet();
             }
-            need_ctx_checker->set_ctx(*ctx_);
+            need_ctx_checker->set_ctx(*ctx_.get_value());
         }
         if(checker->validate(labels_to_check) == false) return false; //validation failed
     }
