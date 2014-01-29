@@ -1395,7 +1395,9 @@ src_corba_fred_adifd_SOURCES = \
 		src/corba/mailer_manager.cc \
 		src/corba/admin_block/corba_conversion.h \
 		src/corba/admin_block/server_i.cc \
-		src/corba/admin_block/server_i.h
+		src/corba/admin_block/server_i.h \
+		src/admin/contact/verification/resolve_check.cc \
+		src/admin/contact/verification/resolve_check.h
 
 src_corba_fred_adifd_LDADD = \
 		src/corba/admin/libadmin_impl.a \
@@ -1711,6 +1713,8 @@ src_cli_admin_fred_admin_SOURCES = \
 		src/admin/contact/verification/run_first_enqueued_check.cc \
 		src/admin/contact/verification/run_all_enqueued_checks.h \
 		src/admin/contact/verification/run_all_enqueued_checks.cc \
+		src/admin/contact/verification/resolve_check.h \
+		src/admin/contact/verification/resolve_check.cc \
 		src/admin/contact/verification/create_test_impl_prototypes.h \
 		src/admin/contact/verification/create_test_impl_prototypes.cc \
 		src/admin/contact/verification/test_impl/test_email_syntax.h \
@@ -1722,7 +1726,13 @@ src_cli_admin_fred_admin_SOURCES = \
 		src/admin/contact/verification/test_impl/test_cz_address_exists.h \
 		src/admin/contact/verification/test_impl/test_cz_address_exists.cc \
 		src/admin/contact/verification/test_impl/test_contactability.h \
-		src/admin/contact/verification/test_impl/test_contactability.cc
+		src/admin/contact/verification/test_impl/test_contactability.cc \
+		src/fredlib/object_state/create_object_state_request.cc \
+		src/fredlib/object_state/create_object_state_request.h \
+		src/fredlib/object_state/create_object_state_request_id.cc \
+		src/fredlib/object_state/create_object_state_request_id.h \
+		src/fredlib/object_state/get_object_state_id_map.cc \
+		src/fredlib/object_state/get_object_state_id_map.h
 		
 src_cli_admin_fred_admin_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS) \
