@@ -29,11 +29,9 @@ CLEANFILES = \
 		doxy.conf \
 		src/corba/MessagesSK.cc \
 		src/corba/MessagesDynSK.cc \
-		src/corba/MessagesSK.h \
 		src/corba/Messages.hh \
 		src/corba/MojeIDSK.cc \
 		src/corba/MojeIDDynSK.cc \
-		src/corba/MojeIDSK.h \
 		src/corba/MojeID.hh \
 		src/corba/AdministrativeBlockingSK.cc \
 		src/corba/AdministrativeBlockingDynSK.cc \
@@ -41,51 +39,39 @@ CLEANFILES = \
 		src/corba/AdministrativeBlocking.hh \
 		src/corba/FileManagerSK.cc \
 		src/corba/FileManagerDynSK.cc \
-		src/corba/FileManagerSK.h \
 		src/corba/FileManager.hh \
 		src/corba/MailerSK.cc \
 		src/corba/MailerDynSK.cc \
-		src/corba/MailerSK.h \
 		src/corba/Mailer.hh \
 		src/corba/ZoneSK.cc \
 		src/corba/ZoneDynSK.cc \
-		src/corba/ZoneSK.h \
 		src/corba/Zone.hh \
 		src/corba/_dataTypesSK.cc \
 		src/corba/_dataTypesDynSK.cc \
-		src/corba/_dataTypesSK.h \
 		src/corba/_dataTypes.hh \
 		src/corba/FiltersSK.cc \
 		src/corba/FiltersDynSK.cc \
-		src/corba/FiltersSK.h \
 		src/corba/Filters.hh \
 		src/corba/RegistrySK.cc \
 		src/corba/RegistryDynSK.cc \
-		src/corba/RegistrySK.h \
 		src/corba/Registry.hh \
 		src/corba/WhoisSK.cc \
 		src/corba/WhoisDynSK.cc \
-		src/corba/WhoisSK.h \
 		src/corba/Whois.hh \
 		src/corba/AdminSK.cc \
 		src/corba/AdminDynSK.cc \
-		src/corba/AdminSK.h \
 		src/corba/Admin.hh \
 		src/corba/LoggerSK.cc \
 		src/corba/LoggerDynSK.cc \
-		src/corba/LoggerSK.h \
 		src/corba/Logger.hh \
 		src/corba/TechCheckSK.cc \
 		src/corba/TechCheckDynSK.cc \
-		src/corba/TechCheckSK.h \
 		src/corba/TechCheck.hh \
 		src/corba/EPPSK.cc \
 		src/corba/EPPDynSK.cc \
-		src/corba/EPPSK.h \
 		src/corba/EPP.hh \
 		src/corba/ZoneGeneratorSK.cc \
 		src/corba/ZoneGeneratorDynSK.cc \
-		src/corba/ZoneGeneratorSK.h \
 		src/corba/ZoneGenerator.hh \
 		src/corba/ContactVerificationSK.cc \
 		src/corba/ContactVerificationDynSK.cc \
