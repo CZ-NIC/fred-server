@@ -117,7 +117,7 @@ public:
      * Check if exception instance have set content to be thrown.
      *@return true if exception data is set then throw exception
      */
-    bool throw_me()
+    bool throw_me() const
     {
         return throw_me_;
     }

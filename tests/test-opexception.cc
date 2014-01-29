@@ -144,6 +144,7 @@ BOOST_AUTO_TEST_CASE(throwTestExceptionCallback)
     {
         BOOST_TEST_MESSAGE( boost::diagnostic_information(ex));
         BOOST_CHECK(ex.is_set_unknown_registrar_handle());
+        BOOST_CHECK_EQUAL(ex.throw_me(), true);
     }
 }
 
