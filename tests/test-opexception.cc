@@ -515,5 +515,21 @@ BOOST_AUTO_TEST_CASE(substring)
     BOOST_CHECK(std::string("aaababcbbccc").find("abc") != std::string::npos);
 }
 
+
+struct TestExceptionFlag
+: virtual Fred::OperationException
+{};
+
+BOOST_AUTO_TEST_CASE(flag_copy)
+{
+    TestExceptionFlag ex1;
+    ex1.set_throw_me();
+    BOOST_CHECK(ex1.throw_me());
+
+    TestExceptionFlag ex2 = ex1;
+    BOOST_CHECK(ex2.throw_me());
+}
+
+
 BOOST_AUTO_TEST_SUITE_END();//TestOperationException
 
