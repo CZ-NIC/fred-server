@@ -1732,7 +1732,11 @@ src_cli_admin_fred_admin_SOURCES = \
 		src/fredlib/object_state/create_object_state_request_id.cc \
 		src/fredlib/object_state/create_object_state_request_id.h \
 		src/fredlib/object_state/get_object_state_id_map.cc \
-		src/fredlib/object_state/get_object_state_id_map.h
+		src/fredlib/object_state/get_object_state_id_map.h \
+		src/fredlib/object_state/cancel_object_state_request.cc \
+		src/fredlib/object_state/cancel_object_state_request.h \
+		src/fredlib/object_state/cancel_object_state_request_id.cc \
+		src/fredlib/object_state/cancel_object_state_request_id.h
 		
 src_cli_admin_fred_admin_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS) \
@@ -1923,7 +1927,17 @@ tests_test_server_SOURCES = \
 		tests/admin/contact/verification/test-run_all_enqueued_checks.cc \
 		src/admin/contact/verification/fill_check_queue.cc \
 		tests/admin/contact/verification/test-fill_check_queue.cc \
-		tests/util/test-is-equal-optional-nullable.cc
+		tests/util/test-is-equal-optional-nullable.cc \
+		src/fredlib/object_state/create_object_state_request.cc \
+		src/fredlib/object_state/create_object_state_request.h \
+		src/fredlib/object_state/create_object_state_request_id.cc \
+		src/fredlib/object_state/create_object_state_request_id.h \
+		src/fredlib/object_state/get_object_state_id_map.cc \
+		src/fredlib/object_state/get_object_state_id_map.h \
+		src/fredlib/object_state/cancel_object_state_request.cc \
+		src/fredlib/object_state/cancel_object_state_request.h \
+		src/fredlib/object_state/cancel_object_state_request_id.cc \
+		src/fredlib/object_state/cancel_object_state_request_id.h
 
 tests_test_server_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS) \

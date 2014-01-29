@@ -6,9 +6,14 @@
 #include "src/fredlib/contact/verification/create_check.h"
 #include "src/fredlib/contact/verification/update_check.h"
 #include "src/fredlib/contact/verification/info_check.h"
+#include "src/fredlib/contact/info_contact.h"
+#include "src/fredlib/object_state/create_object_state_request_id.h"
+#include "src/fredlib/object_state/cancel_object_state_request_id.h"
 #include "src/fredlib/opexception.h"
 
+#include <set>
 #include <boost/foreach.hpp>
+#include <boost/assign/list_of.hpp>
 
 namespace  Admin {
 
@@ -42,12 +47,6 @@ namespace  Admin {
      */
     static std::string evaluate_check_status_after_tests_finished(std::vector<std::string> _test_statuses);
 
-    /**
-     * Triggering possible related actions after check has finished.
-     */
-    static void post_run_hooks(const std::string& _check_handle);
-
-
     // technicality - way how to "return" from nested function
     struct _ExceptionAllTestsAlreadyRunning : public std::exception {};
     struct ExceptionNoEnqueuedChecksAvailable : public std::exception {};
@@ -68,6 +67,12 @@ namespace  Admin {
            as there is not much in check's history and no tests either it is acceptable */
         Fred::InfoContactCheckOutput check_info (
             Fred::InfoContactCheck(check_handle).exec(ctx_locked_check) );
+
+        if(check_info.testsuite_handle == Fred::TestsuiteHandle::AUTOMATIC) {
+            preprocess_automatic_check(check_handle);
+        } else if(check_info.testsuite_handle == Fred::TestsuiteHandle::MANUAL) {
+            preprocess_manual_check(check_handle);
+        }
 
         std::vector<std::string> test_statuses;
         std::vector<Optional<std::string> > error_messages;
@@ -156,8 +161,6 @@ namespace  Admin {
         update_operation.exec(ctx_locked_check);
 
         ctx_locked_check.commit_transaction();
-
-        post_run_hooks(check_handle);
 
         return check_handle;
     }
@@ -376,7 +379,68 @@ namespace  Admin {
         }
     }
 
-    void post_run_hooks(const std::string& _check_handle) {
+    void preprocess_automatic_check(const std::string& _check_handle) {
+        // in case of need feel free to express yourself...
+    }
 
+    void preprocess_manual_check(const std::string& _check_handle) {
+        Fred::OperationContext ctx;
+
+        Fred::InfoContactCheckOutput check_info = Fred::InfoContactCheck(
+            _check_handle
+        ).exec(ctx);
+
+        Fred::InfoContactOutput contact_info = Fred::HistoryInfoContactByHistoryid(
+            check_info.contact_history_id
+        ).exec(ctx);
+
+        ctx.get_conn().exec("SAVEPOINT state_savepoint");
+
+        // cancel one state at a time because when exception is thrown, all changes would be ROLLBACKed
+        try {
+            std::set<std::string> object_states_to_erase =
+                boost::assign::list_of("contactInManualVerification");
+            Fred::CancelObjectStateRequestId(
+                contact_info.info_contact_data.id,
+                object_states_to_erase
+            ).exec(ctx);
+            ctx.get_conn().exec("RELEASE SAVEPOINT state_savepoint");
+            ctx.get_conn().exec("SAVEPOINT state_savepoint");
+        } catch(Fred::CancelObjectStateRequestId::Exception& e) {
+            // in case it throws from with unknown cause
+            if(e.is_set_state_not_found() == false) {
+                throw;
+            } else {
+                ctx.get_conn().exec("ROLLBACK TO state_savepoint");
+            }
+        }
+        try {
+            std::set<std::string> object_states_to_erase =
+                boost::assign::list_of("manuallyVerifiedContact");
+
+            Fred::CancelObjectStateRequestId(
+                contact_info.info_contact_data.id,
+                object_states_to_erase
+            ).exec(ctx);
+
+            ctx.get_conn().exec("RELEASE SAVEPOINT state_savepoint");
+            ctx.get_conn().exec("SAVEPOINT state_savepoint");
+        } catch(Fred::CancelObjectStateRequestId::Exception& e) {
+            // in case it throws from with unknown cause
+            if(e.is_set_state_not_found() == false) {
+                throw;
+            } else {
+                ctx.get_conn().exec("ROLLBACK TO state_savepoint");
+            }
+        }
+
+        std::set<std::string> status;
+        status.insert("contactInManualVerification");
+        Fred::CreateObjectStateRequestId(
+            contact_info.info_contact_data.id,
+            status
+        ).exec(ctx);
+
+        ctx.commit_transaction();
     }
 }
