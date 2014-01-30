@@ -124,42 +124,49 @@ namespace Admin {
                 address
                 );
         } catch(...) {
-            return T_run_result (Fred::ContactTestStatus::ERROR, std::string("failed to generate pdf file") );
+            return make_result (Fred::ContactTestStatus::ERROR, std::string("failed to generate pdf file") );
         }
 
         bool error = false;
         std::string error_msg;
 
+        set<unsigned long long> mail_ids;
+        set<unsigned long long> message_ids;
+
         try {
-            send_email(
-                contact_data.handle,
-                contact_email,
-                generated_pdf_id);
+            mail_ids.insert(
+                send_email(
+                    contact_data.handle,
+                    contact_email,
+                    generated_pdf_id)
+            );
         } catch(...) {
             error = true;
             error_msg += "failed to send email";
         }
 
         try {
-            send_letter(
-                contact_data.id,
-                contact_data.handle,
-                contact_data.historyid,
-                address,
-                generated_pdf_id);
+            message_ids.insert(
+                send_letter(
+                    contact_data.id,
+                    contact_data.handle,
+                    contact_data.historyid,
+                    address,
+                    generated_pdf_id)
+            );
         } catch(...) {
             error = true;
             error_msg += "failed to send letter";
         }
 
         if(error) {
-            return T_run_result (Fred::ContactTestStatus::ERROR, error_msg );
+            return make_result(Fred::ContactTestStatus::ERROR, error_msg, mail_ids, message_ids );
         } else {
-            return T_run_result (Fred::ContactTestStatus::MANUAL, string() );
+            return make_result(Fred::ContactTestStatus::MANUAL, string(), mail_ids, message_ids );
         }
     }
 
-    void ContactVerificationTestContactability::send_email(
+    unsigned long long ContactVerificationTestContactability::send_email(
         const std::string&          _contact_handle,
         const std::string&          _contact_email,
         unsigned long long          _attached_pdf_id
@@ -171,19 +178,20 @@ namespace Admin {
         Fred::Mailer::Attachments attachements;
         attachements.push_back(_attached_pdf_id);
 
-        unsigned long long mid = email_manager_->sendEmail(
-            "",
-            _contact_email,
-            "",
-            email_template_name_,
-            param_values,
-            Fred::Mailer::Handles(),
-            attachements,
-            ""
+        return email_manager_
+            ->sendEmail(
+                "",
+                _contact_email,
+                "",
+                email_template_name_,
+                param_values,
+                Fred::Mailer::Handles(),
+                attachements,
+                ""
         );
     }
 
-    void ContactVerificationTestContactability::send_letter(
+    unsigned long long ContactVerificationTestContactability::send_letter(
         unsigned long                           _contact_id,
         const std::string&                      _contact_handle,
         unsigned long                           _contact_history_id,
@@ -191,7 +199,7 @@ namespace Admin {
         unsigned long long                      _pdf_file_id
     ) const {
 
-        unsigned long long message_id = letter_manager_
+        return letter_manager_
             ->save_letter_to_send(
                 _contact_handle.c_str(),
                 _contact_address,

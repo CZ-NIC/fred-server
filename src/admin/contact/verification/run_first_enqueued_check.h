@@ -31,10 +31,21 @@
 #include <boost/shared_ptr.hpp>
 
 #include "util/optional_value.h"
+#include "src/fredlib/opcontext.h"
 
 #include "src/admin/contact/verification/test_impl/test_interface.h"
+#include "src/fredlib/contact/verification/enum_testsuite_handle.h"
 
 namespace Admin {
+
+    void preprocess_automatic_check(
+        Fred::OperationContext& _ctx,
+        const std::string& _check_handle);
+
+    void preprocess_manual_check(
+        Fred::OperationContext& _ctx,
+        const std::string& _check_handle);
+
     /**
      * Randomly (by happenstance, not even pseudo-random) selects some enqueued check and execute it (by running it's tests).
      *

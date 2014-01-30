@@ -31,9 +31,9 @@ namespace Admin {
         string name =  boost::algorithm::trim_copy(static_cast<std::string>(contact_data.name));
 
         if( name.find(' ') == std::string::npos ) {
-            return T_run_result (Fred::ContactTestStatus::FAIL, string("name has to contain at least two words separated by space") );
+            return make_result(Fred::ContactTestStatus::FAIL, string("name has to contain at least two words separated by space") );
         } else {
-            return T_run_result(Fred::ContactTestStatus::OK, Optional<string>() );
+            return make_result(Fred::ContactTestStatus::OK );
         }
     }
 }

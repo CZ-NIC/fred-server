@@ -43,7 +43,7 @@
 #include "setup_server_decl.h"
 #include "time_clock.h"
 #include "src/fredlib/registrar.h"
-#include "src/fredlib/domain/create_object_state_request_id.h"
+#include "src/fredlib/object_state/create_object_state_request_id.h"
 #include "src/fredlib/opexception.h"
 #include "util/util.h"
 
@@ -144,7 +144,7 @@ BOOST_FIXTURE_TEST_CASE(create_object_state_request_id, create_object_state_requ
 {
     {
         Fred::OperationContext ctx;
-        const std::string handle = Fred::CreateObjectStateRequestId(test_domain_id, status_list).exec(ctx);
+        const std::string handle = Fred::CreateObjectStateRequestId(test_domain_id, status_list).exec(ctx).first;
         BOOST_CHECK(handle == test_domain_fqdn);
         ctx.commit_transaction();
     }

@@ -1,4 +1,5 @@
 #include "src/admin/contact/verification/run_first_enqueued_check.h"
+#include "src/admin/contact/verification/related_records.h"
 #include "src/fredlib/contact/verification/enum_check_status.h"
 #include "src/fredlib/contact/verification/enum_test_status.h"
 #include "src/fredlib/contact/verification/create_test.h"
@@ -6,9 +7,14 @@
 #include "src/fredlib/contact/verification/create_check.h"
 #include "src/fredlib/contact/verification/update_check.h"
 #include "src/fredlib/contact/verification/info_check.h"
+#include "src/fredlib/contact/info_contact.h"
+#include "src/fredlib/object_state/create_object_state_request_id.h"
+#include "src/fredlib/object_state/cancel_object_state_request_id.h"
 #include "src/fredlib/opexception.h"
 
+#include <set>
 #include <boost/foreach.hpp>
+#include <boost/assign/list_of.hpp>
 
 namespace  Admin {
 
@@ -42,12 +48,6 @@ namespace  Admin {
      */
     static std::string evaluate_check_status_after_tests_finished(std::vector<std::string> _test_statuses);
 
-    /**
-     * Triggering possible related actions after check has finished.
-     */
-    static void post_run_hooks(const std::string& _check_handle);
-
-
     // technicality - way how to "return" from nested function
     struct _ExceptionAllTestsAlreadyRunning : public std::exception {};
     struct ExceptionNoEnqueuedChecksAvailable : public std::exception {};
@@ -69,8 +69,16 @@ namespace  Admin {
         Fred::InfoContactCheckOutput check_info (
             Fred::InfoContactCheck(check_handle).exec(ctx_locked_check) );
 
+        if(check_info.testsuite_handle == Fred::TestsuiteHandle::AUTOMATIC) {
+            preprocess_automatic_check(ctx_locked_check, check_handle);
+        } else if(check_info.testsuite_handle == Fred::TestsuiteHandle::MANUAL) {
+            preprocess_manual_check(ctx_locked_check, check_handle);
+        }
+
         std::vector<std::string> test_statuses;
         std::vector<Optional<std::string> > error_messages;
+        std::set<unsigned long long> related_mail_ids;
+        std::set<unsigned long long> related_message_ids;
         ContactVerificationTest::T_run_result temp_result;
 
         try {
@@ -82,8 +90,10 @@ namespace  Admin {
                 try {
                     temp_result = _tests.at(test_handle)->run(check_info.contact_history_id);
 
-                    test_statuses.push_back(temp_result.first);
-                    error_messages.push_back(temp_result.second);
+                    test_statuses.push_back(temp_result.get<0>());
+                    error_messages.push_back(temp_result.get<1>());
+                    related_mail_ids.insert(temp_result.get<2>().begin(), temp_result.get<2>().end());
+                    related_message_ids.insert(temp_result.get<3>().begin(), temp_result.get<3>().end());
 
                     if( test_statuses.back() == Fred::ContactTestStatus::ENQUEUED
                         || test_statuses.back() == Fred::ContactTestStatus::RUNNING
@@ -126,20 +136,25 @@ namespace  Admin {
             // just breaking the loop to get to the end
             // definitely not re-throwing this exception
         } catch (...) {
-            Fred::UpdateContactCheck update_operation(
-                check_handle,
-                evaluate_check_status_after_tests_finished(test_statuses)
-            );
+            try {
+                Fred::UpdateContactCheck update_operation(
+                    check_handle,
+                    evaluate_check_status_after_tests_finished(test_statuses)
+                );
 
-            if(_logd_request_id.isset()) {
-                update_operation.set_logd_request_id(_logd_request_id.get_value());
+                if(_logd_request_id.isset()) {
+                    update_operation.set_logd_request_id(_logd_request_id.get_value());
+                }
+
+                update_operation.exec(ctx_locked_check);
+
+                Admin::add_related_messages(ctx_locked_check, check_handle, related_message_ids);
+                Admin::add_related_mail(ctx_locked_check, check_handle, related_mail_ids);
+
+                ctx_locked_check.commit_transaction();
+            } catch(...) {
+                // the caught exception is probably the cause
             }
-
-            update_operation.exec(ctx_locked_check);
-
-            ctx_locked_check.commit_transaction();
-
-            // not calling post_run_hooks because of the exception
 
             throw;
         }
@@ -155,9 +170,10 @@ namespace  Admin {
 
         update_operation.exec(ctx_locked_check);
 
-        ctx_locked_check.commit_transaction();
+        Admin::add_related_messages(ctx_locked_check, check_handle, related_message_ids);
+        Admin::add_related_mail(ctx_locked_check, check_handle, related_mail_ids);
 
-        post_run_hooks(check_handle);
+        ctx_locked_check.commit_transaction();
 
         return check_handle;
     }
@@ -376,7 +392,78 @@ namespace  Admin {
         }
     }
 
-    void post_run_hooks(const std::string& _check_handle) {
 
+    void preprocess_automatic_check(
+        Fred::OperationContext& _ctx,
+        const std::string& _check_handle
+    ) {
+        // in case of need feel free to express yourself...
+    }
+
+    void preprocess_manual_check(
+        Fred::OperationContext& _ctx,
+        const std::string& _check_handle
+    ) {
+        Fred::InfoContactCheckOutput check_info = Fred::InfoContactCheck(
+            _check_handle
+        ).exec(_ctx);
+
+        Fred::InfoContactOutput contact_info = Fred::HistoryInfoContactByHistoryid(
+            check_info.contact_history_id
+        ).exec(_ctx);
+
+        _ctx.get_conn().exec("SAVEPOINT state_savepoint");
+
+        // cancel one state at a time because when exception is thrown, all changes would be ROLLBACKed
+        try {
+            std::set<std::string> object_states_to_erase =
+                boost::assign::list_of("contactInManualVerification");
+            Fred::CancelObjectStateRequestId(
+                contact_info.info_contact_data.id,
+                object_states_to_erase
+            ).exec(_ctx);
+            _ctx.get_conn().exec("RELEASE SAVEPOINT state_savepoint");
+            _ctx.get_conn().exec("SAVEPOINT state_savepoint");
+        } catch(Fred::CancelObjectStateRequestId::Exception& e) {
+            // in case it throws from with unknown cause
+            if(e.is_set_state_not_found() == false) {
+                throw;
+            } else {
+                _ctx.get_conn().exec("ROLLBACK TO state_savepoint");
+            }
+        }
+        try {
+            std::set<std::string> object_states_to_erase =
+                boost::assign::list_of("manuallyVerifiedContact");
+
+            Fred::CancelObjectStateRequestId(
+                contact_info.info_contact_data.id,
+                object_states_to_erase
+            ).exec(_ctx);
+
+            _ctx.get_conn().exec("RELEASE SAVEPOINT state_savepoint");
+            _ctx.get_conn().exec("SAVEPOINT state_savepoint");
+        } catch(Fred::CancelObjectStateRequestId::Exception& e) {
+            // in case it throws from with unknown cause
+            if(e.is_set_state_not_found() == false) {
+                throw;
+            } else {
+                _ctx.get_conn().exec("ROLLBACK TO state_savepoint");
+            }
+        }
+
+        std::set<std::string> status;
+        status.insert("contactInManualVerification");
+
+        std::set<unsigned long long> state_request_ids;
+        state_request_ids.insert(
+            Fred::CreateObjectStateRequestId(
+                contact_info.info_contact_data.id,
+                status
+            ).exec(_ctx)
+            .second
+        );
+
+        Admin::add_related_object_state_requests(_ctx, _check_handle, state_request_ids);
     }
 }

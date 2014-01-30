@@ -29,11 +29,9 @@ CLEANFILES = \
 		doxy.conf \
 		src/corba/MessagesSK.cc \
 		src/corba/MessagesDynSK.cc \
-		src/corba/MessagesSK.h \
 		src/corba/Messages.hh \
 		src/corba/MojeIDSK.cc \
 		src/corba/MojeIDDynSK.cc \
-		src/corba/MojeIDSK.h \
 		src/corba/MojeID.hh \
 		src/corba/AdministrativeBlockingSK.cc \
 		src/corba/AdministrativeBlockingDynSK.cc \
@@ -41,19 +39,15 @@ CLEANFILES = \
 		src/corba/AdministrativeBlocking.hh \
 		src/corba/FileManagerSK.cc \
 		src/corba/FileManagerDynSK.cc \
-		src/corba/FileManagerSK.h \
 		src/corba/FileManager.hh \
 		src/corba/MailerSK.cc \
 		src/corba/MailerDynSK.cc \
-		src/corba/MailerSK.h \
 		src/corba/Mailer.hh \
 		src/corba/ZoneSK.cc \
 		src/corba/ZoneDynSK.cc \
-		src/corba/ZoneSK.h \
 		src/corba/Zone.hh \
 		src/corba/_dataTypesSK.cc \
 		src/corba/_dataTypesDynSK.cc \
-		src/corba/_dataTypesSK.h \
 		src/corba/_dataTypes.hh \
 		src/corba/DateTimeSK.cc \
 		src/corba/DateTimeDynSK.cc \
@@ -63,35 +57,27 @@ CLEANFILES = \
 		src/corba/NullableTypes.hh \
 		src/corba/FiltersSK.cc \
 		src/corba/FiltersDynSK.cc \
-		src/corba/FiltersSK.h \
 		src/corba/Filters.hh \
 		src/corba/RegistrySK.cc \
 		src/corba/RegistryDynSK.cc \
-		src/corba/RegistrySK.h \
 		src/corba/Registry.hh \
 		src/corba/WhoisSK.cc \
 		src/corba/WhoisDynSK.cc \
-		src/corba/WhoisSK.h \
 		src/corba/Whois.hh \
 		src/corba/AdminSK.cc \
 		src/corba/AdminDynSK.cc \
-		src/corba/AdminSK.h \
 		src/corba/Admin.hh \
 		src/corba/LoggerSK.cc \
 		src/corba/LoggerDynSK.cc \
-		src/corba/LoggerSK.h \
 		src/corba/Logger.hh \
 		src/corba/TechCheckSK.cc \
 		src/corba/TechCheckDynSK.cc \
-		src/corba/TechCheckSK.h \
 		src/corba/TechCheck.hh \
 		src/corba/EPPSK.cc \
 		src/corba/EPPDynSK.cc \
-		src/corba/EPPSK.h \
 		src/corba/EPP.hh \
 		src/corba/ZoneGeneratorSK.cc \
 		src/corba/ZoneGeneratorDynSK.cc \
-		src/corba/ZoneGeneratorSK.h \
 		src/corba/ZoneGenerator.hh \
 		src/corba/ContactVerificationSK.cc \
 		src/corba/ContactVerificationDynSK.cc \
@@ -766,8 +752,8 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/reminder.h \
 		src/fredlib/opcontext.cc \
 		src/fredlib/opcontext.h \
-		src/fredlib/domain/copy_contact.h \
-		src/fredlib/domain/copy_contact.cc \
+		src/fredlib/contact/copy_contact.h \
+		src/fredlib/contact/copy_contact.cc \
 		src/fredlib/domain/update_domain.h \
 		src/fredlib/domain/update_domain.cc \
 		src/fredlib/domain/info_domain_data.h \
@@ -868,8 +854,9 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/keyset/delete_keyset.cc \
 		src/fredlib/keyset/delete_keyset.h \
 		src/fredlib/registrar/registrar_impl.h \
-		src/fredlib/registrar/registrar_impl.cc
-
+		src/fredlib/registrar/registrar_impl.cc \
+		src/fredlib/registrar/get_registrar_handles.cc \
+		src/fredlib/registrar/get_registrar_handles.h
 #
 # src/fredlib/libfred.a
 
@@ -1348,40 +1335,40 @@ src_corba_fred_adifd_SOURCES = \
 		src/corba/fred-adifd.cc \
 		src/admin_block/administrativeblocking.cc \
 		src/admin_block/administrativeblocking.h \
-		src/fredlib/domain/get_blocking_status_desc_list.cc \
-		src/fredlib/domain/get_blocking_status_desc_list.h \
-		src/fredlib/domain/cancel_object_state_request.cc \
-		src/fredlib/domain/cancel_object_state_request.h \
-		src/fredlib/domain/cancel_object_state_request_id.cc \
-		src/fredlib/domain/cancel_object_state_request_id.h \
-		src/fredlib/domain/create_object_state_request.cc \
-		src/fredlib/domain/create_object_state_request.h \
-		src/fredlib/domain/create_object_state_request_id.cc \
-		src/fredlib/domain/create_object_state_request_id.h \
-		src/fredlib/domain/get_object_state_id_map.cc \
-		src/fredlib/domain/get_object_state_id_map.h \
-		src/fredlib/domain/create_administrative_object_block_request.cc \
-		src/fredlib/domain/create_administrative_object_block_request.h \
-		src/fredlib/domain/create_administrative_object_block_request_id.cc \
-		src/fredlib/domain/create_administrative_object_block_request_id.h \
-		src/fredlib/domain/create_administrative_object_state_restore_request.cc \
-		src/fredlib/domain/create_administrative_object_state_restore_request.h \
-		src/fredlib/domain/create_administrative_object_state_restore_request_id.cc \
-		src/fredlib/domain/create_administrative_object_state_restore_request_id.h \
-	        src/fredlib/domain/clear_administrative_object_state_request_id.cc \
-	        src/fredlib/domain/clear_administrative_object_state_request_id.h \
-		src/fredlib/domain/clear_object_state_request.cc \
-		src/fredlib/domain/clear_object_state_request.h \
-		src/fredlib/domain/clear_object_state_request_id.cc \
-		src/fredlib/domain/clear_object_state_request_id.h \
+		src/fredlib/object_state/get_blocking_status_desc_list.cc \
+		src/fredlib/object_state/get_blocking_status_desc_list.h \
+		src/fredlib/object_state/cancel_object_state_request.cc \
+		src/fredlib/object_state/cancel_object_state_request.h \
+		src/fredlib/object_state/cancel_object_state_request_id.cc \
+		src/fredlib/object_state/cancel_object_state_request_id.h \
+		src/fredlib/object_state/create_object_state_request.cc \
+		src/fredlib/object_state/create_object_state_request.h \
+		src/fredlib/object_state/create_object_state_request_id.cc \
+		src/fredlib/object_state/create_object_state_request_id.h \
+		src/fredlib/object_state/get_object_state_id_map.cc \
+		src/fredlib/object_state/get_object_state_id_map.h \
+		src/fredlib/object_state/create_admin_object_block_request.cc \
+		src/fredlib/object_state/create_admin_object_block_request.h \
+		src/fredlib/object_state/create_admin_object_block_request_id.cc \
+		src/fredlib/object_state/create_admin_object_block_request_id.h \
+		src/fredlib/object_state/create_admin_object_state_restore_request.cc \
+		src/fredlib/object_state/create_admin_object_state_restore_request.h \
+		src/fredlib/object_state/create_admin_object_state_restore_request_id.cc \
+		src/fredlib/object_state/create_admin_object_state_restore_request_id.h \
+		src/fredlib/object_state/clear_admin_object_state_request_id.cc \
+		src/fredlib/object_state/clear_admin_object_state_request_id.h \
+		src/fredlib/object_state/clear_object_state_request.cc \
+		src/fredlib/object_state/clear_object_state_request.h \
+		src/fredlib/object_state/clear_object_state_request_id.cc \
+		src/fredlib/object_state/clear_object_state_request_id.h \
 		src/fredlib/domain/create_domain_name_blacklist.cc \
 		src/fredlib/domain/create_domain_name_blacklist.h \
 		src/fredlib/domain/create_domain_name_blacklist_id.cc \
 		src/fredlib/domain/create_domain_name_blacklist_id.h \
 		src/fredlib/domain/update_domain.cc \
 		src/fredlib/domain/update_domain.h \
-		src/fredlib/domain/copy_contact.cc \
-		src/fredlib/domain/copy_contact.h \
+		src/fredlib/contact/copy_contact.cc \
+		src/fredlib/contact/copy_contact.h \
 		src/fredlib/contact/info_contact_data.h \
 		src/fredlib/contact/info_contact_data.cc \
 		src/fredlib/contact/info_contact.h \
@@ -1394,7 +1381,11 @@ src_corba_fred_adifd_SOURCES = \
 		src/corba/mailer_manager.cc \
 		src/corba/admin_block/corba_conversion.h \
 		src/corba/admin_block/server_i.cc \
-		src/corba/admin_block/server_i.h
+		src/corba/admin_block/server_i.h \
+		src/admin/contact/verification/resolve_check.cc \
+		src/admin/contact/verification/resolve_check.h \
+		src/admin/contact/verification/related_records.cc \
+		src/admin/contact/verification/related_records.h
 
 src_corba_fred_adifd_LDADD = \
 		src/corba/admin/libadmin_impl.a \
@@ -1710,6 +1701,8 @@ src_cli_admin_fred_admin_SOURCES = \
 		src/admin/contact/verification/run_first_enqueued_check.cc \
 		src/admin/contact/verification/run_all_enqueued_checks.h \
 		src/admin/contact/verification/run_all_enqueued_checks.cc \
+		src/admin/contact/verification/resolve_check.h \
+		src/admin/contact/verification/resolve_check.cc \
 		src/admin/contact/verification/create_test_impl_prototypes.h \
 		src/admin/contact/verification/create_test_impl_prototypes.cc \
 		src/admin/contact/verification/test_impl/test_email_syntax.h \
@@ -1721,7 +1714,19 @@ src_cli_admin_fred_admin_SOURCES = \
 		src/admin/contact/verification/test_impl/test_cz_address_exists.h \
 		src/admin/contact/verification/test_impl/test_cz_address_exists.cc \
 		src/admin/contact/verification/test_impl/test_contactability.h \
-		src/admin/contact/verification/test_impl/test_contactability.cc
+		src/admin/contact/verification/test_impl/test_contactability.cc \
+		src/fredlib/object_state/create_object_state_request.cc \
+		src/fredlib/object_state/create_object_state_request.h \
+		src/fredlib/object_state/create_object_state_request_id.cc \
+		src/fredlib/object_state/create_object_state_request_id.h \
+		src/fredlib/object_state/get_object_state_id_map.cc \
+		src/fredlib/object_state/get_object_state_id_map.h \
+		src/fredlib/object_state/cancel_object_state_request.cc \
+		src/fredlib/object_state/cancel_object_state_request.h \
+		src/fredlib/object_state/cancel_object_state_request_id.cc \
+		src/fredlib/object_state/cancel_object_state_request_id.h \
+		src/admin/contact/verification/related_records.cc \
+		src/admin/contact/verification/related_records.h
 		
 src_cli_admin_fred_admin_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS) \
@@ -1912,7 +1917,19 @@ tests_test_server_SOURCES = \
 		tests/admin/contact/verification/test-run_all_enqueued_checks.cc \
 		src/admin/contact/verification/fill_check_queue.cc \
 		tests/admin/contact/verification/test-fill_check_queue.cc \
-		tests/util/test-is-equal-optional-nullable.cc
+		tests/util/test-is-equal-optional-nullable.cc \
+		src/fredlib/object_state/create_object_state_request.cc \
+		src/fredlib/object_state/create_object_state_request.h \
+		src/fredlib/object_state/create_object_state_request_id.cc \
+		src/fredlib/object_state/create_object_state_request_id.h \
+		src/fredlib/object_state/get_object_state_id_map.cc \
+		src/fredlib/object_state/get_object_state_id_map.h \
+		src/fredlib/object_state/cancel_object_state_request.cc \
+		src/fredlib/object_state/cancel_object_state_request.h \
+		src/fredlib/object_state/cancel_object_state_request_id.cc \
+		src/fredlib/object_state/cancel_object_state_request_id.h \
+		src/admin/contact/verification/related_records.cc \
+		src/admin/contact/verification/related_records.h
 
 tests_test_server_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS) \
@@ -1996,23 +2013,23 @@ tests_test_blocking_SOURCES = \
 		src/mojeid/mojeid.h \
 		src/mojeid/mojeid_notifier.cc \
 		src/mojeid/mojeid_notifier.h \
-		src/fredlib/domain/clear_administrative_object_state_request_id.cc \
-		src/fredlib/domain/clear_object_state_request_id.cc \
-		src/fredlib/domain/create_object_state_request_id.cc \
-		src/fredlib/domain/create_object_state_request.cc \
-		src/fredlib/domain/create_administrative_object_block_request_id.cc \
-		src/fredlib/domain/create_administrative_object_state_restore_request_id.cc \
-		src/fredlib/domain/cancel_object_state_request_id.cc \
-		src/fredlib/domain/get_object_state_id_map.cc \
-		src/fredlib/domain/get_blocking_status_desc_list.cc \
+		src/fredlib/object_state/clear_admin_object_state_request_id.cc \
+		src/fredlib/object_state/clear_object_state_request_id.cc \
+		src/fredlib/object_state/create_object_state_request_id.cc \
+		src/fredlib/object_state/create_object_state_request.cc \
+		src/fredlib/object_state/create_admin_object_block_request_id.cc \
+		src/fredlib/object_state/create_admin_object_state_restore_request_id.cc \
+		src/fredlib/object_state/cancel_object_state_request_id.cc \
+		src/fredlib/object_state/get_object_state_id_map.cc \
+		src/fredlib/object_state/get_blocking_status_desc_list.cc \
 		src/fredlib/domain/create_domain_name_blacklist_id.cc \
 		tests/checks.h \
 		tests/test-copy-contact.cc \
 		tests/test-create-object-state-request-id.cc \
-		tests/test-create-administrative-object-block-request-id.cc \
-		tests/test-create-administrative-object-state-restore-request-id.cc \
+		tests/test-create-admin-object-block-request-id.cc \
+		tests/test-create-admin-object-state-restore-request-id.cc \
 		tests/test-cancel-object-state-request-id.cc \
-		tests/test-clear-administrative-object-state-request-id.cc \
+		tests/test-clear-admin-object-state-request-id.cc \
 		tests/test-create-domain-name-blacklist-id.cc
 
 tests_test_blocking_LDFLAGS = \

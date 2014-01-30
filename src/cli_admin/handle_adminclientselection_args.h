@@ -339,10 +339,9 @@ public:
     }//handle
 };//class HandleAdminClientContactReminderArgsGrp
 
-
 /**
  * \class HandleAdminClientContactMergeDuplicateAutoArgsGrp
- * \brief admin client contact_reminder options handler
+ * \brief admin client contact_merge_duplicate_auto options handler
  */
 class HandleAdminClientContactMergeDuplicateAutoArgsGrp : public HandleCommandGrpArgs
 {
@@ -362,13 +361,13 @@ public:
                         std::string("contact_merge_duplicate_auto options")));
         cfg_opts->add_options()
             ("contact_merge_duplicate_auto",
-                "command for run contact merge duplicate automatic procedure")
-            ("registrar", boost::program_options::value<Checked::string>()
-                ->notifier(save_optional_string(params.registrar)),
-                "registrar handle to run merge for")
-            ("limit", boost::program_options::value<Checked::ulonglong>()
-                ->notifier(save_optional_ulonglong(params.limit)),
-                "limit")
+                "contact merge, if further unspecified for all registrars")
+            ("registrar", boost::program_options::value<std::vector<std::string> >()->multitoken()
+                ->notifier(save_arg<std::vector<std::string> >(params.registrar)),
+                "registrar handles to run merge for, don't use with --except_registrar option")
+            ("except_registrar", boost::program_options::value<std::vector<std::string> >()->multitoken()
+                ->notifier(save_arg<std::vector<std::string> >(params.except_registrar)),
+                "run merge contact for all registrars except of these, don't use with --registrar option")
             ("dry_run", boost::program_options::value<bool>()
                 ->default_value(false)->zero_tokens()
                 ->notifier(save_arg<bool>(params.dry_run)),
@@ -399,7 +398,6 @@ public:
         return option_group_index;
     }//handle
 };//class HandleAdminClientContactMergeDuplicateAutoArgsGrp
-
 
 class HandleAdminClientContactMergeArgsGrp : public HandleCommandGrpArgs
 {

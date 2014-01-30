@@ -73,7 +73,9 @@ class DummyTestReturning: public Admin::ContactVerificationTest {
                 break;
             }
         }
-        ContactVerificationTest::T_run_result run(long _history_id) const { return std::make_pair(return_status, return_status); }
+        ContactVerificationTest::T_run_result run(long _history_id) const {
+            return ContactVerificationTest::make_result(return_status, return_status);
+        }
         std::string get_name() const { return handle; }
 };
 

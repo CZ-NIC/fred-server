@@ -35,7 +35,7 @@ namespace Admin {
         boost::algorithm::trim(trimmed_telephone);
 
         if(trimmed_telephone.empty()) {
-            return T_run_result(Fred::ContactTestStatus::SKIPPED, string("optional telephone is empty") );
+            return make_result(Fred::ContactTestStatus::SKIPPED, string("optional telephone is empty") );
         }
 
         if ( boost::regex_match(
@@ -43,9 +43,9 @@ namespace Admin {
                 trimmed_telephone,
                 PHONE_PATTERN )
         ) {
-            return T_run_result(Fred::ContactTestStatus::OK, Optional<string>() );
+            return make_result(Fred::ContactTestStatus::OK );
         }
 
-        return T_run_result(Fred::ContactTestStatus::FAIL, string("invalid phone format") );
+        return make_result(Fred::ContactTestStatus::FAIL, string("invalid phone format") );
     }
 }
