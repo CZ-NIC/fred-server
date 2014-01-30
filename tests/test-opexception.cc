@@ -144,7 +144,7 @@ BOOST_AUTO_TEST_CASE(throwTestExceptionCallback)
     {
         BOOST_TEST_MESSAGE( boost::diagnostic_information(ex));
         BOOST_CHECK(ex.is_set_unknown_registrar_handle());
-        BOOST_CHECK_EQUAL(ex.throw_me(), true);
+        //BOOST_CHECK_EQUAL(ex.throw_me(), true);//this is not real use case
     }
 }
 
@@ -514,6 +514,64 @@ BOOST_AUTO_TEST_CASE(substring)
     BOOST_CHECK(std::string("aaabbbccc").find("abc") == std::string::npos);
     BOOST_CHECK(std::string("aaababcbbccc").find("abc") != std::string::npos);
 }
+
+struct ExceptionBase
+{
+    int base_test;
+
+    ExceptionBase(ExceptionBase const& i) throw()
+    : base_test(i.base_test)
+    {}
+
+    ExceptionBase() throw()
+    : base_test(0)
+    {}
+
+};
+
+struct TestExceptionFlag
+  : virtual std::exception
+  , virtual boost::exception
+  , //virtual
+  ExceptionBase
+{
+    int test;
+
+    TestExceptionFlag(TestExceptionFlag const& i) throw()
+    : ExceptionBase(i)
+    , test(i.test)
+    {}
+
+    TestExceptionFlag() throw()
+    : test(0)
+    {}
+
+};
+
+BOOST_AUTO_TEST_CASE(flag_copy)
+{
+    TestExceptionFlag ex1;
+    ex1.test = 10;
+    ex1.base_test = 20;
+
+    BOOST_CHECK(ex1.test == 10);
+    BOOST_CHECK(ex1.base_test == 20);
+
+    TestExceptionFlag ex2 (ex1);
+    BOOST_CHECK(ex2.test == 10);
+    BOOST_CHECK(ex2.base_test == 20);
+
+    try
+    {
+        BOOST_THROW_EXCEPTION(ex1);
+    }
+    catch(const TestExceptionFlag& ex )
+    {
+        BOOST_CHECK(ex.test == 10);
+        BOOST_CHECK(ex.base_test == 20);
+    }
+}
+
 
 BOOST_AUTO_TEST_SUITE_END();//TestOperationException
 
