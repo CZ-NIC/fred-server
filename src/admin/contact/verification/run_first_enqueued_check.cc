@@ -87,8 +87,8 @@ namespace  Admin {
                 try {
                     temp_result = _tests.at(test_handle)->run(check_info.contact_history_id);
 
-                    test_statuses.push_back(temp_result.first);
-                    error_messages.push_back(temp_result.second);
+                    test_statuses.push_back(temp_result.get<0>());
+                    error_messages.push_back(temp_result.get<1>());
 
                     if( test_statuses.back() == Fred::ContactTestStatus::ENQUEUED
                         || test_statuses.back() == Fred::ContactTestStatus::RUNNING

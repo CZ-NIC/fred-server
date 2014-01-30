@@ -61,13 +61,13 @@ namespace Admin
             const Fred::Messages::PostalAddress&    _contact_address
         ) const;
 
-        void send_email(
+        unsigned long long send_email(
             const std::string&          _contact_handle,
             const std::string&          _contact_email,
             unsigned long long          _attached_pdf_id
         ) const;
 
-        void send_letter(
+        unsigned long long send_letter(
             unsigned long                           _contact_id,
             const std::string&                      _contact_handle,
             unsigned long                           _contact_history_id,

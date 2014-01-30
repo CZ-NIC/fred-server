@@ -36,9 +36,9 @@ namespace Admin {
                 static_cast<std::string>(contact_data.email),
                 EMAIL_PATTERN )
         ) {
-            return T_run_result(Fred::ContactTestStatus::OK, Optional<string>() );
+            return make_result(Fred::ContactTestStatus::OK );
         }
 
-        return T_run_result (Fred::ContactTestStatus::FAIL, string("invalid e-mail format") );
+        return make_result(Fred::ContactTestStatus::FAIL, string("invalid e-mail format") );
     }
 }

@@ -25,19 +25,38 @@
 #define CONTACT_VERIFICATION_TEST_INTF_11637813419_
 
 #include <string>
-#include <sstream>
+#include <set>
+#include <boost/tuple/tuple.hpp>
 #include "util/optional_value.h"
 
 namespace Admin
 {
     using std::string;
-    using std::pair;
+    using std::set;
+    using boost::tuple;
 
     class ContactVerificationTest {
         public:
-            typedef pair<string, Optional<string> > T_run_result;
+            typedef tuple<
+                string,                 // status
+                Optional<string>,       // error message
+                // XXX hopefuly one day related mail and messages will be unified
+                set<unsigned long long>,// related mail archive ids
+                set<unsigned long long> // related message archive ids
+            > T_run_result;
+
+            inline static T_run_result make_result(
+                const string&                   _status,
+                const Optional<string>&         _error_msg = Optional<string>(),
+                // XXX hopefuly one day related mail and messages will be unified
+                const set<unsigned long long>&  _related_mail_archive_ids = set<unsigned long long>(),
+                const set<unsigned long long>&  _related_message_archive_ids = set<unsigned long long>()
+            ) {
+                return T_run_result(_status, _error_msg, _related_mail_archive_ids, _related_message_archive_ids);
+            }
+
             /**
-             * @return final status of the test and optional error message
+             * @return final status of the test, optional error message and optional related states and messages
              */
             virtual T_run_result run(long _history_id) const = 0;
             virtual string get_name() const = 0;
