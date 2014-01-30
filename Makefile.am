@@ -1923,7 +1923,9 @@ tests_test_server_SOURCES = \
 		src/fredlib/object_state/cancel_object_state_request.cc \
 		src/fredlib/object_state/cancel_object_state_request.h \
 		src/fredlib/object_state/cancel_object_state_request_id.cc \
-		src/fredlib/object_state/cancel_object_state_request_id.h
+		src/fredlib/object_state/cancel_object_state_request_id.h \
+		src/admin/contact/verification/related_records.cc \
+		src/admin/contact/verification/related_records.h
 
 tests_test_server_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS) \

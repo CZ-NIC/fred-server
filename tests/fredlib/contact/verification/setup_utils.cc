@@ -860,7 +860,7 @@ void autoclean_contact_verification_db::clean(Fred::OperationContext& _ctx) {
             "   enum_contact_test_status_localization, "
             "   enum_contact_check_status_localization, "
             "   contact_check_message_map,"
-            "   contact_check_object_state_map, "
+            "   contact_check_object_state_request_map, "
             "   contact_check_poll_message_map");
 
     set_cascading_fkeys(_ctx);
