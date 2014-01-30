@@ -407,6 +407,87 @@ unsigned long long Manager::save_letter_to_send(const char* contact_handle
     return message_archive_id;
 }
 
+unsigned long long Manager::copy_letter_to_send(unsigned long long letter_id)
+{
+    try
+    {
+        LOGGER(PACKAGE).debug(boost::format(
+                "Messages::copy_letter_to_send "
+                " letter_id: %1%"
+                )
+                      % letter_id
+                      );
+
+        Database::Connection conn = Database::Manager::acquire();
+        Database::Transaction tx(conn);
+
+        Database::Result res = conn.exec_params(
+                "INSERT INTO message_archive "
+                 "(crdate,moddate,attempt,status_id,comm_type_id,message_type_id) "
+                 "SELECT ma.crdate,ma.moddate,0,ma.status_id,ma.comm_type_id,ma.message_type_id "
+                 "FROM message_archive ma "
+                 "JOIN letter_archive la ON la.id=ma.id "
+                 "WHERE ma.id=$1 "
+                "RETURNING id",
+                Database::query_param_list(letter_id));
+        if (res.size() <= 0) {
+            throw std::runtime_error(boost::format("letter_id: %1% not found") % letter_id);
+        }
+        const unsigned long long message_archive_id = static_cast< unsigned long long >(res[0][0]);
+
+        res = conn.exec_params(
+                "INSERT INTO letter_archive "
+                 "(id,file_id,batch_id,"
+                  "postal_address_name,"
+                  "postal_address_organization,"
+                  "postal_address_street1,"
+                  "postal_address_street2,"
+                  "postal_address_street3,"
+                  "postal_address_city,"
+                  "postal_address_stateorprovince,"
+                  "postal_address_postalcode,"
+                  "postal_address_country,"
+                  "postal_address_id"
+                 ") "
+                 "SELECT "
+                  "$1::integer,"//new letter_id
+                  "file_id,batch_id,"
+                  "postal_address_name,"
+                  "postal_address_organization,"
+                  "postal_address_street1,"
+                  "postal_address_street2,"
+                  "postal_address_street3,"
+                  "postal_address_city,"
+                  "postal_address_stateorprovince,"
+                  "postal_address_postalcode,"
+                  "postal_address_country,"
+                  "postal_address_id "
+                 "FROM letter_archive "
+                 "WHERE id=$2::integer "//source letter_id
+                "RETURNING id",
+                Database::query_param_list(message_archive_id)(letter_id)
+                );
+        if (res.size() <= 0) {
+            throw std::runtime_error(boost::format(
+                    "letter_id: %1% not found in letter_archive") % letter_id);
+        }
+
+        tx.commit();
+        return message_archive_id;
+    }//try
+    catch(const std::exception& ex)
+    {
+        LOGGER(PACKAGE).error(boost::format(
+                "Messages::copy_letter_to_send exception: %1%") % ex.what());
+        throw;
+    }
+    catch(...)
+    {
+        LOGGER(PACKAGE).error("Messages::copy_letter_to_send error");
+        throw;
+    }
+}
+
 LetterProcInfo Manager::load_letters_to_send(std::size_t batch_size_limit
         , const std::string &comm_type, std::size_t max_attempts_limit)
 {
