@@ -1383,7 +1383,9 @@ src_corba_fred_adifd_SOURCES = \
 		src/corba/admin_block/server_i.cc \
 		src/corba/admin_block/server_i.h \
 		src/admin/contact/verification/resolve_check.cc \
-		src/admin/contact/verification/resolve_check.h
+		src/admin/contact/verification/resolve_check.h \
+		src/admin/contact/verification/related_records.cc \
+		src/admin/contact/verification/related_records.h
 
 src_corba_fred_adifd_LDADD = \
 		src/corba/admin/libadmin_impl.a \
@@ -1722,7 +1724,9 @@ src_cli_admin_fred_admin_SOURCES = \
 		src/fredlib/object_state/cancel_object_state_request.cc \
 		src/fredlib/object_state/cancel_object_state_request.h \
 		src/fredlib/object_state/cancel_object_state_request_id.cc \
-		src/fredlib/object_state/cancel_object_state_request_id.h
+		src/fredlib/object_state/cancel_object_state_request_id.h \
+		src/admin/contact/verification/related_records.cc \
+		src/admin/contact/verification/related_records.h
 		
 src_cli_admin_fred_admin_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS) \

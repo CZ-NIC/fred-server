@@ -1,4 +1,5 @@
 #include "src/admin/contact/verification/resolve_check.h"
+#include "src/admin/contact/verification/related_records.h"
 #include "src/fredlib/contact/verification/enum_testsuite_handle.h"
 #include "src/fredlib/contact/verification/enum_check_status.h"
 #include "src/fredlib/contact/verification/update_check.h"
@@ -110,10 +111,17 @@ namespace  Admin {
         if(check_info.check_state_history.rbegin()->status_handle == Fred::ContactCheckStatus::OK) {
             std::set<std::string> status;
             status.insert("manuallyVerifiedContact");
-            Fred::CreateObjectStateRequestId(
-                contact_info.info_contact_data.id,
-                status
-            ).exec(ctx);
+
+            std::set<unsigned long long> state_request_ids;
+            state_request_ids.insert(
+                Fred::CreateObjectStateRequestId(
+                    contact_info.info_contact_data.id,
+                    status
+                ).exec(ctx)
+                .second
+            );
+
+            Admin::add_related_object_state_requests(ctx, check_handle_, state_request_ids);
         }
 
         ctx.commit_transaction();
