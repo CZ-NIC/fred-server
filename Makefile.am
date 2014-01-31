@@ -199,7 +199,8 @@ noinst_LIBRARIES = \
 		src/corba/libcorbaadministrativeblocking.a \
 		src/fredlib/public_request/libpublic_request.a \
 		src/fredlib/contact_verification/libcontact_verification.a \
-		src/corba/libcorbacontactverification.a
+		src/corba/libcorbacontactverification.a \
+		src/corba/libcorbadomainbrowser.a
 
 
 noinst_PROGRAMS = \
@@ -935,7 +936,8 @@ BUILT_SOURCES = \
 		src/corba/TechCheckSK.cc \
 		src/corba/EPPSK.cc \
 		src/corba/ZoneGeneratorSK.cc \
-		src/corba/ContactVerificationSK.cc
+		src/corba/ContactVerificationSK.cc \
+		src/corba/DomainBrowserSK.cc
 
 
 # src/corba/libcorba.a
@@ -1043,6 +1045,11 @@ nodist_src_corba_libcorbaadministrativeblocking_a_SOURCES = \
 		src/corba/AdministrativeBlockingDynSK.cc \
 		src/corba/AdministrativeBlocking.hh
 
+nodist_src_corba_libcorbadomainbrowser_a_SOURCES = \
+		src/corba/DomainBrowserSK.cc \
+		src/corba/DomainBrowserDynSK.cc \
+		src/corba/DomainBrowser.hh
+
 #
 # nodist corba libs
 
@@ -1096,6 +1103,10 @@ src/corba/ZoneGeneratorSK.cc: $(IDLDIR)/ZoneGenerator.idl $(IDLDIR)/_dataTypes.i
 
 src/corba/ContactVerificationSK.cc: $(IDLDIR)/ContactVerification.idl
 		omniidl -bcxx -Wbuse_quotes -Wba -C$(top_builddir)/src/corba $(IDLDIR)/ContactVerification.idl
+
+src/corba/DomainBrowserSK.cc: $(IDLDIR)/DomainBrowser.idl
+		omniidl -bcxx -Wbuse_quotes -Wba -C$(top_builddir)/src/corba $(IDLDIR)/DomainBrowser.idl
+
 #
 # idl build
 
@@ -1363,6 +1374,7 @@ src_corba_fred_pifd_LDADD = \
 		src/corba/libcorba.a \
 		src/corba/libcorbaepp.a \
 		src/corba/libfilemanager.a \
+		src/corba/libcorbadomainbrowser.a \
 		src/corba/libcorbalogger.a \
 		src/fredlib/contact_verification/libcontact_verification.a \
 		src/corba/libcorbacontactverification.a \
@@ -1933,6 +1945,7 @@ tests_test_blocking_LDADD = \
 		$(BOOST_SYSTEM_LIB)
 #
 # tests/test_blocking
+
 
 
 # non-corba tests with overloaded global operator new
