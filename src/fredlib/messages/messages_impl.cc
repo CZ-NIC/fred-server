@@ -431,7 +431,7 @@ unsigned long long Manager::copy_letter_to_send(unsigned long long letter_id)
                 "RETURNING id",
                 Database::query_param_list(letter_id));
         if (res.size() <= 0) {
-            throw std::runtime_error(boost::format("letter_id: %1% not found") % letter_id);
+            throw std::runtime_error((boost::format("letter_id: %1% not found") % letter_id).str());
         }
         const unsigned long long message_archive_id = static_cast< unsigned long long >(res[0][0]);
 
@@ -468,8 +468,8 @@ unsigned long long Manager::copy_letter_to_send(unsigned long long letter_id)
                 Database::query_param_list(message_archive_id)(letter_id)
                 );
         if (res.size() <= 0) {
-            throw std::runtime_error(boost::format(
-                    "letter_id: %1% not found in letter_archive") % letter_id);
+            throw std::runtime_error((boost::format(
+                    "letter_id: %1% not found in letter_archive") % letter_id).str());
         }
 
         tx.commit();
