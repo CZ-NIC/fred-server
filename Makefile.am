@@ -75,7 +75,10 @@ CLEANFILES = \
 		src/corba/ZoneGenerator.hh \
 		src/corba/ContactVerificationSK.cc \
 		src/corba/ContactVerificationDynSK.cc \
-		src/corba/ContactVerification.hh
+		src/corba/ContactVerification.hh \
+		src/corba/DomainBrowserSK.cc \
+		src/corba/DomainBrowserDynSK.cc \
+		src/corba/DomainBrowser.hh
 
 
 
@@ -199,7 +202,8 @@ noinst_LIBRARIES = \
 		src/corba/libcorbaadministrativeblocking.a \
 		src/fredlib/public_request/libpublic_request.a \
 		src/fredlib/contact_verification/libcontact_verification.a \
-		src/corba/libcorbacontactverification.a
+		src/corba/libcorbacontactverification.a \
+		src/corba/libcorbadomainbrowser.a
 
 
 noinst_PROGRAMS = \
@@ -935,7 +939,8 @@ BUILT_SOURCES = \
 		src/corba/TechCheckSK.cc \
 		src/corba/EPPSK.cc \
 		src/corba/ZoneGeneratorSK.cc \
-		src/corba/ContactVerificationSK.cc
+		src/corba/ContactVerificationSK.cc \
+		src/corba/DomainBrowserSK.cc
 
 
 # src/corba/libcorba.a
@@ -1043,6 +1048,11 @@ nodist_src_corba_libcorbaadministrativeblocking_a_SOURCES = \
 		src/corba/AdministrativeBlockingDynSK.cc \
 		src/corba/AdministrativeBlocking.hh
 
+nodist_src_corba_libcorbadomainbrowser_a_SOURCES = \
+		src/corba/DomainBrowserSK.cc \
+		src/corba/DomainBrowserDynSK.cc \
+		src/corba/DomainBrowser.hh
+
 #
 # nodist corba libs
 
@@ -1096,6 +1106,10 @@ src/corba/ZoneGeneratorSK.cc: $(IDLDIR)/ZoneGenerator.idl $(IDLDIR)/_dataTypes.i
 
 src/corba/ContactVerificationSK.cc: $(IDLDIR)/ContactVerification.idl
 		omniidl -bcxx -Wbuse_quotes -Wba -C$(top_builddir)/src/corba $(IDLDIR)/ContactVerification.idl
+
+src/corba/DomainBrowserSK.cc: $(IDLDIR)/DomainBrowser.idl
+		omniidl -bcxx -Wbuse_quotes -Wba -C$(top_builddir)/src/corba $(IDLDIR)/DomainBrowser.idl
+
 #
 # idl build
 
@@ -1348,6 +1362,10 @@ src_corba_fred_pifd_SOURCES = \
 		src/contact_verification/contact_verification_impl.cc \
 		src/contact_verification/contact_verification_impl.h \
 		src/contact_verification/public_request_contact_verification_wrapper.h \
+		src/domain_browser/domain_browser.cc \
+		src/domain_browser/domain_browser.h \
+		src/corba/domain_browser/domain_browser_i.cc \
+		src/corba/domain_browser/domain_browser_i.h \
 		src/corba/fred-pifd.cc
 
 src_corba_fred_pifd_LDADD = \
@@ -1363,6 +1381,7 @@ src_corba_fred_pifd_LDADD = \
 		src/corba/libcorba.a \
 		src/corba/libcorbaepp.a \
 		src/corba/libfilemanager.a \
+		src/corba/libcorbadomainbrowser.a \
 		src/corba/libcorbalogger.a \
 		src/fredlib/contact_verification/libcontact_verification.a \
 		src/corba/libcorbacontactverification.a \
@@ -1775,8 +1794,10 @@ tests_test_server_SOURCES = \
 		src/fredlib/object_state/get_object_state_id_map.cc \
 		src/fredlib/object_state/get_object_state_id_map.h \
 		src/fredlib/object_state/create_object_state_request_id.cc \
-		src/fredlib/object_state/create_object_state_request_id.h
-
+		src/fredlib/object_state/create_object_state_request_id.h \
+		src/domain_browser/domain_browser.cc \
+		src/domain_browser/domain_browser.h \
+		tests/test-domain-browser.cc
 
 tests_test_server_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS) \
@@ -1933,6 +1954,7 @@ tests_test_blocking_LDADD = \
 		$(BOOST_SYSTEM_LIB)
 #
 # tests/test_blocking
+
 
 
 # non-corba tests with overloaded global operator new
