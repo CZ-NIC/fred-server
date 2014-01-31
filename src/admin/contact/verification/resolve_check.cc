@@ -28,47 +28,47 @@ namespace  Admin {
         return *this;
     }
 
-    void resolve_check::exec() {
-        Fred::OperationContext ctx_update;
+    void resolve_check::exec(Fred::OperationContext& _ctx) {
 
         Fred::UpdateContactCheck(
             check_handle_,
             status_handle_,
             logd_request_id_
-        ).exec(ctx_update);
-
-        ctx_update.commit_transaction();
-
-        Fred::OperationContext ctx_info;
+        ).exec(_ctx);
 
         Fred::InfoContactCheckOutput check_info = Fred::InfoContactCheck(
             check_handle_
-        ).exec(ctx_info);
+        ).exec(_ctx);
 
 
         if(check_info.testsuite_handle == Fred::TestsuiteHandle::AUTOMATIC) {
-            postprocess_automatic_check(check_handle_);
+            postprocess_automatic_check(_ctx, check_handle_);
         } else if(check_info.testsuite_handle == Fred::TestsuiteHandle::MANUAL) {
-            postprocess_manual_check(check_handle_);
+            postprocess_manual_check(_ctx, check_handle_);
         }
     }
 
-    void resolve_check::postprocess_automatic_check(const std::string& _check_handle) {
+    void resolve_check::postprocess_automatic_check(
+        Fred::OperationContext& _ctx,
+        const std::string& _check_handle
+    ) {
         // in case of need feel free to express yourself...
     }
 
-    void resolve_check::postprocess_manual_check(const std::string& _check_handle) {
-        Fred::OperationContext ctx;
+    void resolve_check::postprocess_manual_check(
+        Fred::OperationContext& _ctx,
+        const std::string& _check_handle
+    ) {
 
         Fred::InfoContactCheckOutput check_info = Fred::InfoContactCheck(
             _check_handle
-        ).exec(ctx);
+        ).exec(_ctx);
 
         Fred::InfoContactOutput contact_info = Fred::HistoryInfoContactByHistoryid(
             check_info.contact_history_id
-        ).exec(ctx);
+        ).exec(_ctx);
 
-        ctx.get_conn().exec("SAVEPOINT state_savepoint");
+        _ctx.get_conn().exec("SAVEPOINT state_savepoint");
 
         // cancel one state at a time because when exception is thrown, all changes would be ROLLBACKed
         try {
@@ -77,15 +77,15 @@ namespace  Admin {
             Fred::CancelObjectStateRequestId(
                 contact_info.info_contact_data.id,
                 object_states_to_erase
-            ).exec(ctx);
-            ctx.get_conn().exec("RELEASE SAVEPOINT state_savepoint");
-            ctx.get_conn().exec("SAVEPOINT state_savepoint");
+            ).exec(_ctx);
+            _ctx.get_conn().exec("RELEASE SAVEPOINT state_savepoint");
+            _ctx.get_conn().exec("SAVEPOINT state_savepoint");
         } catch(Fred::CancelObjectStateRequestId::Exception& e) {
             // in case it throws from with unknown cause
             if(e.is_set_state_not_found() == false) {
                 throw;
             } else {
-                ctx.get_conn().exec("ROLLBACK TO state_savepoint");
+                _ctx.get_conn().exec("ROLLBACK TO state_savepoint");
             }
         }
         try {
@@ -95,16 +95,16 @@ namespace  Admin {
             Fred::CancelObjectStateRequestId(
                 contact_info.info_contact_data.id,
                 object_states_to_erase
-            ).exec(ctx);
+            ).exec(_ctx);
 
-            ctx.get_conn().exec("RELEASE SAVEPOINT state_savepoint");
-            ctx.get_conn().exec("SAVEPOINT state_savepoint");
+            _ctx.get_conn().exec("RELEASE SAVEPOINT state_savepoint");
+            _ctx.get_conn().exec("SAVEPOINT state_savepoint");
         } catch(Fred::CancelObjectStateRequestId::Exception& e) {
             // in case it throws from with unknown cause
             if(e.is_set_state_not_found() == false) {
                 throw;
             } else {
-                ctx.get_conn().exec("ROLLBACK TO state_savepoint");
+                _ctx.get_conn().exec("ROLLBACK TO state_savepoint");
             }
         }
 
@@ -117,13 +117,11 @@ namespace  Admin {
                 Fred::CreateObjectStateRequestId(
                     contact_info.info_contact_data.id,
                     status
-                ).exec(ctx)
+                ).exec(_ctx)
                 .second
             );
 
-            Admin::add_related_object_state_requests(ctx, check_handle_, state_request_ids);
+            Admin::add_related_object_state_requests(_ctx, check_handle_, state_request_ids);
         }
-
-        ctx.commit_transaction();
     }
 }
