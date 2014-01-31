@@ -875,6 +875,7 @@ ccReg::TID ccReg_Admin_i::resendPin3Letter(ccReg::TID publicRequestId)
   
     try {
         Database::Connection conn = Database::Manager::acquire();
+        Database::Transaction tx(conn);
         Database::Result res = conn.exec_params(
             "SELECT eprt.name,"
                    "eprt.name IN ('mojeid_contact_identification','contact_identification'),"
@@ -887,7 +888,7 @@ ccReg::TID ccReg_Admin_i::resendPin3Letter(ccReg::TID publicRequestId)
             "JOIN enum_public_request_status eprs ON eprs.id=pr.status "
             "LEFT JOIN public_request_messages_map prmm ON prmm.public_request_id=pr.id "
             "LEFT JOIN message_archive ma ON ma.id=prmm.message_archive_id "
-            "WHERE pr.id=$1",
+            "WHERE pr.id=$1::integer",
             Database::query_param_list(publicRequestId)
         );
         if (res.size() <= 0) {
@@ -926,7 +927,15 @@ ccReg::TID ccReg_Admin_i::resendPin3Letter(ccReg::TID publicRequestId)
         }
         const ccReg::TID letterId = static_cast< ccReg::TID >(res[0][5]);
         Fred::Messages::ManagerPtr msgMan = Fred::Messages::create_manager();
-        return msgMan->copy_letter_to_send(letterId);
+        const ccReg::TID newLetterId = msgMan->copy_letter_to_send(letterId);
+        conn.exec_params(
+            "INSERT INTO public_request_messages_map "
+              "(public_request_id,message_archive_id,mail_archive_id) "
+              "VALUES($1::integer,$2::integer,NULL)",
+            Database::query_param_list(publicRequestId)(newLetterId)
+        );
+        tx.commit();
+        return newLetterId;
     }
     catch (ccReg::Admin::OBJECT_NOT_FOUND&) {
         throw;
