@@ -871,6 +871,8 @@ ccReg::TID ccReg_Admin_i::resendPin3Letter(ccReg::TID publicRequestId)
     Logging::Context ctx(server_name_);
     ConnectionReleaser releaser;
 
+    TRACE(boost::format("[CALL] ccReg_Admin_i::resendPin3Letter(%1%)") % publicRequestId);
+  
     try {
         Database::Connection conn = Database::Manager::acquire();
         Database::Result res = conn.exec_params(
@@ -889,50 +891,59 @@ ccReg::TID ccReg_Admin_i::resendPin3Letter(ccReg::TID publicRequestId)
             Database::query_param_list(publicRequestId)
         );
         if (res.size() <= 0) {
-            throw std::runtime_error(
-                (boost::format("publicRequestId: %1% not found") % publicRequestId).str());
+            LOGGER(PACKAGE).error(boost::format("publicRequestId: %1% not found") % publicRequestId);
+            throw ccReg::Admin::OBJECT_NOT_FOUND();
         }
         if (!static_cast< bool >(res[0][1])) {
-            throw std::runtime_error(
-                (boost::format("publicRequestId: %1% of %2% type is not PIN3 request")
+            LOGGER(PACKAGE).error(boost::format("publicRequestId: %1% of %2% type is not PIN3 request")
                 % publicRequestId
-                % static_cast< std::string >(res[0][0])).str());
+                % static_cast< std::string >(res[0][0]));
+            throw ccReg::Admin::SQL_ERROR();
         }
         if (static_cast< std::string >(res[0][2]) != "new") {
-            throw std::runtime_error(
-                (boost::format("publicRequestId: %1% in %2% state is not new PIN3 request")
+            LOGGER(PACKAGE).error(
+                boost::format("publicRequestId: %1% in %2% state is not new PIN3 request")
                 % publicRequestId
-                % static_cast< std::string >(res[0][2])).str());
+                % static_cast< std::string >(res[0][2]));
+            throw ccReg::Admin::SQL_ERROR();
         }
         if (static_cast< bool >(res[0][3])) {
-            throw std::runtime_error(
-                (boost::format("publicRequestId: %1% doesn't have message")
-                % publicRequestId).str());
+            LOGGER(PACKAGE).error(boost::format("publicRequestId: %1% doesn't have message")
+                % publicRequestId);
+            throw ccReg::Admin::SQL_ERROR();
         }
         if (res[0][4].isnull()) {
-            throw std::runtime_error(
-                (boost::format("publicRequestId: %1% doesn't have message_archive_id")
-                % publicRequestId).str());
+            LOGGER(PACKAGE).error(
+                boost::format("publicRequestId: %1% doesn't have message_archive_id")
+                % publicRequestId);
+            throw ccReg::Admin::SQL_ERROR();
         }
         if (res[0][5].isnull()) {
-            throw std::runtime_error(
-                (boost::format("message_archive_id: %1% doesn't exists")
-                % static_cast< ccReg::TID >(res[0][4])).str());
+            LOGGER(PACKAGE).error(
+                boost::format("message_archive_id: %1% doesn't exists")
+                % static_cast< ccReg::TID >(res[0][4]));
+            throw ccReg::Admin::SQL_ERROR();
         }
         const ccReg::TID letterId = static_cast< ccReg::TID >(res[0][5]);
         Fred::Messages::ManagerPtr msgMan = Fred::Messages::create_manager();
         return msgMan->copy_letter_to_send(letterId);
     }
+    catch (ccReg::Admin::OBJECT_NOT_FOUND&) {
+        throw;
+    }
+    catch (ccReg::Admin::SQL_ERROR&) {
+        throw;
+    }
     catch (Database::Exception &ex) {
         LOGGER(PACKAGE).error(boost::format("Database problem: %1%") % ex.what());
-        throw ccReg::Admin::InternalServerError();
+        throw ccReg::Admin::SQL_ERROR();
     }
     catch (std::exception &ex) {
         LOGGER(PACKAGE).error(boost::format("Internal error: %1%") % ex.what());
-        throw ccReg::Admin::InternalServerError();
+        throw ccReg::Admin::SQL_ERROR();
     }
     catch (...) {
-        throw ccReg::Admin::InternalServerError();
+        throw ccReg::Admin::SQL_ERROR();
     }
 }
 
