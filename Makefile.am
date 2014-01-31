@@ -724,6 +724,8 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/contact/info_contact_output.h \
 		src/fredlib/object/object.h \
 		src/fredlib/object/object.cc \
+		src/fredlib/object/object_impl.h \
+		src/fredlib/object/object_impl.cc \
 		src/fredlib/poll/create_poll_message.h \
 		src/fredlib/poll/create_poll_message.cc \
 		src/fredlib/poll/create_update_object_poll_message.h \

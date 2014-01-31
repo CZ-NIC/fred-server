@@ -29,6 +29,7 @@
 
 #include "src/fredlib/keyset/create_keyset.h"
 #include "src/fredlib/object/object.h"
+#include "src/fredlib/object/object_impl.h"
 #include "src/fredlib/registrar/registrar_impl.h"
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/db_settings.h"

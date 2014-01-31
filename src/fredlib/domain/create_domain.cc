@@ -33,6 +33,7 @@
 #include "src/fredlib/domain/check_domain.h"
 #include "src/fredlib/zone/zone.h"
 #include "src/fredlib/object/object.h"
+#include "src/fredlib/object/object_impl.h"
 #include "src/fredlib/registrar/registrar_impl.h"
 
 #include "src/fredlib/opcontext.h"
