@@ -49,7 +49,7 @@ bool contact_checker_phone_format(const Contact &_data, FieldErrorMap &_errors)
     bool result = true;
 
     if (generic_checker_phone_format(
-                static_cast<std::string>(_data.telephone),
+                _data.telephone.get_value(),
                 PHONE_CZ_SK_PATTERN) == false) {
         result = false;
     }
@@ -64,7 +64,7 @@ bool contact_checker_phone_format(const Contact &_data, FieldErrorMap &_errors)
 bool contact_checker_fax_format(const Contact &_data, FieldErrorMap &_errors)
 {
     bool result = generic_checker_phone_format(
-            static_cast<std::string>(_data.fax),
+            _data.fax.get_value(),
             PHONE_PATTERN);
     if (result == false) {
         _errors[field_fax] = INVALID;
@@ -78,7 +78,7 @@ bool contact_checker_phone_required(const Contact &_data, FieldErrorMap &_errors
     bool result = true;
 
     if (_data.telephone.isnull()
-            || boost::algorithm::trim_copy(static_cast<std::string>(_data.telephone)).empty()) {
+            || boost::algorithm::trim_copy(_data.telephone.get_value()).empty()) {
         _errors[field_phone] = REQUIRED;
         result = false;
     }
@@ -104,7 +104,7 @@ bool contact_checker_phone_unique(const Contact &_data, FieldErrorMap &_errors)
                 " LIMIT 1",
                 Database::query_param_list
                     (EMAIL_PHONE_PROTECTION_PERIOD)
-                    (static_cast<std::string>(_data.telephone)));
+                    (_data.telephone.get_value()));
 
         if (ucheck.size() > 0) {
             _errors[field_phone] = NOT_AVAILABLE;
@@ -133,7 +133,7 @@ bool generic_checker_email_format(const std::string &_email)
 
 bool contact_checker_email_format(const Contact &_data, FieldErrorMap &_errors)
 {
-    bool result = generic_checker_email_format(static_cast<std::string>(_data.email));
+    bool result = generic_checker_email_format(_data.email.get_value());
     if (result == false) {
         _errors[field_email] = INVALID;
     }
@@ -143,7 +143,7 @@ bool contact_checker_email_format(const Contact &_data, FieldErrorMap &_errors)
 
 bool contact_checker_notify_email_format(const Contact &_data, FieldErrorMap &_errors)
 {
-    bool result = generic_checker_email_format(static_cast<std::string>(_data.notifyemail));
+    bool result = generic_checker_email_format(_data.notifyemail.get_value());
     if (result == false) {
        _errors[field_notify_email] = INVALID;
     }
@@ -156,7 +156,7 @@ bool contact_checker_email_required(const Contact &_data, FieldErrorMap &_errors
     bool result = true;
 
     if (_data.email.isnull()
-            || boost::algorithm::trim_copy(static_cast<std::string>(_data.email)).empty()) {
+            || boost::algorithm::trim_copy(_data.email.get_value()).empty()) {
         _errors[field_email] = REQUIRED;
         result = false;
     }
@@ -182,7 +182,7 @@ bool contact_checker_email_unique(const Contact &_data, FieldErrorMap &_errors)
                 " LIMIT 1",
                 Database::query_param_list
                     (EMAIL_PHONE_PROTECTION_PERIOD)
-                    (static_cast<std::string>(_data.email)));
+                    (_data.email.get_value()));
 
         if (ucheck.size() > 0) {
             _errors[field_email] = NOT_AVAILABLE;
@@ -202,22 +202,22 @@ bool contact_checker_address_required(const Contact &_data, FieldErrorMap &_erro
     bool result = true;
     /* main address is required */
     if (_data.street1.isnull()
-            || boost::algorithm::trim_copy(static_cast<std::string>(_data.street1)).empty()) {
+            || boost::algorithm::trim_copy(_data.street1.get_value()).empty()) {
         _errors[field_street1] = REQUIRED;
         result = false;
     }
     if (_data.city.isnull()
-            || boost::algorithm::trim_copy(static_cast<std::string>(_data.city)).empty()) {
+            || boost::algorithm::trim_copy(_data.city.get_value()).empty()) {
         _errors[field_city] = REQUIRED;
         result = false;
     }
     if (_data.postalcode.isnull()
-            || boost::algorithm::trim_copy(static_cast<std::string>(_data.postalcode)).empty()) {
+            || boost::algorithm::trim_copy(_data.postalcode.get_value()).empty()) {
         _errors[field_postal_code] = REQUIRED;
         result = false;
     }
     if (_data.country.isnull()
-            || boost::algorithm::trim_copy(static_cast<std::string>(_data.country)).empty()) {
+            || boost::algorithm::trim_copy(_data.country.get_value()).empty()) {
         _errors[field_country] = REQUIRED;
         result = false;
     }
@@ -231,7 +231,7 @@ bool contact_checker_address_postalcode_format_cz(const Contact &_data, FieldErr
     bool result = true;
 
     if (!boost::regex_search(
-                    static_cast<std::string>(_data.postalcode),
+                    _data.postalcode.get_value(),
                     POSTALCODE_CZ_PATTERN)) {
         _errors[field_postal_code] = INVALID;
         result = false;
@@ -245,8 +245,8 @@ bool contact_checker_address_country(const Contact &_data, FieldErrorMap &_error
 {
     bool result = true;
 
-    if ((static_cast<std::string>(_data.country) != "CZ")
-        && (static_cast<std::string>(_data.country) != "SK")) {
+    if ((_data.country.get_value() != "CZ")
+        && (_data.country.get_value() != "SK")) {
         _errors[field_country] = INVALID;
         result = false;
     }
@@ -259,10 +259,10 @@ bool contact_checker_birthday(const Contact &_data, FieldErrorMap &_errors)
 {
     bool result = true;
 
-    if (!_data.ssntype.isnull() && static_cast<std::string>(_data.ssntype) == "BIRTHDAY") {
+    if (!_data.ssntype.isnull() && _data.ssntype.get_value() == "BIRTHDAY") {
         try {
             boost::gregorian::date tmp
-                = boost::gregorian::from_string(static_cast<std::string>(_data.ssn));
+                = boost::gregorian::from_string(_data.ssn.get_value());
             if (tmp.is_special()) {
                 throw 0;
             }
@@ -286,33 +286,33 @@ bool check_conditionally_identified_contact_diff(
         return false;
     }
     /* organization */
-    if (static_cast<std::string>(_c1.organization) != static_cast<std::string>(_c2.organization)) {
+    if (_c1.organization.get_value() != _c2.organization.get_value()) {
         return false;
     }
     /* dic */
-    if (static_cast<std::string>(_c1.vat) != static_cast<std::string>(_c2.vat)) {
+    if (_c1.vat.get_value() != _c2.vat.get_value()) {
         return false;
     }
     /* address */
-    if ((static_cast<std::string>(_c1.street1) != static_cast<std::string>(_c2.street1))
-            || (static_cast<std::string>(_c1.street2) != static_cast<std::string>(_c2.street2))
-            || (static_cast<std::string>(_c1.street3) != static_cast<std::string>(_c2.street3))
-            || (static_cast<std::string>(_c1.city) != static_cast<std::string>(_c2.city))
-            || (static_cast<std::string>(_c1.stateorprovince) != static_cast<std::string>(_c2.stateorprovince))
-            || (static_cast<std::string>(_c1.country) != static_cast<std::string>(_c2.country))
-            || (static_cast<std::string>(_c1.postalcode) != static_cast<std::string>(_c2.postalcode))) {
+    if ((_c1.street1.get_value() != _c2.street1.get_value())
+            || (_c1.street2.get_value() != _c2.street2.get_value())
+            || (_c1.street3.get_value() != _c2.street3.get_value())
+            || (_c1.city.get_value() != _c2.city.get_value())
+            || (_c1.stateorprovince.get_value() != _c2.stateorprovince.get_value())
+            || (_c1.country.get_value() != _c2.country.get_value())
+            || (_c1.postalcode.get_value() != _c2.postalcode.get_value())) {
         return false;
     }
     /* identification type */
-    if (static_cast<std::string>(_c1.ssntype) != static_cast<std::string>(_c2.ssntype)) {
+    if (_c1.ssntype.get_value() != _c2.ssntype.get_value()) {
         return false;
     }
     /* identification regardless of type*/
-    if (static_cast<std::string>(_c1.ssn) != static_cast<std::string>(_c2.ssn)) {
+    if (_c1.ssn.get_value() != _c2.ssn.get_value()) {
 
-        if (static_cast<std::string>(_c1.ssntype) == "BIRTHDAY") {
-            boost::gregorian::date before = boost::gregorian::from_string(static_cast<std::string>(_c1.ssn));
-            boost::gregorian::date after = boost::gregorian::from_string(static_cast<std::string>(_c2.ssn));
+        if (_c1.ssntype.get_value() == "BIRTHDAY") {
+            boost::gregorian::date before = boost::gregorian::from_string(_c1.ssn.get_value());
+            boost::gregorian::date after = boost::gregorian::from_string(_c2.ssn.get_value());
             if (before != after) {
                 return false;
             }
@@ -323,10 +323,10 @@ bool check_conditionally_identified_contact_diff(
         }
     }
     /* telephone and email */
-    if ((static_cast<std::string>(_c1.telephone) != static_cast<std::string>(_c2.telephone))
-            || (static_cast<std::string>(_c1.fax) != static_cast<std::string>(_c2.fax))
-            || (static_cast<std::string>(_c1.email) != static_cast<std::string>(_c2.email))
-            || (static_cast<std::string>(_c1.notifyemail) != static_cast<std::string>(_c2.notifyemail))) {
+    if ((_c1.telephone.get_value() != _c2.telephone.get_value())
+            || (_c1.fax.get_value() != _c2.fax.get_value())
+            || (_c1.email.get_value() != _c2.email.get_value())
+            || (_c1.notifyemail.get_value() != _c2.notifyemail.get_value())) {
         return false;
     }
     /* all disclose disclose flags */
@@ -355,33 +355,33 @@ bool check_validated_contact_diff(
         return false;
     }
     /* organization */
-    if (static_cast<std::string>(_c1.organization) != static_cast<std::string>(_c2.organization)) {
+    if (_c1.organization.get_value() != _c2.organization.get_value()) {
         return false;
     }
     /* dic */
-    if (static_cast<std::string>(_c1.vat) != static_cast<std::string>(_c2.vat)) {
+    if (_c1.vat.get_value() != _c2.vat.get_value()) {
         return false;
     }
     /* address */
-    if ((static_cast<std::string>(_c1.street1) != static_cast<std::string>(_c2.street1))
-            || (static_cast<std::string>(_c1.street2) != static_cast<std::string>(_c2.street2))
-            || (static_cast<std::string>(_c1.street3) != static_cast<std::string>(_c2.street3))
-            || (static_cast<std::string>(_c1.city) != static_cast<std::string>(_c2.city))
-            || (static_cast<std::string>(_c1.stateorprovince) != static_cast<std::string>(_c2.stateorprovince))
-            || (static_cast<std::string>(_c1.country) != static_cast<std::string>(_c2.country))
-            || (static_cast<std::string>(_c1.postalcode) != static_cast<std::string>(_c2.postalcode))) {
+    if ((_c1.street1.get_value() != _c2.street1.get_value())
+            || (_c1.street2.get_value() != _c2.street2.get_value())
+            || (_c1.street3.get_value() != _c2.street3.get_value())
+            || (_c1.city.get_value() != _c2.city.get_value())
+            || (_c1.stateorprovince.get_value() != _c2.stateorprovince.get_value())
+            || (_c1.country.get_value() != _c2.country.get_value())
+            || (_c1.postalcode.get_value() != _c2.postalcode.get_value())) {
         return false;
     }
     /* identification type */
-    if (static_cast<std::string>(_c1.ssntype) != static_cast<std::string>(_c2.ssntype)) {
+    if (_c1.ssntype.get_value() != _c2.ssntype.get_value()) {
         return false;
     }
     /* identification regardless of type*/
-    if (static_cast<std::string>(_c1.ssn) != static_cast<std::string>(_c2.ssn)) {
+    if (_c1.ssn.get_value() != _c2.ssn.get_value()) {
 
-        if(static_cast<std::string>(_c1.ssntype) == "BIRTHDAY") {
-            boost::gregorian::date before = boost::gregorian::from_string(static_cast<std::string>(_c1.ssn));
-            boost::gregorian::date after = boost::gregorian::from_string(static_cast<std::string>(_c2.ssn));
+        if(_c1.ssntype.get_value() == "BIRTHDAY") {
+            boost::gregorian::date before = boost::gregorian::from_string(_c1.ssn.get_value());
+            boost::gregorian::date after = boost::gregorian::from_string(_c2.ssn.get_value());
             if(before != after) {
                 return false;
             }

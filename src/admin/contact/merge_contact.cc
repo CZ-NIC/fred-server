@@ -12,22 +12,22 @@ void create_poll_messages(const Fred::MergeContactOutput &_merge_data, Fred::Ope
     for (std::vector<Fred::MergeContactUpdateDomainRegistrant>::const_iterator i = _merge_data.update_domain_registrant.begin();
             i != _merge_data.update_domain_registrant.end(); ++i)
     {
-        Fred::Poll::CreateUpdateObjectPollMessage(i->history_id).exec(_ctx);
+        Fred::Poll::CreateUpdateObjectPollMessage(i->history_id.get_value()).exec(_ctx);
     }
     for (std::vector<Fred::MergeContactUpdateDomainAdminContact>::const_iterator i = _merge_data.update_domain_admin_contact.begin();
             i != _merge_data.update_domain_admin_contact.end(); ++i)
     {
-        Fred::Poll::CreateUpdateObjectPollMessage(i->history_id).exec(_ctx);
+        Fred::Poll::CreateUpdateObjectPollMessage(i->history_id.get_value()).exec(_ctx);
     }
     for (std::vector<Fred::MergeContactUpdateNssetTechContact>::const_iterator i = _merge_data.update_nsset_tech_contact.begin();
             i != _merge_data.update_nsset_tech_contact.end(); ++i)
     {
-        Fred::Poll::CreateUpdateObjectPollMessage(i->history_id).exec(_ctx);
+        Fred::Poll::CreateUpdateObjectPollMessage(i->history_id.get_value()).exec(_ctx);
     }
     for (std::vector<Fred::MergeContactUpdateKeysetTechContact>::const_iterator i = _merge_data.update_keyset_tech_contact.begin();
             i != _merge_data.update_keyset_tech_contact.end(); ++i)
     {
-        Fred::Poll::CreateUpdateObjectPollMessage(i->history_id).exec(_ctx);
+        Fred::Poll::CreateUpdateObjectPollMessage(i->history_id.get_value()).exec(_ctx);
     }
     Fred::Poll::CreateDeleteContactPollMessage(_merge_data.contactid.src_contact_historyid).exec(_ctx);
 }
