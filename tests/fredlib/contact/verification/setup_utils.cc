@@ -1,4 +1,7 @@
 #include <boost/algorithm/string/join.hpp>
+#include <boost/uuid/uuid.hpp>            // uuid class
+#include <boost/uuid/uuid_generators.hpp> // generators
+#include <boost/uuid/uuid_io.hpp>         // streaming operators etc.
 
 #include "tests/fredlib/contact/verification/setup_utils.h"
 
@@ -355,49 +358,12 @@ setup_check::setup_check(const std::string& _testsuite_handle, Optional<long lon
 }
 
 setup_nonexistent_check_handle::setup_nonexistent_check_handle() {
-    struct BOOST { struct UUIDS { struct RANDOM_GENERATOR {
-        static std::string generate() {
-            srand(time(NULL));
-            std::vector<unsigned char> bytes;
 
-            // generate random 128bits = 16 bytes
-            for (int i = 0; i < 16; ++i) {
-                bytes.push_back( RandomDataGenerator().xletter()%256 );
-            }
-            /* some specific uuid rules
-             * http://www.cryptosys.net/pki/Uuid.c.html
-             */
-            bytes.at(6) = static_cast<char>(0x40 | (bytes.at(6) & 0xf));
-            bytes.at(8) = static_cast<char>(0x80 | (bytes.at(8) & 0x3f));
-
-            // buffer for hex representation of one byte + terminating zero
-            char hex_rep[3];
-
-            // converting raw bytes to hex string representation
-            std::string result;
-            for (std::vector<unsigned char>::iterator it = bytes.begin(); it != bytes.end(); ++it) {
-                sprintf(hex_rep,"%02x",*it);
-                // conversion target is hhhh - so in case it gets wrong just cut off the tail
-                hex_rep[2] = 0;
-                result += hex_rep;
-            }
-
-            // hyphens for canonical form
-            result.insert(8, "-");
-            result.insert(13, "-");
-            result.insert(18, "-");
-            result.insert(23, "-");
-
-            return result;
-        }
-    }; }; };
-
-    /* end of temporary ugliness - please cut and replace between ASAP*/
     Fred::OperationContext ctx;
 
     Database::Result res;
     do {
-        check_handle = boost::lexical_cast<std::string>(BOOST::UUIDS::RANDOM_GENERATOR::generate());
+        check_handle = boost::lexical_cast<std::string>(boost::uuids::random_generator()());
         res = ctx.get_conn().exec(
             "SELECT handle "
             "   FROM contact_check "
