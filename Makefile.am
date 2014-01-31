@@ -109,6 +109,7 @@ noinst_HEADERS = \
 		include/fredlib/fredlib.h \
 		include/fredlib/keyset.h \
 		include/fredlib/nsset.h \
+		include/fredlib/registrar.h \
 		util/util.h \
 		util/singleton.h \
 		util/time_clock.h \
@@ -724,6 +725,8 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/contact/info_contact_output.h \
 		src/fredlib/object/object.h \
 		src/fredlib/object/object.cc \
+		src/fredlib/object/object_impl.h \
+		src/fredlib/object/object_impl.cc \
 		src/fredlib/poll/create_poll_message.h \
 		src/fredlib/poll/create_poll_message.cc \
 		src/fredlib/poll/create_update_object_poll_message.h \
@@ -773,8 +776,30 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/keyset/delete_keyset.h \
 		src/fredlib/registrar/registrar_impl.h \
 		src/fredlib/registrar/registrar_impl.cc \
+		src/fredlib/registrar/info_registrar.cc \
+		src/fredlib/registrar/info_registrar.h \
+		src/fredlib/registrar/info_registrar_data.cc \
+		src/fredlib/registrar/info_registrar_data.h \
+		src/fredlib/registrar/info_registrar_diff.cc \
+		src/fredlib/registrar/info_registrar_diff.h \
+		src/fredlib/registrar/registrar_zone_access.h \
+		src/fredlib/registrar/create_registrar.cc \
+		src/fredlib/registrar/create_registrar.h \
+		src/fredlib/registrar/info_registrar_impl.cc \
+		src/fredlib/registrar/info_registrar_impl.h \
+		src/fredlib/registrar/info_registrar_output.cc \
+		src/fredlib/registrar/info_registrar_output.h \
 		src/fredlib/registrar/get_registrar_handles.cc \
-		src/fredlib/registrar/get_registrar_handles.h
+		src/fredlib/registrar/get_registrar_handles.h \
+		src/fredlib/object_state/lock_multiple_object_state_request_lock.cc \
+		src/fredlib/object_state/lock_multiple_object_state_request_lock.h \
+		src/fredlib/object_state/lock_object_state_request_lock.h \
+		src/fredlib/object_state/lock_object_state_request_lock.cc \
+		src/fredlib/object_state/perform_object_state_request.h \
+		src/fredlib/object_state/perform_object_state_request.cc \
+		src/fredlib/object_state/object_state_name.h \
+		src/fredlib/object_state/object_has_state.h \
+		src/fredlib/object_state/object_has_state.cc
 #
 # src/fredlib/libfred.a
 
@@ -1744,7 +1769,14 @@ tests_test_server_SOURCES = \
 		tests/test-printable.cc \
 		tests/test-info-keyset.cc \
 		tests/test-info-nsset.cc \
-		tests/util/test-is-equal-optional-nullable.cc
+		tests/test-info-registrar.cc \
+		tests/test-create-registrar.cc \
+		tests/util/test-is-equal-optional-nullable.cc \
+		src/fredlib/object_state/get_object_state_id_map.cc \
+		src/fredlib/object_state/get_object_state_id_map.h \
+		src/fredlib/object_state/create_object_state_request_id.cc \
+		src/fredlib/object_state/create_object_state_request_id.h
+
 
 tests_test_server_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS) \

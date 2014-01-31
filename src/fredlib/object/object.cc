@@ -23,18 +23,15 @@
 
 #include <string>
 
-#include "src/fredlib/object/object.h"
+#include "object_impl.h"
 #include "src/fredlib/registrar/registrar_impl.h"
-
 #include "src/fredlib/opexception.h"
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/db_settings.h"
 #include "util/optional_value.h"
-
 #include "util/log/log.h"
-
 #include "util/random_data_generator.h"
-
+#include "object.h"
 
 namespace Fred
 {
@@ -393,18 +390,6 @@ namespace Fred
         Util::vector_of<std::pair<std::string,std::string> >
         (std::make_pair("obj_type",obj_type_))
         );
-    }
-
-    unsigned long long get_object_type_id(OperationContext& ctx, const std::string& obj_type)
-    {
-        Database::Result object_type_res = ctx.get_conn().exec_params(
-            "SELECT id FROM enum_object_type WHERE name = $1::text FOR SHARE"
-            , Database::query_param_list(obj_type));
-        if (object_type_res.size() != 1)
-        {
-            BOOST_THROW_EXCEPTION(InternalError("failed to get object type"));
-        }
-        return  static_cast<unsigned long long> (object_type_res[0][0]);
     }
 
 }//namespace Fred
