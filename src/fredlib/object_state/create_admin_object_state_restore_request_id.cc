@@ -25,6 +25,7 @@
 #include "src/fredlib/object_state/clear_admin_object_state_request_id.h"
 #include "src/fredlib/object_state/clear_object_state_request_id.h"
 #include "src/fredlib/object_state/get_blocking_status_desc_list.h"
+#include "lock_multiple_object_state_request_lock.h"
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/db_settings.h"
 #include "util/optional_value.h"
