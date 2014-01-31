@@ -1715,6 +1715,8 @@ src_cli_admin_fred_admin_SOURCES = \
 		src/admin/contact/verification/test_impl/test_cz_address_exists.cc \
 		src/admin/contact/verification/test_impl/test_contactability.h \
 		src/admin/contact/verification/test_impl/test_contactability.cc \
+		src/admin/contact/verification/test_impl/test_email_exists.h \
+		src/admin/contact/verification/test_impl/test_email_exists.cc \
 		src/fredlib/object_state/create_object_state_request.cc \
 		src/fredlib/object_state/create_object_state_request.h \
 		src/fredlib/object_state/create_object_state_request_id.cc \
@@ -1765,7 +1767,8 @@ src_cli_admin_fred_admin_LDADD = \
 		$(BOOST_THREAD_LIB) \
 		$(BOOST_SERIALIZATION_LIB) \
 		$(POSTGRESQL_LIB) \
-		$(BOOST_SYSTEM_LIB)
+		$(BOOST_SYSTEM_LIB) \
+		-lresolv
 #
 # src/cli_admin/fred-admin
 
