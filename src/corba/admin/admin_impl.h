@@ -134,6 +134,9 @@ public:
   );
   ccReg::Admin::Buffer* getPublicRequestPDF(ccReg::TID id, const char *lang);
 
+  /// znovu odešle dopis s PIN3
+  ccReg::TID resendPin3Letter(ccReg::TID publicRequestId);
+
   ::CORBA::ULongLong countEnumDomainsByRegistrant(const char* name, ::CORBA::Boolean by_person, ::CORBA::Boolean by_org);
   ccReg::EnumDictList* getEnumDomainsByRegistrant(const char* name, ::CORBA::Boolean by_person, ::CORBA::Boolean by_org, ::CORBA::Long offset, ::CORBA::Long limit);
   ccReg::EnumDictList* getEnumDomainsRecentEntries(::CORBA::Long count);

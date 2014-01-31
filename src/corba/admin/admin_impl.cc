@@ -866,6 +866,76 @@ ccReg::Admin::Buffer* ccReg_Admin_i::getPublicRequestPDF(ccReg::TID id,
   }
 }
 
+ccReg::TID ccReg_Admin_i::resendPin3Letter(ccReg::TID publicRequestId)
+{
+    Logging::Context ctx(server_name_);
+    ConnectionReleaser releaser;
+
+    try {
+        Database::Connection conn = Database::Manager::acquire();
+        Database::Result res = conn.exec_params(
+            "SELECT eprt.name,"
+                   "eprt.name IN ('mojeid_contact_identification','contact_identification'),"
+                   "eprs.name,"
+                   "prmm.id IS NULL,"
+                   "prmm.message_archive_id,"
+                   "ma.id "
+            "FROM public_request pr "
+            "JOIN enum_public_request_type eprt ON eprt.id=pr.request_type "
+            "JOIN enum_public_request_status eprs ON eprs.id=pr.status "
+            "LEFT JOIN public_request_messages_map prmm ON prmm.public_request_id=pr.id "
+            "LEFT JOIN message_archive ma ON ma.id=prmm.message_archive_id "
+            "WHERE pr.id=$1",
+            Database::query_param_list(publicRequestId)
+        );
+        if (res.size() <= 0) {
+            throw std::runtime_error(
+                (boost::format("publicRequestId: %1% not found") % publicRequestId).str());
+        }
+        if (!static_cast< bool >(res[0][1])) {
+            throw std::runtime_error(
+                (boost::format("publicRequestId: %1% of %2% type is not PIN3 request")
+                % publicRequestId
+                % static_cast< std::string >(res[0][0])).str());
+        }
+        if (static_cast< std::string >(res[0][2]) != "new") {
+            throw std::runtime_error(
+                (boost::format("publicRequestId: %1% in %2% state is not new PIN3 request")
+                % publicRequestId
+                % static_cast< std::string >(res[0][2])).str());
+        }
+        if (static_cast< bool >(res[0][3])) {
+            throw std::runtime_error(
+                (boost::format("publicRequestId: %1% doesn't have message")
+                % publicRequestId).str());
+        }
+        if (res[0][4].isnull()) {
+            throw std::runtime_error(
+                (boost::format("publicRequestId: %1% doesn't have message_archive_id")
+                % publicRequestId).str());
+        }
+        if (res[0][5].isnull()) {
+            throw std::runtime_error(
+                (boost::format("message_archive_id: %1% doesn't exists")
+                % static_cast< ccReg::TID >(res[0][4])).str());
+        }
+        const ccReg::TID letterId = static_cast< ccReg::TID >(res[0][5]);
+        Fred::Messages::ManagerPtr msgMan = Fred::Messages::create_manager();
+        return msgMan->copy_letter_to_send(letterId);
+    }
+    catch (Database::Exception &ex) {
+        LOGGER(PACKAGE).error(boost::format("Database problem: %1%") % ex.what());
+        throw ccReg::Admin::InternalServerError();
+    }
+    catch (std::exception &ex) {
+        LOGGER(PACKAGE).error(boost::format("Internal error: %1%") % ex.what());
+        throw ccReg::Admin::InternalServerError();
+    }
+    catch (...) {
+        throw ccReg::Admin::InternalServerError();
+    }
+}
+
 /* enum dictionary method implementation */
 
 /* helper method - query construct */
