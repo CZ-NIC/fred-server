@@ -157,7 +157,7 @@ namespace Fred
             }
 
             //remove optional root dot from fqdn
-            std::string no_root_dot_fqdn = Fred::Domain::rem_trailing_dot(fqdn_);
+            std::string no_root_dot_fqdn = Fred::Zone::rem_trailing_dot(fqdn_);
 
             //check zone
             if(CheckDomain(fqdn_).is_bad_zone(ctx))

@@ -26,16 +26,14 @@
 
 #include <string>
 #include <vector>
-#include <set>
 
 #include <boost/date_time/posix_time/ptime.hpp>
-#include <boost/date_time/gregorian/gregorian.hpp>
 
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
 #include "util/printable.h"
 
-#include "src/fredlib/nsset/nsset_dns_host.h"
+#include "nsset_dns_host.h"
 
 namespace Fred
 {

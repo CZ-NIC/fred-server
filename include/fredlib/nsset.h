@@ -28,6 +28,7 @@
 #include "src/fredlib/nsset/delete_nsset.h"
 #include "src/fredlib/nsset/update_nsset.h"
 #include "src/fredlib/nsset/info_nsset.h"
+#include "src/fredlib/nsset/info_nsset_diff.h"
 #include "src/fredlib/nsset/check_nsset.h"
 
 #endif//NSSET_H_1dcf8d7b8966442e9dbd8ea99b95b709

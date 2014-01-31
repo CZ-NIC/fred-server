@@ -28,6 +28,12 @@
 namespace Fred {
 namespace Zone {
 
+    std::string rem_trailing_dot(const std::string& fqdn)
+    {
+        if(!fqdn.empty() && fqdn.at(fqdn.size()-1) == '.') return fqdn.substr(0,fqdn.size()-1);
+        return fqdn;
+    }
+
     Data get_zone(OperationContext& ctx, const std::string& zone_name)
     {
         Database::Result zone_res = ctx.get_conn().exec_params(

@@ -18,27 +18,19 @@
 
 /**
  *  @file
- * keyset info data diff
+ *  keyset info data diff
  */
 
-#include <iterator>
 #include <algorithm>
 #include <string>
 #include <vector>
 #include <set>
-#include <iostream>
 
 #include <boost/algorithm/string.hpp>
-#include <boost/date_time/posix_time/ptime.hpp>
-#include <boost/date_time/posix_time/time_period.hpp>
-#include <boost/date_time/gregorian/gregorian.hpp>
-#include <boost/lexical_cast.hpp>
 
-#include "util/optional_value.h"
-#include "util/db/nullable.h"
 #include "util/util.h"
 #include "util/is_equal_optional_nullable.h"
-#include "src/fredlib/keyset/info_keyset_diff.h"
+#include "info_keyset_diff.h"
 
 namespace Fred
 {
@@ -112,10 +104,9 @@ namespace Fred
             diff.delete_time = std::make_pair(first.delete_time,second.delete_time);
         }
 
-        if(first.handle.compare(second.handle) != 0)
+        if(boost::algorithm::to_upper_copy(first.handle).compare(boost::algorithm::to_upper_copy(second.handle)) != 0)
         {
-            diff.handle = std::make_pair(boost::algorithm::to_lower_copy(first.handle)
-                , boost::algorithm::to_lower_copy(second.handle));
+            diff.handle = std::make_pair(first.handle, second.handle);
         }
 
         if(first.roid.compare(second.roid) != 0)
@@ -215,26 +206,3 @@ namespace Fred
     }
 
 }//namespace Fred
-
-/*
- members
-
-    crhistoryid
-    historyid
-    delete_time
-    handle
-    roid
-    sponsoring_registrar_handle
-    create_registrar_handle
-    update_registrar_handle
-    creation_time
-    update_time
-    transfer_time
-    authinfopw
-
-std::vector<DnsKey> dns_keys
-std::vector<std::string> tech_contacts
-
-id
-*/
-

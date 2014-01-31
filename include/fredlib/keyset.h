@@ -28,6 +28,7 @@
 #include "src/fredlib/keyset/delete_keyset.h"
 #include "src/fredlib/keyset/update_keyset.h"
 #include "src/fredlib/keyset/info_keyset.h"
+#include "src/fredlib/keyset/info_keyset_diff.h"
 #include "src/fredlib/keyset/check_keyset.h"
 
 #endif//KEYSET_H_ff36d63fd7fe402cbe22a06b6d3a9bda

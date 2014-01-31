@@ -28,6 +28,7 @@
 #include "src/fredlib/contact/delete_contact.h"
 #include "src/fredlib/contact/update_contact.h"
 #include "src/fredlib/contact/info_contact.h"
+#include "src/fredlib/contact/info_contact_diff.h"
 #include "src/fredlib/contact/check_contact.h"
 #include "src/fredlib/contact/merge_contact.h"
 
