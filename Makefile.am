@@ -75,7 +75,10 @@ CLEANFILES = \
 		src/corba/ZoneGenerator.hh \
 		src/corba/ContactVerificationSK.cc \
 		src/corba/ContactVerificationDynSK.cc \
-		src/corba/ContactVerification.hh
+		src/corba/ContactVerification.hh \
+		src/corba/DomainBrowserSK.cc \
+		src/corba/DomainBrowserDynSK.cc \
+		src/corba/DomainBrowser.hh
 
 
 
@@ -1359,6 +1362,10 @@ src_corba_fred_pifd_SOURCES = \
 		src/contact_verification/contact_verification_impl.cc \
 		src/contact_verification/contact_verification_impl.h \
 		src/contact_verification/public_request_contact_verification_wrapper.h \
+		src/domain_browser/domain_browser.cc \
+		src/domain_browser/domain_browser.h \
+		src/corba/domain_browser/domain_browser_i.cc \
+		src/corba/domain_browser/domain_browser_i.h \
 		src/corba/fred-pifd.cc
 
 src_corba_fred_pifd_LDADD = \
@@ -1787,8 +1794,10 @@ tests_test_server_SOURCES = \
 		src/fredlib/object_state/get_object_state_id_map.cc \
 		src/fredlib/object_state/get_object_state_id_map.h \
 		src/fredlib/object_state/create_object_state_request_id.cc \
-		src/fredlib/object_state/create_object_state_request_id.h
-
+		src/fredlib/object_state/create_object_state_request_id.h \
+		src/domain_browser/domain_browser.cc \
+		src/domain_browser/domain_browser.h \
+		tests/test-domain-browser.cc
 
 tests_test_server_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS) \
