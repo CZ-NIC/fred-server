@@ -4,6 +4,7 @@
 #include "src/admin/contact/verification/test_impl/test_phone_syntax.h"
 #include "src/admin/contact/verification/test_impl/test_cz_address_exists.h"
 #include "src/admin/contact/verification/test_impl/test_contactability.h"
+#include "src/admin/contact/verification/test_impl/test_email_exists.h"
 
 #include <boost/make_shared.hpp>
 
@@ -54,6 +55,12 @@ namespace  Admin {
             result[temp_ptr->get_name()] = temp_ptr;
         }
 
+        {
+            boost::shared_ptr<Admin::ContactVerificationTest> temp_ptr
+                = boost::make_shared<Admin::ContactVerificationTestEmailExists>();
+
+            result[temp_ptr->get_name()] = temp_ptr;
+        }
         return result;
     }
 }
