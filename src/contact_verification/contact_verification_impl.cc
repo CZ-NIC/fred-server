@@ -347,6 +347,13 @@ namespace Registry
                                      = Util::vector_of<Fred::PublicRequest::Type>
                                  (Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION);
 
+                     if(request_manager->checkAlreadyProcessedPublicRequest(
+                             cinfo.id, request_type_list))
+                     {
+                         LOGGER(PACKAGE).error("Found already processed request");
+                         throw Registry::Contact::Verification::IDENTIFICATION_PROCESSED();
+                     }
+
                      std::string request_id = request_manager->getPublicRequestAuthIdentification(
                              cinfo.id, request_type_list);
 

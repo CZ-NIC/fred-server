@@ -101,10 +101,12 @@ bool contact_checker_phone_unique(const Contact &_data, FieldErrorMap &_errors)
                 " WHERE eos.name = 'conditionallyIdentifiedContact'"
                 " AND os.valid_from > now() - $1::interval"
                 " AND trim(both ' ' from ch.telephone) = trim(both ' ' from $2::text)"
+                " AND ch.id != $3::bigint"
                 " LIMIT 1",
                 Database::query_param_list
                     (EMAIL_PHONE_PROTECTION_PERIOD)
-                    (static_cast<std::string>(_data.telephone)));
+                    (static_cast<std::string>(_data.telephone))
+                    (_data.id));
 
         if (ucheck.size() > 0) {
             _errors[field_phone] = NOT_AVAILABLE;
@@ -179,10 +181,12 @@ bool contact_checker_email_unique(const Contact &_data, FieldErrorMap &_errors)
                 " WHERE eos.name = 'conditionallyIdentifiedContact'"
                 " AND os.valid_from > now() - $1::interval"
                 " AND trim(both ' ' from LOWER(ch.email)) = trim(both ' ' from LOWER($2::text))"
+                " AND ch.id != $3::bigint"
                 " LIMIT 1",
                 Database::query_param_list
                     (EMAIL_PHONE_PROTECTION_PERIOD)
-                    (static_cast<std::string>(_data.email)));
+                    (static_cast<std::string>(_data.email))
+                    (_data.id));
 
         if (ucheck.size() > 0) {
             _errors[field_email] = NOT_AVAILABLE;
