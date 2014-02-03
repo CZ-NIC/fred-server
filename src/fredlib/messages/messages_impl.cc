@@ -423,11 +423,21 @@ unsigned long long Manager::copy_letter_to_send(unsigned long long letter_id)
 
         Database::Result res = conn.exec_params(
                 "INSERT INTO message_archive "
-                 "(crdate,moddate,attempt,status_id,comm_type_id,message_type_id) "
-                 "SELECT ma.crdate,ma.moddate,0,ma.status_id,ma.comm_type_id,ma.message_type_id "
+                       "(crdate,"
+                        "moddate,"
+                        "attempt,"
+                        "status_id,"
+                        "comm_type_id,"
+                        "message_type_id) "
+                 "SELECT CURRENT_TIMESTAMP,"
+                        "NULL,"
+                        "0,"
+                        "(SELECT id FROM enum_send_status WHERE status_name='ready'),"
+                        "ma.comm_type_id,"
+                        "ma.message_type_id "
                  "FROM message_archive ma "
                  "JOIN letter_archive la ON la.id=ma.id "
-                 "WHERE ma.id=$1 "
+                 "WHERE ma.id=$1::bigint "
                 "RETURNING id",
                 Database::query_param_list(letter_id));
         if (res.size() <= 0) {
@@ -436,8 +446,28 @@ unsigned long long Manager::copy_letter_to_send(unsigned long long letter_id)
         const unsigned long long message_archive_id = static_cast< unsigned long long >(res[0][0]);
 
         res = conn.exec_params(
+                "INSERT INTO message_contact_history_map "
+                 "(contact_object_registry_id,"
+                  "contact_history_historyid,"
+                  "message_archive_id"
+                 ") "
+                 "SELECT "
+                  "contact_object_registry_id,"
+                  "contact_history_historyid,"
+                  "$1::bigint "
+                 "FROM message_contact_history_map "
+                 "WHERE message_archive_id=$2::bigint "
+                "RETURNING id",
+                Database::query_param_list(message_archive_id)(letter_id)
+                );
+        if (res.size() <= 0) {
+            throw std::runtime_error((boost::format(
+                "letter_id: %1% not found in message_contact_history_map") % letter_id).str());
+        }
+
+        res = conn.exec_params(
                 "INSERT INTO letter_archive "
-                 "(id,file_id,batch_id,"
+                 "(id,file_id,"
                   "postal_address_name,"
                   "postal_address_organization,"
                   "postal_address_street1,"
@@ -450,8 +480,8 @@ unsigned long long Manager::copy_letter_to_send(unsigned long long letter_id)
                   "postal_address_id"
                  ") "
                  "SELECT "
-                  "$1::integer,"//new letter_id
-                  "file_id,batch_id,"
+                  "$1::bigint,"//new letter_id
+                  "file_id,"
                   "postal_address_name,"
                   "postal_address_organization,"
                   "postal_address_street1,"
@@ -463,13 +493,13 @@ unsigned long long Manager::copy_letter_to_send(unsigned long long letter_id)
                   "postal_address_country,"
                   "postal_address_id "
                  "FROM letter_archive "
-                 "WHERE id=$2::integer "//source letter_id
+                 "WHERE id=$2::bigint "//source letter_id
                 "RETURNING id",
                 Database::query_param_list(message_archive_id)(letter_id)
                 );
         if (res.size() <= 0) {
             throw std::runtime_error((boost::format(
-                    "letter_id: %1% not found in letter_archive") % letter_id).str());
+                "letter_id: %1% not found in letter_archive") % letter_id).str());
         }
 
         tx.commit();
