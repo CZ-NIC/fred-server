@@ -240,7 +240,9 @@ sbin_PROGRAMS = \
 util_libutil_a_SOURCES = \
 		util/random.cc \
 		util/util.cc \
-		util/output_indenter.cc
+		util/output_indenter.cc \
+		util/xmlgen.h \
+		util/xmlgen.cc
 #
 # util/libutil.a
 
