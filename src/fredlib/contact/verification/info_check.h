@@ -27,6 +27,8 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <vector>
 
+#include "util/printable.h"
+
 #include "src/fredlib/opexception.h"
 #include "src/fredlib/opcontext.h"
 #include "util/db/nullable.h"
@@ -107,7 +109,7 @@ namespace Fred
     /**
      * Get info from existing record in contact_check table. Has no sideeffects.
      */
-    class InfoContactCheck {
+    class InfoContactCheck : public Util::Printable {
             std::string handle_;
 
         public:
@@ -128,8 +130,7 @@ namespace Fred
              */
             InfoContactCheckOutput exec(OperationContext& _ctx, const std::string& _output_timezone = "Europe/Prague");
             // serialization
-            friend std::ostream& operator<<(std::ostream& _os, const InfoContactCheck& _i);
-            std::string to_string() const;
+            virtual std::string to_string() const;
 
         private:
             /**

@@ -24,7 +24,9 @@
 #include "src/fredlib/contact/verification/update_test.h"
 
 #include <boost/lexical_cast.hpp>
+#include <boost/assign/list_of.hpp>
 #include <boost/algorithm/string/join.hpp>
+#include <boost/assign/list_of.hpp>
 
 namespace Fred
 {
@@ -169,20 +171,17 @@ namespace Fred
         }
     }
 
-    std::ostream& operator<<(std::ostream& os, const UpdateContactTest& i) {
-        os << "#UpdateContactTest "
-            << " check_handle_: "    << i.check_handle_
-            << " test_handle_: "       << i.test_handle_
-            << " status_handle_: "     << i.status_handle_
-            << " logd_request_id_: " << i.logd_request_id_.print_quoted()
-            << " error_msg_: "       << i.error_msg_.print_quoted();
-
-        return os;
-    }
-
     std::string UpdateContactTest::to_string() const {
-        std::stringstream ss;
-        ss << *this;
-        return ss.str();
+        using std::make_pair;
+
+        return Util::format_operation_state(
+            "ListContactChecks",
+            boost::assign::list_of
+                (make_pair("check_handle",      check_handle_ ))
+                (make_pair("test_handle",       test_handle_ ))
+                (make_pair("status_handle",     status_handle_ ))
+                (make_pair("logd_request_id",   logd_request_id_.print_quoted() ))
+                (make_pair("error_msg",         error_msg_.print_quoted() ))
+        );
     }
 } // namespace Fred

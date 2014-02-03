@@ -223,19 +223,17 @@ namespace Fred
         }
     }
 
-
-    std::ostream& operator<<(std::ostream& os, const ListContactChecks& i) {
-        os  << "#ListContactChecks "
-                << " max_item_count_: "  << i.max_item_count_
-                << " testsuite_handle_: " << i.testsuite_handle_.print_quoted()
-                << " contact_id_: "      << i.contact_id_.print_quoted();
-
-        return os;
-    }
-
     std::string ListContactChecks::to_string() const {
-        std::stringstream ss;
-        ss << *this;
-        return ss.str();
+        using std::make_pair;
+        using boost::lexical_cast;
+        using std::string;
+
+        return Util::format_operation_state(
+            "ListContactChecks",
+            boost::assign::list_of
+                (make_pair("max_item_count",    lexical_cast<string>(max_item_count_) ))
+                (make_pair("testsuite_handle",  testsuite_handle_.print_quoted() ))
+                (make_pair("contact_id",        contact_id_.print_quoted() ))
+        );
     }
 }

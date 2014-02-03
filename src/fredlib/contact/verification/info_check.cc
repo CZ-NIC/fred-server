@@ -25,6 +25,7 @@
 
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string/join.hpp>
+#include <boost/assign/list_of.hpp>
 #include <string>
 
 namespace Fred
@@ -169,17 +170,14 @@ namespace Fred
         }
     }
 
-
-    std::ostream& operator<<(std::ostream& os, const InfoContactCheck& i) {
-        os << "#InfoContactCheck check_handle_: " << i.handle_;
-
-        return os;
-    }
-
     std::string InfoContactCheck::to_string() const {
-        std::stringstream ss;
-        ss << *this;
-        return ss.str();
+        using std::make_pair;
+
+        return Util::format_operation_state(
+            "InfoContactCheck",
+            boost::assign::list_of
+                (make_pair("check_handle",      handle_ ))
+        );
     }
 
     std::vector<InfoContactCheckOutput::ContactTestResultData> InfoContactCheck::get_test_data(OperationContext& _ctx, long long _check_id, const std::string& _output_timezone) {

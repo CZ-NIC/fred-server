@@ -27,6 +27,8 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <vector>
 
+#include "util/printable.h"
+
 #include "src/fredlib/opexception.h"
 #include "src/fredlib/opcontext.h"
 #include "util/optional_value.h"
@@ -53,7 +55,7 @@ namespace Fred
     /**
      * Get list of existing record in contact_check table. Has no sideeffects.
      */
-    class ListContactChecks {
+    class ListContactChecks : public Util::Printable {
             unsigned long                    max_item_count_;
             Optional<std::string>            testsuite_handle_;
             Optional<unsigned long long>     contact_id_;
@@ -103,8 +105,7 @@ namespace Fred
              */
             std::vector<ListChecksItem> exec(OperationContext& _ctx, const std::string& _output_timezone = "Europe/Prague");
             // serialization
-            friend std::ostream& operator<<(std::ostream& _os, const ListContactChecks& _i);
-            std::string to_string() const;
+            virtual std::string to_string() const;
     };
 }
 #endif // #include guard end

@@ -24,6 +24,7 @@
 #include "src/fredlib/contact/verification/enum_test_status.h"
 
 #include <boost/algorithm/string/join.hpp>
+#include <boost/assign/list_of.hpp>
 
 namespace Fred
 {
@@ -149,19 +150,16 @@ namespace Fred
         }
     }
 
-    std::ostream& operator<<(std::ostream& os, const CreateContactTest& i) {
-        os << "#CreateContactTest"
-            << " check_handle_: "    << i.check_handle_
-            << " test_handle_: "       << i.test_handle_
-            << " logd_request_id_: " << i.logd_request_id_.print_quoted();
-
-        return os;
-    }
-
     std::string CreateContactTest::to_string() const {
-        std::stringstream ss;
-        ss << *this;
-        return ss.str();
+        using std::make_pair;
+
+        return Util::format_operation_state(
+            "CreateContactTest",
+            boost::assign::list_of
+                (make_pair("check_handle",      check_handle_ ))
+                (make_pair("test_handle",       test_handle_ ))
+                (make_pair("logd_request_id",   logd_request_id_.print_quoted() ))
+        );
     }
 
 } // namespace Fred

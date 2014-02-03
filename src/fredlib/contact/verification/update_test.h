@@ -24,6 +24,7 @@
 #ifndef CONTACT_VERIFICATION_UPDATE_TEST_51798341011_
 #define CONTACT_VERIFICATION_UPDATE_TEST_51798341011_
 
+#include "util/printable.h"
 #include "src/fredlib/opexception.h"
 #include "src/fredlib/opcontext.h"
 #include "util/db/nullable.h"
@@ -34,7 +35,7 @@ namespace Fred
     /**
      * Updates existing record in contact_test_result table. Has no sideeffects.
      */
-    class UpdateContactTest {
+    class UpdateContactTest : public Util::Printable {
             std::string           check_handle_;
             std::string           test_handle_;
             std::string           status_handle_;
@@ -87,10 +88,10 @@ namespace Fred
              */
             UpdateContactTest& set_error_msg (const std::string& _error_msg);
 
-            // exec and serialization
+            // exec
             void exec(OperationContext& _ctx);
-            friend std::ostream& operator<<(std::ostream& _os, const UpdateContactTest& _i);
-            std::string to_string() const;
+            // serialization
+            virtual std::string to_string() const;
     };
 }
 #endif // #include guard end
