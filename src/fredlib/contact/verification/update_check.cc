@@ -58,6 +58,8 @@ namespace Fred
     }
 
     void UpdateContactCheck::exec (OperationContext& _ctx) {
+        _ctx.get_log().debug("UpdateContactCheck exec() started");
+        _ctx.get_log().info(to_string());
 
         // using solo select for easy checking of existence (subselect would be strange)
         Database::Result status_res = _ctx.get_conn().exec_params(
@@ -110,6 +112,8 @@ namespace Fred
             // problem was elsewhere so let it propagate
             throw;
         }
+
+        _ctx.get_log().debug("UpdateContactCheck executed succesfully");
     }
 
     std::string UpdateContactCheck::to_string() const {

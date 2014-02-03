@@ -76,6 +76,9 @@ namespace Fred
 
     // exec and serialization
     std::vector<ListChecksItem> ListContactChecks::exec(OperationContext& _ctx, const std::string& _output_timezone) {
+        _ctx.get_log().debug("ListContactChecks exec() started");
+        _ctx.get_log().info(to_string());
+
         try {
             std::map<std::string, ListChecksItem> checks;
 
@@ -214,6 +217,8 @@ namespace Fred
             ) {
                 result.push_back(it->second);
             }
+
+            _ctx.get_log().debug("ListContactChecks executed succesfully");
 
             return result;
 

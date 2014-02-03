@@ -67,7 +67,10 @@ namespace Fred
     }
 
     std::string CreateContactCheck::exec(OperationContext& _ctx) {
-         Fred::OperationContext ctx_unique;
+        _ctx.get_log().debug("CreateContactCheck exec() started");
+        _ctx.get_log().info(to_string());
+
+        Fred::OperationContext ctx_unique;
         std::string unique_test_query =
                 "SELECT handle "
                 "   FROM contact_check "
@@ -148,6 +151,8 @@ namespace Fred
             // problem was elsewhere so let it propagate
             throw;
         }
+
+        _ctx.get_log().debug("CreateContactCheck executed succesfully");
 
         return handle;
     }
