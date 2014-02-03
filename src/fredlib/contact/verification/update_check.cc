@@ -24,6 +24,7 @@
 
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string/join.hpp>
+#include <boost/assign/list_of.hpp>
 
 namespace Fred
 {
@@ -57,6 +58,8 @@ namespace Fred
     }
 
     void UpdateContactCheck::exec (OperationContext& _ctx) {
+        _ctx.get_log().debug("UpdateContactCheck exec() started");
+        _ctx.get_log().info(to_string());
 
         // using solo select for easy checking of existence (subselect would be strange)
         Database::Result status_res = _ctx.get_conn().exec_params(
@@ -109,20 +112,19 @@ namespace Fred
             // problem was elsewhere so let it propagate
             throw;
         }
-    }
 
-    std::ostream& operator<<(std::ostream& os, const UpdateContactCheck& i) {
-        os << "#UpdateContactCheck "
-            << " check_handle_: "    << i.check_handle_
-            << " logd_request_id_: " << i.logd_request_id_.print_quoted()
-            << " status_handle_: "   << i.status_handle_;
-
-        return os;
+        _ctx.get_log().debug("UpdateContactCheck executed succesfully");
     }
 
     std::string UpdateContactCheck::to_string() const {
-        std::stringstream ss;
-        ss << *this;
-        return ss.str();
+        using std::make_pair;
+
+        return Util::format_operation_state(
+            "UpdateContactCheck",
+            boost::assign::list_of
+                (make_pair("check_handle",      check_handle_ ))
+                (make_pair("logd_request_id",   logd_request_id_.print_quoted() ))
+                (make_pair("status_handle",     status_handle_ ))
+        );
     }
 } // namespace Fred

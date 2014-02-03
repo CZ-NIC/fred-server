@@ -24,6 +24,8 @@
 #ifndef CONTACT_VERIFICATION_CREATE_TEST_51547658410_
 #define CONTACT_VERIFICATION_CREATE_TEST_51547658410_
 
+#include "util/printable.h"
+
 #include "src/fredlib/opexception.h"
 #include "src/fredlib/opcontext.h"
 #include "util/db/nullable.h"
@@ -34,8 +36,7 @@ namespace Fred
     /**
      * Creates new record in contact_test_resutl table with status @ref ContactTestStatus::RUNNING . Has no sideeffects.
      */
-    class CreateContactTest
-    {
+    class CreateContactTest : public Util::Printable {
         std::string         check_handle_;
         std::string         test_handle_;
         Nullable<long long> logd_request_id_;
@@ -84,8 +85,7 @@ namespace Fred
         // exec
         void exec(OperationContext& ctx);
         // serialization
-        friend std::ostream& operator<<(std::ostream& os, const CreateContactTest& i);
-        std::string to_string() const;
+        virtual std::string to_string() const;
     };
 }
 #endif // #include guard end

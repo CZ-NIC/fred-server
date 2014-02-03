@@ -24,6 +24,8 @@
 #ifndef CONTACT_VERIFICATION_LIST_ENUM_OBJECTS_378454221371_
 #define CONTACT_VERIFICATION_LIST_ENUM_OBJECTS_378454221371_
 
+#include "util/printable.h"
+
 #include <vector>
 #include <string>
 

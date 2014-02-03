@@ -25,6 +25,7 @@
 
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string/join.hpp>
+#include <boost/assign/list_of.hpp>
 #include <string>
 
 namespace Fred
@@ -102,6 +103,9 @@ namespace Fred
 
     // exec and serialization
     InfoContactCheckOutput InfoContactCheck::exec(OperationContext& _ctx, const std::string& _output_timezone) {
+        _ctx.get_log().debug("InfoContactCheck exec() started");
+        _ctx.get_log().info(to_string());
+
         try {
             InfoContactCheckOutput result;
 
@@ -161,6 +165,8 @@ namespace Fred
             temp_check_history_state.local_update_time = boost::posix_time::time_from_string(static_cast<std::string>( contact_check_data[0]["update_time_"]));
             result.check_state_history.push_back(temp_check_history_state);
 
+            _ctx.get_log().debug("InfoContactCheck executed succesfully");
+
             return result;
 
         } catch(ExceptionStack& ex) {
@@ -169,17 +175,14 @@ namespace Fred
         }
     }
 
-
-    std::ostream& operator<<(std::ostream& os, const InfoContactCheck& i) {
-        os << "#InfoContactCheck check_handle_: " << i.handle_;
-
-        return os;
-    }
-
     std::string InfoContactCheck::to_string() const {
-        std::stringstream ss;
-        ss << *this;
-        return ss.str();
+        using std::make_pair;
+
+        return Util::format_operation_state(
+            "InfoContactCheck",
+            boost::assign::list_of
+                (make_pair("check_handle",      handle_ ))
+        );
     }
 
     std::vector<InfoContactCheckOutput::ContactTestResultData> InfoContactCheck::get_test_data(OperationContext& _ctx, long long _check_id, const std::string& _output_timezone) {

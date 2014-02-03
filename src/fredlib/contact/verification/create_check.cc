@@ -27,7 +27,9 @@
 #include "src/fredlib/contact/verification/create_test.h"
 #include "src/fredlib/contact/verification/enum_check_status.h"
 
+#include <utility>
 #include <boost/assign/list_of.hpp>
+#include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string/join.hpp>
 #include <boost/uuid/uuid.hpp>            // uuid class
 #include <boost/uuid/uuid_generators.hpp> // generators
@@ -65,7 +67,10 @@ namespace Fred
     }
 
     std::string CreateContactCheck::exec(OperationContext& _ctx) {
-         Fred::OperationContext ctx_unique;
+        _ctx.get_log().debug("CreateContactCheck exec() started");
+        _ctx.get_log().info(to_string());
+
+        Fred::OperationContext ctx_unique;
         std::string unique_test_query =
                 "SELECT handle "
                 "   FROM contact_check "
@@ -147,22 +152,23 @@ namespace Fred
             throw;
         }
 
+        _ctx.get_log().debug("CreateContactCheck executed succesfully");
+
         return handle;
     }
 
-    std::ostream& operator<<(std::ostream& os, const CreateContactCheck& i) {
-        os << "#CreateContactCheck"
-            << " contact_id_: "         << i.contact_id_
-            << " testsuite_handle_: "     << i.testsuite_handle_
-            << " logd_request_id_: "    << i.logd_request_id_.print_quoted();
-
-        return os;
-    }
-
     std::string CreateContactCheck::to_string() const {
-        std::stringstream ss;
-        ss << *this;
-        return ss.str();
+        using std::string;
+        using std::make_pair;
+        using boost::lexical_cast;
+
+        return Util::format_operation_state(
+            "CreateContactCheck",
+            boost::assign::list_of
+                (make_pair("contact_id",        lexical_cast<string>(contact_id_) ))
+                (make_pair("testsuite_handle",  testsuite_handle_ ))
+                (make_pair("logd_request_id",   logd_request_id_.print_quoted() ))
+        );
     }
 
 } // namespace Fred

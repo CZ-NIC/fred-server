@@ -24,6 +24,8 @@
 #ifndef CONTACT_VERIFICATION_CREATE_CHECK_51537653410_
 #define CONTACT_VERIFICATION_CREATE_CHECK_51537653410_
 
+#include "util/printable.h"
+
 #include "src/fredlib/opexception.h"
 #include "src/fredlib/opcontext.h"
 #include "util/db/nullable.h"
@@ -35,7 +37,7 @@ namespace Fred
      * Creates:
      *  - new record in contact_check table with status @ref ContactCheckStatus::ENQUEUED
      */
-    class CreateContactCheck
+    class CreateContactCheck : public Util::Printable
     {
             long long           contact_id_;
             std::string         testsuite_handle_;
@@ -82,8 +84,7 @@ namespace Fred
              */
             std::string exec(OperationContext& ctx);
             // serialization
-            friend std::ostream& operator<<(std::ostream& os, const CreateContactCheck& i);
-            std::string to_string() const;
+            virtual std::string to_string() const;
     };
 }
 #endif // #include guard end
