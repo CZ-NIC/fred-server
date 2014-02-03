@@ -28,6 +28,10 @@
 
 namespace Fred
 {
+    /**
+     * @namespace ObjectState
+     * object state names string constants from db table enum_object_states.
+     */
     namespace ObjectState
     {//object state names from db table enum_object_states
         const std::string SERVER_DELETE_PROHIBITED = "serverDeleteProhibited";//id 1
