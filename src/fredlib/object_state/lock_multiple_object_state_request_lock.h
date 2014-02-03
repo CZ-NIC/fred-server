@@ -31,15 +31,31 @@
 
 namespace Fred
 {
-
+    /**
+    * Locks set of object states using object_state_request_lock table.
+    * Set of state database ids and database id of the object is set via constructor.
+    * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
+    * When exception is thrown, changes to database are considered inconsistent and should be rolled back by the caller.
+    * In case of insuperable failures and inconsistencies, the instance of @ref InternalError or other exception is thrown.
+    */
     class LockMultipleObjectStateRequestLock
     {
     public:
+        /**
+        * Locks set of object states using object_state_request_lock table constructor with mandatory parameters.
+        * @param _state_id sets set of database ids into @ref state_id_ attribute
+        * @param object_id sets database id of the object into @ref object_id_ attribute
+        */
         LockMultipleObjectStateRequestLock(const std::set<unsigned long long> &_state_id, unsigned long long _object_id);
+        /**
+        * Executes object states lock using object_state_request_lock table.
+        * @param ctx contains reference to database and logging interface
+        * @return true if object exists and have the states set, false if not
+        */
         void exec(OperationContext &_ctx);
     private:
-        const std::set<unsigned long long> state_id_;
-        const unsigned long long object_id_;
+        const std::set<unsigned long long> state_id_;/**< set of database ids of the states */
+        const unsigned long long object_id_;/**< database id of the object */
     };
 
 }//namespace Fred
