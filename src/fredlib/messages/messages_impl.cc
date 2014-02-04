@@ -526,7 +526,7 @@ unsigned long long Manager::copy_sms_to_send(unsigned long long sms_id)
                 "Messages::copy_sms_to_send "
                 " sms_id: %1%"
                 )
-                      % letter_id
+                      % sms_id
                       );
 
         Database::Connection conn = Database::Manager::acquire();
