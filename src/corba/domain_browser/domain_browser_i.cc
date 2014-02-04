@@ -270,20 +270,31 @@ namespace Registry
         {
             try
             {
+                Registry::DomainBrowserImpl::ContactDetail detail_impl
+                    = pimpl_->getContactDetail(contact.id, detail.id, lang);
+
                 ContactDetail_var contact_detail = new ContactDetail;
+                contact_detail->id = detail_impl.id;
+                contact_detail->handle = CORBA::string_dup(detail_impl.handle.c_str());
+                contact_detail->name = CORBA::string_dup(detail_impl.name.c_str());
+
                 return contact_detail._retn();
             }//try
-            catch (std::exception &_ex)
+            catch (const Registry::DomainBrowserImpl::ObjectNotExists& )
             {
                 throw Registry::DomainBrowser::OBJECT_NOT_EXISTS();
             }
-            catch (std::exception &_ex)
+            catch (const Registry::DomainBrowserImpl::UserNotExists& )
             {
                 throw Registry::DomainBrowser::USER_NOT_EXISTS();
             }
-            catch (std::exception &_ex)
+            catch (const boost::exception&)
             {
-                throw Registry::DomainBrowser::INCORRECT_USAGE();
+                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
+            }
+            catch (const std::exception&)
+            {
+                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
             }
             catch (...)
             {

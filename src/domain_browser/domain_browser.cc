@@ -136,6 +136,16 @@ namespace Registry
         }
 
 
+        ContactDetail getContactDetail(unsigned long long user_contact_id,
+                unsigned long long contact_id,
+                const std::string& lang)
+        {
+
+            ContactDetail detail;
+            return detail;
+        }
+
+
     }//namespace DomainBrowserImpl
 }//namespace Registry
 
