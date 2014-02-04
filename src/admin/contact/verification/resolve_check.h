@@ -26,6 +26,7 @@
 
 #include "util/db/nullable.h"
 #include "util/optional_value.h"
+#include "src/fredlib/opcontext.h"
 
 namespace Admin {
     /**
@@ -38,8 +39,13 @@ namespace Admin {
             std::string         status_handle_;
             Optional<long long> logd_request_id_;
 
-            void postprocess_automatic_check(const std::string& _check_handle);
-            void postprocess_manual_check(const std::string& _check_handle);
+            void postprocess_automatic_check(
+                Fred::OperationContext& _ctx,
+                const std::string& _check_handle);
+
+            void postprocess_manual_check(
+                Fred::OperationContext& _ctx,
+                const std::string& _check_handle);
 
         public:
 
@@ -55,7 +61,7 @@ namespace Admin {
 
             resolve_check& set_logd_request_id(Optional<long long> _logd_request_id);
 
-            void exec();
+            void exec(Fred::OperationContext& _ctx);
     };
 }
 

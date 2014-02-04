@@ -27,7 +27,7 @@
 #include <utility>
 
 #include "src/fredlib/contact/util.h"
-#include "src/fredlib/contact/verification/create_check.h"
+#include "src/admin/contact/verification/enqueue_check.h"
 #include "src/fredlib/contact/verification/update_check.h"
 #include "src/fredlib/contact/verification/info_check.h"
 #include "src/fredlib/contact/verification/list_checks.h"
@@ -245,22 +245,27 @@ namespace Registry
         }
 
         void Server_i::resolveContactCheckStatus(const char* check_handle, const char* status, ::CORBA::ULongLong logd_request_id){
+            Fred::OperationContext ctx;
+
             Admin::resolve_check(
                 Corba::unwrap_string(check_handle),
                 Corba::unwrap_string(status),
                 logd_request_id
-            ).exec();
+            ).exec(ctx);
+
+            ctx.commit_transaction();
         }
 
         char* Server_i::enqueueContactCheck(::CORBA::ULongLong contact_id, const char* testsuite_handle, ::CORBA::ULongLong logd_request_id){
             Fred::OperationContext ctx;
 
             std::string created_handle;
-            created_handle = Fred::CreateContactCheck(
+            created_handle = Admin::enqueue_check(
+                ctx,
                 contact_id,
                 Corba::unwrap_string(testsuite_handle),
                 logd_request_id
-            ).exec(ctx);
+            );
 
             ctx.commit_transaction();
 

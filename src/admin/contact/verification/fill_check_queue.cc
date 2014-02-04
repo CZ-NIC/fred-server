@@ -8,10 +8,10 @@
 
 #include "src/admin/contact/verification/fill_check_queue.h"
 #include "src/fredlib/opcontext.h"
-#include "src/fredlib/contact/verification/create_check.h"
 #include "src/fredlib/contact/verification/info_check.h"
 #include "src/fredlib/contact/verification/enum_testsuite_handle.h"
 #include "src/fredlib/contact/verification/enum_check_status.h"
+#include "src/admin/contact/verification/enqueue_check.h"
 
 namespace  Admin {
 namespace ContactVerificationQueue {
@@ -278,26 +278,27 @@ namespace ContactVerificationQueue {
 
         std::vector< boost::tuple<std::string, long long, long long> > result;
 
-        std::vector<long long> to_enqueue;
+        std::vector<long long> to_enqueue_never_checked;
         std::string temp_handle;
 
         if(checks_to_enqueue_count > 0) {
             result.reserve(checks_to_enqueue_count);
 
             // enqueuing never checked contacts with priority
-            to_enqueue = select_never_checked_contacts(
+            to_enqueue_never_checked = select_never_checked_contacts(
                 ctx1,
                 checks_to_enqueue_count,
                 testsuite_handle_,
                 filter_
             );
 
-            BOOST_FOREACH(long long contact_id, to_enqueue) {
-                temp_handle = Fred::CreateContactCheck(
+            BOOST_FOREACH(long long contact_id, to_enqueue_never_checked) {
+                temp_handle = enqueue_check(
+                    ctx1,
                     contact_id,
                     testsuite_handle_,
                     logd_request_id_
-                ).exec(ctx1);
+                );
 
                 Fred::InfoContactCheckOutput info = Fred::InfoContactCheck(temp_handle).exec(ctx1);
 
@@ -312,34 +313,43 @@ namespace ContactVerificationQueue {
 
             ctx1.commit_transaction();
 
-            checks_to_enqueue_count -= to_enqueue.size();
-            to_enqueue.empty();
+            checks_to_enqueue_count -= to_enqueue_never_checked.size();
         }
 
         if(checks_to_enqueue_count > 0) {
-            /* Filling the queue until it's full even if that means planning several consecutive runs of checks.
-             *
-             * Never checked contacts cannot be used for this as checks for those are all planned before these "repeated" checks
-             * and once those are gone the only non-empty set is contacts ready for repeated check.
-             */
+
+            std::vector<long long> to_enqueue_oldest_checked;
 
             Fred::OperationContext ctx2;
-            to_enqueue = select_oldest_checked_contacts(
+            to_enqueue_oldest_checked = select_oldest_checked_contacts(
                 ctx2,
                 checks_to_enqueue_count,
                 testsuite_handle_,
                 filter_
             );
 
-            if(to_enqueue.empty() == false) {
-                std::vector<long long>::iterator contact_id_it = to_enqueue.begin();
+            if(to_enqueue_oldest_checked.empty() == false) {
 
-                for(; checks_to_enqueue_count > 0; --checks_to_enqueue_count) {
-                    temp_handle = Fred::CreateContactCheck(
+                for(std::vector<long long>::const_iterator contact_id_it = to_enqueue_oldest_checked.begin();
+                    contact_id_it != to_enqueue_oldest_checked.end();
+                    ++contact_id_it
+                ) {
+                    // skip those checks which were enqueued as never checked
+                    if( std::find(
+                            to_enqueue_never_checked.begin(),
+                            to_enqueue_never_checked.end(),
+                            *contact_id_it
+                        ) != to_enqueue_never_checked.end()
+                    ) {
+                        continue;
+                    }
+
+                    temp_handle = enqueue_check(
+                        ctx2,
                         *contact_id_it,
                         testsuite_handle_,
                         logd_request_id_
-                    ).exec(ctx2);
+                    );
 
                     Fred::InfoContactCheckOutput info = Fred::InfoContactCheck(temp_handle).exec(ctx2);
 
@@ -350,11 +360,6 @@ namespace ContactVerificationQueue {
                             info.contact_history_id
                         )
                     );
-
-                    ++contact_id_it;
-                    if(contact_id_it == to_enqueue.end() ) {
-                        contact_id_it = to_enqueue.begin();
-                    }
                 }
                 ctx2.commit_transaction();
             }
