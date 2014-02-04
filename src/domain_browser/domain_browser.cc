@@ -31,6 +31,7 @@
 #include "src/fredlib/object_state/object_has_state.h"
 #include "src/fredlib/object_state/object_state_name.h"
 #include "src/fredlib/registrar/info_registrar.h"
+#include "src/fredlib/contact/info_contact.h"
 #include "domain_browser.h"
 
 namespace Registry
@@ -51,19 +52,29 @@ namespace Registry
         }
 
         RegistrarDetail DomainBrowser::getRegistrarDetail(
-            const std::string& user_contact_handle,
+            unsigned long long user_contact_id,
             const std::string& registrar_handle)
         {
             Fred::OperationContext ctx;
 
-            //check user_contact_handle
-            unsigned long long user_contact_id = get_object_id_by_handle_and_type_with_lock(
-                ctx,user_contact_handle,"contact",static_cast<UserNotExists*>(0),
-                &UserNotExists::set_unknown_contact_handle);
+            //check user_contact_id
+            try
+            {
+                Fred::InfoContactById(user_contact_id).set_lock(true).exec(ctx);
+            }
+            catch(const Fred::InfoContactById::Exception& ex)
+            {
+                if(ex.is_set_unknown_object_id())
+                {
+                    BOOST_THROW_EXCEPTION(UserNotExists());
+                }
+                else
+                    throw;
+            }
 
             if(!Fred::ObjectHasState(user_contact_id,Fred::ObjectState::MOJEID_CONTACT).exec(ctx))
             {
-                BOOST_THROW_EXCEPTION(UserNotExists().set_unknown_contact_handle(user_contact_handle));
+                BOOST_THROW_EXCEPTION(UserNotExists());
             }
 
             Fred::InfoRegistrarOutput registar_info;

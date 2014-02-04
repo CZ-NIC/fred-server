@@ -151,7 +151,8 @@ BOOST_FIXTURE_TEST_CASE(get_registrar_detail, get_registrar_fixture )
     Fred::OperationContext ctx;
     Fred::InfoRegistrarOutput registrar_info = Fred::InfoRegistrarByHandle(test_registrar_handle).exec(ctx);
     Registry::DomainBrowserImpl::DomainBrowser impl(server_name);
-    Registry::DomainBrowserImpl::RegistrarDetail rd = impl.getRegistrarDetail(user_contact_handle, test_registrar_handle);
+    Registry::DomainBrowserImpl::RegistrarDetail rd = impl.getRegistrarDetail(user_contact_info.info_contact_data.id,
+            test_registrar_handle);
 
     BOOST_CHECK(rd.id == registrar_info.info_registrar_data.id);
     BOOST_CHECK(rd.handle == registrar_info.info_registrar_data.handle);
@@ -177,13 +178,12 @@ BOOST_FIXTURE_TEST_CASE(get_registrar_detail_no_user, get_registrar_detail_no_us
         Fred::OperationContext ctx;
         Fred::InfoRegistrarOutput registrar_info = Fred::InfoRegistrarByHandle(test_registrar_handle).exec(ctx);
         Registry::DomainBrowserImpl::DomainBrowser impl(server_name);
-        Registry::DomainBrowserImpl::RegistrarDetail rd = impl.getRegistrarDetail(user_contact_handle, test_registrar_handle);
+        Registry::DomainBrowserImpl::RegistrarDetail rd = impl.getRegistrarDetail(0, test_registrar_handle);
         BOOST_ERROR("unreported mojeidContact state");
     }
     catch( const Registry::DomainBrowserImpl::UserNotExists& ex)
     {
-        BOOST_CHECK(ex.is_set_unknown_contact_handle());
-        BOOST_CHECK(ex.get_unknown_contact_handle() == user_contact_handle);
+        BOOST_CHECK(true);
         BOOST_MESSAGE(boost::diagnostic_information(ex));
     }
 }
@@ -205,13 +205,13 @@ BOOST_FIXTURE_TEST_CASE(get_registrar_detail_not_mojeid_user, get_registrar_deta
         Fred::OperationContext ctx;
         Fred::InfoRegistrarOutput registrar_info = Fred::InfoRegistrarByHandle(test_registrar_handle).exec(ctx);
         Registry::DomainBrowserImpl::DomainBrowser impl(server_name);
-        Registry::DomainBrowserImpl::RegistrarDetail rd = impl.getRegistrarDetail(user_contact_handle, test_registrar_handle);
+        Registry::DomainBrowserImpl::RegistrarDetail rd = impl.getRegistrarDetail(user_contact_info.info_contact_data.id,
+                test_registrar_handle);
         BOOST_ERROR("unreported mojeidContact state");
     }
     catch( const Registry::DomainBrowserImpl::UserNotExists& ex)
     {
-        BOOST_CHECK(ex.is_set_unknown_contact_handle());
-        BOOST_CHECK(ex.get_unknown_contact_handle() == user_contact_handle);
+        BOOST_CHECK(true);
         BOOST_MESSAGE(boost::diagnostic_information(ex));
     }
 }
