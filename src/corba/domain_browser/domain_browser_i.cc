@@ -276,7 +276,7 @@ namespace Registry
                 ContactDetail_var contact_detail = new ContactDetail;
                 contact_detail->id = detail_impl.id;
                 contact_detail->handle = CORBA::string_dup(detail_impl.handle.c_str());
-                contact_detail->name = CORBA::string_dup(detail_impl.name.c_str());
+                //contact_detail->name = CORBA::string_dup(detail_impl.name.get_value().c_str());
 
                 return contact_detail._retn();
             }//try
