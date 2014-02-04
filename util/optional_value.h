@@ -28,6 +28,7 @@
 #include <string>
 #include <sstream>
 
+#include "src/fredlib/opexception.h"
 #include "util/printable.h"
 
 namespace arbitrary_pair_ostream_support
@@ -77,14 +78,24 @@ public:
         return *this;
     }//assignment
 
-    T get_value() const
-    {
-        return value_;
-    }
-
     bool isset() const
     {
         return isset_;
+    }
+
+    T get_value() const
+    {
+        if (!isset())
+        {
+            BOOST_THROW_EXCEPTION(Fred::InternalError("value is not set"));
+        }
+
+        return value_;
+    }
+
+    T get_value_or_default() const
+    {
+        return value_;
     }
 
     friend std::ostream& operator<<(std::ostream& os, const Optional<T>& ov)
