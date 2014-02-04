@@ -28,7 +28,7 @@
 #include <string>
 #include <set>
 
-#include "src/fredlib/contact/verification/create_check.h"
+#include "util/optional_value.h"
 
 namespace Admin {
 namespace ContactVerificationQueue {

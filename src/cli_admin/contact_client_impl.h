@@ -43,7 +43,7 @@
 #include "src/admin/contact/merge_contact_reporting.h"
 #include "src/corba/logger_client_impl.h"
 #include "src/admin/contact/verification/fill_check_queue.h"
-#include "src/fredlib/contact/verification/create_check.h"
+#include "src/admin/contact/verification/enqueue_check.h"
 #include "src/admin/contact/verification/run_all_enqueued_checks.h"
 #include "src/admin/contact/verification/create_test_impl_prototypes.h"
 
@@ -350,8 +350,11 @@ struct contact_verification_enqueue_check_impl
       Fred::OperationContext ctx;
       std::string check_handle;
       try {
-          check_handle = Fred::CreateContactCheck(params.contact_id, params.testsuite_handle)
-              .exec(ctx);
+          check_handle = Admin::enqueue_check(
+              ctx,
+              params.contact_id,
+              params.testsuite_handle);
+
           ctx.commit_transaction();
       } catch (Fred::CreateContactCheck::ExceptionUnknownContactId& e) {
           throw ReturnCode(
