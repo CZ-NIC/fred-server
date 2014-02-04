@@ -385,7 +385,7 @@ namespace Registry
             try
             {
                 Registry::DomainBrowserImpl::RegistrarDetail detail_impl
-                    = pimpl_->getRegistrarDetail(contact.handle.in(), handle);
+                    = pimpl_->getRegistrarDetail(contact.id, handle);
 
                 RegistrarDetail_var registrar_detail = new RegistrarDetail;
                 registrar_detail->id = detail_impl.id;
