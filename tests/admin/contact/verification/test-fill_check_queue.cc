@@ -76,7 +76,7 @@ int get_queue_length() {
         "   FROM contact_check "
         "   WHERE enum_contact_check_status_id = "
         "       (SELECT id FROM enum_contact_check_status WHERE handle=$1::varchar);",
-        Database::query_param_list(Test::ENQUEUED) );
+        Database::query_param_list(Check::ENQUEUED) );
 
     if(res.size() != 1) {
         throw std::runtime_error("invalid query result");
@@ -208,22 +208,28 @@ parameter of fill_automatic_check_queue must correctly affect number of newly en
  */
 BOOST_AUTO_TEST_CASE(test_Max_queue_lenght_parameter)
 {
-    setup_contact contact;
+    for(int i=0; i<100; ++i) {
+        setup_contact contact;
+    }
+
     create_dummy_automatic_testsuite();
     T_enq_ch enqueued;
 
+    int queue_length = 0;
     enqueued = Admin::ContactVerificationQueue::fill_check_queue(Fred::TestsuiteHandle::AUTOMATIC, 10).exec();
-    BOOST_CHECK_EQUAL(get_queue_length(), 10);
+    // number of enqueued check is exact, if there some check resolved as ignored has no effect
     BOOST_CHECK_EQUAL(enqueued.size(), 10);
+    queue_length = get_queue_length();
+    BOOST_CHECK_MESSAGE(queue_length <= 10, "check queue too long");
 
     enqueued = Admin::ContactVerificationQueue::fill_check_queue(Fred::TestsuiteHandle::AUTOMATIC, 30).exec();
-    BOOST_CHECK_EQUAL(get_queue_length(), 30);
-    BOOST_CHECK_EQUAL(enqueued.size(), 20);
+    BOOST_CHECK_EQUAL(enqueued.size(), 30 - queue_length);
+    queue_length = get_queue_length();
+    BOOST_CHECK_MESSAGE(queue_length <= 30, "check queue too long");
 
     enqueued = Admin::ContactVerificationQueue::fill_check_queue(Fred::TestsuiteHandle::AUTOMATIC, 20).exec();
-    BOOST_CHECK_EQUAL(get_queue_length(), 30);
-    BOOST_CHECK_EQUAL(enqueued.size(), 0);
-
+    BOOST_CHECK_EQUAL(enqueued.size(), std::max(20 - queue_length, 0));
+    BOOST_CHECK_MESSAGE(get_queue_length() <= 30, "check queue too long");
 }
 
 /**
@@ -233,21 +239,23 @@ BOOST_AUTO_TEST_CASE(test_Max_queue_lenght_parameter)
  */
 BOOST_AUTO_TEST_CASE(test_Try_fill_full_queue)
 {
-    setup_contact contact;
+    for(int i=0; i<25; ++i) {
+        setup_contact contact;
+    }
+
     create_dummy_automatic_testsuite();
 
     T_enq_ch enqueued;
 
-    enqueued = Admin::ContactVerificationQueue::fill_check_queue(Fred::TestsuiteHandle::AUTOMATIC, 101).exec();
-    BOOST_CHECK_EQUAL(enqueued.size(), 101);
+    int queue_length = 0;
+    enqueued = Admin::ContactVerificationQueue::fill_check_queue(Fred::TestsuiteHandle::AUTOMATIC, 20).exec();
+    BOOST_CHECK_EQUAL(enqueued.size(), 20);
+    queue_length = get_queue_length();
+    BOOST_CHECK_MESSAGE(queue_length <= 20, "check queue too long");
 
-    enqueued = Admin::ContactVerificationQueue::fill_check_queue(Fred::TestsuiteHandle::AUTOMATIC, 101).exec();
-    BOOST_CHECK_EQUAL(get_queue_length(), 101);
-    BOOST_CHECK_EQUAL(enqueued.size(), 0);
-
-    enqueued = Admin::ContactVerificationQueue::fill_check_queue(Fred::TestsuiteHandle::AUTOMATIC, 101).exec();
-    BOOST_CHECK_EQUAL(get_queue_length(), 101);
-    BOOST_CHECK_EQUAL(enqueued.size(), 0);
+    enqueued = Admin::ContactVerificationQueue::fill_check_queue(Fred::TestsuiteHandle::AUTOMATIC, 11).exec();
+    BOOST_CHECK_MESSAGE(get_queue_length() <= 20, "check queue too long");
+    BOOST_CHECK_EQUAL(enqueued.size(), std::max(11 - queue_length, 0));
 }
 
 /**
