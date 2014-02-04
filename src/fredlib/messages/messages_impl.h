@@ -185,6 +185,9 @@ public:
     //copy message for later send
     unsigned long long copy_letter_to_send(unsigned long long letter_id);
 
+    //copy sms for later send
+    unsigned long long copy_sms_to_send(unsigned long long sms_id);
+
     //load saved letters
     LetterProcInfo load_letters_to_send(std::size_t batch_size_limit
             , const std::string &comm_type, std::size_t max_attempts_limit);

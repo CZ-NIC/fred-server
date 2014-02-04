@@ -137,6 +137,9 @@ public:
   /// znovu odešle dopis s PIN3
   ccReg::TID resendPin3Letter(ccReg::TID publicRequestId);
 
+  /// znovu odešle SMS s PIN2
+  ccReg::TID resendPin2SMS(ccReg::TID publicRequestId);
+
   ::CORBA::ULongLong countEnumDomainsByRegistrant(const char* name, ::CORBA::Boolean by_person, ::CORBA::Boolean by_org);
   ccReg::EnumDictList* getEnumDomainsByRegistrant(const char* name, ::CORBA::Boolean by_person, ::CORBA::Boolean by_org, ::CORBA::Long offset, ::CORBA::Long limit);
   ccReg::EnumDictList* getEnumDomainsRecentEntries(::CORBA::Long count);

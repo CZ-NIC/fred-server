@@ -518,6 +518,102 @@ unsigned long long Manager::copy_letter_to_send(unsigned long long letter_id)
     }
 }
 
+unsigned long long Manager::copy_sms_to_send(unsigned long long sms_id)
+{
+    try
+    {
+        LOGGER(PACKAGE).debug(boost::format(
+                "Messages::copy_sms_to_send "
+                " sms_id: %1%"
+                )
+                      % letter_id
+                      );
+
+        Database::Connection conn = Database::Manager::acquire();
+        Database::Transaction tx(conn);
+
+        Database::Result res = conn.exec_params(
+                "INSERT INTO message_archive "
+                       "(crdate,"
+                        "moddate,"
+                        "attempt,"
+                        "status_id,"
+                        "comm_type_id,"
+                        "message_type_id) "
+                 "SELECT CURRENT_TIMESTAMP,"
+                        "NULL,"
+                        "0,"
+                        "(SELECT id FROM enum_send_status WHERE status_name='ready'),"
+                        "ma.comm_type_id,"
+                        "ma.message_type_id "
+                 "FROM message_archive ma "
+                 "JOIN sms_archive sa ON sa.id=ma.id "
+                 "WHERE sa.id=$1::bigint "
+                "RETURNING id",
+                Database::query_param_list(sms_id));
+        if (res.size() <= 0) {
+            throw std::runtime_error((boost::format("sms_id: %1% not found") % sms_id).str());
+        }
+        const unsigned long long message_archive_id = static_cast< unsigned long long >(res[0][0]);
+
+        res = conn.exec_params(
+                "INSERT INTO message_contact_history_map "
+                 "(contact_object_registry_id,"
+                  "contact_history_historyid,"
+                  "message_archive_id"
+                 ") "
+                 "SELECT "
+                  "contact_object_registry_id,"
+                  "contact_history_historyid,"
+                  "$1::bigint "
+                 "FROM message_contact_history_map "
+                 "WHERE message_archive_id=$2::bigint "
+                "RETURNING id",
+                Database::query_param_list(message_archive_id)(sms_id)
+                );
+        if (res.size() <= 0) {
+            throw std::runtime_error((boost::format(
+                "sms_id: %1% not found in message_contact_history_map") % sms_id).str());
+        }
+
+        res = conn.exec_params(
+                "INSERT INTO sms_archive "
+                 "(id,"
+                  "phone_number,"
+                  "phone_number_id,"
+                  "content"
+                 ") "
+                 "SELECT "
+                  "$1::bigint,"//new sms_id
+                  "phone_number,"
+                  "phone_number_id,"
+                  "content "
+                 "FROM sms_archive "
+                 "WHERE id=$2::bigint "//source sms_id
+                "RETURNING id",
+                Database::query_param_list(message_archive_id)(sms_id)
+                );
+        if (res.size() <= 0) {
+            throw std::runtime_error((boost::format(
+                "sms_id: %1% not found in sms_archive") % sms_id).str());
+        }
+
+        tx.commit();
+        return message_archive_id;
+    }//try
+    catch(const std::exception& ex)
+    {
+        LOGGER(PACKAGE).error(boost::format(
+                "Messages::copy_sms_to_send exception: %1%") % ex.what());
+        throw;
+    }
+    catch(...)
+    {
+        LOGGER(PACKAGE).error("Messages::copy_sms_to_send error");
+        throw;
+    }
+}
+
 LetterProcInfo Manager::load_letters_to_send(std::size_t batch_size_limit
         , const std::string &comm_type, std::size_t max_attempts_limit)
 {
