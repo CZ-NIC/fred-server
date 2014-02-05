@@ -82,8 +82,8 @@ namespace Fred
         _ctx.get_log().debug(std::string(
             "CreateObjectStateRequestId::exec object id: ") + boost::lexical_cast< std::string >(object_id_)
             + " object state name: " + object_state_names
-            + " valid from: " + boost::posix_time::to_iso_string(valid_from_.get_value())
-            + " valid to: " + boost::posix_time::to_iso_string(valid_to_.get_value()));
+            + " valid from: " + boost::posix_time::to_iso_string(valid_from_.get_value_or_default())
+            + " valid to: " + boost::posix_time::to_iso_string(valid_to_.get_value_or_default()));
 
         //check time
         if (valid_to_.isset()) {
