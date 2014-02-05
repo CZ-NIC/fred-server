@@ -102,14 +102,14 @@ namespace Fred
                 BOOST_THROW_EXCEPTION(Exception().set_invalid_object_handle(handle_));
             }
 
-            if(authinfo_.get_value().empty())
+            if(authinfo_.get_value_or_default().empty())
             {
                 authinfo_ = RandomDataGenerator().xnstring(8);//former PASS_LEN
             }
 
             ctx.get_conn().exec_params("INSERT INTO object(id, clid, authinfopw) VALUES ($1::bigint "//object id from create_object
                     " , $2::integer, $3::text)"
-                    , Database::query_param_list(output.object_id)(registrar_id)(authinfo_));
+                    , Database::query_param_list(output.object_id)(registrar_id)(authinfo_.get_value()));
 
             output.history_id = Fred::InsertHistory(logd_request_id_, output.object_id).exec(ctx);
 
