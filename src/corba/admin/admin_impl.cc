@@ -996,7 +996,7 @@ ccReg::TID ccReg_Admin_i::resendPin2SMS(ccReg::TID publicRequestId)
         );
         if (res.size() <= 0) {
             LOGGER(PACKAGE).error(boost::format("publicRequestId: %1% not found") % publicRequestId);
-            throw ccReg::Admin::OBJECT_NOT_FOUND();
+            throw ccReg::Admin::ObjectNotFound();
         }
         const std::string typeOfRequest = static_cast< std::string >(res[0][0]);
         if ((typeOfRequest != "mojeid_contact_conditional_identification") &&
@@ -1004,7 +1004,7 @@ ccReg::TID ccReg_Admin_i::resendPin2SMS(ccReg::TID publicRequestId)
             LOGGER(PACKAGE).error(boost::format("publicRequestId: %1% of %2% type is not PIN2 request")
                 % publicRequestId
                 % typeOfRequest);
-            throw ccReg::Admin::SQL_ERROR();
+            throw ccReg::Admin::ObjectNotFound();
         }
         const std::string requestStatus = static_cast< std::string >(res[0][1]);
         if (requestStatus != "new") {
@@ -1012,24 +1012,24 @@ ccReg::TID ccReg_Admin_i::resendPin2SMS(ccReg::TID publicRequestId)
                 boost::format("publicRequestId: %1% in %2% state is not new PIN2 request")
                 % publicRequestId
                 % requestStatus);
-            throw ccReg::Admin::SQL_ERROR();
+            throw ccReg::Admin::ObjectNotFound();
         }
         if (static_cast< bool >(res[0][2])) {
             LOGGER(PACKAGE).error(boost::format("publicRequestId: %1% doesn't have message")
                 % publicRequestId);
-            throw ccReg::Admin::SQL_ERROR();
+            throw ccReg::Admin::ObjectNotFound();
         }
         if (res[0][3].isnull()) {
             LOGGER(PACKAGE).error(
                 boost::format("publicRequestId: %1% doesn't have message_archive_id")
                 % publicRequestId);
-            throw ccReg::Admin::SQL_ERROR();
+            throw ccReg::Admin::ObjectNotFound();
         }
         if (res[0][4].isnull()) {
             LOGGER(PACKAGE).error(
                 boost::format("message_archive_id: %1% doesn't exists")
                 % static_cast< ccReg::TID >(res[0][3]));
-            throw ccReg::Admin::SQL_ERROR();
+            throw ccReg::Admin::ObjectNotFound();
         }
         const ccReg::TID smsId = static_cast< ccReg::TID >(res[0][4]);
         Fred::Messages::ManagerPtr msgMan = Fred::Messages::create_manager();
@@ -1043,22 +1043,32 @@ ccReg::TID ccReg_Admin_i::resendPin2SMS(ccReg::TID publicRequestId)
         tx.commit();
         return newSmsId;
     }
-    catch (ccReg::Admin::OBJECT_NOT_FOUND&) {
+    catch (ccReg::Admin::ObjectNotFound&) {
         throw;
     }
-    catch (ccReg::Admin::SQL_ERROR&) {
+    catch (ccReg::Admin::InternalServerError&) {
         throw;
+    }
+    catch (ccReg::Admin::OBJECT_NOT_FOUND&) {
+        throw ccReg::Admin::ObjectNotFound();
+    }
+    catch (ccReg::Admin::SQL_ERROR&) {
+        throw ccReg::Admin::InternalServerError();
+    }
+    catch (Database::NoDataFound &ex) {
+        LOGGER(PACKAGE).error(boost::format("Database::NoDataFound: %1%") % ex.what());
+        throw ccReg::Admin::ObjectNotFound();
     }
     catch (Database::Exception &ex) {
         LOGGER(PACKAGE).error(boost::format("Database problem: %1%") % ex.what());
-        throw ccReg::Admin::SQL_ERROR();
+        throw ccReg::Admin::InternalServerError();
     }
     catch (std::exception &ex) {
         LOGGER(PACKAGE).error(boost::format("Internal error: %1%") % ex.what());
-        throw ccReg::Admin::SQL_ERROR();
+        throw ccReg::Admin::InternalServerError();
     }
     catch (...) {
-        throw ccReg::Admin::SQL_ERROR();
+        throw ccReg::Admin::InternalServerError();
     }
 }
 
