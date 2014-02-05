@@ -27,8 +27,8 @@
 #include <utility>
 #include <string>
 #include <sstream>
+#include <stdexcept>
 
-#include "src/fredlib/opexception.h"
 #include "util/printable.h"
 
 namespace arbitrary_pair_ostream_support
@@ -87,7 +87,7 @@ public:
     {
         if (!isset())
         {
-            BOOST_THROW_EXCEPTION(Fred::InternalError("value is not set"));
+            throw std::logic_error("value is not set");
         }
 
         return value_;

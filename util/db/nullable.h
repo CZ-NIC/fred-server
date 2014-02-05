@@ -1,7 +1,7 @@
 #ifndef NULLABLE_H_
 #define NULLABLE_H_
 
-#include "src/fredlib/opexception.h"
+#include <stdexcept>
 #include "db/query_param.h"
 #include "db/value.h"
 
@@ -40,7 +40,7 @@ public:
     {
         if (isnull())
         {
-            BOOST_THROW_EXCEPTION(Fred::InternalError("value is null"));
+            throw std::logic_error("value is null");
         }
 
         return value_;
