@@ -82,7 +82,7 @@ public:
     std::string print_quoted() const
     {
         std::stringstream ss;
-        ss << (*this);
+        if(!isnull()) ss << (*this);
         return isnull() ? std::string("[NULL]") : std::string("'") + ss.str() + "'";
     }
 };
