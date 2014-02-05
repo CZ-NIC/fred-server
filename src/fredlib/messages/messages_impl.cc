@@ -441,7 +441,7 @@ unsigned long long Manager::copy_letter_to_send(unsigned long long letter_id)
                 "RETURNING id",
                 Database::query_param_list(letter_id));
         if (res.size() <= 0) {
-            throw std::runtime_error((boost::format("letter_id: %1% not found") % letter_id).str());
+            throw Database::NoDataFound("not found");
         }
         const unsigned long long message_archive_id = static_cast< unsigned long long >(res[0][0]);
 
@@ -461,8 +461,7 @@ unsigned long long Manager::copy_letter_to_send(unsigned long long letter_id)
                 Database::query_param_list(message_archive_id)(letter_id)
                 );
         if (res.size() <= 0) {
-            throw std::runtime_error((boost::format(
-                "letter_id: %1% not found in message_contact_history_map") % letter_id).str());
+            throw Database::NoDataFound("not found in message_contact_history_map");
         }
 
         res = conn.exec_params(
@@ -498,22 +497,36 @@ unsigned long long Manager::copy_letter_to_send(unsigned long long letter_id)
                 Database::query_param_list(message_archive_id)(letter_id)
                 );
         if (res.size() <= 0) {
-            throw std::runtime_error((boost::format(
-                "letter_id: %1% not found in letter_archive") % letter_id).str());
+            throw Database::NoDataFound("not found in letter_archive");
         }
 
         tx.commit();
         return message_archive_id;
     }//try
-    catch(const std::exception& ex)
-    {
+    catch (const Database::NoDataFound &ex) {
         LOGGER(PACKAGE).error(boost::format(
-                "Messages::copy_letter_to_send exception: %1%") % ex.what());
+            "Messages::copy_letter_to_send(letter_id:%1%) Database::NoDataFound(%2%)")
+            % letter_id
+            % ex.what());
         throw;
     }
-    catch(...)
-    {
-        LOGGER(PACKAGE).error("Messages::copy_letter_to_send error");
+    catch (const Database::Exception &ex) {
+        LOGGER(PACKAGE).error(boost::format(
+            "Messages::copy_letter_to_send(letter_id:%1%) Database::Exception(%2%)")
+            % letter_id
+            % ex.what());
+        throw;
+    }
+    catch(const std::exception &ex) {
+        LOGGER(PACKAGE).error(boost::format(
+            "Messages::copy_letter_to_send(letter_id:%1%) std::exception(%2%)")
+            % letter_id
+            % ex.what());
+        throw;
+    }
+    catch(...) {
+        LOGGER(PACKAGE).error(boost::format(
+            "Messages::copy_letter_to_send(letter_id:%1%) error") % letter_id);
         throw;
     }
 }
