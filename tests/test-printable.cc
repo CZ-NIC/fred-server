@@ -471,7 +471,7 @@ BOOST_AUTO_TEST_CASE(create_nsset)
 BOOST_AUTO_TEST_CASE(delete_nsset)
 {
     printable_test(
-    Fred::DeleteNsset("TEST-DEL-NSSET-HANDLE")
+    Fred::DeleteNssetByHandle("TEST-DEL-NSSET-HANDLE")
     );
 }
 
