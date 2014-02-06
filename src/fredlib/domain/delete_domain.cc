@@ -68,7 +68,7 @@ namespace Fred
                 BOOST_THROW_EXCEPTION(Fred::InternalError("delete domain failed"));
             }
 
-            Fred::DeleteObject(no_root_dot_fqdn,"domain").exec(ctx);
+            Fred::DeleteObjectByHandle(no_root_dot_fqdn,"domain").exec(ctx);
 
         }//try
         catch(ExceptionStack& ex)

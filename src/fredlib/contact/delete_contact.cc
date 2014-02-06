@@ -68,7 +68,7 @@ namespace Fred
                 BOOST_THROW_EXCEPTION(Fred::InternalError("delete contact failed"));
             }
 
-            Fred::DeleteObject(handle_,"contact").exec(ctx);
+            Fred::DeleteObjectByHandle(handle_,"contact").exec(ctx);
         }//try
         catch(ExceptionStack& ex)
         {

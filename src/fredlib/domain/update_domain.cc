@@ -263,7 +263,7 @@ namespace Fred
                 else
                 {
                     //lock nsset object_registry row for update and get id
-                    unsigned long long nsset_id = get_object_id_by_handle_and_type_with_lock(
+                    unsigned long long nsset_id = lock_object_by_handle_and_type(
                             ctx,new_nsset_value,"nsset",&update_domain_exception,
                             &Exception::set_unknown_nsset_handle);
 
@@ -283,7 +283,7 @@ namespace Fred
                 else
                 {
                     //lock keyset object_registry row for update and get id
-                    unsigned long long keyset_id = get_object_id_by_handle_and_type_with_lock(
+                    unsigned long long keyset_id = lock_object_by_handle_and_type(
                             ctx,new_keyset_value,"keyset",&update_domain_exception,
                             &Exception::set_unknown_keyset_handle);
 
@@ -296,7 +296,7 @@ namespace Fred
             if(registrant_.isset())//change registrant
             {
                 //lock object_registry row for update
-                unsigned long long registrant_id = get_object_id_by_handle_and_type_with_lock(
+                unsigned long long registrant_id = lock_object_by_handle_and_type(
                         ctx,registrant_.get_value(),"contact",&update_domain_exception,
                         &Exception::set_unknown_registrant_handle);
 
@@ -345,7 +345,7 @@ namespace Fred
             {
                 //lock object_registry row for update and get id
 
-                unsigned long long admin_contact_id = get_object_id_by_handle_and_type_with_lock(
+                unsigned long long admin_contact_id = lock_object_by_handle_and_type(
                         ctx,*i,"contact",&update_domain_exception,
                         &Exception::add_unknown_admin_contact_handle);
                 if(admin_contact_id == 0) continue;
@@ -390,7 +390,7 @@ namespace Fred
             {
                 //lock object_registry row for update and get id
 
-                unsigned long long admin_contact_id = get_object_id_by_handle_and_type_with_lock(
+                unsigned long long admin_contact_id = lock_object_by_handle_and_type(
                         ctx,*i,"contact",&update_domain_exception,
                         &Exception::add_unknown_admin_contact_handle);
                 if(admin_contact_id == 0) continue;

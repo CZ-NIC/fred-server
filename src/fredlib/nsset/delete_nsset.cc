@@ -78,7 +78,7 @@ namespace Fred
                 BOOST_THROW_EXCEPTION(Fred::InternalError("delete nsset failed"));
             }
 
-            Fred::DeleteObject(handle_,"nsset").exec(ctx);
+            Fred::DeleteObjectByHandle(handle_,"nsset").exec(ctx);
         }//try
         catch(ExceptionStack& ex)
         {

@@ -77,7 +77,7 @@ namespace Fred
                 BOOST_THROW_EXCEPTION(Fred::InternalError("delete keyset failed"));
             }
 
-            Fred::DeleteObject(handle_,"keyset").exec(ctx);
+            Fred::DeleteObjectByHandle(handle_,"keyset").exec(ctx);
         }//try
         catch(ExceptionStack& ex)
         {
