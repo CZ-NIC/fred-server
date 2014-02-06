@@ -130,7 +130,7 @@ BOOST_AUTO_TEST_CASE(create_contact)
 BOOST_AUTO_TEST_CASE(delete_contact)
 {
     printable_test(
-    Fred::DeleteContact("TEST-DELETE-CONTACT-HANDLE")
+    Fred::DeleteContactByHandle("TEST-DELETE-CONTACT-HANDLE")
     );
 }
 
