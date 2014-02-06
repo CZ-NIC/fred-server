@@ -762,6 +762,10 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/domain/info_domain_diff.cc \
 		src/fredlib/domain/info_domain.h \
 		src/fredlib/domain/info_domain.cc \
+		src/fredlib/domain/info_domain_impl.cc \
+		src/fredlib/domain/info_domain_impl.h \
+		src/fredlib/domain/info_domain_output.cc \
+		src/fredlib/domain/info_domain_output.h \
 		src/fredlib/domain/enum_validation_extension.h \
 		src/fredlib/nsset/update_nsset.h \
 		src/fredlib/nsset/update_nsset.cc \
@@ -771,6 +775,10 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/nsset/info_nsset_data.cc \
 		src/fredlib/nsset/info_nsset_diff.h \
 		src/fredlib/nsset/info_nsset_diff.cc \
+		src/fredlib/nsset/info_nsset_impl.cc \
+		src/fredlib/nsset/info_nsset_impl.h \
+		src/fredlib/nsset/info_nsset_output.cc \
+		src/fredlib/nsset/info_nsset_output.h \
 		src/fredlib/keyset/update_keyset.h \
 		src/fredlib/keyset/keyset_dns_key.h \
 		src/fredlib/keyset/update_keyset.cc \
@@ -782,6 +790,10 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/keyset/info_keyset_diff.cc \
 		src/fredlib/keyset/info_keyset.h \
 		src/fredlib/keyset/info_keyset.cc \
+		src/fredlib/keyset/info_keyset_impl.cc \
+		src/fredlib/keyset/info_keyset_impl.h \
+		src/fredlib/keyset/info_keyset_output.cc \
+		src/fredlib/keyset/info_keyset_output.h \
 		src/fredlib/contact/delete_contact.h \
 		src/fredlib/contact/delete_contact.cc \
 		src/fredlib/contact/info_contact_data.h \
@@ -790,6 +802,10 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/contact/info_contact_diff.cc \
 		src/fredlib/contact/info_contact.h \
 		src/fredlib/contact/info_contact.cc \
+		src/fredlib/contact/info_contact_impl.cc \
+		src/fredlib/contact/info_contact_impl.h \
+		src/fredlib/contact/info_contact_output.cc \
+		src/fredlib/contact/info_contact_output.h \
 		src/fredlib/object/object.h \
 		src/fredlib/object/object.cc \
 		src/fredlib/poll/create_poll_message.h \

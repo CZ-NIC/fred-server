@@ -124,7 +124,7 @@ BOOST_FIXTURE_TEST_CASE(delete_contact, test_contact_fixture )
     Fred::InfoContactOutput contact_info1 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
     BOOST_CHECK(contact_info1.info_contact_data.delete_time.isnull());
 
-    Fred::DeleteContact(test_contact_handle).exec(ctx);
+    Fred::DeleteContactByHandle(test_contact_handle).exec(ctx);
     ctx.commit_transaction();
 
     std::vector<Fred::InfoContactOutput> contact_history_info1 = Fred::InfoContactHistory(
@@ -160,10 +160,10 @@ BOOST_FIXTURE_TEST_CASE(delete_contact_with_wrong_handle, test_contact_fixture )
     try
     {
         Fred::OperationContext ctx;//new connection to rollback on error
-        Fred::DeleteContact(bad_test_contact_handle).exec(ctx);
+        Fred::DeleteContactByHandle(bad_test_contact_handle).exec(ctx);
         ctx.commit_transaction();
     }
-    catch(const Fred::DeleteContact::Exception& ex)
+    catch(const Fred::DeleteContactByHandle::Exception& ex)
     {
         BOOST_CHECK(ex.is_set_unknown_contact_handle());
         BOOST_CHECK(ex.get_unknown_contact_handle().compare(bad_test_contact_handle) == 0);
@@ -193,10 +193,10 @@ BOOST_FIXTURE_TEST_CASE(delete_linked_contact, test_contact_fixture )
     try
     {
         Fred::OperationContext ctx;//new connection to rollback on error
-        Fred::DeleteContact(test_contact_handle).exec(ctx);
+        Fred::DeleteContactByHandle(test_contact_handle).exec(ctx);
         ctx.commit_transaction();
     }
-    catch(const Fred::DeleteContact::Exception& ex)
+    catch(const Fred::DeleteContactByHandle::Exception& ex)
     {
         BOOST_CHECK(ex.is_set_object_linked_to_contact_handle());
         BOOST_CHECK(ex.get_object_linked_to_contact_handle().compare(test_contact_handle) == 0);

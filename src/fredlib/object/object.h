@@ -157,56 +157,123 @@ namespace Fred
     * , or set unknown object handle or fqdn into given external exception instance and return 0
     * , or throw InternalError or some other exception in case of failure.
     */
-    template <class EXCEPTION, typename EXCEPTION_OBJECT_HANDLE_SETTER>
-    unsigned long long get_object_id_by_handle_and_type_with_lock(OperationContext& ctx
-            , const std::string& object_handle, const std::string& object_type
-            , EXCEPTION* ex_ptr, EXCEPTION_OBJECT_HANDLE_SETTER ex_handle_setter)
-    {
+    template <class EXCEPTION, typename EXCEPTION_HANDLE_SETTER>
+        unsigned long long lock_object_by_handle_and_type(
+            OperationContext& ctx,
+            const std::string& object_handle, const std::string& object_type,
+            EXCEPTION* ex_ptr, EXCEPTION_HANDLE_SETTER ex_handle_setter
+    ) {
         get_object_type_id(ctx, object_type);
 
         Database::Result object_id_res = ctx.get_conn().exec_params(
-        "SELECT oreg.id FROM object_registry oreg "
-        " JOIN enum_object_type eot ON eot.id = oreg.type AND eot.name = $2::text "
-        " WHERE oreg.name = CASE WHEN $2::text = 'domain'::text THEN LOWER($1::text) "
-        " ELSE UPPER($1::text) END AND oreg.erdate IS NULL "
-        " FOR UPDATE OF oreg"
-        , Database::query_param_list(object_handle)(object_type));
+            "SELECT oreg.id AS id_ "
+            "   FROM object_registry oreg "
+            "   JOIN enum_object_type eot ON eot.id = oreg.type AND eot.name = $2::text "
+            "   WHERE oreg.name = "
+            "       CASE "
+            "           WHEN $2::text = 'domain'::text THEN LOWER($1::text) "
+            "           ELSE UPPER($1::text) END AND oreg.erdate IS NULL "
+            "   FOR UPDATE OF oreg",
+            Database::query_param_list(object_handle)(object_type));
 
-        if(object_id_res.size() == 0)
-        {
-            if(ex_ptr == 0)//make new exception instance, set data and throw
-            {
+        if(object_id_res.size() == 0) {
+            //make new exception instance, set data and throw
+            if(ex_ptr == 0) {
                 BOOST_THROW_EXCEPTION((EXCEPTION().*ex_handle_setter)(object_handle));
-            }
-            else//set unknown handle to given exception instance (don't throw) and return 0
-            {
+            } else {
+                //set unknown handle to given exception instance (don't throw) and return 0
                 (ex_ptr->*ex_handle_setter)(object_handle);
+
                 return 0;
             }
+        } else if (object_id_res.size() != 1) {
+            BOOST_THROW_EXCEPTION(InternalError("failed to get object id"));
         }
-        if (object_id_res.size() != 1)
-        {
-            BOOST_THROW_EXCEPTION(InternalError("failed to get object handle"));
-        }
-        return  static_cast<unsigned long long> (object_id_res[0][0]);
+
+        return static_cast<unsigned long long> (object_id_res[0]["id_"]);
     }
 
-    class DeleteObject : public virtual Util::Printable
+    /**
+    * Locks object for update.
+    * @param EXCEPTION is type of exception used for reporting when object is not found, deducible from type of @ref ex_ptr parameter
+    * @param EXCEPTION_OBJECT_HANDLE_SETTER is EXCEPTION member function pointer used to report unknown object handle
+    * @param ctx contains reference to database and logging interface
+    * @param object_id is id to look for
+    * @param ex_ptr is  pointer to given exception instance to be set (don't throw except for object_type), if ex_ptr is 0, new exception instance is created, set and thrown
+    * @param ex_handle_setter is EXCEPTION member function pointer used to report unknown object handle
+    * @return database id of the object
+    * , or throw @ref EXCEPTION if object id was not found and external exception instance was not provided
+    * , or set unknown object id into given external exception instance and return 0
+    * , or throw InternalError or some other exception in case of failure.
+    */
+    template <class EXCEPTION, typename EXCEPTION_HANDLE_SETTER>
+        unsigned long long lock_object_by_id(
+            OperationContext& ctx,
+            unsigned long long object_id,
+            EXCEPTION* ex_ptr, EXCEPTION_HANDLE_SETTER ex_handle_setter
+    ) {
+        Database::Result locked_res = ctx.get_conn().exec_params(
+            "SELECT oreg.id AS id_ "
+            "   FROM object_registry AS oreg "
+            "   WHERE oreg.id = $1::integer "
+            "   FOR UPDATE OF oreg",
+            Database::query_param_list(object_id)
+        );
+
+        if(locked_res.size() == 0) {
+            //make new exception instance, set data and throw
+            if(ex_ptr == 0) {
+                BOOST_THROW_EXCEPTION((EXCEPTION().*ex_handle_setter)(object_id));
+            } else {
+                //set unknown handle to given exception instance (don't throw) and return 0
+                (ex_ptr->*ex_handle_setter)(object_id);
+
+                return 0;
+            }
+        } else if (locked_res.size() != 1) {
+            BOOST_THROW_EXCEPTION(InternalError("failed to lock object"));
+        }
+
+        return static_cast<unsigned long long> (locked_res[0]["id_"]);
+    }
+
+    bool is_object_linked(OperationContext& _ctx, unsigned long long _id);
+
+    class DeleteObjectByHandle : public virtual Util::Printable
     {
-        const std::string handle_;//object identifier
-        const std::string obj_type_;//object type name
+        const std::string handle_;      //object handle
+        const std::string obj_type_;    //object type name
     public:
         DECLARE_EXCEPTION_DATA(unknown_object_handle, std::string);
         struct Exception
-        : virtual Fred::OperationException
-        , ExceptionData_unknown_object_handle<Exception>
-        {};
-        DeleteObject(const std::string& handle
+            : virtual Fred::OperationException
+            , ExceptionData_unknown_object_handle<Exception>
+            {};
+
+        DeleteObjectByHandle(const std::string& handle
                 , const std::string& obj_type);
+
         void exec(OperationContext& ctx);
 
-        std::string to_string() const;
+        virtual std::string to_string() const;
+    };
+
+    class DeleteObjectById : public virtual Util::Printable
+    {
+        const unsigned long long id_;      //object id
+    public:
+        DECLARE_EXCEPTION_DATA(unknown_object_id, unsigned long long);
+        struct Exception
+            : virtual Fred::OperationException
+            , ExceptionData_unknown_object_id<Exception>
+            {};
+
+        DeleteObjectById(unsigned long long id);
+
+        void exec(OperationContext& ctx);
+
+        virtual std::string to_string() const;
     };
 
 }//namespace Fred
-#endif //OBJECT_H_
+#endif // end of #include guard

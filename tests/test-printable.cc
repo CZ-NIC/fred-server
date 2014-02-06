@@ -130,7 +130,7 @@ BOOST_AUTO_TEST_CASE(create_contact)
 BOOST_AUTO_TEST_CASE(delete_contact)
 {
     printable_test(
-    Fred::DeleteContact("TEST-DELETE-CONTACT-HANDLE")
+    Fred::DeleteContactByHandle("TEST-DELETE-CONTACT-HANDLE")
     );
 }
 
@@ -258,7 +258,7 @@ BOOST_AUTO_TEST_CASE(create_domain)
 BOOST_AUTO_TEST_CASE(delete_domain)
 {
     printable_test(
-    Fred::DeleteDomain("TEST-DELETE-CONTACT-HANDLE")
+    Fred::DeleteDomainByHandle("TEST-DELETE-CONTACT-HANDLE")
     );
 }
 
@@ -358,7 +358,7 @@ BOOST_AUTO_TEST_CASE(create_keyset)
 BOOST_AUTO_TEST_CASE(delete_keyset)
 {
     printable_test(
-    Fred::DeleteKeyset("TEST-DEL-KEYSET-HANDLE")
+    Fred::DeleteKeysetByHandle("TEST-DEL-KEYSET-HANDLE")
     );
 }
 
@@ -471,7 +471,7 @@ BOOST_AUTO_TEST_CASE(create_nsset)
 BOOST_AUTO_TEST_CASE(delete_nsset)
 {
     printable_test(
-    Fred::DeleteNsset("TEST-DEL-NSSET-HANDLE")
+    Fred::DeleteNssetByHandle("TEST-DEL-NSSET-HANDLE")
     );
 }
 

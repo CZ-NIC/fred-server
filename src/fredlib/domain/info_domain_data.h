@@ -26,14 +26,11 @@
 
 #include <string>
 #include <vector>
-#include <set>
 
 #include <boost/date_time/posix_time/ptime.hpp>
-#include <boost/date_time/gregorian/gregorian.hpp>
 
-#include "util/optional_value.h"
 #include "util/db/nullable.h"
-#include "src/fredlib/domain/enum_validation_extension.h"
+#include "enum_validation_extension.h"
 #include "util/printable.h"
 
 namespace Fred

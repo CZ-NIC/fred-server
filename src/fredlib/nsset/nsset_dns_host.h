@@ -27,10 +27,6 @@
 #include <string>
 #include <vector>
 
-#include "src/fredlib/opexception.h"
-#include "src/fredlib/opcontext.h"
-#include "util/optional_value.h"
-#include "util/db/nullable.h"
 #include "util/printable.h"
 
 namespace Fred

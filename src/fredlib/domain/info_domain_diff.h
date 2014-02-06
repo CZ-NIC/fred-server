@@ -26,14 +26,12 @@
 
 #include <string>
 #include <vector>
-#include <set>
 #include <utility>
 
 #include <boost/date_time/posix_time/ptime.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
 
-#include "src/fredlib/domain/info_domain_data.h"
-
+#include "info_domain_data.h"
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
 #include "util/printable.h"

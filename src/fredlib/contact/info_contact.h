@@ -28,66 +28,22 @@
 #include <vector>
 
 #include <boost/date_time/posix_time/ptime.hpp>
-#include <boost/date_time/gregorian/gregorian.hpp>
 
 #include "src/fredlib/opexception.h"
 #include "src/fredlib/opcontext.h"
 #include "util/optional_value.h"
-#include "util/db/nullable.h"
 #include "util/printable.h"
-#include "src/fredlib/contact/info_contact_data.h"
+#include "info_contact_output.h"
 
 namespace Fred
 {
-    /**
-    * Element of contact info data.
-    */
-    struct InfoContactOutput : public Util::Printable
-    {
-        InfoContactData info_contact_data;/**< data of the contact */
-        boost::posix_time::ptime utc_timestamp;/**< timestamp of getting the contact data in UTC */
-        boost::posix_time::ptime local_timestamp;/**< timestamp of getting the contact data in local time zone viz @ref local_timestamp_pg_time_zone_name */
-
-        Nullable<unsigned long long> next_historyid; /**< next historyid of the contact history*/
-        boost::posix_time::ptime history_valid_from;/**< history data valid from time in local time zone viz @ref local_timestamp_pg_time_zone_name*/
-        Nullable<boost::posix_time::ptime> history_valid_to;/**< history data valid to time in local time zone viz @ref local_timestamp_pg_time_zone_name, null means open end */
-        Nullable<unsigned long long> logd_request_id; /**< id of the request that changed contact data*/
-
-        /**
-        * Empty constructor of the contact info data structure.
-        */
-        InfoContactOutput()
-        {}
-
-        /**
-        * Dumps state of the instance into the string
-        * @return string with description of the instance state
-        */
-        std::string to_string() const;
-
-        /**
-        * Equality of the contact info data structure operator. Compares only InfoContactData member.
-        * @param rhs is right hand side of the contact data comparison
-        * @return true if equal, false if not
-        */
-        bool operator==(const InfoContactOutput& rhs) const;
-
-        /**
-        * Inequality of the contact info data structure operator. Compares only InfoContactData member.
-        * @param rhs is right hand side of the contact data comparison
-        * @return true if not equal, false if equal
-        */
-        bool operator!=(const InfoContactOutput& rhs) const;
-
-    };
-
     /**
     * Contact info by handle.
     * Contact handle to get info about the contact is set via constructor.
     * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
     * When exception is thrown, changes to database are considered inconsistent and should be rolled back by the caller.
     * In case of wrong input data or other predictable and superable failure, the instance of @ref InfoContactByHandle::Exception is thrown with appropriate attributes set.
-    * In case of other unsuperable failures and inconstistencies, the instance of @ref InternalError or other exception is thrown.
+    * In case of other insuperable failures and inconsistencies, the instance of @ref InternalError or other exception is thrown.
     */
     class InfoContactByHandle : public Util::Printable
     {
@@ -136,7 +92,7 @@ namespace Fred
     * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
     * When exception is thrown, changes to database are considered inconsistent and should be rolled back by the caller.
     * In case of wrong input data or other predictable and superable failure, the instance of @ref InfoContactById::Exception is thrown with appropriate attributes set.
-    * In case of other unsuperable failures and inconstistencies, the instance of @ref InternalError or other exception is thrown.
+    * In case of other insuperable failures and inconsistencies, the instance of @ref InternalError or other exception is thrown.
     */
     class InfoContactById : public Util::Printable
     {
@@ -185,7 +141,7 @@ namespace Fred
     * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
     * When exception is thrown, changes to database are considered inconsistent and should be rolled back by the caller.
     * In case of wrong input data or other predictable and superable failure, the instance of @ref InfoContactHistory::Exception is thrown with appropriate attributes set.
-    * In case of other unsuperable failures and inconstistencies, the instance of @ref InternalError or other exception is thrown.
+    * In case of other insuperable failures and inconsistencies, the instance of @ref InternalError or other exception is thrown.
     */
     class InfoContactHistory  : public Util::Printable
     {
@@ -249,7 +205,7 @@ namespace Fred
     * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
     * When exception is thrown, changes to database are considered inconsistent and should be rolled back by the caller.
     * In case of wrong input data or other predictable and superable failure, the instance of @ref HistoryInfoContactById::Exception is thrown with appropriate attributes set.
-    * In case of other unsuperable failures and inconstistencies, the instance of @ref InternalError or other exception is thrown.
+    * In case of other insuperable failures and inconsistencies, the instance of @ref InternalError or other exception is thrown.
     */
     class HistoryInfoContactById : public Util::Printable
     {
@@ -298,7 +254,7 @@ namespace Fred
     * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
     * When exception is thrown, changes to database are considered inconsistent and should be rolled back by the caller.
     * In case of wrong input data or other predictable and superable failure, the instance of @ref HistoryInfoContactByHistoryid::Exception is thrown with appropriate attributes set.
-    * In case of other unsuperable failures and inconstistencies, the instance of @ref InternalError or other exception is thrown.
+    * In case of other insuperable failures and inconsistencies, the instance of @ref InternalError or other exception is thrown.
     */
     class HistoryInfoContactByHistoryid : public Util::Printable
     {
@@ -341,99 +297,6 @@ namespace Fred
 
     };//class HistoryInfoContactByHistoryid
 
-
-    /**
-    * Contact info implementation.
-    * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
-    * When exception is thrown, changes to database are considered inconsistent and should be rolled back by the caller.
-    */
-    class InfoContact
-    {
-        Optional<std::string> contact_handle_;/**< handle of the contact */
-        Optional<std::string> contact_roid_;/**< registry object identifier of the contact */
-        Optional<unsigned long long> contact_id_;/**< object id of the contact */
-        Optional<unsigned long long> contact_historyid_;/**< history id of the contact */
-        Optional<boost::posix_time::ptime> history_timestamp_;/**< timestamp of history state we want to get (in time zone set in @ref local_timestamp_pg_time_zone_name parameter) */
-        bool history_query_;/**< flag to query history records of the contact */
-        bool lock_;/**< lock object_registry row for contact */
-
-        std::pair<std::string, Database::QueryParams> make_query(const std::string& local_timestamp_pg_time_zone_name);/**< info query generator @return pair of query string with query params*/
-
-    public:
-        /**
-         * Default constructor.
-         * Sets @ref history_query_ and @ref lock_ to false
-         */
-        InfoContact();
-
-        /**
-        * Sets handle of the contact.
-        * @param contact_handle sets handle of the contact we want to get @ref contact_handle_ attribute
-        * @return operation instance reference to allow method chaining
-        */
-        InfoContact& set_handle(const std::string& contact_handle);
-
-        /**
-        * Sets registry object identifier of the contact.
-        * @param contact_roid sets registry object identifier of the contact we want to get @ref contact_roid_ attribute
-        * @return operation instance reference to allow method chaining
-        */
-        InfoContact& set_roid(const std::string& contact_roid);
-
-        /**
-        * Sets database identifier of the contact.
-        * @param contact_id sets object identifier of the contact we want to get @ref contact_id_ attribute
-        * @return operation instance reference to allow method chaining
-        */
-        InfoContact& set_id(unsigned long long contact_id);
-
-        /**
-        * Sets history identifier of the contact.
-        * @param contact_historyid sets history identifier of the contact we want to get @ref contact_historyid_ attribute
-        * @return operation instance reference to allow method chaining
-        */
-        InfoContact& set_historyid(unsigned long long contact_historyid);
-
-        /**
-        * Sets timestamp of the history state we want to get.
-        * @param history_timestamp sets timestamp of history state we want to get @ref history_timestamp_ attribute
-        * @return operation instance reference to allow method chaining
-        */
-        InfoContact& set_history_timestamp(const boost::posix_time::ptime& history_timestamp);
-
-        /**
-        * Sets history query flag.
-        * @param history_query sets history query flag into @ref history query_ attribute
-        * @return operation instance reference to allow method chaining
-        */
-        InfoContact& set_history_query(bool history_query);
-
-        /**
-        * Sets the contact lock flag.
-        * @param lock sets lock contact flag into @ref lock_ attribute
-        * @return operation instance reference to allow method chaining
-        */
-        InfoContact& set_lock(bool lock = true);
-
-        /**
-        * Executes getting info about the contact.
-        * @param ctx contains reference to database and logging interface
-        * @param local_timestamp_pg_time_zone_name is postgresql time zone name of the returned data and history_timestamp
-        * @return info data about the contact
-        */
-        std::vector<InfoContactOutput> exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "UTC");//return data
-
-        /**
-        * Executes explain analyze and getting info about the contact for testing purposes.
-        * @param ctx contains reference to database and logging interface
-        * @param local_timestamp_pg_time_zone_name is postgresql time zone name of the returned data and history_timestamp
-        * @param result info data about the contact
-        * @return query and plan
-        */
-        std::string explain_analyze(OperationContext& ctx, std::vector<InfoContactOutput>& result, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return query plan
-
-
-    };//classInfoContact
 }//namespace Fred
 
 #endif//INFO_CONTACT_H_

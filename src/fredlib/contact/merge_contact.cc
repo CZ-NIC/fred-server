@@ -393,7 +393,7 @@ namespace Fred
         //delete src contact
         if(!dry_run)
         {
-            DeleteContact(src_contact_handle_).exec(ctx);
+            DeleteContactByHandle(src_contact_handle_).exec(ctx);
             /* #9877 - change authinfo of destination contact */
             std::string new_authinfo =  Random::string_from(8, "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789");
             UpdateContactByHandle(dst_contact_handle_, registrar_)

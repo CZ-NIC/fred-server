@@ -22,6 +22,8 @@
  */
 
 #include <string>
+#include <boost/assign.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include "src/fredlib/keyset/delete_keyset.h"
 #include "src/fredlib/object/object.h"
@@ -32,66 +34,105 @@
 
 namespace Fred
 {
-    DeleteKeyset::DeleteKeyset(const std::string& handle)
-    : handle_(handle)
-    {}
+    void delete_keyset_impl(OperationContext& ctx, unsigned long long id) {
+        ctx.get_conn().exec_params(
+            "DELETE FROM keyset_contact_map "
+            "   WHERE keysetid = $1::integer",
+            Database::query_param_list(id));
 
-    void DeleteKeyset::exec(OperationContext& ctx)
+        ctx.get_conn().exec_params(
+            "DELETE FROM dnskey "
+            "   WHERE keysetid = $1::integer",
+            Database::query_param_list(id));
+
+        ctx.get_conn().exec_params(
+            "DELETE FROM dsrecord "
+            "   WHERE keysetid = $1::integer",
+            Database::query_param_list(id));
+
+        Database::Result delete_keyset_res = ctx.get_conn().exec_params(
+            "DELETE FROM keyset "
+            "   WHERE id = $1::integer RETURNING id",
+            Database::query_param_list(id));
+
+        if (delete_keyset_res.size() != 1) {
+            BOOST_THROW_EXCEPTION(Fred::InternalError("delete keyset failed"));
+        }
+    }
+
+    DeleteKeysetByHandle::DeleteKeysetByHandle(const std::string& handle)
+        : handle_(handle)
+    { }
+
+    void DeleteKeysetByHandle::exec(OperationContext& ctx)
     {
         try
         {
-            //lock object_registry row for update and get keyset_id
-            unsigned long long keyset_id = get_object_id_by_handle_and_type_with_lock(
-                    ctx,handle_,"keyset",static_cast<Exception*>(0),
-                    &Exception::set_unknown_keyset_handle);
+            unsigned long long keyset_id = lock_object_by_handle_and_type(
+                ctx,
+                handle_,
+                "keyset",
+                static_cast<Exception*>(NULL),
+                &Exception::set_unknown_keyset_handle);
 
-            //check if object is linked
-            Database::Result linked_result = ctx.get_conn().exec_params(
-                "SELECT * FROM object_state os "
-                " JOIN enum_object_states eos ON eos.id = os.state_id "
-                " WHERE os.object_id = $1::integer AND eos.name = $2::text "
-                " AND valid_to IS NULL",
-                Database::query_param_list
-                (keyset_id)
-                (Fred::ObjectState::LINKED));
-
-            if (linked_result.size() > 0)
-            {
+            if (is_object_linked(ctx, keyset_id)) {
                 BOOST_THROW_EXCEPTION(Exception().set_object_linked_to_keyset_handle(handle_));
             }
 
-            ctx.get_conn().exec_params("DELETE FROM keyset_contact_map WHERE keysetid = $1::integer"
-                , Database::query_param_list(keyset_id));
+            delete_keyset_impl(ctx, keyset_id);
 
-            ctx.get_conn().exec_params("DELETE FROM dnskey WHERE keysetid = $1::integer"
-                , Database::query_param_list(keyset_id));
+            Fred::DeleteObjectByHandle(handle_, "keyset").exec(ctx);
 
-            ctx.get_conn().exec_params("DELETE FROM dsrecord WHERE keysetid = $1::integer"
-                , Database::query_param_list(keyset_id));
-
-            Database::Result delete_keyset_res = ctx.get_conn().exec_params(
-                "DELETE FROM keyset WHERE id = $1::integer RETURNING id"
-                    , Database::query_param_list(keyset_id));
-            if (delete_keyset_res.size() != 1)
-            {
-                BOOST_THROW_EXCEPTION(Fred::InternalError("delete keyset failed"));
-            }
-
-            Fred::DeleteObject(handle_,"keyset").exec(ctx);
-        }//try
-        catch(ExceptionStack& ex)
-        {
+        } catch(ExceptionStack& ex) {
             ex.add_exception_stack_info(to_string());
             throw;
         }
 
-    }//DeleteKeyset::exec
+    }
 
-    std::string DeleteKeyset::to_string() const
-    {
-        return Util::format_operation_state("DeleteKeyset",
-        Util::vector_of<std::pair<std::string,std::string> >
-        (std::make_pair("handle",handle_)));
+    std::string DeleteKeysetByHandle::to_string() const {
+        return Util::format_operation_state(
+            "DeleteKeysetByHandle",
+            boost::assign::list_of
+                (std::make_pair("handle", handle_ ))
+        );
+    }
+
+    DeleteKeysetById::DeleteKeysetById(unsigned long long _id)
+        : id_(_id)
+    { }
+
+    void DeleteKeysetById::exec(OperationContext& ctx) {
+        try {
+            unsigned long long keyset_id = lock_object_by_id(
+                ctx,
+                id_,
+                static_cast<Exception*>(NULL),
+                &Exception::set_unknown_keyset_id);
+
+            if (is_object_linked(ctx, id_)) {
+                BOOST_THROW_EXCEPTION(Exception().set_object_linked_to_keyset_id(id_));
+            }
+
+            delete_keyset_impl(ctx, id_);
+
+            Fred::DeleteObjectById(id_).exec(ctx);
+
+        } catch(ExceptionStack& ex) {
+
+            ex.add_exception_stack_info(to_string());
+            throw;
+        }
+
+    }
+
+    std::string DeleteKeysetById::to_string() const {
+
+        return Util::format_operation_state(
+            "DeleteKeysetById",
+            boost::assign::list_of
+                (std::make_pair("id", boost::lexical_cast<std::string>(id_) ))
+        );
     }
 
 

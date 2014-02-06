@@ -24,15 +24,10 @@
 #ifndef INFO_CONTACT_DIFF_H_
 #define INFO_CONTACT_DIFF_H_
 
+#include <algorithm>
 #include <string>
-#include <vector>
-#include <set>
-#include <utility>
 
-#include <boost/date_time/posix_time/ptime.hpp>
-#include <boost/date_time/gregorian/gregorian.hpp>
-
-#include "src/fredlib/contact/info_contact_data.h"
+#include "info_contact_data.h"
 
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
