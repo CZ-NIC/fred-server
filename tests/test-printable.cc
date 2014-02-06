@@ -358,7 +358,7 @@ BOOST_AUTO_TEST_CASE(create_keyset)
 BOOST_AUTO_TEST_CASE(delete_keyset)
 {
     printable_test(
-    Fred::DeleteKeyset("TEST-DEL-KEYSET-HANDLE")
+    Fred::DeleteKeysetByHandle("TEST-DEL-KEYSET-HANDLE")
     );
 }
 

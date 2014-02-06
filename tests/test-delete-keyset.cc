@@ -131,7 +131,7 @@ BOOST_FIXTURE_TEST_CASE(delete_keyset, delete_keyset_fixture )
     Fred::InfoKeysetOutput keyset_info1 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
     BOOST_CHECK(keyset_info1.info_keyset_data.delete_time.isnull());
 
-    Fred::DeleteKeyset(test_keyset_handle).exec(ctx);
+    Fred::DeleteKeysetByHandle(test_keyset_handle).exec(ctx);
     ctx.commit_transaction();
 
     std::vector<Fred::InfoKeysetOutput> keyset_history_info1 = Fred::InfoKeysetHistory(
@@ -180,10 +180,10 @@ BOOST_FIXTURE_TEST_CASE(delete_keyset_with_wrong_handle, delete_keyset_fixture )
     try
     {
         Fred::OperationContext ctx;//new connection to rollback on error
-        Fred::DeleteKeyset(bad_test_keyset_handle).exec(ctx);
+        Fred::DeleteKeysetByHandle(bad_test_keyset_handle).exec(ctx);
         ctx.commit_transaction();
     }
-    catch(const Fred::DeleteKeyset::Exception& ex)
+    catch(const Fred::DeleteKeysetByHandle::Exception& ex)
     {
         BOOST_CHECK(ex.is_set_unknown_keyset_handle());
         BOOST_CHECK(ex.get_unknown_keyset_handle().compare(bad_test_keyset_handle) == 0);
@@ -213,10 +213,10 @@ BOOST_FIXTURE_TEST_CASE(delete_linked_keyset, delete_keyset_fixture )
     try
     {
         Fred::OperationContext ctx;//new connection to rollback on error
-        Fred::DeleteKeyset(test_keyset_handle).exec(ctx);
+        Fred::DeleteKeysetByHandle(test_keyset_handle).exec(ctx);
         ctx.commit_transaction();
     }
-    catch(const Fred::DeleteKeyset::Exception& ex)
+    catch(const Fred::DeleteKeysetByHandle::Exception& ex)
     {
         BOOST_CHECK(ex.is_set_object_linked_to_keyset_handle());
         BOOST_CHECK(ex.get_object_linked_to_keyset_handle().compare(test_keyset_handle) == 0);

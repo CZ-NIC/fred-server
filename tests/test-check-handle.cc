@@ -159,7 +159,7 @@ struct check_handle_fixture
                 .set_tech_contacts(Util::vector_of<std::string>(admin_contact_handle))
                 .exec(ctx);
 
-        Fred::DeleteKeyset(test_keyset_handle_rem).exec(ctx);
+        Fred::DeleteKeysetByHandle(test_keyset_handle_rem).exec(ctx);
 
         ctx.commit_transaction();
     }
