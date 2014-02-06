@@ -196,7 +196,7 @@ BOOST_FIXTURE_TEST_CASE(delete_domain, delete_domain_fixture )
     Fred::InfoDomainOutput domain_info1 = Fred::InfoDomainByHandle(test_domain_fqdn).exec(ctx);
     BOOST_CHECK(domain_info1.info_domain_data.delete_time.isnull());
 
-    Fred::DeleteDomain(test_domain_fqdn).exec(ctx);
+    Fred::DeleteDomainByHandle(test_domain_fqdn).exec(ctx);
     ctx.commit_transaction();
 
     std::vector<Fred::InfoDomainOutput> domain_history_info1 = Fred::InfoDomainHistory(
@@ -250,7 +250,7 @@ BOOST_FIXTURE_TEST_CASE(delete_enum_domain, delete_enum_domain_fixture )
     Fred::InfoDomainOutput domain_info1 = Fred::InfoDomainByHandle(test_domain_fqdn).exec(ctx);
     BOOST_CHECK(domain_info1.info_domain_data.delete_time.isnull());
 
-    Fred::DeleteDomain(test_domain_fqdn).exec(ctx);
+    Fred::DeleteDomainByHandle(test_domain_fqdn).exec(ctx);
     ctx.commit_transaction();
 
     std::vector<Fred::InfoDomainOutput> domain_history_info1 = Fred::InfoDomainHistory(
@@ -303,10 +303,10 @@ BOOST_FIXTURE_TEST_CASE(delete_domain_with_wrong_fqdn, delete_domain_fixture )
     try
     {
         Fred::OperationContext ctx;//new connection to rollback on error
-        Fred::DeleteDomain(bad_test_domain_fqdn).exec(ctx);
+        Fred::DeleteDomainByHandle(bad_test_domain_fqdn).exec(ctx);
         ctx.commit_transaction();
     }
-    catch(const Fred::DeleteDomain::Exception& ex)
+    catch(const Fred::DeleteDomainByHandle::Exception& ex)
     {
         BOOST_CHECK(ex.is_set_unknown_domain_fqdn());
         BOOST_CHECK(ex.get_unknown_domain_fqdn().compare(bad_test_domain_fqdn) == 0);

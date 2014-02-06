@@ -258,7 +258,7 @@ BOOST_AUTO_TEST_CASE(create_domain)
 BOOST_AUTO_TEST_CASE(delete_domain)
 {
     printable_test(
-    Fred::DeleteDomain("TEST-DELETE-CONTACT-HANDLE")
+    Fred::DeleteDomainByHandle("TEST-DELETE-CONTACT-HANDLE")
     );
 }
 
