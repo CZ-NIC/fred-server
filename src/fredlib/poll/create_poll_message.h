@@ -3,7 +3,6 @@
 
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/opexception.h"
-#include "util/types/optional.h"
 #include "util/printable.h"
 
 namespace Fred {
