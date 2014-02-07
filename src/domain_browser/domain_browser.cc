@@ -38,26 +38,8 @@ namespace Registry
 {
     namespace DomainBrowserImpl
     {
-        //dummy decl - impl
-        DomainBrowser::DomainBrowser(const std::string& server_name)
-        : server_name_(server_name)
-        {}
-
-        DomainBrowser::~DomainBrowser()
-        {}
-
-        unsigned long long DomainBrowser::getObjectRegistryId(const std::string& objtype, const std::string& handle)
+        void DomainBrowser::check_user_contact_id(Fred::OperationContext& ctx, unsigned long long user_contact_id)
         {
-            return 0;
-        }
-
-        RegistrarDetail DomainBrowser::getRegistrarDetail(
-            unsigned long long user_contact_id,
-            const std::string& registrar_handle)
-        {
-            Fred::OperationContext ctx;
-
-            //check user_contact_id
             try
             {
                 Fred::InfoContactById(user_contact_id).set_lock(true).exec(ctx);
@@ -76,6 +58,28 @@ namespace Registry
             {
                 BOOST_THROW_EXCEPTION(UserNotExists());
             }
+        }
+
+        DomainBrowser::DomainBrowser(const std::string& server_name)
+        : server_name_(server_name)
+        {}
+
+        DomainBrowser::~DomainBrowser()
+        {}
+
+        unsigned long long DomainBrowser::getObjectRegistryId(const std::string& objtype, const std::string& handle)
+        {
+            return 0;
+        }
+
+
+
+        RegistrarDetail DomainBrowser::getRegistrarDetail(
+            unsigned long long user_contact_id,
+            const std::string& registrar_handle)
+        {
+            Fred::OperationContext ctx;
+            check_user_contact_id(ctx, user_contact_id);
 
             Fred::InfoRegistrarOutput registar_info;
             try
@@ -150,8 +154,12 @@ namespace Registry
                 unsigned long long contact_id,
                 const std::string& lang)
         {
+            Fred::OperationContext ctx;
+            check_user_contact_id(ctx, user_contact_id);
+
 
             ContactDetail detail;
+
             return detail;
         }
 

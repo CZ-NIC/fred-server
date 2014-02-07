@@ -30,6 +30,7 @@
 #include <boost/thread/mutex.hpp>
 
 #include "src/fredlib/opexception.h"
+#include "src/fredlib/opcontext.h"
 #include "util/db/nullable.h"
 #include "cfg/handle_registry_args.h"
 
@@ -221,6 +222,13 @@ namespace Registry
         class DomainBrowser
         {
             std::string server_name_;
+            /**
+             * Check user contact.
+             * @param ctx contains reference to database and logging interface
+             * @param user_contact_id is database id of user contact
+             * If user contact is deleted or don't have mojeidContact state throw UserNotExists.
+             */
+            void check_user_contact_id(Fred::OperationContext& ctx, unsigned long long user_contact_id);
         public:
             //dummy decl - impl
             DomainBrowser(const std::string &server_name);
