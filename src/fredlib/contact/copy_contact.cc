@@ -89,7 +89,7 @@ namespace Fred
                     "FROM registrar "
                     "WHERE handle=UPPER($4::text))",
             Database::query_param_list
-                (OBJECT_TYPE_ID_CONTACT)(src_contact_handle_)(dst_contact_handle_)(dst_registrar_handle_));
+                (OBJECT_TYPE_ID_CONTACT)(src_contact_handle_)(dst_contact_handle_)(dst_registrar_handle_.get_value_or_default()));
         if (check_args_res.size() == 1) {
             Exception ex;
             if (check_args_res[0][0].isnull()) {
@@ -99,7 +99,7 @@ namespace Fred
                 ex.set_dst_contact_handle_already_exist(dst_contact_handle_);
             }
             if (check_args_res[0][2].isnull()) {
-                ex.set_create_contact_failed(std::string("dst_registrar_handle ") + dst_registrar_handle_.get_value() + " doesn't exist");
+                ex.set_create_contact_failed(std::string("dst_registrar_handle ") + dst_registrar_handle_.print_quoted() + " doesn't exist");
             }
             if (ex.throw_me()) {
                 BOOST_THROW_EXCEPTION(ex);

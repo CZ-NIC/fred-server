@@ -1,6 +1,7 @@
 #ifndef NULLABLE_H_
 #define NULLABLE_H_
 
+#include <stdexcept>
 #include "db/query_param.h"
 #include "db/value.h"
 
@@ -30,14 +31,24 @@ public:
         return *this;
     }
 
-    T get_value() const
-    {
-        return value_;
-    }
-
     bool isnull() const
     {
         return isnull_;
+    }
+
+    T get_value() const
+    {
+        if (isnull())
+        {
+            throw std::logic_error("value is null");
+        }
+
+        return value_;
+    }
+
+    T get_value_or_default() const
+    {
+        return value_;
     }
 
     operator Database::QueryParam()
@@ -71,7 +82,7 @@ public:
     std::string print_quoted() const
     {
         std::stringstream ss;
-        ss << (*this);
+        if(!isnull()) ss << (*this);
         return isnull() ? std::string("[NULL]") : std::string("'") + ss.str() + "'";
     }
 };

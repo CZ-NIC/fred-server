@@ -59,7 +59,7 @@ MergeContact::MergeContact(
 MergeContact::MergeContact(
         const std::string &_src_contact_handle,
         const std::string &_dst_contact_handle,
-        const optional_string &_registrar)
+        const Optional<std::string> &_registrar)
     : src_contact_handle_(_src_contact_handle),
       dst_contact_handle_(_dst_contact_handle),
       registrar_(_registrar)
@@ -72,7 +72,7 @@ Fred::MergeContactOutput MergeContact::exec(Fred::Logger::LoggerClient &_logger_
 {
     Fred::OperationContext ctx;
 
-    if (!registrar_.is_value_set()) {
+    if (!registrar_.isset()) {
         registrar_ = get_system_registrar(ctx);
     }
 
@@ -81,7 +81,7 @@ Fred::MergeContactOutput MergeContact::exec(Fred::Logger::LoggerClient &_logger_
     try {
         req_id = logger_merge_contact_create_request(_logger_client, src_contact_handle_, dst_contact_handle_);
 
-        merge_data = Fred::MergeContact(src_contact_handle_, dst_contact_handle_, registrar_)
+        merge_data = Fred::MergeContact(src_contact_handle_, dst_contact_handle_, registrar_.get_value())
                             .set_logd_request_id(req_id)
                             .exec(ctx);
 
@@ -102,11 +102,11 @@ Fred::MergeContactOutput MergeContact::exec_dry_run()
 {
     Fred::OperationContext ctx;
 
-    if (!registrar_.is_value_set()) {
+    if (!registrar_.isset()) {
         registrar_ = get_system_registrar(ctx);
     }
 
-    return Fred::MergeContact(src_contact_handle_, dst_contact_handle_, registrar_).exec_dry_run(ctx);
+    return Fred::MergeContact(src_contact_handle_, dst_contact_handle_, registrar_.get_value()).exec_dry_run(ctx);
 }
 
 

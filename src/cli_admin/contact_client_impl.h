@@ -152,9 +152,9 @@ struct contact_merge_duplicate_auto_impl
                     *(mm.get()),
                     *(logger_client.get()))
                 .set_registrar(*ci)
-                .set_limit(params.limit)
+                .set_limit(params.limit.is_value_set() ? Optional<unsigned long long>(params.limit.get_value()) : Optional<unsigned long long>())
                 .set_dry_run(params.dry_run)
-                .set_verbose(params.verbose)
+                .set_verbose(params.verbose.is_value_set() ? Optional<unsigned short>(params.verbose.get_value()) : Optional<unsigned short>())
                 .set_selection_filter_order(params.selection_filter_order)
             .exec();
         }
