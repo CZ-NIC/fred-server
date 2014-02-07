@@ -255,27 +255,6 @@ bool contact_checker_address_country(const Contact &_data, FieldErrorMap &_error
 }
 
 
-bool contact_checker_birthday(const Contact &_data, FieldErrorMap &_errors)
-{
-    bool result = true;
-
-    if (!_data.ssntype.isnull() && static_cast<std::string>(_data.ssntype) == "BIRTHDAY") {
-        try {
-            boost::gregorian::date tmp
-                = boost::gregorian::from_string(static_cast<std::string>(_data.ssn));
-            if (tmp.is_special()) {
-                throw 0;
-            }
-        }
-        catch (...) {
-            _errors[field_birth_date] = INVALID;
-            result = false;
-        }
-    }
-
-    return result;
-}
-
 /// return true in case the contacts are equal in terms registry data
 bool check_conditionally_identified_contact_diff(
         const Contact &_c1,
