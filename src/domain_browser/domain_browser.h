@@ -30,7 +30,7 @@
 #include <boost/thread/mutex.hpp>
 
 #include "src/fredlib/opexception.h"
-
+#include "util/db/nullable.h"
 #include "cfg/handle_registry_args.h"
 
 namespace Registry

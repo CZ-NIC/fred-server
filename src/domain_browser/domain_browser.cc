@@ -146,8 +146,7 @@ namespace Registry
             return "";
         }
 
-
-        ContactDetail getContactDetail(unsigned long long user_contact_id,
+        ContactDetail DomainBrowser::getContactDetail(unsigned long long user_contact_id,
                 unsigned long long contact_id,
                 const std::string& lang)
         {
