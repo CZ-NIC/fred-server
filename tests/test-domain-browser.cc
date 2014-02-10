@@ -112,8 +112,6 @@ struct mojeid_user_contact_fixture
     ~mojeid_user_contact_fixture(){}
 };
 
-BOOST_AUTO_TEST_SUITE(getRegistrarDetail)
-
 struct test_registrar_fixture
 {
     std::string xmark;
@@ -137,6 +135,8 @@ struct test_registrar_fixture
     ~test_registrar_fixture()
     {}
 };
+
+BOOST_AUTO_TEST_SUITE(getRegistrarDetail)
 
 struct get_registrar_fixture
 : mojeid_user_contact_fixture
@@ -220,5 +220,45 @@ BOOST_FIXTURE_TEST_CASE(get_registrar_detail_not_mojeid_user, get_registrar_deta
 }
 
 BOOST_AUTO_TEST_SUITE_END();//getRegistrarDetail
+
+BOOST_AUTO_TEST_SUITE(getContactDetail)
+
+struct test_contact_fixture
+: test_registrar_fixture
+{
+    std::string test_contact_handle;
+
+    test_contact_fixture()
+    :test_contact_handle(std::string("TEST-CONTACT-HANDLE")+xmark)
+    {
+        Fred::OperationContext ctx;
+
+        BOOST_CHECK(!test_registrar_handle.empty());//expecting existing registrar
+
+        Fred::CreateContact(test_contact_handle,test_registrar_handle).set_name(std::string("TEST-CONTACT NAME")+xmark)
+            .set_name(std::string("TEST-CONTACT NAME")+xmark)
+            .set_disclosename(true)
+            .set_street1(std::string("STR1")+xmark)
+            .set_city("Praha").set_postalcode("11150").set_country("CZ")
+            .set_discloseaddress(true)
+            .exec(ctx);
+
+        ctx.commit_transaction();//commit fixture
+    }
+    ~test_contact_fixture()
+    {}
+};
+
+struct get_my_contact_fixture
+: mojeid_user_contact_fixture
+{};
+
+struct get_contact_fixture
+: mojeid_user_contact_fixture
+, test_contact_fixture
+{};
+
+
+BOOST_AUTO_TEST_SUITE_END();//getContactDetail
 
 BOOST_AUTO_TEST_SUITE_END();//TestDomainBrowser
