@@ -156,10 +156,10 @@ BOOST_FIXTURE_TEST_CASE(get_registrar_detail, get_registrar_fixture )
 
     BOOST_CHECK(rd.id == registrar_info.info_registrar_data.id);
     BOOST_CHECK(rd.handle == registrar_info.info_registrar_data.handle);
-    BOOST_CHECK(rd.name == registrar_info.info_registrar_data.name.get_value());
-    BOOST_CHECK(rd.phone == registrar_info.info_registrar_data.telephone.get_value());
-    BOOST_CHECK(rd.fax == registrar_info.info_registrar_data.fax.get_value());
-    BOOST_CHECK(rd.url == registrar_info.info_registrar_data.url.get_value());
+    BOOST_CHECK(rd.name == registrar_info.info_registrar_data.name.get_value_or_default());
+    BOOST_CHECK(rd.phone == registrar_info.info_registrar_data.telephone.get_value_or_default());
+    BOOST_CHECK(rd.fax == registrar_info.info_registrar_data.fax.get_value_or_default());
+    BOOST_CHECK(rd.url == registrar_info.info_registrar_data.url.get_value_or_default());
     BOOST_MESSAGE(rd.address);
 }
 

@@ -100,10 +100,10 @@ namespace Registry
 
             result.id = registar_info.info_registrar_data.id;
             result.handle = registar_info.info_registrar_data.handle;
-            result.name = registar_info.info_registrar_data.name.get_value();
-            result.phone = registar_info.info_registrar_data.telephone.get_value();
-            result.fax = registar_info.info_registrar_data.fax.get_value();
-            result.url = registar_info.info_registrar_data.url.get_value();
+            result.name = registar_info.info_registrar_data.name.get_value_or_default();
+            result.phone = registar_info.info_registrar_data.telephone.get_value_or_default();
+            result.fax = registar_info.info_registrar_data.fax.get_value_or_default();
+            result.url = registar_info.info_registrar_data.url.get_value_or_default();
 
             Util::HeadSeparator addr_separator("",", ");
 
