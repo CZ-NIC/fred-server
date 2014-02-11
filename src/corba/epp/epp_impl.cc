@@ -1672,6 +1672,7 @@ ccReg::Response* ccReg_EPP_i::PollRequest(
         type = ccReg::polltype_delete_nsset;
         break;
       case Fred::Poll::MT_IDLE_DELETE_DOMAIN:
+      case Fred::Poll::MT_DELETE_DOMAIN:
         type = ccReg::polltype_delete_domain;
         break;
       case Fred::Poll::MT_IDLE_DELETE_KEYSET:
