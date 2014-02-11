@@ -145,10 +145,10 @@ MergeContactAutoProcedure::MergeContactAutoProcedure(
 MergeContactAutoProcedure::MergeContactAutoProcedure(
         Fred::Mailer::Manager& mm,
         Fred::Logger::LoggerClient &_logger_client,
-        const optional_string &_registrar,
-        const optional_ulonglong &_limit,
-        const optional_bool &_dry_run,
-        const optional_ushort &_verbose)
+        const Optional<std::string> &_registrar,
+        const Optional<unsigned long long> &_limit,
+        const Optional<bool> &_dry_run,
+        const Optional<unsigned short> &_verbose)
     : mm_(mm),
       logger_client_(_logger_client),
       registrar_(_registrar),
@@ -160,7 +160,7 @@ MergeContactAutoProcedure::MergeContactAutoProcedure(
 
 
 MergeContactAutoProcedure& MergeContactAutoProcedure::set_registrar(
-        const optional_string &_registrar)
+        const Optional<std::string> &_registrar)
 {
     registrar_ = _registrar;
     return *this;
@@ -168,7 +168,7 @@ MergeContactAutoProcedure& MergeContactAutoProcedure::set_registrar(
 
 
 MergeContactAutoProcedure& MergeContactAutoProcedure::set_limit(
-        const optional_ulonglong &_limit)
+        const Optional<unsigned long long> &_limit)
 {
     limit_ = _limit;
     return *this;
@@ -176,7 +176,7 @@ MergeContactAutoProcedure& MergeContactAutoProcedure::set_limit(
 
 
 MergeContactAutoProcedure& MergeContactAutoProcedure::set_dry_run(
-        const optional_bool &_dry_run)
+        const Optional<bool> &_dry_run)
 {
     dry_run_ = _dry_run;
     return *this;
@@ -194,7 +194,7 @@ MergeContactAutoProcedure& MergeContactAutoProcedure::set_selection_filter_order
 
 
 MergeContactAutoProcedure& MergeContactAutoProcedure::set_verbose(
-        const optional_ushort &_verbose)
+        const Optional<unsigned short> &_verbose)
 {
     verbose_ = _verbose;
     return *this;
@@ -203,7 +203,7 @@ MergeContactAutoProcedure& MergeContactAutoProcedure::set_verbose(
 
 bool MergeContactAutoProcedure::is_set_dry_run() const
 {
-    return (dry_run_.is_value_set() && dry_run_.get_value() == true);
+    return (dry_run_.isset() && dry_run_.get_value() == true);
 }
 
 
@@ -224,7 +224,7 @@ std::vector<Fred::ContactSelectionFilterType> MergeContactAutoProcedure::get_def
 
 unsigned short MergeContactAutoProcedure::get_verbose_level() const
 {
-    if (verbose_.is_value_set()) {
+    if (verbose_.isset()) {
         return verbose_.get_value();
     }
     if (this->is_set_dry_run()) {
@@ -271,7 +271,7 @@ void MergeContactAutoProcedure::exec()
 
     if (this->get_verbose_level() > 0) {
         out_stream << format_header(str(boost::format("REGISTRAR: %1%")
-            % (registrar_.is_value_set() ? registrar_.get_value(): std::string("n/a"))), indenter);
+            % (registrar_.isset() ? registrar_.get_value(): std::string("n/a"))), indenter);
     }
 
 

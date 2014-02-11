@@ -270,20 +270,76 @@ namespace Registry
         {
             try
             {
+                Registry::DomainBrowserImpl::ContactDetail detail_impl
+                    = pimpl_->getContactDetail(contact.id, detail.id, lang);
+
                 ContactDetail_var contact_detail = new ContactDetail;
+                contact_detail->id = detail_impl.id;
+                contact_detail->handle = CORBA::string_dup(detail_impl.handle.c_str());
+                contact_detail->roid = CORBA::string_dup(detail_impl.roid.c_str());
+                contact_detail->registrar.id = detail_impl.sponsoring_registrar.id;
+                contact_detail->registrar.handle = CORBA::string_dup(detail_impl.sponsoring_registrar.handle.c_str());
+                contact_detail->registrar.name = CORBA::string_dup(detail_impl.sponsoring_registrar.name.c_str());
+                contact_detail->create_date = CORBA::string_dup(boost::gregorian::to_iso_extended_string(detail_impl.creation_time.date()).c_str());
+                contact_detail->transfer_date = CORBA::string_dup(detail_impl.transfer_time.isnull()
+                    ? "" : boost::gregorian::to_iso_extended_string(detail_impl.transfer_time.get_value().date()).c_str());
+                contact_detail->update_date = CORBA::string_dup(detail_impl.update_time.isnull()
+                    ? "" : boost::gregorian::to_iso_extended_string(detail_impl.update_time.get_value().date()).c_str());
+                contact_detail->auth_info = CORBA::string_dup(detail_impl.authinfopw.c_str());
+                contact_detail->name = CORBA::string_dup(detail_impl.name.get_value_or_default().c_str());
+                contact_detail->organization = CORBA::string_dup(detail_impl.organization.get_value_or_default().c_str());
+                contact_detail->street1 = CORBA::string_dup(detail_impl.street1.get_value_or_default().c_str());
+                contact_detail->street2 = CORBA::string_dup(detail_impl.street2.get_value_or_default().c_str());
+                contact_detail->street3 = CORBA::string_dup(detail_impl.street3.get_value_or_default().c_str());
+                contact_detail->province = CORBA::string_dup(detail_impl.stateorprovince.get_value_or_default().c_str());
+                contact_detail->postalcode = CORBA::string_dup(detail_impl.postalcode.get_value_or_default().c_str());
+                contact_detail->city = CORBA::string_dup(detail_impl.city.get_value_or_default().c_str());
+                contact_detail->country = CORBA::string_dup(detail_impl.country.get_value_or_default().c_str());
+                contact_detail->telephone = CORBA::string_dup(detail_impl.telephone.get_value_or_default().c_str());
+                contact_detail->fax = CORBA::string_dup(detail_impl.fax.get_value_or_default().c_str());
+                contact_detail->email = CORBA::string_dup(detail_impl.email.get_value_or_default().c_str());
+                contact_detail->notify_email = CORBA::string_dup(detail_impl.notifyemail.get_value_or_default().c_str());
+                contact_detail->ssn = CORBA::string_dup(detail_impl.ssn.get_value_or_default().c_str());
+                contact_detail->ssn_type = CORBA::string_dup(detail_impl.ssntype.get_value_or_default().c_str());
+                contact_detail->vat = CORBA::string_dup(detail_impl.vat.get_value_or_default().c_str());
+                contact_detail->disclose_flags.address = detail_impl.disclose_flags.address;
+                contact_detail->disclose_flags.email = detail_impl.disclose_flags.email;
+                contact_detail->disclose_flags.fax = detail_impl.disclose_flags.fax;
+                contact_detail->disclose_flags.ident = detail_impl.disclose_flags.ident;
+                contact_detail->disclose_flags.name = detail_impl.disclose_flags.name;
+                contact_detail->disclose_flags.notify_email = detail_impl.disclose_flags.notify_email;
+                contact_detail->disclose_flags.organization = detail_impl.disclose_flags.organization;
+                contact_detail->disclose_flags.telephone = detail_impl.disclose_flags.telephone;
+                contact_detail->disclose_flags.vat = detail_impl.disclose_flags.vat;
+                contact_detail->states = CORBA::string_dup(detail_impl.states.c_str());
+                contact_detail->state_codes = CORBA::string_dup(detail_impl.state_codes.c_str());
+
+                if(detail_impl.is_owner)
+                {
+                    auth_result = PRIVATE_DATA;
+                }
+                else
+                {
+                    auth_result = PUBLIC_DATA;
+                }
+
                 return contact_detail._retn();
             }//try
-            catch (std::exception &_ex)
+            catch (const Registry::DomainBrowserImpl::ObjectNotExists& )
             {
                 throw Registry::DomainBrowser::OBJECT_NOT_EXISTS();
             }
-            catch (std::exception &_ex)
+            catch (const Registry::DomainBrowserImpl::UserNotExists& )
             {
                 throw Registry::DomainBrowser::USER_NOT_EXISTS();
             }
-            catch (std::exception &_ex)
+            catch (const boost::exception&)
             {
-                throw Registry::DomainBrowser::INCORRECT_USAGE();
+                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
+            }
+            catch (const std::exception&)
+            {
+                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
             }
             catch (...)
             {

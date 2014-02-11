@@ -30,13 +30,28 @@
 #include <boost/thread/mutex.hpp>
 
 #include "src/fredlib/opexception.h"
-
+#include "src/fredlib/opcontext.h"
+#include "util/db/nullable.h"
 #include "cfg/handle_registry_args.h"
 
 namespace Registry
 {
     namespace DomainBrowserImpl
     {
+
+        /**
+         * Registry object id, handle and name data.
+         */
+        struct RegistryReference
+        {
+            unsigned long long id;/**< database id of the object */
+            std::string handle;/**< handle of the object */
+            std::string name;/**< name of the object */
+
+            RegistryReference()
+            : id(0)
+            {}
+        };
         /**
          * Registrar detail data.
          * Returned by @ref getRegistrarDetail.
@@ -44,12 +59,82 @@ namespace Registry
         struct RegistrarDetail
         {
             unsigned long long id;/**< database id of the registrar */
-            std::string handle;/**< name of the registrar */
+            std::string handle;/**< handle of the registrar */
             std::string name;/**< name of the registrar */
             std::string phone;/**< phone number of the registrar */
             std::string fax;/**< fax number of the registrar */
             std::string url;/**< web address of the registrar */
             std::string address; /**< postal address of the registrar */
+        };
+
+        /**
+         * Contact fields disclose data.
+         */
+        struct ContactDiscloseFlags
+        {
+            bool name;/**< whether to reveal contact name */
+            bool organization;/**< whether to reveal organization */
+            bool email;/**< whether to reveal email address */
+            bool address;/**< whether to reveal address */
+            bool telephone;/**< whether to reveal phone number */
+            bool fax;/**< whether to reveal fax number */
+            bool ident;/**< whether to reveal unambiguous identification number */
+            bool vat;/**< whether to reveal taxpayer identification number */
+            bool notify_email;/**< whether to reveal notify email */
+
+            ContactDiscloseFlags()
+            : name(false)
+            , organization(false)
+            , email(false)
+            , address(false)
+            , telephone(false)
+            , fax(false)
+            , ident(false)
+            , vat(false)
+            , notify_email(false)
+            {}
+        };
+
+
+        /**
+         * Contact detail data.
+         * Returned by @ref getContactDetail.
+         */
+        struct ContactDetail
+        {
+            unsigned long long id;/**< database id of the contact object*/
+            std::string handle;/**< contact handle */
+            std::string roid;/**< registry object identifier of the contact */
+            RegistryReference sponsoring_registrar;/**< registrar administering the contact */
+            boost::posix_time::ptime creation_time;/**< creation time of the contact in set local zone*/
+            Nullable<boost::posix_time::ptime> update_time; /**< last update time of the contact in set local zone*/
+            Nullable<boost::posix_time::ptime> transfer_time; /**<last transfer time in set local zone*/
+            std::string authinfopw;/**< password for transfer */
+            Nullable<std::string> name ;/**< name of contact person */
+            Nullable<std::string> organization;/**< full trade name of organization */
+            Nullable<std::string> street1;/**< part of address */
+            Nullable<std::string> street2;/**< part of address */
+            Nullable<std::string> street3;/**< part of address*/
+            Nullable<std::string> city;/**< part of address - city */
+            Nullable<std::string> stateorprovince;/**< part of address - region */
+            Nullable<std::string> postalcode;/**< part of address - postal code */
+            Nullable<std::string> country;/**< two character country code or country name */
+            Nullable<std::string> telephone;/**<  telephone number */
+            Nullable<std::string> fax;/**< fax number */
+            Nullable<std::string> email;/**< e-mail address */
+            Nullable<std::string> notifyemail;/**< to this e-mail address will be send message in case of any change in domain or nsset affecting contact */
+            Nullable<std::string> vat;/**< taxpayer identification number */
+            Nullable<std::string> ssntype;/**< type of identification from enumssntype table */
+            Nullable<std::string> ssn;/**< unambiguous identification number e.g. social security number, identity card number, date of birth */
+            ContactDiscloseFlags disclose_flags;/**< contact fields disclose flags*/
+            std::string states;/**< contact states descriptions in given language from db. table enum_object_states_desc delimited by pipe '|' character */
+            std::string state_codes;/**< contact states names from db. table enum_object_states delimited by coma ',' character */
+            bool is_owner;/**< whether user contact is the same as requested contact */
+
+            ContactDetail()
+            : id(0)
+            , is_owner(false)
+            {}
         };
 
         /**
@@ -139,6 +224,13 @@ namespace Registry
         class DomainBrowser
         {
             std::string server_name_;
+            /**
+             * Check user contact.
+             * @param ctx contains reference to database and logging interface
+             * @param user_contact_id is database id of user contact
+             * If user contact is deleted or don't have mojeidContact state throw UserNotExists.
+             */
+            void check_user_contact_id(Fred::OperationContext& ctx, unsigned long long user_contact_id);
         public:
             //dummy decl - impl
             DomainBrowser(const std::string &server_name);
@@ -153,6 +245,17 @@ namespace Registry
              * @return registrar detail data.
              */
             RegistrarDetail getRegistrarDetail(unsigned long long user_contact_id, const std::string& registrar_handle);
+
+            /**
+             * Returns contact detail.
+             * @param user_contact_id contains database id of the user contact
+             * @param contact_id contains database id of the contact
+             * @param lang contains language for state description "EN" or "CS"
+             * @return registrar detail data.
+             */
+            ContactDetail getContactDetail(unsigned long long user_contact_id,
+                    unsigned long long contact_id,
+                    const std::string& lang);
 
             std::string get_server_name();
         };//class DomainBrowser

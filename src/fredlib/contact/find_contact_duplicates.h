@@ -2,7 +2,7 @@
 #define FIND_CONTACT_DUPLICATES
 
 #include "src/fredlib/opcontext.h"
-#include "util/types/optional.h"
+#include "util/optional_value.h"
 
 #include <set>
 #include <string>
@@ -17,7 +17,7 @@ class FindAnyContactDuplicates
 public:
     FindAnyContactDuplicates();
 
-    FindAnyContactDuplicates& set_registrar(const optional_string &_registrar_handle);
+    FindAnyContactDuplicates& set_registrar(const Optional<std::string> &_registrar_handle);
 
     FindAnyContactDuplicates& set_exclude_contacts(const std::set<std::string> &_exclude_contacts);
 
@@ -25,7 +25,7 @@ public:
 
 
 private:
-    optional_string registrar_handle_;
+    Optional<std::string> registrar_handle_;
     std::set<std::string> exclude_contacts_;
 };
 

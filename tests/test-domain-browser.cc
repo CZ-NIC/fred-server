@@ -112,8 +112,6 @@ struct mojeid_user_contact_fixture
     ~mojeid_user_contact_fixture(){}
 };
 
-BOOST_AUTO_TEST_SUITE(getRegistrarDetail)
-
 struct test_registrar_fixture
 {
     std::string xmark;
@@ -138,6 +136,8 @@ struct test_registrar_fixture
     {}
 };
 
+BOOST_AUTO_TEST_SUITE(getRegistrarDetail)
+
 struct get_registrar_fixture
 : mojeid_user_contact_fixture
   , test_registrar_fixture
@@ -156,10 +156,13 @@ BOOST_FIXTURE_TEST_CASE(get_registrar_detail, get_registrar_fixture )
 
     BOOST_CHECK(rd.id == registrar_info.info_registrar_data.id);
     BOOST_CHECK(rd.handle == registrar_info.info_registrar_data.handle);
-    BOOST_CHECK(rd.name == registrar_info.info_registrar_data.name.get_value());
-    BOOST_CHECK(rd.phone == registrar_info.info_registrar_data.telephone.get_value());
-    BOOST_CHECK(rd.fax == registrar_info.info_registrar_data.fax.get_value());
-    BOOST_CHECK(rd.url == registrar_info.info_registrar_data.url.get_value());
+    BOOST_CHECK(rd.name == registrar_info.info_registrar_data.name.get_value_or_default());
+    BOOST_CHECK(rd.phone == registrar_info.info_registrar_data.telephone.get_value_or_default());
+    BOOST_CHECK(rd.fax == registrar_info.info_registrar_data.fax.get_value_or_default());
+    BOOST_CHECK(rd.url == registrar_info.info_registrar_data.url.get_value_or_default());
+    BOOST_CHECK(rd.address == (registrar_info.info_registrar_data.street1.get_value_or_default()+ ", "
+        + registrar_info.info_registrar_data.postalcode.get_value_or_default() + " "
+        + registrar_info.info_registrar_data.city.get_value_or_default()));
     BOOST_MESSAGE(rd.address);
 }
 
@@ -179,7 +182,7 @@ BOOST_FIXTURE_TEST_CASE(get_registrar_detail_no_user, get_registrar_detail_no_us
         Fred::InfoRegistrarOutput registrar_info = Fred::InfoRegistrarByHandle(test_registrar_handle).exec(ctx);
         Registry::DomainBrowserImpl::DomainBrowser impl(server_name);
         Registry::DomainBrowserImpl::RegistrarDetail rd = impl.getRegistrarDetail(0, test_registrar_handle);
-        BOOST_ERROR("unreported mojeidContact state");
+        BOOST_ERROR("unreported missing user contact");
     }
     catch( const Registry::DomainBrowserImpl::UserNotExists& ex)
     {
@@ -216,6 +219,257 @@ BOOST_FIXTURE_TEST_CASE(get_registrar_detail_not_mojeid_user, get_registrar_deta
     }
 }
 
+struct get_registrar_detail_no_registrar_fixture
+: mojeid_user_contact_fixture
+{};
+
+/**
+ * test getRegistrarDetail no registrar
+*/
+BOOST_FIXTURE_TEST_CASE(get_registrar_detail_no_registrar, get_registrar_detail_no_registrar_fixture )
+{
+    try
+    {
+        Fred::OperationContext ctx;
+        Registry::DomainBrowserImpl::DomainBrowser impl(server_name);
+        Registry::DomainBrowserImpl::RegistrarDetail rd = impl.getRegistrarDetail(user_contact_info.info_contact_data.id,
+                "NO-NO-REGISTRAR-HANDLE");
+        BOOST_ERROR("unreported missing registrar");
+    }
+    catch( const Registry::DomainBrowserImpl::ObjectNotExists& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
 BOOST_AUTO_TEST_SUITE_END();//getRegistrarDetail
+
+BOOST_AUTO_TEST_SUITE(getContactDetail)
+
+struct test_contact_fixture
+: test_registrar_fixture
+{
+    std::string test_contact_handle;
+
+    test_contact_fixture()
+    :test_contact_handle(std::string("TEST-CONTACT-HANDLE")+xmark)
+    {
+        Fred::OperationContext ctx;
+
+        BOOST_CHECK(!test_registrar_handle.empty());//expecting existing registrar
+
+        Fred::CreateContact(test_contact_handle,test_registrar_handle).set_name(std::string("TEST-CONTACT NAME")+xmark)
+            .set_name(std::string("TEST-CONTACT NAME")+xmark)
+            .set_disclosename(true)
+            .set_street1(std::string("STR1")+xmark)
+            .set_city("Praha").set_postalcode("11150").set_country("CZ")
+            .set_discloseaddress(true)
+            .exec(ctx);
+
+        ctx.commit_transaction();//commit fixture
+    }
+    ~test_contact_fixture()
+    {}
+};
+
+struct get_my_contact_fixture
+: mojeid_user_contact_fixture
+{};
+
+/**
+ * test call getContactDetail with private data
+*/
+BOOST_FIXTURE_TEST_CASE(get_my_contact_detail, get_my_contact_fixture )
+{
+    Fred::OperationContext ctx;
+    Fred::InfoContactOutput my_contact_info = Fred::InfoContactByHandle(user_contact_handle).exec(ctx);
+    Fred::InfoRegistrarOutput sponsoring_registrar_info = Fred::InfoRegistrarByHandle(my_contact_info.info_contact_data.sponsoring_registrar_handle).exec(ctx);
+
+    Registry::DomainBrowserImpl::DomainBrowser impl(server_name);
+    Registry::DomainBrowserImpl::ContactDetail cd = impl.getContactDetail(user_contact_info.info_contact_data.id,
+            my_contact_info.info_contact_data.id, "CS");
+
+    BOOST_CHECK(cd.id == my_contact_info.info_contact_data.id);
+    BOOST_CHECK(cd.handle == my_contact_info.info_contact_data.handle);
+    BOOST_CHECK(cd.roid == my_contact_info.info_contact_data.roid);
+    BOOST_CHECK(cd.sponsoring_registrar.id == sponsoring_registrar_info.info_registrar_data.id);
+    BOOST_CHECK(cd.sponsoring_registrar.handle == sponsoring_registrar_info.info_registrar_data.handle);
+    BOOST_CHECK(cd.sponsoring_registrar.name == sponsoring_registrar_info.info_registrar_data.name.get_value_or_default());
+    BOOST_CHECK(cd.creation_time == my_contact_info.info_contact_data.creation_time);
+    BOOST_CHECK(cd.update_time.get_value_or_default() == my_contact_info.info_contact_data.update_time.get_value_or_default());
+    BOOST_CHECK(cd.transfer_time.get_value_or_default() == my_contact_info.info_contact_data.transfer_time.get_value_or_default());
+    BOOST_CHECK(cd.authinfopw == my_contact_info.info_contact_data.authinfopw);
+    BOOST_CHECK(cd.name.get_value_or_default() == my_contact_info.info_contact_data.name.get_value_or_default());
+    BOOST_CHECK(cd.organization.get_value_or_default() == my_contact_info.info_contact_data.organization.get_value_or_default());
+    BOOST_CHECK(cd.street1.get_value_or_default() == my_contact_info.info_contact_data.street1.get_value_or_default());
+    BOOST_CHECK(cd.street2.get_value_or_default() == my_contact_info.info_contact_data.street2.get_value_or_default());
+    BOOST_CHECK(cd.street3.get_value_or_default() == my_contact_info.info_contact_data.street3.get_value_or_default());
+    BOOST_CHECK(cd.city.get_value_or_default() == my_contact_info.info_contact_data.city.get_value_or_default());
+    BOOST_CHECK(cd.stateorprovince.get_value_or_default() == my_contact_info.info_contact_data.stateorprovince.get_value_or_default());
+    BOOST_CHECK(cd.postalcode.get_value_or_default() == my_contact_info.info_contact_data.postalcode.get_value_or_default());
+    BOOST_CHECK(cd.country.get_value_or_default() == my_contact_info.info_contact_data.country.get_value_or_default());
+    BOOST_CHECK(cd.telephone.get_value_or_default() == my_contact_info.info_contact_data.telephone.get_value_or_default());
+    BOOST_CHECK(cd.fax.get_value_or_default() == my_contact_info.info_contact_data.fax.get_value_or_default());
+    BOOST_CHECK(cd.email.get_value_or_default() == my_contact_info.info_contact_data.email.get_value_or_default());
+    BOOST_CHECK(cd.notifyemail.get_value_or_default() == my_contact_info.info_contact_data.notifyemail.get_value_or_default());
+    BOOST_CHECK(cd.vat.get_value_or_default() == my_contact_info.info_contact_data.vat.get_value_or_default());
+    BOOST_CHECK(cd.ssntype.get_value_or_default() == my_contact_info.info_contact_data.ssntype.get_value_or_default());
+    BOOST_CHECK(cd.ssn.get_value_or_default() == my_contact_info.info_contact_data.ssn.get_value_or_default());
+    BOOST_CHECK(cd.disclose_flags.name == my_contact_info.info_contact_data.disclosename.get_value_or_default());
+    BOOST_CHECK(cd.disclose_flags.organization == my_contact_info.info_contact_data.discloseorganization.get_value_or_default());
+    BOOST_CHECK(cd.disclose_flags.email == my_contact_info.info_contact_data.discloseemail.get_value_or_default());
+    BOOST_CHECK(cd.disclose_flags.address == my_contact_info.info_contact_data.discloseaddress.get_value_or_default());
+    BOOST_CHECK(cd.disclose_flags.telephone == my_contact_info.info_contact_data.disclosetelephone.get_value_or_default());
+    BOOST_CHECK(cd.disclose_flags.fax == my_contact_info.info_contact_data.disclosefax.get_value_or_default());
+    BOOST_CHECK(cd.disclose_flags.ident == my_contact_info.info_contact_data.discloseident.get_value_or_default());
+    BOOST_CHECK(cd.disclose_flags.vat == my_contact_info.info_contact_data.disclosevat.get_value_or_default());
+    BOOST_CHECK(cd.disclose_flags.notify_email == my_contact_info.info_contact_data.disclosenotifyemail.get_value_or_default());
+    BOOST_CHECK(cd.states.find_first_of("MojeID contact") != std::string::npos);
+    BOOST_CHECK(cd.state_codes.find_first_of("mojeidContact") != std::string::npos);
+    BOOST_CHECK(cd.is_owner == true);
+
+    BOOST_MESSAGE(cd.states);
+    BOOST_MESSAGE(cd.state_codes);
+}
+
+struct get_contact_fixture
+: mojeid_user_contact_fixture
+, test_contact_fixture
+{};
+
+
+/**
+ * test call getContactDetail with public data
+*/
+BOOST_FIXTURE_TEST_CASE(get_contact_detail, get_contact_fixture )
+{
+    Fred::OperationContext ctx;
+    Fred::InfoContactOutput test_contact_info = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
+    Fred::InfoRegistrarOutput sponsoring_registrar_info = Fred::InfoRegistrarByHandle(test_contact_info.info_contact_data.sponsoring_registrar_handle).exec(ctx);
+
+    Registry::DomainBrowserImpl::DomainBrowser impl(server_name);
+    Registry::DomainBrowserImpl::ContactDetail cd = impl.getContactDetail(user_contact_info.info_contact_data.id,
+            test_contact_info.info_contact_data.id, "CS");
+
+    BOOST_CHECK(cd.id == test_contact_info.info_contact_data.id);
+    BOOST_CHECK(cd.handle == test_contact_info.info_contact_data.handle);
+    BOOST_CHECK(cd.roid == test_contact_info.info_contact_data.roid);
+    BOOST_CHECK(cd.sponsoring_registrar.id == sponsoring_registrar_info.info_registrar_data.id);
+    BOOST_CHECK(cd.sponsoring_registrar.handle == sponsoring_registrar_info.info_registrar_data.handle);
+    BOOST_CHECK(cd.sponsoring_registrar.name == sponsoring_registrar_info.info_registrar_data.name.get_value_or_default());
+    BOOST_CHECK(cd.creation_time == test_contact_info.info_contact_data.creation_time);
+    BOOST_CHECK(cd.update_time.get_value_or_default() == test_contact_info.info_contact_data.update_time.get_value_or_default());
+    BOOST_CHECK(cd.transfer_time.get_value_or_default() == test_contact_info.info_contact_data.transfer_time.get_value_or_default());
+    BOOST_CHECK(cd.authinfopw == "********");
+    BOOST_CHECK(cd.name.get_value_or_default() == test_contact_info.info_contact_data.name.get_value_or_default());
+    BOOST_CHECK(cd.organization.get_value_or_default() == test_contact_info.info_contact_data.organization.get_value_or_default());
+    BOOST_CHECK(cd.street1.get_value_or_default() == test_contact_info.info_contact_data.street1.get_value_or_default());
+    BOOST_CHECK(cd.street2.get_value_or_default() == test_contact_info.info_contact_data.street2.get_value_or_default());
+    BOOST_CHECK(cd.street3.get_value_or_default() == test_contact_info.info_contact_data.street3.get_value_or_default());
+    BOOST_CHECK(cd.city.get_value_or_default() == test_contact_info.info_contact_data.city.get_value_or_default());
+    BOOST_CHECK(cd.stateorprovince.get_value_or_default() == test_contact_info.info_contact_data.stateorprovince.get_value_or_default());
+    BOOST_CHECK(cd.postalcode.get_value_or_default() == test_contact_info.info_contact_data.postalcode.get_value_or_default());
+    BOOST_CHECK(cd.country.get_value_or_default() == test_contact_info.info_contact_data.country.get_value_or_default());
+    BOOST_CHECK(cd.telephone.get_value_or_default() == test_contact_info.info_contact_data.telephone.get_value_or_default());
+    BOOST_CHECK(cd.fax.get_value_or_default() == test_contact_info.info_contact_data.fax.get_value_or_default());
+    BOOST_CHECK(cd.email.get_value_or_default() == test_contact_info.info_contact_data.email.get_value_or_default());
+    BOOST_CHECK(cd.notifyemail.get_value_or_default() == test_contact_info.info_contact_data.notifyemail.get_value_or_default());
+    BOOST_CHECK(cd.vat.get_value_or_default() == test_contact_info.info_contact_data.vat.get_value_or_default());
+    BOOST_CHECK(cd.ssntype.get_value_or_default() == test_contact_info.info_contact_data.ssntype.get_value_or_default());
+    BOOST_CHECK(cd.ssn.get_value_or_default() == test_contact_info.info_contact_data.ssn.get_value_or_default());
+    BOOST_CHECK(cd.disclose_flags.name == test_contact_info.info_contact_data.disclosename.get_value_or_default());
+    BOOST_CHECK(cd.disclose_flags.organization == test_contact_info.info_contact_data.discloseorganization.get_value_or_default());
+    BOOST_CHECK(cd.disclose_flags.email == test_contact_info.info_contact_data.discloseemail.get_value_or_default());
+    BOOST_CHECK(cd.disclose_flags.address == test_contact_info.info_contact_data.discloseaddress.get_value_or_default());
+    BOOST_CHECK(cd.disclose_flags.telephone == test_contact_info.info_contact_data.disclosetelephone.get_value_or_default());
+    BOOST_CHECK(cd.disclose_flags.fax == test_contact_info.info_contact_data.disclosefax.get_value_or_default());
+    BOOST_CHECK(cd.disclose_flags.ident == test_contact_info.info_contact_data.discloseident.get_value_or_default());
+    BOOST_CHECK(cd.disclose_flags.vat == test_contact_info.info_contact_data.disclosevat.get_value_or_default());
+    BOOST_CHECK(cd.disclose_flags.notify_email == test_contact_info.info_contact_data.disclosenotifyemail.get_value_or_default());
+    BOOST_CHECK(cd.states.find_first_of("MojeID contact") == std::string::npos);
+    BOOST_CHECK(cd.state_codes.find_first_of("mojeidContact") == std::string::npos);
+    BOOST_CHECK(cd.is_owner == false);
+
+    BOOST_MESSAGE(cd.states);
+    BOOST_MESSAGE(cd.state_codes);
+}
+
+struct get_contact_detail_no_user_fixture
+: test_contact_fixture
+{};
+
+/**
+ * test getContactDetail no user contact
+*/
+BOOST_FIXTURE_TEST_CASE(get_contact_detail_no_user, get_contact_detail_no_user_fixture )
+{
+    try
+    {
+        Fred::OperationContext ctx;
+        Fred::InfoContactOutput test_contact_info = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
+        Registry::DomainBrowserImpl::DomainBrowser impl(server_name);
+        Registry::DomainBrowserImpl::ContactDetail cd = impl.getContactDetail(0,test_contact_info.info_contact_data.id, "CS");
+
+        BOOST_ERROR("unreported missing user contact");
+    }
+    catch( const Registry::DomainBrowserImpl::UserNotExists& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
+struct get_contact_detail_not_mojeid_user_fixture
+: user_contact_fixture
+  , test_contact_fixture
+{};
+
+/**
+ * test getContactDetail not mojeid user contact
+ */
+BOOST_FIXTURE_TEST_CASE(get_contact_detail_not_mojeid_user, get_contact_detail_not_mojeid_user_fixture )
+{
+    try
+    {
+        Fred::OperationContext ctx;
+        Fred::InfoContactOutput test_contact_info = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
+        Registry::DomainBrowserImpl::DomainBrowser impl(server_name);
+        Registry::DomainBrowserImpl::ContactDetail cd = impl.getContactDetail(user_contact_info.info_contact_data.id,
+                test_contact_info.info_contact_data.id, "CS");
+        BOOST_ERROR("unreported mojeidContact state");
+    }
+    catch( const Registry::DomainBrowserImpl::UserNotExists& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
+struct get_contact_detail_no_test_contact_fixture
+: mojeid_user_contact_fixture
+{};
+
+/**
+ * test getContactDetail not mojeid user contact
+ */
+BOOST_FIXTURE_TEST_CASE(get_contact_detail_no_test_contact, get_contact_detail_no_test_contact_fixture )
+{
+    try
+    {
+        Fred::OperationContext ctx;
+        Registry::DomainBrowserImpl::DomainBrowser impl(server_name);
+        Registry::DomainBrowserImpl::ContactDetail cd = impl.getContactDetail(user_contact_info.info_contact_data.id,0, "CS");
+        BOOST_ERROR("unreported missing test contact");
+    }
+    catch( const Registry::DomainBrowserImpl::ObjectNotExists& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
+
+BOOST_AUTO_TEST_SUITE_END();//getContactDetail
 
 BOOST_AUTO_TEST_SUITE_END();//TestDomainBrowser

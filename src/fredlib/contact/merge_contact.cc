@@ -396,9 +396,9 @@ namespace Fred
             DeleteContact(src_contact_handle_).exec(ctx);
             /* #9877 - change authinfo of destination contact */
             std::string new_authinfo =  Random::string_from(8, "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789");
-            UpdateContactByHandle(dst_contact_handle_, registrar_)
-                .set_logd_request_id(logd_request_id_.get_value())
-                .set_authinfo(new_authinfo)
+            UpdateContactByHandle ucbh (dst_contact_handle_, registrar_);
+                if(logd_request_id_.isset()) ucbh.set_logd_request_id(logd_request_id_.get_value());
+                ucbh.set_authinfo(new_authinfo)
                 .exec(ctx);
         }
 

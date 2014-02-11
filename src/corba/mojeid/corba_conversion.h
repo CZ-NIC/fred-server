@@ -215,7 +215,7 @@ Fred::Contact::Verification::Contact corba_unwrap_contact(const Contact &_contac
         else if (type == "BIRTHDAY") data.ssn = corba_unwrap_nullable_date(_contact.birth_date);
     }
 
-    data.id = corba_unwrap_nullable_ulonglong(_contact.id).get_value();
+    data.id = corba_unwrap_nullable_ulonglong(_contact.id).get_value_or_default();
     data.name = corba_unwrap_string(_contact.first_name) + " " + corba_unwrap_string(_contact.last_name);
     data.handle = corba_unwrap_string(_contact.username);
     data.organization = corba_unwrap_nullable_string(_contact.organization);
@@ -240,7 +240,7 @@ Contact* corba_wrap_contact(const Fred::Contact::Verification::Contact &_contact
     data->vat_reg_num  = corba_wrap_nullable_string(_contact.vat);
     data->ssn_type     = corba_wrap_nullable_string(_contact.ssntype);
 
-    std::string type = _contact.ssntype.get_value();
+    std::string type = _contact.ssntype.get_value_or_default();
     data->id_card_num  = type == "OP"       ? corba_wrap_nullable_string(_contact.ssn) : 0;
     data->passport_num = type == "PASS"     ? corba_wrap_nullable_string(_contact.ssn) : 0;
     data->vat_id_num   = type == "ICO"      ? corba_wrap_nullable_string(_contact.ssn) : 0;
@@ -249,26 +249,26 @@ Contact* corba_wrap_contact(const Fred::Contact::Verification::Contact &_contact
 
     data->addresses.length(1);
     data->addresses[0].type         = "DEFAULT";
-    data->addresses[0].street1      = corba_wrap_string(_contact.street1.get_value());
+    data->addresses[0].street1      = corba_wrap_string(_contact.street1.get_value_or_default());
     data->addresses[0].street2      = corba_wrap_nullable_string(_contact.street2);
     data->addresses[0].street3      = corba_wrap_nullable_string(_contact.street3);
-    data->addresses[0].city         = corba_wrap_string(_contact.city.get_value());
+    data->addresses[0].city         = corba_wrap_string(_contact.city.get_value_or_default());
     data->addresses[0].state        = corba_wrap_nullable_string(_contact.stateorprovince);
-    data->addresses[0].postal_code  = corba_wrap_string(_contact.postalcode.get_value());
-    data->addresses[0].country      = corba_wrap_string(_contact.country.get_value());
+    data->addresses[0].postal_code  = corba_wrap_string(_contact.postalcode.get_value_or_default());
+    data->addresses[0].country      = corba_wrap_string(_contact.country.get_value_or_default());
 
     data->emails.length(1);
     data->emails[0].type = "DEFAULT";
-    data->emails[0].email_address = corba_wrap_string(_contact.email.get_value());
-    std::string notify_email = _contact.notifyemail.get_value();
+    data->emails[0].email_address = corba_wrap_string(_contact.email.get_value_or_default());
+    std::string notify_email = _contact.notifyemail.get_value_or_default();
     if (notify_email.size()) {
         data->emails.length(2);
         data->emails[1].type = "NOTIFY";
         data->emails[1].email_address = corba_wrap_string(notify_email);
     }
 
-    std::string telephone = _contact.telephone.get_value();
-    std::string fax = _contact.fax.get_value();
+    std::string telephone = _contact.telephone.get_value_or_default();
+    std::string fax = _contact.fax.get_value_or_default();
     if (telephone.size()) {
         data->phones.length(1);
         data->phones[0].type = "DEFAULT";
