@@ -61,13 +61,6 @@ namespace Fred
             Optional<unsigned long long>     contact_id_;
 
         public:
-            struct ExceptionUnknownContactId : virtual Fred::OperationException {
-                const char* what() const throw() {return "unknown contact id";}
-            };
-            struct ExceptionUnknownTestsuiteName : virtual Fred::OperationException {
-                const char* what() const throw() {return "unknown testsuite name";}
-            };
-
             /**
              * constructor with only mandatory parameter
              * @param _max_item_count     how many records shall be returned at most.
