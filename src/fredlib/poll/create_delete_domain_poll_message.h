@@ -1,5 +1,5 @@
-#ifndef CREATE_DELETE_CONTACT_POLL_MESSAGE_H__
-#define CREATE_DELETE_CONTACT_POLL_MESSAGE_H__
+#ifndef CREATE_DELETE_DOMAIN_POLL_MESSAGE_H_468854341212_
+#define CREATE_DELETE_DOMAIN_POLL_MESSAGE_H_468854341212_
 
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/opexception.h"
@@ -10,21 +10,20 @@ namespace Fred {
 namespace Poll {
 
 
-class CreateDeleteContactPollMessage : public Util::Printable
-{
+class CreateDeleteDomainPollMessage : public Util::Printable {
 public:
     typedef unsigned long long ObjectHistoryId;
 
-    DECLARE_EXCEPTION_DATA(contact_not_found, unsigned long long);
+    DECLARE_EXCEPTION_DATA(domain_not_found, unsigned long long);
     DECLARE_EXCEPTION_DATA(object_history_not_found, unsigned long long);
     struct Exception
     :
         virtual Fred::OperationException,
-        ExceptionData_contact_not_found<Exception>,
+        ExceptionData_domain_not_found<Exception>,
         ExceptionData_object_history_not_found<Exception>
     { };
 
-    CreateDeleteContactPollMessage(const ObjectHistoryId &_history_id);
+    CreateDeleteDomainPollMessage(ObjectHistoryId _history_id);
 
     unsigned long long exec(Fred::OperationContext &_ctx);
 
@@ -33,12 +32,12 @@ public:
 private:
     ObjectHistoryId history_id_;
 
-    static std::string message_type_handle() { return "delete_contact"; }
+    static std::string message_type_handle() { return "delete_domain"; }
 };
 
 }
 }
 
 
-#endif /*CREATE_DELETE_CONTACT_POLL_MESSAGE_H__*/
+#endif
 

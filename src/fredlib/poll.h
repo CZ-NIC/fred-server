@@ -39,7 +39,8 @@ namespace Fred
       MT_UPDATE_DOMAIN = 17,
       MT_UPDATE_NSSET = 18,
       MT_UPDATE_KEYSET = 19,
-      MT_DELETE_CONTACT = 20
+      MT_DELETE_CONTACT = 20,
+      MT_DELETE_DOMAIN = 21
     };
 
 
