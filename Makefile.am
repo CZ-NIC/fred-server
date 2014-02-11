@@ -1407,8 +1407,10 @@ src_corba_fred_adifd_SOURCES = \
 		src/admin/contact/verification/enqueue_check.cc \
 		src/admin/contact/verification/enqueue_check.h \
 		src/admin/contact/verification/resolve_check.cc \
-		src/admin/contact/verification/resolve_check.h
-
+		src/admin/contact/verification/resolve_check.h \
+		src/admin/contact/verification/delete_domains_of_invalid_contact.cc \
+		src/admin/contact/verification/delete_domains_of_invalid_contact.h
+		
 src_corba_fred_adifd_LDADD = \
 		src/corba/admin/libadmin_impl.a \
 		src/corba/libcorbaadmin.a \
