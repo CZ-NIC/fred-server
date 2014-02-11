@@ -32,10 +32,9 @@
 namespace Admin {
 
     /**
-     * @throw Fred::CreateContactCheck::ExceptionUnknownContactId
-     * @throw Fred::CreateContactCheck::ExceptionUnknownTestsuiteHandle
+     * @throws Fred::ExceptionUnknownContactId
+     * @throws Fred::ExceptionUnknownTestsuiteHandle
      */
-
     std::string enqueue_check(
         Fred::OperationContext& _ctx,
         long long               _contact_id,

@@ -29,6 +29,9 @@
 
 namespace Admin {
 
+    /**
+     * @throws Fred::ExceptionUnknownCheckHandle
+     */
     void delete_domains_of_invalid_contact(
         Fred::OperationContext& _ctx,
         const std::string&      _check_handle);
