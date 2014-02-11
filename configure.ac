@@ -190,6 +190,11 @@ AC_ARG_WITH([msgdport], [AS_HELP_STRING([--with-msgdport],
 			[CORBA fred-msgd port [2228]])],
 			[AC_SUBST([MSGDPORT], [$withval])],
 			[AC_SUBST([MSGDPORT], [2228])])
+#dbifd port
+AC_ARG_WITH([dbifdport], [AS_HELP_STRING([--with-dbifdport],
+			[CORBA fred-dbifd port [2229]])],
+			[AC_SUBST([ABFDPORT], [$withval])],
+			[AC_SUBST([ABFDPORT], [2229])])
 #abfd port
 AC_ARG_WITH([abfdport], [AS_HELP_STRING([--with-abfdport],
 			[CORBA fred-abfd port [2229]])],

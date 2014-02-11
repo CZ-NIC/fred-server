@@ -223,6 +223,7 @@ sbin_PROGRAMS = \
 		src/corba/fred-logd \
 		src/corba/messages/fred-msgd \
 		src/corba/mojeid/fred-mifd \
+		src/corba/domain_browser/fred-dbifd \
 		src/cli_admin/fred-admin \
 		tools/logd_migration/migrate_log
 
@@ -1549,6 +1550,66 @@ src_corba_mojeid_fred_mifd_LDADD = \
 		$(BOOST_SYSTEM_LIB)
 #
 # src/corba/mojeid/fred-mifd
+
+#
+# src/corba/domain_browser/fred-dbifd
+src_corba_domain_browser_fred_dbifd_SOURCES = \
+		src/fredlib/registrar/info_registrar.cc \
+		src/fredlib/registrar/info_registrar.h \
+		src/fredlib/registrar/info_registrar_output.cc \
+		src/fredlib/registrar/info_registrar_output.h \
+		src/fredlib/registrar/info_registrar_data.cc \
+		src/fredlib/registrar/info_registrar_data.h \
+		src/fredlib/registrar/info_registrar_diff.cc \
+		src/fredlib/registrar/info_registrar_diff.h \
+		src/fredlib/registrar/info_registrar_impl.cc \
+		src/fredlib/registrar/info_registrar_impl.h \
+		src/fredlib/contact/info_contact.cc \
+		src/fredlib/contact/info_contact.h \
+		src/fredlib/contact/info_contact_output.cc \
+		src/fredlib/contact/info_contact_output.h \
+		src/fredlib/contact/info_contact_data.cc \
+		src/fredlib/contact/info_contact_data.h \
+		src/fredlib/contact/info_contact_diff.cc \
+		src/fredlib/contact/info_contact_diff.h \
+		src/fredlib/contact/info_contact_impl.cc \
+		src/fredlib/contact/info_contact_impl.h \
+		src/fredlib/object_state/object_has_state.cc \
+		src/fredlib/object_state/object_has_state.h \
+		src/fredlib/object_state/lock_object_state_request_lock.cc \
+		src/fredlib/object_state/lock_object_state_request_lock.h \
+		src/fredlib/opcontext.cc \
+		src/fredlib/opcontext.h \
+		src/corba/nameservice.cc \
+		src/domain_browser/domain_browser.cc \
+		src/domain_browser/domain_browser.h \
+		src/corba/domain_browser/domain_browser_i.cc \
+		src/corba/domain_browser/domain_browser_i.h \
+		src/corba/domain_browser/fred-dbifd.cc
+
+nodist_src_corba_domain_browser_fred_dbifd_SOURCES = \
+		src/corba/DomainBrowserSK.cc
+
+src_corba_domain_browser_fred_dbifd_LDFLAGS = \
+		$(POSTGRESQL_LDFLAGS) \
+		$(BOOST_LDFLAGS) \
+		$(AM_LDFLAGS)
+
+src_corba_domain_browser_fred_dbifd_LDADD = \
+		util/libutil.a \
+		util/log/liblog.a \
+		util/db/libdb.a \
+		-lmpdec -lm \
+		$(LIBIDN_LIBS) \
+		$(BOOST_PROGRAM_OPTIONS_LIB) \
+		$(OMNIORB4_LIBS) \
+		$(BOOST_DATE_TIME_LIB) \
+		$(BOOST_REGEX_LIB) \
+		$(BOOST_THREAD_LIB) \
+		$(POSTGRESQL_LIB) \
+		$(BOOST_SYSTEM_LIB)
+#
+# src/corba/domain_browser/fred-dbifd
 
 
 # src/cli_admin/fred-admin
