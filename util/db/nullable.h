@@ -8,28 +8,51 @@
 template<typename T>
 class Nullable
 {
+public:
+    typedef T Type;
 private:
     bool isnull_;
-    T value_;
-
+    Type value_;
+    template < typename Tc >
+    friend class Nullable; // private members of Nullable< X > are accessible in Nullable< T >
 public:
+    // default ctor => value is NULL
     Nullable()
-        : isnull_(true),
-          value_()
-    {
-    }
-    Nullable(const T &_value)
-        : isnull_(false),
-          value_(_value)
-    {
-    }
+        : isnull_(true), // value is NULL
+          value_()       // default value
+    {}//default
 
-    Nullable<T>& operator=(const T&_value)
+    // init ctor; conversion Tc -> T must be possible
+    template < typename Tc >
+    Nullable(const Tc &_value)
+        : isnull_(false), // value isn't NULL
+          value_(_value)  // conversion Tc -> T exists
+    {}//init
+
+    // copy ctor; an Nullable can be constructed from another Nullable of a different but convertible type
+    template < typename Tc >
+    Nullable(const Nullable< Tc > &_rhs)
+    : isnull_(_rhs.isnull_)
+    , value_(_rhs.value_)
+    {}//copy
+
+    // assignment; an Nullable can be assigned value of a different but convertible type
+    template < typename Tc >
+    Nullable& operator=(const Tc &_value)
     {
-        isnull_ = false;
         value_ = _value;
+        isnull_ = false;
         return *this;
-    }
+    }//assignment
+
+    // assignment; an Nullable can be assigned another Nullable of a different but convertible type
+    template < typename Tc >
+    Nullable& operator=(const Nullable< Tc > &_rhs)
+    {
+        value_ = _rhs.value_;
+        isnull_ = _rhs.isnull_;
+        return *this;
+    }//assignment
 
     bool isnull() const
     {
@@ -87,6 +110,22 @@ public:
     }
 };
 
+// comparison of equality
+template < typename T >
+bool operator==(const Nullable< T > &_a, const Nullable< T > &_b)
+{
+    return (!_a.isnull() && !_b.isnull() && (_a.get_value_or_default() == _b.get_value_or_default())) ||
+           (_a.isnull() && _b.isnull());
+}
+
+// comparison of inequality
+template < typename T >
+bool operator!=(const Nullable< T > &_a, const Nullable< T > &_b)
+{
+    return !(_a == _b);
+}
+
+// never use Nullable< T* >; isnull() has two meanings
+template < typename T > class Nullable< T* >;
 
 #endif /*NULLABLE_H_*/
-
