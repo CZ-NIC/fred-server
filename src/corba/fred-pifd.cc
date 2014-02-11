@@ -26,7 +26,6 @@
 #include "admin/admin_impl.h"
 #include "whois/whois_impl.h"
 #include "contact_verification/contact_verification_i.h"
-#include "domain_browser/domain_browser_i.h"
 
 #include <iostream>
 #include <stdexcept>
@@ -120,9 +119,6 @@ int main(int argc, char *argv[])
         std::auto_ptr<Registry::Contact::Verification::ContactVerification_i> contact_vrf_iface(
                 new Registry::Contact::Verification::ContactVerification_i("fred-pifd-cv"));
 
-        std::auto_ptr<Registry::DomainBrowser::Server_i> domain_browser_iface(
-                        new Registry::DomainBrowser::Server_i("fred-pifd-cv"));
-
             // create session use values from config
             LOGGER(PACKAGE).info(boost::format(
                     "sessions max: %1%; timeout: %2%")
@@ -138,10 +134,6 @@ int main(int argc, char *argv[])
 
         CorbaContainer::get_instance()
             ->register_server(contact_vrf_iface.release(), "ContactVerification");
-
-        CorbaContainer::get_instance()
-            ->register_server(domain_browser_iface.release(), "DomainBrowserTest");
-
 
         run_server(CfgArgs::instance(), CorbaContainer::get_instance());
 
