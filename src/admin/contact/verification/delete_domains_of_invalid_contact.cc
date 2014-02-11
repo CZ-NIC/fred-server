@@ -3,8 +3,10 @@
 #include "src/fredlib/contact/verification/info_check.h"
 #include "src/fredlib/contact/verification/enum_testsuite_handle.h"
 #include "src/fredlib/contact/verification/enum_check_status.h"
-#include "src/fredlib/contact/info_contact.h"
-#include "src/fredlib/domain/delete_domain.h"
+
+#include <fredlib/domain.h>
+#include <fredlib/contact.h>
+#include "src/fredlib/poll/create_delete_domain_poll_message.h"
 
 #include <set>
 
@@ -13,6 +15,11 @@ namespace  Admin {
     static std::set<unsigned long long> get_owned_domains_locking(
         Fred::OperationContext& _ctx,
         unsigned long long _contact_id);
+
+    static void store_check_poll_message_relation(
+        Fred::OperationContext& _ctx,
+        const std::string&      _check_handle,
+        unsigned long long      _poll_msg_id);
 
     void delete_domains_of_invalid_contact(
         Fred::OperationContext& _ctx,
@@ -27,19 +34,29 @@ namespace  Admin {
             return;
         }
 
+        Fred::InfoContactOutput contact_info = Fred::HistoryInfoContactByHistoryid(check_info.contact_history_id).exec(_ctx);
+
         std::set<unsigned long long> domain_ids_to_delete =
             get_owned_domains_locking (
                 _ctx,
-                Fred::HistoryInfoContactByHistoryid(check_info.contact_history_id)
-                .exec(_ctx)
-                    .info_contact_data.id
+                contact_info.info_contact_data.id
             );
 
         for(std::set<unsigned long long>::const_iterator it = domain_ids_to_delete.begin();
             it != domain_ids_to_delete.end();
             ++it
         ){
+            // beware - need to get info before deleting
+            Fred::InfoDomainData info_domain = Fred::InfoDomainById(*it).exec(_ctx).info_domain_data;
             Fred::DeleteDomainById(*it).exec(_ctx);
+
+            store_check_poll_message_relation(
+                _ctx,
+                _check_handle,
+                Fred::Poll::CreateDeleteDomainPollMessage(
+                    info_domain.historyid
+                ).exec(_ctx)
+            );
         }
     }
 
@@ -66,5 +83,24 @@ namespace  Admin {
         }
 
         return result;
+    }
+
+    void store_check_poll_message_relation(
+        Fred::OperationContext& _ctx,
+        const std::string&      _check_handle,
+        unsigned long long      _poll_msg_id
+    ) {
+        _ctx.get_conn().exec_params(
+            "INSERT "
+            "   INTO contact_check_poll_message_map "
+            "   (contact_check_id, poll_message_id) "
+            "   VALUES("
+            "       (SELECT id FROM contact_check WHERE handle=$1::uuid), "
+            "       $2::bigint"
+            "   ) ",
+            Database::query_param_list
+                (_check_handle)
+                (_poll_msg_id)
+        );
     }
 }
