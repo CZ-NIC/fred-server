@@ -724,8 +724,10 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/contact/info_contact_output.h \
 		src/fredlib/object/object.h \
 		src/fredlib/object/object.cc \
-		src/fredlib/poll/create_poll_message.h \
-		src/fredlib/poll/create_poll_message.cc \
+		src/fredlib/poll/create_poll_message_impl.h \
+		src/fredlib/poll/create_poll_message_impl.cc \
+		src/fredlib/poll/create_epp_action_poll_message_impl.h \
+		src/fredlib/poll/create_epp_action_poll_message_impl.cc \
 		src/fredlib/poll/create_update_object_poll_message.h \
 		src/fredlib/poll/create_update_object_poll_message.cc \
 		src/fredlib/poll/create_delete_contact_poll_message.h \
