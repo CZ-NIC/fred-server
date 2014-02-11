@@ -129,9 +129,11 @@ namespace Registry
             ContactDiscloseFlags disclose_flags;/**< contact fields disclose flags*/
             std::string states;/**< contact states descriptions in given language from db. table enum_object_states_desc delimited by pipe '|' character */
             std::string state_codes;/**< contact states names from db. table enum_object_states delimited by coma ',' character */
+            bool is_owner;/**< whether user contact is the same as requested contact */
 
             ContactDetail()
             : id(0)
+            , is_owner(false)
             {}
         };
 

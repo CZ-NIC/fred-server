@@ -285,7 +285,7 @@ namespace Registry
                     ? "" : boost::gregorian::to_iso_extended_string(detail_impl.transfer_time.get_value().date()).c_str());
                 contact_detail->update_date = CORBA::string_dup(detail_impl.update_time.isnull()
                     ? "" : boost::gregorian::to_iso_extended_string(detail_impl.update_time.get_value().date()).c_str());
-
+                contact_detail->auth_info = CORBA::string_dup(detail_impl.authinfopw.c_str());
                 contact_detail->name = CORBA::string_dup(detail_impl.name.get_value_or_default().c_str());
                 contact_detail->organization = CORBA::string_dup(detail_impl.organization.get_value_or_default().c_str());
                 contact_detail->street1 = CORBA::string_dup(detail_impl.street1.get_value_or_default().c_str());
@@ -314,15 +314,13 @@ namespace Registry
                 contact_detail->states = CORBA::string_dup(detail_impl.states.c_str());
                 contact_detail->state_codes = CORBA::string_dup(detail_impl.state_codes.c_str());
 
-                if(contact.id == detail.id)//if user is owner of requested contact
+                if(detail_impl.is_owner)
                 {
                     auth_result = PRIVATE_DATA;
-                    contact_detail->auth_info = CORBA::string_dup(detail_impl.authinfopw.c_str());
                 }
                 else
                 {
                     auth_result = PUBLIC_DATA;
-                    contact_detail->auth_info = CORBA::string_dup("********");
                 }
 
                 return contact_detail._retn();

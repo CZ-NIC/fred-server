@@ -226,7 +226,17 @@ namespace Registry
             detail.creation_time = contact_info.info_contact_data.creation_time;
             detail.update_time = contact_info.info_contact_data.update_time;
             detail.transfer_time = contact_info.info_contact_data.transfer_time;
-            detail.authinfopw = contact_info.info_contact_data.authinfopw;
+
+            detail.is_owner = (user_contact_id == contact_id);
+            if(detail.is_owner)//if user contact is the same as requested contact
+            {
+                detail.authinfopw = contact_info.info_contact_data.authinfopw;
+            }
+            else
+            {
+                detail.authinfopw ="********";
+            }
+
             detail.name = contact_info.info_contact_data.name;
             detail.organization = contact_info.info_contact_data.organization;
             detail.street1 = contact_info.info_contact_data.street1;
