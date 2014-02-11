@@ -70,7 +70,7 @@
 #include "src/fredlib/contact/merge_contact_email_notification_data.h"
 #include "src/fredlib/contact/merge_contact_selection.h"
 #include "src/fredlib/poll/create_delete_contact_poll_message.h"
-#include "src/fredlib/poll/create_poll_message.h"
+#include "src/fredlib/poll/create_poll_message_impl.h"
 #include "src/fredlib/poll/create_update_object_poll_message.h"
 #include "src/fredlib/contact/info_contact_diff.h"
 #include "src/fredlib/domain/info_domain_diff.h"
