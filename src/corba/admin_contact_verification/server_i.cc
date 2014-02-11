@@ -34,6 +34,7 @@
 #include "src/fredlib/contact/verification/list_enum_objects.h"
 #include "src/fredlib/contact/verification/update_test.h"
 #include "src/admin/contact/verification/resolve_check.h"
+#include "src/admin/contact/verification/delete_domains_of_invalid_contact.h"
 #include "src/corba/util/corba_conversions_datetime.h"
 #include "src/corba/util/corba_conversions_string.h"
 #include "src/corba/util/corba_conversions_nullable_types.h"
@@ -252,6 +253,17 @@ namespace Registry
                 Corba::unwrap_string(status),
                 logd_request_id
             ).exec(ctx);
+
+            ctx.commit_transaction();
+        }
+
+        void Server_i::deleteDomainsAfterFailedManualCheck(const char* check_handle) {
+            Fred::OperationContext ctx;
+
+            Admin::delete_domains_of_invalid_contact(
+                ctx,
+                Corba::unwrap_string(check_handle)
+            );
 
             ctx.commit_transaction();
         }
