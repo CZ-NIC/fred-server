@@ -48,33 +48,49 @@ namespace arbitrary_pair_ostream_support
 template<typename T>
 class Optional
 {
+public:
+    typedef T Type;
 private:
     bool isset_;
-    T value_;
-
+    Type value_;
+    template < typename Tc >
+    friend class Optional; // private members of Optional< X > are accessible in Optional< T >
 public:
+    // default ctor => value doesn't present
     Optional()
-        : isset_(false),
-          value_()
-    {}
+        : isset_(false), // value doesn't present
+          value_()       // default value
+    {}//default
 
-    Optional(const T &_value)
-        : isset_(true),
-          value_(_value)
+    // init ctor; conversion Tc -> T must be possible
+    template < typename Tc >
+    Optional(const Tc &_value)
+        : isset_(true),  // value present
+          value_(_value) // conversion Tc -> T exists
     {}//init
 
-    Optional(Optional const & rhs)
-    : isset_(rhs.isset_)
-    , value_(rhs.value_)
+    // copy ctor; an Optional can be constructed from another Optional of a different but convertible type
+    template < typename Tc >
+    Optional(const Optional< Tc > &_rhs)
+    : isset_(_rhs.isset_)
+    , value_(_rhs.value_)
     {}//copy
 
-    Optional& operator=(Optional const & rhs)
+    // assignment; an Optional can be assigned value of a different but convertible type
+    template < typename Tc >
+    Optional& operator=(const Tc &_value)
     {
-        if (this != &rhs)
-        {
-            value_=rhs.value_;
-            isset_ = rhs.isset_;
-        }
+        value_ = _value;
+        isset_ = true;
+        return *this;
+    }//assignment
+
+    // assignment; an Optional can be assigned another Optional of a different but convertible type
+    template < typename Tc >
+    Optional& operator=(const Optional< Tc > &_rhs)
+    {
+        value_ = _rhs.value_;
+        isset_ = _rhs.isset_;
         return *this;
     }//assignment
 
@@ -113,5 +129,19 @@ public:
 
 };
 
-#endif //OPTIONAL_VALUE_H_
+// comparison of equality
+template < typename T >
+bool operator==(const Optional< T > &_a, const Optional< T > &_b)
+{
+    return (_a.isset() && _b.isset() && (_a.get_value_or_default() == _b.get_value_or_default())) ||
+           (!_a.isset() && !_b.isset());
+}
 
+// comparison of inequality
+template < typename T >
+bool operator!=(const Optional< T > &_a, const Optional< T > &_b)
+{
+    return !(_a == _b);
+}
+
+#endif //OPTIONAL_VALUE_H_
