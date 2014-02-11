@@ -303,6 +303,7 @@ BOOST_FIXTURE_TEST_CASE(get_my_contact_detail, get_my_contact_fixture )
     BOOST_CHECK(cd.disclose_flags.notify_email == my_contact_info.info_contact_data.disclosenotifyemail.get_value_or_default());
     BOOST_CHECK(cd.states.find_first_of("MojeID contact") != std::string::npos);
     BOOST_CHECK(cd.state_codes.find_first_of("mojeidContact") != std::string::npos);
+    BOOST_CHECK(cd.is_owner == true);
 
     BOOST_MESSAGE(cd.states);
     BOOST_MESSAGE(cd.state_codes);
