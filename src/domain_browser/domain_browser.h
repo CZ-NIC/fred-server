@@ -127,8 +127,8 @@ namespace Registry
             Nullable<std::string> ssntype;/**< type of identification from enumssntype table */
             Nullable<std::string> ssn;/**< unambiguous identification number e.g. social security number, identity card number, date of birth */
             ContactDiscloseFlags disclose_flags;/**< contact fields disclose flags*/
-            std::string states;
-            std::string state_codes;
+            std::string states;/**< contact states descriptions in given language from db. table enum_object_states_desc delimited by pipe '|' character */
+            std::string state_codes;/**< contact states names from db. table enum_object_states delimited by coma ',' character */
 
             ContactDetail()
             : id(0)
