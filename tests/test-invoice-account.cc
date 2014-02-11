@@ -32,6 +32,10 @@
 #include "test-common-registry.h"
 #include "types/money.h"
 #include "fredlib/invoicing/invoice.h"
+#include "fredlib/domain/create_domain.h"
+#include "fredlib/domain/info_domain.h"
+#include "fredlib/contact/create_contact.h"
+#include "fredlib/nsset/create_nsset.h"
 
 #include "test-invoice-common.h"
 
@@ -273,6 +277,172 @@ BOOST_AUTO_TEST_CASE( createAccountInvoice_request1 )
 
 }
 
+BOOST_AUTO_TEST_CASE(archiveAccountInvoice)
+{
+    init_corba_container();
+    Database::Connection conn = Database::Manager::acquire();
+    HandleCorbaNameServiceArgs* ns_args_ptr=CfgArgs::instance()->
+            get_handler_ptr_by_type<HandleCorbaNameServiceArgs>();
+    HandleRegistryArgs* registry_args_ptr = CfgArgs::instance()
+               ->get_handler_ptr_by_type<HandleRegistryArgs>();
+    std::string corbaNS =ns_args_ptr->nameservice_host
+            + ":"
+            + boost::lexical_cast<std::string>(ns_args_ptr->nameservice_port);
+    std::auto_ptr<Fred::Document::Manager> docMan(
+              Fred::Document::Manager::create(
+                  registry_args_ptr->docgen_path
+                  , registry_args_ptr->docgen_template_path
+                  , registry_args_ptr->fileclient_path
+                  , corbaNS)
+              );
+    //manager init
+    MailerManager mailMan(CorbaContainer::get_instance()->getNS());
+    std::auto_ptr<Fred::Invoicing::Manager> invMan(
+        Fred::Invoicing::Manager::create(
+        docMan.get(),&mailMan));
+    FileManagerClient fm_client(
+             CorbaContainer::get_instance()->getNS());
+    unsigned long long zone_cz_id = conn.exec("select id from zone where fqdn='cz'")[0][0];
+    Fred::Registrar::Registrar::AutoPtr registrar = createTestRegistrarClass();
+    std::string registrar_handle =     registrar->getHandle();
+    unsigned long long registrar_inv_id = registrar->getId();
+
+    BOOST_MESSAGE(registrar_handle);
+
+
+    for(unsigned long long iter_account = 0; iter_account < 2 ; ++iter_account)
+    {
+        //add credit
+        unsigned long long invoiceid = 0;
+        Database::Date taxdate;
+        taxdate = Database::Date(2010,1,1);
+        Money price = std::string("1000.00");//money
+        Money out_credit;
+        invoiceid = invMan->createDepositInvoice(taxdate//taxdate
+                , zone_cz_id//zone
+                , registrar_inv_id//registrar
+                , price
+                , boost::posix_time::ptime(taxdate), out_credit);//price
+        BOOST_CHECK_EQUAL(invoiceid != 0,true);
+        Fred::Credit::add_credit_to_invoice( registrar_inv_id,  zone_cz_id, out_credit, invoiceid);
+
+        try
+        {//create domain
+
+            for(unsigned long long i = 0; i < 3 ; ++i)
+            {
+                std::string time_string(TimeStamp::microsec());
+                time_string += "i";
+                time_string += boost::lexical_cast<std::string>(i);
+                std::string xmark(time_string);
+                std::string admin_contact2_handle(std::string("TEST-ADMIN-CONTACT3-HANDLE")+xmark);
+                std::string registrant_contact_handle(std::string("TEST-REGISTRANT-CONTACT-HANDLE") + xmark);
+
+                Fred::OperationContext ctx;
+
+                Fred::CreateContact(admin_contact2_handle,registrar_handle)
+                    .set_name(std::string("TEST-ADMIN-CONTACT3 NAME")+xmark)
+                    .set_disclosename(true)
+                    .set_street1(std::string("STR1")+xmark)
+                    .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                    .set_discloseaddress(true)
+                    .exec(ctx);
+
+                Fred::CreateContact(registrant_contact_handle,registrar_handle)
+                    .set_name(std::string("TEST-REGISTRANT-CONTACT NAME")+xmark)
+                    .set_disclosename(true)
+                    .set_street1(std::string("STR1")+xmark)
+                    .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                    .set_discloseaddress(true)
+                    .exec(ctx);
+
+                std::string test_nsset_handle("invarchtestnsset");
+                test_nsset_handle += time_string;
+                Fred::CreateNsset(test_nsset_handle, registrar_handle)
+                   .set_dns_hosts(Util::vector_of<Fred::DnsHost>
+                       (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.3")("127.1.1.3"))) //add_dns
+                       (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.4")("127.1.1.4"))) //add_dns
+                       )
+                       .set_tech_contacts(Util::vector_of<std::string>(admin_contact2_handle))
+                       .exec(ctx);
+
+                std::string test_domain_fqdn("invarchtest");
+                test_domain_fqdn += time_string;
+                test_domain_fqdn += ".cz";
+
+                BOOST_MESSAGE(test_domain_fqdn);
+
+                Fred::CreateDomain(test_domain_fqdn, registrar_handle, registrant_contact_handle)
+                .set_admin_contacts(Util::vector_of<std::string>(admin_contact2_handle))
+                .set_nsset(test_nsset_handle)
+                .set_expiration_period(12)//1year
+                .exec(ctx);
+
+                unsigned long long domain_id = static_cast<unsigned long long>(
+                        ctx.get_conn().exec_params("select id from object_registry where name = $1::text"
+                        , Database::query_param_list(test_domain_fqdn))[0][0]);
+
+                ctx.commit_transaction();
+
+                invMan->charge_operation_auto_price(
+                                 "CreateDomain"
+                                 , zone_cz_id
+                                 , registrar_inv_id
+                                 , domain_id //object_id
+                                 , boost::posix_time::second_clock::universal_time() //crdate //utc timestamp
+                                 , day_clock::local_day() - boost::gregorian::months(1)//date_from //local date
+                                 , boost::gregorian::date()// date_to //local date
+                                 , Decimal ("1"));//1 year
+
+                invMan->charge_operation_auto_price(
+                                 "RenewDomain"
+                                 , zone_cz_id
+                                 , registrar_inv_id
+                                 , domain_id //object_id
+                                 , boost::posix_time::second_clock::universal_time() //crdate //utc timestamp
+                                 , day_clock::local_day() - boost::gregorian::months(1)//date_from //local date
+                                 , day_clock::local_day() + boost::gregorian::months(11)// date_to //local date
+                                 , Decimal ("1"));//1 year
+
+
+
+            }
+            invMan->charge_operation_auto_price(
+                      "GeneralEppOperation"
+                      , zone_cz_id
+                      , registrar_inv_id
+                      , 0 //object_id
+                      , boost::posix_time::second_clock::universal_time() //crdate //utc timestamp
+                      , day_clock::local_day() - boost::gregorian::months(12) - boost::gregorian::months(1)//date_from //local date
+                      , day_clock::local_day()// date_to //local date
+                      , Decimal ("90"));
+        }
+        catch(boost::exception& ex)
+        {
+            BOOST_MESSAGE(boost::diagnostic_information(ex));
+            throw;
+        }
+        catch(std::exception& ex)
+        {
+            BOOST_MESSAGE(ex.what());
+            throw;
+        }
+
+        {//account invoice
+            boost::gregorian::date todate( day_clock::local_day() );
+            boost::gregorian::date fromdate( todate - months(1) );
+            boost::gregorian::date taxdate(todate);
+
+
+            invMan->createAccountInvoice( registrar_handle, std::string("cz")
+                , taxdate
+                , fromdate //from_date not set
+                , todate, boost::posix_time::ptime(todate));
+        }
+        //call archive invoices and get processed invoice ids
+        InvoiceIdVect inv_id_vect = invMan->archiveInvoices(true);
+    }
+}
 
 BOOST_AUTO_TEST_CASE( createAccountInvoice_request2 )
 {
