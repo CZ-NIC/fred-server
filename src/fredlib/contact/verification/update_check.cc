@@ -69,7 +69,7 @@ namespace Fred
             Database::query_param_list(status_handle_)
         );
         if(status_res.size() != 1) {
-            throw ExceptionUnknownStatusHandle();
+            throw ExceptionUnknownCheckStatusHandle();
         }
         long status_id = static_cast<long>(status_res[0]["id"]);
 
@@ -106,7 +106,7 @@ namespace Fred
             std::string what_string(_exc.what());
 
             if(what_string.find("contact_check_fk_Enum_contact_check_status_id") != std::string::npos) {
-                throw ExceptionUnknownStatusHandle();
+                throw ExceptionUnknownCheckStatusHandle();
             }
 
             // problem was elsewhere so let it propagate

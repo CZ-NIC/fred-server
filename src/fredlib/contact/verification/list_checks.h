@@ -29,7 +29,6 @@
 
 #include "util/printable.h"
 
-#include "src/fredlib/opexception.h"
 #include "src/fredlib/opcontext.h"
 #include "util/optional_value.h"
 

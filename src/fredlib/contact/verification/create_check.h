@@ -26,7 +26,7 @@
 
 #include "util/printable.h"
 
-#include "src/fredlib/opexception.h"
+#include "src/fredlib/contact/verification/exceptions.h"
 #include "src/fredlib/opcontext.h"
 #include "util/db/nullable.h"
 #include "util/optional_value.h"
@@ -44,13 +44,6 @@ namespace Fred
             Nullable<long long> logd_request_id_;
 
         public:
-            struct ExceptionUnknownContactId : virtual Fred::OperationException {
-                const char* what() const throw() {return "unknown contact id";}
-            };
-            struct ExceptionUnknownTestsuiteHandle : virtual Fred::OperationException {
-                const char* what() const throw() {return "unknown testsuite handle";}
-            };
-
             /**
              * constructor only with mandatory parameters
              * @param _contact_id       identifies contact to be checked - current "snapshot" of historical data is used during check.
@@ -80,6 +73,8 @@ namespace Fred
 
             /**
              * Commits operation.
+             * @throws Fred::ExceptionUnknownContactId
+             * @throws Fred::ExceptionUnknownTestsuiteHandle
              * @return handle of created contact_check record.
              */
             std::string exec(OperationContext& ctx);

@@ -88,7 +88,7 @@ namespace Fred
             Database::query_param_list(status_handle_)
         );
         if(status_res.size() != 1) {
-            throw ExceptionUnknownStatusHandle();
+            throw ExceptionUnknownTestStatusHandle();
         }
         long status_id = static_cast<long>(status_res[0]["id"]);
 
@@ -166,7 +166,7 @@ namespace Fred
             }
 
             if(what_string.find("contact_test_result_history_fk_Enum_contact_test_status_id") != std::string::npos) {
-                throw ExceptionUnknownStatusHandle();
+                throw ExceptionUnknownTestStatusHandle();
             }
 
             // problem was elsewhere so let it propagate

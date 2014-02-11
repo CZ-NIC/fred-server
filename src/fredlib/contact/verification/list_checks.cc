@@ -23,6 +23,7 @@
 
 #include "src/fredlib/contact/verification/list_checks.h"
 #include "src/fredlib/contact/verification/enum_check_status.h"
+#include "src/fredlib/opexception.h"
 
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string/join.hpp>

@@ -25,7 +25,7 @@
 #define CONTACT_VERIFICATION_UPDATE_TEST_51798341011_
 
 #include "util/printable.h"
-#include "src/fredlib/opexception.h"
+#include "src/fredlib/contact/verification/exceptions.h"
 #include "src/fredlib/opcontext.h"
 #include "util/db/nullable.h"
 #include "util/optional_value.h"
@@ -43,19 +43,6 @@ namespace Fred
             Nullable<std::string> error_msg_;
 
         public:
-            struct ExceptionUnknownCheckHandle : virtual Fred::OperationException {
-                const char* what() const throw() {return "unknown check handle";}
-            };
-            struct ExceptionUnknownTestHandle : virtual Fred::OperationException {
-                const char* what() const throw() {return "unknown test handle";}
-            };
-            struct ExceptionUnknownCheckTestPair : virtual Fred::OperationException {
-                const char* what() const throw() {return "unknown check_handle, test_handle pair";}
-            };
-            struct ExceptionUnknownStatusHandle : virtual Fred::OperationException {
-                const char* what() const throw() {return "unknown status handle";}
-            };
-
             /**
              * constructor only with mandatory parameters
              * @param _check_handle     identifies which contact_check this test belongs to (by check's handle).
@@ -88,7 +75,13 @@ namespace Fred
              */
             UpdateContactTest& set_error_msg (const std::string& _error_msg);
 
-            // exec
+            /**
+             * Commits operation.
+             * @throws Fred::ExceptionUnknownCheckHandle
+             * @throws Fred::ExceptionUnknownTestHandle
+             * @throws Fred::ExceptionUnknownCheckTestPair
+             * @throws Fred::ExceptionUnknownTestStatusHandle
+             */
             void exec(OperationContext& _ctx);
             // serialization
             virtual std::string to_string() const;
