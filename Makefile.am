@@ -1554,41 +1554,12 @@ src_corba_mojeid_fred_mifd_LDADD = \
 #
 # src/corba/domain_browser/fred-dbifd
 src_corba_domain_browser_fred_dbifd_SOURCES = \
-		src/fredlib/registrar/info_registrar.cc \
-		src/fredlib/registrar/info_registrar.h \
-		src/fredlib/registrar/info_registrar_output.cc \
-		src/fredlib/registrar/info_registrar_output.h \
-		src/fredlib/registrar/info_registrar_data.cc \
-		src/fredlib/registrar/info_registrar_data.h \
-		src/fredlib/registrar/info_registrar_diff.cc \
-		src/fredlib/registrar/info_registrar_diff.h \
-		src/fredlib/registrar/info_registrar_impl.cc \
-		src/fredlib/registrar/info_registrar_impl.h \
-		src/fredlib/contact/info_contact.cc \
-		src/fredlib/contact/info_contact.h \
-		src/fredlib/contact/info_contact_output.cc \
-		src/fredlib/contact/info_contact_output.h \
-		src/fredlib/contact/info_contact_data.cc \
-		src/fredlib/contact/info_contact_data.h \
-		src/fredlib/contact/info_contact_diff.cc \
-		src/fredlib/contact/info_contact_diff.h \
-		src/fredlib/contact/info_contact_impl.cc \
-		src/fredlib/contact/info_contact_impl.h \
-		src/fredlib/object_state/object_has_state.cc \
-		src/fredlib/object_state/object_has_state.h \
-		src/fredlib/object_state/lock_object_state_request_lock.cc \
-		src/fredlib/object_state/lock_object_state_request_lock.h \
-		src/fredlib/opcontext.cc \
-		src/fredlib/opcontext.h \
-		src/corba/nameservice.cc \
 		src/domain_browser/domain_browser.cc \
 		src/domain_browser/domain_browser.h \
+		src/corba/nameservice.cc \
 		src/corba/domain_browser/domain_browser_i.cc \
 		src/corba/domain_browser/domain_browser_i.h \
 		src/corba/domain_browser/fred-dbifd.cc
-
-nodist_src_corba_domain_browser_fred_dbifd_SOURCES = \
-		src/corba/DomainBrowserSK.cc
 
 src_corba_domain_browser_fred_dbifd_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS) \
@@ -1596,6 +1567,8 @@ src_corba_domain_browser_fred_dbifd_LDFLAGS = \
 		$(AM_LDFLAGS)
 
 src_corba_domain_browser_fred_dbifd_LDADD = \
+		src/corba/libcorbadomainbrowser.a \
+		src/fredlib/libfred.a \
 		util/libutil.a \
 		util/log/liblog.a \
 		util/db/libdb.a \
