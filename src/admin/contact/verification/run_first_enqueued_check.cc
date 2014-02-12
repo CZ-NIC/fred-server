@@ -109,22 +109,26 @@ namespace  Admin {
                         throw Fred::InternalError("malfunction in implementation of test " + test_handle + ", run() returned bad status");
                     }
                 } catch(...) {
-                    ctx_locked_test.get_conn().exec("ROLLBACK;");
+                    try {
+                        ctx_locked_test.get_conn().exec("ROLLBACK;");
 
-                    Fred::OperationContext ctx_testrun_error;
-                    test_statuses.push_back(Fred::ContactTestStatus::ERROR);
-                    error_messages.push_back(Optional<std::string>("exception in test implementation"));
+                        Fred::OperationContext ctx_testrun_error;
+                        test_statuses.push_back(Fred::ContactTestStatus::ERROR);
+                        error_messages.push_back(Optional<std::string>("exception in test implementation"));
 
-                    Fred::UpdateContactTest(
-                        check_handle,
-                        test_handle,
-                        test_statuses.back(),
-                        _logd_request_id,
-                        error_messages.back()
-                    ).exec(ctx_testrun_error);
+                        Fred::UpdateContactTest(
+                            check_handle,
+                            test_handle,
+                            test_statuses.back(),
+                            _logd_request_id,
+                            error_messages.back()
+                        ).exec(ctx_testrun_error);
 
-                    ctx_testrun_error.get_log().warning("exception in test implementation " + test_handle);
-                    ctx_testrun_error.commit_transaction();
+                        ctx_testrun_error.get_log().warning("exception in test implementation " + test_handle);
+                        ctx_testrun_error.commit_transaction();
+                    } catch(...) {
+                        // the caught exception is probably the cause for this one as well
+                    }
 
                     // let it propagate so the check can be updated to reflect this situation
                     throw;
@@ -160,7 +164,7 @@ namespace  Admin {
 
                 ctx_locked_check.commit_transaction();
             } catch(...) {
-                // the caught exception is probably the cause
+                // the caught exception is probably the cause for this one as well
             }
 
             throw;
