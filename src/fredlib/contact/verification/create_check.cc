@@ -152,7 +152,7 @@ namespace Fred
             throw;
         }
 
-        _ctx.get_log().debug("CreateContactCheck executed succesfully");
+        _ctx.get_log().debug("CreateContactCheck executed successfully");
 
         return handle;
     }

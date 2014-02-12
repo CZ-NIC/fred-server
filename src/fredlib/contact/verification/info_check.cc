@@ -165,7 +165,7 @@ namespace Fred
             temp_check_history_state.local_update_time = boost::posix_time::time_from_string(static_cast<std::string>( contact_check_data[0]["update_time_"]));
             result.check_state_history.push_back(temp_check_history_state);
 
-            _ctx.get_log().debug("InfoContactCheck executed succesfully");
+            _ctx.get_log().debug("InfoContactCheck executed successfully");
 
             return result;
 

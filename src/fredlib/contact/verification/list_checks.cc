@@ -219,7 +219,7 @@ namespace Fred
                 result.push_back(it->second);
             }
 
-            _ctx.get_log().debug("ListContactChecks executed succesfully");
+            _ctx.get_log().debug("ListContactChecks executed successfully");
 
             return result;
 

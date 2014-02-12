@@ -113,7 +113,7 @@ namespace Fred
             throw;
         }
 
-        _ctx.get_log().debug("UpdateContactCheck executed succesfully");
+        _ctx.get_log().debug("UpdateContactCheck executed successfully");
     }
 
     std::string UpdateContactCheck::to_string() const {

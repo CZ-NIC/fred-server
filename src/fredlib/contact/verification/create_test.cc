@@ -152,7 +152,7 @@ namespace Fred
             throw;
         }
 
-        _ctx.get_log().debug("CreateContactTest executed succesfully");
+        _ctx.get_log().debug("CreateContactTest executed successfully");
     }
 
     std::string CreateContactTest::to_string() const {
