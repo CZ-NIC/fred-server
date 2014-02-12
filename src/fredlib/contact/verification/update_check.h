@@ -25,7 +25,7 @@
 #define CONTACT_VERIFICATION_UPDATE_CHECK_51547983410_
 
 #include "util/printable.h"
-#include "src/fredlib/opexception.h"
+#include "src/fredlib/contact/verification/exceptions.h"
 #include "src/fredlib/opcontext.h"
 #include "util/db/nullable.h"
 #include "util/optional_value.h"
@@ -41,13 +41,6 @@ namespace Fred
             Nullable<long long> logd_request_id_;
 
         public:
-            struct ExceptionUnknownCheckHandle : virtual Fred::OperationException {
-                const char* what() const throw() {return "unknown check handle";}
-            };
-            struct ExceptionUnknownStatusHandle : virtual Fred::OperationException {
-                const char* what() const throw() {return "unknown status handle";}
-            };
-
             /**
              * constructor only with mandatory parameters
              * @param _check_handle     identifies which contact_check to update.
@@ -73,7 +66,9 @@ namespace Fred
             UpdateContactCheck& set_logd_request_id (long long _logd_request_id);
 
             /**
-             * commits this operation
+             * Commits operation.
+             * @throws Fred::ExceptionUnknownCheckHandle
+             * @throws Fred::ExceptionUnknownCheckStatusHandle
              */
             void exec(OperationContext& _ctx);
             // serialization

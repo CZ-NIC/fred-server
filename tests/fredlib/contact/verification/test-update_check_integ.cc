@@ -499,7 +499,7 @@ BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_check_handle)
         Fred::OperationContext ctx;
         dummy.exec(ctx);
         ctx.commit_transaction();
-    } catch(const Fred::UpdateContactCheck::ExceptionUnknownCheckHandle& exp) {
+    } catch(const Fred::ExceptionUnknownCheckHandle& exp) {
         caught_the_right_exception = true;
     } catch(...) {
         BOOST_FAIL("incorrect exception caught");
@@ -529,7 +529,7 @@ BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_status_handle)
         Fred::OperationContext ctx;
         dummy.exec(ctx);
         ctx.commit_transaction();
-    } catch(const Fred::UpdateContactCheck::ExceptionUnknownStatusHandle& exp) {
+    } catch(const Fred::ExceptionUnknownCheckStatusHandle& exp) {
         caught_the_right_exception = true;
     } catch(...) {
         BOOST_FAIL("incorrect exception caught");

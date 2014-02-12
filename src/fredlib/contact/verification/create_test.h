@@ -26,7 +26,7 @@
 
 #include "util/printable.h"
 
-#include "src/fredlib/opexception.h"
+#include "src/fredlib/contact/verification/exceptions.h"
 #include "src/fredlib/opcontext.h"
 #include "util/db/nullable.h"
 #include "util/optional_value.h"
@@ -42,19 +42,6 @@ namespace Fred
         Nullable<long long> logd_request_id_;
 
     public:
-        struct ExceptionUnknownCheckHandle : virtual Fred::OperationException {
-            const char* what() const throw() {return "unknown check handle";}
-        };
-        struct ExceptionUnknownTestHandle : virtual Fred::OperationException {
-            const char* what() const throw() {return "unknown test handle";}
-        };
-        struct ExceptionTestNotInMyTestsuite : virtual Fred::OperationException {
-            const char* what() const throw() {return "test is not in testsuite of this check";}
-        };
-        struct ExceptionCheckTestPairAlreadyExists : virtual Fred::OperationException {
-            const char* what() const throw() {return "given check test pair already exists";}
-        };
-
         /**
          * constructor only with mandatory parameters
          * @param _check_handle     identifies which contact_check this test belongs to (by check's handle).
@@ -82,7 +69,13 @@ namespace Fred
          */
         CreateContactTest& set_logd_request_id(long long _logd_request_id);
 
-        // exec
+        /**
+         * Commits operation.
+         * @throws Fred::ExceptionUnknownCheckHandle
+         * @throws Fred::ExceptionUnknownTestHandle
+         * @throws Fred::ExceptionTestNotInMyTestsuite
+         * @throws Fred::ExceptionCheckTestPairAlreadyExists
+         */
         void exec(OperationContext& ctx);
         // serialization
         virtual std::string to_string() const;

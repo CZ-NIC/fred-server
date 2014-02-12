@@ -29,7 +29,7 @@
 
 #include "util/printable.h"
 
-#include "src/fredlib/opexception.h"
+#include "src/fredlib/contact/verification/exceptions.h"
 #include "src/fredlib/opcontext.h"
 #include "util/db/nullable.h"
 
@@ -113,10 +113,6 @@ namespace Fred
             std::string handle_;
 
         public:
-            struct ExceptionUnknownCheckHandle : virtual Fred::OperationException {
-                const char* what() const throw() {return "unknown check handle";}
-            };
-
             /**
              * constructor with only parameter
              * @param _handle     identifies which contact_check to update by it's handle.
@@ -126,6 +122,7 @@ namespace Fred
             /**
              * commit operation
              * @param _output_timezone Postgres time zone input type (as string e. g. "Europe/Prague") for conversion to local time values.
+             * @throws Fred::ExceptionUnknownCheckHandle
              * @return Data of existing check in InfoContactCheckOutput structured.
              */
             InfoContactCheckOutput exec(OperationContext& _ctx, const std::string& _output_timezone = "Europe/Prague");

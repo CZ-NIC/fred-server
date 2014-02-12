@@ -61,6 +61,12 @@ namespace Admin {
 
             resolve_check& set_logd_request_id(Optional<long long> _logd_request_id);
 
+
+            /**
+             * Commits operation.
+             * @throws Fred::ExceptionUnknownCheckHandle
+             * @throws Fred::ExceptionUnknownCheckStatusHandle
+             */
             void exec(Fred::OperationContext& _ctx);
     };
 }

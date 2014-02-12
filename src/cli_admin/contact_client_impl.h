@@ -356,11 +356,11 @@ struct contact_verification_enqueue_check_impl
               params.testsuite_handle);
 
           ctx.commit_transaction();
-      } catch (Fred::CreateContactCheck::ExceptionUnknownContactId& e) {
+      } catch (Fred::ExceptionUnknownContactId& e) {
           throw ReturnCode(
               std::string("given contact id (") + boost::lexical_cast<std::string>(params.contact_id) + ") is unknown",
               1);
-      } catch (Fred::CreateContactCheck::ExceptionUnknownTestsuiteHandle& e) {
+      } catch (Fred::ExceptionUnknownTestsuiteHandle& e) {
           throw ReturnCode(
               std::string("given testsuite handle (") + params.testsuite_handle + ") is unknown",
               1);

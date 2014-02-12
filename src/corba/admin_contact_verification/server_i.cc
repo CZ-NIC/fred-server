@@ -202,11 +202,15 @@ namespace Registry
             ContactCheckDetail_var result(new ContactCheckDetail);
             Fred::OperationContext ctx;
 
-            Corba::wrap_check_detail(
-                Fred::InfoContactCheck(Corba::unwrap_string(check_handle))
-                    .exec(ctx),
-                result
-            );
+            try {
+                Corba::wrap_check_detail(
+                    Fred::InfoContactCheck(Corba::unwrap_string(check_handle))
+                        .exec(ctx),
+                    result
+                );
+            } catch (const Fred::ExceptionUnknownCheckHandle&) {
+                throw UNKNOWN_CHECK_HANDLE();
+            }
 
             return result._retn();
         }
@@ -237,9 +241,20 @@ namespace Registry
             for(unsigned long long i=0; i<changes.length(); ++i) {
                 status = Corba::unwrap_string(changes[i].status);
                 testname = Corba::unwrap_string(changes[i].test_handle);
-                Fred::UpdateContactTest(ch_handle, testname, status)
-                    .set_logd_request_id(logd_request_id)
-                    .exec(ctx);
+                try {
+                    Fred::UpdateContactTest(ch_handle, testname, status)
+                        .set_logd_request_id(logd_request_id)
+                        .exec(ctx);
+
+                } catch(const Fred::ExceptionUnknownCheckHandle&) {
+                    throw UNKNOWN_CHECK_HANDLE();
+                } catch(const Fred::ExceptionUnknownTestHandle&) {
+                    throw UNKNOWN_TEST_HANDLE();
+                } catch(const Fred::ExceptionUnknownCheckTestPair&) {
+                    throw UNKNOWN_CHECK_TEST_PAIR();
+                } catch(const Fred::ExceptionUnknownTestStatusHandle&) {
+                    throw UNKNOWN_TEST_STATUS_HANDLE();
+                }
             }
 
             ctx.commit_transaction();
@@ -248,11 +263,17 @@ namespace Registry
         void Server_i::resolveContactCheckStatus(const char* check_handle, const char* status, ::CORBA::ULongLong logd_request_id){
             Fred::OperationContext ctx;
 
-            Admin::resolve_check(
-                Corba::unwrap_string(check_handle),
-                Corba::unwrap_string(status),
-                logd_request_id
-            ).exec(ctx);
+            try {
+                Admin::resolve_check(
+                    Corba::unwrap_string(check_handle),
+                    Corba::unwrap_string(status),
+                    logd_request_id
+                ).exec(ctx);
+            } catch(const Fred::ExceptionUnknownCheckHandle&) {
+                throw UNKNOWN_CHECK_HANDLE();
+            } catch(const Fred::ExceptionUnknownCheckStatusHandle&) {
+                throw UNKNOWN_CHECK_STATUS_HANDLE();
+            }
 
             ctx.commit_transaction();
         }
@@ -260,10 +281,14 @@ namespace Registry
         void Server_i::deleteDomainsAfterFailedManualCheck(const char* check_handle) {
             Fred::OperationContext ctx;
 
-            Admin::delete_domains_of_invalid_contact(
-                ctx,
-                Corba::unwrap_string(check_handle)
-            );
+            try {
+                Admin::delete_domains_of_invalid_contact(
+                    ctx,
+                    Corba::unwrap_string(check_handle)
+                );
+            } catch (const Fred::ExceptionUnknownCheckHandle&) {
+                throw UNKNOWN_CHECK_HANDLE();
+            }
 
             ctx.commit_transaction();
         }
@@ -272,12 +297,19 @@ namespace Registry
             Fred::OperationContext ctx;
 
             std::string created_handle;
-            created_handle = Admin::enqueue_check(
-                ctx,
-                contact_id,
-                Corba::unwrap_string(testsuite_handle),
-                logd_request_id
-            );
+
+            try {
+                created_handle = Admin::enqueue_check(
+                    ctx,
+                    contact_id,
+                    Corba::unwrap_string(testsuite_handle),
+                    logd_request_id
+                );
+            } catch(const Fred::ExceptionUnknownContactId&) {
+                throw UNKNOWN_CONTACT_ID();
+            } catch(const Fred::ExceptionUnknownTestsuiteHandle&) {
+                throw UNKNOWN_TESTSUITE_HANDLE();
+            }
 
             ctx.commit_transaction();
 
