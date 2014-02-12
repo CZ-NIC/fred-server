@@ -17,7 +17,7 @@
  */
 
 /**
- *  \file
+ *  @file
  *  create contact test
  */
 
