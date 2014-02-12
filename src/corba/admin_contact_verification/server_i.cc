@@ -26,7 +26,7 @@
 #include <vector>
 #include <utility>
 
-#include "src/fredlib/contact/util.h"
+#include <fredlib/contact.h>
 #include "src/admin/contact/verification/enqueue_check.h"
 #include "src/fredlib/contact/verification/update_check.h"
 #include "src/fredlib/contact/verification/info_check.h"
@@ -45,14 +45,16 @@ namespace Corba {
         typedef Fred::InfoContactCheckOutput::ContactTestResultData ContactTestData;
         typedef Fred::InfoContactCheckOutput::ContactTestResultState ContactTestState;
 
-        // TODO prasarna - casem pouzit novou verzi InfoContactByHistoryId
-
-        std::pair<std::string, unsigned long long> contact_data = Fred::ContactUtil::contact_hid_to_handle_id_pair(in.contact_history_id);
+        Fred::InfoContactOutput contact_info;
+        {
+            Fred::OperationContext ctx;
+            contact_info = Fred::HistoryInfoContactByHistoryid(in.contact_history_id).exec(ctx);
+        }
 
         out->check_handle =         Corba::wrap_string(in.handle);
         out->test_suite_handle =    Corba::wrap_string(in.testsuite_handle);
-        out->contact_handle =       Corba::wrap_string(contact_data.first);
-        out->contact_id =           contact_data.second;
+        out->contact_handle =       Corba::wrap_string(contact_info.info_contact_data.handle);
+        out->contact_id =           contact_info.info_contact_data.id;
         out->checked_contact_hid =  in.contact_history_id;
         out->created =              Corba::wrap_time(in.local_create_time);
 
@@ -118,10 +120,14 @@ namespace Corba {
             out->operator[](list_index).check_handle =          Corba::wrap_string(it->check_handle);
             out->operator[](list_index).test_suite_handle =     Corba::wrap_string(it->testsuite_handle);
 
-            contact_data = Fred::ContactUtil::contact_hid_to_handle_id_pair(it->contact_history_id);
+            Fred::InfoContactOutput contact_info;
+            {
+                Fred::OperationContext ctx;
+                contact_info = Fred::HistoryInfoContactByHistoryid(it->contact_history_id).exec(ctx);
+            }
 
-            out->operator[](list_index).contact_handle =        Corba::wrap_string(contact_data.first);
-            out->operator[](list_index).contact_id =            contact_data.second;
+            out->operator[](list_index).contact_handle =        Corba::wrap_string(contact_info.info_contact_data.handle);
+            out->operator[](list_index).contact_id =            contact_info.info_contact_data.id;
             out->operator[](list_index).checked_contact_hid =   it->contact_history_id;
             out->operator[](list_index).created =               Corba::wrap_time(it->local_create_time);
             out->operator[](list_index).current_status =        Corba::wrap_string(it->status_handle);
