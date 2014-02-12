@@ -115,8 +115,7 @@ namespace  Admin {
                         error_messages.back()
                     ).exec(ctx_testrun_error);
 
-                    // TODO log problem
-                    ctx_testrun_error.get_log();
+                    ctx_testrun_error.get_log().warning("exception in test implementation " + test_handle);
                     ctx_testrun_error.commit_transaction();
 
                     // let it propagate so the check can be updated to reflect this situation
