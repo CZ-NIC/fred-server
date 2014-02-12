@@ -163,8 +163,6 @@ namespace Registry
 
             DomainDetail()
             : id(0)
-            , publish(false)
-            , is_enum(false)
             , is_owner(false)
             {}
         };
@@ -284,10 +282,21 @@ namespace Registry
              * @param user_contact_id contains database id of the user contact
              * @param contact_id contains database id of the contact
              * @param lang contains language for state description "EN" or "CS"
-             * @return registrar detail data.
+             * @return contact detail data.
              */
             ContactDetail getContactDetail(unsigned long long user_contact_id,
                     unsigned long long contact_id,
+                    const std::string& lang);
+
+            /**
+             * Returns domain detail.
+             * @param user_contact_id contains database id of the user contact
+             * @param domain_id contains database id of the domain
+             * @param lang contains language for state description "EN" or "CS"
+             * @return domain detail data.
+             */
+            DomainDetail getDomainDetail(unsigned long long user_contact_id,
+                    unsigned long long domain_id,
                     const std::string& lang);
 
             std::string get_server_name();

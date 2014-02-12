@@ -32,6 +32,10 @@
 #include "src/fredlib/object_state/object_state_name.h"
 #include "src/fredlib/registrar/info_registrar.h"
 #include "src/fredlib/contact/info_contact.h"
+#include "src/fredlib/domain/info_domain.h"
+#include "src/fredlib/nsset/info_nsset.h"
+#include "src/fredlib/keyset/info_keyset.h"
+
 #include "domain_browser.h"
 
 namespace Registry
@@ -264,6 +268,185 @@ namespace Registry
 
                 detail.state_codes += state_codes_separator.get();
                 detail.state_codes += static_cast<std::string>(contact_states_result[i][1]);
+            }
+
+            return detail;
+        }
+
+        DomainDetail DomainBrowser::getDomainDetail(unsigned long long user_contact_id,
+                unsigned long long domain_id,
+                const std::string& lang)
+        {
+            Fred::OperationContext ctx;
+            check_user_contact_id(ctx, user_contact_id);
+
+            Fred::InfoDomainOutput domain_info;
+            try
+            {
+                domain_info = Fred::InfoDomainById(domain_id).set_lock(true).exec(ctx);
+            }
+            catch(const Fred::InfoDomainById::Exception& ex)
+            {
+                if(ex.is_set_unknown_object_id())
+                {
+                    BOOST_THROW_EXCEPTION(ObjectNotExists());
+                }
+                else
+                    throw;
+            }
+
+            Fred::InfoRegistrarOutput sponsoring_registar_info;
+            try
+            {
+                sponsoring_registar_info = Fred::InfoRegistrarByHandle(domain_info.info_domain_data.sponsoring_registrar_handle).exec(ctx);
+            }
+            catch(const Fred::InfoRegistrarByHandle::Exception& ex)
+            {
+                if(ex.is_set_unknown_registrar_handle())
+                {
+                    BOOST_THROW_EXCEPTION(InternalServerError());
+                }
+                else
+                    throw;
+            }
+
+            RegistryReference sponsoring_registrar;
+            sponsoring_registrar.id = sponsoring_registar_info.info_registrar_data.id;
+            sponsoring_registrar.handle = sponsoring_registar_info.info_registrar_data.handle;
+            sponsoring_registrar.name = sponsoring_registar_info.info_registrar_data.name.get_value_or_default();
+
+            Fred::InfoContactOutput registrant_contact_info;
+            try
+            {
+                registrant_contact_info = Fred::InfoContactByHandle(domain_info.info_domain_data.registrant_handle).set_lock(true).exec(ctx);
+            }
+            catch(const Fred::InfoContactByHandle::Exception& ex)
+            {
+                if(ex.is_set_unknown_contact_handle())
+                {
+                    BOOST_THROW_EXCEPTION(InternalServerError());
+                }
+                else
+                    throw;
+            }
+
+            RegistryReference registrant;
+            registrant.id = registrant_contact_info.info_contact_data.id;
+            registrant.handle = registrant_contact_info.info_contact_data.handle;
+            registrant.name = registrant_contact_info.info_contact_data.name.get_value_or_default();
+
+            Fred::InfoNssetOutput nsset_info;
+            try
+            {
+                nsset_info = Fred::InfoNssetByHandle(domain_info.info_domain_data.nsset_handle.get_value_or_default()).set_lock(true).exec(ctx);
+            }
+            catch(const Fred::InfoNssetByHandle::Exception& ex)
+            {
+                if(ex.is_set_unknown_handle())
+                {
+                    BOOST_THROW_EXCEPTION(InternalServerError());
+                }
+                else
+                    throw;
+            }
+
+            RegistryReference nsset;
+            nsset.id = nsset_info.info_nsset_data.id;
+            nsset.handle = nsset_info.info_nsset_data.handle;
+
+            Fred::InfoKeysetOutput keyset_info;
+            try
+            {
+                keyset_info = Fred::InfoKeysetByHandle(domain_info.info_domain_data.keyset_handle.get_value_or_default()).set_lock(true).exec(ctx);
+            }
+            catch(const Fred::InfoKeysetByHandle::Exception& ex)
+            {
+                if(ex.is_set_unknown_handle())
+                {
+                    BOOST_THROW_EXCEPTION(InternalServerError());
+                }
+                else
+                    throw;
+            }
+
+            RegistryReference keyset;
+            keyset.id = keyset_info.info_keyset_data.id;
+            keyset.handle = keyset_info.info_keyset_data.handle;
+
+
+            Database::Result domain_states_result = ctx.get_conn().exec_params(
+            "SELECT eos.name, COALESCE(osd.description, '') "
+            " FROM object_state os "
+                " JOIN enum_object_states eos ON eos.id = os.state_id "
+                " JOIN enum_object_states_desc osd ON osd.state_id = eos.id AND lang = $2::text "
+                " WHERE os.object_id = $1::bigint "
+                " AND eos.importance > 0 "
+                " AND eos.external = TRUE "
+                    " AND os.valid_from <= CURRENT_TIMESTAMP "
+                    " AND (os.valid_to IS NULL OR os.valid_to > CURRENT_TIMESTAMP) "
+                " ORDER BY eos.importance "
+            , Database::query_param_list(domain_info.info_domain_data.id)(lang)
+            );
+
+            DomainDetail detail;
+            detail.id = domain_info.info_domain_data.id;
+            detail.fqdn = domain_info.info_domain_data.fqdn;
+            detail.roid = domain_info.info_domain_data.roid;
+            detail.registrar = sponsoring_registrar;
+            detail.creation_time = domain_info.info_domain_data.creation_time;
+            detail.update_time = domain_info.info_domain_data.update_time;
+
+            detail.is_owner = (user_contact_id == registrant_contact_info.info_contact_data.id);
+            if(detail.is_owner)//if user contact is the owner of requested domain
+            {
+                detail.authinfopw = domain_info.info_domain_data.authinfopw;
+            }
+            else
+            {
+                detail.authinfopw ="********";
+            }
+
+            detail.registrant = registrant;
+            detail.expiration_date = domain_info.info_domain_data.expiration_date;
+            detail.enum_domain_validation = domain_info.info_domain_data.enum_domain_validation;
+            detail.nsset = nsset;
+            detail.keyset = keyset;
+
+            for(std::vector<std::string>::const_iterator ci = domain_info.info_domain_data.admin_contacts.begin();
+                    ci != domain_info.info_domain_data.admin_contacts.end(); ++ci)
+            {
+                Fred::InfoContactOutput admin_contact_info;
+                try
+                {
+                    admin_contact_info = Fred::InfoContactByHandle(*ci).set_lock(true).exec(ctx);
+                }
+                catch(const Fred::InfoContactByHandle::Exception& ex)
+                {
+                    if(ex.is_set_unknown_contact_handle())
+                    {
+                        BOOST_THROW_EXCEPTION(InternalServerError());
+                    }
+                    else
+                        throw;
+                }
+
+                RegistryReference admin;
+                admin.id = admin_contact_info.info_contact_data.id;
+                admin.handle = admin_contact_info.info_contact_data.handle;
+                admin.name = admin_contact_info.info_contact_data.name.get_value_or_default();
+
+                detail.admins.push_back(admin);
+            }
+
+            Util::HeadSeparator states_separator("","|");
+            Util::HeadSeparator state_codes_separator("",",");
+            for(unsigned long long i = 0; i < domain_states_result.size(); ++i)
+            {
+                detail.states += states_separator.get();
+                detail.states += static_cast<std::string>(domain_states_result[i][0]);
+
+                detail.state_codes += state_codes_separator.get();
+                detail.state_codes += static_cast<std::string>(domain_states_result[i][1]);
             }
 
             return detail;
