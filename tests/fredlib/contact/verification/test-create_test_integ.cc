@@ -237,7 +237,7 @@ BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_check_handle)
         Fred::OperationContext ctx1;
         create_test.exec(ctx1);
         ctx1.commit_transaction();
-    } catch(const Fred::CreateContactTest::ExceptionUnknownCheckHandle& exp) {
+    } catch(const Fred::ExceptionUnknownCheckHandle& exp) {
         caught_the_right_exception = true;
     } catch(...) {
         BOOST_FAIL("incorrect exception caught");
@@ -267,7 +267,7 @@ BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_test_handle)
         Fred::OperationContext ctx;
         create_test.exec(ctx);
         ctx.commit_transaction();
-    } catch(const Fred::CreateContactTest::ExceptionUnknownTestHandle& exp) {
+    } catch(const Fred::ExceptionUnknownTestHandle& exp) {
         caught_the_right_exception = true;
     } catch(...) {
         BOOST_FAIL("incorrect exception caught");
@@ -298,7 +298,7 @@ BOOST_AUTO_TEST_CASE(test_Exec_test_handle_not_in_suite)
         Fred::OperationContext ctx;
         create_test.exec(ctx);
         ctx.commit_transaction();
-    } catch(const Fred::CreateContactTest::ExceptionTestNotInMyTestsuite& exp) {
+    } catch(const Fred::ExceptionTestNotInMyTestsuite& exp) {
         caught_the_right_exception = true;
     } catch(...) {
         BOOST_FAIL("incorrect exception caught");
@@ -334,7 +334,7 @@ BOOST_AUTO_TEST_CASE(test_Exec_violating_unique_check_test_pair)
         Fred::OperationContext ctx2;
         create_test.exec(ctx2);
         ctx2.commit_transaction();
-    } catch(const Fred::CreateContactTest::ExceptionCheckTestPairAlreadyExists& exp) {
+    } catch(const Fred::ExceptionCheckTestPairAlreadyExists& exp) {
         caught_the_right_exception = true;
     } catch(...) {
         BOOST_FAIL("incorrect exception caught");

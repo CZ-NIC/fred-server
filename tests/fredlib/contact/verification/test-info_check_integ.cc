@@ -272,7 +272,7 @@ BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_check_handle)
     try {
         Fred::OperationContext ctx1;
         dummy.exec(ctx1);
-    } catch(const Fred::InfoContactCheck::ExceptionUnknownCheckHandle& exp) {
+    } catch(const Fred::ExceptionUnknownCheckHandle& exp) {
         caught_the_right_exception = true;
     } catch(...) {
         BOOST_FAIL("incorrect exception caught");

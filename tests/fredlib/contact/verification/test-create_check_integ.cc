@@ -322,7 +322,7 @@ BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_contact_id)
         Fred::OperationContext ctx;
         handle = create_check.exec(ctx);
         ctx.commit_transaction();
-    } catch(const Fred::CreateContactCheck::ExceptionUnknownContactId& exp) {
+    } catch(const Fred::ExceptionUnknownContactId& exp) {
         caught_the_right_exception = true;
     } catch(...) {
         BOOST_FAIL("incorrect exception caught");
@@ -352,7 +352,7 @@ BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_testsuite_handle)
         Fred::OperationContext ctx;
         handle = create_check.exec(ctx);
         ctx.commit_transaction();
-    } catch(const Fred::CreateContactCheck::ExceptionUnknownTestsuiteHandle& exp) {
+    } catch(const Fred::ExceptionUnknownTestsuiteHandle& exp) {
         caught_the_right_exception = true;
     } catch(...) {
         BOOST_FAIL("incorrect exception caught");
