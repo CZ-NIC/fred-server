@@ -17,7 +17,7 @@ struct setup_contact {
     std::string contact_handle;
     setup_get_registrar_handle registrar;
     Fred::InfoContactOutput data_;
-    long long contact_id_;
+    unsigned long long contact_id_;
 
     setup_contact();
 };
@@ -29,7 +29,7 @@ struct setup_nonexistent_contact_handle {
 };
 
 struct setup_nonexistent_contact_id {
-    long long contact_id_;
+        unsigned long long contact_id_;
 
     setup_nonexistent_contact_id();
 };
@@ -77,7 +77,7 @@ struct setup_nonexistent_testsuite_handle {
 };
 
 struct setup_logd_request_id {
-    long long logd_request_id;
+    unsigned long long logd_request_id;
 
     setup_logd_request_id();
 };
@@ -104,10 +104,10 @@ struct setup_error_msg {
 
 struct setup_check {
     std::string check_handle_;
-    Optional<long long> logd_request_;
+    Optional<unsigned long long> logd_request_;
     setup_contact contact_;
 
-    setup_check(const std::string& _testsuite_handle, Optional<long long> _logd_request = Optional<long long>());
+    setup_check(const std::string& _testsuite_handle, Optional<unsigned long long> _logd_request = Optional<unsigned long long>());
 };
 
 struct setup_nonexistent_check_handle {
@@ -124,12 +124,12 @@ struct setup_nonexistent_check_status_handle {
 
 struct setup_test {
     std::string testdef_handle_;
-    Optional<long long> logd_request_;
+    Optional<unsigned long long> logd_request_;
 
     setup_test(
         const std::string& _check_handle,
         const std::string& _testdef_handle,
-        Optional<long long> _logd_request = Optional<long long>()
+        Optional<unsigned long long> _logd_request = Optional<unsigned long long>()
     );
 };
 

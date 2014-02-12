@@ -81,16 +81,16 @@ BOOST_AUTO_TEST_CASE(test_Exec)
     }
 
     vector<string> check_status_history;
-    vector<Optional<long long> > check_logd_request_history;
+    vector<Optional<unsigned long long> > check_logd_request_history;
 
     vector<string> test_handles;
 
     vector<vector<string> >                 tests_status_history(test_count);
-    vector<vector<Optional<long long> > >   tests_logd_request_history(test_count);
+    vector<vector<Optional<unsigned long long> > >   tests_logd_request_history(test_count);
     vector<vector<Optional<string> > >      tests_error_msg_history(test_count);
 
     check_status_history.push_back( Fred::ContactCheckStatus::ENQUEUED);
-    check_logd_request_history.push_back(Optional<long long>() );
+    check_logd_request_history.push_back(Optional<unsigned long long>() );
 
     // building check history
     for(int i=1; i<check_history_steps; ++i) {
@@ -124,13 +124,13 @@ BOOST_AUTO_TEST_CASE(test_Exec)
     }
 
     tests_status_history.front().push_back(Fred::ContactTestStatus::ENQUEUED);
-    tests_logd_request_history.front().push_back(Optional<long long>());
+    tests_logd_request_history.front().push_back(Optional<unsigned long long>());
     tests_error_msg_history.front().push_back(Optional<string>());
 
     // starting from 1 because first history step is already CREATEd
     for(int j=1; j<tests_history_steps.at(0); ++j) {
         tests_status_history.at(0).push_back(setup_test_status().status_handle_);
-        tests_logd_request_history.at(0).push_back(Optional<long long>(setup_logd_request_id().logd_request_id));
+        tests_logd_request_history.at(0).push_back(Optional<unsigned long long>(setup_logd_request_id().logd_request_id));
         tests_error_msg_history.at(0).push_back(Optional<string>(setup_error_msg().error_msg));
 
         Fred::UpdateContactTest update_test(
@@ -155,7 +155,7 @@ BOOST_AUTO_TEST_CASE(test_Exec)
     for(int i=1; i<test_count; ++i) {
         test_handles.push_back(setup_testdef().testdef_handle_);
         tests_status_history.at(i).push_back(Fred::ContactTestStatus::ENQUEUED);
-        tests_logd_request_history.at(i).push_back(Optional<long long>(setup_logd_request_id().logd_request_id));
+        tests_logd_request_history.at(i).push_back(Optional<unsigned long long>(setup_logd_request_id().logd_request_id));
         tests_error_msg_history.at(i).push_back(Optional<string>());
 
         setup_testdef_in_testsuite_of_check(test_handles.at(i), check.check_handle_);
@@ -180,7 +180,7 @@ BOOST_AUTO_TEST_CASE(test_Exec)
         // starting from 1 because first history step is already CREATEd
         for(int j=1; j<tests_history_steps.at(i); ++j) {
             tests_status_history.at(i).push_back(setup_test_status().status_handle_);
-            tests_logd_request_history.at(i).push_back(Optional<long long>(setup_logd_request_id().logd_request_id));
+            tests_logd_request_history.at(i).push_back(Optional<unsigned long long>(setup_logd_request_id().logd_request_id));
             tests_error_msg_history.at(i).push_back(Optional<string>(setup_error_msg().error_msg));
 
             Fred::UpdateContactTest update_test(

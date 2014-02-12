@@ -25,11 +25,11 @@ namespace  Admin {
      *
      * @return locked check id
      */
-    static std::string lazy_get_locked_running_check(Fred::OperationContext& _ctx, Optional<long long> _logd_request_id);
+    static std::string lazy_get_locked_running_check(Fred::OperationContext& _ctx, Optional<unsigned long long> _logd_request_id);
     /**
      * Important side-effect: tests of this check are created in db with status enqueued.
      */
-    static void update_some_enqueued_check_to_running(Optional<long long> _logd_request_id);
+    static void update_some_enqueued_check_to_running(Optional<unsigned long long> _logd_request_id);
 
     /**
      * Lock some contact_test with running status related to given check.
@@ -40,8 +40,13 @@ namespace  Admin {
      * @param _check_id check whose tests are tried to lock
      * @return locked test handle
      */
-    static std::string lazy_get_locked_running_test(Fred::OperationContext& _ctx, const std::string& _check_handle, Optional<long long> _logd_request_id);
-    static void update_some_enqueued_test_to_running(const std::string& _check_handle, Optional<long long> _logd_request_id);
+    static std::string lazy_get_locked_running_test(
+        Fred::OperationContext& _ctx,
+        const std::string& _check_handle,
+        Optional<unsigned long long> _logd_request_id
+    );
+
+    static void update_some_enqueued_test_to_running(const std::string& _check_handle, Optional<unsigned long long> _logd_request_id);
 
     /**
      * Updating check status based on tests results
@@ -55,7 +60,10 @@ namespace  Admin {
     /**
      * main function and the only one visible to the outer world
      */
-    Optional<std::string> run_first_enqueued_check(const std::map<std::string, boost::shared_ptr<Admin::ContactVerificationTest> >& _tests, Optional<long long> _logd_request_id) {
+    Optional<std::string> run_first_enqueued_check(
+        const std::map<std::string, boost::shared_ptr<Admin::ContactVerificationTest> >& _tests,
+        Optional<unsigned long long> _logd_request_id
+    ) {
         Fred::OperationContext ctx_locked_check;
         Optional<std::string> check_handle;
         try {
@@ -177,7 +185,7 @@ namespace  Admin {
         return check_handle;
     }
 
-    std::string lazy_get_locked_running_check(Fred::OperationContext& _ctx, Optional<long long> _logd_request_id) {
+    std::string lazy_get_locked_running_check(Fred::OperationContext& _ctx, Optional<unsigned long long> _logd_request_id) {
         while(true) {
             Database::Result locked_check_res = _ctx.get_conn().exec_params(
                 "SELECT c_ch.handle AS check_handle_ "
@@ -204,7 +212,7 @@ namespace  Admin {
             }
         }
     }
-    void update_some_enqueued_check_to_running(Optional<long long> _logd_request_id) {
+    void update_some_enqueued_check_to_running(Optional<unsigned long long> _logd_request_id) {
         Fred::OperationContext ctx;
 
         Database::Result locked_check_res = ctx.get_conn().exec_params(
@@ -265,7 +273,11 @@ namespace  Admin {
         ctx.commit_transaction();
     }
 
-    std::string lazy_get_locked_running_test(Fred::OperationContext& _ctx, const std::string& _check_handle, Optional<long long> _logd_request_id) {
+    std::string lazy_get_locked_running_test(
+        Fred::OperationContext& _ctx,
+        const std::string& _check_handle,
+        Optional<unsigned long long> _logd_request_id
+    ) {
         while(true) {
 
             Database::Result locked_test_res = _ctx.get_conn().exec_params(
@@ -299,7 +311,7 @@ namespace  Admin {
         }
     }
 
-    void update_some_enqueued_test_to_running(const std::string& _check_handle, Optional<long long> _logd_request_id) {
+    void update_some_enqueued_test_to_running(const std::string& _check_handle, Optional<unsigned long long> _logd_request_id) {
         Database::Result locked_testhandle_res;
 
         while(true) {

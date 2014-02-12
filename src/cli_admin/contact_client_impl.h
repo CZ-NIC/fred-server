@@ -276,7 +276,7 @@ struct contact_verification_fill_queue_impl
       ContactVerificationFillQueueArgs params = CfgArgGroups::instance()
           ->get_handler_ptr_by_type<HandleContactVerificationFillQueueArgsGrp>()->params;
 
-      typedef boost::tuple<std::string, long long, long long> check_data_type;
+      typedef boost::tuple<std::string, unsigned long long, unsigned long long> check_data_type;
 
       Admin::ContactVerificationQueue::contact_filter filter;
 

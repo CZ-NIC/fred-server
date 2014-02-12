@@ -360,7 +360,7 @@ BOOST_AUTO_TEST_CASE(test_Logd_request_id_of_related_changes)
 
     // effectively creates tests and updates check at once
     Admin::ContactVerificationQueue::fill_check_queue(testsuite.testsuite_handle, 1).exec();
-    long long logd_request_id = Random::integer(0, 2147483647);
+    unsigned long long logd_request_id = Random::integer(0, 2147483647);
     Admin::run_all_enqueued_checks(test_impls_, logd_request_id);
 
     Fred::InfoContactCheck info_op(check.check_handle_);
@@ -387,7 +387,7 @@ BOOST_AUTO_TEST_CASE(test_Logd_request_id_of_related_changes)
             continue;
         }
 
-        BOOST_CHECK_EQUAL(static_cast<long long>(it->logd_request_id), logd_request_id);
+        BOOST_CHECK_EQUAL(static_cast<unsigned long long>(it->logd_request_id), logd_request_id);
     }
     for( std::vector<ContactTestResultData>::const_iterator
             test_it = info.tests.begin();
@@ -399,7 +399,7 @@ BOOST_AUTO_TEST_CASE(test_Logd_request_id_of_related_changes)
                 state_it != test_it->state_history.end();
                 ++state_it
         ) {
-            BOOST_CHECK_EQUAL(static_cast<long long>(state_it->logd_request_id), logd_request_id);
+            BOOST_CHECK_EQUAL(static_cast<unsigned long long>(state_it->logd_request_id), logd_request_id);
         }
     }
 }

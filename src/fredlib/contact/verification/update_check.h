@@ -36,9 +36,9 @@ namespace Fred
      * Updates existing record in contact_check table. Has no sideeffects.
      */
     class UpdateContactCheck : public Util::Printable {
-            std::string         check_handle_;
-            std::string         status_handle_;
-            Nullable<long long> logd_request_id_;
+            std::string                     check_handle_;
+            std::string                     status_handle_;
+            Nullable<unsigned long long>    logd_request_id_;
 
         public:
             /**
@@ -55,15 +55,15 @@ namespace Fred
              * @param _status_name      denotes status to be set by it's name. Allowed values are in enum_check_status.h or enum_contact_check_status.name in database.
              * @param _logd_request_id  denotes entry in log_entry (by id) database table related to this update.
              */
-            UpdateContactCheck( const std::string&  _check_handle,
-                                const std::string&  _status_handle,
-                                Optional<long long> _logd_request_id);
+            UpdateContactCheck( const std::string&              _check_handle,
+                                const std::string&              _status_handle,
+                                Optional<unsigned long long>    _logd_request_id);
 
             /**
              * setter of optional logd_request_id
              * Call with another value for re-set, no need to unset first.
              */
-            UpdateContactCheck& set_logd_request_id (long long _logd_request_id);
+            UpdateContactCheck& set_logd_request_id (unsigned long long _logd_request_id);
 
             /**
              * Commits operation.

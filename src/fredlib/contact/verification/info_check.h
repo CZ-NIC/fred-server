@@ -59,10 +59,10 @@ namespace Fred
      */
     struct InfoContactCheckOutput {
         struct ContactTestResultState {
-            std::string              status_handle;
-            Nullable<std::string>    error_msg;
-            boost::posix_time::ptime local_update_time;
-            Nullable<long long>      logd_request_id;
+            std::string                     status_handle;
+            Nullable<std::string>           error_msg;
+            boost::posix_time::ptime        local_update_time;
+            Nullable<unsigned long long>    logd_request_id;
 
             std::string to_string(const std::string& _each_line_prefix = "\t") const;
             bool operator==(const ContactTestResultState& rhs) const {
@@ -82,9 +82,9 @@ namespace Fred
         };
 
         struct ContactCheckState {
-            std::string              status_handle;
-            boost::posix_time::ptime local_update_time;
-            Nullable<long long>      logd_request_id;
+            std::string                     status_handle;
+            boost::posix_time::ptime        local_update_time;
+            Nullable<unsigned long long>    logd_request_id;
 
             std::string to_string(const std::string& _each_line_prefix = "\t") const;
             bool operator==(const ContactCheckState& rhs) const {
@@ -95,7 +95,7 @@ namespace Fred
 
         std::string                        handle;
         std::string                        testsuite_handle;
-        long                               contact_history_id;
+        unsigned long long                 contact_history_id;
         boost::posix_time::ptime           local_create_time;
         std::vector<ContactCheckState>     check_state_history; /* current state is also included */
         std::vector<ContactTestResultData> tests;
@@ -134,12 +134,19 @@ namespace Fred
              * Get data for tests of specific check.
              * @param _check_id     specifies check which tests data should be retrieved
              */
-            static std::vector<InfoContactCheckOutput::ContactTestResultData> get_test_data(OperationContext& _ctx, long long _check_id, const std::string& _output_timezone = "Europe/Prague");
+            static std::vector<InfoContactCheckOutput::ContactTestResultData> get_test_data(
+                OperationContext& _ctx,
+                unsigned long long _check_id,
+                const std::string& _output_timezone = "Europe/Prague");
+
             /**
              * Get data for historical states (explicitly: except the current state) of specific check.
              * @param _check_id     specifies check which history should be retrieved
              */
-            static std::vector<InfoContactCheckOutput::ContactCheckState> get_check_historical_states(OperationContext& _ctx, long long _check_id, const std::string& _output_timezone = "Europe/Prague");
+            static std::vector<InfoContactCheckOutput::ContactCheckState> get_check_historical_states(
+                OperationContext& _ctx,
+                unsigned long long _check_id,
+                const std::string& _output_timezone = "Europe/Prague");
     };
 }
 #endif // #include guard end

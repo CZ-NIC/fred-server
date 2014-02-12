@@ -65,16 +65,16 @@ typedef Fred::InfoContactCheckOutput InfoContactCheckOutput;
 struct setup_create_update_check {
     std::string old_status_;
     std::string new_status_;
-    Optional<long long> old_logd_request_;
-    Optional<long long> new_logd_request_;
+    Optional<unsigned long long> old_logd_request_;
+    Optional<unsigned long long> new_logd_request_;
     Fred::InfoContactCheckOutput data_pre_update_;
     Fred::InfoContactCheckOutput data_post_update_;
     std::string timezone_;
 
     setup_create_update_check(
         const std::string& _new_status,
-        Optional<long long> _old_logd_request,
-        Optional<long long> _new_logd_request,
+        Optional<unsigned long long> _old_logd_request,
+        Optional<unsigned long long> _new_logd_request,
         const std::string& _timezone = "UTC"
     ) :
         old_status_(Fred::ContactCheckStatus::ENQUEUED),
@@ -133,9 +133,9 @@ struct setup_create_update_update_check  {
     std::string status1_;
     std::string status2_;
     std::string status3_;
-    Optional<long long> logd_request1_;
-    Optional<long long> logd_request2_;
-    Optional<long long> logd_request3_;
+    Optional<unsigned long long> logd_request1_;
+    Optional<unsigned long long> logd_request2_;
+    Optional<unsigned long long> logd_request3_;
     Fred::InfoContactCheckOutput data_post_create_;
     Fred::InfoContactCheckOutput data_post_reset_;
     Fred::InfoContactCheckOutput data_post_update_;
@@ -144,9 +144,9 @@ struct setup_create_update_update_check  {
     setup_create_update_update_check(
         const std::string& _status2,
         const std::string& _status3,
-        Optional<long long> _logd_request1,
-        Optional<long long> _logd_request2,
-        Optional<long long> _logd_request3,
+        Optional<unsigned long long> _logd_request1,
+        Optional<unsigned long long> _logd_request2,
+        Optional<unsigned long long> _logd_request3,
         const std::string& _timezone = "UTC"
     ) :
         status1_(Fred::ContactCheckStatus::ENQUEUED),
@@ -235,7 +235,14 @@ struct setup_create_update_update_check  {
  * @param old_logd_request logd request related to check before update operation has been executed
  * @param new_logd_request logd request related to check set in update operation (input param of UpdateContactCheck operation)
  */
-void check(const InfoContactCheckOutput& data_pre_update, const InfoContactCheckOutput& data_post_update, const std::string& old_status, const std::string& new_status, Optional<long long> old_logd_request, Optional<long long> new_logd_request) {
+void check(
+    const InfoContactCheckOutput& data_pre_update,
+    const InfoContactCheckOutput& data_post_update,
+    const std::string& old_status,
+    const std::string& new_status,
+    Optional<unsigned long long> old_logd_request,
+    Optional<unsigned long long> new_logd_request
+) {
     // everything is the same except the last state in history
     BOOST_CHECK_EQUAL( data_pre_update.contact_history_id, data_post_update.contact_history_id );
     BOOST_CHECK_EQUAL( data_pre_update.handle, data_post_update.handle );
@@ -296,9 +303,9 @@ BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_request1_to_statusX_logd_request1)
 {
     setup_check_status status;
 
-    Optional<long long> logd_request_id1 = RandomDataGenerator().xuint();
-    Optional<long long> logd_request_id2 = RandomDataGenerator().xuint();
-    Optional<long long> logd_request_id3 = RandomDataGenerator().xuint();
+    Optional<unsigned long long> logd_request_id1 = RandomDataGenerator().xuint();
+    Optional<unsigned long long> logd_request_id2 = RandomDataGenerator().xuint();
+    Optional<unsigned long long> logd_request_id3 = RandomDataGenerator().xuint();
 
     setup_create_update_check testcase1(
         Fred::ContactCheckStatus::ENQUEUED,
@@ -322,9 +329,9 @@ BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_request1_to_statusY_logd_request1)
     setup_check_status status1;
     setup_check_status status2;
 
-    Optional<long long> logd_request_id1 = RandomDataGenerator().xuint();
-    Optional<long long> logd_request_id2 = RandomDataGenerator().xuint();
-    Optional<long long> logd_request_id3 = RandomDataGenerator().xuint();
+    Optional<unsigned long long> logd_request_id1 = RandomDataGenerator().xuint();
+    Optional<unsigned long long> logd_request_id2 = RandomDataGenerator().xuint();
+    Optional<unsigned long long> logd_request_id3 = RandomDataGenerator().xuint();
 
     setup_create_update_check testcase1(
         status2.status_handle,
@@ -346,17 +353,17 @@ BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_request1_to_statusX_logd_requestNU
 {
     setup_check_status status;
 
-    Optional<long long> logd_request_id1 = RandomDataGenerator().xuint();
-    Optional<long long> logd_request_id2 = RandomDataGenerator().xuint();
+    Optional<unsigned long long> logd_request_id1 = RandomDataGenerator().xuint();
+    Optional<unsigned long long> logd_request_id2 = RandomDataGenerator().xuint();
 
     setup_create_update_check testcase1(
         Fred::ContactCheckStatus::ENQUEUED,
-        logd_request_id1, Optional<long long>());
+        logd_request_id1, Optional<unsigned long long>());
     check(testcase1.data_pre_update_, testcase1.data_post_update_, testcase1.old_status_, testcase1.new_status_, testcase1.old_logd_request_, testcase1.new_logd_request_);
 
     setup_create_update_update_check testcase2(
         status.status_handle, status.status_handle,
-        Optional<long long>(), logd_request_id2, Optional<long long>());
+        Optional<unsigned long long>(), logd_request_id2, Optional<unsigned long long>());
     check(testcase2.data_post_reset_, testcase2.data_post_update_, testcase2.status2_, testcase2.status3_, testcase2.logd_request2_, testcase2.logd_request3_);
 }
 
@@ -371,17 +378,17 @@ BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_request1_to_statusY_logd_requestNU
     setup_check_status status1;
     setup_check_status status2;
 
-    Optional<long long> logd_request_id1 = RandomDataGenerator().xuint();
-    Optional<long long> logd_request_id2 = RandomDataGenerator().xuint();
+    Optional<unsigned long long> logd_request_id1 = RandomDataGenerator().xuint();
+    Optional<unsigned long long> logd_request_id2 = RandomDataGenerator().xuint();
 
     setup_create_update_check testcase1(
         status1.status_handle,
-        logd_request_id1, Optional<long long>());
+        logd_request_id1, Optional<unsigned long long>());
     check(testcase1.data_pre_update_, testcase1.data_post_update_, testcase1.old_status_, testcase1.new_status_, testcase1.old_logd_request_, testcase1.new_logd_request_);
 
     setup_create_update_update_check testcase2(
         status1.status_handle, status2.status_handle,
-        Optional<long long>(), logd_request_id2, Optional<long long>());
+        Optional<unsigned long long>(), logd_request_id2, Optional<unsigned long long>());
     check(testcase2.data_post_reset_, testcase2.data_post_update_, testcase2.status2_, testcase2.status3_, testcase2.logd_request2_, testcase2.logd_request3_);
 }
 
@@ -395,18 +402,18 @@ BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusX_logd_reques
 {
     setup_check_status status;
 
-    Optional<long long> logd_request_id1 = RandomDataGenerator().xuint();
-    Optional<long long> logd_request_id2 = RandomDataGenerator().xuint();
-    Optional<long long> logd_request_id3 = RandomDataGenerator().xuint();
+    Optional<unsigned long long> logd_request_id1 = RandomDataGenerator().xuint();
+    Optional<unsigned long long> logd_request_id2 = RandomDataGenerator().xuint();
+    Optional<unsigned long long> logd_request_id3 = RandomDataGenerator().xuint();
 
     setup_create_update_check testcase1(
         Fred::ContactCheckStatus::ENQUEUED,
-        Optional<long long>(), logd_request_id1 );
+        Optional<unsigned long long>(), logd_request_id1 );
     check(testcase1.data_pre_update_, testcase1.data_post_update_, testcase1.old_status_, testcase1.new_status_, testcase1.old_logd_request_, testcase1.new_logd_request_);
 
     setup_create_update_update_check testcase2(
         status.status_handle, status.status_handle,
-        logd_request_id2, Optional<long long>(), logd_request_id3);
+        logd_request_id2, Optional<unsigned long long>(), logd_request_id3);
     check(testcase2.data_post_reset_, testcase2.data_post_update_, testcase2.status2_, testcase2.status3_, testcase2.logd_request2_, testcase2.logd_request3_);
 }
 
@@ -422,18 +429,18 @@ BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusY_logd_reques
     setup_check_status status1;
     setup_check_status status2;
 
-    Optional<long long> logd_request_id1 = RandomDataGenerator().xuint();
-    Optional<long long> logd_request_id2 = RandomDataGenerator().xuint();
-    Optional<long long> logd_request_id3 = RandomDataGenerator().xuint();
+    Optional<unsigned long long> logd_request_id1 = RandomDataGenerator().xuint();
+    Optional<unsigned long long> logd_request_id2 = RandomDataGenerator().xuint();
+    Optional<unsigned long long> logd_request_id3 = RandomDataGenerator().xuint();
 
     setup_create_update_check testcase1(
         status1.status_handle,
-        Optional<long long>(), logd_request_id1 );
+        Optional<unsigned long long>(), logd_request_id1 );
     check(testcase1.data_pre_update_, testcase1.data_post_update_, testcase1.old_status_, testcase1.new_status_, testcase1.old_logd_request_, testcase1.new_logd_request_);
 
     setup_create_update_update_check testcase2(
         status1.status_handle, status2.status_handle,
-        logd_request_id2, Optional<long long>(), logd_request_id3);
+        logd_request_id2, Optional<unsigned long long>(), logd_request_id3);
     check(testcase2.data_post_reset_, testcase2.data_post_update_, testcase2.status2_, testcase2.status3_, testcase2.logd_request2_, testcase2.logd_request3_);
 }
 
@@ -445,16 +452,16 @@ BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusY_logd_reques
 BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusX_logd_requestNULL)
 {
     setup_check_status status;
-    Optional<long long> logd_request_id1 = RandomDataGenerator().xuint();
+    Optional<unsigned long long> logd_request_id1 = RandomDataGenerator().xuint();
 
     setup_create_update_check testcase1(
         Fred::ContactCheckStatus::ENQUEUED,
-        Optional<long long>(), Optional<long long>() );
+        Optional<unsigned long long>(), Optional<unsigned long long>() );
     check(testcase1.data_pre_update_, testcase1.data_post_update_, testcase1.old_status_, testcase1.new_status_, testcase1.old_logd_request_, testcase1.new_logd_request_);
 
     setup_create_update_update_check testcase2(
         status.status_handle, status.status_handle,
-        logd_request_id1, Optional<long long>(), Optional<long long>());
+        logd_request_id1, Optional<unsigned long long>(), Optional<unsigned long long>());
     check(testcase2.data_post_reset_, testcase2.data_post_update_, testcase2.status2_, testcase2.status3_, testcase2.logd_request2_, testcase2.logd_request3_);
 }
 
@@ -468,16 +475,16 @@ BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusY_logd_reques
 {
     setup_check_status status1;
     setup_check_status status2;
-    Optional<long long> logd_request_id1 = RandomDataGenerator().xuint();
+    Optional<unsigned long long> logd_request_id1 = RandomDataGenerator().xuint();
 
     setup_create_update_check testcase1(
         status1.status_handle,
-        Optional<long long>(), Optional<long long>() );
+        Optional<unsigned long long>(), Optional<unsigned long long>() );
     check(testcase1.data_pre_update_, testcase1.data_post_update_, testcase1.old_status_, testcase1.new_status_, testcase1.old_logd_request_, testcase1.new_logd_request_);
 
     setup_create_update_update_check testcase2(
         status1.status_handle, status2.status_handle,
-        logd_request_id1, Optional<long long>(), Optional<long long>());
+        logd_request_id1, Optional<unsigned long long>(), Optional<unsigned long long>());
     check(testcase2.data_post_reset_, testcase2.data_post_update_, testcase2.status2_, testcase2.status3_, testcase2.logd_request2_, testcase2.logd_request3_);
 }
 

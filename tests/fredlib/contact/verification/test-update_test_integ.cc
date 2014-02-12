@@ -71,8 +71,8 @@ struct setup_create_update_test {
     std::string test_handle_;
     std::string old_status_;
     std::string new_status_;
-    Optional<long long> old_logd_request_;
-    Optional<long long> new_logd_request_;
+    Optional<unsigned long long> old_logd_request_;
+    Optional<unsigned long long> new_logd_request_;
     Optional<std::string> old_error_msg_;
     Optional<std::string> new_error_msg_;
     Fred::InfoContactCheckOutput data_pre_update_;
@@ -81,8 +81,8 @@ struct setup_create_update_test {
 
     setup_create_update_test(
         const std::string& _new_status,
-        Optional<long long> _old_logd_request,
-        Optional<long long> _new_logd_request,
+        Optional<unsigned long long> _old_logd_request,
+        Optional<unsigned long long> _new_logd_request,
         Optional<std::string> _new_error_msg,
         const std::string& _timezone = "UTC"
     ) :
@@ -151,9 +151,9 @@ struct setup_create_update_update_test {
     const std::string status1_;
     std::string status2_;
     std::string status3_;
-    Optional<long long> logd_request1_;
-    Optional<long long> logd_request2_;
-    Optional<long long> logd_request3_;
+    Optional<unsigned long long> logd_request1_;
+    Optional<unsigned long long> logd_request2_;
+    Optional<unsigned long long> logd_request3_;
     const Optional<std::string> error_msg1_;
     Optional<std::string> error_msg2_;
     Optional<std::string> error_msg3_;
@@ -165,9 +165,9 @@ struct setup_create_update_update_test {
     setup_create_update_update_test(
         const std::string& _status2,
         const std::string& _status3,
-        Optional<long long> _logd_request1,
-        Optional<long long> _logd_request2,
-        Optional<long long> _logd_request3,
+        Optional<unsigned long long> _logd_request1,
+        Optional<unsigned long long> _logd_request2,
+        Optional<unsigned long long> _logd_request3,
         Optional<std::string> _error_msg2,
         Optional<std::string> _error_msg3,
         const std::string& _timezone = "UTC"
@@ -263,7 +263,17 @@ struct setup_create_update_update_test {
  * @param old_error_msg error message related to test before update operation has been executed
  * @param new_error_msg error message related to test set in update operation (input param of UpdateContactTest operation)
  */
-void check(const std::string& test_handle, const InfoContactCheckOutput& data_pre_update, const InfoContactCheckOutput& data_post_update, const std::string& old_status, const std::string& new_status, Optional<long long> old_logd_request, Optional<long long> new_logd_request, Optional<std::string> old_error_msg, Optional<std::string> new_error_msg) {
+void check(
+    const std::string& test_handle,
+    const InfoContactCheckOutput& data_pre_update,
+    const InfoContactCheckOutput& data_post_update,
+    const std::string& old_status,
+    const std::string& new_status,
+    Optional<unsigned long long> old_logd_request,
+    Optional<unsigned long long> new_logd_request,
+    Optional<std::string> old_error_msg,
+    Optional<std::string> new_error_msg
+) {
     // everything is the same except the last state in history
     BOOST_CHECK_EQUAL( data_pre_update.contact_history_id, data_post_update.contact_history_id );
     BOOST_CHECK_EQUAL( data_pre_update.handle, data_post_update.handle );
@@ -356,20 +366,20 @@ BOOST_AUTO_TEST_CASE(test_Update)
     status_post_created.push_back(status1.status_handle_);
     status_post_reset.push_back(std::make_pair(status1.status_handle_, status2.status_handle_));
 
-    Optional<long long> logd_request_id1 = RandomDataGenerator().xuint();
-    Optional<long long> logd_request_id2 = RandomDataGenerator().xuint();
-    Optional<long long> logd_request_id3 = RandomDataGenerator().xuint();
-    std::vector<std::pair<Optional<long long>, Optional<long long> > > logd_request_post_created;
-    std::vector<boost::tuple<Optional<long long>, Optional<long long>, Optional<long long> > > logd_request_post_reset;
-    logd_request_post_created.push_back( std::make_pair( Optional<long long>(), Optional<long long>() ) );
+    Optional<unsigned long long> logd_request_id1 = RandomDataGenerator().xuint();
+    Optional<unsigned long long> logd_request_id2 = RandomDataGenerator().xuint();
+    Optional<unsigned long long> logd_request_id3 = RandomDataGenerator().xuint();
+    std::vector<std::pair<Optional<unsigned long long>, Optional<unsigned long long> > > logd_request_post_created;
+    std::vector<boost::tuple<Optional<unsigned long long>, Optional<unsigned long long>, Optional<unsigned long long> > > logd_request_post_reset;
+    logd_request_post_created.push_back( std::make_pair( Optional<unsigned long long>(), Optional<unsigned long long>() ) );
     logd_request_post_created.push_back( std::make_pair( logd_request_id1, Optional<long long>() ) );
-    logd_request_post_created.push_back( std::make_pair( Optional<long long>(), logd_request_id1 ) );
+    logd_request_post_created.push_back( std::make_pair( Optional<unsigned long long>(), logd_request_id1 ) );
     logd_request_post_created.push_back( std::make_pair( logd_request_id1, logd_request_id1 ) );
     logd_request_post_created.push_back( std::make_pair( logd_request_id1, logd_request_id2 ) );
-    logd_request_post_reset.push_back( boost::make_tuple(Optional<long long>(), Optional<long long>(), Optional<long long>() ) );
-    logd_request_post_reset.push_back( boost::make_tuple(logd_request_id1, Optional<long long>(), Optional<long long>() ) );
-    logd_request_post_reset.push_back( boost::make_tuple(logd_request_id1, logd_request_id2, Optional<long long>() ) );
-    logd_request_post_reset.push_back( boost::make_tuple(logd_request_id1, Optional<long long>(), logd_request_id2 ) );
+    logd_request_post_reset.push_back( boost::make_tuple(Optional<unsigned long long>(), Optional<unsigned long long>(), Optional<unsigned long long>() ) );
+    logd_request_post_reset.push_back( boost::make_tuple(logd_request_id1, Optional<unsigned long long>(), Optional<unsigned long long>() ) );
+    logd_request_post_reset.push_back( boost::make_tuple(logd_request_id1, logd_request_id2, Optional<unsigned long long>() ) );
+    logd_request_post_reset.push_back( boost::make_tuple(logd_request_id1, Optional<unsigned long long>(), logd_request_id2 ) );
     logd_request_post_reset.push_back( boost::make_tuple(logd_request_id1, logd_request_id2, logd_request_id2 ) );
     logd_request_post_reset.push_back( boost::make_tuple(logd_request_id1, logd_request_id2, logd_request_id3 ) );
 
@@ -385,7 +395,7 @@ BOOST_AUTO_TEST_CASE(test_Update)
     error_msg_post_reset.push_back( std::make_pair(error_msg_id1, error_msg_id1 ) );
     error_msg_post_reset.push_back( std::make_pair(Optional<std::string>(), error_msg_id1 ) );
 
-    typedef std::pair< Optional<long long>, Optional<long long> > logd_request_pair;
+    typedef std::pair< Optional<unsigned long long>, Optional<unsigned long long> > logd_request_pair;
 
     BOOST_FOREACH(const std::string& status, status_post_created) {
         BOOST_FOREACH(logd_request_pair& logd_request, logd_request_post_created) {
@@ -396,7 +406,7 @@ BOOST_AUTO_TEST_CASE(test_Update)
         }
     }
     typedef std::pair<std::string, std::string> pair_string;
-    typedef boost::tuple< Optional<long long>, Optional<long long>, Optional<long long> > logd_request_tuple;
+    typedef boost::tuple< Optional<unsigned long long>, Optional<unsigned long long>, Optional<unsigned long long> > logd_request_tuple;
     typedef std::pair<Optional<std::string>, Optional<std::string> > pair_optional_string;
     BOOST_FOREACH(pair_string& status, status_post_reset) {
         BOOST_FOREACH(logd_request_tuple& logd_request, logd_request_post_reset) {

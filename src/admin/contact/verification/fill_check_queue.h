@@ -55,10 +55,10 @@ namespace ContactVerificationQueue {
 
     class fill_check_queue {
         private:
-            std::string         testsuite_handle_;
-            unsigned            max_queue_length_;
-            contact_filter      filter_;
-            Optional<long long> logd_request_id_;
+            std::string                     testsuite_handle_;
+            unsigned                        max_queue_length_;
+            contact_filter                  filter_;
+            Optional<unsigned long long>    logd_request_id_;
 
         public:
             /**
@@ -70,9 +70,9 @@ namespace ContactVerificationQueue {
                 unsigned _max_queue_length);
 
             fill_check_queue& set_contact_filter(Optional<contact_filter> _filter);
-            fill_check_queue& set_logd_request_id(Optional<long long> _logd_request_id);
+            fill_check_queue& set_logd_request_id(Optional<unsigned long long> _logd_request_id);
 
-            std::vector< boost::tuple<std::string, long long, long long> > exec();
+            std::vector< boost::tuple<std::string, unsigned long long, unsigned long long> > exec();
     };
 }
 }

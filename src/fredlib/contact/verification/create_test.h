@@ -37,9 +37,9 @@ namespace Fred
      * Creates new record in contact_test_resutl table with status @ref ContactTestStatus::RUNNING . Has no sideeffects.
      */
     class CreateContactTest : public Util::Printable {
-        std::string         check_handle_;
-        std::string         test_handle_;
-        Nullable<long long> logd_request_id_;
+        std::string                     check_handle_;
+        std::string                     test_handle_;
+        Nullable<unsigned long long>    logd_request_id_;
 
     public:
         /**
@@ -58,16 +58,16 @@ namespace Fred
          * @param _logd_request_id  identifies (by id) optional log entry in logd related to this operation.
          */
         CreateContactTest(
-            const std::string&  _check_handle,
-            const std::string&  _test_handle,
-            Optional<long long> _logd_request_id
+            const std::string&              _check_handle,
+            const std::string&              _test_handle,
+            Optional<unsigned long long>    _logd_request_id
         );
 
         /**
          * setter of optional logd_request_id
          * Call with another value for re-set, no need to unset first.
          */
-        CreateContactTest& set_logd_request_id(long long _logd_request_id);
+        CreateContactTest& set_logd_request_id(unsigned long long _logd_request_id);
 
         /**
          * Commits operation.

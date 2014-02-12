@@ -150,7 +150,7 @@ namespace Fred
             result.local_create_time = boost::posix_time::time_from_string(static_cast<std::string>(contact_check_data[0]["create_time_"]));
             result.contact_history_id = static_cast<long>(contact_check_data[0]["contact_history_id_"]);
             result.testsuite_handle = static_cast<std::string>(contact_check_data[0]["testsuite_handle_"]);
-            long long temp_check_id = contact_check_data[0]["id_"]; /* only used within this function, output contains handle instead */
+            unsigned long long temp_check_id = contact_check_data[0]["id_"]; /* only used within this function, output contains handle instead */
 
             // check tests data
             result.tests = get_test_data(_ctx, temp_check_id, _output_timezone);
@@ -185,7 +185,11 @@ namespace Fred
         );
     }
 
-    std::vector<InfoContactCheckOutput::ContactTestResultData> InfoContactCheck::get_test_data(OperationContext& _ctx, long long _check_id, const std::string& _output_timezone) {
+    std::vector<InfoContactCheckOutput::ContactTestResultData> InfoContactCheck::get_test_data(
+        OperationContext& _ctx,
+        unsigned long long _check_id,
+        const std::string& _output_timezone
+    ) {
         std::vector<InfoContactCheckOutput::ContactTestResultData> result;
 
         // test_history data SHOULD remain safe - are updated only via trigger
@@ -222,7 +226,7 @@ namespace Fred
         for(Database::Result::Iterator it = contact_test_result.begin(); it != contact_test_result.end(); ++it) {
             test_ids.push_back(
                 boost::lexical_cast<std::string>(
-                    static_cast<long>( (*it)["id_"]) )
+                    static_cast<unsigned long long>( (*it)["id_"]) )
                 );
         }
 
@@ -258,7 +262,7 @@ namespace Fred
 
             // for each history state of this test (NOTE - states are clustered by test id)
             while( it_test_histories != contact_test_history_result.end() ) {
-                if( static_cast<long long>( (*it_test_histories)["id_"] ) != static_cast<long long>( (*it_tests)["id_"] ) ) {
+                if( static_cast<unsigned long long>( (*it_test_histories)["id_"] ) != static_cast<long long>( (*it_tests)["id_"] ) ) {
                     break;
                 }
 
@@ -292,7 +296,11 @@ namespace Fred
         return result;
     }
 
-    std::vector<InfoContactCheckOutput::ContactCheckState> InfoContactCheck::get_check_historical_states(OperationContext& _ctx, long long _check_id, const std::string& _output_timezone) {
+    std::vector<InfoContactCheckOutput::ContactCheckState> InfoContactCheck::get_check_historical_states(
+        OperationContext& _ctx,
+        unsigned long long _check_id,
+        const std::string& _output_timezone
+    ) {
         std::vector<InfoContactCheckOutput::ContactCheckState> result;
 
         // get check state history

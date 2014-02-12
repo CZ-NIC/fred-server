@@ -36,11 +36,11 @@ namespace Fred
      * Updates existing record in contact_test_result table. Has no sideeffects.
      */
     class UpdateContactTest : public Util::Printable {
-            std::string           check_handle_;
-            std::string           test_handle_;
-            std::string           status_handle_;
-            Nullable<long long>   logd_request_id_;
-            Nullable<std::string> error_msg_;
+            std::string                     check_handle_;
+            std::string                     test_handle_;
+            std::string                     status_handle_;
+            Nullable<unsigned long long>    logd_request_id_;
+            Nullable<std::string>           error_msg_;
 
         public:
             /**
@@ -59,16 +59,16 @@ namespace Fred
              * @param _status_name      denotes status to be set by it's name. Allowed values are in enum_test_status.h or enum_contact_test_status.name in database.
              * @param _error_msg        optional error message (free text string) describing test state.
              */
-            UpdateContactTest( const std::string&    _check_handle,
-                               const std::string&    _test_handle,
-                               const std::string&    _status_handle,
-                               Optional<long long>   _logd_request_id,
-                               Optional<std::string> _error_msg);
+            UpdateContactTest( const std::string&           _check_handle,
+                               const std::string&           _test_handle,
+                               const std::string&           _status_handle,
+                               Optional<unsigned long long> _logd_request_id,
+                               Optional<std::string>        _error_msg);
 
             /**
              * setter of optional logd_request_id
              */
-            UpdateContactTest& set_logd_request_id (long long _logd_request_id);
+            UpdateContactTest& set_logd_request_id (unsigned long long _logd_request_id);
 
             /**
              * setter of optional error message

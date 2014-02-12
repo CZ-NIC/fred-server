@@ -53,8 +53,11 @@ namespace Admin {
      * @return handle of selected and executed check
      */
     Optional<std::string> run_first_enqueued_check(
-        const std::map<std::string, boost::shared_ptr<Admin::ContactVerificationTest> >& _tests,
-        Optional<long long> _logd_request_id);
+        const std::map<
+            std::string,
+            boost::shared_ptr<Admin::ContactVerificationTest>
+        >&                              _tests,
+        Optional<unsigned long long>    _logd_request_id);
 
 }
 

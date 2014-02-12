@@ -39,9 +39,9 @@ namespace Fred
      */
     class CreateContactCheck : public Util::Printable
     {
-            long long           contact_id_;
-            std::string         testsuite_handle_;
-            Nullable<long long> logd_request_id_;
+            unsigned long long              contact_id_;
+            std::string                     testsuite_handle_;
+            Nullable<unsigned long long>    logd_request_id_;
 
         public:
             /**
@@ -50,7 +50,7 @@ namespace Fred
              * @param _testsuite_handle   denotes set (by it's handle) of tests to be run when this check is started.
              */
             CreateContactCheck(
-                long long          _contact_id,
+                unsigned long long _contact_id,
                 const std::string& _testsuite_handle
             );
             /**
@@ -60,16 +60,16 @@ namespace Fred
              * @param _logd_request_id  identifies (by id) optional log entry in logd related to this operation.
              */
             CreateContactCheck(
-                long long           _contact_id,
-                const std::string&  _testsuite_handle,
-                Optional<long long> _logd_request_id
+                unsigned long long              _contact_id,
+                const std::string&              _testsuite_handle,
+                Optional<unsigned long long>    _logd_request_id
             );
 
             /**
              * setter of optional logd_request_id
              * Call with another value for re-set, no need to unset first.
              */
-            CreateContactCheck& set_logd_request_id(long long _logd_request_id);
+            CreateContactCheck& set_logd_request_id(unsigned long long _logd_request_id);
 
             /**
              * Commits operation.

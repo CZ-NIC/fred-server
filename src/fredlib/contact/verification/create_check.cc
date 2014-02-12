@@ -38,7 +38,7 @@
 namespace Fred
 {
     CreateContactCheck::CreateContactCheck(
-        long long           _contact_id,
+        unsigned long long _contact_id,
         const std::string& _testsuite_handle
     ) :
         contact_id_(_contact_id),
@@ -46,22 +46,22 @@ namespace Fred
     { }
 
     CreateContactCheck::CreateContactCheck(
-        long long           _contact_id,
-        const std::string&  _testsuite_handle,
-        Optional<long long> _logd_request_id
+        unsigned long long              _contact_id,
+        const std::string&              _testsuite_handle,
+        Optional<unsigned long long>    _logd_request_id
     ) :
         contact_id_(_contact_id),
         testsuite_handle_(_testsuite_handle),
         logd_request_id_(
             ( _logd_request_id.isset() )
                 ?
-                Nullable<long long>( _logd_request_id.get_value() )
+                Nullable<unsigned long long>( _logd_request_id.get_value() )
                 :
-                Nullable<long long>()
+                Nullable<unsigned long long>()
         )
     { }
 
-    CreateContactCheck& CreateContactCheck::set_logd_request_id(long long _logd_request_id) {
+    CreateContactCheck& CreateContactCheck::set_logd_request_id(unsigned long long _logd_request_id) {
         logd_request_id_ = _logd_request_id;
         return *this;
     }
@@ -100,7 +100,7 @@ namespace Fred
         if(contact_history_res.size() != 1) {
             throw ExceptionUnknownContactId();
         }
-        long contact_history_id = static_cast<long>(contact_history_res[0]["historyid_"]);
+        unsigned long long contact_history_id = static_cast<unsigned long long>(contact_history_res[0]["historyid_"]);
 
         Database::Result testsuite_res = _ctx.get_conn().exec_params(
             "SELECT id "

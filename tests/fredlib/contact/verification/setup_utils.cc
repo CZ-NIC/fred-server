@@ -50,7 +50,7 @@ setup_contact::setup_contact() {
     Fred::OperationContext ctx_check;
     data_ = Fred::InfoContactByHandle(contact_handle).exec(ctx_check);
 
-    contact_id_ = static_cast<long long>(
+    contact_id_ = static_cast<unsigned long long>(
         ctx_check.get_conn().exec(
             "SELECT id "
             "   FROM contact "
@@ -342,7 +342,7 @@ setup_error_msg::setup_error_msg() {
     error_msg = "ERROR_MSG_" + RandomDataGenerator().xnumstring(20);
 }
 
-setup_check::setup_check(const std::string& _testsuite_handle, Optional<long long> _logd_request)
+setup_check::setup_check(const std::string& _testsuite_handle, Optional<unsigned long long> _logd_request)
     : logd_request_(_logd_request)
 {
     // check
@@ -388,7 +388,7 @@ setup_nonexistent_check_status_handle::setup_nonexistent_check_status_handle() {
 setup_test::setup_test(
     const std::string& _check_handle,
     const std::string& _testdef_handle,
-    Optional<long long> _logd_request
+    Optional<unsigned long long> _logd_request
 ) :
     testdef_handle_(_testdef_handle),
     logd_request_(_logd_request)

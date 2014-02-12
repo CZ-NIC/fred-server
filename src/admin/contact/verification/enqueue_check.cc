@@ -8,10 +8,10 @@
 
 namespace  Admin {
     std::string enqueue_check(
-        Fred::OperationContext& _ctx,
-        long long               _contact_id,
-        const std::string&      _testsuite_handle,
-        Optional<long long>     _logd_request_id
+        Fred::OperationContext&         _ctx,
+        unsigned long long              _contact_id,
+        const std::string&              _testsuite_handle,
+        Optional<unsigned long long>    _logd_request_id
     ) {
         std::string created_handle = Fred::CreateContactCheck(
             _contact_id,

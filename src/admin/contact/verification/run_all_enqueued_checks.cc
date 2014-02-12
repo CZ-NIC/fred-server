@@ -3,7 +3,10 @@
 
 namespace  Admin {
 
-    std::vector<std::string> run_all_enqueued_checks(const std::map<std::string, boost::shared_ptr<Admin::ContactVerificationTest> >& _tests, Optional<long long> _logd_request_id) {
+    std::vector<std::string> run_all_enqueued_checks(
+        const std::map<std::string, boost::shared_ptr<Admin::ContactVerificationTest> >& _tests,
+        Optional<unsigned long long> _logd_request_id
+    ) {
         std::vector<std::string> handles;
         Optional<std::string> temp_handle;
 
