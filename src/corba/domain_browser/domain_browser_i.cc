@@ -384,20 +384,84 @@ namespace Registry
         {
             try
             {
+                Registry::DomainBrowserImpl::DomainDetail detail_impl
+                    = pimpl_->getDomainDetail(contact.id, domain.id, lang);
+
                 DomainDetail_var domain_detail = new DomainDetail;
+                domain_detail->id = detail_impl.id;
+                domain_detail->fqdn = CORBA::string_dup(detail_impl.fqdn.c_str());
+                domain_detail->roid = CORBA::string_dup(detail_impl.roid.c_str());
+                domain_detail->registrar.id = detail_impl.registrar.id;
+                domain_detail->registrar.handle = CORBA::string_dup(detail_impl.registrar.handle.c_str());
+                domain_detail->registrar.name = CORBA::string_dup(detail_impl.registrar.name.c_str());
+                domain_detail->create_date = CORBA::string_dup(boost::gregorian::to_iso_extended_string(detail_impl.creation_time.date()).c_str());
+                domain_detail->update_date = CORBA::string_dup(detail_impl.update_time.isnull()
+                    ? "" : boost::gregorian::to_iso_extended_string(detail_impl.update_time.get_value().date()).c_str());
+                domain_detail->auth_info = CORBA::string_dup(detail_impl.authinfopw.c_str());
+                domain_detail->registrant.id = detail_impl.registrant.id;
+                domain_detail->registrant.handle = CORBA::string_dup(detail_impl.registrant.handle.c_str());
+                domain_detail->registrant.name = CORBA::string_dup(detail_impl.registrant.name.c_str());
+                domain_detail->expiration_date = CORBA::string_dup(boost::gregorian::to_iso_extended_string(detail_impl.expiration_date).c_str());
+
+                domain_detail->is_enum = !detail_impl.enum_domain_validation.isnull();
+                if(domain_detail->is_enum)
+                {
+                    domain_detail->publish = detail_impl.enum_domain_validation.get_value().publish;
+                    domain_detail->val_ex_date = CORBA::string_dup(boost::gregorian::to_iso_extended_string(
+                        detail_impl.enum_domain_validation.get_value().validation_expiration).c_str());
+                }
+                else
+                {
+                    domain_detail->publish = false;
+                    domain_detail->val_ex_date = CORBA::string_dup("");
+                }
+
+                domain_detail->nsset.id = detail_impl.nsset.id;
+                domain_detail->nsset.handle = CORBA::string_dup(detail_impl.nsset.handle.c_str());
+                domain_detail->nsset.name = CORBA::string_dup(detail_impl.nsset.name.c_str());
+
+                domain_detail->keyset.id = detail_impl.keyset.id;
+                domain_detail->keyset.handle = CORBA::string_dup(detail_impl.keyset.handle.c_str());
+                domain_detail->keyset.name = CORBA::string_dup(detail_impl.keyset.name.c_str());
+
+                domain_detail->admins.length(detail_impl.admins.size());
+
+                for(std::size_t i = 0; i < detail_impl.admins.size(); ++i)
+                {
+                    domain_detail->admins[i].id = detail_impl.admins[i].id;
+                    domain_detail->admins[i].handle = CORBA::string_dup(detail_impl.admins[i].handle.c_str());
+                    domain_detail->admins[i].name = CORBA::string_dup(detail_impl.admins[i].name.c_str());
+                }
+
+                domain_detail->states = CORBA::string_dup(detail_impl.states.c_str());
+                domain_detail->state_codes = CORBA::string_dup(detail_impl.state_codes.c_str());
+
+                if(detail_impl.is_owner)
+                {
+                    auth_result = PRIVATE_DATA;
+                }
+                else
+                {
+                    auth_result = PUBLIC_DATA;
+                }
+
                 return domain_detail._retn();
             }//try
-            catch (std::exception &_ex)
+            catch (const Registry::DomainBrowserImpl::ObjectNotExists& )
             {
                 throw Registry::DomainBrowser::OBJECT_NOT_EXISTS();
             }
-            catch (std::exception &_ex)
+            catch (const Registry::DomainBrowserImpl::UserNotExists& )
             {
                 throw Registry::DomainBrowser::USER_NOT_EXISTS();
             }
-            catch (std::exception &_ex)
+            catch (const boost::exception&)
             {
-                throw Registry::DomainBrowser::INCORRECT_USAGE();
+                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
+            }
+            catch (const std::exception&)
+            {
+                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
             }
             catch (...)
             {
