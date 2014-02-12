@@ -138,6 +138,40 @@ namespace Registry
         };
 
         /**
+         * Domain detail data
+         * Returned by @ref getDomainDetail.
+         */
+        struct DomainDetail
+        {
+            unsigned long long id;/**< id of the domain */
+            std::string fqdn;/**< fully qualified domain name */
+            std::string roid;/**< registry object identifier of domain */
+            RegistryReference registrar;/**< registrar administering the domain */
+            boost::posix_time::ptime creation_time;/**< creation time of the domain in set local zone*/
+            Nullable<boost::posix_time::ptime> update_time; /**< last update time of the domain in set local zone*/
+            std::string authinfopw;/**< password for transfer */
+            RegistryReference registrant; /**< owner of domain*/
+            boost::gregorian::date expiration_date; /**< domain expiration local date */
+            boost::gregorian::date validation_expiration;/**< the expiration date of the ENUM domain validation */
+            bool publish;/**< flag for publishing ENUM number and associated contact in public directory */
+            bool is_enum;/**< is ENUM domain */
+            RegistryReference nsset; /**< domain nsset */
+            RegistryReference keyset;/**< domain keyset */
+            std::vector<RegistryReference> admins; /**< domain admin contacts */
+            std::string states;/**< contact states descriptions in given language from db. table enum_object_states_desc delimited by pipe '|' character */
+            std::string state_codes;/**< contact states names from db. table enum_object_states delimited by coma ',' character */
+            bool is_owner;/**< whether user contact is the same as requested domain owner */
+
+            DomainDetail()
+            : id(0)
+            , publish(false)
+            , is_enum(false)
+            , is_owner(false)
+            {}
+        };
+
+
+        /**
          * Internal server error.
          * Unexpected failure, requires maintenance. Exception should contain boost diagnostic information.
          */
