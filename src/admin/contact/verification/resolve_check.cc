@@ -1,5 +1,5 @@
 #include "src/admin/contact/verification/resolve_check.h"
-#include "src/admin/contact/verification/related_records.h"
+#include "src/admin/contact/verification/related_records_impl.h"
 #include "src/fredlib/contact/verification/enum_testsuite_handle.h"
 #include "src/fredlib/contact/verification/enum_check_status.h"
 #include "src/fredlib/contact/verification/update_check.h"
@@ -13,16 +13,16 @@
 
 namespace  Admin {
     resolve_check::resolve_check(
-        const std::string&  _check_handle,
-        const std::string&  _status_handle,
-        Optional<long long> _logd_request_id
+        const std::string&              _check_handle,
+        const std::string&              _status_handle,
+        Optional<unsigned long long>    _logd_request_id
     ) :
         check_handle_(_check_handle),
         status_handle_(_status_handle),
         logd_request_id_(_logd_request_id)
     { }
 
-    resolve_check& resolve_check::set_logd_request_id(Optional<long long> _logd_request_id) {
+    resolve_check& resolve_check::set_logd_request_id(Optional<unsigned long long> _logd_request_id) {
         logd_request_id_ = _logd_request_id;
 
         return *this;

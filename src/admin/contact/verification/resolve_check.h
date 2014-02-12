@@ -35,9 +35,9 @@ namespace Admin {
 
     class resolve_check {
         private:
-            std::string         check_handle_;
-            std::string         status_handle_;
-            Optional<long long> logd_request_id_;
+            std::string                     check_handle_;
+            std::string                     status_handle_;
+            Optional<unsigned long long>    logd_request_id_;
 
             void postprocess_automatic_check(
                 Fred::OperationContext& _ctx,
@@ -55,11 +55,11 @@ namespace Admin {
              * @param _logd_request_id Related logger request
              */
             resolve_check(
-                const std::string&  _check_handle,
-                const std::string&  _status_handle,
-                Optional<long long> _logd_request_id);
+                const std::string&              _check_handle,
+                const std::string&              _status_handle,
+                Optional<unsigned long long>    _logd_request_id);
 
-            resolve_check& set_logd_request_id(Optional<long long> _logd_request_id);
+            resolve_check& set_logd_request_id(Optional<unsigned long long> _logd_request_id);
 
 
             /**

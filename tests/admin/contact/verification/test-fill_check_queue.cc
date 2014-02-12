@@ -49,7 +49,7 @@
 namespace Test = Fred::ContactTestStatus;
 namespace Check = Fred::ContactCheckStatus;
 
-typedef std::vector< boost::tuple<std::string, long long, long long> > T_enq_ch;
+typedef std::vector< boost::tuple<std::string, unsigned long long, unsigned long long> > T_enq_ch;
 typedef std::map<std::string, boost::shared_ptr<Admin::ContactVerificationTest> > T_testimpl_map;
 
 void clean_queue() {
@@ -114,7 +114,7 @@ T_testimpl_map create_dummy_automatic_testsuite() {
 struct setup_already_checked_contacts {
 
     int count_;
-    std::vector<long long> ids_;
+    std::vector<unsigned long long> ids_;
 
     setup_already_checked_contacts(int _count)
         : count_(_count)
@@ -128,7 +128,7 @@ struct setup_already_checked_contacts {
             "   FROM object_registry AS o_r "
             "       JOIN contact USING(id); ");
         for(Database::Result::Iterator it = pre_existing_res.begin(); it != pre_existing_res.end(); ++it) {
-            ids_.push_back( static_cast<long long>( (*it)["contact_id_"] ) );
+            ids_.push_back( static_cast<unsigned long long>( (*it)["contact_id_"] ) );
             pre_existing_count++;
         }
 
@@ -179,7 +179,7 @@ void create_check_for_all_unchecked_contacts(const std::string& testsuite_handle
     ) {
         Fred::OperationContext ctx1;
         handle = Fred::CreateContactCheck(
-            static_cast<long long>( (*it)["contact_id_"] ),
+            static_cast<unsigned long long>( (*it)["contact_id_"] ),
             testsuite_handle
         )
         .exec(ctx1);
@@ -277,13 +277,13 @@ BOOST_AUTO_TEST_CASE(test_Enqueueing_never_checked_contacts)
 
         static void enqueued_in_never_checked(
             const T_enq_ch& _enqueued_checks,
-            const std::vector<long long>& _never_checked_contacts_ids
+            const std::vector<unsigned long long>& _never_checked_contacts_ids
         ) {
             bool is_enqueued;
             for(T_enq_ch::const_iterator it_enqueued = _enqueued_checks.begin(); it_enqueued != _enqueued_checks.end(); ++it_enqueued) {
                 is_enqueued = false;
 
-                for(std::vector<long long>::const_iterator it_never_ch = _never_checked_contacts_ids.begin(); it_never_ch != _never_checked_contacts_ids.end(); ++it_never_ch) {
+                for(std::vector<unsigned long long>::const_iterator it_never_ch = _never_checked_contacts_ids.begin(); it_never_ch != _never_checked_contacts_ids.end(); ++it_never_ch) {
                     if(it_enqueued->get<1>() == *it_never_ch) {
                         is_enqueued = true;
                     }
@@ -294,10 +294,10 @@ BOOST_AUTO_TEST_CASE(test_Enqueueing_never_checked_contacts)
 
         static void update_never_checked(
             const T_enq_ch& _enqueued_checks,
-            std::vector<long long>& _never_checked_contacts_ids
+            std::vector<unsigned long long>& _never_checked_contacts_ids
         ) {
-            std::map<long long, int> never_checked_copy;
-            for(std::vector<long long>::const_iterator it = _never_checked_contacts_ids.begin();
+            std::map<unsigned long long, int> never_checked_copy;
+            for(std::vector<unsigned long long>::const_iterator it = _never_checked_contacts_ids.begin();
                it != _never_checked_contacts_ids.end();
                ++it) {
                never_checked_copy[*it] = 1;
@@ -308,8 +308,8 @@ BOOST_AUTO_TEST_CASE(test_Enqueueing_never_checked_contacts)
             }
 
 
-            std::vector<long long> result;
-            for(std::map<long long, int>::const_iterator it = never_checked_copy.begin();
+            std::vector<unsigned long long> result;
+            for(std::map<unsigned long long, int>::const_iterator it = never_checked_copy.begin();
                 it != never_checked_copy.end();
                 ++it
             ) {
@@ -326,7 +326,7 @@ BOOST_AUTO_TEST_CASE(test_Enqueueing_never_checked_contacts)
     setup_already_checked_contacts(50);
 
     // make set of new, never checked contacts
-    std::vector<long long> never_checked_contacts;
+    std::vector<unsigned long long> never_checked_contacts;
     for(int i=0; i<50; ++i) {
         never_checked_contacts.push_back(setup_contact().contact_id_);
     }
@@ -374,7 +374,7 @@ BOOST_AUTO_TEST_CASE(test_Enqueueing_already_checked_contacts)
 
     create_check_for_all_unchecked_contacts(Fred::TestsuiteHandle::AUTOMATIC);
 
-    std::vector<long long> ids;
+    std::vector<unsigned long long> ids;
 
     Fred::OperationContext ctx;
 
@@ -393,11 +393,11 @@ BOOST_AUTO_TEST_CASE(test_Enqueueing_already_checked_contacts)
     BOOST_CHECK_EQUAL(oldest_checked_res.size(), 20);
 
     for(Database::Result::Iterator it = oldest_checked_res.begin(); it != oldest_checked_res.end(); ++it) {
-        ids.push_back( static_cast<long long>( (*it)["contact_id_"] ) );
+        ids.push_back( static_cast<unsigned long long>( (*it)["contact_id_"] ) );
     }
 
     T_enq_ch enqueued_checks;
-    std::vector<long long>::const_iterator it_checked = ids.begin();
+    std::vector<unsigned long long>::const_iterator it_checked = ids.begin();
 
     for(int i = 1; i<=20; ++i) {
         enqueued_checks.clear();
@@ -526,7 +526,7 @@ setup_special_contact::setup_special_contact(
     data_ = Fred::InfoContactByHandle(contact_handle_)
         .exec(ctx_check);
 
-    contact_id_ = static_cast<long long>(
+    contact_id_ = static_cast<unsigned long long>(
         ctx_check.get_conn().exec(
             "SELECT id "
             "   FROM contact "
@@ -568,7 +568,7 @@ void process_filtered_contacts_testcase(
         Ttestdata;
 
     std::vector<boost::shared_ptr<setup_special_contact> > test_contacts;
-    std::vector<long long> contacts_to_be_enqueued;
+    std::vector<unsigned long long> contacts_to_be_enqueued;
     for(Ttestdata::const_iterator it = testcases.begin();
         it != testcases.end();
         ++it
@@ -586,13 +586,13 @@ void process_filtered_contacts_testcase(
         }
     }
 
-    std::vector< boost::tuple<std::string, long long, long long> > enqueued_contacts;
+    std::vector< boost::tuple<std::string, unsigned long long, unsigned long long> > enqueued_contacts;
     enqueued_contacts = Admin::ContactVerificationQueue::fill_check_queue(Fred::TestsuiteHandle::AUTOMATIC, 10)
         .set_contact_filter(filter)
         .exec();
 
-    std::set<long long> unique_enqueued_contacts;
-    for(std::vector< boost::tuple<std::string, long long, long long> >::const_iterator it = enqueued_contacts.begin();
+    std::set<unsigned long long> unique_enqueued_contacts;
+    for(std::vector< boost::tuple<std::string, unsigned long long, unsigned long long> >::const_iterator it = enqueued_contacts.begin();
         it != enqueued_contacts.end();
         ++it
     ) {
@@ -601,7 +601,7 @@ void process_filtered_contacts_testcase(
 
     BOOST_CHECK_EQUAL(contacts_to_be_enqueued.size(), unique_enqueued_contacts.size());
 
-    for(std::set<long long>::const_iterator it = unique_enqueued_contacts.begin();
+    for(std::set<unsigned long long>::const_iterator it = unique_enqueued_contacts.begin();
         it != unique_enqueued_contacts.end();
         ++it
     ) {

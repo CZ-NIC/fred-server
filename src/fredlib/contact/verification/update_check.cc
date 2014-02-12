@@ -37,22 +37,22 @@ namespace Fred
     { }
 
     UpdateContactCheck::UpdateContactCheck(
-        const std::string&  _check_handle,
-        const std::string&  _status_handle,
-        Optional<long long> _logd_request_id
+        const std::string&              _check_handle,
+        const std::string&              _status_handle,
+        Optional<unsigned long long>    _logd_request_id
     ) :
         check_handle_(_check_handle),
         status_handle_(_status_handle),
         logd_request_id_(
             ( _logd_request_id.isset() )
                 ?
-                Nullable<long long>( _logd_request_id.get_value() )
+                Nullable<unsigned long long>( _logd_request_id.get_value() )
                 :
-                Nullable<long long>()
+                Nullable<unsigned long long>()
         )
     { }
 
-    UpdateContactCheck& UpdateContactCheck::set_logd_request_id (long long _logd_request_id) {
+    UpdateContactCheck& UpdateContactCheck::set_logd_request_id (unsigned long long _logd_request_id) {
         logd_request_id_ = _logd_request_id;
         return *this;
     }
@@ -113,7 +113,7 @@ namespace Fred
             throw;
         }
 
-        _ctx.get_log().debug("UpdateContactCheck executed succesfully");
+        _ctx.get_log().debug("UpdateContactCheck executed successfully");
     }
 
     std::string UpdateContactCheck::to_string() const {

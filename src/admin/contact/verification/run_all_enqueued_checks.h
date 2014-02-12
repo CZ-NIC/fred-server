@@ -41,7 +41,7 @@ namespace Admin {
      */
     std::vector<std::string> run_all_enqueued_checks(
         const std::map<std::string, boost::shared_ptr<Admin::ContactVerificationTest> >& _tests,
-        Optional<long long> _logd_request_id = Optional<long long>());
+        Optional<unsigned long long> _logd_request_id = Optional<unsigned long long>());
 }
 
 #endif // #include guard end

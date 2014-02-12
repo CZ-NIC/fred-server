@@ -1,5 +1,5 @@
 #include "src/admin/contact/verification/run_first_enqueued_check.h"
-#include "src/admin/contact/verification/related_records.h"
+#include "src/admin/contact/verification/related_records_impl.h"
 #include "src/fredlib/contact/verification/enum_check_status.h"
 #include "src/fredlib/contact/verification/enum_test_status.h"
 #include "src/fredlib/contact/verification/create_test.h"
@@ -21,27 +21,32 @@ namespace  Admin {
     /**
      * Lock some contact_check with running status.
      * If no existing running check can be be locked check with status enqueued is looked for, it's status updated and locking is retried.
-     * Iterates until some contact_check is locked succesfully or there is neither any lockable check with running status nor check with enqueued status.
+     * Iterates until some contact_check is locked successfully or there is neither any lockable check with running status nor check with enqueued status.
      *
      * @return locked check id
      */
-    static std::string lazy_get_locked_running_check(Fred::OperationContext& _ctx, Optional<long long> _logd_request_id);
+    static std::string lazy_get_locked_running_check(Fred::OperationContext& _ctx, Optional<unsigned long long> _logd_request_id);
     /**
      * Important side-effect: tests of this check are created in db with status enqueued.
      */
-    static void update_some_enqueued_check_to_running(Optional<long long> _logd_request_id);
+    static void update_some_enqueued_check_to_running(Optional<unsigned long long> _logd_request_id);
 
     /**
      * Lock some contact_test with running status related to given check.
      * If no existing running test can be be locked function tries to upgrade status of some existing test from enqueued to running
      * and locking is retried.
-     * Iterates until some contact_test is locked succesfully or all tests of given check are already running (and can't be locked).
+     * Iterates until some contact_test is locked successfully or all tests of given check are already running (and can't be locked).
      *
      * @param _check_id check whose tests are tried to lock
      * @return locked test handle
      */
-    static std::string lazy_get_locked_running_test(Fred::OperationContext& _ctx, const std::string& _check_handle, Optional<long long> _logd_request_id);
-    static void update_some_enqueued_test_to_running(const std::string& _check_handle, Optional<long long> _logd_request_id);
+    static std::string lazy_get_locked_running_test(
+        Fred::OperationContext& _ctx,
+        const std::string& _check_handle,
+        Optional<unsigned long long> _logd_request_id
+    );
+
+    static void update_some_enqueued_test_to_running(const std::string& _check_handle, Optional<unsigned long long> _logd_request_id);
 
     /**
      * Updating check status based on tests results
@@ -55,7 +60,10 @@ namespace  Admin {
     /**
      * main function and the only one visible to the outer world
      */
-    Optional<std::string> run_first_enqueued_check(const std::map<std::string, boost::shared_ptr<Admin::ContactVerificationTest> >& _tests, Optional<long long> _logd_request_id) {
+    Optional<std::string> run_first_enqueued_check(
+        const std::map<std::string, boost::shared_ptr<Admin::ContactVerificationTest> >& _tests,
+        Optional<unsigned long long> _logd_request_id
+    ) {
         Fred::OperationContext ctx_locked_check;
         Optional<std::string> check_handle;
         try {
@@ -101,23 +109,26 @@ namespace  Admin {
                         throw Fred::InternalError("malfunction in implementation of test " + test_handle + ", run() returned bad status");
                     }
                 } catch(...) {
-                    ctx_locked_test.get_conn().exec("ROLLBACK;");
+                    try {
+                        ctx_locked_test.get_conn().exec("ROLLBACK;");
 
-                    Fred::OperationContext ctx_testrun_error;
-                    test_statuses.push_back(Fred::ContactTestStatus::ERROR);
-                    error_messages.push_back(Optional<std::string>("exception in test implementation"));
+                        Fred::OperationContext ctx_testrun_error;
+                        test_statuses.push_back(Fred::ContactTestStatus::ERROR);
+                        error_messages.push_back(Optional<std::string>("exception in test implementation"));
 
-                    Fred::UpdateContactTest(
-                        check_handle,
-                        test_handle,
-                        test_statuses.back(),
-                        _logd_request_id,
-                        error_messages.back()
-                    ).exec(ctx_testrun_error);
+                        Fred::UpdateContactTest(
+                            check_handle,
+                            test_handle,
+                            test_statuses.back(),
+                            _logd_request_id,
+                            error_messages.back()
+                        ).exec(ctx_testrun_error);
 
-                    // TODO log problem
-                    ctx_testrun_error.get_log();
-                    ctx_testrun_error.commit_transaction();
+                        ctx_testrun_error.get_log().warning("exception in test implementation " + test_handle);
+                        ctx_testrun_error.commit_transaction();
+                    } catch(...) {
+                        // the caught exception is probably the cause for this one as well
+                    }
 
                     // let it propagate so the check can be updated to reflect this situation
                     throw;
@@ -153,7 +164,7 @@ namespace  Admin {
 
                 ctx_locked_check.commit_transaction();
             } catch(...) {
-                // the caught exception is probably the cause
+                // the caught exception is probably the cause for this one as well
             }
 
             throw;
@@ -178,7 +189,7 @@ namespace  Admin {
         return check_handle;
     }
 
-    std::string lazy_get_locked_running_check(Fred::OperationContext& _ctx, Optional<long long> _logd_request_id) {
+    std::string lazy_get_locked_running_check(Fred::OperationContext& _ctx, Optional<unsigned long long> _logd_request_id) {
         while(true) {
             Database::Result locked_check_res = _ctx.get_conn().exec_params(
                 "SELECT c_ch.handle AS check_handle_ "
@@ -205,7 +216,7 @@ namespace  Admin {
             }
         }
     }
-    void update_some_enqueued_check_to_running(Optional<long long> _logd_request_id) {
+    void update_some_enqueued_check_to_running(Optional<unsigned long long> _logd_request_id) {
         Fred::OperationContext ctx;
 
         Database::Result locked_check_res = ctx.get_conn().exec_params(
@@ -266,7 +277,11 @@ namespace  Admin {
         ctx.commit_transaction();
     }
 
-    std::string lazy_get_locked_running_test(Fred::OperationContext& _ctx, const std::string& _check_handle, Optional<long long> _logd_request_id) {
+    std::string lazy_get_locked_running_test(
+        Fred::OperationContext& _ctx,
+        const std::string& _check_handle,
+        Optional<unsigned long long> _logd_request_id
+    ) {
         while(true) {
 
             Database::Result locked_test_res = _ctx.get_conn().exec_params(
@@ -300,7 +315,7 @@ namespace  Admin {
         }
     }
 
-    void update_some_enqueued_test_to_running(const std::string& _check_handle, Optional<long long> _logd_request_id) {
+    void update_some_enqueued_test_to_running(const std::string& _check_handle, Optional<unsigned long long> _logd_request_id) {
         Database::Result locked_testhandle_res;
 
         while(true) {

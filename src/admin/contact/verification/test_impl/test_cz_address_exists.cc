@@ -102,8 +102,7 @@ namespace Admin {
         try {
             string normalized_street1(static_cast<string>(contact_data.street1));
             boost::algorithm::trim(normalized_street1);
-            // TODO
-                // erase č.p. variants
+            // TODO erase č.p. variants
             street = parse_street1(
                 normalized_street1,
                 street_delimiters_,
@@ -128,7 +127,6 @@ namespace Admin {
             }
             postal_code = parse_postal_code(static_cast<string>(contact_data.postalcode));
         } catch (...) {
-            // TODO error message
             return T_run_result (Fred::ContactTestStatus::FAIL, string("exception during parsing") );
         }
 
@@ -137,7 +135,6 @@ namespace Admin {
                 return T_run_result (Fred::ContactTestStatus::OK, string() );
             }
         } catch (...) {
-            // TODO error message
             return T_run_result (Fred::ContactTestStatus::FAIL, string("exception during validation") );
         }
 
@@ -145,7 +142,6 @@ namespace Admin {
         try {
             error_msg = diagnose_problem(street, city, postal_code);
         } catch (...) {
-            // TODO error message
             return T_run_result (Fred::ContactTestStatus::FAIL, string("exception during diagnostics") );
         }
 

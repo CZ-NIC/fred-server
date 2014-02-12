@@ -105,7 +105,7 @@ namespace ContactVerificationQueue {
         _conditions = conditions;
     }
 
-    static std::vector<long long> select_never_checked_contacts(
+    static std::vector<unsigned long long> select_never_checked_contacts(
         Fred::OperationContext& _ctx,
         unsigned                _max_count,
         const std::string&      _testsuite_handle,
@@ -158,7 +158,7 @@ namespace ContactVerificationQueue {
             Database::query_param_list(_max_count)
         );
 
-        std::vector<long long> result;
+        std::vector<unsigned long long> result;
 
         if(never_checked_contacts_res.size() == 0) {
             return result;
@@ -166,13 +166,13 @@ namespace ContactVerificationQueue {
         result.reserve(never_checked_contacts_res.size());
 
         for(Database::Result::Iterator it = never_checked_contacts_res.begin(); it != never_checked_contacts_res.end(); ++it) {
-            result.push_back( static_cast<long long>( (*it)["contact_id_"]) );
+            result.push_back( static_cast<unsigned long long>( (*it)["contact_id_"]) );
         }
 
         return result;
     }
 
-    static std::vector<long long> select_oldest_checked_contacts(
+    static std::vector<unsigned long long> select_oldest_checked_contacts(
         Fred::OperationContext& _ctx,
         unsigned                _max_count,
         const std::string&      _testsuite_handle,
@@ -227,7 +227,7 @@ namespace ContactVerificationQueue {
         );
 
 
-        std::vector<long long> result;
+        std::vector<unsigned long long> result;
 
         if(oldest_checked_contacts_res.size() == 0) {
             return result;
@@ -235,7 +235,7 @@ namespace ContactVerificationQueue {
         result.reserve(oldest_checked_contacts_res.size());
 
         for(Database::Result::Iterator it = oldest_checked_contacts_res.begin(); it != oldest_checked_contacts_res.end(); ++it) {
-            result.push_back( static_cast<long long>( (*it)["contact_id_"] ) );
+            result.push_back( static_cast<unsigned long long>( (*it)["contact_id_"] ) );
         }
 
         return result;
@@ -252,13 +252,13 @@ namespace ContactVerificationQueue {
 
         return *this;
     }
-    fill_check_queue& fill_check_queue::set_logd_request_id(Optional<long long> _logd_request_id) {
+    fill_check_queue& fill_check_queue::set_logd_request_id(Optional<unsigned long long> _logd_request_id) {
         logd_request_id_ = _logd_request_id;
 
         return *this;
     }
 
-    std::vector< boost::tuple<std::string, long long, long long> > fill_check_queue::exec() {
+    std::vector< boost::tuple<std::string, unsigned long long, unsigned long long> > fill_check_queue::exec() {
         Fred::OperationContext ctx1;
 
         // how many enqueued checks are there?
@@ -276,9 +276,9 @@ namespace ContactVerificationQueue {
 
         int checks_to_enqueue_count = static_cast<int>(max_queue_length_) - static_cast<int>(queue_count_res[0]["count_"]);
 
-        std::vector< boost::tuple<std::string, long long, long long> > result;
+        std::vector< boost::tuple<std::string, unsigned long long, unsigned long long> > result;
 
-        std::vector<long long> to_enqueue_never_checked;
+        std::vector<unsigned long long> to_enqueue_never_checked;
         std::string temp_handle;
 
         if(checks_to_enqueue_count > 0) {
@@ -292,7 +292,7 @@ namespace ContactVerificationQueue {
                 filter_
             );
 
-            BOOST_FOREACH(long long contact_id, to_enqueue_never_checked) {
+            BOOST_FOREACH(unsigned long long contact_id, to_enqueue_never_checked) {
                 temp_handle = enqueue_check(
                     ctx1,
                     contact_id,
@@ -318,7 +318,7 @@ namespace ContactVerificationQueue {
 
         if(checks_to_enqueue_count > 0) {
 
-            std::vector<long long> to_enqueue_oldest_checked;
+            std::vector<unsigned long long> to_enqueue_oldest_checked;
 
             Fred::OperationContext ctx2;
             to_enqueue_oldest_checked = select_oldest_checked_contacts(
@@ -330,7 +330,7 @@ namespace ContactVerificationQueue {
 
             if(to_enqueue_oldest_checked.empty() == false) {
 
-                for(std::vector<long long>::const_iterator contact_id_it = to_enqueue_oldest_checked.begin();
+                for(std::vector<unsigned long long>::const_iterator contact_id_it = to_enqueue_oldest_checked.begin();
                     contact_id_it != to_enqueue_oldest_checked.end();
                     ++contact_id_it
                 ) {

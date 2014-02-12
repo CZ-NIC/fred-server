@@ -154,7 +154,7 @@ namespace Fred
                    ListChecksItem temp_item;
 
                    temp_item.check_handle = static_cast<std::string>( (*it)["handle_"] );
-                   temp_item.contact_history_id = static_cast<long long>( (*it)["contact_history_id_"] );
+                   temp_item.contact_history_id = static_cast<unsigned long long>( (*it)["contact_history_id_"] );
                    temp_item.local_create_time = boost::posix_time::time_from_string(static_cast<std::string>( (*it)["create_time_"]));
                    temp_item.local_update_time = boost::posix_time::time_from_string(static_cast<std::string>( (*it)["update_time_"]));
                    temp_item.local_tests_finished_time = Optional<boost::posix_time::ptime>();
@@ -219,7 +219,7 @@ namespace Fred
                 result.push_back(it->second);
             }
 
-            _ctx.get_log().debug("ListContactChecks executed succesfully");
+            _ctx.get_log().debug("ListContactChecks executed successfully");
 
             return result;
 

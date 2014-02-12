@@ -41,11 +41,11 @@ namespace Fred
     { }
 
     UpdateContactTest::UpdateContactTest(
-        const std::string&    _check_handle,
-        const std::string&    _test_handle,
-        const std::string&    _status_handle,
-        Optional<long long>   _logd_request_id,
-        Optional<std::string> _error_msg
+        const std::string&              _check_handle,
+        const std::string&              _test_handle,
+        const std::string&              _status_handle,
+        Optional<unsigned long long>    _logd_request_id,
+        Optional<std::string>           _error_msg
     ) :
         check_handle_(_check_handle),
         test_handle_(_test_handle),
@@ -53,9 +53,9 @@ namespace Fred
         logd_request_id_(
             ( _logd_request_id.isset() )
                 ?
-                Nullable<long long>( _logd_request_id.get_value() )
+                Nullable<unsigned long long>( _logd_request_id.get_value() )
                 :
-                Nullable<long long>()
+                Nullable<unsigned long long>()
         ),
         error_msg_(
             ( _error_msg.isset() )
@@ -66,7 +66,7 @@ namespace Fred
         )
     { }
 
-    UpdateContactTest& UpdateContactTest::set_logd_request_id (long long _logd_request_id) {
+    UpdateContactTest& UpdateContactTest::set_logd_request_id (unsigned long long _logd_request_id) {
         logd_request_id_ = _logd_request_id;
         return *this;
     }
@@ -102,7 +102,7 @@ namespace Fred
         if(check_res.size() != 1) {
             throw ExceptionUnknownCheckHandle();
         }
-        long check_id = static_cast<long>(check_res[0]["id"]);
+        unsigned long long check_id = static_cast<unsigned long long>(check_res[0]["id"]);
 
         // using solo select for easy checking of existence (subselect would be strange)
         Database::Result test_res = _ctx.get_conn().exec_params(
@@ -114,7 +114,7 @@ namespace Fred
         if(test_res.size() != 1) {
             throw ExceptionUnknownTestHandle();
         }
-        long test_id = static_cast<long>(test_res[0]["id"]);
+        unsigned long long test_id = static_cast<unsigned long long>(test_res[0]["id"]);
 
         try {
             Database::Result update_contact_test_res = _ctx.get_conn().exec_params(
@@ -173,7 +173,7 @@ namespace Fred
             throw;
         }
 
-        _ctx.get_log().debug("UpdateContactTest executed succesfully");
+        _ctx.get_log().debug("UpdateContactTest executed successfully");
     }
 
     std::string UpdateContactTest::to_string() const {

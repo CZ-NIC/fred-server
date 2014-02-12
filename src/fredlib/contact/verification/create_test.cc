@@ -37,22 +37,22 @@ namespace Fred
     { }
 
     CreateContactTest::CreateContactTest(
-        const std::string&  _check_handle,
-        const std::string&  _test_handle,
-        Optional<long long> _logd_request_id
+        const std::string&              _check_handle,
+        const std::string&              _test_handle,
+        Optional<unsigned long long>    _logd_request_id
     ) :
         check_handle_(_check_handle),
         test_handle_(_test_handle),
         logd_request_id_(
             ( _logd_request_id.isset() )
                 ?
-                Nullable<long long>( _logd_request_id.get_value() )
+                Nullable<unsigned long long>( _logd_request_id.get_value() )
                 :
-                Nullable<long long>()
+                Nullable<unsigned long long>()
         )
     { }
 
-    CreateContactTest& CreateContactTest::set_logd_request_id(long long _logd_request_id) {
+    CreateContactTest& CreateContactTest::set_logd_request_id(unsigned long long _logd_request_id) {
         logd_request_id_ = _logd_request_id;
         return *this;
     }
@@ -71,7 +71,7 @@ namespace Fred
         if(check_res.size() != 1) {
             throw ExceptionUnknownCheckHandle();
         }
-        long check_id = static_cast<long>(check_res[0]["id"]);
+        unsigned long long check_id = static_cast<unsigned long long>(check_res[0]["id"]);
 
         // get test is in testsuite of this check
         Database::Result testinsuite_res = _ctx.get_conn().exec_params(
@@ -109,7 +109,7 @@ namespace Fred
         if(test_res.size() != 1) {
             throw ExceptionUnknownTestHandle();
         }
-        long test_id = static_cast<long>(test_res[0]["id"]);
+        unsigned long long test_id = static_cast<unsigned long long>(test_res[0]["id"]);
 
         try {
             _ctx.get_conn().exec_params(
@@ -152,7 +152,7 @@ namespace Fred
             throw;
         }
 
-        _ctx.get_log().debug("CreateContactTest executed succesfully");
+        _ctx.get_log().debug("CreateContactTest executed successfully");
     }
 
     std::string CreateContactTest::to_string() const {

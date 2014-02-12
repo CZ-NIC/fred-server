@@ -36,10 +36,10 @@ namespace Admin {
      * @throws Fred::ExceptionUnknownTestsuiteHandle
      */
     std::string enqueue_check(
-        Fred::OperationContext& _ctx,
-        long long               _contact_id,
-        const std::string&      _testsuite_handle,
-        Optional<long long>     _logd_request_id = Optional<long long>());
+        Fred::OperationContext&         _ctx,
+        unsigned long long              _contact_id,
+        const std::string&              _testsuite_handle,
+        Optional<unsigned long long>    _logd_request_id = Optional<unsigned long long>());
 }
 
 
