@@ -21,7 +21,7 @@ namespace  Admin {
     /**
      * Lock some contact_check with running status.
      * If no existing running check can be be locked check with status enqueued is looked for, it's status updated and locking is retried.
-     * Iterates until some contact_check is locked succesfully or there is neither any lockable check with running status nor check with enqueued status.
+     * Iterates until some contact_check is locked successfully or there is neither any lockable check with running status nor check with enqueued status.
      *
      * @return locked check id
      */
@@ -35,7 +35,7 @@ namespace  Admin {
      * Lock some contact_test with running status related to given check.
      * If no existing running test can be be locked function tries to upgrade status of some existing test from enqueued to running
      * and locking is retried.
-     * Iterates until some contact_test is locked succesfully or all tests of given check are already running (and can't be locked).
+     * Iterates until some contact_test is locked successfully or all tests of given check are already running (and can't be locked).
      *
      * @param _check_id check whose tests are tried to lock
      * @return locked test handle
