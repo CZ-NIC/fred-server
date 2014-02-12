@@ -1,5 +1,5 @@
 #include "src/admin/contact/verification/run_first_enqueued_check.h"
-#include "src/admin/contact/verification/related_records.h"
+#include "src/admin/contact/verification/related_records_impl.h"
 #include "src/fredlib/contact/verification/enum_check_status.h"
 #include "src/fredlib/contact/verification/enum_test_status.h"
 #include "src/fredlib/contact/verification/create_test.h"
