@@ -2602,6 +2602,14 @@ ccReg::Response* ccReg_EPP_i::ContactInfo(
     const Fred::StatusDesc* sd = regMan->getStatusDesc(stateId);
     if (!sd || !sd->getExternal())
       continue;
+    /* Ticket #10053 - HACK: temporarily hide states until we fix epp schemas */
+    if (sd->getName() == "manuallyVerifiedContact"
+        || sd->getName() == "contactInManualVerification"
+    ) {
+        continue;
+    }
+    /* Ticket #10053 - END OF HACK*/
+
     c->stat.length(c->stat.length()+1);
     c->stat[c->stat.length()-1].value = CORBA::string_dup(sd->getName().c_str() );
     c->stat[c->stat.length()-1].text = CORBA::string_dup(sd->getDesc(
