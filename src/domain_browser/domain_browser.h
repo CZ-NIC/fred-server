@@ -31,6 +31,7 @@
 
 #include "src/fredlib/opexception.h"
 #include "src/fredlib/opcontext.h"
+#include "src/fredlib/domain/enum_validation_extension.h"
 #include "util/db/nullable.h"
 #include "cfg/handle_registry_args.h"
 
@@ -152,9 +153,7 @@ namespace Registry
             std::string authinfopw;/**< password for transfer */
             RegistryReference registrant; /**< owner of domain*/
             boost::gregorian::date expiration_date; /**< domain expiration local date */
-            boost::gregorian::date validation_expiration;/**< the expiration date of the ENUM domain validation */
-            bool publish;/**< flag for publishing ENUM number and associated contact in public directory */
-            bool is_enum;/**< is ENUM domain */
+            Nullable<Fred::ENUMValidationExtension > enum_domain_validation;/**< ENUM domain validation extension info, is ENUM domain if set */
             RegistryReference nsset; /**< domain nsset */
             RegistryReference keyset;/**< domain keyset */
             std::vector<RegistryReference> admins; /**< domain admin contacts */
