@@ -163,6 +163,39 @@ BOOST_AUTO_TEST_CASE(test_Resolving_manual_suite_postprocessing)
         1 );
 }
 
+/**
+testing if manual check postprocessing creates related object_state_request
+@pre existing check with manual testsuite
+@post new record for this check in contact_check_object_state_request_map
+*/
+BOOST_AUTO_TEST_CASE(test_Resolving_automatic_suite_postprocessing)
+{
+    setup_check fail_check(Fred::TestsuiteHandle::AUTOMATIC);
+    setup_check ok_check(Fred::TestsuiteHandle::AUTOMATIC);
+
+    Fred::OperationContext ctx;
+
+    Admin::resolve_check(
+        fail_check.check_handle_,
+        Fred::ContactCheckStatus::FAIL,
+        Optional<unsigned long long>()
+    ).exec(ctx);
+
+    Admin::resolve_check(
+        ok_check.check_handle_,
+        Fred::ContactCheckStatus::OK,
+        Optional<unsigned long long>()
+    ).exec(ctx);
+
+    BOOST_CHECK_EQUAL(
+        get_related_object_state_requests(ctx, fail_check.check_handle_).size(),
+        0 );
+
+    BOOST_CHECK_EQUAL(
+        get_related_object_state_requests(ctx, ok_check.check_handle_).size(),
+        0 );
+}
+
 
 
 BOOST_AUTO_TEST_SUITE_END();
