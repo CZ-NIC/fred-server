@@ -43,7 +43,7 @@ testing check gets correct status
 @pre existing check
 @pre existing status passed to resolve_check
 @post correct status set to check
- */
+*/
 BOOST_AUTO_TEST_CASE(test_Resolved_status)
 {
     setup_testsuite testsuite;
@@ -68,6 +68,41 @@ BOOST_AUTO_TEST_CASE(test_Resolved_status)
                     ->status_handle
     );
 }
+
+/**
+testing correct logd_request_id
+@pre existing check
+@pre logd_request_id to resolve_check
+@post correct logd_request_id set to check
+*/
+BOOST_AUTO_TEST_CASE(test_Resolved_logd_request_id)
+{
+    setup_testsuite testsuite;
+    setup_check check(testsuite.testsuite_handle);
+    setup_check_status status;
+
+    Fred::OperationContext ctx;
+
+    Admin::resolve_check(
+        check.check_handle_,
+        status.status_handle,
+        36478
+    ).exec(ctx);
+
+    BOOST_CHECK_EQUAL(
+        36478,
+        static_cast<long>(
+            Fred::InfoContactCheck(
+                check.check_handle_
+            ).exec(ctx)
+                .check_state_history
+                    .rbegin()
+                        ->logd_request_id
+        )
+    );
+}
+
+
 
 BOOST_AUTO_TEST_SUITE_END();
 BOOST_AUTO_TEST_SUITE_END();
