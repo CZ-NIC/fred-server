@@ -660,8 +660,8 @@ BOOST_FIXTURE_TEST_CASE(get_my_domain_detail, get_my_domain_fixture )
     BOOST_CHECK(d.admins.at(0).handle == admin_contact_info.info_contact_data.handle);
     BOOST_CHECK(d.admins.at(0).name == admin_contact_info.info_contact_data.name.get_value_or_default());
     BOOST_CHECK(d.admins.size() == 1);
-    BOOST_CHECK(d.states.find_first_of("MojeID contact") != std::string::npos);
-    BOOST_CHECK(d.state_codes.find_first_of("mojeidContact") != std::string::npos);
+    BOOST_CHECK(d.states.empty());
+    BOOST_CHECK(d.state_codes.empty());
     BOOST_CHECK(d.is_owner == true);
 }
 
