@@ -80,11 +80,12 @@ namespace  Admin {
 
         Fred::OperationContext ctx_info;
 
+        Fred::InfoContactCheckOutput check_info = Fred::InfoContactCheck(_check_handle)
+            .exec(ctx_info);
+
         const unsigned long long contact_id =
         Fred::HistoryInfoContactByHistoryid(
-            Fred::InfoContactCheck(_check_handle)
-            .exec(ctx_info)
-            .contact_history_id
+            check_info.contact_history_id
         ).exec(ctx_info)
         .info_contact_data.id;
 
@@ -100,10 +101,16 @@ namespace  Admin {
                 _ctx.get_conn().exec_params(
                     "INSERT INTO contact_check_object_state_request_map "
                     "   (contact_check_id, object_state_request_id) "
-                    "   VALUES($1::bigint, $2::bigint)",
+                    "   VALUES( ( "
+                    "       SELECT id "
+                    "           FROM contact_check "
+                    "           WHERE handle = $1::uuid "
+                    "       ), "
+                    "       $2::bigint"
+                    "   )",
                     Database::query_param_list
-                    (contact_id)
-                    (*it)
+                        (_check_handle)
+                        (*it)
                 );
             }
         } catch(...) {
