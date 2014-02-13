@@ -333,7 +333,9 @@ namespace Registry
             RegistryReference registrant;
             registrant.id = registrant_contact_info.info_contact_data.id;
             registrant.handle = registrant_contact_info.info_contact_data.handle;
-            registrant.name = registrant_contact_info.info_contact_data.name.get_value_or_default();
+            registrant.name = registrant_contact_info.info_contact_data.organization.get_value_or_default().empty()
+                ? registrant_contact_info.info_contact_data.name.get_value_or_default()
+                : registrant_contact_info.info_contact_data.organization.get_value();
 
             Fred::InfoNssetOutput nsset_info;
             try
@@ -433,7 +435,9 @@ namespace Registry
                 RegistryReference admin;
                 admin.id = admin_contact_info.info_contact_data.id;
                 admin.handle = admin_contact_info.info_contact_data.handle;
-                admin.name = admin_contact_info.info_contact_data.name.get_value_or_default();
+                admin.name = admin_contact_info.info_contact_data.organization.get_value_or_default().empty()
+                    ? admin_contact_info.info_contact_data.name.get_value_or_default()
+                    : admin_contact_info.info_contact_data.organization.get_value();
 
                 detail.admins.push_back(admin);
             }

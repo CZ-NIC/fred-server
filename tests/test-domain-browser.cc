@@ -509,7 +509,7 @@ struct admin_contact_fixture
     : test_contact_handle(std::string("TEST-ADMIN-HANDLE")+xmark)
     {
         Fred::OperationContext ctx;
-        Fred::CreateContact(test_contact_handle,test_registrar_handle).set_name(std::string("TEST-CONTACT NAME")+xmark)
+        Fred::CreateContact(test_contact_handle,test_registrar_handle).set_organization(std::string("TEST-ORGANIZATION")+xmark)
             .set_name(std::string("TEST-CONTACT NAME")+xmark)
             .set_disclosename(true)
             .set_street1(std::string("STR1")+xmark)
@@ -649,7 +649,9 @@ BOOST_FIXTURE_TEST_CASE(get_my_domain_detail, get_my_domain_fixture )
     BOOST_CHECK(d.authinfopw == my_domain_info.info_domain_data.authinfopw);
     BOOST_CHECK(d.registrant.id == user_contact_info.info_contact_data.id);
     BOOST_CHECK(d.registrant.handle == user_contact_info.info_contact_data.handle);
-    BOOST_CHECK(d.registrant.name == user_contact_info.info_contact_data.name.get_value_or_default());
+    BOOST_CHECK(d.registrant.name == (user_contact_info.info_contact_data.organization.get_value_or_default().empty()
+            ? user_contact_info.info_contact_data.name.get_value_or_default()
+            : user_contact_info.info_contact_data.organization.get_value_or_default()));
     BOOST_CHECK(d.expiration_date == my_domain_info.info_domain_data.expiration_date);
     BOOST_CHECK(d.enum_domain_validation.get_value_or_default() == my_domain_info.info_domain_data.enum_domain_validation.get_value_or_default());
     BOOST_CHECK(d.nsset.id == nsset_info.info_nsset_data.id);
@@ -658,7 +660,9 @@ BOOST_FIXTURE_TEST_CASE(get_my_domain_detail, get_my_domain_fixture )
     BOOST_CHECK(d.keyset.handle == keyset_info.info_keyset_data.handle);
     BOOST_CHECK(d.admins.at(0).id == admin_contact_info.info_contact_data.id);
     BOOST_CHECK(d.admins.at(0).handle == admin_contact_info.info_contact_data.handle);
-    BOOST_CHECK(d.admins.at(0).name == admin_contact_info.info_contact_data.name.get_value_or_default());
+    BOOST_CHECK(d.admins.at(0).name == (admin_contact_info.info_contact_data.organization.get_value_or_default().empty()
+        ? admin_contact_info.info_contact_data.name.get_value_or_default()
+        : admin_contact_info.info_contact_data.organization.get_value_or_default()));
     BOOST_CHECK(d.admins.size() == 1);
     BOOST_CHECK(d.states.empty());
     BOOST_CHECK(d.state_codes.empty());
