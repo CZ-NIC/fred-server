@@ -391,9 +391,9 @@ namespace Registry
                 domain_detail->id = detail_impl.id;
                 domain_detail->fqdn = CORBA::string_dup(detail_impl.fqdn.c_str());
                 domain_detail->roid = CORBA::string_dup(detail_impl.roid.c_str());
-                domain_detail->registrar.id = detail_impl.registrar.id;
-                domain_detail->registrar.handle = CORBA::string_dup(detail_impl.registrar.handle.c_str());
-                domain_detail->registrar.name = CORBA::string_dup(detail_impl.registrar.name.c_str());
+                domain_detail->registrar.id = detail_impl.sponsoring_registrar.id;
+                domain_detail->registrar.handle = CORBA::string_dup(detail_impl.sponsoring_registrar.handle.c_str());
+                domain_detail->registrar.name = CORBA::string_dup(detail_impl.sponsoring_registrar.name.c_str());
                 domain_detail->create_date = CORBA::string_dup(boost::gregorian::to_iso_extended_string(detail_impl.creation_time.date()).c_str());
                 domain_detail->update_date = CORBA::string_dup(detail_impl.update_time.isnull()
                     ? "" : boost::gregorian::to_iso_extended_string(detail_impl.update_time.get_value().date()).c_str());

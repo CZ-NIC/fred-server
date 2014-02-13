@@ -392,7 +392,7 @@ namespace Registry
             detail.id = domain_info.info_domain_data.id;
             detail.fqdn = domain_info.info_domain_data.fqdn;
             detail.roid = domain_info.info_domain_data.roid;
-            detail.registrar = sponsoring_registrar;
+            detail.sponsoring_registrar = sponsoring_registrar;
             detail.creation_time = domain_info.info_domain_data.creation_time;
             detail.update_time = domain_info.info_domain_data.update_time;
 

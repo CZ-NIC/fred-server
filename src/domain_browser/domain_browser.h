@@ -147,7 +147,7 @@ namespace Registry
             unsigned long long id;/**< id of the domain */
             std::string fqdn;/**< fully qualified domain name */
             std::string roid;/**< registry object identifier of domain */
-            RegistryReference registrar;/**< registrar administering the domain */
+            RegistryReference sponsoring_registrar;/**< registrar administering the domain */
             boost::posix_time::ptime creation_time;/**< creation time of the domain in set local zone*/
             Nullable<boost::posix_time::ptime> update_time; /**< last update time of the domain in set local zone*/
             std::string authinfopw;/**< password for transfer */
