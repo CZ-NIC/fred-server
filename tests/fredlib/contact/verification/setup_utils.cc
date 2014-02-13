@@ -768,7 +768,8 @@ autoclean_contact_verification_db::autoclean_contact_verification_db() {
     check_statuses.push_back(setup_check_status(Fred::ContactCheckStatus::FAIL));
     check_statuses.push_back(setup_check_status(Fred::ContactCheckStatus::INVALIDATED));
 
-    setup_empty_testsuite testsuite(Fred::TestsuiteHandle::AUTOMATIC);
+    setup_empty_testsuite testsuite_automatic(Fred::TestsuiteHandle::AUTOMATIC);
+    setup_empty_testsuite testsuite_manual(Fred::TestsuiteHandle::MANUAL);
 }
 
 void autoclean_contact_verification_db::set_cascading_fkeys(Fred::OperationContext& _ctx) {
