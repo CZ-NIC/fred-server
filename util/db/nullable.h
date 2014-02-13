@@ -1,9 +1,9 @@
 #ifndef NULLABLE_H_
 #define NULLABLE_H_
 
+#include "util/db/query_param.h"
+#include "util/db/value.h"
 #include <stdexcept>
-#include "db/query_param.h"
-#include "db/value.h"
 
 template<typename T>
 class Nullable
@@ -82,7 +82,7 @@ public:
             return ::Database::QueryParam(value_);
     }
 
-    Nullable<T>& operator=(const Database::Value &_v)
+    Nullable& operator=(const Database::Value &_v)
     {
         if (_v.isnull()) {
             isnull_ = true;
@@ -94,19 +94,23 @@ public:
         return *this;
     }
 
-    friend std::ostream& operator<<(std::ostream& os, const Nullable<T>& v)
+
+    friend std::ostream& operator<<(std::ostream &_os, const Nullable<T> &_v)
     {
-        if (v.isnull())
-            return os << "[NULL]";
-        else
-            return os << v.get_value();
+        static const char null_value_look[] = "[NULL]";
+        return _v.isnull() ? _os << null_value_look : _os << _v.get_value();
     }
 
     std::string print_quoted() const
     {
-        std::stringstream ss;
-        if(!isnull()) ss << (*this);
-        return isnull() ? std::string("[NULL]") : std::string("'") + ss.str() + "'";
+        std::ostringstream ss;
+        if (isnull()) {
+            ss << (*this);               // [NULL]
+        }
+        else {
+            ss << "'" << (*this) << "'"; // 'value'
+        }
+        return ss.str();
     }
 };
 
@@ -118,9 +122,33 @@ bool operator==(const Nullable< T > &_a, const Nullable< T > &_b)
            (_a.isnull() && _b.isnull());
 }
 
+template < typename T >
+bool operator==(const Nullable< T > &_a, const T &_b)
+{
+    return !_a.isnull() && (_a.get_value_or_default() == _b);
+}
+
+template < typename T >
+bool operator==(const T &_a, const Nullable< T > &_b)
+{
+    return !_b.isnull() && (_a == _b.get_value_or_default());
+}
+
 // comparison of inequality
 template < typename T >
 bool operator!=(const Nullable< T > &_a, const Nullable< T > &_b)
+{
+    return !(_a == _b);
+}
+
+template < typename T >
+bool operator!=(const Nullable< T > &_a, const T &_b)
+{
+    return !(_a == _b);
+}
+
+template < typename T >
+bool operator!=(const T &_a, const Nullable< T > &_b)
 {
     return !(_a == _b);
 }
