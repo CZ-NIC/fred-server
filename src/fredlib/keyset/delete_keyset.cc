@@ -25,7 +25,7 @@
 
 #include "src/fredlib/keyset/delete_keyset.h"
 #include "src/fredlib/object/object.h"
-
+#include "src/fredlib/object/object_impl.h"
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/db_settings.h"
 #include "src/fredlib/object_states.h"
