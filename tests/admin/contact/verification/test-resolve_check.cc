@@ -23,6 +23,7 @@
 
 #include "src/admin/contact/verification/resolve_check.h"
 #include "src/fredlib/contact/verification/info_check.h"
+#include "src/fredlib/contact/verification/enum_testsuite_handle.h"
 
 #include <boost/test/unit_test.hpp>
 
@@ -100,6 +101,66 @@ BOOST_AUTO_TEST_CASE(test_Resolved_logd_request_id)
                         ->logd_request_id
         )
     );
+}
+
+static std::vector<unsigned long long> get_related_object_state_requests(
+    Fred::OperationContext& ctx,
+    const std::string& contact_check_handle
+) {
+    Database::Result requests_res = ctx.get_conn().exec_params(
+        "SELECT map_.object_state_request_id AS id_ "
+        "   FROM contact_check_object_state_request_map AS map_ "
+        "       JOIN contact_check AS c_ch ON map_.contact_check_id = c_ch.id "
+        "   WHERE c_ch.handle = $1::uuid ",
+        Database::query_param_list
+            (contact_check_handle)
+    );
+
+    std::vector<unsigned long long> result;
+
+    for(Database::Result::Iterator it = requests_res.begin();
+        it != requests_res.end();
+        ++it
+    ) {
+        result.push_back(
+            static_cast<unsigned long long>((*it)["id_"])
+        );
+    }
+
+    return result;
+}
+
+/**
+testing if manual check postprocessing creates related object_state_request
+@pre existing check with manual testsuite
+@post new record for this check in contact_check_object_state_request_map
+*/
+BOOST_AUTO_TEST_CASE(test_Resolving_manual_suite_postprocessing)
+{
+    setup_check fail_check(Fred::TestsuiteHandle::MANUAL);
+    setup_check ok_check(Fred::TestsuiteHandle::MANUAL);
+
+    Fred::OperationContext ctx;
+
+    Admin::resolve_check(
+        fail_check.check_handle_,
+        Fred::ContactCheckStatus::FAIL,
+        Optional<unsigned long long>()
+    ).exec(ctx);
+
+    Admin::resolve_check(
+        ok_check.check_handle_,
+        Fred::ContactCheckStatus::OK,
+        Optional<unsigned long long>()
+    ).exec(ctx);
+
+    BOOST_CHECK_EQUAL(
+        get_related_object_state_requests(ctx, fail_check.check_handle_).size(),
+        0 );
+
+    BOOST_CHECK_EQUAL(
+        get_related_object_state_requests(ctx, ok_check.check_handle_).size(),
+        1 );
 }
 
 
