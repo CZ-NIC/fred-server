@@ -21,8 +21,11 @@
 
 #include <boost/lexical_cast.hpp>
 
+#include "src/fredlib/domain/info_domain.h"
 #include "src/fredlib/domain/create_domain.h"
+#include "src/fredlib/keyset/info_keyset.h"
 #include "src/fredlib/keyset/create_keyset.h"
+#include "src/fredlib/nsset/info_nsset.h"
 #include "src/fredlib/nsset/create_nsset.h"
 #include "src/fredlib/contact/create_contact.h"
 #include "src/fredlib/contact/info_contact.h"
@@ -616,6 +619,51 @@ struct get_domain_fixture
     ~get_domain_fixture()
     {}
 };
+
+/**
+ * test call getDomainDetail with private data
+*/
+BOOST_FIXTURE_TEST_CASE(get_my_domain_detail, get_my_domain_fixture )
+{
+    Fred::OperationContext ctx;
+    Fred::InfoDomainOutput my_domain_info = Fred::InfoDomainByHandle(test_fqdn).exec(ctx);
+    Fred::InfoRegistrarOutput sponsoring_registrar_info = Fred::InfoRegistrarByHandle(my_domain_info.info_domain_data.sponsoring_registrar_handle).exec(ctx);
+
+    Fred::InfoNssetOutput nsset_info = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
+    Fred::InfoKeysetOutput keyset_info = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
+
+    Fred::InfoContactOutput admin_contact_info = Fred::InfoContactByHandle(admin_contact_fixture::test_contact_handle).exec(ctx);
+
+    Registry::DomainBrowserImpl::DomainBrowser impl(server_name);
+    Registry::DomainBrowserImpl::DomainDetail d = impl.getDomainDetail(user_contact_info.info_contact_data.id,
+            my_domain_info.info_domain_data.id, "CS");
+
+    BOOST_CHECK(d.id == my_domain_info.info_domain_data.id);
+    BOOST_CHECK(d.fqdn == my_domain_info.info_domain_data.fqdn);
+    BOOST_CHECK(d.roid == my_domain_info.info_domain_data.roid);
+    BOOST_CHECK(d.sponsoring_registrar.id == sponsoring_registrar_info.info_registrar_data.id);
+    BOOST_CHECK(d.sponsoring_registrar.handle == sponsoring_registrar_info.info_registrar_data.handle);
+    BOOST_CHECK(d.sponsoring_registrar.name == sponsoring_registrar_info.info_registrar_data.name.get_value_or_default());
+    BOOST_CHECK(d.creation_time == my_domain_info.info_domain_data.creation_time);
+    BOOST_CHECK(d.update_time.get_value_or_default() == my_domain_info.info_domain_data.update_time.get_value_or_default());
+    BOOST_CHECK(d.authinfopw == my_domain_info.info_domain_data.authinfopw);
+    BOOST_CHECK(d.registrant.id == user_contact_info.info_contact_data.id);
+    BOOST_CHECK(d.registrant.handle == user_contact_info.info_contact_data.handle);
+    BOOST_CHECK(d.registrant.name == user_contact_info.info_contact_data.name.get_value_or_default());
+    BOOST_CHECK(d.expiration_date == my_domain_info.info_domain_data.expiration_date);
+    BOOST_CHECK(d.enum_domain_validation.get_value_or_default() == my_domain_info.info_domain_data.enum_domain_validation.get_value_or_default());
+    BOOST_CHECK(d.nsset.id == nsset_info.info_nsset_data.id);
+    BOOST_CHECK(d.nsset.handle == nsset_info.info_nsset_data.handle);
+    BOOST_CHECK(d.keyset.id == keyset_info.info_keyset_data.id);
+    BOOST_CHECK(d.keyset.handle == keyset_info.info_keyset_data.handle);
+    BOOST_CHECK(d.admins.at(0).id == admin_contact_info.info_contact_data.id);
+    BOOST_CHECK(d.admins.at(0).handle == admin_contact_info.info_contact_data.handle);
+    BOOST_CHECK(d.admins.at(0).name == admin_contact_info.info_contact_data.name.get_value_or_default());
+    BOOST_CHECK(d.admins.size() == 1);
+    BOOST_CHECK(d.states.find_first_of("MojeID contact") != std::string::npos);
+    BOOST_CHECK(d.state_codes.find_first_of("mojeidContact") != std::string::npos);
+    BOOST_CHECK(d.is_owner == true);
+}
 
 BOOST_AUTO_TEST_SUITE_END();//getDomainDetail
 
