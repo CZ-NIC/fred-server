@@ -1942,6 +1942,7 @@ tests_test_server_SOURCES = \
 		tests/admin/contact/verification/test-fill_check_queue.cc \
 		tests/admin/contact/verification/test-resolve_check.cc \
 		tests/admin/contact/verification/test-related_records.cc \
+		tests/admin/contact/verification/test-enqueue_check.cc \
 		tests/util/test-is-equal-optional-nullable.cc \
 		src/fredlib/object_state/create_object_state_request.cc \
 		src/fredlib/object_state/create_object_state_request.h \
