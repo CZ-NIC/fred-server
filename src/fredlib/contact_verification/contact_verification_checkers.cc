@@ -1,5 +1,6 @@
 #include "log/logger.h"
 #include "fredlib/db_settings.h"
+#include "util/types/birthdate.h"
 #include "contact_verification_checkers.h"
 
 #include <boost/algorithm/string.hpp>
@@ -290,8 +291,8 @@ bool check_conditionally_identified_contact_diff(
     if (static_cast<std::string>(_c1.ssn) != static_cast<std::string>(_c2.ssn)) {
 
         if (static_cast<std::string>(_c1.ssntype) == "BIRTHDAY") {
-            boost::gregorian::date before = boost::gregorian::from_string(static_cast<std::string>(_c1.ssn));
-            boost::gregorian::date after = boost::gregorian::from_string(static_cast<std::string>(_c2.ssn));
+            boost::gregorian::date before = birthdate_from_string_to_date(static_cast<std::string>(_c1.ssn));
+            boost::gregorian::date after = birthdate_from_string_to_date(static_cast<std::string>(_c2.ssn));
             if (before != after) {
                 return false;
             }
@@ -359,13 +360,13 @@ bool check_validated_contact_diff(
     if (static_cast<std::string>(_c1.ssn) != static_cast<std::string>(_c2.ssn)) {
 
         if(static_cast<std::string>(_c1.ssntype) == "BIRTHDAY") {
-            boost::gregorian::date before = boost::gregorian::from_string(static_cast<std::string>(_c1.ssn));
-            boost::gregorian::date after = boost::gregorian::from_string(static_cast<std::string>(_c2.ssn));
+            boost::gregorian::date before = birthdate_from_string_to_date(static_cast<std::string>(_c1.ssn));
+            boost::gregorian::date after = birthdate_from_string_to_date(static_cast<std::string>(_c2.ssn));
             if(before != after) {
                 return false;
             }
-
-        } else {
+        }
+        else {
             return false;
         }
     }
