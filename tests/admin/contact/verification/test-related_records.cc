@@ -84,5 +84,51 @@ BOOST_AUTO_TEST_CASE(test_Ids_of_added_related_mail)
     );
 }
 
+/**
+testing that id of added related message propagates successfully
+@pre existing check
+@pre valid message ids
+@post correct id in contact_check_message_map.message_archive_id
+ */
+BOOST_AUTO_TEST_CASE(test_Ids_of_added_related_messages)
+{
+    setup_testsuite testsuite;
+    setup_check check(testsuite.testsuite_handle);
+    std::set<unsigned long long> added_message_archive_ids;
+
+    for(int i=0; i<20; ++i) {
+        added_message_archive_ids.insert(RandomDataGenerator().xuint());
+    }
+
+    Fred::OperationContext ctx;
+
+    Admin::add_related_messages(ctx, check.check_handle_, added_message_archive_ids);
+
+    Database::Result requests_res = ctx.get_conn().exec_params(
+        "SELECT map_.message_archive_id AS id_ "
+        "   FROM contact_check_message_map AS map_ "
+        "       JOIN contact_check AS c_ch ON map_.contact_check_id = c_ch.id "
+        "   WHERE c_ch.handle = $1::uuid ",
+        Database::query_param_list
+            (check.check_handle_)
+    );
+
+    std::set<unsigned long long> selected_message_archive_ids;
+
+    for(Database::Result::Iterator it = requests_res.begin();
+        it != requests_res.end();
+        ++it
+    ) {
+        selected_message_archive_ids.insert(
+            static_cast<unsigned long long>((*it)["id_"])
+        );
+    }
+
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        added_message_archive_ids.begin(), added_message_archive_ids.end(),
+        selected_message_archive_ids.begin(), selected_message_archive_ids.end()
+    );
+}
+
 BOOST_AUTO_TEST_SUITE_END();
 BOOST_AUTO_TEST_SUITE_END();
