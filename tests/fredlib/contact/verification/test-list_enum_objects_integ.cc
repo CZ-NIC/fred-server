@@ -24,6 +24,7 @@
 
 #include "src/fredlib/contact/verification/list_enum_objects.h"
 #include "src/fredlib/contact/verification/enum_test_status.h"
+#include "src/fredlib/contact/verification/enum_check_status.h"
 #include "tests/fredlib/contact/verification/setup_utils.h"
 
 //not using UTF defined main
@@ -86,7 +87,39 @@ BOOST_AUTO_TEST_CASE(test_List_test_result_statuses)
  */
 BOOST_AUTO_TEST_CASE(test_List_check_statuses)
 {
+    std::vector<std::string> created_statuses;
 
+    for(int i=0; i<5; ++i) {
+        created_statuses.push_back(setup_check_status().status_handle);
+    }
+
+    created_statuses.push_back(Fred::ContactCheckStatus::ENQUEUED);
+    created_statuses.push_back(Fred::ContactCheckStatus::RUNNING);
+    created_statuses.push_back(Fred::ContactCheckStatus::AUTO_OK);
+    created_statuses.push_back(Fred::ContactCheckStatus::AUTO_FAIL);
+    created_statuses.push_back(Fred::ContactCheckStatus::AUTO_TO_BE_DECIDED);
+    created_statuses.push_back(Fred::ContactCheckStatus::OK);
+    created_statuses.push_back(Fred::ContactCheckStatus::FAIL);
+    created_statuses.push_back(Fred::ContactCheckStatus::INVALIDATED);
+
+    std::vector<Fred::check_status> listed_statuses = Fred::list_check_statuses("en");
+
+    BOOST_CHECK_EQUAL(created_statuses.size(), listed_statuses.size());
+
+    std::vector<std::string> listed_status_handles;
+    for(std::vector<Fred::check_status>::const_iterator it = listed_statuses.begin();
+        it != listed_statuses.end();
+        ++it
+    ) {
+        listed_status_handles.push_back(it->handle);
+    }
+
+    std::sort(listed_status_handles.begin(), listed_status_handles.end());
+    std::sort(created_statuses.begin(), created_statuses.end());
+
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        listed_status_handles.begin(), listed_status_handles.end(),
+        created_statuses.begin(), created_statuses.end());
 }
 
 /**
