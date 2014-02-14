@@ -130,5 +130,51 @@ BOOST_AUTO_TEST_CASE(test_Ids_of_added_related_messages)
     );
 }
 
+/**
+testing that id of added related object state request propagates successfully
+@pre existing check
+@pre valid object state request ids
+@post correct id in contact_check_object_state_request_map.object_state_request_id
+ */
+BOOST_AUTO_TEST_CASE(test_Ids_of_added_related_object_state_request)
+{
+    setup_testsuite testsuite;
+    setup_check check(testsuite.testsuite_handle);
+    std::set<unsigned long long> added_object_state_request_ids;
+
+    for(int i=0; i<20; ++i) {
+        added_object_state_request_ids.insert(RandomDataGenerator().xuint());
+    }
+
+    Fred::OperationContext ctx;
+
+    Admin::add_related_object_state_requests(ctx, check.check_handle_, added_object_state_request_ids);
+
+    Database::Result requests_res = ctx.get_conn().exec_params(
+        "SELECT map_.object_state_request_id AS id_ "
+        "   FROM contact_check_object_state_request_map AS map_ "
+        "       JOIN contact_check AS c_ch ON map_.contact_check_id = c_ch.id "
+        "   WHERE c_ch.handle = $1::uuid ",
+        Database::query_param_list
+            (check.check_handle_)
+    );
+
+    std::set<unsigned long long> selected_object_state_request_ids;
+
+    for(Database::Result::Iterator it = requests_res.begin();
+        it != requests_res.end();
+        ++it
+    ) {
+        selected_object_state_request_ids.insert(
+            static_cast<unsigned long long>((*it)["id_"])
+        );
+    }
+
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        added_object_state_request_ids.begin(), added_object_state_request_ids.end(),
+        selected_object_state_request_ids.begin(), selected_object_state_request_ids.end()
+    );
+}
+
 BOOST_AUTO_TEST_SUITE_END();
 BOOST_AUTO_TEST_SUITE_END();
