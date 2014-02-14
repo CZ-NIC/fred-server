@@ -73,9 +73,10 @@ std::string format_merge_contact_output(
         OutputIndenter _indenter)
 {
     std::stringstream output;
-    std::string header = str(boost::format("[%1%/%2%/%3%] MERGE %4% => %5%")
+    std::string header = str(boost::format("[%1%/%2%/%3%] MERGE %4% (id=%5%, hid=%6%) => %7% (id=%8%, hid=%9%)")
             % _msi.merge_counter % _msi.merge_set_counter % _msi.merge_per_merge_set_counter
-            % _src_handle % _dst_handle);
+            % _src_handle % _merge_data.contactid.src_contact_id % _merge_data.contactid.src_contact_historyid
+            % _dst_handle % _merge_data.contactid.dst_contact_id % _merge_data.contactid.dst_contact_historyid);
 
     output << format_header(header, _indenter);
 
