@@ -25,6 +25,7 @@
 #include "src/fredlib/contact/verification/list_enum_objects.h"
 #include "src/fredlib/contact/verification/enum_test_status.h"
 #include "src/fredlib/contact/verification/enum_check_status.h"
+#include "src/fredlib/contact/verification/enum_testsuite_handle.h"
 #include "tests/fredlib/contact/verification/setup_utils.h"
 
 //not using UTF defined main
@@ -162,8 +163,35 @@ BOOST_AUTO_TEST_CASE(test_List_test_definitions)
  */
 BOOST_AUTO_TEST_CASE(test_List_testsuite_definitions)
 {
+    std::vector<std::string> created_testsuites;
 
+    for(int i=0; i<5; ++i) {
+        created_testsuites.push_back(setup_testsuite().testsuite_handle);
+    }
+
+    created_testsuites.push_back(Fred::TestsuiteHandle::AUTOMATIC);
+    created_testsuites.push_back(Fred::TestsuiteHandle::MANUAL);
+
+    std::vector<Fred::testsuite_definition> listed_testsuites = Fred::list_testsuite_definitions("en");
+
+    BOOST_CHECK_EQUAL(created_testsuites.size(), listed_testsuites.size());
+
+    std::vector<std::string> listed_testsuite_handles;
+    for(std::vector<Fred::testsuite_definition>::const_iterator it = listed_testsuites.begin();
+        it != listed_testsuites.end();
+        ++it
+    ) {
+        listed_testsuite_handles.push_back(it->handle);
+    }
+
+    std::sort(listed_testsuite_handles.begin(), listed_testsuite_handles.end());
+    std::sort(created_testsuites.begin(), created_testsuites.end());
+
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        listed_testsuite_handles.begin(), listed_testsuite_handles.end(),
+        created_testsuites.begin(), created_testsuites.end());
 }
 
 BOOST_AUTO_TEST_SUITE_END();
 BOOST_AUTO_TEST_SUITE_END();
+
