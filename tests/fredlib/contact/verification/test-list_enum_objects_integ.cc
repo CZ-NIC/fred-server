@@ -23,10 +23,13 @@
 
 
 #include "src/fredlib/contact/verification/list_enum_objects.h"
+#include "src/fredlib/contact/verification/enum_test_status.h"
 #include "tests/fredlib/contact/verification/setup_utils.h"
 
 //not using UTF defined main
 #define BOOST_TEST_NO_MAIN
+
+#include <algorithm>
 
 #include <boost/test/unit_test.hpp>
 
@@ -42,7 +45,38 @@ const std::string server_name = "test-contact_verification-list_enum_objects_int
  */
 BOOST_AUTO_TEST_CASE(test_List_test_result_statuses)
 {
+    std::vector<std::string> created_statuses;
 
+    for(int i=0; i<5; ++i) {
+        created_statuses.push_back(setup_test_status().status_handle_);
+    }
+
+    created_statuses.push_back(Fred::ContactTestStatus::ENQUEUED);
+    created_statuses.push_back(Fred::ContactTestStatus::RUNNING);
+    created_statuses.push_back(Fred::ContactTestStatus::OK);
+    created_statuses.push_back(Fred::ContactTestStatus::SKIPPED);
+    created_statuses.push_back(Fred::ContactTestStatus::FAIL);
+    created_statuses.push_back(Fred::ContactTestStatus::MANUAL);
+    created_statuses.push_back(Fred::ContactTestStatus::ERROR);
+
+    std::vector<Fred::test_result_status> listed_statuses = Fred::list_test_result_statuses("en");
+
+    BOOST_CHECK_EQUAL(created_statuses.size(), listed_statuses.size());
+
+    std::vector<std::string> listed_status_handles;
+    for(std::vector<Fred::test_result_status>::const_iterator it = listed_statuses.begin();
+        it != listed_statuses.end();
+        ++it
+    ) {
+        listed_status_handles.push_back(it->handle);
+    }
+
+    std::sort(listed_status_handles.begin(), listed_status_handles.end());
+    std::sort(created_statuses.begin(), created_statuses.end());
+
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        listed_status_handles.begin(), listed_status_handles.end(),
+        created_statuses.begin(), created_statuses.end());
 }
 
 /**
