@@ -127,5 +127,61 @@ BOOST_AUTO_TEST_CASE(test_Invalidating_old_checks)
 
 }
 
+/**
+testing correct exception throw after unknown contact id is passed
+@pre existing testsuite_handle
+@pre nonexistent contact id
+@post correct exception thrown
+*/
+BOOST_AUTO_TEST_CASE(test_ExceptionUnknownContactId)
+{
+    Fred::OperationContext ctx;
+
+    bool correct_exception_thrown = false;
+
+    try {
+        Admin::enqueue_check(
+            ctx,
+            setup_nonexistent_contact_id().contact_id_,
+            setup_testsuite().testsuite_handle,
+            Optional<unsigned long long>()
+        );
+    } catch (const Fred::ExceptionUnknownContactId& ) {
+        correct_exception_thrown = true;
+    } catch(...) {
+        BOOST_FAIL("incorrect exception thrown");
+    }
+
+    BOOST_CHECK(correct_exception_thrown);
+}
+
+/**
+testing correct exception throw after unknown testsuite handle is passed
+@pre existing contact id
+@pre nonexistent testsuite_handle
+@post correct exception thrown
+*/
+BOOST_AUTO_TEST_CASE(test_ExceptionUnknownTestsuiteHandle)
+{
+    Fred::OperationContext ctx;
+
+    bool correct_exception_thrown = false;
+
+    try {
+        Admin::enqueue_check(
+            ctx,
+            setup_contact().contact_id_,
+            setup_nonexistent_testsuite_handle().testsuite_handle,
+            Optional<unsigned long long>()
+        );
+    } catch (const Fred::ExceptionUnknownTestsuiteHandle& ) {
+        correct_exception_thrown = true;
+    } catch(...) {
+        BOOST_FAIL("incorrect exception thrown");
+    }
+
+    BOOST_CHECK(correct_exception_thrown);
+}
+
 BOOST_AUTO_TEST_SUITE_END();
 BOOST_AUTO_TEST_SUITE_END();
