@@ -295,40 +295,16 @@ namespace Registry
                     throw;
             }
 
-            Fred::InfoRegistrarOutput sponsoring_registar_info;
-            try
-            {
-                sponsoring_registar_info = Fred::InfoRegistrarByHandle(domain_info.info_domain_data.sponsoring_registrar_handle).exec(ctx);
-            }
-            catch(const Fred::InfoRegistrarByHandle::Exception& ex)
-            {
-                if(ex.is_set_unknown_registrar_handle())
-                {
-                    BOOST_THROW_EXCEPTION(InternalServerError());
-                }
-                else
-                    throw;
-            }
+            Fred::InfoRegistrarOutput sponsoring_registar_info = Fred::InfoRegistrarByHandle(
+                domain_info.info_domain_data.sponsoring_registrar_handle).exec(ctx);
 
             RegistryReference sponsoring_registrar;
             sponsoring_registrar.id = sponsoring_registar_info.info_registrar_data.id;
             sponsoring_registrar.handle = sponsoring_registar_info.info_registrar_data.handle;
             sponsoring_registrar.name = sponsoring_registar_info.info_registrar_data.name.get_value_or_default();
 
-            Fred::InfoContactOutput registrant_contact_info;
-            try
-            {
-                registrant_contact_info = Fred::InfoContactByHandle(domain_info.info_domain_data.registrant_handle).set_lock(true).exec(ctx);
-            }
-            catch(const Fred::InfoContactByHandle::Exception& ex)
-            {
-                if(ex.is_set_unknown_contact_handle())
-                {
-                    BOOST_THROW_EXCEPTION(InternalServerError());
-                }
-                else
-                    throw;
-            }
+            Fred::InfoContactOutput registrant_contact_info = Fred::InfoContactByHandle(
+                domain_info.info_domain_data.registrant_handle).set_lock(true).exec(ctx);
 
             RegistryReference registrant;
             registrant.id = registrant_contact_info.info_contact_data.id;
@@ -337,39 +313,16 @@ namespace Registry
                 ? registrant_contact_info.info_contact_data.name.get_value_or_default()
                 : registrant_contact_info.info_contact_data.organization.get_value();
 
-            Fred::InfoNssetOutput nsset_info;
-            try
-            {
-                nsset_info = Fred::InfoNssetByHandle(domain_info.info_domain_data.nsset_handle.get_value_or_default()).set_lock(true).exec(ctx);
-            }
-            catch(const Fred::InfoNssetByHandle::Exception& ex)
-            {
-                if(ex.is_set_unknown_handle())
-                {
-                    BOOST_THROW_EXCEPTION(InternalServerError());
-                }
-                else
-                    throw;
-            }
+            Fred::InfoNssetOutput nsset_info = Fred::InfoNssetByHandle(
+                domain_info.info_domain_data.nsset_handle.get_value_or_default()).set_lock(true).exec(ctx);
 
             RegistryReference nsset;
             nsset.id = nsset_info.info_nsset_data.id;
             nsset.handle = nsset_info.info_nsset_data.handle;
 
-            Fred::InfoKeysetOutput keyset_info;
-            try
-            {
-                keyset_info = Fred::InfoKeysetByHandle(domain_info.info_domain_data.keyset_handle.get_value_or_default()).set_lock(true).exec(ctx);
-            }
-            catch(const Fred::InfoKeysetByHandle::Exception& ex)
-            {
-                if(ex.is_set_unknown_handle())
-                {
-                    BOOST_THROW_EXCEPTION(InternalServerError());
-                }
-                else
-                    throw;
-            }
+            Fred::InfoKeysetOutput keyset_info = Fred::InfoKeysetByHandle(
+                domain_info.info_domain_data.keyset_handle.get_value_or_default()).set_lock(true).exec(ctx);
+
 
             RegistryReference keyset;
             keyset.id = keyset_info.info_keyset_data.id;
@@ -417,20 +370,7 @@ namespace Registry
             for(std::vector<std::string>::const_iterator ci = domain_info.info_domain_data.admin_contacts.begin();
                     ci != domain_info.info_domain_data.admin_contacts.end(); ++ci)
             {
-                Fred::InfoContactOutput admin_contact_info;
-                try
-                {
-                    admin_contact_info = Fred::InfoContactByHandle(*ci).set_lock(true).exec(ctx);
-                }
-                catch(const Fred::InfoContactByHandle::Exception& ex)
-                {
-                    if(ex.is_set_unknown_contact_handle())
-                    {
-                        BOOST_THROW_EXCEPTION(InternalServerError());
-                    }
-                    else
-                        throw;
-                }
+                Fred::InfoContactOutput admin_contact_info = Fred::InfoContactByHandle(*ci).set_lock(true).exec(ctx);
 
                 RegistryReference admin;
                 admin.id = admin_contact_info.info_contact_data.id;
