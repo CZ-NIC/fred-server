@@ -129,7 +129,30 @@ BOOST_AUTO_TEST_CASE(test_List_check_statuses)
  */
 BOOST_AUTO_TEST_CASE(test_List_test_definitions)
 {
+    std::vector<std::string> created_tests;
 
+    for(int i=0; i<5; ++i) {
+        created_tests.push_back(setup_testdef().testdef_handle_);
+    }
+
+    std::vector<Fred::test_definition> listed_tests = Fred::list_test_definitions("en");
+
+    BOOST_CHECK_EQUAL(created_tests.size(), listed_tests.size());
+
+    std::vector<std::string> listed_test_handles;
+    for(std::vector<Fred::test_definition>::const_iterator it = listed_tests.begin();
+        it != listed_tests.end();
+        ++it
+    ) {
+        listed_test_handles.push_back(it->handle);
+    }
+
+    std::sort(listed_test_handles.begin(), listed_test_handles.end());
+    std::sort(created_tests.begin(), created_tests.end());
+
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        listed_test_handles.begin(), listed_test_handles.end(),
+        created_tests.begin(), created_tests.end());
 }
 
 /**
