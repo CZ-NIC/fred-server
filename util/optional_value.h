@@ -133,13 +133,37 @@ public:
 template < typename T >
 bool operator==(const Optional< T > &_a, const Optional< T > &_b)
 {
-    return (_a.isset() && _b.isset() && (_a.get_value_or_default() == _b.get_value_or_default())) ||
+    return (_a.isset() && _b.isset() && (_a.get_value() == _b.get_value())) ||
            (!_a.isset() && !_b.isset());
+}
+
+template < typename T >
+bool operator==(const Optional< T > &_a, const T &_b)
+{
+    return _a.isset() && (_a.get_value() == _b);
+}
+
+template < typename T >
+bool operator==(const T &_a, const Optional< T > &_b)
+{
+    return _b.isset() && (_a == _b.get_value());
 }
 
 // comparison of inequality
 template < typename T >
 bool operator!=(const Optional< T > &_a, const Optional< T > &_b)
+{
+    return !(_a == _b);
+}
+
+template < typename T >
+bool operator!=(const Optional< T > &_a, const T &_b)
+{
+    return !(_a == _b);
+}
+
+template < typename T >
+bool operator!=(const T &_a, const Optional< T > &_b)
 {
     return !(_a == _b);
 }

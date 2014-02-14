@@ -1706,6 +1706,7 @@ tests_test_server_SOURCES = \
 		tests/test-locking-trigger.cc \
 		tests/test-mojeid.cc \
 		tests/test-nullable.cc \
+		tests/test-optional.cc \
 		src/corba/epp_corba_client_impl.cc \
 		src/corba/epp_corba_client_impl.h \
 		src/contact_verification/contact_verification_impl.cc \
