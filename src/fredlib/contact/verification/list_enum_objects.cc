@@ -35,8 +35,10 @@ namespace Fred
                 "SELECT "
                 "   handle, name, description "
                 "   FROM enum_contact_test_status AS status "
-                "       JOIN enum_contact_test_status_localization USING (id) "
-                "   WHERE lang = $1::varchar",
+                "       LEFT JOIN enum_contact_test_status_localization USING (id) "
+                "   WHERE "
+                "       lang = $1::varchar "
+                "       OR lang IS NULL",
                 Database::query_param_list(lang)
             );
 
@@ -69,8 +71,9 @@ namespace Fred
                 "SELECT "
                 "   handle, name, description "
                 "   FROM enum_contact_check_status "
-                "       JOIN enum_contact_check_status_localization USING (id) "
-                "   WHERE lang = $1::varchar",
+                "       LEFT JOIN enum_contact_check_status_localization USING (id) "
+                "   WHERE lang = $1::varchar "
+                "       OR lang IS NULL",
                 Database::query_param_list(lang)
             );
 
@@ -109,7 +112,7 @@ namespace Fred
                 "   enum_c_t_loc.name           AS name_, "
                 "   enum_c_t_loc.description    AS description_ "
                 "   FROM enum_contact_test AS enum_c_t "
-                "       JOIN enum_contact_test_localization AS enum_c_t_loc USING(id) ";
+                "       LEFT JOIN enum_contact_test_localization AS enum_c_t_loc USING(id) ";
 
             if(testsuite_name.empty() == false) {
                 params.push_back(testsuite_name);
@@ -126,7 +129,8 @@ namespace Fred
                         "   WHERE ";
             }
             query +=
-                "       enum_c_t_loc.lang = $"+lang_position+"::varchar ";
+                "       (enum_c_t_loc.lang = $"+lang_position+"::varchar "
+                "           OR enum_c_t_loc.lang IS NULL ) ";
 
 
             Database::Result names_res = ctx.get_conn().exec_params(
@@ -163,8 +167,9 @@ namespace Fred
                 "SELECT "
                 "   handle, name, description "
                 "   FROM enum_contact_testsuite "
-                "       JOIN enum_contact_testsuite_localization USING (id) "
-                "   WHERE lang = $1::varchar ",
+                "       LEFT JOIN enum_contact_testsuite_localization USING (id) "
+                "   WHERE lang = $1::varchar "
+                "       OR lang IS NULL",
                 Database::query_param_list(lang));
 
             std::vector<testsuite_definition> result;
