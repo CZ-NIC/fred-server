@@ -24,6 +24,8 @@
 #ifndef ADMIN_CONTACT_VERIFICATION_ENQUEUE_CHECK_H_32421015464
 #define ADMIN_CONTACT_VERIFICATION_ENQUEUE_CHECK_H_32421015464
 
+#include "src/admin/contact/verification/exceptions.h"
+
 #include "src/fredlib/contact/verification/create_check.h"
 
 #include "src/fredlib/opcontext.h"
@@ -32,8 +34,8 @@
 namespace Admin {
 
     /**
-     * @throws Fred::ExceptionUnknownContactId
-     * @throws Fred::ExceptionUnknownTestsuiteHandle
+     * @throws Admin::ExceptionUnknownContactId
+     * @throws Admin::ExceptionUnknownTestsuiteHandle
      */
     std::string enqueue_check(
         Fred::OperationContext&         _ctx,
