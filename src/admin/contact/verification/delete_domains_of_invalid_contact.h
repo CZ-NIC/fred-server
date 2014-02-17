@@ -24,13 +24,15 @@
 #ifndef ADMIN_CONTACT_VERIFICATION_DELETE_DOMAINS_OF_INVALID_CONTACT_H_585314041545
 #define ADMIN_CONTACT_VERIFICATION_DELETE_DOMAINS_OF_INVALID_CONTACT_H_585314041545
 
+#include "src/admin/contact/verification/exceptions.h"
+
 #include "src/fredlib/opcontext.h"
 #include "util/optional_value.h"
 
 namespace Admin {
 
     /**
-     * @throws Fred::ExceptionUnknownCheckHandle
+     * @throws Admin::ExceptionUnknownCheckHandle
      */
     void delete_domains_of_invalid_contact(
         Fred::OperationContext& _ctx,

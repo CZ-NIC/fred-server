@@ -24,6 +24,8 @@
 #ifndef ADMIN_CONTACT_VERIFICATION_RESOLVE_CHECK_H_4574534345654
 #define ADMIN_CONTACT_VERIFICATION_RESOLVE_CHECK_H_4574534345654
 
+#include "src/admin/contact/verification/exceptions.h"
+
 #include "util/db/nullable.h"
 #include "util/optional_value.h"
 #include "src/fredlib/opcontext.h"
@@ -64,8 +66,8 @@ namespace Admin {
 
             /**
              * Commits operation.
-             * @throws Fred::ExceptionUnknownCheckHandle
-             * @throws Fred::ExceptionUnknownCheckStatusHandle
+             * @throws Admin::ExceptionUnknownCheckHandle
+             * @throws Admin::ExceptionUnknownCheckStatusHandle
              */
             void exec(Fred::OperationContext& _ctx);
     };

@@ -205,173 +205,203 @@ namespace Registry
     namespace AdminContactVerification
     {
         ContactCheckDetail* Server_i::getContactCheckDetail(const char* check_handle) {
-            ContactCheckDetail_var result(new ContactCheckDetail);
-            Fred::OperationContext ctx;
-
             try {
+                ContactCheckDetail_var result(new ContactCheckDetail);
+                Fred::OperationContext ctx;
+
                 Corba::wrap_check_detail(
                     Fred::InfoContactCheck(Corba::unwrap_string(check_handle))
                         .exec(ctx),
                     result
                 );
+
+                return result._retn();
             } catch (const Fred::ExceptionUnknownCheckHandle&) {
                 throw UNKNOWN_CHECK_HANDLE();
+            } catch (...) {
+                throw INTERNAL_SERVER_ERROR();
             }
-
-            return result._retn();
         }
 
         ContactCheckList* Server_i::getContactCheckList(NullableString* testsuite, NullableULongLong* contact_id, ::CORBA::ULong max_item_count) {
-            ContactCheckList_var result(new ContactCheckList);
-            Fred::OperationContext ctx;
+            try {
+                ContactCheckList_var result(new ContactCheckList);
+                Fred::OperationContext ctx;
 
-            Corba::wrap_check_list(
-                Fred::ListContactChecks(
-                    static_cast<unsigned long>(max_item_count),
-                    Corba::unwrap_nullable_string_to_optional(testsuite),
-                    Corba::unwrap_nullable_ulonglong_to_optional(contact_id)
-                ).exec(ctx),
-                result
-            );
+                Corba::wrap_check_list(
+                    Fred::ListContactChecks(
+                        static_cast<unsigned long>(max_item_count),
+                        Corba::unwrap_nullable_string_to_optional(testsuite),
+                        Corba::unwrap_nullable_ulonglong_to_optional(contact_id)
+                    ).exec(ctx),
+                    result
+                );
 
-            return result._retn();
+                return result._retn();
+            } catch (...) {
+                throw INTERNAL_SERVER_ERROR();
+            }
         }
 
         void Server_i::updateContactCheckTests(const char* check_handle, const TestUpdateSeq& changes, ::CORBA::ULongLong logd_request_id){
-            std::string ch_handle(Corba::unwrap_string(check_handle));
-            std::string testname;
-            std::string status;
+            try {
+                std::string ch_handle(Corba::unwrap_string(check_handle));
+                std::string testname;
+                std::string status;
 
-            Fred::OperationContext ctx;
+                Fred::OperationContext ctx;
 
-            for(unsigned long long i=0; i<changes.length(); ++i) {
-                status = Corba::unwrap_string(changes[i].status);
-                testname = Corba::unwrap_string(changes[i].test_handle);
-                try {
+                for(unsigned long long i=0; i<changes.length(); ++i) {
+                    status = Corba::unwrap_string(changes[i].status);
+                    testname = Corba::unwrap_string(changes[i].test_handle);
+
                     Fred::UpdateContactTest(ch_handle, testname, status)
                         .set_logd_request_id(logd_request_id)
                         .exec(ctx);
-
-                } catch(const Fred::ExceptionUnknownCheckHandle&) {
-                    throw UNKNOWN_CHECK_HANDLE();
-                } catch(const Fred::ExceptionUnknownTestHandle&) {
-                    throw UNKNOWN_TEST_HANDLE();
-                } catch(const Fred::ExceptionUnknownCheckTestPair&) {
-                    throw UNKNOWN_CHECK_TEST_PAIR();
-                } catch(const Fred::ExceptionUnknownTestStatusHandle&) {
-                    throw UNKNOWN_TEST_STATUS_HANDLE();
                 }
-            }
 
-            ctx.commit_transaction();
+                ctx.commit_transaction();
+            } catch(const Fred::ExceptionUnknownCheckHandle&) {
+                throw UNKNOWN_CHECK_HANDLE();
+            } catch(const Fred::ExceptionUnknownTestHandle&) {
+                throw UNKNOWN_TEST_HANDLE();
+            } catch(const Fred::ExceptionUnknownCheckTestPair&) {
+                throw UNKNOWN_CHECK_TEST_PAIR();
+            } catch(const Fred::ExceptionUnknownTestStatusHandle&) {
+                throw UNKNOWN_TEST_STATUS_HANDLE();
+            } catch (...) {
+                throw INTERNAL_SERVER_ERROR();
+            }
         }
 
         void Server_i::resolveContactCheckStatus(const char* check_handle, const char* status, ::CORBA::ULongLong logd_request_id){
-            Fred::OperationContext ctx;
-
             try {
+                Fred::OperationContext ctx;
+
                 Admin::resolve_check(
                     Corba::unwrap_string(check_handle),
                     Corba::unwrap_string(status),
                     logd_request_id
                 ).exec(ctx);
+
+                ctx.commit_transaction();
             } catch(const Fred::ExceptionUnknownCheckHandle&) {
                 throw UNKNOWN_CHECK_HANDLE();
             } catch(const Fred::ExceptionUnknownCheckStatusHandle&) {
                 throw UNKNOWN_CHECK_STATUS_HANDLE();
+            } catch (...) {
+                throw INTERNAL_SERVER_ERROR();
             }
-
-            ctx.commit_transaction();
         }
 
         void Server_i::deleteDomainsAfterFailedManualCheck(const char* check_handle) {
-            Fred::OperationContext ctx;
-
             try {
+                Fred::OperationContext ctx;
+
                 Admin::delete_domains_of_invalid_contact(
                     ctx,
                     Corba::unwrap_string(check_handle)
                 );
+
+                ctx.commit_transaction();
             } catch (const Fred::ExceptionUnknownCheckHandle&) {
                 throw UNKNOWN_CHECK_HANDLE();
+            } catch (...) {
+                throw INTERNAL_SERVER_ERROR();
             }
-
-            ctx.commit_transaction();
         }
 
         char* Server_i::enqueueContactCheck(::CORBA::ULongLong contact_id, const char* testsuite_handle, ::CORBA::ULongLong logd_request_id){
-            Fred::OperationContext ctx;
-
-            std::string created_handle;
-
             try {
+                Fred::OperationContext ctx;
+
+                std::string created_handle;
+
                 created_handle = Admin::enqueue_check(
                     ctx,
                     contact_id,
                     Corba::unwrap_string(testsuite_handle),
                     logd_request_id
                 );
+
+                ctx.commit_transaction();
+
+                return CORBA::string_dup(created_handle.c_str());
             } catch(const Fred::ExceptionUnknownContactId&) {
                 throw UNKNOWN_CONTACT_ID();
             } catch(const Fred::ExceptionUnknownTestsuiteHandle&) {
                 throw UNKNOWN_TESTSUITE_HANDLE();
+            } catch (...) {
+                throw INTERNAL_SERVER_ERROR();
             }
-
-            ctx.commit_transaction();
-
-            return CORBA::string_dup(created_handle.c_str());
         }
 
         ContactTestStatusDefSeq* Server_i::listTestStatusDefs(const char* lang) {
-            ContactTestStatusDefSeq_var result (new ContactTestStatusDefSeq);
+            try {
+                ContactTestStatusDefSeq_var result (new ContactTestStatusDefSeq);
 
-            Corba::wrap_test_statuses(
-                Fred::list_test_result_statuses(
-                    Corba::unwrap_string(lang)),
-                result
-            );
+                Corba::wrap_test_statuses(
+                    Fred::list_test_result_statuses(
+                        Corba::unwrap_string(lang)),
+                    result
+                );
 
-            return result._retn();
+                return result._retn();
+            } catch (...) {
+                throw INTERNAL_SERVER_ERROR();
+            }
         }
 
         ContactCheckStatusDefSeq* Server_i::listCheckStatusDefs(const char* lang) {
-            ContactCheckStatusDefSeq_var result (new ContactCheckStatusDefSeq);
+            try {
+                ContactCheckStatusDefSeq_var result (new ContactCheckStatusDefSeq);
 
-            Corba::wrap_check_statuses(
-                Fred::list_check_statuses(
-                    Corba::unwrap_string(lang)),
-                result
-            );
+                Corba::wrap_check_statuses(
+                    Fred::list_check_statuses(
+                        Corba::unwrap_string(lang)),
+                    result
+                );
 
-            return result._retn();
+                return result._retn();
+            } catch (...) {
+                throw INTERNAL_SERVER_ERROR();
+            }
         }
 
         ContactTestDefSeq* Server_i::listTestDefs(
             const char* lang,
             Registry::NullableString* testsuite_handle
         ) {
-            ContactTestDefSeq_var result (new ContactTestDefSeq);
+            try {
+                ContactTestDefSeq_var result (new ContactTestDefSeq);
 
-            Corba::wrap_test_definitions(
-                Fred::list_test_definitions(
-                    Corba::unwrap_string(lang),
-                    Corba::unwrap_nullable_string(testsuite_handle)),
-                result
-            );
+                Corba::wrap_test_definitions(
+                    Fred::list_test_definitions(
+                        Corba::unwrap_string(lang),
+                        Corba::unwrap_nullable_string(testsuite_handle)),
+                    result
+                );
 
-            return result._retn();
+                return result._retn();
+            } catch (...) {
+                throw INTERNAL_SERVER_ERROR();
+            }
         }
 
         ContactTestSuiteDefSeq* Server_i::listTestSuiteDefs(const char* lang) {
-            ContactTestSuiteDefSeq_var result (new ContactTestSuiteDefSeq);
+            try {
+                ContactTestSuiteDefSeq_var result (new ContactTestSuiteDefSeq);
 
-            Corba::wrap_testsuite_definitions(
-                Fred::list_testsuite_definitions(
-                    Corba::unwrap_string(lang)),
-                result
-            );
+                Corba::wrap_testsuite_definitions(
+                    Fred::list_testsuite_definitions(
+                        Corba::unwrap_string(lang)),
+                    result
+                );
 
-            return result._retn();
+                return result._retn();
+            } catch (...) {
+                throw INTERNAL_SERVER_ERROR();
+            }
         }
     }
 }

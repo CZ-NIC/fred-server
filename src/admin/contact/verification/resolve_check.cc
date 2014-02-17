@@ -29,22 +29,27 @@ namespace  Admin {
     }
 
     void resolve_check::exec(Fred::OperationContext& _ctx) {
+        try {
+            Fred::UpdateContactCheck(
+                check_handle_,
+                status_handle_,
+                logd_request_id_
+            ).exec(_ctx);
 
-        Fred::UpdateContactCheck(
-            check_handle_,
-            status_handle_,
-            logd_request_id_
-        ).exec(_ctx);
-
-        Fred::InfoContactCheckOutput check_info = Fred::InfoContactCheck(
-            check_handle_
-        ).exec(_ctx);
+            Fred::InfoContactCheckOutput check_info = Fred::InfoContactCheck(
+                check_handle_
+            ).exec(_ctx);
 
 
-        if(check_info.testsuite_handle == Fred::TestsuiteHandle::AUTOMATIC) {
-            postprocess_automatic_check(_ctx, check_handle_);
-        } else if(check_info.testsuite_handle == Fred::TestsuiteHandle::MANUAL) {
-            postprocess_manual_check(_ctx, check_handle_);
+            if(check_info.testsuite_handle == Fred::TestsuiteHandle::AUTOMATIC) {
+                postprocess_automatic_check(_ctx, check_handle_);
+            } else if(check_info.testsuite_handle == Fred::TestsuiteHandle::MANUAL) {
+                postprocess_manual_check(_ctx, check_handle_);
+            }
+        } catch (const Fred::ExceptionUnknownCheckHandle& ) {
+            Admin::ExceptionUnknownCheckHandle();
+        } catch (const Fred::ExceptionUnknownCheckStatusHandle& ) {
+            Admin::ExceptionUnknownCheckStatusHandle();
         }
     }
 

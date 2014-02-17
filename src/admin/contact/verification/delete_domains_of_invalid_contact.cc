@@ -25,38 +25,42 @@ namespace  Admin {
         Fred::OperationContext& _ctx,
         const std::string&      _check_handle
     ) {
-        Fred::InfoContactCheckOutput check_info = Fred::InfoContactCheck(_check_handle).exec(_ctx);
+        try {
+            Fred::InfoContactCheckOutput check_info = Fred::InfoContactCheck(_check_handle).exec(_ctx);
 
-        if( check_info.testsuite_handle != Fred::TestsuiteHandle::MANUAL
-            ||
-            check_info.check_state_history.rbegin()->status_handle != Fred::ContactCheckStatus::FAIL
-        ) {
-            return;
-        }
+            if( check_info.testsuite_handle != Fred::TestsuiteHandle::MANUAL
+                ||
+                check_info.check_state_history.rbegin()->status_handle != Fred::ContactCheckStatus::FAIL
+            ) {
+                return;
+            }
 
-        Fred::InfoContactOutput contact_info = Fred::HistoryInfoContactByHistoryid(check_info.contact_history_id).exec(_ctx);
+            Fred::InfoContactOutput contact_info = Fred::HistoryInfoContactByHistoryid(check_info.contact_history_id).exec(_ctx);
 
-        std::set<unsigned long long> domain_ids_to_delete =
-            get_owned_domains_locking (
-                _ctx,
-                contact_info.info_contact_data.id
-            );
+            std::set<unsigned long long> domain_ids_to_delete =
+                get_owned_domains_locking (
+                    _ctx,
+                    contact_info.info_contact_data.id
+                );
 
-        for(std::set<unsigned long long>::const_iterator it = domain_ids_to_delete.begin();
-            it != domain_ids_to_delete.end();
-            ++it
-        ){
-            // beware - need to get info before deleting
-            Fred::InfoDomainData info_domain = Fred::InfoDomainById(*it).exec(_ctx).info_domain_data;
-            Fred::DeleteDomainById(*it).exec(_ctx);
+            for(std::set<unsigned long long>::const_iterator it = domain_ids_to_delete.begin();
+                it != domain_ids_to_delete.end();
+                ++it
+            ){
+                // beware - need to get info before deleting
+                Fred::InfoDomainData info_domain = Fred::InfoDomainById(*it).exec(_ctx).info_domain_data;
+                Fred::DeleteDomainById(*it).exec(_ctx);
 
-            store_check_poll_message_relation(
-                _ctx,
-                _check_handle,
-                Fred::Poll::CreateDeleteDomainPollMessage(
-                    info_domain.historyid
-                ).exec(_ctx)
-            );
+                store_check_poll_message_relation(
+                    _ctx,
+                    _check_handle,
+                    Fred::Poll::CreateDeleteDomainPollMessage(
+                        info_domain.historyid
+                    ).exec(_ctx)
+                );
+            }
+        } catch (const Fred::ExceptionUnknownCheckHandle&) {
+            throw Admin::ExceptionUnknownCheckHandle();
         }
     }
 

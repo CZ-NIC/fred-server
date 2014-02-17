@@ -146,7 +146,7 @@ BOOST_AUTO_TEST_CASE(test_ExceptionUnknownContactId)
             setup_testsuite().testsuite_handle,
             Optional<unsigned long long>()
         );
-    } catch (const Fred::ExceptionUnknownContactId& ) {
+    } catch (const Admin::ExceptionUnknownContactId& ) {
         correct_exception_thrown = true;
     } catch(...) {
         BOOST_FAIL("incorrect exception thrown");
@@ -174,7 +174,7 @@ BOOST_AUTO_TEST_CASE(test_ExceptionUnknownTestsuiteHandle)
             setup_nonexistent_testsuite_handle().testsuite_handle,
             Optional<unsigned long long>()
         );
-    } catch (const Fred::ExceptionUnknownTestsuiteHandle& ) {
+    } catch (const Admin::ExceptionUnknownTestsuiteHandle& ) {
         correct_exception_thrown = true;
     } catch(...) {
         BOOST_FAIL("incorrect exception thrown");
