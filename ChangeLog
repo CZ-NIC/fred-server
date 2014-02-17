@@ -1,3 +1,7 @@
+2014-02-17 Jaromir Talir (2.16.2)
+
+  * fix rpm dependencies
+
 2014-02-10 Michal Strnad (2.16.1)
 
   * bugfix in mojeid interface (wrong exception translation at corba wrapper)
