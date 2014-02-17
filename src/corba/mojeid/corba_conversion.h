@@ -156,7 +156,7 @@ bool corba_unwrap_nullable_boolean(const NullableBoolean *_v, const bool null_va
 Nullable<std::string> corba_unwrap_nullable_date(const NullableDate *_v)
 {
     if (_v) {
-        boost::format date_fmt = boost::format ("%1%-%2%-%3%")
+        boost::format date_fmt = boost::format("%1%-%2$02d-%3$02d")
                             % _v->_value().year
                             % _v->_value().month
                             % _v->_value().day;
