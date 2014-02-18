@@ -3,6 +3,7 @@
 
 #include "corba/MojeID.hh"
 #include "corba/common_wrappers.h"
+#include "util/types/birthdate.h"
 
 #include "fredlib/contact_verification/contact.h"
 #include "fredlib/contact_verification/contact_validator.h"
@@ -74,7 +75,7 @@ NullableDate* corba_wrap_nullable_date(const Nullable<std::string> &_v)
     }
     else {
         boost::gregorian::date tmp
-            = boost::gregorian::from_string(static_cast<std::string>(_v));
+            = birthdate_from_string_to_date(static_cast<std::string>(_v));
         if (tmp.is_special()) {
             return 0;
         }
@@ -155,7 +156,7 @@ bool corba_unwrap_nullable_boolean(const NullableBoolean *_v, const bool null_va
 Nullable<std::string> corba_unwrap_nullable_date(const NullableDate *_v)
 {
     if (_v) {
-        boost::format date_fmt = boost::format ("%1%-%2%-%3%")
+        boost::format date_fmt = boost::format("%1%-%2$02d-%3$02d")
                             % _v->_value().year
                             % _v->_value().month
                             % _v->_value().day;
