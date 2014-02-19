@@ -41,7 +41,7 @@
 #include "src/admin/contact/verification/test_impl/test_interface.h"
 
 
-class DummyTestReturning: public Admin::ContactVerificationTest {
+class DummyTestReturning: public Admin::ContactVerification::Test {
         std::string handle;
         std::string description;
         long id;
@@ -73,14 +73,16 @@ class DummyTestReturning: public Admin::ContactVerificationTest {
                 break;
             }
         }
-        ContactVerificationTest::T_run_result run(long _history_id) const {
-            return ContactVerificationTest::make_result(return_status, return_status);
+        T_run_result run(long _history_id) const {
+            return make_result(return_status, return_status);
         }
-        std::string get_name() const { return handle; }
+        static std::string registration_name() { return "DummyTestReturning"; }
+
+        std::string get_handle() const { return handle; }
 };
 
 /* Jack the Thrower */
-class DummyThrowingTest: public Admin::ContactVerificationTest {
+class DummyThrowingTest: public Admin::ContactVerification::Test {
     std::string handle_;
     std::string description_;
     long id_;
@@ -114,10 +116,12 @@ class DummyThrowingTest: public Admin::ContactVerificationTest {
             id_ = static_cast<long>(res[0]["id_"]);
         }
 
-        ContactVerificationTest::T_run_result run(long _history_id) const {
+        T_run_result run(long _history_id) const {
             throw std::runtime_error("not exactly a feature");
         }
-        std::string get_name() const { return handle_; }
+        static std::string registration_name() { return "DummyThrowingTest"; }
+
+        std::string get_handle() const { return handle_; }
 };
 
 #endif // #include guard end

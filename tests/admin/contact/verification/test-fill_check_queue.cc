@@ -50,7 +50,7 @@ namespace Test = Fred::ContactTestStatus;
 namespace Check = Fred::ContactCheckStatus;
 
 typedef std::vector< boost::tuple<std::string, unsigned long long, unsigned long long> > T_enq_ch;
-typedef std::map<std::string, boost::shared_ptr<Admin::ContactVerificationTest> > T_testimpl_map;
+typedef std::map<std::string, boost::shared_ptr<Admin::ContactVerification::Test> > T_testimpl_map;
 
 void clean_queue() {
     Fred::OperationContext ctx;
@@ -97,15 +97,17 @@ void empty_automatic_testsuite() {
 }
 
 T_testimpl_map create_dummy_automatic_testsuite() {
-    std::map< std::string, boost::shared_ptr<Admin::ContactVerificationTest> > test_impls;
+    std::map< std::string, boost::shared_ptr<Admin::ContactVerification::Test> > test_impls;
 
     Fred::OperationContext ctx;
-    boost::shared_ptr<Admin::ContactVerificationTest> temp_ptr
+    boost::shared_ptr<Admin::ContactVerification::Test> temp_ptr
         (new DummyTestReturning(Test::OK));
 
-    test_impls[temp_ptr->get_name()] = temp_ptr;
+    std::string handle = dynamic_cast<DummyTestReturning*>(temp_ptr.get())->get_handle();
 
-    setup_testdef_in_testsuite(temp_ptr->get_name(), Fred::TestsuiteHandle::AUTOMATIC);
+    test_impls[handle] = temp_ptr;
+
+    setup_testdef_in_testsuite(handle, Fred::TestsuiteHandle::AUTOMATIC);
     ctx.commit_transaction();
 
     return test_impls;
