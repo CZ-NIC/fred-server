@@ -1409,7 +1409,19 @@ src_corba_fred_adifd_SOURCES = \
 		src/admin/contact/verification/resolve_check.cc \
 		src/admin/contact/verification/resolve_check.h \
 		src/admin/contact/verification/delete_domains_of_invalid_contact.cc \
-		src/admin/contact/verification/delete_domains_of_invalid_contact.h
+		src/admin/contact/verification/delete_domains_of_invalid_contact.h \
+		src/admin/contact/verification/test_impl/test_email_syntax.h \
+		src/admin/contact/verification/test_impl/test_email_syntax.cc \
+ 		src/admin/contact/verification/test_impl/test_name_syntax.h \
+ 		src/admin/contact/verification/test_impl/test_name_syntax.cc \
+		src/admin/contact/verification/test_impl/test_phone_syntax.h \
+		src/admin/contact/verification/test_impl/test_phone_syntax.cc \
+		src/admin/contact/verification/test_impl/test_cz_address_exists.h \
+		src/admin/contact/verification/test_impl/test_cz_address_exists.cc \
+		src/admin/contact/verification/test_impl/test_contactability.h \
+		src/admin/contact/verification/test_impl/test_contactability.cc \
+		src/admin/contact/verification/test_impl/test_email_exists.h \
+		src/admin/contact/verification/test_impl/test_email_exists.cc
 		
 src_corba_fred_adifd_LDADD = \
 		src/corba/admin/libadmin_impl.a \

@@ -46,16 +46,18 @@ namespace Corba {
         typedef Fred::InfoContactCheckOutput::ContactTestResultData ContactTestData;
         typedef Fred::InfoContactCheckOutput::ContactTestResultState ContactTestState;
 
-        Fred::InfoContactOutput contact_info;
+        Fred::InfoContactOutput contact_info_historical;
+        Fred::InfoContactOutput contact_info_current;
         {
             Fred::OperationContext ctx;
-            contact_info = Fred::HistoryInfoContactByHistoryid(in.contact_history_id).exec(ctx);
+            contact_info_historical = Fred::HistoryInfoContactByHistoryid(in.contact_history_id).exec(ctx);
+            contact_info_current = Fred::InfoContactById(contact_info_historical.info_contact_data.id).exec(ctx);
         }
 
         out->check_handle =         Corba::wrap_string(in.handle);
         out->test_suite_handle =    Corba::wrap_string(in.testsuite_handle);
-        out->contact_handle =       Corba::wrap_string(contact_info.info_contact_data.handle);
-        out->contact_id =           contact_info.info_contact_data.id;
+        out->contact_handle =       Corba::wrap_string(contact_info_historical.info_contact_data.handle);
+        out->contact_id =           contact_info_historical.info_contact_data.id;
         out->checked_contact_hid =  in.contact_history_id;
         out->created =              Corba::wrap_time(in.local_create_time);
 
@@ -79,22 +81,35 @@ namespace Corba {
             test_it != in.tests.end();
             ++test_it, ++test_seq_i
         ) {
-            // #10556
-            // TODO
-            // pokus
             std::vector<std::string> tested_values =
                 Admin::ContactVerification::test_data_provider_factory::instance_ref()
                     .create_sh_ptr(test_it->test_handle)
                     ->init_data(in.contact_history_id)
                         .get_string_data();
 
-            unsigned out_index = 0;
-            out->test_list[test_seq_i].tested_values_changes.length(tested_values.size());
+            std::vector<std::string> current_values =
+                Admin::ContactVerification::test_data_provider_factory::instance_ref()
+                    .create_sh_ptr(test_it->test_handle)
+                    ->init_data(contact_info_current.info_contact_data.historyid)
+                        .get_string_data();
+
+            unsigned out_tested_index = 0;
+            out->test_list[test_seq_i].tested_contact_data.length(tested_values.size());
             for(std::vector<std::string>::const_iterator it = tested_values.begin();
                 it != tested_values.end();
-                ++it, ++out_index
+                ++it, ++out_tested_index
             ) {
-                out->test_list[test_seq_i].tested_values_changes[out_index].old_value
+                out->test_list[test_seq_i].tested_contact_data[out_tested_index]
+                    = Corba::wrap_string(*it);
+            }
+
+            unsigned out_current_index = 0;
+            out->test_list[test_seq_i].current_contact_data.length(current_values.size());
+            for(std::vector<std::string>::const_iterator it = current_values.begin();
+                it != current_values.end();
+                ++it, ++out_current_index
+            ) {
+                out->test_list[test_seq_i].current_contact_data[out_current_index]
                     = Corba::wrap_string(*it);
             }
 
