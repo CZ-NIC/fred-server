@@ -61,7 +61,7 @@ namespace  Admin {
      * main function and the only one visible to the outer world
      */
     Optional<std::string> run_first_enqueued_check(
-        const std::map<std::string, boost::shared_ptr<Admin::ContactVerificationTest> >& _tests,
+        const std::map<std::string, boost::shared_ptr<Admin::ContactVerification::Test> >& _tests,
         Optional<unsigned long long> _logd_request_id
     ) {
         Fred::OperationContext ctx_locked_check;
@@ -87,7 +87,7 @@ namespace  Admin {
         std::vector<Optional<std::string> > error_messages;
         std::set<unsigned long long> related_mail_ids;
         std::set<unsigned long long> related_message_ids;
-        ContactVerificationTest::T_run_result temp_result;
+        ContactVerification::Test::T_run_result temp_result;
 
         try {
             while(true) {

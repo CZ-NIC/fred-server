@@ -24,11 +24,15 @@
 #include <fredlib/contact.h>
 
 namespace Admin {
-    ContactVerificationTest::T_run_result ContactVerificationTestNameSyntax::run(long _history_id) const {
-        Fred::OperationContext ctx;
-        const Fred::InfoContactData& contact_data = Fred::HistoryInfoContactByHistoryid(_history_id).exec(ctx).info_contact_data;
+namespace ContactVerification {
 
-        string name =  boost::algorithm::trim_copy(static_cast<std::string>(contact_data.name));
+    FACTORY_MODULE_INIT_DEFI(TestNameSyntax_init)
+
+    Test::T_run_result TestNameSyntax::run(long _history_id) const {
+        TestDataProvider<TestNameSyntax> data;
+        data.init_data(_history_id);
+
+        string name =  boost::algorithm::trim_copy(static_cast<std::string>(data.name_));
 
         if( name.find(' ') == std::string::npos ) {
             return make_result(Fred::ContactTestStatus::FAIL, string("name has to contain at least two words separated by space") );
@@ -36,4 +40,5 @@ namespace Admin {
             return make_result(Fred::ContactTestStatus::OK );
         }
     }
+}
 }

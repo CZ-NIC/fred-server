@@ -43,13 +43,17 @@
 
 struct dummy_testsuite : public setup_empty_testsuite {
 
-    std::map< std::string, boost::shared_ptr<Admin::ContactVerificationTest> > test_impls_;
+    std::map< std::string, boost::shared_ptr<Admin::ContactVerification::Test> > test_impls_;
 
     dummy_testsuite (const std::vector<std::string>& _test_return_statuses) {
+        std::string handle;
+
         BOOST_FOREACH(const std::string& status, _test_return_statuses) {
-            boost::shared_ptr<Admin::ContactVerificationTest> temp_ptr(new DummyTestReturning(status));
-            test_impls_[temp_ptr->get_name()] = temp_ptr;
-            setup_testdef_in_testsuite(temp_ptr->get_name(), testsuite_handle);
+            boost::shared_ptr<Admin::ContactVerification::Test> temp_ptr(new DummyTestReturning(status));
+            handle = dynamic_cast<DummyTestReturning*>(temp_ptr.get())->get_handle();
+
+            test_impls_[handle] = temp_ptr;
+            setup_testdef_in_testsuite(handle, testsuite_handle);
         }
     }
 };
@@ -59,7 +63,7 @@ void test_Resulting_check_status_impl(std::vector<std::string> _test_statuses, c
     setup_check check(suite.testsuite_handle);
 
     try {
-        Admin::run_all_enqueued_checks( const_cast<const std::map< std::string, boost::shared_ptr<Admin::ContactVerificationTest> >& > (suite.test_impls_) );
+        Admin::run_all_enqueued_checks( const_cast<const std::map< std::string, boost::shared_ptr<Admin::ContactVerification::Test> >& > (suite.test_impls_) );
     } catch (...) {
         BOOST_FAIL("exception during Admin::run_all_enqueued_checks");
     }
@@ -233,14 +237,16 @@ BOOST_AUTO_TEST_CASE(test_Incorrect_test_return_handling)
     {
         Fred::OperationContext ctx;
 
-        boost::shared_ptr<Admin::ContactVerificationTest> temp_ptr(
+        boost::shared_ptr<Admin::ContactVerification::Test> temp_ptr(
             new DummyTestReturning(Test::ENQUEUED));
 
-        std::map< std::string, boost::shared_ptr<Admin::ContactVerificationTest> > test_impls_;
-        test_impls_[temp_ptr->get_name()] = temp_ptr;
+        std::string handle = dynamic_cast<DummyTestReturning*>(temp_ptr.get())->get_handle();
+
+        std::map< std::string, boost::shared_ptr<Admin::ContactVerification::Test> > test_impls_;
+        test_impls_[handle] = temp_ptr;
 
         setup_empty_testsuite testsuite;
-        setup_testdef_in_testsuite(temp_ptr->get_name(), testsuite.testsuite_handle);
+        setup_testdef_in_testsuite(handle, testsuite.testsuite_handle);
 
         setup_check check(testsuite.testsuite_handle);
 
@@ -260,14 +266,16 @@ BOOST_AUTO_TEST_CASE(test_Incorrect_test_return_handling)
     {
         Fred::OperationContext ctx;
 
-        boost::shared_ptr<Admin::ContactVerificationTest> temp_ptr(
+        boost::shared_ptr<Admin::ContactVerification::Test> temp_ptr(
             new DummyTestReturning(Test::RUNNING));
 
-        std::map< std::string, boost::shared_ptr<Admin::ContactVerificationTest> > test_impls_;
-        test_impls_[temp_ptr->get_name()] = temp_ptr;
+        std::string handle = dynamic_cast<DummyTestReturning*>(temp_ptr.get())->get_handle();
+
+        std::map< std::string, boost::shared_ptr<Admin::ContactVerification::Test> > test_impls_;
+        test_impls_[handle] = temp_ptr;
 
         setup_empty_testsuite testsuite;
-        setup_testdef_in_testsuite(temp_ptr->get_name(), testsuite.testsuite_handle);
+        setup_testdef_in_testsuite(handle, testsuite.testsuite_handle);
         setup_check check(testsuite.testsuite_handle);
 
         bool caught_the_right_exception = false;
@@ -290,13 +298,14 @@ BOOST_AUTO_TEST_CASE(test_Incorrect_test_return_handling)
  */
 BOOST_AUTO_TEST_CASE(test_Throwing_test_handling)
 {
-    boost::shared_ptr<Admin::ContactVerificationTest> temp_ptr(new DummyThrowingTest);
+    boost::shared_ptr<Admin::ContactVerification::Test> temp_ptr(new DummyThrowingTest);
+    std::string handle = dynamic_cast<DummyThrowingTest*>(temp_ptr.get())->get_handle();
 
-    std::map< std::string, boost::shared_ptr<Admin::ContactVerificationTest> > test_impls_;
-    test_impls_[temp_ptr->get_name()] = temp_ptr;
+    std::map< std::string, boost::shared_ptr<Admin::ContactVerification::Test> > test_impls_;
+    test_impls_[handle] = temp_ptr;
 
     setup_empty_testsuite testsuite;
-    setup_testdef_in_testsuite(temp_ptr->get_name(), testsuite.testsuite_handle);
+    setup_testdef_in_testsuite(handle, testsuite.testsuite_handle);
     setup_check check(testsuite.testsuite_handle);
 
     bool caught_some_exception = false;
@@ -335,24 +344,27 @@ BOOST_AUTO_TEST_CASE(test_Logd_request_id_of_related_changes)
     // creating checkdef
     Fred::OperationContext ctx1;
 
-    boost::shared_ptr<Admin::ContactVerificationTest> temp_ptr1(
+    boost::shared_ptr<Admin::ContactVerification::Test> temp_ptr1(
         new DummyTestReturning(Test::OK));
+    std::string handle1 = dynamic_cast<DummyTestReturning*>(temp_ptr1.get())->get_handle();
 
-    boost::shared_ptr<Admin::ContactVerificationTest> temp_ptr2(
+    boost::shared_ptr<Admin::ContactVerification::Test> temp_ptr2(
         new DummyTestReturning(Test::FAIL));
+    std::string handle2 = dynamic_cast<DummyTestReturning*>(temp_ptr2.get())->get_handle();
 
-    boost::shared_ptr<Admin::ContactVerificationTest> temp_ptr3(
+    boost::shared_ptr<Admin::ContactVerification::Test> temp_ptr3(
         new DummyTestReturning(Test::MANUAL));
+    std::string handle3 = dynamic_cast<DummyTestReturning*>(temp_ptr3.get())->get_handle();
 
-    std::map< std::string, boost::shared_ptr<Admin::ContactVerificationTest> > test_impls_;
-    test_impls_[temp_ptr1->get_name()] = temp_ptr1;
-    test_impls_[temp_ptr2->get_name()] = temp_ptr2;
-    test_impls_[temp_ptr3->get_name()] = temp_ptr3;
+    std::map< std::string, boost::shared_ptr<Admin::ContactVerification::Test> > test_impls_;
+    test_impls_[handle1] = temp_ptr1;
+    test_impls_[handle2] = temp_ptr2;
+    test_impls_[handle3] = temp_ptr3;
 
     setup_empty_testsuite testsuite;
-    setup_testdef_in_testsuite(temp_ptr1->get_name(), testsuite.testsuite_handle);
-    setup_testdef_in_testsuite(temp_ptr2->get_name(), testsuite.testsuite_handle);
-    setup_testdef_in_testsuite(temp_ptr3->get_name(), testsuite.testsuite_handle);
+    setup_testdef_in_testsuite(handle1, testsuite.testsuite_handle);
+    setup_testdef_in_testsuite(handle2, testsuite.testsuite_handle);
+    setup_testdef_in_testsuite(handle3, testsuite.testsuite_handle);
 
     setup_check check(testsuite.testsuite_handle);
 

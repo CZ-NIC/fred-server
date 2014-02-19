@@ -10,57 +10,48 @@
 
 namespace  Admin {
 
-    std::map< std::string, boost::shared_ptr<Admin::ContactVerificationTest> > create_test_impl_prototypes(
+    std::map< std::string, boost::shared_ptr<ContactVerification::Test> > create_test_impl_prototypes(
         boost::shared_ptr<Fred::Mailer::Manager>   _mailer_manager,
         boost::shared_ptr<Fred::Document::Manager> _document_manager,
         boost::shared_ptr<Fred::Messages::Manager> _message_manager,
         const std::string&                         _cz_address_dataset_path
     ) {
-        std::map< std::string, boost::shared_ptr<Admin::ContactVerificationTest> > result;
+        std::map< std::string, boost::shared_ptr<ContactVerification::Test> > result;
 
-        {
-            boost::shared_ptr<Admin::ContactVerificationTest> temp_ptr
-                = boost::make_shared<Admin::ContactVerificationTestNameSyntax>();
+        result[ContactVerification::TestNameSyntax::registration_name()] =
+            ContactVerification::test_factory::instance_ref()
+                .create_sh_ptr(ContactVerification::TestNameSyntax::registration_name());
 
-            result[temp_ptr->get_name()] = temp_ptr;
-        }
+        result[ContactVerification::TestEmailSyntax::registration_name()] =
+            ContactVerification::test_factory::instance_ref()
+                .create_sh_ptr(ContactVerification::TestEmailSyntax::registration_name());
 
-        {
-            boost::shared_ptr<Admin::ContactVerificationTest> temp_ptr
-                = boost::make_shared<Admin::ContactVerificationTestEmailSyntax>();
+        result[ContactVerification::TestPhoneSyntax::registration_name()] =
+            ContactVerification::test_factory::instance_ref()
+                .create_sh_ptr(ContactVerification::TestPhoneSyntax::registration_name());
 
-            result[temp_ptr->get_name()] = temp_ptr;
-        }
+        result[ContactVerification::TestCzAddress::registration_name()] =
+                ContactVerification::test_factory::instance_ref()
+                    .create_sh_ptr(ContactVerification::TestCzAddress::registration_name());
 
-        {
-            boost::shared_ptr<Admin::ContactVerificationTest> temp_ptr
-                = boost::make_shared<Admin::ContactVerificationTestPhoneSyntax>();
+        dynamic_cast<ContactVerification::TestCzAddress *>(
+            result[ContactVerification::TestCzAddress::registration_name()].get()
+        )->set_mvcr_address_xml_filename(_cz_address_dataset_path);
 
-            result[temp_ptr->get_name()] = temp_ptr;
-        }
+        result[ContactVerification::TestContactability::registration_name()] =
+            ContactVerification::test_factory::instance_ref()
+                .create_sh_ptr(ContactVerification::TestContactability::registration_name());
 
-        {
-            boost::shared_ptr<Admin::ContactVerificationTest> temp_ptr
-                = boost::make_shared<Admin::ContactVerificationTestCzAddress>(
-                    _cz_address_dataset_path );
+        dynamic_cast<ContactVerification::TestContactability *>(
+            result[ContactVerification::TestContactability::registration_name()].get()
+        )->set_document_file_manager(_document_manager)
+        .set_email_manager(_mailer_manager)
+        .set_letter_manager(_message_manager );
 
-            result[temp_ptr->get_name()] = temp_ptr;
-        }
+        result[ContactVerification::TestEmailExists::registration_name()] =
+            ContactVerification::test_factory::instance_ref()
+                .create_sh_ptr(ContactVerification::TestEmailExists::registration_name());
 
-        {
-            boost::shared_ptr<Admin::ContactVerificationTest> temp_ptr
-                = boost::make_shared<ContactVerificationTestContactability>(
-                    _mailer_manager, _document_manager, _message_manager );
-
-            result[temp_ptr->get_name()] = temp_ptr;
-        }
-
-        {
-            boost::shared_ptr<Admin::ContactVerificationTest> temp_ptr
-                = boost::make_shared<Admin::ContactVerificationTestEmailExists>();
-
-            result[temp_ptr->get_name()] = temp_ptr;
-        }
         return result;
     }
 }

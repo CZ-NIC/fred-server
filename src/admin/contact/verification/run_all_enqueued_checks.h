@@ -40,7 +40,7 @@ namespace Admin {
      * @return handles of executed check ordered by execution (first in vector - first executed)
      */
     std::vector<std::string> run_all_enqueued_checks(
-        const std::map<std::string, boost::shared_ptr<Admin::ContactVerificationTest> >& _tests,
+        const std::map<std::string, boost::shared_ptr<Admin::ContactVerification::Test> >& _tests,
         Optional<unsigned long long> _logd_request_id = Optional<unsigned long long>());
 }
 

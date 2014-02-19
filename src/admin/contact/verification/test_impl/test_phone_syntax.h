@@ -28,20 +28,47 @@
 
 #include "src/admin/contact/verification/test_impl/test_interface.h"
 
+#include <boost/assign/list_of.hpp>
+
 namespace Admin
 {
-    class ContactVerificationTestPhoneSyntax: public ContactVerificationTest {
+namespace ContactVerification
+{
+    FACTORY_MODULE_INIT_DECL(TestPhoneSyntax_init)
+
+    class TestPhoneSyntax
+    : public
+        Test,
+        test_auto_registration<TestPhoneSyntax>
+    {
             const boost::regex PHONE_PATTERN;
 
         public:
-            ContactVerificationTestPhoneSyntax()
+            TestPhoneSyntax()
                 // first draft of pattern - see ticket #9588
                 : PHONE_PATTERN ("^\\+[0-9]{1,3}\\.[0-9]{1,14}$") {}
 
-            virtual ContactVerificationTest::T_run_result run(long _history_id) const;
-            virtual std::string get_name() const { return "phone_syntax"; }
+            virtual T_run_result run(long _history_id) const;
+            static std::string registration_name() { return "phone_syntax"; }
+    };
+
+    template<> struct TestDataProvider<TestPhoneSyntax>
+    : TestDataProvider_common,
+      _inheritTestRegName<TestPhoneSyntax>
+    {
+        std::string phone_;
+
+        virtual void store_data(const Fred::InfoContactOutput& _data) {
+            if(_data.info_contact_data.telephone.isnull() == false) {
+                phone_ = static_cast<string>(_data.info_contact_data.telephone);
+            }
+        }
+
+        virtual vector<string> get_string_data() const {
+            return boost::assign::list_of(phone_);
+        };
     };
 }
-
+}
 
 #endif // #include guard end

@@ -26,14 +26,43 @@
 
 #include "src/admin/contact/verification/test_impl/test_interface.h"
 
+#include <boost/assign/list_of.hpp>
+
 namespace Admin
 {
-    class ContactVerificationTestEmailExists: public ContactVerificationTest {
+namespace ContactVerification
+{
+    FACTORY_MODULE_INIT_DECL(TestEmailExists_init)
+
+    class TestEmailExists
+    : public
+        Test,
+        test_auto_registration<TestEmailExists>
+    {
         public:
-            virtual ContactVerificationTest::T_run_result run(long _history_id) const;
-            virtual std::string get_name() const { return "email_host_existence"; }
+            virtual T_run_result run(long _history_id) const;
+            static std::string registration_name() { return "email_host_existence"; }
+    };
+
+    template<> struct TestDataProvider<TestEmailExists>
+    : TestDataProvider_common,
+      _inheritTestRegName<TestEmailExists>
+    {
+        std::string email_;
+
+        virtual void store_data(const Fred::InfoContactOutput& _data) {
+            if(_data.info_contact_data.email.isnull() == false) {
+                email_ = static_cast<string>(_data.info_contact_data.email);
+            }
+        }
+
+        virtual vector<string> get_string_data() const {
+            return boost::assign::list_of(email_);
+        };
+
+        static string registration_name() { return TestEmailExists::registration_name(); }
     };
 }
-
+}
 
 #endif // #include guard end

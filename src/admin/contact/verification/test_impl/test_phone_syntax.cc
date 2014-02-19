@@ -27,12 +27,15 @@
 #include <fredlib/contact.h>
 
 namespace Admin {
-    ContactVerificationTest::T_run_result ContactVerificationTestPhoneSyntax::run(long _history_id) const {
-        Fred::OperationContext ctx;
-        const Fred::InfoContactData& contact_data = Fred::HistoryInfoContactByHistoryid(_history_id).exec(ctx).info_contact_data;
+namespace ContactVerification {
 
-        std::string trimmed_telephone(static_cast<std::string>(contact_data.telephone));
-        boost::algorithm::trim(trimmed_telephone);
+    FACTORY_MODULE_INIT_DEFI(TestPhoneSyntax_init)
+
+    Test::T_run_result TestPhoneSyntax::run(long _history_id) const {
+        TestDataProvider<TestPhoneSyntax> data;
+        data.init_data(_history_id);
+
+        string trimmed_telephone =  boost::algorithm::trim_copy(static_cast<std::string>(data.phone_));
 
         if(trimmed_telephone.empty()) {
             return make_result(Fred::ContactTestStatus::SKIPPED, string("optional telephone is empty") );
@@ -48,4 +51,5 @@ namespace Admin {
 
         return make_result(Fred::ContactTestStatus::FAIL, string("invalid phone format") );
     }
+}
 }

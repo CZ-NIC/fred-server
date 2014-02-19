@@ -36,10 +36,20 @@
 
 #include <boost/shared_ptr.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
+#include <boost/algorithm/string/trim.hpp>
+#include <boost/assign/list_of.hpp>
 
 namespace Admin
 {
-    class ContactVerificationTestContactability: public ContactVerificationTest {
+namespace ContactVerification
+{
+    FACTORY_MODULE_INIT_DECL(TestContactability_init)
+
+    class TestContactability
+    : public
+        Test,
+        test_auto_registration<TestContactability>
+    {
         boost::shared_ptr<Fred::Mailer::Manager>    email_manager_;
         boost::shared_ptr<Fred::Document::Manager>  document_file_manager_;
         boost::shared_ptr<Fred::Messages::Manager>  letter_manager_;
@@ -76,20 +86,66 @@ namespace Admin
         ) const;
 
         public:
-            ContactVerificationTestContactability(
-                boost::shared_ptr<Fred::Mailer::Manager>    _email_manager,
-                boost::shared_ptr<Fred::Document::Manager>  _document_file_manager,
-                boost::shared_ptr<Fred::Messages::Manager>  _letter_manager
-            ) :
-                email_manager_(_email_manager),
-                document_file_manager_(_document_file_manager),
-                letter_manager_(_letter_manager)
-            { }
+            TestContactability& set_email_manager(boost::shared_ptr<Fred::Mailer::Manager> _email_manager) {
+                email_manager_ = _email_manager;
+                return *this;
+            }
 
-            virtual ContactVerificationTest::T_run_result run(long _history_id) const;
-            virtual std::string get_name() const { return "contactability"; }
+            TestContactability& set_document_file_manager(boost::shared_ptr<Fred::Document::Manager> _document_file_manager) {
+                document_file_manager_ = _document_file_manager;
+                return *this;
+            }
+
+            TestContactability& set_letter_manager(boost::shared_ptr<Fred::Messages::Manager> _letter_manager) {
+                letter_manager_ = _letter_manager;
+                return *this;
+            }
+
+            virtual T_run_result run(long _history_id) const;
+            static std::string registration_name() { return "contactability"; }
+    };
+
+    template<> struct TestDataProvider<TestContactability>
+    : TestDataProvider_common,
+      _inheritTestRegName<TestContactability>
+    {
+        std::string name_;
+        std::string email_;
+        std::string organization_;
+        std::string street1_;
+        std::string street2_;
+        std::string street3_;
+        std::string city_;
+        std::string stateorprovince_;
+        std::string postalcode_;
+        std::string country_;
+
+        virtual void store_data(const Fred::InfoContactOutput& _data) {
+            name_ = boost::algorithm::trim_copy(static_cast<std::string>(_data.info_contact_data.name));
+            email_ = boost::algorithm::trim_copy(static_cast<std::string>(_data.info_contact_data.email));
+            organization_ = boost::algorithm::trim_copy(static_cast<std::string>(_data.info_contact_data.organization));
+            street1_ = boost::algorithm::trim_copy(static_cast<std::string>(_data.info_contact_data.street1));
+            street2_ = boost::algorithm::trim_copy(static_cast<std::string>(_data.info_contact_data.street2));
+            street3_ = boost::algorithm::trim_copy(static_cast<std::string>(_data.info_contact_data.street3));
+            city_ = boost::algorithm::trim_copy(static_cast<std::string>(_data.info_contact_data.city));
+            stateorprovince_ = boost::algorithm::trim_copy(static_cast<std::string>(_data.info_contact_data.stateorprovince));
+            postalcode_ = boost::algorithm::trim_copy(static_cast<std::string>(_data.info_contact_data.postalcode));
+            country_ = boost::algorithm::trim_copy(static_cast<std::string>(_data.info_contact_data.country));
+        }
+
+        virtual vector<string> get_string_data() const {
+            return boost::assign::list_of
+                (name_)
+                (email_)
+                (organization_)
+                (street1_)(street2_)(street3_)
+                (city_)
+                (stateorprovince_)
+                (postalcode_)
+                (country_);
+        };
     };
 }
-
+}
 
 #endif // #include guard end

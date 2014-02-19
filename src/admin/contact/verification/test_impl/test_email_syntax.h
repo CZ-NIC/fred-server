@@ -25,16 +25,25 @@
 #define CONTACT_VERIFICATION_TEST_EMAIL_SYNTAX_11637813419_
 
 #include <boost/regex.hpp>
+#include <boost/assign/list_of.hpp>
 
 #include "src/admin/contact/verification/test_impl/test_interface.h"
 
 namespace Admin
 {
-    class ContactVerificationTestEmailSyntax: public ContactVerificationTest {
+namespace ContactVerification
+{
+    FACTORY_MODULE_INIT_DECL(TestEmailSyntax_init)
+
+    class TestEmailSyntax
+    : public
+        Test,
+        test_auto_registration<TestEmailSyntax>
+    {
             const boost::regex EMAIL_PATTERN;
 
         public:
-            ContactVerificationTestEmailSyntax()
+            TestEmailSyntax()
             /* legacy compatibility
              * old e-mail data in register can be multiple e-mail addresses separated by commas ","
              */
@@ -53,10 +62,29 @@ namespace Admin
                 boost::regex::icase
             ) {}
 
-            virtual ContactVerificationTest::T_run_result run(long _history_id) const;
-            virtual std::string get_name() const { return "email_syntax"; }
+            virtual T_run_result run(long _history_id) const;
+            static std::string registration_name() { return "email_syntax"; }
+    };
+
+    template<> struct TestDataProvider<TestEmailSyntax>
+    : TestDataProvider_common,
+      _inheritTestRegName<TestEmailSyntax>
+    {
+        std::string email_;
+
+        virtual void store_data(const Fred::InfoContactOutput& _data) {
+            if(_data.info_contact_data.email.isnull() == false) {
+                email_ = static_cast<string>(_data.info_contact_data.email);
+            }
+        }
+
+        virtual vector<string> get_string_data() const {
+            return boost::assign::list_of(email_);
+        };
+
+        static string registration_name() { return TestEmailSyntax::registration_name(); }
     };
 }
-
+}
 
 #endif // #include guard end

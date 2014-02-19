@@ -30,6 +30,9 @@
 #include <vector>
 #include <utility>
 
+#include <boost/algorithm/string/trim.hpp>
+#include <boost/assign/list_of.hpp>
+
 #include <libxml/parser.h>
 #include <libxml/xpath.h>
 #include <libxml/xpathInternals.h>
@@ -37,7 +40,15 @@
 
 namespace Admin
 {
-    class ContactVerificationTestCzAddress: public ContactVerificationTest {
+namespace ContactVerification
+{
+    FACTORY_MODULE_INIT_DECL(TestCzAddress_init)
+
+    class TestCzAddress
+    : public
+        Test,
+        test_auto_registration<TestCzAddress>
+    {
         private:
             enum address_part {postal_code, city, street, house_number};
         public:
@@ -48,36 +59,63 @@ namespace Admin
             xmlDocPtr doc_;
             xmlXPathContextPtr xpathCtx_;
 
-            const std::string street_delimiters_;
-            const std::string street_shortened_word_signs_;
-            const std::string city_delimiters_;
-            const std::string city_shortened_word_signs_;
+            static const std::string street_delimiters_;
+            static const std::string street_shortened_word_signs_;
+            static const std::string city_delimiters_;
+            static const std::string city_shortened_word_signs_;
 
             bool is_address_valid(
-                const ContactVerificationTestCzAddress::T_street_data& street,
-                const ContactVerificationTestCzAddress::T_words_shortened& city,
+                const TestCzAddress::T_street_data& street,
+                const TestCzAddress::T_words_shortened& city,
                 const string& postal_code) const;
 
             std::string diagnose_problem(
-                const ContactVerificationTestCzAddress::T_street_data& street,
-                const ContactVerificationTestCzAddress::T_words_shortened& city,
+                const TestCzAddress::T_street_data& street,
+                const TestCzAddress::T_words_shortened& city,
                 const string& postal_code) const;
 
             std::vector<std::string> generate_xpath_queries(
-                ContactVerificationTestCzAddress::T_street_data street,
-                ContactVerificationTestCzAddress::T_words_shortened city,
+                TestCzAddress::T_street_data street,
+                TestCzAddress::T_words_shortened city,
                 string postal_code,
                 Optional<address_part> to_ommit = Optional<address_part>()) const;
 
 
         public:
-            ContactVerificationTestCzAddress(const std::string& _mvcr_address_xml_filename);
-            ~ContactVerificationTestCzAddress();
+            TestCzAddress& set_mvcr_address_xml_filename(const std::string& _mvcr_address_xml_filename);
+            ~TestCzAddress();
 
-            virtual ContactVerificationTest::T_run_result run(long _history_id) const;
-            virtual std::string get_name() const { return "cz_address_existence"; }
+            virtual T_run_result run(long _history_id) const;
+            static std::string registration_name() { return "cz_address_existence"; }
+    };
+
+    template<> struct TestDataProvider<TestCzAddress>
+    : TestDataProvider_common,
+      _inheritTestRegName<TestCzAddress>
+    {
+        std::string street1_;
+        std::string city_;
+        std::string postalcode_;
+        std::string country_;
+
+        virtual void store_data(const Fred::InfoContactOutput& _data) {
+            street1_ = boost::algorithm::trim_copy(static_cast<std::string>(_data.info_contact_data.street1));
+            city_ = boost::algorithm::trim_copy(static_cast<std::string>(_data.info_contact_data.city));
+            postalcode_ = boost::algorithm::trim_copy(static_cast<std::string>(_data.info_contact_data.postalcode));
+            country_ = boost::algorithm::trim_copy(static_cast<std::string>(_data.info_contact_data.country));
+        }
+
+        virtual vector<string> get_string_data() const {
+            return boost::assign::list_of
+                (street1_)
+                (city_)
+                (postalcode_)
+                (country_);
+        };
+
+        static string registration_name() { return TestCzAddress::registration_name(); }
     };
 }
-
+}
 
 #endif // #include guard end

@@ -30,18 +30,18 @@
 #include <resolv.h>
 
 namespace Admin {
-    ContactVerificationTest::T_run_result ContactVerificationTestEmailExists::run(long _history_id) const {
+namespace ContactVerification {
+
+    FACTORY_MODULE_INIT_DEFI(TestEmailExists_init)
+
+    Test::T_run_result TestEmailExists::run(long _history_id) const {
         using std::string;
         using std::vector;
 
-        Fred::OperationContext ctx;
-        const Fred::InfoContactData& contact_data = Fred::HistoryInfoContactByHistoryid(_history_id).exec(ctx).info_contact_data;
+        TestDataProvider<TestEmailExists> data;
+        data.init_data(_history_id);
 
-        if(contact_data.email.isnull()) {
-            return make_result( Fred::ContactTestStatus::FAIL, string("missing email") );
-        }
-
-        std::string email = boost::trim_copy(static_cast<std::string>(contact_data.email));
+        std::string email = boost::trim_copy(static_cast<std::string>(data.email_));
 
         if(email.length() == 0) {
             return make_result( Fred::ContactTestStatus::FAIL, string("empty email") );
@@ -92,4 +92,5 @@ namespace Admin {
 
         return make_result( Fred::ContactTestStatus::FAIL, string("hostname in email couldn't be resolved") );
     }
+}
 }
