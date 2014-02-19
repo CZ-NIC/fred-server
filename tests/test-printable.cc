@@ -293,7 +293,7 @@ BOOST_AUTO_TEST_CASE(info_domain_history_output)
     id.fqdn = "test-fred.cz";
     id.creation_time = boost::posix_time::microsec_clock::universal_time();
     id.delete_time = boost::posix_time::microsec_clock::universal_time();
-    id.keyset_handle=Nullable<std::string>("TEST-KEYSET");
+    id.keyset=Nullable<Fred::ObjectIdHandlePair>(Fred::ObjectIdHandlePair(1,"TEST-KEYSET"));
 
     Fred::InfoDomainOutput ih;
     ih.history_valid_from = boost::posix_time::microsec_clock::universal_time();

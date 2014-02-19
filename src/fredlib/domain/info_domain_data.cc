@@ -56,7 +56,7 @@ namespace Fred
         (std::make_pair("fqdn",fqdn))
         (std::make_pair("registrant",registrant.to_string()))
         (std::make_pair("nsset",nsset.print_quoted()))
-        (std::make_pair("keyset_handle",keyset_handle.print_quoted()))
+        (std::make_pair("keyset",keyset.print_quoted()))
         (std::make_pair("sponsoring_registrar_handle",sponsoring_registrar_handle))
         (std::make_pair("create_registrar_handle",create_registrar_handle))
         (std::make_pair("update_registrar_handle",update_registrar_handle.print_quoted()))

@@ -264,8 +264,11 @@ namespace Fred
                     static_cast<unsigned long long>(query_result[i][11]),//nsset id
                     static_cast<std::string>(query_result[i][12])));//nobr.name
 
-            info_domain_output.info_domain_data.keyset_handle = query_result[i][14].isnull() ? Nullable<std::string>()
-            : Nullable<std::string> (static_cast<std::string>(query_result[i][14]));//kobr.name
+            info_domain_output.info_domain_data.keyset =(query_result[i][13].isnull() || query_result[i][14].isnull())
+                ? Nullable<Fred::ObjectIdHandlePair>()
+                : Nullable<Fred::ObjectIdHandlePair> (Fred::ObjectIdHandlePair(
+                    static_cast<unsigned long long>(query_result[i][13]),//keyset id
+                    static_cast<std::string>(query_result[i][14])));//kobr.name
 
             info_domain_output.info_domain_data.sponsoring_registrar_handle = static_cast<std::string>(query_result[i][16]);//clr.handle
 

@@ -57,7 +57,7 @@ namespace Fred
 
         (std::make_pair("registrant", registrant.print_quoted()))
         (std::make_pair("nsset", nsset.print_quoted()))
-        (std::make_pair("keyset_handle", keyset_handle.print_quoted()))
+        (std::make_pair("keyset_handle", keyset.print_quoted()))
         (std::make_pair("expiration_date", expiration_date.print_quoted()))
         (std::make_pair("admin_contacts", admin_contacts.print_quoted()))
         (std::make_pair("enum_domain_validation", enum_domain_validation.print_quoted()))
@@ -86,7 +86,7 @@ namespace Fred
 
             || registrant.isset()
             || nsset.isset()
-            || keyset_handle.isset()
+            || keyset.isset()
             || expiration_date.isset()
             || admin_contacts.isset()
             || enum_domain_validation.isset()
@@ -179,9 +179,9 @@ namespace Fred
             diff.nsset = std::make_pair(first.nsset,second.nsset);
         }
 
-        if(!Util::is_equal_upper(first.keyset_handle, second.keyset_handle))
+        if(!Util::is_equal(first.keyset, second.keyset))
         {
-            diff.keyset_handle = std::make_pair(first.keyset_handle,second.keyset_handle);
+            diff.keyset = std::make_pair(first.keyset,second.keyset);
         }
 
         if(first.expiration_date != second.expiration_date)

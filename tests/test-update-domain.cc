@@ -58,6 +58,7 @@
 #include "src/fredlib/contact/create_contact.h"
 #include "src/fredlib/nsset/create_nsset.h"
 #include "src/fredlib/keyset/create_keyset.h"
+#include "src/fredlib/keyset/info_keyset.h"
 #include "src/fredlib/domain/create_domain.h"
 #include "src/fredlib/domain/info_domain.h"
 #include "src/fredlib/opexception.h"
@@ -813,7 +814,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     BOOST_CHECK(registrar_handle == std::string(info_data_14.info_domain_data.update_registrar_handle.get_value()));
 
     //set keyset
-    info_data_13_with_changes.info_domain_data.keyset_handle = Nullable<std::string>();
+    info_data_13_with_changes.info_domain_data.keyset = Nullable<Fred::ObjectIdHandlePair>();
 
     //updated update_time
     info_data_13_with_changes.info_domain_data.update_time = info_data_14.info_domain_data.update_time;
@@ -860,7 +861,9 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     BOOST_CHECK(registrar_handle == std::string(info_data_15.info_domain_data.update_registrar_handle.get_value()));
 
     //set keyset
-    info_data_14_with_changes.info_domain_data.keyset_handle = test_keyset_handle;
+    Fred::InfoKeysetOutput test_keyset_info = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
+    info_data_14_with_changes.info_domain_data.keyset = Nullable<Fred::ObjectIdHandlePair>(
+        Fred::ObjectIdHandlePair(test_keyset_info.info_keyset_data.id, test_keyset_info.info_keyset_data.handle));
 
     //updated update_time
     info_data_14_with_changes.info_domain_data.update_time = info_data_15.info_domain_data.update_time;
@@ -908,7 +911,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     BOOST_CHECK(registrar_handle == std::string(info_data_16.info_domain_data.update_registrar_handle.get_value()));
 
     //set keyset
-    info_data_15_with_changes.info_domain_data.keyset_handle = Nullable<std::string>();
+    info_data_15_with_changes.info_domain_data.keyset = Nullable<Fred::ObjectIdHandlePair>();
 
     //updated update_time
     info_data_15_with_changes.info_domain_data.update_time = info_data_16.info_domain_data.update_time;
@@ -957,7 +960,8 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     BOOST_CHECK(registrar_handle == std::string(info_data_17.info_domain_data.update_registrar_handle.get_value()));
 
     //set keyset
-    info_data_16_with_changes.info_domain_data.keyset_handle = test_keyset_handle;
+    info_data_16_with_changes.info_domain_data.keyset = Nullable<Fred::ObjectIdHandlePair>(
+            Fred::ObjectIdHandlePair(test_keyset_info.info_keyset_data.id, test_keyset_info.info_keyset_data.handle));
 
     //updated update_time
     info_data_16_with_changes.info_domain_data.update_time = info_data_17.info_domain_data.update_time;
