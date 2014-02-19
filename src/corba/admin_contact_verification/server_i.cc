@@ -28,6 +28,7 @@
 
 #include <fredlib/contact.h>
 #include "src/admin/contact/verification/enqueue_check.h"
+#include "src/admin/contact/verification/test_impl/test_interface.h"
 #include "src/fredlib/contact/verification/update_check.h"
 #include "src/fredlib/contact/verification/info_check.h"
 #include "src/fredlib/contact/verification/list_checks.h"
@@ -78,10 +79,24 @@ namespace Corba {
             test_it != in.tests.end();
             ++test_it, ++test_seq_i
         ) {
+            // #10556
+            // TODO
+            // pokus
+            std::vector<std::string> tested_values =
+                Admin::ContactVerification::test_data_provider_factory::instance_ref()
+                    .create_sh_ptr(test_it->test_handle)
+                    ->init_data(in.contact_history_id)
+                        .get_string_data();
 
-            // TODO pridelat diffovatko na data kontaktu
-            // TODO vyresit jaka data kontaktu ktery test kontroluje
-            // TODO vyresit jake casy jdou ven
+            unsigned out_index = 0;
+            out->test_list[test_seq_i].tested_values_changes.length(tested_values.size());
+            for(std::vector<std::string>::const_iterator it = tested_values.begin();
+                it != tested_values.end();
+                ++it, ++out_index
+            ) {
+                out->test_list[test_seq_i].tested_values_changes[out_index].old_value
+                    = Corba::wrap_string(*it);
+            }
 
             out->test_list[test_seq_i].test_handle = Corba::wrap_string(test_it->test_handle);
             out->test_list[test_seq_i].created = Corba::wrap_time(test_it->local_create_time);

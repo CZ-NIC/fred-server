@@ -26,19 +26,27 @@
 
 #include <fredlib/contact.h>
 
+#include <boost/algorithm/string/trim.hpp>
+
 namespace Admin {
-    ContactVerificationTest::T_run_result ContactVerificationTestEmailSyntax::run(long _history_id) const {
-        Fred::OperationContext ctx;
-        const Fred::InfoContactData& contact_data = Fred::HistoryInfoContactByHistoryid(_history_id).exec(ctx).info_contact_data;
+namespace ContactVerification {
+
+    FACTORY_MODULE_INIT_DEFI(TestEmailSyntax_init)
+
+    Test::T_run_result TestEmailSyntax::run(long _history_id) const {
+        TestDataProvider<TestEmailSyntax> data;
+        data.init_data(_history_id);
+
+        std::string email = boost::trim_copy(static_cast<std::string>(data.email_));
 
         if ( boost::regex_match(
-                // if Nullable email is NULL then this casts returns empty string
-                static_cast<std::string>(contact_data.email),
-                EMAIL_PATTERN )
+            email,
+            EMAIL_PATTERN )
         ) {
             return make_result(Fred::ContactTestStatus::OK );
         }
 
         return make_result(Fred::ContactTestStatus::FAIL, string("invalid e-mail format") );
     }
+}
 }

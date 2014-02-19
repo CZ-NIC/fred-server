@@ -26,24 +26,25 @@
 #include <utility>
 
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/trim.hpp>
 
 namespace Admin {
+namespace ContactVerification {
 
-    typedef ContactVerificationTestContactability Test;
+    FACTORY_MODULE_INIT_DEFI(TestContactability_init)
 
-    const std::string                    Test::letter_message_type_("admin_contact_verification_contact_update_call");
-    const unsigned                       Test::letter_file_type_(8); // admin_contact_verification_contact_update_call
-    const std::string                    Test::letter_comm_type_("registered_letter");
-    const Fred::Document::GenerationType Test::letter_doc_type_(Fred::Document::GT_ADMIN_CONTACT_VERIFICATION_CONTACT_UPDATE_CALL);
-    const std::string                    Test::email_template_name_("contact_update_call");
-    const boost::gregorian::days         Test::deadline_interval_(15);
+    const std::string                    TestContactability::letter_message_type_("admin_contact_verification_contact_update_call");
+    const unsigned                       TestContactability::letter_file_type_(8); // admin_contact_verification_contact_update_call
+    const std::string                    TestContactability::letter_comm_type_("registered_letter");
+    const Fred::Document::GenerationType TestContactability::letter_doc_type_(Fred::Document::GT_ADMIN_CONTACT_VERIFICATION_CONTACT_UPDATE_CALL);
+    const std::string                    TestContactability::email_template_name_("contact_update_call");
+    const boost::gregorian::days         TestContactability::deadline_interval_(15);
 
     static inline string xml_cdata(const string& _input) {
         return "<![CDATA[" + _input + "]]>";
     }
 
-    unsigned long long ContactVerificationTestContactability::generate_pdf(
+    unsigned long long TestContactability::generate_pdf(
         const std::string&                      _contact_handle,
         unsigned long                           _contact_history_id,
         const std::string&                      _contact_email,
@@ -97,30 +98,34 @@ namespace Admin {
                 "");
     }
 
-    ContactVerificationTest::T_run_result ContactVerificationTestContactability::run(long _history_id) const {
-        Fred::OperationContext ctx;
-        const Fred::InfoContactData& contact_data = Fred::HistoryInfoContactByHistoryid(_history_id).exec(ctx).info_contact_data;
-        std::string contact_email = boost::algorithm::trim_copy(static_cast<std::string>(contact_data.email));
+    Test::T_run_result TestContactability::run(long _history_id) const {
+        TestDataProvider<TestContactability> data;
+        data.init_data(_history_id);
 
         Fred::Messages::PostalAddress address;
-        address.name    = (contact_data.name.isnull())              ? "" : static_cast<std::string>(contact_data.name);
-        address.org     = (contact_data.organization.isnull())      ? "" : static_cast<std::string>(contact_data.organization);
-        address.street1 = (contact_data.street1.isnull())           ? "" : static_cast<std::string>(contact_data.street1);
-        address.street2 = (contact_data.street2.isnull())           ? "" : static_cast<std::string>(contact_data.street2);
-        address.street3 = (contact_data.street3.isnull())           ? "" : static_cast<std::string>(contact_data.street3);
-        address.city    = (contact_data.city.isnull())              ? "" : static_cast<std::string>(contact_data.city);
-        address.state   = (contact_data.stateorprovince.isnull())   ? "" : static_cast<std::string>(contact_data.stateorprovince);
-        address.code    = (contact_data.postalcode.isnull())        ? "" : static_cast<std::string>(contact_data.postalcode);
-        address.country = (contact_data.country.isnull())           ? "" : static_cast<std::string>(contact_data.country);
+        address.name    = data.name_;
+        address.org     = data.organization_;
+        address.street1 = data.street1_;
+        address.street2 = data.street2_;
+        address.street3 = data.street3_;
+        address.city    = data.city_;
+        address.state   = data.stateorprovince_;
+        address.code    = data.postalcode_;
+        address.country = data.country_;
 
 
         unsigned long long generated_pdf_id;
+
+        Fred::OperationContext ctx;
+        Fred::InfoContactData contact_data = Fred::HistoryInfoContactByHistoryid(_history_id)
+            .exec(ctx)
+                .info_contact_data;
 
         try {
             generated_pdf_id = generate_pdf(
                 contact_data.handle,
                 contact_data.historyid,
-                contact_email,
+                data.email_,
                 address
                 );
         } catch(...) {
@@ -137,7 +142,7 @@ namespace Admin {
             mail_ids.insert(
                 send_email(
                     contact_data.handle,
-                    contact_email,
+                    data.email_,
                     generated_pdf_id)
             );
         } catch(...) {
@@ -166,7 +171,7 @@ namespace Admin {
         }
     }
 
-    unsigned long long ContactVerificationTestContactability::send_email(
+    unsigned long long TestContactability::send_email(
         const std::string&          _contact_handle,
         const std::string&          _contact_email,
         unsigned long long          _attached_pdf_id
@@ -191,7 +196,7 @@ namespace Admin {
         );
     }
 
-    unsigned long long ContactVerificationTestContactability::send_letter(
+    unsigned long long TestContactability::send_letter(
         unsigned long                           _contact_id,
         const std::string&                      _contact_handle,
         unsigned long                           _contact_history_id,
@@ -209,4 +214,5 @@ namespace Admin {
                 _contact_history_id,
                 letter_comm_type_.c_str() );
     }
+}
 }

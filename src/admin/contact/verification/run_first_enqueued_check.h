@@ -55,7 +55,7 @@ namespace Admin {
     Optional<std::string> run_first_enqueued_check(
         const std::map<
             std::string,
-            boost::shared_ptr<Admin::ContactVerificationTest>
+            boost::shared_ptr<Admin::ContactVerification::Test>
         >&                              _tests,
         Optional<unsigned long long>    _logd_request_id);
 

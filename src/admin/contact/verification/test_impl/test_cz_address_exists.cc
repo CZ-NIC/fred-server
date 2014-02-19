@@ -39,28 +39,31 @@
 #include <boost/assign/list_of.hpp>
 
 namespace Admin {
+namespace ContactVerification {
+
+    FACTORY_MODULE_INIT_DEFI(TestCzAddress_init)
+
     static void erase_chars(std::string& _input, const std::vector<char>& _chars_to_erase);
 
-    static ContactVerificationTestCzAddress::T_words_shortened parse_multiword(const std::string& _registry_data, const std::string& _delimiters, const std::string& _shortening_delimiters);
-    static ContactVerificationTestCzAddress::T_street_data parse_street1(const std::string& _street1, const std::string& _delimiters, const std::string& _shortening_delimiters);
+    static TestCzAddress::T_words_shortened parse_multiword(const std::string& _registry_data, const std::string& _delimiters, const std::string& _shortening_delimiters);
+    static TestCzAddress::T_street_data parse_street1(const std::string& _street1, const std::string& _delimiters, const std::string& _shortening_delimiters);
     static std::string parse_postal_code(const std::string& _postalcode);
 
-    static ContactVerificationTestCzAddress::T_words_shortened rtrim_numbers(const ContactVerificationTestCzAddress::T_words_shortened& _input, unsigned _nondigit_chars_tolerance_per_word = 0);
+    static TestCzAddress::T_words_shortened rtrim_numbers(const TestCzAddress::T_words_shortened& _input, unsigned _nondigit_chars_tolerance_per_word = 0);
 
     static std::string xpath_normalize_chars(const std::string& _input);
-    static std::string xpath_multiword_match(ContactVerificationTestCzAddress::T_words_shortened _shortened_words, const std::string& _delimiters, const std::string& _xpath_lhs);
-    static std::string xpath_city_match(ContactVerificationTestCzAddress::T_words_shortened _shortened_words, const std::string& _delimiters, const std::string& _xpath_lhs);
-    static std::string xpath_district_match(ContactVerificationTestCzAddress::T_words_shortened _shortened_words, const std::string& _delimiters, const std::string& _xpath_lhs);
+    static std::string xpath_multiword_match(TestCzAddress::T_words_shortened _shortened_words, const std::string& _delimiters, const std::string& _xpath_lhs);
+    static std::string xpath_city_match(TestCzAddress::T_words_shortened _shortened_words, const std::string& _delimiters, const std::string& _xpath_lhs);
+    static std::string xpath_district_match(TestCzAddress::T_words_shortened _shortened_words, const std::string& _delimiters, const std::string& _xpath_lhs);
     static std::string xpath_postal_code_match(const std::string& _postal_code, const std::string& _xpath_min, const std::string& _xpath_max);
     static std::string xpath_house_number_match(std::vector<std::string> _numbers, std::vector<std::string> _xpath_lhs);
 
-    ContactVerificationTestCzAddress::ContactVerificationTestCzAddress(const std::string& _mvcr_address_xml_filename)
-    :
-        street_delimiters_("\\/-,()| \t\n\r"),
-        street_shortened_word_signs_("."),
-        city_delimiters_("-()\\, \t\n\r"),
-        city_shortened_word_signs_("./")
-    {
+    const std::string TestCzAddress::street_delimiters_("\\/-,()| \t\n\r");
+    const std::string TestCzAddress::street_shortened_word_signs_(".");
+    const std::string TestCzAddress::city_delimiters_("-()\\, \t\n\r");
+    const std::string TestCzAddress::city_shortened_word_signs_("./");
+
+    TestCzAddress& TestCzAddress::set_mvcr_address_xml_filename(const std::string& _mvcr_address_xml_filename) {
         /* Load XML document */
         doc_ = xmlParseFile(_mvcr_address_xml_filename.c_str());
         if (doc_ == NULL) {
@@ -73,22 +76,23 @@ namespace Admin {
             xmlFreeDoc(doc_);
             throw Fred::InternalError("Error: unable to create new XPath context");
         }
+
+        return *this;
     }
 
-    ContactVerificationTestCzAddress::~ContactVerificationTestCzAddress() {
+    TestCzAddress::~TestCzAddress() {
         xmlXPathFreeContext(xpathCtx_);
         xmlFreeDoc(doc_);
     }
-
-    ContactVerificationTest::T_run_result ContactVerificationTestCzAddress::run(long _history_id) const {
+    Test::T_run_result TestCzAddress::run(long _history_id) const {
         using std::string;
         using std::vector;
 
-        Fred::OperationContext ctx;
-        const Fred::InfoContactData& contact_data = Fred::HistoryInfoContactByHistoryid(_history_id).exec(ctx).info_contact_data;
+        TestDataProvider<TestCzAddress> data;
+        data.init_data(_history_id);
 
         // can use boost to_lower because in there should be no utf8 chars in country_code
-        string country =  boost::algorithm::to_lower_copy(boost::algorithm::trim_copy(static_cast<std::string>(contact_data.country)));
+        string country =  boost::algorithm::to_lower_copy(data.country_);
 
         if(country != "cz") {
             return T_run_result (Fred::ContactTestStatus::SKIPPED, string("this test is intended for CZ addresses only") );
@@ -100,7 +104,7 @@ namespace Admin {
         string postal_code;
 
         try {
-            string normalized_street1(static_cast<string>(contact_data.street1));
+            string normalized_street1(data.street1_);
             boost::algorithm::trim(normalized_street1);
             // TODO erase č.p. variants
             street = parse_street1(
@@ -109,10 +113,10 @@ namespace Admin {
                 street_shortened_word_signs_);
             street.first = rtrim_numbers(street.first, 2);
 
-            string normalized_city(static_cast<string>(contact_data.city));
+            string normalized_city(data.city_);
             boost::algorithm::trim(normalized_city);
             // TODO spise vyhodit jen 2ciferna cisla
-            Admin::erase_chars(
+            erase_chars(
                 normalized_city,
                 Util::vector_of<char>('0')('1')('2')('3')('4')('5')('6')('7')('8')('9')
             );
@@ -125,7 +129,7 @@ namespace Admin {
             if(city.size() < 1) {
                 return T_run_result (Fred::ContactTestStatus::FAIL, string("city is missing content") );
             }
-            postal_code = parse_postal_code(static_cast<string>(contact_data.postalcode));
+            postal_code = parse_postal_code(static_cast<string>(data.postalcode_));
         } catch (...) {
             return T_run_result (Fred::ContactTestStatus::FAIL, string("exception during parsing") );
         }
@@ -150,9 +154,9 @@ namespace Admin {
         return T_run_result (Fred::ContactTestStatus::FAIL, error_msg );
     }
 
-    bool ContactVerificationTestCzAddress::is_address_valid(
-        const ContactVerificationTestCzAddress::T_street_data& street,
-        const ContactVerificationTestCzAddress::T_words_shortened& city,
+    bool TestCzAddress::is_address_valid(
+        const TestCzAddress::T_street_data& street,
+        const TestCzAddress::T_words_shortened& city,
         const string& postal_code
     ) const {
         using std::string;
@@ -188,9 +192,9 @@ namespace Admin {
         return false;
     }
 
-    std::string ContactVerificationTestCzAddress::diagnose_problem(
-        const ContactVerificationTestCzAddress::T_street_data& _street,
-        const ContactVerificationTestCzAddress::T_words_shortened& _city,
+    std::string TestCzAddress::diagnose_problem(
+        const TestCzAddress::T_street_data& _street,
+        const TestCzAddress::T_words_shortened& _city,
         const string& _postal_code
     ) const {
         using std::string;
@@ -258,9 +262,9 @@ namespace Admin {
         return std::string();
     }
 
-    std::vector<std::string> ContactVerificationTestCzAddress::generate_xpath_queries(
-        ContactVerificationTestCzAddress::T_street_data _street,
-        ContactVerificationTestCzAddress::T_words_shortened _city,
+    std::vector<std::string> TestCzAddress::generate_xpath_queries(
+        TestCzAddress::T_street_data _street,
+        TestCzAddress::T_words_shortened _city,
         string _postal_code,
         Optional<address_part> _to_ommit
     ) const {
@@ -364,10 +368,10 @@ namespace Admin {
 
     /* splitting input _registry_data into parts containing words with the last word being shortened
      */
-    ContactVerificationTestCzAddress::T_words_shortened parse_multiword(const std::string& _registry_data, const std::string& _delimiters, const std::string& _shortening_delimiters) {
+    TestCzAddress::T_words_shortened parse_multiword(const std::string& _registry_data, const std::string& _delimiters, const std::string& _shortening_delimiters) {
         using std::string;
         using std::vector;
-        ContactVerificationTestCzAddress::T_words_shortened result;
+        TestCzAddress::T_words_shortened result;
 
         bool word_has_content = false;
         string::const_iterator word_begin = _registry_data.begin();
@@ -401,11 +405,11 @@ namespace Admin {
         return result;
     }
 
-    ContactVerificationTestCzAddress::T_street_data parse_street1(const std::string& _street1, const std::string& _delimiters, const std::string& _shortening_delimiters) {
+    TestCzAddress::T_street_data parse_street1(const std::string& _street1, const std::string& _delimiters, const std::string& _shortening_delimiters) {
         using std::vector;
         using std::string;
 
-        std::pair<ContactVerificationTestCzAddress::T_words_shortened, std::vector<std::string> > result;
+        std::pair<TestCzAddress::T_words_shortened, std::vector<std::string> > result;
 
         result.first = parse_multiword(_street1, _delimiters, _shortening_delimiters);
 
@@ -457,15 +461,15 @@ namespace Admin {
         return result;
     }
 
-    ContactVerificationTestCzAddress::T_words_shortened rtrim_numbers(const ContactVerificationTestCzAddress::T_words_shortened& _input, unsigned _nondigit_chars_tolerance_per_word) {
+    TestCzAddress::T_words_shortened rtrim_numbers(const TestCzAddress::T_words_shortened& _input, unsigned _nondigit_chars_tolerance_per_word) {
 
-        ContactVerificationTestCzAddress::T_words_shortened result;
+        TestCzAddress::T_words_shortened result;
         unsigned nondigit_chars = 0;
         bool trimming_finished = false;
         bool has_digit = false;
 
         // walk throught words
-        for(ContactVerificationTestCzAddress::T_words_shortened::const_reverse_iterator it = _input.rbegin();
+        for(TestCzAddress::T_words_shortened::const_reverse_iterator it = _input.rbegin();
             it != _input.rend();
             ++it
         ) {
@@ -503,7 +507,7 @@ namespace Admin {
         return result;
     }
 
-    std::string xpath_multiword_match(ContactVerificationTestCzAddress::T_words_shortened _shortened_words, const std::string& _delimiters, const std::string& _xpath_lhs) {
+    std::string xpath_multiword_match(TestCzAddress::T_words_shortened _shortened_words, const std::string& _delimiters, const std::string& _xpath_lhs) {
         std::vector<std::string> result;
 
         std::string get_nth_word_pre;
@@ -524,12 +528,12 @@ namespace Admin {
                 + translate_delimiters_suff
             +")";
 
-        for(ContactVerificationTestCzAddress::T_words_shortened::iterator it = _shortened_words.begin();
+        for(TestCzAddress::T_words_shortened::iterator it = _shortened_words.begin();
             it != _shortened_words.end();
             ++it
         ) {
             nth_word = get_nth_word_pre + lhs_processed + get_nth_word_suff;
-            ContactVerificationTestCzAddress::T_words_shortened::iterator it_test = it;
+            TestCzAddress::T_words_shortened::iterator it_test = it;
             it_test++;
 
             // first word in string
@@ -579,7 +583,7 @@ namespace Admin {
     }
 
     std::string xpath_city_match(
-        ContactVerificationTestCzAddress::T_words_shortened _shortened_words,
+        TestCzAddress::T_words_shortened _shortened_words,
         const std::string& _delimiters,
         const std::string& _xpath_lhs
     ) {
@@ -591,7 +595,7 @@ namespace Admin {
             );
     }
 
-    std::string xpath_district_match(ContactVerificationTestCzAddress::T_words_shortened _shortened_words, const std::string& _delimiters, const std::string& _xpath_lhs) {
+    std::string xpath_district_match(TestCzAddress::T_words_shortened _shortened_words, const std::string& _delimiters, const std::string& _xpath_lhs) {
         std::vector<std::string> result;
 
         do {
@@ -622,4 +626,5 @@ namespace Admin {
         }
         return boost::join(result, " or ");
     }
+}
 }

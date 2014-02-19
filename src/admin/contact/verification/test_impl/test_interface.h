@@ -27,15 +27,21 @@
 #include <string>
 #include <set>
 #include <boost/tuple/tuple.hpp>
+#include <boost/lexical_cast.hpp>
 #include "util/optional_value.h"
+#include "util/factory.h"
+
+#include <fredlib/contact.h>
 
 namespace Admin
 {
+namespace ContactVerification{
     using std::string;
+    using std::vector;
     using std::set;
     using boost::tuple;
 
-    class ContactVerificationTest {
+    class Test {
         public:
             typedef tuple<
                 string,                 // status
@@ -59,9 +65,48 @@ namespace Admin
              * @return final status of the test, optional error message and optional related states and messages
              */
             virtual T_run_result run(long _history_id) const = 0;
-            virtual string get_name() const = 0;
-            virtual ~ContactVerificationTest() {};
+            virtual ~Test() {};
+            static string registration_name();
     };
+
+    struct TestDataProvider_intf {
+        virtual TestDataProvider_intf& init_data(unsigned long long _contact_history_id) = 0;
+        virtual vector<string> get_string_data() const = 0;
+        virtual ~TestDataProvider_intf() {};
+    };
+
+    template<typename Test> struct _inheritTestRegName {
+        static string registration_name() { return Test::registration_name(); }
+    };
+
+    struct TestDataProvider_common : public TestDataProvider_intf {
+        private:
+            virtual Fred::InfoContactOutput get_data(unsigned long long _contact_history_id) {
+                Fred::OperationContext ctx;
+
+                return Fred::HistoryInfoContactByHistoryid(_contact_history_id)
+                    .exec(ctx);
+            }
+            virtual void store_data(const Fred::InfoContactOutput& _data) = 0;
+        public:
+            virtual TestDataProvider_intf& init_data(unsigned long long _contact_history_id) {
+                this->store_data(this->get_data(_contact_history_id));
+
+                return *this;
+            }
+    };
+
+    template<typename Test> struct TestDataProvider { };
+
+    typedef Util::Factory<Test, Util::ClassCreator<Test> > test_factory;
+    typedef Util::Factory<TestDataProvider_intf, Util::ClassCreator<TestDataProvider_intf> > test_data_provider_factory;
+
+    template<typename Test_impl> class test_auto_registration
+    : public
+        Util::FactoryAutoRegister<Test, Test_impl>,
+        Util::FactoryAutoRegister<TestDataProvider_intf, TestDataProvider<Test_impl> >
+    { };
+}
 }
 
 #endif // #include guard end

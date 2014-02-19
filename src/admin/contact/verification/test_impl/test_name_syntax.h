@@ -26,15 +26,42 @@
 
 #include "src/admin/contact/verification/test_impl/test_interface.h"
 
+#include <boost/assign/list_of.hpp>
+
 namespace Admin
 {
-    class ContactVerificationTestNameSyntax: public ContactVerificationTest {
+namespace ContactVerification
+{
+    FACTORY_MODULE_INIT_DECL(TestNameSyntax_init)
+
+    class TestNameSyntax
+    : public
+        Test,
+        test_auto_registration<TestNameSyntax>
+    {
 
         public:
-            virtual ContactVerificationTest::T_run_result run(long _history_id) const;
-            virtual std::string get_name() const { return "name_syntax"; }
+            virtual T_run_result run(long _history_id) const;
+            static std::string registration_name() { return "name_syntax"; }
+    };
+
+    template<> struct TestDataProvider<TestNameSyntax>
+    : TestDataProvider_common,
+      _inheritTestRegName<TestNameSyntax>
+    {
+        std::string name_;
+
+        virtual void store_data(const Fred::InfoContactOutput& _data) {
+            if(_data.info_contact_data.name.isnull() == false) {
+                name_ = static_cast<string>(_data.info_contact_data.name);
+            }
+        }
+
+        virtual vector<string> get_string_data() const {
+            return boost::assign::list_of(name_);
+        };
     };
 }
-
+}
 
 #endif // #include guard end
