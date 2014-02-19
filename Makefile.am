@@ -785,7 +785,9 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/object_state/perform_object_state_request.cc \
 		src/fredlib/object_state/object_state_name.h \
 		src/fredlib/object_state/object_has_state.h \
-		src/fredlib/object_state/object_has_state.cc
+		src/fredlib/object_state/object_has_state.cc \
+		src/fredlib/object/object_id_handle_pair.h \
+		src/fredlib/object/object_id_handle_pair.cc
 #
 # src/fredlib/libfred.a
 

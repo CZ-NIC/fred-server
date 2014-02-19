@@ -76,6 +76,7 @@
 #include "src/fredlib/domain/info_domain_diff.h"
 #include "src/fredlib/keyset/info_keyset_diff.h"
 #include "src/fredlib/nsset/info_nsset_diff.h"
+#include "src/fredlib/object/object_id_handle_pair.h"
 
 #include "util/util.h"
 #include "util/printable.h"
@@ -963,6 +964,18 @@ BOOST_AUTO_TEST_CASE(info_keyset_diff)
     d.authinfopw ="test";
     Fred::InfoKeysetDiff diff = Fred::diff_keyset_data(Fred::InfoKeysetData(),d);
     printable_test(diff);
+}
+
+/**
+ * test ObjectIdHandlePair print to string
+ */
+
+BOOST_AUTO_TEST_CASE(object_id_handle_pair)
+{
+    Fred::ObjectIdHandlePair i(1,"test");
+    printable_test(i);
+    BOOST_CHECK(i.id == 1);
+    BOOST_CHECK(i.handle == "test");
 }
 
 BOOST_AUTO_TEST_SUITE_END();//TestPrintable
