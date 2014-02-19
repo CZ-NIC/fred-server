@@ -52,6 +52,7 @@
 #include "src/fredlib/registrar.h"
 #include "src/fredlib/domain/update_domain.h"
 #include "src/fredlib/nsset/update_nsset.h"
+#include "src/fredlib/nsset/info_nsset.h"
 #include "src/fredlib/keyset/update_keyset.h"
 #include "src/fredlib/contact/delete_contact.h"
 #include "src/fredlib/contact/create_contact.h"
@@ -546,7 +547,9 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     BOOST_CHECK(registrar_handle == std::string(info_data_8.info_domain_data.update_registrar_handle.get_value()));
 
     //set nsset
-    info_data_7_with_changes.info_domain_data.nsset_handle = test_nsset_handle;
+    Fred::InfoNssetOutput test_nsset_info = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
+    info_data_7_with_changes.info_domain_data.nsset = Nullable<Fred::ObjectIdHandlePair>(
+        Fred::ObjectIdHandlePair(test_nsset_info.info_nsset_data.id, test_nsset_info.info_nsset_data.handle));
 
     //updated update_time
     info_data_7_with_changes.info_domain_data.update_time = info_data_8.info_domain_data.update_time;
@@ -587,7 +590,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     BOOST_CHECK(registrar_handle == std::string(info_data_9.info_domain_data.update_registrar_handle.get_value()));
 
     //set nsset
-    info_data_8_with_changes.info_domain_data.nsset_handle = Nullable<std::string>();
+    info_data_8_with_changes.info_domain_data.nsset = Nullable<Fred::ObjectIdHandlePair>();
 
     //updated update_time
     info_data_8_with_changes.info_domain_data.update_time = info_data_9.info_domain_data.update_time;
@@ -629,7 +632,8 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     BOOST_CHECK(registrar_handle == std::string(info_data_10.info_domain_data.update_registrar_handle.get_value()));
 
     //set nsset
-    info_data_9_with_changes.info_domain_data.nsset_handle = test_nsset_handle;
+    info_data_9_with_changes.info_domain_data.nsset = Nullable<Fred::ObjectIdHandlePair>(
+            Fred::ObjectIdHandlePair(test_nsset_info.info_nsset_data.id, test_nsset_info.info_nsset_data.handle));
 
     //updated update_time
     info_data_9_with_changes.info_domain_data.update_time = info_data_10.info_domain_data.update_time;
@@ -672,7 +676,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     BOOST_CHECK(registrar_handle == std::string(info_data_11.info_domain_data.update_registrar_handle.get_value()));
 
     //set nsset
-    info_data_10_with_changes.info_domain_data.nsset_handle = Nullable<std::string>();
+    info_data_10_with_changes.info_domain_data.nsset = Nullable<Fred::ObjectIdHandlePair>();
 
     //updated update_time
     info_data_10_with_changes.info_domain_data.update_time = info_data_11.info_domain_data.update_time;
@@ -716,7 +720,8 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     BOOST_CHECK(registrar_handle == std::string(info_data_12.info_domain_data.update_registrar_handle.get_value()));
 
     //set nsset
-    info_data_11_with_changes.info_domain_data.nsset_handle = test_nsset_handle;
+    info_data_11_with_changes.info_domain_data.nsset = Nullable<Fred::ObjectIdHandlePair>(
+            Fred::ObjectIdHandlePair(test_nsset_info.info_nsset_data.id, test_nsset_info.info_nsset_data.handle));
 
     //updated update_time
     info_data_11_with_changes.info_domain_data.update_time = info_data_12.info_domain_data.update_time;
@@ -761,7 +766,8 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     BOOST_CHECK(registrar_handle == std::string(info_data_13.info_domain_data.update_registrar_handle.get_value()));
 
     //set nsset
-    info_data_12_with_changes.info_domain_data.nsset_handle = test_nsset_handle;
+    info_data_12_with_changes.info_domain_data.nsset = Nullable<Fred::ObjectIdHandlePair>(
+            Fred::ObjectIdHandlePair(test_nsset_info.info_nsset_data.id, test_nsset_info.info_nsset_data.handle));
 
     //updated update_time
     info_data_12_with_changes.info_domain_data.update_time = info_data_13.info_domain_data.update_time;

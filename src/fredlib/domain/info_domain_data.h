@@ -45,7 +45,7 @@ namespace Fred
         std::string roid;/**< registry object identifier of domain */
         std::string fqdn;/**< fully qualified domain name */
         ObjectIdHandlePair registrant;/**< registrant contact id and handle, owner of the domain*/
-        Nullable<std::string> nsset_handle;/**< nsset handle or NULL if missing */
+        Nullable<ObjectIdHandlePair> nsset;/**< nsset handle or NULL if missing */
         Nullable<std::string> keyset_handle;/**< keyset handle or NULL if missing */
         std::string sponsoring_registrar_handle;/**< handle of registrar administering domain */
         std::string create_registrar_handle;/**< handle of registrar which created domain */

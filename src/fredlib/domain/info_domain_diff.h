@@ -61,7 +61,7 @@ namespace Fred
         DiffMemeber<std::string>::Type authinfopw;/**< password for transfer */
 
         DiffMemeber<Fred::ObjectIdHandlePair>::Type registrant; /**< registrant contact id and handle, owner of domain*/
-        DiffMemeber<Nullable<std::string> >::Type nsset_handle;/**< nsset handle or NULL if missing */
+        DiffMemeber<Nullable<ObjectIdHandlePair> >::Type nsset;/**< nsset id and handle or NULL if missing */
         DiffMemeber<Nullable<std::string> >::Type keyset_handle;/**< keyset handle or NULL if missing */
         DiffMemeber<boost::gregorian::date>::Type expiration_date;/**< domain expiration local date */
         DiffMemeber<std::vector<std::string> >::Type admin_contacts;/**< list of administrating contact handles */
