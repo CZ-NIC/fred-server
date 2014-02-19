@@ -254,7 +254,9 @@ namespace Fred
             info_domain_output.history_valid_to = query_result[i][8].isnull() ? Nullable<boost::posix_time::ptime>()
             : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(query_result[i][8])));//h.valid_to
 
-            info_domain_output.info_domain_data.registrant_handle = static_cast<std::string>(query_result[i][10]);//cor.name
+            info_domain_output.info_domain_data.registrant = Fred::ObjectIdHandlePair(
+                static_cast<unsigned long long>(query_result[i][9])//cor.id
+                , static_cast<std::string>(query_result[i][10]));//cor.name
 
             info_domain_output.info_domain_data.nsset_handle = query_result[i][12].isnull() ? Nullable<std::string>()
             : Nullable<std::string> (static_cast<std::string>(query_result[i][12]));//nobr.name

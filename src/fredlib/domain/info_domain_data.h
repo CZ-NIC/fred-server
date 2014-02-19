@@ -32,6 +32,7 @@
 #include "util/db/nullable.h"
 #include "enum_validation_extension.h"
 #include "util/printable.h"
+#include "src/fredlib/object/object_id_handle_pair.h"
 
 namespace Fred
 {
@@ -43,7 +44,7 @@ namespace Fred
     {
         std::string roid;/**< registry object identifier of domain */
         std::string fqdn;/**< fully qualified domain name */
-        std::string registrant_handle;/**< registrant contact handle, owner of domain*/
+        ObjectIdHandlePair registrant;/**< registrant contact id and handle, owner of the domain*/
         Nullable<std::string> nsset_handle;/**< nsset handle or NULL if missing */
         Nullable<std::string> keyset_handle;/**< keyset handle or NULL if missing */
         std::string sponsoring_registrar_handle;/**< handle of registrar administering domain */

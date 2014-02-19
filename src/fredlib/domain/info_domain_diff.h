@@ -60,7 +60,7 @@ namespace Fred
         DiffMemeber<Nullable<boost::posix_time::ptime> >::Type transfer_time; /**<last transfer time in set local zone*/
         DiffMemeber<std::string>::Type authinfopw;/**< password for transfer */
 
-        DiffMemeber<std::string>::Type registrant_handle; /**< registrant contact handle, owner of domain*/
+        DiffMemeber<Fred::ObjectIdHandlePair>::Type registrant; /**< registrant contact id and handle, owner of domain*/
         DiffMemeber<Nullable<std::string> >::Type nsset_handle;/**< nsset handle or NULL if missing */
         DiffMemeber<Nullable<std::string> >::Type keyset_handle;/**< keyset handle or NULL if missing */
         DiffMemeber<boost::gregorian::date>::Type expiration_date;/**< domain expiration local date */

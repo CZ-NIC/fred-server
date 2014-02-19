@@ -55,7 +55,7 @@ namespace Fred
         (std::make_pair("transfer_time", transfer_time.print_quoted()))
         (std::make_pair("authinfopw", authinfopw.print_quoted()))
 
-        (std::make_pair("registrant_handle", registrant_handle.print_quoted()))
+        (std::make_pair("registrant", registrant.print_quoted()))
         (std::make_pair("nsset_handle", nsset_handle.print_quoted()))
         (std::make_pair("keyset_handle", keyset_handle.print_quoted()))
         (std::make_pair("expiration_date", expiration_date.print_quoted()))
@@ -84,7 +84,7 @@ namespace Fred
             || transfer_time.isset()
             || authinfopw.isset()
 
-            || registrant_handle.isset()
+            || registrant.isset()
             || nsset_handle.isset()
             || keyset_handle.isset()
             || expiration_date.isset()
@@ -169,10 +169,9 @@ namespace Fred
             diff.authinfopw = std::make_pair(first.authinfopw,second.authinfopw);
         }
 
-        if(boost::algorithm::to_upper_copy(first.registrant_handle)
-            .compare(boost::algorithm::to_upper_copy(second.registrant_handle)) != 0)
+        if(first.registrant != second.registrant)
         {
-            diff.registrant_handle = std::make_pair(first.registrant_handle,second.registrant_handle);
+            diff.registrant = std::make_pair(first.registrant,second.registrant);
         }
 
         if(!Util::is_equal_upper(first.nsset_handle, second.nsset_handle))

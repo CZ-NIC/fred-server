@@ -280,8 +280,8 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     info_data_1_with_changes.info_domain_data.sponsoring_registrar_handle = registrar_handle;
 
     //updated registrant_handle
-    BOOST_CHECK(registrant_contact_handle == std::string(info_data_2.info_domain_data.registrant_handle));
-    info_data_1_with_changes.info_domain_data.registrant_handle = registrant_contact_handle;
+    BOOST_CHECK(registrant_contact_handle == info_data_2.info_domain_data.registrant.handle);
+    info_data_1_with_changes.info_domain_data.registrant = info_data_2.info_domain_data.registrant;
 
     //updated update_time
     info_data_1_with_changes.info_domain_data.update_time = info_data_2.info_domain_data.update_time;
@@ -339,8 +339,8 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     BOOST_CHECK(registrar_handle == std::string(info_data_3.info_domain_data.sponsoring_registrar_handle));
 
     //updated registrant_handle
-    BOOST_CHECK(registrant_contact_handle == std::string(info_data_3.info_domain_data.registrant_handle));
-    info_data_2_with_changes.info_domain_data.registrant_handle = registrant_contact_handle;
+    BOOST_CHECK(registrant_contact_handle == info_data_3.info_domain_data.registrant.handle);
+    info_data_2_with_changes.info_domain_data.registrant = info_data_3.info_domain_data.registrant;
 
     //updated update_time
     info_data_2_with_changes.info_domain_data.update_time = info_data_3.info_domain_data.update_time;
@@ -425,8 +425,8 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     BOOST_CHECK(registrar_handle == std::string(info_data_5.info_domain_data.update_registrar_handle.get_value()));
 
     //updated registrant_handle
-    BOOST_CHECK(registrant_contact_handle == std::string(info_data_5.info_domain_data.registrant_handle));
-    info_data_4_with_changes.info_domain_data.registrant_handle = registrant_contact_handle;
+    BOOST_CHECK(registrant_contact_handle == info_data_5.info_domain_data.registrant.handle);
+    info_data_4_with_changes.info_domain_data.registrant = info_data_5.info_domain_data.registrant;
 
     //updated update_time
     info_data_4_with_changes.info_domain_data.update_time = info_data_5.info_domain_data.update_time;

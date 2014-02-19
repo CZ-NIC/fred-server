@@ -644,7 +644,8 @@ struct merge_contact_n_fixture
         for(int i = 0; i < domain_owner_count; ++i)
         {
             Fred::InfoDomainOutput info_domain_owner_with_change = info_domain_owner_1.at(i);
-            info_domain_owner_with_change.info_domain_data.registrant_handle = dst_contact_handle;
+            info_domain_owner_with_change.info_domain_data.registrant = Fred::ObjectIdHandlePair(
+                info_dst_contact_1.info_contact_data.id,info_dst_contact_1.info_contact_data.handle);
             info_domain_owner_with_change.info_domain_data.historyid = info_domain_owner_2.at(i).info_domain_data.historyid;
             info_domain_owner_with_change.info_domain_data.update_registrar_handle = registrar_handle;
             info_domain_owner_with_change.info_domain_data.update_time = info_domain_owner_2.at(i).info_domain_data.update_time;
@@ -724,7 +725,8 @@ BOOST_FIXTURE_TEST_CASE(merge_contact, merge_contact_domain_fixture)
 
     //compare state before merge with state after
     Fred::InfoDomainOutput info_domain_owner_with_change = info_domain_owner_1;
-    info_domain_owner_with_change.info_domain_data.registrant_handle = dst_contact_handle;
+    info_domain_owner_with_change.info_domain_data.registrant = Fred::ObjectIdHandlePair(
+            info_dst_contact_1.info_contact_data.id,info_dst_contact_1.info_contact_data.handle);
     info_domain_owner_with_change.info_domain_data.historyid = info_domain_owner_2.info_domain_data.historyid;
     info_domain_owner_with_change.info_domain_data.update_registrar_handle = registrar_handle;
     info_domain_owner_with_change.info_domain_data.update_time = info_domain_owner_2.info_domain_data.update_time;
