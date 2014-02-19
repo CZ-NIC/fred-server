@@ -397,20 +397,6 @@ namespace Registry
                     = Fred::Contact::Verification::create_contact_update_validator();
                 validator.check(_contact);
 
-                if (Fred::object_has_state(cid, Fred::ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT) == true) {
-
-                    if (Fred::Contact::Verification::check_conditionally_identified_contact_diff(
-                            _contact, Fred::Contact::Verification::contact_info(cid)) == false) {
-                        LOGGER(PACKAGE).info( boost::format(
-                                "tried to update conditionally identified contact -- handle: %1%  id: %2% ")
-                                % handle % cid);
-
-                        Fred::Contact::Verification::FieldErrorMap errors;
-                        errors[Fred::Contact::Verification::field_status] = Fred::Contact::Verification::INVALID;
-                        throw Fred::Contact::Verification::DataValidationError(errors);
-                    }
-                }
-
                 DiscloseFlagPolicy::PolicyCallbackVector pcv
                     = boost::assign::list_of
                         (DiscloseFlagPolicy::PolicyCallback(SetDiscloseAddrTrueIfOrganization()))
