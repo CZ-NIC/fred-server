@@ -39,7 +39,7 @@
 #include <boost/lexical_cast.hpp>
 
 #include "src/fredlib/db_settings.h"
-//#include "util/corba_wrapper.h"
+
 #include "log/logger.h"
 #include "log/context.h"
 #include "random_data_generator.h"
@@ -49,7 +49,7 @@
 #include "cfg/handle_server_args.h"
 #include "cfg/handle_logging_args.h"
 #include "cfg/handle_database_args.h"
-//#include "cfg/handle_corbanameservice_args.h"
+
 #include "cfg/handle_threadgroup_args.h"
 #include "cfg/handle_registry_args.h"
 #include "cfg/handle_rifd_args.h"
@@ -64,7 +64,7 @@ boost::assign::list_of
 (HandleArgsPtr(new HandleServerArgs))
 (HandleArgsPtr(new HandleLoggingArgs))
 (HandleArgsPtr(new HandleDatabaseArgs))
-//(HandleArgsPtr(new HandleCorbaNameServiceArgs))
+
 (HandleArgsPtr(new HandleThreadGroupArgs))
 (HandleArgsPtr(new HandleRegistryArgs))
 (HandleArgsPtr(new HandleRifdArgs))
@@ -120,85 +120,4 @@ public:
 };
 
 BOOST_GLOBAL_FIXTURE( LoggingFixture );
-
-
-
-BOOST_AUTO_TEST_SUITE(TestCpp)
-
-void test_stdex()
-{
-    throw std::runtime_error("test ex");
-}
-
-struct DUMMY_EXCEPTION : std::runtime_error
-{
-    DUMMY_EXCEPTION(const std::string& what)
-            : std::runtime_error(what)
-    {}
-};
-
-struct DUMMY_EXCEPTION_1 : std::runtime_error
-{
-    DUMMY_EXCEPTION_1()
-            : std::runtime_error("error")
-    {}
-};
-
-
-BOOST_AUTO_TEST_CASE( test_exception )
-{
-    int check_counter = 0;
-    try
-    {
-        try
-        {
-            test_stdex();
-        }//try
-        catch (const std::exception& ex)
-        {
-            //std::cout << "ex: " << ex.what() << std::endl;
-            ++check_counter;
-            throw;
-        }
-        catch (...)
-        {
-            check_counter+=3;
-        }
-    }//try
-    catch (...)
-    {}
-    BOOST_REQUIRE_EQUAL(1, check_counter);
-
-    {
-        int DUMMY_EXCEPTION_catch_check = 0;
-        try
-        {
-            throw DUMMY_EXCEPTION("error");
-        }
-        catch(const std::exception& ex)
-        {
-            //std::cout << "ex: " << ex.what() << std::endl;
-            ++DUMMY_EXCEPTION_catch_check;
-        }
-        BOOST_REQUIRE_EQUAL(1, DUMMY_EXCEPTION_catch_check);
-    }//DUMMY_EXCEPTION_catch_check
-
-    {
-        int DUMMY_EXCEPTION_catch_check = 0;
-        try
-        {
-            throw DUMMY_EXCEPTION_1();
-        }
-        catch(const std::exception& ex)
-        {
-            //std::cout << "ex: " << ex.what() << std::endl;
-            ++DUMMY_EXCEPTION_catch_check;
-        }
-        BOOST_REQUIRE_EQUAL(2, DUMMY_EXCEPTION_catch_check+1);
-    }//DUMMY_EXCEPTION_catch_check
-
-
-}//test_exception
-
-BOOST_AUTO_TEST_SUITE_END();//TestCpp
 
