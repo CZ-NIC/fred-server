@@ -190,14 +190,14 @@ namespace Fred
         }
 
         std::set<ObjectIdHandlePair> lhs_admin_contacts;
-        for(std::vector<std::string>::size_type i = 0
+        for(std::vector<ObjectIdHandlePair>::size_type i = 0
             ; i != first.admin_contacts.size(); ++i)
         {
             lhs_admin_contacts.insert(first.admin_contacts[i]);
         }
 
         std::set<ObjectIdHandlePair> rhs_admin_contacts;
-        for(std::vector<std::string>::size_type i = 0
+        for(std::vector<ObjectIdHandlePair>::size_type i = 0
             ; i != second.admin_contacts.size(); ++i)
         {
             rhs_admin_contacts.insert(second.admin_contacts[i]);
