@@ -67,6 +67,13 @@ namespace Fred
         bool operator!=(const ObjectIdHandlePair& rhs) const;
 
         /**
+         * Comparison operator comparing both attributes in string.
+         * Handle is compared converted to uppercase
+         * @param rhs data compared with this instance
+         */
+        bool operator<(const ObjectIdHandlePair& rhs) const;
+
+        /**
         * Dumps state of the instance into the string
         * @return string with description of the instance state
         */

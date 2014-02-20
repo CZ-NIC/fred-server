@@ -64,7 +64,7 @@ namespace Fred
         DiffMemeber<Nullable<ObjectIdHandlePair> >::Type nsset;/**< nsset id and handle or NULL if missing */
         DiffMemeber<Nullable<ObjectIdHandlePair> >::Type keyset;/**< keyset id and handle or NULL if missing */
         DiffMemeber<boost::gregorian::date>::Type expiration_date;/**< domain expiration local date */
-        DiffMemeber<std::vector<std::string> >::Type admin_contacts;/**< list of administrating contact handles */
+        DiffMemeber<std::vector<ObjectIdHandlePair> >::Type admin_contacts;/**< list of administrating contact handles */
         DiffMemeber<Nullable<ENUMValidationExtension> >::Type enum_domain_validation;/**< ENUM domain validation extension info */
         DiffMemeber<boost::posix_time::ptime>::Type outzone_time;/**< domain outzone time in regular_day_procedure_zone from table enum_parameters */
         DiffMemeber<boost::posix_time::ptime>::Type cancel_time;/**< domain cancel time in regular_day_procedure_zone from table enum_parameters */

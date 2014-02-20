@@ -279,7 +279,11 @@ BOOST_AUTO_TEST_CASE(check_domain)
 BOOST_AUTO_TEST_CASE(info_domain_data)
 {
     Fred::InfoDomainData i;
-    i.admin_contacts = Util::vector_of<std::string>("admin1")("admin2")("admin3");
+    i.admin_contacts = Util::vector_of<Fred::ObjectIdHandlePair>
+        (Fred::ObjectIdHandlePair(1, "admin1"))
+        (Fred::ObjectIdHandlePair(2, "admin2"))
+        (Fred::ObjectIdHandlePair(3, "admin3"));
+
     i.expiration_date = boost::gregorian::day_clock::local_day();
     printable_test(i);
 }

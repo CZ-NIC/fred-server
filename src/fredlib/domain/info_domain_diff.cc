@@ -189,18 +189,18 @@ namespace Fred
             diff.expiration_date = std::make_pair(first.expiration_date,second.expiration_date);
         }
 
-        std::set<std::string> lhs_admin_contacts;
+        std::set<ObjectIdHandlePair> lhs_admin_contacts;
         for(std::vector<std::string>::size_type i = 0
             ; i != first.admin_contacts.size(); ++i)
         {
-            lhs_admin_contacts.insert(boost::algorithm::to_upper_copy(first.admin_contacts[i]));
+            lhs_admin_contacts.insert(first.admin_contacts[i]);
         }
 
-        std::set<std::string> rhs_admin_contacts;
+        std::set<ObjectIdHandlePair> rhs_admin_contacts;
         for(std::vector<std::string>::size_type i = 0
             ; i != second.admin_contacts.size(); ++i)
         {
-            rhs_admin_contacts.insert(boost::algorithm::to_upper_copy(second.admin_contacts[i]));
+            rhs_admin_contacts.insert(second.admin_contacts[i]);
         }
 
         if(lhs_admin_contacts != rhs_admin_contacts)

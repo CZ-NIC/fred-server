@@ -55,7 +55,7 @@ namespace Fred
         Nullable<boost::posix_time::ptime> transfer_time; /**< time of last transfer in UTC*/
         boost::gregorian::date expiration_date; /**< domain expiration local date */
         std::string authinfopw;/**< password for domain transfer */
-        std::vector<std::string> admin_contacts;/**< list of administrating contact handles */
+        std::vector<ObjectIdHandlePair> admin_contacts;/**< list of administrating contact handles */
         Nullable<ENUMValidationExtension > enum_domain_validation;/**< ENUM domain validation extension info */
         boost::posix_time::ptime outzone_time; /**< domain outzone time in regular_day_procedure_zone from table enum_parameters */
         boost::posix_time::ptime cancel_time; /**< domain cancel time in regular_day_procedure_zone from table enum_parameters */

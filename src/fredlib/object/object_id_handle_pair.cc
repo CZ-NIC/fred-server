@@ -40,12 +40,25 @@ namespace Fred
 
     bool ObjectIdHandlePair::operator==(const ObjectIdHandlePair& rhs) const
     {
-        return (id == rhs.id) && (boost::algorithm::to_upper_copy(handle).compare(boost::algorithm::to_upper_copy(rhs.handle)) == 0);
+        return ((id == rhs.id) && (boost::algorithm::to_upper_copy(handle).compare(boost::algorithm::to_upper_copy(rhs.handle)) == 0));
     }
 
     bool ObjectIdHandlePair::operator!=(const ObjectIdHandlePair& rhs) const
     {
         return !(*this == rhs);
+    }
+
+    bool ObjectIdHandlePair::operator<(const ObjectIdHandlePair& rhs) const
+    {
+        std::string lhs_string;
+        lhs_string+=boost::lexical_cast<std::string>(id);
+        lhs_string+=boost::algorithm::to_upper_copy(handle);
+
+        std::string rhs_string;
+        rhs_string+=boost::lexical_cast<std::string>(rhs.id);
+        rhs_string+=boost::algorithm::to_upper_copy(rhs.handle);
+
+        return (lhs_string.compare(rhs_string) < 0);
     }
 
     std::string ObjectIdHandlePair::to_string() const

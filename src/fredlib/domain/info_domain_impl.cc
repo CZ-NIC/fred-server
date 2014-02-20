@@ -197,7 +197,7 @@ namespace Fred
         Database::QueryParams params;
         std::ostringstream sql;
 
-        sql << "SELECT cobr.name ";
+        sql << "SELECT cobr.id, cobr.name ";
         if(history_query_)
         {
             params.push_back(id);
@@ -321,7 +321,10 @@ namespace Fred
             info_domain_output.info_domain_data.admin_contacts.reserve(admin_contact_res.size());
             for(Database::Result::size_type j = 0; j < admin_contact_res.size(); ++j)
             {
-                info_domain_output.info_domain_data.admin_contacts.push_back(static_cast<std::string>(admin_contact_res[j][0]));
+                info_domain_output.info_domain_data.admin_contacts.push_back(Fred::ObjectIdHandlePair(
+                        static_cast<unsigned long long>(admin_contact_res[j][0]),
+                        static_cast<std::string>(admin_contact_res[j][1])
+                        ));
             }
 
             result.push_back(info_domain_output);
