@@ -785,7 +785,18 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/object_state/perform_object_state_request.cc \
 		src/fredlib/object_state/object_state_name.h \
 		src/fredlib/object_state/object_has_state.h \
-		src/fredlib/object_state/object_has_state.cc
+		src/fredlib/object_state/object_has_state.cc \
+		src/fredlib/object_state/get_object_state_descriptions.h \
+		src/fredlib/object_state/get_object_state_descriptions.cc \
+		src/fredlib/object_state/get_object_states.h \
+		src/fredlib/object_state/get_object_states.cc \
+		src/fredlib/object_state/get_object_state_id_map.h \
+		src/fredlib/object_state/get_object_state_id_map.cc \
+		src/fredlib/object_state/create_object_state_request_id.h \
+		src/fredlib/object_state/create_object_state_request_id.cc \
+		src/fredlib/object_state/perform_object_state_request.h \
+		src/fredlib/object_state/perform_object_state_request.cc
+
 #
 # src/fredlib/libfred.a
 
@@ -1917,7 +1928,8 @@ tests_test_fredlib_SOURCES = \
 		tests/test-update-contact.cc \
 		tests/test-printable.cc \
 		tests/test-info-keyset.cc \
-		tests/test-info-nsset.cc
+		tests/test-info-nsset.cc \
+		tests/test-object-state.cc
 
 tests_test_fredlib_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS) \

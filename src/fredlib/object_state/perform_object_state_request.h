@@ -28,16 +28,43 @@
 
 namespace Fred
 {
+    /**
+    * Process object state change requests.
+    * Calling database function update_object_states with optional object_id.
+    * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
+    * When exception is thrown, changes to database are considered inconsistent and should be rolled back by the caller.
+    * In case of insuperable failures and inconsistencies, exception is thrown.
+    */
     class PerformObjectStateRequest
     {
     public:
+
+        /**
+        * Default behavior when no object_id is set (or is set to 0) is process all object state change requests.
+        */
         PerformObjectStateRequest();
+
+        /**
+         * Process only object state change requests for object with given database id.
+         * @param _object_id sets database id of the object @ref object_id_ attribute
+         */
         PerformObjectStateRequest(const Optional< unsigned long long > &_object_id);
+
+        /**
+         * Sets database id of object for object state change requests processing.
+         * @param _object_id sets database id of the object @ref object_id_ attribute
+         * @return operation instance reference to allow method chaining
+         */
         PerformObjectStateRequest& set_object_id(unsigned long long _object_id);
+
+        /**
+        * Executes object state change requests processing.
+        * @param ctx contains reference to database and logging interface
+        */
         void exec(OperationContext &_ctx);
 
     private:
-        Optional< unsigned long long > object_id_;
+        Optional< unsigned long long > object_id_;/**< database id of the object */
     };//class PerformObjectStateRequest
 
 }//namespace Fred
