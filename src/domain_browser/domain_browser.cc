@@ -303,8 +303,8 @@ namespace Registry
             sponsoring_registrar.handle = sponsoring_registar_info.info_registrar_data.handle;
             sponsoring_registrar.name = sponsoring_registar_info.info_registrar_data.name.get_value_or_default();
 
-            Fred::InfoContactOutput registrant_contact_info = Fred::InfoContactByHandle(
-                domain_info.info_domain_data.registrant_handle).set_lock(true).exec(ctx);
+            Fred::InfoContactOutput registrant_contact_info = Fred::InfoContactById(
+                domain_info.info_domain_data.registrant.id).set_lock(true).exec(ctx);
 
             RegistryReference registrant;
             registrant.id = registrant_contact_info.info_contact_data.id;
@@ -313,21 +313,13 @@ namespace Registry
                 ? registrant_contact_info.info_contact_data.name.get_value_or_default()
                 : registrant_contact_info.info_contact_data.organization.get_value();
 
-            Fred::InfoNssetOutput nsset_info = Fred::InfoNssetByHandle(
-                domain_info.info_domain_data.nsset_handle.get_value_or_default()).set_lock(true).exec(ctx);
-
             RegistryReference nsset;
-            nsset.id = nsset_info.info_nsset_data.id;
-            nsset.handle = nsset_info.info_nsset_data.handle;
-
-            Fred::InfoKeysetOutput keyset_info = Fred::InfoKeysetByHandle(
-                domain_info.info_domain_data.keyset_handle.get_value_or_default()).set_lock(true).exec(ctx);
-
+            nsset.id = domain_info.info_domain_data.nsset.get_value_or_default().id;
+            nsset.handle = domain_info.info_domain_data.nsset.get_value_or_default().handle;
 
             RegistryReference keyset;
-            keyset.id = keyset_info.info_keyset_data.id;
-            keyset.handle = keyset_info.info_keyset_data.handle;
-
+            keyset.id = domain_info.info_domain_data.keyset.get_value_or_default().id;
+            keyset.handle = domain_info.info_domain_data.keyset.get_value_or_default().handle;
 
             Database::Result domain_states_result = ctx.get_conn().exec_params(
             "SELECT eos.name, COALESCE(osd.description, '') "
@@ -367,10 +359,10 @@ namespace Registry
             detail.nsset = nsset;
             detail.keyset = keyset;
 
-            for(std::vector<std::string>::const_iterator ci = domain_info.info_domain_data.admin_contacts.begin();
+            for(std::vector<Fred::ObjectIdHandlePair>::const_iterator ci = domain_info.info_domain_data.admin_contacts.begin();
                     ci != domain_info.info_domain_data.admin_contacts.end(); ++ci)
             {
-                Fred::InfoContactOutput admin_contact_info = Fred::InfoContactByHandle(*ci).set_lock(true).exec(ctx);
+                Fred::InfoContactOutput admin_contact_info = Fred::InfoContactById(ci->id).set_lock(true).exec(ctx);
 
                 RegistryReference admin;
                 admin.id = admin_contact_info.info_contact_data.id;
