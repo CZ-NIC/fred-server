@@ -5,6 +5,10 @@
 #include "src/fredlib/opexception.h"
 #include "util/printable.h"
 
+/**
+ *  @file
+ *  create delete domain poll message
+ */
 
 namespace Fred {
 namespace Poll {
@@ -23,10 +27,20 @@ public:
         ExceptionData_object_history_not_found<Exception>
     { };
 
+    /**
+    * @param _history_id specific history version of domain to which the new message shall be related
+    */
     CreateDeleteDomainPollMessage(ObjectHistoryId _history_id);
 
+    /**
+    * @return id of newly created message
+    * @throws Exception
+    */
     unsigned long long exec(Fred::OperationContext &_ctx);
 
+    /**
+    * @return string with description of the instance state
+    */
     std::string to_string() const;
 
 private:
