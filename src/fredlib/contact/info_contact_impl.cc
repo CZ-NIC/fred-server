@@ -75,9 +75,9 @@ namespace Fred
         return *this;
     }
 
-    InfoContact& InfoContact::set_lock(bool lock)
+    InfoContact& InfoContact::set_lock()
     {
-        lock_ = lock;
+        lock_ = true;
         return *this;
     }
 
@@ -164,6 +164,10 @@ namespace Fred
         if(lock_)
         {
             sql << " FOR UPDATE of cobr ";
+        }
+        else
+        {
+            sql << " FOR SHARE of cobr ";
         }
 
         return std::make_pair(sql.str(), params);
