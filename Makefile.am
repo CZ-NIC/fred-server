@@ -109,6 +109,7 @@ noinst_HEADERS = \
 		include/fredlib/fredlib.h \
 		include/fredlib/keyset.h \
 		include/fredlib/nsset.h \
+		include/fredlib/registrar.h \
 		util/util.h \
 		util/singleton.h \
 		util/time_clock.h \
@@ -775,6 +776,19 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/keyset/delete_keyset.h \
 		src/fredlib/registrar/registrar_impl.h \
 		src/fredlib/registrar/registrar_impl.cc \
+		src/fredlib/registrar/info_registrar.cc \
+		src/fredlib/registrar/info_registrar.h \
+		src/fredlib/registrar/info_registrar_data.cc \
+		src/fredlib/registrar/info_registrar_data.h \
+		src/fredlib/registrar/info_registrar_diff.cc \
+		src/fredlib/registrar/info_registrar_diff.h \
+		src/fredlib/registrar/registrar_zone_access.h \
+		src/fredlib/registrar/create_registrar.cc \
+		src/fredlib/registrar/create_registrar.h \
+		src/fredlib/registrar/info_registrar_impl.cc \
+		src/fredlib/registrar/info_registrar_impl.h \
+		src/fredlib/registrar/info_registrar_output.cc \
+		src/fredlib/registrar/info_registrar_output.h \
 		src/fredlib/registrar/get_registrar_handles.cc \
 		src/fredlib/registrar/get_registrar_handles.h \
 		src/fredlib/object_state/lock_multiple_object_state_request_lock.cc \
@@ -1930,7 +1944,9 @@ tests_test_fredlib_SOURCES = \
 		tests/test-printable.cc \
 		tests/test-info-keyset.cc \
 		tests/test-info-nsset.cc \
-		tests/test-object-state.cc
+		tests/test-object-state.cc \
+		tests/test-info-registrar.cc \
+		tests/test-create-registrar.cc
 
 tests_test_fredlib_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS) \
