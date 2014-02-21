@@ -172,20 +172,8 @@ namespace Registry
                     throw;
             }
 
-            Fred::InfoRegistrarOutput sponsoring_registar_info;
-            try
-            {
-                sponsoring_registar_info = Fred::InfoRegistrarByHandle(contact_info.info_contact_data.sponsoring_registrar_handle).exec(ctx);
-            }
-            catch(const Fred::InfoRegistrarByHandle::Exception& ex)
-            {
-                if(ex.is_set_unknown_registrar_handle())
-                {
-                    BOOST_THROW_EXCEPTION(InternalServerError());
-                }
-                else
-                    throw;
-            }
+            Fred::InfoRegistrarOutput sponsoring_registar_info = Fred::InfoRegistrarByHandle(
+                contact_info.info_contact_data.sponsoring_registrar_handle).exec(ctx);
 
             Database::Result contact_states_result = ctx.get_conn().exec_params(
             "SELECT eos.name, COALESCE(osd.description, '') "
