@@ -119,6 +119,7 @@ namespace Fred
         " , h.request_id " //logd request_id 31
         " , (CURRENT_TIMESTAMP AT TIME ZONE 'UTC')::timestamp AS utc_timestamp "// utc timestamp 32
         " , (CURRENT_TIMESTAMP AT TIME ZONE 'UTC' AT TIME ZONE $1::text)::timestamp AS local_timestamp  "// local zone timestamp 33
+        " , z.enum_zone "//is ENUM domain flag 34
         " FROM object_registry dobr ";
 
         if(history_query_)
@@ -137,6 +138,7 @@ namespace Fred
         sql << " JOIN object_registry cor ON dt.registrant=cor.id "
         " JOIN registrar clr ON clr.id = obj.clid "
         " JOIN registrar crr ON crr.id = dobr.crid "
+        " JOIN zone z ON dt.zone = z.id "
         " LEFT JOIN object_registry nobr ON nobr.id = dt.nsset "
         " AND nobr.type = ( SELECT id FROM enum_object_type eot WHERE eot.name='nsset'::text) "
         " LEFT JOIN object_registry kobr ON kobr.id = dt.keyset "
@@ -290,7 +292,7 @@ namespace Fred
 
             info_domain_output.info_domain_data.authinfopw = static_cast<std::string>(query_result[i][25]);//oh.authinfopw
 
-            info_domain_output.info_domain_data.enum_domain_validation = (query_result[i][26].isnull() || query_result[i][27].isnull())
+            info_domain_output.info_domain_data.enum_domain_validation = (static_cast<bool>(query_result[i][34]) == false)//if not ENUM
             ? Nullable<ENUMValidationExtension>()
             : Nullable<ENUMValidationExtension>(ENUMValidationExtension(
                 boost::gregorian::from_string(static_cast<std::string>(query_result[i][26]))
