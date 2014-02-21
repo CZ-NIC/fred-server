@@ -197,7 +197,7 @@ namespace Fred
         Database::QueryParams params;
         std::ostringstream sql;
 
-        sql << "SELECT cobr.name ";
+        sql << "SELECT cobr.id, cobr.name ";
         if(history_query_)
         {
             params.push_back(id);
@@ -254,13 +254,21 @@ namespace Fred
             info_domain_output.history_valid_to = query_result[i][8].isnull() ? Nullable<boost::posix_time::ptime>()
             : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(query_result[i][8])));//h.valid_to
 
-            info_domain_output.info_domain_data.registrant_handle = static_cast<std::string>(query_result[i][10]);//cor.name
+            info_domain_output.info_domain_data.registrant = Fred::ObjectIdHandlePair(
+                static_cast<unsigned long long>(query_result[i][9])//cor.id
+                , static_cast<std::string>(query_result[i][10]));//cor.name
 
-            info_domain_output.info_domain_data.nsset_handle = query_result[i][12].isnull() ? Nullable<std::string>()
-            : Nullable<std::string> (static_cast<std::string>(query_result[i][12]));//nobr.name
+            info_domain_output.info_domain_data.nsset = (query_result[i][11].isnull() || query_result[i][12].isnull())
+                ? Nullable<Fred::ObjectIdHandlePair>()
+                : Nullable<Fred::ObjectIdHandlePair> (Fred::ObjectIdHandlePair(
+                    static_cast<unsigned long long>(query_result[i][11]),//nsset id
+                    static_cast<std::string>(query_result[i][12])));//nobr.name
 
-            info_domain_output.info_domain_data.keyset_handle = query_result[i][14].isnull() ? Nullable<std::string>()
-            : Nullable<std::string> (static_cast<std::string>(query_result[i][14]));//kobr.name
+            info_domain_output.info_domain_data.keyset =(query_result[i][13].isnull() || query_result[i][14].isnull())
+                ? Nullable<Fred::ObjectIdHandlePair>()
+                : Nullable<Fred::ObjectIdHandlePair> (Fred::ObjectIdHandlePair(
+                    static_cast<unsigned long long>(query_result[i][13]),//keyset id
+                    static_cast<std::string>(query_result[i][14])));//kobr.name
 
             info_domain_output.info_domain_data.sponsoring_registrar_handle = static_cast<std::string>(query_result[i][16]);//clr.handle
 
@@ -313,7 +321,10 @@ namespace Fred
             info_domain_output.info_domain_data.admin_contacts.reserve(admin_contact_res.size());
             for(Database::Result::size_type j = 0; j < admin_contact_res.size(); ++j)
             {
-                info_domain_output.info_domain_data.admin_contacts.push_back(static_cast<std::string>(admin_contact_res[j][0]));
+                info_domain_output.info_domain_data.admin_contacts.push_back(Fred::ObjectIdHandlePair(
+                        static_cast<unsigned long long>(admin_contact_res[j][0]),
+                        static_cast<std::string>(admin_contact_res[j][1])
+                        ));
             }
 
             result.push_back(info_domain_output);
