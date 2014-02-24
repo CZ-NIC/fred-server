@@ -218,8 +218,8 @@ noinst_LIBRARIES = \
 		src/fredlib/contact_verification/libcontact_verification.a \
 		src/corba/libcorbacontactverification.a \
 		src/corba/libcorbaadmincontactverification.a \
-		src/corba/util/libcorbautil.a
-
+		src/corba/util/libcorbautil.a \
+		src/admin/contact/verification/libadmin_contact_verification.a
 
 noinst_PROGRAMS = \
 		util/log/test-log \
@@ -943,6 +943,43 @@ src_fredlib_contact_verification_libcontact_verification_a_SOURCES = \
 # src/fredlib/contact_verification/libcontact_verification.a
 
 
+# src/admin/contact/verification/libadmin_contact_verification.a
+#
+src_admin_contact_verification_libadmin_contact_verification_a_SOURCES = \
+		src/admin/contact/verification/create_test_impl_prototypes.h \
+		src/admin/contact/verification/create_test_impl_prototypes.cc \
+		src/admin/contact/verification/delete_domains_of_invalid_contact.h \
+		src/admin/contact/verification/delete_domains_of_invalid_contact.cc \
+		src/admin/contact/verification/enqueue_check.h \
+		src/admin/contact/verification/enqueue_check.cc \
+		src/admin/contact/verification/exceptions.h \
+		src/admin/contact/verification/fill_check_queue.h \
+		src/admin/contact/verification/related_records_impl.h \
+		src/admin/contact/verification/related_records_impl.cc \
+		src/admin/contact/verification/resolve_check.h \
+		src/admin/contact/verification/resolve_check.cc \
+		src/admin/contact/verification/run_all_enqueued_checks.h \
+		src/admin/contact/verification/run_all_enqueued_checks.cc \
+		src/admin/contact/verification/run_first_enqueued_check.h \
+		src/admin/contact/verification/run_first_enqueued_check.cc \
+		src/admin/contact/verification/test_impl/test_contactability.h \
+		src/admin/contact/verification/test_impl/test_contactability.cc \
+		src/admin/contact/verification/test_impl/test_cz_address_exists.h \
+		src/admin/contact/verification/test_impl/test_cz_address_exists.cc \
+		src/admin/contact/verification/test_impl/test_email_exists.h \
+		src/admin/contact/verification/test_impl/test_email_exists.cc \
+		src/admin/contact/verification/test_impl/test_email_syntax.h \
+		src/admin/contact/verification/test_impl/test_email_syntax.cc \
+		src/admin/contact/verification/test_impl/test_interface.h \
+		src/admin/contact/verification/test_impl/test_interface.cc \
+		src/admin/contact/verification/test_impl/test_name_syntax.h \
+		src/admin/contact/verification/test_impl/test_name_syntax.cc \
+		src/admin/contact/verification/test_impl/test_phone_syntax.h \
+		src/admin/contact/verification/test_impl/test_phone_syntax.cc
+#
+# src/admin/contact/verification/libadmin_contact_verification.a
+
+
 BUILT_SOURCES = \
 		src/corba/MessagesSK.cc \
 		src/corba/MojeIDSK.cc \
@@ -1347,28 +1384,7 @@ src_corba_fred_adifd_SOURCES = \
 		src/corba/mailer_manager.cc \
 		src/corba/admin_block/corba_conversion.h \
 		src/corba/admin_block/server_i.cc \
-		src/corba/admin_block/server_i.h \
-		src/admin/contact/verification/related_records_impl.cc \
-		src/admin/contact/verification/related_records_impl.h \
-		src/admin/contact/verification/enqueue_check.cc \
-		src/admin/contact/verification/enqueue_check.h \
-		src/admin/contact/verification/resolve_check.cc \
-		src/admin/contact/verification/resolve_check.h \
-		src/admin/contact/verification/delete_domains_of_invalid_contact.cc \
-		src/admin/contact/verification/delete_domains_of_invalid_contact.h \
-		src/admin/contact/verification/test_impl/test_interface.cc \
-		src/admin/contact/verification/test_impl/test_email_syntax.h \
-		src/admin/contact/verification/test_impl/test_email_syntax.cc \
- 		src/admin/contact/verification/test_impl/test_name_syntax.h \
- 		src/admin/contact/verification/test_impl/test_name_syntax.cc \
-		src/admin/contact/verification/test_impl/test_phone_syntax.h \
-		src/admin/contact/verification/test_impl/test_phone_syntax.cc \
-		src/admin/contact/verification/test_impl/test_cz_address_exists.h \
-		src/admin/contact/verification/test_impl/test_cz_address_exists.cc \
-		src/admin/contact/verification/test_impl/test_contactability.h \
-		src/admin/contact/verification/test_impl/test_contactability.cc \
-		src/admin/contact/verification/test_impl/test_email_exists.h \
-		src/admin/contact/verification/test_impl/test_email_exists.cc
+		src/corba/admin_block/server_i.h
 		
 src_corba_fred_adifd_LDADD = \
 		src/corba/admin/libadmin_impl.a \
@@ -1386,6 +1402,7 @@ src_corba_fred_adifd_LDADD = \
 		src/corba/libcorbaadmincontactverification.a \
 		src/corba/libfilemanager.a \
 		src/corba/libcorbaadministrativeblocking.a \
+		src/admin/contact/verification/libadmin_contact_verification.a \
 		src/fredlib/requests/librequests.a \
 		src/fredlib/contact_verification/libcontact_verification.a \
 		src/fredlib/public_request/libpublic_request.a \
@@ -1678,29 +1695,6 @@ src_cli_admin_fred_admin_SOURCES = \
 		src/admin/contact/merge_contact_reporting.h \
 		src/cli_admin/domain_name_validation_params.h \
 		src/cli_admin/domain_name_validation_init.h \
-		src/admin/contact/verification/fill_check_queue.h \
-		src/admin/contact/verification/fill_check_queue.cc \
-		src/admin/contact/verification/run_first_enqueued_check.h \
-		src/admin/contact/verification/run_first_enqueued_check.cc \
-		src/admin/contact/verification/run_all_enqueued_checks.h \
-		src/admin/contact/verification/run_all_enqueued_checks.cc \
-		src/admin/contact/verification/resolve_check.h \
-		src/admin/contact/verification/resolve_check.cc \
-		src/admin/contact/verification/create_test_impl_prototypes.h \
-		src/admin/contact/verification/create_test_impl_prototypes.cc \
-		src/admin/contact/verification/test_impl/test_interface.cc \
-		src/admin/contact/verification/test_impl/test_email_syntax.h \
-		src/admin/contact/verification/test_impl/test_email_syntax.cc \
- 		src/admin/contact/verification/test_impl/test_name_syntax.h \
- 		src/admin/contact/verification/test_impl/test_name_syntax.cc \
-		src/admin/contact/verification/test_impl/test_phone_syntax.h \
-		src/admin/contact/verification/test_impl/test_phone_syntax.cc \
-		src/admin/contact/verification/test_impl/test_cz_address_exists.h \
-		src/admin/contact/verification/test_impl/test_cz_address_exists.cc \
-		src/admin/contact/verification/test_impl/test_contactability.h \
-		src/admin/contact/verification/test_impl/test_contactability.cc \
-		src/admin/contact/verification/test_impl/test_email_exists.h \
-		src/admin/contact/verification/test_impl/test_email_exists.cc \
 		src/fredlib/object_state/create_object_state_request.cc \
 		src/fredlib/object_state/create_object_state_request.h \
 		src/fredlib/object_state/create_object_state_request_id.cc \
@@ -1710,11 +1704,7 @@ src_cli_admin_fred_admin_SOURCES = \
 		src/fredlib/object_state/cancel_object_state_request.cc \
 		src/fredlib/object_state/cancel_object_state_request.h \
 		src/fredlib/object_state/cancel_object_state_request_id.cc \
-		src/fredlib/object_state/cancel_object_state_request_id.h \
-		src/admin/contact/verification/related_records_impl.cc \
-		src/admin/contact/verification/related_records_impl.h \
-		src/admin/contact/verification/enqueue_check.cc \
-		src/admin/contact/verification/enqueue_check.h
+		src/fredlib/object_state/cancel_object_state_request_id.h
 		
 src_cli_admin_fred_admin_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS) \
@@ -1736,6 +1726,7 @@ src_cli_admin_fred_admin_LDADD = \
 		src/corba/libfilemanager.a \
 		src/fredlib/messages/libmessages.a \
 		src/fredlib/requests/librequests.a \
+		src/admin/contact/verification/libadmin_contact_verification.a \
 		util/log/liblog.a \
 		util/types/libtypes.a \
 		util/db/libdb.a \
@@ -1895,17 +1886,12 @@ tests_test_server_SOURCES = \
 		tests/fredlib/contact/verification/test-info_check_integ.cc \
 		tests/fredlib/contact/verification/test-list_checks_integ.cc \
 		tests/fredlib/contact/verification/test-list_enum_objects_integ.cc \
-		src/admin/contact/verification/run_first_enqueued_check.cc \
-		src/admin/contact/verification/run_all_enqueued_checks.cc \
 		tests/admin/contact/verification/setup_utils.h \
 		tests/admin/contact/verification/test-run_all_enqueued_checks.cc \
-		src/admin/contact/verification/fill_check_queue.cc \
 		tests/admin/contact/verification/test-fill_check_queue.cc \
 		tests/admin/contact/verification/test-resolve_check.cc \
 		tests/admin/contact/verification/test-related_records.cc \
 		tests/admin/contact/verification/test-enqueue_check.cc \
-		src/admin/contact/verification/delete_domains_of_invalid_contact.cc \
-		src/admin/contact/verification/test_impl/test_interface.cc \
 		tests/admin/contact/verification/test-delete_domains_of_invalid_contact.cc \
 		tests/util/test-is-equal-optional-nullable.cc \
 		src/fredlib/object_state/create_object_state_request.cc \
@@ -1917,13 +1903,7 @@ tests_test_server_SOURCES = \
 		src/fredlib/object_state/cancel_object_state_request.cc \
 		src/fredlib/object_state/cancel_object_state_request.h \
 		src/fredlib/object_state/cancel_object_state_request_id.cc \
-		src/fredlib/object_state/cancel_object_state_request_id.h \
-		src/admin/contact/verification/related_records_impl.cc \
-		src/admin/contact/verification/related_records_impl.h \
-		src/admin/contact/verification/enqueue_check.cc \
-		src/admin/contact/verification/enqueue_check.h \
-		src/admin/contact/verification/resolve_check.cc \
-		src/admin/contact/verification/resolve_check.h
+		src/fredlib/object_state/cancel_object_state_request_id.h
 		
 tests_test_server_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS) \
@@ -1938,6 +1918,7 @@ tests_test_server_LDADD = \
 		src/corba/libcorba.a \
 		src/corba/whois/libwhois_impl.a \
 		src/fredlib/public_request/libpublic_request.a \
+		src/admin/contact/verification/libadmin_contact_verification.a \
 		src/fredlib/libfred.a \
 		src/fredlib/messages/libmessages.a \
 		src/model/libmodel.a \
