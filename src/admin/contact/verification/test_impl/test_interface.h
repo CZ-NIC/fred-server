@@ -51,21 +51,19 @@ namespace ContactVerification{
                 set<unsigned long long> // related message archive ids
             > T_run_result;
 
-            inline static T_run_result make_result(
+            static T_run_result make_result(
                 const string&                   _status,
                 const Optional<string>&         _error_msg = Optional<string>(),
                 // XXX hopefuly one day related mail and messages will be unified
                 const set<unsigned long long>&  _related_mail_archive_ids = set<unsigned long long>(),
                 const set<unsigned long long>&  _related_message_archive_ids = set<unsigned long long>()
-            ) {
-                return T_run_result(_status, _error_msg, _related_mail_archive_ids, _related_message_archive_ids);
-            }
+            );
 
             /**
              * @return final status of the test, optional error message and optional related states and messages
              */
             virtual T_run_result run(long _history_id) const = 0;
-            virtual ~Test() { }
+            virtual ~Test();
             static string registration_name();
     };
 
@@ -81,19 +79,10 @@ namespace ContactVerification{
 
     struct TestDataProvider_common : public TestDataProvider_intf {
         private:
-            virtual Fred::InfoContactOutput get_data(unsigned long long _contact_history_id) {
-                Fred::OperationContext ctx;
-
-                return Fred::HistoryInfoContactByHistoryid(_contact_history_id)
-                    .exec(ctx);
-            }
+            virtual Fred::InfoContactOutput get_data(unsigned long long _contact_history_id);
             virtual void store_data(const Fred::InfoContactOutput& _data) = 0;
         public:
-            virtual TestDataProvider_intf& init_data(unsigned long long _contact_history_id) {
-                this->store_data(this->get_data(_contact_history_id));
-
-                return *this;
-            }
+            virtual TestDataProvider_intf& init_data(unsigned long long _contact_history_id);
     };
 
     template<typename Test> struct TestDataProvider { };

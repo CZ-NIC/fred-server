@@ -1410,6 +1410,7 @@ src_corba_fred_adifd_SOURCES = \
 		src/admin/contact/verification/resolve_check.h \
 		src/admin/contact/verification/delete_domains_of_invalid_contact.cc \
 		src/admin/contact/verification/delete_domains_of_invalid_contact.h \
+		src/admin/contact/verification/test_impl/test_interface.cc \
 		src/admin/contact/verification/test_impl/test_email_syntax.h \
 		src/admin/contact/verification/test_impl/test_email_syntax.cc \
  		src/admin/contact/verification/test_impl/test_name_syntax.h \
@@ -1741,6 +1742,7 @@ src_cli_admin_fred_admin_SOURCES = \
 		src/admin/contact/verification/resolve_check.cc \
 		src/admin/contact/verification/create_test_impl_prototypes.h \
 		src/admin/contact/verification/create_test_impl_prototypes.cc \
+		src/admin/contact/verification/test_impl/test_interface.cc \
 		src/admin/contact/verification/test_impl/test_email_syntax.h \
 		src/admin/contact/verification/test_impl/test_email_syntax.cc \
  		src/admin/contact/verification/test_impl/test_name_syntax.h \
@@ -1957,6 +1959,7 @@ tests_test_server_SOURCES = \
 		tests/admin/contact/verification/test-related_records.cc \
 		tests/admin/contact/verification/test-enqueue_check.cc \
 		src/admin/contact/verification/delete_domains_of_invalid_contact.cc \
+		src/admin/contact/verification/test_impl/test_interface.cc \
 		tests/admin/contact/verification/test-delete_domains_of_invalid_contact.cc \
 		tests/util/test-is-equal-optional-nullable.cc \
 		src/fredlib/object_state/create_object_state_request.cc \
