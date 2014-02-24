@@ -119,6 +119,8 @@ noinst_HEADERS = \
 		include/fredlib/fredlib.h \
 		include/fredlib/keyset.h \
 		include/fredlib/nsset.h \
+		include/fredlib/admin_contact_verification.h \
+		include/admin/admin_contact_verification.h \
 		util/util.h \
 		util/singleton.h \
 		util/time_clock.h \
@@ -177,7 +179,9 @@ noinst_HEADERS = \
 		src/fredlib/contact/verification/enum_testsuite_handle.h \
 		src/fredlib/contact/verification/enum_check_status.h \
 		src/fredlib/contact/verification/enum_test_status.h \
-		src/admin/contact/verification/test_impl/test_interface.h
+		src/fredlib/contact/verification/exceptions.h
+		src/admin/contact/verification/test_impl/test_interface.h \
+		src/admin/contact/verification/exceptions.h
 
 
 noinst_LIBRARIES = \
@@ -954,6 +958,7 @@ src_admin_contact_verification_libadmin_contact_verification_a_SOURCES = \
 		src/admin/contact/verification/enqueue_check.cc \
 		src/admin/contact/verification/exceptions.h \
 		src/admin/contact/verification/fill_check_queue.h \
+		src/admin/contact/verification/fill_check_queue.cc \
 		src/admin/contact/verification/related_records_impl.h \
 		src/admin/contact/verification/related_records_impl.cc \
 		src/admin/contact/verification/resolve_check.h \
@@ -1712,6 +1717,7 @@ src_cli_admin_fred_admin_LDFLAGS = \
 		$(XML2_LIBS)
 
 src_cli_admin_fred_admin_LDADD = \
+		src/admin/contact/verification/libadmin_contact_verification.a \
 		src/fredlib/libfred.a \
 		src/model/libmodel.a \
 		src/fredlib/banking/libbanking.a \
@@ -1726,7 +1732,6 @@ src_cli_admin_fred_admin_LDADD = \
 		src/corba/libfilemanager.a \
 		src/fredlib/messages/libmessages.a \
 		src/fredlib/requests/librequests.a \
-		src/admin/contact/verification/libadmin_contact_verification.a \
 		util/log/liblog.a \
 		util/types/libtypes.a \
 		util/db/libdb.a \
