@@ -44,9 +44,9 @@ namespace Fred
         , lock_(false)
     {}
 
-    InfoKeysetByHandle& InfoKeysetByHandle::set_lock(bool lock)//set lock object_registry row for keyset
+    InfoKeysetByHandle& InfoKeysetByHandle::set_lock()
     {
-        lock_ = lock;
+        lock_ = true;
         return *this;
     }
 
@@ -56,11 +56,10 @@ namespace Fred
 
         try
         {
-            keyset_res = InfoKeyset()
-                    .set_handle(handle_)
-                    .set_lock(lock_)
-                    .set_history_query(false)
-                    .exec(ctx,local_timestamp_pg_time_zone_name);
+            InfoKeyset ik;
+            ik.set_handle(handle_).set_history_query(false);
+            if(lock_) ik.set_lock();
+            keyset_res = ik.exec(ctx,local_timestamp_pg_time_zone_name);
 
             if (keyset_res.empty())
             {
@@ -95,9 +94,9 @@ namespace Fred
         , lock_(false)
     {}
 
-    InfoKeysetById& InfoKeysetById::set_lock(bool lock)//set lock object_registry row for keyset
+    InfoKeysetById& InfoKeysetById::set_lock()
     {
-        lock_ = lock;
+        lock_ = true;
         return *this;
     }
 
@@ -107,11 +106,10 @@ namespace Fred
 
         try
         {
-            keyset_res = InfoKeyset()
-                    .set_id(id_)
-                    .set_lock(lock_)
-                    .set_history_query(false)
-                    .exec(ctx,local_timestamp_pg_time_zone_name);
+            InfoKeyset ik;
+            ik.set_id(id_).set_history_query(false);
+            if(lock_) ik.set_lock();
+            keyset_res = ik.exec(ctx,local_timestamp_pg_time_zone_name);
 
             if (keyset_res.empty())
             {
@@ -159,9 +157,9 @@ namespace Fred
         return *this;
     }
 
-    InfoKeysetHistory& InfoKeysetHistory::set_lock(bool lock)//set lock object_registry row for keyset
+    InfoKeysetHistory& InfoKeysetHistory::set_lock()
     {
-        lock_ = lock;
+        lock_ = true;
         return *this;
     }
 
@@ -171,11 +169,10 @@ namespace Fred
 
         try
         {
-            keyset_res = InfoKeyset()
-                    .set_roid(roid_)
-                    .set_lock(lock_)
-                    .set_history_query(true)
-                    .exec(ctx,local_timestamp_pg_time_zone_name);
+            InfoKeyset ik;
+            ik.set_roid(roid_).set_history_query(true);
+            if(lock_) ik.set_lock();
+            keyset_res = ik.exec(ctx,local_timestamp_pg_time_zone_name);
 
             if (keyset_res.empty())
             {
@@ -207,9 +204,9 @@ namespace Fred
         , lock_(false)
     {}
 
-    HistoryInfoKeysetById& HistoryInfoKeysetById::set_lock(bool lock)//set lock object_registry row for keyset
+    HistoryInfoKeysetById& HistoryInfoKeysetById::set_lock()
     {
-        lock_ = lock;
+        lock_ = true;
         return *this;
     }
 
@@ -219,11 +216,10 @@ namespace Fred
 
         try
         {
-            keyset_history_res = InfoKeyset()
-                    .set_id(id_)
-                    .set_lock(lock_)
-                    .set_history_query(true)
-                    .exec(ctx,local_timestamp_pg_time_zone_name);
+            InfoKeyset ik;
+            ik.set_id(id_).set_history_query(true);
+            if(lock_) ik.set_lock();
+            keyset_history_res = ik.exec(ctx,local_timestamp_pg_time_zone_name);
 
             if (keyset_history_res.empty())
             {
@@ -253,9 +249,9 @@ namespace Fred
         , lock_(false)
     {}
 
-    HistoryInfoKeysetByHistoryid& HistoryInfoKeysetByHistoryid::set_lock(bool lock)//set lock object_registry row for keyset
+    HistoryInfoKeysetByHistoryid& HistoryInfoKeysetByHistoryid::set_lock()
     {
-        lock_ = lock;
+        lock_ = true;
         return *this;
     }
 
@@ -265,11 +261,10 @@ namespace Fred
 
         try
         {
-            keyset_history_res = InfoKeyset()
-                    .set_historyid(historyid_)
-                    .set_lock(lock_)
-                    .set_history_query(true)
-                    .exec(ctx,local_timestamp_pg_time_zone_name);
+            InfoKeyset ik;
+            ik.set_historyid(historyid_).set_history_query(true);
+            if(lock_) ik.set_lock();
+            keyset_history_res = ik.exec(ctx,local_timestamp_pg_time_zone_name);
 
             if (keyset_history_res.empty())
             {
