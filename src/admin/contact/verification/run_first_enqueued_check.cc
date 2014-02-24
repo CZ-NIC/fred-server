@@ -20,6 +20,14 @@
 
 namespace  Admin {
 
+    static void preprocess_automatic_check(
+        Fred::OperationContext& _ctx,
+        const std::string& _check_handle);
+
+    static void preprocess_manual_check(
+        Fred::OperationContext& _ctx,
+        const std::string& _check_handle);
+
     /**
      * Lock some contact_check with running status.
      * If no existing running check can be be locked check with status enqueued is looked for, it's status updated and locking is retried.

@@ -38,14 +38,6 @@
 
 namespace Admin {
 
-    void preprocess_automatic_check(
-        Fred::OperationContext& _ctx,
-        const std::string& _check_handle);
-
-    void preprocess_manual_check(
-        Fred::OperationContext& _ctx,
-        const std::string& _check_handle);
-
     /**
      * Randomly (by happenstance, not even pseudo-randomly) selects some enqueued check and execute it (by running it's tests).
      *
