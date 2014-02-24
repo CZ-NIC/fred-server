@@ -78,9 +78,9 @@ namespace Fred
         return *this;
     }
 
-    InfoDomain& InfoDomain::set_lock(bool lock)
+    InfoDomain& InfoDomain::set_lock()
     {
-        lock_ = lock;
+        lock_ = true;
         return *this;
     }
 
@@ -185,7 +185,10 @@ namespace Fred
         {
             sql << " FOR UPDATE of dobr ";
         }
-
+        else
+        {
+            sql << " FOR SHARE of dobr ";
+        }
 
         return std::make_pair(sql.str(), params);
 
