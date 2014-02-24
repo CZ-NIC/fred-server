@@ -85,7 +85,7 @@ namespace ContactVerification
             TestCzAddress& set_mvcr_address_xml_filename(const std::string& _mvcr_address_xml_filename);
             ~TestCzAddress();
 
-            virtual T_run_result run(long _history_id) const;
+            virtual T_run_result run(unsigned long long _history_id) const;
             static std::string registration_name() { return "cz_address_existence"; }
     };
 

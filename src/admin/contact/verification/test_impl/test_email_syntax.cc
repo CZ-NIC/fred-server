@@ -33,7 +33,7 @@ namespace ContactVerification {
 
     FACTORY_MODULE_INIT_DEFI(TestEmailSyntax_init)
 
-    Test::T_run_result TestEmailSyntax::run(long _history_id) const {
+    Test::T_run_result TestEmailSyntax::run(unsigned long long _history_id) const {
         TestDataProvider<TestEmailSyntax> data;
         data.init_data(_history_id);
 

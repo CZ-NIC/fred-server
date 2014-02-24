@@ -62,7 +62,7 @@ namespace ContactVerification{
             /**
              * @return final status of the test, optional error message and optional related states and messages
              */
-            virtual T_run_result run(long _history_id) const = 0;
+            virtual T_run_result run(unsigned long long _history_id) const = 0;
             virtual ~Test();
             static string registration_name();
     };

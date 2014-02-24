@@ -41,7 +41,7 @@ namespace ContactVerification
     {
 
         public:
-            virtual T_run_result run(long _history_id) const;
+            virtual T_run_result run(unsigned long long _history_id) const;
             static std::string registration_name() { return "name_syntax"; }
     };
 
@@ -59,7 +59,7 @@ namespace ContactVerification
 
         virtual vector<string> get_string_data() const {
             return boost::assign::list_of(name_);
-        };
+        }
     };
 }
 }

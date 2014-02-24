@@ -84,7 +84,7 @@ namespace ContactVerification {
         xmlXPathFreeContext(xpathCtx_);
         xmlFreeDoc(doc_);
     }
-    Test::T_run_result TestCzAddress::run(long _history_id) const {
+    Test::T_run_result TestCzAddress::run(unsigned long long _history_id) const {
         using std::string;
         using std::vector;
 
