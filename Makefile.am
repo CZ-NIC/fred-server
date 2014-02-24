@@ -505,59 +505,6 @@ util_hp_crc32_LDADD = \
 # util/hp/crc32
 
 
-# util/decimal/libmpdec.a
-#
-MPD_HEADER = @MPD_HEADER@
-MPD_WARN = @MPD_WARN@
-MPD_CONFIG = @MPD_CONFIG@
-
-util_decimal_libmpdec_a_CFLAGS = \
-		-I $(top_srcdir)/util/decimal/mpdecimal-2.2 \
-		-I $(top_builddir)/util/decimal/mpdecimal-2.2 \
-		$(CONFIGURE_CFLAGS)
-
-util_decimal_libmpdec_a_SOURCES = \
-		util/decimal/mpdecimal-2.2/basearith.c \
-		util/decimal/mpdecimal-2.2/context.c \
-		util/decimal/mpdecimal-2.2/constants.c \
-		util/decimal/mpdecimal-2.2/convolute.c \
-		util/decimal/mpdecimal-2.2/crt.c \
-		util/decimal/mpdecimal-2.2/mpdecimal.c \
-		util/decimal/mpdecimal-2.2/mpsignal.c \
-		util/decimal/mpdecimal-2.2/difradix2.c \
-		util/decimal/mpdecimal-2.2/fnt.c \
-		util/decimal/mpdecimal-2.2/fourstep.c \
-		util/decimal/mpdecimal-2.2/io.c \
-		util/decimal/mpdecimal-2.2/memory.c \
-		util/decimal/mpdecimal-2.2/numbertheory.c \
-		util/decimal/mpdecimal-2.2/sixstep.c \
-		util/decimal/mpdecimal-2.2/transpose.c \
-		util/decimal/mpdecimal-2.2/mptypes.h \
-		util/decimal/mpdecimal-2.2/umodarith.h \
-		util/decimal/mpdecimal-2.2/basearith.h \
-		util/decimal/mpdecimal-2.2/fnt.h \
-		util/decimal/mpdecimal-2.2/memory.h \
-		util/decimal/mpdecimal-2.2/mpdecimal32vc.h \
-		util/decimal/mpdecimal-2.2/convolute.h \
-		util/decimal/mpdecimal-2.2/difradix2.h \
-		util/decimal/mpdecimal-2.2/io.h \
-		util/decimal/mpdecimal-2.2/mpdecimal64vc.h \
-		util/decimal/mpdecimal-2.2/numbertheory.h \
-		util/decimal/mpdecimal-2.2/vccompat.h \
-		util/decimal/mpdecimal-2.2/constants.h \
-		util/decimal/mpdecimal-2.2/transpose.h \
-		util/decimal/mpdecimal-2.2/bits.h \
-		util/decimal/mpdecimal-2.2/fourstep.h \
-		util/decimal/mpdecimal-2.2/sixstep.h \
-		util/decimal/mpdecimal-2.2/vcstdint.h \
-		util/decimal/mpdecimal-2.2/crt.h \
-		util/decimal/mpdecimal-2.2/docstrings.h \
-		util/decimal/mpdecimal-2.2/mptest.h \
-		util/decimal/mpdecimal-2.2/typearith.h \
-		util/decimal/mpdecimal-2.2/vcdiv64.asm
-#
-# util/decimal/libmpdec.a
-
 # src/corba/util/libcorbautil.a
 #
 src_corba_util_libcorbautil_a_SOURCES = \
