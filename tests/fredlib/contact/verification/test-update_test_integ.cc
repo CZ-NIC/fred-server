@@ -34,7 +34,7 @@
 #include "src/fredlib/contact/create_contact.h"
 #include "src/fredlib/db_settings.h"
 #include "util/optional_value.h"
-#include "util/optional_nullable_equal.h"
+#include "util/is_equal_optional_nullable.h"
 #include "util/random_data_generator.h"
 
 #include "tests/fredlib/contact/verification/setup_utils.h"
@@ -327,7 +327,7 @@ void check(
                 BOOST_CHECK_EQUAL(post_it->state_history.back().status_handle, new_status);
                 BOOST_CHECK_EQUAL(post_it->state_history.back().logd_request_id, new_logd_request);
                 BOOST_CHECK_MESSAGE(
-                    equal(post_it->state_history.back().error_msg, new_error_msg ),
+                    Util::is_equal(post_it->state_history.back().error_msg, new_error_msg ),
                     std::string("difference in post_it->state_history.back() and new_error_msg")
                     + post_it->state_history.back().error_msg.print_quoted() + "\n"
                     + new_error_msg.print_quoted()
