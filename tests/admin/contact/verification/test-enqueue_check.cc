@@ -22,13 +22,11 @@
  */
 
 #include "src/admin/contact/verification/enqueue_check.h"
-#include "src/fredlib/contact/verification/enum_testsuite_handle.h"
 
 #include <boost/test/unit_test.hpp>
 
 
 #include "tests/admin/contact/verification/setup_utils.h"
-#include "tests/fredlib/contact/verification/setup_utils.h"
 
 //not using UTF defined main
 #define BOOST_TEST_NO_MAIN

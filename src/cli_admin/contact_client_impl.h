@@ -42,10 +42,7 @@
 #include "src/admin/contact/merge_contact.h"
 #include "src/admin/contact/merge_contact_reporting.h"
 #include "src/corba/logger_client_impl.h"
-#include "src/admin/contact/verification/fill_check_queue.h"
-#include "src/admin/contact/verification/enqueue_check.h"
-#include "src/admin/contact/verification/run_all_enqueued_checks.h"
-#include "src/admin/contact/verification/create_test_impl_prototypes.h"
+#include <admin/admin_contact_verification.h>
 
 #include "src/fredlib/mailer.h"
 #include "src/fredlib/documents.h"

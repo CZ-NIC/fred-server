@@ -23,11 +23,7 @@
 
 #include "src/admin/contact/verification/run_all_enqueued_checks.h"
 #include "src/admin/contact/verification/fill_check_queue.h"
-#include "src/fredlib/contact/verification/enum_check_status.h"
-#include "src/fredlib/contact/verification/enum_test_status.h"
-#include "src/fredlib/contact/verification/enum_testsuite_handle.h"
-#include "src/fredlib/contact/verification/create_check.h"
-#include "src/fredlib/contact/verification/update_check.h"
+#include <fredlib/admin_contact_verification.h>
 #include <fredlib/nsset.h>
 #include <fredlib/domain.h>
 #include "src/fredlib/object_states.h"
@@ -41,7 +37,6 @@
 #include <boost/shared_ptr.hpp>
 
 #include "tests/admin/contact/verification/setup_utils.h"
-#include "tests/fredlib/contact/verification/setup_utils.h"
 
 //not using UTF defined main
 #define BOOST_TEST_NO_MAIN
