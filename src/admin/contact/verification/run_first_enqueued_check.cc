@@ -37,7 +37,7 @@ namespace  Admin {
      * and locking is retried.
      * Iterates until some contact_test is locked successfully or all tests of given check are already running (and can't be locked).
      *
-     * @param _check_id check whose tests are tried to lock
+     * @param _check_handle check whose tests are tried to lock
      * @return locked test handle
      */
     static std::string lazy_get_locked_running_test(

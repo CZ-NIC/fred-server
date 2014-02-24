@@ -69,7 +69,7 @@ namespace Fred
             /**
              * constructor with all available parameters including optional ones
              * @param _max_item_count   how many records shall be returned at most.
-             * @param _testsuite_name   filter: only checks with given testsuite are returned
+             * @param _testsuite_handle filter: only checks with given testsuite are returned
              * @param _contact_id       filter: only checks of given contact (connected by historyid) are returned
              */
             ListContactChecks(

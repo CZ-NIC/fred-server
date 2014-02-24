@@ -44,7 +44,7 @@ namespace Fred
             /**
              * constructor only with mandatory parameters
              * @param _check_handle     identifies which contact_check to update.
-             * @param _status_name      denotes status to be set. Allowed values are in enum_check_status.h or enum_contact_check_status in database.
+             * @param _status_handle    denotes status to be set. Allowed values are in enum_check_status.h or enum_contact_check_status in database.
              */
             UpdateContactCheck( const std::string& _check_handle,
                                 const std::string& _status_handle);
@@ -52,8 +52,8 @@ namespace Fred
             /**
              * constructor with all available parameters including optional ones
              * @param _check_handle     identifies which contact_check to update by it's handle.
-             * @param _status_name      denotes status to be set by it's name. Allowed values are in enum_check_status.h or enum_contact_check_status.name in database.
-             * @param _logd_request_id  denotes entry in log_entry (by id) database table related to this update.
+             * @param _status_handle    denotes status to be set. Allowed values are in enum_check_status.h or enum_contact_check_status.name in database.
+             * @param _logd_request_id  denotes entry in log_entry database table related to this update.
              */
             UpdateContactCheck( const std::string&              _check_handle,
                                 const std::string&              _status_handle,

@@ -65,14 +65,14 @@ namespace ContactVerification{
              * @return final status of the test, optional error message and optional related states and messages
              */
             virtual T_run_result run(long _history_id) const = 0;
-            virtual ~Test() {};
+            virtual ~Test() { }
             static string registration_name();
     };
 
     struct TestDataProvider_intf {
         virtual TestDataProvider_intf& init_data(unsigned long long _contact_history_id) = 0;
         virtual vector<string> get_string_data() const = 0;
-        virtual ~TestDataProvider_intf() {};
+        virtual ~TestDataProvider_intf() { }
     };
 
     template<typename Test> struct _inheritTestRegName {

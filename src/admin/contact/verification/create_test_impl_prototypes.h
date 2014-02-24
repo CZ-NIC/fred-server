@@ -37,7 +37,7 @@
 namespace Admin {
 
     /**
-     * @return mapping of testnames to test implementation instances
+     * @return mapping of testnames to configured test implementation instances
      */
     std::map<std::string, boost::shared_ptr<Admin::ContactVerification::Test> > create_test_impl_prototypes(
         boost::shared_ptr<Fred::Mailer::Manager>   _mailer_manager,

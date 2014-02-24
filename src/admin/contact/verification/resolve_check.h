@@ -61,6 +61,10 @@ namespace Admin {
                 const std::string&              _status_handle,
                 Optional<unsigned long long>    _logd_request_id);
 
+            /**
+             * setter of optional logd_request_id
+             * Call with another value for re-set, no need to unset first.
+             */
             resolve_check& set_logd_request_id(Optional<unsigned long long> _logd_request_id);
 
 

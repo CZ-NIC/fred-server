@@ -38,24 +38,6 @@ namespace Fred
     /**
      * Return structure of operation @ref InfoContactCheck. Includes type definition of it's own parts.
      * All times are returned as local @ref InfoContactCheck::exec().
-     *
-     * consists of:
-     * + handle
-     * + testsuite handle
-     * + contact history id
-     * + create time
-     * + check state history []
-     *    + status
-     *    + update time
-     *    + logd request id
-     * + test result data []
-     *    + test handle
-     *    + create time
-     *    + test state history []
-     *       + status
-     *       + error msg
-     *       + update time
-     *       + logd request id
      */
     struct InfoContactCheckOutput {
         struct ContactTestResultState {
@@ -97,7 +79,7 @@ namespace Fred
         std::string                        testsuite_handle;
         unsigned long long                 contact_history_id;
         boost::posix_time::ptime           local_create_time;
-        std::vector<ContactCheckState>     check_state_history; /* current state is also included */
+        std::vector<ContactCheckState>     check_state_history; ///< current state is also included */
         std::vector<ContactTestResultData> tests;
 
         std::string to_string(const std::string& _each_line_prefix = "\t") const;
@@ -123,7 +105,7 @@ namespace Fred
              * commit operation
              * @param _output_timezone Postgres time zone input type (as string e. g. "Europe/Prague") for conversion to local time values.
              * @throws Fred::ExceptionUnknownCheckHandle
-             * @return Data of existing check in InfoContactCheckOutput structured.
+             * @return Data of existing check in InfoContactCheckOutput structure.
              */
             InfoContactCheckOutput exec(OperationContext& _ctx, const std::string& _output_timezone = "Europe/Prague");
             // serialization

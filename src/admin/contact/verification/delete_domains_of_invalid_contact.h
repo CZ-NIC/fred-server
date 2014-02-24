@@ -32,6 +32,11 @@
 namespace Admin {
 
     /**
+     * Deletes domains owned by contact which MANUAL check FAILED.
+     * If check IS NOT MANUAL or the result is NOT FAILED then does nothing.
+     *
+     * Creates Delete Domain Poll Message as sideeffect and stores the relation between the message and check.
+     *
      * @throws Admin::ExceptionUnknownCheckHandle
      */
     void delete_domains_of_invalid_contact(

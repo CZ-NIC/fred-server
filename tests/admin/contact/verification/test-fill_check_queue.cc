@@ -18,7 +18,7 @@
 
 /**
  *  @file
- *  integration tests for admin/contact/verification/fill_automatic_check_queue.cc
+ *  integration tests for admin/contact/verification/fill_check_queue.cc
  */
 
 #include "src/admin/contact/verification/run_all_enqueued_checks.h"
