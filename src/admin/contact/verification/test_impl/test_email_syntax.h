@@ -80,7 +80,7 @@ namespace ContactVerification
 
         virtual vector<string> get_string_data() const {
             return boost::assign::list_of(email_);
-        };
+        }
 
         static string registration_name() { return TestEmailSyntax::registration_name(); }
     };

@@ -49,7 +49,7 @@ namespace Fred
             std::string to_string(const std::string& _each_line_prefix = "\t") const;
             bool operator==(const ContactTestResultState& rhs) const {
                 return this->to_string() == rhs.to_string();
-            };
+            }
         };
 
         struct ContactTestResultData {
@@ -60,7 +60,7 @@ namespace Fred
             std::string to_string(const std::string& _each_line_prefix = "\t") const;
             bool operator==(const ContactTestResultData& rhs) const {
                 return this->to_string() == rhs.to_string();
-            };
+            }
         };
 
         struct ContactCheckState {
@@ -71,7 +71,7 @@ namespace Fred
             std::string to_string(const std::string& _each_line_prefix = "\t") const;
             bool operator==(const ContactCheckState& rhs) const {
                 return this->to_string() == rhs.to_string();
-            };
+            }
         };
 
 
@@ -85,7 +85,7 @@ namespace Fred
         std::string to_string(const std::string& _each_line_prefix = "\t") const;
         bool operator==(const InfoContactCheckOutput& rhs) const {
             return this->to_string() == rhs.to_string();
-        };
+        }
     };
 
     /**

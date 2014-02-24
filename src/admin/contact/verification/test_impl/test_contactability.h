@@ -143,7 +143,7 @@ namespace ContactVerification
                 (stateorprovince_)
                 (postalcode_)
                 (country_);
-        };
+        }
     };
 }
 }

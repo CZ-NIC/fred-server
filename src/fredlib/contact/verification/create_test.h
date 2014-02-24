@@ -54,8 +54,8 @@ namespace Fred
         /**
          * constructor with all available parameters including optional ones
          * @param _check_handle     identifies which contact_check this test belongs to (by check's handle).
-         * @param _test_handle      denotes type of test (by it's handle) to be run. Allowed values are in enum_contact_test.name in database.
-         * @param _logd_request_id  identifies (by id) optional log entry in logd related to this operation.
+         * @param _test_handle      denotes type of test to be run. Allowed values are in enum_contact_test.name in database.
+         * @param _logd_request_id  identifies optional log entry in logd related to this operation.
          */
         CreateContactTest(
             const std::string&              _check_handle,

@@ -38,8 +38,8 @@ namespace Registry
                 Server_i& operator= (const Server_i&); // no definition
 
             public:
-                Server_i() {};
-                virtual ~Server_i(){};
+                Server_i() { }
+                virtual ~Server_i(){ }
 
                 // Methods corresponding to IDL attributes and operations
                 virtual ContactCheckDetail* getContactCheckDetail(const char* check_handle);

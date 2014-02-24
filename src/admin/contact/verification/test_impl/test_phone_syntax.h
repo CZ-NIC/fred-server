@@ -66,7 +66,7 @@ namespace ContactVerification
 
         virtual vector<string> get_string_data() const {
             return boost::assign::list_of(phone_);
-        };
+        }
     };
 }
 }
