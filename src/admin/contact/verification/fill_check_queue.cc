@@ -241,7 +241,7 @@ namespace ContactVerificationQueue {
         return result;
     }
 
-    fill_check_queue::fill_check_queue(std::string _testsuite_handle, unsigned _max_queue_length)
+    fill_check_queue::fill_check_queue(const std::string& _testsuite_handle, unsigned _max_queue_length)
     :
         testsuite_handle_(_testsuite_handle),
         max_queue_length_(_max_queue_length)

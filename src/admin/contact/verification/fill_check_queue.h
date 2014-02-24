@@ -66,7 +66,7 @@ namespace ContactVerificationQueue {
              * @param _max_queue_length Will not add any check above this limit.
              */
             fill_check_queue(
-                std::string _testsuite_handle,
+                const std::string& _testsuite_handle,
                 unsigned _max_queue_length);
 
             /**
