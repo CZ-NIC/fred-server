@@ -21,12 +21,6 @@ namespace  Admin {
         Fred::InfoContactCheckOutput check_info = Fred::InfoContactCheck(_check_handle)
             .exec(ctx_info);
 
-        const unsigned long long contact_id =
-        Fred::HistoryInfoContactByHistoryid(
-            check_info.contact_history_id
-        ).exec(ctx_info)
-            .info_contact_data.id;
-
         std::string collumn_name = (_is_mail) ? "mail_archive_id" : "message_archive_id";
 
         _ctx.get_conn().exec("SAVEPOINT related_communication_savepoint");

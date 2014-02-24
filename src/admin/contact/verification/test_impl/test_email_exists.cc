@@ -57,7 +57,7 @@ namespace ContactVerification {
         unsigned char* buffer_ptr;
         try {
             buffer_ptr = new unsigned char[100];
-        } catch(std::exception& e) {
+        } catch(const std::exception&) {
             return make_result( Fred::ContactTestStatus::ERROR, string("runtime error") );
         }
         boost::scoped_array<unsigned char> buffer_scoped(buffer_ptr);

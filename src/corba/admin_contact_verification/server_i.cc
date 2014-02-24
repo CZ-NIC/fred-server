@@ -144,7 +144,6 @@ namespace Corba {
 
         out->length(in.size());
 
-        std::pair<std::string, unsigned long long> contact_data;
         long list_index = 0;
         for(std::vector<Fred::ListChecksItem>::const_iterator it = in.begin(); it != in.end(); ++it, ++list_index) {
             out->operator[](list_index).check_handle =          Corba::wrap_string(it->check_handle);

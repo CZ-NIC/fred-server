@@ -369,7 +369,6 @@ namespace  Admin {
         bool has_some_ok = false;
         bool has_some_fail = false;
         bool has_some_error = false;
-        bool has_some_skipped = false;  // mainly to prevent from counting SKIPPED as OTHER
         bool has_some_running = false;
         bool has_some_other = false;
 
@@ -378,12 +377,12 @@ namespace  Admin {
                 has_some_ok = true;
             } else if(status == Fred::ContactTestStatus::FAIL) {
                 has_some_fail = true;
-            } else if(status == Fred::ContactTestStatus::SKIPPED) {
-                has_some_skipped = true;
             } else if(status == Fred::ContactTestStatus::ERROR) {
                 has_some_error = true;
             } else if(status == Fred::ContactTestStatus::RUNNING) {
                 has_some_running = true;
+            } else if(status == Fred::ContactTestStatus::SKIPPED) {
+                // do nothing but don't count it as other
             } else {
                 has_some_other = true;
             }
