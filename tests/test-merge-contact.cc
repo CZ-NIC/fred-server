@@ -1564,20 +1564,21 @@ BOOST_FIXTURE_TEST_CASE(test_merge_keyset_tech_contacts, merge_tech_contact_keys
     {
         Fred::OperationContext ctx;
         Fred::InfoKeysetOutput keyset_info_1 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
+        Fred::InfoContactOutput contact_info_1 = Fred::InfoContactByHandle(contact_handle_1).exec(ctx);
+        Fred::InfoContactOutput contact_info_2 = Fred::InfoContactByHandle(contact_handle_2).exec(ctx);
+
         Fred::MergeContactOutput merge_data = Fred::MergeContact(contact_handle_1, contact_handle_2, sys_registrar_handle).exec(ctx);
         Fred::InfoKeysetOutput keyset_info_2 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
 
         BOOST_CHECK(keyset_info_1 != keyset_info_2);
 
         //src contact is not admin
-        Fred::InfoContactOutput contact_info_1 = Fred::InfoContactByHandle(contact_handle_1).exec(ctx);
         BOOST_CHECK(std::find(keyset_info_2.info_keyset_data.tech_contacts.begin(),
             keyset_info_2.info_keyset_data.tech_contacts.end(),
             Fred::ObjectIdHandlePair(contact_info_1.info_contact_data.id, contact_info_1.info_contact_data.handle)
                 ) == keyset_info_2.info_keyset_data.tech_contacts.end());
 
         //dst contact is admin
-        Fred::InfoContactOutput contact_info_2 = Fred::InfoContactByHandle(contact_handle_2).exec(ctx);
         BOOST_CHECK(std::find(keyset_info_2.info_keyset_data.tech_contacts.begin(),
             keyset_info_2.info_keyset_data.tech_contacts.end(),
             Fred::ObjectIdHandlePair(contact_info_2.info_contact_data.id, contact_info_2.info_contact_data.handle)
@@ -1594,6 +1595,7 @@ BOOST_FIXTURE_TEST_CASE(test_merge_keyset_tech_contacts, merge_tech_contact_keys
         BOOST_CHECK(Fred::diff_keyset_data(keyset_info_1.info_keyset_data, keyset_info_2.info_keyset_data).is_empty());
 
         BOOST_MESSAGE(merge_data);
+
         ctx.commit_transaction();
     }
     catch(boost::exception& ex)
