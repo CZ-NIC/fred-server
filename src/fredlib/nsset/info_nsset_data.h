@@ -32,6 +32,7 @@
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
 #include "util/printable.h"
+#include "src/fredlib/object/object_id_handle_pair.h"
 
 #include "nsset_dns_host.h"
 
@@ -58,7 +59,7 @@ namespace Fred
         std::string authinfopw;/**< password for transfer */
         Nullable<short> tech_check_level; /**< nsset level of technical checks */
         std::vector<DnsHost> dns_hosts; /**< DNS hosts */
-        std::vector<std::string> tech_contacts;/**< list of technical contact handles */
+        std::vector<ObjectIdHandlePair> tech_contacts;/**< list of technical contacts */
 
         /**
         * Constructor of the nsset data structure.
