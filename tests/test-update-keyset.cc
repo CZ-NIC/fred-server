@@ -48,6 +48,7 @@
 #include "src/fredlib/domain/update_domain.h"
 #include "src/fredlib/nsset/update_nsset.h"
 #include "src/fredlib/keyset/update_keyset.h"
+#include "src/fredlib/contact/info_contact.h"
 #include "src/fredlib/contact/delete_contact.h"
 #include "src/fredlib/contact/create_contact.h"
 #include "src/fredlib/nsset/create_nsset.h"
@@ -237,7 +238,9 @@ BOOST_FIXTURE_TEST_CASE(update_keyset, update_keyset_fixture )
     info_data_2_with_changes.info_keyset_data.dns_keys = Util::vector_of<Fred::DnsKey> (Fred::DnsKey(257, 3, 5, "key"));
 
     //tech contacts
-    info_data_2_with_changes.info_keyset_data.tech_contacts = Util::vector_of<std::string>(admin_contact5_handle);
+    Fred::InfoContactOutput admin_contact5_info  = Fred::InfoContactByHandle(admin_contact5_handle).exec(ctx);
+    info_data_2_with_changes.info_keyset_data.tech_contacts = Util::vector_of<Fred::ObjectIdHandlePair>(Fred::ObjectIdHandlePair(
+        admin_contact5_info.info_contact_data.id, admin_contact5_info.info_contact_data.handle));
 
     //check changes made by last update
     BOOST_CHECK(info_data_2_with_changes == info_data_3);
@@ -358,7 +361,9 @@ BOOST_FIXTURE_TEST_CASE(update_keyset, update_keyset_fixture )
     info_data_5_with_changes.info_keyset_data.update_time = info_data_6.info_keyset_data.update_time;
 
     //add tech contact
-    info_data_5_with_changes.info_keyset_data.tech_contacts.push_back(admin_contact4_handle);
+    Fred::InfoContactOutput admin_contact4_info  = Fred::InfoContactByHandle(admin_contact4_handle).exec(ctx);
+    info_data_5_with_changes.info_keyset_data.tech_contacts.push_back(Fred::ObjectIdHandlePair(
+        admin_contact4_info.info_contact_data.id, admin_contact4_info.info_contact_data.handle));
 
     //check changes made by last update
     BOOST_CHECK(info_data_5_with_changes == info_data_6);
@@ -399,9 +404,11 @@ BOOST_FIXTURE_TEST_CASE(update_keyset, update_keyset_fixture )
 
     //rem tech contact
     info_data_6_with_changes.info_keyset_data.tech_contacts.erase(
-        std::remove(info_data_6_with_changes.info_keyset_data.tech_contacts.begin()
-        , info_data_6_with_changes.info_keyset_data.tech_contacts.end(), admin_contact5_handle)
-        , info_data_6_with_changes.info_keyset_data.tech_contacts.end());
+        std::remove(info_data_6_with_changes.info_keyset_data.tech_contacts.begin(),
+            info_data_6_with_changes.info_keyset_data.tech_contacts.end(),
+            Fred::ObjectIdHandlePair(admin_contact5_info.info_contact_data.id,
+                    admin_contact5_info.info_contact_data.handle)),
+        info_data_6_with_changes.info_keyset_data.tech_contacts.end());
 
     //check changes made by last update
     BOOST_CHECK(info_data_6_with_changes == info_data_7);

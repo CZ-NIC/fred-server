@@ -61,7 +61,7 @@ namespace Fred
         DiffMemeber<std::string>::Type authinfopw;/**< password for transfer */
 
         DiffMemeber<std::vector<DnsKey> >::Type dns_keys;/**< DNS keys */
-        DiffMemeber<std::vector<std::string> >::Type tech_contacts;/**< list of technical contact handles */
+        DiffMemeber<std::vector<ObjectIdHandlePair> >::Type tech_contacts;/**< list of technical contacts*/
 
         DiffMemeber<unsigned long long>::Type id;/**< id of the keyset object*/
 
