@@ -84,7 +84,7 @@ namespace ContactVerification {
         xmlXPathFreeContext(xpathCtx_);
         xmlFreeDoc(doc_);
     }
-    Test::T_run_result TestCzAddress::run(long _history_id) const {
+    Test::T_run_result TestCzAddress::run(unsigned long long _history_id) const {
         using std::string;
         using std::vector;
 
@@ -431,7 +431,7 @@ namespace ContactVerification {
             vector<string> temp;
             vector<string>::const_reverse_iterator it = house_numbers.rbegin();
             temp.push_back(*it);
-            it++;
+            ++it;
             if(it != house_numbers.rend()) {
                 temp.push_back(*it);
                 std::reverse(temp.begin(), temp.end());
@@ -534,7 +534,7 @@ namespace ContactVerification {
         ) {
             nth_word = get_nth_word_pre + lhs_processed + get_nth_word_suff;
             TestCzAddress::T_words_shortened::iterator it_test = it;
-            it_test++;
+            ++it_test;
 
             // first word in string
             if(it == _shortened_words.begin()) {

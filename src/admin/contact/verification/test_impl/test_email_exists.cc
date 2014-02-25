@@ -34,7 +34,7 @@ namespace ContactVerification {
 
     FACTORY_MODULE_INIT_DEFI(TestEmailExists_init)
 
-    Test::T_run_result TestEmailExists::run(long _history_id) const {
+    Test::T_run_result TestEmailExists::run(unsigned long long _history_id) const {
         using std::string;
         using std::vector;
 
@@ -57,7 +57,7 @@ namespace ContactVerification {
         unsigned char* buffer_ptr;
         try {
             buffer_ptr = new unsigned char[100];
-        } catch(std::exception& e) {
+        } catch(const std::exception&) {
             return make_result( Fred::ContactTestStatus::ERROR, string("runtime error") );
         }
         boost::scoped_array<unsigned char> buffer_scoped(buffer_ptr);

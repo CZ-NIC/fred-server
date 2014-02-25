@@ -28,16 +28,14 @@
 #include <utility>
 #include <string>
 
-#include "src/fredlib/contact/verification/create_check.h"
-#include "src/fredlib/contact/verification/info_check.h"
-#include "src/fredlib/contact/verification/enum_check_status.h"
 #include <fredlib/contact.h>
+#include <fredlib/admin_contact_verification.h>
+
 #include "src/fredlib/db_settings.h"
 #include "util/db/nullable.h"
 #include "util/random_data_generator.h"
 
 #include "tests/fredlib/contact/verification/setup_utils.h"
-
 #include "src/admin/contact/verification/test_impl/test_interface.h"
 
 
@@ -73,7 +71,7 @@ class DummyTestReturning: public Admin::ContactVerification::Test {
                 break;
             }
         }
-        T_run_result run(long _history_id) const {
+        T_run_result run(unsigned long long _history_id) const {
             return make_result(return_status, return_status);
         }
         static std::string registration_name() { return "DummyTestReturning"; }
@@ -116,7 +114,7 @@ class DummyThrowingTest: public Admin::ContactVerification::Test {
             id_ = static_cast<long>(res[0]["id_"]);
         }
 
-        T_run_result run(long _history_id) const {
+        T_run_result run(unsigned long long _history_id) const {
             throw std::runtime_error("not exactly a feature");
         }
         static std::string registration_name() { return "DummyThrowingTest"; }

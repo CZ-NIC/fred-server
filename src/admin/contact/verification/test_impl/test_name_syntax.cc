@@ -28,7 +28,7 @@ namespace ContactVerification {
 
     FACTORY_MODULE_INIT_DEFI(TestNameSyntax_init)
 
-    Test::T_run_result TestNameSyntax::run(long _history_id) const {
+    Test::T_run_result TestNameSyntax::run(unsigned long long _history_id) const {
         TestDataProvider<TestNameSyntax> data;
         data.init_data(_history_id);
 

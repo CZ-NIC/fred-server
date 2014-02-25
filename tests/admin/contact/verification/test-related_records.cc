@@ -27,7 +27,6 @@
 
 
 #include "tests/admin/contact/verification/setup_utils.h"
-#include "tests/fredlib/contact/verification/setup_utils.h"
 
 //not using UTF defined main
 #define BOOST_TEST_NO_MAIN

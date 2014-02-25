@@ -31,7 +31,7 @@ namespace ContactVerification {
 
     FACTORY_MODULE_INIT_DEFI(TestPhoneSyntax_init)
 
-    Test::T_run_result TestPhoneSyntax::run(long _history_id) const {
+    Test::T_run_result TestPhoneSyntax::run(unsigned long long _history_id) const {
         TestDataProvider<TestPhoneSyntax> data;
         data.init_data(_history_id);
 

@@ -35,7 +35,7 @@
 #include "src/fredlib/contact/create_contact.h"
 #include "src/fredlib/db_settings.h"
 #include "util/optional_value.h"
-#include "util/optional_nullable_equal.h"
+#include "util/is_equal_optional_nullable.h"
 #include "util/random_data_generator.h"
 
 #include "tests/fredlib/contact/verification/setup_utils.h"
@@ -220,7 +220,7 @@ BOOST_AUTO_TEST_CASE(test_Exec)
     for(int i=0; i<check_history_steps; ++i) {
         BOOST_CHECK_EQUAL(check_status_history.at(i), info.check_state_history.at(i).status_handle);
         BOOST_CHECK_MESSAGE(
-            equal(
+            Util::is_equal(
                 check_logd_request_history.at(i),
                 info.check_state_history.at(i).logd_request_id
             ),
@@ -236,7 +236,7 @@ BOOST_AUTO_TEST_CASE(test_Exec)
                 tests_status_history.at(i).at(j),
                 info.tests.at(i).state_history.at(j).status_handle);
             BOOST_CHECK_MESSAGE(
-                equal(
+                Util::is_equal(
                     tests_logd_request_history.at(i).at(j),
                     info.tests.at(i).state_history.at(j).logd_request_id
                 ),
@@ -245,8 +245,8 @@ BOOST_AUTO_TEST_CASE(test_Exec)
                 + info.tests.at(i).state_history.at(j).logd_request_id.print_quoted()
             );
             BOOST_CHECK_MESSAGE(
-                equal(
-                        tests_error_msg_history.at(i).at(j),
+                Util::is_equal(
+                    tests_error_msg_history.at(i).at(j),
                     info.tests.at(i).state_history.at(j).error_msg
                 ),
                 tests_error_msg_history.at(i).at(j).print_quoted()

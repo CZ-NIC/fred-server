@@ -30,17 +30,29 @@
 
 namespace Admin {
 
+    /**
+     * Stores the relation between check and mail.
+     * Mail itself has to be already created otherwise postgres exception is thrown.
+     */
     void add_related_mail(
         Fred::OperationContext&             _ctx,
         const std::string&                  _check_handle,
         const std::set<unsigned long long>& _mail_archive_ids
     );
 
+    /**
+     * Stores the relation between check and message.
+     * Message itself has to be already created otherwise postgres exception is thrown.
+     */
     void add_related_messages(
         Fred::OperationContext&             _ctx,
         const std::string&                  _check_handle,
         const std::set<unsigned long long>& _message_archive_ids);
 
+    /**
+     * Stores the relation between check and object state request.
+     * Object state request itself has to be already created otherwise postgres exception is thrown.
+     */
     void add_related_object_state_requests(
         Fred::OperationContext&             _ctx,
         const std::string&                  _check_handle,

@@ -46,7 +46,7 @@ namespace ContactVerification {
 
     unsigned long long TestContactability::generate_pdf(
         const std::string&                      _contact_handle,
-        unsigned long                           _contact_history_id,
+        unsigned long long                      _contact_history_id,
         const std::string&                      _contact_email,
         const Fred::Messages::PostalAddress&    _contact_address
     ) const {
@@ -98,7 +98,7 @@ namespace ContactVerification {
                 "");
     }
 
-    Test::T_run_result TestContactability::run(long _history_id) const {
+    Test::T_run_result TestContactability::run(unsigned long long _history_id) const {
         TestDataProvider<TestContactability> data;
         data.init_data(_history_id);
 
@@ -197,9 +197,9 @@ namespace ContactVerification {
     }
 
     unsigned long long TestContactability::send_letter(
-        unsigned long                           _contact_id,
+        unsigned long long                      _contact_id,
         const std::string&                      _contact_handle,
-        unsigned long                           _contact_history_id,
+        unsigned long long                      _contact_history_id,
         const Fred::Messages::PostalAddress&    _contact_address,
         unsigned long long                      _pdf_file_id
     ) const {

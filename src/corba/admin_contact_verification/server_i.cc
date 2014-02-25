@@ -27,15 +27,9 @@
 #include <utility>
 
 #include <fredlib/contact.h>
-#include "src/admin/contact/verification/enqueue_check.h"
-#include "src/admin/contact/verification/test_impl/test_interface.h"
-#include "src/fredlib/contact/verification/update_check.h"
-#include "src/fredlib/contact/verification/info_check.h"
-#include "src/fredlib/contact/verification/list_checks.h"
-#include "src/fredlib/contact/verification/list_enum_objects.h"
-#include "src/fredlib/contact/verification/update_test.h"
-#include "src/admin/contact/verification/resolve_check.h"
-#include "src/admin/contact/verification/delete_domains_of_invalid_contact.h"
+#include <fredlib/admin_contact_verification.h>
+#include <admin/admin_contact_verification.h>
+
 #include "src/corba/util/corba_conversions_datetime.h"
 #include "src/corba/util/corba_conversions_string.h"
 #include "src/corba/util/corba_conversions_nullable_types.h"
@@ -144,7 +138,6 @@ namespace Corba {
 
         out->length(in.size());
 
-        std::pair<std::string, unsigned long long> contact_data;
         long list_index = 0;
         for(std::vector<Fred::ListChecksItem>::const_iterator it = in.begin(); it != in.end(); ++it, ++list_index) {
             out->operator[](list_index).check_handle =          Corba::wrap_string(it->check_handle);

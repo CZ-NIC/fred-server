@@ -34,8 +34,7 @@
 namespace Fred
 {
     /**
-     * Creates:
-     *  - new record in contact_check table with status @ref ContactCheckStatus::ENQUEUED
+     * Creates new record in contact_check table with status @ref ContactCheckStatus::ENQUEUED
      */
     class CreateContactCheck : public Util::Printable
     {
@@ -47,7 +46,7 @@ namespace Fred
             /**
              * constructor only with mandatory parameters
              * @param _contact_id       identifies contact to be checked - current "snapshot" of historical data is used during check.
-             * @param _testsuite_handle   denotes set (by it's handle) of tests to be run when this check is started.
+             * @param _testsuite_handle denotes testsuite to be run when this check is started.
              */
             CreateContactCheck(
                 unsigned long long _contact_id,
@@ -55,9 +54,9 @@ namespace Fred
             );
             /**
              * constructor with all available parameters including optional ones
-             * @param _contact_id       identifies contact to be checked - current "snapshot" of historical data is used during check.
-             * @param _testsuite_name   denotes set (by it's handle) of tests to be run when this check is started.
-             * @param _logd_request_id  identifies (by id) optional log entry in logd related to this operation.
+             * @param _contact_id       identifies contact to be checked - data realated to current history_id will be used during check.
+             * @param _testsuite_handle denotes testsuite to be run when this check is started.
+             * @param _logd_request_id  identifies optional log entry in logd related to this operation.
              */
             CreateContactCheck(
                 unsigned long long              _contact_id,

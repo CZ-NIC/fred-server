@@ -14,18 +14,31 @@
 
 #include <set>
 #include <boost/foreach.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/make_shared.hpp>
 #include <boost/assign/list_of.hpp>
 
 namespace  Admin {
+
+    static void preprocess_automatic_check(
+        Fred::OperationContext& _ctx,
+        const std::string& _check_handle);
+
+    static void preprocess_manual_check(
+        Fred::OperationContext& _ctx,
+        const std::string& _check_handle);
 
     /**
      * Lock some contact_check with running status.
      * If no existing running check can be be locked check with status enqueued is looked for, it's status updated and locking is retried.
      * Iterates until some contact_check is locked successfully or there is neither any lockable check with running status nor check with enqueued status.
      *
-     * @return locked check id
+     * @return locked check id and OperationContext in whose transacation it is locked
      */
-    static std::string lazy_get_locked_running_check(Fred::OperationContext& _ctx, Optional<unsigned long long> _logd_request_id);
+    static std::pair<
+    std::string,
+    boost::shared_ptr<Fred::OperationContext>
+    > lazy_get_locked_running_check(Optional<unsigned long long> _logd_request_id);
     /**
      * Important side-effect: tests of this check are created in db with status enqueued.
      */
@@ -37,7 +50,7 @@ namespace  Admin {
      * and locking is retried.
      * Iterates until some contact_test is locked successfully or all tests of given check are already running (and can't be locked).
      *
-     * @param _check_id check whose tests are tried to lock
+     * @param _check_handle check whose tests are tried to lock
      * @return locked test handle
      */
     static std::string lazy_get_locked_running_test(
@@ -64,10 +77,19 @@ namespace  Admin {
         const std::map<std::string, boost::shared_ptr<Admin::ContactVerification::Test> >& _tests,
         Optional<unsigned long long> _logd_request_id
     ) {
-        Fred::OperationContext ctx_locked_check;
+        // has to be optional because it is used as return value
         Optional<std::string> check_handle;
+        boost::shared_ptr<Fred::OperationContext> ctx_locked_check;
+
         try {
-            check_handle = lazy_get_locked_running_check(ctx_locked_check, _logd_request_id);
+            std::pair<
+                std::string,
+                boost::shared_ptr<Fred::OperationContext> > temp_result;
+
+            temp_result = lazy_get_locked_running_check(_logd_request_id);
+            check_handle = temp_result.first;
+            ctx_locked_check = temp_result.second;
+
         } catch (ExceptionNoEnqueuedChecksAvailable&) {
             return check_handle;
         }
@@ -75,12 +97,12 @@ namespace  Admin {
         /* right now this is just a query for history_id
            as there is not much in check's history and no tests either it is acceptable */
         Fred::InfoContactCheckOutput check_info (
-            Fred::InfoContactCheck(check_handle).exec(ctx_locked_check) );
+            Fred::InfoContactCheck(check_handle).exec(*ctx_locked_check) );
 
         if(check_info.testsuite_handle == Fred::TestsuiteHandle::AUTOMATIC) {
-            preprocess_automatic_check(ctx_locked_check, check_handle);
+            preprocess_automatic_check(*ctx_locked_check, check_handle);
         } else if(check_info.testsuite_handle == Fred::TestsuiteHandle::MANUAL) {
-            preprocess_manual_check(ctx_locked_check, check_handle);
+            preprocess_manual_check(*ctx_locked_check, check_handle);
         }
 
         std::vector<std::string> test_statuses;
@@ -157,12 +179,12 @@ namespace  Admin {
                     update_operation.set_logd_request_id(_logd_request_id.get_value());
                 }
 
-                update_operation.exec(ctx_locked_check);
+                update_operation.exec(*ctx_locked_check);
 
-                Admin::add_related_messages(ctx_locked_check, check_handle, related_message_ids);
-                Admin::add_related_mail(ctx_locked_check, check_handle, related_mail_ids);
+                Admin::add_related_messages(*ctx_locked_check, check_handle, related_message_ids);
+                Admin::add_related_mail(*ctx_locked_check, check_handle, related_mail_ids);
 
-                ctx_locked_check.commit_transaction();
+                ctx_locked_check->commit_transaction();
             } catch(...) {
                 // the caught exception is probably the cause for this one as well
             }
@@ -179,19 +201,25 @@ namespace  Admin {
             update_operation.set_logd_request_id(_logd_request_id.get_value());
         }
 
-        update_operation.exec(ctx_locked_check);
+        update_operation.exec(*ctx_locked_check);
 
-        Admin::add_related_messages(ctx_locked_check, check_handle, related_message_ids);
-        Admin::add_related_mail(ctx_locked_check, check_handle, related_mail_ids);
+        Admin::add_related_messages(*ctx_locked_check, check_handle, related_message_ids);
+        Admin::add_related_mail(*ctx_locked_check, check_handle, related_mail_ids);
 
-        ctx_locked_check.commit_transaction();
+        ctx_locked_check->commit_transaction();
 
         return check_handle;
     }
 
-    std::string lazy_get_locked_running_check(Fred::OperationContext& _ctx, Optional<unsigned long long> _logd_request_id) {
+    std::pair<
+        std::string,
+        boost::shared_ptr<Fred::OperationContext>
+        > lazy_get_locked_running_check(Optional<unsigned long long> _logd_request_id
+    ) {
+        boost::shared_ptr<Fred::OperationContext> result_ctx = boost::make_shared<Fred::OperationContext>();
+
         while(true) {
-            Database::Result locked_check_res = _ctx.get_conn().exec_params(
+            Database::Result locked_check_res = result_ctx->get_conn().exec_params(
                 "SELECT c_ch.handle AS check_handle_ "
                 "   FROM contact_check AS c_ch "
                 "       JOIN enum_contact_check_status AS enum_status ON c_ch.enum_contact_check_status_id = enum_status.id "
@@ -202,10 +230,13 @@ namespace  Admin {
             );
 
             if(locked_check_res.size() == 1) {
-                return static_cast<std::string>(locked_check_res[0]["check_handle_"]);
+                return std::make_pair(
+                    static_cast<std::string>(locked_check_res[0]["check_handle_"]),
+                    result_ctx);
             } else if(locked_check_res.size() == 0) {
                 try {
                     update_some_enqueued_check_to_running(_logd_request_id);
+                    result_ctx.reset(new Fred::OperationContext);
                 } catch(ExceptionNoEnqueuedChecksAvailable&) {
                     throw;
                 }
@@ -369,7 +400,6 @@ namespace  Admin {
         bool has_some_ok = false;
         bool has_some_fail = false;
         bool has_some_error = false;
-        bool has_some_skipped = false;  // mainly to prevent from counting SKIPPED as OTHER
         bool has_some_running = false;
         bool has_some_other = false;
 
@@ -378,12 +408,12 @@ namespace  Admin {
                 has_some_ok = true;
             } else if(status == Fred::ContactTestStatus::FAIL) {
                 has_some_fail = true;
-            } else if(status == Fred::ContactTestStatus::SKIPPED) {
-                has_some_skipped = true;
             } else if(status == Fred::ContactTestStatus::ERROR) {
                 has_some_error = true;
             } else if(status == Fred::ContactTestStatus::RUNNING) {
                 has_some_running = true;
+            } else if(status == Fred::ContactTestStatus::SKIPPED) {
+                // do nothing but don't count it as other
             } else {
                 has_some_other = true;
             }

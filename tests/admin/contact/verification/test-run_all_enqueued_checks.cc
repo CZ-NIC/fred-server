@@ -23,8 +23,7 @@
 
 #include "src/admin/contact/verification/run_all_enqueued_checks.h"
 #include "src/admin/contact/verification/fill_check_queue.h"
-#include "src/fredlib/contact/verification/info_check.h"
-#include "src/fredlib/contact/verification/enum_test_status.h"
+#include <fredlib/admin_contact_verification.h>
 #include "src/fredlib/opexception.h"
 
 #include <boost/test/unit_test.hpp>
@@ -33,7 +32,6 @@
 #include <map>
 
 #include "tests/admin/contact/verification/setup_utils.h"
-#include "tests/fredlib/contact/verification/setup_utils.h"
 #include "util/random.h"
 
 

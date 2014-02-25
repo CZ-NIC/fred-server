@@ -66,7 +66,7 @@ namespace ContactVerification
 
         unsigned long long generate_pdf(
             const std::string&                      _contact_handle,
-            unsigned long                           _contact_history_id,
+            unsigned long long                      _contact_history_id,
             const std::string&                      _contact_email,
             const Fred::Messages::PostalAddress&    _contact_address
         ) const;
@@ -78,9 +78,9 @@ namespace ContactVerification
         ) const;
 
         unsigned long long send_letter(
-            unsigned long                           _contact_id,
+            unsigned long long                      _contact_id,
             const std::string&                      _contact_handle,
-            unsigned long                           _contact_history_id,
+            unsigned long long                      _contact_history_id,
             const Fred::Messages::PostalAddress&    _contact_address,
             unsigned long long                      _pdf_file_id
         ) const;
@@ -101,7 +101,7 @@ namespace ContactVerification
                 return *this;
             }
 
-            virtual T_run_result run(long _history_id) const;
+            virtual T_run_result run(unsigned long long _history_id) const;
             static std::string registration_name() { return "contactability"; }
     };
 
@@ -143,7 +143,7 @@ namespace ContactVerification
                 (stateorprovince_)
                 (postalcode_)
                 (country_);
-        };
+        }
     };
 }
 }
