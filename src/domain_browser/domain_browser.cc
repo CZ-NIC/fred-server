@@ -41,6 +41,10 @@
 
 #include "domain_browser.h"
 
+
+#include "src/fredlib/object_state/get_object_states.h"
+#include "src/fredlib/object_state/get_object_state_descriptions.h"
+
 namespace Registry
 {
     namespace DomainBrowserImpl
@@ -179,34 +183,8 @@ namespace Registry
                     throw;
             }
 
-            Fred::InfoRegistrarOutput sponsoring_registar_info;
-            try
-            {
-                sponsoring_registar_info = Fred::InfoRegistrarByHandle(contact_info.info_contact_data.sponsoring_registrar_handle).exec(ctx);
-            }
-            catch(const Fred::InfoRegistrarByHandle::Exception& ex)
-            {
-                if(ex.is_set_unknown_registrar_handle())
-                {
-                    BOOST_THROW_EXCEPTION(InternalServerError());
-                }
-                else
-                    throw;
-            }
-
-            Database::Result contact_states_result = ctx.get_conn().exec_params(
-            "SELECT eos.name, COALESCE(osd.description, '') "
-            " FROM object_state os "
-                " JOIN enum_object_states eos ON eos.id = os.state_id "
-                " JOIN enum_object_states_desc osd ON osd.state_id = eos.id AND lang = $2::text "
-                " WHERE os.object_id = $1::bigint "
-                " AND eos.importance > 0 "
-                " AND eos.external = TRUE "
-                    " AND os.valid_from <= CURRENT_TIMESTAMP "
-                    " AND (os.valid_to IS NULL OR os.valid_to > CURRENT_TIMESTAMP) "
-                " ORDER BY eos.importance "
-            , Database::query_param_list(contact_info.info_contact_data.id)(lang)
-            );
+            Fred::InfoRegistrarOutput sponsoring_registar_info = Fred::InfoRegistrarByHandle(
+                contact_info.info_contact_data.sponsoring_registrar_handle).exec(ctx);
 
             RegistryReference sponsoring_registrar;
             sponsoring_registrar.id = sponsoring_registar_info.info_registrar_data.id;
@@ -262,15 +240,22 @@ namespace Registry
             detail.ssn = contact_info.info_contact_data.ssn;
             detail.disclose_flags = disclose_flags;
 
+
+            std::vector<Fred::ObjectStateData> states = Fred::GetObjectStates(contact_info.info_contact_data.id).exec(ctx);
+            std::map<unsigned long long, std::string> state_desc_map = Fred::GetObjectStateDescriptions(lang).exec(ctx);
+
             Util::HeadSeparator states_separator("","|");
             Util::HeadSeparator state_codes_separator("",",");
-            for(unsigned long long i = 0; i < contact_states_result.size(); ++i)
+            for(unsigned long long i = 0; i < states.size(); ++i)
             {
                 detail.states += states_separator.get();
-                detail.states += static_cast<std::string>(contact_states_result[i][0]);
+                detail.states += states.at(i).state_name;
 
-                detail.state_codes += state_codes_separator.get();
-                detail.state_codes += static_cast<std::string>(contact_states_result[i][1]);
+                if(states.at(i).is_external)
+                {
+                   detail.state_codes += state_codes_separator.get();
+                   detail.state_codes += map_at(state_desc_map, states.at(i).state_id);
+                }
             }
 
             return detail;
