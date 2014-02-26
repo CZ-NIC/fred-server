@@ -49,7 +49,7 @@ namespace Registry
         {
             try
             {
-                Fred::InfoContactById(user_contact_id).set_lock(true).exec(ctx);
+                Fred::InfoContactById(user_contact_id).exec(ctx);
             }
             catch(const Fred::InfoContactById::Exception& ex)
             {
@@ -167,7 +167,7 @@ namespace Registry
             Fred::InfoContactOutput contact_info;
             try
             {
-                contact_info = Fred::InfoContactById(contact_id).set_lock(true).exec(ctx);
+                contact_info = Fred::InfoContactById(contact_id).exec(ctx);
             }
             catch(const Fred::InfoContactById::Exception& ex)
             {
@@ -286,7 +286,7 @@ namespace Registry
             Fred::InfoDomainOutput domain_info;
             try
             {
-                domain_info = Fred::InfoDomainById(domain_id).set_lock(true).exec(ctx);
+                domain_info = Fred::InfoDomainById(domain_id).exec(ctx);
             }
             catch(const Fred::InfoDomainById::Exception& ex)
             {
@@ -307,7 +307,7 @@ namespace Registry
             sponsoring_registrar.name = sponsoring_registar_info.info_registrar_data.name.get_value_or_default();
 
             Fred::InfoContactOutput registrant_contact_info = Fred::InfoContactById(
-                domain_info.info_domain_data.registrant.id).set_lock(true).exec(ctx);
+                domain_info.info_domain_data.registrant.id).exec(ctx);
 
             RegistryReference registrant;
             registrant.id = registrant_contact_info.info_contact_data.id;
@@ -351,7 +351,7 @@ namespace Registry
             for(std::vector<Fred::ObjectIdHandlePair>::const_iterator ci = domain_info.info_domain_data.admin_contacts.begin();
                     ci != domain_info.info_domain_data.admin_contacts.end(); ++ci)
             {
-                Fred::InfoContactOutput admin_contact_info = Fred::InfoContactById(ci->id).set_lock(true).exec(ctx);
+                Fred::InfoContactOutput admin_contact_info = Fred::InfoContactById(ci->id).exec(ctx);
 
                 RegistryReference admin;
                 admin.id = admin_contact_info.info_contact_data.id;
