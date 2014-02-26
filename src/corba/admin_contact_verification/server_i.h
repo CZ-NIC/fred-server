@@ -57,7 +57,7 @@ namespace Registry
 
                 virtual ContactTestStatusDefSeq* listTestStatusDefs(const char* lang);
                 virtual ContactCheckStatusDefSeq* listCheckStatusDefs(const char* lang);
-                virtual ContactTestDefSeq* listTestDefs(const char* lang, Registry::NullableString* testsuite_handle);
+                virtual ContactTestDefSeq* listTestDefs(const char* lang, NullableString* testsuite_handle);
                 virtual ContactTestSuiteDefSeq* listTestSuiteDefs(const char* lang);
         };
     }
