@@ -39,9 +39,9 @@ namespace Fred
         , lock_(false)
     {}
 
-    InfoContactByHandle& InfoContactByHandle::set_lock(bool lock)//set lock object_registry row for contact
+    InfoContactByHandle& InfoContactByHandle::set_lock()
     {
-        lock_ = lock;
+        lock_ = true;
         return *this;
     }
 
@@ -51,11 +51,11 @@ namespace Fred
 
         try
         {
-            contact_res = InfoContact()
-                    .set_handle(handle_)
-                    .set_lock(lock_)
-                    .set_history_query(false)
-                    .exec(ctx,local_timestamp_pg_time_zone_name);
+            InfoContact ic;
+            ic.set_handle(handle_)
+            .set_history_query(false);
+            if(lock_) ic.set_lock();
+            contact_res = ic.exec(ctx,local_timestamp_pg_time_zone_name);
 
             if (contact_res.empty())
             {
@@ -90,9 +90,9 @@ namespace Fred
         , lock_(false)
     {}
 
-    InfoContactById& InfoContactById::set_lock(bool lock)//set lock object_registry row for contact
+    InfoContactById& InfoContactById::set_lock()
     {
-        lock_ = lock;
+        lock_ = true;
         return *this;
     }
 
@@ -102,11 +102,11 @@ namespace Fred
 
         try
         {
-            contact_res = InfoContact()
-                    .set_id(id_)
-                    .set_lock(lock_)
-                    .set_history_query(false)
-                    .exec(ctx,local_timestamp_pg_time_zone_name);
+            InfoContact ic;
+            ic.set_id(id_)
+            .set_history_query(false);
+            if(lock_) ic.set_lock();
+            contact_res = ic.exec(ctx,local_timestamp_pg_time_zone_name);
 
             if (contact_res.empty())
             {
@@ -154,9 +154,9 @@ namespace Fred
         return *this;
     }
 
-    InfoContactHistory& InfoContactHistory::set_lock(bool lock)//set lock object_registry row for contact
+    InfoContactHistory& InfoContactHistory::set_lock()
     {
-        lock_ = lock;
+        lock_ = true;
         return *this;
     }
 
@@ -166,11 +166,11 @@ namespace Fred
 
         try
         {
-            contact_history_res = InfoContact()
-                    .set_roid(roid_)
-                    .set_lock(lock_)
-                    .set_history_query(true)
-                    .exec(ctx,local_timestamp_pg_time_zone_name);
+            InfoContact ic;
+            ic.set_roid(roid_)
+            .set_history_query(true);
+            if(lock_) ic.set_lock();
+            contact_history_res = ic.exec(ctx,local_timestamp_pg_time_zone_name);
 
             if (contact_history_res.empty())
             {
@@ -200,9 +200,9 @@ namespace Fred
         , lock_(false)
     {}
 
-    HistoryInfoContactById& HistoryInfoContactById::set_lock(bool lock)//set lock object_registry row for contact
+    HistoryInfoContactById& HistoryInfoContactById::set_lock()
     {
-        lock_ = lock;
+        lock_ = true;
         return *this;
     }
 
@@ -212,11 +212,11 @@ namespace Fred
 
         try
         {
-            contact_history_res = InfoContact()
-                    .set_id(id_)
-                    .set_lock(lock_)
-                    .set_history_query(true)
-                    .exec(ctx,local_timestamp_pg_time_zone_name);
+            InfoContact ic;
+            ic.set_id(id_)
+            .set_history_query(true);
+            if(lock_) ic.set_lock();
+            contact_history_res = ic.exec(ctx,local_timestamp_pg_time_zone_name);
 
             if (contact_history_res.empty())
             {
@@ -246,9 +246,9 @@ namespace Fred
         , lock_(false)
     {}
 
-    HistoryInfoContactByHistoryid& HistoryInfoContactByHistoryid::set_lock(bool lock)//set lock object_registry row for contact
+    HistoryInfoContactByHistoryid& HistoryInfoContactByHistoryid::set_lock()
     {
-        lock_ = lock;
+        lock_ = true;
         return *this;
     }
 
@@ -258,11 +258,11 @@ namespace Fred
 
         try
         {
-            contact_history_res = InfoContact()
-                    .set_historyid(historyid_)
-                    .set_lock(lock_)
-                    .set_history_query(true)
-                    .exec(ctx,local_timestamp_pg_time_zone_name);
+            InfoContact ic;
+            ic.set_historyid(historyid_)
+            .set_history_query(true);
+            if(lock_) ic.set_lock();
+            contact_history_res = ic.exec(ctx,local_timestamp_pg_time_zone_name);
 
             if (contact_history_res.empty())
             {

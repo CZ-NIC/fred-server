@@ -50,7 +50,7 @@ namespace Fred
         Optional<unsigned long long> contact_historyid_;/**< history id of the contact */
         Optional<boost::posix_time::ptime> history_timestamp_;/**< timestamp of history state we want to get (in time zone set in @ref local_timestamp_pg_time_zone_name parameter) */
         bool history_query_;/**< flag to query history records of the contact */
-        bool lock_;/**< lock object_registry row for contact */
+        bool lock_;/**< if set to true lock object_registry row for update, if set to false lock for share */
 
         std::pair<std::string, Database::QueryParams> make_query(const std::string& local_timestamp_pg_time_zone_name);/**< info query generator @return pair of query string with query params*/
 
@@ -104,11 +104,12 @@ namespace Fred
         InfoContact& set_history_query(bool history_query);
 
         /**
-        * Sets the contact lock flag.
-        * @param lock sets lock contact flag into @ref lock_ attribute
+        * Sets lock for update.
+        * Default, if not set, is lock for share.
+        * Sets true to lock flag in @ref lock_ attribute
         * @return operation instance reference to allow method chaining
         */
-        InfoContact& set_lock(bool lock = true);
+        InfoContact& set_lock();
 
         /**
         * Executes getting info about the contact.

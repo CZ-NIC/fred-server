@@ -45,9 +45,9 @@ namespace Fred
         , lock_(false)
     {}
 
-    InfoDomainByHandle& InfoDomainByHandle::set_lock(bool lock)//set lock object_registry row for domain
+    InfoDomainByHandle& InfoDomainByHandle::set_lock()
     {
-        lock_ = lock;
+        lock_ = true;
         return *this;
     }
 
@@ -57,11 +57,10 @@ namespace Fred
 
         try
         {
-            domain_res = InfoDomain()
-                    .set_fqdn(fqdn_)
-                    .set_lock(lock_)
-                    .set_history_query(false)
-                    .exec(ctx,local_timestamp_pg_time_zone_name);
+            InfoDomain id;
+            id.set_fqdn(fqdn_).set_history_query(false);
+            if(lock_) id.set_lock();
+            domain_res = id.exec(ctx,local_timestamp_pg_time_zone_name);
 
             if (domain_res.empty())
             {
@@ -96,9 +95,9 @@ namespace Fred
         , lock_(false)
     {}
 
-    InfoDomainById& InfoDomainById::set_lock(bool lock)//set lock object_registry row for domain
+    InfoDomainById& InfoDomainById::set_lock()
     {
-        lock_ = lock;
+        lock_ = true;
         return *this;
     }
 
@@ -108,11 +107,10 @@ namespace Fred
 
         try
         {
-            domain_res = InfoDomain()
-                    .set_id(id_)
-                    .set_lock(lock_)
-                    .set_history_query(false)
-                    .exec(ctx,local_timestamp_pg_time_zone_name);
+            InfoDomain id;
+            id.set_id(id_).set_history_query(false);
+            if(lock_) id.set_lock();
+            domain_res = id.exec(ctx,local_timestamp_pg_time_zone_name);
 
             if (domain_res.empty())
             {
@@ -160,9 +158,9 @@ namespace Fred
         return *this;
     }
 
-    InfoDomainHistory& InfoDomainHistory::set_lock(bool lock)//set lock object_registry row for domain
+    InfoDomainHistory& InfoDomainHistory::set_lock()
     {
-        lock_ = lock;
+        lock_ = true;
         return *this;
     }
 
@@ -172,11 +170,10 @@ namespace Fred
 
         try
         {
-            domain_res = InfoDomain()
-                    .set_roid(roid_)
-                    .set_lock(lock_)
-                    .set_history_query(true)
-                    .exec(ctx,local_timestamp_pg_time_zone_name);
+            InfoDomain id;
+            id.set_roid(roid_).set_history_query(true);
+            if(lock_) id.set_lock();
+            domain_res = id.exec(ctx,local_timestamp_pg_time_zone_name);
 
             if (domain_res.empty())
             {
@@ -207,9 +204,9 @@ namespace Fred
         , lock_(false)
     {}
 
-    HistoryInfoDomainById& HistoryInfoDomainById::set_lock(bool lock)//set lock object_registry row for domain
+    HistoryInfoDomainById& HistoryInfoDomainById::set_lock()
     {
-        lock_ = lock;
+        lock_ = true;
         return *this;
     }
 
@@ -219,11 +216,10 @@ namespace Fred
 
         try
         {
-            domain_history_res = InfoDomain()
-                    .set_id(id_)
-                    .set_lock(lock_)
-                    .set_history_query(true)
-                    .exec(ctx,local_timestamp_pg_time_zone_name);
+            InfoDomain id;
+            id.set_id(id_).set_history_query(true);
+            if(lock_) id.set_lock();
+            domain_history_res = id.exec(ctx,local_timestamp_pg_time_zone_name);
 
             if (domain_history_res.empty())
             {
@@ -253,9 +249,9 @@ namespace Fred
         , lock_(false)
     {}
 
-    HistoryInfoDomainByHistoryid& HistoryInfoDomainByHistoryid::set_lock(bool lock)//set lock object_registry row for domain
+    HistoryInfoDomainByHistoryid& HistoryInfoDomainByHistoryid::set_lock()
     {
-        lock_ = lock;
+        lock_ = true;
         return *this;
     }
 
@@ -265,11 +261,11 @@ namespace Fred
 
         try
         {
-            domain_history_res = InfoDomain()
-                    .set_historyid(historyid_)
-                    .set_lock(lock_)
-                    .set_history_query(true)
-                    .exec(ctx,local_timestamp_pg_time_zone_name);
+            InfoDomain id;
+            id.set_historyid(historyid_)
+            .set_history_query(true);
+            if(lock_) id.set_lock();
+            domain_history_res = id.exec(ctx,local_timestamp_pg_time_zone_name);
 
             if (domain_history_res.empty())
             {

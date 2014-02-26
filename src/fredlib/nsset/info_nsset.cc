@@ -41,9 +41,9 @@ namespace Fred
         , lock_(false)
     {}
 
-    InfoNssetByHandle& InfoNssetByHandle::set_lock(bool lock)//set lock object_registry row for nsset
+    InfoNssetByHandle& InfoNssetByHandle::set_lock()
     {
-        lock_ = lock;
+        lock_ = true;
         return *this;
     }
 
@@ -53,11 +53,10 @@ namespace Fred
 
         try
         {
-            nsset_res = InfoNsset()
-                    .set_handle(handle_)
-                    .set_lock(lock_)
-                    .set_history_query(false)
-                    .exec(ctx,local_timestamp_pg_time_zone_name);
+            InfoNsset in;
+            in.set_handle(handle_).set_history_query(false);
+            if(lock_) in.set_lock();
+            nsset_res = in.exec(ctx,local_timestamp_pg_time_zone_name);
 
             if (nsset_res.empty())
             {
@@ -92,9 +91,9 @@ namespace Fred
         , lock_(false)
     {}
 
-    InfoNssetById& InfoNssetById::set_lock(bool lock)//set lock object_registry row for nsset
+    InfoNssetById& InfoNssetById::set_lock()
     {
-        lock_ = lock;
+        lock_ = true;
         return *this;
     }
 
@@ -104,11 +103,10 @@ namespace Fred
 
         try
         {
-            nsset_res = InfoNsset()
-                    .set_id(id_)
-                    .set_lock(lock_)
-                    .set_history_query(false)
-                    .exec(ctx,local_timestamp_pg_time_zone_name);
+            InfoNsset in;
+            in.set_id(id_).set_history_query(false);
+            if(lock_) in.set_lock();
+            nsset_res = in.exec(ctx,local_timestamp_pg_time_zone_name);
 
             if (nsset_res.empty())
             {
@@ -156,9 +154,9 @@ namespace Fred
         return *this;
     }
 
-    InfoNssetHistory& InfoNssetHistory::set_lock(bool lock)//set lock object_registry row for domain
+    InfoNssetHistory& InfoNssetHistory::set_lock()
     {
-        lock_ = lock;
+        lock_ = true;
         return *this;
     }
 
@@ -168,11 +166,10 @@ namespace Fred
 
         try
         {
-            nsset_res = InfoNsset()
-                    .set_roid(roid_)
-                    .set_lock(lock_)
-                    .set_history_query(true)
-                    .exec(ctx,local_timestamp_pg_time_zone_name);
+            InfoNsset in;
+            in.set_roid(roid_).set_history_query(true);
+            if(lock_) in.set_lock();
+            nsset_res = in.exec(ctx,local_timestamp_pg_time_zone_name);
 
             if (nsset_res.empty())
             {
@@ -204,9 +201,9 @@ namespace Fred
         , lock_(false)
     {}
 
-    HistoryInfoNssetById& HistoryInfoNssetById::set_lock(bool lock)//set lock object_registry row for nsset
+    HistoryInfoNssetById& HistoryInfoNssetById::set_lock()
     {
-        lock_ = lock;
+        lock_ = true;
         return *this;
     }
 
@@ -216,11 +213,10 @@ namespace Fred
 
         try
         {
-            nsset_history_res = InfoNsset()
-                    .set_id(id_)
-                    .set_lock(lock_)
-                    .set_history_query(true)
-                    .exec(ctx,local_timestamp_pg_time_zone_name);
+            InfoNsset in;
+            in.set_id(id_).set_history_query(true);
+            if(lock_) in.set_lock();
+            nsset_history_res = in.exec(ctx,local_timestamp_pg_time_zone_name);
 
             if (nsset_history_res.empty())
             {
@@ -250,9 +246,9 @@ namespace Fred
         , lock_(false)
     {}
 
-    HistoryInfoNssetByHistoryid& HistoryInfoNssetByHistoryid::set_lock(bool lock)//set lock object_registry row for nsset
+    HistoryInfoNssetByHistoryid& HistoryInfoNssetByHistoryid::set_lock()
     {
-        lock_ = lock;
+        lock_ = true;
         return *this;
     }
 
@@ -262,11 +258,10 @@ namespace Fred
 
         try
         {
-            nsset_history_res = InfoNsset()
-                    .set_historyid(historyid_)
-                    .set_lock(lock_)
-                    .set_history_query(true)
-                    .exec(ctx,local_timestamp_pg_time_zone_name);
+            InfoNsset in;
+            in.set_historyid(historyid_).set_history_query(true);
+            if(lock_) in.set_lock();
+            nsset_history_res = in.exec(ctx,local_timestamp_pg_time_zone_name);
 
             if (nsset_history_res.empty())
             {

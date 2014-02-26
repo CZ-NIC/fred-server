@@ -51,7 +51,7 @@ namespace Fred
         Optional<unsigned long long> nsset_historyid_;/**< history id of the nsset */
         Optional<boost::posix_time::ptime> history_timestamp_;/**< timestamp of history state we want to get (in time zone set in @ref local_timestamp_pg_time_zone_name parameter) */
         bool history_query_;/**< flag to query history records of the nsset */
-        bool lock_;/**< lock object_registry row for nsset */
+        bool lock_;/**< if set to true lock object_registry row for update, if set to false lock for share */
 
         std::pair<std::string, Database::QueryParams> make_nsset_query(const std::string& local_timestamp_pg_time_zone_name);/**< info query generator @return pair of query string with query params*/
         std::pair<std::string, Database::QueryParams> make_tech_contact_query(unsigned long long id, unsigned long long historyid);/**< nsset technical contacts query generator @return pair of query string with query params*/
@@ -109,11 +109,12 @@ namespace Fred
 
 
         /**
-        * Sets nsset lock flag.
-        * @param lock sets lock nsset flag into @ref lock_ attribute
+        * Sets lock for update.
+        * Default, if not set, is lock for share.
+        * Sets true to lock flag in @ref lock_ attribute
         * @return operation instance reference to allow method chaining
         */
-        InfoNsset& set_lock(bool lock = true);
+        InfoNsset& set_lock();
 
         /**
         * Executes getting info about the nsset.
