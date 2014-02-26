@@ -262,6 +262,17 @@ namespace Registry
              * If user contact is deleted or don't have mojeidContact state throw UserNotExists.
              */
             void check_user_contact_id(Fred::OperationContext& ctx, unsigned long long user_contact_id);
+
+            /**
+             * Fill object state codes and description into given strings.
+             * @param ctx contains reference to database and logging interface
+             * @param object_id is database id of object
+             * @param lang is required language of object state description e.g. "EN" or "CS"
+             * @param state_codes is output string of object state codes delimited by '|'
+             * @param states is output string with descriptions of external object states delimited by ','
+             */
+            void get_object_states(Fred::OperationContext& ctx, unsigned long long object_id, const std::string& lang
+                        , std::string& state_codes, std::string& states);
         public:
             //dummy decl - impl
             DomainBrowser(const std::string &server_name);

@@ -67,6 +67,29 @@ namespace Registry
             }
         }
 
+        void DomainBrowser::get_object_states(Fred::OperationContext& ctx, unsigned long long object_id, const std::string& lang
+            , std::string& state_codes, std::string& states)
+        {
+
+            std::vector<Fred::ObjectStateData> state_data = Fred::GetObjectStates(object_id).exec(ctx);
+            std::map<unsigned long long, std::string> state_desc_map = Fred::GetObjectStateDescriptions(lang).exec(ctx);
+
+            Util::HeadSeparator states_separator("","|");
+            Util::HeadSeparator state_codes_separator("",",");
+            for(unsigned long long i = 0; i < state_data.size(); ++i)
+            {
+                state_codes += state_codes_separator.get();
+                state_codes += state_data.at(i).state_name;
+
+                if(state_data.at(i).is_external)
+                {
+                   states += states_separator.get();
+                   states += map_at(state_desc_map, state_data.at(i).state_id);
+                }
+            }
+        }
+
+
         DomainBrowser::DomainBrowser(const std::string& server_name)
         : server_name_(server_name)
         {}
@@ -236,23 +259,9 @@ namespace Registry
             detail.ssn = contact_info.info_contact_data.ssn;
             detail.disclose_flags = disclose_flags;
 
-
-            std::vector<Fred::ObjectStateData> states = Fred::GetObjectStates(contact_info.info_contact_data.id).exec(ctx);
-            std::map<unsigned long long, std::string> state_desc_map = Fred::GetObjectStateDescriptions(lang).exec(ctx);
-
-            Util::HeadSeparator states_separator("","|");
-            Util::HeadSeparator state_codes_separator("",",");
-            for(unsigned long long i = 0; i < states.size(); ++i)
-            {
-                detail.states += states_separator.get();
-                detail.states += states.at(i).state_name;
-
-                if(states.at(i).is_external)
-                {
-                   detail.state_codes += state_codes_separator.get();
-                   detail.state_codes += map_at(state_desc_map, states.at(i).state_id);
-                }
-            }
+            //get states
+            get_object_states(ctx, contact_info.info_contact_data.id,lang
+                , detail.state_codes, detail.states);
 
             return detail;
         }
@@ -344,22 +353,8 @@ namespace Registry
                 detail.admins.push_back(admin);
             }
 
-            std::vector<Fred::ObjectStateData> states = Fred::GetObjectStates(domain_info.info_domain_data.id).exec(ctx);
-            std::map<unsigned long long, std::string> state_desc_map = Fred::GetObjectStateDescriptions(lang).exec(ctx);
-
-            Util::HeadSeparator states_separator("","|");
-            Util::HeadSeparator state_codes_separator("",",");
-            for(unsigned long long i = 0; i < states.size(); ++i)
-            {
-                detail.states += states_separator.get();
-                detail.states += states.at(i).state_name;
-
-                if(states.at(i).is_external)
-                {
-                    detail.state_codes += state_codes_separator.get();
-                    detail.state_codes += map_at(state_desc_map, states.at(i).state_id);
-                }
-            }
+            get_object_states(ctx, domain_info.info_domain_data.id,lang
+                , detail.state_codes, detail.states);
 
             return detail;
         }
