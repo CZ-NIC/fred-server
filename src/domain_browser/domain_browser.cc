@@ -41,10 +41,6 @@
 
 #include "domain_browser.h"
 
-
-#include "src/fredlib/object_state/get_object_states.h"
-#include "src/fredlib/object_state/get_object_state_descriptions.h"
-
 namespace Registry
 {
     namespace DomainBrowserImpl
