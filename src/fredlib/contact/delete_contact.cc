@@ -52,7 +52,7 @@ namespace Fred
     {
         try
         {
-            unsigned long long contact_id = lock_object_by_handle_and_type(
+            unsigned long long contact_id = get_object_id_by_handle_and_type_with_lock(
                 _ctx,
                 handle_,
                 "contact",
@@ -92,7 +92,7 @@ namespace Fred
     {
         try
         {
-            lock_object_by_id(
+            get_object_id_by_object_id_with_lock(
                 _ctx,
                 id_,
                 static_cast<Exception*>(NULL),

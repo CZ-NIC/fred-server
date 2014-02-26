@@ -158,7 +158,7 @@ namespace Fred
     * , or throw InternalError or some other exception in case of failure.
     */
     template <class EXCEPTION, typename EXCEPTION_HANDLE_SETTER>
-        unsigned long long lock_object_by_handle_and_type(
+        unsigned long long get_object_id_by_handle_and_type_with_lock(
             OperationContext& ctx,
             const std::string& object_handle, const std::string& object_type,
             EXCEPTION* ex_ptr, EXCEPTION_HANDLE_SETTER ex_handle_setter
@@ -207,7 +207,7 @@ namespace Fred
     * , or throw InternalError or some other exception in case of failure.
     */
     template <class EXCEPTION, typename EXCEPTION_HANDLE_SETTER>
-        unsigned long long lock_object_by_id(
+        unsigned long long get_object_id_by_object_id_with_lock(
             OperationContext& ctx,
             unsigned long long object_id,
             EXCEPTION* ex_ptr, EXCEPTION_HANDLE_SETTER ex_handle_setter

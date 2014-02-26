@@ -230,7 +230,7 @@ namespace Fred
             Exception create_domain_exception;
 
             //lock registrant object_registry row for update and get id
-            unsigned long long registrant_id = lock_object_by_handle_and_type(
+            unsigned long long registrant_id = get_object_id_by_handle_and_type_with_lock(
                     ctx,registrant_,"contact",&create_domain_exception,
                     &Exception::set_unknown_registrant_handle);
 
@@ -283,7 +283,7 @@ namespace Fred
                     }
                     else
                     {//value case query, lock nsset object_registry row for update and get id
-                        unsigned long long nsset_id = lock_object_by_handle_and_type(
+                        unsigned long long nsset_id = get_object_id_by_handle_and_type_with_lock(
                             ctx,new_nsset_value,"nsset",&create_domain_exception,
                             &Exception::set_unknown_nsset_handle);
 
@@ -306,7 +306,7 @@ namespace Fred
                     }
                     else
                     {//value case query, lock keyset object_registry row for update and get id
-                        unsigned long long keyset_id = lock_object_by_handle_and_type(
+                        unsigned long long keyset_id = get_object_id_by_handle_and_type_with_lock(
                                 ctx,new_keyset_value,"keyset",&create_domain_exception,
                                 &Exception::set_unknown_keyset_handle);
 
@@ -342,7 +342,7 @@ namespace Fred
                     for(std::vector<std::string>::iterator i = admin_contacts_.begin(); i != admin_contacts_.end(); ++i)
                     {
                         //lock admin contact object_registry row for update and get id
-                        unsigned long long admin_contact_id = lock_object_by_handle_and_type(
+                        unsigned long long admin_contact_id = get_object_id_by_handle_and_type_with_lock(
                                 ctx,*i,"contact",&create_domain_exception,
                                 &Exception::add_unknown_admin_contact_handle);
                         if(admin_contact_id == 0) continue;

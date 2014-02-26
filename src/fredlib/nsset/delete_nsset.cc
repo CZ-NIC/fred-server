@@ -67,7 +67,7 @@ namespace Fred
     {
         try
         {
-            unsigned long long nsset_id = lock_object_by_handle_and_type(
+            unsigned long long nsset_id = get_object_id_by_handle_and_type_with_lock(
                 ctx,
                 handle_,
                 "nsset",
@@ -105,7 +105,7 @@ namespace Fred
     {
         try
         {
-            unsigned long long nsset_id = lock_object_by_id(
+            unsigned long long nsset_id = get_object_id_by_object_id_with_lock(
                 ctx,
                 id_,
                 static_cast<Exception*>(NULL),

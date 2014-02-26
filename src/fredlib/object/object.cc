@@ -206,7 +206,7 @@ namespace Fred
             Exception update_object_exception;
 
             //get object id with lock
-            unsigned long long object_id = lock_object_by_handle_and_type(
+            unsigned long long object_id = get_object_id_by_handle_and_type_with_lock(
                 ctx,handle_,obj_type_,&update_object_exception,
                 &Exception::set_unknown_object_handle);
 
@@ -364,7 +364,7 @@ namespace Fred
             //check object type
             get_object_type_id(ctx, obj_type_);
 
-            unsigned long long object_id = lock_object_by_handle_and_type(
+            unsigned long long object_id = get_object_id_by_handle_and_type_with_lock(
                 ctx,
                 handle_,
                 obj_type_,
@@ -410,7 +410,7 @@ namespace Fred
     void DeleteObjectById::exec(OperationContext& ctx) {
         try
         {
-            lock_object_by_id(
+            get_object_id_by_object_id_with_lock(
                 ctx,
                 id_,
                 static_cast<Exception*>(NULL),

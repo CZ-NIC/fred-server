@@ -73,7 +73,7 @@ namespace Fred
             std::string no_root_dot_fqdn = Fred::Zone::rem_trailing_dot(fqdn_);
 
             //get domain_id and lock object_registry row for update
-            unsigned long long domain_id = lock_object_by_handle_and_type(
+            unsigned long long domain_id = get_object_id_by_handle_and_type_with_lock(
                 _ctx,
                 no_root_dot_fqdn,
                 "domain",
@@ -109,7 +109,7 @@ namespace Fred
     void DeleteDomainById::exec(OperationContext& _ctx) {
         try
         {
-            lock_object_by_id(
+            get_object_id_by_object_id_with_lock(
                 _ctx,
                 id_,
                 static_cast<Exception*>(NULL),
