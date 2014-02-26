@@ -109,6 +109,7 @@ noinst_HEADERS = \
 		include/fredlib/fredlib.h \
 		include/fredlib/keyset.h \
 		include/fredlib/nsset.h \
+		include/fredlib/registrar.h \
 		util/util.h \
 		util/singleton.h \
 		util/time_clock.h \
@@ -724,6 +725,8 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/contact/info_contact_output.h \
 		src/fredlib/object/object.h \
 		src/fredlib/object/object.cc \
+		src/fredlib/object/object_impl.h \
+		src/fredlib/object/object_impl.cc \
 		src/fredlib/poll/create_poll_message.h \
 		src/fredlib/poll/create_poll_message.cc \
 		src/fredlib/poll/create_update_object_poll_message.h \
@@ -773,8 +776,42 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/keyset/delete_keyset.h \
 		src/fredlib/registrar/registrar_impl.h \
 		src/fredlib/registrar/registrar_impl.cc \
+		src/fredlib/registrar/info_registrar.cc \
+		src/fredlib/registrar/info_registrar.h \
+		src/fredlib/registrar/info_registrar_data.cc \
+		src/fredlib/registrar/info_registrar_data.h \
+		src/fredlib/registrar/info_registrar_diff.cc \
+		src/fredlib/registrar/info_registrar_diff.h \
+		src/fredlib/registrar/registrar_zone_access.h \
+		src/fredlib/registrar/create_registrar.cc \
+		src/fredlib/registrar/create_registrar.h \
+		src/fredlib/registrar/info_registrar_impl.cc \
+		src/fredlib/registrar/info_registrar_impl.h \
+		src/fredlib/registrar/info_registrar_output.cc \
+		src/fredlib/registrar/info_registrar_output.h \
 		src/fredlib/registrar/get_registrar_handles.cc \
-		src/fredlib/registrar/get_registrar_handles.h
+		src/fredlib/registrar/get_registrar_handles.h \
+		src/fredlib/object_state/lock_multiple_object_state_request_lock.cc \
+		src/fredlib/object_state/lock_multiple_object_state_request_lock.h \
+		src/fredlib/object_state/lock_object_state_request_lock.h \
+		src/fredlib/object_state/lock_object_state_request_lock.cc \
+		src/fredlib/object_state/perform_object_state_request.h \
+		src/fredlib/object_state/perform_object_state_request.cc \
+		src/fredlib/object_state/object_state_name.h \
+		src/fredlib/object_state/object_has_state.h \
+		src/fredlib/object_state/object_has_state.cc \
+		src/fredlib/object_state/get_object_state_descriptions.h \
+		src/fredlib/object_state/get_object_state_descriptions.cc \
+		src/fredlib/object_state/get_object_states.h \
+		src/fredlib/object_state/get_object_states.cc \
+		src/fredlib/object_state/get_object_state_id_map.h \
+		src/fredlib/object_state/get_object_state_id_map.cc \
+		src/fredlib/object_state/create_object_state_request_id.h \
+		src/fredlib/object_state/create_object_state_request_id.cc \
+		src/fredlib/object_state/perform_object_state_request.h \
+		src/fredlib/object_state/perform_object_state_request.cc \
+		src/fredlib/object/object_id_handle_pair.h \
+		src/fredlib/object/object_id_handle_pair.cc
 #
 # src/fredlib/libfred.a
 
@@ -1659,7 +1696,8 @@ tools_logd_migration_migrate_log_LDADD = \
 SERVER_TESTS = \
 		tests/test-server \
 		tests/test-exception \
-		tests/test-blocking
+		tests/test-blocking \
+		tests/test-fredlib
 
 
 # tests/test_server
@@ -1724,26 +1762,6 @@ tests_test_server_SOURCES = \
 		src/mojeid/mojeid_notifier.h \
 		tests/checks.h \
 		tests/test-utils.cc \
-		tests/test-update-nsset.cc \
-		tests/test-update-keyset.cc \
-		tests/test-update-domain.cc \
-		tests/test-delete-contact.cc \
-		tests/test-info-domain.cc \
-		tests/test-merge-contact.cc \
-		tests/test-opexception.cc \
-		tests/test-create-contact.cc \
-		tests/test-info-contact.cc \
-		tests/test-delete-domain.cc \
-		tests/test-delete-nsset.cc \
-		tests/test-create-domain.cc \
-		tests/test-check-domain.cc \
-		tests/test-domain-name.cc \
-		tests/test-check-handle.cc \
-		tests/test-delete-keyset.cc \
-		tests/test-update-contact.cc \
-		tests/test-printable.cc \
-		tests/test-info-keyset.cc \
-		tests/test-info-nsset.cc \
 		tests/util/test-is-equal-optional-nullable.cc
 
 tests_test_server_LDFLAGS = \
@@ -1902,6 +1920,57 @@ tests_test_blocking_LDADD = \
 #
 # tests/test_blocking
 
+# tests/test_fredlib
+#
+tests_test_fredlib_SOURCES = \
+		tests/test-fredlib.cc \
+		tests/test-update-nsset.cc \
+		tests/test-update-keyset.cc \
+		tests/test-update-domain.cc \
+		tests/test-delete-contact.cc \
+		tests/test-info-domain.cc \
+		tests/test-merge-contact.cc \
+		tests/test-opexception.cc \
+		tests/test-create-contact.cc \
+		tests/test-info-contact.cc \
+		tests/test-delete-domain.cc \
+		tests/test-delete-nsset.cc \
+		tests/test-create-domain.cc \
+		tests/test-check-domain.cc \
+		tests/test-domain-name.cc \
+		tests/test-check-handle.cc \
+		tests/test-delete-keyset.cc \
+		tests/test-update-contact.cc \
+		tests/test-printable.cc \
+		tests/test-info-keyset.cc \
+		tests/test-info-nsset.cc \
+		tests/test-object-state.cc \
+		tests/test-info-registrar.cc \
+		tests/test-create-registrar.cc
+
+tests_test_fredlib_LDFLAGS = \
+		$(POSTGRESQL_LDFLAGS) \
+		$(BOOST_LDFLAGS) \
+		$(AM_LDFLAGS)
+
+tests_test_fredlib_LDADD = \
+		src/fredlib/libfred.a \
+		util/libutil.a \
+		util/log/liblog.a \
+		-lmpdec -lm \
+		$(BOOST_PROGRAM_OPTIONS_LIB) \
+		$(BOOST_DATE_TIME_LIB) \
+		$(BOOST_REGEX_LIB) \
+		$(OMNIORB4_LIBS) \
+		$(LIBIDN_CFLAGS) \
+		$(LIBIDN_LIBS) \
+		$(BOOST_THREAD_LIB) \
+		$(BOOST_SERIALIZATION_LIB) \
+		$(XML2_LIBS) \
+		$(POSTGRESQL_LIB) \
+		$(BOOST_SYSTEM_LIB)
+#
+# tests/test_fredlib
 
 # non-corba tests with overloaded global operator new
 #

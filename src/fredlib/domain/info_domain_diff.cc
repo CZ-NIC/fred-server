@@ -55,9 +55,9 @@ namespace Fred
         (std::make_pair("transfer_time", transfer_time.print_quoted()))
         (std::make_pair("authinfopw", authinfopw.print_quoted()))
 
-        (std::make_pair("registrant_handle", registrant_handle.print_quoted()))
-        (std::make_pair("nsset_handle", nsset_handle.print_quoted()))
-        (std::make_pair("keyset_handle", keyset_handle.print_quoted()))
+        (std::make_pair("registrant", registrant.print_quoted()))
+        (std::make_pair("nsset", nsset.print_quoted()))
+        (std::make_pair("keyset_handle", keyset.print_quoted()))
         (std::make_pair("expiration_date", expiration_date.print_quoted()))
         (std::make_pair("admin_contacts", admin_contacts.print_quoted()))
         (std::make_pair("enum_domain_validation", enum_domain_validation.print_quoted()))
@@ -84,9 +84,9 @@ namespace Fred
             || transfer_time.isset()
             || authinfopw.isset()
 
-            || registrant_handle.isset()
-            || nsset_handle.isset()
-            || keyset_handle.isset()
+            || registrant.isset()
+            || nsset.isset()
+            || keyset.isset()
             || expiration_date.isset()
             || admin_contacts.isset()
             || enum_domain_validation.isset()
@@ -169,20 +169,19 @@ namespace Fred
             diff.authinfopw = std::make_pair(first.authinfopw,second.authinfopw);
         }
 
-        if(boost::algorithm::to_upper_copy(first.registrant_handle)
-            .compare(boost::algorithm::to_upper_copy(second.registrant_handle)) != 0)
+        if(first.registrant != second.registrant)
         {
-            diff.registrant_handle = std::make_pair(first.registrant_handle,second.registrant_handle);
+            diff.registrant = std::make_pair(first.registrant,second.registrant);
         }
 
-        if(!Util::is_equal_upper(first.nsset_handle, second.nsset_handle))
+        if(!Util::is_equal(first.nsset, second.nsset))
         {
-            diff.nsset_handle = std::make_pair(first.nsset_handle,second.nsset_handle);
+            diff.nsset = std::make_pair(first.nsset,second.nsset);
         }
 
-        if(!Util::is_equal_upper(first.keyset_handle, second.keyset_handle))
+        if(!Util::is_equal(first.keyset, second.keyset))
         {
-            diff.keyset_handle = std::make_pair(first.keyset_handle,second.keyset_handle);
+            diff.keyset = std::make_pair(first.keyset,second.keyset);
         }
 
         if(first.expiration_date != second.expiration_date)
@@ -190,18 +189,18 @@ namespace Fred
             diff.expiration_date = std::make_pair(first.expiration_date,second.expiration_date);
         }
 
-        std::set<std::string> lhs_admin_contacts;
-        for(std::vector<std::string>::size_type i = 0
+        std::set<ObjectIdHandlePair> lhs_admin_contacts;
+        for(std::vector<ObjectIdHandlePair>::size_type i = 0
             ; i != first.admin_contacts.size(); ++i)
         {
-            lhs_admin_contacts.insert(boost::algorithm::to_upper_copy(first.admin_contacts[i]));
+            lhs_admin_contacts.insert(first.admin_contacts[i]);
         }
 
-        std::set<std::string> rhs_admin_contacts;
-        for(std::vector<std::string>::size_type i = 0
+        std::set<ObjectIdHandlePair> rhs_admin_contacts;
+        for(std::vector<ObjectIdHandlePair>::size_type i = 0
             ; i != second.admin_contacts.size(); ++i)
         {
-            rhs_admin_contacts.insert(boost::algorithm::to_upper_copy(second.admin_contacts[i]));
+            rhs_admin_contacts.insert(second.admin_contacts[i]);
         }
 
         if(lhs_admin_contacts != rhs_admin_contacts)

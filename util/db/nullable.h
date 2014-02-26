@@ -30,7 +30,7 @@ public:
         return *this;
     }
 
-    operator T() const
+    T get_value() const
     {
         return value_;
     }
@@ -65,7 +65,7 @@ public:
         if (v.isnull())
             return os << "[NULL]";
         else
-            return os << static_cast<T>(v);
+            return os << v.get_value();
     }
 
     std::string print_quoted() const

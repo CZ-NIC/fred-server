@@ -24,6 +24,7 @@
 #include "src/fredlib/object_state/create_object_state_request.h"
 #include "src/fredlib/object_state/get_blocking_status_desc_list.h"
 #include "src/fredlib/object_state/get_object_state_id_map.h"
+#include "lock_multiple_object_state_request_lock.h"
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/db_settings.h"
 #include "util/optional_value.h"
@@ -80,8 +81,8 @@ namespace Fred
             "CreateObjectStateRequest::exec object name: ") + object_handle_
             + " object type: " + boost::lexical_cast< std::string >(object_type_)
             + " object state name: " + object_state_names
-            + " valid from: " + boost::posix_time::to_iso_string(valid_from_)
-            + " valid to: " + boost::posix_time::to_iso_string(valid_to_));
+            + " valid from: " + boost::posix_time::to_iso_string(valid_from_.get_value())
+            + " valid to: " + boost::posix_time::to_iso_string(valid_to_.get_value()));
 
         //check time
         if (valid_to_.isset()) {
@@ -237,70 +238,6 @@ namespace Fred
         _ctx.get_conn().exec_params(cmd.str(), param);
         return object_id;
     }//CreateObjectStateRequest::exec
-
-    PerformObjectStateRequest::PerformObjectStateRequest()
-    {}
-
-    PerformObjectStateRequest::PerformObjectStateRequest(const Optional< ObjectId > &_object_id)
-    :   object_id_(_object_id)
-    {}
-
-    PerformObjectStateRequest& PerformObjectStateRequest::set_object_id(ObjectId _object_id)
-    {
-        object_id_ = _object_id;
-        return *this;
-    }
-
-    void PerformObjectStateRequest::exec(OperationContext &_ctx)
-    {
-        _ctx.get_conn().exec_params(
-            "SELECT update_object_states($1::integer)",
-            Database::query_param_list
-                (object_id_));
-    }
-
-    LockObjectStateRequestLock::LockObjectStateRequestLock(ObjectStateId _state_id, ObjectId _object_id)
-    :   state_id_(_state_id),
-        object_id_(_object_id)
-    {}
-
-    void LockObjectStateRequestLock::exec(OperationContext &_ctx)
-    {
-        {//insert separately
-            typedef std::auto_ptr< Database::StandaloneConnection > StandaloneConnectionPtr;
-            Database::StandaloneManager sm = Database::StandaloneManager(
-                new Database::StandaloneConnectionFactory(Database::Manager::getConnectionString()));
-            StandaloneConnectionPtr conn_standalone(sm.acquire());
-            conn_standalone->exec_params(
-                "INSERT INTO object_state_request_lock (id,state_id,object_id) "
-                "VALUES (DEFAULT, $1::bigint, $2::bigint)",
-                Database::query_param_list(state_id_)(object_id_));
-        }
-
-        _ctx.get_conn().exec_params("SELECT lock_object_state_request_lock($1::bigint, $2::bigint)",
-            Database::query_param_list(state_id_)(object_id_));
-    }
-
-    LockMultipleObjectStateRequestLock::LockMultipleObjectStateRequestLock(
-        const MultipleObjectStateId &_state_id, ObjectId _object_id)
-    :   state_id_(_state_id),
-        object_id_(_object_id)
-    {}
-
-    void LockMultipleObjectStateRequestLock::exec(OperationContext &_ctx)
-    {
-        typedef std::auto_ptr< Database::StandaloneConnection > StandaloneConnectionPtr;
-        Database::StandaloneManager sm = Database::StandaloneManager(
-            new Database::StandaloneConnectionFactory(Database::Manager::getConnectionString()));
-        StandaloneConnectionPtr conn_standalone(sm.acquire());
-        for (MultipleObjectStateId::const_iterator pStateId = state_id_.begin(); pStateId != state_id_.end(); ++pStateId) {
-            Database::query_param_list param(*pStateId);
-            param(object_id_);
-            conn_standalone->exec_params("INSERT INTO object_state_request_lock (state_id,object_id) "
-                                         "VALUES ($1::bigint,$2::bigint)", param);
-            _ctx.get_conn().exec_params("SELECT lock_object_state_request_lock($1::bigint,$2::bigint)", param);
-        }
-    }
 
     GetObjectId::GetObjectId(const std::string &_object_handle, ObjectType _object_type)
     :   object_handle_(_object_handle),

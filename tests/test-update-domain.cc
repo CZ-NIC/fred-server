@@ -52,11 +52,14 @@
 #include "src/fredlib/registrar.h"
 #include "src/fredlib/domain/update_domain.h"
 #include "src/fredlib/nsset/update_nsset.h"
+#include "src/fredlib/nsset/info_nsset.h"
 #include "src/fredlib/keyset/update_keyset.h"
+#include "src/fredlib/contact/info_contact.h"
 #include "src/fredlib/contact/delete_contact.h"
 #include "src/fredlib/contact/create_contact.h"
 #include "src/fredlib/nsset/create_nsset.h"
 #include "src/fredlib/keyset/create_keyset.h"
+#include "src/fredlib/keyset/info_keyset.h"
 #include "src/fredlib/domain/create_domain.h"
 #include "src/fredlib/domain/info_domain.h"
 #include "src/fredlib/opexception.h"
@@ -272,7 +275,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     info_data_1_with_changes.info_domain_data.historyid = info_data_2.info_domain_data.historyid;
 
     //updated update_registrar_handle
-    BOOST_CHECK(registrar_handle == std::string(info_data_2.info_domain_data.update_registrar_handle));
+    BOOST_CHECK(registrar_handle == info_data_2.info_domain_data.update_registrar_handle.get_value());
     info_data_1_with_changes.info_domain_data.update_registrar_handle = registrar_handle;
 
     //updated sponsoring_registrar_handle
@@ -280,18 +283,27 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     info_data_1_with_changes.info_domain_data.sponsoring_registrar_handle = registrar_handle;
 
     //updated registrant_handle
-    BOOST_CHECK(registrant_contact_handle == std::string(info_data_2.info_domain_data.registrant_handle));
-    info_data_1_with_changes.info_domain_data.registrant_handle = registrant_contact_handle;
+    BOOST_CHECK(registrant_contact_handle == info_data_2.info_domain_data.registrant.handle);
+    info_data_1_with_changes.info_domain_data.registrant = info_data_2.info_domain_data.registrant;
 
     //updated update_time
     info_data_1_with_changes.info_domain_data.update_time = info_data_2.info_domain_data.update_time;
 
     //updated admin contacts
-    info_data_1_with_changes.info_domain_data.admin_contacts.push_back(admin_contact1_handle);
-    info_data_1_with_changes.info_domain_data.admin_contacts.push_back(registrant_contact_handle);
+
+    Fred::InfoContactOutput admin_contact_info  = Fred::InfoContactByHandle(admin_contact_handle).exec(ctx);
+    Fred::InfoContactOutput admin_contact1_info = Fred::InfoContactByHandle(admin_contact1_handle).exec(ctx);
+    Fred::InfoContactOutput registrant_contact_info = Fred::InfoContactByHandle(registrant_contact_handle).exec(ctx);
+    Fred::InfoContactOutput admin_contact2_info = Fred::InfoContactByHandle(admin_contact2_handle).exec(ctx);
+
+    info_data_1_with_changes.info_domain_data.admin_contacts.push_back(Fred::ObjectIdHandlePair(
+            admin_contact1_info.info_contact_data.id, admin_contact1_info.info_contact_data.handle));
+    info_data_1_with_changes.info_domain_data.admin_contacts.push_back(Fred::ObjectIdHandlePair(
+            registrant_contact_info.info_contact_data.id, registrant_contact_info.info_contact_data.handle));
     info_data_1_with_changes.info_domain_data.admin_contacts
         .erase(std::remove(info_data_1_with_changes.info_domain_data.admin_contacts.begin()
-            , info_data_1_with_changes.info_domain_data.admin_contacts.end(), admin_contact2_handle)
+            , info_data_1_with_changes.info_domain_data.admin_contacts.end(), Fred::ObjectIdHandlePair(
+                    admin_contact2_info.info_contact_data.id, admin_contact2_info.info_contact_data.handle))
             , info_data_1_with_changes.info_domain_data.admin_contacts.end());
 
     //check changes made by last update
@@ -305,7 +317,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     BOOST_CHECK(history_info_data_2.at(1).info_domain_data == history_info_data_1.at(0).info_domain_data);
 
     //check historyid
-    BOOST_CHECK(history_info_data_2.at(1).next_historyid == history_info_data_2.at(0).info_domain_data.historyid);
+    BOOST_CHECK(history_info_data_2.at(1).next_historyid.get_value() == history_info_data_2.at(0).info_domain_data.historyid);
     BOOST_CHECK(history_info_data_2.at(0).info_domain_data.crhistoryid == info_data_2.info_domain_data.crhistoryid);
 
     //call update using small ctor and set custom params
@@ -333,28 +345,36 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     info_data_2_with_changes.info_domain_data.historyid = info_data_3.info_domain_data.historyid;
 
     //updated update_registrar_handle
-    BOOST_CHECK(registrar_handle == std::string(info_data_3.info_domain_data.update_registrar_handle));
+    BOOST_CHECK(registrar_handle == std::string(info_data_3.info_domain_data.update_registrar_handle.get_value()));
 
     //updated sponsoring_registrar_handle
     BOOST_CHECK(registrar_handle == std::string(info_data_3.info_domain_data.sponsoring_registrar_handle));
 
     //updated registrant_handle
-    BOOST_CHECK(registrant_contact_handle == std::string(info_data_3.info_domain_data.registrant_handle));
-    info_data_2_with_changes.info_domain_data.registrant_handle = registrant_contact_handle;
+    BOOST_CHECK(registrant_contact_handle == info_data_3.info_domain_data.registrant.handle);
+    info_data_2_with_changes.info_domain_data.registrant = info_data_3.info_domain_data.registrant;
 
     //updated update_time
     info_data_2_with_changes.info_domain_data.update_time = info_data_3.info_domain_data.update_time;
 
     //updated admin contacts
-    info_data_2_with_changes.info_domain_data.admin_contacts.push_back(admin_contact_handle);
+    info_data_2_with_changes.info_domain_data.admin_contacts.push_back(Fred::ObjectIdHandlePair(
+        admin_contact_info.info_contact_data.id, admin_contact_info.info_contact_data.handle));
+
     info_data_2_with_changes.info_domain_data.admin_contacts
         .erase(std::remove(info_data_2_with_changes.info_domain_data.admin_contacts.begin()
-            , info_data_2_with_changes.info_domain_data.admin_contacts.end(), registrant_contact_handle)
+            , info_data_2_with_changes.info_domain_data.admin_contacts.end()
+                , Fred::ObjectIdHandlePair(registrant_contact_info.info_contact_data.id
+                    , registrant_contact_info.info_contact_data.handle))
             , info_data_2_with_changes.info_domain_data.admin_contacts.end());
+
     info_data_2_with_changes.info_domain_data.admin_contacts
         .erase(std::remove(info_data_2_with_changes.info_domain_data.admin_contacts.begin()
-            , info_data_2_with_changes.info_domain_data.admin_contacts.end(), admin_contact1_handle)
+            , info_data_2_with_changes.info_domain_data.admin_contacts.end()
+                , Fred::ObjectIdHandlePair(admin_contact1_info.info_contact_data.id
+                    , admin_contact1_info.info_contact_data.handle))
             , info_data_2_with_changes.info_domain_data.admin_contacts.end());
+
 
     //check changes made by last update
     BOOST_CHECK(info_data_2_with_changes == info_data_3);
@@ -368,7 +388,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     BOOST_CHECK(history_info_data_3.at(2).info_domain_data == history_info_data_2.at(1).info_domain_data);
 
     //check historyid
-    BOOST_CHECK(history_info_data_3.at(1).next_historyid == history_info_data_3.at(0).info_domain_data.historyid);
+    BOOST_CHECK(history_info_data_3.at(1).next_historyid.get_value() == history_info_data_3.at(0).info_domain_data.historyid);
     BOOST_CHECK(history_info_data_3.at(0).info_domain_data.crhistoryid == info_data_3.info_domain_data.crhistoryid);
 
     //call update using small ctor and set one custom param
@@ -388,7 +408,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     info_data_3_with_changes.info_domain_data.historyid = info_data_4.info_domain_data.historyid;
 
     //updated update_registrar_handle
-    BOOST_CHECK(registrar_handle == std::string(info_data_4.info_domain_data.update_registrar_handle));
+    BOOST_CHECK(registrar_handle == std::string(info_data_4.info_domain_data.update_registrar_handle.get_value()));
 
     //updated update_time
     info_data_3_with_changes.info_domain_data.update_time = info_data_4.info_domain_data.update_time;
@@ -406,7 +426,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     BOOST_CHECK(history_info_data_4.at(3).info_domain_data == history_info_data_3.at(2).info_domain_data);
 
     //check historyid
-    BOOST_CHECK(history_info_data_4.at(1).next_historyid == history_info_data_4.at(0).info_domain_data.historyid);
+    BOOST_CHECK(history_info_data_4.at(1).next_historyid.get_value() == history_info_data_4.at(0).info_domain_data.historyid);
     BOOST_CHECK(history_info_data_4.at(0).info_domain_data.crhistoryid == info_data_4.info_domain_data.crhistoryid);
 
     //call update using small ctor and set one custom param
@@ -422,11 +442,11 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     info_data_4_with_changes.info_domain_data.historyid = info_data_5.info_domain_data.historyid;
 
     //updated update_registrar_handle
-    BOOST_CHECK(registrar_handle == std::string(info_data_5.info_domain_data.update_registrar_handle));
+    BOOST_CHECK(registrar_handle == std::string(info_data_5.info_domain_data.update_registrar_handle.get_value()));
 
     //updated registrant_handle
-    BOOST_CHECK(registrant_contact_handle == std::string(info_data_5.info_domain_data.registrant_handle));
-    info_data_4_with_changes.info_domain_data.registrant_handle = registrant_contact_handle;
+    BOOST_CHECK(registrant_contact_handle == info_data_5.info_domain_data.registrant.handle);
+    info_data_4_with_changes.info_domain_data.registrant = info_data_5.info_domain_data.registrant;
 
     //updated update_time
     info_data_4_with_changes.info_domain_data.update_time = info_data_5.info_domain_data.update_time;
@@ -445,7 +465,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     BOOST_CHECK(history_info_data_5.at(4).info_domain_data == history_info_data_4.at(3).info_domain_data);
 
     //check historyid
-    BOOST_CHECK(history_info_data_5.at(1).next_historyid == history_info_data_5.at(0).info_domain_data.historyid);
+    BOOST_CHECK(history_info_data_5.at(1).next_historyid.get_value() == history_info_data_5.at(0).info_domain_data.historyid);
     BOOST_CHECK(history_info_data_5.at(0).info_domain_data.crhistoryid == info_data_5.info_domain_data.crhistoryid);
 
     //call update using small ctor and set one custom param
@@ -461,10 +481,11 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     info_data_5_with_changes.info_domain_data.historyid = info_data_6.info_domain_data.historyid;
 
     //updated update_registrar_handle
-    BOOST_CHECK(registrar_handle == std::string(info_data_6.info_domain_data.update_registrar_handle));
+    BOOST_CHECK(registrar_handle == std::string(info_data_6.info_domain_data.update_registrar_handle.get_value()));
 
     //updated admin contacts
-    info_data_5_with_changes.info_domain_data.admin_contacts.push_back(admin_contact1_handle);
+    info_data_5_with_changes.info_domain_data.admin_contacts.push_back(Fred::ObjectIdHandlePair(
+        admin_contact1_info.info_contact_data.id, admin_contact1_info.info_contact_data.handle));
 
     //updated update_time
     info_data_5_with_changes.info_domain_data.update_time = info_data_6.info_domain_data.update_time;
@@ -484,7 +505,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     BOOST_CHECK(history_info_data_6.at(5).info_domain_data == history_info_data_5.at(4).info_domain_data);
 
     //check historyid
-    BOOST_CHECK(history_info_data_6.at(1).next_historyid == history_info_data_6.at(0).info_domain_data.historyid);
+    BOOST_CHECK(history_info_data_6.at(1).next_historyid.get_value() == history_info_data_6.at(0).info_domain_data.historyid);
     BOOST_CHECK(history_info_data_6.at(0).info_domain_data.crhistoryid == info_data_6.info_domain_data.crhistoryid);
 
     //call update using small ctor and set one custom param
@@ -500,12 +521,14 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     info_data_6_with_changes.info_domain_data.historyid = info_data_7.info_domain_data.historyid;
 
     //updated update_registrar_handle
-    BOOST_CHECK(registrar_handle == std::string(info_data_7.info_domain_data.update_registrar_handle));
+    BOOST_CHECK(registrar_handle == std::string(info_data_7.info_domain_data.update_registrar_handle.get_value()));
 
     //updated admin contacts
     info_data_6_with_changes.info_domain_data.admin_contacts
         .erase(std::remove(info_data_6_with_changes.info_domain_data.admin_contacts.begin()
-            , info_data_6_with_changes.info_domain_data.admin_contacts.end(), admin_contact_handle)
+            , info_data_6_with_changes.info_domain_data.admin_contacts.end()
+            , Fred::ObjectIdHandlePair(admin_contact_info.info_contact_data.id
+                    , admin_contact_info.info_contact_data.handle))
             , info_data_6_with_changes.info_domain_data.admin_contacts.end());
 
     //updated update_time
@@ -527,7 +550,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     BOOST_CHECK(history_info_data_7.at(6).info_domain_data == history_info_data_6.at(5).info_domain_data);
 
     //check historyid
-    BOOST_CHECK(history_info_data_7.at(1).next_historyid == history_info_data_7.at(0).info_domain_data.historyid);
+    BOOST_CHECK(history_info_data_7.at(1).next_historyid.get_value() == history_info_data_7.at(0).info_domain_data.historyid);
     BOOST_CHECK(history_info_data_7.at(0).info_domain_data.crhistoryid == info_data_7.info_domain_data.crhistoryid);
 
     //call update using small ctor and set one custom param
@@ -543,10 +566,12 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     info_data_7_with_changes.info_domain_data.historyid = info_data_8.info_domain_data.historyid;
 
     //updated update_registrar_handle
-    BOOST_CHECK(registrar_handle == std::string(info_data_8.info_domain_data.update_registrar_handle));
+    BOOST_CHECK(registrar_handle == std::string(info_data_8.info_domain_data.update_registrar_handle.get_value()));
 
     //set nsset
-    info_data_7_with_changes.info_domain_data.nsset_handle = test_nsset_handle;
+    Fred::InfoNssetOutput test_nsset_info = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
+    info_data_7_with_changes.info_domain_data.nsset = Nullable<Fred::ObjectIdHandlePair>(
+        Fred::ObjectIdHandlePair(test_nsset_info.info_nsset_data.id, test_nsset_info.info_nsset_data.handle));
 
     //updated update_time
     info_data_7_with_changes.info_domain_data.update_time = info_data_8.info_domain_data.update_time;
@@ -568,7 +593,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     BOOST_CHECK(history_info_data_8.at(7).info_domain_data == history_info_data_7.at(6).info_domain_data);
 
     //check historyid
-    BOOST_CHECK(history_info_data_8.at(1).next_historyid == history_info_data_8.at(0).info_domain_data.historyid);
+    BOOST_CHECK(history_info_data_8.at(1).next_historyid.get_value() == history_info_data_8.at(0).info_domain_data.historyid);
     BOOST_CHECK(history_info_data_8.at(0).info_domain_data.crhistoryid == info_data_8.info_domain_data.crhistoryid);
 
     //call update using small ctor and set one custom param
@@ -584,10 +609,10 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     info_data_8_with_changes.info_domain_data.historyid = info_data_9.info_domain_data.historyid;
 
     //updated update_registrar_handle
-    BOOST_CHECK(registrar_handle == std::string(info_data_9.info_domain_data.update_registrar_handle));
+    BOOST_CHECK(registrar_handle == std::string(info_data_9.info_domain_data.update_registrar_handle.get_value()));
 
     //set nsset
-    info_data_8_with_changes.info_domain_data.nsset_handle = Nullable<std::string>();
+    info_data_8_with_changes.info_domain_data.nsset = Nullable<Fred::ObjectIdHandlePair>();
 
     //updated update_time
     info_data_8_with_changes.info_domain_data.update_time = info_data_9.info_domain_data.update_time;
@@ -610,7 +635,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     BOOST_CHECK(history_info_data_9.at(8).info_domain_data == history_info_data_8.at(7).info_domain_data);
 
     //check historyid
-    BOOST_CHECK(history_info_data_9.at(1).next_historyid == history_info_data_9.at(0).info_domain_data.historyid);
+    BOOST_CHECK(history_info_data_9.at(1).next_historyid.get_value() == history_info_data_9.at(0).info_domain_data.historyid);
     BOOST_CHECK(history_info_data_9.at(0).info_domain_data.crhistoryid == info_data_9.info_domain_data.crhistoryid);
 
     //call update using small ctor and set one custom param
@@ -626,10 +651,11 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     info_data_9_with_changes.info_domain_data.historyid = info_data_10.info_domain_data.historyid;
 
     //updated update_registrar_handle
-    BOOST_CHECK(registrar_handle == std::string(info_data_10.info_domain_data.update_registrar_handle));
+    BOOST_CHECK(registrar_handle == std::string(info_data_10.info_domain_data.update_registrar_handle.get_value()));
 
     //set nsset
-    info_data_9_with_changes.info_domain_data.nsset_handle = test_nsset_handle;
+    info_data_9_with_changes.info_domain_data.nsset = Nullable<Fred::ObjectIdHandlePair>(
+            Fred::ObjectIdHandlePair(test_nsset_info.info_nsset_data.id, test_nsset_info.info_nsset_data.handle));
 
     //updated update_time
     info_data_9_with_changes.info_domain_data.update_time = info_data_10.info_domain_data.update_time;
@@ -653,7 +679,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     BOOST_CHECK(history_info_data_10.at(9).info_domain_data == history_info_data_9.at(8).info_domain_data);
 
     //check historyid
-    BOOST_CHECK(history_info_data_10.at(1).next_historyid == history_info_data_10.at(0).info_domain_data.historyid);
+    BOOST_CHECK(history_info_data_10.at(1).next_historyid.get_value() == history_info_data_10.at(0).info_domain_data.historyid);
     BOOST_CHECK(history_info_data_10.at(0).info_domain_data.crhistoryid == info_data_10.info_domain_data.crhistoryid);
 
     //call update using small ctor and set one custom param
@@ -669,10 +695,10 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     info_data_10_with_changes.info_domain_data.historyid = info_data_11.info_domain_data.historyid;
 
     //updated update_registrar_handle
-    BOOST_CHECK(registrar_handle == std::string(info_data_11.info_domain_data.update_registrar_handle));
+    BOOST_CHECK(registrar_handle == std::string(info_data_11.info_domain_data.update_registrar_handle.get_value()));
 
     //set nsset
-    info_data_10_with_changes.info_domain_data.nsset_handle = Nullable<std::string>();
+    info_data_10_with_changes.info_domain_data.nsset = Nullable<Fred::ObjectIdHandlePair>();
 
     //updated update_time
     info_data_10_with_changes.info_domain_data.update_time = info_data_11.info_domain_data.update_time;
@@ -697,7 +723,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     BOOST_CHECK(history_info_data_11.at(10).info_domain_data == history_info_data_10.at(9).info_domain_data);
 
     //check historyid
-    BOOST_CHECK(history_info_data_11.at(1).next_historyid == history_info_data_11.at(0).info_domain_data.historyid);
+    BOOST_CHECK(history_info_data_11.at(1).next_historyid.get_value() == history_info_data_11.at(0).info_domain_data.historyid);
     BOOST_CHECK(history_info_data_11.at(0).info_domain_data.crhistoryid == info_data_11.info_domain_data.crhistoryid);
 
     //call update using small ctor and set one custom param
@@ -713,10 +739,11 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     info_data_11_with_changes.info_domain_data.historyid = info_data_12.info_domain_data.historyid;
 
     //updated update_registrar_handle
-    BOOST_CHECK(registrar_handle == std::string(info_data_12.info_domain_data.update_registrar_handle));
+    BOOST_CHECK(registrar_handle == std::string(info_data_12.info_domain_data.update_registrar_handle.get_value()));
 
     //set nsset
-    info_data_11_with_changes.info_domain_data.nsset_handle = test_nsset_handle;
+    info_data_11_with_changes.info_domain_data.nsset = Nullable<Fred::ObjectIdHandlePair>(
+            Fred::ObjectIdHandlePair(test_nsset_info.info_nsset_data.id, test_nsset_info.info_nsset_data.handle));
 
     //updated update_time
     info_data_11_with_changes.info_domain_data.update_time = info_data_12.info_domain_data.update_time;
@@ -742,7 +769,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     BOOST_CHECK(history_info_data_12.at(11).info_domain_data == history_info_data_11.at(10).info_domain_data);
 
     //check historyid
-    BOOST_CHECK(history_info_data_12.at(1).next_historyid == history_info_data_12.at(0).info_domain_data.historyid);
+    BOOST_CHECK(history_info_data_12.at(1).next_historyid.get_value() == history_info_data_12.at(0).info_domain_data.historyid);
     BOOST_CHECK(history_info_data_12.at(0).info_domain_data.crhistoryid == info_data_12.info_domain_data.crhistoryid);
 
     //call update using small ctor and set one custom param
@@ -758,10 +785,11 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     info_data_12_with_changes.info_domain_data.historyid = info_data_13.info_domain_data.historyid;
 
     //updated update_registrar_handle
-    BOOST_CHECK(registrar_handle == std::string(info_data_13.info_domain_data.update_registrar_handle));
+    BOOST_CHECK(registrar_handle == std::string(info_data_13.info_domain_data.update_registrar_handle.get_value()));
 
     //set nsset
-    info_data_12_with_changes.info_domain_data.nsset_handle = test_nsset_handle;
+    info_data_12_with_changes.info_domain_data.nsset = Nullable<Fred::ObjectIdHandlePair>(
+            Fred::ObjectIdHandlePair(test_nsset_info.info_nsset_data.id, test_nsset_info.info_nsset_data.handle));
 
     //updated update_time
     info_data_12_with_changes.info_domain_data.update_time = info_data_13.info_domain_data.update_time;
@@ -788,7 +816,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     BOOST_CHECK(history_info_data_13.at(12).info_domain_data == history_info_data_12.at(11).info_domain_data);
 
     //check historyid
-    BOOST_CHECK(history_info_data_13.at(1).next_historyid == history_info_data_13.at(0).info_domain_data.historyid);
+    BOOST_CHECK(history_info_data_13.at(1).next_historyid.get_value() == history_info_data_13.at(0).info_domain_data.historyid);
     BOOST_CHECK(history_info_data_13.at(0).info_domain_data.crhistoryid == info_data_13.info_domain_data.crhistoryid);
 
     //call update using small ctor and set one custom param
@@ -804,10 +832,10 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     info_data_13_with_changes.info_domain_data.historyid = info_data_14.info_domain_data.historyid;
 
     //updated update_registrar_handle
-    BOOST_CHECK(registrar_handle == std::string(info_data_14.info_domain_data.update_registrar_handle));
+    BOOST_CHECK(registrar_handle == std::string(info_data_14.info_domain_data.update_registrar_handle.get_value()));
 
     //set keyset
-    info_data_13_with_changes.info_domain_data.keyset_handle = Nullable<std::string>();
+    info_data_13_with_changes.info_domain_data.keyset = Nullable<Fred::ObjectIdHandlePair>();
 
     //updated update_time
     info_data_13_with_changes.info_domain_data.update_time = info_data_14.info_domain_data.update_time;
@@ -835,7 +863,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     BOOST_CHECK(history_info_data_14.at(13).info_domain_data == history_info_data_13.at(12).info_domain_data);
 
     //check historyid
-    BOOST_CHECK(history_info_data_14.at(1).next_historyid == history_info_data_14.at(0).info_domain_data.historyid);
+    BOOST_CHECK(history_info_data_14.at(1).next_historyid.get_value() == history_info_data_14.at(0).info_domain_data.historyid);
     BOOST_CHECK(history_info_data_14.at(0).info_domain_data.crhistoryid == info_data_14.info_domain_data.crhistoryid);
 
     //call update using small ctor and set one custom param
@@ -851,10 +879,12 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     info_data_14_with_changes.info_domain_data.historyid = info_data_15.info_domain_data.historyid;
 
     //updated update_registrar_handle
-    BOOST_CHECK(registrar_handle == std::string(info_data_15.info_domain_data.update_registrar_handle));
+    BOOST_CHECK(registrar_handle == std::string(info_data_15.info_domain_data.update_registrar_handle.get_value()));
 
     //set keyset
-    info_data_14_with_changes.info_domain_data.keyset_handle = test_keyset_handle;
+    Fred::InfoKeysetOutput test_keyset_info = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
+    info_data_14_with_changes.info_domain_data.keyset = Nullable<Fred::ObjectIdHandlePair>(
+        Fred::ObjectIdHandlePair(test_keyset_info.info_keyset_data.id, test_keyset_info.info_keyset_data.handle));
 
     //updated update_time
     info_data_14_with_changes.info_domain_data.update_time = info_data_15.info_domain_data.update_time;
@@ -883,7 +913,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     BOOST_CHECK(history_info_data_15.at(14).info_domain_data == history_info_data_14.at(13).info_domain_data);
 
     //check historyid
-    BOOST_CHECK(history_info_data_15.at(1).next_historyid == history_info_data_15.at(0).info_domain_data.historyid);
+    BOOST_CHECK(history_info_data_15.at(1).next_historyid.get_value() == history_info_data_15.at(0).info_domain_data.historyid);
     BOOST_CHECK(history_info_data_15.at(0).info_domain_data.crhistoryid == info_data_15.info_domain_data.crhistoryid);
 
     //call update using small ctor and set one custom param
@@ -899,10 +929,10 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     info_data_15_with_changes.info_domain_data.historyid = info_data_16.info_domain_data.historyid;
 
     //updated update_registrar_handle
-    BOOST_CHECK(registrar_handle == std::string(info_data_16.info_domain_data.update_registrar_handle));
+    BOOST_CHECK(registrar_handle == std::string(info_data_16.info_domain_data.update_registrar_handle.get_value()));
 
     //set keyset
-    info_data_15_with_changes.info_domain_data.keyset_handle = Nullable<std::string>();
+    info_data_15_with_changes.info_domain_data.keyset = Nullable<Fred::ObjectIdHandlePair>();
 
     //updated update_time
     info_data_15_with_changes.info_domain_data.update_time = info_data_16.info_domain_data.update_time;
@@ -932,7 +962,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     BOOST_CHECK(history_info_data_16.at(15).info_domain_data == history_info_data_15.at(14).info_domain_data);
 
     //check historyid
-    BOOST_CHECK(history_info_data_16.at(1).next_historyid == history_info_data_16.at(0).info_domain_data.historyid);
+    BOOST_CHECK(history_info_data_16.at(1).next_historyid.get_value() == history_info_data_16.at(0).info_domain_data.historyid);
     BOOST_CHECK(history_info_data_16.at(0).info_domain_data.crhistoryid == info_data_16.info_domain_data.crhistoryid);
 
     //call update using small ctor and set one custom param
@@ -948,10 +978,11 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     info_data_16_with_changes.info_domain_data.historyid = info_data_17.info_domain_data.historyid;
 
     //updated update_registrar_handle
-    BOOST_CHECK(registrar_handle == std::string(info_data_17.info_domain_data.update_registrar_handle));
+    BOOST_CHECK(registrar_handle == std::string(info_data_17.info_domain_data.update_registrar_handle.get_value()));
 
     //set keyset
-    info_data_16_with_changes.info_domain_data.keyset_handle = test_keyset_handle;
+    info_data_16_with_changes.info_domain_data.keyset = Nullable<Fred::ObjectIdHandlePair>(
+            Fred::ObjectIdHandlePair(test_keyset_info.info_keyset_data.id, test_keyset_info.info_keyset_data.handle));
 
     //updated update_time
     info_data_16_with_changes.info_domain_data.update_time = info_data_17.info_domain_data.update_time;
@@ -982,7 +1013,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     BOOST_CHECK(history_info_data_17.at(16).info_domain_data == history_info_data_16.at(15).info_domain_data);
 
     //check historyid
-    BOOST_CHECK(history_info_data_17.at(1).next_historyid == history_info_data_17.at(0).info_domain_data.historyid);
+    BOOST_CHECK(history_info_data_17.at(1).next_historyid.get_value() == history_info_data_17.at(0).info_domain_data.historyid);
     BOOST_CHECK(history_info_data_17.at(0).info_domain_data.crhistoryid == info_data_17.info_domain_data.crhistoryid);
 
     //call update using small ctor and set one custom param
@@ -999,14 +1030,14 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     info_data_17_with_changes.info_domain_data.historyid = info_data_18.info_domain_data.historyid;
 
     //updated update_registrar_handle
-    BOOST_CHECK(registrar_handle == std::string(info_data_18.info_domain_data.update_registrar_handle));
+    BOOST_CHECK(registrar_handle == std::string(info_data_18.info_domain_data.update_registrar_handle.get_value()));
 
     //updated update_time
     info_data_17_with_changes.info_domain_data.update_time = info_data_18.info_domain_data.update_time;
 
     //check changes made by last update
     BOOST_CHECK(info_data_17_with_changes == info_data_18);
-    BOOST_CHECK(history_info_data_18.at(0).logd_request_id == 3);
+    BOOST_CHECK(history_info_data_18.at(0).logd_request_id.get_value() == 3);
 
     //check info domain history against info domain
     BOOST_CHECK(history_info_data_18.at(0) == info_data_18);
@@ -1032,7 +1063,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     BOOST_CHECK(history_info_data_18.at(17).info_domain_data == history_info_data_17.at(16).info_domain_data);
 
     //check historyid
-    BOOST_CHECK(history_info_data_18.at(1).next_historyid == history_info_data_18.at(0).info_domain_data.historyid);
+    BOOST_CHECK(history_info_data_18.at(1).next_historyid.get_value() == history_info_data_18.at(0).info_domain_data.historyid);
     BOOST_CHECK(history_info_data_18.at(0).info_domain_data.crhistoryid == info_data_18.info_domain_data.crhistoryid);
 
 
@@ -1303,10 +1334,10 @@ BOOST_FIXTURE_TEST_CASE(info_domain_history_test, update_domain_fixture)
     BOOST_CHECK(history_info_data.at(0) == info_data_2);
     BOOST_CHECK(history_info_data.at(1) == info_data_1);
 
-    BOOST_CHECK(history_info_data.at(1).next_historyid == history_info_data.at(0).info_domain_data.historyid);
+    BOOST_CHECK(history_info_data.at(1).next_historyid.get_value() == history_info_data.at(0).info_domain_data.historyid);
 
-    BOOST_CHECK(history_info_data.at(1).history_valid_from < history_info_data.at(1).history_valid_to);
-    BOOST_CHECK(history_info_data.at(1).history_valid_to <= history_info_data.at(0).history_valid_from);
+    BOOST_CHECK(history_info_data.at(1).history_valid_from < history_info_data.at(1).history_valid_to.get_value());
+    BOOST_CHECK(history_info_data.at(1).history_valid_to.get_value() <= history_info_data.at(0).history_valid_from);
     BOOST_CHECK(history_info_data.at(0).history_valid_to.isnull());
 
     BOOST_CHECK(history_info_data.at(1).info_domain_data.crhistoryid == history_info_data.at(1).info_domain_data.historyid);
@@ -1393,7 +1424,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_set_valexdate, update_domain_fixture)
     }
 
     Fred::InfoDomainOutput info_data_2 = Fred::InfoDomainByHandle(test_enum_domain).exec(ctx);
-    BOOST_CHECK(static_cast<Fred::ENUMValidationExtension>(info_data_2.info_domain_data.enum_domain_validation)
+    BOOST_CHECK(info_data_2.info_domain_data.enum_domain_validation.get_value()
             .validation_expiration == valexdate);
     BOOST_CHECK(info_data_2.info_domain_data.delete_time.isnull());
 }

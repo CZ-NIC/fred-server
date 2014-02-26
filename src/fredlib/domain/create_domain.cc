@@ -33,6 +33,7 @@
 #include "src/fredlib/domain/check_domain.h"
 #include "src/fredlib/zone/zone.h"
 #include "src/fredlib/object/object.h"
+#include "src/fredlib/object/object_impl.h"
 #include "src/fredlib/registrar/registrar_impl.h"
 
 #include "src/fredlib/opcontext.h"
@@ -273,7 +274,7 @@ namespace Fred
                 //nsset
                 if(nsset_.isset())
                 {
-                    Nullable<std::string> new_nsset_value = nsset_;
+                    Nullable<std::string> new_nsset_value = nsset_.get_value();
                     col_sql << col_separator.get() << "nsset";
 
                     if(new_nsset_value.isnull())
@@ -284,7 +285,7 @@ namespace Fred
                     else
                     {//value case query, lock nsset object_registry row for update and get id
                         unsigned long long nsset_id = get_object_id_by_handle_and_type_with_lock(
-                            ctx,new_nsset_value,"nsset",&create_domain_exception,
+                            ctx,new_nsset_value.get_value(),"nsset",&create_domain_exception,
                             &Exception::set_unknown_nsset_handle);
 
                         params.push_back(nsset_id);//id
@@ -296,7 +297,7 @@ namespace Fred
                 //keyset
                 if(keyset_.isset())
                 {
-                    Nullable<std::string> new_keyset_value = keyset_;
+                    Nullable<std::string> new_keyset_value = keyset_.get_value();
                     col_sql << col_separator.get() << "keyset";
 
                     if(new_keyset_value.isnull())
@@ -307,7 +308,7 @@ namespace Fred
                     else
                     {//value case query, lock keyset object_registry row for update and get id
                         unsigned long long keyset_id = get_object_id_by_handle_and_type_with_lock(
-                                ctx,new_keyset_value,"keyset",&create_domain_exception,
+                                ctx,new_keyset_value.get_value(),"keyset",&create_domain_exception,
                                 &Exception::set_unknown_keyset_handle);
 
                         params.push_back(keyset_id);//id

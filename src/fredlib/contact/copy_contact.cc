@@ -61,7 +61,7 @@ namespace Fred
         template< class T >
         Optional< T > to_optional(const Nullable< T > &_n)
         {
-            return _n.isnull() ? Optional< T >() : Optional< T >(_n);
+            return _n.isnull() ? Optional< T >() : Optional< T >(_n.get_value());
         }
 
         Optional< std::string > to_optional(const std::string &_n)
@@ -108,7 +108,7 @@ namespace Fred
 
         Fred::InfoContactByHandle info_contact(src_contact_handle_);
         Fred::InfoContactOutput old_contact = info_contact.exec(_ctx);
-        Fred::CreateContact create_contact(dst_contact_handle_, dst_registrar_handle_,
+        Fred::CreateContact create_contact(dst_contact_handle_, dst_registrar_handle_.get_value(),
           to_optional(old_contact.info_contact_data.authinfopw),
           to_optional(old_contact.info_contact_data.name),
           to_optional(old_contact.info_contact_data.organization),

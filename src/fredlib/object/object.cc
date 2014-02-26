@@ -25,19 +25,17 @@
 #include <boost/assign.hpp>
 #include <boost/lexical_cast.hpp>
 
-#include "src/fredlib/object/object.h"
+#include "object_impl.h"
 #include "src/fredlib/registrar/registrar_impl.h"
-#include "src/fredlib/object_states.h"
+#include "src/fredlib/object_state/object_state_name.h"
 
 #include "src/fredlib/opexception.h"
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/db_settings.h"
 #include "util/optional_value.h"
-
 #include "util/log/log.h"
-
 #include "util/random_data_generator.h"
-
+#include "object.h"
 
 namespace Fred
 {
@@ -221,7 +219,7 @@ namespace Fred
             {
                 //check sponsoring registrar
                 unsigned long long sponsoring_registrar_id = Registrar::get_registrar_id_by_handle(
-                    ctx, sponsoring_registrar_, &update_object_exception,
+                    ctx, sponsoring_registrar_.get_value(), &update_object_exception,
                     &Exception::set_unknown_sponsoring_registrar_handle);
                 params.push_back(sponsoring_registrar_id);
                 sql << " , clid = $" << params.size() << "::integer ";//set sponsoring registrar
@@ -391,18 +389,6 @@ namespace Fred
         );
     }
 
-    unsigned long long get_object_type_id(OperationContext& ctx, const std::string& obj_type)
-    {
-        Database::Result object_type_res = ctx.get_conn().exec_params(
-            "SELECT id FROM enum_object_type WHERE name = $1::text FOR SHARE"
-            , Database::query_param_list(obj_type));
-        if (object_type_res.size() != 1)
-        {
-            BOOST_THROW_EXCEPTION(InternalError("failed to get object type"));
-        }
-        return  static_cast<unsigned long long> (object_type_res[0][0]);
-    }
-
     DeleteObjectById::DeleteObjectById(unsigned long long id)
         : id_(id)
     { }
@@ -434,16 +420,4 @@ namespace Fred
         );
     }
 
-    bool is_object_linked(OperationContext& _ctx, unsigned long long _id) {
-        Database::Result linked_result = _ctx.get_conn().exec_params(
-            "SELECT * FROM object_state os "
-            "   JOIN enum_object_states eos ON eos.id = os.state_id "
-            "   WHERE os.object_id = $1::integer AND eos.name = $2::text "
-            "       AND valid_to IS NULL",
-            Database::query_param_list
-                (_id)
-                (Fred::ObjectState::LINKED));
-
-        return linked_result.size() > 0;
-    }
 }//namespace Fred

@@ -213,7 +213,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
     info_data_1_with_changes.info_nsset_data.historyid = info_data_2.info_nsset_data.historyid;
 
     //updated update_registrar_handle
-    BOOST_CHECK(registrar_handle == std::string(info_data_2.info_nsset_data.update_registrar_handle));
+    BOOST_CHECK(registrar_handle == info_data_2.info_nsset_data.update_registrar_handle.get_value());
     info_data_1_with_changes.info_nsset_data.update_registrar_handle = registrar_handle;
 
     //updated update_time
@@ -230,7 +230,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
     BOOST_CHECK(history_info_data_2.at(1).info_nsset_data == history_info_data_1.at(0).info_nsset_data);
 
     //check historyid
-    BOOST_CHECK(history_info_data_2.at(1).next_historyid == history_info_data_2.at(0).info_nsset_data.historyid);
+    BOOST_CHECK(history_info_data_2.at(1).next_historyid.get_value() == history_info_data_2.at(0).info_nsset_data.historyid);
     BOOST_CHECK(history_info_data_2.at(0).info_nsset_data.crhistoryid == info_data_2.info_nsset_data.crhistoryid);
 
     Fred::UpdateNsset(test_nsset_handle//handle
@@ -255,7 +255,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
     info_data_2_with_changes.info_nsset_data.historyid = info_data_3.info_nsset_data.historyid;
 
     //updated update_registrar_handle
-    BOOST_CHECK(registrar_handle == std::string(info_data_3.info_nsset_data.update_registrar_handle));
+    BOOST_CHECK(registrar_handle == info_data_3.info_nsset_data.update_registrar_handle.get_value());
     info_data_2_with_changes.info_nsset_data.update_registrar_handle = registrar_handle;
 
     //updated update_time
@@ -273,7 +273,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
     BOOST_CHECK(history_info_data_3.at(1).info_nsset_data == history_info_data_2.at(0).info_nsset_data);
 
     //check historyid
-    BOOST_CHECK(history_info_data_3.at(1).next_historyid == history_info_data_3.at(0).info_nsset_data.historyid);
+    BOOST_CHECK(history_info_data_3.at(1).next_historyid.get_value() == history_info_data_3.at(0).info_nsset_data.historyid);
     BOOST_CHECK(history_info_data_3.at(0).info_nsset_data.crhistoryid == info_data_3.info_nsset_data.crhistoryid);
 
     Fred::UpdateNsset(test_nsset_handle//handle
@@ -301,7 +301,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
     info_data_3_with_changes.info_nsset_data.historyid = info_data_4.info_nsset_data.historyid;
 
     //updated update_registrar_handle
-    BOOST_CHECK(registrar_handle == std::string(info_data_4.info_nsset_data.update_registrar_handle));
+    BOOST_CHECK(registrar_handle == info_data_4.info_nsset_data.update_registrar_handle.get_value());
     info_data_3_with_changes.info_nsset_data.update_registrar_handle = registrar_handle;
 
     //updated sponsoring_registrar_handle
@@ -336,7 +336,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
     BOOST_CHECK(history_info_data_4.at(1).info_nsset_data == history_info_data_3.at(0).info_nsset_data);
 
     //check historyid
-    BOOST_CHECK(history_info_data_4.at(1).next_historyid == history_info_data_4.at(0).info_nsset_data.historyid);
+    BOOST_CHECK(history_info_data_4.at(1).next_historyid.get_value() == history_info_data_4.at(0).info_nsset_data.historyid);
     BOOST_CHECK(history_info_data_4.at(0).info_nsset_data.crhistoryid == info_data_4.info_nsset_data.crhistoryid);
 
     Fred::UpdateNsset(test_nsset_handle, registrar_handle)
@@ -360,7 +360,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
     info_data_4_with_changes.info_nsset_data.historyid = info_data_5.info_nsset_data.historyid;
 
     //updated update_registrar_handle
-    BOOST_CHECK(registrar_handle == std::string(info_data_5.info_nsset_data.update_registrar_handle));
+    BOOST_CHECK(registrar_handle == info_data_5.info_nsset_data.update_registrar_handle.get_value());
     info_data_4_with_changes.info_nsset_data.update_registrar_handle = registrar_handle;
 
     //updated sponsoring_registrar_handle
@@ -382,11 +382,11 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
         (Fred::DnsHost("host1", Util::vector_of<std::string>("127.0.0.2")("127.1.1.2")));
 
     //updated tech_check_level
-    BOOST_CHECK(3 == info_data_5.info_nsset_data.tech_check_level);
+    BOOST_CHECK(3 == info_data_5.info_nsset_data.tech_check_level.get_value());
     info_data_4_with_changes.info_nsset_data.tech_check_level = 3;
 
     //check logd request_id
-    BOOST_CHECK(4 == history_info_data_5.at(0).logd_request_id);
+    BOOST_CHECK(4 == history_info_data_5.at(0).logd_request_id.get_value());
 
 
     //check changes made by last update
@@ -403,7 +403,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
     BOOST_CHECK(history_info_data_5.at(1).info_nsset_data == history_info_data_4.at(0).info_nsset_data);
 
     //check historyid
-    BOOST_CHECK(history_info_data_5.at(1).next_historyid == history_info_data_5.at(0).info_nsset_data.historyid);
+    BOOST_CHECK(history_info_data_5.at(1).next_historyid.get_value() == history_info_data_5.at(0).info_nsset_data.historyid);
     BOOST_CHECK(history_info_data_5.at(0).info_nsset_data.crhistoryid == info_data_5.info_nsset_data.crhistoryid);
 
     //add dns host
@@ -419,7 +419,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
     info_data_5_with_changes.info_nsset_data.historyid = info_data_6.info_nsset_data.historyid;
 
     //updated update_registrar_handle
-    BOOST_CHECK(registrar_handle == std::string(info_data_6.info_nsset_data.update_registrar_handle));
+    BOOST_CHECK(registrar_handle == info_data_6.info_nsset_data.update_registrar_handle.get_value());
     info_data_5_with_changes.info_nsset_data.update_registrar_handle = registrar_handle;
 
     //updated update_time
@@ -447,7 +447,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
     BOOST_CHECK(history_info_data_6.at(1).info_nsset_data == history_info_data_5.at(0).info_nsset_data);
 
     //check historyid
-    BOOST_CHECK(history_info_data_6.at(1).next_historyid == history_info_data_6.at(0).info_nsset_data.historyid);
+    BOOST_CHECK(history_info_data_6.at(1).next_historyid.get_value() == history_info_data_6.at(0).info_nsset_data.historyid);
     BOOST_CHECK(history_info_data_6.at(0).info_nsset_data.crhistoryid == info_data_6.info_nsset_data.crhistoryid);
 
     //rem dns host
@@ -463,7 +463,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
     info_data_6_with_changes.info_nsset_data.historyid = info_data_7.info_nsset_data.historyid;
 
     //updated update_registrar_handle
-    BOOST_CHECK(registrar_handle == std::string(info_data_7.info_nsset_data.update_registrar_handle));
+    BOOST_CHECK(registrar_handle == info_data_7.info_nsset_data.update_registrar_handle.get_value());
     info_data_6_with_changes.info_nsset_data.update_registrar_handle = registrar_handle;
 
     //updated update_time
@@ -491,7 +491,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
     BOOST_CHECK(history_info_data_7.at(1).info_nsset_data == history_info_data_6.at(0).info_nsset_data);
 
     //check historyid
-    BOOST_CHECK(history_info_data_7.at(1).next_historyid == history_info_data_7.at(0).info_nsset_data.historyid);
+    BOOST_CHECK(history_info_data_7.at(1).next_historyid.get_value() == history_info_data_7.at(0).info_nsset_data.historyid);
     BOOST_CHECK(history_info_data_7.at(0).info_nsset_data.crhistoryid == info_data_7.info_nsset_data.crhistoryid);
 
     //rem tech contact
@@ -507,7 +507,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
     info_data_7_with_changes.info_nsset_data.historyid = info_data_8.info_nsset_data.historyid;
 
     //updated update_registrar_handle
-    BOOST_CHECK(registrar_handle == std::string(info_data_8.info_nsset_data.update_registrar_handle));
+    BOOST_CHECK(registrar_handle == info_data_8.info_nsset_data.update_registrar_handle.get_value());
     info_data_7_with_changes.info_nsset_data.update_registrar_handle = registrar_handle;
 
     //updated update_time
@@ -536,7 +536,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
     BOOST_CHECK(history_info_data_8.at(1).info_nsset_data == history_info_data_7.at(0).info_nsset_data);
 
     //check historyid
-    BOOST_CHECK(history_info_data_8.at(1).next_historyid == history_info_data_8.at(0).info_nsset_data.historyid);
+    BOOST_CHECK(history_info_data_8.at(1).next_historyid.get_value() == history_info_data_8.at(0).info_nsset_data.historyid);
     BOOST_CHECK(history_info_data_8.at(0).info_nsset_data.crhistoryid == info_data_8.info_nsset_data.crhistoryid);
 
     //add tech contact
@@ -552,7 +552,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
     info_data_8_with_changes.info_nsset_data.historyid = info_data_9.info_nsset_data.historyid;
 
     //updated update_registrar_handle
-    BOOST_CHECK(registrar_handle == std::string(info_data_9.info_nsset_data.update_registrar_handle));
+    BOOST_CHECK(registrar_handle == info_data_9.info_nsset_data.update_registrar_handle.get_value());
     info_data_8_with_changes.info_nsset_data.update_registrar_handle = registrar_handle;
 
     //updated update_time
@@ -579,7 +579,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
     BOOST_CHECK(history_info_data_9.at(1).info_nsset_data == history_info_data_8.at(0).info_nsset_data);
 
     //check historyid
-    BOOST_CHECK(history_info_data_9.at(1).next_historyid == history_info_data_9.at(0).info_nsset_data.historyid);
+    BOOST_CHECK(history_info_data_9.at(1).next_historyid.get_value() == history_info_data_9.at(0).info_nsset_data.historyid);
     BOOST_CHECK(history_info_data_9.at(0).info_nsset_data.crhistoryid == info_data_9.info_nsset_data.crhistoryid);
 
     //set authinfopw
@@ -595,7 +595,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
     info_data_9_with_changes.info_nsset_data.historyid = info_data_10.info_nsset_data.historyid;
 
     //updated update_registrar_handle
-    BOOST_CHECK(registrar_handle == std::string(info_data_10.info_nsset_data.update_registrar_handle));
+    BOOST_CHECK(registrar_handle == info_data_10.info_nsset_data.update_registrar_handle.get_value());
     info_data_9_with_changes.info_nsset_data.update_registrar_handle = registrar_handle;
 
     //updated update_time
@@ -623,7 +623,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
     BOOST_CHECK(history_info_data_10.at(1).info_nsset_data == history_info_data_9.at(0).info_nsset_data);
 
     //check historyid
-    BOOST_CHECK(history_info_data_10.at(1).next_historyid == history_info_data_10.at(0).info_nsset_data.historyid);
+    BOOST_CHECK(history_info_data_10.at(1).next_historyid.get_value() == history_info_data_10.at(0).info_nsset_data.historyid);
     BOOST_CHECK(history_info_data_10.at(0).info_nsset_data.crhistoryid == info_data_10.info_nsset_data.crhistoryid);
 
     //set logd request_id
@@ -639,7 +639,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
     info_data_10_with_changes.info_nsset_data.historyid = info_data_11.info_nsset_data.historyid;
 
     //updated update_registrar_handle
-    BOOST_CHECK(registrar_handle == std::string(info_data_11.info_nsset_data.update_registrar_handle));
+    BOOST_CHECK(registrar_handle == info_data_11.info_nsset_data.update_registrar_handle.get_value());
     info_data_10_with_changes.info_nsset_data.update_registrar_handle = registrar_handle;
 
     //updated update_time
@@ -665,11 +665,11 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
     BOOST_CHECK(history_info_data_11.at(1).info_nsset_data == history_info_data_10.at(0).info_nsset_data);
 
     //check historyid
-    BOOST_CHECK(history_info_data_11.at(1).next_historyid == history_info_data_11.at(0).info_nsset_data.historyid);
+    BOOST_CHECK(history_info_data_11.at(1).next_historyid.get_value() == history_info_data_11.at(0).info_nsset_data.historyid);
     BOOST_CHECK(history_info_data_11.at(0).info_nsset_data.crhistoryid == info_data_11.info_nsset_data.crhistoryid);
 
     //check logd request_id
-    BOOST_CHECK(1 == history_info_data_11.at(0).logd_request_id);
+    BOOST_CHECK(1 == history_info_data_11.at(0).logd_request_id.get_value());
 
     //set tech check level
     Fred::UpdateNsset(test_nsset_handle, registrar_handle).set_tech_check_level(2).exec(ctx);
@@ -684,14 +684,14 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
     info_data_11_with_changes.info_nsset_data.historyid = info_data_12.info_nsset_data.historyid;
 
     //updated update_registrar_handle
-    BOOST_CHECK(registrar_handle == std::string(info_data_12.info_nsset_data.update_registrar_handle));
+    BOOST_CHECK(registrar_handle == info_data_12.info_nsset_data.update_registrar_handle.get_value());
     info_data_11_with_changes.info_nsset_data.update_registrar_handle = registrar_handle;
 
     //updated update_time
     info_data_11_with_changes.info_nsset_data.update_time = info_data_12.info_nsset_data.update_time;
 
     //updated tech_check_level
-    BOOST_CHECK(2 == info_data_12.info_nsset_data.tech_check_level);
+    BOOST_CHECK(2 == info_data_12.info_nsset_data.tech_check_level.get_value());
     info_data_11_with_changes.info_nsset_data.tech_check_level = 2;
 
 
@@ -716,7 +716,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
     BOOST_CHECK(history_info_data_12.at(1).info_nsset_data == history_info_data_11.at(0).info_nsset_data);
 
     //check historyid
-    BOOST_CHECK(history_info_data_12.at(1).next_historyid == history_info_data_12.at(0).info_nsset_data.historyid);
+    BOOST_CHECK(history_info_data_12.at(1).next_historyid.get_value() == history_info_data_12.at(0).info_nsset_data.historyid);
     BOOST_CHECK(history_info_data_12.at(0).info_nsset_data.crhistoryid == info_data_12.info_nsset_data.crhistoryid);
 
     ctx.commit_transaction();
@@ -1000,10 +1000,10 @@ BOOST_FIXTURE_TEST_CASE(info_nsset_history_test, update_nsset_fixture)
     BOOST_CHECK(history_info_data.at(0) == info_data_2);
     BOOST_CHECK(history_info_data.at(1) == info_data_1);
 
-    BOOST_CHECK(history_info_data.at(1).next_historyid == history_info_data.at(0).info_nsset_data.historyid);
+    BOOST_CHECK(history_info_data.at(1).next_historyid.get_value() == history_info_data.at(0).info_nsset_data.historyid);
 
-    BOOST_CHECK(history_info_data.at(1).history_valid_from < history_info_data.at(1).history_valid_to);
-    BOOST_CHECK(history_info_data.at(1).history_valid_to <= history_info_data.at(0).history_valid_from);
+    BOOST_CHECK(history_info_data.at(1).history_valid_from < history_info_data.at(1).history_valid_to.get_value());
+    BOOST_CHECK(history_info_data.at(1).history_valid_to.get_value() <= history_info_data.at(0).history_valid_from);
     BOOST_CHECK(history_info_data.at(0).history_valid_to.isnull());
 
     BOOST_CHECK(history_info_data.at(1).info_nsset_data.crhistoryid == history_info_data.at(1).info_nsset_data.historyid);

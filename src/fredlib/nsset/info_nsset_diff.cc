@@ -159,7 +159,7 @@ namespace Fred
             diff.authinfopw = std::make_pair(first.authinfopw,second.authinfopw);
         }
 
-        if(first.tech_check_level != second.tech_check_level)
+        if(!Util::is_equal(first.tech_check_level, second.tech_check_level))
         {
             diff.tech_check_level = std::make_pair(first.tech_check_level,second.tech_check_level);
         }

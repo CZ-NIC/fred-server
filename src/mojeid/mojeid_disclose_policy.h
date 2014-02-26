@@ -97,7 +97,7 @@ struct SetDiscloseAddrTrueIfOrganization
 {
     void operator()(DiscloseFlagPolicy& policy)
     {
-        if(std::string(policy.get_contact().organization).compare("") != 0)
+        if(policy.get_contact().organization.get_value().compare("") != 0)
         {
             policy.get_contact().discloseaddress=true;
         }

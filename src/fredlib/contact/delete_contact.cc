@@ -27,9 +27,11 @@
 
 #include "src/fredlib/contact/delete_contact.h"
 #include "src/fredlib/object/object.h"
-
+#include "src/fredlib/object/object_impl.h"
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/db_settings.h"
+#include "src/fredlib/object_state/object_has_state.h"
+#include "src/fredlib/object_state/object_state_name.h"
 
 namespace Fred
 {
@@ -59,7 +61,7 @@ namespace Fred
                 static_cast<Exception*>(NULL),
                 &Exception::set_unknown_contact_handle);
 
-            if (is_object_linked(_ctx, contact_id)) {
+            if (ObjectHasState(contact_id, ObjectState::LINKED).exec(_ctx)) {
                 BOOST_THROW_EXCEPTION(Exception().set_object_linked_to_contact_handle(handle_));
             }
 
@@ -99,7 +101,7 @@ namespace Fred
                 &Exception::set_unknown_contact_id
             );
 
-            if (is_object_linked(_ctx, id_)) {
+            if (ObjectHasState(id_, ObjectState::LINKED).exec(_ctx)) {
                 BOOST_THROW_EXCEPTION(Exception().set_object_linked_to_contact_id(id_));
             }
 

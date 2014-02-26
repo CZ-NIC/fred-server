@@ -27,10 +27,12 @@
 
 #include "src/fredlib/nsset/delete_nsset.h"
 #include "src/fredlib/object/object.h"
-
+#include "src/fredlib/object/object_impl.h"
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/db_settings.h"
 #include "src/fredlib/object_states.h"
+#include "src/fredlib/object_state/object_has_state.h"
+#include "src/fredlib/object_state/object_state_name.h"
 
 namespace Fred
 {
@@ -63,24 +65,24 @@ namespace Fred
     : handle_(handle)
     {}
 
-    void DeleteNssetByHandle::exec(OperationContext& ctx)
+    void DeleteNssetByHandle::exec(OperationContext& _ctx)
     {
         try
         {
             unsigned long long nsset_id = get_object_id_by_handle_and_type_with_lock(
-                ctx,
+                _ctx,
                 handle_,
                 "nsset",
                 static_cast<Exception*>(NULL),
                 &Exception::set_unknown_nsset_handle);
 
-            if (is_object_linked(ctx, nsset_id)) {
+            if (ObjectHasState(nsset_id, ObjectState::LINKED).exec(_ctx)) {
                 BOOST_THROW_EXCEPTION(Exception().set_object_linked_to_nsset_handle(handle_));
             }
 
-            delete_nsset_impl(ctx, nsset_id);
+            delete_nsset_impl(_ctx, nsset_id);
 
-            Fred::DeleteObjectByHandle(handle_,"nsset").exec(ctx);
+            Fred::DeleteObjectByHandle(handle_,"nsset").exec(_ctx);
 
         } catch(ExceptionStack& ex) {
             ex.add_exception_stack_info(to_string());
@@ -101,23 +103,23 @@ namespace Fred
     : id_(id)
     {}
 
-    void DeleteNssetById::exec(OperationContext& ctx)
+    void DeleteNssetById::exec(OperationContext& _ctx)
     {
         try
         {
             unsigned long long nsset_id = get_object_id_by_object_id_with_lock(
-                ctx,
+                _ctx,
                 id_,
                 static_cast<Exception*>(NULL),
                 &Exception::set_unknown_nsset_id);
 
-            if (is_object_linked(ctx, id_)) {
+            if (ObjectHasState(id_, ObjectState::LINKED).exec(_ctx)) {
                 BOOST_THROW_EXCEPTION(Exception().set_object_linked_to_nsset_id(id_));
             }
 
-            delete_nsset_impl(ctx, id_);
+            delete_nsset_impl(_ctx, id_);
 
-            Fred::DeleteObjectById(id_).exec(ctx);
+            Fred::DeleteObjectById(id_).exec(_ctx);
 
         } catch(ExceptionStack& ex) {
             ex.add_exception_stack_info(to_string());
