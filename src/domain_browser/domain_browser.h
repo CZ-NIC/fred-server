@@ -31,6 +31,7 @@
 
 #include "src/fredlib/opexception.h"
 #include "src/fredlib/opcontext.h"
+#include "src/fredlib/domain/enum_validation_extension.h"
 #include "util/db/nullable.h"
 #include "cfg/handle_registry_args.h"
 
@@ -136,6 +137,36 @@ namespace Registry
             , is_owner(false)
             {}
         };
+
+        /**
+         * Domain detail data
+         * Returned by @ref getDomainDetail.
+         */
+        struct DomainDetail
+        {
+            unsigned long long id;/**< id of the domain */
+            std::string fqdn;/**< fully qualified domain name */
+            std::string roid;/**< registry object identifier of domain */
+            RegistryReference sponsoring_registrar;/**< registrar administering the domain */
+            boost::posix_time::ptime creation_time;/**< creation time of the domain in set local zone*/
+            Nullable<boost::posix_time::ptime> update_time; /**< last update time of the domain in set local zone*/
+            std::string authinfopw;/**< password for transfer */
+            RegistryReference registrant; /**< owner of domain*/
+            boost::gregorian::date expiration_date; /**< domain expiration local date */
+            Nullable<Fred::ENUMValidationExtension > enum_domain_validation;/**< ENUM domain validation extension info, is ENUM domain if set */
+            RegistryReference nsset; /**< domain nsset */
+            RegistryReference keyset;/**< domain keyset */
+            std::vector<RegistryReference> admins; /**< domain admin contacts */
+            std::string states;/**< contact states descriptions in given language from db. table enum_object_states_desc delimited by pipe '|' character */
+            std::string state_codes;/**< contact states names from db. table enum_object_states delimited by coma ',' character */
+            bool is_owner;/**< whether user contact is the same as requested domain owner */
+
+            DomainDetail()
+            : id(0)
+            , is_owner(false)
+            {}
+        };
+
 
         /**
          * Internal server error.
@@ -251,10 +282,21 @@ namespace Registry
              * @param user_contact_id contains database id of the user contact
              * @param contact_id contains database id of the contact
              * @param lang contains language for state description "EN" or "CS"
-             * @return registrar detail data.
+             * @return contact detail data.
              */
             ContactDetail getContactDetail(unsigned long long user_contact_id,
                     unsigned long long contact_id,
+                    const std::string& lang);
+
+            /**
+             * Returns domain detail.
+             * @param user_contact_id contains database id of the user contact
+             * @param domain_id contains database id of the domain
+             * @param lang contains language for state description "EN" or "CS"
+             * @return domain detail data.
+             */
+            DomainDetail getDomainDetail(unsigned long long user_contact_id,
+                    unsigned long long domain_id,
                     const std::string& lang);
 
             std::string get_server_name();

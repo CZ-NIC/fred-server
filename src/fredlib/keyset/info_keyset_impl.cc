@@ -78,9 +78,9 @@ namespace Fred
         return *this;
     }
 
-    InfoKeyset& InfoKeyset::set_lock(bool lock)
+    InfoKeyset& InfoKeyset::set_lock()
     {
-        lock_ = lock;
+        lock_ = true;
         return *this;
     }
 
@@ -166,7 +166,10 @@ namespace Fred
         {
             sql << " FOR UPDATE of kobr ";
         }
-
+        else
+        {
+            sql << " FOR SHARE of kobr ";
+        }
 
         return std::make_pair(sql.str(), params);
 

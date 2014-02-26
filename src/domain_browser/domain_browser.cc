@@ -25,6 +25,7 @@
 #include <vector>
 #include <boost/date_time/gregorian/gregorian.hpp>
 
+#include "util/map_at.h"
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/opexception.h"
 #include "src/fredlib/object/object_impl.h"
@@ -32,6 +33,12 @@
 #include "src/fredlib/object_state/object_state_name.h"
 #include "src/fredlib/registrar/info_registrar.h"
 #include "src/fredlib/contact/info_contact.h"
+#include "src/fredlib/domain/info_domain.h"
+#include "src/fredlib/nsset/info_nsset.h"
+#include "src/fredlib/keyset/info_keyset.h"
+#include "src/fredlib/object_state/get_object_states.h"
+#include "src/fredlib/object_state/get_object_state_descriptions.h"
+
 #include "domain_browser.h"
 
 namespace Registry
@@ -264,6 +271,113 @@ namespace Registry
 
                 detail.state_codes += state_codes_separator.get();
                 detail.state_codes += static_cast<std::string>(contact_states_result[i][1]);
+            }
+
+            return detail;
+        }
+
+        DomainDetail DomainBrowser::getDomainDetail(unsigned long long user_contact_id,
+                unsigned long long domain_id,
+                const std::string& lang)
+        {
+            Fred::OperationContext ctx;
+            check_user_contact_id(ctx, user_contact_id);
+
+            Fred::InfoDomainOutput domain_info;
+            try
+            {
+                domain_info = Fred::InfoDomainById(domain_id).set_lock(true).exec(ctx);
+            }
+            catch(const Fred::InfoDomainById::Exception& ex)
+            {
+                if(ex.is_set_unknown_object_id())
+                {
+                    BOOST_THROW_EXCEPTION(ObjectNotExists());
+                }
+                else
+                    throw;
+            }
+
+            Fred::InfoRegistrarOutput sponsoring_registar_info = Fred::InfoRegistrarByHandle(
+                domain_info.info_domain_data.sponsoring_registrar_handle).exec(ctx);
+
+            RegistryReference sponsoring_registrar;
+            sponsoring_registrar.id = sponsoring_registar_info.info_registrar_data.id;
+            sponsoring_registrar.handle = sponsoring_registar_info.info_registrar_data.handle;
+            sponsoring_registrar.name = sponsoring_registar_info.info_registrar_data.name.get_value_or_default();
+
+            Fred::InfoContactOutput registrant_contact_info = Fred::InfoContactById(
+                domain_info.info_domain_data.registrant.id).set_lock(true).exec(ctx);
+
+            RegistryReference registrant;
+            registrant.id = registrant_contact_info.info_contact_data.id;
+            registrant.handle = registrant_contact_info.info_contact_data.handle;
+            registrant.name = registrant_contact_info.info_contact_data.organization.get_value_or_default().empty()
+                ? registrant_contact_info.info_contact_data.name.get_value_or_default()
+                : registrant_contact_info.info_contact_data.organization.get_value();
+
+            RegistryReference nsset;
+            nsset.id = domain_info.info_domain_data.nsset.get_value_or_default().id;
+            nsset.handle = domain_info.info_domain_data.nsset.get_value_or_default().handle;
+
+            RegistryReference keyset;
+            keyset.id = domain_info.info_domain_data.keyset.get_value_or_default().id;
+            keyset.handle = domain_info.info_domain_data.keyset.get_value_or_default().handle;
+
+            DomainDetail detail;
+            detail.id = domain_info.info_domain_data.id;
+            detail.fqdn = domain_info.info_domain_data.fqdn;
+            detail.roid = domain_info.info_domain_data.roid;
+            detail.sponsoring_registrar = sponsoring_registrar;
+            detail.creation_time = domain_info.info_domain_data.creation_time;
+            detail.update_time = domain_info.info_domain_data.update_time;
+
+            detail.is_owner = (user_contact_id == registrant_contact_info.info_contact_data.id);
+            if(detail.is_owner)//if user contact is the owner of requested domain
+            {
+                detail.authinfopw = domain_info.info_domain_data.authinfopw;
+            }
+            else
+            {
+                detail.authinfopw ="********";
+            }
+
+            detail.registrant = registrant;
+            detail.expiration_date = domain_info.info_domain_data.expiration_date;
+            detail.enum_domain_validation = domain_info.info_domain_data.enum_domain_validation;
+            detail.nsset = nsset;
+            detail.keyset = keyset;
+
+            for(std::vector<Fred::ObjectIdHandlePair>::const_iterator ci = domain_info.info_domain_data.admin_contacts.begin();
+                    ci != domain_info.info_domain_data.admin_contacts.end(); ++ci)
+            {
+                Fred::InfoContactOutput admin_contact_info = Fred::InfoContactById(ci->id).set_lock(true).exec(ctx);
+
+                RegistryReference admin;
+                admin.id = admin_contact_info.info_contact_data.id;
+                admin.handle = admin_contact_info.info_contact_data.handle;
+                admin.name = admin_contact_info.info_contact_data.organization.get_value_or_default().empty()
+                    ? admin_contact_info.info_contact_data.name.get_value_or_default()
+                    : admin_contact_info.info_contact_data.organization.get_value();
+
+                detail.admins.push_back(admin);
+            }
+
+            std::vector<Fred::ObjectStateData> states = Fred::GetObjectStates(domain_info.info_domain_data.id).exec(ctx);
+            std::map<unsigned long long, std::string> state_desc_map = Fred::GetObjectStateDescriptions(lang).exec(ctx);
+
+            Util::HeadSeparator states_separator("","|");
+            Util::HeadSeparator state_codes_separator("",",");
+            for(unsigned long long i = 0; i < states.size(); ++i)
+            {
+                detail.states += states_separator.get();
+                detail.states += states.at(i).state_name;
+
+                if(states.at(i).is_external)
+                {
+                    detail.state_codes += state_codes_separator.get();
+                    detail.state_codes += map_at(state_desc_map, states.at(i).state_id);
+                }
             }
 
             return detail;

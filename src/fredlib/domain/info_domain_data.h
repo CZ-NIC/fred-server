@@ -32,6 +32,7 @@
 #include "util/db/nullable.h"
 #include "enum_validation_extension.h"
 #include "util/printable.h"
+#include "src/fredlib/object/object_id_handle_pair.h"
 
 namespace Fred
 {
@@ -43,22 +44,22 @@ namespace Fred
     {
         std::string roid;/**< registry object identifier of domain */
         std::string fqdn;/**< fully qualified domain name */
-        std::string registrant_handle;/**< registrant contact handle, owner of domain*/
-        Nullable<std::string> nsset_handle;/**< nsset handle or NULL if missing */
-        Nullable<std::string> keyset_handle;/**< keyset handle or NULL if missing */
+        ObjectIdHandlePair registrant;/**< registrant contact id and handle, owner of the domain*/
+        Nullable<ObjectIdHandlePair> nsset;/**< nsset handle or NULL if missing */
+        Nullable<ObjectIdHandlePair> keyset;/**< keyset id and handle or NULL if missing */
         std::string sponsoring_registrar_handle;/**< handle of registrar administering domain */
         std::string create_registrar_handle;/**< handle of registrar which created domain */
         Nullable<std::string> update_registrar_handle;/**< handle of registrar which last time changed domain*/
-        boost::posix_time::ptime creation_time;/**< time of domain creation in UTC*/
-        Nullable<boost::posix_time::ptime> update_time; /**< time of last update time in UTC*/
-        Nullable<boost::posix_time::ptime> transfer_time; /**< time of last transfer in UTC*/
+        boost::posix_time::ptime creation_time;/**< time of domain creation in set local zone*/
+        Nullable<boost::posix_time::ptime> update_time; /**< time of last update time in set local zone*/
+        Nullable<boost::posix_time::ptime> transfer_time; /**< time of last transfer in set local zone*/
         boost::gregorian::date expiration_date; /**< domain expiration local date */
         std::string authinfopw;/**< password for domain transfer */
-        std::vector<std::string> admin_contacts;/**< list of administrating contact handles */
+        std::vector<ObjectIdHandlePair> admin_contacts;/**< list of administrating contact handles */
         Nullable<ENUMValidationExtension > enum_domain_validation;/**< ENUM domain validation extension info */
         boost::posix_time::ptime outzone_time; /**< domain outzone time in regular_day_procedure_zone from table enum_parameters */
         boost::posix_time::ptime cancel_time; /**< domain cancel time in regular_day_procedure_zone from table enum_parameters */
-        Nullable<boost::posix_time::ptime> delete_time;/**< domain delete time in UTC*/
+        Nullable<boost::posix_time::ptime> delete_time;/**< domain delete time in set local zone*/
         unsigned long long historyid;/**< last historyid of domain history*/
         unsigned long long crhistoryid;/**< first historyid of domain history*/
         unsigned long long id;/**< id of the domain object*/

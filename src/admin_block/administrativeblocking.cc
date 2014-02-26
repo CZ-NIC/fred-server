@@ -753,9 +753,9 @@ namespace Registry
                                 update_domain.set_logd_request_id(_log_req_id);
                             }
                             if (_remove_admin_c) {
-                                for (std::vector< std::string >::const_iterator pAdmin = info_domain_data.admin_contacts.begin();
+                                for (std::vector< Fred::ObjectIdHandlePair >::const_iterator pAdmin = info_domain_data.admin_contacts.begin();
                                      pAdmin != info_domain_data.admin_contacts.end(); ++pAdmin) {
-                                    update_domain.rem_admin_contact(*pAdmin);
+                                    update_domain.rem_admin_contact(pAdmin->handle);
                                 }
                             }
                             update_domain.exec(ctx);
