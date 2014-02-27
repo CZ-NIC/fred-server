@@ -58,6 +58,7 @@ namespace Fred
             Optional<unsigned long>          max_item_count_;
             Optional<std::string>            testsuite_handle_;
             Optional<unsigned long long>     contact_id_;
+            Optional<std::string>            status_handle_;
 
         public:
             /**
@@ -71,11 +72,13 @@ namespace Fred
              * @param _max_item_count   how many records shall be returned at most.
              * @param _testsuite_handle filter: only checks with given testsuite are returned
              * @param _contact_id       filter: only checks of given contact (connected by historyid) are returned
+             * @param _status_handle    filter: only checks with given status are returned
              */
             ListContactChecks(
                 Optional<unsigned long>         _max_item_count,
                 Optional<std::string>           _testsuite_handle,
-                Optional<unsigned long long>    _contact_id
+                Optional<unsigned long long>    _contact_id,
+                Optional<std::string>           _status_handle
             );
 
             /**
@@ -95,6 +98,12 @@ namespace Fred
              * Call with another value for re-set, no need to unset first.
              */
             ListContactChecks& set_contact_id(unsigned long long _contact_id);
+
+            /**
+             * setter of optional status_handle
+             * Call with another value for re-set, no need to unset first.
+             */
+            ListContactChecks& set_status_handle(const std::string& _status_handle);
 
             /**
              * commit operation

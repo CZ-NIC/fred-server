@@ -52,11 +52,13 @@ namespace Fred
     ListContactChecks::ListContactChecks(
         Optional<unsigned long>          _max_item_count,
         Optional<std::string>            _testsuite_handle,
-        Optional<unsigned long long>     _contact_id
+        Optional<unsigned long long>     _contact_id,
+        Optional<std::string>            _status_handle
     ) :
         max_item_count_(_max_item_count),
         testsuite_handle_(_testsuite_handle),
-        contact_id_(_contact_id)
+        contact_id_(_contact_id),
+        status_handle_(_status_handle)
     { }
 
     ListContactChecks& ListContactChecks::set_max_item_count(unsigned long _max_item_count) {
@@ -73,6 +75,12 @@ namespace Fred
 
     ListContactChecks& ListContactChecks::set_contact_id(unsigned long long _contact_id) {
         contact_id_ = _contact_id;
+
+        return *this;
+    }
+
+    ListContactChecks& ListContactChecks::set_status_handle(const std::string& _status_handle) {
+        status_handle_ = _status_handle;
 
         return *this;
     }
@@ -112,6 +120,16 @@ namespace Fred
                         " AND c_h.id = $" + boost::lexical_cast<std::string>(params.size()+1) + "::bigint ");
 
                     params.push_back(contact_id_.get_value());
+                }
+
+                if(status_handle_.isset()) {
+                    joins.push_back(
+                        " JOIN enum_contact_check_status AS enum_c_ch_status ON "+ check_alias +".enum_contact_check_status_id = enum_c_ch_status.id " );
+
+                    wheres.push_back(
+                        " AND enum_c_ch_status.handle = $" + boost::lexical_cast<std::string>(params.size()+1) + "::varchar ");
+
+                    params.push_back(status_handle_.get_value());
                 }
 
                 std::string timezone_param_order = boost::lexical_cast<std::string>(params.size()+1);
@@ -247,6 +265,7 @@ namespace Fred
                 (make_pair("max_item_count",    max_item_count_.print_quoted() ))
                 (make_pair("testsuite_handle",  testsuite_handle_.print_quoted() ))
                 (make_pair("contact_id",        contact_id_.print_quoted() ))
+                (make_pair("status_handle",     status_handle_.print_quoted() ))
         );
     }
 }
