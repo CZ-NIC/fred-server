@@ -133,22 +133,41 @@ namespace Fred
         std::string to_string() const;
     };
 
-    class DeleteObject : public virtual Util::Printable
+    class DeleteObjectByHandle : public virtual Util::Printable
     {
-        const std::string handle_;//object identifier
-        const std::string obj_type_;//object type name
+        const std::string handle_;      //object handle
+        const std::string obj_type_;    //object type name
     public:
         DECLARE_EXCEPTION_DATA(unknown_object_handle, std::string);
         struct Exception
-        : virtual Fred::OperationException
-        , ExceptionData_unknown_object_handle<Exception>
-        {};
-        DeleteObject(const std::string& handle
+            : virtual Fred::OperationException
+            , ExceptionData_unknown_object_handle<Exception>
+            {};
+
+        DeleteObjectByHandle(const std::string& handle
                 , const std::string& obj_type);
+
         void exec(OperationContext& ctx);
 
-        std::string to_string() const;
+        virtual std::string to_string() const;
+    };
+
+    class DeleteObjectById : public virtual Util::Printable
+    {
+        const unsigned long long id_;      //object id
+    public:
+        DECLARE_EXCEPTION_DATA(unknown_object_id, unsigned long long);
+        struct Exception
+            : virtual Fred::OperationException
+            , ExceptionData_unknown_object_id<Exception>
+            {};
+
+        DeleteObjectById(unsigned long long id);
+
+        void exec(OperationContext& ctx);
+
+        virtual std::string to_string() const;
     };
 
 }//namespace Fred
-#endif //OBJECT_H_
+#endif // end of #include guard

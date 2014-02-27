@@ -131,7 +131,7 @@ BOOST_FIXTURE_TEST_CASE(delete_nsset, delete_nsset_fixture )
     Fred::InfoNssetOutput nsset_info1 = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
     BOOST_CHECK(nsset_info1.info_nsset_data.delete_time.isnull());
 
-    Fred::DeleteNsset(test_nsset_handle).exec(ctx);
+    Fred::DeleteNssetByHandle(test_nsset_handle).exec(ctx);
     ctx.commit_transaction();
 
     std::vector<Fred::InfoNssetOutput> nsset_history_info1 = Fred::InfoNssetHistory(
@@ -180,10 +180,10 @@ BOOST_FIXTURE_TEST_CASE(delete_nsset_with_wrong_handle, delete_nsset_fixture )
     try
     {
         Fred::OperationContext ctx;//new connection to rollback on error
-        Fred::DeleteNsset(bad_test_nsset_handle).exec(ctx);
+        Fred::DeleteNssetByHandle(bad_test_nsset_handle).exec(ctx);
         ctx.commit_transaction();
     }
-    catch(const Fred::DeleteNsset::Exception& ex)
+    catch(const Fred::DeleteNssetByHandle::Exception& ex)
     {
         BOOST_CHECK(ex.is_set_unknown_nsset_handle());
         BOOST_CHECK(ex.get_unknown_nsset_handle().compare(bad_test_nsset_handle) == 0);
@@ -213,10 +213,10 @@ BOOST_FIXTURE_TEST_CASE(delete_linked_nsset, delete_nsset_fixture )
     try
     {
         Fred::OperationContext ctx;//new connection to rollback on error
-        Fred::DeleteNsset(test_nsset_handle).exec(ctx);
+        Fred::DeleteNssetByHandle(test_nsset_handle).exec(ctx);
         ctx.commit_transaction();
     }
-    catch(const Fred::DeleteNsset::Exception& ex)
+    catch(const Fred::DeleteNssetByHandle::Exception& ex)
     {
         BOOST_CHECK(ex.is_set_object_linked_to_nsset_handle());
         BOOST_CHECK(ex.get_object_linked_to_nsset_handle().compare(test_nsset_handle) == 0);

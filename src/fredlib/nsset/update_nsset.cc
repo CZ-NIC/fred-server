@@ -127,7 +127,7 @@ namespace Fred
             , &Exception::set_unknown_registrar_handle);
 
         //lock row and get nsset_id
-        unsigned long long nsset_id =get_object_id_by_handle_and_type_with_lock(
+        unsigned long long nsset_id = get_object_id_by_handle_and_type_with_lock(
                 ctx,handle_,"nsset",static_cast<Exception*>(0),
                 &Exception::set_unknown_nsset_handle);
 

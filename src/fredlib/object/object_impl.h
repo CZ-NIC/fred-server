@@ -89,5 +89,50 @@ namespace Fred
         return  static_cast<unsigned long long> (object_id_res[0][0]);
     }
 
+    /**
+    * Locks object for update.
+    * @param EXCEPTION is type of exception used for reporting when object is not found, deducible from type of @ref ex_ptr parameter
+    * @param EXCEPTION_OBJECT_HANDLE_SETTER is EXCEPTION member function pointer used to report unknown object handle
+    * @param ctx contains reference to database and logging interface
+    * @param object_id is id to look for
+    * @param ex_ptr is  pointer to given exception instance to be set (don't throw except for object_type), if ex_ptr is 0, new exception instance is created, set and thrown
+    * @param ex_handle_setter is EXCEPTION member function pointer used to report unknown object handle
+    * @return database id of the object
+    * , or throw @ref EXCEPTION if object id was not found and external exception instance was not provided
+    * , or set unknown object id into given external exception instance and return 0
+    * , or throw InternalError or some other exception in case of failure.
+    */
+    template <class EXCEPTION, typename EXCEPTION_HANDLE_SETTER>
+        unsigned long long get_object_id_by_object_id_with_lock(
+            OperationContext& ctx,
+            unsigned long long object_id,
+            EXCEPTION* ex_ptr, EXCEPTION_HANDLE_SETTER ex_handle_setter
+    ) {
+        Database::Result locked_res = ctx.get_conn().exec_params(
+            "SELECT oreg.id AS id_ "
+            "   FROM object_registry AS oreg "
+            "   WHERE oreg.id = $1::integer "
+            "       AND oreg.erdate IS NULL "
+            "   FOR UPDATE OF oreg",
+            Database::query_param_list(object_id)
+        );
+
+        if(locked_res.size() == 0) {
+            //make new exception instance, set data and throw
+            if(ex_ptr == 0) {
+                BOOST_THROW_EXCEPTION((EXCEPTION().*ex_handle_setter)(object_id));
+            } else {
+                //set unknown handle to given exception instance (don't throw) and return 0
+                (ex_ptr->*ex_handle_setter)(object_id);
+
+                return 0;
+            }
+        } else if (locked_res.size() != 1) {
+            BOOST_THROW_EXCEPTION(InternalError("failed to lock object"));
+        }
+
+        return static_cast<unsigned long long> (locked_res[0]["id_"]);
+    }
+
 }//namespace Fred
 #endif //OBJECT_IMPL_H_54ff2fba491943db8a52ff835e32741d

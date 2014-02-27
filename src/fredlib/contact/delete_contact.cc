@@ -22,70 +22,107 @@
  */
 
 #include <string>
+#include <boost/assign.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include "src/fredlib/contact/delete_contact.h"
 #include "src/fredlib/object/object.h"
 #include "src/fredlib/object/object_impl.h"
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/db_settings.h"
-#include "src/fredlib/object_states.h"
+#include "src/fredlib/object_state/object_has_state.h"
+#include "src/fredlib/object_state/object_state_name.h"
 
 namespace Fred
 {
-    DeleteContact::DeleteContact(const std::string& handle)
+    static void delete_contact_impl(OperationContext& _ctx, unsigned long long _id) {
+        Database::Result delete_contact_res = _ctx.get_conn().exec_params(
+            "DELETE FROM contact "
+            "   WHERE id = $1::integer RETURNING id",
+            Database::query_param_list(_id));
+
+        if (delete_contact_res.size() != 1) {
+            BOOST_THROW_EXCEPTION(Fred::InternalError("delete contact failed"));
+        }
+    }
+
+    DeleteContactByHandle::DeleteContactByHandle(const std::string& handle)
     : handle_(handle)
     {}
 
-    void DeleteContact::exec(OperationContext& ctx)
+    void DeleteContactByHandle::exec(OperationContext& _ctx)
     {
         try
         {
-            //lock object_registry row for update and get contact_id
             unsigned long long contact_id = get_object_id_by_handle_and_type_with_lock(
-                ctx,handle_,"contact",static_cast<Exception*>(0),
+                _ctx,
+                handle_,
+                "contact",
+                static_cast<Exception*>(NULL),
                 &Exception::set_unknown_contact_handle);
 
-            //check if object is linked
-            Database::Result linked_result = ctx.get_conn().exec_params(
-                "SELECT * FROM object_state os "
-                " JOIN enum_object_states eos ON eos.id = os.state_id "
-                " WHERE os.object_id = $1::integer AND eos.name = $2::text "
-                " AND valid_to IS NULL",
-                Database::query_param_list
-                (contact_id)
-                (Fred::ObjectState::LINKED));
-
-            if (linked_result.size() > 0)
-            {
+            if (ObjectHasState(contact_id, ObjectState::LINKED).exec(_ctx)) {
                 BOOST_THROW_EXCEPTION(Exception().set_object_linked_to_contact_handle(handle_));
             }
 
-            Database::Result delete_contact_res = ctx.get_conn().exec_params(
-                "DELETE FROM contact WHERE id = $1::integer RETURNING id"
-                    , Database::query_param_list(contact_id));
-            if (delete_contact_res.size() != 1)
-            {
-                BOOST_THROW_EXCEPTION(Fred::InternalError("delete contact failed"));
-            }
+            delete_contact_impl(_ctx, contact_id);
 
-            Fred::DeleteObject(handle_,"contact").exec(ctx);
-        }//try
-        catch(ExceptionStack& ex)
-        {
+            Fred::DeleteObjectByHandle(handle_,"contact").exec(_ctx);
+
+        } catch(ExceptionStack& ex) {
             ex.add_exception_stack_info(to_string());
             throw;
         }
 
-    }//DeleteContact::exec
+    }
 
-    std::string DeleteContact::to_string() const
+    std::string DeleteContactByHandle::to_string() const
     {
-        return Util::format_operation_state("DeleteContact",
-        Util::vector_of<std::pair<std::string,std::string> >
-        (std::make_pair("handle",handle_))
+        return Util::format_operation_state(
+            "DeleteContactByHandle",
+            boost::assign::list_of
+                (std::make_pair("handle", handle_ ))
         );
     }
 
 
+    DeleteContactById::DeleteContactById(unsigned long long _id)
+        : id_(_id)
+    { }
+
+    void DeleteContactById::exec(OperationContext& _ctx)
+    {
+        try
+        {
+            get_object_id_by_object_id_with_lock(
+                _ctx,
+                id_,
+                static_cast<Exception*>(NULL),
+                &Exception::set_unknown_contact_id
+            );
+
+            if (ObjectHasState(id_, ObjectState::LINKED).exec(_ctx)) {
+                BOOST_THROW_EXCEPTION(Exception().set_object_linked_to_contact_id(id_));
+            }
+
+            delete_contact_impl(_ctx, id_);
+
+            Fred::DeleteObjectById(id_).exec(_ctx);
+
+        } catch(ExceptionStack& ex) {
+            ex.add_exception_stack_info(to_string());
+            throw;
+        }
+
+    }
+
+    std::string DeleteContactById::to_string() const
+    {
+        return Util::format_operation_state(
+            "DeleteContactById",
+            boost::assign::list_of
+                (std::make_pair("id", boost::lexical_cast<std::string>(id_) ))
+        );
+    }
 }//namespace Fred
 

@@ -22,9 +22,13 @@
  */
 
 #include <string>
+#include <boost/assign.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include "object_impl.h"
 #include "src/fredlib/registrar/registrar_impl.h"
+#include "src/fredlib/object_state/object_state_name.h"
+
 #include "src/fredlib/opexception.h"
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/db_settings.h"
@@ -325,56 +329,47 @@ namespace Fred
         );
     }
 
-    DeleteObject::DeleteObject(const std::string& handle
+    static void delete_object_impl(OperationContext& ctx, unsigned long long id) {
+        Database::Result update_erdate_res = ctx.get_conn().exec_params(
+            "UPDATE object_registry "
+            "   SET erdate = now() "
+            "   WHERE id = $1::integer RETURNING id",
+            Database::query_param_list(id));
+
+        if (update_erdate_res.size() != 1) {
+            BOOST_THROW_EXCEPTION(Fred::InternalError("erdate update failed"));
+        }
+
+        Database::Result delete_object_res = ctx.get_conn().exec_params(
+            "DELETE FROM object WHERE id = $1::integer RETURNING id",
+            Database::query_param_list(id));
+
+        if (delete_object_res.size() != 1) {
+            BOOST_THROW_EXCEPTION(Fred::InternalError("delete object failed"));
+        }
+    }
+
+    DeleteObjectByHandle::DeleteObjectByHandle(const std::string& handle
         , const std::string& obj_type)
     : handle_(handle)
     , obj_type_(obj_type)
     {}
 
-    void DeleteObject::exec(OperationContext& ctx)
+    void DeleteObjectByHandle::exec(OperationContext& ctx)
     {
         try
         {
             //check object type
             get_object_type_id(ctx, obj_type_);
 
-            unsigned long long object_id = 0;
-            {
-                Database::Result object_id_res = ctx.get_conn().exec_params(
-                "SELECT oreg.id FROM object_registry oreg "
-                " JOIN enum_object_type eot ON eot.id = oreg.type AND eot.name = $2::text "
-                " WHERE oreg.name = CASE WHEN $2::text = 'domain'::text THEN LOWER($1::text) "
-                " ELSE UPPER($1::text) END AND oreg.erdate IS NULL "
-                " FOR UPDATE OF oreg"
-                , Database::query_param_list(handle_)(obj_type_));
+            unsigned long long object_id = get_object_id_by_handle_and_type_with_lock(
+                ctx,
+                handle_,
+                obj_type_,
+                static_cast<Exception*>(NULL),
+                &Exception::set_unknown_object_handle);
 
-                if(object_id_res.size() == 0)
-                {
-                    BOOST_THROW_EXCEPTION(Exception().set_unknown_object_handle(handle_));
-                }
-                if (object_id_res.size() != 1)
-                {
-                    BOOST_THROW_EXCEPTION(InternalError("failed to get object handle"));
-                }
-                object_id = static_cast<unsigned long long> (object_id_res[0][0]);
-            }
-
-            Database::Result update_erdate_res = ctx.get_conn().exec_params(
-                "UPDATE object_registry SET erdate = now() "
-                " WHERE id = $1::integer RETURNING id"
-                , Database::query_param_list(object_id));
-            if (update_erdate_res.size() != 1)
-            {
-                BOOST_THROW_EXCEPTION(Fred::InternalError("erdate update failed"));
-            }
-
-            Database::Result delete_object_res = ctx.get_conn().exec_params(
-                "DELETE FROM object WHERE id = $1::integer RETURNING id"
-                    , Database::query_param_list(object_id));
-            if (delete_object_res.size() != 1)
-            {
-                BOOST_THROW_EXCEPTION(Fred::InternalError("delete object failed"));
-            }
+            delete_object_impl(ctx, object_id);
 
         }//try
         catch(ExceptionStack& ex)
@@ -384,11 +379,44 @@ namespace Fred
         }
     }
 
-    std::string DeleteObject::to_string() const
+    std::string DeleteObjectByHandle::to_string() const
     {
-        return Util::format_operation_state("DeleteObject",
-        Util::vector_of<std::pair<std::string,std::string> >
-        (std::make_pair("obj_type",obj_type_))
+        return Util::format_operation_state(
+            "DeleteObjectByHandle",
+            boost::assign::list_of
+                (std::make_pair("handle", handle_))
+                (std::make_pair("obj_type", obj_type_))
+        );
+    }
+
+    DeleteObjectById::DeleteObjectById(unsigned long long id)
+        : id_(id)
+    { }
+
+    void DeleteObjectById::exec(OperationContext& ctx) {
+        try
+        {
+            get_object_id_by_object_id_with_lock(
+                ctx,
+                id_,
+                static_cast<Exception*>(NULL),
+                &Exception::set_unknown_object_id
+            );
+
+            delete_object_impl(ctx, id_);
+
+        } catch(ExceptionStack& ex) {
+            ex.add_exception_stack_info(to_string());
+            throw;
+        }
+    }
+
+    std::string DeleteObjectById::to_string() const {
+
+        return Util::format_operation_state(
+            "DeleteObjectById",
+            boost::assign::list_of
+                (std::make_pair("id", boost::lexical_cast<std::string>(id_) ))
         );
     }
 
