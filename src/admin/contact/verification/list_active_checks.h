@@ -34,7 +34,7 @@ namespace Admin {
      * @param _testsuite handle     return checks only with specified testsuite
      * @return information about checks
      */
-    std::vector<Fred::ListChecksItem> list_checks_awaiting_resolution(const Optional<std::string>& _testsuite_handle);
+    std::vector<Fred::ListChecksItem> list_active_checks(const Optional<std::string>& _testsuite_handle);
 }
 
 
