@@ -624,7 +624,8 @@ struct merge_contact_n_fixture
         for(int i = 0; i < nsset_count; ++i)
         {
             Fred::InfoNssetOutput info_nsset_with_change = info_nsset_1.at(i);
-            info_nsset_with_change.info_nsset_data.tech_contacts = Util::vector_of<std::string>(dst_contact_handle);
+            info_nsset_with_change.info_nsset_data.tech_contacts = Util::vector_of<Fred::ObjectIdHandlePair>(Fred::ObjectIdHandlePair(
+                info_dst_contact_1.info_contact_data.id, info_dst_contact_1.info_contact_data.handle));
             info_nsset_with_change.info_nsset_data.historyid = info_nsset_2.at(i).info_nsset_data.historyid;
             info_nsset_with_change.info_nsset_data.update_registrar_handle = registrar_handle;
             info_nsset_with_change.info_nsset_data.update_time = info_nsset_2.at(i).info_nsset_data.update_time;
@@ -749,7 +750,8 @@ BOOST_FIXTURE_TEST_CASE(merge_contact, merge_contact_domain_fixture)
     BOOST_CHECK(info_keyset_with_change == info_keyset_2);
 
     Fred::InfoNssetOutput info_nsset_with_change = info_nsset_1;
-    info_nsset_with_change.info_nsset_data.tech_contacts = Util::vector_of<std::string>(dst_contact_handle);
+    info_nsset_with_change.info_nsset_data.tech_contacts = Util::vector_of<Fred::ObjectIdHandlePair>(
+        Fred::ObjectIdHandlePair(info_dst_contact_1.info_contact_data.id,info_dst_contact_1.info_contact_data.handle));
     info_nsset_with_change.info_nsset_data.historyid = info_nsset_2.info_nsset_data.historyid;
     info_nsset_with_change.info_nsset_data.update_registrar_handle = registrar_handle;
     info_nsset_with_change.info_nsset_data.update_time = info_nsset_2.info_nsset_data.update_time;
@@ -1519,20 +1521,24 @@ BOOST_FIXTURE_TEST_CASE(test_merge_nsset_tech_contacts, merge_tech_contact_nsset
     {
         Fred::OperationContext ctx;
         Fred::InfoNssetOutput nsset_info_1 = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
+        Fred::InfoContactOutput contact_info_1 = Fred::InfoContactByHandle(contact_handle_1).exec(ctx);
+        Fred::InfoContactOutput contact_info_2 = Fred::InfoContactByHandle(contact_handle_2).exec(ctx);
         Fred::MergeContactOutput merge_data = Fred::MergeContact(contact_handle_1, contact_handle_2, sys_registrar_handle).exec(ctx);
         Fred::InfoNssetOutput nsset_info_2 = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
 
         BOOST_CHECK(nsset_info_1 != nsset_info_2);
 
         //src contact is not admin
-        BOOST_CHECK(std::find(nsset_info_2.info_nsset_data.tech_contacts.begin()
-        , nsset_info_2.info_nsset_data.tech_contacts.end()
-        , contact_handle_1) == nsset_info_2.info_nsset_data.tech_contacts.end());
+        BOOST_CHECK(std::find(nsset_info_2.info_nsset_data.tech_contacts.begin(),
+                nsset_info_2.info_nsset_data.tech_contacts.end(),
+                Fred::ObjectIdHandlePair(contact_info_1.info_contact_data.id, contact_info_1.info_contact_data.handle)
+            ) == nsset_info_2.info_nsset_data.tech_contacts.end());
 
         //dst contact is admin
-        BOOST_CHECK(std::find(nsset_info_2.info_nsset_data.tech_contacts.begin()
-        , nsset_info_2.info_nsset_data.tech_contacts.end()
-        , contact_handle_2) != nsset_info_2.info_nsset_data.tech_contacts.end());
+        BOOST_CHECK(std::find(nsset_info_2.info_nsset_data.tech_contacts.begin(),
+                nsset_info_2.info_nsset_data.tech_contacts.end(),
+                Fred::ObjectIdHandlePair(contact_info_2.info_contact_data.id, contact_info_2.info_contact_data.handle)
+            ) != nsset_info_2.info_nsset_data.tech_contacts.end());
 
         //check unrelated data not changed
         nsset_info_1.info_nsset_data.tech_contacts = nsset_info_2.info_nsset_data.tech_contacts;
