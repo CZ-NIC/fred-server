@@ -355,20 +355,80 @@ namespace Registry
         {
             try
             {
+                Registry::DomainBrowserImpl::NssetDetail detail_impl
+                    = pimpl_->getNssetDetail(contact.id, nsset.id, lang);
+
                 NSSetDetail_var nsset_detail = new NSSetDetail;
+
+                nsset_detail->id = detail_impl.id;
+                nsset_detail->handle = CORBA::string_dup(detail_impl.handle.c_str());
+                nsset_detail->roid = CORBA::string_dup(detail_impl.roid.c_str());
+                nsset_detail->registrar.id = detail_impl.sponsoring_registrar.id;
+                nsset_detail->registrar.handle = CORBA::string_dup(detail_impl.sponsoring_registrar.handle.c_str());
+                nsset_detail->registrar.name = CORBA::string_dup(detail_impl.sponsoring_registrar.name.c_str());
+                nsset_detail->create_date = CORBA::string_dup(boost::gregorian::to_iso_extended_string(detail_impl.creation_time.date()).c_str());
+                nsset_detail->transfer_date = CORBA::string_dup(detail_impl.transfer_time.isnull()
+                    ? "" : boost::gregorian::to_iso_extended_string(detail_impl.transfer_time.get_value().date()).c_str());
+                nsset_detail->update_date = CORBA::string_dup(detail_impl.update_time.isnull()
+                    ? "" : boost::gregorian::to_iso_extended_string(detail_impl.update_time.get_value().date()).c_str());
+
+                nsset_detail->create_registrar.id = detail_impl.create_registrar.id;
+                nsset_detail->create_registrar.handle = CORBA::string_dup(detail_impl.create_registrar.handle.c_str());
+                nsset_detail->create_registrar.name = CORBA::string_dup(detail_impl.create_registrar.name.c_str());
+
+                nsset_detail->update_registrar.id = detail_impl.update_registrar.id;
+                nsset_detail->update_registrar.handle = CORBA::string_dup(detail_impl.update_registrar.handle.c_str());
+                nsset_detail->update_registrar.name = CORBA::string_dup(detail_impl.update_registrar.name.c_str());
+
+                nsset_detail->auth_info = CORBA::string_dup(detail_impl.authinfopw.c_str());
+
+                nsset_detail->admins.length(detail_impl.admins.size());
+                for(std::size_t i = 0; i < detail_impl.admins.size(); ++i)
+                {
+                    nsset_detail->admins[i].id = detail_impl.admins[i].id;
+                    nsset_detail->admins[i].handle = CORBA::string_dup(detail_impl.admins[i].handle.c_str());
+                    nsset_detail->admins[i].name = CORBA::string_dup(detail_impl.admins[i].name.c_str());
+                }
+
+                nsset_detail->hosts.length(detail_impl.hosts.size());
+                for(std::size_t i = 0; i < detail_impl.hosts.size(); ++i)
+                {
+                    nsset_detail->hosts[i].fqdn = CORBA::string_dup(detail_impl.hosts[i].fqdn.c_str());
+                    nsset_detail->hosts[i].inet = CORBA::string_dup(detail_impl.hosts[i].inet_addr.c_str());
+                }
+
+
+                nsset_detail->states = CORBA::string_dup(detail_impl.states.c_str());
+                nsset_detail->state_codes = CORBA::string_dup(detail_impl.state_codes.c_str());
+
+                nsset_detail->report_level = detail_impl.report_level;
+
+                if(detail_impl.is_owner)
+                {
+                    auth_result = PRIVATE_DATA;
+                }
+                else
+                {
+                    auth_result = PUBLIC_DATA;
+                }
+
                 return nsset_detail._retn();
             }//try
-            catch (std::exception &_ex)
+            catch (const Registry::DomainBrowserImpl::ObjectNotExists& )
             {
                 throw Registry::DomainBrowser::OBJECT_NOT_EXISTS();
             }
-            catch (std::exception &_ex)
+            catch (const Registry::DomainBrowserImpl::UserNotExists& )
             {
                 throw Registry::DomainBrowser::USER_NOT_EXISTS();
             }
-            catch (std::exception &_ex)
+            catch (const boost::exception&)
             {
-                throw Registry::DomainBrowser::INCORRECT_USAGE();
+                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
+            }
+            catch (const std::exception&)
+            {
+                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
             }
             catch (...)
             {
