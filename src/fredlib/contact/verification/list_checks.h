@@ -46,8 +46,7 @@ namespace Fred
         std::string                         contact_handle;
         boost::posix_time::ptime            local_create_time;
         boost::posix_time::ptime            local_update_time;
-        Optional<boost::posix_time::ptime>  local_tests_finished_time;
-        Optional<boost::posix_time::ptime>  local_relevant_contact_update_time;
+        boost::posix_time::ptime            local_last_contact_update;
         std::string                         status_handle;
 
         std::string to_string(const std::string& _each_line_prefix = "\t") const;

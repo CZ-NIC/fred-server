@@ -146,17 +146,9 @@ namespace Corba {
             out->operator[](list_index).contact_id =            it->contact_id;
             out->operator[](list_index).checked_contact_hid =   it->contact_history_id;
             out->operator[](list_index).created =               Corba::wrap_time(it->local_create_time);
+            out->operator[](list_index).updated =               Corba::wrap_nullable_datetime(it->local_update_time);
+            out->operator[](list_index).last_contact_update =   Corba::wrap_nullable_datetime(it->local_last_contact_update);
             out->operator[](list_index).current_status =        Corba::wrap_string(it->status_handle);
-
-            out->operator[](list_index).tests_finished =
-                (it->local_tests_finished_time.isset())
-                ? Corba::wrap_nullable_datetime(it->local_tests_finished_time.get_value())
-                : Corba::wrap_nullable_datetime(Nullable<boost::posix_time::ptime>());
-
-            out->operator[](list_index).last_relevant_contact_update =
-                (it->local_relevant_contact_update_time.isset())
-                ? Corba::wrap_nullable_datetime(it->local_relevant_contact_update_time.get_value())
-                : Corba::wrap_nullable_datetime(Nullable<boost::posix_time::ptime>());
         }
     }
 
