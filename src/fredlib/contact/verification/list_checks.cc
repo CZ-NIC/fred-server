@@ -95,6 +95,7 @@ namespace Fred
 
             const std::string check_alias = "check_";
             const std::string enum_testsuite_alias = "enum_c_t";
+            const std::string contact_history_alias = "c_h";
 
             // select handles and basic data
             {
@@ -113,11 +114,11 @@ namespace Fred
                 }
 
                 if(contact_id_.isset()) {
-                    joins.push_back(
-                        " JOIN contact_history AS c_h ON "+ check_alias +".contact_history_id = c_h.historyid " );
+                    // contact_historyid is already used by the fixed part of query
+                    //joins.push_back();
 
                     wheres.push_back(
-                        " AND c_h.id = $" + boost::lexical_cast<std::string>(params.size()+1) + "::bigint ");
+                        " AND "+contact_history_alias+".id = $" + boost::lexical_cast<std::string>(params.size()+1) + "::bigint ");
 
                     params.push_back(contact_id_.get_value());
                 }
@@ -145,6 +146,10 @@ namespace Fred
                     "                                           AS create_time_, "  /* ... to _output_timezone */
 
                     "    "+ check_alias +".contact_history_id   AS contact_history_id_, "
+
+                    "    "+ contact_history_alias +".id         AS contact_id_, "
+                    "    o_r.name                               AS contact_handle_, "
+
                     "    "+ enum_testsuite_alias +".handle      AS testsuite_handle_, "
 
                     "    "+ check_alias +".update_time "
@@ -160,6 +165,10 @@ namespace Fred
 
                     "   JOIN enum_contact_check_status  AS status "
                     "       ON "+ check_alias +".enum_contact_check_status_id = status.id "
+                    "   JOIN contact_history            AS "+ contact_history_alias +" "
+                    "       ON "+ check_alias +".contact_history_id = "+contact_history_alias+".historyid "
+                    "   JOIN object_registry            AS o_r "
+                    "       ON o_r.id = "+contact_history_alias+".id "
 
                     + boost::join(joins, " ") +
 
@@ -182,6 +191,8 @@ namespace Fred
 
                    temp_item.check_handle = static_cast<std::string>( (*it)["handle_"] );
                    temp_item.contact_history_id = static_cast<unsigned long long>( (*it)["contact_history_id_"] );
+                   temp_item.contact_handle = static_cast<std::string>( (*it)["contact_handle_"] );
+                   temp_item.contact_id = static_cast<unsigned long long>( (*it)["contact_id_"] );
                    temp_item.local_create_time = boost::posix_time::time_from_string(static_cast<std::string>( (*it)["create_time_"]));
                    temp_item.local_update_time = boost::posix_time::time_from_string(static_cast<std::string>( (*it)["update_time_"]));
                    temp_item.local_tests_finished_time = Optional<boost::posix_time::ptime>();

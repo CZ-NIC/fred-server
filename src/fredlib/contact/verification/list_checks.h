@@ -42,6 +42,8 @@ namespace Fred
         std::string                         check_handle;
         std::string                         testsuite_handle;
         unsigned long long                  contact_history_id;
+        unsigned long long                  contact_id;
+        std::string                         contact_handle;
         boost::posix_time::ptime            local_create_time;
         boost::posix_time::ptime            local_update_time;
         Optional<boost::posix_time::ptime>  local_tests_finished_time;
