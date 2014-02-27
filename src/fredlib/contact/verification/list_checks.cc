@@ -49,12 +49,8 @@ namespace Fred
         return result;
     }
 
-    ListContactChecks::ListContactChecks( unsigned long _max_item_count)
-        : max_item_count_(_max_item_count)
-    { }
-
     ListContactChecks::ListContactChecks(
-        unsigned long                    _max_item_count,
+        Optional<unsigned long>          _max_item_count,
         Optional<std::string>            _testsuite_handle,
         Optional<unsigned long long>     _contact_id
     ) :
@@ -62,6 +58,12 @@ namespace Fred
         testsuite_handle_(_testsuite_handle),
         contact_id_(_contact_id)
     { }
+
+    ListContactChecks& ListContactChecks::set_max_item_count(unsigned long _max_item_count) {
+        max_item_count_ = _max_item_count;
+
+        return *this;
+    }
 
     ListContactChecks& ListContactChecks::set_testsuite_handle(const std::string& _testsuite_handle) {
         testsuite_handle_ = _testsuite_handle;
@@ -143,7 +145,12 @@ namespace Fred
 
                     "   WHERE true "
                     + boost::join(wheres, " ") +
-                    "   LIMIT " + boost::lexical_cast<std::string>(max_item_count_) ,
+                    (max_item_count_.isset()
+                        ?
+                        "   LIMIT " + boost::lexical_cast<std::string>(max_item_count_)
+                        :
+                        " "
+                    ),
                     params);
 
                 for(Database::Result::Iterator it = contact_check_records.begin();
@@ -237,7 +244,7 @@ namespace Fred
         return Util::format_operation_state(
             "ListContactChecks",
             boost::assign::list_of
-                (make_pair("max_item_count",    lexical_cast<string>(max_item_count_) ))
+                (make_pair("max_item_count",    max_item_count_.print_quoted() ))
                 (make_pair("testsuite_handle",  testsuite_handle_.print_quoted() ))
                 (make_pair("contact_id",        contact_id_.print_quoted() ))
         );
