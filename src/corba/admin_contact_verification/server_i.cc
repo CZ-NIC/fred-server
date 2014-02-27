@@ -246,17 +246,38 @@ namespace Registry
             }
         }
 
-        ContactCheckList* Server_i::getContactCheckList(NullableString* testsuite, NullableULongLong* contact_id, ::CORBA::ULong max_item_count) {
+        ContactCheckList* Server_i::getChecksOfContact(::CORBA::ULongLong contact_id, NullableString* testsuite, ::CORBA::ULong max_item_count) {
             try {
                 ContactCheckList_var result(new ContactCheckList);
                 Fred::OperationContext ctx;
+                Fred::ListContactChecks list_checks;
+
+                list_checks
+                    .set_max_item_count(static_cast<unsigned long>(max_item_count))
+                    .set_contact_id( static_cast<unsigned long long>(contact_id) );
+
+                Optional<std::string> testsuite_unwrapped = Corba::unwrap_nullable_string_to_optional(testsuite);
+                if(testsuite_unwrapped.isset()) {
+                    list_checks.set_testsuite_handle(testsuite_unwrapped.get_value());
+                }
 
                 Corba::wrap_check_list(
-                    Fred::ListContactChecks(
-                        static_cast<unsigned long>(max_item_count),
-                        Corba::unwrap_nullable_string_to_optional(testsuite),
-                        Corba::unwrap_nullable_ulonglong_to_optional(contact_id)
-                    ).exec(ctx),
+                    list_checks.exec(ctx),
+                    result
+                );
+
+                return result._retn();
+            } catch (...) {
+                throw INTERNAL_SERVER_ERROR();
+            }
+        }
+
+        ContactCheckList* Server_i::getChecksAwatingResolution(NullableString* testsuite) {
+            try {
+                ContactCheckList_var result(new ContactCheckList);
+
+                Corba::wrap_check_list(
+                    Admin::list_checks_awaiting_resolution( Corba::unwrap_nullable_string_to_optional(testsuite) ),
                     result
                 );
 

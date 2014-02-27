@@ -43,7 +43,9 @@ namespace Registry
 
                 // Methods corresponding to IDL attributes and operations
                 virtual ContactCheckDetail* getContactCheckDetail(const char* check_handle);
-                virtual ContactCheckList* getContactCheckList(NullableString* testsuite, NullableULongLong* contact_id, ::CORBA::ULong max_item_count);
+
+                virtual ContactCheckList* getChecksOfContact(::CORBA::ULongLong contact_id, NullableString* testsuite, ::CORBA::ULong max_item_count);
+                virtual ContactCheckList* getChecksAwatingResolution(NullableString* testsuite);
 
                 virtual void updateContactCheckTests(const char* check_handle, const TestUpdateSeq& changes, ::CORBA::ULongLong logd_request_id);
 
