@@ -78,6 +78,7 @@ private:
     int fd_[2];
 };
 
+//public read end of pipe interface, hide write end of pipe
 class ImReader:public boost::noncopyable
 {
 public:
@@ -96,6 +97,7 @@ private:
     Pipe &pipe_;
 };
 
+//public write end of pipe interface, hide read end of pipe
 class ImWriter:public boost::noncopyable
 {
 public:
@@ -116,12 +118,12 @@ private:
 class SaveAndRestoreSigChldHandler
 {
 public:
-    SaveAndRestoreSigChldHandler():old_h_(::signal(SIGCHLD, SIG_DFL)) { }
-    ~SaveAndRestoreSigChldHandler() {
-        ::signal(SIGCHLD, old_h_);
-    }
+    SaveAndRestoreSigChldHandler();
+    ~SaveAndRestoreSigChldHandler();
 private:
-    const ::sighandler_t old_h_;
+    static void handler(int) { }
+    struct ::sigaction old_act_;
+    ::sigset_t old_set_;
 };
 
 }
@@ -196,11 +198,11 @@ SubProcessOutput ShellCmd::execute(std::string stdin_str)
             };
 
             //shell exec
-            if (::execvp(shell_argv[0], shell_argv) == FAILURE) {
+            if (::execv(shell_argv[0], shell_argv) == FAILURE) {
                 //failed to launch the shell
                 std::string err_msg(std::strerror(errno));
                 Logging::Manager::instance_ref()
-                .get(PACKAGE).error("ShellCmd::execute execvp failed: " + err_msg);
+                .get(PACKAGE).error("ShellCmd::execute execv failed: " + err_msg);
             }
         }
         catch (...) {
@@ -254,8 +256,8 @@ SubProcessOutput ShellCmd::execute(std::string stdin_str)
                 stdin.close();
                 stdout.close();
                 stderr.close();
-                this->kill_child(&ret.status);
-                return ret;
+                this->kill_child();
+                throw std::runtime_error("ShellCmd::check_timeout timeout cmd: " + cmd_);
             }
 
             if (events == FAILURE) {
@@ -330,47 +332,48 @@ void ShellCmd::kill_child(int *_status) throw()
     }
     catch (...) { }
 
-    const ::pid_t dp = ::waitpid(child_pid_, _status, WNOHANG); //death pid
+    enum { PASS_MAX = 10 };
+    for (int pass = 0; pass < PASS_MAX; ++pass) {
+        const ::pid_t dp = ::waitpid(child_pid_, _status, WNOHANG); //death pid
 
-    if (dp == FAILURE) {
+        if (dp == FAILURE) {
+            try {
+                std::string err_msg(std::strerror(errno));
+                Logging::Manager::instance_ref()
+                .get(PACKAGE).error("ShellCmd::kill_child error in waitpid: " + err_msg);
+            }
+            catch (...) { }
+            break;
+        }
+
+        if (dp == child_pid_) {//if killed child done
+            try {
+                Logging::Manager::instance_ref()
+                .get(PACKAGE).debug("ShellCmd::kill_child, killed child done, command: " + cmd_);
+            }
+            catch (...) { }
+            child_pid_ = IM_CHILD;
+            return;
+        }
+
+        //killed child is still running
         try {
-            std::string err_msg(std::strerror(errno));
-            Logging::Manager::instance_ref()
-            .get(PACKAGE).error("ShellCmd::kill_child error in waitpid: " + err_msg);
         }
         catch (...) { }
-        child_pid_ = IM_CHILD;
-        return;
-    }
 
-    if (dp == child_pid_) {//if killed child done
-        try {
-            Logging::Manager::instance_ref()
-            .get(PACKAGE).debug("ShellCmd::kill_child, killed child done, command: " + cmd_);
+        if ((pass + 1) < PASS_MAX) {
+            ::usleep(10 * 1000);//wait for child stop (SIGCHLD), max 10ms
         }
-        catch (...) { }
-        child_pid_ = IM_CHILD;
-        return;
-    }
-
-    //killed child is still running
-    try {
-        Logging::Manager::instance_ref()
-        .get(PACKAGE).debug("ShellCmd::kill_child, killed child is still running, command: " + cmd_);
-    }
-    catch (...) { }
-    ::sleep(1);//wait for child stop (SIGCHLD), max 1 second
-    if (::waitpid(child_pid_, _status, WNOHANG) != child_pid_) {
-        if (_status != NULL) {
-            *_status = EXIT_FAILURE;
+        else {
+            try {
+                Logging::Manager::instance_ref()
+                .get(PACKAGE).debug("ShellCmd::kill_child, killed child is still running, command: " + cmd_);
+            }
+            catch (...) { }
         }
     }
-    else {
-        try {
-            Logging::Manager::instance_ref()
-            .get(PACKAGE).debug("ShellCmd::kill_child, killed child done, command: " + cmd_);
-        }
-        catch (...) { }
+    if (_status != NULL) {
+        *_status = EXIT_FAILURE;
     }
     child_pid_ = IM_CHILD;
 }
@@ -636,6 +639,26 @@ bool ImWriter::is_ready(const ::fd_set &_set)const
 ::size_t ImWriter::write(const void *_data, ::size_t _data_size)const
 {
     return pipe_.write(_data, _data_size);
+}
+
+SaveAndRestoreSigChldHandler::SaveAndRestoreSigChldHandler()
+{
+    struct ::sigaction new_act;
+    new_act.sa_handler = handler;
+    ::sigemptyset(&new_act.sa_mask);
+    new_act.sa_flags = 0;
+    ::sigaction(SIGCHLD, &new_act, &old_act_);
+
+    ::sigset_t new_set;
+    ::sigemptyset(&new_set);
+    ::sigaddset(&new_set, SIGCHLD);
+    ::sigprocmask(SIG_UNBLOCK, &new_set, &old_set_);
+}
+
+SaveAndRestoreSigChldHandler::~SaveAndRestoreSigChldHandler()
+{
+    ::sigprocmask(SIG_SETMASK, &old_set_, NULL);
+    ::sigaction(SIGCHLD, &old_act_, NULL);
 }
 
 }
