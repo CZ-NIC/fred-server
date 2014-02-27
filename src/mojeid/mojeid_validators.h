@@ -33,6 +33,7 @@ namespace Verification {
 
 ContactValidator create_conditional_identification_validator_mojeid();
 ContactValidator create_finish_identification_validator_mojeid();
+ContactValidator create_verified_transfer_validator_mojeid();
 
 }
 }
