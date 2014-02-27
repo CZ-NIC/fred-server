@@ -90,6 +90,15 @@ ContactValidator create_finish_identification_validator_mojeid()
     return tmp;
 }
 
+ContactValidator create_verified_transfer_validator_mojeid()
+{
+    ContactValidator tmp = create_default_contact_validator();
+    tmp.add_checker(contact_checker_username);
+    tmp.add_checker(contact_checker_birthday);
+    return tmp;
+}
+
+
 }
 }
 }
