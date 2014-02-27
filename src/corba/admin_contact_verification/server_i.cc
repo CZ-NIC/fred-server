@@ -142,20 +142,11 @@ namespace Corba {
         for(std::vector<Fred::ListChecksItem>::const_iterator it = in.begin(); it != in.end(); ++it, ++list_index) {
             out->operator[](list_index).check_handle =          Corba::wrap_string(it->check_handle);
             out->operator[](list_index).test_suite_handle =     Corba::wrap_string(it->testsuite_handle);
-
-            Fred::InfoContactOutput contact_info;
-            {
-                Fred::OperationContext ctx;
-                contact_info = Fred::HistoryInfoContactByHistoryid(it->contact_history_id).exec(ctx);
-            }
-
-            out->operator[](list_index).contact_handle =        Corba::wrap_string(contact_info.info_contact_data.handle);
-            out->operator[](list_index).contact_id =            contact_info.info_contact_data.id;
+            out->operator[](list_index).contact_handle =        Corba::wrap_string(it->contact_handle);
+            out->operator[](list_index).contact_id =            it->contact_id;
             out->operator[](list_index).checked_contact_hid =   it->contact_history_id;
             out->operator[](list_index).created =               Corba::wrap_time(it->local_create_time);
             out->operator[](list_index).current_status =        Corba::wrap_string(it->status_handle);
-
-            out->operator[](list_index).created =               Corba::wrap_time(it->local_create_time);
 
             out->operator[](list_index).tests_finished =
                 (it->local_tests_finished_time.isset())
