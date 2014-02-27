@@ -49,19 +49,23 @@ namespace Fred
         return result;
     }
 
-    ListContactChecks::ListContactChecks( unsigned long _max_item_count)
-        : max_item_count_(_max_item_count)
-    { }
-
     ListContactChecks::ListContactChecks(
-        unsigned long                    _max_item_count,
+        Optional<unsigned long>          _max_item_count,
         Optional<std::string>            _testsuite_handle,
-        Optional<unsigned long long>     _contact_id
+        Optional<unsigned long long>     _contact_id,
+        Optional<std::string>            _status_handle
     ) :
         max_item_count_(_max_item_count),
         testsuite_handle_(_testsuite_handle),
-        contact_id_(_contact_id)
+        contact_id_(_contact_id),
+        status_handle_(_status_handle)
     { }
+
+    ListContactChecks& ListContactChecks::set_max_item_count(unsigned long _max_item_count) {
+        max_item_count_ = _max_item_count;
+
+        return *this;
+    }
 
     ListContactChecks& ListContactChecks::set_testsuite_handle(const std::string& _testsuite_handle) {
         testsuite_handle_ = _testsuite_handle;
@@ -71,6 +75,12 @@ namespace Fred
 
     ListContactChecks& ListContactChecks::set_contact_id(unsigned long long _contact_id) {
         contact_id_ = _contact_id;
+
+        return *this;
+    }
+
+    ListContactChecks& ListContactChecks::set_status_handle(const std::string& _status_handle) {
+        status_handle_ = _status_handle;
 
         return *this;
     }
@@ -112,6 +122,16 @@ namespace Fred
                     params.push_back(contact_id_.get_value());
                 }
 
+                if(status_handle_.isset()) {
+                    joins.push_back(
+                        " JOIN enum_contact_check_status AS enum_c_ch_status ON "+ check_alias +".enum_contact_check_status_id = enum_c_ch_status.id " );
+
+                    wheres.push_back(
+                        " AND enum_c_ch_status.handle = $" + boost::lexical_cast<std::string>(params.size()+1) + "::varchar ");
+
+                    params.push_back(status_handle_.get_value());
+                }
+
                 std::string timezone_param_order = boost::lexical_cast<std::string>(params.size()+1);
                 params.push_back(_output_timezone);
 
@@ -121,14 +141,16 @@ namespace Fred
 
                     "    "+ check_alias +".create_time "
                     "        AT TIME ZONE 'utc' "                                   /* conversion from 'utc' ... */
-                    "        AT TIME ZONE $"+timezone_param_order+"::text              AS create_time_, "  /* ... to _output_timezone */
+                    "        AT TIME ZONE $"+timezone_param_order+"::text              "
+                    "                                           AS create_time_, "  /* ... to _output_timezone */
 
                     "    "+ check_alias +".contact_history_id   AS contact_history_id_, "
                     "    "+ enum_testsuite_alias +".handle      AS testsuite_handle_, "
 
                     "    "+ check_alias +".update_time "
                     "        AT TIME ZONE 'utc' "                                   /* conversion from 'utc' ... */
-                    "        AT TIME ZONE $"+timezone_param_order+"::text              AS update_time_, "  /* ... to _output_timezone */
+                    "        AT TIME ZONE $"+timezone_param_order+"::text              "
+                    "                                           AS update_time_, "  /* ... to _output_timezone */
 
                     "    status.handle                          AS status_handle_ "
 
@@ -143,7 +165,12 @@ namespace Fred
 
                     "   WHERE true "
                     + boost::join(wheres, " ") +
-                    "   LIMIT " + boost::lexical_cast<std::string>(max_item_count_) ,
+                    (max_item_count_.isset()
+                        ?
+                        "   LIMIT " + boost::lexical_cast<std::string>(max_item_count_)
+                        :
+                        " "
+                    ),
                     params);
 
                 for(Database::Result::Iterator it = contact_check_records.begin();
@@ -237,9 +264,10 @@ namespace Fred
         return Util::format_operation_state(
             "ListContactChecks",
             boost::assign::list_of
-                (make_pair("max_item_count",    lexical_cast<string>(max_item_count_) ))
+                (make_pair("max_item_count",    max_item_count_.print_quoted() ))
                 (make_pair("testsuite_handle",  testsuite_handle_.print_quoted() ))
                 (make_pair("contact_id",        contact_id_.print_quoted() ))
+                (make_pair("status_handle",     status_handle_.print_quoted() ))
         );
     }
 }

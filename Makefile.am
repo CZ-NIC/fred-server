@@ -959,6 +959,8 @@ src_admin_contact_verification_libadmin_contact_verification_a_SOURCES = \
 		src/admin/contact/verification/exceptions.h \
 		src/admin/contact/verification/fill_check_queue.h \
 		src/admin/contact/verification/fill_check_queue.cc \
+		src/admin/contact/verification/list_checks_awaiting_resolution.h \
+		src/admin/contact/verification/list_checks_awaiting_resolution.cc \
 		src/admin/contact/verification/related_records_impl.h \
 		src/admin/contact/verification/related_records_impl.cc \
 		src/admin/contact/verification/resolve_check.h \

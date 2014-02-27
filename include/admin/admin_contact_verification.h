@@ -29,6 +29,7 @@
 #include "src/admin/contact/verification/enqueue_check.h"
 #include "src/admin/contact/verification/exceptions.h"
 #include "src/admin/contact/verification/fill_check_queue.h"
+#include "src/admin/contact/verification/list_checks_awaiting_resolution.h"
 #include "src/admin/contact/verification/resolve_check.h"
 #include "src/admin/contact/verification/run_all_enqueued_checks.h"
 
