@@ -142,6 +142,72 @@ struct test_registrar_fixture
     {}
 };
 
+struct admin_contact_fixture
+: virtual test_registrar_fixture
+{
+    std::string test_contact_handle;
+    admin_contact_fixture()
+    : test_contact_handle(std::string("TEST-ADMIN-HANDLE")+xmark)
+    {
+        Fred::OperationContext ctx;
+        Fred::CreateContact(test_contact_handle,test_registrar_handle).set_organization(std::string("TEST-ORGANIZATION")+xmark)
+            .set_name(std::string("TEST-CONTACT NAME")+xmark)
+            .set_disclosename(true)
+            .set_street1(std::string("STR1")+xmark)
+            .set_city("Praha").set_postalcode("11150").set_country("CZ")
+            .set_discloseaddress(true)
+            .exec(ctx);
+        ctx.commit_transaction();//commit fixture
+    }
+    ~admin_contact_fixture()
+    {}
+};
+
+struct nsset_fixture
+: virtual admin_contact_fixture
+{
+    std::string test_nsset_handle;
+    nsset_fixture()
+    : test_nsset_handle(std::string("TEST-NSSET-HANDLE")+xmark)
+    {
+        Fred::OperationContext ctx;
+        Fred::CreateNsset(test_nsset_handle, test_registrar_handle)
+            .set_tech_contacts(Util::vector_of<std::string>(admin_contact_fixture::test_contact_handle))
+            .set_dns_hosts(Util::vector_of<Fred::DnsHost>
+            (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.3")("127.1.1.3"))) //add_dns
+            (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.4")("127.1.1.4"))) //add_dns
+            ).exec(ctx);
+
+        Fred::InfoNssetOutput nsset_info = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
+
+        Fred::CreateObjectStateRequestId(nsset_info.info_nsset_data.id,
+            Util::set_of<std::string>(Fred::ObjectState::SERVER_DELETE_PROHIBITED)).exec(ctx);
+        Fred::PerformObjectStateRequest().set_object_id(nsset_info.info_nsset_data.id).exec(ctx);
+
+        ctx.commit_transaction();//commit fixture
+    }
+    ~nsset_fixture()
+    {}
+};
+
+struct keyset_fixture
+: virtual admin_contact_fixture
+{
+    std::string test_keyset_handle;
+    keyset_fixture()
+    : test_keyset_handle(std::string("TEST-KEYSET-HANDLE")+xmark)
+    {
+        Fred::OperationContext ctx;
+        Fred::CreateKeyset(test_keyset_handle, test_registrar_handle)
+        .set_tech_contacts(Util::vector_of<std::string>(admin_contact_fixture::test_contact_handle))
+                .exec(ctx);
+        ctx.commit_transaction();//commit fixture
+    }
+    ~keyset_fixture()
+    {}
+};
+
+
 BOOST_AUTO_TEST_SUITE(getRegistrarDetail)
 
 struct get_registrar_fixture
@@ -501,63 +567,6 @@ struct registrant_contact_fixture
     {}
 };
 
-struct admin_contact_fixture
-: virtual test_registrar_fixture
-{
-    std::string test_contact_handle;
-    admin_contact_fixture()
-    : test_contact_handle(std::string("TEST-ADMIN-HANDLE")+xmark)
-    {
-        Fred::OperationContext ctx;
-        Fred::CreateContact(test_contact_handle,test_registrar_handle).set_organization(std::string("TEST-ORGANIZATION")+xmark)
-            .set_name(std::string("TEST-CONTACT NAME")+xmark)
-            .set_disclosename(true)
-            .set_street1(std::string("STR1")+xmark)
-            .set_city("Praha").set_postalcode("11150").set_country("CZ")
-            .set_discloseaddress(true)
-            .exec(ctx);
-        ctx.commit_transaction();//commit fixture
-    }
-    ~admin_contact_fixture()
-    {}
-};
-
-struct nsset_fixture
-: virtual admin_contact_fixture
-{
-    std::string test_nsset_handle;
-    nsset_fixture()
-    : test_nsset_handle(std::string("TEST-NSSET-HANDLE")+xmark)
-    {
-        Fred::OperationContext ctx;
-        Fred::CreateNsset(test_nsset_handle, test_registrar_handle)
-            .set_tech_contacts(Util::vector_of<std::string>(admin_contact_fixture::test_contact_handle))
-            .set_dns_hosts(Util::vector_of<Fred::DnsHost>
-            (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.3")("127.1.1.3"))) //add_dns
-            (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.4")("127.1.1.4"))) //add_dns
-            ).exec(ctx);
-        ctx.commit_transaction();//commit fixture
-    }
-    ~nsset_fixture()
-    {}
-};
-
-struct keyset_fixture
-: virtual admin_contact_fixture
-{
-    std::string test_keyset_handle;
-    keyset_fixture()
-    : test_keyset_handle(std::string("TEST-KEYSET-HANDLE")+xmark)
-    {
-        Fred::OperationContext ctx;
-        Fred::CreateKeyset(test_keyset_handle, test_registrar_handle)
-        .set_tech_contacts(Util::vector_of<std::string>(admin_contact_fixture::test_contact_handle))
-                .exec(ctx);
-        ctx.commit_transaction();//commit fixture
-    }
-    ~keyset_fixture()
-    {}
-};
 
 struct get_my_domain_fixture
 : mojeid_user_contact_fixture
@@ -582,6 +591,14 @@ struct get_my_domain_fixture
                     , Optional<bool>()
                     , 0//const Optional<unsigned long long> logd_request_id
                     ).exec(ctx);
+
+
+        Fred::InfoDomainOutput domain_info = Fred::InfoDomainByHandle(test_fqdn).exec(ctx);
+
+        Fred::CreateObjectStateRequestId(domain_info.info_domain_data.id,
+            Util::set_of<std::string>(Fred::ObjectState::SERVER_BLOCKED)).exec(ctx);
+        Fred::PerformObjectStateRequest().set_object_id(domain_info.info_domain_data.id).exec(ctx);
+
         ctx.commit_transaction();//commit fixture
     }
 
@@ -664,11 +681,77 @@ BOOST_FIXTURE_TEST_CASE(get_my_domain_detail, get_my_domain_fixture )
         ? admin_contact_info.info_contact_data.name.get_value_or_default()
         : admin_contact_info.info_contact_data.organization.get_value_or_default()));
     BOOST_CHECK(d.admins.size() == 1);
-    BOOST_CHECK(d.states.empty());
-    BOOST_CHECK(d.state_codes.empty());
+    BOOST_CHECK(d.states.compare("Doména je blokována") == 0);
+    BOOST_CHECK(d.state_codes.compare(Fred::ObjectState::SERVER_BLOCKED) == 0);
     BOOST_CHECK(d.is_owner == true);
 }
 
 BOOST_AUTO_TEST_SUITE_END();//getDomainDetail
+
+BOOST_AUTO_TEST_SUITE(getNssetDetail)
+
+
+struct get_nsset_fixture
+: mojeid_user_contact_fixture
+  , nsset_fixture
+{};
+
+/**
+ * test call getNssetDetail with private data
+*/
+BOOST_FIXTURE_TEST_CASE(get_nsset_detail, get_nsset_fixture )
+{
+    Fred::OperationContext ctx;
+    Fred::InfoNssetOutput nsset_info = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
+    Fred::InfoRegistrarOutput sponsoring_registrar_info = Fred::InfoRegistrarByHandle(nsset_info.info_nsset_data.sponsoring_registrar_handle).exec(ctx);
+    Fred::InfoContactOutput admin_contact_info = Fred::InfoContactByHandle(admin_contact_fixture::test_contact_handle).exec(ctx);
+
+    Registry::DomainBrowserImpl::DomainBrowser impl(server_name);
+    Registry::DomainBrowserImpl::NssetDetail n = impl.getNssetDetail(user_contact_info.info_contact_data.id,
+            nsset_info.info_nsset_data.id, "CS");
+
+    BOOST_CHECK(n.id == nsset_info.info_nsset_data.id);
+    BOOST_CHECK(n.handle == nsset_info.info_nsset_data.handle);
+    BOOST_CHECK(n.roid == nsset_info.info_nsset_data.roid);
+    BOOST_CHECK(n.sponsoring_registrar.id == sponsoring_registrar_info.info_registrar_data.id);
+    BOOST_CHECK(n.sponsoring_registrar.handle == sponsoring_registrar_info.info_registrar_data.handle);
+    BOOST_CHECK(n.sponsoring_registrar.name == sponsoring_registrar_info.info_registrar_data.name.get_value_or_default());
+    BOOST_CHECK(n.creation_time == nsset_info.info_nsset_data.creation_time);
+    BOOST_CHECK(n.transfer_time.get_value_or_default() == nsset_info.info_nsset_data.transfer_time.get_value_or_default());
+    BOOST_CHECK(n.update_time.get_value_or_default() == nsset_info.info_nsset_data.update_time.get_value_or_default());
+
+    BOOST_CHECK(n.create_registrar.id == sponsoring_registrar_info.info_registrar_data.id);
+    BOOST_CHECK(n.create_registrar.handle == sponsoring_registrar_info.info_registrar_data.handle);
+    BOOST_CHECK(n.create_registrar.name == sponsoring_registrar_info.info_registrar_data.name.get_value_or_default());
+
+    BOOST_CHECK(n.update_registrar.id == 0);
+    BOOST_CHECK(n.update_registrar.handle == "");
+    BOOST_CHECK(n.update_registrar.name == "");
+
+    BOOST_CHECK(n.authinfopw == "********");
+
+    BOOST_CHECK(n.admins.at(0).id == admin_contact_info.info_contact_data.id);
+    BOOST_CHECK(n.admins.at(0).handle == admin_contact_info.info_contact_data.handle);
+    BOOST_CHECK(n.admins.at(0).name == (admin_contact_info.info_contact_data.organization.get_value_or_default().empty()
+        ? admin_contact_info.info_contact_data.name.get_value_or_default()
+        : admin_contact_info.info_contact_data.organization.get_value_or_default()));
+    BOOST_CHECK(n.admins.size() == 1);
+
+    BOOST_CHECK(n.hosts.at(0).fqdn.compare("a.ns.nic.cz") == 0);
+    BOOST_CHECK(n.hosts.at(0).inet_addr.compare("127.0.0.3, 127.1.1.3") == 0);
+    BOOST_CHECK(n.hosts.at(1).fqdn.compare("b.ns.nic.cz") == 0);
+    BOOST_CHECK(n.hosts.at(1).inet_addr.compare("127.0.0.4, 127.1.1.4") == 0);
+
+    BOOST_CHECK(n.states.compare("Není povoleno smazání") == 0);
+    BOOST_CHECK(n.state_codes.compare(Fred::ObjectState::SERVER_DELETE_PROHIBITED) == 0);
+
+    BOOST_CHECK(n.report_level == 0);
+
+    BOOST_CHECK(n.is_owner == false);
+
+}
+
+
+BOOST_AUTO_TEST_SUITE_END();//getNssetDetail
 
 BOOST_AUTO_TEST_SUITE_END();//TestDomainBrowser

@@ -438,11 +438,10 @@ namespace Registry
             {
                 DNSHost host;
                 host.fqdn = ci->get_fqdn();
-
                 Util::HeadSeparator add_separator("",", ");
-
-                for(std::vector<std::string>::const_iterator cj = ci->get_inet_addr().begin();
-                                    cj != ci->get_inet_addr().end(); ++cj)
+                std::vector<std::string> inet_addr_list = ci->get_inet_addr();
+                for(std::vector<std::string>::const_iterator cj = inet_addr_list.begin();
+                    cj != inet_addr_list.end(); ++cj)
                 {
                     host.inet_addr += add_separator.get();
                     host.inet_addr += *cj;
