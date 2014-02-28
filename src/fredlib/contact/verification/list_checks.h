@@ -31,6 +31,7 @@
 
 #include "src/fredlib/opcontext.h"
 #include "util/optional_value.h"
+#include "util/db/nullable.h"
 
 namespace Fred
 {
@@ -47,7 +48,7 @@ namespace Fred
         boost::posix_time::ptime            local_create_time;
         boost::posix_time::ptime            local_update_time;
         boost::posix_time::ptime            local_last_contact_update;
-        boost::posix_time::ptime            last_test_finished_local_time;
+        Nullable<boost::posix_time::ptime>  last_test_finished_local_time;
         std::string                         status_handle;
 
         std::string to_string(const std::string& _each_line_prefix = "\t") const;
