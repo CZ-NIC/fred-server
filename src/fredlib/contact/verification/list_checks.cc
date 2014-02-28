@@ -199,6 +199,8 @@ namespace Fred
                     temp_item.local_create_time = boost::posix_time::time_from_string(static_cast<std::string>( (*it)["create_time_"]));
                     temp_item.local_update_time = boost::posix_time::time_from_string(static_cast<std::string>( (*it)["update_time_"]));
                     temp_item.local_last_contact_update = boost::posix_time::time_from_string(static_cast<std::string>( (*it)["last_contact_change_"]));
+                    // default - in case it is not set, it remains as NULL
+                    temp_item.last_test_finished_local_time = Nullable<boost::posix_time::ptime>();
                     temp_item.status_handle = static_cast<std::string>( (*it)["status_handle_"] );
                     temp_item.testsuite_handle  = static_cast<std::string>( (*it)["testsuite_handle_"] );
 
