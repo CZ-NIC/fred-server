@@ -167,6 +167,45 @@ namespace Registry
             {}
         };
 
+        /**
+         * DNSHost data
+         */
+        struct DNSHost
+        {
+            std::string fqdn;/**< fully qualified name of the nameserver host*/
+            std::string inet_addr;/**< list of IPv4 or IPv6 addresses of the nameserver host*/
+        };
+
+        /**
+         * Nsset detail data
+         * Returned by @ref getNssetDetail.
+         */
+        struct NssetDetail
+        {
+            unsigned long long id;/**< database id of the nsset */
+            std::string handle;/**< nsset handle */
+            std::string roid;/**< registry object identifier of nsset */
+            RegistryReference sponsoring_registrar;/**< registrar administering the contact */
+            boost::posix_time::ptime creation_time;/**< creation time of the contact in set local zone*/
+            Nullable<boost::posix_time::ptime> transfer_time; /**< last transfer time of the contact in set local zone*/
+            Nullable<boost::posix_time::ptime> update_time; /**< last update time of the contact in set local zone*/
+            RegistryReference create_registrar;/**< registrar that created the nsset */
+            RegistryReference update_registrar;/**< registrar that updated the nsset */
+            std::string authinfopw;/**< password for transfer */
+            std::vector<RegistryReference> admins; /**< nsset admin contacts */
+            std::vector<DNSHost> hosts; /**< nsset DNS hosts */
+            std::string states;/**< contact states descriptions in given language from db. table enum_object_states_desc delimited by pipe '|' character */
+            std::string state_codes;/**< contact states names from db. table enum_object_states delimited by coma ',' character */
+            short report_level; /**< nsset level of technical checks */
+            bool is_owner;/**< user contact is never owner of the nsset*/
+
+            NssetDetail()
+            : id(0)
+            , report_level(0)
+            , is_owner(false)
+            {}
+        };
+
 
         /**
          * Internal server error.
@@ -272,7 +311,16 @@ namespace Registry
              * @param states is output string with descriptions of external object states delimited by ','
              */
             void get_object_states(Fred::OperationContext& ctx, unsigned long long object_id, const std::string& lang
-                        , std::string& state_codes, std::string& states);
+                    , std::string& state_codes, std::string& states);
+
+            /**
+             * Fill authinfo into given string.
+             * @param user_is_owner means that user contact owns requested object so that transfer password can be revealed
+             * @param authinfopw is transfer password of requested object
+             * @return transfer password returned to the user, if user is not owner of requested object output is "********"
+             */
+            std::string filter_authinfo(bool user_is_owner,const std::string& authinfopw);
+
         public:
             //dummy decl - impl
             DomainBrowser(const std::string &server_name);
@@ -308,6 +356,17 @@ namespace Registry
              */
             DomainDetail getDomainDetail(unsigned long long user_contact_id,
                     unsigned long long domain_id,
+                    const std::string& lang);
+
+            /**
+             * Returns nsset detail.
+             * @param user_contact_id contains database id of the user contact
+             * @param nsset_id contains database id of the nsset
+             * @param lang contains language for state description "EN" or "CS"
+             * @return nsset detail data.
+             */
+            NssetDetail getNssetDetail(unsigned long long user_contact_id,
+                    unsigned long long nsset_id,
                     const std::string& lang);
 
             std::string get_server_name();
