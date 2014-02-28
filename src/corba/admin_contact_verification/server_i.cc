@@ -148,7 +148,7 @@ namespace Corba {
             out->operator[](list_index).created =               Corba::wrap_time(it->local_create_time);
             out->operator[](list_index).updated =               Corba::wrap_time(it->local_update_time);
             out->operator[](list_index).last_contact_update =   Corba::wrap_time(it->local_last_contact_update);
-            out->operator[](list_index).last_test_finished =    Corba::wrap_time(it->last_test_finished_local_time);
+            out->operator[](list_index).last_test_finished =    Corba::wrap_nullable_datetime(it->last_test_finished_local_time);
             out->operator[](list_index).current_status =        Corba::wrap_string(it->status_handle);
         }
     }
