@@ -92,7 +92,7 @@ class ShellCmd:public boost::noncopyable
 public:
     /**
      * @class RelativeTimeInSeconds
-     * Represents relative (from now) time meassured in seconds.
+     * @brief Represents relative (from now) time meassured in seconds.
      */
     typedef typeof(::timeval().tv_sec) RelativeTimeInSeconds;
 
