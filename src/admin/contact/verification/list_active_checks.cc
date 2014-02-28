@@ -1,13 +1,15 @@
-#include "src/admin/contact/verification/list_checks_awaiting_resolution.h"
+#include "src/admin/contact/verification/list_active_checks.h"
 
 #include <set>
 #include <boost/assign/list_of.hpp>
 
 namespace  Admin {
-    std::vector<Fred::ListChecksItem> list_checks_awaiting_resolution(const Optional<std::string>& _testsuite_handle) {
+    std::vector<Fred::ListChecksItem> list_active_checks(const Optional<std::string>& _testsuite_handle) {
         std::vector<Fred::ListChecksItem> result;
 
         std::set<std::string> awaiting_statuses = boost::assign::list_of
+            (Fred::ContactCheckStatus::ENQUEUED)
+            (Fred::ContactCheckStatus::RUNNING)
             (Fred::ContactCheckStatus::AUTO_OK)
             (Fred::ContactCheckStatus::AUTO_FAIL)
             (Fred::ContactCheckStatus::AUTO_TO_BE_DECIDED);

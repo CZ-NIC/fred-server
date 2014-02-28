@@ -45,7 +45,7 @@ namespace Registry
                 virtual ContactCheckDetail* getContactCheckDetail(const char* check_handle);
 
                 virtual ContactCheckList* getChecksOfContact(::CORBA::ULongLong contact_id, NullableString* testsuite, ::CORBA::ULong max_item_count);
-                virtual ContactCheckList* getChecksAwatingResolution(NullableString* testsuite);
+                virtual ContactCheckList* getActiveChecks(NullableString* testsuite);
 
                 virtual void updateContactCheckTests(const char* check_handle, const TestUpdateSeq& changes, ::CORBA::ULongLong logd_request_id);
 
