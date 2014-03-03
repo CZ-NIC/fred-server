@@ -55,8 +55,8 @@ public:
     // copy ctor; an Nullable can be constructed from another Nullable of a different but convertible type
     template < typename Tc >
     Nullable(const Nullable< Tc > &_rhs)
-    : isnull_(_rhs.isnull_)
-    , value_(_rhs.value_)
+        : isnull_(_rhs.isnull_),
+          value_(_rhs.value_)
     {}//copy
 
     // assignment; an Nullable can be assigned value of a different but convertible type

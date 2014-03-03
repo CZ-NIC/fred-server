@@ -72,8 +72,8 @@ public:
     // copy ctor; an Optional can be constructed from another Optional of a different but convertible type
     template < typename Tc >
     Optional(const Optional< Tc > &_rhs)
-    : isset_(_rhs.isset_)
-    , value_(_rhs.value_)
+        : isset_(_rhs.isset_),
+          value_(_rhs.value_)
     {}//copy
 
     // assignment; an Optional can be assigned value of a different but convertible type
