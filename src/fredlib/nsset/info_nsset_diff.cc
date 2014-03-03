@@ -184,18 +184,18 @@ namespace Fred
         }
 
 
-        std::set<std::string> lhs_tech_contacts;
-        for(std::vector<std::string>::size_type i = 0
+        std::set<ObjectIdHandlePair> lhs_tech_contacts;
+        for(std::vector<ObjectIdHandlePair>::size_type i = 0
             ; i != first.tech_contacts.size(); ++i)
         {
-            lhs_tech_contacts.insert(boost::algorithm::to_upper_copy(first.tech_contacts[i]));
+            lhs_tech_contacts.insert(first.tech_contacts[i]);
         }
 
-        std::set<std::string> rhs_tech_contacts;
-        for(std::vector<std::string>::size_type i = 0
+        std::set<ObjectIdHandlePair> rhs_tech_contacts;
+        for(std::vector<ObjectIdHandlePair>::size_type i = 0
             ; i != second.tech_contacts.size(); ++i)
         {
-            rhs_tech_contacts.insert(boost::algorithm::to_upper_copy(second.tech_contacts[i]));
+            rhs_tech_contacts.insert(second.tech_contacts[i]);
         }
 
         if(lhs_tech_contacts != rhs_tech_contacts)

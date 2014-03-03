@@ -45,14 +45,11 @@
 #include "setup_server_decl.h"
 #include "time_clock.h"
 #include "src/fredlib/registrar.h"
-#include "src/fredlib/domain/update_domain.h"
 #include "src/fredlib/nsset/update_nsset.h"
-#include "src/fredlib/keyset/update_keyset.h"
+#include "src/fredlib/contact/info_contact.h"
 #include "src/fredlib/contact/delete_contact.h"
 #include "src/fredlib/contact/create_contact.h"
 #include "src/fredlib/nsset/create_nsset.h"
-#include "src/fredlib/keyset/create_keyset.h"
-#include "src/fredlib/domain/create_domain.h"
 #include "src/fredlib/nsset/info_nsset.h"
 #include "src/fredlib/opexception.h"
 #include "util/util.h"
@@ -222,11 +219,11 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
     //check changes made by last update
     BOOST_CHECK(info_data_1_with_changes == info_data_2);
 
-    //check info domain history against info domain
+    //check info nsset history against info nsset
     BOOST_CHECK(history_info_data_2.at(0) == info_data_2);
     BOOST_CHECK(history_info_data_2.at(1) == info_data_1);
 
-    //check info domain history against last info domain history
+    //check info nsset history against last info nsset history
     BOOST_CHECK(history_info_data_2.at(1).info_nsset_data == history_info_data_1.at(0).info_nsset_data);
 
     //check historyid
@@ -264,12 +261,12 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
     //check changes made by last update
     BOOST_CHECK(info_data_2_with_changes == info_data_3);
 
-    //check info domain history against info domain
+    //check info nsset history against info nsset
     BOOST_CHECK(history_info_data_3.at(0) == info_data_3);
     BOOST_CHECK(history_info_data_3.at(1) == info_data_2);
     BOOST_CHECK(history_info_data_3.at(2) == info_data_1);
 
-    //check info domain history against last info domain history
+    //check info nsset history against last info nsset history
     BOOST_CHECK(history_info_data_3.at(1).info_nsset_data == history_info_data_2.at(0).info_nsset_data);
 
     //check historyid
@@ -326,13 +323,13 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
     //check changes made by last update
     BOOST_CHECK(info_data_3_with_changes == info_data_4);
 
-    //check info domain history against info domain
+    //check info nsset history against info nsset
     BOOST_CHECK(history_info_data_4.at(0) == info_data_4);
     BOOST_CHECK(history_info_data_4.at(1) == info_data_3);
     BOOST_CHECK(history_info_data_4.at(2) == info_data_2);
     BOOST_CHECK(history_info_data_4.at(3) == info_data_1);
 
-    //check info domain history against last info domain history
+    //check info nsset history against last info nsset history
     BOOST_CHECK(history_info_data_4.at(1).info_nsset_data == history_info_data_3.at(0).info_nsset_data);
 
     //check historyid
@@ -392,14 +389,14 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
     //check changes made by last update
     BOOST_CHECK(info_data_4_with_changes == info_data_5);
 
-    //check info domain history against info domain
+    //check info nsset history against info nsset
     BOOST_CHECK(history_info_data_5.at(0) == info_data_5);
     BOOST_CHECK(history_info_data_5.at(1) == info_data_4);
     BOOST_CHECK(history_info_data_5.at(2) == info_data_3);
     BOOST_CHECK(history_info_data_5.at(3) == info_data_2);
     BOOST_CHECK(history_info_data_5.at(4) == info_data_1);
 
-    //check info domain history against last info domain history
+    //check info nsset history against last info nsset history
     BOOST_CHECK(history_info_data_5.at(1).info_nsset_data == history_info_data_4.at(0).info_nsset_data);
 
     //check historyid
@@ -435,7 +432,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
     //check changes made by last update
     BOOST_CHECK(info_data_5_with_changes == info_data_6);
 
-    //check info domain history against info domain
+    //check info nsset history against info nsset
     BOOST_CHECK(history_info_data_6.at(0) == info_data_6);
     BOOST_CHECK(history_info_data_6.at(1) == info_data_5);
     BOOST_CHECK(history_info_data_6.at(2) == info_data_4);
@@ -443,7 +440,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
     BOOST_CHECK(history_info_data_6.at(4) == info_data_2);
     BOOST_CHECK(history_info_data_6.at(5) == info_data_1);
 
-    //check info domain history against last info domain history
+    //check info nsset history against last info nsset history
     BOOST_CHECK(history_info_data_6.at(1).info_nsset_data == history_info_data_5.at(0).info_nsset_data);
 
     //check historyid
@@ -478,7 +475,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
     //check changes made by last update
     BOOST_CHECK(info_data_6_with_changes == info_data_7);
 
-    //check info domain history against info domain
+    //check info nsset history against info nsset
     BOOST_CHECK(history_info_data_7.at(0) == info_data_7);
     BOOST_CHECK(history_info_data_7.at(1) == info_data_6);
     BOOST_CHECK(history_info_data_7.at(2) == info_data_5);
@@ -487,7 +484,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
     BOOST_CHECK(history_info_data_7.at(5) == info_data_2);
     BOOST_CHECK(history_info_data_7.at(6) == info_data_1);
 
-    //check info domain history against last info domain history
+    //check info nsset history against last info nsset history
     BOOST_CHECK(history_info_data_7.at(1).info_nsset_data == history_info_data_6.at(0).info_nsset_data);
 
     //check historyid
@@ -513,16 +510,18 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
     //updated update_time
     info_data_7_with_changes.info_nsset_data.update_time = info_data_8.info_nsset_data.update_time;
 
+    Fred::InfoContactOutput admin_contact3_info  = Fred::InfoContactByHandle(admin_contact3_handle).exec(ctx);
     //rem tech contact
     info_data_7_with_changes.info_nsset_data.tech_contacts.erase(std::remove(
-            info_data_7_with_changes.info_nsset_data.tech_contacts.begin()
-            , info_data_7_with_changes.info_nsset_data.tech_contacts.end()
-            , admin_contact3_handle));
+            info_data_7_with_changes.info_nsset_data.tech_contacts.begin(),
+            info_data_7_with_changes.info_nsset_data.tech_contacts.end(),
+        Fred::ObjectIdHandlePair(admin_contact3_info.info_contact_data.id,admin_contact3_info.info_contact_data.handle)
+    ));
 
     //check changes made by last update
     BOOST_CHECK(info_data_7_with_changes == info_data_8);
 
-    //check info domain history against info domain
+    //check info nsset history against info nsset
     BOOST_CHECK(history_info_data_8.at(0) == info_data_8);
     BOOST_CHECK(history_info_data_8.at(1) == info_data_7);
     BOOST_CHECK(history_info_data_8.at(2) == info_data_6);
@@ -532,7 +531,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
     BOOST_CHECK(history_info_data_8.at(6) == info_data_2);
     BOOST_CHECK(history_info_data_8.at(7) == info_data_1);
 
-    //check info domain history against last info domain history
+    //check info nsset history against last info nsset history
     BOOST_CHECK(history_info_data_8.at(1).info_nsset_data == history_info_data_7.at(0).info_nsset_data);
 
     //check historyid
@@ -559,12 +558,13 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
     info_data_8_with_changes.info_nsset_data.update_time = info_data_9.info_nsset_data.update_time;
 
     //add tech contact
-    info_data_8_with_changes.info_nsset_data.tech_contacts.push_back(admin_contact3_handle);
+    info_data_8_with_changes.info_nsset_data.tech_contacts.push_back(
+        Fred::ObjectIdHandlePair(admin_contact3_info.info_contact_data.id,admin_contact3_info.info_contact_data.handle));
 
     //check changes made by last update
     BOOST_CHECK(info_data_8_with_changes == info_data_9);
 
-    //check info domain history against info domain
+    //check info nsset history against info nsset
     BOOST_CHECK(history_info_data_9.at(0) == info_data_9);
     BOOST_CHECK(history_info_data_9.at(1) == info_data_8);
     BOOST_CHECK(history_info_data_9.at(2) == info_data_7);
@@ -575,7 +575,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
     BOOST_CHECK(history_info_data_9.at(7) == info_data_2);
     BOOST_CHECK(history_info_data_9.at(8) == info_data_1);
 
-    //check info domain history against last info domain history
+    //check info nsset history against last info nsset history
     BOOST_CHECK(history_info_data_9.at(1).info_nsset_data == history_info_data_8.at(0).info_nsset_data);
 
     //check historyid
@@ -607,7 +607,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
     //check changes made by last update
     BOOST_CHECK(info_data_9_with_changes == info_data_10);
 
-    //check info domain history against info domain
+    //check info nsset history against info nsset
     BOOST_CHECK(history_info_data_10.at(0) == info_data_10);
     BOOST_CHECK(history_info_data_10.at(1) == info_data_9);
     BOOST_CHECK(history_info_data_10.at(2) == info_data_8);
@@ -619,7 +619,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
     BOOST_CHECK(history_info_data_10.at(8) == info_data_2);
     BOOST_CHECK(history_info_data_10.at(9) == info_data_1);
 
-    //check info domain history against last info domain history
+    //check info nsset history against last info nsset history
     BOOST_CHECK(history_info_data_10.at(1).info_nsset_data == history_info_data_9.at(0).info_nsset_data);
 
     //check historyid
@@ -648,7 +648,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
     //check changes made by last update
     BOOST_CHECK(info_data_10_with_changes == info_data_11);
 
-    //check info domain history against info domain
+    //check info nsset history against info nsset
     BOOST_CHECK(history_info_data_11.at(0) == info_data_11);
     BOOST_CHECK(history_info_data_11.at(1) == info_data_10);
     BOOST_CHECK(history_info_data_11.at(2) == info_data_9);
@@ -661,7 +661,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
     BOOST_CHECK(history_info_data_11.at(9) == info_data_2);
     BOOST_CHECK(history_info_data_11.at(10) == info_data_1);
 
-    //check info domain history against last info domain history
+    //check info nsset history against last info nsset history
     BOOST_CHECK(history_info_data_11.at(1).info_nsset_data == history_info_data_10.at(0).info_nsset_data);
 
     //check historyid
@@ -698,7 +698,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
     //check changes made by last update
     BOOST_CHECK(info_data_11_with_changes == info_data_12);
 
-    //check info domain history against info domain
+    //check info nsset history against info nsset
     BOOST_CHECK(history_info_data_12.at(0) == info_data_12);
     BOOST_CHECK(history_info_data_12.at(1) == info_data_11);
     BOOST_CHECK(history_info_data_12.at(2) == info_data_10);
@@ -712,7 +712,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
     BOOST_CHECK(history_info_data_12.at(10) == info_data_2);
     BOOST_CHECK(history_info_data_12.at(11) == info_data_1);
 
-    //check info domain history against last info domain history
+    //check info nsset history against last info nsset history
     BOOST_CHECK(history_info_data_12.at(1).info_nsset_data == history_info_data_11.at(0).info_nsset_data);
 
     //check historyid

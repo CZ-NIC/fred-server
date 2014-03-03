@@ -514,7 +514,9 @@ BOOST_AUTO_TEST_CASE(info_nsset_output)
     d.handle = "TEST-INFO-NSSET-HANDLE";
     d.creation_time = boost::posix_time::microsec_clock::universal_time();
     d.delete_time = boost::posix_time::microsec_clock::universal_time();
-    d.tech_contacts = Util::vector_of<std::string>("tech1")("tech2")("tech3");
+    d.tech_contacts = Util::vector_of<Fred::ObjectIdHandlePair>(Fred::ObjectIdHandlePair(1, "tech1"))
+        (Fred::ObjectIdHandlePair(2, "tech2"))
+        (Fred::ObjectIdHandlePair(3, "tech3"));
     d.dns_hosts = Util::vector_of<Fred::DnsHost>
         (Fred::DnsHost("test1dns.cz", Util::vector_of<std::string>("6.6.6.6")("7.7.7.7")))
         (Fred::DnsHost("test2dns.cz", Util::vector_of<std::string>("6.6.6.6")("7.7.7.7")));
