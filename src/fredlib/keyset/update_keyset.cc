@@ -120,7 +120,7 @@ namespace Fred
                 , &Exception::set_unknown_registrar_handle);
 
             //lock row and get keyset_id
-            unsigned long long keyset_id =get_object_id_by_handle_and_type_with_lock(
+            unsigned long long keyset_id = get_object_id_by_handle_and_type_with_lock(
                     ctx,handle_,"keyset",static_cast<Exception*>(0),
                     &Exception::set_unknown_keyset_handle);
 
