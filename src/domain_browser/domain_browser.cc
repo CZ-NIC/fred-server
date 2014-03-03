@@ -333,6 +333,7 @@ namespace Registry
             detail.nsset = nsset;
             detail.keyset = keyset;
 
+            detail.admins.reserve(domain_info.info_domain_data.admin_contacts.size());
             for(std::vector<Fred::ObjectIdHandlePair>::const_iterator ci = domain_info.info_domain_data.admin_contacts.begin();
                     ci != domain_info.info_domain_data.admin_contacts.end(); ++ci)
             {
@@ -415,9 +416,9 @@ namespace Registry
             detail.create_registrar = create_registrar;
             detail.update_registrar = update_registrar;
 
-            detail.is_owner = false;//nsset have no owner contact
-            detail.authinfopw =filter_authinfo(detail.is_owner, nsset_info.info_nsset_data.authinfopw);
+            detail.is_owner = false;
 
+            detail.admins.reserve(nsset_info.info_nsset_data.tech_contacts.size());
             for(std::vector<Fred::ObjectIdHandlePair>::const_iterator ci = nsset_info.info_nsset_data.tech_contacts.begin();
                     ci != nsset_info.info_nsset_data.tech_contacts.end(); ++ci)
             {
@@ -429,10 +430,13 @@ namespace Registry
                 admin.name = tech_contact_info.info_contact_data.organization.get_value_or_default().empty()
                     ? tech_contact_info.info_contact_data.name.get_value_or_default()
                     : tech_contact_info.info_contact_data.organization.get_value();
-
                 detail.admins.push_back(admin);
-            }
 
+                if(admin.id == user_contact_id) detail.is_owner = true;//reveal authinfo
+            }
+            detail.authinfopw =filter_authinfo(detail.is_owner, nsset_info.info_nsset_data.authinfopw);
+
+            detail.hosts.reserve(nsset_info.info_nsset_data.dns_hosts.size());
             for(std::vector<Fred::DnsHost>::const_iterator ci = nsset_info.info_nsset_data.dns_hosts.begin();
                     ci != nsset_info.info_nsset_data.dns_hosts.end(); ++ci)
             {
@@ -458,8 +462,104 @@ namespace Registry
             return detail;
         }
 
+        KeysetDetail DomainBrowser::getKeysetDetail(unsigned long long user_contact_id,
+                unsigned long long keyset_id,
+                const std::string& lang)
+        {
+            Fred::OperationContext ctx;
+            check_user_contact_id(ctx, user_contact_id);
 
+            Fred::InfoKeysetOutput keyset_info;
+            try
+            {
+                keyset_info = Fred::InfoKeysetById(keyset_id).exec(ctx);
+            }
+            catch(const Fred::InfoKeysetById::Exception& ex)
+            {
+                if(ex.is_set_unknown_object_id())
+                {
+                    BOOST_THROW_EXCEPTION(ObjectNotExists());
+                }
+                else
+                    throw;
+            }
 
+            Fred::InfoRegistrarOutput sponsoring_registar_info = Fred::InfoRegistrarByHandle(
+                keyset_info.info_keyset_data.sponsoring_registrar_handle).exec(ctx);
+            RegistryReference sponsoring_registrar;
+            sponsoring_registrar.id = sponsoring_registar_info.info_registrar_data.id;
+            sponsoring_registrar.handle = sponsoring_registar_info.info_registrar_data.handle;
+            sponsoring_registrar.name = sponsoring_registar_info.info_registrar_data.name.get_value_or_default();
+
+            Fred::InfoRegistrarOutput create_registar_info = Fred::InfoRegistrarByHandle(
+                keyset_info.info_keyset_data.create_registrar_handle).exec(ctx);
+            RegistryReference create_registrar;
+            create_registrar.id = create_registar_info.info_registrar_data.id;
+            create_registrar.handle = create_registar_info.info_registrar_data.handle;
+            create_registrar.name = create_registar_info.info_registrar_data.name.get_value_or_default();
+
+            RegistryReference update_registrar;
+            if(!keyset_info.info_keyset_data.update_registrar_handle.isnull())
+            {
+                Fred::InfoRegistrarOutput update_registar_info = Fred::InfoRegistrarByHandle(
+                    keyset_info.info_keyset_data.update_registrar_handle.get_value()).exec(ctx);
+                create_registrar.id = create_registar_info.info_registrar_data.id;
+                create_registrar.handle = create_registar_info.info_registrar_data.handle;
+                create_registrar.name = create_registar_info.info_registrar_data.name.get_value_or_default();
+            }
+
+            KeysetDetail detail;
+
+            detail.id = keyset_info.info_keyset_data.id;
+            detail.handle = keyset_info.info_keyset_data.handle;
+            detail.roid = keyset_info.info_keyset_data.roid;
+            detail.sponsoring_registrar = sponsoring_registrar;
+            detail.creation_time = keyset_info.info_keyset_data.creation_time;
+            detail.transfer_time = keyset_info.info_keyset_data.transfer_time;
+            detail.update_time = keyset_info.info_keyset_data.update_time;
+
+            detail.create_registrar = create_registrar;
+            detail.update_registrar = update_registrar;
+
+            detail.is_owner = false;
+
+            detail.admins.reserve(keyset_info.info_keyset_data.tech_contacts.size());
+            for(std::vector<Fred::ObjectIdHandlePair>::const_iterator ci = keyset_info.info_keyset_data.tech_contacts.begin();
+                    ci != keyset_info.info_keyset_data.tech_contacts.end(); ++ci)
+            {
+                Fred::InfoContactOutput tech_contact_info = Fred::InfoContactById(ci->id).exec(ctx);
+
+                RegistryReference admin;
+                admin.id = tech_contact_info.info_contact_data.id;
+                admin.handle = tech_contact_info.info_contact_data.handle;
+                admin.name = tech_contact_info.info_contact_data.organization.get_value_or_default().empty()
+                    ? tech_contact_info.info_contact_data.name.get_value_or_default()
+                    : tech_contact_info.info_contact_data.organization.get_value();
+                detail.admins.push_back(admin);
+
+                if(admin.id == user_contact_id) detail.is_owner = true;//reveal authinfo
+            }
+
+            detail.authinfopw =filter_authinfo(detail.is_owner, keyset_info.info_keyset_data.authinfopw);
+
+            detail.dnskeys.reserve(keyset_info.info_keyset_data.dns_keys.size());
+            for(std::vector<Fred::DnsKey>::const_iterator ci = keyset_info.info_keyset_data.dns_keys.begin();
+                    ci != keyset_info.info_keyset_data.dns_keys.end(); ++ci)
+            {
+                DNSKey dnskey;
+                dnskey.flags = ci->get_flags();
+                dnskey.protocol = ci->get_protocol();
+                dnskey.alg = ci->get_alg();
+                dnskey.key = ci->get_key();
+
+                detail.dnskeys.push_back(dnskey);
+            }
+
+            get_object_states(ctx, keyset_info.info_keyset_data.id,lang
+                , detail.state_codes, detail.states);
+
+            return detail;
+        }
     }//namespace DomainBrowserImpl
 }//namespace Registry
 
