@@ -21,8 +21,8 @@
  *  optional value
  */
 
-#ifndef OPTIONAL_VALUE_H_
-#define OPTIONAL_VALUE_H_
+#ifndef OPTIONAL_VALUE_H_1134545331
+#define OPTIONAL_VALUE_H_1134545331
 
 #include <utility>
 #include <string>
