@@ -60,21 +60,21 @@ public:
     Optional()
         : isset_(false), // value doesn't present
           value_()       // default value
-    {}//default
+    {}
 
     // init ctor; conversion Tc -> T must be possible
     template < typename Tc >
     Optional(const Tc &_value)
         : isset_(true),  // value present
           value_(_value) // conversion Tc -> T exists
-    {}//init
+    {}
 
     // copy ctor; an Optional can be constructed from another Optional of a different but convertible type
     template < typename Tc >
     Optional(const Optional< Tc > &_rhs)
         : isset_(_rhs.isset_),
           value_(_rhs.value_)
-    {}//copy
+    {}
 
     // assignment; an Optional can be assigned value of a different but convertible type
     template < typename Tc >
@@ -83,7 +83,7 @@ public:
         value_ = _value;
         isset_ = true;
         return *this;
-    }//assignment
+    }
 
     // assignment; an Optional can be assigned another Optional of a different but convertible type
     template < typename Tc >
@@ -92,7 +92,7 @@ public:
         value_ = _rhs.value_;
         isset_ = _rhs.isset_;
         return *this;
-    }//assignment
+    }
 
     bool isset() const
     {
@@ -168,4 +168,4 @@ bool operator!=(const T &_a, const Optional< T > &_b)
     return !(_a == _b);
 }
 
-#endif //OPTIONAL_VALUE_H_
+#endif

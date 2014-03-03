@@ -43,21 +43,21 @@ public:
     Nullable()
         : isnull_(true), // value is NULL
           value_()       // default value
-    {}//default
+    {}
 
     // init ctor; conversion Tc -> T must be possible
     template < typename Tc >
     Nullable(const Tc &_value)
         : isnull_(false), // value isn't NULL
           value_(_value)  // conversion Tc -> T exists
-    {}//init
+    {}
 
     // copy ctor; an Nullable can be constructed from another Nullable of a different but convertible type
     template < typename Tc >
     Nullable(const Nullable< Tc > &_rhs)
         : isnull_(_rhs.isnull_),
           value_(_rhs.value_)
-    {}//copy
+    {}
 
     // assignment; an Nullable can be assigned value of a different but convertible type
     template < typename Tc >
@@ -66,7 +66,7 @@ public:
         value_ = _value;
         isnull_ = false;
         return *this;
-    }//assignment
+    }
 
     // assignment; an Nullable can be assigned another Nullable of a different but convertible type
     template < typename Tc >
@@ -75,7 +75,7 @@ public:
         value_ = _rhs.value_;
         isnull_ = _rhs.isnull_;
         return *this;
-    }//assignment
+    }
 
     bool isnull() const
     {
@@ -179,4 +179,4 @@ bool operator!=(const T &_a, const Nullable< T > &_b)
 // never use Nullable< T* >; isnull() has two meanings
 template < typename T > class Nullable< T* >;
 
-#endif /*NULLABLE_H_*/
+#endif
