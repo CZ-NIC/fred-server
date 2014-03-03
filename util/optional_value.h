@@ -17,7 +17,7 @@
  */
 
 /**
- *  @optional_value.h
+ *  @file
  *  optional value
  */
 
@@ -44,7 +44,11 @@ namespace arbitrary_pair_ostream_support
     }
 }
 
-//simple optional value template
+/** Optional value template
+ *
+ * Maintains value of type T and flag if it has already been set (i. e. initialized or assigned).
+ */
+
 template<typename T>
 class Optional
 {
@@ -54,29 +58,58 @@ private:
     bool isset_;
     Type value_;
     template < typename Tc >
-    friend class Optional; // private members of Optional< X > are accessible in Optional< T >
+    friend class Optional; ///< convenient for copy-ctors and assignment operators because Optional<Tc> is not related to Optional<T>
 public:
-    // default ctor => value doesn't present
+
+    /** default c-tor
+     *
+     * No value is given so object is "not set".
+     * Calls default constructor of parameter type.
+     */
     Optional()
-        : isset_(false), // value doesn't present
-          value_()       // default value
+        : isset_(false),
+          value_()
     {}
 
-    // init ctor; conversion Tc -> T must be possible
+    /** "initialization operator"
+     *
+     * Value is given so object is "set".
+     * By using template
+     * - Tc doesn't have to be exactly T
+     * - but also all types that can be implicitly converted to T can be used as Tc
+     *
+     * Sanity of conversion is implicitly guaranteed by template instantiation mechanism.
+     */
     template < typename Tc >
     Optional(const Tc &_value)
-        : isset_(true),  // value present
-          value_(_value) // conversion Tc -> T exists
+        : isset_(true),
+          value_(_value)
     {}
 
-    // copy ctor; an Optional can be constructed from another Optional of a different but convertible type
+    /** generalized copy c-tor
+     *
+     * Object is "set" if and only if the initialization object is "set".
+     * By using template
+     * - Optional<Tc> doesn't have to be exactly Optional<T>
+     * - but all types that can be implicitly converted to T can be used as Tc
+     *
+     * Sanity of conversion is implicitly guaranteed by template instantiation mechanism.
+     */
     template < typename Tc >
     Optional(const Optional< Tc > &_rhs)
         : isset_(_rhs.isset_),
           value_(_rhs.value_)
     {}
 
-    // assignment; an Optional can be assigned value of a different but convertible type
+    /** "setter"
+     *
+     * Value is given so object is "set".
+     * By using template
+     * - Tc doesn't have to be exactly T
+     * - but also all types that can be implicitly converted to T can be used as Tc
+     *
+     * Sanity of conversion is implicitly guaranteed by template instantiation mechanism.
+     */
     template < typename Tc >
     Optional& operator=(const Tc &_value)
     {
@@ -85,7 +118,15 @@ public:
         return *this;
     }
 
-    // assignment; an Optional can be assigned another Optional of a different but convertible type
+    /** generalized assignment operator
+     *
+     * Object is "set" if and only if the assigned object is "set".
+     * By using template
+     * - Optional<Tc> doesn't have to be exactly Optional<T>
+     * - but all types that can be implicitly converted to T can be used as Tc
+     *
+     * Sanity of conversion is implicitly guaranteed by template instantiation mechanism.
+     */
     template < typename Tc >
     Optional& operator=(const Optional< Tc > &_rhs)
     {
@@ -94,11 +135,18 @@ public:
         return *this;
     }
 
+    /**
+     * @returns flag whether object has already been set
+     */
     bool isset() const
     {
         return isset_;
     }
 
+    /**
+     * @returns "normal" value of the object
+     * @throws std::logic_error in case object has not been set
+     */
     T get_value() const
     {
         if (!isset())
@@ -109,17 +157,26 @@ public:
         return value_;
     }
 
+    /**
+     * @returns "normal" value of object and in case it has not been set it returns default value of type T (defined by it's default constructor)
+     */
     T get_value_or_default() const
     {
         return value_;
     }
 
+    /**
+     * overloaded printing to ostream
+     */
     friend std::ostream& operator<<(std::ostream& os, const Optional<T>& ov)
     {
         using namespace arbitrary_pair_ostream_support;
         return os << ov.get_value();
     }
 
+    /**
+     * serialization (conversion to string) of object
+     */
     std::string print_quoted() const
     {
         std::stringstream ss;
@@ -129,7 +186,14 @@ public:
 
 };
 
-// comparison of equality
+/**
+ * comparison operator
+ *
+ * Optional<T> == Optional<T> overload
+ *
+ * Intentionaly prohibiting Optional<X> == Optional<Y> even for implicitly convertible types.
+ * Guaranteed by the fact that template instantiation enforces exact type match and precedes overload resolution.
+ */
 template < typename T >
 bool operator==(const Optional< T > &_a, const Optional< T > &_b)
 {
@@ -137,31 +201,70 @@ bool operator==(const Optional< T > &_a, const Optional< T > &_b)
            (!_a.isset() && !_b.isset());
 }
 
+/**
+ * comparison operator
+ *
+ * Optional<T> == T overload
+ *
+ * Intentionaly prohibiting Optional<X> == Y even for implicitly convertible types.
+ * Guaranteed by the fact that template instantiation enforces exact type match and precedes overload resolution.
+ */
 template < typename T >
 bool operator==(const Optional< T > &_a, const T &_b)
 {
     return _a.isset() && (_a.get_value() == _b);
 }
 
+/**
+ * comparison operator
+ *
+ * T == Optional<T> overload
+ *
+ * Intentionaly prohibiting X == Optional<Y> even for implicitly convertible types.
+ * Guaranteed by the fact that template instantiation enforces exact type match and precedes overload resolution.
+ */
 template < typename T >
 bool operator==(const T &_a, const Optional< T > &_b)
 {
     return _b.isset() && (_a == _b.get_value());
 }
 
-// comparison of inequality
+/**
+ * comparison operator
+ *
+ * Optional<T> != Optional<T> overload
+ *
+ * Intentionaly prohibiting Optional<X> != Optional<Y> even for implicitly convertible types.
+ * Guaranteed by the fact that template instantiation enforces exact type match and precedes overload resolution.
+ */
 template < typename T >
 bool operator!=(const Optional< T > &_a, const Optional< T > &_b)
 {
     return !(_a == _b);
 }
 
+/**
+ * comparison operator
+ *
+ * Optional<T> != T overload
+ *
+ * Intentionaly prohibiting Optional<X> != Y even for implicitly convertible types.
+ * Guaranteed by the fact that template instantiation enforces exact type match and precedes overload resolution.
+ */
 template < typename T >
 bool operator!=(const Optional< T > &_a, const T &_b)
 {
     return !(_a == _b);
 }
 
+/**
+ * comparison operator
+ *
+ * T != Optional<T> overload
+ *
+ * Intentionaly prohibiting X != Optional<Y> even for implicitly convertible types.
+ * Guaranteed by the fact that template instantiation enforces exact type match and precedes overload resolution.
+ */
 template < typename T >
 bool operator!=(const T &_a, const Optional< T > &_b)
 {
