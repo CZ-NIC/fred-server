@@ -357,22 +357,22 @@ public:
       " JOIN public_request pr ON (pra.id=pr.id) "
       " JOIN public_request_objects_map prom ON (prom.request_id=pr.id) "
       " JOIN enum_public_request_type eprt ON eprt.id = pr.request_type "
-      " WHERE object_id = $1::bigint "
-      " AND pr.status = 1 AND ";//answered requests
+      " WHERE object_id = $1::bigint "//_contact_id
+      " AND pr.status = $2::integer AND ";// 1 - answered requests , 0 - new requests
 
       Util::HeadSeparator prt_separator("("," OR ");
       Database::QueryParams params;
-      params.push_back(_contact_id);
 
       for(std::vector<Type>::const_iterator cit = _request_type_list.begin(); cit != _request_type_list.end(); ++cit)
       {
           lock_public_request_lock(*cit, _contact_id);
           params.push_back(*cit);
-          sql << prt_separator.get() << "eprt.name = $" << params.size() << "::text";
+          sql << prt_separator.get() << "eprt.name = $" << (params.size() + 2) << "::text";
       }
       sql << ")";
 
-      return conn.exec_params(sql.str(), params).size() > 0;
+      return (conn.exec_params(sql.str(), Util::vector_of<QueryParam>(_contact_id)(1)(params)).size() > 0)//found answered request
+          && (conn.exec_params(sql.str(), Util::vector_of<QueryParam>(_contact_id)(0)(params)).size() == 0); //and no new request
   }
 
   virtual std::string getPublicRequestAuthIdentification(
