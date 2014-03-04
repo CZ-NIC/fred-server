@@ -200,6 +200,7 @@ struct keyset_fixture
         Fred::OperationContext ctx;
         Fred::CreateKeyset(test_keyset_handle, test_registrar_handle)
         .set_tech_contacts(Util::vector_of<std::string>(admin_contact_fixture::test_contact_handle))
+        .set_dns_keys(Util::vector_of<Fred::DnsKey> (Fred::DnsKey(257, 3, 5, "AwEAAddt2AkLfYGKgiEZB5SmIF8EvrjxNMH6HtxWEA4RJ9Ao6LCWheg8")))
                 .exec(ctx);
 
         Fred::InfoKeysetOutput keyset_info = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
@@ -298,14 +299,10 @@ BOOST_FIXTURE_TEST_CASE(get_registrar_detail_not_mojeid_user, get_registrar_deta
     }
 }
 
-struct get_registrar_detail_no_registrar_fixture
-: mojeid_user_contact_fixture
-{};
-
 /**
  * test getRegistrarDetail no registrar
 */
-BOOST_FIXTURE_TEST_CASE(get_registrar_detail_no_registrar, get_registrar_detail_no_registrar_fixture )
+BOOST_FIXTURE_TEST_CASE(get_registrar_detail_no_registrar, mojeid_user_contact_fixture )
 {
     try
     {
@@ -352,14 +349,10 @@ struct test_contact_fixture
     {}
 };
 
-struct get_my_contact_fixture
-: mojeid_user_contact_fixture
-{};
-
 /**
  * test call getContactDetail with private data
 */
-BOOST_FIXTURE_TEST_CASE(get_my_contact_detail, get_my_contact_fixture )
+BOOST_FIXTURE_TEST_CASE(get_my_contact_detail, mojeid_user_contact_fixture )
 {
     Fred::OperationContext ctx;
     Fred::InfoContactOutput my_contact_info = Fred::InfoContactByHandle(user_contact_handle).exec(ctx);
@@ -474,14 +467,10 @@ BOOST_FIXTURE_TEST_CASE(get_contact_detail, get_contact_fixture )
     BOOST_MESSAGE(cd.state_codes);
 }
 
-struct get_contact_detail_no_user_fixture
-: test_contact_fixture
-{};
-
 /**
  * test getContactDetail no user contact
 */
-BOOST_FIXTURE_TEST_CASE(get_contact_detail_no_user, get_contact_detail_no_user_fixture )
+BOOST_FIXTURE_TEST_CASE(get_contact_detail_no_user, test_contact_fixture )
 {
     try
     {
@@ -525,20 +514,16 @@ BOOST_FIXTURE_TEST_CASE(get_contact_detail_not_mojeid_user, get_contact_detail_n
     }
 }
 
-struct get_contact_detail_no_test_contact_fixture
-: mojeid_user_contact_fixture
-{};
-
 /**
- * test getContactDetail not mojeid user contact
+ * test getContactDetail no contact
  */
-BOOST_FIXTURE_TEST_CASE(get_contact_detail_no_test_contact, get_contact_detail_no_test_contact_fixture )
+BOOST_FIXTURE_TEST_CASE(get_contact_detail_no_test_contact, mojeid_user_contact_fixture )
 {
     try
     {
         Fred::OperationContext ctx;
         Registry::DomainBrowserImpl::DomainBrowser impl(server_name);
-        Registry::DomainBrowserImpl::ContactDetail cd = impl.getContactDetail(user_contact_info.info_contact_data.id,0, "CS");
+        Registry::DomainBrowserImpl::ContactDetail d = impl.getContactDetail(user_contact_info.info_contact_data.id,0, "CS");
         BOOST_ERROR("unreported missing test contact");
     }
     catch( const Registry::DomainBrowserImpl::ObjectNotExists& ex)
@@ -693,6 +678,25 @@ BOOST_FIXTURE_TEST_CASE(get_my_domain_detail, get_my_domain_fixture )
     BOOST_CHECK(d.is_owner == true);
 }
 
+/**
+ * test getDomainDetail no domain
+ */
+BOOST_FIXTURE_TEST_CASE(get_domain_detail_no_domain, mojeid_user_contact_fixture )
+{
+    try
+    {
+        Fred::OperationContext ctx;
+        Registry::DomainBrowserImpl::DomainBrowser impl(server_name);
+        Registry::DomainBrowserImpl::DomainDetail d = impl.getDomainDetail(user_contact_info.info_contact_data.id,0, "CS");
+        BOOST_ERROR("unreported missing test domain");
+    }
+    catch( const Registry::DomainBrowserImpl::ObjectNotExists& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
 BOOST_AUTO_TEST_SUITE_END();//getDomainDetail
 
 BOOST_AUTO_TEST_SUITE(getNssetDetail)
@@ -757,6 +761,26 @@ BOOST_FIXTURE_TEST_CASE(get_nsset_detail, get_nsset_fixture )
 
 }
 
+/**
+ * test getNssetDetail no nsset
+ */
+BOOST_FIXTURE_TEST_CASE(get_nsset_detail_no_nsset, mojeid_user_contact_fixture )
+{
+    try
+    {
+        Fred::OperationContext ctx;
+        Registry::DomainBrowserImpl::DomainBrowser impl(server_name);
+        Registry::DomainBrowserImpl::NssetDetail d = impl.getNssetDetail(user_contact_info.info_contact_data.id,0, "CS");
+        BOOST_ERROR("unreported missing test nsset");
+    }
+    catch( const Registry::DomainBrowserImpl::ObjectNotExists& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
+
 BOOST_AUTO_TEST_SUITE_END();//getNssetDetail
 
 BOOST_AUTO_TEST_SUITE(getKeysetDetail)
@@ -806,18 +830,39 @@ BOOST_FIXTURE_TEST_CASE(get_keyset_detail, get_keyset_fixture )
         ? admin_contact_info.info_contact_data.name.get_value_or_default()
         : admin_contact_info.info_contact_data.organization.get_value_or_default()));
     BOOST_CHECK(k.admins.size() == 1);
-/*
-    BOOST_CHECK(n.hosts.at(0).fqdn.compare("a.ns.nic.cz") == 0);
-    BOOST_CHECK(n.hosts.at(0).inet_addr.compare("127.0.0.3, 127.1.1.3") == 0);
-    BOOST_CHECK(n.hosts.at(1).fqdn.compare("b.ns.nic.cz") == 0);
-    BOOST_CHECK(n.hosts.at(1).inet_addr.compare("127.0.0.4, 127.1.1.4") == 0);
-*/
+
+    BOOST_CHECK(k.dnskeys.size() == 1);
+    BOOST_CHECK(k.dnskeys.at(0).flags == 257);
+    BOOST_CHECK(k.dnskeys.at(0).protocol == 3);
+    BOOST_CHECK(k.dnskeys.at(0).alg == 5);
+    BOOST_CHECK(k.dnskeys.at(0).key.compare("AwEAAddt2AkLfYGKgiEZB5SmIF8EvrjxNMH6HtxWEA4RJ9Ao6LCWheg8") == 0);
+
     BOOST_CHECK(k.states.compare("Není povoleno smazání") == 0);
     BOOST_CHECK(k.state_codes.compare(Fred::ObjectState::SERVER_DELETE_PROHIBITED) == 0);
 
     BOOST_CHECK(k.is_owner == false);
 
 }
+
+/**
+ * test getKeysetDetail no keyset
+ */
+BOOST_FIXTURE_TEST_CASE(get_keyset_detail_no_keyset, mojeid_user_contact_fixture )
+{
+    try
+    {
+        Fred::OperationContext ctx;
+        Registry::DomainBrowserImpl::DomainBrowser impl(server_name);
+        Registry::DomainBrowserImpl::KeysetDetail d = impl.getKeysetDetail(user_contact_info.info_contact_data.id,0, "CS");
+        BOOST_ERROR("unreported missing test keyset");
+    }
+    catch( const Registry::DomainBrowserImpl::ObjectNotExists& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
 
 BOOST_AUTO_TEST_SUITE_END();//getKeysetDetail
 
