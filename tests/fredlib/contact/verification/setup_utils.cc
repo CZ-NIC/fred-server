@@ -758,15 +758,14 @@ autoclean_contact_verification_db::autoclean_contact_verification_db() {
     test_statuses.push_back(setup_test_status(Fred::ContactTestStatus::MANUAL));
     test_statuses.push_back(setup_test_status(Fred::ContactTestStatus::ERROR));
 
+    std::vector<std::string> check_status_handles = Fred::ContactCheckStatus::get_all();
     std::vector<setup_check_status> check_statuses;
-    check_statuses.push_back(setup_check_status(Fred::ContactCheckStatus::ENQUEUED));
-    check_statuses.push_back(setup_check_status(Fred::ContactCheckStatus::RUNNING));
-    check_statuses.push_back(setup_check_status(Fred::ContactCheckStatus::AUTO_OK));
-    check_statuses.push_back(setup_check_status(Fred::ContactCheckStatus::AUTO_FAIL));
-    check_statuses.push_back(setup_check_status(Fred::ContactCheckStatus::AUTO_TO_BE_DECIDED));
-    check_statuses.push_back(setup_check_status(Fred::ContactCheckStatus::OK));
-    check_statuses.push_back(setup_check_status(Fred::ContactCheckStatus::FAIL));
-    check_statuses.push_back(setup_check_status(Fred::ContactCheckStatus::INVALIDATED));
+    for(std::vector<std::string>::const_iterator it = check_status_handles.begin();
+        it != check_status_handles.end();
+        ++it
+    ) {
+        check_statuses.push_back(setup_check_status(*it));
+    }
 
     setup_empty_testsuite testsuite_automatic(Fred::TestsuiteHandle::AUTOMATIC);
     setup_empty_testsuite testsuite_manual(Fred::TestsuiteHandle::MANUAL);

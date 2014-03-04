@@ -5,6 +5,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string/join.hpp>
 #include <boost/algorithm/string/case_conv.hpp>
+#include <boost/assign/list_of.hpp>
 
 #include "src/admin/contact/verification/fill_check_queue.h"
 #include "src/fredlib/opcontext.h"
@@ -266,8 +267,12 @@ namespace ContactVerificationQueue {
             "SELECT COUNT(c_ch.id) as count_ "
             "   FROM contact_check AS c_ch "
             "       JOIN enum_contact_check_status AS enum_status ON c_ch.enum_contact_check_status_id = enum_status.id "
-            "   WHERE enum_status.handle = $1::varchar",
-            Database::query_param_list(Fred::ContactCheckStatus::ENQUEUED)
+            "   WHERE enum_status.handle = ANY($1::varchar[]) ",
+            Database::query_param_list(
+                std::string("{")
+                + boost::join(Fred::ContactCheckStatus::get_not_yet_resolved(), ",")
+                + "}"
+            )
         );
 
         if(queue_count_res.size() != 1) {
