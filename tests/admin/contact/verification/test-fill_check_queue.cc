@@ -48,30 +48,99 @@ typedef std::vector< boost::tuple<std::string, unsigned long long, unsigned long
 typedef std::map<std::string, boost::shared_ptr<Admin::ContactVerification::Test> > T_testimpl_map;
 
 void clean_queue() {
+    std::string status_array =
+        std::string("{")
+        + boost::join(Fred::ContactCheckStatus::get_not_yet_resolved(), ",")
+        + "}";
+
     Fred::OperationContext ctx;
     ctx.get_conn().exec_params(
-        "DELETE FROM contact_test_result "
-        "   WHERE enum_contact_test_status_id = "
-        "       (SELECT id FROM enum_contact_test_status WHERE handle=$1::varchar);",
-        Database::query_param_list(Test::ENQUEUED) );
+        "DELETE "
+        "   FROM contact_test_result_history AS test_history "
+        "   WHERE "
+        "       EXISTS ("
+        "           SELECT * "
+        "               FROM "
+        "                   contact_test_result AS test_ "
+        "                   JOIN contact_check AS c_ch "
+        "                       ON test_.contact_check_id = c_ch.id "
+        "                   JOIN enum_contact_check_status AS enum_status "
+        "                       ON c_ch.enum_contact_check_status_id = enum_status.id "
+        "               WHERE test_history.contact_test_result_id = test_.id "
+        "                   AND enum_status.handle = ANY($1::varchar[]) "
+        "       )",
+        Database::query_param_list
+            (status_array)
+        );
 
     ctx.get_conn().exec_params(
-        "DELETE FROM contact_check "
-        "   WHERE enum_contact_check_status_id = "
-        "       (SELECT id FROM enum_contact_check_status WHERE handle=$1::varchar);",
-        Database::query_param_list(Check::ENQUEUED) );
+        "DELETE "
+        "   FROM contact_test_result AS test_ "
+        "   WHERE "
+        "       EXISTS ("
+        "           SELECT * "
+        "               FROM "
+        "                   contact_check AS c_ch "
+        "                   JOIN enum_contact_check_status AS enum_status "
+        "                       ON c_ch.enum_contact_check_status_id = enum_status.id "
+        "               WHERE test_.contact_check_id = c_ch.id "
+        "                   AND enum_status.handle = ANY($1::varchar[]) "
+        "       )",
+        Database::query_param_list
+            (status_array)
+        );
+
+    ctx.get_conn().exec_params(
+        "DELETE "
+        "   FROM contact_check_history AS check_history "
+        "   WHERE "
+        "       EXISTS ("
+        "           SELECT * "
+        "               FROM "
+        "                   contact_check AS c_ch "
+        "                   JOIN enum_contact_check_status AS enum_status "
+        "                       ON c_ch.enum_contact_check_status_id = enum_status.id "
+        "               WHERE check_history.contact_check_id = c_ch.id "
+        "                   AND enum_status.handle = ANY($1::varchar[]) "
+        "       )",
+        Database::query_param_list
+            (status_array)
+        );
+
+    ctx.get_conn().exec_params(
+        "DELETE FROM contact_check AS c_ch "
+        "   WHERE "
+        "       EXISTS ("
+        "           SELECT * "
+        "               FROM "
+        "                   enum_contact_check_status AS enum_status "
+        "               WHERE c_ch.enum_contact_check_status_id = enum_status.id "
+        "                   AND enum_status.handle = ANY($1::varchar[]) "
+        "       )",
+        Database::query_param_list
+            (status_array)
+        );
 
     ctx.commit_transaction();
 }
 
 int get_queue_length() {
+    std::string status_array =
+        std::string("{")
+        + boost::join(Fred::ContactCheckStatus::get_not_yet_resolved(), ",")
+        + "}";
+
     Fred::OperationContext ctx;
     Database::Result res = ctx.get_conn().exec_params(
-        "SELECT COUNT(id) AS count_ "
-        "   FROM contact_check "
-        "   WHERE enum_contact_check_status_id = "
-        "       (SELECT id FROM enum_contact_check_status WHERE handle=$1::varchar);",
-        Database::query_param_list(Check::ENQUEUED) );
+        "SELECT COUNT(c_ch.id) AS count_ "
+        "   FROM contact_check AS c_ch "
+        "       JOIN enum_contact_check_status AS enum_status "
+        "           ON c_ch.enum_contact_check_status_id = enum_status.id "
+        "   WHERE "
+        "       enum_status.handle = ANY($1::varchar[])",
+        Database::query_param_list
+            (status_array)
+    );
 
     if(res.size() != 1) {
         throw std::runtime_error("invalid query result");
@@ -145,6 +214,13 @@ struct setup_already_checked_contacts {
             started_check_handles.push_back(
                 Admin::run_all_enqueued_checks(dummy_testsuite).front()
             );
+            Fred::OperationContext ctx;
+            Fred::UpdateContactCheck(
+                *started_check_handles.rbegin(),
+                Fred::ContactCheckStatus::OK
+            )
+            .exec(ctx);
+            ctx.commit_transaction();
         }
 
         BOOST_CHECK_EQUAL( started_check_handles.size(), count_);
@@ -185,7 +261,7 @@ void create_check_for_all_unchecked_contacts(const std::string& testsuite_handle
         Fred::OperationContext ctx2;
         Fred::UpdateContactCheck(
             handle,
-            Fred::ContactCheckStatus::AUTO_OK
+            Fred::ContactCheckStatus::OK
         )
         .exec(ctx2);
         ctx2.commit_transaction();
@@ -320,11 +396,14 @@ BOOST_AUTO_TEST_CASE(test_Enqueueing_never_checked_contacts)
     create_dummy_automatic_testsuite();
 
     create_check_for_all_unchecked_contacts(Fred::TestsuiteHandle::AUTOMATIC);
-    setup_already_checked_contacts(50);
+
+    const unsigned already_checked_count = 50;
+
+    setup_already_checked_contacts tmp(already_checked_count);
 
     // make set of new, never checked contacts
     std::vector<unsigned long long> never_checked_contacts;
-    for(int i=0; i<50; ++i) {
+    for(int i=0; i<100; ++i) {
         never_checked_contacts.push_back(setup_contact().contact_id_);
     }
 
