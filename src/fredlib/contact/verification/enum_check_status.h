@@ -24,6 +24,8 @@
 #ifndef CONTACT_VERIFICATION_CHECK_STATUS_35892232386_
 #define CONTACT_VERIFICATION_CHECK_STATUS_35892232386_
 
+#include <boost/assign/list_of.hpp>
+
 namespace Fred
 {
     /**
@@ -40,6 +42,38 @@ namespace Fred
         const std::string OK                    = "ok";
         const std::string FAIL                  = "fail";
         const std::string INVALIDATED           = "invalidated";
+
+        /**
+         * Check statuses sorted into semantical groups
+         */
+
+        inline std::vector<std::string> get_resolution_awaiting() {
+            return boost::assign::list_of
+                (Fred::ContactCheckStatus::AUTO_OK)
+                (Fred::ContactCheckStatus::AUTO_FAIL)
+                (Fred::ContactCheckStatus::AUTO_TO_BE_DECIDED);
+        }
+
+        inline std::vector<std::string> get_not_yet_resolved() {
+            return boost::assign::list_of
+                (Fred::ContactCheckStatus::ENQUEUED)
+                (Fred::ContactCheckStatus::RUNNING)
+                (Fred::ContactCheckStatus::AUTO_OK)
+                (Fred::ContactCheckStatus::AUTO_FAIL)
+                (Fred::ContactCheckStatus::AUTO_TO_BE_DECIDED);
+        }
+
+        inline std::vector<std::string> get_all() {
+            return boost::assign::list_of
+                (Fred::ContactCheckStatus::ENQUEUED)
+                (Fred::ContactCheckStatus::RUNNING)
+                (Fred::ContactCheckStatus::AUTO_OK)
+                (Fred::ContactCheckStatus::AUTO_FAIL)
+                (Fred::ContactCheckStatus::AUTO_TO_BE_DECIDED)
+                (Fred::ContactCheckStatus::OK)
+                (Fred::ContactCheckStatus::FAIL)
+                (Fred::ContactCheckStatus::INVALIDATED);
+        }
     }
 }
 #endif // #include guard end
