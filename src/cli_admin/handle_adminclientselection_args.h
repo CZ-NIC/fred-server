@@ -2449,31 +2449,31 @@ class HandleContactVerificationFillQueueArgsGrp : public HandleCommandGrpArgs {
             boost::shared_ptr<options_description> cfg_opts( new options_description(name()) );
             cfg_opts->add_options()(name(), "fill contact checks queue");
 
-            cfg_opts->add_options()("max_queue_length",
+            cfg_opts->add_options()("max_active_checks",
                 boost::program_options::value<Checked::ulong>()
                     ->default_value(100)
                     ->notifier(save_arg<unsigned>(params.max_queue_lenght)),
-                    "maximum length of queue");
+                    "maximum number of all active checks");
 
             cfg_opts->add_options()("testsuite_handle",
                 boost::program_options::value<Checked::string>()
                     ->notifier(save_arg<std::string>(params.testsuite_handle)),
-                    "testsuite handle");
+                    "testsuite handle to use for new checks");
 
             cfg_opts->add_options()("country_code",
                 boost::program_options::value<Checked::string>()
                     ->notifier(save_arg<std::string>(params.country_code)),
-                    "country code");
+                    "enqueue only contacts with given country code");
 
             cfg_opts->add_options()("contact_role",
                 boost::program_options::value<std::vector<std::string> >()->multitoken()
                     ->notifier(save_arg<std::vector<std::string> >(params.contact_roles)),
-                    "contact role");
+                    "enqueue only contacts with given contact role");
 
             cfg_opts->add_options()("contact_state",
                 boost::program_options::value<std::vector<std::string> >()->multitoken()
                     ->notifier(save_arg<std::vector<std::string> >(params.contact_states)),
-                    "contact state");
+                    "enqueue only contacts with given contact state");
 
             return cfg_opts;
         }
