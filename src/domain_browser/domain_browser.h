@@ -128,8 +128,8 @@ namespace Registry
             Nullable<std::string> ssntype;/**< type of identification from enumssntype table */
             Nullable<std::string> ssn;/**< unambiguous identification number e.g. social security number, identity card number, date of birth */
             ContactDiscloseFlags disclose_flags;/**< contact fields disclose flags*/
-            std::string states;/**< contact states descriptions in given language from db. table enum_object_states_desc delimited by pipe '|' character */
-            std::string state_codes;/**< contact states names from db. table enum_object_states delimited by coma ',' character */
+            std::string states;/**< object states descriptions in given language from db. table enum_object_states_desc delimited by pipe '|' character */
+            std::string state_codes;/**< object states names from db. table enum_object_states delimited by coma ',' character */
             bool is_owner;/**< whether user contact is the same as requested contact */
 
             ContactDetail()
@@ -157,8 +157,8 @@ namespace Registry
             RegistryReference nsset; /**< domain nsset */
             RegistryReference keyset;/**< domain keyset */
             std::vector<RegistryReference> admins; /**< domain admin contacts */
-            std::string states;/**< contact states descriptions in given language from db. table enum_object_states_desc delimited by pipe '|' character */
-            std::string state_codes;/**< contact states names from db. table enum_object_states delimited by coma ',' character */
+            std::string states;/**< object states descriptions in given language from db. table enum_object_states_desc delimited by pipe '|' character */
+            std::string state_codes;/**< object states names from db. table enum_object_states delimited by coma ',' character */
             bool is_owner;/**< whether user contact is the same as requested domain owner */
 
             DomainDetail()
@@ -185,23 +185,62 @@ namespace Registry
             unsigned long long id;/**< database id of the nsset */
             std::string handle;/**< nsset handle */
             std::string roid;/**< registry object identifier of nsset */
-            RegistryReference sponsoring_registrar;/**< registrar administering the contact */
-            boost::posix_time::ptime creation_time;/**< creation time of the contact in set local zone*/
-            Nullable<boost::posix_time::ptime> transfer_time; /**< last transfer time of the contact in set local zone*/
-            Nullable<boost::posix_time::ptime> update_time; /**< last update time of the contact in set local zone*/
+            RegistryReference sponsoring_registrar;/**< registrar administering the nsset */
+            boost::posix_time::ptime creation_time;/**< creation time of the nsset in set local zone*/
+            Nullable<boost::posix_time::ptime> transfer_time; /**< last transfer time of the nsset in set local zone*/
+            Nullable<boost::posix_time::ptime> update_time; /**< last update time of the nsset in set local zone*/
             RegistryReference create_registrar;/**< registrar that created the nsset */
             RegistryReference update_registrar;/**< registrar that updated the nsset */
             std::string authinfopw;/**< password for transfer */
             std::vector<RegistryReference> admins; /**< nsset admin contacts */
             std::vector<DNSHost> hosts; /**< nsset DNS hosts */
-            std::string states;/**< contact states descriptions in given language from db. table enum_object_states_desc delimited by pipe '|' character */
-            std::string state_codes;/**< contact states names from db. table enum_object_states delimited by coma ',' character */
+            std::string states;/**< object states descriptions in given language from db. table enum_object_states_desc delimited by pipe '|' character */
+            std::string state_codes;/**< object states names from db. table enum_object_states delimited by coma ',' character */
             short report_level; /**< nsset level of technical checks */
-            bool is_owner;/**< user contact is never owner of the nsset*/
+            bool is_owner;/**< user contact is owner of the nsset if it's also admin contact*/
 
             NssetDetail()
             : id(0)
             , report_level(0)
+            , is_owner(false)
+            {}
+        };
+
+        /**
+         * DNSKey data
+         */
+        struct DNSKey
+        {
+            unsigned short flags;/**< the flags field */
+            unsigned short protocol;/**< the protocol field, only valid value is 3*/
+            unsigned short alg;/**< the algorithm field identifies the public key's cryptographic algorithm, values can be found in RFC 4034 Apendix A.1. */
+            std::string key;/**< the public key field in base64 encoding */
+        };
+
+        /**
+         * Keyset detail data
+         * Returned by @ref getKeysetDetail.
+         */
+        struct KeysetDetail
+        {
+            unsigned long long id;/**< database id of the keyset */
+            std::string handle;/**< keyset handle */
+            std::string roid;/**< registry object identifier of keyset */
+            RegistryReference sponsoring_registrar;/**< registrar administering the keyset */
+            boost::posix_time::ptime creation_time;/**< creation time of the keyset in set local zone*/
+            Nullable<boost::posix_time::ptime> transfer_time; /**< last transfer time of the keyset in set local zone*/
+            Nullable<boost::posix_time::ptime> update_time; /**< last update time of the keyset in set local zone*/
+            RegistryReference create_registrar;/**< registrar that created the keyset */
+            RegistryReference update_registrar;/**< registrar that updated the keyset */
+            std::string authinfopw;/**< password for transfer */
+            std::vector<RegistryReference> admins; /**< keyset admin contacts */
+            std::vector<DNSKey> dnskeys; /**< DNS keys */
+            std::string states;/**< object states descriptions in given language from db. table enum_object_states_desc delimited by pipe '|' character */
+            std::string state_codes;/**< object states names from db. table enum_object_states delimited by coma ',' character */
+            bool is_owner;/**< user contact is owner of the keyset if it's also admin contact*/
+
+            KeysetDetail()
+            : id(0)
             , is_owner(false)
             {}
         };
@@ -368,6 +407,18 @@ namespace Registry
             NssetDetail getNssetDetail(unsigned long long user_contact_id,
                     unsigned long long nsset_id,
                     const std::string& lang);
+
+            /**
+             * Returns keyset detail.
+             * @param user_contact_id contains database id of the user contact
+             * @param keyset_id contains database id of the keyset
+             * @param lang contains language for state description "EN" or "CS"
+             * @return keyset detail data.
+             */
+            KeysetDetail getKeysetDetail(unsigned long long user_contact_id,
+                    unsigned long long keyset_id,
+                    const std::string& lang);
+
 
             std::string get_server_name();
         };//class DomainBrowser

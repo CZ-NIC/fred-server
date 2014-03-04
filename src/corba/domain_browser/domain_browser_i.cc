@@ -537,20 +537,79 @@ namespace Registry
         {
             try
             {
+                Registry::DomainBrowserImpl::KeysetDetail detail_impl
+                    = pimpl_->getKeysetDetail(contact.id, keyset.id, lang);
+
                 KeysetDetail_var keyset_detail = new KeysetDetail;
+
+                keyset_detail->id = detail_impl.id;
+                keyset_detail->handle = CORBA::string_dup(detail_impl.handle.c_str());
+                keyset_detail->roid = CORBA::string_dup(detail_impl.roid.c_str());
+                keyset_detail->registrar.id = detail_impl.sponsoring_registrar.id;
+                keyset_detail->registrar.handle = CORBA::string_dup(detail_impl.sponsoring_registrar.handle.c_str());
+                keyset_detail->registrar.name = CORBA::string_dup(detail_impl.sponsoring_registrar.name.c_str());
+                keyset_detail->create_date = CORBA::string_dup(boost::gregorian::to_iso_extended_string(detail_impl.creation_time.date()).c_str());
+                keyset_detail->transfer_date = CORBA::string_dup(detail_impl.transfer_time.isnull()
+                    ? "" : boost::gregorian::to_iso_extended_string(detail_impl.transfer_time.get_value().date()).c_str());
+                keyset_detail->update_date = CORBA::string_dup(detail_impl.update_time.isnull()
+                    ? "" : boost::gregorian::to_iso_extended_string(detail_impl.update_time.get_value().date()).c_str());
+
+                keyset_detail->create_registrar.id = detail_impl.create_registrar.id;
+                keyset_detail->create_registrar.handle = CORBA::string_dup(detail_impl.create_registrar.handle.c_str());
+                keyset_detail->create_registrar.name = CORBA::string_dup(detail_impl.create_registrar.name.c_str());
+
+                keyset_detail->update_registrar.id = detail_impl.update_registrar.id;
+                keyset_detail->update_registrar.handle = CORBA::string_dup(detail_impl.update_registrar.handle.c_str());
+                keyset_detail->update_registrar.name = CORBA::string_dup(detail_impl.update_registrar.name.c_str());
+
+                keyset_detail->auth_info = CORBA::string_dup(detail_impl.authinfopw.c_str());
+
+                keyset_detail->admins.length(detail_impl.admins.size());
+                for(std::size_t i = 0; i < detail_impl.admins.size(); ++i)
+                {
+                    keyset_detail->admins[i].id = detail_impl.admins[i].id;
+                    keyset_detail->admins[i].handle = CORBA::string_dup(detail_impl.admins[i].handle.c_str());
+                    keyset_detail->admins[i].name = CORBA::string_dup(detail_impl.admins[i].name.c_str());
+                }
+
+                keyset_detail->dnskeys.length(detail_impl.dnskeys.size());
+                for(std::size_t i = 0; i < detail_impl.dnskeys.size(); ++i)
+                {
+                    keyset_detail->dnskeys[i].flags = detail_impl.dnskeys[i].flags;
+                    keyset_detail->dnskeys[i].protocol = detail_impl.dnskeys[i].protocol;
+                    keyset_detail->dnskeys[i].alg = detail_impl.dnskeys[i].alg;
+                    keyset_detail->dnskeys[i].key = CORBA::string_dup(detail_impl.dnskeys[i].key.c_str());
+                }
+
+                keyset_detail->states = CORBA::string_dup(detail_impl.states.c_str());
+                keyset_detail->state_codes = CORBA::string_dup(detail_impl.state_codes.c_str());
+
+                if(detail_impl.is_owner)
+                {
+                    auth_result = PRIVATE_DATA;
+                }
+                else
+                {
+                    auth_result = PUBLIC_DATA;
+                }
+
                 return keyset_detail._retn();
             }//try
-            catch (std::exception &_ex)
+            catch (const Registry::DomainBrowserImpl::ObjectNotExists& )
             {
                 throw Registry::DomainBrowser::OBJECT_NOT_EXISTS();
             }
-            catch (std::exception &_ex)
+            catch (const Registry::DomainBrowserImpl::UserNotExists& )
             {
                 throw Registry::DomainBrowser::USER_NOT_EXISTS();
             }
-            catch (std::exception &_ex)
+            catch (const boost::exception&)
             {
-                throw Registry::DomainBrowser::INCORRECT_USAGE();
+                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
+            }
+            catch (const std::exception&)
+            {
+                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
             }
             catch (...)
             {

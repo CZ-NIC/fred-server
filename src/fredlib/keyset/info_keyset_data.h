@@ -30,6 +30,7 @@
 
 #include "util/db/nullable.h"
 #include "util/printable.h"
+#include "src/fredlib/object/object_id_handle_pair.h"
 
 #include "keyset_dns_key.h"
 
@@ -56,7 +57,7 @@ namespace Fred
         Nullable<boost::posix_time::ptime> transfer_time; /**<last transfer time in local time zone viz @ref local_timestamp_pg_time_zone_name*/
         std::string authinfopw;/**< password for transfer */
         std::vector<DnsKey> dns_keys;/**< DNS keys */
-        std::vector<std::string> tech_contacts;/**< list of technical contact handles */
+        std::vector<ObjectIdHandlePair> tech_contacts;/**< list of technical contact handles */
 
         /**
         * Constructor of the keyset data structure.

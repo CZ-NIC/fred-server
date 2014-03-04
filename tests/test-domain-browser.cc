@@ -201,6 +201,13 @@ struct keyset_fixture
         Fred::CreateKeyset(test_keyset_handle, test_registrar_handle)
         .set_tech_contacts(Util::vector_of<std::string>(admin_contact_fixture::test_contact_handle))
                 .exec(ctx);
+
+        Fred::InfoKeysetOutput keyset_info = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
+
+        Fred::CreateObjectStateRequestId(keyset_info.info_keyset_data.id,
+            Util::set_of<std::string>(Fred::ObjectState::SERVER_DELETE_PROHIBITED)).exec(ctx);
+        Fred::PerformObjectStateRequest().set_object_id(keyset_info.info_keyset_data.id).exec(ctx);
+
         ctx.commit_transaction();//commit fixture
     }
     ~keyset_fixture()
@@ -690,7 +697,6 @@ BOOST_AUTO_TEST_SUITE_END();//getDomainDetail
 
 BOOST_AUTO_TEST_SUITE(getNssetDetail)
 
-
 struct get_nsset_fixture
 : mojeid_user_contact_fixture
   , nsset_fixture
@@ -751,7 +757,69 @@ BOOST_FIXTURE_TEST_CASE(get_nsset_detail, get_nsset_fixture )
 
 }
 
-
 BOOST_AUTO_TEST_SUITE_END();//getNssetDetail
+
+BOOST_AUTO_TEST_SUITE(getKeysetDetail)
+
+struct get_keyset_fixture
+: mojeid_user_contact_fixture
+  , keyset_fixture
+{};
+
+/**
+ * test call getKeysetDetail with private data
+*/
+BOOST_FIXTURE_TEST_CASE(get_keyset_detail, get_keyset_fixture )
+{
+    Fred::OperationContext ctx;
+    Fred::InfoKeysetOutput keyset_info = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
+    Fred::InfoRegistrarOutput sponsoring_registrar_info = Fred::InfoRegistrarByHandle(keyset_info.info_keyset_data.sponsoring_registrar_handle).exec(ctx);
+    Fred::InfoContactOutput admin_contact_info = Fred::InfoContactByHandle(admin_contact_fixture::test_contact_handle).exec(ctx);
+
+    Registry::DomainBrowserImpl::DomainBrowser impl(server_name);
+    Registry::DomainBrowserImpl::KeysetDetail k = impl.getKeysetDetail(user_contact_info.info_contact_data.id,
+            keyset_info.info_keyset_data.id, "CS");
+
+    BOOST_CHECK(k.id == keyset_info.info_keyset_data.id);
+    BOOST_CHECK(k.handle == keyset_info.info_keyset_data.handle);
+    BOOST_CHECK(k.roid == keyset_info.info_keyset_data.roid);
+    BOOST_CHECK(k.sponsoring_registrar.id == sponsoring_registrar_info.info_registrar_data.id);
+    BOOST_CHECK(k.sponsoring_registrar.handle == sponsoring_registrar_info.info_registrar_data.handle);
+    BOOST_CHECK(k.sponsoring_registrar.name == sponsoring_registrar_info.info_registrar_data.name.get_value_or_default());
+    BOOST_CHECK(k.creation_time == keyset_info.info_keyset_data.creation_time);
+    BOOST_CHECK(k.transfer_time.get_value_or_default() == keyset_info.info_keyset_data.transfer_time.get_value_or_default());
+    BOOST_CHECK(k.update_time.get_value_or_default() == keyset_info.info_keyset_data.update_time.get_value_or_default());
+
+    BOOST_CHECK(k.create_registrar.id == sponsoring_registrar_info.info_registrar_data.id);
+    BOOST_CHECK(k.create_registrar.handle == sponsoring_registrar_info.info_registrar_data.handle);
+    BOOST_CHECK(k.create_registrar.name == sponsoring_registrar_info.info_registrar_data.name.get_value_or_default());
+
+    BOOST_CHECK(k.update_registrar.id == 0);
+    BOOST_CHECK(k.update_registrar.handle == "");
+    BOOST_CHECK(k.update_registrar.name == "");
+
+    BOOST_CHECK(k.authinfopw == "********");
+
+    BOOST_CHECK(k.admins.at(0).id == admin_contact_info.info_contact_data.id);
+    BOOST_CHECK(k.admins.at(0).handle == admin_contact_info.info_contact_data.handle);
+    BOOST_CHECK(k.admins.at(0).name == (admin_contact_info.info_contact_data.organization.get_value_or_default().empty()
+        ? admin_contact_info.info_contact_data.name.get_value_or_default()
+        : admin_contact_info.info_contact_data.organization.get_value_or_default()));
+    BOOST_CHECK(k.admins.size() == 1);
+/*
+    BOOST_CHECK(n.hosts.at(0).fqdn.compare("a.ns.nic.cz") == 0);
+    BOOST_CHECK(n.hosts.at(0).inet_addr.compare("127.0.0.3, 127.1.1.3") == 0);
+    BOOST_CHECK(n.hosts.at(1).fqdn.compare("b.ns.nic.cz") == 0);
+    BOOST_CHECK(n.hosts.at(1).inet_addr.compare("127.0.0.4, 127.1.1.4") == 0);
+*/
+    BOOST_CHECK(k.states.compare("Není povoleno smazání") == 0);
+    BOOST_CHECK(k.state_codes.compare(Fred::ObjectState::SERVER_DELETE_PROHIBITED) == 0);
+
+    BOOST_CHECK(k.is_owner == false);
+
+}
+
+BOOST_AUTO_TEST_SUITE_END();//getKeysetDetail
+
 
 BOOST_AUTO_TEST_SUITE_END();//TestDomainBrowser

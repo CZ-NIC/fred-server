@@ -386,7 +386,9 @@ BOOST_AUTO_TEST_CASE(info_keyset_data)
     i.handle = "TEST-INFO-KEYSET-HANDLE";
     i.creation_time = boost::posix_time::microsec_clock::universal_time();
     i.delete_time = boost::posix_time::microsec_clock::universal_time();
-    i.tech_contacts = Util::vector_of<std::string>("tech1")("tech2")("tech3");
+    i.tech_contacts = Util::vector_of<Fred::ObjectIdHandlePair>(Fred::ObjectIdHandlePair(1, "tech1"))
+        (Fred::ObjectIdHandlePair(2, "tech2"))
+        (Fred::ObjectIdHandlePair(3, "tech3"));
     i.dns_keys = Util::vector_of<Fred::DnsKey>
     (Fred::DnsKey(257, 3, 5, "test1"))
     (Fred::DnsKey(257, 3, 5, "test2"));
@@ -404,7 +406,9 @@ BOOST_AUTO_TEST_CASE(info_keyset_output)
     d.handle = "TEST-INFO-KEYSET-HANDLE";
     d.creation_time = boost::posix_time::microsec_clock::universal_time();
     d.delete_time = boost::posix_time::microsec_clock::universal_time();
-    d.tech_contacts = Util::vector_of<std::string>("tech1")("tech2")("tech3");
+    d.tech_contacts = Util::vector_of<Fred::ObjectIdHandlePair>(Fred::ObjectIdHandlePair(1, "tech1"))
+        (Fred::ObjectIdHandlePair(2, "tech2"))
+        (Fred::ObjectIdHandlePair(3, "tech3"));
     d.dns_keys = Util::vector_of<Fred::DnsKey>
     (Fred::DnsKey(257, 3, 5, "test1"))
     (Fred::DnsKey(257, 3, 5, "test2"));
