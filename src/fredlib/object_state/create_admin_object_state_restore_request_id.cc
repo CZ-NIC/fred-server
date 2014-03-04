@@ -48,7 +48,9 @@ namespace Fred
         const Optional<unsigned long long> _logd_request_id)
     :   object_id_(_object_id),
         reason_(_reason),
-        logd_request_id_(_logd_request_id.get_value())
+        logd_request_id_(_logd_request_id.isset()
+        ? Nullable<unsigned long long>(_logd_request_id.get_value())
+        : Nullable<unsigned long long>())//is NULL if not set
     {}
 
     CreateAdminObjectStateRestoreRequestId& CreateAdminObjectStateRestoreRequestId::set_reason(const std::string &_reason)

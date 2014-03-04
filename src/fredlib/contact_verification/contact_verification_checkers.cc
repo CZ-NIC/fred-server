@@ -49,7 +49,7 @@ bool contact_checker_phone_format(const Contact &_data, FieldErrorMap &_errors)
     bool result = true;
 
     if (generic_checker_phone_format(
-                _data.telephone.get_value(),
+                _data.telephone.get_value_or_default(),
                 PHONE_CZ_SK_PATTERN) == false) {
         result = false;
     }
@@ -64,7 +64,7 @@ bool contact_checker_phone_format(const Contact &_data, FieldErrorMap &_errors)
 bool contact_checker_fax_format(const Contact &_data, FieldErrorMap &_errors)
 {
     bool result = generic_checker_phone_format(
-            _data.fax.get_value(),
+            _data.fax.get_value_or_default(),
             PHONE_PATTERN);
     if (result == false) {
         _errors[field_fax] = INVALID;
@@ -104,7 +104,7 @@ bool contact_checker_phone_unique(const Contact &_data, FieldErrorMap &_errors)
                 " LIMIT 1",
                 Database::query_param_list
                     (EMAIL_PHONE_PROTECTION_PERIOD)
-                    (_data.telephone.get_value()));
+                    (_data.telephone.get_value_or_default()));
 
         if (ucheck.size() > 0) {
             _errors[field_phone] = NOT_AVAILABLE;
@@ -133,7 +133,7 @@ bool generic_checker_email_format(const std::string &_email)
 
 bool contact_checker_email_format(const Contact &_data, FieldErrorMap &_errors)
 {
-    bool result = generic_checker_email_format(_data.email.get_value());
+    bool result = generic_checker_email_format(_data.email.get_value_or_default());
     if (result == false) {
         _errors[field_email] = INVALID;
     }
@@ -143,7 +143,7 @@ bool contact_checker_email_format(const Contact &_data, FieldErrorMap &_errors)
 
 bool contact_checker_notify_email_format(const Contact &_data, FieldErrorMap &_errors)
 {
-    bool result = generic_checker_email_format(_data.notifyemail.get_value());
+    bool result = generic_checker_email_format(_data.notifyemail.get_value_or_default());
     if (result == false) {
        _errors[field_notify_email] = INVALID;
     }
@@ -182,7 +182,7 @@ bool contact_checker_email_unique(const Contact &_data, FieldErrorMap &_errors)
                 " LIMIT 1",
                 Database::query_param_list
                     (EMAIL_PHONE_PROTECTION_PERIOD)
-                    (_data.email.get_value()));
+                    (_data.email.get_value_or_default()));
 
         if (ucheck.size() > 0) {
             _errors[field_email] = NOT_AVAILABLE;
@@ -231,7 +231,7 @@ bool contact_checker_address_postalcode_format_cz(const Contact &_data, FieldErr
     bool result = true;
 
     if (!boost::regex_search(
-                    _data.postalcode.get_value(),
+                    _data.postalcode.get_value_or_default(),
                     POSTALCODE_CZ_PATTERN)) {
         _errors[field_postal_code] = INVALID;
         result = false;
@@ -245,8 +245,8 @@ bool contact_checker_address_country(const Contact &_data, FieldErrorMap &_error
 {
     bool result = true;
 
-    if ((_data.country.get_value() != "CZ")
-        && (_data.country.get_value() != "SK")) {
+    if ((_data.country.get_value_or_default() != "CZ")
+        && (_data.country.get_value_or_default() != "SK")) {
         _errors[field_country] = INVALID;
         result = false;
     }
@@ -286,33 +286,33 @@ bool check_conditionally_identified_contact_diff(
         return false;
     }
     /* organization */
-    if (_c1.organization.get_value() != _c2.organization.get_value()) {
+    if (_c1.organization.get_value_or_default() != _c2.organization.get_value_or_default()) {
         return false;
     }
     /* dic */
-    if (_c1.vat.get_value() != _c2.vat.get_value()) {
+    if (_c1.vat.get_value_or_default() != _c2.vat.get_value_or_default()) {
         return false;
     }
     /* address */
-    if ((_c1.street1.get_value() != _c2.street1.get_value())
-            || (_c1.street2.get_value() != _c2.street2.get_value())
-            || (_c1.street3.get_value() != _c2.street3.get_value())
-            || (_c1.city.get_value() != _c2.city.get_value())
-            || (_c1.stateorprovince.get_value() != _c2.stateorprovince.get_value())
-            || (_c1.country.get_value() != _c2.country.get_value())
-            || (_c1.postalcode.get_value() != _c2.postalcode.get_value())) {
+    if ((_c1.street1.get_value_or_default() != _c2.street1.get_value_or_default())
+            || (_c1.street2.get_value_or_default() != _c2.street2.get_value_or_default())
+            || (_c1.street3.get_value_or_default() != _c2.street3.get_value_or_default())
+            || (_c1.city.get_value_or_default() != _c2.city.get_value_or_default())
+            || (_c1.stateorprovince.get_value_or_default() != _c2.stateorprovince.get_value_or_default())
+            || (_c1.country.get_value_or_default() != _c2.country.get_value_or_default())
+            || (_c1.postalcode.get_value_or_default() != _c2.postalcode.get_value_or_default())) {
         return false;
     }
     /* identification type */
-    if (_c1.ssntype.get_value() != _c2.ssntype.get_value()) {
+    if (_c1.ssntype.get_value_or_default() != _c2.ssntype.get_value_or_default()) {
         return false;
     }
     /* identification regardless of type*/
-    if (_c1.ssn.get_value() != _c2.ssn.get_value()) {
+    if (_c1.ssn.get_value_or_default() != _c2.ssn.get_value_or_default()) {
 
-        if (_c1.ssntype.get_value() == "BIRTHDAY") {
-            boost::gregorian::date before = boost::gregorian::from_string(_c1.ssn.get_value());
-            boost::gregorian::date after = boost::gregorian::from_string(_c2.ssn.get_value());
+        if (_c1.ssntype.get_value_or_default() == "BIRTHDAY") {
+            boost::gregorian::date before = boost::gregorian::from_string(_c1.ssn.get_value_or_default());
+            boost::gregorian::date after = boost::gregorian::from_string(_c2.ssn.get_value_or_default());
             if (before != after) {
                 return false;
             }
@@ -323,10 +323,10 @@ bool check_conditionally_identified_contact_diff(
         }
     }
     /* telephone and email */
-    if ((_c1.telephone.get_value() != _c2.telephone.get_value())
-            || (_c1.fax.get_value() != _c2.fax.get_value())
-            || (_c1.email.get_value() != _c2.email.get_value())
-            || (_c1.notifyemail.get_value() != _c2.notifyemail.get_value())) {
+    if ((_c1.telephone.get_value_or_default() != _c2.telephone.get_value_or_default())
+            || (_c1.fax.get_value_or_default() != _c2.fax.get_value_or_default())
+            || (_c1.email.get_value_or_default() != _c2.email.get_value_or_default())
+            || (_c1.notifyemail.get_value_or_default() != _c2.notifyemail.get_value_or_default())) {
         return false;
     }
     /* all disclose disclose flags */
@@ -355,33 +355,33 @@ bool check_validated_contact_diff(
         return false;
     }
     /* organization */
-    if (_c1.organization.get_value() != _c2.organization.get_value()) {
+    if (_c1.organization.get_value_or_default() != _c2.organization.get_value_or_default()) {
         return false;
     }
     /* dic */
-    if (_c1.vat.get_value() != _c2.vat.get_value()) {
+    if (_c1.vat.get_value_or_default() != _c2.vat.get_value_or_default()) {
         return false;
     }
     /* address */
-    if ((_c1.street1.get_value() != _c2.street1.get_value())
-            || (_c1.street2.get_value() != _c2.street2.get_value())
-            || (_c1.street3.get_value() != _c2.street3.get_value())
-            || (_c1.city.get_value() != _c2.city.get_value())
-            || (_c1.stateorprovince.get_value() != _c2.stateorprovince.get_value())
-            || (_c1.country.get_value() != _c2.country.get_value())
-            || (_c1.postalcode.get_value() != _c2.postalcode.get_value())) {
+    if ((_c1.street1.get_value_or_default() != _c2.street1.get_value_or_default())
+            || (_c1.street2.get_value_or_default() != _c2.street2.get_value_or_default())
+            || (_c1.street3.get_value_or_default() != _c2.street3.get_value_or_default())
+            || (_c1.city.get_value_or_default() != _c2.city.get_value_or_default())
+            || (_c1.stateorprovince.get_value_or_default() != _c2.stateorprovince.get_value_or_default())
+            || (_c1.country.get_value_or_default() != _c2.country.get_value_or_default())
+            || (_c1.postalcode.get_value_or_default() != _c2.postalcode.get_value_or_default())) {
         return false;
     }
     /* identification type */
-    if (_c1.ssntype.get_value() != _c2.ssntype.get_value()) {
+    if (_c1.ssntype.get_value_or_default() != _c2.ssntype.get_value_or_default()) {
         return false;
     }
     /* identification regardless of type*/
-    if (_c1.ssn.get_value() != _c2.ssn.get_value()) {
+    if (_c1.ssn.get_value_or_default() != _c2.ssn.get_value_or_default()) {
 
-        if(_c1.ssntype.get_value() == "BIRTHDAY") {
-            boost::gregorian::date before = boost::gregorian::from_string(_c1.ssn.get_value());
-            boost::gregorian::date after = boost::gregorian::from_string(_c2.ssn.get_value());
+        if(_c1.ssntype.get_value_or_default() == "BIRTHDAY") {
+            boost::gregorian::date before = boost::gregorian::from_string(_c1.ssn.get_value_or_default());
+            boost::gregorian::date after = boost::gregorian::from_string(_c2.ssn.get_value_or_default());
             if(before != after) {
                 return false;
             }

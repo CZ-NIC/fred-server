@@ -27,6 +27,7 @@
 #include <utility>
 #include <string>
 #include <sstream>
+#include <stdexcept>
 
 #include "util/printable.h"
 
@@ -77,14 +78,24 @@ public:
         return *this;
     }//assignment
 
-    T get_value() const
-    {
-        return value_;
-    }
-
     bool isset() const
     {
         return isset_;
+    }
+
+    T get_value() const
+    {
+        if (!isset())
+        {
+            throw std::logic_error("value is not set");
+        }
+
+        return value_;
+    }
+
+    T get_value_or_default() const
+    {
+        return value_;
     }
 
     friend std::ostream& operator<<(std::ostream& os, const Optional<T>& ov)
@@ -96,7 +107,7 @@ public:
     std::string print_quoted() const
     {
         std::stringstream ss;
-        ss << (*this);
+        if(isset()) ss << (*this);
         return isset() ? std::string("'") + ss.str() + "'" : std::string("[N/A]");
     }
 
