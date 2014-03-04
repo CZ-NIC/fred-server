@@ -208,10 +208,7 @@ namespace Fred
                 }
             }
 
-            std::vector<std::string> statuses = boost::assign::list_of
-                (Fred::ContactCheckStatus::AUTO_OK)
-                (Fred::ContactCheckStatus::AUTO_FAIL)
-                (Fred::ContactCheckStatus::AUTO_TO_BE_DECIDED);
+            std::vector<std::string> statuses = Fred::ContactCheckStatus::get_resolution_awaiting();
 
             // set time when tests finished if it is the current state
             {

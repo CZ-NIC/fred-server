@@ -90,18 +90,11 @@ BOOST_AUTO_TEST_CASE(test_List_check_statuses)
 {
     std::vector<std::string> created_statuses;
 
+    created_statuses = Fred::ContactCheckStatus::get_all();
+
     for(int i=0; i<5; ++i) {
         created_statuses.push_back(setup_check_status().status_handle);
     }
-
-    created_statuses.push_back(Fred::ContactCheckStatus::ENQUEUED);
-    created_statuses.push_back(Fred::ContactCheckStatus::RUNNING);
-    created_statuses.push_back(Fred::ContactCheckStatus::AUTO_OK);
-    created_statuses.push_back(Fred::ContactCheckStatus::AUTO_FAIL);
-    created_statuses.push_back(Fred::ContactCheckStatus::AUTO_TO_BE_DECIDED);
-    created_statuses.push_back(Fred::ContactCheckStatus::OK);
-    created_statuses.push_back(Fred::ContactCheckStatus::FAIL);
-    created_statuses.push_back(Fred::ContactCheckStatus::INVALIDATED);
 
     std::vector<Fred::check_status> listed_statuses = Fred::list_check_statuses("en");
 
