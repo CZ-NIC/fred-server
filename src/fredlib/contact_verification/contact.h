@@ -4,10 +4,25 @@
 #include "util/db/nullable.h"
 #include <string>
 #include <map>
+#include <vector>
 
 namespace Fred {
 namespace Contact {
 namespace Verification {
+
+
+class ContactAddress
+{
+public:
+    std::string type;
+    Nullable<std::string> street1;
+    Nullable<std::string> street2;
+    Nullable<std::string> street3;
+    Nullable<std::string> city;
+    Nullable<std::string> stateorprovince;
+    Nullable<std::string> postalcode;
+    Nullable<std::string> country;
+};
 
 
 class Contact
@@ -54,6 +69,7 @@ public:
     bool disclosevat;
     bool discloseident;
     bool disclosenotifyemail;
+    std::vector<ContactAddress> addresses;
 };
 
 

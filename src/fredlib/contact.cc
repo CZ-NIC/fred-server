@@ -46,6 +46,105 @@ namespace Contact {
 static boost::regex format(CONTACT_REGEX);
 static boost::regex formatRestricted(CONTACT_REGEX_RESTRICTED);
 
+class AddressImpl : public virtual Address
+{
+private:
+  std::string type;
+  std::string street1;
+  std::string street2;
+  std::string street3;
+  std::string province;
+  std::string postal_code;
+  std::string city;
+  std::string country;
+
+public:
+  AddressImpl(
+          const std::string &_type,
+          const std::string &_street1,
+          const std::string &_street2,
+          const std::string &_street3,
+          const std::string &_province,
+          const std::string &_postal_code,
+          const std::string &_city,
+          const std::string &_country
+          ) :
+      type(_type),
+      street1(_street1),
+      street2(_street2),
+      street3(_street3),
+      province(_province),
+      postal_code(_postal_code),
+      city(_city),
+      country(_country)
+    {
+    }
+
+  virtual const std::string& getType() const
+  {
+      return type;
+  }
+  /// return contact street addres part 1
+  virtual const std::string& getStreet1() const
+  {
+      return street1;
+  }
+  /// return contact street addres part 2
+  virtual const std::string& getStreet2() const
+  {
+      return street2;
+  }
+  /// return contact street addres part 3
+  virtual const std::string& getStreet3() const
+  {
+      return street3;
+  }
+  /// return contact state or province
+  virtual const std::string& getProvince() const
+  {
+      return province;
+  }
+  /// return contact postal code
+  virtual const std::string& getPostalCode() const
+  {
+      return postal_code;
+  }
+  /// return contact city
+  virtual const std::string& getCity() const
+  {
+      return city;
+  }
+  /// return contact contry code
+  virtual const std::string& getCountry() const
+  {
+      return country;
+  }
+
+  virtual bool operator==(const Address &_other) const
+  {
+      if (getType() == _other.getType()
+              && getStreet1() == _other.getStreet1()
+              && getStreet2() == _other.getStreet2()
+              && getStreet3() == _other.getStreet3()
+              && getProvince() == _other.getProvince()
+              && getPostalCode() == _other.getPostalCode()
+              && getCity() == _other.getCity()
+              && getCountry() == _other.getCountry())
+      {
+          return true;
+      }
+      else
+      {
+          return false;
+      }
+
+  }
+  virtual bool operator!=(const Address &_other) const
+  {
+      return !(*this == _other);
+  }
+};
+
 class ContactImpl : public ObjectImpl, public virtual Contact {
   std::string handle;
   std::string name;
@@ -74,6 +173,7 @@ class ContactImpl : public ObjectImpl, public virtual Contact {
   bool discloseVat;
   bool discloseIdent;
   bool discloseNotifyEmail;
+  std::vector<AddressImpl> addresses;
 public:
   ContactImpl(TID _id, const Database::ID& _history_id, const std::string& _handle, const std::string& _name,
       TID _registrar, const std::string& _registrarHandle, ptime _crDate,
@@ -188,6 +288,25 @@ public:
   }
   virtual bool getDiscloseNotifyEmail() const {
     return discloseNotifyEmail;
+  }
+  virtual unsigned int getAddressCount() const {
+      return addresses.size();
+  }
+  virtual const Address* getAddressByIdx(const unsigned int &_idx) const
+  {
+      if (_idx >= addresses.size())
+      {
+          throw NOT_FOUND();
+      }
+      else
+      {
+          return &addresses[_idx];
+      }
+  }
+  AddressImpl* addAddress(const AddressImpl &_addr)
+  {
+      addresses.push_back(_addr);
+      return &addresses.at(addresses.size() - 1);
   }
 };
 
@@ -548,7 +667,38 @@ public:
                 disclose_notify_email
             ));
       }
-      
+
+      resetHistoryIDSequence();
+      std::stringstream addr_query;
+      addr_query << "SELECT tmp.id, cah.contactid, ecat.name, cah.street1,"
+                 << " cah.street2, cah.street3, cah.stateorprovince, cah.postalcode,"
+                 << " cah.city, cah.country"
+                 << " FROM " << getTempTableName() << " tmp"
+                 << " JOIN contact_address_history cah ON cah.historyid = tmp.id"
+                 << " JOIN enum_contact_address_type ecat ON ecat.id = cah.type_id"
+                 << " ORDER BY cah.contactid, tmp.id, cah.id";
+      Database::Result r_addr = conn.exec(addr_query.str());
+      for (Database::Result::Iterator it = r_addr.begin(); it != r_addr.end(); ++it)
+      {
+          Database::Row::Iterator col = (*it).begin();
+          unsigned long long c_hid = *col;
+          unsigned long long c_id = *(++col);
+          std::string type = *(++col);
+          std::string street1 = *(++col);
+          std::string street2 = *(++col);
+          std::string street3 = *(++col);
+          std::string province = *(++col);
+          std::string pc = *(++col);
+          std::string city = *(++col);
+          std::string country = *(++col);
+
+          ContactImpl *cptr = dynamic_cast<ContactImpl*>(findHistoryIDSequence(c_hid));
+          if (cptr)
+          {
+              cptr->addAddress(AddressImpl(type, street1, street2, street3, province, pc, city, country));
+          }
+      }
+
       bool history = false;
       if (uf.settings()) {
         history = uf.settings()->get("filter.history") == "on";

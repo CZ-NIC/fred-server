@@ -22,6 +22,28 @@ enum MemberType {
   MT_REGISTRAR_HANDLE, ///< registrar handle
 };
 
+class Address
+{
+public:
+  virtual const std::string& getType() const = 0;
+  /// return contact street addres part 1
+  virtual const std::string& getStreet1() const = 0;
+  /// return contact street addres part 2
+  virtual const std::string& getStreet2() const = 0;
+  /// return contact street addres part 3
+  virtual const std::string& getStreet3() const = 0;
+  /// return contact state or province
+  virtual const std::string& getProvince() const = 0;
+  /// return contact postal code
+  virtual const std::string& getPostalCode() const = 0;
+  /// return contact city
+  virtual const std::string& getCity() const = 0;
+  /// return contact contry code
+  virtual const std::string& getCountry() const = 0;
+
+  virtual bool operator==(const Address &_other) const = 0;
+  virtual bool operator!=(const Address &_other) const = 0;
+};
 
 class Contact : virtual public Fred::Object {
 public:
@@ -82,6 +104,9 @@ public:
   virtual bool getDiscloseIdent() const = 0;
   /// return disclose attribute for contact notify email
   virtual bool getDiscloseNotifyEmail() const = 0;
+
+  virtual unsigned int getAddressCount() const = 0;
+  virtual const Address* getAddressByIdx(const unsigned int &_idx) const = 0;
 };
 
 

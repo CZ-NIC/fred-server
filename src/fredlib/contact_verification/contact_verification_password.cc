@@ -37,17 +37,31 @@ const ContactVerificationPassword::MessageData ContactVerificationPassword::coll
 {
     Database::Connection conn = Database::Manager::acquire();
     Database::Result result = conn.exec_params(
-            "SELECT c.name, c.organization, c.street1, c.city,"
-            " c.stateorprovince, c.postalcode, c.country, c.email,"
+            "SELECT c.name, NULL, ca.street1, ca.city,"
+            " ca.stateorprovince, ca.postalcode, ca.country, c.email,"
             " oreg.historyid, c.telephone, ec.country, ec.country_cs"
             " FROM contact c"
             " JOIN object_registry oreg ON oreg.id = c.id"
-            " JOIN enum_country ec ON ec.id = c.country "
-            " WHERE c.id = $1::integer",
+            " JOIN contact_address ca ON ca.contactid = c.id"
+            " JOIN enum_contact_address_type ecat ON ecat.id = ca.type_id"
+            " JOIN enum_country ec ON ec.id = ca.country"
+            " WHERE c.id = $1::integer AND ecat.name = 'MAILING' LIMIT 1",
             Database::query_param_list(prai_ptr_->getObject(0).id));
     if (result.size() != 1)
-        throw std::runtime_error("unable to get data for"
-                " password messages");
+    {
+        result = conn.exec_params(
+                "SELECT c.name, c.organization, c.street1, c.city,"
+                " c.stateorprovince, c.postalcode, c.country, c.email,"
+                " oreg.historyid, c.telephone, ec.country, ec.country_cs"
+                " FROM contact c"
+                " JOIN object_registry oreg ON oreg.id = c.id"
+                " JOIN enum_country ec ON ec.id = c.country "
+                " WHERE c.id = $1::integer",
+                Database::query_param_list(prai_ptr_->getObject(0).id));
+        if (result.size() != 1)
+            throw std::runtime_error("unable to get data for"
+                    " password messages");
+    }
 
     MessageData data;
 

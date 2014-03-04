@@ -203,6 +203,18 @@ Fred::Contact::Verification::Contact corba_unwrap_contact(const Contact &_contac
             data.postalcode = corba_unwrap_string(_contact.addresses[i].postal_code);
             data.country = corba_unwrap_string(_contact.addresses[i].country);
         }
+        else {
+            Fred::Contact::Verification::ContactAddress addr;
+            addr.type = type;
+            addr.street1 = corba_unwrap_string(_contact.addresses[i].street1);
+            addr.street2 = corba_unwrap_nullable_string(_contact.addresses[i].street2);
+            addr.street3 = corba_unwrap_nullable_string(_contact.addresses[i].street3);
+            addr.city = corba_unwrap_string(_contact.addresses[i].city);
+            addr.stateorprovince = corba_unwrap_nullable_string(_contact.addresses[i].state);
+            addr.postalcode = corba_unwrap_string(_contact.addresses[i].postal_code);
+            addr.country = corba_unwrap_string(_contact.addresses[i].country);
+            data.addresses.push_back(addr);
+        }
     }
 
     if (_contact.ssn_type) {
@@ -256,6 +268,21 @@ Contact* corba_wrap_contact(const Fred::Contact::Verification::Contact &_contact
     data->addresses[0].state        = corba_wrap_nullable_string(_contact.stateorprovince);
     data->addresses[0].postal_code  = corba_wrap_string(_contact.postalcode.get_value_or_default());
     data->addresses[0].country      = corba_wrap_string(_contact.country.get_value_or_default());
+
+    for (std::vector<Fred::Contact::Verification::ContactAddress>::const_iterator i = _contact.addresses.begin();
+            i != _contact.addresses.end(); ++i)
+    {
+        unsigned int j = data->addresses.length();
+        data->addresses.length(j + 1);
+        data->addresses[j].type         = corba_wrap_string(i->type);
+        data->addresses[j].street1      = corba_wrap_string(i->street1);
+        data->addresses[j].street2      = corba_wrap_nullable_string(i->street2);
+        data->addresses[j].street3      = corba_wrap_nullable_string(i->street3);
+        data->addresses[j].city         = corba_wrap_string(i->city);
+        data->addresses[j].state        = corba_wrap_nullable_string(i->stateorprovince);
+        data->addresses[j].postal_code  = corba_wrap_string(i->postalcode);
+        data->addresses[j].country      = corba_wrap_string(i->country);
+    }
 
     data->emails.length(1);
     data->emails[0].type = "DEFAULT";

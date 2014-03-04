@@ -54,6 +54,35 @@ unsigned long long db_contact_object_create(const unsigned long long &_registrar
 }
 
 
+void db_contact_addresses_insert(Contact &_data)
+{
+    std::string qaddress =
+        "INSERT INTO contact_address ("
+        "contactid, type_id, street1, street2, street3,"
+        " city, stateorprovince, postalcode, country)"
+        " VALUES ("
+        " $1::integer, (SELECT id FROM enum_contact_address_type WHERE name = $2::text),"
+        " $3::text, $4::text, $5::text, $6::text, $7::text, $8::text, $9::text)";
+
+    Database::Connection conn = Database::Manager::acquire();
+
+    for (std::vector<ContactAddress>::const_iterator it = _data.addresses.begin(); it != _data.addresses.end(); ++it)
+    {
+        Database::QueryParams paddress = Database::query_param_list
+            (_data.id)
+            (it->type)
+            (it->street1)
+            (it->street2)
+            (it->street3)
+            (it->city)
+            (it->stateorprovince)
+            (it->postalcode)
+            (it->country);
+
+        Database::Result raddress = conn.exec_params(qaddress, paddress);
+    }
+}
+
 unsigned long long db_contact_insert(Contact &_data)
 {
     if (static_cast<unsigned long long>(_data.id) == 0) {
@@ -107,6 +136,8 @@ unsigned long long db_contact_insert(Contact &_data)
 
     Database::Connection conn = Database::Manager::acquire();
     Database::Result rcontact = conn.exec_params(qcontact, pcontact);
+    db_contact_addresses_insert(_data);
+
     return _data.id;
 }
 
@@ -165,6 +196,11 @@ void db_contact_update(Contact &_data)
 
     Database::Connection conn = Database::Manager::acquire();
     Database::Result rcontact = conn.exec_params(qcontact, pcontact);
+
+    Database::Result daddress = conn.exec_params(
+            "DELETE FROM contact_address WHERE contactid = $1::integer",
+            Database::query_param_list(_data.id));
+    db_contact_addresses_insert(_data);
 }
 
 
@@ -207,6 +243,14 @@ unsigned long long db_contact_insert_history(const unsigned long long &_request_
             " c.disclosename, c.discloseorganization, c.discloseaddress, c.disclosetelephone, c.disclosefax,"
             " c.discloseemail, c.notifyemail, c.vat, c.ssn, c.ssntype, c.disclosevat, c.discloseident,"
             " c.disclosenotifyemail FROM contact c WHERE c.id = $2::integer",
+            Database::query_param_list(history_id)(_contact_id));
+
+    Database::Result rcontact_address_history = conn.exec_params(
+            "INSERT INTO contact_address_history (historyid, id, contactid, type_id, street1, street2, street3,"
+            " city, stateorprovince, postalcode, country)"
+            " SELECT $1::integer, id, contactid, type_id, street1, street2, street3,"
+            " city, stateorprovince, postalcode, country"
+            " FROM contact_address WHERE contactid = $2::integer",
             Database::query_param_list(history_id)(_contact_id));
 
     return history_id;
@@ -324,6 +368,25 @@ const Contact contact_info(const unsigned long long &_id)
     data.notifyemail = rinfo[0][24];
     data.telephone = rinfo[0][25];
     data.fax = rinfo[0][26];
+
+    std::string qaddresses = "SELECT ecat.name as type, ca.street1, ca.street2, ca.street3,"
+        " ca.city, ca.stateorprovince, ca.postalcode, ca.country"
+        " FROM contact_address ca JOIN enum_contact_address_type ecat ON ecat.id = ca.type_id"
+        " WHERE ca.contactid = $1::integer";
+    Database::Result raddresses = conn.exec_params(qaddresses, Database::query_param_list(_id));
+    for (unsigned long long i = 0; i < raddresses.size(); ++i)
+    {
+        ContactAddress addr;
+        addr.type = static_cast<std::string>(raddresses[i][0]);
+        addr.street1 = static_cast<std::string>(raddresses[i][1]);
+        addr.street2 = static_cast<std::string>(raddresses[i][2]);
+        addr.street3 = static_cast<std::string>(raddresses[i][3]);
+        addr.city = static_cast<std::string>(raddresses[i][4]);
+        addr.stateorprovince = static_cast<std::string>(raddresses[i][5]);
+        addr.postalcode = static_cast<std::string>(raddresses[i][6]);
+        addr.country = static_cast<std::string>(raddresses[i][7]);
+        data.addresses.push_back(addr);
+    }
 
     return data;
 }

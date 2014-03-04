@@ -1142,12 +1142,15 @@ bool DB::SaveDomainHistory(
 bool DB::DeleteDomainObject(
   int id)
 {
-  if (DeleteFromTable("domain_contact_map", "domainID", id) ) // admin-c
-    if (DeleteFromTable("enumval", "domainID", id) ) // enumval extension 
-      if (DeleteFromTable("DOMAIN", "id", id) )
-        if (DeleteFromTable("OBJECT", "id", id) )
+  if (DeleteFromTable("domain_contact_map", "domainID", id) ) { // admin-c
+    if (DeleteFromTable("enumval", "domainID", id) ) { // enumval extension 
+      if (DeleteFromTable("DOMAIN", "id", id) ) {
+        if (DeleteFromTable("OBJECT", "id", id) ) {
           return true;
-
+        }
+      }
+    }
+  }
   return false;
 }
 
@@ -1156,20 +1159,25 @@ bool DB::SaveContactHistory(
 {
 
   if (MakeHistory(id, request_id) ) {
-    if (SaveHistory("Contact", "id", id) )
-      return true;
+    if (SaveHistory("Contact", "id", id) ) {
+      if (SaveHistory("contact_address", "contactid", id)) {
+        return true;
+      }
+    }
   }
 
-  return 0;
+  return false;
 }
 
 bool DB::DeleteContactObject(
   int id)
 {
-
-  if (DeleteFromTable("CONTACT", "id", id) ) {
-    if (DeleteFromTable("OBJECT", "id", id) )
-      return true;
+  if (DeleteFromTable("contact_address", "contactid", id)) {
+    if (DeleteFromTable("CONTACT", "id", id) ) {
+      if (DeleteFromTable("OBJECT", "id", id) ) {
+        return true;
+      }
+    }
   }
 
   return false;
