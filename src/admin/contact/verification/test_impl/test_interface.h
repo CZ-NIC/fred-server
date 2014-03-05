@@ -73,8 +73,8 @@ namespace ContactVerification{
         virtual ~TestDataProvider_intf() { }
     };
 
-    template<typename Test> struct _inheritTestRegName {
-        static string registration_name() { return Test::registration_name(); }
+    template<typename T_test> struct _inheritTestRegName {
+        static string registration_name() { return T_test::registration_name(); }
     };
 
     struct TestDataProvider_common : public TestDataProvider_intf {
