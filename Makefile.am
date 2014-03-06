@@ -1748,7 +1748,12 @@ tests_test_server_SOURCES = \
 		tests/test-printable.cc \
 		tests/test-info-keyset.cc \
 		tests/test-info-nsset.cc \
-		tests/util/test-is-equal-optional-nullable.cc
+		tests/util/test-is-equal-optional-nullable.cc \
+		tests/fredlib/poll/test-create_delete_contact_poll_message.cc \
+		tests/fredlib/poll/test-create_delete_domain_poll_message.cc \
+		tests/fredlib/poll/test-create_update_object_poll_message.cc \
+		tests/fredlib/poll/setup_utils.h \
+		tests/fredlib/poll/setup_utils.cc
 
 tests_test_server_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS) \
