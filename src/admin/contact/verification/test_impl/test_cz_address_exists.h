@@ -112,8 +112,6 @@ namespace ContactVerification
                 (postalcode_)
                 (country_);
         }
-
-        static string registration_name() { return TestCzAddress::registration_name(); }
     };
 }
 }
