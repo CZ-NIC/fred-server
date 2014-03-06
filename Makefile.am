@@ -1391,8 +1391,41 @@ src_corba_fred_adifd_SOURCES = \
 		src/corba/mailer_manager.cc \
 		src/corba/admin_block/corba_conversion.h \
 		src/corba/admin_block/server_i.cc \
-		src/corba/admin_block/server_i.h
-		
+		src/corba/admin_block/server_i.h \
+		src/admin/contact/verification/create_test_impl_prototypes.h \
+		src/admin/contact/verification/create_test_impl_prototypes.cc \
+		src/admin/contact/verification/delete_domains_of_invalid_contact.h \
+		src/admin/contact/verification/delete_domains_of_invalid_contact.cc \
+		src/admin/contact/verification/enqueue_check.h \
+		src/admin/contact/verification/enqueue_check.cc \
+		src/admin/contact/verification/exceptions.h \
+		src/admin/contact/verification/fill_check_queue.h \
+		src/admin/contact/verification/fill_check_queue.cc \
+		src/admin/contact/verification/list_active_checks.h \
+		src/admin/contact/verification/list_active_checks.cc \
+		src/admin/contact/verification/related_records_impl.h \
+		src/admin/contact/verification/related_records_impl.cc \
+		src/admin/contact/verification/resolve_check.h \
+		src/admin/contact/verification/resolve_check.cc \
+		src/admin/contact/verification/run_all_enqueued_checks.h \
+		src/admin/contact/verification/run_all_enqueued_checks.cc \
+		src/admin/contact/verification/run_first_enqueued_check.h \
+		src/admin/contact/verification/run_first_enqueued_check.cc \
+		src/admin/contact/verification/test_impl/test_contactability.h \
+		src/admin/contact/verification/test_impl/test_contactability.cc \
+		src/admin/contact/verification/test_impl/test_cz_address_exists.h \
+		src/admin/contact/verification/test_impl/test_cz_address_exists.cc \
+		src/admin/contact/verification/test_impl/test_email_exists.h \
+		src/admin/contact/verification/test_impl/test_email_exists.cc \
+		src/admin/contact/verification/test_impl/test_email_syntax.h \
+		src/admin/contact/verification/test_impl/test_email_syntax.cc \
+		src/admin/contact/verification/test_impl/test_interface.h \
+		src/admin/contact/verification/test_impl/test_interface.cc \
+		src/admin/contact/verification/test_impl/test_name_syntax.h \
+		src/admin/contact/verification/test_impl/test_name_syntax.cc \
+		src/admin/contact/verification/test_impl/test_phone_syntax.h \
+		src/admin/contact/verification/test_impl/test_phone_syntax.cc
+
 src_corba_fred_adifd_LDADD = \
 		src/corba/admin/libadmin_impl.a \
 		src/corba/libcorbaadmin.a \
@@ -1409,7 +1442,6 @@ src_corba_fred_adifd_LDADD = \
 		src/corba/libcorbaadmincontactverification.a \
 		src/corba/libfilemanager.a \
 		src/corba/libcorbaadministrativeblocking.a \
-		src/admin/contact/verification/libadmin_contact_verification.a \
 		src/fredlib/requests/librequests.a \
 		src/fredlib/contact_verification/libcontact_verification.a \
 		src/fredlib/public_request/libpublic_request.a \
