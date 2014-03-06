@@ -26,6 +26,7 @@ public:
 
     /**
     * @throws Exception
+    * @throws CreatePollMessage::Exception when history_id_ is not related to any update message type
     */
     void exec(Fred::OperationContext &_ctx);
 
