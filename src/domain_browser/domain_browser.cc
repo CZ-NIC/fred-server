@@ -33,11 +33,14 @@
 #include "src/fredlib/object_state/object_state_name.h"
 #include "src/fredlib/registrar/info_registrar.h"
 #include "src/fredlib/contact/info_contact.h"
+#include "src/fredlib/contact/update_contact.h"
 #include "src/fredlib/domain/info_domain.h"
 #include "src/fredlib/nsset/info_nsset.h"
 #include "src/fredlib/keyset/info_keyset.h"
 #include "src/fredlib/object_state/get_object_states.h"
 #include "src/fredlib/object_state/get_object_state_descriptions.h"
+#include "cfg/handle_mojeid_args.h"
+#include "cfg/config_handler_decl.h"
 
 #include "domain_browser.h"
 
@@ -45,17 +48,30 @@ namespace Registry
 {
     namespace DomainBrowserImpl
     {
-        void DomainBrowser::check_user_contact_id(Fred::OperationContext& ctx, unsigned long long user_contact_id)
+
+        /**
+         * Check user contact.
+         * @param EXCEPTION is type of exception used for reporting when contact is not found
+         * @param ctx contains reference to database and logging interface
+         * @param user_contact_id is database id of user contact
+         * @param lock_contact_for_update indicates whether to lock contact for update (true) or for share (false)
+         * @return contact info or if user contact is deleted or don't have mojeidContact state throw UserNotExists.
+         */
+        template <class EXCEPTION> Fred::InfoContactOutput check_user_contact_id(Fred::OperationContext& ctx,
+                unsigned long long user_contact_id, bool lock_contact_for_update = false)
         {
+            Fred::InfoContactOutput info;
             try
             {
-                Fred::InfoContactById(user_contact_id).exec(ctx);
+                Fred::InfoContactById info_contact_by_id(user_contact_id);
+                if(lock_contact_for_update) info_contact_by_id.set_lock();
+                info = info_contact_by_id.exec(ctx);
             }
             catch(const Fred::InfoContactById::Exception& ex)
             {
                 if(ex.is_set_unknown_object_id())
                 {
-                    BOOST_THROW_EXCEPTION(UserNotExists());
+                    BOOST_THROW_EXCEPTION(EXCEPTION());
                 }
                 else
                     throw;
@@ -65,6 +81,8 @@ namespace Registry
             {
                 BOOST_THROW_EXCEPTION(UserNotExists());
             }
+
+            return info;
         }
 
         void DomainBrowser::get_object_states(Fred::OperationContext& ctx, unsigned long long object_id, const std::string& lang
@@ -102,6 +120,7 @@ namespace Registry
 
         DomainBrowser::DomainBrowser(const std::string& server_name)
         : server_name_(server_name)
+        , update_registrar_(CfgArgs::instance()->get_handler_ptr_by_type<HandleMojeIDArgs>()->registrar_handle)//MojeID registrar
         {}
 
         DomainBrowser::~DomainBrowser()
@@ -118,7 +137,7 @@ namespace Registry
             const std::string& registrar_handle)
         {
             Fred::OperationContext ctx;
-            check_user_contact_id(ctx, user_contact_id);
+            check_user_contact_id<UserNotExists>(ctx, user_contact_id);
 
             Fred::InfoRegistrarOutput registar_info;
             try
@@ -194,7 +213,7 @@ namespace Registry
                 const std::string& lang)
         {
             Fred::OperationContext ctx;
-            check_user_contact_id(ctx, user_contact_id);
+            check_user_contact_id<UserNotExists>(ctx, user_contact_id);
 
             Fred::InfoContactOutput contact_info;
             try
@@ -273,7 +292,7 @@ namespace Registry
                 const std::string& lang)
         {
             Fred::OperationContext ctx;
-            check_user_contact_id(ctx, user_contact_id);
+            check_user_contact_id<UserNotExists>(ctx, user_contact_id);
 
             Fred::InfoDomainOutput domain_info;
             try
@@ -360,7 +379,7 @@ namespace Registry
                 const std::string& lang)
         {
             Fred::OperationContext ctx;
-            check_user_contact_id(ctx, user_contact_id);
+            check_user_contact_id<UserNotExists>(ctx, user_contact_id);
 
             Fred::InfoNssetOutput nsset_info;
             try
@@ -467,7 +486,7 @@ namespace Registry
                 const std::string& lang)
         {
             Fred::OperationContext ctx;
-            check_user_contact_id(ctx, user_contact_id);
+            check_user_contact_id<UserNotExists>(ctx, user_contact_id);
 
             Fred::InfoKeysetOutput keyset_info;
             try
@@ -560,6 +579,89 @@ namespace Registry
 
             return detail;
         }
+
+        bool DomainBrowser::setContactDiscloseFlags(
+            unsigned long long contact_id,
+            const ContactDiscloseFlagsToSet& flags,
+            unsigned long long request_id)
+        {
+            Fred::OperationContext ctx;
+            Fred::InfoContactOutput contact_info = check_user_contact_id<UserNotExists>(ctx, contact_id, true);
+
+            if(!(Fred::ObjectHasState(contact_id,Fred::ObjectState::IDENTIFIED_CONTACT).exec(ctx)
+                || Fred::ObjectHasState(contact_id,Fred::ObjectState::VALIDATED_CONTACT).exec(ctx)))
+            {
+                BOOST_THROW_EXCEPTION(AccessDenied());
+            }
+
+            if(Fred::ObjectHasState(contact_id,Fred::ObjectState::SERVER_BLOCKED).exec(ctx))
+            {
+                BOOST_THROW_EXCEPTION(ObjectBlocked());
+            }
+
+            //when organization is set it's not allowed to hide address
+            if((!contact_info.info_contact_data.organization.get_value_or_default().empty()) && (flags.address == false))
+            {
+                BOOST_THROW_EXCEPTION(IncorrectUsage());
+            }
+
+            Fred::UpdateContactById update_contact(contact_id, update_registrar_);
+            bool exec_update = false;
+            if(flags.email != contact_info.info_contact_data.discloseemail.get_value_or_default())
+            {
+                update_contact.set_discloseemail(flags.email);
+                exec_update = true;
+            }
+
+            if(flags.address != contact_info.info_contact_data.discloseaddress.get_value_or_default())
+            {
+                update_contact.set_discloseaddress(flags.address);
+                exec_update = true;
+            }
+
+            if(flags.telephone != contact_info.info_contact_data.disclosetelephone.get_value_or_default())
+            {
+                update_contact.set_disclosetelephone(flags.telephone);
+                exec_update = true;
+            }
+
+            if(flags.fax != contact_info.info_contact_data.disclosefax.get_value_or_default())
+            {
+                update_contact.set_disclosefax(flags.fax);
+                exec_update = true;
+            }
+
+            if(flags.ident != contact_info.info_contact_data.discloseident.get_value_or_default())
+            {
+                update_contact.set_discloseident(flags.ident);
+                exec_update = true;
+            }
+
+            if(flags.vat != contact_info.info_contact_data.disclosevat.get_value_or_default())
+            {
+                update_contact.set_disclosevat(flags.vat);
+                exec_update = true;
+            }
+
+            if(flags.notify_email != contact_info.info_contact_data.disclosenotifyemail.get_value_or_default())
+            {
+                update_contact.set_disclosenotifyemail(flags.notify_email);
+                exec_update = true;
+            }
+
+            if(exec_update)
+            {
+                update_contact.exec(ctx);
+                ctx.commit_transaction();
+            }
+            else
+            {
+                return false;
+            }
+
+            return true;
+        }
+
     }//namespace DomainBrowserImpl
 }//namespace Registry
 

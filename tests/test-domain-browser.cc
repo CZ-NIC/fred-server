@@ -88,10 +88,8 @@ struct user_contact_fixture
         Fred::CreateContact(user_contact_handle,
             CfgArgs::instance()->get_handler_ptr_by_type<HandleMojeIDArgs>()->registrar_handle)//MojeID registrar
             .set_name(std::string("USER-CONTACT-HANDLE NAME")+xmark)
-            .set_disclosename(true)
             .set_street1(std::string("STR1")+xmark)
             .set_city("Praha").set_postalcode("11150").set_country("CZ")
-            .set_discloseaddress(true)
             .exec(ctx);
 
         user_contact_info = Fred::InfoContactByHandle(user_contact_handle).exec(ctx);
@@ -866,5 +864,46 @@ BOOST_FIXTURE_TEST_CASE(get_keyset_detail_no_keyset, mojeid_user_contact_fixture
 
 BOOST_AUTO_TEST_SUITE_END();//getKeysetDetail
 
+BOOST_AUTO_TEST_SUITE(setContactDiscloseFlags)
+
+/**
+ * test call getKeysetDetail with private data
+*/
+BOOST_FIXTURE_TEST_CASE(set_contact_disclose_flags, mojeid_user_contact_fixture )
+{
+    {
+        Fred::OperationContext ctx;
+        Fred::StatusList states;
+        states.insert(Fred::ObjectState::IDENTIFIED_CONTACT);
+        Fred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id, states).exec(ctx);
+        Fred::PerformObjectStateRequest(user_contact_info.info_contact_data.id).exec(ctx);
+        ctx.commit_transaction();
+    }
+
+    Fred::OperationContext ctx;
+
+    Registry::DomainBrowserImpl::DomainBrowser impl(server_name);
+    Registry::DomainBrowserImpl::ContactDiscloseFlagsToSet set_flags;
+    set_flags.address = true;
+    set_flags.email = true;
+    set_flags.fax = true;
+    set_flags.ident = true;
+    set_flags.notify_email = true;
+    set_flags.telephone = true;
+    set_flags.vat = true;
+    impl.setContactDiscloseFlags(user_contact_info.info_contact_data.id,set_flags, 0);
+
+    Fred::InfoContactOutput my_contact_info = Fred::InfoContactByHandle(user_contact_handle).exec(ctx);
+    BOOST_CHECK(!my_contact_info.info_contact_data.disclosename.get_value_or_default());
+    BOOST_CHECK(!my_contact_info.info_contact_data.discloseorganization.get_value_or_default());
+    BOOST_CHECK(my_contact_info.info_contact_data.discloseemail.get_value_or_default());
+    BOOST_CHECK(my_contact_info.info_contact_data.discloseaddress.get_value_or_default());
+    BOOST_CHECK(my_contact_info.info_contact_data.disclosetelephone.get_value_or_default());
+    BOOST_CHECK(my_contact_info.info_contact_data.disclosefax.get_value_or_default());
+    BOOST_CHECK(my_contact_info.info_contact_data.discloseident.get_value_or_default());
+    BOOST_CHECK(my_contact_info.info_contact_data.disclosevat.get_value_or_default());
+    BOOST_CHECK(my_contact_info.info_contact_data.disclosenotifyemail.get_value_or_default());
+}
+BOOST_AUTO_TEST_SUITE_END();//setContactDiscloseFlags
 
 BOOST_AUTO_TEST_SUITE_END();//TestDomainBrowser
