@@ -13,7 +13,6 @@ ContactValidator create_default_contact_validator()
     tmp.add_checker(contact_checker_email_format);
     tmp.add_checker(contact_checker_email_required);
     tmp.add_checker(contact_checker_phone_format);
-    tmp.add_checker(contact_checker_birthday);
     tmp.add_checker(contact_checker_notify_email_format);
     tmp.add_checker(contact_checker_fax_format);
     return tmp;

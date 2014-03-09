@@ -1,11 +1,29 @@
 #include "contact.h"
 #include "random.h"
 #include "src/fredlib/db_settings.h"
+#include "util/types/birthdate.h"
 
 
 namespace Fred {
 namespace Contact {
 namespace Verification {
+
+
+bool transform_ssn_birthday_value(Contact &_data)
+{
+    if (_data.ssntype.get_value_or_default() == "BIRTHDAY")
+    {
+        std::string orig = _data.ssn.get_value_or_default();
+        boost::gregorian::date conv = birthdate_from_string_to_date(orig);
+        if (conv.is_special())
+        {
+            throw std::runtime_error("invalid ssn value for type BIRTHDAY");
+        }
+        _data.ssn = to_iso_extended_string(conv);
+        return _data.ssn.get_value_or_default() != orig;
+    }
+    return false;
+}
 
 
 unsigned long long db_contact_object_create(const unsigned long long &_registrar_id,
@@ -199,6 +217,7 @@ unsigned long long contact_create(const unsigned long long &_request_id,
                                   const unsigned long long &_registrar_id,
                                   Contact &_data)
 {
+    transform_ssn_birthday_value(_data);
     _data.id = db_contact_object_create(_registrar_id, _data.handle, Random::string_alphanum(8));
     db_contact_insert(_data);
     unsigned long long hid = db_contact_insert_history(_request_id, _data.id);
@@ -221,7 +240,14 @@ unsigned long long contact_transfer(const unsigned long long &_request_id,
                          (_registrar_id)
                          (Random::string_alphanum(8))
                          (_contact_id));
-    return db_contact_insert_history(_request_id, _contact_id);
+    unsigned long long hid = db_contact_insert_history(_request_id, _contact_id);
+
+    Contact tmp = contact_info(_contact_id);
+    if (transform_ssn_birthday_value(tmp))
+    {
+        hid = contact_update(_request_id, _registrar_id, tmp);
+    }
+    return hid;
 }
 
 
@@ -229,6 +255,7 @@ unsigned long long contact_update(const unsigned long long &_request_id,
                                   const unsigned long long &_registrar_id,
                                   Contact &_data)
 {
+    transform_ssn_birthday_value(_data);
     Database::Connection conn = Database::Manager::acquire();
     conn.exec_params("UPDATE object SET upid = $1::integer, update = now()"
                      " WHERE id = $2::integer",

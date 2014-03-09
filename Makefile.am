@@ -230,7 +230,9 @@ util_libutil_a_SOURCES = \
 		util/util.cc \
 		util/output_indenter.cc \
 		util/printable.h \
-		util/printable.cc
+		util/printable.cc \
+		util/xmlgen.cc \
+		util/subprocess.cc
 #
 # util/libutil.a
 

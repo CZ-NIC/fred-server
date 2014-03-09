@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012  CZ.NIC, z.s.p.o.
+ * Copyright (C) 2013  CZ.NIC, z.s.p.o.
  *
  * This file is part of FRED.
  *
@@ -17,27 +17,19 @@
  */
 
 /**
- *  @contact_verification_validators.h
- *  mojeid contact verification
+ *  @file
+ *  xml generator
  */
 
-#ifndef MOJEID_VALIDATORS_H_
-#define MOJEID_VALIDATORS_H_
+#include "util/xmlgen.h"
 
-#include "src/fredlib/contact_verification/contact_verification_validators.h"
-
-
-namespace Fred {
-namespace Contact {
-namespace Verification {
-
-ContactValidator create_conditional_identification_validator_mojeid();
-ContactValidator create_finish_identification_validator_mojeid();
-ContactValidator create_verified_transfer_validator_mojeid();
-
-}
-}
-}
-
-#endif //MOJEID_VALIDATORS_H_
-
+namespace Util
+{
+    std::string XmlUnparsedCData(const std::string& data)
+    {
+        std::string ret("<![CDATA[");
+        ret+=data;
+        ret+="]]>";
+        return ret;
+    }
+} //namespace Util
