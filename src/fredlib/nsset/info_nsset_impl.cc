@@ -79,9 +79,9 @@ namespace Fred
         return *this;
     }
 
-    InfoNsset& InfoNsset::set_lock(bool lock)
+    InfoNsset& InfoNsset::set_lock()
     {
-        lock_ = lock;
+        lock_ = true;
         return *this;
     }
 
@@ -168,7 +168,10 @@ namespace Fred
         {
             sql << " FOR UPDATE of nobr ";
         }
-
+        else
+        {
+            sql << " FOR SHARE of nobr ";
+        }
 
         return std::make_pair(sql.str(), params);
 

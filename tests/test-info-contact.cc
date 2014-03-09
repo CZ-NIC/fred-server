@@ -161,7 +161,7 @@ BOOST_FIXTURE_TEST_CASE(info_contact, test_contact_fixture )
         if(j & (1 << 1)) i.set_roid(contact_info1.info_contact_data.roid);
         if(j & (1 << 2)) i.set_id(contact_info1.info_contact_data.id);
         if(j & (1 << 3)) i.set_historyid(contact_info1.info_contact_data.historyid);
-        if(j & (1 << 4)) i.set_lock(true);
+        if(j & (1 << 4)) i.set_lock();
         if(j & (1 << 5)) i.set_history_timestamp(contact_info1.info_contact_data.creation_time);
         if(j & (1 << 6)) i.set_history_query(true);
 

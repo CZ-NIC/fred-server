@@ -220,7 +220,7 @@ BOOST_FIXTURE_TEST_CASE(info_domain, test_domain_fixture )
         if(j & (1 << 1)) i.set_roid(info_data_1.info_domain_data.roid);
         if(j & (1 << 2)) i.set_id(info_data_1.info_domain_data.id);
         if(j & (1 << 3)) i.set_historyid(info_data_1.info_domain_data.historyid);
-        if(j & (1 << 4)) i.set_lock(true);
+        if(j & (1 << 4)) i.set_lock();
         if(j & (1 << 5)) i.set_history_timestamp(info_data_1.info_domain_data.update_time.get_value());
         if(j & (1 << 6)) i.set_history_query(true);
 

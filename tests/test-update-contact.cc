@@ -431,9 +431,12 @@ BOOST_FIXTURE_TEST_CASE(update_contact_by_handle_wrong_handle, update_contact_fi
  */
 BOOST_FIXTURE_TEST_CASE(update_contact_by_handle_wrong_registrar, update_contact_fixture)
 {
-    Fred::OperationContext ctx;
     std::string bad_registrar_handle = registrar_handle+xmark;
-    Fred::InfoContactOutput info_data_1 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
+    Fred::InfoContactOutput info_data_1;
+    {
+        Fred::OperationContext ctx;
+        info_data_1 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
+    }
 
     try
     {
@@ -448,7 +451,11 @@ BOOST_FIXTURE_TEST_CASE(update_contact_by_handle_wrong_registrar, update_contact
         BOOST_CHECK(ex.get_unknown_registrar_handle().compare(bad_registrar_handle) == 0);
     }
 
-    Fred::InfoContactOutput info_data_2 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
+    Fred::InfoContactOutput info_data_2;
+    {
+        Fred::OperationContext ctx;
+        info_data_2 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
+    }
     BOOST_CHECK(info_data_1 == info_data_2);
     BOOST_CHECK(info_data_2.info_contact_data.delete_time.isnull());
 }
@@ -458,9 +465,12 @@ BOOST_FIXTURE_TEST_CASE(update_contact_by_handle_wrong_registrar, update_contact
  */
 BOOST_FIXTURE_TEST_CASE(update_contact_by_handle_wrong_sponsoring_registrar, update_contact_fixture)
 {
-    Fred::OperationContext ctx;
     std::string bad_registrar_handle = registrar_handle+xmark;
-    Fred::InfoContactOutput info_data_1 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
+    Fred::InfoContactOutput info_data_1;
+    {
+        Fred::OperationContext ctx;
+        info_data_1 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
+    }
 
     try
     {
@@ -476,7 +486,11 @@ BOOST_FIXTURE_TEST_CASE(update_contact_by_handle_wrong_sponsoring_registrar, upd
         BOOST_CHECK(ex.get_unknown_sponsoring_registrar_handle().compare(bad_registrar_handle) == 0);
     }
 
-    Fred::InfoContactOutput info_data_2 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
+    Fred::InfoContactOutput info_data_2;
+    {
+        Fred::OperationContext ctx;
+        info_data_2 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
+    }
     BOOST_CHECK(info_data_1 == info_data_2);
     BOOST_CHECK(info_data_2.info_contact_data.delete_time.isnull());
 }
@@ -487,8 +501,11 @@ BOOST_FIXTURE_TEST_CASE(update_contact_by_handle_wrong_sponsoring_registrar, upd
  */
 BOOST_FIXTURE_TEST_CASE(update_contact_by_handle_wrong_ssntype, update_contact_fixture)
 {
-    Fred::OperationContext ctx;
-    Fred::InfoContactOutput info_data_1 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
+    Fred::InfoContactOutput info_data_1;
+    {
+        Fred::OperationContext ctx;
+        info_data_1 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
+    }
 
     try
     {
@@ -505,7 +522,11 @@ BOOST_FIXTURE_TEST_CASE(update_contact_by_handle_wrong_ssntype, update_contact_f
         BOOST_CHECK(ex.get_unknown_ssntype().compare("bad-ssntype") == 0);
     }
 
-    Fred::InfoContactOutput info_data_2 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
+    Fred::InfoContactOutput info_data_2;
+    {
+        Fred::OperationContext ctx;
+        info_data_2 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
+    }
     BOOST_CHECK(info_data_1 == info_data_2);
     BOOST_CHECK(info_data_2.info_contact_data.delete_time.isnull());
 }
@@ -515,8 +536,11 @@ BOOST_FIXTURE_TEST_CASE(update_contact_by_handle_wrong_ssntype, update_contact_f
  */
 BOOST_FIXTURE_TEST_CASE(update_contact_by_handle_wrong_country, update_contact_fixture)
 {
-    Fred::OperationContext ctx;
-    Fred::InfoContactOutput info_data_1 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
+    Fred::InfoContactOutput info_data_1;
+    {
+        Fred::OperationContext ctx;
+        info_data_1 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
+    }
 
     try
     {
@@ -533,7 +557,11 @@ BOOST_FIXTURE_TEST_CASE(update_contact_by_handle_wrong_country, update_contact_f
         BOOST_CHECK(ex.get_unknown_country().compare("bad-country") == 0);
     }
 
-    Fred::InfoContactOutput info_data_2 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
+    Fred::InfoContactOutput info_data_2;
+    {
+        Fred::OperationContext ctx;
+        info_data_2 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
+    }
     BOOST_CHECK(info_data_1 == info_data_2);
     BOOST_CHECK(info_data_2.info_contact_data.delete_time.isnull());
 }
@@ -555,8 +583,11 @@ BOOST_FIXTURE_TEST_CASE(update_contact_by_id, update_contact_fixture )
  */
 BOOST_FIXTURE_TEST_CASE(update_contact_by_id_wrong_id, update_contact_fixture)
 {
-    Fred::OperationContext ctx;
-    Fred::InfoContactOutput info_data_1 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
+    Fred::InfoContactOutput info_data_1;
+    {
+        Fred::OperationContext ctx;
+        info_data_1 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
+    }
 
     try
     {
@@ -572,7 +603,11 @@ BOOST_FIXTURE_TEST_CASE(update_contact_by_id_wrong_id, update_contact_fixture)
         BOOST_CHECK(ex.get_unknown_contact_id() == 0);
     }
 
-    Fred::InfoContactOutput info_data_2 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
+    Fred::InfoContactOutput info_data_2;
+    {
+        Fred::OperationContext ctx;
+        info_data_2 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
+    }
     BOOST_CHECK(info_data_1 == info_data_2);
     BOOST_CHECK(info_data_2.info_contact_data.delete_time.isnull());
 }

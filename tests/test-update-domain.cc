@@ -1093,6 +1093,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_wrong_fqdn, update_domain_fixture )
         Fred::OperationContext ctx;//new connection to rollback on error
         Fred::UpdateDomain(bad_test_domain_handle, registrar_handle).exec(ctx);
         ctx.commit_transaction();
+        BOOST_ERROR("no exception thrown");
     }
     catch(const Fred::UpdateDomain::Exception& ex)
     {
@@ -1107,16 +1108,19 @@ BOOST_FIXTURE_TEST_CASE(update_domain_wrong_fqdn, update_domain_fixture )
  */
 BOOST_FIXTURE_TEST_CASE(update_domain_wrong_registrar, update_domain_fixture)
 {
-    Fred::OperationContext ctx;
     std::string bad_registrar_handle = registrar_handle+xmark;
-
-    Fred::InfoDomainOutput info_data_1 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_1;
+    {
+        Fred::OperationContext ctx;
+        info_data_1 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+    }
 
     try
     {
         Fred::OperationContext ctx;//new connection to rollback on error
         Fred::UpdateDomain(test_domain_handle, bad_registrar_handle).exec(ctx);
         ctx.commit_transaction();
+        BOOST_ERROR("no exception thrown");
     }
     catch(const Fred::UpdateDomain::Exception& ex)
     {
@@ -1124,10 +1128,13 @@ BOOST_FIXTURE_TEST_CASE(update_domain_wrong_registrar, update_domain_fixture)
         BOOST_CHECK(ex.get_unknown_registrar_handle().compare(bad_registrar_handle) == 0);
     }
 
-    Fred::InfoDomainOutput info_data_2 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_2;
+    {
+        Fred::OperationContext ctx;
+        info_data_2 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+    }
     BOOST_CHECK(info_data_1 == info_data_2);
     BOOST_CHECK(info_data_2.info_domain_data.delete_time.isnull());
-
 }
 
 /**
@@ -1135,10 +1142,13 @@ BOOST_FIXTURE_TEST_CASE(update_domain_wrong_registrar, update_domain_fixture)
  */
 BOOST_FIXTURE_TEST_CASE(update_domain_wrong_sponsoring_registrar, update_domain_fixture)
 {
-    Fred::OperationContext ctx;
     std::string bad_registrar_handle = registrar_handle+xmark;
 
-    Fred::InfoDomainOutput info_data_1 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_1;
+    {
+        Fred::OperationContext ctx;
+        info_data_1 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+    }
 
     try
     {
@@ -1146,6 +1156,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_wrong_sponsoring_registrar, update_domain_
         Fred::UpdateDomain(test_domain_handle, registrar_handle)
             .set_sponsoring_registrar(bad_registrar_handle).exec(ctx);
         ctx.commit_transaction();
+        BOOST_ERROR("no exception thrown");
     }
     catch(const Fred::UpdateDomain::Exception& ex)
     {
@@ -1153,7 +1164,11 @@ BOOST_FIXTURE_TEST_CASE(update_domain_wrong_sponsoring_registrar, update_domain_
         BOOST_CHECK(ex.get_unknown_sponsoring_registrar_handle().compare(bad_registrar_handle) == 0);
     }
 
-    Fred::InfoDomainOutput info_data_2 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_2;
+    {
+        Fred::OperationContext ctx;
+        info_data_2 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+    }
     BOOST_CHECK(info_data_1 == info_data_2);
     BOOST_CHECK(info_data_2.info_domain_data.delete_time.isnull());
 }
@@ -1163,10 +1178,13 @@ BOOST_FIXTURE_TEST_CASE(update_domain_wrong_sponsoring_registrar, update_domain_
  */
 BOOST_FIXTURE_TEST_CASE(update_domain_wrong_registrant, update_domain_fixture)
 {
-    Fred::OperationContext ctx;
     std::string bad_registrant_handle = registrant_contact_handle+xmark;
 
-    Fred::InfoDomainOutput info_data_1 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_1;
+    {
+        Fred::OperationContext ctx;
+        info_data_1 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+    }
 
     try
     {
@@ -1175,6 +1193,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_wrong_registrant, update_domain_fixture)
         .set_registrant(bad_registrant_handle)
         .exec(ctx);
         ctx.commit_transaction();
+        BOOST_ERROR("no exception thrown");
     }
     catch(const Fred::UpdateDomain::Exception& ex)
     {
@@ -1184,7 +1203,11 @@ BOOST_FIXTURE_TEST_CASE(update_domain_wrong_registrant, update_domain_fixture)
         BOOST_CHECK(ex.get_unknown_registrant_handle().compare(bad_registrant_handle) == 0);
     }
 
-    Fred::InfoDomainOutput info_data_2 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_2;
+    {
+        Fred::OperationContext ctx;
+        info_data_2 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+    }
     BOOST_CHECK(info_data_1 == info_data_2);
     BOOST_CHECK(info_data_2.info_domain_data.delete_time.isnull());
 }
@@ -1194,10 +1217,13 @@ BOOST_FIXTURE_TEST_CASE(update_domain_wrong_registrant, update_domain_fixture)
  */
 BOOST_FIXTURE_TEST_CASE(update_domain_add_wrong_admin, update_domain_fixture)
 {
-    Fred::OperationContext ctx;
     std::string bad_admin_contact_handle = admin_contact2_handle+xmark;
 
-    Fred::InfoDomainOutput info_data_1 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_1;
+    {
+        Fred::OperationContext ctx;
+        info_data_1 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+    }
 
     try
     {
@@ -1206,6 +1232,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_add_wrong_admin, update_domain_fixture)
         .add_admin_contact(bad_admin_contact_handle)
         .exec(ctx);
         ctx.commit_transaction();
+        BOOST_ERROR("no exception thrown");
     }
     catch(const Fred::UpdateDomain::Exception& ex)
     {
@@ -1213,7 +1240,11 @@ BOOST_FIXTURE_TEST_CASE(update_domain_add_wrong_admin, update_domain_fixture)
         BOOST_CHECK(ex.get_vector_of_unknown_admin_contact_handle().at(0).compare(bad_admin_contact_handle) == 0);
     }
 
-    Fred::InfoDomainOutput info_data_2 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_2;
+    {
+        Fred::OperationContext ctx;
+        info_data_2 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+    }
     BOOST_CHECK(info_data_1 == info_data_2);
     BOOST_CHECK(info_data_2.info_domain_data.delete_time.isnull());
 
@@ -1224,8 +1255,11 @@ BOOST_FIXTURE_TEST_CASE(update_domain_add_wrong_admin, update_domain_fixture)
  */
 BOOST_FIXTURE_TEST_CASE(update_domain_add_already_added_admin, update_domain_fixture)
 {
-    Fred::OperationContext ctx;
-    Fred::InfoDomainOutput info_data_1 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_1;
+    {
+        Fred::OperationContext ctx;
+        info_data_1 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+    }
 
     try
     {
@@ -1235,6 +1269,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_add_already_added_admin, update_domain_fix
         .add_admin_contact(admin_contact2_handle)
         .exec(ctx);
         ctx.commit_transaction();
+        BOOST_ERROR("no exception thrown");
     }
     catch(const Fred::UpdateDomain::Exception& ex)
     {
@@ -1242,7 +1277,11 @@ BOOST_FIXTURE_TEST_CASE(update_domain_add_already_added_admin, update_domain_fix
         BOOST_CHECK(ex.get_vector_of_already_set_admin_contact_handle().at(0).compare(admin_contact2_handle) == 0);
     }
 
-    Fred::InfoDomainOutput info_data_2 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_2;
+    {
+        Fred::OperationContext ctx;
+        info_data_2 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+    }
     BOOST_CHECK(info_data_1 == info_data_2);
     BOOST_CHECK(info_data_2.info_domain_data.delete_time.isnull());
 
@@ -1253,10 +1292,13 @@ BOOST_FIXTURE_TEST_CASE(update_domain_add_already_added_admin, update_domain_fix
  */
 BOOST_FIXTURE_TEST_CASE(update_domain_rem_wrong_admin, update_domain_fixture)
 {
-    Fred::OperationContext ctx;
     std::string bad_admin_contact_handle = admin_contact2_handle+xmark;
 
-    Fred::InfoDomainOutput info_data_1 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_1;
+    {
+        Fred::OperationContext ctx;
+        info_data_1 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+    }
 
     try
     {
@@ -1265,6 +1307,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_rem_wrong_admin, update_domain_fixture)
         .rem_admin_contact(bad_admin_contact_handle)
         .exec(ctx);
         ctx.commit_transaction();
+        BOOST_ERROR("no exception thrown");
     }
     catch(const Fred::UpdateDomain::Exception& ex)
     {
@@ -1272,7 +1315,11 @@ BOOST_FIXTURE_TEST_CASE(update_domain_rem_wrong_admin, update_domain_fixture)
         BOOST_CHECK(ex.get_vector_of_unknown_admin_contact_handle().at(0).compare(bad_admin_contact_handle) == 0);
     }
 
-    Fred::InfoDomainOutput info_data_2 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_2;
+    {
+        Fred::OperationContext ctx;
+        info_data_2 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+    }
     BOOST_CHECK(info_data_1 == info_data_2);
     BOOST_CHECK(info_data_2.info_domain_data.delete_time.isnull());
 
@@ -1283,10 +1330,13 @@ BOOST_FIXTURE_TEST_CASE(update_domain_rem_wrong_admin, update_domain_fixture)
  */
 BOOST_FIXTURE_TEST_CASE(update_domain_rem_unassigned_admin, update_domain_fixture)
 {
-    Fred::OperationContext ctx;
     std::string bad_admin_contact_handle = registrant_contact_handle;
 
-    Fred::InfoDomainOutput info_data_1 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_1;
+    {
+        Fred::OperationContext ctx;
+        info_data_1 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+    }
 
     try
     {
@@ -1295,6 +1345,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_rem_unassigned_admin, update_domain_fixtur
         .rem_admin_contact(bad_admin_contact_handle)
         .exec(ctx);
         ctx.commit_transaction();
+        BOOST_ERROR("no exception thrown");
     }
     catch(const Fred::UpdateDomain::Exception& ex)
     {
@@ -1302,7 +1353,11 @@ BOOST_FIXTURE_TEST_CASE(update_domain_rem_unassigned_admin, update_domain_fixtur
         BOOST_CHECK(ex.get_vector_of_unassigned_admin_contact_handle().at(0).compare(bad_admin_contact_handle) == 0);
     }
 
-    Fred::InfoDomainOutput info_data_2 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_2;
+    {
+        Fred::OperationContext ctx;
+        info_data_2 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+    }
     BOOST_CHECK(info_data_1 == info_data_2);
     BOOST_CHECK(info_data_2.info_domain_data.delete_time.isnull());
 
@@ -1317,8 +1372,11 @@ BOOST_FIXTURE_TEST_CASE(update_domain_rem_unassigned_admin, update_domain_fixtur
  */
 BOOST_FIXTURE_TEST_CASE(info_domain_history_test, update_domain_fixture)
 {
-    Fred::OperationContext ctx;
-    Fred::InfoDomainOutput info_data_1 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_1;
+    {
+        Fred::OperationContext ctx;
+        info_data_1 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+    }
     //call update
     {
         Fred::OperationContext ctx;//new connection to rollback on error
@@ -1327,9 +1385,13 @@ BOOST_FIXTURE_TEST_CASE(info_domain_history_test, update_domain_fixture)
         ctx.commit_transaction();
     }
 
-    Fred::InfoDomainOutput info_data_2 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
-
-    std::vector<Fred::InfoDomainOutput> history_info_data = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid).exec(ctx);
+    Fred::InfoDomainOutput info_data_2;
+    std::vector<Fred::InfoDomainOutput> history_info_data;
+    {
+        Fred::OperationContext ctx;
+        info_data_2 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+        history_info_data = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid).exec(ctx);
+    }
 
     BOOST_CHECK(history_info_data.at(0) == info_data_2);
     BOOST_CHECK(history_info_data.at(1) == info_data_1);
@@ -1349,8 +1411,11 @@ BOOST_FIXTURE_TEST_CASE(info_domain_history_test, update_domain_fixture)
  */
 BOOST_FIXTURE_TEST_CASE(update_domain_set_exdate, update_domain_fixture)
 {
-    Fred::OperationContext ctx;
-    Fred::InfoDomainOutput info_data_1 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_1;
+    {
+        Fred::OperationContext ctx;
+        info_data_1 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+    }
 
     boost::gregorian::date exdate(boost::gregorian::from_string("2010-12-20"));
 
@@ -1367,7 +1432,11 @@ BOOST_FIXTURE_TEST_CASE(update_domain_set_exdate, update_domain_fixture)
         BOOST_ERROR(boost::diagnostic_information(ex));
     }
 
-    Fred::InfoDomainOutput info_data_2 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_2;
+    {
+        Fred::OperationContext ctx;
+        info_data_2 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+    }
     BOOST_CHECK(info_data_2.info_domain_data.expiration_date == exdate);
 }
 
@@ -1376,8 +1445,11 @@ BOOST_FIXTURE_TEST_CASE(update_domain_set_exdate, update_domain_fixture)
  */
 BOOST_FIXTURE_TEST_CASE(update_domain_set_wrong_exdate, update_domain_fixture)
 {
-    Fred::OperationContext ctx;
-    Fred::InfoDomainOutput info_data_1 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_1;
+    {
+        Fred::OperationContext ctx;
+        info_data_1 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+    }
 
     boost::gregorian::date exdate;
 
@@ -1388,6 +1460,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_set_wrong_exdate, update_domain_fixture)
         .set_domain_expiration(exdate)
         .exec(ctx);
         ctx.commit_transaction();
+        BOOST_ERROR("no exception thrown");
     }
     catch(const Fred::UpdateDomain::Exception& ex)
     {
@@ -1395,7 +1468,11 @@ BOOST_FIXTURE_TEST_CASE(update_domain_set_wrong_exdate, update_domain_fixture)
         BOOST_CHECK(ex.get_invalid_expiration_date().is_special());
     }
 
-    Fred::InfoDomainOutput info_data_2 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_2;
+    {
+        Fred::OperationContext ctx;
+        info_data_2 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+    }
     BOOST_CHECK(info_data_1 == info_data_2);
     BOOST_CHECK(info_data_2.info_domain_data.delete_time.isnull());
 }
@@ -1405,8 +1482,11 @@ BOOST_FIXTURE_TEST_CASE(update_domain_set_wrong_exdate, update_domain_fixture)
  */
 BOOST_FIXTURE_TEST_CASE(update_domain_set_valexdate, update_domain_fixture)
 {
-    Fred::OperationContext ctx;
-    Fred::InfoDomainOutput info_data_1 = Fred::InfoDomainByHandle(test_enum_domain).exec(ctx);
+    Fred::InfoDomainOutput info_data_1;
+    {
+        Fred::OperationContext ctx;
+        info_data_1 = Fred::InfoDomainByHandle(test_enum_domain).exec(ctx);
+    }
 
     boost::gregorian::date valexdate(boost::gregorian::from_string("2010-12-20"));
 
@@ -1423,7 +1503,11 @@ BOOST_FIXTURE_TEST_CASE(update_domain_set_valexdate, update_domain_fixture)
         BOOST_ERROR(boost::diagnostic_information(ex));
     }
 
-    Fred::InfoDomainOutput info_data_2 = Fred::InfoDomainByHandle(test_enum_domain).exec(ctx);
+    Fred::InfoDomainOutput info_data_2;
+    {
+        Fred::OperationContext ctx;
+        info_data_2 = Fred::InfoDomainByHandle(test_enum_domain).exec(ctx);
+    }
     BOOST_CHECK(info_data_2.info_domain_data.enum_domain_validation.get_value()
             .validation_expiration == valexdate);
     BOOST_CHECK(info_data_2.info_domain_data.delete_time.isnull());
@@ -1434,8 +1518,11 @@ BOOST_FIXTURE_TEST_CASE(update_domain_set_valexdate, update_domain_fixture)
  */
 BOOST_FIXTURE_TEST_CASE(update_domain_set_wrong_valexdate, update_domain_fixture)
 {
-    Fred::OperationContext ctx;
-    Fred::InfoDomainOutput info_data_1 = Fred::InfoDomainByHandle(test_enum_domain).exec(ctx);
+    Fred::InfoDomainOutput info_data_1;
+    {
+        Fred::OperationContext ctx;
+        info_data_1 = Fred::InfoDomainByHandle(test_enum_domain).exec(ctx);
+    }
 
     boost::gregorian::date valexdate;
 
@@ -1446,6 +1533,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_set_wrong_valexdate, update_domain_fixture
         .set_enum_validation_expiration(valexdate)
         .exec(ctx);
         ctx.commit_transaction();
+        BOOST_ERROR("no exception thrown");
     }
     catch(const Fred::UpdateDomain::Exception& ex)
     {
@@ -1453,7 +1541,11 @@ BOOST_FIXTURE_TEST_CASE(update_domain_set_wrong_valexdate, update_domain_fixture
         BOOST_CHECK(ex.get_invalid_enum_validation_expiration_date().is_special());
     }
 
-    Fred::InfoDomainOutput info_data_2 = Fred::InfoDomainByHandle(test_enum_domain).exec(ctx);
+    Fred::InfoDomainOutput info_data_2;
+    {
+        Fred::OperationContext ctx;
+        info_data_2 = Fred::InfoDomainByHandle(test_enum_domain).exec(ctx);
+    }
     BOOST_CHECK(info_data_1 == info_data_2);
     BOOST_CHECK(info_data_2.info_domain_data.delete_time.isnull());
 }
@@ -1463,8 +1555,11 @@ BOOST_FIXTURE_TEST_CASE(update_domain_set_wrong_valexdate, update_domain_fixture
  */
 BOOST_FIXTURE_TEST_CASE(update_domain_set_valexdate_wrong_domain, update_domain_fixture)
 {
-    Fred::OperationContext ctx;
-    Fred::InfoDomainOutput info_data_1 = Fred::InfoDomainByHandle(test_enum_domain).exec(ctx);
+    Fred::InfoDomainOutput info_data_1;
+    {
+        Fred::OperationContext ctx;
+        info_data_1 = Fred::InfoDomainByHandle(test_enum_domain).exec(ctx);
+    }
 
     boost::gregorian::date valexdate(boost::gregorian::from_string("2010-12-20"));
 
@@ -1475,13 +1570,18 @@ BOOST_FIXTURE_TEST_CASE(update_domain_set_valexdate_wrong_domain, update_domain_
         .set_enum_validation_expiration(valexdate)
         .exec(ctx);
         ctx.commit_transaction();
+        BOOST_ERROR("no exception thrown");
     }
     catch(const Fred::InternalError& ex)
     {
         BOOST_MESSAGE(ex.what());
     }
 
-    Fred::InfoDomainOutput info_data_2 = Fred::InfoDomainByHandle(test_enum_domain).exec(ctx);
+    Fred::InfoDomainOutput info_data_2;
+    {
+        Fred::OperationContext ctx;
+        info_data_2 = Fred::InfoDomainByHandle(test_enum_domain).exec(ctx);
+    }
     BOOST_CHECK(info_data_1 == info_data_2);
     BOOST_CHECK(info_data_2.info_domain_data.delete_time.isnull());
 }
@@ -1491,8 +1591,11 @@ BOOST_FIXTURE_TEST_CASE(update_domain_set_valexdate_wrong_domain, update_domain_
  */
 BOOST_FIXTURE_TEST_CASE(update_domain_set_publish_wrong_domain, update_domain_fixture)
 {
-    Fred::OperationContext ctx;
-    Fred::InfoDomainOutput info_data_1 = Fred::InfoDomainByHandle(test_enum_domain).exec(ctx);
+    Fred::InfoDomainOutput info_data_1;
+    {
+        Fred::OperationContext ctx;
+        info_data_1 = Fred::InfoDomainByHandle(test_enum_domain).exec(ctx);
+    }
 
     try
     {
@@ -1501,13 +1604,18 @@ BOOST_FIXTURE_TEST_CASE(update_domain_set_publish_wrong_domain, update_domain_fi
         .set_enum_publish_flag(true)
         .exec(ctx);
         ctx.commit_transaction();
+        BOOST_ERROR("no exception thrown");
     }
     catch(const Fred::InternalError& ex)
     {
         BOOST_MESSAGE(ex.what());
     }
 
-    Fred::InfoDomainOutput info_data_2 = Fred::InfoDomainByHandle(test_enum_domain).exec(ctx);
+    Fred::InfoDomainOutput info_data_2;
+    {
+        Fred::OperationContext ctx;
+        info_data_2 = Fred::InfoDomainByHandle(test_enum_domain).exec(ctx);
+    }
     BOOST_CHECK(info_data_1 == info_data_2);
     BOOST_CHECK(info_data_2.info_domain_data.delete_time.isnull());
 }
