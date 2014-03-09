@@ -107,7 +107,7 @@ namespace Fred
     {
         try
         {
-            unsigned long long nsset_id = get_object_id_by_object_id_with_lock(
+            get_object_id_by_object_id_with_lock(
                 _ctx,
                 id_,
                 static_cast<Exception*>(NULL),
