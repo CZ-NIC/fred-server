@@ -29,7 +29,6 @@
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/thread/mutex.hpp>
 
-#include "src/fredlib/opexception.h"
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/domain/enum_validation_extension.h"
 #include "util/db/nullable.h"
@@ -272,10 +271,10 @@ namespace Registry
 
         /**
          * Internal server error.
-         * Unexpected failure, requires maintenance. Exception should contain boost diagnostic information.
+         * Unexpected failure, requires maintenance.
          */
         struct InternalServerError
-        : virtual Fred::OperationException
+        : virtual std::exception
         {
             /**
              * Returns failure description.
@@ -286,10 +285,10 @@ namespace Registry
 
         /**
          * Contact of the user requesting the service was not found.
-         * The contact could have been deleted or set into inappropriate state. Exception should contain boost diagnostic information.
+         * The contact could have been deleted or set into inappropriate state.
          */
         struct UserNotExists
-        : virtual Fred::OperationException
+        : virtual std::exception
         {
             /**
              * Returns failure description.
@@ -300,10 +299,10 @@ namespace Registry
 
         /**
          * Requested object was not found.
-         * Requested object could have been deleted or set into inappropriate state. Exception should contain boost diagnostic information.
+         * Requested object could have been deleted or set into inappropriate state.
          */
         struct ObjectNotExists
-        : virtual Fred::OperationException
+        : virtual std::exception
         {
             /**
              * Returns failure description.
@@ -314,10 +313,10 @@ namespace Registry
 
         /**
          * Incorrect usage of the service.
-         * Unexpected input data. This should not happen, probably result of bad interface design. Exception should contain boost diagnostic information.
+         * Unexpected input data. This should not happen, probably result of bad interface design.
          */
         struct IncorrectUsage
-        : virtual Fred::OperationException
+        : virtual std::exception
         {
             /**
              * Returns failure description.
@@ -328,10 +327,9 @@ namespace Registry
 
         /**
          * Access to requested information is forbidden.
-         * Exception should contain boost diagnostic information.
          */
         struct AccessDenied
-        : virtual Fred::OperationException
+        : virtual std::exception
         {
             /**
              * Returns failure description.
@@ -342,10 +340,10 @@ namespace Registry
 
         /**
          * Requested object does not allow update.
-         * Requested object has a status that does not allow update. Exception should contain boost diagnostic information.
+         * Requested object has a status that does not allow update.
          */
         struct ObjectBlocked
-        : virtual Fred::OperationException
+        : virtual std::exception
         {
             /**
              * Returns failure description.
