@@ -58,11 +58,11 @@ void db_contact_addresses_insert(Contact &_data)
 {
     std::string qaddress =
         "INSERT INTO contact_address ("
-        "contactid, type_id, street1, street2, street3,"
-        " city, stateorprovince, postalcode, country)"
+        "contactid,type_id,street1,street2,street3,"
+        " city,stateorprovince,postalcode,country)"
         " VALUES ("
-        " $1::integer, (SELECT id FROM enum_contact_address_type WHERE name = $2::text),"
-        " $3::text, $4::text, $5::text, $6::text, $7::text, $8::text, $9::text)";
+         "$1::integer,$2::text,$3::text,$4::text,$5::text,"
+         "$6::text,$7::text,$8::text,$9::text)";
 
     Database::Connection conn = Database::Manager::acquire();
 
@@ -369,10 +369,10 @@ const Contact contact_info(const unsigned long long &_id)
     data.telephone = rinfo[0][25];
     data.fax = rinfo[0][26];
 
-    std::string qaddresses = "SELECT ecat.name as type, ca.street1, ca.street2, ca.street3,"
-        " ca.city, ca.stateorprovince, ca.postalcode, ca.country"
-        " FROM contact_address ca JOIN enum_contact_address_type ecat ON ecat.id = ca.type_id"
-        " WHERE ca.contactid = $1::integer";
+    std::string qaddresses = 
+        "SELECT type,street1,street2,street3,city,stateorprovince,postalcode,country "
+         "FROM contact_address "
+         "WHERE contactid=$1::integer";
     Database::Result raddresses = conn.exec_params(qaddresses, Database::query_param_list(_id));
     for (unsigned long long i = 0; i < raddresses.size(); ++i)
     {

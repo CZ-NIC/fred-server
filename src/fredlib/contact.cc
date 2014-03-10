@@ -50,6 +50,7 @@ class AddressImpl : public virtual Address
 {
 private:
   std::string type;
+  std::string company_name;
   std::string street1;
   std::string street2;
   std::string street3;
@@ -61,6 +62,7 @@ private:
 public:
   AddressImpl(
           const std::string &_type,
+          const std::string &_company_name,
           const std::string &_street1,
           const std::string &_street2,
           const std::string &_street3,
@@ -70,6 +72,7 @@ public:
           const std::string &_country
           ) :
       type(_type),
+      company_name(_company_name),
       street1(_street1),
       street2(_street2),
       street3(_street3),
@@ -84,17 +87,22 @@ public:
   {
       return type;
   }
-  /// return contact street addres part 1
+  /// return contact company name
+  virtual const std::string& getCompanyName() const
+  {
+      return company_name;
+  }
+  /// return contact street address part 1
   virtual const std::string& getStreet1() const
   {
       return street1;
   }
-  /// return contact street addres part 2
+  /// return contact street address part 2
   virtual const std::string& getStreet2() const
   {
       return street2;
   }
-  /// return contact street addres part 3
+  /// return contact street address part 3
   virtual const std::string& getStreet3() const
   {
       return street3;
@@ -122,21 +130,15 @@ public:
 
   virtual bool operator==(const Address &_other) const
   {
-      if (getType() == _other.getType()
-              && getStreet1() == _other.getStreet1()
-              && getStreet2() == _other.getStreet2()
-              && getStreet3() == _other.getStreet3()
-              && getProvince() == _other.getProvince()
-              && getPostalCode() == _other.getPostalCode()
-              && getCity() == _other.getCity()
-              && getCountry() == _other.getCountry())
-      {
-          return true;
-      }
-      else
-      {
-          return false;
-      }
+      return getType() == _other.getType() &&
+             getCompanyName() == _other.getCompanyName() &&
+             getStreet1() == _other.getStreet1() &&
+             getStreet2() == _other.getStreet2() &&
+             getStreet3() == _other.getStreet3() &&
+             getProvince() == _other.getProvince() &&
+             getPostalCode() == _other.getPostalCode() &&
+             getCity() == _other.getCity() &&
+             getCountry() == _other.getCountry();
 
   }
   virtual bool operator!=(const Address &_other) const
@@ -359,10 +361,10 @@ public:
   void makeQuery(bool count, bool limit, std::stringstream& sql) const {
     std::stringstream from, where;
     sql.str("");
-    if (!count)
+    if (!count) {
       sql << "INSERT INTO " << getTempTableName() << " ";
-    sql << "SELECT " << (count ? "COUNT(" : "") << "DISTINCT c.id"
-        << (count ? ") " : " ");
+    }
+    sql << "SELECT " << (count ? "COUNT(DISTINCT c.id) " : "DISTINCT c.id ");
     from << "FROM contact c ";
     where << "WHERE 1=1 ";
     SQL_ID_FILTER(where, "c.id", idFilter);
@@ -408,10 +410,12 @@ public:
             createRegistrarHandleFilter, wcheck, false);
       }
     }
-    if (!count)
+    if (!count) {
       where << "ORDER BY c.id ASC ";
-    if (limit)
+    }
+    if (limit) {
       where << "LIMIT " << load_limit_ << " ";
+    }
     sql << from.rdbuf();
     sql << where.rdbuf();
   }
@@ -670,12 +674,11 @@ public:
 
       resetHistoryIDSequence();
       std::stringstream addr_query;
-      addr_query << "SELECT tmp.id, cah.contactid, ecat.name, cah.street1,"
-                 << " cah.street2, cah.street3, cah.stateorprovince, cah.postalcode,"
-                 << " cah.city, cah.country"
+      addr_query << "SELECT tmp.id,cah.contactid,cah.type,cah.street1,"
+                 << " cah.street2,cah.street3,cah.stateorprovince,cah.postalcode,"
+                 << " cah.city,cah.country"
                  << " FROM " << getTempTableName() << " tmp"
                  << " JOIN contact_address_history cah ON cah.historyid = tmp.id"
-                 << " JOIN enum_contact_address_type ecat ON ecat.id = cah.type_id"
                  << " ORDER BY cah.contactid, tmp.id, cah.id";
       Database::Result r_addr = conn.exec(addr_query.str());
       for (Database::Result::Iterator it = r_addr.begin(); it != r_addr.end(); ++it)

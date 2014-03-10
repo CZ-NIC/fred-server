@@ -37,15 +37,14 @@ const ContactVerificationPassword::MessageData ContactVerificationPassword::coll
 {
     Database::Connection conn = Database::Manager::acquire();
     Database::Result result = conn.exec_params(
-            "SELECT c.name, NULL, ca.street1, ca.city,"
-            " ca.stateorprovince, ca.postalcode, ca.country, c.email,"
-            " oreg.historyid, c.telephone, ec.country, ec.country_cs"
-            " FROM contact c"
-            " JOIN object_registry oreg ON oreg.id = c.id"
-            " JOIN contact_address ca ON ca.contactid = c.id"
-            " JOIN enum_contact_address_type ecat ON ecat.id = ca.type_id"
-            " JOIN enum_country ec ON ec.id = ca.country"
-            " WHERE c.id = $1::integer AND ecat.name = 'MAILING' LIMIT 1",
+            "SELECT c.name,NULL,ca.street1,ca.city,"
+             "ca.stateorprovince, ca.postalcode, ca.country, c.email,"
+             "oreg.historyid, c.telephone, ec.country, ec.country_cs"
+             "FROM contact c "
+             "JOIN object_registry oreg ON oreg.id=c.id "
+             "JOIN contact_address ca ON ca.contactid=c.id "
+             "JOIN enum_country ec ON ec.id=ca.country "
+             "WHERE c.id=$1::integer AND ca.type='MAILING' LIMIT 1",
             Database::query_param_list(prai_ptr_->getObject(0).id));
     if (result.size() != 1)
     {

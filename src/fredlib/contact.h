@@ -26,11 +26,13 @@ class Address
 {
 public:
   virtual const std::string& getType() const = 0;
-  /// return contact street addres part 1
+  /// return contact company name
+  virtual const std::string& getCompanyName() const = 0;
+  /// return contact street address part 1
   virtual const std::string& getStreet1() const = 0;
-  /// return contact street addres part 2
+  /// return contact street address part 2
   virtual const std::string& getStreet2() const = 0;
-  /// return contact street addres part 3
+  /// return contact street address part 3
   virtual const std::string& getStreet3() const = 0;
   /// return contact state or province
   virtual const std::string& getProvince() const = 0;
