@@ -21,6 +21,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <limits>
+#include <vector>
 
 namespace
 {
@@ -95,16 +96,33 @@ void test_convertible_types(T0 v0, T1 v1)
     typedef Optional< T0 > OT0;
     typedef Optional< T1 > OT1;
 
-    const T0 t0_v[] = {v0, v1};
-    const T1 t1_v[] = {v0, v1};
-    OT0 o0i[] = {v0,  // init constructor Optional< T0 >(const T0&)
-                 v1}; // init constructor Optional< T0 >(const T1&)
-    OT1 o1i[] = {v0,  // init constructor Optional< T1 >(const T0&)
-                 v1}; // init constructor Optional< T1 >(const T1&)
-    OT0 o0c[] = {o0i[0], o0i[1],  // copy constructor Optional< T0 >(const Optional< T0 >&)
-                 o1i[0], o1i[1]}; // copy constructor Optional< T0 >(const Optional< T1 >&)
-    OT1 o1c[] = {o0i[0], o0i[1],  // copy constructor Optional< T1 >(const Optional< T0 >&)
-                 o1i[0], o1i[1]}; // copy constructor Optional< T1 >(const Optional< T1 >&)
+    std::vector<T0> t0_v;
+    t0_v.push_back(v0);
+    t0_v.push_back(v1);
+
+    std::vector<T1> t1_v;
+    t1_v.push_back(v0);
+    t1_v.push_back(v1);
+
+    std::vector<OT0> o0i;
+    o0i.push_back(v0);  // init constructor Optional< T0 >(const T0&)
+    o0i.push_back(v1);  // init constructor Optional< T0 >(const T1&)
+
+    std::vector<OT1> o1i;
+    o1i.push_back(v0);  // init constructor Optional< T1 >(const T0&)
+    o1i.push_back(v1);  // init constructor Optional< T1 >(const T1&)
+
+    std::vector<OT0> o0c;
+    o0c.push_back(o0i[0]);  // copy constructor Optional< T0 >(const Optional< T0 >&)
+    o0c.push_back(o0i[1]);  // copy constructor Optional< T0 >(const Optional< T0 >&)
+    o0c.push_back(o1i[0]);  // copy constructor Optional< T0 >(const Optional< T1 >&)
+    o0c.push_back(o1i[1]);  // copy constructor Optional< T0 >(const Optional< T1 >&)
+
+    std::vector<OT1> o1c;
+    o1c.push_back(o0i[0]);  // copy constructor Optional< T1 >(const Optional< T0 >&)
+    o1c.push_back(o0i[1]);  // copy constructor Optional< T1 >(const Optional< T0 >&)
+    o1c.push_back(o1i[0]);  // copy constructor Optional< T1 >(const Optional< T1 >&)
+    o1c.push_back(o1i[1]);  // copy constructor Optional< T1 >(const Optional< T1 >&)
 
     for (int variant = 0; variant < 2; ++variant) {
         switch (variant) { // 0..1
