@@ -23,7 +23,7 @@
 
 #include "src/fredlib/poll/create_update_object_poll_message.h"
 #include "src/fredlib/poll/create_poll_message_impl.h"
-#include "src/fredlib/poll.h"
+#include "src/fredlib/poll/message_types.h"
 
 #include <boost/test/unit_test.hpp>
 
@@ -88,10 +88,7 @@ BOOST_AUTO_TEST_CASE( test_correct_generic_data )
     BOOST_CHECK_EQUAL(ids_before.size() + 1, ids_after.size());
 
     Database::Result message_res = ctx.get_conn().exec_params(
-        "SELECT "
-        "       exdate, "
-        "       seen, "
-        "       msgtype "
+        "SELECT seen "
         "   FROM message "
         "   WHERE id=$1::integer",
         Database::query_param_list
@@ -190,25 +187,24 @@ BOOST_AUTO_TEST_CASE( test_correct_type_specific_data)
         BOOST_CHECK_EQUAL(ids_before.size() + 1, ids_after.size());
 
         Database::Result message_res = ctx.get_conn().exec_params(
-            "SELECT "
-            "       exdate, "
-            "       seen, "
-            "       msgtype "
-            "   FROM message "
-            "   WHERE id=$1::integer",
+            "SELECT mt.name     AS msgtype_name_ "
+            "   FROM message AS m "
+            "       JOIN messagetype AS mt "
+            "           ON m.msgtype = mt.id "
+            "   WHERE m.id=$1::integer",
             Database::query_param_list
                 (new_message_id)
         );
 
         switch(i) {
             case 0:
-                BOOST_CHECK_EQUAL(static_cast<long>(message_res[0]["msgtype"]), Fred::Poll::MT_UPDATE_DOMAIN);
+                BOOST_CHECK_EQUAL(static_cast<std::string>(message_res[0]["msgtype_name_"]), Fred::Poll::UPDATE_DOMAIN);
                 break;
             case 1:
-                BOOST_CHECK_EQUAL(static_cast<long>(message_res[0]["msgtype"]), Fred::Poll::MT_UPDATE_KEYSET);
+                BOOST_CHECK_EQUAL(static_cast<std::string>(message_res[0]["msgtype_name_"]), Fred::Poll::UPDATE_KEYSET);
                 break;
             case 2:
-                BOOST_CHECK_EQUAL(static_cast<long>(message_res[0]["msgtype"]), Fred::Poll::MT_UPDATE_NSSET);
+                BOOST_CHECK_EQUAL(static_cast<std::string>(message_res[0]["msgtype_name_"]), Fred::Poll::UPDATE_NSSET);
                 break;
         }
 

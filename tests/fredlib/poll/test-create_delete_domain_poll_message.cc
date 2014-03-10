@@ -22,7 +22,7 @@
 #include "setup_utils.h"
 
 #include "src/fredlib/poll/create_delete_domain_poll_message.h"
-#include "src/fredlib/poll.h"
+#include "src/fredlib/poll/message_types.h"
 
 #include <boost/test/unit_test.hpp>
 
@@ -63,21 +63,22 @@ BOOST_AUTO_TEST_CASE( test_correct_data )
 
     Database::Result message_res = ctx.get_conn().exec_params(
         "SELECT "
-        "       exdate, "
-        "       seen, "
-        "       msgtype "
-        "   FROM message "
-        "   WHERE id=$1::integer",
+        "       m.seen      AS seen_, "
+        "       mt.name     AS msgtype_name_ "
+        "   FROM message AS m "
+        "       JOIN messagetype AS mt "
+        "           ON m.msgtype = mt.id "
+        "   WHERE m.id=$1::integer",
         Database::query_param_list
             (message_id)
     );
 
     BOOST_CHECK_EQUAL(message_res.size(), 1);
-    BOOST_CHECK_EQUAL(static_cast<bool>(message_res[0]["seen"]), false);
-    BOOST_CHECK_EQUAL(static_cast<long>(message_res[0]["msgtype"]), Fred::Poll::MT_DELETE_DOMAIN);
+    BOOST_CHECK_EQUAL(static_cast<bool>(message_res[0]["seen_"]), false);
+    BOOST_CHECK_EQUAL(static_cast<std::string>(message_res[0]["msgtype_name_"]), Fred::Poll::DELETE_DOMAIN);
 
     Database::Result polleppaction_res = ctx.get_conn().exec_params(
-        "SELECT msgid, objid "
+        "SELECT objid "
         "   FROM poll_eppaction "
         "   WHERE msgid=$1::integer",
         Database::query_param_list
