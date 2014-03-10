@@ -676,13 +676,21 @@ namespace Registry
                 flags_.notify_email = flags.notify_email;
                 return pimpl_->setContactDiscloseFlags(contact.id, flags_, request_id);
             }//try
-            catch (const Registry::DomainBrowserImpl::ObjectNotExists& )
-            {
-                throw Registry::DomainBrowser::OBJECT_NOT_EXISTS();
-            }
             catch (const Registry::DomainBrowserImpl::UserNotExists& )
             {
                 throw Registry::DomainBrowser::USER_NOT_EXISTS();
+            }
+            catch (const Registry::DomainBrowserImpl::IncorrectUsage& )
+            {
+                throw Registry::DomainBrowser::INCORRECT_USAGE();
+            }
+            catch (const Registry::DomainBrowserImpl::ObjectBlocked& )
+            {
+                throw Registry::DomainBrowser::OBJECT_BLOCKED();
+            }
+            catch (const Registry::DomainBrowserImpl::AccessDenied& )
+            {
+                throw Registry::DomainBrowser::ACCESS_DENIED();
             }
             catch (const boost::exception&)
             {
