@@ -27,7 +27,6 @@
 
 #include "util/map_at.h"
 #include "src/fredlib/opcontext.h"
-#include "src/fredlib/opexception.h"
 #include "src/fredlib/object/object_impl.h"
 #include "src/fredlib/object_state/object_has_state.h"
 #include "src/fredlib/object_state/object_state_name.h"
@@ -71,7 +70,7 @@ namespace Registry
             {
                 if(ex.is_set_unknown_object_id())
                 {
-                    BOOST_THROW_EXCEPTION(EXCEPTION());
+                    throw EXCEPTION();
                 }
                 else
                     throw;
@@ -79,7 +78,7 @@ namespace Registry
 
             if(!Fred::ObjectHasState(user_contact_id,Fred::ObjectState::MOJEID_CONTACT).exec(ctx))
             {
-                BOOST_THROW_EXCEPTION(UserNotExists());
+                throw UserNotExists();
             }
 
             return info;
@@ -148,7 +147,7 @@ namespace Registry
             {
                 if(ex.is_set_unknown_registrar_handle())
                 {
-                    BOOST_THROW_EXCEPTION(ObjectNotExists());
+                    throw ObjectNotExists();
                 }
                 else
                     throw;
@@ -224,7 +223,7 @@ namespace Registry
             {
                 if(ex.is_set_unknown_object_id())
                 {
-                    BOOST_THROW_EXCEPTION(ObjectNotExists());
+                    throw ObjectNotExists();
                 }
                 else
                     throw;
@@ -303,7 +302,7 @@ namespace Registry
             {
                 if(ex.is_set_unknown_object_id())
                 {
-                    BOOST_THROW_EXCEPTION(ObjectNotExists());
+                    throw ObjectNotExists();
                 }
                 else
                     throw;
@@ -390,7 +389,7 @@ namespace Registry
             {
                 if(ex.is_set_unknown_object_id())
                 {
-                    BOOST_THROW_EXCEPTION(ObjectNotExists());
+                    throw ObjectNotExists();
                 }
                 else
                     throw;
@@ -497,7 +496,7 @@ namespace Registry
             {
                 if(ex.is_set_unknown_object_id())
                 {
-                    BOOST_THROW_EXCEPTION(ObjectNotExists());
+                    throw ObjectNotExists();
                 }
                 else
                     throw;
@@ -591,18 +590,18 @@ namespace Registry
             if(!(Fred::ObjectHasState(contact_id,Fred::ObjectState::IDENTIFIED_CONTACT).exec(ctx)
                 || Fred::ObjectHasState(contact_id,Fred::ObjectState::VALIDATED_CONTACT).exec(ctx)))
             {
-                BOOST_THROW_EXCEPTION(AccessDenied());
+                throw AccessDenied();
             }
 
             if(Fred::ObjectHasState(contact_id,Fred::ObjectState::SERVER_BLOCKED).exec(ctx))
             {
-                BOOST_THROW_EXCEPTION(ObjectBlocked());
+                throw ObjectBlocked();
             }
 
             //when organization is set it's not allowed to hide address
             if((!contact_info.info_contact_data.organization.get_value_or_default().empty()) && (flags.address == false))
             {
-                BOOST_THROW_EXCEPTION(IncorrectUsage());
+                throw IncorrectUsage();
             }
 
             Fred::UpdateContactById update_contact(contact_id, update_registrar_);
