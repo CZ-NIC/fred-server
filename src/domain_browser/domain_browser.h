@@ -245,6 +245,30 @@ namespace Registry
             {}
         };
 
+        /**
+         * Contact disclose flags to be set.
+         */
+        struct ContactDiscloseFlagsToSet
+        {
+            bool email;/**< whether to reveal email address */
+            bool address;/**< whether to reveal address */
+            bool telephone;/**< whether to reveal phone number */
+            bool fax;/**< whether to reveal fax number */
+            bool ident;/**< whether to reveal unambiguous identification number */
+            bool vat;/**< whether to reveal taxpayer identification number */
+            bool notify_email;/**< whether to reveal notify email */
+
+            ContactDiscloseFlagsToSet()
+            : email(false)
+            , address(false)
+            , telephone(false)
+            , fax(false)
+            , ident(false)
+            , vat(false)
+            , notify_email(false)
+            {}
+        };
+
 
         /**
          * Internal server error.
@@ -333,13 +357,7 @@ namespace Registry
         class DomainBrowser
         {
             std::string server_name_;
-            /**
-             * Check user contact.
-             * @param ctx contains reference to database and logging interface
-             * @param user_contact_id is database id of user contact
-             * If user contact is deleted or don't have mojeidContact state throw UserNotExists.
-             */
-            void check_user_contact_id(Fred::OperationContext& ctx, unsigned long long user_contact_id);
+            std::string update_registrar_;/**< handle of registrar performing the updates */
 
             /**
              * Fill object state codes and description into given strings.
@@ -418,6 +436,18 @@ namespace Registry
             KeysetDetail getKeysetDetail(unsigned long long user_contact_id,
                     unsigned long long keyset_id,
                     const std::string& lang);
+
+            /**
+             * Sets contact disclose flags.
+             * @param contact_id contains database id of the contact
+             * @param flags contains contact disclose flags
+             * @param request_id is id of the new entry in log_entry database table
+             * @return true if disclose flags were set, false if not or exception in case of failure
+             */
+            bool setContactDiscloseFlags(
+                unsigned long long contact_id,
+                const ContactDiscloseFlagsToSet& flags,
+                unsigned long long request_id);
 
 
             std::string get_server_name();

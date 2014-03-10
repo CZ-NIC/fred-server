@@ -666,23 +666,31 @@ namespace Registry
         {
             try
             {
-                return false;
+                Registry::DomainBrowserImpl::ContactDiscloseFlagsToSet flags_;
+                flags_.email = flags.email;
+                flags_.address = flags.address;
+                flags_.telephone = flags.telephone;
+                flags_.fax = flags.fax;
+                flags_.ident = flags.ident;
+                flags_.vat = flags.vat;
+                flags_.notify_email = flags.notify_email;
+                return pimpl_->setContactDiscloseFlags(contact.id, flags_, request_id);
             }//try
-            catch (std::exception &_ex)
+            catch (const Registry::DomainBrowserImpl::ObjectNotExists& )
             {
-                throw Registry::DomainBrowser::OBJECT_BLOCKED();
+                throw Registry::DomainBrowser::OBJECT_NOT_EXISTS();
             }
-            catch (std::exception &_ex)
-            {
-                throw Registry::DomainBrowser::ACCESS_DENIED();
-            }
-            catch (std::exception &_ex)
+            catch (const Registry::DomainBrowserImpl::UserNotExists& )
             {
                 throw Registry::DomainBrowser::USER_NOT_EXISTS();
             }
-            catch (std::exception &_ex)
+            catch (const boost::exception&)
             {
-                throw Registry::DomainBrowser::INCORRECT_USAGE();
+                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
+            }
+            catch (const std::exception&)
+            {
+                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
             }
             catch (...)
             {
