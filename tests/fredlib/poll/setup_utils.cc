@@ -45,13 +45,7 @@ setup_contact::setup_contact() {
     Fred::OperationContext ctx_check;
     data_ = Fred::InfoContactByHandle(handle_).exec(ctx_check);
 
-    id_ = static_cast<unsigned long long>(
-        ctx_check.get_conn().exec(
-            "SELECT id "
-            "   FROM contact "
-            "   JOIN object_registry AS o_r USING(id) "
-            "   WHERE o_r.name='" + handle_ + "' "
-        )[0]["id"]);
+    id_ = data_.info_contact_data.id;
 }
 
 setup_domain::setup_domain() {
@@ -76,13 +70,7 @@ setup_domain::setup_domain() {
     Fred::OperationContext ctx_check;
     data_ = Fred::InfoDomainByHandle(fqdn_).exec(ctx_check);
 
-    id_ = static_cast<unsigned long long>(
-        ctx_check.get_conn().exec(
-            "SELECT id "
-            "   FROM domain "
-            "   JOIN object_registry AS o_r USING(id) "
-            "   WHERE o_r.name='" + boost::algorithm::to_lower_copy(fqdn_) + "' "
-        )[0]["id"]);
+    id_ = data_.info_domain_data.id;
 }
 
 setup_keyset::setup_keyset() {
@@ -107,13 +95,7 @@ setup_keyset::setup_keyset() {
     Fred::OperationContext ctx_check;
     data_ = Fred::InfoKeysetByHandle(handle_).exec(ctx_check);
 
-    id_ = static_cast<unsigned long long>(
-        ctx_check.get_conn().exec(
-            "SELECT id "
-            "   FROM keyset "
-            "   JOIN object_registry AS o_r USING(id) "
-            "   WHERE o_r.name='" + handle_ + "' "
-        )[0]["id"]);
+    id_ = data_.info_keyset_data.id;
 }
 
 setup_nsset::setup_nsset() {
@@ -138,13 +120,7 @@ setup_nsset::setup_nsset() {
     Fred::OperationContext ctx_check;
     data_ = Fred::InfoNssetByHandle(handle_).exec(ctx_check);
 
-    id_ = static_cast<unsigned long long>(
-        ctx_check.get_conn().exec(
-            "SELECT id "
-            "   FROM nsset "
-            "   JOIN object_registry AS o_r USING(id) "
-            "   WHERE o_r.name='" + handle_ + "' "
-        )[0]["id"]);
+    id_ = data_.info_nsset_data.id;
 }
 
 setup_nonexistent_object_historyid::setup_nonexistent_object_historyid() {
