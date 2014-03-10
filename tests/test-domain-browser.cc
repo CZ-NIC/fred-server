@@ -29,6 +29,7 @@
 #include "src/fredlib/nsset/create_nsset.h"
 #include "src/fredlib/contact/create_contact.h"
 #include "src/fredlib/contact/info_contact.h"
+#include "src/fredlib/contact/update_contact.h"
 #include "src/fredlib/object_state/object_state_name.h"
 #include "src/fredlib/object_state/create_object_state_request_id.h"
 #include "src/fredlib/registrar/create_registrar.h"
@@ -904,6 +905,110 @@ BOOST_FIXTURE_TEST_CASE(set_contact_disclose_flags, mojeid_user_contact_fixture 
     BOOST_CHECK(my_contact_info.info_contact_data.disclosevat.get_value_or_default());
     BOOST_CHECK(my_contact_info.info_contact_data.disclosenotifyemail.get_value_or_default());
 }
+
+/**
+ * test setContactDiscloseFlags non-mojeid user
+ */
+BOOST_FIXTURE_TEST_CASE(set_contact_disclose_flags_user_not_in_mojeid, user_contact_fixture )
+{
+    try
+    {
+        Fred::OperationContext ctx;
+        Registry::DomainBrowserImpl::DomainBrowser impl(server_name);
+        Registry::DomainBrowserImpl::ContactDiscloseFlagsToSet set_flags;
+        set_flags.email = true;
+        impl.setContactDiscloseFlags(user_contact_info.info_contact_data.id,set_flags, 0);
+        BOOST_ERROR("unreported missing user");
+    }
+    catch( const Registry::DomainBrowserImpl::UserNotExists& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
+
+/**
+ * test setContactDiscloseFlags non-identified user
+ */
+BOOST_FIXTURE_TEST_CASE(set_contact_disclose_flags_user_not_identified, mojeid_user_contact_fixture )
+{
+    try
+    {
+        Fred::OperationContext ctx;
+        Registry::DomainBrowserImpl::DomainBrowser impl(server_name);
+        Registry::DomainBrowserImpl::ContactDiscloseFlagsToSet set_flags;
+        set_flags.email = true;
+        impl.setContactDiscloseFlags(user_contact_info.info_contact_data.id,set_flags, 0);
+        BOOST_ERROR("unreported missing user identification");
+    }
+    catch( const Registry::DomainBrowserImpl::AccessDenied& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
+/**
+ * test setContactDiscloseFlags blocked user
+ */
+BOOST_FIXTURE_TEST_CASE(set_contact_disclose_flags_contact_blocked, mojeid_user_contact_fixture )
+{
+    {
+        Fred::OperationContext ctx;
+        Fred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id
+        , Util::set_of<std::string>(Fred::ObjectState::IDENTIFIED_CONTACT)(Fred::ObjectState::SERVER_BLOCKED)).exec(ctx);
+        Fred::PerformObjectStateRequest(user_contact_info.info_contact_data.id).exec(ctx);
+        ctx.commit_transaction();
+    }
+
+    try
+    {
+        Fred::OperationContext ctx;
+        Registry::DomainBrowserImpl::DomainBrowser impl(server_name);
+        Registry::DomainBrowserImpl::ContactDiscloseFlagsToSet set_flags;
+        set_flags.email = true;
+        impl.setContactDiscloseFlags(user_contact_info.info_contact_data.id,set_flags, 0);
+        BOOST_ERROR("unreported blocked user contact");
+    }
+    catch( const Registry::DomainBrowserImpl::ObjectBlocked& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
+/**
+ * test setContactDiscloseFlags hide address of organization
+ */
+BOOST_FIXTURE_TEST_CASE(set_contact_disclose_flags_hide_organization_address, mojeid_user_contact_fixture )
+{
+    {
+        Fred::OperationContext ctx;
+        Fred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id
+        , Util::set_of<std::string>(Fred::ObjectState::IDENTIFIED_CONTACT)).exec(ctx);
+        Fred::PerformObjectStateRequest(user_contact_info.info_contact_data.id).exec(ctx);
+        Fred::UpdateContactById(user_contact_info.info_contact_data.id
+            , CfgArgs::instance()->get_handler_ptr_by_type<HandleMojeIDArgs>()->registrar_handle)
+        .set_organization("TestOrganization").exec(ctx);
+        ctx.commit_transaction();
+    }
+
+    try
+    {
+        Fred::OperationContext ctx;
+        Registry::DomainBrowserImpl::DomainBrowser impl(server_name);
+        Registry::DomainBrowserImpl::ContactDiscloseFlagsToSet set_flags;
+        impl.setContactDiscloseFlags(user_contact_info.info_contact_data.id,set_flags, 0);
+        BOOST_ERROR("unreported hide address of organization");
+    }
+    catch( const Registry::DomainBrowserImpl::IncorrectUsage& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
 BOOST_AUTO_TEST_SUITE_END();//setContactDiscloseFlags
 
 BOOST_AUTO_TEST_SUITE_END();//TestDomainBrowser
