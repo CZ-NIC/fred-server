@@ -86,6 +86,17 @@ public:
           value_(_value)
     {}
 
+    /** copy c-tor
+     *
+     * Object is "set" if and only if the initialization object is "set".
+     *
+     * @remark Used instead of @ref Optional(const Optional< Tc > &_rhs).
+     */
+    Optional(const Optional &_rhs)
+        : isset_(_rhs.isset_),
+          value_(_rhs.value_)
+    {}
+
     /** generalized copy c-tor
      *
      * Object is "set" if and only if the initialization object is "set".
@@ -129,6 +140,19 @@ public:
      */
     template < typename Tc >
     Optional& operator=(const Optional< Tc > &_rhs)
+    {
+        value_ = _rhs.value_;
+        isset_ = _rhs.isset_;
+        return *this;
+    }
+
+    /** assignment operator
+     *
+     * Object is "set" if and only if the assigned object is "set".
+     *
+     * @remark Used instead of @ref operator=(const Optional< Tc > &_rhs).
+     */
+    Optional& operator=(const Optional &_rhs)
     {
         value_ = _rhs.value_;
         isset_ = _rhs.isset_;

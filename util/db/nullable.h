@@ -70,6 +70,17 @@ public:
           value_(_value)
     {}
 
+    /** copy c-tor
+     *
+     * Object is "null" if and only if the initialization object is "null".
+     *
+     * @remark Used instead of @ref Nullable(const Nullable< Tc > &_rhs).
+     */
+    Nullable(const Nullable &_rhs)
+        : isnull_(_rhs.isnull_),
+          value_(_rhs.value_)
+    {}
+
     /** generalized copy c-tor
      *
      * Object is "null" if and only if the initialization object is "null".
@@ -99,6 +110,19 @@ public:
     {
         value_ = _value;
         isnull_ = false;
+        return *this;
+    }
+
+    /** assignment operator
+     *
+     * Object is "null" if and only if the assigned object is "null".
+     *
+     * @remark Used instead of @ref operator=(const Nullable< Tc > &_rhs).
+     */
+    Nullable& operator=(const Nullable &_rhs)
+    {
+        value_ = _rhs.value_;
+        isnull_ = _rhs.isnull_;
         return *this;
     }
 
