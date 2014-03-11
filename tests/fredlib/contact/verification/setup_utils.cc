@@ -50,13 +50,7 @@ setup_contact::setup_contact() {
     Fred::OperationContext ctx_check;
     data_ = Fred::InfoContactByHandle(contact_handle).exec(ctx_check);
 
-    contact_id_ = static_cast<unsigned long long>(
-        ctx_check.get_conn().exec(
-            "SELECT id "
-            "   FROM contact "
-            "   JOIN object_registry AS o_r USING(id) "
-            "   WHERE o_r.name='" + contact_handle + "' "
-        )[0][0]);
+    contact_id_ = data_.info_contact_data.id;
 }
 
 setup_nonexistent_contact_handle::setup_nonexistent_contact_handle() {
