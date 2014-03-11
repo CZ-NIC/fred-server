@@ -661,6 +661,47 @@ namespace Registry
             return true;
         }
 
+        bool DomainBrowser::setContactAuthInfo(
+            unsigned long long user_contact_id,
+            unsigned long long contact_id,
+            const std::string& authinfo,
+            unsigned long long request_id)
+        {
+            Fred::OperationContext ctx;
+            Fred::InfoContactOutput contact_info = check_user_contact_id<UserNotExists>(ctx, user_contact_id, true);
+
+            if(contact_id != contact_info.info_contact_data.id)
+            {
+                throw AccessDenied();
+            }
+
+            const unsigned MAX_AUTH_INFO_LENGTH = 300u;
+            if(authinfo.length() > MAX_AUTH_INFO_LENGTH)
+            {
+                throw IncorrectUsage();
+            }
+
+            if(!(Fred::ObjectHasState(contact_id,Fred::ObjectState::IDENTIFIED_CONTACT).exec(ctx)
+                || Fred::ObjectHasState(contact_id,Fred::ObjectState::VALIDATED_CONTACT).exec(ctx)))
+            {
+                throw AccessDenied();
+            }
+
+            if(Fred::ObjectHasState(contact_id,Fred::ObjectState::SERVER_BLOCKED).exec(ctx))
+            {
+                throw ObjectBlocked();
+            }
+
+            if(contact_info.info_contact_data.authinfopw.compare(authinfo) == 0)
+            {
+                return false;
+            }
+
+            Fred::UpdateContactById(contact_id, update_registrar_).set_authinfo(authinfo).exec(ctx);
+            ctx.commit_transaction();
+            return true;
+        }
+
     }//namespace DomainBrowserImpl
 }//namespace Registry
 

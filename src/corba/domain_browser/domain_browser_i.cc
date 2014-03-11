@@ -715,28 +715,39 @@ namespace Registry
         {
             try
             {
-                return false;
+                if(std::string("contact").compare(objtype) != 0)
+                {
+                    throw Registry::DomainBrowserImpl::IncorrectUsage();
+                }
+                return pimpl_->setContactAuthInfo(contact.id, objref.id, auth_info, request_id);
             }//try
-            catch (std::exception &_ex)
-            {
-                throw Registry::DomainBrowser::OBJECT_BLOCKED();
-            }
-            catch (std::exception &_ex)
-            {
-                throw Registry::DomainBrowser::ACCESS_DENIED();
-            }
-            catch (std::exception &_ex)
+            catch (const Registry::DomainBrowserImpl::ObjectNotExists& )
             {
                 throw Registry::DomainBrowser::OBJECT_NOT_EXISTS();
             }
-
-            catch (std::exception &_ex)
+            catch (const Registry::DomainBrowserImpl::UserNotExists& )
             {
                 throw Registry::DomainBrowser::USER_NOT_EXISTS();
             }
-            catch (std::exception &_ex)
+            catch (const Registry::DomainBrowserImpl::IncorrectUsage& )
             {
                 throw Registry::DomainBrowser::INCORRECT_USAGE();
+            }
+            catch (const Registry::DomainBrowserImpl::ObjectBlocked& )
+            {
+                throw Registry::DomainBrowser::OBJECT_BLOCKED();
+            }
+            catch (const Registry::DomainBrowserImpl::AccessDenied& )
+            {
+                throw Registry::DomainBrowser::ACCESS_DENIED();
+            }
+            catch (const boost::exception&)
+            {
+                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
+            }
+            catch (const std::exception&)
+            {
+                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
             }
             catch (...)
             {
