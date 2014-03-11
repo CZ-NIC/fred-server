@@ -50,11 +50,11 @@ namespace Registry
 
         /**
          * Check user contact.
-         * @param EXCEPTION is type of exception used for reporting when contact is not found
+         * @param EXCEPTION is type of exception used for reporting when contact is not found or not in required state
          * @param ctx contains reference to database and logging interface
          * @param user_contact_id is database id of user contact
          * @param lock_contact_for_update indicates whether to lock contact for update (true) or for share (false)
-         * @return contact info or if user contact is deleted or don't have mojeidContact state throw UserNotExists.
+         * @return contact info or if user contact is deleted or don't have mojeidContact state throw @ref EXCEPTION.
          */
         template <class EXCEPTION> Fred::InfoContactOutput check_user_contact_id(Fred::OperationContext& ctx,
                 unsigned long long user_contact_id, bool lock_contact_for_update = false)
@@ -78,7 +78,7 @@ namespace Registry
 
             if(!Fred::ObjectHasState(user_contact_id,Fred::ObjectState::MOJEID_CONTACT).exec(ctx))
             {
-                throw UserNotExists();
+                throw EXCEPTION();
             }
 
             return info;
