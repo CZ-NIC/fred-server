@@ -26,6 +26,8 @@
 // generated from idl
 #include "src/corba/AdminContactVerification.hh"
 
+#include <string>
+
 namespace Registry
 {
     namespace AdminContactVerification
@@ -33,12 +35,15 @@ namespace Registry
         /// corba interface
         class Server_i : public POA_Registry::AdminContactVerification::Server  {
             private:
+                const std::string server_name_;
                 // do not copy
                 Server_i(const Server_i&); // no definition
                 Server_i& operator= (const Server_i&); // no definition
 
             public:
-                Server_i() { }
+                Server_i()
+                    : server_name_("fred-adifd")
+                { }
                 virtual ~Server_i(){ }
 
                 // Methods corresponding to IDL attributes and operations

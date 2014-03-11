@@ -6,6 +6,8 @@
 #include "src/admin/contact/verification/test_impl/test_contactability.h"
 #include "src/admin/contact/verification/test_impl/test_email_exists.h"
 
+#include "util/log/context.h"
+
 #include <boost/make_shared.hpp>
 
 namespace  Admin {
@@ -16,6 +18,8 @@ namespace  Admin {
         boost::shared_ptr<Fred::Messages::Manager> _message_manager,
         const std::string&                         _cz_address_dataset_path
     ) {
+        Logging::Context log("create_test_impl_prototypes");
+
         std::map< std::string, boost::shared_ptr<ContactVerification::Test> > result;
 
         result[ContactVerification::TestNameSyntax::registration_name()] =

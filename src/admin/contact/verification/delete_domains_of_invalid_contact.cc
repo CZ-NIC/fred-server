@@ -8,6 +8,8 @@
 #include <fredlib/contact.h>
 #include "src/fredlib/poll/create_delete_domain_poll_message.h"
 
+#include "util/log/context.h"
+
 #include <set>
 
 namespace  Admin {
@@ -25,6 +27,8 @@ namespace  Admin {
         Fred::OperationContext& _ctx,
         const std::string&      _check_handle
     ) {
+        Logging::Context log("delete_domains_of_invalid_contact");
+
         try {
             Fred::InfoContactCheckOutput check_info = Fred::InfoContactCheck(_check_handle).exec(_ctx);
 

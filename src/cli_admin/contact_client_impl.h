@@ -268,8 +268,6 @@ struct contact_verification_fill_queue_impl
 {
   void operator()() const
   {
-      Logging::Context log("contact_verification_fill_queue");
-
       ContactVerificationFillQueueArgs params = CfgArgGroups::instance()
           ->get_handler_ptr_by_type<HandleContactVerificationFillQueueArgsGrp>()->params;
 
@@ -339,8 +337,6 @@ struct contact_verification_enqueue_check_impl
 {
   void operator()() const
   {
-      Logging::Context log("contact_verification_enqueue_check ");
-
       ContactVerificationEnqueueCheckArgs params = CfgArgGroups::instance()
         ->get_handler_ptr_by_type<HandleContactVerificationEnqueueCheckArgsGrp>()->params;
 
@@ -378,8 +374,6 @@ struct contact_verification_start_enqueued_checks_impl
 {
   void operator()() const
   {
-      Logging::Context log("contact_verification_start_enqueued_checks");
-
       FakedArgs orb_fa = CfgArgGroups::instance()->fa;
       HandleCorbaNameServiceArgsGrp* ns_args_ptr=CfgArgGroups::instance()->
          get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>();

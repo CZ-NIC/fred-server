@@ -6,6 +6,8 @@
 
 #include "src/fredlib/db_settings.h"
 
+#include "util/log/context.h"
+
 namespace  Admin {
     std::string enqueue_check(
         Fred::OperationContext&         _ctx,
@@ -13,6 +15,8 @@ namespace  Admin {
         const std::string&              _testsuite_handle,
         Optional<unsigned long long>    _logd_request_id
     ) {
+        Logging::Context log("enqueue_check");
+
         try {
             std::string created_handle = Fred::CreateContactCheck(
                 _contact_id,
