@@ -8,6 +8,8 @@
 #include "src/fredlib/object_state/create_object_state_request_id.h"
 #include "src/fredlib/object_state/cancel_object_state_request_id.h"
 
+#include "util/log/context.h"
+
 #include <set>
 #include <boost/assign/list_of.hpp>
 
@@ -29,6 +31,8 @@ namespace  Admin {
     }
 
     void resolve_check::exec(Fred::OperationContext& _ctx) {
+        Logging::Context log("resolve_check::exec");
+
         try {
             Fred::UpdateContactCheck(
                 check_handle_,

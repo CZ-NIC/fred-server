@@ -14,6 +14,8 @@
 #include "src/fredlib/contact/verification/enum_check_status.h"
 #include "src/admin/contact/verification/enqueue_check.h"
 
+#include "util/log/context.h"
+
 namespace  Admin {
 namespace ContactVerificationQueue {
 
@@ -260,6 +262,8 @@ namespace ContactVerificationQueue {
     }
 
     std::vector< boost::tuple<std::string, unsigned long long, unsigned long long> > fill_check_queue::exec() {
+        Logging::Context log("fill_check_queue::exec");
+
         Fred::OperationContext ctx1;
 
         // how many enqueued checks are there?

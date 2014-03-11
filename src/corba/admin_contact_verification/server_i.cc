@@ -25,14 +25,22 @@
 
 #include <vector>
 #include <utility>
+#include <string>
 
 #include <fredlib/contact.h>
 #include <fredlib/admin_contact_verification.h>
 #include <admin/admin_contact_verification.h>
 
+#include "util/log/context.h"
+#include "util/random_data_generator.h"
+
 #include "src/corba/util/corba_conversions_datetime.h"
 #include "src/corba/util/corba_conversions_string.h"
 #include "src/corba/util/corba_conversions_nullable_types.h"
+
+static inline std::string create_log_server_id(const std::string& _server_name) {
+    return _server_name + "-" + RandomDataGenerator().xnumstring(5);
+}
 
 namespace Corba {
     static void wrap_check_detail(const Fred::InfoContactCheckOutput& in, Registry::AdminContactVerification::ContactCheckDetail_var& out) {
@@ -212,6 +220,9 @@ namespace Registry
     namespace AdminContactVerification
     {
         ContactCheckDetail* Server_i::getContactCheckDetail(const char* check_handle) {
+            Logging::Context log_server(create_log_server_id(server_name_));
+            Logging::Context log_method("getContactCheckDetail");
+
             try {
                 ContactCheckDetail_var result(new ContactCheckDetail);
                 Fred::OperationContext ctx;
@@ -231,6 +242,9 @@ namespace Registry
         }
 
         ContactCheckList* Server_i::getChecksOfContact(::CORBA::ULongLong contact_id, NullableString* testsuite, ::CORBA::ULong max_item_count) {
+            Logging::Context log_server(create_log_server_id(server_name_));
+            Logging::Context log_method("getChecksOfContact");
+
             try {
                 ContactCheckList_var result(new ContactCheckList);
                 Fred::OperationContext ctx;
@@ -257,6 +271,9 @@ namespace Registry
         }
 
         ContactCheckList* Server_i::getActiveChecks(NullableString* testsuite) {
+            Logging::Context log_server(create_log_server_id(server_name_));
+            Logging::Context log_method("getActiveChecks");
+
             try {
                 ContactCheckList_var result(new ContactCheckList);
 
@@ -272,6 +289,9 @@ namespace Registry
         }
 
         void Server_i::updateContactCheckTests(const char* check_handle, const TestUpdateSeq& changes, ::CORBA::ULongLong logd_request_id){
+            Logging::Context log_server(create_log_server_id(server_name_));
+            Logging::Context log_method("updateContactCheckTests");
+
             try {
                 std::string ch_handle(Corba::unwrap_string(check_handle));
                 std::string testname;
@@ -303,6 +323,9 @@ namespace Registry
         }
 
         void Server_i::resolveContactCheckStatus(const char* check_handle, const char* status, ::CORBA::ULongLong logd_request_id){
+            Logging::Context log_server(create_log_server_id(server_name_));
+            Logging::Context log_method("resolveContactCheckStatus");
+
             try {
                 Fred::OperationContext ctx;
 
@@ -323,6 +346,9 @@ namespace Registry
         }
 
         void Server_i::deleteDomainsAfterFailedManualCheck(const char* check_handle) {
+            Logging::Context log_server(create_log_server_id(server_name_));
+            Logging::Context log_method("deleteDomainsAfterFailedManualCheck");
+
             try {
                 Fred::OperationContext ctx;
 
@@ -340,6 +366,9 @@ namespace Registry
         }
 
         char* Server_i::enqueueContactCheck(::CORBA::ULongLong contact_id, const char* testsuite_handle, ::CORBA::ULongLong logd_request_id){
+            Logging::Context log_server(create_log_server_id(server_name_));
+            Logging::Context log_method("enqueueContactCheck");
+
             try {
                 Fred::OperationContext ctx;
 
@@ -365,6 +394,9 @@ namespace Registry
         }
 
         ContactTestStatusDefSeq* Server_i::listTestStatusDefs(const char* lang) {
+            Logging::Context log_server(create_log_server_id(server_name_));
+            Logging::Context log_method("listTestStatusDefs");
+
             try {
                 ContactTestStatusDefSeq_var result (new ContactTestStatusDefSeq);
 
@@ -381,6 +413,9 @@ namespace Registry
         }
 
         ContactCheckStatusDefSeq* Server_i::listCheckStatusDefs(const char* lang) {
+            Logging::Context log_server(create_log_server_id(server_name_));
+            Logging::Context log_method("listCheckStatusDefs");
+
             try {
                 ContactCheckStatusDefSeq_var result (new ContactCheckStatusDefSeq);
 
@@ -400,6 +435,9 @@ namespace Registry
             const char* lang,
             Registry::NullableString* testsuite_handle
         ) {
+            Logging::Context log_server(create_log_server_id(server_name_));
+            Logging::Context log_method("listTestDefs");
+
             try {
                 ContactTestDefSeq_var result (new ContactTestDefSeq);
 
@@ -417,6 +455,9 @@ namespace Registry
         }
 
         ContactTestSuiteDefSeq* Server_i::listTestSuiteDefs(const char* lang) {
+            Logging::Context log_server(create_log_server_id(server_name_));
+            Logging::Context log_method("listTestSuiteDefs");
+
             try {
                 ContactTestSuiteDefSeq_var result (new ContactTestSuiteDefSeq);
 

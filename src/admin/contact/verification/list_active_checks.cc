@@ -1,10 +1,14 @@
 #include "src/admin/contact/verification/list_active_checks.h"
 
+#include "util/log/context.h"
+
 #include <vector>
 #include <boost/assign/list_of.hpp>
 
 namespace  Admin {
     std::vector<Fred::ListChecksItem> list_active_checks(const Optional<std::string>& _testsuite_handle) {
+        Logging::Context log("list_active_checks");
+
         std::vector<Fred::ListChecksItem> result;
 
         std::vector<std::string> awaiting_statuses = Fred::ContactCheckStatus::get_all();
