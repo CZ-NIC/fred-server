@@ -447,6 +447,18 @@ namespace Registry
                 const ContactDiscloseFlagsToSet& flags,
                 unsigned long long request_id);
 
+            /**
+             * Sets contact transfer password.
+             * @param user_contact_id contains database id of the user contact
+             * @param contact_id is database id of the contact to be modified
+             * @param authinfo is new transfer password
+             * @param request_id is id of the new entry in log_entry database table
+             * @return true if authinfo were set, false if not or exception in case of failure
+             */
+            bool setContactAuthInfo(unsigned long long user_contact_id,
+                unsigned long long contact_id,
+                const std::string& authinfo,
+                unsigned long long request_id);
 
             std::string get_server_name();
         };//class DomainBrowser
