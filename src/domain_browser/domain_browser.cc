@@ -26,10 +26,13 @@
 #include <boost/date_time/gregorian/gregorian.hpp>
 
 #include "util/map_at.h"
+#include "util/util.h"
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/object/object_impl.h"
 #include "src/fredlib/object_state/object_has_state.h"
 #include "src/fredlib/object_state/object_state_name.h"
+#include "src/fredlib/object_state/create_object_state_request_id.h"
+#include "src/fredlib/object_state/cancel_object_state_request_id.h"
 #include "src/fredlib/registrar/info_registrar.h"
 #include "src/fredlib/contact/info_contact.h"
 #include "src/fredlib/contact/update_contact.h"
@@ -700,6 +703,151 @@ namespace Registry
             Fred::UpdateContactById(contact_id, update_registrar_).set_authinfo(authinfo).exec(ctx);
             ctx.commit_transaction();
             return true;
+        }
+
+        bool DomainBrowser::setObjectBlockStatus(unsigned long long user_contact_id,
+            const std::string& objtype,
+            const std::vector<unsigned long long>& object_id,
+            unsigned block_type,
+            std::vector<std::string>& blocked_objects)
+        {
+            Fred::OperationContext ctx;
+            Fred::InfoContactOutput contact_info = check_user_contact_id<UserNotExists>(ctx, user_contact_id);
+
+            if(!Fred::ObjectHasState(user_contact_id,Fred::ObjectState::VALIDATED_CONTACT).exec(ctx))
+            {
+                throw AccessDenied();
+            }
+
+            unsigned long long object_type_id=0;
+            try //check objtype exists and get id
+            {
+                object_type_id = Fred::get_object_type_id(ctx,objtype);
+            }
+            catch(const Fred::InternalError&)
+            {
+                throw IncorrectUsage();
+            }
+
+            //check input size
+            if(object_id.size() == 0) return false;//nothing to do
+            const unsigned SET_STATUS_MAX_ITEMS = 500u;
+            if(object_id.size() > SET_STATUS_MAX_ITEMS) throw IncorrectUsage();//input too big
+
+            //object ids made unique
+            std::set<unsigned long long> object_id_set(object_id.begin(), object_id.end());
+
+            //checked object id-handle pairs
+            std::set<std::pair<unsigned long long, std::string> > object_id_name_pairs;
+
+            //check contact ownership
+            if(objtype.compare("contact") == 0)
+            {
+                if(object_id_set.size() != 1) throw ObjectNotExists();//user can have only one contact id
+                if(*(object_id_set.begin()) != user_contact_id) throw ObjectNotExists();//given object id have to be the same as user contact id
+                object_id_name_pairs.insert(std::make_pair(user_contact_id, contact_info.info_contact_data.handle));
+            }
+            else
+            {//check ownership for other object types
+                Database::QueryParams params;
+                std::ostringstream object_sql;
+                object_sql << "SELECT oreg.id, oreg.name FROM object_registry oreg ";
+
+                params.push_back(object_type_id);//$1
+                params.push_back(user_contact_id);//$2
+                if(objtype.compare("nsset") == 0)//user have to be tech contact
+                {
+                    object_sql << " JOIN nsset_contact_map map ON map.nssetid = oreg.id AND map.contactid = $"
+                            << params.size() << "::bigint ";
+                }
+
+                if(objtype.compare("domain") == 0)//user have to be admin contact or registrant
+                {
+                    object_sql << " LEFT JOIN domain_contact_map map ON map.domainid = oreg.id"
+                        " JOIN domain d ON oreg.id = d.id"
+                        " AND ( map.contactid = $" << params.size() << "::bigint"
+                        " OR d.registrant = $" << params.size() << "::bigint) ";
+                }
+
+                if(objtype.compare("keyset") == 0)//user have to be tech contact
+                {
+                    object_sql << " JOIN keyset_contact_map map ON map.keysetid = oreg.id AND map.contactid = $"
+                            << params.size() << "::bigint ";
+                }
+
+                object_sql << " WHERE oreg.type = $1::integer AND oreg.erdate IS NULL AND (";
+
+                Util::HeadSeparator or_separator(""," OR ");
+                for(std::set<unsigned long long>::const_iterator ci = object_id_set.begin(); ci != object_id_set.end(); ++ci)
+                {
+                    params.push_back(*ci);
+                    object_sql << or_separator.get() << "oreg.id = $" << params.size() << "::bigint";
+                }
+                object_sql << ") FOR UPDATE OF oreg";
+
+                Database::Result object_result = ctx.get_conn().exec_params(object_sql.str(), params);
+                if(object_id_set.size() != object_result.size()) throw ObjectNotExists();//given objects was not found all in database belonging to user contact
+
+                for(std::size_t i = 0; i < object_result.size(); ++i)
+                {
+                    object_id_name_pairs.insert(std::make_pair(static_cast<unsigned long long>(object_result[i][0]),
+                        static_cast<std::string>(object_result[i][1])));
+                }
+            }
+
+            for(std::set<std::pair<unsigned long long, std::string> >::const_iterator ci = object_id_name_pairs.begin()
+                ; ci != object_id_name_pairs.end(); ++ci)
+            {
+                //block_type
+                const unsigned BLOCK_TRANSFER = 0;
+                const unsigned UNBLOCK_TRANSFER = 1;
+                const unsigned BLOCK_UPDATE = 2;
+                const unsigned UNBLOCK_UPDATE = 3;
+                const unsigned BLOCK_TRANSFER_AND_UPDATE = 4;
+                const unsigned UNBLOCK_TRANSFER_AND_UPDATE = 5;
+
+                if((block_type == BLOCK_TRANSFER) || (block_type == BLOCK_TRANSFER_AND_UPDATE))
+                {
+                    if(!Fred::ObjectHasState(ci->first, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx))
+                    {
+                        Fred::CreateObjectStateRequestId(ci->first,
+                            Util::set_of<std::string>(Fred::ObjectState::SERVER_TRANSFER_PROHIBITED)).exec(ctx);
+                    }
+                }
+
+                if((block_type == BLOCK_UPDATE) || (block_type == BLOCK_TRANSFER_AND_UPDATE))
+                {
+                    if(!Fred::ObjectHasState(ci->first, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx))
+                    {
+                        Fred::CreateObjectStateRequestId(ci->first,
+                            Util::set_of<std::string>(Fred::ObjectState::SERVER_UPDATE_PROHIBITED)).exec(ctx);
+                    }
+                }
+
+                if((block_type == UNBLOCK_TRANSFER) || (block_type == UNBLOCK_TRANSFER_AND_UPDATE))
+                {
+                    if(Fred::ObjectHasState(ci->first, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx))
+                    {
+                        Fred::CancelObjectStateRequestId(ci->first,
+                            Util::set_of<std::string>(Fred::ObjectState::SERVER_TRANSFER_PROHIBITED)).exec(ctx);
+                    }
+                }
+
+                if((block_type == UNBLOCK_UPDATE) || (block_type == UNBLOCK_TRANSFER_AND_UPDATE))
+                {
+                    if(Fred::ObjectHasState(ci->first, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx))
+                    {
+                        Fred::CancelObjectStateRequestId(ci->first,
+                            Util::set_of<std::string>(Fred::ObjectState::SERVER_UPDATE_PROHIBITED)).exec(ctx);
+                    }
+                }
+
+                Fred::PerformObjectStateRequest(ci->first).exec(ctx);
+                blocked_objects.push_back(ci->second);
+            }
+
+            ctx.commit_transaction();
+            return false;
         }
 
     }//namespace DomainBrowserImpl

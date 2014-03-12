@@ -764,24 +764,49 @@ namespace Registry
         {
             try
             {
-                return false;
+                std::vector<unsigned long long> objects_id;
+                objects_id.reserve(objects.length());
+                for(std::size_t i = 0; i < objects.length(); ++i)
+                {
+                    objects_id.push_back(objects[i].id);
+                }
+                std::vector<std::string> blocked_objects;
+
+                bool ret = pimpl_->setObjectBlockStatus(contact.id, objtype, objects_id, block, blocked_objects);
+
+                Registry::DomainBrowser::RecordSequence_var blocked_var = new Registry::DomainBrowser::RecordSequence;
+                blocked_var->length(blocked_objects.size());
+                for(std::size_t i = 0; i < blocked_objects.size(); ++i)
+                {
+                    blocked_var[i] = CORBA::string_dup(blocked_objects.at(i).c_str());
+                }
+
+                blocked = blocked_var._retn();//transfer ownership to the out parameter, no exceptions allowed after this point
+                return ret;
             }//try
-            catch (std::exception &_ex)
-            {
-                throw Registry::DomainBrowser::ACCESS_DENIED();
-            }
-            catch (std::exception &_ex)
+            catch (const Registry::DomainBrowserImpl::ObjectNotExists& )
             {
                 throw Registry::DomainBrowser::OBJECT_NOT_EXISTS();
             }
-
-            catch (std::exception &_ex)
+            catch (const Registry::DomainBrowserImpl::UserNotExists& )
             {
                 throw Registry::DomainBrowser::USER_NOT_EXISTS();
             }
-            catch (std::exception &_ex)
+            catch (const Registry::DomainBrowserImpl::IncorrectUsage& )
             {
                 throw Registry::DomainBrowser::INCORRECT_USAGE();
+            }
+            catch (const Registry::DomainBrowserImpl::AccessDenied& )
+            {
+                throw Registry::DomainBrowser::ACCESS_DENIED();
+            }
+            catch (const boost::exception&)
+            {
+                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
+            }
+            catch (const std::exception&)
+            {
+                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
             }
             catch (...)
             {

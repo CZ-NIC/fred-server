@@ -813,8 +813,8 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/object_state/get_object_state_id_map.cc \
 		src/fredlib/object_state/create_object_state_request_id.h \
 		src/fredlib/object_state/create_object_state_request_id.cc \
-		src/fredlib/object_state/perform_object_state_request.h \
-		src/fredlib/object_state/perform_object_state_request.cc \
+		src/fredlib/object_state/cancel_object_state_request_id.h \
+		src/fredlib/object_state/cancel_object_state_request_id.cc \
 		src/fredlib/object/object_id_handle_pair.h \
 		src/fredlib/object/object_id_handle_pair.cc
 #
@@ -1279,8 +1279,6 @@ src_corba_fred_adifd_SOURCES = \
 		src/fredlib/object_state/get_blocking_status_desc_list.h \
 		src/fredlib/object_state/cancel_object_state_request.cc \
 		src/fredlib/object_state/cancel_object_state_request.h \
-		src/fredlib/object_state/cancel_object_state_request_id.cc \
-		src/fredlib/object_state/cancel_object_state_request_id.h \
 		src/fredlib/object_state/create_object_state_request.cc \
 		src/fredlib/object_state/create_object_state_request.h \
 		src/fredlib/object_state/create_object_state_request_id.cc \
@@ -1912,7 +1910,6 @@ tests_test_blocking_SOURCES = \
 		src/fredlib/object_state/create_object_state_request.cc \
 		src/fredlib/object_state/create_admin_object_block_request_id.cc \
 		src/fredlib/object_state/create_admin_object_state_restore_request_id.cc \
-		src/fredlib/object_state/cancel_object_state_request_id.cc \
 		src/fredlib/object_state/get_object_state_id_map.cc \
 		src/fredlib/object_state/get_blocking_status_desc_list.cc \
 		src/fredlib/domain/create_domain_name_blacklist_id.cc \
