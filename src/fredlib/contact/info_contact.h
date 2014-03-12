@@ -85,7 +85,7 @@ namespace Fred
         */
         std::string to_string() const;
 
-    };//class InfoContactByHandle
+    };
 
     /**
     * Contact info by id.
@@ -135,7 +135,7 @@ namespace Fred
         */
         std::string to_string() const;
 
-    };//class InfoContactById
+    };
 
     /**
     * Contact history info by registry object identifier  and optional time.
@@ -200,7 +200,7 @@ namespace Fred
         */
         std::string to_string() const;
 
-    };//class InfoContactHistory
+    };
 
     /**
     * Contact info by id including history.
@@ -250,7 +250,7 @@ namespace Fred
         */
         std::string to_string() const;
 
-    };//class HistoryInfoContactById
+    };
 
     /**
     * Contact info by historyid.
@@ -300,7 +300,7 @@ namespace Fred
         */
         std::string to_string() const;
 
-    };//class HistoryInfoContactByHistoryid
+    };
 
 }//namespace Fred
 

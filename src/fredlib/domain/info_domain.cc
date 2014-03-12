@@ -72,14 +72,14 @@ namespace Fred
                 BOOST_THROW_EXCEPTION(InternalError("query result size > 1"));
             }
 
-        }//try
+        }
         catch(ExceptionStack& ex)
         {
             ex.add_exception_stack_info(to_string());
             throw;
         }
         return domain_res.at(0);
-    }//InfoDomainByHandle::exec
+    }
 
     std::string InfoDomainByHandle::to_string() const
     {
@@ -122,14 +122,14 @@ namespace Fred
                 BOOST_THROW_EXCEPTION(InternalError("query result size > 1"));
             }
 
-        }//try
+        }
         catch(ExceptionStack& ex)
         {
             ex.add_exception_stack_info(to_string());
             throw;
         }
         return domain_res.at(0);
-    }//InfoDomainById::exec
+    }
 
     std::string InfoDomainById::to_string() const
     {
@@ -180,14 +180,14 @@ namespace Fred
                 BOOST_THROW_EXCEPTION(Exception().set_unknown_registry_object_identifier(roid_));
             }
 
-        }//try
+        }
         catch(ExceptionStack& ex)
         {
             ex.add_exception_stack_info(to_string());
             throw;
         }
         return domain_res;
-    }//InfoDomainHistory::exec
+    }
 
     std::string InfoDomainHistory::to_string() const
     {
@@ -226,14 +226,14 @@ namespace Fred
                 BOOST_THROW_EXCEPTION(Exception().set_unknown_object_id(id_));
             }
 
-        }//try
+        }
         catch(ExceptionStack& ex)
         {
             ex.add_exception_stack_info(to_string());
             throw;
         }
         return domain_history_res;
-    }//HistoryInfoDomainById::exec
+    }
 
     std::string InfoDomainHistoryById::to_string() const
     {
@@ -277,14 +277,14 @@ namespace Fred
                 BOOST_THROW_EXCEPTION(InternalError("query result size > 1"));
             }
 
-        }//try
+        }
         catch(ExceptionStack& ex)
         {
             ex.add_exception_stack_info(to_string());
             throw;
         }
         return domain_history_res.at(0);
-    }//HistoryInfoDomainByHistoryid::exec
+    }
 
     std::string InfoDomainHistoryByHistoryid::to_string() const
     {

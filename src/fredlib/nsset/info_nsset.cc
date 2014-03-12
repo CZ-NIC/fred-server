@@ -68,14 +68,14 @@ namespace Fred
                 BOOST_THROW_EXCEPTION(InternalError("query result size > 1"));
             }
 
-        }//try
+        }
         catch(ExceptionStack& ex)
         {
             ex.add_exception_stack_info(to_string());
             throw;
         }
         return nsset_res.at(0);
-    }//InfoNssetByHandle::exec
+    }
 
     std::string InfoNssetByHandle::to_string() const
     {
@@ -118,14 +118,14 @@ namespace Fred
                 BOOST_THROW_EXCEPTION(InternalError("query result size > 1"));
             }
 
-        }//try
+        }
         catch(ExceptionStack& ex)
         {
             ex.add_exception_stack_info(to_string());
             throw;
         }
         return nsset_res.at(0);
-    }//InfoNssetById::exec
+    }
 
     std::string InfoNssetById::to_string() const
     {
@@ -176,14 +176,14 @@ namespace Fred
                 BOOST_THROW_EXCEPTION(Exception().set_unknown_registry_object_identifier(roid_));
             }
 
-        }//try
+        }
         catch(ExceptionStack& ex)
         {
             ex.add_exception_stack_info(to_string());
             throw;
         }
         return nsset_res;
-    }//InfoNssetHistory::exec
+    }
 
     std::string InfoNssetHistory::to_string() const
     {
@@ -223,14 +223,14 @@ namespace Fred
                 BOOST_THROW_EXCEPTION(Exception().set_unknown_object_id(id_));
             }
 
-        }//try
+        }
         catch(ExceptionStack& ex)
         {
             ex.add_exception_stack_info(to_string());
             throw;
         }
         return nsset_history_res;
-    }//HistoryInfoNssetById::exec
+    }
 
     std::string InfoNssetHistoryById::to_string() const
     {
@@ -273,14 +273,14 @@ namespace Fred
                 BOOST_THROW_EXCEPTION(InternalError("query result size > 1"));
             }
 
-        }//try
+        }
         catch(ExceptionStack& ex)
         {
             ex.add_exception_stack_info(to_string());
             throw;
         }
         return nsset_history_res.at(0);
-    }//HistoryInfoNssetByHistoryid::exec
+    }
 
     std::string InfoNssetHistoryByHistoryid::to_string() const
     {

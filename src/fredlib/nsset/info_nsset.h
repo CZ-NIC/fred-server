@@ -86,7 +86,7 @@ namespace Fred
         */
         std::string to_string() const;
 
-    };//class InfoNssetByHandle
+    };
 
     /**
     * Nsset info by id.
@@ -136,7 +136,7 @@ namespace Fred
         */
         std::string to_string() const;
 
-    };//class InfoNssetById
+    };
 
     /**
     * Nsset history info.
@@ -201,7 +201,7 @@ namespace Fred
         */
         std::string to_string() const;
 
-    };//class InfoNssetHistory
+    };
 
     /**
     * Nsset info by id including history.
@@ -251,7 +251,7 @@ namespace Fred
         */
         std::string to_string() const;
 
-    };//class HistoryInfoNssetById
+    };
 
     /**
     * Nsset info by historyid.
@@ -301,7 +301,7 @@ namespace Fred
         */
         std::string to_string() const;
 
-    };//class HistoryInfoNssetByHistoryid
+    };
 
 }//namespace Fred
 

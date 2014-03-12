@@ -128,7 +128,7 @@ namespace Fred
         */
         std::string explain_analyze(OperationContext& ctx, std::vector<InfoContactOutput>& result, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return query plan
 
-    };//classInfoContact
+    };
 
 }//namespace Fred
 

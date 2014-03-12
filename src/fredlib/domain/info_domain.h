@@ -85,7 +85,7 @@ namespace Fred
         */
         std::string to_string() const;
 
-    };//class InfoDomainByHandle
+    };
 
     /**
     * Domain info by id.
@@ -135,7 +135,7 @@ namespace Fred
         */
         std::string to_string() const;
 
-    };//class InfoDomainById
+    };
 
     /**
     * Domain history info.
@@ -200,7 +200,7 @@ namespace Fred
         */
         std::string to_string() const;
 
-    };//class InfoDomainHistory
+    };
 
     /**
     * Domain info by id including history.
@@ -250,7 +250,7 @@ namespace Fred
         */
         std::string to_string() const;
 
-    };//class HistoryInfoDomainById
+    };
 
     /**
     * Domain info by historyid.
@@ -300,7 +300,7 @@ namespace Fred
         */
         std::string to_string() const;
 
-    };//class HistoryInfoDomainByHistoryid
+    };
 
 }//namespace Fred
 

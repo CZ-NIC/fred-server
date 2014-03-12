@@ -67,14 +67,14 @@ namespace Fred
                 BOOST_THROW_EXCEPTION(InternalError("query result size > 1"));
             }
 
-        }//try
+        }
         catch(ExceptionStack& ex)
         {
             ex.add_exception_stack_info(to_string());
             throw;
         }
         return contact_res.at(0);
-    }//InfoContactByHandle::exec
+    }
 
     std::string InfoContactByHandle::to_string() const
     {
@@ -118,14 +118,14 @@ namespace Fred
                 BOOST_THROW_EXCEPTION(InternalError("query result size > 1"));
             }
 
-        }//try
+        }
         catch(ExceptionStack& ex)
         {
             ex.add_exception_stack_info(to_string());
             throw;
         }
         return contact_res.at(0);
-    }//InfoContactById::exec
+    }
 
     std::string InfoContactById::to_string() const
     {
@@ -176,14 +176,14 @@ namespace Fred
             {
                 BOOST_THROW_EXCEPTION(Exception().set_unknown_registry_object_identifier(roid_));
             }
-        }//try
+        }
         catch(ExceptionStack& ex)
         {
             ex.add_exception_stack_info(to_string());
             throw;
         }
         return contact_history_res;
-    }//InfoContactHistory::exec
+    }
 
     std::string InfoContactHistory::to_string() const
     {
@@ -223,14 +223,14 @@ namespace Fred
                 BOOST_THROW_EXCEPTION(Exception().set_unknown_object_id(id_));
             }
 
-        }//try
+        }
         catch(ExceptionStack& ex)
         {
             ex.add_exception_stack_info(to_string());
             throw;
         }
         return contact_history_res;
-    }//HistoryInfoContactById::exec
+    }
 
     std::string InfoContactHistoryById::to_string() const
     {
@@ -274,14 +274,14 @@ namespace Fred
                 BOOST_THROW_EXCEPTION(InternalError("query result size > 1"));
             }
 
-        }//try
+        }
         catch(ExceptionStack& ex)
         {
             ex.add_exception_stack_info(to_string());
             throw;
         }
         return contact_history_res.at(0);
-    }//HistoryInfoContactByHistoryid::exec
+    }
 
     std::string InfoContactHistoryByHistoryid::to_string() const
     {

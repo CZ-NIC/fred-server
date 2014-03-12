@@ -71,14 +71,14 @@ namespace Fred
                 BOOST_THROW_EXCEPTION(InternalError("query result size > 1"));
             }
 
-        }//try
+        }
         catch(ExceptionStack& ex)
         {
             ex.add_exception_stack_info(to_string());
             throw;
         }
         return keyset_res.at(0);
-    }//InfoKeysetByHandle::exec
+    }
 
     std::string InfoKeysetByHandle::to_string() const
     {
@@ -121,14 +121,14 @@ namespace Fred
                 BOOST_THROW_EXCEPTION(InternalError("query result size > 1"));
             }
 
-        }//try
+        }
         catch(ExceptionStack& ex)
         {
             ex.add_exception_stack_info(to_string());
             throw;
         }
         return keyset_res.at(0);
-    }//InfoKeysetById::exec
+    }
 
     std::string InfoKeysetById::to_string() const
     {
@@ -179,14 +179,14 @@ namespace Fred
                 BOOST_THROW_EXCEPTION(Exception().set_unknown_registry_object_identifier(roid_));
             }
 
-        }//try
+        }
         catch(ExceptionStack& ex)
         {
             ex.add_exception_stack_info(to_string());
             throw;
         }
         return keyset_res;
-    }//InfoKeysetHistory::exec
+    }
 
     std::string InfoKeysetHistory::to_string() const
     {
@@ -226,14 +226,14 @@ namespace Fred
                 BOOST_THROW_EXCEPTION(Exception().set_unknown_object_id(id_));
             }
 
-        }//try
+        }
         catch(ExceptionStack& ex)
         {
             ex.add_exception_stack_info(to_string());
             throw;
         }
         return keyset_history_res;
-    }//HistoryInfoKeysetById::exec
+    }
 
     std::string InfoKeysetHistoryById::to_string() const
     {
@@ -276,14 +276,14 @@ namespace Fred
                 BOOST_THROW_EXCEPTION(InternalError("query result size > 1"));
             }
 
-        }//try
+        }
         catch(ExceptionStack& ex)
         {
             ex.add_exception_stack_info(to_string());
             throw;
         }
         return keyset_history_res.at(0);
-    }//HistoryInfoKeysetByHistoryid::exec
+    }
 
     std::string InfoKeysetHistoryByHistoryid::to_string() const
     {

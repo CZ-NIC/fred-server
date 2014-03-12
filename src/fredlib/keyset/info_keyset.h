@@ -83,7 +83,7 @@ namespace Fred
         */
         std::string to_string() const;
 
-    };//class InfoKeysetByHandle
+    };
 
     /**
     * Keyset info by id.
@@ -133,7 +133,7 @@ namespace Fred
         */
         std::string to_string() const;
 
-    };//class InfoKeysetById
+    };
 
     /**
     * Keyset history info.
@@ -196,7 +196,7 @@ namespace Fred
         * @return string with description of the instance state
         */
         std::string to_string() const;
-    };//class InfoKeysetHistory
+    };
 
     /**
     * Keyset info by id including history.
@@ -246,7 +246,7 @@ namespace Fred
         */
         std::string to_string() const;
 
-    };//class HistoryInfoKeysetById
+    };
 
     /**
     * Keyset info by historyid.
@@ -296,7 +296,7 @@ namespace Fred
         */
         std::string to_string() const;
 
-    };//class HistoryInfoKeysetByHistoryid
+    };
 
 }//namespace Fred
 
