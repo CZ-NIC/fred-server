@@ -1672,7 +1672,6 @@ tests_test_server_SOURCES = \
 		tests/test-file-manager-client.cc \
 		tests/test-file-manager-client.h \
 		tests/test-db.cc \
-		tests/test-db.h \
 		tests/test-model.cc \
 		tests/test-model.h \
 		tests/test-registrar-group.cc \

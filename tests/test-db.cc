@@ -18,7 +18,40 @@
  */
 
 
-#include "test-db.h"
+#include <memory>
+#include <iostream>
+#include <string>
+#include <algorithm>
+#include <functional>
+#include <numeric>
+#include <queue>
+#include <sys/time.h>
+#include <time.h>
+
+#include <boost/format.hpp>
+#include <boost/thread.hpp>
+#include <boost/thread/barrier.hpp>
+#include <boost/date_time.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/assign/list_of.hpp>
+
+#include "util/db/nullable.h"
+#include "src/fredlib/db_settings.h"
+#include "log/logger.h"
+#include "log/context.h"
+#include "random_data_generator.h"
+#include "concurrent_queue.h"
+
+
+#include "cfg/handle_general_args.h"
+#include "cfg/handle_database_args.h"
+
+//not using UTF defined main
+#define BOOST_TEST_NO_MAIN
+
+#include "cfg/config_handler_decl.h"
+#include <boost/test/unit_test.hpp>
+
 BOOST_AUTO_TEST_SUITE(DbParamQuery)
 BOOST_AUTO_TEST_CASE( init_params_test )
 {
@@ -145,6 +178,77 @@ BOOST_AUTO_TEST_CASE(test_timeout_exception)
     }
 
     BOOST_REQUIRE_MESSAGE(thrown, "No timeout (or any other) exception thrown, wrong behaviour. ");
+
+}
+
+BOOST_AUTO_TEST_CASE( nullable_to_query_param )
+{
+    {
+        const Database::QueryParam qp = Database::QPNull;
+        BOOST_CHECK(qp.is_null());
+    }
+    {
+        const Database::QueryParam qp = Nullable<std::string>();
+        BOOST_CHECK(qp.is_null());
+    }
+    {
+        const Database::QueryParam qp = Nullable<int>();
+        BOOST_CHECK(qp.is_null());
+    }
+
+    {
+        const Database::QueryParam qp = "test";
+        BOOST_CHECK(!qp.is_null());
+    }
+    {
+        const Database::QueryParam qp = Nullable<std::string>("test");
+        BOOST_CHECK(!qp.is_null());
+    }
+    {
+        const Database::QueryParam qp = Nullable<int>(0);
+        BOOST_CHECK(!qp.is_null());
+    }
+
+    {
+        Database::QueryParam qp;
+        qp = Database::QPNull;
+        BOOST_CHECK(qp.is_null());
+    }
+    {
+        Database::QueryParam qp;
+        qp = Nullable<std::string>();
+        BOOST_CHECK(qp.is_null());
+    }
+    {
+        Database::QueryParam qp;
+        qp = Nullable<int>();
+        BOOST_CHECK(qp.is_null());
+    }
+
+    {
+        Database::QueryParam qp;
+        qp = "test";
+        BOOST_CHECK(!qp.is_null());
+    }
+    {
+        Database::QueryParam qp;
+        qp = Nullable<std::string>("test");
+        BOOST_CHECK(!qp.is_null());
+    }
+    {
+        Database::QueryParam qp;
+        qp = Nullable<int>(0);
+        BOOST_CHECK(!qp.is_null());
+    }
+
+
+    BOOST_CHECK(Database::QueryParam(Database::QPNull).is_null());
+    BOOST_CHECK(Database::QueryParam(Nullable<std::string>()).is_null());
+    BOOST_CHECK(Database::QueryParam(Nullable<int>()).is_null());
+
+    BOOST_CHECK(!Database::QueryParam("test").is_null());
+    BOOST_CHECK(!Database::QueryParam(Nullable<std::string>("test")).is_null());
+    BOOST_CHECK(!Database::QueryParam(Nullable<int>(0)).is_null());
 
 }
 
