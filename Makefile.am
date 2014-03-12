@@ -1712,7 +1712,6 @@ tests_test_server_SOURCES = \
 		tests/test-file-manager-client.cc \
 		tests/test-file-manager-client.h \
 		tests/test-db.cc \
-		tests/test-db.h \
 		tests/test-model.cc \
 		tests/test-model.h \
 		tests/test-registrar-group.cc \
@@ -1745,6 +1744,8 @@ tests_test_server_SOURCES = \
 		tests/test-contact-verification.cc \
 		tests/test-locking-trigger.cc \
 		tests/test-mojeid.cc \
+		tests/test-nullable.cc \
+		tests/test-optional.cc \
 		src/corba/epp_corba_client_impl.cc \
 		src/corba/epp_corba_client_impl.h \
 		src/contact_verification/contact_verification_impl.cc \
