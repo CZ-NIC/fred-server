@@ -73,7 +73,7 @@ public:
      *
      * Object is "null" if and only if the initialization object is "null".
      *
-     * @remark Used instead of @ref Nullable(const Nullable< Tc > &_rhs).
+     * @remark Always used instead of @ref Nullable(const Nullable< Tc > &_rhs) (see 12.8 of C++ standard).
      */
     Nullable(const Nullable &_rhs)
         : isnull_(_rhs.isnull_),
@@ -116,7 +116,7 @@ public:
      *
      * Object is "null" if and only if the assigned object is "null".
      *
-     * @remark Used instead of @ref operator=(const Nullable< Tc > &_rhs).
+     * @remark Always used instead of @ref operator=(const Nullable< Tc > &_rhs) (see 12.8 of C++ standard).
      */
     Nullable& operator=(const Nullable &_rhs)
     {

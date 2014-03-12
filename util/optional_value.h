@@ -90,7 +90,7 @@ public:
      *
      * Object is "set" if and only if the initialization object is "set".
      *
-     * @remark Used instead of @ref Optional(const Optional< Tc > &_rhs).
+     * @remark Always used instead of @ref Optional(const Optional< Tc > &_rhs) (see 12.8 of C++ standard).
      */
     Optional(const Optional &_rhs)
         : isset_(_rhs.isset_),
@@ -150,7 +150,7 @@ public:
      *
      * Object is "set" if and only if the assigned object is "set".
      *
-     * @remark Used instead of @ref operator=(const Optional< Tc > &_rhs).
+     * @remark Always used instead of @ref operator=(const Optional< Tc > &_rhs) (see 12.8 of C++ standard).
      */
     Optional& operator=(const Optional &_rhs)
     {
