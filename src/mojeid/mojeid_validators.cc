@@ -98,6 +98,12 @@ ContactValidator create_verified_transfer_validator_mojeid()
     return tmp;
 }
 
+ContactValidator create_contact_update_validator_mojeid()
+{
+    ContactValidator tmp = create_default_contact_validator();
+    return tmp;
+}
+
 
 }
 }

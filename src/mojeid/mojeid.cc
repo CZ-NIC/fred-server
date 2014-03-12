@@ -33,11 +33,11 @@
 #include "fredlib/public_request/public_request.h"
 #include "fredlib/object_states.h"
 #include "fredlib/contact_verification/contact.h"
-#include "fredlib/contact_verification/contact_verification_validators.h"
 #include "mojeid/request.h"
 #include "mojeid/mojeid_contact_states.h"
 #include "mojeid/mojeid_disclose_policy.h"
 #include "mojeid/public_request_verification_impl.h"
+#include "mojeid/mojeid_validators.h"
 #include "util/factory_check.h"
 #include "util/util.h"
 #include "util/xmlgen.h"
@@ -394,7 +394,7 @@ namespace Registry
                 }
 
                 Fred::Contact::Verification::ContactValidator validator
-                    = Fred::Contact::Verification::create_contact_update_validator();
+                    = Fred::Contact::Verification::create_contact_update_validator_mojeid();
                 validator.check(_contact);
 
                 DiscloseFlagPolicy::PolicyCallbackVector pcv
