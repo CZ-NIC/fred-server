@@ -1,6 +1,7 @@
 #ifndef CREATE_DELETE_DOMAIN_POLL_MESSAGE_H_468854341212_
 #define CREATE_DELETE_DOMAIN_POLL_MESSAGE_H_468854341212_
 
+#include "src/fredlib/poll/message_types.h"
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/opexception.h"
 #include "util/printable.h"
@@ -46,7 +47,7 @@ public:
 private:
     ObjectHistoryId history_id_;
 
-    static std::string message_type_handle() { return "delete_domain"; }
+    static std::string message_type_handle() { return Fred::Poll::DELETE_DOMAIN; }
 };
 
 }
