@@ -206,7 +206,7 @@ namespace Fred
     * In case of wrong input data or other predictable and superable failure, the instance of @ref HistoryInfoKeysetById::Exception is thrown with appropriate attributes set.
     * In case of other insuperable failures and inconsistencies, the instance of @ref InternalError or other exception is thrown.
     */
-    class HistoryInfoKeysetById : public Util::Printable
+    class InfoKeysetHistoryById : public Util::Printable
     {
         unsigned long long id_;/**< object id of the keyset */
         bool lock_;/**< if set to true lock object_registry row for update, if set to false lock for share */
@@ -222,7 +222,7 @@ namespace Fred
         * Info keyset history constructor with mandatory parameter.
         * @param id sets object id of the keyset into @ref id_ attribute
         */
-        explicit HistoryInfoKeysetById(unsigned long long id);
+        explicit InfoKeysetHistoryById(unsigned long long id);
 
         /**
          * Sets lock for update.
@@ -230,7 +230,7 @@ namespace Fred
          * Sets true to lock flag in @ref lock_ attribute
          * @return operation instance reference to allow method chaining
          */
-        HistoryInfoKeysetById& set_lock();
+        InfoKeysetHistoryById& set_lock();
 
         /**
         * Executes getting history info about the keyset.
@@ -256,7 +256,7 @@ namespace Fred
     * In case of wrong input data or other predictable and superable failure, the instance of @ref HistoryInfoKeysetByHistoryid::Exception is thrown with appropriate attributes set.
     * In case of other insuperable failures and inconsistencies, the instance of @ref InternalError or other exception is thrown.
     */
-    class HistoryInfoKeysetByHistoryid : public Util::Printable
+    class InfoKeysetHistoryByHistoryid : public Util::Printable
     {
         unsigned long long historyid_;/**< history id of the keyset */
         bool lock_;/**< if set to true lock object_registry row for update, if set to false lock for share */
@@ -272,7 +272,7 @@ namespace Fred
         * Info keyset history constructor with mandatory parameter.
         * @param historyid sets object historyid of the keyset into @ref historyid_ attribute
         */
-        explicit HistoryInfoKeysetByHistoryid(unsigned long long historyid);
+        explicit InfoKeysetHistoryByHistoryid(unsigned long long historyid);
 
         /**
          * Sets lock for update.
@@ -280,7 +280,7 @@ namespace Fred
          * Sets true to lock flag in @ref lock_ attribute
          * @return operation instance reference to allow method chaining
          */
-        HistoryInfoKeysetByHistoryid& set_lock();
+        InfoKeysetHistoryByHistoryid& set_lock();
 
         /**
         * Executes getting history info about the keyset.

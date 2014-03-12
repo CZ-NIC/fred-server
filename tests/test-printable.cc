@@ -209,22 +209,22 @@ BOOST_AUTO_TEST_CASE(info_contact_by_id)
 }
 
 /**
- * test HistoryInfoContactById print to string
+ * test InfoContactHistoryById print to string
  */
 BOOST_AUTO_TEST_CASE(history_info_contact_by_id)
 {
     printable_test(
-    Fred::HistoryInfoContactById(1)
+    Fred::InfoContactHistoryById(1)
     );
 }
 
 /**
- * test HistoryInfoContactByHistoryid print to string
+ * test InfoContactHistoryByHistoryid print to string
  */
 BOOST_AUTO_TEST_CASE(history_info_contact_by_historyid)
 {
     printable_test(
-    Fred::HistoryInfoContactByHistoryid(1)
+    Fred::InfoContactHistoryByHistoryid(1)
     );
 }
 

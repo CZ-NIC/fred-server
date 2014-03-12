@@ -210,7 +210,7 @@ namespace Fred
     * In case of wrong input data or other predictable and superable failure, the instance of @ref HistoryInfoContactById::Exception is thrown with appropriate attributes set.
     * In case of other insuperable failures and inconsistencies, the instance of @ref InternalError or other exception is thrown.
     */
-    class HistoryInfoContactById : public Util::Printable
+    class InfoContactHistoryById : public Util::Printable
     {
         unsigned long long id_;/**< object id of the contact */
         bool lock_;/**< if set to true lock object_registry row for update, if set to false lock for share */
@@ -226,7 +226,7 @@ namespace Fred
         * Info contact history constructor with mandatory parameter.
         * @param id sets object id of the contact into @ref id_ attribute
         */
-        explicit HistoryInfoContactById(unsigned long long id);
+        explicit InfoContactHistoryById(unsigned long long id);
 
         /**
         * Sets lock for update.
@@ -234,7 +234,7 @@ namespace Fred
         * Sets true to lock flag in @ref lock_ attribute
         * @return operation instance reference to allow method chaining
         */
-        HistoryInfoContactById& set_lock();
+        InfoContactHistoryById& set_lock();
 
         /**
         * Executes getting history info about the contact.
@@ -260,7 +260,7 @@ namespace Fred
     * In case of wrong input data or other predictable and superable failure, the instance of @ref HistoryInfoContactByHistoryid::Exception is thrown with appropriate attributes set.
     * In case of other insuperable failures and inconsistencies, the instance of @ref InternalError or other exception is thrown.
     */
-    class HistoryInfoContactByHistoryid : public Util::Printable
+    class InfoContactHistoryByHistoryid : public Util::Printable
     {
         unsigned long long historyid_;/**< history id of the contact */
         bool lock_;/**< if set to true lock object_registry row for update, if set to false lock for share */
@@ -276,7 +276,7 @@ namespace Fred
         * Info contact history constructor with mandatory parameter.
         * @param historyid sets object historyid of the contact into @ref historyid_ attribute
         */
-        explicit HistoryInfoContactByHistoryid(unsigned long long historyid);
+        explicit InfoContactHistoryByHistoryid(unsigned long long historyid);
 
         /**
         * Sets lock for update.
@@ -284,7 +284,7 @@ namespace Fred
         * Sets true to lock flag in @ref lock_ attribute
         * @return operation instance reference to allow method chaining
         */
-        HistoryInfoContactByHistoryid& set_lock();
+        InfoContactHistoryByHistoryid& set_lock();
 
         /**
         * Executes getting history info about the contact.

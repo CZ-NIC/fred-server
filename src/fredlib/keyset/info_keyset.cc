@@ -199,18 +199,18 @@ namespace Fred
     }
 
 
-    HistoryInfoKeysetById::HistoryInfoKeysetById(unsigned long long id)
+    InfoKeysetHistoryById::InfoKeysetHistoryById(unsigned long long id)
         : id_(id)
         , lock_(false)
     {}
 
-    HistoryInfoKeysetById& HistoryInfoKeysetById::set_lock()
+    InfoKeysetHistoryById& InfoKeysetHistoryById::set_lock()
     {
         lock_ = true;
         return *this;
     }
 
-    std::vector<InfoKeysetOutput> HistoryInfoKeysetById::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
+    std::vector<InfoKeysetOutput> InfoKeysetHistoryById::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
     {
         std::vector<InfoKeysetOutput> keyset_history_res;
 
@@ -235,27 +235,27 @@ namespace Fred
         return keyset_history_res;
     }//HistoryInfoKeysetById::exec
 
-    std::string HistoryInfoKeysetById::to_string() const
+    std::string InfoKeysetHistoryById::to_string() const
     {
-        return Util::format_operation_state("HistoryInfoKeysetById",
+        return Util::format_operation_state("InfoKeysetHistoryById",
         Util::vector_of<std::pair<std::string,std::string> >
         (std::make_pair("id",boost::lexical_cast<std::string>(id_)))
         (std::make_pair("lock",lock_ ? "true":"false"))
         );
     }
 
-    HistoryInfoKeysetByHistoryid::HistoryInfoKeysetByHistoryid(unsigned long long historyid)
+    InfoKeysetHistoryByHistoryid::InfoKeysetHistoryByHistoryid(unsigned long long historyid)
         : historyid_(historyid)
         , lock_(false)
     {}
 
-    HistoryInfoKeysetByHistoryid& HistoryInfoKeysetByHistoryid::set_lock()
+    InfoKeysetHistoryByHistoryid& InfoKeysetHistoryByHistoryid::set_lock()
     {
         lock_ = true;
         return *this;
     }
 
-    InfoKeysetOutput HistoryInfoKeysetByHistoryid::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
+    InfoKeysetOutput InfoKeysetHistoryByHistoryid::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
     {
         std::vector<InfoKeysetOutput> keyset_history_res;
 
@@ -285,9 +285,9 @@ namespace Fred
         return keyset_history_res.at(0);
     }//HistoryInfoKeysetByHistoryid::exec
 
-    std::string HistoryInfoKeysetByHistoryid::to_string() const
+    std::string InfoKeysetHistoryByHistoryid::to_string() const
     {
-        return Util::format_operation_state("HistoryInfoKeysetByHistoryid",
+        return Util::format_operation_state("InfoKeysetHistoryByHistoryid",
         Util::vector_of<std::pair<std::string,std::string> >
         (std::make_pair("historyid",boost::lexical_cast<std::string>(historyid_)))
         (std::make_pair("lock",lock_ ? "true":"false"))

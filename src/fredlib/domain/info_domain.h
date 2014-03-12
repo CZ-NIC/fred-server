@@ -210,7 +210,7 @@ namespace Fred
     * In case of wrong input data or other predictable and superable failure, the instance of @ref HistoryInfoDomainById::Exception is thrown with appropriate attributes set.
     * In case of other insuperable failures and inconsistencies, the instance of @ref InternalError or other exception is thrown.
     */
-    class HistoryInfoDomainById : public Util::Printable
+    class InfoDomainHistoryById : public Util::Printable
     {
         unsigned long long id_;/**< object id of the domain */
         bool lock_;/**< if set to true lock object_registry row for update, if set to false lock for share */
@@ -226,7 +226,7 @@ namespace Fred
         * Info domain history constructor with mandatory parameter.
         * @param id sets object id of the domain into @ref id_ attribute
         */
-        explicit HistoryInfoDomainById(unsigned long long id);
+        explicit InfoDomainHistoryById(unsigned long long id);
 
         /**
          * Sets lock for update.
@@ -234,7 +234,7 @@ namespace Fred
          * Sets true to lock flag in @ref lock_ attribute
          * @return operation instance reference to allow method chaining
          */
-        HistoryInfoDomainById& set_lock();
+        InfoDomainHistoryById& set_lock();
 
         /**
         * Executes getting history info about the domain.
@@ -260,7 +260,7 @@ namespace Fred
     * In case of wrong input data or other predictable and superable failure, the instance of @ref HistoryInfoDomainByHistoryid::Exception is thrown with appropriate attributes set.
     * In case of other insuperable failures and inconsistencies, the instance of @ref InternalError or other exception is thrown.
     */
-    class HistoryInfoDomainByHistoryid : public Util::Printable
+    class InfoDomainHistoryByHistoryid : public Util::Printable
     {
         unsigned long long historyid_;/**< history id of the domain */
         bool lock_;/**< if set to true lock object_registry row for update, if set to false lock for share */
@@ -276,7 +276,7 @@ namespace Fred
         * Info domain history constructor with mandatory parameter.
         * @param historyid sets object historyid of the domain into @ref historyid_ attribute
         */
-        explicit HistoryInfoDomainByHistoryid(unsigned long long historyid);
+        explicit InfoDomainHistoryByHistoryid(unsigned long long historyid);
 
         /**
          * Sets lock for update.
@@ -284,7 +284,7 @@ namespace Fred
          * Sets true to lock flag in @ref lock_ attribute
          * @return operation instance reference to allow method chaining
          */
-        HistoryInfoDomainByHistoryid& set_lock();
+        InfoDomainHistoryByHistoryid& set_lock();
 
         /**
         * Executes getting history info about the domain.
