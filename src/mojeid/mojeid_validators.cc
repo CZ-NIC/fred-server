@@ -101,6 +101,7 @@ ContactValidator create_verified_transfer_validator_mojeid()
 ContactValidator create_contact_update_validator_mojeid()
 {
     ContactValidator tmp = create_default_contact_validator();
+    tmp.add_checker(contact_checker_birthday);
     return tmp;
 }
 
