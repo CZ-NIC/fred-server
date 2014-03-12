@@ -50,13 +50,6 @@ ContactValidator create_finish_identification_validator()
 }
 
 
-ContactValidator create_contact_update_validator()
-{
-    ContactValidator tmp = create_default_contact_validator();
-    return tmp;
-}
-
-
 }
 }
 }
