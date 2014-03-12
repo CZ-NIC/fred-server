@@ -33,7 +33,7 @@ unsigned long long CreateDeleteDomainPollMessage::exec(Fred::OperationContext &_
                 ).add_exception_stack_info(
                     this->to_string() );
 
-            throw new_e;
+            BOOST_THROW_EXCEPTION(new_e);
         }
 
         if(e.is_set_object_type_not_found()) {
@@ -45,7 +45,7 @@ unsigned long long CreateDeleteDomainPollMessage::exec(Fred::OperationContext &_
                 ).add_exception_stack_info(
                     this->to_string() );
 
-            throw new_e;
+            BOOST_THROW_EXCEPTION(new_e);
         }
 
         // if (maybe in future) implementation Exception contains some other fragments don't swallow it...

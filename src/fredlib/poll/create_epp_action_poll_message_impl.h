@@ -29,7 +29,7 @@ inline std::string to_registry_handle(object_type _in) {
         case nsset:
             return "nsset";
         default:
-            throw std::runtime_error("uknonwn registry object type");
+            BOOST_THROW_EXCEPTION(std::runtime_error("unknown registry object type"));
     };
 }
 

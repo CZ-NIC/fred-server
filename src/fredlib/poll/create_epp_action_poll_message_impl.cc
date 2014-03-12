@@ -42,11 +42,13 @@ unsigned long long CreateEppActionPollMessage::exec(Fred::OperationContext &_ctx
         !=
         to_registry_handle(object_type_)
     ) {
-        throw Exception()
-            .set_object_type_not_found(
-                std::make_pair(
-                    to_registry_handle(object_type_),
-                    history_id_)
+        BOOST_THROW_EXCEPTION(
+            Exception()
+                .set_object_type_not_found(
+                    std::make_pair(
+                        to_registry_handle(object_type_),
+                        history_id_)
+            )
         );
     }
 
