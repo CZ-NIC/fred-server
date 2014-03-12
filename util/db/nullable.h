@@ -24,7 +24,6 @@
 #ifndef NULLABLE_H_10011114543210
 #define NULLABLE_H_10011114543210
 
-#include "util/db/query_param.h"
 #include "util/db/value.h"
 #include <stdexcept>
 
@@ -171,19 +170,6 @@ public:
     T get_value_or_default() const
     {
         return value_;
-    }
-
-    /**
-     * Conversion operator to Database::QueryParam
-     *
-     * \remark In case the object is null default value of Database::QueryParam is returned.
-     */
-    operator Database::QueryParam()
-    {
-        if (isnull())
-            return ::Database::QueryParam();
-        else
-            return ::Database::QueryParam(value_);
     }
 
     /**

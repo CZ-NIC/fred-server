@@ -35,6 +35,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
 
+#include "nullable.h"
 
 namespace Database
 {
@@ -129,6 +130,16 @@ public:
     , null_(false)
     , buffer_( boost::gregorian::to_iso_extended_string(value))
     {}
+
+    template <class T> QueryParam( const Nullable<T>& t )
+    : binary_(false)
+    , null_(t.isnull())
+    {
+        if(!t.isnull())
+        {
+            buffer_ = boost::lexical_cast<std::string>(t.get_value());
+        }
+    }
 
     //all others
     template <class T> QueryParam( T t )
