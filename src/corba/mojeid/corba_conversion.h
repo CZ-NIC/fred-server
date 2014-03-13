@@ -275,6 +275,7 @@ Contact* corba_wrap_contact(const Fred::Contact::Verification::Contact &_contact
         unsigned int j = data->addresses.length();
         data->addresses.length(j + 1);
         data->addresses[j].type         = corba_wrap_string(i->type);
+        data->addresses[j].company_name = corba_wrap_nullable_string(i->company_name);
         data->addresses[j].street1      = corba_wrap_string(i->street1.get_value());
         data->addresses[j].street2      = corba_wrap_nullable_string(i->street2);
         data->addresses[j].street3      = corba_wrap_nullable_string(i->street3);

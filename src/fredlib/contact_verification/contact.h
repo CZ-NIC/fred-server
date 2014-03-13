@@ -15,6 +15,7 @@ class ContactAddress
 {
 public:
     std::string type;
+    Nullable<std::string> company_name;
     Nullable<std::string> street1;
     Nullable<std::string> street2;
     Nullable<std::string> street3;

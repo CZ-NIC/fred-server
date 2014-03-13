@@ -25,6 +25,12 @@ enum MemberType {
 class Address
 {
 public:
+  typedef struct _Type
+  {
+    static const std::string MAILING; // Fred::Contact::Address::Type::MAILING  = "MAILING"
+    static const std::string SHIPPING;// Fred::Contact::Address::Type::SHIPPING = "SHIPPING"
+    static const std::string BILLING; // Fred::Contact::Address::Type::BILLING  = "BILLING"
+  } Type;
   virtual const std::string& getType() const = 0;
   /// return contact company name
   virtual const std::string& getCompanyName() const = 0;

@@ -46,6 +46,10 @@ namespace Contact {
 static boost::regex format(CONTACT_REGEX);
 static boost::regex formatRestricted(CONTACT_REGEX_RESTRICTED);
 
+const std::string Address::Type::MAILING  = "MAILING";
+const std::string Address::Type::SHIPPING = "SHIPPING";
+const std::string Address::Type::BILLING  = "BILLING";
+
 class AddressImpl : public virtual Address
 {
 private:
@@ -296,19 +300,16 @@ public:
   }
   virtual const Address* getAddressByIdx(const unsigned int &_idx) const
   {
-      if (_idx >= addresses.size())
+      if (_idx < addresses.size())
       {
-          throw NOT_FOUND();
+          return &(addresses[_idx]);
       }
-      else
-      {
-          return &addresses[_idx];
-      }
+      throw NOT_FOUND();
   }
   AddressImpl* addAddress(const AddressImpl &_addr)
   {
       addresses.push_back(_addr);
-      return &addresses.at(addresses.size() - 1);
+      return &(addresses.back());
   }
 };
 
@@ -359,7 +360,7 @@ public:
     nonHandleFilterSet = true;
   }
   void makeQuery(bool count, bool limit, std::stringstream& sql) const {
-    std::stringstream from, where;
+    std::ostringstream from, where;
     sql.str("");
     if (!count) {
       sql << "INSERT INTO " << getTempTableName() << " ";
@@ -673,8 +674,8 @@ public:
       }
 
       resetHistoryIDSequence();
-      std::stringstream addr_query;
-      addr_query << "SELECT tmp.id,cah.contactid,cah.type,cah.street1,"
+      std::ostringstream addr_query;
+      addr_query << "SELECT tmp.id,cah.contactid,cah.type,cah.company_name,cah.street1,"
                  << " cah.street2,cah.street3,cah.stateorprovince,cah.postalcode,"
                  << " cah.city,cah.country"
                  << " FROM " << getTempTableName() << " tmp"
@@ -685,20 +686,21 @@ public:
       {
           Database::Row::Iterator col = (*it).begin();
           unsigned long long c_hid = *col;
-          unsigned long long c_id = *(++col);
-          std::string type = *(++col);
-          std::string street1 = *(++col);
-          std::string street2 = *(++col);
-          std::string street3 = *(++col);
-          std::string province = *(++col);
-          std::string pc = *(++col);
-          std::string city = *(++col);
-          std::string country = *(++col);
+          unsigned long long c_id  = *(++col);
+          std::string type         = *(++col);
+          std::string company_name = *(++col);
+          std::string street1      = *(++col);
+          std::string street2      = *(++col);
+          std::string street3      = *(++col);
+          std::string province     = *(++col);
+          std::string pc           = *(++col);
+          std::string city         = *(++col);
+          std::string country      = *(++col);
 
           ContactImpl *cptr = dynamic_cast<ContactImpl*>(findHistoryIDSequence(c_hid));
           if (cptr)
           {
-              cptr->addAddress(AddressImpl(type, street1, street2, street3, province, pc, city, country));
+              cptr->addAddress(AddressImpl(type, company_name, street1, street2, street3, province, pc, city, country));
           }
       }
 

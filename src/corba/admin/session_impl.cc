@@ -964,24 +964,27 @@ LOGGER(PACKAGE).debug(boost::format("history detail -- (id=%1%) checking state %
     /* address list */
     try {
       bool addr_list_changed = (act->getAddressCount() != prev->getAddressCount()) || (act == prev);
-      for (unsigned i = 0; addr_list_changed != true && i < act->getAddressCount(); ++i) {
-        if (*(act->getAddressByIdx(i)) != *(prev->getAddressByIdx(i))) {
-          addr_list_changed = true;
-          break;
+      if (!addr_list_changed) {
+        for (unsigned i = 0; i < act->getAddressCount(); ++i) {
+          if (*(act->getAddressByIdx(i)) != *(prev->getAddressByIdx(i))) {
+            addr_list_changed = true;
+            break;
+          }
         }
       }
       if (addr_list_changed) {
         Registry::Contact::AddressSeq addresses;
         addresses.length(act->getAddressCount());
         for (unsigned k = 0; k < act->getAddressCount(); ++k) {
-          addresses[k].type     = DUPSTRFUN(act->getAddressByIdx(k)->getType);
-          addresses[k].street1  = DUPSTRFUN(act->getAddressByIdx(k)->getStreet1);
-          addresses[k].street2  = DUPSTRFUN(act->getAddressByIdx(k)->getStreet2);
-          addresses[k].street3  = DUPSTRFUN(act->getAddressByIdx(k)->getStreet3);
-          addresses[k].province = DUPSTRFUN(act->getAddressByIdx(k)->getProvince);
-          addresses[k].postalcode = DUPSTRFUN(act->getAddressByIdx(k)->getPostalCode);
-          addresses[k].city = DUPSTRFUN(act->getAddressByIdx(k)->getCity);
-          addresses[k].country = DUPSTRFUN(act->getAddressByIdx(k)->getCountry);
+          addresses[k].type        = DUPSTRFUN(act->getAddressByIdx(k)->getType);
+          addresses[k].companyName = DUPSTRFUN(act->getAddressByIdx(k)->getCompanyName);
+          addresses[k].street1     = DUPSTRFUN(act->getAddressByIdx(k)->getStreet1);
+          addresses[k].street2     = DUPSTRFUN(act->getAddressByIdx(k)->getStreet2);
+          addresses[k].street3     = DUPSTRFUN(act->getAddressByIdx(k)->getStreet3);
+          addresses[k].province    = DUPSTRFUN(act->getAddressByIdx(k)->getProvince);
+          addresses[k].postalcode  = DUPSTRFUN(act->getAddressByIdx(k)->getPostalCode);
+          addresses[k].city        = DUPSTRFUN(act->getAddressByIdx(k)->getCity);
+          addresses[k].country     = DUPSTRFUN(act->getAddressByIdx(k)->getCountry);
           LOGGER(PACKAGE).debug(boost::format("contact id=%1% add address to output type=%2%")
                   % act->getId() % act->getAddressByIdx(k)->getType());
         }
