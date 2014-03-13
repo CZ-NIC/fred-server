@@ -161,9 +161,9 @@ BOOST_FIXTURE_TEST_CASE(info_keyset, info_keyset_fixture )
     BOOST_CHECK(info_data_1 == info_data_3);
     Fred::InfoKeysetOutput info_data_4 = Fred::InfoKeysetHistory(info_data_1.info_keyset_data.roid).exec(ctx).at(0);
     BOOST_CHECK(info_data_1 == info_data_4);
-    Fred::InfoKeysetOutput info_data_5 = Fred::HistoryInfoKeysetById(info_data_1.info_keyset_data.id).exec(ctx).at(0);
+    Fred::InfoKeysetOutput info_data_5 = Fred::InfoKeysetHistoryById(info_data_1.info_keyset_data.id).exec(ctx).at(0);
     BOOST_CHECK(info_data_1 == info_data_5);
-    Fred::InfoKeysetOutput info_data_6 = Fred::HistoryInfoKeysetByHistoryid(info_data_1.info_keyset_data.historyid).exec(ctx);
+    Fred::InfoKeysetOutput info_data_6 = Fred::InfoKeysetHistoryByHistoryid(info_data_1.info_keyset_data.historyid).exec(ctx);
     BOOST_CHECK(info_data_1 == info_data_6);
 
     //impl

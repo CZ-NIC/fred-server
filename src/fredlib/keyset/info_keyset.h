@@ -39,9 +39,6 @@ namespace Fred
     * Keyset info by keyset handle.
     * Keyset handle to get info about is set via constructor.
     * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
-    * When exception is thrown, changes to database are considered inconsistent and should be rolled back by the caller.
-    * In case of wrong input data or other predictable and superable failure, the instance of @ref InfoKeysetByHandle::Exception is thrown with appropriate attributes set.
-    * In case of other insuperable failures and inconsistencies, the instance of @ref InternalError or other exception is thrown.
     */
     class InfoKeysetByHandle : public Util::Printable
     {
@@ -74,6 +71,9 @@ namespace Fred
         * @param ctx contains reference to database and logging interface
         * @param local_timestamp_pg_time_zone_name is postgresql time zone name of the returned data
         * @return info data about the keyset
+        * @throws Exception in case of wrong input data or other predictable and superable failure.
+        * @throws InternalError otherwise
+        * When exception is thrown changes to database are considered inconsistent and should be rolled back by the caller.
         */
         InfoKeysetOutput exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
 
@@ -83,15 +83,12 @@ namespace Fred
         */
         std::string to_string() const;
 
-    };//class InfoKeysetByHandle
+    };
 
     /**
     * Keyset info by id.
     * Keyset id to get info about the keyset is set via constructor.
     * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
-    * When exception is thrown, changes to database are considered inconsistent and should be rolled back by the caller.
-    * In case of wrong input data or other predictable and superable failure, the instance of @ref InfoKeysetById::Exception is thrown with appropriate attributes set.
-    * In case of other insuperable failures and inconsistencies, the instance of @ref InternalError or other exception is thrown.
     */
     class InfoKeysetById : public Util::Printable
     {
@@ -124,6 +121,9 @@ namespace Fred
         * @param ctx contains reference to database and logging interface
         * @param local_timestamp_pg_time_zone_name is postgresql time zone name of the returned data
         * @return info data about the keyset
+        * @throws Exception in case of wrong input data or other predictable and superable failure.
+        * @throws InternalError otherwise
+        * When exception is thrown changes to database are considered inconsistent and should be rolled back by the caller.
         */
         InfoKeysetOutput exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
 
@@ -133,15 +133,12 @@ namespace Fred
         */
         std::string to_string() const;
 
-    };//class InfoKeysetById
+    };
 
     /**
     * Keyset history info.
     * Keyset registry object identifier to get history info about the keyset is set via constructor.
     * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
-    * When exception is thrown, changes to database are considered incosistent and should be rolled back by the caller.
-    * In case of wrong input data or other predictable and superable failure, the instance of @ref InfoKeysetHistory::Exception is thrown with appropriate attributes set.
-    * In case of other insuperable failures and inconsistencies, the instance of @ref InternalError or other exception is thrown.
     */
     class InfoKeysetHistory : public Util::Printable
     {
@@ -188,6 +185,9 @@ namespace Fred
         * @param ctx contains reference to database and logging interface
         * @param local_timestamp_pg_time_zone_name is postgresql time zone name of the returned data
         * @return history info data about the keyset
+        * @throws Exception in case of wrong input data or other predictable and superable failure.
+        * @throws InternalError otherwise
+        * When exception is thrown changes to database are considered inconsistent and should be rolled back by the caller.
         */
         std::vector<InfoKeysetOutput> exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
 
@@ -196,17 +196,14 @@ namespace Fred
         * @return string with description of the instance state
         */
         std::string to_string() const;
-    };//class InfoKeysetHistory
+    };
 
     /**
     * Keyset info by id including history.
     * Keyset id to get info about the keyset is set via constructor.
     * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
-    * When exception is thrown, changes to database are considered inconsistent and should be rolled back by the caller.
-    * In case of wrong input data or other predictable and superable failure, the instance of @ref HistoryInfoKeysetById::Exception is thrown with appropriate attributes set.
-    * In case of other insuperable failures and inconsistencies, the instance of @ref InternalError or other exception is thrown.
     */
-    class HistoryInfoKeysetById : public Util::Printable
+    class InfoKeysetHistoryById : public Util::Printable
     {
         unsigned long long id_;/**< object id of the keyset */
         bool lock_;/**< if set to true lock object_registry row for update, if set to false lock for share */
@@ -222,7 +219,7 @@ namespace Fred
         * Info keyset history constructor with mandatory parameter.
         * @param id sets object id of the keyset into @ref id_ attribute
         */
-        explicit HistoryInfoKeysetById(unsigned long long id);
+        explicit InfoKeysetHistoryById(unsigned long long id);
 
         /**
          * Sets lock for update.
@@ -230,13 +227,16 @@ namespace Fred
          * Sets true to lock flag in @ref lock_ attribute
          * @return operation instance reference to allow method chaining
          */
-        HistoryInfoKeysetById& set_lock();
+        InfoKeysetHistoryById& set_lock();
 
         /**
         * Executes getting history info about the keyset.
         * @param ctx contains reference to database and logging interface
         * @param local_timestamp_pg_time_zone_name is postgresql time zone name of the returned data
         * @return history info data about the keyset
+        * @throws Exception in case of wrong input data or other predictable and superable failure.
+        * @throws InternalError otherwise
+        * When exception is thrown changes to database are considered inconsistent and should be rolled back by the caller.
         */
         std::vector<InfoKeysetOutput> exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
 
@@ -246,17 +246,14 @@ namespace Fred
         */
         std::string to_string() const;
 
-    };//class HistoryInfoKeysetById
+    };
 
     /**
     * Keyset info by historyid.
     * Keyset historyid to get info about the keyset is set via constructor.
     * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
-    * When exception is thrown, changes to database are considered inconsistent and should be rolled back by the caller.
-    * In case of wrong input data or other predictable and superable failure, the instance of @ref HistoryInfoKeysetByHistoryid::Exception is thrown with appropriate attributes set.
-    * In case of other insuperable failures and inconsistencies, the instance of @ref InternalError or other exception is thrown.
     */
-    class HistoryInfoKeysetByHistoryid : public Util::Printable
+    class InfoKeysetHistoryByHistoryid : public Util::Printable
     {
         unsigned long long historyid_;/**< history id of the keyset */
         bool lock_;/**< if set to true lock object_registry row for update, if set to false lock for share */
@@ -272,7 +269,7 @@ namespace Fred
         * Info keyset history constructor with mandatory parameter.
         * @param historyid sets object historyid of the keyset into @ref historyid_ attribute
         */
-        explicit HistoryInfoKeysetByHistoryid(unsigned long long historyid);
+        explicit InfoKeysetHistoryByHistoryid(unsigned long long historyid);
 
         /**
          * Sets lock for update.
@@ -280,13 +277,16 @@ namespace Fred
          * Sets true to lock flag in @ref lock_ attribute
          * @return operation instance reference to allow method chaining
          */
-        HistoryInfoKeysetByHistoryid& set_lock();
+        InfoKeysetHistoryByHistoryid& set_lock();
 
         /**
         * Executes getting history info about the keyset.
         * @param ctx contains reference to database and logging interface
         * @param local_timestamp_pg_time_zone_name is postgresql time zone name of the returned data
         * @return history info data about the keyset
+        * @throws Exception in case of wrong input data or other predictable and superable failure.
+        * @throws InternalError otherwise
+        * When exception is thrown changes to database are considered inconsistent and should be rolled back by the caller.
         */
         InfoKeysetOutput exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
 
@@ -296,7 +296,7 @@ namespace Fred
         */
         std::string to_string() const;
 
-    };//class HistoryInfoKeysetByHistoryid
+    };
 
 }//namespace Fred
 

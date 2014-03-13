@@ -42,9 +42,6 @@ namespace Fred
     * Nsset info by nsset handle.
     * Nsset handle to get info about is set via constructor.
     * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
-    * When exception is thrown, changes to database are considered inconsistent and should be rolled back by the caller.
-    * In case of wrong input data or other predictable and superable failure, the instance of @ref InfoNssetByHandle::Exception is thrown with appropriate attributes set.
-    * In case of other insuperable failures and inconsistencies, the instance of @ref InternalError or other exception is thrown.
     */
     class InfoNssetByHandle : public Util::Printable
     {
@@ -77,6 +74,9 @@ namespace Fred
         * @param ctx contains reference to database and logging interface
         * @param local_timestamp_pg_time_zone_name is postgresql time zone name of the returned data
         * @return info data about the nsset
+        * @throws Exception in case of wrong input data or other predictable and superable failure.
+        * @throws InternalError otherwise
+        * When exception is thrown changes to database are considered inconsistent and should be rolled back by the caller.
         */
         InfoNssetOutput exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
 
@@ -86,15 +86,12 @@ namespace Fred
         */
         std::string to_string() const;
 
-    };//class InfoNssetByHandle
+    };
 
     /**
     * Nsset info by id.
     * Nsset id to get info about the nsset is set via constructor.
     * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
-    * When exception is thrown, changes to database are considered inconsistent and should be rolled back by the caller.
-    * In case of wrong input data or other predictable and superable failure, the instance of @ref InfoNssetById::Exception is thrown with appropriate attributes set.
-    * In case of other insuperable failures and inconsistencies, the instance of @ref InternalError or other exception is thrown.
     */
     class InfoNssetById : public Util::Printable
     {
@@ -127,6 +124,9 @@ namespace Fred
         * @param ctx contains reference to database and logging interface
         * @param local_timestamp_pg_time_zone_name is postgresql time zone name of the returned data
         * @return info data about the nsset
+        * @throws Exception in case of wrong input data or other predictable and superable failure.
+        * @throws InternalError otherwise
+        * When exception is thrown changes to database are considered inconsistent and should be rolled back by the caller.
         */
         InfoNssetOutput exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
 
@@ -136,15 +136,12 @@ namespace Fred
         */
         std::string to_string() const;
 
-    };//class InfoNssetById
+    };
 
     /**
     * Nsset history info.
     * Nsset registry object identifier to get history info about the nsset is set via constructor.
     * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
-    * When exception is thrown, changes to database are considered incosistent and should be rolled back by the caller.
-    * In case of wrong input data or other predictable and superable failure, the instance of @ref InfoNssetHistory::Exception is thrown with appropriate attributes set.
-    * In case of other insuperable failures and inconsistencies, the instance of @ref InternalError or other exception is thrown.
     */
     class InfoNssetHistory : public Util::Printable
     {
@@ -192,6 +189,9 @@ namespace Fred
         * @param ctx contains reference to database and logging interface
         * @param local_timestamp_pg_time_zone_name is postgresql time zone name of the returned data
         * @return history info data about the nsset
+        * @throws Exception in case of wrong input data or other predictable and superable failure.
+        * @throws InternalError otherwise
+        * When exception is thrown changes to database are considered inconsistent and should be rolled back by the caller.
         */
         std::vector<InfoNssetOutput> exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");
 
@@ -201,17 +201,14 @@ namespace Fred
         */
         std::string to_string() const;
 
-    };//class InfoNssetHistory
+    };
 
     /**
     * Nsset info by id including history.
     * Nsset id to get info about the nsset is set via constructor.
     * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
-    * When exception is thrown, changes to database are considered inconsistent and should be rolled back by the caller.
-    * In case of wrong input data or other predictable and superable failure, the instance of @ref HistoryInfoNssetById::Exception is thrown with appropriate attributes set.
-    * In case of other insuperable failures and inconsistencies, the instance of @ref InternalError or other exception is thrown.
     */
-    class HistoryInfoNssetById : public Util::Printable
+    class InfoNssetHistoryById : public Util::Printable
     {
         unsigned long long id_;/**< object id of the nsset */
         bool lock_;/**< if set to true lock object_registry row for update, if set to false lock for share */
@@ -227,7 +224,7 @@ namespace Fred
         * Info nsset history constructor with mandatory parameter.
         * @param id sets object id of the nsset into @ref id_ attribute
         */
-        explicit HistoryInfoNssetById(unsigned long long id);
+        explicit InfoNssetHistoryById(unsigned long long id);
 
         /**
         * Sets lock for update.
@@ -235,13 +232,16 @@ namespace Fred
         * Sets true to lock flag in @ref lock_ attribute
         * @return operation instance reference to allow method chaining
         */
-        HistoryInfoNssetById& set_lock();
+        InfoNssetHistoryById& set_lock();
 
         /**
         * Executes getting history info about the nsset.
         * @param ctx contains reference to database and logging interface
         * @param local_timestamp_pg_time_zone_name is postgresql time zone name of the returned data
         * @return history info data about the nsset
+        * @throws Exception in case of wrong input data or other predictable and superable failure.
+        * @throws InternalError otherwise
+        * When exception is thrown changes to database are considered inconsistent and should be rolled back by the caller.
         */
         std::vector<InfoNssetOutput> exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
 
@@ -251,17 +251,14 @@ namespace Fred
         */
         std::string to_string() const;
 
-    };//class HistoryInfoNssetById
+    };
 
     /**
     * Nsset info by historyid.
     * Nsset historyid to get info about the nsset is set via constructor.
     * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
-    * When exception is thrown, changes to database are considered inconsistent and should be rolled back by the caller.
-    * In case of wrong input data or other predictable and superable failure, the instance of @ref HistoryInfoNssetByHistoryid::Exception is thrown with appropriate attributes set.
-    * In case of other insuperable failures and inconsistencies, the instance of @ref InternalError or other exception is thrown.
     */
-    class HistoryInfoNssetByHistoryid : public Util::Printable
+    class InfoNssetHistoryByHistoryid : public Util::Printable
     {
         unsigned long long historyid_;/**< history id of the nsset */
         bool lock_;/**< if set to true lock object_registry row for update, if set to false lock for share */
@@ -277,7 +274,7 @@ namespace Fred
         * Info nsset history constructor with mandatory parameter.
         * @param historyid sets object historyid of the nsset into @ref historyid_ attribute
         */
-        explicit HistoryInfoNssetByHistoryid(unsigned long long historyid);
+        explicit InfoNssetHistoryByHistoryid(unsigned long long historyid);
 
         /**
         * Sets lock for update.
@@ -285,13 +282,16 @@ namespace Fred
         * Sets true to lock flag in @ref lock_ attribute
         * @return operation instance reference to allow method chaining
         */
-        HistoryInfoNssetByHistoryid& set_lock();
+        InfoNssetHistoryByHistoryid& set_lock();
 
         /**
         * Executes getting history info about the nsset.
         * @param ctx contains reference to database and logging interface
         * @param local_timestamp_pg_time_zone_name is postgresql time zone name of the returned data
         * @return history info data about the nsset
+        * @throws Exception in case of wrong input data or other predictable and superable failure.
+        * @throws InternalError otherwise
+        * When exception is thrown changes to database are considered inconsistent and should be rolled back by the caller.
         */
         InfoNssetOutput exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
 
@@ -301,7 +301,7 @@ namespace Fred
         */
         std::string to_string() const;
 
-    };//class HistoryInfoNssetByHistoryid
+    };
 
 }//namespace Fred
 
