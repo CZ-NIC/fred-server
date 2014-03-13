@@ -519,6 +519,7 @@ public:
           hasUpdateObject = true;
           break;
         case MT_DELETE_CONTACT:
+        case MT_DELETE_DOMAIN:
           o = new MessageEventImpl(
               type,STR_TO_ID(db->GetFieldValue(i,1)),
               STR_TO_ID(db->GetFieldValue(i,2)),
