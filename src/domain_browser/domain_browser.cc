@@ -798,14 +798,6 @@ namespace Registry
             for(std::set<std::pair<unsigned long long, std::string> >::const_iterator ci = object_id_name_pairs.begin()
                 ; ci != object_id_name_pairs.end(); ++ci)
             {
-                //block_type
-                const unsigned BLOCK_TRANSFER = 0;
-                const unsigned UNBLOCK_TRANSFER = 1;
-                const unsigned BLOCK_UPDATE = 2;
-                const unsigned UNBLOCK_UPDATE = 3;
-                const unsigned BLOCK_TRANSFER_AND_UPDATE = 4;
-                const unsigned UNBLOCK_TRANSFER_AND_UPDATE = 5;
-
                 if((block_type == BLOCK_TRANSFER) || (block_type == BLOCK_TRANSFER_AND_UPDATE))
                 {
                     if(!Fred::ObjectHasState(ci->first, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx))

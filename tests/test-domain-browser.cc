@@ -31,6 +31,7 @@
 #include "src/fredlib/contact/info_contact.h"
 #include "src/fredlib/contact/update_contact.h"
 #include "src/fredlib/object_state/object_state_name.h"
+#include "src/fredlib/object_state/object_has_state.h"
 #include "src/fredlib/object_state/create_object_state_request_id.h"
 #include "src/fredlib/registrar/create_registrar.h"
 #include "src/fredlib/registrar/info_registrar.h"
@@ -1268,7 +1269,31 @@ BOOST_FIXTURE_TEST_CASE(set_contact_authinfo_too_long, mojeid_user_contact_fixtu
     }
 }
 
-
 BOOST_AUTO_TEST_SUITE_END();//setContactAuthInfo
+
+BOOST_AUTO_TEST_SUITE(setObjectBlockStatus)
+
+BOOST_FIXTURE_TEST_CASE(set_contact_object_block_status, mojeid_user_contact_fixture)
+{
+    {
+        Fred::OperationContext ctx;
+        Fred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id
+        , Util::set_of<std::string>(Fred::ObjectState::VALIDATED_CONTACT)).exec(ctx);
+        Fred::PerformObjectStateRequest(user_contact_info.info_contact_data.id).exec(ctx);
+        ctx.commit_transaction();
+    }
+
+    Fred::OperationContext ctx;
+    Registry::DomainBrowserImpl::DomainBrowser impl(server_name);
+    std::vector<std::string> blocked_objects_out;
+    impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
+        "contact", Util::vector_of<unsigned long long>(user_contact_info.info_contact_data.id),
+        Registry::DomainBrowserImpl::BLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
+
+    BOOST_CHECK(Fred::ObjectHasState(user_contact_info.info_contact_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
+    BOOST_CHECK(Fred::ObjectHasState(user_contact_info.info_contact_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+}
+
+BOOST_AUTO_TEST_SUITE_END();//setObjectBlockStatus
 
 BOOST_AUTO_TEST_SUITE_END();//TestDomainBrowser

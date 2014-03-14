@@ -352,6 +352,16 @@ namespace Registry
             const char* what() const throw() {return "object has a status that does not allow update";}
         };
 
+        /**
+         * Type of blocking to be applied (value from enum Registry::DomainBrowser::ObjectBlockType)
+         */
+        static const unsigned BLOCK_TRANSFER = 0;
+        static const unsigned UNBLOCK_TRANSFER = 1;
+        static const unsigned BLOCK_UPDATE = 2;
+        static const unsigned UNBLOCK_UPDATE = 3;
+        static const unsigned BLOCK_TRANSFER_AND_UPDATE = 4;
+        static const unsigned UNBLOCK_TRANSFER_AND_UPDATE = 5;
+
         class DomainBrowser
         {
             std::string server_name_;
