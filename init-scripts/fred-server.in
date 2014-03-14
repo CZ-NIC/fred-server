@@ -85,42 +85,42 @@ fred_start() {
 	fi
     fi
     if check_pidfile ${VARRUN_PATH}/fred-rifd.pid; then NUM=$(($NUM+1)); else
-        ${FRED_PATH}/fred-rifd ${OPTIONS}${RIFD_PORT} 2>/dev/null &
+        ${FRED_PATH}/fred-rifd ${OPTIONS}${RIFD_PORT} >/dev/null 2>&1 &
         if store_pid "${FRED_PATH}/fred-rifd" ${VARRUN_PATH}/fred-rifd.pid
 	then
 	    NUM=$(($NUM+1))
         fi
     fi
     if check_pidfile ${VARRUN_PATH}/fred-pifd.pid; then NUM=$(($NUM+1)); else
-        ${FRED_PATH}/fred-pifd ${OPTIONS}${PIFD_PORT} 2>/dev/null &
+        ${FRED_PATH}/fred-pifd ${OPTIONS}${PIFD_PORT} >/dev/null 2>&1 &
         if store_pid "${FRED_PATH}/fred-pifd" ${VARRUN_PATH}/fred-pifd.pid
 	then
 	    NUM=$(($NUM+1))
         fi
     fi
     if check_pidfile ${VARRUN_PATH}/fred-adifd.pid; then NUM=$(($NUM+1)); else
-        ${FRED_PATH}/fred-adifd ${OPTIONS}${ADIFD_PORT} 2>/dev/null &
+        ${FRED_PATH}/fred-adifd ${OPTIONS}${ADIFD_PORT} >/dev/null 2>&1 &
         if store_pid "${FRED_PATH}/fred-adifd" ${VARRUN_PATH}/fred-adifd.pid
 	then
 	    NUM=$(($NUM+1))
         fi
     fi
     if check_pidfile ${VARRUN_PATH}/fred-logd.pid; then NUM=$(($NUM+1)); else
-        ${FRED_PATH}/fred-logd ${OPTIONS}${LOGD_PORT} 2>/dev/null &
+        ${FRED_PATH}/fred-logd ${OPTIONS}${LOGD_PORT} >/dev/null 2>&1 &
         if store_pid "${FRED_PATH}/fred-logd" ${VARRUN_PATH}/fred-logd.pid
 	then
 	    NUM=$(($NUM+1))
         fi
     fi
     if check_pidfile ${VARRUN_PATH}/fred-mifd.pid; then NUM=$(($NUM+1)); else
-        ${FRED_PATH}/fred-mifd ${OPTIONS}${MIFD_PORT} 2>/dev/null &
+        ${FRED_PATH}/fred-mifd ${OPTIONS}${MIFD_PORT} >/dev/null 2>&1 &
         if store_pid "${FRED_PATH}/fred-mifd" ${VARRUN_PATH}/fred-mifd.pid
 	then
 	    NUM=$(($NUM+1))
         fi
     fi
     if check_pidfile ${VARRUN_PATH}/fred-msgd.pid; then NUM=$(($NUM+1)); else
-        ${FRED_PATH}/fred-msgd ${OPTIONS}${MSGD_PORT} 2>/dev/null &
+        ${FRED_PATH}/fred-msgd ${OPTIONS}${MSGD_PORT} >/dev/null 2>&1 &
         if store_pid "${FRED_PATH}/fred-msgd" ${VARRUN_PATH}/fred-msgd.pid
 	then
 	    NUM=$(($NUM+1))

@@ -39,7 +39,7 @@ namespace  Admin {
                 return;
             }
 
-            Fred::InfoContactOutput contact_info = Fred::HistoryInfoContactByHistoryid(check_info.contact_history_id).exec(_ctx);
+            Fred::InfoContactOutput contact_info = Fred::InfoContactHistoryByHistoryid(check_info.contact_history_id).exec(_ctx);
 
             std::set<unsigned long long> domain_ids_to_delete =
                 get_owned_domains_locking (

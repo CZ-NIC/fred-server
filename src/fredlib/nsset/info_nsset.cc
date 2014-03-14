@@ -41,9 +41,9 @@ namespace Fred
         , lock_(false)
     {}
 
-    InfoNssetByHandle& InfoNssetByHandle::set_lock(bool lock)//set lock object_registry row for nsset
+    InfoNssetByHandle& InfoNssetByHandle::set_lock()
     {
-        lock_ = lock;
+        lock_ = true;
         return *this;
     }
 
@@ -53,11 +53,10 @@ namespace Fred
 
         try
         {
-            nsset_res = InfoNsset()
-                    .set_handle(handle_)
-                    .set_lock(lock_)
-                    .set_history_query(false)
-                    .exec(ctx,local_timestamp_pg_time_zone_name);
+            InfoNsset in;
+            in.set_handle(handle_).set_history_query(false);
+            if(lock_) in.set_lock();
+            nsset_res = in.exec(ctx,local_timestamp_pg_time_zone_name);
 
             if (nsset_res.empty())
             {
@@ -69,14 +68,14 @@ namespace Fred
                 BOOST_THROW_EXCEPTION(InternalError("query result size > 1"));
             }
 
-        }//try
+        }
         catch(ExceptionStack& ex)
         {
             ex.add_exception_stack_info(to_string());
             throw;
         }
         return nsset_res.at(0);
-    }//InfoNssetByHandle::exec
+    }
 
     std::string InfoNssetByHandle::to_string() const
     {
@@ -92,9 +91,9 @@ namespace Fred
         , lock_(false)
     {}
 
-    InfoNssetById& InfoNssetById::set_lock(bool lock)//set lock object_registry row for nsset
+    InfoNssetById& InfoNssetById::set_lock()
     {
-        lock_ = lock;
+        lock_ = true;
         return *this;
     }
 
@@ -104,11 +103,10 @@ namespace Fred
 
         try
         {
-            nsset_res = InfoNsset()
-                    .set_id(id_)
-                    .set_lock(lock_)
-                    .set_history_query(false)
-                    .exec(ctx,local_timestamp_pg_time_zone_name);
+            InfoNsset in;
+            in.set_id(id_).set_history_query(false);
+            if(lock_) in.set_lock();
+            nsset_res = in.exec(ctx,local_timestamp_pg_time_zone_name);
 
             if (nsset_res.empty())
             {
@@ -120,14 +118,14 @@ namespace Fred
                 BOOST_THROW_EXCEPTION(InternalError("query result size > 1"));
             }
 
-        }//try
+        }
         catch(ExceptionStack& ex)
         {
             ex.add_exception_stack_info(to_string());
             throw;
         }
         return nsset_res.at(0);
-    }//InfoNssetById::exec
+    }
 
     std::string InfoNssetById::to_string() const
     {
@@ -156,9 +154,9 @@ namespace Fred
         return *this;
     }
 
-    InfoNssetHistory& InfoNssetHistory::set_lock(bool lock)//set lock object_registry row for domain
+    InfoNssetHistory& InfoNssetHistory::set_lock()
     {
-        lock_ = lock;
+        lock_ = true;
         return *this;
     }
 
@@ -168,25 +166,24 @@ namespace Fred
 
         try
         {
-            nsset_res = InfoNsset()
-                    .set_roid(roid_)
-                    .set_lock(lock_)
-                    .set_history_query(true)
-                    .exec(ctx,local_timestamp_pg_time_zone_name);
+            InfoNsset in;
+            in.set_roid(roid_).set_history_query(true);
+            if(lock_) in.set_lock();
+            nsset_res = in.exec(ctx,local_timestamp_pg_time_zone_name);
 
             if (nsset_res.empty())
             {
                 BOOST_THROW_EXCEPTION(Exception().set_unknown_registry_object_identifier(roid_));
             }
 
-        }//try
+        }
         catch(ExceptionStack& ex)
         {
             ex.add_exception_stack_info(to_string());
             throw;
         }
         return nsset_res;
-    }//InfoNssetHistory::exec
+    }
 
     std::string InfoNssetHistory::to_string() const
     {
@@ -199,74 +196,72 @@ namespace Fred
     }
 
 
-    HistoryInfoNssetById::HistoryInfoNssetById(unsigned long long id)
+    InfoNssetHistoryById::InfoNssetHistoryById(unsigned long long id)
         : id_(id)
         , lock_(false)
     {}
 
-    HistoryInfoNssetById& HistoryInfoNssetById::set_lock(bool lock)//set lock object_registry row for nsset
+    InfoNssetHistoryById& InfoNssetHistoryById::set_lock()
     {
-        lock_ = lock;
+        lock_ = true;
         return *this;
     }
 
-    std::vector<InfoNssetOutput> HistoryInfoNssetById::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
+    std::vector<InfoNssetOutput> InfoNssetHistoryById::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
     {
         std::vector<InfoNssetOutput> nsset_history_res;
 
         try
         {
-            nsset_history_res = InfoNsset()
-                    .set_id(id_)
-                    .set_lock(lock_)
-                    .set_history_query(true)
-                    .exec(ctx,local_timestamp_pg_time_zone_name);
+            InfoNsset in;
+            in.set_id(id_).set_history_query(true);
+            if(lock_) in.set_lock();
+            nsset_history_res = in.exec(ctx,local_timestamp_pg_time_zone_name);
 
             if (nsset_history_res.empty())
             {
                 BOOST_THROW_EXCEPTION(Exception().set_unknown_object_id(id_));
             }
 
-        }//try
+        }
         catch(ExceptionStack& ex)
         {
             ex.add_exception_stack_info(to_string());
             throw;
         }
         return nsset_history_res;
-    }//HistoryInfoNssetById::exec
+    }
 
-    std::string HistoryInfoNssetById::to_string() const
+    std::string InfoNssetHistoryById::to_string() const
     {
-        return Util::format_operation_state("HistoryInfoNssetById",
+        return Util::format_operation_state("InfoNssetHistoryById",
         Util::vector_of<std::pair<std::string,std::string> >
         (std::make_pair("id",boost::lexical_cast<std::string>(id_)))
         (std::make_pair("lock",lock_ ? "true":"false"))
         );
     }
 
-    HistoryInfoNssetByHistoryid::HistoryInfoNssetByHistoryid(unsigned long long historyid)
+    InfoNssetHistoryByHistoryid::InfoNssetHistoryByHistoryid(unsigned long long historyid)
         : historyid_(historyid)
         , lock_(false)
     {}
 
-    HistoryInfoNssetByHistoryid& HistoryInfoNssetByHistoryid::set_lock(bool lock)//set lock object_registry row for nsset
+    InfoNssetHistoryByHistoryid& InfoNssetHistoryByHistoryid::set_lock()
     {
-        lock_ = lock;
+        lock_ = true;
         return *this;
     }
 
-    InfoNssetOutput HistoryInfoNssetByHistoryid::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
+    InfoNssetOutput InfoNssetHistoryByHistoryid::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
     {
         std::vector<InfoNssetOutput> nsset_history_res;
 
         try
         {
-            nsset_history_res = InfoNsset()
-                    .set_historyid(historyid_)
-                    .set_lock(lock_)
-                    .set_history_query(true)
-                    .exec(ctx,local_timestamp_pg_time_zone_name);
+            InfoNsset in;
+            in.set_historyid(historyid_).set_history_query(true);
+            if(lock_) in.set_lock();
+            nsset_history_res = in.exec(ctx,local_timestamp_pg_time_zone_name);
 
             if (nsset_history_res.empty())
             {
@@ -278,18 +273,18 @@ namespace Fred
                 BOOST_THROW_EXCEPTION(InternalError("query result size > 1"));
             }
 
-        }//try
+        }
         catch(ExceptionStack& ex)
         {
             ex.add_exception_stack_info(to_string());
             throw;
         }
         return nsset_history_res.at(0);
-    }//HistoryInfoNssetByHistoryid::exec
+    }
 
-    std::string HistoryInfoNssetByHistoryid::to_string() const
+    std::string InfoNssetHistoryByHistoryid::to_string() const
     {
-        return Util::format_operation_state("HistoryInfoNssetByHistoryid",
+        return Util::format_operation_state("InfoNssetHistoryByHistoryid",
         Util::vector_of<std::pair<std::string,std::string> >
         (std::make_pair("historyid",boost::lexical_cast<std::string>(historyid_)))
         (std::make_pair("lock",lock_ ? "true":"false"))

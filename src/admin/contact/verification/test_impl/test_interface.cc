@@ -35,7 +35,7 @@ namespace ContactVerification {
     Fred::InfoContactOutput TestDataProvider_common::get_data(unsigned long long _contact_history_id) {
         Fred::OperationContext ctx;
 
-        return Fred::HistoryInfoContactByHistoryid(_contact_history_id).exec(ctx);
+        return Fred::InfoContactHistoryByHistoryid(_contact_history_id).exec(ctx);
     }
 
     TestDataProvider_intf& TestDataProvider_common::init_data(unsigned long long _contact_history_id) {

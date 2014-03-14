@@ -62,7 +62,7 @@ namespace Fred
 
         DiffMemeber<Nullable<short> >::Type tech_check_level; /**< nsset level of technical checks */
         DiffMemeber<std::vector<DnsHost> >::Type dns_hosts;/**< DNS hosts */
-        DiffMemeber<std::vector<std::string> >::Type tech_contacts;/**< list of technical contact handles */
+        DiffMemeber<std::vector<ObjectIdHandlePair> >::Type tech_contacts;/**< list of technical contacts */
 
         DiffMemeber<unsigned long long>::Type id;/**< id of the nsset object*/
         /**

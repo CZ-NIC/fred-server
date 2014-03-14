@@ -1,3 +1,4 @@
+#include "util/optional_value.h"
 #include "find_contact_duplicates.h"
 #include <boost/algorithm/string/join.hpp>
 
@@ -13,7 +14,7 @@ FindAnyContactDuplicates::FindAnyContactDuplicates()
 
 
 FindAnyContactDuplicates& FindAnyContactDuplicates::set_registrar(
-        const optional_string &_registrar_handle)
+        const Optional<std::string> &_registrar_handle)
 {
     registrar_handle_ = _registrar_handle;
     return *this;
@@ -39,7 +40,7 @@ std::set<std::string> FindAnyContactDuplicates::exec(Fred::OperationContext &_ct
         " JOIN object o ON o.id = c.id"
         " JOIN registrar r ON r.id = o.clid";
 
-    if (registrar_handle_.is_value_set()) {
+    if (registrar_handle_.isset()) {
         dup_params.push_back(registrar_handle_.get_value());
         dup_sql << " WHERE r.handle = $" << dup_params.size() << "::varchar";
     }

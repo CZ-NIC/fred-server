@@ -284,7 +284,7 @@ void check(
             "invalid contact_check.create_time: " + boost::posix_time::to_simple_string(data_post_update.check_state_history.back().local_update_time)
             + " 'now' is:" + boost::posix_time::to_simple_string(now) );
         BOOST_CHECK_EQUAL(data_post_update.check_state_history.back().status_handle, new_status);
-        BOOST_CHECK_EQUAL(data_post_update.check_state_history.back().logd_request_id, new_logd_request);
+        BOOST_CHECK_EQUAL(data_post_update.check_state_history.back().logd_request_id.get_value_or_default(), new_logd_request.get_value_or_default());
     } else {
         BOOST_CHECK_EQUAL( data_pre_update.check_state_history.size(), data_post_update.check_state_history.size() );
         std::vector<ContactCheckState>::const_iterator post_it = data_post_update.check_state_history.begin();

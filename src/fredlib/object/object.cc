@@ -25,19 +25,17 @@
 #include <boost/assign.hpp>
 #include <boost/lexical_cast.hpp>
 
-#include "src/fredlib/object/object.h"
+#include "object_impl.h"
 #include "src/fredlib/registrar/registrar_impl.h"
-#include "src/fredlib/object_states.h"
+#include "src/fredlib/object_state/object_state_name.h"
 
 #include "src/fredlib/opexception.h"
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/db_settings.h"
 #include "util/optional_value.h"
-
 #include "util/log/log.h"
-
 #include "util/random_data_generator.h"
-
+#include "object.h"
 
 namespace Fred
 {
@@ -105,14 +103,14 @@ namespace Fred
                 BOOST_THROW_EXCEPTION(Exception().set_invalid_object_handle(handle_));
             }
 
-            if(authinfo_.get_value().empty())
+            if(authinfo_.get_value_or_default().empty())
             {
                 authinfo_ = RandomDataGenerator().xnstring(8);//former PASS_LEN
             }
 
             ctx.get_conn().exec_params("INSERT INTO object(id, clid, authinfopw) VALUES ($1::bigint "//object id from create_object
                     " , $2::integer, $3::text)"
-                    , Database::query_param_list(output.object_id)(registrar_id)(authinfo_));
+                    , Database::query_param_list(output.object_id)(registrar_id)(authinfo_.get_value()));
 
             output.history_id = Fred::InsertHistory(logd_request_id_, output.object_id).exec(ctx);
 
@@ -206,7 +204,7 @@ namespace Fred
             Exception update_object_exception;
 
             //get object id with lock
-            unsigned long long object_id = lock_object_by_handle_and_type(
+            unsigned long long object_id = get_object_id_by_handle_and_type_with_lock(
                 ctx,handle_,obj_type_,&update_object_exception,
                 &Exception::set_unknown_object_handle);
 
@@ -221,7 +219,7 @@ namespace Fred
             {
                 //check sponsoring registrar
                 unsigned long long sponsoring_registrar_id = Registrar::get_registrar_id_by_handle(
-                    ctx, sponsoring_registrar_, &update_object_exception,
+                    ctx, sponsoring_registrar_.get_value(), &update_object_exception,
                     &Exception::set_unknown_sponsoring_registrar_handle);
                 params.push_back(sponsoring_registrar_id);
                 sql << " , clid = $" << params.size() << "::integer ";//set sponsoring registrar
@@ -364,7 +362,7 @@ namespace Fred
             //check object type
             get_object_type_id(ctx, obj_type_);
 
-            unsigned long long object_id = lock_object_by_handle_and_type(
+            unsigned long long object_id = get_object_id_by_handle_and_type_with_lock(
                 ctx,
                 handle_,
                 obj_type_,
@@ -391,18 +389,6 @@ namespace Fred
         );
     }
 
-    unsigned long long get_object_type_id(OperationContext& ctx, const std::string& obj_type)
-    {
-        Database::Result object_type_res = ctx.get_conn().exec_params(
-            "SELECT id FROM enum_object_type WHERE name = $1::text FOR SHARE"
-            , Database::query_param_list(obj_type));
-        if (object_type_res.size() != 1)
-        {
-            BOOST_THROW_EXCEPTION(InternalError("failed to get object type"));
-        }
-        return  static_cast<unsigned long long> (object_type_res[0][0]);
-    }
-
     DeleteObjectById::DeleteObjectById(unsigned long long id)
         : id_(id)
     { }
@@ -410,7 +396,7 @@ namespace Fred
     void DeleteObjectById::exec(OperationContext& ctx) {
         try
         {
-            lock_object_by_id(
+            get_object_id_by_object_id_with_lock(
                 ctx,
                 id_,
                 static_cast<Exception*>(NULL),
@@ -434,16 +420,4 @@ namespace Fred
         );
     }
 
-    bool is_object_linked(OperationContext& _ctx, unsigned long long _id) {
-        Database::Result linked_result = _ctx.get_conn().exec_params(
-            "SELECT * FROM object_state os "
-            "   JOIN enum_object_states eos ON eos.id = os.state_id "
-            "   WHERE os.object_id = $1::integer AND eos.name = $2::text "
-            "       AND valid_to IS NULL",
-            Database::query_param_list
-                (_id)
-                (Fred::ObjectState::LINKED));
-
-        return linked_result.size() > 0;
-    }
 }//namespace Fred

@@ -204,7 +204,7 @@ namespace Fred
                     std::string fqdn = std::string(result[i][0]);
                     UpdateDomain ud (fqdn, registrar_ );
                     ud.set_registrant(dst_contact_handle_);
-                    if(logd_request_id_.isset()) ud.set_logd_request_id(logd_request_id_);
+                    if(logd_request_id_.isset()) ud.set_logd_request_id(logd_request_id_.get_value());
                     tmp.history_id = ud.exec(ctx);
                 }
                 output.update_domain_registrant.push_back(tmp);
@@ -243,7 +243,7 @@ namespace Fred
                         UpdateDomain ud (tmp.fqdn, registrar_ );
                         ud.rem_admin_contact(src_contact_handle_)
                         .add_admin_contact(dst_contact_handle_);
-                        if(logd_request_id_.isset()) ud.set_logd_request_id(logd_request_id_);
+                        if(logd_request_id_.isset()) ud.set_logd_request_id(logd_request_id_.get_value());
                         tmp.history_id = ud.exec(ctx);
                         ctx.get_conn().exec("RELEASE SAVEPOINT merge_contact_update_domain");
                     }
@@ -258,7 +258,7 @@ namespace Fred
                             ctx.get_conn().exec("ROLLBACK TO SAVEPOINT merge_contact_update_domain");
                             UpdateDomain ud (tmp.fqdn, registrar_ );
                             ud.rem_admin_contact(src_contact_handle_);
-                            if(logd_request_id_.isset()) ud.set_logd_request_id(logd_request_id_);
+                            if(logd_request_id_.isset()) ud.set_logd_request_id(logd_request_id_.get_value());
                             tmp.history_id = ud.exec(ctx);
                             ctx.get_conn().exec("RELEASE SAVEPOINT merge_contact_update_domain");
                         }
@@ -303,7 +303,7 @@ namespace Fred
                         UpdateNsset un(tmp.handle, registrar_ );
                         un.rem_tech_contact(src_contact_handle_)
                         .add_tech_contact(dst_contact_handle_);
-                        if(logd_request_id_.isset()) un.set_logd_request_id(logd_request_id_);
+                        if(logd_request_id_.isset()) un.set_logd_request_id(logd_request_id_.get_value());
                         tmp.history_id = un.exec(ctx);
                         ctx.get_conn().exec("RELEASE SAVEPOINT merge_contact_update_nsset");
                     }
@@ -318,7 +318,7 @@ namespace Fred
                             ctx.get_conn().exec("ROLLBACK TO SAVEPOINT merge_contact_update_nsset");
                             UpdateNsset un(tmp.handle, registrar_ );
                             un.rem_tech_contact(src_contact_handle_);
-                            if(logd_request_id_.isset()) un.set_logd_request_id(logd_request_id_);
+                            if(logd_request_id_.isset()) un.set_logd_request_id(logd_request_id_.get_value());
                             tmp.history_id = un.exec(ctx);
                             ctx.get_conn().exec("RELEASE SAVEPOINT merge_contact_update_nsset");
                         }
@@ -363,7 +363,7 @@ namespace Fred
                         UpdateKeyset uk(tmp.handle, registrar_);
                         uk.rem_tech_contact(src_contact_handle_)
                         .add_tech_contact(dst_contact_handle_);
-                        if(logd_request_id_.isset()) uk.set_logd_request_id(logd_request_id_);
+                        if(logd_request_id_.isset()) uk.set_logd_request_id(logd_request_id_.get_value());
                         tmp.history_id = uk.exec(ctx);
                         ctx.get_conn().exec("RELEASE SAVEPOINT merge_contact_update_keyset");
                     }
@@ -376,7 +376,7 @@ namespace Fred
                             ctx.get_conn().exec("ROLLBACK TO SAVEPOINT merge_contact_update_keyset");
                             UpdateKeyset uk(tmp.handle, registrar_);
                             uk.rem_tech_contact(src_contact_handle_);
-                            if(logd_request_id_.isset()) uk.set_logd_request_id(logd_request_id_);
+                            if(logd_request_id_.isset()) uk.set_logd_request_id(logd_request_id_.get_value());
                             tmp.history_id = uk.exec(ctx);
                             ctx.get_conn().exec("RELEASE SAVEPOINT merge_contact_update_keyset");
                         }
@@ -396,9 +396,9 @@ namespace Fred
             DeleteContactByHandle(src_contact_handle_).exec(ctx);
             /* #9877 - change authinfo of destination contact */
             std::string new_authinfo =  Random::string_from(8, "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789");
-            UpdateContactByHandle(dst_contact_handle_, registrar_)
-                .set_logd_request_id(logd_request_id_)
-                .set_authinfo(new_authinfo)
+            UpdateContactByHandle ucbh (dst_contact_handle_, registrar_);
+                if(logd_request_id_.isset()) ucbh.set_logd_request_id(logd_request_id_.get_value());
+                ucbh.set_authinfo(new_authinfo)
                 .exec(ctx);
         }
 

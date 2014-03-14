@@ -79,9 +79,9 @@ namespace Fred
         return *this;
     }
 
-    InfoNsset& InfoNsset::set_lock(bool lock)
+    InfoNsset& InfoNsset::set_lock()
     {
-        lock_ = lock;
+        lock_ = true;
         return *this;
     }
 
@@ -168,7 +168,10 @@ namespace Fred
         {
             sql << " FOR UPDATE of nobr ";
         }
-
+        else
+        {
+            sql << " FOR SHARE of nobr ";
+        }
 
         return std::make_pair(sql.str(), params);
 
@@ -181,7 +184,7 @@ namespace Fred
         Database::QueryParams params;
         std::ostringstream sql;
 
-        sql << "SELECT cobr.name ";
+        sql << "SELECT cobr.id, cobr.name ";
         if(history_query_)
         {
             params.push_back(id);
@@ -306,8 +309,8 @@ namespace Fred
             info_nsset_output.info_nsset_data.update_time = query_result[i][17].isnull() ? Nullable<boost::posix_time::ptime>()
             : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(query_result[i][17])));//oh.update
 
-            info_nsset_output.info_nsset_data.tech_check_level = query_result[i][18].isnull() ? Nullable<unsigned long long>()
-                       : Nullable<unsigned long long>(static_cast<unsigned long long>(query_result[i][18]));//nt.checklevel
+            info_nsset_output.info_nsset_data.tech_check_level = query_result[i][18].isnull() ? Nullable<short>()
+                       : Nullable<short>(static_cast<short>(query_result[i][18]));//nt.checklevel
 
             info_nsset_output.info_nsset_data.authinfopw = static_cast<std::string>(query_result[i][19]);//oh.authinfopw
 
@@ -328,7 +331,10 @@ namespace Fred
             info_nsset_output.info_nsset_data.tech_contacts.reserve(tech_contact_res.size());
             for(Database::Result::size_type j = 0; j < tech_contact_res.size(); ++j)
             {
-                info_nsset_output.info_nsset_data.tech_contacts.push_back(static_cast<std::string>(tech_contact_res[j][0]));
+                info_nsset_output.info_nsset_data.tech_contacts.push_back(Fred::ObjectIdHandlePair(
+                    static_cast<unsigned long long>(tech_contact_res[j][0]),
+                    static_cast<std::string>(tech_contact_res[j][1])
+                ));
             }
 
             //DNS keys

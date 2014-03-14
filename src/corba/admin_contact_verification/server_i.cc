@@ -52,7 +52,7 @@ namespace Corba {
         Fred::InfoContactOutput contact_info_current;
         {
             Fred::OperationContext ctx;
-            contact_info_historical = Fred::HistoryInfoContactByHistoryid(in.contact_history_id).exec(ctx);
+            contact_info_historical = Fred::InfoContactHistoryByHistoryid(in.contact_history_id).exec(ctx);
             contact_info_current = Fred::InfoContactById(contact_info_historical.info_contact_data.id).exec(ctx);
         }
 
@@ -131,7 +131,7 @@ namespace Corba {
                 out->test_list[test_seq_i].status_history[testhistory_seq_i].err_msg
                     = (testhistory_it->error_msg.isnull())
                         ? Corba::wrap_string(std::string())
-                        : Corba::wrap_string(static_cast<std::string>(testhistory_it->error_msg));
+                        : Corba::wrap_string(testhistory_it->error_msg.get_value_or_default());
 
                 out->test_list[test_seq_i].status_history[testhistory_seq_i].update
                     = Corba::wrap_time(testhistory_it->local_update_time);
@@ -444,7 +444,8 @@ namespace Registry
                 Corba::wrap_test_definitions(
                     Fred::list_test_definitions(
                         Corba::unwrap_string(lang),
-                        Corba::unwrap_nullable_string(testsuite_handle)),
+                        Corba::unwrap_nullable_string(testsuite_handle).get_value_or_default()
+                    ),
                     result
                 );
 

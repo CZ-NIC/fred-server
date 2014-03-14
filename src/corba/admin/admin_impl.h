@@ -134,6 +134,10 @@ public:
   );
   ccReg::Admin::Buffer* getPublicRequestPDF(ccReg::TID id, const char *lang);
 
+  ccReg::TID resendPin3Letter(ccReg::TID publicRequestId);
+
+  ccReg::TID resendPin2SMS(ccReg::TID publicRequestId);
+
   ::CORBA::ULongLong countEnumDomainsByRegistrant(const char* name, ::CORBA::Boolean by_person, ::CORBA::Boolean by_org);
   ccReg::EnumDictList* getEnumDomainsByRegistrant(const char* name, ::CORBA::Boolean by_person, ::CORBA::Boolean by_org, ::CORBA::Long offset, ::CORBA::Long limit);
   ccReg::EnumDictList* getEnumDomainsRecentEntries(::CORBA::Long count);

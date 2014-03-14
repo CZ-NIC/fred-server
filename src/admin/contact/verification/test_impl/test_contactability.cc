@@ -117,7 +117,7 @@ namespace ContactVerification {
         unsigned long long generated_pdf_id;
 
         Fred::OperationContext ctx;
-        Fred::InfoContactData contact_data = Fred::HistoryInfoContactByHistoryid(_history_id)
+        Fred::InfoContactData contact_data = Fred::InfoContactHistoryByHistoryid(_history_id)
             .exec(ctx)
                 .info_contact_data;
 

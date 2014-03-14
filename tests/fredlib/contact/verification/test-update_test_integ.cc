@@ -325,7 +325,7 @@ void check(
                     "invalid contact_check.create_time: " + boost::posix_time::to_simple_string(post_it->state_history.back().local_update_time)
                     + " 'now' is:" + boost::posix_time::to_simple_string(now) );
                 BOOST_CHECK_EQUAL(post_it->state_history.back().status_handle, new_status);
-                BOOST_CHECK_EQUAL(post_it->state_history.back().logd_request_id, new_logd_request);
+                BOOST_CHECK_EQUAL(post_it->state_history.back().logd_request_id.get_value_or_default(), new_logd_request.get_value_or_default());
                 BOOST_CHECK_MESSAGE(
                     Util::is_equal(post_it->state_history.back().error_msg, new_error_msg ),
                     std::string("difference in post_it->state_history.back() and new_error_msg")

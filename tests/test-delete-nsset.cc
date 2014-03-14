@@ -149,7 +149,7 @@ BOOST_FIXTURE_TEST_CASE(delete_nsset, delete_nsset_fixture )
     BOOST_CHECK(nsset_history_info1.at(0).next_historyid.isnull());
     BOOST_CHECK(!nsset_history_info1.at(0).history_valid_from.is_not_a_date_time());
     BOOST_CHECK(!nsset_history_info1.at(0).history_valid_to.isnull());
-    BOOST_CHECK(nsset_history_info1.at(0).history_valid_from <= nsset_history_info1.at(0).history_valid_to);
+    BOOST_CHECK(nsset_history_info1.at(0).history_valid_from <= nsset_history_info1.at(0).history_valid_to.get_value());
 
     BOOST_CHECK(static_cast<bool>(ctx.get_conn().exec_params(
         "select erdate is not null from object_registry where name = $1::text"

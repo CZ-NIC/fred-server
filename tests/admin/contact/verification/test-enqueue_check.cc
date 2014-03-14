@@ -60,8 +60,7 @@ BOOST_AUTO_TEST_CASE(test_Enqueued_check_data)
     BOOST_CHECK_EQUAL(check_info.check_state_history.size(), 1);
     BOOST_CHECK_EQUAL(check_info.testsuite_handle, testsuite.testsuite_handle);
     BOOST_CHECK_EQUAL(
-        static_cast<unsigned long long>(
-            check_info.check_state_history.begin()->logd_request_id),
+        check_info.check_state_history.begin()->logd_request_id.get_value_or_default(),
         logd_request_id);
     BOOST_CHECK_EQUAL(
         check_info.check_state_history.begin()->status_handle,

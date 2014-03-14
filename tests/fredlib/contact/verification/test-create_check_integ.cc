@@ -280,7 +280,7 @@ BOOST_AUTO_TEST_CASE(test_Exec_optional_setup)
     // logd_request_id
 
     BOOST_CHECK_MESSAGE(
-        static_cast<long long>(result_data.check_state_history.begin()->logd_request_id) == logd_request.logd_request_id,
+        result_data.check_state_history.begin()->logd_request_id.get_value_or_default() == logd_request.logd_request_id,
         std::string("logd_request_id differs in CreateContactCheck (")+ boost::lexical_cast<std::string>(logd_request.logd_request_id) +") & InfoContactCheck ("+ result_data.check_state_history.begin()->logd_request_id.print_quoted() +")"
     );
 

@@ -33,6 +33,7 @@
 #include "src/fredlib/domain/check_domain.h"
 #include "src/fredlib/zone/zone.h"
 #include "src/fredlib/object/object.h"
+#include "src/fredlib/object/object_impl.h"
 #include "src/fredlib/registrar/registrar_impl.h"
 
 #include "src/fredlib/opcontext.h"
@@ -230,7 +231,7 @@ namespace Fred
             Exception create_domain_exception;
 
             //lock registrant object_registry row for update and get id
-            unsigned long long registrant_id = lock_object_by_handle_and_type(
+            unsigned long long registrant_id = get_object_id_by_handle_and_type_with_lock(
                     ctx,registrant_,"contact",&create_domain_exception,
                     &Exception::set_unknown_registrant_handle);
 
@@ -273,7 +274,7 @@ namespace Fred
                 //nsset
                 if(nsset_.isset())
                 {
-                    Nullable<std::string> new_nsset_value = nsset_;
+                    Nullable<std::string> new_nsset_value = nsset_.get_value();
                     col_sql << col_separator.get() << "nsset";
 
                     if(new_nsset_value.isnull())
@@ -283,8 +284,8 @@ namespace Fred
                     }
                     else
                     {//value case query, lock nsset object_registry row for update and get id
-                        unsigned long long nsset_id = lock_object_by_handle_and_type(
-                            ctx,new_nsset_value,"nsset",&create_domain_exception,
+                        unsigned long long nsset_id = get_object_id_by_handle_and_type_with_lock(
+                            ctx,new_nsset_value.get_value(),"nsset",&create_domain_exception,
                             &Exception::set_unknown_nsset_handle);
 
                         params.push_back(nsset_id);//id
@@ -296,7 +297,7 @@ namespace Fred
                 //keyset
                 if(keyset_.isset())
                 {
-                    Nullable<std::string> new_keyset_value = keyset_;
+                    Nullable<std::string> new_keyset_value = keyset_.get_value();
                     col_sql << col_separator.get() << "keyset";
 
                     if(new_keyset_value.isnull())
@@ -306,8 +307,8 @@ namespace Fred
                     }
                     else
                     {//value case query, lock keyset object_registry row for update and get id
-                        unsigned long long keyset_id = lock_object_by_handle_and_type(
-                                ctx,new_keyset_value,"keyset",&create_domain_exception,
+                        unsigned long long keyset_id = get_object_id_by_handle_and_type_with_lock(
+                                ctx,new_keyset_value.get_value(),"keyset",&create_domain_exception,
                                 &Exception::set_unknown_keyset_handle);
 
                         params.push_back(keyset_id);//id
@@ -342,7 +343,7 @@ namespace Fred
                     for(std::vector<std::string>::iterator i = admin_contacts_.begin(); i != admin_contacts_.end(); ++i)
                     {
                         //lock admin contact object_registry row for update and get id
-                        unsigned long long admin_contact_id = lock_object_by_handle_and_type(
+                        unsigned long long admin_contact_id = get_object_id_by_handle_and_type_with_lock(
                                 ctx,*i,"contact",&create_domain_exception,
                                 &Exception::add_unknown_admin_contact_handle);
                         if(admin_contact_id == 0) continue;

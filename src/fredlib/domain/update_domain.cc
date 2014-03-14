@@ -31,6 +31,7 @@
 #include "src/fredlib/domain/domain_name.h"
 #include "src/fredlib/zone/zone.h"
 #include "src/fredlib/object/object.h"
+#include "src/fredlib/object/object_impl.h"
 #include "src/fredlib/registrar/registrar_impl.h"
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/db_settings.h"
@@ -255,7 +256,7 @@ namespace Fred
 
             if(nsset_.isset())//change nsset
             {
-                Nullable<std::string> new_nsset_value = nsset_;
+                Nullable<std::string> new_nsset_value = nsset_.get_value();
                 if(new_nsset_value.isnull())
                 {
                     params.push_back(Database::NullQueryParam);//NULL, no nsset
@@ -263,8 +264,8 @@ namespace Fred
                 else
                 {
                     //lock nsset object_registry row for update and get id
-                    unsigned long long nsset_id = lock_object_by_handle_and_type(
-                            ctx,new_nsset_value,"nsset",&update_domain_exception,
+                    unsigned long long nsset_id = get_object_id_by_handle_and_type_with_lock(
+                            ctx,new_nsset_value.get_value(),"nsset",&update_domain_exception,
                             &Exception::set_unknown_nsset_handle);
 
                     params.push_back(nsset_id); //nsset update
@@ -275,7 +276,7 @@ namespace Fred
 
             if(keyset_.isset())//change keyset
             {
-                Nullable<std::string> new_keyset_value = keyset_;
+                Nullable<std::string> new_keyset_value = keyset_.get_value();
                 if(new_keyset_value.isnull())
                 {
                     params.push_back(Database::NullQueryParam);//NULL, no nsset
@@ -283,8 +284,8 @@ namespace Fred
                 else
                 {
                     //lock keyset object_registry row for update and get id
-                    unsigned long long keyset_id = lock_object_by_handle_and_type(
-                            ctx,new_keyset_value,"keyset",&update_domain_exception,
+                    unsigned long long keyset_id = get_object_id_by_handle_and_type_with_lock(
+                            ctx,new_keyset_value.get_value(),"keyset",&update_domain_exception,
                             &Exception::set_unknown_keyset_handle);
 
                     params.push_back(keyset_id); //keyset update
@@ -296,7 +297,7 @@ namespace Fred
             if(registrant_.isset())//change registrant
             {
                 //lock object_registry row for update
-                unsigned long long registrant_id = lock_object_by_handle_and_type(
+                unsigned long long registrant_id = get_object_id_by_handle_and_type_with_lock(
                         ctx,registrant_.get_value(),"contact",&update_domain_exception,
                         &Exception::set_unknown_registrant_handle);
 
@@ -345,7 +346,7 @@ namespace Fred
             {
                 //lock object_registry row for update and get id
 
-                unsigned long long admin_contact_id = lock_object_by_handle_and_type(
+                unsigned long long admin_contact_id = get_object_id_by_handle_and_type_with_lock(
                         ctx,*i,"contact",&update_domain_exception,
                         &Exception::add_unknown_admin_contact_handle);
                 if(admin_contact_id == 0) continue;
@@ -390,7 +391,7 @@ namespace Fred
             {
                 //lock object_registry row for update and get id
 
-                unsigned long long admin_contact_id = lock_object_by_handle_and_type(
+                unsigned long long admin_contact_id = get_object_id_by_handle_and_type_with_lock(
                         ctx,*i,"contact",&update_domain_exception,
                         &Exception::add_unknown_admin_contact_handle);
                 if(admin_contact_id == 0) continue;

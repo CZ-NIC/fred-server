@@ -90,14 +90,13 @@ BOOST_AUTO_TEST_CASE(test_Resolved_logd_request_id)
 
     BOOST_CHECK_EQUAL(
         36478,
-        static_cast<long>(
-            Fred::InfoContactCheck(
-                check.check_handle_
-            ).exec(ctx)
-                .check_state_history
-                    .rbegin()
-                        ->logd_request_id
-        )
+        Fred::InfoContactCheck(
+            check.check_handle_
+        ).exec(ctx)
+            .check_state_history
+                .rbegin()
+                    ->logd_request_id.get_value_or_default()
+
     );
 }
 

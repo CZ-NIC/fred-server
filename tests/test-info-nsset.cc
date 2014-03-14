@@ -142,7 +142,6 @@ BOOST_FIXTURE_TEST_CASE(info_nsset, info_nsset_fixture )
 
     BOOST_MESSAGE(Fred::InfoNsset()
                 .set_handle(test_nsset_handle)
-                .set_lock(false)
                 .set_history_query(false)
                 .explain_analyze(ctx,nsset_res,"Europe/Prague")
                 );
@@ -155,9 +154,9 @@ BOOST_FIXTURE_TEST_CASE(info_nsset, info_nsset_fixture )
     BOOST_CHECK(info_data_1 == info_data_3);
     Fred::InfoNssetOutput info_data_4 = Fred::InfoNssetHistory(info_data_1.info_nsset_data.roid).exec(ctx).at(0);
     BOOST_CHECK(info_data_1 == info_data_4);
-    Fred::InfoNssetOutput info_data_5 = Fred::HistoryInfoNssetById(info_data_1.info_nsset_data.id).exec(ctx).at(0);
+    Fred::InfoNssetOutput info_data_5 = Fred::InfoNssetHistoryById(info_data_1.info_nsset_data.id).exec(ctx).at(0);
     BOOST_CHECK(info_data_1 == info_data_5);
-    Fred::InfoNssetOutput info_data_6 = Fred::HistoryInfoNssetByHistoryid(info_data_1.info_nsset_data.historyid).exec(ctx);
+    Fred::InfoNssetOutput info_data_6 = Fred::InfoNssetHistoryByHistoryid(info_data_1.info_nsset_data.historyid).exec(ctx);
     BOOST_CHECK(info_data_1 == info_data_6);
 
     //impl
@@ -168,7 +167,7 @@ BOOST_FIXTURE_TEST_CASE(info_nsset, info_nsset_fixture )
         if(j & (1 << 1)) i.set_roid(info_data_1.info_nsset_data.roid);
         if(j & (1 << 2)) i.set_id(info_data_1.info_nsset_data.id);
         if(j & (1 << 3)) i.set_historyid(info_data_1.info_nsset_data.historyid);
-        if(j & (1 << 4)) i.set_lock(true);
+        if(j & (1 << 4)) i.set_lock();
         if(j & (1 << 5)) i.set_history_timestamp(info_data_1.info_nsset_data.creation_time);
         if(j & (1 << 6)) i.set_history_query(true);
 

@@ -377,7 +377,7 @@ namespace Registry
                 boost::posix_time::ptime block_time_limit;
                 if (!_block_to_date.isnull()) {
                     // block to date 12:00:00 https://admin.nic.cz/ticket/6314#comment:50
-                    block_time_limit = boost::posix_time::ptime(static_cast< boost::gregorian::date >(_block_to_date),
+                    block_time_limit = boost::posix_time::ptime(_block_to_date.get_value(),
                                                                 boost::posix_time::time_duration(12, 0, 0));
                 }
                 for (IdlDomainIdList::const_iterator pObjectId = _domain_list.begin(); pObjectId != _domain_list.end(); ++pObjectId) {
@@ -558,7 +558,7 @@ namespace Registry
 
                         const boost::gregorian::date today(boost::gregorian::day_clock::universal_day());
                         const bool set_expire_today = expiration_date < today;
-                        const bool new_owner_is_set = !(_new_owner.isnull() || static_cast< std::string >(_new_owner).empty());
+                        const bool new_owner_is_set = !(_new_owner.isnull() || _new_owner.get_value().empty());
                         if (new_owner_is_set || set_expire_today) {
                             if (sys_registrar.empty()) {
                                 sys_registrar = get_sys_registrar(ctx, is_sys_registrar);
@@ -570,7 +570,7 @@ namespace Registry
                             }
                             Fred::UpdateDomain update_domain(fqdn, sys_registrar);
                             if (new_owner_is_set) {
-                                update_domain.set_registrant(_new_owner);
+                                update_domain.set_registrant(_new_owner.get_value());
                             }
                             if (set_expire_today) {
                                 update_domain.set_domain_expiration(today);
@@ -637,7 +637,7 @@ namespace Registry
                 boost::posix_time::ptime block_time_limit;
                 if (!_block_to_date.isnull()) {
                     // block to date 12:00:00 https://admin.nic.cz/ticket/6314#comment:50
-                    block_time_limit = boost::posix_time::ptime(static_cast< boost::gregorian::date >(_block_to_date),
+                    block_time_limit = boost::posix_time::ptime(_block_to_date.get_value(),
                                                                 boost::posix_time::time_duration(12, 0, 0));
                 }
                 Fred::OperationContext ctx;
@@ -732,7 +732,7 @@ namespace Registry
 
                         const boost::gregorian::date today(boost::gregorian::day_clock::universal_day());
                         const bool set_expire_today = info_domain_data.expiration_date < today;
-                        const bool set_new_owner = !_new_owner.isnull() && !static_cast< std::string >(_new_owner).empty();
+                        const bool set_new_owner = !_new_owner.isnull() && !_new_owner.get_value().empty();
                         if (_remove_admin_c || set_new_owner || set_expire_today) {
                             if (sys_registrar.empty()) {
                                 sys_registrar = get_sys_registrar(ctx, is_sys_registrar);
@@ -744,7 +744,7 @@ namespace Registry
                             }
                             Fred::UpdateDomain update_domain(fqdn, sys_registrar);
                             if (set_new_owner) {
-                                update_domain.set_registrant(_new_owner);
+                                update_domain.set_registrant(_new_owner.get_value());
                             }
                             if (set_expire_today) {
                                 update_domain.set_domain_expiration(today);
@@ -753,9 +753,9 @@ namespace Registry
                                 update_domain.set_logd_request_id(_log_req_id);
                             }
                             if (_remove_admin_c) {
-                                for (std::vector< std::string >::const_iterator pAdmin = info_domain_data.admin_contacts.begin();
+                                for (std::vector< Fred::ObjectIdHandlePair >::const_iterator pAdmin = info_domain_data.admin_contacts.begin();
                                      pAdmin != info_domain_data.admin_contacts.end(); ++pAdmin) {
-                                    update_domain.rem_admin_contact(*pAdmin);
+                                    update_domain.rem_admin_contact(pAdmin->handle);
                                 }
                             }
                             update_domain.exec(ctx);
@@ -829,7 +829,7 @@ namespace Registry
             try {
                 boost::posix_time::ptime blacklist_to_limit;
                 if (!_blacklist_to_date.isnull()) {
-                    blacklist_to_limit = boost::posix_time::ptime(static_cast< boost::gregorian::date >(_blacklist_to_date),
+                    blacklist_to_limit = boost::posix_time::ptime(_blacklist_to_date.get_value(),
                                                                   boost::posix_time::time_duration(12, 0, 0));
                 }
                 Fred::OperationContext ctx;
@@ -891,7 +891,7 @@ namespace Registry
             try {
                 boost::posix_time::ptime blacklist_to_limit;
                 if (!_blacklist_to_date.isnull()) {
-                    blacklist_to_limit = boost::posix_time::ptime(static_cast< boost::gregorian::date >(_blacklist_to_date),
+                    blacklist_to_limit = boost::posix_time::ptime(_blacklist_to_date.get_value(),
                                                                   boost::posix_time::time_duration(12, 0, 0));
                 }
                 Fred::OperationContext ctx;

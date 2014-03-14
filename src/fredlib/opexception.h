@@ -41,7 +41,6 @@
 #include <boost/exception/all.hpp>
 
 #include "src/fredlib/db_settings.h"
-#include "util/db/nullable.h"
 
 namespace Fred
 {

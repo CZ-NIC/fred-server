@@ -85,7 +85,7 @@ namespace  Admin {
             .exec(ctx_info);
 
         const unsigned long long contact_id =
-        Fred::HistoryInfoContactByHistoryid(
+        Fred::InfoContactHistoryByHistoryid(
             check_info.contact_history_id
         ).exec(ctx_info)
         .info_contact_data.id;

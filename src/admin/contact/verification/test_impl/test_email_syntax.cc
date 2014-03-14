@@ -37,7 +37,7 @@ namespace ContactVerification {
         TestDataProvider<TestEmailSyntax> data;
         data.init_data(_history_id);
 
-        std::string email = boost::trim_copy(static_cast<std::string>(data.email_));
+        std::string email = boost::trim_copy(data.email_);
 
         if ( boost::regex_match(
             email,

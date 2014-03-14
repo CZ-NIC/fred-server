@@ -20,7 +20,7 @@ namespace  Admin {
                 break;
             }
 
-            handles.push_back(static_cast<std::string>(temp_handle));
+            handles.push_back(temp_handle.get_value_or_default());
         }
 
         return handles;

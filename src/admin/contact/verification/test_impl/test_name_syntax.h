@@ -53,7 +53,7 @@ namespace ContactVerification
 
         virtual void store_data(const Fred::InfoContactOutput& _data) {
             if(_data.info_contact_data.name.isnull() == false) {
-                name_ = static_cast<string>(_data.info_contact_data.name);
+                name_ = _data.info_contact_data.name.get_value_or_default();
             }
         }
 

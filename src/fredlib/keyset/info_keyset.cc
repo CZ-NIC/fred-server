@@ -44,9 +44,9 @@ namespace Fred
         , lock_(false)
     {}
 
-    InfoKeysetByHandle& InfoKeysetByHandle::set_lock(bool lock)//set lock object_registry row for keyset
+    InfoKeysetByHandle& InfoKeysetByHandle::set_lock()
     {
-        lock_ = lock;
+        lock_ = true;
         return *this;
     }
 
@@ -56,11 +56,10 @@ namespace Fred
 
         try
         {
-            keyset_res = InfoKeyset()
-                    .set_handle(handle_)
-                    .set_lock(lock_)
-                    .set_history_query(false)
-                    .exec(ctx,local_timestamp_pg_time_zone_name);
+            InfoKeyset ik;
+            ik.set_handle(handle_).set_history_query(false);
+            if(lock_) ik.set_lock();
+            keyset_res = ik.exec(ctx,local_timestamp_pg_time_zone_name);
 
             if (keyset_res.empty())
             {
@@ -72,14 +71,14 @@ namespace Fred
                 BOOST_THROW_EXCEPTION(InternalError("query result size > 1"));
             }
 
-        }//try
+        }
         catch(ExceptionStack& ex)
         {
             ex.add_exception_stack_info(to_string());
             throw;
         }
         return keyset_res.at(0);
-    }//InfoKeysetByHandle::exec
+    }
 
     std::string InfoKeysetByHandle::to_string() const
     {
@@ -95,9 +94,9 @@ namespace Fred
         , lock_(false)
     {}
 
-    InfoKeysetById& InfoKeysetById::set_lock(bool lock)//set lock object_registry row for keyset
+    InfoKeysetById& InfoKeysetById::set_lock()
     {
-        lock_ = lock;
+        lock_ = true;
         return *this;
     }
 
@@ -107,11 +106,10 @@ namespace Fred
 
         try
         {
-            keyset_res = InfoKeyset()
-                    .set_id(id_)
-                    .set_lock(lock_)
-                    .set_history_query(false)
-                    .exec(ctx,local_timestamp_pg_time_zone_name);
+            InfoKeyset ik;
+            ik.set_id(id_).set_history_query(false);
+            if(lock_) ik.set_lock();
+            keyset_res = ik.exec(ctx,local_timestamp_pg_time_zone_name);
 
             if (keyset_res.empty())
             {
@@ -123,14 +121,14 @@ namespace Fred
                 BOOST_THROW_EXCEPTION(InternalError("query result size > 1"));
             }
 
-        }//try
+        }
         catch(ExceptionStack& ex)
         {
             ex.add_exception_stack_info(to_string());
             throw;
         }
         return keyset_res.at(0);
-    }//InfoKeysetById::exec
+    }
 
     std::string InfoKeysetById::to_string() const
     {
@@ -159,9 +157,9 @@ namespace Fred
         return *this;
     }
 
-    InfoKeysetHistory& InfoKeysetHistory::set_lock(bool lock)//set lock object_registry row for keyset
+    InfoKeysetHistory& InfoKeysetHistory::set_lock()
     {
-        lock_ = lock;
+        lock_ = true;
         return *this;
     }
 
@@ -171,25 +169,24 @@ namespace Fred
 
         try
         {
-            keyset_res = InfoKeyset()
-                    .set_roid(roid_)
-                    .set_lock(lock_)
-                    .set_history_query(true)
-                    .exec(ctx,local_timestamp_pg_time_zone_name);
+            InfoKeyset ik;
+            ik.set_roid(roid_).set_history_query(true);
+            if(lock_) ik.set_lock();
+            keyset_res = ik.exec(ctx,local_timestamp_pg_time_zone_name);
 
             if (keyset_res.empty())
             {
                 BOOST_THROW_EXCEPTION(Exception().set_unknown_registry_object_identifier(roid_));
             }
 
-        }//try
+        }
         catch(ExceptionStack& ex)
         {
             ex.add_exception_stack_info(to_string());
             throw;
         }
         return keyset_res;
-    }//InfoKeysetHistory::exec
+    }
 
     std::string InfoKeysetHistory::to_string() const
     {
@@ -202,74 +199,72 @@ namespace Fred
     }
 
 
-    HistoryInfoKeysetById::HistoryInfoKeysetById(unsigned long long id)
+    InfoKeysetHistoryById::InfoKeysetHistoryById(unsigned long long id)
         : id_(id)
         , lock_(false)
     {}
 
-    HistoryInfoKeysetById& HistoryInfoKeysetById::set_lock(bool lock)//set lock object_registry row for keyset
+    InfoKeysetHistoryById& InfoKeysetHistoryById::set_lock()
     {
-        lock_ = lock;
+        lock_ = true;
         return *this;
     }
 
-    std::vector<InfoKeysetOutput> HistoryInfoKeysetById::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
+    std::vector<InfoKeysetOutput> InfoKeysetHistoryById::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
     {
         std::vector<InfoKeysetOutput> keyset_history_res;
 
         try
         {
-            keyset_history_res = InfoKeyset()
-                    .set_id(id_)
-                    .set_lock(lock_)
-                    .set_history_query(true)
-                    .exec(ctx,local_timestamp_pg_time_zone_name);
+            InfoKeyset ik;
+            ik.set_id(id_).set_history_query(true);
+            if(lock_) ik.set_lock();
+            keyset_history_res = ik.exec(ctx,local_timestamp_pg_time_zone_name);
 
             if (keyset_history_res.empty())
             {
                 BOOST_THROW_EXCEPTION(Exception().set_unknown_object_id(id_));
             }
 
-        }//try
+        }
         catch(ExceptionStack& ex)
         {
             ex.add_exception_stack_info(to_string());
             throw;
         }
         return keyset_history_res;
-    }//HistoryInfoKeysetById::exec
+    }
 
-    std::string HistoryInfoKeysetById::to_string() const
+    std::string InfoKeysetHistoryById::to_string() const
     {
-        return Util::format_operation_state("HistoryInfoKeysetById",
+        return Util::format_operation_state("InfoKeysetHistoryById",
         Util::vector_of<std::pair<std::string,std::string> >
         (std::make_pair("id",boost::lexical_cast<std::string>(id_)))
         (std::make_pair("lock",lock_ ? "true":"false"))
         );
     }
 
-    HistoryInfoKeysetByHistoryid::HistoryInfoKeysetByHistoryid(unsigned long long historyid)
+    InfoKeysetHistoryByHistoryid::InfoKeysetHistoryByHistoryid(unsigned long long historyid)
         : historyid_(historyid)
         , lock_(false)
     {}
 
-    HistoryInfoKeysetByHistoryid& HistoryInfoKeysetByHistoryid::set_lock(bool lock)//set lock object_registry row for keyset
+    InfoKeysetHistoryByHistoryid& InfoKeysetHistoryByHistoryid::set_lock()
     {
-        lock_ = lock;
+        lock_ = true;
         return *this;
     }
 
-    InfoKeysetOutput HistoryInfoKeysetByHistoryid::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
+    InfoKeysetOutput InfoKeysetHistoryByHistoryid::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
     {
         std::vector<InfoKeysetOutput> keyset_history_res;
 
         try
         {
-            keyset_history_res = InfoKeyset()
-                    .set_historyid(historyid_)
-                    .set_lock(lock_)
-                    .set_history_query(true)
-                    .exec(ctx,local_timestamp_pg_time_zone_name);
+            InfoKeyset ik;
+            ik.set_historyid(historyid_).set_history_query(true);
+            if(lock_) ik.set_lock();
+            keyset_history_res = ik.exec(ctx,local_timestamp_pg_time_zone_name);
 
             if (keyset_history_res.empty())
             {
@@ -281,18 +276,18 @@ namespace Fred
                 BOOST_THROW_EXCEPTION(InternalError("query result size > 1"));
             }
 
-        }//try
+        }
         catch(ExceptionStack& ex)
         {
             ex.add_exception_stack_info(to_string());
             throw;
         }
         return keyset_history_res.at(0);
-    }//HistoryInfoKeysetByHistoryid::exec
+    }
 
-    std::string HistoryInfoKeysetByHistoryid::to_string() const
+    std::string InfoKeysetHistoryByHistoryid::to_string() const
     {
-        return Util::format_operation_state("HistoryInfoKeysetByHistoryid",
+        return Util::format_operation_state("InfoKeysetHistoryByHistoryid",
         Util::vector_of<std::pair<std::string,std::string> >
         (std::make_pair("historyid",boost::lexical_cast<std::string>(historyid_)))
         (std::make_pair("lock",lock_ ? "true":"false"))

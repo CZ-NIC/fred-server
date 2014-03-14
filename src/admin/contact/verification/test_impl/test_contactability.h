@@ -121,16 +121,16 @@ namespace ContactVerification
         std::string country_;
 
         virtual void store_data(const Fred::InfoContactOutput& _data) {
-            name_ = boost::algorithm::trim_copy(static_cast<std::string>(_data.info_contact_data.name));
-            email_ = boost::algorithm::trim_copy(static_cast<std::string>(_data.info_contact_data.email));
-            organization_ = boost::algorithm::trim_copy(static_cast<std::string>(_data.info_contact_data.organization));
-            street1_ = boost::algorithm::trim_copy(static_cast<std::string>(_data.info_contact_data.street1));
-            street2_ = boost::algorithm::trim_copy(static_cast<std::string>(_data.info_contact_data.street2));
-            street3_ = boost::algorithm::trim_copy(static_cast<std::string>(_data.info_contact_data.street3));
-            city_ = boost::algorithm::trim_copy(static_cast<std::string>(_data.info_contact_data.city));
-            stateorprovince_ = boost::algorithm::trim_copy(static_cast<std::string>(_data.info_contact_data.stateorprovince));
-            postalcode_ = boost::algorithm::trim_copy(static_cast<std::string>(_data.info_contact_data.postalcode));
-            country_ = boost::algorithm::trim_copy(static_cast<std::string>(_data.info_contact_data.country));
+            name_ = boost::algorithm::trim_copy(_data.info_contact_data.name.get_value_or_default());
+            email_ = boost::algorithm::trim_copy(_data.info_contact_data.email.get_value_or_default());
+            organization_ = boost::algorithm::trim_copy(_data.info_contact_data.organization.get_value_or_default());
+            street1_ = boost::algorithm::trim_copy(_data.info_contact_data.street1.get_value_or_default());
+            street2_ = boost::algorithm::trim_copy(_data.info_contact_data.street2.get_value_or_default());
+            street3_ = boost::algorithm::trim_copy(_data.info_contact_data.street3.get_value_or_default());
+            city_ = boost::algorithm::trim_copy(_data.info_contact_data.city.get_value_or_default());
+            stateorprovince_ = boost::algorithm::trim_copy(_data.info_contact_data.stateorprovince.get_value_or_default());
+            postalcode_ = boost::algorithm::trim_copy(_data.info_contact_data.postalcode.get_value_or_default());
+            country_ = boost::algorithm::trim_copy(_data.info_contact_data.country.get_value_or_default());
         }
 
         virtual vector<string> get_string_data() const {

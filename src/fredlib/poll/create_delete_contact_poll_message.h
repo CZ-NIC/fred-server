@@ -1,10 +1,15 @@
 #ifndef CREATE_DELETE_CONTACT_POLL_MESSAGE_H__
 #define CREATE_DELETE_CONTACT_POLL_MESSAGE_H__
 
+#include "src/fredlib/poll/message_types.h"
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/opexception.h"
 #include "util/printable.h"
 
+/**
+ *  @file
+ *  create delete contact poll message
+ */
 
 namespace Fred {
 namespace Poll {
@@ -24,16 +29,26 @@ public:
         ExceptionData_object_history_not_found<Exception>
     { };
 
+    /**
+    * @param _history_id specific history version of contact to which the new message shall be related
+    */
     CreateDeleteContactPollMessage(const ObjectHistoryId &_history_id);
 
+    /**
+    * @return id of newly created message
+    * @throws Exception
+    */
     unsigned long long exec(Fred::OperationContext &_ctx);
 
+    /**
+    * @return string with description of the instance state
+    */
     std::string to_string() const;
 
 private:
     ObjectHistoryId history_id_;
 
-    static std::string message_type_handle() { return "delete_contact"; }
+    static std::string message_type_handle() { return Fred::Poll::DELETE_CONTACT; }
 };
 
 }

@@ -8,6 +8,11 @@
 #include <exception>
 #include <utility>
 
+/**
+ *  @file
+ *  common implementation for creating epp action poll messages
+ */
+
 namespace Fred {
 namespace Poll {
 
@@ -24,7 +29,7 @@ inline std::string to_registry_handle(object_type _in) {
         case nsset:
             return "nsset";
         default:
-            throw std::runtime_error("uknonwn registry object type");
+            BOOST_THROW_EXCEPTION(std::runtime_error("unknown registry object type"));
     };
 }
 
@@ -43,13 +48,25 @@ class CreateEppActionPollMessage : public Util::Printable
             ExceptionData_object_type_not_found<Exception>
         { };
 
+        /**
+        * @param _history_id specific history version of registry object to which the new message shall be related
+        * @param _object_type type of object
+        * @param _message_type_handle type of message to be created
+        */
         CreateEppActionPollMessage(
             ObjectHistoryId     _history_id,
             object_type         _object_type,
             const std::string&  _message_type_handle);
 
+        /**
+        * @return id of newly created message
+        * @throws Exception
+        */
         unsigned long long exec(Fred::OperationContext &_ctx);
 
+        /**
+        * @return string with description of the instance state
+        */
         virtual std::string to_string() const;
 
     private:

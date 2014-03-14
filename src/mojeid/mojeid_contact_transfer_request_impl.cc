@@ -1,8 +1,10 @@
-#include "mojeid_contact_transfer_request_impl.h"
 #include "src/fredlib/contact_verification/contact.h"
 #include "src/fredlib/object_states.h"
 #include "src/mojeid/mojeid_contact_states.h"
 #include "src/mojeid/request.h"
+#include "src/mojeid/mojeid_contact_transfer_request_impl.h"
+#include "src/mojeid/mojeid_validators.h"
+
 
 namespace Registry {
 namespace MojeID {
@@ -50,7 +52,8 @@ void run_transfer_command(unsigned long long _registrar_id
 MojeIDContactTransferRequestImpl::MojeIDContactTransferRequestImpl(
         Fred::PublicRequest::PublicRequestAuthImpl * _pra_impl_ptr)
     : pra_impl_ptr_(_pra_impl_ptr),
-      contact_verification_passwd_(_pra_impl_ptr)
+      contact_verification_passwd_(_pra_impl_ptr),
+      contact_validator_(Fred::Contact::Verification::create_verified_transfer_validator_mojeid())
 {
 }
 
@@ -66,6 +69,9 @@ void MojeIDContactTransferRequestImpl::pre_insert_check()
         throw Fred::PublicRequest::NotApplicable("pre_save_check: failed");
     }
 
+    Fred::Contact::Verification::Contact cdata = Fred::Contact::Verification::contact_info(
+            pra_impl_ptr_->getObject(0).id);
+    contact_validator_.check(cdata);
 }
 
 void MojeIDContactTransferRequestImpl::pre_save_check()

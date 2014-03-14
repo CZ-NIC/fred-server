@@ -586,7 +586,7 @@ setup_special_contact::setup_special_contact(
             contact_handle_ = "CONTACT_" + RandomDataGenerator().xnumstring(10);
             Fred::CreateContact create(contact_handle_, registrar_.registrar_handle);
             if(country_code_.isset()) {
-                create.set_country(static_cast<std::string>(country_code_));
+                create.set_country(country_code_.get_value_or_default());
             }
             create.exec(ctx);
             ctx.commit_transaction();
@@ -609,6 +609,8 @@ setup_special_contact::setup_special_contact(
             "   JOIN object_registry AS o_r USING(id) "
             "   WHERE o_r.name='" + contact_handle_ + "' "
         )[0][0]);
+
+    ctx_check.commit_transaction();
 
     if(state_.isset()) {
         setup_contact_in_state(*this, state_names_[state_.get_value()]);

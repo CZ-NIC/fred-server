@@ -3,6 +3,7 @@
 
 #include "src/corba/MojeID.hh"
 #include "src/corba/common_wrappers.h"
+#include "util/types/birthdate.h"
 
 #include "src/fredlib/contact_verification/contact.h"
 #include "src/fredlib/contact_verification/contact_validator.h"
@@ -36,7 +37,7 @@ NullableString* corba_wrap_nullable_string(const Nullable<std::string> &_v)
         return 0;
     }
     else {
-        return new NullableString(static_cast<std::string>(_v).c_str());
+        return new NullableString(_v.get_value().c_str());
     }
 }
 
@@ -46,7 +47,7 @@ NullableBoolean* corba_wrap_nullable_boolean(const Nullable<bool> &_v)
         return 0;
     }
     else {
-        return new NullableBoolean(static_cast<bool>(_v));
+        return new NullableBoolean(_v.get_value());
     }
 }
 
@@ -62,7 +63,7 @@ NullableULongLong* corba_wrap_nullable_ulonglong(const Nullable<unsigned long lo
         return 0;
     }
     else {
-        return new NullableULongLong(static_cast<unsigned long long>(_v));
+        return new NullableULongLong(_v.get_value());
     }
 }
 
@@ -73,8 +74,7 @@ NullableDate* corba_wrap_nullable_date(const Nullable<std::string> &_v)
         return 0;
     }
     else {
-        boost::gregorian::date tmp
-            = boost::gregorian::from_string(static_cast<std::string>(_v));
+        boost::gregorian::date tmp = birthdate_from_string_to_date(_v.get_value());
         if (tmp.is_special()) {
             return 0;
         }
@@ -155,7 +155,7 @@ bool corba_unwrap_nullable_boolean(const NullableBoolean *_v, const bool null_va
 Nullable<std::string> corba_unwrap_nullable_date(const NullableDate *_v)
 {
     if (_v) {
-        boost::format date_fmt = boost::format ("%1%-%2%-%3%")
+        boost::format date_fmt = boost::format("%1%-%2$02d-%3$02d")
                             % _v->_value().year
                             % _v->_value().month
                             % _v->_value().day;
@@ -215,7 +215,7 @@ Fred::Contact::Verification::Contact corba_unwrap_contact(const Contact &_contac
         else if (type == "BIRTHDAY") data.ssn = corba_unwrap_nullable_date(_contact.birth_date);
     }
 
-    data.id = corba_unwrap_nullable_ulonglong(_contact.id);
+    data.id = corba_unwrap_nullable_ulonglong(_contact.id).get_value_or_default();
     data.name = corba_unwrap_string(_contact.first_name) + " " + corba_unwrap_string(_contact.last_name);
     data.handle = corba_unwrap_string(_contact.username);
     data.organization = corba_unwrap_nullable_string(_contact.organization);
@@ -240,7 +240,7 @@ Contact* corba_wrap_contact(const Fred::Contact::Verification::Contact &_contact
     data->vat_reg_num  = corba_wrap_nullable_string(_contact.vat);
     data->ssn_type     = corba_wrap_nullable_string(_contact.ssntype);
 
-    std::string type = static_cast<std::string>(_contact.ssntype);
+    std::string type = _contact.ssntype.get_value_or_default();
     data->id_card_num  = type == "OP"       ? corba_wrap_nullable_string(_contact.ssn) : 0;
     data->passport_num = type == "PASS"     ? corba_wrap_nullable_string(_contact.ssn) : 0;
     data->vat_id_num   = type == "ICO"      ? corba_wrap_nullable_string(_contact.ssn) : 0;
@@ -249,26 +249,26 @@ Contact* corba_wrap_contact(const Fred::Contact::Verification::Contact &_contact
 
     data->addresses.length(1);
     data->addresses[0].type         = "DEFAULT";
-    data->addresses[0].street1      = corba_wrap_string(_contact.street1);
+    data->addresses[0].street1      = corba_wrap_string(_contact.street1.get_value_or_default());
     data->addresses[0].street2      = corba_wrap_nullable_string(_contact.street2);
     data->addresses[0].street3      = corba_wrap_nullable_string(_contact.street3);
-    data->addresses[0].city         = corba_wrap_string(_contact.city);
+    data->addresses[0].city         = corba_wrap_string(_contact.city.get_value_or_default());
     data->addresses[0].state        = corba_wrap_nullable_string(_contact.stateorprovince);
-    data->addresses[0].postal_code  = corba_wrap_string(_contact.postalcode);
-    data->addresses[0].country      = corba_wrap_string(_contact.country);
+    data->addresses[0].postal_code  = corba_wrap_string(_contact.postalcode.get_value_or_default());
+    data->addresses[0].country      = corba_wrap_string(_contact.country.get_value_or_default());
 
     data->emails.length(1);
     data->emails[0].type = "DEFAULT";
-    data->emails[0].email_address = corba_wrap_string(_contact.email);
-    std::string notify_email = static_cast<std::string>(_contact.notifyemail);
+    data->emails[0].email_address = corba_wrap_string(_contact.email.get_value_or_default());
+    std::string notify_email = _contact.notifyemail.get_value_or_default();
     if (notify_email.size()) {
         data->emails.length(2);
         data->emails[1].type = "NOTIFY";
         data->emails[1].email_address = corba_wrap_string(notify_email);
     }
 
-    std::string telephone = static_cast<std::string>(_contact.telephone);
-    std::string fax = static_cast<std::string>(_contact.fax);
+    std::string telephone = _contact.telephone.get_value_or_default();
+    std::string fax = _contact.fax.get_value_or_default();
     if (telephone.size()) {
         data->phones.length(1);
         data->phones[0].type = "DEFAULT";

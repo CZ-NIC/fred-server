@@ -3,7 +3,7 @@
 
 #include "src/fredlib/contact/merge_contact.h"
 #include "src/fredlib/logger_client.h"
-#include "util/types/optional.h"
+#include "util/optional_value.h"
 
 
 namespace Admin {
@@ -19,7 +19,7 @@ public:
     MergeContact(
             const std::string &_src_contact_handle,
             const std::string &_dst_contact_handle,
-            const optional_string &_registrar);
+            const Optional<std::string> &_registrar);
 
     Fred::MergeContactOutput exec(Fred::Logger::LoggerClient &_logger_client);
 
@@ -29,7 +29,7 @@ public:
 private:
     std::string src_contact_handle_;
     std::string dst_contact_handle_;
-    optional_string registrar_;
+    Optional<std::string> registrar_;
 };
 
 

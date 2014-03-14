@@ -78,9 +78,9 @@ namespace Fred
         return *this;
     }
 
-    InfoKeyset& InfoKeyset::set_lock(bool lock)
+    InfoKeyset& InfoKeyset::set_lock()
     {
-        lock_ = lock;
+        lock_ = true;
         return *this;
     }
 
@@ -166,7 +166,10 @@ namespace Fred
         {
             sql << " FOR UPDATE of kobr ";
         }
-
+        else
+        {
+            sql << " FOR SHARE of kobr ";
+        }
 
         return std::make_pair(sql.str(), params);
 
@@ -179,7 +182,7 @@ namespace Fred
         Database::QueryParams params;
         std::ostringstream sql;
 
-        sql << "SELECT cobr.name ";
+        sql << "SELECT cobr.id, cobr.name ";
         if(history_query_)
         {
             params.push_back(id);
@@ -295,7 +298,10 @@ namespace Fred
             info_keyset_output.info_keyset_data.tech_contacts.reserve(tech_contact_res.size());
             for(Database::Result::size_type j = 0; j < tech_contact_res.size(); ++j)
             {
-                info_keyset_output.info_keyset_data.tech_contacts.push_back(static_cast<std::string>(tech_contact_res[j][0]));
+                info_keyset_output.info_keyset_data.tech_contacts.push_back(Fred::ObjectIdHandlePair(
+                    static_cast<unsigned long long>(tech_contact_res[j][0]),
+                    static_cast<std::string>(tech_contact_res[j][1])
+                ));
             }
 
             //DNS keys

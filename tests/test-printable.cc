@@ -76,6 +76,7 @@
 #include "src/fredlib/domain/info_domain_diff.h"
 #include "src/fredlib/keyset/info_keyset_diff.h"
 #include "src/fredlib/nsset/info_nsset_diff.h"
+#include "src/fredlib/object/object_id_handle_pair.h"
 
 #include "util/util.h"
 #include "util/printable.h"
@@ -208,22 +209,22 @@ BOOST_AUTO_TEST_CASE(info_contact_by_id)
 }
 
 /**
- * test HistoryInfoContactById print to string
+ * test InfoContactHistoryById print to string
  */
 BOOST_AUTO_TEST_CASE(history_info_contact_by_id)
 {
     printable_test(
-    Fred::HistoryInfoContactById(1)
+    Fred::InfoContactHistoryById(1)
     );
 }
 
 /**
- * test HistoryInfoContactByHistoryid print to string
+ * test InfoContactHistoryByHistoryid print to string
  */
 BOOST_AUTO_TEST_CASE(history_info_contact_by_historyid)
 {
     printable_test(
-    Fred::HistoryInfoContactByHistoryid(1)
+    Fred::InfoContactHistoryByHistoryid(1)
     );
 }
 
@@ -278,7 +279,11 @@ BOOST_AUTO_TEST_CASE(check_domain)
 BOOST_AUTO_TEST_CASE(info_domain_data)
 {
     Fred::InfoDomainData i;
-    i.admin_contacts = Util::vector_of<std::string>("admin1")("admin2")("admin3");
+    i.admin_contacts = Util::vector_of<Fred::ObjectIdHandlePair>
+        (Fred::ObjectIdHandlePair(1, "admin1"))
+        (Fred::ObjectIdHandlePair(2, "admin2"))
+        (Fred::ObjectIdHandlePair(3, "admin3"));
+
     i.expiration_date = boost::gregorian::day_clock::local_day();
     printable_test(i);
 }
@@ -292,7 +297,7 @@ BOOST_AUTO_TEST_CASE(info_domain_history_output)
     id.fqdn = "test-fred.cz";
     id.creation_time = boost::posix_time::microsec_clock::universal_time();
     id.delete_time = boost::posix_time::microsec_clock::universal_time();
-    id.keyset_handle=Nullable<std::string>("TEST-KEYSET");
+    id.keyset=Nullable<Fred::ObjectIdHandlePair>(Fred::ObjectIdHandlePair(1,"TEST-KEYSET"));
 
     Fred::InfoDomainOutput ih;
     ih.history_valid_from = boost::posix_time::microsec_clock::universal_time();
@@ -381,7 +386,9 @@ BOOST_AUTO_TEST_CASE(info_keyset_data)
     i.handle = "TEST-INFO-KEYSET-HANDLE";
     i.creation_time = boost::posix_time::microsec_clock::universal_time();
     i.delete_time = boost::posix_time::microsec_clock::universal_time();
-    i.tech_contacts = Util::vector_of<std::string>("tech1")("tech2")("tech3");
+    i.tech_contacts = Util::vector_of<Fred::ObjectIdHandlePair>(Fred::ObjectIdHandlePair(1, "tech1"))
+        (Fred::ObjectIdHandlePair(2, "tech2"))
+        (Fred::ObjectIdHandlePair(3, "tech3"));
     i.dns_keys = Util::vector_of<Fred::DnsKey>
     (Fred::DnsKey(257, 3, 5, "test1"))
     (Fred::DnsKey(257, 3, 5, "test2"));
@@ -399,7 +406,9 @@ BOOST_AUTO_TEST_CASE(info_keyset_output)
     d.handle = "TEST-INFO-KEYSET-HANDLE";
     d.creation_time = boost::posix_time::microsec_clock::universal_time();
     d.delete_time = boost::posix_time::microsec_clock::universal_time();
-    d.tech_contacts = Util::vector_of<std::string>("tech1")("tech2")("tech3");
+    d.tech_contacts = Util::vector_of<Fred::ObjectIdHandlePair>(Fred::ObjectIdHandlePair(1, "tech1"))
+        (Fred::ObjectIdHandlePair(2, "tech2"))
+        (Fred::ObjectIdHandlePair(3, "tech3"));
     d.dns_keys = Util::vector_of<Fred::DnsKey>
     (Fred::DnsKey(257, 3, 5, "test1"))
     (Fred::DnsKey(257, 3, 5, "test2"));
@@ -509,7 +518,9 @@ BOOST_AUTO_TEST_CASE(info_nsset_output)
     d.handle = "TEST-INFO-NSSET-HANDLE";
     d.creation_time = boost::posix_time::microsec_clock::universal_time();
     d.delete_time = boost::posix_time::microsec_clock::universal_time();
-    d.tech_contacts = Util::vector_of<std::string>("tech1")("tech2")("tech3");
+    d.tech_contacts = Util::vector_of<Fred::ObjectIdHandlePair>(Fred::ObjectIdHandlePair(1, "tech1"))
+        (Fred::ObjectIdHandlePair(2, "tech2"))
+        (Fred::ObjectIdHandlePair(3, "tech3"));
     d.dns_hosts = Util::vector_of<Fred::DnsHost>
         (Fred::DnsHost("test1dns.cz", Util::vector_of<std::string>("6.6.6.6")("7.7.7.7")))
         (Fred::DnsHost("test2dns.cz", Util::vector_of<std::string>("6.6.6.6")("7.7.7.7")));
@@ -963,6 +974,18 @@ BOOST_AUTO_TEST_CASE(info_keyset_diff)
     d.authinfopw ="test";
     Fred::InfoKeysetDiff diff = Fred::diff_keyset_data(Fred::InfoKeysetData(),d);
     printable_test(diff);
+}
+
+/**
+ * test ObjectIdHandlePair print to string
+ */
+
+BOOST_AUTO_TEST_CASE(object_id_handle_pair)
+{
+    Fred::ObjectIdHandlePair i(1,"test");
+    printable_test(i);
+    BOOST_CHECK(i.id == 1);
+    BOOST_CHECK(i.handle == "test");
 }
 
 BOOST_AUTO_TEST_SUITE_END();//TestPrintable

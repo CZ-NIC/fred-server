@@ -73,7 +73,7 @@ namespace  Admin {
             _check_handle
         ).exec(_ctx);
 
-        Fred::InfoContactOutput contact_info = Fred::HistoryInfoContactByHistoryid(
+        Fred::InfoContactOutput contact_info = Fred::InfoContactHistoryByHistoryid(
             check_info.contact_history_id
         ).exec(_ctx);
 

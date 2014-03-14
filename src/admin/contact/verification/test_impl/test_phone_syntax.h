@@ -60,7 +60,7 @@ namespace ContactVerification
 
         virtual void store_data(const Fred::InfoContactOutput& _data) {
             if(_data.info_contact_data.telephone.isnull() == false) {
-                phone_ = static_cast<string>(_data.info_contact_data.telephone);
+                phone_ = _data.info_contact_data.telephone.get_value_or_default();
             }
         }
 

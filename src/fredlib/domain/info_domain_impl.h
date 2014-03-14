@@ -50,7 +50,7 @@ namespace Fred
         Optional<unsigned long long> domain_historyid_;/**< history id of the domain */
         Optional<boost::posix_time::ptime> history_timestamp_;/**< timestamp of history state we want to get (in time zone set in @ref local_timestamp_pg_time_zone_name parameter) */
         bool history_query_;/**< flag to query history records of the domain */
-        bool lock_;/**< lock object_registry row for domain */
+        bool lock_;/**< if set to true lock object_registry row for update, if set to false lock for share */
 
         std::pair<std::string, Database::QueryParams> make_domain_query(const std::string& local_timestamp_pg_time_zone_name);/**< info query generator @return pair of query string with query params*/
         std::pair<std::string, Database::QueryParams> make_admin_query(unsigned long long id, unsigned long long historyid);/**< info query generator @return pair of query string with query params*/
@@ -104,13 +104,13 @@ namespace Fred
         */
         InfoDomain& set_history_query(bool history_query);
 
-
         /**
-        * Sets domain lock flag.
-        * @param lock sets lock domain flag into @ref lock_ attribute
-        * @return operation instance reference to allow method chaining
-        */
-        InfoDomain& set_lock(bool lock = true);
+         * Sets lock for update.
+         * Default, if not set, is lock for share.
+         * Sets true to lock flag in @ref lock_ attribute
+         * @return operation instance reference to allow method chaining
+         */
+        InfoDomain& set_lock();
 
         /**
         * Executes getting info about the domain.
@@ -128,7 +128,7 @@ namespace Fred
         * @return query and plan
         */
         std::string explain_analyze(OperationContext& ctx, std::vector<InfoDomainOutput>& result, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return query plan
-    };//class InfoDomain
+    };
 
 }//namespace Fred
 

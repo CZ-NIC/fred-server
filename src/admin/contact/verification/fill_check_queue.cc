@@ -64,9 +64,7 @@ namespace ContactVerificationQueue {
             conditions.push_back(
                 _contact_alias+".country = upper('"
                 + ctx.get_conn().escape(
-                    static_cast<string>(
-                        _filter.country_code
-                    )
+                    _filter.country_code.get_value_or_default()
                 ) + "')"
             );
         }
@@ -251,7 +249,7 @@ namespace ContactVerificationQueue {
     { }
 
     fill_check_queue& fill_check_queue::set_contact_filter(Optional<contact_filter> _filter) {
-        filter_ = _filter;
+        filter_ = _filter.get_value_or_default();
 
         return *this;
     }

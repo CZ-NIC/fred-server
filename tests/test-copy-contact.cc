@@ -134,80 +134,80 @@ BOOST_FIXTURE_TEST_CASE(copy_contact, copy_contact_fixture)
     BOOST_CHECK(boost::algorithm::to_upper_copy(src_contact_info.create_registrar_handle).compare(boost::algorithm::to_upper_copy(dst_contact_info.create_registrar_handle)) != 0);
     BOOST_CHECK(src_contact_info.authinfopw == dst_contact_info.authinfopw);
     BOOST_CHECK((src_contact_info.name.isnull() == dst_contact_info.name.isnull()) &&
-                (src_contact_info.name.isnull() || (static_cast< std::string >(src_contact_info.name).compare(
-                                                    static_cast< std::string >(dst_contact_info.name)) == 0)));
+                (src_contact_info.name.isnull() || (src_contact_info.name.get_value().compare(
+                                                    dst_contact_info.name.get_value()) == 0)));
     BOOST_CHECK((src_contact_info.organization.isnull() == dst_contact_info.organization.isnull()) &&
-                (src_contact_info.organization.isnull() || (static_cast< std::string >(src_contact_info.organization).compare(
-                                                            static_cast< std::string >(dst_contact_info.organization)) == 0)));
+                (src_contact_info.organization.isnull() || (src_contact_info.organization.get_value().compare(
+                                                            dst_contact_info.organization.get_value()) == 0)));
     BOOST_CHECK((src_contact_info.street1.isnull() == dst_contact_info.street1.isnull()) &&
-                (src_contact_info.street1.isnull() || (static_cast< std::string >(src_contact_info.street1).compare(
-                                                       static_cast< std::string >(dst_contact_info.street1)) == 0)));
+                (src_contact_info.street1.isnull() || (src_contact_info.street1.get_value().compare(
+                                                       dst_contact_info.street1.get_value()) == 0)));
     BOOST_CHECK((src_contact_info.street2.isnull() == dst_contact_info.street2.isnull()) &&
-                (src_contact_info.street2.isnull() || (static_cast< std::string >(src_contact_info.street2).compare(
-                                                       static_cast< std::string >(dst_contact_info.street2)) == 0)));
+                (src_contact_info.street2.isnull() || (src_contact_info.street2.get_value().compare(
+                                                       dst_contact_info.street2.get_value()) == 0)));
     BOOST_CHECK((src_contact_info.street3.isnull() == dst_contact_info.street3.isnull()) &&
-                (src_contact_info.street3.isnull() || (static_cast< std::string >(src_contact_info.street3).compare(
-                                                       static_cast< std::string >(dst_contact_info.street3)) == 0)));
+                (src_contact_info.street3.isnull() || (src_contact_info.street3.get_value().compare(
+                                                       dst_contact_info.street3.get_value()) == 0)));
     BOOST_CHECK((src_contact_info.city.isnull() == dst_contact_info.city.isnull()) &&
-                (src_contact_info.city.isnull() || (static_cast< std::string >(src_contact_info.city).compare(
-                                                    static_cast< std::string >(dst_contact_info.city)) == 0)));
+                (src_contact_info.city.isnull() || (src_contact_info.city.get_value().compare(
+                                                    dst_contact_info.city.get_value()) == 0)));
     BOOST_CHECK((src_contact_info.stateorprovince.isnull() == dst_contact_info.stateorprovince.isnull()) &&
-                (src_contact_info.stateorprovince.isnull() || (static_cast< std::string >(src_contact_info.stateorprovince).compare(
-                                                               static_cast< std::string >(dst_contact_info.stateorprovince)) == 0)));
+                (src_contact_info.stateorprovince.isnull() || (src_contact_info.stateorprovince.get_value().compare(
+                                                               dst_contact_info.stateorprovince.get_value()) == 0)));
     BOOST_CHECK((src_contact_info.postalcode.isnull() == dst_contact_info.postalcode.isnull()) &&
-                (src_contact_info.postalcode.isnull() || (static_cast< std::string >(src_contact_info.postalcode).compare(
-                                                          static_cast< std::string >(dst_contact_info.postalcode)) == 0)));
+                (src_contact_info.postalcode.isnull() || (src_contact_info.postalcode.get_value().compare(
+                                                          dst_contact_info.postalcode.get_value()) == 0)));
     BOOST_CHECK((src_contact_info.country.isnull() == dst_contact_info.country.isnull()) &&
-                (src_contact_info.country.isnull() || (static_cast< std::string >(src_contact_info.country).compare(
-                                                       static_cast< std::string >(dst_contact_info.country)) == 0)));
+                (src_contact_info.country.isnull() || (src_contact_info.country.get_value().compare(
+                                                       dst_contact_info.country.get_value()) == 0)));
     BOOST_CHECK((src_contact_info.telephone.isnull() == dst_contact_info.telephone.isnull()) &&
-                (src_contact_info.telephone.isnull() || (static_cast< std::string >(src_contact_info.telephone).compare(
-                                                         static_cast< std::string >(dst_contact_info.telephone)) == 0)));
+                (src_contact_info.telephone.isnull() || (src_contact_info.telephone.get_value().compare(
+                                                         dst_contact_info.telephone.get_value()) == 0)));
     BOOST_CHECK((src_contact_info.fax.isnull() == dst_contact_info.fax.isnull()) &&
-                (src_contact_info.fax.isnull() || (static_cast< std::string >(src_contact_info.fax).compare(
-                                                   static_cast< std::string >(dst_contact_info.fax)) == 0)));
+                (src_contact_info.fax.isnull() || (src_contact_info.fax.get_value().compare(
+                                                   dst_contact_info.fax.get_value()) == 0)));
     BOOST_CHECK((src_contact_info.email.isnull() == dst_contact_info.email.isnull()) &&
-                (src_contact_info.email.isnull() || (static_cast< std::string >(src_contact_info.email).compare(
-                                                     static_cast< std::string >(dst_contact_info.email)) == 0)));
+                (src_contact_info.email.isnull() || (src_contact_info.email.get_value().compare(
+                                                     dst_contact_info.email.get_value()) == 0)));
     BOOST_CHECK((src_contact_info.notifyemail.isnull() == dst_contact_info.notifyemail.isnull()) &&
-                (src_contact_info.notifyemail.isnull() || (static_cast< std::string >(src_contact_info.notifyemail).compare(
-                                                           static_cast< std::string >(dst_contact_info.notifyemail)) == 0)));
+                (src_contact_info.notifyemail.isnull() || (src_contact_info.notifyemail.get_value().compare(
+                                                           dst_contact_info.notifyemail.get_value()) == 0)));
     BOOST_CHECK((src_contact_info.vat.isnull() == dst_contact_info.vat.isnull()) &&
-                (src_contact_info.vat.isnull() || (static_cast< std::string >(src_contact_info.vat).compare(
-                                                   static_cast< std::string >(dst_contact_info.vat)) == 0)));
+                (src_contact_info.vat.isnull() || (src_contact_info.vat.get_value().compare(
+                                                   dst_contact_info.vat.get_value()) == 0)));
     BOOST_CHECK((src_contact_info.ssntype.isnull() == dst_contact_info.ssntype.isnull()) &&
-                (src_contact_info.ssntype.isnull() || (static_cast< std::string >(src_contact_info.ssntype).compare(
-                                                       static_cast< std::string >(dst_contact_info.ssntype)) == 0)));
+                (src_contact_info.ssntype.isnull() || (src_contact_info.ssntype.get_value().compare(
+                                                       dst_contact_info.ssntype.get_value()) == 0)));
     BOOST_CHECK((src_contact_info.ssn.isnull() == dst_contact_info.ssn.isnull()) &&
-                (src_contact_info.ssn.isnull() || (static_cast< std::string >(src_contact_info.ssn).compare(
-                                                   static_cast< std::string >(dst_contact_info.ssn)) == 0)));
+                (src_contact_info.ssn.isnull() || (src_contact_info.ssn.get_value().compare(
+                                                   dst_contact_info.ssn.get_value()) == 0)));
     BOOST_CHECK((src_contact_info.disclosename.isnull() == dst_contact_info.disclosename.isnull()) &&
-                (src_contact_info.disclosename.isnull() || (static_cast< bool >(src_contact_info.disclosename) ==
-                                                            static_cast< bool >(dst_contact_info.disclosename))));
+                (src_contact_info.disclosename.isnull() || (src_contact_info.disclosename.get_value() ==
+                                                            dst_contact_info.disclosename.get_value())));
     BOOST_CHECK((src_contact_info.discloseorganization.isnull() == dst_contact_info.discloseorganization.isnull()) &&
-                (src_contact_info.discloseorganization.isnull() || (static_cast< bool >(src_contact_info.discloseorganization) ==
-                                                                    static_cast< bool >(dst_contact_info.discloseorganization))));
+                (src_contact_info.discloseorganization.isnull() || (src_contact_info.discloseorganization.get_value() ==
+                                                                    dst_contact_info.discloseorganization.get_value())));
     BOOST_CHECK((src_contact_info.discloseaddress.isnull() == dst_contact_info.discloseaddress.isnull()) &&
-                (src_contact_info.discloseaddress.isnull() || (static_cast< bool >(src_contact_info.discloseaddress) ==
-                                                               static_cast< bool >(dst_contact_info.discloseaddress))));
+                (src_contact_info.discloseaddress.isnull() || (src_contact_info.discloseaddress.get_value() ==
+                                                               dst_contact_info.discloseaddress.get_value())));
     BOOST_CHECK((src_contact_info.disclosetelephone.isnull() == dst_contact_info.disclosetelephone.isnull()) &&
-                (src_contact_info.disclosetelephone.isnull() || (static_cast< bool >(src_contact_info.disclosetelephone) ==
-                                                                 static_cast< bool >(dst_contact_info.disclosetelephone))));
+                (src_contact_info.disclosetelephone.isnull() || (src_contact_info.disclosetelephone.get_value() ==
+                                                                 dst_contact_info.disclosetelephone.get_value())));
     BOOST_CHECK((src_contact_info.disclosefax.isnull() == dst_contact_info.disclosefax.isnull()) &&
-                (src_contact_info.disclosefax.isnull() || (static_cast< bool >(src_contact_info.disclosefax) ==
-                                                           static_cast< bool >(dst_contact_info.disclosefax))));
+                (src_contact_info.disclosefax.isnull() || (src_contact_info.disclosefax.get_value() ==
+                                                           dst_contact_info.disclosefax.get_value())));
     BOOST_CHECK((src_contact_info.discloseemail.isnull() == dst_contact_info.discloseemail.isnull()) &&
-                (src_contact_info.discloseemail.isnull() || (static_cast< bool >(src_contact_info.discloseemail) ==
-                                                             static_cast< bool >(dst_contact_info.discloseemail))));
+                (src_contact_info.discloseemail.isnull() || (src_contact_info.discloseemail.get_value() ==
+                                                             dst_contact_info.discloseemail.get_value())));
     BOOST_CHECK((src_contact_info.disclosevat.isnull() == dst_contact_info.disclosevat.isnull()) &&
-                (src_contact_info.disclosevat.isnull() || (static_cast< bool >(src_contact_info.disclosevat) ==
-                                                           static_cast< bool >(dst_contact_info.disclosevat))));
+                (src_contact_info.disclosevat.isnull() || (src_contact_info.disclosevat.get_value() ==
+                                                           dst_contact_info.disclosevat.get_value())));
     BOOST_CHECK((src_contact_info.discloseident.isnull() == dst_contact_info.discloseident.isnull()) &&
-                (src_contact_info.discloseident.isnull() || (static_cast< bool >(src_contact_info.discloseident) ==
-                                                             static_cast< bool >(dst_contact_info.discloseident))));
+                (src_contact_info.discloseident.isnull() || (src_contact_info.discloseident.get_value() ==
+                                                             dst_contact_info.discloseident.get_value())));
     BOOST_CHECK((src_contact_info.disclosenotifyemail.isnull() == dst_contact_info.disclosenotifyemail.isnull()) &&
-                (src_contact_info.disclosenotifyemail.isnull() || (static_cast< bool >(src_contact_info.disclosenotifyemail) ==
-                                                                   static_cast< bool >(dst_contact_info.disclosenotifyemail))));
+                (src_contact_info.disclosenotifyemail.isnull() || (src_contact_info.disclosenotifyemail.get_value() ==
+                                                                   dst_contact_info.disclosenotifyemail.get_value())));
 
 }
 

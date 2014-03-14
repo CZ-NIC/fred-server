@@ -97,12 +97,12 @@ namespace  Admin {
         /* right now this is just a query for history_id
            as there is not much in check's history and no tests either it is acceptable */
         Fred::InfoContactCheckOutput check_info (
-            Fred::InfoContactCheck(check_handle).exec(*ctx_locked_check) );
+            Fred::InfoContactCheck(check_handle.get_value_or_default()).exec(*ctx_locked_check) );
 
         if(check_info.testsuite_handle == Fred::TestsuiteHandle::AUTOMATIC) {
-            preprocess_automatic_check(*ctx_locked_check, check_handle);
+            preprocess_automatic_check(*ctx_locked_check, check_handle.get_value_or_default());
         } else if(check_info.testsuite_handle == Fred::TestsuiteHandle::MANUAL) {
-            preprocess_manual_check(*ctx_locked_check, check_handle);
+            preprocess_manual_check(*ctx_locked_check, check_handle.get_value_or_default());
         }
 
         std::vector<std::string> test_statuses;
@@ -115,7 +115,10 @@ namespace  Admin {
             while(true) {
                 Fred::OperationContext ctx_locked_test;
                 // can throw exception_locking_failed
-                std::string test_handle = lazy_get_locked_running_test(ctx_locked_test, check_handle, _logd_request_id);
+                std::string test_handle = lazy_get_locked_running_test(
+                    ctx_locked_test,
+                    check_handle.get_value_or_default(),
+                    _logd_request_id);
 
                 try {
                     temp_result = _tests.at(test_handle)->run(check_info.contact_history_id);
@@ -139,7 +142,7 @@ namespace  Admin {
                         error_messages.push_back(Optional<std::string>("exception in test implementation"));
 
                         Fred::UpdateContactTest(
-                            check_handle,
+                            check_handle.get_value_or_default(),
                             test_handle,
                             test_statuses.back(),
                             _logd_request_id,
@@ -156,7 +159,7 @@ namespace  Admin {
                     throw;
                 }
                 Fred::UpdateContactTest(
-                    check_handle,
+                    check_handle.get_value_or_default(),
                     test_handle,
                     test_statuses.back(),
                     _logd_request_id,
@@ -171,7 +174,7 @@ namespace  Admin {
         } catch (...) {
             try {
                 Fred::UpdateContactCheck update_operation(
-                    check_handle,
+                    check_handle.get_value_or_default(),
                     evaluate_check_status_after_tests_finished(test_statuses)
                 );
 
@@ -181,8 +184,8 @@ namespace  Admin {
 
                 update_operation.exec(*ctx_locked_check);
 
-                Admin::add_related_messages(*ctx_locked_check, check_handle, related_message_ids);
-                Admin::add_related_mail(*ctx_locked_check, check_handle, related_mail_ids);
+                Admin::add_related_messages(*ctx_locked_check, check_handle.get_value_or_default(), related_message_ids);
+                Admin::add_related_mail(*ctx_locked_check, check_handle.get_value_or_default(), related_mail_ids);
 
                 ctx_locked_check->commit_transaction();
             } catch(...) {
@@ -193,7 +196,7 @@ namespace  Admin {
         }
 
         Fred::UpdateContactCheck update_operation(
-            check_handle,
+            check_handle.get_value_or_default(),
             evaluate_check_status_after_tests_finished(test_statuses)
         );
 
@@ -203,8 +206,15 @@ namespace  Admin {
 
         update_operation.exec(*ctx_locked_check);
 
-        Admin::add_related_messages(*ctx_locked_check, check_handle, related_message_ids);
-        Admin::add_related_mail(*ctx_locked_check, check_handle, related_mail_ids);
+        Admin::add_related_messages(
+            *ctx_locked_check,
+            check_handle.get_value_or_default(),
+            related_message_ids);
+
+        Admin::add_related_mail(
+            *ctx_locked_check,
+            check_handle.get_value_or_default(),
+            related_mail_ids);
 
         ctx_locked_check->commit_transaction();
 
@@ -453,7 +463,7 @@ namespace  Admin {
             _check_handle
         ).exec(_ctx);
 
-        Fred::InfoContactOutput contact_info = Fred::HistoryInfoContactByHistoryid(
+        Fred::InfoContactOutput contact_info = Fred::InfoContactHistoryByHistoryid(
             check_info.contact_history_id
         ).exec(_ctx);
 

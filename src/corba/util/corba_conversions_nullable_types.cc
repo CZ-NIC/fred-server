@@ -5,7 +5,7 @@ namespace Corba {
 
         if(in.isnull() == false) {
             long long temp;
-            temp = static_cast<long long>(in);
+            temp = in.get_value_or_default();
             if(temp < 0) {
                 throw std::out_of_range("should be >= 0");
             }
@@ -18,8 +18,7 @@ namespace Corba {
     Registry::NullableULongLong* wrap_nullable_ulonglong(const Nullable<unsigned long long>& in) {
 
         if(in.isnull() == false) {
-            return new Registry::NullableULongLong(
-                static_cast<unsigned long long>(in));
+            return new Registry::NullableULongLong(in.get_value_or_default());
         }
 
         return NULL;
@@ -30,7 +29,7 @@ namespace Corba {
             return NULL;
         }
         else {
-            const boost::gregorian::date& in_value = in;
+            const boost::gregorian::date& in_value = in.get_value_or_default();
 
             if (in_value.is_special()) {
                 return NULL;
@@ -50,7 +49,7 @@ namespace Corba {
             return NULL;
         }
         else {
-            const boost::posix_time::ptime& in_value = in;
+            const boost::posix_time::ptime& in_value = in.get_value_or_default();
 
             if (in_value.is_special()) {
                 return NULL;
