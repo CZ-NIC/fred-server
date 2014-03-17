@@ -807,15 +807,6 @@ namespace Registry
                     }
                 }
 
-                if((block_type == BLOCK_UPDATE) || (block_type == BLOCK_TRANSFER_AND_UPDATE))
-                {
-                    if(!Fred::ObjectHasState(ci->first, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx))
-                    {
-                        Fred::CreateObjectStateRequestId(ci->first,
-                            Util::set_of<std::string>(Fred::ObjectState::SERVER_UPDATE_PROHIBITED)).exec(ctx);
-                    }
-                }
-
                 if((block_type == UNBLOCK_TRANSFER) || (block_type == UNBLOCK_TRANSFER_AND_UPDATE))
                 {
                     if(Fred::ObjectHasState(ci->first, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx))
@@ -825,14 +816,7 @@ namespace Registry
                     }
                 }
 
-                if((block_type == UNBLOCK_UPDATE) || (block_type == UNBLOCK_TRANSFER_AND_UPDATE))
-                {
-                    if(Fred::ObjectHasState(ci->first, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx))
-                    {
-                        Fred::CancelObjectStateRequestId(ci->first,
-                            Util::set_of<std::string>(Fred::ObjectState::SERVER_UPDATE_PROHIBITED)).exec(ctx);
-                    }
-                }
+                if(block_type == INVALID_BLOCK_TYPE) throw InternalServerError(); //bug in implementation
 
                 Fred::PerformObjectStateRequest(ci->first).exec(ctx);
                 blocked_objects.push_back(ci->second);
