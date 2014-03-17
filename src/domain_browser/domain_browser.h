@@ -352,6 +352,16 @@ namespace Registry
             const char* what() const throw() {return "object has a status that does not allow update";}
         };
 
+        /**
+         * Type of blocking to be applied (value from enum Registry::DomainBrowser::ObjectBlockType)
+         */
+        static const unsigned BLOCK_TRANSFER = 0;
+        static const unsigned UNBLOCK_TRANSFER = 1;
+        static const unsigned BLOCK_UPDATE = 2;
+        static const unsigned UNBLOCK_UPDATE = 3;
+        static const unsigned BLOCK_TRANSFER_AND_UPDATE = 4;
+        static const unsigned UNBLOCK_TRANSFER_AND_UPDATE = 5;
+
         class DomainBrowser
         {
             std::string server_name_;
@@ -459,6 +469,21 @@ namespace Registry
                 unsigned long long contact_id,
                 const std::string& authinfo,
                 unsigned long long request_id);
+
+            /**
+             * Sets blocking state of the object.
+             * @param user_contact_id contains database id of the user contact
+             * @param objtype type of the objects to be set
+             * @param object_id list of database ids of the objects to be set
+             * @param block_type is type of blocking to be applied (value from enum Registry::DomainBrowser::ObjectBlockType)
+             * @param blocked_objects is list of blocked object handles
+             * @return false if blocking were set, true if not or exception in case of failure
+             */
+            bool setObjectBlockStatus(unsigned long long user_contact_id,
+                const std::string& objtype,
+                const std::vector<unsigned long long>& object_id,
+                unsigned block_type,
+                std::vector<std::string>& blocked_objects);
 
             std::string get_server_name();
         };//class DomainBrowser
