@@ -22,6 +22,7 @@
  */
 
 #include "mojeid_validators.h"
+#include "util/types/birthdate.h"
 #include <boost/algorithm/string.hpp>
 
 namespace Fred {
@@ -54,10 +55,30 @@ bool contact_checker_username(const Contact &_data, FieldErrorMap &_errors)
 }
 
 
+bool contact_checker_birthday(const Contact &_data, FieldErrorMap &_errors)
+{
+    if (!_data.ssntype.isnull() && _data.ssntype.get_value() == "BIRTHDAY") {
+        try {
+            boost::gregorian::date tmp = birthdate_from_string_to_date(_data.ssn.get_value());
+            if (tmp.is_special()) {
+                throw 0;
+            }
+        }
+        catch (...) {
+            _errors[field_birth_date] = INVALID;
+            return false;
+        }
+    }
+
+    return true;
+}
+
+
 ContactValidator create_conditional_identification_validator_mojeid()
 {
     ContactValidator tmp = create_conditional_identification_validator();
     tmp.add_checker(contact_checker_username);
+    tmp.add_checker(contact_checker_birthday);
     return tmp;
 }
 
@@ -65,8 +86,25 @@ ContactValidator create_finish_identification_validator_mojeid()
 {
     ContactValidator tmp = create_finish_identification_validator();
     tmp.add_checker(contact_checker_username);
+    tmp.add_checker(contact_checker_birthday);
     return tmp;
 }
+
+ContactValidator create_verified_transfer_validator_mojeid()
+{
+    ContactValidator tmp = create_default_contact_validator();
+    tmp.add_checker(contact_checker_username);
+    tmp.add_checker(contact_checker_birthday);
+    return tmp;
+}
+
+ContactValidator create_contact_update_validator_mojeid()
+{
+    ContactValidator tmp = create_default_contact_validator();
+    tmp.add_checker(contact_checker_birthday);
+    return tmp;
+}
+
 
 }
 }

@@ -1,5 +1,6 @@
 #include "log/logger.h"
 #include "src/fredlib/db_settings.h"
+#include "util/types/birthdate.h"
 #include "contact_verification_checkers.h"
 
 #include <boost/algorithm/string.hpp>
@@ -101,10 +102,12 @@ bool contact_checker_phone_unique(const Contact &_data, FieldErrorMap &_errors)
                 " WHERE eos.name = 'conditionallyIdentifiedContact'"
                 " AND os.valid_from > now() - $1::interval"
                 " AND trim(both ' ' from ch.telephone) = trim(both ' ' from $2::text)"
+                " AND ch.id != $3::bigint"
                 " LIMIT 1",
                 Database::query_param_list
                     (EMAIL_PHONE_PROTECTION_PERIOD)
-                    (_data.telephone.get_value_or_default()));
+                    (_data.telephone.get_value_or_default())
+                    (_data.id));
 
         if (ucheck.size() > 0) {
             _errors[field_phone] = NOT_AVAILABLE;
@@ -179,10 +182,12 @@ bool contact_checker_email_unique(const Contact &_data, FieldErrorMap &_errors)
                 " WHERE eos.name = 'conditionallyIdentifiedContact'"
                 " AND os.valid_from > now() - $1::interval"
                 " AND trim(both ' ' from LOWER(ch.email)) = trim(both ' ' from LOWER($2::text))"
+                " AND ch.id != $3::bigint"
                 " LIMIT 1",
                 Database::query_param_list
                     (EMAIL_PHONE_PROTECTION_PERIOD)
-                    (_data.email.get_value_or_default()));
+                    (_data.email.get_value_or_default())
+                    (_data.id));
 
         if (ucheck.size() > 0) {
             _errors[field_email] = NOT_AVAILABLE;
@@ -255,27 +260,6 @@ bool contact_checker_address_country(const Contact &_data, FieldErrorMap &_error
 }
 
 
-bool contact_checker_birthday(const Contact &_data, FieldErrorMap &_errors)
-{
-    bool result = true;
-
-    if (!_data.ssntype.isnull() && _data.ssntype.get_value() == "BIRTHDAY") {
-        try {
-            boost::gregorian::date tmp
-                = boost::gregorian::from_string(_data.ssn.get_value());
-            if (tmp.is_special()) {
-                throw 0;
-            }
-        }
-        catch (...) {
-            _errors[field_birth_date] = INVALID;
-            result = false;
-        }
-    }
-
-    return result;
-}
-
 /// return true in case the contacts are equal in terms registry data
 bool check_conditionally_identified_contact_diff(
         const Contact &_c1,
@@ -311,8 +295,8 @@ bool check_conditionally_identified_contact_diff(
     if (_c1.ssn.get_value_or_default() != _c2.ssn.get_value_or_default()) {
 
         if (_c1.ssntype.get_value_or_default() == "BIRTHDAY") {
-            boost::gregorian::date before = boost::gregorian::from_string(_c1.ssn.get_value_or_default());
-            boost::gregorian::date after = boost::gregorian::from_string(_c2.ssn.get_value_or_default());
+            boost::gregorian::date before = birthdate_from_string_to_date(_c1.ssn.get_value_or_default());
+            boost::gregorian::date after = birthdate_from_string_to_date(_c2.ssn.get_value_or_default());
             if (before != after) {
                 return false;
             }
@@ -380,13 +364,13 @@ bool check_validated_contact_diff(
     if (_c1.ssn.get_value_or_default() != _c2.ssn.get_value_or_default()) {
 
         if(_c1.ssntype.get_value_or_default() == "BIRTHDAY") {
-            boost::gregorian::date before = boost::gregorian::from_string(_c1.ssn.get_value_or_default());
-            boost::gregorian::date after = boost::gregorian::from_string(_c2.ssn.get_value_or_default());
+            boost::gregorian::date before = birthdate_from_string_to_date(_c1.ssn.get_value_or_default());
+            boost::gregorian::date after = birthdate_from_string_to_date(_c2.ssn.get_value_or_default());
             if(before != after) {
                 return false;
             }
-
-        } else {
+        }
+        else {
             return false;
         }
     }

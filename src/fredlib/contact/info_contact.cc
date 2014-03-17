@@ -67,14 +67,14 @@ namespace Fred
                 BOOST_THROW_EXCEPTION(InternalError("query result size > 1"));
             }
 
-        }//try
+        }
         catch(ExceptionStack& ex)
         {
             ex.add_exception_stack_info(to_string());
             throw;
         }
         return contact_res.at(0);
-    }//InfoContactByHandle::exec
+    }
 
     std::string InfoContactByHandle::to_string() const
     {
@@ -118,14 +118,14 @@ namespace Fred
                 BOOST_THROW_EXCEPTION(InternalError("query result size > 1"));
             }
 
-        }//try
+        }
         catch(ExceptionStack& ex)
         {
             ex.add_exception_stack_info(to_string());
             throw;
         }
         return contact_res.at(0);
-    }//InfoContactById::exec
+    }
 
     std::string InfoContactById::to_string() const
     {
@@ -176,14 +176,14 @@ namespace Fred
             {
                 BOOST_THROW_EXCEPTION(Exception().set_unknown_registry_object_identifier(roid_));
             }
-        }//try
+        }
         catch(ExceptionStack& ex)
         {
             ex.add_exception_stack_info(to_string());
             throw;
         }
         return contact_history_res;
-    }//InfoContactHistory::exec
+    }
 
     std::string InfoContactHistory::to_string() const
     {
@@ -195,18 +195,18 @@ namespace Fred
         );
     }
 
-    HistoryInfoContactById::HistoryInfoContactById(unsigned long long id)
+    InfoContactHistoryById::InfoContactHistoryById(unsigned long long id)
         : id_(id)
         , lock_(false)
     {}
 
-    HistoryInfoContactById& HistoryInfoContactById::set_lock()
+    InfoContactHistoryById& InfoContactHistoryById::set_lock()
     {
         lock_ = true;
         return *this;
     }
 
-    std::vector<InfoContactOutput> HistoryInfoContactById::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
+    std::vector<InfoContactOutput> InfoContactHistoryById::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
     {
         std::vector<InfoContactOutput> contact_history_res;
 
@@ -223,36 +223,36 @@ namespace Fred
                 BOOST_THROW_EXCEPTION(Exception().set_unknown_object_id(id_));
             }
 
-        }//try
+        }
         catch(ExceptionStack& ex)
         {
             ex.add_exception_stack_info(to_string());
             throw;
         }
         return contact_history_res;
-    }//HistoryInfoContactById::exec
+    }
 
-    std::string HistoryInfoContactById::to_string() const
+    std::string InfoContactHistoryById::to_string() const
     {
-        return Util::format_operation_state("HistoryInfoContactById",
+        return Util::format_operation_state("InfoContactHistoryById",
         Util::vector_of<std::pair<std::string,std::string> >
         (std::make_pair("id",boost::lexical_cast<std::string>(id_)))
         (std::make_pair("lock",lock_ ? "true":"false"))
         );
     }
 
-    HistoryInfoContactByHistoryid::HistoryInfoContactByHistoryid(unsigned long long historyid)
+    InfoContactHistoryByHistoryid::InfoContactHistoryByHistoryid(unsigned long long historyid)
         : historyid_(historyid)
         , lock_(false)
     {}
 
-    HistoryInfoContactByHistoryid& HistoryInfoContactByHistoryid::set_lock()
+    InfoContactHistoryByHistoryid& InfoContactHistoryByHistoryid::set_lock()
     {
         lock_ = true;
         return *this;
     }
 
-    InfoContactOutput HistoryInfoContactByHistoryid::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
+    InfoContactOutput InfoContactHistoryByHistoryid::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
     {
         std::vector<InfoContactOutput> contact_history_res;
 
@@ -274,18 +274,18 @@ namespace Fred
                 BOOST_THROW_EXCEPTION(InternalError("query result size > 1"));
             }
 
-        }//try
+        }
         catch(ExceptionStack& ex)
         {
             ex.add_exception_stack_info(to_string());
             throw;
         }
         return contact_history_res.at(0);
-    }//HistoryInfoContactByHistoryid::exec
+    }
 
-    std::string HistoryInfoContactByHistoryid::to_string() const
+    std::string InfoContactHistoryByHistoryid::to_string() const
     {
-        return Util::format_operation_state("HistoryInfoContactByHistoryid",
+        return Util::format_operation_state("InfoContactHistoryByHistoryid",
         Util::vector_of<std::pair<std::string,std::string> >
         (std::make_pair("historyid",boost::lexical_cast<std::string>(historyid_)))
         (std::make_pair("lock",lock_ ? "true":"false"))

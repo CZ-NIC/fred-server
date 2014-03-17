@@ -1,4 +1,4 @@
-#include "create_delete_contact_poll_message.h"
+#include "create_delete_domain_poll_message.h"
 #include "create_epp_action_poll_message_impl.h"
 
 #include <boost/lexical_cast.hpp>
@@ -9,18 +9,18 @@ namespace Fred {
 namespace Poll {
 
 
-CreateDeleteContactPollMessage::CreateDeleteContactPollMessage(
-    const ObjectHistoryId &_history_id
+CreateDeleteDomainPollMessage::CreateDeleteDomainPollMessage(
+    ObjectHistoryId _history_id
 ) :
     history_id_(_history_id)
 { }
 
-unsigned long long CreateDeleteContactPollMessage::exec(Fred::OperationContext &_ctx) {
+unsigned long long CreateDeleteDomainPollMessage::exec(Fred::OperationContext &_ctx) {
     try {
         return
             Fred::Poll::CreateEppActionPollMessage(
                 history_id_,
-                Fred::Poll::contact,
+                Fred::Poll::domain,
                 message_type_handle()
             ).exec(_ctx);
     } catch (CreateEppActionPollMessage::Exception& e) {
@@ -40,7 +40,7 @@ unsigned long long CreateDeleteContactPollMessage::exec(Fred::OperationContext &
             Exception new_e;
 
             new_e
-                .set_contact_not_found(
+                .set_domain_not_found(
                     e.get_object_type_not_found().second
                 ).add_exception_stack_info(
                     this->to_string() );
@@ -53,10 +53,10 @@ unsigned long long CreateDeleteContactPollMessage::exec(Fred::OperationContext &
     }
 }
 
-std::string CreateDeleteContactPollMessage::to_string() const {
+std::string CreateDeleteDomainPollMessage::to_string() const {
 
     return Util::format_operation_state(
-        "CreateDeleteContactPollMessage",
+        "CreateDeleteDomainPollMessage",
         boost::assign::list_of
             (std::make_pair("history_id",boost::lexical_cast<std::string>(history_id_)))
     );

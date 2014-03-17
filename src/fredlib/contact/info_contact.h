@@ -41,9 +41,6 @@ namespace Fred
     * Contact info by handle.
     * Contact handle to get info about the contact is set via constructor.
     * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
-    * When exception is thrown, changes to database are considered inconsistent and should be rolled back by the caller.
-    * In case of wrong input data or other predictable and superable failure, the instance of @ref InfoContactByHandle::Exception is thrown with appropriate attributes set.
-    * In case of other insuperable failures and inconsistencies, the instance of @ref InternalError or other exception is thrown.
     */
     class InfoContactByHandle : public Util::Printable
     {
@@ -76,6 +73,9 @@ namespace Fred
         * @param ctx contains reference to database and logging interface
         * @param local_timestamp_pg_time_zone_name is postgresql time zone name of the returned data
         * @return info data about the contact
+        * @throws Exception in case of wrong input data or other predictable and superable failure.
+        * @throws InternalError otherwise
+        * When exception is thrown changes to database are considered inconsistent and should be rolled back by the caller.
         */
         InfoContactOutput exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
 
@@ -85,15 +85,12 @@ namespace Fred
         */
         std::string to_string() const;
 
-    };//class InfoContactByHandle
+    };
 
     /**
     * Contact info by id.
     * Contact id to get info about the contact is set via constructor.
     * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
-    * When exception is thrown, changes to database are considered inconsistent and should be rolled back by the caller.
-    * In case of wrong input data or other predictable and superable failure, the instance of @ref InfoContactById::Exception is thrown with appropriate attributes set.
-    * In case of other insuperable failures and inconsistencies, the instance of @ref InternalError or other exception is thrown.
     */
     class InfoContactById : public Util::Printable
     {
@@ -126,6 +123,9 @@ namespace Fred
         * @param ctx contains reference to database and logging interface
         * @param local_timestamp_pg_time_zone_name is postgresql time zone name of the returned data
         * @return info data about the contact
+        * @throws Exception in case of wrong input data or other predictable and superable failure.
+        * @throws InternalError otherwise
+        * When exception is thrown changes to database are considered inconsistent and should be rolled back by the caller.
         */
         InfoContactOutput exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
 
@@ -135,15 +135,12 @@ namespace Fred
         */
         std::string to_string() const;
 
-    };//class InfoContactById
+    };
 
     /**
     * Contact history info by registry object identifier  and optional time.
     * Contact registry object identifier to get history info about the contact is set via constructor.
     * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
-    * When exception is thrown, changes to database are considered inconsistent and should be rolled back by the caller.
-    * In case of wrong input data or other predictable and superable failure, the instance of @ref InfoContactHistory::Exception is thrown with appropriate attributes set.
-    * In case of other insuperable failures and inconsistencies, the instance of @ref InternalError or other exception is thrown.
     */
     class InfoContactHistory  : public Util::Printable
     {
@@ -191,6 +188,9 @@ namespace Fred
         * @param ctx contains reference to database and logging interface
         * @param local_timestamp_pg_time_zone_name is postgresql time zone name of the returned data
         * @return history info data about the contact
+        * @throws Exception in case of wrong input data or other predictable and superable failure.
+        * @throws InternalError otherwise
+        * When exception is thrown changes to database are considered inconsistent and should be rolled back by the caller.
         */
         std::vector<InfoContactOutput> exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
 
@@ -200,17 +200,14 @@ namespace Fred
         */
         std::string to_string() const;
 
-    };//class InfoContactHistory
+    };
 
     /**
     * Contact info by id including history.
     * Contact id to get info about the contact is set via constructor.
     * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
-    * When exception is thrown, changes to database are considered inconsistent and should be rolled back by the caller.
-    * In case of wrong input data or other predictable and superable failure, the instance of @ref HistoryInfoContactById::Exception is thrown with appropriate attributes set.
-    * In case of other insuperable failures and inconsistencies, the instance of @ref InternalError or other exception is thrown.
     */
-    class HistoryInfoContactById : public Util::Printable
+    class InfoContactHistoryById : public Util::Printable
     {
         unsigned long long id_;/**< object id of the contact */
         bool lock_;/**< if set to true lock object_registry row for update, if set to false lock for share */
@@ -226,7 +223,7 @@ namespace Fred
         * Info contact history constructor with mandatory parameter.
         * @param id sets object id of the contact into @ref id_ attribute
         */
-        explicit HistoryInfoContactById(unsigned long long id);
+        explicit InfoContactHistoryById(unsigned long long id);
 
         /**
         * Sets lock for update.
@@ -234,13 +231,16 @@ namespace Fred
         * Sets true to lock flag in @ref lock_ attribute
         * @return operation instance reference to allow method chaining
         */
-        HistoryInfoContactById& set_lock();
+        InfoContactHistoryById& set_lock();
 
         /**
         * Executes getting history info about the contact.
         * @param ctx contains reference to database and logging interface
         * @param local_timestamp_pg_time_zone_name is postgresql time zone name of the returned data
         * @return history info data about the contact
+        * @throws Exception in case of wrong input data or other predictable and superable failure.
+        * @throws InternalError otherwise
+        * When exception is thrown changes to database are considered inconsistent and should be rolled back by the caller.
         */
         std::vector<InfoContactOutput> exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
 
@@ -250,17 +250,14 @@ namespace Fred
         */
         std::string to_string() const;
 
-    };//class HistoryInfoContactById
+    };
 
     /**
     * Contact info by historyid.
     * Contact historyid to get info about the contact is set via constructor.
     * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
-    * When exception is thrown, changes to database are considered inconsistent and should be rolled back by the caller.
-    * In case of wrong input data or other predictable and superable failure, the instance of @ref HistoryInfoContactByHistoryid::Exception is thrown with appropriate attributes set.
-    * In case of other insuperable failures and inconsistencies, the instance of @ref InternalError or other exception is thrown.
     */
-    class HistoryInfoContactByHistoryid : public Util::Printable
+    class InfoContactHistoryByHistoryid : public Util::Printable
     {
         unsigned long long historyid_;/**< history id of the contact */
         bool lock_;/**< if set to true lock object_registry row for update, if set to false lock for share */
@@ -276,7 +273,7 @@ namespace Fred
         * Info contact history constructor with mandatory parameter.
         * @param historyid sets object historyid of the contact into @ref historyid_ attribute
         */
-        explicit HistoryInfoContactByHistoryid(unsigned long long historyid);
+        explicit InfoContactHistoryByHistoryid(unsigned long long historyid);
 
         /**
         * Sets lock for update.
@@ -284,13 +281,16 @@ namespace Fred
         * Sets true to lock flag in @ref lock_ attribute
         * @return operation instance reference to allow method chaining
         */
-        HistoryInfoContactByHistoryid& set_lock();
+        InfoContactHistoryByHistoryid& set_lock();
 
         /**
         * Executes getting history info about the contact.
         * @param ctx contains reference to database and logging interface
         * @param local_timestamp_pg_time_zone_name is postgresql time zone name of the returned data
         * @return history info data about the contact
+        * @throws Exception in case of wrong input data or other predictable and superable failure.
+        * @throws InternalError otherwise
+        * When exception is thrown changes to database are considered inconsistent and should be rolled back by the caller.
         */
         InfoContactOutput exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
 
@@ -300,7 +300,7 @@ namespace Fred
         */
         std::string to_string() const;
 
-    };//class HistoryInfoContactByHistoryid
+    };
 
 }//namespace Fred
 

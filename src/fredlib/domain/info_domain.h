@@ -41,9 +41,6 @@ namespace Fred
     * Domain info by fully qualified domain name.
     * Domain fully qualified name to get info about is set via constructor.
     * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
-    * When exception is thrown, changes to database are considered inconsistent and should be rolled back by the caller.
-    * In case of wrong input data or other predictable and superable failure, the instance of @ref InfoDomainByHandle::Exception is thrown with appropriate attributes set.
-    * In case of other insuperable failures and inconsistencies, the instance of @ref InternalError or other exception is thrown.
     */
     class InfoDomainByHandle : public Util::Printable
     {
@@ -76,6 +73,9 @@ namespace Fred
         * @param ctx contains reference to database and logging interface
         * @param local_timestamp_pg_time_zone_name is postgresql time zone name of the returned data
         * @return info data about the domain
+        * @throws Exception in case of wrong input data or other predictable and superable failure.
+        * @throws InternalError otherwise
+        * When exception is thrown changes to database are considered inconsistent and should be rolled back by the caller.
         */
         InfoDomainOutput exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
 
@@ -85,15 +85,12 @@ namespace Fred
         */
         std::string to_string() const;
 
-    };//class InfoDomainByHandle
+    };
 
     /**
     * Domain info by id.
     * Domain id to get info about the domain is set via constructor.
     * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
-    * When exception is thrown, changes to database are considered inconsistent and should be rolled back by the caller.
-    * In case of wrong input data or other predictable and superable failure, the instance of @ref InfoDomainById::Exception is thrown with appropriate attributes set.
-    * In case of other insuperable failures and inconsistencies, the instance of @ref InternalError or other exception is thrown.
     */
     class InfoDomainById : public Util::Printable
     {
@@ -126,6 +123,9 @@ namespace Fred
         * @param ctx contains reference to database and logging interface
         * @param local_timestamp_pg_time_zone_name is postgresql time zone name of the returned data
         * @return info data about the domain
+        * @throws Exception in case of wrong input data or other predictable and superable failure.
+        * @throws InternalError otherwise
+        * When exception is thrown changes to database are considered inconsistent and should be rolled back by the caller.
         */
         InfoDomainOutput exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
 
@@ -135,15 +135,12 @@ namespace Fred
         */
         std::string to_string() const;
 
-    };//class InfoDomainById
+    };
 
     /**
     * Domain history info.
     * Domain registry object identifier to get history info about the domain is set via constructor.
     * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
-    * When exception is thrown, changes to database are considered incosistent and should be rolled back by the caller.
-    * In case of wrong input data or other predictable and superable failure, the instance of @ref InfoDomainHistory::Exception is thrown with appropriate attributes set.
-    * In case of other insuperable failures and inconsistencies, the instance of @ref InternalError or other exception is thrown.
     */
     class InfoDomainHistory  : public Util::Printable
     {
@@ -191,6 +188,9 @@ namespace Fred
         * @param ctx contains reference to database and logging interface
         * @param local_timestamp_pg_time_zone_name is postgresql time zone name of the returned data
         * @return history info data about the domain
+        * @throws Exception in case of wrong input data or other predictable and superable failure.
+        * @throws InternalError otherwise
+        * When exception is thrown changes to database are considered inconsistent and should be rolled back by the caller.
         */
         std::vector<InfoDomainOutput> exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
 
@@ -200,17 +200,14 @@ namespace Fred
         */
         std::string to_string() const;
 
-    };//class InfoDomainHistory
+    };
 
     /**
     * Domain info by id including history.
     * Domain id to get info about the domain is set via constructor.
     * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
-    * When exception is thrown, changes to database are considered inconsistent and should be rolled back by the caller.
-    * In case of wrong input data or other predictable and superable failure, the instance of @ref HistoryInfoDomainById::Exception is thrown with appropriate attributes set.
-    * In case of other insuperable failures and inconsistencies, the instance of @ref InternalError or other exception is thrown.
     */
-    class HistoryInfoDomainById : public Util::Printable
+    class InfoDomainHistoryById : public Util::Printable
     {
         unsigned long long id_;/**< object id of the domain */
         bool lock_;/**< if set to true lock object_registry row for update, if set to false lock for share */
@@ -226,7 +223,7 @@ namespace Fred
         * Info domain history constructor with mandatory parameter.
         * @param id sets object id of the domain into @ref id_ attribute
         */
-        explicit HistoryInfoDomainById(unsigned long long id);
+        explicit InfoDomainHistoryById(unsigned long long id);
 
         /**
          * Sets lock for update.
@@ -234,13 +231,16 @@ namespace Fred
          * Sets true to lock flag in @ref lock_ attribute
          * @return operation instance reference to allow method chaining
          */
-        HistoryInfoDomainById& set_lock();
+        InfoDomainHistoryById& set_lock();
 
         /**
         * Executes getting history info about the domain.
         * @param ctx contains reference to database and logging interface
         * @param local_timestamp_pg_time_zone_name is postgresql time zone name of the returned data
         * @return history info data about the domain
+        * @throws Exception in case of wrong input data or other predictable and superable failure.
+        * @throws InternalError otherwise
+        * When exception is thrown changes to database are considered inconsistent and should be rolled back by the caller.
         */
         std::vector<InfoDomainOutput> exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
 
@@ -250,17 +250,14 @@ namespace Fred
         */
         std::string to_string() const;
 
-    };//class HistoryInfoDomainById
+    };
 
     /**
     * Domain info by historyid.
     * Domain historyid to get info about the domain is set via constructor.
     * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
-    * When exception is thrown, changes to database are considered inconsistent and should be rolled back by the caller.
-    * In case of wrong input data or other predictable and superable failure, the instance of @ref HistoryInfoDomainByHistoryid::Exception is thrown with appropriate attributes set.
-    * In case of other insuperable failures and inconsistencies, the instance of @ref InternalError or other exception is thrown.
     */
-    class HistoryInfoDomainByHistoryid : public Util::Printable
+    class InfoDomainHistoryByHistoryid : public Util::Printable
     {
         unsigned long long historyid_;/**< history id of the domain */
         bool lock_;/**< if set to true lock object_registry row for update, if set to false lock for share */
@@ -276,7 +273,7 @@ namespace Fred
         * Info domain history constructor with mandatory parameter.
         * @param historyid sets object historyid of the domain into @ref historyid_ attribute
         */
-        explicit HistoryInfoDomainByHistoryid(unsigned long long historyid);
+        explicit InfoDomainHistoryByHistoryid(unsigned long long historyid);
 
         /**
          * Sets lock for update.
@@ -284,13 +281,16 @@ namespace Fred
          * Sets true to lock flag in @ref lock_ attribute
          * @return operation instance reference to allow method chaining
          */
-        HistoryInfoDomainByHistoryid& set_lock();
+        InfoDomainHistoryByHistoryid& set_lock();
 
         /**
         * Executes getting history info about the domain.
         * @param ctx contains reference to database and logging interface
         * @param local_timestamp_pg_time_zone_name is postgresql time zone name of the returned data
         * @return history info data about the domain
+        * @throws Exception in case of wrong input data or other predictable and superable failure.
+        * @throws InternalError otherwise
+        * When exception is thrown changes to database are considered inconsistent and should be rolled back by the caller.
         */
         InfoDomainOutput exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
 
@@ -300,7 +300,7 @@ namespace Fred
         */
         std::string to_string() const;
 
-    };//class HistoryInfoDomainByHistoryid
+    };
 
 }//namespace Fred
 

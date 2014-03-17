@@ -106,7 +106,7 @@ namespace Fred
 
     void DeleteKeysetById::exec(OperationContext& ctx) {
         try {
-            unsigned long long keyset_id = get_object_id_by_object_id_with_lock(
+            get_object_id_by_object_id_with_lock(
                 ctx,
                 id_,
                 static_cast<Exception*>(NULL),

@@ -207,9 +207,9 @@ BOOST_FIXTURE_TEST_CASE(info_domain, test_domain_fixture )
     BOOST_CHECK(info_data_1 == info_data_3);
     Fred::InfoDomainOutput info_data_4 = Fred::InfoDomainHistory(info_data_1.info_domain_data.roid).exec(ctx).at(0);
     BOOST_CHECK(info_data_1 == info_data_4);
-    Fred::InfoDomainOutput info_data_5 = Fred::HistoryInfoDomainById(info_data_1.info_domain_data.id).exec(ctx).at(0);
+    Fred::InfoDomainOutput info_data_5 = Fred::InfoDomainHistoryById(info_data_1.info_domain_data.id).exec(ctx).at(0);
     BOOST_CHECK(info_data_1 == info_data_5);
-    Fred::InfoDomainOutput info_data_6 = Fred::HistoryInfoDomainByHistoryid(info_data_1.info_domain_data.historyid).exec(ctx);
+    Fred::InfoDomainOutput info_data_6 = Fred::InfoDomainHistoryByHistoryid(info_data_1.info_domain_data.historyid).exec(ctx);
     BOOST_CHECK(info_data_1 == info_data_6);
 
     //impl

@@ -235,7 +235,9 @@ util_libutil_a_SOURCES = \
 		util/util.cc \
 		util/output_indenter.cc \
 		util/printable.h \
-		util/printable.cc
+		util/printable.cc \
+		util/xmlgen.cc \
+		util/subprocess.cc
 #
 # util/libutil.a
 
@@ -732,12 +734,17 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/object/object.cc \
 		src/fredlib/object/object_impl.h \
 		src/fredlib/object/object_impl.cc \
-		src/fredlib/poll/create_poll_message.h \
-		src/fredlib/poll/create_poll_message.cc \
+		src/fredlib/poll/message_types.h \
+		src/fredlib/poll/create_poll_message_impl.h \
+		src/fredlib/poll/create_poll_message_impl.cc \
+		src/fredlib/poll/create_epp_action_poll_message_impl.h \
+		src/fredlib/poll/create_epp_action_poll_message_impl.cc \
 		src/fredlib/poll/create_update_object_poll_message.h \
 		src/fredlib/poll/create_update_object_poll_message.cc \
 		src/fredlib/poll/create_delete_contact_poll_message.h \
 		src/fredlib/poll/create_delete_contact_poll_message.cc \
+		src/fredlib/poll/create_delete_domain_poll_message.h \
+		src/fredlib/poll/create_delete_domain_poll_message.cc \
 		src/fredlib/opexception.h \
 		src/fredlib/contact/merge_contact.h \
 		src/fredlib/contact/merge_contact.cc \
@@ -1761,7 +1768,6 @@ tests_test_server_SOURCES = \
 		tests/test-file-manager-client.cc \
 		tests/test-file-manager-client.h \
 		tests/test-db.cc \
-		tests/test-db.h \
 		tests/test-model.cc \
 		tests/test-model.h \
 		tests/test-registrar-group.cc \
@@ -1794,6 +1800,8 @@ tests_test_server_SOURCES = \
 		tests/test-contact-verification.cc \
 		tests/test-locking-trigger.cc \
 		tests/test-mojeid.cc \
+		tests/test-nullable.cc \
+		tests/test-optional.cc \
 		src/corba/epp_corba_client_impl.cc \
 		src/corba/epp_corba_client_impl.h \
 		src/contact_verification/contact_verification_impl.cc \
@@ -2003,7 +2011,13 @@ tests_test_fredlib_SOURCES = \
 		tests/test-info-nsset.cc \
 		tests/test-info-registrar.cc \
 		tests/test-create-registrar.cc \
-		tests/test-object-state.cc
+		tests/test-object-state.cc \
+		tests/fredlib/poll/test-create_delete_contact_poll_message.cc \
+		tests/fredlib/poll/test-create_delete_domain_poll_message.cc \
+		tests/fredlib/poll/test-create_update_object_poll_message.cc \
+		tests/fredlib/poll/setup_utils.h \
+		tests/fredlib/poll/setup_utils.cc
+
 
 
 tests_test_fredlib_LDFLAGS = \

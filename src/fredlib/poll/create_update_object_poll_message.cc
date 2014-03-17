@@ -1,5 +1,5 @@
 #include "create_update_object_poll_message.h"
-#include "create_poll_message.h"
+#include "create_poll_message_impl.h"
 
 #include <boost/lexical_cast.hpp>
 

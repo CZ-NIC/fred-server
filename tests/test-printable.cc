@@ -70,7 +70,7 @@
 #include "src/fredlib/contact/merge_contact_email_notification_data.h"
 #include "src/fredlib/contact/merge_contact_selection.h"
 #include "src/fredlib/poll/create_delete_contact_poll_message.h"
-#include "src/fredlib/poll/create_poll_message.h"
+#include "src/fredlib/poll/create_poll_message_impl.h"
 #include "src/fredlib/poll/create_update_object_poll_message.h"
 #include "src/fredlib/contact/info_contact_diff.h"
 #include "src/fredlib/domain/info_domain_diff.h"
@@ -209,22 +209,22 @@ BOOST_AUTO_TEST_CASE(info_contact_by_id)
 }
 
 /**
- * test HistoryInfoContactById print to string
+ * test InfoContactHistoryById print to string
  */
 BOOST_AUTO_TEST_CASE(history_info_contact_by_id)
 {
     printable_test(
-    Fred::HistoryInfoContactById(1)
+    Fred::InfoContactHistoryById(1)
     );
 }
 
 /**
- * test HistoryInfoContactByHistoryid print to string
+ * test InfoContactHistoryByHistoryid print to string
  */
 BOOST_AUTO_TEST_CASE(history_info_contact_by_historyid)
 {
     printable_test(
-    Fred::HistoryInfoContactByHistoryid(1)
+    Fred::InfoContactHistoryByHistoryid(1)
     );
 }
 

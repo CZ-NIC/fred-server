@@ -58,7 +58,6 @@ template <typename ELEMENT_TYPE > struct vector_of
         return *this;
     }
     //appends vector of the same elements
-    /*
     vector_of(const std::vector<ELEMENT_TYPE>& v)
     {
         (*this)(v);
@@ -68,7 +67,6 @@ template <typename ELEMENT_TYPE > struct vector_of
         this->insert(this->end(), v.begin(), v.end());
         return *this;
     }
-    */
 };
 
 //template for initialization of std::set
