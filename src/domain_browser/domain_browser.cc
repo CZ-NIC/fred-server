@@ -781,7 +781,7 @@ namespace Registry
                     params.push_back(*ci);
                     object_sql << or_separator.get() << "oreg.id = $" << params.size() << "::bigint";
                 }
-                object_sql << ") FOR UPDATE OF oreg";
+                object_sql << ") FOR SHARE OF oreg";//lock to prevent change of linked contacts
 
                 Database::Result object_result = ctx.get_conn().exec_params(object_sql.str(), params);
                 if(object_id_set.size() != object_result.size()) throw ObjectNotExists();//given objects was not found all in database belonging to user contact
