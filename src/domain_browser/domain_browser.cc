@@ -793,35 +793,44 @@ namespace Registry
                 }
             }
 
+            bool retval = false;
             for(std::set<std::pair<unsigned long long, std::string> >::const_iterator ci = object_id_name_pairs.begin()
                 ; ci != object_id_name_pairs.end(); ++ci)
             {
+                Fred::OperationContext ctx_per_object;
+                if(Fred::ObjectHasState(ci->first, Fred::ObjectState::SERVER_BLOCKED).exec(ctx_per_object))//object administratively blocked
+                {
+                    blocked_objects.push_back(ci->second);
+                    continue;
+                }
+
                 if((block_type == BLOCK_TRANSFER) || (block_type == BLOCK_TRANSFER_AND_UPDATE))
                 {
-                    if(!Fred::ObjectHasState(ci->first, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx))
+                    if(!Fred::ObjectHasState(ci->first, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx_per_object))
                     {
                         Fred::CreateObjectStateRequestId(ci->first,
-                            Util::set_of<std::string>(Fred::ObjectState::SERVER_TRANSFER_PROHIBITED)).exec(ctx);
+                            Util::set_of<std::string>(Fred::ObjectState::SERVER_TRANSFER_PROHIBITED)).exec(ctx_per_object);
                     }
                 }
 
                 if((block_type == UNBLOCK_TRANSFER) || (block_type == UNBLOCK_TRANSFER_AND_UPDATE))
                 {
-                    if(Fred::ObjectHasState(ci->first, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx))
+                    if(Fred::ObjectHasState(ci->first, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx_per_object))
                     {
                         Fred::CancelObjectStateRequestId(ci->first,
-                            Util::set_of<std::string>(Fred::ObjectState::SERVER_TRANSFER_PROHIBITED)).exec(ctx);
+                            Util::set_of<std::string>(Fred::ObjectState::SERVER_TRANSFER_PROHIBITED)).exec(ctx_per_object);
                     }
                 }
 
                 if(block_type == INVALID_BLOCK_TYPE) throw InternalServerError(); //bug in implementation
 
-                Fred::PerformObjectStateRequest(ci->first).exec(ctx);
-                blocked_objects.push_back(ci->second);
+                Fred::PerformObjectStateRequest(ci->first).exec(ctx_per_object);
+                ctx_per_object.commit_transaction();
+                retval = true;//ok at least one object have required state
             }
 
             ctx.commit_transaction();
-            return false;
+            return retval;
         }
 
     }//namespace DomainBrowserImpl
