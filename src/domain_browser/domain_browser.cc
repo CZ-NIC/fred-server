@@ -806,7 +806,7 @@ namespace Registry
                     continue;
                 }
 
-                if((block_type == BLOCK_TRANSFER) || (block_type == BLOCK_TRANSFER_AND_UPDATE))
+                if((block_type == BLOCK_TRANSFER) || (block_type == BLOCK_TRANSFER_AND_UPDATE))//block transfer
                 {
                     if(!Fred::ObjectHasState(ci->first, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx_per_object))
                     {
@@ -815,12 +815,30 @@ namespace Registry
                     }
                 }
 
-                if((block_type == UNBLOCK_TRANSFER) || (block_type == UNBLOCK_TRANSFER_AND_UPDATE))
+                if(block_type == BLOCK_TRANSFER_AND_UPDATE)//block update
+                {
+                    if(!Fred::ObjectHasState(ci->first, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx_per_object))
+                    {
+                        Fred::CreateObjectStateRequestId(ci->first,
+                            Util::set_of<std::string>(Fred::ObjectState::SERVER_UPDATE_PROHIBITED)).exec(ctx_per_object);
+                    }
+                }
+
+                if((block_type == UNBLOCK_TRANSFER) || (block_type == UNBLOCK_TRANSFER_AND_UPDATE))//unblock transfer
                 {
                     if(Fred::ObjectHasState(ci->first, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx_per_object))
                     {
                         Fred::CancelObjectStateRequestId(ci->first,
                             Util::set_of<std::string>(Fred::ObjectState::SERVER_TRANSFER_PROHIBITED)).exec(ctx_per_object);
+                    }
+                }
+
+                if(block_type == UNBLOCK_TRANSFER_AND_UPDATE)//unblock transfer and update
+                {
+                    if(Fred::ObjectHasState(ci->first, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx_per_object))
+                    {
+                        Fred::CancelObjectStateRequestId(ci->first,
+                            Util::set_of<std::string>(Fred::ObjectState::SERVER_UPDATE_PROHIBITED)).exec(ctx_per_object);
                     }
                 }
 
