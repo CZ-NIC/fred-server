@@ -1283,15 +1283,21 @@ BOOST_FIXTURE_TEST_CASE(set_contact_object_block_status, mojeid_user_contact_fix
         ctx.commit_transaction();
     }
 
-    Fred::OperationContext ctx;
-    Registry::DomainBrowserImpl::DomainBrowser impl(server_name);
-    std::vector<std::string> blocked_objects_out;
-    impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
-        "contact", Util::vector_of<unsigned long long>(user_contact_info.info_contact_data.id),
-        Registry::DomainBrowserImpl::BLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
-
-    BOOST_CHECK(Fred::ObjectHasState(user_contact_info.info_contact_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
-    BOOST_CHECK(Fred::ObjectHasState(user_contact_info.info_contact_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+    try
+    {
+        Fred::OperationContext ctx;
+        Registry::DomainBrowserImpl::DomainBrowser impl(server_name);
+        std::vector<std::string> blocked_objects_out;
+        impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
+            "contact", Util::vector_of<unsigned long long>(user_contact_info.info_contact_data.id),
+            Registry::DomainBrowserImpl::BLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
+        BOOST_ERROR("unreported objtype contact");
+    }
+    catch(const Registry::DomainBrowserImpl::IncorrectUsage& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
 }
 
 BOOST_AUTO_TEST_SUITE_END();//setObjectBlockStatus

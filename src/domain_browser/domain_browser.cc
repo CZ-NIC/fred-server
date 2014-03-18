@@ -740,12 +740,10 @@ namespace Registry
             //checked object id-handle pairs
             std::set<std::pair<unsigned long long, std::string> > object_id_name_pairs;
 
-            //check contact ownership
+            //check contact object type
             if(objtype.compare("contact") == 0)
             {
-                if(object_id_set.size() != 1) throw ObjectNotExists();//user can have only one contact id
-                if(*(object_id_set.begin()) != user_contact_id) throw ObjectNotExists();//given object id have to be the same as user contact id
-                object_id_name_pairs.insert(std::make_pair(user_contact_id, contact_info.info_contact_data.handle));
+                throw IncorrectUsage();//contact is not valid object type in this use case
             }
             else
             {//check ownership for other object types
