@@ -758,19 +758,21 @@ namespace Registry
                     object_sql << " JOIN nsset_contact_map map ON map.nssetid = oreg.id AND map.contactid = $"
                             << params.size() << "::bigint ";
                 }
-
-                if(objtype.compare("domain") == 0)//user have to be admin contact or registrant
+                else if(objtype.compare("domain") == 0)//user have to be admin contact or registrant
                 {
                     object_sql << " LEFT JOIN domain_contact_map map ON map.domainid = oreg.id"
                         " JOIN domain d ON oreg.id = d.id"
                         " AND ( map.contactid = $" << params.size() << "::bigint"
                         " OR d.registrant = $" << params.size() << "::bigint) ";
                 }
-
-                if(objtype.compare("keyset") == 0)//user have to be tech contact
+                else if(objtype.compare("keyset") == 0)//user have to be tech contact
                 {
                     object_sql << " JOIN keyset_contact_map map ON map.keysetid = oreg.id AND map.contactid = $"
                             << params.size() << "::bigint ";
+                }
+                else
+                {
+                    throw IncorrectUsage();//unknown object type
                 }
 
                 object_sql << " WHERE oreg.type = $1::integer AND oreg.erdate IS NULL AND (";
