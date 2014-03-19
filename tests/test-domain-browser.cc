@@ -1783,6 +1783,27 @@ BOOST_FIXTURE_TEST_CASE(set_object_block_status_wrong_object_type, admin_keyset_
     }
 }
 
+/**
+ * test setObjectBlockStatus - zero size of input
+ */
+BOOST_FIXTURE_TEST_CASE(set_object_block_status_empty_input, admin_keyset_fixture)
+{
+    {
+        Fred::OperationContext ctx;
+        Fred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id
+        , Util::set_of<std::string>(Fred::ObjectState::VALIDATED_CONTACT)).exec(ctx);
+        Fred::PerformObjectStateRequest(user_contact_info.info_contact_data.id).exec(ctx);
+        ctx.commit_transaction();
+    }
+
+    Registry::DomainBrowserImpl::DomainBrowser impl(server_name);
+    std::vector<std::string> blocked_objects_out;
+    BOOST_CHECK(!impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
+        "keyset", std::vector<unsigned long long>(),
+        Registry::DomainBrowserImpl::BLOCK_TRANSFER_AND_UPDATE, blocked_objects_out));
+}
+
+
 BOOST_AUTO_TEST_SUITE_END();//setObjectBlockStatus
 
 BOOST_AUTO_TEST_SUITE_END();//TestDomainBrowser
