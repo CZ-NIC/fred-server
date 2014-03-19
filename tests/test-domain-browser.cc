@@ -1408,11 +1408,6 @@ struct admin_domain_fixture
                     ).exec(ctx);
 
         domain_info = Fred::InfoDomainByHandle(test_fqdn).exec(ctx);
-/*
-        Fred::CreateObjectStateRequestId(domain_info.info_domain_data.id,
-            Util::set_of<std::string>(Fred::ObjectState::SERVER_BLOCKED)).exec(ctx);
-        Fred::PerformObjectStateRequest().set_object_id(domain_info.info_domain_data.id).exec(ctx);
-*/
         ctx.commit_transaction();//commit fixture
     }
 
@@ -1859,6 +1854,44 @@ BOOST_FIXTURE_TEST_CASE(set_object_block_wrong_object_id, admin_keyset_fixture)
         BOOST_CHECK(true);
         BOOST_MESSAGE(boost::diagnostic_information(ex));
     }
+}
+
+/**
+ * test setObjectBlockStatus - blocked object
+ */
+BOOST_FIXTURE_TEST_CASE(set_object_block_blocked_object, admin_nsset_fixture)
+{
+    {
+        Fred::OperationContext ctx;
+        Fred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id
+        , Util::set_of<std::string>(Fred::ObjectState::VALIDATED_CONTACT)).exec(ctx);
+        Fred::PerformObjectStateRequest(user_contact_info.info_contact_data.id).exec(ctx);
+        ctx.commit_transaction();
+    }
+
+    {
+        Fred::OperationContext ctx;
+        if(!Fred::ObjectHasState(nsset_info.info_nsset_data.id, Fred::ObjectState::SERVER_BLOCKED).exec(ctx))
+        {
+            ctx.get_conn().exec_params(
+                "INSERT INTO object_state_request (object_id, state_id)"
+                " VALUES ($1::integer, (SELECT id FROM enum_object_states"
+                " WHERE name = $2::text)) RETURNING id",
+                Database::query_param_list
+                    (nsset_info.info_nsset_data.id)
+                    (Fred::ObjectState::SERVER_BLOCKED));
+            Fred::PerformObjectStateRequest().set_object_id(nsset_info.info_nsset_data.id).exec(ctx);
+            ctx.commit_transaction();
+        }
+    }
+
+    Registry::DomainBrowserImpl::DomainBrowser impl(server_name);
+    std::vector<std::string> blocked_objects_out;
+    BOOST_CHECK(!impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
+        "nsset", Util::vector_of<unsigned long long>(nsset_info.info_nsset_data.id),
+        Registry::DomainBrowserImpl::BLOCK_TRANSFER_AND_UPDATE, blocked_objects_out));
+    BOOST_CHECK(blocked_objects_out.size() == 1);
+    BOOST_CHECK(blocked_objects_out.at(0) == nsset_info.info_nsset_data.handle);
 }
 
 BOOST_AUTO_TEST_SUITE_END();//setObjectBlockStatus
