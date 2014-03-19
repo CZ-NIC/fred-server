@@ -1273,35 +1273,6 @@ BOOST_AUTO_TEST_SUITE_END();//setContactAuthInfo
 
 BOOST_AUTO_TEST_SUITE(setObjectBlockStatus)
 
-/**
- * test setObjectBlockStatus - wrong object type contact
- */
-BOOST_FIXTURE_TEST_CASE(set_contact_object_block_status, mojeid_user_contact_fixture)
-{
-    {
-        Fred::OperationContext ctx;
-        Fred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id
-        , Util::set_of<std::string>(Fred::ObjectState::VALIDATED_CONTACT)).exec(ctx);
-        Fred::PerformObjectStateRequest(user_contact_info.info_contact_data.id).exec(ctx);
-        ctx.commit_transaction();
-    }
-
-    try
-    {
-        Registry::DomainBrowserImpl::DomainBrowser impl(server_name);
-        std::vector<std::string> blocked_objects_out;
-        impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
-            "contact", Util::vector_of<unsigned long long>(user_contact_info.info_contact_data.id),
-            Registry::DomainBrowserImpl::BLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
-        BOOST_ERROR("unreported objtype contact");
-    }
-    catch(const Registry::DomainBrowserImpl::IncorrectUsage& ex)
-    {
-        BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
-    }
-}
-
 struct registrant_domain_fixture
 : mojeid_user_contact_fixture
   , nsset_fixture
@@ -1734,6 +1705,35 @@ BOOST_FIXTURE_TEST_CASE(set_admin_keyset_object_block_status_transfer, admin_key
 }
 
 /**
+ * test setObjectBlockStatus - wrong object type contact
+ */
+BOOST_FIXTURE_TEST_CASE(set_contact_object_block_status, mojeid_user_contact_fixture)
+{
+    {
+        Fred::OperationContext ctx;
+        Fred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id
+        , Util::set_of<std::string>(Fred::ObjectState::VALIDATED_CONTACT)).exec(ctx);
+        Fred::PerformObjectStateRequest(user_contact_info.info_contact_data.id).exec(ctx);
+        ctx.commit_transaction();
+    }
+
+    try
+    {
+        Registry::DomainBrowserImpl::DomainBrowser impl(server_name);
+        std::vector<std::string> blocked_objects_out;
+        impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
+            "contact", Util::vector_of<unsigned long long>(user_contact_info.info_contact_data.id),
+            Registry::DomainBrowserImpl::BLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
+        BOOST_ERROR("unreported objtype contact");
+    }
+    catch(const Registry::DomainBrowserImpl::IncorrectUsage& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
+/**
  * test setObjectBlockStatus - missing user validation
  */
 BOOST_FIXTURE_TEST_CASE(set_object_block_status_missing_user_validation, admin_keyset_fixture)
@@ -1754,6 +1754,34 @@ BOOST_FIXTURE_TEST_CASE(set_object_block_status_missing_user_validation, admin_k
     }
 }
 
+/**
+ * test setObjectBlockStatus - wrong object type
+ */
+BOOST_FIXTURE_TEST_CASE(set_object_block_status_wrong_object_type, admin_keyset_fixture)
+{
+    {
+        Fred::OperationContext ctx;
+        Fred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id
+        , Util::set_of<std::string>(Fred::ObjectState::VALIDATED_CONTACT)).exec(ctx);
+        Fred::PerformObjectStateRequest(user_contact_info.info_contact_data.id).exec(ctx);
+        ctx.commit_transaction();
+    }
+
+    try
+    {
+        Registry::DomainBrowserImpl::DomainBrowser impl(server_name);
+        std::vector<std::string> blocked_objects_out;
+        impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
+            "wrongtype", Util::vector_of<unsigned long long>(keyset_info.info_keyset_data.id),
+            Registry::DomainBrowserImpl::BLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
+        BOOST_ERROR("unreported wrong object type");
+    }
+    catch(const Registry::DomainBrowserImpl::IncorrectUsage& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
 
 BOOST_AUTO_TEST_SUITE_END();//setObjectBlockStatus
 
