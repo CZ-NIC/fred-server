@@ -772,7 +772,13 @@ namespace Registry
                 }
                 std::vector<std::string> blocked_objects;
 
-                bool ret = pimpl_->setObjectBlockStatus(contact.id, objtype, objects_id, block, blocked_objects);
+                bool ret = pimpl_->setObjectBlockStatus(contact.id, objtype, objects_id,
+                        (block == Registry::DomainBrowser::BLOCK_TRANSFER) ? Registry::DomainBrowserImpl::BLOCK_TRANSFER
+                        : (block == Registry::DomainBrowser::UNBLOCK_TRANSFER) ? Registry::DomainBrowserImpl::UNBLOCK_TRANSFER
+                        : (block == Registry::DomainBrowser::BLOCK_TRANSFER_AND_UPDATE) ? Registry::DomainBrowserImpl::BLOCK_TRANSFER_AND_UPDATE
+                        : (block == Registry::DomainBrowser::UNBLOCK_TRANSFER_AND_UPDATE) ? Registry::DomainBrowserImpl::UNBLOCK_TRANSFER_AND_UPDATE
+                        : Registry::DomainBrowserImpl::INVALID_BLOCK_TYPE
+                        , blocked_objects);
 
                 Registry::DomainBrowser::RecordSequence_var blocked_var = new Registry::DomainBrowser::RecordSequence;
                 blocked_var->length(blocked_objects.size());

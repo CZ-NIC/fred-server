@@ -1273,6 +1273,435 @@ BOOST_AUTO_TEST_SUITE_END();//setContactAuthInfo
 
 BOOST_AUTO_TEST_SUITE(setObjectBlockStatus)
 
+struct registrant_domain_fixture
+: mojeid_user_contact_fixture
+  , nsset_fixture
+  , keyset_fixture
+{
+    std::string test_fqdn;
+    Fred::InfoDomainOutput domain_info;
+
+    registrant_domain_fixture()
+    : test_fqdn(std::string("test")+test_registrar_fixture::xmark+".cz")
+    {
+
+        Fred::OperationContext ctx;
+        Fred::CreateDomain(test_fqdn//const std::string& fqdn
+                    , test_registrar_handle//const std::string& registrar
+                    , user_contact_handle//const std::string& registrant
+                    , Optional<std::string>("testpasswd")//const Optional<std::string>& authinfo
+                    , Nullable<std::string>(test_nsset_handle)//const Optional<Nullable<std::string> >& nsset
+                    , Nullable<std::string>(test_keyset_handle)//const Optional<Nullable<std::string> >& keyset
+                    , Util::vector_of<std::string>(admin_contact_fixture::test_contact_handle)//const std::vector<std::string>& admin_contacts
+                    , boost::gregorian::day_clock::local_day()+boost::gregorian::months(12)//const Optional<boost::gregorian::date>& expiration_date
+                    , Optional<boost::gregorian::date>()
+                    , Optional<bool>()
+                    , 0//const Optional<unsigned long long> logd_request_id
+                    ).exec(ctx);
+
+        domain_info = Fred::InfoDomainByHandle(test_fqdn).exec(ctx);
+        ctx.commit_transaction();//commit fixture
+    }
+
+    ~registrant_domain_fixture()
+    {}
+};
+
+/**
+ * test setObjectBlockStatus - domain with registrant, blocking transfer and update
+ */
+
+BOOST_FIXTURE_TEST_CASE(set_registrant_domain_object_block_status, registrant_domain_fixture)
+{
+    {
+        Fred::OperationContext ctx;
+        Fred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id
+        , Util::set_of<std::string>(Fred::ObjectState::VALIDATED_CONTACT)).exec(ctx);
+        Fred::PerformObjectStateRequest(user_contact_info.info_contact_data.id).exec(ctx);
+        ctx.commit_transaction();
+    }
+
+    Registry::DomainBrowserImpl::DomainBrowser impl(server_name);
+    std::vector<std::string> blocked_objects_out;
+    impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
+        "domain", Util::vector_of<unsigned long long>(domain_info.info_domain_data.id),
+        Registry::DomainBrowserImpl::BLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
+    {
+        Fred::OperationContext ctx;
+        BOOST_CHECK(Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
+        BOOST_CHECK(Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+    }
+
+    impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
+        "domain", Util::vector_of<unsigned long long>(domain_info.info_domain_data.id),
+        Registry::DomainBrowserImpl::UNBLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
+
+    {
+        Fred::OperationContext ctx;
+        BOOST_CHECK(!Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
+        BOOST_CHECK(!Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+    }
+}
+
+/**
+ * test setObjectBlockStatus - domain with registrant, blocking transfer
+ */
+
+BOOST_FIXTURE_TEST_CASE(set_registrant_domain_object_block_status_transfer, registrant_domain_fixture)
+{
+    {
+        Fred::OperationContext ctx;
+        Fred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id
+        , Util::set_of<std::string>(Fred::ObjectState::VALIDATED_CONTACT)).exec(ctx);
+        Fred::PerformObjectStateRequest(user_contact_info.info_contact_data.id).exec(ctx);
+        ctx.commit_transaction();
+    }
+
+    Registry::DomainBrowserImpl::DomainBrowser impl(server_name);
+    std::vector<std::string> blocked_objects_out;
+    impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
+        "domain", Util::vector_of<unsigned long long>(domain_info.info_domain_data.id),
+        Registry::DomainBrowserImpl::BLOCK_TRANSFER, blocked_objects_out);
+
+    {
+        Fred::OperationContext ctx;
+        BOOST_CHECK(Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
+        BOOST_CHECK(!Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+    }
+
+    impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
+        "domain", Util::vector_of<unsigned long long>(domain_info.info_domain_data.id),
+        Registry::DomainBrowserImpl::UNBLOCK_TRANSFER, blocked_objects_out);
+
+    {
+        Fred::OperationContext ctx;
+        BOOST_CHECK(!Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
+        BOOST_CHECK(!Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+    }
+}
+
+
+struct admin_domain_fixture
+: mojeid_user_contact_fixture
+  , nsset_fixture
+  , keyset_fixture
+{
+    std::string test_fqdn;
+    Fred::InfoDomainOutput domain_info;
+
+    admin_domain_fixture()
+    : test_fqdn(std::string("test")+test_registrar_fixture::xmark+".cz")
+    {
+
+        Fred::OperationContext ctx;
+        Fred::CreateDomain(test_fqdn//const std::string& fqdn
+                    , test_registrar_handle//const std::string& registrar
+                    , admin_contact_fixture::test_contact_handle//const std::string& registrant
+                    , Optional<std::string>("testpasswd")//const Optional<std::string>& authinfo
+                    , Nullable<std::string>(test_nsset_handle)//const Optional<Nullable<std::string> >& nsset
+                    , Nullable<std::string>(test_keyset_handle)//const Optional<Nullable<std::string> >& keyset
+                    , Util::vector_of<std::string>(user_contact_handle)//const std::vector<std::string>& admin_contacts
+                    , boost::gregorian::day_clock::local_day()+boost::gregorian::months(12)//const Optional<boost::gregorian::date>& expiration_date
+                    , Optional<boost::gregorian::date>()
+                    , Optional<bool>()
+                    , 0//const Optional<unsigned long long> logd_request_id
+                    ).exec(ctx);
+
+        domain_info = Fred::InfoDomainByHandle(test_fqdn).exec(ctx);
+        ctx.commit_transaction();//commit fixture
+    }
+
+    ~admin_domain_fixture()
+    {}
+};
+
+/**
+ * test setObjectBlockStatus - domain with admin, blocking transfer and update
+ */
+
+BOOST_FIXTURE_TEST_CASE(set_admin_domain_object_block_status, admin_domain_fixture)
+{
+    {
+        Fred::OperationContext ctx;
+        Fred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id
+        , Util::set_of<std::string>(Fred::ObjectState::VALIDATED_CONTACT)).exec(ctx);
+        Fred::PerformObjectStateRequest(user_contact_info.info_contact_data.id).exec(ctx);
+        ctx.commit_transaction();
+    }
+
+    Registry::DomainBrowserImpl::DomainBrowser impl(server_name);
+    std::vector<std::string> blocked_objects_out;
+    impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
+        "domain", Util::vector_of<unsigned long long>(domain_info.info_domain_data.id),
+        Registry::DomainBrowserImpl::BLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
+
+    {
+        Fred::OperationContext ctx;
+        BOOST_CHECK(Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
+        BOOST_CHECK(Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+    }
+
+    impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
+        "domain", Util::vector_of<unsigned long long>(domain_info.info_domain_data.id),
+        Registry::DomainBrowserImpl::UNBLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
+
+    {
+        Fred::OperationContext ctx;
+        BOOST_CHECK(!Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
+        BOOST_CHECK(!Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+    }
+}
+
+/**
+ * test setObjectBlockStatus - domain with admin, blocking transfer
+ */
+
+BOOST_FIXTURE_TEST_CASE(set_admin_domain_object_block_status_transfer, admin_domain_fixture)
+{
+    {
+        Fred::OperationContext ctx;
+        Fred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id
+        , Util::set_of<std::string>(Fred::ObjectState::VALIDATED_CONTACT)).exec(ctx);
+        Fred::PerformObjectStateRequest(user_contact_info.info_contact_data.id).exec(ctx);
+        ctx.commit_transaction();
+    }
+
+    Registry::DomainBrowserImpl::DomainBrowser impl(server_name);
+    std::vector<std::string> blocked_objects_out;
+    impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
+        "domain", Util::vector_of<unsigned long long>(domain_info.info_domain_data.id),
+        Registry::DomainBrowserImpl::BLOCK_TRANSFER, blocked_objects_out);
+
+    {
+        Fred::OperationContext ctx;
+        BOOST_CHECK(Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
+        BOOST_CHECK(!Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+    }
+
+    impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
+        "domain", Util::vector_of<unsigned long long>(domain_info.info_domain_data.id),
+        Registry::DomainBrowserImpl::UNBLOCK_TRANSFER, blocked_objects_out);
+
+    {
+        Fred::OperationContext ctx;
+        BOOST_CHECK(!Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
+        BOOST_CHECK(!Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+    }
+}
+
+
+struct admin_nsset_fixture
+: mojeid_user_contact_fixture
+  , admin_contact_fixture
+{
+    std::string test_nsset_handle;
+    Fred::InfoNssetOutput nsset_info;
+
+    admin_nsset_fixture()
+    : test_nsset_handle(std::string("TEST-NSSET-HANDLE")+mojeid_user_contact_fixture::xmark)
+    {
+        Fred::OperationContext ctx;
+        Fred::CreateNsset(test_nsset_handle, test_registrar_handle)
+            .set_tech_contacts(Util::vector_of<std::string>(admin_contact_fixture::test_contact_handle)(user_contact_handle))
+            .set_dns_hosts(Util::vector_of<Fred::DnsHost>
+            (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.3")("127.1.1.3"))) //add_dns
+            (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.4")("127.1.1.4"))) //add_dns
+            ).exec(ctx);
+
+        nsset_info = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
+
+        Fred::CreateObjectStateRequestId(nsset_info.info_nsset_data.id,
+            Util::set_of<std::string>(Fred::ObjectState::SERVER_DELETE_PROHIBITED)).exec(ctx);
+        Fred::PerformObjectStateRequest().set_object_id(nsset_info.info_nsset_data.id).exec(ctx);
+
+        ctx.commit_transaction();//commit fixture
+    }
+
+    ~admin_nsset_fixture()
+    {}
+};
+
+/**
+ * test setObjectBlockStatus - nsset with admin, blocking transfer and update
+ */
+
+BOOST_FIXTURE_TEST_CASE(set_admin_nsset_object_block_status, admin_nsset_fixture)
+{
+    {
+        Fred::OperationContext ctx;
+        Fred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id
+        , Util::set_of<std::string>(Fred::ObjectState::VALIDATED_CONTACT)).exec(ctx);
+        Fred::PerformObjectStateRequest(user_contact_info.info_contact_data.id).exec(ctx);
+        ctx.commit_transaction();
+    }
+
+    Registry::DomainBrowserImpl::DomainBrowser impl(server_name);
+    std::vector<std::string> blocked_objects_out;
+    impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
+        "nsset", Util::vector_of<unsigned long long>(nsset_info.info_nsset_data.id),
+        Registry::DomainBrowserImpl::BLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
+
+    {
+        Fred::OperationContext ctx;
+        BOOST_CHECK(Fred::ObjectHasState(nsset_info.info_nsset_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
+        BOOST_CHECK(Fred::ObjectHasState(nsset_info.info_nsset_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+    }
+
+    impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
+        "nsset", Util::vector_of<unsigned long long>(nsset_info.info_nsset_data.id),
+        Registry::DomainBrowserImpl::UNBLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
+
+    {
+        Fred::OperationContext ctx;
+        BOOST_CHECK(!Fred::ObjectHasState(nsset_info.info_nsset_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
+        BOOST_CHECK(!Fred::ObjectHasState(nsset_info.info_nsset_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+    }
+}
+
+/**
+ * test setObjectBlockStatus - nsset with admin, blocking transfer
+ */
+
+BOOST_FIXTURE_TEST_CASE(set_admin_nsset_object_block_status_transfer, admin_nsset_fixture)
+{
+    {
+        Fred::OperationContext ctx;
+        Fred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id
+        , Util::set_of<std::string>(Fred::ObjectState::VALIDATED_CONTACT)).exec(ctx);
+        Fred::PerformObjectStateRequest(user_contact_info.info_contact_data.id).exec(ctx);
+        ctx.commit_transaction();
+    }
+
+    Registry::DomainBrowserImpl::DomainBrowser impl(server_name);
+    std::vector<std::string> blocked_objects_out;
+    impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
+        "nsset", Util::vector_of<unsigned long long>(nsset_info.info_nsset_data.id),
+        Registry::DomainBrowserImpl::BLOCK_TRANSFER, blocked_objects_out);
+
+    {
+        Fred::OperationContext ctx;
+        BOOST_CHECK(Fred::ObjectHasState(nsset_info.info_nsset_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
+        BOOST_CHECK(!Fred::ObjectHasState(nsset_info.info_nsset_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+    }
+
+    impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
+        "nsset", Util::vector_of<unsigned long long>(nsset_info.info_nsset_data.id),
+        Registry::DomainBrowserImpl::UNBLOCK_TRANSFER, blocked_objects_out);
+
+    {
+        Fred::OperationContext ctx;
+        BOOST_CHECK(!Fred::ObjectHasState(nsset_info.info_nsset_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
+        BOOST_CHECK(!Fred::ObjectHasState(nsset_info.info_nsset_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+    }
+}
+
+
+struct admin_keyset_fixture
+: mojeid_user_contact_fixture
+  , admin_contact_fixture
+{
+    std::string test_keyset_handle;
+    Fred::InfoKeysetOutput keyset_info;
+
+    admin_keyset_fixture()
+    : test_keyset_handle(std::string("TEST-KEYSET-HANDLE")+mojeid_user_contact_fixture::xmark)
+    {
+        Fred::OperationContext ctx;
+        Fred::CreateKeyset(test_keyset_handle, test_registrar_handle)
+        .set_tech_contacts(Util::vector_of<std::string>(admin_contact_fixture::test_contact_handle)(user_contact_handle))
+        .set_dns_keys(Util::vector_of<Fred::DnsKey> (Fred::DnsKey(257, 3, 5, "AwEAAddt2AkLfYGKgiEZB5SmIF8EvrjxNMH6HtxWEA4RJ9Ao6LCWheg8")))
+                .exec(ctx);
+
+        keyset_info = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
+
+        Fred::CreateObjectStateRequestId(keyset_info.info_keyset_data.id,
+            Util::set_of<std::string>(Fred::ObjectState::SERVER_DELETE_PROHIBITED)).exec(ctx);
+        Fred::PerformObjectStateRequest().set_object_id(keyset_info.info_keyset_data.id).exec(ctx);
+
+        ctx.commit_transaction();//commit fixture
+    }
+
+    ~admin_keyset_fixture()
+    {}
+};
+
+/**
+ * test setObjectBlockStatus - keyset with admin, blocking transfer and update
+ */
+
+BOOST_FIXTURE_TEST_CASE(set_admin_keyset_object_block_status, admin_keyset_fixture)
+{
+    {
+        Fred::OperationContext ctx;
+        Fred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id
+        , Util::set_of<std::string>(Fred::ObjectState::VALIDATED_CONTACT)).exec(ctx);
+        Fred::PerformObjectStateRequest(user_contact_info.info_contact_data.id).exec(ctx);
+        ctx.commit_transaction();
+    }
+
+    Registry::DomainBrowserImpl::DomainBrowser impl(server_name);
+    std::vector<std::string> blocked_objects_out;
+    impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
+        "keyset", Util::vector_of<unsigned long long>(keyset_info.info_keyset_data.id),
+        Registry::DomainBrowserImpl::BLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
+
+    {
+        Fred::OperationContext ctx;
+        BOOST_CHECK(Fred::ObjectHasState(keyset_info.info_keyset_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
+        BOOST_CHECK(Fred::ObjectHasState(keyset_info.info_keyset_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+    }
+
+    impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
+        "keyset", Util::vector_of<unsigned long long>(keyset_info.info_keyset_data.id),
+        Registry::DomainBrowserImpl::UNBLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
+
+    {
+        Fred::OperationContext ctx;
+        BOOST_CHECK(!Fred::ObjectHasState(keyset_info.info_keyset_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
+        BOOST_CHECK(!Fred::ObjectHasState(keyset_info.info_keyset_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+    }
+}
+
+/**
+ * test setObjectBlockStatus - keyset with admin, blocking transfer
+ */
+
+BOOST_FIXTURE_TEST_CASE(set_admin_keyset_object_block_status_transfer, admin_keyset_fixture)
+{
+    {
+        Fred::OperationContext ctx;
+        Fred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id
+        , Util::set_of<std::string>(Fred::ObjectState::VALIDATED_CONTACT)).exec(ctx);
+        Fred::PerformObjectStateRequest(user_contact_info.info_contact_data.id).exec(ctx);
+        ctx.commit_transaction();
+    }
+
+    Registry::DomainBrowserImpl::DomainBrowser impl(server_name);
+    std::vector<std::string> blocked_objects_out;
+    impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
+        "keyset", Util::vector_of<unsigned long long>(keyset_info.info_keyset_data.id),
+        Registry::DomainBrowserImpl::BLOCK_TRANSFER, blocked_objects_out);
+
+    {
+        Fred::OperationContext ctx;
+        BOOST_CHECK(Fred::ObjectHasState(keyset_info.info_keyset_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
+        BOOST_CHECK(!Fred::ObjectHasState(keyset_info.info_keyset_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+    }
+
+    impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
+        "keyset", Util::vector_of<unsigned long long>(keyset_info.info_keyset_data.id),
+        Registry::DomainBrowserImpl::UNBLOCK_TRANSFER, blocked_objects_out);
+
+    {
+        Fred::OperationContext ctx;
+        BOOST_CHECK(!Fred::ObjectHasState(keyset_info.info_keyset_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
+        BOOST_CHECK(!Fred::ObjectHasState(keyset_info.info_keyset_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+    }
+}
+
+/**
+ * test setObjectBlockStatus - wrong object type contact
+ */
 BOOST_FIXTURE_TEST_CASE(set_contact_object_block_status, mojeid_user_contact_fixture)
 {
     {
@@ -1283,15 +1712,186 @@ BOOST_FIXTURE_TEST_CASE(set_contact_object_block_status, mojeid_user_contact_fix
         ctx.commit_transaction();
     }
 
-    Fred::OperationContext ctx;
+    try
+    {
+        Registry::DomainBrowserImpl::DomainBrowser impl(server_name);
+        std::vector<std::string> blocked_objects_out;
+        impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
+            "contact", Util::vector_of<unsigned long long>(user_contact_info.info_contact_data.id),
+            Registry::DomainBrowserImpl::BLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
+        BOOST_ERROR("unreported objtype contact");
+    }
+    catch(const Registry::DomainBrowserImpl::IncorrectUsage& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
+/**
+ * test setObjectBlockStatus - missing user validation
+ */
+BOOST_FIXTURE_TEST_CASE(set_object_block_status_missing_user_validation, admin_keyset_fixture)
+{
+    try
+    {
+        Registry::DomainBrowserImpl::DomainBrowser impl(server_name);
+        std::vector<std::string> blocked_objects_out;
+        impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
+            "keyset", Util::vector_of<unsigned long long>(keyset_info.info_keyset_data.id),
+            Registry::DomainBrowserImpl::BLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
+        BOOST_ERROR("unreported missing user validation");
+    }
+    catch(const Registry::DomainBrowserImpl::AccessDenied& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
+/**
+ * test setObjectBlockStatus - wrong object type
+ */
+BOOST_FIXTURE_TEST_CASE(set_object_block_status_wrong_object_type, admin_keyset_fixture)
+{
+    {
+        Fred::OperationContext ctx;
+        Fred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id
+        , Util::set_of<std::string>(Fred::ObjectState::VALIDATED_CONTACT)).exec(ctx);
+        Fred::PerformObjectStateRequest(user_contact_info.info_contact_data.id).exec(ctx);
+        ctx.commit_transaction();
+    }
+
+    try
+    {
+        Registry::DomainBrowserImpl::DomainBrowser impl(server_name);
+        std::vector<std::string> blocked_objects_out;
+        impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
+            "wrongtype", Util::vector_of<unsigned long long>(keyset_info.info_keyset_data.id),
+            Registry::DomainBrowserImpl::BLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
+        BOOST_ERROR("unreported wrong object type");
+    }
+    catch(const Registry::DomainBrowserImpl::IncorrectUsage& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
+/**
+ * test setObjectBlockStatus - zero size of input
+ */
+BOOST_FIXTURE_TEST_CASE(set_object_block_status_empty_input, admin_keyset_fixture)
+{
+    {
+        Fred::OperationContext ctx;
+        Fred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id
+        , Util::set_of<std::string>(Fred::ObjectState::VALIDATED_CONTACT)).exec(ctx);
+        Fred::PerformObjectStateRequest(user_contact_info.info_contact_data.id).exec(ctx);
+        ctx.commit_transaction();
+    }
+
     Registry::DomainBrowserImpl::DomainBrowser impl(server_name);
     std::vector<std::string> blocked_objects_out;
-    impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
-        "contact", Util::vector_of<unsigned long long>(user_contact_info.info_contact_data.id),
-        Registry::DomainBrowserImpl::BLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
+    BOOST_CHECK(!impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
+        "keyset", std::vector<unsigned long long>(),
+        Registry::DomainBrowserImpl::BLOCK_TRANSFER_AND_UPDATE, blocked_objects_out));
+}
 
-    BOOST_CHECK(Fred::ObjectHasState(user_contact_info.info_contact_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
-    BOOST_CHECK(Fred::ObjectHasState(user_contact_info.info_contact_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+/**
+ * test setObjectBlockStatus - input too big
+ */
+BOOST_FIXTURE_TEST_CASE(set_object_block_status_big_input, admin_keyset_fixture)
+{
+    {
+        Fred::OperationContext ctx;
+        Fred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id
+        , Util::set_of<std::string>(Fred::ObjectState::VALIDATED_CONTACT)).exec(ctx);
+        Fred::PerformObjectStateRequest(user_contact_info.info_contact_data.id).exec(ctx);
+        ctx.commit_transaction();
+    }
+
+    try
+    {
+        Registry::DomainBrowserImpl::DomainBrowser impl(server_name);
+        std::vector<std::string> blocked_objects_out;
+        impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
+            "keyset", std::vector<unsigned long long>(501,keyset_info.info_keyset_data.id),
+            Registry::DomainBrowserImpl::BLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
+        BOOST_ERROR("unreported big input");
+    }
+    catch(const Registry::DomainBrowserImpl::IncorrectUsage& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
+/**
+ * test setObjectBlockStatus - wrong object id
+ */
+BOOST_FIXTURE_TEST_CASE(set_object_block_wrong_object_id, admin_keyset_fixture)
+{
+    {
+        Fred::OperationContext ctx;
+        Fred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id
+        , Util::set_of<std::string>(Fred::ObjectState::VALIDATED_CONTACT)).exec(ctx);
+        Fred::PerformObjectStateRequest(user_contact_info.info_contact_data.id).exec(ctx);
+        ctx.commit_transaction();
+    }
+
+    try
+    {
+        Registry::DomainBrowserImpl::DomainBrowser impl(server_name);
+        std::vector<std::string> blocked_objects_out;
+        impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
+            "keyset", Util::vector_of<unsigned long long>(keyset_info.info_keyset_data.id)(0u),
+            Registry::DomainBrowserImpl::BLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
+        BOOST_ERROR("unreported wrong object id");
+    }
+    catch(const Registry::DomainBrowserImpl::ObjectNotExists& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
+/**
+ * test setObjectBlockStatus - blocked object
+ */
+BOOST_FIXTURE_TEST_CASE(set_object_block_blocked_object, admin_nsset_fixture)
+{
+    {
+        Fred::OperationContext ctx;
+        Fred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id
+        , Util::set_of<std::string>(Fred::ObjectState::VALIDATED_CONTACT)).exec(ctx);
+        Fred::PerformObjectStateRequest(user_contact_info.info_contact_data.id).exec(ctx);
+        ctx.commit_transaction();
+    }
+
+    {
+        Fred::OperationContext ctx;
+        if(!Fred::ObjectHasState(nsset_info.info_nsset_data.id, Fred::ObjectState::SERVER_BLOCKED).exec(ctx))
+        {
+            ctx.get_conn().exec_params(
+                "INSERT INTO object_state_request (object_id, state_id)"
+                " VALUES ($1::integer, (SELECT id FROM enum_object_states"
+                " WHERE name = $2::text)) RETURNING id",
+                Database::query_param_list
+                    (nsset_info.info_nsset_data.id)
+                    (Fred::ObjectState::SERVER_BLOCKED));
+            Fred::PerformObjectStateRequest().set_object_id(nsset_info.info_nsset_data.id).exec(ctx);
+            ctx.commit_transaction();
+        }
+    }
+
+    Registry::DomainBrowserImpl::DomainBrowser impl(server_name);
+    std::vector<std::string> blocked_objects_out;
+    BOOST_CHECK(!impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
+        "nsset", Util::vector_of<unsigned long long>(nsset_info.info_nsset_data.id),
+        Registry::DomainBrowserImpl::BLOCK_TRANSFER_AND_UPDATE, blocked_objects_out));
+    BOOST_CHECK(blocked_objects_out.size() == 1);
+    BOOST_CHECK(blocked_objects_out.at(0) == nsset_info.info_nsset_data.handle);
 }
 
 BOOST_AUTO_TEST_SUITE_END();//setObjectBlockStatus
