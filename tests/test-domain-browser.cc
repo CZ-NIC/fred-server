@@ -1288,7 +1288,6 @@ BOOST_FIXTURE_TEST_CASE(set_contact_object_block_status, mojeid_user_contact_fix
 
     try
     {
-        Fred::OperationContext ctx;
         Registry::DomainBrowserImpl::DomainBrowser impl(server_name);
         std::vector<std::string> blocked_objects_out;
         impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
@@ -1351,22 +1350,26 @@ BOOST_FIXTURE_TEST_CASE(set_registrant_domain_object_block_status, registrant_do
         ctx.commit_transaction();
     }
 
-    Fred::OperationContext ctx;
     Registry::DomainBrowserImpl::DomainBrowser impl(server_name);
     std::vector<std::string> blocked_objects_out;
     impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
         "domain", Util::vector_of<unsigned long long>(domain_info.info_domain_data.id),
         Registry::DomainBrowserImpl::BLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
-
-    BOOST_CHECK(Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
-    BOOST_CHECK(Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+    {
+        Fred::OperationContext ctx;
+        BOOST_CHECK(Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
+        BOOST_CHECK(Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+    }
 
     impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
         "domain", Util::vector_of<unsigned long long>(domain_info.info_domain_data.id),
         Registry::DomainBrowserImpl::UNBLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
 
-    BOOST_CHECK(!Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
-    BOOST_CHECK(!Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+    {
+        Fred::OperationContext ctx;
+        BOOST_CHECK(!Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
+        BOOST_CHECK(!Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+    }
 }
 
 /**
@@ -1383,22 +1386,27 @@ BOOST_FIXTURE_TEST_CASE(set_registrant_domain_object_block_status_transfer, regi
         ctx.commit_transaction();
     }
 
-    Fred::OperationContext ctx;
     Registry::DomainBrowserImpl::DomainBrowser impl(server_name);
     std::vector<std::string> blocked_objects_out;
     impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
         "domain", Util::vector_of<unsigned long long>(domain_info.info_domain_data.id),
         Registry::DomainBrowserImpl::BLOCK_TRANSFER, blocked_objects_out);
 
-    BOOST_CHECK(Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
-    BOOST_CHECK(!Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+    {
+        Fred::OperationContext ctx;
+        BOOST_CHECK(Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
+        BOOST_CHECK(!Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+    }
 
     impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
         "domain", Util::vector_of<unsigned long long>(domain_info.info_domain_data.id),
         Registry::DomainBrowserImpl::UNBLOCK_TRANSFER, blocked_objects_out);
 
-    BOOST_CHECK(!Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
-    BOOST_CHECK(!Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+    {
+        Fred::OperationContext ctx;
+        BOOST_CHECK(!Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
+        BOOST_CHECK(!Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+    }
 }
 
 
@@ -1455,22 +1463,27 @@ BOOST_FIXTURE_TEST_CASE(set_admin_domain_object_block_status, admin_domain_fixtu
         ctx.commit_transaction();
     }
 
-    Fred::OperationContext ctx;
     Registry::DomainBrowserImpl::DomainBrowser impl(server_name);
     std::vector<std::string> blocked_objects_out;
     impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
         "domain", Util::vector_of<unsigned long long>(domain_info.info_domain_data.id),
         Registry::DomainBrowserImpl::BLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
 
-    BOOST_CHECK(Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
-    BOOST_CHECK(Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+    {
+        Fred::OperationContext ctx;
+        BOOST_CHECK(Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
+        BOOST_CHECK(Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+    }
 
     impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
         "domain", Util::vector_of<unsigned long long>(domain_info.info_domain_data.id),
         Registry::DomainBrowserImpl::UNBLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
 
-    BOOST_CHECK(!Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
-    BOOST_CHECK(!Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+    {
+        Fred::OperationContext ctx;
+        BOOST_CHECK(!Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
+        BOOST_CHECK(!Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+    }
 }
 
 /**
@@ -1487,22 +1500,27 @@ BOOST_FIXTURE_TEST_CASE(set_admin_domain_object_block_status_transfer, admin_dom
         ctx.commit_transaction();
     }
 
-    Fred::OperationContext ctx;
     Registry::DomainBrowserImpl::DomainBrowser impl(server_name);
     std::vector<std::string> blocked_objects_out;
     impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
         "domain", Util::vector_of<unsigned long long>(domain_info.info_domain_data.id),
         Registry::DomainBrowserImpl::BLOCK_TRANSFER, blocked_objects_out);
 
-    BOOST_CHECK(Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
-    BOOST_CHECK(!Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+    {
+        Fred::OperationContext ctx;
+        BOOST_CHECK(Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
+        BOOST_CHECK(!Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+    }
 
     impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
         "domain", Util::vector_of<unsigned long long>(domain_info.info_domain_data.id),
         Registry::DomainBrowserImpl::UNBLOCK_TRANSFER, blocked_objects_out);
 
-    BOOST_CHECK(!Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
-    BOOST_CHECK(!Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+    {
+        Fred::OperationContext ctx;
+        BOOST_CHECK(!Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
+        BOOST_CHECK(!Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+    }
 }
 
 
@@ -1551,22 +1569,27 @@ BOOST_FIXTURE_TEST_CASE(set_admin_nsset_object_block_status, admin_nsset_fixture
         ctx.commit_transaction();
     }
 
-    Fred::OperationContext ctx;
     Registry::DomainBrowserImpl::DomainBrowser impl(server_name);
     std::vector<std::string> blocked_objects_out;
     impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
         "nsset", Util::vector_of<unsigned long long>(nsset_info.info_nsset_data.id),
         Registry::DomainBrowserImpl::BLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
 
-    BOOST_CHECK(Fred::ObjectHasState(nsset_info.info_nsset_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
-    BOOST_CHECK(Fred::ObjectHasState(nsset_info.info_nsset_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+    {
+        Fred::OperationContext ctx;
+        BOOST_CHECK(Fred::ObjectHasState(nsset_info.info_nsset_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
+        BOOST_CHECK(Fred::ObjectHasState(nsset_info.info_nsset_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+    }
 
     impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
         "nsset", Util::vector_of<unsigned long long>(nsset_info.info_nsset_data.id),
         Registry::DomainBrowserImpl::UNBLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
 
-    BOOST_CHECK(!Fred::ObjectHasState(nsset_info.info_nsset_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
-    BOOST_CHECK(!Fred::ObjectHasState(nsset_info.info_nsset_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+    {
+        Fred::OperationContext ctx;
+        BOOST_CHECK(!Fred::ObjectHasState(nsset_info.info_nsset_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
+        BOOST_CHECK(!Fred::ObjectHasState(nsset_info.info_nsset_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+    }
 }
 
 /**
@@ -1583,22 +1606,27 @@ BOOST_FIXTURE_TEST_CASE(set_admin_nsset_object_block_status_transfer, admin_nsse
         ctx.commit_transaction();
     }
 
-    Fred::OperationContext ctx;
     Registry::DomainBrowserImpl::DomainBrowser impl(server_name);
     std::vector<std::string> blocked_objects_out;
     impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
         "nsset", Util::vector_of<unsigned long long>(nsset_info.info_nsset_data.id),
         Registry::DomainBrowserImpl::BLOCK_TRANSFER, blocked_objects_out);
 
-    BOOST_CHECK(Fred::ObjectHasState(nsset_info.info_nsset_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
-    BOOST_CHECK(!Fred::ObjectHasState(nsset_info.info_nsset_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+    {
+        Fred::OperationContext ctx;
+        BOOST_CHECK(Fred::ObjectHasState(nsset_info.info_nsset_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
+        BOOST_CHECK(!Fred::ObjectHasState(nsset_info.info_nsset_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+    }
 
     impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
         "nsset", Util::vector_of<unsigned long long>(nsset_info.info_nsset_data.id),
         Registry::DomainBrowserImpl::UNBLOCK_TRANSFER, blocked_objects_out);
 
-    BOOST_CHECK(!Fred::ObjectHasState(nsset_info.info_nsset_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
-    BOOST_CHECK(!Fred::ObjectHasState(nsset_info.info_nsset_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+    {
+        Fred::OperationContext ctx;
+        BOOST_CHECK(!Fred::ObjectHasState(nsset_info.info_nsset_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
+        BOOST_CHECK(!Fred::ObjectHasState(nsset_info.info_nsset_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+    }
 }
 
 
@@ -1645,22 +1673,27 @@ BOOST_FIXTURE_TEST_CASE(set_admin_keyset_object_block_status, admin_keyset_fixtu
         ctx.commit_transaction();
     }
 
-    Fred::OperationContext ctx;
     Registry::DomainBrowserImpl::DomainBrowser impl(server_name);
     std::vector<std::string> blocked_objects_out;
     impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
         "keyset", Util::vector_of<unsigned long long>(keyset_info.info_keyset_data.id),
         Registry::DomainBrowserImpl::BLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
 
-    BOOST_CHECK(Fred::ObjectHasState(keyset_info.info_keyset_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
-    BOOST_CHECK(Fred::ObjectHasState(keyset_info.info_keyset_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+    {
+        Fred::OperationContext ctx;
+        BOOST_CHECK(Fred::ObjectHasState(keyset_info.info_keyset_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
+        BOOST_CHECK(Fred::ObjectHasState(keyset_info.info_keyset_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+    }
 
     impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
         "keyset", Util::vector_of<unsigned long long>(keyset_info.info_keyset_data.id),
         Registry::DomainBrowserImpl::UNBLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
 
-    BOOST_CHECK(!Fred::ObjectHasState(keyset_info.info_keyset_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
-    BOOST_CHECK(!Fred::ObjectHasState(keyset_info.info_keyset_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+    {
+        Fred::OperationContext ctx;
+        BOOST_CHECK(!Fred::ObjectHasState(keyset_info.info_keyset_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
+        BOOST_CHECK(!Fred::ObjectHasState(keyset_info.info_keyset_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+    }
 }
 
 /**
@@ -1677,22 +1710,27 @@ BOOST_FIXTURE_TEST_CASE(set_admin_keyset_object_block_status_transfer, admin_key
         ctx.commit_transaction();
     }
 
-    Fred::OperationContext ctx;
     Registry::DomainBrowserImpl::DomainBrowser impl(server_name);
     std::vector<std::string> blocked_objects_out;
     impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
         "keyset", Util::vector_of<unsigned long long>(keyset_info.info_keyset_data.id),
         Registry::DomainBrowserImpl::BLOCK_TRANSFER, blocked_objects_out);
 
-    BOOST_CHECK(Fred::ObjectHasState(keyset_info.info_keyset_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
-    BOOST_CHECK(!Fred::ObjectHasState(keyset_info.info_keyset_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+    {
+        Fred::OperationContext ctx;
+        BOOST_CHECK(Fred::ObjectHasState(keyset_info.info_keyset_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
+        BOOST_CHECK(!Fred::ObjectHasState(keyset_info.info_keyset_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+    }
 
     impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
         "keyset", Util::vector_of<unsigned long long>(keyset_info.info_keyset_data.id),
         Registry::DomainBrowserImpl::UNBLOCK_TRANSFER, blocked_objects_out);
 
-    BOOST_CHECK(!Fred::ObjectHasState(keyset_info.info_keyset_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
-    BOOST_CHECK(!Fred::ObjectHasState(keyset_info.info_keyset_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+    {
+        Fred::OperationContext ctx;
+        BOOST_CHECK(!Fred::ObjectHasState(keyset_info.info_keyset_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
+        BOOST_CHECK(!Fred::ObjectHasState(keyset_info.info_keyset_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+    }
 }
 
 BOOST_AUTO_TEST_SUITE_END();//setObjectBlockStatus
