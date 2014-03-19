@@ -1483,6 +1483,60 @@ BOOST_FIXTURE_TEST_CASE(set_admin_nsset_object_block_status, admin_nsset_fixture
     BOOST_CHECK(Fred::ObjectHasState(nsset_info.info_nsset_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
 }
 
+struct admin_keyset_fixture
+: mojeid_user_contact_fixture
+  , admin_contact_fixture
+{
+    std::string test_keyset_handle;
+    Fred::InfoKeysetOutput keyset_info;
+
+    admin_keyset_fixture()
+    : test_keyset_handle(std::string("TEST-KEYSET-HANDLE")+mojeid_user_contact_fixture::xmark)
+    {
+        Fred::OperationContext ctx;
+        Fred::CreateKeyset(test_keyset_handle, test_registrar_handle)
+        .set_tech_contacts(Util::vector_of<std::string>(admin_contact_fixture::test_contact_handle)(user_contact_handle))
+        .set_dns_keys(Util::vector_of<Fred::DnsKey> (Fred::DnsKey(257, 3, 5, "AwEAAddt2AkLfYGKgiEZB5SmIF8EvrjxNMH6HtxWEA4RJ9Ao6LCWheg8")))
+                .exec(ctx);
+
+        keyset_info = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
+
+        Fred::CreateObjectStateRequestId(keyset_info.info_keyset_data.id,
+            Util::set_of<std::string>(Fred::ObjectState::SERVER_DELETE_PROHIBITED)).exec(ctx);
+        Fred::PerformObjectStateRequest().set_object_id(keyset_info.info_keyset_data.id).exec(ctx);
+
+        ctx.commit_transaction();//commit fixture
+    }
+
+    ~admin_keyset_fixture()
+    {}
+};
+
+/**
+ * test setObjectBlockStatus - keyset with admin, blocking transfer and update
+ */
+
+BOOST_FIXTURE_TEST_CASE(set_admin_keyset_object_block_status, admin_keyset_fixture)
+{
+    {
+        Fred::OperationContext ctx;
+        Fred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id
+        , Util::set_of<std::string>(Fred::ObjectState::VALIDATED_CONTACT)).exec(ctx);
+        Fred::PerformObjectStateRequest(user_contact_info.info_contact_data.id).exec(ctx);
+        ctx.commit_transaction();
+    }
+
+    Fred::OperationContext ctx;
+    Registry::DomainBrowserImpl::DomainBrowser impl(server_name);
+    std::vector<std::string> blocked_objects_out;
+    impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
+        "keyset", Util::vector_of<unsigned long long>(keyset_info.info_keyset_data.id),
+        Registry::DomainBrowserImpl::BLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
+
+    BOOST_CHECK(Fred::ObjectHasState(keyset_info.info_keyset_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
+    BOOST_CHECK(Fred::ObjectHasState(keyset_info.info_keyset_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+}
+
 
 BOOST_AUTO_TEST_SUITE_END();//setObjectBlockStatus
 
