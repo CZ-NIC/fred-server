@@ -1427,6 +1427,63 @@ BOOST_FIXTURE_TEST_CASE(set_admin_domain_object_block_status, admin_domain_fixtu
 }
 
 
+struct admin_nsset_fixture
+: mojeid_user_contact_fixture
+  , admin_contact_fixture
+{
+    std::string test_nsset_handle;
+    Fred::InfoNssetOutput nsset_info;
+
+    admin_nsset_fixture()
+    : test_nsset_handle(std::string("TEST-NSSET-HANDLE")+mojeid_user_contact_fixture::xmark)
+    {
+        Fred::OperationContext ctx;
+        Fred::CreateNsset(test_nsset_handle, test_registrar_handle)
+            .set_tech_contacts(Util::vector_of<std::string>(admin_contact_fixture::test_contact_handle)(user_contact_handle))
+            .set_dns_hosts(Util::vector_of<Fred::DnsHost>
+            (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.3")("127.1.1.3"))) //add_dns
+            (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.4")("127.1.1.4"))) //add_dns
+            ).exec(ctx);
+
+        nsset_info = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
+
+        Fred::CreateObjectStateRequestId(nsset_info.info_nsset_data.id,
+            Util::set_of<std::string>(Fred::ObjectState::SERVER_DELETE_PROHIBITED)).exec(ctx);
+        Fred::PerformObjectStateRequest().set_object_id(nsset_info.info_nsset_data.id).exec(ctx);
+
+        ctx.commit_transaction();//commit fixture
+    }
+
+    ~admin_nsset_fixture()
+    {}
+};
+
+/**
+ * test setObjectBlockStatus - nsset with admin, blocking transfer and update
+ */
+
+BOOST_FIXTURE_TEST_CASE(set_admin_nsset_object_block_status, admin_nsset_fixture)
+{
+    {
+        Fred::OperationContext ctx;
+        Fred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id
+        , Util::set_of<std::string>(Fred::ObjectState::VALIDATED_CONTACT)).exec(ctx);
+        Fred::PerformObjectStateRequest(user_contact_info.info_contact_data.id).exec(ctx);
+        ctx.commit_transaction();
+    }
+
+    Fred::OperationContext ctx;
+    Registry::DomainBrowserImpl::DomainBrowser impl(server_name);
+    std::vector<std::string> blocked_objects_out;
+    impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
+        "nsset", Util::vector_of<unsigned long long>(nsset_info.info_nsset_data.id),
+        Registry::DomainBrowserImpl::BLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
+
+    BOOST_CHECK(Fred::ObjectHasState(nsset_info.info_nsset_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
+    BOOST_CHECK(Fred::ObjectHasState(nsset_info.info_nsset_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+}
+
+
 BOOST_AUTO_TEST_SUITE_END();//setObjectBlockStatus
 
 BOOST_AUTO_TEST_SUITE_END();//TestDomainBrowser
