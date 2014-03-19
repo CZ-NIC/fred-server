@@ -1330,11 +1330,6 @@ struct registrant_domain_fixture
                     ).exec(ctx);
 
         domain_info = Fred::InfoDomainByHandle(test_fqdn).exec(ctx);
-/*
-        Fred::CreateObjectStateRequestId(domain_info.info_domain_data.id,
-            Util::set_of<std::string>(Fred::ObjectState::SERVER_BLOCKED)).exec(ctx);
-        Fred::PerformObjectStateRequest().set_object_id(domain_info.info_domain_data.id).exec(ctx);
-*/
         ctx.commit_transaction();//commit fixture
     }
 
@@ -1343,7 +1338,7 @@ struct registrant_domain_fixture
 };
 
 /**
- * test setObjectBlockStatus - domain with registrar blocking transfer and update
+ * test setObjectBlockStatus - domain with registrant, blocking transfer and update
  */
 
 BOOST_FIXTURE_TEST_CASE(set_registrant_domain_object_block_status, registrant_domain_fixture)
@@ -1366,6 +1361,71 @@ BOOST_FIXTURE_TEST_CASE(set_registrant_domain_object_block_status, registrant_do
     BOOST_CHECK(Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
     BOOST_CHECK(Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
 }
+
+struct admin_domain_fixture
+: mojeid_user_contact_fixture
+  , nsset_fixture
+  , keyset_fixture
+{
+    std::string test_fqdn;
+    Fred::InfoDomainOutput domain_info;
+
+    admin_domain_fixture()
+    : test_fqdn(std::string("test")+test_registrar_fixture::xmark+".cz")
+    {
+
+        Fred::OperationContext ctx;
+        Fred::CreateDomain(test_fqdn//const std::string& fqdn
+                    , test_registrar_handle//const std::string& registrar
+                    , admin_contact_fixture::test_contact_handle//const std::string& registrant
+                    , Optional<std::string>("testpasswd")//const Optional<std::string>& authinfo
+                    , Nullable<std::string>(test_nsset_handle)//const Optional<Nullable<std::string> >& nsset
+                    , Nullable<std::string>(test_keyset_handle)//const Optional<Nullable<std::string> >& keyset
+                    , Util::vector_of<std::string>(user_contact_handle)//const std::vector<std::string>& admin_contacts
+                    , boost::gregorian::day_clock::local_day()+boost::gregorian::months(12)//const Optional<boost::gregorian::date>& expiration_date
+                    , Optional<boost::gregorian::date>()
+                    , Optional<bool>()
+                    , 0//const Optional<unsigned long long> logd_request_id
+                    ).exec(ctx);
+
+        domain_info = Fred::InfoDomainByHandle(test_fqdn).exec(ctx);
+/*
+        Fred::CreateObjectStateRequestId(domain_info.info_domain_data.id,
+            Util::set_of<std::string>(Fred::ObjectState::SERVER_BLOCKED)).exec(ctx);
+        Fred::PerformObjectStateRequest().set_object_id(domain_info.info_domain_data.id).exec(ctx);
+*/
+        ctx.commit_transaction();//commit fixture
+    }
+
+    ~admin_domain_fixture()
+    {}
+};
+
+/**
+ * test setObjectBlockStatus - domain with admin, blocking transfer and update
+ */
+
+BOOST_FIXTURE_TEST_CASE(set_admin_domain_object_block_status, admin_domain_fixture)
+{
+    {
+        Fred::OperationContext ctx;
+        Fred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id
+        , Util::set_of<std::string>(Fred::ObjectState::VALIDATED_CONTACT)).exec(ctx);
+        Fred::PerformObjectStateRequest(user_contact_info.info_contact_data.id).exec(ctx);
+        ctx.commit_transaction();
+    }
+
+    Fred::OperationContext ctx;
+    Registry::DomainBrowserImpl::DomainBrowser impl(server_name);
+    std::vector<std::string> blocked_objects_out;
+    impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
+        "domain", Util::vector_of<unsigned long long>(domain_info.info_domain_data.id),
+        Registry::DomainBrowserImpl::BLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
+
+    BOOST_CHECK(Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
+    BOOST_CHECK(Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+}
+
 
 BOOST_AUTO_TEST_SUITE_END();//setObjectBlockStatus
 
