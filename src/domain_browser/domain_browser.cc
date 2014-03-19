@@ -772,7 +772,7 @@ namespace Registry
                 }
                 else
                 {
-                    throw IncorrectUsage();//unknown object type
+                    throw InternalServerError();//unknown object type, should'v been checked before
                 }
 
                 object_sql << " WHERE oreg.type = $1::integer AND oreg.erdate IS NULL AND (";
