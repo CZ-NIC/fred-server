@@ -483,6 +483,20 @@ namespace Registry
                 unsigned block_type,
                 std::vector<std::string>& blocked_objects);
 
+            /**
+             * Get domain list.
+             * @param user_contact_id contains database id of the user contact
+             * @param lang contains language for state description "EN" or "CS"
+             * @param offset contains list offset
+             * @param  domain_list_out references output domain list
+             * @return limit_exceeded flag
+             */
+            bool getDomainList(unsigned long long user_contact_id,
+                const std::string& lang,
+                unsigned long long offset,
+                std::vector<std::vector<std::string> >& domain_list_out);
+
+
             std::string get_server_name();
         };//class DomainBrowser
 

@@ -853,6 +853,15 @@ namespace Registry
             return retval;
         }
 
+        bool DomainBrowser::getDomainList(unsigned long long user_contact_id,
+            const std::string& lang,
+            unsigned long long offset,
+            std::vector<std::vector<std::string> >& domain_list_out)
+        {
+            return true;
+        }
+
+
     }//namespace DomainBrowserImpl
 }//namespace Registry
 
