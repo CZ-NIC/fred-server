@@ -803,6 +803,13 @@ namespace Fred
                     " WHERE id = $2::integer"
                     , Database::query_param_list(history_id)(contact.info_contact_data.id));
 
+                ctx.get_conn().exec_params(
+                    "INSERT INTO contact_address_history (historyid, id, contactid, type_id, street1, street2, street3,"
+                    " city, stateorprovince, postalcode, country)"
+                    " SELECT $1::integer, id, contactid, type_id, street1, street2, street3,"
+                    " city, stateorprovince, postalcode, country"
+                    " FROM contact_address WHERE contactid = $2::integer"
+                    , Database::query_param_list(history_id)(contact.info_contact_data.id));
             }//save history
 
             return history_id;
