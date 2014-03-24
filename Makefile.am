@@ -1571,6 +1571,7 @@ src_corba_mojeid_fred_mifd_LDADD = \
 #
 # src/corba/domain_browser/fred-dbifd
 src_corba_domain_browser_fred_dbifd_SOURCES = \
+		util/cfg/handle_domainbrowser_args.h \
 		src/domain_browser/domain_browser.cc \
 		src/domain_browser/domain_browser.h \
 		src/corba/nameservice.cc \

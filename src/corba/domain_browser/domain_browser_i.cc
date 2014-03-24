@@ -32,9 +32,11 @@ namespace Registry
 {
     namespace DomainBrowser
     {
-
-        Server_i::Server_i(const std::string &_server_name)
-        : pimpl_(new Registry::DomainBrowserImpl::DomainBrowser(_server_name))
+        Server_i::Server_i(const std::string &_server_name,
+            const std::string& _update_registrar_handle,
+            unsigned int _domain_list_limit)
+        : pimpl_(new Registry::DomainBrowserImpl::DomainBrowser(_server_name,
+                    _update_registrar_handle, _domain_list_limit))
         {}
 
         Server_i::~Server_i()

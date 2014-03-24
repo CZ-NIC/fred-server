@@ -26,6 +26,8 @@
 #include "cfg/handle_database_args.h"
 #include "cfg/handle_registry_args.h"
 #include "cfg/handle_corbanameservice_args.h"
+#include "cfg/handle_mojeid_args.h"
+#include "cfg/handle_domainbrowser_args.h"
 
 
 using namespace std;
@@ -41,7 +43,9 @@ boost::assign::list_of
     (HandleArgsPtr(new HandleLoggingArgs))
     (HandleArgsPtr(new HandleDatabaseArgs))
     (HandleArgsPtr(new HandleCorbaNameServiceArgs))
-    (HandleArgsPtr(new HandleRegistryArgs));
+    (HandleArgsPtr(new HandleRegistryArgs))
+    (HandleArgsPtr(new HandleMojeIDArgs))
+    (HandleArgsPtr(new HandleDomainBrowserArgs));
 
 
 
@@ -58,9 +62,17 @@ int main(int argc, char *argv[])
         //CORBA init
         corba_init();
 
+        //MojeID registrar used for updates in domain browser
+        std::string update_registrar_handle = CfgArgs::instance()
+            ->get_handler_ptr_by_type<HandleMojeIDArgs>()->registrar_handle;
+
+        //domain list chunk size
+        unsigned int domain_list_limit = CfgArgs::instance()
+            ->get_handler_ptr_by_type<HandleDomainBrowserArgs>()->domain_list_limit;
+
         //create server object with poa and nameservice registration
         CorbaContainer::get_instance()
-            ->register_server(new Registry::DomainBrowser::Server_i(server_name)
+            ->register_server(new Registry::DomainBrowser::Server_i(server_name, update_registrar_handle, domain_list_limit)
             , "DomainBrowser2");
         run_server(CfgArgs::instance(), CorbaContainer::get_instance());
 

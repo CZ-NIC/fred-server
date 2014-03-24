@@ -42,7 +42,6 @@
 #include "src/fredlib/object_state/get_object_states.h"
 #include "src/fredlib/object_state/get_object_state_descriptions.h"
 #include "cfg/handle_mojeid_args.h"
-#include "cfg/config_handler_decl.h"
 
 #include "domain_browser.h"
 
@@ -119,10 +118,12 @@ namespace Registry
             return "********";//if not
         }
 
-
-        DomainBrowser::DomainBrowser(const std::string& server_name)
+        DomainBrowser::DomainBrowser(const std::string& server_name,
+            const std::string& update_registrar_handle,
+            unsigned int domain_list_limit)
         : server_name_(server_name)
-        , update_registrar_(CfgArgs::instance()->get_handler_ptr_by_type<HandleMojeIDArgs>()->registrar_handle)//MojeID registrar
+        , update_registrar_(update_registrar_handle)
+        , domain_list_limit_(domain_list_limit)
         {}
 
         DomainBrowser::~DomainBrowser()
@@ -858,6 +859,7 @@ namespace Registry
             unsigned long long offset,
             std::vector<std::vector<std::string> >& domain_list_out)
         {
+
             return true;
         }
 

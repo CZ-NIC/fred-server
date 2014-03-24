@@ -32,7 +32,6 @@
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/domain/enum_validation_extension.h"
 #include "util/db/nullable.h"
-#include "cfg/handle_registry_args.h"
 
 namespace Registry
 {
@@ -364,7 +363,7 @@ namespace Registry
         {
             std::string server_name_;
             std::string update_registrar_;/**< handle of registrar performing the updates */
-
+            unsigned int domain_list_limit_;/**< domain list chunk size */
             /**
              * Fill object state codes and description into given strings.
              * @param ctx contains reference to database and logging interface
@@ -385,8 +384,9 @@ namespace Registry
             std::string filter_authinfo(bool user_is_owner,const std::string& authinfopw);
 
         public:
-            //dummy decl - impl
-            DomainBrowser(const std::string &server_name);
+            DomainBrowser(const std::string &server_name,
+                    const std::string& update_registrar_handle,
+                    unsigned int domain_list_limit);
             virtual ~DomainBrowser();
 
             unsigned long long getObjectRegistryId(const std::string& objtype, const std::string& handle);
