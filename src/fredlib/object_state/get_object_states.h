@@ -47,6 +47,7 @@ namespace Fred
         Nullable<unsigned long long> valid_to_history_id; /**< history id of object in the moment of leaving state or null*/
         bool is_external;/**< if object state is externally visible */
         bool is_manual;/**< if object state is set automatically or manually */
+        long importance;/**< frontend state importance */
     };
 
     /**

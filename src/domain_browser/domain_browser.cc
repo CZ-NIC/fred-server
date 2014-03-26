@@ -24,6 +24,7 @@
 #include <string>
 #include <vector>
 #include <boost/date_time/gregorian/gregorian.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include "util/map_at.h"
 #include "util/util.h"
@@ -86,9 +87,10 @@ namespace Registry
             return info;
         }
 
-        void DomainBrowser::get_object_states(Fred::OperationContext& ctx, unsigned long long object_id, const std::string& lang
+        std::pair<long,bool> DomainBrowser::get_object_states(Fred::OperationContext& ctx, unsigned long long object_id, const std::string& lang
             , std::string& state_codes, std::string& states)
         {
+            std::pair<long,bool> ret;
 
             std::vector<Fred::ObjectStateData> state_data = Fred::GetObjectStates(object_id).exec(ctx);
             std::map<unsigned long long, std::string> state_desc_map = Fred::GetObjectStateDescriptions(lang).exec(ctx);
@@ -100,12 +102,18 @@ namespace Registry
                 state_codes += state_codes_separator.get();
                 state_codes += state_data.at(i).state_name;
 
+                if(state_data.at(i).state_name.compare(Fred::ObjectState::SERVER_BLOCKED)==0)
+                {
+                    ret.second = true;
+                }
                 if(state_data.at(i).is_external)
                 {
+                    ret.first |= state_data.at(i).importance;
                    states += states_separator.get();
                    states += map_at(state_desc_map, state_data.at(i).state_id);
                 }
             }
+            return ret;
         }
 
         std::string DomainBrowser::filter_authinfo(bool user_is_owner, const std::string& authinfopw)
@@ -118,13 +126,57 @@ namespace Registry
             return "********";//if not
         }
 
+        NextDomainState DomainBrowser::getNextDomainState(
+            const boost::gregorian::date& today_date,
+            const boost::gregorian::date& expiration_date,
+            const boost::gregorian::date& outzone_date,
+            const boost::gregorian::date& delete_date)
+        {
+            NextDomainState next;
+            if(today_date < expiration_date)
+            {
+                next = NextDomainState("expired", expiration_date);
+            }
+            else if((today_date < delete_date) || (today_date < outzone_date))
+                {
+                    if(outzone_date < delete_date)
+                    {
+                        if(today_date < outzone_date)
+                        {
+                            next = NextDomainState("outzone", outzone_date);
+                        }
+                        else
+                        {
+                            next = NextDomainState("deleteCandidate", delete_date);
+                        }
+                    }
+                    else //posibly bad config
+                    {
+                        if(today_date < delete_date)
+                        {
+                            next = NextDomainState("deleteCandidate", delete_date);
+                        }
+                        else
+                        {
+                            next = NextDomainState("outzone", outzone_date);
+                        }
+                    }
+                }
+            return next;
+        }
+
         DomainBrowser::DomainBrowser(const std::string& server_name,
             const std::string& update_registrar_handle,
             unsigned int domain_list_limit)
         : server_name_(server_name)
         , update_registrar_(update_registrar_handle)
         , domain_list_limit_(domain_list_limit)
-        {}
+        {
+            Fred::OperationContext ctx;
+            Database::Result db_config = ctx.get_conn().exec(
+                "SELECT MAX(importance) * 2 AS minimal_status_importance FROM enum_object_states");
+            minimal_status_importance_ = static_cast<unsigned int>(db_config[0]["minimal_status_importance"]);
+        }
 
         DomainBrowser::~DomainBrowser()
         {}
@@ -859,8 +911,80 @@ namespace Registry
             unsigned long long offset,
             std::vector<std::vector<std::string> >& domain_list_out)
         {
+            Fred::OperationContext ctx;
+            check_user_contact_id<UserNotExists>(ctx, user_contact_id);
 
-            return true;
+            Database::Result domain_list_result = ctx.get_conn().exec_params(
+                "SELECT "
+                    "oreg.id AS id, "
+                    "oreg.name AS fqdn, "
+                    "registrar.handle AS registrar_handle, "
+                    "registrar.name AS registrar_name, "
+                    "domain.exdate AS expiration_date, "
+                    "domain.registrant AS registrant_id, "
+                    "domain.keyset IS NOT NULL AS have_keyset, "
+                    "CASE WHEN domain.registrant = $1::bigint THEN 'holder' ELSE 'admin' END AS user_role,"
+                    "CURRENT_DATE AS today_date, "
+                    "(domain.exdate + (SELECT val || ' day' FROM enum_parameters "
+                    " WHERE name = 'expiration_dns_protection_period')::interval)::date as outzone_date, "
+                    "(domain.exdate + (SELECT val || ' day' FROM enum_parameters "
+                    " WHERE name = 'expiration_registration_protection_period')::interval)::date as delete_date "
+                "FROM object_registry oreg "
+                "JOIN domain ON oreg.id = domain.id "
+                "JOIN object ON object.id = oreg.id "
+                "JOIN registrar ON registrar.id = object.clid "
+                "LEFT JOIN domain_contact_map ON domain_contact_map.domainid = domain.id "
+                    "AND domain_contact_map.role = 1 " //admin
+                    "AND domain_contact_map.contactid = $1::bigint "
+                "WHERE oreg.erdate is null AND (domain_contact_map.contactid = $1::bigint "
+                    "OR domain.registrant = $1::bigint) "
+                "ORDER BY domain.exdate, domain.id "
+                "LIMIT $2::bigint OFFSET $3::bigint "
+            , Database::query_param_list(user_contact_id)(domain_list_limit_+1)(offset));
+
+            unsigned long long limited_domain_list_size = (domain_list_result.size() > domain_list_limit_)
+                ? domain_list_limit_ : domain_list_result.size();
+
+            domain_list_out.reserve(limited_domain_list_size);
+            for (unsigned long long i = 0;i < limited_domain_list_size;++i)
+            {
+                std::vector<std::string> row(11);
+                row.at(0) = static_cast<std::string>(domain_list_result[i]["id"]);
+                row.at(1) = static_cast<std::string>(domain_list_result[i]["fqdn"]);
+
+
+                std::string state_codes;
+                std::string state_desc;
+                std::pair<long,bool> object_states_result = get_object_states(ctx,
+                        static_cast<unsigned long long >(domain_list_result[i]["id"]),lang,
+                        state_codes, state_desc);
+
+                row.at(2) = boost::lexical_cast<std::string>(object_states_result.first == 0 ? minimal_status_importance_ : object_states_result.first);
+
+                boost::gregorian::date today_date = domain_list_result[i]["today_date"].isnull() ? boost::gregorian::date()
+                            : boost::gregorian::from_string(static_cast<std::string>(domain_list_result[i]["today_date"]));
+                boost::gregorian::date expiration_date = domain_list_result[i]["expiration_date"].isnull() ? boost::gregorian::date()
+                            : boost::gregorian::from_string(static_cast<std::string>(domain_list_result[i]["expiration_date"]));
+                boost::gregorian::date outzone_date = domain_list_result[i]["outzone_date"].isnull() ? boost::gregorian::date()
+                            : boost::gregorian::from_string(static_cast<std::string>(domain_list_result[i]["outzone_date"]));
+                boost::gregorian::date delete_date = domain_list_result[i]["delete_date"].isnull() ? boost::gregorian::date()
+                            : boost::gregorian::from_string(static_cast<std::string>(domain_list_result[i]["delete_date"]));
+                NextDomainState next = getNextDomainState(today_date,expiration_date,outzone_date,delete_date);
+
+                row.at(3) = next.state;
+                row.at(4) = boost::gregorian::to_iso_extended_string(next.state_date);
+                row.at(5) = static_cast<std::string>(domain_list_result[i]["have_keyset"]);
+                row.at(6) = static_cast<std::string>(domain_list_result[i]["user_role"]);
+                row.at(7) = static_cast<std::string>(domain_list_result[i]["registrar_handle"]);
+                row.at(8) = static_cast<std::string>(domain_list_result[i]["registrar_name"]);
+
+                row.at(9) = state_desc;
+                row.at(10) = object_states_result.second ? "t":"f";
+
+                domain_list_out.push_back(row);
+            }
+
+            return domain_list_result.size() > domain_list_limit_;
         }
 
 
