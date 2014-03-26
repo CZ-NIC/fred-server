@@ -15,7 +15,7 @@
 
 namespace  Admin {
     resolve_check::resolve_check(
-        const std::string&              _check_handle,
+        const uuid&                     _check_handle,
         const std::string&              _status_handle,
         Optional<unsigned long long>    _logd_request_id
     ) :
@@ -32,6 +32,19 @@ namespace  Admin {
 
     void resolve_check::exec(Fred::OperationContext& _ctx) {
         Logging::Context log("resolve_check::exec");
+
+        std::vector<std::string> allowed_statuses = Fred::ContactCheckStatus::get_resolution_awaiting();
+        // if current check status is not valid for resolution...
+        if(
+            std::find(
+                allowed_statuses.begin(),
+                allowed_statuses.end(),
+                Fred::InfoContactCheck(check_handle_).exec(_ctx)
+                    .check_state_history.rbegin()->status_handle
+            ) == allowed_statuses.end()
+        ) {
+            throw Admin::ExceptionCheckNotUpdateable();
+        }
 
         try {
             Fred::UpdateContactCheck(
@@ -51,22 +64,23 @@ namespace  Admin {
                 postprocess_manual_check(_ctx, check_handle_);
             }
         } catch (const Fred::ExceptionUnknownCheckHandle& ) {
-            Admin::ExceptionUnknownCheckHandle();
+            throw Admin::ExceptionUnknownCheckHandle();
+
         } catch (const Fred::ExceptionUnknownCheckStatusHandle& ) {
-            Admin::ExceptionUnknownCheckStatusHandle();
+            throw Admin::ExceptionUnknownCheckStatusHandle();
         }
     }
 
     void resolve_check::postprocess_automatic_check(
         Fred::OperationContext& _ctx,
-        const std::string& _check_handle
+        const uuid& _check_handle
     ) {
         // in case of need feel free to express yourself...
     }
 
     void resolve_check::postprocess_manual_check(
         Fred::OperationContext& _ctx,
-        const std::string& _check_handle
+        const uuid& _check_handle
     ) {
 
         Fred::InfoContactCheckOutput check_info = Fred::InfoContactCheck(

@@ -97,7 +97,7 @@ namespace Fred
         return result;
     }
 
-    InfoContactCheck::InfoContactCheck( const std::string& _handle)
+    InfoContactCheck::InfoContactCheck( const uuid& _handle)
         : handle_(_handle)
     {}
 
@@ -181,7 +181,7 @@ namespace Fred
         return Util::format_operation_state(
             "InfoContactCheck",
             boost::assign::list_of
-                (make_pair("check_handle",      handle_ ))
+                (make_pair("check_handle",      handle_.to_string() ))
         );
     }
 

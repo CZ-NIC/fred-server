@@ -70,7 +70,10 @@ void test_Resulting_check_status_impl(std::vector<std::string> _test_statuses, c
 
     try {
         Fred::OperationContext ctx2;
-        final_check_state = Fred::InfoContactCheck(check.check_handle_).exec(ctx2);
+        final_check_state = Fred::InfoContactCheck(
+            uuid::from_string( check.check_handle_)
+        ).exec(ctx2);
+
     } catch (...) {
         BOOST_FAIL("exception during Fred::InfoContactCheck");
     }
@@ -318,7 +321,7 @@ BOOST_AUTO_TEST_CASE(test_Throwing_test_handling)
 
     try {
         Fred::OperationContext ctx2;
-        final_check_state = Fred::InfoContactCheck(check.check_handle_).exec(ctx2);
+        final_check_state = Fred::InfoContactCheck( uuid::from_string( check.check_handle_) ).exec(ctx2);
     } catch (...) {
         BOOST_FAIL("exception during Fred::InfoContactCheck");
     }
@@ -373,7 +376,7 @@ BOOST_AUTO_TEST_CASE(test_Logd_request_id_of_related_changes)
     unsigned long long logd_request_id = Random::integer(0, 2147483647);
     Admin::run_all_enqueued_checks(test_impls_, logd_request_id);
 
-    Fred::InfoContactCheck info_op(check.check_handle_);
+    Fred::InfoContactCheck info_op( uuid::from_string( check.check_handle_) );
     Fred::InfoContactCheckOutput info;
     try {
         Fred::OperationContext ctx2;

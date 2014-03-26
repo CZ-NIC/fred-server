@@ -22,11 +22,11 @@ namespace  Admin {
 
     static void preprocess_automatic_check(
         Fred::OperationContext& _ctx,
-        const std::string& _check_handle);
+        const uuid&             _check_handle);
 
     static void preprocess_manual_check(
         Fred::OperationContext& _ctx,
-        const std::string& _check_handle);
+        const uuid&             _check_handle);
 
     /**
      * Lock some contact_check with running status.
@@ -54,12 +54,12 @@ namespace  Admin {
      * @return locked test handle
      */
     static std::string lazy_get_locked_running_test(
-        Fred::OperationContext& _ctx,
-        const std::string& _check_handle,
+        Fred::OperationContext&      _ctx,
+        const uuid&                  _check_handle,
         Optional<unsigned long long> _logd_request_id
     );
 
-    static void update_some_enqueued_test_to_running(const std::string& _check_handle, Optional<unsigned long long> _logd_request_id);
+    static void update_some_enqueued_test_to_running(const uuid& _check_handle, Optional<unsigned long long> _logd_request_id);
 
     /**
      * Updating check status based on tests results
@@ -97,12 +97,20 @@ namespace  Admin {
         /* right now this is just a query for history_id
            as there is not much in check's history and no tests either it is acceptable */
         Fred::InfoContactCheckOutput check_info (
-            Fred::InfoContactCheck(check_handle.get_value_or_default()).exec(*ctx_locked_check) );
+            Fred::InfoContactCheck(
+                uuid::from_string( check_handle.get_value() )
+            ).exec(*ctx_locked_check) );
 
         if(check_info.testsuite_handle == Fred::TestsuiteHandle::AUTOMATIC) {
-            preprocess_automatic_check(*ctx_locked_check, check_handle.get_value_or_default());
+            preprocess_automatic_check(
+                *ctx_locked_check,
+                uuid::from_string( check_handle.get_value() )
+            );
         } else if(check_info.testsuite_handle == Fred::TestsuiteHandle::MANUAL) {
-            preprocess_manual_check(*ctx_locked_check, check_handle.get_value_or_default());
+            preprocess_manual_check(
+                *ctx_locked_check,
+                uuid::from_string( check_handle.get_value() )
+            );
         }
 
         std::vector<std::string> test_statuses;
@@ -117,7 +125,7 @@ namespace  Admin {
                 // can throw exception_locking_failed
                 std::string test_handle = lazy_get_locked_running_test(
                     ctx_locked_test,
-                    check_handle.get_value_or_default(),
+                    uuid::from_string( check_handle.get_value() ),
                     _logd_request_id);
 
                 try {
@@ -142,7 +150,7 @@ namespace  Admin {
                         error_messages.push_back(Optional<std::string>("exception in test implementation"));
 
                         Fred::UpdateContactTest(
-                            check_handle.get_value_or_default(),
+                            uuid::from_string( check_handle.get_value() ),
                             test_handle,
                             test_statuses.back(),
                             _logd_request_id,
@@ -159,7 +167,7 @@ namespace  Admin {
                     throw;
                 }
                 Fred::UpdateContactTest(
-                    check_handle.get_value_or_default(),
+                    uuid::from_string( check_handle.get_value() ),
                     test_handle,
                     test_statuses.back(),
                     _logd_request_id,
@@ -174,7 +182,7 @@ namespace  Admin {
         } catch (...) {
             try {
                 Fred::UpdateContactCheck update_operation(
-                    check_handle.get_value_or_default(),
+                    uuid::from_string(check_handle.get_value()),
                     evaluate_check_status_after_tests_finished(test_statuses)
                 );
 
@@ -184,8 +192,15 @@ namespace  Admin {
 
                 update_operation.exec(*ctx_locked_check);
 
-                Admin::add_related_messages(*ctx_locked_check, check_handle.get_value_or_default(), related_message_ids);
-                Admin::add_related_mail(*ctx_locked_check, check_handle.get_value_or_default(), related_mail_ids);
+                Admin::add_related_messages(
+                    *ctx_locked_check,
+                    uuid::from_string( check_handle.get_value() ),
+                    related_message_ids);
+
+                Admin::add_related_mail(
+                    *ctx_locked_check,
+                    uuid::from_string( check_handle.get_value() ),
+                    related_mail_ids);
 
                 ctx_locked_check->commit_transaction();
             } catch(...) {
@@ -196,7 +211,7 @@ namespace  Admin {
         }
 
         Fred::UpdateContactCheck update_operation(
-            check_handle.get_value_or_default(),
+            uuid::from_string( check_handle.get_value() ),
             evaluate_check_status_after_tests_finished(test_statuses)
         );
 
@@ -208,12 +223,12 @@ namespace  Admin {
 
         Admin::add_related_messages(
             *ctx_locked_check,
-            check_handle.get_value_or_default(),
+            uuid::from_string( check_handle.get_value() ),
             related_message_ids);
 
         Admin::add_related_mail(
             *ctx_locked_check,
-            check_handle.get_value_or_default(),
+            uuid::from_string( check_handle.get_value() ),
             related_mail_ids);
 
         ctx_locked_check->commit_transaction();
@@ -277,7 +292,7 @@ namespace  Admin {
         std::string check_handle(static_cast<std::string>( locked_check_res[0]["handle_"] ));
 
         Fred::UpdateContactCheck update_operation(
-            check_handle,
+            uuid::from_string( check_handle ),
             Fred::ContactCheckStatus::RUNNING);
 
         if(_logd_request_id.isset()) {
@@ -303,13 +318,13 @@ namespace  Admin {
         if(testhandles_res.size() == 0) {
             throw Fred::InternalError(
                 std::string("testsuite of check(id=")
-                + check_handle
+                + static_cast<std::string>(check_handle)
                 + ") contains no tests");
         }
 
         for(Database::Result::Iterator it = testhandles_res.begin(); it != testhandles_res.end(); ++it) {
             Fred::CreateContactTest(
-                check_handle,
+                uuid::from_string( check_handle ),
                 static_cast<std::string>( (*it)["handle_"] ),
                 _logd_request_id
             ).exec(ctx);
@@ -320,7 +335,7 @@ namespace  Admin {
 
     std::string lazy_get_locked_running_test(
         Fred::OperationContext& _ctx,
-        const std::string& _check_handle,
+        const uuid& _check_handle,
         Optional<unsigned long long> _logd_request_id
     ) {
         while(true) {
@@ -356,7 +371,7 @@ namespace  Admin {
         }
     }
 
-    void update_some_enqueued_test_to_running(const std::string& _check_handle, Optional<unsigned long long> _logd_request_id) {
+    void update_some_enqueued_test_to_running(const uuid& _check_handle, Optional<unsigned long long> _logd_request_id) {
         Database::Result locked_testhandle_res;
 
         while(true) {
@@ -450,14 +465,14 @@ namespace  Admin {
 
     void preprocess_automatic_check(
         Fred::OperationContext& _ctx,
-        const std::string& _check_handle
+        const uuid& _check_handle
     ) {
         // in case of need feel free to express yourself...
     }
 
     void preprocess_manual_check(
         Fred::OperationContext& _ctx,
-        const std::string& _check_handle
+        const uuid& _check_handle
     ) {
         Fred::InfoContactCheckOutput check_info = Fred::InfoContactCheck(
             _check_handle

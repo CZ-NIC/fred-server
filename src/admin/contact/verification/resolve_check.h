@@ -37,17 +37,17 @@ namespace Admin {
 
     class resolve_check {
         private:
-            std::string                     check_handle_;
+            uuid                            check_handle_;
             std::string                     status_handle_;
             Optional<unsigned long long>    logd_request_id_;
 
             void postprocess_automatic_check(
                 Fred::OperationContext& _ctx,
-                const std::string& _check_handle);
+                const uuid&             _check_handle);
 
             void postprocess_manual_check(
                 Fred::OperationContext& _ctx,
-                const std::string& _check_handle);
+                const uuid&             _check_handle);
 
         public:
 
@@ -57,7 +57,7 @@ namespace Admin {
              * @param _logd_request_id Related logger request
              */
             resolve_check(
-                const std::string&              _check_handle,
+                const uuid&                     _check_handle,
                 const std::string&              _status_handle,
                 Optional<unsigned long long>    _logd_request_id);
 
@@ -72,6 +72,7 @@ namespace Admin {
              * Commits operation.
              * @throws Admin::ExceptionUnknownCheckHandle
              * @throws Admin::ExceptionUnknownCheckStatusHandle
+             * @throws Admin::ExceptionCheckNotUpdateable
              */
             void exec(Fred::OperationContext& _ctx);
     };

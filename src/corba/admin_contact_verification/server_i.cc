@@ -33,6 +33,7 @@
 
 #include "util/log/context.h"
 #include "util/random_data_generator.h"
+#include "util/uuid.h"
 
 #include "src/corba/util/corba_conversions_datetime.h"
 #include "src/corba/util/corba_conversions_string.h"
@@ -213,6 +214,23 @@ namespace Corba {
             out->operator [](out_index).tests = temp_tests;
         }
     }
+
+    static std::vector<std::pair<std::string, std::string> > unwrap_test_change_sequence(
+        const Registry::AdminContactVerification::TestUpdateSeq& in
+    ) {
+        std::vector<std::pair<std::string, std::string> > result;
+
+        for(unsigned long long i=0; i<in.length(); ++i) {
+            result.push_back(
+                std::make_pair(
+                    Corba::unwrap_string(in[i].test_handle),
+                    Corba::unwrap_string(in[i].status)
+                )
+            );
+        }
+
+        return result;
+    }
 }
 
 namespace Registry
@@ -228,12 +246,15 @@ namespace Registry
                 Fred::OperationContext ctx;
 
                 Corba::wrap_check_detail(
-                    Fred::InfoContactCheck(Corba::unwrap_string(check_handle))
-                        .exec(ctx),
+                    Fred::InfoContactCheck(
+                        uuid::from_string( Corba::unwrap_string(check_handle) )
+                    ).exec(ctx),
                     result
                 );
 
                 return result._retn();
+            } catch (const uuid::ExceptionInvalidUuid&) {
+                throw INVALID_CHECK_HANDLE();
             } catch (const Fred::ExceptionUnknownCheckHandle&) {
                 throw UNKNOWN_CHECK_HANDLE();
             } catch (...) {
@@ -293,30 +314,28 @@ namespace Registry
             Logging::Context log_method("updateContactCheckTests");
 
             try {
-                std::string ch_handle(Corba::unwrap_string(check_handle));
-                std::string testname;
-                std::string status;
-
                 Fred::OperationContext ctx;
 
-                for(unsigned long long i=0; i<changes.length(); ++i) {
-                    status = Corba::unwrap_string(changes[i].status);
-                    testname = Corba::unwrap_string(changes[i].test_handle);
-
-                    Fred::UpdateContactTest(ch_handle, testname, status)
-                        .set_logd_request_id(logd_request_id)
-                        .exec(ctx);
-                }
+                Admin::update_tests(
+                    ctx,
+                    uuid::from_string( Corba::unwrap_string(check_handle) ),
+                    Corba::unwrap_test_change_sequence(changes),
+                    logd_request_id
+                );
 
                 ctx.commit_transaction();
-            } catch(const Fred::ExceptionUnknownCheckHandle&) {
+            } catch (const uuid::ExceptionInvalidUuid&) {
+                throw INVALID_CHECK_HANDLE();
+            } catch(const Admin::ExceptionUnknownCheckHandle&) {
                 throw UNKNOWN_CHECK_HANDLE();
-            } catch(const Fred::ExceptionUnknownTestHandle&) {
+            } catch(const Admin::ExceptionUnknownTestHandle&) {
                 throw UNKNOWN_TEST_HANDLE();
-            } catch(const Fred::ExceptionUnknownCheckTestPair&) {
+            } catch(const Admin::ExceptionUnknownCheckTestPair&) {
                 throw UNKNOWN_CHECK_TEST_PAIR();
-            } catch(const Fred::ExceptionUnknownTestStatusHandle&) {
+            } catch(const Admin::ExceptionUnknownTestStatusHandle&) {
                 throw UNKNOWN_TEST_STATUS_HANDLE();
+            } catch(const Admin::ExceptionCheckNotUpdateable&) {
+                throw CHECK_NOT_UPDATEABLE();
             } catch (...) {
                 throw INTERNAL_SERVER_ERROR();
             }
@@ -330,12 +349,14 @@ namespace Registry
                 Fred::OperationContext ctx;
 
                 Admin::resolve_check(
-                    Corba::unwrap_string(check_handle),
+                    uuid::from_string( Corba::unwrap_string(check_handle) ),
                     Corba::unwrap_string(status),
                     logd_request_id
                 ).exec(ctx);
 
                 ctx.commit_transaction();
+            } catch (const uuid::ExceptionInvalidUuid&) {
+                throw INVALID_CHECK_HANDLE();
             } catch(const Fred::ExceptionUnknownCheckHandle&) {
                 throw UNKNOWN_CHECK_HANDLE();
             } catch(const Fred::ExceptionUnknownCheckStatusHandle&) {
@@ -354,10 +375,12 @@ namespace Registry
 
                 Admin::delete_domains_of_invalid_contact(
                     ctx,
-                    Corba::unwrap_string(check_handle)
+                    uuid::from_string( Corba::unwrap_string(check_handle) )
                 );
 
                 ctx.commit_transaction();
+            } catch (const uuid::ExceptionInvalidUuid&) {
+                throw INVALID_CHECK_HANDLE();
             } catch (const Fred::ExceptionUnknownCheckHandle&) {
                 throw UNKNOWN_CHECK_HANDLE();
             } catch (...) {

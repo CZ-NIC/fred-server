@@ -55,7 +55,10 @@ BOOST_AUTO_TEST_CASE(test_Ids_of_added_related_mail)
 
     Fred::OperationContext ctx;
 
-    Admin::add_related_mail(ctx, check.check_handle_, added_mail_archive_ids);
+    Admin::add_related_mail(
+        ctx,
+        uuid::from_string( check.check_handle_ ),
+        added_mail_archive_ids);
 
     Database::Result requests_res = ctx.get_conn().exec_params(
         "SELECT map_.mail_archive_id AS id_ "
@@ -101,7 +104,10 @@ BOOST_AUTO_TEST_CASE(test_Ids_of_added_related_messages)
 
     Fred::OperationContext ctx;
 
-    Admin::add_related_messages(ctx, check.check_handle_, added_message_archive_ids);
+    Admin::add_related_messages(
+        ctx,
+        uuid::from_string( check.check_handle_ ),
+        added_message_archive_ids);
 
     Database::Result requests_res = ctx.get_conn().exec_params(
         "SELECT map_.message_archive_id AS id_ "
@@ -147,7 +153,10 @@ BOOST_AUTO_TEST_CASE(test_Ids_of_added_related_object_state_request)
 
     Fred::OperationContext ctx;
 
-    Admin::add_related_object_state_requests(ctx, check.check_handle_, added_object_state_request_ids);
+    Admin::add_related_object_state_requests(
+        ctx,
+        uuid::from_string( check.check_handle_ ),
+        added_object_state_request_ids);
 
     Database::Result requests_res = ctx.get_conn().exec_params(
         "SELECT map_.object_state_request_id AS id_ "

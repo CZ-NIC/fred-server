@@ -76,7 +76,7 @@ BOOST_AUTO_TEST_CASE(test_Exec_mandatory_setup)
         BOOST_FAIL(std::string("exception (3):") + exp.what());
     }
 
-    Fred::InfoContactCheck info_check(handle);
+    Fred::InfoContactCheck info_check( uuid::from_string(handle) );
     Fred::InfoContactCheckOutput result_data;
 
 
@@ -205,7 +205,7 @@ BOOST_AUTO_TEST_CASE(test_Exec_optional_setup)
         BOOST_FAIL(std::string("exception (3):") + exp.what());
     }
 
-    Fred::InfoContactCheck info_check(handle);
+    Fred::InfoContactCheck info_check(uuid::from_string(handle));
     Fred::InfoContactCheckOutput result_data;
 
     try {

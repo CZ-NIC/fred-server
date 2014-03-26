@@ -47,20 +47,25 @@ BOOST_AUTO_TEST_CASE(test_Resolved_status)
 {
     setup_testsuite testsuite;
     setup_check check(testsuite.testsuite_handle);
-    setup_check_status status;
 
     Fred::OperationContext ctx;
 
+    Fred::UpdateContactCheck(
+        uuid::from_string( check.check_handle_ ),
+        Fred::ContactCheckStatus::AUTO_OK,
+        Optional<unsigned long long>()
+    ).exec(ctx);
+
     Admin::resolve_check(
-        check.check_handle_,
-        status.status_handle,
+        uuid::from_string( check.check_handle_ ),
+        Fred::ContactCheckStatus::OK,
         Optional<unsigned long long>()
     ).exec(ctx);
 
     BOOST_CHECK_EQUAL(
-        status.status_handle,
+        Fred::ContactCheckStatus::OK,
         Fred::InfoContactCheck(
-            check.check_handle_
+            uuid::from_string( check.check_handle_ )
         ).exec(ctx)
             .check_state_history
                 .rbegin()
@@ -78,20 +83,25 @@ BOOST_AUTO_TEST_CASE(test_Resolved_logd_request_id)
 {
     setup_testsuite testsuite;
     setup_check check(testsuite.testsuite_handle);
-    setup_check_status status;
 
     Fred::OperationContext ctx;
 
+    Fred::UpdateContactCheck(
+        uuid::from_string( check.check_handle_ ),
+        Fred::ContactCheckStatus::AUTO_OK,
+        36477
+    ).exec(ctx);
+
     Admin::resolve_check(
-        check.check_handle_,
-        status.status_handle,
+        uuid::from_string( check.check_handle_ ),
+        Fred::ContactCheckStatus::OK,
         36478
     ).exec(ctx);
 
     BOOST_CHECK_EQUAL(
         36478,
         Fred::InfoContactCheck(
-            check.check_handle_
+            uuid::from_string( check.check_handle_ )
         ).exec(ctx)
             .check_state_history
                 .rbegin()
@@ -139,21 +149,35 @@ BOOST_AUTO_TEST_CASE(test_Resolving_manual_suite_postprocessing)
 
     Fred::OperationContext ctx;
 
-    Admin::resolve_check(
-        fail_check.check_handle_,
-        Fred::ContactCheckStatus::FAIL,
+
+    Fred::UpdateContactCheck(
+        uuid::from_string( fail_check.check_handle_ ),
+        Fred::ContactCheckStatus::AUTO_FAIL,
         Optional<unsigned long long>()
     ).exec(ctx);
 
     Admin::resolve_check(
-        ok_check.check_handle_,
-        Fred::ContactCheckStatus::OK,
+        uuid::from_string( fail_check.check_handle_ ),
+        Fred::ContactCheckStatus::FAIL,
         Optional<unsigned long long>()
     ).exec(ctx);
 
     BOOST_CHECK_EQUAL(
         get_related_object_state_requests(ctx, fail_check.check_handle_).size(),
         0 );
+
+
+    Fred::UpdateContactCheck(
+        uuid::from_string( ok_check.check_handle_ ),
+        Fred::ContactCheckStatus::AUTO_OK,
+        Optional<unsigned long long>()
+    ).exec(ctx);
+
+    Admin::resolve_check(
+        uuid::from_string( ok_check.check_handle_ ),
+        Fred::ContactCheckStatus::OK,
+        Optional<unsigned long long>()
+    ).exec(ctx);
 
     BOOST_CHECK_EQUAL(
         get_related_object_state_requests(ctx, ok_check.check_handle_).size(),
@@ -172,21 +196,34 @@ BOOST_AUTO_TEST_CASE(test_Resolving_automatic_suite_postprocessing)
 
     Fred::OperationContext ctx;
 
-    Admin::resolve_check(
-        fail_check.check_handle_,
-        Fred::ContactCheckStatus::FAIL,
+    Fred::UpdateContactCheck(
+        uuid::from_string( fail_check.check_handle_ ),
+        Fred::ContactCheckStatus::AUTO_FAIL,
         Optional<unsigned long long>()
     ).exec(ctx);
 
     Admin::resolve_check(
-        ok_check.check_handle_,
-        Fred::ContactCheckStatus::OK,
+        uuid::from_string( fail_check.check_handle_ ),
+        Fred::ContactCheckStatus::FAIL,
         Optional<unsigned long long>()
     ).exec(ctx);
 
     BOOST_CHECK_EQUAL(
         get_related_object_state_requests(ctx, fail_check.check_handle_).size(),
         0 );
+
+
+    Fred::UpdateContactCheck(
+        uuid::from_string( ok_check.check_handle_ ),
+        Fred::ContactCheckStatus::AUTO_OK,
+        Optional<unsigned long long>()
+    ).exec(ctx);
+
+    Admin::resolve_check(
+        uuid::from_string( ok_check.check_handle_ ),
+        Fred::ContactCheckStatus::OK,
+        Optional<unsigned long long>()
+    ).exec(ctx);
 
     BOOST_CHECK_EQUAL(
         get_related_object_state_requests(ctx, ok_check.check_handle_).size(),

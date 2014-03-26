@@ -41,7 +41,7 @@ namespace Admin {
      */
     void delete_domains_of_invalid_contact(
         Fred::OperationContext& _ctx,
-        const std::string&      _check_handle);
+        const uuid&             _check_handle);
 }
 
 

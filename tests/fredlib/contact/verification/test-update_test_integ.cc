@@ -49,10 +49,6 @@
 #include "boost/date_time/local_time_adjustor.hpp"
 #include <boost/foreach.hpp>
 
-/* TODO - FIXME - only temporary for uuid mockup */
-#include  <cstdlib>
-#include "util/random_data_generator.h"
-
 BOOST_AUTO_TEST_SUITE(TestContactVerification)
 BOOST_FIXTURE_TEST_SUITE(TestUpdateContactTest_integ, autoclean_contact_verification_db)
 
@@ -101,7 +97,7 @@ struct setup_create_update_test {
         setup_test(check.check_handle_, testdef.testdef_handle_, old_logd_request_);
         test_handle_ = testdef.testdef_handle_;
 
-        Fred::InfoContactCheck info_check(check.check_handle_);
+        Fred::InfoContactCheck info_check( uuid::from_string( check.check_handle_) );
 
         try {
             Fred::OperationContext ctx1;
@@ -114,7 +110,13 @@ struct setup_create_update_test {
            BOOST_FAIL(std::string("exception (3):") + exp.what());
         }
 
-        Fred::UpdateContactTest update(check.check_handle_, test_handle_, new_status_, new_logd_request_, new_error_msg_);
+        Fred::UpdateContactTest update(
+            uuid::from_string(check.check_handle_),
+            test_handle_,
+            new_status_,
+            new_logd_request_,
+            new_error_msg_);
+
         try {
             Fred::OperationContext ctx2;
             update.exec(ctx2);
@@ -189,7 +191,7 @@ struct setup_create_update_update_test {
         test_handle_ = testdef.testdef_handle_;
         setup_test(check.check_handle_, test_handle_, _logd_request1);
 
-        Fred::InfoContactCheck info_check(check.check_handle_);
+        Fred::InfoContactCheck info_check( uuid::from_string( check.check_handle_) );
 
         try {
             Fred::OperationContext ctx1;
@@ -202,7 +204,13 @@ struct setup_create_update_update_test {
            BOOST_FAIL(std::string("exception (3):") + exp.what());
         }
 
-        Fred::UpdateContactTest reset(check.check_handle_, test_handle_, status2_, logd_request2_, error_msg2_);
+        Fred::UpdateContactTest reset(
+            uuid::from_string(check.check_handle_),
+            test_handle_,
+            status2_,
+            logd_request2_,
+            error_msg2_);
+
         try {
             Fred::OperationContext ctx2;
             reset.exec(ctx2);
@@ -226,7 +234,13 @@ struct setup_create_update_update_test {
             BOOST_FAIL(std::string("exception (3):") + exp.what());
         }
 
-        Fred::UpdateContactTest update(check.check_handle_, testdef.testdef_handle_, status3_, logd_request3_, error_msg3_);
+        Fred::UpdateContactTest update(
+            uuid::from_string(check.check_handle_),
+            testdef.testdef_handle_,
+            status3_,
+            logd_request3_,
+            error_msg3_);
+
         try {
             Fred::OperationContext ctx4;
             update.exec(ctx4);
@@ -431,7 +445,10 @@ BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_check_handle)
     setup_testdef testdef;
     setup_test_status status;
 
-    Fred::UpdateContactTest dummy(check.check_handle, testdef.testdef_handle_, status.status_handle_);
+    Fred::UpdateContactTest dummy(
+        uuid::from_string(check.check_handle),
+        testdef.testdef_handle_,
+        status.status_handle_);
 
     bool caught_the_right_exception = false;
     try {
@@ -464,7 +481,10 @@ BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_check_test_pair)
     setup_testdef testdef;
     setup_test_status status;
 
-    Fred::UpdateContactTest dummy(check.check_handle_, testdef.testdef_handle_, status.status_handle_);
+    Fred::UpdateContactTest dummy(
+        uuid::from_string(check.check_handle_),
+        testdef.testdef_handle_,
+        status.status_handle_);
 
     bool caught_the_right_exception = false;
     try {
@@ -496,7 +516,10 @@ BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_test_handle)
     setup_nonexistent_testdef_handle test;
     setup_test_status status;
 
-    Fred::UpdateContactTest dummy(check.check_handle_, test.testdef_handle, status.status_handle_);
+    Fred::UpdateContactTest dummy(
+        uuid::from_string(check.check_handle_),
+        test.testdef_handle,
+        status.status_handle_);
 
     bool caught_the_right_exception = false;
     try {
@@ -530,7 +553,10 @@ BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_status_handle)
     setup_check check(suite.testsuite_handle);
     setup_nonexistent_test_status_handle status;
 
-    Fred::UpdateContactTest dummy(check.check_handle_, testdef.testdef_handle_, status.status_handle);
+    Fred::UpdateContactTest dummy(
+        uuid::from_string(check.check_handle_),
+        testdef.testdef_handle_,
+        status.status_handle);
 
     bool caught_the_right_exception = false;
     try {

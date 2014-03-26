@@ -20,12 +20,12 @@ namespace  Admin {
 
     static void store_check_poll_message_relation(
         Fred::OperationContext& _ctx,
-        const std::string&      _check_handle,
+        const uuid&             _check_handle,
         unsigned long long      _poll_msg_id);
 
     void delete_domains_of_invalid_contact(
         Fred::OperationContext& _ctx,
-        const std::string&      _check_handle
+        const uuid&             _check_handle
     ) {
         Logging::Context log("delete_domains_of_invalid_contact");
 
@@ -95,7 +95,7 @@ namespace  Admin {
 
     void store_check_poll_message_relation(
         Fred::OperationContext& _ctx,
-        const std::string&      _check_handle,
+        const uuid&      _check_handle,
         unsigned long long      _poll_msg_id
     ) {
         _ctx.get_conn().exec_params(

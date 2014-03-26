@@ -43,6 +43,22 @@ namespace Admin
     struct ExceptionUnknownCheckStatusHandle : virtual Fred::OperationException {
         const char* what() const throw() {return "unknown check status handle";}
     };
+
+    struct ExceptionCheckNotUpdateable : virtual Fred::OperationException {
+        const char* what() const throw() {return "check is not updateable - either already resolved or tests not yet finished";}
+    };
+
+    struct ExceptionUnknownTestHandle : virtual Fred::OperationException {
+        const char* what() const throw() {return "unknown test handle";}
+    };
+
+    struct ExceptionUnknownCheckTestPair : virtual Fred::OperationException {
+        const char* what() const throw() {return "unknown check_handle, test_handle pair";}
+    };
+
+    struct ExceptionUnknownTestStatusHandle : virtual Fred::OperationException {
+        const char* what() const throw() {return "unknown test status handle";}
+    };
 }
 
 #endif

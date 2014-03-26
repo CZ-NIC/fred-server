@@ -29,7 +29,7 @@
 namespace Fred
 {
     UpdateContactCheck::UpdateContactCheck(
-        const std::string& _check_handle,
+        const uuid&        _check_handle,
         const std::string& _status_handle
     ) :
         check_handle_(_check_handle),
@@ -37,7 +37,7 @@ namespace Fred
     { }
 
     UpdateContactCheck::UpdateContactCheck(
-        const std::string&              _check_handle,
+        const uuid&                     _check_handle,
         const std::string&              _status_handle,
         Optional<unsigned long long>    _logd_request_id
     ) :
@@ -122,7 +122,7 @@ namespace Fred
         return Util::format_operation_state(
             "UpdateContactCheck",
             boost::assign::list_of
-                (make_pair("check_handle",      check_handle_ ))
+                (make_pair("check_handle",      check_handle_.to_string() ))
                 (make_pair("logd_request_id",   logd_request_id_.print_quoted() ))
                 (make_pair("status_handle",     status_handle_ ))
         );

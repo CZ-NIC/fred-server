@@ -216,7 +216,7 @@ struct setup_already_checked_contacts {
             );
             Fred::OperationContext ctx;
             Fred::UpdateContactCheck(
-                *started_check_handles.rbegin(),
+                uuid::from_string(*started_check_handles.rbegin()),
                 Fred::ContactCheckStatus::OK
             )
             .exec(ctx);
@@ -245,13 +245,12 @@ void create_check_for_all_unchecked_contacts(const std::string& testsuite_handle
         "   ) "
     );
 
-    std::string handle;
     for(Database::Result::Iterator it = never_checked_contacts_res.begin();
         it != never_checked_contacts_res.end();
         ++it
     ) {
         Fred::OperationContext ctx1;
-        handle = Fred::CreateContactCheck(
+        std::string handle = Fred::CreateContactCheck(
             static_cast<unsigned long long>( (*it)["contact_id_"] ),
             testsuite_handle
         )
@@ -260,7 +259,7 @@ void create_check_for_all_unchecked_contacts(const std::string& testsuite_handle
 
         Fred::OperationContext ctx2;
         Fred::UpdateContactCheck(
-            handle,
+            uuid::from_string(handle),
             Fred::ContactCheckStatus::OK
         )
         .exec(ctx2);

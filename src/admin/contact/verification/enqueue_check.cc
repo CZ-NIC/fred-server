@@ -1,8 +1,5 @@
 #include "src/admin/contact/verification/enqueue_check.h"
-#include "src/admin/contact/verification/resolve_check.h"
-#include "src/fredlib/contact/verification/create_check.h"
-#include "src/fredlib/contact/verification/info_check.h"
-#include "src/fredlib/contact/verification/enum_check_status.h"
+#include <fredlib/admin_contact_verification.h>
 
 #include "src/fredlib/db_settings.h"
 
@@ -25,7 +22,7 @@ namespace  Admin {
             ).exec(_ctx);
 
             Fred::InfoContactCheckOutput info = Fred::InfoContactCheck(
-                created_handle
+                uuid::from_string(created_handle)
             ).exec(_ctx);
 
             Database::Result obsolete_handles_res = _ctx.get_conn().exec_params(
@@ -50,8 +47,8 @@ namespace  Admin {
                 it != obsolete_handles_res.end();
                 ++it
             ) {
-                resolve_check(
-                    static_cast<std::string>( (*it)["handle_"]),
+                Fred::UpdateContactCheck(
+                    uuid::from_string( static_cast<std::string>( (*it)["handle_"]) ),
                     Fred::ContactCheckStatus::INVALIDATED,
                     _logd_request_id
                 ).exec(_ctx);
