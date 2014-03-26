@@ -98,8 +98,10 @@ BOOST_AUTO_TEST_CASE(test_Exec)
         check_logd_request_history.push_back(setup_logd_request_id().logd_request_id);
 
         Fred::UpdateContactCheck update_check(
-            check.check_handle_, check_status_history.back(),
+            uuid::from_string(check.check_handle_),
+            check_status_history.back(),
             check_logd_request_history.back() );
+
         try {
             Fred::OperationContext ctx1;
             update_check.exec(ctx1);
@@ -119,7 +121,7 @@ BOOST_AUTO_TEST_CASE(test_Exec)
     BOOST_FOREACH (const setup_testdef& def, suite.testdefs) {
         test_handles.push_back(def.testdef_handle_);
         Fred::OperationContext ctx;
-        Fred::CreateContactTest(check.check_handle_, def.testdef_handle_).exec(ctx);
+        Fred::CreateContactTest(uuid::from_string(check.check_handle_), def.testdef_handle_).exec(ctx);
         ctx.commit_transaction();
     }
 
@@ -134,7 +136,7 @@ BOOST_AUTO_TEST_CASE(test_Exec)
         tests_error_msg_history.at(0).push_back(Optional<string>(setup_error_msg().error_msg));
 
         Fred::UpdateContactTest update_test(
-            check.check_handle_,
+            uuid::from_string(check.check_handle_),
             test_handles.at(0),
             tests_status_history.at(0).at(j),
             tests_logd_request_history.at(0).at(j),
@@ -161,7 +163,7 @@ BOOST_AUTO_TEST_CASE(test_Exec)
         setup_testdef_in_testsuite_of_check(test_handles.at(i), check.check_handle_);
 
         Fred::CreateContactTest create_test(
-            check.check_handle_,
+            uuid::from_string(check.check_handle_),
             test_handles.at(i),
             tests_logd_request_history.at(i).at(0) );
 
@@ -184,7 +186,7 @@ BOOST_AUTO_TEST_CASE(test_Exec)
             tests_error_msg_history.at(i).push_back(Optional<string>(setup_error_msg().error_msg));
 
             Fred::UpdateContactTest update_test(
-                check.check_handle_,
+                uuid::from_string(check.check_handle_),
                 test_handles.at(i),
                 tests_status_history.at(i).at(j),
                 tests_logd_request_history.at(i).at(j),
@@ -204,7 +206,7 @@ BOOST_AUTO_TEST_CASE(test_Exec)
         }
     }
 
-    Fred::InfoContactCheck info_op(check.check_handle_);
+    Fred::InfoContactCheck info_op( uuid::from_string( check.check_handle_) );
     Fred::InfoContactCheckOutput info;
     try {
         Fred::OperationContext ctx5;
@@ -266,7 +268,7 @@ BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_check_handle)
 {
     setup_nonexistent_check_handle handle;
 
-    Fred::InfoContactCheck dummy(handle.check_handle);
+    Fred::InfoContactCheck dummy( uuid::from_string( handle.check_handle) );
 
     bool caught_the_right_exception = false;
     try {

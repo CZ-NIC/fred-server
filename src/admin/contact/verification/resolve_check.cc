@@ -15,7 +15,7 @@
 
 namespace  Admin {
     resolve_check::resolve_check(
-        const std::string&              _check_handle,
+        const uuid&                     _check_handle,
         const std::string&              _status_handle,
         Optional<unsigned long long>    _logd_request_id
     ) :
@@ -59,14 +59,14 @@ namespace  Admin {
 
     void resolve_check::postprocess_automatic_check(
         Fred::OperationContext& _ctx,
-        const std::string& _check_handle
+        const uuid& _check_handle
     ) {
         // in case of need feel free to express yourself...
     }
 
     void resolve_check::postprocess_manual_check(
         Fred::OperationContext& _ctx,
-        const std::string& _check_handle
+        const uuid& _check_handle
     ) {
 
         Fred::InfoContactCheckOutput check_info = Fred::InfoContactCheck(

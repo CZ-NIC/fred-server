@@ -10,7 +10,7 @@ namespace  Admin {
      */
     static void add_related_communication_impl(
         Fred::OperationContext&             _ctx,
-        const std::string&                  _check_handle,
+        const uuid&                         _check_handle,
         const std::set<unsigned long long>& _ids,
         bool                                _is_mail
     ){
@@ -58,7 +58,7 @@ namespace  Admin {
 
     void add_related_mail(
         Fred::OperationContext&             _ctx,
-        const std::string&                  _check_handle,
+        const uuid&                         _check_handle,
         const std::set<unsigned long long>& _mail_archive_ids
     ) {
         add_related_communication_impl(_ctx, _check_handle, _mail_archive_ids, true);
@@ -66,7 +66,7 @@ namespace  Admin {
 
     void add_related_messages(
         Fred::OperationContext&             _ctx,
-        const std::string&                  _check_handle,
+        const uuid&                         _check_handle,
         const std::set<unsigned long long>& _message_archive_ids
     ) {
         add_related_communication_impl(_ctx, _check_handle, _message_archive_ids, false);
@@ -74,7 +74,7 @@ namespace  Admin {
 
     void add_related_object_state_requests(
         Fred::OperationContext&             _ctx,
-        const std::string&                  _check_handle,
+        const uuid&                         _check_handle,
         const std::set<unsigned long long>& _request_ids
     ) {
         using std::set;

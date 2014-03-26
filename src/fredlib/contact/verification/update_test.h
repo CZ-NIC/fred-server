@@ -36,7 +36,7 @@ namespace Fred
      * Updates existing record in contact_test_result table. Has no sideeffects.
      */
     class UpdateContactTest : public Util::Printable {
-            std::string                     check_handle_;
+            uuid                            check_handle_;
             std::string                     test_handle_;
             std::string                     status_handle_;
             Nullable<unsigned long long>    logd_request_id_;
@@ -49,7 +49,7 @@ namespace Fred
              * @param _test_handle      denotes type of test to be run. Allowed values are in enum_contact_test.name in database.
              * @param _status_handle    denotes status to be set. Allowed values are in enum_test_status.h or enum_contact_test_status.name in database.
              */
-            UpdateContactTest( const std::string&    _check_handle,
+            UpdateContactTest( const uuid&           _check_handle,
                                const std::string&    _test_handle,
                                const std::string&    _status_handle);
             /**
@@ -59,7 +59,7 @@ namespace Fred
              * @param _status_handle    denotes status to be set. Allowed values are in enum_test_status.h or enum_contact_test_status.name in database.
              * @param _error_msg        optional error message (free text string) describing test state.
              */
-            UpdateContactTest( const std::string&           _check_handle,
+            UpdateContactTest( const uuid&                  _check_handle,
                                const std::string&           _test_handle,
                                const std::string&           _status_handle,
                                Optional<unsigned long long> _logd_request_id,

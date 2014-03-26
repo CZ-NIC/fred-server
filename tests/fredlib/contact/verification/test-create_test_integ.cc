@@ -63,10 +63,10 @@ BOOST_AUTO_TEST_CASE(test_Exec_mandatory_setup)
     setup_testdef testdef;
     setup_testdef_in_testsuite_of_check(testdef.testdef_handle_, check.check_handle_);
 
-    Fred::CreateContactTest create_test(check.check_handle_, testdef.testdef_handle_);
+    Fred::CreateContactTest create_test(uuid::from_string(check.check_handle_), testdef.testdef_handle_);
     std::string timezone = "UTC";
 
-    Fred::InfoContactCheck info_check(check.check_handle_);
+    Fred::InfoContactCheck info_check( uuid::from_string( check.check_handle_) );
     Fred::InfoContactCheckOutput pre_create_test_data;
 
     try {
@@ -148,10 +148,10 @@ BOOST_AUTO_TEST_CASE(test_Exec_optional_setup)
     setup_testdef_in_testsuite_of_check(testdef.testdef_handle_, check.check_handle_);
     setup_logd_request_id logd_request;
 
-    Fred::CreateContactTest create_test(check.check_handle_, testdef.testdef_handle_, logd_request.logd_request_id);
+    Fred::CreateContactTest create_test(uuid::from_string(check.check_handle_), testdef.testdef_handle_, logd_request.logd_request_id);
     std::string timezone = "UTC";
 
-    Fred::InfoContactCheck info_check(check.check_handle_);
+    Fred::InfoContactCheck info_check( uuid::from_string( check.check_handle_) );
     Fred::InfoContactCheckOutput pre_create_test_data;
 
     try {
@@ -230,7 +230,7 @@ BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_check_handle)
     setup_nonexistent_check_handle check;
     setup_testdef testdef;
 
-    Fred::CreateContactTest create_test(check.check_handle, testdef.testdef_handle_);
+    Fred::CreateContactTest create_test(uuid::from_string(check.check_handle), testdef.testdef_handle_);
 
     bool caught_the_right_exception = false;
     try {
@@ -260,7 +260,7 @@ BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_test_handle)
     setup_check check(suite.testsuite_handle);
     setup_nonexistent_testdef_handle testdef;
 
-    Fred::CreateContactTest create_test(check.check_handle_, testdef.testdef_handle);
+    Fred::CreateContactTest create_test(uuid::from_string(check.check_handle_), testdef.testdef_handle);
 
     bool caught_the_right_exception = false;
     try {
@@ -291,7 +291,7 @@ BOOST_AUTO_TEST_CASE(test_Exec_test_handle_not_in_suite)
     setup_testdef testdef;
     // deliberately OMITTING setup_testdef_in_testsuite_of_check(...)
 
-    Fred::CreateContactTest create_test(check.check_handle_, testdef.testdef_handle_);
+    Fred::CreateContactTest create_test(uuid::from_string(check.check_handle_), testdef.testdef_handle_);
 
     bool caught_the_right_exception = false;
     try {
@@ -323,7 +323,7 @@ BOOST_AUTO_TEST_CASE(test_Exec_violating_unique_check_test_pair)
     setup_testdef testdef;
     setup_testdef_in_testsuite_of_check(testdef.testdef_handle_, check.check_handle_);
 
-    Fred::CreateContactTest create_test(check.check_handle_, testdef.testdef_handle_);
+    Fred::CreateContactTest create_test(uuid::from_string(check.check_handle_), testdef.testdef_handle_);
     // preparation - the original previously existing record
     Fred::OperationContext ctx1;
     create_test.exec(ctx1);

@@ -307,7 +307,7 @@ namespace ContactVerificationQueue {
                     logd_request_id_
                 );
 
-                Fred::InfoContactCheckOutput info = Fred::InfoContactCheck(temp_handle).exec(ctx1);
+                Fred::InfoContactCheckOutput info = Fred::InfoContactCheck(uuid::from_string(temp_handle)).exec(ctx1);
 
                 result.push_back(
                     boost::make_tuple(
@@ -358,7 +358,7 @@ namespace ContactVerificationQueue {
                         logd_request_id_
                     );
 
-                    Fred::InfoContactCheckOutput info = Fred::InfoContactCheck(temp_handle).exec(ctx2);
+                    Fred::InfoContactCheckOutput info = Fred::InfoContactCheck(uuid::from_string(temp_handle)).exec(ctx2);
 
                     result.push_back(
                         boost::make_tuple(

@@ -52,7 +52,7 @@ BOOST_AUTO_TEST_CASE(test_Resolved_status)
     Fred::OperationContext ctx;
 
     Admin::resolve_check(
-        check.check_handle_,
+        uuid::from_string( check.check_handle_ ),
         status.status_handle,
         Optional<unsigned long long>()
     ).exec(ctx);
@@ -60,7 +60,7 @@ BOOST_AUTO_TEST_CASE(test_Resolved_status)
     BOOST_CHECK_EQUAL(
         status.status_handle,
         Fred::InfoContactCheck(
-            check.check_handle_
+            uuid::from_string( check.check_handle_ )
         ).exec(ctx)
             .check_state_history
                 .rbegin()
@@ -83,7 +83,7 @@ BOOST_AUTO_TEST_CASE(test_Resolved_logd_request_id)
     Fred::OperationContext ctx;
 
     Admin::resolve_check(
-        check.check_handle_,
+        uuid::from_string( check.check_handle_ ),
         status.status_handle,
         36478
     ).exec(ctx);
@@ -91,7 +91,7 @@ BOOST_AUTO_TEST_CASE(test_Resolved_logd_request_id)
     BOOST_CHECK_EQUAL(
         36478,
         Fred::InfoContactCheck(
-            check.check_handle_
+            uuid::from_string( check.check_handle_ )
         ).exec(ctx)
             .check_state_history
                 .rbegin()
@@ -140,13 +140,13 @@ BOOST_AUTO_TEST_CASE(test_Resolving_manual_suite_postprocessing)
     Fred::OperationContext ctx;
 
     Admin::resolve_check(
-        fail_check.check_handle_,
+        uuid::from_string( fail_check.check_handle_ ),
         Fred::ContactCheckStatus::FAIL,
         Optional<unsigned long long>()
     ).exec(ctx);
 
     Admin::resolve_check(
-        ok_check.check_handle_,
+        uuid::from_string( ok_check.check_handle_ ),
         Fred::ContactCheckStatus::OK,
         Optional<unsigned long long>()
     ).exec(ctx);
@@ -173,13 +173,13 @@ BOOST_AUTO_TEST_CASE(test_Resolving_automatic_suite_postprocessing)
     Fred::OperationContext ctx;
 
     Admin::resolve_check(
-        fail_check.check_handle_,
+        uuid::from_string( fail_check.check_handle_ ),
         Fred::ContactCheckStatus::FAIL,
         Optional<unsigned long long>()
     ).exec(ctx);
 
     Admin::resolve_check(
-        ok_check.check_handle_,
+        uuid::from_string( ok_check.check_handle_ ),
         Fred::ContactCheckStatus::OK,
         Optional<unsigned long long>()
     ).exec(ctx);

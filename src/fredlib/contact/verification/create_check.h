@@ -30,6 +30,7 @@
 #include "src/fredlib/opcontext.h"
 #include "util/db/nullable.h"
 #include "util/optional_value.h"
+#include "util/uuid.h"
 
 namespace Fred
 {

@@ -29,6 +29,7 @@
 #include "src/fredlib/opcontext.h"
 #include "util/db/nullable.h"
 #include "util/optional_value.h"
+#include "util/uuid.h"
 
 namespace Fred
 {
@@ -36,7 +37,7 @@ namespace Fred
      * Updates existing record in contact_check table. Has no sideeffects.
      */
     class UpdateContactCheck : public Util::Printable {
-            std::string                     check_handle_;
+            uuid                            check_handle_;
             std::string                     status_handle_;
             Nullable<unsigned long long>    logd_request_id_;
 
@@ -46,8 +47,8 @@ namespace Fred
              * @param _check_handle     identifies which contact_check to update.
              * @param _status_handle    denotes status to be set. Allowed values are in enum_check_status.h or enum_contact_check_status in database.
              */
-            UpdateContactCheck( const std::string& _check_handle,
-                                const std::string& _status_handle);
+            UpdateContactCheck( const uuid&         _check_handle,
+                                const std::string&  _status_handle);
 
             /**
              * constructor with all available parameters including optional ones
@@ -55,7 +56,7 @@ namespace Fred
              * @param _status_handle    denotes status to be set. Allowed values are in enum_check_status.h or enum_contact_check_status.name in database.
              * @param _logd_request_id  denotes entry in log_entry database table related to this update.
              */
-            UpdateContactCheck( const std::string&              _check_handle,
+            UpdateContactCheck( const uuid&                     _check_handle,
                                 const std::string&              _status_handle,
                                 Optional<unsigned long long>    _logd_request_id);
 

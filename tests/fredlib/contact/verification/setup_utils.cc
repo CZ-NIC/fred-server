@@ -387,7 +387,7 @@ setup_test::setup_test(
     testdef_handle_(_testdef_handle),
     logd_request_(_logd_request)
 {
-    Fred::CreateContactTest create_test(_check_handle, testdef_handle_, logd_request_);
+    Fred::CreateContactTest create_test(uuid::from_string(_check_handle), testdef_handle_, logd_request_);
 
     Fred::OperationContext ctx;
     create_test.exec(ctx);

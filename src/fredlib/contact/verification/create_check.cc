@@ -78,7 +78,7 @@ namespace Fred
         // generate handle over and over until it is unique
         std::string handle;
         do {
-            handle = boost::lexical_cast<std::string>(boost::uuids::random_generator()());
+            handle = boost::lexical_cast<std::string>( boost::uuids::random_generator()() );
         } while(
             ctx_unique.get_conn().exec_params(
                 unique_test_query,
@@ -136,6 +136,7 @@ namespace Fred
                     (Fred::ContactCheckStatus::ENQUEUED)
                     (logd_request_id_)
             );
+
         } catch(const std::exception& _exc) {
 
             std::string what_string(_exc.what());

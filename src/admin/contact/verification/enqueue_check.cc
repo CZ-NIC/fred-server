@@ -25,7 +25,7 @@ namespace  Admin {
             ).exec(_ctx);
 
             Fred::InfoContactCheckOutput info = Fred::InfoContactCheck(
-                created_handle
+                uuid::from_string(created_handle)
             ).exec(_ctx);
 
             Database::Result obsolete_handles_res = _ctx.get_conn().exec_params(
@@ -51,7 +51,7 @@ namespace  Admin {
                 ++it
             ) {
                 resolve_check(
-                    static_cast<std::string>( (*it)["handle_"]),
+                    uuid::from_string( static_cast<std::string>( (*it)["handle_"]) ),
                     Fred::ContactCheckStatus::INVALIDATED,
                     _logd_request_id
                 ).exec(_ctx);

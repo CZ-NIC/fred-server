@@ -88,7 +88,7 @@ struct setup_create_update_check {
         setup_testdef_in_testsuite(testdef.testdef_handle_, suite.testsuite_handle);
         setup_check check(suite.testsuite_handle, _old_logd_request);
 
-        Fred::InfoContactCheck info_check(check.check_handle_);
+        Fred::InfoContactCheck info_check( uuid::from_string( check.check_handle_) );
         try {
             Fred::OperationContext ctx1;
             data_pre_update_ = info_check.exec(ctx1, timezone_);
@@ -100,7 +100,11 @@ struct setup_create_update_check {
            BOOST_FAIL(std::string("exception (3):") + exp.what());
         }
 
-        Fred::UpdateContactCheck update(check.check_handle_, new_status_, new_logd_request_);
+        Fred::UpdateContactCheck update(
+            uuid::from_string( check.check_handle_ ),
+            new_status_,
+            new_logd_request_);
+
         try {
             Fred::OperationContext ctx2;
             update.exec(ctx2);
@@ -162,7 +166,7 @@ struct setup_create_update_update_check  {
         setup_testdef_in_testsuite(testdef.testdef_handle_, suite.testsuite_handle);
         setup_check check(suite.testsuite_handle, _logd_request1);
 
-        Fred::InfoContactCheck info_check(check.check_handle_);
+        Fred::InfoContactCheck info_check( uuid::from_string( check.check_handle_) );
 
         try {
             Fred::OperationContext ctx1;
@@ -175,7 +179,11 @@ struct setup_create_update_update_check  {
             BOOST_FAIL(std::string("exception (3):") + exp.what());
         }
 
-        Fred::UpdateContactCheck reset(check.check_handle_, status2_, logd_request2_);
+        Fred::UpdateContactCheck reset(
+            uuid::from_string( check.check_handle_),
+            status2_,
+            logd_request2_);
+
         try {
             Fred::OperationContext ctx2;
             reset.exec(ctx2);
@@ -199,7 +207,11 @@ struct setup_create_update_update_check  {
             BOOST_FAIL(std::string("exception (3):") + exp.what());
         }
 
-        Fred::UpdateContactCheck update(check.check_handle_, status3_, logd_request3_);
+        Fred::UpdateContactCheck update(
+            uuid::from_string(check.check_handle_),
+            status3_,
+            logd_request3_);
+
         try {
             Fred::OperationContext ctx4;
             update.exec(ctx4);
@@ -499,7 +511,9 @@ BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_check_handle)
     setup_nonexistent_check_handle handle;
     setup_check_status status;
 
-    Fred::UpdateContactCheck dummy(handle.check_handle, status.status_handle);
+    Fred::UpdateContactCheck dummy(
+        uuid::from_string(handle.check_handle),
+        status.status_handle);
 
     bool caught_the_right_exception = false;
     try {
@@ -529,7 +543,9 @@ BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_status_handle)
     setup_check check(suite.testsuite_handle);
     setup_nonexistent_check_status_handle nonexistent_status;
 
-    Fred::UpdateContactCheck dummy(check.check_handle_, nonexistent_status.status_handle);
+    Fred::UpdateContactCheck dummy(
+        uuid::from_string(check.check_handle_),
+        nonexistent_status.status_handle);
 
     bool caught_the_right_exception = false;
     try {

@@ -55,7 +55,7 @@ BOOST_AUTO_TEST_CASE(test_Enqueued_check_data)
         testsuite.testsuite_handle,
         logd_request_id);
 
-    Fred::InfoContactCheckOutput check_info = Fred::InfoContactCheck(check_handle).exec(ctx);
+    Fred::InfoContactCheckOutput check_info = Fred::InfoContactCheck( uuid::from_string( check_handle) ).exec(ctx);
 
     BOOST_CHECK_EQUAL(check_info.check_state_history.size(), 1);
     BOOST_CHECK_EQUAL(check_info.testsuite_handle, testsuite.testsuite_handle);
@@ -90,21 +90,29 @@ BOOST_AUTO_TEST_CASE(test_Invalidating_old_checks)
         testsuite.testsuite_handle
     ).exec(ctx);
 
-    std::string new_check_handle = Admin::enqueue_check(
-        ctx,
-        contact.contact_id_,
-        testsuite.testsuite_handle,
-        RandomDataGenerator().xuint()
+    std::string new_check_handle(
+        Admin::enqueue_check(
+            ctx,
+            contact.contact_id_,
+            testsuite.testsuite_handle,
+            RandomDataGenerator().xuint()
+        )
     );
 
-    Fred::InfoContactCheckOutput invalidated_check_info_1 = Fred::InfoContactCheck(invalidated_check_handle_1)
-        .exec(ctx);
+    Fred::InfoContactCheckOutput invalidated_check_info_1 =
+        Fred::InfoContactCheck(
+            uuid::from_string( invalidated_check_handle_1)
+        ).exec(ctx);
 
-    Fred::InfoContactCheckOutput invalidated_check_info_2 = Fred::InfoContactCheck(invalidated_check_handle_2)
-        .exec(ctx);
+    Fred::InfoContactCheckOutput invalidated_check_info_2 =
+        Fred::InfoContactCheck(
+            uuid::from_string( invalidated_check_handle_2)
+        ).exec(ctx);
 
-    Fred::InfoContactCheckOutput new_check_info = Fred::InfoContactCheck(new_check_handle)
-        .exec(ctx);
+    Fred::InfoContactCheckOutput new_check_info =
+        Fred::InfoContactCheck(
+            uuid::from_string( new_check_handle)
+        ).exec(ctx);
 
     BOOST_CHECK_EQUAL(
         invalidated_check_info_1.check_state_history.rbegin()->status_handle,

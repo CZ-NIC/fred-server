@@ -75,7 +75,7 @@ BOOST_AUTO_TEST_CASE(test_Deleting_domains)
         Fred::TestsuiteHandle::MANUAL);
 
     Admin::resolve_check(
-        check_handle,
+        uuid::from_string( check_handle ),
         Fred::ContactCheckStatus::FAIL,
         Optional<unsigned long long>()
     ).exec(ctx);
@@ -84,7 +84,7 @@ BOOST_AUTO_TEST_CASE(test_Deleting_domains)
 
     Admin::delete_domains_of_invalid_contact(
         ctx,
-        check_handle);
+        uuid::from_string( check_handle) );
 
     bool domain_deleted = false;
 

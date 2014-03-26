@@ -92,14 +92,14 @@ namespace Fred
      * Get info from existing record in contact_check table. Has no sideeffects.
      */
     class InfoContactCheck : public Util::Printable {
-            std::string handle_;
+            uuid handle_;
 
         public:
             /**
              * constructor with only parameter
              * @param _handle     identifies which contact_check to update by it's handle.
              */
-            InfoContactCheck( const std::string& _handle);
+            InfoContactCheck( const uuid& _handle);
 
             /**
              * commit operation
