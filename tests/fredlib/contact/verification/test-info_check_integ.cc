@@ -50,10 +50,6 @@
 #include "boost/date_time/local_time_adjustor.hpp"
 #include "boost/foreach.hpp"
 
-/* TODO - FIXME - only temporary for uuid mockup */
-#include  <cstdlib>
-#include "util/random_data_generator.h"
-
 BOOST_AUTO_TEST_SUITE(TestContactVerification)
 BOOST_FIXTURE_TEST_SUITE(TestInfoContactCheck_integ, autoclean_contact_verification_db)
 
