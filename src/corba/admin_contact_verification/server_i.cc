@@ -214,6 +214,23 @@ namespace Corba {
             out->operator [](out_index).tests = temp_tests;
         }
     }
+
+    static std::vector<std::pair<std::string, std::string> > unwrap_test_change_sequence(
+        const Registry::AdminContactVerification::TestUpdateSeq& in
+    ) {
+        std::vector<std::pair<std::string, std::string> > result;
+
+        for(unsigned long long i=0; i<in.length(); ++i) {
+            result.push_back(
+                std::make_pair(
+                    Corba::unwrap_string(in[i].test_handle),
+                    Corba::unwrap_string(in[i].status)
+                )
+            );
+        }
+
+        return result;
+    }
 }
 
 namespace Registry
@@ -297,23 +314,14 @@ namespace Registry
             Logging::Context log_method("updateContactCheckTests");
 
             try {
-                std::string ch_handle(Corba::unwrap_string(check_handle));
-                std::string testname;
-                std::string status;
-
                 Fred::OperationContext ctx;
 
-                for(unsigned long long i=0; i<changes.length(); ++i) {
-                    status = Corba::unwrap_string(changes[i].status);
-                    testname = Corba::unwrap_string(changes[i].test_handle);
-
-                    Fred::UpdateContactTest(
-                        uuid::from_string(ch_handle),
-                        testname,
-                        status
-                    ).set_logd_request_id(logd_request_id)
-                    .exec(ctx);
-                }
+                Admin::update_tests(
+                    ctx,
+                    uuid::from_string( Corba::unwrap_string(check_handle) ),
+                    Corba::unwrap_test_change_sequence(changes),
+                    logd_request_id
+                );
 
                 ctx.commit_transaction();
             } catch (const uuid::ExceptionInvalidUuid&) {
