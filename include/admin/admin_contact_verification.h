@@ -32,5 +32,6 @@
 #include "src/admin/contact/verification/list_active_checks.h"
 #include "src/admin/contact/verification/resolve_check.h"
 #include "src/admin/contact/verification/run_all_enqueued_checks.h"
+#include "src/admin/contact/verification/update_tests.h"
 
 #endif

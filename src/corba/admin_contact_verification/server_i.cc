@@ -318,14 +318,16 @@ namespace Registry
                 ctx.commit_transaction();
             } catch (const uuid::ExceptionInvalidUuid&) {
                 throw INVALID_CHECK_HANDLE();
-            } catch(const Fred::ExceptionUnknownCheckHandle&) {
+            } catch(const Admin::ExceptionUnknownCheckHandle&) {
                 throw UNKNOWN_CHECK_HANDLE();
-            } catch(const Fred::ExceptionUnknownTestHandle&) {
+            } catch(const Admin::ExceptionUnknownTestHandle&) {
                 throw UNKNOWN_TEST_HANDLE();
-            } catch(const Fred::ExceptionUnknownCheckTestPair&) {
+            } catch(const Admin::ExceptionUnknownCheckTestPair&) {
                 throw UNKNOWN_CHECK_TEST_PAIR();
-            } catch(const Fred::ExceptionUnknownTestStatusHandle&) {
+            } catch(const Admin::ExceptionUnknownTestStatusHandle&) {
                 throw UNKNOWN_TEST_STATUS_HANDLE();
+            } catch(const Admin::ExceptionCheckNotUpdateable&) {
+                throw CHECK_NOT_UPDATEABLE();
             } catch (...) {
                 throw INTERNAL_SERVER_ERROR();
             }

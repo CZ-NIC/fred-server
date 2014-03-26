@@ -1010,6 +1010,8 @@ src_admin_contact_verification_libadmin_contact_verification_a_SOURCES = \
 		src/admin/contact/verification/run_all_enqueued_checks.cc \
 		src/admin/contact/verification/run_first_enqueued_check.h \
 		src/admin/contact/verification/run_first_enqueued_check.cc \
+		src/admin/contact/verification/update_tests.h \
+		src/admin/contact/verification/update_tests.cc \
 		src/admin/contact/verification/test_impl/test_contactability.h \
 		src/admin/contact/verification/test_impl/test_contactability.cc \
 		src/admin/contact/verification/test_impl/test_cz_address_exists.h \
@@ -1452,6 +1454,8 @@ src_corba_fred_adifd_SOURCES = \
 		src/admin/contact/verification/run_all_enqueued_checks.cc \
 		src/admin/contact/verification/run_first_enqueued_check.h \
 		src/admin/contact/verification/run_first_enqueued_check.cc \
+		src/admin/contact/verification/update_tests.h \
+		src/admin/contact/verification/update_tests.cc \
 		src/admin/contact/verification/test_impl/test_contactability.h \
 		src/admin/contact/verification/test_impl/test_contactability.cc \
 		src/admin/contact/verification/test_impl/test_cz_address_exists.h \
