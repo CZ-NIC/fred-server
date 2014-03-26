@@ -74,6 +74,12 @@ BOOST_AUTO_TEST_CASE(test_Deleting_domains)
         contact.contact_id_,
         Fred::TestsuiteHandle::MANUAL);
 
+    Fred::UpdateContactCheck(
+        uuid::from_string( check_handle ),
+        Fred::ContactCheckStatus::AUTO_FAIL,
+        Optional<unsigned long long>()
+    ).exec(ctx);
+
     Admin::resolve_check(
         uuid::from_string( check_handle ),
         Fred::ContactCheckStatus::FAIL,
