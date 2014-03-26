@@ -169,6 +169,7 @@ noinst_HEADERS = \
 		util/factory.h \
 		util/factory_check.h \
 		util/map_get.h \
+		util/uuid.h \
 		src/corba/common_wrappers.h \
 		src/corba/contact_verification/corba_conversion.h \
 		util/optional_value.h \
