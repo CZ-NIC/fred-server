@@ -51,9 +51,10 @@ namespace  Admin {
                 postprocess_manual_check(_ctx, check_handle_);
             }
         } catch (const Fred::ExceptionUnknownCheckHandle& ) {
-            Admin::ExceptionUnknownCheckHandle();
+            throw Admin::ExceptionUnknownCheckHandle();
+
         } catch (const Fred::ExceptionUnknownCheckStatusHandle& ) {
-            Admin::ExceptionUnknownCheckStatusHandle();
+            throw Admin::ExceptionUnknownCheckStatusHandle();
         }
     }
 
