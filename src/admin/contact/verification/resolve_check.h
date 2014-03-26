@@ -72,6 +72,7 @@ namespace Admin {
              * Commits operation.
              * @throws Admin::ExceptionUnknownCheckHandle
              * @throws Admin::ExceptionUnknownCheckStatusHandle
+             * @throws Admin::ExceptionCheckNotUpdateable
              */
             void exec(Fred::OperationContext& _ctx);
     };
