@@ -1,3 +1,7 @@
+2014-03-26 Jiri Sadek (2.17.1)
+
+  * fix mojeid identification validator (country, postal code checks removed)
+
 2014-02-19 Michal Strnad, Jan Zima, Jiri Sadek (2.17.0)
 
   * fix input xml escaping for pdf document generator
