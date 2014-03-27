@@ -2028,4 +2028,96 @@ BOOST_FIXTURE_TEST_CASE(set_object_block_blocked_object, set_object_block_blocke
 
 BOOST_AUTO_TEST_SUITE_END();//setObjectBlockStatus
 
+BOOST_AUTO_TEST_SUITE(getDomainList)
+
+struct get_my_domains_fixture
+: mojeid_user_contact_fixture
+  , nsset_fixture
+  , keyset_fixture
+  , domain_browser_impl_instance_fixture
+{
+    std::string test_fqdn;
+    std::vector<Fred::InfoDomainOutput> domain_info;
+    get_my_domains_fixture()
+    : test_fqdn(std::string("test")+test_registrar_fixture::xmark+".cz")
+    {
+
+        Fred::OperationContext ctx;
+        for(int i = 0; i < 10; ++i)
+        {
+            std::ostringstream fqdn;
+            fqdn << "n"<<i<<test_fqdn;
+            Fred::CreateDomain(fqdn.str()//const std::string& fqdn
+                , test_registrar_handle//const std::string& registrar
+                , user_contact_handle//const std::string& registrant
+                , Optional<std::string>("testpasswd")//const Optional<std::string>& authinfo
+                , Nullable<std::string>(test_nsset_handle)//const Optional<Nullable<std::string> >& nsset
+                , Nullable<std::string>(test_keyset_handle)//const Optional<Nullable<std::string> >& keyset
+                , Util::vector_of<std::string>(admin_contact_fixture::test_contact_handle)//const std::vector<std::string>& admin_contacts
+                , boost::gregorian::day_clock::local_day()+boost::gregorian::months(12)//const Optional<boost::gregorian::date>& expiration_date
+                , Optional<boost::gregorian::date>()
+                , Optional<bool>()
+                , 0//const Optional<unsigned long long> logd_request_id
+                ).exec(ctx);
+            domain_info.push_back( Fred::InfoDomainByHandle(fqdn.str()).exec(ctx));
+
+            if(i%2)
+            {
+                BOOST_MESSAGE(fqdn.str() + " blocked");
+                Fred::CreateObjectStateRequestId(domain_info.at(i).info_domain_data.id,
+                    Util::set_of<std::string>(Fred::ObjectState::SERVER_BLOCKED)).exec(ctx);
+                Fred::PerformObjectStateRequest().set_object_id(domain_info.at(i).info_domain_data.id).exec(ctx);
+            }
+        }
+
+        ctx.commit_transaction();//commit fixture
+    }
+
+    ~get_my_domains_fixture()
+    {}
+};
+
+/**
+ * test call getDomainList
+*/
+BOOST_FIXTURE_TEST_CASE(get_my_domain_list, get_my_domains_fixture )
+{
+    Fred::OperationContext ctx;
+    std::vector<std::vector<std::string> > domain_list_out;
+    bool limit_exceeded = impl.getDomainList(user_contact_info.info_contact_data.id,"CS",0,domain_list_out);
+
+    std::ostringstream list_out;
+    list_out << "domain_list_out: \n";
+
+    for(unsigned long long i = 0; i < domain_list_out.size(); ++i)
+    {
+        for(unsigned long long j = 0; j < domain_list_out.at(i).size(); ++j)
+        {
+            list_out << " " <<domain_list_out.at(i).at(j);
+        }
+
+        list_out << "\n";
+    }
+    BOOST_MESSAGE(list_out.str());
+    BOOST_MESSAGE("limit_exceeded: " << limit_exceeded);
+
+    for(unsigned long long i = 0; i < domain_list_out.size(); ++i)
+    {
+        BOOST_CHECK(domain_list_out.at(i).at(1) == domain_info.at(i).info_domain_data.fqdn);
+
+        if(i%2)
+        {
+            BOOST_MESSAGE(domain_list_out.at(i).at(10));
+            BOOST_CHECK(domain_list_out.at(i).at(10) == "t");
+        }
+        else
+        {
+            BOOST_MESSAGE(domain_list_out.at(i).at(10));
+            BOOST_CHECK(domain_list_out.at(i).at(10) == "f");
+        }
+    }
+}
+
+BOOST_AUTO_TEST_SUITE_END();//getDomainList
+
 BOOST_AUTO_TEST_SUITE_END();//TestDomainBrowser
