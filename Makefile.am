@@ -1500,6 +1500,7 @@ src_corba_fred_adifd_LDADD = \
 		src/old_utils/liboldutils.a \
 		util/libutil.a \
 		-lmpdec -lm \
+		-lresolv \
 		$(OMNIORB4_LIBS) \
 		$(LIBIDN_LIBS) \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
