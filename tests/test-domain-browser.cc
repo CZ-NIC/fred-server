@@ -18,11 +18,14 @@
 
 #include <string>
 #include <utility>
+#include <vector>
+#include <map>
 
 #include <boost/lexical_cast.hpp>
 
 #include "src/fredlib/domain/info_domain.h"
 #include "src/fredlib/domain/create_domain.h"
+#include "src/fredlib/domain/update_domain.h"
 #include "src/fredlib/keyset/info_keyset.h"
 #include "src/fredlib/keyset/create_keyset.h"
 #include "src/fredlib/nsset/info_nsset.h"
@@ -40,6 +43,7 @@
 #include "src/fredlib/opexception.h"
 #include "src/fredlib/opcontext.h"
 #include "util/util.h"
+#include "util/map_at.h"
 
 #include "random_data_generator.h"
 
@@ -2037,7 +2041,7 @@ struct get_my_domains_fixture
   , domain_browser_impl_instance_fixture
 {
     std::string test_fqdn;
-    std::vector<Fred::InfoDomainOutput> domain_info;
+    std::map<std::string,Fred::InfoDomainOutput> domain_info;
     get_my_domains_fixture()
     : test_fqdn(std::string("test")+test_registrar_fixture::xmark+".cz")
     {
@@ -2059,15 +2063,29 @@ struct get_my_domains_fixture
                 , Optional<bool>()
                 , 0//const Optional<unsigned long long> logd_request_id
                 ).exec(ctx);
-            domain_info.push_back( Fred::InfoDomainByHandle(fqdn.str()).exec(ctx));
+
+            domain_info[fqdn.str()]= Fred::InfoDomainByHandle(fqdn.str()).exec(ctx);
 
             if(i%2)
             {
                 BOOST_MESSAGE(fqdn.str() + " blocked");
-                Fred::CreateObjectStateRequestId(domain_info.at(i).info_domain_data.id,
+                Fred::CreateObjectStateRequestId(map_at(domain_info,fqdn.str()).info_domain_data.id,
                     Util::set_of<std::string>(Fred::ObjectState::SERVER_BLOCKED)).exec(ctx);
-                Fred::PerformObjectStateRequest().set_object_id(domain_info.at(i).info_domain_data.id).exec(ctx);
+                Fred::PerformObjectStateRequest().set_object_id(map_at(domain_info,fqdn.str()).info_domain_data.id).exec(ctx);
             }
+        }
+
+        {
+            std::ostringstream fqdn;
+            fqdn << "n"<<1<<test_fqdn;
+            Fred::UpdateDomain(fqdn.str(), test_registrar_handle).set_domain_expiration(
+                boost::gregorian::day_clock::day_clock::local_day() - boost::gregorian::days(1)).exec(ctx);
+        }
+
+        {   std::ostringstream fqdn;
+            fqdn << "n"<<2<<test_fqdn;
+            Fred::UpdateDomain(fqdn.str(), test_registrar_handle).set_domain_expiration(
+                boost::gregorian::day_clock::day_clock::local_day() - boost::gregorian::days(40)).exec(ctx);
         }
 
         ctx.commit_transaction();//commit fixture
@@ -2101,9 +2119,15 @@ BOOST_FIXTURE_TEST_CASE(get_my_domain_list, get_my_domains_fixture )
     BOOST_MESSAGE(list_out.str());
     BOOST_MESSAGE("limit_exceeded: " << limit_exceeded);
 
+
+    BOOST_CHECK(domain_list_out.at(0).at(3) == "deleteCandidate");
+    BOOST_CHECK(domain_list_out.at(1).at(3) == "outzone");
+    BOOST_CHECK(domain_list_out.at(2).at(3) == "expired");
+
     for(unsigned long long i = 0; i < domain_list_out.size(); ++i)
     {
-        BOOST_CHECK(domain_list_out.at(i).at(1) == domain_info.at(i).info_domain_data.fqdn);
+        BOOST_CHECK(domain_list_out.at(i).at(0) == boost::lexical_cast<std::string>(map_at(domain_info,domain_list_out.at(i).at(1)).info_domain_data.id));
+        BOOST_CHECK(domain_list_out.at(i).at(1) == map_at(domain_info,domain_list_out.at(i).at(1)).info_domain_data.fqdn);
 
         if(i%2)
         {
