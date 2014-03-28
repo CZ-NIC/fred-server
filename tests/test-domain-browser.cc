@@ -2042,8 +2042,15 @@ struct get_my_domains_fixture
 {
     std::string test_fqdn;
     std::map<std::string,Fred::InfoDomainOutput> domain_info;
+    boost::gregorian::date current_local_day;
+    unsigned outzone_protection;
+    unsigned registration_protection;
+
     get_my_domains_fixture()
     : test_fqdn(std::string("test")+test_registrar_fixture::xmark+".cz")
+    , current_local_day(boost::gregorian::day_clock::day_clock::local_day())
+    , outzone_protection(0)
+    , registration_protection(0)
     {
 
         Fred::OperationContext ctx;
@@ -2075,17 +2082,27 @@ struct get_my_domains_fixture
             }
         }
 
+        Database::Result protection_result = ctx.get_conn().exec(
+        "SELECT (SELECT val::integer FROM enum_parameters WHERE name = 'expiration_dns_protection_period') AS outzone_protection, "
+        " (SELECT val::integer FROM enum_parameters WHERE name = 'expiration_registration_protection_period') AS registration_protection ");
+
+        outzone_protection = static_cast<unsigned>(protection_result[0]["outzone_protection"]);
+        registration_protection = static_cast<unsigned>(protection_result[0]["registration_protection"]);
+
         {
             std::ostringstream fqdn;
             fqdn << "n"<<1<<test_fqdn;
             Fred::UpdateDomain(fqdn.str(), test_registrar_handle).set_domain_expiration(
-                boost::gregorian::day_clock::day_clock::local_day() - boost::gregorian::days(1)).exec(ctx);
+                    current_local_day - boost::gregorian::days(1)).exec(ctx);
+
+            domain_info[fqdn.str()]= Fred::InfoDomainByHandle(fqdn.str()).exec(ctx);
         }
 
         {   std::ostringstream fqdn;
             fqdn << "n"<<2<<test_fqdn;
             Fred::UpdateDomain(fqdn.str(), test_registrar_handle).set_domain_expiration(
-                boost::gregorian::day_clock::day_clock::local_day() - boost::gregorian::days(40)).exec(ctx);
+                    current_local_day - boost::gregorian::days(outzone_protection+1)).exec(ctx);
+            domain_info[fqdn.str()]= Fred::InfoDomainByHandle(fqdn.str()).exec(ctx);
         }
 
         ctx.commit_transaction();//commit fixture
@@ -2121,8 +2138,13 @@ BOOST_FIXTURE_TEST_CASE(get_my_domain_list, get_my_domains_fixture )
 
 
     BOOST_CHECK(domain_list_out.at(0).at(3) == "deleteCandidate");
+    BOOST_CHECK(boost::gregorian::from_simple_string(domain_list_out.at(0).at(4)) == (map_at(domain_info,domain_list_out.at(0).at(1)).info_domain_data.expiration_date + boost::gregorian::days(registration_protection)));
+
     BOOST_CHECK(domain_list_out.at(1).at(3) == "outzone");
+    BOOST_CHECK(boost::gregorian::from_simple_string(domain_list_out.at(1).at(4)) == (map_at(domain_info,domain_list_out.at(1).at(1)).info_domain_data.expiration_date + boost::gregorian::days(outzone_protection)));
+
     BOOST_CHECK(domain_list_out.at(2).at(3) == "expired");
+    BOOST_CHECK(boost::gregorian::from_simple_string(domain_list_out.at(2).at(4)) == (map_at(domain_info,domain_list_out.at(2).at(1)).info_domain_data.expiration_date));
 
     for(unsigned long long i = 0; i < domain_list_out.size(); ++i)
     {
