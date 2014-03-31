@@ -2164,6 +2164,33 @@ BOOST_FIXTURE_TEST_CASE(get_my_domain_list, get_my_domains_fixture )
     }
 }
 
+
+
+struct get_domain_list_user_not_in_mojeid_fixture
+: user_contact_fixture
+, domain_browser_impl_instance_fixture
+{};
+/**
+ * test getDomainList non-mojeid user
+ */
+BOOST_FIXTURE_TEST_CASE(get_domain_list_user_not_in_mojeid, get_domain_list_user_not_in_mojeid_fixture )
+{
+    try
+    {
+        Fred::OperationContext ctx;
+        std::vector<std::vector<std::string> > domain_list_out;
+        impl.getDomainList(user_contact_info.info_contact_data.id,"CS",0,domain_list_out);
+
+        BOOST_ERROR("unreported missing user");
+    }
+    catch( const Registry::DomainBrowserImpl::UserNotExists& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
+
 BOOST_AUTO_TEST_SUITE_END();//getDomainList
 
 BOOST_AUTO_TEST_SUITE_END();//TestDomainBrowser
