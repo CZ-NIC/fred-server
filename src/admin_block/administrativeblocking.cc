@@ -1,4 +1,4 @@
-*
+/*
  * Copyright (C) 2012  CZ.NIC, z.s.p.o.
  *
  * This file is part of FRED.
