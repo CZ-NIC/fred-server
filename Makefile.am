@@ -165,6 +165,7 @@ noinst_HEADERS = \
 		util/types/optional.h \
 		util/types/optional_from_program_options.h \
 		util/types/money.h \
+		util/xmlgen.h \
 		tests/exception-test.h \
 		util/factory.h \
 		util/factory_check.h \
