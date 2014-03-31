@@ -32,7 +32,6 @@
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/domain/enum_validation_extension.h"
 #include "util/db/nullable.h"
-#include "cfg/handle_registry_args.h"
 
 namespace Registry
 {
@@ -268,6 +267,29 @@ namespace Registry
             {}
         };
 
+        /**
+         * Next domain state data.
+         */
+        struct NextDomainState
+        {
+            std::string state; /**< next state */
+            boost::gregorian::date state_date; /**< next state date*/
+
+            /**
+             * Default state is "N/A" and default date is not_a_date_time.
+             */
+            NextDomainState()
+            : state("N/A")
+            {}
+
+            /**
+             * Init both members.
+             */
+            NextDomainState(const std::string& _state, const boost::gregorian::date& _state_date)
+            : state(_state)
+            , state_date(_state_date)
+            {}
+        };
 
         /**
          * Internal server error.
@@ -364,6 +386,9 @@ namespace Registry
         {
             std::string server_name_;
             std::string update_registrar_;/**< handle of registrar performing the updates */
+            unsigned int domain_list_limit_;/**< domain list chunk size */
+
+            unsigned int minimal_status_importance_;
 
             /**
              * Fill object state codes and description into given strings.
@@ -372,8 +397,9 @@ namespace Registry
              * @param lang is required language of object state description e.g. "EN" or "CS"
              * @param state_codes is output string of object state codes delimited by '|'
              * @param states is output string with descriptions of external object states delimited by ','
+             * @return bitwise inclusive OR of external states importance with server blocked flag
              */
-            void get_object_states(Fred::OperationContext& ctx, unsigned long long object_id, const std::string& lang
+             std::pair<long,bool> get_object_states(Fred::OperationContext& ctx, unsigned long long object_id, const std::string& lang
                     , std::string& state_codes, std::string& states);
 
             /**
@@ -384,9 +410,34 @@ namespace Registry
              */
             std::string filter_authinfo(bool user_is_owner,const std::string& authinfopw);
 
+            /**
+             * Get next domain state from given dates.
+             *
+\verbatim
+
+ # resolve next domain state:
+ #    today   exdate         protected period
+ #      |       |<- - - - - - - - - - - - - - - - - - ->|
+ # |------------|-------------------|-------------------|------------>
+ #             0|                +30|                +61|
+ #          expiration           outzone              delete
+
+\endverbatim
+             * @param today_date current date
+             * @param expiration_date domain expiration
+             * @param outzone_date domain outzone date
+             * @param delete_date domain delete date
+             */
+            NextDomainState getNextDomainState(
+                const boost::gregorian::date&  today_date,
+                const boost::gregorian::date& expiration_date,
+                const boost::gregorian::date& outzone_date,
+                const boost::gregorian::date& delete_date);
+
         public:
-            //dummy decl - impl
-            DomainBrowser(const std::string &server_name);
+            DomainBrowser(const std::string &server_name,
+                    const std::string& update_registrar_handle,
+                    unsigned int domain_list_limit);
             virtual ~DomainBrowser();
 
             unsigned long long getObjectRegistryId(const std::string& objtype, const std::string& handle);
@@ -482,6 +533,20 @@ namespace Registry
                 const std::vector<unsigned long long>& object_id,
                 unsigned block_type,
                 std::vector<std::string>& blocked_objects);
+
+            /**
+             * Get domain list.
+             * @param user_contact_id contains database id of the user contact
+             * @param lang contains language for state description "EN" or "CS"
+             * @param offset contains list offset
+             * @param  domain_list_out references output domain list
+             * @return limit_exceeded flag
+             */
+            bool getDomainList(unsigned long long user_contact_id,
+                const std::string& lang,
+                unsigned long long offset,
+                std::vector<std::vector<std::string> >& domain_list_out);
+
 
             std::string get_server_name();
         };//class DomainBrowser

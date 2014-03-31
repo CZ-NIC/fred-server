@@ -120,3 +120,8 @@ hostname = demo.contactverification.cz
 # demo_mode = true - uses constant PINs (do not use on production)
 demo_mode = false
 
+##
+# domain browser server settings
+##
+[domain_browser]
+list_domains_limit=5000
