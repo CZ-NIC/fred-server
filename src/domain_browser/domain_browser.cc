@@ -914,8 +914,10 @@ namespace Registry
             Fred::OperationContext ctx;
             check_user_contact_id<UserNotExists>(ctx, user_contact_id);
 
-            Database::Result domain_list_result = ctx.get_conn().exec_params(
-                "SELECT "
+            Database::QueryParams params;
+            std::ostringstream sql;
+            params.push_back(user_contact_id);
+            sql << "SELECT "
                     "oreg.id AS id, "
                     "oreg.name AS fqdn, "
                     "registrar.handle AS registrar_handle, "
@@ -923,7 +925,9 @@ namespace Registry
                     "domain.exdate AS expiration_date, "
                     "domain.registrant AS registrant_id, "
                     "domain.keyset IS NOT NULL AS have_keyset, "
-                    "CASE WHEN domain.registrant = $1::bigint THEN 'holder' ELSE 'admin' END AS user_role,"
+                    "CASE WHEN domain.registrant = $" << params.size() << "::bigint THEN 'holder'::text ELSE "
+                        "CASE WHEN domain_contact_map.contactid = $" << params.size() << "::bigint THEN 'admin'::text ELSE ''::text END "
+                    "END AS user_role,"
                     "CURRENT_DATE AS today_date, "
                     "(domain.exdate + (SELECT val || ' day' FROM enum_parameters "
                     " WHERE name = 'expiration_dns_protection_period')::interval)::date as outzone_date, "
@@ -935,12 +939,18 @@ namespace Registry
                 "JOIN registrar ON registrar.id = object.clid "
                 "LEFT JOIN domain_contact_map ON domain_contact_map.domainid = domain.id "
                     "AND domain_contact_map.role = 1 " //admin
-                    "AND domain_contact_map.contactid = $1::bigint "
-                "WHERE oreg.erdate is null AND (domain_contact_map.contactid = $1::bigint "
-                    "OR domain.registrant = $1::bigint) "
-                "ORDER BY domain.exdate, domain.id "
-                "LIMIT $2::bigint OFFSET $3::bigint "
-            , Database::query_param_list(user_contact_id)(domain_list_limit_+1)(offset));
+                    "AND domain_contact_map.contactid = $" << params.size() << "::bigint "
+                "WHERE oreg.erdate is null AND (domain_contact_map.contactid = $" << params.size() << "::bigint "
+                    "OR domain.registrant = $" << params.size() << "::bigint) ";
+
+            params.push_back(domain_list_limit_+1);
+            sql << "ORDER BY domain.exdate, domain.id "
+                "LIMIT $" << params.size() << "::bigint ";
+
+            params.push_back(offset);
+            sql << "OFFSET $" << params.size() << "::bigint ";
+
+            Database::Result domain_list_result = ctx.get_conn().exec_params(sql.str(), params);
 
             unsigned long long limited_domain_list_size = (domain_list_result.size() > domain_list_limit_)
                 ? domain_list_limit_ : domain_list_result.size();
