@@ -36,9 +36,8 @@
 #include "src/fredlib/domain/info_domain.h"
 #include "src/fredlib/contact/copy_contact.h"
 
-#include "log/logger.h"
-#include "random.h"
-#include "src/corba/connection_releaser.h"
+#include "util/log/context.h"
+#include "util/random.h"
 
 #include <memory>
 #include <map>
