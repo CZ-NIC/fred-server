@@ -1,4 +1,4 @@
-/*
+*
  * Copyright (C) 2012  CZ.NIC, z.s.p.o.
  *
  * This file is part of FRED.
@@ -35,6 +35,11 @@
 #include "src/fredlib/domain/delete_domain.h"
 #include "src/fredlib/domain/info_domain.h"
 #include "src/fredlib/contact/copy_contact.h"
+
+#include "log/logger.h"
+#include "random.h"
+#include "src/corba/connection_releaser.h"
+
 #include <memory>
 #include <map>
 
@@ -42,6 +47,11 @@ namespace
 {
 
 enum { OBJECT_TYPE_DOMAIN = 3 };
+
+std::string create_ctx_name(const std::string &_name)
+{
+    return str(boost::format("%1%-<%2%>")% _name % Random::integer(0, 10000));
+}
 
 }
 
@@ -52,6 +62,8 @@ namespace Registry
 
         Fred::GetBlockingStatusDescList::StatusDescList BlockingImpl::getBlockingStatusDescList(const std::string &_lang)
         {
+            Logging::Context ctx_server(this->get_server_name());
+            Logging::Context ctx_method("get-blocking-status-desc-list");
             try {
                 Fred::OperationContext ctx;
                 Fred::GetBlockingStatusDescList blocking_status_desc_list;
@@ -335,6 +347,9 @@ namespace Registry
             const std::string &_reason,
             unsigned long long _log_req_id)
         {
+            Logging::Context ctx_server(this->get_server_name());
+            Logging::Context ctx_method("block-domains-id");
+
             EX_DOMAIN_ID_NOT_FOUND domain_id_not_found;
             EX_UNKNOWN_STATUS unknown_status;
             EX_DOMAIN_ID_ALREADY_BLOCKED domain_id_already_blocked;
@@ -535,6 +550,9 @@ namespace Registry
             const std::string &_reason,
             unsigned long long _log_req_id)
         {
+            Logging::Context ctx_server(this->get_server_name());
+            Logging::Context ctx_method("restore-pre-administrative-block-states-id");
+
             EX_DOMAIN_ID_NOT_BLOCKED domain_id_not_blocked;
             try {
                 Fred::OperationContext ctx;
@@ -631,6 +649,9 @@ namespace Registry
             const std::string &_reason,
             unsigned long long _log_req_id)
         {
+            Logging::Context ctx_server(this->get_server_name());
+            Logging::Context ctx_method("update-block-domains-id");
+
             EX_DOMAIN_ID_NOT_FOUND domain_id_not_found;
             EX_UNKNOWN_STATUS unknown_status;
             try {
@@ -711,6 +732,9 @@ namespace Registry
             const std::string &_reason,
             unsigned long long _log_req_id)
         {
+            Logging::Context ctx_server(this->get_server_name());
+            Logging::Context ctx_method("unblock-domains-id");
+
             EX_DOMAIN_ID_NOT_BLOCKED domain_id_not_blocked;
             try {
                 Fred::OperationContext ctx;
@@ -825,6 +849,9 @@ namespace Registry
             const std::string &_reason,
             unsigned long long _log_req_id)
         {
+            Logging::Context ctx_server(this->get_server_name());
+            Logging::Context ctx_method("blacklist-and-delete-domains-id");
+
             EX_DOMAIN_ID_NOT_FOUND domain_id_not_found;
             try {
                 boost::posix_time::ptime blacklist_to_limit;
@@ -888,6 +915,9 @@ namespace Registry
             bool _with_delete,
             unsigned long long _log_req_id)
         {
+            Logging::Context ctx_server(this->get_server_name());
+            Logging::Context ctx_method("blacklist-domains-id");
+
             try {
                 boost::posix_time::ptime blacklist_to_limit;
                 if (!_blacklist_to_date.isnull()) {
