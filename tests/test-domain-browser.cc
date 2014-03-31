@@ -2151,6 +2151,12 @@ BOOST_FIXTURE_TEST_CASE(get_my_domain_list, get_my_domains_fixture )
         BOOST_CHECK(domain_list_out.at(i).at(0) == boost::lexical_cast<std::string>(map_at(domain_info,domain_list_out.at(i).at(1)).info_domain_data.id));
         BOOST_CHECK(domain_list_out.at(i).at(1) == map_at(domain_info,domain_list_out.at(i).at(1)).info_domain_data.fqdn);
 
+
+        BOOST_CHECK(domain_list_out.at(i).at(5) == "t");//have keyset
+        BOOST_CHECK(domain_list_out.at(i).at(6) == "holder");//role
+        BOOST_CHECK(domain_list_out.at(i).at(7) == test_registrar_handle);//registrar handle
+        BOOST_CHECK(domain_list_out.at(i).at(8) == boost::algorithm::replace_first_copy(test_registrar_handle, "-HANDLE", " NAME"));//registrar name
+
         if(i%2)
         {
             BOOST_MESSAGE(domain_list_out.at(i).at(10));
