@@ -1789,8 +1789,7 @@ src_cli_admin_fred_admin_SOURCES = \
 		
 src_cli_admin_fred_admin_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS) \
-		# using xpath in contact verification test for czech address
-		$(XML2_LIBS)
+		$(XML2_LIBS)	# using xpath in contact verification test for czech address
 
 src_cli_admin_fred_admin_LDADD = \
 		src/admin/contact/verification/libadmin_contact_verification.a \
