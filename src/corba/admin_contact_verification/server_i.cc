@@ -149,31 +149,31 @@ namespace Corba {
 
         long list_index = 0;
         for(std::vector<Fred::ListChecksItem>::const_iterator it = in.begin(); it != in.end(); ++it, ++list_index) {
-            out->operator[](list_index).check_handle =          Corba::wrap_string(it->check_handle);
-            out->operator[](list_index).test_suite_handle =     Corba::wrap_string(it->testsuite_handle);
-            out->operator[](list_index).contact_handle =        Corba::wrap_string(it->contact_handle);
-            out->operator[](list_index).contact_id =            it->contact_id;
-            out->operator[](list_index).checked_contact_hid =   it->contact_history_id;
-            out->operator[](list_index).created =               Corba::wrap_time(it->local_create_time);
-            out->operator[](list_index).updated =               Corba::wrap_time(it->local_update_time);
-            out->operator[](list_index).last_contact_update =   Corba::wrap_time(it->local_last_contact_update);
-            out->operator[](list_index).last_test_finished =    Corba::wrap_nullable_datetime(it->last_test_finished_local_time);
-            out->operator[](list_index).current_status =        Corba::wrap_string(it->status_handle);
+            out[list_index].check_handle =          Corba::wrap_string(it->check_handle);
+            out[list_index].test_suite_handle =     Corba::wrap_string(it->testsuite_handle);
+            out[list_index].contact_handle =        Corba::wrap_string(it->contact_handle);
+            out[list_index].contact_id =            it->contact_id;
+            out[list_index].checked_contact_hid =   it->contact_history_id;
+            out[list_index].created =               Corba::wrap_time(it->local_create_time);
+            out[list_index].updated =               Corba::wrap_time(it->local_update_time);
+            out[list_index].last_contact_update =   Corba::wrap_time(it->local_last_contact_update);
+            out[list_index].last_test_finished =    Corba::wrap_nullable_datetime(it->last_test_finished_local_time);
+            out[list_index].current_status =        Corba::wrap_string(it->status_handle);
         }
     }
 
     template<typename Tin, typename Tout>
         static void wrap_enum(const Tin& in, Tout& out) {
-            (out.operator->())->length(in.size());
+            out->length(in.size());
 
             long out_index = 0;
             for(typename Tin::const_iterator in_it = in.begin();
                 in_it != in.end();
                 ++in_it, ++out_index
             ) {
-                out->operator [](out_index).handle =        Corba::wrap_string(in_it->handle);
-                out->operator [](out_index).name =          Corba::wrap_string(in_it->name);
-                out->operator [](out_index).description =   Corba::wrap_string(in_it->description);
+                out[out_index].handle =        Corba::wrap_string(in_it->handle);
+                out[out_index].name =          Corba::wrap_string(in_it->name);
+                out[out_index].description =   Corba::wrap_string(in_it->description);
             }
         }
 
@@ -211,7 +211,7 @@ namespace Corba {
         ) {
             Registry::AdminContactVerification::ContactTestDefSeq_var temp_tests(new Registry::AdminContactVerification::ContactTestDefSeq);
             Corba::wrap_test_definitions(in_it->tests, temp_tests );
-            out->operator [](out_index).tests = temp_tests;
+            out[out_index].tests = temp_tests;
         }
     }
 

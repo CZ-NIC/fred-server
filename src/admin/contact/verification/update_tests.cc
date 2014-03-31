@@ -27,7 +27,7 @@ namespace  Admin {
 
         try {
             for(vector<pair<string, string> >::const_iterator it = _test_statuses.begin();
-                it != _test_statuses.begin();
+                it != _test_statuses.end();
                 ++it
             ) {
                 Fred::UpdateContactTest(

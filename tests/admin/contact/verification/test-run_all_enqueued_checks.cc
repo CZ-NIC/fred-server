@@ -253,14 +253,11 @@ BOOST_AUTO_TEST_CASE(test_Incorrect_test_return_handling)
 
         ctx.commit_transaction();
 
-        bool caught_the_right_exception = false;
         try {
             Admin::run_all_enqueued_checks( test_impls_ );
-        } catch(Fred::InternalError& ) {
-            caught_the_right_exception = true;
-        } catch(...) { }
-
-        BOOST_CHECK_EQUAL(caught_the_right_exception, true);
+        } catch(...) {
+            BOOST_FAIL("should have been swallowed");
+        }
     }
 
     // returning RUNNING
@@ -279,14 +276,11 @@ BOOST_AUTO_TEST_CASE(test_Incorrect_test_return_handling)
         setup_testdef_in_testsuite(handle, testsuite.testsuite_handle);
         setup_check check(testsuite.testsuite_handle);
 
-        bool caught_the_right_exception = false;
         try {
             Admin::run_all_enqueued_checks( test_impls_ );
-        } catch(Fred::InternalError& ) {
-            caught_the_right_exception = true;
-        } catch(...) { }
-
-        BOOST_CHECK_EQUAL(caught_the_right_exception, true);
+        } catch(...) {
+            BOOST_FAIL("should have been swallowed");
+        }
     }
 }
 
@@ -309,13 +303,11 @@ BOOST_AUTO_TEST_CASE(test_Throwing_test_handling)
     setup_testdef_in_testsuite(handle, testsuite.testsuite_handle);
     setup_check check(testsuite.testsuite_handle);
 
-    bool caught_some_exception = false;
     try {
         Admin::run_all_enqueued_checks( test_impls_ );
     } catch (...) {
-        caught_some_exception = true;
+        BOOST_FAIL("should have been swallowed");
     }
-    BOOST_CHECK_EQUAL(caught_some_exception, true);
 
     Fred::InfoContactCheckOutput final_check_state;
 
