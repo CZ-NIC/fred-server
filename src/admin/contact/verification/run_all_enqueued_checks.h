@@ -37,7 +37,7 @@ namespace Admin {
      * Randomly (by happenstance, not even pseudo-random) runs all enqueued checks one by one
      *
      * @param _tests map of test objects denoted by their name
-     * @return handles of executed check ordered by execution (first in vector - first executed)
+     * @return handles of executed (finalized) check ordered by execution (first in vector - first executed)
      */
     std::vector<std::string> run_all_enqueued_checks(
         const std::map<std::string, boost::shared_ptr<Admin::ContactVerification::Test> >& _tests,
