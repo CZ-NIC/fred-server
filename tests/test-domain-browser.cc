@@ -2139,18 +2139,19 @@ BOOST_FIXTURE_TEST_CASE(get_my_domain_list, get_my_domains_fixture )
 
     BOOST_CHECK(domain_list_out.at(0).at(3) == "deleteCandidate");
     BOOST_CHECK(boost::gregorian::from_simple_string(domain_list_out.at(0).at(4)) == (map_at(domain_info,domain_list_out.at(0).at(1)).info_domain_data.expiration_date + boost::gregorian::days(registration_protection)));
+    BOOST_CHECK(domain_list_out.at(0).at(9) == "Doména je po expiraci|Doména není generována do zóny");
 
     BOOST_CHECK(domain_list_out.at(1).at(3) == "outzone");
     BOOST_CHECK(boost::gregorian::from_simple_string(domain_list_out.at(1).at(4)) == (map_at(domain_info,domain_list_out.at(1).at(1)).info_domain_data.expiration_date + boost::gregorian::days(outzone_protection)));
+    BOOST_CHECK(domain_list_out.at(1).at(9) == "Doména je po expiraci|Doména je blokována");
 
     BOOST_CHECK(domain_list_out.at(2).at(3) == "expired");
     BOOST_CHECK(boost::gregorian::from_simple_string(domain_list_out.at(2).at(4)) == (map_at(domain_info,domain_list_out.at(2).at(1)).info_domain_data.expiration_date));
-
+    BOOST_CHECK(domain_list_out.at(2).at(9) == "");
     for(unsigned long long i = 0; i < domain_list_out.size(); ++i)
     {
         BOOST_CHECK(domain_list_out.at(i).at(0) == boost::lexical_cast<std::string>(map_at(domain_info,domain_list_out.at(i).at(1)).info_domain_data.id));
         BOOST_CHECK(domain_list_out.at(i).at(1) == map_at(domain_info,domain_list_out.at(i).at(1)).info_domain_data.fqdn);
-
 
         BOOST_CHECK(domain_list_out.at(i).at(5) == "t");//have keyset
         BOOST_CHECK(domain_list_out.at(i).at(6) == "holder");//role
@@ -2161,6 +2162,7 @@ BOOST_FIXTURE_TEST_CASE(get_my_domain_list, get_my_domains_fixture )
         {
             BOOST_MESSAGE(domain_list_out.at(i).at(10));
             BOOST_CHECK(domain_list_out.at(i).at(10) == "t");
+            if(i > 2) BOOST_CHECK(domain_list_out.at(i).at(9) == "Doména je blokována");
         }
         else
         {
