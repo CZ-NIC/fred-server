@@ -75,7 +75,7 @@ namespace Registry
             try
             {
                 std::vector<std::vector<std::string> > domain_list_out;
-                limit_exceeded = pimpl_->getDomainList(contact.id, lang, offset, domain_list_out);
+                limit_exceeded = pimpl_->getDomainList(contact.id, Optional<unsigned long long>(),  lang, offset, domain_list_out);
 
                 RecordSet_var rs = new RecordSet;
                 rs->length(domain_list_out.size());
@@ -239,35 +239,47 @@ namespace Registry
         {
             try
             {
+                std::vector<std::vector<std::string> > domain_list_out;
+                limit_exceeded = pimpl_->getDomainList(contact.id,
+                        Optional<unsigned long long>(nsset.id),  lang, offset, domain_list_out);
+
                 RecordSet_var rs = new RecordSet;
-                rs->length(1);
-
-                RecordSequence_var rseq = new RecordSequence;
-                rseq->length(1);
-
-                RegistryObject_var robject = CORBA::string_dup("test_object");
-
-                rseq[0] = robject._retn();
-
-                rs[0] = rseq;
-
+                rs->length(domain_list_out.size());
+                for(unsigned long long i = 0 ; i < domain_list_out.size(); ++i)
+                {
+                    RecordSequence rseq;
+                    rseq.length(domain_list_out.at(i).size());
+                    for(unsigned long long j = 0 ; j < domain_list_out.at(i).size(); ++j)
+                    {
+                        rseq[j] = CORBA::string_dup(domain_list_out.at(i).at(j).c_str());
+                    }
+                    rs[i] = rseq;
+                }
                 return rs._retn();
             }//try
-            catch (std::exception &_ex)
+            catch (const Registry::DomainBrowserImpl::AccessDenied&)
             {
                 throw Registry::DomainBrowser::ACCESS_DENIED();
             }
-            catch (std::exception &_ex)
+            catch (const Registry::DomainBrowserImpl::ObjectNotExists&)
             {
                 throw Registry::DomainBrowser::OBJECT_NOT_EXISTS();
             }
-            catch (std::exception &_ex)
+            catch (const Registry::DomainBrowserImpl::UserNotExists& )
             {
                 throw Registry::DomainBrowser::USER_NOT_EXISTS();
             }
-            catch (std::exception &_ex)
+            catch (const Registry::DomainBrowserImpl::IncorrectUsage& )
             {
                 throw Registry::DomainBrowser::INCORRECT_USAGE();
+            }
+            catch (const boost::exception&)
+            {
+                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
+            }
+            catch (const std::exception&)
+            {
+                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
             }
             catch (...)
             {

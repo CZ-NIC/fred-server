@@ -32,6 +32,7 @@
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/domain/enum_validation_extension.h"
 #include "util/db/nullable.h"
+#include "util/optional_value.h"
 
 namespace Registry
 {
@@ -537,12 +538,14 @@ namespace Registry
             /**
              * Get domain list.
              * @param user_contact_id contains database id of the user contact
+             * @param list_domains_for_nsset_id optionally list domains linked to nsset with given id regardless of user contact relation to listed domains
              * @param lang contains language for state description "EN" or "CS"
              * @param offset contains list offset
              * @param  domain_list_out references output domain list
              * @return limit_exceeded flag
              */
             bool getDomainList(unsigned long long user_contact_id,
+                const Optional<unsigned long long>& list_domains_for_nsset_id,
                 const std::string& lang,
                 unsigned long long offset,
                 std::vector<std::vector<std::string> >& domain_list_out);

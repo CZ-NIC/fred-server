@@ -30,6 +30,7 @@
 #include "src/fredlib/keyset/create_keyset.h"
 #include "src/fredlib/nsset/info_nsset.h"
 #include "src/fredlib/nsset/create_nsset.h"
+#include "src/fredlib/nsset/update_nsset.h"
 #include "src/fredlib/contact/create_contact.h"
 #include "src/fredlib/contact/info_contact.h"
 #include "src/fredlib/contact/update_contact.h"
@@ -187,6 +188,7 @@ struct admin_contact_fixture
 struct nsset_fixture
 : virtual admin_contact_fixture
 {
+    Fred::InfoNssetOutput nsset_info;
     std::string test_nsset_handle;
     nsset_fixture()
     : test_nsset_handle(std::string("TEST-NSSET-HANDLE")+xmark)
@@ -199,7 +201,7 @@ struct nsset_fixture
             (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.4")("127.1.1.4"))) //add_dns
             ).exec(ctx);
 
-        Fred::InfoNssetOutput nsset_info = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
+        nsset_info = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
 
         Fred::CreateObjectStateRequestId(nsset_info.info_nsset_data.id,
             Util::set_of<std::string>(Fred::ObjectState::SERVER_DELETE_PROHIBITED)).exec(ctx);
@@ -2119,7 +2121,73 @@ BOOST_FIXTURE_TEST_CASE(get_my_domain_list, get_my_domains_fixture )
 {
     Fred::OperationContext ctx;
     std::vector<std::vector<std::string> > domain_list_out;
-    bool limit_exceeded = impl.getDomainList(user_contact_info.info_contact_data.id,"CS",0,domain_list_out);
+    bool limit_exceeded = impl.getDomainList(user_contact_info.info_contact_data.id,
+            Optional<unsigned long long>(),"CS",0,domain_list_out);
+
+    std::ostringstream list_out;
+    list_out << "domain_list_out: \n";
+
+    for(unsigned long long i = 0; i < domain_list_out.size(); ++i)
+    {
+        for(unsigned long long j = 0; j < domain_list_out.at(i).size(); ++j)
+        {
+            list_out << " " <<domain_list_out.at(i).at(j);
+        }
+
+        list_out << "\n";
+    }
+    BOOST_MESSAGE(list_out.str());
+    BOOST_MESSAGE("limit_exceeded: " << limit_exceeded);
+
+
+    BOOST_CHECK(domain_list_out.at(0).at(3) == "deleteCandidate");
+    BOOST_CHECK(boost::gregorian::from_simple_string(domain_list_out.at(0).at(4)) == (map_at(domain_info,domain_list_out.at(0).at(1)).info_domain_data.expiration_date + boost::gregorian::days(registration_protection)));
+    BOOST_CHECK(domain_list_out.at(0).at(9) == "Doména je po expiraci|Doména není generována do zóny");
+
+    BOOST_CHECK(domain_list_out.at(1).at(3) == "outzone");
+    BOOST_CHECK(boost::gregorian::from_simple_string(domain_list_out.at(1).at(4)) == (map_at(domain_info,domain_list_out.at(1).at(1)).info_domain_data.expiration_date + boost::gregorian::days(outzone_protection)));
+    BOOST_CHECK(domain_list_out.at(1).at(9) == "Doména je po expiraci|Doména je blokována");
+
+    BOOST_CHECK(domain_list_out.at(2).at(3) == "expired");
+    BOOST_CHECK(boost::gregorian::from_simple_string(domain_list_out.at(2).at(4)) == (map_at(domain_info,domain_list_out.at(2).at(1)).info_domain_data.expiration_date));
+    BOOST_CHECK(domain_list_out.at(2).at(9) == "");
+    for(unsigned long long i = 0; i < domain_list_out.size(); ++i)
+    {
+        BOOST_CHECK(domain_list_out.at(i).at(0) == boost::lexical_cast<std::string>(map_at(domain_info,domain_list_out.at(i).at(1)).info_domain_data.id));
+        BOOST_CHECK(domain_list_out.at(i).at(1) == map_at(domain_info,domain_list_out.at(i).at(1)).info_domain_data.fqdn);
+
+        BOOST_CHECK(domain_list_out.at(i).at(5) == "t");//have keyset
+        BOOST_CHECK(domain_list_out.at(i).at(6) == "holder");//role
+        BOOST_CHECK(domain_list_out.at(i).at(7) == test_registrar_handle);//registrar handle
+        BOOST_CHECK(domain_list_out.at(i).at(8) == boost::algorithm::replace_first_copy(test_registrar_handle, "-HANDLE", " NAME"));//registrar name
+
+        if(i%2)
+        {
+            BOOST_MESSAGE(domain_list_out.at(i).at(10));
+            BOOST_CHECK(domain_list_out.at(i).at(10) == "t");
+            if(i > 2) BOOST_CHECK(domain_list_out.at(i).at(9) == "Doména je blokována");
+        }
+        else
+        {
+            BOOST_MESSAGE(domain_list_out.at(i).at(10));
+            BOOST_CHECK(domain_list_out.at(i).at(10) == "f");
+        }
+    }
+}
+
+BOOST_FIXTURE_TEST_CASE(get_my_domain_list_by_nsset, get_my_domains_fixture )
+{
+    //add user contact as nsset admin
+    {
+        Fred::OperationContext ctx;
+        Fred::UpdateNsset(test_nsset_handle, test_registrar_handle).add_tech_contact(user_contact_info.info_contact_data.handle).exec(ctx);
+        ctx.commit_transaction();
+    }
+
+    Fred::OperationContext ctx;
+    std::vector<std::vector<std::string> > domain_list_out;
+    bool limit_exceeded = impl.getDomainList(user_contact_info.info_contact_data.id,
+            Optional<unsigned long long>(nsset_info.info_nsset_data.id),"CS",0,domain_list_out);
 
     std::ostringstream list_out;
     list_out << "domain_list_out: \n";
@@ -2173,7 +2241,6 @@ BOOST_FIXTURE_TEST_CASE(get_my_domain_list, get_my_domains_fixture )
 }
 
 
-
 struct get_domain_list_user_not_in_mojeid_fixture
 : user_contact_fixture
 , domain_browser_impl_instance_fixture
@@ -2187,7 +2254,8 @@ BOOST_FIXTURE_TEST_CASE(get_domain_list_user_not_in_mojeid, get_domain_list_user
     {
         Fred::OperationContext ctx;
         std::vector<std::vector<std::string> > domain_list_out;
-        impl.getDomainList(user_contact_info.info_contact_data.id,"CS",0,domain_list_out);
+        impl.getDomainList(user_contact_info.info_contact_data.id,
+                Optional<unsigned long long>(),"CS",0,domain_list_out);
 
         BOOST_ERROR("unreported missing user");
     }
@@ -2198,6 +2266,26 @@ BOOST_FIXTURE_TEST_CASE(get_domain_list_user_not_in_mojeid, get_domain_list_user
     }
 }
 
+/**
+ * test getDomainList for not owned nsset
+ */
+BOOST_FIXTURE_TEST_CASE(get_domain_list_for_nsset_user_not_nsset_admin, get_my_domains_fixture )
+{
+    try
+    {
+        Fred::OperationContext ctx;
+        std::vector<std::vector<std::string> > domain_list_out;
+        impl.getDomainList(user_contact_info.info_contact_data.id,
+            Optional<unsigned long long>(nsset_info.info_nsset_data.id),"CS",0,domain_list_out);
+
+        BOOST_ERROR("unreported missing nsset admin contact");
+    }
+    catch( const Registry::DomainBrowserImpl::AccessDenied& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
 
 BOOST_AUTO_TEST_SUITE_END();//getDomainList
 
