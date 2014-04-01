@@ -33,7 +33,7 @@ namespace ContactVerification {
 
     FACTORY_MODULE_INIT_DEFI(TestContactability_init)
 
-    const std::string                    TestContactability::letter_message_type_("admin_contact_verification_contact_update_call");
+    const std::string                    TestContactability::letter_message_type_("admin_contact_correction_notice");
     const unsigned                       TestContactability::letter_file_type_(8); // admin_contact_verification_contact_update_call
     const std::string                    TestContactability::letter_comm_type_("registered_letter");
     const Fred::Document::GenerationType TestContactability::letter_doc_type_(Fred::Document::GT_ADMIN_CONTACT_VERIFICATION_CONTACT_UPDATE_CALL);
