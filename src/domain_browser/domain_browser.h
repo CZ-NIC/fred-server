@@ -537,8 +537,10 @@ namespace Registry
 
             /**
              * Get domain list.
+             * Get list of domains registered or administered by user contact except the case when nsset id or keyset id (or both) is set.
              * @param user_contact_id contains database id of the user contact
-             * @param list_domains_for_nsset_id optionally list domains linked to nsset with given id regardless of user contact relation to listed domains
+             * @param list_domains_for_nsset_id if set list domains linked to nsset with given id regardless of user contact relation to listed domains
+             * @param list_domains_for_keyset_id if set list domains linked to keyset with given id regardless of user contact relation to listed domains
              * @param lang contains language for state description "EN" or "CS"
              * @param offset contains list offset
              * @param  domain_list_out references output domain list
@@ -546,6 +548,7 @@ namespace Registry
              */
             bool getDomainList(unsigned long long user_contact_id,
                 const Optional<unsigned long long>& list_domains_for_nsset_id,
+                const Optional<unsigned long long>& list_domains_for_keyset_id,
                 const std::string& lang,
                 unsigned long long offset,
                 std::vector<std::vector<std::string> >& domain_list_out);

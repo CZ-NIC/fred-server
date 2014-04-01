@@ -2122,7 +2122,7 @@ BOOST_FIXTURE_TEST_CASE(get_my_domain_list, get_my_domains_fixture )
     Fred::OperationContext ctx;
     std::vector<std::vector<std::string> > domain_list_out;
     bool limit_exceeded = impl.getDomainList(user_contact_info.info_contact_data.id,
-            Optional<unsigned long long>(),"CS",0,domain_list_out);
+            Optional<unsigned long long>(), Optional<unsigned long long>(),"CS",0,domain_list_out);
 
     std::ostringstream list_out;
     list_out << "domain_list_out: \n";
@@ -2187,7 +2187,8 @@ BOOST_FIXTURE_TEST_CASE(get_my_domain_list_by_nsset, get_my_domains_fixture )
     Fred::OperationContext ctx;
     std::vector<std::vector<std::string> > domain_list_out;
     bool limit_exceeded = impl.getDomainList(user_contact_info.info_contact_data.id,
-            Optional<unsigned long long>(nsset_info.info_nsset_data.id),"CS",0,domain_list_out);
+            Optional<unsigned long long>(nsset_info.info_nsset_data.id),
+            Optional<unsigned long long>(),"CS",0,domain_list_out);
 
     std::ostringstream list_out;
     list_out << "domain_list_out: \n";
@@ -2255,7 +2256,8 @@ BOOST_FIXTURE_TEST_CASE(get_domain_list_user_not_in_mojeid, get_domain_list_user
         Fred::OperationContext ctx;
         std::vector<std::vector<std::string> > domain_list_out;
         impl.getDomainList(user_contact_info.info_contact_data.id,
-                Optional<unsigned long long>(),"CS",0,domain_list_out);
+            Optional<unsigned long long>(),Optional<unsigned long long>()
+            ,"CS",0,domain_list_out);
 
         BOOST_ERROR("unreported missing user");
     }
@@ -2276,7 +2278,8 @@ BOOST_FIXTURE_TEST_CASE(get_domain_list_for_nsset_user_not_nsset_admin, get_my_d
         Fred::OperationContext ctx;
         std::vector<std::vector<std::string> > domain_list_out;
         impl.getDomainList(user_contact_info.info_contact_data.id,
-            Optional<unsigned long long>(nsset_info.info_nsset_data.id),"CS",0,domain_list_out);
+            Optional<unsigned long long>(nsset_info.info_nsset_data.id),
+            Optional<unsigned long long>(),"CS",0,domain_list_out);
 
         BOOST_ERROR("unreported missing nsset admin contact");
     }
