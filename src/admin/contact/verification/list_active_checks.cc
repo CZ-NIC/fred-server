@@ -11,7 +11,7 @@ namespace  Admin {
 
         std::vector<Fred::ListChecksItem> result;
 
-        std::vector<std::string> awaiting_statuses = Fred::ContactCheckStatus::get_resolution_awaiting();
+        std::vector<std::string> awaiting_statuses = Fred::ContactCheckStatus::get_not_yet_resolved();
 
         Fred::OperationContext ctx;
         std::vector<Fred::ListChecksItem> temp_result;
