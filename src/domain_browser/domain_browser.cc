@@ -908,6 +908,7 @@ namespace Registry
 
         bool DomainBrowser::getDomainList(unsigned long long user_contact_id,
             const Optional<unsigned long long>& list_domains_for_nsset_id,
+            const Optional<unsigned long long>& list_domains_for_keyset_id,
             const std::string& lang,
             unsigned long long offset,
             std::vector<std::vector<std::string> >& domain_list_out)
@@ -923,6 +924,16 @@ namespace Registry
                 , Database::query_param_list (list_domains_for_nsset_id.get_value())(user_contact_id));
                 if(nsset_ownership_result.size() == 0) throw AccessDenied();
             }
+
+            if(list_domains_for_keyset_id.isset())
+            {
+                //check keyset owned by user contact
+                Database::Result keyset_ownership_result = ctx.get_conn().exec_params(
+                "SELECT * FROM keyset_contact_map WHERE keysetid = $1::bigint AND contactid = $2::bigint"
+                , Database::query_param_list (list_domains_for_keyset_id.get_value())(user_contact_id));
+                if(keyset_ownership_result.size() == 0) throw AccessDenied();
+            }
+
             Database::QueryParams params;
             std::ostringstream sql;
             params.push_back(user_contact_id);
@@ -951,15 +962,22 @@ namespace Registry
                     "AND domain_contact_map.contactid = $" << params.size() << "::bigint "
                 "WHERE oreg.erdate is null ";
 
+                if(!list_domains_for_nsset_id.isset() && !list_domains_for_keyset_id.isset())
+                {   //select domains related to user_contact_id
+                    sql << "AND (domain_contact_map.contactid = $" << params.size() << "::bigint "
+                            "OR domain.registrant = $" << params.size() << "::bigint) ";
+                }
+
                 if(list_domains_for_nsset_id.isset())
                 {   //select domains with given nsset
                     params.push_back(list_domains_for_nsset_id.get_value());
                     sql << "AND domain.nsset = $" << params.size() << "::bigint ";
                 }
-                else
-                {   //select domains related to user_contact_id
-                    sql << "AND (domain_contact_map.contactid = $" << params.size() << "::bigint "
-                            "OR domain.registrant = $" << params.size() << "::bigint) ";
+
+                if(list_domains_for_keyset_id.isset())
+                {   //select domains with given keyset
+                    params.push_back(list_domains_for_keyset_id.get_value());
+                    sql << "AND domain.keyset = $" << params.size() << "::bigint ";
                 }
 
             params.push_back(domain_list_limit_+1);
