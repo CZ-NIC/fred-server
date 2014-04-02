@@ -7,6 +7,7 @@
 #include "src/fredlib/contact/info_contact.h"
 #include "src/fredlib/object_state/create_object_state_request_id.h"
 #include "src/fredlib/object_state/cancel_object_state_request_id.h"
+#include "src/fredlib/object_state/perform_object_state_request.h"
 
 #include "util/log/context.h"
 
@@ -143,6 +144,8 @@ namespace  Admin {
                 ).exec(_ctx)
                 .second
             );
+
+            Fred::PerformObjectStateRequest(contact_info.info_contact_data.id).exec(_ctx);
 
             Admin::add_related_object_state_requests(_ctx, check_handle_, state_request_ids);
         }
