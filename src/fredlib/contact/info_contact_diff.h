@@ -58,13 +58,7 @@ namespace Fred
         DiffMemeber<std::string>::Type authinfopw;/**< password for transfer */
         DiffMemeber<Nullable<std::string> >::Type name ;/**< name of contact person */
         DiffMemeber<Nullable<std::string> >::Type organization;/**< full trade name of organization */
-        DiffMemeber<Nullable<std::string> >::Type street1;/**< part of address */
-        DiffMemeber<Nullable<std::string> >::Type street2;/**< part of address */
-        DiffMemeber<Nullable<std::string> >::Type street3;/**< part of address*/
-        DiffMemeber<Nullable<std::string> >::Type city;/**< part of address - city */
-        DiffMemeber<Nullable<std::string> >::Type stateorprovince;/**< part of address - region */
-        DiffMemeber<Nullable<std::string> >::Type postalcode;/**< part of address - postal code */
-        DiffMemeber<Nullable<std::string> >::Type country;/**< two character country code or country name */
+        DiffMemeber< Nullable< Fred::Contact::PlaceAddress > >::Type place;/**< place address of contact */
         DiffMemeber<Nullable<std::string> >::Type telephone;/**<  telephone number */
         DiffMemeber<Nullable<std::string> >::Type fax;/**< fax number */
         DiffMemeber<Nullable<std::string> >::Type email;/**< e-mail address */

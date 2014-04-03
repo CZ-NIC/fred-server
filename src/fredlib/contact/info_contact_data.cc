@@ -68,13 +68,7 @@ namespace Fred
         (std::make_pair("authinfopw",authinfopw))
         (std::make_pair("name",name.print_quoted()))
         (std::make_pair("organization",organization.print_quoted()))
-        (std::make_pair("street1",street1.print_quoted()))
-        (std::make_pair("street2",street2.print_quoted()))
-        (std::make_pair("street3",street3.print_quoted()))
-        (std::make_pair("city",city.print_quoted()))
-        (std::make_pair("stateorprovince",stateorprovince.print_quoted()))
-        (std::make_pair("postalcode",postalcode.print_quoted()))
-        (std::make_pair("country",country.print_quoted()))
+        (std::make_pair("place",place.print_quoted()))
         (std::make_pair("telephone",telephone.print_quoted()))
         (std::make_pair("fax",fax.print_quoted()))
         (std::make_pair("email",email.print_quoted()))
@@ -95,5 +89,3 @@ namespace Fred
     }
 
 }//namespace Fred
-
-

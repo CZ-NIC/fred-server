@@ -53,13 +53,7 @@ namespace Fred
         (std::make_pair("authinfopw", authinfopw.print_quoted()))
         (std::make_pair("name", name.print_quoted()))
         (std::make_pair("organization", organization.print_quoted()))
-        (std::make_pair("street1", street1.print_quoted()))
-        (std::make_pair("street2", street2.print_quoted()))
-        (std::make_pair("street3", street3.print_quoted()))
-        (std::make_pair("city", city.print_quoted()))
-        (std::make_pair("stateorprovince", stateorprovince.print_quoted()))
-        (std::make_pair("postalcode", postalcode.print_quoted()))
-        (std::make_pair("country", country.print_quoted()))
+        (std::make_pair("place", place.print_quoted()))
         (std::make_pair("telephone", telephone.print_quoted()))
         (std::make_pair("fax", fax.print_quoted()))
         (std::make_pair("email", email.print_quoted()))
@@ -97,13 +91,7 @@ namespace Fred
             || authinfopw.isset()
             || name.isset()
             || organization.isset()
-            || street1.isset()
-            || street2.isset()
-            || street3.isset()
-            || city.isset()
-            || stateorprovince.isset()
-            || postalcode.isset()
-            || country.isset()
+            || place.isset()
             || telephone.isset()
             || fax.isset()
             || email.isset()
@@ -207,39 +195,9 @@ namespace Fred
             diff.organization = std::make_pair(first.organization,second.organization);
         }
 
-        if(!Util::is_equal(first.street1, second.street1))
+        if(!Util::is_equal(first.place, second.place))
         {
-            diff.street1 = std::make_pair(first.street1,second.street1);
-        }
-
-        if(!Util::is_equal(first.street2, second.street2))
-        {
-            diff.street2 = std::make_pair(first.street2,second.street2);
-        }
-
-        if(!Util::is_equal(first.street3, second.street3))
-        {
-            diff.street3 = std::make_pair(first.street3,second.street3);
-        }
-
-        if(!Util::is_equal(first.city, second.city))
-        {
-            diff.city = std::make_pair(first.city,second.city);
-        }
-
-        if(!Util::is_equal(first.stateorprovince, second.stateorprovince))
-        {
-            diff.stateorprovince = std::make_pair(first.stateorprovince,second.stateorprovince);
-        }
-
-        if(!Util::is_equal(first.postalcode, second.postalcode))
-        {
-            diff.postalcode = std::make_pair(first.postalcode,second.postalcode);
-        }
-
-        if(!Util::is_equal(first.country, second.country))
-        {
-            diff.country = std::make_pair(first.country,second.country);
+            diff.place = std::make_pair(first.place, second.place);
         }
 
         if(!Util::is_equal(first.telephone, second.telephone))

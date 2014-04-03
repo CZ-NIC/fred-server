@@ -30,6 +30,7 @@
 
 #include "util/db/nullable.h"
 #include "util/printable.h"
+#include "src/fredlib/contact/place_address.h"
 
 namespace Fred
 {
@@ -53,13 +54,7 @@ namespace Fred
         std::string authinfopw;/**< password for transfer */
         Nullable<std::string> name ;/**< name of contact person */
         Nullable<std::string> organization;/**< full trade name of organization */
-        Nullable<std::string> street1;/**< part of address */
-        Nullable<std::string> street2;/**< part of address */
-        Nullable<std::string> street3;/**< part of address*/
-        Nullable<std::string> city;/**< part of address - city */
-        Nullable<std::string> stateorprovince;/**< part of address - region */
-        Nullable<std::string> postalcode;/**< part of address - postal code */
-        Nullable<std::string> country;/**< two character country code or country name */
+        Nullable< Contact::PlaceAddress > place;/**< place address of contact */
         Nullable<std::string> telephone;/**<  telephone number */
         Nullable<std::string> fax;/**< fax number */
         Nullable<std::string> email;/**< e-mail address */

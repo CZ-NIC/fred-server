@@ -34,6 +34,7 @@
 #include "util/optional_value.h"
 #include "util/printable.h"
 #include "info_contact_output.h"
+#include "src/fredlib/contact/place_address.h"
 
 namespace Fred
 {

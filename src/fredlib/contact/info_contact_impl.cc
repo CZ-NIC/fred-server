@@ -236,20 +236,18 @@ namespace Fred
                     : Nullable<std::string> (static_cast<std::string>(query_result[i][21]));
             info_contact_output.info_contact_data.organization = query_result[i][22].isnull() ? Nullable<std::string>()
                     : Nullable<std::string> (static_cast<std::string>(query_result[i][22]));
-            info_contact_output.info_contact_data.street1 = query_result[i][23].isnull() ? Nullable<std::string>()
-                    : Nullable<std::string> (static_cast<std::string>(query_result[i][23]));
-            info_contact_output.info_contact_data.street2 = query_result[i][24].isnull() ? Nullable<std::string>()
-                    : Nullable<std::string> (static_cast<std::string>(query_result[i][24]));
-            info_contact_output.info_contact_data.street3 = query_result[i][25].isnull() ? Nullable<std::string>()
-                    : Nullable<std::string> (static_cast<std::string>(query_result[i][25]));
-            info_contact_output.info_contact_data.city = query_result[i][26].isnull() ? Nullable<std::string>()
-                    : Nullable<std::string> (static_cast<std::string>(query_result[i][26]));
-            info_contact_output.info_contact_data.stateorprovince = query_result[i][27].isnull() ? Nullable<std::string>()
-                    : Nullable<std::string> (static_cast<std::string>(query_result[i][27]));
-            info_contact_output.info_contact_data.postalcode = query_result[i][28].isnull() ? Nullable<std::string>()
-                    : Nullable<std::string> (static_cast<std::string>(query_result[i][28]));
-            info_contact_output.info_contact_data.country = query_result[i][29].isnull() ? Nullable<std::string>()
-                    : Nullable<std::string> (static_cast<std::string>(query_result[i][29]));
+            Contact::PlaceAddress place;
+            place.street1 = static_cast<std::string>(query_result[i][23]);
+            place.street2 = query_result[i][24].isnull() ? Optional<std::string>()
+                    : Optional<std::string> (static_cast<std::string>(query_result[i][24]));
+            place.street3 = query_result[i][25].isnull() ? Optional<std::string>()
+                    : Optional<std::string> (static_cast<std::string>(query_result[i][25]));
+            place.city = static_cast<std::string>(query_result[i][26]);
+            place.stateorprovince = query_result[i][27].isnull() ? Optional<std::string>()
+                    : Optional<std::string> (static_cast<std::string>(query_result[i][27]));
+            place.postalcode = static_cast<std::string>(query_result[i][28]);
+            place.country = static_cast<std::string>(query_result[i][29]);
+            info_contact_output.info_contact_data.place = place;
             info_contact_output.info_contact_data.telephone = query_result[i][30].isnull() ? Nullable<std::string>()
                     : Nullable<std::string> (static_cast<std::string>(query_result[i][30]));
             info_contact_output.info_contact_data.fax = query_result[i][31].isnull() ? Nullable<std::string>()

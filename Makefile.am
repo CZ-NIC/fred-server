@@ -778,6 +778,8 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/contact/info_contact_impl.h \
 		src/fredlib/contact/info_contact_output.cc \
 		src/fredlib/contact/info_contact_output.h \
+		src/fredlib/contact/place_address.cc \
+		src/fredlib/contact/place_address.h \
 		src/fredlib/object/object.h \
 		src/fredlib/object/object.cc \
 		src/fredlib/object/object_impl.h \
@@ -1476,6 +1478,8 @@ src_corba_fred_adifd_SOURCES = \
 		src/fredlib/contact/info_contact.cc \
 		src/fredlib/contact/create_contact.h \
 		src/fredlib/contact/create_contact.cc \
+		src/fredlib/contact/place_address.cc \
+		src/fredlib/contact/place_address.h \
 		src/fredlib/opcontext.cc \
 		src/fredlib/opcontext.h \
 		src/corba/nameservice.cc \

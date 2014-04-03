@@ -240,11 +240,11 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle)
     info_data_3_with_changes.info_contact_data.authinfopw = std::string("passwd");
     info_data_3_with_changes.info_contact_data.name = std::string("Test Name");
     info_data_3_with_changes.info_contact_data.organization = std::string("Test o.r.g.");
-    info_data_3_with_changes.info_contact_data.street1 = std::string("Str 1");
-    info_data_3_with_changes.info_contact_data.street2 = std::string("str2");
-    info_data_3_with_changes.info_contact_data.city = std::string("Prague");
-    info_data_3_with_changes.info_contact_data.postalcode = std::string("11150");
-    info_data_3_with_changes.info_contact_data.country = std::string("CZ");
+    info_data_3_with_changes.info_contact_data.place.get_value().street1 = std::string("Str 1");
+    info_data_3_with_changes.info_contact_data.place.get_value().street2 = std::string("str2");
+    info_data_3_with_changes.info_contact_data.place.get_value().city = std::string("Prague");
+    info_data_3_with_changes.info_contact_data.place.get_value().postalcode = std::string("11150");
+    info_data_3_with_changes.info_contact_data.place.get_value().country = std::string("CZ");
     info_data_3_with_changes.info_contact_data.telephone = std::string("+420.123456789");
     info_data_3_with_changes.info_contact_data.email = std::string("test@nic.cz");
     info_data_3_with_changes.info_contact_data.notifyemail = std::string("notif-test@nic.cz");
@@ -333,7 +333,7 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle)
     info_data_4_with_changes.info_contact_data.authinfopw = std::string("passw");
 
     //empty string in street3 and fax
-    info_data_4_with_changes.info_contact_data.street3 = std::string("");
+    info_data_4_with_changes.info_contact_data.place.get_value().street3 = std::string("");
     info_data_4_with_changes.info_contact_data.fax = std::string("");
 
     //check logd request_id

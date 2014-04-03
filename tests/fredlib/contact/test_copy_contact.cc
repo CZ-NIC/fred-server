@@ -92,27 +92,9 @@ BOOST_AUTO_TEST_CASE(copy_contact)
     BOOST_CHECK((src_contact_info.organization.isnull() == dst_contact_info.organization.isnull()) &&
                 (src_contact_info.organization.isnull() || (src_contact_info.organization.get_value().compare(
                                                             dst_contact_info.organization.get_value()) == 0)));
-    BOOST_CHECK((src_contact_info.street1.isnull() == dst_contact_info.street1.isnull()) &&
-                (src_contact_info.street1.isnull() || (src_contact_info.street1.get_value().compare(
-                                                       dst_contact_info.street1.get_value()) == 0)));
-    BOOST_CHECK((src_contact_info.street2.isnull() == dst_contact_info.street2.isnull()) &&
-                (src_contact_info.street2.isnull() || (src_contact_info.street2.get_value().compare(
-                                                       dst_contact_info.street2.get_value()) == 0)));
-    BOOST_CHECK((src_contact_info.street3.isnull() == dst_contact_info.street3.isnull()) &&
-                (src_contact_info.street3.isnull() || (src_contact_info.street3.get_value().compare(
-                                                       dst_contact_info.street3.get_value()) == 0)));
-    BOOST_CHECK((src_contact_info.city.isnull() == dst_contact_info.city.isnull()) &&
-                (src_contact_info.city.isnull() || (src_contact_info.city.get_value().compare(
-                                                    dst_contact_info.city.get_value()) == 0)));
-    BOOST_CHECK((src_contact_info.stateorprovince.isnull() == dst_contact_info.stateorprovince.isnull()) &&
-                (src_contact_info.stateorprovince.isnull() || (src_contact_info.stateorprovince.get_value().compare(
-                                                               dst_contact_info.stateorprovince.get_value()) == 0)));
-    BOOST_CHECK((src_contact_info.postalcode.isnull() == dst_contact_info.postalcode.isnull()) &&
-                (src_contact_info.postalcode.isnull() || (src_contact_info.postalcode.get_value().compare(
-                                                          dst_contact_info.postalcode.get_value()) == 0)));
-    BOOST_CHECK((src_contact_info.country.isnull() == dst_contact_info.country.isnull()) &&
-                (src_contact_info.country.isnull() || (src_contact_info.country.get_value().compare(
-                                                       dst_contact_info.country.get_value()) == 0)));
+    BOOST_CHECK((src_contact_info.place.isnull() == dst_contact_info.place.isnull()) &&
+                (src_contact_info.place.isnull() || (src_contact_info.place.get_value() ==
+                                                     dst_contact_info.place.get_value())));
     BOOST_CHECK((src_contact_info.telephone.isnull() == dst_contact_info.telephone.isnull()) &&
                 (src_contact_info.telephone.isnull() || (src_contact_info.telephone.get_value().compare(
                                                          dst_contact_info.telephone.get_value()) == 0)));
