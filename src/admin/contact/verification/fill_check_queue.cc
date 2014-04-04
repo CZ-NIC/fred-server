@@ -13,6 +13,7 @@
 #include "src/fredlib/contact/verification/enum_testsuite_handle.h"
 #include "src/fredlib/contact/verification/enum_check_status.h"
 #include "src/admin/contact/verification/enqueue_check.h"
+#include "src/fredlib/object_state/object_state_name.h"
 
 #include "util/log/context.h"
 
@@ -44,6 +45,20 @@ namespace ContactVerificationQueue {
         }
 
         throw Fred::InternalError(std::string("unknown role (") + _in + ")");
+    }
+
+    static std::string is_contact_mojeid_query(std::string contact_id_column) {
+        return
+            "EXISTS ( "
+                "SELECT * "
+                    "FROM object_state AS o_s "
+                        "JOIN enum_object_states AS enum_o_s "
+                            "ON enum_o_s.id = o_s.state_id "
+                    "WHERE o_s.object_id = " + contact_id_column + " "
+                        "AND enum_o_s.name = '" + Fred::ObjectState::MOJEID_CONTACT + "' "
+                        "AND o_s.valid_from <= CURRENT_TIMESTAMP "
+                        "AND (o_s.valid_to IS NULL OR o_s.valid_to > CURRENT_TIMESTAMP) "
+            ") ";
     }
 
     static void set_contact_filter_query(
@@ -154,6 +169,7 @@ namespace ContactVerificationQueue {
             "            EXCEPT "
             "            SELECT id from temp_already_checked "
             "        ) as filter ON o_r.id = filter.id "
+            "    WHERE NOT " + is_contact_mojeid_query("o_r.id") + " "
             "    LIMIT $1::integer "
             "    FOR SHARE OF o_r ",
             Database::query_param_list(_max_count)
@@ -221,6 +237,7 @@ namespace ContactVerificationQueue {
             "    FROM object_registry AS o_r "
             "        JOIN temp_filter ON temp_filter.contact_id_ = o_r.id "
             "        JOIN temp_already_checked ON temp_already_checked.contact_id_ = o_r.id "
+            "    WHERE NOT " + is_contact_mojeid_query("o_r.id") + " "
             "    ORDER BY temp_already_checked.last_update_ ASC "
             "    LIMIT $1::integer "
             "    FOR SHARE OF o_r ",
