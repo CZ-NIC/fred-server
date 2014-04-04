@@ -36,6 +36,7 @@
 #include "src/fredlib/contact/info_contact.h"
 #include "src/fredlib/contact/contact_enum.h"
 #include "src/fredlib/object/object.h"
+#include "src/fredlib/contact/place_address.h"
 
 #include "src/admin/contact/verification/contact_states/delete_all.h"
 
@@ -102,13 +103,7 @@ namespace Fred
         Optional<std::string> authinfo_;/**< transfer password */
         Optional<std::string> name_ ;/**< name of contact person */
         Optional<std::string> organization_;/**< full trade name of organization */
-        Optional<std::string> street1_;/**< part of address */
-        Optional<std::string> street2_;/**< part of address */
-        Optional<std::string> street3_;/**< part of address*/
-        Optional<std::string> city_;/**< part of address - city */
-        Optional<std::string> stateorprovince_;/**< part of address - region */
-        Optional<std::string> postalcode_;/**< part of address - postal code */
-        Optional<std::string> country_;/**< two character country code or country name */
+        Optional< Fred::Contact::PlaceAddress > place_;/**< place address of contact */
         Optional<std::string> telephone_;/**<  telephone number */
         Optional<std::string> fax_;/**< fax number */
         Optional<std::string> email_;/**< e-mail address */
@@ -148,13 +143,7 @@ namespace Fred
         * @param authinfo sets transfer password into @ref authinfo_ attribute
         * @param name sets name of contact person into @ref name_ attribute
         * @param organization sets full trade name of organization into @ref organization_ attribute
-        * @param street1 sets part of address into @ref street1_ attribute
-        * @param street2 sets part of address into @ref street2_ attribute
-        * @param street3 sets part of address into @ref street3_ attribute
-        * @param city sets part of address - city into @ref city_ attribute
-        * @param stateorprovince sets part of address - region into @ref stateorprovince_ attribute
-        * @param postalcode sets part of address - postal code into @ref postalcode_ attribute
-        * @param country sets two character country code or country name  into @ref country_ attribute
+        * @param place sets place address of contact into @ref place_ attribute
         * @param telephone sets telephone number into @ref telephone_ attribute
         * @param fax sets fax number into @ref fax_ attribute
         * @param email sets e-mail address into @ref email_ attribute
@@ -178,13 +167,7 @@ namespace Fred
                 , const Optional<std::string>& authinfo
                 , const Optional<std::string>& name
                 , const Optional<std::string>& organization
-                , const Optional<std::string>& street1
-                , const Optional<std::string>& street2
-                , const Optional<std::string>& street3
-                , const Optional<std::string>& city
-                , const Optional<std::string>& stateorprovince
-                , const Optional<std::string>& postalcode
-                , const Optional<std::string>& country
+                , const Optional< Fred::Contact::PlaceAddress > &place
                 , const Optional<std::string>& telephone
                 , const Optional<std::string>& fax
                 , const Optional<std::string>& email
@@ -208,13 +191,7 @@ namespace Fred
         , authinfo_(authinfo)
         , name_(name)
         , organization_(organization)
-        , street1_(street1)
-        , street2_(street2)
-        , street3_(street3)
-        , city_(city)
-        , stateorprovince_(stateorprovince)
-        , postalcode_(postalcode)
-        , country_(country)
+        , place_(place)
         , telephone_(telephone)
         , fax_(fax)
         , email_(email)
@@ -281,79 +258,13 @@ namespace Fred
         }
 
         /**
-        * Sets contact street1 part of address.
-        * @param street1 sets part of address into @ref street1_ attribute
+        * Sets place address of contact.
+        * @param place sets place address of contact into @ref place_ attribute
         * @return operation instance reference to allow method chaining
         */
-        DERIVED& set_street1(const std::string& street1)
+        DERIVED& set_place(const Fred::Contact::PlaceAddress &place)
         {
-            street1_ = street1;
-            return static_cast<DERIVED&>(*this);
-        }
-
-        /**
-        * Sets contact street2 part of address.
-        * @param street2 sets part of address into @ref street2_ attribute
-        * @return operation instance reference to allow method chaining
-        */
-        DERIVED& set_street2(const std::string& street2)
-        {
-            street2_ = street2;
-            return static_cast<DERIVED&>(*this);
-        }
-
-        /**
-        * Sets contact street3 part of address.
-        * @param street3 sets part of address into @ref street3_ attribute
-        * @return operation instance reference to allow method chaining
-        */
-        DERIVED& set_street3(const std::string& street3)
-        {
-            street3_ = street3;
-            return static_cast<DERIVED&>(*this);
-        }
-
-        /**
-        * Sets contact city part of address.
-        * @param city sets part of address - city into @ref city_ attribute
-        * @return operation instance reference to allow method chaining
-        */
-        DERIVED& set_city(const std::string& city)
-        {
-            city_ = city;
-            return static_cast<DERIVED&>(*this);
-        }
-
-        /**
-        * Sets contact region part of address.
-        * @param stateorprovince sets part of address - region into @ref stateorprovince_ attribute
-        * @return operation instance reference to allow method chaining
-        */
-        DERIVED& set_stateorprovince(const std::string& stateorprovince)
-        {
-            stateorprovince_ = stateorprovince;
-            return static_cast<DERIVED&>(*this);
-        }
-
-        /**
-        * Sets contact postal code part of address.
-        * @param postalcode sets part of address - postal code into @ref postalcode_ attribute
-        * @return operation instance reference to allow method chaining
-        */
-        DERIVED& set_postalcode(const std::string& postalcode)
-        {
-            postalcode_ = postalcode;
-            return static_cast<DERIVED&>(*this);
-        }
-
-        /**
-        * Sets contact country part of address.
-        * @param country sets two character country code or country name into @ref country_ attribute
-        * @return operation instance reference to allow method chaining
-        */
-        DERIVED& set_country(const std::string& country)
-        {
-            country_ = country;
+            place_ = place;
             return static_cast<DERIVED&>(*this);
         }
 
@@ -604,45 +515,37 @@ namespace Fred
                     sql << set_separator.get() << "organization = $" << params.size() << "::text ";
                 }
 
-                if(street1_.isset())
+                if(place_.isset())
                 {
-                    params.push_back(street1_.get_value());
+                    const Fred::Contact::PlaceAddress &place = place_.get_value();
+                    params.push_back(place.street1);
                     sql << set_separator.get() << "street1 = $" << params.size() << "::text ";
-                }
 
-                if(street2_.isset())
-                {
-                    params.push_back(street2_.get_value());
-                    sql << set_separator.get() << "street2 = $" << params.size() << "::text ";
-                }
+                    if(place.street2.isset())
+                    {
+                        params.push_back(place.street2.get_value());
+                        sql << set_separator.get() << "street2 = $" << params.size() << "::text ";
+                    }
 
-                if(street3_.isset())
-                {
-                    params.push_back(street3_.get_value());
-                    sql << set_separator.get() << "street3 = $" << params.size() << "::text ";
-                }
+                    if(place.street3.isset())
+                    {
+                        params.push_back(place.street3.get_value());
+                        sql << set_separator.get() << "street3 = $" << params.size() << "::text ";
+                    }
 
-                if(city_.isset())
-                {
-                    params.push_back(city_.get_value());
+                    params.push_back(place.city);
                     sql << set_separator.get() << "city = $" << params.size() << "::text ";
-                }
 
-                if(stateorprovince_.isset())
-                {
-                    params.push_back(stateorprovince_.get_value());
-                    sql << set_separator.get() << "stateorprovince = $" << params.size() << "::text ";
-                }
+                    if(place.stateorprovince.isset())
+                    {
+                        params.push_back(place.stateorprovince.get_value());
+                        sql << set_separator.get() << "stateorprovince = $" << params.size() << "::text ";
+                    }
 
-                if(postalcode_.isset())
-                {
-                    params.push_back(postalcode_.get_value());
+                    params.push_back(place.postalcode);
                     sql << set_separator.get() << "postalcode = $" << params.size() << "::text ";
-                }
 
-                if(country_.isset())
-                {
-                    params.push_back(Contact::get_country_code(country_, ctx, &update_contact_exception, &Exception::set_unknown_country));
+                    params.push_back(Contact::get_country_code(place.country, ctx, &update_contact_exception, &Exception::set_unknown_country));
                     sql << set_separator.get() << "country = $" << params.size() << "::text ";
                 }
 
@@ -828,13 +731,7 @@ namespace Fred
             (std::make_pair("authinfo",authinfo_.print_quoted()))
             (std::make_pair("name",name_.print_quoted()))
             (std::make_pair("organization",organization_.print_quoted()))
-            (std::make_pair("street1",street1_.print_quoted()))
-            (std::make_pair("street2",street2_.print_quoted()))
-            (std::make_pair("street3",street3_.print_quoted()))
-            (std::make_pair("city",city_.print_quoted()))
-            (std::make_pair("stateorprovince",stateorprovince_.print_quoted()))
-            (std::make_pair("postalcode",postalcode_.print_quoted()))
-            (std::make_pair("country",country_.print_quoted()))
+            (std::make_pair("place",place_.print_quoted()))
             (std::make_pair("telephone",telephone_.print_quoted()))
             (std::make_pair("fax",fax_.print_quoted()))
             (std::make_pair("email",email_.print_quoted()))
@@ -908,13 +805,7 @@ namespace Fred
         * @param authinfo sets transfer password into UpdateContact base
         * @param name sets name of contact person into UpdateContact base
         * @param organization sets full trade name of organization into UpdateContact base
-        * @param street1 sets part of address into UpdateContact base
-        * @param street2 sets part of address into UpdateContact base
-        * @param street3 sets part of address into UpdateContact base
-        * @param city sets part of address - city into UpdateContact base
-        * @param stateorprovince sets part of address - region into UpdateContact base
-        * @param postalcode sets part of address - postal code into UpdateContact base
-        * @param country sets two character country code or country name  into UpdateContact base
+        * @param place sets place address of contact into UpdateContact base
         * @param telephone sets telephone number into UpdateContact base
         * @param fax sets fax number into UpdateContact base
         * @param email sets e-mail address into UpdateContact base
@@ -939,13 +830,7 @@ namespace Fred
                 , const Optional<std::string>& authinfo
                 , const Optional<std::string>& name
                 , const Optional<std::string>& organization
-                , const Optional<std::string>& street1
-                , const Optional<std::string>& street2
-                , const Optional<std::string>& street3
-                , const Optional<std::string>& city
-                , const Optional<std::string>& stateorprovince
-                , const Optional<std::string>& postalcode
-                , const Optional<std::string>& country
+                , const Optional< Fred::Contact::PlaceAddress > &place
                 , const Optional<std::string>& telephone
                 , const Optional<std::string>& fax
                 , const Optional<std::string>& email
@@ -1030,13 +915,7 @@ namespace Fred
         * @param authinfo sets transfer password into UpdateContact base
         * @param name sets name of contact person into UpdateContact base
         * @param organization sets full trade name of organization into UpdateContact base
-        * @param street1 sets part of address into UpdateContact base
-        * @param street2 sets part of address into UpdateContact base
-        * @param street3 sets part of address into UpdateContact base
-        * @param city sets part of address - city into UpdateContact base
-        * @param stateorprovince sets part of address - region into UpdateContact base
-        * @param postalcode sets part of address - postal code into UpdateContact base
-        * @param country sets two character country code or country name  into UpdateContact base
+        * @param place sets place address of contact into UpdateContact base
         * @param telephone sets telephone number into UpdateContact base
         * @param fax sets fax number into UpdateContact base
         * @param email sets e-mail address into UpdateContact base
@@ -1061,13 +940,7 @@ namespace Fred
                 , const Optional<std::string>& authinfo
                 , const Optional<std::string>& name
                 , const Optional<std::string>& organization
-                , const Optional<std::string>& street1
-                , const Optional<std::string>& street2
-                , const Optional<std::string>& street3
-                , const Optional<std::string>& city
-                , const Optional<std::string>& stateorprovince
-                , const Optional<std::string>& postalcode
-                , const Optional<std::string>& country
+                , const Optional< Fred::Contact::PlaceAddress > &place
                 , const Optional<std::string>& telephone
                 , const Optional<std::string>& fax
                 , const Optional<std::string>& email

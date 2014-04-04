@@ -52,13 +52,7 @@ namespace Fred
             , const Optional<std::string>& authinfo
             , const Optional<std::string>& name
             , const Optional<std::string>& organization
-            , const Optional<std::string>& street1
-            , const Optional<std::string>& street2
-            , const Optional<std::string>& street3
-            , const Optional<std::string>& city
-            , const Optional<std::string>& stateorprovince
-            , const Optional<std::string>& postalcode
-            , const Optional<std::string>& country
+            , const Optional< Fred::Contact::PlaceAddress > &place
             , const Optional<std::string>& telephone
             , const Optional<std::string>& fax
             , const Optional<std::string>& email
@@ -82,13 +76,7 @@ namespace Fred
               , authinfo
               , name
               , organization
-              , street1
-              , street2
-              , street3
-              , city
-              , stateorprovince
-              , postalcode
-              , country
+              , place
               , telephone
               , fax
               , email
@@ -214,13 +202,7 @@ namespace Fred
             , const Optional<std::string>& authinfo
             , const Optional<std::string>& name
             , const Optional<std::string>& organization
-            , const Optional<std::string>& street1
-            , const Optional<std::string>& street2
-            , const Optional<std::string>& street3
-            , const Optional<std::string>& city
-            , const Optional<std::string>& stateorprovince
-            , const Optional<std::string>& postalcode
-            , const Optional<std::string>& country
+            , const Optional< Fred::Contact::PlaceAddress > &place
             , const Optional<std::string>& telephone
             , const Optional<std::string>& fax
             , const Optional<std::string>& email
@@ -244,13 +226,7 @@ namespace Fred
             , authinfo
             , name
             , organization
-            , street1
-            , street2
-            , street3
-            , city
-            , stateorprovince
-            , postalcode
-            , country
+            , place
             , telephone
             , fax
             , email

@@ -129,13 +129,7 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle)
             , Optional<std::string>()//authinfo
             , Optional<std::string>()//name
             , Optional<std::string>()//organization
-            , Optional<std::string>()//street1
-            , Optional<std::string>()//street2
-            , Optional<std::string>()//street3
-            , Optional<std::string>()//city
-            , Optional<std::string>()//stateorprovince
-            , Optional<std::string>()//postalcode
-            , Optional<std::string>()//country
+            , Optional< Fred::Contact::PlaceAddress >()//place
             , Optional<std::string>()//telephone
             , Optional<std::string>()//fax
             , Optional<std::string>()//email
@@ -186,19 +180,19 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle)
     BOOST_CHECK(history_info_data_3.at(1).next_historyid.get_value() == history_info_data_3.at(0).info_contact_data.historyid);
     BOOST_CHECK(history_info_data_3.at(0).info_contact_data.crhistoryid == info_data_3.info_contact_data.crhistoryid);
 
+    Fred::Contact::PlaceAddress place;
+    place.street1 = "Str 1";
+    place.street2 = Optional< std::string >("str2");
+    place.city = "Prague";
+    place.postalcode = "11150";
+    place.country = "Czech Republic";
     Fred::UpdateContactByHandle(test_contact_handle//handle
             , registrar_handle//registrar
                 , Optional<std::string>(registrar_handle)//sponsoring registrar
                 , Optional<std::string>("passwd")//authinfo
                 , Optional<std::string>("Test Name")//name
                 , Optional<std::string>("Test o.r.g.")//organization
-                , Optional<std::string>("Str 1")//street1
-                , Optional<std::string>("str2")//street2
-                , Optional<std::string>()//street3
-                , Optional<std::string>("Prague")//city
-                , Optional<std::string>()//stateorprovince
-                , Optional<std::string>("11150")//postalcode
-                , Optional<std::string>("Czech Republic")//country
+                , place//place
                 , Optional<std::string>("+420.123456789")//telephone
                 , Optional<std::string>()//fax
                 , Optional<std::string>("test@nic.cz")//email
@@ -282,16 +276,13 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle)
     BOOST_CHECK(history_info_data_4.at(1).next_historyid.get_value() == history_info_data_4.at(0).info_contact_data.historyid);
     BOOST_CHECK(history_info_data_4.at(0).info_contact_data.crhistoryid == info_data_4.info_contact_data.crhistoryid);
 
+    place.street3 = Optional<std::string>("");
     Fred::UpdateContactByHandle(test_contact_handle, registrar_handle)
     .set_sponsoring_registrar(registrar_handle)
     .set_authinfo("passw")
     .set_name("Test Name")
     .set_organization("Test o.r.g.")
-    .set_street1("Str 1")
-    .set_street2("str2")
-    .set_street3("")
-    .set_city("Prague")
-    .set_postalcode("11150")
+    .set_place(place)
     .set_telephone("+420.123456789")
     .set_fax("")
     .set_email("test@nic.cz")
@@ -502,9 +493,11 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle_wrong_country)
 
     try
     {
+        Fred::Contact::PlaceAddress place;
+        place.country = "bad-country";
         Fred::OperationContext ctx;//new connection to rollback on error
         Fred::UpdateContactByHandle(test_contact_handle, registrar_handle)
-        .set_country("bad-country")
+        .set_place(place)
         .exec(ctx);
         ctx.commit_transaction();
         BOOST_ERROR("no exception thrown");
@@ -532,7 +525,9 @@ BOOST_AUTO_TEST_CASE(update_contact_by_id)
 {
     Fred::OperationContext ctx;
     Fred::InfoContactOutput info_data_1 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
-    Fred::UpdateContactById(info_data_1.info_contact_data.id,registrar_handle).set_street3("test street 3").exec(ctx);
+    Fred::Contact::PlaceAddress place = info_data_1.info_contact_data.place.get_value();
+    place.street3 = Optional<std::string>("test street 3");
+    Fred::UpdateContactById(info_data_1.info_contact_data.id,registrar_handle).set_place(place).exec(ctx);
     ctx.commit_transaction();
 }
 
