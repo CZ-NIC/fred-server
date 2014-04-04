@@ -51,19 +51,22 @@ struct create_domain_name_blacklist_id_fixture : public Test::Fixture::instantia
             "SELECT handle FROM registrar WHERE system ORDER BY id LIMIT 1")[0][0]);
         BOOST_CHECK(!registrar_handle.empty());//expecting existing system registrar
 
+        Fred::Contact::PlaceAddress place;
+        place.street1 = std::string("STR1") + xmark;
+        place.city = "Praha";
+        place.postalcode = "11150";
+        place.country = "CZ";
         Fred::CreateContact(admin_contact2_handle,registrar_handle)
             .set_name(std::string("TEST-CDNB-ADMIN-CONTACT NAME")+xmark)
             .set_disclosename(true)
-            .set_street1(std::string("STR1")+xmark)
-            .set_city("Praha").set_postalcode("11150").set_country("CZ")
+            .set_place(place)
             .set_discloseaddress(true)
             .exec(ctx);
 
         Fred::CreateContact(registrant_contact_handle,registrar_handle)
             .set_name(std::string("TEST-REGISTRANT-CONTACT NAME")+xmark)
             .set_disclosename(true)
-            .set_street1(std::string("STR1")+xmark)
-            .set_city("Praha").set_postalcode("11150").set_country("CZ")
+            .set_place(place)
             .set_discloseaddress(true)
             .exec(ctx);
 

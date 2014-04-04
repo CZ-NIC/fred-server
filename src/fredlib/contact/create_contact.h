@@ -34,6 +34,7 @@
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
 #include "util/printable.h"
+#include "src/fredlib/contact/place_address.h"
 
 
 namespace Fred
@@ -68,13 +69,7 @@ namespace Fred
         Optional<std::string> authinfo_;/**< transfer password */
         Optional<std::string> name_ ;/**< name of contact person */
         Optional<std::string> organization_;/**< full trade name of organization */
-        Optional<std::string> street1_;/**< part of address */
-        Optional<std::string> street2_;/**< part of address */
-        Optional<std::string> street3_;/**< part of address*/
-        Optional<std::string> city_;/**< part of address - city */
-        Optional<std::string> stateorprovince_;/**< part of address - region */
-        Optional<std::string> postalcode_;/**< part of address - postal code */
-        Optional<std::string> country_;/**< two character country code or country name */
+        Optional< Fred::Contact::PlaceAddress > place_;/**< place address of contact */
         Optional<std::string> telephone_;/**<  telephone number */
         Optional<std::string> fax_;/**< fax number */
         Optional<std::string> email_;/**< e-mail address */
@@ -139,13 +134,7 @@ namespace Fred
                 , const Optional<std::string>& authinfo
                 , const Optional<std::string>& name
                 , const Optional<std::string>& organization
-                , const Optional<std::string>& street1
-                , const Optional<std::string>& street2
-                , const Optional<std::string>& street3
-                , const Optional<std::string>& city
-                , const Optional<std::string>& stateorprovince
-                , const Optional<std::string>& postalcode
-                , const Optional<std::string>& country
+                , const Optional< Fred::Contact::PlaceAddress > &place
                 , const Optional<std::string>& telephone
                 , const Optional<std::string>& fax
                 , const Optional<std::string>& email
@@ -189,53 +178,11 @@ namespace Fred
         CreateContact& set_organization(const std::string& organization);
 
         /**
-        * Sets contact street1 part of address.
-        * @param street1 sets part of address into @ref street1_ attribute
+        * Sets contact place address.
+        * @param place sets place address into @ref place_ attribute
         * @return operation instance reference to allow method chaining
         */
-        CreateContact& set_street1(const std::string& street1);
-
-        /**
-        * Sets contact street2 part of address.
-        * @param street2 sets part of address into @ref street2_ attribute
-        * @return operation instance reference to allow method chaining
-        */
-        CreateContact& set_street2(const std::string& street2);
-
-        /**
-        * Sets contact street3 part of address.
-        * @param street3 sets part of address into @ref street3_ attribute
-        * @return operation instance reference to allow method chaining
-        */
-        CreateContact& set_street3(const std::string& street3);
-
-        /**
-        * Sets contact city part of address.
-        * @param city sets part of address - city into @ref city_ attribute
-        * @return operation instance reference to allow method chaining
-        */
-        CreateContact& set_city(const std::string& city);
-
-        /**
-        * Sets contact region part of address.
-        * @param stateorprovince sets part of address - region into @ref stateorprovince_ attribute
-        * @return operation instance reference to allow method chaining
-        */
-        CreateContact& set_stateorprovince(const std::string& stateorprovince);
-
-        /**
-        * Sets contact postal code part of address.
-        * @param postalcode sets part of address - postal code into @ref postalcode_ attribute
-        * @return operation instance reference to allow method chaining
-        */
-        CreateContact& set_postalcode(const std::string& postalcode);
-
-        /**
-        * Sets contact country part of address.
-        * @param country sets two character country code or country name into @ref country_ attribute
-        * @return operation instance reference to allow method chaining
-        */
-        CreateContact& set_country(const std::string& country);
+        CreateContact& set_place(const Fred::Contact::PlaceAddress &place);
 
         /**
         * Sets contact telephone number.
