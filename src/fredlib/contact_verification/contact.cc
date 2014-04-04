@@ -58,7 +58,7 @@ void db_contact_addresses_insert(Contact &_data)
 {
     std::string qaddress =
         "INSERT INTO contact_address ("
-        "contactid,type_id,street1,street2,street3,"
+        "contactid,type,street1,street2,street3,"
         " city,stateorprovince,postalcode,country)"
         " VALUES ("
          "$1::integer,$2::text,$3::text,$4::text,$5::text,"
@@ -246,7 +246,7 @@ unsigned long long db_contact_insert_history(const unsigned long long &_request_
             Database::query_param_list(history_id)(_contact_id));
 
     Database::Result rcontact_address_history = conn.exec_params(
-            "INSERT INTO contact_address_history (historyid, id, contactid, type_id, street1, street2, street3,"
+            "INSERT INTO contact_address_history (historyid, id, contactid, type, street1, street2, street3,"
             " city, stateorprovince, postalcode, country)"
             " SELECT $1::integer, id, contactid, type_id, street1, street2, street3,"
             " city, stateorprovince, postalcode, country"
