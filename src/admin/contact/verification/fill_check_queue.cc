@@ -305,12 +305,15 @@ namespace ContactVerificationQueue {
             "SELECT COUNT(c_ch.id) as count_ "
             "   FROM contact_check AS c_ch "
             "       JOIN enum_contact_check_status AS enum_status ON c_ch.enum_contact_check_status_id = enum_status.id "
-            "   WHERE enum_status.handle = ANY($1::varchar[]) ",
-            Database::query_param_list(
-                std::string("{")
-                + boost::join(Fred::ContactCheckStatus::get_not_yet_resolved(), ",")
-                + "}"
-            )
+            "       JOIN enum_contact_testsuite AS enum_c_t ON c_ch.enum_contact_testsuite_id = enum_c_t.id "
+            "   WHERE enum_status.handle = ANY($1::varchar[]) "
+            "       AND enum_c_t.handle = $2::varchar ",
+            Database::query_param_list
+                (   std::string("{")
+                    + boost::join(Fred::ContactCheckStatus::get_not_yet_resolved(), ",")
+                    + "}"
+                )
+                (testsuite_handle_)
         );
 
         if(queue_count_res.size() != 1) {
