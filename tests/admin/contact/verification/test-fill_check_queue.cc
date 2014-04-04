@@ -278,7 +278,7 @@ parameter of fill_automatic_check_queue must correctly affect number of newly en
 @pre clean queue
 @post correct number of enqueued checks
  */
-BOOST_AUTO_TEST_CASE(test_Max_queue_lenght_parameter)
+BOOST_AUTO_TEST_CASE(test_Max_queue_length_parameter)
 {
     for(int i=0; i<100; ++i) {
         setup_contact contact;
@@ -306,7 +306,7 @@ BOOST_AUTO_TEST_CASE(test_Max_queue_lenght_parameter)
 
 /**
  when queue is full new checks mustn't be created
- @pre full queue (relative to max_queue_lenght value)
+ @pre full queue (relative to max_queue_length value)
  @post no new checks enqueued
  */
 BOOST_AUTO_TEST_CASE(test_Try_fill_full_queue)

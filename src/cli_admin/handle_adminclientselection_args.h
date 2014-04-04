@@ -2452,7 +2452,7 @@ class HandleContactVerificationFillQueueArgsGrp : public HandleCommandGrpArgs {
             cfg_opts->add_options()("max_active_checks",
                 boost::program_options::value<Checked::ulong>()
                     ->default_value(100)
-                    ->notifier(save_arg<unsigned>(params.max_queue_lenght)),
+                    ->notifier(save_arg<unsigned>(params.max_queue_length)),
                     "maximum number of all active checks");
 
             cfg_opts->add_options()("testsuite_handle",
