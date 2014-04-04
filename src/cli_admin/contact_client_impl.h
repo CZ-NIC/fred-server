@@ -306,7 +306,7 @@ struct contact_verification_fill_queue_impl
       enqueued_checks =
           Admin::ContactVerificationQueue::fill_check_queue(
               boost::to_lower_copy(params.testsuite_handle),
-              params.max_queue_lenght
+              params.max_queue_length
           )
           .set_contact_filter(filter)
           .exec();

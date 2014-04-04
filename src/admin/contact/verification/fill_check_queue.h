@@ -49,7 +49,7 @@ namespace ContactVerificationQueue {
     /**
      * Operation for filling the contact check queue in contact_check table
      * - new checks are of specified testsuite
-     * - queue lenght is counted without regards to testsuite
+     * - queue length is counted without regards to testsuite
      * - (optinally) of contacts specified by filter
      */
 
