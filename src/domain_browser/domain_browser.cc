@@ -167,10 +167,12 @@ namespace Registry
 
         DomainBrowser::DomainBrowser(const std::string& server_name,
             const std::string& update_registrar_handle,
-            unsigned int domain_list_limit)
+            unsigned int domain_list_limit,
+            unsigned int nsset_list_limit)
         : server_name_(server_name)
         , update_registrar_(update_registrar_handle)
         , domain_list_limit_(domain_list_limit)
+        , nsset_list_limit_(nsset_list_limit)
         {
             Fred::OperationContext ctx;
             Database::Result db_config = ctx.get_conn().exec(
@@ -911,7 +913,7 @@ namespace Registry
             const Optional<unsigned long long>& list_domains_for_keyset_id,
             const std::string& lang,
             unsigned long long offset,
-            std::vector<std::vector<std::string> >& domain_list_out)
+            std::vector<std::vector<std::string> >& nsset_list_out)
         {
             Fred::OperationContext ctx;
             check_user_contact_id<UserNotExists>(ctx, user_contact_id);
@@ -992,7 +994,7 @@ namespace Registry
             unsigned long long limited_domain_list_size = (domain_list_result.size() > domain_list_limit_)
                 ? domain_list_limit_ : domain_list_result.size();
 
-            domain_list_out.reserve(limited_domain_list_size);
+            nsset_list_out.reserve(limited_domain_list_size);
             for (unsigned long long i = 0;i < limited_domain_list_size;++i)
             {
                 std::vector<std::string> row(11);
@@ -1028,12 +1030,66 @@ namespace Registry
                 row.at(9) = state_desc;
                 row.at(10) = object_states_result.second ? "t":"f";
 
-                domain_list_out.push_back(row);
+                nsset_list_out.push_back(row);
             }
 
             return domain_list_result.size() > domain_list_limit_;
         }
 
+        bool DomainBrowser::getNssetList(unsigned long long user_contact_id,
+                    const std::string& lang,
+                    unsigned long long offset,
+                    std::vector<std::vector<std::string> >& nsset_list_out)
+        {
+            Fred::OperationContext ctx;
+            check_user_contact_id<UserNotExists>(ctx, user_contact_id);
+
+            Database::Result nsset_list_result = ctx.get_conn().exec_params(
+                "SELECT oreg.id AS id "
+                ", oreg.name AS handle "
+                ", registrar.handle AS registrar_handle "
+                ", registrar.name AS registrar_name "
+                ", COALESCE(domains.number,0) AS domain_number "
+                " FROM object_registry oreg "
+                " JOIN object obj ON obj.id = oreg.id "
+                " JOIN registrar ON registrar.id = obj.clid "
+                " JOIN nsset_contact_map ncm ON ncm.nssetid = oreg.id "
+                " LEFT JOIN (SELECT d.nsset AS nsset, count(d.id) AS number FROM domain d "
+                " JOIN nsset_contact_map ncm ON  d.nsset = ncm.nssetid "
+                " WHERE ncm.contactid = $1::bigint "
+                " GROUP BY d.nsset) AS domains ON domains.nsset = oreg.id "
+                " WHERE ncm.contactid = $1::bigint "
+                " ORDER BY id LIMIT $2::bigint OFFSET $3::bigint ",
+                Database::query_param_list(user_contact_id)(nsset_list_limit_+1)(offset));
+
+            unsigned long long limited_nsset_list_size = (nsset_list_result.size() > nsset_list_limit_)
+                ? nsset_list_limit_ : nsset_list_result.size();
+
+            nsset_list_out.reserve(limited_nsset_list_size);
+            for (unsigned long long i = 0;i < limited_nsset_list_size;++i)
+            {
+                std::vector<std::string> row(8);
+                row.at(0) = static_cast<std::string>(nsset_list_result[i]["id"]);
+                row.at(1) = static_cast<std::string>(nsset_list_result[i]["handle"]);
+                row.at(2) = static_cast<std::string>(nsset_list_result[i]["registrar_handle"]);
+                row.at(3) = static_cast<std::string>(nsset_list_result[i]["registrar_name"]);
+                row.at(4) = static_cast<std::string>(nsset_list_result[i]["domain_number"]);
+
+                std::string state_codes;
+                std::string state_desc;
+                std::pair<long,bool> object_states_result = get_object_states(ctx,
+                        static_cast<unsigned long long >(nsset_list_result[i]["id"]),lang,
+                        state_codes, state_desc);
+
+                row.at(5) = boost::lexical_cast<std::string>(object_states_result.first == 0 ? minimal_status_importance_ : object_states_result.first);
+                row.at(6) = state_desc;
+                row.at(7) = object_states_result.second ? "t":"f";
+
+                nsset_list_out.push_back(row);
+            }
+
+            return nsset_list_result.size() > nsset_list_limit_;
+        }
 
     }//namespace DomainBrowserImpl
 }//namespace Registry

@@ -73,6 +73,7 @@ struct domain_browser_impl_instance_fixture
 {
     std::string update_registrar_handle;
     unsigned int domain_list_limit;
+    unsigned int nsset_list_limit;
     Registry::DomainBrowserImpl::DomainBrowser impl;
 
     domain_browser_impl_instance_fixture()
@@ -80,7 +81,9 @@ struct domain_browser_impl_instance_fixture
         ->get_handler_ptr_by_type<HandleMojeIDArgs>()->registrar_handle)//MojeID registrar used for updates in domain browser
     , domain_list_limit(CfgArgs::instance()
         ->get_handler_ptr_by_type<HandleDomainBrowserArgs>()->domain_list_limit)//domain list chunk size
-    , impl(server_name, update_registrar_handle, domain_list_limit)
+    , nsset_list_limit(CfgArgs::instance()
+            ->get_handler_ptr_by_type<HandleDomainBrowserArgs>()->nsset_list_limit)//nsset list chunk size
+    , impl(server_name, update_registrar_handle, domain_list_limit, nsset_list_limit)
     {}
 };
 
@@ -2380,7 +2383,105 @@ BOOST_FIXTURE_TEST_CASE(get_domain_list_for_keyset_user_not_keyset_admin, get_my
     }
 }
 
-
 BOOST_AUTO_TEST_SUITE_END();//getDomainList
+
+BOOST_AUTO_TEST_SUITE(getNssetList)
+
+struct get_my_nssets_fixture
+: mojeid_user_contact_fixture
+  , admin_contact_fixture
+  , domain_browser_impl_instance_fixture
+{
+    std::string test_nsset_handle;
+    std::map<std::string,Fred::InfoNssetOutput> nsset_info;
+
+    get_my_nssets_fixture()
+    : test_nsset_handle(std::string("TEST_NSSET_")+user_contact_handle_fixture::xmark+"_")
+    {
+        Fred::OperationContext ctx;
+        for(int i = 0; i < 10; ++i)
+        {
+            std::ostringstream nsset_handle;
+            nsset_handle << test_nsset_handle << i;
+
+            Fred::CreateNsset(nsset_handle.str(), test_registrar_handle)
+                .set_tech_contacts(Util::vector_of<std::string>(admin_contact_fixture::test_contact_handle)(user_contact_handle))
+                .set_dns_hosts(Util::vector_of<Fred::DnsHost>
+                (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.3")("127.1.1.3"))) //add_dns
+                (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.4")("127.1.1.4"))) //add_dns
+                ).exec(ctx);
+
+            nsset_info[nsset_handle.str()]= Fred::InfoNssetByHandle(nsset_handle.str()).exec(ctx);
+
+            if(i%2)
+            {
+                BOOST_MESSAGE(nsset_handle.str() + " blocked");
+                Fred::LockObjectStateRequestLock(Fred::ObjectState::SERVER_BLOCKED,
+                    map_at(nsset_info,nsset_handle.str()).info_nsset_data.id).exec(ctx);
+                ctx.get_conn().exec_params(
+                    "INSERT INTO object_state_request (object_id, state_id)"
+                    " VALUES ($1::integer, (SELECT id FROM enum_object_states"
+                    " WHERE name = $2::text)) RETURNING id",
+                    Database::query_param_list
+                        (map_at(nsset_info,nsset_handle.str()).info_nsset_data.id)
+                        (Fred::ObjectState::SERVER_BLOCKED));
+                Fred::PerformObjectStateRequest().set_object_id(map_at(nsset_info,nsset_handle.str()).info_nsset_data.id).exec(ctx);
+            }
+        }
+
+        ctx.commit_transaction();//commit fixture
+    }
+
+    ~get_my_nssets_fixture()
+    {}
+};
+
+/**
+ * test call getNssetList
+*/
+BOOST_FIXTURE_TEST_CASE(get_my_nsset_list, get_my_nssets_fixture )
+{
+    Fred::OperationContext ctx;
+    std::vector<std::vector<std::string> > nsset_list_out;
+    bool limit_exceeded = impl.getNssetList(user_contact_info.info_contact_data.id,
+        "CS",0,nsset_list_out);
+
+    std::ostringstream list_out;
+    list_out << "nsset_list_out: \n";
+
+    for(unsigned long long i = 0; i < nsset_list_out.size(); ++i)
+    {
+        for(unsigned long long j = 0; j < nsset_list_out.at(i).size(); ++j)
+        {
+            list_out << " " <<nsset_list_out.at(i).at(j);
+        }
+
+        list_out << "\n";
+    }
+    BOOST_MESSAGE(list_out.str());
+    BOOST_MESSAGE("limit_exceeded: " << limit_exceeded);
+
+    for(unsigned long long i = 0; i < nsset_list_out.size(); ++i)
+    {
+        BOOST_CHECK(nsset_list_out.at(i).at(0) == boost::lexical_cast<std::string>(map_at(nsset_info,nsset_list_out.at(i).at(1)).info_nsset_data.id));
+        BOOST_CHECK(nsset_list_out.at(i).at(1) == map_at(nsset_info,nsset_list_out.at(i).at(1)).info_nsset_data.handle);
+        BOOST_CHECK(nsset_list_out.at(i).at(2) == test_registrar_handle);//registrar handle
+        BOOST_CHECK(nsset_list_out.at(i).at(3) == boost::algorithm::replace_first_copy(test_registrar_handle, "-HANDLE", " NAME"));//registrar name
+
+        if(i%2)
+        {
+            BOOST_MESSAGE(nsset_list_out.at(i).at(7));
+            BOOST_CHECK(nsset_list_out.at(i).at(7) == "t");
+            if(i > 2) BOOST_CHECK(nsset_list_out.at(i).at(6) == "Doména je blokována");
+        }
+        else
+        {
+            BOOST_MESSAGE(nsset_list_out.at(i).at(7));
+            BOOST_CHECK(nsset_list_out.at(i).at(7) == "f");
+        }
+    }
+}
+
+BOOST_AUTO_TEST_SUITE_END();//getNssetList
 
 BOOST_AUTO_TEST_SUITE_END();//TestDomainBrowser

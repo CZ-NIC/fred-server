@@ -50,7 +50,8 @@ namespace Registry
             // standard constructor
             Server_i(const std::string &_server_name,
                     const std::string& _update_registrar_handle,
-                    unsigned int domain_list_limit);
+                    unsigned int domain_list_limit,
+                    unsigned int nsset_list_limit);
 
             virtual ~Server_i();
             // methods corresponding to defined IDL attributes and operations
