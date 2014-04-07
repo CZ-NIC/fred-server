@@ -63,6 +63,8 @@ namespace  Admin {
                 postprocess_automatic_check(_ctx, check_handle_);
             } else if(check_info.testsuite_handle == Fred::TestsuiteHandle::MANUAL) {
                 postprocess_manual_check(_ctx, check_handle_);
+            } else if(check_info.testsuite_handle == Fred::TestsuiteHandle::THANK_YOU) {
+                postprocess_thank_you_check(_ctx, check_handle_);
             }
         } catch (const Fred::ExceptionUnknownCheckHandle& ) {
             throw Admin::ExceptionUnknownCheckHandle();
@@ -149,5 +151,12 @@ namespace  Admin {
 
             Admin::add_related_object_state_requests(_ctx, check_handle_, state_request_ids);
         }
+    }
+
+    void resolve_check::postprocess_thank_you_check(
+        Fred::OperationContext& _ctx,
+        const uuid& _check_handle
+    ) {
+        // in case of need feel free to express yourself...
     }
 }
