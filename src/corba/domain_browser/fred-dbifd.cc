@@ -70,9 +70,13 @@ int main(int argc, char *argv[])
         unsigned int domain_list_limit = CfgArgs::instance()
             ->get_handler_ptr_by_type<HandleDomainBrowserArgs>()->domain_list_limit;
 
+        //nsset list chunk size
+        unsigned int nsset_list_limit = CfgArgs::instance()
+            ->get_handler_ptr_by_type<HandleDomainBrowserArgs>()->nsset_list_limit;
+
         //create server object with poa and nameservice registration
         CorbaContainer::get_instance()
-            ->register_server(new Registry::DomainBrowser::Server_i(server_name, update_registrar_handle, domain_list_limit)
+            ->register_server(new Registry::DomainBrowser::Server_i(server_name, update_registrar_handle, domain_list_limit, nsset_list_limit)
             , "DomainBrowser2");
         run_server(CfgArgs::instance(), CorbaContainer::get_instance());
 

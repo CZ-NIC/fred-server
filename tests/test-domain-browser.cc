@@ -73,6 +73,7 @@ struct domain_browser_impl_instance_fixture
 {
     std::string update_registrar_handle;
     unsigned int domain_list_limit;
+    unsigned int nsset_list_limit;
     Registry::DomainBrowserImpl::DomainBrowser impl;
 
     domain_browser_impl_instance_fixture()
@@ -80,7 +81,9 @@ struct domain_browser_impl_instance_fixture
         ->get_handler_ptr_by_type<HandleMojeIDArgs>()->registrar_handle)//MojeID registrar used for updates in domain browser
     , domain_list_limit(CfgArgs::instance()
         ->get_handler_ptr_by_type<HandleDomainBrowserArgs>()->domain_list_limit)//domain list chunk size
-    , impl(server_name, update_registrar_handle, domain_list_limit)
+    , nsset_list_limit(CfgArgs::instance()
+            ->get_handler_ptr_by_type<HandleDomainBrowserArgs>()->nsset_list_limit)//nsset list chunk size
+    , impl(server_name, update_registrar_handle, domain_list_limit, nsset_list_limit)
     {}
 };
 

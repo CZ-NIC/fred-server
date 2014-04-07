@@ -125,3 +125,4 @@ demo_mode = false
 ##
 [domain_browser]
 list_domains_limit=5000
+list_nssets_limit=5000

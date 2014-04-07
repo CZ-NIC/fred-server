@@ -34,9 +34,10 @@ namespace Registry
     {
         Server_i::Server_i(const std::string &_server_name,
             const std::string& _update_registrar_handle,
-            unsigned int _domain_list_limit)
+            unsigned int _domain_list_limit,
+            unsigned int _nsset_list_limit)
         : pimpl_(new Registry::DomainBrowserImpl::DomainBrowser(_server_name,
-                    _update_registrar_handle, _domain_list_limit))
+                    _update_registrar_handle, _domain_list_limit, _nsset_list_limit))
         {}
 
         Server_i::~Server_i()
@@ -123,27 +124,39 @@ namespace Registry
         {
             try
             {
+                std::vector<std::vector<std::string> > nsset_list_out;
+                limit_exceeded = pimpl_->getNssetList(contact.id,
+                    lang, offset, nsset_list_out);
+
                 RecordSet_var rs = new RecordSet;
-                rs->length(1);
-
-                RecordSequence_var rseq = new RecordSequence;
-                rseq->length(1);
-
-                RegistryObject_var robject = CORBA::string_dup("test_object");
-
-                rseq[0] = robject._retn();
-
-                rs[0] = rseq;
-
+                rs->length(nsset_list_out.size());
+                for(unsigned long long i = 0 ; i < nsset_list_out.size(); ++i)
+                {
+                    RecordSequence rseq;
+                    rseq.length(nsset_list_out.at(i).size());
+                    for(unsigned long long j = 0 ; j < nsset_list_out.at(i).size(); ++j)
+                    {
+                        rseq[j] = CORBA::string_dup(nsset_list_out.at(i).at(j).c_str());
+                    }
+                    rs[i] = rseq;
+                }
                 return rs._retn();
             }//try
-            catch (std::exception &_ex)
+            catch (const Registry::DomainBrowserImpl::UserNotExists& )
             {
                 throw Registry::DomainBrowser::USER_NOT_EXISTS();
             }
-            catch (std::exception &_ex)
+            catch (const Registry::DomainBrowserImpl::IncorrectUsage& )
             {
                 throw Registry::DomainBrowser::INCORRECT_USAGE();
+            }
+            catch (const boost::exception&)
+            {
+                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
+            }
+            catch (const std::exception&)
+            {
+                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
             }
             catch (...)
             {

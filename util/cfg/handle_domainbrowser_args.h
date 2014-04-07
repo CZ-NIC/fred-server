@@ -43,6 +43,7 @@ class HandleDomainBrowserArgs : public HandleArgs
 {
 public:
     unsigned int domain_list_limit;
+    unsigned int nsset_list_limit;
 
     boost::shared_ptr<boost::program_options::options_description>
     get_options_description()
@@ -52,8 +53,11 @@ public:
                         std::string("Domain browser server options")));
 
         cfg_opts->add_options()
-                ("domain_browser.list_domains_limit",
-                        po::value<unsigned int>()->default_value(5000),"domain list chunk size");
+            ("domain_browser.list_domains_limit",
+                po::value<unsigned int>()->default_value(5000),"domain list chunk size")
+            ("domain_browser.list_nssets_limit",
+                po::value<unsigned int>()->default_value(5000),"nsset list chunk size")
+            ;
 
         return cfg_opts;
     }//get_options_description
@@ -63,6 +67,7 @@ public:
         handler_parse_args(get_options_description(), vm, argc, argv, fa);
 
         domain_list_limit = vm["domain_browser.list_domains_limit"].as<unsigned int>();
+        nsset_list_limit = vm["domain_browser.list_nssets_limit"].as<unsigned int>();
     }//handle
 };
 
