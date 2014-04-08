@@ -61,6 +61,19 @@ namespace ContactVerificationQueue {
             ") ";
     }
 
+    static std::string get_already_checked_contacts_query(Fred::OperationContext& _ctx, const std::string& _testsuite_handle) {
+        return
+            "SELECT "
+                    "c_h.id AS contact_id_, "
+                    "MAX(c_ch.update_time) AS last_update_ "
+                "FROM contact_history AS c_h "
+                    "JOIN contact_check AS c_ch ON c_ch.contact_history_id = c_h.historyid "
+            // using correct testsuite (IMPORTANT)
+                    "JOIN enum_contact_testsuite AS enum_c_t ON c_ch.enum_contact_testsuite_id = enum_c_t.id "
+                "WHERE enum_c_t.handle = '"+_ctx.get_conn().escape(_testsuite_handle)+"' "
+                "GROUP BY contact_id_ ";
+    }
+
     static void set_contact_filter_query(
         const contact_filter&               _filter,
         const std::string&                  _contact_alias,
@@ -121,17 +134,14 @@ namespace ContactVerificationQueue {
         _conditions = conditions;
     }
 
-    static std::vector<unsigned long long> select_never_checked_contacts(
-        Fred::OperationContext& _ctx,
-        unsigned                _max_count,
-        const std::string&      _testsuite_handle,
-        contact_filter          _filter
+    static std::string get_contact_filter_query(
+        const contact_filter& _filter
     ) {
         using std::string;
         using std::vector;
         using std::set;
 
-       // create temporary view for filtered contact ids
+        // create temporary view for filtered contact ids
         vector<string> joins;
         vector<string> conditions;
 
@@ -142,36 +152,55 @@ namespace ContactVerificationQueue {
             joined_conditions = " WHERE (" + joined_conditions + ")";
         }
 
+        return
+            "SELECT DISTINCT c.id AS contact_id_ "
+                "FROM contact AS c "
+                + boost::algorithm::join(joins, " " ) +" "
+                + joined_conditions ;
+    }
+
+    static std::string get_contacts_with_enqueued_check_query(Fred::OperationContext& _ctx) {
+
+        return
+            "SELECT "
+                    "c_h.id AS contact_id_ "
+                "FROM contact_history AS c_h "
+                    "JOIN contact_check AS c_ch ON c_ch.contact_history_id = c_h.historyid "
+                    "JOIN enum_contact_check_status AS enum_c_ch_s ON c_ch.enum_contact_check_status_id = enum_c_ch_s.id "
+                "WHERE enum_c_ch_s.handle = '"+_ctx.get_conn().escape(Fred::ContactCheckStatus::ENQUEUED)+"' "
+                "GROUP BY contact_id_ ";
+    }
+
+    static std::vector<unsigned long long> select_never_checked_contacts(
+        Fred::OperationContext& _ctx,
+        unsigned                _max_count,
+        const std::string&      _testsuite_handle,
+        contact_filter          _filter
+    ) {
         _ctx.get_conn().exec(
             "CREATE OR REPLACE TEMP VIEW temp_filter AS "
-            "   SELECT DISTINCT c.id "
-            "       FROM contact AS c "
-            "       "+ boost::algorithm::join(joins, " " ) +" "
-            "       "+joined_conditions
-        );
+            + get_contact_filter_query(_filter) );
 
-       // create temporary view for already checked contact ids
         _ctx.get_conn().exec(
             "CREATE OR REPLACE TEMP VIEW temp_already_checked AS "
-            "   SELECT DISTINCT c_h.id "
-            "       FROM contact_history AS c_h "
-            "           JOIN contact_check AS c_ch ON c_ch.contact_history_id = c_h.historyid "
-            // using correct testsuite (IMPORTANT)
-            "           JOIN enum_contact_testsuite AS enum_c_t ON c_ch.enum_contact_testsuite_id = enum_c_t.id "
-            "       WHERE enum_c_t.handle = '"+_ctx.get_conn().escape(_testsuite_handle)+"'"
-        );
+            + get_already_checked_contacts_query(_ctx, _testsuite_handle) );
+
+        _ctx.get_conn().exec(
+            "CREATE OR REPLACE TEMP VIEW temp_with_active_check AS "
+            + get_contacts_with_enqueued_check_query(_ctx) );
 
         Database::Result never_checked_contacts_res = _ctx.get_conn().exec_params(
             "SELECT o_r.id AS contact_id_ "
-            "    FROM object_registry AS o_r "
-            "        JOIN ( "
-            "            SELECT id from temp_filter "
-            "            EXCEPT "
-            "            SELECT id from temp_already_checked "
-            "        ) as filter ON o_r.id = filter.id "
-            "    WHERE NOT " + is_contact_mojeid_query("o_r.id") + " "
-            "    LIMIT $1::integer "
-            "    FOR SHARE OF o_r ",
+                "FROM object_registry AS o_r "
+                    "JOIN ( "
+                        "SELECT contact_id_ AS id from temp_filter "
+                        "EXCEPT "
+                        "SELECT contact_id_ AS id from temp_already_checked "
+                    ") as filter ON o_r.id = filter.id "
+                "WHERE NOT " + is_contact_mojeid_query("o_r.id") + " "
+                    "AND NOT EXISTS (SELECT * FROM temp_with_active_check AS temp_u_e WHERE temp_u_e.contact_id_ = o_r.id ) "
+                "LIMIT $1::integer "
+                "FOR SHARE OF o_r ",
             Database::query_param_list(_max_count)
         );
 
@@ -195,71 +224,29 @@ namespace ContactVerificationQueue {
         const std::string&      _testsuite_handle,
         contact_filter          _filter
     ) {
-        using std::string;
-        using std::vector;
-        using std::set;
-
-        // create temporary view for filtered contact ids
-        vector<string> joins;
-        vector<string> conditions;
-
-        set_contact_filter_query(_filter, "c", joins, conditions);
-
-        std::string joined_conditions = boost::algorithm::join(conditions, ") AND (" );
-        if(joined_conditions.length() > 0) {
-            joined_conditions = " WHERE (" + joined_conditions + ")";
-        }
-
         _ctx.get_conn().exec(
             "CREATE OR REPLACE TEMP VIEW temp_filter AS "
-            "   SELECT DISTINCT c.id AS contact_id_ "
-            "       FROM contact AS c "
-            "       "+ boost::algorithm::join(joins, " " ) +" "
-            "       "+joined_conditions
-        );
+            + get_contact_filter_query(_filter) );
 
-        // create temporary view for already checked contact ids
         _ctx.get_conn().exec(
             "CREATE OR REPLACE TEMP VIEW temp_already_checked AS "
-            "   SELECT "
-            "       c_h.id AS contact_id_, "
-            "       MAX(c_ch.update_time) AS last_update_ "
-            "       FROM contact_history AS c_h "
-            "           JOIN contact_check AS c_ch ON c_ch.contact_history_id = c_h.historyid "
-            // using correct testsuite (IMPORTANT)
-            "           JOIN enum_contact_testsuite AS enum_c_t ON c_ch.enum_contact_testsuite_id = enum_c_t.id "
-            "       WHERE enum_c_t.handle = '"+_ctx.get_conn().escape(_testsuite_handle)+"' "
-            "       GROUP BY contact_id_ "
+            + get_already_checked_contacts_query(_ctx, _testsuite_handle)
         );
 
-        // create temporary view for unchanged enqueued contact ids
         _ctx.get_conn().exec(
-            "CREATE OR REPLACE TEMP VIEW temp_unchanged_enqueued AS "
-            "   SELECT "
-            "       o_r.id AS contact_id_ "
-            "       FROM object_registry AS o_r "
-            // interested in checks whose contact_history_id is the newest one of the contact
-            "           JOIN contact_check AS c_ch ON c_ch.contact_history_id = o_r.historyid "
-            // using correct testsuite (IMPORTANT)
-            "           JOIN enum_contact_testsuite AS enum_c_t ON c_ch.enum_contact_testsuite_id = enum_c_t.id "
-            // skip ENQUEUED checks to prevent enqueue+invalidation of the same contact in case of fewer contacts then queue length
-            "           JOIN enum_contact_check_status AS enum_c_ch_s ON c_ch.enum_contact_check_status_id = enum_c_ch_s.id "
-            "       WHERE enum_c_t.handle = '"+_ctx.get_conn().escape(_testsuite_handle)+"' "
-            "           AND enum_c_ch_s.handle = '"+_ctx.get_conn().escape(Fred::ContactCheckStatus::ENQUEUED)+"' "
-            "       GROUP BY contact_id_ "
-        );
+            "CREATE OR REPLACE TEMP VIEW temp_with_active_check AS "
+            + get_contacts_with_enqueued_check_query(_ctx) );
 
         Database::Result oldest_checked_contacts_res = _ctx.get_conn().exec_params(
             "SELECT o_r.id AS contact_id_ "
-            "    FROM object_registry AS o_r "
-            "        JOIN temp_filter ON temp_filter.contact_id_ = o_r.id "
-            "        JOIN temp_already_checked ON temp_already_checked.contact_id_ = o_r.id "
-            "    WHERE "
-            "       NOT " + is_contact_mojeid_query("o_r.id") + " "
-            "       AND NOT EXISTS (SELECT * FROM temp_unchanged_enqueued AS temp_u_e WHERE temp_u_e.contact_id_ = o_r.id ) "
-            "    ORDER BY temp_already_checked.last_update_ ASC "
-            "    LIMIT $1::integer "
-            "    FOR SHARE OF o_r ",
+                "FROM object_registry AS o_r "
+                    "JOIN temp_filter ON temp_filter.contact_id_ = o_r.id "
+                    "JOIN temp_already_checked ON temp_already_checked.contact_id_ = o_r.id "
+                "WHERE NOT " + is_contact_mojeid_query("o_r.id") + " "
+                    "AND NOT EXISTS (SELECT * FROM temp_with_active_check AS temp_u_e WHERE temp_u_e.contact_id_ = o_r.id ) "
+                "ORDER BY temp_already_checked.last_update_ ASC "
+                "LIMIT $1::integer "
+                "FOR SHARE OF o_r ",
             Database::query_param_list(_max_count)
         );
 
@@ -303,11 +290,11 @@ namespace ContactVerificationQueue {
         // how many enqueued checks are there?
         Database::Result queue_count_res = ctx1.get_conn().exec_params(
             "SELECT COUNT(c_ch.id) as count_ "
-            "   FROM contact_check AS c_ch "
-            "       JOIN enum_contact_check_status AS enum_status ON c_ch.enum_contact_check_status_id = enum_status.id "
-            "       JOIN enum_contact_testsuite AS enum_c_t ON c_ch.enum_contact_testsuite_id = enum_c_t.id "
-            "   WHERE enum_status.handle = ANY($1::varchar[]) "
-            "       AND enum_c_t.handle = $2::varchar ",
+                "FROM contact_check AS c_ch "
+                    "JOIN enum_contact_check_status AS enum_status ON c_ch.enum_contact_check_status_id = enum_status.id "
+                    "JOIN enum_contact_testsuite AS enum_c_t ON c_ch.enum_contact_testsuite_id = enum_c_t.id "
+                "WHERE enum_status.handle = ANY($1::varchar[]) "
+                "AND enum_c_t.handle = $2::varchar ",
             Database::query_param_list
                 (   std::string("{")
                     + boost::join(Fred::ContactCheckStatus::get_not_yet_resolved(), ",")

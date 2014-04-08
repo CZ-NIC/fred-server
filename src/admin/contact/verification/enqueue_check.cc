@@ -29,16 +29,14 @@ namespace  Admin {
                 "SELECT c_ch.handle as handle_ "
                 "   FROM contact_check AS c_ch "
                 "       JOIN enum_contact_check_status AS enum_status ON c_ch.enum_contact_check_status_id = enum_status.id "
-                "       JOIN enum_contact_testsuite AS enum_testsuite ON c_ch.enum_contact_testsuite_id = enum_testsuite.id "
                 "       JOIN contact_history AS c_h1 ON c_ch.contact_history_id = c_h1.historyid "
                 "       JOIN contact_history AS c_h2 ON c_h1.id = c_h2.id "
                 "   WHERE enum_status.handle = $1::varchar "
-                "       AND enum_testsuite.handle = $2::varchar "
-                "       AND c_h2.historyid = $3::integer "
-                "       AND c_ch.handle != $4::uuid ",
+                "       AND c_h2.historyid = $2::integer "
+                // Don't want to invalidate our brand new check...
+                "       AND c_ch.handle != $3::uuid ",
                 Database::query_param_list
                     (Fred::ContactCheckStatus::ENQUEUED)
-                    (_testsuite_handle)
                     (info.contact_history_id)
                     (created_handle)
             );
