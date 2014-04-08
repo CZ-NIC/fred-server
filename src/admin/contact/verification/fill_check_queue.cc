@@ -191,16 +191,16 @@ namespace ContactVerificationQueue {
 
         Database::Result never_checked_contacts_res = _ctx.get_conn().exec_params(
             "SELECT o_r.id AS contact_id_ "
-            "    FROM object_registry AS o_r "
-            "        JOIN ( "
-            "            SELECT contact_id_ AS id from temp_filter "
-            "            EXCEPT "
-            "            SELECT contact_id_ AS id from temp_already_checked "
-            "        ) as filter ON o_r.id = filter.id "
-            "    WHERE NOT " + is_contact_mojeid_query("o_r.id") + " "
-            "       AND NOT EXISTS (SELECT * FROM temp_with_active_check AS temp_u_e WHERE temp_u_e.contact_id_ = o_r.id ) "
-            "    LIMIT $1::integer "
-            "    FOR SHARE OF o_r ",
+                "FROM object_registry AS o_r "
+                    "JOIN ( "
+                        "SELECT contact_id_ AS id from temp_filter "
+                        "EXCEPT "
+                        "SELECT contact_id_ AS id from temp_already_checked "
+                    ") as filter ON o_r.id = filter.id "
+                "WHERE NOT " + is_contact_mojeid_query("o_r.id") + " "
+                    "AND NOT EXISTS (SELECT * FROM temp_with_active_check AS temp_u_e WHERE temp_u_e.contact_id_ = o_r.id ) "
+                "LIMIT $1::integer "
+                "FOR SHARE OF o_r ",
             Database::query_param_list(_max_count)
         );
 
@@ -239,15 +239,14 @@ namespace ContactVerificationQueue {
 
         Database::Result oldest_checked_contacts_res = _ctx.get_conn().exec_params(
             "SELECT o_r.id AS contact_id_ "
-            "    FROM object_registry AS o_r "
-            "        JOIN temp_filter ON temp_filter.contact_id_ = o_r.id "
-            "        JOIN temp_already_checked ON temp_already_checked.contact_id_ = o_r.id "
-            "    WHERE "
-            "       NOT " + is_contact_mojeid_query("o_r.id") + " "
-            "       AND NOT EXISTS (SELECT * FROM temp_with_active_check AS temp_u_e WHERE temp_u_e.contact_id_ = o_r.id ) "
-            "    ORDER BY temp_already_checked.last_update_ ASC "
-            "    LIMIT $1::integer "
-            "    FOR SHARE OF o_r ",
+                "FROM object_registry AS o_r "
+                    "JOIN temp_filter ON temp_filter.contact_id_ = o_r.id "
+                    "JOIN temp_already_checked ON temp_already_checked.contact_id_ = o_r.id "
+                "WHERE NOT " + is_contact_mojeid_query("o_r.id") + " "
+                    "AND NOT EXISTS (SELECT * FROM temp_with_active_check AS temp_u_e WHERE temp_u_e.contact_id_ = o_r.id ) "
+                "ORDER BY temp_already_checked.last_update_ ASC "
+                "LIMIT $1::integer "
+                "FOR SHARE OF o_r ",
             Database::query_param_list(_max_count)
         );
 
@@ -291,11 +290,11 @@ namespace ContactVerificationQueue {
         // how many enqueued checks are there?
         Database::Result queue_count_res = ctx1.get_conn().exec_params(
             "SELECT COUNT(c_ch.id) as count_ "
-            "   FROM contact_check AS c_ch "
-            "       JOIN enum_contact_check_status AS enum_status ON c_ch.enum_contact_check_status_id = enum_status.id "
-            "       JOIN enum_contact_testsuite AS enum_c_t ON c_ch.enum_contact_testsuite_id = enum_c_t.id "
-            "   WHERE enum_status.handle = ANY($1::varchar[]) "
-            "       AND enum_c_t.handle = $2::varchar ",
+                "FROM contact_check AS c_ch "
+                    "JOIN enum_contact_check_status AS enum_status ON c_ch.enum_contact_check_status_id = enum_status.id "
+                    "JOIN enum_contact_testsuite AS enum_c_t ON c_ch.enum_contact_testsuite_id = enum_c_t.id "
+                "WHERE enum_status.handle = ANY($1::varchar[]) "
+                "AND enum_c_t.handle = $2::varchar ",
             Database::query_param_list
                 (   std::string("{")
                     + boost::join(Fred::ContactCheckStatus::get_not_yet_resolved(), ",")
