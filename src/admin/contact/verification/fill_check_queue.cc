@@ -134,17 +134,14 @@ namespace ContactVerificationQueue {
         _conditions = conditions;
     }
 
-    static std::vector<unsigned long long> select_never_checked_contacts(
-        Fred::OperationContext& _ctx,
-        unsigned                _max_count,
-        const std::string&      _testsuite_handle,
-        contact_filter          _filter
+    static std::string get_contact_filter_query(
+        const contact_filter& _filter
     ) {
         using std::string;
         using std::vector;
         using std::set;
 
-       // create temporary view for filtered contact ids
+        // create temporary view for filtered contact ids
         vector<string> joins;
         vector<string> conditions;
 
@@ -155,25 +152,32 @@ namespace ContactVerificationQueue {
             joined_conditions = " WHERE (" + joined_conditions + ")";
         }
 
+        return
+            "SELECT DISTINCT c.id AS contact_id_ "
+                "FROM contact AS c "
+                + boost::algorithm::join(joins, " " ) +" "
+                + joined_conditions ;
+    }
+
+    static std::vector<unsigned long long> select_never_checked_contacts(
+        Fred::OperationContext& _ctx,
+        unsigned                _max_count,
+        const std::string&      _testsuite_handle,
+        contact_filter          _filter
+    ) {
         _ctx.get_conn().exec(
             "CREATE OR REPLACE TEMP VIEW temp_filter AS "
-            "   SELECT DISTINCT c.id "
-            "       FROM contact AS c "
-            "       "+ boost::algorithm::join(joins, " " ) +" "
-            "       "+joined_conditions
-        );
+            + get_contact_filter_query(_filter) );
 
-       // create temporary view for already checked contact ids
         _ctx.get_conn().exec(
             "CREATE OR REPLACE TEMP VIEW temp_already_checked AS "
-            + get_already_checked_contacts_query(_ctx, _testsuite_handle)
-        );
+            + get_already_checked_contacts_query(_ctx, _testsuite_handle) );
 
         Database::Result never_checked_contacts_res = _ctx.get_conn().exec_params(
             "SELECT o_r.id AS contact_id_ "
             "    FROM object_registry AS o_r "
             "        JOIN ( "
-            "            SELECT id from temp_filter "
+            "            SELECT contact_id_ AS id from temp_filter "
             "            EXCEPT "
             "            SELECT contact_id_ AS id from temp_already_checked "
             "        ) as filter ON o_r.id = filter.id "
@@ -203,30 +207,10 @@ namespace ContactVerificationQueue {
         const std::string&      _testsuite_handle,
         contact_filter          _filter
     ) {
-        using std::string;
-        using std::vector;
-        using std::set;
-
-        // create temporary view for filtered contact ids
-        vector<string> joins;
-        vector<string> conditions;
-
-        set_contact_filter_query(_filter, "c", joins, conditions);
-
-        std::string joined_conditions = boost::algorithm::join(conditions, ") AND (" );
-        if(joined_conditions.length() > 0) {
-            joined_conditions = " WHERE (" + joined_conditions + ")";
-        }
-
         _ctx.get_conn().exec(
             "CREATE OR REPLACE TEMP VIEW temp_filter AS "
-            "   SELECT DISTINCT c.id AS contact_id_ "
-            "       FROM contact AS c "
-            "       "+ boost::algorithm::join(joins, " " ) +" "
-            "       "+joined_conditions
-        );
+            + get_contact_filter_query(_filter) );
 
-        // create temporary view for already checked contact ids
         _ctx.get_conn().exec(
             "CREATE OR REPLACE TEMP VIEW temp_already_checked AS "
             + get_already_checked_contacts_query(_ctx, _testsuite_handle)
