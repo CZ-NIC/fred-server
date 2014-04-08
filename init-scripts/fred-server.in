@@ -23,6 +23,7 @@ ADIFD_PORT=@ADIFDPORT@
 LOGD_PORT=@LOGDPORT@
 MIFD_PORT=@MIFDPORT@
 MSGD_PORT=@MSGDPORT@
+DBIFD_PORT=@DBIFDPORT@
 OPTIONS="-ORBnativeCharCodeSet UTF-8 -ORBendPoint giop:tcp::"
 
 MSG_START="Starting FRED central registry CORBA servers..."
@@ -161,6 +162,7 @@ fred_status() {
     check_server_status "fred-logd" "${VARRUN_PATH}/fred-logd.pid"
     check_server_status "fred-mifd" "${VARRUN_PATH}/fred-mifd.pid"
     check_server_status "fred-msgd" "${VARRUN_PATH}/fred-msgd.pid"
+    check_server_status "fred-dbifd" "${VARRUN_PATH}/fred-dbifd.pid"
 }
 
 fred_stop() {
@@ -201,7 +203,12 @@ fred_stop() {
         STOP_SUCCEDED=$(($STOP_SUCCEDED * $?))
 	rm -f ${VARRUN_PATH}/fred-msgd.pid
     fi
-
+    if [ -f ${VARRUN_PATH}/fred-dbifd.pid ]
+    then
+    kill -TERM `cat ${VARRUN_PATH}/fred-dbifd.pid` 2>/dev/null
+        STOP_SUCCEDED=$(($STOP_SUCCEDED * $?))
+    rm -f ${VARRUN_PATH}/fred-dbifd.pid
+    fi
 
     @BINDIR@/pyfredctl stop > /dev/null
     STOP_SUCCEDED=$(($STOP_SUCCEDED * $?))
