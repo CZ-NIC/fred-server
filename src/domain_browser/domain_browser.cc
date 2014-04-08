@@ -168,11 +168,13 @@ namespace Registry
         DomainBrowser::DomainBrowser(const std::string& server_name,
             const std::string& update_registrar_handle,
             unsigned int domain_list_limit,
-            unsigned int nsset_list_limit)
+            unsigned int nsset_list_limit,
+            unsigned int keyset_list_limit)
         : server_name_(server_name)
         , update_registrar_(update_registrar_handle)
         , domain_list_limit_(domain_list_limit)
         , nsset_list_limit_(nsset_list_limit)
+        , keyset_list_limit_(keyset_list_limit)
         {
             Fred::OperationContext ctx;
             Database::Result db_config = ctx.get_conn().exec(
@@ -1090,6 +1092,62 @@ namespace Registry
 
             return nsset_list_result.size() > nsset_list_limit_;
         }
+
+        bool DomainBrowser::getKeysetList(unsigned long long user_contact_id,
+            const std::string& lang,
+            unsigned long long offset,
+            std::vector<std::vector<std::string> >& keyset_list_out)
+        {
+            Fred::OperationContext ctx;
+            check_user_contact_id<UserNotExists>(ctx, user_contact_id);
+
+            Database::Result keyset_list_result = ctx.get_conn().exec_params(
+                "SELECT oreg.id AS id "
+                ", oreg.name AS handle "
+                ", registrar.handle AS registrar_handle "
+                ", registrar.name AS registrar_name "
+                ", COALESCE(domains.number,0) AS domain_number "
+                " FROM object_registry oreg "
+                " JOIN object obj ON obj.id = oreg.id "
+                " JOIN registrar ON registrar.id = obj.clid "
+                " JOIN keyset_contact_map kcm ON kcm.keysetid = oreg.id "
+                " LEFT JOIN (SELECT d.keyset AS keyset, count(d.id) AS number FROM domain d "
+                " JOIN keyset_contact_map kcm ON  d.keyset = kcm.keysetid "
+                " WHERE kcm.contactid = $1::bigint "
+                " GROUP BY d.keyset) AS domains ON domains.keyset = oreg.id "
+                " WHERE kcm.contactid = $1::bigint "
+                " ORDER BY id LIMIT $2::bigint OFFSET $3::bigint ",
+                Database::query_param_list(user_contact_id)(keyset_list_limit_+1)(offset));
+
+            unsigned long long limited_keyset_list_size = (keyset_list_result.size() > keyset_list_limit_)
+                ? keyset_list_limit_ : keyset_list_result.size();
+
+            keyset_list_out.reserve(limited_keyset_list_size);
+            for (unsigned long long i = 0;i < limited_keyset_list_size;++i)
+            {
+                std::vector<std::string> row(8);
+                row.at(0) = static_cast<std::string>(keyset_list_result[i]["id"]);
+                row.at(1) = static_cast<std::string>(keyset_list_result[i]["handle"]);
+                row.at(2) = static_cast<std::string>(keyset_list_result[i]["registrar_handle"]);
+                row.at(3) = static_cast<std::string>(keyset_list_result[i]["registrar_name"]);
+                row.at(4) = static_cast<std::string>(keyset_list_result[i]["domain_number"]);
+
+                std::string state_codes;
+                std::string state_desc;
+                std::pair<long,bool> object_states_result = get_object_states(ctx,
+                        static_cast<unsigned long long >(keyset_list_result[i]["id"]),lang,
+                        state_codes, state_desc);
+
+                row.at(5) = boost::lexical_cast<std::string>(object_states_result.first == 0 ? minimal_status_importance_ : object_states_result.first);
+                row.at(6) = state_desc;
+                row.at(7) = object_states_result.second ? "t":"f";
+
+                keyset_list_out.push_back(row);
+            }
+
+            return keyset_list_result.size() > keyset_list_limit_;
+        }
+
 
     }//namespace DomainBrowserImpl
 }//namespace Registry

@@ -389,6 +389,7 @@ namespace Registry
             std::string update_registrar_;/**< handle of registrar performing the updates */
             unsigned int domain_list_limit_;/**< domain list chunk size */
             unsigned int nsset_list_limit_;/**< nsset list chunk size */
+            unsigned int keyset_list_limit_;/**< keyset list chunk size */
 
             unsigned int minimal_status_importance_;
 
@@ -440,7 +441,8 @@ namespace Registry
             DomainBrowser(const std::string &server_name,
                     const std::string& update_registrar_handle,
                     unsigned int domain_list_limit,
-                    unsigned int nsset_list_limit);
+                    unsigned int nsset_list_limit,
+                    unsigned int keyset_list_limit);
             virtual ~DomainBrowser();
 
             unsigned long long getObjectRegistryId(const std::string& objtype, const std::string& handle);
@@ -568,6 +570,20 @@ namespace Registry
                 const std::string& lang,
                 unsigned long long offset,
                 std::vector<std::vector<std::string> >& nsset_list_out);
+
+            /**
+             * Get keyset list.
+             * Get list of keysets administered by user contact.
+             * @param user_contact_id contains database id of the user contact
+             * @param lang contains language for state description "EN" or "CS"
+             * @param offset contains list offset
+             * @param  keyset_list_out references output keyset list
+             * @return limit_exceeded flag
+             */
+            bool getKeysetList(unsigned long long user_contact_id,
+                const std::string& lang,
+                unsigned long long offset,
+                std::vector<std::vector<std::string> >& keyset_list_out);
 
 
             std::string get_server_name();
