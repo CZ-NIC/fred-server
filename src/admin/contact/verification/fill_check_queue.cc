@@ -61,6 +61,19 @@ namespace ContactVerificationQueue {
             ") ";
     }
 
+    static std::string get_already_checked_contacts_query(Fred::OperationContext& _ctx, const std::string& _testsuite_handle) {
+        return
+            "SELECT "
+                    "c_h.id AS contact_id_, "
+                    "MAX(c_ch.update_time) AS last_update_ "
+                "FROM contact_history AS c_h "
+                    "JOIN contact_check AS c_ch ON c_ch.contact_history_id = c_h.historyid "
+            // using correct testsuite (IMPORTANT)
+                    "JOIN enum_contact_testsuite AS enum_c_t ON c_ch.enum_contact_testsuite_id = enum_c_t.id "
+                "WHERE enum_c_t.handle = '"+_ctx.get_conn().escape(_testsuite_handle)+"' "
+                "GROUP BY contact_id_ ";
+    }
+
     static void set_contact_filter_query(
         const contact_filter&               _filter,
         const std::string&                  _contact_alias,
@@ -153,12 +166,7 @@ namespace ContactVerificationQueue {
        // create temporary view for already checked contact ids
         _ctx.get_conn().exec(
             "CREATE OR REPLACE TEMP VIEW temp_already_checked AS "
-            "   SELECT DISTINCT c_h.id "
-            "       FROM contact_history AS c_h "
-            "           JOIN contact_check AS c_ch ON c_ch.contact_history_id = c_h.historyid "
-            // using correct testsuite (IMPORTANT)
-            "           JOIN enum_contact_testsuite AS enum_c_t ON c_ch.enum_contact_testsuite_id = enum_c_t.id "
-            "       WHERE enum_c_t.handle = '"+_ctx.get_conn().escape(_testsuite_handle)+"'"
+            + get_already_checked_contacts_query(_ctx, _testsuite_handle)
         );
 
         Database::Result never_checked_contacts_res = _ctx.get_conn().exec_params(
@@ -167,7 +175,7 @@ namespace ContactVerificationQueue {
             "        JOIN ( "
             "            SELECT id from temp_filter "
             "            EXCEPT "
-            "            SELECT id from temp_already_checked "
+            "            SELECT contact_id_ AS id from temp_already_checked "
             "        ) as filter ON o_r.id = filter.id "
             "    WHERE NOT " + is_contact_mojeid_query("o_r.id") + " "
             "    LIMIT $1::integer "
@@ -221,15 +229,7 @@ namespace ContactVerificationQueue {
         // create temporary view for already checked contact ids
         _ctx.get_conn().exec(
             "CREATE OR REPLACE TEMP VIEW temp_already_checked AS "
-            "   SELECT "
-            "       c_h.id AS contact_id_, "
-            "       MAX(c_ch.update_time) AS last_update_ "
-            "       FROM contact_history AS c_h "
-            "           JOIN contact_check AS c_ch ON c_ch.contact_history_id = c_h.historyid "
-            // using correct testsuite (IMPORTANT)
-            "           JOIN enum_contact_testsuite AS enum_c_t ON c_ch.enum_contact_testsuite_id = enum_c_t.id "
-            "       WHERE enum_c_t.handle = '"+_ctx.get_conn().escape(_testsuite_handle)+"' "
-            "       GROUP BY contact_id_ "
+            + get_already_checked_contacts_query(_ctx, _testsuite_handle)
         );
 
         // create temporary view for unchanged enqueued contact ids
