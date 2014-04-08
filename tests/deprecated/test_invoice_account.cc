@@ -341,19 +341,22 @@ BOOST_AUTO_TEST_CASE(archiveAccountInvoice)
 
                 Fred::OperationContext ctx;
 
+                Fred::Contact::PlaceAddress place;
+                place.street1 = std::string("STR1") + xmark;
+                place.city = "Praha";
+                place.postalcode = "11150";
+                place.country = "CZ";
                 Fred::CreateContact(admin_contact2_handle,registrar_handle)
                     .set_name(std::string("TEST-ADMIN-CONTACT3 NAME")+xmark)
                     .set_disclosename(true)
-                    .set_street1(std::string("STR1")+xmark)
-                    .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                    .set_place(place)
                     .set_discloseaddress(true)
                     .exec(ctx);
 
                 Fred::CreateContact(registrant_contact_handle,registrar_handle)
                     .set_name(std::string("TEST-REGISTRANT-CONTACT NAME")+xmark)
                     .set_disclosename(true)
-                    .set_street1(std::string("STR1")+xmark)
-                    .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                    .set_place(place)
                     .set_discloseaddress(true)
                     .exec(ctx);
 

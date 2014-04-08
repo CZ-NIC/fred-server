@@ -45,17 +45,6 @@ std::string PlaceAddress::to_string()const
     return Util::format_data_structure("PlaceAddress", data);
 }
 
-namespace
-{
-
-template < typename T > bool operator==(const Optional< T > &_a, const Optional< T > &_b)
-{
-    return (_a.isset() && _b.isset() && (_a.get_value() == _b.get_value())) ||
-           (!_a.isset() && !_b.isset());
-}
-
-}
-
 bool PlaceAddress::operator==(const struct _PlaceAddress &_b)const
 {
     return street1 == _b.street1 &&
