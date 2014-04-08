@@ -33,6 +33,7 @@ namespace  Admin {
                 "       JOIN contact_history AS c_h2 ON c_h1.id = c_h2.id "
                 "   WHERE enum_status.handle = $1::varchar "
                 "       AND c_h2.historyid = $2::integer "
+                // Don't want to invalidate our brand new check...
                 "       AND c_ch.handle != $3::uuid ",
                 Database::query_param_list
                     (Fred::ContactCheckStatus::ENQUEUED)
