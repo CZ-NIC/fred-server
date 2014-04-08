@@ -41,6 +41,8 @@ namespace Admin {
      * @param _contact_id specifies contact to be checked
      * @param _testsuite_handle specifice testsuite of enqueued check
      *
+     * @returns handle of enqueued check
+     *
      * @throws Fred::ExceptionUnknownContactId
      * @throws Fred::ExceptionUnknownTestsuiteHandle
      */
