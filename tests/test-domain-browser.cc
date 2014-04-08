@@ -2487,4 +2487,101 @@ BOOST_FIXTURE_TEST_CASE(get_my_nsset_list, get_my_nssets_fixture )
 
 BOOST_AUTO_TEST_SUITE_END();//getNssetList
 
+BOOST_AUTO_TEST_SUITE(getKeysetList)
+
+struct get_my_keysets_fixture
+: mojeid_user_contact_fixture
+  , admin_contact_fixture
+  , domain_browser_impl_instance_fixture
+{
+    std::string test_keyset_handle;
+    std::map<std::string,Fred::InfoKeysetOutput> keyset_info;
+
+    get_my_keysets_fixture()
+    : test_keyset_handle(std::string("TEST_KEYSET_")+user_contact_handle_fixture::xmark+"_")
+    {
+        Fred::OperationContext ctx;
+        for(int i = 0; i < 10; ++i)
+        {
+            std::ostringstream keyset_handle;
+            keyset_handle << test_keyset_handle << i;
+
+            Fred::CreateKeyset(keyset_handle.str(), test_registrar_handle)
+                .set_tech_contacts(Util::vector_of<std::string>(admin_contact_fixture::test_contact_handle)(user_contact_handle))
+                .set_dns_keys(Util::vector_of<Fred::DnsKey> (Fred::DnsKey(257, 3, 5, "AwEAAddt2AkLfYGKgiEZB5SmIF8EvrjxNMH6HtxWEA4RJ9Ao6LCWheg8")))
+                .exec(ctx);
+
+            keyset_info[keyset_handle.str()]= Fred::InfoKeysetByHandle(keyset_handle.str()).exec(ctx);
+
+            if(i%2)
+            {
+                BOOST_MESSAGE(keyset_handle.str() + " blocked");
+                Fred::LockObjectStateRequestLock(Fred::ObjectState::SERVER_BLOCKED,
+                    map_at(keyset_info,keyset_handle.str()).info_keyset_data.id).exec(ctx);
+                ctx.get_conn().exec_params(
+                    "INSERT INTO object_state_request (object_id, state_id)"
+                    " VALUES ($1::integer, (SELECT id FROM enum_object_states"
+                    " WHERE name = $2::text)) RETURNING id",
+                    Database::query_param_list
+                        (map_at(keyset_info,keyset_handle.str()).info_keyset_data.id)
+                        (Fred::ObjectState::SERVER_BLOCKED));
+                Fred::PerformObjectStateRequest().set_object_id(map_at(keyset_info,keyset_handle.str()).info_keyset_data.id).exec(ctx);
+            }
+        }
+
+        ctx.commit_transaction();//commit fixture
+    }
+
+    ~get_my_keysets_fixture()
+    {}
+};
+
+/**
+ * test call getKeysetList
+*/
+BOOST_FIXTURE_TEST_CASE(get_my_keyset_list, get_my_keysets_fixture )
+{
+    Fred::OperationContext ctx;
+    std::vector<std::vector<std::string> > keyset_list_out;
+    bool limit_exceeded = impl.getKeysetList(user_contact_info.info_contact_data.id,
+        "CS",0,keyset_list_out);
+
+    std::ostringstream list_out;
+    list_out << "keyset_list_out: \n";
+
+    for(unsigned long long i = 0; i < keyset_list_out.size(); ++i)
+    {
+        for(unsigned long long j = 0; j < keyset_list_out.at(i).size(); ++j)
+        {
+            list_out << " " <<keyset_list_out.at(i).at(j);
+        }
+
+        list_out << "\n";
+    }
+    BOOST_MESSAGE(list_out.str());
+    BOOST_MESSAGE("limit_exceeded: " << limit_exceeded);
+
+    for(unsigned long long i = 0; i < keyset_list_out.size(); ++i)
+    {
+        BOOST_CHECK(keyset_list_out.at(i).at(0) == boost::lexical_cast<std::string>(map_at(keyset_info,keyset_list_out.at(i).at(1)).info_keyset_data.id));
+        BOOST_CHECK(keyset_list_out.at(i).at(1) == map_at(keyset_info,keyset_list_out.at(i).at(1)).info_keyset_data.handle);
+        BOOST_CHECK(keyset_list_out.at(i).at(2) == test_registrar_handle);//registrar handle
+        BOOST_CHECK(keyset_list_out.at(i).at(3) == boost::algorithm::replace_first_copy(test_registrar_handle, "-HANDLE", " NAME"));//registrar name
+
+        if(i%2)
+        {
+            BOOST_MESSAGE(keyset_list_out.at(i).at(7));
+            BOOST_CHECK(keyset_list_out.at(i).at(7) == "t");
+            BOOST_CHECK(keyset_list_out.at(i).at(6) == "Doména je blokována");
+        }
+        else
+        {
+            BOOST_MESSAGE(keyset_list_out.at(i).at(7));
+            BOOST_CHECK(keyset_list_out.at(i).at(7) == "f");
+        }
+    }
+}
+
+BOOST_AUTO_TEST_SUITE_END();//getKeysetList
+
 BOOST_AUTO_TEST_SUITE_END();//TestDomainBrowser
