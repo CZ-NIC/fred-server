@@ -5,6 +5,7 @@
 #include "src/admin/contact/verification/test_impl/test_cz_address_exists.h"
 #include "src/admin/contact/verification/test_impl/test_contactability.h"
 #include "src/admin/contact/verification/test_impl/test_email_exists.h"
+#include "src/admin/contact/verification/test_impl/test_send_letter.h"
 
 #include "util/log/context.h"
 
@@ -55,6 +56,15 @@ namespace  Admin {
         result[ContactVerification::TestEmailExists::registration_name()] =
             ContactVerification::test_factory::instance_ref()
                 .create_sh_ptr(ContactVerification::TestEmailExists::registration_name());
+
+        result[ContactVerification::TestSendLetter::registration_name()] =
+                    ContactVerification::test_factory::instance_ref()
+                        .create_sh_ptr(ContactVerification::TestSendLetter::registration_name());
+
+        dynamic_cast<ContactVerification::TestSendLetter *>(
+            result[ContactVerification::TestSendLetter::registration_name()].get()
+        )->set_document_file_manager(_document_manager)
+        .set_letter_manager(_message_manager );
 
         return result;
     }

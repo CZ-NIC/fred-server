@@ -35,6 +35,7 @@ namespace Fred
     {
         const std::string AUTOMATIC     = "automatic";
         const std::string MANUAL        = "manual";
+        const std::string THANK_YOU     = "thank_you";
     }
 }
 #endif // #include guard end

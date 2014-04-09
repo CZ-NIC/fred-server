@@ -49,6 +49,10 @@ namespace Admin {
                 Fred::OperationContext& _ctx,
                 const uuid&             _check_handle);
 
+            void postprocess_thank_you_check(
+                Fred::OperationContext& _ctx,
+                const uuid&             _check_handle);
+
         public:
 
             /**

@@ -288,6 +288,13 @@ namespace  Admin {
         Admin::add_related_object_state_requests(_ctx, _check_handle, state_request_ids);
     }
 
+    static void preprocess_thank_you_check(
+        Fred::OperationContext& _ctx,
+        const uuid& _check_handle
+    ) {
+        // in case of need feel free to express yourself...
+    }
+
     static void preprocess_check(Fred::OperationContext& ctx, const uuid& handle) {
         Fred::InfoContactCheckOutput check_info (
             Fred::InfoContactCheck(
@@ -301,6 +308,11 @@ namespace  Admin {
 
         } else if(check_info.testsuite_handle == Fred::TestsuiteHandle::MANUAL) {
             preprocess_manual_check(
+                ctx,
+                handle );
+
+        } else if(check_info.testsuite_handle == Fred::TestsuiteHandle::THANK_YOU) {
+            preprocess_thank_you_check(
                 ctx,
                 handle );
         }
