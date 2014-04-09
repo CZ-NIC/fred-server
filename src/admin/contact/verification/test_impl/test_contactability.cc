@@ -39,6 +39,7 @@ namespace ContactVerification {
     const Fred::Document::GenerationType TestContactability::letter_doc_type_(Fred::Document::GT_ADMIN_CONTACT_VERIFICATION_CONTACT_UPDATE_CALL);
     const std::string                    TestContactability::email_template_name_("contact_update_call");
     const boost::gregorian::days         TestContactability::deadline_interval_(25);
+    const std::string                    TestContactability::genereted_file_name_("admin_contact_verification_contact_update_call");
 
     static inline string xml_cdata(const string& _input) {
         return "<![CDATA[" + _input + "]]>";
@@ -85,7 +86,7 @@ namespace ContactVerification {
 
 
         std::string filename(
-            "admin_contact_verification_contact_update_call"
+            genereted_file_name_
             + boost::lexical_cast<std::string>(_contact_history_id)
             + ".pdf");
 
