@@ -17,8 +17,8 @@
  */
 
 /**
- *  @file
- *  place address type
+ * @file
+ * Common type for postal addresses of contacts.
  */
 
 #ifndef PLACE_ADDRESS_H_40BCB51572DBDD30F6E1441AE2CCADF5 // PLACE_ADDRESS_H_$(date "+%s"|md5sum)
@@ -31,22 +31,43 @@
 namespace Fred {
 namespace Contact {
 
+/**
+ * Postal address of place (building).
+ *
+ * Common type for postal addresses of contacts.
+ */
 typedef struct _PlaceAddress
 {
-    std::string street1;
-    Optional< std::string > street2;
-    Optional< std::string > street3;
-    std::string city;
-    Optional< std::string > stateorprovince;
-    std::string postalcode;
-    std::string country;
+    std::string street1;/**< address part 1 (required) */
+    Optional< std::string > street2;/**< address part 2 (optional) */
+    Optional< std::string > street3;/**< address part 3 (optional) */
+    std::string city;/**< city (required) */
+    Optional< std::string > stateorprovince;/**< state or province (optional) */
+    std::string postalcode;/**< postal code (required) */
+    std::string country;/**< country (required) */
+
+    /**
+     * Dumps content into the string.
+     * @return string with description of the instance content
+     */
     std::string to_string()const;
+    /**
+     * Check equality of two instances.
+     * @param _b compares @a this instance with @a _b instance
+     * @return true if they are the same.
+     */
     bool operator==(const struct _PlaceAddress &_b)const;
 } PlaceAddress;
 
 }//namespace Contact
 }//namespace Fred
 
-std::ostream& operator<<(std::ostream&, const Fred::Contact::PlaceAddress&);
+/**
+ * Inserts string representation that conforms value of @a src into stream @a out.
+ * @param out object where characters are inserted
+ * @param src object with the content to insert
+ * @return the same as parameter @a out
+ */
+std::ostream& operator<<(std::ostream &out, const Fred::Contact::PlaceAddress &src);
 
 #endif//PLACE_ADDRESS_H_40BCB51572DBDD30F6E1441AE2CCADF5
