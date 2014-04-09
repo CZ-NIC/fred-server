@@ -35,6 +35,90 @@
 namespace Fred
 {
     /**
+     * Type of contact address.
+     */
+    struct ContactAddressType
+    {
+        enum Value/** Enumeration of possible values. */
+        {
+            MAILING,/**< where can I send letters */
+            BILLING,/**< where can I send bills */
+            SHIPPING,/**< where can I send ordered goods */
+        };
+        /**
+         * Default constructor.
+         * @warning No default value => default constructor not defined.
+         */
+        ContactAddressType();
+        /**
+         * Init constructor.
+         * @param _value initializes @ref value.
+         */
+        ContactAddressType(Value _value):value(_value) { }
+        /**
+         * Copy constructor.
+         * @param _src copied instance.
+         */
+        ContactAddressType(const struct ContactAddressType &_src):value(_src.value) { }
+        /**
+         * Assign operator.
+         * @param _src assigned instance.
+         * @return self reference
+         */
+        struct ContactAddressType& operator=(const struct ContactAddressType &_src)
+        {
+            value = _src.value;
+            return *this;
+        }
+        /**
+         * Assign operator.
+         * @param _value assigned value.
+         * @return self reference
+         */
+        struct ContactAddressType& operator=(Value _value)
+        {
+            value = _value;
+            return *this;
+        }
+        Value value;/**< one of possible values */
+        /**
+         * Dumps content of @a _src into the string.
+         * @return string representation of @a _src.@ref value
+         * @throw std::runtime_error if conversion is impossible
+         */
+        static std::string to_string(const struct ContactAddressType &_src);
+        /**
+         * Converts string @a _value into one of possible integer values.
+         * @return one of possible integer values that conform string @a _value
+         * @throw std::runtime_error if conversion is impossible
+         */
+        static Value from_string(const std::string &_value);
+    };
+    /**
+     * Additional postal address of contact.
+     */
+    struct ContactAddress : Contact::PlaceAddress
+    {
+        struct ContactAddressType type;/**< type of address (required) */
+        Optional< std::string > company_name;/**< company name (optional) */
+
+        /**
+         * Dumps content into the string.
+         * @return string with description of the instance content
+         */
+        std::string to_string()const;
+        /**
+         * Check equality of two instances.
+         * @param _b compares @a this instance with @a _b instance
+         * @return true if they are the same.
+         */
+        bool operator==(const struct ContactAddress &_b)const;
+    };
+    /**
+     * Container of additional contact addresses.
+     */
+    typedef std::vector< struct ContactAddress > ContactAddressList;
+    /**
      * Common data of contact.
      * Current or history state of the contact.
      */
@@ -72,6 +156,7 @@ namespace Fred
         bool discloseident;/**< whether to reveal unambiguous identification number */
         bool disclosenotifyemail;/**< whether to reveal notify email */
         unsigned long long id;/**< id of the contact object*/
+        ContactAddressList addresses;/**< additional contact addresses */
 
     public:
         /**

@@ -33,6 +33,37 @@
 namespace Fred
 {
 
+    std::string ContactAddressType::to_string(const struct ContactAddressType &_src)
+    {
+        switch (_src.value) {
+            case MAILING:
+                return "MAILING";
+            case BILLING:
+                return "BILLING";
+            case SHIPPING:
+                return "SHIPPING";
+        }
+        std::ostringstream msg;
+        msg << "invalid value " << static_cast< int >(_src.value) << " of ContactAddressType";
+        throw std::runtime_error(msg.str());
+    }
+
+    ContactAddressType::Value ContactAddressType::from_string(const std::string &_src)
+    {
+        if (_src == "MAILING") {
+            return MAILING;
+        }
+        if (_src == "BILLING") {
+            return BILLING;
+        }
+        if (_src == "SHIPPING") {
+            return SHIPPING;
+        }
+        std::ostringstream msg;
+        msg << "\"" << _src << "\" unable convert to ContactAddressType";
+        throw std::runtime_error(msg.str());
+    }
+
     InfoContactData::InfoContactData()
     : crhistoryid(0)
     , historyid(0)
