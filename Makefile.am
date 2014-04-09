@@ -1024,7 +1024,9 @@ src_admin_contact_verification_libadmin_contact_verification_a_SOURCES = \
 		src/admin/contact/verification/test_impl/test_name_syntax.h \
 		src/admin/contact/verification/test_impl/test_name_syntax.cc \
 		src/admin/contact/verification/test_impl/test_phone_syntax.h \
-		src/admin/contact/verification/test_impl/test_phone_syntax.cc
+		src/admin/contact/verification/test_impl/test_phone_syntax.cc \
+		src/admin/contact/verification/test_impl/test_send_letter.h \
+		src/admin/contact/verification/test_impl/test_send_letter.cc
 #
 # src/admin/contact/verification/libadmin_contact_verification.a
 
@@ -1466,7 +1468,9 @@ src_corba_fred_adifd_SOURCES = \
 		src/admin/contact/verification/test_impl/test_name_syntax.h \
 		src/admin/contact/verification/test_impl/test_name_syntax.cc \
 		src/admin/contact/verification/test_impl/test_phone_syntax.h \
-		src/admin/contact/verification/test_impl/test_phone_syntax.cc
+		src/admin/contact/verification/test_impl/test_phone_syntax.cc \
+		src/admin/contact/verification/test_impl/test_send_letter.h \
+		src/admin/contact/verification/test_impl/test_send_letter.cc
 
 src_corba_fred_adifd_LDADD = \
 		src/corba/admin/libadmin_impl.a \
