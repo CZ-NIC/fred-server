@@ -184,11 +184,32 @@ namespace Registry
         DomainBrowser::~DomainBrowser()
         {}
 
+        //exception with dummy set handle
+        struct ObjectNotExistsWithDummyHandleSetter : ObjectNotExists
+        {
+            ObjectNotExistsWithDummyHandleSetter& set_handle(const std::string&)
+            {
+                return *this;
+            }
+        };
+
         unsigned long long DomainBrowser::getObjectRegistryId(const std::string& objtype, const std::string& handle)
         {
-            return 0;
-        }
+            Fred::OperationContext ctx;
 
+            try
+            {
+                get_object_type_id(ctx, objtype);
+            }
+            catch(const std::exception&)
+            {
+                throw IncorrectUsage();
+            }
+
+            return Fred::get_object_id_by_handle_and_type_with_lock(ctx,handle, objtype,
+                static_cast<ObjectNotExistsWithDummyHandleSetter*>(NULL),
+                &ObjectNotExistsWithDummyHandleSetter::set_handle);
+        }
 
         RegistrarDetail DomainBrowser::getRegistrarDetail(
             unsigned long long user_contact_id,

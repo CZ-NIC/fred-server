@@ -55,18 +55,27 @@ namespace Registry
                 unsigned long long id = pimpl_->getObjectRegistryId(objtype,handle);
                 return id;
             }//try
-            catch (std::exception &_ex)
+            catch (const Registry::DomainBrowserImpl::ObjectNotExists&)
             {
                 throw Registry::DomainBrowser::OBJECT_NOT_EXISTS();
             }
-            catch (std::exception &_ex)
+            catch (const Registry::DomainBrowserImpl::IncorrectUsage& )
             {
                 throw Registry::DomainBrowser::INCORRECT_USAGE();
+            }
+            catch (const boost::exception&)
+            {
+                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
+            }
+            catch (const std::exception&)
+            {
+                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
             }
             catch (...)
             {
                 throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
             }
+
         }
 
         Registry::DomainBrowser::RecordSet* Server_i::getDomainList(
