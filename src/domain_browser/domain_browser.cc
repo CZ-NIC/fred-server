@@ -1148,6 +1148,18 @@ namespace Registry
         }
 
 
+        void DomainBrowser::getPublicStatusDesc(const std::string& lang,
+            std::vector<std::string>& status_description_out)
+        {
+            Fred::OperationContext ctx;
+            std::map<unsigned long long, std::string> state_desc_map = Fred::GetObjectStateDescriptions(lang)
+                .set_external().exec(ctx);
+
+            status_description_out.reserve(state_desc_map.size());
+            for(std::map<unsigned long long, std::string>::const_iterator ci = state_desc_map.begin()
+                ; ci != state_desc_map.end(); ++ci) status_description_out.push_back(ci->second);
+        }
+
     }//namespace DomainBrowserImpl
 }//namespace Registry
 

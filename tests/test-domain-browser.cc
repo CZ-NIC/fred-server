@@ -2584,4 +2584,20 @@ BOOST_FIXTURE_TEST_CASE(get_my_keyset_list, get_my_keysets_fixture )
 
 BOOST_AUTO_TEST_SUITE_END();//getKeysetList
 
+BOOST_AUTO_TEST_SUITE(getPublicStatusDesc)
+
+BOOST_FIXTURE_TEST_CASE(get_public_sattus_desc, domain_browser_impl_instance_fixture)
+{
+    Fred::OperationContext ctx;
+    std::vector<std::string> status_desc_out;
+    impl.getPublicStatusDesc("CS",status_desc_out);
+    for(std::vector<std::string>::const_iterator ci = status_desc_out.begin();
+        ci!=status_desc_out.end(); ++ci)
+    {
+        BOOST_MESSAGE((*ci));
+    }
+}
+
+BOOST_AUTO_TEST_SUITE_END();//getPublicStatusDesc
+
 BOOST_AUTO_TEST_SUITE_END();//TestDomainBrowser
