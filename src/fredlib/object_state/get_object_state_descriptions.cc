@@ -33,16 +33,34 @@ namespace Fred
 
     GetObjectStateDescriptions::GetObjectStateDescriptions(const std::string& description_language)
     : description_language_(description_language)
+    , external_states(false)
     {}
+
+    GetObjectStateDescriptions& GetObjectStateDescriptions::set_external()
+    {
+        external_states = true;
+        return *this;
+    }
 
     std::map<unsigned long long, std::string> GetObjectStateDescriptions::exec(OperationContext& ctx)
     {
+        std::string sql = "SELECT eosd.state_id, COALESCE(eosd.description, '') ";
+        sql += " FROM enum_object_states_desc eosd ";
+
+        if(external_states)
+        {
+            sql += " JOIN enum_object_states eos ON eos.id = eosd.state_id ";
+        }
+
+        sql += " WHERE eosd.lang = $1::text ";
+
+        if(external_states)
+        {
+            sql += " AND eos.external = TRUE ";
+        }
+
         Database::Result domain_state_descriptions_result = ctx.get_conn().exec_params(
-        "SELECT eosd.state_id, COALESCE(eosd.description, '') "
-        " FROM enum_object_states_desc eosd "
-        " WHERE eosd.lang = $1::text "
-        , Database::query_param_list(description_language_)
-        );
+        sql, Database::query_param_list(description_language_));
 
         std::map<unsigned long long, std::string> result;
         for(unsigned long long i = 0 ; i < domain_state_descriptions_result.size() ; ++i)

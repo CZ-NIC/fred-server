@@ -2584,4 +2584,69 @@ BOOST_FIXTURE_TEST_CASE(get_my_keyset_list, get_my_keysets_fixture )
 
 BOOST_AUTO_TEST_SUITE_END();//getKeysetList
 
+BOOST_AUTO_TEST_SUITE(getPublicStatusDesc)
+
+BOOST_FIXTURE_TEST_CASE(get_public_sattus_desc, domain_browser_impl_instance_fixture)
+{
+    Fred::OperationContext ctx;
+    std::vector<std::string> status_desc_out;
+    impl.getPublicStatusDesc("CS",status_desc_out);
+    for(std::vector<std::string>::const_iterator ci = status_desc_out.begin();
+        ci!=status_desc_out.end(); ++ci)
+    {
+        BOOST_MESSAGE((*ci));
+    }
+}
+
+BOOST_AUTO_TEST_SUITE_END();//getPublicStatusDesc
+
+BOOST_AUTO_TEST_SUITE(getObjectRegistryId)
+
+struct get_my_contact_object_fixture
+: mojeid_user_contact_fixture
+, domain_browser_impl_instance_fixture
+{};
+
+BOOST_FIXTURE_TEST_CASE(get_object_id, get_my_contact_object_fixture)
+{
+    Fred::OperationContext ctx;
+    BOOST_CHECK(user_contact_info.info_contact_data.id == impl.getObjectRegistryId(
+        "contact",user_contact_info.info_contact_data.handle));
+}
+
+BOOST_FIXTURE_TEST_CASE(get_object_id_by_wrong_handle, get_my_contact_object_fixture )
+{
+    try
+    {
+        Fred::OperationContext ctx;
+        impl.getObjectRegistryId("contact","_WRONG_HANDLE_");
+
+        BOOST_ERROR("unreported wrong handle");
+    }
+    catch( const Registry::DomainBrowserImpl::ObjectNotExists& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
+BOOST_FIXTURE_TEST_CASE(get_object_id_by_objtype, get_my_contact_object_fixture )
+{
+    try
+    {
+        Fred::OperationContext ctx;
+        impl.getObjectRegistryId("wrongtype","_WRONG_HANDLE_");
+
+        BOOST_ERROR("unreported wrong object type");
+    }
+    catch( const Registry::DomainBrowserImpl::IncorrectUsage& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
+BOOST_AUTO_TEST_SUITE_END();//getObjectRegistryId
+
+
 BOOST_AUTO_TEST_SUITE_END();//TestDomainBrowser

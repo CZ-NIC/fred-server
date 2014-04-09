@@ -184,11 +184,32 @@ namespace Registry
         DomainBrowser::~DomainBrowser()
         {}
 
+        //exception with dummy set handle
+        struct ObjectNotExistsWithDummyHandleSetter : ObjectNotExists
+        {
+            ObjectNotExistsWithDummyHandleSetter& set_handle(const std::string&)
+            {
+                return *this;
+            }
+        };
+
         unsigned long long DomainBrowser::getObjectRegistryId(const std::string& objtype, const std::string& handle)
         {
-            return 0;
-        }
+            Fred::OperationContext ctx;
 
+            try
+            {
+                get_object_type_id(ctx, objtype);
+            }
+            catch(const std::exception&)
+            {
+                throw IncorrectUsage();
+            }
+
+            return Fred::get_object_id_by_handle_and_type_with_lock(ctx,handle, objtype,
+                static_cast<ObjectNotExistsWithDummyHandleSetter*>(NULL),
+                &ObjectNotExistsWithDummyHandleSetter::set_handle);
+        }
 
         RegistrarDetail DomainBrowser::getRegistrarDetail(
             unsigned long long user_contact_id,
@@ -1147,6 +1168,18 @@ namespace Registry
             return keyset_list_result.size() > keyset_list_limit_;
         }
 
+
+        void DomainBrowser::getPublicStatusDesc(const std::string& lang,
+            std::vector<std::string>& status_description_out)
+        {
+            Fred::OperationContext ctx;
+            std::map<unsigned long long, std::string> state_desc_map = Fred::GetObjectStateDescriptions(lang)
+                .set_external().exec(ctx);
+
+            status_description_out.reserve(state_desc_map.size());
+            for(std::map<unsigned long long, std::string>::const_iterator ci = state_desc_map.begin()
+                ; ci != state_desc_map.end(); ++ci) status_description_out.push_back(ci->second);
+        }
 
     }//namespace DomainBrowserImpl
 }//namespace Registry

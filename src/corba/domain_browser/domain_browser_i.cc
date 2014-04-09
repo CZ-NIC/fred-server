@@ -55,18 +55,27 @@ namespace Registry
                 unsigned long long id = pimpl_->getObjectRegistryId(objtype,handle);
                 return id;
             }//try
-            catch (std::exception &_ex)
+            catch (const Registry::DomainBrowserImpl::ObjectNotExists&)
             {
                 throw Registry::DomainBrowser::OBJECT_NOT_EXISTS();
             }
-            catch (std::exception &_ex)
+            catch (const Registry::DomainBrowserImpl::IncorrectUsage& )
             {
                 throw Registry::DomainBrowser::INCORRECT_USAGE();
+            }
+            catch (const boost::exception&)
+            {
+                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
+            }
+            catch (const std::exception&)
+            {
+                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
             }
             catch (...)
             {
                 throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
             }
+
         }
 
         Registry::DomainBrowser::RecordSet* Server_i::getDomainList(
@@ -892,18 +901,28 @@ namespace Registry
         {
             try
             {
-                RecordSequence_var rseq = new RecordSequence;
-                rseq->length(1);
+                std::vector<std::string> status_description_out;
+                pimpl_->getPublicStatusDesc(lang, status_description_out);
+                Registry::DomainBrowser::RecordSequence_var status_description_var = new Registry::DomainBrowser::RecordSequence;
+                status_description_var->length(status_description_out.size());
+                for(std::size_t i = 0; i < status_description_out.size(); ++i)
+                {
+                    status_description_var[i] = CORBA::string_dup(status_description_out.at(i).c_str());
+                }
+                return  status_description_var._retn();
 
-                RegistryObject_var robject = CORBA::string_dup("test_object");
-
-                rseq[0] = robject._retn();
-
-                return rseq._retn();
             }//try
-            catch (std::exception &_ex)
+            catch (const Registry::DomainBrowserImpl::IncorrectUsage& )
             {
                 throw Registry::DomainBrowser::INCORRECT_USAGE();
+            }
+            catch (const boost::exception&)
+            {
+                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
+            }
+            catch (const std::exception&)
+            {
+                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
             }
             catch (...)
             {

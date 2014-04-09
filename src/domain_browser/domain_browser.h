@@ -585,6 +585,14 @@ namespace Registry
                 unsigned long long offset,
                 std::vector<std::vector<std::string> >& keyset_list_out);
 
+            /**
+             * Get descriptions of public states.
+             * @param lang contains language for state description "EN" or "CS"
+             * @param  status_description_out references output list of descriptions
+             */
+            void getPublicStatusDesc(const std::string& lang,
+                std::vector<std::string>& status_description_out);
+
 
             std::string get_server_name();
         };//class DomainBrowser
