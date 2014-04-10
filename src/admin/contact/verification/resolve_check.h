@@ -41,15 +41,15 @@ namespace Admin {
             std::string                     status_handle_;
             Optional<unsigned long long>    logd_request_id_;
 
-            void postprocess_automatic_check(
+            static void postprocess_automatic_check(
                 Fred::OperationContext& _ctx,
                 const uuid&             _check_handle);
 
-            void postprocess_manual_check(
+            static void postprocess_manual_check(
                 Fred::OperationContext& _ctx,
                 const uuid&             _check_handle);
 
-            void postprocess_thank_you_check(
+            static void postprocess_thank_you_check(
                 Fred::OperationContext& _ctx,
                 const uuid&             _check_handle);
 
