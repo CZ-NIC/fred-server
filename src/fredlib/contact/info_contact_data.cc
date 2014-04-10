@@ -77,7 +77,7 @@ namespace Fred
     bool ContactAddress::operator==(const struct ContactAddress &_b)const
     {
         return static_cast< const Contact::PlaceAddress& >(*this) == static_cast< const Contact::PlaceAddress& >(_b) &&
-               this->type.value == _b.type.value &&
+               this->type == _b.type &&
                this->company_name == _b.company_name;
     }
 
@@ -107,7 +107,7 @@ namespace Fred
     struct InfoContactData::Address InfoContactData::get_address()const
     {
         for (ContactAddressList::const_iterator pA = addresses.begin(); pA != addresses.end(); ++pA) {
-            if (pA->type.value == purpose) {
+            if (pA->type == purpose) {
                 struct Address address;
                 address = static_cast< const Contact::PlaceAddress& >(*pA);
                 if (!name.isnull()) {

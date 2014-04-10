@@ -24,13 +24,11 @@
 #ifndef INFO_CONTACT_DATA_H_
 #define INFO_CONTACT_DATA_H_
 
-#include <string>
-
-#include <boost/date_time/posix_time/ptime.hpp>
-
 #include "util/db/nullable.h"
 #include "util/printable.h"
 #include "src/fredlib/contact/place_address.h"
+
+#include <boost/date_time/posix_time/ptime.hpp>
 
 namespace Fred
 {
@@ -52,17 +50,17 @@ namespace Fred
         ContactAddressType();
         /**
          * Init constructor.
-         * @param _value initializes @ref value.
+         * @param _value initializes @ref value
          */
         ContactAddressType(Value _value):value(_value) { }
         /**
          * Copy constructor.
-         * @param _src copied instance.
+         * @param _src is copied instance
          */
         ContactAddressType(const struct ContactAddressType &_src):value(_src.value) { }
         /**
          * Assign operator.
-         * @param _src assigned instance.
+         * @param _src assigned instance
          * @return self reference
          */
         struct ContactAddressType& operator=(const struct ContactAddressType &_src)
@@ -72,7 +70,7 @@ namespace Fred
         }
         /**
          * Assign operator.
-         * @param _value assigned value.
+         * @param _value assigned value
          * @return self reference
          */
         struct ContactAddressType& operator=(Value _value)
@@ -112,6 +110,18 @@ namespace Fred
             value = from_string(_value);
             return *this;
         }
+        /**
+         * Comparison operator.
+         * @param _value is right hand side of the comparison
+         * @return true if equal, false otherwise
+         */
+        bool operator==(Value _value)const { return this->value == _value; }
+        /**
+         * Comparison operator.
+         * @param _b is right hand side of the comparison
+         * @return true if equal, false otherwise
+         */
+        bool operator==(const struct ContactAddressType &_b)const { return this->value == _b.value; }
     };
     /**
      * Additional postal address of contact.
