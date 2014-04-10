@@ -128,7 +128,7 @@ namespace  Admin {
                 .second
             );
 
-            Admin::add_related_object_state_requests(_ctx, check_handle_, state_request_ids);
+            Admin::add_related_object_state_requests(_ctx, _check_handle, state_request_ids);
         }
 
         Fred::PerformObjectStateRequest(contact_info.info_contact_data.id).exec(_ctx);
@@ -193,7 +193,7 @@ namespace  Admin {
                 .second
             );
 
-            Admin::add_related_object_state_requests(_ctx, check_handle_, state_request_ids);
+            Admin::add_related_object_state_requests(_ctx, _check_handle, state_request_ids);
         }
 
         Fred::PerformObjectStateRequest(contact_info.info_contact_data.id).exec(_ctx);
