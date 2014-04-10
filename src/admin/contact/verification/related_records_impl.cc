@@ -79,15 +79,13 @@ namespace  Admin {
     ) {
         using std::set;
 
-        Fred::OperationContext ctx_info;
-
         Fred::InfoContactCheckOutput check_info = Fred::InfoContactCheck(_check_handle)
-            .exec(ctx_info);
+            .exec(_ctx);
 
         const unsigned long long contact_id =
         Fred::InfoContactHistoryByHistoryid(
             check_info.contact_history_id
-        ).exec(ctx_info)
+        ).exec(_ctx)
         .info_contact_data.id;
 
         _ctx.get_conn().exec("SAVEPOINT related_object_request_savepoint");
