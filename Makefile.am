@@ -1012,6 +1012,8 @@ src_admin_contact_verification_libadmin_contact_verification_a_SOURCES = \
 		src/admin/contact/verification/update_tests.h \
 		src/admin/contact/verification/update_tests.cc \
 		src/admin/contact/verification/contact_states/enum.h \
+		src/admin/contact/verification/contact_states/delete_all.h \
+		src/admin/contact/verification/contact_states/delete_all.cc \
 		src/admin/contact/verification/test_impl/test_contactability.h \
 		src/admin/contact/verification/test_impl/test_contactability.cc \
 		src/admin/contact/verification/test_impl/test_cz_address_exists.h \
@@ -1457,6 +1459,8 @@ src_corba_fred_adifd_SOURCES = \
 		src/admin/contact/verification/update_tests.h \
 		src/admin/contact/verification/update_tests.cc \
 		src/admin/contact/verification/contact_states/enum.h \
+		src/admin/contact/verification/contact_states/delete_all.h \
+		src/admin/contact/verification/contact_states/delete_all.cc \
 		src/admin/contact/verification/test_impl/test_contactability.h \
 		src/admin/contact/verification/test_impl/test_contactability.cc \
 		src/admin/contact/verification/test_impl/test_cz_address_exists.h \

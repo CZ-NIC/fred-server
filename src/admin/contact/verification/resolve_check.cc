@@ -1,13 +1,13 @@
 #include "src/admin/contact/verification/resolve_check.h"
 #include "src/admin/contact/verification/related_records_impl.h"
 #include "src/admin/contact/verification/contact_states/enum.h"
+#include "src/admin/contact/verification/contact_states/delete_all.h"
 #include "src/fredlib/contact/verification/enum_testsuite_handle.h"
 #include "src/fredlib/contact/verification/enum_check_status.h"
 #include "src/fredlib/contact/verification/update_check.h"
 #include "src/fredlib/contact/verification/info_check.h"
 #include "src/fredlib/contact/info_contact.h"
 #include "src/fredlib/object_state/create_object_state_request_id.h"
-#include "src/fredlib/object_state/cancel_object_state_request_id.h"
 #include "src/fredlib/object_state/perform_object_state_request.h"
 
 #include "util/log/context.h"
@@ -88,30 +88,7 @@ namespace  Admin {
             check_info.contact_history_id
         ).exec(_ctx);
 
-        _ctx.get_conn().exec("SAVEPOINT state_savepoint");
-
-        // cancel one state at a time because when exception is thrown, all changes would be ROLLBACKed
-        BOOST_FOREACH(
-            const std::string& object_state,
-            Admin::AdminContactVerificationObjectStates::get_all()
-        ) {
-            std::set<std::string> object_states_to_erase = boost::assign::list_of(object_state);
-            try {
-                Fred::CancelObjectStateRequestId(
-                    contact_info.info_contact_data.id,
-                    object_states_to_erase
-                ).exec(_ctx);
-                _ctx.get_conn().exec("RELEASE SAVEPOINT state_savepoint");
-                _ctx.get_conn().exec("SAVEPOINT state_savepoint");
-            } catch(Fred::CancelObjectStateRequestId::Exception& e) {
-                // in case it throws with unknown cause
-                if(e.is_set_state_not_found() == false) {
-                    throw;
-                } else {
-                    _ctx.get_conn().exec("ROLLBACK TO state_savepoint");
-                }
-            }
-        }
+        AdminContactVerificationObjectStates::delete_all(_ctx, contact_info.info_contact_data.id);
 
         const std::string& new_handle = check_info.check_state_history.rbegin()->status_handle;
         if( new_handle == Fred::ContactCheckStatus::OK ) {
@@ -147,30 +124,7 @@ namespace  Admin {
             check_info.contact_history_id
         ).exec(_ctx);
 
-        _ctx.get_conn().exec("SAVEPOINT state_savepoint");
-
-        // cancel one state at a time because when exception is thrown, all changes would be ROLLBACKed
-        BOOST_FOREACH(
-            const std::string& object_state,
-            Admin::AdminContactVerificationObjectStates::get_all()
-        ) {
-            std::set<std::string> object_states_to_erase = boost::assign::list_of(object_state);
-            try {
-                Fred::CancelObjectStateRequestId(
-                    contact_info.info_contact_data.id,
-                    object_states_to_erase
-                ).exec(_ctx);
-                _ctx.get_conn().exec("RELEASE SAVEPOINT state_savepoint");
-                _ctx.get_conn().exec("SAVEPOINT state_savepoint");
-            } catch(Fred::CancelObjectStateRequestId::Exception& e) {
-                // in case it throws with unknown cause
-                if(e.is_set_state_not_found() == false) {
-                    throw;
-                } else {
-                    _ctx.get_conn().exec("ROLLBACK TO state_savepoint");
-                }
-            }
-        }
+        AdminContactVerificationObjectStates::delete_all(_ctx, contact_info.info_contact_data.id);
 
         const std::string& new_handle = check_info.check_state_history.rbegin()->status_handle;
         if( new_handle == Fred::ContactCheckStatus::OK
