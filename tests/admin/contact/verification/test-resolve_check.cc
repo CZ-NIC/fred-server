@@ -164,7 +164,7 @@ BOOST_AUTO_TEST_CASE(test_Resolving_manual_suite_postprocessing)
 
     BOOST_CHECK_EQUAL(
         get_related_object_state_requests(ctx, fail_check.check_handle_).size(),
-        0 );
+        1 );
 
 
     Fred::UpdateContactCheck(
@@ -227,7 +227,7 @@ BOOST_AUTO_TEST_CASE(test_Resolving_automatic_suite_postprocessing)
 
     BOOST_CHECK_EQUAL(
         get_related_object_state_requests(ctx, ok_check.check_handle_).size(),
-        0 );
+        1 );
 }
 
 
