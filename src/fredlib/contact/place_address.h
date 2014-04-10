@@ -57,6 +57,7 @@ typedef struct _PlaceAddress
      * @return true if they are the same.
      */
     bool operator==(const struct _PlaceAddress &_b)const;
+    struct _PlaceAddress& operator=(const struct _PlaceAddress &_src);
 } PlaceAddress;
 
 }//namespace Contact

@@ -163,6 +163,30 @@ namespace Fred
         * Constructor of the contact data structure.
         */
         InfoContactData();
+
+        /**
+         * Postal address of contact.
+         */
+        struct Address : Contact::PlaceAddress
+        {
+            Optional< std::string > name;/**< person name (optional) */
+            Optional< std::string > organization;/**< organization name (optional) */
+            Optional< std::string > company_name;/**< company name (optional) */
+            struct Address& operator=(const Contact::PlaceAddress &_src);/**< set PlaceAddress part */
+        };
+
+        /**
+         * Get permanent address of contact.
+         * @return permanent address of contact
+         */
+        struct Address get_permanent_address()const;
+        /**
+         * Get given @a address_type of contact.
+         * @tparam address_type type of address @ref ContactAddressType::Value
+         * @return given @a address_type of contact
+         */
+        template < ContactAddressType::Value address_type >
+        struct Address get_address()const;
         /**
         * Equality of the contact data structure operator.
         * @param rhs is right hand side of the contact data comparison

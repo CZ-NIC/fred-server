@@ -70,6 +70,50 @@ namespace Fred
     , id(0)
     {}
 
+    struct InfoContactData::Address InfoContactData::get_permanent_address()const
+    {
+        if (place.isnull()) {
+            throw std::runtime_error("no address present");
+        }
+        struct Address address;
+        address = place.get_value();
+        if (!name.isnull()) {
+            address.name = name.get_value();
+        }
+        if (!organization.isnull()) {
+            address.organization = organization.get_value();
+        }
+        return address;
+    }
+
+    template < ContactAddressType::Value address_type >
+    struct InfoContactData::Address InfoContactData::get_address()const
+    {
+        for (ContactAddressList::const_iterator pA = addresses.begin(); pA != addresses.end(); ++pA) {
+            if (pA->type.value == address_type) {
+                struct Address address;
+                address = static_cast< const Contact::PlaceAddress& >(*pA);
+                if (!name.isnull()) {
+                    address.name = name.get_value();
+                }
+                if (!organization.isnull()) {
+                    address.organization = organization.get_value();
+                }
+                return address;
+            }
+        }
+        return this->get_permanent_address();
+    }
+
+    template
+    struct InfoContactData::Address InfoContactData::get_address< ContactAddressType::MAILING >()const;
+
+    template
+    struct InfoContactData::Address InfoContactData::get_address< ContactAddressType::BILLING >()const;
+
+    template
+    struct InfoContactData::Address InfoContactData::get_address< ContactAddressType::SHIPPING >()const;
+
     bool InfoContactData::operator==(const InfoContactData& rhs) const
     {
         return diff_contact_data(*this, rhs).is_empty();
@@ -117,6 +161,12 @@ namespace Fred
         (std::make_pair("discloseident",discloseident ? "true" : "false"))
         (std::make_pair("disclosenotifyemail",disclosenotifyemail ? "true" : "false"))
         );
+    }
+
+    struct InfoContactData::Address& InfoContactData::Address::operator=(const Contact::PlaceAddress &_src)
+    {
+        static_cast< Contact::PlaceAddress& >(*this) = _src;
+        return *this;
     }
 
 }//namespace Fred
