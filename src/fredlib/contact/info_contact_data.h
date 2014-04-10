@@ -82,17 +82,36 @@ namespace Fred
         }
         Value value;/**< one of possible values */
         /**
-         * Dumps content of @a _src into the string.
-         * @return string representation of @a _src.@ref value
+         * Dumps @a _value into the string.
+         * @param _value will be converted to string
+         * @return string representation of @a _value
          * @throw std::runtime_error if conversion is impossible
          */
-        static std::string to_string(const struct ContactAddressType &_src);
+        static std::string to_string(Value _value);
+        /**
+         * Dumps content of the instance into the string.
+         * @return string representation of @ref value
+         * @throw std::runtime_error if conversion is impossible
+         */
+        std::string to_string()const { return to_string(value); }
         /**
          * Converts string @a _value into one of possible integer values.
+         * @param _value string representation of address type
          * @return one of possible integer values that conform string @a _value
          * @throw std::runtime_error if conversion is impossible
          */
         static Value from_string(const std::string &_value);
+        /**
+         * Sets to corresponding value.
+         * @param _value string representation of address type
+         * @return self reference
+         * @throw std::runtime_error if conversion is impossible
+         */
+        struct ContactAddressType& set_value(const std::string &_value)
+        {
+            value = from_string(_value);
+            return *this;
+        }
     };
     /**
      * Additional postal address of contact.
@@ -178,14 +197,16 @@ namespace Fred
         /**
          * Get permanent address of contact.
          * @return permanent address of contact
+         * @throw std::runtime_error if no address exists
          */
         struct Address get_permanent_address()const;
         /**
-         * Get given @a address_type of contact.
-         * @tparam address_type type of address @ref ContactAddressType::Value
-         * @return given @a address_type of contact
+         * Get address for given purpose.
+         * @tparam purpose specifies usage of address
+         * @return contact address for given purpose
+         * @throw std::runtime_error if no usable address exists
          */
-        template < ContactAddressType::Value address_type >
+        template < ContactAddressType::Value purpose >
         struct Address get_address()const;
         /**
         * Equality of the contact data structure operator.

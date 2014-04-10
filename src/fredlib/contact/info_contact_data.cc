@@ -33,9 +33,9 @@
 namespace Fred
 {
 
-    std::string ContactAddressType::to_string(const struct ContactAddressType &_src)
+    std::string ContactAddressType::to_string(Value _value)
     {
-        switch (_src.value) {
+        switch (_value) {
             case MAILING:
                 return "MAILING";
             case BILLING:
@@ -44,7 +44,7 @@ namespace Fred
                 return "SHIPPING";
         }
         std::ostringstream msg;
-        msg << "invalid value " << static_cast< int >(_src.value) << " of ContactAddressType";
+        msg << "invalid value " << static_cast< int >(_value) << " of ContactAddressType";
         throw std::runtime_error(msg.str());
     }
 
@@ -62,6 +62,23 @@ namespace Fred
         std::ostringstream msg;
         msg << "\"" << _src << "\" unable convert to ContactAddressType";
         throw std::runtime_error(msg.str());
+    }
+
+    std::string ContactAddress::to_string()const
+    {
+        return Util::format_data_structure("ContactAddress",
+        Util::vector_of< std::pair< std::string, std::string > >
+        (std::make_pair("place", static_cast< const Contact::PlaceAddress& >(*this).to_string()))
+        (std::make_pair("type", type.to_string()))
+        (std::make_pair("company_name", company_name.print_quoted()))
+        );
+    }
+
+    bool ContactAddress::operator==(const struct ContactAddress &_b)const
+    {
+        return static_cast< const Contact::PlaceAddress& >(*this) == static_cast< const Contact::PlaceAddress& >(_b) &&
+               this->type.value == _b.type.value &&
+               this->company_name == _b.company_name;
     }
 
     InfoContactData::InfoContactData()
@@ -86,11 +103,11 @@ namespace Fred
         return address;
     }
 
-    template < ContactAddressType::Value address_type >
+    template < ContactAddressType::Value purpose >
     struct InfoContactData::Address InfoContactData::get_address()const
     {
         for (ContactAddressList::const_iterator pA = addresses.begin(); pA != addresses.end(); ++pA) {
-            if (pA->type.value == address_type) {
+            if (pA->type.value == purpose) {
                 struct Address address;
                 address = static_cast< const Contact::PlaceAddress& >(*pA);
                 if (!name.isnull()) {
@@ -151,15 +168,16 @@ namespace Fred
         (std::make_pair("vat",vat.print_quoted()))
         (std::make_pair("ssntype",ssntype.print_quoted()))
         (std::make_pair("ssn",ssn.print_quoted()))
-        (std::make_pair("disclosename",disclosename ? "true" : "false"))
-        (std::make_pair("discloseorganization",discloseorganization ? "true" : "false"))
-        (std::make_pair("discloseaddress",discloseaddress ? "true" : "false"))
-        (std::make_pair("disclosetelephone",disclosetelephone ? "true" : "false"))
-        (std::make_pair("disclosefax",disclosefax ? "true" : "false"))
-        (std::make_pair("discloseemail",discloseemail ? "true" : "false"))
-        (std::make_pair("disclosevat",disclosevat ? "true" : "false"))
-        (std::make_pair("discloseident",discloseident ? "true" : "false"))
-        (std::make_pair("disclosenotifyemail",disclosenotifyemail ? "true" : "false"))
+        (std::make_pair("addresses",Util::format_vector(addresses)))
+        (std::make_pair("disclosename",disclosename.print_quoted()))
+        (std::make_pair("discloseorganization",discloseorganization.print_quoted()))
+        (std::make_pair("discloseaddress",discloseaddress.print_quoted()))
+        (std::make_pair("disclosetelephone",disclosetelephone.print_quoted()))
+        (std::make_pair("disclosefax",disclosefax.print_quoted()))
+        (std::make_pair("discloseemail",discloseemail.print_quoted()))
+        (std::make_pair("disclosevat",disclosevat.print_quoted()))
+        (std::make_pair("discloseident",discloseident.print_quoted()))
+        (std::make_pair("disclosenotifyemail",disclosenotifyemail.print_quoted()))
         );
     }
 
