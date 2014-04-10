@@ -29,20 +29,16 @@ namespace Contact {
 
 std::string PlaceAddress::to_string()const
 {
-    Util::vector_of< std::pair< std::string, std::string > > data(std::make_pair("street1", street1));
-    if (street2.isset()) {
-        data(std::make_pair("street2", street2.get_value()));
-    }
-    if (street3.isset()) {
-        data(std::make_pair("street3", street3.get_value()));
-    }
-    data(std::make_pair("city", city));
-    if (stateorprovince.isset()) {
-        data(std::make_pair("stateorprovince", stateorprovince.get_value()));
-    }
-    data(std::make_pair("postalcode", postalcode));
-    data(std::make_pair("country", country));
-    return Util::format_data_structure("PlaceAddress", data);
+    return Util::format_data_structure("PlaceAddress",
+    Util::vector_of< std::pair< std::string, std::string > >
+    (std::make_pair("street1", street1))
+    (std::make_pair("street2", street2.print_quoted()))
+    (std::make_pair("street3", street3.print_quoted()))
+    (std::make_pair("city", city))
+    (std::make_pair("stateorprovince", stateorprovince.print_quoted()))
+    (std::make_pair("postalcode", postalcode))
+    (std::make_pair("country", country))
+    );
 }
 
 bool PlaceAddress::operator==(const struct _PlaceAddress &_b)const
