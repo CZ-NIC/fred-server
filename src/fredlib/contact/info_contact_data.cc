@@ -69,7 +69,6 @@ namespace Fred
         return Util::format_data_structure("ContactAddress",
         Util::vector_of< std::pair< std::string, std::string > >
         (std::make_pair("place", static_cast< const Contact::PlaceAddress& >(*this).to_string()))
-        (std::make_pair("type", type.to_string()))
         (std::make_pair("company_name", company_name.print_quoted()))
         );
     }
@@ -77,8 +76,13 @@ namespace Fred
     bool ContactAddress::operator==(const struct ContactAddress &_b)const
     {
         return static_cast< const Contact::PlaceAddress& >(*this) == static_cast< const Contact::PlaceAddress& >(_b) &&
-               this->type == _b.type &&
                this->company_name == _b.company_name;
+    }
+
+    struct ContactAddress& ContactAddress::operator=(const Contact::PlaceAddress &_src)
+    {
+        static_cast< Contact::PlaceAddress& >(*this) = _src;
+        return *this;
     }
 
     InfoContactData::InfoContactData()
@@ -106,18 +110,17 @@ namespace Fred
     template < ContactAddressType::Value purpose >
     struct InfoContactData::Address InfoContactData::get_address()const
     {
-        for (ContactAddressList::const_iterator pA = addresses.begin(); pA != addresses.end(); ++pA) {
-            if (pA->type == purpose) {
-                struct Address address;
-                address = static_cast< const Contact::PlaceAddress& >(*pA);
-                if (!name.isnull()) {
-                    address.name = name.get_value();
-                }
-                if (!organization.isnull()) {
-                    address.organization = organization.get_value();
-                }
-                return address;
+        ContactAddressList::const_iterator ptr_contact_address = addresses.find(purpose);
+        if (ptr_contact_address != addresses.end()) {
+            struct Address address;
+            address = static_cast< const Contact::PlaceAddress& >(ptr_contact_address->second);
+            if (!name.isnull()) {
+                address.name = name.get_value();
             }
+            if (!organization.isnull()) {
+                address.organization = organization.get_value();
+            }
+            return address;
         }
         return this->get_permanent_address();
     }
@@ -139,6 +142,20 @@ namespace Fred
     bool InfoContactData::operator!=(const InfoContactData& rhs) const
     {
         return !this->operator ==(rhs);
+    }
+
+    template < class KEY, class VALUE > std::string format_map(const std::map< KEY, VALUE > &in)
+    {
+        std::ostringstream out;
+
+        for(typename std::map< KEY, VALUE >::const_iterator ptr = in.begin(); ptr != in.end(); ++ptr)
+        {
+            if (!out.str().empty()) {
+                out << " ";
+            }
+            out << "\"" << ptr->first << "\":\"" << ptr->second << "\"";// "key":"value"
+        }
+        return out.str();
     }
 
     std::string InfoContactData::to_string() const
@@ -168,7 +185,7 @@ namespace Fred
         (std::make_pair("vat",vat.print_quoted()))
         (std::make_pair("ssntype",ssntype.print_quoted()))
         (std::make_pair("ssn",ssn.print_quoted()))
-        (std::make_pair("addresses",Util::format_vector(addresses)))
+        (std::make_pair("addresses",format_map(addresses)))
         (std::make_pair("disclosename",disclosename.print_quoted()))
         (std::make_pair("discloseorganization",discloseorganization.print_quoted()))
         (std::make_pair("discloseaddress",discloseaddress.print_quoted()))
@@ -179,6 +196,12 @@ namespace Fred
         (std::make_pair("discloseident",discloseident.print_quoted()))
         (std::make_pair("disclosenotifyemail",disclosenotifyemail.print_quoted()))
         );
+    }
+
+    struct InfoContactData::Address& InfoContactData::Address::operator=(const ContactAddress &_src)
+    {
+        static_cast< ContactAddress& >(*this) = _src;
+        return *this;
     }
 
     struct InfoContactData::Address& InfoContactData::Address::operator=(const Contact::PlaceAddress &_src)

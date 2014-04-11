@@ -29,6 +29,7 @@
 #include "src/fredlib/contact/place_address.h"
 
 #include <boost/date_time/posix_time/ptime.hpp>
+#include <map>
 
 namespace Fred
 {
@@ -122,15 +123,29 @@ namespace Fred
          * @return true if equal, false otherwise
          */
         bool operator==(const struct ContactAddressType &_b)const { return this->value == _b.value; }
+        /**
+         * Comparison operator.
+         * @param _b is right hand side of the comparison
+         * @return true if @a this smaller then @a _b, false otherwise
+         */
+        bool operator<(const struct ContactAddressType &_b)const { return this->value < _b.value; }
+        /**
+        * Dumps content of the instance into stream
+        * @param _os contains output stream reference
+        * @param _v reference of instance to be dumped into the stream
+        * @return output stream reference
+        */
+        friend std::ostream& operator<<(std::ostream &_os, const struct ContactAddressType &_v)
+        {
+            return _os << _v.to_string();
+        }
     };
     /**
      * Additional postal address of contact.
      */
     struct ContactAddress : Contact::PlaceAddress
     {
-        struct ContactAddressType type;/**< type of address (required) */
         Optional< std::string > company_name;/**< company name (optional) */
-
         /**
          * Dumps content into the string.
          * @return string with description of the instance content
@@ -142,11 +157,27 @@ namespace Fred
          * @return true if they are the same.
          */
         bool operator==(const struct ContactAddress &_b)const;
+        /**
+         * Assign operator, sets PlaceAddress part.
+         * @param _src assigned instance
+         * @return self reference
+         */
+        struct ContactAddress& operator=(const Contact::PlaceAddress &_src);
+        /**
+        * Dumps content of the instance into stream
+        * @param _os contains output stream reference
+        * @param _v reference of instance to be dumped into the stream
+        * @return output stream reference
+        */
+        friend std::ostream& operator<<(std::ostream &_os, const struct ContactAddress &_v)
+        {
+            return _os << _v.to_string();
+        }
     };
     /**
      * Container of additional contact addresses.
      */
-    typedef std::vector< struct ContactAddress > ContactAddressList;
+    typedef std::map< struct ContactAddressType, struct ContactAddress > ContactAddressList;
     /**
      * Common data of contact.
      * Current or history state of the contact.
@@ -196,11 +227,11 @@ namespace Fred
         /**
          * Postal address of contact.
          */
-        struct Address : Contact::PlaceAddress
+        struct Address : ContactAddress
         {
             Optional< std::string > name;/**< person name (optional) */
             Optional< std::string > organization;/**< organization name (optional) */
-            Optional< std::string > company_name;/**< company name (optional) */
+            struct Address& operator=(const ContactAddress &_src);/**< set ContactAddress part */
             struct Address& operator=(const Contact::PlaceAddress &_src);/**< set PlaceAddress part */
         };
 
