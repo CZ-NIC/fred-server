@@ -799,27 +799,47 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/registrar/info_registrar_output.h \
 		src/fredlib/registrar/get_registrar_handles.cc \
 		src/fredlib/registrar/get_registrar_handles.h \
+		src/fredlib/object/object_id_handle_pair.h \
+		src/fredlib/object/object_id_handle_pair.cc \
+		src/fredlib/object_state/object_state_name.h \
+		src/fredlib/object_state/object_has_state.h \
+		src/fredlib/object_state/object_has_state.cc \
 		src/fredlib/object_state/lock_multiple_object_state_request_lock.cc \
 		src/fredlib/object_state/lock_multiple_object_state_request_lock.h \
 		src/fredlib/object_state/lock_object_state_request_lock.h \
 		src/fredlib/object_state/lock_object_state_request_lock.cc \
-		src/fredlib/object_state/perform_object_state_request.h \
-		src/fredlib/object_state/perform_object_state_request.cc \
-		src/fredlib/object_state/object_state_name.h \
-		src/fredlib/object_state/object_has_state.h \
-		src/fredlib/object_state/object_has_state.cc \
 		src/fredlib/object_state/get_object_state_descriptions.h \
 		src/fredlib/object_state/get_object_state_descriptions.cc \
 		src/fredlib/object_state/get_object_states.h \
 		src/fredlib/object_state/get_object_states.cc \
 		src/fredlib/object_state/get_object_state_id_map.h \
 		src/fredlib/object_state/get_object_state_id_map.cc \
-		src/fredlib/object_state/create_object_state_request_id.h \
-		src/fredlib/object_state/create_object_state_request_id.cc \
+		src/fredlib/object_state/get_blocking_status_desc_list.cc \
+		src/fredlib/object_state/get_blocking_status_desc_list.h \
 		src/fredlib/object_state/perform_object_state_request.h \
 		src/fredlib/object_state/perform_object_state_request.cc \
-		src/fredlib/object/object_id_handle_pair.h \
-		src/fredlib/object/object_id_handle_pair.cc
+		src/fredlib/object_state/cancel_object_state_request.cc \
+		src/fredlib/object_state/cancel_object_state_request.h \
+		src/fredlib/object_state/cancel_object_state_request_id.cc \
+		src/fredlib/object_state/cancel_object_state_request_id.h \
+		src/fredlib/object_state/create_object_state_request.cc \
+		src/fredlib/object_state/create_object_state_request.h \
+		src/fredlib/object_state/create_object_state_request_id.cc \
+		src/fredlib/object_state/create_object_state_request_id.h \
+		src/fredlib/object_state/create_admin_object_block_request.cc \
+		src/fredlib/object_state/create_admin_object_block_request.h \
+		src/fredlib/object_state/create_admin_object_block_request_id.cc \
+		src/fredlib/object_state/create_admin_object_block_request_id.h \
+		src/fredlib/object_state/create_admin_object_state_restore_request.cc \
+		src/fredlib/object_state/create_admin_object_state_restore_request.h \
+		src/fredlib/object_state/create_admin_object_state_restore_request_id.cc \
+		src/fredlib/object_state/create_admin_object_state_restore_request_id.h \
+		src/fredlib/object_state/clear_admin_object_state_request_id.cc \
+		src/fredlib/object_state/clear_admin_object_state_request_id.h \
+		src/fredlib/object_state/clear_object_state_request.cc \
+		src/fredlib/object_state/clear_object_state_request.h \
+		src/fredlib/object_state/clear_object_state_request_id.cc \
+		src/fredlib/object_state/clear_object_state_request_id.h
 #
 # src/fredlib/libfred.a
 
@@ -1268,32 +1288,6 @@ src_corba_fred_adifd_SOURCES = \
 		src/corba/fred-adifd.cc \
 		src/admin_block/administrativeblocking.cc \
 		src/admin_block/administrativeblocking.h \
-		src/fredlib/object_state/get_blocking_status_desc_list.cc \
-		src/fredlib/object_state/get_blocking_status_desc_list.h \
-		src/fredlib/object_state/cancel_object_state_request.cc \
-		src/fredlib/object_state/cancel_object_state_request.h \
-		src/fredlib/object_state/cancel_object_state_request_id.cc \
-		src/fredlib/object_state/cancel_object_state_request_id.h \
-		src/fredlib/object_state/create_object_state_request.cc \
-		src/fredlib/object_state/create_object_state_request.h \
-		src/fredlib/object_state/create_object_state_request_id.cc \
-		src/fredlib/object_state/create_object_state_request_id.h \
-		src/fredlib/object_state/get_object_state_id_map.cc \
-		src/fredlib/object_state/get_object_state_id_map.h \
-		src/fredlib/object_state/create_admin_object_block_request.cc \
-		src/fredlib/object_state/create_admin_object_block_request.h \
-		src/fredlib/object_state/create_admin_object_block_request_id.cc \
-		src/fredlib/object_state/create_admin_object_block_request_id.h \
-		src/fredlib/object_state/create_admin_object_state_restore_request.cc \
-		src/fredlib/object_state/create_admin_object_state_restore_request.h \
-		src/fredlib/object_state/create_admin_object_state_restore_request_id.cc \
-		src/fredlib/object_state/create_admin_object_state_restore_request_id.h \
-		src/fredlib/object_state/clear_admin_object_state_request_id.cc \
-		src/fredlib/object_state/clear_admin_object_state_request_id.h \
-		src/fredlib/object_state/clear_object_state_request.cc \
-		src/fredlib/object_state/clear_object_state_request.h \
-		src/fredlib/object_state/clear_object_state_request_id.cc \
-		src/fredlib/object_state/clear_object_state_request_id.h \
 		src/fredlib/domain/create_domain_name_blacklist.cc \
 		src/fredlib/domain/create_domain_name_blacklist.h \
 		src/fredlib/domain/create_domain_name_blacklist_id.cc \
