@@ -357,11 +357,11 @@ namespace Registry
                 contact_detail->registrar.id = detail_impl.sponsoring_registrar.id;
                 contact_detail->registrar.handle = CORBA::string_dup(detail_impl.sponsoring_registrar.handle.c_str());
                 contact_detail->registrar.name = CORBA::string_dup(detail_impl.sponsoring_registrar.name.c_str());
-                contact_detail->create_date = CORBA::string_dup(boost::gregorian::to_iso_extended_string(detail_impl.creation_time.date()).c_str());
+                contact_detail->create_date = CORBA::string_dup(boost::posix_time::to_iso_extended_string(detail_impl.creation_time).c_str());
                 contact_detail->transfer_date = CORBA::string_dup(detail_impl.transfer_time.isnull()
-                    ? "" : boost::gregorian::to_iso_extended_string(detail_impl.transfer_time.get_value().date()).c_str());
+                    ? "" : boost::posix_time::to_iso_extended_string(detail_impl.transfer_time.get_value()).c_str());
                 contact_detail->update_date = CORBA::string_dup(detail_impl.update_time.isnull()
-                    ? "" : boost::gregorian::to_iso_extended_string(detail_impl.update_time.get_value().date()).c_str());
+                    ? "" : boost::posix_time::to_iso_extended_string(detail_impl.update_time.get_value()).c_str());
                 contact_detail->auth_info = CORBA::string_dup(detail_impl.authinfopw.c_str());
                 contact_detail->name = CORBA::string_dup(detail_impl.name.get_value_or_default().c_str());
                 contact_detail->organization = CORBA::string_dup(detail_impl.organization.get_value_or_default().c_str());
