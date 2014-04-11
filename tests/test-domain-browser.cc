@@ -2577,8 +2577,9 @@ BOOST_FIXTURE_TEST_CASE(get_my_keyset_list, get_my_keysets_fixture )
     {
         BOOST_CHECK(keyset_list_out.at(i).at(0) == boost::lexical_cast<std::string>(map_at(keyset_info,keyset_list_out.at(i).at(1)).info_keyset_data.id));
         BOOST_CHECK(keyset_list_out.at(i).at(1) == map_at(keyset_info,keyset_list_out.at(i).at(1)).info_keyset_data.handle);
-        BOOST_CHECK(keyset_list_out.at(i).at(2) == test_registrar_handle);//registrar handle
-        BOOST_CHECK(keyset_list_out.at(i).at(3) == boost::algorithm::replace_first_copy(test_registrar_handle, "-HANDLE", " NAME"));//registrar name
+
+        BOOST_CHECK(keyset_list_out.at(i).at(3) == test_registrar_handle);//registrar handle
+        BOOST_CHECK(keyset_list_out.at(i).at(4) == boost::algorithm::replace_first_copy(test_registrar_handle, "-HANDLE", " NAME"));//registrar name
 
         if(i%2)
         {
