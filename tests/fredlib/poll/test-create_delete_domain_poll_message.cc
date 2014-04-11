@@ -106,7 +106,7 @@ BOOST_AUTO_TEST_CASE( test_nonexistent_historyid )
 
     bool correct_exception_caught = false;
     try {
-        unsigned long long message_id = Fred::Poll::CreateDeleteDomainPollMessage(
+        Fred::Poll::CreateDeleteDomainPollMessage(
             nonexist_historyid.history_id_
         ).exec(ctx);
     } catch(const Fred::Poll::CreateDeleteDomainPollMessage::Exception& e) {
@@ -133,7 +133,7 @@ BOOST_AUTO_TEST_CASE( test_different_object_type )
 
     bool correct_exception_caught = false;
     try {
-        unsigned long long message_id = Fred::Poll::CreateDeleteDomainPollMessage(
+        Fred::Poll::CreateDeleteDomainPollMessage(
                 contact.data_.info_contact_data.historyid
         ).exec(ctx);
     } catch(const Fred::Poll::CreateDeleteDomainPollMessage::Exception& e) {

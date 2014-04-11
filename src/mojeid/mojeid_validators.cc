@@ -84,9 +84,7 @@ ContactValidator create_conditional_identification_validator_mojeid()
 
 ContactValidator create_finish_identification_validator_mojeid()
 {
-    ContactValidator tmp = create_finish_identification_validator();
-    tmp.add_checker(contact_checker_username);
-    tmp.add_checker(contact_checker_birthday);
+    ContactValidator tmp = create_default_contact_validator();
     return tmp;
 }
 
