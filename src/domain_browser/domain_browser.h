@@ -27,6 +27,7 @@
 #include <string>
 #include <vector>
 #include <boost/date_time/gregorian/gregorian.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/thread/mutex.hpp>
 
 #include "src/fredlib/opcontext.h"
