@@ -2150,11 +2150,15 @@ BOOST_FIXTURE_TEST_CASE(get_my_domain_list, get_my_domains_fixture )
 
     BOOST_CHECK(domain_list_out.at(0).at(3) == "deleteCandidate");
     BOOST_CHECK(boost::gregorian::from_simple_string(domain_list_out.at(0).at(4)) == (map_at(domain_info,domain_list_out.at(0).at(1)).info_domain_data.expiration_date + boost::gregorian::days(registration_protection)));
-    BOOST_CHECK(domain_list_out.at(0).at(9) == "Doména je po expiraci|Doména není generována do zóny");
+
+    BOOST_CHECK(domain_list_out.at(0).at(9).find("Doména je po expiraci") != std::string::npos);
+    BOOST_CHECK(domain_list_out.at(0).at(9).find("Doména není generována do zóny") != std::string::npos);
 
     BOOST_CHECK(domain_list_out.at(1).at(3) == "outzone");
     BOOST_CHECK(boost::gregorian::from_simple_string(domain_list_out.at(1).at(4)) == (map_at(domain_info,domain_list_out.at(1).at(1)).info_domain_data.expiration_date + boost::gregorian::days(outzone_protection)));
-    BOOST_CHECK(domain_list_out.at(1).at(9) == "Doména je po expiraci|Doména je blokována");
+
+    BOOST_CHECK(domain_list_out.at(1).at(9).find("Doména je po expiraci") != std::string::npos);
+    BOOST_CHECK(domain_list_out.at(1).at(9).find("Doména je blokována") != std::string::npos);
 
     BOOST_CHECK(domain_list_out.at(2).at(3) == "expired");
     BOOST_CHECK(boost::gregorian::from_simple_string(domain_list_out.at(2).at(4)) == (map_at(domain_info,domain_list_out.at(2).at(1)).info_domain_data.expiration_date));
@@ -2216,11 +2220,15 @@ BOOST_FIXTURE_TEST_CASE(get_my_domain_list_by_nsset, get_my_domains_fixture )
 
     BOOST_CHECK(domain_list_out.at(0).at(3) == "deleteCandidate");
     BOOST_CHECK(boost::gregorian::from_simple_string(domain_list_out.at(0).at(4)) == (map_at(domain_info,domain_list_out.at(0).at(1)).info_domain_data.expiration_date + boost::gregorian::days(registration_protection)));
-    BOOST_CHECK(domain_list_out.at(0).at(9) == "Doména je po expiraci|Doména není generována do zóny");
+
+    BOOST_CHECK(domain_list_out.at(0).at(9).find("Doména je po expiraci") != std::string::npos);
+    BOOST_CHECK(domain_list_out.at(0).at(9).find("Doména není generována do zóny") != std::string::npos);
 
     BOOST_CHECK(domain_list_out.at(1).at(3) == "outzone");
     BOOST_CHECK(boost::gregorian::from_simple_string(domain_list_out.at(1).at(4)) == (map_at(domain_info,domain_list_out.at(1).at(1)).info_domain_data.expiration_date + boost::gregorian::days(outzone_protection)));
-    BOOST_CHECK(domain_list_out.at(1).at(9) == "Doména je po expiraci|Doména je blokována");
+
+    BOOST_CHECK(domain_list_out.at(1).at(9).find("Doména je po expiraci") != std::string::npos);
+    BOOST_CHECK(domain_list_out.at(1).at(9).find("Doména je blokována") != std::string::npos);
 
     BOOST_CHECK(domain_list_out.at(2).at(3) == "expired");
     BOOST_CHECK(boost::gregorian::from_simple_string(domain_list_out.at(2).at(4)) == (map_at(domain_info,domain_list_out.at(2).at(1)).info_domain_data.expiration_date));
@@ -2279,14 +2287,17 @@ BOOST_FIXTURE_TEST_CASE(get_my_domain_list_by_keyset, get_my_domains_fixture )
     BOOST_MESSAGE(list_out.str());
     BOOST_MESSAGE("limit_exceeded: " << limit_exceeded);
 
-
     BOOST_CHECK(domain_list_out.at(0).at(3) == "deleteCandidate");
     BOOST_CHECK(boost::gregorian::from_simple_string(domain_list_out.at(0).at(4)) == (map_at(domain_info,domain_list_out.at(0).at(1)).info_domain_data.expiration_date + boost::gregorian::days(registration_protection)));
-    BOOST_CHECK(domain_list_out.at(0).at(9) == "Doména je po expiraci|Doména není generována do zóny");
+
+    BOOST_CHECK(domain_list_out.at(0).at(9).find("Doména je po expiraci") != std::string::npos);
+    BOOST_CHECK(domain_list_out.at(0).at(9).find("Doména není generována do zóny") != std::string::npos);
 
     BOOST_CHECK(domain_list_out.at(1).at(3) == "outzone");
     BOOST_CHECK(boost::gregorian::from_simple_string(domain_list_out.at(1).at(4)) == (map_at(domain_info,domain_list_out.at(1).at(1)).info_domain_data.expiration_date + boost::gregorian::days(outzone_protection)));
-    BOOST_CHECK(domain_list_out.at(1).at(9) == "Doména je po expiraci|Doména je blokována");
+
+    BOOST_CHECK(domain_list_out.at(1).at(9).find("Doména je po expiraci") != std::string::npos);
+    BOOST_CHECK(domain_list_out.at(1).at(9).find("Doména je blokována") != std::string::npos);
 
     BOOST_CHECK(domain_list_out.at(2).at(3) == "expired");
     BOOST_CHECK(boost::gregorian::from_simple_string(domain_list_out.at(2).at(4)) == (map_at(domain_info,domain_list_out.at(2).at(1)).info_domain_data.expiration_date));

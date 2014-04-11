@@ -935,7 +935,7 @@ namespace Registry
             const Optional<unsigned long long>& list_domains_for_keyset_id,
             const std::string& lang,
             unsigned long long offset,
-            std::vector<std::vector<std::string> >& nsset_list_out)
+            std::vector<std::vector<std::string> >& domain_list_out)
         {
             Fred::OperationContext ctx;
             check_user_contact_id<UserNotExists>(ctx, user_contact_id);
@@ -961,7 +961,14 @@ namespace Registry
             Database::QueryParams params;
             std::ostringstream sql;
             params.push_back(user_contact_id);
-            sql << "SELECT "
+            sql <<  "SELECT domain_list.id, domain_list.fqdn, domain_list.registrar_handle, domain_list.registrar_name, "
+                    " domain_list.expiration_date, domain_list.registrant_id, domain_list.have_keyset, domain_list.user_role, "
+                    " domain_list.today_date, domain_list.outzone_date,domain_list.delete_date, "
+                    " COALESCE(bit_or(CASE WHEN eos.external THEN eos.importance ELSE NULL END),0) AS external_importance, "
+                    " SUM(CASE WHEN eos.name = 'serverBlocked' THEN 1 ELSE 0 END) AS is_server_blocked, "
+                    " array_to_string(ARRAY_AGG((CASE WHEN eos.external THEN eosd.description ELSE NULL END)), '|') AS state_desc "
+                    " FROM "
+                    "(SELECT "
                     "oreg.id AS id, "
                     "oreg.name AS fqdn, "
                     "registrar.handle AS registrar_handle, "
@@ -1004,8 +1011,17 @@ namespace Registry
                     sql << "AND domain.keyset = $" << params.size() << "::bigint ";
                 }
 
+            params.push_back(lang);
+            sql <<" ) AS domain_list "
+            " LEFT JOIN object_state os ON os.object_id = domain_list.id AND os.valid_from <= CURRENT_TIMESTAMP AND (os.valid_to IS NULL OR os.valid_to > CURRENT_TIMESTAMP) "
+            " LEFT JOIN enum_object_states eos ON eos.id = os.state_id "
+            " LEFT JOIN enum_object_states_desc eosd ON os.state_id = eosd.state_id AND eosd.lang = $" << params.size() << "::text "//lang
+            " GROUP BY domain_list.id, domain_list.fqdn, domain_list.registrar_handle, domain_list.registrar_name, "
+            " domain_list.expiration_date, domain_list.registrant_id, domain_list.have_keyset, domain_list.user_role, "
+            " domain_list.today_date, domain_list.outzone_date,domain_list.delete_date ";
+
             params.push_back(domain_list_limit_+1);
-            sql << "ORDER BY domain.exdate, domain.id "
+            sql << "ORDER BY domain_list.expiration_date,domain_list.id "
                 "LIMIT $" << params.size() << "::bigint ";
 
             params.push_back(offset);
@@ -1016,21 +1032,15 @@ namespace Registry
             unsigned long long limited_domain_list_size = (domain_list_result.size() > domain_list_limit_)
                 ? domain_list_limit_ : domain_list_result.size();
 
-            nsset_list_out.reserve(limited_domain_list_size);
+            domain_list_out.reserve(limited_domain_list_size);
             for (unsigned long long i = 0;i < limited_domain_list_size;++i)
             {
                 std::vector<std::string> row(11);
                 row.at(0) = static_cast<std::string>(domain_list_result[i]["id"]);
                 row.at(1) = static_cast<std::string>(domain_list_result[i]["fqdn"]);
 
-
-                std::string state_codes;
-                std::string state_desc;
-                std::pair<long,bool> object_states_result = get_object_states(ctx,
-                        static_cast<unsigned long long >(domain_list_result[i]["id"]),lang,
-                        state_codes, state_desc);
-
-                row.at(2) = boost::lexical_cast<std::string>(object_states_result.first == 0 ? minimal_status_importance_ : object_states_result.first);
+                unsigned int external_status_importance = static_cast<unsigned int>(domain_list_result[i]["external_importance"]);
+                row.at(2) = boost::lexical_cast<std::string>(external_status_importance == 0 ? minimal_status_importance_ : external_status_importance);
 
                 boost::gregorian::date today_date = domain_list_result[i]["today_date"].isnull() ? boost::gregorian::date()
                             : boost::gregorian::from_string(static_cast<std::string>(domain_list_result[i]["today_date"]));
@@ -1049,10 +1059,12 @@ namespace Registry
                 row.at(7) = static_cast<std::string>(domain_list_result[i]["registrar_handle"]);
                 row.at(8) = static_cast<std::string>(domain_list_result[i]["registrar_name"]);
 
-                row.at(9) = state_desc;
-                row.at(10) = object_states_result.second ? "t":"f";
+                row.at(9) = static_cast<std::string>(domain_list_result[i]["state_desc"]);
 
-                nsset_list_out.push_back(row);
+                bool server_blocked = static_cast<unsigned int>(domain_list_result[i]["is_server_blocked"]);
+                row.at(10) = server_blocked ? "t":"f";
+
+                domain_list_out.push_back(row);
             }
 
             return domain_list_result.size() > domain_list_limit_;
@@ -1067,7 +1079,14 @@ namespace Registry
             check_user_contact_id<UserNotExists>(ctx, user_contact_id);
 
             Database::Result nsset_list_result = ctx.get_conn().exec_params(
-                "SELECT oreg.id AS id "
+                "SELECT nsset_list.id, nsset_list.handle, "
+                    " nsset_list.registrar_handle, nsset_list.registrar_name "
+                    " , nsset_list.domain_number, "
+                " COALESCE(BIT_OR(CASE WHEN eos.external THEN eos.importance ELSE NULL END), 0) AS external_importance, "
+                " SUM(CASE WHEN eos.name = 'serverBlocked' THEN 1 ELSE 0 END) AS is_server_blocked, "
+                " ARRAY_TO_STRING(ARRAY_AGG((CASE WHEN eos.external THEN eosd.description ELSE NULL END)), '|') AS state_desc "
+                "FROM "
+                "(SELECT oreg.id AS id "
                 ", oreg.name AS handle "
                 ", registrar.handle AS registrar_handle "
                 ", registrar.name AS registrar_name "
@@ -1081,8 +1100,18 @@ namespace Registry
                 " WHERE ncm.contactid = $1::bigint "
                 " GROUP BY d.nsset) AS domains ON domains.nsset = oreg.id "
                 " WHERE ncm.contactid = $1::bigint "
-                " ORDER BY id LIMIT $2::bigint OFFSET $3::bigint ",
-                Database::query_param_list(user_contact_id)(nsset_list_limit_+1)(offset));
+                ") AS nsset_list "
+                " LEFT JOIN object_state os ON os.object_id = nsset_list.id "
+                    " AND os.valid_from <= CURRENT_TIMESTAMP "
+                    " AND (os.valid_to IS NULL OR os.valid_to > CURRENT_TIMESTAMP) "
+                " LEFT JOIN enum_object_states eos ON eos.id = os.state_id "
+                " LEFT JOIN enum_object_states_desc eosd ON os.state_id = eosd.state_id AND eosd.lang = $4::text "//lang
+                " GROUP BY nsset_list.id, nsset_list.handle, "
+                    " nsset_list.registrar_handle, nsset_list.registrar_name "
+                    " , nsset_list.domain_number "
+                " ORDER BY nsset_list.id "
+                " LIMIT $2::bigint OFFSET $3::bigint ",
+                Database::query_param_list(user_contact_id)(nsset_list_limit_+1)(offset)(lang));
 
             unsigned long long limited_nsset_list_size = (nsset_list_result.size() > nsset_list_limit_)
                 ? nsset_list_limit_ : nsset_list_result.size();
@@ -1097,15 +1126,13 @@ namespace Registry
                 row.at(3) = static_cast<std::string>(nsset_list_result[i]["registrar_name"]);
                 row.at(4) = static_cast<std::string>(nsset_list_result[i]["domain_number"]);
 
-                std::string state_codes;
-                std::string state_desc;
-                std::pair<long,bool> object_states_result = get_object_states(ctx,
-                        static_cast<unsigned long long >(nsset_list_result[i]["id"]),lang,
-                        state_codes, state_desc);
+                unsigned int external_status_importance = static_cast<unsigned int>(nsset_list_result[i]["external_importance"]);
+                row.at(5) = boost::lexical_cast<std::string>(external_status_importance == 0 ? minimal_status_importance_ : external_status_importance);
 
-                row.at(5) = boost::lexical_cast<std::string>(object_states_result.first == 0 ? minimal_status_importance_ : object_states_result.first);
-                row.at(6) = state_desc;
-                row.at(7) = object_states_result.second ? "t":"f";
+                row.at(6) = static_cast<std::string>(nsset_list_result[i]["state_desc"]);
+
+                bool server_blocked = static_cast<unsigned int>(nsset_list_result[i]["is_server_blocked"]);
+                row.at(7) = server_blocked ? "t":"f";
 
                 nsset_list_out.push_back(row);
             }
@@ -1122,7 +1149,14 @@ namespace Registry
             check_user_contact_id<UserNotExists>(ctx, user_contact_id);
 
             Database::Result keyset_list_result = ctx.get_conn().exec_params(
-                "SELECT oreg.id AS id "
+                "SELECT keyset_list.id, keyset_list.handle, "
+                    " keyset_list.registrar_handle, keyset_list.registrar_name "
+                    " , keyset_list.domain_number, "
+                " COALESCE(BIT_OR(CASE WHEN eos.external THEN eos.importance ELSE NULL END), 0) AS external_importance, "
+                " SUM(CASE WHEN eos.name = 'serverBlocked' THEN 1 ELSE 0 END) AS is_server_blocked, "
+                " ARRAY_TO_STRING(ARRAY_AGG((CASE WHEN eos.external THEN eosd.description ELSE NULL END)), '|') AS state_desc "
+                "FROM "
+                "(SELECT oreg.id AS id "
                 ", oreg.name AS handle "
                 ", registrar.handle AS registrar_handle "
                 ", registrar.name AS registrar_name "
@@ -1136,8 +1170,18 @@ namespace Registry
                 " WHERE kcm.contactid = $1::bigint "
                 " GROUP BY d.keyset) AS domains ON domains.keyset = oreg.id "
                 " WHERE kcm.contactid = $1::bigint "
-                " ORDER BY id LIMIT $2::bigint OFFSET $3::bigint ",
-                Database::query_param_list(user_contact_id)(keyset_list_limit_+1)(offset));
+                ") AS keyset_list "
+                " LEFT JOIN object_state os ON os.object_id = keyset_list.id "
+                    " AND os.valid_from <= CURRENT_TIMESTAMP "
+                    " AND (os.valid_to IS NULL OR os.valid_to > CURRENT_TIMESTAMP) "
+                " LEFT JOIN enum_object_states eos ON eos.id = os.state_id "
+                " LEFT JOIN enum_object_states_desc eosd ON os.state_id = eosd.state_id AND eosd.lang = $4::text "//lang
+                " GROUP BY keyset_list.id, keyset_list.handle, "
+                    " keyset_list.registrar_handle, keyset_list.registrar_name "
+                    " , keyset_list.domain_number "
+                " ORDER BY keyset_list.id "
+                " LIMIT $2::bigint OFFSET $3::bigint ",
+                Database::query_param_list(user_contact_id)(keyset_list_limit_+1)(offset)(lang));
 
             unsigned long long limited_keyset_list_size = (keyset_list_result.size() > keyset_list_limit_)
                 ? keyset_list_limit_ : keyset_list_result.size();
@@ -1152,15 +1196,13 @@ namespace Registry
                 row.at(3) = static_cast<std::string>(keyset_list_result[i]["registrar_name"]);
                 row.at(4) = static_cast<std::string>(keyset_list_result[i]["domain_number"]);
 
-                std::string state_codes;
-                std::string state_desc;
-                std::pair<long,bool> object_states_result = get_object_states(ctx,
-                        static_cast<unsigned long long >(keyset_list_result[i]["id"]),lang,
-                        state_codes, state_desc);
+                unsigned int external_status_importance = static_cast<unsigned int>(keyset_list_result[i]["external_importance"]);
+                row.at(5) = boost::lexical_cast<std::string>(external_status_importance == 0 ? minimal_status_importance_ : external_status_importance);
 
-                row.at(5) = boost::lexical_cast<std::string>(object_states_result.first == 0 ? minimal_status_importance_ : object_states_result.first);
-                row.at(6) = state_desc;
-                row.at(7) = object_states_result.second ? "t":"f";
+                row.at(6) = static_cast<std::string>(keyset_list_result[i]["state_desc"]);
+
+                bool server_blocked = static_cast<unsigned int>(keyset_list_result[i]["is_server_blocked"]);
+                row.at(7) = server_blocked ? "t":"f";
 
                 keyset_list_out.push_back(row);
             }
