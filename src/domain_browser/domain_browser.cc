@@ -1122,9 +1122,9 @@ namespace Registry
                 std::vector<std::string> row(8);
                 row.at(0) = static_cast<std::string>(nsset_list_result[i]["id"]);
                 row.at(1) = static_cast<std::string>(nsset_list_result[i]["handle"]);
-                row.at(2) = static_cast<std::string>(nsset_list_result[i]["registrar_handle"]);
-                row.at(3) = static_cast<std::string>(nsset_list_result[i]["registrar_name"]);
-                row.at(4) = static_cast<std::string>(nsset_list_result[i]["domain_number"]);
+                row.at(2) = static_cast<std::string>(nsset_list_result[i]["domain_number"]);
+                row.at(3) = static_cast<std::string>(nsset_list_result[i]["registrar_handle"]);
+                row.at(4) = static_cast<std::string>(nsset_list_result[i]["registrar_name"]);
 
                 unsigned int external_status_importance = static_cast<unsigned int>(nsset_list_result[i]["external_importance"]);
                 row.at(5) = boost::lexical_cast<std::string>(external_status_importance == 0 ? minimal_status_importance_ : external_status_importance);

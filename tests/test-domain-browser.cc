@@ -2479,8 +2479,9 @@ BOOST_FIXTURE_TEST_CASE(get_my_nsset_list, get_my_nssets_fixture )
     {
         BOOST_CHECK(nsset_list_out.at(i).at(0) == boost::lexical_cast<std::string>(map_at(nsset_info,nsset_list_out.at(i).at(1)).info_nsset_data.id));
         BOOST_CHECK(nsset_list_out.at(i).at(1) == map_at(nsset_info,nsset_list_out.at(i).at(1)).info_nsset_data.handle);
-        BOOST_CHECK(nsset_list_out.at(i).at(2) == test_registrar_handle);//registrar handle
-        BOOST_CHECK(nsset_list_out.at(i).at(3) == boost::algorithm::replace_first_copy(test_registrar_handle, "-HANDLE", " NAME"));//registrar name
+
+        BOOST_CHECK(nsset_list_out.at(i).at(3) == test_registrar_handle);//registrar handle
+        BOOST_CHECK(nsset_list_out.at(i).at(4) == boost::algorithm::replace_first_copy(test_registrar_handle, "-HANDLE", " NAME"));//registrar name
 
         if(i%2)
         {
