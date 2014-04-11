@@ -783,6 +783,8 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/contact/create_contact.h \
 		src/fredlib/contact/update_contact.cc \
 		src/fredlib/contact/update_contact.h \
+		src/admin/contact/verification/contact_states/delete_all.h \
+		src/admin/contact/verification/contact_states/delete_all.cc \
 		src/fredlib/contact/contact_enum.h \
 		src/fredlib/nsset/create_nsset.cc \
 		src/fredlib/nsset/create_nsset.h \

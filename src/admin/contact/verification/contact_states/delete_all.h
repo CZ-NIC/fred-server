@@ -26,11 +26,36 @@
 
 
 #include "src/fredlib/opcontext.h"
+#include "util/optional_value.h"
+
+#include <string>
 
 namespace Admin
 {
 namespace AdminContactVerificationObjectStates
 {
+    /* OperationContext versions */
+    bool conditionally_delete_all(
+        Fred::OperationContext& ctx,
+        unsigned long long contact_id,
+        const Optional<std::string>& name_change_to,
+        const Optional<std::string>& organization_change_to,
+        const Optional<std::string>& street1_change_to,
+        const Optional<std::string>& street2_change_to,
+        const Optional<std::string>& street3_change_to,
+        const Optional<std::string>& city_change_to,
+        const Optional<std::string>& stateorprovince_change_to,
+        const Optional<std::string>& postalcode_change_to,
+        const Optional<std::string>& country_change_to,
+        const Optional<std::string>& telephone_change_to,
+        const Optional<std::string>& fax_change_to,
+        const Optional<std::string>& email_change_to,
+        const Optional<std::string>& notifyemail_change_to,
+        const Optional<std::string>& vat_change_to,
+        const Optional<std::string>& ssntype_change_to,
+        const Optional<std::string>& ssn_change_to
+    );
+
     void delete_all(Fred::OperationContext& ctx, unsigned long long contact_id);
 }
 }
