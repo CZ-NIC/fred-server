@@ -40,7 +40,7 @@ namespace Fred
         Database::Result domain_state_descriptions_result = ctx.get_conn().exec_params(
         "SELECT eosd.state_id, COALESCE(eosd.description, '') "
         " FROM enum_object_states_desc eosd "
-        " WHERE eosd.lang = $1::text "
+        " WHERE UPPER(eosd.lang) = UPPER($1::text) "
         , Database::query_param_list(description_language_)
         );
 
