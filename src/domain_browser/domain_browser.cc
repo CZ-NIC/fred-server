@@ -1015,7 +1015,7 @@ namespace Registry
             sql <<" ) AS domain_list "
             " LEFT JOIN object_state os ON os.object_id = domain_list.id AND os.valid_from <= CURRENT_TIMESTAMP AND (os.valid_to IS NULL OR os.valid_to > CURRENT_TIMESTAMP) "
             " LEFT JOIN enum_object_states eos ON eos.id = os.state_id "
-            " LEFT JOIN enum_object_states_desc eosd ON os.state_id = eosd.state_id AND eosd.lang = $" << params.size() << "::text "//lang
+            " LEFT JOIN enum_object_states_desc eosd ON os.state_id = eosd.state_id AND UPPER(eosd.lang) = UPPER($" << params.size() << "::text) "//lang
             " GROUP BY domain_list.id, domain_list.fqdn, domain_list.registrar_handle, domain_list.registrar_name, "
             " domain_list.expiration_date, domain_list.registrant_id, domain_list.have_keyset, domain_list.user_role, "
             " domain_list.today_date, domain_list.outzone_date,domain_list.delete_date ";
@@ -1106,7 +1106,7 @@ namespace Registry
                     " AND os.valid_from <= CURRENT_TIMESTAMP "
                     " AND (os.valid_to IS NULL OR os.valid_to > CURRENT_TIMESTAMP) "
                 " LEFT JOIN enum_object_states eos ON eos.id = os.state_id "
-                " LEFT JOIN enum_object_states_desc eosd ON os.state_id = eosd.state_id AND eosd.lang = $4::text "//lang
+                " LEFT JOIN enum_object_states_desc eosd ON os.state_id = eosd.state_id AND UPPER(eosd.lang) = UPPER($4::text) "//lang
                 " GROUP BY nsset_list.id, nsset_list.handle, "
                     " nsset_list.registrar_handle, nsset_list.registrar_name "
                     " , nsset_list.domain_number "
@@ -1177,7 +1177,7 @@ namespace Registry
                     " AND os.valid_from <= CURRENT_TIMESTAMP "
                     " AND (os.valid_to IS NULL OR os.valid_to > CURRENT_TIMESTAMP) "
                 " LEFT JOIN enum_object_states eos ON eos.id = os.state_id "
-                " LEFT JOIN enum_object_states_desc eosd ON os.state_id = eosd.state_id AND eosd.lang = $4::text "//lang
+                " LEFT JOIN enum_object_states_desc eosd ON os.state_id = eosd.state_id AND UPPER(eosd.lang) = UPPER($4::text) "//lang
                 " GROUP BY keyset_list.id, keyset_list.handle, "
                     " keyset_list.registrar_handle, keyset_list.registrar_name "
                     " , keyset_list.domain_number "
