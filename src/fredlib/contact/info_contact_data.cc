@@ -23,6 +23,7 @@
 
 #include <algorithm>
 #include <string>
+#include <ostream>
 
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
@@ -211,3 +212,8 @@ namespace Fred
     }
 
 }//namespace Fred
+
+std::ostream& operator<<(std::ostream &os, const Fred::ContactAddressList &v)
+{
+    return os << Fred::format_map(v);
+}

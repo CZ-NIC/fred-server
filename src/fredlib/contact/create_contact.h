@@ -35,6 +35,7 @@
 #include "util/db/nullable.h"
 #include "util/printable.h"
 #include "src/fredlib/contact/place_address.h"
+#include "src/fredlib/contact/info_contact_data.h"
 
 
 namespace Fred
@@ -77,6 +78,7 @@ namespace Fred
         Optional<std::string> vat_;/**< taxpayer identification number */
         Optional<std::string> ssntype_;/**< type of identification from enum_ssntype table */
         Optional<std::string> ssn_;/**< unambiguous identification number e.g. social security number, identity card number, date of birth */
+        Optional<ContactAddressList> addresses_;/**< additional contact addresses */
         Optional<bool> disclosename_;/**< whether to reveal contact name */
         Optional<bool> discloseorganization_;/**< whether to reveal organization */
         Optional<bool> discloseaddress_;/**< whether to reveal address */
@@ -118,6 +120,7 @@ namespace Fred
         * @param vat sets taxpayer identification number into @ref vat_ attribute
         * @param ssntype sets type of identification into @ref ssntype_ attribute
         * @param ssn sets unambiguous identification number into @ref ssn_ attribute
+        * @param addresses sets additional contact addresses into @ref addresses_ attribute
         * @param disclosename sets whether to reveal contact name into @ref disclosename_ attribute
         * @param discloseorganization sets whether to reveal organization name into @ref discloseorganization_ attribute
         * @param discloseaddress sets whether to reveal contact address into @ref discloseaddress_ attribute
@@ -142,6 +145,7 @@ namespace Fred
                 , const Optional<std::string>& vat
                 , const Optional<std::string>& ssntype
                 , const Optional<std::string>& ssn
+                , const Optional<ContactAddressList>& addresses
                 , const Optional<bool>& disclosename
                 , const Optional<bool>& discloseorganization
                 , const Optional<bool>& discloseaddress
@@ -232,6 +236,13 @@ namespace Fred
         * @return operation instance reference to allow method chaining
         */
         CreateContact& set_ssn(const std::string& ssn);
+
+        /**
+        * Sets additional contact addresses.
+        * @param addresses sets additional contact addresses into @ref addresses_ attribute
+        * @return operation instance reference to allow method chaining
+        */
+        CreateContact& set_addresses(const ContactAddressList& addresses);
 
         /**
         * Sets whether to reveal contact name.

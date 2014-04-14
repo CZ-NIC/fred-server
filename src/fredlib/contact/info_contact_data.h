@@ -30,6 +30,7 @@
 
 #include <boost/date_time/posix_time/ptime.hpp>
 #include <map>
+#include <iosfwd>
 
 namespace Fred
 {
@@ -271,5 +272,13 @@ namespace Fred
     };
 
 }//namespace Fred
+
+/**
+ * Dumps content of the instance into stream
+ * @param os contains output stream reference
+ * @param v reference of instance to be dumped into the stream
+ * @return output stream reference
+ */
+std::ostream& operator<<(std::ostream &os, const Fred::ContactAddressList &v);
 
 #endif//INFO_CONTACT_DATA_H_

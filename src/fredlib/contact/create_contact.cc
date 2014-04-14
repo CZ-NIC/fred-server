@@ -60,6 +60,7 @@ namespace Fred
             , const Optional<std::string>& vat
             , const Optional<std::string>& ssntype
             , const Optional<std::string>& ssn
+            , const Optional<ContactAddressList>& addresses
             , const Optional<bool>& disclosename
             , const Optional<bool>& discloseorganization
             , const Optional<bool>& discloseaddress
@@ -84,6 +85,7 @@ namespace Fred
     , vat_(vat)
     , ssntype_(ssntype)
     , ssn_(ssn)
+    , addresses_(addresses)
     , disclosename_(disclosename)
     , discloseorganization_(discloseorganization)
     , discloseaddress_(discloseaddress)
@@ -164,6 +166,12 @@ namespace Fred
         return *this;
     }
 
+    CreateContact& CreateContact::set_addresses(const ContactAddressList& addresses)
+    {
+        addresses_ = addresses;
+        return *this;
+    }
+    
     CreateContact& CreateContact::set_disclosename(const bool disclosename)
     {
         disclosename_ = disclosename;
@@ -258,7 +266,7 @@ namespace Fred
             //create contact
             {
                 Database::QueryParams params;//query params
-                std::stringstream col_sql, val_sql;
+                std::ostringstream col_sql, val_sql;
                 Util::HeadSeparator col_separator("",", "), val_separator("",", ");
 
                 col_sql <<"INSERT INTO contact (";
@@ -449,6 +457,83 @@ namespace Fred
                 //insert into contact
                 ctx.get_conn().exec_params(col_sql.str() + val_sql.str(), params);
 
+                //insert into contact_address
+                if (addresses_.isset() && !addresses_.get_value().empty()) {
+                    std::ostringstream sql;
+                    params = Database::QueryParams();
+                    params.push_back(create_object_output.object_id);//$1::bigint=contactid
+                    const ContactAddressList &addresses = addresses_.get_value();
+                    for (ContactAddressList::const_iterator addr_ptr = addresses.begin();
+                         addr_ptr != addresses.end(); ++addr_ptr) {
+                        if (sql.str().empty()) {
+                            sql << "INSERT INTO contact_address "
+                                    "("
+                                     "contactid,"
+                                     "type,"
+                                     "company_name,"
+                                     "street1,"
+                                     "street2,"
+                                     "street3,"
+                                     "city,"
+                                     "stateorprovince,"
+                                     "postalcode,"
+                                     "country"
+                                    ") VALUES ";
+                        }
+                        else {
+                            sql << ",";
+                        }
+                        //type
+                        params.push_back(addr_ptr->first.to_string());
+                        sql << "($1::bigint,$" << params.size() << "::text,";
+                        //company_name
+                        if (addr_ptr->second.company_name.isset()) {
+                            params.push_back(addr_ptr->second.company_name.get_value());
+                            sql << "$" << params.size() << "::text,";
+                        }
+                        else {
+                            sql << "NULL,";
+                        }
+                        //street1
+                        params.push_back(addr_ptr->second.street1);
+                        sql << "$" << params.size() << "::text,";
+                        //street2
+                        if (addr_ptr->second.street2.isset()) {
+                            params.push_back(addr_ptr->second.street2.get_value());
+                            sql << "$" << params.size() << "::text,";
+                        }
+                        else {
+                            sql << "NULL,";
+                        }
+                        //street3
+                        if (addr_ptr->second.street3.isset()) {
+                            params.push_back(addr_ptr->second.street3.get_value());
+                            sql << "$" << params.size() << "::text,";
+                        }
+                        else {
+                            sql << "NULL,";
+                        }
+                        //city
+                        params.push_back(addr_ptr->second.city);
+                        sql << "$" << params.size() << "::text,";
+                        //stateorprovince
+                        if (addr_ptr->second.stateorprovince.isset()) {
+                            params.push_back(addr_ptr->second.stateorprovince.get_value());
+                            sql << "$" << params.size() << "::text,";
+                        }
+                        else {
+                            sql << "NULL,";
+                        }
+                        //postalcode
+                        params.push_back(addr_ptr->second.postalcode);
+                        sql << "$" << params.size() << "::text,";
+                        //country
+                        params.push_back(addr_ptr->second.country);
+                        sql << "$" << params.size() << "::text)";
+                    }
+                    ctx.get_conn().exec_params(sql.str(), params);
+                }
+
                 //get crdate from object_registry
                 {
                     Database::Result crdate_res = ctx.get_conn().exec_params(
@@ -521,6 +606,7 @@ namespace Fred
         (std::make_pair("vat",vat_.print_quoted()))
         (std::make_pair("ssntype",ssntype_.print_quoted()))
         (std::make_pair("ssn",ssn_.print_quoted()))
+        (std::make_pair("addresses",addresses_.print_quoted()))
         (std::make_pair("disclosename",disclosename_.print_quoted()))
         (std::make_pair("discloseorganization",discloseorganization_.print_quoted()))
         (std::make_pair("discloseaddress",discloseaddress_.print_quoted()))
