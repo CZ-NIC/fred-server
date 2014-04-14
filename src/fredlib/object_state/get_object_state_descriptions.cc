@@ -52,7 +52,7 @@ namespace Fred
             sql += " JOIN enum_object_states eos ON eos.id = eosd.state_id ";
         }
 
-        sql += " WHERE eosd.lang = $1::text ";
+        sql += " WHERE UPPER(eosd.lang) = UPPER($1::text) ";
 
         if(external_states)
         {
@@ -60,7 +60,7 @@ namespace Fred
         }
 
         Database::Result domain_state_descriptions_result = ctx.get_conn().exec_params(
-        sql, Database::query_param_list(description_language_));
+                sql, Database::query_param_list(description_language_));
 
         std::map<unsigned long long, std::string> result;
         for(unsigned long long i = 0 ; i < domain_state_descriptions_result.size() ; ++i)
