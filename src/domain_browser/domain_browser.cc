@@ -991,7 +991,7 @@ namespace Registry
                 "LEFT JOIN domain_contact_map ON domain_contact_map.domainid = domain.id "
                     "AND domain_contact_map.role = 1 " //admin
                     "AND domain_contact_map.contactid = $" << params.size() << "::bigint "
-                "WHERE oreg.erdate is null ";
+                "WHERE oreg.type = (SELECT id FROM enum_object_type eot WHERE eot.name='domain'::text) AND oreg.erdate IS NULL ";
 
                 if(!list_domains_for_nsset_id.isset() && !list_domains_for_keyset_id.isset())
                 {   //select domains related to user_contact_id
@@ -1100,6 +1100,7 @@ namespace Registry
                 " WHERE ncm.contactid = $1::bigint "
                 " GROUP BY d.nsset) AS domains ON domains.nsset = oreg.id "
                 " WHERE ncm.contactid = $1::bigint "
+                " AND oreg.type = (SELECT id FROM enum_object_type eot WHERE eot.name='nsset'::text) AND oreg.erdate IS NULL "
                 ") AS nsset_list "
                 " LEFT JOIN object_state os ON os.object_id = nsset_list.id "
                     " AND os.valid_from <= CURRENT_TIMESTAMP "
@@ -1170,6 +1171,7 @@ namespace Registry
                 " WHERE kcm.contactid = $1::bigint "
                 " GROUP BY d.keyset) AS domains ON domains.keyset = oreg.id "
                 " WHERE kcm.contactid = $1::bigint "
+                " AND oreg.type = (SELECT id FROM enum_object_type eot WHERE eot.name='keyset'::text) AND oreg.erdate IS NULL "
                 ") AS keyset_list "
                 " LEFT JOIN object_state os ON os.object_id = keyset_list.id "
                     " AND os.valid_from <= CURRENT_TIMESTAMP "
