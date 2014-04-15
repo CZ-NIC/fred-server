@@ -1283,6 +1283,8 @@ src_corba_fred_rifd_LDADD = \
 src_corba_fred_adifd_SOURCES = \
 		src/mojeid/mojeid_validators.cc \
 		src/mojeid/mojeid_validators.h \
+		src/mojeid/mojeid_checkers.cc \
+		src/mojeid/mojeid_checkers.h \
 		src/mojeid/mojeid_contact_transfer_request_impl.cc \
 		src/mojeid/public_request_verification_impl.cc \
 		src/corba/fred-adifd.cc \
@@ -1355,6 +1357,8 @@ src_corba_fred_adifd_LDADD = \
 src_corba_fred_pifd_SOURCES = \
 		src/mojeid/mojeid_validators.cc \
 		src/mojeid/mojeid_validators.h \
+		src/mojeid/mojeid_checkers.cc \
+		src/mojeid/mojeid_checkers.h \
 		src/mojeid/mojeid_contact_transfer_request_impl.cc \
 		src/mojeid/public_request_verification_impl.cc \
 		src/corba/contact_verification/contact_verification_i.cc \
@@ -1490,6 +1494,8 @@ src_corba_messages_fred_msgd_LDADD = \
 src_corba_mojeid_fred_mifd_SOURCES = \
 		src/mojeid/mojeid_validators.cc \
 		src/mojeid/mojeid_validators.h \
+		src/mojeid/mojeid_checkers.cc \
+		src/mojeid/mojeid_checkers.h \
 		src/mojeid/request.h \
 		src/mojeid/mojeid_contact_transfer_request_impl.h \
 		src/mojeid/mojeid_contact_transfer_request_impl.cc \
@@ -1754,6 +1760,8 @@ tests_test_server_SOURCES = \
 		src/fredlib/contact_verification/cancel_contact_verification.h \
 		src/mojeid/mojeid_validators.cc \
 		src/mojeid/mojeid_validators.h \
+		src/mojeid/mojeid_checkers.cc \
+		src/mojeid/mojeid_checkers.h \
 		src/mojeid/request.h \
 		src/mojeid/mojeid_contact_transfer_request_impl.h \
 		src/mojeid/mojeid_contact_transfer_request_impl.cc \
@@ -1840,6 +1848,8 @@ tests_test_blocking_SOURCES = \
 		src/fredlib/contact_verification/cancel_contact_verification.h \
 		src/mojeid/mojeid_validators.cc \
 		src/mojeid/mojeid_validators.h \
+		src/mojeid/mojeid_checkers.cc \
+		src/mojeid/mojeid_checkers.h \
 		src/mojeid/request.h \
 		src/mojeid/mojeid_contact_transfer_request_impl.h \
 		src/mojeid/mojeid_contact_transfer_request_impl.cc \

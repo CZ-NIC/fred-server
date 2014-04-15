@@ -25,6 +25,7 @@
 #define MOJEID_VALIDATORS_H_
 
 #include "src/fredlib/contact_verification/contact_verification_validators.h"
+#include "mojeid_checkers.h"
 
 
 namespace Fred {
@@ -35,6 +36,11 @@ ContactValidator create_conditional_identification_validator_mojeid();
 ContactValidator create_finish_identification_validator_mojeid();
 ContactValidator create_verified_transfer_validator_mojeid();
 ContactValidator create_contact_update_validator_mojeid();
+
+
+bool check_conditionally_identified_contact_diff(
+        const Contact &_c1, const Contact &_c2);
+bool check_validated_contact_diff(const Contact &_c1, const Contact &_c2);
 
 }
 }
