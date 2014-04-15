@@ -88,10 +88,10 @@ namespace  Admin {
             check_info.contact_history_id
         ).exec(_ctx);
 
-        AdminContactVerificationObjectStates::delete_all(_ctx, contact_info.info_contact_data.id);
-
         const std::string& new_handle = check_info.check_state_history.rbegin()->status_handle;
         if( new_handle == Fred::ContactCheckStatus::OK ) {
+
+            AdminContactVerificationObjectStates::delete_all(_ctx, contact_info.info_contact_data.id);
 
             std::set<std::string> status;
             status.insert(Admin::AdminContactVerificationObjectStates::CONTACT_PASSED_MANUAL_VERIFICATION);
