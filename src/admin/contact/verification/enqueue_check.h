@@ -51,6 +51,24 @@ namespace Admin {
         unsigned long long              _contact_id,
         const std::string&              _testsuite_handle,
         Optional<unsigned long long>    _logd_request_id = Optional<unsigned long long>());
+
+    /**
+     * Creates new check for specified contact with specified testsuite
+     * in case no other check (regardless of testsuite) for the same contact exists (not only same history of contact).
+     *
+     * @param _contact_id specifies contact to be checked
+     * @param _testsuite_handle specifice testsuite of enqueued check
+     *
+     * @returns handle of enqueued check (if any)
+     *
+     * @throws Fred::ExceptionUnknownContactId
+     * @throws Fred::ExceptionUnknownTestsuiteHandle
+     */
+    Optional<std::string> enqueue_check_if_no_other_exists(
+        Fred::OperationContext&         _ctx,
+        unsigned long long              _contact_id,
+        const std::string&              _testsuite_handle,
+        Optional<unsigned long long>    _logd_request_id = Optional<unsigned long long>());
 }
 
 

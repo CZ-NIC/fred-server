@@ -5,6 +5,8 @@
 
 #include "util/log/context.h"
 
+#include <boost/algorithm/string/join.hpp>
+
 namespace  Admin {
     std::string enqueue_check(
         Fred::OperationContext&         _ctx,
@@ -58,5 +60,40 @@ namespace  Admin {
         } catch (const Fred::ExceptionUnknownTestsuiteHandle& ) {
             throw Admin::ExceptionUnknownTestsuiteHandle();
         }
+    }
+
+    Optional<std::string> enqueue_check_if_no_other_exists(
+        Fred::OperationContext&         _ctx,
+        unsigned long long              _contact_id,
+        const std::string&              _testsuite_handle,
+        Optional<unsigned long long>    _logd_request_id
+    ) {
+
+        Database::Result existing_check_count_res = _ctx.get_conn().exec_params(
+            "SELECT "
+                    "COUNT( c_ch.id ) AS count_ "
+                "FROM contact_check AS c_ch "
+                    "JOIN contact_history AS c_h ON c_ch.contact_history_id = c_h.historyid "
+                    "JOIN enum_contact_check_status AS enum_c_ch_s ON c_ch.enum_contact_check_status_id = enum_c_ch_s.id "
+                "WHERE enum_c_ch_s.handle = ANY($1::varchar[]) "
+                    "AND c_h.id = $2::bigint ",
+            Database::query_param_list
+                (   std::string("{")
+                    + boost::join(Fred::ContactCheckStatus::get_not_yet_resolved(), ",")
+                    + "}"
+                )
+                (_contact_id)
+        );
+
+        if(static_cast<unsigned long long>(existing_check_count_res[0]["count_"]) == 0) {
+            return enqueue_check(
+                _ctx,
+                _contact_id,
+                _testsuite_handle,
+                _logd_request_id
+            );
+        }
+
+        return Optional<std::string>();
     }
 }

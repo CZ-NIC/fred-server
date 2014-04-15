@@ -1371,6 +1371,7 @@ src_corba_fred_rifd_SOURCES = \
 
 src_corba_fred_rifd_LDADD = \
 		src/corba/epp/libepp_impl.a \
+		src/admin/contact/verification/libadmin_contact_verification.a \
 		src/corba/libcorbaepp.a \
 		src/corba/libcorbatechcheck.a \
 		src/corba/libmailer.a \
