@@ -2,6 +2,9 @@
 #include "src/admin/contact/verification/contact_states/enum.h"
 #include "src/fredlib/object_state/cancel_object_state_request_id.h"
 
+// legacy
+#include "src/fredlib/object_states.h"
+
 #include <boost/foreach.hpp>
 
 namespace Admin
@@ -79,6 +82,53 @@ namespace AdminContactVerificationObjectStates
                     _ctx.get_conn().exec("ROLLBACK TO state_savepoint");
                 }
             }
+        }
+    }
+
+    bool conditionally_delete_all_legacy(
+        unsigned long long contact_id
+    ) {
+        Database::Connection db_conn = Database::Manager::acquire();
+
+        // is there any change?
+        Database::Result result = db_conn.exec_params(
+            "SELECT "
+                        "(c.name            IS DISTINCT FROM c_h_before.name) "
+                    "OR  (c.organization    IS DISTINCT FROM c_h_before.organization) "
+                    "OR  (c.street1         IS DISTINCT FROM c_h_before.street1) "
+                    "OR  (c.street2         IS DISTINCT FROM c_h_before.street2) "
+                    "OR  (c.street3         IS DISTINCT FROM c_h_before.street3) "
+                    "OR  (c.city            IS DISTINCT FROM c_h_before.city) "
+                    "OR  (c.stateorprovince IS DISTINCT FROM c_h_before.stateorprovince) "
+                    "OR  (c.postalcode      IS DISTINCT FROM c_h_before.postalcode) "
+                    "OR  (c.country         IS DISTINCT FROM c_h_before.country) "
+                    "OR  (c.telephone       IS DISTINCT FROM c_h_before.telephone) "
+                    "OR  (c.fax             IS DISTINCT FROM c_h_before.fax) "
+                    "OR  (c.email           IS DISTINCT FROM c_h_before.email) "
+                    "OR  (c.notifyemail     IS DISTINCT FROM c_h_before.notifyemail) "
+                    "OR  (c.vat             IS DISTINCT FROM c_h_before.vat) "
+                    "OR  (c.ssn             IS DISTINCT FROM c_h_before.ssn) "
+                    "OR  (c.ssntype         IS DISTINCT FROM c_h_before.ssntype) "
+                "FROM object_registry AS o_r "
+                    "JOIN contact AS c USING( id ) "
+                    "JOIN history AS h_before ON o_r.historyid = h_before.next "
+                    "JOIN contact_history AS c_h_before ON h_before.id = c_h_before.historyid "
+                "WHERE o_r.id = $1::bigint ",
+            Database::query_param_list(contact_id)
+        );
+
+        if( static_cast<bool>(result[0][0]) == false ) {
+            return false;
+
+        } else {
+            BOOST_FOREACH(
+                const std::string& object_state,
+                Admin::AdminContactVerificationObjectStates::get_all()
+            ) {
+                Fred::cancel_object_state(contact_id, object_state);
+            }
+
+            return true;
         }
     }
 }

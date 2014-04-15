@@ -28,6 +28,9 @@
 #include "src/fredlib/opcontext.h"
 #include "util/optional_value.h"
 
+// legacy stuff
+#include "src/fredlib/db_settings.h"
+
 #include <string>
 
 namespace Admin
@@ -57,6 +60,11 @@ namespace AdminContactVerificationObjectStates
     );
 
     void delete_all(Fred::OperationContext& ctx, unsigned long long contact_id);
+
+    /* legacy version (EPP, MojeID) */
+    bool conditionally_delete_all_legacy(
+        unsigned long long contact_id
+    );
 }
 }
 #endif // #include guard end

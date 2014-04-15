@@ -80,6 +80,9 @@
 //object states
 #include "src/fredlib/object_states.h"
 
+#include "src/admin/contact/verification/contact_states/delete_all.h"
+#include <fredlib/admin_contact_verification.h>
+
 #define FLAG_serverDeleteProhibited 1
 #define FLAG_serverRenewProhibited 2
 #define FLAG_serverTransferProhibited 3
@@ -2828,6 +2831,10 @@ ccReg::Response * ccReg_EPP_i::ContactUpdate(
     LOGGER(PACKAGE).notice(boost::format("Discloseflag %1%: Disclose Name %2% Org %3% Add %4% Tel %5% Fax %6% Email %7% VAT %8% Ident %9% NotifyEmail %10%") % c.DiscloseFlag % c.DiscloseName % c.DiscloseOrganization % c.DiscloseAddress % c.DiscloseTelephone % c.DiscloseFax % c.DiscloseEmail % c.DiscloseVAT % c.DiscloseIdent % c.DiscloseNotifyEmail );
 
 
+    /* this abomination is by the way LOCKING record in object_registry FOR UPDATE
+       main purpose is probably different but since right now it is relied upon in
+       AdminContactVerificationObjectStates::conditionally_delete_all( ) called below
+    */
     id = getIdOfContact(action.getDB(), handle, restricted_handles_
             , lock_epp_commands_, true);
     // for notification to old notify address, this address must be
@@ -3012,6 +3019,13 @@ ccReg::Response * ccReg_EPP_i::ContactUpdate(
                     {
                         LOGGER(PACKAGE).error("ContactUpdate: contact_cancel_verification unknown exception");
                         code =2400;
+                    }
+
+                    // admin contact verification Ticket #10935
+                    try {
+                        Admin::AdminContactVerificationObjectStates::conditionally_delete_all_legacy(id);
+                    } catch(...) {
+                        LOGGER(PACKAGE).error("ContactUpdate: conditionally_delete_all_legacy exception");
                     }
                 }
 
