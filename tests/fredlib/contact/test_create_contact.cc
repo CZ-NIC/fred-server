@@ -34,15 +34,37 @@ struct create_contact_fixture : public virtual Test::Fixture::instantiate_db_tem
     std::string registrar_handle;
     std::string xmark;
     std::string create_contact_handle;
+    std::string contact_name;
+    Fred::Contact::PlaceAddress place;
+    Fred::ContactAddressList addresses;
 
     create_contact_fixture()
     : xmark(RandomDataGenerator().xnumstring(6))
-    , create_contact_handle(std::string("TEST-CREATE-CONTACT-HANDLE")+xmark)
+    , create_contact_handle(std::string("TEST-CREATE-CONTACT-HANDLE") + xmark)
+    , contact_name(std::string("TEST-CREATE-CONTACT NAME") + xmark)
     {
         Fred::OperationContext ctx;
         registrar_handle = static_cast<std::string>(ctx.get_conn().exec(
                 "SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]);
         BOOST_CHECK(!registrar_handle.empty());//expecting existing system registrar
+        place.street1 = "\"Hlavní\"";
+        place.street2 = "adresa";
+        place.street3 = "kontaktu";
+        place.city = "Testín 10";
+        place.stateorprovince = "Testerovo";
+        place.postalcode = "32100";
+        place.country = "CZ";
+        Fred::ContactAddress address;
+        address.company_name = "Testovací, s.r.o.";
+        address.street1 = "Testosteronová 5";
+        address.city = "Testín pod Testerem";
+        address.stateorprovince = "Testerovo";
+        address.postalcode = "32100";
+        address.country = "CZ";
+        addresses[Fred::ContactAddressType::from_string("MAILING")] = address;
+        addresses[Fred::ContactAddressType::from_string("BILLING")] = address;
+        addresses[Fred::ContactAddressType::from_string("SHIPPING")] = address;
+        BOOST_CHECK(addresses.size() == 3);
     }
     ~create_contact_fixture()
     {}
@@ -104,6 +126,37 @@ BOOST_AUTO_TEST_CASE(create_contact_wrong_ssntype)
     }
     , std::exception
     , check_std_exception);
+}
+
+/**
+ * test CreateContact with regular data
+ */
+BOOST_FIXTURE_TEST_CASE(create_contact_ok, create_contact_fixture)
+{
+    Fred::OperationContext ctx;
+    Fred::CreateContact(create_contact_handle, registrar_handle)
+    .set_authinfo("testauthinfo")
+    .set_logd_request_id(0)
+    .set_name(contact_name)
+    .set_place(place)
+    .set_ssntype("RC")
+    .set_ssn("121110/0121")
+    .set_addresses(addresses)
+    .exec(ctx);
+    const Fred::InfoContactOutput output = Fred::InfoContactByHandle(create_contact_handle).exec(ctx);
+    ctx.commit_transaction();
+    BOOST_CHECK(output.info_contact_data.addresses.size() == addresses.size());
+    for (Fred::ContactAddressList::const_iterator address_ptr = output.info_contact_data.addresses.begin();
+         address_ptr != output.info_contact_data.addresses.end(); ++address_ptr) {
+        BOOST_CHECK(address_ptr->second.company_name == addresses[address_ptr->first].company_name);
+        BOOST_CHECK(address_ptr->second.street1 == addresses[address_ptr->first].street1);
+        BOOST_CHECK(address_ptr->second.street2 == addresses[address_ptr->first].street2);
+        BOOST_CHECK(address_ptr->second.street3 == addresses[address_ptr->first].street3);
+        BOOST_CHECK(address_ptr->second.city == addresses[address_ptr->first].city);
+        BOOST_CHECK(address_ptr->second.stateorprovince == addresses[address_ptr->first].stateorprovince);
+        BOOST_CHECK(address_ptr->second.postalcode == addresses[address_ptr->first].postalcode);
+        BOOST_CHECK(address_ptr->second.country == addresses[address_ptr->first].country);
+    }
 }
 
 

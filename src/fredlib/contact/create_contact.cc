@@ -485,7 +485,7 @@ namespace Fred
                         }
                         //type
                         params.push_back(addr_ptr->first.to_string());
-                        sql << "($1::bigint,$" << params.size() << "::text,";
+                        sql << "($1::bigint,$" << params.size() << "::contact_address_type,";
                         //company_name
                         if (addr_ptr->second.company_name.isset()) {
                             params.push_back(addr_ptr->second.company_name.get_value());
