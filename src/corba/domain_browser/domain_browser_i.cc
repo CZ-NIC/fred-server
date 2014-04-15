@@ -63,14 +63,6 @@ namespace Registry
             {
                 throw Registry::DomainBrowser::INCORRECT_USAGE();
             }
-            catch (const boost::exception&)
-            {
-                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
-            }
-            catch (const std::exception&)
-            {
-                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
-            }
             catch (...)
             {
                 throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
@@ -113,14 +105,6 @@ namespace Registry
             {
                 throw Registry::DomainBrowser::INCORRECT_USAGE();
             }
-            catch (const boost::exception&)
-            {
-                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
-            }
-            catch (const std::exception&)
-            {
-                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
-            }
             catch (...)
             {
                 throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
@@ -161,14 +145,6 @@ namespace Registry
             {
                 throw Registry::DomainBrowser::INCORRECT_USAGE();
             }
-            catch (const boost::exception&)
-            {
-                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
-            }
-            catch (const std::exception&)
-            {
-                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
-            }
             catch (...)
             {
                 throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
@@ -208,14 +184,6 @@ namespace Registry
             catch (const Registry::DomainBrowserImpl::IncorrectUsage& )
             {
                 throw Registry::DomainBrowser::INCORRECT_USAGE();
-            }
-            catch (const boost::exception&)
-            {
-                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
-            }
-            catch (const std::exception&)
-            {
-                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
             }
             catch (...)
             {
@@ -267,14 +235,6 @@ namespace Registry
             {
                 throw Registry::DomainBrowser::INCORRECT_USAGE();
             }
-            catch (const boost::exception&)
-            {
-                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
-            }
-            catch (const std::exception&)
-            {
-                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
-            }
             catch (...)
             {
                 throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
@@ -324,14 +284,6 @@ namespace Registry
             catch (const Registry::DomainBrowserImpl::IncorrectUsage& )
             {
                 throw Registry::DomainBrowser::INCORRECT_USAGE();
-            }
-            catch (const boost::exception&)
-            {
-                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
-            }
-            catch (const std::exception&)
-            {
-                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
             }
             catch (...)
             {
@@ -409,14 +361,6 @@ namespace Registry
             catch (const Registry::DomainBrowserImpl::UserNotExists& )
             {
                 throw Registry::DomainBrowser::USER_NOT_EXISTS();
-            }
-            catch (const boost::exception&)
-            {
-                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
-            }
-            catch (const std::exception&)
-            {
-                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
             }
             catch (...)
             {
@@ -498,14 +442,6 @@ namespace Registry
             catch (const Registry::DomainBrowserImpl::UserNotExists& )
             {
                 throw Registry::DomainBrowser::USER_NOT_EXISTS();
-            }
-            catch (const boost::exception&)
-            {
-                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
-            }
-            catch (const std::exception&)
-            {
-                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
             }
             catch (...)
             {
@@ -592,14 +528,6 @@ namespace Registry
             {
                 throw Registry::DomainBrowser::USER_NOT_EXISTS();
             }
-            catch (const boost::exception&)
-            {
-                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
-            }
-            catch (const std::exception&)
-            {
-                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
-            }
             catch (...)
             {
                 throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
@@ -680,14 +608,6 @@ namespace Registry
             {
                 throw Registry::DomainBrowser::USER_NOT_EXISTS();
             }
-            catch (const boost::exception&)
-            {
-                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
-            }
-            catch (const std::exception&)
-            {
-                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
-            }
             catch (...)
             {
                 throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
@@ -721,14 +641,6 @@ namespace Registry
             catch (const Registry::DomainBrowserImpl::UserNotExists& )
             {
                 throw Registry::DomainBrowser::USER_NOT_EXISTS();
-            }
-            catch (const boost::exception&)
-            {
-                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
-            }
-            catch (const std::exception&)
-            {
-                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
             }
             catch (...)
             {
@@ -768,14 +680,6 @@ namespace Registry
             catch (const Registry::DomainBrowserImpl::AccessDenied& )
             {
                 throw Registry::DomainBrowser::ACCESS_DENIED();
-            }
-            catch (const boost::exception&)
-            {
-                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
-            }
-            catch (const std::exception&)
-            {
-                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
             }
             catch (...)
             {
@@ -817,14 +721,6 @@ namespace Registry
             catch (const Registry::DomainBrowserImpl::AccessDenied& )
             {
                 throw Registry::DomainBrowser::ACCESS_DENIED();
-            }
-            catch (const boost::exception&)
-            {
-                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
-            }
-            catch (const std::exception&)
-            {
-                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
             }
             catch (...)
             {
@@ -883,14 +779,6 @@ namespace Registry
             {
                 throw Registry::DomainBrowser::ACCESS_DENIED();
             }
-            catch (const boost::exception&)
-            {
-                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
-            }
-            catch (const std::exception&)
-            {
-                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
-            }
             catch (...)
             {
                 throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
@@ -910,19 +798,10 @@ namespace Registry
                     status_description_var[i] = CORBA::string_dup(status_description_out.at(i).c_str());
                 }
                 return  status_description_var._retn();
-
             }//try
             catch (const Registry::DomainBrowserImpl::IncorrectUsage& )
             {
                 throw Registry::DomainBrowser::INCORRECT_USAGE();
-            }
-            catch (const boost::exception&)
-            {
-                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
-            }
-            catch (const std::exception&)
-            {
-                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
             }
             catch (...)
             {
