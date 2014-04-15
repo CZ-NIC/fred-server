@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
         CorbaContainer::get_instance()
             ->register_server(new Registry::DomainBrowser::Server_i(server_name, update_registrar_handle,
                     domain_list_limit, nsset_list_limit, keyset_list_limit)
-            , "DomainBrowser2");
+            , "DomainBrowser");
         run_server(CfgArgs::instance(), CorbaContainer::get_instance());
 
     }//try
