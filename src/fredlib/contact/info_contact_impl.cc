@@ -277,6 +277,48 @@ namespace Fred
             info_contact_output.local_timestamp = query_result[i][47].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
             : boost::posix_time::time_from_string(static_cast<std::string>(query_result[i][47]));//local zone timestamp
 
+            Database::QueryParams params;
+            const std::string sql = "SELECT type,company_name,street1,street2,street3,"
+                                           "city,stateorprovince,postalcode,country "
+                                    "FROM contact_address "
+                                    "WHERE contactid=$1::bigint";
+            params.push_back(info_contact_output.info_contact_data.id);
+            Database::Result subquery_result = ctx.get_conn().exec_params(sql, params);
+            ContactAddressList addresses;
+            for(::size_t idx = 0; idx < subquery_result.size(); ++idx) {
+                const struct ContactAddressType type(ContactAddressType::from_string(
+                     static_cast< std::string >(subquery_result[idx][0])));
+                struct ContactAddress address;
+                if (!subquery_result[idx][1].isnull()) {
+                    address.company_name = static_cast< std::string >(subquery_result[idx][1]);
+                }
+                if (!subquery_result[idx][2].isnull()) {
+                    address.street1 = static_cast< std::string >(subquery_result[idx][2]);
+                }
+                if (!subquery_result[idx][3].isnull()) {
+                    address.street2 = static_cast< std::string >(subquery_result[idx][3]);
+                }
+                if (!subquery_result[idx][4].isnull()) {
+                    address.street3 = static_cast< std::string >(subquery_result[idx][4]);
+                }
+                if (!subquery_result[idx][5].isnull()) {
+                    address.city = static_cast< std::string >(subquery_result[idx][5]);
+                }
+                if (!subquery_result[idx][6].isnull()) {
+                    address.stateorprovince = static_cast< std::string >(subquery_result[idx][6]);
+                }
+                if (!subquery_result[idx][7].isnull()) {
+                    address.postalcode = static_cast< std::string >(subquery_result[idx][7]);
+                }
+                if (!subquery_result[idx][8].isnull()) {
+                    address.country = static_cast< std::string >(subquery_result[idx][8]);
+                }
+                addresses[type] = address;
+            }
+            if (!addresses.empty()) {
+                info_contact_output.info_contact_data.addresses = addresses;
+            }
+
             result.push_back(info_contact_output);
         }//for res
 

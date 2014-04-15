@@ -78,7 +78,7 @@ namespace Fred
         Optional<std::string> vat_;/**< taxpayer identification number */
         Optional<std::string> ssntype_;/**< type of identification from enum_ssntype table */
         Optional<std::string> ssn_;/**< unambiguous identification number e.g. social security number, identity card number, date of birth */
-        Optional<ContactAddressList> addresses_;/**< additional contact addresses */
+        Optional< Fred::ContactAddressList > addresses_;/**< additional contact addresses */
         Optional<bool> disclosename_;/**< whether to reveal contact name */
         Optional<bool> discloseorganization_;/**< whether to reveal organization */
         Optional<bool> discloseaddress_;/**< whether to reveal address */
@@ -106,13 +106,7 @@ namespace Fred
         * @param authinfo sets transfer password into @ref authinfo_ attribute
         * @param name sets name of contact person into @ref name_ attribute
         * @param organization sets full trade name of organization into @ref organization_ attribute
-        * @param street1 sets part of address into @ref street1_ attribute
-        * @param street2 sets part of address into @ref street2_ attribute
-        * @param street3 sets part of address into @ref street3_ attribute
-        * @param city sets part of address - city into @ref city_ attribute
-        * @param stateorprovince sets part of address - region into @ref stateorprovince_ attribute
-        * @param postalcode sets part of address - postal code into @ref postalcode_ attribute
-        * @param country sets two character country code or country name  into @ref country_ attribute
+        * @param place sets contact address into @ref place_ attribute
         * @param telephone sets telephone number into @ref telephone_ attribute
         * @param fax sets fax number into @ref fax_ attribute
         * @param email sets e-mail address into @ref email_ attribute
@@ -145,7 +139,7 @@ namespace Fred
                 , const Optional<std::string>& vat
                 , const Optional<std::string>& ssntype
                 , const Optional<std::string>& ssn
-                , const Optional<ContactAddressList>& addresses
+                , const Optional< Fred::ContactAddressList >& addresses
                 , const Optional<bool>& disclosename
                 , const Optional<bool>& discloseorganization
                 , const Optional<bool>& discloseaddress
@@ -242,7 +236,7 @@ namespace Fred
         * @param addresses sets additional contact addresses into @ref addresses_ attribute
         * @return operation instance reference to allow method chaining
         */
-        CreateContact& set_addresses(const ContactAddressList& addresses);
+        CreateContact& set_addresses(const Fred::ContactAddressList& addresses);
 
         /**
         * Sets whether to reveal contact name.
