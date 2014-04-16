@@ -783,6 +783,8 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/contact/create_contact.h \
 		src/fredlib/contact/update_contact.cc \
 		src/fredlib/contact/update_contact.h \
+		src/admin/contact/verification/contact_states/delete_all.h \
+		src/admin/contact/verification/contact_states/delete_all.cc \
 		src/fredlib/contact/contact_enum.h \
 		src/fredlib/nsset/create_nsset.cc \
 		src/fredlib/nsset/create_nsset.h \
@@ -848,27 +850,47 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/registrar/info_registrar_output.h \
 		src/fredlib/registrar/get_registrar_handles.cc \
 		src/fredlib/registrar/get_registrar_handles.h \
+		src/fredlib/object/object_id_handle_pair.h \
+		src/fredlib/object/object_id_handle_pair.cc \
+		src/fredlib/object_state/object_state_name.h \
+		src/fredlib/object_state/object_has_state.h \
+		src/fredlib/object_state/object_has_state.cc \
 		src/fredlib/object_state/lock_multiple_object_state_request_lock.cc \
 		src/fredlib/object_state/lock_multiple_object_state_request_lock.h \
 		src/fredlib/object_state/lock_object_state_request_lock.h \
 		src/fredlib/object_state/lock_object_state_request_lock.cc \
-		src/fredlib/object_state/perform_object_state_request.h \
-		src/fredlib/object_state/perform_object_state_request.cc \
-		src/fredlib/object_state/object_state_name.h \
-		src/fredlib/object_state/object_has_state.h \
-		src/fredlib/object_state/object_has_state.cc \
 		src/fredlib/object_state/get_object_state_descriptions.h \
 		src/fredlib/object_state/get_object_state_descriptions.cc \
 		src/fredlib/object_state/get_object_states.h \
 		src/fredlib/object_state/get_object_states.cc \
 		src/fredlib/object_state/get_object_state_id_map.h \
 		src/fredlib/object_state/get_object_state_id_map.cc \
-		src/fredlib/object_state/create_object_state_request_id.h \
-		src/fredlib/object_state/create_object_state_request_id.cc \
+		src/fredlib/object_state/get_blocking_status_desc_list.cc \
+		src/fredlib/object_state/get_blocking_status_desc_list.h \
 		src/fredlib/object_state/perform_object_state_request.h \
 		src/fredlib/object_state/perform_object_state_request.cc \
-		src/fredlib/object/object_id_handle_pair.h \
-		src/fredlib/object/object_id_handle_pair.cc
+		src/fredlib/object_state/cancel_object_state_request.cc \
+		src/fredlib/object_state/cancel_object_state_request.h \
+		src/fredlib/object_state/cancel_object_state_request_id.cc \
+		src/fredlib/object_state/cancel_object_state_request_id.h \
+		src/fredlib/object_state/create_object_state_request.cc \
+		src/fredlib/object_state/create_object_state_request.h \
+		src/fredlib/object_state/create_object_state_request_id.cc \
+		src/fredlib/object_state/create_object_state_request_id.h \
+		src/fredlib/object_state/create_admin_object_block_request.cc \
+		src/fredlib/object_state/create_admin_object_block_request.h \
+		src/fredlib/object_state/create_admin_object_block_request_id.cc \
+		src/fredlib/object_state/create_admin_object_block_request_id.h \
+		src/fredlib/object_state/create_admin_object_state_restore_request.cc \
+		src/fredlib/object_state/create_admin_object_state_restore_request.h \
+		src/fredlib/object_state/create_admin_object_state_restore_request_id.cc \
+		src/fredlib/object_state/create_admin_object_state_restore_request_id.h \
+		src/fredlib/object_state/clear_admin_object_state_request_id.cc \
+		src/fredlib/object_state/clear_admin_object_state_request_id.h \
+		src/fredlib/object_state/clear_object_state_request.cc \
+		src/fredlib/object_state/clear_object_state_request.h \
+		src/fredlib/object_state/clear_object_state_request_id.cc \
+		src/fredlib/object_state/clear_object_state_request_id.h
 #
 # src/fredlib/libfred.a
 
@@ -1011,6 +1033,9 @@ src_admin_contact_verification_libadmin_contact_verification_a_SOURCES = \
 		src/admin/contact/verification/run_all_enqueued_checks.cc \
 		src/admin/contact/verification/update_tests.h \
 		src/admin/contact/verification/update_tests.cc \
+		src/admin/contact/verification/contact_states/enum.h \
+		src/admin/contact/verification/contact_states/delete_all.h \
+		src/admin/contact/verification/contact_states/delete_all.cc \
 		src/admin/contact/verification/test_impl/test_contactability.h \
 		src/admin/contact/verification/test_impl/test_contactability.cc \
 		src/admin/contact/verification/test_impl/test_cz_address_exists.h \
@@ -1346,6 +1371,7 @@ src_corba_fred_rifd_SOURCES = \
 
 src_corba_fred_rifd_LDADD = \
 		src/corba/epp/libepp_impl.a \
+		src/admin/contact/verification/libadmin_contact_verification.a \
 		src/corba/libcorbaepp.a \
 		src/corba/libcorbatechcheck.a \
 		src/corba/libmailer.a \
@@ -1389,32 +1415,6 @@ src_corba_fred_adifd_SOURCES = \
 		src/corba/fred-adifd.cc \
 		src/admin_block/administrativeblocking.cc \
 		src/admin_block/administrativeblocking.h \
-		src/fredlib/object_state/get_blocking_status_desc_list.cc \
-		src/fredlib/object_state/get_blocking_status_desc_list.h \
-		src/fredlib/object_state/cancel_object_state_request.cc \
-		src/fredlib/object_state/cancel_object_state_request.h \
-		src/fredlib/object_state/cancel_object_state_request_id.cc \
-		src/fredlib/object_state/cancel_object_state_request_id.h \
-		src/fredlib/object_state/create_object_state_request.cc \
-		src/fredlib/object_state/create_object_state_request.h \
-		src/fredlib/object_state/create_object_state_request_id.cc \
-		src/fredlib/object_state/create_object_state_request_id.h \
-		src/fredlib/object_state/get_object_state_id_map.cc \
-		src/fredlib/object_state/get_object_state_id_map.h \
-		src/fredlib/object_state/create_admin_object_block_request.cc \
-		src/fredlib/object_state/create_admin_object_block_request.h \
-		src/fredlib/object_state/create_admin_object_block_request_id.cc \
-		src/fredlib/object_state/create_admin_object_block_request_id.h \
-		src/fredlib/object_state/create_admin_object_state_restore_request.cc \
-		src/fredlib/object_state/create_admin_object_state_restore_request.h \
-		src/fredlib/object_state/create_admin_object_state_restore_request_id.cc \
-		src/fredlib/object_state/create_admin_object_state_restore_request_id.h \
-		src/fredlib/object_state/clear_admin_object_state_request_id.cc \
-		src/fredlib/object_state/clear_admin_object_state_request_id.h \
-		src/fredlib/object_state/clear_object_state_request.cc \
-		src/fredlib/object_state/clear_object_state_request.h \
-		src/fredlib/object_state/clear_object_state_request_id.cc \
-		src/fredlib/object_state/clear_object_state_request_id.h \
 		src/fredlib/domain/create_domain_name_blacklist.cc \
 		src/fredlib/domain/create_domain_name_blacklist.h \
 		src/fredlib/domain/create_domain_name_blacklist_id.cc \
@@ -1455,6 +1455,9 @@ src_corba_fred_adifd_SOURCES = \
 		src/admin/contact/verification/run_all_enqueued_checks.cc \
 		src/admin/contact/verification/update_tests.h \
 		src/admin/contact/verification/update_tests.cc \
+		src/admin/contact/verification/contact_states/enum.h \
+		src/admin/contact/verification/contact_states/delete_all.h \
+		src/admin/contact/verification/contact_states/delete_all.cc \
 		src/admin/contact/verification/test_impl/test_contactability.h \
 		src/admin/contact/verification/test_impl/test_contactability.cc \
 		src/admin/contact/verification/test_impl/test_cz_address_exists.h \

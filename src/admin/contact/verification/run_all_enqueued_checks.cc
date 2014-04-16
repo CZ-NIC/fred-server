@@ -1,5 +1,7 @@
 #include "src/admin/contact/verification/run_all_enqueued_checks.h"
 #include "src/admin/contact/verification/related_records_impl.h"
+#include "src/admin/contact/verification/contact_states/enum.h"
+#include "src/admin/contact/verification/contact_states/delete_all.h"
 #include "src/fredlib/contact/verification/enum_check_status.h"
 #include "src/fredlib/contact/verification/enum_test_status.h"
 #include "src/fredlib/contact/verification/enum_testsuite_handle.h"
@@ -231,48 +233,10 @@ namespace  Admin {
             check_info.contact_history_id
         ).exec(_ctx);
 
-        _ctx.get_conn().exec("SAVEPOINT state_savepoint");
-
-        // cancel one state at a time because when exception is thrown, all changes would be ROLLBACKed
-        try {
-            std::set<std::string> object_states_to_erase =
-                boost::assign::list_of("contactInManualVerification");
-            Fred::CancelObjectStateRequestId(
-                contact_info.info_contact_data.id,
-                object_states_to_erase
-            ).exec(_ctx);
-            _ctx.get_conn().exec("RELEASE SAVEPOINT state_savepoint");
-            _ctx.get_conn().exec("SAVEPOINT state_savepoint");
-        } catch(Fred::CancelObjectStateRequestId::Exception& e) {
-            // in case it throws from with unknown cause
-            if(e.is_set_state_not_found() == false) {
-                throw;
-            } else {
-                _ctx.get_conn().exec("ROLLBACK TO state_savepoint");
-            }
-        }
-        try {
-            std::set<std::string> object_states_to_erase =
-                boost::assign::list_of("manuallyVerifiedContact");
-
-            Fred::CancelObjectStateRequestId(
-                contact_info.info_contact_data.id,
-                object_states_to_erase
-            ).exec(_ctx);
-
-            _ctx.get_conn().exec("RELEASE SAVEPOINT state_savepoint");
-            _ctx.get_conn().exec("SAVEPOINT state_savepoint");
-        } catch(Fred::CancelObjectStateRequestId::Exception& e) {
-            // in case it throws from with unknown cause
-            if(e.is_set_state_not_found() == false) {
-                throw;
-            } else {
-                _ctx.get_conn().exec("ROLLBACK TO state_savepoint");
-            }
-        }
+        AdminContactVerificationObjectStates::delete_all(_ctx, contact_info.info_contact_data.id);
 
         std::set<std::string> status;
-        status.insert("contactInManualVerification");
+        status.insert(Admin::AdminContactVerificationObjectStates::CONTACT_IN_MANUAL_VERIFICATION);
 
         std::set<unsigned long long> state_request_ids;
         state_request_ids.insert(
@@ -292,7 +256,8 @@ namespace  Admin {
         Fred::OperationContext& _ctx,
         const uuid& _check_handle
     ) {
-        // in case of need feel free to express yourself...
+        // right now it's exactly the same
+        preprocess_manual_check(_ctx, _check_handle);
     }
 
     static void preprocess_check(Fred::OperationContext& ctx, const uuid& handle) {
