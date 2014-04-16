@@ -159,7 +159,7 @@ namespace Registry
             std::vector<RegistryReference> admins; /**< domain admin contacts */
             std::string states;/**< object states descriptions in given language from db. table enum_object_states_desc delimited by pipe '|' character */
             std::string state_codes;/**< object states names from db. table enum_object_states delimited by coma ',' character */
-            bool is_owner;/**< whether user contact is the same as requested domain owner */
+            bool is_owner;/**< whether user contact is the same as domain owner*/
 
             DomainDetail()
             : id(0)

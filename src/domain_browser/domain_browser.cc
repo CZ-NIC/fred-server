@@ -494,7 +494,6 @@ namespace Registry
                 detail.update_time = domain_info.info_domain_data.update_time;
 
                 detail.is_owner = (user_contact_id == registrant_contact_info.info_contact_data.id);
-                detail.authinfopw =filter_authinfo(detail.is_owner, domain_info.info_domain_data.authinfopw);
 
                 detail.registrant = registrant;
                 detail.expiration_date = domain_info.info_domain_data.expiration_date;
@@ -502,6 +501,7 @@ namespace Registry
                 detail.nsset = nsset;
                 detail.keyset = keyset;
 
+                bool set_authinfo = detail.is_owner;
                 detail.admins.reserve(domain_info.info_domain_data.admin_contacts.size());
                 for(std::vector<Fred::ObjectIdHandlePair>::const_iterator ci = domain_info.info_domain_data.admin_contacts.begin();
                         ci != domain_info.info_domain_data.admin_contacts.end(); ++ci)
@@ -516,7 +516,11 @@ namespace Registry
                         : admin_contact_info.info_contact_data.organization.get_value();
 
                     detail.admins.push_back(admin);
+
+                    if(admin.id == user_contact_id) set_authinfo = true;//reveal authinfo to admin
                 }
+
+                detail.authinfopw =filter_authinfo(set_authinfo, domain_info.info_domain_data.authinfopw);
 
                 get_object_states(ctx, domain_info.info_domain_data.id,lang
                     , detail.state_codes, detail.states);
