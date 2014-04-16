@@ -81,6 +81,7 @@
 #include "src/fredlib/object_states.h"
 
 #include "src/admin/contact/verification/contact_states/delete_all.h"
+#include "src/admin/contact/verification/contact_states/enum.h"
 #include <admin/admin_contact_verification.h>
 
 #define FLAG_serverDeleteProhibited 1
@@ -2599,19 +2600,26 @@ ccReg::Response* ccReg_EPP_i::ContactInfo(
   c->AuthInfoPw = CORBA::string_dup(
    a.getRegistrar() == (int)con->getRegistrarId()?con->getAuthPw().c_str():""
   );
+  /* Ticket #10053 - HACK - 1st part: temporarily hide states until we fix epp schemas */
+  std::vector<std::string> admin_contact_verification_states = Admin::AdminContactVerificationObjectStates::get_all();
+  /* Ticket #10053 - END OF 1st part*/
   // states
   for (unsigned i=0; i<con->getStatusCount(); i++) {
     Fred::TID stateId = con->getStatusByIdx(i)->getStatusId();
     const Fred::StatusDesc* sd = regMan->getStatusDesc(stateId);
     if (!sd || !sd->getExternal())
       continue;
-    /* Ticket #10053 - HACK: temporarily hide states until we fix epp schemas */
-    if (sd->getName() == "manuallyVerifiedContact"
-        || sd->getName() == "contactInManualVerification"
+
+    /* Ticket #10053 - HACK - 2nd part: temporarily hide states until we fix epp schemas */
+    if( std::find(
+            admin_contact_verification_states.begin(),
+            admin_contact_verification_states.end(),
+            sd->getName()
+        ) != admin_contact_verification_states.end()
     ) {
         continue;
     }
-    /* Ticket #10053 - END OF HACK*/
+    /* Ticket #10053 - END OF 2nd part*/
 
     c->stat.length(c->stat.length()+1);
     c->stat[c->stat.length()-1].value = CORBA::string_dup(sd->getName().c_str() );
