@@ -387,6 +387,33 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle)
     BOOST_CHECK(history_info_data_5.at(1).next_historyid.get_value() == history_info_data_5.at(0).info_contact_data.historyid);
     BOOST_CHECK(history_info_data_5.at(0).info_contact_data.crhistoryid == info_data_5.info_contact_data.crhistoryid);
 
+    //remove more then one additional address (DELETE ... WHERE ... type IN ($2,$3,...))
+    Fred::UpdateContactByHandle(test_contact_handle, registrar_handle)
+    .reset_address< Fred::ContactAddressType::MAILING >()
+    .reset_address< Fred::ContactAddressType::BILLING >()
+    .reset_address< Fred::ContactAddressType::SHIPPING >()
+    .exec(ctx);
+
+    Fred::InfoContactOutput info_data_6 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
+
+    //updated addresses
+    BOOST_CHECK(info_data_6.info_contact_data.addresses.empty());//no additional address
+
+    //insert more then one additional address (INSERT ... VALUES (...),(...),...)
+    Fred::UpdateContactByHandle(test_contact_handle, registrar_handle)
+    .set_address< Fred::ContactAddressType::MAILING >(address)
+    .set_address< Fred::ContactAddressType::BILLING >(address)
+    .set_address< Fred::ContactAddressType::SHIPPING >(address)
+    .exec(ctx);
+
+    Fred::InfoContactOutput info_data_7 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
+
+    //updated addresses
+    BOOST_CHECK(info_data_7.info_contact_data.addresses.size() == 3);//MAILING, BILLING, SHIPPING
+    BOOST_CHECK(info_data_7.info_contact_data.addresses[Fred::ContactAddressType::MAILING] == address);
+    BOOST_CHECK(info_data_7.info_contact_data.addresses[Fred::ContactAddressType::BILLING] == address);
+    BOOST_CHECK(info_data_7.info_contact_data.addresses[Fred::ContactAddressType::SHIPPING] == address);
+
     ctx.commit_transaction();
 }//update_contact_by_handle
 
