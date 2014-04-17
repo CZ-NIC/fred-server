@@ -24,9 +24,6 @@
 #ifndef UPDATE_CONTACT_H_
 #define UPDATE_CONTACT_H_
 
-#include <string>
-#include <vector>
-
 #include "src/fredlib/opexception.h"
 #include "src/fredlib/opcontext.h"
 #include "util/optional_value.h"
@@ -39,6 +36,10 @@
 #include "src/fredlib/contact/place_address.h"
 
 #include "src/admin/contact/verification/contact_states/delete_all.h"
+
+#include <string>
+#include <vector>
+#include <set>
 
 namespace Fred
 {
@@ -85,6 +86,68 @@ namespace Fred
 
 
     /**
+     * Container of additional contact addresses to update.
+     */
+    class ContactAddressToUpdate
+    {
+    public:
+        /**
+         * Default constructor, nothing to update, nothing to remove.
+         */
+        ContactAddressToUpdate() { }
+        /**
+         * Copy constructor.
+         * @param _src refers to instance which is copied
+         */
+        ContactAddressToUpdate(const ContactAddressToUpdate &_src);
+        /**
+         * Destructor, nothing to do.
+         */
+        ~ContactAddressToUpdate() { }
+        /**
+         * Sets address given purpose to be updated.
+         * @tparam type purpose of address
+         * @param _address new content of contact address given purpose
+         * @return self instance reference to allow method chaining
+         */
+        template < ContactAddressType::Value type >
+        ContactAddressToUpdate& update(const struct ContactAddress &_address);
+        /**
+         * Contact address given purpose to be removed.
+         * @tparam type purpose of address
+         * @return self instance reference to allow method chaining
+         */
+        template < ContactAddressType::Value type >
+        ContactAddressToUpdate& remove();
+        /**
+         * Container of addresses given purpose.
+         */
+        typedef ContactAddressList ToUpdate;
+        /**
+         * Container of purposes.
+         */
+        typedef std::set< ContactAddressType > ToRemove;
+        /**
+         * Get addresses to update.
+         * @return addresses to update
+         */
+        const ToUpdate& to_update()const { return to_update_; }
+        /**
+         * Get addresses to remove.
+         * @return addresses to remove
+         */
+        const ToRemove& to_remove()const { return to_remove_; }
+        /**
+        * Dumps content of the instance into the string
+        * @return string with description of the instance content
+        */
+        std::string to_string()const;
+    private:
+        ToUpdate to_update_;
+        ToRemove to_remove_;
+    };
+
+    /**
     * Update of contact, implementation template.
     * Created instance is modifiable by chainable methods i.e. methods returning instance reference.
     * Data set into instance by constructor and methods serve as input data of the update.
@@ -111,6 +174,7 @@ namespace Fred
         Optional<std::string> vat_;/**< taxpayer identification number */
         Optional<std::string> ssntype_;/**< type of identification from enum_ssntype table */
         Optional<std::string> ssn_;/**< unambiguous identification number e.g. social security number, identity card number, date of birth */
+        ContactAddressToUpdate addresses_;/**< contact addresses to update or remove */
         Optional<bool> disclosename_;/**< whether to reveal contact name */
         Optional<bool> discloseorganization_;/**< whether to reveal organization */
         Optional<bool> discloseaddress_;/**< whether to reveal address */
@@ -151,6 +215,7 @@ namespace Fred
         * @param vat sets taxpayer identification number into @ref vat_ attribute
         * @param ssntype sets type of identification into @ref ssntype_ attribute
         * @param ssn sets unambiguous identification number into @ref ssn_ attribute
+        * @param addresses sets contact addresses into @ref addresses_ attribute
         * @param disclosename sets whether to reveal contact name into @ref disclosename_ attribute
         * @param discloseorganization sets whether to reveal organization name into @ref discloseorganization_ attribute
         * @param discloseaddress sets whether to reveal contact address into @ref discloseaddress_ attribute
@@ -163,55 +228,30 @@ namespace Fred
         * @param logd_request_id sets logger request id into @ref logd_request_id_ attribute
         */
         UpdateContact(const std::string& registrar
-                , const Optional<std::string>& sponsoring_registrar
-                , const Optional<std::string>& authinfo
-                , const Optional<std::string>& name
-                , const Optional<std::string>& organization
-                , const Optional< Fred::Contact::PlaceAddress > &place
-                , const Optional<std::string>& telephone
-                , const Optional<std::string>& fax
-                , const Optional<std::string>& email
-                , const Optional<std::string>& notifyemail
-                , const Optional<std::string>& vat
-                , const Optional<std::string>& ssntype
-                , const Optional<std::string>& ssn
-                , const Optional<bool>& disclosename
-                , const Optional<bool>& discloseorganization
-                , const Optional<bool>& discloseaddress
-                , const Optional<bool>& disclosetelephone
-                , const Optional<bool>& disclosefax
-                , const Optional<bool>& discloseemail
-                , const Optional<bool>& disclosevat
-                , const Optional<bool>& discloseident
-                , const Optional<bool>& disclosenotifyemail
-                , const Optional<unsigned long long>& logd_request_id
-                )
-        : registrar_(registrar)
-        , sponsoring_registrar_(sponsoring_registrar)
-        , authinfo_(authinfo)
-        , name_(name)
-        , organization_(organization)
-        , place_(place)
-        , telephone_(telephone)
-        , fax_(fax)
-        , email_(email)
-        , notifyemail_(notifyemail)
-        , vat_(vat)
-        , ssntype_(ssntype)
-        , ssn_(ssn)
-        , disclosename_(disclosename)
-        , discloseorganization_(discloseorganization)
-        , discloseaddress_(discloseaddress)
-        , disclosetelephone_(disclosetelephone)
-        , disclosefax_(disclosefax)
-        , discloseemail_(discloseemail)
-        , disclosevat_(disclosevat)
-        , discloseident_(discloseident)
-        , disclosenotifyemail_(disclosenotifyemail)
-        , logd_request_id_(logd_request_id.isset()
-                ? Nullable<unsigned long long>(logd_request_id.get_value())
-                : Nullable<unsigned long long>())//is NULL if not set
-        {}
+            , const Optional<std::string>& sponsoring_registrar
+            , const Optional<std::string>& authinfo
+            , const Optional<std::string>& name
+            , const Optional<std::string>& organization
+            , const Optional< Fred::Contact::PlaceAddress > &place
+            , const Optional<std::string>& telephone
+            , const Optional<std::string>& fax
+            , const Optional<std::string>& email
+            , const Optional<std::string>& notifyemail
+            , const Optional<std::string>& vat
+            , const Optional<std::string>& ssntype
+            , const Optional<std::string>& ssn
+            , const ContactAddressToUpdate &addresses
+            , const Optional<bool>& disclosename
+            , const Optional<bool>& discloseorganization
+            , const Optional<bool>& discloseaddress
+            , const Optional<bool>& disclosetelephone
+            , const Optional<bool>& disclosefax
+            , const Optional<bool>& discloseemail
+            , const Optional<bool>& disclosevat
+            , const Optional<bool>& discloseident
+            , const Optional<bool>& disclosenotifyemail
+            , const Optional<unsigned long long>& logd_request_id
+            );
 
         /**
         * Sets contact sponsoring registrar.
@@ -346,6 +386,31 @@ namespace Fred
         }
 
         /**
+         * Sets address given purpose to be updated.
+         * @tparam type purpose of address
+         * @param _address new content of contact address given purpose
+         * @return self instance reference to allow method chaining
+         */
+        template < ContactAddressType::Value type >
+        DERIVED& set_address(const struct ContactAddress &_address)
+        {
+            addresses_.update< type >(_address);
+            return static_cast<DERIVED&>(*this);
+        }
+
+        /**
+         * Contact address given purpose to be removed.
+         * @tparam type purpose of address
+         * @return self instance reference to allow method chaining
+         */
+        template < ContactAddressType::Value type >
+        DERIVED& reset_address()
+        {
+            addresses_.remove< type >();
+            return static_cast<DERIVED&>(*this);
+        }
+
+        /**
         * Sets whether to reveal contact name.
         * @param disclosename sets whether to reveal contact name into @ref disclosename_ attribute
         * @return operation instance reference to allow method chaining
@@ -461,300 +526,18 @@ namespace Fred
         * @param contact designated for the update
         * @return new history_id
         */
-        unsigned long long exec(OperationContext& ctx, const InfoContactOutput& contact)
-        {
-            unsigned long long history_id = 0;
-
-            Exception update_contact_exception;
-            //update object
-            try
-            {
-                history_id = UpdateObject(contact.info_contact_data.handle,
-                    "contact",registrar_,sponsoring_registrar_, authinfo_,
-                    logd_request_id_).exec(ctx);
-            }
-            catch(const UpdateObject::Exception& ex)
-            {
-                if(ex.is_set_unknown_registrar_handle())
-                {
-                    //fatal good path, need valid registrar performing update
-                    BOOST_THROW_EXCEPTION(Exception().set_unknown_registrar_handle(ex.get_unknown_registrar_handle()));
-                }
-                else if(ex.is_set_unknown_object_handle()
-                    || ex.is_set_unknown_sponsoring_registrar_handle())//non-fatal good path, update can continue to check input
-                {
-                    if(ex.is_set_unknown_object_handle())
-                    {
-                        update_contact_exception.set_unknown_contact_handle(contact.info_contact_data.handle);
-                    }
-                    if(ex.is_set_unknown_sponsoring_registrar_handle())
-                    {
-                        update_contact_exception.set_unknown_sponsoring_registrar_handle(
-                                ex.get_unknown_sponsoring_registrar_handle());
-                    }
-                }
-                else throw;//rethrow unexpected
-            }
-
-            //update contact
-            {
-                Database::QueryParams params;//query params
-                std::stringstream sql;
-                Util::HeadSeparator set_separator("SET ",", ");
-                sql <<"UPDATE contact ";
-
-                if(name_.isset())
-                {
-                    params.push_back(name_.get_value());
-                    sql << set_separator.get() << "name = $" << params.size() << "::text ";
-                }
-
-                if(organization_.isset())
-                {
-                    params.push_back(organization_.get_value());
-                    sql << set_separator.get() << "organization = $" << params.size() << "::text ";
-                }
-
-                if(place_.isset())
-                {
-                    const Fred::Contact::PlaceAddress &place = place_.get_value();
-                    params.push_back(place.street1);
-                    sql << set_separator.get() << "street1 = $" << params.size() << "::text ";
-
-                    if(place.street2.isset())
-                    {
-                        params.push_back(place.street2.get_value());
-                        sql << set_separator.get() << "street2 = $" << params.size() << "::text ";
-                    }
-
-                    if(place.street3.isset())
-                    {
-                        params.push_back(place.street3.get_value());
-                        sql << set_separator.get() << "street3 = $" << params.size() << "::text ";
-                    }
-
-                    params.push_back(place.city);
-                    sql << set_separator.get() << "city = $" << params.size() << "::text ";
-
-                    if(place.stateorprovince.isset())
-                    {
-                        params.push_back(place.stateorprovince.get_value());
-                        sql << set_separator.get() << "stateorprovince = $" << params.size() << "::text ";
-                    }
-
-                    params.push_back(place.postalcode);
-                    sql << set_separator.get() << "postalcode = $" << params.size() << "::text ";
-
-                    params.push_back(Contact::get_country_code(place.country, ctx, &update_contact_exception, &Exception::set_unknown_country));
-                    sql << set_separator.get() << "country = $" << params.size() << "::text ";
-                }
-
-                if(telephone_.isset())
-                {
-                    params.push_back(telephone_.get_value());
-                    sql << set_separator.get() << "telephone = $" << params.size() << "::text ";
-                }
-
-                if(fax_.isset())
-                {
-                    params.push_back(fax_.get_value());
-                    sql << set_separator.get() << "fax = $" << params.size() << "::text ";
-                }
-
-                if(email_.isset())
-                {
-                    params.push_back(email_.get_value());
-                    sql << set_separator.get() << "email = $" << params.size() << "::text ";
-                }
-
-                if(notifyemail_.isset())
-                {
-                    params.push_back(notifyemail_.get_value());
-                    sql << set_separator.get() << "notifyemail = $" << params.size() << "::text ";
-                }
-
-                if(vat_.isset())
-                {
-                    params.push_back(vat_.get_value());
-                    sql << set_separator.get() << "vat = $" << params.size() << "::text ";
-                }
-
-                if(ssntype_.isset())
-                {
-                    params.push_back(Contact::get_ssntype_id(ssntype_,ctx, &update_contact_exception, &Exception::set_unknown_ssntype));
-                    sql << set_separator.get() << "ssntype = $" << params.size() << "::integer ";
-                }
-
-                if(ssn_.isset())
-                {
-                    params.push_back(ssn_.get_value());
-                    sql << set_separator.get() << "ssn = $" << params.size() << "::text ";
-                }
-
-                if(disclosename_.isset())
-                {
-                    params.push_back(disclosename_.get_value());
-                    sql << set_separator.get() << "disclosename = $" << params.size() << "::boolean ";
-                }
-
-                if(discloseorganization_.isset())
-                {
-                    params.push_back(discloseorganization_.get_value());
-                    sql << set_separator.get() << "discloseorganization = $" << params.size() << "::boolean ";
-                }
-
-                if(discloseaddress_.isset())
-                {
-                    params.push_back(discloseaddress_.get_value());
-                    sql << set_separator.get() << "discloseaddress = $" << params.size() << "::boolean ";
-                }
-
-                if(disclosetelephone_.isset())
-                {
-                    params.push_back(disclosetelephone_.get_value());
-                    sql << set_separator.get() << "disclosetelephone = $" << params.size() << "::boolean ";
-                }
-
-                if(disclosefax_.isset())
-                {
-                    params.push_back(disclosefax_.get_value());
-                    sql << set_separator.get() << "disclosefax = $" << params.size() << "::boolean ";
-                }
-
-                if(discloseemail_.isset())
-                {
-                    params.push_back(discloseemail_.get_value());
-                    sql << set_separator.get() << "discloseemail = $" << params.size() << "::boolean ";
-                }
-
-                if(disclosevat_.isset())
-                {
-                    params.push_back(disclosevat_.get_value());
-                    sql << set_separator.get() << "disclosevat = $" << params.size() << "::boolean ";
-                }
-
-                if(discloseident_.isset())
-                {
-                    params.push_back(discloseident_.get_value());
-                    sql << set_separator.get() << "discloseident = $" << params.size() << "::boolean ";
-                }
-
-                if(disclosenotifyemail_.isset())
-                {
-                    params.push_back(disclosenotifyemail_.get_value());
-                    sql << set_separator.get() << "disclosenotifyemail = $" << params.size() << "::boolean ";
-                }
-
-                params.push_back(contact.info_contact_data.id);
-                sql <<" WHERE id = $" << params.size() << "::integer  RETURNING id";
-
-                //check exception
-                if(update_contact_exception.throw_me())
-                {
-                    BOOST_THROW_EXCEPTION(update_contact_exception);
-                }
-
-                //execute update of the contact
-                if(params.size() > 1)
-                {
-                    Database::Result update_contact_res = ctx.get_conn().exec_params(sql.str(), params);
-                    if(update_contact_res.size() != 1)
-                    {
-                        BOOST_THROW_EXCEPTION(InternalError("failed to update contact"));
-
-                    } else {
-                        Admin::AdminContactVerificationObjectStates::conditionally_cancel_final_states(
-                            ctx,
-                            contact.info_contact_data.id,
-                            name_,
-                            organization_,
-                            street1_,
-                            street2_,
-                            street3_,
-                            city_,
-                            stateorprovince_,
-                            postalcode_,
-                            country_,
-                            telephone_,
-                            fax_,
-                            email_,
-                            notifyemail_,
-                            vat_,
-                            ssntype_,
-                            ssn_
-                        );
-                    }
-                }
-            }//update contact
-
-            //save history
-            {
-                //contact_history
-                ctx.get_conn().exec_params(
-                    "INSERT INTO contact_history(historyid,id "
-                    " , name, organization, street1, street2, street3, city, stateorprovince, postalcode "
-                    " , country, telephone, fax, email, notifyemail, vat, ssntype, ssn "
-                    " , disclosename, discloseorganization, discloseaddress, disclosetelephone "
-                    " , disclosefax, discloseemail, disclosevat, discloseident, disclosenotifyemail "
-                    " ) "
-                    " SELECT $1::bigint, id "
-                    " , name, organization, street1, street2, street3, city, stateorprovince, postalcode "
-                    " , country, telephone, fax, email, notifyemail, vat, ssntype, ssn "
-                    " , disclosename, discloseorganization, discloseaddress, disclosetelephone "
-                    " , disclosefax, discloseemail, disclosevat, discloseident, disclosenotifyemail "
-                    " FROM contact "
-                    " WHERE id = $2::integer"
-                    , Database::query_param_list(history_id)(contact.info_contact_data.id));
-
-                ctx.get_conn().exec_params(
-                    "INSERT INTO contact_address_history (historyid, id, contactid, type, street1, street2, street3,"
-                    " city, stateorprovince, postalcode, country)"
-                    " SELECT $1::integer, id, contactid, type, street1, street2, street3,"
-                    " city, stateorprovince, postalcode, country"
-                    " FROM contact_address WHERE contactid = $2::integer"
-                    , Database::query_param_list(history_id)(contact.info_contact_data.id));
-            }//save history
-
-            return history_id;
-        }
+        unsigned long long exec(OperationContext& ctx, const InfoContactOutput& contact);
 
         /**
         * Dumps state of the instance into the string
         * @return string with description of the instance state
         */
-        std::string to_string() const
-        {
-            return Util::format_operation_state("UpdateContact",
-            Util::vector_of<std::pair<std::string,std::string> >
-            (std::make_pair("registrar",registrar_))
-            (std::make_pair("sponsoring_registrar",sponsoring_registrar_.print_quoted()))
-            (std::make_pair("authinfo",authinfo_.print_quoted()))
-            (std::make_pair("name",name_.print_quoted()))
-            (std::make_pair("organization",organization_.print_quoted()))
-            (std::make_pair("place",place_.print_quoted()))
-            (std::make_pair("telephone",telephone_.print_quoted()))
-            (std::make_pair("fax",fax_.print_quoted()))
-            (std::make_pair("email",email_.print_quoted()))
-            (std::make_pair("notifyemail_",notifyemail_.print_quoted()))
-            (std::make_pair("vat",vat_.print_quoted()))
-            (std::make_pair("ssntype",ssntype_.print_quoted()))
-            (std::make_pair("ssn",ssn_.print_quoted()))
-            (std::make_pair("disclosename",disclosename_.print_quoted()))
-            (std::make_pair("discloseorganization",discloseorganization_.print_quoted()))
-            (std::make_pair("discloseaddress",discloseaddress_.print_quoted()))
-            (std::make_pair("disclosetelephone",disclosetelephone_.print_quoted()))
-            (std::make_pair("disclosefax",disclosefax_.print_quoted()))
-            (std::make_pair("discloseemail",discloseemail_.print_quoted()))
-            (std::make_pair("disclosevat",disclosevat_.print_quoted()))
-            (std::make_pair("discloseident",discloseident_.print_quoted()))
-            (std::make_pair("disclosenotifyemail",disclosenotifyemail_.print_quoted()))
-            (std::make_pair("logd_request_id",logd_request_id_.print_quoted()))
-            );
-        }
+        std::string to_string() const;
 
     };//UpdateContact
 
     /**
+     * @class UpdateContactById
      * Update of contact identified by database id.
      * Forward declaration of derived composite class.
      */
@@ -813,6 +596,7 @@ namespace Fred
         * @param vat sets taxpayer identification number into UpdateContact base
         * @param ssntype sets type of identification into UpdateContact base
         * @param ssn sets unambiguous identification number into UpdateContact base
+        * @param addresses sets contact addresses into UpdateContact base
         * @param disclosename sets whether to reveal contact name into UpdateContact base
         * @param discloseorganization sets whether to reveal organization name into UpdateContact base
         * @param discloseaddress sets whether to reveal contact address into UpdateContact base
@@ -838,6 +622,7 @@ namespace Fred
                 , const Optional<std::string>& vat
                 , const Optional<std::string>& ssntype
                 , const Optional<std::string>& ssn
+                , const ContactAddressToUpdate &addresses
                 , const Optional<bool>& disclosename
                 , const Optional<bool>& discloseorganization
                 , const Optional<bool>& discloseaddress
@@ -865,6 +650,7 @@ namespace Fred
     };
 
     /**
+     * @class UpdateContactByHandle
      * Update of contact identified by handle.
      * Forward declaration of derived composite class.
      */
@@ -923,6 +709,7 @@ namespace Fred
         * @param vat sets taxpayer identification number into UpdateContact base
         * @param ssntype sets type of identification into UpdateContact base
         * @param ssn sets unambiguous identification number into UpdateContact base
+        * @param addresses sets contact addresses into UpdateContact base
         * @param disclosename sets whether to reveal contact name into UpdateContact base
         * @param discloseorganization sets whether to reveal organization name into UpdateContact base
         * @param discloseaddress sets whether to reveal contact address into UpdateContact base
@@ -948,6 +735,7 @@ namespace Fred
                 , const Optional<std::string>& vat
                 , const Optional<std::string>& ssntype
                 , const Optional<std::string>& ssn
+                , const ContactAddressToUpdate &addresses
                 , const Optional<bool>& disclosename
                 , const Optional<bool>& discloseorganization
                 , const Optional<bool>& discloseaddress

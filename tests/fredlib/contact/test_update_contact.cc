@@ -34,6 +34,9 @@ struct update_contact_fixture : public Test::Fixture::instantiate_db_template
     std::string registrar_handle;
     std::string xmark;
     std::string test_contact_handle;
+    Fred::Contact::PlaceAddress place;
+    Fred::ContactAddress address;
+    Fred::ContactAddressList addresses;
 
     update_contact_fixture()
     : xmark(RandomDataGenerator().xnumstring(6))
@@ -44,15 +47,25 @@ struct update_contact_fixture : public Test::Fixture::instantiate_db_template
             "SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]);
         BOOST_CHECK(!registrar_handle.empty());//expecting existing system registrar
 
-        Fred::Contact::PlaceAddress place;
         place.street1 = std::string("STR1") + xmark;
         place.city = "Praha";
         place.postalcode = "11150";
         place.country = "CZ";
+        address.company_name = "Testovací, s.r.o.";
+        address.street1 = "Měnitelná 1";
+        address.city = "Testín pod Testerem";
+        address.stateorprovince = "Testerovo";
+        address.postalcode = "32100";
+        address.country = "CZ";
+        addresses[Fred::ContactAddressType::from_string("MAILING")] = address;
+        addresses[Fred::ContactAddressType::from_string("BILLING")] = address;
+        addresses[Fred::ContactAddressType::from_string("SHIPPING")] = address;
+        BOOST_CHECK(addresses.size() == 3);
         Fred::CreateContact(test_contact_handle,registrar_handle)
             .set_name(std::string("TEST-CONTACT NAME")+xmark)
             .set_disclosename(true)
             .set_place(place)
+            .set_addresses(addresses)
             .set_discloseaddress(true)
             .exec(ctx);
 
@@ -137,6 +150,7 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle)
             , Optional<std::string>()//vat
             , Optional<std::string>()//ssntype
             , Optional<std::string>()//ssn
+            , Fred::ContactAddressToUpdate()//addresses
             , Optional<bool>()//disclosename
             , Optional<bool>()//discloseorganization
             , Optional<bool>()//discloseaddress
@@ -186,6 +200,13 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle)
     place.city = "Prague";
     place.postalcode = "11150";
     place.country = "Czech Republic";
+    Fred::ContactAddressToUpdate addresses_to_update;
+    addresses_to_update.remove< Fred::ContactAddressType::SHIPPING >();
+    addresses_to_update.remove< Fred::ContactAddressType::MAILING >();
+    Fred::ContactAddress new_address = address;
+    new_address.company_name = Optional< std::string >();
+    new_address.street1 = "Změněná 1";
+    addresses_to_update.update< Fred::ContactAddressType::MAILING >(new_address);
     Fred::UpdateContactByHandle(test_contact_handle//handle
             , registrar_handle//registrar
                 , Optional<std::string>(registrar_handle)//sponsoring registrar
@@ -200,6 +221,7 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle)
                 , Optional<std::string>("7805962556")//vat is TID
                 , Optional<std::string>("ICO")//ssntype
                 , Optional<std::string>("7805962556")//ssn
+                , addresses_to_update//addresses MAILING change, BILLING don't touch, SHIPPING remove
                 , Optional<bool>(true)//disclosename
                 , Optional<bool>(true)//discloseorganization
                 , Optional<bool>(true)//discloseaddress
@@ -216,6 +238,12 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle)
     std::vector<Fred::InfoContactOutput> history_info_data_4 = Fred::InfoContactHistory(info_data_1.info_contact_data.roid).exec(ctx);
 
     Fred::InfoContactOutput info_data_3_with_changes = info_data_3;
+
+    //updated addresses
+    BOOST_CHECK(info_data_4.info_contact_data.addresses.size() == 2);//MAILING, BILLING
+    BOOST_CHECK(info_data_4.info_contact_data.addresses[Fred::ContactAddressType::MAILING] == new_address);
+    BOOST_CHECK(info_data_4.info_contact_data.addresses[Fred::ContactAddressType::BILLING] == address);
+    BOOST_CHECK(info_data_4.info_contact_data.addresses.find(Fred::ContactAddressType::SHIPPING) == info_data_4.info_contact_data.addresses.end());
 
     //updated historyid
     BOOST_CHECK(info_data_3.info_contact_data.historyid !=info_data_4.info_contact_data.historyid);
@@ -274,6 +302,7 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle)
     BOOST_CHECK(history_info_data_4.at(0).info_contact_data.crhistoryid == info_data_4.info_contact_data.crhistoryid);
 
     place.street3 = Optional<std::string>("");
+    new_address.street1 = "Vrácená 1";
     Fred::UpdateContactByHandle(test_contact_handle, registrar_handle)
     .set_sponsoring_registrar(registrar_handle)
     .set_authinfo("passw")
@@ -287,6 +316,8 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle)
     .set_vat("7805962556")
     .set_ssntype("ICO")
     .set_ssn("7805962556")
+    .set_address< Fred::ContactAddressType::MAILING >(new_address)
+    .set_address< Fred::ContactAddressType::SHIPPING >(new_address)
     .set_disclosename(true)
     .set_discloseorganization(true)
     .set_discloseaddress(true)
@@ -303,6 +334,12 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle)
     std::vector<Fred::InfoContactOutput> history_info_data_5 = Fred::InfoContactHistory(info_data_1.info_contact_data.roid).exec(ctx);
 
     Fred::InfoContactOutput info_data_4_with_changes = info_data_4;
+
+    //updated addresses
+    BOOST_CHECK(info_data_5.info_contact_data.addresses.size() == 3);//MAILING, BILLING, SHIPPING
+    BOOST_CHECK(info_data_5.info_contact_data.addresses[Fred::ContactAddressType::MAILING] == new_address);
+    BOOST_CHECK(info_data_5.info_contact_data.addresses[Fred::ContactAddressType::BILLING] == address);
+    BOOST_CHECK(info_data_5.info_contact_data.addresses[Fred::ContactAddressType::SHIPPING] == new_address);
 
     //updated historyid
     BOOST_CHECK(info_data_4.info_contact_data.historyid !=info_data_5.info_contact_data.historyid);
