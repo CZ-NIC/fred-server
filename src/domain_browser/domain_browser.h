@@ -401,10 +401,9 @@ namespace Registry
              * @param lang is required language of object state description e.g. "EN" or "CS"
              * @param state_codes is output string of object state codes delimited by '|'
              * @param states is output string with descriptions of external object states delimited by ','
-             * @return bitwise inclusive OR of external states importance with server blocked flag
              */
-             std::pair<long,bool> get_object_states(Fred::OperationContext& ctx, unsigned long long object_id, const std::string& lang
-                    , std::string& state_codes, std::string& states);
+             void get_object_states(Fred::OperationContext& ctx, unsigned long long object_id, const std::string& lang
+                     , std::string& state_codes, std::string& states);
 
             /**
              * Fill authinfo into given string.

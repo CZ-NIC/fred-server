@@ -124,33 +124,22 @@ namespace Registry
             return info;
         }
 
-        std::pair<long,bool> DomainBrowser::get_object_states(Fred::OperationContext& ctx, unsigned long long object_id, const std::string& lang
+        void DomainBrowser::get_object_states(Fred::OperationContext& ctx, unsigned long long object_id, const std::string& lang
             , std::string& state_codes, std::string& states)
         {
-            std::pair<long,bool> ret;
+            Database::Result state_res = ctx.get_conn().exec_params(
+                "SELECT ARRAY_TO_STRING(ARRAY_AGG(CASE WHEN eos.external THEN eosd.description ELSE NULL END ORDER BY eos.importance), '|') AS state_descs, "
+                    " ARRAY_TO_STRING(ARRAY_AGG(eos.name ORDER BY eos.importance), ',') AS state_codes "
+                " FROM object_state os "
+                " JOIN enum_object_states eos ON eos.id = os.state_id "
+                " LEFT JOIN enum_object_states_desc eosd ON os.state_id = eosd.state_id AND UPPER(eosd.lang) = UPPER($2::text) "
+                " WHERE os.object_id = $1::bigint "
+                    " AND os.valid_from <= CURRENT_TIMESTAMP "
+                    " AND (os.valid_to IS NULL OR os.valid_to > CURRENT_TIMESTAMP) "
+                    , Database::query_param_list(object_id)(lang));
 
-            std::vector<Fred::ObjectStateData> state_data = Fred::GetObjectStates(object_id).exec(ctx);
-            std::map<unsigned long long, std::string> state_desc_map = Fred::GetObjectStateDescriptions(lang).exec(ctx);
-
-            Util::HeadSeparator states_separator("","|");
-            Util::HeadSeparator state_codes_separator("",",");
-            for(unsigned long long i = 0; i < state_data.size(); ++i)
-            {
-                state_codes += state_codes_separator.get();
-                state_codes += state_data.at(i).state_name;
-
-                if(state_data.at(i).state_name.compare(Fred::ObjectState::SERVER_BLOCKED)==0)
-                {
-                    ret.second = true;
-                }
-                if(state_data.at(i).is_external)
-                {
-                    ret.first |= state_data.at(i).importance;
-                   states += states_separator.get();
-                   states += map_at(state_desc_map, state_data.at(i).state_id);
-                }
-            }
-            return ret;
+            state_codes = static_cast<std::string>(state_res[0]["state_codes"]);
+            states = static_cast<std::string>(state_res[0]["state_descs"]);
         }
 
         std::string DomainBrowser::filter_authinfo(bool user_is_owner, const std::string& authinfopw)
