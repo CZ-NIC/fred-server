@@ -38,7 +38,7 @@ namespace Admin
 namespace AdminContactVerificationObjectStates
 {
     /* OperationContext versions */
-    bool conditionally_delete_all(
+    bool conditionally_cancel_final_states(
         Fred::OperationContext& ctx,
         unsigned long long contact_id,
         const Optional<std::string>& name_change_to,
@@ -59,10 +59,12 @@ namespace AdminContactVerificationObjectStates
         const Optional<std::string>& ssn_change_to
     );
 
-    void delete_all(Fred::OperationContext& ctx, unsigned long long contact_id);
+    void cancel_all_states(Fred::OperationContext& ctx, unsigned long long contact_id);
+
+    void cancel_final_states(Fred::OperationContext& ctx, unsigned long long contact_id);
 
     /* legacy version (EPP, MojeID) */
-    bool conditionally_delete_all_legacy(
+    bool conditionally_cancel_final_states_legacy(
         unsigned long long contact_id
     );
 }
