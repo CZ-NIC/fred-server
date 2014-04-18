@@ -85,7 +85,7 @@ namespace AdminContactVerificationObjectStates
         }
     }
 
-    bool conditionally_delete_final_states_legacy(
+    bool conditionally_cancel_final_states_legacy(
         unsigned long long contact_id
     ) {
         Database::Connection db_conn = Database::Manager::acquire();

@@ -233,7 +233,7 @@ namespace  Admin {
             check_info.contact_history_id
         ).exec(_ctx);
 
-        AdminContactVerificationObjectStates::delete_all(_ctx, contact_info.info_contact_data.id);
+        AdminContactVerificationObjectStates::cancel_all_states(_ctx, contact_info.info_contact_data.id);
 
         std::set<std::string> status;
         status.insert(Admin::AdminContactVerificationObjectStates::CONTACT_IN_MANUAL_VERIFICATION);
