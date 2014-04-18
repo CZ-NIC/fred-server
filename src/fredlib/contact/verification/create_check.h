@@ -35,7 +35,7 @@
 namespace Fred
 {
     /**
-     * Creates new record in contact_check table with status @ref ContactCheckStatus::ENQUEUED
+     * Creates new record in contact_check table with status @ref ContactCheckStatus::ENQUEUE_REQ
      */
     class CreateContactCheck : public Util::Printable
     {

@@ -133,7 +133,7 @@ namespace Fred
                     (handle)
                     (contact_history_id)
                     (testsuite_id)
-                    (Fred::ContactCheckStatus::ENQUEUED)
+                    (Fred::ContactCheckStatus::ENQUEUE_REQ)
                     (logd_request_id_)
             );
 
