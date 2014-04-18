@@ -760,7 +760,7 @@ namespace Fred
                         BOOST_THROW_EXCEPTION(InternalError("failed to update contact"));
 
                     } else {
-                        Admin::AdminContactVerificationObjectStates::conditionally_delete_all(
+                        Admin::AdminContactVerificationObjectStates::conditionally_cancel_final_states(
                             ctx,
                             contact.info_contact_data.id,
                             name_,
