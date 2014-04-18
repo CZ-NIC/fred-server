@@ -34,6 +34,7 @@ namespace Fred
      */
     namespace ContactCheckStatus
     {
+        const std::string ENQUEUE_REQ           = "enqueue_req";
         const std::string ENQUEUED              = "enqueued";
         const std::string RUNNING               = "running";
         const std::string AUTO_TO_BE_DECIDED    = "auto_to_be_decided";
@@ -56,6 +57,7 @@ namespace Fred
 
         inline std::vector<std::string> get_not_yet_resolved() {
             return boost::assign::list_of
+                (Fred::ContactCheckStatus::ENQUEUE_REQ)
                 (Fred::ContactCheckStatus::ENQUEUED)
                 (Fred::ContactCheckStatus::RUNNING)
                 (Fred::ContactCheckStatus::AUTO_OK)
@@ -65,6 +67,7 @@ namespace Fred
 
         inline std::vector<std::string> get_all() {
             return boost::assign::list_of
+                (Fred::ContactCheckStatus::ENQUEUE_REQ)
                 (Fred::ContactCheckStatus::ENQUEUED)
                 (Fred::ContactCheckStatus::RUNNING)
                 (Fred::ContactCheckStatus::AUTO_OK)
