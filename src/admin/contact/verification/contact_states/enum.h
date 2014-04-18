@@ -43,6 +43,12 @@ namespace AdminContactVerificationObjectStates
             (CONTACT_PASSED_MANUAL_VERIFICATION)
             (CONTACT_FAILED_MANUAL_VERIFICATION);
     }
+
+    inline std::vector<std::string> get_final() {
+        return boost::assign::list_of
+            (CONTACT_PASSED_MANUAL_VERIFICATION)
+            (CONTACT_FAILED_MANUAL_VERIFICATION);
+    }
 }
 }
 #endif // #include guard end

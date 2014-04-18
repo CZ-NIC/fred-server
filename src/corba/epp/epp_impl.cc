@@ -3036,9 +3036,9 @@ ccReg::Response * ccReg_EPP_i::ContactUpdate(
 
                         // admin contact verification Ticket #10935
                         try {
-                            automatic_contact_check_should_be_enqueued = Admin::AdminContactVerificationObjectStates::conditionally_delete_all_legacy(id);
+                            automatic_contact_check_should_be_enqueued = Admin::AdminContactVerificationObjectStates::conditionally_delete_final_states_legacy(id);
                         } catch(...) {
-                            LOGGER(PACKAGE).error("ContactUpdate: conditionally_delete_all_legacy exception");
+                            LOGGER(PACKAGE).error("ContactUpdate: conditionally_delete_final_states_legacy exception");
                         }
                     }
             }

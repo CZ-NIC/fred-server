@@ -62,7 +62,7 @@ namespace AdminContactVerificationObjectStates
     void delete_all(Fred::OperationContext& ctx, unsigned long long contact_id);
 
     /* legacy version (EPP, MojeID) */
-    bool conditionally_delete_all_legacy(
+    bool conditionally_delete_final_states_legacy(
         unsigned long long contact_id
     );
 }

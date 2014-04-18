@@ -85,7 +85,7 @@ namespace AdminContactVerificationObjectStates
         }
     }
 
-    bool conditionally_delete_all_legacy(
+    bool conditionally_delete_final_states_legacy(
         unsigned long long contact_id
     ) {
         Database::Connection db_conn = Database::Manager::acquire();
@@ -123,7 +123,7 @@ namespace AdminContactVerificationObjectStates
         } else {
             BOOST_FOREACH(
                 const std::string& object_state,
-                Admin::AdminContactVerificationObjectStates::get_all()
+                Admin::AdminContactVerificationObjectStates::get_final()
             ) {
                 Fred::cancel_object_state(contact_id, object_state);
             }

@@ -425,9 +425,9 @@ namespace Registry
 
                 // admin contact verification Ticket #10935
                 try {
-                    Admin::AdminContactVerificationObjectStates::conditionally_delete_all_legacy(cid);
+                    Admin::AdminContactVerificationObjectStates::conditionally_delete_final_states_legacy(cid);
                 } catch (...) {
-                    LOGGER(PACKAGE).error("conditionally_delete_all_legacy exception");
+                    LOGGER(PACKAGE).error("conditionally_delete_final_states_legacy exception");
                     throw;
                 }
 
