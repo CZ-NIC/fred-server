@@ -361,6 +361,8 @@ namespace Registry
                 throw UNKNOWN_CHECK_HANDLE();
             } catch(const Fred::ExceptionUnknownCheckStatusHandle&) {
                 throw UNKNOWN_CHECK_STATUS_HANDLE();
+            } catch(const Admin::ExceptionCheckNotUpdateable&) {
+                throw CHECK_NOT_UPDATEABLE();
             } catch (...) {
                 throw INTERNAL_SERVER_ERROR();
             }
