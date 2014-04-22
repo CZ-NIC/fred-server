@@ -54,9 +54,11 @@ namespace  Admin {
         }
 
         try {
+            using namespace Fred::ContactCheckStatus;
+
             Fred::UpdateContactCheck(
                 _check_handle,
-                Fred::ContactCheckStatus::ENQUEUED,
+                ENQUEUED,
                 _logd_request_id
             ).exec(_ctx);
 
@@ -66,12 +68,12 @@ namespace  Admin {
                 "       JOIN enum_contact_check_status AS enum_status ON c_ch.enum_contact_check_status_id = enum_status.id "
                 "       JOIN contact_history AS c_h1 ON c_ch.contact_history_id = c_h1.historyid "
                 "       JOIN contact_history AS c_h2 ON c_h1.id = c_h2.id "
-                "   WHERE enum_status.handle = $1::varchar "
+                "   WHERE enum_status.handle = ANY($1::varchar[]) "
                 "       AND c_h2.historyid = $2::integer "
                 // Don't want to invalidate our brand new check...
                 "       AND c_ch.handle != $3::uuid ",
                 Database::query_param_list
-                    (Fred::ContactCheckStatus::ENQUEUED)
+                    ( std::string("{") + ENQUEUE_REQ + "," + ENQUEUED + "}")
                     (info.contact_history_id)
                     (_check_handle)
             );
@@ -82,7 +84,7 @@ namespace  Admin {
             ) {
                 Fred::UpdateContactCheck(
                     uuid::from_string( static_cast<std::string>( (*it)["handle_"]) ),
-                    Fred::ContactCheckStatus::INVALIDATED,
+                    INVALIDATED,
                     _logd_request_id
                 ).exec(_ctx);
             }
