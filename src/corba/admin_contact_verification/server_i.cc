@@ -255,7 +255,7 @@ namespace Registry
                 return result._retn();
             } catch (const uuid::ExceptionInvalidUuid&) {
                 throw INVALID_CHECK_HANDLE();
-            } catch (const Fred::ExceptionUnknownCheckHandle&) {
+            } catch (const Admin::ExceptionUnknownCheckHandle&) {
                 throw UNKNOWN_CHECK_HANDLE();
             } catch (...) {
                 throw INTERNAL_SERVER_ERROR();
@@ -357,9 +357,9 @@ namespace Registry
                 ctx.commit_transaction();
             } catch (const uuid::ExceptionInvalidUuid&) {
                 throw INVALID_CHECK_HANDLE();
-            } catch(const Fred::ExceptionUnknownCheckHandle&) {
+            } catch(const Admin::ExceptionUnknownCheckHandle&) {
                 throw UNKNOWN_CHECK_HANDLE();
-            } catch(const Fred::ExceptionUnknownCheckStatusHandle&) {
+            } catch(const Admin::ExceptionUnknownCheckStatusHandle&) {
                 throw UNKNOWN_CHECK_STATUS_HANDLE();
             } catch(const Admin::ExceptionCheckNotUpdateable&) {
                 throw CHECK_NOT_UPDATEABLE();
@@ -383,7 +383,7 @@ namespace Registry
                 ctx.commit_transaction();
             } catch (const uuid::ExceptionInvalidUuid&) {
                 throw INVALID_CHECK_HANDLE();
-            } catch (const Fred::ExceptionUnknownCheckHandle&) {
+            } catch (const Admin::ExceptionUnknownCheckHandle&) {
                 throw UNKNOWN_CHECK_HANDLE();
             } catch (...) {
                 throw INTERNAL_SERVER_ERROR();
@@ -409,9 +409,9 @@ namespace Registry
                 ctx.commit_transaction();
 
                 return CORBA::string_dup(created_handle.c_str());
-            } catch(const Fred::ExceptionUnknownContactId&) {
+            } catch(const Admin::ExceptionUnknownContactId&) {
                 throw UNKNOWN_CONTACT_ID();
-            } catch(const Fred::ExceptionUnknownTestsuiteHandle&) {
+            } catch(const Admin::ExceptionUnknownTestsuiteHandle&) {
                 throw UNKNOWN_TESTSUITE_HANDLE();
             } catch (...) {
                 throw INTERNAL_SERVER_ERROR();
