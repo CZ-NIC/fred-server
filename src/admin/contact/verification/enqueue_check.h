@@ -43,8 +43,8 @@ namespace Admin {
      *
      * @returns handle of enqueued check
      *
-     * @throws Fred::ExceptionUnknownContactId
-     * @throws Fred::ExceptionUnknownTestsuiteHandle
+     * @throws Admin::ExceptionUnknownContactId
+     * @throws Admin::ExceptionUnknownTestsuiteHandle
      */
     std::string enqueue_check(
         Fred::OperationContext&         _ctx,
@@ -61,8 +61,8 @@ namespace Admin {
      *
      * @returns handle of enqueued check (if any)
      *
-     * @throws Fred::ExceptionUnknownContactId
-     * @throws Fred::ExceptionUnknownTestsuiteHandle
+     * @throws Admin::ExceptionUnknownContactId
+     * @throws Admin::ExceptionUnknownTestsuiteHandle
      */
     Optional<std::string> enqueue_check_if_no_other_exists(
         Fred::OperationContext&         _ctx,
