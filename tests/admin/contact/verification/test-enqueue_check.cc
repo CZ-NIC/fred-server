@@ -64,7 +64,7 @@ BOOST_AUTO_TEST_CASE(test_Enqueued_check_data)
         logd_request_id);
     BOOST_CHECK_EQUAL(
         check_info.check_state_history.begin()->status_handle,
-        Fred::ContactCheckStatus::ENQUEUED);
+        Fred::ContactCheckStatus::ENQUEUE_REQ);
 
 }
 
@@ -85,19 +85,32 @@ BOOST_AUTO_TEST_CASE(test_Invalidating_old_checks)
         testsuite.testsuite_handle
     ).exec(ctx);
 
+    Fred::UpdateContactCheck(
+        uuid::from_string(invalidated_check_handle_1),
+        Fred::ContactCheckStatus::ENQUEUED
+    ).exec(ctx);
+
     std::string invalidated_check_handle_2 = Fred::CreateContactCheck(
         contact.contact_id_,
         testsuite.testsuite_handle
     ).exec(ctx);
 
+    Fred::UpdateContactCheck(
+        uuid::from_string(invalidated_check_handle_2),
+        Fred::ContactCheckStatus::ENQUEUED
+    ).exec(ctx);
+
     std::string new_check_handle(
-        Admin::enqueue_check(
+        Admin::request_check_enqueueing(
             ctx,
             contact.contact_id_,
             testsuite.testsuite_handle,
             RandomDataGenerator().xuint()
-        )
-    );
+    ));
+
+    Admin::confirm_check_enqueueing(
+        ctx,
+        uuid::from_string(new_check_handle));
 
     Fred::InfoContactCheckOutput invalidated_check_info_1 =
         Fred::InfoContactCheck(

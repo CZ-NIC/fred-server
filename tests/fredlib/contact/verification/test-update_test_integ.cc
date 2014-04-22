@@ -174,7 +174,7 @@ struct setup_create_update_update_test {
         Optional<std::string> _error_msg3,
         const std::string& _timezone = "UTC"
     ) :
-        status1_(Fred::ContactCheckStatus::ENQUEUED),
+        status1_(Fred::ContactCheckStatus::ENQUEUE_REQ),
         status2_(_status2),
         status3_(_status3),
         logd_request1_(_logd_request1),

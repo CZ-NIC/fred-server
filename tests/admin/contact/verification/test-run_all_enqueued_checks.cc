@@ -60,6 +60,13 @@ void test_Resulting_check_status_impl(std::vector<std::string> _test_statuses, c
     dummy_testsuite suite(_test_statuses);
     setup_check check(suite.testsuite_handle);
 
+    Fred::OperationContext ctx1;
+    Fred::UpdateContactCheck(
+        uuid::from_string(check.check_handle_),
+        Fred::ContactCheckStatus::ENQUEUED
+    ).exec(ctx1);
+    ctx1.commit_transaction();
+
     try {
         Admin::run_all_enqueued_checks( const_cast<const std::map< std::string, boost::shared_ptr<Admin::ContactVerification::Test> >& > (suite.test_impls_) );
     } catch (...) {
@@ -302,6 +309,13 @@ BOOST_AUTO_TEST_CASE(test_Throwing_test_handling)
     setup_empty_testsuite testsuite;
     setup_testdef_in_testsuite(handle, testsuite.testsuite_handle);
     setup_check check(testsuite.testsuite_handle);
+
+    Fred::OperationContext ctx1;
+    Fred::UpdateContactCheck(
+        uuid::from_string(check.check_handle_),
+        Fred::ContactCheckStatus::ENQUEUED
+    ).exec(ctx1);
+    ctx1.commit_transaction();
 
     try {
         Admin::run_all_enqueued_checks( test_impls_ );

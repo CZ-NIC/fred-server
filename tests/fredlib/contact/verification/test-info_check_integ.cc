@@ -85,7 +85,7 @@ BOOST_AUTO_TEST_CASE(test_Exec)
     vector<vector<Optional<unsigned long long> > >   tests_logd_request_history(test_count);
     vector<vector<Optional<string> > >      tests_error_msg_history(test_count);
 
-    check_status_history.push_back( Fred::ContactCheckStatus::ENQUEUED);
+    check_status_history.push_back( Fred::ContactCheckStatus::ENQUEUE_REQ);
     check_logd_request_history.push_back(Optional<unsigned long long>() );
 
     // building check history
