@@ -167,7 +167,10 @@ namespace ContactVerificationQueue {
                 "FROM contact_history AS c_h "
                     "JOIN contact_check AS c_ch ON c_ch.contact_history_id = c_h.historyid "
                     "JOIN enum_contact_check_status AS enum_c_ch_s ON c_ch.enum_contact_check_status_id = enum_c_ch_s.id "
-                "WHERE enum_c_ch_s.handle = '"+_ctx.get_conn().escape(Fred::ContactCheckStatus::ENQUEUED)+"' "
+                "WHERE "
+                    "enum_c_ch_s.handle = '"+_ctx.get_conn().escape(Fred::ContactCheckStatus::ENQUEUE_REQ)+"' "
+                    "OR "
+                    "enum_c_ch_s.handle = '"+_ctx.get_conn().escape(Fred::ContactCheckStatus::ENQUEUED)+"' "
                 "GROUP BY contact_id_ ";
     }
 
