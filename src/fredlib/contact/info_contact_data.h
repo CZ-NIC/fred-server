@@ -67,15 +67,15 @@ namespace Fred
         Nullable<std::string> vat;/**< taxpayer identification number */
         Nullable<std::string> ssntype;/**< type of identification from enumssntype table */
         Nullable<std::string> ssn;/**< unambiguous identification number e.g. social security number, identity card number, date of birth */
-        Nullable<bool> disclosename;/**< whether to reveal contact name */
-        Nullable<bool> discloseorganization;/**< whether to reveal organization */
-        Nullable<bool> discloseaddress;/**< whether to reveal address */
-        Nullable<bool> disclosetelephone;/**< whether to reveal phone number */
-        Nullable<bool> disclosefax;/**< whether to reveal fax number */
-        Nullable<bool> discloseemail;/**< whether to reveal email address */
-        Nullable<bool> disclosevat;/**< whether to reveal taxpayer identification number */
-        Nullable<bool> discloseident;/**< whether to reveal unambiguous identification number */
-        Nullable<bool> disclosenotifyemail;/**< whether to reveal notify email */
+        bool disclosename;/**< whether to reveal contact name */
+        bool discloseorganization;/**< whether to reveal organization */
+        bool discloseaddress;/**< whether to reveal address */
+        bool disclosetelephone;/**< whether to reveal phone number */
+        bool disclosefax;/**< whether to reveal fax number */
+        bool discloseemail;/**< whether to reveal email address */
+        bool disclosevat;/**< whether to reveal taxpayer identification number */
+        bool discloseident;/**< whether to reveal unambiguous identification number */
+        bool disclosenotifyemail;/**< whether to reveal notify email */
         unsigned long long id;/**< id of the contact object*/
 
     public:

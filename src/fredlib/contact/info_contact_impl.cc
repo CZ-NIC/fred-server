@@ -259,24 +259,15 @@ namespace Fred
                     : Nullable<std::string> (static_cast<std::string>(query_result[i][35]));
             info_contact_output.info_contact_data.ssntype = query_result[i][36].isnull() ? Nullable<std::string>()
                     : Nullable<std::string> (static_cast<std::string>(query_result[i][36]));
-            info_contact_output.info_contact_data.disclosename = query_result[i][37].isnull() ? Nullable<bool>()
-                    : Nullable<bool> (static_cast<bool>(query_result[i][37]));
-            info_contact_output.info_contact_data.discloseorganization = query_result[i][38].isnull() ? Nullable<bool>()
-                    : Nullable<bool> (static_cast<bool>(query_result[i][38]));
-            info_contact_output.info_contact_data.discloseaddress = query_result[i][39].isnull() ? Nullable<bool>()
-                    : Nullable<bool> (static_cast<bool>(query_result[i][39]));
-            info_contact_output.info_contact_data.disclosetelephone = query_result[i][40].isnull() ? Nullable<bool>()
-                    : Nullable<bool> (static_cast<bool>(query_result[i][40]));
-            info_contact_output.info_contact_data.disclosefax = query_result[i][41].isnull() ? Nullable<bool>()
-                    : Nullable<bool> (static_cast<bool>(query_result[i][41]));
-            info_contact_output.info_contact_data.discloseemail = query_result[i][42].isnull() ? Nullable<bool>()
-                    : Nullable<bool> (static_cast<bool>(query_result[i][42]));
-            info_contact_output.info_contact_data.disclosevat = query_result[i][43].isnull() ? Nullable<bool>()
-                    : Nullable<bool> (static_cast<bool>(query_result[i][43]));
-            info_contact_output.info_contact_data.discloseident = query_result[i][44].isnull() ? Nullable<bool>()
-                    : Nullable<bool> (static_cast<bool>(query_result[i][44]));
-            info_contact_output.info_contact_data.disclosenotifyemail = query_result[i][45].isnull() ? Nullable<bool>()
-                    : Nullable<bool> (static_cast<bool>(query_result[i][45]));
+            info_contact_output.info_contact_data.disclosename = static_cast<bool>(query_result[i][37]);
+            info_contact_output.info_contact_data.discloseorganization = static_cast<bool>(query_result[i][38]);
+            info_contact_output.info_contact_data.discloseaddress = static_cast<bool>(query_result[i][39]);
+            info_contact_output.info_contact_data.disclosetelephone = static_cast<bool>(query_result[i][40]);
+            info_contact_output.info_contact_data.disclosefax = static_cast<bool>(query_result[i][41]);
+            info_contact_output.info_contact_data.discloseemail = static_cast<bool>(query_result[i][42]);
+            info_contact_output.info_contact_data.disclosevat = static_cast<bool>(query_result[i][43]);
+            info_contact_output.info_contact_data.discloseident = static_cast<bool>(query_result[i][44]);
+            info_contact_output.info_contact_data.disclosenotifyemail = static_cast<bool>(query_result[i][45]);
 
             info_contact_output.utc_timestamp = query_result[i][46].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
             : boost::posix_time::time_from_string(static_cast<std::string>(query_result[i][46]));// utc timestamp
