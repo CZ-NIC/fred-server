@@ -41,6 +41,7 @@ namespace Fred
         const std::string AUTO_OK               = "auto_ok";
         const std::string AUTO_FAIL             = "auto_fail";
         const std::string OK                    = "ok";
+        const std::string FAIL_REQ              = "fail_req";
         const std::string FAIL                  = "fail";
         const std::string INVALIDATED           = "invalidated";
 
@@ -53,6 +54,7 @@ namespace Fred
                 (AUTO_OK)
                 (AUTO_FAIL)
                 (AUTO_TO_BE_DECIDED)
+                (FAIL_REQ);
         }
 
         inline std::vector<std::string> get_not_yet_resolved() {
@@ -63,6 +65,7 @@ namespace Fred
                 (AUTO_OK)
                 (AUTO_FAIL)
                 (AUTO_TO_BE_DECIDED)
+                (FAIL_REQ);
         }
 
         inline std::vector<std::string> get_all() {
@@ -74,6 +77,7 @@ namespace Fred
                 (AUTO_FAIL)
                 (AUTO_TO_BE_DECIDED)
                 (OK)
+                (FAIL_REQ)
                 (FAIL)
                 (INVALIDATED);
         }
