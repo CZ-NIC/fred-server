@@ -50,32 +50,32 @@ namespace Fred
 
         inline std::vector<std::string> get_resolution_awaiting() {
             return boost::assign::list_of
-                (Fred::ContactCheckStatus::AUTO_OK)
-                (Fred::ContactCheckStatus::AUTO_FAIL)
-                (Fred::ContactCheckStatus::AUTO_TO_BE_DECIDED);
+                (AUTO_OK)
+                (AUTO_FAIL)
+                (AUTO_TO_BE_DECIDED)
         }
 
         inline std::vector<std::string> get_not_yet_resolved() {
             return boost::assign::list_of
-                (Fred::ContactCheckStatus::ENQUEUE_REQ)
-                (Fred::ContactCheckStatus::ENQUEUED)
-                (Fred::ContactCheckStatus::RUNNING)
-                (Fred::ContactCheckStatus::AUTO_OK)
-                (Fred::ContactCheckStatus::AUTO_FAIL)
-                (Fred::ContactCheckStatus::AUTO_TO_BE_DECIDED);
+                (ENQUEUE_REQ)
+                (ENQUEUED)
+                (RUNNING)
+                (AUTO_OK)
+                (AUTO_FAIL)
+                (AUTO_TO_BE_DECIDED)
         }
 
         inline std::vector<std::string> get_all() {
             return boost::assign::list_of
-                (Fred::ContactCheckStatus::ENQUEUE_REQ)
-                (Fred::ContactCheckStatus::ENQUEUED)
-                (Fred::ContactCheckStatus::RUNNING)
-                (Fred::ContactCheckStatus::AUTO_OK)
-                (Fred::ContactCheckStatus::AUTO_FAIL)
-                (Fred::ContactCheckStatus::AUTO_TO_BE_DECIDED)
-                (Fred::ContactCheckStatus::OK)
-                (Fred::ContactCheckStatus::FAIL)
-                (Fred::ContactCheckStatus::INVALIDATED);
+                (ENQUEUE_REQ)
+                (ENQUEUED)
+                (RUNNING)
+                (AUTO_OK)
+                (AUTO_FAIL)
+                (AUTO_TO_BE_DECIDED)
+                (OK)
+                (FAIL)
+                (INVALIDATED);
         }
     }
 }
