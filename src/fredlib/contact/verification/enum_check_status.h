@@ -34,12 +34,14 @@ namespace Fred
      */
     namespace ContactCheckStatus
     {
+        const std::string ENQUEUE_REQ           = "enqueue_req";
         const std::string ENQUEUED              = "enqueued";
         const std::string RUNNING               = "running";
         const std::string AUTO_TO_BE_DECIDED    = "auto_to_be_decided";
         const std::string AUTO_OK               = "auto_ok";
         const std::string AUTO_FAIL             = "auto_fail";
         const std::string OK                    = "ok";
+        const std::string FAIL_REQ              = "fail_req";
         const std::string FAIL                  = "fail";
         const std::string INVALIDATED           = "invalidated";
 
@@ -49,30 +51,43 @@ namespace Fred
 
         inline std::vector<std::string> get_resolution_awaiting() {
             return boost::assign::list_of
-                (Fred::ContactCheckStatus::AUTO_OK)
-                (Fred::ContactCheckStatus::AUTO_FAIL)
-                (Fred::ContactCheckStatus::AUTO_TO_BE_DECIDED);
+                (AUTO_OK)
+                (AUTO_FAIL)
+                (AUTO_TO_BE_DECIDED)
+                (FAIL_REQ);
         }
 
         inline std::vector<std::string> get_not_yet_resolved() {
             return boost::assign::list_of
-                (Fred::ContactCheckStatus::ENQUEUED)
-                (Fred::ContactCheckStatus::RUNNING)
-                (Fred::ContactCheckStatus::AUTO_OK)
-                (Fred::ContactCheckStatus::AUTO_FAIL)
-                (Fred::ContactCheckStatus::AUTO_TO_BE_DECIDED);
+                (ENQUEUE_REQ)
+                (ENQUEUED)
+                (RUNNING)
+                (AUTO_OK)
+                (AUTO_FAIL)
+                (AUTO_TO_BE_DECIDED)
+                (FAIL_REQ);
+        }
+
+        inline std::vector<std::string> get_possible_resolutions() {
+            return boost::assign::list_of
+                (OK)
+                (FAIL_REQ)
+                (FAIL)
+                (INVALIDATED);
         }
 
         inline std::vector<std::string> get_all() {
             return boost::assign::list_of
-                (Fred::ContactCheckStatus::ENQUEUED)
-                (Fred::ContactCheckStatus::RUNNING)
-                (Fred::ContactCheckStatus::AUTO_OK)
-                (Fred::ContactCheckStatus::AUTO_FAIL)
-                (Fred::ContactCheckStatus::AUTO_TO_BE_DECIDED)
-                (Fred::ContactCheckStatus::OK)
-                (Fred::ContactCheckStatus::FAIL)
-                (Fred::ContactCheckStatus::INVALIDATED);
+                (ENQUEUE_REQ)
+                (ENQUEUED)
+                (RUNNING)
+                (AUTO_OK)
+                (AUTO_FAIL)
+                (AUTO_TO_BE_DECIDED)
+                (OK)
+                (FAIL_REQ)
+                (FAIL)
+                (INVALIDATED);
         }
     }
 }

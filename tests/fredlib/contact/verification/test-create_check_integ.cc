@@ -170,10 +170,10 @@ BOOST_AUTO_TEST_CASE(test_Exec_mandatory_setup)
          "create_time ("+ boost::posix_time::to_simple_string(result_data.local_create_time) +") differs from first update_time ("+ boost::posix_time::to_simple_string(result_data.check_state_history.begin()->local_update_time) +")"
     );
 
-    // status handle is 'enqueued'
+    // status handle is 'ENQUEUE_REQ'
     BOOST_CHECK_MESSAGE(
-         result_data.check_state_history.begin()->status_handle == Fred::ContactCheckStatus::ENQUEUED,
-         "status of create check ("+ result_data.check_state_history.begin()->status_handle +")should be enqueued"
+         result_data.check_state_history.begin()->status_handle == Fred::ContactCheckStatus::ENQUEUE_REQ,
+         "status of create check ("+ result_data.check_state_history.begin()->status_handle +") should be " + Fred::ContactCheckStatus::ENQUEUE_REQ
     );
 }
 
@@ -296,10 +296,10 @@ BOOST_AUTO_TEST_CASE(test_Exec_optional_setup)
          "create_time ("+ boost::posix_time::to_simple_string(result_data.local_create_time) +") differs from first update_time ("+ boost::posix_time::to_simple_string(result_data.check_state_history.begin()->local_update_time) +")"
     );
 
-    // status handle is 'enqueued'
+    // status handle is 'ENQUEUE_REQ'
     BOOST_CHECK_MESSAGE(
-         result_data.check_state_history.begin()->status_handle == Fred::ContactCheckStatus::ENQUEUED,
-         "status of create check ("+ result_data.check_state_history.begin()->status_handle +")should be enqueued"
+         result_data.check_state_history.begin()->status_handle == Fred::ContactCheckStatus::ENQUEUE_REQ,
+         "status of create check ("+ result_data.check_state_history.begin()->status_handle +")should be " + Fred::ContactCheckStatus::ENQUEUE_REQ
     );
 }
 

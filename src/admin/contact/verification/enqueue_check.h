@@ -34,6 +34,36 @@
 namespace Admin {
 
     /**
+     * Creates new check for specified contact with specified testsuite with status ENQUEUE_REQ
+     *
+     * @param _contact_id specifies contact to be checked
+     * @param _testsuite_handle specifice testsuite of enqueued check
+     *
+     * @returns handle of check
+     *
+     * @throws Admin::ExceptionUnknownContactId
+     * @throws Admin::ExceptionUnknownTestsuiteHandle
+     */
+    std::string request_check_enqueueing(
+        Fred::OperationContext&         _ctx,
+        unsigned long long              _contact_id,
+        const std::string&              _testsuite_handle,
+        Optional<unsigned long long>    _logd_request_id = Optional<unsigned long long>());
+
+    /**
+     * Updates check with status ENQUEUE_REQ to status ENQUEUED
+     *
+     * @param _check_handle specifies check to be updated
+     *
+     * @throws Admin::ExceptionUnknownCheckHandle
+     * @throws Admin::ExceptionCheckNotUpdateable
+     */
+    void confirm_check_enqueueing(
+        Fred::OperationContext&         _ctx,
+        const uuid&                     _check_handle,
+        Optional<unsigned long long>    _logd_request_id = Optional<unsigned long long>());
+
+    /**
      * Creates new check for specified contact with specified testsuite
      * and resolve all ENQUEUED checks for the same contact (not only same history of contact)
      * with status INVALIDATED.

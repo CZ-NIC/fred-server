@@ -390,6 +390,60 @@ namespace Registry
             }
         }
 
+        char* Server_i::requestEnqueueingContactCheck(::CORBA::ULongLong contact_id, const char* testsuite_handle, ::CORBA::ULongLong logd_request_id) {
+            Logging::Context log_server(create_log_server_id(server_name_));
+            Logging::Context log_method("requestEnqueueingContactCheck");
+
+            try {
+                Fred::OperationContext ctx;
+
+                std::string created_handle;
+
+                created_handle = Admin::request_check_enqueueing(
+                    ctx,
+                    contact_id,
+                    Corba::unwrap_string(testsuite_handle),
+                    logd_request_id
+                );
+
+                ctx.commit_transaction();
+
+                return CORBA::string_dup(created_handle.c_str());
+            } catch(const Fred::ExceptionUnknownContactId&) {
+                throw UNKNOWN_CONTACT_ID();
+            } catch(const Fred::ExceptionUnknownTestsuiteHandle&) {
+                throw UNKNOWN_TESTSUITE_HANDLE();
+            } catch (...) {
+                throw INTERNAL_SERVER_ERROR();
+            }
+        }
+
+        void Server_i::confirmEnqueueingContactCheck(const char* check_handle, ::CORBA::ULongLong logd_request_id) {
+            Logging::Context log_server(create_log_server_id(server_name_));
+            Logging::Context log_method("confirmEnqueueingContactCheck");
+
+            try {
+                Fred::OperationContext ctx;
+
+                Admin::confirm_check_enqueueing(
+                    ctx,
+                    uuid::from_string( Corba::unwrap_string(check_handle) ),
+                    logd_request_id
+                );
+
+                ctx.commit_transaction();
+
+            } catch (const uuid::ExceptionInvalidUuid&) {
+                throw INVALID_CHECK_HANDLE();
+            } catch (const Fred::ExceptionUnknownCheckHandle&) {
+                throw UNKNOWN_CHECK_HANDLE();
+            } catch(const Admin::ExceptionCheckNotUpdateable&) {
+                throw CHECK_NOT_UPDATEABLE();
+            } catch (...) {
+                throw INTERNAL_SERVER_ERROR();
+            }
+        }
+
         char* Server_i::enqueueContactCheck(::CORBA::ULongLong contact_id, const char* testsuite_handle, ::CORBA::ULongLong logd_request_id){
             Logging::Context log_server(create_log_server_id(server_name_));
             Logging::Context log_method("enqueueContactCheck");

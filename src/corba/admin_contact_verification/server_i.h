@@ -58,6 +58,8 @@ namespace Registry
 
                 virtual void deleteDomainsAfterFailedManualCheck(const char* check_handle);
 
+                virtual char* requestEnqueueingContactCheck(::CORBA::ULongLong contact_id, const char* testsuite_handle, ::CORBA::ULongLong logd_request_id);
+                virtual void confirmEnqueueingContactCheck(const char* check_handle, ::CORBA::ULongLong logd_request_id);
                 virtual char* enqueueContactCheck(::CORBA::ULongLong contact_id, const char* testsuite_handle, ::CORBA::ULongLong logd_request_id);
 
                 virtual ContactTestStatusDefSeq* listTestStatusDefs(const char* lang);
