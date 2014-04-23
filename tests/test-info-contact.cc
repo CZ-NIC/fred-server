@@ -224,15 +224,15 @@ BOOST_FIXTURE_TEST_CASE(info_contact_diff, test_contact_fixture )
     test_diff.vat = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
     test_diff.ssntype = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
     test_diff.ssn = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
-    test_diff.disclosename= std::make_pair(Nullable<bool>(),Nullable<bool>(true));
-    test_diff.discloseorganization= std::make_pair(Nullable<bool>(),Nullable<bool>(false));
-    test_diff.discloseaddress= std::make_pair(Nullable<bool>(),Nullable<bool>(false));
-    test_diff.disclosetelephone= std::make_pair(Nullable<bool>(),Nullable<bool>(false));
-    test_diff.disclosefax= std::make_pair(Nullable<bool>(),Nullable<bool>(false));
-    test_diff.discloseemail= std::make_pair(Nullable<bool>(),Nullable<bool>(false));
-    test_diff.disclosevat= std::make_pair(Nullable<bool>(),Nullable<bool>(false));
-    test_diff.discloseident= std::make_pair(Nullable<bool>(),Nullable<bool>(false));
-    test_diff.disclosenotifyemail= std::make_pair(Nullable<bool>(),Nullable<bool>(false));
+    test_diff.disclosename= std::make_pair(false, true);
+    test_diff.discloseorganization= std::make_pair(true, false);
+    test_diff.discloseaddress= std::make_pair(false, true);
+    test_diff.disclosetelephone= std::make_pair(true, false);
+    test_diff.disclosefax= std::make_pair(false, true);
+    test_diff.discloseemail= std::make_pair(true, false);
+    test_diff.disclosevat= std::make_pair(false, true);
+    test_diff.discloseident= std::make_pair(true, false);
+    test_diff.disclosenotifyemail= std::make_pair(false, true);
 
     BOOST_MESSAGE(test_diff.to_string());
     BOOST_MESSAGE(test_empty_diff.to_string());
