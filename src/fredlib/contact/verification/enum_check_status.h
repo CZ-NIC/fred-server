@@ -68,6 +68,14 @@ namespace Fred
                 (FAIL_REQ);
         }
 
+        inline std::vector<std::string> get_possible_resolutions() {
+            return boost::assign::list_of
+                (OK)
+                (FAIL_REQ)
+                (FAIL)
+                (INVALIDATED);
+        }
+
         inline std::vector<std::string> get_all() {
             return boost::assign::list_of
                 (ENQUEUE_REQ)
