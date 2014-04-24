@@ -60,15 +60,8 @@ void ContactIdentificationImpl::pre_save_check()
                     pra_impl_ptr_->getObject(0).id);
         contact_validator_.check(cdata);
 
-        if (((object_has_state(pra_impl_ptr_->getObject(0).id
-                , ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT) == false)
-            ||
-            object_has_one_of_states(
-                pra_impl_ptr_->getObject(0).id
-                , Util::vector_of<std::string>
-                (ObjectState::IDENTIFIED_CONTACT) // already I
-                (ObjectState::VALIDATED_CONTACT)) // already V
-        ))
+        if (object_has_state(pra_impl_ptr_->getObject(0).id
+                , ObjectState::IDENTIFIED_CONTACT)) // already I
         {
             throw Fred::PublicRequest::NotApplicable("pre_save_check: failed!");
         }
@@ -77,12 +70,6 @@ void ContactIdentificationImpl::pre_save_check()
 
 void ContactIdentificationImpl::pre_process_check(bool _check)
 {
-    if (object_has_state(pra_impl_ptr_->getObject(0).id,
-            ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT) == false)
-    {
-        throw Fred::PublicRequest::NotApplicable("pre_process_check: failed!");
-    }
-
     Fred::Contact::Verification::Contact cdata
         = Fred::Contact::Verification::contact_info(
                 pra_impl_ptr_->getObject(0).id);
@@ -91,9 +78,6 @@ void ContactIdentificationImpl::pre_process_check(bool _check)
 
 void ContactIdentificationImpl::process_action(bool _check)
 {
-        Fred::cancel_object_state(pra_impl_ptr_->getObject(0).id,
-                Fred::ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT);
-
         Fred::PublicRequest::insertNewStateRequest(
                 pra_impl_ptr_->getId(),
                 pra_impl_ptr_->getObject(0).id,
@@ -101,6 +85,3 @@ void ContactIdentificationImpl::process_action(bool _check)
 }
 
 }}}
-
-
-

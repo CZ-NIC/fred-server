@@ -384,10 +384,7 @@ public:
     {
         if (!pri_ptr_->getId()) {
 
-            if ((!object_has_one_of_states(pri_ptr_->getObject(0).id, Util::vector_of<std::string>
-                        (ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT)
-                        (ObjectState::IDENTIFIED_CONTACT)))
-                    || (!object_has_state(pri_ptr_->getObject(0).id, ::MojeID::ObjectState::MOJEID_CONTACT)))
+            if (!object_has_state(pri_ptr_->getObject(0).id, ::MojeID::ObjectState::MOJEID_CONTACT))
             {
                 throw NotApplicable("pre_insert_checks: failed!");
             }
@@ -458,22 +455,9 @@ public:
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
 
-        if ((object_has_state(pri_ptr_->getObject(0).id
-                , ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT) == false)
-            && object_has_state(pri_ptr_->getObject(0).id
-                , ObjectState::IDENTIFIED_CONTACT) == false)
-        {
-            throw NotApplicable("cannot process contact validation: no identified state &&"
-                    " no conditionally identified state");
-        }
-
-        /* check if contact is already conditionally identified (21) and cancel status */
-        Fred::cancel_object_state(pri_ptr_->getObject(0).id
-                , Fred::ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT);
-
         /* check if contact is already identified (22) and cancel status */
-        if (Fred::cancel_object_state(pri_ptr_->getObject(0).id
-                , Fred::ObjectState::IDENTIFIED_CONTACT) == false)
+        if (!Fred::object_has_state(pri_ptr_->getObject(0).id
+                , Fred::ObjectState::IDENTIFIED_CONTACT))
         {
             /* otherwise there could be identification request */
             cancel_public_request(pri_ptr_->getObject(0).id
@@ -539,4 +523,3 @@ public:
 
 }
 }
-

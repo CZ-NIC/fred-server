@@ -63,12 +63,8 @@ void ConditionalContactIdentificationImpl::pre_save_check()
                     pra_impl_ptr_->getObject(0).id);
         contact_validator_.check(cdata);
 
-        if (object_has_one_of_states(pra_impl_ptr_->getObject(0).id
-            , Util::vector_of<std::string>
-            (ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT)// already CI
-            (ObjectState::IDENTIFIED_CONTACT)// already I
-            (ObjectState::VALIDATED_CONTACT))// already V
-        )
+        if (object_has_state(pra_impl_ptr_->getObject(0).id
+            , ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT))// already CI
         {
             throw Fred::PublicRequest::NotApplicable("pre_save_check: failed!");
         }
@@ -99,4 +95,3 @@ void ConditionalContactIdentificationImpl::process_action(bool _check)
 
 
 }}}
-
