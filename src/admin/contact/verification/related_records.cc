@@ -1,4 +1,4 @@
-#include "src/admin/contact/verification/related_records_impl.h"
+#include "src/admin/contact/verification/related_records.h"
 #include "src/fredlib/contact/verification/info_check.h"
 #include "src/fredlib/contact/info_contact.h"
 #include "src/fredlib/object_state/create_object_state_request.h"
