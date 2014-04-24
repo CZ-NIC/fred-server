@@ -59,6 +59,22 @@ namespace Admin
     struct ExceptionUnknownTestStatusHandle : virtual Fred::OperationException {
         const char* what() const throw() {return "unknown test status handle";}
     };
+
+    struct ExceptionIncorrectTestsuite : virtual Fred::OperationException {
+        const char* what() const throw() {return "incorrect testsuite";}
+    };
+
+    struct ExceptionIncorrectCheckStatus : virtual Fred::OperationException {
+        const char* what() const throw() {return "incorrect check status";}
+    };
+
+    struct ExceptionIncorrectContactStatus : virtual Fred::OperationException {
+        const char* what() const throw() {return "incorrect contact status";}
+    };
+
+    struct ExceptionDomainsAlreadyDeleted : virtual Fred::OperationException {
+        const char* what() const throw() {return "domains already deleted";}
+    };
 }
 
 #endif

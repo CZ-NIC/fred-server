@@ -385,6 +385,14 @@ namespace Registry
                 throw INVALID_CHECK_HANDLE();
             } catch (const Admin::ExceptionUnknownCheckHandle&) {
                 throw UNKNOWN_CHECK_HANDLE();
+            } catch (const Admin::ExceptionIncorrectTestsuite&) {
+                throw INCORRECT_TESTSUITE();
+            } catch (const Admin::ExceptionIncorrectCheckStatus&) {
+                throw INCORRECT_CHECK_STATUS();
+            } catch (const Admin::ExceptionIncorrectContactStatus&) {
+                throw INCORRECT_CONTACT_STATUS();
+            } catch (const Admin::ExceptionDomainsAlreadyDeleted&) {
+                throw DOMAINS_ALREADY_DELETED();
             } catch (...) {
                 throw INTERNAL_SERVER_ERROR();
             }

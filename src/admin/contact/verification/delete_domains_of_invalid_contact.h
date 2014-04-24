@@ -38,6 +38,10 @@ namespace Admin {
      * Creates Delete Domain Poll Message as sideeffect and stores the relation between the message and check.
      *
      * @throws Admin::ExceptionUnknownCheckHandle
+     * @throws Admin::ExceptionIncorrectTestsuite
+     * @throws Admin::ExceptionIncorrectCheckStatus
+     * @throws Admin::ExceptionIncorrectContactStatus
+     * @throws Admin::ExceptionDomainsAlreadyDeleted
      */
     void delete_domains_of_invalid_contact(
         Fred::OperationContext& _ctx,
