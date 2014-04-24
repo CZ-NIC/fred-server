@@ -231,6 +231,23 @@ namespace Corba {
 
         return result;
     }
+
+    static void wrap_messages(
+        const std::vector< boost::tuple< unsigned long long, std::string, std::string > >& in,
+        Registry::AdminContactVerification::MessageSeq_var& out
+    ) {
+        out->length(in.size());
+
+        long list_index = 0;
+        for(std::vector< boost::tuple< unsigned long long, std::string, std::string > >::const_iterator it = in.begin();
+            it != in.end();
+            ++it, ++list_index
+        ) {
+            out[list_index].id              = it->get<0>();
+            out[list_index].type_handle     = Corba::wrap_string( it->get<1>() );
+            out[list_index].content_handle  = Corba::wrap_string( it->get<2>() );
+        }
+    }
 }
 
 namespace Registry
@@ -475,6 +492,32 @@ namespace Registry
                 throw UNKNOWN_CONTACT_ID();
             } catch(const Admin::ExceptionUnknownTestsuiteHandle&) {
                 throw UNKNOWN_TESTSUITE_HANDLE();
+            } catch (...) {
+                throw INTERNAL_SERVER_ERROR();
+            }
+        }
+
+        MessageSeq* Server_i::getContactCheckMessages(const char* check_handle) {
+            Logging::Context log_server(create_log_server_id(server_name_));
+            Logging::Context log_method("getContactCheckMessages");
+
+            try {
+                MessageSeq_var result(new MessageSeq);
+
+                Fred::OperationContext ctx;
+
+                Corba::wrap_messages(
+                    Admin::get_related_messages(
+                        ctx,
+                        uuid::from_string( Corba::unwrap_string(check_handle) )
+                    ),
+                    result
+                );
+
+                return result._retn();
+
+            } catch (const uuid::ExceptionInvalidUuid&) {
+                throw INVALID_CHECK_HANDLE();
             } catch (...) {
                 throw INTERNAL_SERVER_ERROR();
             }
