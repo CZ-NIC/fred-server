@@ -1,5 +1,5 @@
 #include "src/admin/contact/verification/resolve_check.h"
-#include "src/admin/contact/verification/related_records_impl.h"
+#include "src/admin/contact/verification/related_records.h"
 #include "src/admin/contact/verification/contact_states/enum.h"
 #include "src/admin/contact/verification/contact_states/delete_all.h"
 #include "src/fredlib/contact/verification/enum_testsuite_handle.h"

@@ -1025,8 +1025,8 @@ src_admin_contact_verification_libadmin_contact_verification_a_SOURCES = \
 		src/admin/contact/verification/fill_check_queue.cc \
 		src/admin/contact/verification/list_active_checks.h \
 		src/admin/contact/verification/list_active_checks.cc \
-		src/admin/contact/verification/related_records_impl.h \
-		src/admin/contact/verification/related_records_impl.cc \
+		src/admin/contact/verification/related_records.h \
+		src/admin/contact/verification/related_records.cc \
 		src/admin/contact/verification/resolve_check.h \
 		src/admin/contact/verification/resolve_check.cc \
 		src/admin/contact/verification/run_all_enqueued_checks.h \
@@ -1447,8 +1447,8 @@ src_corba_fred_adifd_SOURCES = \
 		src/admin/contact/verification/fill_check_queue.cc \
 		src/admin/contact/verification/list_active_checks.h \
 		src/admin/contact/verification/list_active_checks.cc \
-		src/admin/contact/verification/related_records_impl.h \
-		src/admin/contact/verification/related_records_impl.cc \
+		src/admin/contact/verification/related_records.h \
+		src/admin/contact/verification/related_records.cc \
 		src/admin/contact/verification/resolve_check.h \
 		src/admin/contact/verification/resolve_check.cc \
 		src/admin/contact/verification/run_all_enqueued_checks.h \

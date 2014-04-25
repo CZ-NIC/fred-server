@@ -24,11 +24,17 @@
 #ifndef ADMIN_CONTACT_VERIFICATION_RELATED_RECORDS_H_56564542442
 #define ADMIN_CONTACT_VERIFICATION_RELATED_RECORDS_H_56564542442
 
+#include <vector>
+#include <string>
 #include <set>
+#include <boost/tuple/tuple.hpp>
 
 #include "src/fredlib/opcontext.h"
 
 namespace Admin {
+    using std::vector;
+    using std::string;
+    using boost::tuple;
 
     /**
      * Stores the relation between check and mail.
@@ -57,6 +63,13 @@ namespace Admin {
         Fred::OperationContext&             _ctx,
         const uuid&                         _check_handle,
         const std::set<unsigned long long>& _request_ids);
+
+    /**
+     * @returns message id, communication channel type, message content type
+     */
+    vector< tuple< unsigned long long, string, string > > get_related_messages(
+        Fred::OperationContext& _ctx,
+        const uuid&             _check_handle);
 }
 
 

@@ -18,10 +18,10 @@
 
 /**
  *  @file
- *  integration tests for admin/contact/verification/related_records_impl.cc
+ *  integration tests for admin/contact/verification/related_records.cc
  */
 
-#include "src/admin/contact/verification/related_records_impl.h"
+#include "src/admin/contact/verification/related_records.h"
 
 #include <boost/test/unit_test.hpp>
 

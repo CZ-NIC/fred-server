@@ -1,4 +1,4 @@
-#include "src/admin/contact/verification/related_records_impl.h"
+#include "src/admin/contact/verification/related_records.h"
 #include "src/fredlib/contact/verification/info_check.h"
 #include "src/fredlib/contact/info_contact.h"
 #include "src/fredlib/object_state/create_object_state_request.h"
@@ -120,5 +120,52 @@ namespace  Admin {
 
             throw;
         }
+    }
+
+    vector< tuple< unsigned long long, string, string > > get_related_messages(
+        Fred::OperationContext& _ctx,
+        const uuid&             _check_handle
+    ) {
+        Database::Result related_res = _ctx.get_conn().exec_params(
+            "WITH check_id AS ( "
+            "SELECT id "
+                "FROM contact_check "
+                "WHERE handle = $1::uuid "
+            ") ( "
+                "SELECT "
+                    "c_ch_m_map.mail_archive_id  AS id_, "
+                    "'email'                     AS comm_type_, "
+                    "m_t.name                    AS content_type_ "
+                "FROM "
+                    "check_id "
+                    "JOIN contact_check_message_map  AS c_ch_m_map   ON check_id.id = c_ch_m_map.contact_check_id "
+                    "JOIN mail_archive               AS m_a          ON c_ch_m_map.mail_archive_id = m_a.id "
+                    "JOIN mail_type                  AS m_t          ON m_a.mailtype = m_t.id "
+                "UNION "
+                "SELECT "
+                    "c_ch_m_map.message_archive_id   AS id_, "
+                    "c_t.type                        AS comm_type_, "
+                    "m_t.type                        AS content_type_ "
+                "FROM "
+                    "check_id "
+                    "JOIN contact_check_message_map  AS c_ch_m_map   ON check_id.id = c_ch_m_map.contact_check_id "
+                    "JOIN message_archive            AS m_a          ON c_ch_m_map.message_archive_id = m_a.id "
+                    "JOIN comm_type                  AS c_t          ON m_a.comm_type_id = c_t.id "
+                    "JOIN message_type               AS m_t          ON m_a.message_type_id = m_t.id "
+            ") ",
+            Database::query_param_list(_check_handle)
+        );
+
+        vector< tuple< unsigned long long, string, string > > result;
+
+        for(Database::Result::Iterator it = related_res.begin(); it != related_res.end(); ++it) {
+            result.push_back(boost::make_tuple(
+                (*it)["id_"],
+                (*it)["comm_type_"],
+                (*it)["content_type_"]
+            ));
+        }
+
+        return result;
     }
 }

@@ -30,6 +30,7 @@
 #include "src/admin/contact/verification/exceptions.h"
 #include "src/admin/contact/verification/fill_check_queue.h"
 #include "src/admin/contact/verification/list_active_checks.h"
+#include "src/admin/contact/verification/related_records.h"
 #include "src/admin/contact/verification/resolve_check.h"
 #include "src/admin/contact/verification/run_all_enqueued_checks.h"
 #include "src/admin/contact/verification/update_tests.h"
