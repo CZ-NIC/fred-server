@@ -406,13 +406,11 @@ namespace Registry
 
                 DiscloseFlagPolicy contact_disclose_policy (pcv);
 
-                if (Fred::object_has_state(cid, Fred::ObjectState::VALIDATED_CONTACT) == true) {
-                    if (Fred::Contact::Verification::check_validated_contact_diff(_contact
-                            , Fred::Contact::Verification::contact_info(cid)) == false) {
-                        /* change contact status to identified */
-                        if (Fred::cancel_object_state(cid, Fred::ObjectState::VALIDATED_CONTACT)) {
-                            Fred::insert_object_state(cid, Fred::ObjectState::IDENTIFIED_CONTACT);
-                        }
+                if (Fred::object_has_state(cid, Fred::ObjectState::VALIDATED_CONTACT)) {
+                    if (!Fred::Contact::Verification::check_validated_contact_diff(_contact
+                            , Fred::Contact::Verification::contact_info(cid))) {
+                        /* drop contact validated status */
+                        Fred::cancel_object_state(cid, Fred::ObjectState::VALIDATED_CONTACT);
                     }
                 }
 
@@ -1272,10 +1270,6 @@ namespace Registry
                         throw std::runtime_error(
                             "Fred::cancel_object_state validatedContact failed");
                     }
-
-                    //set identified contact
-                    Fred::insert_object_state(
-                            _contact_id, Fred::ObjectState::IDENTIFIED_CONTACT);
                 }
 
                 //lock public requests
