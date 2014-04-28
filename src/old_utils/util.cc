@@ -73,7 +73,12 @@ bool validateIPV6(
     if(addr.is_loopback()) {
         return false;
     }
-  // TODO for more
+
+    if (addr.is_multicast()) {
+        return false;
+    }
+
+    // TODO for more
 
   return true;
 }
