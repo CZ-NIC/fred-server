@@ -88,11 +88,14 @@ bool validateIPV4(
 {
   unsigned b1, b2, b3, b4;
   int rc;
-  int len;
-  // test on the end
-  len = strlen(ipadd);
-  if (ipadd[len-1] == '.')
-    return false;
+
+  // syntax
+  try {
+      boost::asio::ip::address_v4::from_string(ipadd);
+  } catch(...) {
+      // syntax check failed
+      return false;
+  }
 
   rc = sscanf(ipadd, "%3u.%3u.%3u.%3u", &b1, &b2, &b3, &b4);
   if (rc == 4) {
