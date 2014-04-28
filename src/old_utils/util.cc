@@ -27,6 +27,8 @@
 #include <arpa/inet.h>
 #include <netinet/in.h> // to support build on FreeBSD
 
+#include <boost/asio/ip/address.hpp>
+
 #include "util.h"
 #include "log.h"
 #include "log/logger.h"
@@ -60,15 +62,13 @@ void random_pass(
 bool validateIPV6(
   const char *ipadd)
 {
-  int len;
-  // test on the end
-  len = strlen(ipadd);
-  if (ipadd[len-1] == ':')
-    return false;
-
-  // test loop back
-  if (strncmp(ipadd, "::", 2) == 0)
-    return false;
+    boost::asio::ip::address_v6 addr;
+    try {
+        addr = boost::asio::ip::address_v6::from_string(ipadd);
+    } catch(...) {
+        // syntax check failed
+        return false;
+    }
 
   // TODO for more
 
