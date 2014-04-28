@@ -70,6 +70,9 @@ bool validateIPV6(
         return false;
     }
 
+    if(addr.is_loopback()) {
+        return false;
+    }
   // TODO for more
 
   return true;
