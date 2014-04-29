@@ -68,6 +68,20 @@ namespace Registry
 {
     namespace MojeID
     {
+        ContactStateData::StateValidFrom::const_iterator ContactStateData::get_sum_state() const
+        {
+            StateValidFrom::const_iterator state_ptr = state.find("validatedContact");
+            if (state_ptr != state.end()) {
+                return state_ptr;
+            }
+            state_ptr = state.find("identifiedContact");
+            if (state_ptr != state.end()) {
+                return state_ptr;
+            }
+            return state.find("conditionallyIdentifiedContact");
+        }
+
+
         MojeIDImpl::MojeIDImpl(const std::string &_server_name
                 , boost::shared_ptr<Fred::Mailer::Manager> _mailer)
         : registry_conf_(CfgArgs::instance()
@@ -988,11 +1002,10 @@ namespace Registry
                     ContactStateData csd;
                     csd.contact_id = static_cast<unsigned long long>(
                             rstates[i][0]);
-                    csd.valid_from = rstates[i][1].isnull()
+                    csd.state[static_cast<std::string>(rstates[i][2])] = rstates[i][1].isnull()
                             ? boost::gregorian::date()
                             : boost::gregorian::from_string(
                                 static_cast<std::string>(rstates[i][1]));
-                    csd.state_name = static_cast<std::string>(rstates[i][2]);
 
                     csdv.push_back(csd);
                 }//for
@@ -1021,49 +1034,42 @@ namespace Registry
                 Database::Connection conn = Database::Manager::acquire();
                 ContactStateData csd;
                 Database::Result rstates = conn.exec_params(
-                        "SELECT c.id, mcs.valid_from, mcs.name FROM contact c "
-                        " LEFT JOIN (SELECT mojeid_contact.id, os.valid_from, CASE "
-                        " WHEN bool_or (eos.name = 'validatedContact') "
-                        "   THEN 'validatedContact' "
-                        "  WHEN bool_or (eos.name = 'identifiedContact') "
-                        "   THEN 'identifiedContact' "
-                        "  WHEN bool_or (eos.name = 'conditionallyIdentifiedContact') "
-                        "   THEN 'conditionallyIdentifiedContact' "
-                        "  END AS name "
-                        " FROM (SELECT c.id AS id "
-                        "   FROM contact c "
-                        "    JOIN object o ON c.id=o.id "
-                        "    JOIN registrar r on o.clid = r.id "
-                        "    JOIN object_state os ON o.id = os.object_id "
-                        "    JOIN enum_object_states eos ON eos.id = os.state_id "
-                        "   WHERE os.valid_to IS NULL "
-                        "    AND r.handle=$1::text "
-                        "    AND c.id = $2::bigint "
-                        "    AND eos.name = 'mojeidContact') AS mojeid_contact "
-                        "  JOIN object_state os ON mojeid_contact.id = os.object_id "
-                        "  JOIN enum_object_states eos ON eos.id = os.state_id "
-                        " WHERE os.valid_to IS NULL "
-                        "   AND eos.name = ANY ('{\"conditionallyIdentifiedContact\", \"identifiedContact\", \"validatedContact\"}') "
-                        " GROUP BY mojeid_contact.id, os.valid_from "
-                        " ) AS mcs ON mcs.id = c.id "
-                        " WHERE c.id = $2::bigint "
+                        "SELECT eos.name,os.valid_from "
+                        "FROM contact c "
+                        "JOIN object o ON o.id=c.id "
+                        "JOIN registrar r on r.id=o.clid "
+                        "JOIN object_state os ON os.object_id=o.id "
+                        "JOIN enum_object_states eos ON eos.id=os.state_id "
+                        "WHERE c.id=(SELECT os.object_id "
+                                    "FROM object_state os "
+                                    "JOIN enum_object_states eos ON eos.id=os.state_id "
+                                    "WHERE os.object_id=$2::bigint AND "
+                                          "os.valid_to IS NULL AND "
+                                          "eos.name='mojeidContact'"
+                                    ") AND "
+                              "os.valid_to IS NULL AND "
+                              "r.handle=$1::text AND "
+                              "eos.name IN ('conditionallyIdentifiedContact',"
+                                           "'identifiedContact',"
+                                           "'validatedContact')"
                         , Database::query_param_list
                             (server_conf_->registrar_handle)
                             (_contact_id));
 
                 if (rstates.size() == 0) {
-                    throw Registry::MojeID::OBJECT_NOT_EXISTS();
-                }
-                else if (rstates.size() != 1) {
-                    throw std::runtime_error("Object appears to be in several exclusive states");
+                    if (conn.exec_params("SELECT 1 FROM contact WHERE id=$1::bigint",
+                                         Database::query_param_list(_contact_id)).size() == 0) {
+                        throw Registry::MojeID::OBJECT_NOT_EXISTS();
+                    }
                 }
 
-                csd.contact_id = static_cast<unsigned long long>(rstates[0][0]);;
-                csd.valid_from = rstates[0][1].isnull()
-                        ? boost::gregorian::date()
-                        : boost::gregorian::from_string(
-                            static_cast<std::string>(rstates[0][1]));
-                csd.state_name = static_cast<std::string>(rstates[0][2]);
+                csd.contact_id = _contact_id;
+                for (::size_t idx = 0; idx < rstates.size(); ++idx) {
+                    const std::string name = static_cast< std::string >(rstates[idx][0]);
+                    const boost::gregorian::date valid_from =
+                        boost::gregorian::from_string(static_cast< std::string >(rstates[idx][1]));
+                    csd.state[name] = valid_from;
+                }
                 return csd;
             }//try
             catch (std::exception &_ex)

@@ -431,26 +431,31 @@ namespace Registry
                 for (std::vector<ContactStateData>::const_iterator csdvi
                     = csdv.begin(); csdvi != csdv.end(); ++csdvi)
                 {
-                    Registry::MojeID::ContactStateInfo sinfo;
-                    sinfo.contact_id = csdvi->contact_id;
-                    sinfo.valid_from = corba_wrap_date(csdvi->valid_from);
-                    std::string state_name = csdvi->state_name;
-                    unsigned int act_size = ret->length();
+                    Registry::MojeID::ContactStateData::StateValidFrom::const_iterator sum_state_ptr =
+                        csdvi->get_sum_state();
+                    if (sum_state_ptr != csdvi->state.end()) {
+                        Registry::MojeID::ContactStateInfo sinfo;
+                        sinfo.contact_id = csdvi->contact_id;
+                        unsigned int act_size = ret->length();
 
-                    if (state_name == "conditionallyIdentifiedContact") {
-                        ret->length(act_size + 1);
-                        sinfo.state = Registry::MojeID::CONDITIONALLY_IDENTIFIED;
-                        ret[act_size] = sinfo;
-                    }
-                    else if (state_name == "identifiedContact") {
-                        ret->length(act_size + 1);
-                        sinfo.state = Registry::MojeID::IDENTIFIED;
-                        ret[act_size] = sinfo;
-                    }
-                    else if (state_name == "validatedContact") {
-                        ret->length(act_size + 1);
-                        sinfo.state = Registry::MojeID::VALIDATED;
-                        ret[act_size] = sinfo;
+                        if (sum_state_ptr->first == "validatedContact") {
+                            ret->length(act_size + 1);
+                            sinfo.state = Registry::MojeID::VALIDATED;
+                            sinfo.valid_from = corba_wrap_date(sum_state_ptr->second);
+                            ret[act_size] = sinfo;
+                        }
+                        else if (sum_state_ptr->first == "identifiedContact") {
+                            ret->length(act_size + 1);
+                            sinfo.state = Registry::MojeID::IDENTIFIED;
+                            sinfo.valid_from = corba_wrap_date(sum_state_ptr->second);
+                            ret[act_size] = sinfo;
+                        }
+                        else if (sum_state_ptr->first == "conditionallyIdentifiedContact") {
+                            ret->length(act_size + 1);
+                            sinfo.state = Registry::MojeID::CONDITIONALLY_IDENTIFIED;
+                            sinfo.valid_from = corba_wrap_date(sum_state_ptr->second);
+                            ret[act_size] = sinfo;
+                        }
                     }
                 }//for
 
@@ -475,17 +480,21 @@ namespace Registry
                 ContactStateData csd = pimpl_->getContactState(_contact_id);
                 Registry::MojeID::ContactStateInfo_var sinfo;
                 sinfo->contact_id = csd.contact_id;
-                sinfo->valid_from = corba_wrap_date(csd.valid_from);
-                std::string state_name = csd.state_name;
-
-                if (state_name == "conditionallyIdentifiedContact") {
-                    sinfo->state = Registry::MojeID::CONDITIONALLY_IDENTIFIED;
-                }
-                else if (state_name == "identifiedContact") {
-                    sinfo->state = Registry::MojeID::IDENTIFIED;
-                }
-                else if (state_name == "validatedContact") {
-                    sinfo->state = Registry::MojeID::VALIDATED;
+                Registry::MojeID::ContactStateData::StateValidFrom::const_iterator sum_state_ptr =
+                    csd.get_sum_state();
+                if (sum_state_ptr != csd.state.end()) {
+                    if (sum_state_ptr->first == "conditionallyIdentifiedContact") {
+                        sinfo->state = Registry::MojeID::CONDITIONALLY_IDENTIFIED;
+                        sinfo->valid_from = corba_wrap_date(sum_state_ptr->second);
+                    }
+                    else if (sum_state_ptr->first == "identifiedContact") {
+                        sinfo->state = Registry::MojeID::IDENTIFIED;
+                        sinfo->valid_from = corba_wrap_date(sum_state_ptr->second);
+                    }
+                    else if (sum_state_ptr->first == "validatedContact") {
+                        sinfo->state = Registry::MojeID::VALIDATED;
+                        sinfo->valid_from = corba_wrap_date(sum_state_ptr->second);
+                    }
                 }
                 else {
                     sinfo->state = Registry::MojeID::NOT_IDENTIFIED;
