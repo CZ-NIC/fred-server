@@ -70,6 +70,10 @@ bool validateIPV6(
         return false;
     }
 
+    if(addr.is_unspecified()) {
+        return false;
+    }
+
     if(addr.is_loopback()) {
         return false;
     }
