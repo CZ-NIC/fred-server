@@ -124,7 +124,7 @@ bool validateIPV4(
       return false;
     }
 
-    return true; // OK
+    return true;
   } else
     return false;
 }
