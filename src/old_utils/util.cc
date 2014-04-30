@@ -89,9 +89,10 @@ bool validateIPV4(
   unsigned b1, b2, b3, b4;
   int rc;
 
+  boost::asio::ip::address_v4 addr;
   // syntax
   try {
-      boost::asio::ip::address_v4::from_string(ipadd);
+      addr = boost::asio::ip::address_v4::from_string(ipadd);
   } catch(...) {
       // syntax check failed
       return false;
@@ -119,8 +120,9 @@ bool validateIPV4(
       return false;
     if (b1 == 192 && b2 == 168)
       return false;
-    if (b1 >= 224)
-      return false; // multicast
+    if (addr.is_multicast()) {
+      return false;
+    }
 
     return true; // OK
   } else
