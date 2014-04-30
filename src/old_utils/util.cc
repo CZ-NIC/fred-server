@@ -108,8 +108,11 @@ bool validateIPV4(
     if (strspn(ipadd, "0123456789.") < strlen(ipadd))
       return false;
 
-    if (b1 == 127)
+    // TODO - libboost1.46-dev in Ubuntu 12.04.4 LTS doesn't contain this method
+    // if (addr.is_loopback()) {
+    if(addr.to_string().substr(0, 3) == "127") {
       return false;
+    }
     if (b1 == 10)
       return false;
     if (b1 == 172 && b2 >= 16 && b2 < 32)
