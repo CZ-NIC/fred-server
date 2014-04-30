@@ -970,45 +970,75 @@ namespace Registry
                 Database::Connection conn = Database::Manager::acquire();
                 std::vector<ContactStateData> csdv;
                 Database::Result rstates = conn.exec_params(
-                "SELECT mojeid_contact.id, os.valid_from, CASE "
-                 " WHEN bool_or (eos.name = 'validatedContact') "
-                  " THEN 'validatedContact' "
-                 " WHEN bool_or (eos.name = 'identifiedContact') "
-                   " THEN 'identifiedContact' "
-                 " WHEN bool_or (eos.name = 'conditionallyIdentifiedContact') "
-                  " THEN 'conditionallyIdentifiedContact' "
-                 " END AS name "
-                " FROM (SELECT c.id AS id "
-                  " FROM contact c "
-                   " JOIN object o ON c.id=o.id "
-                   " JOIN registrar r on o.clid = r.id "
-                   " JOIN object_state os ON o.id = os.object_id "
-                   " JOIN enum_object_states eos ON eos.id = os.state_id "
-                  " WHERE os.valid_to IS NULL "
-                   " AND r.handle=$1::text "
-                   " AND eos.name = 'mojeidContact') AS mojeid_contact "
-                 " JOIN object_state os ON mojeid_contact.id = os.object_id "
-                 " JOIN enum_object_states eos ON eos.id = os.state_id "
-                " WHERE os.valid_to IS NULL "
-                   " AND os.valid_from > now() - $2::interval "
-                  " AND eos.name = ANY ('{\"conditionallyIdentifiedContact\", \"identifiedContact\", \"validatedContact\"}') "
-                " GROUP BY mojeid_contact.id, os.valid_from "
-                , Database::query_param_list
-                (server_conf_->registrar_handle)
-                (boost::lexical_cast<std::string>(_last_hours) + " hours"));
+                "SELECT cc.id,eos.name,"                               //arguments GROUP BY clause
+                       "MAX(os.valid_from),"                           //valid from
+                       "BOOL_OR(os.valid_from<=(NOW()-$2::interval))," //present on begin
+                       "BOOL_OR(os.valid_to IS NULL) "                 //present still
+                "FROM ("
+                    "SELECT c.id "
+                    "FROM ("
+                        "SELECT object_id"
+                        "FROM object_state "
+                        "WHERE state_id IN (SELECT id "
+                                           "FROM enum_object_states "
+                                           "WHERE name IN ('conditionallyIdentifiedContact',"
+                                                          "'identifiedContact',"
+                                                          "'validatedContact')"
+                                          ") AND "
+                              "(((NOW()-$2::interval)<valid_from) OR "
+                               "((NOW()-$2::interval)<valid_to)) "
+                        "GROUP BY object_id"
+                        ") AS co " //objects whose observed states changed
+                    "JOIN contact c ON c.id=co.object_id "
+                    "JOIN object o ON o.id=co.object_id "
+                    "JOIN registrar r ON r.id=o.clid "
+                    "JOIN object_state os ON os.object_id=co.object_id "
+                    "JOIN enum_object_states eos ON eos.id=os.state_id "
+                    "WHERE os.valid_to IS NULL AND "
+                          "r.handle=$1::text AND "
+                          "eos.name='mojeidContact'"
+                    ") AS cc " //mojeID contacts whose observed states changed
+                "JOIN object_state os ON os.object_id=cc.id "
+                "JOIN enum_object_states eos ON eos.id=os.state_id "
+                "WHERE eos.name IN ('conditionallyIdentifiedContact',"
+                                   "'identifiedContact',"
+                                   "'validatedContact') AND "
+                      "((NOW()-$2::interval)<os.valid_to OR os.valid_to IS NULL) "
+                "GROUP BY cc.id,eos.name "
+                "ORDER BY cc.id,eos.name",
+                Database::query_param_list
+                    (server_conf_->registrar_handle)
+                    (boost::lexical_cast< std::string >(_last_hours) + " hours"));
 
-                for (Database::Result::size_type i = 0; i < rstates.size(); ++i)
-                {
-                    ContactStateData csd;
-                    csd.contact_id = static_cast<unsigned long long>(
-                            rstates[i][0]);
-                    csd.state[static_cast<std::string>(rstates[i][2])] = rstates[i][1].isnull()
-                            ? boost::gregorian::date()
-                            : boost::gregorian::from_string(
-                                static_cast<std::string>(rstates[i][1]));
+                enum { INVALID_ID = 0 };
+                ContactStateData csd;
+                csd.contact_id = INVALID_ID;
+                bool status_differ = false;
+                for (::size_t idx = 0; idx < rstates.size(); ++idx) {
+                    const ::size_t contact_id = static_cast< ::size_t    >(rstates[idx][0]);
+                    const std::string state   = static_cast< std::string >(rstates[idx][1]);
+                    const bool present_before = static_cast< std::string >(rstates[idx][3]) == "t";
+                    const bool present_still  = static_cast< std::string >(rstates[idx][4]) == "t";
 
-                    csdv.push_back(csd);
+                    if (csd.contact_id != contact_id) {
+                        if (status_differ) {
+                            csdv.push_back(csd);
+                            status_differ = false;
+                        }
+                        csd.contact_id = contact_id;
+                        csd.state.clear();
+                    }
+
+                    status_differ |= present_before != present_still;
+                    if (present_still) {
+                        const boost::gregorian::date valid_from =
+                            boost::gregorian::from_string(static_cast< std::string >(rstates[idx][2]));
+                        csd.state[state] = valid_from;
+                    }
                 }//for
+                if (status_differ) {
+                    csdv.push_back(csd);
+                }
 
                 return csdv;
             }
@@ -1034,27 +1064,27 @@ namespace Registry
                 Database::Connection conn = Database::Manager::acquire();
                 ContactStateData csd;
                 Database::Result rstates = conn.exec_params(
-                        "SELECT eos.name,os.valid_from "
-                        "FROM contact c "
-                        "JOIN object o ON o.id=c.id "
-                        "JOIN registrar r on r.id=o.clid "
-                        "JOIN object_state os ON os.object_id=o.id "
-                        "JOIN enum_object_states eos ON eos.id=os.state_id "
-                        "WHERE c.id=(SELECT os.object_id "
-                                    "FROM object_state os "
-                                    "JOIN enum_object_states eos ON eos.id=os.state_id "
-                                    "WHERE os.object_id=$2::bigint AND "
-                                          "os.valid_to IS NULL AND "
-                                          "eos.name='mojeidContact'"
-                                    ") AND "
-                              "os.valid_to IS NULL AND "
-                              "r.handle=$1::text AND "
-                              "eos.name IN ('conditionallyIdentifiedContact',"
-                                           "'identifiedContact',"
-                                           "'validatedContact')"
-                        , Database::query_param_list
-                            (server_conf_->registrar_handle)
-                            (_contact_id));
+                    "SELECT eos.name,os.valid_from "
+                    "FROM contact c "
+                    "JOIN object o ON o.id=c.id "
+                    "JOIN registrar r on r.id=o.clid "
+                    "JOIN object_state os ON os.object_id=o.id "
+                    "JOIN enum_object_states eos ON eos.id=os.state_id "
+                    "WHERE c.id=(SELECT os.object_id "
+                                "FROM object_state os "
+                                "JOIN enum_object_states eos ON eos.id=os.state_id "
+                                "WHERE os.object_id=$2::bigint AND "
+                                      "os.valid_to IS NULL AND "
+                                      "eos.name='mojeidContact'"
+                               ") AND "
+                          "os.valid_to IS NULL AND "
+                          "r.handle=$1::text AND "
+                          "eos.name IN ('conditionallyIdentifiedContact',"
+                                       "'identifiedContact',"
+                                       "'validatedContact')",
+                    Database::query_param_list
+                        (server_conf_->registrar_handle)
+                        (_contact_id));
 
                 if (rstates.size() == 0) {
                     if (conn.exec_params("SELECT 1 FROM contact WHERE id=$1::bigint",
