@@ -977,7 +977,7 @@ namespace Registry
                 "FROM ("
                     "SELECT c.id "
                     "FROM ("
-                        "SELECT object_id"
+                        "SELECT object_id "
                         "FROM object_state "
                         "WHERE state_id IN (SELECT id "
                                            "FROM enum_object_states "
