@@ -1141,7 +1141,7 @@ src/corba/ZoneSK.cc: $(IDLDIR)/Zone.idl
 src/corba/DateTimeSK.cc: $(IDLDIR)/DateTime.idl
 		omniidl -bcxx -Wbuse_quotes -Wba -C$(top_builddir)/src/corba $(IDLDIR)/DateTime.idl
 
-src/corba/NullableTypesSK.cc: $(IDLDIR)/NullableTypes.idl
+src/corba/NullableTypesSK.cc: $(IDLDIR)/NullableTypes.idl $(IDLDIR)/DateTime.idl
 		omniidl -bcxx -Wbuse_quotes -Wba -C$(top_builddir)/src/corba $(IDLDIR)/NullableTypes.idl
 
 src/corba/_dataTypesSK.cc: $(IDLDIR)/_dataTypes.idl
