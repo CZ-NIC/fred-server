@@ -58,11 +58,11 @@ void db_contact_addresses_insert(Contact &_data)
 {
     std::string qaddress =
         "INSERT INTO contact_address ("
-        "contactid,type,street1,street2,street3,"
+        "contactid,type,company_name,street1,street2,street3,"
         " city,stateorprovince,postalcode,country)"
         " VALUES ("
-         "$1::integer,$2::text,$3::text,$4::text,$5::text,"
-         "$6::text,$7::text,$8::text,$9::text)";
+         "$1::integer,$2::contact_address_type,$3::text,$4::text,$5::text,"
+         "$6::text,$7::text,$8::text,$9::text,$10::text)";
 
     Database::Connection conn = Database::Manager::acquire();
 
@@ -71,6 +71,7 @@ void db_contact_addresses_insert(Contact &_data)
         Database::QueryParams paddress = Database::query_param_list
             (_data.id)
             (it->type)
+            (it->company_name)
             (it->street1)
             (it->street2)
             (it->street3)
@@ -372,7 +373,7 @@ const Contact contact_info(const unsigned long long &_id)
     data.fax = rinfo[0][26];
 
     std::string qaddresses = 
-        "SELECT type,street1,street2,street3,city,stateorprovince,postalcode,country "
+        "SELECT type,company_name,street1,street2,street3,city,stateorprovince,postalcode,country "
          "FROM contact_address "
          "WHERE contactid=$1::integer";
     Database::Result raddresses = conn.exec_params(qaddresses, Database::query_param_list(_id));
@@ -380,13 +381,14 @@ const Contact contact_info(const unsigned long long &_id)
     {
         ContactAddress addr;
         addr.type = static_cast<std::string>(raddresses[i][0]);
-        addr.street1 = static_cast<std::string>(raddresses[i][1]);
-        addr.street2 = static_cast<std::string>(raddresses[i][2]);
-        addr.street3 = static_cast<std::string>(raddresses[i][3]);
-        addr.city = static_cast<std::string>(raddresses[i][4]);
-        addr.stateorprovince = static_cast<std::string>(raddresses[i][5]);
-        addr.postalcode = static_cast<std::string>(raddresses[i][6]);
-        addr.country = static_cast<std::string>(raddresses[i][7]);
+        addr.company_name = static_cast<std::string>(raddresses[i][1]);
+        addr.street1 = static_cast<std::string>(raddresses[i][2]);
+        addr.street2 = static_cast<std::string>(raddresses[i][3]);
+        addr.street3 = static_cast<std::string>(raddresses[i][4]);
+        addr.city = static_cast<std::string>(raddresses[i][5]);
+        addr.stateorprovince = static_cast<std::string>(raddresses[i][6]);
+        addr.postalcode = static_cast<std::string>(raddresses[i][7]);
+        addr.country = static_cast<std::string>(raddresses[i][8]);
         data.addresses.push_back(addr);
     }
 
