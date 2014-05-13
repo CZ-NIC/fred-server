@@ -26,6 +26,7 @@
 #include <ctype.h>
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/regex.hpp>
 
 #include "model_zone.h"
 #include "model_zone_ns.h"
@@ -834,66 +835,71 @@ namespace Fred
         const std::string& fqdn, DomainName& domain, bool allowIDN
       ) const throw (INVALID_DOMAIN_NAME)
       {
-        std::string part; // one part(label) of fqdn
-        for (unsigned i=0; i<fqdn.size(); i++) {
-          if (part.empty()) {
-            // first character of every label has to be letter or digit
-            // digit is not in RFC 1034 but it's required in ENUM domains
-            if (!IS_NUMBER(fqdn.at(i)) && !IS_LETTER(fqdn.at(i)))
-              throw INVALID_DOMAIN_NAME();
-          }
-          else {
-            // dot '.' is a separator of labels, store and clear part
-            if (fqdn[i] == '.') {
-              // part must finish with letter or digit
-              if (!IS_NUMBER(*part.rbegin()) && !IS_LETTER(*part.rbegin()))
-                throw INVALID_DOMAIN_NAME();
-              // length of part should be < 64
-              if (part.length() > 63)
-                throw INVALID_DOMAIN_NAME();
-              // if there is punycode present and allowed, it must be valid
-              if( allowIDN && part.compare(0, 4, "xn--") == 0 ) {
-                  if( is_valid_punycode(part) == false ) {
-                      throw INVALID_DOMAIN_NAME();
-                  }
-              }
-              domain.push_back(part);
-              part.clear();
-              continue;
-            }
-            else {
-              if (fqdn.at(i) == '-') {
-                // only single hyphen '-' is generaly acceptable (specific .cz rule)
-                if (*part.rbegin() == '-') {
-                    // exceptions are:
-                    // idn (in form of punycode)...
-                    if( !allowIDN ) {
-                        throw INVALID_DOMAIN_NAME();
-                    // ...in ACE prefix (xn--) or ELSEWHERE ("--" can be produced during encoding)
-                    // therefore we don't check it here but check validity of the whole punycode label above
-                    } else if ( (i == 3 && part != "xn-") || (i >= 4 && part.compare(0, 4, "xn--") != 0) ) {
+          // ! the last asterisk means only that last label has {0,n} chars with 0 enabling fqdn to end with dot
+          //                                    (somelabel.)*(label )
+          //                                    |          | |      |
+          static const boost::regex fqdn_regex("([^\\.]+\\.)*[^\\.]*");
+          static const boost::regex label_regex("[a-z0-9]|[a-z0-9][-a-z0-9]{0,61}[a-z0-9]", boost::regex::icase);
+          static const boost::regex punycode_label_regex("xn--[-a-z0-9]{0,58}[a-z0-9]", boost::regex::icase);
+
+          const unsigned fqdn_without_root_dot_lenght = 253;
+          const unsigned label_without_dot_lenght = 63;
+          const unsigned min_labels_count = 1;
+
+          try {
+                // hacking and slashing through string value-space eliminating one invalid fqdn branch after another
+                // ... TODO: reversed, more defensive approach would be safer
+
+                if(!boost::regex_match(fqdn, fqdn_regex)) {
+                    throw INVALID_DOMAIN_NAME();
+                }
+                // if there had been ".." at the end of fqdn previous fqdn_regex would have already killed it
+                const std::string fqdn_without_root_dot(boost::trim_right_copy_if(fqdn, boost::is_any_of(".")));
+                if( fqdn_without_root_dot.size() > fqdn_without_root_dot_lenght ) {
+                    throw INVALID_DOMAIN_NAME();
+                }
+
+                std::vector<std::string> labels;
+                // although ".." would have been found by "fqdn_regex" not using boost::token_compress_on just to be sure
+                boost::split(labels, fqdn_without_root_dot, boost::is_any_of(".") /* boost::token_compress_OFF */);
+
+                if( labels.size() < min_labels_count ) {
+                    throw INVALID_DOMAIN_NAME();
+                }
+
+                // enum (or enum resembling) domains
+                if ( checkEnumDomainSuffix(fqdn) ){
+                    if( !checkEnumDomainName(labels)) {
                         throw INVALID_DOMAIN_NAME();
                     }
+
+                // non-enum domains
+                } else {
+                    BOOST_FOREACH(const std::string& label, labels) {
+                        if( label.length() > label_without_dot_lenght ) {
+                            throw INVALID_DOMAIN_NAME();
+                        }
+                        if(!boost::regex_match(label, label_regex)) {
+                            throw INVALID_DOMAIN_NAME();
+                        }
+                        if(label.find("--") != std::string::npos) {
+                            if(!allowIDN) {
+                                throw INVALID_DOMAIN_NAME();
+                            } else if(!boost::regex_match(label, punycode_label_regex)) {
+                                throw INVALID_DOMAIN_NAME();
+                            } else if(!is_valid_punycode(label)) {
+                                throw INVALID_DOMAIN_NAME();
+                            }
+                        }
+                    }
                 }
-              }
-              else {
-                // other character could be only number or letter
-                if (!IS_NUMBER(fqdn[i]) && !IS_LETTER(fqdn[i]))
-                  throw INVALID_DOMAIN_NAME();
-              }
-            }
+
+                domain = labels;
+          } catch(...) {
+              throw INVALID_DOMAIN_NAME();
           }
-          // add character into part
-          part += fqdn.at(i);
-        }
-        // last part cannot be empty
-        if (part.empty()) throw INVALID_DOMAIN_NAME();
-        // append last part
-        domain.push_back(part);
-        // enum domains has special rules
-        if (checkEnumDomainSuffix(fqdn) && !checkEnumDomainName(domain))
-          throw INVALID_DOMAIN_NAME();
       }
+
       /// interface method implementation
       bool checkEnumDomainName(const DomainName& domain) const
       {
