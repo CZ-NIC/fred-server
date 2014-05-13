@@ -94,11 +94,11 @@ bool validateIPV4(
   boost::asio::ip::address_v4::bytes_type bytes;
   // syntax
   try {
-      addr = boost::asio::ip::address_v4::from_string(ipadd);
+    addr = boost::asio::ip::address_v4::from_string(ipadd);
     bytes = addr.to_bytes();
   } catch(...) {
-      // syntax check failed
-      return false;
+    // syntax check failed
+    return false;
   }
 
   if (bytes[0] == 0 && bytes[1] == 0 && bytes[2] == 0 && bytes[3] == 0)
