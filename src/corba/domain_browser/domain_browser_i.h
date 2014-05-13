@@ -140,6 +140,14 @@ namespace Registry
 
             Registry::DomainBrowser::RecordSequence* getPublicStatusDesc(const char* lang);
 
+            Registry::DomainBrowser::RecordSet* getMergeContactCandidateList(
+                const Registry::DomainBrowser::RegistryReference& contact,
+                ::CORBA::ULong offset,
+                ::CORBA::Boolean& limit_exceeded);
+
+            void mergeContacts(const Registry::DomainBrowser::RegistryReference& dst_contact,
+                const Registry::DomainBrowser::RegistryReferenceSeq& src_contact_list);
+
         };//class Server_i
     }//namespace DomainBrowser
 }//namespace Registry

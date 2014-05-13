@@ -377,6 +377,21 @@ namespace Registry
         };
 
         /**
+         * Invalid contacts.
+         * Unable to merge contacts.
+         */
+        struct InvalidContacts
+        : virtual std::exception
+        {
+            /**
+             * Returns failure description.
+             * @return string with the general cause of the current error.
+             */
+            const char* what() const throw() {return "unable to merge given contacts";}
+        };
+
+
+        /**
          * Type of blocking to be applied (value related to enum Registry::DomainBrowser::ObjectBlockType)
          */
         static const unsigned BLOCK_TRANSFER = 0;
@@ -593,6 +608,25 @@ namespace Registry
             void getPublicStatusDesc(const std::string& lang,
                 std::vector<std::string>& status_description_out);
 
+            /**
+             * Get contact merge candidate list.
+             * Get list of contacts mergeable to user contact.
+             * @param user_contact_id contains database id of the user contact
+             * @param offset contains list offset
+             * @param  contact_list_out references output candidate contact list
+             * @return limit_exceeded flag
+             */
+            bool getMergeContactCandidateList(unsigned long long user_contact_id,
+                unsigned long long offset,
+                std::vector<std::vector<std::string> >& contact_list_out);
+
+            /**
+             * Merge contacts.
+             * Merge contact list to destination contact
+             * @param dst_contact_id id of destination contact
+             */
+            void mergeContacts(unsigned long long dst_contact_id,
+                const std::vector<unsigned long long>& contact_list);
 
             std::string get_server_name();
         };//class DomainBrowser

@@ -1379,6 +1379,19 @@ namespace Registry
             }
         }
 
+        bool DomainBrowser::getMergeContactCandidateList(unsigned long long user_contact_id,
+            unsigned long long offset,
+            std::vector<std::vector<std::string> >& contact_list_out)
+        {
+            return false;
+        }
+
+        void DomainBrowser::mergeContacts(unsigned long long dst_contact_id,
+            const std::vector<unsigned long long>& contact_list)
+        {
+
+        }
+
     }//namespace DomainBrowserImpl
 }//namespace Registry
 
