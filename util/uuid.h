@@ -42,7 +42,12 @@ class uuid {
         explicit uuid(const std::string& _in)
         try
             : value_(boost::uuids::string_generator()(_in))
-            { }
+        {
+            // cannonical form e. g. 550e8400-e29b-41d4-a716-446655440000
+            if(_in.length() != 36) {
+                throw ExceptionInvalidUuid();
+            }
+        }
         catch(const std::runtime_error&) {
             throw ExceptionInvalidUuid();
         }
