@@ -844,6 +844,7 @@ namespace Fred
 
           const unsigned fqdn_without_root_dot_lenght = 253;
           const unsigned label_without_dot_lenght = 63;
+          const unsigned min_labels_count = 1;
 
           try {
                 // hacking and slashing through string value-space eliminating one invalid fqdn branch after another
@@ -861,6 +862,10 @@ namespace Fred
                 std::vector<std::string> labels;
                 // although ".." would have been found by "fqdn_regex" not using boost::token_compress_on just to be sure
                 boost::split(labels, fqdn_without_root_dot, boost::is_any_of(".") /* boost::token_compress_OFF */);
+
+                if( labels.size() < min_labels_count ) {
+                    throw INVALID_DOMAIN_NAME();
+                }
 
                 // enum (or enum resembling) domains
                 if ( checkEnumDomainSuffix(fqdn) ){
