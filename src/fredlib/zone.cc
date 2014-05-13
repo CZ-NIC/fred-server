@@ -835,6 +835,9 @@ namespace Fred
         const std::string& fqdn, DomainName& domain, bool allowIDN
       ) const throw (INVALID_DOMAIN_NAME)
       {
+          // ! the last asterisk means only that last label has {0,n} chars with 0 enabling fqdn to end with dot
+          //                                    (somelabel.)*(label )
+          //                                    |          | |      |
           const boost::regex fqdn_regex("([^\\.]+\\.)*[^\\.]*");
           const boost::regex label_regex("[a-z0-9]|[a-z0-9][-a-z0-9]{0,61}[a-z0-9]", boost::regex::icase);
           const boost::regex punycode_label_regex("xn--[-a-z0-9]{0,58}[a-z0-9]", boost::regex::icase);
