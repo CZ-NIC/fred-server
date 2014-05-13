@@ -291,13 +291,13 @@ namespace Registry
                 /* create public request */
                 Fred::PublicRequest::Type type;
 
-                if (Fred::object_has_state(cinfo.id, Fred::ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT))
-                {
-                    type = Fred::PublicRequest::PRT_MOJEID_CONDITIONALLY_IDENTIFIED_CONTACT_TRANSFER;
-                }
-                else if (Fred::object_has_state(cinfo.id, Fred::ObjectState::IDENTIFIED_CONTACT))
+                if (Fred::object_has_state(cinfo.id, Fred::ObjectState::IDENTIFIED_CONTACT))
                 {
                     type = Fred::PublicRequest::PRT_MOJEID_IDENTIFIED_CONTACT_TRANSFER;
+                }
+                else if (Fred::object_has_state(cinfo.id, Fred::ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT))
+                {
+                    type = Fred::PublicRequest::PRT_MOJEID_CONDITIONALLY_IDENTIFIED_CONTACT_TRANSFER;
                 }
                 else {
                     type = Fred::PublicRequest::PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION;
