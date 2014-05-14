@@ -49,6 +49,7 @@
 #include "src/fredlib/keyset/info_keyset.h"
 #include "src/fredlib/object_state/get_object_states.h"
 #include "src/fredlib/object_state/get_object_state_descriptions.h"
+#include "src/fredlib/contact/merge_contact.h"
 
 #include "domain_browser.h"
 
@@ -1378,6 +1379,51 @@ namespace Registry
                 log_and_rethrow_exception_handler(ctx);
             }
         }
+
+struct MergeContactDiffContacts
+{
+    bool operator()(Fred::OperationContext& ctx,
+        const std::string& src_contact_handle,
+        const std::string& dst_contact_handle) const
+    {
+        if(boost::algorithm::to_upper_copy(src_contact_handle).compare(boost::algorithm::to_upper_copy(dst_contact_handle)) == 0)
+        {
+            BOOST_THROW_EXCEPTION(Fred::MergeContact::Exception().set_identical_contacts_handle(dst_contact_handle));
+        }
+
+        Database::Result diff_result = ctx.get_conn().exec_params(
+        "SELECT "//--c_src.name, oreg_src.name, o_src.clid, c_dst.name, oreg_dst.name , o_dst.clid,
+        //the same
+        " (trim(both ' ' from COALESCE(c_src.name,'')) != trim(both ' ' from COALESCE(c_dst.name,''))) OR "
+        " (trim(both ' ' from COALESCE(c_src.organization,'')) != trim(both ' ' from COALESCE(c_dst.organization,''))) OR "
+        " (trim(both ' ' from COALESCE(c_src.street1,'')) != trim(both ' ' from COALESCE(c_dst.street1,''))) OR "
+        " (trim(both ' ' from COALESCE(c_src.street2,'')) != trim(both ' ' from COALESCE(c_dst.street2,''))) OR "
+        " (trim(both ' ' from COALESCE(c_src.street3,'')) != trim(both ' ' from COALESCE(c_dst.street3,''))) OR "
+        " (trim(both ' ' from COALESCE(c_src.city,'')) != trim(both ' ' from COALESCE(c_dst.city,''))) OR "
+        " (trim(both ' ' from COALESCE(c_src.postalcode,'')) != trim(both ' ' from COALESCE(c_dst.postalcode,''))) OR "
+        " (trim(both ' ' from COALESCE(c_src.stateorprovince,'')) != trim(both ' ' from COALESCE(c_dst.stateorprovince,''))) OR "
+        " (trim(both ' ' from COALESCE(c_src.country,'')) != trim(both ' ' from COALESCE(c_dst.country,''))) OR "
+        " (trim(both ' ' from COALESCE(c_src.email,'')) != trim(both ' ' from COALESCE(c_dst.email,''))) OR "
+        //if dst filled then src the same or empty
+        " (trim(both ' ' from COALESCE(c_src.vat,'')) != trim(both ' ' from COALESCE(c_dst.vat,'')) AND trim(both ' ' from COALESCE(c_src.vat,'')) != ''::text) OR "
+        " (trim(both ' ' from COALESCE(c_src.ssn,'')) != trim(both ' ' from COALESCE(c_dst.ssn,'')) AND trim(both ' ' from COALESCE(c_src.ssn,'')) != ''::text) OR "
+        " (COALESCE(c_src.ssntype,0) != COALESCE(c_dst.ssntype,0) AND COALESCE(c_src.ssntype,0) != 0) "
+        "  as differ "
+        " FROM (object_registry oreg_src "
+        " JOIN contact c_src ON c_src.id = oreg_src.id AND oreg_src.name = UPPER($1::text) AND oreg_src.erdate IS NULL) "
+        " JOIN (object_registry oreg_dst "
+        " JOIN contact c_dst ON c_dst.id = oreg_dst.id AND oreg_dst.name = UPPER($2::text) AND oreg_dst.erdate IS NULL"
+        ") ON TRUE "
+          , Database::query_param_list(src_contact_handle)(dst_contact_handle));
+        if (diff_result.size() != 1)
+        {
+            BOOST_THROW_EXCEPTION(Fred::MergeContact::Exception().set_unable_to_get_difference_of_contacts(
+                    Fred::MergeContact::InvalidContacts(src_contact_handle,dst_contact_handle)));
+        }
+        bool contact_differs = static_cast<bool>(diff_result[0][0]);
+        return contact_differs;
+    }
+};
 
     }//namespace DomainBrowserImpl
 }//namespace Registry
