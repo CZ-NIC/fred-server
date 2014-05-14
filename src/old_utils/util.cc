@@ -27,6 +27,8 @@
 #include <arpa/inet.h>
 #include <netinet/in.h> // to support build on FreeBSD
 
+#include <boost/asio/ip/address.hpp>
+
 #include "util.h"
 #include "log.h"
 #include "log/logger.h"
@@ -60,17 +62,27 @@ void random_pass(
 bool validateIPV6(
   const char *ipadd)
 {
-  int len;
-  // test on the end
-  len = strlen(ipadd);
-  if (ipadd[len-1] == ':')
-    return false;
+    boost::asio::ip::address_v6 addr;
+    try {
+        addr = boost::asio::ip::address_v6::from_string(ipadd);
+    } catch(...) {
+        // syntax check failed
+        return false;
+    }
 
-  // test loop back
-  if (strncmp(ipadd, "::", 2) == 0)
-    return false;
+    if(addr.is_unspecified()) {
+        return false;
+    }
 
-  // TODO for more
+    if(addr.is_loopback()) {
+        return false;
+    }
+
+    if (addr.is_multicast()) {
+        return false;
+    }
+
+    // TODO for more
 
   return true;
 }
@@ -78,39 +90,38 @@ bool validateIPV6(
 bool validateIPV4(
   const char *ipadd)
 {
-  unsigned b1, b2, b3, b4;
-  int rc;
-  int len;
-  // test on the end
-  len = strlen(ipadd);
-  if (ipadd[len-1] == '.')
+  boost::asio::ip::address_v4 addr;
+  boost::asio::ip::address_v4::bytes_type bytes;
+  // syntax
+  try {
+    addr = boost::asio::ip::address_v4::from_string(ipadd);
+    bytes = addr.to_bytes();
+  } catch(...) {
+    // syntax check failed
+    return false;
+  }
+
+  if (bytes[0] == 0 && bytes[1] == 0 && bytes[2] == 0 && bytes[3] == 0)
+    return false;
+  if (bytes[0] == 1 && bytes[1] == 1 && bytes[2] == 1 && bytes[3] == 1)
+    return false;
+  if ( (bytes[0] | bytes[1] | bytes[2] | bytes[3]) > 255)
+    return false; // maximum
+
+  // TODO - libboost1.46-dev in Ubuntu 12.04.4 LTS doesn't contain this method
+  // if (addr.is_loopback()) {
+  if(bytes[0] == 127)
+    return false;
+  if (bytes[0] == 10)
+    return false;
+  if (bytes[0] == 172 && bytes[1] >= 16 && bytes[1] < 32)
+    return false;
+  if (bytes[0] == 192 && bytes[1] == 168)
+    return false;
+  if (addr.is_multicast())
     return false;
 
-  rc = sscanf(ipadd, "%3u.%3u.%3u.%3u", &b1, &b2, &b3, &b4);
-  if (rc == 4) {
-    if (b1 == 0 && b2 == 0 && b3 == 0 && b4 == 0)
-      return false;
-    if (b1 == 1 && b2 == 1 && b3 == 1 && b4 == 1)
-      return false;
-    if ( (b1 | b2 | b3 | b4) > 255)
-      return false; // maximum
-    if (strspn(ipadd, "0123456789.") < strlen(ipadd))
-      return false;
-
-    if (b1 == 127)
-      return false;
-    if (b1 == 10)
-      return false;
-    if (b1 == 172 && b2 >= 16 && b2 < 32)
-      return false;
-    if (b1 == 192 && b2 == 168)
-      return false;
-    if (b1 >= 224)
-      return false; // multicast
-
-    return true; // OK
-  } else
-    return false;
+  return true;
 }
 
 int test_inet_addr(
