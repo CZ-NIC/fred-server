@@ -668,6 +668,7 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/model_registrar_group_map.cc \
 		src/fredlib/domain.cc \
 		src/fredlib/domain.h \
+		src/fredlib/contact_validation_state.cc \
 		src/fredlib/contact.cc \
 		src/fredlib/contact.h \
 		src/fredlib/nsset.cc \
