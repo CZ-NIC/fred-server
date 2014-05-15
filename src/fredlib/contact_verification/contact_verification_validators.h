@@ -1,8 +1,8 @@
 #ifndef CONTACT_VERIFICATION_VALIDATORS_H__
 #define CONTACT_VERIFICATION_VALIDATORS_H__
 
-#include "contact_validator.h"
-#include "contact_verification_checkers.h"
+#include "src/fredlib/contact_verification/contact_validator.h"
+#include "src/fredlib/contact_verification/contact_verification_checkers.h"
 #include "src/fredlib/contact.h"
 
 

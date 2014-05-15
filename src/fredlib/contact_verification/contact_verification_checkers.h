@@ -1,7 +1,7 @@
 #ifndef CONTACT_VERIFICATION_CHECKERS_H__
 #define CONTACT_VERIFICATION_CHECKERS_H__
 
-#include "contact_validator.h"
+#include "src/fredlib/contact_verification/contact_validator.h"
 
 #include <boost/regex.hpp>
 #include <string>

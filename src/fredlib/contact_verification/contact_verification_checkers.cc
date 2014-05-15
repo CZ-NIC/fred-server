@@ -1,7 +1,7 @@
 #include "log/logger.h"
 #include "src/fredlib/db_settings.h"
 #include "util/types/birthdate.h"
-#include "contact_verification_checkers.h"
+#include "src/fredlib/contact_verification/contact_verification_checkers.h"
 
 #include <boost/algorithm/string.hpp>
 

@@ -25,8 +25,8 @@
 #define CONTACT_CONDITIONAL_IDENTIFICATION_IMPL_H_
 
 #include "src/fredlib/public_request/public_request_impl.h"
-#include "contact_verification_password.h"
-#include "contact_verification_validators.h"
+#include "src/fredlib/contact_verification/contact_verification_password.h"
+#include "src/fredlib/contact_verification/contact_verification_validators.h"
 
 
 namespace Fred {
