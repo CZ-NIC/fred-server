@@ -54,7 +54,7 @@ void lock_contact_validation_states(::uint64_t _contact_id)
     Fred::lock_multiple_object_states(_contact_id, validation_states);
 }
 
-void lock_contact_validation_states(const std::string &_contact_handle)
+::uint64_t lock_contact_validation_states(const std::string &_contact_handle)
 {
     Database::Connection conn = Database::Manager::acquire();
     static const std::string sql =
@@ -67,7 +67,9 @@ void lock_contact_validation_states(const std::string &_contact_handle)
     if (res.size() <= 0) {
         throw std::runtime_error("contact handle '" + _contact_handle + "' not found");
     }
-    lock_contact_validation_states(static_cast< ::uint64_t >(res[0][0]));
+    const ::uint64_t contact_id = static_cast< ::uint64_t >(res[0][0]);
+    lock_contact_validation_states(contact_id);
+    return contact_id;
 }
 
 ValidationState get_contact_validation_state(::uint64_t _contact_id)

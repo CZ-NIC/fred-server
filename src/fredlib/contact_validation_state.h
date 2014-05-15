@@ -27,7 +27,9 @@
 #include <stdint.h>
 #include <string>
 
+/** Fred */
 namespace Fred {
+/** Contact */
 namespace Contact {
 
 /**
@@ -54,22 +56,22 @@ public:
         V = 1 << 2,///< validatedContact presents
         m = 0,     ///< mojeidContact doesn't present
         M = 1 << 3,///< mojeidContact presents
-        civm = c | i | v | m,
-        civM = c | i | v | M,
-        ciVm = c | i | V | m,
-        ciVM = c | i | V | M,
-        cIvm = c | I | v | m,
-        cIvM = c | I | v | M,
-        cIVm = c | I | V | m,
-        cIVM = c | I | V | M,
-        Civm = C | i | v | m,
-        CivM = C | i | v | M,
-        CiVm = C | i | V | m,
-        CiVM = C | i | V | M,
-        CIvm = C | I | v | m,
-        CIvM = C | I | v | M,
-        CIVm = C | I | V | m,
-        CIVM = C | I | V | M,
+        civm = c | i | v | m,///< civm
+        civM = c | i | v | M,///< civM
+        ciVm = c | i | V | m,///< ciVm
+        ciVM = c | i | V | M,///< ciVM
+        cIvm = c | I | v | m,///< cIvm
+        cIvM = c | I | v | M,///< cIvM
+        cIVm = c | I | V | m,///< cIVm
+        cIVM = c | I | V | M,///< cIVM
+        Civm = C | i | v | m,///< Civm
+        CivM = C | i | v | M,///< CivM
+        CiVm = C | i | V | m,///< CiVm
+        CiVM = C | i | V | M,///< CiVM
+        CIvm = C | I | v | m,///< CIvm
+        CIvM = C | I | v | M,///< CIvM
+        CIVm = C | I | V | m,///< CIVm
+        CIVM = C | I | V | M,///< CIVM
     };
     ValidationState(enum Value _value = civm):value_(_value) { }
     ValidationState(const std::string &_state):value_(str2value(_state)) { }
@@ -98,9 +100,10 @@ void lock_contact_validation_states(::uint64_t _contact_id);
 /**
  * Lock four validation states of contact.
  * @param _contact_handle contact handle
+ * @return contact id
  * @throw std::runtime_error if contact handle doesn't exist
  */
-void lock_contact_validation_states(const std::string &_contact_handle);
+::uint64_t lock_contact_validation_states(const std::string &_contact_handle);
 
 /**
  * Get four validation states of contact.
@@ -130,12 +133,11 @@ ValidationState get_contact_validation_state(const std::string &_contact_handle)
  * @return _a OR _b
  */
 enum Fred::Contact::ValidationState::Value operator|(
-    Fred::Contact::ValidationState::Value _a,
-    Fred::Contact::ValidationState::Value _b)
+    enum Fred::Contact::ValidationState::Value _a,
+    enum Fred::Contact::ValidationState::Value _b)
 {
     return Fred::Contact::ValidationState::Value(_a | _b);
 }
-
 
 /**
  * Logical AND.
@@ -144,10 +146,20 @@ enum Fred::Contact::ValidationState::Value operator|(
  * @return _a AND _b
  */
 enum Fred::Contact::ValidationState::Value operator&(
-    Fred::Contact::ValidationState::Value _a,
-    Fred::Contact::ValidationState::Value _b)
+    enum Fred::Contact::ValidationState::Value _a,
+    enum Fred::Contact::ValidationState::Value _b)
 {
     return Fred::Contact::ValidationState::Value(_a & _b);
+}
+
+/**
+ * Operator @a unary @a not means equal to zero.
+ * @param _a operand
+ * @return true if _a == 0
+ */
+bool operator!(enum Fred::Contact::ValidationState::Value _a)
+{
+    return _a == Fred::Contact::ValidationState::Value(0);
 }
 
 #endif//CONTACT_VALIDATION_STATE_H_85BD98645DD8A487ABA826A5D21C75CE
