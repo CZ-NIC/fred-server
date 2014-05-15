@@ -1,5 +1,5 @@
-#ifndef CONTACT_VERIFICATION_CHECKERS_H__
-#define CONTACT_VERIFICATION_CHECKERS_H__
+#ifndef CONTACT_VERIFICATION_CHECKERS_H_454838214
+#define CONTACT_VERIFICATION_CHECKERS_H_454838214
 
 #include "src/fredlib/contact_verification/contact_validator.h"
 

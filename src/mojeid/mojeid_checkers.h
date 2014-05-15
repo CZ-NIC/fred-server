@@ -1,5 +1,5 @@
-#ifndef MOJEID_CHECKERS_90239480__
-#define MOJEID_CHECKERS_90239480__
+#ifndef MOJEID_CHECKERS_H_90239480
+#define MOJEID_CHECKERS_H_90239480
 
 #include "src/fredlib/contact_verification/contact_verification_checkers.h"
 #include <boost/regex.hpp>

@@ -21,8 +21,8 @@
  *  mojeid contact verification
  */
 
-#ifndef MOJEID_VALIDATORS_H_
-#define MOJEID_VALIDATORS_H_
+#ifndef MOJEID_VALIDATORS_H_274554864
+#define MOJEID_VALIDATORS_H_274554864
 
 #include "src/fredlib/contact_verification/contact_verification_validators.h"
 #include "src/mojeid/mojeid_checkers.h"
