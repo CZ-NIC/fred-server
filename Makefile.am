@@ -668,7 +668,6 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/model_registrar_group_map.cc \
 		src/fredlib/domain.cc \
 		src/fredlib/domain.h \
-		src/fredlib/contact_validation_state.cc \
 		src/fredlib/contact.cc \
 		src/fredlib/contact.h \
 		src/fredlib/nsset.cc \
@@ -1022,6 +1021,8 @@ src_fredlib_contact_verification_libcontact_verification_a_SOURCES = \
 		src/fredlib/contact_verification/contact_conditional_identification_impl.h \
 		src/fredlib/contact_verification/contact_identification_impl.cc \
 		src/fredlib/contact_verification/contact_identification_impl.h \
+		src/fredlib/contact_verification/contact_verification_state.cc \
+		src/fredlib/contact_verification/contact_verification_state.h \
 		src/fredlib/contact_verification/contact_verification_validators.cc \
 		src/fredlib/contact_verification/contact_verification_validators.h \
 		src/fredlib/contact_verification/contact_verification_password.cc \

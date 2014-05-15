@@ -1,4 +1,4 @@
-#include "src/fredlib/contact_validation_state.h"
+#include "src/fredlib/contact_verification/contact_verification_state.h"
 #include "src/fredlib/object_states.h"
 #include "src/fredlib/object_state/object_state_name.h"
 #include "src/fredlib/db_settings.h"
