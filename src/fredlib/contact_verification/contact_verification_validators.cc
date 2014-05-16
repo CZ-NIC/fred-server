@@ -1,4 +1,4 @@
-#include "contact_verification_validators.h"
+#include "src/fredlib/contact_verification/contact_verification_validators.h"
 
 namespace Fred {
 namespace Contact {
