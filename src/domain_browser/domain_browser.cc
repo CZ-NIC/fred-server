@@ -1408,7 +1408,7 @@ struct MergeContactDiffContacts
         " (trim(both ' ' from COALESCE(c_src.vat,'')) != trim(both ' ' from COALESCE(c_dst.vat,'')) AND trim(both ' ' from COALESCE(c_src.vat,'')) != ''::text) OR "
         " (trim(both ' ' from COALESCE(c_src.ssn,'')) != trim(both ' ' from COALESCE(c_dst.ssn,'')) AND trim(both ' ' from COALESCE(c_src.ssn,'')) != ''::text) OR "
         " (COALESCE(c_src.ssntype,0) != COALESCE(c_dst.ssntype,0) AND COALESCE(c_src.ssntype,0) != 0) "
-        "  as differ "
+        "  as differ, c_src.id AS src_contact_id"
         " FROM (object_registry oreg_src "
         " JOIN contact c_src ON c_src.id = oreg_src.id AND oreg_src.name = UPPER($1::text) AND oreg_src.erdate IS NULL) "
         " JOIN (object_registry oreg_dst "
@@ -1418,9 +1418,18 @@ struct MergeContactDiffContacts
         if (diff_result.size() != 1)
         {
             BOOST_THROW_EXCEPTION(Fred::MergeContact::Exception().set_unable_to_get_difference_of_contacts(
-                    Fred::MergeContact::InvalidContacts(src_contact_handle,dst_contact_handle)));
+                Fred::MergeContact::InvalidContacts(src_contact_handle,dst_contact_handle)));
         }
-        bool contact_differs = static_cast<bool>(diff_result[0][0]);
+
+        unsigned long long src_contact_id = static_cast<unsigned long long>(diff_result[0]["src_contact_id"]);
+
+        if(Fred::ObjectHasState(src_contact_id,Fred::ObjectState::MOJEID_CONTACT).exec(ctx))
+        {
+            BOOST_THROW_EXCEPTION(Fred::MergeContact::Exception().set_src_contact_in_mojeid(
+                Fred::MergeContact::InvalidContacts(src_contact_handle,dst_contact_handle)));
+        }
+
+        bool contact_differs = static_cast<bool>(diff_result[0]["differ"]);
         return contact_differs;
     }
 };
