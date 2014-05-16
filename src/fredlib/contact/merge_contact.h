@@ -351,6 +351,7 @@ namespace Fred
             : source_handle(_source_handle), destination_handle(_destination_handle){}
         };
         DECLARE_EXCEPTION_DATA(unable_to_get_difference_of_contacts, InvalidContacts);
+        DECLARE_EXCEPTION_DATA(src_contact_in_mojeid, InvalidContacts);
         DECLARE_EXCEPTION_DATA(contacts_differ, InvalidContacts);
         DECLARE_EXCEPTION_DATA(identical_contacts_handle, std::string);
         DECLARE_EXCEPTION_DATA(identical_contacts_roid, std::string);
@@ -360,6 +361,7 @@ namespace Fred
         , ExceptionData_unknown_destination_contact_handle<Exception>
         , ExceptionData_unknown_registrar_handle<Exception>
         , ExceptionData_unable_to_get_difference_of_contacts<Exception>
+        , ExceptionData_src_contact_in_mojeid<Exception>
         , ExceptionData_contacts_differ<Exception>
         , ExceptionData_identical_contacts_handle<Exception>
         , ExceptionData_identical_contacts_roid<Exception>
