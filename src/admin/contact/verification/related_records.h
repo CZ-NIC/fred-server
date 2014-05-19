@@ -34,7 +34,6 @@
 namespace Admin {
     using std::vector;
     using std::string;
-    using boost::tuple;
 
     /**
      * Stores the relation between check and mail.
@@ -64,10 +63,39 @@ namespace Admin {
         const uuid&                         _check_handle,
         const std::set<unsigned long long>& _request_ids);
 
+
+    struct related_message {
+        unsigned long long                  id;
+        string                              comm_type;
+        string                              content_type;
+        boost::posix_time::ptime            created;
+        Nullable<boost::posix_time::ptime>  update;
+        unsigned long                       status_id;
+        string                              status_name;
+
+        related_message(
+            unsigned long long                          _id,
+            const string&                               _comm_type,
+            const string&                               _content_type,
+            const boost::posix_time::ptime&             _created,
+            const Nullable<boost::posix_time::ptime>&   _update,
+            unsigned long                               _status_id,
+            const string&                               _status_name
+        ) :
+            id(_id),
+            comm_type(_comm_type),
+            content_type(_content_type),
+            created(_created),
+            update(_update),
+            status_id(_status_id),
+            status_name(_status_name)
+        { }
+    };
+
     /**
-     * @returns message id, communication channel type, message content type
+     * @returns related messages info
      */
-    vector< tuple< unsigned long long, string, string > > get_related_messages(
+    vector<related_message> get_related_messages(
         Fred::OperationContext& _ctx,
         const uuid&             _check_handle);
 }

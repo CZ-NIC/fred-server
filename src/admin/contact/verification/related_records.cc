@@ -3,6 +3,8 @@
 #include "src/fredlib/contact/info_contact.h"
 #include "src/fredlib/object_state/create_object_state_request.h"
 
+#include <boost/assign/list_of.hpp>
+
 namespace  Admin {
 
     /**
@@ -122,10 +124,18 @@ namespace  Admin {
         }
     }
 
-    vector< tuple< unsigned long long, string, string > > get_related_messages(
+    vector<related_message> get_related_messages(
         Fred::OperationContext& _ctx,
         const uuid&             _check_handle
     ) {
+        static const std::map<unsigned, std::string> mail_status_names =
+            boost::assign::map_list_of
+                (0, "sent")
+                (1, "ready")
+                (2, "waiting_confirmation")
+                (3, "no_processing")
+                (4, "send_failed");
+
         Database::Result related_res = _ctx.get_conn().exec_params(
             "WITH check_id AS ( "
             "SELECT id "
@@ -135,7 +145,11 @@ namespace  Admin {
                 "SELECT "
                     "c_ch_m_map.mail_archive_id  AS id_, "
                     "'email'                     AS comm_type_, "
-                    "m_t.name                    AS content_type_ "
+                    "m_t.name                    AS content_type_, "
+                    "m_a.crdate                  AS created_, "
+                    "m_a.moddate                 AS updated_, "
+                    "m_a.status                  AS status_id_, "
+                    "''                          AS status_name_ "
                 "FROM "
                     "check_id "
                     "JOIN contact_check_message_map  AS c_ch_m_map   ON check_id.id = c_ch_m_map.contact_check_id "
@@ -145,25 +159,43 @@ namespace  Admin {
                 "SELECT "
                     "c_ch_m_map.message_archive_id   AS id_, "
                     "c_t.type                        AS comm_type_, "
-                    "m_t.type                        AS content_type_ "
+                    "m_t.type                        AS content_type_, "
+                    "m_a.crdate                      AS created_, "
+                    "m_a.moddate                     AS updated_, "
+                    "m_a.status_id                   AS status_id_, "
+                    "enum_s_st.status_name           AS status_name_ "
                 "FROM "
                     "check_id "
                     "JOIN contact_check_message_map  AS c_ch_m_map   ON check_id.id = c_ch_m_map.contact_check_id "
                     "JOIN message_archive            AS m_a          ON c_ch_m_map.message_archive_id = m_a.id "
                     "JOIN comm_type                  AS c_t          ON m_a.comm_type_id = c_t.id "
                     "JOIN message_type               AS m_t          ON m_a.message_type_id = m_t.id "
+                    "JOIN enum_send_status           AS enum_s_st    ON enum_s_st.id = m_a.status_id "
             ") ",
             Database::query_param_list(_check_handle)
         );
 
-        vector< tuple< unsigned long long, string, string > > result;
+        vector<related_message> result;
 
         for(Database::Result::Iterator it = related_res.begin(); it != related_res.end(); ++it) {
-            result.push_back(boost::make_tuple(
-                (*it)["id_"],
-                (*it)["comm_type_"],
-                (*it)["content_type_"]
-            ));
+            using boost::posix_time::ptime;
+            using boost::posix_time::time_from_string;
+
+            result.push_back(
+                related_message(
+                    static_cast<unsigned long long>((*it)["id_"]),
+                    static_cast<std::string>((*it)["comm_type_"]),
+                    static_cast<std::string>((*it)["content_type_"]),
+                    static_cast<ptime>(time_from_string(static_cast<string>((*it)["created_"]))),
+                    ((*it)["updated_"].isnull())
+                        ? Nullable<ptime>()
+                        : Nullable<ptime>(time_from_string(static_cast<string>((*it)["updated_"]))),
+                    static_cast<unsigned>((*it)["status_id_"]),
+                    ( static_cast<std::string>((*it)["comm_type_"]) == "email" )
+                        ? mail_status_names.at(static_cast<unsigned>((*it)["status_id_"]))
+                        : static_cast<string>((*it)["status_name_"])
+                )
+            );
         }
 
         return result;
