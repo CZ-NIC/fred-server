@@ -64,6 +64,10 @@
 #include "src/fredlib/nsset/info_nsset_diff.h"
 #include "src/fredlib/keyset/info_keyset_diff.h"
 #include "src/fredlib/registrar/get_registrar_handles.h"
+#include "src/fredlib/object_state/object_state_name.h"
+#include "src/fredlib/object_state/object_has_state.h"
+#include "src/fredlib/object_state/perform_object_state_request.h"
+
 
 #include "util/util.h"
 
@@ -972,6 +976,60 @@ BOOST_FIXTURE_TEST_CASE(merge_contact_with_same_src_and_dst_contact, merge_conta
     BOOST_CHECK(info_keyset_1 == info_keyset_2);
     BOOST_CHECK(info_nsset_1 == info_nsset_2);
 }
+
+/**
+ * test MergeContact with mojeid src contact
+ */
+BOOST_FIXTURE_TEST_CASE(merge_contact_with_mojeid_src_contact, merge_contact_domain_fixture)
+{
+    unsigned long long src_contact_id = Fred::InfoContactByHandle(
+            src_contact_handle).exec(ctx).info_contact_data.id;
+    if(!Fred::ObjectHasState(src_contact_id,
+        Fred::ObjectState::MOJEID_CONTACT).exec(ctx))
+    {
+        ctx.get_conn().exec_params(
+            "INSERT INTO object_state_request (object_id, state_id)"
+            " VALUES ($1::integer, (SELECT id FROM enum_object_states"
+            " WHERE name = $2::text))",
+            Database::query_param_list
+                (src_contact_id)
+                (Fred::ObjectState::MOJEID_CONTACT));
+        Fred::PerformObjectStateRequest().set_object_id(src_contact_id).exec(ctx);
+        ctx.commit_transaction();
+    }
+
+    //info before merge
+    Fred::InfoDomainOutput info_domain_owner_1 = Fred::InfoDomainByHandle(test_domain_owner_handle).exec(ctx);
+    Fred::InfoDomainOutput info_domain_admin_1 = Fred::InfoDomainByHandle(test_domain_admin_handle).exec(ctx);
+    Fred::InfoKeysetOutput info_keyset_1 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
+    Fred::InfoNssetOutput info_nsset_1 = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
+
+    try
+    {
+        //merge
+        Fred::MergeContactOutput merge_data = Fred::MergeContact(src_contact_handle, dst_contact_handle, registrar_handle).exec(ctx);
+        ctx.commit_transaction();
+    }
+    catch(Fred::MergeContact::Exception& ex)
+    {
+        BOOST_CHECK(ex.is_set_src_contact_in_mojeid());
+        BOOST_CHECK(ex.get_src_contact_in_mojeid().source_handle.compare(src_contact_handle) == 0);
+        BOOST_CHECK(ex.get_src_contact_in_mojeid().destination_handle.compare(dst_contact_handle) == 0);
+    }
+
+    //info after merge
+    Fred::InfoDomainOutput info_domain_owner_2 = Fred::InfoDomainByHandle(test_domain_owner_handle).exec(ctx);
+    Fred::InfoDomainOutput info_domain_admin_2 = Fred::InfoDomainByHandle(test_domain_admin_handle).exec(ctx);
+    Fred::InfoKeysetOutput info_keyset_2 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
+    Fred::InfoNssetOutput info_nsset_2 = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
+
+    //compare state before merge with state after
+    BOOST_CHECK(info_domain_owner_1 == info_domain_owner_2);
+    BOOST_CHECK(info_domain_admin_1 == info_domain_admin_2);
+    BOOST_CHECK(info_keyset_1 == info_keyset_2);
+    BOOST_CHECK(info_nsset_1 == info_nsset_2);
+}
+
 
 
 BOOST_AUTO_TEST_CASE(test_merge_contact_selection)
