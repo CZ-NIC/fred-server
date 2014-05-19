@@ -233,19 +233,22 @@ namespace Corba {
     }
 
     static void wrap_messages(
-        const std::vector< boost::tuple< unsigned long long, std::string, std::string > >& in,
+        const std::vector<Admin::related_message>& in,
         Registry::AdminContactVerification::MessageSeq_var& out
     ) {
         out->length(in.size());
 
         long list_index = 0;
-        for(std::vector< boost::tuple< unsigned long long, std::string, std::string > >::const_iterator it = in.begin();
+        for(std::vector<Admin::related_message>::const_iterator it = in.begin();
             it != in.end();
             ++it, ++list_index
         ) {
-            out[list_index].id              = it->get<0>();
-            out[list_index].type_handle     = Corba::wrap_string( it->get<1>() );
-            out[list_index].content_handle  = Corba::wrap_string( it->get<2>() );
+            out[list_index].id              = it->id;
+            out[list_index].type_handle     = Corba::wrap_string(it->comm_type);
+            out[list_index].content_handle  = Corba::wrap_string(it->content_type);
+            out[list_index].created         = Corba::wrap_time(it->created);
+            out[list_index].updated         = Corba::wrap_nullable_datetime(it->update);
+            out[list_index].status          = Corba::wrap_string(it->status_name);
         }
     }
 }
