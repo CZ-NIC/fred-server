@@ -97,7 +97,7 @@ namespace Admin {
      */
     vector<related_message> get_related_messages(
         Fred::OperationContext& _ctx,
-        const uuid&             _check_handle);
+        unsigned long long      _contact_id);
 }
 
 

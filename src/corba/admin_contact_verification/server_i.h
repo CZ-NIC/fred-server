@@ -62,7 +62,7 @@ namespace Registry
                 virtual void confirmEnqueueingContactCheck(const char* check_handle, ::CORBA::ULongLong logd_request_id);
                 virtual char* enqueueContactCheck(::CORBA::ULongLong contact_id, const char* testsuite_handle, ::CORBA::ULongLong logd_request_id);
 
-                virtual MessageSeq* getContactCheckMessages(const char* check_handle);
+                virtual MessageSeq* getContactCheckMessages(::CORBA::ULongLong contact_id);
 
                 virtual ContactTestStatusDefSeq* listTestStatusDefs(const char* lang);
                 virtual ContactCheckStatusDefSeq* listCheckStatusDefs(const char* lang);

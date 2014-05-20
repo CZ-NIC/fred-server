@@ -500,7 +500,7 @@ namespace Registry
             }
         }
 
-        MessageSeq* Server_i::getContactCheckMessages(const char* check_handle) {
+        MessageSeq* Server_i::getContactCheckMessages(::CORBA::ULongLong contact_id) {
             Logging::Context log_server(create_log_server_id(server_name_));
             Logging::Context log_method("getContactCheckMessages");
 
@@ -512,7 +512,7 @@ namespace Registry
                 Corba::wrap_messages(
                     Admin::get_related_messages(
                         ctx,
-                        uuid::from_string( Corba::unwrap_string(check_handle) )
+                        contact_id
                     ),
                     result
                 );
