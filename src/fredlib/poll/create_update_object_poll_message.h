@@ -22,7 +22,12 @@ public:
     struct Exception
     : virtual Fred::OperationException
     , ExceptionData_object_history_not_found<Exception>
-    {};
+    {
+        const char* what() const throw()
+        {
+            return "CreateUpdateObjectPollMessage::Exception";
+        }
+    };
 
 private:
     ObjectHistoryId history_id_;

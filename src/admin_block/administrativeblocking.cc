@@ -35,6 +35,7 @@
 #include "fredlib/domain/delete_domain.h"
 #include "fredlib/domain/info_domain.h"
 #include "fredlib/contact/copy_contact.h"
+#include "fredlib/poll/create_update_object_poll_message.h"
 #include <memory>
 #include <map>
 
@@ -753,7 +754,9 @@ namespace Registry
                                     update_domain.rem_admin_contact(*pAdmin);
                                 }
                             }
-                            update_domain.exec(ctx);
+                            unsigned long long new_hid = update_domain.exec(ctx);
+                            /* in case of error when creating poll message we fail with internal server error */
+                            Fred::Poll::CreateUpdateObjectPollMessage(new_hid).exec(ctx);
                         }
                     }
                     catch (const Fred::ClearAdminObjectStateRequestId::Exception &e) {
