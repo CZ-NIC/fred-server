@@ -36,10 +36,11 @@ namespace Registry
             const std::string& _update_registrar_handle,
             unsigned int _domain_list_limit,
             unsigned int _nsset_list_limit,
-            unsigned int _keyset_list_limit)
+            unsigned int _keyset_list_limit,
+            unsigned int _contact_list_limit)
         : pimpl_(new Registry::DomainBrowserImpl::DomainBrowser(_server_name,
                     _update_registrar_handle, _domain_list_limit,
-                    _nsset_list_limit, _keyset_list_limit))
+                    _nsset_list_limit, _keyset_list_limit, _contact_list_limit))
         {}
 
         Server_i::~Server_i()

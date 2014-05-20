@@ -196,12 +196,14 @@ namespace Registry
             const std::string& update_registrar_handle,
             unsigned int domain_list_limit,
             unsigned int nsset_list_limit,
-            unsigned int keyset_list_limit)
+            unsigned int keyset_list_limit,
+            unsigned int contact_list_limit)
         : server_name_(server_name)
         , update_registrar_(update_registrar_handle)
         , domain_list_limit_(domain_list_limit)
         , nsset_list_limit_(nsset_list_limit)
         , keyset_list_limit_(keyset_list_limit)
+        , contact_list_limit_(contact_list_limit)
         {
             Logging::Context lctx_server(server_name_);
             Logging::Context lctx("init");
@@ -1438,6 +1440,63 @@ namespace Registry
             unsigned long long offset,
             std::vector<std::vector<std::string> >& contact_list_out)
         {
+            Logging::Context lctx_server(create_ctx_name(get_server_name()));
+            Logging::Context lctx("get-merge-contact-candidate-list");
+            Fred::OperationContext ctx;
+            try
+            {
+                check_user_contact_id<UserNotExists>(ctx, user_contact_id);
+
+                Database::Result candidate_list_result = ctx.get_conn().exec_params(
+                    " SELECT oreg_src.id AS id, oreg_src.name AS handle"
+                    " FROM (object_registry oreg_src "
+                    " JOIN contact c_src ON c_src.id = oreg_src.id AND oreg_src.erdate IS NULL) "
+                    " JOIN (object_registry oreg_dst "
+                    " JOIN contact c_dst ON c_dst.id = oreg_dst.id  AND oreg_dst.erdate IS NULL AND oreg_dst.id = $1::bigint "
+                    " ) ON TRUE "
+                    " LEFT JOIN object_state os ON os.object_id = c_src.id "
+                    " AND os.state_id = (SELECT eos.id FROM enum_object_states eos WHERE eos.name = 'mojeidContact'::text) "
+                    " WHERE "
+                    " ( "
+                    //the same
+                    " (trim(both ' ' from COALESCE(c_src.name,'')) != trim(both ' ' from COALESCE(c_dst.name,''))) OR "
+                    " (trim(both ' ' from COALESCE(c_src.organization,'')) != trim(both ' ' from COALESCE(c_dst.organization,''))) OR "
+                    " (trim(both ' ' from COALESCE(c_src.street1,'')) != trim(both ' ' from COALESCE(c_dst.street1,''))) OR "
+                    " (trim(both ' ' from COALESCE(c_src.street2,'')) != trim(both ' ' from COALESCE(c_dst.street2,''))) OR "
+                    " (trim(both ' ' from COALESCE(c_src.street3,'')) != trim(both ' ' from COALESCE(c_dst.street3,''))) OR "
+                    " (trim(both ' ' from COALESCE(c_src.city,'')) != trim(both ' ' from COALESCE(c_dst.city,''))) OR "
+                    " (trim(both ' ' from COALESCE(c_src.postalcode,'')) != trim(both ' ' from COALESCE(c_dst.postalcode,''))) OR "
+                    " (trim(both ' ' from COALESCE(c_src.stateorprovince,'')) != trim(both ' ' from COALESCE(c_dst.stateorprovince,''))) OR "
+                    " (trim(both ' ' from COALESCE(c_src.country,'')) != trim(both ' ' from COALESCE(c_dst.country,''))) OR "
+                    " (trim(both ' ' from COALESCE(c_src.email,'')) != trim(both ' ' from COALESCE(c_dst.email,''))) OR "
+                    //if dst filled then src the same or empty
+                    " (trim(both ' ' from COALESCE(c_src.vat,'')) != trim(both ' ' from COALESCE(c_dst.vat,'')) AND trim(both ' ' from COALESCE(c_src.vat,'')) != ''::text) OR "
+                    " (trim(both ' ' from COALESCE(c_src.ssn,'')) != trim(both ' ' from COALESCE(c_dst.ssn,'')) AND trim(both ' ' from COALESCE(c_src.ssn,'')) != ''::text) OR "
+                    " (COALESCE(c_src.ssntype,0) != COALESCE(c_dst.ssntype,0) AND COALESCE(c_src.ssntype,0) != 0)) = false "
+                    " AND oreg_src.name != oreg_dst.name AND os.id IS NULL "
+                    " ORDER BY oreg_src.id "
+                    " LIMIT $2::bigint OFFSET $3::bigint ",
+                    Database::query_param_list(user_contact_id)(contact_list_limit_+1)(offset));
+
+                unsigned long long limited_contact_list_size = (candidate_list_result.size() > contact_list_limit_)
+                    ? contact_list_limit_ : candidate_list_result.size();
+
+                contact_list_out.reserve(limited_contact_list_size);
+                for (unsigned long long i = 0;i < limited_contact_list_size;++i)
+                {
+                    std::vector<std::string> row(2);
+                    row.at(0) = static_cast<std::string>(candidate_list_result[i]["id"]);
+                    row.at(1) = static_cast<std::string>(candidate_list_result[i]["handle"]);
+
+                    contact_list_out.push_back(row);
+                }
+
+                return candidate_list_result.size() > contact_list_limit_;
+            }
+            catch(...)
+            {
+                log_and_rethrow_exception_handler(ctx);
+            }
             return false;
         }
 

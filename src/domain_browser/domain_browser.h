@@ -406,6 +406,7 @@ namespace Registry
             unsigned int domain_list_limit_;/**< domain list chunk size */
             unsigned int nsset_list_limit_;/**< nsset list chunk size */
             unsigned int keyset_list_limit_;/**< keyset list chunk size */
+            unsigned int contact_list_limit_;/**< contact list chunk size */
 
             unsigned int minimal_status_importance_;
 
@@ -457,7 +458,8 @@ namespace Registry
                     const std::string& update_registrar_handle,
                     unsigned int domain_list_limit,
                     unsigned int nsset_list_limit,
-                    unsigned int keyset_list_limit);
+                    unsigned int keyset_list_limit,
+                    unsigned int contact_list_limit);
             virtual ~DomainBrowser();
 
             unsigned long long getObjectRegistryId(const std::string& objtype, const std::string& handle);
