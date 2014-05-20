@@ -126,7 +126,7 @@ namespace  Admin {
 
     vector<related_message> get_related_messages(
         Fred::OperationContext& _ctx,
-        const uuid&             _check_handle
+        unsigned long long      _contact_id
     ) {
         static const std::map<unsigned, std::string> mail_status_names =
             boost::assign::map_list_of
@@ -138,9 +138,10 @@ namespace  Admin {
 
         Database::Result related_res = _ctx.get_conn().exec_params(
             "WITH check_id AS ( "
-            "SELECT id "
-                "FROM contact_check "
-                "WHERE handle = $1::uuid "
+            "SELECT c_ch.id "
+                "FROM contact_history AS c_h "
+                "   JOIN contact_check AS c_ch ON c_h.historyid = c_ch.contact_history_id "
+                "WHERE c_h.id = $1::bigint "
             ") ( "
                 "SELECT "
                     "c_ch_m_map.mail_archive_id  AS id_, "
@@ -172,7 +173,7 @@ namespace  Admin {
                     "JOIN message_type               AS m_t          ON m_a.message_type_id = m_t.id "
                     "JOIN enum_send_status           AS enum_s_st    ON enum_s_st.id = m_a.status_id "
             ") ",
-            Database::query_param_list(_check_handle)
+            Database::query_param_list(_contact_id)
         );
 
         vector<related_message> result;
