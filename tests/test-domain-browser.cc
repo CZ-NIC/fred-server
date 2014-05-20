@@ -2664,6 +2664,92 @@ BOOST_FIXTURE_TEST_CASE(get_object_id_by_objtype, get_my_contact_object_fixture 
 }
 
 BOOST_AUTO_TEST_SUITE_END();//getObjectRegistryId
+;
+BOOST_AUTO_TEST_SUITE(getMergeContactCandidateList)
 
+struct get_candidate_contacts_fixture
+: mojeid_user_contact_fixture
+, virtual test_registrar_fixture
+, domain_browser_impl_instance_fixture
+{
+    std::string test_contact_handle;
+    std::map<std::string,Fred::InfoContactOutput> contact_info;
+
+    get_candidate_contacts_fixture()
+    : test_contact_handle(std::string("TEST_CONTACT_")+user_contact_handle_fixture::xmark+"_")
+    {
+        Fred::OperationContext ctx;
+        for(int i = 0; i < 10; ++i)
+        {
+            std::ostringstream contact_handle;
+            contact_handle << test_contact_handle << i;
+
+            Fred::CreateContact(contact_handle.str(),test_registrar_handle)
+                .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
+                .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
+                .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                .exec(ctx);
+
+            contact_info[contact_handle.str()]= Fred::InfoContactByHandle(contact_handle.str()).exec(ctx);
+
+            if(i == 9)
+            {
+                BOOST_MESSAGE(contact_handle.str() + " mojeidContact");
+                Fred::LockObjectStateRequestLock(Fred::ObjectState::MOJEID_CONTACT,
+                    map_at(contact_info,contact_handle.str()).info_contact_data.id).exec(ctx);
+                ctx.get_conn().exec_params(
+                    "INSERT INTO object_state_request (object_id, state_id)"
+                    " VALUES ($1::integer, (SELECT id FROM enum_object_states"
+                    " WHERE name = $2::text))",
+                    Database::query_param_list
+                        (map_at(contact_info,contact_handle.str()).info_contact_data.id)
+                        (Fred::ObjectState::MOJEID_CONTACT));
+                Fred::PerformObjectStateRequest().set_object_id(map_at(contact_info,contact_handle.str()).info_contact_data.id).exec(ctx);
+            }
+        }
+
+        ctx.commit_transaction();//commit fixture
+    }
+
+    ~get_candidate_contacts_fixture()
+    {}
+};
+
+/**
+ * test call getMergeContactCandidateList, candidate list except last mojeid contact
+*/
+BOOST_FIXTURE_TEST_CASE(get_candidate_contact_list, get_candidate_contacts_fixture )
+{
+    Fred::OperationContext ctx;
+    std::vector<std::vector<std::string> > contact_list_out;
+    bool limit_exceeded = impl.getMergeContactCandidateList(user_contact_info.info_contact_data.id,
+        0,contact_list_out);
+
+    std::ostringstream list_out;
+    list_out << "contact_list_out: \n";
+
+    for(unsigned long long i = 0; i < contact_list_out.size(); ++i)
+    {
+        for(unsigned long long j = 0; j < contact_list_out.at(i).size(); ++j)
+        {
+            list_out << " " <<contact_list_out.at(i).at(j);
+        }
+
+        list_out << "\n";
+    }
+    BOOST_MESSAGE(list_out.str());
+    BOOST_MESSAGE("limit_exceeded: " << limit_exceeded);
+
+    BOOST_CHECK(contact_list_out.size() == contact_info.size() - 1);//except last mojeid contact
+
+    for(unsigned long long i = 0; i < contact_list_out.size(); ++i)
+    {
+        BOOST_CHECK(contact_list_out.at(i).at(0) == boost::lexical_cast<std::string>(map_at(contact_info,contact_list_out.at(i).at(1)).info_contact_data.id));
+        BOOST_CHECK(contact_list_out.at(i).at(1) == map_at(contact_info,contact_list_out.at(i).at(1)).info_contact_data.handle);
+    }
+}
+
+
+BOOST_AUTO_TEST_SUITE_END();//getMergeContactCandidateList
 
 BOOST_AUTO_TEST_SUITE_END();//TestDomainBrowser
