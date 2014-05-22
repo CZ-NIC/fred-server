@@ -175,6 +175,6 @@ namespace  Admin {
         const uuid& _check_handle
     ) {
         // it is exactly the same
-        postprocess_manual_check(_ctx, _check_handle);
+        postprocess_automatic_check(_ctx, _check_handle);
     }
 }
