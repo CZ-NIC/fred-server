@@ -1058,7 +1058,7 @@ nodist_src_corba_libcorbadatatypes_a_SOURCES = \
 		src/corba/DateTimeSK.cc \
 		src/corba/DateTimeDynSK.cc \
 		src/corba/DateTime.hh
-		
+
 nodist_src_corba_libcorbanullabletypes_a_SOURCES = \
 		src/corba/NullableTypesSK.cc \
 		src/corba/NullableTypesDynSK.cc \
@@ -1139,10 +1139,10 @@ src/corba/ZoneSK.cc: $(IDLDIR)/Zone.idl
 		omniidl -bcxx -Wbuse_quotes -Wba -C$(top_builddir)/src/corba $(IDLDIR)/Zone.idl
 
 src/corba/DateTimeSK.cc: $(IDLDIR)/DateTime.idl
-		omniidl -bcxx -Wba -C$(top_builddir)/src/corba $(IDLDIR)/DateTime.idl
+		omniidl -bcxx -Wbuse_quotes -Wba -C$(top_builddir)/src/corba $(IDLDIR)/DateTime.idl
 
 src/corba/NullableTypesSK.cc: $(IDLDIR)/NullableTypes.idl
-		omniidl -bcxx -Wba -C$(top_builddir)/src/corba $(IDLDIR)/NullableTypes.idl
+		omniidl -bcxx -Wbuse_quotes -Wba -C$(top_builddir)/src/corba $(IDLDIR)/NullableTypes.idl
 
 src/corba/_dataTypesSK.cc: $(IDLDIR)/_dataTypes.idl
 		omniidl -bcxx -Wbuse_quotes -Wba -C$(top_builddir)/src/corba $(IDLDIR)/_dataTypes.idl
