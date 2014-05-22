@@ -105,7 +105,9 @@ namespace  Admin {
 
         std::string created_check_handle = request_check_enqueueing(_ctx, _contact_id, _testsuite_handle, _logd_request_id);
 
-        if(_testsuite_handle == Fred::TestsuiteHandle::AUTOMATIC) {
+        if(_testsuite_handle == Fred::TestsuiteHandle::AUTOMATIC
+            || _testsuite_handle == Fred::TestsuiteHandle::THANK_YOU
+        ) {
             confirm_check_enqueueing(_ctx, uuid::from_string(created_check_handle), _logd_request_id);
         }
 
