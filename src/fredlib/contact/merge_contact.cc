@@ -34,6 +34,8 @@
 #include "src/fredlib/contact/update_contact.h"
 #include "src/fredlib/object_state/object_has_state.h"
 #include "src/fredlib/object_state/object_state_name.h"
+#include "src/fredlib/poll/create_update_object_poll_message.h"
+#include "src/fredlib/poll/create_delete_contact_poll_message.h"
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/db_settings.h"
 #include "util/random.h"
@@ -492,6 +494,33 @@ namespace Fred
         bool contact_differs = static_cast<bool>(diff_result[0]["differ"]);
         return contact_differs;
     }
+
+
+    void create_poll_messages(const Fred::MergeContactOutput &_merge_data, Fred::OperationContext &_ctx)
+    {
+        for (std::vector<Fred::MergeContactUpdateDomainRegistrant>::const_iterator i = _merge_data.update_domain_registrant.begin();
+                i != _merge_data.update_domain_registrant.end(); ++i)
+        {
+            Fred::Poll::CreateUpdateObjectPollMessage(i->history_id.get_value()).exec(_ctx);
+        }
+        for (std::vector<Fred::MergeContactUpdateDomainAdminContact>::const_iterator i = _merge_data.update_domain_admin_contact.begin();
+                i != _merge_data.update_domain_admin_contact.end(); ++i)
+        {
+            Fred::Poll::CreateUpdateObjectPollMessage(i->history_id.get_value()).exec(_ctx);
+        }
+        for (std::vector<Fred::MergeContactUpdateNssetTechContact>::const_iterator i = _merge_data.update_nsset_tech_contact.begin();
+                i != _merge_data.update_nsset_tech_contact.end(); ++i)
+        {
+            Fred::Poll::CreateUpdateObjectPollMessage(i->history_id.get_value()).exec(_ctx);
+        }
+        for (std::vector<Fred::MergeContactUpdateKeysetTechContact>::const_iterator i = _merge_data.update_keyset_tech_contact.begin();
+                i != _merge_data.update_keyset_tech_contact.end(); ++i)
+        {
+            Fred::Poll::CreateUpdateObjectPollMessage(i->history_id.get_value()).exec(_ctx);
+        }
+        Fred::Poll::CreateDeleteContactPollMessage(_merge_data.contactid.src_contact_historyid).exec(_ctx);
+    }
+
 
 
 

@@ -375,6 +375,8 @@ namespace Fred
         std::string to_string() const;
     };//class MergeContact
 
+    void create_poll_messages(const Fred::MergeContactOutput &_merge_data, Fred::OperationContext &_ctx);
+
 }//namespace Fred
 
 #endif//MERGE_CONTACT_H
