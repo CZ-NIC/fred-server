@@ -18,7 +18,7 @@
 
 /**
  *  @file
- *  contact validation state
+ *  contact verification state
  */
 
 #ifndef CONTACT_VERIFICATION_STATE_H_85BD98645DD8A487ABA826A5D21C75CE//CONTACT_VERIFICATION_STATE_H_$(date "+%s"|md5sum|tr "[a-f]" "[A-F]")
@@ -31,15 +31,17 @@
 namespace Fred {
 /** Contact */
 namespace Contact {
+/** Verification */
+namespace Verification {
 
 /**
- * Contact validation state consists of four states
+ * Contact verification state consists of four states
  * conditionallyIdentifiedContact,
  * identifiedContact,
  * validatedContact and
  * mojeidContact.
  */
-class ValidationState
+class State
 {
 public:
     /**
@@ -73,15 +75,18 @@ public:
         CIVm = C | I | V | m,///< CIVm
         CIVM = C | I | V | M,///< CIVM
     };
-    ValidationState(enum Value _value = civm):value_(_value) { }
-    ValidationState(const std::string &_state):value_(str2value(_state)) { }
-    ValidationState(const ValidationState &_src):value_(_src.value_) { }
-    ValidationState& operator=(enum Value _value) { value_ = _value; return *this; }
-    ValidationState& operator=(const std::string &_state) { return *this = str2value(_state); }
-    ValidationState& operator=(const ValidationState &_src) { value_ = _src.value_; return *this; }
-    ValidationState& set(const std::string &_state) { return *this = _state; }
-    ValidationState& add(const std::string &_state);
+    State(enum Value _value = civm):value_(_value) { }
+    State(const std::string &_state):value_(str2value(_state)) { }
+    State(const State &_src):value_(_src.value_) { }
+    State& operator=(enum Value _value) { value_ = _value; return *this; }
+    State& operator=(const std::string &_state) { return *this = str2value(_state); }
+    State& operator=(const State &_src) { value_ = _src.value_; return *this; }
+    State& set(const std::string &_state) { return *this = _state; }
+    State& add(const std::string &_state);
     enum Value get()const { return value_; }
+    bool has_all(enum Value _mask)const { return (value_ & _mask) == _mask; }
+    bool has_any(enum Value _mask)const { return (value_ & _mask) != civm; }
+    bool operator==(enum Value _value)const { return value_ == _value; }
     static enum Value str2value(const std::string &_state);
     static const std::string STR_C;///< conditionallyIdentifiedContact
     static const std::string STR_I;///< identifiedContact
@@ -92,37 +97,38 @@ private:
 };
 
 /**
- * Lock four validation states of contact.
+ * Lock four verification states of contact.
  * @param _contact_id contact id
  */
-void lock_contact_validation_states(::uint64_t _contact_id);
+void lock_contact_verification_states(::uint64_t _contact_id);
 
 /**
- * Lock four validation states of contact.
+ * Lock four verification states of contact.
  * @param _contact_handle contact handle
  * @return contact id
  * @throw std::runtime_error if contact handle doesn't exist
  */
-::uint64_t lock_contact_validation_states(const std::string &_contact_handle);
+::uint64_t lock_contact_verification_states(const std::string &_contact_handle);
 
 /**
- * Get four validation states of contact.
+ * Get four verification states of contact.
  * @param _contact_id contact id
- * @return four validation states of contact
+ * @return four verification states of contact
  * @throw std::runtime_error if contact od doesn't exist
  * @note contact states must be locked
  */
-ValidationState get_contact_validation_state(::uint64_t _contact_id);
+State get_contact_verification_state(::uint64_t _contact_id);
 
 /**
- * Get four validation states of contact.
+ * Get four verification states of contact.
  * @param _contact_handle contact handle
- * @return four validation states of contact
+ * @return four verification states of contact
  * @throw std::runtime_error if contact handle doesn't exist
  * @note contact states must be locked
  */
-ValidationState get_contact_validation_state(const std::string &_contact_handle);
+State get_contact_verification_state(const std::string &_contact_handle);
 
+} // namespace Verification
 } // namespace Contact
 } // namespace Fred
 
@@ -132,11 +138,11 @@ ValidationState get_contact_validation_state(const std::string &_contact_handle)
  * @param _b second operand
  * @return _a OR _b
  */
-enum Fred::Contact::ValidationState::Value operator|(
-    enum Fred::Contact::ValidationState::Value _a,
-    enum Fred::Contact::ValidationState::Value _b)
+inline enum Fred::Contact::Verification::State::Value operator|(
+    enum Fred::Contact::Verification::State::Value _a,
+    enum Fred::Contact::Verification::State::Value _b)
 {
-    return Fred::Contact::ValidationState::Value(_a | _b);
+    return Fred::Contact::Verification::State::Value(_a | _b);
 }
 
 /**
@@ -145,11 +151,11 @@ enum Fred::Contact::ValidationState::Value operator|(
  * @param _b second operand
  * @return _a AND _b
  */
-enum Fred::Contact::ValidationState::Value operator&(
-    enum Fred::Contact::ValidationState::Value _a,
-    enum Fred::Contact::ValidationState::Value _b)
+inline enum Fred::Contact::Verification::State::Value operator&(
+    enum Fred::Contact::Verification::State::Value _a,
+    enum Fred::Contact::Verification::State::Value _b)
 {
-    return Fred::Contact::ValidationState::Value(_a & _b);
+    return Fred::Contact::Verification::State::Value(_a & _b);
 }
 
 /**
@@ -157,9 +163,9 @@ enum Fred::Contact::ValidationState::Value operator&(
  * @param _a operand
  * @return true if _a == 0
  */
-bool operator!(enum Fred::Contact::ValidationState::Value _a)
+inline bool operator!(enum Fred::Contact::Verification::State::Value _a)
 {
-    return _a == Fred::Contact::ValidationState::Value(0);
+    return _a == Fred::Contact::Verification::State::Value(0);
 }
 
 #endif//CONTACT_VERIFICATION_STATE_H_85BD98645DD8A487ABA826A5D21C75CE

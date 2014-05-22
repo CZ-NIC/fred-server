@@ -17,7 +17,7 @@
  */
 
 /**
- *  @mojeid.cc
+ *  @file
  *  mojeid implementation
  */
 
@@ -26,6 +26,7 @@
 #include "src/mojeid/mojeid_identification.h"
 #include "src/mojeid/mojeid_notifier.h"
 #include "src/mojeid/mojeid_contact_states.h"
+#include "src/fredlib/contact_verification/contact_verification_state.h"
 
 #include "src/fredlib/db_settings.h"
 #include "src/fredlib/registry.h"
@@ -70,15 +71,15 @@ namespace Registry
     {
         ContactStateData::StateValidFrom::const_iterator ContactStateData::get_sum_state() const
         {
-            StateValidFrom::const_iterator state_ptr = state.find("validatedContact");
+            StateValidFrom::const_iterator state_ptr = state.find(Fred::ObjectState::VALIDATED_CONTACT);
             if (state_ptr != state.end()) {
                 return state_ptr;
             }
-            state_ptr = state.find("identifiedContact");
+            state_ptr = state.find(Fred::ObjectState::IDENTIFIED_CONTACT);
             if (state_ptr != state.end()) {
                 return state_ptr;
             }
-            return state.find("conditionallyIdentifiedContact");
+            return state.find(Fred::ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT);
         }
 
 
@@ -270,20 +271,21 @@ namespace Registry
 
                 Fred::Contact::Verification::FieldErrorMap errors;
 
-                if (Fred::object_has_state(cinfo.id, Fred::ObjectState::VALIDATED_CONTACT) == true)
-                {
+                const Fred::Contact::Verification::State contact_state =
+                    Fred::Contact::Verification::get_contact_verification_state(cinfo.id);
+                if (contact_state.has_all(Fred::Contact::Verification::State::ciVm)) {// already V
                     errors[Fred::Contact::Verification::field_status]
                            = Fred::Contact::Verification::NOT_AVAILABLE;
                 }
-                else if ((Fred::object_has_state(cinfo.id
-                            , Fred::ObjectState::SERVER_TRANSFER_PROHIBITED) == true)
-                        || (Fred::object_has_state(cinfo.id
-                            , Fred::ObjectState::SERVER_UPDATE_PROHIBITED) == true)) {
+                else if (Fred::object_has_state(cinfo.id
+                            , Fred::ObjectState::SERVER_TRANSFER_PROHIBITED) ||
+                         Fred::object_has_state(cinfo.id
+                            , Fred::ObjectState::SERVER_UPDATE_PROHIBITED)) {
 
                     errors[Fred::Contact::Verification::field_status]
                            = Fred::Contact::Verification::INVALID;
                 }
-                if (errors.size() > 0) {
+                if (0 < errors.size()) {
                     throw Fred::Contact::Verification
                         ::DataValidationError(errors);
                 }
@@ -291,12 +293,10 @@ namespace Registry
                 /* create public request */
                 Fred::PublicRequest::Type type;
 
-                if (Fred::object_has_state(cinfo.id, Fred::ObjectState::IDENTIFIED_CONTACT))
-                {
+                if (contact_state.has_all(Fred::Contact::Verification::State::cIvm)) {// already I
                     type = Fred::PublicRequest::PRT_MOJEID_IDENTIFIED_CONTACT_TRANSFER;
                 }
-                else if (Fred::object_has_state(cinfo.id, Fred::ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT))
-                {
+                else if (contact_state.has_all(Fred::Contact::Verification::State::Civm)) {// already C
                     type = Fred::PublicRequest::PRT_MOJEID_CONDITIONALLY_IDENTIFIED_CONTACT_TRANSFER;
                 }
                 else {
@@ -420,7 +420,9 @@ namespace Registry
 
                 DiscloseFlagPolicy contact_disclose_policy (pcv);
 
-                if (Fred::object_has_state(cid, Fred::ObjectState::VALIDATED_CONTACT)) {
+                const Fred::Contact::Verification::State contact_state =
+                    Fred::Contact::Verification::get_contact_verification_state(cid);
+                if (contact_state.has_all(Fred::Contact::Verification::State::ciVm)) {// already V
                     if (!Fred::Contact::Verification::check_validated_contact_diff(_contact
                             , Fred::Contact::Verification::contact_info(cid))) {
                         /* drop contact validated status */
@@ -1254,8 +1256,7 @@ namespace Registry
                     throw Registry::MojeID::OBJECT_NOT_EXISTS();
                 }
 
-                if(!isMojeidContact(_contact_id))
-                {
+                if (!isMojeidContact(_contact_id)) {
                     throw std::runtime_error(
                             "Contact is not registered with MojeID");
                 }
@@ -1269,40 +1270,34 @@ namespace Registry
                         (Fred::ObjectState::SERVER_UPDATE_PROHIBITED)
                         (Fred::ObjectState::VALIDATED_CONTACT) );
 
-                if(!Fred::cancel_object_state(
-                    _contact_id, ::MojeID::ObjectState::MOJEID_CONTACT))
-                {
+                if (!Fred::cancel_object_state(
+                    _contact_id, ::MojeID::ObjectState::MOJEID_CONTACT)) {
                     throw std::runtime_error(
                             "Fred::cancel_object_state mojeidContact failed");
                 }
 
-                if(!Fred::cancel_object_state(
-                    _contact_id, Fred::ObjectState::SERVER_DELETE_PROHIBITED))
-                {
+                if (!Fred::cancel_object_state(
+                    _contact_id, Fred::ObjectState::SERVER_DELETE_PROHIBITED)) {
                     throw std::runtime_error(
                         "Fred::cancel_object_state serverDeleteProhibited failed");
                 }
 
-                if(!Fred::cancel_object_state(
-                    _contact_id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED))
-                {
+                if (!Fred::cancel_object_state(
+                    _contact_id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED)) {
                     throw std::runtime_error(
                         "Fred::cancel_object_state serverTransferProhibited failed");
                 }
 
-                if(!Fred::cancel_object_state(
-                    _contact_id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED))
-                {
+                if (!Fred::cancel_object_state(
+                    _contact_id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED)) {
                     throw std::runtime_error(
                         "Fred::cancel_object_state serverUpdateProhibited failed");
                 }
 
-                if(Fred::object_has_state(_contact_id, Fred::ObjectState::VALIDATED_CONTACT))
-                {
+                if (Fred::object_has_state(_contact_id, Fred::ObjectState::VALIDATED_CONTACT)) {
                     //cancel validated
-                    if(!Fred::cancel_object_state(_contact_id
-                            , Fred::ObjectState::VALIDATED_CONTACT))
-                    {
+                    if (!Fred::cancel_object_state(_contact_id
+                            , Fred::ObjectState::VALIDATED_CONTACT)) {
                         throw std::runtime_error(
                             "Fred::cancel_object_state validatedContact failed");
                     }
@@ -1310,11 +1305,11 @@ namespace Registry
 
                 //lock public requests
                 Fred::PublicRequest::lock_public_request_lock(
-                    Fred::PublicRequest::PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION,_contact_id);
+                    Fred::PublicRequest::PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION, _contact_id);
                 Fred::PublicRequest::lock_public_request_lock(
-                    Fred::PublicRequest::PRT_MOJEID_CONTACT_IDENTIFICATION,_contact_id);
+                    Fred::PublicRequest::PRT_MOJEID_CONTACT_IDENTIFICATION, _contact_id);
                 Fred::PublicRequest::lock_public_request_lock(
-                    Fred::PublicRequest::PRT_MOJEID_CONTACT_VALIDATION,_contact_id);
+                    Fred::PublicRequest::PRT_MOJEID_CONTACT_VALIDATION, _contact_id);
 
                 conn.exec_params("UPDATE public_request pr SET status=2 "
                     " , resolve_time = CURRENT_TIMESTAMP "
@@ -1380,22 +1375,17 @@ namespace Registry
                 (server_conf_->registrar_handle)
                 (_contact_id));
 
-            if(contact_result.size() == 0)
-            {
+            if (contact_result.size() == 0) {
                 throw std::runtime_error(
                         "MojeIDImpl::isMojeidContact: contact doesn't exist");
             }
 
-            if(std::string(contact_result[0]["mojeidContact"])
-                .compare("f") == 0)
-            {
+            if (std::string(contact_result[0]["mojeidContact"]) == "f") {
                 //not mojeidContact - ok
                 return false;
             }
 
-            if(std::string(contact_result[0]["is_mojeid_registrar"])
-                .compare("f") == 0)
-            {
+            if (std::string(contact_result[0]["is_mojeid_registrar"]) == "f") {
                 //contact is in state mojeidContact
                 // and do not have mojeid registrar - nok
                 throw std::runtime_error(
@@ -1403,23 +1393,14 @@ namespace Registry
                     " mojeidContact and don't have mojeid registrar");
             }
 
-            if(
-                (std::string(contact_result[0]["conditionallyIdentifiedContact"])
-                .compare("t") == 0)
-                || (std::string(contact_result[0]["identifiedContact"])
-                .compare("t") == 0)
-                || (std::string(contact_result[0]["validatedContact"])
-                .compare("t") == 0)
-            )
-            {
+            if ((std::string(contact_result[0]["conditionallyIdentifiedContact"]) == "t") ||
+                (std::string(contact_result[0]["identifiedContact"]) == "t") ||
+                (std::string(contact_result[0]["validatedContact"]) == "t")) {
                 return true;//ok
             }
-            else
-            {
-                //contact lack identification state - nok
-                throw std::runtime_error(
-                    "MojeIDImpl::isMojeidContact: missing identification state");
-            }
+            //contact lack identification state - nok
+            throw std::runtime_error(
+                "MojeIDImpl::isMojeidContact: missing identification state");
         }//MojeIDImpl::isMojeidContact by id
 
         ///check if contact is mojeid contact
@@ -1432,13 +1413,12 @@ namespace Registry
                 " WHERE obr.name = $1::text "
                 , Database::query_param_list(_contact_handle));
 
-            if(contact_result.size() == 0)
-            {
+            if (contact_result.size() == 0) {
                 throw std::runtime_error(
                     "MojeIDImpl::isMojeidContact: "
                     " contact handle doesn't exist");
             }
-            unsigned long long contact_id (contact_result[0][0]);
+            const unsigned long long contact_id(contact_result[0][0]);
             return isMojeidContact(contact_id);
         }//MojeIDImpl::isMojeidContact by handle
 
@@ -1459,13 +1439,11 @@ namespace Registry
                     dynamic_cast<Fred::PublicRequest::PublicRequestAuth*>
                         (list->get(0));
 
-                if (new_auth_req == NULL)
-                {
+                if (new_auth_req == NULL) {
                     LOGGER(PACKAGE).error(
                             "unable to create identfication request - wrong type");
                 }
-                else
-                {
+                else {
                     new_auth_req->sendPasswords();
                 }
                 tx.commit();
@@ -1510,6 +1488,3 @@ namespace Registry
 
     }//namespace MojeID
 }//namespace Registry
-
-
-

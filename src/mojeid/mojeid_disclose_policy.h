@@ -32,6 +32,7 @@
 
 #include "src/fredlib/object_states.h"
 #include "src/fredlib/contact_verification/contact.h"
+#include "src/fredlib/contact_verification/contact_verification_state.h"
 #include "src/mojeid/mojeid_contact_states.h"
 
 class DiscloseFlagPolicy
@@ -108,12 +109,10 @@ struct SetDiscloseAddrTrueIfNotIdentified
 {
     void operator()(DiscloseFlagPolicy& policy)
     {
-        if (!(Fred::object_has_state(policy.get_contact().id
-                , Fred::ObjectState::IDENTIFIED_CONTACT)
-            || Fred::object_has_state(policy.get_contact().id
-                , Fred::ObjectState::VALIDATED_CONTACT)))
-        {
-            policy.get_contact().discloseaddress=true;
+        const Fred::Contact::Verification::State contact_state =
+            Fred::Contact::Verification::get_contact_verification_state(policy.get_contact().id);
+        if (!contact_state.has_any(Fred::Contact::Verification::State::cIVm)) {
+            policy.get_contact().discloseaddress = true;
         }
     }
 };

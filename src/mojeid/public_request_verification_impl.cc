@@ -3,16 +3,17 @@
 #include "src/fredlib/public_request/public_request_impl.h"
 #include "src/fredlib/contact_verification/contact.h"
 #include "src/fredlib/contact_verification/contact_verification_password.h"
+#include "src/fredlib/contact_verification/contact_verification_state.h"
 #include "src/fredlib/contact_verification/contact_conditional_identification_impl.h"
 #include "src/fredlib/contact_verification/contact_identification_impl.h"
 #include "src/contact_verification/public_request_contact_verification_impl.h"
 #include "src/mojeid/request.h"
 #include "src/mojeid/mojeid_contact_states.h"
 #include "src/mojeid/mojeid_contact_transfer_request_impl.h"
-#include "map_at.h"
-#include "factory.h"
-#include "public_request_verification_impl.h"
-#include "mojeid_validators.h"
+#include "util/map_at.h"
+#include "util/factory.h"
+#include "src/mojeid/public_request_verification_impl.h"
+#include "src/mojeid/mojeid_validators.h"
 
 #include <boost/assign/list_of.hpp>
 
@@ -49,8 +50,9 @@ public:
         mojeid_transfer_impl_.pre_save_check();
         if (!this->getId())
         {
-            if (!object_has_state(this->getObject(0).id, ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT))
-            {
+            const Contact::Verification::State contact_state =
+                Contact::Verification::get_contact_verification_state(this->getObject(0).id);
+            if (!contact_state.has_all(Contact::Verification::State::Civm)) {
                 throw Fred::PublicRequest::NotApplicable("pre_save_check: failed");
             }
             /* if there is another open CICT close it */
@@ -137,8 +139,9 @@ public:
         mojeid_transfer_impl_.pre_save_check();
         if (!this->getId())
         {
-            if (!object_has_state(this->getObject(0).id, ObjectState::IDENTIFIED_CONTACT))
-            {
+            const Contact::Verification::State contact_state =
+                Contact::Verification::get_contact_verification_state(this->getObject(0).id);
+            if (!contact_state.has_all(Contact::Verification::State::cIvm)) {
                 throw Fred::PublicRequest::NotApplicable("pre_save_check: failed");
             }
 
@@ -384,8 +387,9 @@ public:
     {
         if (!pri_ptr_->getId()) {
 
-            if (!object_has_state(pri_ptr_->getObject(0).id, ::MojeID::ObjectState::MOJEID_CONTACT))
-            {
+            const Contact::Verification::State contact_state =
+                Contact::Verification::get_contact_verification_state(pri_ptr_->getObject(0).id);
+            if (!contact_state.has_all(Contact::Verification::State::civM)) {
                 throw NotApplicable("pre_insert_checks: failed!");
             }
 
@@ -456,9 +460,9 @@ public:
         Database::Transaction tx(conn);
 
         /* check if contact is already identified (22) and cancel status */
-        if (!Fred::object_has_state(pri_ptr_->getObject(0).id
-                , Fred::ObjectState::IDENTIFIED_CONTACT))
-        {
+        const Contact::Verification::State contact_state =
+            Contact::Verification::get_contact_verification_state(pri_ptr_->getObject(0).id);
+        if (!contact_state.has_all(Contact::Verification::State::cIvm)) {
             /* otherwise there could be identification request */
             cancel_public_request(pri_ptr_->getObject(0).id
                     , PRT_MOJEID_CONTACT_IDENTIFICATION, pri_ptr_->getResolveRequestId());
@@ -520,6 +524,12 @@ public:
         return Fred::PublicRequest::PRT_MOJEID_CONTACT_VALIDATION;
     }
 };
+
+const Type PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION = "mojeid_contact_conditional_identification";
+const Type PRT_MOJEID_CONTACT_IDENTIFICATION = "mojeid_contact_identification";
+const Type PRT_MOJEID_CONTACT_VALIDATION = "mojeid_contact_validation";
+const Type PRT_MOJEID_CONDITIONALLY_IDENTIFIED_CONTACT_TRANSFER = "mojeid_conditionally_identified_contact_transfer";
+const Type PRT_MOJEID_IDENTIFIED_CONTACT_TRANSFER = "mojeid_identified_contact_transfer";
 
 }
 }
