@@ -1503,7 +1503,48 @@ namespace Registry
         void DomainBrowser::mergeContacts(unsigned long long dst_contact_id,
             const std::vector<unsigned long long>& contact_list)
         {
+            Logging::Context lctx_server(create_ctx_name(get_server_name()));
+            Logging::Context lctx("get-merge-contact-candidate-list");
+            Fred::OperationContext ctx;
+            try
+            {
+                Fred::InfoContactOutput dst = check_user_contact_id<UserNotExists>(ctx, dst_contact_id);
+                if(contact_list.empty()) throw Registry::DomainBrowserImpl::InvalidContacts();
 
+                //get src contact handle
+                Database::query_param_list params;
+                Util::HeadSeparator id_separator("",", ");
+                std::string sql("SELECT name, id FROM object_registry WHERE id IN (");
+
+                for(std::vector<unsigned long long>::const_iterator ci = contact_list.begin(); ci < contact_list.end(); ++ci)
+                {
+                    sql += id_separator.get();
+                    sql += params.add(*ci);
+                }
+
+                sql += ")";
+
+                Database::Result src_handle_result = ctx.get_conn().exec_params(sql, params);
+
+                for(Database::Result::size_type i = 0; i < src_handle_result.size(); ++i)
+                {
+                    Fred::MergeContactOutput merge_data = Fred::MergeContact(src_handle_result[i]["name"],
+                        dst.info_contact_data.handle, update_registrar_, MergeContactDiffContacts()).exec(ctx);
+
+                    if((merge_data.contactid.src_contact_id != static_cast<unsigned long long>(src_handle_result[i]["id"]))
+                    || (merge_data.contactid.dst_contact_id != dst_contact_id))
+                    {
+                        throw InternalServerError();
+                    }
+
+                    Fred::create_poll_messages(merge_data, ctx);
+                }
+            }
+            catch(...)
+            {
+                log_and_rethrow_exception_handler(ctx);
+            }
+            ctx.commit_transaction();
         }
     }//namespace DomainBrowserImpl
 }//namespace Registry
