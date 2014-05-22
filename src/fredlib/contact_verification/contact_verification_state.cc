@@ -73,9 +73,11 @@ void lock_contact_verification_states(::uint64_t _contact_id)
     return contact_id;
 }
 
-State get_contact_verification_state(::uint64_t _contact_id)
+namespace
 {
-    lock_contact_verification_states(_contact_id);
+
+State get_contact_verification_state_without_lock(::uint64_t _contact_id)
+{
     Database::Connection conn = Database::Manager::acquire();
     static const std::string sql =
         "SELECT COALESCE(BOOL_OR(eos.name='" + State::STR_C + "'),False),"
@@ -105,10 +107,18 @@ State get_contact_verification_state(::uint64_t _contact_id)
                                                                  State::M));
 }
 
+}
+
+State get_contact_verification_state(::uint64_t _contact_id)
+{
+    lock_contact_verification_states(_contact_id);
+    return get_contact_verification_state_without_lock(_contact_id);
+}
+
 State get_contact_verification_state(const std::string &_contact_handle)
 {
     const ::uint64_t contact_id = lock_contact_verification_states(_contact_handle);
-    return get_contact_verification_state(contact_id);
+    return get_contact_verification_state_without_lock(contact_id);
 }
 
 } // namespace Verification
