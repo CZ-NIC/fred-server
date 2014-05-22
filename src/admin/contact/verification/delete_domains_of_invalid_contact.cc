@@ -45,10 +45,7 @@ namespace  Admin {
         try {
             Fred::InfoContactCheckOutput check_info = Fred::InfoContactCheck(_check_handle).exec(_ctx);
 
-            if( check_info.testsuite_handle != Fred::TestsuiteHandle::MANUAL
-                &&
-                check_info.testsuite_handle != Fred::TestsuiteHandle::THANK_YOU
-            ) {
+            if( check_info.testsuite_handle != Fred::TestsuiteHandle::MANUAL) {
                 throw Admin::ExceptionIncorrectTestsuite();
             }
 
