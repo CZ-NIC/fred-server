@@ -2664,10 +2664,8 @@ BOOST_FIXTURE_TEST_CASE(get_object_id_by_objtype, get_my_contact_object_fixture 
 }
 
 BOOST_AUTO_TEST_SUITE_END();//getObjectRegistryId
-;
-BOOST_AUTO_TEST_SUITE(getMergeContactCandidateList)
 
-struct get_candidate_contacts_fixture
+struct merge_contacts_fixture
 : mojeid_user_contact_fixture
 , virtual test_registrar_fixture
 , domain_browser_impl_instance_fixture
@@ -2675,7 +2673,7 @@ struct get_candidate_contacts_fixture
     std::string test_contact_handle;
     std::map<std::string,Fred::InfoContactOutput> contact_info;
 
-    get_candidate_contacts_fixture()
+    merge_contacts_fixture()
     : test_contact_handle(std::string("TEST_CONTACT_")+user_contact_handle_fixture::xmark+"_")
     {
         Fred::OperationContext ctx;
@@ -2695,30 +2693,27 @@ struct get_candidate_contacts_fixture
             if(i == 9)
             {
                 BOOST_MESSAGE(contact_handle.str() + " mojeidContact");
-                Fred::LockObjectStateRequestLock(Fred::ObjectState::MOJEID_CONTACT,
-                    map_at(contact_info,contact_handle.str()).info_contact_data.id).exec(ctx);
-                ctx.get_conn().exec_params(
-                    "INSERT INTO object_state_request (object_id, state_id)"
-                    " VALUES ($1::integer, (SELECT id FROM enum_object_states"
-                    " WHERE name = $2::text))",
-                    Database::query_param_list
-                        (map_at(contact_info,contact_handle.str()).info_contact_data.id)
-                        (Fred::ObjectState::MOJEID_CONTACT));
-                Fred::PerformObjectStateRequest().set_object_id(map_at(contact_info,contact_handle.str()).info_contact_data.id).exec(ctx);
+                Fred::CreateObjectStateRequestId(map_at(contact_info,contact_handle.str()).info_contact_data.id,
+                    Util::set_of<std::string>(Fred::ObjectState::MOJEID_CONTACT)).exec(ctx);
+                Fred::PerformObjectStateRequest(map_at(contact_info,contact_handle.str()).info_contact_data.id).exec(ctx);
             }
         }
 
         ctx.commit_transaction();//commit fixture
     }
 
-    ~get_candidate_contacts_fixture()
+    ~merge_contacts_fixture()
     {}
 };
+
+
+BOOST_AUTO_TEST_SUITE(getMergeContactCandidateList)
+
 
 /**
  * test call getMergeContactCandidateList, candidate list except last mojeid contact
 */
-BOOST_FIXTURE_TEST_CASE(get_candidate_contact_list, get_candidate_contacts_fixture )
+BOOST_FIXTURE_TEST_CASE(get_candidate_contact_list, merge_contacts_fixture )
 {
     Fred::OperationContext ctx;
     std::vector<std::vector<std::string> > contact_list_out;
