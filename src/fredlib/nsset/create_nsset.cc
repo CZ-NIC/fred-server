@@ -17,7 +17,7 @@
  */
 
 /**
- *  @file create_nsset.h
+ *  @file
  *  create nsset
  */
 
@@ -27,11 +27,12 @@
 
 #include <boost/algorithm/string.hpp>
 
-#include "fredlib/nsset/create_nsset.h"
-#include "fredlib/object/object.h"
-
-#include "fredlib/opcontext.h"
-#include "fredlib/db_settings.h"
+#include "src/fredlib/nsset/create_nsset.h"
+#include "src/fredlib/object/object.h"
+#include "src/fredlib/object/object_impl.h"
+#include "src/fredlib/registrar/registrar_impl.h"
+#include "src/fredlib/opcontext.h"
+#include "src/fredlib/db_settings.h"
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
 #include "util/util.h"
@@ -100,7 +101,15 @@ namespace Fred
 
         try
         {
-            unsigned long long object_id = CreateObject("nsset", handle_, registrar_, authinfo_).exec(ctx);
+            //check registrar
+            Registrar::get_registrar_id_by_handle(
+                ctx, registrar_, static_cast<Exception*>(0)//set throw
+                , &Exception::set_unknown_registrar_handle);
+
+            CreateObjectOutput create_object_output = CreateObject("nsset", handle_, registrar_, authinfo_, logd_request_id_).exec(ctx);
+
+            Exception create_nsset_exception;
+
             //create nsset
             {
                 Database::QueryParams params;//query params
@@ -111,7 +120,7 @@ namespace Fred
                 val_sql << " VALUES (";
 
                 //id
-                params.push_back(object_id);
+                params.push_back(create_object_output.object_id);
                 col_sql << col_separator.get() << "id";
                 val_sql << val_separator.get() << "$" << params.size() <<"::integer";
 
@@ -132,36 +141,54 @@ namespace Fred
                 {
                     for(std::vector<DnsHost>::iterator i = dns_hosts_.begin(); i != dns_hosts_.end(); ++i)
                     {
-                        Database::Result add_host_id_res = ctx.get_conn().exec_params(
+                        unsigned long long add_host_id = 0;
+                        try
+                        {
+                            ctx.get_conn().exec("SAVEPOINT dnshost");
+                            Database::Result add_host_id_res = ctx.get_conn().exec_params(
                             "INSERT INTO host (nssetid, fqdn) VALUES( "
                             " $1::integer, LOWER($2::text)) RETURNING id"
-                            , Database::query_param_list(object_id)(i->get_fqdn()));
-                        if(add_host_id_res.size() != 1)
-                        {
-                            std::string errmsg("set dns hosts || invalid:dns fqdn: ");
-                            errmsg += boost::replace_all_copy(i->get_fqdn(),"|", "[pipe]");//quote pipes
-                            errmsg += " |";
-                            throw CNEX(errmsg.c_str());
-                        }
+                            , Database::query_param_list(create_object_output.object_id)(i->get_fqdn()));
+                            ctx.get_conn().exec("RELEASE SAVEPOINT dnshost");
 
-                        unsigned long long add_host_id = add_host_id_res[0][0];
+                            add_host_id = static_cast<unsigned long long>(add_host_id_res[0][0]);
+                        }
+                        catch(const std::exception& ex)
+                        {
+                            std::string what_string(ex.what());
+                            if(what_string.find("host_nssetid_fqdn_key") != std::string::npos)
+                            {
+                                create_nsset_exception.add_already_set_dns_host(i->get_fqdn());
+                                ctx.get_conn().exec("ROLLBACK TO SAVEPOINT dnshost");
+                            }
+                            else
+                                throw;
+                        }
 
                         std::vector<std::string> dns_host_ip = i->get_inet_addr();
 
                         for(std::vector<std::string>::iterator j = dns_host_ip.begin(); j != dns_host_ip.end(); ++j)
                         {
-                            Database::Result add_host_ipaddr_res = ctx.get_conn().exec_params(
-                                "INSERT INTO host_ipaddr_map (hostid, nssetid, ipaddr) "
-                                " VALUES($1::integer, $2::integer, $3::inet) RETURNING hostid"
-                                , Database::query_param_list(add_host_id)(object_id)(*j));
-                            if(add_host_ipaddr_res.size() != 1)
+                            try
                             {
-                                std::string errmsg("set dns hosts || invalid:ipaddr: ");
-                                errmsg += boost::replace_all_copy(*j,"|", "[pipe]");//quote pipes
-                                errmsg += " |";
-                                throw CNEX(errmsg.c_str());
+                                ctx.get_conn().exec("SAVEPOINT dnshostipaddr");
+                                ctx.get_conn().exec_params(
+                                "INSERT INTO host_ipaddr_map (hostid, nssetid, ipaddr) "
+                                " VALUES($1::integer, $2::integer, $3::inet)"
+                                , Database::query_param_list(add_host_id)(create_object_output.object_id)(*j));
+                                ctx.get_conn().exec("RELEASE SAVEPOINT dnshostipaddr");
                             }
-
+                            catch(const std::exception& ex)
+                            {
+                                std::string what_string(ex.what());
+                                if(what_string.find("syntax for type inet") != std::string::npos)
+                                {
+                                    create_nsset_exception.add_invalid_dns_host_ipaddr(*j);
+                                    ctx.get_conn().exec("ROLLBACK TO SAVEPOINT dnshostipaddr");
+                                }
+                                else
+                                    throw;
+                            }
                         }//for j
                     }//for i
                 }//if set dns hosts
@@ -173,74 +200,48 @@ namespace Fred
                     Database::QueryParams params;//query params
                     std::stringstream sql;
 
-                    params.push_back(object_id);
+                    params.push_back(create_object_output.object_id);
                     sql << "INSERT INTO nsset_contact_map(nssetid, contactid) "
                             " VALUES ($" << params.size() << "::integer, ";
 
                     for(std::vector<std::string>::iterator i = tech_contacts_.begin(); i != tech_contacts_.end(); ++i)
                     {
-                        //lock object_registry row for update
-                        {
-                            Database::Result lock_res = ctx.get_conn().exec_params(
-                                "SELECT oreg.id FROM enum_object_type eot"
-                                " JOIN object_registry oreg ON oreg.type = eot.id "
-                                " AND oreg.name = UPPER($1::text) AND oreg.erdate IS NULL "
-                                " WHERE eot.name = 'contact' FOR UPDATE OF oreg"
-                                , Database::query_param_list(*i));
-
-                            if (lock_res.size() != 1)
-                            {
-                                std::string errmsg("unable to lock || not found:tech contact: ");
-                                errmsg += boost::replace_all_copy(*i,"|", "[pipe]");//quote pipes
-                                errmsg += " |";
-                                throw CNEX(errmsg.c_str());
-                            }
-                        }
+                        //lock object_registry row for update and get id
+                        unsigned long long tech_contact_id = get_object_id_by_handle_and_type_with_lock(
+                                ctx,*i,"contact",&create_nsset_exception,
+                                &Exception::add_unknown_technical_contact_handle);
+                        if(tech_contact_id == 0) continue;
 
                         Database::QueryParams params_i = params;//query params
                         std::stringstream sql_i;
                         sql_i << sql.str();
 
-                        params_i.push_back(*i);
+                        params_i.push_back(tech_contact_id);
+                        sql_i << " $"<< params_i.size() << "::integer )";
 
-                        {//precheck uniqueness
-                            Database::Result nsset_res = ctx.get_conn().exec_params(
-                            "SELECT nssetid, contactid FROM nsset_contact_map "
-                            " WHERE nssetid = $1::bigint "
-                            "  AND contactid = raise_exception_ifnull("
-                            "    (SELECT oreg.id FROM object_registry oreg "
-                            "       JOIN contact c ON oreg.id = c.id "
-                            "     WHERE oreg.name = UPPER($2::text) AND oreg.erdate IS NULL) "
-                            "     ,'|| not found:tech contact: '||ex_data($2::text)||' |')"
-                            , params_i);
-
-                            if (nsset_res.size() == 1)
-                            {
-                                std::string errmsg("set tech contact precheck uniqueness failed || already set:tech contact: ");
-                                errmsg += boost::replace_all_copy(*i,"|", "[pipe]");//quote pipes
-                                errmsg += " |";
-                                throw CNEX(errmsg.c_str());
-                            }
-                        }
-
-                        sql_i << " raise_exception_ifnull("
-                            " (SELECT oreg.id FROM object_registry oreg JOIN contact c ON oreg.id = c.id "
-                            " WHERE oreg.name = UPPER($"<< params_i.size() << "::text) AND oreg.erdate IS NULL) "
-                            " ,'|| not found:tech contact: '||ex_data($"<< params.size() << "::text)||' |')) "
-                            " RETURNING nssetid";
-                        Database::Result nsset_add_check_res = ctx.get_conn().exec_params(sql_i.str(), params_i);
-                        if (nsset_add_check_res.size() != 1)
+                        try
                         {
-                            std::string errmsg("set tech contact failed || invalid:handle: ");
-                            errmsg += boost::replace_all_copy(handle_,"|", "[pipe]");//quote pipes
-                            errmsg += " | invalid:tech contact: ";
-                            errmsg += boost::replace_all_copy(*i,"|", "[pipe]");//quote pipes
-                            errmsg += " |";
-                            throw CNEX(errmsg.c_str());
+                            ctx.get_conn().exec("SAVEPOINT tech_contact");
+                            ctx.get_conn().exec_params(sql_i.str(), params_i);
+                            ctx.get_conn().exec("RELEASE SAVEPOINT tech_contact");
+                        }
+                        catch(const std::exception& ex)
+                        {
+                            std::string what_string(ex.what());
+                            if(what_string.find("nsset_contact_map_pkey") != std::string::npos)
+                            {
+                                create_nsset_exception.add_already_set_technical_contact_handle(*i);
+                                ctx.get_conn().exec("ROLLBACK TO SAVEPOINT tech_contact");
+                            }
+                            else
+                                throw;
                         }
                     }//for i
                 }//if set tech contacts
 
+                //check exception
+                if(create_nsset_exception.throw_me())
+                    BOOST_THROW_EXCEPTION(create_nsset_exception);
 
                 //get crdate from object_registry
                 {
@@ -248,75 +249,68 @@ namespace Fred
                             "SELECT crdate::timestamp AT TIME ZONE 'UTC' AT TIME ZONE $1::text "
                             "  FROM object_registry "
                             " WHERE id = $2::bigint"
-                        , Database::query_param_list(returned_timestamp_pg_time_zone_name)(object_id));
-
+                        , Database::query_param_list(returned_timestamp_pg_time_zone_name)(create_object_output.object_id));
                     if (crdate_res.size() != 1)
                     {
-                        std::string errmsg("|| not found crdate:handle: ");
-                        errmsg += boost::replace_all_copy(handle_,"|", "[pipe]");//quote pipes
-                        errmsg += " |";
-                        throw CNEX(errmsg.c_str());
+                        BOOST_THROW_EXCEPTION(Fred::InternalError("timestamp of the nsset creation was not found"));
                     }
-
                     timestamp = boost::posix_time::time_from_string(std::string(crdate_res[0][0]));
                 }
             }
 
             //save history
             {
-                unsigned long long history_id = Fred::InsertHistory(logd_request_id_).exec(ctx);
-
-                //object_history
-                ctx.get_conn().exec_params(
-                    "INSERT INTO object_history(historyid,id,clid, upid, trdate, update, authinfopw) "
-                    " SELECT $1::bigint, id,clid, upid, trdate, update, authinfopw FROM object "
-                    " WHERE id = $2::integer"
-                    , Database::query_param_list(history_id)(object_id));
-
-                //object_registry historyid
-                ctx.get_conn().exec_params(
-                    "UPDATE object_registry SET historyid = $1::bigint, crhistoryid = $1::bigint  "
-                        " WHERE id = $2::integer"
-                        , Database::query_param_list(history_id)(object_id));
-
                 //nsset_history
                 ctx.get_conn().exec_params(
                     "INSERT INTO nsset_history(historyid,id,checklevel) "
                     " SELECT $1::bigint, id, checklevel FROM nsset "
                         " WHERE id = $2::integer"
-                        , Database::query_param_list(history_id)(object_id));
+                        , Database::query_param_list(create_object_output.history_id)(create_object_output.object_id));
 
                 //host_history
                 ctx.get_conn().exec_params(
                     "INSERT INTO host_history(historyid, id, nssetid, fqdn) "
                     " SELECT $1::bigint, id, nssetid, fqdn FROM host "
                         " WHERE nssetid = $2::integer"
-                    , Database::query_param_list(history_id)(object_id));
+                    , Database::query_param_list(create_object_output.history_id)(create_object_output.object_id));
 
                 //host_ipaddr_map_history
                 ctx.get_conn().exec_params(
                     "INSERT INTO host_ipaddr_map_history(historyid, id, hostid, nssetid, ipaddr) "
                     " SELECT $1::bigint, id, hostid, nssetid, ipaddr FROM host_ipaddr_map "
                         " WHERE nssetid = $2::integer"
-                    , Database::query_param_list(history_id)(object_id));
+                    , Database::query_param_list(create_object_output.history_id)(create_object_output.object_id));
 
                 //nsset_contact_map_history
                 ctx.get_conn().exec_params(
                     "INSERT INTO nsset_contact_map_history(historyid, nssetid, contactid) "
                     " SELECT $1::bigint, nssetid, contactid FROM nsset_contact_map "
                         " WHERE nssetid = $2::integer"
-                    , Database::query_param_list(history_id)(object_id));
+                    , Database::query_param_list(create_object_output.history_id)(create_object_output.object_id));
             }//save history
-
-
         }//try
-        catch(...)//common exception processing
+        catch(ExceptionStack& ex)
         {
-            handleOperationExceptions<CreateNssetException>(__FILE__, __LINE__, __ASSERT_FUNCTION);
+            ex.add_exception_stack_info(to_string());
+            throw;
         }
 
         return timestamp;
     }
+
+    std::string CreateNsset::to_string() const
+    {
+        return Util::format_operation_state("CreateNsset",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("handle",handle_))
+        (std::make_pair("registrar",registrar_))
+        (std::make_pair("authinfo",authinfo_.print_quoted()))
+        (std::make_pair("dns_hosts", Util::format_vector(dns_hosts_)))
+        (std::make_pair("tech_contacts",Util::format_vector(tech_contacts_)))
+        (std::make_pair("logd_request_id",logd_request_id_.print_quoted()))
+        );
+    }
+
 
 }//namespace Fred
 

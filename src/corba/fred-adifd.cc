@@ -22,8 +22,9 @@
  */
 
 #include "config.h"
-#include "Admin.hh"
+#include "src/corba/Admin.hh"
 #include "admin/admin_impl.h"
+#include "admin_block/server_i.h"
 
 #include <iostream>
 #include <stdexcept>
@@ -37,11 +38,11 @@
 #include <boost/date_time.hpp>
 #include <boost/assign/list_of.hpp>
 
-#include "fredlib/db_settings.h"
-#include "corba_wrapper.h"
+#include "src/fredlib/db_settings.h"
+#include "util/corba_wrapper.h"
 #include "log/logger.h"
 #include "log/context.h"
-#include "corba/connection_releaser.h"
+#include "src/corba/connection_releaser.h"
 #include "setup_server.h"
 
 #include "cfg/config_handler.h"
@@ -113,6 +114,9 @@ int main(int argc, char *argv[])
         //create server object with poa and nameservice registration
         CorbaContainer::get_instance()
             ->register_server(myccReg_Admin_i.release(), "Admin");
+
+        CorbaContainer::get_instance()
+            ->register_server(new Registry::Administrative::Server_i(server_name), "Administrative");
 
         run_server(CfgArgs::instance(), CorbaContainer::get_instance());
 

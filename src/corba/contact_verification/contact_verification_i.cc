@@ -23,12 +23,12 @@
 */
 
 #include "contact_verification_i.h"
-#include "corba_wrapper_decl.h"
-#include "contact_verification/contact_verification_impl.h"
-#include "mailer_manager.h"
-#include <ContactVerification.hh>
+#include "util/corba_wrapper_decl.h"
+#include "src/contact_verification/contact_verification_impl.h"
+#include "src/corba/mailer_manager.h"
+#include "src/corba/ContactVerification.hh"
 #include <string>
-#include "contact_verification/corba_conversion.h"
+#include "src/corba/contact_verification/corba_conversion.h"
 
 
 namespace Registry

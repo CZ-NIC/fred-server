@@ -17,21 +17,23 @@
  */
 
 /**
- *  @file create_contact.h
+ *  @file
  *  create contact
  */
 
 
 #include <string>
 #include <vector>
+#include <sstream>
 
 #include <boost/algorithm/string.hpp>
 
-#include "fredlib/contact/create_contact.h"
-#include "fredlib/object/object.h"
+#include "src/fredlib/contact/create_contact.h"
+#include "src/fredlib/object/object.h"
+#include "src/fredlib/contact/contact_enum.h"
 
-#include "fredlib/opcontext.h"
-#include "fredlib/db_settings.h"
+#include "src/fredlib/opcontext.h"
+#include "src/fredlib/db_settings.h"
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
 #include "util/util.h"
@@ -276,7 +278,31 @@ namespace Fred
 
         try
         {
-            unsigned long long object_id = CreateObject("contact", handle_, registrar_, authinfo_).exec(ctx);
+            Exception create_contact_exception;
+            CreateObjectOutput create_object_output;
+            try
+            {
+                create_object_output = CreateObject(
+                        "contact", handle_, registrar_, authinfo_, logd_request_id_)
+                        .exec(ctx);
+            }
+            catch(const CreateObject::Exception& create_object_exception)
+            {
+                //CreateObject implementation sets only one member at once into Exception instance
+                if(create_object_exception.is_set_unknown_registrar_handle())
+                {
+                    //fatal good path, need valid registrar performing create
+                    BOOST_THROW_EXCEPTION(Exception().set_unknown_registrar_handle(
+                            create_object_exception.get_unknown_registrar_handle()));
+                }
+                else if(create_object_exception.is_set_invalid_object_handle())
+                {   //non-fatal good path, create can continue to check input
+                    create_contact_exception.set_invalid_contact_handle(
+                            create_object_exception.get_invalid_object_handle());
+                }
+                else throw;//rethrow unexpected
+            }
+
             //create contact
             {
                 Database::QueryParams params;//query params
@@ -287,7 +313,7 @@ namespace Fred
                 val_sql << " VALUES (";
 
                 //id
-                params.push_back(object_id);
+                params.push_back(create_object_output.object_id);
                 col_sql << col_separator.get() << "id";
                 val_sql << val_separator.get() << "$" << params.size() <<"::integer";
 
@@ -349,7 +375,8 @@ namespace Fred
 
                 if(country_.isset())
                 {
-                    params.push_back(country_.get_value());
+                    params.push_back(Contact::get_country_code(country_, ctx,
+                            &create_contact_exception, &Exception::set_unknown_country));
                     col_sql << col_separator.get() << "country";
                     val_sql << val_separator.get() << "$" << params.size() <<"::text";
                 }
@@ -391,11 +418,10 @@ namespace Fred
 
                 if(ssntype_.isset())
                 {
-                    params.push_back(ssntype_.get_value());
+                    params.push_back(Contact::get_ssntype_id(ssntype_,ctx,
+                            &create_contact_exception, &Exception::set_unknown_ssntype));
                     col_sql << col_separator.get() << "ssntype";
-                    val_sql << val_separator.get() << "raise_exception_ifnull( "
-                    " (SELECT id FROM enum_ssntype WHERE type = UPPER($" << params.size() <<"::text)) "
-                    " ,'|| not found:ssntype: '||ex_data($1::text)||' |') ";
+                    val_sql << val_separator.get() << "$" << params.size() <<"::integer";
                 }
 
                 if(ssn_.isset())
@@ -425,7 +451,6 @@ namespace Fred
                     col_sql << col_separator.get() << "discloseaddress";
                     val_sql << val_separator.get() << "$" << params.size() <<"::boolean";
                 }
-
 
                 if(disclosetelephone_.isset())
                 {
@@ -471,6 +496,12 @@ namespace Fred
 
                 col_sql <<")";
                 val_sql << ")";
+
+                if(create_contact_exception.throw_me())
+                {
+                    BOOST_THROW_EXCEPTION(create_contact_exception);
+                }
+
                 //insert into contact
                 ctx.get_conn().exec_params(col_sql.str() + val_sql.str(), params);
 
@@ -480,14 +511,11 @@ namespace Fred
                             "SELECT crdate::timestamp AT TIME ZONE 'UTC' AT TIME ZONE $1::text "
                             "  FROM object_registry "
                             " WHERE id = $2::bigint"
-                        , Database::query_param_list(returned_timestamp_pg_time_zone_name)(object_id));
+                        , Database::query_param_list(returned_timestamp_pg_time_zone_name)(create_object_output.object_id));
 
                     if (crdate_res.size() != 1)
                     {
-                        std::string errmsg("|| not found crdate:handle: ");
-                        errmsg += boost::replace_all_copy(handle_,"|", "[pipe]");//quote pipes
-                        errmsg += " |";
-                        throw CCEX(errmsg.c_str());
+                        BOOST_THROW_EXCEPTION(Fred::InternalError("timestamp of the contact creation was not found"));
                     }
 
                     timestamp = boost::posix_time::time_from_string(std::string(crdate_res[0][0]));
@@ -496,21 +524,6 @@ namespace Fred
 
             //save history
             {
-                unsigned long long history_id = Fred::InsertHistory(logd_request_id_).exec(ctx);
-
-                //object_history
-                ctx.get_conn().exec_params(
-                    "INSERT INTO object_history(historyid,id,clid, upid, trdate, update, authinfopw) "
-                    " SELECT $1::bigint, id,clid, upid, trdate, update, authinfopw FROM object "
-                    " WHERE id = $2::integer"
-                    , Database::query_param_list(history_id)(object_id));
-
-                //object_registry historyid
-                ctx.get_conn().exec_params(
-                    "UPDATE object_registry SET historyid = $1::bigint "
-                        " WHERE id = $2::integer"
-                        , Database::query_param_list(history_id)(object_id));
-
                 //contact_history
                 ctx.get_conn().exec_params(
                     "INSERT INTO contact_history(historyid,id "
@@ -526,19 +539,55 @@ namespace Fred
                     " , disclosefax, discloseemail, disclosevat, discloseident, disclosenotifyemail "
                     " FROM contact "
                     " WHERE id = $2::integer"
-                    , Database::query_param_list(history_id)(object_id));
+                    , Database::query_param_list(create_object_output.history_id)(create_object_output.object_id));
 
             }//save history
 
-
         }//try
-        catch(...)//common exception processing
+        catch(ExceptionStack& ex)
         {
-            handleOperationExceptions<CreateContactException>(__FILE__, __LINE__, __ASSERT_FUNCTION);
+            ex.add_exception_stack_info(to_string());
+            throw;
         }
 
         return timestamp;
     }
 
-}//namespace Fred
+    std::string CreateContact::to_string() const
+    {
+        return Util::format_operation_state("CreateContact",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("handle",handle_))
+        (std::make_pair("registrar",registrar_))
+        (std::make_pair("authinfo",authinfo_.print_quoted()))
+        (std::make_pair("name",name_.print_quoted()))
+        (std::make_pair("organization",organization_.print_quoted()))
+        (std::make_pair("street1",street1_.print_quoted()))
+        (std::make_pair("street2",street2_.print_quoted()))
+        (std::make_pair("street3",street3_.print_quoted()))
+        (std::make_pair("city",city_.print_quoted()))
+        (std::make_pair("stateorprovince",stateorprovince_.print_quoted()))
+        (std::make_pair("postalcode",postalcode_.print_quoted()))
+        (std::make_pair("country",country_.print_quoted()))
+        (std::make_pair("telephone",telephone_.print_quoted()))
+        (std::make_pair("fax",fax_.print_quoted()))
+        (std::make_pair("email",email_.print_quoted()))
+        (std::make_pair("notifyemail_",notifyemail_.print_quoted()))
+        (std::make_pair("vat",vat_.print_quoted()))
+        (std::make_pair("ssntype",ssntype_.print_quoted()))
+        (std::make_pair("ssn",ssn_.print_quoted()))
+        (std::make_pair("disclosename",disclosename_.print_quoted()))
+        (std::make_pair("discloseorganization",discloseorganization_.print_quoted()))
+        (std::make_pair("discloseaddress",discloseaddress_.print_quoted()))
+        (std::make_pair("disclosetelephone",disclosetelephone_.print_quoted()))
+        (std::make_pair("disclosefax",disclosefax_.print_quoted()))
+        (std::make_pair("discloseemail",discloseemail_.print_quoted()))
+        (std::make_pair("disclosevat",disclosevat_.print_quoted()))
+        (std::make_pair("discloseident",discloseident_.print_quoted()))
+        (std::make_pair("disclosenotifyemail",disclosenotifyemail_.print_quoted()))
+        (std::make_pair("logd_request_id",logd_request_id_.print_quoted()))
+        );
+    }
+
+}// namespace Fred
 

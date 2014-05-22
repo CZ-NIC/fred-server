@@ -1,63 +1,66 @@
 #include "create_delete_contact_poll_message.h"
-#include "create_poll_message.h"
+#include "create_epp_action_poll_message_impl.h"
 
 #include <boost/lexical_cast.hpp>
+#include <boost/assign/list_of.hpp>
 
-
-#define MY_EXCEPTION_CLASS(DATA) CreateDeleteContactPollMessageException(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-#define MY_ERROR_CLASS(DATA)     CreateDeleteContactPollMessageError(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
 
 namespace Fred {
 namespace Poll {
 
 
 CreateDeleteContactPollMessage::CreateDeleteContactPollMessage(
-        const ObjectHistoryId &_history_id)
-    : history_id_(_history_id)
-{
-}
+    const ObjectHistoryId &_history_id
+) :
+    history_id_(_history_id)
+{ }
 
+unsigned long long CreateDeleteContactPollMessage::exec(Fred::OperationContext &_ctx) {
+    try {
+        return
+            Fred::Poll::CreateEppActionPollMessage(
+                history_id_,
+                Fred::Poll::contact,
+                message_type_handle()
+            ).exec(_ctx);
+    } catch (CreateEppActionPollMessage::Exception& e) {
+        if(e.is_set_object_history_not_found()) {
+            Exception new_e;
 
-void CreateDeleteContactPollMessage::exec(Fred::OperationContext &_ctx)
-{
-    try
-    {
-        Database::Result r = _ctx.get_conn().exec_params(
-                "SELECT eot.name AS object_type, r.handle as registrar_handle"
-                " FROM object_registry oreg JOIN object_history oh ON oh.id = oreg.id"
-                " JOIN enum_object_type eot ON eot.id = oreg.type"
-                " JOIN registrar r ON r.id = oh.clid"
-                " WHERE oh.historyid = $1::bigint",
-                Database::query_param_list(history_id_));
+            new_e
+                .set_object_history_not_found(
+                    e.get_object_history_not_found()
+                ).add_exception_stack_info(
+                    this->to_string() );
 
-        if (r.size() != 1) {
-            std::string errmsg("|| not found:object history:");
-            errmsg += boost::lexical_cast<std::string>(history_id_);
-            errmsg += " |";
-            throw MY_EXCEPTION_CLASS(errmsg.c_str());
+            BOOST_THROW_EXCEPTION(new_e);
         }
 
-        if (static_cast<std::string>(r[0][0]) != "contact") {
-            std::string errmsg("|| not found:contact:");
-            errmsg += boost::lexical_cast<std::string>(history_id_);
-            errmsg += " |";
-            throw MY_EXCEPTION_CLASS(errmsg.c_str());
+        if(e.is_set_object_type_not_found()) {
+            Exception new_e;
+
+            new_e
+                .set_contact_not_found(
+                    e.get_object_type_not_found().second
+                ).add_exception_stack_info(
+                    this->to_string() );
+
+            BOOST_THROW_EXCEPTION(new_e);
         }
 
-        std::string sponsoring_registrar = static_cast<std::string>(r[0][1]);
-        unsigned long long poll_msg_id = CreatePollMessage(sponsoring_registrar, std::string("delete_contact")).exec(_ctx);
-
-        _ctx.get_conn().exec_params(
-                "INSERT INTO poll_eppaction (msgid, objid) VALUES ($1::bigint, $2::bigint)",
-                Database::query_param_list(poll_msg_id)(history_id_));
-    }
-    catch (...)
-    {
-        handleOperationExceptions<CreateDeleteContactPollMessageException>(
-                __FILE__, __LINE__, __ASSERT_FUNCTION);
+        // if (maybe in future) implementation Exception contains some other fragments don't swallow it...
+        throw;
     }
 }
 
+std::string CreateDeleteContactPollMessage::to_string() const {
+
+    return Util::format_operation_state(
+        "CreateDeleteContactPollMessage",
+        boost::assign::list_of
+            (std::make_pair("history_id",boost::lexical_cast<std::string>(history_id_)))
+    );
+}
 
 }
 }

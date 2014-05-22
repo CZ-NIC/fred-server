@@ -28,14 +28,15 @@
 #include <vector>
 
 
-#include "fredlib/opexception.h"
-#include "fredlib/opcontext.h"
-#include "fredlib/contact/merge_contact.h"
+#include "src/fredlib/opexception.h"
+#include "src/fredlib/opcontext.h"
+#include "util/printable.h"
+#include "src/fredlib/contact/merge_contact.h"
 
 
 namespace Fred
 {
-    struct MergeContactEmailNotificationInput
+    struct MergeContactEmailNotificationInput : public Util::Printable
     {
         std::string src_contact_handle;//source contact identifier
         std::string dst_contact_handle;//destination contact identifier
@@ -48,9 +49,23 @@ namespace Fred
         , dst_contact_handle(_dst_contact_handle)
         , merge_output(_merge_output)
         {}
+
+        /**
+        * Dumps state of the instance into the string
+        * @return string with description of the instance state
+        */
+        std::string to_string() const
+        {
+            return Util::format_data_structure("MergeContactEmailNotificationInput",
+            Util::vector_of<std::pair<std::string,std::string> >
+            (std::make_pair("src_contact_handle",src_contact_handle))
+            (std::make_pair("dst_contact_handle",dst_contact_handle))
+            (std::make_pair("merge_output",merge_output.to_string()))
+            );
+        }
     };
 
-    struct MergeContactNotificationEmail
+    struct MergeContactNotificationEmail : public Util::Printable
     {
         std::string dst_contact_handle;
         std::string dst_contact_roid;
@@ -60,6 +75,25 @@ namespace Fred
         std::vector<std::string> keyset_tech_list;
         std::vector<std::string> removed_list;
         std::vector<std::string> removed_roid_list;
+
+        /**
+        * Dumps state of the instance into the string
+        * @return string with description of the instance state
+        */
+        std::string to_string() const
+        {
+            return Util::format_data_structure("MergeContactNotificationEmail",
+            Util::vector_of<std::pair<std::string,std::string> >
+            (std::make_pair("dst_contact_handle",dst_contact_handle))
+            (std::make_pair("dst_contact_roid",dst_contact_roid))
+            (std::make_pair("domain_registrant_list",Util::format_vector(domain_registrant_list)))
+            (std::make_pair("domain_admin_list",Util::format_vector(domain_admin_list)))
+            (std::make_pair("nsset_tech_list",Util::format_vector(nsset_tech_list)))
+            (std::make_pair("keyset_tech_list",Util::format_vector(keyset_tech_list)))
+            (std::make_pair("removed_list",Util::format_vector(removed_list)))
+            (std::make_pair("removed_roid_list",Util::format_vector(removed_roid_list)))
+            );
+        }
     };
 
     struct SortedContactNotificationEmail
@@ -73,7 +107,7 @@ namespace Fred
         std::set<std::string> removed_roid_list;
     };
 
-    class MergeContactEmailNotificationData
+    class MergeContactEmailNotificationData  : public Util::Printable
     {
         std::vector<MergeContactEmailNotificationInput> merge_contact_data_;
 
@@ -81,32 +115,24 @@ namespace Fred
                     , SortedContactNotificationEmail& email);
 
     public:
+        DECLARE_EXCEPTION_DATA(invalid_contact_handle, std::string);
+        DECLARE_EXCEPTION_DATA(invalid_registry_object_identifier, std::string);
+        struct Exception
+        : virtual Fred::OperationException
+        , ExceptionData_invalid_contact_handle<Exception>
+        , ExceptionData_invalid_registry_object_identifier<Exception>
+        {};
+
         MergeContactEmailNotificationData(const std::vector<MergeContactEmailNotificationInput>& merge_contact_data_);
         std::vector<MergeContactNotificationEmail> exec(OperationContext& ctx);
+
+        /**
+        * Dumps state of the instance into the string
+        * @return string with description of the instance state
+        */
+        std::string to_string() const;
+
     };//class MergeContactEmailNotificationData
-
-    //exception impl
-    class MergeContactEmailNotificationDataException
-    : public OperationExceptionImpl<MergeContactEmailNotificationDataException, 8192>
-    {
-    public:
-        MergeContactEmailNotificationDataException(const char* file
-                , const int line
-                , const char* function
-                , const char* data)
-        : OperationExceptionImpl<MergeContactEmailNotificationDataException, 8192>(file, line, function, data)
-        {}
-
-        ConstArr get_fail_param_impl() throw()
-        {
-            static const char* list[]={"invalid:contact handle", "invalid:contact roid"};
-            return ConstArr(list,sizeof(list)/sizeof(char*));
-        }
-    };//class MergeContactEmailNotificationDataException
-
-    typedef MergeContactEmailNotificationDataException::OperationErrorType MergeContactEmailNotificationDataError;
-#define MCENDEX(DATA) MergeContactEmailNotificationDataException(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-#define MCENDERR(DATA) MergeContactEmailNotificationDataError(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
 
     struct MergeContactNotificationEmailWithAddr
     {
@@ -114,37 +140,25 @@ namespace Fred
         MergeContactNotificationEmail email_data;
     };
 
-    class MergeContactNotificationEmailAddr
+    class MergeContactNotificationEmailAddr : public Util::Printable
     {
         const std::vector<MergeContactNotificationEmail> email_data_;
     public:
+        DECLARE_EXCEPTION_DATA(invalid_registry_object_identifier, std::string);
+        struct Exception
+        : virtual Fred::OperationException
+        , ExceptionData_invalid_registry_object_identifier<Exception>
+        {};
+
         MergeContactNotificationEmailAddr(const std::vector<MergeContactNotificationEmail>& email_data);
         std::vector<MergeContactNotificationEmailWithAddr> exec(OperationContext& ctx);
+
+        /**
+        * Dumps state of the instance into the string
+        * @return string with description of the instance state
+        */
+        std::string to_string() const;
     };
-
-    //exception impl
-    class MergeContactNotificationEmailAddrException
-    : public OperationExceptionImpl<MergeContactNotificationEmailAddrException, 8192>
-    {
-    public:
-        MergeContactNotificationEmailAddrException(const char* file
-                , const int line
-                , const char* function
-                , const char* data)
-        : OperationExceptionImpl<MergeContactNotificationEmailAddrException, 8192>(file, line, function, data)
-        {}
-
-        ConstArr get_fail_param_impl() throw()
-        {
-            static const char* list[]={"invalid:contact handle", "invalid:contact roid"};
-            return ConstArr(list,sizeof(list)/sizeof(char*));
-        }
-    };//class MergeContactNotificationEmailAddrException
-
-    typedef MergeContactNotificationEmailAddrException::OperationErrorType MergeContactNotificationEmailAddrError;
-#define MCNEAEX(DATA) MergeContactNotificationEmailAddrException(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-#define MCNEAERR(DATA) MergeContactNotificationEmailAddrError(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-
 
 }//namespace Fred
 

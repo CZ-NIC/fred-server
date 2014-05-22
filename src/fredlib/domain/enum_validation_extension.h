@@ -17,7 +17,7 @@
  */
 
 /**
- *  @file enum_validation_extension.h
+ *  @file
  *  domain ENUM validation extension
  */
 
@@ -30,24 +30,49 @@
 namespace Fred
 {
 
-    ///enum domain validation extension
+    /**
+     * ENUM domain validation extension
+     */
     struct ENUMValidationExtension
     {
-        boost::gregorian::date validation_expiration;//expiration date of validation
-        bool publish;//publish in ENUM dictionary
+        boost::gregorian::date validation_expiration;/**< the expiration date of the ENUM domain validation */
+        bool publish;/**< flag for publishing ENUM number and associated contact in public directory */
+        /**
+         * Default constructor initializing @ref validation_expiration to not-a-date-time and @ref publish to false
+         */
         ENUMValidationExtension()
         : validation_expiration()//not a date time
         , publish(false)
         {}
+        /**
+         * Constructor for costum initialization of attributes
+         * @param _validation_expiration sets the expiration date of the ENUM domain validation into @ref validation_expiration attribute
+         * @param _publish sets flag for publishing ENUM number and associated contact in public directory into @ref publish attribute
+         */
         ENUMValidationExtension(const boost::gregorian::date& _validation_expiration
                 , bool _publish)
         : validation_expiration(_validation_expiration)
         , publish(_publish)
         {}
-
+        /**
+         * Comparison operator comparing both attributes
+         * @param rhs data compared with this instance
+         */
         bool operator==(const ENUMValidationExtension& rhs) const
         {
             return (publish == rhs.publish) && (validation_expiration == rhs.validation_expiration);
+        }
+
+        /**
+        * Dumps state of the instance into stream
+        * @param os contains output stream reference
+        * @param i reference of instance to be dumped into the stream
+        * @return output stream reference
+        */
+        friend std::ostream& operator<<(std::ostream& os, const ENUMValidationExtension& i)
+        {
+            return os << "ENUMValidationExtension publish: " << i.publish
+                << " validation_expiration: " << boost::gregorian::to_simple_string(i.validation_expiration);
         }
     };
 

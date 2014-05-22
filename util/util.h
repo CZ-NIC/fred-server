@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <set>
 #include "types/data_types.h"
 
 namespace Util {
@@ -46,6 +47,7 @@ public:
 template <typename ELEMENT_TYPE > struct vector_of
     : public std::vector<ELEMENT_TYPE>
 {
+    //appends one element
     vector_of(const ELEMENT_TYPE& t)
     {
         (*this)(t);
@@ -55,8 +57,44 @@ template <typename ELEMENT_TYPE > struct vector_of
         this->push_back(t);
         return *this;
     }
+    //appends vector of the same elements
+    vector_of(const std::vector<ELEMENT_TYPE>& v)
+    {
+        (*this)(v);
+    }
+    vector_of& operator()(const std::vector<ELEMENT_TYPE>& v)
+    {
+        this->insert(this->end(), v.begin(), v.end());
+        return *this;
+    }
 };
 
+//template for initialization of std::set
+template <typename ELEMENT_TYPE > struct set_of
+    : public std::set<ELEMENT_TYPE>
+{
+    //insert one element
+    set_of(const ELEMENT_TYPE& t)
+    {
+        (*this)(t);
+    }
+    set_of& operator()(const ELEMENT_TYPE& t)
+    {
+        std::pair<typename std::set<ELEMENT_TYPE>::iterator, bool> insert_result = this->insert(t);
+        if(!insert_result.second) throw std::logic_error("not unique");
+        return *this;
+    }
+    //inserts set of the same elements
+    set_of(const std::set<ELEMENT_TYPE>& v)
+    {
+        (*this)(v);
+    }
+    set_of& operator()(const std::set<ELEMENT_TYPE>& v)
+    {
+        this->insert(v.begin(), v.end());
+        return *this;
+    }
+};
 
 template<class T>
 std::string container2comma_list(const T &_cont)
@@ -100,6 +138,17 @@ inline std::string escape2(std::string _input) {
 
 std::string make_svtrid(unsigned long long request_id);
 
-}
+
+/**
+ * Makes type from enum value
+ * @param VALUE is value of the enum
+ */
+template <int VALUE>
+struct EnumType
+{
+   enum { value = VALUE };
+};
+
+}//namespace Util
 
 #endif /*UTIL_H_*/

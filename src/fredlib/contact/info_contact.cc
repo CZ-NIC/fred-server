@@ -17,220 +17,280 @@
  */
 
 /**
- *  @file info_contact.cc
+ *  @file
  *  contact info
  */
 
 #include <string>
 #include <vector>
 
-#include <boost/algorithm/string.hpp>
-#include <boost/date_time/posix_time/ptime.hpp>
-#include <boost/date_time/posix_time/time_period.hpp>
-#include <boost/date_time/gregorian/gregorian.hpp>
+#include "info_contact.h"
+#include "info_contact_impl.h"
 
-#include "fredlib/contact/info_contact.h"
-#include "fredlib/object/object.h"
-
-#include "fredlib/opcontext.h"
-#include "fredlib/db_settings.h"
-#include "util/optional_value.h"
+#include "src/fredlib/opcontext.h"
 #include "util/db/nullable.h"
 #include "util/util.h"
 
-#define ICEX(DATA) InfoContactException(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-#define ICERR(DATA) InfoContactError(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-
-
 namespace Fred
 {
-    InfoContact::InfoContact(const std::string& handle
-            , const std::string& registrar)
-    : handle_(handle)
-    , registrar_(registrar)
-    , lock_(false)
+
+    InfoContactByHandle::InfoContactByHandle(const std::string& handle)
+        : handle_(handle)
+        , lock_(false)
     {}
 
-    InfoContact& InfoContact::set_lock(bool lock)//set lock object_registry row
+    InfoContactByHandle& InfoContactByHandle::set_lock()
     {
-        lock_ = lock;
+        lock_ = true;
         return *this;
     }
 
-    InfoContactOutput InfoContact::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
+    InfoContactOutput InfoContactByHandle::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
     {
-        InfoContactOutput contact_info_output;
+        std::vector<InfoContactOutput> contact_res;
 
         try
         {
-            //check handle or lock object_registry row for update
-            {
-                Database::Result res = ctx.get_conn().exec_params(
-                    std::string("SELECT id FROM object_registry WHERE name=UPPER($1::text) "
-                    " AND erdate IS NULL AND type = ( SELECT id FROM enum_object_type eot "
-                    " WHERE eot.name='contact'::text) ")
-                    + (lock_ ? std::string(" FOR UPDATE") : std::string(""))
-                    , Database::query_param_list(handle_));
+            InfoContact ic;
+            ic.set_handle(handle_)
+            .set_history_query(false);
+            if(lock_) ic.set_lock();
+            contact_res = ic.exec(ctx,local_timestamp_pg_time_zone_name);
 
-                if (res.size() != 1)
-                {
-                    std::string errmsg("check handle || not found:handle: ");
-                    errmsg += boost::replace_all_copy(handle_,"|", "[pipe]");//quote pipes
-                    errmsg += " |";
-                    throw ICEX(errmsg.c_str());
-                }
+            if (contact_res.empty())
+            {
+                BOOST_THROW_EXCEPTION(Exception().set_unknown_contact_handle(handle_));
             }
 
-            //check registrar exists
-            //TODO: check registrar access
+            if (contact_res.size() > 1)
             {
-                Database::Result res = ctx.get_conn().exec_params(
-                        "SELECT id FROM registrar WHERE handle = UPPER($1::text)"
-                    , Database::query_param_list(registrar_));
-
-                if (res.size() != 1)
-                {
-                    std::string errmsg("|| not found:registrar: ");
-                    errmsg += boost::replace_all_copy(registrar_,"|", "[pipe]");//quote pipes
-                    errmsg += " |";
-                    throw ICEX(errmsg.c_str());
-                }
+                BOOST_THROW_EXCEPTION(InternalError("query result size > 1"));
             }
 
-            //info about contact
-            unsigned long long contact_id = 0;
-            {
-                Database::Result res = ctx.get_conn().exec_params(
-                "SELECT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC')::timestamp AS utc_timestamp "// utc timestamp 0
-                " , (CURRENT_TIMESTAMP AT TIME ZONE 'UTC' AT TIME ZONE $1::text)::timestamp AS local_timestamp  "// local zone timestamp 1
-                " , cobr.crhistoryid "//first historyid 2
-                " , cobr.historyid "// last historyid 3
-                " , cobr.erdate "// contact delete time 4
-                " , cobr.id,cobr.name,cobr.roid " //contact 5-7
-                " , o.clid,clr.handle "//sponzoring registrar 8-9
-                " , cobr.crid, crr.handle "//creating registrar 10-11
-                " , o.upid, upr.handle "//updated by registrar 12-13
-                " , cobr.crdate,o.trdate,o.update "//registration dates 14-16
-                " , o.authinfopw "//authinfo 17
-                " , c.name, c.organization, c.street1, c.street2, c.street3, c.city, c.stateorprovince, c.postalcode, c.country "// contact data 18-26
-                " , c.telephone, c.fax, c.email , c.notifyemail, c.vat, c.ssn, est.type "// 27-33
-                " , c.disclosename, c.discloseorganization, c.discloseaddress, c.disclosetelephone, c.disclosefax "// 34-38
-                " , c.discloseemail, c.disclosevat, c.discloseident, c.disclosenotifyemail "// 39-42
-                " FROM object_registry cobr "
-                " JOIN contact c ON cobr.id=c.id "
-                " JOIN object o ON c.id=o.id "
-                " JOIN registrar clr ON clr.id = o.clid "
-                " JOIN registrar crr ON crr.id = cobr.crid "
-                " LEFT JOIN registrar upr ON upr.id = o.upid "
-                " LEFT JOIN enum_ssntype est ON est.id = c.ssntype "
-                " WHERE cobr.name=UPPER($2::text) AND cobr.erdate IS NULL "
-                " AND cobr.type = ( SELECT id FROM enum_object_type eot WHERE eot.name='contact'::text)"
-                , Database::query_param_list(local_timestamp_pg_time_zone_name)(handle_));
-
-                if (res.size() != 1)
-                {
-                    std::string errmsg("info contact || not found:handle: ");
-                    errmsg += boost::replace_all_copy(handle_,"|", "[pipe]");//quote pipes
-                    errmsg += " |";
-                    throw ICEX(errmsg.c_str());
-                }
-
-                contact_info_output.utc_timestamp = res[0][0].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
-                : boost::posix_time::time_from_string(static_cast<std::string>(res[0][0]));// utc timestamp
-
-                contact_info_output.local_timestamp = res[0][1].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
-                : boost::posix_time::time_from_string(static_cast<std::string>(res[0][1]));//local zone timestamp
-
-                contact_info_output.info_contact_data.crhistoryid = static_cast<unsigned long long>(res[0][2]);//cobr.crhistoryid
-
-                contact_info_output.info_contact_data.historyid = static_cast<unsigned long long>(res[0][3]);//cobr.historyid
-
-                contact_info_output.info_contact_data.delete_time = res[0][4].isnull() ? Nullable<boost::posix_time::ptime>()
-                    : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(res[0][4])));//cobr.erdate
-
-                contact_id = static_cast<unsigned long long>(res[0][5]);//cobr.id
-
-                contact_info_output.info_contact_data.handle = static_cast<std::string>(res[0][6]);//cobr.name
-
-                contact_info_output.info_contact_data.roid = static_cast<std::string>(res[0][7]);//cobr.roid
-
-                contact_info_output.info_contact_data.sponsoring_registrar_handle = static_cast<std::string>(res[0][9]);//clr.handle
-
-                contact_info_output.info_contact_data.create_registrar_handle = static_cast<std::string>(res[0][11]);//crr.handle
-
-                contact_info_output.info_contact_data.update_registrar_handle = res[0][13].isnull() ? Nullable<std::string>()
-                    : Nullable<std::string> (static_cast<std::string>(res[0][13]));//upr.handle
-
-                contact_info_output.info_contact_data.creation_time = boost::posix_time::time_from_string(static_cast<std::string>(res[0][14]));//cobr.crdate
-
-                contact_info_output.info_contact_data.transfer_time = res[0][15].isnull() ? Nullable<boost::posix_time::ptime>()
-                : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(res[0][15])));//o.trdate
-
-                contact_info_output.info_contact_data.update_time = res[0][16].isnull() ? Nullable<boost::posix_time::ptime>()
-                : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(res[0][16])));//o.update
-
-                contact_info_output.info_contact_data.authinfopw = static_cast<std::string>(res[0][17]);//o.authinfopw
-
-
-                contact_info_output.info_contact_data.name = res[0][18].isnull() ? Nullable<std::string>()
-                        : Nullable<std::string> (static_cast<std::string>(res[0][18]));
-                contact_info_output.info_contact_data.organization = res[0][19].isnull() ? Nullable<std::string>()
-                        : Nullable<std::string> (static_cast<std::string>(res[0][19]));
-                contact_info_output.info_contact_data.street1 = res[0][20].isnull() ? Nullable<std::string>()
-                        : Nullable<std::string> (static_cast<std::string>(res[0][20]));
-                contact_info_output.info_contact_data.street2 = res[0][21].isnull() ? Nullable<std::string>()
-                        : Nullable<std::string> (static_cast<std::string>(res[0][21]));
-                contact_info_output.info_contact_data.street3 = res[0][22].isnull() ? Nullable<std::string>()
-                        : Nullable<std::string> (static_cast<std::string>(res[0][22]));
-                contact_info_output.info_contact_data.city = res[0][23].isnull() ? Nullable<std::string>()
-                        : Nullable<std::string> (static_cast<std::string>(res[0][23]));
-                contact_info_output.info_contact_data.stateorprovince = res[0][24].isnull() ? Nullable<std::string>()
-                        : Nullable<std::string> (static_cast<std::string>(res[0][24]));
-                contact_info_output.info_contact_data.postalcode = res[0][25].isnull() ? Nullable<std::string>()
-                        : Nullable<std::string> (static_cast<std::string>(res[0][25]));
-                contact_info_output.info_contact_data.country = res[0][26].isnull() ? Nullable<std::string>()
-                        : Nullable<std::string> (static_cast<std::string>(res[0][26]));
-                contact_info_output.info_contact_data.telephone = res[0][27].isnull() ? Nullable<std::string>()
-                        : Nullable<std::string> (static_cast<std::string>(res[0][27]));
-                contact_info_output.info_contact_data.fax = res[0][28].isnull() ? Nullable<std::string>()
-                        : Nullable<std::string> (static_cast<std::string>(res[0][28]));
-                contact_info_output.info_contact_data.email = res[0][29].isnull() ? Nullable<std::string>()
-                        : Nullable<std::string> (static_cast<std::string>(res[0][29]));
-                contact_info_output.info_contact_data.notifyemail = res[0][30].isnull() ? Nullable<std::string>()
-                        : Nullable<std::string> (static_cast<std::string>(res[0][30]));
-                contact_info_output.info_contact_data.vat = res[0][31].isnull() ? Nullable<std::string>()
-                        : Nullable<std::string> (static_cast<std::string>(res[0][31]));
-                contact_info_output.info_contact_data.ssn = res[0][32].isnull() ? Nullable<std::string>()
-                        : Nullable<std::string> (static_cast<std::string>(res[0][32]));
-                contact_info_output.info_contact_data.ssntype = res[0][33].isnull() ? Nullable<std::string>()
-                        : Nullable<std::string> (static_cast<std::string>(res[0][33]));
-                contact_info_output.info_contact_data.disclosename = res[0][34].isnull() ? Nullable<bool>()
-                        : Nullable<bool> (static_cast<bool>(res[0][34]));
-                contact_info_output.info_contact_data.discloseorganization = res[0][35].isnull() ? Nullable<bool>()
-                        : Nullable<bool> (static_cast<bool>(res[0][35]));
-                contact_info_output.info_contact_data.discloseaddress = res[0][36].isnull() ? Nullable<bool>()
-                        : Nullable<bool> (static_cast<bool>(res[0][36]));
-                contact_info_output.info_contact_data.disclosetelephone = res[0][37].isnull() ? Nullable<bool>()
-                        : Nullable<bool> (static_cast<bool>(res[0][37]));
-                contact_info_output.info_contact_data.disclosefax = res[0][38].isnull() ? Nullable<bool>()
-                        : Nullable<bool> (static_cast<bool>(res[0][38]));
-                contact_info_output.info_contact_data.discloseemail = res[0][39].isnull() ? Nullable<bool>()
-                        : Nullable<bool> (static_cast<bool>(res[0][39]));
-                contact_info_output.info_contact_data.disclosevat = res[0][40].isnull() ? Nullable<bool>()
-                        : Nullable<bool> (static_cast<bool>(res[0][40]));
-                contact_info_output.info_contact_data.discloseident = res[0][41].isnull() ? Nullable<bool>()
-                        : Nullable<bool> (static_cast<bool>(res[0][41]));
-                contact_info_output.info_contact_data.disclosenotifyemail = res[0][42].isnull() ? Nullable<bool>()
-                        : Nullable<bool> (static_cast<bool>(res[0][42]));
-            }
-
-        }//try
-        catch(...)//common exception processing
-        {
-            handleOperationExceptions<InfoContactException>(__FILE__, __LINE__, __ASSERT_FUNCTION);
         }
-        return contact_info_output;
-    }//InfoContact::exec
+        catch(ExceptionStack& ex)
+        {
+            ex.add_exception_stack_info(to_string());
+            throw;
+        }
+        return contact_res.at(0);
+    }
+
+    std::string InfoContactByHandle::to_string() const
+    {
+        return Util::format_operation_state("InfoContactByHandle",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("handle", handle_))
+        (std::make_pair("lock",lock_ ? "true":"false"))
+        );
+    }
+
+    InfoContactById::InfoContactById(unsigned long long id)
+        : id_(id)
+        , lock_(false)
+    {}
+
+    InfoContactById& InfoContactById::set_lock()
+    {
+        lock_ = true;
+        return *this;
+    }
+
+    InfoContactOutput InfoContactById::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
+    {
+        std::vector<InfoContactOutput> contact_res;
+
+        try
+        {
+            InfoContact ic;
+            ic.set_id(id_)
+            .set_history_query(false);
+            if(lock_) ic.set_lock();
+            contact_res = ic.exec(ctx,local_timestamp_pg_time_zone_name);
+
+            if (contact_res.empty())
+            {
+                BOOST_THROW_EXCEPTION(Exception().set_unknown_object_id(id_));
+            }
+
+            if (contact_res.size() > 1)
+            {
+                BOOST_THROW_EXCEPTION(InternalError("query result size > 1"));
+            }
+
+        }
+        catch(ExceptionStack& ex)
+        {
+            ex.add_exception_stack_info(to_string());
+            throw;
+        }
+        return contact_res.at(0);
+    }
+
+    std::string InfoContactById::to_string() const
+    {
+        return Util::format_operation_state("InfoContactById",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("id",boost::lexical_cast<std::string>(id_)))
+        (std::make_pair("lock",lock_ ? "true":"false"))
+        );
+    }
+
+    InfoContactHistory::InfoContactHistory(const std::string& roid
+            , const Optional<boost::posix_time::ptime>& history_timestamp)
+        : roid_(roid)
+        , history_timestamp_(history_timestamp)
+        , lock_(false)
+    {}
+
+    InfoContactHistory::InfoContactHistory(const std::string& roid)
+    : roid_(roid)
+    , lock_(false)
+    {}
+
+    InfoContactHistory& InfoContactHistory::set_history_timestamp(boost::posix_time::ptime history_timestamp)//set history timestamp
+    {
+        history_timestamp_ = history_timestamp;
+        return *this;
+    }
+
+    InfoContactHistory& InfoContactHistory::set_lock()
+    {
+        lock_ = true;
+        return *this;
+    }
+
+    std::vector<InfoContactOutput> InfoContactHistory::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
+    {
+        std::vector<InfoContactOutput> contact_history_res;
+
+        try
+        {
+            InfoContact ic;
+            ic.set_roid(roid_)
+            .set_history_query(true);
+            if(lock_) ic.set_lock();
+            contact_history_res = ic.exec(ctx,local_timestamp_pg_time_zone_name);
+
+            if (contact_history_res.empty())
+            {
+                BOOST_THROW_EXCEPTION(Exception().set_unknown_registry_object_identifier(roid_));
+            }
+        }
+        catch(ExceptionStack& ex)
+        {
+            ex.add_exception_stack_info(to_string());
+            throw;
+        }
+        return contact_history_res;
+    }
+
+    std::string InfoContactHistory::to_string() const
+    {
+        return Util::format_operation_state("InfoContactHistory",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("roid",roid_))
+        (std::make_pair("history_timestamp",history_timestamp_.print_quoted()))
+        (std::make_pair("lock",lock_ ? "true":"false"))
+        );
+    }
+
+    InfoContactHistoryById::InfoContactHistoryById(unsigned long long id)
+        : id_(id)
+        , lock_(false)
+    {}
+
+    InfoContactHistoryById& InfoContactHistoryById::set_lock()
+    {
+        lock_ = true;
+        return *this;
+    }
+
+    std::vector<InfoContactOutput> InfoContactHistoryById::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
+    {
+        std::vector<InfoContactOutput> contact_history_res;
+
+        try
+        {
+            InfoContact ic;
+            ic.set_id(id_)
+            .set_history_query(true);
+            if(lock_) ic.set_lock();
+            contact_history_res = ic.exec(ctx,local_timestamp_pg_time_zone_name);
+
+            if (contact_history_res.empty())
+            {
+                BOOST_THROW_EXCEPTION(Exception().set_unknown_object_id(id_));
+            }
+
+        }
+        catch(ExceptionStack& ex)
+        {
+            ex.add_exception_stack_info(to_string());
+            throw;
+        }
+        return contact_history_res;
+    }
+
+    std::string InfoContactHistoryById::to_string() const
+    {
+        return Util::format_operation_state("InfoContactHistoryById",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("id",boost::lexical_cast<std::string>(id_)))
+        (std::make_pair("lock",lock_ ? "true":"false"))
+        );
+    }
+
+    InfoContactHistoryByHistoryid::InfoContactHistoryByHistoryid(unsigned long long historyid)
+        : historyid_(historyid)
+        , lock_(false)
+    {}
+
+    InfoContactHistoryByHistoryid& InfoContactHistoryByHistoryid::set_lock()
+    {
+        lock_ = true;
+        return *this;
+    }
+
+    InfoContactOutput InfoContactHistoryByHistoryid::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
+    {
+        std::vector<InfoContactOutput> contact_history_res;
+
+        try
+        {
+            InfoContact ic;
+            ic.set_historyid(historyid_)
+            .set_history_query(true);
+            if(lock_) ic.set_lock();
+            contact_history_res = ic.exec(ctx,local_timestamp_pg_time_zone_name);
+
+            if (contact_history_res.empty())
+            {
+                BOOST_THROW_EXCEPTION(Exception().set_unknown_object_historyid(historyid_));
+            }
+
+            if (contact_history_res.size() > 1)
+            {
+                BOOST_THROW_EXCEPTION(InternalError("query result size > 1"));
+            }
+
+        }
+        catch(ExceptionStack& ex)
+        {
+            ex.add_exception_stack_info(to_string());
+            throw;
+        }
+        return contact_history_res.at(0);
+    }
+
+    std::string InfoContactHistoryByHistoryid::to_string() const
+    {
+        return Util::format_operation_state("InfoContactHistoryByHistoryid",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("historyid",boost::lexical_cast<std::string>(historyid_)))
+        (std::make_pair("lock",lock_ ? "true":"false"))
+        );
+    }
 
 }//namespace Fred
 

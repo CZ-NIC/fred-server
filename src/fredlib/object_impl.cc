@@ -19,7 +19,7 @@
 #include <algorithm>
 
 #include "object_impl.h"
-#include "old_utils/dbsql.h"
+#include "src/old_utils/dbsql.h"
 #include "sql.h"
 
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -335,7 +335,7 @@ void Fred::ObjectListImpl::reload(bool _history) {
       Database::Row::Iterator col = (*it).begin();
 
       Database::ID       object_historyid = *col;
-      Database::ID       object_id        = *(++col);
+                                             (++col);//Database::ID       object_id
       Database::ID       state_db_id      = *(++col);
       Database::ID       state_id         = *(++col);
       Database::DateTime valid_from       = *(++col);

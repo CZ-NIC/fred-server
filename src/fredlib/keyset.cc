@@ -19,13 +19,13 @@
 #include <boost/date_time/posix_time/time_parsers.hpp>
 #include <boost/regex.hpp>
 #include <vector>
-#include "keyset.h"
+#include "src/fredlib/keyset.h"
 
 #include "object_impl.h"
 #include "sql.h"
-#include "old_utils/dbsql.h"
-#include "old_utils/util.h"
-#include "model/model_filters.h"
+#include "src/old_utils/dbsql.h"
+#include "src/old_utils/util.h"
+#include "src/model/model_filters.h"
 #include "log/logger.h"
 
 #define KEYSET_REGEX_RESTRICTED "[kK][eE][yY][iI][dD]:[a-zA-Z0-9_:.-]{1,57}"
@@ -654,7 +654,7 @@ ListImpl::reload(Database::Filters::Union &uf)
             Database::Row::Iterator col = (*it).begin();
 
             Database::ID keyset_historyid   = *col;
-            Database::ID keyset_id          = *(++col);
+                                               (++col);//Database::ID keyset_id
             Database::ID contact_id         = *(++col);
             std::string  contact_handle     = *(++col);
 
@@ -679,8 +679,8 @@ ListImpl::reload(Database::Filters::Union &uf)
             Database::Row::Iterator col = (*it).begin();
 
             Database::ID keyset_historyid  = *col;
-            Database::ID keyset_id         = *(++col);
-            Database::ID dsrecord_id       = *(++col);
+                                           (++col);//Database::ID keyset_id
+            Database::ID dsrecord_id    = *(++col);
             unsigned int keytag         = *(++col);
             unsigned int alg            = *(++col);
             unsigned int digesttype     = *(++col);
@@ -717,7 +717,7 @@ ListImpl::reload(Database::Filters::Union &uf)
             Database::Row::Iterator col = (*it).begin();
 
             Database::ID keyset_historyid  = *col;
-            Database::ID keyset_id         = *(++col);
+                                              (++col);//Database::ID keyset_id
             Database::ID dnskey_id         = *(++col);
             unsigned int flags             = *(++col);
             unsigned int protocol          = *(++col);

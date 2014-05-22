@@ -27,7 +27,7 @@
 #include <string>
 #include <boost/utility.hpp>
 
-#include "fredlib/db_settings.h"
+#include "src/fredlib/db_settings.h"
 #include "util/log/log.h"
 
 namespace Fred

@@ -37,13 +37,13 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/assign/list_of.hpp>
 
-#include "db_settings.h"
+#include "src/fredlib/db_settings.h"
 #include "log/logger.h"
 #include "log/context.h"
 #include "random_data_generator.h"
 #include "concurrent_queue.h"
-#include "model_files.h"
-#include "model_bank_payment.h"
+#include "src/fredlib/model_files.h"
+#include "src/fredlib/banking/model_bank_payment.h"
 #include "types/money.h"
 
 #include "decimal/decimal.h"

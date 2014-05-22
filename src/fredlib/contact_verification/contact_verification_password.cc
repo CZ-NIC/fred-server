@@ -23,10 +23,12 @@
 
 #include <stdexcept>
 
-#include "contact_verification_password.h"
-#include "fredlib/db_settings.h"
+#include "src/fredlib/contact_verification/contact_verification_password.h"
+#include "src/fredlib/db_settings.h"
 #include "log/logger.h"
 #include "util/map_at.h"
+#include "util/util.h"
+#include "util/xmlgen.h"
 
 namespace Fred {
 namespace PublicRequest {
@@ -160,48 +162,45 @@ void ContactVerificationPassword::sendLetterPassword( const std::string& custom_
 
     MessageData data = collectMessageData();
 
-    std::stringstream xmldata;
-
     std::string addr_country = ((map_at(data, "country_cs_name")).empty()
             ? map_at(data, "country_name")
             : map_at(data, "country_cs_name"));
 
-    xmldata << "<?xml version='1.0' encoding='utf-8'?>"
-             << "<contact_auth>"
-             << "<user>"
-             << "<actual_date>" << map_at(data, "reqdate")
-                 << "</actual_date>"
-             << "<name>" << map_at(data, "firstname")
-                         << " " << map_at(data, "lastname") << "</name>"
-             << "<organization>" << map_at(data, "organization")
-                 << "</organization>"
-             << "<street>" << map_at(data, "street") << "</street>"
-             << "<city>" << map_at(data, "city") << "</city>"
-             << "<stateorprovince>" << map_at(data, "stateorprovince")
-                 << "</stateorprovince>"
-             << "<postal_code>" << map_at(data, "postalcode")
-                 << "</postal_code>"
-             << "<country>" << addr_country << "</country>"
-             << "<account>"
-             << "<username>" << map_at(data, "handle") << "</username>"
-             << "<first_name>" << map_at(data, "firstname")
-                 << "</first_name>"
-             << "<last_name>" << map_at(data, "lastname") << "</last_name>"
-             << "<email>" << map_at(data, "email") << "</email>"
-             << "</account>"
-             << "<auth>"
-             << "<codes>"
-             << std::string("<") + custom_tag + ">" + map_at(data, custom_tag) + ("</") + custom_tag + ">"
-             << "</codes>"
-             << "<link>" <<
-                ((message_type == "contact_verification_pin3") ?
-                    std::string("https://") + map_at(data, "hostname")
-                        + std::string("/verification/identify/letter/?handle=") + map_at(data, "handle")
-                    : map_at(data, "hostname"))
-             << "</link>"
-             << "</auth>"
-             << "</user>"
-             << "</contact_auth>";
+    std::string letter_xml("<?xml version='1.0' encoding='utf-8'?>");
+
+    Util::XmlTagPair("contact_auth", Util::vector_of<Util::XmlCallback>
+        (Util::XmlTagPair("user", Util::vector_of<Util::XmlCallback>
+            (Util::XmlTagPair("actual_date", Util::XmlUnparsedCData(map_at(data, "reqdate"))))
+            (Util::XmlTagPair("name", Util::XmlUnparsedCData(map_at(data, "firstname")+ " " + map_at(data, "lastname"))))
+            (Util::XmlTagPair("organization", Util::XmlUnparsedCData(map_at(data, "organization"))))
+            (Util::XmlTagPair("street", Util::XmlUnparsedCData(map_at(data, "street"))))
+            (Util::XmlTagPair("city", Util::XmlUnparsedCData(map_at(data, "city"))))
+            (Util::XmlTagPair("stateorprovince", Util::XmlUnparsedCData(map_at(data, "stateorprovince"))))
+            (Util::XmlTagPair("postal_code", Util::XmlUnparsedCData(map_at(data, "postalcode"))))
+            (Util::XmlTagPair("country", Util::XmlUnparsedCData(addr_country)))
+            (Util::XmlTagPair("account", Util::vector_of<Util::XmlCallback>
+                (Util::XmlTagPair("username", Util::XmlUnparsedCData(map_at(data, "handle"))))
+                (Util::XmlTagPair("first_name", Util::XmlUnparsedCData(map_at(data, "firstname"))))
+                (Util::XmlTagPair("last_name", Util::XmlUnparsedCData(map_at(data, "lastname"))))
+                (Util::XmlTagPair("email", Util::XmlUnparsedCData(map_at(data, "email"))))
+            ))
+            (Util::XmlTagPair("auth", Util::vector_of<Util::XmlCallback>
+                (Util::XmlTagPair("codes", Util::vector_of<Util::XmlCallback>
+                    (Util::XmlTagPair(custom_tag, Util::XmlUnparsedCData(map_at(data, custom_tag))))
+                ))
+                (Util::XmlTagPair("link"
+                    , Util::XmlUnparsedCData(((message_type == "contact_verification_pin3") ?
+                        std::string("https://") + map_at(data, "hostname")
+                            + std::string("/verification/identify/letter/?handle=") + map_at(data, "handle")
+                        : map_at(data, "hostname"))
+                    )
+                ))
+            ))
+        ))
+    )(letter_xml);
+
+    std::stringstream xmldata;
+    xmldata << letter_xml;
 
         unsigned long long file_id = prai_ptr_->getPublicRequestManager()
             ->getDocumentManager()->generateDocumentAndSave(

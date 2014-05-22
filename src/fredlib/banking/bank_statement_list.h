@@ -1,9 +1,9 @@
 #ifndef BANK_STATEMENT_LIST_H_
 #define BANK_STATEMENT_LIST_H_
 
-#include "common_new.h"
+#include "src/fredlib/common_new.h"
 #include "bank_statement.h"
-#include "model/model_filters.h"
+#include "src/model/model_filters.h"
 
 namespace Fred {
 namespace Banking {

@@ -3,12 +3,12 @@
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
-#include "types.h"
+#include "src/fredlib/types.h"
 #include "types/money.h"
-#include "exceptions.h"
-#include "common_object.h"
+#include "src/fredlib/exceptions.h"
+#include "src/fredlib/common_object.h"
 #include <ostream>
-#include "old_utils/dbsql.h"
+#include "src/old_utils/dbsql.h"
 #include "logger_client.h"
 
 using namespace boost::posix_time;
@@ -39,7 +39,8 @@ namespace Fred
       MT_UPDATE_DOMAIN = 17,
       MT_UPDATE_NSSET = 18,
       MT_UPDATE_KEYSET = 19,
-      MT_DELETE_CONTACT = 20
+      MT_DELETE_CONTACT = 20,
+      MT_DELETE_DOMAIN = 21
     };
 
 
@@ -151,8 +152,8 @@ namespace Fred
      public:
       virtual ~Manager() {}
       /// return count of messages in queue for registrar
-      virtual unsigned long getMessageCount(std::string registrar) const = 0;
-      virtual unsigned long getMessageCount(TID registrar) const = 0;
+      virtual unsigned long long getMessageCount(std::string registrar) const = 0;
+      virtual unsigned long long getMessageCount(TID registrar) const = 0;
       /// return next unseen and unexpired message for registrar
       virtual Message* getNextMessage(std::string registrar) = 0; // const = 0;
       virtual Message* getNextMessage(TID registrar) = 0; // const = 0;

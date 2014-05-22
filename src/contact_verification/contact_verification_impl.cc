@@ -1,21 +1,21 @@
-#include "contact_verification/contact_verification_impl.h"
-#include "contact_verification/public_request_contact_verification_impl.h"
-#include "contact_verification/public_request_contact_verification_wrapper.h"
+#include "contact_verification_impl.h"
+#include "public_request_contact_verification_impl.h"
+#include "public_request_contact_verification_wrapper.h"
 
-#include "fredlib/db_settings.h"
-#include "fredlib/registry.h"
-#include "fredlib/contact.h"
-#include "fredlib/public_request/public_request.h"
-#include "fredlib/object_states.h"
-#include "fredlib/contact_verification/contact.h"
-#include "fredlib/contact_verification/contact_verification_validators.h"
+#include "src/fredlib/db_settings.h"
+#include "src/fredlib/registry.h"
+#include "src/fredlib/contact.h"
+#include "src/fredlib/public_request/public_request.h"
+#include "src/fredlib/object_states.h"
+#include "src/fredlib/contact_verification/contact.h"
+#include "src/fredlib/contact_verification/contact_verification_validators.h"
 #include "util/factory_check.h"
 #include "util/util.h"
 
 #include "cfg/config_handler_decl.h"
 #include "util/log/logger.h"
 #include "util/random.h"
-#include "corba/connection_releaser.h"
+#include "src/corba/connection_releaser.h"
 #include "types/stringify.h"
 #include "types/birthdate.h"
 
@@ -346,6 +346,13 @@ namespace Registry
                      std::vector<Fred::PublicRequest::Type> request_type_list
                                      = Util::vector_of<Fred::PublicRequest::Type>
                                  (Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION);
+
+                     if(request_manager->checkAlreadyProcessedPublicRequest(
+                             cinfo.id, request_type_list))
+                     {
+                         LOGGER(PACKAGE).error("Found already processed request");
+                         throw Registry::Contact::Verification::IDENTIFICATION_PROCESSED();
+                     }
 
                      std::string request_id = request_manager->getPublicRequestAuthIdentification(
                              cinfo.id, request_type_list);

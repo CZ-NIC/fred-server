@@ -27,12 +27,12 @@
 
 #include <boost/lexical_cast.hpp>
 
-#include "corba/nameservice.h"
+#include "src/corba/nameservice.h"
 #include "types/datetime_interval.h"
 #include "types/date_interval.h"
-#include "old_utils/dbsql.h"
+#include "src/old_utils/dbsql.h"
 
-#include <corba/EPP.hh>
+#include "src/corba/EPP.hh"
 
 extern const char *corbaOpts[][2];
 extern const char g_prog_name[];

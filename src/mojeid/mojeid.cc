@@ -23,27 +23,29 @@
 
 #include "mojeid.h"
 
-#include "mojeid/mojeid_identification.h"
-#include "mojeid/mojeid_notifier.h"
-#include "mojeid/mojeid_contact_states.h"
+#include "src/mojeid/mojeid_identification.h"
+#include "src/mojeid/mojeid_notifier.h"
+#include "src/mojeid/mojeid_contact_states.h"
 
-#include "fredlib/db_settings.h"
-#include "fredlib/registry.h"
-#include "fredlib/contact.h"
-#include "fredlib/public_request/public_request.h"
-#include "fredlib/object_states.h"
-#include "fredlib/contact_verification/contact.h"
-#include "fredlib/contact_verification/contact_verification_validators.h"
-#include "mojeid/request.h"
-#include "mojeid/mojeid_contact_states.h"
-#include "mojeid/mojeid_disclose_policy.h"
-#include "mojeid/public_request_verification_impl.h"
+#include "src/fredlib/db_settings.h"
+#include "src/fredlib/registry.h"
+#include "src/fredlib/contact.h"
+#include "src/fredlib/public_request/public_request.h"
+#include "src/fredlib/object_states.h"
+#include "src/fredlib/contact_verification/contact.h"
+#include "src/mojeid/request.h"
+#include "src/mojeid/mojeid_contact_states.h"
+#include "src/mojeid/mojeid_disclose_policy.h"
+#include "src/mojeid/public_request_verification_impl.h"
+#include "src/mojeid/mojeid_validators.h"
 #include "util/factory_check.h"
+#include "util/util.h"
+#include "util/xmlgen.h"
 
 #include "cfg/config_handler_decl.h"
 #include "log/logger.h"
 #include "random.h"
-#include "corba/connection_releaser.h"
+#include "src/corba/connection_releaser.h"
 #include "types/stringify.h"
 #include "types/birthdate.h"
 
@@ -392,22 +394,8 @@ namespace Registry
                 }
 
                 Fred::Contact::Verification::ContactValidator validator
-                    = Fred::Contact::Verification::create_contact_update_validator();
+                    = Fred::Contact::Verification::create_contact_update_validator_mojeid();
                 validator.check(_contact);
-
-                if (Fred::object_has_state(cid, Fred::ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT) == true) {
-
-                    if (Fred::Contact::Verification::check_conditionally_identified_contact_diff(
-                            _contact, Fred::Contact::Verification::contact_info(cid)) == false) {
-                        LOGGER(PACKAGE).info( boost::format(
-                                "tried to update conditionally identified contact -- handle: %1%  id: %2% ")
-                                % handle % cid);
-
-                        Fred::Contact::Verification::FieldErrorMap errors;
-                        errors[Fred::Contact::Verification::field_status] = Fred::Contact::Verification::INVALID;
-                        throw Fred::Contact::Verification::DataValidationError(errors);
-                    }
-                }
 
                 DiscloseFlagPolicy::PolicyCallbackVector pcv
                     = boost::assign::list_of
@@ -830,24 +818,21 @@ namespace Registry
                 unsigned identType = res[0][5];
                 Database::Date d = res[0][0];
                 //g->getInput().imbue(std::locale(std::locale(""),new date_facet("%x")));
-                g->getInput()
-                    << "<?xml version='1.0' encoding='utf-8'?>"
-                    << "<mojeid_valid>"
-                    << "<request_date>"
-                    << stringify(d.get())
-                    << "</request_date>"
-                    << "<request_id>"  << unsigned(res[0][1]) << "</request_id>"
-                    << "<handle>" << std::string(res[0][7]) << "</handle>"
-                    << "<name>" << std::string(res[0][2]) << "</name>"
-                    << "<organization>" << std::string(res[0][3]) << "</organization>"
-                    << "<ic>"
-                    << (identType == 4 ? std::string(res[0][4]) : "")
-                    << "</ic>"
-                    << "<birth_date>"
-                    << (identType == 6 ? stringify(birthdate_from_string_to_date(res[0][4])) : "")
-                    << "</birth_date>"
-                    << "<address>" << std::string(res[0][6]) << "</address>"
-                    << "</mojeid_valid>";
+
+                std::string letter_xml("<?xml version='1.0' encoding='utf-8'?>");
+
+                Util::XmlTagPair("mojeid_valid", Util::vector_of<Util::XmlCallback>
+                    (Util::XmlTagPair("request_date", Util::XmlUnparsedCData(stringify(d.get()))))
+                    (Util::XmlTagPair("request_id", Util::XmlUnparsedCData(static_cast<std::string>(res[0][1]))))
+                    (Util::XmlTagPair("handle", Util::XmlUnparsedCData(static_cast<std::string>(res[0][7]))))
+                    (Util::XmlTagPair("name", Util::XmlUnparsedCData(static_cast<std::string>(res[0][2]))))
+                    (Util::XmlTagPair("organization", Util::XmlUnparsedCData(static_cast<std::string>(res[0][3]))))
+                    (Util::XmlTagPair("ic", Util::XmlUnparsedCData(identType == 4 ? static_cast<std::string>(res[0][4]) : "")))
+                    (Util::XmlTagPair("birth_date", Util::XmlUnparsedCData(identType == 6 ? stringify(birthdate_from_string_to_date(res[0][4])) : "")))
+                    (Util::XmlTagPair("address", Util::XmlUnparsedCData(static_cast<std::string>(res[0][6]))))
+                )(letter_xml);
+
+                g->getInput() << letter_xml;
                 g->closeInput();
                 tx.commit();
             }//try

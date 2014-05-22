@@ -1,7 +1,7 @@
 #ifndef KEYSET_DIFF_H__
 #define KEYSET_DIFF_H__
 
-#include "keyset.h"
+#include "src/fredlib/keyset.h"
 #include "common_diff.h"
 
 namespace Fred {

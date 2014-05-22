@@ -1,7 +1,7 @@
 #ifndef PAGETABLE_SESSION_H_
 #define PAGETABLE_SESSION_H_
 
-#include "requests/session.h"
+#include "src/fredlib/requests/session.h"
 #include "pagetable_impl.h"
 
 class ccReg_LogSession_i : public ccReg_PageTable_i,

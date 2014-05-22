@@ -30,14 +30,15 @@
 #include "cfg/handle_corbanameservice_args.h"
 #include "handle_adminclientselection_args.h"
 #include "log/context.h"
-#include "cli_admin/contactclient.h"
+#include "contactclient.h"
 #include "commonclient.h"
-#include "fredlib/reminder.h"
-#include "admin/contact/merge_contact_auto_procedure.h"
-#include "admin/contact/merge_contact.h"
-#include "admin/contact/merge_contact_reporting.h"
-#include "corba/logger_client_impl.h"
+#include "src/fredlib/reminder.h"
+#include "src/admin/contact/merge_contact_auto_procedure.h"
+#include "src/admin/contact/merge_contact.h"
+#include "src/admin/contact/merge_contact_reporting.h"
+#include "src/corba/logger_client_impl.h"
 
+#include "src/fredlib/registrar/get_registrar_handles.h"
 
 /**
  * \class contact_list_impl
@@ -93,7 +94,6 @@ struct contact_reminder_impl
   }
 };
 
-
 /**
  * \class contact_merge_duplicate_auto_impl
  * \brief functor to run automatic contact duplicates merge procedure
@@ -129,15 +129,38 @@ struct contact_merge_duplicate_auto_impl
         ContactMergeDuplicateAutoArgs params = CfgArgGroups::instance()->
             get_handler_ptr_by_type<HandleAdminClientContactMergeDuplicateAutoArgsGrp>()->params;
 
-        Admin::MergeContactAutoProcedure(
-                *(mm.get()),
-                *(logger_client.get()), params.registrar,
-                params.limit, params.dry_run, params.verbose)
-            .set_selection_filter_order(params.selection_filter_order).exec();
+        if((!params.registrar.empty()) && (!params.except_registrar.empty()))
+        {
+            throw std::runtime_error("unable to use --registrar option with --except_registrar option");
+        }
 
+        std::vector<std::string> registrar_handles;
+
+        if(!params.registrar.empty())
+        {
+            registrar_handles=params.registrar;
+        }
+        else
+        {
+            registrar_handles = Fred::Registrar::GetRegistrarHandles().set_exclude_registrars(params.except_registrar).exec();
+        }
+
+        for(std::vector<std::string>::const_iterator ci = registrar_handles.begin()
+            ; ci != registrar_handles.end(); ++ci)
+        {
+            Admin::MergeContactAutoProcedure(
+                    *(mm.get()),
+                    *(logger_client.get()))
+                .set_registrar(*ci)
+                .set_limit(params.limit.is_value_set() ? Optional<unsigned long long>(params.limit.get_value()) : Optional<unsigned long long>())
+                .set_dry_run(params.dry_run)
+                .set_verbose(params.verbose.is_value_set() ? Optional<unsigned short>(params.verbose.get_value()) : Optional<unsigned short>())
+                .set_selection_filter_order(params.selection_filter_order)
+            .exec();
+        }
         return;
     }
-};
+};//struct contact_merge_duplicate_auto_impl
 
 
 /**
@@ -207,26 +230,18 @@ struct contact_merge_impl
                 std::cout << merge_operation_info.format(indenter.dive());
             }
         }
-        catch (Fred::MergeContactException &ex)
+        catch (Fred::MergeContact::Exception &ex)
         {
-            Fred::GetOperationExceptionParamsDataToBoolCallback cb;
-            ex.callback_exception_params(boost::ref(cb), "not found:src_contact_handle");
-            if (cb.get() == true) {
+            if (ex.is_set_unknown_source_contact_handle()) {
                 throw ReturnCode(std::string("source contact '") + params.src + std::string("' not found"), 1);
             }
-            ex.callback_exception_params(boost::ref(cb), "not found:dst_contact_handle");
-            if (cb.get() == true) {
+            if (ex.is_set_unknown_destination_contact_handle()) {
                 throw ReturnCode(std::string("destination contact '") + params.dst + std::string("' not found"), 1);
             }
-            ex.callback_exception_params(boost::ref(cb), "invalid:src_contact_handle");
-            bool isrc = cb.get();
-            ex.callback_exception_params(boost::ref(cb), "invalid:dst_contact_handle");
-            bool idst = cb.get();
-            if (isrc || idst) {
+            if (ex.is_set_contacts_differ()) {
                 throw ReturnCode(std::string("contact differs - cannot merge"), 1);
             }
-            ex.callback_exception_params(boost::ref(cb), "identical:dst_contact_handle");
-            if (cb.get() == true) {
+            if (ex.is_set_identical_contacts_handle() || ex.is_set_identical_contacts_roid()) {
                 throw ReturnCode(std::string("identical contacts passed as source and destination"), 1);
             }
         }

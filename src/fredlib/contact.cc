@@ -16,16 +16,16 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "contact.h"
+#include "src/fredlib/contact.h"
 #include "object_impl.h"
 #include "sql.h"
-#include "old_utils/dbsql.h"
+#include "src/old_utils/dbsql.h"
 #include <boost/date_time/posix_time/time_parsers.hpp>
 #include <boost/regex.hpp>
 #include <boost/lexical_cast.hpp>
 #include <vector>
-#include "old_utils/log.h"
-#include "model/model_filters.h"
+#include "src/old_utils/log.h"
+#include "src/model/model_filters.h"
 #include "log/logger.h"
 
 /* FIXME: Use types as defined in IDL files and not this horrible macro */

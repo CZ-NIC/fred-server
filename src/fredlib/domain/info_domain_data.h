@@ -17,7 +17,7 @@
  */
 
 /**
- *  @file info_domain_data.h
+ *  @file
  *  common domain info data
  */
 
@@ -26,50 +26,66 @@
 
 #include <string>
 #include <vector>
-#include <set>
 
 #include <boost/date_time/posix_time/ptime.hpp>
-#include <boost/date_time/gregorian/gregorian.hpp>
 
-#include "util/optional_value.h"
 #include "util/db/nullable.h"
-#include "fredlib/domain/enum_validation_extension.h"
+#include "enum_validation_extension.h"
+#include "util/printable.h"
+#include "src/fredlib/object/object_id_handle_pair.h"
 
 namespace Fred
 {
-    struct InfoDomainData
+    /**
+     * Common data of domain.
+     * Current or history state of the domain.
+     */
+    struct InfoDomainData : public Util::Printable
     {
-        std::string roid;//domain identifier
-        std::string fqdn;//domain name
-        std::string registrant_handle;//domain owner
-        Nullable<std::string> nsset_handle;//nsset might not be set
-        Nullable<std::string> keyset_handle;//keyset might not be set
-        std::string sponsoring_registrar_handle;//registrar which have right for change
-        std::string create_registrar_handle;//registrar which created domain
-        Nullable<std::string> update_registrar_handle;//registrar which last time changed domain
-        boost::posix_time::ptime creation_time;//time of domain creation
-        Nullable<boost::posix_time::ptime> update_time; //last update time
-        Nullable<boost::posix_time::ptime> transfer_time; //last transfer time
-        boost::gregorian::date expiration_date; //domain expiration date
-        std::string authinfopw;//password for domain transfer
-        std::vector<std::string> admin_contacts;//list of administrative contacts
-        Nullable<ENUMValidationExtension > enum_domain_validation;//enum domain validation info
-        boost::posix_time::ptime outzone_time; //domain outzone time
-        boost::posix_time::ptime cancel_time; //domain cancel time
-        Nullable<boost::posix_time::ptime> delete_time; //domain delete time
-        unsigned long long historyid;//last historyid
-        unsigned long long crhistoryid;//first historyid
+        std::string roid;/**< registry object identifier of domain */
+        std::string fqdn;/**< fully qualified domain name */
+        ObjectIdHandlePair registrant;/**< registrant contact id and handle, owner of the domain*/
+        Nullable<ObjectIdHandlePair> nsset;/**< nsset handle or NULL if missing */
+        Nullable<ObjectIdHandlePair> keyset;/**< keyset id and handle or NULL if missing */
+        std::string sponsoring_registrar_handle;/**< handle of registrar administering domain */
+        std::string create_registrar_handle;/**< handle of registrar which created domain */
+        Nullable<std::string> update_registrar_handle;/**< handle of registrar which last time changed domain*/
+        boost::posix_time::ptime creation_time;/**< time of domain creation in set local zone*/
+        Nullable<boost::posix_time::ptime> update_time; /**< time of last update time in set local zone*/
+        Nullable<boost::posix_time::ptime> transfer_time; /**< time of last transfer in set local zone*/
+        boost::gregorian::date expiration_date; /**< domain expiration local date */
+        std::string authinfopw;/**< password for domain transfer */
+        std::vector<ObjectIdHandlePair> admin_contacts;/**< list of administrating contact handles */
+        Nullable<ENUMValidationExtension > enum_domain_validation;/**< ENUM domain validation extension info */
+        boost::posix_time::ptime outzone_time; /**< domain outzone time in regular_day_procedure_zone from table enum_parameters */
+        boost::posix_time::ptime cancel_time; /**< domain cancel time in regular_day_procedure_zone from table enum_parameters */
+        Nullable<boost::posix_time::ptime> delete_time;/**< domain delete time in set local zone*/
+        unsigned long long historyid;/**< last historyid of domain history*/
+        unsigned long long crhistoryid;/**< first historyid of domain history*/
+        unsigned long long id;/**< id of the domain object*/
 
-    private:
-        bool print_diff_;
-    public:
-
+        /**
+        * Constructor of domain data structure.
+        */
         InfoDomainData();
+        /**
+        * Equality of domain data structure operator.
+        * @param rhs is right hand side of domain data comparison
+        * @return true if equal, false if not
+        */
         bool operator==(const InfoDomainData& rhs) const;
+        /**
+        * Inequality of the contact data structure operator.
+        * @param rhs is right hand side of the contact data comparison
+        * @return true if not equal, false if equal
+        */
         bool operator!=(const InfoDomainData& rhs) const;
 
-        void set_diff_print(bool print_diff = true);
-
+        /**
+        * Dumps state of the instance into the string
+        * @return string with description of the instance state
+        */
+        std::string to_string() const;
     };
 
 }//namespace Fred

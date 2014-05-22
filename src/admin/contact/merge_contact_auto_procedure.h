@@ -1,10 +1,10 @@
 #ifndef MERGE_CONTACT_AUTO_PROC_H__
 #define MERGE_CONTACT_AUTO_PROC_H__
 
-#include "util/types/optional.h"
-#include "fredlib/logger_client.h"
-#include "fredlib/mailer.h"
-#include "fredlib/contact/merge_contact_selection.h"
+#include "util/optional_value.h"
+#include "src/fredlib/logger_client.h"
+#include "src/fredlib/mailer.h"
+#include "src/fredlib/contact/merge_contact_selection.h"
 
 
 
@@ -19,21 +19,21 @@ public:
     MergeContactAutoProcedure(
             Fred::Mailer::Manager& mm,
             Fred::Logger::LoggerClient &_logger_client,
-            const optional_string &_registrar,
-            const optional_ulonglong &_limit,
-            const optional_bool &_dry_run,
-            const optional_ushort &_verbose);
+            const Optional<std::string> &_registrar,
+            const Optional<unsigned long long> &_limit,
+            const Optional<bool> &_dry_run,
+            const Optional<unsigned short> &_verbose);
 
-    MergeContactAutoProcedure& set_registrar(const optional_string &_registrar);
+    MergeContactAutoProcedure& set_registrar(const Optional<std::string> &_registrar);
 
-    MergeContactAutoProcedure& set_limit(const optional_ulonglong &_limit);
+    MergeContactAutoProcedure& set_limit(const Optional<unsigned long long> &_limit);
 
-    MergeContactAutoProcedure& set_dry_run(const optional_bool &_dry_run);
+    MergeContactAutoProcedure& set_dry_run(const Optional<bool> &_dry_run);
 
     MergeContactAutoProcedure& set_selection_filter_order(
             const std::vector<Fred::ContactSelectionFilterType> &_selection_filter_order);
 
-    MergeContactAutoProcedure& set_verbose(const optional_ushort &_verbose);
+    MergeContactAutoProcedure& set_verbose(const Optional<unsigned short> &_verbose);
 
     void exec();
 
@@ -48,11 +48,11 @@ private:
     Fred::Mailer::Manager& mm_;
     Fred::Logger::LoggerClient &logger_client_;
 
-    optional_string registrar_;
-    optional_ulonglong limit_;
-    optional_bool dry_run_;
+    Optional<std::string> registrar_;
+    Optional<unsigned long long> limit_;
+    Optional<bool> dry_run_;
     std::vector<Fred::ContactSelectionFilterType> selection_filter_order_;
-    optional_ushort verbose_;
+    Optional<unsigned short> verbose_;
 };
 
 

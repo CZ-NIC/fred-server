@@ -21,9 +21,9 @@
  *  common part of contact identification implementation
  */
 
-#include "contact_identification_impl.h"
-#include "object_states.h"
-#include "public_request/public_request_impl.h"
+#include "src/fredlib/contact_verification/contact_identification_impl.h"
+#include "src/fredlib/object_states.h"
+#include "src/fredlib/public_request/public_request_impl.h"
 
 namespace Fred {
 namespace Contact {
@@ -77,13 +77,10 @@ void ContactIdentificationImpl::pre_save_check()
 
 void ContactIdentificationImpl::pre_process_check(bool _check)
 {
-    /* object should not change */
-    if (object_has_state(pra_impl_ptr_->getObject(0).id
-            , ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT) == false
-            && Fred::PublicRequest::object_was_changed_since_request_create(
-                    pra_impl_ptr_->getId()))
+    if (object_has_state(pra_impl_ptr_->getObject(0).id,
+            ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT) == false)
     {
-        throw Fred::PublicRequest::ObjectChanged();
+        throw Fred::PublicRequest::NotApplicable("pre_process_check: failed!");
     }
 
     Fred::Contact::Verification::Contact cdata

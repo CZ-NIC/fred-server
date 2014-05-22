@@ -418,7 +418,7 @@ auto_ptr<Fred::Logger::RequestProperties> log_epp_command(epp_command_data *cdat
 
 	//int res;								/* response from corba call wrapper */
 												
-	char errmsg[MAX_ERROR_MSG_LEN];			/* error message returned from corba call */
+
 	Fred::Logger::RequestProperties *c_props = NULL;	/* properties to be sent to the log */
 	/* data structures for every command */
 	epps_sendAuthInfo *ai;
@@ -438,7 +438,7 @@ auto_ptr<Fred::Logger::RequestProperties> log_epp_command(epp_command_data *cdat
 
 	c_props = new Fred::Logger::RequestProperties;
 	
-	errmsg[0] = '\0';
+
 	if(cdata->type == EPP_DUMMY) {
 		*request_type_id = (epp_action_type)999900;
 		PUSH_PROPERTY (c_props, "command", "dummy");

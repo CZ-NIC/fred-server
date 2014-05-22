@@ -36,32 +36,33 @@
 #include <boost/date_time.hpp>
 #include <boost/assign/list_of.hpp>
 
-#include "fredlib/db_settings.h"
-#include "corba_wrapper.h"
+#include "src/fredlib/db_settings.h"
+#include "util/corba_wrapper.h"
 #include "log/logger.h"
 #include "log/context.h"
-#include "corba/connection_releaser.h"
+#include "src/corba/connection_releaser.h"
 
-#include "cli_admin/domain_client_impl.h"
-#include "cli_admin/keyset_client_impl.h"
-#include "cli_admin/contact_client_impl.h"
-#include "cli_admin/invoice_client_impl.h"
-#include "cli_admin/bank_client_impl.h"
-#include "cli_admin/poll_client_impl.h"
-#include "cli_admin/registrar_client_impl.h"
-#include "cli_admin/notify_client_impl.h"
-#include "cli_admin/enumparam_client_impl.h"
-#include "cli_admin/object_client_impl.h"
-#include "cli_admin/file_client_impl.h"
-#include "cli_admin/regblock_client.h"
-#include "cli_admin/charge_client_impl.h"
+#include "domain_client_impl.h"
+#include "keyset_client_impl.h"
+#include "contact_client_impl.h"
+#include "invoice_client_impl.h"
+#include "bank_client_impl.h"
+#include "poll_client_impl.h"
+#include "registrar_client_impl.h"
+#include "notify_client_impl.h"
+#include "enumparam_client_impl.h"
+#include "object_client_impl.h"
+#include "file_client_impl.h"
+#include "regblock_client.h"
+#include "charge_client_impl.h"
+#include "domain_name_validation_init.h"
 
 #include "cfg/handle_general_args.h"
 #include "cfg/handle_logging_args.h"
 #include "cfg/handle_database_args.h"
 #include "cfg/handle_threadgroup_args.h"
 #include "cfg/handle_corbanameservice_args.h"
-#include "cli_admin/handle_adminclientselection_args.h"
+#include "handle_adminclientselection_args.h"
 #include "cfg/handle_registry_args.h"
 #include "cfg/handle_sms_args.h"
 #include "cfg/check_args.h"
@@ -131,6 +132,9 @@ CommandHandlerPtrVector chpv = boost::assign::list_of
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientObjectRegularProcedureArgsGrp),object_regular_procedure_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientObjectDeleteCandidatesArgsGrp),object_delete_candidates_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientFileListArgsGrp),file_list_impl()))
+    (CommandHandlerParam(HandleCommandArgsPtr(new HandleInitDomainNameValidationCheckersArgsGrp),init_domain_name_validation_impl()))
+    (CommandHandlerParam(HandleCommandArgsPtr(new HandleDomainNameValidationByZoneArgsGrp),set_zone_domain_name_validation_impl()))
+
  ;
 
 CommandOptionGroups cog(chpv);

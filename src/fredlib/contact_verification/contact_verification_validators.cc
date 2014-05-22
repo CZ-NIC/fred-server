@@ -1,4 +1,4 @@
-#include "contact_verification_validators.h"
+#include "src/fredlib/contact_verification/contact_verification_validators.h"
 
 namespace Fred {
 namespace Contact {
@@ -13,7 +13,6 @@ ContactValidator create_default_contact_validator()
     tmp.add_checker(contact_checker_email_format);
     tmp.add_checker(contact_checker_email_required);
     tmp.add_checker(contact_checker_phone_format);
-    tmp.add_checker(contact_checker_birthday);
     tmp.add_checker(contact_checker_notify_email_format);
     tmp.add_checker(contact_checker_fax_format);
     return tmp;
@@ -47,13 +46,6 @@ ContactValidator create_finish_identification_validator()
     ContactValidator tmp = create_default_contact_validator();
     tmp.add_checker(contact_checker_address_country);
     tmp.add_checker(contact_checker_address_postalcode_format_cz);
-    return tmp;
-}
-
-
-ContactValidator create_contact_update_validator()
-{
-    ContactValidator tmp = create_default_contact_validator();
     return tmp;
 }
 

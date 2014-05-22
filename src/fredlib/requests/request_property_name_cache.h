@@ -19,7 +19,7 @@
 #include <map>
 #include <boost/thread/mutex.hpp>
 
-#include "db_settings.h"
+#include "src/fredlib/db_settings.h"
 #include "model_request_property_name.h"
 
 // FRED logging

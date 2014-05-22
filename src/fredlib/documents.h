@@ -1,7 +1,7 @@
 #ifndef DOCGEN_H_
 #define DOCGEN_H_
 
-#include "types.h"
+#include "src/fredlib/types.h"
 #include <iostream>
 #include <stdexcept>
 #include <memory>

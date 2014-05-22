@@ -26,9 +26,9 @@
 #include "util/cfg/handle_mojeid_args.h"
 #include "server_i.h"
 #include "corba_conversion.h"
-#include "mojeid/mojeid.h"
-#include "mailer_manager.h"
-#include <MojeID.hh>
+#include "src/mojeid/mojeid.h"
+#include "src/corba/mailer_manager.h"
+#include "src/corba/MojeID.hh"
 #include <string>
 
 
@@ -491,6 +491,10 @@ namespace Registry
                     sinfo->state = Registry::MojeID::NOT_IDENTIFIED;
                 }
                 return sinfo._retn();
+            }
+            catch (Registry::MojeID::OBJECT_NOT_EXISTS &_ex)
+            {
+                throw Registry::MojeID::Server::OBJECT_NOT_EXISTS();
             }
             catch (std::exception &_ex)
             {

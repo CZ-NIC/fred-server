@@ -35,10 +35,10 @@
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/lexical_cast.hpp>
 
-#include "fredlib/db_settings.h"
-#include "model/model_filters.h"
+#include "src/fredlib/db_settings.h"
+#include "src/model/model_filters.h"
 
-#include "fredlib/obj_types.h"
+#include "src/fredlib/obj_types.h"
 
 
 namespace Fred
@@ -181,6 +181,12 @@ public:
             , unsigned long contact_history_historyid
             , const std::string& comm_type //letter or registered_letter
             );
+
+    //copy message for later send
+    unsigned long long copy_letter_to_send(unsigned long long letter_id);
+
+    //copy sms for later send
+    unsigned long long copy_sms_to_send(unsigned long long sms_id);
 
     //load saved letters
     LetterProcInfo load_letters_to_send(std::size_t batch_size_limit

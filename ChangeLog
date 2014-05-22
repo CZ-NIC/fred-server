@@ -1,3 +1,53 @@
+2014-03-26 Jiri Sadek (2.17.1)
+
+  * fix mojeid identification validator (country, postal code checks removed)
+
+2014-02-19 Michal Strnad, Jan Zima, Jiri Sadek (2.17.0)
+
+  * fix input xml escaping for pdf document generator
+
+  * document generator external command is now called by 'ShellCmd' instead of
+    'system' call to get better error logging
+
+  * adifd - methods for resend messages (only contact verification PIN2/PIN3)
+    associated with public request
+
+  * mojeid - allow contact update before PIN3 (in conditionally identification status)
+           - birthday format check (contact.ssn) in mojeid transfer is now
+             more clever and support several notations; fix saving to db (iso format)
+
+  * contact verification - birthday is excluded from checks
+
+  * mojeid/contact verification - 30 days registration "protection" period for
+    'e-mail' and 'telephone' values is now disabled for identical contact (by id)
+
+2014-02-17 Jaromir Talir (2.16.2)
+
+  * fix rpm dependencies
+
+2014-02-10 Michal Strnad (2.16.1)
+
+  * bugfix in mojeid interface (wrong exception translation at corba wrapper)
+
+2013-11-11 Jan Zima, Michal Strnad, Jan Korous, Jiri Sadek (2.16.0)
+
+  * new interface for administrative blocking/unblocking domains (and holders)
+
+  * epp operation charging has now configuration option
+
+  * serveral idn support fixes/enhancements (still mostly for experimental purpose due to lack of
+    definition of allowed character sets)
+      - configuration option
+      - enabled for system registrar
+
+  * fix logger object references filter
+
+  * fix epp poll req/ack commands - overflow of count values
+
+2013-11-15 Jiri Sadek (2.15.3)
+
+  * contact merge - generate new authinfo for destination contact
+
 2013-10-25 Jan Korous, Jiri Sadek (2.15.2)
 
   * fix zone name resolution

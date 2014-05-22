@@ -22,6 +22,7 @@
  */
 
 #include <string>
+#include <vector>
 
 #include <algorithm>
 #include <functional>
@@ -31,10 +32,10 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/regex.hpp>
 
-#include "fredlib/contact/merge_contact_selection.h"
-#include "fredlib/opcontext.h"
-#include "fredlib/db_settings.h"
-#include "fredlib/object_states.h"
+#include "src/fredlib/contact/merge_contact_selection.h"
+#include "src/fredlib/opcontext.h"
+#include "src/fredlib/db_settings.h"
+#include "src/fredlib/object_states.h"
 
 #include "util/util.h"
 
@@ -57,30 +58,52 @@ namespace Fred
 
     MergeContactSelectionOutput MergeContactSelection::exec(OperationContext& ctx)
     {
-        if(contact_handle_.empty())
+        try
         {
-            throw std::logic_error("no contact handles");
-        }
-        for(std::vector<std::pair<std::string, boost::shared_ptr<ContactSelectionFilterBase> > >::iterator f = ff_.begin(); f != ff_.end(); ++f)
-        {
-            std::vector<std::string> current_filter_result;
-            if((f->second).get() != 0) current_filter_result = (f->second).get()->operator()(ctx,contact_handle_);
-            if(current_filter_result.size() > 1) contact_handle_ = current_filter_result;
-            if(current_filter_result.size() == 1) {
-                return MergeContactSelectionOutput(current_filter_result[0], f->first);
+            if(contact_handle_.empty())
+            {
+                BOOST_THROW_EXCEPTION(NoContactHandles());
             }
-            //if(current_filter_result.empty()) continue;//try next filter
-        }
+            for(std::vector<std::pair<std::string, boost::shared_ptr<ContactSelectionFilterBase> > >::iterator f = ff_.begin(); f != ff_.end(); ++f)
+            {
+                std::vector<std::string> current_filter_result;
+                if((f->second).get() != 0) current_filter_result = (f->second).get()->operator()(ctx,contact_handle_);
+                if(current_filter_result.size() > 1) contact_handle_ = current_filter_result;
+                if(current_filter_result.size() == 1) {
+                    return MergeContactSelectionOutput(current_filter_result[0], f->first);
+                }
+                //if(current_filter_result.empty()) continue;//try next filter
+            }
 
-        if(contact_handle_.empty())
+            if(contact_handle_.empty())
+            {
+                BOOST_THROW_EXCEPTION(NoContactHandlesLeft());
+            }
+            else
+            {
+                BOOST_THROW_EXCEPTION(TooManyContactHandlesLeft());
+            }
+
+        }//try
+        catch(ExceptionStack& ex)
         {
-            throw std::logic_error("no contact handles left");
-        }
-        else
-        {
-            throw std::logic_error("to many contact handles left");
+            ex.add_exception_stack_info(to_string());
+            throw;
         }
     }
+
+    std::string MergeContactSelection::to_string() const
+    {
+        std::vector<std::pair<std::string,std::string> > data;
+
+        data.push_back((std::make_pair("contact_handle",Util::format_vector(contact_handle_))));
+        std::ostringstream os;
+        for(std::vector<std::pair<std::string, boost::shared_ptr<ContactSelectionFilterBase> > >::const_iterator ci = ff_.begin()
+                ; ci != ff_.end() ; ++ci) os << " " << ci->first;
+        data.push_back((std::make_pair("selection filters",os.str())));
+        return Util::format_operation_state("MergeContactSelection",data);
+    }
+//class MergeContactSelection
 
     class FilterIdentifiedContact
     : public ContactSelectionFilterBase

@@ -27,27 +27,27 @@
 #include <math.h>
 #include <memory>
 #include <iomanip>
-#include <corba/Admin.hh>
+#include "src/corba/Admin.hh"
 
 #include "common.h"
 #include "admin_impl.h"
-#include "old_utils/log.h"
-#include "old_utils/dbsql.h"
-#include "fredlib/registry.h"
-#include "fredlib/notify.h"
-#include "corba/mailer_manager.h"
-#include "fredlib/messages/messages_impl.h"
-#include "fredlib/object_states.h"
-#include "fredlib/poll.h"
-#include "bank_payment.h"
-#include "fredlib/public_request/public_request_authinfo_impl.h"
-#include "fredlib/public_request/public_request_block_impl.h"
+#include "src/old_utils/log.h"
+#include "src/old_utils/dbsql.h"
+#include "src/fredlib/registry.h"
+#include "src/fredlib/notify.h"
+#include "src/corba/mailer_manager.h"
+#include "src/fredlib/messages/messages_impl.h"
+#include "src/fredlib/object_states.h"
+#include "src/fredlib/poll.h"
+#include "src/fredlib/banking/bank_payment.h"
+#include "src/fredlib/public_request/public_request_authinfo_impl.h"
+#include "src/fredlib/public_request/public_request_block_impl.h"
 #include "util/factory_check.h"
 #include "log/logger.h"
 #include "log/context.h"
 #include "random.h"
-#include "corba/connection_releaser.h"
-#include "epp_corba_client_impl.h"
+#include "src/corba/connection_releaser.h"
+#include "src/corba/epp_corba_client_impl.h"
 
 class Registry_RegistrarCertification_i;
 class Registry_RegistrarGroup_i;
@@ -864,6 +864,222 @@ ccReg::Admin::Buffer* ccReg_Admin_i::getPublicRequestPDF(ccReg::TID id,
   catch (Fred::NOT_FOUND) {
     throw ccReg::Admin::OBJECT_NOT_FOUND();
   }
+}
+
+ccReg::TID ccReg_Admin_i::resendPin3Letter(ccReg::TID publicRequestId)
+{
+    Logging::Context ctx(server_name_);
+    ConnectionReleaser releaser;
+
+    TRACE(boost::format("[CALL] ccReg_Admin_i::resendPin3Letter(%1%)") % publicRequestId);
+  
+    try {
+        Database::Connection conn = Database::Manager::acquire();
+        Database::Transaction tx(conn);
+        Database::Result res = conn.exec_params(
+            "SELECT (SELECT name "            // [0] - type of request
+                    "FROM enum_public_request_type WHERE id=pr.request_type),"
+                   "(SELECT name "            // [1] - request status new/answered/invalidated
+                    "FROM enum_public_request_status WHERE id=pr.status),"
+                   "prmm.id IS NULL,"         // [2] - have any message
+                   "prmm.message_archive_id," // [3] - sms/letter id
+                   "ma.id "                   // [4] - id of pin3 letter
+            "FROM public_request pr "
+            "LEFT JOIN public_request_messages_map prmm ON prmm.public_request_id=pr.id "
+            "LEFT JOIN message_archive ma ON ("
+                "ma.id=prmm.message_archive_id AND "
+                "ma.message_type_id IN (SELECT id FROM message_type "
+                                       "WHERE type IN ('mojeid_pin3','contact_verification_pin3')) AND "
+                "ma.comm_type_id=(SELECT id FROM comm_type WHERE type='letter')) "
+            "WHERE pr.id=$1::bigint AND "
+                  "(prmm.id IS NULL OR prmm.message_archive_id IS NOT NULL) "
+                  "ORDER BY prmm.id LIMIT 1",
+            Database::query_param_list(publicRequestId)
+        );
+        if (res.size() <= 0) {
+            LOGGER(PACKAGE).error(boost::format("publicRequestId: %1% not found") % publicRequestId);
+            throw ccReg::Admin::ObjectNotFound();
+        }
+        const std::string typeOfRequest = static_cast< std::string >(res[0][0]);
+        if ((typeOfRequest != "mojeid_contact_identification") &&
+            (typeOfRequest != "contact_identification")) {
+            LOGGER(PACKAGE).error(boost::format("publicRequestId: %1% of %2% type is not PIN3 request")
+                % publicRequestId
+                % typeOfRequest);
+            throw ccReg::Admin::ObjectNotFound();
+        }
+        const std::string requestStatus = static_cast< std::string >(res[0][1]);
+        if (requestStatus != "new") {
+            LOGGER(PACKAGE).error(
+                boost::format("publicRequestId: %1% in %2% state is not new PIN3 request")
+                % publicRequestId
+                % requestStatus);
+            throw ccReg::Admin::ObjectNotFound();
+        }
+        if (static_cast< bool >(res[0][2])) {
+            LOGGER(PACKAGE).error(boost::format("publicRequestId: %1% doesn't have message")
+                % publicRequestId);
+            throw ccReg::Admin::ObjectNotFound();
+        }
+        if (res[0][3].isnull()) {
+            LOGGER(PACKAGE).error(
+                boost::format("publicRequestId: %1% doesn't have message_archive_id")
+                % publicRequestId);
+            throw ccReg::Admin::ObjectNotFound();
+        }
+        if (res[0][4].isnull()) {
+            LOGGER(PACKAGE).error(
+                boost::format("message_archive_id: %1% doesn't exists")
+                % static_cast< ccReg::TID >(res[0][3]));
+            throw ccReg::Admin::ObjectNotFound();
+        }
+        const ccReg::TID letterId = static_cast< ccReg::TID >(res[0][4]);
+        Fred::Messages::ManagerPtr msgMan = Fred::Messages::create_manager();
+        const ccReg::TID newLetterId = msgMan->copy_letter_to_send(letterId);
+        conn.exec_params(
+            "INSERT INTO public_request_messages_map "
+              "(public_request_id,message_archive_id,mail_archive_id) "
+              "VALUES($1::bigint,$2::bigint,NULL)",
+            Database::query_param_list(publicRequestId)(newLetterId)
+        );
+        tx.commit();
+        return newLetterId;
+    }
+    catch (ccReg::Admin::ObjectNotFound&) {
+        throw;
+    }
+    catch (ccReg::Admin::InternalServerError&) {
+        throw;
+    }
+    catch (ccReg::Admin::OBJECT_NOT_FOUND&) {
+        throw ccReg::Admin::ObjectNotFound();
+    }
+    catch (ccReg::Admin::SQL_ERROR&) {
+        throw ccReg::Admin::InternalServerError();
+    }
+    catch (Database::NoDataFound &ex) {
+        LOGGER(PACKAGE).error(boost::format("Database::NoDataFound: %1%") % ex.what());
+        throw ccReg::Admin::ObjectNotFound();
+    }
+    catch (Database::Exception &ex) {
+        LOGGER(PACKAGE).error(boost::format("Database problem: %1%") % ex.what());
+        throw ccReg::Admin::InternalServerError();
+    }
+    catch (std::exception &ex) {
+        LOGGER(PACKAGE).error(boost::format("Internal error: %1%") % ex.what());
+        throw ccReg::Admin::InternalServerError();
+    }
+    catch (...) {
+        throw ccReg::Admin::InternalServerError();
+    }
+}
+
+ccReg::TID ccReg_Admin_i::resendPin2SMS(ccReg::TID publicRequestId)
+{
+    Logging::Context ctx(server_name_);
+    ConnectionReleaser releaser;
+
+    TRACE(boost::format("[CALL] ccReg_Admin_i::resendPin2SMS(%1%)") % publicRequestId);
+  
+    try {
+        Database::Connection conn = Database::Manager::acquire();
+        Database::Transaction tx(conn);
+        Database::Result res = conn.exec_params(
+            "SELECT (SELECT name "            // [0] - type of request
+                    "FROM enum_public_request_type WHERE id=pr.request_type),"
+                   "(SELECT name "            // [1] - request status new/answered/invalidated
+                    "FROM enum_public_request_status WHERE id=pr.status),"
+                   "prmm.id IS NULL,"         // [2] - have any message
+                   "prmm.message_archive_id," // [3] - sms/letter id
+                   "ma.id "                   // [4] - id of pin2 sms
+            "FROM public_request pr "
+            "LEFT JOIN public_request_messages_map prmm ON prmm.public_request_id=pr.id "
+            "LEFT JOIN message_archive ma ON ("
+                "ma.id=prmm.message_archive_id AND "
+                "ma.message_type_id IN (SELECT id FROM message_type "
+                                       "WHERE type IN ('mojeid_pin2','contact_verification_pin2')) AND "
+                "ma.comm_type_id=(SELECT id FROM comm_type WHERE type='sms')) "
+            "WHERE pr.id=$1::bigint AND "
+                  "(prmm.id IS NULL OR prmm.message_archive_id IS NOT NULL) "
+                  "ORDER BY prmm.id LIMIT 1",
+            Database::query_param_list(publicRequestId)
+        );
+        if (res.size() <= 0) {
+            LOGGER(PACKAGE).error(boost::format("publicRequestId: %1% not found") % publicRequestId);
+            throw ccReg::Admin::ObjectNotFound();
+        }
+        const std::string typeOfRequest = static_cast< std::string >(res[0][0]);
+        if ((typeOfRequest != "mojeid_contact_conditional_identification") &&
+            (typeOfRequest != "contact_conditional_identification")) {
+            LOGGER(PACKAGE).error(boost::format("publicRequestId: %1% of %2% type is not PIN2 request")
+                % publicRequestId
+                % typeOfRequest);
+            throw ccReg::Admin::ObjectNotFound();
+        }
+        const std::string requestStatus = static_cast< std::string >(res[0][1]);
+        if (requestStatus != "new") {
+            LOGGER(PACKAGE).error(
+                boost::format("publicRequestId: %1% in %2% state is not new PIN2 request")
+                % publicRequestId
+                % requestStatus);
+            throw ccReg::Admin::ObjectNotFound();
+        }
+        if (static_cast< bool >(res[0][2])) {
+            LOGGER(PACKAGE).error(boost::format("publicRequestId: %1% doesn't have message")
+                % publicRequestId);
+            throw ccReg::Admin::ObjectNotFound();
+        }
+        if (res[0][3].isnull()) {
+            LOGGER(PACKAGE).error(
+                boost::format("publicRequestId: %1% doesn't have message_archive_id")
+                % publicRequestId);
+            throw ccReg::Admin::ObjectNotFound();
+        }
+        if (res[0][4].isnull()) {
+            LOGGER(PACKAGE).error(
+                boost::format("message_archive_id: %1% doesn't exists")
+                % static_cast< ccReg::TID >(res[0][3]));
+            throw ccReg::Admin::ObjectNotFound();
+        }
+        const ccReg::TID smsId = static_cast< ccReg::TID >(res[0][4]);
+        Fred::Messages::ManagerPtr msgMan = Fred::Messages::create_manager();
+        const ccReg::TID newSmsId = msgMan->copy_sms_to_send(smsId);
+        conn.exec_params(
+            "INSERT INTO public_request_messages_map "
+              "(public_request_id,message_archive_id,mail_archive_id) "
+              "VALUES($1::bigint,$2::bigint,NULL)",
+            Database::query_param_list(publicRequestId)(newSmsId)
+        );
+        tx.commit();
+        return newSmsId;
+    }
+    catch (ccReg::Admin::ObjectNotFound&) {
+        throw;
+    }
+    catch (ccReg::Admin::InternalServerError&) {
+        throw;
+    }
+    catch (ccReg::Admin::OBJECT_NOT_FOUND&) {
+        throw ccReg::Admin::ObjectNotFound();
+    }
+    catch (ccReg::Admin::SQL_ERROR&) {
+        throw ccReg::Admin::InternalServerError();
+    }
+    catch (Database::NoDataFound &ex) {
+        LOGGER(PACKAGE).error(boost::format("Database::NoDataFound: %1%") % ex.what());
+        throw ccReg::Admin::ObjectNotFound();
+    }
+    catch (Database::Exception &ex) {
+        LOGGER(PACKAGE).error(boost::format("Database problem: %1%") % ex.what());
+        throw ccReg::Admin::InternalServerError();
+    }
+    catch (std::exception &ex) {
+        LOGGER(PACKAGE).error(boost::format("Internal error: %1%") % ex.what());
+        throw ccReg::Admin::InternalServerError();
+    }
+    catch (...) {
+        throw ccReg::Admin::InternalServerError();
+    }
 }
 
 /* enum dictionary method implementation */

@@ -10,19 +10,19 @@
 #include <boost/format.hpp>
 #include <boost/utility.hpp>
 
-#include "common_object.h"
-#include "registrar.h"
-#include "object.h"
-#include "domain.h"
-#include "contact.h"
-#include "nsset.h"
-#include "keyset.h"
-#include "mailer.h"
-#include "documents.h"
-#include "messages/messages_impl.h"
+#include "src/fredlib/common_object.h"
+#include "src/fredlib/registrar.h"
+#include "src/fredlib/object.h"
+#include "src/fredlib/domain.h"
+#include "src/fredlib/contact.h"
+#include "src/fredlib/nsset.h"
+#include "src/fredlib/keyset.h"
+#include "src/fredlib/mailer.h"
+#include "src/fredlib/documents.h"
+#include "src/fredlib/messages/messages_impl.h"
 
-#include "db_settings.h"
-#include "model/model_filters.h"
+#include "src/fredlib/db_settings.h"
+#include "src/model/model_filters.h"
 #include "factory.h"
 
 using namespace boost::posix_time;
@@ -248,6 +248,10 @@ public:
           const std::string &_identification,
           const std::string &_password,
           const unsigned long long &_request_id) = 0;
+
+  virtual bool checkAlreadyProcessedPublicRequest(
+          unsigned long long &_contact_id,
+          const std::vector<Type> &_request_type_list) = 0;
 
   virtual std::string getPublicRequestAuthIdentification(
           unsigned long long &_contact_id,

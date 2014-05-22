@@ -17,8 +17,8 @@
  */
 
 /**
- *  @file info_domain.cc
- *  domain info
+ *  @file
+ *  domain history info
  */
 
 #include <string>
@@ -29,208 +29,270 @@
 #include <boost/date_time/posix_time/time_period.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
 
-#include "fredlib/domain/info_domain.h"
-#include "fredlib/object/object.h"
+#include "info_domain.h"
+#include "info_domain_impl.h"
 
-#include "fredlib/opcontext.h"
-#include "fredlib/db_settings.h"
-#include "util/optional_value.h"
-#include "util/db/nullable.h"
+#include "src/fredlib/opcontext.h"
+#include "src/fredlib/opexception.h"
 #include "util/util.h"
+#include "util/printable.h"
 
 namespace Fred
 {
-    InfoDomain::InfoDomain(const std::string& fqdn
-            , const std::string& registrar)
-    : fqdn_(fqdn)
-    , registrar_(registrar)
-    , lock_(false)
+
+    InfoDomainByHandle::InfoDomainByHandle(const std::string& fqdn)
+        : fqdn_(fqdn)
+        , lock_(false)
     {}
 
-    InfoDomain& InfoDomain::set_lock(bool lock)//set lock object_registry row for domain
+    InfoDomainByHandle& InfoDomainByHandle::set_lock()
     {
-        lock_ = lock;
+        lock_ = true;
         return *this;
     }
 
-    InfoDomainOutput InfoDomain::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
+    InfoDomainOutput InfoDomainByHandle::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
     {
-        InfoDomainOutput domain_info_output;
+        std::vector<InfoDomainOutput> domain_res;
 
         try
         {
-            //check fqdn or lock object_registry row for update
-            {
-                Database::Result res = ctx.get_conn().exec_params(
-                    std::string("SELECT id FROM object_registry WHERE name=LOWER($1::text) "
-                    " AND erdate IS NULL AND type = ( SELECT id FROM enum_object_type eot "
-                    " WHERE eot.name='domain'::text) ")
-                    + (lock_ ? std::string(" FOR UPDATE") : std::string(""))
-                    , Database::query_param_list(fqdn_));
+            InfoDomain id;
+            id.set_fqdn(fqdn_).set_history_query(false);
+            if(lock_) id.set_lock();
+            domain_res = id.exec(ctx,local_timestamp_pg_time_zone_name);
 
-                if (res.size() != 1)
-                {
-                    std::string errmsg("|| not found:fqdn: ");
-                    errmsg += boost::replace_all_copy(fqdn_,"|", "[pipe]");//quote pipes
-                    errmsg += " |";
-                    throw IDEX(errmsg.c_str());
-                }
+            if (domain_res.empty())
+            {
+                BOOST_THROW_EXCEPTION(Exception().set_unknown_fqdn(fqdn_));
             }
 
-            //check registrar exists
-            //TODO: check registrar access
+            if (domain_res.size() > 1)
             {
-                Database::Result res = ctx.get_conn().exec_params(
-                        "SELECT id FROM registrar WHERE handle = UPPER($1::text)"
-                    , Database::query_param_list(registrar_));
-
-                if (res.size() != 1)
-                {
-                    std::string errmsg("|| not found:registrar: ");
-                    errmsg += boost::replace_all_copy(registrar_,"|", "[pipe]");//quote pipes
-                    errmsg += " |";
-                    throw IDEX(errmsg.c_str());
-                }
+                BOOST_THROW_EXCEPTION(InternalError("query result size > 1"));
             }
 
-            //info about domain
-            unsigned long long domain_id = 0;
-            {
-                Database::Result res = ctx.get_conn().exec_params(
-                "SELECT dobr.id,dobr.name,dobr.roid,d.zone,d.nsset,nobr.name, "// domain, zone, nsset 0-5
-                " cor.id,cor.name,c.name,c.organization, "// registrant 6-9
-                " o.clid,clr.handle , " // sponsoring registrar 10-11
-                " dobr.crid, crr.handle, "//creating registrar 12-13
-                " o.upid, upr.handle, "//updated by registrar 14-15
-                " dobr.crdate,o.trdate,o.update, "// registration dates 16-18
-                " o.authinfopw, " // authinfo 19
-                " d.exdate, "// expiration time 20
-                // outzone data and cancel date from enum_parameters compute 21-22
-                " (((d.exdate + (SELECT val || ' day' FROM enum_parameters WHERE id = 4)::interval)::timestamp "
-                " + (SELECT val || ' hours' FROM enum_parameters WHERE name = 'regular_day_procedure_period')::interval) "
-                "    AT TIME ZONE (SELECT val FROM enum_parameters WHERE name = 'regular_day_procedure_zone'))::timestamp as outzonedate "
-                " ,(((d.exdate + (SELECT val || ' day' FROM enum_parameters WHERE id = 6)::interval)::timestamp "
-                " + (SELECT val || ' hours' FROM enum_parameters WHERE name = 'regular_day_procedure_period')::interval) "
-                " AT TIME ZONE (SELECT val FROM enum_parameters WHERE name = 'regular_day_procedure_zone'))::timestamp as canceldate "
-                " , d.keyset, kobr.name "// keyset id and keyset handle 23-24
-                " , ev.exdate, ev.publish "//enumval 25-26
-                " , dobr.erdate "// domain delete time 27
-                " , dobr.historyid as historyid " // last historyid 28
-                " , (CURRENT_TIMESTAMP AT TIME ZONE 'UTC')::timestamp AS utc_timestamp " // utc timestamp 29
-                " , (CURRENT_TIMESTAMP AT TIME ZONE 'UTC' AT TIME ZONE $1::text)::timestamp AS local_timestamp " // local zone timestamp 30
-                " , dobr.crhistoryid "//first historyid 31
-                " FROM object_registry dobr "
-                " JOIN domain d ON dobr.id=d.id "
-                " JOIN object o ON d.id=o.id "
-                " JOIN registrar clr ON clr.id = o.clid "
-                " JOIN registrar crr ON crr.id = dobr.crid "
-                " JOIN contact c ON d.registrant=c.id "
-                " JOIN object_registry cor ON c.id=cor.id "
-                " LEFT JOIN object_registry nobr ON nobr.id = d.nsset AND nobr.erdate IS NULL "
-                " AND nobr.type = ( SELECT id FROM enum_object_type eot WHERE eot.name='nsset'::text) "
-                " LEFT JOIN object_registry kobr ON kobr.id = d.keyset AND kobr.erdate IS NULL "
-                 " AND kobr.type = ( SELECT id FROM enum_object_type eot WHERE eot.name='keyset'::text) "
-                " LEFT JOIN registrar upr ON upr.id = o.upid "
-                " LEFT JOIN  enumval ev ON ev.domainid = d.id "
-                " WHERE dobr.name=LOWER($2::text) AND dobr.erdate IS NULL "
-                " AND dobr.type = ( SELECT id FROM enum_object_type eot WHERE eot.name='domain'::text)"
-                , Database::query_param_list(local_timestamp_pg_time_zone_name)(fqdn_));
-
-                if (res.size() != 1)
-                {
-                    std::string errmsg("|| not found:fqdn: ");
-                    errmsg += boost::replace_all_copy(fqdn_,"|", "[pipe]");//quote pipes
-                    errmsg += " |";
-                    throw IDEX(errmsg.c_str());
-                }
-
-                domain_id = static_cast<unsigned long long>(res[0][0]);//dobr.id
-
-                domain_info_output.info_domain_data.fqdn = static_cast<std::string>(res[0][1]);//dobr.name
-
-                domain_info_output.info_domain_data.roid = static_cast<std::string>(res[0][2]);//dobr.roid
-
-                domain_info_output.info_domain_data.nsset_handle = res[0][5].isnull() ? Nullable<std::string>()
-                        : Nullable<std::string> (static_cast<std::string>(res[0][5]));//nobr.name
-
-                domain_info_output.info_domain_data.registrant_handle = static_cast<std::string>(res[0][7]);
-
-                domain_info_output.info_domain_data.sponsoring_registrar_handle = static_cast<std::string>(res[0][11]);//clr.handle
-
-                domain_info_output.info_domain_data.create_registrar_handle = static_cast<std::string>(res[0][13]);//crr.handle
-
-                domain_info_output.info_domain_data.update_registrar_handle = res[0][15].isnull() ? Nullable<std::string>()
-                    : Nullable<std::string> (static_cast<std::string>(res[0][15]));//upr.handle
-
-                domain_info_output.info_domain_data.creation_time = boost::posix_time::time_from_string(static_cast<std::string>(res[0][16]));//dobr.crdate
-
-                domain_info_output.info_domain_data.transfer_time = res[0][17].isnull() ? Nullable<boost::posix_time::ptime>()
-                : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(res[0][17])));//o.trdate
-
-                domain_info_output.info_domain_data.update_time = res[0][18].isnull() ? Nullable<boost::posix_time::ptime>()
-                : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(res[0][18])));//o.update
-
-                domain_info_output.info_domain_data.authinfopw = static_cast<std::string>(res[0][19]);//o.authinfopw
-
-                domain_info_output.info_domain_data.expiration_date = res[0][20].isnull() ? boost::gregorian::date()
-                : boost::gregorian::from_string(static_cast<std::string>(res[0][20]));//d.exdate
-
-                domain_info_output.info_domain_data.outzone_time = res[0][21].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
-                : boost::posix_time::time_from_string(static_cast<std::string>(res[0][21]));//outzonedate
-
-                domain_info_output.info_domain_data.cancel_time = res[0][22].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
-                : boost::posix_time::time_from_string(static_cast<std::string>(res[0][22]));//canceldate
-
-                domain_info_output.info_domain_data.keyset_handle = res[0][24].isnull() ? Nullable<std::string>()
-                : Nullable<std::string> (static_cast<std::string>(res[0][24]));//kobr.name
-
-                domain_info_output.info_domain_data.enum_domain_validation = (res[0][25].isnull() || res[0][26].isnull())
-                        ? Nullable<ENUMValidationExtension > ()
-                        : Nullable<ENUMValidationExtension > (ENUMValidationExtension(
-                            boost::gregorian::from_string(static_cast<std::string>(res[0][25]))
-                            ,static_cast<bool>(res[0][26])));
-
-                domain_info_output.info_domain_data.delete_time = res[0][27].isnull() ? Nullable<boost::posix_time::ptime>()
-                : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(res[0][27])));//dobr.erdate
-
-                domain_info_output.info_domain_data.historyid = static_cast<unsigned long long>(res[0][28]);//last historyid
-
-                domain_info_output.utc_timestamp = res[0][29].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
-                : boost::posix_time::time_from_string(static_cast<std::string>(res[0][29]));// utc timestamp
-
-                domain_info_output.local_timestamp = res[0][30].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
-                : boost::posix_time::time_from_string(static_cast<std::string>(res[0][30]));//local zone timestamp
-
-                domain_info_output.info_domain_data.crhistoryid = static_cast<unsigned long long>(res[0][31]);//dobr.crhistoryid
-            }
-
-            //list of administrative contacts
-            {
-                Database::Result result = ctx.get_conn().exec_params(
-                "SELECT cobr.name "
-                " FROM domain_contact_map dcm "
-                " JOIN object_registry cobr ON dcm.contactid = cobr.id AND cobr.erdate IS NULL "
-                " JOIN enum_object_type ceot ON ceot.id = cobr.type AND ceot.name='contact'::text "
-                " WHERE dcm.domainid = $1::bigint "
-                " AND dcm.role = 1 "// admin contact
-                " ORDER BY cobr.name "
-                , Database::query_param_list(domain_id));
-
-                domain_info_output.info_domain_data.admin_contacts.reserve(result.size());
-                for(Database::Result::size_type i = 0; i < result.size(); ++i)
-                {
-                    domain_info_output.info_domain_data.admin_contacts.push_back(
-                    static_cast<std::string>(result[i][0]));
-                }
-            }
-
-        }//try
-        catch(...)//common exception processing
-        {
-            handleOperationExceptions<InfoDomainException>(__FILE__, __LINE__, __ASSERT_FUNCTION);
         }
-        return domain_info_output;
-    }//InfoDomain::exec
+        catch(ExceptionStack& ex)
+        {
+            ex.add_exception_stack_info(to_string());
+            throw;
+        }
+        return domain_res.at(0);
+    }
 
+    std::string InfoDomainByHandle::to_string() const
+    {
+        return Util::format_operation_state("InfoDomainByHandle",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("handle", fqdn_))
+        (std::make_pair("lock",lock_ ? "true":"false"))
+        );
+    }
+
+    InfoDomainById::InfoDomainById(unsigned long long id)
+        : id_(id)
+        , lock_(false)
+    {}
+
+    InfoDomainById& InfoDomainById::set_lock()
+    {
+        lock_ = true;
+        return *this;
+    }
+
+    InfoDomainOutput InfoDomainById::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
+    {
+        std::vector<InfoDomainOutput> domain_res;
+
+        try
+        {
+            InfoDomain id;
+            id.set_id(id_).set_history_query(false);
+            if(lock_) id.set_lock();
+            domain_res = id.exec(ctx,local_timestamp_pg_time_zone_name);
+
+            if (domain_res.empty())
+            {
+                BOOST_THROW_EXCEPTION(Exception().set_unknown_object_id(id_));
+            }
+
+            if (domain_res.size() > 1)
+            {
+                BOOST_THROW_EXCEPTION(InternalError("query result size > 1"));
+            }
+
+        }
+        catch(ExceptionStack& ex)
+        {
+            ex.add_exception_stack_info(to_string());
+            throw;
+        }
+        return domain_res.at(0);
+    }
+
+    std::string InfoDomainById::to_string() const
+    {
+        return Util::format_operation_state("InfoDomainById",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("id",boost::lexical_cast<std::string>(id_)))
+        (std::make_pair("lock",lock_ ? "true":"false"))
+        );
+    }
+
+    InfoDomainHistory::InfoDomainHistory(const std::string& roid
+            , const Optional<boost::posix_time::ptime>& history_timestamp)
+        : roid_(roid)
+        , history_timestamp_(history_timestamp)
+        , lock_(false)
+    {}
+
+    InfoDomainHistory::InfoDomainHistory(const std::string& roid)
+    : roid_(roid)
+    , lock_(false)
+    {}
+
+    InfoDomainHistory& InfoDomainHistory::set_history_timestamp(boost::posix_time::ptime history_timestamp)//set history timestamp
+    {
+        history_timestamp_ = history_timestamp;
+        return *this;
+    }
+
+    InfoDomainHistory& InfoDomainHistory::set_lock()
+    {
+        lock_ = true;
+        return *this;
+    }
+
+    std::vector<InfoDomainOutput> InfoDomainHistory::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
+    {
+        std::vector<InfoDomainOutput> domain_res;
+
+        try
+        {
+            InfoDomain id;
+            id.set_roid(roid_).set_history_query(true);
+            if(lock_) id.set_lock();
+            domain_res = id.exec(ctx,local_timestamp_pg_time_zone_name);
+
+            if (domain_res.empty())
+            {
+                BOOST_THROW_EXCEPTION(Exception().set_unknown_registry_object_identifier(roid_));
+            }
+
+        }
+        catch(ExceptionStack& ex)
+        {
+            ex.add_exception_stack_info(to_string());
+            throw;
+        }
+        return domain_res;
+    }
+
+    std::string InfoDomainHistory::to_string() const
+    {
+        return Util::format_operation_state("InfoDomainHistory",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("roid",roid_))
+        (std::make_pair("history_timestamp",history_timestamp_.print_quoted()))
+        (std::make_pair("lock",lock_ ? "true":"false"))
+        );
+    }
+
+    InfoDomainHistoryById::InfoDomainHistoryById(unsigned long long id)
+        : id_(id)
+        , lock_(false)
+    {}
+
+    InfoDomainHistoryById& InfoDomainHistoryById::set_lock()
+    {
+        lock_ = true;
+        return *this;
+    }
+
+    std::vector<InfoDomainOutput> InfoDomainHistoryById::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
+    {
+        std::vector<InfoDomainOutput> domain_history_res;
+
+        try
+        {
+            InfoDomain id;
+            id.set_id(id_).set_history_query(true);
+            if(lock_) id.set_lock();
+            domain_history_res = id.exec(ctx,local_timestamp_pg_time_zone_name);
+
+            if (domain_history_res.empty())
+            {
+                BOOST_THROW_EXCEPTION(Exception().set_unknown_object_id(id_));
+            }
+
+        }
+        catch(ExceptionStack& ex)
+        {
+            ex.add_exception_stack_info(to_string());
+            throw;
+        }
+        return domain_history_res;
+    }
+
+    std::string InfoDomainHistoryById::to_string() const
+    {
+        return Util::format_operation_state("InfoDomainHistoryById",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("id",boost::lexical_cast<std::string>(id_)))
+        (std::make_pair("lock",lock_ ? "true":"false"))
+        );
+    }
+
+    InfoDomainHistoryByHistoryid::InfoDomainHistoryByHistoryid(unsigned long long historyid)
+        : historyid_(historyid)
+        , lock_(false)
+    {}
+
+    InfoDomainHistoryByHistoryid& InfoDomainHistoryByHistoryid::set_lock()
+    {
+        lock_ = true;
+        return *this;
+    }
+
+    InfoDomainOutput InfoDomainHistoryByHistoryid::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
+    {
+        std::vector<InfoDomainOutput> domain_history_res;
+
+        try
+        {
+            InfoDomain id;
+            id.set_historyid(historyid_)
+            .set_history_query(true);
+            if(lock_) id.set_lock();
+            domain_history_res = id.exec(ctx,local_timestamp_pg_time_zone_name);
+
+            if (domain_history_res.empty())
+            {
+                BOOST_THROW_EXCEPTION(Exception().set_unknown_object_historyid(historyid_));
+            }
+
+            if (domain_history_res.size() > 1)
+            {
+                BOOST_THROW_EXCEPTION(InternalError("query result size > 1"));
+            }
+
+        }
+        catch(ExceptionStack& ex)
+        {
+            ex.add_exception_stack_info(to_string());
+            throw;
+        }
+        return domain_history_res.at(0);
+    }
+
+    std::string InfoDomainHistoryByHistoryid::to_string() const
+    {
+        return Util::format_operation_state("InfoDomainHistoryByHistoryid",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("historyid",boost::lexical_cast<std::string>(historyid_)))
+        (std::make_pair("lock",lock_ ? "true":"false"))
+        );
+    }
 }//namespace Fred
 

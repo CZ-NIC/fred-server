@@ -26,15 +26,17 @@
 
 #include <string>
 #include <vector>
+#include <boost/lexical_cast.hpp>
 
-#include "fredlib/opexception.h"
-#include "fredlib/opcontext.h"
+#include "src/fredlib/opexception.h"
+#include "src/fredlib/opcontext.h"
 #include "util/optional_value.h"
+#include "util/printable.h"
 
 namespace Fred
 {
 
-    struct MergeContactUpdateDomainRegistrant
+    struct MergeContactUpdateDomainRegistrant : public Util::Printable
     {
         std::string fqdn;
         unsigned long long domain_id;
@@ -57,9 +59,25 @@ namespace Fred
             , set_registrant(_set_registrant)
             , history_id(_history_id)
         {}
+
+        /**
+        * Dumps state of the instance into the string
+        * @return string with description of the instance state
+        */
+        std::string to_string() const
+        {
+            return Util::format_data_structure("MergeContactUpdateDomainRegistrant",
+            Util::vector_of<std::pair<std::string,std::string> >
+            (std::make_pair("fqdn",fqdn))
+            (std::make_pair("domain_id",boost::lexical_cast<std::string>(domain_id)))
+            (std::make_pair("sponsoring_registrar",sponsoring_registrar))
+            (std::make_pair("set_registrant",set_registrant))
+            (std::make_pair("history_id",history_id.print_quoted()))
+            );
+        }
     };
 
-    struct MergeContactUpdateDomainAdminContact
+    struct MergeContactUpdateDomainAdminContact : public Util::Printable
     {
         std::string fqdn;
         unsigned long long domain_id;
@@ -85,9 +103,26 @@ namespace Fred
             , add_admin_contact(_add_admin_contact)
             , history_id(_history_id)
         {}
+
+        /**
+        * Dumps state of the instance into the string
+        * @return string with description of the instance state
+        */
+        std::string to_string() const
+        {
+            return Util::format_data_structure("MergeContactUpdateDomainAdminContact",
+            Util::vector_of<std::pair<std::string,std::string> >
+            (std::make_pair("fqdn",fqdn))
+            (std::make_pair("domain_id",boost::lexical_cast<std::string>(domain_id)))
+            (std::make_pair("sponsoring_registrar",sponsoring_registrar))
+            (std::make_pair("rem_admin_contact",rem_admin_contact))
+            (std::make_pair("add_admin_contact",add_admin_contact))
+            (std::make_pair("history_id",history_id.print_quoted()))
+            );
+        }
     };
 
-    struct MergeContactUpdateNssetTechContact
+    struct MergeContactUpdateNssetTechContact : public Util::Printable
     {
         std::string handle;
         unsigned long long nsset_id;
@@ -113,9 +148,27 @@ namespace Fred
             , add_tech_contact(_add_tech_contact)
             , history_id(_history_id)
             {}
+
+        /**
+        * Dumps state of the instance into the string
+        * @return string with description of the instance state
+        */
+        std::string to_string() const
+        {
+            return Util::format_data_structure("MergeContactUpdateNssetTechContact",
+            Util::vector_of<std::pair<std::string,std::string> >
+            (std::make_pair("handle",handle))
+            (std::make_pair("nsset_id",boost::lexical_cast<std::string>(nsset_id)))
+            (std::make_pair("sponsoring_registrar",sponsoring_registrar))
+            (std::make_pair("rem_tech_contact",rem_tech_contact))
+            (std::make_pair("add_tech_contact",add_tech_contact))
+            (std::make_pair("history_id",history_id.print_quoted()))
+            );
+        }
+
     };
 
-    struct MergeContactUpdateKeysetTechContact
+    struct MergeContactUpdateKeysetTechContact : public Util::Printable
     {
         std::string handle;
         unsigned long long keyset_id;
@@ -141,9 +194,27 @@ namespace Fred
             , add_tech_contact(_add_tech_contact)
             , history_id(_history_id)
         {}
+
+        /**
+        * Dumps state of the instance into the string
+        * @return string with description of the instance state
+        */
+        std::string to_string() const
+        {
+            return Util::format_data_structure("MergeContactUpdateKeysetTechContact",
+            Util::vector_of<std::pair<std::string,std::string> >
+            (std::make_pair("handle",handle))
+            (std::make_pair("keyset_id",boost::lexical_cast<std::string>(keyset_id)))
+            (std::make_pair("sponsoring_registrar",sponsoring_registrar))
+            (std::make_pair("rem_tech_contact",rem_tech_contact))
+            (std::make_pair("add_tech_contact",add_tech_contact))
+            (std::make_pair("history_id",history_id.print_quoted()))
+            );
+        }
+
     };
 
-    struct MergeContactLockedContactId
+    struct MergeContactLockedContactId : public Util::Printable
     {
         unsigned long long src_contact_id;
         unsigned long long src_contact_historyid;
@@ -180,9 +251,28 @@ namespace Fred
         , dst_contact_roid(_dst_contact_roid)
         , dst_contact_sponsoring_registrar(_dst_contact_sponsoring_registrar)
         {}
+
+        /**
+        * Dumps state of the instance into the string
+        * @return string with description of the instance state
+        */
+        std::string to_string() const
+        {
+            return Util::format_data_structure("MergeContactLockedContactId",
+            Util::vector_of<std::pair<std::string,std::string> >
+            (std::make_pair("src_contact_id",boost::lexical_cast<std::string>(src_contact_id)))
+            (std::make_pair("src_contact_historyid",boost::lexical_cast<std::string>(src_contact_historyid)))
+            (std::make_pair("src_contact_roid",src_contact_roid))
+            (std::make_pair("src_contact_sponsoring_registrar",boost::lexical_cast<std::string>(src_contact_sponsoring_registrar)))
+            (std::make_pair("dst_contact_id",boost::lexical_cast<std::string>(dst_contact_id)))
+            (std::make_pair("dst_contact_historyid",boost::lexical_cast<std::string>(dst_contact_historyid)))
+            (std::make_pair("dst_contact_roid",dst_contact_roid))
+            (std::make_pair("dst_contact_sponsoring_registrar",dst_contact_sponsoring_registrar))
+            );
+        }
     };
 
-    struct MergeContactOutput
+    struct MergeContactOutput : public Util::Printable
     {
         MergeContactLockedContactId contactid;
         std::vector<MergeContactUpdateDomainRegistrant> update_domain_registrant;
@@ -203,9 +293,26 @@ namespace Fred
         , update_nsset_tech_contact(_update_nsset_tech_contact)
         , update_keyset_tech_contact(_update_keyset_tech_contact)
         {}
+
+        /**
+        * Dumps state of the instance into the string
+        * @return string with description of the instance state
+        */
+        std::string to_string() const
+        {
+            return Util::format_data_structure("MergeContactOutput",
+            Util::vector_of<std::pair<std::string,std::string> >
+            (std::make_pair("contactid",contactid.to_string()))
+            (std::make_pair("update_domain_registrant",Util::format_vector(update_domain_registrant)))
+            (std::make_pair("update_domain_admin_contact",Util::format_vector(update_domain_admin_contact)))
+            (std::make_pair("update_nsset_tech_contact",Util::format_vector(update_nsset_tech_contact)))
+            (std::make_pair("update_keyset_tech_contact",Util::format_vector(update_keyset_tech_contact)))
+            );
+        }
+
     };
 
-    class MergeContact
+    class MergeContact  : public Util::Printable
     {
         const std::string src_contact_handle_;//source contact identifier
         const std::string dst_contact_handle_;//destination contact identifier
@@ -217,36 +324,38 @@ namespace Fred
         MergeContactOutput merge_contact_impl(OperationContext& ctx, bool dry_run);
 
     public:
+        DECLARE_EXCEPTION_DATA(unknown_source_contact_handle, std::string);
+        DECLARE_EXCEPTION_DATA(unknown_destination_contact_handle, std::string);
+        DECLARE_EXCEPTION_DATA(unknown_registrar_handle, std::string);
+        struct InvalidContacts
+        {
+            std::string source_handle;
+            std::string destination_handle;
+            InvalidContacts(){}
+            InvalidContacts(const std::string& _source_handle, const std::string& _destination_handle)
+            : source_handle(_source_handle), destination_handle(_destination_handle){}
+        };
+        DECLARE_EXCEPTION_DATA(unable_to_get_difference_of_contacts, InvalidContacts);
+        DECLARE_EXCEPTION_DATA(contacts_differ, InvalidContacts);
+        DECLARE_EXCEPTION_DATA(identical_contacts_handle, std::string);
+        DECLARE_EXCEPTION_DATA(identical_contacts_roid, std::string);
+        struct Exception
+        : virtual Fred::OperationException
+        , ExceptionData_unknown_source_contact_handle<Exception>
+        , ExceptionData_unknown_destination_contact_handle<Exception>
+        , ExceptionData_unknown_registrar_handle<Exception>
+        , ExceptionData_unable_to_get_difference_of_contacts<Exception>
+        , ExceptionData_contacts_differ<Exception>
+        , ExceptionData_identical_contacts_handle<Exception>
+        , ExceptionData_identical_contacts_roid<Exception>
+        {};
+
         MergeContact(const std::string& from_contact_handle, const std::string& to_contact_handle, const std::string& registrar);
         MergeContact& set_logd_request_id(unsigned long long logd_request_id);
         MergeContactOutput exec_dry_run(OperationContext& ctx);//history_id not set in output
         MergeContactOutput exec(OperationContext& ctx);
+        std::string to_string() const;
     };//class MergeContact
-
-    //exception impl
-    class MergeContactException
-    : public OperationExceptionImpl<MergeContactException, 8192>
-    {
-    public:
-        MergeContactException(const char* file
-                , const int line
-                , const char* function
-                , const char* data)
-        : OperationExceptionImpl<MergeContactException, 8192>(file, line, function, data)
-        {}
-
-        ConstArr get_fail_param_impl() throw()
-        {
-            static const char* list[]={"not found:src_contact_handle", "not found:dst_contact_handle", "not found:registrar"
-                , "invalid:src_contact_handle", "invalid:dst_contact_handle"
-                , "identical:dst_contact_handle", "identical:dst_contact_roid"};
-            return ConstArr(list,sizeof(list)/sizeof(char*));
-        }
-    };//class MergeContactException
-
-    typedef MergeContactException::OperationErrorType MergeContactError;
-#define MCEX(DATA) MergeContactException(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
-#define MCERR(DATA) MergeContactError(__FILE__, __LINE__, __ASSERT_FUNCTION, (DATA))
 
 }//namespace Fred
 

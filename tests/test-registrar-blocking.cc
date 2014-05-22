@@ -2,16 +2,16 @@
 #include <iostream>
 #include "time_clock.h"
 
-#include "fredlib/db_settings.h"
-#include "old_utils/dbsql.h"
-#include "registrar.h"
+#include "src/fredlib/db_settings.h"
+#include "src/old_utils/dbsql.h"
+#include "src/fredlib/registrar.h"
 
 #include "cfg/config_handler_decl.h"
 #include "cfg/handle_general_args.h"
 #include "cfg/handle_database_args.h"
 #include "cfg/handle_corbanameservice_args.h"
 
-#include "epp_corba_client_impl.h"
+#include "src/corba/epp_corba_client_impl.h"
 #include "test-invoice-common.h"
 
 
@@ -78,7 +78,7 @@ BOOST_AUTO_TEST_CASE( test_is_registrar_blocked )
     std::auto_ptr<Fred::Registrar::Manager> regman(
                    Fred::Registrar::Manager::create(nodb));
 
-    Database::ID reg_id = block_reg_and_test(regman.get());
+    block_reg_and_test(regman.get());
 }
 
 BOOST_AUTO_TEST_CASE(test_unblock_registrar)

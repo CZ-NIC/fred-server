@@ -7,10 +7,10 @@
 #include <math.h>
 #include <memory>
 #include <iomanip>
-#include <corba/Admin.hh>
+#include "src/corba/Admin.hh"
 
-#include "fredlib/registry.h"
-#include "fredlib/invoicing/invoice.h"
+#include "src/fredlib/registry.h"
+#include "src/fredlib/invoicing/invoice.h"
 #include "types/money.h"
 
 using namespace boost::posix_time;

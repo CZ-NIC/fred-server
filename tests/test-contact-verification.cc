@@ -41,7 +41,7 @@
 #include "random_data_generator.h"
 #include "concurrent_queue.h"
 
-#include "contact_verification/public_request_contact_verification_impl.h"
+#include "src/contact_verification/public_request_contact_verification_impl.h"
 
 #include "setup_server_decl.h"
 
@@ -60,12 +60,12 @@
 #include "cfg/config_handler_decl.h"
 #include <boost/test/unit_test.hpp>
 
-#include "mailer_manager.h"
-#include "fredlib/contact_verification/contact.h"
-#include "fredlib/object_states.h"
-#include "contact_verification/contact_verification_impl.h"
+#include "src/corba/mailer_manager.h"
+#include "src/fredlib/contact_verification/contact.h"
+#include "src/fredlib/object_states.h"
+#include "src/contact_verification/contact_verification_impl.h"
 #include "checks.h"
-#include "contact_verification/contact_verification_checkers.h"
+#include "src/fredlib/contact_verification/contact_verification_checkers.h"
 
 //test-contact-verification.cc
 
@@ -125,7 +125,7 @@ BOOST_AUTO_TEST_CASE( test_primary_phone_format_checker )
         {
             Fred::Contact::Verification::FieldErrorMap errors;
             c.telephone = (*it) + std::string("000000");
-            BOOST_TEST_MESSAGE("telephone: " << static_cast<std::string>(c.telephone));
+            BOOST_TEST_MESSAGE("telephone: " << c.telephone.get_value());
             bool check_result = contact_checker_phone_format(c, errors);
             BOOST_CHECK(check_result == true && errors.empty());
         }
@@ -161,7 +161,7 @@ BOOST_AUTO_TEST_CASE( test_primary_phone_format_checker )
         {
             Fred::Contact::Verification::FieldErrorMap errors;
             c.telephone = (*it) + std::string("000000");
-            BOOST_TEST_MESSAGE("telephone: " << static_cast<std::string>(c.telephone));
+            BOOST_TEST_MESSAGE("telephone: " << c.telephone.get_value());
             bool check_result = contact_checker_phone_format(c, errors);
             BOOST_CHECK(check_result == false
                 && errors[Fred::Contact::Verification::field_phone] == Fred::Contact::Verification::INVALID);
@@ -176,7 +176,7 @@ BOOST_AUTO_TEST_CASE( test_primary_phone_format_checker )
 
         /* CZ_CODE + 6010000000 */
         c.telephone = CZ_CODE + "6010000000";
-        BOOST_TEST_MESSAGE("telephone: " << static_cast<std::string>(c.telephone));
+        BOOST_TEST_MESSAGE("telephone: " << c.telephone.get_value());
         bool check_result = contact_checker_phone_format(c, errors);
         BOOST_CHECK(check_result == false
                 && errors[Fred::Contact::Verification::field_phone] == Fred::Contact::Verification::INVALID);
@@ -190,7 +190,7 @@ BOOST_AUTO_TEST_CASE( test_primary_phone_format_checker )
         /* CZ_CODE + 60100000 */
 
         c.telephone = CZ_CODE + "60100000";
-        BOOST_TEST_MESSAGE("telephone: " << static_cast<std::string>(c.telephone));
+        BOOST_TEST_MESSAGE("telephone: " << c.telephone.get_value());
         bool check_result = contact_checker_phone_format(c, errors);
         BOOST_CHECK(check_result == false
                 && errors[Fred::Contact::Verification::field_phone] == Fred::Contact::Verification::INVALID);
@@ -203,7 +203,7 @@ BOOST_AUTO_TEST_CASE( test_primary_phone_format_checker )
 
         /* CZ_CODE + 60100000a */
         c.telephone = CZ_CODE + "60100000a";
-        BOOST_TEST_MESSAGE("telephone: " << static_cast<std::string>(c.telephone));
+        BOOST_TEST_MESSAGE("telephone: " << c.telephone.get_value());
         bool check_result = contact_checker_phone_format(c, errors);
         BOOST_CHECK(check_result == false
                 && errors[Fred::Contact::Verification::field_phone] == Fred::Contact::Verification::INVALID);
@@ -216,7 +216,7 @@ BOOST_AUTO_TEST_CASE( test_primary_phone_format_checker )
 
         std::string phone(CZ_CODE + "601000000");
         c.telephone = phone.substr(1, phone.length());
-        BOOST_TEST_MESSAGE("telephone: " << static_cast<std::string>(c.telephone));
+        BOOST_TEST_MESSAGE("telephone: " << c.telephone.get_value());
         bool check_result = contact_checker_phone_format(c, errors);
         BOOST_CHECK(check_result == false
                 && errors[Fred::Contact::Verification::field_phone] == Fred::Contact::Verification::INVALID);
@@ -228,7 +228,7 @@ BOOST_AUTO_TEST_CASE( test_primary_phone_format_checker )
         Fred::Contact::Verification::FieldErrorMap errors;
 
         c.telephone = std::string("+423.601000000");
-        BOOST_TEST_MESSAGE("telephone: " << static_cast<std::string>(c.telephone));
+        BOOST_TEST_MESSAGE("telephone: " << c.telephone.get_value());
         bool check_result = contact_checker_phone_format(c, errors);
         BOOST_CHECK(check_result == false
                 && errors[Fred::Contact::Verification::field_phone] == Fred::Contact::Verification::INVALID);
@@ -240,7 +240,7 @@ BOOST_AUTO_TEST_CASE( test_primary_phone_format_checker )
         Fred::Contact::Verification::FieldErrorMap errors;
 
         c.telephone = std::string("");
-        BOOST_TEST_MESSAGE("telephone: " << static_cast<std::string>(c.telephone));
+        BOOST_TEST_MESSAGE("telephone: " << c.telephone.get_value());
         bool check_result = contact_checker_phone_format(c, errors);
         BOOST_CHECK(check_result == true && errors.empty());
     }

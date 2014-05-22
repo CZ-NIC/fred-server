@@ -32,7 +32,7 @@
 #include <boost/operators.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/noncopyable.hpp>
-#include "util/decimal/mpdecimal-2.2/mpdecimal.h"
+#include <mpdecimal.h>
 
 class decimal_exception_handler
 {

@@ -50,6 +50,7 @@
 #include "file_params.h"
 #include "regblock_params.h"
 #include "charge_params.h"
+#include "domain_name_validation_params.h"
 
 
 /**
@@ -338,10 +339,9 @@ public:
     }//handle
 };//class HandleAdminClientContactReminderArgsGrp
 
-
 /**
  * \class HandleAdminClientContactMergeDuplicateAutoArgsGrp
- * \brief admin client contact_reminder options handler
+ * \brief admin client contact_merge_duplicate_auto options handler
  */
 class HandleAdminClientContactMergeDuplicateAutoArgsGrp : public HandleCommandGrpArgs
 {
@@ -361,13 +361,13 @@ public:
                         std::string("contact_merge_duplicate_auto options")));
         cfg_opts->add_options()
             ("contact_merge_duplicate_auto",
-                "command for run contact merge duplicate automatic procedure")
-            ("registrar", boost::program_options::value<Checked::string>()
-                ->notifier(save_optional_string(params.registrar)),
-                "registrar handle to run merge for")
-            ("limit", boost::program_options::value<Checked::ulonglong>()
-                ->notifier(save_optional_ulonglong(params.limit)),
-                "limit")
+                "contact merge, if further unspecified for all registrars")
+            ("registrar", boost::program_options::value<std::vector<std::string> >()->multitoken()
+                ->notifier(save_arg<std::vector<std::string> >(params.registrar)),
+                "registrar handles to run merge for, don't use with --except_registrar option")
+            ("except_registrar", boost::program_options::value<std::vector<std::string> >()->multitoken()
+                ->notifier(save_arg<std::vector<std::string> >(params.except_registrar)),
+                "run merge contact for all registrars except of these, don't use with --registrar option")
             ("dry_run", boost::program_options::value<bool>()
                 ->default_value(false)->zero_tokens()
                 ->notifier(save_arg<bool>(params.dry_run)),
@@ -398,7 +398,6 @@ public:
         return option_group_index;
     }//handle
 };//class HandleAdminClientContactMergeDuplicateAutoArgsGrp
-
 
 class HandleAdminClientContactMergeArgsGrp : public HandleCommandGrpArgs
 {
@@ -1802,10 +1801,10 @@ public:
             ("price_add", "add price")
             ("valid_from", boost::program_options
                 ::value<Checked::string>()->notifier(save_optional_string(params.valid_from))
-                , "price valid from datetime")
+                , "price valid from UTC datetime e.g. '2006-09-09 19:15:56'")
             ("valid_to", boost::program_options
                 ::value<Checked::string>()->notifier(save_optional_string(params.valid_to))
-                , "price valid to datetime")
+                , "price valid to UTC datetime e.g. '2007-09-29 19:15:56'")
             ("operation_price", boost::program_options
                 ::value<Checked::string_fpnumber>()->notifier(save_optional_string(params.operation_price))
                 , "operation price like: 140.00")
@@ -2351,6 +2350,86 @@ public:
         return option_group_index;
     }//handle
 };//class HandleAdminClientFileListArgsGrp
+
+/**
+ * \class HandleInitDomainNameValidationArgsGrp
+ * \brief admin client init_domain_name_validation options handler
+ */
+class HandleInitDomainNameValidationCheckersArgsGrp : public HandleCommandGrpArgs
+{
+public:
+    DomainNameValidationCheckersInitArgs params;
+    CommandDescription get_command_option()
+    {
+        return CommandDescription("init_domain_name_validation");
+    }
+    boost::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("init_domain_name_validation options")));
+        cfg_opts->add_options()
+            ("init_domain_name_validation","save domain name syntax checker names into database")
+            ("auto,a", boost::program_options
+                                 ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(params.serch_checkers_by_prefix))
+                                 , "get checker names to save from searching selfregistered implementations using checker name prefix")
+            ("checker_name_prefix,p",boost::program_options
+                ::value<Checked::string>()->default_value("dncheck_")->notifier(save_optional_string(params.checker_name_prefix))
+                 ,"prefix of checker implementation name used for searching")
+            ("checker_name,c",boost::program_options
+                  ::value<std::vector<std::string> >()->notifier(insert_arg< std::vector<std::string> >(params.checker_names))
+                   ,"explicit specification of checker name to save, may appear multiple times like \" -c dncheck_single_digit_labels -c dncheck_no_consecutive_hyphens \""
+                   "checker names are defined in implementation and are used for selfregistration of the checker into factory")
+                ;
+        return cfg_opts;
+    }//get_options_description
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }//handle
+};//class HandleInitDomainNameValidationCheckersArgsGrp
+
+/**
+ * \class HandleDomainNameValidationByZoneArgsGrp
+ * \brief admin client set_zone_domain_name_validation options handler
+ */
+class HandleDomainNameValidationByZoneArgsGrp : public HandleCommandGrpArgs
+{
+public:
+    ZoneDomainNameValidationCheckersArgs params;
+    CommandDescription get_command_option()
+    {
+        return CommandDescription("set_zone_domain_name_validation");
+    }
+    boost::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("set_zone_domain_name_validation options")));
+        cfg_opts->add_options()
+            ("set_zone_domain_name_validation","set checkers applied to domain names per zone")
+            ("zone_name,z",boost::program_options
+                ::value<Checked::string>()->notifier(save_optional_string(params.zone_name))
+                 ,"name of the zone to configure checkers")
+            ("checker_name,c",boost::program_options
+                  ::value<std::vector<std::string> >()->notifier(insert_arg< std::vector<std::string> >(params.checker_names))
+                   ,"checker names to apply per zone to domain name e.g. \" -c dncheck_rfc1035_preferred_syntax -c dncheck_no_consecutive_hyphens \"")
+                ;
+        return cfg_opts;
+    }//get_options_description
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }//handle
+};//class HandleDomainNameValidationByZoneArgsGrp
 
 
 #endif //HANDLE_ADMINCLIENTSELECTION_ARGS_H_

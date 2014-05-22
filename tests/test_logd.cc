@@ -14,14 +14,14 @@
 
 #include "time_clock.h"
 
-#include "requests/request_impl.h"
-#include "requests/request.h"
-#include "requests/request_manager.h"
-#include "requests/model_request_property_name.h"
-#include "requests/model_request_property_value.h"
+#include "src/fredlib/requests/request_impl.h"
+#include "src/fredlib/requests/request.h"
+#include "src/fredlib/requests/request_manager.h"
+#include "src/fredlib/requests/model_request_property_name.h"
+#include "src/fredlib/requests/model_request_property_value.h"
 
-#include "corba_wrapper_decl.h"
-#include <corba/Logger.hh>
+#include "util/corba_wrapper_decl.h"
+#include "src/corba/Logger.hh"
 
 #include "cfg/handle_general_args.h"
 #include "cfg/handle_database_args.h"
@@ -46,7 +46,7 @@ using namespace Fred::Logger;
 
 
 
-BOOST_AUTO_TEST_SUITE(TestLogd)
+namespace TestLogd {
 
 //args processing config for custom main
 // TODO this should be taken from the database 
@@ -107,7 +107,12 @@ std::list<ID> MyFixture::id_list_entry;
 std::list<ID> MyFixture::id_list_session;
 concurrent_set<ID>  MyFixture::id_list_property_name;
 
-BOOST_GLOBAL_FIXTURE( MyFixture );
+}//namespace TestLogd
+BOOST_FIXTURE_TEST_SUITE(TestLogd, MyFixture)
+
+//BOOST_AUTO_TEST_SUITE(TestLogd)
+//BOOST_GLOBAL_FIXTURE( MyFixture );
+
 
 
 class TestImplLog {
@@ -1752,7 +1757,7 @@ BOOST_AUTO_TEST_CASE(test_request_count_irregular)
 
     std::string time_string(TimeStamp::microsec());
     std::string reg_handle = "REG-"+ time_string;
-    Database::ID session_id = test.createSession(0, reg_handle.c_str());
+    test.createSession(0, reg_handle.c_str());
 
     boost::gregorian::date current_date = boost::gregorian::day_clock::local_day();
 

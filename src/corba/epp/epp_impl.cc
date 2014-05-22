@@ -30,42 +30,42 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <corba/EPP.hh>
+#include "src/corba/EPP.hh"
 #include "epp_impl.h"
 
-#include "corba/connection_releaser.h"
+#include "src/corba/connection_releaser.h"
 
 #include "config.h"
 
 // database functions
-#include "old_utils/dbsql.h"
+#include "src/old_utils/dbsql.h"
 
 // support function
-#include "old_utils/util.h"
+#include "src/old_utils/util.h"
 
 #include "action.h"    // code of the EPP operations
 #include "response.h"  // errors code
 #include "reason.h"    // reason messages code
 
 // logger
-#include "old_utils/log.h"
+#include "src/old_utils/log.h"
 
 // MailerManager is connected in constructor
-#include "fredlib/common_diff.h"
-#include "fredlib/domain.h"
-#include "fredlib/contact.h"
-#include "fredlib/nsset.h"
-#include "fredlib/keyset.h"
-#include "fredlib/info_buffer.h"
-#include "fredlib/poll.h"
-#include "fredlib/zone.h"
-#include "fredlib/invoicing/invoice.h"
+#include "src/fredlib/common_diff.h"
+#include "src/fredlib/domain.h"
+#include "src/fredlib/contact.h"
+#include "src/fredlib/nsset.h"
+#include "src/fredlib/keyset.h"
+#include "src/fredlib/info_buffer.h"
+#include "src/fredlib/poll.h"
+#include "src/fredlib/zone.h"
+#include "src/fredlib/invoicing/invoice.h"
 #include <memory>
 #include "tech_check.h"
 
 #include "util/factory_check.h"
-#include "fredlib/public_request/public_request.h"
-#include "fredlib/public_request/public_request_authinfo_impl.h"
+#include "src/fredlib/public_request/public_request.h"
+#include "src/fredlib/public_request/public_request_authinfo_impl.h"
 
 // Notifier
 #include "notifier.h"
@@ -75,10 +75,10 @@
 #include "log/context.h"
 
 //cancel contact verification
-#include "fredlib/contact_verification/cancel_contact_verification.h"
+#include "src/fredlib/contact_verification/cancel_contact_verification.h"
 
 //object states
-#include "object_states.h"
+#include "src/fredlib/object_states.h"
 
 #define FLAG_serverDeleteProhibited 1
 #define FLAG_serverRenewProhibited 2
@@ -376,7 +376,7 @@ getIdOfKeySet(DBSharedPtr db, const char *handle, bool restricted_handles
 /// replace GetDomainID
 static long int getIdOfDomain(
 DBSharedPtr db, const char *handle, bool lock_epp_commands
-    , bool lock = false, int* zone = NULL)
+    , bool allow_idn, bool lock = false, int* zone = NULL)
 {
   if (lock && !lock_epp_commands) lock = false;
   std::auto_ptr<Fred::Zone::Manager> zm(
@@ -388,7 +388,7 @@ DBSharedPtr db, const char *handle, bool lock_epp_commands
   Fred::NameIdPair nameId;
   long int ret = -1;
   try {
-    switch (dman->checkAvail(handle, nameId, lock)) {
+    switch (dman->checkAvail(handle, nameId, allow_idn, lock )) {
       case Fred::Domain::CA_REGISTRED :
         ret = nameId.id;
         break;
@@ -667,6 +667,8 @@ ccReg_EPP_i::ccReg_EPP_i(
     , unsigned rifd_session_timeout
     , unsigned rifd_session_registrar_max
     , bool rifd_epp_update_domain_keyset_clear
+    , bool rifd_epp_operations_charging
+    , bool _allow_idn
 )
 
     : database(_db),
@@ -685,8 +687,9 @@ ccReg_EPP_i::ccReg_EPP_i(
     , rifd_session_max_(rifd_session_max)
     , rifd_session_timeout_(rifd_session_timeout)
     , rifd_session_registrar_max_(rifd_session_registrar_max)
-    , rifd_epp_update_domain_keyset_clear_(rifd_epp_update_domain_keyset_clear) ,
-
+    , rifd_epp_update_domain_keyset_clear_(rifd_epp_update_domain_keyset_clear)
+    , rifd_epp_operations_charging_(rifd_epp_operations_charging),
+    allow_idn_(_allow_idn),
     db_disconnect_guard_(),
     regMan(),
     epp_sessions(rifd_session_max, rifd_session_registrar_max, rifd_session_timeout),
@@ -778,8 +781,21 @@ int ccReg_EPP_i::GetRegistrarLang(
   return epp_sessions.get_registrar_lang(clientID);
 }
 
-// Load table to memory for speed
+bool ccReg_EPP_i::idn_allowed(EPPAction& action) const {
+    DBSharedPtr db = action.getDB();
+    if (!db.get()) {
+        throw Fred::SQL_ERROR();
+    }
 
+    // system registrar has IDN always allowed
+    if (db->GetRegistrarSystem(action.getRegistrar())) {
+        return true;
+    } else {
+        return this->allow_idn_;
+    }
+}
+
+// Load table to memory for speed
 int ccReg_EPP_i::LoadReasonMessages()
 {
   Logging::Context::clear();
@@ -1514,7 +1530,7 @@ ccReg::Response* ccReg_EPP_i::GetTransaction(
  ***********************************************************************/
 
 ccReg::Response* ccReg_EPP_i::PollAcknowledgement(
-  const char* msgID, CORBA::Short& count, CORBA::String_out newmsgID,
+  const char* msgID, CORBA::ULongLong& count, CORBA::String_out newmsgID,
   const ccReg::EppParams &params)
 {
   Logging::Context::clear();
@@ -1576,7 +1592,7 @@ ccReg::Response* ccReg_EPP_i::PollAcknowledgement(
  ***********************************************************************/
 
 ccReg::Response* ccReg_EPP_i::PollRequest(
-  CORBA::String_out msgID, CORBA::Short& count, ccReg::timestamp_out qDate,
+  CORBA::String_out msgID, CORBA::ULongLong& count, ccReg::timestamp_out qDate,
   ccReg::PollType& type, CORBA::Any_OUT_arg msg, const ccReg::EppParams &params
   )
 {
@@ -1656,6 +1672,7 @@ ccReg::Response* ccReg_EPP_i::PollRequest(
         type = ccReg::polltype_delete_nsset;
         break;
       case Fred::Poll::MT_IDLE_DELETE_DOMAIN:
+      case Fred::Poll::MT_DELETE_DOMAIN:
         type = ccReg::polltype_delete_domain;
         break;
       case Fred::Poll::MT_IDLE_DELETE_KEYSET:
@@ -2399,7 +2416,7 @@ ccReg_EPP_i::ObjectCheck(short act, const char * table, const char *fname,
 
                     LOG( NOTICE_LOG , "domain checkAvail fqdn [%s]" , (const char * ) chck[i] );
 
-                    caType = dman->checkAvail( ( const char * ) chck[i] , caConflict);
+                    caType = dman->checkAvail( ( const char * ) chck[i] , caConflict, idn_allowed(action) );
                     LOG( NOTICE_LOG , "domain type %d" , caType );
                     switch (caType) {
                         case Fred::Domain::CA_INVALID_HANDLE:
@@ -3293,7 +3310,7 @@ ccReg::Response* ccReg_EPP_i::ObjectTransfer(
 
         case EPP_DomainTransfer:
             if ( (id = getIdOfDomain(action.getDB(), name, lock_epp_commands_
-                    , true, &zone) ) <= 0) {
+                    , idn_allowed(action), true, &zone ) ) <= 0) {
                 code=COMMAND_OBJECT_NOT_EXIST;
             }
             if (action.getDB()->TestRegistrarZone(action.getRegistrar(), zone) == false) {
@@ -4497,7 +4514,8 @@ ccReg::Response* ccReg_EPP_i::DomainInfo(
   std::auto_ptr<Fred::Domain::Manager>
       dman(Fred::Domain::Manager::create(a.getDB(), zman.get()) );
   // first check handle for proper format
-  Fred::Domain::CheckAvailType caType = dman->checkHandle(fqdn);
+
+  Fred::Domain::CheckAvailType caType = dman->checkHandle(fqdn, idn_allowed(a));
   if (caType != Fred::Domain::CA_AVAILABLE) {
     // failure in FQDN check, throw exception
     a.failed(SetReasonDomainFQDN(a.getErrors(), fqdn, caType
@@ -4548,7 +4566,7 @@ ccReg::Response* ccReg_EPP_i::DomainDelete(
     LOGGER(PACKAGE).notice(boost::format("DomainDelete: clientID -> %1% clTRID [%2%] fqdn  [%3%] ") % (int ) params.loginID % static_cast<const char*>(params.clTRID) % fqdn );
 
     if ( (id = getIdOfDomain(action.getDB(), fqdn, lock_epp_commands_
-            , true, &zone) ) <= 0) {
+            , idn_allowed(action), true,  &zone) ) <= 0) {
         LOG( WARNING_LOG, "domain  [%s] NOT_EXIST", fqdn );
         code=COMMAND_OBJECT_NOT_EXIST;
     }
@@ -4634,12 +4652,10 @@ ccReg::Response * ccReg_EPP_i::DomainUpdate(
     std::string valexdate;
     ccReg::Disclose publish;
     int id, nssetid, contactid, adminid, keysetid;
-    int seq, zone;
+    int zone;
     std::vector<int> ac_add, ac_rem, tc_rem;
     unsigned int i, j;
     short int code = 0;
-
-    seq=0;
 
     EPPAction action(this, params.loginID, EPP_DomainUpdate, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
 
@@ -4654,7 +4670,7 @@ ccReg::Response * ccReg_EPP_i::DomainUpdate(
     extractEnumDomainExtension(valexdate, publish, ext);
 
     if ( (id = getIdOfDomain(action.getDB(), fqdn, lock_epp_commands_
-            , true, &zone) ) <= 0) {
+            , idn_allowed(action), true, &zone) ) <= 0) {
         LOG( WARNING_LOG, "domain  [%s] NOT_EXIST", fqdn );
         code=COMMAND_OBJECT_NOT_EXIST;
     }
@@ -5161,7 +5177,7 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
 
         LOG( NOTICE_LOG , "Domain::checkAvail  fqdn [%s]" , (const char * ) fqdn );
 
-        dType = dman->checkAvail( FQDN , dConflict);
+        dType = dman->checkAvail( FQDN , dConflict, idn_allowed(action));
         const Fred::Zone::Zone* temp_zone = NULL;
 
         LOG( NOTICE_LOG , "domain type %d" , dType );
@@ -5441,26 +5457,39 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
                                 }
 
                             }
-                            std::auto_ptr<Fred::Invoicing::Manager> invMan(
-                                    Fred::Invoicing::Manager::create());
-                            if (invMan->chargeDomainCreate(zone, action.getRegistrar(),
-                                        id, Database::Date(std::string(exDate)), period_count)) {
 
-                                if(!invMan->chargeDomainRenew(zone, action.getRegistrar(),
-                                        id, Database::Date(std::string(exDate)), period_count)) {
+                            if(rifd_epp_operations_charging_)
+                            {
+                                std::auto_ptr<Fred::Invoicing::Manager> invMan(
+                                        Fred::Invoicing::Manager::create());
+                                if (invMan->chargeDomainCreate(zone, action.getRegistrar(),
+                                            id, Database::Date(std::string(exDate)), period_count)) {
+
+                                    if(!invMan->chargeDomainRenew(zone, action.getRegistrar(),
+                                            id, Database::Date(std::string(exDate)), period_count)) {
+                                        code = COMMAND_BILLING_FAILURE;
+                                    }
+
+                                    else if (action.getDB()->SaveDomainHistory(id, params.requestID)) {
+                                        if (action.getDB()->SaveObjectCreate(id)) {
+                                            code = COMMAND_OK;
+                                        }
+                                    } else {
+                                        code = COMMAND_FAILED;
+                                    }
+                                } else {
                                     code = COMMAND_BILLING_FAILURE;
                                 }
 
-                                else if (action.getDB()->SaveDomainHistory(id, params.requestID)) {
-                                    if (action.getDB()->SaveObjectCreate(id)) {
-                                        code = COMMAND_OK;
-                                    }
-                                } else {
-                                    code = COMMAND_FAILED;
+                            }
+                            else if (action.getDB()->SaveDomainHistory(id, params.requestID)) {
+                                if (action.getDB()->SaveObjectCreate(id)) {
+                                    code = COMMAND_OK;
                                 }
                             } else {
-                                code = COMMAND_BILLING_FAILURE;
+                                code = COMMAND_FAILED;
                             }
+
 
                         } else
                             code = COMMAND_FAILED;
@@ -5472,7 +5501,6 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
                                             mm , action.getDB(), action.getRegistrar(), id ));
                                 action.setNotifier(ntf.get());
                             }
-
                     }
                 }
 
@@ -5557,7 +5585,7 @@ ccReg_EPP_i::DomainRenew(const char *fqdn, const char* curExpDate,
     extractEnumDomainExtension(valexdate, publish, ext);
 
     if ((id = getIdOfDomain(action.getDB(), fqdn, lock_epp_commands_
-            , true, &zone) ) <= 0) {
+            , idn_allowed(action), true, &zone) ) <= 0) {
         LOG( WARNING_LOG, "domain  [%s] NOT_EXIST", fqdn );
         code=COMMAND_OBJECT_NOT_EXIST;
     }
@@ -5689,12 +5717,15 @@ ccReg_EPP_i::DomainRenew(const char *fqdn, const char* curExpDate,
                         CORBA::string_free(exDate);
                         exDate = CORBA::string_dup(action.getDB()->GetDomainExDate(id) );
 
-
-
-                        std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
-                        if (invMan->chargeDomainRenew(zone, action.getRegistrar(),
-                                    id, Database::Date(std::string(exDate)), period_count) == false ) {
-                            code = COMMAND_BILLING_FAILURE;
+                        if(rifd_epp_operations_charging_)
+                        {
+                            std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
+                            if (invMan->chargeDomainRenew(zone, action.getRegistrar(),
+                                        id, Database::Date(std::string(exDate)), period_count) == false ) {
+                                code = COMMAND_BILLING_FAILURE;
+                            } else if (action.getDB()->SaveDomainHistory(id, params.requestID)) {
+                                code = COMMAND_OK;
+                            }
                         } else if (action.getDB()->SaveDomainHistory(id, params.requestID)) {
                             code = COMMAND_OK;
                         }
@@ -6534,7 +6565,6 @@ ccReg_EPP_i::KeySetUpdate(
     // dnsk_add tests - if exact same exist for this keyset
     if (!code) {
         for (int ii = 0; ii < (int)dnsk_add.length(); ii++) {
-            bool pass = true;
             int id;
             char *key;
             // keys are inserted into database without whitespaces
@@ -6542,7 +6572,6 @@ ccReg_EPP_i::KeySetUpdate(
                 code = COMMAND_FAILED;
                 LOG(WARNING_LOG, "removeWhitespaces failed");
                 free(key);
-                pass = false;
                 break;
             }
             id = action.getDB()->GetDNSKeyId(
@@ -6559,7 +6588,6 @@ ccReg_EPP_i::KeySetUpdate(
                 code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
                         ccReg::keyset_dnskey_add, ii,
                         REASON_MSG_DNSKEY_EXIST);
-                pass = false;
                 break;
             }
         }
@@ -7354,7 +7382,7 @@ ccReg_EPP_i::ObjectSendAuthInfo(
 
             // static check of fqdn format (no db)
             try {
-                zm->parseDomainName(FQDN, dev_null, false);
+                zm->parseDomainName(FQDN, dev_null, idn_allowed(action));
             } catch(Fred::Zone::INVALID_DOMAIN_NAME&) {
                 zone = -1;
                 code = action.setErrorReason(COMMAND_PARAMETR_ERROR,

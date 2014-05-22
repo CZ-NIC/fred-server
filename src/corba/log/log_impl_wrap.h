@@ -1,9 +1,9 @@
 #ifndef _LOG_IMPL_WRAP_H_
 #define _LOG_IMPL_WRAP_H_
 
-#include <corba/Logger.hh>
+#include "src/corba/Logger.hh"
 
-#include "fredlib/requests/request_manager.h"
+#include "src/fredlib/requests/request_manager.h"
 #include "src/corba/admin/usertype_conv.h"
 #include "src/corba/admin/pagetable_logger.h"
 #include "src/corba/admin/common.h"
