@@ -12,8 +12,10 @@
 
 namespace Corba {
     typedef boost::posix_time::ptime ptime;
+    typedef boost::gregorian::date date;
 
     ccReg::DateTimeType wrap_time(ptime in);
+    ccReg::DateType wrap_date(date in);
 }
 
 #endif // end of #include guard

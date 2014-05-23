@@ -22,4 +22,20 @@ namespace Corba {
 
         return out;
     }
+
+    ccReg::DateType wrap_date(date in) {
+        ccReg::DateType out;
+
+        if (in.is_special()) {
+            out.day = 0;
+            out.month = 0;
+            out.year = 0;
+        } else {
+            out.day    = in.day();
+            out.month  = in.month();
+            out.year   = in.year();
+        }
+
+        return out;
+    }
 }
