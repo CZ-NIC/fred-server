@@ -1449,13 +1449,19 @@ namespace Registry
 
                 Database::Result candidate_list_result = ctx.get_conn().exec_params(
                     " SELECT oreg_src.id AS id, oreg_src.name AS handle"
+                    " , (SELECT count(foo.c) FROM (SELECT id AS c FROM domain WHERE registrant = oreg_src.id UNION SELECT domainid AS c FROM domain_contact_map WHERE contactid = oreg_src.id) AS foo) AS domain_count "
+                    " , (SELECT count(ncm.nssetid) FROM nsset_contact_map ncm WHERE ncm.contactid = oreg_src.id ) AS nsset_count "
+                    " , (SELECT count(kcm.keysetid) FROM keyset_contact_map kcm WHERE kcm.contactid = oreg_src.id ) AS keyset_count "
+                    " , r.handle AS registrar_handle, r.name AS registrar_name "
                     " FROM (object_registry oreg_src "
-                    " JOIN contact c_src ON c_src.id = oreg_src.id AND oreg_src.erdate IS NULL) "
+                    " JOIN contact c_src ON c_src.id = oreg_src.id AND oreg_src.erdate IS NULL "
+                    " JOIN object o ON o.id = oreg_src.id JOIN registrar r ON r.id = o.clid) "
                     " JOIN (object_registry oreg_dst "
                     " JOIN contact c_dst ON c_dst.id = oreg_dst.id  AND oreg_dst.erdate IS NULL AND oreg_dst.id = $1::bigint "
                     " ) ON TRUE "
                     " LEFT JOIN object_state os ON os.object_id = c_src.id "
-                    " AND os.state_id = (SELECT eos.id FROM enum_object_states eos WHERE eos.name = 'mojeidContact'::text) "
+                    " AND os.state_id IN (SELECT eos.id FROM enum_object_states eos WHERE eos.name = 'mojeidContact'::text "
+                    " OR eos.name = 'serverDeleteProhibited'::text OR eos.name = 'serverBlocked'::text) "//forbidden states of src contact
                     " WHERE "
                     " ( "
                     //the same
@@ -1484,9 +1490,14 @@ namespace Registry
                 contact_list_out.reserve(limited_contact_list_size);
                 for (unsigned long long i = 0;i < limited_contact_list_size;++i)
                 {
-                    std::vector<std::string> row(2);
+                    std::vector<std::string> row(7);
                     row.at(0) = static_cast<std::string>(candidate_list_result[i]["id"]);
                     row.at(1) = static_cast<std::string>(candidate_list_result[i]["handle"]);
+                    row.at(2) = static_cast<std::string>(candidate_list_result[i]["domain_count"]);
+                    row.at(3) = static_cast<std::string>(candidate_list_result[i]["nsset_count"]);
+                    row.at(4) = static_cast<std::string>(candidate_list_result[i]["keyset_count"]);
+                    row.at(5) = static_cast<std::string>(candidate_list_result[i]["registrar_handle"]);
+                    row.at(6) = static_cast<std::string>(candidate_list_result[i]["registrar_name"]);
 
                     contact_list_out.push_back(row);
                 }
