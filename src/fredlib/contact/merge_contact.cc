@@ -491,6 +491,13 @@ namespace Fred
                 Fred::MergeContact::InvalidContacts(src_contact_handle,dst_contact_handle)));
         }
 
+        if(Fred::ObjectHasState(src_contact_id,Fred::ObjectState::SERVER_BLOCKED).exec(ctx)
+            || Fred::ObjectHasState(src_contact_id,Fred::ObjectState::SERVER_DELETE_PROHIBITED).exec(ctx))
+        {
+            BOOST_THROW_EXCEPTION(Fred::MergeContact::Exception().set_src_contact_blocked(
+                Fred::MergeContact::InvalidContacts(src_contact_handle,dst_contact_handle)));
+        }
+
         bool contact_differs = static_cast<bool>(diff_result[0]["differ"]);
         return contact_differs;
     }
