@@ -36,10 +36,11 @@ namespace Registry
             const std::string& _update_registrar_handle,
             unsigned int _domain_list_limit,
             unsigned int _nsset_list_limit,
-            unsigned int _keyset_list_limit)
+            unsigned int _keyset_list_limit,
+            unsigned int _contact_list_limit)
         : pimpl_(new Registry::DomainBrowserImpl::DomainBrowser(_server_name,
                     _update_registrar_handle, _domain_list_limit,
-                    _nsset_list_limit, _keyset_list_limit))
+                    _nsset_list_limit, _keyset_list_limit, _contact_list_limit))
         {}
 
         Server_i::~Server_i()
@@ -808,6 +809,73 @@ namespace Registry
                 throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
             }
         }
+
+
+        Registry::DomainBrowser::RecordSet* Server_i::getMergeContactCandidateList(
+            const Registry::DomainBrowser::RegistryReference& contact,
+            ::CORBA::ULong offset, ::CORBA::Boolean& limit_exceeded)
+        {
+            try
+            {
+                std::vector<std::vector<std::string> > contact_list_out;
+                limit_exceeded = pimpl_->getMergeContactCandidateList(contact.id,
+                    offset, contact_list_out);
+
+                RecordSet_var rs = new RecordSet;
+                rs->length(contact_list_out.size());
+                for(unsigned long long i = 0 ; i < contact_list_out.size(); ++i)
+                {
+                    RecordSequence rseq;
+                    rseq.length(contact_list_out.at(i).size());
+                    for(unsigned long long j = 0 ; j < contact_list_out.at(i).size(); ++j)
+                    {
+                        rseq[j] = CORBA::string_dup(contact_list_out.at(i).at(j).c_str());
+                    }
+                    rs[i] = rseq;
+                }
+                return rs._retn();
+            }//try
+            catch (const Registry::DomainBrowserImpl::UserNotExists& )
+            {
+                throw Registry::DomainBrowser::USER_NOT_EXISTS();
+            }
+            catch (const Registry::DomainBrowserImpl::IncorrectUsage& )
+            {
+                throw Registry::DomainBrowser::INCORRECT_USAGE();
+            }
+            catch (...)
+            {
+                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
+            }
+        }
+
+        void Server_i::mergeContacts(const Registry::DomainBrowser::RegistryReference& dst_contact,
+            const Registry::DomainBrowser::RegistryReferenceSeq& src_contact_list)
+        {
+            try
+            {
+                std::vector<unsigned long long> contact_list;
+                contact_list.reserve(src_contact_list.length());
+                for(std::size_t i = 0; i < src_contact_list.length(); ++i)
+                {
+                    contact_list.push_back(src_contact_list[i].id);
+                }
+                pimpl_->mergeContacts(dst_contact.id, contact_list);
+            }//try
+            catch (const Registry::DomainBrowserImpl::UserNotExists& )
+            {
+                throw Registry::DomainBrowser::USER_NOT_EXISTS();
+            }
+            catch (const Registry::DomainBrowserImpl::InvalidContacts& )
+            {
+                throw Registry::DomainBrowser::INVALID_CONTACTS();
+            }
+            catch (...)
+            {
+                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
+            }
+        }
+
 
     }//namespace DomainBrowser
 }//namespace Registry

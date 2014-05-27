@@ -377,6 +377,21 @@ namespace Registry
         };
 
         /**
+         * Invalid contacts.
+         * Unable to merge contacts.
+         */
+        struct InvalidContacts
+        : virtual std::exception
+        {
+            /**
+             * Returns failure description.
+             * @return string with the general cause of the current error.
+             */
+            const char* what() const throw() {return "unable to merge given contacts";}
+        };
+
+
+        /**
          * Type of blocking to be applied (value related to enum Registry::DomainBrowser::ObjectBlockType)
          */
         static const unsigned BLOCK_TRANSFER = 0;
@@ -391,6 +406,7 @@ namespace Registry
             unsigned int domain_list_limit_;/**< domain list chunk size */
             unsigned int nsset_list_limit_;/**< nsset list chunk size */
             unsigned int keyset_list_limit_;/**< keyset list chunk size */
+            unsigned int contact_list_limit_;/**< contact list chunk size */
 
             unsigned int minimal_status_importance_;
 
@@ -442,7 +458,8 @@ namespace Registry
                     const std::string& update_registrar_handle,
                     unsigned int domain_list_limit,
                     unsigned int nsset_list_limit,
-                    unsigned int keyset_list_limit);
+                    unsigned int keyset_list_limit,
+                    unsigned int contact_list_limit);
             virtual ~DomainBrowser();
 
             unsigned long long getObjectRegistryId(const std::string& objtype, const std::string& handle);
@@ -593,6 +610,25 @@ namespace Registry
             void getPublicStatusDesc(const std::string& lang,
                 std::vector<std::string>& status_description_out);
 
+            /**
+             * Get contact merge candidate list.
+             * Get list of contacts mergeable to user contact.
+             * @param user_contact_id contains database id of the user contact
+             * @param offset contains list offset
+             * @param  contact_list_out references output candidate contact list
+             * @return limit_exceeded flag
+             */
+            bool getMergeContactCandidateList(unsigned long long user_contact_id,
+                unsigned long long offset,
+                std::vector<std::vector<std::string> >& contact_list_out);
+
+            /**
+             * Merge contacts.
+             * Merge contact list to destination contact
+             * @param dst_contact_id id of destination contact
+             */
+            void mergeContacts(unsigned long long dst_contact_id,
+                const std::vector<unsigned long long>& contact_list);
 
             std::string get_server_name();
         };//class DomainBrowser

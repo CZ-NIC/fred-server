@@ -75,6 +75,7 @@ struct domain_browser_impl_instance_fixture
     unsigned int domain_list_limit;
     unsigned int nsset_list_limit;
     unsigned int keyset_list_limit;
+    unsigned int contact_list_limit;
     Registry::DomainBrowserImpl::DomainBrowser impl;
 
     domain_browser_impl_instance_fixture()
@@ -83,10 +84,13 @@ struct domain_browser_impl_instance_fixture
     , domain_list_limit(CfgArgs::instance()
         ->get_handler_ptr_by_type<HandleDomainBrowserArgs>()->domain_list_limit)//domain list chunk size
     , nsset_list_limit(CfgArgs::instance()
-            ->get_handler_ptr_by_type<HandleDomainBrowserArgs>()->nsset_list_limit)//nsset list chunk size
+        ->get_handler_ptr_by_type<HandleDomainBrowserArgs>()->nsset_list_limit)//nsset list chunk size
     , keyset_list_limit(CfgArgs::instance()
-                ->get_handler_ptr_by_type<HandleDomainBrowserArgs>()->keyset_list_limit)//keyset list chunk size
-    , impl(server_name, update_registrar_handle, domain_list_limit, nsset_list_limit, keyset_list_limit)
+        ->get_handler_ptr_by_type<HandleDomainBrowserArgs>()->keyset_list_limit)//keyset list chunk size
+    , contact_list_limit(CfgArgs::instance()
+        ->get_handler_ptr_by_type<HandleDomainBrowserArgs>()->contact_list_limit)//contact list chunk size
+
+    , impl(server_name, update_registrar_handle, domain_list_limit, nsset_list_limit, keyset_list_limit, contact_list_limit)
     {}
 };
 
@@ -2661,5 +2665,389 @@ BOOST_FIXTURE_TEST_CASE(get_object_id_by_objtype, get_my_contact_object_fixture 
 
 BOOST_AUTO_TEST_SUITE_END();//getObjectRegistryId
 
+struct merge_contacts_fixture
+: virtual user_contact_handle_fixture
+, virtual test_registrar_fixture
+, domain_browser_impl_instance_fixture
+{
+    Fred::InfoContactOutput user_contact_info;
+
+    std::string test_contact_handle;
+    std::map<std::string,Fred::InfoContactOutput> contact_info;
+
+    merge_contacts_fixture()
+    : test_contact_handle(std::string("TEST_CONTACT_")+user_contact_handle_fixture::xmark+"_")
+    {
+        { //destination / user contact
+            Fred::OperationContext ctx;
+            Fred::CreateContact(user_contact_handle,
+                CfgArgs::instance()->get_handler_ptr_by_type<HandleMojeIDArgs>()->registrar_handle)//MojeID registrar
+                .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
+                .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
+                .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
+                .exec(ctx);
+            user_contact_info = Fred::InfoContactByHandle(user_contact_handle).exec(ctx);
+            Fred::StatusList states;
+            states.insert(Fred::ObjectState::MOJEID_CONTACT);
+            Fred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id, states).exec(ctx);
+            Fred::PerformObjectStateRequest(user_contact_info.info_contact_data.id).exec(ctx);
+            ctx.commit_transaction();//commit fixture
+        }
+
+        //source contacts
+        Fred::OperationContext ctx;
+        for(int i = 0; i < 25; ++i)
+        {
+            std::ostringstream contact_handle;
+            contact_handle << test_contact_handle << i;
+
+            switch(i)
+            {
+                case 0: //the same as dest. - ok
+                    Fred::CreateContact(contact_handle.str(),test_registrar_handle)
+                        .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
+                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
+                        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                        .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
+                        .exec(ctx);
+                    break;
+                case 1: //the same as dest. except missing vat - ok
+                    Fred::CreateContact(contact_handle.str(),test_registrar_handle)
+                        .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
+                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
+                        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                        .set_ssntype("OP").set_ssn("123456")
+                        .exec(ctx);
+                    break;
+                case 2: //the same as dest. except missing ssntype and ssn - ok
+                    Fred::CreateContact(contact_handle.str(),test_registrar_handle)
+                        .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
+                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
+                        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                        .set_vat("CZ1234567890")
+                        .exec(ctx);
+                    break;
+                case 3: //the same as dest. except missing ssntype, make no sence but - ok
+                    Fred::CreateContact(contact_handle.str(),test_registrar_handle)
+                        .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
+                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
+                        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                        .set_vat("CZ1234567890").set_ssn("123456")
+                        .exec(ctx);
+                    break;
+                case 4: //the same as dest. except missing ssn, make no sence but - ok
+                    Fred::CreateContact(contact_handle.str(),test_registrar_handle)
+                        .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
+                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
+                        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                        .set_vat("CZ1234567890").set_ssntype("OP")
+                        .exec(ctx);
+                    break;
+                case 5: //the same as dest. except spaces in vat - ok
+                    Fred::CreateContact(contact_handle.str(),test_registrar_handle)
+                        .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
+                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
+                        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                        .set_vat(" CZ1234567890 ").set_ssntype("OP").set_ssn("123456")
+                        .exec(ctx);
+                    break;
+                case 6: //the same as dest. except spaces in ssn - ok
+                    Fred::CreateContact(contact_handle.str(),test_registrar_handle)
+                        .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
+                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
+                        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                        .set_vat("CZ1234567890").set_ssntype("OP").set_ssn(" 123456 ")
+                        .exec(ctx);
+                    break;
+                case 7: //the same as dest. except spaces in name - ok
+                    Fred::CreateContact(contact_handle.str(),test_registrar_handle)
+                        .set_name(std::string(" USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark+" ")
+                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
+                        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                        .set_vat("CZ1234567890").set_ssntype("OP").set_ssn(" 123456 ")
+                        .exec(ctx);
+                    break;
+                case 8: //the same as dest. except spaces in city - ok
+                    Fred::CreateContact(contact_handle.str(),test_registrar_handle)
+                        .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
+                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
+                        .set_city("  Praha  ").set_postalcode("11150").set_country("CZ")
+                        .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
+                        .exec(ctx);
+                    break;
+                case 9: //the same as dest. except mojeidContact state - nok
+                {
+                    Fred::CreateContact(contact_handle.str(),test_registrar_handle)
+                        .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
+                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
+                        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                        .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
+                        .exec(ctx);
+                        BOOST_MESSAGE(contact_handle.str() + " mojeidContact");
+                        unsigned long long contact_id = Fred::InfoContactByHandle(contact_handle.str()).exec(ctx).info_contact_data.id;
+                        Fred::CreateObjectStateRequestId(contact_id,
+                            Util::set_of<std::string>(Fred::ObjectState::MOJEID_CONTACT)).exec(ctx);
+                        Fred::PerformObjectStateRequest(contact_id).exec(ctx);
+                }
+                    break;
+                case 10: //the same as dest. except serverBlocked state - nok
+                {
+                    Fred::CreateContact(contact_handle.str(),test_registrar_handle)
+                        .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
+                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
+                        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                        .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
+                        .exec(ctx);
+                        BOOST_MESSAGE(contact_handle.str() + " serverBlocked");
+                        unsigned long long contact_id = Fred::InfoContactByHandle(contact_handle.str()).exec(ctx).info_contact_data.id;
+                        Fred::CreateObjectStateRequestId(contact_id,
+                            Util::set_of<std::string>(Fred::ObjectState::SERVER_BLOCKED)).exec(ctx);
+                        Fred::PerformObjectStateRequest(contact_id).exec(ctx);
+                }
+                    break;
+                case 11: //the same as dest. except serverDeleteProhibited state - nok
+                {
+                    Fred::CreateContact(contact_handle.str(),test_registrar_handle)
+                        .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
+                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
+                        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                        .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
+                        .exec(ctx);
+                        BOOST_MESSAGE(contact_handle.str() + " serverDeleteProhibited");
+                        unsigned long long contact_id = Fred::InfoContactByHandle(contact_handle.str()).exec(ctx).info_contact_data.id;
+                        Fred::CreateObjectStateRequestId(contact_id,
+                            Util::set_of<std::string>(Fred::ObjectState::SERVER_DELETE_PROHIBITED)).exec(ctx);
+                        Fred::PerformObjectStateRequest(contact_id).exec(ctx);
+                }
+                    break;
+                case 12: //the same as dest. except the name - nok
+                {
+                    Fred::CreateContact(contact_handle.str(),test_registrar_handle)
+                        .set_name(std::string("USER-CONTACT-HANDLE DIFFERENTNAME")+user_contact_handle_fixture::xmark)
+                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
+                        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                        .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
+                        .exec(ctx);
+                        BOOST_MESSAGE(contact_handle.str() + " different name");
+                }
+                    break;
+                case 13: //the same as dest. except the organization - nok
+                {
+                    Fred::CreateContact(contact_handle.str(),test_registrar_handle)
+                        .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
+                        .set_organization(std::string("USER-CONTACT-HANDLE ORG")+user_contact_handle_fixture::xmark)
+                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
+                        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                        .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
+                        .exec(ctx);
+                        BOOST_MESSAGE(contact_handle.str() + " different organization");
+                }
+                    break;
+                case 14: //the same as dest. except the street1 - nok
+                {
+                    Fred::CreateContact(contact_handle.str(),test_registrar_handle)
+                        .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
+                        .set_street1(std::string("DIFFERENTSTR1")+user_contact_handle_fixture::xmark)
+                        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                        .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
+                        .exec(ctx);
+                        BOOST_MESSAGE(contact_handle.str() + " different street1");
+                }
+                    break;
+                case 15: //the same as dest. except the street2 - nok
+                {
+                    Fred::CreateContact(contact_handle.str(),test_registrar_handle)
+                        .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
+                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
+                        .set_street2(std::string("DIFFERENTSTR2")+user_contact_handle_fixture::xmark)
+                        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                        .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
+                        .exec(ctx);
+                        BOOST_MESSAGE(contact_handle.str() + " different street2");
+                }
+                    break;
+                case 16: //the same as dest. except the street3 - nok
+                {
+                    Fred::CreateContact(contact_handle.str(),test_registrar_handle)
+                        .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
+                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
+                        .set_street3(std::string("DIFFERENTSTR3")+user_contact_handle_fixture::xmark)
+                        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                        .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
+                        .exec(ctx);
+                        BOOST_MESSAGE(contact_handle.str() + " different street3");
+                }
+                    break;
+                case 17: //the same as dest. except the city - nok
+                {
+                    Fred::CreateContact(contact_handle.str(),test_registrar_handle)
+                        .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
+                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
+                        .set_city("DifferentPraha").set_postalcode("11150").set_country("CZ")
+                        .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
+                        .exec(ctx);
+                        BOOST_MESSAGE(contact_handle.str() + " different city");
+                }
+                    break;
+                case 18: //the same as dest. except the postalcode - nok
+                {
+                    Fred::CreateContact(contact_handle.str(),test_registrar_handle)
+                        .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
+                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
+                        .set_city("Praha").set_postalcode("11151").set_country("CZ")
+                        .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
+                        .exec(ctx);
+                        BOOST_MESSAGE(contact_handle.str() + " different postalcode");
+                }
+                    break;
+                case 19: //the same as dest. except the stateorprovince - nok
+                {
+                    Fred::CreateContact(contact_handle.str(),test_registrar_handle)
+                        .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
+                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
+                        .set_city("Praha").set_postalcode("11150").set_country("CZ").set_stateorprovince("different")
+                        .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
+                        .exec(ctx);
+                        BOOST_MESSAGE(contact_handle.str() + " different stateorprovince");
+                }
+                    break;
+                case 20: //the same as dest. except the country - nok
+                {
+                    Fred::CreateContact(contact_handle.str(),test_registrar_handle)
+                        .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
+                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
+                        .set_city("Praha").set_postalcode("11150").set_country("SK")
+                        .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
+                        .exec(ctx);
+                        BOOST_MESSAGE(contact_handle.str() + " different country");
+                }
+                    break;
+                case 21: //the same as dest. except the email - nok
+                {
+                    Fred::CreateContact(contact_handle.str(),test_registrar_handle)
+                        .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
+                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
+                        .set_city("Praha").set_postalcode("11150").set_country("CZ").set_email("test@test.cz")
+                        .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
+                        .exec(ctx);
+                        BOOST_MESSAGE(contact_handle.str() + " different email");
+                }
+                    break;
+                case 22: //the same as dest. except the vat - nok
+                {
+                    Fred::CreateContact(contact_handle.str(),test_registrar_handle)
+                        .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
+                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
+                        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                        .set_vat("SK1234567890").set_ssntype("OP").set_ssn("123456")
+                        .exec(ctx);
+                        BOOST_MESSAGE(contact_handle.str() + " different vat");
+                }
+                    break;
+                case 23: //the same as dest. except the ssn - nok
+                {
+                    Fred::CreateContact(contact_handle.str(),test_registrar_handle)
+                        .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
+                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
+                        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                        .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("223456")
+                        .exec(ctx);
+                        BOOST_MESSAGE(contact_handle.str() + " different ssn");
+                }
+                    break;
+                case 24: //the same as dest. except the ssntype - nok
+                {
+                    Fred::CreateContact(contact_handle.str(),test_registrar_handle)
+                        .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
+                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
+                        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                        .set_vat("CZ1234567890").set_ssntype("RC").set_ssn("123456")
+                        .exec(ctx);
+                        BOOST_MESSAGE(contact_handle.str() + " different ssntype");
+                }
+                    break;
+            }
+
+            contact_info[contact_handle.str()]= Fred::InfoContactByHandle(contact_handle.str()).exec(ctx);
+
+        }
+
+        ctx.commit_transaction();//commit fixture
+    }
+
+    ~merge_contacts_fixture()
+    {}
+};
+
+
+BOOST_AUTO_TEST_SUITE(getMergeContactCandidateList)
+
+
+/**
+ * test getMergeContactCandidateList, check candidate list contacts from fixture
+*/
+BOOST_FIXTURE_TEST_CASE(get_candidate_contact_list, merge_contacts_fixture )
+{
+    Fred::OperationContext ctx;
+    std::vector<std::vector<std::string> > contact_list_out;
+    bool limit_exceeded = impl.getMergeContactCandidateList(user_contact_info.info_contact_data.id,
+        0,contact_list_out);
+
+    std::ostringstream list_out;
+    list_out << "contact_list_out: \n";
+
+    for(unsigned long long i = 0; i < contact_list_out.size(); ++i)
+    {
+        for(unsigned long long j = 0; j < contact_list_out.at(i).size(); ++j)
+        {
+            list_out << " " <<contact_list_out.at(i).at(j);
+        }
+
+        list_out << "\n";
+    }
+    BOOST_MESSAGE(list_out.str());
+    BOOST_MESSAGE("limit_exceeded: " << limit_exceeded);
+
+    BOOST_CHECK(contact_list_out.size() == 9);//except other contacts that do not match
+
+    for(unsigned long long i = 0; i < contact_list_out.size(); ++i)
+    {
+        BOOST_CHECK(contact_list_out.at(i).at(0) == boost::lexical_cast<std::string>(map_at(contact_info,contact_list_out.at(i).at(1)).info_contact_data.id));
+        BOOST_CHECK(contact_list_out.at(i).at(1) == map_at(contact_info,contact_list_out.at(i).at(1)).info_contact_data.handle);
+        BOOST_CHECK(contact_list_out.at(i).at(5) == std::string("TEST-REGISTRAR-HANDLE")+test_registrar_fixture::xmark);
+        BOOST_CHECK(contact_list_out.at(i).at(6) == std::string("TEST-REGISTRAR NAME")+test_registrar_fixture::xmark);
+    }
+}
+
+struct get_domain_list_user_not_in_mojeid_fixture
+: user_contact_fixture
+, domain_browser_impl_instance_fixture
+{};
+
+/**
+ * test getMergeContactCandidateList, non-mojeid user
+*/
+
+BOOST_FIXTURE_TEST_CASE(get_candidate_contact_list_user_not_in_mojeid, get_domain_list_user_not_in_mojeid_fixture )
+{
+    try
+    {
+        Fred::OperationContext ctx;
+        std::vector<std::vector<std::string> > contact_list_out;
+        bool limit_exceeded = impl.getMergeContactCandidateList(user_contact_info.info_contact_data.id,
+            0,contact_list_out);
+
+        BOOST_ERROR("unreported missing user");
+    }
+    catch( const Registry::DomainBrowserImpl::UserNotExists& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
+
+BOOST_AUTO_TEST_SUITE_END();//getMergeContactCandidateList
 
 BOOST_AUTO_TEST_SUITE_END();//TestDomainBrowser

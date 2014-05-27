@@ -196,12 +196,14 @@ namespace Registry
             const std::string& update_registrar_handle,
             unsigned int domain_list_limit,
             unsigned int nsset_list_limit,
-            unsigned int keyset_list_limit)
+            unsigned int keyset_list_limit,
+            unsigned int contact_list_limit)
         : server_name_(server_name)
         , update_registrar_(update_registrar_handle)
         , domain_list_limit_(domain_list_limit)
         , nsset_list_limit_(nsset_list_limit)
         , keyset_list_limit_(keyset_list_limit)
+        , contact_list_limit_(contact_list_limit)
         {
             Logging::Context lctx_server(server_name_);
             Logging::Context lctx("init");
@@ -1380,60 +1382,181 @@ namespace Registry
             }
         }
 
-struct MergeContactDiffContacts
-{
-    bool operator()(Fred::OperationContext& ctx,
-        const std::string& src_contact_handle,
-        const std::string& dst_contact_handle) const
-    {
-        if(boost::algorithm::to_upper_copy(src_contact_handle).compare(boost::algorithm::to_upper_copy(dst_contact_handle)) == 0)
+        struct MergeContactDiffContacts
         {
-            BOOST_THROW_EXCEPTION(Fred::MergeContact::Exception().set_identical_contacts_handle(dst_contact_handle));
+            bool operator()(Fred::OperationContext& ctx,
+                const std::string& src_contact_handle,
+                const std::string& dst_contact_handle) const
+            {
+                if(boost::algorithm::to_upper_copy(src_contact_handle).compare(boost::algorithm::to_upper_copy(dst_contact_handle)) == 0)
+                {
+                    BOOST_THROW_EXCEPTION(Fred::MergeContact::Exception().set_identical_contacts_handle(dst_contact_handle));
+                }
+
+                Database::Result diff_result = ctx.get_conn().exec_params(
+                "SELECT "//--c_src.name, oreg_src.name, o_src.clid, c_dst.name, oreg_dst.name , o_dst.clid,
+                //the same
+                " (trim(both ' ' from COALESCE(c_src.name,'')) != trim(both ' ' from COALESCE(c_dst.name,''))) OR "
+                " (trim(both ' ' from COALESCE(c_src.organization,'')) != trim(both ' ' from COALESCE(c_dst.organization,''))) OR "
+                " (trim(both ' ' from COALESCE(c_src.street1,'')) != trim(both ' ' from COALESCE(c_dst.street1,''))) OR "
+                " (trim(both ' ' from COALESCE(c_src.street2,'')) != trim(both ' ' from COALESCE(c_dst.street2,''))) OR "
+                " (trim(both ' ' from COALESCE(c_src.street3,'')) != trim(both ' ' from COALESCE(c_dst.street3,''))) OR "
+                " (trim(both ' ' from COALESCE(c_src.city,'')) != trim(both ' ' from COALESCE(c_dst.city,''))) OR "
+                " (trim(both ' ' from COALESCE(c_src.postalcode,'')) != trim(both ' ' from COALESCE(c_dst.postalcode,''))) OR "
+                " (trim(both ' ' from COALESCE(c_src.stateorprovince,'')) != trim(both ' ' from COALESCE(c_dst.stateorprovince,''))) OR "
+                " (trim(both ' ' from COALESCE(c_src.country,'')) != trim(both ' ' from COALESCE(c_dst.country,''))) OR "
+                " (trim(both ' ' from COALESCE(c_src.email,'')) != trim(both ' ' from COALESCE(c_dst.email,''))) OR "
+                //if dst filled then src the same or empty
+                " (trim(both ' ' from COALESCE(c_src.vat,'')) != trim(both ' ' from COALESCE(c_dst.vat,'')) AND trim(both ' ' from COALESCE(c_src.vat,'')) != ''::text) OR "
+                " (trim(both ' ' from COALESCE(c_src.ssn,'')) != trim(both ' ' from COALESCE(c_dst.ssn,'')) AND trim(both ' ' from COALESCE(c_src.ssn,'')) != ''::text) OR "
+                " (COALESCE(c_src.ssntype,0) != COALESCE(c_dst.ssntype,0) AND COALESCE(c_src.ssntype,0) != 0) "
+                "  as differ, c_src.id AS src_contact_id"
+                " FROM (object_registry oreg_src "
+                " JOIN contact c_src ON c_src.id = oreg_src.id AND oreg_src.name = UPPER($1::text) AND oreg_src.erdate IS NULL) "
+                " JOIN (object_registry oreg_dst "
+                " JOIN contact c_dst ON c_dst.id = oreg_dst.id AND oreg_dst.name = UPPER($2::text) AND oreg_dst.erdate IS NULL"
+                ") ON TRUE "
+                  , Database::query_param_list(src_contact_handle)(dst_contact_handle));
+                if (diff_result.size() != 1)
+                {
+                    BOOST_THROW_EXCEPTION(Fred::MergeContact::Exception().set_unable_to_get_difference_of_contacts(
+                        Fred::MergeContact::InvalidContacts(src_contact_handle,dst_contact_handle)));
+                }
+
+                unsigned long long src_contact_id = static_cast<unsigned long long>(diff_result[0]["src_contact_id"]);
+
+                if(Fred::ObjectHasState(src_contact_id,Fred::ObjectState::MOJEID_CONTACT).exec(ctx))
+                {
+                    BOOST_THROW_EXCEPTION(Fred::MergeContact::Exception().set_src_contact_in_mojeid(
+                        Fred::MergeContact::InvalidContacts(src_contact_handle,dst_contact_handle)));
+                }
+
+                bool contact_differs = static_cast<bool>(diff_result[0]["differ"]);
+                return contact_differs;
+            }
+        };
+
+        bool DomainBrowser::getMergeContactCandidateList(unsigned long long user_contact_id,
+            unsigned long long offset,
+            std::vector<std::vector<std::string> >& contact_list_out)
+        {
+            Logging::Context lctx_server(create_ctx_name(get_server_name()));
+            Logging::Context lctx("get-merge-contact-candidate-list");
+            Fred::OperationContext ctx;
+            try
+            {
+                check_user_contact_id<UserNotExists>(ctx, user_contact_id);
+
+                Database::Result candidate_list_result = ctx.get_conn().exec_params(
+                    " SELECT oreg_src.id AS id, oreg_src.name AS handle"
+                    " , (SELECT count(foo.c) FROM (SELECT id AS c FROM domain WHERE registrant = oreg_src.id UNION SELECT domainid AS c FROM domain_contact_map WHERE contactid = oreg_src.id) AS foo) AS domain_count "
+                    " , (SELECT count(ncm.nssetid) FROM nsset_contact_map ncm WHERE ncm.contactid = oreg_src.id ) AS nsset_count "
+                    " , (SELECT count(kcm.keysetid) FROM keyset_contact_map kcm WHERE kcm.contactid = oreg_src.id ) AS keyset_count "
+                    " , r.handle AS registrar_handle, r.name AS registrar_name "
+                    " FROM (object_registry oreg_src "
+                    " JOIN contact c_src ON c_src.id = oreg_src.id AND oreg_src.erdate IS NULL "
+                    " JOIN object o ON o.id = oreg_src.id JOIN registrar r ON r.id = o.clid) "
+                    " JOIN (object_registry oreg_dst "
+                    " JOIN contact c_dst ON c_dst.id = oreg_dst.id  AND oreg_dst.erdate IS NULL AND oreg_dst.id = $1::bigint "
+                    " ) ON TRUE "
+                    " LEFT JOIN object_state os ON os.object_id = c_src.id "
+                    " AND os.state_id IN (SELECT eos.id FROM enum_object_states eos WHERE eos.name = 'mojeidContact'::text "
+                    " OR eos.name = 'serverDeleteProhibited'::text OR eos.name = 'serverBlocked'::text) "//forbidden states of src contact
+                    " WHERE "
+                    " ( "
+                    //the same
+                    " (trim(both ' ' from COALESCE(c_src.name,'')) != trim(both ' ' from COALESCE(c_dst.name,''))) OR "
+                    " (trim(both ' ' from COALESCE(c_src.organization,'')) != trim(both ' ' from COALESCE(c_dst.organization,''))) OR "
+                    " (trim(both ' ' from COALESCE(c_src.street1,'')) != trim(both ' ' from COALESCE(c_dst.street1,''))) OR "
+                    " (trim(both ' ' from COALESCE(c_src.street2,'')) != trim(both ' ' from COALESCE(c_dst.street2,''))) OR "
+                    " (trim(both ' ' from COALESCE(c_src.street3,'')) != trim(both ' ' from COALESCE(c_dst.street3,''))) OR "
+                    " (trim(both ' ' from COALESCE(c_src.city,'')) != trim(both ' ' from COALESCE(c_dst.city,''))) OR "
+                    " (trim(both ' ' from COALESCE(c_src.postalcode,'')) != trim(both ' ' from COALESCE(c_dst.postalcode,''))) OR "
+                    " (trim(both ' ' from COALESCE(c_src.stateorprovince,'')) != trim(both ' ' from COALESCE(c_dst.stateorprovince,''))) OR "
+                    " (trim(both ' ' from COALESCE(c_src.country,'')) != trim(both ' ' from COALESCE(c_dst.country,''))) OR "
+                    " (trim(both ' ' from COALESCE(c_src.email,'')) != trim(both ' ' from COALESCE(c_dst.email,''))) OR "
+                    //if dst filled then src the same or empty
+                    " (trim(both ' ' from COALESCE(c_src.vat,'')) != trim(both ' ' from COALESCE(c_dst.vat,'')) AND trim(both ' ' from COALESCE(c_src.vat,'')) != ''::text) OR "
+                    " (trim(both ' ' from COALESCE(c_src.ssn,'')) != trim(both ' ' from COALESCE(c_dst.ssn,'')) AND trim(both ' ' from COALESCE(c_src.ssn,'')) != ''::text) OR "
+                    " (COALESCE(c_src.ssntype,0) != COALESCE(c_dst.ssntype,0) AND COALESCE(c_src.ssntype,0) != 0)) = false "
+                    " AND oreg_src.name != oreg_dst.name AND os.id IS NULL "
+                    " ORDER BY oreg_src.id "
+                    " LIMIT $2::bigint OFFSET $3::bigint ",
+                    Database::query_param_list(user_contact_id)(contact_list_limit_+1)(offset));
+
+                unsigned long long limited_contact_list_size = (candidate_list_result.size() > contact_list_limit_)
+                    ? contact_list_limit_ : candidate_list_result.size();
+
+                contact_list_out.reserve(limited_contact_list_size);
+                for (unsigned long long i = 0;i < limited_contact_list_size;++i)
+                {
+                    std::vector<std::string> row(7);
+                    row.at(0) = static_cast<std::string>(candidate_list_result[i]["id"]);
+                    row.at(1) = static_cast<std::string>(candidate_list_result[i]["handle"]);
+                    row.at(2) = static_cast<std::string>(candidate_list_result[i]["domain_count"]);
+                    row.at(3) = static_cast<std::string>(candidate_list_result[i]["nsset_count"]);
+                    row.at(4) = static_cast<std::string>(candidate_list_result[i]["keyset_count"]);
+                    row.at(5) = static_cast<std::string>(candidate_list_result[i]["registrar_handle"]);
+                    row.at(6) = static_cast<std::string>(candidate_list_result[i]["registrar_name"]);
+
+                    contact_list_out.push_back(row);
+                }
+
+                return candidate_list_result.size() > contact_list_limit_;
+            }
+            catch(...)
+            {
+                log_and_rethrow_exception_handler(ctx);
+            }
+            return false;
         }
 
-        Database::Result diff_result = ctx.get_conn().exec_params(
-        "SELECT "//--c_src.name, oreg_src.name, o_src.clid, c_dst.name, oreg_dst.name , o_dst.clid,
-        //the same
-        " (trim(both ' ' from COALESCE(c_src.name,'')) != trim(both ' ' from COALESCE(c_dst.name,''))) OR "
-        " (trim(both ' ' from COALESCE(c_src.organization,'')) != trim(both ' ' from COALESCE(c_dst.organization,''))) OR "
-        " (trim(both ' ' from COALESCE(c_src.street1,'')) != trim(both ' ' from COALESCE(c_dst.street1,''))) OR "
-        " (trim(both ' ' from COALESCE(c_src.street2,'')) != trim(both ' ' from COALESCE(c_dst.street2,''))) OR "
-        " (trim(both ' ' from COALESCE(c_src.street3,'')) != trim(both ' ' from COALESCE(c_dst.street3,''))) OR "
-        " (trim(both ' ' from COALESCE(c_src.city,'')) != trim(both ' ' from COALESCE(c_dst.city,''))) OR "
-        " (trim(both ' ' from COALESCE(c_src.postalcode,'')) != trim(both ' ' from COALESCE(c_dst.postalcode,''))) OR "
-        " (trim(both ' ' from COALESCE(c_src.stateorprovince,'')) != trim(both ' ' from COALESCE(c_dst.stateorprovince,''))) OR "
-        " (trim(both ' ' from COALESCE(c_src.country,'')) != trim(both ' ' from COALESCE(c_dst.country,''))) OR "
-        " (trim(both ' ' from COALESCE(c_src.email,'')) != trim(both ' ' from COALESCE(c_dst.email,''))) OR "
-        //if dst filled then src the same or empty
-        " (trim(both ' ' from COALESCE(c_src.vat,'')) != trim(both ' ' from COALESCE(c_dst.vat,'')) AND trim(both ' ' from COALESCE(c_src.vat,'')) != ''::text) OR "
-        " (trim(both ' ' from COALESCE(c_src.ssn,'')) != trim(both ' ' from COALESCE(c_dst.ssn,'')) AND trim(both ' ' from COALESCE(c_src.ssn,'')) != ''::text) OR "
-        " (COALESCE(c_src.ssntype,0) != COALESCE(c_dst.ssntype,0) AND COALESCE(c_src.ssntype,0) != 0) "
-        "  as differ, c_src.id AS src_contact_id"
-        " FROM (object_registry oreg_src "
-        " JOIN contact c_src ON c_src.id = oreg_src.id AND oreg_src.name = UPPER($1::text) AND oreg_src.erdate IS NULL) "
-        " JOIN (object_registry oreg_dst "
-        " JOIN contact c_dst ON c_dst.id = oreg_dst.id AND oreg_dst.name = UPPER($2::text) AND oreg_dst.erdate IS NULL"
-        ") ON TRUE "
-          , Database::query_param_list(src_contact_handle)(dst_contact_handle));
-        if (diff_result.size() != 1)
+        void DomainBrowser::mergeContacts(unsigned long long dst_contact_id,
+            const std::vector<unsigned long long>& contact_list)
         {
-            BOOST_THROW_EXCEPTION(Fred::MergeContact::Exception().set_unable_to_get_difference_of_contacts(
-                Fred::MergeContact::InvalidContacts(src_contact_handle,dst_contact_handle)));
+            Logging::Context lctx_server(create_ctx_name(get_server_name()));
+            Logging::Context lctx("get-merge-contact-candidate-list");
+            Fred::OperationContext ctx;
+            try
+            {
+                Fred::InfoContactOutput dst = check_user_contact_id<UserNotExists>(ctx, dst_contact_id);
+                if(contact_list.empty()) throw Registry::DomainBrowserImpl::InvalidContacts();
+
+                //get src contact handle
+                Database::query_param_list params;
+                Util::HeadSeparator id_separator("",", ");
+                std::string sql("SELECT name, id FROM object_registry WHERE id IN (");
+
+                for(std::vector<unsigned long long>::const_iterator ci = contact_list.begin(); ci < contact_list.end(); ++ci)
+                {
+                    sql += id_separator.get();
+                    sql += params.add(*ci);
+                }
+
+                sql += ")";
+
+                Database::Result src_handle_result = ctx.get_conn().exec_params(sql, params);
+
+                for(Database::Result::size_type i = 0; i < src_handle_result.size(); ++i)
+                {
+                    Fred::MergeContactOutput merge_data = Fred::MergeContact(src_handle_result[i]["name"],
+                        dst.info_contact_data.handle, update_registrar_, MergeContactDiffContacts()).exec(ctx);
+
+                    if((merge_data.contactid.src_contact_id != static_cast<unsigned long long>(src_handle_result[i]["id"]))
+                    || (merge_data.contactid.dst_contact_id != dst_contact_id))
+                    {
+                        throw InternalServerError();
+                    }
+
+                    Fred::create_poll_messages(merge_data, ctx);
+                }
+            }
+            catch(...)
+            {
+                log_and_rethrow_exception_handler(ctx);
+            }
+            ctx.commit_transaction();
         }
-
-        unsigned long long src_contact_id = static_cast<unsigned long long>(diff_result[0]["src_contact_id"]);
-
-        if(Fred::ObjectHasState(src_contact_id,Fred::ObjectState::MOJEID_CONTACT).exec(ctx))
-        {
-            BOOST_THROW_EXCEPTION(Fred::MergeContact::Exception().set_src_contact_in_mojeid(
-                Fred::MergeContact::InvalidContacts(src_contact_handle,dst_contact_handle)));
-        }
-
-        bool contact_differs = static_cast<bool>(diff_result[0]["differ"]);
-        return contact_differs;
-    }
-};
-
     }//namespace DomainBrowserImpl
 }//namespace Registry
 
