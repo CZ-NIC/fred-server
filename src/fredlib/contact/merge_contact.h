@@ -353,6 +353,7 @@ namespace Fred
         DECLARE_EXCEPTION_DATA(unable_to_get_difference_of_contacts, InvalidContacts);
         DECLARE_EXCEPTION_DATA(src_contact_in_mojeid, InvalidContacts);
         DECLARE_EXCEPTION_DATA(src_contact_blocked, InvalidContacts);
+        DECLARE_EXCEPTION_DATA(object_blocked, std::string);
         DECLARE_EXCEPTION_DATA(contacts_differ, InvalidContacts);
         DECLARE_EXCEPTION_DATA(identical_contacts_handle, std::string);
         DECLARE_EXCEPTION_DATA(identical_contacts_roid, std::string);
@@ -364,6 +365,7 @@ namespace Fred
         , ExceptionData_unable_to_get_difference_of_contacts<Exception>
         , ExceptionData_src_contact_in_mojeid<Exception>
         , ExceptionData_src_contact_blocked<Exception>
+        , ExceptionData_object_blocked<Exception>
         , ExceptionData_contacts_differ<Exception>
         , ExceptionData_identical_contacts_handle<Exception>
         , ExceptionData_identical_contacts_roid<Exception>

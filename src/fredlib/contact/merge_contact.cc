@@ -167,6 +167,12 @@ namespace Fred
                 tmp.sponsoring_registrar = std::string(result[i][1]);
                 tmp.set_registrant = dst_contact_handle_;
 
+                //check if object blocked
+                if(Fred::ObjectHasState(tmp.domain_id,Fred::ObjectState::SERVER_BLOCKED).exec(ctx))
+                {
+                    BOOST_THROW_EXCEPTION(Fred::MergeContact::Exception().set_object_blocked(tmp.fqdn));
+                }
+
                 if(!dry_run)
                 {
                     std::string fqdn = std::string(result[i][0]);
@@ -202,6 +208,12 @@ namespace Fred
                 tmp.sponsoring_registrar = std::string(result[i][1]);
                 tmp.rem_admin_contact = src_contact_handle_;
                 tmp.add_admin_contact = dst_contact_handle_;
+
+                //check if object blocked
+                if(Fred::ObjectHasState(tmp.domain_id,Fred::ObjectState::SERVER_BLOCKED).exec(ctx))
+                {
+                    BOOST_THROW_EXCEPTION(Fred::MergeContact::Exception().set_object_blocked(tmp.fqdn));
+                }
 
                 if(!dry_run)
                 {
@@ -263,6 +275,12 @@ namespace Fred
                 tmp.rem_tech_contact = src_contact_handle_;
                 tmp.add_tech_contact = dst_contact_handle_;
 
+                //check if object blocked
+                if(Fred::ObjectHasState(tmp.nsset_id,Fred::ObjectState::SERVER_BLOCKED).exec(ctx))
+                {
+                    BOOST_THROW_EXCEPTION(Fred::MergeContact::Exception().set_object_blocked(tmp.handle));
+                }
+
                 if(!dry_run)
                 {
                     try
@@ -322,6 +340,12 @@ namespace Fred
                 tmp.sponsoring_registrar = std::string(result[i][1]);
                 tmp.rem_tech_contact = src_contact_handle_;
                 tmp.add_tech_contact = dst_contact_handle_;
+
+                //check if object blocked
+                if(Fred::ObjectHasState(tmp.keyset_id,Fred::ObjectState::SERVER_BLOCKED).exec(ctx))
+                {
+                    BOOST_THROW_EXCEPTION(Fred::MergeContact::Exception().set_object_blocked(tmp.handle));
+                }
 
                 if(!dry_run)
                 {
