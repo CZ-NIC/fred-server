@@ -3035,7 +3035,7 @@ BOOST_FIXTURE_TEST_CASE(get_candidate_contact_list_user_not_in_mojeid, get_domai
     {
         Fred::OperationContext ctx;
         std::vector<std::vector<std::string> > contact_list_out;
-        bool limit_exceeded = impl.getMergeContactCandidateList(user_contact_info.info_contact_data.id,
+        impl.getMergeContactCandidateList(user_contact_info.info_contact_data.id,
             0,contact_list_out);
 
         BOOST_ERROR("unreported missing user");
