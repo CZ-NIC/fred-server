@@ -2688,9 +2688,7 @@ struct merge_contacts_fixture
                 .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
                 .exec(ctx);
             user_contact_info = Fred::InfoContactByHandle(user_contact_handle).exec(ctx);
-            Fred::StatusList states;
-            states.insert(Fred::ObjectState::MOJEID_CONTACT);
-            Fred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id, states).exec(ctx);
+            Fred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id, Util::set_of<std::string>(Fred::ObjectState::MOJEID_CONTACT)).exec(ctx);
             Fred::PerformObjectStateRequest(user_contact_info.info_contact_data.id).exec(ctx);
             ctx.commit_transaction();//commit fixture
         }
