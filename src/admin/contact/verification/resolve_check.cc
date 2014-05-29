@@ -141,9 +141,19 @@ namespace  Admin {
             check_info.contact_history_id
         ).exec(_ctx);
 
+        const std::string& new_handle = check_info.check_state_history.rbegin()->status_handle;
+
+        if( new_handle != Fred::ContactCheckStatus::OK
+            &&
+            new_handle != Fred::ContactCheckStatus::FAIL
+            &&
+            new_handle != Fred::ContactCheckStatus::INVALIDATED
+        ) {
+            return;
+        }
+
         AdminContactVerificationObjectStates::cancel_all_states(_ctx, contact_info.info_contact_data.id);
 
-        const std::string& new_handle = check_info.check_state_history.rbegin()->status_handle;
         if( new_handle == Fred::ContactCheckStatus::OK
             ||
             new_handle == Fred::ContactCheckStatus::FAIL
