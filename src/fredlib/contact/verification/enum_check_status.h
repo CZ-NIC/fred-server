@@ -54,7 +54,8 @@ namespace Fred
                 (AUTO_OK)
                 (AUTO_FAIL)
                 (AUTO_TO_BE_DECIDED)
-                (FAIL_REQ);
+                (FAIL_REQ)
+                (ENQUEUE_REQ);  // XXX hack - ugly (but simple) way to enable rejection of ENQUEUE_REQ
         }
 
         inline std::vector<std::string> get_not_yet_resolved() {
