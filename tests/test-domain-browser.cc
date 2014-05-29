@@ -2709,6 +2709,27 @@ struct merge_contacts_fixture
                         .set_city("Praha").set_postalcode("11150").set_country("CZ")
                         .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
                         .exec(ctx);
+
+                    Fred::CreateNsset(std::string("TEST-NSSET-HANDLE")+user_contact_handle_fixture::xmark, test_registrar_handle)
+                        .set_dns_hosts(Util::vector_of<Fred::DnsHost>
+                            (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.3")("127.1.1.3"))) //add_dns
+                            (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.4")("127.1.1.4"))) //add_dns
+                            )
+                            .set_tech_contacts(Util::vector_of<std::string>(contact_handle.str()))
+                            .exec(ctx);
+
+                    Fred::CreateKeyset(std::string("TEST-KEYSET-HANDLE")+user_contact_handle_fixture::xmark, test_registrar_handle)
+                            .set_tech_contacts(Util::vector_of<std::string>(contact_handle.str()))
+                            .exec(ctx);
+
+                    Fred::CreateDomain(
+                            std::string("testdomainadminowner")+user_contact_handle_fixture::xmark+".cz" //const std::string& fqdn
+                            , test_registrar_handle //const std::string& registrar
+                            , contact_handle.str() //registrant
+                            )
+                    .set_admin_contacts(Util::vector_of<std::string>(contact_handle.str()))
+                    .exec(ctx);
+
                     break;
                 case 1: //the same as dest. except missing vat - ok
                     Fred::CreateContact(contact_handle.str(),test_registrar_handle)
@@ -3013,6 +3034,20 @@ BOOST_FIXTURE_TEST_CASE(get_candidate_contact_list, merge_contacts_fixture )
     {
         BOOST_CHECK(contact_list_out.at(i).at(0) == boost::lexical_cast<std::string>(map_at(contact_info,contact_list_out.at(i).at(1)).info_contact_data.id));
         BOOST_CHECK(contact_list_out.at(i).at(1) == map_at(contact_info,contact_list_out.at(i).at(1)).info_contact_data.handle);
+
+        if(i == 0)
+        {
+            BOOST_CHECK(contact_list_out.at(i).at(2) == "1");
+            BOOST_CHECK(contact_list_out.at(i).at(3) == "1");
+            BOOST_CHECK(contact_list_out.at(i).at(4) == "1");
+        }
+        else
+        {
+            BOOST_CHECK(contact_list_out.at(i).at(2) == "0");
+            BOOST_CHECK(contact_list_out.at(i).at(3) == "0");
+            BOOST_CHECK(contact_list_out.at(i).at(4) == "0");
+        }
+
         BOOST_CHECK(contact_list_out.at(i).at(5) == std::string("TEST-REGISTRAR-HANDLE")+test_registrar_fixture::xmark);
         BOOST_CHECK(contact_list_out.at(i).at(6) == std::string("TEST-REGISTRAR NAME")+test_registrar_fixture::xmark);
     }
