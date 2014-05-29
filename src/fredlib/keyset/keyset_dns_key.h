@@ -86,7 +86,7 @@ public:
      * Flags field getter.
      * @return flags field viz @ref flags_
      */
-    unsigned short get_flags()
+    unsigned short get_flags() const
     {
         return flags_;
     }
@@ -95,7 +95,7 @@ public:
      * Protocol field getter.
      * @return protocol field viz @ref protocol_
      */
-    unsigned short get_protocol()
+    unsigned short get_protocol() const
     {
         return protocol_;
     }
@@ -103,7 +103,7 @@ public:
      * Algorithm field getter.
      * @return algorithm field viz @ref alg_
      */
-    unsigned short get_alg()
+    unsigned short get_alg() const
     {
         return alg_;
     }
@@ -112,7 +112,7 @@ public:
      * Key field getter.
      * @return public key field viz @ref key_
      */
-    std::string get_key()
+    std::string get_key() const
     {
         return key_;
     }
