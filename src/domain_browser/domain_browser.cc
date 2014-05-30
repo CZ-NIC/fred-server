@@ -1522,7 +1522,7 @@ namespace Registry
             const std::vector<unsigned long long>& contact_list)
         {
             Logging::Context lctx_server(create_ctx_name(get_server_name()));
-            Logging::Context lctx("get-merge-contact-candidate-list");
+            Logging::Context lctx("get-merge-contact");
             Fred::OperationContext ctx;
             try
             {
@@ -1531,13 +1531,14 @@ namespace Registry
 
                 //get src contact handle
                 Database::query_param_list params;
-                Util::HeadSeparator id_separator("",", ");
+                Util::HeadSeparator id_separator("$",", $");
                 std::string sql("SELECT name, id FROM object_registry WHERE id IN (");
 
                 for(std::vector<unsigned long long>::const_iterator ci = contact_list.begin(); ci < contact_list.end(); ++ci)
                 {
                     sql += id_separator.get();
                     sql += params.add(*ci);
+                    sql +="::bigint";
                 }
 
                 sql += ")";
@@ -1546,8 +1547,18 @@ namespace Registry
 
                 for(Database::Result::size_type i = 0; i < src_handle_result.size(); ++i)
                 {
-                    Fred::MergeContactOutput merge_data = Fred::MergeContact(src_handle_result[i]["name"],
-                        dst.info_contact_data.handle, update_registrar_, MergeContactDiffContacts()).exec(ctx);
+                    Fred::MergeContactOutput merge_data;
+                    try
+                    {
+                        merge_data = Fred::MergeContact(src_handle_result[i]["name"],
+                            dst.info_contact_data.handle, update_registrar_, MergeContactDiffContacts()).exec(ctx);
+                    }
+                    catch(const Fred::MergeContact::Exception& ex)
+                    {
+                        ctx.get_log().error(boost::algorithm::replace_all_copy(ex.get_exception_stack_info(),"\n", " "));
+                        ctx.get_log().error(boost::algorithm::replace_all_copy(boost::diagnostic_information(ex),"\n", " "));
+                        throw InvalidContacts();
+                    }
 
                     if((merge_data.contactid.src_contact_id != static_cast<unsigned long long>(src_handle_result[i]["id"]))
                     || (merge_data.contactid.dst_contact_id != dst_contact_id))
