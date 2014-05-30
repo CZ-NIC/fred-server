@@ -142,7 +142,7 @@ inline enum Fred::Contact::Verification::State::Value operator|(
     enum Fred::Contact::Verification::State::Value _a,
     enum Fred::Contact::Verification::State::Value _b)
 {
-    return Fred::Contact::Verification::State::Value(_a | _b);
+    return Fred::Contact::Verification::State::Value(long(_a) | long(_b));
 }
 
 /**
@@ -155,7 +155,7 @@ inline enum Fred::Contact::Verification::State::Value operator&(
     enum Fred::Contact::Verification::State::Value _a,
     enum Fred::Contact::Verification::State::Value _b)
 {
-    return Fred::Contact::Verification::State::Value(_a & _b);
+    return Fred::Contact::Verification::State::Value(long(_a) & long(_b));
 }
 
 /**
