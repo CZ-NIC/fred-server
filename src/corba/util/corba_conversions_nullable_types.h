@@ -13,6 +13,9 @@
  */
 
 namespace Corba {
+    /**
+     * @throws std::out_of_range in case input is < 0
+     */
     Registry::NullableULongLong* wrap_nullable_ulonglong(const Nullable<long long>& in);
     Registry::NullableULongLong* wrap_nullable_ulonglong(const Nullable<unsigned long long>& in);
 

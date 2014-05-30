@@ -14,7 +14,14 @@ namespace Corba {
     typedef boost::posix_time::ptime ptime;
     typedef boost::gregorian::date date;
 
+    /**
+     * In case @in is a special value (not a time, infinity etc.) all members of returned struct are set to zero.
+     */
     ccReg::DateTimeType wrap_time(ptime in);
+
+    /**
+     * In case @in is a special value (not a date, infinity etc.) all members of returned struct are set to zero.
+     */
     ccReg::DateType wrap_date(date in);
 }
 
