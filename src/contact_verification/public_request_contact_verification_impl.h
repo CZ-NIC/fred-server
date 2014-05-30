@@ -10,8 +10,8 @@ namespace PublicRequest {
 
 FACTORY_MODULE_INIT_DECL(contact_verification)
 
-extern const Type PRT_CONTACT_CONDITIONAL_IDENTIFICATION;
-extern const Type PRT_CONTACT_IDENTIFICATION;
+const Type PRT_CONTACT_CONDITIONAL_IDENTIFICATION = "contact_conditional_identification";
+const Type PRT_CONTACT_IDENTIFICATION = "contact_identification";
 
 }
 }

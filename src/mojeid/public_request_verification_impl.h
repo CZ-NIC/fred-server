@@ -10,11 +10,11 @@ namespace PublicRequest {
 
 FACTORY_MODULE_INIT_DECL(verification)
 
-extern const Type PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION;
-extern const Type PRT_MOJEID_CONTACT_IDENTIFICATION;
-extern const Type PRT_MOJEID_CONTACT_VALIDATION;
-extern const Type PRT_MOJEID_CONDITIONALLY_IDENTIFIED_CONTACT_TRANSFER;
-extern const Type PRT_MOJEID_IDENTIFIED_CONTACT_TRANSFER;
+const Type PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION = "mojeid_contact_conditional_identification";
+const Type PRT_MOJEID_CONTACT_IDENTIFICATION = "mojeid_contact_identification";
+const Type PRT_MOJEID_CONTACT_VALIDATION = "mojeid_contact_validation";
+const Type PRT_MOJEID_CONDITIONALLY_IDENTIFIED_CONTACT_TRANSFER = "mojeid_conditionally_identified_contact_transfer";
+const Type PRT_MOJEID_IDENTIFIED_CONTACT_TRANSFER = "mojeid_identified_contact_transfer";
 
 }
 }
