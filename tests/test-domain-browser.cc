@@ -3083,4 +3083,343 @@ BOOST_FIXTURE_TEST_CASE(get_candidate_contact_list_user_not_in_mojeid, get_domai
 
 BOOST_AUTO_TEST_SUITE_END();//getMergeContactCandidateList
 
+
+BOOST_AUTO_TEST_SUITE(mergeContacts)
+
+/**
+ * mergeContacts
+*/
+BOOST_FIXTURE_TEST_CASE(merge_contacts, merge_contacts_fixture )
+{
+    Fred::OperationContext ctx;
+
+    impl.mergeContacts(user_contact_info.info_contact_data.id,
+        Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"0").info_contact_data.id));
+
+    std::vector<Fred::InfoContactOutput> info = Fred::InfoContactHistoryById(
+        map_at(contact_info,test_contact_handle+"0").info_contact_data.id).exec(ctx);
+    BOOST_CHECK(!info.back().info_contact_data.delete_time.isnull());
+
+}
+
+struct merge_contacts_user_not_in_mojeid_fixture
+: user_contact_fixture
+, domain_browser_impl_instance_fixture
+{};
+
+/**
+ * mergeContacts, non-mojeid user
+*/
+BOOST_FIXTURE_TEST_CASE(merge_contacts_user_not_in_mojeid, merge_contacts_user_not_in_mojeid_fixture )
+{
+    Fred::OperationContext ctx;
+    try
+    {
+        impl.mergeContacts(user_contact_info.info_contact_data.id,Util::vector_of<unsigned long long>(0));
+        BOOST_ERROR("unreported missing user");
+    }
+    catch( const Registry::DomainBrowserImpl::UserNotExists& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
+
+struct merge_contacts_no_src_contacts_fixture
+: virtual user_contact_handle_fixture
+, virtual test_registrar_fixture
+, domain_browser_impl_instance_fixture
+{
+    Fred::InfoContactOutput user_contact_info;
+
+    std::string test_contact_handle;
+    std::map<std::string,Fred::InfoContactOutput> contact_info;
+
+    merge_contacts_no_src_contacts_fixture()
+    : test_contact_handle(std::string("TEST_CONTACT_")+user_contact_handle_fixture::xmark+"_")
+    {
+        // user contact
+        Fred::OperationContext ctx;
+        Fred::CreateContact(user_contact_handle,
+            CfgArgs::instance()->get_handler_ptr_by_type<HandleMojeIDArgs>()->registrar_handle)//MojeID registrar
+            .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
+            .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
+            .set_city("Praha").set_postalcode("11150").set_country("CZ")
+            .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
+            .exec(ctx);
+        user_contact_info = Fred::InfoContactByHandle(user_contact_handle).exec(ctx);
+        Fred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id, Util::set_of<std::string>(Fred::ObjectState::MOJEID_CONTACT)).exec(ctx);
+        Fred::PerformObjectStateRequest(user_contact_info.info_contact_data.id).exec(ctx);
+        ctx.commit_transaction();//commit fixture
+    }
+};
+
+/**
+ * mergeContacts no src contacts throws invalid contacts
+*/
+BOOST_FIXTURE_TEST_CASE(merge_contacts_no_src_contacts, merge_contacts_no_src_contacts_fixture )
+{
+    Fred::OperationContext ctx;
+    try
+    {
+        impl.mergeContacts(user_contact_info.info_contact_data.id,std::vector<unsigned long long>());
+        BOOST_ERROR("unreported missing src contacts");
+    }
+    catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
+/**
+ * mergeContacts src contact is the same as dest contact
+*/
+BOOST_FIXTURE_TEST_CASE(merge_contacts_dst_contacts, merge_contacts_no_src_contacts_fixture )
+{
+    Fred::OperationContext ctx;
+    try
+    {
+        impl.mergeContacts(user_contact_info.info_contact_data.id,Util::vector_of<unsigned long long>(user_contact_info.info_contact_data.id));
+        BOOST_ERROR("unreported the same src and dest. contacts");
+    }
+    catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
+/**
+ * mergeContacts src contact is mojeid contact
+*/
+BOOST_FIXTURE_TEST_CASE(merge_contacts_mojeid_src_contact, merge_contacts_fixture )
+{
+    Fred::OperationContext ctx;
+    try
+    {
+        impl.mergeContacts(user_contact_info.info_contact_data.id,
+                Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"9").info_contact_data.id));
+        BOOST_ERROR("unreported invalid contacts");
+    }
+    catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
+/**
+ * mergeContacts src contact is blocked contact
+*/
+BOOST_FIXTURE_TEST_CASE(merge_contacts_blocked_src_contact, merge_contacts_fixture )
+{
+    Fred::OperationContext ctx;
+    try
+    {
+        impl.mergeContacts(user_contact_info.info_contact_data.id,
+                Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"10").info_contact_data.id));
+        BOOST_ERROR("unreported invalid contacts");
+    }
+    catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
+/**
+ * mergeContacts src contact is delete prohibited
+*/
+BOOST_FIXTURE_TEST_CASE(merge_contacts_delete_prohibited_src_contact, merge_contacts_fixture )
+{
+    Fred::OperationContext ctx;
+    try
+    {
+        impl.mergeContacts(user_contact_info.info_contact_data.id,
+                Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"11").info_contact_data.id));
+        BOOST_ERROR("unreported invalid contacts");
+    }
+    catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
+/**
+ * mergeContacts src contact differs in name
+*/
+BOOST_FIXTURE_TEST_CASE(merge_contacts_src_contact_differs_in_name, merge_contacts_fixture )
+{
+    Fred::OperationContext ctx;
+    try
+    {
+        impl.mergeContacts(user_contact_info.info_contact_data.id,
+                Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"12").info_contact_data.id));
+        BOOST_ERROR("unreported invalid contacts");
+    }
+    catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
+/**
+ * mergeContacts src contact differs in org
+*/
+BOOST_FIXTURE_TEST_CASE(merge_contacts_src_contact_differs_in_org, merge_contacts_fixture )
+{
+    Fred::OperationContext ctx;
+    try
+    {
+        impl.mergeContacts(user_contact_info.info_contact_data.id,
+                Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"13").info_contact_data.id));
+        BOOST_ERROR("unreported invalid contacts");
+    }
+    catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
+/**
+ * mergeContacts src contact differs in street1
+*/
+BOOST_FIXTURE_TEST_CASE(merge_contacts_src_contact_differs_in_street1, merge_contacts_fixture )
+{
+    Fred::OperationContext ctx;
+    try
+    {
+        impl.mergeContacts(user_contact_info.info_contact_data.id,
+                Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"14").info_contact_data.id));
+        BOOST_ERROR("unreported invalid contacts");
+    }
+    catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
+/**
+ * mergeContacts src contact differs in city
+*/
+BOOST_FIXTURE_TEST_CASE(merge_contacts_src_contact_differs_in_city, merge_contacts_fixture )
+{
+    Fred::OperationContext ctx;
+    try
+    {
+        impl.mergeContacts(user_contact_info.info_contact_data.id,
+            Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"17").info_contact_data.id));
+        BOOST_ERROR("unreported invalid contacts");
+    }
+    catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
+/**
+ * mergeContacts src contact differs in postalcode
+*/
+BOOST_FIXTURE_TEST_CASE(merge_contacts_src_contact_differs_in_postalcode, merge_contacts_fixture )
+{
+    Fred::OperationContext ctx;
+    try
+    {
+        impl.mergeContacts(user_contact_info.info_contact_data.id,
+            Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"18").info_contact_data.id));
+        BOOST_ERROR("unreported invalid contacts");
+    }
+    catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
+/**
+ * mergeContacts src contact differs in country
+*/
+BOOST_FIXTURE_TEST_CASE(merge_contacts_src_contact_differs_in_country, merge_contacts_fixture )
+{
+    Fred::OperationContext ctx;
+    try
+    {
+        impl.mergeContacts(user_contact_info.info_contact_data.id,
+            Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"20").info_contact_data.id));
+        BOOST_ERROR("unreported invalid contacts");
+    }
+    catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
+/**
+ * mergeContacts src contact differs in email
+*/
+BOOST_FIXTURE_TEST_CASE(merge_contacts_src_contact_differs_in_email, merge_contacts_fixture )
+{
+    Fred::OperationContext ctx;
+    try
+    {
+        impl.mergeContacts(user_contact_info.info_contact_data.id,
+            Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"21").info_contact_data.id));
+        BOOST_ERROR("unreported invalid contacts");
+    }
+    catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
+/**
+ * mergeContacts src contact differs in vat
+*/
+BOOST_FIXTURE_TEST_CASE(merge_contacts_src_contact_differs_in_vat, merge_contacts_fixture )
+{
+    Fred::OperationContext ctx;
+    try
+    {
+        impl.mergeContacts(user_contact_info.info_contact_data.id,
+            Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"22").info_contact_data.id));
+        BOOST_ERROR("unreported invalid contacts");
+    }
+    catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
+/**
+ * mergeContacts src contact differs in ssn
+*/
+BOOST_FIXTURE_TEST_CASE(merge_contacts_src_contact_differs_in_ssn, merge_contacts_fixture )
+{
+    Fred::OperationContext ctx;
+    try
+    {
+        impl.mergeContacts(user_contact_info.info_contact_data.id,
+            Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"23").info_contact_data.id));
+        BOOST_ERROR("unreported invalid contacts");
+    }
+    catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
+
+BOOST_AUTO_TEST_SUITE_END();//mergeContacts
+
 BOOST_AUTO_TEST_SUITE_END();//TestDomainBrowser
