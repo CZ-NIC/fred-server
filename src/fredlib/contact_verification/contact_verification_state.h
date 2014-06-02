@@ -133,7 +133,7 @@ State get_contact_verification_state(const std::string &_contact_handle);
 } // namespace Fred
 
 /**
- * Logical OR.
+ * Bitwise OR.
  * @param _a first operand
  * @param _b second operand
  * @return _a OR _b
@@ -146,7 +146,7 @@ inline enum Fred::Contact::Verification::State::Value operator|(
 }
 
 /**
- * Logical AND.
+ * Bitwise AND.
  * @param _a first operand
  * @param _b second operand
  * @return _a AND _b
