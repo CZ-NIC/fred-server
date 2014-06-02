@@ -28,7 +28,6 @@
 #include <vector>
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/thread/mutex.hpp>
 
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/domain/enum_validation_extension.h"
