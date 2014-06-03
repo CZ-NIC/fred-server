@@ -569,9 +569,9 @@ namespace Registry
                 {
                     Fred::InfoRegistrarOutput update_registar_info = Fred::InfoRegistrarByHandle(
                         nsset_info.info_nsset_data.update_registrar_handle.get_value()).exec(ctx);
-                    create_registrar.id = create_registar_info.info_registrar_data.id;
-                    create_registrar.handle = create_registar_info.info_registrar_data.handle;
-                    create_registrar.name = create_registar_info.info_registrar_data.name.get_value_or_default();
+                    update_registrar.id = update_registar_info.info_registrar_data.id;
+                    update_registrar.handle = update_registar_info.info_registrar_data.handle;
+                    update_registrar.name = update_registar_info.info_registrar_data.name.get_value_or_default();
                 }
 
                 NssetDetail detail;
@@ -684,9 +684,9 @@ namespace Registry
                 {
                     Fred::InfoRegistrarOutput update_registar_info = Fred::InfoRegistrarByHandle(
                         keyset_info.info_keyset_data.update_registrar_handle.get_value()).exec(ctx);
-                    create_registrar.id = create_registar_info.info_registrar_data.id;
-                    create_registrar.handle = create_registar_info.info_registrar_data.handle;
-                    create_registrar.name = create_registar_info.info_registrar_data.name.get_value_or_default();
+                    update_registrar.id = update_registar_info.info_registrar_data.id;
+                    update_registrar.handle = update_registar_info.info_registrar_data.handle;
+                    update_registrar.name = update_registar_info.info_registrar_data.name.get_value_or_default();
                 }
 
                 KeysetDetail detail;
