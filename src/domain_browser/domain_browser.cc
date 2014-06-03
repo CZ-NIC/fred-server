@@ -612,14 +612,7 @@ namespace Registry
                 {
                     DNSHost host;
                     host.fqdn = ci->get_fqdn();
-                    Util::HeadSeparator add_separator("",", ");
-                    std::vector<std::string> inet_addr_list = ci->get_inet_addr();
-                    for(std::vector<std::string>::const_iterator cj = inet_addr_list.begin();
-                        cj != inet_addr_list.end(); ++cj)
-                    {
-                        host.inet_addr += add_separator.get();
-                        host.inet_addr += *cj;
-                    }
+                    host.inet_addr = boost::algorithm::join(ci->get_inet_addr(), ", ");
 
                     detail.hosts.push_back(host);
                 }
