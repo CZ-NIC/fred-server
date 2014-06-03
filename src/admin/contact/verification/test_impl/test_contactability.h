@@ -59,7 +59,7 @@ namespace ContactVerification
         const static std::string                    letter_comm_type_;
         const static unsigned                       letter_file_type_;
         const static Fred::Document::GenerationType letter_doc_type_;
-        const static std::string                    genereted_file_name_;
+        const static std::string                    generated_file_name_;
 
         const static boost::gregorian::days         deadline_interval_;
 

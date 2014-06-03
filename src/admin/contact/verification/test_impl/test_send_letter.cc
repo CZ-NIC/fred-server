@@ -33,11 +33,11 @@ namespace ContactVerification {
 
     FACTORY_MODULE_INIT_DEFI(TestSendLetter_init)
 
-    const std::string                    TestSendLetter::letter_message_type_("admin_contact_confirm_correction");
-    const unsigned                       TestSendLetter::letter_file_type_(9); // admin contact confirm correction
+    const std::string                    TestSendLetter::letter_message_type_("contact_check_thank_you");
+    const unsigned                       TestSendLetter::letter_file_type_(9); // contact_check_thank_you
     const std::string                    TestSendLetter::letter_comm_type_("letter");   // to enable manual "approval/rejection"
-    const Fred::Document::GenerationType TestSendLetter::letter_doc_type_(Fred::Document::GT_ADMIN_CONTACT_VERIFICATION_CONTACT_CONFIRM_CORRECTION);
-    const std::string                    TestSendLetter::genereted_file_name("admin_contact_verification_confirm_correction");
+    const Fred::Document::GenerationType TestSendLetter::letter_doc_type_(Fred::Document::GT_ADMIN_CONTACT_VERIFICATION_CONTACT_CHECK_THANK_YOU);
+    const std::string                    TestSendLetter::genereted_file_name(TestSendLetter::letter_message_type_);
 
     static inline string xml_cdata(const string& _input) {
         return "<![CDATA[" + _input + "]]>";
