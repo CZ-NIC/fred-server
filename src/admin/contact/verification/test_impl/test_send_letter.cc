@@ -35,7 +35,7 @@ namespace ContactVerification {
 
     const std::string                    TestSendLetter::letter_message_type_("contact_check_thank_you");
     const unsigned                       TestSendLetter::letter_file_type_(9); // contact_check_thank_you
-    const std::string                    TestSendLetter::letter_comm_type_("letter");   // to enable manual "approval/rejection"
+    const std::string                    TestSendLetter::letter_comm_type_("registered_letter");   // to enable manual "approval/rejection"
     const Fred::Document::GenerationType TestSendLetter::letter_doc_type_(Fred::Document::GT_ADMIN_CONTACT_VERIFICATION_CONTACT_CHECK_THANK_YOU);
     const std::string                    TestSendLetter::genereted_file_name(TestSendLetter::letter_message_type_);
 
