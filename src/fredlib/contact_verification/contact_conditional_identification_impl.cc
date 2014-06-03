@@ -22,7 +22,7 @@
  */
 
 #include <string>
-#include "contact_conditional_identification_impl.h"
+#include "src/fredlib/contact_verification/contact_conditional_identification_impl.h"
 #include "src/fredlib/object_states.h"
 
 namespace Fred {
