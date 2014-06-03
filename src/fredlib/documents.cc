@@ -250,7 +250,7 @@ namespace Fred
         templateMap[GT_ADMIN_CONTACT_VERIFICATION_CONTACT_CHECK_NOTICE] = GenProcType(
           "notice_to_correct_data.xsl", true, "application/pdf"
         );
-        templateMap[GT_ADMIN_CONTACT_VERIFICATION_CONTACT_CONFIRM_CORRECTION] = GenProcType(
+        templateMap[GT_ADMIN_CONTACT_VERIFICATION_CONTACT_CHECK_THANK_YOU] = GenProcType(
           "confirm_correction.xsl", true, "application/pdf"
         );
       }      
