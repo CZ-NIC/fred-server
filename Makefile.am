@@ -49,6 +49,12 @@ CLEANFILES = \
 		src/corba/_dataTypesSK.cc \
 		src/corba/_dataTypesDynSK.cc \
 		src/corba/_dataTypes.hh \
+		src/corba/DateTimeSK.cc \
+		src/corba/DateTimeDynSK.cc \
+		src/corba/DateTime.hh \
+		src/corba/NullableTypesSK.cc \
+		src/corba/NullableTypesDynSK.cc \
+		src/corba/NullableTypes.hh \
 		src/corba/FiltersSK.cc \
 		src/corba/FiltersDynSK.cc \
 		src/corba/Filters.hh \
@@ -162,6 +168,9 @@ noinst_HEADERS = \
 		src/corba/contact_verification/corba_conversion.h \
 		util/optional_value.h \
 		util/output_indenter.h \
+		src/corba/util/corba_conversions_datetime.h \
+		src/corba/util/corba_conversions_nullable_types.h \
+		src/corba/util/corba_conversions_string.h \
 		util/is_equal_optional_nullable.h
 
 
@@ -189,6 +198,7 @@ noinst_LIBRARIES = \
 		util/hp/libhp.a \
 		src/fredlib/notifier/libnotifier.a \
 		src/corba/libcorbadatatypes.a \
+		src/corba/libcorbanullabletypes.a \
 		src/corba/libcorbafilters.a \
 		src/corba/libcorbaregistry.a \
 		src/corba/libcorbawhois.a \
@@ -200,7 +210,8 @@ noinst_LIBRARIES = \
 		src/corba/libcorbaadministrativeblocking.a \
 		src/fredlib/public_request/libpublic_request.a \
 		src/fredlib/contact_verification/libcontact_verification.a \
-		src/corba/libcorbacontactverification.a
+		src/corba/libcorbacontactverification.a \
+		src/corba/util/libcorbautil.a
 
 
 noinst_PROGRAMS = \
@@ -486,6 +497,16 @@ util_hp_crc32_LDADD = \
 		$(BOOST_DATE_TIME_LIB)
 #
 # util/hp/crc32
+
+
+# src/corba/util/libcorbautil.a
+#
+src_corba_util_libcorbautil_a_SOURCES = \
+		src/corba/util/corba_conversions_datetime.cc \
+		src/corba/util/corba_conversions_nullable_types.cc \
+		src/corba/util/corba_conversions_string.cc
+#
+# src/corba/util/libcorbautil.a
 
 
 # src/old_utils/liboldutils.a
@@ -967,6 +988,8 @@ BUILT_SOURCES = \
 		src/corba/FileManagerSK.cc \
 		src/corba/MailerSK.cc \
 		src/corba/ZoneSK.cc \
+		src/corba/DateTimeSK.cc \
+		src/corba/NullableTypesSK.cc \
 		src/corba/_dataTypesSK.cc \
 		src/corba/FiltersSK.cc src/corba/RegistrySK.cc \
 		src/corba/WhoisSK.cc \
@@ -1031,7 +1054,15 @@ nodist_src_corba_libcorbazone_a_SOURCES = \
 nodist_src_corba_libcorbadatatypes_a_SOURCES = \
 		src/corba/_dataTypesSK.cc \
 		src/corba/_dataTypesDynSK.cc \
-		src/corba/_dataTypes.hh
+		src/corba/_dataTypes.hh \
+		src/corba/DateTimeSK.cc \
+		src/corba/DateTimeDynSK.cc \
+		src/corba/DateTime.hh
+
+nodist_src_corba_libcorbanullabletypes_a_SOURCES = \
+		src/corba/NullableTypesSK.cc \
+		src/corba/NullableTypesDynSK.cc \
+		src/corba/NullableTypes.hh
 
 nodist_src_corba_libcorbafilters_a_SOURCES = \
 		src/corba/FiltersSK.cc \
@@ -1106,6 +1137,12 @@ src/corba/MailerSK.cc: $(IDLDIR)/Mailer.idl $(IDLDIR)/_dataTypes.idl
 
 src/corba/ZoneSK.cc: $(IDLDIR)/Zone.idl
 		omniidl -bcxx -Wbuse_quotes -Wba -C$(top_builddir)/src/corba $(IDLDIR)/Zone.idl
+
+src/corba/DateTimeSK.cc: $(IDLDIR)/DateTime.idl
+		omniidl -bcxx -Wbuse_quotes -Wba -C$(top_builddir)/src/corba $(IDLDIR)/DateTime.idl
+
+src/corba/NullableTypesSK.cc: $(IDLDIR)/NullableTypes.idl $(IDLDIR)/DateTime.idl
+		omniidl -bcxx -Wbuse_quotes -Wba -C$(top_builddir)/src/corba $(IDLDIR)/NullableTypes.idl
 
 src/corba/_dataTypesSK.cc: $(IDLDIR)/_dataTypes.idl
 		omniidl -bcxx -Wbuse_quotes -Wba -C$(top_builddir)/src/corba $(IDLDIR)/_dataTypes.idl
