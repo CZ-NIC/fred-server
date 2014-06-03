@@ -42,6 +42,16 @@
 #include "exception-test.h"
 
 #include "decimal/decimal.h"
+/*
+class ElapsedTimeFixture
+{
+    ElapsedTime et_;
+public:
+    ElapsedTimeFixture()
+    : et_("elapsed time: ", cout_print())
+    {}
+} ElapsedTimeFixture_instance;
+*/
 
 ExceptionTest& ExceptionTest::instance()
 {
@@ -51,6 +61,12 @@ ExceptionTest& ExceptionTest::instance()
 
 void test_decimal_wrapper_exceptions_fun()
 {
+    /*
+    std::string a("test");
+    a+="test";
+    a+="test";
+*/
+//#if 0
 
     (Decimal("1") < Decimal("2"));
     (Decimal("1") <= Decimal("2"));
@@ -82,7 +98,20 @@ void test_decimal_wrapper_exceptions_fun()
     (Decimal("1 000").is_special());
     (Decimal("1,1").is_nan());
     (Decimal("1,1").is_special());
+/*
+    BOOST_CHECK_EXCEPTION((Decimal("1") / Decimal("0")).is_infinite()
+            , std::exception
+            , check_std_exception);//Infinity
 
+    BOOST_CHECK_EXCEPTION((Decimal("0") / Decimal("0")).is_nan()
+            , std::exception
+            , check_std_exception);
+
+    BOOST_CHECK_EXCEPTION((Decimal("1") / Decimal("-0")).is_infinite()
+            , std::exception
+            , check_std_exception
+            );//-Infinity
+*/
     (Decimal("Infinity").is_infinite());//Infinity
     (Decimal("-Infinity").is_infinite());//Infinity
     (Decimal("NaN").is_nan());//NaN
@@ -95,6 +124,25 @@ void test_decimal_wrapper_exceptions_fun()
     (Decimal(std::string()).get_string().compare("") == 0);//string ctor
 
     (Decimal(std::string("1.1")) == Decimal("1.1"));//string ctor
+
+/*
+    BOOST_CHECK_EXCEPTION(Decimal("Infinity") == Decimal("Infinity")
+            , std::exception
+            , check_std_exception);
+    BOOST_CHECK_EXCEPTION(Decimal("Infinity") != Decimal("-Infinity")
+            , std::exception
+            , check_std_exception);
+    BOOST_CHECK_EXCEPTION(Decimal("NaN") != Decimal("NaN")
+            , std::exception
+            , check_std_exception);
+    BOOST_CHECK_EXCEPTION(Decimal("NaN") != Decimal("-NaN")
+            , std::exception
+            , check_std_exception);
+
+    BOOST_CHECK_EXCEPTION( (Decimal("Infinity") + Decimal("-Infinity")).is_nan()
+            , std::exception
+            , check_std_exception);
+*/
 
     Decimal a("1234567890.123456789", 500);
 
@@ -143,59 +191,57 @@ void test_decimal_wrapper_exceptions_fun()
     //this have to be disabled by: supported_types_of_Decimal_<T>::Type()
     //Decimal d0(0);
     //Decimal d1(1);
-
+//#endif
 }
+
 
 
 struct test_decimal_wrapper_exceptions
 {
     test_decimal_wrapper_exceptions()
     {
-        unsigned long long ex_count = 0;
-        for(unsigned long long i = 0; i < ex_count+1; ++i)
+    unsigned long long ex_count = 0;
+    for(unsigned long long i = 0; i < ex_count+1; ++i)
+    {
+        ExceptionTest::instance().count();//start count
+        test_decimal_wrapper_exceptions_fun();
+        if( ex_count< ExceptionTest::instance().get_iteration_count())
+            ex_count = ExceptionTest::instance().get_iteration_count();
+        ExceptionTest::instance().end_test();
+        std::cout << "ex_count: " << ex_count << std::endl;
+    }//for i
+
+    ExceptionTest::instance().start_test();//end count, start test
+
+    for(unsigned long long i = 0; i < ex_count; ++i)
+    {
+        puts("test_decimal_wrapper_exceptions for start");
+        try
         {
-            ExceptionTest::instance().count();//start count
             test_decimal_wrapper_exceptions_fun();
-            if( ex_count< ExceptionTest::instance().get_iteration_count())
-                ex_count = ExceptionTest::instance().get_iteration_count();
-            ExceptionTest::instance().end_test();
-            //std::cout << "ex_count: " << ex_count << std::endl;
-        }//for i
-
-        ExceptionTest::instance().start_test();//end count, start test
-
-        for(unsigned long long i = 0; i < ex_count; ++i)
+        }
+        catch(const std::exception& ex)
         {
-            //puts("test_decimal_wrapper_exceptions for start");
-            try
-            {
-                test_decimal_wrapper_exceptions_fun();
-            }
-            catch(const std::exception& ex)
-            {
-                if(strcmp(ex.what(),"std::bad_alloc") != 0)//expecting only bad alloc exeption
-                {
-                    puts("ERR catch std::exception");
-                    puts(ex.what());
-                }
-            }
+            puts("catch std::exception");
+            puts(ex.what());
+        }
 
-            /* this is not working - Boost.Test framework internal error: unknown reason
-            BOOST_CHECK_EXCEPTION( test_decimal_wrapper_exceptions_fun();
-                , std::exception, check_std_exception); */
+        /* this is not working - Boost.Test framework internal error: unknown reason
+        BOOST_CHECK_EXCEPTION( test_decimal_wrapper_exceptions_fun();
+            , std::exception, check_std_exception); */
 
-            ExceptionTest::instance().next_path();
-            //puts("test_decimal_wrapper_exceptions for end");
-        }//fro i
+        ExceptionTest::instance().next_path();
+        puts("test_decimal_wrapper_exceptions for end");
+    }//fro i
 
-        unsigned long long iterations = ExceptionTest::instance().get_iteration_count();
-        unsigned long long paths = ExceptionTest::instance().get_path_count();
-        ExceptionTest::instance().end_test();//end test
+    unsigned long long iterations = ExceptionTest::instance().get_iteration_count();
+    unsigned long long paths = ExceptionTest::instance().get_path_count();
+    ExceptionTest::instance().end_test();//end test
 
-        std::cout
-        << "iterations: " << iterations
-        << " paths: " << paths
-                << " OK" <<std::endl;
+    std::cout
+    << "iterations: " << iterations
+    << " paths: " << paths
+            << std::endl;
     }
     virtual ~test_decimal_wrapper_exceptions(){}
 
