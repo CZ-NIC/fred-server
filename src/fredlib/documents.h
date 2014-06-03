@@ -24,7 +24,7 @@ namespace Fred
       GT_CONTACT_IDENTIFICATION_LETTER_PIN3,  ///< mojeid identificaton letter with pin3 code
       GT_CONTACT_VALIDATION_REQUEST_PIN3,  ///< PDF with validation request
       GT_CONTACT_VERIFICATION_LETTER_PIN3,  ///< contact verification letter with pin3 code
-      GT_ADMIN_CONTACT_VERIFICATION_CONTACT_UPDATE_CALL,
+      GT_ADMIN_CONTACT_VERIFICATION_CONTACT_CHECK_NOTICE,
       GT_ADMIN_CONTACT_VERIFICATION_CONTACT_CONFIRM_CORRECTION
     };
     /// generator that has to be filled with stream of data
