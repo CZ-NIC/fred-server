@@ -15,8 +15,7 @@ const Type PRT_MOJEID_CONTACT_IDENTIFICATION = "mojeid_contact_identification";
 const Type PRT_MOJEID_CONTACT_VALIDATION = "mojeid_contact_validation";
 const Type PRT_MOJEID_CONDITIONALLY_IDENTIFIED_CONTACT_TRANSFER = "mojeid_conditionally_identified_contact_transfer";
 const Type PRT_MOJEID_IDENTIFIED_CONTACT_TRANSFER = "mojeid_identified_contact_transfer";
-const Type PRT_MOJEID_CONTACT_IDENTIFICATION_LOSS = "mojeid_contact_identification_loss";
-const Type PRT_MOJEID_CONTACT_VALIDATION_LOSS = "mojeid_contact_validation_loss";
+const Type PRT_MOJEID_CONTACT_REIDENTIFICATION = "mojeid_contact_reidentification";
 
 }
 }
