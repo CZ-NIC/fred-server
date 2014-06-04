@@ -62,18 +62,21 @@ namespace Registry
                 const char* handle);
 
             Registry::DomainBrowser::RecordSet* getDomainList(
+                const Registry::DomainBrowser::RegistryReference& user_contact,
                 const Registry::DomainBrowser::RegistryReference& contact,
                 const char* lang,
                 ::CORBA::ULong offset,
                 ::CORBA::Boolean& limit_exceeded);
 
             Registry::DomainBrowser::RecordSet* getNssetList(
+                const Registry::DomainBrowser::RegistryReference& user_contact,
                 const Registry::DomainBrowser::RegistryReference& contact,
                 const char* lang,
                 ::CORBA::ULong offset,
                  ::CORBA::Boolean& limit_exceeded);
 
             Registry::DomainBrowser::RecordSet* getKeysetList(
+                const Registry::DomainBrowser::RegistryReference& user_contact,
                 const Registry::DomainBrowser::RegistryReference& contact,
                 const char* lang,
                 ::CORBA::ULong offset,

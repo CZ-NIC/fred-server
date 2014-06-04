@@ -90,14 +90,14 @@ namespace Registry
         }
 
         /**
-         * Check user contact.
-         * @param EXCEPTION is type of exception used for reporting when contact is not found or not in required state
+         * Check contact.
+         * @param EXCEPTION is type of exception used for reporting when contact is not found
          * @param ctx contains reference to database and logging interface
-         * @param user_contact_id is database id of user contact
+         * @param contact_id is database id of contact
          * @param lock_contact_for_update indicates whether to lock contact for update (true) or for share (false)
-         * @return contact info or if user contact is deleted or don't have mojeidContact state throw @ref EXCEPTION.
+         * @return contact info or if contact is deleted throw @ref EXCEPTION.
          */
-        template <class EXCEPTION> Fred::InfoContactOutput check_user_contact_id(Fred::OperationContext& ctx,
+        template <class EXCEPTION> Fred::InfoContactOutput check_contact_id(Fred::OperationContext& ctx,
                 unsigned long long user_contact_id, bool lock_contact_for_update = false)
         {
             Fred::InfoContactOutput info;
@@ -116,6 +116,22 @@ namespace Registry
                 else
                     throw;
             }
+
+            return info;
+        }
+
+        /**
+         * Check user contact.
+         * @param EXCEPTION is type of exception used for reporting when contact is not found or not in required state
+         * @param ctx contains reference to database and logging interface
+         * @param user_contact_id is database id of user contact
+         * @param lock_contact_for_update indicates whether to lock contact for update (true) or for share (false)
+         * @return contact info or if user contact is deleted or don't have mojeidContact state throw @ref EXCEPTION.
+         */
+        template <class EXCEPTION> Fred::InfoContactOutput check_user_contact_id(Fred::OperationContext& ctx,
+                unsigned long long user_contact_id, bool lock_contact_for_update = false)
+        {
+            Fred::InfoContactOutput info = check_contact_id<EXCEPTION>(ctx, user_contact_id, lock_contact_for_update);
 
             if(!Fred::ObjectHasState(user_contact_id,Fred::ObjectState::MOJEID_CONTACT).exec(ctx))
             {
@@ -1042,6 +1058,7 @@ namespace Registry
         }
 
         bool DomainBrowser::getDomainList(unsigned long long user_contact_id,
+            const Optional<unsigned long long>& list_domains_for_contact_id,
             const Optional<unsigned long long>& list_domains_for_nsset_id,
             const Optional<unsigned long long>& list_domains_for_keyset_id,
             const std::string& lang,
@@ -1055,12 +1072,20 @@ namespace Registry
             {
                 check_user_contact_id<UserNotExists>(ctx, user_contact_id);
 
+                if(list_domains_for_contact_id.isset())
+                {
+                    check_contact_id<ObjectNotExists>(ctx, list_domains_for_contact_id.get_value());
+                }
+
+                unsigned long long contact_id = list_domains_for_contact_id.isset()
+                        ? list_domains_for_contact_id.get_value() : user_contact_id;
+
                 if(list_domains_for_nsset_id.isset())
                 {
                     //check nsset owned by user contact
                     Database::Result nsset_ownership_result = ctx.get_conn().exec_params(
                     "SELECT * FROM nsset_contact_map WHERE nssetid = $1::bigint AND contactid = $2::bigint"
-                    , Database::query_param_list (list_domains_for_nsset_id.get_value())(user_contact_id));
+                    , Database::query_param_list (list_domains_for_nsset_id.get_value())(contact_id));
                     if(nsset_ownership_result.size() == 0) throw AccessDenied();
                 }
 
@@ -1069,13 +1094,13 @@ namespace Registry
                     //check keyset owned by user contact
                     Database::Result keyset_ownership_result = ctx.get_conn().exec_params(
                     "SELECT * FROM keyset_contact_map WHERE keysetid = $1::bigint AND contactid = $2::bigint"
-                    , Database::query_param_list (list_domains_for_keyset_id.get_value())(user_contact_id));
+                    , Database::query_param_list (list_domains_for_keyset_id.get_value())(contact_id));
                     if(keyset_ownership_result.size() == 0) throw AccessDenied();
                 }
 
                 Database::QueryParams params;
                 std::ostringstream sql;
-                params.push_back(user_contact_id);
+                params.push_back(contact_id);
                 sql <<  "SELECT domain_list.id, domain_list.fqdn, domain_list.registrar_handle, domain_list.registrar_name, "
                         " domain_list.expiration_date, domain_list.registrant_id, domain_list.have_keyset, domain_list.user_role, "
                         " domain_list.today_date, domain_list.outzone_date,domain_list.delete_date, "
@@ -1192,6 +1217,7 @@ namespace Registry
         }
 
         bool DomainBrowser::getNssetList(unsigned long long user_contact_id,
+                    const Optional<unsigned long long>& list_nssets_for_contact_id,
                     const std::string& lang,
                     unsigned long long offset,
                     std::vector<std::vector<std::string> >& nsset_list_out)
@@ -1202,6 +1228,14 @@ namespace Registry
             try
             {
                 check_user_contact_id<UserNotExists>(ctx, user_contact_id);
+
+                if(list_nssets_for_contact_id.isset())
+                {
+                    check_contact_id<ObjectNotExists>(ctx, list_nssets_for_contact_id.get_value());
+                }
+
+                unsigned long long contact_id = list_nssets_for_contact_id.isset()
+                        ? list_nssets_for_contact_id.get_value() : user_contact_id;
 
                 Database::Result nsset_list_result = ctx.get_conn().exec_params(
                     "SELECT nsset_list.id, nsset_list.handle, "
@@ -1237,7 +1271,7 @@ namespace Registry
                         " , nsset_list.domain_number "
                     " ORDER BY nsset_list.id "
                     " LIMIT $2::bigint OFFSET $3::bigint ",
-                    Database::query_param_list(user_contact_id)(nsset_list_limit_+1)(offset)(lang));
+                    Database::query_param_list(contact_id)(nsset_list_limit_+1)(offset)(lang));
 
                 unsigned long long limited_nsset_list_size = (nsset_list_result.size() > nsset_list_limit_)
                     ? nsset_list_limit_ : nsset_list_result.size();
@@ -1273,6 +1307,7 @@ namespace Registry
         }
 
         bool DomainBrowser::getKeysetList(unsigned long long user_contact_id,
+            const Optional<unsigned long long>& list_keysets_for_contact_id,
             const std::string& lang,
             unsigned long long offset,
             std::vector<std::vector<std::string> >& keyset_list_out)
@@ -1283,6 +1318,14 @@ namespace Registry
             try
             {
                 check_user_contact_id<UserNotExists>(ctx, user_contact_id);
+
+                if(list_keysets_for_contact_id.isset())
+                {
+                    check_contact_id<ObjectNotExists>(ctx, list_keysets_for_contact_id.get_value());
+                }
+
+                unsigned long long contact_id = list_keysets_for_contact_id.isset()
+                    ? list_keysets_for_contact_id.get_value() : user_contact_id;
 
                 Database::Result keyset_list_result = ctx.get_conn().exec_params(
                     "SELECT keyset_list.id, keyset_list.handle, "
@@ -1318,7 +1361,7 @@ namespace Registry
                         " , keyset_list.domain_number "
                     " ORDER BY keyset_list.id "
                     " LIMIT $2::bigint OFFSET $3::bigint ",
-                    Database::query_param_list(user_contact_id)(keyset_list_limit_+1)(offset)(lang));
+                    Database::query_param_list(contact_id)(keyset_list_limit_+1)(offset)(lang));
 
                 unsigned long long limited_keyset_list_size = (keyset_list_result.size() > keyset_list_limit_)
                     ? keyset_list_limit_ : keyset_list_result.size();

@@ -72,6 +72,7 @@ namespace Registry
         }
 
         Registry::DomainBrowser::RecordSet* Server_i::getDomainList(
+            const Registry::DomainBrowser::RegistryReference& user_contact,
             const Registry::DomainBrowser::RegistryReference& contact,
             const char* lang,
             ::CORBA::ULong offset,
@@ -80,7 +81,8 @@ namespace Registry
             try
             {
                 std::vector<std::vector<std::string> > domain_list_out;
-                limit_exceeded = pimpl_->getDomainList(contact.id,
+                limit_exceeded = pimpl_->getDomainList(user_contact.id,
+                    (contact.id > 0) ? Optional<unsigned long long>(contact.id) : Optional<unsigned long long>(),
                     Optional<unsigned long long>(), Optional<unsigned long long>(),
                     lang, offset, domain_list_out);
 
@@ -98,6 +100,10 @@ namespace Registry
                 }
                 return rs._retn();
             }//try
+            catch (const Registry::DomainBrowserImpl::ObjectNotExists& )
+            {
+                throw Registry::DomainBrowser::OBJECT_NOT_EXISTS();
+            }
             catch (const Registry::DomainBrowserImpl::UserNotExists& )
             {
                 throw Registry::DomainBrowser::USER_NOT_EXISTS();
@@ -113,6 +119,7 @@ namespace Registry
         }
 
         Registry::DomainBrowser::RecordSet* Server_i::getNssetList(
+            const Registry::DomainBrowser::RegistryReference& user_contact,
             const Registry::DomainBrowser::RegistryReference& contact,
             const char* lang,
             ::CORBA::ULong offset,
@@ -121,7 +128,8 @@ namespace Registry
             try
             {
                 std::vector<std::vector<std::string> > nsset_list_out;
-                limit_exceeded = pimpl_->getNssetList(contact.id,
+                limit_exceeded = pimpl_->getNssetList(user_contact.id,
+                    (contact.id > 0) ? Optional<unsigned long long>(contact.id) : Optional<unsigned long long>(),
                     lang, offset, nsset_list_out);
 
                 RecordSet_var rs = new RecordSet;
@@ -138,6 +146,10 @@ namespace Registry
                 }
                 return rs._retn();
             }//try
+            catch (const Registry::DomainBrowserImpl::ObjectNotExists& )
+            {
+                throw Registry::DomainBrowser::OBJECT_NOT_EXISTS();
+            }
             catch (const Registry::DomainBrowserImpl::UserNotExists& )
             {
                 throw Registry::DomainBrowser::USER_NOT_EXISTS();
@@ -153,6 +165,7 @@ namespace Registry
         }
 
         Registry::DomainBrowser::RecordSet* Server_i::getKeysetList(
+            const Registry::DomainBrowser::RegistryReference& user_contact,
             const Registry::DomainBrowser::RegistryReference& contact,
             const char* lang,
             ::CORBA::ULong offset,
@@ -161,7 +174,8 @@ namespace Registry
             try
             {
                 std::vector<std::vector<std::string> > keyset_list_out;
-                limit_exceeded = pimpl_->getKeysetList(contact.id,
+                limit_exceeded = pimpl_->getKeysetList(user_contact.id,
+                    (contact.id > 0) ? Optional<unsigned long long>(contact.id) : Optional<unsigned long long>(),
                     lang, offset, keyset_list_out);
 
                 RecordSet_var rs = new RecordSet;
@@ -178,6 +192,10 @@ namespace Registry
                 }
                 return rs._retn();
             }//try
+            catch (const Registry::DomainBrowserImpl::ObjectNotExists& )
+            {
+                throw Registry::DomainBrowser::OBJECT_NOT_EXISTS();
+            }
             catch (const Registry::DomainBrowserImpl::UserNotExists& )
             {
                 throw Registry::DomainBrowser::USER_NOT_EXISTS();
@@ -203,6 +221,7 @@ namespace Registry
             {
                 std::vector<std::vector<std::string> > domain_list_out;
                 limit_exceeded = pimpl_->getDomainList(contact.id,
+                        Optional<unsigned long long>(),
                         Optional<unsigned long long>(),
                         Optional<unsigned long long>(keyset.id), lang, offset, domain_list_out);
 
@@ -253,6 +272,7 @@ namespace Registry
             {
                 std::vector<std::vector<std::string> > domain_list_out;
                 limit_exceeded = pimpl_->getDomainList(contact.id,
+                        Optional<unsigned long long>(),
                         Optional<unsigned long long>(nsset.id),
                         Optional<unsigned long long>(), lang, offset, domain_list_out);
 

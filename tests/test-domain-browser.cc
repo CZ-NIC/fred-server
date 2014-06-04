@@ -2133,7 +2133,7 @@ BOOST_FIXTURE_TEST_CASE(get_my_domain_list, get_my_domains_fixture )
 {
     Fred::OperationContext ctx;
     std::vector<std::vector<std::string> > domain_list_out;
-    bool limit_exceeded = impl.getDomainList(user_contact_info.info_contact_data.id,
+    bool limit_exceeded = impl.getDomainList(user_contact_info.info_contact_data.id, Optional<unsigned long long>(),
             Optional<unsigned long long>(), Optional<unsigned long long>(),"CS",0,domain_list_out);
 
     std::ostringstream list_out;
@@ -2203,6 +2203,7 @@ BOOST_FIXTURE_TEST_CASE(get_my_domain_list_by_nsset, get_my_domains_fixture )
     Fred::OperationContext ctx;
     std::vector<std::vector<std::string> > domain_list_out;
     bool limit_exceeded = impl.getDomainList(user_contact_info.info_contact_data.id,
+            Optional<unsigned long long>(),
             Optional<unsigned long long>(nsset_info.info_nsset_data.id),
             Optional<unsigned long long>(),"CS",0,domain_list_out);
 
@@ -2273,6 +2274,7 @@ BOOST_FIXTURE_TEST_CASE(get_my_domain_list_by_keyset, get_my_domains_fixture )
     Fred::OperationContext ctx;
     std::vector<std::vector<std::string> > domain_list_out;
     bool limit_exceeded = impl.getDomainList(user_contact_info.info_contact_data.id,
+            Optional<unsigned long long>(),
             Optional<unsigned long long>(),
             Optional<unsigned long long>(keyset_info.info_keyset_data.id),"CS",0,domain_list_out);
 
@@ -2345,6 +2347,7 @@ BOOST_FIXTURE_TEST_CASE(get_domain_list_user_not_in_mojeid, get_domain_list_user
         Fred::OperationContext ctx;
         std::vector<std::vector<std::string> > domain_list_out;
         impl.getDomainList(user_contact_info.info_contact_data.id,
+            Optional<unsigned long long>(),
             Optional<unsigned long long>(),Optional<unsigned long long>()
             ,"CS",0,domain_list_out);
 
@@ -2367,6 +2370,7 @@ BOOST_FIXTURE_TEST_CASE(get_domain_list_for_nsset_user_not_nsset_admin, get_my_d
         Fred::OperationContext ctx;
         std::vector<std::vector<std::string> > domain_list_out;
         impl.getDomainList(user_contact_info.info_contact_data.id,
+            Optional<unsigned long long>(),
             Optional<unsigned long long>(nsset_info.info_nsset_data.id),
             Optional<unsigned long long>(),"CS",0,domain_list_out);
 
@@ -2389,6 +2393,7 @@ BOOST_FIXTURE_TEST_CASE(get_domain_list_for_keyset_user_not_keyset_admin, get_my
         Fred::OperationContext ctx;
         std::vector<std::vector<std::string> > domain_list_out;
         impl.getDomainList(user_contact_info.info_contact_data.id,
+            Optional<unsigned long long>(),
             Optional<unsigned long long>(),
             Optional<unsigned long long>(keyset_info.info_keyset_data.id),"CS",0,domain_list_out);
 
@@ -2461,7 +2466,7 @@ BOOST_FIXTURE_TEST_CASE(get_my_nsset_list, get_my_nssets_fixture )
 {
     Fred::OperationContext ctx;
     std::vector<std::vector<std::string> > nsset_list_out;
-    bool limit_exceeded = impl.getNssetList(user_contact_info.info_contact_data.id,
+    bool limit_exceeded = impl.getNssetList(user_contact_info.info_contact_data.id, Optional<unsigned long long>(),
         "CS",0,nsset_list_out);
 
     std::ostringstream list_out;
@@ -2559,7 +2564,7 @@ BOOST_FIXTURE_TEST_CASE(get_my_keyset_list, get_my_keysets_fixture )
 {
     Fred::OperationContext ctx;
     std::vector<std::vector<std::string> > keyset_list_out;
-    bool limit_exceeded = impl.getKeysetList(user_contact_info.info_contact_data.id,
+    bool limit_exceeded = impl.getKeysetList(user_contact_info.info_contact_data.id, Optional<unsigned long long>(),
         "CS",0,keyset_list_out);
 
     std::ostringstream list_out;
