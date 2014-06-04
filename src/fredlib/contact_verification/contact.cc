@@ -1,7 +1,7 @@
-#include "contact.h"
-#include "random.h"
+#include "src/fredlib/contact_verification/contact.h"
 #include "src/fredlib/db_settings.h"
 #include "util/types/birthdate.h"
+#include "util/random.h"
 
 
 namespace Fred {

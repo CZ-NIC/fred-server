@@ -93,6 +93,7 @@ public:
             ++iteration_counter;
             if(do_test && ((path_counter % iteration_counter) == 0))
             {
+
                 //puts("ExceptionTest::exception_test() throw");
                 //char iteration_counter_str[40]={0};
                 //char path_counter_str[40]={0};
@@ -102,6 +103,7 @@ public:
                 //puts(path_counter_str);
                 //printf("PID of this process: %d\n", getpid());
                 //printf("The ID of this thread is: %u\n", (unsigned int)pthread_self());
+
 
                 ++path_counter;
                 throw ex;

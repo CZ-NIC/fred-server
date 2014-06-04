@@ -28,7 +28,6 @@
 #include <vector>
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/thread/mutex.hpp>
 
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/domain/enum_validation_extension.h"
@@ -547,8 +546,8 @@ namespace Registry
              * @param objtype type of the objects to be set
              * @param object_id list of database ids of the objects to be set
              * @param block_type is type of blocking to be applied (value from enum Registry::DomainBrowser::ObjectBlockType)
-             * @param blocked_objects is list of blocked object handles
-             * @return false if blocking were set, true if not or exception in case of failure
+             * @param blocked_objects is list of object handles of objects with SERVER_BLOCKED state
+             * @return false if all objects have SERVER_BLOCKED state (no block_type applied), true if not or exception in case of failure
              */
             bool setObjectBlockStatus(unsigned long long user_contact_id,
                 const std::string& objtype,

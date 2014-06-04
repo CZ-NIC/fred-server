@@ -572,9 +572,9 @@ namespace Registry
                 {
                     Fred::InfoRegistrarOutput update_registar_info = Fred::InfoRegistrarByHandle(
                         nsset_info.info_nsset_data.update_registrar_handle.get_value()).exec(ctx);
-                    create_registrar.id = create_registar_info.info_registrar_data.id;
-                    create_registrar.handle = create_registar_info.info_registrar_data.handle;
-                    create_registrar.name = create_registar_info.info_registrar_data.name.get_value_or_default();
+                    update_registrar.id = update_registar_info.info_registrar_data.id;
+                    update_registrar.handle = update_registar_info.info_registrar_data.handle;
+                    update_registrar.name = update_registar_info.info_registrar_data.name.get_value_or_default();
                 }
 
                 NssetDetail detail;
@@ -615,14 +615,7 @@ namespace Registry
                 {
                     DNSHost host;
                     host.fqdn = ci->get_fqdn();
-                    Util::HeadSeparator add_separator("",", ");
-                    std::vector<std::string> inet_addr_list = ci->get_inet_addr();
-                    for(std::vector<std::string>::const_iterator cj = inet_addr_list.begin();
-                        cj != inet_addr_list.end(); ++cj)
-                    {
-                        host.inet_addr += add_separator.get();
-                        host.inet_addr += *cj;
-                    }
+                    host.inet_addr = boost::algorithm::join(ci->get_inet_addr(), ", ");
 
                     detail.hosts.push_back(host);
                 }
@@ -687,9 +680,9 @@ namespace Registry
                 {
                     Fred::InfoRegistrarOutput update_registar_info = Fred::InfoRegistrarByHandle(
                         keyset_info.info_keyset_data.update_registrar_handle.get_value()).exec(ctx);
-                    create_registrar.id = create_registar_info.info_registrar_data.id;
-                    create_registrar.handle = create_registar_info.info_registrar_data.handle;
-                    create_registrar.name = create_registar_info.info_registrar_data.name.get_value_or_default();
+                    update_registrar.id = update_registar_info.info_registrar_data.id;
+                    update_registrar.handle = update_registar_info.info_registrar_data.handle;
+                    update_registrar.name = update_registar_info.info_registrar_data.name.get_value_or_default();
                 }
 
                 KeysetDetail detail;

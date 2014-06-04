@@ -82,6 +82,7 @@
 #include "cfg/config_handler_decl.h"
 #include <boost/test/unit_test.hpp>
 
+
 BOOST_AUTO_TEST_SUITE(TestCheckHandle)
 
 const std::string server_name = "test-check-handle";

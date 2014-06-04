@@ -24,11 +24,9 @@
 #ifndef HANDLE_DOMAINBROWSER_ARGS_H_
 #define HANDLE_DOMAINBROWSER_ARGS_H_
 
-#include <iostream>
-#include <exception>
 #include <string>
-#include <vector>
 
+#include <boost/shared_ptr.hpp>
 #include <boost/program_options.hpp>
 
 #include "faked_args.h"

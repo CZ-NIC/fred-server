@@ -23,7 +23,7 @@
 
 #include <stdexcept>
 
-#include "contact_verification_password.h"
+#include "src/fredlib/contact_verification/contact_verification_password.h"
 #include "src/fredlib/db_settings.h"
 #include "log/logger.h"
 #include "util/map_at.h"
