@@ -389,7 +389,8 @@ public:
 
             const Contact::Verification::State contact_state =
                 Contact::Verification::get_contact_verification_state(pri_ptr_->getObject(0).id);
-            if (!contact_state.has_all(Contact::Verification::State::civM)) {
+            if (contact_state.has_all(Contact::Verification::State::ciVm) ||
+               !contact_state.has_all(Contact::Verification::State::civM)) {
                 throw NotApplicable("pre_insert_checks: failed!");
             }
 
