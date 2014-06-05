@@ -116,6 +116,7 @@ namespace Registry
                 ::KeyVector required_keys = boost::assign::list_of
                     (Fred::PublicRequest::PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION)
                     (Fred::PublicRequest::PRT_MOJEID_CONTACT_IDENTIFICATION)
+                    (Fred::PublicRequest::PRT_MOJEID_CONTACT_REIDENTIFICATION)
                     (Fred::PublicRequest::PRT_MOJEID_CONTACT_VALIDATION)
                     (Fred::PublicRequest::PRT_MOJEID_CONDITIONALLY_IDENTIFIED_CONTACT_TRANSFER)
                     (Fred::PublicRequest::PRT_MOJEID_IDENTIFIED_CONTACT_TRANSFER);
@@ -429,6 +430,13 @@ namespace Registry
                         Fred::cancel_object_state(cid, Fred::ObjectState::VALIDATED_CONTACT);
                     }
                 }
+                if (contact_state.has_all(Fred::Contact::Verification::State::cIvm)) {// already I
+                    if (!Fred::Contact::Verification::check_identified_contact_diff(_contact,
+                             Fred::Contact::Verification::contact_info(cid))) {
+                        /* drop contact identified status */
+                        Fred::cancel_object_state(cid, Fred::ObjectState::IDENTIFIED_CONTACT);
+                    }
+                }
 
                 contact_disclose_policy.apply(_contact);
 
@@ -608,9 +616,9 @@ namespace Registry
                 IdentificationRequestManagerPtr request_manager(mailer_  );
                 std::vector<Fred::PublicRequest::Type> request_type_list
                     = boost::assign::list_of
-                        (Fred::PublicRequest
-                            ::PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION)
-                        (Fred::PublicRequest::PRT_MOJEID_CONTACT_IDENTIFICATION);
+                        (Fred::PublicRequest::PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION)
+                        (Fred::PublicRequest::PRT_MOJEID_CONTACT_IDENTIFICATION)
+                        (Fred::PublicRequest::PRT_MOJEID_CONTACT_REIDENTIFICATION);
                 unsigned long long cid = static_cast<unsigned long long>(
                         _contact_id);
 
@@ -1309,14 +1317,27 @@ namespace Registry
                 Fred::PublicRequest::lock_public_request_lock(
                     Fred::PublicRequest::PRT_MOJEID_CONTACT_IDENTIFICATION, _contact_id);
                 Fred::PublicRequest::lock_public_request_lock(
+                    Fred::PublicRequest::PRT_MOJEID_CONTACT_REIDENTIFICATION, _contact_id);
+                Fred::PublicRequest::lock_public_request_lock(
                     Fred::PublicRequest::PRT_MOJEID_CONTACT_VALIDATION, _contact_id);
 
-                conn.exec_params("UPDATE public_request pr SET status=2 "
-                    " , resolve_time = CURRENT_TIMESTAMP "
-                    " FROM public_request_objects_map prom WHERE (prom.request_id = pr.id) "
-                    " AND pr.resolve_time IS NULL AND pr.status = 0 "
-                    " AND pr.request_type IN (12,13,14) AND object_id = $1::integer",
-                        Database::query_param_list(_contact_id));
+                conn.exec_params(
+                    "UPDATE public_request pr "
+                    "SET status=(SELECT id FROM enum_public_request_status WHERE name='invalidated'),"
+                        "resolve_time=CURRENT_TIMESTAMP "
+                    "FROM public_request_objects_map prom "
+                    "WHERE prom.object_id=$1::integer AND "
+                          "pr.id=prom.request_id AND "
+                          "pr.resolve_time IS NULL AND "
+                          "pr.status=(SELECT id FROM enum_public_request_status WHERE name='new') AND "
+                          "pr.request_type IN "
+                              "(SELECT id FROM enum_public_request_type "
+                               "WHERE name IN ($2::text,$3::text,$4::text,$5::text))",
+                    Database::query_param_list(_contact_id)
+                        (Fred::PublicRequest::PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION)
+                        (Fred::PublicRequest::PRT_MOJEID_CONTACT_IDENTIFICATION)
+                        (Fred::PublicRequest::PRT_MOJEID_CONTACT_REIDENTIFICATION)
+                        (Fred::PublicRequest::PRT_MOJEID_CONTACT_VALIDATION));
 
 
                 tx.prepare(_trans_id);
