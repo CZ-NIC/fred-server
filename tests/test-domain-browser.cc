@@ -2473,6 +2473,29 @@ BOOST_FIXTURE_TEST_CASE(get_domain_list_for_keyset_user_not_keyset_admin, get_my
     }
 }
 
+/**
+ * test getDomainList for not existing contact
+ */
+BOOST_FIXTURE_TEST_CASE(get_domain_list_for_not_existing_contact, get_my_domains_fixture )
+{
+    try
+    {
+        Fred::OperationContext ctx;
+        std::vector<std::vector<std::string> > domain_list_out;
+        impl.getDomainList(user_contact_info.info_contact_data.id,
+            Optional<unsigned long long>(0),
+            Optional<unsigned long long>(),
+            Optional<unsigned long long>(),"CS",0,domain_list_out);
+
+        BOOST_ERROR("unreported missing contact");
+    }
+    catch( const Registry::DomainBrowserImpl::ObjectNotExists& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
 BOOST_AUTO_TEST_SUITE_END();//getDomainList
 
 BOOST_AUTO_TEST_SUITE(getNssetList)
