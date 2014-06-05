@@ -1,4 +1,5 @@
 #include "src/fredlib/contact_verification/contact.h"
+#include "src/fredlib/contact.h"
 #include "src/fredlib/db_settings.h"
 #include "util/types/birthdate.h"
 #include "util/random.h"
@@ -8,6 +9,40 @@ namespace Fred {
 namespace Contact {
 namespace Verification {
 
+
+bool ContactAddress::operator==(const ContactAddress &_b)const
+{
+    return this->type == _b.type &&
+           this->company_name == _b.company_name &&
+           this->street1 == _b.street1 &&
+           this->street2 == _b.street2 &&
+           this->street3 == _b.street3 &&
+           this->city == _b.city &&
+           this->stateorprovince == _b.stateorprovince &&
+           this->postalcode == _b.postalcode &&
+           this->country == _b.country;
+}
+
+ContactAddress Contact::get_mailing_address()const
+{
+    for (std::vector< ContactAddress >::const_iterator ptr_addr = addresses.begin();
+         ptr_addr != addresses.end(); ++ptr_addr) {
+        if (ptr_addr->type == Address::Type::MAILING) {
+            return *ptr_addr;
+        }
+    }
+    ContactAddress addr;
+    addr.type = Address::Type::MAILING;
+    addr.company_name = this->organization;
+    addr.street1 = this->street1;
+    addr.street2 = this->street2;
+    addr.street3 = this->street3;
+    addr.city = this->city;
+    addr.stateorprovince = this->stateorprovince;
+    addr.postalcode = this->postalcode;
+    addr.country = this->country;
+    return addr;
+}
 
 bool transform_ssn_birthday_value(Contact &_data)
 {

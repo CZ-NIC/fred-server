@@ -23,6 +23,8 @@ public:
     Nullable<std::string> stateorprovince;
     Nullable<std::string> postalcode;
     Nullable<std::string> country;
+    bool operator==(const ContactAddress &_b)const;
+    bool operator!=(const ContactAddress &_b)const { return !this->operator==(_b); }
 };
 
 
@@ -71,6 +73,7 @@ public:
     bool discloseident;
     bool disclosenotifyemail;
     std::vector<ContactAddress> addresses;
+    ContactAddress get_mailing_address()const;
 };
 
 
