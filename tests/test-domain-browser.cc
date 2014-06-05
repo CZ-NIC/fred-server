@@ -2641,6 +2641,28 @@ BOOST_FIXTURE_TEST_CASE(get_nsset_list_by_contact, get_my_nssets_fixture )
     }
 }
 
+/**
+ * test getNssetList for not existing contact
+ */
+BOOST_FIXTURE_TEST_CASE(get_nsset_list_for_not_existing_contact, get_my_nssets_fixture )
+{
+    try
+    {
+        Fred::OperationContext ctx;
+        std::vector<std::vector<std::string> > nsset_list_out;
+        impl.getNssetList(user_contact_info.info_contact_data.id,
+            Optional<unsigned long long>(0),
+            "CS",0,nsset_list_out);
+
+        BOOST_ERROR("unreported missing contact");
+    }
+    catch( const Registry::DomainBrowserImpl::ObjectNotExists& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
 
 BOOST_AUTO_TEST_SUITE_END();//getNssetList
 
