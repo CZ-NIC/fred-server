@@ -17,7 +17,7 @@
  */
 
 /**
- *  file@
+ *  @file
  *  domain browser implementation
  */
 
