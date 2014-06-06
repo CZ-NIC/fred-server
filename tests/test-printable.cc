@@ -463,12 +463,14 @@ BOOST_AUTO_TEST_CASE(update_keyset)
  */
 BOOST_AUTO_TEST_CASE(create_nsset)
 {
+    using boost::asio::ip::address;
+
     printable_test(
     Fred::CreateNsset("TEST-CREATE-NSSET-HANDLE", "REGISTRAR-TEST-HANDLE")
     .set_tech_contacts(Util::vector_of<std::string>("admin1")("admin2")("admin3"))
     .set_dns_hosts(Util::vector_of<Fred::DnsHost>
-        (Fred::DnsHost("test1dns.cz", Util::vector_of<std::string>("6.6.6.6")("7.7.7.7")))
-        (Fred::DnsHost("test2dns.cz", Util::vector_of<std::string>("6.6.6.6")("7.7.7.7")))
+        (Fred::DnsHost("test1dns.cz", Util::vector_of<address>(address::from_string("6.6.6.6"))(address::from_string("7.7.7.7"))))
+        (Fred::DnsHost("test2dns.cz", Util::vector_of<address>(address::from_string("6.6.6.6"))(address::from_string("7.7.7.7"))))
         )
     .set_authinfo("testauthinfo").set_logd_request_id(0)
     );
@@ -499,13 +501,14 @@ BOOST_AUTO_TEST_CASE(check_nsset)
  */
 BOOST_AUTO_TEST_CASE(info_nsset_data)
 {
+    using boost::asio::ip::address;
     Fred::InfoNssetData i;
     i.handle = "TEST-INFO-NSSET-HANDLE";
     i.creation_time = boost::posix_time::microsec_clock::universal_time();
     i.delete_time = boost::posix_time::microsec_clock::universal_time();
     i.dns_hosts = Util::vector_of<Fred::DnsHost>
-    (Fred::DnsHost("test1dns.cz", Util::vector_of<std::string>("6.6.6.6")("7.7.7.7")))
-    (Fred::DnsHost("test2dns.cz", Util::vector_of<std::string>("6.6.6.6")("7.7.7.7")));
+    (Fred::DnsHost("test1dns.cz", Util::vector_of<address>(address::from_string("6.6.6.6"))(address::from_string("7.7.7.7"))))
+    (Fred::DnsHost("test2dns.cz", Util::vector_of<address>(address::from_string("6.6.6.6"))(address::from_string("7.7.7.7"))));
     printable_test(i);
 }
 
@@ -514,6 +517,7 @@ BOOST_AUTO_TEST_CASE(info_nsset_data)
  */
 BOOST_AUTO_TEST_CASE(info_nsset_output)
 {
+    using boost::asio::ip::address;
     Fred::InfoNssetData d;
     d.handle = "TEST-INFO-NSSET-HANDLE";
     d.creation_time = boost::posix_time::microsec_clock::universal_time();
@@ -522,8 +526,8 @@ BOOST_AUTO_TEST_CASE(info_nsset_output)
         (Fred::ObjectIdHandlePair(2, "tech2"))
         (Fred::ObjectIdHandlePair(3, "tech3"));
     d.dns_hosts = Util::vector_of<Fred::DnsHost>
-        (Fred::DnsHost("test1dns.cz", Util::vector_of<std::string>("6.6.6.6")("7.7.7.7")))
-        (Fred::DnsHost("test2dns.cz", Util::vector_of<std::string>("6.6.6.6")("7.7.7.7")));
+        (Fred::DnsHost("test1dns.cz", Util::vector_of<address>(address::from_string("6.6.6.6"))(address::from_string("7.7.7.7"))))
+        (Fred::DnsHost("test2dns.cz", Util::vector_of<address>(address::from_string("6.6.6.6"))(address::from_string("7.7.7.7"))));
     d.tech_check_level = 2;
 
     Fred::InfoNssetOutput i;
@@ -561,13 +565,14 @@ BOOST_AUTO_TEST_CASE(info_nsset)
  */
 BOOST_AUTO_TEST_CASE(update_nsset)
 {
+    using boost::asio::ip::address;
     printable_test(
     Fred::UpdateNsset("TEST-NSSET-HANDLE", "REGISTRAR-TEST-HANDLE")
     .add_tech_contact("tech1")
     .add_tech_contact("tech2")
     .add_tech_contact("tech3")
-    .add_dns(Fred::DnsHost("test1dns.cz", Util::vector_of<std::string>("6.6.6.6")("7.7.7.7")))
-    .add_dns(Fred::DnsHost("test2dns.cz", Util::vector_of<std::string>("6.6.6.6")("7.7.7.7")))
+    .add_dns(Fred::DnsHost("test1dns.cz", Util::vector_of<address>(address::from_string("6.6.6.6"))(address::from_string("7.7.7.7"))))
+    .add_dns(Fred::DnsHost("test2dns.cz", Util::vector_of<address>(address::from_string("6.6.6.6"))(address::from_string("7.7.7.7"))))
     .rem_dns("test1dns.cz")
     .set_tech_check_level(2)
     .set_authinfo("testauthinfo").set_logd_request_id(0)

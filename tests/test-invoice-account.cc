@@ -328,6 +328,7 @@ BOOST_AUTO_TEST_CASE(archiveAccountInvoice)
 
         try
         {//create domain
+            using boost::asio::ip::address;
 
             for(unsigned long long i = 0; i < 3 ; ++i)
             {
@@ -360,8 +361,8 @@ BOOST_AUTO_TEST_CASE(archiveAccountInvoice)
                 test_nsset_handle += time_string;
                 Fred::CreateNsset(test_nsset_handle, registrar_handle)
                    .set_dns_hosts(Util::vector_of<Fred::DnsHost>
-                       (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.3")("127.1.1.3"))) //add_dns
-                       (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.4")("127.1.1.4"))) //add_dns
+                       (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<address>(address::from_string("127.0.0.3"))(address::from_string("127.1.1.3")))) //add_dns
+                       (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<address>(address::from_string("127.0.0.4"))(address::from_string("127.1.1.4")))) //add_dns
                        )
                        .set_tech_contacts(Util::vector_of<std::string>(admin_contact2_handle))
                        .exec(ctx);
