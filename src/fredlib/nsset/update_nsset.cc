@@ -117,6 +117,8 @@ namespace Fred
 
     unsigned long long UpdateNsset::exec(OperationContext& ctx)
     {
+        using boost::asio::ip::address;
+
         unsigned long long history_id = 0;
 
         try
@@ -313,9 +315,9 @@ namespace Fred
                         throw;
                 }
 
-                std::vector<std::string> dns_host_ip = i->get_inet_addr();
+                std::vector<address> dns_host_ip = i->get_inet_addr();
 
-                for(std::vector<std::string>::iterator j = dns_host_ip.begin(); j != dns_host_ip.end(); ++j)
+                for(std::vector<address>::iterator j = dns_host_ip.begin(); j != dns_host_ip.end(); ++j)
                 {
                     try
                     {
@@ -323,7 +325,7 @@ namespace Fred
                         ctx.get_conn().exec_params(
                         "INSERT INTO host_ipaddr_map (hostid, nssetid, ipaddr) "
                         " VALUES($1::integer, $2::integer, $3::inet)"
-                        , Database::query_param_list(add_host_id)(nsset_id)(*j));
+                        , Database::query_param_list(add_host_id)(nsset_id)(j->to_string()));
                         ctx.get_conn().exec("RELEASE SAVEPOINT add_dns_host_ipaddr");
                     }
                     catch(const std::exception& ex)
@@ -331,7 +333,7 @@ namespace Fred
                         std::string what_string(ex.what());
                         if(what_string.find("syntax for type inet") != std::string::npos)
                         {
-                            update_nsset_exception.add_invalid_dns_host_ipaddr(*j);
+                            update_nsset_exception.add_invalid_dns_host_ipaddr(j->to_string());
                             ctx.get_conn().exec("ROLLBACK TO SAVEPOINT add_dns_host_ipaddr");
                         }
                         else
