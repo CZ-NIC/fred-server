@@ -559,6 +559,7 @@ namespace Registry
              * Get domain list.
              * Get list of domains registered or administered by user contact except the case when nsset id or keyset id (or both) is set.
              * @param user_contact_id contains database id of the user contact
+             * @param list_domains_for_contact_id if set list domains linked to contact with given id regardless of user contact relation to listed domains
              * @param list_domains_for_nsset_id if set list domains linked to nsset with given id regardless of user contact relation to listed domains
              * @param list_domains_for_keyset_id if set list domains linked to keyset with given id regardless of user contact relation to listed domains
              * @param lang contains language for state description "EN" or "CS"
@@ -567,6 +568,7 @@ namespace Registry
              * @return limit_exceeded flag
              */
             bool getDomainList(unsigned long long user_contact_id,
+                const Optional<unsigned long long>& list_domains_for_contact_id,
                 const Optional<unsigned long long>& list_domains_for_nsset_id,
                 const Optional<unsigned long long>& list_domains_for_keyset_id,
                 const std::string& lang,
@@ -577,12 +579,14 @@ namespace Registry
              * Get nsset list.
              * Get list of nssets administered by user contact.
              * @param user_contact_id contains database id of the user contact
+             * @param list_nssets_for_contact_id if set list nssets linked to contact with given id regardless of user contact relation to listed nssets
              * @param lang contains language for state description "EN" or "CS"
              * @param offset contains list offset
              * @param  nsset_list_out references output nsset list
              * @return limit_exceeded flag
              */
             bool getNssetList(unsigned long long user_contact_id,
+                const Optional<unsigned long long>& list_nssets_for_contact_id,
                 const std::string& lang,
                 unsigned long long offset,
                 std::vector<std::vector<std::string> >& nsset_list_out);
@@ -591,12 +595,14 @@ namespace Registry
              * Get keyset list.
              * Get list of keysets administered by user contact.
              * @param user_contact_id contains database id of the user contact
+             * @param list_keysets_for_contact_id if set list keysets linked to contact with given id regardless of user contact relation to listed keysets
              * @param lang contains language for state description "EN" or "CS"
              * @param offset contains list offset
              * @param  keyset_list_out references output keyset list
              * @return limit_exceeded flag
              */
             bool getKeysetList(unsigned long long user_contact_id,
+                const Optional<unsigned long long>& list_keysets_for_contact_id,
                 const std::string& lang,
                 unsigned long long offset,
                 std::vector<std::vector<std::string> >& keyset_list_out);
