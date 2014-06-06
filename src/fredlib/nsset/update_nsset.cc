@@ -117,7 +117,7 @@ namespace Fred
 
     unsigned long long UpdateNsset::exec(OperationContext& ctx)
     {
-        using boost::asio::ip::address;
+        namespace ip = boost::asio::ip;
 
         unsigned long long history_id = 0;
 
@@ -315,9 +315,9 @@ namespace Fred
                         throw;
                 }
 
-                std::vector<address> dns_host_ip = i->get_inet_addr();
+                std::vector<ip::address> dns_host_ip = i->get_inet_addr();
 
-                for(std::vector<address>::iterator j = dns_host_ip.begin(); j != dns_host_ip.end(); ++j)
+                for(std::vector<ip::address>::iterator j = dns_host_ip.begin(); j != dns_host_ip.end(); ++j)
                 {
                     try
                     {

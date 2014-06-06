@@ -112,7 +112,7 @@ struct check_handle_fixture
     , test_keyset_handle ( std::string("TEST-KEYSET-")+xmark+"-HANDLE")
     , test_keyset_handle_rem ( std::string("TEST-KEYSET-")+xmark+"-HANDLE-REM")
     {
-        using boost::asio::ip::address;
+        namespace ip = boost::asio::ip;
 
         Fred::OperationContext ctx;
         registrar_handle = static_cast<std::string>(ctx.get_conn().exec(
@@ -140,15 +140,15 @@ struct check_handle_fixture
         Fred::CreateNsset(test_nsset_handle, registrar_handle)
             .set_tech_contacts(Util::vector_of<std::string>(admin_contact_handle))
             .set_dns_hosts(Util::vector_of<Fred::DnsHost>
-                (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<address>(address::from_string("127.0.0.3"))(address::from_string("127.1.1.3")))) //add_dns
-                (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<address>(address::from_string("127.0.0.4"))(address::from_string("127.1.1.4")))) //add_dns
+                (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<ip::address>(ip::address::from_string("127.0.0.3"))(ip::address::from_string("127.1.1.3")))) //add_dns
+                (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<ip::address>(ip::address::from_string("127.0.0.4"))(ip::address::from_string("127.1.1.4")))) //add_dns
                 ).exec(ctx);
 
         Fred::CreateNsset(test_nsset_handle_rem, registrar_handle)
             .set_tech_contacts(Util::vector_of<std::string>(admin_contact_handle))
             .set_dns_hosts(Util::vector_of<Fred::DnsHost>
-                (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<address>(address::from_string("127.0.0.3"))(address::from_string("127.1.1.3")))) //add_dns
-                (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<address>(address::from_string("127.0.0.4"))(address::from_string("127.1.1.4")))) //add_dns
+                (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<ip::address>(ip::address::from_string("127.0.0.3"))(ip::address::from_string("127.1.1.3")))) //add_dns
+                (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<ip::address>(ip::address::from_string("127.0.0.4"))(ip::address::from_string("127.1.1.4")))) //add_dns
                 ).exec(ctx);
 
         Fred::DeleteNssetByHandle(test_nsset_handle_rem).exec(ctx);
