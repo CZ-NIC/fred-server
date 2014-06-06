@@ -17,7 +17,7 @@
  */
 
 /**
- *  @domain_browser.h
+ *  @file
  *  header of domain browser implementation
  */
 

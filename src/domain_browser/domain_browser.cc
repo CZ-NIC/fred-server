@@ -17,7 +17,7 @@
  */
 
 /**
- *  file@
+ *  @file
  *  domain browser implementation
  */
 
@@ -884,7 +884,7 @@ namespace Registry
                     throw ObjectBlocked();
                 }
 
-                if(contact_info.info_contact_data.authinfopw.compare(authinfo) == 0)
+                if(contact_info.info_contact_data.authinfopw == authinfo)
                 {
                     return false;
                 }
@@ -939,7 +939,7 @@ namespace Registry
                 std::set<std::pair<unsigned long long, std::string> > object_id_name_pairs;
 
                 //check contact object type
-                if(objtype.compare("contact") == 0)
+                if(objtype == "contact")
                 {
                     throw IncorrectUsage();//contact is not valid object type in this use case
                 }
@@ -951,19 +951,17 @@ namespace Registry
 
                     params.push_back(object_type_id);//$1
                     params.push_back(user_contact_id);//$2
-                    if(objtype.compare("nsset") == 0)//user have to be tech contact
+                    if(objtype == "nsset")//user have to be tech contact
                     {
                         object_sql << " JOIN nsset_contact_map map ON map.nssetid = oreg.id AND map.contactid = $"
                                 << params.size() << "::bigint ";
                     }
-                    else if(objtype.compare("domain") == 0)//user have to be admin contact or registrant
+                    else if(objtype == "domain")//user have to be admin contact or registrant
                     {
-                        object_sql << " LEFT JOIN domain_contact_map map ON map.domainid = oreg.id"
-                            " JOIN domain d ON oreg.id = d.id"
-                            " AND ( map.contactid = $" << params.size() << "::bigint"
-                            " OR d.registrant = $" << params.size() << "::bigint) ";
+                        object_sql << " LEFT JOIN domain d ON oreg.id = d.id AND d.registrant = $" << params.size() << "::bigint "
+                            " LEFT JOIN domain_contact_map map ON map.domainid = oreg.id AND map.contactid = $" << params.size() << "::bigint ";
                     }
-                    else if(objtype.compare("keyset") == 0)//user have to be tech contact
+                    else if(objtype == "keyset")//user have to be tech contact
                     {
                         object_sql << " JOIN keyset_contact_map map ON map.keysetid = oreg.id AND map.contactid = $"
                                 << params.size() << "::bigint ";
@@ -973,7 +971,14 @@ namespace Registry
                         throw InternalServerError();//unknown object type, should'v been checked before
                     }
 
-                    object_sql << " WHERE oreg.type = $1::integer AND oreg.erdate IS NULL AND (";
+                    object_sql << " WHERE oreg.type = $1::integer AND oreg.erdate IS NULL ";
+
+                    if(objtype == "domain")//user have to be admin contact or registrant
+                    {
+                        object_sql << " AND (d.id IS NOT NULL OR map.domainid IS NOT NULL) ";
+                    }
+
+                    object_sql << " AND (";
 
                     Util::HeadSeparator or_separator(""," OR ");
                     for(std::set<unsigned long long>::const_iterator ci = object_id_set.begin(); ci != object_id_set.end(); ++ci)

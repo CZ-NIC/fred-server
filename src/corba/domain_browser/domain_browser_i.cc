@@ -717,7 +717,7 @@ namespace Registry
         {
             try
             {
-                if(std::string("contact").compare(objtype) != 0)
+                if(std::string("contact") != objtype)
                 {
                     throw Registry::DomainBrowserImpl::IncorrectUsage();
                 }
