@@ -351,11 +351,11 @@ namespace Fred
                         dns_host_id, info_nsset_output.info_nsset_data.historyid );
 
                 Database::Result dns_ip_res = ctx.get_conn().exec_params(dns_ip_query.first, dns_ip_query.second);
-                std::vector<std::string> dns_ip;
+                std::vector<boost::asio::ip::address> dns_ip;
                 dns_ip.reserve(dns_ip_res.size());
                 for(Database::Result::size_type k = 0; k < dns_ip_res.size(); ++k)
                 {
-                    dns_ip.push_back(static_cast<std::string>(dns_ip_res[k][0]));
+                    dns_ip.push_back(boost::asio::ip::address::from_string(static_cast<std::string>(dns_ip_res[k][0])));
                 }
                 info_nsset_output.info_nsset_data.dns_hosts.push_back(DnsHost(dns_host_fqdn, dns_ip));
             }

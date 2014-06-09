@@ -234,10 +234,12 @@ struct merge_contact_domain_fixture
     , test_domain_owner_handle (std::string("mergecontactowner")+xmark+".cz")
     , test_domain_admin_handle (std::string("mergecontactadmin")+xmark+".cz")
     {
+        namespace ip = boost::asio::ip;
+
         Fred::CreateNsset(test_nsset_handle, registrar_handle)
             .set_dns_hosts(Util::vector_of<Fred::DnsHost>
-                (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.3")("127.1.1.3"))) //add_dns
-                (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.4")("127.1.1.4"))) //add_dns
+                (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<ip::address>(ip::address::from_string("127.0.0.3"))(ip::address::from_string("127.1.1.3")))) //add_dns
+                (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<ip::address>(ip::address::from_string("127.0.0.4"))(ip::address::from_string("127.1.1.4")))) //add_dns
                 )
                 .set_tech_contacts(Util::vector_of<std::string>(src_contact_handle))
                 .exec(ctx);
@@ -284,12 +286,13 @@ struct merge_contact_n_nsset_fixture
     : nsset_count(n)
     , test_nsset_handle(std::string("TEST-MC-NSSET-HANDLE")+xmark+"_")
     {
+        namespace ip = boost::asio::ip;
         for(int i = 0 ; i < nsset_count; ++i)
         {
             Fred::CreateNsset(get_handle(i), registrar_handle)
             .set_dns_hosts(Util::vector_of<Fred::DnsHost>
-                (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.3")("127.1.1.3"))) //add_dns
-                (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.4")("127.1.1.4"))) //add_dns
+                (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<ip::address>(ip::address::from_string("127.0.0.3"))(ip::address::from_string("127.1.1.3")))) //add_dns
+                (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<ip::address>(ip::address::from_string("127.0.0.4"))(ip::address::from_string("127.1.1.4")))) //add_dns
                 )
                 .set_tech_contacts(Util::vector_of<std::string>(src_contact_handle))
                 .exec(ctx);
@@ -316,12 +319,14 @@ struct merge_contact_r_nsset_fixture
     : nsset_count(n)
     , test_nsset_handle(std::string("TEST-MC-R-NSSET-HANDLE")+xmark+"_")
     {
+        namespace ip = boost::asio::ip;
+
         for(int i = 0 ; i < nsset_count; ++i)
         {
             Fred::CreateNsset(get_handle(i), registrar_handle)
             .set_dns_hosts(Util::vector_of<Fred::DnsHost>
-                (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.3")("127.1.1.3"))) //add_dns
-                (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.4")("127.1.1.4"))) //add_dns
+                (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<ip::address>(ip::address::from_string("127.0.0.3"))(ip::address::from_string("127.1.1.3")))) //add_dns
+                (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<ip::address>(ip::address::from_string("127.0.0.4"))(ip::address::from_string("127.1.1.4")))) //add_dns
                 )
                 .set_tech_contacts(Util::vector_of<std::string>(dst_contact_handle))
                 .exec(ctx);
@@ -1381,12 +1386,14 @@ struct merge_tech_contact_nsset_fixture
     merge_tech_contact_nsset_fixture()
     : test_nsset_handle(std::string("TEST-MC-TECH-NSSET-HANDLE")+xmark)
     {
+        namespace ip = boost::asio::ip;
+
         Fred::OperationContext ctx;
 
         Fred::CreateNsset(test_nsset_handle, registrar_handle)
             .set_dns_hosts(Util::vector_of<Fred::DnsHost>
-                (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.3")("127.1.1.3"))) //add_dns
-                (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.4")("127.1.1.4"))) //add_dns
+                (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<ip::address>(ip::address::from_string("127.0.0.3"))(ip::address::from_string("127.1.1.3")))) //add_dns
+                (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<ip::address>(ip::address::from_string("127.0.0.4"))(ip::address::from_string("127.1.1.4")))) //add_dns
                 )
                 .set_tech_contacts(Util::vector_of<std::string>(contact_handle_1)(contact_handle_2))
                 .exec(ctx);
@@ -1433,12 +1440,14 @@ struct merge_admin_contact_domain_fixture
     , test_keyset_handle (std::string("TEST-MC-ADMIN-KEYSET-HANDLE")+xmark)
     , test_domain_handle(std::string("testmerge-admins"+xmark+".cz"))
     {
+        namespace ip = boost::asio::ip;
+
         Fred::OperationContext ctx;
 
         Fred::CreateNsset(test_nsset_handle, registrar_handle)
             .set_dns_hosts(Util::vector_of<Fred::DnsHost>
-                (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.3")("127.1.1.3"))) //add_dns
-                (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.4")("127.1.1.4"))) //add_dns
+                (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<ip::address>(ip::address::from_string("127.0.0.3"))(ip::address::from_string("127.1.1.3")))) //add_dns
+                (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<ip::address>(ip::address::from_string("127.0.0.4"))(ip::address::from_string("127.1.1.4")))) //add_dns
                 )
                 .set_tech_contacts(Util::vector_of<std::string>(contact_handle_1))
                 .exec(ctx);

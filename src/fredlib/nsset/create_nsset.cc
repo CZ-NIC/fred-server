@@ -165,9 +165,9 @@ namespace Fred
                                 throw;
                         }
 
-                        std::vector<std::string> dns_host_ip = i->get_inet_addr();
+                        std::vector<boost::asio::ip::address> dns_host_ip = i->get_inet_addr();
 
-                        for(std::vector<std::string>::iterator j = dns_host_ip.begin(); j != dns_host_ip.end(); ++j)
+                        for(std::vector<boost::asio::ip::address>::iterator j = dns_host_ip.begin(); j != dns_host_ip.end(); ++j)
                         {
                             try
                             {
@@ -183,7 +183,7 @@ namespace Fred
                                 std::string what_string(ex.what());
                                 if(what_string.find("syntax for type inet") != std::string::npos)
                                 {
-                                    create_nsset_exception.add_invalid_dns_host_ipaddr(*j);
+                                    create_nsset_exception.add_invalid_dns_host_ipaddr(j->to_string());
                                     ctx.get_conn().exec("ROLLBACK TO SAVEPOINT dnshostipaddr");
                                 }
                                 else
