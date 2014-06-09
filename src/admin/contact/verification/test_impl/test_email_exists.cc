@@ -54,7 +54,7 @@ namespace ContactVerification {
         }
 
         unsigned char* buffer_ptr;
-        const unsigned int buffer_length = 100;
+        static const unsigned int buffer_length = 1;
 
         try {
             buffer_ptr = new unsigned char[buffer_length];
