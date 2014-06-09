@@ -36,18 +36,17 @@ namespace ContactVerification {
 
     Test::T_run_result TestEmailExists::run(unsigned long long _history_id) const {
         using std::string;
-        using std::vector;
 
         TestDataProvider<TestEmailExists> data;
         data.init_data(_history_id);
 
-        std::string email = boost::trim_copy(static_cast<std::string>(data.email_));
+        string email = boost::trim_copy(static_cast<string>(data.email_));
 
         if(email.empty()) {
             return make_result( Fred::ContactTestStatus::FAIL, string("empty email") );
         }
 
-        std::string host;
+        string host;
         try {
             host = email.substr(email.find('@') + 1);   // +1 <=> cut the '@' as well
         } catch(...) {
