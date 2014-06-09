@@ -82,7 +82,6 @@ namespace ContactVerificationQueue {
     ) {
         using std::string;
         using std::vector;
-        using std::set;
 
         vector<string> joins;
         vector<string> conditions;
@@ -139,7 +138,6 @@ namespace ContactVerificationQueue {
     ) {
         using std::string;
         using std::vector;
-        using std::set;
 
         // create temporary view for filtered contact ids
         vector<string> joins;
