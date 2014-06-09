@@ -60,7 +60,7 @@ namespace AdminContactVerificationObjectStates
     static void cancel_states(
         Fred::OperationContext&         _ctx,
         unsigned long long              _contact_id,
-        const std::vector<std::string>  _states
+        const std::vector<std::string>&  _states
     ) {
         _ctx.get_conn().exec("SAVEPOINT state_savepoint");
 
