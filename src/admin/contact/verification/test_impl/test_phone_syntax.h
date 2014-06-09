@@ -59,7 +59,7 @@ namespace ContactVerification
         std::string phone_;
 
         virtual void store_data(const Fred::InfoContactOutput& _data) {
-            if(_data.info_contact_data.telephone.isnull() == false) {
+            if( !_data.info_contact_data.telephone.isnull() ) {
                 phone_ = _data.info_contact_data.telephone.get_value_or_default();
             }
         }

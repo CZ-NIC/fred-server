@@ -79,7 +79,7 @@ namespace AdminContactVerificationObjectStates
                  _ctx.get_conn().exec("SAVEPOINT state_savepoint");
              } catch(Fred::CancelObjectStateRequestId::Exception& e) {
                  // in case it throws with unknown cause
-                 if(e.is_set_state_not_found() == false) {
+                 if(!e.is_set_state_not_found()) {
                      throw;
                  } else {
                      _ctx.get_conn().exec("ROLLBACK TO state_savepoint");

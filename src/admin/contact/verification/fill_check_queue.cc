@@ -97,7 +97,7 @@ namespace ContactVerificationQueue {
             );
         }
 
-        if(_filter.states.empty() == false) {
+        if( !_filter.states.empty() ) {
             joins.push_back("JOIN object_state AS o_s ON o_s.object_id = "+_contact_alias+".id");
             joins.push_back("JOIN enum_object_states AS enum_o_s ON o_s.state_id = enum_o_s.id");
             conditions.push_back(
@@ -109,7 +109,7 @@ namespace ContactVerificationQueue {
             conditions.push_back("o_s.valid_to IS NULL");
         }
 
-        if(_filter.roles.empty() == false) {
+        if( !_filter.roles.empty() ) {
             if(_filter.roles.count(owner) == 1) {
                 joins.push_back("JOIN domain AS d ON d.registrant = "+_contact_alias+".id");
             }
@@ -364,7 +364,7 @@ namespace ContactVerificationQueue {
                 filter_
             );
 
-            if(to_enqueue_oldest_checked.empty() == false) {
+            if( !to_enqueue_oldest_checked.empty() ) {
 
                 for(std::vector<unsigned long long>::const_iterator contact_id_it = to_enqueue_oldest_checked.begin();
                     contact_id_it != to_enqueue_oldest_checked.end();

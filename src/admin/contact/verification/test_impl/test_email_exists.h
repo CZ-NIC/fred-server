@@ -51,7 +51,7 @@ namespace ContactVerification
         std::string email_;
 
         virtual void store_data(const Fred::InfoContactOutput& _data) {
-            if(_data.info_contact_data.email.isnull() == false) {
+            if( !_data.info_contact_data.email.isnull() ) {
                 email_ = _data.info_contact_data.email.get_value_or_default();
             }
         }

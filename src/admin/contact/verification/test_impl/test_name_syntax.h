@@ -52,7 +52,7 @@ namespace ContactVerification
         std::string name_;
 
         virtual void store_data(const Fred::InfoContactOutput& _data) {
-            if(_data.info_contact_data.name.isnull() == false) {
+            if( !_data.info_contact_data.name.isnull() ) {
                 name_ = _data.info_contact_data.name.get_value_or_default();
             }
         }
