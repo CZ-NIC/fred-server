@@ -54,8 +54,10 @@ namespace ContactVerification {
         }
 
         unsigned char* buffer_ptr;
+        const unsigned int buffer_length = 100;
+
         try {
-            buffer_ptr = new unsigned char[100];
+            buffer_ptr = new unsigned char[buffer_length];
         } catch(const std::exception&) {
             return make_result( Fred::ContactTestStatus::ERROR, string("runtime error") );
         }
@@ -68,7 +70,7 @@ namespace ContactVerification {
             C_IN,
             T_MX,
             buffer_scoped.get(),
-            100
+            buffer_length
         );
 
         if(result_len != -1) {
@@ -76,13 +78,13 @@ namespace ContactVerification {
         }
 
         // fallback to A record test
-        memset(buffer_scoped.get(), 0, 100);
+        memset(buffer_scoped.get(), 0, buffer_length);
         result_len = res_query(
             host.c_str(),
             C_IN,
             T_A,
             buffer_scoped.get(),
-            100
+            buffer_length
         );
 
         if(result_len != -1) {
