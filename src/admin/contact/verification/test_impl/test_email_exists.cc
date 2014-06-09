@@ -43,7 +43,7 @@ namespace ContactVerification {
 
         std::string email = boost::trim_copy(static_cast<std::string>(data.email_));
 
-        if(email.length() == 0) {
+        if(email.empty()) {
             return make_result( Fred::ContactTestStatus::FAIL, string("empty email") );
         }
 
