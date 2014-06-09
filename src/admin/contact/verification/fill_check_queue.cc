@@ -40,8 +40,8 @@ namespace ContactVerificationQueue {
         if(_in == "admin_c") {
             return admin_c;
         }
-        if(_in == "admin_c") {
-            return admin_c;
+        if(_in == "tech_c") {
+            return tech_c;
         }
 
         throw Fred::InternalError(std::string("unknown role (") + _in + ")");
