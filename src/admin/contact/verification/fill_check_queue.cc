@@ -197,7 +197,7 @@ namespace ContactVerificationQueue {
                         "SELECT contact_id_ AS id from temp_filter "
                         "EXCEPT "
                         "SELECT contact_id_ AS id from temp_already_checked "
-                    ") as filter ON o_r.id = filter.id "
+                    ") AS filter ON o_r.id = filter.id "
                 "WHERE NOT " + is_contact_mojeid_query("o_r.id") + " "
                     "AND NOT EXISTS (SELECT * FROM temp_with_active_check AS temp_u_e WHERE temp_u_e.contact_id_ = o_r.id ) "
                 "LIMIT $1::integer "
