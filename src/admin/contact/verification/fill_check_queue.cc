@@ -148,7 +148,7 @@ namespace ContactVerificationQueue {
         set_contact_filter_query(_filter, "c", joins, conditions);
 
         std::string joined_conditions = boost::algorithm::join(conditions, ") AND (" );
-        if(joined_conditions.length() > 0) {
+        if( !joined_conditions.empty() ) {
             joined_conditions = " WHERE (" + joined_conditions + ")";
         }
 
