@@ -461,6 +461,13 @@ namespace Registry
                     unsigned int contact_list_limit);
             virtual ~DomainBrowser();
 
+            /**
+             * Gets database id of the object.
+             * @param objtype is type of the object from table enum_object_type
+             * @param handle is object registry handle of the object
+             * @return object database id
+             * @throw @ref IncorrectUsage if objype not found, @ref ObjectNotExists if object with given type not found or anything else in case of failure
+             */
             unsigned long long getObjectRegistryId(const std::string& objtype, const std::string& handle);
 
             /**
@@ -556,8 +563,7 @@ namespace Registry
                 std::vector<std::string>& blocked_objects);
 
             /**
-             * Get domain list.
-             * Get list of domains registered or administered by user contact except the case when nsset id or keyset id (or both) is set.
+             * Get list of domains registered or administered by user contact except the case when contact id, nsset id or keyset id (or all of them) is set.
              * @param user_contact_id contains database id of the user contact
              * @param list_domains_for_contact_id if set list domains linked to contact with given id regardless of user contact relation to listed domains
              * @param list_domains_for_nsset_id if set list domains linked to nsset with given id regardless of user contact relation to listed domains
@@ -576,7 +582,6 @@ namespace Registry
                 std::vector<std::vector<std::string> >& domain_list_out);
 
             /**
-             * Get nsset list.
              * Get list of nssets administered by user contact.
              * @param user_contact_id contains database id of the user contact
              * @param list_nssets_for_contact_id if set list nssets linked to contact with given id regardless of user contact relation to listed nssets
@@ -592,7 +597,6 @@ namespace Registry
                 std::vector<std::vector<std::string> >& nsset_list_out);
 
             /**
-             * Get keyset list.
              * Get list of keysets administered by user contact.
              * @param user_contact_id contains database id of the user contact
              * @param list_keysets_for_contact_id if set list keysets linked to contact with given id regardless of user contact relation to listed keysets
@@ -616,7 +620,6 @@ namespace Registry
                 std::vector<std::string>& status_description_out);
 
             /**
-             * Get contact merge candidate list.
              * Get list of contacts mergeable to user contact.
              * @param user_contact_id contains database id of the user contact
              * @param offset contains list offset
@@ -628,13 +631,17 @@ namespace Registry
                 std::vector<std::vector<std::string> >& contact_list_out);
 
             /**
-             * Merge contacts.
              * Merge contact list to destination contact
              * @param dst_contact_id id of destination contact
+             * @param contact_list id list of source contacts
              */
             void mergeContacts(unsigned long long dst_contact_id,
                 const std::vector<unsigned long long>& contact_list);
 
+            /**
+             * Get server name
+             * @return name for logging context
+             */
             std::string get_server_name();
         };//class DomainBrowser
 
