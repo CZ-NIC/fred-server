@@ -44,7 +44,7 @@
 namespace Test = Fred::ContactTestStatus;
 namespace Check = Fred::ContactCheckStatus;
 
-typedef std::vector< boost::tuple<std::string, unsigned long long, unsigned long long> > T_enq_ch;
+typedef std::vector<Admin::ContactVerificationQueue::enqueued_check> T_enq_ch;
 typedef std::map<std::string, boost::shared_ptr<Admin::ContactVerification::Test> > T_testimpl_map;
 
 void clean_queue() {
@@ -356,7 +356,7 @@ BOOST_AUTO_TEST_CASE(test_Enqueueing_never_checked_contacts)
                 is_enqueued = false;
 
                 for(std::vector<unsigned long long>::const_iterator it_never_ch = _never_checked_contacts_ids.begin(); it_never_ch != _never_checked_contacts_ids.end(); ++it_never_ch) {
-                    if(it_enqueued->get<1>() == *it_never_ch) {
+                    if(it_enqueued->contact_id == *it_never_ch) {
                         is_enqueued = true;
                     }
                 }
@@ -376,7 +376,7 @@ BOOST_AUTO_TEST_CASE(test_Enqueueing_never_checked_contacts)
             }
 
             for(T_enq_ch::const_iterator it_enqueued = _enqueued_checks.begin(); it_enqueued != _enqueued_checks.end(); ++it_enqueued) {
-               never_checked_copy.erase(it_enqueued->get<1>());
+               never_checked_copy.erase(it_enqueued->contact_id);
             }
 
 
@@ -478,7 +478,7 @@ BOOST_AUTO_TEST_CASE(test_Enqueueing_already_checked_contacts)
         enqueued_checks.clear();
         enqueued_checks = Admin::ContactVerificationQueue::fill_check_queue(Fred::TestsuiteHandle::AUTOMATIC, i).exec();
         BOOST_CHECK_EQUAL(enqueued_checks.size(), 1);
-        BOOST_CHECK_EQUAL(enqueued_checks.back().get<1>(), *it_checked);
+        BOOST_CHECK_EQUAL(enqueued_checks.back().contact_id, *it_checked);
 
         ++it_checked;
     }
@@ -663,17 +663,17 @@ void process_filtered_contacts_testcase(
         }
     }
 
-    std::vector< boost::tuple<std::string, unsigned long long, unsigned long long> > enqueued_contacts;
+    T_enq_ch enqueued_contacts;
     enqueued_contacts = Admin::ContactVerificationQueue::fill_check_queue(Fred::TestsuiteHandle::AUTOMATIC, 10)
         .set_contact_filter(filter)
         .exec();
 
     std::set<unsigned long long> unique_enqueued_contacts;
-    for(std::vector< boost::tuple<std::string, unsigned long long, unsigned long long> >::const_iterator it = enqueued_contacts.begin();
+    for(T_enq_ch::const_iterator it = enqueued_contacts.begin();
         it != enqueued_contacts.end();
         ++it
     ) {
-        unique_enqueued_contacts.insert(it->get<1>());
+        unique_enqueued_contacts.insert(it->contact_id);
     }
 
     BOOST_CHECK_EQUAL(contacts_to_be_enqueued.size(), unique_enqueued_contacts.size());
