@@ -271,8 +271,6 @@ struct contact_verification_fill_queue_impl
       ContactVerificationFillQueueArgs params = CfgArgGroups::instance()
           ->get_handler_ptr_by_type<HandleContactVerificationFillQueueArgsGrp>()->params;
 
-      typedef boost::tuple<std::string, unsigned long long, unsigned long long> check_data_type;
-
       Admin::ContactVerificationQueue::contact_filter filter;
 
       if(params.contact_roles.empty() == false) {
@@ -301,7 +299,7 @@ struct contact_verification_fill_queue_impl
           filter.country_code = params.country_code;
       }
 
-      std::vector<check_data_type> enqueued_checks;
+      std::vector<Admin::ContactVerificationQueue::enqueued_check> enqueued_checks;
 
       enqueued_checks =
           Admin::ContactVerificationQueue::fill_check_queue(
@@ -314,11 +312,11 @@ struct contact_verification_fill_queue_impl
       if(enqueued_checks.size() > 0) {
           std::cout << "enqueued check handles:" << std::endl;
 
-          BOOST_FOREACH(const check_data_type& info, enqueued_checks) {
+          BOOST_FOREACH(const Admin::ContactVerificationQueue::enqueued_check& info, enqueued_checks) {
               std::cout
-                << "check handle: "         << info.get<0>() << "\t"
-                << "contact id: "           << info.get<1>() << "\t"
-                << "contact history id: "   << info.get<2>() << std::endl;
+                << "check handle: "         << info.handle << "\t"
+                << "contact id: "           << info.contact_id << "\t"
+                << "contact history id: "   << info.contact_history_id << std::endl;
           }
       } else {
           std::cout << "no checks enqueued" << std::endl;

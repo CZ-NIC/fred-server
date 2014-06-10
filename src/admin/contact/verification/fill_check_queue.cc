@@ -47,6 +47,16 @@ namespace ContactVerificationQueue {
         throw Fred::InternalError(std::string("unknown role (") + _in + ")");
     }
 
+    enqueued_check::enqueued_check(
+        const std::string&  _handle,
+        unsigned long long  _contact_id,
+        unsigned long long  _contact_history_id
+    ) :
+        handle(_handle),
+        contact_id(_contact_id),
+        contact_history_id(_contact_history_id)
+    { }
+
     static std::string is_contact_mojeid_query(std::string contact_id_column) {
         return
             "EXISTS ( "
@@ -283,7 +293,7 @@ namespace ContactVerificationQueue {
         return *this;
     }
 
-    std::vector< boost::tuple<std::string, unsigned long long, unsigned long long> > fill_check_queue::exec() {
+    std::vector<enqueued_check> fill_check_queue::exec() {
         Logging::Context log("fill_check_queue::exec");
 
         Fred::OperationContext ctx1;
@@ -310,7 +320,7 @@ namespace ContactVerificationQueue {
 
         int checks_to_enqueue_count = static_cast<int>(max_queue_length_) - static_cast<int>(queue_count_res[0]["count_"]);
 
-        std::vector< boost::tuple<std::string, unsigned long long, unsigned long long> > result;
+        std::vector<enqueued_check> result;
 
         std::vector<unsigned long long> to_enqueue_never_checked;
         std::string temp_handle;
@@ -337,7 +347,7 @@ namespace ContactVerificationQueue {
                 Fred::InfoContactCheckOutput info = Fred::InfoContactCheck(uuid::from_string(temp_handle)).exec(ctx1);
 
                 result.push_back(
-                    boost::make_tuple(
+                    enqueued_check(
                         temp_handle,
                         contact_id,
                         info.contact_history_id
@@ -388,7 +398,7 @@ namespace ContactVerificationQueue {
                     Fred::InfoContactCheckOutput info = Fred::InfoContactCheck(uuid::from_string(temp_handle)).exec(ctx2);
 
                     result.push_back(
-                        boost::make_tuple(
+                        enqueued_check(
                             temp_handle,
                             *contact_id_it,
                             info.contact_history_id
