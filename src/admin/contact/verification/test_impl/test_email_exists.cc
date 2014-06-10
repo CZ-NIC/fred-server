@@ -34,7 +34,7 @@ namespace ContactVerification {
 
     FACTORY_MODULE_INIT_DEFI(TestEmailExists_init)
 
-    Test::T_run_result TestEmailExists::run(unsigned long long _history_id) const {
+    Test::TestRunResult TestEmailExists::run(unsigned long long _history_id) const {
         using std::string;
 
         TestDataProvider<TestEmailExists> data;
@@ -43,14 +43,14 @@ namespace ContactVerification {
         string email = boost::trim_copy(static_cast<string>(data.email_));
 
         if(email.empty()) {
-            return make_result( Fred::ContactTestStatus::FAIL, string("empty email") );
+            return TestRunResult( Fred::ContactTestStatus::FAIL, string("empty email") );
         }
 
         string host;
         try {
             host = email.substr(email.find('@') + 1);   // +1 <=> cut the '@' as well
         } catch(...) {
-            return make_result( Fred::ContactTestStatus::FAIL, string("invalid email format") );
+            return TestRunResult( Fred::ContactTestStatus::FAIL, string("invalid email format") );
         }
 
         unsigned char* buffer_ptr;
@@ -59,7 +59,7 @@ namespace ContactVerification {
         try {
             buffer_ptr = new unsigned char[buffer_length];
         } catch(const std::exception&) {
-            return make_result( Fred::ContactTestStatus::ERROR, string("runtime error") );
+            return TestRunResult( Fred::ContactTestStatus::ERROR, string("runtime error") );
         }
         boost::scoped_array<unsigned char> buffer_scoped(buffer_ptr);
         buffer_ptr = NULL;
@@ -74,7 +74,7 @@ namespace ContactVerification {
         );
 
         if(result_len != -1) {
-            return make_result( Fred::ContactTestStatus::OK);
+            return TestRunResult( Fred::ContactTestStatus::OK);
         }
 
         // fallback to A record test
@@ -88,10 +88,10 @@ namespace ContactVerification {
         );
 
         if(result_len != -1) {
-            return make_result( Fred::ContactTestStatus::OK);
+            return TestRunResult( Fred::ContactTestStatus::OK);
         }
 
-        return make_result( Fred::ContactTestStatus::FAIL, string("hostname in email couldn't be resolved") );
+        return TestRunResult( Fred::ContactTestStatus::FAIL, string("hostname in email couldn't be resolved") );
     }
 }
 }

@@ -292,21 +292,21 @@ namespace  Admin {
         std::set<unsigned long long>&               _related_message_ids,
         Optional<unsigned long long>  _logd_request_id
     ) {
-        ContactVerification::Test::T_run_result temp_result = _tests.at(_test_handle)->run(Fred::InfoContactCheck(_check_handle).exec(ctx).contact_history_id);
+        ContactVerification::Test::TestRunResult temp_result = _tests.at(_test_handle)->run(Fred::InfoContactCheck(_check_handle).exec(ctx).contact_history_id);
 
         Fred::UpdateContactTest(
             _check_handle,
             _test_handle,
-            temp_result.get<0>(),
+            temp_result.status,
             _logd_request_id,
-            temp_result.get<1>()
+            temp_result.error_message
         ).exec(ctx);
 
-        _related_mail_ids.insert(temp_result.get<2>().begin(), temp_result.get<2>().end());
-        _related_message_ids.insert(temp_result.get<3>().begin(), temp_result.get<3>().end());
+        _related_mail_ids.insert(temp_result.related_mail_archive_ids.begin(), temp_result.related_mail_archive_ids.end());
+        _related_message_ids.insert(temp_result.related_message_archive_ids.begin(), temp_result.related_message_archive_ids.end());
 
-        if( temp_result.get<0>() == Fred::ContactTestStatus::ENQUEUED
-            || temp_result.get<0>() == Fred::ContactTestStatus::RUNNING
+        if( temp_result.status == Fred::ContactTestStatus::ENQUEUED
+            || temp_result.status == Fred::ContactTestStatus::RUNNING
         ) {
             throw Fred::InternalError("malfunction in implementation of test " + _test_handle + ", run() returned bad status");
         }

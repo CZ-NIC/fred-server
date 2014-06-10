@@ -31,14 +31,14 @@ namespace ContactVerification {
 
     FACTORY_MODULE_INIT_DEFI(TestPhoneSyntax_init)
 
-    Test::T_run_result TestPhoneSyntax::run(unsigned long long _history_id) const {
+    Test::TestRunResult TestPhoneSyntax::run(unsigned long long _history_id) const {
         TestDataProvider<TestPhoneSyntax> data;
         data.init_data(_history_id);
 
         string trimmed_telephone =  boost::algorithm::trim_copy(static_cast<std::string>(data.phone_));
 
         if(trimmed_telephone.empty()) {
-            return make_result(Fred::ContactTestStatus::SKIPPED, string("optional telephone is empty") );
+            return TestRunResult(Fred::ContactTestStatus::SKIPPED, string("optional telephone is empty") );
         }
 
         if ( boost::regex_match(
@@ -46,10 +46,10 @@ namespace ContactVerification {
                 trimmed_telephone,
                 PHONE_PATTERN )
         ) {
-            return make_result(Fred::ContactTestStatus::OK );
+            return TestRunResult(Fred::ContactTestStatus::OK );
         }
 
-        return make_result(Fred::ContactTestStatus::FAIL, string("invalid phone format") );
+        return TestRunResult(Fred::ContactTestStatus::FAIL, string("invalid phone format") );
     }
 }
 }

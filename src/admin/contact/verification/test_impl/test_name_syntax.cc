@@ -28,16 +28,16 @@ namespace ContactVerification {
 
     FACTORY_MODULE_INIT_DEFI(TestNameSyntax_init)
 
-    Test::T_run_result TestNameSyntax::run(unsigned long long _history_id) const {
+    Test::TestRunResult TestNameSyntax::run(unsigned long long _history_id) const {
         TestDataProvider<TestNameSyntax> data;
         data.init_data(_history_id);
 
         string name =  boost::algorithm::trim_copy(static_cast<std::string>(data.name_));
 
         if( name.find(' ') == std::string::npos ) {
-            return make_result(Fred::ContactTestStatus::FAIL, string("name has to contain at least two words separated by space") );
+            return TestRunResult(Fred::ContactTestStatus::FAIL, string("name has to contain at least two words separated by space") );
         } else {
-            return make_result(Fred::ContactTestStatus::OK );
+            return TestRunResult(Fred::ContactTestStatus::OK );
         }
     }
 }

@@ -102,7 +102,7 @@ namespace ContactVerification
                 return *this;
             }
 
-            virtual T_run_result run(unsigned long long _history_id) const;
+            virtual TestRunResult run(unsigned long long _history_id) const;
             static std::string registration_name() { return "contactability"; }
     };
 

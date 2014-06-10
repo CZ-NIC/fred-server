@@ -84,7 +84,7 @@ namespace ContactVerification {
         xmlXPathFreeContext(xpathCtx_);
         xmlFreeDoc(doc_);
     }
-    Test::T_run_result TestCzAddress::run(unsigned long long _history_id) const {
+    Test::TestRunResult TestCzAddress::run(unsigned long long _history_id) const {
         using std::string;
         using std::vector;
 
@@ -95,7 +95,7 @@ namespace ContactVerification {
         string country =  boost::algorithm::to_lower_copy(data.country_);
 
         if(country != "cz") {
-            return T_run_result (Fred::ContactTestStatus::SKIPPED, string("this test is intended for CZ addresses only") );
+            return TestRunResult (Fred::ContactTestStatus::SKIPPED, string("this test is intended for CZ addresses only") );
         }
 
         // registry data
@@ -127,31 +127,31 @@ namespace ContactVerification {
                 city_shortened_word_signs_);
 
             if(city.size() < 1) {
-                return T_run_result (Fred::ContactTestStatus::FAIL, string("city is missing content") );
+                return TestRunResult (Fred::ContactTestStatus::FAIL, string("city is missing content") );
             }
             postal_code = parse_postal_code(static_cast<string>(data.postalcode_));
         } catch (...) {
-            return T_run_result (Fred::ContactTestStatus::FAIL, string("exception during parsing") );
+            return TestRunResult (Fred::ContactTestStatus::FAIL, string("exception during parsing") );
         }
 
         try {
             if(is_address_valid(street, city, postal_code)) {
-                return T_run_result (Fred::ContactTestStatus::OK, string() );
+                return TestRunResult (Fred::ContactTestStatus::OK, string() );
             }
         } catch (...) {
-            return T_run_result (Fred::ContactTestStatus::FAIL, string("exception during validation") );
+            return TestRunResult (Fred::ContactTestStatus::FAIL, string("exception during validation") );
         }
 
         std::string error_msg;
         try {
             error_msg = diagnose_problem(street, city, postal_code);
         } catch (...) {
-            return T_run_result (Fred::ContactTestStatus::FAIL, string("exception during diagnostics") );
+            return TestRunResult (Fred::ContactTestStatus::FAIL, string("exception during diagnostics") );
         }
 
 
 
-        return T_run_result (Fred::ContactTestStatus::FAIL, error_msg );
+        return TestRunResult (Fred::ContactTestStatus::FAIL, error_msg );
     }
 
     bool TestCzAddress::is_address_valid(

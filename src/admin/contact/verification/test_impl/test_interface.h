@@ -43,26 +43,25 @@ namespace ContactVerification{
 
     class Test {
         public:
-            typedef tuple<
-                string,                 // status
-                Optional<string>,       // error message
+            struct TestRunResult {
+                string                  status;
+                Optional<string>        error_message;
                 // XXX hopefuly one day related mail and messages will be unified
-                set<unsigned long long>,// related mail archive ids
-                set<unsigned long long> // related message archive ids
-            > T_run_result;
+                set<unsigned long long> related_mail_archive_ids;
+                set<unsigned long long> related_message_archive_ids;
 
-            static T_run_result make_result(
-                const string&                   _status,
-                const Optional<string>&         _error_msg = Optional<string>(),
-                // XXX hopefuly one day related mail and messages will be unified
-                const set<unsigned long long>&  _related_mail_archive_ids = set<unsigned long long>(),
-                const set<unsigned long long>&  _related_message_archive_ids = set<unsigned long long>()
-            );
+                TestRunResult(
+                    const string&                   _status,
+                    const Optional<string>&         _error_msg = Optional<string>(),
+                    const set<unsigned long long>&  _related_mail_archive_ids = set<unsigned long long>(),
+                    const set<unsigned long long>&  _related_message_archive_ids = set<unsigned long long>()
+                );
+            };
 
             /**
              * @return final status of the test, optional error message and optional related states and messages
              */
-            virtual T_run_result run(unsigned long long _history_id) const = 0;
+            virtual TestRunResult run(unsigned long long _history_id) const = 0;
             virtual ~Test();
             static string registration_name();
     };
