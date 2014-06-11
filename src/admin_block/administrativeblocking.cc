@@ -35,6 +35,7 @@
 #include "src/fredlib/domain/delete_domain.h"
 #include "src/fredlib/domain/info_domain.h"
 #include "src/fredlib/contact/copy_contact.h"
+#include "src/fredlib/poll/create_update_object_poll_message.h"
 #include <memory>
 #include <map>
 
