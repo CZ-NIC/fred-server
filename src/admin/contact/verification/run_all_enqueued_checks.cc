@@ -327,81 +327,86 @@ namespace  Admin {
                 while(true) {
                     Fred::OperationContext ctx_check_postprocess;
                     Optional<string> check_handle_to_postprocess = lock_some_running_check_with_some_finished_test(ctx_check_postprocess);
-                    if( check_handle_to_postprocess.isset() ) {
-                        uuid check_uuid_to_postprocess(uuid::from_string(check_handle_to_postprocess.get_value()));
-                        Fred::UpdateContactCheck(
-                            check_uuid_to_postprocess,
-                            evaluate_check_status_after_tests_finished(ctx_check_postprocess, check_uuid_to_postprocess),
-                            _logd_request_id
-                        ).exec(ctx_check_postprocess);
-                        ctx_check_postprocess.commit_transaction();
-                        handles.push_back(check_handle_to_postprocess.get_value());
-                    } else { break; }
+                    if( !check_handle_to_postprocess.isset() ) {
+                        break;
+                    }
+                    uuid check_uuid_to_postprocess(uuid::from_string(check_handle_to_postprocess.get_value()));
+                    Fred::UpdateContactCheck(
+                        check_uuid_to_postprocess,
+                        evaluate_check_status_after_tests_finished(ctx_check_postprocess, check_uuid_to_postprocess),
+                        _logd_request_id
+                    ).exec(ctx_check_postprocess);
+                    ctx_check_postprocess.commit_transaction();
+                    handles.push_back(check_handle_to_postprocess.get_value());
                 }
 
                 Fred::OperationContext ctx_check_process;
                 Optional<string> check_handle_to_process = lock_some_running_check_with_only_enqueued_tests(ctx_check_process);
-                if( check_handle_to_process.isset() ) {
-                    uuid check_uuid_to_process(uuid::from_string(check_handle_to_process.get_value()));
-                    preprocess_check(ctx_check_process, check_uuid_to_process);
-                    std::set<unsigned long long> related_mail_ids;
-                    std::set<unsigned long long> related_message_ids;
+                if( !check_handle_to_process.isset() ) {
+                    break;
+                }
+                uuid check_uuid_to_process(uuid::from_string(check_handle_to_process.get_value()));
+                preprocess_check(ctx_check_process, check_uuid_to_process);
+                std::set<unsigned long long> related_mail_ids;
+                std::set<unsigned long long> related_message_ids;
+                while(true) {
                     while(true) {
-                        while(true) {
-                            Fred::OperationContext ctx_test_process;
-                            Optional<string> test_handle_to_process = lock_some_running_test(ctx_test_process, check_uuid_to_process );
-                            if( test_handle_to_process.isset() ) {
-                                try {
-                                    run_test(
-                                        ctx_test_process, _tests,
-                                        check_uuid_to_process, test_handle_to_process.get_value(),
-                                        related_mail_ids, related_message_ids,
-                                        _logd_request_id);
-                                } catch(...) {
-                                    try {
-                                        ctx_test_process.get_conn().exec("ROLLBACK");
-                                        Fred::OperationContext ctx_testrun_error;
-
-                                        Fred::UpdateContactTest(
-                                            check_uuid_to_process, test_handle_to_process.get_value(),
-                                            Fred::ContactTestStatus::ERROR,
-                                            _logd_request_id,
-                                            "exception in test implementation and/or execution"
-                                        ).exec(ctx_testrun_error);
-
-                                        ctx_testrun_error.get_log().warning( (string("exception in test implementation ") + test_handle_to_process.get_value()).c_str());
-                                        ctx_testrun_error.commit_transaction();
-                                    } catch(...) {
-                                        throw Fred::InternalError( (string("problem when setting test status to ERROR; check_handle=") + check_handle_to_process.get_value() + "; test_handle=" + test_handle_to_process.get_value()).c_str() );
-                                    }
-                                }
-                                ctx_test_process.commit_transaction();
-                            } else { break; }
+                        Fred::OperationContext ctx_test_process;
+                        Optional<string> test_handle_to_process = lock_some_running_test(ctx_test_process, check_uuid_to_process );
+                        if( !test_handle_to_process.isset() ) {
+                            break;
                         }
+                        try {
+                            run_test(
+                                ctx_test_process, _tests,
+                                check_uuid_to_process, test_handle_to_process.get_value(),
+                                related_mail_ids, related_message_ids,
+                                _logd_request_id);
+                        } catch(...) {
+                            try {
+                                ctx_test_process.get_conn().exec("ROLLBACK");
+                                Fred::OperationContext ctx_testrun_error;
 
-                        Fred::OperationContext ctx_test_preprocess;
-                        Optional<string> test_handle_to_preprocess = lock_some_enqueued_test(ctx_test_preprocess, check_uuid_to_process );
-                        if( test_handle_to_preprocess.isset() ) {
-                            Fred::UpdateContactTest( check_uuid_to_process, test_handle_to_preprocess.get_value(), Fred::ContactTestStatus::RUNNING, _logd_request_id, Optional<std::string>() ).exec(ctx_test_preprocess);
-                            ctx_test_preprocess.commit_transaction();
-                        } else { break; }
+                                Fred::UpdateContactTest(
+                                    check_uuid_to_process, test_handle_to_process.get_value(),
+                                    Fred::ContactTestStatus::ERROR,
+                                    _logd_request_id,
+                                    "exception in test implementation and/or execution"
+                                ).exec(ctx_testrun_error);
+
+                                ctx_testrun_error.get_log().warning( (string("exception in test implementation ") + test_handle_to_process.get_value()).c_str());
+                                ctx_testrun_error.commit_transaction();
+                            } catch(...) {
+                                throw Fred::InternalError( (string("problem when setting test status to ERROR; check_handle=") + check_handle_to_process.get_value() + "; test_handle=" + test_handle_to_process.get_value()).c_str() );
+                            }
+                        }
+                        ctx_test_process.commit_transaction();
                     }
 
-                    Admin::add_related_messages(ctx_check_process, check_uuid_to_process, related_message_ids);
-                    Admin::add_related_mail(ctx_check_process, check_uuid_to_process, related_mail_ids);
+                    Fred::OperationContext ctx_test_preprocess;
+                    Optional<string> test_handle_to_preprocess = lock_some_enqueued_test(ctx_test_preprocess, check_uuid_to_process );
+                    if( !test_handle_to_preprocess.isset() ) {
+                        break;
+                    }
+                    Fred::UpdateContactTest( check_uuid_to_process, test_handle_to_preprocess.get_value(), Fred::ContactTestStatus::RUNNING, _logd_request_id, Optional<std::string>() ).exec(ctx_test_preprocess);
+                    ctx_test_preprocess.commit_transaction();
+                }
 
-                    ctx_check_process.commit_transaction();
-                } else { break; }
+                Admin::add_related_messages(ctx_check_process, check_uuid_to_process, related_message_ids);
+                Admin::add_related_mail(ctx_check_process, check_uuid_to_process, related_mail_ids);
+
+                ctx_check_process.commit_transaction();
             }
 
             Fred::OperationContext ctx_check_preprocess;
             Optional<string> check_handle_to_preprocess = lock_some_enqueued_check(ctx_check_preprocess);
-            if( check_handle_to_preprocess.isset() ) {
-                uuid check_uuid_to_preprocess(uuid::from_string(check_handle_to_preprocess.get_value()));
-                Fred::UpdateContactCheck( check_uuid_to_preprocess, Fred::ContactCheckStatus::RUNNING, _logd_request_id).exec(ctx_check_preprocess);
-                create_all_tests(ctx_check_preprocess, check_uuid_to_preprocess, _logd_request_id);
-                ctx_check_preprocess.commit_transaction();
-            } else { break; }
+            if( !check_handle_to_preprocess.isset() ) {
+                break;
+            }
+            uuid check_uuid_to_preprocess(uuid::from_string(check_handle_to_preprocess.get_value()));
+            Fred::UpdateContactCheck( check_uuid_to_preprocess, Fred::ContactCheckStatus::RUNNING, _logd_request_id).exec(ctx_check_preprocess);
+            create_all_tests(ctx_check_preprocess, check_uuid_to_preprocess, _logd_request_id);
+            ctx_check_preprocess.commit_transaction();
         }
 
         return handles;
