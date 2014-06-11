@@ -41,7 +41,7 @@ namespace ContactVerification
     {
 
         public:
-            virtual T_run_result run(unsigned long long _history_id) const;
+            virtual TestRunResult run(unsigned long long _history_id) const;
             static std::string registration_name() { return "name_syntax"; }
     };
 
@@ -52,7 +52,7 @@ namespace ContactVerification
         std::string name_;
 
         virtual void store_data(const Fred::InfoContactOutput& _data) {
-            if(_data.info_contact_data.name.isnull() == false) {
+            if( !_data.info_contact_data.name.isnull() ) {
                 name_ = _data.info_contact_data.name.get_value_or_default();
             }
         }

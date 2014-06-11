@@ -84,7 +84,7 @@ namespace ContactVerification {
         xmlXPathFreeContext(xpathCtx_);
         xmlFreeDoc(doc_);
     }
-    Test::T_run_result TestCzAddress::run(unsigned long long _history_id) const {
+    Test::TestRunResult TestCzAddress::run(unsigned long long _history_id) const {
         using std::string;
         using std::vector;
 
@@ -95,7 +95,7 @@ namespace ContactVerification {
         string country =  boost::algorithm::to_lower_copy(data.country_);
 
         if(country != "cz") {
-            return T_run_result (Fred::ContactTestStatus::SKIPPED, string("this test is intended for CZ addresses only") );
+            return TestRunResult (Fred::ContactTestStatus::SKIPPED, string("this test is intended for CZ addresses only") );
         }
 
         // registry data
@@ -127,31 +127,31 @@ namespace ContactVerification {
                 city_shortened_word_signs_);
 
             if(city.size() < 1) {
-                return T_run_result (Fred::ContactTestStatus::FAIL, string("city is missing content") );
+                return TestRunResult (Fred::ContactTestStatus::FAIL, string("city is missing content") );
             }
             postal_code = parse_postal_code(static_cast<string>(data.postalcode_));
         } catch (...) {
-            return T_run_result (Fred::ContactTestStatus::FAIL, string("exception during parsing") );
+            return TestRunResult (Fred::ContactTestStatus::FAIL, string("exception during parsing") );
         }
 
         try {
             if(is_address_valid(street, city, postal_code)) {
-                return T_run_result (Fred::ContactTestStatus::OK, string() );
+                return TestRunResult (Fred::ContactTestStatus::OK, string() );
             }
         } catch (...) {
-            return T_run_result (Fred::ContactTestStatus::FAIL, string("exception during validation") );
+            return TestRunResult (Fred::ContactTestStatus::FAIL, string("exception during validation") );
         }
 
         std::string error_msg;
         try {
             error_msg = diagnose_problem(street, city, postal_code);
         } catch (...) {
-            return T_run_result (Fred::ContactTestStatus::FAIL, string("exception during diagnostics") );
+            return TestRunResult (Fred::ContactTestStatus::FAIL, string("exception during diagnostics") );
         }
 
 
 
-        return T_run_result (Fred::ContactTestStatus::FAIL, error_msg );
+        return TestRunResult (Fred::ContactTestStatus::FAIL, error_msg );
     }
 
     bool TestCzAddress::is_address_valid(
@@ -184,7 +184,7 @@ namespace ContactVerification {
                 throw Fred::InternalError("Error: unable to evaluate xpath expression " + query);
             }
 
-            if(xmlXPathCastToBoolean(xpathObj.get()) == true) {
+            if(xmlXPathCastToBoolean(xpathObj.get())) {
                 return true;
             }
         }
@@ -250,12 +250,12 @@ namespace ContactVerification {
                 throw Fred::InternalError("Error: unable to evaluate xpath expression " + query);
             }
 
-            if(xmlXPathCastToBoolean(xpathObj.get()) == true) {
+            if(xmlXPathCastToBoolean(xpathObj.get())) {
                 suspicious_data.insert(suspicious_data_map[query]);
             }
         }
 
-        if(suspicious_data.empty() == false) {
+        if( !suspicious_data.empty() ) {
             return boost::join(suspicious_data, " or ") + " might be invalid";
         }
 
@@ -381,18 +381,18 @@ namespace ContactVerification {
             ++word_end
         ) {
             if(boost::is_any_of(_shortening_delimiters)(*word_end)) {
-                if(word_has_content == true) {
+                if(word_has_content) {
                     result.push_back(std::make_pair(string(word_begin, word_end), true));
                 }
                 word_begin = word_end;
                 word_has_content = false;
             } else if(boost::is_any_of(_delimiters)(*word_end)) {
-                if(word_has_content == true) {
+                if(word_has_content) {
                     result.push_back(std::make_pair(string(word_begin, word_end), false));
                 }
                 word_begin = word_end;
                 word_has_content = false;
-            } else if(word_has_content == false) {
+            } else if( !word_has_content ) {
                 word_begin = word_end;
                 word_has_content = true;
             }
@@ -480,7 +480,7 @@ namespace ContactVerification {
                 str_it != (*it).first.end();
                 ++str_it
             ) {
-                if(isdigit(*str_it) == false) {
+                if( !isdigit(*str_it) ) {
                     ++nondigit_chars;
                 } else {
                     has_digit = true;
@@ -492,7 +492,7 @@ namespace ContactVerification {
             }
 
             if( // trimming from right ends at first nondigit value
-                has_digit == false
+                ! has_digit
                 // if there are more nondigits than limit, we don't trim the word
                 || nondigit_chars > _nondigit_chars_tolerance_per_word
                 // trimming is continuous, no trimming after first non-trimmed word
@@ -540,7 +540,7 @@ namespace ContactVerification {
             if(it == _shortened_words.begin()) {
                 // ... and at the same time last word in string
                 if(it_test == _shortened_words.end()) {
-                    if(it->second == true) {
+                    if(it->second) {
                         // TODO tohle asi neni moc vypovidajici - jednoslovnych nazvu se stejnym pismenem na zacatku jsou mraky
                         result.push_back(
                             " starts-with( "+lhs_processed+", " + xpath_normalize_chars( string("'") + it->first + "'" ) + " ) ");
@@ -549,7 +549,7 @@ namespace ContactVerification {
                             " "+lhs_processed+" = " + xpath_normalize_chars( string("'") + it->first + "'" ) + " ");
                     }
                 } else {
-                    if(it->second == true) {
+                    if(it->second) {
                         result.push_back(
                             " starts-with( substring-before( "+lhs_processed+", ' ' ), " + xpath_normalize_chars( string("'") + it->first + "'" ) + " ) ");
                     } else {
@@ -560,7 +560,7 @@ namespace ContactVerification {
 
             // in between words
             } else if(it_test != _shortened_words.end()) {
-                if(it->second == true) {
+                if(it->second) {
                     result.push_back(" starts-with( substring-before(" + nth_word + ", ' '), " + xpath_normalize_chars( string("'") + it->first + "'" ) + ") ");
                 } else {
                     result.push_back(" substring-before("+ nth_word + ", ' ') = " + xpath_normalize_chars( string("'") + it->first + "'" ) + " ");
@@ -568,7 +568,7 @@ namespace ContactVerification {
 
             // last word in string
             } else {
-                if(it->second == true) {
+                if(it->second) {
                     result.push_back(" starts-with( " + nth_word + ", " + xpath_normalize_chars( string("'") + it->first + "'" ) + ") ");
                 } else {
                     result.push_back(" " + nth_word + " = " + xpath_normalize_chars( string("'") + it->first + "'" ) + " ");

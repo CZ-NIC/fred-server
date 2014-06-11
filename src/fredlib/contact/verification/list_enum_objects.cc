@@ -114,7 +114,7 @@ namespace Fred
                 "   FROM enum_contact_test AS enum_c_t "
                 "       LEFT JOIN enum_contact_test_localization AS enum_c_t_loc USING(id) ";
 
-            if(testsuite_name.empty() == false) {
+            if( !testsuite_name.empty() ) {
                 params.push_back(testsuite_name);
                 std::string testsuite_position = boost::lexical_cast<std::string>(params.size());
 

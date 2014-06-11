@@ -158,7 +158,7 @@ namespace  Admin {
     ) {
         return
             _ctx.get_conn().exec_params(
-                "SELECT m.id "  // ...whatever, just to keep it smaller than "*"
+                "SELECT 1 "  // ...whatever, just to keep it smaller than "*"
                     "FROM contact_check_poll_message_map AS p_m_map "
                         "JOIN message AS m          ON p_m_map.poll_message_id = m.id "
                         "JOIN messagetype AS mtype  ON m.msgtype = mtype.id "

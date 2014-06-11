@@ -48,7 +48,7 @@ namespace ContactVerification
                 // first draft of pattern - see ticket #9588
                 : PHONE_PATTERN ("^\\+[0-9]{1,3}\\.[0-9]{1,14}$") {}
 
-            virtual T_run_result run(unsigned long long _history_id) const;
+            virtual TestRunResult run(unsigned long long _history_id) const;
             static std::string registration_name() { return "phone_syntax"; }
     };
 
@@ -59,7 +59,7 @@ namespace ContactVerification
         std::string phone_;
 
         virtual void store_data(const Fred::InfoContactOutput& _data) {
-            if(_data.info_contact_data.telephone.isnull() == false) {
+            if( !_data.info_contact_data.telephone.isnull() ) {
                 phone_ = _data.info_contact_data.telephone.get_value_or_default();
             }
         }

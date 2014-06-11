@@ -65,7 +65,7 @@ namespace Fred
         Database::Result status_res = _ctx.get_conn().exec_params(
             "SELECT id "
             "   FROM enum_contact_check_status "
-            "   WHERE handle=$1::varchar; ",
+            "   WHERE handle=$1::varchar ",
             Database::query_param_list(status_handle_)
         );
         if(status_res.size() != 1) {
@@ -83,7 +83,7 @@ namespace Fred
                "        $2::bigint "
                "    )"
                "    WHERE handle=$3::uuid"
-               "    RETURNING id;",
+               "    RETURNING id ",
                Database::query_param_list
                 (status_id)
                 (logd_request_id_)

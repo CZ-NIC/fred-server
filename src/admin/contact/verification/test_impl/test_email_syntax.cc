@@ -33,7 +33,7 @@ namespace ContactVerification {
 
     FACTORY_MODULE_INIT_DEFI(TestEmailSyntax_init)
 
-    Test::T_run_result TestEmailSyntax::run(unsigned long long _history_id) const {
+    Test::TestRunResult TestEmailSyntax::run(unsigned long long _history_id) const {
         TestDataProvider<TestEmailSyntax> data;
         data.init_data(_history_id);
 
@@ -43,10 +43,10 @@ namespace ContactVerification {
             email,
             EMAIL_PATTERN )
         ) {
-            return make_result(Fred::ContactTestStatus::OK );
+            return TestRunResult(Fred::ContactTestStatus::OK );
         }
 
-        return make_result(Fred::ContactTestStatus::FAIL, string("invalid e-mail format") );
+        return TestRunResult(Fred::ContactTestStatus::FAIL, string("invalid e-mail format") );
     }
 }
 }

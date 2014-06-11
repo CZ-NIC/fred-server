@@ -46,6 +46,18 @@ namespace ContactVerificationQueue {
         std::set<allowed_contact_roles> roles;
     };
 
+    struct enqueued_check {
+        std::string         handle;
+        unsigned long long  contact_id;
+        unsigned long long  contact_history_id;
+
+        enqueued_check(
+            const std::string&  _handle,
+            unsigned long long  _contact_id,
+            unsigned long long  _contact_history_id
+        );
+    };
+
     /**
      * Operation for filling the contact check queue in contact_check table
      * - new checks are of specified testsuite
@@ -81,7 +93,7 @@ namespace ContactVerificationQueue {
              */
             fill_check_queue& set_logd_request_id(Optional<unsigned long long> _logd_request_id);
 
-            std::vector< boost::tuple<std::string, unsigned long long, unsigned long long> > exec();
+            std::vector<enqueued_check> exec();
     };
 }
 }

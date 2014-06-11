@@ -99,7 +99,7 @@ namespace ContactVerification {
                 "");
     }
 
-    Test::T_run_result TestContactability::run(unsigned long long _history_id) const {
+    Test::TestRunResult TestContactability::run(unsigned long long _history_id) const {
         TestDataProvider<TestContactability> data;
         data.init_data(_history_id);
 
@@ -130,7 +130,7 @@ namespace ContactVerification {
                 address
                 );
         } catch(...) {
-            return make_result (Fred::ContactTestStatus::ERROR, std::string("failed to generate pdf file") );
+            return TestRunResult (Fred::ContactTestStatus::ERROR, std::string("failed to generate pdf file") );
         }
 
         bool error = false;
@@ -166,9 +166,9 @@ namespace ContactVerification {
         }
 
         if(error) {
-            return make_result(Fred::ContactTestStatus::ERROR, error_msg, mail_ids, message_ids );
+            return TestRunResult(Fred::ContactTestStatus::ERROR, error_msg, mail_ids, message_ids );
         } else {
-            return make_result(Fred::ContactTestStatus::MANUAL, string(), mail_ids, message_ids );
+            return TestRunResult(Fred::ContactTestStatus::MANUAL, string(), mail_ids, message_ids );
         }
     }
 

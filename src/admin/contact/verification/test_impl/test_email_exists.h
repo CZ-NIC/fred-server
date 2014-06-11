@@ -40,7 +40,7 @@ namespace ContactVerification
         test_auto_registration<TestEmailExists>
     {
         public:
-            virtual T_run_result run(unsigned long long _history_id) const;
+            virtual TestRunResult run(unsigned long long _history_id) const;
             static std::string registration_name() { return "email_host_existence"; }
     };
 
@@ -51,7 +51,7 @@ namespace ContactVerification
         std::string email_;
 
         virtual void store_data(const Fred::InfoContactOutput& _data) {
-            if(_data.info_contact_data.email.isnull() == false) {
+            if( !_data.info_contact_data.email.isnull() ) {
                 email_ = _data.info_contact_data.email.get_value_or_default();
             }
         }

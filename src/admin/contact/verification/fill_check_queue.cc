@@ -40,12 +40,22 @@ namespace ContactVerificationQueue {
         if(_in == "admin_c") {
             return admin_c;
         }
-        if(_in == "admin_c") {
-            return admin_c;
+        if(_in == "tech_c") {
+            return tech_c;
         }
 
         throw Fred::InternalError(std::string("unknown role (") + _in + ")");
     }
+
+    enqueued_check::enqueued_check(
+        const std::string&  _handle,
+        unsigned long long  _contact_id,
+        unsigned long long  _contact_history_id
+    ) :
+        handle(_handle),
+        contact_id(_contact_id),
+        contact_history_id(_contact_history_id)
+    { }
 
     static std::string is_contact_mojeid_query(std::string contact_id_column) {
         return
@@ -82,7 +92,6 @@ namespace ContactVerificationQueue {
     ) {
         using std::string;
         using std::vector;
-        using std::set;
 
         vector<string> joins;
         vector<string> conditions;
@@ -97,7 +106,7 @@ namespace ContactVerificationQueue {
             );
         }
 
-        if(_filter.states.empty() == false) {
+        if( !_filter.states.empty() ) {
             joins.push_back("JOIN object_state AS o_s ON o_s.object_id = "+_contact_alias+".id");
             joins.push_back("JOIN enum_object_states AS enum_o_s ON o_s.state_id = enum_o_s.id");
             conditions.push_back(
@@ -109,7 +118,7 @@ namespace ContactVerificationQueue {
             conditions.push_back("o_s.valid_to IS NULL");
         }
 
-        if(_filter.roles.empty() == false) {
+        if( !_filter.roles.empty() ) {
             if(_filter.roles.count(owner) == 1) {
                 joins.push_back("JOIN domain AS d ON d.registrant = "+_contact_alias+".id");
             }
@@ -139,7 +148,6 @@ namespace ContactVerificationQueue {
     ) {
         using std::string;
         using std::vector;
-        using std::set;
 
         // create temporary view for filtered contact ids
         vector<string> joins;
@@ -148,7 +156,7 @@ namespace ContactVerificationQueue {
         set_contact_filter_query(_filter, "c", joins, conditions);
 
         std::string joined_conditions = boost::algorithm::join(conditions, ") AND (" );
-        if(joined_conditions.length() > 0) {
+        if( !joined_conditions.empty() ) {
             joined_conditions = " WHERE (" + joined_conditions + ")";
         }
 
@@ -199,7 +207,7 @@ namespace ContactVerificationQueue {
                         "SELECT contact_id_ AS id from temp_filter "
                         "EXCEPT "
                         "SELECT contact_id_ AS id from temp_already_checked "
-                    ") as filter ON o_r.id = filter.id "
+                    ") AS filter ON o_r.id = filter.id "
                 "WHERE NOT " + is_contact_mojeid_query("o_r.id") + " "
                     "AND NOT EXISTS (SELECT * FROM temp_with_active_check AS temp_u_e WHERE temp_u_e.contact_id_ = o_r.id ) "
                 "LIMIT $1::integer "
@@ -285,7 +293,7 @@ namespace ContactVerificationQueue {
         return *this;
     }
 
-    std::vector< boost::tuple<std::string, unsigned long long, unsigned long long> > fill_check_queue::exec() {
+    std::vector<enqueued_check> fill_check_queue::exec() {
         Logging::Context log("fill_check_queue::exec");
 
         Fred::OperationContext ctx1;
@@ -312,7 +320,7 @@ namespace ContactVerificationQueue {
 
         int checks_to_enqueue_count = static_cast<int>(max_queue_length_) - static_cast<int>(queue_count_res[0]["count_"]);
 
-        std::vector< boost::tuple<std::string, unsigned long long, unsigned long long> > result;
+        std::vector<enqueued_check> result;
 
         std::vector<unsigned long long> to_enqueue_never_checked;
         std::string temp_handle;
@@ -339,7 +347,7 @@ namespace ContactVerificationQueue {
                 Fred::InfoContactCheckOutput info = Fred::InfoContactCheck(uuid::from_string(temp_handle)).exec(ctx1);
 
                 result.push_back(
-                    boost::make_tuple(
+                    enqueued_check(
                         temp_handle,
                         contact_id,
                         info.contact_history_id
@@ -364,7 +372,7 @@ namespace ContactVerificationQueue {
                 filter_
             );
 
-            if(to_enqueue_oldest_checked.empty() == false) {
+            if( !to_enqueue_oldest_checked.empty() ) {
 
                 for(std::vector<unsigned long long>::const_iterator contact_id_it = to_enqueue_oldest_checked.begin();
                     contact_id_it != to_enqueue_oldest_checked.end();
@@ -390,7 +398,7 @@ namespace ContactVerificationQueue {
                     Fred::InfoContactCheckOutput info = Fred::InfoContactCheck(uuid::from_string(temp_handle)).exec(ctx2);
 
                     result.push_back(
-                        boost::make_tuple(
+                        enqueued_check(
                             temp_handle,
                             *contact_id_it,
                             info.contact_history_id

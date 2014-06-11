@@ -39,6 +39,7 @@ namespace  Admin {
                 ContactVerification::test_factory::instance_ref()
                     .create_sh_ptr(ContactVerification::TestCzAddress::registration_name());
 
+        // no check of cast result is needed - same type is used for cast as for object selection
         dynamic_cast<ContactVerification::TestCzAddress *>(
             result[ContactVerification::TestCzAddress::registration_name()].get()
         )->set_mvcr_address_xml_filename(_cz_address_dataset_path);
@@ -47,6 +48,7 @@ namespace  Admin {
             ContactVerification::test_factory::instance_ref()
                 .create_sh_ptr(ContactVerification::TestContactability::registration_name());
 
+        // no check of cast result is needed - same type is used for cast as for object selection
         dynamic_cast<ContactVerification::TestContactability *>(
             result[ContactVerification::TestContactability::registration_name()].get()
         )->set_document_file_manager(_document_manager)
@@ -61,6 +63,7 @@ namespace  Admin {
                     ContactVerification::test_factory::instance_ref()
                         .create_sh_ptr(ContactVerification::TestSendLetter::registration_name());
 
+        // no check of cast result is needed - same type is used for cast as for object selection
         dynamic_cast<ContactVerification::TestSendLetter *>(
             result[ContactVerification::TestSendLetter::registration_name()].get()
         )->set_document_file_manager(_document_manager)

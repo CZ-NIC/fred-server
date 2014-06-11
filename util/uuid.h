@@ -35,6 +35,8 @@ class uuid {
         struct ExceptionInvalidUuid {
             const char* what() const throw() {return "invalid input UUID";}
         };
+
+        enum { CANNONICAL_FORM_LENGTH = 36 };
     private:
         boost::uuids::uuid value_;
 
@@ -44,7 +46,7 @@ class uuid {
             : value_(boost::uuids::string_generator()(_in))
         {
             // cannonical form e. g. 550e8400-e29b-41d4-a716-446655440000
-            if(_in.length() != 36) {
+            if(_in.length() != CANNONICAL_FORM_LENGTH) {
                 throw ExceptionInvalidUuid();
             }
         }
