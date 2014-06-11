@@ -358,7 +358,7 @@ namespace  Admin {
                                         _logd_request_id);
                                 } catch(...) {
                                     try {
-                                        ctx_test_process.get_conn().exec("ROLLBACK;");
+                                        ctx_test_process.get_conn().exec("ROLLBACK");
                                         Fred::OperationContext ctx_testrun_error;
 
                                         Fred::UpdateContactTest(

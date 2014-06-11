@@ -94,7 +94,7 @@ namespace Fred
             "       JOIN enum_object_type AS e_o_t ON obj_reg.type = e_o_t.id "
             "   WHERE obj_reg.id=$1::integer "
             "       AND e_o_t.name = $2::varchar "
-            "       AND obj_reg.erdate IS NULL; ",
+            "       AND obj_reg.erdate IS NULL ",
             Database::query_param_list(contact_id_)("contact")
         );
         if(contact_history_res.size() != 1) {
@@ -105,7 +105,7 @@ namespace Fred
         Database::Result testsuite_res = _ctx.get_conn().exec_params(
             "SELECT id "
             "   FROM enum_contact_testsuite "
-            "   WHERE handle=$1::varchar; ",
+            "   WHERE handle=$1::varchar ",
             Database::query_param_list(testsuite_handle_)
         );
         if(testsuite_res.size() != 1) {
@@ -128,7 +128,7 @@ namespace Fred
                 "   $3::int,"
                 "   (SELECT id FROM enum_contact_check_status WHERE handle=$4::varchar),"
                 "   $5::bigint"
-                ");",
+                ")",
                 Database::query_param_list
                     (handle)
                     (contact_history_id)
