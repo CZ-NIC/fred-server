@@ -284,13 +284,14 @@ namespace  Admin {
     }
 
     static void run_test(
-        Fred::OperationContext& ctx,
-        const std::map<std::string, boost::shared_ptr<Admin::ContactVerification::Test> >& _tests,
-        const uuid& _check_handle,
-        const std::string& _test_handle,
-        std::set<unsigned long long>&               _related_mail_ids,
-        std::set<unsigned long long>&               _related_message_ids,
-        Optional<unsigned long long>  _logd_request_id
+        Fred::OperationContext&             ctx,
+        const std::map<std::string, boost::shared_ptr<Admin::ContactVerification::Test> >&
+                                            _tests,
+        const uuid&                         _check_handle,
+        const std::string&                  _test_handle,
+        std::set<unsigned long long>&       _related_mail_ids,
+        std::set<unsigned long long>&       _related_message_ids,
+        Optional<unsigned long long>        _logd_request_id
     ) {
         ContactVerification::Test::TestRunResult temp_result = _tests.at(_test_handle)->run(Fred::InfoContactCheck(_check_handle).exec(ctx).contact_history_id);
 
