@@ -439,7 +439,9 @@ namespace Registry
                                 if (0 < _log_req_id) {
                                     update_domain.set_logd_request_id(_log_req_id);
                                 }
-                                update_domain.exec(ctx);
+                                unsigned long long new_hid = update_domain.exec(ctx);
+                                /* in case of error when creating poll message we fail with internal server error */
+                                Fred::Poll::CreateUpdateObjectPollMessage(new_hid).exec(ctx);
                             }
                             result.push_back(result_item);
                         }
@@ -758,7 +760,9 @@ namespace Registry
                                     update_domain.rem_admin_contact(pAdmin->handle);
                                 }
                             }
-                            update_domain.exec(ctx);
+                            unsigned long long new_hid = update_domain.exec(ctx);
+                            /* in case of error when creating poll message we fail with internal server error */
+                            Fred::Poll::CreateUpdateObjectPollMessage(new_hid).exec(ctx);
                         }
                     }
                     catch (const Fred::ClearAdminObjectStateRequestId::Exception &e) {
