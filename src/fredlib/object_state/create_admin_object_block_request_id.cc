@@ -95,7 +95,7 @@ namespace Fred
             status_list,
             valid_from_,
             valid_to_);
-        const std::string handle_name = createObjectStateRequestId.exec(_ctx);
+        const std::string handle_name = createObjectStateRequestId.exec(_ctx).first;
         if (reason_.isset()) {
             _ctx.get_conn().exec_params(
                 "INSERT INTO object_state_request_reason (object_state_request_id,reason_creation,reason_cancellation) "

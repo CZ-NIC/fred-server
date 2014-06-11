@@ -247,8 +247,12 @@ namespace Fred
         templateMap[GT_CONTACT_VERIFICATION_LETTER_PIN3] = GenProcType(
           "contact_verification_auth_owner.xsl", true, "application/pdf"
         );
-
-
+        templateMap[GT_ADMIN_CONTACT_VERIFICATION_CONTACT_CHECK_NOTICE] = GenProcType(
+          "notice_to_correct_data.xsl", true, "application/pdf"
+        );
+        templateMap[GT_ADMIN_CONTACT_VERIFICATION_CONTACT_CHECK_THANK_YOU] = GenProcType(
+          "confirm_correction.xsl", true, "application/pdf"
+        );
       }      
       std::auto_ptr<Fred::Document::Generator> createOutputGenerator(
         GenerationType type, std::ostream& output,

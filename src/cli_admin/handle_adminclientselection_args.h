@@ -2432,4 +2432,131 @@ public:
 };//class HandleDomainNameValidationByZoneArgsGrp
 
 
+/**
+ * admin client contact_verification_fill_queue_automatic_testsuite options handler
+ */
+class HandleContactVerificationFillQueueArgsGrp : public HandleCommandGrpArgs {
+    private:
+        const char* name() const { return "contact_verification_fill_queue"; }
+        typedef boost::program_options::options_description options_description;
+
+    public:
+        ContactVerificationFillQueueArgs params;
+
+        CommandDescription get_command_option() { return CommandDescription(name()); }
+
+        boost::shared_ptr<options_description> get_options_description() {
+            boost::shared_ptr<options_description> cfg_opts( new options_description(name()) );
+            cfg_opts->add_options()(name(), "fill contact checks queue");
+
+            cfg_opts->add_options()("max_active_checks",
+                boost::program_options::value<Checked::ulong>()
+                    ->default_value(100)
+                    ->notifier(save_arg<unsigned>(params.max_queue_length)),
+                    "maximum number of all active checks");
+
+            cfg_opts->add_options()("testsuite_handle",
+                boost::program_options::value<Checked::string>()
+                    ->notifier(save_arg<std::string>(params.testsuite_handle)),
+                    "testsuite handle to use for new checks");
+
+            cfg_opts->add_options()("country_code",
+                boost::program_options::value<Checked::string>()
+                    ->notifier(save_arg<std::string>(params.country_code)),
+                    "enqueue only contacts with given country code");
+
+            cfg_opts->add_options()("contact_role",
+                boost::program_options::value<std::vector<std::string> >()->multitoken()
+                    ->notifier(save_arg<std::vector<std::string> >(params.contact_roles)),
+                    "enqueue only contacts with given contact role");
+
+            cfg_opts->add_options()("contact_state",
+                boost::program_options::value<std::vector<std::string> >()->multitoken()
+                    ->notifier(save_arg<std::vector<std::string> >(params.contact_states)),
+                    "enqueue only contacts with given contact state");
+
+            return cfg_opts;
+        }
+
+        std::size_t handle( int argc, char* argv[],  FakedArgs &fa, std::size_t option_group_index) {
+            boost::program_options::variables_map vm;
+            handler_parse_args(get_options_description(), vm, argc, argv, fa);
+
+            return option_group_index;
+        }
+};
+
+
+/**
+ * admin client contact_verification_enqueue_check  options handler
+ */
+class HandleContactVerificationEnqueueCheckArgsGrp : public HandleCommandGrpArgs {
+    private:
+        const char* name() const { return "contact_verification_enqueue_check";}
+        typedef boost::program_options::options_description options_description;
+
+    public:
+        ContactVerificationEnqueueCheckArgs params;
+
+        CommandDescription get_command_option() { return CommandDescription(name()); }
+
+        boost::shared_ptr<options_description> get_options_description() {
+            boost::shared_ptr<options_description> cfg_opts( new options_description(name()) );
+            cfg_opts->add_options()(name(), "enqueue check for contact specified by id with specified testsuite");
+            cfg_opts->add_options()("contact_id",
+                boost::program_options::value<Checked::ulonglong>()
+                    ->notifier(save_arg<long long>(params.contact_id)),
+                    "contact id");
+            cfg_opts->add_options()("testsuite_handle",
+                boost::program_options::value<Checked::string>()
+                    ->notifier(save_arg<std::string>(params.testsuite_handle)),
+                    "testsuite handle");
+
+            return cfg_opts;
+        }
+
+        std::size_t handle( int argc, char* argv[],  FakedArgs &fa, std::size_t option_group_index) {
+            boost::program_options::variables_map vm;
+            handler_parse_args(get_options_description(), vm, argc, argv, fa);
+
+            return option_group_index;
+        }
+};
+
+
+/**
+ * admin client contact_verification_start_enqueued_checks  options handler
+ */
+class HandleContactVerificationStartEnqueuedChecksArgsGrp : public HandleCommandGrpArgs {
+    private:
+        const char* name() const { return "contact_verification_start_enqueued_checks";}
+        typedef boost::program_options::options_description options_description;
+
+    public:
+        ContactVerificationStartEnqueuedChecksArgs params;
+
+        CommandDescription get_command_option() { return CommandDescription(name()); }
+
+        boost::shared_ptr<options_description> get_options_description() {
+            boost::shared_ptr<options_description> cfg_opts( new options_description(name()) );
+            cfg_opts->add_options()(name(), "start enqueued checks");
+
+            cfg_opts->add_options()("cz_address_mvcr_xml_path",
+                boost::program_options::value<Checked::string>()
+                    ->required()
+                    ->notifier(save_arg<std::string>(params.cz_address_mvcr_xml_path)),
+                "cz_address_mvcr_xml_path");
+
+            return cfg_opts;
+        }
+
+        std::size_t handle( int argc, char* argv[],  FakedArgs &fa, std::size_t option_group_index) {
+            boost::program_options::variables_map vm;
+            handler_parse_args(get_options_description(), vm, argc, argv, fa);
+
+            return option_group_index;
+        }
+};
+
+
 #endif //HANDLE_ADMINCLIENTSELECTION_ARGS_H_

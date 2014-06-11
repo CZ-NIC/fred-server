@@ -57,6 +57,8 @@
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/algorithm/string.hpp>
 
+#include "src/admin/contact/verification/contact_states/delete_all.h"
+
 const std::string create_ctx_name(const std::string &_name)
 {
     return str(boost::format("%1%-<%2%>")% _name % Random::integer(0, 10000));
@@ -420,6 +422,14 @@ namespace Registry
                         request.get_request_id(),
                         request.get_registrar_id(),
                         _contact);
+
+                // admin contact verification Ticket #10935
+                try {
+                    Admin::AdminContactVerificationObjectStates::conditionally_cancel_final_states_legacy(cid);
+                } catch (...) {
+                    LOGGER(PACKAGE).error("conditionally_delete_final_states_legacy exception");
+                    throw;
+                }
 
                 LOGGER(PACKAGE).info(boost::format(
                         "contact updated -- handle: %1%  id: %2%  history_id: %3%")

@@ -71,7 +71,7 @@ namespace Fred
 
     } // unnamed namespace
 
-    std::string CreateObjectStateRequestId::exec(OperationContext &_ctx)
+    std::pair<std::string, unsigned long long> CreateObjectStateRequestId::exec(OperationContext &_ctx)
     {
         std::string object_state_names;
 
@@ -251,8 +251,11 @@ namespace Fred
             }
         }
 
-        _ctx.get_conn().exec_params(cmd.str(), param);
-        return handle_name;
+        cmd << " RETURNING id AS id_";
+
+        Database::Result result_id = _ctx.get_conn().exec_params(cmd.str(), param);
+
+        return std::make_pair(handle_name, result_id[0]["id_"]);
     }//CreateObjectStateRequestId::exec
 
     namespace
