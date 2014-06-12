@@ -58,6 +58,13 @@ namespace Fred
                 (ENQUEUE_REQ);  // XXX hack - ugly (but simple) way to enable rejection of ENQUEUE_REQ
         }
 
+        inline std::vector<std::string> get_after_tests_finished() {
+            return boost::assign::list_of
+                (AUTO_OK)
+                (AUTO_FAIL)
+                (AUTO_TO_BE_DECIDED);
+        }
+
         inline std::vector<std::string> get_not_yet_resolved() {
             return boost::assign::list_of
                 (ENQUEUE_REQ)

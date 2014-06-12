@@ -208,7 +208,7 @@ namespace Fred
                 }
             }
 
-            std::vector<std::string> statuses = Fred::ContactCheckStatus::get_resolution_awaiting();
+            std::vector<std::string> statuses = Fred::ContactCheckStatus::get_after_tests_finished();
 
             // set time when tests finished if it is the current state
             {
