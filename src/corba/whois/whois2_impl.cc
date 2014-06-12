@@ -73,6 +73,27 @@ namespace Whois {
         }
     }
 
+    void wrap_ipaddress(const boost::asio::ip::address& in, IPAddress& out ) {
+        out.address = Corba::wrap_string(in.to_string());
+        if(in.is_v4()) {
+            out.version = v4;
+        } else if(in.is_v6()) {
+            out.version = v6;
+        }
+        // TODO error handling
+    }
+
+    void wrap_ipaddress_sequence(const std::vector<boost::asio::ip::address>& in, IPAddressSeq& out ) {
+        out.length(in.size());
+
+        typename std::vector<boost::asio::ip::address>::size_type i = 0;
+
+        BOOST_FOREACH(const boost::asio::ip::address& address, in) {
+            wrap_ipaddress(address, out[i]);
+            ++i;
+        }
+    }
+
     NullableRegistrar*  wrap_registrar( const Fred::InfoRegistrarData& in) {
         Registrar temp;
         temp.handle = Corba::wrap_string(in.handle);
@@ -214,6 +235,14 @@ namespace Whois {
         return new NullableKeySet(temp);
     }
 
+    NullableNameServer*  wrap_nameserver( const Fred::DnsHost& in) {
+        NameServer temp;
+        temp.fqdn = Corba::wrap_string(in.get_fqdn());
+        wrap_ipaddress_sequence(in.get_inet_addr(), temp.ip_addresses);
+
+        return new NullableNameServer(temp);
+    }
+
     NullableNSSet* wrap_nsset(const Fred::InfoNssetData& in) {
 
         NSSet temp;
@@ -225,13 +254,13 @@ namespace Whois {
         temp.last_transfer = Corba::wrap_nullable_datetime(in.transfer_time);
 
         {
-            std::vector<std::string> nsservers;
-            {
-                BOOST_FOREACH(const Fred::DnsHost& nsserver, in.dns_hosts) {
-                    nsservers.push_back(nsserver.get_fqdn());
-                }
+            temp.nservers.length(in.dns_hosts.size());
+
+            unsigned long i = 0;
+            BOOST_FOREACH(const Fred::DnsHost& nsserver, in.dns_hosts) {
+                temp.nservers[i] = wrap_nameserver(nsserver)->_value();
+                ++i;
             }
-            wrap_string_sequence(nsservers, temp.nservers);
         }
 
         {
