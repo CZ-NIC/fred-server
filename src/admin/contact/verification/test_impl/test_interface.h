@@ -86,8 +86,7 @@ namespace ContactVerification{
     typedef Util::Factory<TestDataProvider_intf, Util::ClassCreator<TestDataProvider_intf> > test_data_provider_factory;
 
     template<typename Test_impl> class test_auto_registration
-    : public
-        Util::FactoryAutoRegister<Test, Test_impl>,
+    :   Util::FactoryAutoRegister<Test, Test_impl>,
         Util::FactoryAutoRegister<TestDataProvider_intf, TestDataProvider<Test_impl> >
     { };
 }
