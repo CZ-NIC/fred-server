@@ -40,6 +40,8 @@
 #include "cfg/handle_general_args.h"
 #include "hp/handle_hpmail_args.h"
 
+#include "util/optys/handle_optys_mail_args.h"
+
 #include "src/fredlib/db_settings.h"
 
 using namespace Database;
@@ -760,6 +762,33 @@ void notify_letters_optys_send_impl(
         )
 {
     std::cout << "notify_letters_optys_send_impl " <<std::endl;
+
+    {//parse config file
+            boost::shared_ptr<HandleOptysMailArgs> handle_optys_args(new HandleOptysMailArgs);
+
+            HandlerPtrVector hpv =
+                boost::assign::list_of
+                    (HandleArgsPtr(new HandleConfigFileArgs(optys_config_file) ))
+                    (HandleArgsPtr(handle_optys_args));
+
+            // it always needs some argv vector, argc cannot be 0
+            FakedArgs fa;
+            fa.add_argv(std::string(""));
+
+            //handle
+            for(HandlerPtrVector::const_iterator i = hpv.begin()
+                    ; i != hpv.end(); ++i )
+            {
+                FakedArgs fa_out;
+                (*i)->handle( fa.get_argc(), fa.get_argv(), fa_out);
+                fa=fa_out;//last output to next input
+            }//for HandlerPtrVector
+
+            std::map<std::string, std::string> set_cfg = handle_optys_args->get_map();
+
+    }
+
+
 }
 
 
