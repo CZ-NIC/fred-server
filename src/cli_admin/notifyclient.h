@@ -114,7 +114,6 @@ public:
     void sendLetters(std::auto_ptr<Fred::File::Transferer> fileman
             , const std::string &conf_file);
     void sendSMS(const std::string& command , const std::string& param_quote_by);
-    HPCfgMap readHPConfig(const std::string &conf_file);
     void send_letters_impl(
         Fred::File::Transferer* fileman
         , const HPCfgMap& hpmail_config

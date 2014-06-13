@@ -279,6 +279,35 @@ void NotifyClient::sms_send()
             Fred::Messages::LetterProcInfo domestic_letters_;
     };
 
+    /**
+     * read extra config file into key-value config map
+     */
+    template <class HANDLE_ARGS> std::map<std::string, std::string> readConfigFile(const std::string &conf_file)
+    {
+            boost::shared_ptr<HANDLE_ARGS> handle_args_ptr(new HANDLE_ARGS);
+
+            HandlerPtrVector hpv =
+                boost::assign::list_of
+                    (HandleArgsPtr(new HandleConfigFileArgs(conf_file) ))
+                    (HandleArgsPtr(handle_args_ptr));
+
+            // it always needs some argv vector, argc cannot be 0
+            FakedArgs fa;
+            fa.add_argv(std::string(""));
+
+            //handle
+            for(HandlerPtrVector::const_iterator i = hpv.begin()
+                    ; i != hpv.end(); ++i )
+            {
+                FakedArgs fa_out;
+                (*i)->handle( fa.get_argc(), fa.get_argv(), fa_out);
+                fa=fa_out;//last output to next input
+            }//for HandlerPtrVector
+
+            std::map<std::string, std::string> set_cfg = handle_args_ptr->get_map();
+
+            return set_cfg;
+    }
 
   /*
    * This method sends letters from table letter_archive
@@ -293,7 +322,7 @@ void NotifyClient::sms_send()
 
      Fred::Messages::ManagerPtr messages_manager = Fred::Messages::create_manager();
 
-     HPCfgMap hpmail_config = readHPConfig(conf_file);
+     HPCfgMap hpmail_config = readConfigFile<HandleHPMailArgs>(conf_file);
 
      std::string domestic_country_name = "Czech Republic";
      const std::size_t max_attempts_limit = 3;
@@ -438,7 +467,7 @@ void NotifyClient::sms_send()
       TRACE("[CALL] Fred::Notify::sendFile()");
 
 
-      HPCfgMap hpmail_config = readHPConfig(conf_file);
+      HPCfgMap hpmail_config = readConfigFile<HandleHPMailArgs>(conf_file);
 
       LOGGER(PACKAGE).debug(boost::format("File to send %1% ") % filename);
 
@@ -468,33 +497,6 @@ void NotifyClient::sms_send()
       }
 
   }
-
-    HPCfgMap NotifyClient::readHPConfig(const std::string &conf_file)
-    {
-            boost::shared_ptr<HandleHPMailArgs> hhp(new HandleHPMailArgs);
-
-            HandlerPtrVector hpv =
-                boost::assign::list_of
-                    (HandleArgsPtr(new HandleConfigFileArgs(conf_file) ))
-                    (HandleArgsPtr(hhp));
-
-            // it always needs some argv vector, argc cannot be 0
-            FakedArgs fa;
-            fa.add_argv(std::string(""));
-
-            //handle
-            for(HandlerPtrVector::const_iterator i = hpv.begin()
-                    ; i != hpv.end(); ++i )
-            {
-                FakedArgs fa_out;
-                (*i)->handle( fa.get_argc(), fa.get_argv(), fa_out);
-                fa=fa_out;//last output to next input
-            }//for HandlerPtrVector
-
-            HPCfgMap set_cfg = hhp->get_map();
-
-            return set_cfg;
-    }
 
 //#4712#comment:23
 void notify_registered_letters_manual_send_impl(const std::string& nameservice_host_port
@@ -763,31 +765,7 @@ void notify_letters_optys_send_impl(
 {
     std::cout << "notify_letters_optys_send_impl " <<std::endl;
 
-    {//parse config file
-            boost::shared_ptr<HandleOptysMailArgs> handle_optys_args(new HandleOptysMailArgs);
-
-            HandlerPtrVector hpv =
-                boost::assign::list_of
-                    (HandleArgsPtr(new HandleConfigFileArgs(optys_config_file) ))
-                    (HandleArgsPtr(handle_optys_args));
-
-            // it always needs some argv vector, argc cannot be 0
-            FakedArgs fa;
-            fa.add_argv(std::string(""));
-
-            //handle
-            for(HandlerPtrVector::const_iterator i = hpv.begin()
-                    ; i != hpv.end(); ++i )
-            {
-                FakedArgs fa_out;
-                (*i)->handle( fa.get_argc(), fa.get_argv(), fa_out);
-                fa=fa_out;//last output to next input
-            }//for HandlerPtrVector
-
-            std::map<std::string, std::string> set_cfg = handle_optys_args->get_map();
-
-    }
-
+    std::map<std::string, std::string> set_cfg = readConfigFile<HandleOptysMailArgs>(optys_config_file);
 
 }
 
