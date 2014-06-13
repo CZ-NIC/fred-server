@@ -65,6 +65,14 @@ namespace Fred
                 (AUTO_TO_BE_DECIDED);
         }
 
+        inline std::vector<std::string> get_tests_updateable() {
+           return boost::assign::list_of
+                (AUTO_OK)
+                (AUTO_FAIL)
+                (AUTO_TO_BE_DECIDED)
+                (FAIL_REQ);
+        }
+
         inline std::vector<std::string> get_not_yet_resolved() {
             return boost::assign::list_of
                 (ENQUEUE_REQ)

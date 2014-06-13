@@ -12,7 +12,7 @@ namespace  Admin {
     ) {
         Logging::Context log("update_tests");
 
-        std::vector<std::string> allowed_statuses = Fred::ContactCheckStatus::get_resolution_awaiting();
+        std::vector<std::string> allowed_statuses = Fred::ContactCheckStatus::get_tests_updateable();
         // if current check status is not valid for tests change...
         if(
             std::find(
