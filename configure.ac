@@ -52,6 +52,17 @@ AC_CHECK_LIB([mpdec], [mpd_free], [],
     AC_MSG_ERROR([library mpdec not found])
 ])
 
+AC_CHECK_LIB([ssh], [ssh_buffer_free], [],
+[
+    AC_MSG_ERROR([library ssh not found])
+])
+
+AC_CHECK_LIB([zip], [zip_close], [],
+[
+    AC_MSG_ERROR([library zip not found])
+])
+
+
 # Check for omniORB (note that 4.1.1 is bugged for us)
 PKG_CHECK_MODULES(OMNIORB4, [omniORB4 > 4.1.1, omniDynamic4, omnithread3])
 # check for libxml2

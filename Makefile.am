@@ -1842,7 +1842,7 @@ src_cli_admin_fred_admin_LDADD = \
 		$(BOOST_SERIALIZATION_LIB) \
 		$(POSTGRESQL_LIB) \
 		$(BOOST_SYSTEM_LIB) \
-		-lresolv
+		-lresolv -lssh -lzip
 #
 # src/cli_admin/fred-admin
 
