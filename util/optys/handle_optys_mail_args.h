@@ -21,8 +21,8 @@
  *  optys mail upload configuration
  */
 
-#ifndef HANDLE_OPTYS_MAIL_ARGS_H_
-#define HANDLE_OPTYS_MAIL_ARGS_H_
+#ifndef HANDLE_OPTYS_MAIL_ARGS_H_b41ac6cd859a4393b867be7898b2b474
+#define HANDLE_OPTYS_MAIL_ARGS_H_b41ac6cd859a4393b867be7898b2b474
 
 #include <iostream>
 #include <exception>

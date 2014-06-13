@@ -41,6 +41,8 @@
 #include "hp/handle_hpmail_args.h"
 
 #include "util/optys/handle_optys_mail_args.h"
+#include "util/optys/upload_client.h"
+
 
 #include "src/fredlib/db_settings.h"
 
@@ -764,7 +766,6 @@ void notify_letters_optys_send_impl(
         )
 {
     std::cout << "notify_letters_optys_send_impl " <<std::endl;
-
     std::map<std::string, std::string> set_cfg = readConfigFile<HandleOptysMailArgs>(optys_config_file);
 
 }
