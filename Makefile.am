@@ -25,6 +25,7 @@ include $(top_srcdir)/am_doxygen.am
 CLEANFILES = \
 		config/server.conf \
 		config/hpmail.conf \
+		config/optysmail.conf \
 		init-scripts/fred-server \
 		doxy.conf \
 		src/corba/MessagesSK.cc \
@@ -100,7 +101,8 @@ EXTRA_DIST = \
 
 dist_fredconf_DATA = \
 		config/server.conf \
-		config/hpmail.conf
+		config/hpmail.conf \
+		config/optysmail.conf
 
 dist_rcconf_SCRIPTS = \
 		init-scripts/fred-server
