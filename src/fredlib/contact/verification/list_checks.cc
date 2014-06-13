@@ -242,20 +242,24 @@ namespace Fred
                     // looking for time when check tests finished ~ check.status was set to auto_*
                     "SELECT"
                     "   "+ check_alias +".handle    AS handle_, "
-                    "   MIN(c_c_h.update_time)      AS tests_finished_ "
+                    "   MIN(c_c_h.update_time)"
+                    "        AT TIME ZONE 'utc' "                                   /* conversion from 'utc' ... */
+                    "        AT TIME ZONE $1::text "
+                    "                               AS tests_finished_ "
                     "   FROM contact_check AS "+ check_alias +" "
                     "       LEFT JOIN contact_check_history      AS c_c_h "
                     "           ON "+ check_alias +".id = c_c_h.contact_check_id "
                     "       JOIN enum_contact_check_status          AS enum_c_s "
                     "           ON c_c_h.enum_contact_check_status_id = enum_c_s.id "
                     "   WHERE"
-                    "       "+ check_alias +".handle = ANY($1::uuid[]) "
+                    "       "+ check_alias +".handle = ANY($2::uuid[]) "
                     "       AND"
-                    "       (enum_c_s.handle = ANY($2::varchar[]) "
+                    "       (enum_c_s.handle = ANY($3::varchar[]) "
                     "           OR    "
                     "       c_c_h.contact_check_id IS NULL)"
                     "   GROUP BY "+ check_alias +".handle",
                     Database::query_param_list
+                        (_output_timezone)
                         ( std::string("{") + boost::join(handles, ",") + "}")
                         ( std::string("{") + boost::join(statuses, ",") + "}")
                 );
