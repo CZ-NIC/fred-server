@@ -752,5 +752,16 @@ void notify_registered_letters_manual_send_impl(const std::string& nameservice_h
       return ;
 }//
 
+
+void notify_letters_optys_send_impl(
+        const std::string& nameservice_host_port
+        , const std::string& nameservice_context
+        , const std::string& optys_config_file
+        )
+{
+    std::cout << "notify_letters_optys_send_impl " <<std::endl;
+}
+
+
 } // namespace Admin;
 
