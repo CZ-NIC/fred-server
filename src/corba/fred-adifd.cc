@@ -116,7 +116,7 @@ int main(int argc, char *argv[])
             ->register_server(myccReg_Admin_i.release(), "Admin");
 
         CorbaContainer::get_instance()
-            ->register_server(new Registry::Administrative::Server_i(server_name), "Administrative");
+            ->register_server(new Registry::Administrative::Server_i(server_name), "AdminBlocking");
 
         run_server(CfgArgs::instance(), CorbaContainer::get_instance());
 
