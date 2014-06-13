@@ -1,5 +1,5 @@
 [optys_upload]
-host = "ftps.optys.cz"
+host = "localhost"
 user = @OPTYS_LOGIN_NAME@
 password = @OPTYS_LOGIN_PASSWORD@
 port = @OPTYS_LOGIN_PORT@
