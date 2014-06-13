@@ -36,25 +36,21 @@
 namespace Admin
 {
 namespace ContactVerification{
-    using std::string;
-    using std::vector;
-    using std::set;
-    using boost::tuple;
 
     class Test {
         public:
             struct TestRunResult {
-                string                  status;
-                Optional<string>        error_message;
+                std::string                     status;
+                Optional<std::string>           error_message;
                 // XXX hopefuly one day related mail and messages will be unified
-                set<unsigned long long> related_mail_archive_ids;
-                set<unsigned long long> related_message_archive_ids;
+                std::set<unsigned long long>    related_mail_archive_ids;
+                std::set<unsigned long long>    related_message_archive_ids;
 
                 TestRunResult(
-                    const string&                   _status,
-                    const Optional<string>&         _error_msg = Optional<string>(),
-                    const set<unsigned long long>&  _related_mail_archive_ids = set<unsigned long long>(),
-                    const set<unsigned long long>&  _related_message_archive_ids = set<unsigned long long>()
+                    const std::string&                   _status,
+                    const Optional<std::string>&         _error_msg = Optional<std::string>(),
+                    const std::set<unsigned long long>&  _related_mail_archive_ids = std::set<unsigned long long>(),
+                    const std::set<unsigned long long>&  _related_message_archive_ids = std::set<unsigned long long>()
                 );
             };
 
@@ -63,17 +59,17 @@ namespace ContactVerification{
              */
             virtual TestRunResult run(unsigned long long _history_id) const = 0;
             virtual ~Test();
-            static string registration_name();
+            static std::string registration_name();
     };
 
     struct TestDataProvider_intf {
         virtual TestDataProvider_intf& init_data(unsigned long long _contact_history_id) = 0;
-        virtual vector<string> get_string_data() const = 0;
+        virtual std::vector<std::string> get_string_data() const = 0;
         virtual ~TestDataProvider_intf() { }
     };
 
     template<typename T_test> struct _inheritTestRegName {
-        static string registration_name() { return T_test::registration_name(); }
+        static std::string registration_name() { return T_test::registration_name(); }
     };
 
     struct TestDataProvider_common : public TestDataProvider_intf {

@@ -32,10 +32,10 @@ namespace ContactVerification {
         TestDataProvider<TestNameSyntax> data;
         data.init_data(_history_id);
 
-        string name =  boost::algorithm::trim_copy(static_cast<std::string>(data.name_));
+        std::string name =  boost::algorithm::trim_copy(static_cast<std::string>(data.name_));
 
         if( name.find(' ') == std::string::npos ) {
-            return TestRunResult(Fred::ContactTestStatus::FAIL, string("name has to contain at least two words separated by space") );
+            return TestRunResult(Fred::ContactTestStatus::FAIL, std::string("name has to contain at least two words separated by space") );
         } else {
             return TestRunResult(Fred::ContactTestStatus::OK );
         }

@@ -134,7 +134,7 @@ namespace ContactVerification
             country_ = boost::algorithm::trim_copy(_data.info_contact_data.country.get_value_or_default());
         }
 
-        virtual vector<string> get_string_data() const {
+        virtual std::vector<std::string> get_string_data() const {
             return boost::assign::list_of
                 (name_)
                 (email_)
