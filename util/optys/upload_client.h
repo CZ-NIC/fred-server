@@ -25,6 +25,11 @@
 #define UPLOAD_CLIENT_H_1f78f9abca47483e845e3f3625299b50
 
 
+class OptysUploadClient
+{
+public:
+    OptysUploadClient(const std::string& host, int port, const std::string& user, const std::string& password);
+};
 
 
 

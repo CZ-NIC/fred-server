@@ -40,6 +40,7 @@
 #include "cfg/handle_general_args.h"
 #include "hp/handle_hpmail_args.h"
 
+#include "util/map_at.h"
 #include "util/optys/handle_optys_mail_args.h"
 #include "util/optys/upload_client.h"
 
@@ -767,6 +768,11 @@ void notify_letters_optys_send_impl(
 {
     std::cout << "notify_letters_optys_send_impl " <<std::endl;
     std::map<std::string, std::string> set_cfg = readConfigFile<HandleOptysMailArgs>(optys_config_file);
+
+    OptysUploadClient(map_at(set_cfg,"host"),
+        boost::lexical_cast<int>(map_at(set_cfg,"port")),
+        map_at(set_cfg,"user"),
+        map_at(set_cfg,"password"));
 
 }
 
