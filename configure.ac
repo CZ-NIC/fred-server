@@ -223,6 +223,24 @@ AC_ARG_WITH([epp_operations_charging], [AS_HELP_STRING([--with-epp-operations-ch
             [AC_SUBST([EPP_OPERATIONS_CHARGING], [$withval])],
             [AC_SUBST([EPP_OPERATIONS_CHARGING], [false])])
 
+#optys mail login name
+AC_ARG_WITH([optys_login_name], [AS_HELP_STRING([--with-optys_login_name],
+            [Optys mail login name])],
+            [AC_SUBST([OPTYS_LOGIN_NAME], [$withval])],
+            [AC_SUBST([OPTYS_LOGIN_NAME], [test])])
+
+#optys mail login password
+AC_ARG_WITH([optys_login_password], [AS_HELP_STRING([--with-optys_login_password],
+            [Optys mail login password])],
+            [AC_SUBST([OPTYS_LOGIN_PASSWORD], [$withval])],
+            [AC_SUBST([OPTYS_LOGIN_PASSWORD], [test])])
+
+#optys mail login port
+AC_ARG_WITH([optys_login_port], [AS_HELP_STRING([--with-optys_login_port],
+            [Optys mail login port])],
+            [AC_SUBST([OPTYS_LOGIN_PORT], [$withval])],
+            [AC_SUBST([OPTYS_LOGIN_PORT], [22])])
+
 
 #expand paths for bindir, sbindir and datarootdir variable
 AS_AC_EXPAND([BINDIR], [$bindir])
@@ -240,6 +258,9 @@ AC_DEFINE_UNQUOTED([CONFIG_FILE], [["]$SYSCONFDIR/fred/server.conf["]], [locatio
 
 # config file for hpmail (postservis)
 AC_DEFINE_UNQUOTED([HPMAIL_CONFIG], [["]$SYSCONFDIR/fred/hpmail.conf["]], [location of hpmail config file])
+
+# config file for optys mail service
+AC_DEFINE_UNQUOTED([OPTYS_CONFIG], [["]$SYSCONFDIR/fred/optysmail.conf["]], [location of optys mail service config file])
 
 # location of data for tests 
 AC_DEFINE_UNQUOTED([TEST_DATA], [["]$DATAROOTDIR/["]], [location of data for tests])
@@ -446,6 +467,7 @@ AC_CONFIG_FILES([Makefile
                  fred-server.spec
                  config/server.conf
                  config/hpmail.conf
+                 config/optysmail.conf
                  init-scripts/fred-server
                  doxy.conf
                  ])

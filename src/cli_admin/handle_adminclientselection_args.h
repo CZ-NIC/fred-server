@@ -2558,5 +2558,42 @@ class HandleContactVerificationStartEnqueuedChecksArgsGrp : public HandleCommand
         }
 };
 
+/**
+ * \class HandleAdminClientNotifyLettersOptysSendArgsGrp
+ * \brief admin client notify_letters_optys_send options handler
+ */
+class HandleAdminClientNotifyLettersOptysSendArgsGrp : public HandleCommandGrpArgs
+{
+public:
+    optional_string optys_config;
+    CommandDescription get_command_option()
+    {
+        return CommandDescription("notify_letters_optys_send");
+    }
+    boost::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("notify_letters_optys_send options")));
+        cfg_opts->add_options()
+            ("notify_letters_optys_send", "send generated PDF notification letters to optys")
+
+            ("optys_config", boost::program_options
+                ::value<Checked::string>()->default_value(OPTYS_CONFIG)
+                     ->notifier(save_optional_string(optys_config))
+                , "configuration file for Optys client")
+                ;
+        return cfg_opts;
+    }//get_options_description
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }//handle
+};//class HandleAdminClientNotifyLettersOptysSendArgsGrp
+
 
 #endif //HANDLE_ADMINCLIENTSELECTION_ARGS_H_
