@@ -158,8 +158,10 @@ namespace Fred
                     "                                           AS update_time_, "  /* ... to _output_timezone */
 
                     "    status.handle                          AS status_handle_, "
-                    "    h.valid_from                           AS last_contact_change_ "
-
+                    "    h.valid_from "
+                    "        AT TIME ZONE 'utc' "                                   /* conversion from 'utc' ... */
+                    "        AT TIME ZONE $"+timezone_param_order+"::text "
+                    "                                           AS last_contact_change_ "
                     "FROM contact_check AS "+ check_alias +" "
                     "   JOIN enum_contact_testsuite     AS "+ enum_testsuite_alias +" "
                     "       ON "+ check_alias +".enum_contact_testsuite_id = "+ enum_testsuite_alias +".id "
