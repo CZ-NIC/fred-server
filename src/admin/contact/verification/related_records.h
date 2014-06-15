@@ -97,7 +97,8 @@ namespace Admin {
      */
     vector<related_message> get_related_messages(
         Fred::OperationContext& _ctx,
-        unsigned long long      _contact_id);
+        unsigned long long      _contact_id,
+        const std::string&      _output_timezone = "Europe/Prague");
 }
 
 

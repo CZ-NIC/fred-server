@@ -126,7 +126,8 @@ namespace  Admin {
 
     vector<related_message> get_related_messages(
         Fred::OperationContext& _ctx,
-        unsigned long long      _contact_id
+        unsigned long long      _contact_id,
+        const std::string&      _output_timezone
     ) {
         static const std::map<unsigned, std::string> mail_status_names =
             boost::assign::map_list_of
@@ -138,17 +139,23 @@ namespace  Admin {
 
         Database::Result related_res = _ctx.get_conn().exec_params(
             "WITH check_id AS ( "
-            "SELECT c_ch.id "
-                "FROM contact_history AS c_h "
-                "   JOIN contact_check AS c_ch ON c_h.historyid = c_ch.contact_history_id "
-                "WHERE c_h.id = $1::bigint "
+                "SELECT c_ch.id "
+                    "FROM contact_history AS c_h "
+                        "JOIN contact_check AS c_ch ON c_h.historyid = c_ch.contact_history_id "
+                    "WHERE c_h.id = $1::bigint "
             ") ( "
                 "SELECT "
                     "c_ch_m_map.mail_archive_id  AS id_, "
                     "'email'                     AS comm_type_, "
                     "m_t.name                    AS content_type_, "
-                    "m_a.crdate                  AS created_, "
-                    "m_a.moddate                 AS updated_, "
+                    "m_a.crdate                  "
+                        "AT TIME ZONE 'utc' "                                   /* conversion from 'utc' ... */
+                        "AT TIME ZONE $2::text "
+                                                 "AS created_, "
+                    "m_a.moddate "
+                        "AT TIME ZONE 'utc' "                                   /* conversion from 'utc' ... */
+                        "AT TIME ZONE $2::text "
+                                                "AS updated_, "
                     "m_a.status                  AS status_id_, "
                     "''                          AS status_name_ "
                 "FROM "
@@ -161,8 +168,14 @@ namespace  Admin {
                     "c_ch_m_map.message_archive_id   AS id_, "
                     "c_t.type                        AS comm_type_, "
                     "m_t.type                        AS content_type_, "
-                    "m_a.crdate                      AS created_, "
-                    "m_a.moddate                     AS updated_, "
+                    "m_a.crdate "
+                        "AT TIME ZONE 'utc' "                                   /* conversion from 'utc' ... */
+                        "AT TIME ZONE $2::text "
+                                                    "AS created_, "
+                    "m_a.moddate "
+                        "AT TIME ZONE 'utc' "                                   /* conversion from 'utc' ... */
+                        "AT TIME ZONE $2::text "
+                                                    "AS updated_, "
                     "m_a.status_id                   AS status_id_, "
                     "enum_s_st.status_name           AS status_name_ "
                 "FROM "
@@ -173,7 +186,9 @@ namespace  Admin {
                     "JOIN message_type               AS m_t          ON m_a.message_type_id = m_t.id "
                     "JOIN enum_send_status           AS enum_s_st    ON enum_s_st.id = m_a.status_id "
             ") ",
-            Database::query_param_list(_contact_id)
+            Database::query_param_list
+                (_contact_id)
+                (_output_timezone)
         );
 
         vector<related_message> result;

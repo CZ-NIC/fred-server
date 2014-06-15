@@ -157,7 +157,7 @@ namespace ContactVerification {
     bool TestCzAddress::is_address_valid(
         const TestCzAddress::T_street_data& street,
         const TestCzAddress::T_words_shortened& city,
-        const string& postal_code
+        const std::string& postal_code
     ) const {
         using std::string;
         using std::vector;
@@ -195,7 +195,7 @@ namespace ContactVerification {
     std::string TestCzAddress::diagnose_problem(
         const TestCzAddress::T_street_data& _street,
         const TestCzAddress::T_words_shortened& _city,
-        const string& _postal_code
+        const std::string& _postal_code
     ) const {
         using std::string;
         using std::vector;
@@ -265,10 +265,10 @@ namespace ContactVerification {
     std::vector<std::string> TestCzAddress::generate_xpath_queries(
         TestCzAddress::T_street_data _street,
         TestCzAddress::T_words_shortened _city,
-        string _postal_code,
+        std::string _postal_code,
         Optional<address_part> _to_ommit
     ) const {
-
+        using std::string;
         using boost::assign::list_of;
 
         string postal_code_condition = xpath_postal_code_match(_postal_code, "@MinPSC", "@MaxPSC");
@@ -508,6 +508,7 @@ namespace ContactVerification {
     }
 
     std::string xpath_multiword_match(TestCzAddress::T_words_shortened _shortened_words, const std::string& _delimiters, const std::string& _xpath_lhs) {
+        using std::string;
         std::vector<std::string> result;
 
         std::string get_nth_word_pre;

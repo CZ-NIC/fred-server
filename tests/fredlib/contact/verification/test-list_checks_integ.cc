@@ -77,7 +77,6 @@ BOOST_AUTO_TEST_CASE(test_Exec_testsuite_filter)
         .set_testsuite_handle(testsuite2.testsuite_handle)
         .exec(ctx);
 
-    bool found = false;
     for(std::vector<Fred::ListChecksItem>::const_iterator it = list.begin();
         it != list.end();
         ++it

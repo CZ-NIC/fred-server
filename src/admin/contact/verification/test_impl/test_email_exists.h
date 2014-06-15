@@ -56,7 +56,7 @@ namespace ContactVerification
             }
         }
 
-        virtual vector<string> get_string_data() const {
+        virtual std::vector<std::string> get_string_data() const {
             return boost::assign::list_of(email_);
         }
     };

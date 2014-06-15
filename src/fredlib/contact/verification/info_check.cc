@@ -262,7 +262,7 @@ namespace Fred
 
             // for each history state of this test (NOTE - states are clustered by test id)
             while( it_test_histories != contact_test_history_result.end() ) {
-                if( static_cast<unsigned long long>( (*it_test_histories)["id_"] ) != static_cast<long long>( (*it_tests)["id_"] ) ) {
+                if( static_cast<unsigned long long>( (*it_test_histories)["id_"] ) != static_cast<unsigned long long>( (*it_tests)["id_"] ) ) {
                     break;
                 }
 

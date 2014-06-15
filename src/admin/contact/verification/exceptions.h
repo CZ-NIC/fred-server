@@ -75,6 +75,10 @@ namespace Admin
     struct ExceptionDomainsAlreadyDeleted : virtual Fred::OperationException {
         const char* what() const throw() {return "domains already deleted";}
     };
+
+    struct ExceptionTestImplementationError : virtual Fred::OperationException {
+        const char* what() const throw() {return "error in tests implementation";}
+    };
 }
 
 #endif

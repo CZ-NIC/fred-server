@@ -46,7 +46,7 @@ namespace ContactVerification {
             return TestRunResult(Fred::ContactTestStatus::OK );
         }
 
-        return TestRunResult(Fred::ContactTestStatus::FAIL, string("invalid e-mail format") );
+        return TestRunResult(Fred::ContactTestStatus::FAIL, std::string("invalid e-mail format") );
     }
 }
 }

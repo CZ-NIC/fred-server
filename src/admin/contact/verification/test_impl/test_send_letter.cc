@@ -39,7 +39,7 @@ namespace ContactVerification {
     const Fred::Document::GenerationType TestSendLetter::letter_doc_type_(Fred::Document::GT_ADMIN_CONTACT_VERIFICATION_CONTACT_CHECK_THANK_YOU);
     const std::string                    TestSendLetter::genereted_file_name(TestSendLetter::letter_message_type_);
 
-    static inline string xml_cdata(const string& _input) {
+    static inline std::string xml_cdata(const std::string& _input) {
         return "<![CDATA[" + _input + "]]>";
     }
 
@@ -134,7 +134,7 @@ namespace ContactVerification {
         bool error = false;
         std::string error_msg;
 
-        set<unsigned long long> message_ids;
+        std::set<unsigned long long> message_ids;
 
         try {
             message_ids.insert(
@@ -151,9 +151,9 @@ namespace ContactVerification {
         }
 
         if(error) {
-            return TestRunResult(Fred::ContactTestStatus::ERROR, error_msg, set<unsigned long long>(), message_ids );
+            return TestRunResult(Fred::ContactTestStatus::ERROR, error_msg, std::set<unsigned long long>(), message_ids );
         } else {
-            return TestRunResult(Fred::ContactTestStatus::MANUAL, string(), set<unsigned long long>(), message_ids );
+            return TestRunResult(Fred::ContactTestStatus::MANUAL, std::string(), std::set<unsigned long long>(), message_ids );
         }
     }
 

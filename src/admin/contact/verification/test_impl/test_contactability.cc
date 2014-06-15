@@ -41,7 +41,7 @@ namespace ContactVerification {
     const boost::gregorian::days         TestContactability::deadline_interval_(25);
     const std::string                    TestContactability::generated_file_name_("contact_check_notice");
 
-    static inline string xml_cdata(const string& _input) {
+    static inline std::string xml_cdata(const std::string& _input) {
         return "<![CDATA[" + _input + "]]>";
     }
 
@@ -136,8 +136,8 @@ namespace ContactVerification {
         bool error = false;
         std::string error_msg;
 
-        set<unsigned long long> mail_ids;
-        set<unsigned long long> message_ids;
+        std::set<unsigned long long> mail_ids;
+        std::set<unsigned long long> message_ids;
 
         try {
             mail_ids.insert(
@@ -168,7 +168,7 @@ namespace ContactVerification {
         if(error) {
             return TestRunResult(Fred::ContactTestStatus::ERROR, error_msg, mail_ids, message_ids );
         } else {
-            return TestRunResult(Fred::ContactTestStatus::MANUAL, string(), mail_ids, message_ids );
+            return TestRunResult(Fred::ContactTestStatus::MANUAL, std::string(), mail_ids, message_ids );
         }
     }
 

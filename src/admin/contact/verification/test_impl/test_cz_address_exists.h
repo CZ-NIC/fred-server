@@ -67,17 +67,17 @@ namespace ContactVerification
             bool is_address_valid(
                 const TestCzAddress::T_street_data& street,
                 const TestCzAddress::T_words_shortened& city,
-                const string& postal_code) const;
+                const std::string& postal_code) const;
 
             std::string diagnose_problem(
                 const TestCzAddress::T_street_data& street,
                 const TestCzAddress::T_words_shortened& city,
-                const string& postal_code) const;
+                const std::string& postal_code) const;
 
             std::vector<std::string> generate_xpath_queries(
                 TestCzAddress::T_street_data street,
                 TestCzAddress::T_words_shortened city,
-                string postal_code,
+                std::string postal_code,
                 Optional<address_part> to_ommit = Optional<address_part>()) const;
 
 
@@ -105,7 +105,7 @@ namespace ContactVerification
             country_ = boost::algorithm::trim_copy(_data.info_contact_data.country.get_value_or_default());
         }
 
-        virtual vector<string> get_string_data() const {
+        virtual std::vector<std::string> get_string_data() const {
             return boost::assign::list_of
                 (street1_)
                 (city_)

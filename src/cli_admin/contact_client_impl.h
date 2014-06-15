@@ -384,26 +384,32 @@ struct contact_verification_start_enqueued_checks_impl
           ns_args_ptr->get_nameservice_context()
       );
 
-      std::vector<std::string> started_checks = Admin::run_all_enqueued_checks(
-          Admin::create_test_impl_prototypes(
-              boost::shared_ptr<Fred::Mailer::Manager>(
-                  new MailerManager(
-                      CorbaContainer::get_instance()->getNS()
-                  )
-              ),
-              boost::shared_ptr<Fred::Document::Manager>(
-                  Fred::Document::Manager::create(
-                      CfgArgGroups::instance()->get_handler_ptr_by_type<HandleRegistryArgsGrp>()->get_docgen_path(),
-                      CfgArgGroups::instance()->get_handler_ptr_by_type<HandleRegistryArgsGrp>()->get_docgen_template_path(),
-                      CfgArgGroups::instance()->get_handler_ptr_by_type<HandleRegistryArgsGrp>()->get_fileclient_path(),
-                      CfgArgGroups::instance()->get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>()->get_nameservice_host_port()
-                  ).release()
-              ),
-              // returns shared_ptr
-              Fred::Messages::create_manager(),
-              CfgArgGroups::instance()->get_handler_ptr_by_type<HandleContactVerificationStartEnqueuedChecksArgsGrp>()->params.cz_address_mvcr_xml_path
-          )
-      );
+      std::vector<std::string> started_checks;
+
+      try {
+          started_checks = Admin::run_all_enqueued_checks(
+              Admin::create_test_impl_prototypes(
+                  boost::shared_ptr<Fred::Mailer::Manager>(
+                      new MailerManager(
+                          CorbaContainer::get_instance()->getNS()
+                      )
+                  ),
+                  boost::shared_ptr<Fred::Document::Manager>(
+                      Fred::Document::Manager::create(
+                          CfgArgGroups::instance()->get_handler_ptr_by_type<HandleRegistryArgsGrp>()->get_docgen_path(),
+                          CfgArgGroups::instance()->get_handler_ptr_by_type<HandleRegistryArgsGrp>()->get_docgen_template_path(),
+                          CfgArgGroups::instance()->get_handler_ptr_by_type<HandleRegistryArgsGrp>()->get_fileclient_path(),
+                          CfgArgGroups::instance()->get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>()->get_nameservice_host_port()
+                      ).release()
+                  ),
+                  // returns shared_ptr
+                  Fred::Messages::create_manager(),
+                  CfgArgGroups::instance()->get_handler_ptr_by_type<HandleContactVerificationStartEnqueuedChecksArgsGrp>()->params.cz_address_mvcr_xml_path
+              )
+          );
+      } catch (const Admin::ExceptionTestImplementationError& ) {
+          throw ReturnCode("error in test implementation or prototype handling", 1);
+      }
 
       if(started_checks.size() > 0) {
           std::cout << "started checks:" << std::endl;

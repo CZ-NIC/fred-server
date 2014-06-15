@@ -738,6 +738,12 @@ autoclean_contact_verification_db::autoclean_contact_verification_db() {
             "domain_contact_map", "contactid",
             "contact", "id"
         ));
+
+        foreign_keys.push_back(boost::make_tuple(
+            "object_state_request_reason_object_state_request_id_fkey",
+            "object_state_request_reason", "object_state_request_id",
+            "object_state_request", "id"
+        ));
     }
 
     clean(ctx);

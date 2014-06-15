@@ -21,11 +21,11 @@
 namespace Admin {
 namespace ContactVerification {
     Test::TestRunResult::TestRunResult(
-        const string&                   _status,
-        const Optional<string>&         _error_msg,
+        const std::string&                   _status,
+        const Optional<std::string>&         _error_msg,
         // XXX hopefuly one day related mail and messages will be unified
-        const set<unsigned long long>&  _related_mail_archive_ids,
-        const set<unsigned long long>&  _related_message_archive_ids
+        const std::set<unsigned long long>&  _related_mail_archive_ids,
+        const std::set<unsigned long long>&  _related_message_archive_ids
     ) :
         status(_status),
         error_message(_error_msg),

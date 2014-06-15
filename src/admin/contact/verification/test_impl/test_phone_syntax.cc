@@ -35,10 +35,10 @@ namespace ContactVerification {
         TestDataProvider<TestPhoneSyntax> data;
         data.init_data(_history_id);
 
-        string trimmed_telephone =  boost::algorithm::trim_copy(static_cast<std::string>(data.phone_));
+        std::string trimmed_telephone =  boost::algorithm::trim_copy(static_cast<std::string>(data.phone_));
 
         if(trimmed_telephone.empty()) {
-            return TestRunResult(Fred::ContactTestStatus::SKIPPED, string("optional telephone is empty") );
+            return TestRunResult(Fred::ContactTestStatus::SKIPPED, std::string("optional telephone is empty") );
         }
 
         if ( boost::regex_match(
@@ -49,7 +49,7 @@ namespace ContactVerification {
             return TestRunResult(Fred::ContactTestStatus::OK );
         }
 
-        return TestRunResult(Fred::ContactTestStatus::FAIL, string("invalid phone format") );
+        return TestRunResult(Fred::ContactTestStatus::FAIL, std::string("invalid phone format") );
     }
 }
 }
