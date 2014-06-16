@@ -123,7 +123,7 @@ int main(int argc, char *argv[])
             ->register_server(admin_contact_verification_server.release(), "AdminContactVerification");
 
         CorbaContainer::get_instance()
-            ->register_server(new Registry::Administrative::Server_i(server_name), "Administrative");
+            ->register_server(new Registry::Administrative::Server_i(server_name), "AdminBlocking");
 
         run_server(CfgArgs::instance(), CorbaContainer::get_instance());
 
