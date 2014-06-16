@@ -584,7 +584,9 @@ setup_special_contact::setup_special_contact(
             contact_handle_ = "CONTACT_" + RandomDataGenerator().xnumstring(10);
             Fred::CreateContact create(contact_handle_, registrar_.info_data.handle);
             if(country_code_.isset()) {
-                create.set_country(country_code_.get_value_or_default());
+                Fred::Contact::PlaceAddress place;
+                place.country = country_code_.get_value_or_default();
+                create.set_place(place);
             }
             create.exec(ctx);
             ctx.commit_transaction();
