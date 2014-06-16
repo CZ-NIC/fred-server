@@ -61,7 +61,7 @@ namespace Registry
 
         Fred::GetBlockingStatusDescList::StatusDescList BlockingImpl::getBlockingStatusDescList(const std::string &_lang)
         {
-            Logging::Context ctx_server(this->get_server_name());
+            Logging::Context ctx_server(create_ctx_name(this->get_server_name()));
             Logging::Context ctx_method("get-blocking-status-desc-list");
             try {
                 Fred::OperationContext ctx;
@@ -346,7 +346,7 @@ namespace Registry
             const std::string &_reason,
             unsigned long long _log_req_id)
         {
-            Logging::Context ctx_server(this->get_server_name());
+            Logging::Context ctx_server(create_ctx_name(this->get_server_name()));
             Logging::Context ctx_method("block-domains-id");
 
             EX_DOMAIN_ID_NOT_FOUND domain_id_not_found;
@@ -549,7 +549,7 @@ namespace Registry
             const std::string &_reason,
             unsigned long long _log_req_id)
         {
-            Logging::Context ctx_server(this->get_server_name());
+            Logging::Context ctx_server(create_ctx_name(this->get_server_name()));
             Logging::Context ctx_method("restore-pre-administrative-block-states-id");
 
             EX_DOMAIN_ID_NOT_BLOCKED domain_id_not_blocked;
@@ -648,7 +648,7 @@ namespace Registry
             const std::string &_reason,
             unsigned long long _log_req_id)
         {
-            Logging::Context ctx_server(this->get_server_name());
+            Logging::Context ctx_server(create_ctx_name(this->get_server_name()));
             Logging::Context ctx_method("update-block-domains-id");
 
             EX_DOMAIN_ID_NOT_FOUND domain_id_not_found;
@@ -731,7 +731,7 @@ namespace Registry
             const std::string &_reason,
             unsigned long long _log_req_id)
         {
-            Logging::Context ctx_server(this->get_server_name());
+            Logging::Context ctx_server(create_ctx_name(this->get_server_name()));
             Logging::Context ctx_method("unblock-domains-id");
 
             EX_DOMAIN_ID_NOT_BLOCKED domain_id_not_blocked;
@@ -848,7 +848,7 @@ namespace Registry
             const std::string &_reason,
             unsigned long long _log_req_id)
         {
-            Logging::Context ctx_server(this->get_server_name());
+            Logging::Context ctx_server(create_ctx_name(this->get_server_name()));
             Logging::Context ctx_method("blacklist-and-delete-domains-id");
 
             EX_DOMAIN_ID_NOT_FOUND domain_id_not_found;
@@ -914,7 +914,7 @@ namespace Registry
             bool _with_delete,
             unsigned long long _log_req_id)
         {
-            Logging::Context ctx_server(this->get_server_name());
+            Logging::Context ctx_server(create_ctx_name(this->get_server_name()));
             Logging::Context ctx_method("blacklist-domains-id");
 
             try {
