@@ -28,6 +28,7 @@
 #include <iostream>
 #include <iterator>
 #include <iomanip>
+#include <sys/stat.h>
 #include <boost/shared_ptr.hpp>
 
 #include <libssh/libssh.h>
@@ -35,6 +36,67 @@
 
 
 #include "upload_client.h"
+
+    struct ScpSessionDeleter
+    {
+        void operator()(ssh_scp s)
+        {
+            if(s != NULL)
+            {
+                ssh_scp_close(s);
+                ssh_scp_free(s);
+            }
+        }
+    };
+
+
+    class ScpWriteSession
+    {
+        boost::shared_ptr<ssh_session_struct>  ssh_session_;
+        boost::shared_ptr<ssh_scp_struct>  scp_session_;
+
+    public:
+        ScpWriteSession(boost::shared_ptr<ssh_session_struct>  ssh_session)
+        : ssh_session_(ssh_session)
+        , scp_session_(ssh_scp_new(ssh_session.get(), SSH_SCP_WRITE, "."), ScpSessionDeleter())
+        {
+            if(scp_session_.get() == NULL)
+            {
+                std::string errmsg("ssh_scp_new failed: ");
+                errmsg += ssh_get_error(ssh_session_.get());
+                throw std::runtime_error(errmsg);
+            }
+
+            if(ssh_scp_init(scp_session_.get()) != SSH_OK)
+            {
+                std::string errmsg("ssh_scp_init failed: ");
+                errmsg += ssh_get_error(ssh_session_.get());
+                throw std::runtime_error(errmsg);
+            }
+        }
+
+        void upload_file(const std::string& file_name, const std::string& file_content)
+        {
+            if(ssh_scp_push_file(scp_session_.get(), file_name.c_str(), file_content.length(), S_IRUSR | S_IWUSR) != SSH_OK)
+            {
+                std::string errmsg("Can't open remote file: ");
+                errmsg += file_name;
+                errmsg += " error: ";
+                errmsg += ssh_get_error(ssh_session_.get());
+                throw std::runtime_error(errmsg);
+            }
+
+            if(ssh_scp_write(scp_session_.get(), file_content.c_str(), file_content.length()) != SSH_OK)
+            {
+                std::string errmsg("Can't write to remote file: ");
+                errmsg += file_name;
+                errmsg += " error: ";
+                errmsg += ssh_get_error(ssh_session_.get());
+                throw std::runtime_error(errmsg);
+            }
+        }
+
+    };
 
 
     struct SshSessionDeleter
@@ -147,10 +209,17 @@
                throw std::runtime_error(errmsg);
            }
         }
+
+        ScpWriteSession get_scp_write()
+        {
+            return ScpWriteSession(ssh_session_);
+        }
     };
 
     OptysUploadClient::OptysUploadClient(const std::string& host, int port, const std::string& user, const std::string& password)
     {
-        SshSession s(host, port, user, password);
+        std::string file_name("test.txt");
+        std::string file_content("test test");
+        SshSession(host, port, user, password).get_scp_write().upload_file(file_name, file_content);
     }
 
