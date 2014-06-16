@@ -35,6 +35,10 @@
   * mojeid/contact verification - 30 days registration "protection" period for
     'e-mail' and 'telephone' values is now disabled for identical contact (by id)
 
+2014-05-12 Jan Korous (2.16.3)
+
+  * fix idn fqdn check
+
 2014-02-17 Jaromir Talir (2.16.2)
 
   * fix rpm dependencies
