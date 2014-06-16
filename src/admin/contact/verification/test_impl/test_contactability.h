@@ -125,13 +125,13 @@ namespace ContactVerification
             name_ = boost::algorithm::trim_copy(_data.info_contact_data.name.get_value_or_default());
             email_ = boost::algorithm::trim_copy(_data.info_contact_data.email.get_value_or_default());
             organization_ = boost::algorithm::trim_copy(_data.info_contact_data.organization.get_value_or_default());
-            street1_ = boost::algorithm::trim_copy(_data.info_contact_data.place.street1);
-            street2_ = boost::algorithm::trim_copy(_data.info_contact_data.place.street2.get_value_or_default());
-            street3_ = boost::algorithm::trim_copy(_data.info_contact_data.place.street3.get_value_or_default());
-            city_ = boost::algorithm::trim_copy(_data.info_contact_data.place.city);
-            stateorprovince_ = boost::algorithm::trim_copy(_data.info_contact_data.place.stateorprovince.get_value_or_default());
-            postalcode_ = boost::algorithm::trim_copy(_data.info_contact_data.place.postalcode);
-            country_ = boost::algorithm::trim_copy(_data.info_contact_data.place.country);
+            street1_ = boost::algorithm::trim_copy(_data.info_contact_data.place.get_value_or_default().street1);
+            street2_ = boost::algorithm::trim_copy(_data.info_contact_data.place.get_value_or_default().street2.get_value_or_default());
+            street3_ = boost::algorithm::trim_copy(_data.info_contact_data.place.get_value_or_default().street3.get_value_or_default());
+            city_ = boost::algorithm::trim_copy(_data.info_contact_data.place.get_value_or_default().city);
+            stateorprovince_ = boost::algorithm::trim_copy(_data.info_contact_data.place.get_value_or_default().stateorprovince.get_value_or_default());
+            postalcode_ = boost::algorithm::trim_copy(_data.info_contact_data.place.get_value_or_default().postalcode);
+            country_ = boost::algorithm::trim_copy(_data.info_contact_data.place.get_value_or_default().country);
         }
 
         virtual std::vector<std::string> get_string_data() const {

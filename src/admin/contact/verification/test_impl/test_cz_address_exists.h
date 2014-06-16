@@ -99,10 +99,10 @@ namespace ContactVerification
         std::string country_;
 
         virtual void store_data(const Fred::InfoContactOutput& _data) {
-            street1_ = boost::algorithm::trim_copy(_data.info_contact_data.place.street1);
-            city_ = boost::algorithm::trim_copy(_data.info_contact_data.place.city);
-            postalcode_ = boost::algorithm::trim_copy(_data.info_contact_data.place.postalcode);
-            country_ = boost::algorithm::trim_copy(_data.info_contact_data.place.country);
+            street1_ = boost::algorithm::trim_copy(_data.info_contact_data.place.get_value_or_default().street1);
+            city_ = boost::algorithm::trim_copy(_data.info_contact_data.place.get_value_or_default().city);
+            postalcode_ = boost::algorithm::trim_copy(_data.info_contact_data.place.get_value_or_default().postalcode);
+            country_ = boost::algorithm::trim_copy(_data.info_contact_data.place.get_value_or_default().country);
         }
 
         virtual std::vector<std::string> get_string_data() const {
