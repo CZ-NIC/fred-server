@@ -339,6 +339,29 @@ namespace Fred
                 if (update_contact_res.size() != 1) {
                     BOOST_THROW_EXCEPTION(InternalError("failed to update contact"));
                 }
+                else {
+                    const Fred::Contact::PlaceAddress place = place_.get_value_or_default();
+                    Admin::AdminContactVerificationObjectStates::conditionally_cancel_final_states(
+                        ctx,
+                        contact.info_contact_data.id,
+                        name_,
+                        organization_,
+                        place.street1_,
+                        place.street2_,
+                        place.street3_,
+                        place.city_,
+                        place.stateorprovince_,
+                        place.postalcode_,
+                        place.country_,
+                        telephone_,
+                        fax_,
+                        email_,
+                        notifyemail_,
+                        vat_,
+                        ssntype_,
+                        ssn_
+                    );
+                }
             }
 
             //UPDATE or INSERT contact_address
