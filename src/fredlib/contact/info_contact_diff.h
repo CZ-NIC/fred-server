@@ -72,15 +72,15 @@ namespace Fred
         DiffMemeber<Nullable<std::string> >::Type vat;/**< taxpayer identification number */
         DiffMemeber<Nullable<std::string> >::Type ssntype;/**< type of identification from enumssntype table */
         DiffMemeber<Nullable<std::string> >::Type ssn;/**< unambiguous identification number e.g. social security number, identity card number, date of birth */
-        DiffMemeber<Nullable<bool> >::Type disclosename;/**< whether to reveal contact name */
-        DiffMemeber<Nullable<bool> >::Type discloseorganization;/**< whether to reveal organization */
-        DiffMemeber<Nullable<bool> >::Type discloseaddress;/**< whether to reveal address */
-        DiffMemeber<Nullable<bool> >::Type disclosetelephone;/**< whether to reveal phone number */
-        DiffMemeber<Nullable<bool> >::Type disclosefax;/**< whether to reveal fax number */
-        DiffMemeber<Nullable<bool> >::Type discloseemail;/**< whether to reveal email address */
-        DiffMemeber<Nullable<bool> >::Type disclosevat;/**< whether to reveal taxpayer identification number */
-        DiffMemeber<Nullable<bool> >::Type discloseident;/**< whether to reveal unambiguous identification number */
-        DiffMemeber<Nullable<bool> >::Type disclosenotifyemail;/**< whether to reveal notify email */
+        DiffMemeber<bool>::Type disclosename;/**< whether to reveal contact name */
+        DiffMemeber<bool>::Type discloseorganization;/**< whether to reveal organization */
+        DiffMemeber<bool>::Type discloseaddress;/**< whether to reveal address */
+        DiffMemeber<bool>::Type disclosetelephone;/**< whether to reveal phone number */
+        DiffMemeber<bool>::Type disclosefax;/**< whether to reveal fax number */
+        DiffMemeber<bool>::Type discloseemail;/**< whether to reveal email address */
+        DiffMemeber<bool>::Type disclosevat;/**< whether to reveal taxpayer identification number */
+        DiffMemeber<bool>::Type discloseident;/**< whether to reveal unambiguous identification number */
+        DiffMemeber<bool>::Type disclosenotifyemail;/**< whether to reveal notify email */
         DiffMemeber<unsigned long long>::Type id;/**< id of the contact object*/
 
         /**
