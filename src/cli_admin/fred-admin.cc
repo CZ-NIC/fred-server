@@ -79,7 +79,7 @@ const string prog_name = "fred-admin";
 //print help if required
 HandlerGrpVector help_gv = boost::assign::list_of
     (HandleGrpArgsPtr(
-            new HandleHelpArgGrp("\nUsage: " + prog_name + " <switches>\n")));
+            new HandleHelpGrpArg("\nUsage: " + prog_name + " <switches>\n")));
 
 //print help on dates if required
 HandlerGrpVector help_dates_gv = boost::assign::list_of
@@ -144,7 +144,7 @@ CommandOptionGroups cog(chpv);
 //common config file processing in path 0
 HandlerGrpVector config_gv = boost::assign::list_of
     (HandleGrpArgsPtr(
-            new HandleConfigFileArgsGrp(CONFIG_FILE))) ;
+            new HandleConfigFileGrpArgs(CONFIG_FILE))) ;
 HandlerGrpVector loging_gv = boost::assign::list_of
     (HandleGrpArgsPtr(
             new HandleLoggingArgsGrp));
@@ -163,7 +163,7 @@ HandlerGrpVector sms_gv = boost::assign::list_of
 
 HandlerPtrGrid global_hpg = gv_list
     (help_gv)(help_dates_gv)
-    (cog)
+    .addCommandOptions(cog)
     (config_gv)(loging_gv)(database_gv)(corbans_gv)(registry_gv)(sms_gv)
     ;
 
@@ -203,7 +203,7 @@ int main(int argc, char* argv[])
     try
     {
         //config
-        fa = CfgArgGroups::instance<HandleHelpArgGrp>(global_hpg)->handle(argc, argv);
+        fa = CfgArgGroups::init<HandleHelpGrpArg>(global_hpg)->handle(argc, argv);
 
         // setting up logger
         setup_admin_logging(CfgArgGroups::instance());
