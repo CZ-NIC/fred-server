@@ -54,7 +54,7 @@ namespace ContactVerification {
         }
 
         unsigned char* buffer_ptr;
-        static const unsigned int buffer_length = 1;
+        static const unsigned int buffer_length = 12;   // DNS header is rumored to have 12 bytes
 
         try {
             buffer_ptr = new unsigned char[buffer_length];
