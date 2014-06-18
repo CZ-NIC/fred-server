@@ -72,6 +72,9 @@ CLEANFILES = \
 		src/corba/WhoisDynSK.cc \
 		src/corba/WhoisSK.h \
 		src/corba/Whois.hh \
+		src/corba/Whois2SK.cc \
+		src/corba/Whois2DynSK.cc \
+		src/corba/Whois2.hh \
 		src/corba/AdminSK.cc \
 		src/corba/AdminDynSK.cc \
 		src/corba/AdminSK.h \
@@ -195,6 +198,7 @@ noinst_LIBRARIES = \
 		src/corba/libmailer.a \
 		src/corba/admin/libadmin_impl.a \
 		src/corba/whois/libwhois_impl.a \
+		src/corba/whois/libwhois2_impl.a \
 		src/corba/epp/libepp_impl.a \
 		src/corba/log/liblog_impl.a \
 		util/hp/libhp.a \
@@ -203,6 +207,7 @@ noinst_LIBRARIES = \
 		src/corba/libcorbafilters.a \
 		src/corba/libcorbaregistry.a \
 		src/corba/libcorbawhois.a \
+		src/corba/libcorbawhois2.a \
 		src/corba/libcorbaadmin.a \
 		src/corba/libcorbalogger.a \
 		src/corba/libcorbatechcheck.a \
@@ -892,6 +897,7 @@ BUILT_SOURCES = \
 		src/corba/_dataTypesSK.cc \
 		src/corba/FiltersSK.cc src/corba/RegistrySK.cc \
 		src/corba/WhoisSK.cc \
+		src/corba/Whois2SK.cc \
 		src/corba/AdminSK.cc \
 		src/corba/LoggerSK.cc \
 		src/corba/TechCheckSK.cc \
@@ -969,6 +975,11 @@ nodist_src_corba_libcorbawhois_a_SOURCES = \
 		src/corba/WhoisSK.cc \
 		src/corba/WhoisDynSK.cc \
 		src/corba/Whois.hh
+		
+nodist_src_corba_libcorbawhois2_a_SOURCES = \
+		src/corba/Whois2SK.cc \
+		src/corba/Whois2DynSK.cc \
+		src/corba/Whois2.hh
 
 nodist_src_corba_libcorbaadmin_a_SOURCES = \
 		src/corba/AdminSK.cc \
@@ -1041,6 +1052,9 @@ src/corba/RegistrySK.cc: $(IDLDIR)/Registry.idl $(IDLDIR)/Filters.idl $(IDLDIR)/
 src/corba/WhoisSK.cc: $(IDLDIR)/Whois.idl $(IDLDIR)/Registry.idl $(IDLDIR)/_dataTypes.idl
 		omniidl -bcxx -Wba -C$(top_builddir)/src/corba $(IDLDIR)/Whois.idl
 
+src/corba/Whois2SK.cc: $(IDLDIR)/Whois2.idl $(IDLDIR)/NullableTypes.idl $(IDLDIR)/DateTime.idl
+		omniidl -bcxx -Wbuse_quotes -Wba -C$(top_builddir)/src/corba $(IDLDIR)/Whois2.idl
+		
 src/corba/AdminSK.cc: $(IDLDIR)/Admin.idl $(IDLDIR)/Whois.idl $(IDLDIR)/Filters.idl $(IDLDIR)/Registry.idl $(IDLDIR)/_dataTypes.idl
 		omniidl -bcxx -Wba -C$(top_builddir)/src/corba $(IDLDIR)/Admin.idl
 
@@ -1126,6 +1140,17 @@ src_corba_whois_libwhois_impl_a_SOURCES = \
 		src/corba/whois/whois_impl.h
 #
 # src/corba/whois/libwhois_impl.a
+
+
+# src/corba/whois/libwhois2_impl.a
+#
+src_corba_whois_libwhois2_impl_a_SOURCES = \
+		src/corba/whois/whois2_impl.cc \
+		src/corba/whois/whois2_impl.h \
+		src/whois/nameserver_exists.h \
+		src/whois/nameserver_exists.cc
+#
+# src/corba/whois/libwhois2_impl.a
 
 
 # src/corba/epp/libepp_impl.a
