@@ -644,12 +644,12 @@ bool ccReg_Admin_i::setInZoneStatus(ccReg::TID domainId)
         TRACE(boost::format("[CALL] ccReg_Admin_i::setInZoneStatus(%1%)")
                 % domainId);
 
-        /* get actual time before transaction otherwise it would be in the future for the transaction */
-        boost::posix_time::ptime whatisthetime = microsec_clock::universal_time();
-        boost::gregorian::date_duration dd7 (7);
-
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
+
+        /* Ticket #11166 - quick fix, we should rewrite interface and impl. for that feature */
+        boost::posix_time::ptime whatisthetime = time_from_string(static_cast<std::string>(conn.exec("SELECT now()")[0][0]));
+        boost::gregorian::date_duration dd7(7);
 
         Database::Result dname_res = conn.exec_params("SELECT obr.name "
             " FROM object_registry obr JOIN domain d ON d.id = obr.id "

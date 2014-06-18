@@ -210,7 +210,7 @@ void createObjectStateRequestName(
         const std::string & object_name
         , unsigned long object_type
         , std::vector< std::string > _object_state_name
-        , const std::string& valid_from
+        , const optional_string& valid_from
         , const optional_string& valid_to
         , bool update_object_state
         )
@@ -225,7 +225,7 @@ void createObjectStateRequestName(
         "createObjectStateRequestName object name: ") + object_name
         + " object type: " + boost::lexical_cast<std::string>(object_type)
         + " object state name: " + object_state_names
-        + " valid from: " + valid_from
+        + " valid from: " + valid_from.get_value()
         + " valid to: " + valid_to.get_value());
 
     Database::Connection conn = Database::Manager::acquire();
@@ -274,16 +274,24 @@ void createObjectStateRequestName(
         , Database::query_param_list(object_id)(object_state_id));
 
     //check time
-    std::string tmp_time_from ( valid_from);
-    if(tmp_time_from.empty()) throw std::runtime_error("empty valid_from");
-
-    size_t idx_from = tmp_time_from.find('T');
-    if(idx_from == std::string::npos) {
-        throw std::runtime_error("wrong date format. ");
+    std::string tmp_time_from ( valid_from.get_value());
+    if (!tmp_time_from.empty()) {
+        size_t idx_from = tmp_time_from.find('T');
+        if(idx_from == std::string::npos) {
+            throw std::runtime_error("Wrong date format in valid_from");
+        }
+        tmp_time_from[idx_from] = ' ';
     }
-    tmp_time_from[idx_from] = ' ';
-    boost::posix_time::ptime new_valid_from
-        = boost::posix_time::time_from_string(tmp_time_from);
+
+    boost::posix_time::ptime new_valid_from;
+    if (!tmp_time_from.empty())
+    {
+        new_valid_from = boost::posix_time::time_from_string(tmp_time_from);
+    }
+    else
+    {
+        new_valid_from = time_from_string(static_cast<std::string>(conn.exec("SELECT now()")[0][0]));
+    }
 
     std::string tmp_time_to ( valid_to.get_value());
     if(!tmp_time_to.empty()) {
