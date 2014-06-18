@@ -177,14 +177,16 @@ BOOST_FIXTURE_TEST_CASE(delete_contact_with_wrong_handle, test_contact_fixture )
 BOOST_FIXTURE_TEST_CASE(delete_linked_contact, test_contact_fixture )
 {
     {
+        namespace ip = boost::asio::ip;
+
         Fred::OperationContext ctx;
         //create linked object
         std::string test_nsset_handle = std::string("TEST-NSSET-HANDLE")+xmark;
         Fred::CreateNsset(test_nsset_handle, registrar_handle)
             .set_tech_contacts(Util::vector_of<std::string>(test_contact_handle))
             .set_dns_hosts(Util::vector_of<Fred::DnsHost>
-                (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.3")("127.1.1.3"))) //add_dns
-                (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.4")("127.1.1.4"))) //add_dns
+                (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<ip::address>(ip::address::from_string("127.0.0.3"))(ip::address::from_string("127.1.1.3")))) //add_dns
+                (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<ip::address>(ip::address::from_string("127.0.0.4"))(ip::address::from_string("127.1.1.4")))) //add_dns
                 ).exec(ctx);
 
        ctx.commit_transaction();

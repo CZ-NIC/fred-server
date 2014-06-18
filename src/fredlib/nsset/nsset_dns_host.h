@@ -27,6 +27,8 @@
 #include <string>
 #include <vector>
 
+#include <boost/asio/ip/address.hpp>
+
 #include "util/printable.h"
 
 namespace Fred
@@ -38,7 +40,7 @@ namespace Fred
     class DnsHost : public Util::Printable
     {
         std::string fqdn_;/**< fully qualified name of the nameserver host*/
-        std::vector<std::string> inet_addr_;/**< list of IPv4 or IPv6 addresses of the nameserver host*/
+        std::vector<boost::asio::ip::address> inet_addr_;/**< list of IPv4 or IPv6 addresses of the nameserver host*/
     public:
 
         /**
@@ -51,7 +53,7 @@ namespace Fred
          * @param _fqdn sets nameserver name into @ref fqdn_ attribute
          * @param _inet_addr sets addresses of the nameserver into @ref inet_addr_ attribute.
          */
-        DnsHost(const std::string& _fqdn, const std::vector<std::string>& _inet_addr)
+        DnsHost(const std::string& _fqdn, const std::vector<boost::asio::ip::address>& _inet_addr)
         : fqdn_(_fqdn)
         , inet_addr_(_inet_addr)
         {}
@@ -69,7 +71,7 @@ namespace Fred
          * Nameserver addresses getter.
          * @return addresses of nameserver field viz @ref inet_addr_
          */
-        std::vector<std::string> get_inet_addr() const
+        std::vector<boost::asio::ip::address> get_inet_addr() const
         {
             return inet_addr_;
         }
