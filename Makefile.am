@@ -1339,8 +1339,10 @@ src_corba_fred_pifd_SOURCES = \
 
 src_corba_fred_pifd_LDADD = \
 		src/corba/whois/libwhois_impl.a \
+		src/corba/whois/libwhois2_impl.a \
 		src/corba/admin/libadmin_impl.a \
 		src/corba/libcorbawhois.a \
+		src/corba/libcorbawhois2.a \
 		src/corba/libcorbaadmin.a \
 		src/corba/libcorbaregistry.a \
 		src/corba/libcorbafilters.a \
@@ -1351,6 +1353,8 @@ src_corba_fred_pifd_LDADD = \
 		src/corba/libcorbaepp.a \
 		src/corba/libfilemanager.a \
 		src/corba/libcorbalogger.a \
+		src/corba/util/libcorbautil.a \
+		src/corba/libcorbanullabletypes.a \
 		src/fredlib/contact_verification/libcontact_verification.a \
 		src/corba/libcorbacontactverification.a \
 		src/fredlib/requests/librequests.a \
