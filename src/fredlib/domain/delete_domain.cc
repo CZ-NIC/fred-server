@@ -22,92 +22,118 @@
  */
 
 #include <string>
+#include <boost/assign.hpp>
+#include <boost/lexical_cast.hpp>
 
-#include "fredlib/domain/delete_domain.h"
-#include "fredlib/domain/domain_name.h"
-#include "fredlib/object/object.h"
-
-#include "fredlib/opcontext.h"
-#include "fredlib/db_settings.h"
-#include "fredlib/object_states.h"
+#include "src/fredlib/domain/delete_domain.h"
+#include "src/fredlib/domain/domain_name.h"
+#include "src/fredlib/zone/zone.h"
+#include "src/fredlib/object/object.h"
+#include "src/fredlib/object/object_impl.h"
+#include "src/fredlib/registrar/registrar_impl.h"
+#include "src/fredlib/opcontext.h"
+#include "src/fredlib/db_settings.h"
+#include "src/fredlib/object_states.h"
 
 namespace Fred
 {
-    DeleteDomain::DeleteDomain(const std::string& fqdn)
-    : fqdn_(fqdn)
+    DeleteDomainByHandle::DeleteDomainByHandle(const std::string& _fqdn)
+    : fqdn_(_fqdn)
     {}
-    void DeleteDomain::exec(OperationContext& ctx)
+
+    static void delete_domain_impl(OperationContext& ctx, unsigned long long id) {
+        ctx.get_conn().exec_params(
+            "DELETE FROM domain_contact_map "
+            "   WHERE domainid = $1::integer",
+            Database::query_param_list(id));    // delete 0..n rows, nothing to be checked in result
+
+        Database::Result delete_enumval_res = ctx.get_conn().exec_params(
+            "DELETE FROM enumval"
+            "   WHERE domainid = $1::integer RETURNING domainid",
+            Database::query_param_list(id));    // delete 0..1 row
+
+        if(delete_enumval_res.size() > 1) {
+            BOOST_THROW_EXCEPTION(Fred::InternalError("delete enumval failed"));
+        }
+
+        Database::Result delete_contact_res = ctx.get_conn().exec_params(
+            "DELETE FROM domain "
+            "   WHERE id = $1::integer RETURNING id",
+            Database::query_param_list(id));
+
+        if (delete_contact_res.size() != 1) {
+            BOOST_THROW_EXCEPTION(Fred::InternalError("delete domain failed"));
+        }
+    }
+
+    void DeleteDomainByHandle::exec(OperationContext& _ctx)
     {
         try
         {
             //remove optional root dot from fqdn
-            std::string no_root_dot_fqdn = Fred::Domain::rem_trailing_dot(fqdn_);
+            std::string no_root_dot_fqdn = Fred::Zone::rem_trailing_dot(fqdn_);
 
             //get domain_id and lock object_registry row for update
-            unsigned long long domain_id =0;
-            {
-                Database::Result domain_id_res = ctx.get_conn().exec_params(
-                    "SELECT oreg.id FROM domain d "
-                    " JOIN object_registry oreg ON d.id = oreg.id "
-                    " JOIN enum_object_type eot ON oreg.type = eot.id AND eot.name = 'domain' "
-                    " WHERE oreg.name = LOWER($1::text) AND oreg.erdate IS NULL "
-                    " FOR UPDATE OF oreg"
-                    , Database::query_param_list(no_root_dot_fqdn));
+            unsigned long long domain_id = get_object_id_by_handle_and_type_with_lock(
+                _ctx,
+                no_root_dot_fqdn,
+                "domain",
+                static_cast<Exception*>(NULL),
+                &Exception::set_unknown_domain_fqdn
+            );
 
-                if (domain_id_res.size() == 0)
-                {
-                    BOOST_THROW_EXCEPTION(Exception().set_unknown_domain_fqdn(fqdn_));
-                }
-                if (domain_id_res.size() != 1)
-                {
-                    BOOST_THROW_EXCEPTION(InternalError("failed to get domain"));
-                }
+            delete_domain_impl(_ctx, domain_id);
 
-                domain_id = domain_id_res[0][0];
-            }
+            Fred::DeleteObjectByHandle(no_root_dot_fqdn,"domain").exec(_ctx);
 
-            ctx.get_conn().exec_params("DELETE FROM domain_contact_map WHERE domainid = $1::integer"
-                , Database::query_param_list(domain_id));//delete 0..n rows, nothing to be checked in result
+        } catch(ExceptionStack& ex) {
 
-            Database::Result delete_enumval_res = ctx.get_conn().exec_params(
-                "DELETE FROM enumval WHERE domainid = $1::integer RETURNING domainid"
-                , Database::query_param_list(domain_id));//delete 0..1 row
-            if(delete_enumval_res.size() > 1)
-            {
-                BOOST_THROW_EXCEPTION(Fred::InternalError("delete enumval failed"));
-            }
-
-            Database::Result delete_contact_res = ctx.get_conn().exec_params(
-                "DELETE FROM domain WHERE id = $1::integer RETURNING id"
-                    , Database::query_param_list(domain_id));
-            if (delete_contact_res.size() != 1)
-            {
-                BOOST_THROW_EXCEPTION(Fred::InternalError("delete domain failed"));
-            }
-
-            Fred::DeleteObject(no_root_dot_fqdn,"domain").exec(ctx);
-
-        }//try
-        catch(ExceptionStack& ex)
-        {
             ex.add_exception_stack_info(to_string());
             throw;
         }
 
-    }//DeleteDomain::exec
-
-    std::ostream& operator<<(std::ostream& os, const DeleteDomain& dd)
-    {
-        return os << "#DeleteDomain fqdn: " << dd.fqdn_
-                ;
-    }
-    std::string DeleteDomain::to_string()
-    {
-        std::stringstream ss;
-        ss << *this;
-        return ss.str();
     }
 
+    std::string DeleteDomainByHandle::to_string() const
+    {
+        return Util::format_operation_state(
+            "DeleteDomainByHandle",
+            boost::assign::list_of
+                (std::make_pair("fqdn", fqdn_ ))
+        );
+    }
+
+    DeleteDomainById::DeleteDomainById(unsigned long long _id)
+        : id_(_id)
+    { }
+
+    void DeleteDomainById::exec(OperationContext& _ctx) {
+        try
+        {
+            get_object_id_by_object_id_with_lock(
+                _ctx,
+                id_,
+                static_cast<Exception*>(NULL),
+                &Exception::set_unknown_domain_id
+            );
+
+            delete_domain_impl(_ctx, id_);
+
+            Fred::DeleteObjectById(id_).exec(_ctx);
+
+        } catch(ExceptionStack& ex) {
+            ex.add_exception_stack_info(to_string());
+            throw;
+        }
+    }
+
+    std::string DeleteDomainById::to_string() const {
+        return Util::format_operation_state(
+            "DeleteDomainById",
+            boost::assign::list_of
+                (std::make_pair("id", boost::lexical_cast<std::string>(id_) ))
+        );
+    }
 
 }//namespace Fred
 

@@ -30,42 +30,42 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <corba/EPP.hh>
+#include "src/corba/EPP.hh"
 #include "epp_impl.h"
 
-#include "corba/connection_releaser.h"
+#include "src/corba/connection_releaser.h"
 
 #include "config.h"
 
 // database functions
-#include "old_utils/dbsql.h"
+#include "src/old_utils/dbsql.h"
 
 // support function
-#include "old_utils/util.h"
+#include "src/old_utils/util.h"
 
 #include "action.h"    // code of the EPP operations
 #include "response.h"  // errors code
 #include "reason.h"    // reason messages code
 
 // logger
-#include "old_utils/log.h"
+#include "src/old_utils/log.h"
 
 // MailerManager is connected in constructor
-#include "fredlib/common_diff.h"
-#include "fredlib/domain.h"
-#include "fredlib/contact.h"
-#include "fredlib/nsset.h"
-#include "fredlib/keyset.h"
-#include "fredlib/info_buffer.h"
-#include "fredlib/poll.h"
-#include "fredlib/zone.h"
-#include "fredlib/invoicing/invoice.h"
+#include "src/fredlib/common_diff.h"
+#include "src/fredlib/domain.h"
+#include "src/fredlib/contact.h"
+#include "src/fredlib/nsset.h"
+#include "src/fredlib/keyset.h"
+#include "src/fredlib/info_buffer.h"
+#include "src/fredlib/poll.h"
+#include "src/fredlib/zone.h"
+#include "src/fredlib/invoicing/invoice.h"
 #include <memory>
 #include "tech_check.h"
 
 #include "util/factory_check.h"
-#include "fredlib/public_request/public_request.h"
-#include "fredlib/public_request/public_request_authinfo_impl.h"
+#include "src/fredlib/public_request/public_request.h"
+#include "src/fredlib/public_request/public_request_authinfo_impl.h"
 
 // Notifier
 #include "notifier.h"
@@ -75,10 +75,10 @@
 #include "log/context.h"
 
 //cancel contact verification
-#include "fredlib/contact_verification/cancel_contact_verification.h"
+#include "src/fredlib/contact_verification/cancel_contact_verification.h"
 
 //object states
-#include "object_states.h"
+#include "src/fredlib/object_states.h"
 
 #define FLAG_serverDeleteProhibited 1
 #define FLAG_serverRenewProhibited 2
@@ -1672,6 +1672,7 @@ ccReg::Response* ccReg_EPP_i::PollRequest(
         type = ccReg::polltype_delete_nsset;
         break;
       case Fred::Poll::MT_IDLE_DELETE_DOMAIN:
+      case Fred::Poll::MT_DELETE_DOMAIN:
         type = ccReg::polltype_delete_domain;
         break;
       case Fred::Poll::MT_IDLE_DELETE_KEYSET:

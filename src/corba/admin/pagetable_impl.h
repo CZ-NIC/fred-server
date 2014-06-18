@@ -12,24 +12,24 @@
 #include "common.h"
 #include "str_corbaout.h"
 #include "filter_impl.h"
-#include "corba/mailer_manager.h"
+#include "src/corba/mailer_manager.h"
 
-#include "fredlib/registry.h"
-#include "fredlib/invoicing/invoice.h"
-#include "fredlib/notify.h"
-#include "fredlib/mail.h"
-#include "fredlib/filter.h"
-#include "fredlib/requests/request_list.h"
+#include "src/fredlib/registry.h"
+#include "src/fredlib/invoicing/invoice.h"
+#include "src/fredlib/notify.h"
+#include "src/fredlib/mail.h"
+#include "src/fredlib/filter.h"
+#include "src/fredlib/requests/request_list.h"
 
-#include "old_utils/log.h"
-#include "old_utils/dbsql.h"
+#include "src/old_utils/log.h"
+#include "src/old_utils/dbsql.h"
 
 #include "log/logger.h"
 #include "log/context.h"
 
-#include "model/model_filters.h"
+#include "src/model/model_filters.h"
 
-#include "corba/connection_releaser.h"
+#include "src/corba/connection_releaser.h"
 
 using namespace Database;
 

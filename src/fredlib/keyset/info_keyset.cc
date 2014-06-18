@@ -17,7 +17,7 @@
  */
 
 /**
- *  @file info_keyset.cc
+ *  @file
  *  keyset info
  */
 
@@ -29,187 +29,269 @@
 #include <boost/date_time/posix_time/time_period.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
 
-#include "fredlib/keyset/info_keyset.h"
-#include "fredlib/object/object.h"
+#include "info_keyset.h"
+#include "info_keyset_impl.h"
 
-#include "fredlib/opcontext.h"
-#include "fredlib/db_settings.h"
-#include "util/optional_value.h"
-#include "util/db/nullable.h"
+#include "src/fredlib/opcontext.h"
+#include "src/fredlib/opexception.h"
 #include "util/util.h"
 
 namespace Fred
 {
-    InfoKeyset::InfoKeyset(const std::string& handle
-            , const std::string& registrar)
-    : handle_(handle)
-    , registrar_(registrar)
-    , lock_(false)
+
+    InfoKeysetByHandle::InfoKeysetByHandle(const std::string& handle)
+        : handle_(handle)
+        , lock_(false)
     {}
 
-    InfoKeyset& InfoKeyset::set_lock(bool lock)//set lock object_registry row
+    InfoKeysetByHandle& InfoKeysetByHandle::set_lock()
     {
-        lock_ = lock;
+        lock_ = true;
         return *this;
     }
 
-    InfoKeysetOutput InfoKeyset::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
+    InfoKeysetOutput InfoKeysetByHandle::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
     {
-        InfoKeysetOutput keyset_info_output;
+        std::vector<InfoKeysetOutput> keyset_res;
 
         try
         {
-            //check registrar exists
-            //TODO: check registrar access
-            {
-                Database::Result res = ctx.get_conn().exec_params(
-                        "SELECT id FROM registrar WHERE handle = UPPER($1::text)"
-                    , Database::query_param_list(registrar_));
+            InfoKeyset ik;
+            ik.set_handle(handle_).set_history_query(false);
+            if(lock_) ik.set_lock();
+            keyset_res = ik.exec(ctx,local_timestamp_pg_time_zone_name);
 
-                if (res.size() == 0)
-                {
-                    BOOST_THROW_EXCEPTION(Exception().set_unknown_registrar_handle(registrar_));
-                }
-                if (res.size() != 1)
-                {
-                    BOOST_THROW_EXCEPTION(InternalError("failed to get registrar"));
-                }
+            if (keyset_res.empty())
+            {
+                BOOST_THROW_EXCEPTION(Exception().set_unknown_handle(handle_));
             }
 
-            //info about keyset
-            unsigned long long keyset_id = 0;
+            if (keyset_res.size() > 1)
             {
-                Database::Result res = ctx.get_conn().exec_params(std::string(
-                "SELECT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC')::timestamp AS utc_timestamp " // utc timestamp 0
-                " , (CURRENT_TIMESTAMP AT TIME ZONE 'UTC' AT TIME ZONE $1::text)::timestamp AS local_timestamp " // local zone timestamp 1
-                " , kobr.crhistoryid "//first historyid 2
-                " , kobr.historyid " // last historyid 3
-                " , kobr.erdate "// keyset delete time 4
-                " , kobr.id,kobr.name,kobr.roid " //keyset 5-7
-                " , o.clid,clr.handle " //sponzoring registrar 8-9
-                " , kobr.crid, crr.handle "//creating registrar 10-11
-                " , o.upid, upr.handle " //updated by registrar 12-13
-                " , kobr.crdate,o.trdate,o.update "//registration dates 14-16
-                " , o.authinfopw "//authinfo 17
-                " FROM object_registry kobr "
-                " JOIN keyset k ON kobr.id=k.id "
-                " JOIN object o ON k.id=o.id "
-                " JOIN registrar clr ON clr.id = o.clid "
-                " JOIN registrar crr ON crr.id = kobr.crid "
-                " LEFT JOIN registrar upr ON upr.id = o.upid "
-                " WHERE kobr.name=UPPER($2::text) AND kobr.erdate IS NULL "
-                " AND kobr.type = ( SELECT id FROM enum_object_type eot WHERE eot.name='keyset'::text)")
-                + (lock_ ? std::string(" FOR UPDATE OF kobr") : std::string(""))
-                , Database::query_param_list(local_timestamp_pg_time_zone_name)(handle_));
-
-                if (res.size() == 0)
-                {
-                    BOOST_THROW_EXCEPTION(Exception().set_unknown_keyset_handle(handle_));
-                }
-                if (res.size() != 1)
-                {
-                    BOOST_THROW_EXCEPTION(InternalError("failed to get keyset"));
-                }
-
-                keyset_info_output.utc_timestamp = res[0][0].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
-                : boost::posix_time::time_from_string(static_cast<std::string>(res[0][0]));// utc timestamp
-
-                keyset_info_output.local_timestamp = res[0][1].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
-                : boost::posix_time::time_from_string(static_cast<std::string>(res[0][1]));//local zone timestamp
-
-                keyset_info_output.info_keyset_data.crhistoryid = static_cast<unsigned long long>(res[0][2]);//kobr.crhistoryid
-
-                keyset_info_output.info_keyset_data.historyid = static_cast<unsigned long long>(res[0][3]);//kobr.historyid
-
-                keyset_info_output.info_keyset_data.delete_time = res[0][4].isnull() ? Nullable<boost::posix_time::ptime>()
-                    : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(res[0][4])));//nobr.erdate
-
-                keyset_id = static_cast<unsigned long long>(res[0][5]);//kobr.id
-
-                keyset_info_output.info_keyset_data.handle = static_cast<std::string>(res[0][6]);//kobr.name
-
-                keyset_info_output.info_keyset_data.roid = static_cast<std::string>(res[0][7]);//kobr.roid
-
-                keyset_info_output.info_keyset_data.sponsoring_registrar_handle = static_cast<std::string>(res[0][9]);//clr.handle
-
-                keyset_info_output.info_keyset_data.create_registrar_handle = static_cast<std::string>(res[0][11]);//crr.handle
-
-                keyset_info_output.info_keyset_data.update_registrar_handle = res[0][13].isnull() ? Nullable<std::string>()
-                    : Nullable<std::string> (static_cast<std::string>(res[0][13]));//upr.handle
-
-                keyset_info_output.info_keyset_data.creation_time = boost::posix_time::time_from_string(static_cast<std::string>(res[0][14]));//kobr.crdate
-
-                keyset_info_output.info_keyset_data.transfer_time = res[0][15].isnull() ? Nullable<boost::posix_time::ptime>()
-                : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(res[0][15])));//o.trdate
-
-                keyset_info_output.info_keyset_data.update_time = res[0][16].isnull() ? Nullable<boost::posix_time::ptime>()
-                : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(res[0][16])));//o.update
-
-                keyset_info_output.info_keyset_data.authinfopw = static_cast<std::string>(res[0][17]);//o.authinfopw
+                BOOST_THROW_EXCEPTION(InternalError("query result size > 1"));
             }
 
-            //list of dns keys
-            {
-                Database::Result kres = ctx.get_conn().exec_params(
-                "SELECT d.id, d.flags, d.protocol, d.alg, d.key "
-                " FROM dnskey d "
-                " WHERE d.keysetid = $1::bigint "
-                " ORDER BY d.id "
-                , Database::query_param_list(keyset_id));
-
-                keyset_info_output.info_keyset_data.dns_keys.reserve(kres.size());//alloc
-                for(Database::Result::size_type i = 0; i < kres.size(); ++i)
-                {
-                    //unsigned long long dns_key_id = static_cast<unsigned long long>(kres[i][0]);//d.id
-                    unsigned short flags = static_cast<unsigned int>(kres[i][1]);//d.flags
-                    unsigned short protocol = static_cast<unsigned int>(kres[i][2]);//d.protocol
-                    unsigned short alg = static_cast<unsigned int>(kres[i][3]);//d.alg
-                    std::string key = static_cast<std::string>(kres[i][4]);//d.key
-                    keyset_info_output.info_keyset_data.dns_keys.push_back(DnsKey(flags, protocol, alg, key));
-
-                }//for dns keys
-            }//list of dns keyss
-
-            //list of tech contacts
-            {
-                Database::Result result = ctx.get_conn().exec_params(
-                        "SELECT cobr.name "
-                        " FROM keyset_contact_map kcm "
-                        " JOIN object_registry cobr ON kcm.contactid = cobr.id AND cobr.erdate IS NULL "
-                        " JOIN enum_object_type ceot ON ceot.id = cobr.type AND ceot.name='contact'::text "
-                        " WHERE kcm.keysetid = $1::bigint "
-                        " ORDER BY cobr.name "
-                , Database::query_param_list(keyset_id));
-
-                keyset_info_output.info_keyset_data.tech_contacts.reserve(result.size());
-                for(Database::Result::size_type i = 0; i < result.size(); ++i)
-                {
-                    keyset_info_output.info_keyset_data.tech_contacts.push_back(
-                    static_cast<std::string>(result[i][0]));
-                }
-            }
-        }//try
+        }
         catch(ExceptionStack& ex)
         {
             ex.add_exception_stack_info(to_string());
             throw;
         }
-
-        return keyset_info_output;
-    }//InfoKeyset::exec
-
-    std::ostream& operator<<(std::ostream& os, const InfoKeyset& i)
-    {
-        return os << "#InfoKeyset handle: " << i.handle_
-            << " registrar: " << i.registrar_
-            << " lock: " << i.lock_;
+        return keyset_res.at(0);
     }
 
-    std::string InfoKeyset::to_string()
+    std::string InfoKeysetByHandle::to_string() const
     {
-        std::stringstream ss;
-        ss << *this;
-        return ss.str();
+        return Util::format_operation_state("InfoKeysetByHandle",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("handle", handle_))
+        (std::make_pair("lock",lock_ ? "true":"false"))
+        );
+    }
+
+    InfoKeysetById::InfoKeysetById(unsigned long long id)
+        : id_(id)
+        , lock_(false)
+    {}
+
+    InfoKeysetById& InfoKeysetById::set_lock()
+    {
+        lock_ = true;
+        return *this;
+    }
+
+    InfoKeysetOutput InfoKeysetById::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
+    {
+        std::vector<InfoKeysetOutput> keyset_res;
+
+        try
+        {
+            InfoKeyset ik;
+            ik.set_id(id_).set_history_query(false);
+            if(lock_) ik.set_lock();
+            keyset_res = ik.exec(ctx,local_timestamp_pg_time_zone_name);
+
+            if (keyset_res.empty())
+            {
+                BOOST_THROW_EXCEPTION(Exception().set_unknown_object_id(id_));
+            }
+
+            if (keyset_res.size() > 1)
+            {
+                BOOST_THROW_EXCEPTION(InternalError("query result size > 1"));
+            }
+
+        }
+        catch(ExceptionStack& ex)
+        {
+            ex.add_exception_stack_info(to_string());
+            throw;
+        }
+        return keyset_res.at(0);
+    }
+
+    std::string InfoKeysetById::to_string() const
+    {
+        return Util::format_operation_state("InfoKeysetById",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("id",boost::lexical_cast<std::string>(id_)))
+        (std::make_pair("lock",lock_ ? "true":"false"))
+        );
+    }
+
+    InfoKeysetHistory::InfoKeysetHistory(const std::string& roid
+            , const Optional<boost::posix_time::ptime>& history_timestamp)
+        : roid_(roid)
+        , history_timestamp_(history_timestamp)
+        , lock_(false)
+    {}
+
+    InfoKeysetHistory::InfoKeysetHistory(const std::string& roid)
+    : roid_(roid)
+    , lock_(false)
+    {}
+
+    InfoKeysetHistory& InfoKeysetHistory::set_history_timestamp(boost::posix_time::ptime history_timestamp)//set history timestamp
+    {
+        history_timestamp_ = history_timestamp;
+        return *this;
+    }
+
+    InfoKeysetHistory& InfoKeysetHistory::set_lock()
+    {
+        lock_ = true;
+        return *this;
+    }
+
+    std::vector<InfoKeysetOutput> InfoKeysetHistory::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
+    {
+        std::vector<InfoKeysetOutput> keyset_res;
+
+        try
+        {
+            InfoKeyset ik;
+            ik.set_roid(roid_).set_history_query(true);
+            if(lock_) ik.set_lock();
+            keyset_res = ik.exec(ctx,local_timestamp_pg_time_zone_name);
+
+            if (keyset_res.empty())
+            {
+                BOOST_THROW_EXCEPTION(Exception().set_unknown_registry_object_identifier(roid_));
+            }
+
+        }
+        catch(ExceptionStack& ex)
+        {
+            ex.add_exception_stack_info(to_string());
+            throw;
+        }
+        return keyset_res;
+    }
+
+    std::string InfoKeysetHistory::to_string() const
+    {
+        return Util::format_operation_state("InfoKeysetHistory",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("roid",roid_))
+        (std::make_pair("history_timestamp",history_timestamp_.print_quoted()))
+        (std::make_pair("lock",lock_ ? "true":"false"))
+        );
+    }
+
+
+    InfoKeysetHistoryById::InfoKeysetHistoryById(unsigned long long id)
+        : id_(id)
+        , lock_(false)
+    {}
+
+    InfoKeysetHistoryById& InfoKeysetHistoryById::set_lock()
+    {
+        lock_ = true;
+        return *this;
+    }
+
+    std::vector<InfoKeysetOutput> InfoKeysetHistoryById::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
+    {
+        std::vector<InfoKeysetOutput> keyset_history_res;
+
+        try
+        {
+            InfoKeyset ik;
+            ik.set_id(id_).set_history_query(true);
+            if(lock_) ik.set_lock();
+            keyset_history_res = ik.exec(ctx,local_timestamp_pg_time_zone_name);
+
+            if (keyset_history_res.empty())
+            {
+                BOOST_THROW_EXCEPTION(Exception().set_unknown_object_id(id_));
+            }
+
+        }
+        catch(ExceptionStack& ex)
+        {
+            ex.add_exception_stack_info(to_string());
+            throw;
+        }
+        return keyset_history_res;
+    }
+
+    std::string InfoKeysetHistoryById::to_string() const
+    {
+        return Util::format_operation_state("InfoKeysetHistoryById",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("id",boost::lexical_cast<std::string>(id_)))
+        (std::make_pair("lock",lock_ ? "true":"false"))
+        );
+    }
+
+    InfoKeysetHistoryByHistoryid::InfoKeysetHistoryByHistoryid(unsigned long long historyid)
+        : historyid_(historyid)
+        , lock_(false)
+    {}
+
+    InfoKeysetHistoryByHistoryid& InfoKeysetHistoryByHistoryid::set_lock()
+    {
+        lock_ = true;
+        return *this;
+    }
+
+    InfoKeysetOutput InfoKeysetHistoryByHistoryid::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
+    {
+        std::vector<InfoKeysetOutput> keyset_history_res;
+
+        try
+        {
+            InfoKeyset ik;
+            ik.set_historyid(historyid_).set_history_query(true);
+            if(lock_) ik.set_lock();
+            keyset_history_res = ik.exec(ctx,local_timestamp_pg_time_zone_name);
+
+            if (keyset_history_res.empty())
+            {
+                BOOST_THROW_EXCEPTION(Exception().set_unknown_object_historyid(historyid_));
+            }
+
+            if (keyset_history_res.size() > 1)
+            {
+                BOOST_THROW_EXCEPTION(InternalError("query result size > 1"));
+            }
+
+        }
+        catch(ExceptionStack& ex)
+        {
+            ex.add_exception_stack_info(to_string());
+            throw;
+        }
+        return keyset_history_res.at(0);
+    }
+
+    std::string InfoKeysetHistoryByHistoryid::to_string() const
+    {
+        return Util::format_operation_state("InfoKeysetHistoryByHistoryid",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("historyid",boost::lexical_cast<std::string>(historyid_)))
+        (std::make_pair("lock",lock_ ? "true":"false"))
+        );
     }
 
 }//namespace Fred

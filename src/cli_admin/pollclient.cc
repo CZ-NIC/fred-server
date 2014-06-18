@@ -18,7 +18,7 @@
 
 #include "commonclient.h"
 #include "pollclient.h"
-#include "fredlib/poll.h"
+#include "src/fredlib/poll.h"
 #include "src/corba/logger_client_impl.h"
 
 #include "util/cfg/faked_args.h"

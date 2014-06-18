@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-#include "object.h"
+#include "src/fredlib/object.h"
 
 
 

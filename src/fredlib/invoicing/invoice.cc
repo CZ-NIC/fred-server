@@ -32,15 +32,15 @@
 #include <boost/checked_delete.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
-#include "common_impl.h"
+#include "src/fredlib/common_impl.h"
 #include "invoice.h"
 #include "log/logger.h"
 #include "log/context.h"
 #include "types/convert_sql_db_types.h"
 #include "types/sqlize.h"
 
-#include "documents.h"
-#include "poll.h"
+#include "src/fredlib/documents.h"
+#include "src/fredlib/poll.h"
 
 #include "log/logger.h"
 

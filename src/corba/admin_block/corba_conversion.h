@@ -2,10 +2,10 @@
 #define CORBA_CONVERT_H_
 
 #include "db/nullable.h"
-#include "corba/common_wrappers.h"
-#include "fredlib/object_state/get_blocking_status_desc_list.h"
-#include "admin_block/administrativeblocking.h"
-#include <AdministrativeBlocking.hh>
+#include "src/corba/common_wrappers.h"
+#include "src/fredlib/object_state/get_blocking_status_desc_list.h"
+#include "src/admin_block/administrativeblocking.h"
+#include "src/corba/AdministrativeBlocking.hh"
 
 #include <string>
 #include <memory>
@@ -34,7 +34,7 @@ Registry::Administrative::NullableString* corba_wrap_nullable_string(const Nulla
     if (_v.isnull()) {
         return 0;
     }
-    return new Registry::Administrative::NullableString(static_cast<std::string>(_v).c_str());
+    return new Registry::Administrative::NullableString(_v.get_value().c_str());
 }
 
 Registry::Administrative::NullableBoolean* corba_wrap_nullable_boolean(const Nullable<bool> &_v)
@@ -42,7 +42,7 @@ Registry::Administrative::NullableBoolean* corba_wrap_nullable_boolean(const Nul
     if (_v.isnull()) {
         return 0;
     }
-    return new Registry::Administrative::NullableBoolean(static_cast<bool>(_v));
+    return new Registry::Administrative::NullableBoolean(_v.get_value());
 }
 
 Registry::Administrative::NullableBoolean* corba_wrap_nullable_boolean(const bool _v)
@@ -57,7 +57,7 @@ Registry::Administrative::NullableDate* corba_wrap_nullable_date(const Nullable<
         return 0;
     }
     boost::gregorian::date tmp
-        = boost::gregorian::from_string(static_cast<std::string>(_v));
+        = boost::gregorian::from_string(_v.get_value());
     if (tmp.is_special()) {
         return 0;
     }

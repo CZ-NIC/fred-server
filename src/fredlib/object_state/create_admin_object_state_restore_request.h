@@ -21,20 +21,11 @@
  *  create administrative object state restore request
  */
 
-/*
-administrativni nastaveni stavu blokovani objektu, (insert do object_state_request) CreateAdminObjectStateRestoreRequest
-  M handle objektu,
-  M typ objektu,
-  M seznam stavu (jmena)
-  od
-  do
-  poznamka
-*/
 
 #ifndef CREATE_ADMIN_OBJECT_STATE_RESTORE_REQUEST_H_
 #define CREATE_ADMIN_OBJECT_STATE_RESTORE_REQUEST_H_
 
-#include "fredlib/object_state/create_object_state_request.h"
+#include "src/fredlib/object_state/create_object_state_request.h"
 
 namespace Fred
 {

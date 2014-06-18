@@ -18,7 +18,7 @@
 
 #include "commonclient.h"
 #include "enumparamclient.h"
-#include "fredlib/db_settings.h"
+#include "src/fredlib/db_settings.h"
 
 #include <string>
 #include <vector>

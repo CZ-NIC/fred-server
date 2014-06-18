@@ -22,14 +22,14 @@
 #include <algorithm>
 #include <boost/date_time/posix_time/time_parsers.hpp>
 
-#include "domain.h"
+#include "src/fredlib/domain.h"
 #include "blacklist.h"
 #include "object_impl.h"
 #include "sql.h"
-#include "old_utils/dbsql.h"
-#include "model/model_filters.h"
+#include "src/old_utils/dbsql.h"
+#include "src/model/model_filters.h"
 #include "log/logger.h"
-#include "registrar.h"
+#include "src/fredlib/registrar.h"
 
 namespace Fred {
 namespace Domain {

@@ -1,7 +1,7 @@
 #include <algorithm>
 #include <boost/utility.hpp>
 
-#include "common_impl.h"
+#include "src/fredlib/common_impl.h"
 #include "mail.h"
 #include "log/logger.h"
 

@@ -18,12 +18,12 @@
 
 #include <algorithm>
 #include "sql.h"
-#include "poll.h"
-#include "invoicing/invoice.h"
-#include "common_impl.h"
-#include "old_utils/dbsql.h"
-#include "domain.h"
-#include "registrar.h"
+#include "src/fredlib/poll.h"
+#include "src/fredlib/invoicing/invoice.h"
+#include "src/fredlib/common_impl.h"
+#include "src/old_utils/dbsql.h"
+#include "src/fredlib/domain.h"
+#include "src/fredlib/registrar.h"
 #include "util/util.h"
 
 namespace Fred {
@@ -519,6 +519,7 @@ public:
           hasUpdateObject = true;
           break;
         case MT_DELETE_CONTACT:
+        case MT_DELETE_DOMAIN:
           o = new MessageEventImpl(
               type,STR_TO_ID(db->GetFieldValue(i,1)),
               STR_TO_ID(db->GetFieldValue(i,2)),

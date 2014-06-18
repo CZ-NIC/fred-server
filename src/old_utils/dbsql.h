@@ -1,11 +1,11 @@
 #ifndef __DBSQL_H__
 #define __DBSQL_H__
 
-#include "fredlib/db_settings.h"
+#include "src/fredlib/db_settings.h"
 
 #include "util.h"
 #include "pqsql.h"
-#include "fredlib/types.h"
+#include "src/fredlib/types.h"
 #include <map>
 #include <cstdlib>
 #include <boost/shared_ptr.hpp>

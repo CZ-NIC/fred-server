@@ -24,11 +24,13 @@
 #ifndef CREATE_OBJECT_STATE_REQUEST_H_
 #define CREATE_OBJECT_STATE_REQUEST_H_
 
-#include "fredlib/opexception.h"
-#include "fredlib/opcontext.h"
-#include "fredlib/types.h"
+#include "src/fredlib/opexception.h"
+#include "src/fredlib/opcontext.h"
+#include "src/fredlib/types.h"
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
+#include "lock_object_state_request_lock.h"
+#include "perform_object_state_request.h"
 
 #include <boost/date_time/local_time/local_time.hpp>
 #include <string>
@@ -88,23 +90,6 @@ pozadavek na nastaveni stavu objektu (insert do object_state_request)
     };//class CreateObjectStateRequest
 
 
-/*
-vykonani pozadavku na nastaveni stavu objektu (vola update_object_states)
-  id objektu
-*/
-    class PerformObjectStateRequest
-    {
-    public:
-        PerformObjectStateRequest();
-        PerformObjectStateRequest(const Optional< ObjectId > &_object_id);
-        PerformObjectStateRequest& set_object_id(ObjectId _object_id);
-        void exec(OperationContext &_ctx);
-
-    private:
-        Optional< ObjectId > object_id_;
-    };//class PerformObjectStateRequest
-
-
     class GetObjectId
     {
     public:
@@ -120,27 +105,6 @@ vykonani pozadavku na nastaveni stavu objektu (vola update_object_states)
     private:
         const std::string object_handle_;
         const ObjectType object_type_;
-    };
-
-
-    class LockObjectStateRequestLock
-    {
-    public:
-        LockObjectStateRequestLock(ObjectStateId _state_id, ObjectId _object_id);
-        void exec(OperationContext &_ctx);
-    private:
-        const ObjectStateId state_id_;
-        const ObjectId object_id_;
-    };
-
-    class LockMultipleObjectStateRequestLock
-    {
-    public:
-        LockMultipleObjectStateRequestLock(const MultipleObjectStateId &_state_id, ObjectId _object_id);
-        void exec(OperationContext &_ctx);
-    private:
-        const MultipleObjectStateId state_id_;
-        const ObjectId object_id_;
     };
 
 }//namespace Fred

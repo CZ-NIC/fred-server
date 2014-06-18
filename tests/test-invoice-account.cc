@@ -31,23 +31,23 @@
 
 #include "test-common-registry.h"
 #include "types/money.h"
-#include "fredlib/invoicing/invoice.h"
-#include "fredlib/domain/create_domain.h"
-#include "fredlib/domain/info_domain.h"
-#include "fredlib/contact/create_contact.h"
-#include "fredlib/nsset/create_nsset.h"
+#include "src/fredlib/invoicing/invoice.h"
+#include "src/fredlib/domain/create_domain.h"
+#include "src/fredlib/domain/info_domain.h"
+#include "src/fredlib/contact/create_contact.h"
+#include "src/fredlib/nsset/create_nsset.h"
 
 #include "test-invoice-common.h"
 
 #include <boost/test/unit_test.hpp>
 
 #include "time_clock.h"
-#include "credit.h"
-#include "file_manager_client.h"
+#include "src/fredlib/credit.h"
+#include "src/corba/file_manager_client.h"
 
 #include "util/corba_wrapper_decl.h"
 
-#include "fredlib/banking/bank_common.h"
+#include "src/fredlib/banking/bank_common.h"
 
 
 using namespace Fred::Invoicing;
@@ -375,7 +375,7 @@ BOOST_AUTO_TEST_CASE(archiveAccountInvoice)
                 Fred::CreateDomain(test_domain_fqdn, registrar_handle, registrant_contact_handle)
                 .set_admin_contacts(Util::vector_of<std::string>(admin_contact2_handle))
                 .set_nsset(test_nsset_handle)
-                .set_expiration_period(12)//1year
+                .set_expiration_date(day_clock::universal_day() + boost::gregorian::years(1))
                 .exec(ctx);
 
                 unsigned long long domain_id = static_cast<unsigned long long>(

@@ -1,7 +1,7 @@
-#include "contact.h"
-#include "random.h"
-#include "fredlib/db_settings.h"
+#include "src/fredlib/contact_verification/contact.h"
+#include "src/fredlib/db_settings.h"
 #include "util/types/birthdate.h"
+#include "util/random.h"
 
 
 namespace Fred {
@@ -11,16 +11,16 @@ namespace Verification {
 
 bool transform_ssn_birthday_value(Contact &_data)
 {
-    if (static_cast<std::string>(_data.ssntype) == "BIRTHDAY")
+    if (_data.ssntype.get_value_or_default() == "BIRTHDAY")
     {
-        std::string orig = static_cast<std::string>(_data.ssn);
+        std::string orig = _data.ssn.get_value_or_default();
         boost::gregorian::date conv = birthdate_from_string_to_date(orig);
         if (conv.is_special())
         {
             throw std::runtime_error("invalid ssn value for type BIRTHDAY");
         }
         _data.ssn = to_iso_extended_string(conv);
-        return static_cast<std::string>(_data.ssn) != orig;
+        return _data.ssn.get_value_or_default() != orig;
     }
     return false;
 }

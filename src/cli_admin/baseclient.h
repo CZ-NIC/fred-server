@@ -24,7 +24,7 @@
 #ifndef BASE_CLIENT_H_
 #define BASE_CLIENT_H_
 
-#include <corba/EPP.hh>
+#include "src/corba/EPP.hh"
 #include <map>
 #include <string>
 

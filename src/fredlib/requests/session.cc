@@ -7,7 +7,7 @@
 
 #include <boost/utility.hpp>
 
-#include "common_impl.h"
+#include "src/fredlib/common_impl.h"
 #include "session.h"
 #include "log/logger.h"
 

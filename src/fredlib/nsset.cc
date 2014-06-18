@@ -20,12 +20,12 @@
 #include <boost/regex.hpp>
 #include <vector>
 
-#include "nsset.h"
+#include "src/fredlib/nsset.h"
 #include "object_impl.h"
 #include "sql.h"
-#include "old_utils/dbsql.h"
-#include "old_utils/util.h"
-#include "model/model_filters.h"
+#include "src/old_utils/dbsql.h"
+#include "src/old_utils/util.h"
+#include "src/model/model_filters.h"
 #include "log/logger.h"
 
 #define NSSET_REGEX_RESTRICTED "[nN][sS][sS][iI][dD]:[a-zA-Z0-9_:.-]{1,57}"

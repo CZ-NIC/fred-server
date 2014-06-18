@@ -17,7 +17,7 @@
  */
 
 /**
- *  @file merge_contact.cc
+ *  @file
  *  contact merge
  */
 
@@ -25,127 +25,16 @@
 
 #include <boost/algorithm/string.hpp>
 
-#include "fredlib/contact/merge_contact.h"
+#include "src/fredlib/contact/merge_contact.h"
 
-#include "fredlib/domain/update_domain.h"
-#include "fredlib/nsset/update_nsset.h"
-#include "fredlib/keyset/update_keyset.h"
-#include "fredlib/contact/delete_contact.h"
-
-#include "fredlib/opcontext.h"
-#include "fredlib/db_settings.h"
+#include "src/fredlib/domain/update_domain.h"
+#include "src/fredlib/nsset/update_nsset.h"
+#include "src/fredlib/keyset/update_keyset.h"
+#include "src/fredlib/contact/delete_contact.h"
+#include "src/fredlib/contact/update_contact.h"
+#include "src/fredlib/opcontext.h"
+#include "src/fredlib/db_settings.h"
 #include "util/random.h"
-
-/*
- * XXX: #9877 - temoporary (and partial implementation of update contact - authinfo change only)
- * this class should be deleted where full UpdateContact...(...) operation is present
- */
-namespace Fred
-{
-    class UpdateContactByHandle
-    {
-    private:
-        const std::string handle_;
-        const std::string registrar_;
-        Optional<std::string> authinfo_;
-        Nullable<unsigned long long> logd_request_id_;
-
-
-    public:
-        UpdateContactByHandle(const std::string &_handle, const std::string _registrar)
-            : handle_(_handle),
-              registrar_(_registrar)
-        {
-        }
-
-
-        UpdateContactByHandle& set_authinfo(const std::string &_authinfo)
-        {
-            authinfo_ = _authinfo;
-            return *this;
-        }
-
-
-        UpdateContactByHandle& set_logd_request_id(unsigned long long _logd_request_id)
-        {
-            logd_request_id_ = _logd_request_id;
-            return *this;
-        }
-
-
-        void exec(OperationContext &ctx)
-        {
-            Database::Result r_dst_contact_id = ctx.get_conn().exec_params(
-                    "SELECT id FROM object_registry oreg WHERE type = 1"
-                    " AND erdate is null AND name = $1::text",
-                    Database::query_param_list(handle_));
-            unsigned long long dst_contact_id = 0;
-            if (r_dst_contact_id.size() == 1) {
-                dst_contact_id = static_cast<unsigned long long>(r_dst_contact_id[0][0]);
-            }
-            if (dst_contact_id == 0) {
-                throw std::runtime_error("destination contact id look up failed");
-            }
-
-            /* update object table */
-            {
-                Database::QueryParams p_update_object;
-                std::stringstream s_update_object;
-
-                p_update_object.push_back(registrar_);
-                s_update_object << "UPDATE object SET upid = "
-                    "(SELECT id FROM registrar WHERE handle = $" <<  p_update_object.size() << "::text), update = now()";
-                if (authinfo_.isset())
-                {
-                    p_update_object.push_back(authinfo_.get_value());
-                    s_update_object << ", authinfopw = $" << p_update_object.size() << "::text";
-                }
-                p_update_object.push_back(dst_contact_id);
-                s_update_object << " WHERE id = $" << p_update_object.size() << "::integer";
-
-                ctx.get_conn().exec_params(s_update_object.str(), p_update_object);
-            }
-
-            /* insert into history tables */
-            {
-                Database::Result rhistory = ctx.get_conn().exec_params(
-                        "INSERT INTO history (id, request_id)"
-                        " VALUES (DEFAULT, $1::bigint) RETURNING id",
-                        Database::query_param_list(logd_request_id_));
-                unsigned long long history_id = 0;
-                if (rhistory.size() == 1) {
-                    history_id = static_cast<unsigned long long>(rhistory[0][0]);
-                }
-                if (history_id == 0) {
-                    throw std::runtime_error("cannot save new history");
-                }
-
-                ctx.get_conn().exec_params("UPDATE object_registry SET historyid = $1::integer"
-                        " WHERE id = $2::integer",
-                        Database::query_param_list(history_id)(dst_contact_id));
-
-                Database::Result robject_history = ctx.get_conn().exec_params(
-                        "INSERT INTO object_history (historyid, id, clid, upid, trdate, update, authinfopw)"
-                        " SELECT $1::integer, o.id, o.clid, o.upid, o.trdate, o.update, o.authinfopw"
-                        " FROM object o"
-                        " WHERE o.id = $2::integer",
-                        Database::query_param_list(history_id)(dst_contact_id));
-
-                Database::Result rcontact_history = ctx.get_conn().exec_params(
-                        "INSERT INTO contact_history (historyid, id, name, organization, street1, street2, street3,"
-                        " city, stateorprovince, postalcode, country, telephone, fax, email, disclosename,"
-                        " discloseorganization, discloseaddress, disclosetelephone, disclosefax, discloseemail,"
-                        " notifyemail, vat, ssn, ssntype, disclosevat, discloseident, disclosenotifyemail)"
-                        " SELECT $1::integer, c.id, c.name, c.organization, c.street1, c.street2, c.street3,"
-                        " c.city, c.stateorprovince, c.postalcode, c.country, c.telephone, c.fax, c.email,"
-                        " c.disclosename, c.discloseorganization, c.discloseaddress, c.disclosetelephone, c.disclosefax,"
-                        " c.discloseemail, c.notifyemail, c.vat, c.ssn, c.ssntype, c.disclosevat, c.discloseident,"
-                        " c.disclosenotifyemail FROM contact c WHERE c.id = $2::integer",
-                        Database::query_param_list(history_id)(dst_contact_id));
-            }
-        }
-    };
-}
 
 
 namespace Fred
@@ -315,7 +204,7 @@ namespace Fred
                     std::string fqdn = std::string(result[i][0]);
                     UpdateDomain ud (fqdn, registrar_ );
                     ud.set_registrant(dst_contact_handle_);
-                    if(logd_request_id_.isset()) ud.set_logd_request_id(logd_request_id_);
+                    if(logd_request_id_.isset()) ud.set_logd_request_id(logd_request_id_.get_value());
                     tmp.history_id = ud.exec(ctx);
                 }
                 output.update_domain_registrant.push_back(tmp);
@@ -354,7 +243,7 @@ namespace Fred
                         UpdateDomain ud (tmp.fqdn, registrar_ );
                         ud.rem_admin_contact(src_contact_handle_)
                         .add_admin_contact(dst_contact_handle_);
-                        if(logd_request_id_.isset()) ud.set_logd_request_id(logd_request_id_);
+                        if(logd_request_id_.isset()) ud.set_logd_request_id(logd_request_id_.get_value());
                         tmp.history_id = ud.exec(ctx);
                         ctx.get_conn().exec("RELEASE SAVEPOINT merge_contact_update_domain");
                     }
@@ -369,7 +258,7 @@ namespace Fred
                             ctx.get_conn().exec("ROLLBACK TO SAVEPOINT merge_contact_update_domain");
                             UpdateDomain ud (tmp.fqdn, registrar_ );
                             ud.rem_admin_contact(src_contact_handle_);
-                            if(logd_request_id_.isset()) ud.set_logd_request_id(logd_request_id_);
+                            if(logd_request_id_.isset()) ud.set_logd_request_id(logd_request_id_.get_value());
                             tmp.history_id = ud.exec(ctx);
                             ctx.get_conn().exec("RELEASE SAVEPOINT merge_contact_update_domain");
                         }
@@ -414,7 +303,7 @@ namespace Fred
                         UpdateNsset un(tmp.handle, registrar_ );
                         un.rem_tech_contact(src_contact_handle_)
                         .add_tech_contact(dst_contact_handle_);
-                        if(logd_request_id_.isset()) un.set_logd_request_id(logd_request_id_);
+                        if(logd_request_id_.isset()) un.set_logd_request_id(logd_request_id_.get_value());
                         tmp.history_id = un.exec(ctx);
                         ctx.get_conn().exec("RELEASE SAVEPOINT merge_contact_update_nsset");
                     }
@@ -429,7 +318,7 @@ namespace Fred
                             ctx.get_conn().exec("ROLLBACK TO SAVEPOINT merge_contact_update_nsset");
                             UpdateNsset un(tmp.handle, registrar_ );
                             un.rem_tech_contact(src_contact_handle_);
-                            if(logd_request_id_.isset()) un.set_logd_request_id(logd_request_id_);
+                            if(logd_request_id_.isset()) un.set_logd_request_id(logd_request_id_.get_value());
                             tmp.history_id = un.exec(ctx);
                             ctx.get_conn().exec("RELEASE SAVEPOINT merge_contact_update_nsset");
                         }
@@ -474,7 +363,7 @@ namespace Fred
                         UpdateKeyset uk(tmp.handle, registrar_);
                         uk.rem_tech_contact(src_contact_handle_)
                         .add_tech_contact(dst_contact_handle_);
-                        if(logd_request_id_.isset()) uk.set_logd_request_id(logd_request_id_);
+                        if(logd_request_id_.isset()) uk.set_logd_request_id(logd_request_id_.get_value());
                         tmp.history_id = uk.exec(ctx);
                         ctx.get_conn().exec("RELEASE SAVEPOINT merge_contact_update_keyset");
                     }
@@ -487,7 +376,7 @@ namespace Fred
                             ctx.get_conn().exec("ROLLBACK TO SAVEPOINT merge_contact_update_keyset");
                             UpdateKeyset uk(tmp.handle, registrar_);
                             uk.rem_tech_contact(src_contact_handle_);
-                            if(logd_request_id_.isset()) uk.set_logd_request_id(logd_request_id_);
+                            if(logd_request_id_.isset()) uk.set_logd_request_id(logd_request_id_.get_value());
                             tmp.history_id = uk.exec(ctx);
                             ctx.get_conn().exec("RELEASE SAVEPOINT merge_contact_update_keyset");
                         }
@@ -504,12 +393,12 @@ namespace Fred
         //delete src contact
         if(!dry_run)
         {
-            DeleteContact(src_contact_handle_).exec(ctx);
+            DeleteContactByHandle(src_contact_handle_).exec(ctx);
             /* #9877 - change authinfo of destination contact */
             std::string new_authinfo =  Random::string_from(8, "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789");
-            UpdateContactByHandle(dst_contact_handle_, registrar_)
-                .set_logd_request_id(logd_request_id_)
-                .set_authinfo(new_authinfo)
+            UpdateContactByHandle ucbh (dst_contact_handle_, registrar_);
+                if(logd_request_id_.isset()) ucbh.set_logd_request_id(logd_request_id_.get_value());
+                ucbh.set_authinfo(new_authinfo)
                 .exec(ctx);
         }
 
@@ -563,20 +452,15 @@ namespace Fred
         return MergeContactOutput();
     }//MergeContact::exec
 
-    std::ostream& operator<<(std::ostream& os, const MergeContact& i)
+    std::string MergeContact::to_string() const
     {
-        return os << "#MergeContact src_contact_handle_: " << i.src_contact_handle_
-                << " dst_contact_handle_: " << i.dst_contact_handle_
-                << " registrar_: " << i.registrar_
-                << " logd_request_id_: " << i.logd_request_id_.print_quoted()
-                ;
-    }
-
-    std::string MergeContact::to_string()
-    {
-        std::stringstream ss;
-        ss << *this;
-        return ss.str();
+        return Util::format_operation_state("MergeContact",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("src_contact_handle",src_contact_handle_))
+        (std::make_pair("dst_contact_handle",dst_contact_handle_))
+        (std::make_pair("registrar",registrar_))
+        (std::make_pair("logd_request_id",logd_request_id_.print_quoted()))
+        );
     }
 
 }//namespace Fred

@@ -1,7 +1,7 @@
 #include "test-invoice-common.h"
 
 #include "cfg/handle_corbanameservice_args.h"
-#include "corba_wrapper_decl.h"
+#include "util/corba_wrapper_decl.h"
 
 
 void init_corba_container() {

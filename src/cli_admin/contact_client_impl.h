@@ -30,13 +30,13 @@
 #include "cfg/handle_corbanameservice_args.h"
 #include "handle_adminclientselection_args.h"
 #include "log/context.h"
-#include "cli_admin/contactclient.h"
+#include "contactclient.h"
 #include "commonclient.h"
-#include "fredlib/reminder.h"
-#include "admin/contact/merge_contact_auto_procedure.h"
-#include "admin/contact/merge_contact.h"
-#include "admin/contact/merge_contact_reporting.h"
-#include "corba/logger_client_impl.h"
+#include "src/fredlib/reminder.h"
+#include "src/admin/contact/merge_contact_auto_procedure.h"
+#include "src/admin/contact/merge_contact.h"
+#include "src/admin/contact/merge_contact_reporting.h"
+#include "src/corba/logger_client_impl.h"
 
 #include "src/fredlib/registrar/get_registrar_handles.h"
 
@@ -152,9 +152,9 @@ struct contact_merge_duplicate_auto_impl
                     *(mm.get()),
                     *(logger_client.get()))
                 .set_registrar(*ci)
-                .set_limit(params.limit)
+                .set_limit(params.limit.is_value_set() ? Optional<unsigned long long>(params.limit.get_value()) : Optional<unsigned long long>())
                 .set_dry_run(params.dry_run)
-                .set_verbose(params.verbose)
+                .set_verbose(params.verbose.is_value_set() ? Optional<unsigned short>(params.verbose.get_value()) : Optional<unsigned short>())
                 .set_selection_filter_order(params.selection_filter_order)
             .exec();
         }

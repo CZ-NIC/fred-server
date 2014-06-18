@@ -31,7 +31,7 @@ administrativni zruseni vsech stavu blokovani objektu, (update do object_state_r
 #ifndef CLEAR_ADMIN_OBJECT_STATE_REQUEST_ID_H_
 #define CLEAR_ADMIN_OBJECT_STATE_REQUEST_ID_H_
 
-#include "fredlib/object_state/clear_object_state_request_id.h"
+#include "src/fredlib/object_state/clear_object_state_request_id.h"
 
 namespace Fred
 {

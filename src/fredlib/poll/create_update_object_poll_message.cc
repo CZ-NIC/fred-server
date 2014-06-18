@@ -1,5 +1,5 @@
 #include "create_update_object_poll_message.h"
-#include "create_poll_message.h"
+#include "create_poll_message_impl.h"
 
 #include <boost/lexical_cast.hpp>
 
@@ -34,6 +34,14 @@ void CreateUpdateObjectPollMessage::exec(Fred::OperationContext &_ctx)
     _ctx.get_conn().exec_params(
             "INSERT INTO poll_eppaction (msgid, objid) VALUES ($1::bigint, $2::bigint)",
             Database::query_param_list(poll_msg_id)(history_id_));
+}
+
+
+std::string CreateUpdateObjectPollMessage::to_string() const
+{
+    return Util::format_operation_state("CreateUpdateObjectPollMessage",
+    Util::vector_of<std::pair<std::string,std::string> >
+    (std::make_pair("history_id",boost::lexical_cast<std::string>(history_id_))));
 }
 
 

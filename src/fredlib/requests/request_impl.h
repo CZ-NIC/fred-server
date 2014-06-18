@@ -1,7 +1,7 @@
 #ifndef _REQUEST_IMPL_H_
 #define _REQUEST_IMPL_H_
 
-#include "common_impl.h"
+#include "src/fredlib/common_impl.h"
 #include "request.h"
 
 namespace Fred {

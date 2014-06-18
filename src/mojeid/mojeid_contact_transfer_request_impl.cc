@@ -1,9 +1,10 @@
-#include "mojeid_contact_transfer_request_impl.h"
-#include "fredlib/contact_verification/contact.h"
-#include "fredlib/object_states.h"
-#include "mojeid/mojeid_contact_states.h"
-#include "mojeid/request.h"
-#include "mojeid/mojeid_validators.h"
+#include "src/fredlib/contact_verification/contact.h"
+#include "src/fredlib/object_states.h"
+#include "src/mojeid/mojeid_contact_states.h"
+#include "src/mojeid/request.h"
+#include "src/mojeid/mojeid_contact_transfer_request_impl.h"
+#include "src/mojeid/mojeid_validators.h"
+
 
 namespace Registry {
 namespace MojeID {

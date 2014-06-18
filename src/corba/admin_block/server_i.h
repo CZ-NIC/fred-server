@@ -24,7 +24,7 @@
 #ifndef SERVER_I_H_
 #define SERVER_I_H_
 
-#include <AdministrativeBlocking.hh>
+#include "src/corba/AdministrativeBlocking.hh"
 #include <memory>
 #include <string>
 

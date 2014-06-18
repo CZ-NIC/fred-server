@@ -31,8 +31,8 @@
 #include <boost/foreach.hpp>
 #include <boost/algorithm/string.hpp>
 
-#include "fredlib/opcontext.h"
-#include "fredlib/zone/zone.h"
+#include "src/fredlib/opcontext.h"
+#include "src/fredlib/zone/zone.h"
 #include "util/factory.h"
 #include "util/factory_check.h"
 
@@ -88,11 +88,6 @@ bool general_domain_name_syntax_check(const std::string& fqdn)
     return true;
 }
 
-std::string rem_trailing_dot(const std::string& fqdn)
-{
-    if(!fqdn.empty() && fqdn.at(fqdn.size()-1) == '.') return fqdn.substr(0,fqdn.size()-1);
-    return fqdn;
-}
 
 //domain name validator
 DomainNameValidator& DomainNameValidator::set_zone_name(const DomainName& _zone_name) {
@@ -118,7 +113,7 @@ void DomainName::init(const char* const _fqdn) {
         throw ExceptionInvalidFqdn();
     }
 
-    temp_fqdn = rem_trailing_dot(temp_fqdn);
+    temp_fqdn = Fred::Zone::rem_trailing_dot(temp_fqdn);
     boost::split(labels_,temp_fqdn , boost::is_any_of("."));
 }
 
@@ -194,7 +189,7 @@ bool DomainNameValidator::exec(const DomainName& _fqdn, int top_labels_to_skip) 
             if(ctx_.isset() == false) {
                 throw ExceptionCtxNotSet();
             }
-            need_ctx_checker->set_ctx(*ctx_);
+            need_ctx_checker->set_ctx(*ctx_.get_value());
         }
         if(checker->validate(labels_to_check) == false) return false; //validation failed
     }
@@ -411,6 +406,6 @@ std::vector<std::string> get_domain_name_validation_config_for_zone(Fred::Operat
 
 
 
-}//namespace Fred
 }//namespace Domain
+}//namespace Fred
 

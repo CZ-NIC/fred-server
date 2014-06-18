@@ -21,18 +21,18 @@
  *  copy contact
  */
 
-#include "fredlib/contact/copy_contact.h"
-#include "fredlib/object_state/get_blocking_status_desc_list.h"
-#include "fredlib/object_state/get_object_state_id_map.h"
-#include "fredlib/contact/info_contact.h"
-#include "fredlib/contact/create_contact.h"
-#include "fredlib/object/object.h"
-#include "fredlib/opcontext.h"
-#include "fredlib/db_settings.h"
+#include "src/fredlib/contact/copy_contact.h"
+#include "src/fredlib/object_state/get_blocking_status_desc_list.h"
+#include "src/fredlib/object_state/get_object_state_id_map.h"
+#include "src/fredlib/contact/info_contact.h"
+#include "src/fredlib/contact/create_contact.h"
+#include "src/fredlib/object/object.h"
+#include "src/fredlib/opcontext.h"
+#include "src/fredlib/db_settings.h"
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
 #include "util/util.h"
-#include "fredlib/object.h"
+#include "src/fredlib/object.h"
 
 #include <boost/algorithm/string.hpp>
 
@@ -61,7 +61,7 @@ namespace Fred
         template< class T >
         Optional< T > to_optional(const Nullable< T > &_n)
         {
-            return _n.isnull() ? Optional< T >() : Optional< T >(_n);
+            return _n.isnull() ? Optional< T >() : Optional< T >(_n.get_value());
         }
 
         Optional< std::string > to_optional(const std::string &_n)
@@ -89,7 +89,7 @@ namespace Fred
                     "FROM registrar "
                     "WHERE handle=UPPER($4::text))",
             Database::query_param_list
-                (OBJECT_TYPE_ID_CONTACT)(src_contact_handle_)(dst_contact_handle_)(dst_registrar_handle_));
+                (OBJECT_TYPE_ID_CONTACT)(src_contact_handle_)(dst_contact_handle_)(dst_registrar_handle_.get_value_or_default()));
         if (check_args_res.size() == 1) {
             Exception ex;
             if (check_args_res[0][0].isnull()) {
@@ -99,16 +99,16 @@ namespace Fred
                 ex.set_dst_contact_handle_already_exist(dst_contact_handle_);
             }
             if (check_args_res[0][2].isnull()) {
-                ex.set_create_contact_failed(std::string("dst_registrar_handle ") + dst_registrar_handle_.get_value() + " doesn't exist");
+                ex.set_create_contact_failed(std::string("dst_registrar_handle ") + dst_registrar_handle_.print_quoted() + " doesn't exist");
             }
             if (ex.throw_me()) {
                 BOOST_THROW_EXCEPTION(ex);
             }
         }
 
-        Fred::InfoContact info_contact(src_contact_handle_, dst_registrar_handle_);
+        Fred::InfoContactByHandle info_contact(src_contact_handle_);
         Fred::InfoContactOutput old_contact = info_contact.exec(_ctx);
-        Fred::CreateContact create_contact(dst_contact_handle_, dst_registrar_handle_,
+        Fred::CreateContact create_contact(dst_contact_handle_, dst_registrar_handle_.get_value(),
           to_optional(old_contact.info_contact_data.authinfopw),
           to_optional(old_contact.info_contact_data.name),
           to_optional(old_contact.info_contact_data.organization),

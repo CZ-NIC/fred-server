@@ -18,7 +18,7 @@
 
 /**
  *  @file factory_check.h
- *  Comparsion of registered implementations with requirements.
+ *  Comparison of registered implementations with requirements.
  */
 
 #ifndef FACTORY_CHECK_H_

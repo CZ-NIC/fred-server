@@ -29,7 +29,7 @@
 #include "src/fredlib/opcontext.h"
 #include "util/util.h"
 
-#include "fredlib/registrar/get_registrar_handles.h"
+#include "src/fredlib/registrar/get_registrar_handles.h"
 
 namespace Fred
 {

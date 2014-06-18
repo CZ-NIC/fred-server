@@ -26,9 +26,9 @@
 #include "cfg/config_handler_decl.h"
 #include "cfg/handle_database_args.h"
 #include "cfg/handle_corbanameservice_args.h"
-#include "cli_admin/handle_adminclientselection_args.h"
+#include "handle_adminclientselection_args.h"
 #include "log/context.h"
-#include "cli_admin/enumparamclient.h"
+#include "enumparamclient.h"
 
 /**
  * \class enum_parameter_change_impl

@@ -11,11 +11,11 @@
 #include <boost/thread/condition.hpp>
 
 #include "session_impl.h"
-#include "corba/mailer_manager.h"
-#include "fredlib/registry.h"
-#include "fredlib/invoicing/invoice.h"
-#include "old_utils/dbsql.h"
-#include "model/model_filters.h"
+#include "src/corba/mailer_manager.h"
+#include "src/fredlib/registry.h"
+#include "src/fredlib/invoicing/invoice.h"
+#include "src/old_utils/dbsql.h"
+#include "src/model/model_filters.h"
 #include "bankinginvoicing_impl.h"
 
 class NameService;
@@ -134,10 +134,8 @@ public:
   );
   ccReg::Admin::Buffer* getPublicRequestPDF(ccReg::TID id, const char *lang);
 
-  /// znovu odešle dopis s PIN3
   ccReg::TID resendPin3Letter(ccReg::TID publicRequestId);
 
-  /// znovu odešle SMS s PIN2
   ccReg::TID resendPin2SMS(ccReg::TID publicRequestId);
 
   ::CORBA::ULongLong countEnumDomainsByRegistrant(const char* name, ::CORBA::Boolean by_person, ::CORBA::Boolean by_org);

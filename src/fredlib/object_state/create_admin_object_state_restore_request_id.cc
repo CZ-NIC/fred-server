@@ -21,16 +21,17 @@
  *  create administrative object state restore request
  */
 
-#include "fredlib/object_state/create_admin_object_state_restore_request_id.h"
-#include "fredlib/object_state/clear_admin_object_state_request_id.h"
-#include "fredlib/object_state/clear_object_state_request_id.h"
-#include "fredlib/object_state/get_blocking_status_desc_list.h"
-#include "fredlib/opcontext.h"
-#include "fredlib/db_settings.h"
+#include "src/fredlib/object_state/create_admin_object_state_restore_request_id.h"
+#include "src/fredlib/object_state/clear_admin_object_state_request_id.h"
+#include "src/fredlib/object_state/clear_object_state_request_id.h"
+#include "src/fredlib/object_state/get_blocking_status_desc_list.h"
+#include "lock_multiple_object_state_request_lock.h"
+#include "src/fredlib/opcontext.h"
+#include "src/fredlib/db_settings.h"
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
 #include "util/util.h"
-#include "fredlib/object.h"
+#include "src/fredlib/object.h"
 
 #include <boost/algorithm/string.hpp>
 #include <set>
@@ -47,7 +48,9 @@ namespace Fred
         const Optional<unsigned long long> _logd_request_id)
     :   object_id_(_object_id),
         reason_(_reason),
-        logd_request_id_(_logd_request_id)
+        logd_request_id_(_logd_request_id.isset()
+        ? Nullable<unsigned long long>(_logd_request_id.get_value())
+        : Nullable<unsigned long long>())//is NULL if not set
     {}
 
     CreateAdminObjectStateRestoreRequestId& CreateAdminObjectStateRestoreRequestId::set_reason(const std::string &_reason)
@@ -141,7 +144,7 @@ namespace Fred
             }
         }
         try {
-            ClearAdminObjectStateRequestId(object_id_, reason_).exec(_ctx);
+            ClearAdminObjectStateRequestId(object_id_, reason_.get_value()).exec(_ctx);
         }
         catch (const ClearAdminObjectStateRequestId::Exception &ex) {
             if (ex.is_set_server_blocked_absent()) {

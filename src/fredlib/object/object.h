@@ -21,30 +21,46 @@
  *  common object
  */
 
-#ifndef OBJECT_H_
-#define OBJECT_H_
+#ifndef OBJECT__H_
+#define OBJECT__H_
 
 #include <string>
 
+#include <boost/bind.hpp>
+#include <boost/function.hpp>
 
-#include "fredlib/opexception.h"
-#include "fredlib/opcontext.h"
+#include "src/fredlib/opexception.h"
+#include "src/fredlib/opcontext.h"
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
+#include "util/printable.h"
 
 namespace Fred
 {
-    class CreateObject
+    struct CreateObjectOutput
+    {
+        unsigned long long object_id;
+        unsigned long long history_id;
+        CreateObjectOutput()
+        : object_id(0)
+        , history_id(0)
+        {}
+    };
+    /**
+     * Creates common part of registry object.
+     */
+    class CreateObject : public virtual Util::Printable
     {
         const std::string object_type_;//object type name
         const std::string handle_;//object identifier
         const std::string registrar_;//set registrar
         Optional<std::string> authinfo_;//set authinfo
+        Nullable<unsigned long long> logd_request_id_;//logger request_id
     public:
         DECLARE_EXCEPTION_DATA(invalid_object_handle, std::string);
+        DECLARE_EXCEPTION_DATA(unknown_registrar_handle, std::string);
         struct Exception
         : virtual Fred::OperationException
-        , ExceptionData_unknown_object_type<Exception>
         , ExceptionData_invalid_object_handle<Exception>
         , ExceptionData_unknown_registrar_handle<Exception>
         {};
@@ -55,27 +71,36 @@ namespace Fred
         CreateObject(const std::string& object_type
                 , const std::string& handle
             , const std::string& registrar
-            , const Optional<std::string>& authinfo);
+            , const Optional<std::string>& authinfo
+            , const Nullable<unsigned long long>& logd_request_id);
         CreateObject& set_authinfo(const std::string& authinfo);
-        unsigned long long exec(OperationContext& ctx);
+        CreateObject& set_logd_request_id(const Nullable<unsigned long long>& logd_request_id);
+        CreateObjectOutput exec(OperationContext& ctx);
 
-        friend std::ostream& operator<<(std::ostream& os, const CreateObject& i);
-        std::string to_string();
+        std::string to_string() const;
     };
 
-    class UpdateObject
+    /**
+     * Updates some common parts of registry object.
+     */
+    class UpdateObject : public virtual Util::Printable
     {
         const std::string handle_;//object identifier
         const std::string obj_type_;//object type name
-        const std::string registrar_;//set registrar
+        const std::string registrar_;//set registrar performing the update
+        Optional<std::string> sponsoring_registrar_;//set registrar administering the object
         Optional<std::string> authinfo_;//set authinfo
+        Nullable<unsigned long long> logd_request_id_;//logger request_id
+
     public:
         DECLARE_EXCEPTION_DATA(unknown_object_handle, std::string);
+        DECLARE_EXCEPTION_DATA(unknown_registrar_handle, std::string);
+        DECLARE_EXCEPTION_DATA(unknown_sponsoring_registrar_handle, std::string);
         struct Exception
         : virtual Fred::OperationException
-        , ExceptionData_unknown_object_type<Exception>
         , ExceptionData_unknown_object_handle<Exception>
         , ExceptionData_unknown_registrar_handle<Exception>
+        , ExceptionData_unknown_sponsoring_registrar_handle<Exception>
         {};
 
         UpdateObject(const std::string& handle
@@ -84,43 +109,65 @@ namespace Fred
         UpdateObject(const std::string& handle
             , const std::string& obj_type
             , const std::string& registrar
-            , const Optional<std::string>& authinfo);
+            , const Optional<std::string>& sponsoring_registrar
+            , const Optional<std::string>& authinfo
+            , const Nullable<unsigned long long>& logd_request_id
+        );
+        UpdateObject& set_sponsoring_registrar(const std::string& sponsoring_registrar);
         UpdateObject& set_authinfo(const std::string& authinfo);
-        void exec(OperationContext& ctx);
+        UpdateObject& set_logd_request_id(const Nullable<unsigned long long>& logd_request_id);
 
-        friend std::ostream& operator<<(std::ostream& os, const UpdateObject& i);
-        std::string to_string();
+        unsigned long long exec(OperationContext& ctx);//return history_id
+
+        std::string to_string() const;
     };
 
-    class InsertHistory
+    class InsertHistory : public virtual Util::Printable
     {
         Nullable<unsigned long long> logd_request_id_; //id of the new entry in log_entry database table, id is used in other calls to logging within current request
+        unsigned long long object_id_;
     public:
-        InsertHistory(const Nullable<unsigned long long>& logd_request_id);
+        InsertHistory(const Nullable<unsigned long long>& logd_request_id, unsigned long long object_id);
         unsigned long long exec(OperationContext& ctx);
 
-        friend std::ostream& operator<<(std::ostream& os, const InsertHistory& i);
-        std::string to_string();
+        std::string to_string() const;
     };
 
-    class DeleteObject
+    class DeleteObjectByHandle : public virtual Util::Printable
     {
-        const std::string handle_;//object identifier
-        const std::string obj_type_;//object type name
+        const std::string handle_;      //object handle
+        const std::string obj_type_;    //object type name
     public:
         DECLARE_EXCEPTION_DATA(unknown_object_handle, std::string);
         struct Exception
-        : virtual Fred::OperationException
-        , ExceptionData_unknown_object_type<Exception>
-        , ExceptionData_unknown_object_handle<Exception>
-        {};
-        DeleteObject(const std::string& handle
+            : virtual Fred::OperationException
+            , ExceptionData_unknown_object_handle<Exception>
+            {};
+
+        DeleteObjectByHandle(const std::string& handle
                 , const std::string& obj_type);
+
         void exec(OperationContext& ctx);
 
-        friend std::ostream& operator<<(std::ostream& os, const DeleteObject& i);
-        std::string to_string();
+        virtual std::string to_string() const;
+    };
+
+    class DeleteObjectById : public virtual Util::Printable
+    {
+        const unsigned long long id_;      //object id
+    public:
+        DECLARE_EXCEPTION_DATA(unknown_object_id, unsigned long long);
+        struct Exception
+            : virtual Fred::OperationException
+            , ExceptionData_unknown_object_id<Exception>
+            {};
+
+        DeleteObjectById(unsigned long long id);
+
+        void exec(OperationContext& ctx);
+
+        virtual std::string to_string() const;
     };
 
 }//namespace Fred
-#endif //OBJECT_H_
+#endif // end of #include guard

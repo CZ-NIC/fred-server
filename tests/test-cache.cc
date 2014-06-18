@@ -3,7 +3,7 @@
 #include <boost/thread/barrier.hpp>
 
 #include "random.h"
-#include "requests/session_cache.h"
+#include "src/fredlib/requests/session_cache.h"
 #include "tests-common.h"
 
 using namespace Fred::Logger;

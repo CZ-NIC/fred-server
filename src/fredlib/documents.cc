@@ -17,7 +17,7 @@
  */
 
 #include "log/logger.h"
-#include "documents.h"
+#include "src/fredlib/documents.h"
 #include "util/subprocess.h"
 #include <stdio.h>
 #include <string.h>

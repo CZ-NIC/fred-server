@@ -17,7 +17,7 @@
  */
 
 /**
- *  @file create_keyset.h
+ *  @file
  *  create keyset
  */
 
@@ -27,11 +27,12 @@
 
 #include <boost/algorithm/string.hpp>
 
-#include "fredlib/keyset/create_keyset.h"
-#include "fredlib/object/object.h"
-
-#include "fredlib/opcontext.h"
-#include "fredlib/db_settings.h"
+#include "src/fredlib/keyset/create_keyset.h"
+#include "src/fredlib/object/object.h"
+#include "src/fredlib/object/object_impl.h"
+#include "src/fredlib/registrar/registrar_impl.h"
+#include "src/fredlib/opcontext.h"
+#include "src/fredlib/db_settings.h"
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
 #include "util/util.h"
@@ -93,21 +94,11 @@ namespace Fred
         try
         {
             //check registrar
-            {
-                Database::Result registrar_res = ctx.get_conn().exec_params(
-                    "SELECT id FROM registrar WHERE handle = UPPER($1::text) FOR SHARE"
-                    , Database::query_param_list(registrar_));
-                if(registrar_res.size() == 0)
-                {
-                    BOOST_THROW_EXCEPTION(Exception().set_unknown_registrar_handle(registrar_));
-                }
-                if (registrar_res.size() != 1)
-                {
-                    BOOST_THROW_EXCEPTION(InternalError("failed to get registrar"));
-                }
-            }
+            Registrar::get_registrar_id_by_handle(
+                ctx, registrar_, static_cast<Exception*>(0)//set throw
+                , &Exception::set_unknown_registrar_handle);
 
-            unsigned long long object_id = CreateObject("keyset", handle_, registrar_, authinfo_).exec(ctx);
+            CreateObjectOutput create_object_output = CreateObject("keyset", handle_, registrar_, authinfo_, logd_request_id_).exec(ctx);
 
             Exception create_keyset_exception;
 
@@ -115,7 +106,7 @@ namespace Fred
             {
                 //insert
                 ctx.get_conn().exec_params("INSERT INTO keyset (id) VALUES ($1::integer)"
-                        , Database::query_param_list(object_id));
+                        , Database::query_param_list(create_object_output.object_id));
 
                 //set dns keys
                 if(!dns_keys_.empty())
@@ -128,7 +119,7 @@ namespace Fred
                             ctx.get_conn().exec_params(
                             "INSERT INTO dnskey (keysetid, flags, protocol, alg, key) VALUES($1::integer "
                             ", $2::integer, $3::integer, $4::integer, $5::text)"
-                            , Database::query_param_list(object_id)(i->get_flags())(i->get_protocol())(i->get_alg())(i->get_key()));
+                            , Database::query_param_list(create_object_output.object_id)(i->get_flags())(i->get_protocol())(i->get_alg())(i->get_key()));
                             ctx.get_conn().exec("RELEASE SAVEPOINT dnskey");
                         }
                         catch(const std::exception& ex)
@@ -152,34 +143,17 @@ namespace Fred
                     Database::QueryParams params;//query params
                     std::stringstream sql;
 
-                    params.push_back(object_id);
+                    params.push_back(create_object_output.object_id);
                     sql << "INSERT INTO keyset_contact_map(keysetid, contactid) "
                             " VALUES ($" << params.size() << "::integer, ";
 
                     for(std::vector<std::string>::iterator i = tech_contacts_.begin(); i != tech_contacts_.end(); ++i)
                     {
                         //lock object_registry row for update and get id
-                        unsigned long long tech_contact_id = 0;
-                        {
-                            Database::Result lock_res = ctx.get_conn().exec_params(
-                                "SELECT oreg.id FROM enum_object_type eot"
-                                " JOIN object_registry oreg ON oreg.type = eot.id "
-                                " JOIN contact c ON oreg.id = c.id "
-                                " AND oreg.name = UPPER($1::text) AND oreg.erdate IS NULL "
-                                " WHERE eot.name = 'contact' FOR UPDATE OF oreg"
-                                , Database::query_param_list(*i));
-
-                            if (lock_res.size() == 0)
-                            {
-                                create_keyset_exception.add_unknown_technical_contact_handle(*i);
-                                continue;//for tech_contacts_
-                            }
-                            if (lock_res.size() != 1)
-                            {
-                                BOOST_THROW_EXCEPTION(InternalError("failed to get technical contact"));
-                            }
-                            tech_contact_id = static_cast<unsigned long long> (lock_res[0][0]);
-                        }
+                        unsigned long long tech_contact_id = get_object_id_by_handle_and_type_with_lock(
+                                ctx,*i,"contact",&create_keyset_exception,
+                                &Exception::add_unknown_technical_contact_handle);
+                        if(tech_contact_id == 0) continue;
 
                         Database::QueryParams params_i = params;//query params
                         std::stringstream sql_i;
@@ -215,7 +189,7 @@ namespace Fred
                             "SELECT crdate::timestamp AT TIME ZONE 'UTC' AT TIME ZONE $1::text "
                             "  FROM object_registry "
                             " WHERE id = $2::bigint"
-                        , Database::query_param_list(returned_timestamp_pg_time_zone_name)(object_id));
+                        , Database::query_param_list(returned_timestamp_pg_time_zone_name)(create_object_output.object_id));
 
                     if (crdate_res.size() != 1)
                     {
@@ -232,52 +206,33 @@ namespace Fred
 
             //save history
             {
-                unsigned long long history_id = Fred::InsertHistory(logd_request_id_).exec(ctx);
-
-                //object_history
-                ctx.get_conn().exec_params(
-                    "INSERT INTO object_history(historyid,id,clid, upid, trdate, update, authinfopw) "
-                    " SELECT $1::bigint, id,clid, upid, trdate, update, authinfopw FROM object "
-                    " WHERE id = $2::integer"
-                    , Database::query_param_list(history_id)(object_id));
-
-                //object_registry historyid
-                Database::Result update_historyid_res = ctx.get_conn().exec_params(
-                    "UPDATE object_registry SET historyid = $1::bigint, crhistoryid = $1::bigint  "
-                        " WHERE id = $2::integer RETURNING id"
-                        , Database::query_param_list(history_id)(object_id));
-                if (update_historyid_res.size() != 1)
-                {
-                    BOOST_THROW_EXCEPTION(Fred::InternalError("update historyid failed"));
-                }
-
                 //keyset_history
                 ctx.get_conn().exec_params(
                     "INSERT INTO keyset_history(historyid,id) "
                     " SELECT $1::bigint, id FROM keyset "
                     " WHERE id = $2::integer"
-                    , Database::query_param_list(history_id)(object_id));
+                    , Database::query_param_list(create_object_output.history_id)(create_object_output.object_id));
 
                 //dsrecord_history
                 ctx.get_conn().exec_params(
                     "INSERT INTO dsrecord_history(historyid, id, keysetid, keytag, alg, digesttype, digest, maxsiglife) "
                     " SELECT $1::bigint, id, keysetid, keytag, alg, digesttype, digest, maxsiglife FROM dsrecord "
                     " WHERE keysetid = $2::integer"
-                    , Database::query_param_list(history_id)(object_id));
+                    , Database::query_param_list(create_object_output.history_id)(create_object_output.object_id));
 
                 //dnskey_history
                 ctx.get_conn().exec_params(
                     "INSERT INTO dnskey_history(historyid, id, keysetid, flags, protocol, alg, key) "
                     " SELECT $1::bigint, id, keysetid, flags, protocol, alg, key FROM dnskey "
                     " WHERE keysetid = $2::integer"
-                    , Database::query_param_list(history_id)(object_id));
+                    , Database::query_param_list(create_object_output.history_id)(create_object_output.object_id));
 
                 //keyset_contact_map_history
                 ctx.get_conn().exec_params(
                     "INSERT INTO keyset_contact_map_history(historyid,keysetid, contactid) "
                     " SELECT $1::bigint, keysetid, contactid FROM keyset_contact_map "
                         " WHERE keysetid = $2::integer"
-                        , Database::query_param_list(history_id)(object_id));
+                        , Database::query_param_list(create_object_output.history_id)(create_object_output.object_id));
 
             }//save history
 
@@ -291,27 +246,17 @@ namespace Fred
         return timestamp;
     }
 
-    std::ostream& operator<<(std::ostream& os, const CreateKeyset& i)
+    std::string CreateKeyset::to_string() const
     {
-        os << "#CreateKeyset handle: " << i.handle_
-            << " registrar: " << i.registrar_
-            << " authinfo: " << i.authinfo_.print_quoted()
-            ;
-        if(!i.dns_keys_.empty()) os << " dns_keys: ";
-        for(std::vector<DnsKey>::const_iterator ci = i.dns_keys_.begin()
-                ; ci != i.dns_keys_.end() ; ++ci ) os << static_cast<std::string>(*ci);
-        if(!i.tech_contacts_.empty()) os << " tech_contacts: ";
-        for(std::vector<std::string>::const_iterator ci = i.tech_contacts_.begin()
-                ; ci != i.tech_contacts_.end() ; ++ci ) os << *ci;
-        os << " logd_request_id: " << i.logd_request_id_.print_quoted();
-        return os;
-    }
-
-    std::string CreateKeyset::to_string()
-    {
-        std::stringstream ss;
-        ss << *this;
-        return ss.str();
+        return Util::format_operation_state("CreateKeyset",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("handle",handle_))
+        (std::make_pair("registrar",registrar_))
+        (std::make_pair("authinfo",authinfo_.print_quoted()))
+        (std::make_pair("dns_keys", Util::format_vector(dns_keys_)))
+        (std::make_pair("tech_contacts",Util::format_vector(tech_contacts_)))
+        (std::make_pair("logd_request_id",logd_request_id_.print_quoted()))
+        );
     }
 
 }//namespace Fred

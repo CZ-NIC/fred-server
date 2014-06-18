@@ -1,8 +1,8 @@
 #ifndef MERGE_CONTACT_LOGGER_H__
 #define MERGE_CONTACT_LOGGER_H__
 
-#include "fredlib/contact/merge_contact.h"
-#include "fredlib/logger_client.h"
+#include "src/fredlib/contact/merge_contact.h"
+#include "src/fredlib/logger_client.h"
 
 
 unsigned long long logger_merge_contact_create_request(

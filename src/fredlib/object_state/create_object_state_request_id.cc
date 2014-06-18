@@ -21,15 +21,16 @@
  *  create object state request
  */
 
-#include "fredlib/object_state/create_object_state_request_id.h"
-#include "fredlib/object_state/get_blocking_status_desc_list.h"
-#include "fredlib/object_state/get_object_state_id_map.h"
-#include "fredlib/opcontext.h"
-#include "fredlib/db_settings.h"
+#include "src/fredlib/object_state/create_object_state_request_id.h"
+#include "src/fredlib/object_state/get_blocking_status_desc_list.h"
+#include "src/fredlib/object_state/get_object_state_id_map.h"
+#include "lock_multiple_object_state_request_lock.h"
+#include "src/fredlib/opcontext.h"
+#include "src/fredlib/db_settings.h"
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
 #include "util/util.h"
-#include "fredlib/object.h"
+#include "src/fredlib/object.h"
 
 #include <boost/algorithm/string.hpp>
 
@@ -82,8 +83,8 @@ namespace Fred
         _ctx.get_log().debug(std::string(
             "CreateObjectStateRequestId::exec object id: ") + boost::lexical_cast< std::string >(object_id_)
             + " object state name: " + object_state_names
-            + " valid from: " + boost::posix_time::to_iso_string(valid_from_)
-            + " valid to: " + boost::posix_time::to_iso_string(valid_to_));
+            + " valid from: " + boost::posix_time::to_iso_string(valid_from_.get_value_or_default())
+            + " valid to: " + boost::posix_time::to_iso_string(valid_to_.get_value_or_default()));
 
         //check time
         if (valid_to_.isset()) {

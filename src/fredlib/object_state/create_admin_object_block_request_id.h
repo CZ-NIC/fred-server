@@ -24,7 +24,7 @@
 #ifndef CREATE_ADMIN_OBJECT_BLOCK_REQUEST_ID_H_
 #define CREATE_ADMIN_OBJECT_BLOCK_REQUEST_ID_H_
 
-#include "fredlib/object_state/create_object_state_request_id.h"
+#include "src/fredlib/object_state/create_object_state_request_id.h"
 
 namespace Fred
 {
@@ -37,7 +37,7 @@ namespace Fred
     * When exception is thrown, changes to database are considered inconsistent and should be rolled back by the caller.
     * In case of wrong input data or other predictable and superable failure, an instance of @ref Exception is thrown
     * with appropriate attributes set.
-    * In case of other unsuperable failures and inconstistencies, an instance of @ref InternalError or other exception is thrown.
+    * In case of other insuperable failures and inconsistencies, an instance of @ref InternalError or other exception is thrown.
     */
     class CreateAdminObjectBlockRequestId
     {

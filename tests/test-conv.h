@@ -39,7 +39,7 @@
 #include <boost/lexical_cast.hpp>
 
 
-#include "db_settings.h"
+#include "src/fredlib/db_settings.h"
 #include "log/logger.h"
 #include "log/context.h"
 #include "random_data_generator.h"
