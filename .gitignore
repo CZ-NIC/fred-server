@@ -81,6 +81,9 @@ src/corba/TechCheckSK.cc
 src/corba/Whois.hh
 src/corba/WhoisDynSK.cc
 src/corba/WhoisSK.cc
+src/corba/Whois2.hh
+src/corba/Whois2DynSK.cc
+src/corba/Whois2SK.cc
 src/corba/Zone.hh
 src/corba/ZoneDynSK.cc
 src/corba/ZoneGenerator.hh
