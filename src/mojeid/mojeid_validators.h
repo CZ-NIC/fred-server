@@ -37,11 +37,6 @@ ContactValidator create_finish_identification_validator_mojeid();
 ContactValidator create_verified_transfer_validator_mojeid();
 ContactValidator create_contact_update_validator_mojeid();
 
-
-bool check_conditionally_identified_contact_diff(
-        const Contact &_c1, const Contact &_c2);
-bool check_validated_contact_diff(const Contact &_c1, const Contact &_c2);
-
 }
 }
 }
