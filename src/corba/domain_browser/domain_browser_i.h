@@ -150,7 +150,8 @@ namespace Registry
                 ::CORBA::Boolean& limit_exceeded);
 
             void mergeContacts(const Registry::DomainBrowser::RegistryReference& dst_contact,
-                const Registry::DomainBrowser::RegistryReferenceSeq& src_contact_list);
+                const Registry::DomainBrowser::RegistryReferenceSeq& src_contact_list,
+                Registry::DomainBrowser::TID request_id);
 
         };//class Server_i
     }//namespace DomainBrowser

@@ -870,7 +870,8 @@ namespace Registry
         }
 
         void Server_i::mergeContacts(const Registry::DomainBrowser::RegistryReference& dst_contact,
-            const Registry::DomainBrowser::RegistryReferenceSeq& src_contact_list)
+            const Registry::DomainBrowser::RegistryReferenceSeq& src_contact_list,
+            Registry::DomainBrowser::TID request_id)
         {
             try
             {
@@ -880,7 +881,7 @@ namespace Registry
                 {
                     contact_list.push_back(src_contact_list[i].id);
                 }
-                pimpl_->mergeContacts(dst_contact.id, contact_list);
+                pimpl_->mergeContacts(dst_contact.id, contact_list, request_id);
             }//try
             catch (const Registry::DomainBrowserImpl::UserNotExists& )
             {
