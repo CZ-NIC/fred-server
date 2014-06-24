@@ -4,7 +4,7 @@
 
 #include "random.h"
 #include "src/fredlib/requests/session_cache.h"
-#include "tests-common.h"
+#include "tests/setup/tests-common.h"
 
 using namespace Fred::Logger;
 

@@ -2005,14 +2005,14 @@ tests_test_server_SOURCES = \
 		tests/deprecated/test-corbans.cc \
 		tests/deprecated/test-whois.cc \
 		tests/deprecated/test-cache.cc \
-		tests/deprecated/tests-common.cc \
-		tests/deprecated/tests-common.h \
+		tests/setup/tests-common.cc \
+		tests/setup/tests-common.h \
 		tests/deprecated/test-filters-date-time.cc \
 		tests/deprecated/test-invoice-common.h \
 		tests/deprecated/test-invoice-common.cc \
 		tests/deprecated/test-invoice.cc \
 		tests/deprecated/test-invoice-account.cc \
-		tests/deprecated/test-common-threaded.h \
+		tests/setup/test-common-threaded.h \
 		tests/deprecated/test-common-registry.h \
 		tests/deprecated/test-common-registry.cc \
 		tests/deprecated/test-invoice2.cc \
@@ -2158,8 +2158,8 @@ tests_test_blocking_SOURCES = \
 		tests/deprecated/test-server.h \
 		src/corba/admin/filter_impl.cc \
 		src/corba/admin/filter_impl.h \
-		tests/deprecated/tests-common.cc \
-		tests/deprecated/tests-common.h \
+		tests/setup/tests-common.cc \
+		tests/setup/tests-common.h \
 		src/corba/epp_corba_client_impl.cc \
 		src/corba/epp_corba_client_impl.h \
 		src/contact_verification/contact_verification_impl.cc \
@@ -2316,7 +2316,7 @@ tests_test_fredlib_LDADD = \
 # non-corba tests with overloaded global operator new
 #
 tests_test_exception_SOURCES = \
-		tests/test-exception.cc
+		tests/util/test-exception.cc
 
 tests_test_exception_LDFLAGS = \
 		$(BOOST_LDFLAGS) \

@@ -58,7 +58,7 @@
 
 #include "src/corba/Admin.hh"
 
-#include "test-common-threaded.h"
+#include "tests/setup/test-common-threaded.h"
 
 //not using UTF defined main
 #define BOOST_TEST_NO_MAIN

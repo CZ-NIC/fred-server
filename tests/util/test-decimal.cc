@@ -50,7 +50,7 @@
 #include "cfg/handle_threadgroup_args.h"
 #include "cfg/handle_corbanameservice_args.h"
 
-#include "tests/test-common-threaded.h"
+#include "tests/setup/test-common-threaded.h"
 
 //not using UTF defined main
 #define BOOST_TEST_NO_MAIN
