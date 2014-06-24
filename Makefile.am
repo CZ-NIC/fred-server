@@ -103,7 +103,7 @@ rcconfdir = $(sysconfdir)/init.d
 EXTRA_DIST = \
 		fred-server.spec \
 		util/sms_send.bash \
-		tests/test-file.pdf
+		tests/deprecated/test-file.pdf
 
 dist_fredconf_DATA = \
 		config/server.conf \
@@ -175,7 +175,7 @@ noinst_HEADERS = \
 		util/types/optional_from_program_options.h \
 		util/types/money.h \
 		util/xmlgen.h \
-		tests/exception-test.h \
+		tests/util/exception-test.h \
 		util/factory.h \
 		util/factory_check.h \
 		util/map_get.h \
@@ -1982,47 +1982,47 @@ SERVER_TESTS = \
 # tests/test_server
 #
 tests_test_server_SOURCES = \
-		tests/test-server.cc \
-		tests/test-server.h \
-		tests/test-conv.cc \
-		tests/test-conv.h \
-		tests/test-file-manager-client.cc \
-		tests/test-file-manager-client.h \
-		tests/test-db.cc \
-		tests/test-model.cc \
-		tests/test-model.h \
-		tests/test-registrar-group.cc \
-		tests/test-registrar-group.h \
-		tests/test-registrar-blocking.cc \
+		tests/deprecated/test-server.cc \
+		tests/deprecated/test-server.h \
+		tests/deprecated/test-conv.cc \
+		tests/deprecated/test-conv.h \
+		tests/deprecated/test-file-manager-client.cc \
+		tests/deprecated/test-file-manager-client.h \
+		tests/deprecated/test-db.cc \
+		tests/deprecated/test-model.cc \
+		tests/deprecated/test-model.h \
+		tests/deprecated/test-registrar-group.cc \
+		tests/deprecated/test-registrar-group.h \
+		tests/deprecated/test-registrar-blocking.cc \
 		src/corba/admin/filter_impl.cc \
 		src/corba/admin/filter_impl.h \
-		tests/test-registrar-certification.cc \
-		tests/test-registrar-certification.h \
-		tests/test_logd.cc \
-		tests/test-msgd.cc \
-		tests/test-msgd.h \
-		tests/test-admin.cc \
-		tests/test-corbans.cc \
-		tests/test-whois.cc \
-		tests/test-cache.cc \
-		tests/tests-common.cc \
-		tests/tests-common.h \
-		tests/test-filters-date-time.cc \
-		tests/test-invoice-common.h \
-		tests/test-invoice-common.cc \
-		tests/test-invoice.cc \
-		tests/test-invoice-account.cc \
-		tests/test-common-threaded.h \
-		tests/test-common-registry.h \
-		tests/test-common-registry.cc \
-		tests/test-invoice2.cc \
-		tests/test-decimal.cc \
-		tests/test-shellcmd.cc \
-		tests/test-contact-verification.cc \
-		tests/test-locking-trigger.cc \
-		tests/test-mojeid.cc \
-		tests/test-nullable.cc \
-		tests/test-optional.cc \
+		tests/deprecated/test-registrar-certification.cc \
+		tests/deprecated/test-registrar-certification.h \
+		tests/deprecated/test_logd.cc \
+		tests/deprecated/test-msgd.cc \
+		tests/deprecated/test-msgd.h \
+		tests/deprecated/test-admin.cc \
+		tests/deprecated/test-corbans.cc \
+		tests/deprecated/test-whois.cc \
+		tests/deprecated/test-cache.cc \
+		tests/deprecated/tests-common.cc \
+		tests/deprecated/tests-common.h \
+		tests/deprecated/test-filters-date-time.cc \
+		tests/deprecated/test-invoice-common.h \
+		tests/deprecated/test-invoice-common.cc \
+		tests/deprecated/test-invoice.cc \
+		tests/deprecated/test-invoice-account.cc \
+		tests/deprecated/test-common-threaded.h \
+		tests/deprecated/test-common-registry.h \
+		tests/deprecated/test-common-registry.cc \
+		tests/deprecated/test-invoice2.cc \
+		tests/util/test-decimal.cc \
+		tests/util/test-shellcmd.cc \
+		tests/deprecated/test-contact-verification.cc \
+		tests/deprecated/test-locking-trigger.cc \
+		tests/deprecated/test-mojeid.cc \
+		tests/util/test-nullable.cc \
+		tests/util/test-optional.cc \
 		src/corba/epp_corba_client_impl.cc \
 		src/corba/epp_corba_client_impl.h \
 		src/contact_verification/contact_verification_impl.cc \
@@ -2042,8 +2042,27 @@ tests_test_server_SOURCES = \
 		src/mojeid/mojeid.h \
 		src/mojeid/mojeid_notifier.cc \
 		src/mojeid/mojeid_notifier.h \
-		tests/checks.h \
-		tests/test-utils.cc \
+		tests/deprecated/checks.h \
+		tests/fredlib/nsset/test-update-nsset.cc \
+		tests/fredlib/keyset/test-update-keyset.cc \
+		tests/fredlib/domain/test-update-domain.cc \
+		tests/fredlib/contact/test-delete-contact.cc \
+		tests/fredlib/domain/test-info-domain.cc \
+		tests/fredlib/contact/test-merge-contact.cc \
+		tests/fredlib/test-opexception.cc \
+		tests/fredlib/contact/test-create-contact.cc \
+		tests/fredlib/contact/test-info-contact.cc \
+		tests/fredlib/domain/test-delete-domain.cc \
+		tests/fredlib/nsset/test-delete-nsset.cc \
+		tests/fredlib/domain/test-create-domain.cc \
+		tests/fredlib/domain/test-check-domain.cc \
+		tests/fredlib/domain/test-domain-name.cc \
+		tests/fredlib/test-check-handle.cc \
+		tests/fredlib/keyset/test-delete-keyset.cc \
+		tests/fredlib/contact/test-update-contact.cc \
+		tests/util/test-printable.cc \
+		tests/fredlib/keyset/test-info-keyset.cc \
+		tests/fredlib/nsset/test-info-nsset.cc \
 		tests/fredlib/contact/verification/setup_utils.h \
 		tests/fredlib/contact/verification/setup_utils.cc \
 		tests/fredlib/contact/verification/test-create_check_integ.cc \
@@ -2053,13 +2072,13 @@ tests_test_server_SOURCES = \
 		tests/fredlib/contact/verification/test-info_check_integ.cc \
 		tests/fredlib/contact/verification/test-list_checks_integ.cc \
 		tests/fredlib/contact/verification/test-list_enum_objects_integ.cc \
-		tests/admin/contact/verification/setup_utils.h \
-		tests/admin/contact/verification/test-run_all_enqueued_checks.cc \
-		tests/admin/contact/verification/test-fill_check_queue.cc \
-		tests/admin/contact/verification/test-resolve_check.cc \
-		tests/admin/contact/verification/test-related_records.cc \
-		tests/admin/contact/verification/test-enqueue_check.cc \
-		tests/admin/contact/verification/test-delete_domains_of_invalid_contact.cc \
+		tests/interfaces/admin/contact/verification/setup_utils.h \
+		tests/interfaces/admin/contact/verification/test-run_all_enqueued_checks.cc \
+		tests/interfaces/admin/contact/verification/test-fill_check_queue.cc \
+		tests/interfaces/admin/contact/verification/test-resolve_check.cc \
+		tests/interfaces/admin/contact/verification/test-related_records.cc \
+		tests/interfaces/admin/contact/verification/test-enqueue_check.cc \
+		tests/interfaces/admin/contact/verification/test-delete_domains_of_invalid_contact.cc \
 		tests/util/test-is-equal-optional-nullable.cc \
 		src/fredlib/object_state/create_object_state_request.cc \
 		src/fredlib/object_state/create_object_state_request.h \
@@ -2073,7 +2092,7 @@ tests_test_server_SOURCES = \
 		src/fredlib/object_state/cancel_object_state_request_id.h \
 		src/domain_browser/domain_browser.cc \
 		src/domain_browser/domain_browser.h \
-		tests/test-domain-browser.cc
+		tests/interfaces/domain_browser/test-domain-browser.cc
 
 tests_test_server_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS) \
@@ -2135,12 +2154,12 @@ tests_test_server_LDADD = \
 # tests/test_blocking
 #
 tests_test_blocking_SOURCES = \
-		tests/test-server.cc \
-		tests/test-server.h \
+		tests/deprecated/test-server.cc \
+		tests/deprecated/test-server.h \
 		src/corba/admin/filter_impl.cc \
 		src/corba/admin/filter_impl.h \
-		tests/tests-common.cc \
-		tests/tests-common.h \
+		tests/deprecated/tests-common.cc \
+		tests/deprecated/tests-common.h \
 		src/corba/epp_corba_client_impl.cc \
 		src/corba/epp_corba_client_impl.h \
 		src/contact_verification/contact_verification_impl.cc \
@@ -2171,13 +2190,13 @@ tests_test_blocking_SOURCES = \
 		src/fredlib/object_state/get_blocking_status_desc_list.cc \
 		src/fredlib/domain/create_domain_name_blacklist_id.cc \
 		tests/checks.h \
-		tests/test-copy-contact.cc \
-		tests/test-create-object-state-request-id.cc \
-		tests/test-create-admin-object-block-request-id.cc \
-		tests/test-create-admin-object-state-restore-request-id.cc \
-		tests/test-cancel-object-state-request-id.cc \
-		tests/test-clear-admin-object-state-request-id.cc \
-		tests/test-create-domain-name-blacklist-id.cc
+		tests/fredlib/contact/test-copy-contact.cc \
+		tests/fredlib/object_state/test-create-object-state-request-id.cc \
+		tests/fredlib/object_state/test-create-admin-object-block-request-id.cc \
+		tests/fredlib/object_state/test-create-admin-object-state-restore-request-id.cc \
+		tests/fredlib/object_state/test-cancel-object-state-request-id.cc \
+		tests/fredlib/object_state/test-clear-admin-object-state-request-id.cc \
+		tests/fredlib/domain/test-create-domain-name-blacklist-id.cc
 
 tests_test_blocking_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS) \
@@ -2237,30 +2256,30 @@ tests_test_blocking_LDADD = \
 # tests/test_fredlib
 #
 tests_test_fredlib_SOURCES = \
-		tests/test-fredlib.cc \
-		tests/test-update-nsset.cc \
-		tests/test-update-keyset.cc \
-		tests/test-update-domain.cc \
-		tests/test-delete-contact.cc \
-		tests/test-info-domain.cc \
-		tests/test-merge-contact.cc \
-		tests/test-opexception.cc \
-		tests/test-create-contact.cc \
-		tests/test-info-contact.cc \
-		tests/test-delete-domain.cc \
-		tests/test-delete-nsset.cc \
-		tests/test-create-domain.cc \
-		tests/test-check-domain.cc \
-		tests/test-domain-name.cc \
-		tests/test-check-handle.cc \
-		tests/test-delete-keyset.cc \
-		tests/test-update-contact.cc \
-		tests/test-printable.cc \
-		tests/test-info-keyset.cc \
-		tests/test-info-nsset.cc \
-		tests/test-object-state.cc \
-		tests/test-info-registrar.cc \
-		tests/test-create-registrar.cc \
+		tests/deprecated/test-fredlib.cc \
+		tests/fredlib/nsset/test-update-nsset.cc \
+		tests/fredlib/keyset/test-update-keyset.cc \
+		tests/fredlib/domain/test-update-domain.cc \
+		tests/fredlib/contact/test-delete-contact.cc \
+		tests/fredlib/domain/test-info-domain.cc \
+		tests/fredlib/contact/test-merge-contact.cc \
+		tests/fredlib/test-opexception.cc \
+		tests/fredlib/contact/test-create-contact.cc \
+		tests/fredlib/contact/test-info-contact.cc \
+		tests/fredlib/domain/test-delete-domain.cc \
+		tests/fredlib/nsset/test-delete-nsset.cc \
+		tests/fredlib/domain/test-create-domain.cc \
+		tests/fredlib/domain/test-check-domain.cc \
+		tests/fredlib/domain/test-domain-name.cc \
+		tests/fredlib/test-check-handle.cc \
+		tests/fredlib/keyset/test-delete-keyset.cc \
+		tests/fredlib/contact/test-update-contact.cc \
+		tests/util/test-printable.cc \
+		tests/fredlib/keyset/test-info-keyset.cc \
+		tests/fredlib/nsset/test-info-nsset.cc \
+		tests/fredlib/object_state/test-object-state.cc \
+		tests/fredlib/registrar/test-info-registrar.cc \
+		tests/fredlib/registrar/test-create-registrar.cc \
 		tests/fredlib/poll/test-create_delete_contact_poll_message.cc \
 		tests/fredlib/poll/test-create_delete_domain_poll_message.cc \
 		tests/fredlib/poll/test-create_update_object_poll_message.cc \
@@ -2327,6 +2346,6 @@ install-tests: $(SERVER_TESTS)
 testdatadir = $(docdir)
 
 dist_testdata_DATA = \
-		tests/example_payments.xml \
-		tests/test-file.pdf
+		tests/deprecated/example_payments.xml \
+		tests/deprecated/test-file.pdf
 

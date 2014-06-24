@@ -31,7 +31,7 @@
 #include <boost/foreach.hpp>
 #include <map>
 
-#include "tests/admin/contact/verification/setup_utils.h"
+#include "tests/interfaces/admin/contact/verification/setup_utils.h"
 #include "util/random.h"
 
 

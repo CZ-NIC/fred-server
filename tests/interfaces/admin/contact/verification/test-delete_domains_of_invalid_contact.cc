@@ -30,7 +30,7 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include "tests/admin/contact/verification/setup_utils.h"
+#include "tests/interfaces/admin/contact/verification/setup_utils.h"
 
 //not using UTF defined main
 #define BOOST_TEST_NO_MAIN

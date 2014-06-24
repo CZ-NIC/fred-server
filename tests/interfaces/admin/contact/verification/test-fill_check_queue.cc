@@ -36,7 +36,7 @@
 #include <boost/make_shared.hpp>
 #include <boost/shared_ptr.hpp>
 
-#include "tests/admin/contact/verification/setup_utils.h"
+#include "tests/interfaces/admin/contact/verification/setup_utils.h"
 
 //not using UTF defined main
 #define BOOST_TEST_NO_MAIN
