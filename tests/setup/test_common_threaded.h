@@ -4,7 +4,7 @@
 #include <boost/thread.hpp>
 #include <boost/thread/barrier.hpp>
 #include <boost/lexical_cast.hpp>
-#include "tests-common.h"
+#include "tests_common.h"
 #include "concurrent_queue.h"
 #include "cfg/handle_threadgroup_args.h"
 

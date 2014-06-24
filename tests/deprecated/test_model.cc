@@ -40,7 +40,7 @@
 
 
 
-#include "test-model.h"
+#include "test_model.h"
 
 BOOST_AUTO_TEST_SUITE(ModelTest)
 

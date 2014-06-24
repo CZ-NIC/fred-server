@@ -12,7 +12,7 @@
 #include "cfg/handle_corbanameservice_args.h"
 
 #include "src/corba/epp_corba_client_impl.h"
-#include "test-invoice-common.h"
+#include "test_invoice_common.h"
 
 
 // TODO: this should also be used in invoice test

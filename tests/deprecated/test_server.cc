@@ -19,7 +19,7 @@
 
 #define BOOST_TEST_MODULE Test Server
 
-#include "test-server.h"
+#include "test_server.h"
 
 //args processing config for custom main
 HandlerPtrVector global_hpv =

@@ -16,7 +16,7 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "test-registrar-group.h"
+#include "test_registrar_group.h"
 
 BOOST_AUTO_TEST_SUITE(TestRegistrarGroup)
 

@@ -38,7 +38,7 @@
 #include <boost/thread.hpp>
 #include <boost/thread/barrier.hpp>
 #include "cfg/handle_threadgroup_args.h"
-#include "tests/setup/tests-common.h"
+#include "tests/setup/tests_common.h"
 
 
 using namespace Database;

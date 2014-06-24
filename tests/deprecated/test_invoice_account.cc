@@ -29,7 +29,7 @@
 #include <sys/time.h>
 #include <time.h>
 
-#include "test-common-registry.h"
+#include "test_common_registry.h"
 #include "types/money.h"
 #include "src/fredlib/invoicing/invoice.h"
 #include "src/fredlib/domain/create_domain.h"
@@ -37,7 +37,7 @@
 #include "src/fredlib/contact/create_contact.h"
 #include "src/fredlib/nsset/create_nsset.h"
 
-#include "test-invoice-common.h"
+#include "test_invoice_common.h"
 
 #include <boost/test/unit_test.hpp>
 

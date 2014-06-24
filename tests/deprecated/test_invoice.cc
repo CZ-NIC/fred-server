@@ -36,7 +36,7 @@
 #include <boost/assign/list_of.hpp>
 #include <boost/algorithm/string.hpp>
 
-#include "test-common-registry.h"
+#include "test_common_registry.h"
 
 #include "setup_server_decl.h"
 
@@ -58,12 +58,12 @@
 
 #include "src/corba/Admin.hh"
 
-#include "tests/setup/test-common-threaded.h"
+#include "tests/setup/test_common_threaded.h"
 
 //not using UTF defined main
 #define BOOST_TEST_NO_MAIN
 
-#include "test-invoice-common.h"
+#include "test_invoice_common.h"
 #include "cfg/config_handler_decl.h"
 #include <boost/test/unit_test.hpp>
 

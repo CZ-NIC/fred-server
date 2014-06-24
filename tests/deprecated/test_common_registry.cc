@@ -28,7 +28,7 @@
 #include <time.h>
 
 
-#include "test-common-registry.h"
+#include "test_common_registry.h"
 
 
 #include <boost/format.hpp>

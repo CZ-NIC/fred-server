@@ -39,7 +39,7 @@
 #include "random_data_generator.h"
 #include "concurrent_queue.h"
 
-#include "exception-test.h"
+#include "exception_test.h"
 
 #include "decimal/decimal.h"
 

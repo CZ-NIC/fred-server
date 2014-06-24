@@ -19,7 +19,7 @@
  // test-file-manager-client.cc
 
 
-#include "test-file-manager-client.h"
+#include "test_file_manager_client.h"
 
 BOOST_AUTO_TEST_SUITE(Files)
 
@@ -45,7 +45,7 @@ BOOST_AUTO_TEST_CASE( file_manager_client_simple )
     FileManagerClient fm_client(
             CorbaContainer::get_instance()->getNS());
     unsigned long long file_id
-        = fm_client.upload(in_test_data_vect,"./test-file.pdf","application/pdf",6);
+        = fm_client.upload(in_test_data_vect,"./test_file.pdf","application/pdf",6);
 
     std::vector<char> out_buffer;
     fm_client.download(file_id, out_buffer);

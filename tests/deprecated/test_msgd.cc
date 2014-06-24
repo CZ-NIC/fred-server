@@ -17,7 +17,7 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "test-msgd.h"
+#include "test_msgd.h"
 
 BOOST_AUTO_TEST_SUITE(TestMsgd)
 
@@ -73,7 +73,7 @@ BOOST_AUTO_TEST_CASE( test_corba_interface )
 
 
             //load test pdf
-            std::string test_pdf_file_name = std::string(TEST_DATA)+"doc/fred-server/test-file.pdf";
+            std::string test_pdf_file_name = std::string(TEST_DATA)+"doc/fred-server/test_file.pdf";
             std::ifstream test_pdf;
             long long test_pdf_length = 0;
             test_pdf.open (test_pdf_file_name.c_str()

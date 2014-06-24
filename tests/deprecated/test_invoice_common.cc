@@ -1,4 +1,4 @@
-#include "test-invoice-common.h"
+#include "test_invoice_common.h"
 
 #include "cfg/handle_corbanameservice_args.h"
 #include "util/corba_wrapper_decl.h"
