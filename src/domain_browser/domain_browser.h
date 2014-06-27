@@ -634,9 +634,11 @@ namespace Registry
              * Merge contact list to destination contact
              * @param dst_contact_id id of destination contact
              * @param contact_list id list of source contacts
+             * @param request_id is id of the new entry in log_entry database table
              */
             void mergeContacts(unsigned long long dst_contact_id,
-                const std::vector<unsigned long long>& contact_list);
+                const std::vector<unsigned long long>& contact_list,
+                unsigned long long request_id);
 
             /**
              * Get server name

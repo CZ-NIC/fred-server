@@ -1560,7 +1560,8 @@ namespace Registry
         }
 
         void DomainBrowser::mergeContacts(unsigned long long dst_contact_id,
-            const std::vector<unsigned long long>& contact_list)
+            const std::vector<unsigned long long>& contact_list,
+            unsigned long long request_id)
         {
             Logging::Context lctx_server(create_ctx_name(get_server_name()));
             Logging::Context lctx("get-merge-contact");
@@ -1591,8 +1592,12 @@ namespace Registry
                     Fred::MergeContactOutput merge_data;
                     try
                     {
-                        merge_data = Fred::MergeContact(src_handle_result[i]["name"],
-                            dst.info_contact_data.handle, update_registrar_, MergeContactDiffContacts()).exec(ctx);
+                        merge_data = Fred::MergeContact(
+                                src_handle_result[i]["name"],
+                                dst.info_contact_data.handle,
+                                update_registrar_,
+                                MergeContactDiffContacts()
+                            ).set_logd_request_id(request_id).exec(ctx);
                     }
                     catch(const Fred::MergeContact::Exception& ex)
                     {

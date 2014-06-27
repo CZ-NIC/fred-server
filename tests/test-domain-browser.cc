@@ -3324,7 +3324,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contacts, merge_contacts_fixture )
     Fred::OperationContext ctx;
 
     impl.mergeContacts(user_contact_info.info_contact_data.id,
-        Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"0").info_contact_data.id));
+        Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"0").info_contact_data.id), 0);
 
     std::vector<Fred::InfoContactOutput> info = Fred::InfoContactHistoryById(
         map_at(contact_info,test_contact_handle+"0").info_contact_data.id).exec(ctx);
@@ -3345,7 +3345,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contacts_user_not_in_mojeid, merge_contacts_user_n
     Fred::OperationContext ctx;
     try
     {
-        impl.mergeContacts(user_contact_info.info_contact_data.id,Util::vector_of<unsigned long long>(0));
+        impl.mergeContacts(user_contact_info.info_contact_data.id,Util::vector_of<unsigned long long>(0), 0);
         BOOST_ERROR("unreported missing user");
     }
     catch( const Registry::DomainBrowserImpl::UserNotExists& ex)
@@ -3393,7 +3393,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contacts_no_src_contacts, merge_contacts_no_src_co
     Fred::OperationContext ctx;
     try
     {
-        impl.mergeContacts(user_contact_info.info_contact_data.id,std::vector<unsigned long long>());
+        impl.mergeContacts(user_contact_info.info_contact_data.id,std::vector<unsigned long long>(), 0);
         BOOST_ERROR("unreported missing src contacts");
     }
     catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
@@ -3411,7 +3411,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contacts_dst_contacts, merge_contacts_no_src_conta
     Fred::OperationContext ctx;
     try
     {
-        impl.mergeContacts(user_contact_info.info_contact_data.id,Util::vector_of<unsigned long long>(user_contact_info.info_contact_data.id));
+        impl.mergeContacts(user_contact_info.info_contact_data.id,Util::vector_of<unsigned long long>(user_contact_info.info_contact_data.id), 0);
         BOOST_ERROR("unreported the same src and dest. contacts");
     }
     catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
@@ -3430,7 +3430,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contacts_mojeid_src_contact, merge_contacts_fixtur
     try
     {
         impl.mergeContacts(user_contact_info.info_contact_data.id,
-                Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"9").info_contact_data.id));
+                Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"9").info_contact_data.id), 0);
         BOOST_ERROR("unreported invalid contacts");
     }
     catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
@@ -3449,7 +3449,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contacts_blocked_src_contact, merge_contacts_fixtu
     try
     {
         impl.mergeContacts(user_contact_info.info_contact_data.id,
-                Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"10").info_contact_data.id));
+                Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"10").info_contact_data.id), 0);
         BOOST_ERROR("unreported invalid contacts");
     }
     catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
@@ -3468,7 +3468,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contacts_delete_prohibited_src_contact, merge_cont
     try
     {
         impl.mergeContacts(user_contact_info.info_contact_data.id,
-                Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"11").info_contact_data.id));
+                Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"11").info_contact_data.id), 0);
         BOOST_ERROR("unreported invalid contacts");
     }
     catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
@@ -3487,7 +3487,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contacts_src_contact_differs_in_name, merge_contac
     try
     {
         impl.mergeContacts(user_contact_info.info_contact_data.id,
-                Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"12").info_contact_data.id));
+                Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"12").info_contact_data.id), 0);
         BOOST_ERROR("unreported invalid contacts");
     }
     catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
@@ -3506,7 +3506,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contacts_src_contact_differs_in_org, merge_contact
     try
     {
         impl.mergeContacts(user_contact_info.info_contact_data.id,
-                Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"13").info_contact_data.id));
+                Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"13").info_contact_data.id), 0);
         BOOST_ERROR("unreported invalid contacts");
     }
     catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
@@ -3525,7 +3525,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contacts_src_contact_differs_in_street1, merge_con
     try
     {
         impl.mergeContacts(user_contact_info.info_contact_data.id,
-                Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"14").info_contact_data.id));
+                Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"14").info_contact_data.id), 0);
         BOOST_ERROR("unreported invalid contacts");
     }
     catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
@@ -3544,7 +3544,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contacts_src_contact_differs_in_city, merge_contac
     try
     {
         impl.mergeContacts(user_contact_info.info_contact_data.id,
-            Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"17").info_contact_data.id));
+            Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"17").info_contact_data.id), 0);
         BOOST_ERROR("unreported invalid contacts");
     }
     catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
@@ -3563,7 +3563,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contacts_src_contact_differs_in_postalcode, merge_
     try
     {
         impl.mergeContacts(user_contact_info.info_contact_data.id,
-            Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"18").info_contact_data.id));
+            Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"18").info_contact_data.id), 0);
         BOOST_ERROR("unreported invalid contacts");
     }
     catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
@@ -3582,7 +3582,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contacts_src_contact_differs_in_country, merge_con
     try
     {
         impl.mergeContacts(user_contact_info.info_contact_data.id,
-            Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"20").info_contact_data.id));
+            Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"20").info_contact_data.id), 0);
         BOOST_ERROR("unreported invalid contacts");
     }
     catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
@@ -3601,7 +3601,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contacts_src_contact_differs_in_email, merge_conta
     try
     {
         impl.mergeContacts(user_contact_info.info_contact_data.id,
-            Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"21").info_contact_data.id));
+            Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"21").info_contact_data.id), 0);
         BOOST_ERROR("unreported invalid contacts");
     }
     catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
@@ -3620,7 +3620,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contacts_src_contact_differs_in_vat, merge_contact
     try
     {
         impl.mergeContacts(user_contact_info.info_contact_data.id,
-            Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"22").info_contact_data.id));
+            Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"22").info_contact_data.id), 0);
         BOOST_ERROR("unreported invalid contacts");
     }
     catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
@@ -3639,7 +3639,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contacts_src_contact_differs_in_ssn, merge_contact
     try
     {
         impl.mergeContacts(user_contact_info.info_contact_data.id,
-            Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"23").info_contact_data.id));
+            Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"23").info_contact_data.id), 0);
         BOOST_ERROR("unreported invalid contacts");
     }
     catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
