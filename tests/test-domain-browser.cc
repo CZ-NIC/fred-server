@@ -38,6 +38,7 @@
 #include "src/fredlib/object_state/object_state_name.h"
 #include "src/fredlib/object_state/object_has_state.h"
 #include "src/fredlib/object_state/create_object_state_request_id.h"
+#include "src/fredlib/object_state/cancel_object_state_request_id.h"
 #include "src/fredlib/registrar/create_registrar.h"
 #include "src/fredlib/registrar/info_registrar.h"
 #include "src/fredlib/registrar/info_registrar_diff.h"
@@ -2904,6 +2905,7 @@ struct merge_contacts_fixture
 
     std::string test_contact_handle;
     std::map<std::string,Fred::InfoContactOutput> contact_info;
+    std::set<unsigned long long> contact_merge_candidates_ids;
 
     merge_contacts_fixture()
     : test_contact_handle(std::string("TEST_CONTACT_")+user_contact_handle_fixture::xmark+"_")
@@ -2925,10 +2927,11 @@ struct merge_contacts_fixture
 
         //source contacts
         Fred::OperationContext ctx;
-        for(int i = 0; i < 25; ++i)
+        for(int i = 0; i < 26; ++i)
         {
             std::ostringstream contact_handle;
             contact_handle << test_contact_handle << i;
+            bool merge_candidate = false;
 
             switch(i)
             {
@@ -2960,6 +2963,7 @@ struct merge_contacts_fixture
                     .set_admin_contacts(Util::vector_of<std::string>(contact_handle.str()))
                     .exec(ctx);
 
+                    merge_candidate = true;
                     break;
                 case 1: //the same as dest. except missing vat - ok
                     Fred::CreateContact(contact_handle.str(),test_registrar_handle)
@@ -2968,6 +2972,8 @@ struct merge_contacts_fixture
                         .set_city("Praha").set_postalcode("11150").set_country("CZ")
                         .set_ssntype("OP").set_ssn("123456")
                         .exec(ctx);
+
+                    merge_candidate = true;
                     break;
                 case 2: //the same as dest. except missing ssntype and ssn - ok
                     Fred::CreateContact(contact_handle.str(),test_registrar_handle)
@@ -2976,6 +2982,8 @@ struct merge_contacts_fixture
                         .set_city("Praha").set_postalcode("11150").set_country("CZ")
                         .set_vat("CZ1234567890")
                         .exec(ctx);
+
+                    merge_candidate = true;
                     break;
                 case 3: //the same as dest. except missing ssntype, make no sence but - ok
                     Fred::CreateContact(contact_handle.str(),test_registrar_handle)
@@ -2984,6 +2992,8 @@ struct merge_contacts_fixture
                         .set_city("Praha").set_postalcode("11150").set_country("CZ")
                         .set_vat("CZ1234567890").set_ssn("123456")
                         .exec(ctx);
+
+                    merge_candidate = true;
                     break;
                 case 4: //the same as dest. except missing ssn, make no sence but - ok
                     Fred::CreateContact(contact_handle.str(),test_registrar_handle)
@@ -2992,6 +3002,8 @@ struct merge_contacts_fixture
                         .set_city("Praha").set_postalcode("11150").set_country("CZ")
                         .set_vat("CZ1234567890").set_ssntype("OP")
                         .exec(ctx);
+
+                    merge_candidate = true;
                     break;
                 case 5: //the same as dest. except spaces in vat - ok
                     Fred::CreateContact(contact_handle.str(),test_registrar_handle)
@@ -3000,6 +3012,8 @@ struct merge_contacts_fixture
                         .set_city("Praha").set_postalcode("11150").set_country("CZ")
                         .set_vat(" CZ1234567890 ").set_ssntype("OP").set_ssn("123456")
                         .exec(ctx);
+
+                    merge_candidate = true;
                     break;
                 case 6: //the same as dest. except spaces in ssn - ok
                     Fred::CreateContact(contact_handle.str(),test_registrar_handle)
@@ -3008,6 +3022,8 @@ struct merge_contacts_fixture
                         .set_city("Praha").set_postalcode("11150").set_country("CZ")
                         .set_vat("CZ1234567890").set_ssntype("OP").set_ssn(" 123456 ")
                         .exec(ctx);
+
+                    merge_candidate = true;
                     break;
                 case 7: //the same as dest. except spaces in name - ok
                     Fred::CreateContact(contact_handle.str(),test_registrar_handle)
@@ -3016,6 +3032,8 @@ struct merge_contacts_fixture
                         .set_city("Praha").set_postalcode("11150").set_country("CZ")
                         .set_vat("CZ1234567890").set_ssntype("OP").set_ssn(" 123456 ")
                         .exec(ctx);
+
+                    merge_candidate = true;
                     break;
                 case 8: //the same as dest. except spaces in city - ok
                     Fred::CreateContact(contact_handle.str(),test_registrar_handle)
@@ -3024,6 +3042,8 @@ struct merge_contacts_fixture
                         .set_city("  Praha  ").set_postalcode("11150").set_country("CZ")
                         .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
                         .exec(ctx);
+
+                    merge_candidate = true;
                     break;
                 case 9: //the same as dest. except mojeidContact state - nok
                 {
@@ -3038,6 +3058,8 @@ struct merge_contacts_fixture
                         Fred::CreateObjectStateRequestId(contact_id,
                             Util::set_of<std::string>(Fred::ObjectState::MOJEID_CONTACT)).exec(ctx);
                         Fred::PerformObjectStateRequest(contact_id).exec(ctx);
+
+                    merge_candidate = false;
                 }
                     break;
                 case 10: //the same as dest. except serverBlocked state - nok
@@ -3053,6 +3075,8 @@ struct merge_contacts_fixture
                         Fred::CreateObjectStateRequestId(contact_id,
                             Util::set_of<std::string>(Fred::ObjectState::SERVER_BLOCKED)).exec(ctx);
                         Fred::PerformObjectStateRequest(contact_id).exec(ctx);
+
+                    merge_candidate = false;
                 }
                     break;
                 case 11: //the same as dest. except serverDeleteProhibited state - nok
@@ -3068,6 +3092,8 @@ struct merge_contacts_fixture
                         Fred::CreateObjectStateRequestId(contact_id,
                             Util::set_of<std::string>(Fred::ObjectState::SERVER_DELETE_PROHIBITED)).exec(ctx);
                         Fred::PerformObjectStateRequest(contact_id).exec(ctx);
+
+                    merge_candidate = false;
                 }
                     break;
                 case 12: //the same as dest. except the name - nok
@@ -3079,6 +3105,8 @@ struct merge_contacts_fixture
                         .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
                         .exec(ctx);
                         BOOST_MESSAGE(contact_handle.str() + " different name");
+
+                    merge_candidate = false;
                 }
                     break;
                 case 13: //the same as dest. except the organization - nok
@@ -3091,6 +3119,8 @@ struct merge_contacts_fixture
                         .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
                         .exec(ctx);
                         BOOST_MESSAGE(contact_handle.str() + " different organization");
+
+                    merge_candidate = false;
                 }
                     break;
                 case 14: //the same as dest. except the street1 - nok
@@ -3102,6 +3132,8 @@ struct merge_contacts_fixture
                         .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
                         .exec(ctx);
                         BOOST_MESSAGE(contact_handle.str() + " different street1");
+
+                    merge_candidate = false;
                 }
                     break;
                 case 15: //the same as dest. except the street2 - nok
@@ -3114,6 +3146,8 @@ struct merge_contacts_fixture
                         .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
                         .exec(ctx);
                         BOOST_MESSAGE(contact_handle.str() + " different street2");
+
+                    merge_candidate = false;
                 }
                     break;
                 case 16: //the same as dest. except the street3 - nok
@@ -3126,6 +3160,8 @@ struct merge_contacts_fixture
                         .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
                         .exec(ctx);
                         BOOST_MESSAGE(contact_handle.str() + " different street3");
+
+                    merge_candidate = false;
                 }
                     break;
                 case 17: //the same as dest. except the city - nok
@@ -3137,6 +3173,8 @@ struct merge_contacts_fixture
                         .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
                         .exec(ctx);
                         BOOST_MESSAGE(contact_handle.str() + " different city");
+
+                    merge_candidate = false;
                 }
                     break;
                 case 18: //the same as dest. except the postalcode - nok
@@ -3148,6 +3186,8 @@ struct merge_contacts_fixture
                         .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
                         .exec(ctx);
                         BOOST_MESSAGE(contact_handle.str() + " different postalcode");
+
+                    merge_candidate = false;
                 }
                     break;
                 case 19: //the same as dest. except the stateorprovince - nok
@@ -3159,6 +3199,8 @@ struct merge_contacts_fixture
                         .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
                         .exec(ctx);
                         BOOST_MESSAGE(contact_handle.str() + " different stateorprovince");
+
+                    merge_candidate = false;
                 }
                     break;
                 case 20: //the same as dest. except the country - nok
@@ -3170,6 +3212,8 @@ struct merge_contacts_fixture
                         .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
                         .exec(ctx);
                         BOOST_MESSAGE(contact_handle.str() + " different country");
+
+                    merge_candidate = false;
                 }
                     break;
                 case 21: //the same as dest. except the email - nok
@@ -3181,6 +3225,8 @@ struct merge_contacts_fixture
                         .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
                         .exec(ctx);
                         BOOST_MESSAGE(contact_handle.str() + " different email");
+
+                    merge_candidate = false;
                 }
                     break;
                 case 22: //the same as dest. except the vat - nok
@@ -3192,6 +3238,8 @@ struct merge_contacts_fixture
                         .set_vat("SK1234567890").set_ssntype("OP").set_ssn("123456")
                         .exec(ctx);
                         BOOST_MESSAGE(contact_handle.str() + " different vat");
+
+                    merge_candidate = false;
                 }
                     break;
                 case 23: //the same as dest. except the ssn - nok
@@ -3203,6 +3251,8 @@ struct merge_contacts_fixture
                         .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("223456")
                         .exec(ctx);
                         BOOST_MESSAGE(contact_handle.str() + " different ssn");
+
+                    merge_candidate = false;
                 }
                     break;
                 case 24: //the same as dest. except the ssntype - nok
@@ -3214,11 +3264,37 @@ struct merge_contacts_fixture
                         .set_vat("CZ1234567890").set_ssntype("RC").set_ssn("123456")
                         .exec(ctx);
                         BOOST_MESSAGE(contact_handle.str() + " different ssntype");
+
+                    merge_candidate = false;
+                }
+                    break;
+                case 25: //the same as dest. canceled not allowed status - ok (#11067)
+                {
+                    Fred::CreateContact(contact_handle.str(),test_registrar_handle)
+                        .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
+                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
+                        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                        .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
+                        .exec(ctx);
+                        BOOST_MESSAGE(contact_handle.str() + " serverBlocked");
+                        unsigned long long contact_id = Fred::InfoContactByHandle(contact_handle.str()).exec(ctx).info_contact_data.id;
+                        Fred::CreateObjectStateRequestId(contact_id,
+                            Util::set_of<std::string>(Fred::ObjectState::SERVER_BLOCKED)).exec(ctx);
+                        Fred::PerformObjectStateRequest(contact_id).exec(ctx);
+                        Fred::CancelObjectStateRequestId(contact_id,
+                            Util::set_of<std::string>(Fred::ObjectState::SERVER_BLOCKED)).exec(ctx);
+                        Fred::PerformObjectStateRequest(contact_id).exec(ctx);
+
+                    merge_candidate = true;
                 }
                     break;
             }
 
-            contact_info[contact_handle.str()]= Fred::InfoContactByHandle(contact_handle.str()).exec(ctx);
+            contact_info[contact_handle.str()] = Fred::InfoContactByHandle(contact_handle.str()).exec(ctx);
+            if (merge_candidate)
+            {
+                contact_merge_candidates_ids.insert(contact_info.at(contact_handle.str()).info_contact_data.id);
+            }
 
         }
 
@@ -3258,12 +3334,16 @@ BOOST_FIXTURE_TEST_CASE(get_candidate_contact_list, merge_contacts_fixture )
     BOOST_MESSAGE(list_out.str());
     BOOST_MESSAGE("limit_exceeded: " << limit_exceeded);
 
-    BOOST_CHECK(contact_list_out.size() == 9);//except other contacts that do not match
+    BOOST_CHECK(contact_list_out.size() == contact_merge_candidates_ids.size());
+
+    std::set<unsigned long long> contact_list_out_ids;
 
     for(unsigned long long i = 0; i < contact_list_out.size(); ++i)
     {
-        BOOST_CHECK(contact_list_out.at(i).at(0) == boost::lexical_cast<std::string>(map_at(contact_info,contact_list_out.at(i).at(1)).info_contact_data.id));
+        unsigned long long id = map_at(contact_info,contact_list_out.at(i).at(1)).info_contact_data.id;
+        BOOST_CHECK(contact_list_out.at(i).at(0) == boost::lexical_cast<std::string>(id));
         BOOST_CHECK(contact_list_out.at(i).at(1) == map_at(contact_info,contact_list_out.at(i).at(1)).info_contact_data.handle);
+        contact_list_out_ids.insert(id);
 
         if(i == 0)
         {
@@ -3281,6 +3361,8 @@ BOOST_FIXTURE_TEST_CASE(get_candidate_contact_list, merge_contacts_fixture )
         BOOST_CHECK(contact_list_out.at(i).at(5) == std::string("TEST-REGISTRAR-HANDLE")+test_registrar_fixture::xmark);
         BOOST_CHECK(contact_list_out.at(i).at(6) == std::string("TEST-REGISTRAR NAME")+test_registrar_fixture::xmark);
     }
+
+    BOOST_CHECK(contact_list_out_ids == contact_merge_candidates_ids);
 }
 
 struct get_domain_list_user_not_in_mojeid_fixture
