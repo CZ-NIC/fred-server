@@ -43,7 +43,9 @@
 
 #include "upload_client.h"
 
-
+    /**
+     * Deleter functor for scp session.
+     */
     struct ScpSessionDeleter
     {
         void operator()(ssh_scp s)
@@ -56,7 +58,11 @@
         }
     };
 
-
+    /**
+     * Upload files using scp.
+     * Create remote files with 0600 rights.
+     * Throws mostly std::runtime_error with description of the error.
+     */
     class ScpWriteSession
     {
         boost::shared_ptr<ssh_session_struct>  ssh_session_;
@@ -105,7 +111,9 @@
 
     };
 
-
+    /**
+     * Deleter functor for ssh session.
+     */
     struct SshSessionDeleter
     {
         void operator()(ssh_session s)
@@ -118,6 +126,11 @@
         }
     };
 
+    /**
+     * Underlying ssh session wraper for scp upload.
+     * Checking server public key hash against .ssh/known_hosts.
+     * Throws mostly std::runtime_error with description of the error.
+     */
     class SshSession
     {
         boost::shared_ptr<ssh_session_struct>  ssh_session_;
@@ -223,6 +236,11 @@
         }
     };
 
+    /**
+     * Minizip wrapper.
+     * Crates zip archive on disk, add files into archive from in-memory buffer, compressed by deflate algorithm.
+     * Throws mostly std::runtime_error with description of the error.
+     */
     class CreateZipFile : boost::noncopyable
     {
         zipFile  zip_archive_;

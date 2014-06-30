@@ -282,7 +282,7 @@ void NotifyClient::sms_send()
             Fred::Messages::LetterProcInfo domestic_letters_;
     };
 
-    /*
+    /**
      * Split letter send queue by message_type
      */
     class MessageTypeLetterBatcher
@@ -782,6 +782,9 @@ void notify_registered_letters_manual_send_impl(const std::string& nameservice_h
       return ;
 }//
 
+/**
+ * comparison of letter_proc structure with given letter_id
+ */
 class eq_letter_id
 {
     unsigned long long letter_id_;
@@ -794,7 +797,12 @@ public:
         return  lp.letter_id == letter_id_;
     }
 };
-
+/**
+ * Set status and batch_id of letters send via Optys with given comm_type and service_handle.
+ * Set status "sent" to letters in message_type_letters_map and not in fm_failed_letters_by_batch_id_map.
+ * Set status "send_failed" to letters in fm_failed_letters_by_batch_id_map.
+ * Reset state of unprocessed letters according to send attempts.
+ */
 void set_optys_letter_status(
     const std::map<std::string, Fred::Messages::LetterProcInfo>& fm_failed_letters_by_batch_id_map
     , const std::map<std::string,Fred::Messages::LetterProcInfo>& message_type_letters_map
@@ -845,7 +853,6 @@ void set_optys_letter_status(
         }//batch_id found
     }
 }
-
 
 void notify_letters_optys_send_impl(
         const std::string& nameservice_host_port

@@ -30,7 +30,11 @@
 
 #include "src/fredlib/messages/messages_impl.h"
 #include "src/fredlib/file.h"
-
+/**
+ * Send letters via Optys.
+ * Download designated letters from FRED file manager, archive them in pkzip file in temp dir with specific file names and upload them via ssh-scp into Optys server.
+ * Return "unable to process" letters.
+ */
 class OptysUploadClient
 {
     const std::string host_;
