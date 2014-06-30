@@ -815,7 +815,7 @@ namespace Registry
 
                 if(exec_update)
                 {
-                    update_contact.exec(ctx);
+                    update_contact.set_logd_request_id(request_id).exec(ctx);
                     ctx.commit_transaction();
                 }
                 else
