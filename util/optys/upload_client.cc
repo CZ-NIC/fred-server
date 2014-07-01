@@ -127,6 +127,17 @@
     };
 
     /**
+     * Deleter functor for ssh public key hash.
+     */
+    struct SshPubKeyHashDeleter
+    {
+        void operator()(unsigned char* h)
+        {
+            ssh_clean_pubkey_hash(&h);
+        }
+    };
+
+    /**
      * Underlying ssh session wraper for scp upload.
      * Checking server public key hash against .ssh/known_hosts.
      * Throws mostly std::runtime_error with description of the error.
@@ -147,7 +158,7 @@
 
                 if(hash != NULL && hlen > 0)
                 {
-                     hash_ptr = boost::shared_ptr<unsigned char>(hash,free);
+                     hash_ptr = boost::shared_ptr<unsigned char>(hash,SshPubKeyHashDeleter());
                 }
                 else
                 {
