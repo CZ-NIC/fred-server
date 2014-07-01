@@ -156,14 +156,13 @@
                 unsigned char *hash = NULL;
                 hlen = ssh_get_pubkey_hash(session, &hash);
 
-                if(hash != NULL && hlen > 0)
+                if ((hash == NULL) || (hlen <= 0))
                 {
-                     hash_ptr = boost::shared_ptr<unsigned char>(hash,SshPubKeyHashDeleter());
-                }
-                else
-                {
+                    ssh_clean_pubkey_hash(&hash);
                     throw std::runtime_error("ssh_get_pubkey_hash failed, unable to get buffer with the hash of the public key");
                 }
+
+                hash_ptr = boost::shared_ptr<unsigned char>(hash,SshPubKeyHashDeleter());
             }
             std::ostringstream current_public_key_hash;
             current_public_key_hash <<  std::setw(2) << std::setfill('0') << std::hex << std::uppercase;
