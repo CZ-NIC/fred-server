@@ -47,7 +47,11 @@ class HandleOptysMailArgs : public HandleArgs
 public:
     //selected optys config options values
    
-    const static std::string CONFIG_PREFIX;
+    const std::string CONFIG_PREFIX;
+
+    HandleOptysMailArgs()
+    : CONFIG_PREFIX("optys_upload.")
+    {}
 
     const std::map<std::string, std::string> get_map() { return optys_config; };
 
@@ -101,8 +105,5 @@ public:
 
     }//handle
 };//class HandleOptysMailArgs
-
-const std::string HandleOptysMailArgs::CONFIG_PREFIX("optys_upload.");
-
 
 #endif //OPTYS_MAIL

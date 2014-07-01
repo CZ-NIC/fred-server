@@ -46,7 +46,11 @@ class HandleHPMailBatchStateArgs : public HandleArgs
 public:
 	//selected hpmail config options values
    
-    const static std::string CONFIG_PREFIX;
+    const std::string CONFIG_PREFIX;
+
+    HandleHPMailBatchStateArgs()
+    : CONFIG_PREFIX("statecheck.")
+    {}
 
     const HPCfgMap get_map() { return hp_config; };
 
@@ -135,8 +139,6 @@ public:
     }//handle
 };//class HandleHPMailBatchStateArgs
 
-const std::string HandleHPMailBatchStateArgs::CONFIG_PREFIX("statecheck.");
-
 /**
  * \class HandleHPMailBatchStateArgsGrp
  * \brief postservice client cmdline options handler
@@ -149,7 +151,11 @@ class HandleHPMailBatchStateArgsGrp : public HandleArgs
 public:
     //selected hpmail config options values
 
-    const static std::string CONFIG_PREFIX;
+    const std::string CONFIG_PREFIX;
+
+    HandleHPMailBatchStateArgsGrp()
+    : CONFIG_PREFIX("statecheck.")
+    {}
 
     const HPCfgMap get_map() { return hp_config; };
 
@@ -240,8 +246,5 @@ public:
         return option_group_index;
     }//handle
 };//class HandleHPMailBatchStateArgsGrp
-
-const std::string HandleHPMailBatchStateArgsGrp::CONFIG_PREFIX("statecheck.");
-
 
 #endif //HANDLE_HPMAILBATCHSTATE_ARGS_H_

@@ -46,7 +46,11 @@ class HandleHPMailArgs : public HandleArgs
 public:
 	//selected hpmail config options values
    
-    const static std::string CONFIG_PREFIX;
+    const std::string CONFIG_PREFIX;
+
+    HandleHPMailArgs()
+    : CONFIG_PREFIX("upload.")
+    {}
 
     const HPCfgMap get_map() { return hp_config; };
 
@@ -154,8 +158,6 @@ public:
     }//handle
 };//class HandleHPMailArgs
 
-const std::string HandleHPMailArgs::CONFIG_PREFIX("upload.");
-
 
 /**
  * \class HandleHPMailArgsGrp
@@ -169,8 +171,11 @@ class HandleHPMailArgsGrp : public HandleGrpArgs
 public:
     //selected hpmail config options values
 
-    const static std::string CONFIG_PREFIX;
+    const std::string CONFIG_PREFIX;
 
+    HandleHPMailArgsGrp()
+    : CONFIG_PREFIX("upload.")
+    {}
     const HPCfgMap get_map() { return hp_config; };
 
     boost::shared_ptr<boost::program_options::options_description>
@@ -278,8 +283,5 @@ public:
         return option_group_index;
     }//handle
 };//class HandleHPMailArgsGrp
-
-const std::string HandleHPMailArgsGrp::CONFIG_PREFIX("upload.");
-
 
 #endif //HANDLE_HPMAIL_ARGS_H_
