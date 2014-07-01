@@ -331,13 +331,13 @@
     {
         if(cleanup_zip_tmp_dir_)
         {
-            SubProcessOutput output = ShellCmd((std::string("rm -f ")+zip_tmp_dir_+"/*.zip").c_str(), 3600).execute();
-            if (!output.stderr.empty())
+            std::string cleanup_command = std::string("rm -f ")+zip_tmp_dir_+"/*.zip";
+            SubProcessOutput output = ShellCmd(cleanup_command.c_str(), 3600).execute();
+            if (!output.stderr.empty() || !output.is_exited() || (output.get_exit_status() != EXIT_SUCCESS))
             {
-                throw std::runtime_error(std::string("cleanup_zip_tmp_dir failed: ")+output.stderr);
+                throw std::runtime_error(std::string("cleanup_zip_tmp_dir command: " + cleanup_command +" failed: ")+output.stderr);
             }
         }
-
     }
 
     OptysUploadClient& OptysUploadClient::zip_letters(
