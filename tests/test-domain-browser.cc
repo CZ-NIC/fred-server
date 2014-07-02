@@ -439,15 +439,15 @@ BOOST_FIXTURE_TEST_CASE(get_my_contact_detail, get_my_contact_detail_fixture )
     BOOST_CHECK(cd.vat.get_value_or_default() == my_contact_info.info_contact_data.vat.get_value_or_default());
     BOOST_CHECK(cd.ssntype.get_value_or_default() == my_contact_info.info_contact_data.ssntype.get_value_or_default());
     BOOST_CHECK(cd.ssn.get_value_or_default() == my_contact_info.info_contact_data.ssn.get_value_or_default());
-    BOOST_CHECK(cd.disclose_flags.name == my_contact_info.info_contact_data.disclosename.get_value_or_default());
-    BOOST_CHECK(cd.disclose_flags.organization == my_contact_info.info_contact_data.discloseorganization.get_value_or_default());
-    BOOST_CHECK(cd.disclose_flags.email == my_contact_info.info_contact_data.discloseemail.get_value_or_default());
-    BOOST_CHECK(cd.disclose_flags.address == my_contact_info.info_contact_data.discloseaddress.get_value_or_default());
-    BOOST_CHECK(cd.disclose_flags.telephone == my_contact_info.info_contact_data.disclosetelephone.get_value_or_default());
-    BOOST_CHECK(cd.disclose_flags.fax == my_contact_info.info_contact_data.disclosefax.get_value_or_default());
-    BOOST_CHECK(cd.disclose_flags.ident == my_contact_info.info_contact_data.discloseident.get_value_or_default());
-    BOOST_CHECK(cd.disclose_flags.vat == my_contact_info.info_contact_data.disclosevat.get_value_or_default());
-    BOOST_CHECK(cd.disclose_flags.notify_email == my_contact_info.info_contact_data.disclosenotifyemail.get_value_or_default());
+    BOOST_CHECK(cd.disclose_flags.name == my_contact_info.info_contact_data.disclosename);
+    BOOST_CHECK(cd.disclose_flags.organization == my_contact_info.info_contact_data.discloseorganization);
+    BOOST_CHECK(cd.disclose_flags.email == my_contact_info.info_contact_data.discloseemail);
+    BOOST_CHECK(cd.disclose_flags.address == my_contact_info.info_contact_data.discloseaddress);
+    BOOST_CHECK(cd.disclose_flags.telephone == my_contact_info.info_contact_data.disclosetelephone);
+    BOOST_CHECK(cd.disclose_flags.fax == my_contact_info.info_contact_data.disclosefax);
+    BOOST_CHECK(cd.disclose_flags.ident == my_contact_info.info_contact_data.discloseident);
+    BOOST_CHECK(cd.disclose_flags.vat == my_contact_info.info_contact_data.disclosevat);
+    BOOST_CHECK(cd.disclose_flags.notify_email == my_contact_info.info_contact_data.disclosenotifyemail);
     BOOST_CHECK(cd.states.find_first_of("MojeID contact") != std::string::npos);
     BOOST_CHECK(cd.state_codes.find_first_of("mojeidContact") != std::string::npos);
     BOOST_CHECK(cd.is_owner == true);
@@ -500,15 +500,15 @@ BOOST_FIXTURE_TEST_CASE(get_contact_detail, get_contact_fixture )
     BOOST_CHECK(cd.vat.get_value_or_default() == test_contact_info.info_contact_data.vat.get_value_or_default());
     BOOST_CHECK(cd.ssntype.get_value_or_default() == test_contact_info.info_contact_data.ssntype.get_value_or_default());
     BOOST_CHECK(cd.ssn.get_value_or_default() == test_contact_info.info_contact_data.ssn.get_value_or_default());
-    BOOST_CHECK(cd.disclose_flags.name == test_contact_info.info_contact_data.disclosename.get_value_or_default());
-    BOOST_CHECK(cd.disclose_flags.organization == test_contact_info.info_contact_data.discloseorganization.get_value_or_default());
-    BOOST_CHECK(cd.disclose_flags.email == test_contact_info.info_contact_data.discloseemail.get_value_or_default());
-    BOOST_CHECK(cd.disclose_flags.address == test_contact_info.info_contact_data.discloseaddress.get_value_or_default());
-    BOOST_CHECK(cd.disclose_flags.telephone == test_contact_info.info_contact_data.disclosetelephone.get_value_or_default());
-    BOOST_CHECK(cd.disclose_flags.fax == test_contact_info.info_contact_data.disclosefax.get_value_or_default());
-    BOOST_CHECK(cd.disclose_flags.ident == test_contact_info.info_contact_data.discloseident.get_value_or_default());
-    BOOST_CHECK(cd.disclose_flags.vat == test_contact_info.info_contact_data.disclosevat.get_value_or_default());
-    BOOST_CHECK(cd.disclose_flags.notify_email == test_contact_info.info_contact_data.disclosenotifyemail.get_value_or_default());
+    BOOST_CHECK(cd.disclose_flags.name == test_contact_info.info_contact_data.disclosename);
+    BOOST_CHECK(cd.disclose_flags.organization == test_contact_info.info_contact_data.discloseorganization);
+    BOOST_CHECK(cd.disclose_flags.email == test_contact_info.info_contact_data.discloseemail);
+    BOOST_CHECK(cd.disclose_flags.address == test_contact_info.info_contact_data.discloseaddress);
+    BOOST_CHECK(cd.disclose_flags.telephone == test_contact_info.info_contact_data.disclosetelephone);
+    BOOST_CHECK(cd.disclose_flags.fax == test_contact_info.info_contact_data.disclosefax);
+    BOOST_CHECK(cd.disclose_flags.ident == test_contact_info.info_contact_data.discloseident);
+    BOOST_CHECK(cd.disclose_flags.vat == test_contact_info.info_contact_data.disclosevat);
+    BOOST_CHECK(cd.disclose_flags.notify_email == test_contact_info.info_contact_data.disclosenotifyemail);
     BOOST_CHECK(cd.states.find_first_of("MojeID contact") == std::string::npos);
     BOOST_CHECK(cd.state_codes.find_first_of("mojeidContact") == std::string::npos);
     BOOST_CHECK(cd.is_owner == false);
@@ -972,15 +972,15 @@ BOOST_FIXTURE_TEST_CASE(set_contact_disclose_flags, set_contact_disclose_flags_f
     impl.setContactDiscloseFlags(user_contact_info.info_contact_data.id,set_flags, 42);
 
     Fred::InfoContactOutput my_contact_info = Fred::InfoContactByHandle(user_contact_handle).exec(ctx);
-    BOOST_CHECK(!my_contact_info.info_contact_data.disclosename.get_value_or_default());
-    BOOST_CHECK(!my_contact_info.info_contact_data.discloseorganization.get_value_or_default());
-    BOOST_CHECK(my_contact_info.info_contact_data.discloseemail.get_value_or_default());
-    BOOST_CHECK(my_contact_info.info_contact_data.discloseaddress.get_value_or_default());
-    BOOST_CHECK(my_contact_info.info_contact_data.disclosetelephone.get_value_or_default());
-    BOOST_CHECK(my_contact_info.info_contact_data.disclosefax.get_value_or_default());
-    BOOST_CHECK(my_contact_info.info_contact_data.discloseident.get_value_or_default());
-    BOOST_CHECK(my_contact_info.info_contact_data.disclosevat.get_value_or_default());
-    BOOST_CHECK(my_contact_info.info_contact_data.disclosenotifyemail.get_value_or_default());
+    BOOST_CHECK(!my_contact_info.info_contact_data.disclosename);
+    BOOST_CHECK(!my_contact_info.info_contact_data.discloseorganization);
+    BOOST_CHECK(my_contact_info.info_contact_data.discloseemail);
+    BOOST_CHECK(my_contact_info.info_contact_data.discloseaddress);
+    BOOST_CHECK(my_contact_info.info_contact_data.disclosetelephone);
+    BOOST_CHECK(my_contact_info.info_contact_data.disclosefax);
+    BOOST_CHECK(my_contact_info.info_contact_data.discloseident);
+    BOOST_CHECK(my_contact_info.info_contact_data.disclosevat);
+    BOOST_CHECK(my_contact_info.info_contact_data.disclosenotifyemail);
     BOOST_CHECK(!my_contact_info.logd_request_id.isnull() && my_contact_info.logd_request_id.get_value() == 42);
 }
 
@@ -1016,15 +1016,15 @@ BOOST_FIXTURE_TEST_CASE(set_validated_contact_disclose_flags, set_validated_cont
     impl.setContactDiscloseFlags(user_contact_info.info_contact_data.id,set_flags, 0);
 
     Fred::InfoContactOutput my_contact_info = Fred::InfoContactByHandle(user_contact_handle).exec(ctx);
-    BOOST_CHECK(!my_contact_info.info_contact_data.disclosename.get_value_or_default());
-    BOOST_CHECK(!my_contact_info.info_contact_data.discloseorganization.get_value_or_default());
-    BOOST_CHECK(my_contact_info.info_contact_data.discloseemail.get_value_or_default());
-    BOOST_CHECK(my_contact_info.info_contact_data.discloseaddress.get_value_or_default());
-    BOOST_CHECK(my_contact_info.info_contact_data.disclosetelephone.get_value_or_default());
-    BOOST_CHECK(my_contact_info.info_contact_data.disclosefax.get_value_or_default());
-    BOOST_CHECK(my_contact_info.info_contact_data.discloseident.get_value_or_default());
-    BOOST_CHECK(my_contact_info.info_contact_data.disclosevat.get_value_or_default());
-    BOOST_CHECK(my_contact_info.info_contact_data.disclosenotifyemail.get_value_or_default());
+    BOOST_CHECK(!my_contact_info.info_contact_data.disclosename);
+    BOOST_CHECK(!my_contact_info.info_contact_data.discloseorganization);
+    BOOST_CHECK(my_contact_info.info_contact_data.discloseemail);
+    BOOST_CHECK(my_contact_info.info_contact_data.discloseaddress);
+    BOOST_CHECK(my_contact_info.info_contact_data.disclosetelephone);
+    BOOST_CHECK(my_contact_info.info_contact_data.disclosefax);
+    BOOST_CHECK(my_contact_info.info_contact_data.discloseident);
+    BOOST_CHECK(my_contact_info.info_contact_data.disclosevat);
+    BOOST_CHECK(my_contact_info.info_contact_data.disclosenotifyemail);
 }
 
 struct set_contact_disclose_flags_user_not_in_mojeid_fixture

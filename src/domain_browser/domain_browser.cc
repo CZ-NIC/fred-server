@@ -387,15 +387,15 @@ namespace Registry
                 sponsoring_registrar.name = sponsoring_registar_info.info_registrar_data.name.get_value_or_default();
 
                 ContactDiscloseFlags disclose_flags;
-                disclose_flags.name = contact_info.info_contact_data.disclosename.get_value_or_default();
-                disclose_flags.organization = contact_info.info_contact_data.discloseorganization.get_value_or_default();
-                disclose_flags.email = contact_info.info_contact_data.discloseemail.get_value_or_default();
-                disclose_flags.address = contact_info.info_contact_data.discloseaddress.get_value_or_default();
-                disclose_flags.telephone = contact_info.info_contact_data.disclosetelephone.get_value_or_default();
-                disclose_flags.fax = contact_info.info_contact_data.disclosefax.get_value_or_default();
-                disclose_flags.ident = contact_info.info_contact_data.discloseident.get_value_or_default();
-                disclose_flags.vat = contact_info.info_contact_data.disclosevat.get_value_or_default();
-                disclose_flags.notify_email = contact_info.info_contact_data.disclosenotifyemail.get_value_or_default();
+                disclose_flags.name = contact_info.info_contact_data.disclosename;
+                disclose_flags.organization = contact_info.info_contact_data.discloseorganization;
+                disclose_flags.email = contact_info.info_contact_data.discloseemail;
+                disclose_flags.address = contact_info.info_contact_data.discloseaddress;
+                disclose_flags.telephone = contact_info.info_contact_data.disclosetelephone;
+                disclose_flags.fax = contact_info.info_contact_data.disclosefax;
+                disclose_flags.ident = contact_info.info_contact_data.discloseident;
+                disclose_flags.vat = contact_info.info_contact_data.disclosevat;
+                disclose_flags.notify_email = contact_info.info_contact_data.disclosenotifyemail;
 
                 ContactDetail detail;
                 detail.id = contact_info.info_contact_data.id;
@@ -790,43 +790,43 @@ namespace Registry
 
                 Fred::UpdateContactById update_contact(contact_id, update_registrar_);
                 bool exec_update = false;
-                if(flags.email != contact_info.info_contact_data.discloseemail.get_value_or_default())
+                if(flags.email != contact_info.info_contact_data.discloseemail)
                 {
                     update_contact.set_discloseemail(flags.email);
                     exec_update = true;
                 }
 
-                if(flags.address != contact_info.info_contact_data.discloseaddress.get_value_or_default())
+                if(flags.address != contact_info.info_contact_data.discloseaddress)
                 {
                     update_contact.set_discloseaddress(flags.address);
                     exec_update = true;
                 }
 
-                if(flags.telephone != contact_info.info_contact_data.disclosetelephone.get_value_or_default())
+                if(flags.telephone != contact_info.info_contact_data.disclosetelephone)
                 {
                     update_contact.set_disclosetelephone(flags.telephone);
                     exec_update = true;
                 }
 
-                if(flags.fax != contact_info.info_contact_data.disclosefax.get_value_or_default())
+                if(flags.fax != contact_info.info_contact_data.disclosefax)
                 {
                     update_contact.set_disclosefax(flags.fax);
                     exec_update = true;
                 }
 
-                if(flags.ident != contact_info.info_contact_data.discloseident.get_value_or_default())
+                if(flags.ident != contact_info.info_contact_data.discloseident)
                 {
                     update_contact.set_discloseident(flags.ident);
                     exec_update = true;
                 }
 
-                if(flags.vat != contact_info.info_contact_data.disclosevat.get_value_or_default())
+                if(flags.vat != contact_info.info_contact_data.disclosevat)
                 {
                     update_contact.set_disclosevat(flags.vat);
                     exec_update = true;
                 }
 
-                if(flags.notify_email != contact_info.info_contact_data.disclosenotifyemail.get_value_or_default())
+                if(flags.notify_email != contact_info.info_contact_data.disclosenotifyemail)
                 {
                     update_contact.set_disclosenotifyemail(flags.notify_email);
                     exec_update = true;
