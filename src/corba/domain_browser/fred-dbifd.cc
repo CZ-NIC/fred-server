@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
     FakedArgs fa; //producing faked args with unrecognized ones
     try
     {   //config
-        fa = CfgArgs::instance<HandleHelpArg>(global_hpv)->handle(argc, argv);
+        fa = CfgArgs::init<HandleHelpArg>(global_hpv)->handle(argc, argv);
 
         // setting up logger
         setup_logging(CfgArgs::instance());
