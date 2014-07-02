@@ -1510,6 +1510,7 @@ namespace Registry
                     " LEFT JOIN object_state os ON os.object_id = c_src.id "
                     " AND os.state_id IN (SELECT eos.id FROM enum_object_states eos WHERE eos.name = 'mojeidContact'::text "
                     " OR eos.name = 'serverDeleteProhibited'::text OR eos.name = 'serverBlocked'::text) "//forbidden states of src contact
+                    " AND os.valid_from <= CURRENT_TIMESTAMP AND os.valid_to is null"
                     " WHERE "
                     " ( "
                     //the same
