@@ -161,7 +161,8 @@ public:
 
         //command option have to be first on commandline to prevent command option ambiguity with others
         FakedArgs first_fa;
-        //copy only first option with possible arg
+        //copy only first option with possible arguments
+        //fred-admin --command arg1 arg2 ...
         int prefix_count=0;//option begin counter
         for (int i = 0; i < fa.get_argc(); ++i)
         {
@@ -346,7 +347,7 @@ template <typename CONTAINER_TYPE > struct list_of_gv
         this->push_back(t);
         return *this;
     }
-    list_of_gv& operator()(const CommandOptionGroups& t)
+    list_of_gv& addCommandOptions(const CommandOptionGroups& t)
     {
         this->push_back(t.get_command_selection_gv());
         this->push_back(t.get_command_options_gv());

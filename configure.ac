@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
-AC_INIT([fred-server], [2.17.1])
+AC_INIT([fred-server], [2.18.0])
 AC_CONFIG_SRCDIR(src/corba/fred-rifd.cc)
 AC_CONFIG_HEADER([config.h])
 AC_CONFIG_MACRO_DIR([m4])
@@ -195,12 +195,6 @@ AC_ARG_WITH([dbifdport], [AS_HELP_STRING([--with-dbifdport],
 			[CORBA fred-dbifd port [2229]])],
 			[AC_SUBST([DBIFDPORT], [$withval])],
 			[AC_SUBST([DBIFDPORT], [2229])])
-#abfd port
-AC_ARG_WITH([abfdport], [AS_HELP_STRING([--with-abfdport],
-			[CORBA fred-abfd port [2229]])],
-			[AC_SUBST([ABFDPORT], [$withval])],
-			[AC_SUBST([ABFDPORT], [2229])])
-
 
 #hp login name
 AC_ARG_WITH([hp_login_name], [AS_HELP_STRING([--with-hp_login_name],

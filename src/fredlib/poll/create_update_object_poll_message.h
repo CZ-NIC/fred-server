@@ -34,7 +34,12 @@ public:
     struct Exception
     : virtual Fred::OperationException
     , ExceptionData_object_history_not_found<Exception>
-    {};
+    {
+        const char* what() const throw()
+        {
+            return "CreateUpdateObjectPollMessage::Exception";
+        }
+    };
 
     /**
     * @return string with description of the instance state

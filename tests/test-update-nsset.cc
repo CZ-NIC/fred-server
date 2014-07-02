@@ -86,6 +86,7 @@ const std::string server_name = "test-update-nsset";
 
 BOOST_AUTO_TEST_CASE(info_nsset)
 {
+    namespace ip = boost::asio::ip;
     Fred::OperationContext ctx;
 
     std::string registrar_handle = static_cast<std::string>(
@@ -115,8 +116,8 @@ BOOST_AUTO_TEST_CASE(info_nsset)
     std::string test_nsset_handle = std::string("TEST-NSSET-HANDLE")+xmark;
     Fred::CreateNsset(test_nsset_handle, registrar_handle)
         .set_dns_hosts(Util::vector_of<Fred::DnsHost>
-            (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.3")("127.1.1.3"))) //add_dns
-            (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.4")("127.1.1.4"))) //add_dns
+            (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<ip::address>(ip::address::from_string("127.0.0.3"))(ip::address::from_string("127.1.1.3")))) //add_dns
+            (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<ip::address>(ip::address::from_string("127.0.0.4"))(ip::address::from_string("127.1.1.4")))) //add_dns
             )
             .exec(ctx);
 
@@ -140,6 +141,7 @@ struct update_nsset_fixture
     , admin_contact3_handle(std::string("TEST-ADMIN-CONTACT3-HANDLE")+xmark)
     , test_nsset_handle ( std::string("TEST-NSSET-HANDLE")+xmark)
     {
+        namespace ip = boost::asio::ip;
         Fred::OperationContext ctx;
         registrar_handle = static_cast<std::string>(ctx.get_conn().exec(
             "SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]);
@@ -163,8 +165,8 @@ struct update_nsset_fixture
 
         Fred::CreateNsset(test_nsset_handle, registrar_handle)
             .set_dns_hosts(Util::vector_of<Fred::DnsHost>
-                (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.3")("127.1.1.3"))) //add_dns
-                (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.4")("127.1.1.4"))) //add_dns
+                (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<ip::address>(ip::address::from_string("127.0.0.3"))(ip::address::from_string("127.1.1.3")))) //add_dns
+                (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<ip::address>(ip::address::from_string("127.0.0.4"))(ip::address::from_string("127.1.1.4")))) //add_dns
                 )
                 .set_tech_contacts(Util::vector_of<std::string>(admin_contact3_handle))
                 .exec(ctx);
@@ -183,6 +185,8 @@ struct update_nsset_fixture
  */
 BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
 {
+    namespace ip = boost::asio::ip;
+
     Fred::OperationContext ctx;
     Fred::InfoNssetOutput info_data_1 = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
     std::vector<Fred::InfoNssetOutput> history_info_data_1 = Fred::InfoNssetHistory(info_data_1.info_nsset_data.roid).exec(ctx);
@@ -278,9 +282,9 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
                 , Optional<std::string>(registrar_handle)//sponsoring registrar
                 , Optional<std::string>("passwd")//authinfo
                 , Util::vector_of<Fred::DnsHost>
-                    (Fred::DnsHost("host",  Util::vector_of<std::string>("127.0.0.1")("127.1.1.1"))) //add_dns
-                    (Fred::DnsHost("host1", Util::vector_of<std::string>("127.0.0.2")("127.1.1.2"))) //add_dns
-                    (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.4")))//add_dns
+                    (Fred::DnsHost("host",  Util::vector_of<ip::address>(ip::address::from_string("127.0.0.1"))(ip::address::from_string("127.1.1.1")))) //add_dns
+                    (Fred::DnsHost("host1", Util::vector_of<ip::address>(ip::address::from_string("127.0.0.2"))(ip::address::from_string("127.1.1.2")))) //add_dns
+                    (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<ip::address>(ip::address::from_string("127.0.0.4"))))//add_dns
                 , Util::vector_of<std::string>("a.ns.nic.cz")("b.ns.nic.cz") //rem_dns
                 , Util::vector_of<std::string>(admin_contact2_handle) //std::vector<std::string>() //add_tech_contact
                 , Util::vector_of<std::string>(admin_contact2_handle) //std::vector<std::string>() //rem_tech_contact
@@ -316,9 +320,9 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
 
     //update dns_hosts
     info_data_3_with_changes.info_nsset_data.dns_hosts = Util::vector_of<Fred::DnsHost>
-        (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.4")))
-        (Fred::DnsHost("host",  Util::vector_of<std::string>("127.0.0.1")("127.1.1.1")))
-        (Fred::DnsHost("host1", Util::vector_of<std::string>("127.0.0.2")("127.1.1.2")));
+        (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<ip::address>(ip::address::from_string("127.0.0.4"))))
+        (Fred::DnsHost("host",  Util::vector_of<ip::address>(ip::address::from_string("127.0.0.1"))(ip::address::from_string("127.1.1.1"))))
+        (Fred::DnsHost("host1", Util::vector_of<ip::address>(ip::address::from_string("127.0.0.2"))(ip::address::from_string("127.1.1.2"))));
 
     //check changes made by last update
     BOOST_CHECK(info_data_3_with_changes == info_data_4);
@@ -338,7 +342,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
 
     Fred::UpdateNsset(test_nsset_handle, registrar_handle)
         .set_sponsoring_registrar(registrar_handle)
-        .add_dns(Fred::DnsHost("host2",  Util::vector_of<std::string>("127.0.0.3")("127.1.1.3")))
+        .add_dns(Fred::DnsHost("host2",  Util::vector_of<ip::address>(ip::address::from_string("127.0.0.3"))(ip::address::from_string("127.1.1.3"))))
         .rem_dns("b.ns.nic.cz")
         .add_tech_contact(admin_contact2_handle)
         .rem_tech_contact(admin_contact2_handle)
@@ -374,9 +378,9 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
 
     //update dns_hosts
     info_data_4_with_changes.info_nsset_data.dns_hosts = Util::vector_of<Fred::DnsHost>
-        (Fred::DnsHost("host2",  Util::vector_of<std::string>("127.0.0.3")("127.1.1.3")))
-        (Fred::DnsHost("host",  Util::vector_of<std::string>("127.0.0.1")("127.1.1.1")))
-        (Fred::DnsHost("host1", Util::vector_of<std::string>("127.0.0.2")("127.1.1.2")));
+        (Fred::DnsHost("host2",  Util::vector_of<ip::address>(ip::address::from_string("127.0.0.3"))(ip::address::from_string("127.1.1.3"))))
+        (Fred::DnsHost("host",  Util::vector_of<ip::address>(ip::address::from_string("127.0.0.1"))(ip::address::from_string("127.1.1.1"))))
+        (Fred::DnsHost("host1", Util::vector_of<ip::address>(ip::address::from_string("127.0.0.2"))(ip::address::from_string("127.1.1.2"))));
 
     //updated tech_check_level
     BOOST_CHECK(3 == info_data_5.info_nsset_data.tech_check_level.get_value());
@@ -404,7 +408,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
     BOOST_CHECK(history_info_data_5.at(0).info_nsset_data.crhistoryid == info_data_5.info_nsset_data.crhistoryid);
 
     //add dns host
-    Fred::UpdateNsset(test_nsset_handle, registrar_handle).add_dns(Fred::DnsHost("host3",  Util::vector_of<std::string>("127.0.0.5")("127.1.1.5"))).exec(ctx);
+    Fred::UpdateNsset(test_nsset_handle, registrar_handle).add_dns(Fred::DnsHost("host3",  Util::vector_of<ip::address>(ip::address::from_string("127.0.0.5"))(ip::address::from_string("127.1.1.5")))).exec(ctx);
 
     Fred::InfoNssetOutput info_data_6 = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
     std::vector<Fred::InfoNssetOutput> history_info_data_6 = Fred::InfoNssetHistory(info_data_1.info_nsset_data.roid).exec(ctx);
@@ -424,10 +428,10 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
 
     //update dns_hosts
     info_data_5_with_changes.info_nsset_data.dns_hosts = Util::vector_of<Fred::DnsHost>
-        (Fred::DnsHost("host2",  Util::vector_of<std::string>("127.0.0.3")("127.1.1.3")))
-        (Fred::DnsHost("host",  Util::vector_of<std::string>("127.0.0.1")("127.1.1.1")))
-        (Fred::DnsHost("host1", Util::vector_of<std::string>("127.0.0.2")("127.1.1.2")))
-        (Fred::DnsHost("host3",  Util::vector_of<std::string>("127.0.0.5")("127.1.1.5")));
+        (Fred::DnsHost("host2",  Util::vector_of<ip::address>(ip::address::from_string("127.0.0.3"))(ip::address::from_string("127.1.1.3"))))
+        (Fred::DnsHost("host",  Util::vector_of<ip::address>(ip::address::from_string("127.0.0.1"))(ip::address::from_string("127.1.1.1"))))
+        (Fred::DnsHost("host1", Util::vector_of<ip::address>(ip::address::from_string("127.0.0.2"))(ip::address::from_string("127.1.1.2"))))
+        (Fred::DnsHost("host3",  Util::vector_of<ip::address>(ip::address::from_string("127.0.0.5"))(ip::address::from_string("127.1.1.5"))));
 
     //check changes made by last update
     BOOST_CHECK(info_data_5_with_changes == info_data_6);
@@ -468,9 +472,9 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
 
     //update dns_hosts
     info_data_6_with_changes.info_nsset_data.dns_hosts = Util::vector_of<Fred::DnsHost>
-        (Fred::DnsHost("host",  Util::vector_of<std::string>("127.0.0.1")("127.1.1.1")))
-        (Fred::DnsHost("host1", Util::vector_of<std::string>("127.0.0.2")("127.1.1.2")))
-        (Fred::DnsHost("host3",  Util::vector_of<std::string>("127.0.0.5")("127.1.1.5")));
+        (Fred::DnsHost("host",  Util::vector_of<ip::address>(ip::address::from_string("127.0.0.1"))(ip::address::from_string("127.1.1.1"))))
+        (Fred::DnsHost("host1", Util::vector_of<ip::address>(ip::address::from_string("127.0.0.2"))(ip::address::from_string("127.1.1.2"))))
+        (Fred::DnsHost("host3",  Util::vector_of<ip::address>(ip::address::from_string("127.0.0.5"))(ip::address::from_string("127.1.1.5"))));
 
     //check changes made by last update
     BOOST_CHECK(info_data_6_with_changes == info_data_7);
@@ -966,6 +970,8 @@ BOOST_FIXTURE_TEST_CASE(update_nsset_rem_unassigned_tech_contact, update_nsset_f
  */
 BOOST_FIXTURE_TEST_CASE(update_nsset_add_already_added_dnshost, update_nsset_fixture)
 {
+    namespace ip = boost::asio::ip;
+
     Fred::InfoNssetOutput info_data_1;
     {
         Fred::OperationContext ctx;
@@ -976,7 +982,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset_add_already_added_dnshost, update_nsset_fix
     {
         Fred::OperationContext ctx;//new connection to rollback on error
         Fred::UpdateNsset(test_nsset_handle, registrar_handle)
-        .add_dns(Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.3")("127.1.1.3")))//already added in fixture
+        .add_dns(Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<ip::address>(ip::address::from_string("127.0.0.3"))(ip::address::from_string("127.1.1.3"))))//already added in fixture
         .exec(ctx);
         ctx.commit_transaction();
         BOOST_ERROR("no exception thrown");

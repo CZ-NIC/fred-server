@@ -37,6 +37,8 @@
 #include "src/fredlib/contact/contact_enum.h"
 #include "src/fredlib/object/object.h"
 
+#include "src/admin/contact/verification/contact_states/delete_all.h"
+
 namespace Fred
 {
 
@@ -756,6 +758,28 @@ namespace Fred
                     if(update_contact_res.size() != 1)
                     {
                         BOOST_THROW_EXCEPTION(InternalError("failed to update contact"));
+
+                    } else {
+                        Admin::AdminContactVerificationObjectStates::conditionally_cancel_final_states(
+                            ctx,
+                            contact.info_contact_data.id,
+                            name_,
+                            organization_,
+                            street1_,
+                            street2_,
+                            street3_,
+                            city_,
+                            stateorprovince_,
+                            postalcode_,
+                            country_,
+                            telephone_,
+                            fax_,
+                            email_,
+                            notifyemail_,
+                            vat_,
+                            ssntype_,
+                            ssn_
+                        );
                     }
                 }
             }//update contact

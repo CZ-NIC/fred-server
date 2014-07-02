@@ -36,6 +36,7 @@
 #include <boost/date_time/gregorian/gregorian.hpp>
 
 #include "nullable.h"
+#include "util/uuid.h"
 
 namespace Database
 {
@@ -122,6 +123,13 @@ public:
     : binary_(false)
     , null_(false)
     , buffer_( boost::gregorian::to_iso_extended_string(value))
+    {}
+
+    //uuid
+    QueryParam(const uuid& value )
+    : binary_(false)
+    , null_(false)
+    , buffer_(value)
     {}
 
     template <class T> QueryParam( const Nullable<T>& t )
