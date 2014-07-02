@@ -958,7 +958,7 @@ BOOST_FIXTURE_TEST_CASE(set_contact_disclose_flags, set_contact_disclose_flags_f
     set_flags.notify_email = true;
     set_flags.telephone = true;
     set_flags.vat = true;
-    impl.setContactDiscloseFlags(user_contact_info.info_contact_data.id,set_flags, 0);
+    impl.setContactDiscloseFlags(user_contact_info.info_contact_data.id,set_flags, 42);
 
     Fred::InfoContactOutput my_contact_info = Fred::InfoContactByHandle(user_contact_handle).exec(ctx);
     BOOST_CHECK(!my_contact_info.info_contact_data.disclosename.get_value_or_default());
@@ -970,6 +970,7 @@ BOOST_FIXTURE_TEST_CASE(set_contact_disclose_flags, set_contact_disclose_flags_f
     BOOST_CHECK(my_contact_info.info_contact_data.discloseident.get_value_or_default());
     BOOST_CHECK(my_contact_info.info_contact_data.disclosevat.get_value_or_default());
     BOOST_CHECK(my_contact_info.info_contact_data.disclosenotifyemail.get_value_or_default());
+    BOOST_CHECK(!my_contact_info.logd_request_id.isnull() && my_contact_info.logd_request_id.get_value() == 42);
 }
 
 
@@ -1160,10 +1161,11 @@ BOOST_FIXTURE_TEST_CASE(set_contact_authinfo, set_contact_authinfo_fixture )
     Fred::OperationContext ctx;
     BOOST_CHECK(impl.setContactAuthInfo(
         user_contact_info.info_contact_data.id,
-        user_contact_info.info_contact_data.id,"newauthinfo", 0));
+        user_contact_info.info_contact_data.id,"newauthinfo", 42));
 
     Fred::InfoContactOutput my_contact_info = Fred::InfoContactByHandle(user_contact_handle).exec(ctx);
     BOOST_CHECK(my_contact_info.info_contact_data.authinfopw.compare("newauthinfo")==0);
+    BOOST_CHECK(!my_contact_info.logd_request_id.isnull() && my_contact_info.logd_request_id.get_value() == 42);
 }
 
 struct set_validated_contact_authinfo_fixture
