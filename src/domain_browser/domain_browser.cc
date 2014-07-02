@@ -834,7 +834,7 @@ namespace Registry
 
                 if(exec_update)
                 {
-                    update_contact.exec(ctx);
+                    update_contact.set_logd_request_id(request_id).exec(ctx);
                     ctx.commit_transaction();
                 }
                 else
@@ -889,7 +889,7 @@ namespace Registry
                     return false;
                 }
 
-                Fred::UpdateContactById(contact_id, update_registrar_).set_authinfo(authinfo).exec(ctx);
+                Fred::UpdateContactById(contact_id, update_registrar_).set_authinfo(authinfo).set_logd_request_id(request_id).exec(ctx);
                 ctx.commit_transaction();
             }
             catch(...)
