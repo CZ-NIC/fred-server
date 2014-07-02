@@ -1861,6 +1861,7 @@ src_cli_admin_fred_admin_LDFLAGS = \
 		$(XML2_LIBS)	# using xpath in contact verification test for czech address
 
 src_cli_admin_fred_admin_LDADD = \
+		src/admin/contact/verification/libadmin_contact_verification.a \
 		src/fredlib/libfred.a \
 		src/model/libmodel.a \
 		src/fredlib/banking/libbanking.a \
