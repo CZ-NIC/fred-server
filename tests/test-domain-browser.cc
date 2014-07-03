@@ -213,10 +213,10 @@ struct nsset_fixture
             .set_dns_hosts(Util::vector_of<Fred::DnsHost>
             (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<boost::asio::ip::address>
                 (boost::asio::ip::address::from_string("127.0.0.3"))
-                (boost::asio::ip::address::from_string("127.1.1.3)")))) //add_dns
+                (boost::asio::ip::address::from_string("127.1.1.3")))) //add_dns
             (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<boost::asio::ip::address>
                 (boost::asio::ip::address::from_string("127.0.0.4"))
-                (boost::asio::ip::address::from_string("127.1.1.4)")))) //add_dns
+                (boost::asio::ip::address::from_string("127.1.1.4")))) //add_dns
             ).exec(ctx);
 
         nsset_info = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
@@ -1635,10 +1635,10 @@ struct admin_nsset_fixture
             .set_dns_hosts(Util::vector_of<Fred::DnsHost>
                 (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<boost::asio::ip::address>
                     (boost::asio::ip::address::from_string("127.0.0.3"))
-                    (boost::asio::ip::address::from_string("127.1.1.3)")))) //add_dns
+                    (boost::asio::ip::address::from_string("127.1.1.3")))) //add_dns
                 (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<boost::asio::ip::address>
                     (boost::asio::ip::address::from_string("127.0.0.4"))
-                    (boost::asio::ip::address::from_string("127.1.1.4)")))) //add_dns
+                    (boost::asio::ip::address::from_string("127.1.1.4")))) //add_dns
             ).exec(ctx);
 
         nsset_info = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
@@ -2533,10 +2533,10 @@ struct get_my_nssets_fixture
                 .set_dns_hosts(Util::vector_of<Fred::DnsHost>
                     (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<boost::asio::ip::address>
                         (boost::asio::ip::address::from_string("127.0.0.3"))
-                        (boost::asio::ip::address::from_string("127.1.1.3)")))) //add_dns
+                        (boost::asio::ip::address::from_string("127.1.1.3")))) //add_dns
                     (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<boost::asio::ip::address>
                         (boost::asio::ip::address::from_string("127.0.0.4"))
-                        (boost::asio::ip::address::from_string("127.1.1.4)")))) //add_dns
+                        (boost::asio::ip::address::from_string("127.1.1.4")))) //add_dns
                 ).exec(ctx);
 
             nsset_info[nsset_handle.str()]= Fred::InfoNssetByHandle(nsset_handle.str()).exec(ctx);
@@ -2961,10 +2961,10 @@ struct merge_contacts_fixture
                         .set_dns_hosts(Util::vector_of<Fred::DnsHost>
                             (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<boost::asio::ip::address>
                                 (boost::asio::ip::address::from_string("127.0.0.3"))
-                                (boost::asio::ip::address::from_string("127.1.1.3)")))) //add_dns
+                                (boost::asio::ip::address::from_string("127.1.1.3")))) //add_dns
                             (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<boost::asio::ip::address>
                                 (boost::asio::ip::address::from_string("127.0.0.4"))
-                                (boost::asio::ip::address::from_string("127.1.1.4)")))) //add_dns
+                                (boost::asio::ip::address::from_string("127.1.1.4")))) //add_dns
                             )
                             .set_tech_contacts(Util::vector_of<std::string>(contact_handle.str()))
                             .exec(ctx);
