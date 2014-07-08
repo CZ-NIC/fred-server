@@ -74,6 +74,9 @@ bool queryBlockRequest(
     //lock public_request
     if (blockRequestID) lock_public_request_lock(blockRequestID);
 
+    //already blocked
+    if(object_has_one_of_states(objectId,Util::vector_of<std::string>(ObjectState::MOJEID_CONTACT)(ObjectState::SERVER_BLOCKED))) return false;
+
     if(unblock)//unblocking
     {
         if(!object_has_all_of_states(objectId,states_vect)) return false;//not blocked yet case 03, 04, 07, 08, 11, 12, 16
