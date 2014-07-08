@@ -3069,7 +3069,7 @@ ccReg::Response * ccReg_EPP_i::ContactUpdate(
         try {
             if(automatic_contact_check_should_be_enqueued) {
                 Fred::OperationContext ctx;
-                Admin::enqueue_check_if_no_other_exists(ctx, id, Fred::TestsuiteHandle::AUTOMATIC);
+                Admin::enqueue_check_if_no_other_exists(ctx, id, Fred::TestsuiteHandle::AUTOMATIC, params.requestID);
                 ctx.commit_transaction();
             }
         } catch(...) {
