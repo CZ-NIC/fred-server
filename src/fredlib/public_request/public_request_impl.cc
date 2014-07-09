@@ -93,16 +93,10 @@ bool queryBlockRequest(
 
         if(object_has_one_of_states(objectId,states_vect) && blockRequestID != 0) //cancel previous requests case 14
         {//cancel all states
-
-            std::string cancel_query =
-                "UPDATE object_state_request SET canceled=CURRENT_TIMESTAMP WHERE id IN "
-                " (SELECT osr.id FROM object_state_request osr JOIN enum_object_states eos ON osr.state_id = eos.id "
-                " WHERE eos.name = $1::text AND osr.object_id = $2::bigint AND osr.valid_to IS NULL AND osr.canceled IS NOT NULL) ";
-
             for (std::vector<std::string>::const_iterator it = states_vect.begin()
                 ; it != states_vect.end(); ++it)
             {
-                conn.exec_params(cancel_query, Database::query_param_list(*it)(objectId));
+                Fred::cancel_object_state(objectId, *it);
             }
         }
 
