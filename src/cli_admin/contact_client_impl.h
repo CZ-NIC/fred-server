@@ -25,19 +25,28 @@
 #define CONTACT_CLIENT_IMPL_H_
 
 #include <boost/date_time/gregorian/gregorian.hpp>
-#include "cfg/config_handler_decl.h"
-#include "cfg/handle_database_args.h"
-#include "cfg/handle_corbanameservice_args.h"
-#include "handle_adminclientselection_args.h"
-#include "log/context.h"
-#include "contactclient.h"
-#include "commonclient.h"
+#include <boost/foreach.hpp>
+#include <boost/algorithm/string.hpp>
+#include <boost/make_shared.hpp>
+
+#include "util/cfg/config_handler_decl.h"
+#include "util/cfg/handle_database_args.h"
+#include "util/cfg/handle_registry_args.h"
+#include "util/cfg/handle_corbanameservice_args.h"
+#include "src/cli_admin/handle_adminclientselection_args.h"
+#include "util/log/context.h"
+#include "src/cli_admin/contactclient.h"
+#include "src/cli_admin/commonclient.h"
 #include "src/fredlib/reminder.h"
 #include "src/admin/contact/merge_contact_auto_procedure.h"
 #include "src/admin/contact/merge_contact.h"
 #include "src/admin/contact/merge_contact_reporting.h"
 #include "src/corba/logger_client_impl.h"
+#include <admin/admin_contact_verification.h>
 
+#include "src/fredlib/mailer.h"
+#include "src/fredlib/documents.h"
+#include "src/fredlib/messages/messages_impl.h"
 #include "src/fredlib/registrar/get_registrar_handles.h"
 
 /**
@@ -248,6 +257,170 @@ struct contact_merge_impl
 
         return;
     }
+};
+
+
+
+/**
+ * admin client implementation of contact verification check queue filling
+ */
+struct contact_verification_fill_queue_impl
+{
+  void operator()() const
+  {
+      ContactVerificationFillQueueArgs params = CfgArgGroups::instance()
+          ->get_handler_ptr_by_type<HandleContactVerificationFillQueueArgsGrp>()->params;
+
+      Admin::ContactVerificationQueue::contact_filter filter;
+
+      if(params.contact_roles.empty() == false) {
+          BOOST_FOREACH(const std::string& role, params.contact_roles) {
+              if(boost::iequals(role, "domain_owner")) {
+                  filter.roles.insert(Admin::ContactVerificationQueue::owner);
+              } else if(boost::iequals(role, "admin")) {
+                  filter.roles.insert(Admin::ContactVerificationQueue::admin_c);
+              } else if(boost::iequals(role, "technical")) {
+                  filter.roles.insert(Admin::ContactVerificationQueue::tech_c);
+              } else {
+                  throw ReturnCode(
+                      "unknown role: \"" + role + "\"\n" +
+                      "valid roles are: domain_owner, admin, techical", 1);
+              }
+          }
+      }
+
+      if(params.contact_states.empty() == false) {
+          BOOST_FOREACH(const std::string& state, params.contact_states) {
+              filter.states.insert(state);
+          }
+      }
+
+      if(params.country_code.length() > 0) {
+          filter.country_code = params.country_code;
+      }
+
+      std::vector<Admin::ContactVerificationQueue::enqueued_check> enqueued_checks;
+
+      enqueued_checks =
+          Admin::ContactVerificationQueue::fill_check_queue(
+              boost::to_lower_copy(params.testsuite_handle),
+              params.max_queue_length
+          )
+          .set_contact_filter(filter)
+          .exec();
+
+      if(enqueued_checks.size() > 0) {
+          std::cout << "enqueued check handles:" << std::endl;
+
+          BOOST_FOREACH(const Admin::ContactVerificationQueue::enqueued_check& info, enqueued_checks) {
+              std::cout
+                << "check handle: "         << info.handle << "\t"
+                << "contact id: "           << info.contact_id << "\t"
+                << "contact history id: "   << info.contact_history_id << std::endl;
+          }
+      } else {
+          std::cout << "no checks enqueued" << std::endl;
+      }
+
+      return ;
+  }
+};
+
+
+
+/**
+ * admin client implementation of contact verification check enqueueing
+ */
+struct contact_verification_enqueue_check_impl
+{
+  void operator()() const
+  {
+      ContactVerificationEnqueueCheckArgs params = CfgArgGroups::instance()
+        ->get_handler_ptr_by_type<HandleContactVerificationEnqueueCheckArgsGrp>()->params;
+
+      Fred::OperationContext ctx;
+      std::string check_handle;
+      try {
+          check_handle = Admin::enqueue_check(
+              ctx,
+              params.contact_id,
+              params.testsuite_handle);
+
+          ctx.commit_transaction();
+      } catch (Fred::ExceptionUnknownContactId& e) {
+          throw ReturnCode(
+              std::string("given contact id (") + boost::lexical_cast<std::string>(params.contact_id) + ") is unknown",
+              1);
+      } catch (Fred::ExceptionUnknownTestsuiteHandle& e) {
+          throw ReturnCode(
+              std::string("given testsuite handle (") + params.testsuite_handle + ") is unknown",
+              1);
+      }
+
+      // if no exception was translated to throw (and the check was really created)...
+      std::cout << "enqueued check with handle: " << check_handle << std::endl;
+
+      return ;
+  }
+};
+
+
+/**
+ * admin client implementation of enqueued contact verification check starting
+ */
+struct contact_verification_start_enqueued_checks_impl
+{
+  void operator()() const
+  {
+      FakedArgs orb_fa = CfgArgGroups::instance()->fa;
+      HandleCorbaNameServiceArgsGrp* ns_args_ptr=CfgArgGroups::instance()->
+         get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>();
+
+      CorbaContainer::set_instance(
+          orb_fa.get_argc(),
+          orb_fa.get_argv(),
+          ns_args_ptr->get_nameservice_host(),
+          ns_args_ptr->get_nameservice_port(),
+          ns_args_ptr->get_nameservice_context()
+      );
+
+      std::vector<std::string> started_checks;
+
+      try {
+          started_checks = Admin::run_all_enqueued_checks(
+              Admin::create_test_impl_prototypes(
+                  boost::shared_ptr<Fred::Mailer::Manager>(
+                      new MailerManager(
+                          CorbaContainer::get_instance()->getNS()
+                      )
+                  ),
+                  boost::shared_ptr<Fred::Document::Manager>(
+                      Fred::Document::Manager::create(
+                          CfgArgGroups::instance()->get_handler_ptr_by_type<HandleRegistryArgsGrp>()->get_docgen_path(),
+                          CfgArgGroups::instance()->get_handler_ptr_by_type<HandleRegistryArgsGrp>()->get_docgen_template_path(),
+                          CfgArgGroups::instance()->get_handler_ptr_by_type<HandleRegistryArgsGrp>()->get_fileclient_path(),
+                          CfgArgGroups::instance()->get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>()->get_nameservice_host_port()
+                      ).release()
+                  ),
+                  // returns shared_ptr
+                  Fred::Messages::create_manager(),
+                  CfgArgGroups::instance()->get_handler_ptr_by_type<HandleContactVerificationStartEnqueuedChecksArgsGrp>()->params.cz_address_mvcr_xml_path
+              )
+          );
+      } catch (const Admin::ExceptionTestImplementationError& ) {
+          throw ReturnCode("error in test implementation or prototype handling", 1);
+      }
+
+      if(started_checks.size() > 0) {
+          std::cout << "started checks:" << std::endl;
+
+          BOOST_FOREACH(const std::string& handle, started_checks) {
+              std::cout << "check handle: " << handle << std::endl;
+          }
+      } else {
+          std::cout << "no checks started" << std::endl;
+      }
+  }
 };
 
 

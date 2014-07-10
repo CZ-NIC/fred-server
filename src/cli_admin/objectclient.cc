@@ -59,10 +59,8 @@ ObjectClient::new_state_request_name()
         object_new_state_request_name_params.object_name
         , object_new_state_request_name_params.object_type
         , object_new_state_request_name_params.object_state_name
-        , object_new_state_request_name_params.valid_from.is_value_set()
-            ? object_new_state_request_name_params.valid_from.get_value()
-                :  boost::posix_time::to_iso_extended_string(microsec_clock::universal_time())  //valid_from default now
-        , object_new_state_request_name_params.valid_to//valid_to
+        , object_new_state_request_name_params.valid_from
+        , object_new_state_request_name_params.valid_to
         , object_new_state_request_name_params.update_object_state
         );
 

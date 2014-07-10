@@ -181,34 +181,15 @@ BOOST_FIXTURE_TEST_CASE(copy_contact, copy_contact_fixture)
     BOOST_CHECK((src_contact_info.ssn.isnull() == dst_contact_info.ssn.isnull()) &&
                 (src_contact_info.ssn.isnull() || (src_contact_info.ssn.get_value().compare(
                                                    dst_contact_info.ssn.get_value()) == 0)));
-    BOOST_CHECK((src_contact_info.disclosename.isnull() == dst_contact_info.disclosename.isnull()) &&
-                (src_contact_info.disclosename.isnull() || (src_contact_info.disclosename.get_value() ==
-                                                            dst_contact_info.disclosename.get_value())));
-    BOOST_CHECK((src_contact_info.discloseorganization.isnull() == dst_contact_info.discloseorganization.isnull()) &&
-                (src_contact_info.discloseorganization.isnull() || (src_contact_info.discloseorganization.get_value() ==
-                                                                    dst_contact_info.discloseorganization.get_value())));
-    BOOST_CHECK((src_contact_info.discloseaddress.isnull() == dst_contact_info.discloseaddress.isnull()) &&
-                (src_contact_info.discloseaddress.isnull() || (src_contact_info.discloseaddress.get_value() ==
-                                                               dst_contact_info.discloseaddress.get_value())));
-    BOOST_CHECK((src_contact_info.disclosetelephone.isnull() == dst_contact_info.disclosetelephone.isnull()) &&
-                (src_contact_info.disclosetelephone.isnull() || (src_contact_info.disclosetelephone.get_value() ==
-                                                                 dst_contact_info.disclosetelephone.get_value())));
-    BOOST_CHECK((src_contact_info.disclosefax.isnull() == dst_contact_info.disclosefax.isnull()) &&
-                (src_contact_info.disclosefax.isnull() || (src_contact_info.disclosefax.get_value() ==
-                                                           dst_contact_info.disclosefax.get_value())));
-    BOOST_CHECK((src_contact_info.discloseemail.isnull() == dst_contact_info.discloseemail.isnull()) &&
-                (src_contact_info.discloseemail.isnull() || (src_contact_info.discloseemail.get_value() ==
-                                                             dst_contact_info.discloseemail.get_value())));
-    BOOST_CHECK((src_contact_info.disclosevat.isnull() == dst_contact_info.disclosevat.isnull()) &&
-                (src_contact_info.disclosevat.isnull() || (src_contact_info.disclosevat.get_value() ==
-                                                           dst_contact_info.disclosevat.get_value())));
-    BOOST_CHECK((src_contact_info.discloseident.isnull() == dst_contact_info.discloseident.isnull()) &&
-                (src_contact_info.discloseident.isnull() || (src_contact_info.discloseident.get_value() ==
-                                                             dst_contact_info.discloseident.get_value())));
-    BOOST_CHECK((src_contact_info.disclosenotifyemail.isnull() == dst_contact_info.disclosenotifyemail.isnull()) &&
-                (src_contact_info.disclosenotifyemail.isnull() || (src_contact_info.disclosenotifyemail.get_value() ==
-                                                                   dst_contact_info.disclosenotifyemail.get_value())));
-
+    BOOST_CHECK(src_contact_info.disclosename == dst_contact_info.disclosename);
+    BOOST_CHECK(src_contact_info.discloseorganization == dst_contact_info.discloseorganization);
+    BOOST_CHECK(src_contact_info.discloseaddress == dst_contact_info.discloseaddress);
+    BOOST_CHECK(src_contact_info.disclosetelephone == dst_contact_info.disclosetelephone);
+    BOOST_CHECK(src_contact_info.disclosefax == dst_contact_info.disclosefax);
+    BOOST_CHECK(src_contact_info.discloseemail == dst_contact_info.discloseemail);
+    BOOST_CHECK(src_contact_info.disclosevat == dst_contact_info.disclosevat);
+    BOOST_CHECK(src_contact_info.discloseident == dst_contact_info.discloseident);
+    BOOST_CHECK(src_contact_info.disclosenotifyemail == dst_contact_info.disclosenotifyemail);
 }
 
 /**
