@@ -36,9 +36,7 @@ namespace Whois {
     }
 
     DisclosablePlaceAddress* wrap_disclosable_address(const Fred::InfoContactData& in) {
-        if(in.discloseaddress.isnull()) {
-            return NULL;
-        } else if(in.discloseaddress.get_value() == false) {
+        if( ! in.discloseaddress ) {
             return NULL;
         } else {
             return new DisclosablePlaceAddress( wrap_address(in) );
@@ -46,9 +44,7 @@ namespace Whois {
     }
 
     DisclosableContactIdentification* wrap_disclosable_identification(const Fred::InfoContactData& in) {
-        if(in.discloseident.isnull()) {
-            return NULL;
-        } else if(in.discloseident.get_value() == false) {
+        if( ! in.discloseident ) {
             return NULL;
         } else {
             DisclosableContactIdentification_var result(new DisclosableContactIdentification);
@@ -110,14 +106,14 @@ namespace Whois {
         Contact temp;
 
         temp.handle = Corba::wrap_string(in.handle);
-        temp.organization = wrap_disclosable_string(in.organization, in.discloseorganization.get_value_or_default());
-        temp.name = wrap_disclosable_string(in.name, in.disclosename.get_value_or_default());
+        temp.organization = wrap_disclosable_string(in.organization, in.discloseorganization);
+        temp.name = wrap_disclosable_string(in.name, in.disclosename);
         temp.address = wrap_disclosable_address(in);
-        temp.phone = wrap_disclosable_string(in.telephone, in.disclosetelephone.get_value_or_default());
-        temp.fax = wrap_disclosable_string(in.fax, in.disclosefax.get_value_or_default());
-        temp.email = wrap_disclosable_string(in.email, in.discloseemail.get_value_or_default());
-        temp.notify_email = wrap_disclosable_string(in.notifyemail, in.disclosenotifyemail.get_value_or_default());
-        temp.vat_number = wrap_disclosable_string(in.vat, in.disclosevat.get_value_or_default());
+        temp.phone = wrap_disclosable_string(in.telephone, in.disclosetelephone);
+        temp.fax = wrap_disclosable_string(in.fax, in.disclosefax);
+        temp.email = wrap_disclosable_string(in.email, in.discloseemail);
+        temp.notify_email = wrap_disclosable_string(in.notifyemail, in.disclosenotifyemail);
+        temp.vat_number = wrap_disclosable_string(in.vat, in.disclosevat);
         temp.identification = wrap_disclosable_identification(in);
         temp.creating_registrar_handle = Corba::wrap_string(in.create_registrar_handle);
         temp.sponsoring_registrar_handle = Corba::wrap_string(in.sponsoring_registrar_handle);
