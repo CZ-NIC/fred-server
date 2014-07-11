@@ -673,6 +673,7 @@ ccReg_EPP_i::ccReg_EPP_i(
     , bool rifd_epp_update_domain_keyset_clear
     , bool rifd_epp_operations_charging
     , bool _allow_idn
+    , bool epp_update_contact_enqueue_check
 )
 
     : database(_db),
@@ -694,6 +695,7 @@ ccReg_EPP_i::ccReg_EPP_i(
     , rifd_epp_update_domain_keyset_clear_(rifd_epp_update_domain_keyset_clear)
     , rifd_epp_operations_charging_(rifd_epp_operations_charging),
     allow_idn_(_allow_idn),
+    epp_update_contact_enqueue_check_(epp_update_contact_enqueue_check),
     db_disconnect_guard_(),
     regMan(),
     epp_sessions(rifd_session_max, rifd_session_registrar_max, rifd_session_timeout),
@@ -3067,7 +3069,7 @@ ccReg::Response * ccReg_EPP_i::ContactUpdate(
     // admin contact verification Ticket #10935
     if (code == COMMAND_OK) {
         try {
-            if(automatic_contact_check_should_be_enqueued) {
+            if(epp_update_contact_enqueue_check_ && automatic_contact_check_should_be_enqueued) {
                 Fred::OperationContext ctx;
                 Admin::enqueue_check_if_no_other_exists(ctx, id, Fred::TestsuiteHandle::AUTOMATIC);
                 ctx.commit_transaction();
