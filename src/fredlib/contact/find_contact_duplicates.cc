@@ -38,11 +38,16 @@ std::set<std::string> FindAnyContactDuplicates::exec(Fred::OperationContext &_ct
         " FROM object_registry oreg"
         " JOIN contact c ON c.id = oreg.id"
         " JOIN object o ON o.id = c.id"
-        " JOIN registrar r ON r.id = o.clid";
+        " JOIN registrar r ON r.id = o.clid"
+        " LEFT JOIN object_state os ON os.object_id = o.id AND os.state_id IN "
+            " (SELECT eos.id FROM enum_object_states eos WHERE eos.name = 'mojeidContact'::text "
+            " OR eos.name = 'serverDeleteProhibited'::text OR eos.name = 'serverBlocked'::text) "//forbidden states of merged contact
+            " AND os.valid_from <= CURRENT_TIMESTAMP AND (os.valid_to IS NULL OR os.valid_to > CURRENT_TIMESTAMP) "
+        " WHERE os.id IS NULL ";
 
     if (registrar_handle_.isset()) {
         dup_params.push_back(registrar_handle_.get_value());
-        dup_sql << " WHERE r.handle = $" << dup_params.size() << "::varchar";
+        dup_sql << " AND r.handle = $" << dup_params.size() << "::varchar";
     }
 
     dup_sql << " GROUP BY"
