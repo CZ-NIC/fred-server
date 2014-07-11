@@ -1514,10 +1514,10 @@ namespace Registry
                     " JOIN (object_registry oreg_dst "
                     " JOIN contact c_dst ON c_dst.id = oreg_dst.id  AND oreg_dst.erdate IS NULL AND oreg_dst.id = $1::bigint "
                     " ) ON TRUE "
-                    " LEFT JOIN object_state os ON os.object_id = c_src.id "
-                    " AND os.state_id IN (SELECT eos.id FROM enum_object_states eos WHERE eos.name = 'mojeidContact'::text "
+                    " LEFT JOIN object_state os_src ON os_src.object_id = c_src.id "
+                    " AND os_src.state_id IN (SELECT eos.id FROM enum_object_states eos WHERE eos.name = 'mojeidContact'::text "
                     " OR eos.name = 'serverDeleteProhibited'::text OR eos.name = 'serverBlocked'::text) "//forbidden states of src contact
-                    " AND os.valid_from <= CURRENT_TIMESTAMP AND os.valid_to is null"
+                    " AND os_src.valid_from <= CURRENT_TIMESTAMP AND (os_src.valid_to is null OR os_src.valid_to > CURRENT_TIMESTAMP)"
                     " WHERE "
                     " ( "
                     //the same
@@ -1535,7 +1535,7 @@ namespace Registry
                     " (trim(both ' ' from COALESCE(c_src.vat,'')) != trim(both ' ' from COALESCE(c_dst.vat,'')) AND trim(both ' ' from COALESCE(c_src.vat,'')) != ''::text) OR "
                     " (trim(both ' ' from COALESCE(c_src.ssn,'')) != trim(both ' ' from COALESCE(c_dst.ssn,'')) AND trim(both ' ' from COALESCE(c_src.ssn,'')) != ''::text) OR "
                     " (COALESCE(c_src.ssntype,0) != COALESCE(c_dst.ssntype,0) AND COALESCE(c_src.ssntype,0) != 0)) = false "
-                    " AND oreg_src.name != oreg_dst.name AND os.id IS NULL "
+                    " AND oreg_src.name != oreg_dst.name AND os_src.id IS NULL "
                     " ORDER BY oreg_src.id "
                     " LIMIT $2::bigint OFFSET $3::bigint ",
                     Database::query_param_list(user_contact_id)(contact_list_limit_+1)(offset));
