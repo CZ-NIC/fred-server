@@ -2890,17 +2890,18 @@ ccReg::Response * ccReg_EPP_i::ContactUpdate(
                 || Fred::object_has_state(id, Fred::ObjectState::VALIDATED_CONTACT);
 
         bool hidden_address_allowed_by_organization = false;
-        if(c.Organization.in()[0] =='\b')//mod_eppd hack when organization n/a for update
+        if(c.Organization.in()[0] == '\0') // no change so we need to check current value
         {
-            Database::Connection conn = Database::Manager::acquire();
-            Database::Result result = conn.exec_params(
+            Database::Result result = Database::Manager::acquire().exec_params(
                 "SELECT c.organization FROM contact c WHERE c.id = $1::bigint "
                 , Database::query_param_list(id));
-            if (result.size() == 1) hidden_address_allowed_by_organization = std::string(result[0][0]).empty();
+            if (result.size() == 1) {
+                hidden_address_allowed_by_organization = std::string(result[0][0]).empty();
+            }
         }
-        else
+        else if(c.Organization.in()[0] == '\b')  // erasing current value (see EPP hack - grep "\\\b")
         {
-            hidden_address_allowed_by_organization = std::string(c.Organization.in()).empty();
+            hidden_address_allowed_by_organization = true;
         }
 
         //if not allowed to hide but set to hide address return epp error
