@@ -113,6 +113,7 @@ int main(int argc, char *argv[])
                     , rifd_args_ptr->rifd_epp_update_domain_keyset_clear
                     , rifd_args_ptr->rifd_epp_operations_charging
                     , rifd_args_ptr->allow_idn
+                    , rifd_args_ptr->epp_update_contact_enqueue_check
             ));
 
             // create session use values from config

@@ -80,6 +80,7 @@ session_registrar_max = 5
 epp_update_domain_keyset_clear = true
 epp_operations_charging = @EPP_OPERATIONS_CHARGING@
 allow_idn = false
+epp_update_contact_enqueue_check = false
 
 ##
 # ADIFD specific settings
