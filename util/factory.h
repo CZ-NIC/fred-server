@@ -27,7 +27,10 @@ public:
     typedef Key key_type;
     void register_class(const Key &_key, Creator *_class_creator)
     {
-        class_creators_[_key] = _class_creator;
+        // reregistration is not allowed
+        if (!class_creators_.insert(std::make_pair(_key, _class_creator)).second) {
+            throw std::runtime_error(std::string("key '") + _key + "' already registered");
+        }
     }
 
 
