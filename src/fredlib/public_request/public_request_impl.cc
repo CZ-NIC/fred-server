@@ -7,6 +7,10 @@
 #include "random.h"
 #include "src/fredlib/object_states.h"
 
+#include <string>
+#include <vector>
+#include <algorithm>
+
 #include <boost/utility.hpp>
 #include <boost/lexical_cast.hpp>
 
@@ -51,21 +55,12 @@ void insertNewStateRequest(
         Database::ID objectId,
         const std::string & state_name)
 {
-    unsigned long long req_id = insert_object_state(objectId, state_name);
-
-    Database::Connection conn = Database::Manager::acquire();
-    conn.exec_params("INSERT INTO public_request_state_request_map "
-        " ( state_request_id, block_request_id )"
-        " VALUES ( $1::integer, $2::integer)"
-        , Database::query_param_list(req_id)(blockRequestID));
+    insert_object_state(objectId, state_name);
 }
 
 
 /* 
- * check if already blocked request interfere with requested states
- * this is true in every situation other then when actual states are
- * smaller subset of requested states. if requested by setting parameter
- * blockRequestID, all states in subset are closed
+ * check if object states interfere with requested states
  */
 bool queryBlockRequest(
         Database::ID objectId,
@@ -79,76 +74,35 @@ bool queryBlockRequest(
     //lock public_request
     if (blockRequestID) lock_public_request_lock(blockRequestID);
 
-    std::string states;//comma separated state ids
-    // number of states in csv list of states
-    unsigned numStates = 0;
+    //already blocked
+    if(object_has_one_of_states(objectId,Util::vector_of<std::string>(ObjectState::MOJEID_CONTACT)(ObjectState::SERVER_BLOCKED))) return false;
 
-    for (std::vector<std::string>::const_iterator it = states_vect.begin()
-            ; it != states_vect.end(); ++it)
+    if(unblock)//unblocking
     {
-        Database::Result stid = conn.exec_params(
-            "SELECT id FROM enum_object_states WHERE name = $1::text"
-            , Database::query_param_list(*it));
+        if(!object_has_all_of_states(objectId,states_vect)) return false;//not blocked yet case 03, 04, 07, 08, 11, 12, 16
 
-        //lock state
-        lock_object_state_request_lock( *it, objectId);
+        if(std::find(states_vect.begin(),states_vect.end(),ObjectState::SERVER_TRANSFER_PROHIBITED) != states_vect.end()//unblocking SERVER_TRANSFER_PROHIBITED
+            && std::find(states_vect.begin(),states_vect.end(),ObjectState::SERVER_UPDATE_PROHIBITED) == states_vect.end()//but not SERVER_UPDATE_PROHIBITED
+            && object_has_state(objectId,ObjectState::SERVER_UPDATE_PROHIBITED)) return false; //case 19
 
-        if(stid.size() == 1)
-        {
-            //if not empty then separate values by comma
-            if (numStates > 0) states += std::string(",");
-            states += std::string(stid[0][0]);//append next state id
-            ++numStates;//update number of states
+        //return true case 15, 20
+    }
+    else //blocking
+    {
+        if(object_has_all_of_states(objectId,states_vect)) return false;//already blocked case 13, 17, 18
+
+        if(object_has_one_of_states(objectId,states_vect) && blockRequestID != 0) //cancel previous requests case 14
+        {//cancel all states
+            for (std::vector<std::string>::const_iterator it = states_vect.begin()
+                ; it != states_vect.end(); ++it)
+            {
+                Fred::cancel_object_state(objectId, *it);
+            }
         }
-        else
-        {
-            //error - bad input
-            throw std::runtime_error("queryBlockRequest: unable to find object state id");
-        }
+
+        //return true case 01, 02, 05, 06, 09, 10, 14
     }
 
-  Database::Query sql;
-  sql.buffer() << "SELECT " // ?? FOR UPDATE ??
-               << "  osr.state_id IN (" << states << ") AS st, "
-               << "  state_request_id "
-               << "FROM public_request_state_request_map ps "
-               << "JOIN public_request pr ON (pr.id=ps.block_request_id) "
-               << "JOIN object_state_request osr "
-               << "  ON (osr.id=ps.state_request_id AND osr.canceled ISNULL) "
-               << "WHERE osr.object_id=" << objectId << " "
-               << "ORDER BY st ASC ";
-
-
-  Database::Result result = conn.exec(sql);
-  // in case of unblocking, it's error when no block request states are found
-  if (!result.size() && unblock)
-    return false;
-
-  for (Database::Result::Iterator it = result.begin(); it != result.end(); ++it) {
-    Database::Row::Iterator col = (*it).begin();
-    if (!(bool)*col)
-      return false;
-
-    if ((result.size() == numStates && !unblock) || (result.size() != numStates && unblock))
-      return false;
-
-    if (!blockRequestID)
-      return true;
-
-    Database::ID stateRequestID = *(++col);
-    // close
-    Database::Query sql1;
-    sql1.buffer() << "UPDATE public_request_state_request_map "
-                  << "SET block_request_id=" << blockRequestID << " "
-                  << "WHERE state_request_id=" << stateRequestID;
-    conn.exec(sql1);
-
-    Database::Query sql2;
-    sql2.buffer() << "UPDATE object_state_request "
-                  << "SET canceled=CURRENT_TIMESTAMP "
-                  << "WHERE id= " << stateRequestID;
-    conn.exec(sql2);
-  }
   tx.commit();
   return true;
 }
