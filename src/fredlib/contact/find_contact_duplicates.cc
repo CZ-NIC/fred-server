@@ -39,11 +39,21 @@ std::set<std::string> FindAnyContactDuplicates::exec(Fred::OperationContext &_ct
         " JOIN contact c ON c.id = oreg.id"
         " JOIN object o ON o.id = c.id"
         " JOIN registrar r ON r.id = o.clid"
-        " LEFT JOIN object_state os ON os.object_id = o.id AND os.state_id IN "
+
+        " LEFT JOIN object_state forbidden_os ON forbidden_os.object_id = o.id AND forbidden_os.state_id IN "
             " (SELECT eos.id FROM enum_object_states eos WHERE eos.name = 'mojeidContact'::text "
             " OR eos.name = 'serverDeleteProhibited'::text OR eos.name = 'serverBlocked'::text) "//forbidden states of merged contact
-            " AND os.valid_from <= CURRENT_TIMESTAMP AND (os.valid_to IS NULL OR os.valid_to > CURRENT_TIMESTAMP) "
-        " WHERE os.id IS NULL ";
+            " AND forbidden_os.valid_from <= CURRENT_TIMESTAMP AND (forbidden_os.valid_to IS NULL OR forbidden_os.valid_to > CURRENT_TIMESTAMP) "
+
+        " LEFT JOIN object_state update_os ON update_os.object_id = o.id AND update_os.state_id IN "
+            " (SELECT eos.id FROM enum_object_states eos WHERE eos.name = 'serverUpdateProhibited'::text) "//prohibited update of merged contact
+            " AND update_os.valid_from <= CURRENT_TIMESTAMP AND (update_os.valid_to IS NULL OR update_os.valid_to > CURRENT_TIMESTAMP) "
+
+        " LEFT JOIN object_state transfer_os ON transfer_os.object_id = o.id AND transfer_os.state_id IN "
+            " (SELECT eos.id FROM enum_object_states eos WHERE eos.name = 'serverTransferProhibited'::text) "//prohibited transfer of merged contact
+            " AND transfer_os.valid_from <= CURRENT_TIMESTAMP AND (transfer_os.valid_to IS NULL OR transfer_os.valid_to > CURRENT_TIMESTAMP) "
+
+        " WHERE forbidden_os.id IS NULL ";
 
     if (registrar_handle_.isset()) {
         dup_params.push_back(registrar_handle_.get_value());
@@ -76,7 +86,9 @@ std::set<std::string> FindAnyContactDuplicates::exec(Fred::OperationContext &_ct
         " c.discloseemail,"
         " c.disclosevat,"
         " c.discloseident,"
-        " c.disclosenotifyemail"
+        " c.disclosenotifyemail,"
+        " update_os.id IS NOT NULL,"
+        " transfer_os.id IS NOT NULL"
         " HAVING array_upper(array_accum(oreg.name), 1) > 1";
     if (!exclude_contacts_.empty()) {
         std::vector<std::string> array_params;
