@@ -53,8 +53,6 @@ std::set<std::string> FindAnyContactDuplicates::exec(Fred::OperationContext &_ct
             " (SELECT eos.id FROM enum_object_states eos WHERE eos.name = 'serverTransferProhibited'::text) "//prohibited transfer of merged contact
             " AND transfer_os.valid_from <= CURRENT_TIMESTAMP AND (transfer_os.valid_to IS NULL OR transfer_os.valid_to > CURRENT_TIMESTAMP) "
 
-        " WHERE forbidden_os.id IS NULL ";
-
     if (registrar_handle_.isset()) {
         dup_params.push_back(registrar_handle_.get_value());
         dup_sql << " AND r.handle = $" << dup_params.size() << "::varchar";
@@ -88,8 +86,10 @@ std::set<std::string> FindAnyContactDuplicates::exec(Fred::OperationContext &_ct
         " c.discloseident,"
         " c.disclosenotifyemail,"
         " update_os.id IS NOT NULL,"
-        " transfer_os.id IS NOT NULL"
-        " HAVING array_upper(array_accum(oreg.name), 1) > 1";
+        " transfer_os.id IS NOT NULL,"
+        " forbidden_os.id IS NULL"
+        " HAVING array_upper(array_accum(oreg.name), 1) > 1 "
+        " AND forbidden_os.id IS NULL";
     if (!exclude_contacts_.empty()) {
         std::vector<std::string> array_params;
         for (std::set<std::string>::const_iterator i = exclude_contacts_.begin();
