@@ -627,6 +627,7 @@ void notify_registered_letters_manual_send_impl(const std::string& nameservice_h
                         % proc_reg_letters[i].letter_id % proc_reg_letters[i].file_id );
                 fm_failed_reg_letters.push_back(proc_reg_letters[i]);//save failed letter
                 proc_reg_letters.erase(proc_reg_letters.begin()+i);
+                --i;    // correction of index for deleted element
                 continue;
             }
 
