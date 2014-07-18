@@ -369,9 +369,9 @@
             for(std::size_t i = 0; i < letters.size(); ++i)
             {
                 unsigned long long file_id = letters[i].file_id;
+                unsigned long long letter_id = letters[i].letter_id;
 
-                std::string letter_file_name = std::string("letter_")
-                    + boost::lexical_cast<std::string>(file_id) + ".pdf";
+                std::string letter_file_name = boost::lexical_cast<std::string>(letter_id) + ".pdf";
 
                 std::vector<char> file_buffer;
                 try
