@@ -46,7 +46,11 @@ PKG_PROG_PKG_CONFIG
 
 
 # Checks for libraries.
-AC_CHECK_LIB([pthread], [pthread_exit])
+AC_CHECK_LIB([pthread], [pthread_exit], [],
+[
+    AC_MSG_ERROR([library pthread not found])
+])
+
 AC_CHECK_LIB([mpdec], [mpd_free], [],
 [
     AC_MSG_ERROR([library mpdec not found])
@@ -57,10 +61,21 @@ AC_CHECK_LIB([ssh], [ssh_buffer_free], [],
     AC_MSG_ERROR([library ssh not found])
 ])
 
-AC_CHECK_LIB([zip], [zip_close], [],
+AC_CHECK_HEADER([libssh/libssh.h],,[AC_MSG_ERROR([Header libssh/libssh.h not found])])
+
+AC_CHECK_LIB([z], [get_crc_table], [],
 [
-    AC_MSG_ERROR([library zip not found])
+    AC_MSG_ERROR([library zlib not found])
 ])
+
+AC_CHECK_HEADER([zlib.h],,[AC_MSG_ERROR([Header zlib.h not found])])
+
+AC_CHECK_LIB([minizip], [rand], [],
+[
+    AC_MSG_ERROR([library minizip not found])
+])
+
+AC_CHECK_HEADER([minizip/zip.h],,[AC_MSG_ERROR([Header minizip/zip.h not found])])
 
 
 # Check for omniORB (note that 4.1.1 is bugged for us)
@@ -457,6 +472,9 @@ fi
 # libmagic
 # AC_CHECK_LIB(magic, magic_open)
 # AC_CHECK_HEADERS(magic.h,,[AC_MSG_ERROR([magic.h not found])])
+
+AM_PROG_CC_C_O
+
 
 if test -z "$CFLAGS"; then
     CONFIGURE_CFLAGS="$MPD_WARN $MPD_CONFIG $MPD_OPT"

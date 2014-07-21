@@ -72,6 +72,12 @@ public:
                 ((CONFIG_PREFIX+"port,r").c_str(), boost::program_options
                             ::value<std::string>()
                         , "optys mail upload port")
+                ((CONFIG_PREFIX+"zip_tmp_dir,t").c_str(), boost::program_options
+                            ::value<std::string>()
+                        , "optys zip temp dir path")
+                ((CONFIG_PREFIX+"cleanup_zip_tmp_dir,c").c_str(), boost::program_options
+                            ::value<std::string>()
+                        , "remove *.zip files in optys zip temp dir before new zip file is created (true/false)")
                  ;
         return opts_descs;
     }//get_options_description

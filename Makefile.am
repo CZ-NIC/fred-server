@@ -515,7 +515,6 @@ util_hp_crc32_LDADD = \
 #
 # util/hp/crc32
 
-
 # src/corba/util/libcorbautil.a
 #
 src_corba_util_libcorbautil_a_SOURCES = \
@@ -1844,7 +1843,7 @@ src_cli_admin_fred_admin_LDADD = \
 		$(BOOST_SERIALIZATION_LIB) \
 		$(POSTGRESQL_LIB) \
 		$(BOOST_SYSTEM_LIB) \
-		-lresolv -lssh -lzip
+		-lresolv
 #
 # src/cli_admin/fred-admin
 

@@ -25,17 +25,24 @@
 #include <stdexcept>
 #include <algorithm>
 #include <sstream>
+#include <fstream>
 #include <iostream>
 #include <iterator>
 #include <iomanip>
 #include <sys/stat.h>
+#include <errno.h>
 #include <boost/shared_ptr.hpp>
+#include <boost/format.hpp>
+#include <boost/utility.hpp>
 
 #include <libssh/libssh.h>
-#include <zip.h>
+
+#include "util/subprocess.h"
+#include <minizip/zip.h>
 
 
 #include "upload_client.h"
+
 
     struct ScpSessionDeleter
     {
@@ -216,10 +223,182 @@
         }
     };
 
-    OptysUploadClient::OptysUploadClient(const std::string& host, int port, const std::string& user, const std::string& password)
+    class CreateZipFile : boost::noncopyable
     {
-        std::string file_name("test.txt");
-        std::string file_content("test test");
-        SshSession(host, port, user, password).get_scp_write().upload_file(file_name, file_content);
+        zipFile  zip_archive_;
+    public:
+        zipFile get()
+        {
+            return zip_archive_;
+        }
+
+        ~CreateZipFile()
+        {
+            if(zip_archive_ != NULL)
+            {
+                if(zipClose(zip_archive_, NULL) != ZIP_OK)
+                {
+                    std::cerr << "zipClose failed" << std::endl;
+                }
+            }
+
+        }
+        CreateZipFile(const std::string& zip_file_name)
+        {
+            std::cout << "CreateZipFile zip_file_name: " << zip_file_name << std::endl;
+            zip_archive_ = zipOpen64(zip_file_name.c_str(), APPEND_STATUS_CREATE);
+            if(zip_archive_ == NULL)
+            {
+                std::string errmsg("zipOpen64 with APPEND_STATUS_CREATE flag failed, filename: ");
+                errmsg += zip_file_name;
+                throw std::runtime_error(errmsg);
+            }
+            std::cout << "CreateZipFile zip_archive_: " << zip_archive_ << std::endl;
+        }
+
+        class OpenNewFileInZipWithClose : boost::noncopyable
+        {
+            zipFile  _zip_archive_;
+        public:
+            OpenNewFileInZipWithClose(zipFile  zip_archive, const std::string& file_name)
+            : _zip_archive_(zip_archive)
+            {
+                zip_fileinfo zi = {};//zero all struct fields init
+
+                if(zipOpenNewFileInZip(_zip_archive_, file_name.c_str(), &zi,
+                        NULL, 0, NULL, 0, NULL /* comment*/,
+                        Z_DEFLATED, Z_DEFAULT_COMPRESSION) != ZIP_OK)
+                {
+                    std::string errmsg("zipOpenNewFileInZip failed filename: ");
+                    errmsg += file_name;
+                    throw std::runtime_error(errmsg);
+                }
+            }
+
+            ~OpenNewFileInZipWithClose()
+            {
+                if(zipCloseFileInZip(_zip_archive_) != ZIP_OK)
+                {
+                    std::cerr << "zipCloseFileInZip failed." << std::endl;
+                }
+            }
+        };
+
+        CreateZipFile& add_file(const std::string& file_name, const std::vector<char>& file_content )
+        {
+            std::cout << "CreateZipFile add_file: " << file_name << std::endl;
+            OpenNewFileInZipWithClose new_file_in_zip(zip_archive_, file_name);
+
+            if(zipWriteInFileInZip(zip_archive_, &file_content[0], file_content.size()) != ZIP_OK)
+            {
+                std::string errmsg("zipWriteInFileInZip failed filename: ");
+                errmsg += file_name;
+                throw std::runtime_error(errmsg);
+            }
+
+            return *this;
+        };
+    };
+
+    OptysUploadClient::OptysUploadClient(const std::string& host, int port,
+        const std::string& user, const std::string& password, const std::string& zip_tmp_dir,
+        bool cleanup_zip_tmp_dir, boost::shared_ptr<Fred::File::Manager> file_manager)
+    : host_(host)
+    , port_(port)
+    , user_(user)
+    , password_(password)
+    , zip_tmp_dir_(zip_tmp_dir)
+    , cleanup_zip_tmp_dir_(cleanup_zip_tmp_dir)
+    , file_manager_(file_manager)
+    {
+        if(cleanup_zip_tmp_dir_)
+        {
+            SubProcessOutput output = ShellCmd((std::string("rm -f ")+zip_tmp_dir_+"/*.zip").c_str(), 3600).execute();
+            if (!output.stderr.empty())
+            {
+                throw std::runtime_error(std::string("cleanup_zip_tmp_dir failed: ")+output.stderr);
+            }
+        }
+
+    }
+
+    OptysUploadClient& OptysUploadClient::zip_letters(
+        const std::map<std::string,Fred::Messages::LetterProcInfo>& message_type_letters_map
+        , const std::string& zip_filename_before_message_type
+        , const std::string& zip_filename_after_message_type)
+    {
+        //zip filename
+        for(std::map<std::string,Fred::Messages::LetterProcInfo>::const_iterator
+            ci = message_type_letters_map.begin();
+            ci != message_type_letters_map.end(); ++ci)
+        {
+            std::string batch_id = zip_filename_before_message_type+ ci->first + zip_filename_after_message_type;//have to match batch_id in set status
+            std::string zip_file_name = batch_id + ".zip";
+
+            CreateZipFile zip_file(zip_tmp_dir_+"/" + zip_file_name);
+            //process letter ids
+            Fred::Messages::LetterProcInfo letters = ci->second;
+            for(std::size_t i = 0; i < letters.size(); ++i)
+            {
+                unsigned long long file_id = letters[i].file_id;
+
+                std::string letter_file_name = std::string("letter_")
+                    + boost::lexical_cast<std::string>(file_id) + ".pdf";
+
+                std::vector<char> file_buffer;
+                try
+                {
+                    file_manager_->download(file_id,file_buffer);
+                }
+                catch (std::exception &ex)
+                {
+                    LOGGER(PACKAGE).error(boost::format("filemanager download: '%1%' error processing letter_id: %2% file_id: %3%") % ex.what()
+                         % letters[i].letter_id % letters[i].file_id );
+                    fm_failed_letters_by_batch_id_[batch_id].push_back(letters[i]);//save failed letter
+                    continue;
+                }
+
+                zip_file.add_file(letter_file_name, file_buffer);
+            }//for
+
+            //zip_close(zip_file.get());
+
+            zip_file_names_.push_back(zip_file_name);//set zip file for upload
+        }
+
+
+        return *this;
+    }
+
+    std::map<std::string, Fred::Messages::LetterProcInfo>  OptysUploadClient::scp_upload()
+    {
+        ScpWriteSession scp_write_session = SshSession(host_, port_, user_, password_).get_scp_write();
+
+        for(std::vector<std::string >::const_iterator ci = zip_file_names_.begin();
+                ci != zip_file_names_.end(); ++ci)
+        {
+            //open zip file
+            std::ifstream zip_file_stream;
+            std::string zip_file_name = zip_tmp_dir_+"/" + (*ci);
+            zip_file_stream.open (zip_file_name.c_str(), std::ios::in | std::ios::binary);
+            if(!zip_file_stream.is_open()) throw std::runtime_error("zip_file_stream.open failed, "
+                "unable to open file: "+ zip_file_name);
+
+            //find end of zip file
+            std::string zip_file_content;//buffer
+            zip_file_stream.seekg (0, std::ios::end);
+            long long zip_file_length = zip_file_stream.tellg();
+            zip_file_stream.seekg (0, std::ios::beg);//reset
+
+            //allocate zip file buffer
+            zip_file_content.resize(zip_file_length);
+
+            //read zip file
+            zip_file_stream.read(&zip_file_content[0], zip_file_content.size());
+
+            //upload
+            scp_write_session.upload_file((*ci), zip_file_content);
+        }
+        return fm_failed_letters_by_batch_id_;
     }
 
