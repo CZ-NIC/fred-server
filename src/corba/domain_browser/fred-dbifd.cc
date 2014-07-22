@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
     FakedArgs fa; //producing faked args with unrecognized ones
     try
     {   //config
-        fa = CfgArgs::instance<HandleHelpArg>(global_hpv)->handle(argc, argv);
+        fa = CfgArgs::init<HandleHelpArg>(global_hpv)->handle(argc, argv);
 
         // setting up logger
         setup_logging(CfgArgs::instance());
@@ -72,10 +72,14 @@ int main(int argc, char *argv[])
         unsigned int keyset_list_limit = CfgArgs::instance()
             ->get_handler_ptr_by_type<HandleDomainBrowserArgs>()->keyset_list_limit;
 
+        //contact list chunk size
+        unsigned int contact_list_limit = CfgArgs::instance()
+            ->get_handler_ptr_by_type<HandleDomainBrowserArgs>()->contact_list_limit;
+
         //create server object with poa and nameservice registration
         CorbaContainer::get_instance()
             ->register_server(new Registry::DomainBrowser::Server_i(server_name, update_registrar_handle,
-                    domain_list_limit, nsset_list_limit, keyset_list_limit)
+                    domain_list_limit, nsset_list_limit, keyset_list_limit, contact_list_limit)
             , "DomainBrowser");
         run_server(CfgArgs::instance(), CorbaContainer::get_instance());
 

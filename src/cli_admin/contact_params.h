@@ -25,6 +25,7 @@
 #define CONTACT_PARAMS_H_
 
 #include "util/types/optional.h"
+#include "src/admin/contact/verification/fill_check_queue.h"
 
 /**
  * \class ContactListArgs
@@ -161,6 +162,71 @@ struct ContactMergeArgs
           verbose(_verbose)
     {
     }
+};
+
+
+/**
+ * parameters for appropriate command options Handle#CLASS_NAME#Grp
+ */
+
+struct ContactVerificationFillQueueArgs {
+    std::string             testsuite_handle;
+    unsigned                max_queue_length;
+    std::string             country_code;
+    std::vector<std::string>   contact_states;
+    std::vector<std::string>   contact_roles;
+
+    ContactVerificationFillQueueArgs( )
+        : max_queue_length(0)
+    { }
+
+    ContactVerificationFillQueueArgs(
+        std::string             _testsuite_name,
+        unsigned                _max_queue_length,
+        std::string             _country_code,
+        std::vector<std::string>   _contact_states,
+        std::vector<std::string>   _contact_roles
+    ) :
+        testsuite_handle(_testsuite_name),
+        max_queue_length(_max_queue_length),
+        country_code(_country_code),
+        contact_states(_contact_states),
+        contact_roles(_contact_roles)
+    { }
+};
+
+
+/**
+ * parameters for appropriate command options Handle#CLASS_NAME#Grp
+ */
+
+struct ContactVerificationEnqueueCheckArgs {
+    long long contact_id;
+    std::string testsuite_handle;
+
+    ContactVerificationEnqueueCheckArgs( )
+        : contact_id(0)
+    { }
+
+    ContactVerificationEnqueueCheckArgs( long long _contact_id, const std::string& _testsuite_name )
+        : contact_id(_contact_id), testsuite_handle(_testsuite_name)
+    { }
+};
+
+
+/**
+ * parameters for appropriate command options Handle#CLASS_NAME#Grp
+ */
+
+struct ContactVerificationStartEnqueuedChecksArgs {
+    std::string cz_address_mvcr_xml_path;
+
+    ContactVerificationStartEnqueuedChecksArgs()
+    { }
+
+    ContactVerificationStartEnqueuedChecksArgs( const std::string& _cz_address_mvcr_xml_path )
+        : cz_address_mvcr_xml_path(_cz_address_mvcr_xml_path)
+    { }
 };
 
 

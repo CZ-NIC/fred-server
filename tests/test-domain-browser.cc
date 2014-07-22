@@ -38,6 +38,7 @@
 #include "src/fredlib/object_state/object_state_name.h"
 #include "src/fredlib/object_state/object_has_state.h"
 #include "src/fredlib/object_state/create_object_state_request_id.h"
+#include "src/fredlib/object_state/cancel_object_state_request_id.h"
 #include "src/fredlib/registrar/create_registrar.h"
 #include "src/fredlib/registrar/info_registrar.h"
 #include "src/fredlib/registrar/info_registrar_diff.h"
@@ -75,6 +76,7 @@ struct domain_browser_impl_instance_fixture
     unsigned int domain_list_limit;
     unsigned int nsset_list_limit;
     unsigned int keyset_list_limit;
+    unsigned int contact_list_limit;
     Registry::DomainBrowserImpl::DomainBrowser impl;
 
     domain_browser_impl_instance_fixture()
@@ -83,10 +85,13 @@ struct domain_browser_impl_instance_fixture
     , domain_list_limit(CfgArgs::instance()
         ->get_handler_ptr_by_type<HandleDomainBrowserArgs>()->domain_list_limit)//domain list chunk size
     , nsset_list_limit(CfgArgs::instance()
-            ->get_handler_ptr_by_type<HandleDomainBrowserArgs>()->nsset_list_limit)//nsset list chunk size
+        ->get_handler_ptr_by_type<HandleDomainBrowserArgs>()->nsset_list_limit)//nsset list chunk size
     , keyset_list_limit(CfgArgs::instance()
-                ->get_handler_ptr_by_type<HandleDomainBrowserArgs>()->keyset_list_limit)//keyset list chunk size
-    , impl(server_name, update_registrar_handle, domain_list_limit, nsset_list_limit, keyset_list_limit)
+        ->get_handler_ptr_by_type<HandleDomainBrowserArgs>()->keyset_list_limit)//keyset list chunk size
+    , contact_list_limit(CfgArgs::instance()
+        ->get_handler_ptr_by_type<HandleDomainBrowserArgs>()->contact_list_limit)//contact list chunk size
+
+    , impl(server_name, update_registrar_handle, domain_list_limit, nsset_list_limit, keyset_list_limit, contact_list_limit)
     {}
 };
 
@@ -175,6 +180,7 @@ struct admin_contact_fixture
 : virtual test_registrar_fixture
 {
     std::string test_contact_handle;
+    Fred::InfoContactOutput test_contact_info;
     admin_contact_fixture()
     : test_contact_handle(std::string("TEST-ADMIN-HANDLE")+xmark)
     {
@@ -186,6 +192,7 @@ struct admin_contact_fixture
             .set_city("Praha").set_postalcode("11150").set_country("CZ")
             .set_discloseaddress(true)
             .exec(ctx);
+        test_contact_info = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
         ctx.commit_transaction();//commit fixture
     }
     ~admin_contact_fixture()
@@ -204,8 +211,12 @@ struct nsset_fixture
         Fred::CreateNsset(test_nsset_handle, test_registrar_handle)
             .set_tech_contacts(Util::vector_of<std::string>(admin_contact_fixture::test_contact_handle))
             .set_dns_hosts(Util::vector_of<Fred::DnsHost>
-            (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.3")("127.1.1.3"))) //add_dns
-            (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.4")("127.1.1.4"))) //add_dns
+            (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<boost::asio::ip::address>
+                (boost::asio::ip::address::from_string("127.0.0.3"))
+                (boost::asio::ip::address::from_string("127.1.1.3")))) //add_dns
+            (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<boost::asio::ip::address>
+                (boost::asio::ip::address::from_string("127.0.0.4"))
+                (boost::asio::ip::address::from_string("127.1.1.4")))) //add_dns
             ).exec(ctx);
 
         nsset_info = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
@@ -428,15 +439,15 @@ BOOST_FIXTURE_TEST_CASE(get_my_contact_detail, get_my_contact_detail_fixture )
     BOOST_CHECK(cd.vat.get_value_or_default() == my_contact_info.info_contact_data.vat.get_value_or_default());
     BOOST_CHECK(cd.ssntype.get_value_or_default() == my_contact_info.info_contact_data.ssntype.get_value_or_default());
     BOOST_CHECK(cd.ssn.get_value_or_default() == my_contact_info.info_contact_data.ssn.get_value_or_default());
-    BOOST_CHECK(cd.disclose_flags.name == my_contact_info.info_contact_data.disclosename.get_value_or_default());
-    BOOST_CHECK(cd.disclose_flags.organization == my_contact_info.info_contact_data.discloseorganization.get_value_or_default());
-    BOOST_CHECK(cd.disclose_flags.email == my_contact_info.info_contact_data.discloseemail.get_value_or_default());
-    BOOST_CHECK(cd.disclose_flags.address == my_contact_info.info_contact_data.discloseaddress.get_value_or_default());
-    BOOST_CHECK(cd.disclose_flags.telephone == my_contact_info.info_contact_data.disclosetelephone.get_value_or_default());
-    BOOST_CHECK(cd.disclose_flags.fax == my_contact_info.info_contact_data.disclosefax.get_value_or_default());
-    BOOST_CHECK(cd.disclose_flags.ident == my_contact_info.info_contact_data.discloseident.get_value_or_default());
-    BOOST_CHECK(cd.disclose_flags.vat == my_contact_info.info_contact_data.disclosevat.get_value_or_default());
-    BOOST_CHECK(cd.disclose_flags.notify_email == my_contact_info.info_contact_data.disclosenotifyemail.get_value_or_default());
+    BOOST_CHECK(cd.disclose_flags.name == my_contact_info.info_contact_data.disclosename);
+    BOOST_CHECK(cd.disclose_flags.organization == my_contact_info.info_contact_data.discloseorganization);
+    BOOST_CHECK(cd.disclose_flags.email == my_contact_info.info_contact_data.discloseemail);
+    BOOST_CHECK(cd.disclose_flags.address == my_contact_info.info_contact_data.discloseaddress);
+    BOOST_CHECK(cd.disclose_flags.telephone == my_contact_info.info_contact_data.disclosetelephone);
+    BOOST_CHECK(cd.disclose_flags.fax == my_contact_info.info_contact_data.disclosefax);
+    BOOST_CHECK(cd.disclose_flags.ident == my_contact_info.info_contact_data.discloseident);
+    BOOST_CHECK(cd.disclose_flags.vat == my_contact_info.info_contact_data.disclosevat);
+    BOOST_CHECK(cd.disclose_flags.notify_email == my_contact_info.info_contact_data.disclosenotifyemail);
     BOOST_CHECK(cd.states.find_first_of("MojeID contact") != std::string::npos);
     BOOST_CHECK(cd.state_codes.find_first_of("mojeidContact") != std::string::npos);
     BOOST_CHECK(cd.is_owner == true);
@@ -489,15 +500,15 @@ BOOST_FIXTURE_TEST_CASE(get_contact_detail, get_contact_fixture )
     BOOST_CHECK(cd.vat.get_value_or_default() == test_contact_info.info_contact_data.vat.get_value_or_default());
     BOOST_CHECK(cd.ssntype.get_value_or_default() == test_contact_info.info_contact_data.ssntype.get_value_or_default());
     BOOST_CHECK(cd.ssn.get_value_or_default() == test_contact_info.info_contact_data.ssn.get_value_or_default());
-    BOOST_CHECK(cd.disclose_flags.name == test_contact_info.info_contact_data.disclosename.get_value_or_default());
-    BOOST_CHECK(cd.disclose_flags.organization == test_contact_info.info_contact_data.discloseorganization.get_value_or_default());
-    BOOST_CHECK(cd.disclose_flags.email == test_contact_info.info_contact_data.discloseemail.get_value_or_default());
-    BOOST_CHECK(cd.disclose_flags.address == test_contact_info.info_contact_data.discloseaddress.get_value_or_default());
-    BOOST_CHECK(cd.disclose_flags.telephone == test_contact_info.info_contact_data.disclosetelephone.get_value_or_default());
-    BOOST_CHECK(cd.disclose_flags.fax == test_contact_info.info_contact_data.disclosefax.get_value_or_default());
-    BOOST_CHECK(cd.disclose_flags.ident == test_contact_info.info_contact_data.discloseident.get_value_or_default());
-    BOOST_CHECK(cd.disclose_flags.vat == test_contact_info.info_contact_data.disclosevat.get_value_or_default());
-    BOOST_CHECK(cd.disclose_flags.notify_email == test_contact_info.info_contact_data.disclosenotifyemail.get_value_or_default());
+    BOOST_CHECK(cd.disclose_flags.name == test_contact_info.info_contact_data.disclosename);
+    BOOST_CHECK(cd.disclose_flags.organization == test_contact_info.info_contact_data.discloseorganization);
+    BOOST_CHECK(cd.disclose_flags.email == test_contact_info.info_contact_data.discloseemail);
+    BOOST_CHECK(cd.disclose_flags.address == test_contact_info.info_contact_data.discloseaddress);
+    BOOST_CHECK(cd.disclose_flags.telephone == test_contact_info.info_contact_data.disclosetelephone);
+    BOOST_CHECK(cd.disclose_flags.fax == test_contact_info.info_contact_data.disclosefax);
+    BOOST_CHECK(cd.disclose_flags.ident == test_contact_info.info_contact_data.discloseident);
+    BOOST_CHECK(cd.disclose_flags.vat == test_contact_info.info_contact_data.disclosevat);
+    BOOST_CHECK(cd.disclose_flags.notify_email == test_contact_info.info_contact_data.disclosenotifyemail);
     BOOST_CHECK(cd.states.find_first_of("MojeID contact") == std::string::npos);
     BOOST_CHECK(cd.state_codes.find_first_of("mojeidContact") == std::string::npos);
     BOOST_CHECK(cd.is_owner == false);
@@ -961,15 +972,15 @@ BOOST_FIXTURE_TEST_CASE(set_contact_disclose_flags, set_contact_disclose_flags_f
     impl.setContactDiscloseFlags(user_contact_info.info_contact_data.id,set_flags, 42);
 
     Fred::InfoContactOutput my_contact_info = Fred::InfoContactByHandle(user_contact_handle).exec(ctx);
-    BOOST_CHECK(!my_contact_info.info_contact_data.disclosename.get_value_or_default());
-    BOOST_CHECK(!my_contact_info.info_contact_data.discloseorganization.get_value_or_default());
-    BOOST_CHECK(my_contact_info.info_contact_data.discloseemail.get_value_or_default());
-    BOOST_CHECK(my_contact_info.info_contact_data.discloseaddress.get_value_or_default());
-    BOOST_CHECK(my_contact_info.info_contact_data.disclosetelephone.get_value_or_default());
-    BOOST_CHECK(my_contact_info.info_contact_data.disclosefax.get_value_or_default());
-    BOOST_CHECK(my_contact_info.info_contact_data.discloseident.get_value_or_default());
-    BOOST_CHECK(my_contact_info.info_contact_data.disclosevat.get_value_or_default());
-    BOOST_CHECK(my_contact_info.info_contact_data.disclosenotifyemail.get_value_or_default());
+    BOOST_CHECK(!my_contact_info.info_contact_data.disclosename);
+    BOOST_CHECK(!my_contact_info.info_contact_data.discloseorganization);
+    BOOST_CHECK(my_contact_info.info_contact_data.discloseemail);
+    BOOST_CHECK(my_contact_info.info_contact_data.discloseaddress);
+    BOOST_CHECK(my_contact_info.info_contact_data.disclosetelephone);
+    BOOST_CHECK(my_contact_info.info_contact_data.disclosefax);
+    BOOST_CHECK(my_contact_info.info_contact_data.discloseident);
+    BOOST_CHECK(my_contact_info.info_contact_data.disclosevat);
+    BOOST_CHECK(my_contact_info.info_contact_data.disclosenotifyemail);
     BOOST_CHECK(!my_contact_info.logd_request_id.isnull() && my_contact_info.logd_request_id.get_value() == 42);
 }
 
@@ -1005,15 +1016,15 @@ BOOST_FIXTURE_TEST_CASE(set_validated_contact_disclose_flags, set_validated_cont
     impl.setContactDiscloseFlags(user_contact_info.info_contact_data.id,set_flags, 0);
 
     Fred::InfoContactOutput my_contact_info = Fred::InfoContactByHandle(user_contact_handle).exec(ctx);
-    BOOST_CHECK(!my_contact_info.info_contact_data.disclosename.get_value_or_default());
-    BOOST_CHECK(!my_contact_info.info_contact_data.discloseorganization.get_value_or_default());
-    BOOST_CHECK(my_contact_info.info_contact_data.discloseemail.get_value_or_default());
-    BOOST_CHECK(my_contact_info.info_contact_data.discloseaddress.get_value_or_default());
-    BOOST_CHECK(my_contact_info.info_contact_data.disclosetelephone.get_value_or_default());
-    BOOST_CHECK(my_contact_info.info_contact_data.disclosefax.get_value_or_default());
-    BOOST_CHECK(my_contact_info.info_contact_data.discloseident.get_value_or_default());
-    BOOST_CHECK(my_contact_info.info_contact_data.disclosevat.get_value_or_default());
-    BOOST_CHECK(my_contact_info.info_contact_data.disclosenotifyemail.get_value_or_default());
+    BOOST_CHECK(!my_contact_info.info_contact_data.disclosename);
+    BOOST_CHECK(!my_contact_info.info_contact_data.discloseorganization);
+    BOOST_CHECK(my_contact_info.info_contact_data.discloseemail);
+    BOOST_CHECK(my_contact_info.info_contact_data.discloseaddress);
+    BOOST_CHECK(my_contact_info.info_contact_data.disclosetelephone);
+    BOOST_CHECK(my_contact_info.info_contact_data.disclosefax);
+    BOOST_CHECK(my_contact_info.info_contact_data.discloseident);
+    BOOST_CHECK(my_contact_info.info_contact_data.disclosevat);
+    BOOST_CHECK(my_contact_info.info_contact_data.disclosenotifyemail);
 }
 
 struct set_contact_disclose_flags_user_not_in_mojeid_fixture
@@ -1622,8 +1633,12 @@ struct admin_nsset_fixture
         Fred::CreateNsset(test_nsset_handle, test_registrar_handle)
             .set_tech_contacts(Util::vector_of<std::string>(admin_contact_fixture::test_contact_handle)(user_contact_handle))
             .set_dns_hosts(Util::vector_of<Fred::DnsHost>
-            (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.3")("127.1.1.3"))) //add_dns
-            (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.4")("127.1.1.4"))) //add_dns
+                (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<boost::asio::ip::address>
+                    (boost::asio::ip::address::from_string("127.0.0.3"))
+                    (boost::asio::ip::address::from_string("127.1.1.3")))) //add_dns
+                (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<boost::asio::ip::address>
+                    (boost::asio::ip::address::from_string("127.0.0.4"))
+                    (boost::asio::ip::address::from_string("127.1.1.4")))) //add_dns
             ).exec(ctx);
 
         nsset_info = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
@@ -2131,7 +2146,7 @@ BOOST_FIXTURE_TEST_CASE(get_my_domain_list, get_my_domains_fixture )
 {
     Fred::OperationContext ctx;
     std::vector<std::vector<std::string> > domain_list_out;
-    bool limit_exceeded = impl.getDomainList(user_contact_info.info_contact_data.id,
+    bool limit_exceeded = impl.getDomainList(user_contact_info.info_contact_data.id, Optional<unsigned long long>(),
             Optional<unsigned long long>(), Optional<unsigned long long>(),"CS",0,domain_list_out);
 
     std::ostringstream list_out;
@@ -2189,6 +2204,71 @@ BOOST_FIXTURE_TEST_CASE(get_my_domain_list, get_my_domains_fixture )
     }
 }
 
+BOOST_FIXTURE_TEST_CASE(get_my_domain_list_by_contact, get_my_domains_fixture )
+{
+    Fred::OperationContext ctx;
+    std::vector<std::vector<std::string> > domain_list_out;
+    bool limit_exceeded = impl.getDomainList(user_contact_info.info_contact_data.id,
+            Optional<unsigned long long>(admin_contact_fixture::test_contact_info.info_contact_data.id),
+            Optional<unsigned long long>(),
+            Optional<unsigned long long>(),"CS",0,domain_list_out);
+
+    std::ostringstream list_out;
+    list_out << "domain_list_out: \n";
+
+    for(unsigned long long i = 0; i < domain_list_out.size(); ++i)
+    {
+        for(unsigned long long j = 0; j < domain_list_out.at(i).size(); ++j)
+        {
+            list_out << " " <<domain_list_out.at(i).at(j);
+        }
+
+        list_out << "\n";
+    }
+    BOOST_MESSAGE(list_out.str());
+    BOOST_MESSAGE("limit_exceeded: " << limit_exceeded);
+
+
+    BOOST_CHECK(domain_list_out.at(0).at(3) == "deleteCandidate");
+    BOOST_CHECK(boost::gregorian::from_simple_string(domain_list_out.at(0).at(4)) == (map_at(domain_info,domain_list_out.at(0).at(1)).info_domain_data.expiration_date + boost::gregorian::days(registration_protection)));
+
+    BOOST_CHECK(domain_list_out.at(0).at(9).find("Doména je po expiraci") != std::string::npos);
+    BOOST_CHECK(domain_list_out.at(0).at(9).find("Doména není generována do zóny") != std::string::npos);
+
+    BOOST_CHECK(domain_list_out.at(1).at(3) == "outzone");
+    BOOST_CHECK(boost::gregorian::from_simple_string(domain_list_out.at(1).at(4)) == (map_at(domain_info,domain_list_out.at(1).at(1)).info_domain_data.expiration_date + boost::gregorian::days(outzone_protection)));
+
+    BOOST_CHECK(domain_list_out.at(1).at(9).find("Doména je po expiraci") != std::string::npos);
+    BOOST_CHECK(domain_list_out.at(1).at(9).find("Doména je blokována") != std::string::npos);
+
+    BOOST_CHECK(domain_list_out.at(2).at(3) == "expired");
+    BOOST_CHECK(boost::gregorian::from_simple_string(domain_list_out.at(2).at(4)) == (map_at(domain_info,domain_list_out.at(2).at(1)).info_domain_data.expiration_date));
+    BOOST_CHECK(domain_list_out.at(2).at(9) == "");
+    for(unsigned long long i = 0; i < domain_list_out.size(); ++i)
+    {
+        BOOST_CHECK(domain_list_out.at(i).at(0) == boost::lexical_cast<std::string>(map_at(domain_info,domain_list_out.at(i).at(1)).info_domain_data.id));
+        BOOST_CHECK(domain_list_out.at(i).at(1) == map_at(domain_info,domain_list_out.at(i).at(1)).info_domain_data.fqdn);
+
+        BOOST_CHECK(domain_list_out.at(i).at(5) == "t");//have keyset
+        BOOST_CHECK(domain_list_out.at(i).at(6) == "admin");//role
+        BOOST_CHECK(domain_list_out.at(i).at(7) == test_registrar_handle);//registrar handle
+        BOOST_CHECK(domain_list_out.at(i).at(8) == boost::algorithm::replace_first_copy(test_registrar_handle, "-HANDLE", " NAME"));//registrar name
+
+        if(i%2)
+        {
+            BOOST_MESSAGE(domain_list_out.at(i).at(10));
+            BOOST_CHECK(domain_list_out.at(i).at(10) == "t");
+            if(i > 2) BOOST_CHECK(domain_list_out.at(i).at(9) == "Doména je blokována");
+        }
+        else
+        {
+            BOOST_MESSAGE(domain_list_out.at(i).at(10));
+            BOOST_CHECK(domain_list_out.at(i).at(10) == "f");
+        }
+    }
+}
+
+
 BOOST_FIXTURE_TEST_CASE(get_my_domain_list_by_nsset, get_my_domains_fixture )
 {
     //add user contact as nsset admin
@@ -2201,6 +2281,7 @@ BOOST_FIXTURE_TEST_CASE(get_my_domain_list_by_nsset, get_my_domains_fixture )
     Fred::OperationContext ctx;
     std::vector<std::vector<std::string> > domain_list_out;
     bool limit_exceeded = impl.getDomainList(user_contact_info.info_contact_data.id,
+            Optional<unsigned long long>(),
             Optional<unsigned long long>(nsset_info.info_nsset_data.id),
             Optional<unsigned long long>(),"CS",0,domain_list_out);
 
@@ -2271,6 +2352,7 @@ BOOST_FIXTURE_TEST_CASE(get_my_domain_list_by_keyset, get_my_domains_fixture )
     Fred::OperationContext ctx;
     std::vector<std::vector<std::string> > domain_list_out;
     bool limit_exceeded = impl.getDomainList(user_contact_info.info_contact_data.id,
+            Optional<unsigned long long>(),
             Optional<unsigned long long>(),
             Optional<unsigned long long>(keyset_info.info_keyset_data.id),"CS",0,domain_list_out);
 
@@ -2343,6 +2425,7 @@ BOOST_FIXTURE_TEST_CASE(get_domain_list_user_not_in_mojeid, get_domain_list_user
         Fred::OperationContext ctx;
         std::vector<std::vector<std::string> > domain_list_out;
         impl.getDomainList(user_contact_info.info_contact_data.id,
+            Optional<unsigned long long>(),
             Optional<unsigned long long>(),Optional<unsigned long long>()
             ,"CS",0,domain_list_out);
 
@@ -2365,6 +2448,7 @@ BOOST_FIXTURE_TEST_CASE(get_domain_list_for_nsset_user_not_nsset_admin, get_my_d
         Fred::OperationContext ctx;
         std::vector<std::vector<std::string> > domain_list_out;
         impl.getDomainList(user_contact_info.info_contact_data.id,
+            Optional<unsigned long long>(),
             Optional<unsigned long long>(nsset_info.info_nsset_data.id),
             Optional<unsigned long long>(),"CS",0,domain_list_out);
 
@@ -2388,11 +2472,35 @@ BOOST_FIXTURE_TEST_CASE(get_domain_list_for_keyset_user_not_keyset_admin, get_my
         std::vector<std::vector<std::string> > domain_list_out;
         impl.getDomainList(user_contact_info.info_contact_data.id,
             Optional<unsigned long long>(),
+            Optional<unsigned long long>(),
             Optional<unsigned long long>(keyset_info.info_keyset_data.id),"CS",0,domain_list_out);
 
         BOOST_ERROR("unreported missing keyset admin contact");
     }
     catch( const Registry::DomainBrowserImpl::AccessDenied& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
+/**
+ * test getDomainList for not existing contact
+ */
+BOOST_FIXTURE_TEST_CASE(get_domain_list_for_not_existing_contact, get_my_domains_fixture )
+{
+    try
+    {
+        Fred::OperationContext ctx;
+        std::vector<std::vector<std::string> > domain_list_out;
+        impl.getDomainList(user_contact_info.info_contact_data.id,
+            Optional<unsigned long long>(0),
+            Optional<unsigned long long>(),
+            Optional<unsigned long long>(),"CS",0,domain_list_out);
+
+        BOOST_ERROR("unreported missing contact");
+    }
+    catch( const Registry::DomainBrowserImpl::ObjectNotExists& ex)
     {
         BOOST_CHECK(true);
         BOOST_MESSAGE(boost::diagnostic_information(ex));
@@ -2423,8 +2531,12 @@ struct get_my_nssets_fixture
             Fred::CreateNsset(nsset_handle.str(), test_registrar_handle)
                 .set_tech_contacts(Util::vector_of<std::string>(admin_contact_fixture::test_contact_handle)(user_contact_handle))
                 .set_dns_hosts(Util::vector_of<Fred::DnsHost>
-                (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.3")("127.1.1.3"))) //add_dns
-                (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<std::string>("127.0.0.4")("127.1.1.4"))) //add_dns
+                    (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<boost::asio::ip::address>
+                        (boost::asio::ip::address::from_string("127.0.0.3"))
+                        (boost::asio::ip::address::from_string("127.1.1.3")))) //add_dns
+                    (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<boost::asio::ip::address>
+                        (boost::asio::ip::address::from_string("127.0.0.4"))
+                        (boost::asio::ip::address::from_string("127.1.1.4")))) //add_dns
                 ).exec(ctx);
 
             nsset_info[nsset_handle.str()]= Fred::InfoNssetByHandle(nsset_handle.str()).exec(ctx);
@@ -2459,7 +2571,7 @@ BOOST_FIXTURE_TEST_CASE(get_my_nsset_list, get_my_nssets_fixture )
 {
     Fred::OperationContext ctx;
     std::vector<std::vector<std::string> > nsset_list_out;
-    bool limit_exceeded = impl.getNssetList(user_contact_info.info_contact_data.id,
+    bool limit_exceeded = impl.getNssetList(user_contact_info.info_contact_data.id, Optional<unsigned long long>(),
         "CS",0,nsset_list_out);
 
     std::ostringstream list_out;
@@ -2498,6 +2610,74 @@ BOOST_FIXTURE_TEST_CASE(get_my_nsset_list, get_my_nssets_fixture )
         }
     }
 }
+
+BOOST_FIXTURE_TEST_CASE(get_nsset_list_by_contact, get_my_nssets_fixture )
+{
+    Fred::OperationContext ctx;
+    std::vector<std::vector<std::string> > nsset_list_out;
+    bool limit_exceeded = impl.getNssetList(user_contact_info.info_contact_data.id,
+        Optional<unsigned long long>(admin_contact_fixture::test_contact_info.info_contact_data.id),
+        "CS",0,nsset_list_out);
+
+    std::ostringstream list_out;
+    list_out << "nsset_list_out: \n";
+
+    for(unsigned long long i = 0; i < nsset_list_out.size(); ++i)
+    {
+        for(unsigned long long j = 0; j < nsset_list_out.at(i).size(); ++j)
+        {
+            list_out << " " <<nsset_list_out.at(i).at(j);
+        }
+
+        list_out << "\n";
+    }
+    BOOST_MESSAGE(list_out.str());
+    BOOST_MESSAGE("limit_exceeded: " << limit_exceeded);
+
+    for(unsigned long long i = 0; i < nsset_list_out.size(); ++i)
+    {
+        BOOST_CHECK(nsset_list_out.at(i).at(0) == boost::lexical_cast<std::string>(map_at(nsset_info,nsset_list_out.at(i).at(1)).info_nsset_data.id));
+        BOOST_CHECK(nsset_list_out.at(i).at(1) == map_at(nsset_info,nsset_list_out.at(i).at(1)).info_nsset_data.handle);
+
+        BOOST_CHECK(nsset_list_out.at(i).at(3) == test_registrar_handle);//registrar handle
+        BOOST_CHECK(nsset_list_out.at(i).at(4) == boost::algorithm::replace_first_copy(test_registrar_handle, "-HANDLE", " NAME"));//registrar name
+
+        if(i%2)
+        {
+            BOOST_MESSAGE(nsset_list_out.at(i).at(7));
+            BOOST_CHECK(nsset_list_out.at(i).at(7) == "t");
+            if(i > 2) BOOST_CHECK(nsset_list_out.at(i).at(6) == "Doména je blokována");
+        }
+        else
+        {
+            BOOST_MESSAGE(nsset_list_out.at(i).at(7));
+            BOOST_CHECK(nsset_list_out.at(i).at(7) == "f");
+        }
+    }
+}
+
+/**
+ * test getNssetList for not existing contact
+ */
+BOOST_FIXTURE_TEST_CASE(get_nsset_list_for_not_existing_contact, get_my_nssets_fixture )
+{
+    try
+    {
+        Fred::OperationContext ctx;
+        std::vector<std::vector<std::string> > nsset_list_out;
+        impl.getNssetList(user_contact_info.info_contact_data.id,
+            Optional<unsigned long long>(0),
+            "CS",0,nsset_list_out);
+
+        BOOST_ERROR("unreported missing contact");
+    }
+    catch( const Registry::DomainBrowserImpl::ObjectNotExists& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
 
 BOOST_AUTO_TEST_SUITE_END();//getNssetList
 
@@ -2557,7 +2737,7 @@ BOOST_FIXTURE_TEST_CASE(get_my_keyset_list, get_my_keysets_fixture )
 {
     Fred::OperationContext ctx;
     std::vector<std::vector<std::string> > keyset_list_out;
-    bool limit_exceeded = impl.getKeysetList(user_contact_info.info_contact_data.id,
+    bool limit_exceeded = impl.getKeysetList(user_contact_info.info_contact_data.id, Optional<unsigned long long>(),
         "CS",0,keyset_list_out);
 
     std::ostringstream list_out;
@@ -2594,6 +2774,73 @@ BOOST_FIXTURE_TEST_CASE(get_my_keyset_list, get_my_keysets_fixture )
             BOOST_MESSAGE(keyset_list_out.at(i).at(7));
             BOOST_CHECK(keyset_list_out.at(i).at(7) == "f");
         }
+    }
+}
+
+BOOST_FIXTURE_TEST_CASE(get_keyset_list_by_contact, get_my_keysets_fixture )
+{
+    Fred::OperationContext ctx;
+    std::vector<std::vector<std::string> > keyset_list_out;
+    bool limit_exceeded = impl.getKeysetList(user_contact_info.info_contact_data.id,
+        Optional<unsigned long long>(admin_contact_fixture::test_contact_info.info_contact_data.id),
+        "CS",0,keyset_list_out);
+
+    std::ostringstream list_out;
+    list_out << "keyset_list_out: \n";
+
+    for(unsigned long long i = 0; i < keyset_list_out.size(); ++i)
+    {
+        for(unsigned long long j = 0; j < keyset_list_out.at(i).size(); ++j)
+        {
+            list_out << " " <<keyset_list_out.at(i).at(j);
+        }
+
+        list_out << "\n";
+    }
+    BOOST_MESSAGE(list_out.str());
+    BOOST_MESSAGE("limit_exceeded: " << limit_exceeded);
+
+    for(unsigned long long i = 0; i < keyset_list_out.size(); ++i)
+    {
+        BOOST_CHECK(keyset_list_out.at(i).at(0) == boost::lexical_cast<std::string>(map_at(keyset_info,keyset_list_out.at(i).at(1)).info_keyset_data.id));
+        BOOST_CHECK(keyset_list_out.at(i).at(1) == map_at(keyset_info,keyset_list_out.at(i).at(1)).info_keyset_data.handle);
+
+        BOOST_CHECK(keyset_list_out.at(i).at(3) == test_registrar_handle);//registrar handle
+        BOOST_CHECK(keyset_list_out.at(i).at(4) == boost::algorithm::replace_first_copy(test_registrar_handle, "-HANDLE", " NAME"));//registrar name
+
+        if(i%2)
+        {
+            BOOST_MESSAGE(keyset_list_out.at(i).at(7));
+            BOOST_CHECK(keyset_list_out.at(i).at(7) == "t");
+            BOOST_CHECK(keyset_list_out.at(i).at(6) == "Doména je blokována");
+        }
+        else
+        {
+            BOOST_MESSAGE(keyset_list_out.at(i).at(7));
+            BOOST_CHECK(keyset_list_out.at(i).at(7) == "f");
+        }
+    }
+}
+
+/**
+ * test getKeysetList for not existing contact
+ */
+BOOST_FIXTURE_TEST_CASE(get_keyset_list_for_not_existing_contact, get_my_keysets_fixture )
+{
+    try
+    {
+        Fred::OperationContext ctx;
+        std::vector<std::vector<std::string> > keyset_list_out;
+        impl.getKeysetList(user_contact_info.info_contact_data.id,
+            Optional<unsigned long long>(0),
+            "CS",0,keyset_list_out);
+
+        BOOST_ERROR("unreported missing contact");
+    }
+    catch( const Registry::DomainBrowserImpl::ObjectNotExists& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
     }
 }
 
@@ -2663,5 +2910,846 @@ BOOST_FIXTURE_TEST_CASE(get_object_id_by_objtype, get_my_contact_object_fixture 
 
 BOOST_AUTO_TEST_SUITE_END();//getObjectRegistryId
 
+struct merge_contacts_fixture
+: virtual user_contact_handle_fixture
+, virtual test_registrar_fixture
+, domain_browser_impl_instance_fixture
+{
+    Fred::InfoContactOutput user_contact_info;
+
+    std::string test_contact_handle;
+    std::map<std::string,Fred::InfoContactOutput> contact_info;
+    std::set<unsigned long long> contact_merge_candidates_ids;
+
+    merge_contacts_fixture()
+    : test_contact_handle(std::string("TEST_CONTACT_")+user_contact_handle_fixture::xmark+"_")
+    {
+        { //destination / user contact
+            Fred::OperationContext ctx;
+            Fred::CreateContact(user_contact_handle,
+                CfgArgs::instance()->get_handler_ptr_by_type<HandleMojeIDArgs>()->registrar_handle)//MojeID registrar
+                .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
+                .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
+                .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
+                .exec(ctx);
+            user_contact_info = Fred::InfoContactByHandle(user_contact_handle).exec(ctx);
+            Fred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id, Util::set_of<std::string>(Fred::ObjectState::MOJEID_CONTACT)).exec(ctx);
+            Fred::PerformObjectStateRequest(user_contact_info.info_contact_data.id).exec(ctx);
+            ctx.commit_transaction();//commit fixture
+        }
+
+        //source contacts
+        Fred::OperationContext ctx;
+        for(int i = 0; i < 26; ++i)
+        {
+            std::ostringstream contact_handle;
+            contact_handle << test_contact_handle << i;
+            bool merge_candidate = false;
+
+            switch(i)
+            {
+                case 0: //the same as dest. - ok
+                    Fred::CreateContact(contact_handle.str(),test_registrar_handle)
+                        .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
+                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
+                        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                        .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
+                        .exec(ctx);
+
+                    Fred::CreateNsset(std::string("TEST-NSSET-HANDLE")+user_contact_handle_fixture::xmark, test_registrar_handle)
+                        .set_dns_hosts(Util::vector_of<Fred::DnsHost>
+                            (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<boost::asio::ip::address>
+                                (boost::asio::ip::address::from_string("127.0.0.3"))
+                                (boost::asio::ip::address::from_string("127.1.1.3")))) //add_dns
+                            (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<boost::asio::ip::address>
+                                (boost::asio::ip::address::from_string("127.0.0.4"))
+                                (boost::asio::ip::address::from_string("127.1.1.4")))) //add_dns
+                            )
+                            .set_tech_contacts(Util::vector_of<std::string>(contact_handle.str()))
+                            .exec(ctx);
+
+                    Fred::CreateKeyset(std::string("TEST-KEYSET-HANDLE")+user_contact_handle_fixture::xmark, test_registrar_handle)
+                            .set_tech_contacts(Util::vector_of<std::string>(contact_handle.str()))
+                            .exec(ctx);
+
+                    Fred::CreateDomain(
+                            std::string("testdomainadminowner")+user_contact_handle_fixture::xmark+".cz" //const std::string& fqdn
+                            , test_registrar_handle //const std::string& registrar
+                            , contact_handle.str() //registrant
+                            )
+                    .set_admin_contacts(Util::vector_of<std::string>(contact_handle.str()))
+                    .exec(ctx);
+
+                    merge_candidate = true;
+                    break;
+                case 1: //the same as dest. except missing vat - ok
+                    Fred::CreateContact(contact_handle.str(),test_registrar_handle)
+                        .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
+                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
+                        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                        .set_ssntype("OP").set_ssn("123456")
+                        .exec(ctx);
+
+                    merge_candidate = true;
+                    break;
+                case 2: //the same as dest. except missing ssntype and ssn - ok
+                    Fred::CreateContact(contact_handle.str(),test_registrar_handle)
+                        .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
+                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
+                        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                        .set_vat("CZ1234567890")
+                        .exec(ctx);
+
+                    merge_candidate = true;
+                    break;
+                case 3: //the same as dest. except missing ssntype, make no sence but - ok
+                    Fred::CreateContact(contact_handle.str(),test_registrar_handle)
+                        .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
+                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
+                        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                        .set_vat("CZ1234567890").set_ssn("123456")
+                        .exec(ctx);
+
+                    merge_candidate = true;
+                    break;
+                case 4: //the same as dest. except missing ssn, make no sence but - ok
+                    Fred::CreateContact(contact_handle.str(),test_registrar_handle)
+                        .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
+                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
+                        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                        .set_vat("CZ1234567890").set_ssntype("OP")
+                        .exec(ctx);
+
+                    merge_candidate = true;
+                    break;
+                case 5: //the same as dest. except spaces in vat - ok
+                    Fred::CreateContact(contact_handle.str(),test_registrar_handle)
+                        .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
+                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
+                        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                        .set_vat(" CZ1234567890 ").set_ssntype("OP").set_ssn("123456")
+                        .exec(ctx);
+
+                    merge_candidate = true;
+                    break;
+                case 6: //the same as dest. except spaces in ssn - ok
+                    Fred::CreateContact(contact_handle.str(),test_registrar_handle)
+                        .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
+                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
+                        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                        .set_vat("CZ1234567890").set_ssntype("OP").set_ssn(" 123456 ")
+                        .exec(ctx);
+
+                    merge_candidate = true;
+                    break;
+                case 7: //the same as dest. except spaces in name - ok
+                    Fred::CreateContact(contact_handle.str(),test_registrar_handle)
+                        .set_name(std::string(" USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark+" ")
+                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
+                        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                        .set_vat("CZ1234567890").set_ssntype("OP").set_ssn(" 123456 ")
+                        .exec(ctx);
+
+                    merge_candidate = true;
+                    break;
+                case 8: //the same as dest. except spaces in city - ok
+                    Fred::CreateContact(contact_handle.str(),test_registrar_handle)
+                        .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
+                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
+                        .set_city("  Praha  ").set_postalcode("11150").set_country("CZ")
+                        .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
+                        .exec(ctx);
+
+                    merge_candidate = true;
+                    break;
+                case 9: //the same as dest. except mojeidContact state - nok
+                {
+                    Fred::CreateContact(contact_handle.str(),test_registrar_handle)
+                        .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
+                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
+                        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                        .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
+                        .exec(ctx);
+                        BOOST_MESSAGE(contact_handle.str() + " mojeidContact");
+                        unsigned long long contact_id = Fred::InfoContactByHandle(contact_handle.str()).exec(ctx).info_contact_data.id;
+                        Fred::CreateObjectStateRequestId(contact_id,
+                            Util::set_of<std::string>(Fred::ObjectState::MOJEID_CONTACT)).exec(ctx);
+                        Fred::PerformObjectStateRequest(contact_id).exec(ctx);
+
+                    merge_candidate = false;
+                }
+                    break;
+                case 10: //the same as dest. except serverBlocked state - nok
+                {
+                    Fred::CreateContact(contact_handle.str(),test_registrar_handle)
+                        .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
+                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
+                        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                        .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
+                        .exec(ctx);
+                        BOOST_MESSAGE(contact_handle.str() + " serverBlocked");
+                        unsigned long long contact_id = Fred::InfoContactByHandle(contact_handle.str()).exec(ctx).info_contact_data.id;
+                        Fred::CreateObjectStateRequestId(contact_id,
+                            Util::set_of<std::string>(Fred::ObjectState::SERVER_BLOCKED)).exec(ctx);
+                        Fred::PerformObjectStateRequest(contact_id).exec(ctx);
+
+                    merge_candidate = false;
+                }
+                    break;
+                case 11: //the same as dest. except serverDeleteProhibited state - nok
+                {
+                    Fred::CreateContact(contact_handle.str(),test_registrar_handle)
+                        .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
+                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
+                        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                        .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
+                        .exec(ctx);
+                        BOOST_MESSAGE(contact_handle.str() + " serverDeleteProhibited");
+                        unsigned long long contact_id = Fred::InfoContactByHandle(contact_handle.str()).exec(ctx).info_contact_data.id;
+                        Fred::CreateObjectStateRequestId(contact_id,
+                            Util::set_of<std::string>(Fred::ObjectState::SERVER_DELETE_PROHIBITED)).exec(ctx);
+                        Fred::PerformObjectStateRequest(contact_id).exec(ctx);
+
+                    merge_candidate = false;
+                }
+                    break;
+                case 12: //the same as dest. except the name - nok
+                {
+                    Fred::CreateContact(contact_handle.str(),test_registrar_handle)
+                        .set_name(std::string("USER-CONTACT-HANDLE DIFFERENTNAME")+user_contact_handle_fixture::xmark)
+                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
+                        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                        .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
+                        .exec(ctx);
+                        BOOST_MESSAGE(contact_handle.str() + " different name");
+
+                    merge_candidate = false;
+                }
+                    break;
+                case 13: //the same as dest. except the organization - nok
+                {
+                    Fred::CreateContact(contact_handle.str(),test_registrar_handle)
+                        .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
+                        .set_organization(std::string("USER-CONTACT-HANDLE ORG")+user_contact_handle_fixture::xmark)
+                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
+                        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                        .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
+                        .exec(ctx);
+                        BOOST_MESSAGE(contact_handle.str() + " different organization");
+
+                    merge_candidate = false;
+                }
+                    break;
+                case 14: //the same as dest. except the street1 - nok
+                {
+                    Fred::CreateContact(contact_handle.str(),test_registrar_handle)
+                        .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
+                        .set_street1(std::string("DIFFERENTSTR1")+user_contact_handle_fixture::xmark)
+                        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                        .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
+                        .exec(ctx);
+                        BOOST_MESSAGE(contact_handle.str() + " different street1");
+
+                    merge_candidate = false;
+                }
+                    break;
+                case 15: //the same as dest. except the street2 - nok
+                {
+                    Fred::CreateContact(contact_handle.str(),test_registrar_handle)
+                        .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
+                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
+                        .set_street2(std::string("DIFFERENTSTR2")+user_contact_handle_fixture::xmark)
+                        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                        .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
+                        .exec(ctx);
+                        BOOST_MESSAGE(contact_handle.str() + " different street2");
+
+                    merge_candidate = false;
+                }
+                    break;
+                case 16: //the same as dest. except the street3 - nok
+                {
+                    Fred::CreateContact(contact_handle.str(),test_registrar_handle)
+                        .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
+                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
+                        .set_street3(std::string("DIFFERENTSTR3")+user_contact_handle_fixture::xmark)
+                        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                        .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
+                        .exec(ctx);
+                        BOOST_MESSAGE(contact_handle.str() + " different street3");
+
+                    merge_candidate = false;
+                }
+                    break;
+                case 17: //the same as dest. except the city - nok
+                {
+                    Fred::CreateContact(contact_handle.str(),test_registrar_handle)
+                        .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
+                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
+                        .set_city("DifferentPraha").set_postalcode("11150").set_country("CZ")
+                        .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
+                        .exec(ctx);
+                        BOOST_MESSAGE(contact_handle.str() + " different city");
+
+                    merge_candidate = false;
+                }
+                    break;
+                case 18: //the same as dest. except the postalcode - nok
+                {
+                    Fred::CreateContact(contact_handle.str(),test_registrar_handle)
+                        .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
+                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
+                        .set_city("Praha").set_postalcode("11151").set_country("CZ")
+                        .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
+                        .exec(ctx);
+                        BOOST_MESSAGE(contact_handle.str() + " different postalcode");
+
+                    merge_candidate = false;
+                }
+                    break;
+                case 19: //the same as dest. except the stateorprovince - nok
+                {
+                    Fred::CreateContact(contact_handle.str(),test_registrar_handle)
+                        .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
+                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
+                        .set_city("Praha").set_postalcode("11150").set_country("CZ").set_stateorprovince("different")
+                        .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
+                        .exec(ctx);
+                        BOOST_MESSAGE(contact_handle.str() + " different stateorprovince");
+
+                    merge_candidate = false;
+                }
+                    break;
+                case 20: //the same as dest. except the country - nok
+                {
+                    Fred::CreateContact(contact_handle.str(),test_registrar_handle)
+                        .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
+                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
+                        .set_city("Praha").set_postalcode("11150").set_country("SK")
+                        .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
+                        .exec(ctx);
+                        BOOST_MESSAGE(contact_handle.str() + " different country");
+
+                    merge_candidate = false;
+                }
+                    break;
+                case 21: //the same as dest. except the email - nok
+                {
+                    Fred::CreateContact(contact_handle.str(),test_registrar_handle)
+                        .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
+                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
+                        .set_city("Praha").set_postalcode("11150").set_country("CZ").set_email("test@test.cz")
+                        .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
+                        .exec(ctx);
+                        BOOST_MESSAGE(contact_handle.str() + " different email");
+
+                    merge_candidate = false;
+                }
+                    break;
+                case 22: //the same as dest. except the vat - nok
+                {
+                    Fred::CreateContact(contact_handle.str(),test_registrar_handle)
+                        .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
+                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
+                        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                        .set_vat("SK1234567890").set_ssntype("OP").set_ssn("123456")
+                        .exec(ctx);
+                        BOOST_MESSAGE(contact_handle.str() + " different vat");
+
+                    merge_candidate = false;
+                }
+                    break;
+                case 23: //the same as dest. except the ssn - nok
+                {
+                    Fred::CreateContact(contact_handle.str(),test_registrar_handle)
+                        .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
+                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
+                        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                        .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("223456")
+                        .exec(ctx);
+                        BOOST_MESSAGE(contact_handle.str() + " different ssn");
+
+                    merge_candidate = false;
+                }
+                    break;
+                case 24: //the same as dest. except the ssntype - nok
+                {
+                    Fred::CreateContact(contact_handle.str(),test_registrar_handle)
+                        .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
+                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
+                        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                        .set_vat("CZ1234567890").set_ssntype("RC").set_ssn("123456")
+                        .exec(ctx);
+                        BOOST_MESSAGE(contact_handle.str() + " different ssntype");
+
+                    merge_candidate = false;
+                }
+                    break;
+                case 25: //the same as dest. canceled not allowed status - ok (#11067)
+                {
+                    Fred::CreateContact(contact_handle.str(),test_registrar_handle)
+                        .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
+                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
+                        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                        .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
+                        .exec(ctx);
+                        BOOST_MESSAGE(contact_handle.str() + " serverBlocked");
+                        unsigned long long contact_id = Fred::InfoContactByHandle(contact_handle.str()).exec(ctx).info_contact_data.id;
+                        Fred::CreateObjectStateRequestId(contact_id,
+                            Util::set_of<std::string>(Fred::ObjectState::SERVER_BLOCKED)).exec(ctx);
+                        Fred::PerformObjectStateRequest(contact_id).exec(ctx);
+                        Fred::CancelObjectStateRequestId(contact_id,
+                            Util::set_of<std::string>(Fred::ObjectState::SERVER_BLOCKED)).exec(ctx);
+                        Fred::PerformObjectStateRequest(contact_id).exec(ctx);
+
+                    merge_candidate = true;
+                }
+                    break;
+            }
+
+            contact_info[contact_handle.str()] = Fred::InfoContactByHandle(contact_handle.str()).exec(ctx);
+            if (merge_candidate)
+            {
+                contact_merge_candidates_ids.insert(contact_info.at(contact_handle.str()).info_contact_data.id);
+            }
+
+        }
+
+        ctx.commit_transaction();//commit fixture
+    }
+
+    ~merge_contacts_fixture()
+    {}
+};
+
+
+BOOST_AUTO_TEST_SUITE(getMergeContactCandidateList)
+
+
+/**
+ * test getMergeContactCandidateList, check candidate list contacts from fixture
+*/
+BOOST_FIXTURE_TEST_CASE(get_candidate_contact_list, merge_contacts_fixture )
+{
+    Fred::OperationContext ctx;
+    std::vector<std::vector<std::string> > contact_list_out;
+    bool limit_exceeded = impl.getMergeContactCandidateList(user_contact_info.info_contact_data.id,
+        0,contact_list_out);
+
+    std::ostringstream list_out;
+    list_out << "contact_list_out: \n";
+
+    for(unsigned long long i = 0; i < contact_list_out.size(); ++i)
+    {
+        for(unsigned long long j = 0; j < contact_list_out.at(i).size(); ++j)
+        {
+            list_out << " " <<contact_list_out.at(i).at(j);
+        }
+
+        list_out << "\n";
+    }
+    BOOST_MESSAGE(list_out.str());
+    BOOST_MESSAGE("limit_exceeded: " << limit_exceeded);
+
+    BOOST_CHECK(contact_list_out.size() == contact_merge_candidates_ids.size());
+
+    std::set<unsigned long long> contact_list_out_ids;
+
+    for(unsigned long long i = 0; i < contact_list_out.size(); ++i)
+    {
+        unsigned long long id = map_at(contact_info,contact_list_out.at(i).at(1)).info_contact_data.id;
+        BOOST_CHECK(contact_list_out.at(i).at(0) == boost::lexical_cast<std::string>(id));
+        BOOST_CHECK(contact_list_out.at(i).at(1) == map_at(contact_info,contact_list_out.at(i).at(1)).info_contact_data.handle);
+        contact_list_out_ids.insert(id);
+
+        if(i == 0)
+        {
+            BOOST_CHECK(contact_list_out.at(i).at(2) == "1");
+            BOOST_CHECK(contact_list_out.at(i).at(3) == "1");
+            BOOST_CHECK(contact_list_out.at(i).at(4) == "1");
+        }
+        else
+        {
+            BOOST_CHECK(contact_list_out.at(i).at(2) == "0");
+            BOOST_CHECK(contact_list_out.at(i).at(3) == "0");
+            BOOST_CHECK(contact_list_out.at(i).at(4) == "0");
+        }
+
+        BOOST_CHECK(contact_list_out.at(i).at(5) == std::string("TEST-REGISTRAR-HANDLE")+test_registrar_fixture::xmark);
+        BOOST_CHECK(contact_list_out.at(i).at(6) == std::string("TEST-REGISTRAR NAME")+test_registrar_fixture::xmark);
+    }
+
+    BOOST_CHECK(contact_list_out_ids == contact_merge_candidates_ids);
+}
+
+struct get_domain_list_user_not_in_mojeid_fixture
+: user_contact_fixture
+, domain_browser_impl_instance_fixture
+{};
+
+/**
+ * test getMergeContactCandidateList, non-mojeid user
+*/
+
+BOOST_FIXTURE_TEST_CASE(get_candidate_contact_list_user_not_in_mojeid, get_domain_list_user_not_in_mojeid_fixture )
+{
+    try
+    {
+        Fred::OperationContext ctx;
+        std::vector<std::vector<std::string> > contact_list_out;
+        impl.getMergeContactCandidateList(user_contact_info.info_contact_data.id,
+            0,contact_list_out);
+
+        BOOST_ERROR("unreported missing user");
+    }
+    catch( const Registry::DomainBrowserImpl::UserNotExists& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
+
+BOOST_AUTO_TEST_SUITE_END();//getMergeContactCandidateList
+
+
+BOOST_AUTO_TEST_SUITE(mergeContacts)
+
+/**
+ * mergeContacts
+*/
+BOOST_FIXTURE_TEST_CASE(merge_contacts, merge_contacts_fixture )
+{
+    Fred::OperationContext ctx;
+
+    impl.mergeContacts(user_contact_info.info_contact_data.id,
+        Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"0").info_contact_data.id), 0);
+
+    std::vector<Fred::InfoContactOutput> info = Fred::InfoContactHistoryById(
+        map_at(contact_info,test_contact_handle+"0").info_contact_data.id).exec(ctx);
+    BOOST_CHECK(!info.back().info_contact_data.delete_time.isnull());
+
+}
+
+struct merge_contacts_user_not_in_mojeid_fixture
+: user_contact_fixture
+, domain_browser_impl_instance_fixture
+{};
+
+/**
+ * mergeContacts, non-mojeid user
+*/
+BOOST_FIXTURE_TEST_CASE(merge_contacts_user_not_in_mojeid, merge_contacts_user_not_in_mojeid_fixture )
+{
+    Fred::OperationContext ctx;
+    try
+    {
+        impl.mergeContacts(user_contact_info.info_contact_data.id,Util::vector_of<unsigned long long>(0), 0);
+        BOOST_ERROR("unreported missing user");
+    }
+    catch( const Registry::DomainBrowserImpl::UserNotExists& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
+
+struct merge_contacts_no_src_contacts_fixture
+: virtual user_contact_handle_fixture
+, virtual test_registrar_fixture
+, domain_browser_impl_instance_fixture
+{
+    Fred::InfoContactOutput user_contact_info;
+
+    std::string test_contact_handle;
+    std::map<std::string,Fred::InfoContactOutput> contact_info;
+
+    merge_contacts_no_src_contacts_fixture()
+    : test_contact_handle(std::string("TEST_CONTACT_")+user_contact_handle_fixture::xmark+"_")
+    {
+        // user contact
+        Fred::OperationContext ctx;
+        Fred::CreateContact(user_contact_handle,
+            CfgArgs::instance()->get_handler_ptr_by_type<HandleMojeIDArgs>()->registrar_handle)//MojeID registrar
+            .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
+            .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
+            .set_city("Praha").set_postalcode("11150").set_country("CZ")
+            .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
+            .exec(ctx);
+        user_contact_info = Fred::InfoContactByHandle(user_contact_handle).exec(ctx);
+        Fred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id, Util::set_of<std::string>(Fred::ObjectState::MOJEID_CONTACT)).exec(ctx);
+        Fred::PerformObjectStateRequest(user_contact_info.info_contact_data.id).exec(ctx);
+        ctx.commit_transaction();//commit fixture
+    }
+};
+
+/**
+ * mergeContacts no src contacts throws invalid contacts
+*/
+BOOST_FIXTURE_TEST_CASE(merge_contacts_no_src_contacts, merge_contacts_no_src_contacts_fixture )
+{
+    Fred::OperationContext ctx;
+    try
+    {
+        impl.mergeContacts(user_contact_info.info_contact_data.id,std::vector<unsigned long long>(), 0);
+        BOOST_ERROR("unreported missing src contacts");
+    }
+    catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
+/**
+ * mergeContacts src contact is the same as dest contact
+*/
+BOOST_FIXTURE_TEST_CASE(merge_contacts_dst_contacts, merge_contacts_no_src_contacts_fixture )
+{
+    Fred::OperationContext ctx;
+    try
+    {
+        impl.mergeContacts(user_contact_info.info_contact_data.id,Util::vector_of<unsigned long long>(user_contact_info.info_contact_data.id), 0);
+        BOOST_ERROR("unreported the same src and dest. contacts");
+    }
+    catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
+/**
+ * mergeContacts src contact is mojeid contact
+*/
+BOOST_FIXTURE_TEST_CASE(merge_contacts_mojeid_src_contact, merge_contacts_fixture )
+{
+    Fred::OperationContext ctx;
+    try
+    {
+        impl.mergeContacts(user_contact_info.info_contact_data.id,
+                Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"9").info_contact_data.id), 0);
+        BOOST_ERROR("unreported invalid contacts");
+    }
+    catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
+/**
+ * mergeContacts src contact is blocked contact
+*/
+BOOST_FIXTURE_TEST_CASE(merge_contacts_blocked_src_contact, merge_contacts_fixture )
+{
+    Fred::OperationContext ctx;
+    try
+    {
+        impl.mergeContacts(user_contact_info.info_contact_data.id,
+                Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"10").info_contact_data.id), 0);
+        BOOST_ERROR("unreported invalid contacts");
+    }
+    catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
+/**
+ * mergeContacts src contact is delete prohibited
+*/
+BOOST_FIXTURE_TEST_CASE(merge_contacts_delete_prohibited_src_contact, merge_contacts_fixture )
+{
+    Fred::OperationContext ctx;
+    try
+    {
+        impl.mergeContacts(user_contact_info.info_contact_data.id,
+                Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"11").info_contact_data.id), 0);
+        BOOST_ERROR("unreported invalid contacts");
+    }
+    catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
+/**
+ * mergeContacts src contact differs in name
+*/
+BOOST_FIXTURE_TEST_CASE(merge_contacts_src_contact_differs_in_name, merge_contacts_fixture )
+{
+    Fred::OperationContext ctx;
+    try
+    {
+        impl.mergeContacts(user_contact_info.info_contact_data.id,
+                Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"12").info_contact_data.id), 0);
+        BOOST_ERROR("unreported invalid contacts");
+    }
+    catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
+/**
+ * mergeContacts src contact differs in org
+*/
+BOOST_FIXTURE_TEST_CASE(merge_contacts_src_contact_differs_in_org, merge_contacts_fixture )
+{
+    Fred::OperationContext ctx;
+    try
+    {
+        impl.mergeContacts(user_contact_info.info_contact_data.id,
+                Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"13").info_contact_data.id), 0);
+        BOOST_ERROR("unreported invalid contacts");
+    }
+    catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
+/**
+ * mergeContacts src contact differs in street1
+*/
+BOOST_FIXTURE_TEST_CASE(merge_contacts_src_contact_differs_in_street1, merge_contacts_fixture )
+{
+    Fred::OperationContext ctx;
+    try
+    {
+        impl.mergeContacts(user_contact_info.info_contact_data.id,
+                Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"14").info_contact_data.id), 0);
+        BOOST_ERROR("unreported invalid contacts");
+    }
+    catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
+/**
+ * mergeContacts src contact differs in city
+*/
+BOOST_FIXTURE_TEST_CASE(merge_contacts_src_contact_differs_in_city, merge_contacts_fixture )
+{
+    Fred::OperationContext ctx;
+    try
+    {
+        impl.mergeContacts(user_contact_info.info_contact_data.id,
+            Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"17").info_contact_data.id), 0);
+        BOOST_ERROR("unreported invalid contacts");
+    }
+    catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
+/**
+ * mergeContacts src contact differs in postalcode
+*/
+BOOST_FIXTURE_TEST_CASE(merge_contacts_src_contact_differs_in_postalcode, merge_contacts_fixture )
+{
+    Fred::OperationContext ctx;
+    try
+    {
+        impl.mergeContacts(user_contact_info.info_contact_data.id,
+            Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"18").info_contact_data.id), 0);
+        BOOST_ERROR("unreported invalid contacts");
+    }
+    catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
+/**
+ * mergeContacts src contact differs in country
+*/
+BOOST_FIXTURE_TEST_CASE(merge_contacts_src_contact_differs_in_country, merge_contacts_fixture )
+{
+    Fred::OperationContext ctx;
+    try
+    {
+        impl.mergeContacts(user_contact_info.info_contact_data.id,
+            Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"20").info_contact_data.id), 0);
+        BOOST_ERROR("unreported invalid contacts");
+    }
+    catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
+/**
+ * mergeContacts src contact differs in email
+*/
+BOOST_FIXTURE_TEST_CASE(merge_contacts_src_contact_differs_in_email, merge_contacts_fixture )
+{
+    Fred::OperationContext ctx;
+    try
+    {
+        impl.mergeContacts(user_contact_info.info_contact_data.id,
+            Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"21").info_contact_data.id), 0);
+        BOOST_ERROR("unreported invalid contacts");
+    }
+    catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
+/**
+ * mergeContacts src contact differs in vat
+*/
+BOOST_FIXTURE_TEST_CASE(merge_contacts_src_contact_differs_in_vat, merge_contacts_fixture )
+{
+    Fred::OperationContext ctx;
+    try
+    {
+        impl.mergeContacts(user_contact_info.info_contact_data.id,
+            Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"22").info_contact_data.id), 0);
+        BOOST_ERROR("unreported invalid contacts");
+    }
+    catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
+/**
+ * mergeContacts src contact differs in ssn
+*/
+BOOST_FIXTURE_TEST_CASE(merge_contacts_src_contact_differs_in_ssn, merge_contacts_fixture )
+{
+    Fred::OperationContext ctx;
+    try
+    {
+        impl.mergeContacts(user_contact_info.info_contact_data.id,
+            Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"23").info_contact_data.id), 0);
+        BOOST_ERROR("unreported invalid contacts");
+    }
+    catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
+
+BOOST_AUTO_TEST_SUITE_END();//mergeContacts
 
 BOOST_AUTO_TEST_SUITE_END();//TestDomainBrowser

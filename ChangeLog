@@ -1,3 +1,17 @@
+2014-06-12 Jan Korous, Jan Zima, Michal Strnad, Jiri Sadek (2.18.0)
+
+  * admin. contact verification implementation
+
+  * fredlib - fixes, operation interface changes, impl. refactoring, new operations added
+
+  * admin. domain block fix - creating poll update messages
+
+  * corba utils - common type (un)wrappers
+
+  * nullable/optional types enhancements
+
+  * doxygen code documentation started!
+
 2014-03-26 Jiri Sadek (2.17.1)
 
   * fix mojeid identification validator (country, postal code checks removed)
@@ -20,6 +34,10 @@
 
   * mojeid/contact verification - 30 days registration "protection" period for
     'e-mail' and 'telephone' values is now disabled for identical contact (by id)
+
+2014-05-12 Jan Korous (2.16.3)
+
+  * fix idn fqdn check
 
 2014-02-17 Jaromir Talir (2.16.2)
 

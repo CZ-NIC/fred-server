@@ -47,6 +47,9 @@ missing
 src/corba/Admin.hh
 src/corba/AdminDynSK.cc
 src/corba/AdminSK.cc
+src/corba/AdminContactVerificationSK.cc
+src/corba/AdminContactVerificationDynSK.cc
+src/corba/AdminContactVerification.hh
 src/corba/ContactVerification.hh
 src/corba/ContactVerificationSK.cc
 src/corba/ContactVerificationDynSK.cc
@@ -90,6 +93,12 @@ src/corba/ZoneSK.cc
 src/corba/_dataTypes.hh
 src/corba/_dataTypesDynSK.cc
 src/corba/_dataTypesSK.cc
+src/corba/DateTime.hh
+src/corba/DateTimeDynSK.cc
+src/corba/DateTimeSK.cc
+src/corba/NullableTypes.hh
+src/corba/NullableTypesSK.cc
+src/corba/NullableTypesDynSK.cc
 /src/fred-server/
 src/nbproject/
 /.settings

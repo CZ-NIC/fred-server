@@ -52,7 +52,8 @@ namespace Registry
                     const std::string& _update_registrar_handle,
                     unsigned int domain_list_limit,
                     unsigned int nsset_list_limit,
-                    unsigned int keyset_list_limit);
+                    unsigned int keyset_list_limit,
+                    unsigned int contact_list_limit);
 
             virtual ~Server_i();
             // methods corresponding to defined IDL attributes and operations
@@ -61,18 +62,21 @@ namespace Registry
                 const char* handle);
 
             Registry::DomainBrowser::RecordSet* getDomainList(
+                const Registry::DomainBrowser::RegistryReference& user_contact,
                 const Registry::DomainBrowser::RegistryReference& contact,
                 const char* lang,
                 ::CORBA::ULong offset,
                 ::CORBA::Boolean& limit_exceeded);
 
             Registry::DomainBrowser::RecordSet* getNssetList(
+                const Registry::DomainBrowser::RegistryReference& user_contact,
                 const Registry::DomainBrowser::RegistryReference& contact,
                 const char* lang,
                 ::CORBA::ULong offset,
                  ::CORBA::Boolean& limit_exceeded);
 
             Registry::DomainBrowser::RecordSet* getKeysetList(
+                const Registry::DomainBrowser::RegistryReference& user_contact,
                 const Registry::DomainBrowser::RegistryReference& contact,
                 const char* lang,
                 ::CORBA::ULong offset,
@@ -139,6 +143,15 @@ namespace Registry
                 Registry::DomainBrowser::RecordSequence_out blocked);
 
             Registry::DomainBrowser::RecordSequence* getPublicStatusDesc(const char* lang);
+
+            Registry::DomainBrowser::RecordSet* getMergeContactCandidateList(
+                const Registry::DomainBrowser::RegistryReference& contact,
+                ::CORBA::ULong offset,
+                ::CORBA::Boolean& limit_exceeded);
+
+            void mergeContacts(const Registry::DomainBrowser::RegistryReference& dst_contact,
+                const Registry::DomainBrowser::RegistryReferenceSeq& src_contact_list,
+                Registry::DomainBrowser::TID request_id);
 
         };//class Server_i
     }//namespace DomainBrowser

@@ -156,7 +156,7 @@ namespace Util
      * @param in is input vector
      * @return description of input vector using implemented format
      */
-    template<class IN> std::string format_vector(const std::vector<IN>& in)
+    template<class IN> std::string format_vector(const std::vector<IN>& in, std::string separator = " ")
     {
         std::string out;
         typename std::vector<IN>::const_iterator i = in.begin();
@@ -169,7 +169,7 @@ namespace Util
 
         for(; i != in.end(); ++i)
         {
-            out += " ";
+            out += separator;
             out += printable_conversion_to_string(*i,EnumType<ConversionToString<IN>::result >());
         }
         return out;

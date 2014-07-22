@@ -134,7 +134,7 @@ int main ( int argc, char* argv[])
 	FakedArgs fa;
     try
     {
-        fa = CfgArgs::instance<HandleHelpArg>(global_hpv)->handle(argc, argv);
+        fa = CfgArgs::init<HandleHelpArg>(global_hpv)->handle(argc, argv);
         do_something(fa);
     }
     catch(const ReturnFromMain&)

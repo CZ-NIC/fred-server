@@ -376,6 +376,21 @@ namespace Registry
         };
 
         /**
+         * Invalid contacts.
+         * Unable to merge contacts.
+         */
+        struct InvalidContacts
+        : virtual std::exception
+        {
+            /**
+             * Returns failure description.
+             * @return string with the general cause of the current error.
+             */
+            const char* what() const throw() {return "unable to merge given contacts";}
+        };
+
+
+        /**
          * Type of blocking to be applied (value related to enum Registry::DomainBrowser::ObjectBlockType)
          */
         static const unsigned BLOCK_TRANSFER = 0;
@@ -390,6 +405,7 @@ namespace Registry
             unsigned int domain_list_limit_;/**< domain list chunk size */
             unsigned int nsset_list_limit_;/**< nsset list chunk size */
             unsigned int keyset_list_limit_;/**< keyset list chunk size */
+            unsigned int contact_list_limit_;/**< contact list chunk size */
 
             unsigned int minimal_status_importance_;
 
@@ -441,9 +457,17 @@ namespace Registry
                     const std::string& update_registrar_handle,
                     unsigned int domain_list_limit,
                     unsigned int nsset_list_limit,
-                    unsigned int keyset_list_limit);
+                    unsigned int keyset_list_limit,
+                    unsigned int contact_list_limit);
             virtual ~DomainBrowser();
 
+            /**
+             * Gets database id of the object.
+             * @param objtype is type of the object from table enum_object_type
+             * @param handle is object registry handle of the object
+             * @return object database id
+             * @throw @ref IncorrectUsage if objype not found, @ref ObjectNotExists if object with given type not found or anything else in case of failure
+             */
             unsigned long long getObjectRegistryId(const std::string& objtype, const std::string& handle);
 
             /**
@@ -539,9 +563,9 @@ namespace Registry
                 std::vector<std::string>& blocked_objects);
 
             /**
-             * Get domain list.
-             * Get list of domains registered or administered by user contact except the case when nsset id or keyset id (or both) is set.
+             * Get list of domains registered or administered by user contact except the case when contact id, nsset id or keyset id (or all of them) is set.
              * @param user_contact_id contains database id of the user contact
+             * @param list_domains_for_contact_id if set list domains linked to contact with given id regardless of user contact relation to listed domains
              * @param list_domains_for_nsset_id if set list domains linked to nsset with given id regardless of user contact relation to listed domains
              * @param list_domains_for_keyset_id if set list domains linked to keyset with given id regardless of user contact relation to listed domains
              * @param lang contains language for state description "EN" or "CS"
@@ -550,6 +574,7 @@ namespace Registry
              * @return limit_exceeded flag
              */
             bool getDomainList(unsigned long long user_contact_id,
+                const Optional<unsigned long long>& list_domains_for_contact_id,
                 const Optional<unsigned long long>& list_domains_for_nsset_id,
                 const Optional<unsigned long long>& list_domains_for_keyset_id,
                 const std::string& lang,
@@ -557,29 +582,31 @@ namespace Registry
                 std::vector<std::vector<std::string> >& domain_list_out);
 
             /**
-             * Get nsset list.
              * Get list of nssets administered by user contact.
              * @param user_contact_id contains database id of the user contact
+             * @param list_nssets_for_contact_id if set list nssets linked to contact with given id regardless of user contact relation to listed nssets
              * @param lang contains language for state description "EN" or "CS"
              * @param offset contains list offset
              * @param  nsset_list_out references output nsset list
              * @return limit_exceeded flag
              */
             bool getNssetList(unsigned long long user_contact_id,
+                const Optional<unsigned long long>& list_nssets_for_contact_id,
                 const std::string& lang,
                 unsigned long long offset,
                 std::vector<std::vector<std::string> >& nsset_list_out);
 
             /**
-             * Get keyset list.
              * Get list of keysets administered by user contact.
              * @param user_contact_id contains database id of the user contact
+             * @param list_keysets_for_contact_id if set list keysets linked to contact with given id regardless of user contact relation to listed keysets
              * @param lang contains language for state description "EN" or "CS"
              * @param offset contains list offset
              * @param  keyset_list_out references output keyset list
              * @return limit_exceeded flag
              */
             bool getKeysetList(unsigned long long user_contact_id,
+                const Optional<unsigned long long>& list_keysets_for_contact_id,
                 const std::string& lang,
                 unsigned long long offset,
                 std::vector<std::vector<std::string> >& keyset_list_out);
@@ -592,7 +619,31 @@ namespace Registry
             void getPublicStatusDesc(const std::string& lang,
                 std::vector<std::string>& status_description_out);
 
+            /**
+             * Get list of contacts mergeable to user contact.
+             * @param user_contact_id contains database id of the user contact
+             * @param offset contains list offset
+             * @param  contact_list_out references output candidate contact list
+             * @return limit_exceeded flag
+             */
+            bool getMergeContactCandidateList(unsigned long long user_contact_id,
+                unsigned long long offset,
+                std::vector<std::vector<std::string> >& contact_list_out);
 
+            /**
+             * Merge contact list to destination contact
+             * @param dst_contact_id id of destination contact
+             * @param contact_list id list of source contacts
+             * @param request_id is id of the new entry in log_entry database table
+             */
+            void mergeContacts(unsigned long long dst_contact_id,
+                const std::vector<unsigned long long>& contact_list,
+                unsigned long long request_id);
+
+            /**
+             * Get server name
+             * @return name for logging context
+             */
             std::string get_server_name();
         };//class DomainBrowser
 

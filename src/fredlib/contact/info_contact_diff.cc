@@ -277,47 +277,47 @@ namespace Fred
             diff.ssn = std::make_pair(first.ssn,second.ssn);
         }
 
-        if(!Util::is_equal(first.disclosename, second.disclosename))
+        if(first.disclosename != second.disclosename)
         {
             diff.disclosename = std::make_pair(first.disclosename,second.disclosename);
         }
 
-        if(!Util::is_equal(first.discloseorganization, second.discloseorganization))
+        if(first.discloseorganization != second.discloseorganization)
         {
             diff.discloseorganization = std::make_pair(first.discloseorganization,second.discloseorganization);
         }
 
-        if(!Util::is_equal(first.discloseaddress, second.discloseaddress))
+        if(first.discloseaddress != second.discloseaddress)
         {
             diff.discloseaddress = std::make_pair(first.discloseaddress,second.discloseaddress);
         }
 
-        if(!Util::is_equal(first.disclosetelephone, second.disclosetelephone))
+        if(first.disclosetelephone != second.disclosetelephone)
         {
             diff.disclosetelephone = std::make_pair(first.disclosetelephone,second.disclosetelephone);
         }
 
-        if(!Util::is_equal(first.disclosefax, second.disclosefax))
+        if(first.disclosefax != second.disclosefax)
         {
             diff.disclosefax = std::make_pair(first.disclosefax,second.disclosefax);
         }
 
-        if(!Util::is_equal(first.discloseemail, second.discloseemail))
+        if(first.discloseemail != second.discloseemail)
         {
             diff.discloseemail = std::make_pair(first.discloseemail,second.discloseemail);
         }
 
-        if(!Util::is_equal(first.disclosevat, second.disclosevat))
+        if(first.disclosevat != second.disclosevat)
         {
             diff.disclosevat = std::make_pair(first.disclosevat,second.disclosevat);
         }
 
-        if(!Util::is_equal(first.discloseident, second.discloseident))
+        if(first.discloseident != second.discloseident)
         {
             diff.discloseident = std::make_pair(first.discloseident,second.discloseident);
         }
 
-        if(!Util::is_equal(first.disclosenotifyemail, second.disclosenotifyemail))
+        if(first.disclosenotifyemail != second.disclosenotifyemail)
         {
             diff.disclosenotifyemail = std::make_pair(first.disclosenotifyemail,second.disclosenotifyemail);
         }

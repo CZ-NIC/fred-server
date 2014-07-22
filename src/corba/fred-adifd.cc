@@ -54,6 +54,8 @@
 #include "cfg/handle_corbanameservice_args.h"
 #include "cfg/handle_adifd_args.h"
 
+#include "src/corba/admin_contact_verification/server_i.h"
+
 using namespace std;
 
 const string server_name = "fred-adifd";
@@ -76,7 +78,7 @@ int main(int argc, char *argv[])
     FakedArgs fa; //producing faked args with unrecognized ones
     try
     {   //config
-        fa = CfgArgs::instance<HandleHelpArg>(global_hpv)->handle(argc, argv);
+        fa = CfgArgs::init<HandleHelpArg>(global_hpv)->handle(argc, argv);
 
         // setting up logger
         setup_logging(CfgArgs::instance());
@@ -105,6 +107,9 @@ int main(int argc, char *argv[])
                     , adifd_args_ptr->adifd_session_garbage
             ));
 
+        std::auto_ptr<Registry::AdminContactVerification::Server_i>
+            admin_contact_verification_server(new(Registry::AdminContactVerification::Server_i));
+
             // create session use values from config
             LOGGER(PACKAGE).info(boost::format(
                     "sessions max: %1%; timeout: %2%")
@@ -114,9 +119,11 @@ int main(int argc, char *argv[])
         //create server object with poa and nameservice registration
         CorbaContainer::get_instance()
             ->register_server(myccReg_Admin_i.release(), "Admin");
+        CorbaContainer::get_instance()
+            ->register_server(admin_contact_verification_server.release(), "AdminContactVerification");
 
         CorbaContainer::get_instance()
-            ->register_server(new Registry::Administrative::Server_i(server_name), "Administrative");
+            ->register_server(new Registry::Administrative::Server_i(server_name), "AdminBlocking");
 
         run_server(CfgArgs::instance(), CorbaContainer::get_instance());
 

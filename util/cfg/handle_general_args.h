@@ -76,7 +76,7 @@ static void parse_config_file_to_faked_args(std::string fname, FakedArgs& fa )
 
 /**
  * \class HandleGeneralArgs
- * \brief common options and config file handler
+ * \brief common options and config file handler for tests
  */
 class HandleGeneralArgs : public HandleArgs
 {
@@ -88,10 +88,10 @@ public:
     PoDescs po_description;
 
 #ifdef CONFIG_FILE
-    HandleGeneralArgs(const std::string def_cfg = std::string(CONFIG_FILE)) 
+    HandleGeneralArgs(const std::string& def_cfg = std::string(CONFIG_FILE))
         : default_config(def_cfg) {};
 #else
-    HandleGeneralArgs(const std::string def_cfg = std::string("")) 
+    HandleGeneralArgs(const std::string& def_cfg = std::string(""))
         : default_config(def_cfg) {};
 #endif
 
@@ -212,7 +212,7 @@ class HandleConfigFileArgs : public HandleArgs
 
 public:
 
-    HandleConfigFileArgs(const std::string def_cfg)
+    HandleConfigFileArgs(const std::string& def_cfg)
         : default_config(def_cfg) {};
 
     boost::shared_ptr<boost::program_options::options_description>
@@ -259,13 +259,13 @@ public:
  * \class HandleHelpArgGrp
  * \brief common options and config file handler
  */
-class HandleHelpArgGrp : public HandleGrpArgs
+class HandleHelpGrpArg : public HandleGrpArgs
                         , private HandleHelpArg
 {
 public:
 
-    HandleHelpArgGrp(){}
-    HandleHelpArgGrp(const std::string& usage)
+    HandleHelpGrpArg(){}
+    HandleHelpGrpArg(const std::string& usage)
         : HandleHelpArg(usage){}
 
     boost::shared_ptr<boost::program_options::options_description>
@@ -290,11 +290,11 @@ public:
  * \class HandleConfigFileArgsGrp
  * \brief config file handler
  */
-class HandleConfigFileArgsGrp : public HandleGrpArgs
+class HandleConfigFileGrpArgs : public HandleGrpArgs
                                 , private HandleConfigFileArgs
 {
 public:
-    HandleConfigFileArgsGrp(const std::string def_cfg)
+    HandleConfigFileGrpArgs(const std::string& def_cfg)
         : HandleConfigFileArgs(def_cfg) {};
 
     boost::shared_ptr<boost::program_options::options_description>

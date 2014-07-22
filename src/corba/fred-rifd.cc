@@ -24,7 +24,7 @@
 #include "config.h"
 #include "src/corba/EPP.hh"
 #include "src/corba/TechCheck.hh"
-#include "epp/epp_impl.h"
+#include "src/corba/epp/epp_impl.h"
 #include "src/corba/mailer_manager.h"
 
 #include <iostream>
@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
     FakedArgs fa; //producing faked args with unrecognized ones
     try
     {   //config
-        fa = CfgArgs::instance<HandleHelpArg>(global_hpv)->handle(argc, argv);
+        fa = CfgArgs::init<HandleHelpArg>(global_hpv)->handle(argc, argv);
 
         // setting up logger
         setup_logging(CfgArgs::instance());

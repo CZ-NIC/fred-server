@@ -141,17 +141,18 @@ public:
   virtual short blockAction() const {
     return 2;
   }
-    virtual void processAction(bool check) {
-    Database::Connection conn = Database::Manager::acquire();
-    for (unsigned i = 0; i < getObjectSize(); i++) {
-        if (!queryBlockRequest(getObject(i).id, getId()
-            , Util::vector_of<std::string>(ObjectState::SERVER_TRANSFER_PROHIBITED)
-            , true))
-        throw REQUEST_BLOCKED();
-      Database::Query q;
-      q.buffer() << "SELECT update_object_states(" << getObject(i).id << ")";
-      conn.exec(q);
-    }
+    virtual void processAction(bool check)
+    {
+        Database::Connection conn = Database::Manager::acquire();
+        for (unsigned i = 0; i < getObjectSize(); i++)
+        {
+            if (!queryBlockRequest(getObject(i).id, getId()
+                , Util::vector_of<std::string>(ObjectState::SERVER_TRANSFER_PROHIBITED)
+                , true))
+            throw REQUEST_BLOCKED();
+            Fred::cancel_object_state(getObject(i).id, ObjectState::SERVER_TRANSFER_PROHIBITED);
+            Fred::update_object_states(getObject(i).id);
+        }
     }
 
     static std::string registration_name()
@@ -180,18 +181,21 @@ public:
   virtual short blockAction() const {
     return 1;
   }
-    virtual void processAction(bool check) {
-    Database::Connection conn = Database::Manager::acquire();
-    for (unsigned i = 0; i < getObjectSize(); i++) {
-        if (!queryBlockRequest(getObject(i).id, getId()
-            , Util::vector_of<std::string>(ObjectState::SERVER_TRANSFER_PROHIBITED)
-                (ObjectState::SERVER_UPDATE_PROHIBITED)
-            , true))
-        throw REQUEST_BLOCKED();
-      Database::Query q;
-      q.buffer() << "SELECT update_object_states(" << getObject(i).id << ")";
-      conn.exec(q);
-    }
+    virtual void processAction(bool check)
+    {
+        Database::Connection conn = Database::Manager::acquire();
+        for (unsigned i = 0; i < getObjectSize(); i++)
+        {
+            if (!queryBlockRequest(getObject(i).id, getId()
+                , Util::vector_of<std::string>(ObjectState::SERVER_TRANSFER_PROHIBITED)
+                    (ObjectState::SERVER_UPDATE_PROHIBITED)
+                , true))
+            throw REQUEST_BLOCKED();
+
+            Fred::cancel_object_state(getObject(i).id, ObjectState::SERVER_TRANSFER_PROHIBITED);
+            Fred::cancel_object_state(getObject(i).id, ObjectState::SERVER_UPDATE_PROHIBITED);
+            Fred::update_object_states(getObject(i).id);
+        }
     }
 
     static std::string registration_name()
