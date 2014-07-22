@@ -990,6 +990,13 @@ namespace Registry
                         continue;
                     }
 
+                    if((block_type == UNBLOCK_TRANSFER)
+                        && Fred::ObjectHasState(ci->first, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx_per_object))//forbidden partial unblocking
+                    {
+                        blocked_objects.push_back(ci->second);
+                        continue;
+                    }
+
                     if((block_type == BLOCK_TRANSFER) || (block_type == BLOCK_TRANSFER_AND_UPDATE))//block transfer
                     {
                         if(!Fred::ObjectHasState(ci->first, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx_per_object))
