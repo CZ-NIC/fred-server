@@ -1974,9 +1974,48 @@ tools_logd_migration_migrate_log_LDADD = \
 #
 SERVER_TESTS = \
 		tests/test-server \
+		tests/interfaces/test-admin-contact-verification \
 		tests/test-exception \
 		tests/test-blocking \
 		tests/test-fredlib
+
+
+# tests/interfaces/test-admin-contact-verification
+#
+tests_interfaces_test_admin_contact_verification_SOURCES = \
+		tests/interfaces/admin/contact/verification/main.cc \
+		tests/interfaces/admin/contact/verification/setup_utils.h \
+		tests/fredlib/contact/verification/setup_utils.h \
+		tests/fredlib/contact/verification/setup_utils.cc \
+		tests/interfaces/admin/contact/verification/test_run_all_enqueued_checks.cc \
+		tests/interfaces/admin/contact/verification/test_fill_check_queue.cc \
+		tests/interfaces/admin/contact/verification/test_resolve_check.cc \
+		tests/interfaces/admin/contact/verification/test_related_records.cc \
+		tests/interfaces/admin/contact/verification/test_enqueue_check.cc \
+		tests/interfaces/admin/contact/verification/test_delete_domains_of_invalid_contact.cc \
+		tests/setup/fixtures.h \
+		tests/setup/fixtures.cc
+
+tests_interfaces_test_admin_contact_verification_LDFLAGS = \
+		$(POSTGRESQL_LDFLAGS) \
+		$(BOOST_LDFLAGS) \
+		$(AM_LDFLAGS)
+
+tests_interfaces_test_admin_contact_verification_LDADD = \
+		src/admin/contact/verification/libadmin_contact_verification.a \
+		src/fredlib/libfred.a \
+		util/log/liblog.a \
+		util/libutil.a \
+		$(BOOST_PROGRAM_OPTIONS_LIB) \
+		$(BOOST_DATE_TIME_LIB) \
+		$(BOOST_REGEX_LIB) \
+		$(BOOST_THREAD_LIB) \
+		$(BOOST_SERIALIZATION_LIB) \
+		$(POSTGRESQL_LIB) \
+		$(BOOST_SYSTEM_LIB) \
+		-lboost_unit_test_framework
+#
+# tests/interfaces/test-admin-contact-verification
 
 
 # tests/test_server
@@ -2072,13 +2111,6 @@ tests_test_server_SOURCES = \
 		tests/fredlib/contact/verification/test_info_check_integ.cc \
 		tests/fredlib/contact/verification/test_list_checks_integ.cc \
 		tests/fredlib/contact/verification/test_list_enum_objects_integ.cc \
-		tests/interfaces/admin/contact/verification/setup_utils.h \
-		tests/interfaces/admin/contact/verification/test_run_all_enqueued_checks.cc \
-		tests/interfaces/admin/contact/verification/test_fill_check_queue.cc \
-		tests/interfaces/admin/contact/verification/test_resolve_check.cc \
-		tests/interfaces/admin/contact/verification/test_related_records.cc \
-		tests/interfaces/admin/contact/verification/test_enqueue_check.cc \
-		tests/interfaces/admin/contact/verification/test_delete_domains_of_invalid_contact.cc \
 		tests/util/test_is_equal_optional_nullable.cc \
 		src/fredlib/object_state/create_object_state_request.cc \
 		src/fredlib/object_state/create_object_state_request.h \
@@ -2092,7 +2124,8 @@ tests_test_server_SOURCES = \
 		src/fredlib/object_state/cancel_object_state_request_id.h \
 		src/domain_browser/domain_browser.cc \
 		src/domain_browser/domain_browser.h \
-		tests/interfaces/domain_browser/test_domain_browser.cc
+		tests/interfaces/domain_browser/test_domain_browser.cc \
+		tests/setup/fixtures.h
 
 tests_test_server_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS) \

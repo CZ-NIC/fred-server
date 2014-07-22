@@ -1,0 +1,59 @@
+/**
+ *  @file
+ *  test fixtures
+ */
+
+#ifndef TESTS_SETUP_FIXTURES_41215653023
+#define TESTS_SETUP_FIXTURES_41215653023
+
+#include "util/cfg/handle_args.h"
+#include "src/fredlib/db_settings.h"
+
+namespace Test {
+namespace Fixture {
+
+    // database created by fred-manager init_cz
+    static std::string get_original_db_name() { return "fred"; }
+
+
+
+    struct create_db_template {
+        static std::string get_db_template_name() {
+            return get_original_db_name() + "_test_template";
+        }
+
+        create_db_template();
+        ~create_db_template();
+    };
+
+
+
+    struct instantiate_db_template {
+        instantiate_db_template();
+        ~instantiate_db_template();
+    };
+
+
+    /***
+     * config handlers for admin connection to db used by fixtures related to db data
+     */
+    class HandleAdminDatabaseArgs : public HandleArgs {
+
+        public:
+            std::string host;
+            std::string port;
+            std::string user;
+            std::string pass;
+            std::string dbname;
+            std::string timeout;
+
+            boost::shared_ptr<boost::program_options::options_description> get_options_description();
+
+            void handle( int argc, char* argv[],  FakedArgs &fa);
+
+            std::auto_ptr<Database::StandaloneConnection> get_admin_connection();
+    };
+
+}
+}
+#endif // #include guard end

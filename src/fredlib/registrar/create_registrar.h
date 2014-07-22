@@ -52,7 +52,7 @@ namespace Fred
           , ExceptionData_invalid_registrar_handle<Exception>
           , ExceptionData_unknown_country<Exception>
         {};
-    private:
+    protected:
         const std::string handle_;/**< registrar identifier */
         Optional<std::string> name_;/**< name of the registrar */
         Optional<std::string> organization_;/**< full trade name of organization */
@@ -123,6 +123,8 @@ namespace Fred
                 const Optional<std::string>& variable_symbol,
                 const Optional<std::string>& payment_memo_regex,
                 const Optional<bool>& vat_payer);
+
+        virtual ~CreateRegistrar() { }
 
         /**
         * Sets registrar name.
