@@ -47,7 +47,7 @@
 
 #include "setup_server.h"
 
-#include "cfg/handle_general_args.h"
+#include "cfg/handle_tests_args.h"
 #include "cfg/handle_server_args.h"
 #include "cfg/handle_logging_args.h"
 #include "cfg/handle_database_args.h"

@@ -45,7 +45,7 @@
 #include "random_data_generator.h"
 #include "concurrent_queue.h"
 
-#include "cfg/handle_general_args.h"
+#include "cfg/handle_tests_args.h"
 #include "cfg/handle_server_args.h"
 #include "cfg/handle_logging_args.h"
 #include "cfg/handle_database_args.h"
@@ -62,7 +62,7 @@
 //args processing config for custom main
 HandlerPtrVector global_hpv =
 boost::assign::list_of
-(HandleArgsPtr(new HandleGeneralArgs))
+(HandleArgsPtr(new HandleTestsArgs(CONFIG_FILE)))
 (HandleArgsPtr(new HandleServerArgs))
 (HandleArgsPtr(new HandleLoggingArgs))
 (HandleArgsPtr(new HandleDatabaseArgs))

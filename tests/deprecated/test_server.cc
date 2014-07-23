@@ -26,7 +26,7 @@
 //args processing config for custom main
 HandlerPtrVector global_hpv =
 boost::assign::list_of
-(HandleArgsPtr(new HandleGeneralArgs))
+(HandleArgsPtr(new HandleTestsArgs(CONFIG_FILE)))
 (HandleArgsPtr(new HandleServerArgs))
 (HandleArgsPtr(new HandleLoggingArgs))
 (HandleArgsPtr(new HandleDatabaseArgs))
