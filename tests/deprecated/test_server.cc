@@ -21,6 +21,8 @@
 
 #include "test_server.h"
 
+#include "config.h" // needed for CONFIG_FILE
+
 //args processing config for custom main
 HandlerPtrVector global_hpv =
 boost::assign::list_of

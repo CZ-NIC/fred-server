@@ -87,13 +87,8 @@ class HandleGeneralArgs : public HandleArgs
 public:
     PoDescs po_description;
 
-#ifdef CONFIG_FILE
-    HandleGeneralArgs(const std::string& def_cfg = std::string(CONFIG_FILE))
+    HandleGeneralArgs(const std::string& def_cfg)
         : default_config(def_cfg) {};
-#else
-    HandleGeneralArgs(const std::string& def_cfg = std::string(""))
-        : default_config(def_cfg) {};
-#endif
 
     boost::shared_ptr<boost::program_options::options_description>
         get_options_description()
