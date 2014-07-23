@@ -51,7 +51,7 @@ std::set<std::string> FindAnyContactDuplicates::exec(Fred::OperationContext &_ct
 
         " LEFT JOIN object_state transfer_os ON transfer_os.object_id = o.id AND transfer_os.state_id IN "
             " (SELECT eos.id FROM enum_object_states eos WHERE eos.name = 'serverTransferProhibited'::text) "//prohibited transfer of merged contact
-            " AND transfer_os.valid_from <= CURRENT_TIMESTAMP AND (transfer_os.valid_to IS NULL OR transfer_os.valid_to > CURRENT_TIMESTAMP) "
+            " AND transfer_os.valid_from <= CURRENT_TIMESTAMP AND (transfer_os.valid_to IS NULL OR transfer_os.valid_to > CURRENT_TIMESTAMP) ";
 
     if (registrar_handle_.isset()) {
         dup_params.push_back(registrar_handle_.get_value());
