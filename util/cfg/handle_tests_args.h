@@ -88,12 +88,8 @@ public:
                 std::cout << **it << std::endl;
             }
 
-#if ( BOOST_VERSION > 103900 )
             fa.add_argv(std::string("--help")); //pass consumed help option to UTF
             std::cout << "\n\nBoost Test options under Usage:\n" << std::endl;
-#else
-            throw ReturnFromMain("help called");
-#endif
         }
 
         //read config file if configured and append content to fa
