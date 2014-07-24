@@ -1835,6 +1835,7 @@ src_cli_admin_fred_admin_LDADD = \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(BOOST_DATE_TIME_LIB) \
 		$(BOOST_REGEX_LIB) \
+		$(BOOST_FILESYSTEM_LIB) \
 		$(OMNIORB4_LIBS) \
 		$(XML2_LIBS) \
 		$(LIBIDN_CFLAGS) \

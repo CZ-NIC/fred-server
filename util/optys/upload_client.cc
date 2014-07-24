@@ -34,6 +34,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/format.hpp>
 #include <boost/utility.hpp>
+#include <boost/filesystem.hpp>
 
 #include <libssh/libssh.h>
 
@@ -339,6 +340,11 @@
     , cleanup_zip_tmp_dir_(cleanup_zip_tmp_dir)
     , file_manager_(file_manager)
     {
+        if(!boost::filesystem::exists(zip_tmp_dir))
+        {
+            throw std::runtime_error(std::string("zip_tmp_dir: " + zip_tmp_dir +" not found"));
+        }
+
         if(cleanup_zip_tmp_dir_)
         {
             std::string cleanup_command = std::string("rm -f ")+zip_tmp_dir_+"/*.zip";
