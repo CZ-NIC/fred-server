@@ -799,12 +799,12 @@ public:
 };
 /**
  * Set status and batch_id of letters send via Optys with given comm_type and service_handle.
- * Set status "sent" to letters in message_type_letters_map and not in fm_failed_letters_by_batch_id_map.
- * Set status "send_failed" to letters in fm_failed_letters_by_batch_id_map.
+ * Set status "sent" to letters in message_type_letters_map and not in failed_letters_by_batch_id_map.
+ * Set status "send_failed" to letters in failed_letters_by_batch_id_map.
  * Reset state of unprocessed letters according to send attempts.
  */
 void set_optys_letter_status(
-    const std::map<std::string, Fred::Messages::LetterProcInfo>& fm_failed_letters_by_batch_id_map
+    const std::map<std::string, Fred::Messages::LetterProcInfo>& failed_letters_by_batch_id_map
     , const std::map<std::string,Fred::Messages::LetterProcInfo>& message_type_letters_map
     , const std::string& comm_type
     , const std::string& service_handle
@@ -823,10 +823,10 @@ void set_optys_letter_status(
         Fred::Messages::LetterProcInfo letters = ci->second;
 
         std::map<std::string,Fred::Messages::LetterProcInfo>::const_iterator
-            failed_letters_ci = fm_failed_letters_by_batch_id_map.find(batch_id);
+            failed_letters_ci = failed_letters_by_batch_id_map.find(batch_id);
 
         //if batch_id not found in failed letters then set "sent" status
-        if(failed_letters_ci == fm_failed_letters_by_batch_id_map.end())
+        if(failed_letters_ci == failed_letters_by_batch_id_map.end())
         {
             messages_manager->set_letter_status(
                 letters,"sent",batch_id, comm_type, service_handle, max_attempts_limit);
@@ -910,8 +910,8 @@ void notify_letters_optys_send_impl(
         country_registered_letters_batcher.get_foreign_letters().begin(),
         country_registered_letters_batcher.get_foreign_letters().end(), MessageTypeLetterBatcher());
 
-    //send letters and collect file manager errors
-    std::map<std::string, Fred::Messages::LetterProcInfo> fm_failed_letters_by_batch_id_map
+    //send letters and collect errors
+    std::map<std::string, Fred::Messages::LetterProcInfo> failed_letters_by_batch_id_map
         = OptysUploadClient(map_at(set_cfg,"host"),
             boost::lexical_cast<int>(map_at(set_cfg,"port")),
             map_at(set_cfg,"user"),
@@ -930,22 +930,22 @@ void notify_letters_optys_send_impl(
         .scp_upload();
 
     //set sent or send_failed status
-    set_optys_letter_status(fm_failed_letters_by_batch_id_map,
+    set_optys_letter_status(failed_letters_by_batch_id_map,
         message_type_domestic_lettes_batcher.get_letters_by_message_type_map(),
         "letter",service_handle, max_attempts_limit,
         zip_file_name_domestic_before_message_type, zip_filename_letter_after_message_type,
         messages_manager);
-    set_optys_letter_status(fm_failed_letters_by_batch_id_map,
+    set_optys_letter_status(failed_letters_by_batch_id_map,
         message_type_foreign_letters_batcher.get_letters_by_message_type_map(),
         "letter",service_handle, max_attempts_limit,
         zip_file_name_foreign_before_message_type, zip_filename_letter_after_message_type,
         messages_manager);
-    set_optys_letter_status(fm_failed_letters_by_batch_id_map,
+    set_optys_letter_status(failed_letters_by_batch_id_map,
         message_type_domestic_registered_letters_batcher.get_letters_by_message_type_map(),
         "registered_letter",service_handle, max_attempts_limit,
         zip_file_name_domestic_before_message_type, zip_filename_registered_letter_after_message_type,
         messages_manager);
-    set_optys_letter_status(fm_failed_letters_by_batch_id_map,
+    set_optys_letter_status(failed_letters_by_batch_id_map,
         message_type_foreign_registered_letters_batcher.get_letters_by_message_type_map(),
         "registered_letter",service_handle, max_attempts_limit,
         zip_file_name_foreign_before_message_type, zip_filename_registered_letter_after_message_type,

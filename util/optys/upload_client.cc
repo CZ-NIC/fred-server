@@ -388,7 +388,7 @@
                 {
                     LOGGER(PACKAGE).error(boost::format("filemanager download: '%1%' error processing letter_id: %2% file_id: %3%") % ex.what()
                          % letters[i].letter_id % letters[i].file_id );
-                    fm_failed_letters_by_batch_id_[batch_id].push_back(letters[i]);//save failed letter
+                    failed_letters_by_batch_id_[batch_id].push_back(letters[i]);//save failed letter
                     continue;
                 }
 
@@ -433,6 +433,6 @@
             //upload
             scp_write_session.upload_file((*ci), zip_file_content);
         }
-        return fm_failed_letters_by_batch_id_;
+        return failed_letters_by_batch_id_;
     }
 
