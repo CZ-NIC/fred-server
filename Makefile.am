@@ -1993,6 +1993,8 @@ tests_interfaces_test_admin_contact_verification_SOURCES = \
 		tests/interfaces/admin/contact/verification/test_related_records.cc \
 		tests/interfaces/admin/contact/verification/test_enqueue_check.cc \
 		tests/interfaces/admin/contact/verification/test_delete_domains_of_invalid_contact.cc \
+		tests/setup/fixtures_utils.h \
+		tests/setup/fixtures_utils.cc \
 		tests/setup/fixtures.h \
 		tests/setup/fixtures.cc
 
