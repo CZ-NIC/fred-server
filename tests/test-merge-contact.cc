@@ -49,7 +49,7 @@
 #include "src/fredlib/contact/merge_contact.h"
 #include "src/fredlib/contact/merge_contact_selection.h"
 #include "src/fredlib/contact/merge_contact_email_notification_data.h"
-#include "src/fredlib/contact/create_contact.h"
+#include "src/fredlib/contact/find_contact_duplicates.h"
 
 #include "src/fredlib/contact/create_contact.h"
 #include "src/fredlib/nsset/create_nsset.h"
@@ -71,6 +71,7 @@
 
 
 #include "util/util.h"
+#include "util/printable.h"
 
 #include "src/fredlib/contact_verification/contact.h"
 #include "src/fredlib/object_states.h"
@@ -1881,6 +1882,21 @@ BOOST_AUTO_TEST_CASE(get_registrar_handles_except_excluded)
     std::vector<std::string> registrars = Fred::Registrar::GetRegistrarHandles().set_exclude_registrars(Util::vector_of<std::string>("REG-FRED_B")).exec();
     BOOST_CHECK(std::find(registrars.begin(),registrars.end(),std::string("REG-FRED_A")) != registrars.end());
     BOOST_CHECK(std::find(registrars.begin(),registrars.end(),std::string("REG-FRED_B")) == registrars.end());
+}
+
+
+BOOST_FIXTURE_TEST_CASE(test_find_contact_duplicate, merge_contact_contacts_fixture)
+{
+    std::set<std::string> contact_duplicates_1 = Fred::Contact::FindContactDuplicates()
+    .exec(ctx);
+
+    BOOST_CHECK(!contact_duplicates_1.empty());
+    BOOST_MESSAGE(Util::format_container(contact_duplicates_1,", "));
+
+    //BOOST_CHECK(contact_duplicates_1.find(merge_contact_contacts_fixture::src_contact_handle) != contact_duplicates_1.end());
+    //.set_registrar(merge_contact_contacts_fixture::registrar_handle)
+    //BOOST_MESSAGE(Util::format_container(contact_duplicates_1,", "));
+    ctx.commit_transaction();
 }
 
 BOOST_AUTO_TEST_SUITE_END();//TestMergeContact

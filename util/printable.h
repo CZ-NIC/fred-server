@@ -176,6 +176,32 @@ namespace Util
     }
 
 
+    /**
+     * Print container of elements into the string. Values from input container have to have conversion to string.
+     * C++11 traits solution is a bit nicer viz http://stackoverflow.com/questions/7728478/c-template-class-function-with-arbitrary-container-type-how-to-define-it
+     * @param in is input container with value_type member
+     * @return string with content of input container delimited by separator
+     */
+    template<class CONTAINER> std::string format_container(const CONTAINER& in, std::string separator = " ")
+    {
+        std::string out;
+        typename CONTAINER::const_iterator i = in.begin();
+
+        if(i != in.end())
+        {
+            out += printable_conversion_to_string(*i,EnumType<ConversionToString<typename CONTAINER::value_type>::result >());
+            ++i;
+        }
+
+        for(; i != in.end(); ++i)
+        {
+            out += separator;
+            out += printable_conversion_to_string(*i,EnumType<ConversionToString<typename CONTAINER::value_type>::result >());
+        }
+        return out;
+    }
+
+
 }//namespace Util
 
 #endif //PRINTABLE_H_
