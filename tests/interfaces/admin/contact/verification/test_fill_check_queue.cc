@@ -37,12 +37,10 @@
 #include <boost/shared_ptr.hpp>
 
 #include "tests/interfaces/admin/contact/verification/setup_utils.h"
+#include "tests/setup/fixtures.h"
 
-//not using UTF defined main
-#define BOOST_TEST_NO_MAIN
-
-namespace Test = Fred::ContactTestStatus;
-namespace Check = Fred::ContactCheckStatus;
+namespace TestStatus = Fred::ContactTestStatus;
+namespace CheckStatus = Fred::ContactCheckStatus;
 
 typedef std::vector<Admin::ContactVerificationQueue::enqueued_check> T_enq_ch;
 typedef std::map<std::string, boost::shared_ptr<Admin::ContactVerification::Test> > T_testimpl_map;
@@ -165,7 +163,7 @@ T_testimpl_map create_dummy_automatic_testsuite() {
 
     Fred::OperationContext ctx;
     boost::shared_ptr<Admin::ContactVerification::Test> temp_ptr
-        (new DummyTestReturning(Test::OK));
+        (new DummyTestReturning(TestStatus::OK));
 
     std::string handle = dynamic_cast<DummyTestReturning*>(temp_ptr.get())->get_handle();
 
@@ -269,7 +267,7 @@ void create_check_for_all_unchecked_contacts(const std::string& testsuite_handle
 }
 
 BOOST_AUTO_TEST_SUITE(TestContactVerification)
-BOOST_FIXTURE_TEST_SUITE(TestFillAutomaticQueue, autoclean_contact_verification_db)
+BOOST_FIXTURE_TEST_SUITE(TestFillAutomaticQueue, Test::Fixture::instantiate_db_template)
 
 const std::string server_name = "test-contact_verification_integration-fill_automatic_check_queue";
 
