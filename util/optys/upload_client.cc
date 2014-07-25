@@ -39,6 +39,7 @@
 #include <libssh/libssh.h>
 
 #include "util/subprocess.h"
+#include "util/printable.h"
 #include <minizip/zip.h>
 
 
@@ -448,6 +449,7 @@
         {
             throw ScpUploadException("unknown exception", sent_files);
         }
+        std::cout << "Sent: " << Util::format_container(sent_files, ", ") << std::endl;
         return failed_letters_by_batch_id_;
     }
 
