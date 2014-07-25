@@ -150,7 +150,7 @@ std::set<std::string> FindContactDuplicates::exec(Fred::OperationContext &ctx)
         " AND (transfer_src_os.id IS NULL) = (transfer_dst_os.id IS NULL) "
         " )) as tmp ";
 
-        if(!exclude_contacts_.empty())
+        if(!specific_contact_handle_.isset() && !exclude_contacts_.empty())
         {
             contact_handle_query += "WHERE NOT (tmp.contact_names @> array[";
 
