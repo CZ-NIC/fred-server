@@ -23,6 +23,7 @@ FindContactDuplicates& FindContactDuplicates::set_exclude_contacts(const std::se
     return *this;
 }
 
+//find set of duplicate contacts that contains given specific_contact_handle
 FindContactDuplicates& FindContactDuplicates::set_specific_contact(const std::string& specific_contact_handle)
 {
     specific_contact_handle_ = specific_contact_handle;
