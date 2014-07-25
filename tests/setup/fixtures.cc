@@ -47,6 +47,12 @@ namespace Fixture {
     }
 
     create_db_template::~create_db_template() {
+        // restore original db for the last time
+        force_copy_db(
+            get_db_template_name(),
+            get_original_db_name(),
+            CfgArgs::instance()->get_handler_ptr_by_type<HandleAdminDatabaseArgs>()->get_admin_connection()
+        );
         force_drop_db(
             get_db_template_name(),
             CfgArgs::instance()->get_handler_ptr_by_type<HandleAdminDatabaseArgs>()->get_admin_connection()
