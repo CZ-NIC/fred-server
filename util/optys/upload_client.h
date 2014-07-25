@@ -25,11 +25,34 @@
 #define UPLOAD_CLIENT_H_1f78f9abca47483e845e3f3625299b50
 
 #include <vector>
+#include <set>
 #include <string>
 #include <utility>
+#include <stdexcept>
+
 
 #include "src/fredlib/messages/messages_impl.h"
 #include "src/fredlib/file.h"
+
+
+class ScpUploadException : public std::runtime_error
+{
+    std::set<std::string> sent_zip_file_relative_names_;
+public:
+
+    ScpUploadException(const std::string& what,
+        const std::set<std::string>& sent_zip_file_relative_names)
+    : std::runtime_error(what)
+    , sent_zip_file_relative_names_(sent_zip_file_relative_names)
+    {}
+
+    std::set<std::string> get_sent_zip_file_relative_names() const
+    {
+        return sent_zip_file_relative_names_;
+    }
+    virtual ~ScpUploadException() throw() {};
+};
+
 /**
  * Send letters via Optys.
  * Download designated letters from FRED file manager, archive them in pkzip file in temp dir with specific file names and upload them via ssh-scp into Optys server.
@@ -53,7 +76,7 @@ public:
     OptysUploadClient& zip_letters(const std::map<std::string,Fred::Messages::LetterProcInfo>& message_type_letters_map
         , const std::string& zip_filename_before_message_type
         , const std::string& zip_filename_after_message_type);
-    std::map<std::string, Fred::Messages::LetterProcInfo> scp_upload(); //return failed_letters_by_batch_id
+    std::map<std::string, Fred::Messages::LetterProcInfo> scp_upload(); //return failed_letters_by_batch_id or throw ScpUploadException
 };
 
 

@@ -910,9 +910,13 @@ void notify_letters_optys_send_impl(
         country_registered_letters_batcher.get_foreign_letters().begin(),
         country_registered_letters_batcher.get_foreign_letters().end(), MessageTypeLetterBatcher());
 
-    //send letters and collect errors
-    std::map<std::string, Fred::Messages::LetterProcInfo> failed_letters_by_batch_id_map
-        = OptysUploadClient(map_at(set_cfg,"host"),
+    std::map<std::string, Fred::Messages::LetterProcInfo> failed_letters_by_batch_id_map;
+
+    try
+    {
+        //send letters and collect errors
+        failed_letters_by_batch_id_map =
+        OptysUploadClient(map_at(set_cfg,"host"),
             boost::lexical_cast<int>(map_at(set_cfg,"port")),
             map_at(set_cfg,"user"),
             map_at(set_cfg,"password"),
@@ -928,6 +932,90 @@ void notify_letters_optys_send_impl(
         .zip_letters(message_type_foreign_registered_letters_batcher.get_letters_by_message_type_map(),
             zip_file_name_foreign_before_message_type,zip_filename_registered_letter_after_message_type)
         .scp_upload();
+    }
+    catch(const ScpUploadException& scp_ex)
+    {
+        std::set<std::string> sent_files = scp_ex.get_sent_zip_file_relative_names();
+
+        for(std::map<std::string,Fred::Messages::LetterProcInfo>::const_iterator
+            ci = message_type_domestic_lettes_batcher.get_letters_by_message_type_map().begin();
+            ci != message_type_domestic_lettes_batcher.get_letters_by_message_type_map().end(); ++ci)
+        {
+            std::string batch_id = zip_file_name_domestic_before_message_type+ ci->first + zip_filename_letter_after_message_type;
+            std::string zip_file_name = batch_id + ".zip";
+            if(sent_files.find(zip_file_name) == sent_files.end()) //file was not sent
+            {
+                messages_manager->set_letter_status(ci->second,"send_failed", batch_id, "letter", service_handle, max_attempts_limit);
+            }
+        }
+        for(std::map<std::string,Fred::Messages::LetterProcInfo>::const_iterator
+            ci = message_type_foreign_letters_batcher.get_letters_by_message_type_map().begin();
+            ci != message_type_foreign_letters_batcher.get_letters_by_message_type_map().end(); ++ci)
+        {
+            std::string batch_id = zip_file_name_foreign_before_message_type+ ci->first + zip_filename_letter_after_message_type;
+            std::string zip_file_name = batch_id + ".zip";
+            if(sent_files.find(zip_file_name) == sent_files.end()) //file was not sent
+            {
+                messages_manager->set_letter_status(ci->second,"send_failed", batch_id, "letter", service_handle, max_attempts_limit);
+            }
+        }
+        for(std::map<std::string,Fred::Messages::LetterProcInfo>::const_iterator
+            ci = message_type_domestic_registered_letters_batcher.get_letters_by_message_type_map().begin();
+            ci != message_type_domestic_registered_letters_batcher.get_letters_by_message_type_map().end(); ++ci)
+        {
+            std::string batch_id = zip_file_name_domestic_before_message_type+ ci->first + zip_filename_registered_letter_after_message_type;
+            std::string zip_file_name = batch_id + ".zip";
+            if(sent_files.find(zip_file_name) == sent_files.end()) //file was not sent
+            {
+                messages_manager->set_letter_status(ci->second,"send_failed", batch_id, "registered_letter", service_handle, max_attempts_limit);
+            }
+        }
+        for(std::map<std::string,Fred::Messages::LetterProcInfo>::const_iterator
+            ci = message_type_foreign_registered_letters_batcher.get_letters_by_message_type_map().begin();
+            ci != message_type_foreign_registered_letters_batcher.get_letters_by_message_type_map().end(); ++ci)
+        {
+            std::string batch_id = zip_file_name_foreign_before_message_type+ ci->first + zip_filename_registered_letter_after_message_type;
+            std::string zip_file_name = batch_id + ".zip";
+            if(sent_files.find(zip_file_name) == sent_files.end()) //file was not sent
+            {
+                messages_manager->set_letter_status(ci->second,"send_failed", batch_id, "registered_letter", service_handle, max_attempts_limit);
+            }
+        }
+
+        throw std::runtime_error(scp_ex.what());
+    }
+    catch(...)
+    {
+        for(std::map<std::string,Fred::Messages::LetterProcInfo>::const_iterator
+            ci = message_type_domestic_lettes_batcher.get_letters_by_message_type_map().begin();
+            ci != message_type_domestic_lettes_batcher.get_letters_by_message_type_map().end(); ++ci)
+        {
+            std::string batch_id = zip_file_name_domestic_before_message_type+ ci->first + zip_filename_letter_after_message_type;
+            messages_manager->set_letter_status(ci->second,"send_failed", batch_id, "letter", service_handle, max_attempts_limit);
+        }
+        for(std::map<std::string,Fred::Messages::LetterProcInfo>::const_iterator
+            ci = message_type_foreign_letters_batcher.get_letters_by_message_type_map().begin();
+            ci != message_type_foreign_letters_batcher.get_letters_by_message_type_map().end(); ++ci)
+        {
+            std::string batch_id = zip_file_name_foreign_before_message_type+ ci->first + zip_filename_letter_after_message_type;
+            messages_manager->set_letter_status(ci->second,"send_failed", batch_id, "letter", service_handle, max_attempts_limit);
+        }
+        for(std::map<std::string,Fred::Messages::LetterProcInfo>::const_iterator
+            ci = message_type_domestic_registered_letters_batcher.get_letters_by_message_type_map().begin();
+            ci != message_type_domestic_registered_letters_batcher.get_letters_by_message_type_map().end(); ++ci)
+        {
+            std::string batch_id = zip_file_name_domestic_before_message_type+ ci->first + zip_filename_registered_letter_after_message_type;
+            messages_manager->set_letter_status(ci->second,"send_failed", batch_id, "registered_letter", service_handle, max_attempts_limit);
+        }
+        for(std::map<std::string,Fred::Messages::LetterProcInfo>::const_iterator
+            ci = message_type_foreign_registered_letters_batcher.get_letters_by_message_type_map().begin();
+            ci != message_type_foreign_registered_letters_batcher.get_letters_by_message_type_map().end(); ++ci)
+        {
+            std::string batch_id = zip_file_name_foreign_before_message_type+ ci->first + zip_filename_registered_letter_after_message_type;
+            messages_manager->set_letter_status(ci->second,"send_failed", batch_id, "registered_letter", service_handle, max_attempts_limit);
+        }
+        throw;
+    }
 
     //set sent or send_failed status
     set_optys_letter_status(failed_letters_by_batch_id_map,

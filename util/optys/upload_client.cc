@@ -406,32 +406,47 @@
 
     std::map<std::string, Fred::Messages::LetterProcInfo>  OptysUploadClient::scp_upload()
     {
-        ScpWriteSession scp_write_session = SshSession(host_, port_, user_, password_).get_scp_write();
-
-        for(std::vector<std::string >::const_iterator ci = zip_file_names_.begin();
-                ci != zip_file_names_.end(); ++ci)
+        std::set<std::string> sent_files;
+        try
         {
-            //open zip file
-            std::ifstream zip_file_stream;
-            std::string zip_file_name = zip_tmp_dir_+"/" + (*ci);
-            zip_file_stream.open (zip_file_name.c_str(), std::ios::in | std::ios::binary);
-            if(!zip_file_stream.is_open()) throw std::runtime_error("zip_file_stream.open failed, "
-                "unable to open file: "+ zip_file_name);
+            ScpWriteSession scp_write_session = SshSession(host_, port_, user_, password_).get_scp_write();
 
-            //find end of zip file
-            std::string zip_file_content;//buffer
-            zip_file_stream.seekg (0, std::ios::end);
-            long long zip_file_length = zip_file_stream.tellg();
-            zip_file_stream.seekg (0, std::ios::beg);//reset
+            for(std::vector<std::string >::const_iterator ci = zip_file_names_.begin();
+                ci != zip_file_names_.end(); ++ci)
+            {
+                //open zip file
+                std::ifstream zip_file_stream;
+                std::string zip_file_name = zip_tmp_dir_+"/" + (*ci);
+                zip_file_stream.open (zip_file_name.c_str(), std::ios::in | std::ios::binary);
+                if(!zip_file_stream.is_open()) throw std::runtime_error("zip_file_stream.open failed, "
+                    "unable to open file: "+ zip_file_name);
 
-            //allocate zip file buffer
-            zip_file_content.resize(zip_file_length);
+                //find end of zip file
+                std::string zip_file_content;//buffer
+                zip_file_stream.seekg (0, std::ios::end);
+                long long zip_file_length = zip_file_stream.tellg();
+                zip_file_stream.seekg (0, std::ios::beg);//reset
 
-            //read zip file
-            zip_file_stream.read(&zip_file_content[0], zip_file_content.size());
+                //allocate zip file buffer
+                zip_file_content.resize(zip_file_length);
 
-            //upload
-            scp_write_session.upload_file((*ci), zip_file_content);
+                //read zip file
+                zip_file_stream.read(&zip_file_content[0], zip_file_content.size());
+
+                //upload
+                scp_write_session.upload_file((*ci), zip_file_content);
+
+                //note uploaded files
+                sent_files.insert(*ci);
+            }
+        }
+        catch(const std::exception& ex)
+        {
+            throw ScpUploadException(ex.what(), sent_files);
+        }
+        catch(...)
+        {
+            throw ScpUploadException("unknown exception", sent_files);
         }
         return failed_letters_by_batch_id_;
     }
