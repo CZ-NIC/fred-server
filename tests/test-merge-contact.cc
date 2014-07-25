@@ -1899,17 +1899,22 @@ BOOST_FIXTURE_TEST_CASE(test_find_contact_duplicate, merge_contact_contacts_fixt
     std::set<std::string> contact_duplicates_3 = Fred::Contact::FindContactDuplicates()
     .set_registrar(merge_contact_contacts_fixture::registrar_handle)
     .set_exclude_contacts(Util::set_of<std::string>(merge_contact_contacts_fixture::dst_contact_handle)).exec(ctx);
-    BOOST_CHECK(!contact_duplicates_3.empty());
+    BOOST_CHECK(contact_duplicates_3.find(merge_contact_contacts_fixture::src_contact_handle) == contact_duplicates_3.end());
     BOOST_CHECK(contact_duplicates_3.find(merge_contact_contacts_fixture::dst_contact_handle) == contact_duplicates_3.end());
     BOOST_MESSAGE(Util::format_container(contact_duplicates_3,", "));
 
     std::set<std::string> contact_duplicates_4 = Fred::Contact::FindContactDuplicates()
-    .set_registrar(merge_contact_contacts_fixture::registrar_handle)
-    .set_dest_contact(merge_contact_contacts_fixture::dst_contact_handle).exec(ctx);
+    .set_specific_contact(merge_contact_contacts_fixture::dst_contact_handle).exec(ctx);
     BOOST_CHECK(!contact_duplicates_4.empty());
-    BOOST_CHECK(contact_duplicates_4.find(merge_contact_contacts_fixture::dst_contact_handle) == contact_duplicates_4.end());
+    BOOST_CHECK(contact_duplicates_4.find(merge_contact_contacts_fixture::dst_contact_handle) != contact_duplicates_4.end());
     BOOST_CHECK(contact_duplicates_4.find(merge_contact_contacts_fixture::src_contact_handle) != contact_duplicates_4.end());
     BOOST_MESSAGE(Util::format_container(contact_duplicates_4,", "));
+
+    std::set<std::string> contact_duplicates_5 = Fred::Contact::FindContactDuplicates()
+    .set_exclude_contacts(Util::set_of<std::string>(merge_contact_contacts_fixture::dst_contact_handle)).exec(ctx);
+    BOOST_CHECK(contact_duplicates_5.find(merge_contact_contacts_fixture::src_contact_handle) == contact_duplicates_5.end());
+    BOOST_CHECK(contact_duplicates_5.find(merge_contact_contacts_fixture::dst_contact_handle) == contact_duplicates_5.end());
+    BOOST_MESSAGE(Util::format_container(contact_duplicates_5,", "));
 
     ctx.commit_transaction();
 }

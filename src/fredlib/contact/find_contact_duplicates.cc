@@ -1,5 +1,6 @@
 #include "util/optional_value.h"
 #include "find_contact_duplicates.h"
+
 #include <boost/algorithm/string/join.hpp>
 
 
@@ -22,16 +23,15 @@ FindContactDuplicates& FindContactDuplicates::set_exclude_contacts(const std::se
     return *this;
 }
 
-FindContactDuplicates& FindContactDuplicates::set_dest_contact(const std::string& dest_contact_handle)
+FindContactDuplicates& FindContactDuplicates::set_specific_contact(const std::string& specific_contact_handle)
 {
-    dest_contact_handle_ = dest_contact_handle;
+    specific_contact_handle_ = specific_contact_handle;
     return *this;
 }
 
 std::set<std::string> FindContactDuplicates::exec(Fred::OperationContext &ctx)
 {
-
-    if(!dest_contact_handle_.isset())
+    if(!specific_contact_handle_.isset())
     {
         //cursor WITHOUT HOLD released with CLOSE or at the end of the transaction
         ctx.get_conn().exec("DECLARE get_contacts_by_name CURSOR FOR SELECT unnest(array_accum(c.id)) FROM contact c "
@@ -44,7 +44,7 @@ std::set<std::string> FindContactDuplicates::exec(Fred::OperationContext &ctx)
     {
         Database::Result duplicate_suspect_contact_id_result;
 
-        if(!dest_contact_handle_.isset())
+        if(!specific_contact_handle_.isset())
         {
             duplicate_suspect_contact_id_result = ctx.get_conn().exec("FETCH NEXT FROM get_contacts_by_name");
             if(duplicate_suspect_contact_id_result.size() == 0) break;
@@ -53,21 +53,11 @@ std::set<std::string> FindContactDuplicates::exec(Fred::OperationContext &ctx)
         Database::query_param_list contact_handle_query_params;
 
         std::string contact_handle_query =
-        "SELECT oreg_src.name::text "
-
+        "SELECT unnest(tmp.contact_names) FROM ( "
+        " SELECT array_accum(oreg_src.name::text) as contact_names "
         " FROM (object_registry oreg_src "
-        " JOIN contact c_src ON c_src.id = oreg_src.id AND oreg_src.erdate IS NULL ";
-
-        //exclude given contacts
-        for(std::set<std::string>::const_iterator ci = exclude_contacts_.begin(); ci != exclude_contacts_.end(); ++ci)
-        {
-            contact_handle_query += " AND oreg_src.name != $";
-            contact_handle_query += contact_handle_query_params.add(std::string(*ci));
-            contact_handle_query += "::text ";
-        }
-
-        contact_handle_query += " JOIN object o_src ON o_src.id = oreg_src.id) "
-
+        " JOIN contact c_src ON c_src.id = oreg_src.id AND oreg_src.erdate IS NULL "
+        " JOIN object o_src ON o_src.id = oreg_src.id) "
         " JOIN (object_registry oreg_dst "
         " JOIN object o_dst ON o_dst.id = oreg_dst.id ";
 
@@ -81,11 +71,11 @@ std::set<std::string> FindContactDuplicates::exec(Fred::OperationContext &ctx)
 
         contact_handle_query += " JOIN contact c_dst ON c_dst.id = oreg_dst.id  AND oreg_dst.erdate IS NULL ";
 
-        if(dest_contact_handle_.isset())
+        if(specific_contact_handle_.isset())
         {
-            //set winner contact handle
+            //set specific contact handle
             contact_handle_query += " AND oreg_dst.name = $";
-            contact_handle_query += contact_handle_query_params.add(dest_contact_handle_.get_value());
+            contact_handle_query += contact_handle_query_params.add(specific_contact_handle_.get_value());
             contact_handle_query += "::text ";
         }
         else
@@ -157,23 +147,31 @@ std::set<std::string> FindContactDuplicates::exec(Fred::OperationContext &ctx)
 
         " AND forbidden_src_os.id IS NULL AND forbidden_dst_os.id IS NULL "
         " AND (update_src_os.id IS NULL) = (update_dst_os.id IS NULL) "
-        " AND (transfer_src_os.id IS NULL) = (transfer_dst_os.id IS NULL) ";
+        " AND (transfer_src_os.id IS NULL) = (transfer_dst_os.id IS NULL) "
+        " )) as tmp ";
 
-        //exclude winner contact from set of duplicates
-        if(dest_contact_handle_.isset())
+        if(!exclude_contacts_.empty())
         {
-            contact_handle_query += " AND oreg_src.name != oreg_dst.name ";
+            contact_handle_query += "WHERE NOT (tmp.contact_names @> array[";
+
+            std::vector<std::string> array_params;
+            for (std::set<std::string>::const_iterator i = exclude_contacts_.begin();
+                    i != exclude_contacts_.end(); ++i)
+            {
+                array_params.push_back("$" + contact_handle_query_params.add(*i) + "::text");
+            }
+            contact_handle_query += boost::algorithm::join(array_params, ", ");
+            contact_handle_query +="])";
         }
 
-        contact_handle_query += " ) ";
-
         contact_handle_result = ctx.get_conn().exec_params(contact_handle_query , contact_handle_query_params);
+
         if(contact_handle_result.size() > 0) break;
 
     }
     while(true);
 
-    if(!dest_contact_handle_.isset())
+    if(!specific_contact_handle_.isset())
     {
         //cursor WITHOUT HOLD released with CLOSE or at the end of the transaction
         ctx.get_conn().exec("CLOSE get_contacts_by_name");
