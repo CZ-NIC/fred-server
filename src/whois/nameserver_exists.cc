@@ -6,7 +6,7 @@ namespace Whois {
 
         return
             ctx.get_conn().exec_params(
-                "SELECT id FROM host WHERE fqdn = $1::varchar LIMIT 1",
+                "SELECT 123 FROM host WHERE fqdn = lower($1::varchar) LIMIT 1",
                 Database::query_param_list(ns_fqdn)
             ).size() > 0;
     }

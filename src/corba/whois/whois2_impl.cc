@@ -10,15 +10,17 @@
 
 #include <boost/foreach.hpp>
 
+#include <stdexcept>
+
 namespace Registry {
 namespace Whois {
 
     DisclosableString* wrap_disclosable_string(const Nullable<std::string>& in, bool to_disclose) {
         if(!to_disclose) {
             return NULL;
-        } else {
-            return new DisclosableString(in.get_value_or_default().c_str());
         }
+
+        return new DisclosableString(in.get_value_or_default().c_str());
     }
 
     // at least contact and registrar have address (result of different info operations == different types) ...
@@ -38,22 +40,22 @@ namespace Whois {
     DisclosablePlaceAddress* wrap_disclosable_address(const Fred::InfoContactData& in) {
         if( ! in.discloseaddress ) {
             return NULL;
-        } else {
-            return new DisclosablePlaceAddress( wrap_address(in) );
         }
+
+        return new DisclosablePlaceAddress( wrap_address(in) );
     }
 
     DisclosableContactIdentification* wrap_disclosable_identification(const Fred::InfoContactData& in) {
         if( ! in.discloseident ) {
             return NULL;
-        } else {
-            DisclosableContactIdentification_var result(new DisclosableContactIdentification);
-
-            result->identification_type(in.ssntype.get_value_or_default().c_str());
-            result->identification_data(in.ssn.get_value_or_default().c_str());
-
-            return result._retn();
         }
+
+        DisclosableContactIdentification_var result(new DisclosableContactIdentification);
+
+        result->identification_type(in.ssntype.get_value_or_default().c_str());
+        result->identification_data(in.ssn.get_value_or_default().c_str());
+
+        return result._retn();
     }
 
     template<typename T_container>
@@ -69,14 +71,28 @@ namespace Whois {
         }
     }
 
+    struct InvalidIPAddressException : public std::runtime_error {
+        static const char* what_msg() throw() {return "invalid IP address";}
+
+        InvalidIPAddressException()
+        : std::runtime_error(what_msg())
+        { }
+
+        const char* what() const throw() {return what_msg();}
+    };
+
+    /**
+     * @throws InvalidIPAddressException
+     */
     void wrap_ipaddress(const boost::asio::ip::address& in, IPAddress& out ) {
         out.address = Corba::wrap_string(in.to_string());
         if(in.is_v4()) {
-            out.version = v4;
+            out.version = IPv4;
         } else if(in.is_v6()) {
-            out.version = v6;
+            out.version = IPv6;
+        } else {
+            throw InvalidIPAddressException();
         }
-        // TODO error handling
     }
 
     void wrap_ipaddress_sequence(const std::vector<boost::asio::ip::address>& in, IPAddressSeq& out ) {
@@ -90,7 +106,7 @@ namespace Whois {
         }
     }
 
-    NullableRegistrar*  wrap_registrar( const Fred::InfoRegistrarData& in) {
+    NullableRegistrar*  wrap_registrar(const Fred::InfoRegistrarData& in) {
         Registrar temp;
         temp.handle = Corba::wrap_string(in.handle);
         temp.organization = Corba::wrap_string(in.organization.get_value_or_default());
@@ -318,8 +334,9 @@ namespace Whois {
             if(e.is_set_unknown_registrar_handle()) {
                 return NULL;
             }
-        }
+        } catch (...) { }
 
+        // default exception handling
         throw INTERNAL_SERVER_ERROR();
     }
 
@@ -367,7 +384,7 @@ namespace Whois {
         throw INTERNAL_SERVER_ERROR();
     }
 
-    // TODO XXX just to have prototype compiled
+    // TODO XXX Just to have RDAP prototype quickly deployable (Ticket #10627). Must be implemented later.
     NSSetSeq* Server_impl::get_nssets_by_ns(const char* handle) { return NULL; }
     NSSetSeq* Server_impl::get_nssets_by_tech_c(const char* handle) { return NULL; }
 
@@ -414,7 +431,7 @@ namespace Whois {
         throw INTERNAL_SERVER_ERROR();
     }
 
-    // TODO XXX just to have prototype compiled
+    // TODO XXX Just to have RDAP prototype quickly deployable (Ticket #10627). Must be implemented later.
     KeySetSeq* Server_impl::get_keysets_by_tech_c(const char* handle) { return NULL; }
 
     NullableDomain* Server_impl::get_domain_by_handle(const char* handle) {
@@ -439,13 +456,13 @@ namespace Whois {
         throw INTERNAL_SERVER_ERROR();
     }
 
-    // TODO XXX just to have prototype compiled
+    // TODO XXX Just to have RDAP prototype quickly deployable (Ticket #10627). Must be implemented later.
     DomainSeq* Server_impl::get_domains_by_registrant(const char* handle) { return NULL; }
     DomainSeq* Server_impl::get_domains_by_admin_contact(const char* handle) { return NULL; }
     DomainSeq* Server_impl::get_domains_by_nsset(const char* handle) { return NULL; }
     DomainSeq* Server_impl::get_domains_by_keyset(const char* handle) { return NULL; }
 
-    // TODO XXX just to have prototype compiled
+    // TODO XXX Just to have RDAP prototype quickly deployable (Ticket #10627). Must be implemented later.
     ObjectStatusDescSeq* Server_impl::get_domain_status_descriptions(const char* lang) { return NULL; }
     ObjectStatusDescSeq* Server_impl::get_contact_status_descriptions(const char* lang) { return NULL; }
     ObjectStatusDescSeq* Server_impl::get_nsset_status_descriptions(const char* lang) { return NULL; }
