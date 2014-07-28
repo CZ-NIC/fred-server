@@ -384,7 +384,7 @@ namespace Whois {
         throw INTERNAL_SERVER_ERROR();
     }
 
-    // TODO XXX just to have prototype compiled
+    // TODO XXX Just to have RDAP prototype quickly deployable (Ticket #10627). Must be implemented later.
     NSSetSeq* Server_impl::get_nssets_by_ns(const char* handle) { return NULL; }
     NSSetSeq* Server_impl::get_nssets_by_tech_c(const char* handle) { return NULL; }
 
@@ -431,7 +431,7 @@ namespace Whois {
         throw INTERNAL_SERVER_ERROR();
     }
 
-    // TODO XXX just to have prototype compiled
+    // TODO XXX Just to have RDAP prototype quickly deployable (Ticket #10627). Must be implemented later.
     KeySetSeq* Server_impl::get_keysets_by_tech_c(const char* handle) { return NULL; }
 
     NullableDomain* Server_impl::get_domain_by_handle(const char* handle) {
@@ -456,13 +456,13 @@ namespace Whois {
         throw INTERNAL_SERVER_ERROR();
     }
 
-    // TODO XXX just to have prototype compiled
+    // TODO XXX Just to have RDAP prototype quickly deployable (Ticket #10627). Must be implemented later.
     DomainSeq* Server_impl::get_domains_by_registrant(const char* handle) { return NULL; }
     DomainSeq* Server_impl::get_domains_by_admin_contact(const char* handle) { return NULL; }
     DomainSeq* Server_impl::get_domains_by_nsset(const char* handle) { return NULL; }
     DomainSeq* Server_impl::get_domains_by_keyset(const char* handle) { return NULL; }
 
-    // TODO XXX just to have prototype compiled
+    // TODO XXX Just to have RDAP prototype quickly deployable (Ticket #10627). Must be implemented later.
     ObjectStatusDescSeq* Server_impl::get_domain_status_descriptions(const char* lang) { return NULL; }
     ObjectStatusDescSeq* Server_impl::get_contact_status_descriptions(const char* lang) { return NULL; }
     ObjectStatusDescSeq* Server_impl::get_nsset_status_descriptions(const char* lang) { return NULL; }
