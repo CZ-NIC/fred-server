@@ -18,9 +18,9 @@ namespace Whois {
     DisclosableString* wrap_disclosable_string(const Nullable<std::string>& in, bool to_disclose) {
         if(!to_disclose) {
             return NULL;
-        } else {
-            return new DisclosableString(in.get_value_or_default().c_str());
         }
+
+        return new DisclosableString(in.get_value_or_default().c_str());
     }
 
     // at least contact and registrar have address (result of different info operations == different types) ...
@@ -40,22 +40,22 @@ namespace Whois {
     DisclosablePlaceAddress* wrap_disclosable_address(const Fred::InfoContactData& in) {
         if( ! in.discloseaddress ) {
             return NULL;
-        } else {
-            return new DisclosablePlaceAddress( wrap_address(in) );
         }
+
+        return new DisclosablePlaceAddress( wrap_address(in) );
     }
 
     DisclosableContactIdentification* wrap_disclosable_identification(const Fred::InfoContactData& in) {
         if( ! in.discloseident ) {
             return NULL;
-        } else {
-            DisclosableContactIdentification_var result(new DisclosableContactIdentification);
-
-            result->identification_type(in.ssntype.get_value_or_default().c_str());
-            result->identification_data(in.ssn.get_value_or_default().c_str());
-
-            return result._retn();
         }
+
+        DisclosableContactIdentification_var result(new DisclosableContactIdentification);
+
+        result->identification_type(in.ssntype.get_value_or_default().c_str());
+        result->identification_data(in.ssn.get_value_or_default().c_str());
+
+        return result._retn();
     }
 
     template<typename T_container>
