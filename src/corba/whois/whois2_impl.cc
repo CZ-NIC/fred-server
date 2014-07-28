@@ -10,6 +10,8 @@
 
 #include <boost/foreach.hpp>
 
+#include <stdexcept>
+
 namespace Registry {
 namespace Whois {
 
@@ -69,14 +71,28 @@ namespace Whois {
         }
     }
 
+    struct InvalidIPAddressException : public std::runtime_error {
+        static const char* what_msg() throw() {return "invalid IP address";}
+
+        InvalidIPAddressException()
+        : std::runtime_error(what_msg())
+        { }
+
+        const char* what() const throw() {return what_msg();}
+    };
+
+    /**
+     * @throws InvalidIPAddressException
+     */
     void wrap_ipaddress(const boost::asio::ip::address& in, IPAddress& out ) {
         out.address = Corba::wrap_string(in.to_string());
         if(in.is_v4()) {
             out.version = v4;
         } else if(in.is_v6()) {
             out.version = v6;
+        } else {
+            throw InvalidIPAddressException();
         }
-        // TODO error handling
     }
 
     void wrap_ipaddress_sequence(const std::vector<boost::asio::ip::address>& in, IPAddressSeq& out ) {
