@@ -87,9 +87,9 @@ namespace Whois {
     void wrap_ipaddress(const boost::asio::ip::address& in, IPAddress& out ) {
         out.address = Corba::wrap_string(in.to_string());
         if(in.is_v4()) {
-            out.version = v4;
+            out.version = IPv4;
         } else if(in.is_v6()) {
-            out.version = v6;
+            out.version = IPv6;
         } else {
             throw InvalidIPAddressException();
         }
