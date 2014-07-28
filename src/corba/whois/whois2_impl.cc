@@ -334,8 +334,9 @@ namespace Whois {
             if(e.is_set_unknown_registrar_handle()) {
                 return NULL;
             }
-        }
+        } catch (...) { }
 
+        // default exception handling
         throw INTERNAL_SERVER_ERROR();
     }
 
