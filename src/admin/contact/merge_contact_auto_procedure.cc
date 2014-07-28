@@ -275,8 +275,9 @@ void MergeContactAutoProcedure::exec()
     }
 
 
+
     /* find any contact duplicates set (optionally for specific registrar only) */
-    std::set<std::string> any_dup_set = Fred::Contact::FindAnyContactDuplicates().set_registrar(registrar_).exec(octx);
+    std::set<std::string> any_dup_set = Fred::Contact::FindContactDuplicates().set_registrar(registrar_).exec(octx);
     while (any_dup_set.size() >= 2)
     {
         /* one specific contact set merges scope */
@@ -337,7 +338,7 @@ void MergeContactAutoProcedure::exec()
 
             /* find contact duplicates for winner contact - if nothing changed in registry data this
              * would be the same list as in previous step but without the merged one */
-            dup_set = Fred::Contact::FindSpecificContactDuplicates(winner_handle).exec(octx);
+            dup_set = Fred::Contact::FindContactDuplicates().set_specific_contact(winner_handle).exec(octx);
             if (this->is_set_dry_run())
             {
                 dup_set = dry_run_info.remove_fake_deleted_from_set(dup_set);
@@ -351,7 +352,7 @@ void MergeContactAutoProcedure::exec()
             out_stream << merge_set_operation_info.format(indenter);
         }
 
-        Fred::Contact::FindAnyContactDuplicates new_dup_search = Fred::Contact::FindAnyContactDuplicates().set_registrar(registrar_);
+        Fred::Contact::FindContactDuplicates new_dup_search = Fred::Contact::FindContactDuplicates().set_registrar(registrar_);
         if (this->is_set_dry_run()) {
             new_dup_search.set_exclude_contacts(dry_run_info.any_search_excluded);
         }
