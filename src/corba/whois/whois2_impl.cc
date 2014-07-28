@@ -106,7 +106,7 @@ namespace Whois {
         }
     }
 
-    NullableRegistrar*  wrap_registrar( const Fred::InfoRegistrarData& in) {
+    NullableRegistrar*  wrap_registrar(const Fred::InfoRegistrarData& in) {
         Registrar temp;
         temp.handle = Corba::wrap_string(in.handle);
         temp.organization = Corba::wrap_string(in.organization.get_value_or_default());
