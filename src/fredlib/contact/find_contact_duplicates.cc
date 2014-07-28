@@ -153,6 +153,7 @@ std::set<std::string> FindContactDuplicates::exec(Fred::OperationContext &ctx)
 
         if(!specific_contact_handle_.isset() && !exclude_contacts_.empty())
         {
+            //optional exclusion of contact sets containing given contacts
             contact_handle_query += "WHERE NOT (tmp.contact_names && array[";
 
             std::vector<std::string> array_params;
