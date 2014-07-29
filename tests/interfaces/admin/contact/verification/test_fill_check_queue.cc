@@ -26,7 +26,8 @@
 #include <fredlib/admin_contact_verification.h>
 #include <fredlib/nsset.h>
 #include <fredlib/domain.h>
-#include "src/fredlib/object_states.h"
+#include "src/fredlib/object_state/create_object_state_request_id.h"
+#include "src/fredlib/object_state/perform_object_state_request.h"
 
 #include <algorithm>
 
@@ -484,7 +485,7 @@ BOOST_AUTO_TEST_CASE(test_Enqueueing_already_checked_contacts)
 
 struct setup_special_contact {
     enum allowed_states {
-        validated, linked, mojeid
+        validated, serverBlocked, mojeid
     };
     std::map<allowed_states, std::string> state_names_;
 
@@ -557,9 +558,9 @@ void setup_contact_as_owner(const setup_special_contact& contact_) {
     }
 }
 
-void setup_contact_in_state(const setup_special_contact& contact_, const std::string& state) {
-    Fred::insert_object_state(contact_.contact_id_, state);
-    Fred::update_object_states(contact_.contact_id_);
+void setup_contact_in_state(const setup_special_contact& contact_, const std::string& state, Fred::OperationContext& ctx) {
+    Fred::CreateObjectStateRequestId(contact_.contact_id_, boost::assign::list_of(state)).exec(ctx);
+    Fred::PerformObjectStateRequest(contact_.contact_id_).exec(ctx);
 }
 
 setup_special_contact::setup_special_contact(
@@ -572,7 +573,7 @@ setup_special_contact::setup_special_contact(
     role_(_role)
 {
     state_names_[validated] = "validatedContact";
-    state_names_[linked]    = "linked";
+    state_names_[serverBlocked]    = "serverBlocked";
     state_names_[mojeid]    = "mojeidContact";
 
     // prevent name collisions
@@ -595,23 +596,24 @@ setup_special_contact::setup_special_contact(
         break;
     }
 
-    Fred::OperationContext ctx_check;
+    Fred::OperationContext ctx;
     data_ = Fred::InfoContactByHandle(contact_handle_)
-        .exec(ctx_check);
+        .exec(ctx);
 
     contact_id_ = static_cast<unsigned long long>(
-        ctx_check.get_conn().exec(
+        ctx.get_conn().exec(
             "SELECT id "
             "   FROM contact "
             "   JOIN object_registry AS o_r USING(id) "
             "   WHERE o_r.name='" + contact_handle_ + "' "
         )[0][0]);
 
-    ctx_check.commit_transaction();
-
     if(state_.isset()) {
-        setup_contact_in_state(*this, state_names_[state_.get_value()]);
+        setup_contact_in_state(*this, state_names_[state_.get_value()], ctx);
     }
+
+    ctx.commit_transaction();
+
     if(role_.isset()) {
         if(role_.get_value() == technical) {
             setup_contact_as_technical(*this);
@@ -714,10 +716,10 @@ BOOST_AUTO_TEST_CASE(test_Enqueueing_filtered_contacts_country)
     T_filtered_contacts_testdata testdata;
 
     // country is intentionaly different than 'cz' so post build testdata don't interfere
-    testdata.push_back(boost::make_tuple("DE", ssc::linked,   ssc::none,  false));
-    testdata.push_back(boost::make_tuple("JP", ssc::linked,   ssc::none,  true));
-    testdata.push_back(boost::make_tuple("DE", ssc::linked,   ssc::none,  false));
-    testdata.push_back(boost::make_tuple("DE", ssc::linked,   ssc::none,  false));
+    testdata.push_back(boost::make_tuple("DE", ssc::serverBlocked,   ssc::none,  false));
+    testdata.push_back(boost::make_tuple("JP", ssc::serverBlocked,   ssc::none,  true));
+    testdata.push_back(boost::make_tuple("DE", ssc::serverBlocked,   ssc::none,  false));
+    testdata.push_back(boost::make_tuple("DE", ssc::serverBlocked,   ssc::none,  false));
 
     Admin::ContactVerificationQueue::contact_filter filter;
     filter.country_code = "JP";
@@ -734,10 +736,10 @@ BOOST_AUTO_TEST_CASE(test_Enqueueing_filtered_contacts_state)
 {
     T_filtered_contacts_testdata testdata;
 
-    testdata.push_back(boost::make_tuple("DE", ssc::linked,      ssc::owner,  false));
-    testdata.push_back(boost::make_tuple("DE", ssc::linked,      ssc::owner,  false));
+    testdata.push_back(boost::make_tuple("DE", ssc::serverBlocked,      ssc::owner,  false));
+    testdata.push_back(boost::make_tuple("DE", ssc::serverBlocked,      ssc::owner,  false));
     testdata.push_back(boost::make_tuple("DE", ssc::validated,   ssc::owner,  true));
-    testdata.push_back(boost::make_tuple("DE", ssc::linked,      ssc::owner,  false));
+    testdata.push_back(boost::make_tuple("DE", ssc::serverBlocked,      ssc::owner,  false));
 
     Admin::ContactVerificationQueue::contact_filter filter;
     filter.states.insert("validatedContact");
@@ -755,10 +757,10 @@ BOOST_AUTO_TEST_CASE(test_Enqueueing_filtered_contacts_role)
 {
     T_filtered_contacts_testdata testdata;
 
-    testdata.push_back(boost::make_tuple("DE", ssc::linked,   ssc::owner,       false));
-    testdata.push_back(boost::make_tuple("DE", ssc::linked,   ssc::owner,       false));
-    testdata.push_back(boost::make_tuple("DE", ssc::linked,   ssc::owner,       false));
-    testdata.push_back(boost::make_tuple("DE", ssc::linked,   ssc::technical,   true));
+    testdata.push_back(boost::make_tuple("DE", ssc::serverBlocked,   ssc::owner,       false));
+    testdata.push_back(boost::make_tuple("DE", ssc::serverBlocked,   ssc::owner,       false));
+    testdata.push_back(boost::make_tuple("DE", ssc::serverBlocked,   ssc::owner,       false));
+    testdata.push_back(boost::make_tuple("DE", ssc::serverBlocked,   ssc::technical,   true));
 
     Admin::ContactVerificationQueue::contact_filter filter;
     filter.roles.insert(Admin::ContactVerificationQueue::tech_c);
@@ -779,9 +781,9 @@ BOOST_AUTO_TEST_CASE(test_Enqueueing_filtered_contacts_combined)
     testdata.push_back(boost::make_tuple("DE", ssc::validated,      ssc::owner,       false));
     testdata.push_back(boost::make_tuple("JP", ssc::validated,      ssc::owner,       false));
     testdata.push_back(boost::make_tuple("SK", ssc::validated,      ssc::owner,       false));
-    testdata.push_back(boost::make_tuple("DE", ssc::linked,         ssc::owner,       false));
-    testdata.push_back(boost::make_tuple("JP", ssc::linked,         ssc::owner,       false));
-    testdata.push_back(boost::make_tuple("SK", ssc::linked,         ssc::owner,       false));
+    testdata.push_back(boost::make_tuple("DE", ssc::serverBlocked,         ssc::owner,       false));
+    testdata.push_back(boost::make_tuple("JP", ssc::serverBlocked,         ssc::owner,       false));
+    testdata.push_back(boost::make_tuple("SK", ssc::serverBlocked,         ssc::owner,       false));
     testdata.push_back(boost::make_tuple("DE", ssc::mojeid,         ssc::owner,       false));
     testdata.push_back(boost::make_tuple("JP", ssc::mojeid,         ssc::owner,       false));
     testdata.push_back(boost::make_tuple("SK", ssc::mojeid,         ssc::owner,       false));
@@ -790,9 +792,9 @@ BOOST_AUTO_TEST_CASE(test_Enqueueing_filtered_contacts_combined)
     // this one should be enqueued
     testdata.push_back(boost::make_tuple("JP", ssc::validated,      ssc::technical,       true));
     testdata.push_back(boost::make_tuple("SK", ssc::validated,      ssc::technical,       false));
-    testdata.push_back(boost::make_tuple("DE", ssc::linked,         ssc::technical,       false));
-    testdata.push_back(boost::make_tuple("JP", ssc::linked,         ssc::technical,       false));
-    testdata.push_back(boost::make_tuple("SK", ssc::linked,         ssc::technical,       false));
+    testdata.push_back(boost::make_tuple("DE", ssc::serverBlocked,         ssc::technical,       false));
+    testdata.push_back(boost::make_tuple("JP", ssc::serverBlocked,         ssc::technical,       false));
+    testdata.push_back(boost::make_tuple("SK", ssc::serverBlocked,         ssc::technical,       false));
     testdata.push_back(boost::make_tuple("DE", ssc::mojeid,         ssc::technical,       false));
     testdata.push_back(boost::make_tuple("JP", ssc::mojeid,         ssc::technical,       false));
     testdata.push_back(boost::make_tuple("SK", ssc::mojeid,         ssc::technical,       false));
@@ -800,9 +802,9 @@ BOOST_AUTO_TEST_CASE(test_Enqueueing_filtered_contacts_combined)
     testdata.push_back(boost::make_tuple("DE", ssc::validated,      ssc::none,       false));
     testdata.push_back(boost::make_tuple("JP", ssc::validated,      ssc::none,       false));
     testdata.push_back(boost::make_tuple("SK", ssc::validated,      ssc::none,       false));
-    testdata.push_back(boost::make_tuple("DE", ssc::linked,         ssc::none,       false));
-    testdata.push_back(boost::make_tuple("JP", ssc::linked,         ssc::none,       false));
-    testdata.push_back(boost::make_tuple("SK", ssc::linked,         ssc::none,       false));
+    testdata.push_back(boost::make_tuple("DE", ssc::serverBlocked,         ssc::none,       false));
+    testdata.push_back(boost::make_tuple("JP", ssc::serverBlocked,         ssc::none,       false));
+    testdata.push_back(boost::make_tuple("SK", ssc::serverBlocked,         ssc::none,       false));
     testdata.push_back(boost::make_tuple("DE", ssc::mojeid,         ssc::none,       false));
     testdata.push_back(boost::make_tuple("JP", ssc::mojeid,         ssc::none,       false));
     testdata.push_back(boost::make_tuple("SK", ssc::mojeid,         ssc::none,       false));
