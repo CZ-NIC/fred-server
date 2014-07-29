@@ -208,7 +208,8 @@ void ContactVerificationPassword::sendLetterPassword( const std::string& custom_
             (Util::XmlTagPair("account", Util::vector_of<Util::XmlCallback>
                 (Util::XmlTagPair("username", Util::XmlUnparsedCData(map_at(data, "handle"))))
                 (Util::XmlTagPair("first_name", Util::XmlUnparsedCData(map_at(data, "firstname"))))
-                (Util::XmlTagPair("last_name", Util::XmlUnparsedCData(map_at(data, "lastname"))))
+                (Util::XmlTagPair("last_name", Util::XmlUnparsedCData(lastname)))
+                (Util::XmlTagPair("sex", Util::XmlUnparsedCData(sex)))
                 (Util::XmlTagPair("email", Util::XmlUnparsedCData(map_at(data, "email"))))
                 (Util::XmlTagPair("sex", Util::XmlUnparsedCData(sex)))
                 (Util::XmlTagPair("mobile", Util::XmlUnparsedCData(map_at(data, "phone"))))
