@@ -142,7 +142,9 @@ namespace Whois {
             Fred::OperationContext ctx;
 
             BOOST_FOREACH(const Fred::ObjectStateData& state, Fred::GetObjectStates(in.id).exec(ctx)) {
-                statuses.push_back(state.state_name);
+                if(state.is_external) {
+                    statuses.push_back(state.state_name);
+                }
             }
         }
         wrap_string_sequence(statuses, temp.statuses);
@@ -194,7 +196,9 @@ namespace Whois {
             Fred::OperationContext ctx;
 
             BOOST_FOREACH(const Fred::ObjectStateData& state, Fred::GetObjectStates(in.id).exec(ctx)) {
-                statuses.push_back(state.state_name);
+                if(state.is_external) {
+                    statuses.push_back(state.state_name);
+                }
             }
         }
         wrap_string_sequence(statuses, temp.statuses);
@@ -226,7 +230,9 @@ namespace Whois {
                 Fred::OperationContext ctx;
 
                 BOOST_FOREACH(const Fred::ObjectStateData& state, Fred::GetObjectStates(in.id).exec(ctx)) {
-                    statuses.push_back(state.state_name);
+                    if(state.is_external) {
+                        statuses.push_back(state.state_name);
+                    }
                 }
             }
             wrap_string_sequence(statuses, temp.statuses);
@@ -291,7 +297,9 @@ namespace Whois {
                 Fred::OperationContext ctx;
 
                 BOOST_FOREACH(const Fred::ObjectStateData& state, Fred::GetObjectStates(in.id).exec(ctx)) {
-                    statuses.push_back(state.state_name);
+                    if(state.is_external) {
+                        statuses.push_back(state.state_name);
+                    }
                 }
             }
             wrap_string_sequence(statuses, temp.statuses);
