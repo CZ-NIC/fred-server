@@ -4,20 +4,17 @@
 #include <string>
 #include <vector>
 
-#include "src/fredlib/contact/info_contact.h"
+#include "tests/setup/fixtures_utils.h"
 
-struct setup_get_registrar_handle
+struct setup_registrar
 {
-    std::string registrar_handle;
+    Fred::InfoRegistrarData data;
 
-    setup_get_registrar_handle( );
+    setup_registrar();
 };
 
 struct setup_contact {
-    std::string contact_handle;
-    setup_get_registrar_handle registrar;
-    Fred::InfoContactOutput data_;
-    unsigned long long contact_id_;
+    Fred::InfoContactData data;
 
     setup_contact();
 };
@@ -29,7 +26,7 @@ struct setup_nonexistent_contact_handle {
 };
 
 struct setup_nonexistent_contact_id {
-        unsigned long long contact_id_;
+    unsigned long long contact_id_;
 
     setup_nonexistent_contact_id();
 };

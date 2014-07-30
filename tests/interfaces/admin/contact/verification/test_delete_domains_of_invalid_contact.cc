@@ -48,7 +48,7 @@ BOOST_AUTO_TEST_CASE(test_Deleting_domains)
     setup_contact contact;
 
     Fred::OperationContext ctx;
-    Fred::InfoContactOutput contact_info = Fred::InfoContactByHandle(contact.contact_handle).exec(ctx);
+    Fred::InfoContactOutput contact_info = Fred::InfoContactByHandle(contact.data.handle).exec(ctx);
 
     std::vector<std::string> domain_names;
 
@@ -63,13 +63,13 @@ BOOST_AUTO_TEST_CASE(test_Deleting_domains)
         Fred::CreateDomain(
             *it,
             contact_info.info_contact_data.create_registrar_handle,
-            contact.contact_handle
+            contact.data.handle
         ).exec(ctx);
     }
 
     std::string check_handle = Admin::enqueue_check(
         ctx,
-        contact.contact_id_,
+        contact.data.id,
         Fred::TestsuiteHandle::MANUAL);
 
     Fred::UpdateContactCheck(

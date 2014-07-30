@@ -4,6 +4,7 @@
 #include <boost/uuid/uuid_io.hpp>         // streaming operators etc.
 
 #include "tests/fredlib/contact/verification/setup_utils.h"
+#include "tests/setup/fixtures_utils.h"
 
 #include "src/fredlib/contact/verification/create_check.h"
 #include "src/fredlib/contact/verification/create_test.h"
@@ -15,42 +16,32 @@
 #include "util/random.h"
 #include "util/random_data_generator.h"
 
-setup_get_registrar_handle::setup_get_registrar_handle( ) {
+setup_registrar::setup_registrar( ) {
     Fred::OperationContext ctx;
 
-    registrar_handle = static_cast<std::string>(
-        ctx.get_conn().exec("SELECT handle FROM registrar LIMIT 1;")[0][0] );
+    data = Test::exec(
+        Test::CreateX_factory<Fred::CreateRegistrar>().make(),
+        ctx
+    );
 
     ctx.commit_transaction();
-
-    if(registrar_handle.empty()) {
-        throw std::runtime_error("no registrar found");
-    }
 }
 
 setup_contact::setup_contact() {
-    // prevent handle collisions
-    while(true) {
-        try {
-            Fred::OperationContext ctx;
 
-            contact_handle = "CONTACT_" + RandomDataGenerator().xnumstring(15);
-            Fred::CreateContact create(contact_handle, registrar.registrar_handle);
-            create.exec(ctx);
+    Fred::OperationContext ctx;
 
-            ctx.commit_transaction();
-        } catch (Database::ResultFailed& ) {
-            continue;
-        } catch (Fred::InternalError& ) {
-            continue;
-        }
-        break;
-    }
+    data = Test::exec(
+            Test::CreateX_factory<Fred::CreateContact>().make(
+                Test::exec(
+                    Test::CreateX_factory<Fred::CreateRegistrar>().make(),
+                    ctx
+                ).handle
+            ),
+            ctx
+        );
 
-    Fred::OperationContext ctx_check;
-    data_ = Fred::InfoContactByHandle(contact_handle).exec(ctx_check);
-
-    contact_id_ = data_.info_contact_data.id;
+    ctx.commit_transaction();
 }
 
 setup_nonexistent_contact_handle::setup_nonexistent_contact_handle() {
@@ -341,7 +332,7 @@ setup_check::setup_check(const std::string& _testsuite_handle, Optional<unsigned
 {
     // check
     Fred::CreateContactCheck create_check(
-        contact_.contact_id_,
+        contact_.data.id,
         _testsuite_handle,
         logd_request_
     );

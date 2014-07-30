@@ -118,13 +118,13 @@ BOOST_AUTO_TEST_CASE(test_Exec_contact_filter)
 
     Fred::OperationContext ctx;
     std::string the_check_handle = Fred::CreateContactCheck(
-        the_contact.contact_id_,
+        the_contact.data.id,
         testsuite.testsuite_handle
     ).exec(ctx);
 
     std::vector<Fred::ListChecksItem> list = Fred::ListContactChecks()
         .set_max_item_count(100)
-        .set_contact_id(the_contact.contact_id_)
+        .set_contact_id(the_contact.data.id)
         .exec(ctx);
 
     BOOST_CHECK_EQUAL(list.size(), 1);

@@ -199,7 +199,7 @@ struct setup_already_checked_contacts {
 
         for(int i=0; i < count_ - pre_existing_count; ++i) {
            setup_contact contact;
-           ids_.push_back(contact.contact_id_);
+           ids_.push_back(contact.data.id);
         }
 
         clean_queue();
@@ -402,7 +402,7 @@ BOOST_AUTO_TEST_CASE(test_Enqueueing_never_checked_contacts)
     // make set of new, never checked contacts
     std::vector<unsigned long long> never_checked_contacts;
     for(int i=0; i<100; ++i) {
-        never_checked_contacts.push_back(setup_contact().contact_id_);
+        never_checked_contacts.push_back(setup_contact().data.id);
     }
 
     // test scenarios
@@ -494,7 +494,7 @@ struct setup_special_contact {
     };
 
     std::string contact_handle_;
-    setup_get_registrar_handle registrar_;
+    setup_registrar registrar_;
     Fred::InfoContactOutput data_;
     unsigned long long contact_id_;
 
@@ -518,7 +518,7 @@ void setup_contact_as_technical(const setup_special_contact& contact_) {
             Fred::OperationContext ctx1;
 
             nsset_handle_ = "NSSET_" + RandomDataGenerator().xnumstring(15);
-            Fred::CreateNsset(nsset_handle_, contact_.registrar_.registrar_handle).exec(ctx1);
+            Fred::CreateNsset(nsset_handle_, contact_.registrar_.data.handle).exec(ctx1);
 
             ctx1.commit_transaction();
         } catch (Database::ResultFailed& ) {
@@ -531,7 +531,7 @@ void setup_contact_as_technical(const setup_special_contact& contact_) {
 
     // set contact as technical
     Fred::OperationContext ctx2;
-    Fred::UpdateNsset(nsset_handle_, contact_.registrar_.registrar_handle)
+    Fred::UpdateNsset(nsset_handle_, contact_.registrar_.data.handle)
         .add_tech_contact(contact_.contact_handle_).exec(ctx2);
     ctx2.commit_transaction();
 }
@@ -546,7 +546,7 @@ void setup_contact_as_owner(const setup_special_contact& contact_) {
 
             domain_fqdn_ = "DOMAIN" + RandomDataGenerator().xnumstring(15) + ".cz";
 
-            Fred::CreateDomain(domain_fqdn_, contact_.registrar_.registrar_handle, contact_.contact_handle_).exec(ctx1);
+            Fred::CreateDomain(domain_fqdn_, contact_.registrar_.data.handle, contact_.contact_handle_).exec(ctx1);
 
             ctx1.commit_transaction();
         } catch (Database::ResultFailed& ) {
@@ -582,7 +582,7 @@ setup_special_contact::setup_special_contact(
             Fred::OperationContext ctx;
 
             contact_handle_ = "CONTACT_" + RandomDataGenerator().xnumstring(10);
-            Fred::CreateContact create(contact_handle_, registrar_.registrar_handle);
+            Fred::CreateContact create(contact_handle_, registrar_.data.handle);
             if(country_code_.isset()) {
                 create.set_country(country_code_.get_value_or_default());
             }
