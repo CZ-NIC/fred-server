@@ -16,33 +16,6 @@
 #include "util/random.h"
 #include "util/random_data_generator.h"
 
-setup_nonexistent_contact_handle::setup_nonexistent_contact_handle() {
-    Database::Result res;
-    // guarantee non-existence
-    do {
-        Fred::OperationContext ctx;
-        contact_handle = "NONEX_CONTACT_" + RandomDataGenerator().xnumstring(15);
-        res = ctx.get_conn().exec(
-            "SELECT name "
-            "   FROM object_registry "
-            "   WHERE name='"+contact_handle+"'"
-            "       AND type=1;" );
-    } while(res.size() != 0);
-}
-
-setup_nonexistent_contact_id::setup_nonexistent_contact_id() {
-    Database::Result res;
-    // guarantee non-existence
-    do {
-        Fred::OperationContext ctx;
-        contact_id_ = Random::integer(0, 2147000000);
-        res = ctx.get_conn().exec(
-            "SELECT id "
-            "   FROM contact "
-            "   WHERE id='" + boost::lexical_cast<std::string>(contact_id_) + "'" );
-    } while(res.size() != 0);
-}
-
 setup_testdef::setup_testdef() {
     // prevent handle collisions
     while(true) {

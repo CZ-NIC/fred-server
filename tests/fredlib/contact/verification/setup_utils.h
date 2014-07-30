@@ -6,18 +6,6 @@
 
 #include "tests/setup/fixtures_utils.h"
 
-struct setup_nonexistent_contact_handle {
-    std::string contact_handle;
-
-    setup_nonexistent_contact_handle();
-};
-
-struct setup_nonexistent_contact_id {
-    unsigned long long contact_id_;
-
-    setup_nonexistent_contact_id();
-};
-
 struct setup_testdef {
     long testdef_id_;
     std::string testdef_handle_;
