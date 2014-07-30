@@ -123,34 +123,4 @@ struct setup_nonexistent_test_status_handle {
     setup_nonexistent_test_status_handle();
 };
 
-class autoclean_contact_verification_db {
-    std::vector<unsigned long long> object_ids_to_preserve_;
-
-    public:
-        typedef
-            std::vector<
-                boost::tuple<
-                    std::string,
-                    std::string,
-                    std::string,
-                    std::string,
-                    std::string
-                >
-            > T_foreign_keys;
-
-    private:
-        static T_foreign_keys foreign_keys;
-
-    private:
-        void set_cascading_fkeys(Fred::OperationContext& _ctx);
-
-        void restore_fkeys(Fred::OperationContext& _ctx);
-    public:
-        autoclean_contact_verification_db();
-
-        void clean(Fred::OperationContext& _ctx);
-
-        ~autoclean_contact_verification_db();
-};
-
 #endif
