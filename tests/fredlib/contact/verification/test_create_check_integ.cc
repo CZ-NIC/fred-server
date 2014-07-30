@@ -57,10 +57,10 @@ const std::string server_name = "test-contact_verification-create_check_integ";
  */
 BOOST_AUTO_TEST_CASE(test_Exec_mandatory_setup)
 {
-    setup_contact contact;
+    Test::contact contact;
     setup_testsuite testsuite;
 
-    Fred::CreateContactCheck create_check(contact.data.id, testsuite.testsuite_handle);
+    Fred::CreateContactCheck create_check(contact.info_data.id, testsuite.testsuite_handle);
     std::string handle;
     std::string timezone = "UTC";
 
@@ -185,11 +185,11 @@ BOOST_AUTO_TEST_CASE(test_Exec_mandatory_setup)
  */
 BOOST_AUTO_TEST_CASE(test_Exec_optional_setup)
 {
-    setup_contact contact;
+    Test::contact contact;
     setup_testsuite testsuite;
     setup_logd_request_id logd_request;
 
-    Fred::CreateContactCheck create_check(contact.data.id, testsuite.testsuite_handle, logd_request.logd_request_id);
+    Fred::CreateContactCheck create_check(contact.info_data.id, testsuite.testsuite_handle, logd_request.logd_request_id);
     std::string handle;
     std::string timezone = "UTC";
 
@@ -341,10 +341,10 @@ BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_contact_id)
  */
 BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_testsuite_handle)
 {
-    setup_contact contact;
+    Test::contact contact;
     setup_nonexistent_testsuite_handle testsuite;
 
-    Fred::CreateContactCheck create_check(contact.data.id, testsuite.testsuite_handle);
+    Fred::CreateContactCheck create_check(contact.info_data.id, testsuite.testsuite_handle);
     std::string handle;
 
     bool caught_the_right_exception = false;

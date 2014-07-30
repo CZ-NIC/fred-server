@@ -45,10 +45,10 @@ testing validity of newly created check
 */
 BOOST_AUTO_TEST_CASE(test_Deleting_domains)
 {
-    setup_contact contact;
+    Test::contact contact;
 
     Fred::OperationContext ctx;
-    Fred::InfoContactOutput contact_info = Fred::InfoContactByHandle(contact.data.handle).exec(ctx);
+    Fred::InfoContactOutput contact_info = Fred::InfoContactByHandle(contact.info_data.handle).exec(ctx);
 
     std::vector<std::string> domain_names;
 
@@ -63,13 +63,13 @@ BOOST_AUTO_TEST_CASE(test_Deleting_domains)
         Fred::CreateDomain(
             *it,
             contact_info.info_contact_data.create_registrar_handle,
-            contact.data.handle
+            contact.info_data.handle
         ).exec(ctx);
     }
 
     std::string check_handle = Admin::enqueue_check(
         ctx,
-        contact.data.id,
+        contact.info_data.id,
         Fred::TestsuiteHandle::MANUAL);
 
     Fred::UpdateContactCheck(

@@ -43,13 +43,13 @@ testing validity of newly created check
 BOOST_AUTO_TEST_CASE(test_Enqueued_check_data)
 {
     setup_testsuite testsuite;
-    setup_contact contact;
+    Test::contact contact;
     unsigned long long logd_request_id = RandomDataGenerator().xuint();
 
     Fred::OperationContext ctx;
     std::string check_handle = Admin::enqueue_check(
         ctx,
-        contact.data.id,
+        contact.info_data.id,
         testsuite.testsuite_handle,
         logd_request_id);
 
@@ -74,12 +74,12 @@ testing whether old enqueud checks are correctly invalidated
 BOOST_AUTO_TEST_CASE(test_Invalidating_old_checks)
 {
     setup_testsuite testsuite;
-    setup_contact contact;
+    Test::contact contact;
 
     Fred::OperationContext ctx;
 
     std::string invalidated_check_handle_1 = Fred::CreateContactCheck(
-        contact.data.id,
+        contact.info_data.id,
         testsuite.testsuite_handle
     ).exec(ctx);
 
@@ -89,7 +89,7 @@ BOOST_AUTO_TEST_CASE(test_Invalidating_old_checks)
     ).exec(ctx);
 
     std::string invalidated_check_handle_2 = Fred::CreateContactCheck(
-        contact.data.id,
+        contact.info_data.id,
         testsuite.testsuite_handle
     ).exec(ctx);
 
@@ -101,7 +101,7 @@ BOOST_AUTO_TEST_CASE(test_Invalidating_old_checks)
     std::string new_check_handle(
         Admin::request_check_enqueueing(
             ctx,
-            contact.data.id,
+            contact.info_data.id,
             testsuite.testsuite_handle,
             RandomDataGenerator().xuint()
     ));
@@ -186,7 +186,7 @@ BOOST_AUTO_TEST_CASE(test_ExceptionUnknownTestsuiteHandle)
     try {
         Admin::enqueue_check(
             ctx,
-            setup_contact().data.id,
+            Test::contact().info_data.id,
             setup_nonexistent_testsuite_handle().testsuite_handle,
             Optional<unsigned long long>()
         );

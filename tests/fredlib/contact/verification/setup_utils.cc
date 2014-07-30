@@ -16,34 +16,6 @@
 #include "util/random.h"
 #include "util/random_data_generator.h"
 
-setup_registrar::setup_registrar( ) {
-    Fred::OperationContext ctx;
-
-    data = Test::exec(
-        Test::CreateX_factory<Fred::CreateRegistrar>().make(),
-        ctx
-    );
-
-    ctx.commit_transaction();
-}
-
-setup_contact::setup_contact() {
-
-    Fred::OperationContext ctx;
-
-    data = Test::exec(
-            Test::CreateX_factory<Fred::CreateContact>().make(
-                Test::exec(
-                    Test::CreateX_factory<Fred::CreateRegistrar>().make(),
-                    ctx
-                ).handle
-            ),
-            ctx
-        );
-
-    ctx.commit_transaction();
-}
-
 setup_nonexistent_contact_handle::setup_nonexistent_contact_handle() {
     Database::Result res;
     // guarantee non-existence
@@ -332,7 +304,7 @@ setup_check::setup_check(const std::string& _testsuite_handle, Optional<unsigned
 {
     // check
     Fred::CreateContactCheck create_check(
-        contact_.data.id,
+        contact_.info_data.id,
         _testsuite_handle,
         logd_request_
     );

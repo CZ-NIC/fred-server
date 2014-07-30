@@ -6,19 +6,6 @@
 
 #include "tests/setup/fixtures_utils.h"
 
-struct setup_registrar
-{
-    Fred::InfoRegistrarData data;
-
-    setup_registrar();
-};
-
-struct setup_contact {
-    Fred::InfoContactData data;
-
-    setup_contact();
-};
-
 struct setup_nonexistent_contact_handle {
     std::string contact_handle;
 
@@ -102,7 +89,7 @@ struct setup_error_msg {
 struct setup_check {
     std::string check_handle_;
     Optional<unsigned long long> logd_request_;
-    setup_contact contact_;
+    Test::contact contact_;
 
     setup_check(const std::string& _testsuite_handle, Optional<unsigned long long> _logd_request = Optional<unsigned long long>());
 };

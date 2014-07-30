@@ -198,8 +198,8 @@ struct setup_already_checked_contacts {
         }
 
         for(int i=0; i < count_ - pre_existing_count; ++i) {
-           setup_contact contact;
-           ids_.push_back(contact.data.id);
+           Test::contact contact;
+           ids_.push_back(contact.info_data.id);
         }
 
         clean_queue();
@@ -280,7 +280,7 @@ parameter of fill_automatic_check_queue must correctly affect number of newly en
 BOOST_AUTO_TEST_CASE(test_Max_queue_length_parameter)
 {
     for(int i=0; i<100; ++i) {
-        setup_contact contact;
+        Test::contact contact;
     }
 
     create_dummy_automatic_testsuite();
@@ -311,7 +311,7 @@ BOOST_AUTO_TEST_CASE(test_Max_queue_length_parameter)
 BOOST_AUTO_TEST_CASE(test_Try_fill_full_queue)
 {
     for(int i=0; i<25; ++i) {
-        setup_contact contact;
+        Test::contact contact;
     }
 
     create_dummy_automatic_testsuite();
@@ -402,7 +402,7 @@ BOOST_AUTO_TEST_CASE(test_Enqueueing_never_checked_contacts)
     // make set of new, never checked contacts
     std::vector<unsigned long long> never_checked_contacts;
     for(int i=0; i<100; ++i) {
-        never_checked_contacts.push_back(setup_contact().data.id);
+        never_checked_contacts.push_back(Test::contact().info_data.id);
     }
 
     // test scenarios
@@ -494,7 +494,7 @@ struct setup_special_contact {
     };
 
     std::string contact_handle_;
-    setup_registrar registrar_;
+    Test::registrar registrar_;
     Fred::InfoContactOutput data_;
     unsigned long long contact_id_;
 
@@ -518,7 +518,7 @@ void setup_contact_as_technical(const setup_special_contact& contact_) {
             Fred::OperationContext ctx1;
 
             nsset_handle_ = "NSSET_" + RandomDataGenerator().xnumstring(15);
-            Fred::CreateNsset(nsset_handle_, contact_.registrar_.data.handle).exec(ctx1);
+            Fred::CreateNsset(nsset_handle_, contact_.registrar_.info_data.handle).exec(ctx1);
 
             ctx1.commit_transaction();
         } catch (Database::ResultFailed& ) {
@@ -531,7 +531,7 @@ void setup_contact_as_technical(const setup_special_contact& contact_) {
 
     // set contact as technical
     Fred::OperationContext ctx2;
-    Fred::UpdateNsset(nsset_handle_, contact_.registrar_.data.handle)
+    Fred::UpdateNsset(nsset_handle_, contact_.registrar_.info_data.handle)
         .add_tech_contact(contact_.contact_handle_).exec(ctx2);
     ctx2.commit_transaction();
 }
@@ -546,7 +546,7 @@ void setup_contact_as_owner(const setup_special_contact& contact_) {
 
             domain_fqdn_ = "DOMAIN" + RandomDataGenerator().xnumstring(15) + ".cz";
 
-            Fred::CreateDomain(domain_fqdn_, contact_.registrar_.data.handle, contact_.contact_handle_).exec(ctx1);
+            Fred::CreateDomain(domain_fqdn_, contact_.registrar_.info_data.handle, contact_.contact_handle_).exec(ctx1);
 
             ctx1.commit_transaction();
         } catch (Database::ResultFailed& ) {
@@ -582,7 +582,7 @@ setup_special_contact::setup_special_contact(
             Fred::OperationContext ctx;
 
             contact_handle_ = "CONTACT_" + RandomDataGenerator().xnumstring(10);
-            Fred::CreateContact create(contact_handle_, registrar_.data.handle);
+            Fred::CreateContact create(contact_handle_, registrar_.info_data.handle);
             if(country_code_.isset()) {
                 create.set_country(country_code_.get_value_or_default());
             }

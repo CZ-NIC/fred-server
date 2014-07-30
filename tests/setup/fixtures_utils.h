@@ -13,6 +13,8 @@
 #include <fredlib/registrar.h>
 #include <fredlib/contact.h>
 #include <fredlib/domain.h>
+#include <fredlib/nsset.h>
+#include <fredlib/keyset.h>
 
 #include <vector>
 #include <utility>
@@ -329,6 +331,85 @@ namespace Test {
             exec(Fred::OperationContext& ctx);
     };
 
+
+
+    struct registrar {
+        Fred::InfoRegistrarData info_data;
+
+        static Fred::InfoRegistrarData make(Fred::OperationContext& _ctx) {
+            return exec(
+                CreateX_factory<Fred::CreateRegistrar>().make(),
+                _ctx
+            );
+        }
+
+        registrar(Fred::OperationContext& _ctx) {
+            info_data = make(_ctx);
+        }
+
+        registrar() {
+            Fred::OperationContext ctx;
+            info_data = make(ctx);
+            ctx.commit_transaction();
+        }
+    };
+
+    struct contact {
+        Fred::InfoContactData info_data;
+
+        static Fred::InfoContactData make(Fred::OperationContext& _ctx) {
+            return exec(
+                CreateX_factory<Fred::CreateContact>().make(
+                    registrar(_ctx).info_data.handle
+                ),
+                _ctx
+            );
+        }
+
+        contact(Fred::OperationContext& _ctx) {
+            info_data = make(_ctx);
+        }
+
+        contact() {
+            Fred::OperationContext ctx;
+            info_data = make(ctx);
+            ctx.commit_transaction();
+        }
+    };
+
+    struct domain {
+        Fred::InfoDomainData info_data;
+
+        static Fred::InfoDomainData make(Fred::OperationContext& _ctx) {
+            return exec(
+                CreateX_factory<Fred::CreateDomain>().make(
+                    registrar(_ctx).info_data.handle,
+                    contact(_ctx).info_data.handle
+                ),
+                _ctx
+            );
+        }
+
+        domain(Fred::OperationContext& _ctx) {
+            info_data = make(_ctx);
+        }
+
+        domain() {
+            Fred::OperationContext ctx;
+            info_data = make(ctx);
+            ctx.commit_transaction();
+        }
+    };
+
+    // TODO
+    struct nsset {
+        Fred::InfoNssetData info_data;
+    };
+
+    // TODO
+    struct keyset {
+        Fred::InfoKeysetData info_data;
+    };
 };
 
 #endif // #include guard end
