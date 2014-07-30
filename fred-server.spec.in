@@ -35,6 +35,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %defattr(-,root,root,-)
 %config %{_sysconfdir}/fred/server.conf
 %config %{_sysconfdir}/fred/hpmail.conf
+%config %{_sysconfdir}/fred/optysmail.conf
 %{_sysconfdir}/init.d/fred-server
 %{_sbindir}/fred-rifd
 %{_sbindir}/fred-adifd

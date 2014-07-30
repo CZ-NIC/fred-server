@@ -159,4 +159,21 @@ struct notify_sms_send_impl
   }
 };
 
+/**
+ * \class notify_letters_optys_send_impl
+ * \brief admin client implementation of notify_letters_optys_send
+ */
+struct notify_letters_optys_send_impl
+{
+  void operator()() const
+  {
+      Logging::Context ctx("notify_letters_optys_send_impl");
+      Admin::notify_letters_optys_send_impl(
+              CfgArgGroups::instance()->get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>()->get_nameservice_host_port()
+              , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>()->get_nameservice_context()
+              , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientNotifyLettersOptysSendArgsGrp>()->optys_config
+              );
+  }
+};
+
 #endif // NOTIFY_CLIENT_IMPL_H_

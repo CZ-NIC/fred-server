@@ -25,6 +25,7 @@ include $(top_srcdir)/am_doxygen.am
 CLEANFILES = \
 		config/server.conf \
 		config/hpmail.conf \
+		config/optysmail.conf \
 		init-scripts/fred-server \
 		doxy.conf \
 		src/corba/MessagesSK.cc \
@@ -103,7 +104,8 @@ EXTRA_DIST = \
 
 dist_fredconf_DATA = \
 		config/server.conf \
-		config/hpmail.conf
+		config/hpmail.conf \
+		config/optysmail.conf
 
 dist_rcconf_SCRIPTS = \
 		init-scripts/fred-server
@@ -517,7 +519,6 @@ util_hp_crc32_LDADD = \
 		$(BOOST_DATE_TIME_LIB)
 #
 # util/hp/crc32
-
 
 # src/corba/util/libcorbautil.a
 #
@@ -1829,7 +1830,9 @@ src_cli_admin_fred_admin_SOURCES = \
 		src/fredlib/object_state/cancel_object_state_request.cc \
 		src/fredlib/object_state/cancel_object_state_request.h \
 		src/fredlib/object_state/cancel_object_state_request_id.cc \
-		src/fredlib/object_state/cancel_object_state_request_id.h
+		src/fredlib/object_state/cancel_object_state_request_id.h \
+		util/optys/upload_client.cc \
+		util/optys/upload_client.h
 		
 src_cli_admin_fred_admin_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS) \
@@ -1861,6 +1864,7 @@ src_cli_admin_fred_admin_LDADD = \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(BOOST_DATE_TIME_LIB) \
 		$(BOOST_REGEX_LIB) \
+		$(BOOST_FILESYSTEM_LIB) \
 		$(OMNIORB4_LIBS) \
 		$(XML2_LIBS) \
 		$(LIBIDN_CFLAGS) \

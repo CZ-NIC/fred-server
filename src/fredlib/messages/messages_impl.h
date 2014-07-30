@@ -65,6 +65,7 @@ struct letter_proc {
     unsigned long long file_id;
     unsigned long long letter_id;
     unsigned attempt;
+    std::string message_type;
     std::string fname;
     PostalAddress postal_address;
 };//info for letter processing
@@ -190,19 +191,22 @@ public:
 
     //load saved letters
     LetterProcInfo load_letters_to_send(std::size_t batch_size_limit
-            , const std::string &comm_type, std::size_t max_attempts_limit);
+            , const std::string &comm_type, const std::string& service_handle
+            , std::size_t max_attempts_limit);
 
     //load saved sms
-    SmsProcInfo load_sms_to_send(std::size_t batch_size_limit, std::size_t max_attempts_limit);
+    SmsProcInfo load_sms_to_send(std::size_t batch_size_limit, const std::string& service_handle, std::size_t max_attempts_limit);
 
     //set send result into letter status
     void set_letter_status(const LetterProcInfo& letters
             ,const std::string& new_status, const std::string& batch_id
             , const std::string &comm_type
+            , const std::string& service_handle
             , const std::size_t max_attempts_limit);
 
     //set send result into sms status
     void set_sms_status(const SmsProcInfo& messages
+            , const std::string& service_handle
             , const std::size_t max_attempts_limit);
 
     //get sms data by id

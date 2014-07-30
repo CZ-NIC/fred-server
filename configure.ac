@@ -46,11 +46,37 @@ PKG_PROG_PKG_CONFIG
 
 
 # Checks for libraries.
-AC_CHECK_LIB([pthread], [pthread_exit])
+AC_CHECK_LIB([pthread], [pthread_exit], [],
+[
+    AC_MSG_ERROR([library pthread not found])
+])
+
 AC_CHECK_LIB([mpdec], [mpd_free], [],
 [
     AC_MSG_ERROR([library mpdec not found])
 ])
+
+AC_CHECK_LIB([ssh], [ssh_buffer_free], [],
+[
+    AC_MSG_ERROR([library ssh not found])
+])
+
+AC_CHECK_HEADER([libssh/libssh.h],,[AC_MSG_ERROR([Header libssh/libssh.h not found])])
+
+AC_CHECK_LIB([z], [get_crc_table], [],
+[
+    AC_MSG_ERROR([library zlib not found])
+])
+
+AC_CHECK_HEADER([zlib.h],,[AC_MSG_ERROR([Header zlib.h not found])])
+
+AC_CHECK_LIB([minizip], [rand], [],
+[
+    AC_MSG_ERROR([library minizip not found])
+])
+
+AC_CHECK_HEADER([minizip/zip.h],,[AC_MSG_ERROR([Header minizip/zip.h not found])])
+
 
 # Check for omniORB (note that 4.1.1 is bugged for us)
 PKG_CHECK_MODULES(OMNIORB4, [omniORB4 > 4.1.1, omniDynamic4, omnithread3])
@@ -61,6 +87,7 @@ AX_BOOST_BASE
 AX_BOOST_DATE_TIME
 AX_BOOST_PROGRAM_OPTIONS
 AX_BOOST_REGEX
+AX_BOOST_FILESYSTEM
 
 #libcurl.a
 #checking for some function with C linkage (viz readelf -a /usr/lib/libcurl | less)
@@ -218,6 +245,24 @@ AC_ARG_WITH([epp_operations_charging], [AS_HELP_STRING([--with-epp-operations-ch
             [AC_SUBST([EPP_OPERATIONS_CHARGING], [$withval])],
             [AC_SUBST([EPP_OPERATIONS_CHARGING], [false])])
 
+#optys mail login name
+AC_ARG_WITH([optys_login_name], [AS_HELP_STRING([--with-optys_login_name],
+            [Optys mail login name])],
+            [AC_SUBST([OPTYS_LOGIN_NAME], [$withval])],
+            [AC_SUBST([OPTYS_LOGIN_NAME], [test])])
+
+#optys mail login password
+AC_ARG_WITH([optys_login_password], [AS_HELP_STRING([--with-optys_login_password],
+            [Optys mail login password])],
+            [AC_SUBST([OPTYS_LOGIN_PASSWORD], [$withval])],
+            [AC_SUBST([OPTYS_LOGIN_PASSWORD], [test])])
+
+#optys mail login port
+AC_ARG_WITH([optys_login_port], [AS_HELP_STRING([--with-optys_login_port],
+            [Optys mail login port])],
+            [AC_SUBST([OPTYS_LOGIN_PORT], [$withval])],
+            [AC_SUBST([OPTYS_LOGIN_PORT], [22])])
+
 
 #expand paths for bindir, sbindir and datarootdir variable
 AS_AC_EXPAND([BINDIR], [$bindir])
@@ -235,6 +280,9 @@ AC_DEFINE_UNQUOTED([CONFIG_FILE], [["]$SYSCONFDIR/fred/server.conf["]], [locatio
 
 # config file for hpmail (postservis)
 AC_DEFINE_UNQUOTED([HPMAIL_CONFIG], [["]$SYSCONFDIR/fred/hpmail.conf["]], [location of hpmail config file])
+
+# config file for optys mail service
+AC_DEFINE_UNQUOTED([OPTYS_CONFIG], [["]$SYSCONFDIR/fred/optysmail.conf["]], [location of optys mail service config file])
 
 # location of data for tests 
 AC_DEFINE_UNQUOTED([TEST_DATA], [["]$DATAROOTDIR/["]], [location of data for tests])
@@ -421,6 +469,9 @@ fi
 # AC_CHECK_LIB(magic, magic_open)
 # AC_CHECK_HEADERS(magic.h,,[AC_MSG_ERROR([magic.h not found])])
 
+AM_PROG_CC_C_O
+
+
 if test -z "$CFLAGS"; then
     CONFIGURE_CFLAGS="$MPD_WARN $MPD_CONFIG $MPD_OPT"
 else
@@ -441,6 +492,7 @@ AC_CONFIG_FILES([Makefile
                  fred-server.spec
                  config/server.conf
                  config/hpmail.conf
+                 config/optysmail.conf
                  init-scripts/fred-server
                  doxy.conf
                  ])
