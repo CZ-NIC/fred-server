@@ -1019,9 +1019,8 @@ BOOST_FIXTURE_TEST_CASE(merge_contact_with_mojeid_src_contact, merge_contact_dom
     }
     catch(Fred::MergeContact::Exception& ex)
     {
-        BOOST_CHECK(ex.is_set_src_contact_in_mojeid());
-        BOOST_CHECK(ex.get_src_contact_in_mojeid().source_handle.compare(src_contact_handle) == 0);
-        BOOST_CHECK(ex.get_src_contact_in_mojeid().destination_handle.compare(dst_contact_handle) == 0);
+        BOOST_CHECK(ex.is_set_src_contact_invalid());
+        BOOST_CHECK(ex.get_src_contact_invalid().compare(src_contact_handle) == 0);
     }
 
     //info after merge
@@ -1065,9 +1064,8 @@ BOOST_FIXTURE_TEST_CASE(merge_contact_with_blocked_src_contact, merge_contact_do
     }
     catch(Fred::MergeContact::Exception& ex)
     {
-        BOOST_CHECK(ex.is_set_src_contact_blocked());
-        BOOST_CHECK(ex.get_src_contact_blocked().source_handle.compare(src_contact_handle) == 0);
-        BOOST_CHECK(ex.get_src_contact_blocked().destination_handle.compare(dst_contact_handle) == 0);
+        BOOST_CHECK(ex.is_set_src_contact_invalid());
+        BOOST_CHECK(ex.get_src_contact_invalid().compare(src_contact_handle) == 0);
     }
 
     //info after merge
@@ -1111,9 +1109,54 @@ BOOST_FIXTURE_TEST_CASE(merge_contact_with_delete_prohibited_src_contact, merge_
     }
     catch(Fred::MergeContact::Exception& ex)
     {
-        BOOST_CHECK(ex.is_set_src_contact_blocked());
-        BOOST_CHECK(ex.get_src_contact_blocked().source_handle.compare(src_contact_handle) == 0);
-        BOOST_CHECK(ex.get_src_contact_blocked().destination_handle.compare(dst_contact_handle) == 0);
+        BOOST_CHECK(ex.is_set_src_contact_invalid());
+        BOOST_CHECK(ex.get_src_contact_invalid().compare(src_contact_handle) == 0);
+    }
+
+    //info after merge
+    Fred::InfoDomainOutput info_domain_owner_2 = Fred::InfoDomainByHandle(test_domain_owner_handle).exec(ctx);
+    Fred::InfoDomainOutput info_domain_admin_2 = Fred::InfoDomainByHandle(test_domain_admin_handle).exec(ctx);
+    Fred::InfoKeysetOutput info_keyset_2 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
+    Fred::InfoNssetOutput info_nsset_2 = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
+
+    //compare state before merge with state after
+    BOOST_CHECK(info_domain_owner_1 == info_domain_owner_2);
+    BOOST_CHECK(info_domain_admin_1 == info_domain_admin_2);
+    BOOST_CHECK(info_keyset_1 == info_keyset_2);
+    BOOST_CHECK(info_nsset_1 == info_nsset_2);
+}
+
+
+/**
+ * test MergeContact with blocked dst contact
+ */
+BOOST_FIXTURE_TEST_CASE(merge_contact_with_blocked_dst_contact, merge_contact_domain_fixture)
+{
+    unsigned long long dst_contact_id = Fred::InfoContactByHandle(
+            dst_contact_handle).exec(ctx).info_contact_data.id;
+    {
+        Fred::CreateObjectStateRequestId(dst_contact_id,
+            Util::set_of<std::string>(Fred::ObjectState::SERVER_BLOCKED)).exec(ctx);
+        Fred::PerformObjectStateRequest(dst_contact_id).exec(ctx);
+        ctx.commit_transaction();
+    }
+
+    //info before merge
+    Fred::InfoDomainOutput info_domain_owner_1 = Fred::InfoDomainByHandle(test_domain_owner_handle).exec(ctx);
+    Fred::InfoDomainOutput info_domain_admin_1 = Fred::InfoDomainByHandle(test_domain_admin_handle).exec(ctx);
+    Fred::InfoKeysetOutput info_keyset_1 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
+    Fred::InfoNssetOutput info_nsset_1 = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
+
+    try
+    {
+        //merge
+        Fred::MergeContactOutput merge_data = Fred::MergeContact(src_contact_handle, dst_contact_handle, registrar_handle).exec(ctx);
+        ctx.commit_transaction();
+    }
+    catch(Fred::MergeContact::Exception& ex)
+    {
+        BOOST_CHECK(ex.is_set_dst_contact_invalid());
+        BOOST_CHECK(ex.get_dst_contact_invalid().compare(dst_contact_handle) == 0);
     }
 
     //info after merge

@@ -514,23 +514,16 @@ namespace Fred
 
         if(Fred::ObjectHasState(dst_contact_id,Fred::ObjectState::SERVER_BLOCKED).exec(ctx))
         {
-            BOOST_THROW_EXCEPTION(Fred::MergeContact::Exception().set_src_contact_in_mojeid(
-                Fred::MergeContact::InvalidContacts(src_contact_handle,dst_contact_handle)));
+            BOOST_THROW_EXCEPTION(Fred::MergeContact::Exception().set_dst_contact_invalid(dst_contact_handle));
         }
 
         unsigned long long src_contact_id = static_cast<unsigned long long>(diff_result[0]["src_contact_id"]);
 
-        if(Fred::ObjectHasState(src_contact_id,Fred::ObjectState::MOJEID_CONTACT).exec(ctx))
-        {
-            BOOST_THROW_EXCEPTION(Fred::MergeContact::Exception().set_src_contact_in_mojeid(
-                Fred::MergeContact::InvalidContacts(src_contact_handle,dst_contact_handle)));
-        }
-
-        if(Fred::ObjectHasState(src_contact_id,Fred::ObjectState::SERVER_BLOCKED).exec(ctx)
+        if( Fred::ObjectHasState(src_contact_id,Fred::ObjectState::MOJEID_CONTACT).exec(ctx)
+            || Fred::ObjectHasState(src_contact_id,Fred::ObjectState::SERVER_BLOCKED).exec(ctx)
             || Fred::ObjectHasState(src_contact_id,Fred::ObjectState::SERVER_DELETE_PROHIBITED).exec(ctx))
         {
-            BOOST_THROW_EXCEPTION(Fred::MergeContact::Exception().set_src_contact_blocked(
-                Fred::MergeContact::InvalidContacts(src_contact_handle,dst_contact_handle)));
+            BOOST_THROW_EXCEPTION(Fred::MergeContact::Exception().set_src_contact_invalid(src_contact_handle));
         }
 
         bool contact_differs = static_cast<bool>(diff_result[0]["differ"]);
