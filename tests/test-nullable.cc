@@ -95,16 +95,33 @@ void test_convertible_types(T0 v0, T1 v1)
     typedef Nullable< T0 > NT0;
     typedef Nullable< T1 > NT1;
 
-    const T0 t0_v[] = {v0, v1};
-    const T1 t1_v[] = {v0, v1};
-    NT0 n0i[] = {v0,  // init constructor Nullable< T0 >(const T0&)
-                 v1}; // init constructor Nullable< T0 >(const T1&)
-    NT1 n1i[] = {v0,  // init constructor Nullable< T1 >(const T0&)
-                 v1}; // init constructor Nullable< T1 >(const T1&)
-    NT0 n0c[] = {n0i[0], n0i[1],  // copy constructor Nullable< T0 >(const Nullable< T0 >&)
-                 n1i[0], n1i[1]}; // copy constructor Nullable< T0 >(const Nullable< T1 >&)
-    NT1 n1c[] = {n0i[0], n0i[1],  // copy constructor Nullable< T1 >(const Nullable< T0 >&)
-                 n1i[0], n1i[1]}; // copy constructor Nullable< T1 >(const Nullable< T1 >&)
+    std::vector<T0> t0_v;
+    t0_v.push_back(v0);
+    t0_v.push_back(v1);
+
+    std::vector<T1> t1_v;
+    t1_v.push_back(v0);
+    t1_v.push_back(v1);
+
+    std::vector<NT0> n0i;
+    n0i.push_back(v0);  // init constructor Nullable< T0 >(const T0&)
+    n0i.push_back(v1);  // init constructor Nullable< T0 >(const T1&)
+
+    std::vector<NT1> n1i;
+    n1i.push_back(v0);  // init constructor Nullable< T1 >(const T0&)
+    n1i.push_back(v1);  // init constructor Nullable< T1 >(const T1&)
+
+    std::vector<NT0> n0c;
+    n0c.push_back(n0i[0]);  // copy constructor Nullable< T0 >(const Nullable< T0 >&)
+    n0c.push_back(n0i[1]);  // copy constructor Nullable< T0 >(const Nullable< T0 >&)
+    n0c.push_back(n1i[0]);  // copy constructor Nullable< T0 >(const Nullable< T1 >&)
+    n0c.push_back(n1i[1]);  // copy constructor Nullable< T0 >(const Nullable< T1 >&)
+
+    std::vector<NT1> n1c;
+    n1c.push_back(n0i[0]);  // copy constructor Nullable< T1 >(const Nullable< T0 >&)
+    n1c.push_back(n0i[1]);  // copy constructor Nullable< T1 >(const Nullable< T0 >&)
+    n1c.push_back(n1i[0]);  // copy constructor Nullable< T1 >(const Nullable< T1 >&)
+    n1c.push_back(n1i[1]);  // copy constructor Nullable< T1 >(const Nullable< T1 >&)
 
     for (int variant = 0; variant < 2; ++variant) {
         switch (variant) { // 0..1
