@@ -309,6 +309,8 @@ void MergeContactAutoProcedure::exec()
                     dup_set = tmp_dup_set;
             }
 
+            if(dup_set.size() <= 1) break;
+
             octx.get_log().debug(boost::format("contact duplicates set: { %1% }")
                     % boost::algorithm::join(dup_set, ", "));
 
