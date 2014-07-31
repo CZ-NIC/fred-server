@@ -400,7 +400,8 @@ void MergeContactAutoProcedure::exec()
             out_stream << merge_set_operation_info.format(indenter);
         }
 
-        Fred::Contact::FindContactDuplicates new_dup_search = Fred::Contact::FindContactDuplicates().set_registrar(registrar_);
+        Fred::Contact::FindContactDuplicates new_dup_search = Fred::Contact::FindContactDuplicates()
+            .set_registrar(registrar_).set_exclude_contacts(skip_invalid_contact_set);
         if (this->is_set_dry_run()) {
             new_dup_search.set_exclude_contacts(dry_run_info.any_search_excluded);
         }
