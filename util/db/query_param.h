@@ -224,7 +224,7 @@ template <typename CONTAINER_TYPE > struct list_of_params
     }
     list_of_params& operator()(const ELEMENT_TYPE& t)
     {
-        push_back(t);
+        this->push_back(t);
         return *this;
     }
 
@@ -233,7 +233,7 @@ template <typename CONTAINER_TYPE > struct list_of_params
      * (i. e. number for parameter in sql query)
      */
     std::string add(const ELEMENT_TYPE& t) {
-        push_back(t);
+        this->push_back(t);
         return boost::lexical_cast<std::string>( CONTAINER_TYPE::size() );
     }
 };
