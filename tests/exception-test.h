@@ -94,17 +94,15 @@ public:
             if(do_test && ((path_counter % iteration_counter) == 0))
             {
 
-                puts("ExceptionTest::exception_test() throw");
-                char iteration_counter_str[40]={0};
-                char path_counter_str[40]={0};
-                snprintf(iteration_counter_str, sizeof(iteration_counter_str)
-                        ,"iteration_counter: %llu", iteration_counter);
-                snprintf(path_counter_str,sizeof(path_counter_str)
-                        , "path_counter: %llu", path_counter);
-                puts(iteration_counter_str);
-                puts(path_counter_str);
-                printf("PID of this process: %d\n", getpid());
-                printf("The ID of this thread is: %u\n", (unsigned int)pthread_self());
+                //puts("ExceptionTest::exception_test() throw");
+                //char iteration_counter_str[40]={0};
+                //char path_counter_str[40]={0};
+                //snprintf(iteration_counter_str, sizeof(iteration_counter_str),"iteration_counter: %llu", iteration_counter);
+                //snprintf(path_counter_str,sizeof(path_counter_str), "path_counter: %llu", path_counter);
+                //puts(iteration_counter_str);
+                //puts(path_counter_str);
+                //printf("PID of this process: %d\n", getpid());
+                //printf("The ID of this thread is: %u\n", (unsigned int)pthread_self());
 
 
                 ++path_counter;

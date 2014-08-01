@@ -275,8 +275,11 @@ void MergeContactAutoProcedure::exec()
     }
 
 
+
     /* find any contact duplicates set (optionally for specific registrar only) */
-    std::set<std::string> any_dup_set = Fred::Contact::FindAnyContactDuplicates().set_registrar(registrar_).exec(octx);
+    std::set<std::string> any_dup_set = Fred::Contact::FindContactDuplicates().set_registrar(registrar_).exec(octx);
+    std::set<std::string> skip_invalid_contact_set;
+
     while (any_dup_set.size() >= 2)
     {
         /* one specific contact set merges scope */
@@ -285,6 +288,7 @@ void MergeContactAutoProcedure::exec()
 
         std::vector<Fred::MergeContactEmailNotificationInput> email_notification_input_vector;
         std::set<std::string> dup_set = any_dup_set;
+
         do
         {
             /* one contact merge scope */
@@ -293,6 +297,23 @@ void MergeContactAutoProcedure::exec()
 
             octx.get_log().debug(boost::format("contact duplicates set: { %1% }")
                     % boost::algorithm::join(dup_set, ", "));
+
+            //skip invalid contacts
+            {
+                octx.get_log().debug(boost::format("skip invalid contacts set: { %1% }")
+                        % boost::algorithm::join(skip_invalid_contact_set, ", "));
+
+                std::set<std::string> tmp_dup_set;
+                    std::set_difference(dup_set.begin(), dup_set.end(),skip_invalid_contact_set.begin(), skip_invalid_contact_set.end(),
+                        std::insert_iterator<std::set<std::string> >(tmp_dup_set, tmp_dup_set.begin()));
+                    dup_set = tmp_dup_set;
+            }
+
+            if(dup_set.size() <= 1) break;
+
+            octx.get_log().debug(boost::format("contact duplicates set: { %1% }")
+                    % boost::algorithm::join(dup_set, ", "));
+
 
             /* compute best handle to merge all others onto */
             Fred::MergeContactSelectionOutput contact_select = Fred::MergeContactSelection(
@@ -307,21 +328,49 @@ void MergeContactAutoProcedure::exec()
 
             Fred::MergeContactOutput merge_data;
             Admin::MergeContact merge_op = Admin::MergeContact(pick_one, winner_handle, system_registrar);
-            if (this->is_set_dry_run())
-            {
-                merge_data = merge_op.exec_dry_run();
 
-                dry_run_info.add_fake_deleted(pick_one);
-                dry_run_info.add_search_excluded(winner_handle);
-                /* do not commit */
-            }
-            else
+            try
             {
-                /* MERGE ONE CONTACT */
-                merge_data = merge_op.exec(logger_client_);
-                /* save output for later email notification */
-                email_notification_input_vector.push_back(
-                        Fred::MergeContactEmailNotificationInput(pick_one, winner_handle, merge_data));
+                if (this->is_set_dry_run())
+                {
+                    merge_data = merge_op.exec_dry_run();
+
+                    dry_run_info.add_fake_deleted(pick_one);
+                    dry_run_info.add_search_excluded(winner_handle);
+                    /* do not commit */
+                }
+                else
+                {
+                    /* MERGE ONE CONTACT */
+                    merge_data = merge_op.exec(logger_client_);
+                    /* save output for later email notification */
+                    email_notification_input_vector.push_back(
+                            Fred::MergeContactEmailNotificationInput(pick_one, winner_handle, merge_data));
+                }
+            }
+            catch(const Fred::MergeContact::Exception& ex)
+            {
+                if(ex.is_set_src_contact_invalid())
+                {
+                    skip_invalid_contact_set.insert(ex.get_src_contact_invalid());
+                }
+
+                if(ex.is_set_object_blocked())//linked object of src contact blocked, skip src contact
+                {
+                    skip_invalid_contact_set.insert(pick_one);
+                }
+
+                if(ex.is_set_dst_contact_invalid())
+                {
+                    skip_invalid_contact_set.insert(ex.get_dst_contact_invalid());
+                }
+
+                if(!(ex.is_set_src_contact_invalid()
+                    || ex.is_set_object_blocked()
+                    || ex.is_set_dst_contact_invalid()))
+                {
+                    throw;
+                }
             }
 
             if (this->get_verbose_level() > 0) {
@@ -337,7 +386,7 @@ void MergeContactAutoProcedure::exec()
 
             /* find contact duplicates for winner contact - if nothing changed in registry data this
              * would be the same list as in previous step but without the merged one */
-            dup_set = Fred::Contact::FindSpecificContactDuplicates(winner_handle).exec(octx);
+            dup_set = Fred::Contact::FindContactDuplicates().set_specific_contact(winner_handle).exec(octx);
             if (this->is_set_dry_run())
             {
                 dup_set = dry_run_info.remove_fake_deleted_from_set(dup_set);
@@ -351,7 +400,8 @@ void MergeContactAutoProcedure::exec()
             out_stream << merge_set_operation_info.format(indenter);
         }
 
-        Fred::Contact::FindAnyContactDuplicates new_dup_search = Fred::Contact::FindAnyContactDuplicates().set_registrar(registrar_);
+        Fred::Contact::FindContactDuplicates new_dup_search = Fred::Contact::FindContactDuplicates()
+            .set_registrar(registrar_).set_exclude_contacts(skip_invalid_contact_set);
         if (this->is_set_dry_run()) {
             new_dup_search.set_exclude_contacts(dry_run_info.any_search_excluded);
         }

@@ -38,7 +38,7 @@ namespace Fred
     {
         Database::Result domain_states_result = ctx.get_conn().exec_params(
         "SELECT eos.id, eos.name, os.valid_from, os.valid_to , os.ohid_from, os.ohid_to"
-        " , eos.external, eos.manual "
+        " , eos.external, eos.manual, eos.importance "
         " FROM object_state os "
             " JOIN enum_object_states eos ON eos.id = os.state_id "
             " WHERE os.object_id = $1::bigint "
@@ -67,6 +67,7 @@ namespace Fred
 
             osd.is_external = static_cast<bool>(domain_states_result[i][6]);
             osd.is_manual = static_cast<bool>(domain_states_result[i][7]);
+            osd.importance = static_cast<long>(domain_states_result[i][8]);
 
             result.push_back(osd);
         }//for i

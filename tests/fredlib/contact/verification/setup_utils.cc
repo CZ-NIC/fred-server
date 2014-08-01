@@ -590,12 +590,6 @@ autoclean_contact_verification_db::autoclean_contact_verification_db() {
         ));
 
         foreign_keys.push_back(boost::make_tuple(
-            "public_request_state_request_map_state_request_id_fkey",
-            "public_request_state_request_map", "state_request_id",
-            "object_state_request", "id"
-        ));
-
-        foreign_keys.push_back(boost::make_tuple(
             "check_nsset_nsset_hid_fkey",
             "check_nsset", "nsset_hid",
             "nsset_history", "historyid"

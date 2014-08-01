@@ -11,38 +11,22 @@
 namespace Fred {
 namespace Contact {
 
-
-class FindAnyContactDuplicates
+class FindContactDuplicates
 {
 public:
-    FindAnyContactDuplicates();
+    FindContactDuplicates();
 
-    FindAnyContactDuplicates& set_registrar(const Optional<std::string> &_registrar_handle);
-
-    FindAnyContactDuplicates& set_exclude_contacts(const std::set<std::string> &_exclude_contacts);
+    FindContactDuplicates& set_registrar(const Optional<std::string>&_registrar_handle);
+    FindContactDuplicates& set_exclude_contacts(const std::set<std::string> &_exclude_contacts);
+    FindContactDuplicates& set_specific_contact(const std::string& _dest_contact_handle);
 
     std::set<std::string> exec(Fred::OperationContext &_ctx);
-
 
 private:
     Optional<std::string> registrar_handle_;
     std::set<std::string> exclude_contacts_;
+    Optional<std::string> specific_contact_handle_;
 };
-
-
-
-class FindSpecificContactDuplicates
-{
-public:
-    FindSpecificContactDuplicates(const std::string &_contact_handle);
-
-    std::set<std::string> exec(Fred::OperationContext &_ctx);
-
-
-private:
-    std::string contact_handle_;
-};
-
 
 }
 }

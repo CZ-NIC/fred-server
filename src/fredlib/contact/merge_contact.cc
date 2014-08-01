@@ -32,6 +32,10 @@
 #include "src/fredlib/keyset/update_keyset.h"
 #include "src/fredlib/contact/delete_contact.h"
 #include "src/fredlib/contact/update_contact.h"
+#include "src/fredlib/object_state/object_has_state.h"
+#include "src/fredlib/object_state/object_state_name.h"
+#include "src/fredlib/poll/create_update_object_poll_message.h"
+#include "src/fredlib/poll/create_delete_contact_poll_message.h"
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/db_settings.h"
 #include "util/random.h"
@@ -39,10 +43,12 @@
 
 namespace Fred
 {
-    MergeContact::MergeContact(const std::string& from_contact_handle, const std::string& to_contact_handle, const std::string& registrar)
+    MergeContact::MergeContact(const std::string& from_contact_handle, const std::string& to_contact_handle, const std::string& registrar,
+            DiffContacts diff_contacts_impl)
     : src_contact_handle_(from_contact_handle)
     , dst_contact_handle_(to_contact_handle)
     , registrar_(registrar)
+    , diff_contacts_impl_(diff_contacts_impl)
     {
         if(boost::algorithm::to_upper_copy(src_contact_handle_).compare(boost::algorithm::to_upper_copy(dst_contact_handle_)) == 0)
         {
@@ -119,58 +125,20 @@ namespace Fred
 
     void MergeContact::diff_contacts(OperationContext& ctx)
     {
-        if(boost::algorithm::to_upper_copy(src_contact_handle_).compare(boost::algorithm::to_upper_copy(dst_contact_handle_)) == 0)
+        if(diff_contacts_impl_)
         {
-            BOOST_THROW_EXCEPTION(Exception().set_identical_contacts_handle(dst_contact_handle_));
-        }
+            bool contact_differs = diff_contacts_impl_(ctx,src_contact_handle_, dst_contact_handle_);
 
-        Database::Result diff_result = ctx.get_conn().exec_params(
-        "SELECT "//c1.name, oreg1.name, o1.clid, c2.name, oreg2.name , o2.clid,
-        " (trim(both ' ' from COALESCE(c1.name,'')) != trim(both ' ' from COALESCE(c2.name,''))) OR "
-        " (trim(both ' ' from COALESCE(c1.organization,'')) != trim(both ' ' from COALESCE(c2.organization,''))) OR "
-        " (trim(both ' ' from COALESCE(c1.street1,'')) != trim(both ' ' from COALESCE(c2.street1,''))) OR "
-        " (trim(both ' ' from COALESCE(c1.street2,'')) != trim(both ' ' from COALESCE(c2.street2,''))) OR "
-        " (trim(both ' ' from COALESCE(c1.street3,'')) != trim(both ' ' from COALESCE(c2.street3,''))) OR "
-        " (trim(both ' ' from COALESCE(c1.city,'')) != trim(both ' ' from COALESCE(c2.city,''))) OR "
-        " (trim(both ' ' from COALESCE(c1.postalcode,'')) != trim(both ' ' from COALESCE(c2.postalcode,''))) OR "
-        " (trim(both ' ' from COALESCE(c1.stateorprovince,'')) != trim(both ' ' from COALESCE(c2.stateorprovince,''))) OR "
-        " (trim(both ' ' from COALESCE(c1.country,'')) != trim(both ' ' from COALESCE(c2.country,''))) OR "
-        " (trim(both ' ' from COALESCE(c1.telephone,'')) != trim(both ' ' from COALESCE(c2.telephone,''))) OR "
-        " (trim(both ' ' from COALESCE(c1.fax,'')) != trim(both ' ' from COALESCE(c2.fax,''))) OR "
-        " (trim(both ' ' from COALESCE(c1.email,'')) != trim(both ' ' from COALESCE(c2.email,''))) OR "
-        " (trim(both ' ' from COALESCE(c1.notifyemail,'')) != trim(both ' ' from COALESCE(c2.notifyemail,''))) OR "
-        " (trim(both ' ' from COALESCE(c1.vat,'')) != trim(both ' ' from COALESCE(c2.vat,''))) OR "
-        " (trim(both ' ' from COALESCE(c1.ssn,'')) != trim(both ' ' from COALESCE(c2.ssn,''))) OR "
-        " (COALESCE(c1.ssntype,0) != COALESCE(c2.ssntype,0)) OR "
-        " (c1.disclosename != c2.disclosename) OR "
-        " (c1.discloseorganization != c2.discloseorganization) OR "
-        " (c1.discloseaddress != c2.discloseaddress) OR "
-        " (c1.disclosetelephone != c2.disclosetelephone) OR "
-        " (c1.disclosefax != c2.disclosefax) OR "
-        " (c1.discloseemail != c2.discloseemail) OR "
-        " (c1.disclosevat != c2.disclosevat) OR "
-        " (c1.discloseident != c2.discloseident) OR "
-        " (c1.disclosenotifyemail != c2.disclosenotifyemail) OR "
-        " o1.clid != o2.clid "// current registrar
-        "  as differ "
-        " FROM (object_registry oreg1 "
-        " JOIN object o1 ON oreg1.id=o1.id "
-        " JOIN contact c1 ON c1.id = oreg1.id AND oreg1.name = UPPER($1::text) AND oreg1.erdate IS NULL) "
-        " JOIN (object_registry oreg2 "
-        " JOIN object o2 ON oreg2.id=o2.id "
-        " JOIN contact c2 ON c2.id = oreg2.id AND oreg2.name = UPPER($2::text) AND oreg2.erdate IS NULL"
-        ") ON TRUE "
-          , Database::query_param_list(src_contact_handle_)(dst_contact_handle_));
-        if (diff_result.size() != 1)
+            if(contact_differs)
+            {
+                BOOST_THROW_EXCEPTION(Exception().set_contacts_differ(
+                    InvalidContacts(src_contact_handle_,dst_contact_handle_)));
+            }
+        }
+        else
         {
             BOOST_THROW_EXCEPTION(Exception().set_unable_to_get_difference_of_contacts(
-                    InvalidContacts(src_contact_handle_,dst_contact_handle_)));
-        }
-        bool contact_differs = static_cast<bool>(diff_result[0][0]);
-        if(contact_differs)
-        {
-            BOOST_THROW_EXCEPTION(Exception().set_contacts_differ(
-                    InvalidContacts(src_contact_handle_,dst_contact_handle_)));
+                InvalidContacts(src_contact_handle_,dst_contact_handle_)));
         }
     }//diff_contacts
 
@@ -198,6 +166,13 @@ namespace Fred
                 tmp.domain_id = static_cast<unsigned long long>(result[i][2]);
                 tmp.sponsoring_registrar = std::string(result[i][1]);
                 tmp.set_registrant = dst_contact_handle_;
+
+                //check if object blocked
+                if(Fred::ObjectHasState(tmp.domain_id,Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx)
+                    || Fred::ObjectHasState(tmp.domain_id,Fred::ObjectState::SERVER_BLOCKED).exec(ctx))
+                {
+                    BOOST_THROW_EXCEPTION(Fred::MergeContact::Exception().set_object_blocked(tmp.fqdn));
+                }
 
                 if(!dry_run)
                 {
@@ -234,6 +209,13 @@ namespace Fred
                 tmp.sponsoring_registrar = std::string(result[i][1]);
                 tmp.rem_admin_contact = src_contact_handle_;
                 tmp.add_admin_contact = dst_contact_handle_;
+
+                //check if object blocked
+                if(Fred::ObjectHasState(tmp.domain_id,Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx)
+                    || Fred::ObjectHasState(tmp.domain_id,Fred::ObjectState::SERVER_BLOCKED).exec(ctx))
+                {
+                    BOOST_THROW_EXCEPTION(Fred::MergeContact::Exception().set_object_blocked(tmp.fqdn));
+                }
 
                 if(!dry_run)
                 {
@@ -295,6 +277,12 @@ namespace Fred
                 tmp.rem_tech_contact = src_contact_handle_;
                 tmp.add_tech_contact = dst_contact_handle_;
 
+                //check if object blocked
+                if(Fred::ObjectHasState(tmp.nsset_id,Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx))
+                {
+                    BOOST_THROW_EXCEPTION(Fred::MergeContact::Exception().set_object_blocked(tmp.handle));
+                }
+
                 if(!dry_run)
                 {
                     try
@@ -354,6 +342,12 @@ namespace Fred
                 tmp.sponsoring_registrar = std::string(result[i][1]);
                 tmp.rem_tech_contact = src_contact_handle_;
                 tmp.add_tech_contact = dst_contact_handle_;
+
+                //check if object blocked
+                if(Fred::ObjectHasState(tmp.keyset_id,Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx))
+                {
+                    BOOST_THROW_EXCEPTION(Fred::MergeContact::Exception().set_object_blocked(tmp.handle));
+                }
 
                 if(!dry_run)
                 {
@@ -460,8 +454,110 @@ namespace Fred
         (std::make_pair("dst_contact_handle",dst_contact_handle_))
         (std::make_pair("registrar",registrar_))
         (std::make_pair("logd_request_id",logd_request_id_.print_quoted()))
+        (std::make_pair("diff_contacts_impl",
+            (static_cast<bool>(diff_contacts_impl_) == false) ? "not set" : "set"))
         );
     }
+
+    bool MergeContact::DefaultDiffContacts::operator()(OperationContext& ctx,
+            const std::string& src_contact_handle, const std::string& dst_contact_handle) const
+    {
+        if(boost::algorithm::to_upper_copy(src_contact_handle).compare(boost::algorithm::to_upper_copy(dst_contact_handle)) == 0)
+        {
+            BOOST_THROW_EXCEPTION(MergeContact::Exception().set_identical_contacts_handle(dst_contact_handle));
+        }
+
+        Database::Result diff_result = ctx.get_conn().exec_params(
+        "SELECT "//c1.name, oreg1.name, o1.clid, c2.name, oreg2.name , o2.clid,
+        " (trim(both ' ' from COALESCE(c1.name,'')) != trim(both ' ' from COALESCE(c2.name,''))) OR "
+        " (trim(both ' ' from COALESCE(c1.organization,'')) != trim(both ' ' from COALESCE(c2.organization,''))) OR "
+        " (trim(both ' ' from COALESCE(c1.street1,'')) != trim(both ' ' from COALESCE(c2.street1,''))) OR "
+        " (trim(both ' ' from COALESCE(c1.street2,'')) != trim(both ' ' from COALESCE(c2.street2,''))) OR "
+        " (trim(both ' ' from COALESCE(c1.street3,'')) != trim(both ' ' from COALESCE(c2.street3,''))) OR "
+        " (trim(both ' ' from COALESCE(c1.city,'')) != trim(both ' ' from COALESCE(c2.city,''))) OR "
+        " (trim(both ' ' from COALESCE(c1.postalcode,'')) != trim(both ' ' from COALESCE(c2.postalcode,''))) OR "
+        " (trim(both ' ' from COALESCE(c1.stateorprovince,'')) != trim(both ' ' from COALESCE(c2.stateorprovince,''))) OR "
+        " (trim(both ' ' from COALESCE(c1.country,'')) != trim(both ' ' from COALESCE(c2.country,''))) OR "
+        " (trim(both ' ' from COALESCE(c1.telephone,'')) != trim(both ' ' from COALESCE(c2.telephone,''))) OR "
+        " (trim(both ' ' from COALESCE(c1.fax,'')) != trim(both ' ' from COALESCE(c2.fax,''))) OR "
+        " (trim(both ' ' from COALESCE(c1.email,'')) != trim(both ' ' from COALESCE(c2.email,''))) OR "
+        " (trim(both ' ' from COALESCE(c1.notifyemail,'')) != trim(both ' ' from COALESCE(c2.notifyemail,''))) OR "
+        " (trim(both ' ' from COALESCE(c1.vat,'')) != trim(both ' ' from COALESCE(c2.vat,''))) OR "
+        " (trim(both ' ' from COALESCE(c1.ssn,'')) != trim(both ' ' from COALESCE(c2.ssn,''))) OR "
+        " (COALESCE(c1.ssntype,0) != COALESCE(c2.ssntype,0)) OR "
+        " (c1.disclosename != c2.disclosename) OR "
+        " (c1.discloseorganization != c2.discloseorganization) OR "
+        " (c1.discloseaddress != c2.discloseaddress) OR "
+        " (c1.disclosetelephone != c2.disclosetelephone) OR "
+        " (c1.disclosefax != c2.disclosefax) OR "
+        " (c1.discloseemail != c2.discloseemail) OR "
+        " (c1.disclosevat != c2.disclosevat) OR "
+        " (c1.discloseident != c2.discloseident) OR "
+        " (c1.disclosenotifyemail != c2.disclosenotifyemail) OR "
+        " o1.clid != o2.clid "// current registrar
+        "  as differ, c1.id AS src_contact_id, c2.id AS dst_contact_id"
+        " FROM (object_registry oreg1 "
+        " JOIN object o1 ON oreg1.id=o1.id "
+        " JOIN contact c1 ON c1.id = oreg1.id AND oreg1.name = UPPER($1::text) AND oreg1.erdate IS NULL) "
+        " JOIN (object_registry oreg2 "
+        " JOIN object o2 ON oreg2.id=o2.id "
+        " JOIN contact c2 ON c2.id = oreg2.id AND oreg2.name = UPPER($2::text) AND oreg2.erdate IS NULL"
+        ") ON TRUE "
+          , Database::query_param_list(src_contact_handle)(dst_contact_handle));
+        if (diff_result.size() != 1)
+        {
+            BOOST_THROW_EXCEPTION(MergeContact::Exception().set_unable_to_get_difference_of_contacts(
+                    MergeContact::InvalidContacts(src_contact_handle,dst_contact_handle)));
+        }
+
+        unsigned long long dst_contact_id = static_cast<unsigned long long>(diff_result[0]["dst_contact_id"]);
+
+        if(Fred::ObjectHasState(dst_contact_id,Fred::ObjectState::SERVER_BLOCKED).exec(ctx))
+        {
+            BOOST_THROW_EXCEPTION(Fred::MergeContact::Exception().set_dst_contact_invalid(dst_contact_handle));
+        }
+
+        unsigned long long src_contact_id = static_cast<unsigned long long>(diff_result[0]["src_contact_id"]);
+
+        if( Fred::ObjectHasState(src_contact_id,Fred::ObjectState::MOJEID_CONTACT).exec(ctx)
+            || Fred::ObjectHasState(src_contact_id,Fred::ObjectState::SERVER_BLOCKED).exec(ctx)
+            || Fred::ObjectHasState(src_contact_id,Fred::ObjectState::SERVER_DELETE_PROHIBITED).exec(ctx))
+        {
+            BOOST_THROW_EXCEPTION(Fred::MergeContact::Exception().set_src_contact_invalid(src_contact_handle));
+        }
+
+        bool contact_differs = static_cast<bool>(diff_result[0]["differ"]);
+        return contact_differs;
+    }
+
+
+    void create_poll_messages(const Fred::MergeContactOutput &_merge_data, Fred::OperationContext &_ctx)
+    {
+        for (std::vector<Fred::MergeContactUpdateDomainRegistrant>::const_iterator i = _merge_data.update_domain_registrant.begin();
+                i != _merge_data.update_domain_registrant.end(); ++i)
+        {
+            Fred::Poll::CreateUpdateObjectPollMessage(i->history_id.get_value()).exec(_ctx);
+        }
+        for (std::vector<Fred::MergeContactUpdateDomainAdminContact>::const_iterator i = _merge_data.update_domain_admin_contact.begin();
+                i != _merge_data.update_domain_admin_contact.end(); ++i)
+        {
+            Fred::Poll::CreateUpdateObjectPollMessage(i->history_id.get_value()).exec(_ctx);
+        }
+        for (std::vector<Fred::MergeContactUpdateNssetTechContact>::const_iterator i = _merge_data.update_nsset_tech_contact.begin();
+                i != _merge_data.update_nsset_tech_contact.end(); ++i)
+        {
+            Fred::Poll::CreateUpdateObjectPollMessage(i->history_id.get_value()).exec(_ctx);
+        }
+        for (std::vector<Fred::MergeContactUpdateKeysetTechContact>::const_iterator i = _merge_data.update_keyset_tech_contact.begin();
+                i != _merge_data.update_keyset_tech_contact.end(); ++i)
+        {
+            Fred::Poll::CreateUpdateObjectPollMessage(i->history_id.get_value()).exec(_ctx);
+        }
+        Fred::Poll::CreateDeleteContactPollMessage(_merge_data.contactid.src_contact_historyid).exec(_ctx);
+    }
+
+
+
 
 }//namespace Fred
 

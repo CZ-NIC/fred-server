@@ -27,6 +27,7 @@
 #include <string>
 #include <vector>
 #include <boost/lexical_cast.hpp>
+#include <boost/function.hpp>
 
 #include "src/fredlib/opexception.h"
 #include "src/fredlib/opcontext.h"
@@ -314,16 +315,30 @@ namespace Fred
 
     class MergeContact  : public Util::Printable
     {
+    public:
+        typedef boost::function<bool (OperationContext& ctx,
+            const std::string& src_contact_handle,
+            const std::string& dst_contact_handle)> DiffContacts;
+
+    private:
         const std::string src_contact_handle_;//source contact identifier
         const std::string dst_contact_handle_;//destination contact identifier
         const std::string registrar_;//registrar used for object updates
         Optional<unsigned long long> logd_request_id_; //id of the new entry in log_entry
+        DiffContacts diff_contacts_impl_;//implementation of diff_contacts
 
         MergeContactLockedContactId lock_object_registry_row_for_update(OperationContext& ctx, bool dry_run);
         void diff_contacts(OperationContext& ctx);
         MergeContactOutput merge_contact_impl(OperationContext& ctx, bool dry_run);
 
     public:
+        struct DefaultDiffContacts
+        {
+            bool operator()(OperationContext& ctx,
+                const std::string& src_contact_handle,
+                const std::string& dst_contact_handle) const;
+        };
+
         DECLARE_EXCEPTION_DATA(unknown_source_contact_handle, std::string);
         DECLARE_EXCEPTION_DATA(unknown_destination_contact_handle, std::string);
         DECLARE_EXCEPTION_DATA(unknown_registrar_handle, std::string);
@@ -336,6 +351,9 @@ namespace Fred
             : source_handle(_source_handle), destination_handle(_destination_handle){}
         };
         DECLARE_EXCEPTION_DATA(unable_to_get_difference_of_contacts, InvalidContacts);
+        DECLARE_EXCEPTION_DATA(src_contact_invalid, std::string);//handle
+        DECLARE_EXCEPTION_DATA(dst_contact_invalid, std::string);//handle
+        DECLARE_EXCEPTION_DATA(object_blocked, std::string);
         DECLARE_EXCEPTION_DATA(contacts_differ, InvalidContacts);
         DECLARE_EXCEPTION_DATA(identical_contacts_handle, std::string);
         DECLARE_EXCEPTION_DATA(identical_contacts_roid, std::string);
@@ -345,17 +363,23 @@ namespace Fred
         , ExceptionData_unknown_destination_contact_handle<Exception>
         , ExceptionData_unknown_registrar_handle<Exception>
         , ExceptionData_unable_to_get_difference_of_contacts<Exception>
+        , ExceptionData_src_contact_invalid<Exception>
+        , ExceptionData_dst_contact_invalid<Exception>
+        , ExceptionData_object_blocked<Exception>
         , ExceptionData_contacts_differ<Exception>
         , ExceptionData_identical_contacts_handle<Exception>
         , ExceptionData_identical_contacts_roid<Exception>
         {};
 
-        MergeContact(const std::string& from_contact_handle, const std::string& to_contact_handle, const std::string& registrar);
+        MergeContact(const std::string& from_contact_handle, const std::string& to_contact_handle, const std::string& registrar,
+            DiffContacts diff_contacts_impl = DefaultDiffContacts());
         MergeContact& set_logd_request_id(unsigned long long logd_request_id);
         MergeContactOutput exec_dry_run(OperationContext& ctx);//history_id not set in output
         MergeContactOutput exec(OperationContext& ctx);
         std::string to_string() const;
     };//class MergeContact
+
+    void create_poll_messages(const Fred::MergeContactOutput &_merge_data, Fred::OperationContext &_ctx);
 
 }//namespace Fred
 

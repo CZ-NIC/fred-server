@@ -140,7 +140,6 @@ int main(int argc, char *argv[])
         CorbaContainer::get_instance()
             ->register_server(contact_vrf_iface.release(), "ContactVerification");
 
-
         run_server(CfgArgs::instance(), CorbaContainer::get_instance());
 
     }//try

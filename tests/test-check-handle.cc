@@ -82,11 +82,6 @@
 #include "cfg/config_handler_decl.h"
 #include <boost/test/unit_test.hpp>
 
-static bool check_std_exception(std::exception const & ex)
-{
-    std::string ex_msg(ex.what());
-    return (ex_msg.length() != 0);
-}
 
 BOOST_AUTO_TEST_SUITE(TestCheckHandle)
 

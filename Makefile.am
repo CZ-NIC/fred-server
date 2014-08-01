@@ -86,6 +86,9 @@ CLEANFILES = \
 		src/corba/ContactVerificationSK.cc \
 		src/corba/ContactVerificationDynSK.cc \
 		src/corba/ContactVerification.hh \
+		src/corba/DomainBrowserSK.cc \
+		src/corba/DomainBrowserDynSK.cc \
+		src/corba/DomainBrowser.hh \
 		src/corba/AdminContactVerificationSK.cc \
 		src/corba/AdminContactVerificationDynSK.cc \
 		src/corba/AdminContactVerificationSK.h \
@@ -193,6 +196,7 @@ noinst_HEADERS = \
 		src/admin/contact/verification/exceptions.h
 
 
+
 noinst_LIBRARIES = \
 		util/libutil.a \
 		util/log/liblog.a \
@@ -232,9 +236,11 @@ noinst_LIBRARIES = \
 		src/fredlib/public_request/libpublic_request.a \
 		src/fredlib/contact_verification/libcontact_verification.a \
 		src/corba/libcorbacontactverification.a \
+		src/corba/libcorbadomainbrowser.a \
 		src/corba/libcorbaadmincontactverification.a \
 		src/corba/util/libcorbautil.a \
 		src/admin/contact/verification/libadmin_contact_verification.a
+
 
 noinst_PROGRAMS = \
 		util/log/test-log \
@@ -253,6 +259,7 @@ sbin_PROGRAMS = \
 		src/corba/fred-logd \
 		src/corba/messages/fred-msgd \
 		src/corba/mojeid/fred-mifd \
+		src/corba/domain_browser/fred-dbifd \
 		src/cli_admin/fred-admin \
 		tools/logd_migration/migrate_log
 
@@ -810,8 +817,6 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/domain/domain_name.cc \
 		src/fredlib/zone/zone.h \
 		src/fredlib/zone/zone.cc \
-		src/fredlib/domain/domain_name.h \
-		src/fredlib/domain/domain_name.cc \
 		src/fredlib/contact/verification/create_check.h \
 		src/fredlib/contact/verification/create_check.cc \
 		src/fredlib/contact/verification/update_check.h \
@@ -897,7 +902,9 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/object_state/clear_object_state_request.cc \
 		src/fredlib/object_state/clear_object_state_request.h \
 		src/fredlib/object_state/clear_object_state_request_id.cc \
-		src/fredlib/object_state/clear_object_state_request_id.h
+		src/fredlib/object_state/clear_object_state_request_id.h \
+		src/fredlib/object/object_id_handle_pair.h \
+		src/fredlib/object/object_id_handle_pair.cc
 #
 # src/fredlib/libfred.a
 
@@ -1017,7 +1024,6 @@ src_fredlib_contact_verification_libcontact_verification_a_SOURCES = \
 #
 # src/fredlib/contact_verification/libcontact_verification.a
 
-
 # src/admin/contact/verification/libadmin_contact_verification.a
 #
 src_admin_contact_verification_libadmin_contact_verification_a_SOURCES = \
@@ -1062,7 +1068,6 @@ src_admin_contact_verification_libadmin_contact_verification_a_SOURCES = \
 #
 # src/admin/contact/verification/libadmin_contact_verification.a
 
-
 BUILT_SOURCES = \
 		src/corba/MessagesSK.cc \
 		src/corba/MojeIDSK.cc \
@@ -1082,6 +1087,7 @@ BUILT_SOURCES = \
 		src/corba/EPPSK.cc \
 		src/corba/ZoneGeneratorSK.cc \
 		src/corba/ContactVerificationSK.cc \
+		src/corba/DomainBrowserSK.cc \
 		src/corba/AdminContactVerificationSK.cc
 
 
@@ -1197,7 +1203,7 @@ nodist_src_corba_libcorbacontactverification_a_SOURCES = \
 		src/corba/ContactVerificationSK.cc \
 		src/corba/ContactVerificationDynSK.cc \
 		src/corba/ContactVerification.hh
-		
+
 nodist_src_corba_libcorbaadmincontactverification_a_SOURCES = \
 		src/corba/AdminContactVerificationSK.cc \
 		src/corba/AdminContactVerificationDynSK.cc \
@@ -1208,6 +1214,11 @@ nodist_src_corba_libcorbaadministrativeblocking_a_SOURCES = \
 		src/corba/AdministrativeBlockingSK.cc \
 		src/corba/AdministrativeBlockingDynSK.cc \
 		src/corba/AdministrativeBlocking.hh
+
+nodist_src_corba_libcorbadomainbrowser_a_SOURCES = \
+		src/corba/DomainBrowserSK.cc \
+		src/corba/DomainBrowserDynSK.cc \
+		src/corba/DomainBrowser.hh
 
 #
 # nodist corba libs
@@ -1272,8 +1283,12 @@ src/corba/ZoneGeneratorSK.cc: $(IDLDIR)/ZoneGenerator.idl $(IDLDIR)/_dataTypes.i
 src/corba/ContactVerificationSK.cc: $(IDLDIR)/ContactVerification.idl
 		omniidl -bcxx -Wbuse_quotes -Wba -C$(top_builddir)/src/corba $(IDLDIR)/ContactVerification.idl
 
+src/corba/DomainBrowserSK.cc: $(IDLDIR)/DomainBrowser.idl
+		omniidl -bcxx -Wbuse_quotes -Wba -C$(top_builddir)/src/corba $(IDLDIR)/DomainBrowser.idl
+
 src/corba/AdminContactVerificationSK.cc: $(IDLDIR)/AdminContactVerification.idl $(IDLDIR)/_dataTypes.idl
 		omniidl -bcxx -Wbuse_quotes -Wba -C$(top_builddir)/src/corba $(IDLDIR)/AdminContactVerification.idl
+
 #
 # idl build
 
@@ -1562,6 +1577,10 @@ src_corba_fred_pifd_SOURCES = \
 		src/contact_verification/contact_verification_impl.cc \
 		src/contact_verification/contact_verification_impl.h \
 		src/contact_verification/public_request_contact_verification_wrapper.h \
+		src/domain_browser/domain_browser.cc \
+		src/domain_browser/domain_browser.h \
+		src/corba/domain_browser/domain_browser_i.cc \
+		src/corba/domain_browser/domain_browser_i.h \
 		src/corba/fred-pifd.cc
 
 src_corba_fred_pifd_LDADD = \
@@ -1579,6 +1598,7 @@ src_corba_fred_pifd_LDADD = \
 		src/corba/libcorba.a \
 		src/corba/libcorbaepp.a \
 		src/corba/libfilemanager.a \
+		src/corba/libcorbadomainbrowser.a \
 		src/corba/libcorbalogger.a \
 		src/corba/util/libcorbautil.a \
 		src/corba/libcorbanullabletypes.a \
@@ -1751,6 +1771,40 @@ src_corba_mojeid_fred_mifd_LDADD = \
 #
 # src/corba/mojeid/fred-mifd
 
+#
+# src/corba/domain_browser/fred-dbifd
+src_corba_domain_browser_fred_dbifd_SOURCES = \
+		util/cfg/handle_domainbrowser_args.h \
+		src/domain_browser/domain_browser.cc \
+		src/domain_browser/domain_browser.h \
+		src/corba/nameservice.cc \
+		src/corba/domain_browser/domain_browser_i.cc \
+		src/corba/domain_browser/domain_browser_i.h \
+		src/corba/domain_browser/fred-dbifd.cc
+
+src_corba_domain_browser_fred_dbifd_LDFLAGS = \
+		$(POSTGRESQL_LDFLAGS) \
+		$(BOOST_LDFLAGS) \
+		$(AM_LDFLAGS)
+
+src_corba_domain_browser_fred_dbifd_LDADD = \
+		src/corba/libcorbadomainbrowser.a \
+		src/fredlib/libfred.a \
+		util/libutil.a \
+		util/log/liblog.a \
+		util/db/libdb.a \
+		-lmpdec -lm \
+		$(LIBIDN_LIBS) \
+		$(BOOST_PROGRAM_OPTIONS_LIB) \
+		$(OMNIORB4_LIBS) \
+		$(BOOST_DATE_TIME_LIB) \
+		$(BOOST_REGEX_LIB) \
+		$(BOOST_THREAD_LIB) \
+		$(POSTGRESQL_LIB) \
+		$(BOOST_SYSTEM_LIB)
+#
+# src/corba/domain_browser/fred-dbifd
+
 
 # src/cli_admin/fred-admin
 #
@@ -1833,7 +1887,7 @@ src_cli_admin_fred_admin_SOURCES = \
 		src/fredlib/object_state/cancel_object_state_request_id.h \
 		util/optys/upload_client.cc \
 		util/optys/upload_client.h
-		
+
 src_cli_admin_fred_admin_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS) \
 		$(XML2_LIBS)	# using xpath in contact verification test for czech address
@@ -1989,26 +2043,6 @@ tests_test_server_SOURCES = \
 		src/mojeid/mojeid_notifier.h \
 		tests/checks.h \
 		tests/test-utils.cc \
-		tests/test-update-nsset.cc \
-		tests/test-update-keyset.cc \
-		tests/test-update-domain.cc \
-		tests/test-delete-contact.cc \
-		tests/test-info-domain.cc \
-		tests/test-merge-contact.cc \
-		tests/test-opexception.cc \
-		tests/test-create-contact.cc \
-		tests/test-info-contact.cc \
-		tests/test-delete-domain.cc \
-		tests/test-delete-nsset.cc \
-		tests/test-create-domain.cc \
-		tests/test-check-domain.cc \
-		tests/test-domain-name.cc \
-		tests/test-check-handle.cc \
-		tests/test-delete-keyset.cc \
-		tests/test-update-contact.cc \
-		tests/test-printable.cc \
-		tests/test-info-keyset.cc \
-		tests/test-info-nsset.cc \
 		tests/fredlib/contact/verification/setup_utils.h \
 		tests/fredlib/contact/verification/setup_utils.cc \
 		tests/fredlib/contact/verification/test-create_check_integ.cc \
@@ -2035,7 +2069,10 @@ tests_test_server_SOURCES = \
 		src/fredlib/object_state/cancel_object_state_request.cc \
 		src/fredlib/object_state/cancel_object_state_request.h \
 		src/fredlib/object_state/cancel_object_state_request_id.cc \
-		src/fredlib/object_state/cancel_object_state_request_id.h
+		src/fredlib/object_state/cancel_object_state_request_id.h \
+		src/domain_browser/domain_browser.cc \
+		src/domain_browser/domain_browser.h \
+		tests/test-domain-browser.cc
 
 tests_test_server_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS) \
@@ -2230,6 +2267,7 @@ tests_test_fredlib_SOURCES = \
 		tests/fredlib/poll/setup_utils.cc
 
 
+
 tests_test_fredlib_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS) \
 		$(BOOST_LDFLAGS) \
@@ -2253,6 +2291,7 @@ tests_test_fredlib_LDADD = \
 		$(BOOST_SYSTEM_LIB)
 #
 # tests/test_fredlib
+
 
 # non-corba tests with overloaded global operator new
 #

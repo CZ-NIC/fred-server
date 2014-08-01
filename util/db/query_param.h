@@ -215,14 +215,26 @@ template <typename CONTAINER_TYPE > struct list_of_params
     : public CONTAINER_TYPE
 {
     typedef typename CONTAINER_TYPE::value_type ELEMENT_TYPE;
+    list_of_params()
+    { }
+
     list_of_params(const ELEMENT_TYPE& t)
     {
         (*this)(t);
     }
     list_of_params& operator()(const ELEMENT_TYPE& t)
     {
-        this->push_back(t);
+        push_back(t);
         return *this;
+    }
+
+    /***
+     * @returns size of container AFTER new element has been pushed back
+     * (i. e. number for parameter in sql query)
+     */
+    std::string add(const ELEMENT_TYPE& t) {
+        push_back(t);
+        return boost::lexical_cast<std::string>( CONTAINER_TYPE::size() );
     }
 };
 

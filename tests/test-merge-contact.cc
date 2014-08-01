@@ -49,7 +49,7 @@
 #include "src/fredlib/contact/merge_contact.h"
 #include "src/fredlib/contact/merge_contact_selection.h"
 #include "src/fredlib/contact/merge_contact_email_notification_data.h"
-#include "src/fredlib/contact/create_contact.h"
+#include "src/fredlib/contact/find_contact_duplicates.h"
 
 #include "src/fredlib/contact/create_contact.h"
 #include "src/fredlib/nsset/create_nsset.h"
@@ -64,8 +64,14 @@
 #include "src/fredlib/nsset/info_nsset_diff.h"
 #include "src/fredlib/keyset/info_keyset_diff.h"
 #include "src/fredlib/registrar/get_registrar_handles.h"
+#include "src/fredlib/object_state/object_state_name.h"
+#include "src/fredlib/object_state/object_has_state.h"
+#include "src/fredlib/object_state/perform_object_state_request.h"
+#include "src/fredlib/object_state/create_object_state_request_id.h"
+
 
 #include "util/util.h"
+#include "util/printable.h"
 
 #include "src/fredlib/contact_verification/contact.h"
 #include "src/fredlib/object_states.h"
@@ -978,6 +984,294 @@ BOOST_FIXTURE_TEST_CASE(merge_contact_with_same_src_and_dst_contact, merge_conta
     BOOST_CHECK(info_nsset_1 == info_nsset_2);
 }
 
+/**
+ * test MergeContact with mojeid src contact
+ */
+BOOST_FIXTURE_TEST_CASE(merge_contact_with_mojeid_src_contact, merge_contact_domain_fixture)
+{
+    unsigned long long src_contact_id = Fred::InfoContactByHandle(
+            src_contact_handle).exec(ctx).info_contact_data.id;
+    if(!Fred::ObjectHasState(src_contact_id,
+        Fred::ObjectState::MOJEID_CONTACT).exec(ctx))
+    {
+        ctx.get_conn().exec_params(
+            "INSERT INTO object_state_request (object_id, state_id)"
+            " VALUES ($1::integer, (SELECT id FROM enum_object_states"
+            " WHERE name = $2::text))",
+            Database::query_param_list
+                (src_contact_id)
+                (Fred::ObjectState::MOJEID_CONTACT));
+        Fred::PerformObjectStateRequest().set_object_id(src_contact_id).exec(ctx);
+        ctx.commit_transaction();
+    }
+
+    //info before merge
+    Fred::InfoDomainOutput info_domain_owner_1 = Fred::InfoDomainByHandle(test_domain_owner_handle).exec(ctx);
+    Fred::InfoDomainOutput info_domain_admin_1 = Fred::InfoDomainByHandle(test_domain_admin_handle).exec(ctx);
+    Fred::InfoKeysetOutput info_keyset_1 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
+    Fred::InfoNssetOutput info_nsset_1 = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
+
+    try
+    {
+        //merge
+        Fred::MergeContactOutput merge_data = Fred::MergeContact(src_contact_handle, dst_contact_handle, registrar_handle).exec(ctx);
+        ctx.commit_transaction();
+    }
+    catch(Fred::MergeContact::Exception& ex)
+    {
+        BOOST_CHECK(ex.is_set_src_contact_invalid());
+        BOOST_CHECK(ex.get_src_contact_invalid().compare(src_contact_handle) == 0);
+    }
+
+    //info after merge
+    Fred::InfoDomainOutput info_domain_owner_2 = Fred::InfoDomainByHandle(test_domain_owner_handle).exec(ctx);
+    Fred::InfoDomainOutput info_domain_admin_2 = Fred::InfoDomainByHandle(test_domain_admin_handle).exec(ctx);
+    Fred::InfoKeysetOutput info_keyset_2 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
+    Fred::InfoNssetOutput info_nsset_2 = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
+
+    //compare state before merge with state after
+    BOOST_CHECK(info_domain_owner_1 == info_domain_owner_2);
+    BOOST_CHECK(info_domain_admin_1 == info_domain_admin_2);
+    BOOST_CHECK(info_keyset_1 == info_keyset_2);
+    BOOST_CHECK(info_nsset_1 == info_nsset_2);
+}
+
+/**
+ * test MergeContact with blocked src contact
+ */
+BOOST_FIXTURE_TEST_CASE(merge_contact_with_blocked_src_contact, merge_contact_domain_fixture)
+{
+    unsigned long long src_contact_id = Fred::InfoContactByHandle(
+            src_contact_handle).exec(ctx).info_contact_data.id;
+    {
+        Fred::CreateObjectStateRequestId(src_contact_id,
+            Util::set_of<std::string>(Fred::ObjectState::SERVER_BLOCKED)).exec(ctx);
+        Fred::PerformObjectStateRequest(src_contact_id).exec(ctx);
+        ctx.commit_transaction();
+    }
+
+    //info before merge
+    Fred::InfoDomainOutput info_domain_owner_1 = Fred::InfoDomainByHandle(test_domain_owner_handle).exec(ctx);
+    Fred::InfoDomainOutput info_domain_admin_1 = Fred::InfoDomainByHandle(test_domain_admin_handle).exec(ctx);
+    Fred::InfoKeysetOutput info_keyset_1 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
+    Fred::InfoNssetOutput info_nsset_1 = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
+
+    try
+    {
+        //merge
+        Fred::MergeContactOutput merge_data = Fred::MergeContact(src_contact_handle, dst_contact_handle, registrar_handle).exec(ctx);
+        ctx.commit_transaction();
+    }
+    catch(Fred::MergeContact::Exception& ex)
+    {
+        BOOST_CHECK(ex.is_set_src_contact_invalid());
+        BOOST_CHECK(ex.get_src_contact_invalid().compare(src_contact_handle) == 0);
+    }
+
+    //info after merge
+    Fred::InfoDomainOutput info_domain_owner_2 = Fred::InfoDomainByHandle(test_domain_owner_handle).exec(ctx);
+    Fred::InfoDomainOutput info_domain_admin_2 = Fred::InfoDomainByHandle(test_domain_admin_handle).exec(ctx);
+    Fred::InfoKeysetOutput info_keyset_2 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
+    Fred::InfoNssetOutput info_nsset_2 = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
+
+    //compare state before merge with state after
+    BOOST_CHECK(info_domain_owner_1 == info_domain_owner_2);
+    BOOST_CHECK(info_domain_admin_1 == info_domain_admin_2);
+    BOOST_CHECK(info_keyset_1 == info_keyset_2);
+    BOOST_CHECK(info_nsset_1 == info_nsset_2);
+}
+
+/**
+ * test MergeContact with delete prohibited src contact
+ */
+BOOST_FIXTURE_TEST_CASE(merge_contact_with_delete_prohibited_src_contact, merge_contact_domain_fixture)
+{
+    unsigned long long src_contact_id = Fred::InfoContactByHandle(
+            src_contact_handle).exec(ctx).info_contact_data.id;
+    {
+        Fred::CreateObjectStateRequestId(src_contact_id,
+            Util::set_of<std::string>(Fred::ObjectState::SERVER_DELETE_PROHIBITED)).exec(ctx);
+        Fred::PerformObjectStateRequest(src_contact_id).exec(ctx);
+        ctx.commit_transaction();
+    }
+
+    //info before merge
+    Fred::InfoDomainOutput info_domain_owner_1 = Fred::InfoDomainByHandle(test_domain_owner_handle).exec(ctx);
+    Fred::InfoDomainOutput info_domain_admin_1 = Fred::InfoDomainByHandle(test_domain_admin_handle).exec(ctx);
+    Fred::InfoKeysetOutput info_keyset_1 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
+    Fred::InfoNssetOutput info_nsset_1 = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
+
+    try
+    {
+        //merge
+        Fred::MergeContactOutput merge_data = Fred::MergeContact(src_contact_handle, dst_contact_handle, registrar_handle).exec(ctx);
+        ctx.commit_transaction();
+    }
+    catch(Fred::MergeContact::Exception& ex)
+    {
+        BOOST_CHECK(ex.is_set_src_contact_invalid());
+        BOOST_CHECK(ex.get_src_contact_invalid().compare(src_contact_handle) == 0);
+    }
+
+    //info after merge
+    Fred::InfoDomainOutput info_domain_owner_2 = Fred::InfoDomainByHandle(test_domain_owner_handle).exec(ctx);
+    Fred::InfoDomainOutput info_domain_admin_2 = Fred::InfoDomainByHandle(test_domain_admin_handle).exec(ctx);
+    Fred::InfoKeysetOutput info_keyset_2 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
+    Fred::InfoNssetOutput info_nsset_2 = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
+
+    //compare state before merge with state after
+    BOOST_CHECK(info_domain_owner_1 == info_domain_owner_2);
+    BOOST_CHECK(info_domain_admin_1 == info_domain_admin_2);
+    BOOST_CHECK(info_keyset_1 == info_keyset_2);
+    BOOST_CHECK(info_nsset_1 == info_nsset_2);
+}
+
+
+/**
+ * test MergeContact with blocked dst contact
+ */
+BOOST_FIXTURE_TEST_CASE(merge_contact_with_blocked_dst_contact, merge_contact_domain_fixture)
+{
+    unsigned long long dst_contact_id = Fred::InfoContactByHandle(
+            dst_contact_handle).exec(ctx).info_contact_data.id;
+    {
+        Fred::CreateObjectStateRequestId(dst_contact_id,
+            Util::set_of<std::string>(Fred::ObjectState::SERVER_BLOCKED)).exec(ctx);
+        Fred::PerformObjectStateRequest(dst_contact_id).exec(ctx);
+        ctx.commit_transaction();
+    }
+
+    //info before merge
+    Fred::InfoDomainOutput info_domain_owner_1 = Fred::InfoDomainByHandle(test_domain_owner_handle).exec(ctx);
+    Fred::InfoDomainOutput info_domain_admin_1 = Fred::InfoDomainByHandle(test_domain_admin_handle).exec(ctx);
+    Fred::InfoKeysetOutput info_keyset_1 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
+    Fred::InfoNssetOutput info_nsset_1 = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
+
+    try
+    {
+        //merge
+        Fred::MergeContactOutput merge_data = Fred::MergeContact(src_contact_handle, dst_contact_handle, registrar_handle).exec(ctx);
+        ctx.commit_transaction();
+    }
+    catch(Fred::MergeContact::Exception& ex)
+    {
+        BOOST_CHECK(ex.is_set_dst_contact_invalid());
+        BOOST_CHECK(ex.get_dst_contact_invalid().compare(dst_contact_handle) == 0);
+    }
+
+    //info after merge
+    Fred::InfoDomainOutput info_domain_owner_2 = Fred::InfoDomainByHandle(test_domain_owner_handle).exec(ctx);
+    Fred::InfoDomainOutput info_domain_admin_2 = Fred::InfoDomainByHandle(test_domain_admin_handle).exec(ctx);
+    Fred::InfoKeysetOutput info_keyset_2 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
+    Fred::InfoNssetOutput info_nsset_2 = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
+
+    //compare state before merge with state after
+    BOOST_CHECK(info_domain_owner_1 == info_domain_owner_2);
+    BOOST_CHECK(info_domain_admin_1 == info_domain_admin_2);
+    BOOST_CHECK(info_keyset_1 == info_keyset_2);
+    BOOST_CHECK(info_nsset_1 == info_nsset_2);
+}
+
+/**
+ * test MergeContact with blocked domain with admin
+ */
+BOOST_FIXTURE_TEST_CASE(merge_contact_with_blocked_admin_domain, merge_contact_domain_fixture)
+{
+    unsigned long long admin_domain_id = Fred::InfoDomainByHandle(
+            test_domain_admin_handle).exec(ctx).info_domain_data.id;
+    {
+        Fred::CreateObjectStateRequestId(admin_domain_id,
+            Util::set_of<std::string>(Fred::ObjectState::SERVER_BLOCKED)).exec(ctx);
+        Fred::PerformObjectStateRequest(admin_domain_id).exec(ctx);
+        ctx.commit_transaction();
+    }
+
+    //info before merge
+    Fred::InfoDomainOutput info_domain_owner_1 = Fred::InfoDomainByHandle(test_domain_owner_handle).exec(ctx);
+    Fred::InfoDomainOutput info_domain_admin_1 = Fred::InfoDomainByHandle(test_domain_admin_handle).exec(ctx);
+    Fred::InfoKeysetOutput info_keyset_1 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
+    Fred::InfoNssetOutput info_nsset_1 = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
+
+    try
+    {
+        Fred::OperationContext ctx;
+        //merge
+        Fred::MergeContactOutput merge_data = Fred::MergeContact(src_contact_handle, dst_contact_handle, registrar_handle).exec(ctx);
+        ctx.commit_transaction();
+    }
+    catch(Fred::MergeContact::Exception& ex)
+    {
+        BOOST_CHECK(ex.is_set_object_blocked());
+        BOOST_CHECK(ex.get_object_blocked().compare(test_domain_admin_handle) == 0);
+    }
+
+    {
+        Fred::OperationContext ctx;
+        //info after merge
+        Fred::InfoDomainOutput info_domain_owner_2 = Fred::InfoDomainByHandle(test_domain_owner_handle).exec(ctx);
+        Fred::InfoDomainOutput info_domain_admin_2 = Fred::InfoDomainByHandle(test_domain_admin_handle).exec(ctx);
+        Fred::InfoKeysetOutput info_keyset_2 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
+        Fred::InfoNssetOutput info_nsset_2 = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
+
+        //compare state before merge with state after
+        BOOST_MESSAGE(Fred::diff_domain_data(info_domain_owner_1.info_domain_data,info_domain_owner_2.info_domain_data).to_string());
+
+        BOOST_CHECK(info_domain_owner_1 == info_domain_owner_2);
+        BOOST_CHECK(info_domain_admin_1 == info_domain_admin_2);
+        BOOST_CHECK(info_keyset_1 == info_keyset_2);
+        BOOST_CHECK(info_nsset_1 == info_nsset_2);
+    }
+}
+
+/**
+ * test MergeContact with blocked domain with registrant
+ */
+BOOST_FIXTURE_TEST_CASE(merge_contact_with_blocked_registrant_domain, merge_contact_domain_fixture)
+{
+    unsigned long long registrant_domain_id = Fred::InfoDomainByHandle(
+            test_domain_owner_handle).exec(ctx).info_domain_data.id;
+    {
+        Fred::CreateObjectStateRequestId(registrant_domain_id,
+            Util::set_of<std::string>(Fred::ObjectState::SERVER_BLOCKED)).exec(ctx);
+        Fred::PerformObjectStateRequest(registrant_domain_id).exec(ctx);
+        ctx.commit_transaction();
+    }
+
+    //info before merge
+    Fred::InfoDomainOutput info_domain_owner_1 = Fred::InfoDomainByHandle(test_domain_owner_handle).exec(ctx);
+    Fred::InfoDomainOutput info_domain_admin_1 = Fred::InfoDomainByHandle(test_domain_admin_handle).exec(ctx);
+    Fred::InfoKeysetOutput info_keyset_1 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
+    Fred::InfoNssetOutput info_nsset_1 = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
+
+    try
+    {
+        Fred::OperationContext ctx;
+        //merge
+        Fred::MergeContactOutput merge_data = Fred::MergeContact(src_contact_handle, dst_contact_handle, registrar_handle).exec(ctx);
+        ctx.commit_transaction();
+    }
+    catch(Fred::MergeContact::Exception& ex)
+    {
+        BOOST_CHECK(ex.is_set_object_blocked());
+        BOOST_CHECK(ex.get_object_blocked().compare(test_domain_owner_handle) == 0);
+    }
+
+    {
+        Fred::OperationContext ctx;
+
+        //info after merge
+        Fred::InfoDomainOutput info_domain_owner_2 = Fred::InfoDomainByHandle(test_domain_owner_handle).exec(ctx);
+        Fred::InfoDomainOutput info_domain_admin_2 = Fred::InfoDomainByHandle(test_domain_admin_handle).exec(ctx);
+        Fred::InfoKeysetOutput info_keyset_2 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
+        Fred::InfoNssetOutput info_nsset_2 = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
+
+        //compare state before merge with state after
+        BOOST_CHECK(info_domain_owner_1 == info_domain_owner_2);
+        BOOST_CHECK(info_domain_admin_1 == info_domain_admin_2);
+        BOOST_CHECK(info_keyset_1 == info_keyset_2);
+        BOOST_CHECK(info_nsset_1 == info_nsset_2);
+    }
+}
 
 BOOST_AUTO_TEST_CASE(test_merge_contact_selection)
 {
@@ -1631,6 +1925,41 @@ BOOST_AUTO_TEST_CASE(get_registrar_handles_except_excluded)
     std::vector<std::string> registrars = Fred::Registrar::GetRegistrarHandles().set_exclude_registrars(Util::vector_of<std::string>("REG-FRED_B")).exec();
     BOOST_CHECK(std::find(registrars.begin(),registrars.end(),std::string("REG-FRED_A")) != registrars.end());
     BOOST_CHECK(std::find(registrars.begin(),registrars.end(),std::string("REG-FRED_B")) == registrars.end());
+}
+
+
+BOOST_FIXTURE_TEST_CASE(test_find_contact_duplicate, merge_contact_contacts_fixture)
+{
+    std::set<std::string> contact_duplicates_1 = Fred::Contact::FindContactDuplicates().exec(ctx);
+    BOOST_CHECK(!contact_duplicates_1.empty());
+    BOOST_MESSAGE(Util::format_container(contact_duplicates_1,", "));
+
+    std::set<std::string> contact_duplicates_2 = Fred::Contact::FindContactDuplicates()
+    .set_registrar(merge_contact_contacts_fixture::registrar_handle).exec(ctx);
+    BOOST_CHECK(!contact_duplicates_2.empty());
+    BOOST_MESSAGE(Util::format_container(contact_duplicates_2,", "));
+
+    std::set<std::string> contact_duplicates_3 = Fred::Contact::FindContactDuplicates()
+    .set_registrar(merge_contact_contacts_fixture::registrar_handle)
+    .set_exclude_contacts(Util::set_of<std::string>(merge_contact_contacts_fixture::dst_contact_handle)).exec(ctx);
+    BOOST_CHECK(contact_duplicates_3.find(merge_contact_contacts_fixture::src_contact_handle) == contact_duplicates_3.end());
+    BOOST_CHECK(contact_duplicates_3.find(merge_contact_contacts_fixture::dst_contact_handle) == contact_duplicates_3.end());
+    BOOST_MESSAGE(Util::format_container(contact_duplicates_3,", "));
+
+    std::set<std::string> contact_duplicates_4 = Fred::Contact::FindContactDuplicates()
+    .set_specific_contact(merge_contact_contacts_fixture::dst_contact_handle).exec(ctx);
+    BOOST_CHECK(!contact_duplicates_4.empty());
+    BOOST_CHECK(contact_duplicates_4.find(merge_contact_contacts_fixture::dst_contact_handle) != contact_duplicates_4.end());
+    BOOST_CHECK(contact_duplicates_4.find(merge_contact_contacts_fixture::src_contact_handle) != contact_duplicates_4.end());
+    BOOST_MESSAGE(Util::format_container(contact_duplicates_4,", "));
+
+    std::set<std::string> contact_duplicates_5 = Fred::Contact::FindContactDuplicates()
+    .set_exclude_contacts(Util::set_of<std::string>(merge_contact_contacts_fixture::dst_contact_handle)).exec(ctx);
+    BOOST_CHECK(contact_duplicates_5.find(merge_contact_contacts_fixture::src_contact_handle) == contact_duplicates_5.end());
+    BOOST_CHECK(contact_duplicates_5.find(merge_contact_contacts_fixture::dst_contact_handle) == contact_duplicates_5.end());
+    BOOST_MESSAGE(Util::format_container(contact_duplicates_5,", "));
+
+    ctx.commit_transaction();
 }
 
 BOOST_AUTO_TEST_SUITE_END();//TestMergeContact
