@@ -1,3 +1,25 @@
+2014-08-01 Jan Korous, Jan Zima, Michal Strnad, Jiri Sadek (2.19.0)
+
+  * domain browser
+     - new backend
+     - manual contact duplicate merge feature
+     - object blocking/unblocking fixes
+
+  * fix object blocking/unblocking compatibility between domainbrowser and public requests
+
+  * contact duplicate merge (procedure)
+     - rules fixes (user/admin blocking, mojeid)
+     - speed-up
+
+  * message forwarding service mapping and configuration
+     - new sender for OPTYS service (CZ.NIC only)
+
+  * whois backend rewrite prototype (now used only for rdap)
+
+  * epp
+     - admin. contact verification (add check when updating contact is now configurable)
+     - fix saving request_id for contact check
+
 2014-06-12 Jan Korous, Jan Zima, Michal Strnad, Jiri Sadek (2.18.0)
 
   * admin. contact verification implementation
