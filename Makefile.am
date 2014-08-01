@@ -737,6 +737,8 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/domain/info_domain_output.cc \
 		src/fredlib/domain/info_domain_output.h \
 		src/fredlib/domain/enum_validation_extension.h \
+		src/fredlib/domain/create_domain_name_blacklist_id.h \
+		src/fredlib/domain/create_domain_name_blacklist_id.cc \
 		src/fredlib/nsset/update_nsset.h \
 		src/fredlib/nsset/update_nsset.cc \
 		src/fredlib/nsset/info_nsset.h \
@@ -2084,35 +2086,7 @@ tests_test_server_SOURCES = \
 		src/mojeid/mojeid_notifier.cc \
 		src/mojeid/mojeid_notifier.h \
 		tests/deprecated/checks.h \
-		tests/fredlib/nsset/test_update_nsset.cc \
-		tests/fredlib/keyset/test_update_keyset.cc \
-		tests/fredlib/domain/test_update_domain.cc \
-		tests/fredlib/contact/test_delete_contact.cc \
-		tests/fredlib/domain/test_info_domain.cc \
-		tests/fredlib/contact/test_merge_contact.cc \
-		tests/fredlib/test_opexception.cc \
-		tests/fredlib/contact/test_create_contact.cc \
-		tests/fredlib/contact/test_info_contact.cc \
-		tests/fredlib/domain/test_delete_domain.cc \
-		tests/fredlib/nsset/test_delete_nsset.cc \
-		tests/fredlib/domain/test_create_domain.cc \
-		tests/fredlib/domain/test_check_domain.cc \
-		tests/fredlib/domain/test_domain_name.cc \
-		tests/fredlib/test_check_handle.cc \
-		tests/fredlib/keyset/test_delete_keyset.cc \
-		tests/fredlib/contact/test_update_contact.cc \
 		tests/util/test_printable.cc \
-		tests/fredlib/keyset/test_info_keyset.cc \
-		tests/fredlib/nsset/test_info_nsset.cc \
-		tests/fredlib/contact/verification/setup_utils.h \
-		tests/fredlib/contact/verification/setup_utils.cc \
-		tests/fredlib/contact/verification/test_create_check_integ.cc \
-		tests/fredlib/contact/verification/test_update_check_integ.cc \
-		tests/fredlib/contact/verification/test_create_test_integ.cc \
-		tests/fredlib/contact/verification/test_update_test_integ.cc \
-		tests/fredlib/contact/verification/test_info_check_integ.cc \
-		tests/fredlib/contact/verification/test_list_checks_integ.cc \
-		tests/fredlib/contact/verification/test_list_enum_objects_integ.cc \
 		tests/util/test_is_equal_optional_nullable.cc \
 		src/fredlib/object_state/create_object_state_request.cc \
 		src/fredlib/object_state/create_object_state_request.h \
@@ -2224,15 +2198,8 @@ tests_test_blocking_SOURCES = \
 		src/fredlib/object_state/get_object_state_id_map.cc \
 		src/fredlib/object_state/get_blocking_status_desc_list.cc \
 		src/fredlib/domain/create_domain_name_blacklist_id.cc \
-		tests/checks.h \
-		tests/fredlib/contact/test_copy_contact.cc \
-		tests/fredlib/object_state/test_create_object_state_request_id.cc \
-		tests/fredlib/object_state/test_create_admin_object_block_request_id.cc \
-		tests/fredlib/object_state/test_create_admin_object_state_restore_request_id.cc \
-		tests/fredlib/object_state/test_cancel_object_state_request_id.cc \
-		tests/fredlib/object_state/test_clear_admin_object_state_request_id.cc \
-		tests/fredlib/domain/test_create_domain_name_blacklist_id.cc
-
+		tests/checks.h
+		
 tests_test_blocking_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS) \
 		$(BOOST_LDFLAGS) \
@@ -2292,35 +2259,54 @@ tests_test_blocking_LDADD = \
 #
 tests_test_fredlib_SOURCES = \
 		tests/deprecated/test_fredlib.cc \
-		tests/fredlib/nsset/test_update_nsset.cc \
-		tests/fredlib/keyset/test_update_keyset.cc \
-		tests/fredlib/domain/test_update_domain.cc \
+		tests/fredlib/registrar/test_info_registrar.cc \
+		tests/fredlib/registrar/test_create_registrar.cc \		
 		tests/fredlib/contact/test_delete_contact.cc \
-		tests/fredlib/domain/test_info_domain.cc \
-		tests/fredlib/contact/test_merge_contact.cc \
-		tests/fredlib/test_opexception.cc \
 		tests/fredlib/contact/test_create_contact.cc \
 		tests/fredlib/contact/test_info_contact.cc \
+		tests/fredlib/contact/test_merge_contact.cc \
+		tests/fredlib/contact/test_update_contact.cc \
+		tests/fredlib/contact/test_copy_contact.cc \
+		tests/fredlib/domain/test_update_domain.cc \
+		tests/fredlib/domain/test_info_domain.cc \
 		tests/fredlib/domain/test_delete_domain.cc \
-		tests/fredlib/nsset/test_delete_nsset.cc \
 		tests/fredlib/domain/test_create_domain.cc \
 		tests/fredlib/domain/test_check_domain.cc \
 		tests/fredlib/domain/test_domain_name.cc \
-		tests/fredlib/test_check_handle.cc \
+		tests/fredlib/domain/test_create_domain_name_blacklist_id.cc \
 		tests/fredlib/keyset/test_delete_keyset.cc \
-		tests/fredlib/contact/test_update_contact.cc \
-		tests/util/test_printable.cc \
 		tests/fredlib/keyset/test_info_keyset.cc \
+		tests/fredlib/keyset/test_update_keyset.cc \
+		tests/fredlib/nsset/test_update_nsset.cc \
+		tests/fredlib/nsset/test_delete_nsset.cc \
 		tests/fredlib/nsset/test_info_nsset.cc \
-		tests/fredlib/object_state/test_object_state.cc \
-		tests/fredlib/registrar/test_info_registrar.cc \
-		tests/fredlib/registrar/test_create_registrar.cc \
+		tests/fredlib/contact/verification/setup_utils.h \
+		tests/fredlib/contact/verification/setup_utils.cc \
+		tests/fredlib/contact/verification/test_create_check_integ.cc \
+		tests/fredlib/contact/verification/test_update_check_integ.cc \
+		tests/fredlib/contact/verification/test_create_test_integ.cc \
+		tests/fredlib/contact/verification/test_update_test_integ.cc \
+		tests/fredlib/contact/verification/test_info_check_integ.cc \
+		tests/fredlib/contact/verification/test_list_checks_integ.cc \
+		tests/fredlib/contact/verification/test_list_enum_objects_integ.cc \
 		tests/fredlib/poll/test_create_delete_contact_poll_message.cc \
 		tests/fredlib/poll/test_create_delete_domain_poll_message.cc \
 		tests/fredlib/poll/test_create_update_object_poll_message.cc \
 		tests/fredlib/poll/setup_utils.h \
-		tests/fredlib/poll/setup_utils.cc
-
+		tests/fredlib/poll/setup_utils.cc \
+		tests/fredlib/object_state/test_object_state.cc \
+		tests/fredlib/object_state/test_create_object_state_request_id.cc \
+		tests/fredlib/object_state/test_create_admin_object_block_request_id.cc \
+		tests/fredlib/object_state/test_create_admin_object_state_restore_request_id.cc \
+		tests/fredlib/object_state/test_cancel_object_state_request_id.cc \
+		tests/fredlib/object_state/test_clear_admin_object_state_request_id.cc \
+		tests/util/test_printable.cc \
+		tests/fredlib/test_opexception.cc \
+		tests/fredlib/test_check_handle.cc \
+		tests/setup/fixtures_utils.h \
+		tests/setup/fixtures_utils.cc \
+		tests/setup/fixtures.h \
+		tests/setup/fixtures.cc
 
 
 tests_test_fredlib_LDFLAGS = \
@@ -2336,14 +2322,12 @@ tests_test_fredlib_LDADD = \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(BOOST_DATE_TIME_LIB) \
 		$(BOOST_REGEX_LIB) \
-		$(OMNIORB4_LIBS) \
-		$(LIBIDN_CFLAGS) \
-		$(LIBIDN_LIBS) \
 		$(BOOST_THREAD_LIB) \
 		$(BOOST_SERIALIZATION_LIB) \
-		$(XML2_LIBS) \
+		$(BOOST_SYSTEM_LIB) \
 		$(POSTGRESQL_LIB) \
-		$(BOOST_SYSTEM_LIB)
+		$(OMNIORB4_LIBS) \
+		-lboost_unit_test_framework
 #
 # tests/test_fredlib
 
