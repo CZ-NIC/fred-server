@@ -23,14 +23,14 @@ namespace Fixture {
         }
 
         create_db_template();
-        ~create_db_template();
+        virtual ~create_db_template();
     };
 
 
 
     struct instantiate_db_template {
         instantiate_db_template();
-        ~instantiate_db_template();
+        virtual ~instantiate_db_template();
     };
 
 
