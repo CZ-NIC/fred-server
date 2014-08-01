@@ -21,6 +21,7 @@
 #include <boost/static_assert.hpp>
 #include <boost/foreach.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
+#include <boost/assign/list_of.hpp>
 
 namespace Test {
 
@@ -289,7 +290,12 @@ namespace Test {
         obj.set_authinfo(rnd.xnstring(15));
         obj.set_dns_hosts(
             boost::assign::list_of(
-                Fred::DnsHost("a.b.c.de", boost::asio::ip::address("1.2.3.4"))
+                Fred::DnsHost(
+                    "a.b.c.de",
+                    boost::assign::list_of(
+                        boost::asio::ip::address::from_string("1.2.3.4")
+                    )
+                )
             )
         );
         obj.set_tech_check_level(1);
@@ -307,8 +313,9 @@ namespace Test {
         return obj;
     }
 
-    unsigned long long  get_nonexistent_contact_id(Fred::OperationContext& ctx);
-    std::string         get_nonexistent_contact_handle(Fred::OperationContext& ctx);
+    unsigned long long  get_nonexistent_object_id(Fred::OperationContext& ctx);
+    unsigned long long  get_nonexistent_object_historyid(Fred::OperationContext& ctx);
+    std::string         get_nonexistent_object_handle(Fred::OperationContext& ctx);
 
     template<typename Tinfo> std::vector<std::string> get_handles_from_CreateXs(const std::vector<Tinfo>& objects) {
         std::vector<std::string> result;

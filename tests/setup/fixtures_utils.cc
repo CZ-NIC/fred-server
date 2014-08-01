@@ -2,7 +2,7 @@
 #include <cmath>
 
 namespace Test {
-    unsigned long long get_nonexistent_contact_id(Fred::OperationContext& ctx) {
+    unsigned long long get_nonexistent_object_id(Fred::OperationContext& ctx) {
         unsigned long long result;
 
         Database::Result check;
@@ -13,7 +13,7 @@ namespace Test {
             result = std::abs(RandomDataGenerator().xint());
             check = ctx.get_conn().exec_params(
                 "SELECT id "
-                    "FROM contact "
+                    "FROM object_registry "
                     "WHERE id=$1::bigint ",
                     Database::query_param_list(result) );
         } while(check.size() != 0);
@@ -21,17 +21,36 @@ namespace Test {
         return result;
     }
 
-    std::string get_nonexistent_contact_handle(Fred::OperationContext& ctx) {
+    unsigned long long get_nonexistent_object_historyid(Fred::OperationContext& ctx) {
+        unsigned long long result;
+
+        Database::Result check;
+        // guarantee non-existence
+        do {
+            Fred::OperationContext ctx;
+            // warning: type of column id in postgres is "integer", implicitly assuming POSITIVE
+            result = std::abs(RandomDataGenerator().xint());
+            check = ctx.get_conn().exec_params(
+                "SELECT historyid "
+                    "FROM object_history "
+                    "WHERE id=$1::bigint ",
+                    Database::query_param_list(result) );
+        } while(check.size() != 0);
+
+        return result;
+    }
+
+    std::string get_nonexistent_object_handle(Fred::OperationContext& ctx) {
         std::string result;
 
         Database::Result check;
         // guarantee non-existence
         do {
             Fred::OperationContext ctx;
-            result = "CONTACT_" + RandomDataGenerator().xnumstring(20);
+            result = "OBJECT_" + RandomDataGenerator().xnumstring(20);
             check = ctx.get_conn().exec_params(
                 "SELECT name "
-                    "FROM contact "
+                    "FROM object_registry "
                     "WHERE name=$1::varchar ",
                     Database::query_param_list(result) );
         } while(check.size() != 0);
