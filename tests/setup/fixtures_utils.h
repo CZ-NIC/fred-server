@@ -37,7 +37,12 @@ namespace Test {
         template<> struct InfoXData_type<Fred::CreateDomain> {
             typedef Fred::InfoDomainData type;
         };
-
+        template<> struct InfoXData_type<Fred::CreateNsset> {
+            typedef Fred::InfoNssetData type;
+        };
+        template<> struct InfoXData_type<Fred::CreateKeyset> {
+            typedef Fred::InfoKeysetData type;
+        };
 
         template<typename TCreateOperOp> struct InfoXByHandle_type;
         template<> struct InfoXByHandle_type<Fred::CreateRegistrar> {
@@ -49,6 +54,12 @@ namespace Test {
         template<> struct InfoXByHandle_type<Fred::CreateDomain> {
             typedef Fred::InfoDomainByHandle type;
         };
+        template<> struct InfoXByHandle_type<Fred::CreateNsset> {
+            typedef Fred::InfoNssetByHandle type;
+        };
+        template<> struct InfoXByHandle_type<Fred::CreateKeyset> {
+            typedef Fred::InfoKeysetByHandle type;
+        };
 
         template<typename TInfoOutput, typename TInfoData> void copy_InfoXOutput_to_InfoXData(const TInfoOutput& in, TInfoData& out);
         template<> inline void copy_InfoXOutput_to_InfoXData<>(const Fred::InfoRegistrarOutput& in, Fred::InfoRegistrarData& out) {
@@ -59,6 +70,12 @@ namespace Test {
         }
         template<> inline void copy_InfoXOutput_to_InfoXData<>(const Fred::InfoDomainOutput& in, Fred::InfoDomainData& out) {
             out = in.info_domain_data;
+        }
+        template<> inline void copy_InfoXOutput_to_InfoXData<>(const Fred::InfoNssetOutput& in, Fred::InfoNssetData& out) {
+            out = in.info_nsset_data;
+        }
+        template<> inline void copy_InfoXOutput_to_InfoXData<>(const Fred::InfoKeysetOutput& in, Fred::InfoKeysetData& out) {
+            out = in.info_keyset_data;
         }
 
         // one of the least intrusive ways to get to member data is make those protected and derive...
@@ -161,7 +178,30 @@ namespace Test {
             );
         }
     };
+    template<> struct CreateX_factory<Fred::CreateNsset> {
 
+        Fred::CreateNsset make(
+            const std::string& _registrar,
+            const Optional<std::string>& _handle = Optional<std::string>()
+        ) {
+            return Fred::CreateNsset(
+                _handle.isset() ? _handle.get_value() : "NSSET_" + RandomDataGenerator().xnumstring(20),
+                _registrar
+            );
+        }
+    };
+    template<> struct CreateX_factory<Fred::CreateKeyset> {
+
+        Fred::CreateKeyset make(
+            const std::string& _registrar,
+            const Optional<std::string>& _handle = Optional<std::string>()
+        ) {
+            return Fred::CreateKeyset(
+                _handle.isset() ? _handle.get_value() : "KEYSET_" + RandomDataGenerator().xnumstring(20),
+                _registrar
+            );
+        }
+    };
 
 
     // for use with temporary object - copying arguments - suboptimal but hopefully adequate enough
@@ -240,6 +280,29 @@ namespace Test {
         RandomDataGenerator rnd;
 
         obj.set_authinfo(rnd.xnstring(15));
+
+        return obj;
+    }
+    template<> inline Fred::CreateNsset fill_optional_data<>(Fred::CreateNsset obj) {
+        RandomDataGenerator rnd;
+
+        obj.set_authinfo(rnd.xnstring(15));
+        obj.set_dns_hosts(
+            boost::assign::list_of(
+                Fred::DnsHost("a.b.c.de", boost::asio::ip::address("1.2.3.4"))
+            )
+        );
+        obj.set_tech_check_level(1);
+
+        return obj;
+    }
+    template<> inline Fred::CreateKeyset fill_optional_data<>(Fred::CreateKeyset obj) {
+        RandomDataGenerator rnd;
+
+        obj.set_authinfo(rnd.xnstring(15));
+        obj.set_dns_keys(
+            boost::assign::list_of(Fred::DnsKey(1, 1, 1, "abcde"))
+        );
 
         return obj;
     }
@@ -359,8 +422,10 @@ namespace Test {
 
         static Fred::InfoContactData make(Fred::OperationContext& _ctx) {
             return exec(
-                CreateX_factory<Fred::CreateContact>().make(
-                    registrar(_ctx).info_data.handle
+                fill_optional_data(
+                    CreateX_factory<Fred::CreateContact>().make(
+                        registrar(_ctx).info_data.handle
+                    )
                 ),
                 _ctx
             );
@@ -382,9 +447,11 @@ namespace Test {
 
         static Fred::InfoDomainData make(Fred::OperationContext& _ctx) {
             return exec(
-                CreateX_factory<Fred::CreateDomain>().make(
-                    registrar(_ctx).info_data.handle,
-                    contact(_ctx).info_data.handle
+                fill_optional_data(
+                    CreateX_factory<Fred::CreateDomain>().make(
+                        registrar(_ctx).info_data.handle,
+                        contact(_ctx).info_data.handle
+                    )
                 ),
                 _ctx
             );
@@ -401,14 +468,54 @@ namespace Test {
         }
     };
 
-    // TODO
     struct nsset {
         Fred::InfoNssetData info_data;
+
+        static Fred::InfoNssetData make(Fred::OperationContext& _ctx) {
+            return exec(
+                fill_optional_data(
+                    CreateX_factory<Fred::CreateNsset>().make(
+                        registrar(_ctx).info_data.handle
+                    )
+                ),
+                _ctx
+            );
+        }
+
+        nsset(Fred::OperationContext& _ctx) {
+            info_data = make(_ctx);
+        }
+
+        nsset() {
+            Fred::OperationContext ctx;
+            info_data = make(ctx);
+            ctx.commit_transaction();
+        }
     };
 
-    // TODO
     struct keyset {
         Fred::InfoKeysetData info_data;
+
+        static Fred::InfoKeysetData make(Fred::OperationContext& _ctx) {
+            return exec(
+                fill_optional_data(
+                    CreateX_factory<Fred::CreateKeyset>().make(
+                        registrar(_ctx).info_data.handle
+                    )
+                ),
+                _ctx
+            );
+        }
+
+        keyset(Fred::OperationContext& _ctx) {
+            info_data = make(_ctx);
+        }
+
+        keyset() {
+            Fred::OperationContext ctx;
+            info_data = make(ctx);
+            ctx.commit_transaction();
+        }
     };
 };
 
