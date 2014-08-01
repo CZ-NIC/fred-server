@@ -1458,7 +1458,7 @@ namespace Registry
                 " (trim(both ' ' from COALESCE(c_src.vat,'')) != trim(both ' ' from COALESCE(c_dst.vat,'')) AND trim(both ' ' from COALESCE(c_src.vat,'')) != ''::text) OR "
                 " (trim(both ' ' from COALESCE(c_src.ssn,'')) != trim(both ' ' from COALESCE(c_dst.ssn,'')) AND trim(both ' ' from COALESCE(c_src.ssn,'')) != ''::text) OR "
                 " (COALESCE(c_src.ssntype,0) != COALESCE(c_dst.ssntype,0) AND COALESCE(c_src.ssntype,0) != 0) "
-                "  as differ, c_src.id AS src_contact_id"
+                "  as differ, c_src.id AS src_contact_id, c_dst.id AS dst_contact_id"
                 " FROM (object_registry oreg_src "
                 " JOIN contact c_src ON c_src.id = oreg_src.id AND oreg_src.name = UPPER($1::text) AND oreg_src.erdate IS NULL) "
                 " JOIN (object_registry oreg_dst "
@@ -1471,19 +1471,20 @@ namespace Registry
                         Fred::MergeContact::InvalidContacts(src_contact_handle,dst_contact_handle)));
                 }
 
-                unsigned long long src_contact_id = static_cast<unsigned long long>(diff_result[0]["src_contact_id"]);
+                unsigned long long dst_contact_id = static_cast<unsigned long long>(diff_result[0]["dst_contact_id"]);
 
-                if(Fred::ObjectHasState(src_contact_id,Fred::ObjectState::MOJEID_CONTACT).exec(ctx))
+                if(Fred::ObjectHasState(dst_contact_id,Fred::ObjectState::SERVER_BLOCKED).exec(ctx))
                 {
-                    BOOST_THROW_EXCEPTION(Fred::MergeContact::Exception().set_src_contact_in_mojeid(
-                        Fred::MergeContact::InvalidContacts(src_contact_handle,dst_contact_handle)));
+                    BOOST_THROW_EXCEPTION(Fred::MergeContact::Exception().set_dst_contact_invalid(src_contact_handle));
                 }
 
-                if(Fred::ObjectHasState(src_contact_id,Fred::ObjectState::SERVER_BLOCKED).exec(ctx)
+                unsigned long long src_contact_id = static_cast<unsigned long long>(diff_result[0]["src_contact_id"]);
+
+                if(Fred::ObjectHasState(src_contact_id,Fred::ObjectState::MOJEID_CONTACT).exec(ctx)
+                    || Fred::ObjectHasState(src_contact_id,Fred::ObjectState::SERVER_BLOCKED).exec(ctx)
                     || Fred::ObjectHasState(src_contact_id,Fred::ObjectState::SERVER_DELETE_PROHIBITED).exec(ctx))
                 {
-                    BOOST_THROW_EXCEPTION(Fred::MergeContact::Exception().set_src_contact_blocked(
-                        Fred::MergeContact::InvalidContacts(src_contact_handle,dst_contact_handle)));
+                    BOOST_THROW_EXCEPTION(Fred::MergeContact::Exception().set_src_contact_invalid(src_contact_handle));
                 }
 
                 bool contact_differs = static_cast<bool>(diff_result[0]["differ"]);
@@ -1514,10 +1515,10 @@ namespace Registry
                     " JOIN (object_registry oreg_dst "
                     " JOIN contact c_dst ON c_dst.id = oreg_dst.id  AND oreg_dst.erdate IS NULL AND oreg_dst.id = $1::bigint "
                     " ) ON TRUE "
-                    " LEFT JOIN object_state os ON os.object_id = c_src.id "
-                    " AND os.state_id IN (SELECT eos.id FROM enum_object_states eos WHERE eos.name = 'mojeidContact'::text "
+                    " LEFT JOIN object_state os_src ON os_src.object_id = c_src.id "
+                    " AND os_src.state_id IN (SELECT eos.id FROM enum_object_states eos WHERE eos.name = 'mojeidContact'::text "
                     " OR eos.name = 'serverDeleteProhibited'::text OR eos.name = 'serverBlocked'::text) "//forbidden states of src contact
-                    " AND os.valid_from <= CURRENT_TIMESTAMP AND os.valid_to is null"
+                    " AND os_src.valid_from <= CURRENT_TIMESTAMP AND (os_src.valid_to is null OR os_src.valid_to > CURRENT_TIMESTAMP)"
                     " WHERE "
                     " ( "
                     //the same
@@ -1535,7 +1536,7 @@ namespace Registry
                     " (trim(both ' ' from COALESCE(c_src.vat,'')) != trim(both ' ' from COALESCE(c_dst.vat,'')) AND trim(both ' ' from COALESCE(c_src.vat,'')) != ''::text) OR "
                     " (trim(both ' ' from COALESCE(c_src.ssn,'')) != trim(both ' ' from COALESCE(c_dst.ssn,'')) AND trim(both ' ' from COALESCE(c_src.ssn,'')) != ''::text) OR "
                     " (COALESCE(c_src.ssntype,0) != COALESCE(c_dst.ssntype,0) AND COALESCE(c_src.ssntype,0) != 0)) = false "
-                    " AND oreg_src.name != oreg_dst.name AND os.id IS NULL "
+                    " AND oreg_src.name != oreg_dst.name AND os_src.id IS NULL "
                     " ORDER BY oreg_src.id "
                     " LIMIT $2::bigint OFFSET $3::bigint ",
                     Database::query_param_list(user_contact_id)(contact_list_limit_+1)(offset));

@@ -168,7 +168,8 @@ namespace Fred
                 tmp.set_registrant = dst_contact_handle_;
 
                 //check if object blocked
-                if(Fred::ObjectHasState(tmp.domain_id,Fred::ObjectState::SERVER_BLOCKED).exec(ctx))
+                if(Fred::ObjectHasState(tmp.domain_id,Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx)
+                    || Fred::ObjectHasState(tmp.domain_id,Fred::ObjectState::SERVER_BLOCKED).exec(ctx))
                 {
                     BOOST_THROW_EXCEPTION(Fred::MergeContact::Exception().set_object_blocked(tmp.fqdn));
                 }
@@ -210,7 +211,8 @@ namespace Fred
                 tmp.add_admin_contact = dst_contact_handle_;
 
                 //check if object blocked
-                if(Fred::ObjectHasState(tmp.domain_id,Fred::ObjectState::SERVER_BLOCKED).exec(ctx))
+                if(Fred::ObjectHasState(tmp.domain_id,Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx)
+                    || Fred::ObjectHasState(tmp.domain_id,Fred::ObjectState::SERVER_BLOCKED).exec(ctx))
                 {
                     BOOST_THROW_EXCEPTION(Fred::MergeContact::Exception().set_object_blocked(tmp.fqdn));
                 }
@@ -275,6 +277,12 @@ namespace Fred
                 tmp.rem_tech_contact = src_contact_handle_;
                 tmp.add_tech_contact = dst_contact_handle_;
 
+                //check if object blocked
+                if(Fred::ObjectHasState(tmp.nsset_id,Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx))
+                {
+                    BOOST_THROW_EXCEPTION(Fred::MergeContact::Exception().set_object_blocked(tmp.handle));
+                }
+
                 if(!dry_run)
                 {
                     try
@@ -334,6 +342,12 @@ namespace Fred
                 tmp.sponsoring_registrar = std::string(result[i][1]);
                 tmp.rem_tech_contact = src_contact_handle_;
                 tmp.add_tech_contact = dst_contact_handle_;
+
+                //check if object blocked
+                if(Fred::ObjectHasState(tmp.keyset_id,Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx))
+                {
+                    BOOST_THROW_EXCEPTION(Fred::MergeContact::Exception().set_object_blocked(tmp.handle));
+                }
 
                 if(!dry_run)
                 {
@@ -481,7 +495,7 @@ namespace Fred
         " (c1.discloseident != c2.discloseident) OR "
         " (c1.disclosenotifyemail != c2.disclosenotifyemail) OR "
         " o1.clid != o2.clid "// current registrar
-        "  as differ, c1.id AS src_contact_id"
+        "  as differ, c1.id AS src_contact_id, c2.id AS dst_contact_id"
         " FROM (object_registry oreg1 "
         " JOIN object o1 ON oreg1.id=o1.id "
         " JOIN contact c1 ON c1.id = oreg1.id AND oreg1.name = UPPER($1::text) AND oreg1.erdate IS NULL) "
@@ -495,19 +509,21 @@ namespace Fred
             BOOST_THROW_EXCEPTION(MergeContact::Exception().set_unable_to_get_difference_of_contacts(
                     MergeContact::InvalidContacts(src_contact_handle,dst_contact_handle)));
         }
-        unsigned long long src_contact_id = static_cast<unsigned long long>(diff_result[0]["src_contact_id"]);
 
-        if(Fred::ObjectHasState(src_contact_id,Fred::ObjectState::MOJEID_CONTACT).exec(ctx))
+        unsigned long long dst_contact_id = static_cast<unsigned long long>(diff_result[0]["dst_contact_id"]);
+
+        if(Fred::ObjectHasState(dst_contact_id,Fred::ObjectState::SERVER_BLOCKED).exec(ctx))
         {
-            BOOST_THROW_EXCEPTION(Fred::MergeContact::Exception().set_src_contact_in_mojeid(
-                Fred::MergeContact::InvalidContacts(src_contact_handle,dst_contact_handle)));
+            BOOST_THROW_EXCEPTION(Fred::MergeContact::Exception().set_dst_contact_invalid(dst_contact_handle));
         }
 
-        if(Fred::ObjectHasState(src_contact_id,Fred::ObjectState::SERVER_BLOCKED).exec(ctx)
+        unsigned long long src_contact_id = static_cast<unsigned long long>(diff_result[0]["src_contact_id"]);
+
+        if( Fred::ObjectHasState(src_contact_id,Fred::ObjectState::MOJEID_CONTACT).exec(ctx)
+            || Fred::ObjectHasState(src_contact_id,Fred::ObjectState::SERVER_BLOCKED).exec(ctx)
             || Fred::ObjectHasState(src_contact_id,Fred::ObjectState::SERVER_DELETE_PROHIBITED).exec(ctx))
         {
-            BOOST_THROW_EXCEPTION(Fred::MergeContact::Exception().set_src_contact_blocked(
-                Fred::MergeContact::InvalidContacts(src_contact_handle,dst_contact_handle)));
+            BOOST_THROW_EXCEPTION(Fred::MergeContact::Exception().set_src_contact_invalid(src_contact_handle));
         }
 
         bool contact_differs = static_cast<bool>(diff_result[0]["differ"]);
