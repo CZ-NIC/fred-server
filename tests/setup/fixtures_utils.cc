@@ -1,4 +1,5 @@
 #include "tests/setup/fixtures_utils.h"
+#include <cmath>
 
 namespace Test {
     unsigned long long get_nonexistent_contact_id(Fred::OperationContext& ctx) {
@@ -8,7 +9,8 @@ namespace Test {
         // guarantee non-existence
         do {
             Fred::OperationContext ctx;
-            result = RandomDataGenerator().xuint();
+            // warning: type of column id in postgres is "integer", implicitly assuming POSITIVE
+            result = std::abs(RandomDataGenerator().xint());
             check = ctx.get_conn().exec_params(
                 "SELECT id "
                     "FROM contact "
