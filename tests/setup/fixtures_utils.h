@@ -317,24 +317,6 @@ namespace Test {
     unsigned long long  get_nonexistent_object_historyid(Fred::OperationContext& ctx);
     std::string         get_nonexistent_object_handle(Fred::OperationContext& ctx);
 
-    template<typename Tinfo> std::vector<std::string> get_handles_from_CreateXs(const std::vector<Tinfo>& objects) {
-        std::vector<std::string> result;
-        BOOST_FOREACH(const Tinfo& obj, objects) {
-            result.push_back(obj.handle);
-        }
-
-        return result;
-    }
-    template<> inline std::vector<std::string> get_handles_from_CreateXs(const std::vector<Fred::InfoDomainData>& objects) {
-        std::vector<std::string> result;
-        BOOST_FOREACH(const Fred::InfoDomainData& obj, objects) {
-            result.push_back(obj.fqdn);
-        }
-
-        return result;
-    }
-
-
     // for use with temporary object - copying arguments - suboptimal but hopefully adequate enough
     template<typename TCreateOper> typename util::InfoXData_type<TCreateOper>::type exec(TCreateOper create, Fred::OperationContext& ctx) {
         create.exec(ctx);
