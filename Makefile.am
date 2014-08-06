@@ -170,6 +170,7 @@ noinst_HEADERS = \
 		util/cfg/validate_args.h \
 		util/cfg/handle_sms_args.h \
 		util/cfg/handle_contactverification_args.h \
+		util/optys/handle_optys_mail_args.h \
 		util/types/optional.h \
 		util/types/optional_from_program_options.h \
 		util/types/money.h \
