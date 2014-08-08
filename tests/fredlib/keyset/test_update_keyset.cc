@@ -74,18 +74,14 @@
 #include "cfg/handle_threadgroup_args.h"
 #include "cfg/handle_corbanameservice_args.h"
 
-//not using UTF defined main
-#define BOOST_TEST_NO_MAIN
-
 #include "cfg/config_handler_decl.h"
 #include <boost/test/unit_test.hpp>
 
-BOOST_AUTO_TEST_SUITE(TestUpdateKeyset)
+#include "tests/setup/fixtures.h"
 
 const std::string server_name = "test-update-keyset";
 
-
-struct update_keyset_fixture
+struct update_keyset_fixture : public Test::Fixture::instantiate_db_template
 {
 
     std::string registrar_handle;
@@ -145,12 +141,14 @@ struct update_keyset_fixture
     {}
 };
 
+BOOST_FIXTURE_TEST_SUITE(TestUpdateKeyset, update_keyset_fixture)
+
 /**
  * test UpdateKeyset
  * test UpdateKeyset construction and methods calls with precreated data
  * calls in test shouldn't throw
  */
-BOOST_FIXTURE_TEST_CASE(update_keyset, update_keyset_fixture )
+BOOST_AUTO_TEST_CASE(update_keyset)
 {
     Fred::OperationContext ctx;
     Fred::InfoKeysetOutput info_data_1 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
@@ -570,7 +568,7 @@ BOOST_FIXTURE_TEST_CASE(update_keyset, update_keyset_fixture )
  * test UpdateKeyset with wrong handle
  */
 
-BOOST_FIXTURE_TEST_CASE(update_keyset_wrong_handle, update_keyset_fixture )
+BOOST_AUTO_TEST_CASE(update_keyset_wrong_handle)
 {
     std::string bad_test_keyset_handle = std::string("bad")+test_keyset_handle;
     try
@@ -590,7 +588,7 @@ BOOST_FIXTURE_TEST_CASE(update_keyset_wrong_handle, update_keyset_fixture )
 /**
  * test UpdateKeyset with wrong registrar
  */
-BOOST_FIXTURE_TEST_CASE(update_keyset_wrong_registrar, update_keyset_fixture)
+BOOST_AUTO_TEST_CASE(update_keyset_wrong_registrar)
 {
     std::string bad_registrar_handle = registrar_handle+xmark;
     Fred::InfoKeysetOutput info_data_1;
@@ -625,7 +623,7 @@ BOOST_FIXTURE_TEST_CASE(update_keyset_wrong_registrar, update_keyset_fixture)
 /**
  * test UpdateKeyset with wrong sponsoring registrar
  */
-BOOST_FIXTURE_TEST_CASE(update_keyset_wrong_sponsoring_registrar, update_keyset_fixture)
+BOOST_AUTO_TEST_CASE(update_keyset_wrong_sponsoring_registrar)
 {
     std::string bad_registrar_handle = registrar_handle+xmark;
     Fred::InfoKeysetOutput info_data_1;
@@ -661,7 +659,7 @@ BOOST_FIXTURE_TEST_CASE(update_keyset_wrong_sponsoring_registrar, update_keyset_
 /**
  * test UpdateKeyset add non-existing tech contact
  */
-BOOST_FIXTURE_TEST_CASE(update_keyset_add_wrong_tech_contact, update_keyset_fixture)
+BOOST_AUTO_TEST_CASE(update_keyset_add_wrong_tech_contact)
 {
     std::string bad_tech_contact_handle = admin_contact5_handle+xmark;
     Fred::InfoKeysetOutput info_data_1;
@@ -699,7 +697,7 @@ BOOST_FIXTURE_TEST_CASE(update_keyset_add_wrong_tech_contact, update_keyset_fixt
 /**
  * test UpdateKeyset add already added tech contact
  */
-BOOST_FIXTURE_TEST_CASE(update_keyset_add_already_added_tech_contact, update_keyset_fixture)
+BOOST_AUTO_TEST_CASE(update_keyset_add_already_added_tech_contact)
 {
     Fred::InfoKeysetOutput info_data_1;
     {
@@ -735,7 +733,7 @@ BOOST_FIXTURE_TEST_CASE(update_keyset_add_already_added_tech_contact, update_key
 /**
  * test UpdateKeyset remove non-existing tech contact
  */
-BOOST_FIXTURE_TEST_CASE(update_keyset_rem_wrong_tech_contact, update_keyset_fixture)
+BOOST_AUTO_TEST_CASE(update_keyset_rem_wrong_tech_contact)
 {
     std::string bad_tech_contact_handle = admin_contact6_handle+xmark;
 
@@ -772,7 +770,7 @@ BOOST_FIXTURE_TEST_CASE(update_keyset_rem_wrong_tech_contact, update_keyset_fixt
 /**
  * test UpdateKeyset remove existing unassigned tech contact
  */
-BOOST_FIXTURE_TEST_CASE(update_keyset_rem_unassigned_tech_contact, update_keyset_fixture)
+BOOST_AUTO_TEST_CASE(update_keyset_rem_unassigned_tech_contact)
 {
     std::string bad_tech_contact_handle = admin_contact4_handle;
     Fred::InfoKeysetOutput info_data_1;
@@ -809,7 +807,7 @@ BOOST_FIXTURE_TEST_CASE(update_keyset_rem_unassigned_tech_contact, update_keyset
 /**
  * test UpdateKeyset add already added dnskey
  */
-BOOST_FIXTURE_TEST_CASE(update_keyset_add_already_added_dnskey, update_keyset_fixture)
+BOOST_AUTO_TEST_CASE(update_keyset_add_already_added_dnskey)
 {
     Fred::InfoKeysetOutput info_data_1;
     {
@@ -844,7 +842,7 @@ BOOST_FIXTURE_TEST_CASE(update_keyset_add_already_added_dnskey, update_keyset_fi
 /**
  * test UpdateKeyset remove unassigned dnskey
  */
-BOOST_FIXTURE_TEST_CASE(update_keyset_unassigned_dnskey, update_keyset_fixture)
+BOOST_AUTO_TEST_CASE(update_keyset_unassigned_dnskey)
 {
     Fred::InfoKeysetOutput info_data_1;
     {
@@ -884,7 +882,7 @@ BOOST_FIXTURE_TEST_CASE(update_keyset_unassigned_dnskey, update_keyset_fixture)
  * check initial and next historyid in info keyset history
  * check valid_from and valid_to in info keyset history
  */
-BOOST_FIXTURE_TEST_CASE(info_keyset_history_test, update_keyset_fixture)
+BOOST_AUTO_TEST_CASE(info_keyset_history_test)
 {
     Fred::InfoKeysetOutput info_data_1;
     {

@@ -66,17 +66,14 @@
 #include "cfg/handle_threadgroup_args.h"
 #include "cfg/handle_corbanameservice_args.h"
 
-//not using UTF defined main
-#define BOOST_TEST_NO_MAIN
-
 #include "cfg/config_handler_decl.h"
 #include <boost/test/unit_test.hpp>
 
-BOOST_AUTO_TEST_SUITE(TestCopyContact)
+#include "tests/setup/fixtures.h"
 
 const std::string server_name = "test-copy-contact";
 
-struct copy_contact_fixture
+struct copy_contact_fixture : public Test::Fixture::instantiate_db_template
 {
     std::string xmark;
     std::string sys_registrar_handle;
@@ -111,12 +108,14 @@ struct copy_contact_fixture
     { }
 };
 
+BOOST_FIXTURE_TEST_SUITE(TestCopyContact, copy_contact_fixture)
+
 /**
  * test CopyContact
  * ...
  * calls in test shouldn't throw
  */
-BOOST_FIXTURE_TEST_CASE(copy_contact, copy_contact_fixture)
+BOOST_AUTO_TEST_CASE(copy_contact)
 {
     Fred::OperationContext ctx;
 
@@ -197,7 +196,7 @@ BOOST_FIXTURE_TEST_CASE(copy_contact, copy_contact_fixture)
  * ...
  * calls in test should throw
  */
-BOOST_FIXTURE_TEST_CASE(copy_contact_bad, copy_contact_fixture)
+BOOST_AUTO_TEST_CASE(copy_contact_bad)
 {
     const std::string bad_src_contact_handle = dst_contact_handle;
     try {

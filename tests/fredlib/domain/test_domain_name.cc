@@ -61,13 +61,12 @@
 #include "cfg/handle_threadgroup_args.h"
 #include "cfg/handle_corbanameservice_args.h"
 
-//not using UTF defined main
-#define BOOST_TEST_NO_MAIN
-
 #include "cfg/config_handler_decl.h"
 #include <boost/test/unit_test.hpp>
 
-BOOST_AUTO_TEST_SUITE(TestDomainName)
+#include "tests/setup/fixtures.h"
+
+BOOST_FIXTURE_TEST_SUITE(TestDomainName, Test::Fixture::instantiate_db_template)
 
 const std::string server_name = "test-domain-name";
 

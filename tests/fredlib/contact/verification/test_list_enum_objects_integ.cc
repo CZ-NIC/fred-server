@@ -27,16 +27,14 @@
 #include "src/fredlib/contact/verification/enum_check_status.h"
 #include "src/fredlib/contact/verification/enum_testsuite_handle.h"
 #include "tests/fredlib/contact/verification/setup_utils.h"
-
-//not using UTF defined main
-#define BOOST_TEST_NO_MAIN
+#include "tests/setup/fixtures.h"
 
 #include <algorithm>
 
 #include <boost/test/unit_test.hpp>
 
 BOOST_AUTO_TEST_SUITE(TestContactVerification)
-BOOST_FIXTURE_TEST_SUITE(TestListEnumObjects_integ, autoclean_contact_verification_db)
+BOOST_FIXTURE_TEST_SUITE(TestListEnumObjects_integ, Test::Fixture::instantiate_db_template)
 
 const std::string server_name = "test-contact_verification-list_enum_objects_integ";
 

@@ -71,17 +71,14 @@
 #include "cfg/handle_threadgroup_args.h"
 #include "cfg/handle_corbanameservice_args.h"
 
-//not using UTF defined main
-#define BOOST_TEST_NO_MAIN
-
 #include "cfg/config_handler_decl.h"
 #include <boost/test/unit_test.hpp>
 
-BOOST_AUTO_TEST_SUITE(TestCreateAdminObjectStateRestoreRequestId)
+#include "tests/setup/fixtures.h"
 
 const std::string server_name = "test-create-admin-object-state-restore-request-id";
 
-struct create_admin_object_state_restore_request_id_fixture
+struct create_admin_object_state_restore_request_id_fixture : public Test::Fixture::instantiate_db_template
 {
     std::string registrar_handle;
     std::string xmark;
@@ -143,12 +140,14 @@ struct create_admin_object_state_restore_request_id_fixture
     {}
 };
 
+BOOST_FIXTURE_TEST_SUITE(TestCreateAdminObjectStateRestoreRequestId, create_admin_object_state_restore_request_id_fixture)
+
 /**
  * test CreateAdminObjectStateRestoreRequestId
  * ...
  * calls in test shouldn't throw
  */
-BOOST_FIXTURE_TEST_CASE(create_admin_object_state_restore_request_id, create_admin_object_state_restore_request_id_fixture)
+BOOST_AUTO_TEST_CASE(create_admin_object_state_restore_request_id)
 {
     const std::string query =
         "SELECT eos.name "
@@ -199,7 +198,7 @@ BOOST_FIXTURE_TEST_CASE(create_admin_object_state_restore_request_id, create_adm
 // * ...
 // * calls in test shouldn't throw
 // */
-BOOST_FIXTURE_TEST_CASE(create_admin_object_state_restore_request_id_bad, create_admin_object_state_restore_request_id_fixture)
+BOOST_AUTO_TEST_CASE(create_admin_object_state_restore_request_id_bad)
 {
     Fred::ObjectId not_used_id;
     try {

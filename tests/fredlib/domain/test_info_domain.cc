@@ -72,18 +72,14 @@
 #include "cfg/handle_threadgroup_args.h"
 #include "cfg/handle_corbanameservice_args.h"
 
-//not using UTF defined main
-#define BOOST_TEST_NO_MAIN
-
 #include "cfg/config_handler_decl.h"
 #include <boost/test/unit_test.hpp>
 
-BOOST_AUTO_TEST_SUITE(TestInfoDomain)
+#include "tests/setup/fixtures.h"
 
 const std::string server_name = "test-info-domain";
 
-
-struct test_domain_fixture
+struct test_domain_fixture : public Test::Fixture::instantiate_db_template
 {
     std::string registrar_handle;
     std::string xmark;
@@ -194,10 +190,13 @@ struct test_domain_fixture
     {}
 };
 
+
+BOOST_FIXTURE_TEST_SUITE(TestInfoDomain, test_domain_fixture   )
+
 /**
  * test InfoDomain
  */
-BOOST_FIXTURE_TEST_CASE(info_domain, test_domain_fixture )
+BOOST_AUTO_TEST_CASE(info_domain)
 {
     Fred::OperationContext ctx;
 
@@ -243,7 +242,7 @@ BOOST_FIXTURE_TEST_CASE(info_domain, test_domain_fixture )
 /**
  * test call InfoDomainDiff
 */
-BOOST_FIXTURE_TEST_CASE(info_domain_diff, test_domain_fixture )
+BOOST_AUTO_TEST_CASE(info_domain_diff)
 {
     Fred::OperationContext ctx;
     Fred::InfoDomainOutput domain_info1 = Fred::InfoDomainByHandle(test_fqdn).exec(ctx);

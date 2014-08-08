@@ -76,18 +76,16 @@
 #include "cfg/handle_threadgroup_args.h"
 #include "cfg/handle_corbanameservice_args.h"
 
-//not using UTF defined main
-#define BOOST_TEST_NO_MAIN
-
 #include "cfg/config_handler_decl.h"
 #include <boost/test/unit_test.hpp>
 
+#include "tests/setup/fixtures.h"
 
-BOOST_AUTO_TEST_SUITE(TestCheckHandle)
+BOOST_FIXTURE_TEST_SUITE(TestCheckHandle, Test::Fixture::instantiate_db_template)
 
 const std::string server_name = "test-check-handle";
 
-struct check_handle_fixture
+struct check_handle_fixture : public Test::Fixture::instantiate_db_template
 {
     std::string registrar_handle;
     std::string xmark;

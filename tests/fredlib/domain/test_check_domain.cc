@@ -69,17 +69,15 @@
 #include "cfg/handle_threadgroup_args.h"
 #include "cfg/handle_corbanameservice_args.h"
 
-//not using UTF defined main
-#define BOOST_TEST_NO_MAIN
 
 #include "cfg/config_handler_decl.h"
 #include <boost/test/unit_test.hpp>
 
-BOOST_AUTO_TEST_SUITE(TestCheckDomain)
+#include "tests/setup/fixtures.h"
 
 const std::string server_name = "test-check-domain";
 
-struct check_domain_fixture
+struct check_domain_fixture : public Test::Fixture::instantiate_db_template
 {
     std::string registrar_handle;
     std::string xmark;
@@ -155,10 +153,12 @@ struct check_domain_fixture
     {}
 };
 
+BOOST_FIXTURE_TEST_SUITE(TestCheckDomain, check_domain_fixture)
+
 /**
  * test CheckDomain true returning cases
  */
-BOOST_FIXTURE_TEST_CASE(check_contact_handle_true, check_domain_fixture)
+BOOST_AUTO_TEST_CASE(check_contact_handle_true)
 {
     Fred::OperationContext ctx;
     BOOST_CHECK(Fred::CheckDomain(std::string("-")+test_domain_name).is_invalid_handle(ctx));
@@ -176,7 +176,7 @@ BOOST_FIXTURE_TEST_CASE(check_contact_handle_true, check_domain_fixture)
  * test CheckDomain false returning cases
  */
 
-BOOST_FIXTURE_TEST_CASE(check_contact_handle_false, check_domain_fixture)
+BOOST_AUTO_TEST_CASE(check_contact_handle_false)
 {
     Fred::OperationContext ctx;
     BOOST_CHECK(!Fred::CheckDomain(test_domain_name).is_invalid_handle(ctx));

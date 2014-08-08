@@ -36,22 +36,18 @@
  *  test registrar info
  */
 
-//not using UTF defined main
-#define BOOST_TEST_NO_MAIN
-
 #include <boost/test/unit_test.hpp>
 
-BOOST_AUTO_TEST_SUITE(TestInfoRegistrar)
+#include "tests/setup/fixtures.h"
 
 const std::string server_name = "test-info-registrar";
 
-
-struct test_registrar_fixture
+struct test_info_registrar_fixture : virtual public Test::Fixture::instantiate_db_template
 {
     std::string xmark;
     std::string test_registrar_handle;
 
-    test_registrar_fixture()
+    test_info_registrar_fixture()
     :xmark(RandomDataGenerator().xnumstring(6))
     , test_registrar_handle(std::string("TEST-REGISTRAR-HANDLE")+xmark)
     {
@@ -65,14 +61,16 @@ struct test_registrar_fixture
 
         ctx.commit_transaction();//commit fixture
     }
-    ~test_registrar_fixture()
+    ~test_info_registrar_fixture()
     {}
 };
+
+BOOST_FIXTURE_TEST_SUITE(TestInfoRegistrar, test_info_registrar_fixture)
 
 /**
  * test call InfoRegistrar
 */
-BOOST_FIXTURE_TEST_CASE(info_registrar, test_registrar_fixture )
+BOOST_AUTO_TEST_CASE(info_registrar)
 {
     Fred::OperationContext ctx;
     Fred::InfoRegistrarOutput registrar_info1 = Fred::InfoRegistrarByHandle(test_registrar_handle).exec(ctx);
@@ -157,7 +155,7 @@ BOOST_AUTO_TEST_CASE(info_registrar_wrong_id)
 /**
  * test call InfoRegistrarDiff
 */
-BOOST_FIXTURE_TEST_CASE(info_registrar_diff, test_registrar_fixture )
+BOOST_AUTO_TEST_CASE(info_registrar_diff)
 {
     Fred::OperationContext ctx;
     Fred::InfoRegistrarOutput registrar_info1 = Fred::InfoRegistrarByHandle(test_registrar_handle).exec(ctx);

@@ -69,17 +69,14 @@
 #include "cfg/handle_threadgroup_args.h"
 #include "cfg/handle_corbanameservice_args.h"
 
-//not using UTF defined main
-#define BOOST_TEST_NO_MAIN
-
 #include "cfg/config_handler_decl.h"
 #include <boost/test/unit_test.hpp>
 
-BOOST_AUTO_TEST_SUITE(TestCreateDomainNameBlacklistId)
+#include "tests/setup/fixtures.h"
 
 const std::string server_name = "test-create-domain-name-blacklist-id";
 
-struct create_domain_name_blacklist_id_fixture
+struct create_domain_name_blacklist_id_fixture : public Test::Fixture::instantiate_db_template
 {
     std::string registrar_handle;
     std::string xmark;
@@ -138,12 +135,14 @@ struct create_domain_name_blacklist_id_fixture
     {}
 };
 
+BOOST_FIXTURE_TEST_SUITE(TestCreateDomainNameBlacklistId, create_domain_name_blacklist_id_fixture)
+
 /**
  * test CreateDomainNameBlacklistId
  * ...
  * calls in test shouldn't throw
  */
-BOOST_FIXTURE_TEST_CASE(create_domain_name_blacklist_id, create_domain_name_blacklist_id_fixture)
+BOOST_AUTO_TEST_CASE(create_domain_name_blacklist_id)
 {
     {
         Fred::OperationContext ctx;
@@ -165,7 +164,7 @@ BOOST_FIXTURE_TEST_CASE(create_domain_name_blacklist_id, create_domain_name_blac
  * ...
  * calls in test should throw
  */
-BOOST_FIXTURE_TEST_CASE(create_domain_name_blacklist_id_bad, create_domain_name_blacklist_id_fixture)
+BOOST_AUTO_TEST_CASE(create_domain_name_blacklist_id_bad)
 {
     Fred::ObjectId not_used_id;
     try {

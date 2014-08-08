@@ -73,11 +73,10 @@
 #include "cfg/handle_threadgroup_args.h"
 #include "cfg/handle_corbanameservice_args.h"
 
-//not using UTF defined main
-#define BOOST_TEST_NO_MAIN
-
 #include "cfg/config_handler_decl.h"
 #include <boost/test/unit_test.hpp>
+
+#include "tests/setup/fixtures.h"
 
 static bool check_std_exception(std::exception const & ex)
 {
@@ -95,7 +94,7 @@ DECLARE_VECTOR_OF_EXCEPTION_DATA(contact1_handle, std::string);
 DECLARE_VECTOR_OF_EXCEPTION_DATA(contact2_handle, std::string);
 DECLARE_VECTOR_OF_EXCEPTION_DATA(contact3_handle, int);
 
-BOOST_AUTO_TEST_SUITE(TestOperationException)
+BOOST_FIXTURE_TEST_SUITE(TestOperationException, Test::Fixture::instantiate_db_template)
 
 const std::string server_name = "test-opexception";
 

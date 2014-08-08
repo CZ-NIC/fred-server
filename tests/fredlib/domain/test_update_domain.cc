@@ -81,13 +81,10 @@
 #include "cfg/handle_threadgroup_args.h"
 #include "cfg/handle_corbanameservice_args.h"
 
-//not using UTF defined main
-#define BOOST_TEST_NO_MAIN
-
 #include "cfg/config_handler_decl.h"
 #include <boost/test/unit_test.hpp>
 
-BOOST_AUTO_TEST_SUITE(TestUpdateDomain)
+#include "tests/setup/fixtures.h"
 
 const std::string server_name = "test-update-domain";
 
@@ -95,7 +92,7 @@ const std::string server_name = "test-update-domain";
  * test UpdateDomain::Exception
  * test create and throw exception with special data
  */
-BOOST_AUTO_TEST_CASE(update_domain_exception)
+BOOST_FIXTURE_TEST_CASE(update_domain_exception, Test::Fixture::instantiate_db_template)
 {
     //good path exception
     BOOST_CHECK_THROW (BOOST_THROW_EXCEPTION(Fred::UpdateDomain::Exception().set_unknown_domain_fqdn("badfqdn.cz"));
@@ -107,7 +104,7 @@ BOOST_AUTO_TEST_CASE(update_domain_exception)
 
 }
 
-struct update_domain_fixture
+struct update_domain_fixture : virtual public Test::Fixture::instantiate_db_template
 {
     std::string registrar_handle;
     std::string xmark;
@@ -170,9 +167,8 @@ struct update_domain_fixture
     {}
 };
 
-
 struct update_domain_admin_nsset_keyset_fixture
-: virtual update_domain_fixture
+: virtual update_domain_fixture, virtual public Test::Fixture::instantiate_db_template
 {
     std::string admin_contact_handle;
     std::string admin_contact1_handle;
@@ -221,6 +217,8 @@ struct update_domain_admin_nsset_keyset_fixture
 
     ~update_domain_admin_nsset_keyset_fixture(){}
 };
+
+BOOST_FIXTURE_TEST_SUITE(TestUpdateDomain, update_domain_fixture)
 
 /**
  * test UpdateDomain
@@ -1086,7 +1084,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
  * test UpdateDomain with wrong fqdn
  */
 
-BOOST_FIXTURE_TEST_CASE(update_domain_wrong_fqdn, update_domain_fixture )
+BOOST_AUTO_TEST_CASE(update_domain_wrong_fqdn)
 {
     std::string bad_test_domain_handle = std::string("bad")+xmark+".cz";
     try
@@ -1107,7 +1105,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_wrong_fqdn, update_domain_fixture )
 /**
  * test UpdateDomain with wrong registrar
  */
-BOOST_FIXTURE_TEST_CASE(update_domain_wrong_registrar, update_domain_fixture)
+BOOST_AUTO_TEST_CASE(update_domain_wrong_registrar)
 {
     std::string bad_registrar_handle = registrar_handle+xmark;
     Fred::InfoDomainOutput info_data_1;
@@ -1141,7 +1139,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_wrong_registrar, update_domain_fixture)
 /**
  * test UpdateDomain with wrong sponsoring registrar
  */
-BOOST_FIXTURE_TEST_CASE(update_domain_wrong_sponsoring_registrar, update_domain_fixture)
+BOOST_AUTO_TEST_CASE(update_domain_wrong_sponsoring_registrar)
 {
     std::string bad_registrar_handle = registrar_handle+xmark;
 
@@ -1177,7 +1175,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_wrong_sponsoring_registrar, update_domain_
 /**
  * test UpdateDomain with wrong registrant
  */
-BOOST_FIXTURE_TEST_CASE(update_domain_wrong_registrant, update_domain_fixture)
+BOOST_AUTO_TEST_CASE(update_domain_wrong_registrant)
 {
     std::string bad_registrant_handle = registrant_contact_handle+xmark;
 
@@ -1216,7 +1214,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_wrong_registrant, update_domain_fixture)
 /**
  * test UpdateDomain add non-existing admin
  */
-BOOST_FIXTURE_TEST_CASE(update_domain_add_wrong_admin, update_domain_fixture)
+BOOST_AUTO_TEST_CASE(update_domain_add_wrong_admin)
 {
     std::string bad_admin_contact_handle = admin_contact2_handle+xmark;
 
@@ -1254,7 +1252,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_add_wrong_admin, update_domain_fixture)
 /**
  * test UpdateDomain add already added admin
  */
-BOOST_FIXTURE_TEST_CASE(update_domain_add_already_added_admin, update_domain_fixture)
+BOOST_AUTO_TEST_CASE(update_domain_add_already_added_admin)
 {
     Fred::InfoDomainOutput info_data_1;
     {
@@ -1291,7 +1289,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_add_already_added_admin, update_domain_fix
 /**
  * test UpdateDomain remove non-existing admin
  */
-BOOST_FIXTURE_TEST_CASE(update_domain_rem_wrong_admin, update_domain_fixture)
+BOOST_AUTO_TEST_CASE(update_domain_rem_wrong_admin)
 {
     std::string bad_admin_contact_handle = admin_contact2_handle+xmark;
 
@@ -1329,7 +1327,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_rem_wrong_admin, update_domain_fixture)
 /**
  * test UpdateDomain remove existing unassigned admin
  */
-BOOST_FIXTURE_TEST_CASE(update_domain_rem_unassigned_admin, update_domain_fixture)
+BOOST_AUTO_TEST_CASE(update_domain_rem_unassigned_admin)
 {
     std::string bad_admin_contact_handle = registrant_contact_handle;
 
@@ -1371,7 +1369,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_rem_unassigned_admin, update_domain_fixtur
  * check initial and next historyid in info domain history
  * check valid_from and valid_to in info domain history
  */
-BOOST_FIXTURE_TEST_CASE(info_domain_history_test, update_domain_fixture)
+BOOST_AUTO_TEST_CASE(info_domain_history_test)
 {
     Fred::InfoDomainOutput info_data_1;
     {
@@ -1410,7 +1408,7 @@ BOOST_FIXTURE_TEST_CASE(info_domain_history_test, update_domain_fixture)
 /**
  * test UpdateDomain set exdate
  */
-BOOST_FIXTURE_TEST_CASE(update_domain_set_exdate, update_domain_fixture)
+BOOST_AUTO_TEST_CASE(update_domain_set_exdate)
 {
     Fred::InfoDomainOutput info_data_1;
     {

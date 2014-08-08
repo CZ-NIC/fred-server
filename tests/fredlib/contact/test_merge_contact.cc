@@ -88,11 +88,10 @@
 #include "cfg/handle_threadgroup_args.h"
 #include "cfg/handle_corbanameservice_args.h"
 
-//not using UTF defined main
-#define BOOST_TEST_NO_MAIN
-
 #include "cfg/config_handler_decl.h"
 #include <boost/test/unit_test.hpp>
+
+#include "tests/setup/fixtures.h"
 
 static bool check_std_exception(std::exception const & ex)
 {
@@ -168,7 +167,7 @@ public:
 }//namespace Fred
 
 
-BOOST_AUTO_TEST_SUITE(TestMergeContact)
+BOOST_FIXTURE_TEST_SUITE(TestMergeContact, Test::Fixture::instantiate_db_template)
 
 const std::string server_name = "test-merge-contact";
 
@@ -708,11 +707,13 @@ BOOST_AUTO_TEST_CASE(merge_contact_n10_k10_do10_da10){merge_contact_n_fixture(10
 BOOST_AUTO_TEST_CASE(merge_contact_n10_k10_do20_da20){merge_contact_n_fixture(10,10,20,20).test_impl();}
 
 
+struct merge_contact_domain_plus_db : virtual Test::Fixture::instantiate_db_template, merge_contact_domain_fixture {};
+
 /**
  * test MergeContact
  * compare state before merge with state after
  */
-BOOST_FIXTURE_TEST_CASE(merge_contact, merge_contact_domain_fixture)
+BOOST_FIXTURE_TEST_CASE(merge_contact, merge_contact_domain_plus_db)
 {
     //info before merge
     Fred::InfoDomainOutput info_domain_owner_1 = Fred::InfoDomainByHandle(test_domain_owner_handle).exec(ctx);
@@ -781,7 +782,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contact, merge_contact_domain_fixture)
 /**
  * test MergeContact with non-existing src contact
  */
-BOOST_FIXTURE_TEST_CASE(merge_contact_with_bad_src_contact, merge_contact_domain_fixture)
+BOOST_FIXTURE_TEST_CASE(merge_contact_with_bad_src_contact, merge_contact_domain_plus_db)
 {
     std::string bad_src_contact_handle = src_contact_handle+"_bad";
 
@@ -819,7 +820,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contact_with_bad_src_contact, merge_contact_domain
 /**
  * test MergeContact with non-existing dst contact
  */
-BOOST_FIXTURE_TEST_CASE(merge_contact_with_bad_dst_contact, merge_contact_domain_fixture)
+BOOST_FIXTURE_TEST_CASE(merge_contact_with_bad_dst_contact, merge_contact_domain_plus_db)
 {
     std::string bad_dst_contact_handle = dst_contact_handle+"_bad";
 
@@ -857,7 +858,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contact_with_bad_dst_contact, merge_contact_domain
 /**
  * test MergeContact with different src contact
  */
-BOOST_FIXTURE_TEST_CASE(merge_contact_with_different_src_contact, merge_contact_domain_fixture)
+BOOST_FIXTURE_TEST_CASE(merge_contact_with_different_src_contact, merge_contact_domain_plus_db)
 {
     std::string different_src_contact_handle = src_contact_handle+"_different";
 
@@ -903,7 +904,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contact_with_different_src_contact, merge_contact_
 /**
  * test MergeContact with different dst contact
  */
-BOOST_FIXTURE_TEST_CASE(merge_contact_with_different_dst_contact, merge_contact_domain_fixture)
+BOOST_FIXTURE_TEST_CASE(merge_contact_with_different_dst_contact, merge_contact_domain_plus_db)
 {
     std::string different_dst_contact_handle = dst_contact_handle+"_different";
 
@@ -949,7 +950,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contact_with_different_dst_contact, merge_contact_
 /**
  * test MergeContact with the same src and dst contact
  */
-BOOST_FIXTURE_TEST_CASE(merge_contact_with_same_src_and_dst_contact, merge_contact_domain_fixture)
+BOOST_FIXTURE_TEST_CASE(merge_contact_with_same_src_and_dst_contact, merge_contact_domain_plus_db)
 {
     //info before merge
     Fred::InfoDomainOutput info_domain_owner_1 = Fred::InfoDomainByHandle(test_domain_owner_handle).exec(ctx);
@@ -987,7 +988,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contact_with_same_src_and_dst_contact, merge_conta
 /**
  * test MergeContact with mojeid src contact
  */
-BOOST_FIXTURE_TEST_CASE(merge_contact_with_mojeid_src_contact, merge_contact_domain_fixture)
+BOOST_FIXTURE_TEST_CASE(merge_contact_with_mojeid_src_contact, merge_contact_domain_plus_db)
 {
     unsigned long long src_contact_id = Fred::InfoContactByHandle(
             src_contact_handle).exec(ctx).info_contact_data.id;
@@ -1039,7 +1040,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contact_with_mojeid_src_contact, merge_contact_dom
 /**
  * test MergeContact with blocked src contact
  */
-BOOST_FIXTURE_TEST_CASE(merge_contact_with_blocked_src_contact, merge_contact_domain_fixture)
+BOOST_FIXTURE_TEST_CASE(merge_contact_with_blocked_src_contact, merge_contact_domain_plus_db)
 {
     unsigned long long src_contact_id = Fred::InfoContactByHandle(
             src_contact_handle).exec(ctx).info_contact_data.id;
@@ -1084,7 +1085,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contact_with_blocked_src_contact, merge_contact_do
 /**
  * test MergeContact with delete prohibited src contact
  */
-BOOST_FIXTURE_TEST_CASE(merge_contact_with_delete_prohibited_src_contact, merge_contact_domain_fixture)
+BOOST_FIXTURE_TEST_CASE(merge_contact_with_delete_prohibited_src_contact, merge_contact_domain_plus_db)
 {
     unsigned long long src_contact_id = Fred::InfoContactByHandle(
             src_contact_handle).exec(ctx).info_contact_data.id;
@@ -1130,7 +1131,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contact_with_delete_prohibited_src_contact, merge_
 /**
  * test MergeContact with blocked dst contact
  */
-BOOST_FIXTURE_TEST_CASE(merge_contact_with_blocked_dst_contact, merge_contact_domain_fixture)
+BOOST_FIXTURE_TEST_CASE(merge_contact_with_blocked_dst_contact, merge_contact_domain_plus_db)
 {
     unsigned long long dst_contact_id = Fred::InfoContactByHandle(
             dst_contact_handle).exec(ctx).info_contact_data.id;
@@ -1175,7 +1176,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contact_with_blocked_dst_contact, merge_contact_do
 /**
  * test MergeContact with blocked domain with admin
  */
-BOOST_FIXTURE_TEST_CASE(merge_contact_with_blocked_admin_domain, merge_contact_domain_fixture)
+BOOST_FIXTURE_TEST_CASE(merge_contact_with_blocked_admin_domain, merge_contact_domain_plus_db)
 {
     unsigned long long admin_domain_id = Fred::InfoDomainByHandle(
             test_domain_admin_handle).exec(ctx).info_domain_data.id;
@@ -1226,7 +1227,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contact_with_blocked_admin_domain, merge_contact_d
 /**
  * test MergeContact with blocked domain with registrant
  */
-BOOST_FIXTURE_TEST_CASE(merge_contact_with_blocked_registrant_domain, merge_contact_domain_fixture)
+BOOST_FIXTURE_TEST_CASE(merge_contact_with_blocked_registrant_domain, merge_contact_domain_plus_db)
 {
     unsigned long long registrant_domain_id = Fred::InfoDomainByHandle(
             test_domain_owner_handle).exec(ctx).info_domain_data.id;
@@ -1620,7 +1621,7 @@ BOOST_AUTO_TEST_CASE(create_merge_contact_data){(void)contact_merge_duplicate_au
 
 BOOST_AUTO_TEST_SUITE(OneObject)
 
-struct merge_admin_contacts_fixture
+struct merge_admin_contacts_fixture : virtual Test::Fixture::instantiate_db_template
 {
     std::string sys_registrar_handle;
     std::string registrar_handle;
@@ -1928,7 +1929,9 @@ BOOST_AUTO_TEST_CASE(get_registrar_handles_except_excluded)
 }
 
 
-BOOST_FIXTURE_TEST_CASE(test_find_contact_duplicate, merge_contact_contacts_fixture)
+struct merge_contact_contacts_plus_db_fixture : virtual Test::Fixture::instantiate_db_template, merge_contact_contacts_fixture {};
+
+BOOST_FIXTURE_TEST_CASE(test_find_contact_duplicate, merge_contact_contacts_plus_db_fixture)
 {
     std::set<std::string> contact_duplicates_1 = Fred::Contact::FindContactDuplicates().exec(ctx);
     BOOST_CHECK(!contact_duplicates_1.empty());

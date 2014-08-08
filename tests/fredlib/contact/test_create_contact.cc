@@ -72,11 +72,10 @@
 #include "cfg/handle_threadgroup_args.h"
 #include "cfg/handle_corbanameservice_args.h"
 
-//not using UTF defined main
-#define BOOST_TEST_NO_MAIN
-
 #include "cfg/config_handler_decl.h"
 #include <boost/test/unit_test.hpp>
+
+#include "tests/setup/fixtures.h"
 
 static bool check_std_exception(std::exception const & ex)
 {
@@ -84,11 +83,9 @@ static bool check_std_exception(std::exception const & ex)
     return (ex_msg.length() != 0);
 }
 
-BOOST_AUTO_TEST_SUITE(TestCreateContact)
-
 const std::string server_name = "test-create-contact";
 
-struct create_contact_fixture
+struct create_contact_fixture : public virtual Test::Fixture::instantiate_db_template
 {
     std::string registrar_handle;
     std::string xmark;
@@ -107,12 +104,14 @@ struct create_contact_fixture
     {}
 };
 
+BOOST_FIXTURE_TEST_SUITE(TestCreateContact, create_contact_fixture)
+
 DECLARE_EXCEPTION_DATA(unknown_registrar_handle, std::string);
 
 /**
  * test CreateContact with wrong registrar
  */
-BOOST_FIXTURE_TEST_CASE(create_contact_wrong_registrar, create_contact_fixture)
+BOOST_AUTO_TEST_CASE(create_contact_wrong_registrar)
 {
     Fred::OperationContext ctx;
 
@@ -140,7 +139,7 @@ BOOST_FIXTURE_TEST_CASE(create_contact_wrong_registrar, create_contact_fixture)
 /**
  * test CreateContact with wrong ssntype
  */
-BOOST_FIXTURE_TEST_CASE(create_contact_wrong_ssntype, create_contact_fixture)
+BOOST_AUTO_TEST_CASE(create_contact_wrong_ssntype)
 {
     Fred::OperationContext ctx;
     BOOST_CHECK_EXCEPTION(

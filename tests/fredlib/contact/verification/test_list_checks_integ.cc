@@ -25,14 +25,12 @@
 #include "src/fredlib/contact/verification/list_checks.h"
 #include "src/fredlib/contact/verification/create_check.h"
 #include "tests/fredlib/contact/verification/setup_utils.h"
-
-//not using UTF defined main
-#define BOOST_TEST_NO_MAIN
+#include "tests/setup/fixtures.h"
 
 #include <boost/test/unit_test.hpp>
 
 BOOST_AUTO_TEST_SUITE(TestContactVerification)
-BOOST_FIXTURE_TEST_SUITE(TestListContactChecks_integ, autoclean_contact_verification_db)
+BOOST_FIXTURE_TEST_SUITE(TestListContactChecks_integ, Test::Fixture::instantiate_db_template)
 
 const std::string server_name = "test-contact_verification-list_checks_integ";
 
@@ -156,11 +154,10 @@ BOOST_AUTO_TEST_CASE(test_Exec_filters_nonexistent_values)
         0
     );
 
-    setup_nonexistent_contact_id nonexistent_contact;
     BOOST_CHECK_EQUAL(
         Fred::ListContactChecks()
             .set_max_item_count(100)
-            .set_contact_id(nonexistent_contact.contact_id_)
+            .set_contact_id(Test::get_nonexistent_object_id(ctx))
             .exec(ctx)
                 .size(),
         0

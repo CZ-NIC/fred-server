@@ -18,6 +18,7 @@
 
 #include <string>
 #include <utility>
+#include <iostream>
 
 #include "src/fredlib/registrar/create_registrar.h"
 #include "src/fredlib/registrar/info_registrar.h"
@@ -32,17 +33,13 @@
  *  test create registrar
  */
 
-//not using UTF defined main
-#define BOOST_TEST_NO_MAIN
-
 #include <boost/test/unit_test.hpp>
 
-BOOST_AUTO_TEST_SUITE(TestCreateRegistrar)
+#include "tests/setup/fixtures.h"
 
 const std::string server_name = "test-create-registrar";
 
-
-struct test_registrar_fixture
+struct test_registrar_fixture : virtual public Test::Fixture::instantiate_db_template
 {
     std::string xmark;
     std::string test_registrar_handle;
@@ -77,10 +74,12 @@ struct test_registrar_fixture
     {}
 };
 
+BOOST_FIXTURE_TEST_SUITE(TestCreateRegistrar, test_registrar_fixture)
+
 /**
  * test CreateRegistrar
 */
-BOOST_FIXTURE_TEST_CASE(create_registrar, test_registrar_fixture )
+BOOST_AUTO_TEST_CASE(create_registrar)
 {
     Fred::OperationContext ctx;
 
@@ -120,7 +119,7 @@ BOOST_FIXTURE_TEST_CASE(create_registrar, test_registrar_fixture )
 /**
  * test CreateRegistrar invalid handle
  */
-BOOST_FIXTURE_TEST_CASE(create_registrar_invalid_handle, test_registrar_fixture )
+BOOST_AUTO_TEST_CASE(create_registrar_invalid_handle)
 {
 
     Fred::OperationContext ctx;
@@ -148,7 +147,7 @@ BOOST_FIXTURE_TEST_CASE(create_registrar_invalid_handle, test_registrar_fixture 
 /**
  * test CreateRegistrar unknown country
  */
-BOOST_FIXTURE_TEST_CASE(create_registrar_unknown_country, test_registrar_fixture )
+BOOST_AUTO_TEST_CASE(create_registrar_unknown_country)
 {
     Fred::OperationContext ctx;
 

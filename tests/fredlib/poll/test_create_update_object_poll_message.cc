@@ -16,10 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-//not using UTF defined main
-#define BOOST_TEST_NO_MAIN
-
-#include "setup_utils.h"
 
 #include "src/fredlib/poll/create_update_object_poll_message.h"
 #include "src/fredlib/poll/create_poll_message_impl.h"
@@ -27,7 +23,10 @@
 
 #include <boost/test/unit_test.hpp>
 
-BOOST_AUTO_TEST_SUITE(TestPoll)
+#include "tests/setup/fixtures.h"
+#include "tests/setup/fixtures_utils.h"
+
+BOOST_FIXTURE_TEST_SUITE(TestPoll, Test::Fixture::instantiate_db_template)
 BOOST_AUTO_TEST_SUITE(TestCreateUpdateObjectPollMessage)
 
 /**
@@ -41,7 +40,7 @@ BOOST_AUTO_TEST_CASE( test_correct_generic_data )
 {
     Fred::OperationContext ctx;
 
-    setup_domain domain;
+    Test::domain domain(ctx);
 
     Database::Result ids_res = ctx.get_conn().exec(
         "SELECT id AS count_ "
@@ -59,7 +58,7 @@ BOOST_AUTO_TEST_CASE( test_correct_generic_data )
     }
 
     Fred::Poll::CreateUpdateObjectPollMessage(
-        domain.data_.info_domain_data.historyid
+        domain.info_data.historyid
     ).exec(ctx);
 
     Database::Result ids2_res = ctx.get_conn().exec(
@@ -107,7 +106,7 @@ BOOST_AUTO_TEST_CASE( test_correct_generic_data )
     );
 
     BOOST_CHECK_EQUAL(polleppaction_res.size(), 1);
-    BOOST_CHECK_EQUAL(static_cast<unsigned long long>(polleppaction_res[0]["objid"]), domain.data_.info_domain_data.historyid);
+    BOOST_CHECK_EQUAL(static_cast<unsigned long long>(polleppaction_res[0]["objid"]), domain.info_data.historyid);
 
     ctx.commit_transaction();
 }
@@ -139,25 +138,25 @@ BOOST_AUTO_TEST_CASE( test_correct_type_specific_data)
                 static_cast<int>((*it)["count_"])
             );
         }
-        setup_domain domain;
-        setup_keyset keyset;
-        setup_nsset nsset;
+        Test::domain domain(ctx);
+        Test::keyset keyset(ctx);
+        Test::nsset nsset(ctx);
 
         switch(i) {
             case 0:
 
                 Fred::Poll::CreateUpdateObjectPollMessage(
-                    domain.data_.info_domain_data.historyid
+                    domain.info_data.historyid
                 ).exec(ctx);
                 break;
             case 1:
                 Fred::Poll::CreateUpdateObjectPollMessage(
-                    keyset.data_.info_keyset_data.historyid
+                    keyset.info_data.historyid
                 ).exec(ctx);
                 break;
             case 2:
                 Fred::Poll::CreateUpdateObjectPollMessage(
-                    nsset.data_.info_nsset_data.historyid
+                    nsset.info_data.historyid
                 ).exec(ctx);
                 break;
         }
@@ -215,9 +214,9 @@ BOOST_AUTO_TEST_CASE( test_correct_type_specific_data)
     try {
         Fred::OperationContext ctx;
 
-        setup_contact contact;
+        Test::contact contact(ctx);
         Fred::Poll::CreateUpdateObjectPollMessage(
-            contact.data_.info_contact_data.historyid
+            contact.info_data.historyid
         ).exec(ctx);
 
         ctx.commit_transaction();
@@ -239,14 +238,12 @@ BOOST_AUTO_TEST_CASE( test_correct_type_specific_data)
  */
 BOOST_AUTO_TEST_CASE( test_nonexistent_historyid )
 {
-    setup_nonexistent_object_historyid nonexist_historyid;
-
     Fred::OperationContext ctx;
 
     bool correct_exception_caught = false;
     try {
         Fred::Poll::CreateUpdateObjectPollMessage(
-            nonexist_historyid.history_id_
+            Test::get_nonexistent_object_historyid(ctx)
         ).exec(ctx);
     } catch(const Fred::Poll::CreateUpdateObjectPollMessage::Exception& e) {
         if(e.get_object_history_not_found()) {

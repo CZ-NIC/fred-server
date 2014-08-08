@@ -34,9 +34,7 @@
 #include "util/random_data_generator.h"
 
 #include "tests/fredlib/contact/verification/setup_utils.h"
-
-//not using UTF defined main
-#define BOOST_TEST_NO_MAIN
+#include "tests/setup/fixtures.h"
 
 #include <boost/lexical_cast.hpp>
 #include <boost/test/unit_test.hpp>
@@ -45,7 +43,7 @@
 #include "boost/date_time/local_time_adjustor.hpp"
 
 BOOST_AUTO_TEST_SUITE(TestContactVerification)
-BOOST_FIXTURE_TEST_SUITE(TestCreateContactCheck_integ, autoclean_contact_verification_db)
+BOOST_FIXTURE_TEST_SUITE(TestCreateContactCheck_integ, Test::Fixture::instantiate_db_template)
 
 const std::string server_name = "test-contact_verification-create_check_integ";
 
@@ -311,15 +309,14 @@ BOOST_AUTO_TEST_CASE(test_Exec_optional_setup)
 */
 BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_contact_id)
 {
-    setup_nonexistent_contact_id contact;
     setup_testsuite testsuite;
 
-    Fred::CreateContactCheck create_check(contact.contact_id_, testsuite.testsuite_handle);
     std::string handle;
 
     bool caught_the_right_exception = false;
     try {
         Fred::OperationContext ctx;
+        Fred::CreateContactCheck create_check(Test::get_nonexistent_object_id(ctx), testsuite.testsuite_handle);
         handle = create_check.exec(ctx);
         ctx.commit_transaction();
     } catch(const Fred::ExceptionUnknownContactId& exp) {

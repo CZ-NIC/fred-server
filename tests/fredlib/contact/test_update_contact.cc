@@ -67,17 +67,14 @@
 #include "cfg/handle_threadgroup_args.h"
 #include "cfg/handle_corbanameservice_args.h"
 
-//not using UTF defined main
-#define BOOST_TEST_NO_MAIN
-
 #include "cfg/config_handler_decl.h"
 #include <boost/test/unit_test.hpp>
 
-BOOST_AUTO_TEST_SUITE(TestUpdateContact)
+#include "tests/setup/fixtures.h"
 
 const std::string server_name = "test-update-contact";
 
-struct update_contact_fixture
+struct update_contact_fixture : public Test::Fixture::instantiate_db_template
 {
     std::string registrar_handle;
     std::string xmark;
@@ -107,12 +104,14 @@ struct update_contact_fixture
 };
 
 
+BOOST_FIXTURE_TEST_SUITE(TestUpdateContact, update_contact_fixture)
+
 /**
  * test UpdateContactByHandle
  * test UpdateContactByHandle construction and methods calls with precreated data
  * calls in test shouldn't throw
  */
-BOOST_FIXTURE_TEST_CASE(update_contact_by_handle, update_contact_fixture )
+BOOST_AUTO_TEST_CASE(update_contact_by_handle)
 {
     Fred::OperationContext ctx;
     Fred::InfoContactOutput info_data_1 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
@@ -409,7 +408,7 @@ BOOST_FIXTURE_TEST_CASE(update_contact_by_handle, update_contact_fixture )
  * test UpdateContactByHandle with wrong handle
  */
 
-BOOST_FIXTURE_TEST_CASE(update_contact_by_handle_wrong_handle, update_contact_fixture )
+BOOST_AUTO_TEST_CASE(update_contact_by_handle_wrong_handle)
 {
     std::string bad_test_contact_handle = std::string("bad")+test_contact_handle;
     try
@@ -429,7 +428,7 @@ BOOST_FIXTURE_TEST_CASE(update_contact_by_handle_wrong_handle, update_contact_fi
 /**
  * test UpdateContactByHandle with wrong registrar
  */
-BOOST_FIXTURE_TEST_CASE(update_contact_by_handle_wrong_registrar, update_contact_fixture)
+BOOST_AUTO_TEST_CASE(update_contact_by_handle_wrong_registrar)
 {
     std::string bad_registrar_handle = registrar_handle+xmark;
     Fred::InfoContactOutput info_data_1;
@@ -463,7 +462,7 @@ BOOST_FIXTURE_TEST_CASE(update_contact_by_handle_wrong_registrar, update_contact
 /**
  * test UpdateContactByHandle with wrong sponsoring registrar
  */
-BOOST_FIXTURE_TEST_CASE(update_contact_by_handle_wrong_sponsoring_registrar, update_contact_fixture)
+BOOST_AUTO_TEST_CASE(update_contact_by_handle_wrong_sponsoring_registrar)
 {
     std::string bad_registrar_handle = registrar_handle+xmark;
     Fred::InfoContactOutput info_data_1;
@@ -499,7 +498,7 @@ BOOST_FIXTURE_TEST_CASE(update_contact_by_handle_wrong_sponsoring_registrar, upd
 /**
  * test UpdateContactByHandle with wrong ssntype
  */
-BOOST_FIXTURE_TEST_CASE(update_contact_by_handle_wrong_ssntype, update_contact_fixture)
+BOOST_AUTO_TEST_CASE(update_contact_by_handle_wrong_ssntype)
 {
     Fred::InfoContactOutput info_data_1;
     {
@@ -534,7 +533,7 @@ BOOST_FIXTURE_TEST_CASE(update_contact_by_handle_wrong_ssntype, update_contact_f
 /**
  * test UpdateContactByHandle with wrong country
  */
-BOOST_FIXTURE_TEST_CASE(update_contact_by_handle_wrong_country, update_contact_fixture)
+BOOST_AUTO_TEST_CASE(update_contact_by_handle_wrong_country)
 {
     Fred::InfoContactOutput info_data_1;
     {
@@ -570,7 +569,7 @@ BOOST_FIXTURE_TEST_CASE(update_contact_by_handle_wrong_country, update_contact_f
  * test UpdateContactById
  */
 
-BOOST_FIXTURE_TEST_CASE(update_contact_by_id, update_contact_fixture )
+BOOST_AUTO_TEST_CASE(update_contact_by_id)
 {
     Fred::OperationContext ctx;
     Fred::InfoContactOutput info_data_1 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
@@ -581,7 +580,7 @@ BOOST_FIXTURE_TEST_CASE(update_contact_by_id, update_contact_fixture )
 /**
  * test UpdateContactById with wrong database id
  */
-BOOST_FIXTURE_TEST_CASE(update_contact_by_id_wrong_id, update_contact_fixture)
+BOOST_AUTO_TEST_CASE(update_contact_by_id_wrong_id)
 {
     Fred::InfoContactOutput info_data_1;
     {

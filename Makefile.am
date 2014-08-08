@@ -2258,7 +2258,7 @@ tests_test_blocking_LDADD = \
 # tests/test_fredlib
 #
 tests_test_fredlib_SOURCES = \
-		tests/deprecated/test_fredlib.cc \
+		tests/fredlib/main.cc \
 		tests/fredlib/registrar/test_info_registrar.cc \
 		tests/fredlib/registrar/test_create_registrar.cc \		
 		tests/fredlib/contact/test_delete_contact.cc \
@@ -2292,15 +2292,12 @@ tests_test_fredlib_SOURCES = \
 		tests/fredlib/poll/test_create_delete_contact_poll_message.cc \
 		tests/fredlib/poll/test_create_delete_domain_poll_message.cc \
 		tests/fredlib/poll/test_create_update_object_poll_message.cc \
-		tests/fredlib/poll/setup_utils.h \
-		tests/fredlib/poll/setup_utils.cc \
 		tests/fredlib/object_state/test_object_state.cc \
 		tests/fredlib/object_state/test_create_object_state_request_id.cc \
 		tests/fredlib/object_state/test_create_admin_object_block_request_id.cc \
 		tests/fredlib/object_state/test_create_admin_object_state_restore_request_id.cc \
 		tests/fredlib/object_state/test_cancel_object_state_request_id.cc \
 		tests/fredlib/object_state/test_clear_admin_object_state_request_id.cc \
-		tests/util/test_printable.cc \
 		tests/fredlib/test_opexception.cc \
 		tests/fredlib/test_check_handle.cc \
 		tests/setup/fixtures_utils.h \

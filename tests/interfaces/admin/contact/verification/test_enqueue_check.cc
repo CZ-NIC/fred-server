@@ -158,7 +158,7 @@ BOOST_AUTO_TEST_CASE(test_ExceptionUnknownContactId)
     try {
         Admin::enqueue_check(
             ctx,
-            Test::get_nonexistent_contact_id(ctx),
+            Test::get_nonexistent_object_id(ctx),
             setup_testsuite().testsuite_handle,
             Optional<unsigned long long>()
         );

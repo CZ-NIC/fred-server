@@ -72,18 +72,14 @@
 #include "cfg/handle_threadgroup_args.h"
 #include "cfg/handle_corbanameservice_args.h"
 
-//not using UTF defined main
-#define BOOST_TEST_NO_MAIN
-
 #include "cfg/config_handler_decl.h"
 #include <boost/test/unit_test.hpp>
 
-BOOST_AUTO_TEST_SUITE(TestInfoNsset)
+#include "tests/setup/fixtures.h"
 
 const std::string server_name = "test-info-domain";
 
-
-struct info_nsset_fixture
+struct info_nsset_fixture : public Test::Fixture::instantiate_db_template
 {
     std::string registrar_handle;
     std::string xmark;
@@ -134,10 +130,12 @@ struct info_nsset_fixture
     {}
 };
 
+BOOST_FIXTURE_TEST_SUITE(TestInfoNsset, info_nsset_fixture)
+
 /**
  * test call InfoNsset
 */
-BOOST_FIXTURE_TEST_CASE(info_nsset, info_nsset_fixture )
+BOOST_AUTO_TEST_CASE(info_nsset)
 {
     Fred::OperationContext ctx;
     std::vector<Fred::InfoNssetOutput> nsset_res;
@@ -193,7 +191,7 @@ BOOST_FIXTURE_TEST_CASE(info_nsset, info_nsset_fixture )
 /**
  * test call InfoNssetDiff
 */
-BOOST_FIXTURE_TEST_CASE(info_nsset_diff, info_nsset_fixture )
+BOOST_AUTO_TEST_CASE(info_nsset_diff)
 {
     Fred::OperationContext ctx;
     Fred::InfoNssetOutput nsset_info1 = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);

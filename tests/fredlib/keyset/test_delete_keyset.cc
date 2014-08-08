@@ -71,18 +71,15 @@
 #include "cfg/handle_threadgroup_args.h"
 #include "cfg/handle_corbanameservice_args.h"
 
-//not using UTF defined main
-#define BOOST_TEST_NO_MAIN
 
 #include "cfg/config_handler_decl.h"
 #include <boost/test/unit_test.hpp>
 
-BOOST_AUTO_TEST_SUITE(TestDeleteKeyset)
+#include "tests/setup/fixtures.h"
 
 const std::string server_name = "test-delete-keyset";
 
-
-struct delete_keyset_fixture
+struct delete_keyset_fixture : public Test::Fixture::instantiate_db_template
 {
     std::string registrar_handle;
     std::string xmark;
@@ -119,12 +116,14 @@ struct delete_keyset_fixture
     {}
 };
 
+BOOST_FIXTURE_TEST_SUITE(TestDeleteKeyset, delete_keyset_fixture)
+
 /**
  * test DeleteKeyset
  * create test keyset, delete test keyset, check erdate of test keyset is null
  * calls in test shouldn't throw
  */
-BOOST_FIXTURE_TEST_CASE(delete_keyset, delete_keyset_fixture )
+BOOST_AUTO_TEST_CASE(delete_keyset)
 {
     Fred::OperationContext ctx;
 
@@ -174,7 +173,7 @@ BOOST_FIXTURE_TEST_CASE(delete_keyset, delete_keyset_fixture )
  * test DeleteKeyset with wrong handle
  */
 
-BOOST_FIXTURE_TEST_CASE(delete_keyset_with_wrong_handle, delete_keyset_fixture )
+BOOST_AUTO_TEST_CASE(delete_keyset_with_wrong_handle)
 {
     std::string bad_test_keyset_handle = std::string("bad")+test_keyset_handle;
     try
@@ -194,7 +193,7 @@ BOOST_FIXTURE_TEST_CASE(delete_keyset_with_wrong_handle, delete_keyset_fixture )
  * test DeleteKeyset linked
  */
 
-BOOST_FIXTURE_TEST_CASE(delete_linked_keyset, delete_keyset_fixture )
+BOOST_AUTO_TEST_CASE(delete_linked_keyset)
 {
     {
         Fred::OperationContext ctx;

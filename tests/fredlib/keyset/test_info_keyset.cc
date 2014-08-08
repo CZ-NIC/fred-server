@@ -70,18 +70,14 @@
 #include "cfg/handle_threadgroup_args.h"
 #include "cfg/handle_corbanameservice_args.h"
 
-//not using UTF defined main
-#define BOOST_TEST_NO_MAIN
-
 #include "cfg/config_handler_decl.h"
 #include <boost/test/unit_test.hpp>
 
-BOOST_AUTO_TEST_SUITE(TestInfoKeyset)
+#include "tests/setup/fixtures.h"
 
 const std::string server_name = "test-info-domain";
 
-
-struct info_keyset_fixture
+struct info_keyset_fixture : public Test::Fixture::instantiate_db_template
 {
     Fred::OperationContext fixture_ctx;
     std::string registrar_handle;
@@ -139,10 +135,12 @@ struct info_keyset_fixture
     {}
 };
 
+BOOST_FIXTURE_TEST_SUITE(TestInfoKeyset, info_keyset_fixture)
+
 /**
  * test call InfoKeyset
 */
-BOOST_FIXTURE_TEST_CASE(info_keyset, info_keyset_fixture )
+BOOST_AUTO_TEST_CASE(info_keyset)
 {
     Fred::OperationContext ctx;
     std::vector<Fred::InfoKeysetOutput> keyset_res;
@@ -198,7 +196,7 @@ BOOST_FIXTURE_TEST_CASE(info_keyset, info_keyset_fixture )
 /**
  * test call InfoKeysetDiff
 */
-BOOST_FIXTURE_TEST_CASE(info_keyset_diff, info_keyset_fixture )
+BOOST_AUTO_TEST_CASE(info_keyset_diff)
 {
     Fred::OperationContext ctx;
     Fred::InfoKeysetOutput keyset_info1 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);

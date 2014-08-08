@@ -68,17 +68,14 @@
 #include "cfg/handle_threadgroup_args.h"
 #include "cfg/handle_corbanameservice_args.h"
 
-//not using UTF defined main
-#define BOOST_TEST_NO_MAIN
-
 #include "cfg/config_handler_decl.h"
 #include <boost/test/unit_test.hpp>
 
-BOOST_AUTO_TEST_SUITE(TestCreateAdminObjectBlockRequestId)
+#include "tests/setup/fixtures.h"
 
 const std::string server_name = "test-create-administrative-object-block-request-id";
 
-struct create_administrative_object_block_request_id_fixture
+struct create_administrative_object_block_request_id_fixture : public Test::Fixture::instantiate_db_template
 {
     std::string registrar_handle;
     std::string xmark;
@@ -139,12 +136,14 @@ struct create_administrative_object_block_request_id_fixture
     {}
 };
 
+BOOST_FIXTURE_TEST_SUITE(TestCreateAdminObjectBlockRequestId, create_administrative_object_block_request_id_fixture )
+
 /**
  * test CreateAdminObjectBlockRequestId
  * ...
  * calls in test shouldn't throw
  */
-BOOST_FIXTURE_TEST_CASE(create_administrative_object_block_request_id, create_administrative_object_block_request_id_fixture)
+BOOST_AUTO_TEST_CASE(create_administrative_object_block_request_id)
 {
     {
         Fred::OperationContext ctx;
@@ -180,7 +179,7 @@ BOOST_FIXTURE_TEST_CASE(create_administrative_object_block_request_id, create_ad
  * ...
  * calls in test shouldn't throw
  */
-BOOST_FIXTURE_TEST_CASE(create_administrative_object_block_request_id_bad, create_administrative_object_block_request_id_fixture)
+BOOST_AUTO_TEST_CASE(create_administrative_object_block_request_id_bad)
 {
     Fred::StatusList bad_status_list = status_list;
     try {

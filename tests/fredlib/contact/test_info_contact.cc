@@ -80,18 +80,14 @@
  *  test contact info
  */
 
-//not using UTF defined main
-#define BOOST_TEST_NO_MAIN
-
 #include "cfg/config_handler_decl.h"
 #include <boost/test/unit_test.hpp>
 
-BOOST_AUTO_TEST_SUITE(TestInfoContact)
+#include "tests/setup/fixtures.h"
 
 const std::string server_name = "test-info-contact";
 
-
-struct test_contact_fixture
+struct test_contact_fixture : public Test::Fixture::instantiate_db_template
 {
     std::string registrar_handle;
     std::string xmark;
@@ -120,10 +116,13 @@ struct test_contact_fixture
     {}
 };
 
+
+BOOST_FIXTURE_TEST_SUITE(TestInfoContact, test_contact_fixture)
+
 /**
  * test call InfoContact
 */
-BOOST_FIXTURE_TEST_CASE(info_contact, test_contact_fixture )
+BOOST_AUTO_TEST_CASE(info_contact)
 {
     Fred::OperationContext ctx;
     Fred::InfoContactOutput contact_info1 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
@@ -183,7 +182,7 @@ BOOST_FIXTURE_TEST_CASE(info_contact, test_contact_fixture )
 /**
  * test call InfoContactDiff
 */
-BOOST_FIXTURE_TEST_CASE(info_contact_diff, test_contact_fixture )
+BOOST_AUTO_TEST_CASE(info_contact_diff)
 {
     Fred::OperationContext ctx;
     Fred::InfoContactOutput contact_info1 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);

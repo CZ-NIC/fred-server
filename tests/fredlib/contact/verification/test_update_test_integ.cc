@@ -38,9 +38,7 @@
 #include "util/random_data_generator.h"
 
 #include "tests/fredlib/contact/verification/setup_utils.h"
-
-//not using UTF defined main
-#define BOOST_TEST_NO_MAIN
+#include "tests/setup/fixtures.h"
 
 #include <boost/lexical_cast.hpp>
 #include <boost/test/unit_test.hpp>
@@ -50,7 +48,7 @@
 #include <boost/foreach.hpp>
 
 BOOST_AUTO_TEST_SUITE(TestContactVerification)
-BOOST_FIXTURE_TEST_SUITE(TestUpdateContactTest_integ, autoclean_contact_verification_db)
+BOOST_FIXTURE_TEST_SUITE(TestUpdateContactTest_integ, Test::Fixture::instantiate_db_template)
 
 const std::string server_name = "test-contact_verification-update_test_integ";
 

@@ -73,18 +73,14 @@
 #include "cfg/handle_threadgroup_args.h"
 #include "cfg/handle_corbanameservice_args.h"
 
-//not using UTF defined main
-#define BOOST_TEST_NO_MAIN
-
 #include "cfg/config_handler_decl.h"
 #include <boost/test/unit_test.hpp>
 
-BOOST_AUTO_TEST_SUITE(TestDeleteContact)
+#include "tests/setup/fixtures.h"
 
 const std::string server_name = "test-delete-contact";
 
-
-struct test_contact_fixture
+struct test_contact_fixture  : public Test::Fixture::instantiate_db_template
 {
     std::string registrar_handle;
     std::string xmark;
@@ -113,12 +109,14 @@ struct test_contact_fixture
     {}
 };
 
+BOOST_FIXTURE_TEST_SUITE(TestDeleteContact, test_contact_fixture)
+
 /**
  * test DeleteContact
  * create test contact, delete test contact, check erdate of test contact is null
  * calls in test shouldn't throw
  */
-BOOST_FIXTURE_TEST_CASE(delete_contact, test_contact_fixture )
+BOOST_AUTO_TEST_CASE(delete_contact)
 {
     Fred::OperationContext ctx;
     Fred::InfoContactOutput contact_info1 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
@@ -154,7 +152,7 @@ BOOST_FIXTURE_TEST_CASE(delete_contact, test_contact_fixture )
  * test DeleteContact with wrong handle
  */
 
-BOOST_FIXTURE_TEST_CASE(delete_contact_with_wrong_handle, test_contact_fixture )
+BOOST_AUTO_TEST_CASE(delete_contact_with_wrong_handle)
 {
     std::string bad_test_contact_handle = std::string("bad")+test_contact_handle;
     try
@@ -174,7 +172,7 @@ BOOST_FIXTURE_TEST_CASE(delete_contact_with_wrong_handle, test_contact_fixture )
  * test DeleteContact linked
  */
 
-BOOST_FIXTURE_TEST_CASE(delete_linked_contact, test_contact_fixture )
+BOOST_AUTO_TEST_CASE(delete_linked_contact)
 {
     {
         namespace ip = boost::asio::ip;

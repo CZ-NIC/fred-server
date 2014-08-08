@@ -71,11 +71,10 @@
 #include "cfg/handle_threadgroup_args.h"
 #include "cfg/handle_corbanameservice_args.h"
 
-//not using UTF defined main
-#define BOOST_TEST_NO_MAIN
-
 #include "cfg/config_handler_decl.h"
 #include <boost/test/unit_test.hpp>
+
+#include "tests/setup/fixtures.h"
 
 static bool check_std_exception(std::exception const & ex)
 {
@@ -83,11 +82,9 @@ static bool check_std_exception(std::exception const & ex)
     return (ex_msg.length() != 0);
 }
 
-BOOST_AUTO_TEST_SUITE(TestCreateDomain)
-
 const std::string server_name = "test-create-domain";
 
-struct create_domain_fixture
+struct create_domain_fixture : public Test::Fixture::instantiate_db_template
 {
     std::string registrar_handle;
     std::string xmark;
@@ -131,10 +128,12 @@ struct create_domain_fixture
     {}
 };
 
+BOOST_FIXTURE_TEST_SUITE(TestCreateDomainNameBlacklistId, create_domain_fixture)
+
 /**
  * test CreateDomain with wrong registrar
  */
-BOOST_FIXTURE_TEST_CASE(create_domain_wrong_registrar, create_domain_fixture)
+BOOST_AUTO_TEST_CASE(create_domain_wrong_registrar)
 {
     Fred::OperationContext ctx;
     std::string bad_registrar_handle = registrar_handle+xmark;
@@ -165,7 +164,7 @@ BOOST_FIXTURE_TEST_CASE(create_domain_wrong_registrar, create_domain_fixture)
 /**
  * test CreateDomain with wrong fqdn syntax
  */
-BOOST_FIXTURE_TEST_CASE(create_domain_wrong_fqdn_syntax, create_domain_fixture)
+BOOST_AUTO_TEST_CASE(create_domain_wrong_fqdn_syntax)
 {
     Fred::OperationContext ctx;
     std::string bad_test_domain_handle = test_domain_handle+".2bad..";
@@ -194,7 +193,7 @@ BOOST_FIXTURE_TEST_CASE(create_domain_wrong_fqdn_syntax, create_domain_fixture)
 /**
  * test CreateDomain with wrong fqdn syntax according to zone cz
  */
-BOOST_FIXTURE_TEST_CASE(create_domain_wrong_cz_syntax, create_domain_fixture)
+BOOST_AUTO_TEST_CASE(create_domain_wrong_cz_syntax)
 {
     Fred::OperationContext ctx;
     std::string bad_test_domain_handle = std::string("-")+test_domain_handle;
@@ -223,7 +222,7 @@ BOOST_FIXTURE_TEST_CASE(create_domain_wrong_cz_syntax, create_domain_fixture)
 /**
  * test CreateDomain set exdate
  */
-BOOST_FIXTURE_TEST_CASE(create_domain_set_exdate, create_domain_fixture)
+BOOST_AUTO_TEST_CASE(create_domain_set_exdate)
 {
     boost::gregorian::date exdate(boost::gregorian::from_string("2010-12-20"));
     try
@@ -247,7 +246,7 @@ BOOST_FIXTURE_TEST_CASE(create_domain_set_exdate, create_domain_fixture)
 /**
  * test CreateDomain set invalid exdate
  */
-BOOST_FIXTURE_TEST_CASE(create_domain_set_wrong_exdate, create_domain_fixture)
+BOOST_AUTO_TEST_CASE(create_domain_set_wrong_exdate)
 {
     boost::gregorian::date exdate;
     try
@@ -269,7 +268,7 @@ BOOST_FIXTURE_TEST_CASE(create_domain_set_wrong_exdate, create_domain_fixture)
 /**
  * test CreateDomain set ENUM valexdate to ENUM domain
  */
-BOOST_FIXTURE_TEST_CASE(create_domain_set_valexdate, create_domain_fixture)
+BOOST_AUTO_TEST_CASE(create_domain_set_valexdate)
 {
     boost::gregorian::date valexdate(boost::gregorian::from_string("2010-12-20"));
     try
@@ -294,7 +293,7 @@ BOOST_FIXTURE_TEST_CASE(create_domain_set_valexdate, create_domain_fixture)
 /**
  * test CreateDomain set invalid ENUM valexdate to ENUM domain
  */
-BOOST_FIXTURE_TEST_CASE(create_domain_set_wrong_valexdate, create_domain_fixture)
+BOOST_AUTO_TEST_CASE(create_domain_set_wrong_valexdate)
 {
     boost::gregorian::date valexdate;
     try
@@ -316,7 +315,7 @@ BOOST_FIXTURE_TEST_CASE(create_domain_set_wrong_valexdate, create_domain_fixture
 /**
  * test CreateDomain set ENUM valexdate to non-ENUM domain
  */
-BOOST_FIXTURE_TEST_CASE(create_domain_set_valexdate_wrong_domain, create_domain_fixture)
+BOOST_AUTO_TEST_CASE(create_domain_set_valexdate_wrong_domain)
 {
     boost::gregorian::date valexdate(boost::gregorian::from_string("2010-12-20"));
     try
@@ -337,7 +336,7 @@ BOOST_FIXTURE_TEST_CASE(create_domain_set_valexdate_wrong_domain, create_domain_
 /**
  * test CreateDomain set ENUM publish flag to non-ENUM domain
  */
-BOOST_FIXTURE_TEST_CASE(create_domain_set_publish_wrong_domain, create_domain_fixture)
+BOOST_AUTO_TEST_CASE(create_domain_set_publish_wrong_domain)
 {
     try
     {
