@@ -31,5 +31,6 @@
 #include "src/fredlib/contact/info_contact_diff.h"
 #include "src/fredlib/contact/check_contact.h"
 #include "src/fredlib/contact/merge_contact.h"
+#include "src/fredlib/contact/copy_contact.h"
 
 #endif//CONTACT_H_daee387211374c29b8c9cb44464bcb0a
