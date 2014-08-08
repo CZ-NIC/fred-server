@@ -2112,6 +2112,7 @@ tests_test_server_SOURCES = \
 		tests/util/test_decimal.cc \
 		tests/util/test_shellcmd.cc \
 		tests/deprecated/test_contact_verification.cc \
+		tests/deprecated/test-merge-auto-proc.cc \
 		tests/deprecated/test_locking_trigger.cc \
 		tests/deprecated/test_mojeid.cc \
 		tests/util/test_nullable.cc \
@@ -2142,6 +2143,33 @@ tests_test_server_SOURCES = \
 		util/optys/download_client.cc \
 		util/optys/download_client.h \
 		tests/util/test_is_equal_optional_nullable.cc \
+		src/admin/contact/merge_contact.cc \
+		src/admin/contact/merge_contact.h \
+		src/admin/contact/merge_contact_logger.cc \
+		src/admin/contact/merge_contact_logger.h \
+		src/admin/contact/merge_contact_auto_procedure.cc \
+		src/admin/contact/merge_contact_auto_procedure.h \
+		src/admin/contact/merge_contact_reporting.cc \
+		src/admin/contact/merge_contact_reporting.h \
+		tests/checks.h \
+		tests/test-utils.cc \
+		tests/fredlib/contact/verification/setup_utils.h \
+		tests/fredlib/contact/verification/setup_utils.cc \
+		tests/fredlib/contact/verification/test-create_check_integ.cc \
+		tests/fredlib/contact/verification/test-update_check_integ.cc \
+		tests/fredlib/contact/verification/test-create_test_integ.cc \
+		tests/fredlib/contact/verification/test-update_test_integ.cc \
+		tests/fredlib/contact/verification/test-info_check_integ.cc \
+		tests/fredlib/contact/verification/test-list_checks_integ.cc \
+		tests/fredlib/contact/verification/test-list_enum_objects_integ.cc \
+		tests/admin/contact/verification/setup_utils.h \
+		tests/admin/contact/verification/test-run_all_enqueued_checks.cc \
+		tests/admin/contact/verification/test-fill_check_queue.cc \
+		tests/admin/contact/verification/test-resolve_check.cc \
+		tests/admin/contact/verification/test-related_records.cc \
+		tests/admin/contact/verification/test-enqueue_check.cc \
+		tests/admin/contact/verification/test-delete_domains_of_invalid_contact.cc \
+		tests/util/test-is-equal-optional-nullable.cc \
 		src/fredlib/object_state/create_object_state_request.cc \
 		src/fredlib/object_state/create_object_state_request.h \
 		src/fredlib/object_state/create_object_state_request_id.cc \
