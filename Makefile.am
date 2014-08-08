@@ -2017,7 +2017,7 @@ tests_interfaces_test_admin_contact_verification_LDADD = \
 		$(BOOST_SERIALIZATION_LIB) \
 		$(POSTGRESQL_LIB) \
 		$(BOOST_SYSTEM_LIB) \
-		-lboost_unit_test_framework
+		$(BOOST_UNIT_TEST_FRAMEWORK_LIB)
 #
 # tests/interfaces/test-admin-contact-verification
 
@@ -2324,7 +2324,7 @@ tests_test_fredlib_LDADD = \
 		$(BOOST_SYSTEM_LIB) \
 		$(POSTGRESQL_LIB) \
 		$(OMNIORB4_LIBS) \
-		-lboost_unit_test_framework
+		$(BOOST_UNIT_TEST_FRAMEWORK_LIB)
 #
 # tests/test_fredlib
 
