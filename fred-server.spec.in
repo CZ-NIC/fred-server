@@ -8,7 +8,7 @@ License:        GPL
 URL:            http://fred.nic.cz
 Source:         %{name}-%{version}.tar.gz
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-%(%{__id_u} -n)
-BuildRequires:  omniORB-devel, boost-devel, postgresql-devel, gcc-c++, libxml2-devel, libcurl-devel, libidn-devel, fred-idl, mpdecimal
+BuildRequires:  omniORB-devel, boost-devel, postgresql-devel, gcc-c++, libxml2-devel, libcurl-devel, libidn-devel, fred-idl, mpdecimal, libssh-devel, minizip-devel
 Requires: omniORB, boost, postgresql-libs, libxml2, libcurl, libidn, fred-pyfred, fred-doc2pdf fred-db redhat-lsb, mpdecimal
 
 %description
@@ -33,18 +33,9 @@ rm -rf ${RPM_BUILD_ROOT}
 
 %files
 %defattr(-,root,root,-)
-%config %{_sysconfdir}/fred/server.conf
-%config %{_sysconfdir}/fred/hpmail.conf
-%config %{_sysconfdir}/fred/optysmail.conf
-%{_sysconfdir}/init.d/fred-server
-%{_sbindir}/fred-rifd
-%{_sbindir}/fred-adifd
-%{_sbindir}/fred-pifd
-%{_sbindir}/fred-logd
-%{_sbindir}/fred-admin
-%{_sbindir}/fred-mifd
-%{_sbindir}/fred-msgd
-%{_sbindir}/migrate_log
+%config %{_sysconfdir}/fred/*
+%{_sysconfdir}/init.d/*
+%{_sbindir}/*
 %{_docdir}/fred-server/*
 
 %changelog
