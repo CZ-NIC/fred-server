@@ -206,15 +206,15 @@ namespace Test {
 
 
     // for use with temporary object - copying arguments - suboptimal but hopefully adequate enough
-    template<typename Tobject> Tobject fill_optional_data(Tobject obj);
-    template<typename Tobject> boost::ptr_vector<Tobject>& fill_optional_data(boost::ptr_vector<Tobject>& obj_vec) {
+    template<typename Tobject> Tobject generate_test_data(Tobject obj);
+    template<typename Tobject> boost::ptr_vector<Tobject>& generate_test_data(boost::ptr_vector<Tobject>& obj_vec) {
         BOOST_FOREACH(Tobject& obj, obj_vec) {
-            fill_optional_data(obj);
+            generate_test_data(obj);
         }
 
         return obj_vec;
     }
-    template<> inline Fred::CreateRegistrar fill_optional_data<>(Fred::CreateRegistrar obj) {
+    template<> inline Fred::CreateRegistrar generate_test_data<>(Fred::CreateRegistrar obj) {
         RandomDataGenerator rnd;
 
         obj.set_name("Jan " + rnd.xnstring(7) + " Novak");
@@ -241,7 +241,7 @@ namespace Test {
 
         return obj;
     }
-    template<> inline Fred::CreateContact fill_optional_data<>(Fred::CreateContact obj) {
+    template<> inline Fred::CreateContact generate_test_data<>(Fred::CreateContact obj) {
         RandomDataGenerator rnd;
 
         obj.set_authinfo(rnd.xnstring(10));
@@ -276,14 +276,14 @@ namespace Test {
 
         return obj;
     }
-    template<> inline Fred::CreateDomain fill_optional_data<>(Fred::CreateDomain obj) {
+    template<> inline Fred::CreateDomain generate_test_data<>(Fred::CreateDomain obj) {
         RandomDataGenerator rnd;
 
         obj.set_authinfo(rnd.xnstring(15));
 
         return obj;
     }
-    template<> inline Fred::CreateNsset fill_optional_data<>(Fred::CreateNsset obj) {
+    template<> inline Fred::CreateNsset generate_test_data<>(Fred::CreateNsset obj) {
         RandomDataGenerator rnd;
 
         obj.set_authinfo(rnd.xnstring(15));
@@ -301,7 +301,7 @@ namespace Test {
 
         return obj;
     }
-    template<> inline Fred::CreateKeyset fill_optional_data<>(Fred::CreateKeyset obj) {
+    template<> inline Fred::CreateKeyset generate_test_data<>(Fred::CreateKeyset obj) {
         RandomDataGenerator rnd;
 
         obj.set_authinfo(rnd.xnstring(15));
@@ -410,7 +410,7 @@ namespace Test {
 
         static Fred::InfoContactData make(Fred::OperationContext& _ctx) {
             return exec(
-                fill_optional_data(
+                generate_test_data(
                     CreateX_factory<Fred::CreateContact>().make(
                         registrar(_ctx).info_data.handle
                     )
@@ -435,7 +435,7 @@ namespace Test {
 
         static Fred::InfoDomainData make(Fred::OperationContext& _ctx) {
             return exec(
-                fill_optional_data(
+                generate_test_data(
                     CreateX_factory<Fred::CreateDomain>().make(
                         registrar(_ctx).info_data.handle,
                         contact(_ctx).info_data.handle
@@ -461,7 +461,7 @@ namespace Test {
 
         static Fred::InfoNssetData make(Fred::OperationContext& _ctx) {
             return exec(
-                fill_optional_data(
+                generate_test_data(
                     CreateX_factory<Fred::CreateNsset>().make(
                         registrar(_ctx).info_data.handle
                     )
@@ -486,7 +486,7 @@ namespace Test {
 
         static Fred::InfoKeysetData make(Fred::OperationContext& _ctx) {
             return exec(
-                fill_optional_data(
+                generate_test_data(
                     CreateX_factory<Fred::CreateKeyset>().make(
                         registrar(_ctx).info_data.handle
                     )
