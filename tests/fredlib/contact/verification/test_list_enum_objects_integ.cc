@@ -121,15 +121,24 @@ BOOST_AUTO_TEST_CASE(test_List_check_statuses)
  */
 BOOST_AUTO_TEST_CASE(test_List_test_definitions)
 {
-    std::vector<std::string> created_tests;
+    std::vector<std::string> existing_tests;
+    std::vector<Fred::test_definition> preexisting_tests = Fred::list_test_definitions("en");
 
+    for(std::vector<Fred::test_definition>::const_iterator it = preexisting_tests.begin();
+        it != preexisting_tests.end();
+        ++it
+    ) {
+        existing_tests.push_back(it->handle);
+    }
+
+    // creating new tests
     for(int i=0; i<5; ++i) {
-        created_tests.push_back(setup_testdef().testdef_handle_);
+        existing_tests.push_back(setup_testdef().testdef_handle_);
     }
 
     std::vector<Fred::test_definition> listed_tests = Fred::list_test_definitions("en");
 
-    BOOST_CHECK_EQUAL(created_tests.size(), listed_tests.size());
+    BOOST_CHECK_EQUAL(existing_tests.size(), listed_tests.size());
 
     std::vector<std::string> listed_test_handles;
     for(std::vector<Fred::test_definition>::const_iterator it = listed_tests.begin();
@@ -140,11 +149,11 @@ BOOST_AUTO_TEST_CASE(test_List_test_definitions)
     }
 
     std::sort(listed_test_handles.begin(), listed_test_handles.end());
-    std::sort(created_tests.begin(), created_tests.end());
+    std::sort(existing_tests.begin(), existing_tests.end());
 
     BOOST_CHECK_EQUAL_COLLECTIONS(
         listed_test_handles.begin(), listed_test_handles.end(),
-        created_tests.begin(), created_tests.end());
+        existing_tests.begin(), existing_tests.end());
 }
 
 /**
@@ -162,6 +171,7 @@ BOOST_AUTO_TEST_CASE(test_List_testsuite_definitions)
 
     created_testsuites.push_back(Fred::TestsuiteHandle::AUTOMATIC);
     created_testsuites.push_back(Fred::TestsuiteHandle::MANUAL);
+    created_testsuites.push_back(Fred::TestsuiteHandle::THANK_YOU);
 
     std::vector<Fred::testsuite_definition> listed_testsuites = Fred::list_testsuite_definitions("en");
 
