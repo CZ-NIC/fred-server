@@ -2282,13 +2282,13 @@ tests_test_fredlib_SOURCES = \
 		tests/fredlib/nsset/test_info_nsset.cc \
 		tests/fredlib/contact/verification/setup_utils.h \
 		tests/fredlib/contact/verification/setup_utils.cc \
-		tests/fredlib/contact/verification/test_create_check_integ.cc \
-		tests/fredlib/contact/verification/test_update_check_integ.cc \
-		tests/fredlib/contact/verification/test_create_test_integ.cc \
-		tests/fredlib/contact/verification/test_update_test_integ.cc \
-		tests/fredlib/contact/verification/test_info_check_integ.cc \
-		tests/fredlib/contact/verification/test_list_checks_integ.cc \
-		tests/fredlib/contact/verification/test_list_enum_objects_integ.cc \
+		tests/fredlib/contact/verification/test_create_check.cc \
+		tests/fredlib/contact/verification/test_update_check.cc \
+		tests/fredlib/contact/verification/test_create_test.cc \
+		tests/fredlib/contact/verification/test_update_test.cc \
+		tests/fredlib/contact/verification/test_info_check.cc \
+		tests/fredlib/contact/verification/test_list_checks.cc \
+		tests/fredlib/contact/verification/test_list_enum_objects.cc \
 		tests/fredlib/poll/test_create_delete_contact_poll_message.cc \
 		tests/fredlib/poll/test_create_delete_domain_poll_message.cc \
 		tests/fredlib/poll/test_create_update_object_poll_message.cc \
