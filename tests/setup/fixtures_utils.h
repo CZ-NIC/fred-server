@@ -173,7 +173,7 @@ namespace Test {
             const Optional<std::string>& _fqdn = Optional<std::string>()
         ) {
             return Fred::CreateDomain(
-                _fqdn.isset() ? _fqdn.get_value() : RandomDataGenerator().xnumstring(20) + ".cz",  // TODO zone
+                _fqdn.isset() ? _fqdn.get_value() : RandomDataGenerator().xnumstring(20) + ".cz",  // TODO zavisle na existenci .cz zony, coz bychom casem mohli odstranit
                 _registrar,
                 _registrant
             );
@@ -236,7 +236,7 @@ namespace Test {
         obj.set_ico(ico);
         obj.set_dic(country + ico);
         obj.set_variable_symbol(rnd.xnumstring(6));
-        obj.set_payment_memo_regex(".*");   // TODO - nejaky priklad
+        obj.set_payment_memo_regex(".*");   // TODO - casem mozno doplnit realnejsi exemplar
         obj.set_vat_payer(true);
 
         return obj;
@@ -261,7 +261,6 @@ namespace Test {
         obj.set_email(email);
         obj.set_notifyemail(rnd.xnumstring(1) + email);
         obj.set_vat(country + rnd.xnumstring(8));
-        // TODO setup na ssntypes
         obj.set_ssntype("BIRTHDAY");
         obj.set_ssn(rnd.xnumstring(4) + "-" + rnd.xnumstring(2) + "-" + rnd.xnumstring(2));
         obj.set_disclosename(true);
