@@ -24,12 +24,7 @@
 
 #include "util/random_data_generator.h"
 #include "tests/setup/fixtures.h"
-
-static bool check_std_exception(std::exception const & ex)
-{
-    std::string ex_msg(ex.what());
-    return (ex_msg.length() != 0);
-}
+#include "tests/fredlib/util.h"
 
 DECLARE_EXCEPTION_DATA(unknown_registrar_handle, std::string);
 DECLARE_EXCEPTION_DATA(unknown_contact_handle, std::string);
