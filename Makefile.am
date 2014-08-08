@@ -2153,23 +2153,6 @@ tests_test_server_SOURCES = \
 		src/admin/contact/merge_contact_reporting.h \
 		tests/checks.h \
 		tests/test-utils.cc \
-		tests/fredlib/contact/verification/setup_utils.h \
-		tests/fredlib/contact/verification/setup_utils.cc \
-		tests/fredlib/contact/verification/test-create_check_integ.cc \
-		tests/fredlib/contact/verification/test-update_check_integ.cc \
-		tests/fredlib/contact/verification/test-create_test_integ.cc \
-		tests/fredlib/contact/verification/test-update_test_integ.cc \
-		tests/fredlib/contact/verification/test-info_check_integ.cc \
-		tests/fredlib/contact/verification/test-list_checks_integ.cc \
-		tests/fredlib/contact/verification/test-list_enum_objects_integ.cc \
-		tests/admin/contact/verification/setup_utils.h \
-		tests/admin/contact/verification/test-run_all_enqueued_checks.cc \
-		tests/admin/contact/verification/test-fill_check_queue.cc \
-		tests/admin/contact/verification/test-resolve_check.cc \
-		tests/admin/contact/verification/test-related_records.cc \
-		tests/admin/contact/verification/test-enqueue_check.cc \
-		tests/admin/contact/verification/test-delete_domains_of_invalid_contact.cc \
-		tests/util/test-is-equal-optional-nullable.cc \
 		src/fredlib/object_state/create_object_state_request.cc \
 		src/fredlib/object_state/create_object_state_request.h \
 		src/fredlib/object_state/create_object_state_request_id.cc \
