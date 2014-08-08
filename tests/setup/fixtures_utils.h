@@ -133,74 +133,131 @@ namespace Test {
 
     template<typename TCreateOper> struct CreateX_factory;
     template<> struct CreateX_factory<Fred::CreateRegistrar> {
+        typedef Fred::CreateRegistrar create_type;
 
-        Fred::CreateRegistrar make(const Optional<std::string>& _handle = Optional<std::string>()) {
-            return Fred::CreateRegistrar(
+        create_type make(const Optional<std::string>& _handle = Optional<std::string>()) {
+            return create_type(
                 _handle.isset() ? _handle.get_value() : "REGISTRAR_" + RandomDataGenerator().xnumstring(20)
             );
         }
+
+        // CreateX operation class is in fact non-assignable (due to const members). Ouch :-/ Welcome boost::ptr_vector.
+        boost::ptr_vector<create_type> make_vector(
+            const unsigned n
+        ) {
+            boost::ptr_vector<create_type> result;
+            for(unsigned i=0; i<n; ++i) {
+                result.push_back(new create_type(make()));
+            }
+
+            return result;
+        }
     };
     template<> struct CreateX_factory<Fred::CreateContact> {
+        typedef Fred::CreateContact create_type;
 
-        Fred::CreateContact make(
+        create_type make(
             const std::string& _registrar_handle,
             const Optional<std::string>& _handle = Optional<std::string>()
         ) {
-            return Fred::CreateContact(
+            return create_type(
                 _handle.isset() ? _handle.get_value() : "CONTACT_" + RandomDataGenerator().xnumstring(20),
                 _registrar_handle
             );
         }
 
         // CreateX operation class is in fact non-assignable (due to const members). Ouch :-/ Welcome boost::ptr_vector.
-        boost::ptr_vector<Fred::CreateContact> make_vector(
+        boost::ptr_vector<create_type> make_vector(
             const unsigned n,
             const std::string& _registrar_handle
         ) {
-            boost::ptr_vector<Fred::CreateContact> result;
+            boost::ptr_vector<create_type> result;
             for(unsigned i=0; i<n; ++i) {
-                result.push_back(new Fred::CreateContact(make(_registrar_handle)));
+                result.push_back(new create_type(make(_registrar_handle)));
             }
 
             return result;
         }
     };
     template<> struct CreateX_factory<Fred::CreateDomain> {
+        typedef Fred::CreateDomain create_type;
 
-        Fred::CreateDomain make(
+        create_type make(
             const std::string& _registrar,
             const std::string& _registrant,
             const Optional<std::string>& _fqdn = Optional<std::string>()
         ) {
-            return Fred::CreateDomain(
+            return create_type(
                 _fqdn.isset() ? _fqdn.get_value() : RandomDataGenerator().xnumstring(20) + ".cz",  // TODO zavisle na existenci .cz zony, coz bychom casem mohli odstranit
                 _registrar,
                 _registrant
             );
         }
+
+        // CreateX operation class is in fact non-assignable (due to const members). Ouch :-/ Welcome boost::ptr_vector.
+        boost::ptr_vector<create_type> make_vector(
+            const unsigned n,
+            const std::string& _registrar,
+            const std::string& _registrant
+        ) {
+            boost::ptr_vector<create_type> result;
+            for(unsigned i=0; i<n; ++i) {
+                result.push_back(new create_type(make(_registrar, _registrant)));
+            }
+
+            return result;
+        }
     };
     template<> struct CreateX_factory<Fred::CreateNsset> {
+        typedef Fred::CreateNsset create_type;
 
-        Fred::CreateNsset make(
+        create_type make(
             const std::string& _registrar,
             const Optional<std::string>& _handle = Optional<std::string>()
         ) {
-            return Fred::CreateNsset(
+            return create_type(
                 _handle.isset() ? _handle.get_value() : "NSSET_" + RandomDataGenerator().xnumstring(20),
                 _registrar
             );
         }
+
+        // CreateX operation class is in fact non-assignable (due to const members). Ouch :-/ Welcome boost::ptr_vector.
+        boost::ptr_vector<create_type> make_vector(
+            const unsigned n,
+            const std::string& _registrar
+        ) {
+            boost::ptr_vector<create_type> result;
+            for(unsigned i=0; i<n; ++i) {
+                result.push_back(new create_type(make(_registrar)));
+            }
+
+            return result;
+        }
     };
     template<> struct CreateX_factory<Fred::CreateKeyset> {
+        typedef Fred::CreateKeyset create_type;
 
-        Fred::CreateKeyset make(
+        create_type make(
             const std::string& _registrar,
             const Optional<std::string>& _handle = Optional<std::string>()
         ) {
-            return Fred::CreateKeyset(
+            return create_type(
                 _handle.isset() ? _handle.get_value() : "KEYSET_" + RandomDataGenerator().xnumstring(20),
                 _registrar
             );
+        }
+
+        // CreateX operation class is in fact non-assignable (due to const members). Ouch :-/ Welcome boost::ptr_vector.
+        boost::ptr_vector<create_type> make_vector(
+            const unsigned n,
+            const std::string& _registrar
+        ) {
+            boost::ptr_vector<create_type> result;
+            for(unsigned i=0; i<n; ++i) {
+                result.push_back(new create_type(make(_registrar)));
+            }
+
+            return result;
         }
     };
 
