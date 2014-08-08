@@ -16,48 +16,18 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <boost/test/unit_test.hpp>
 #include <string>
-#include <algorithm>
-#include <functional>
-#include <vector>
-#include <map>
-#include <exception>
 
-#include <boost/lexical_cast.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/date_time.hpp>
-#include <boost/assign/list_of.hpp>
-
-//#include <omniORB4/fixed.h>
-
-#include "setup_server_decl.h"
-#include "time_clock.h"
-#include "src/fredlib/contact/create_contact.h"
-#include "src/fredlib/contact/info_contact.h"
-#include "src/fredlib/opexception.h"
 #include "src/fredlib/opcontext.h"
-#include "util/util.h"
-#include "random_data_generator.h"
+#include <fredlib/contact.h>
+#include "src/fredlib/object_state/create_object_state_request_id.h"
+#include "src/fredlib/object_state/perform_object_state_request.h"
 #include "src/fredlib/object_state/get_object_states.h"
 #include "src/fredlib/object_state/get_object_state_descriptions.h"
-#include "src/fredlib/object_state/create_object_state_request_id.h"
 #include "src/fredlib/object_state/object_state_name.h"
-#include "src/fredlib/object_state/perform_object_state_request.h"
 
-#include "cfg/handle_general_args.h"
-#include "cfg/handle_server_args.h"
-#include "cfg/handle_logging_args.h"
-#include "cfg/handle_database_args.h"
-#include "cfg/handle_threadgroup_args.h"
-
-/**
- *  @file
- *  test contact info
- */
-
-#include "cfg/config_handler_decl.h"
-#include <boost/test/unit_test.hpp>
-
+#include "util/random_data_generator.h"
 #include "tests/setup/fixtures.h"
 
 BOOST_FIXTURE_TEST_SUITE(TestObjectState, Test::Fixture::instantiate_db_template)

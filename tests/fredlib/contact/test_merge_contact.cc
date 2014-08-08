@@ -16,81 +16,27 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <memory>
-#include <iostream>
+#include <boost/test/unit_test.hpp>
 #include <string>
-#include <algorithm>
-#include <functional>
-#include <numeric>
-#include <map>
-#include <exception>
-#include <queue>
-#include <sys/time.h>
-#include <time.h>
-#include <string.h>
-
-#include <boost/algorithm/string.hpp>
-#include <boost/function.hpp>
-#include <boost/format.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/thread.hpp>
-#include <boost/thread/barrier.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/date_time.hpp>
+#include <boost/asio/ip/address.hpp>
 #include <boost/assign/list_of.hpp>
 
-
-//#include <omniORB4/fixed.h>
-
-#include "setup_server_decl.h"
-#include "time_clock.h"
-#include "src/fredlib/registrar.h"
-#include "src/fredlib/contact/merge_contact.h"
+#include "src/fredlib/opcontext.h"
+#include <fredlib/registrar.h>
+#include <fredlib/contact.h>
+#include <fredlib/domain.h>
+#include <fredlib/nsset.h>
+#include <fredlib/keyset.h>
 #include "src/fredlib/contact/merge_contact_selection.h"
 #include "src/fredlib/contact/merge_contact_email_notification_data.h"
-#include "src/fredlib/contact/find_contact_duplicates.h"
-
-#include "src/fredlib/contact/create_contact.h"
-#include "src/fredlib/nsset/create_nsset.h"
-#include "src/fredlib/keyset/create_keyset.h"
-#include "src/fredlib/domain/create_domain.h"
-#include "src/fredlib/keyset/info_keyset.h"
-#include "src/fredlib/nsset/info_nsset.h"
-#include "src/fredlib/domain/info_domain.h"
-#include "src/fredlib/contact/info_contact.h"
-#include "src/fredlib/contact/info_contact_diff.h"
-#include "src/fredlib/domain/info_domain_diff.h"
-#include "src/fredlib/nsset/info_nsset_diff.h"
-#include "src/fredlib/keyset/info_keyset_diff.h"
 #include "src/fredlib/registrar/get_registrar_handles.h"
 #include "src/fredlib/object_state/object_state_name.h"
 #include "src/fredlib/object_state/object_has_state.h"
 #include "src/fredlib/object_state/perform_object_state_request.h"
 #include "src/fredlib/object_state/create_object_state_request_id.h"
+#include "src/fredlib/contact/find_contact_duplicates.h"
 
-
-#include "util/util.h"
-#include "util/printable.h"
-
-#include "src/fredlib/contact_verification/contact.h"
-#include "src/fredlib/object_states.h"
-#include "src/contact_verification/contact_verification_impl.h"
-#include "random_data_generator.h"
-#include "concurrent_queue.h"
-
-#include "src/fredlib/db_settings.h"
-
-#include "cfg/handle_general_args.h"
-#include "cfg/handle_server_args.h"
-#include "cfg/handle_logging_args.h"
-#include "cfg/handle_database_args.h"
-#include "cfg/handle_threadgroup_args.h"
-#include "cfg/handle_corbanameservice_args.h"
-
-#include "cfg/config_handler_decl.h"
-#include <boost/test/unit_test.hpp>
-
+#include "util/random_data_generator.h"
 #include "tests/setup/fixtures.h"
 
 static bool check_std_exception(std::exception const & ex)

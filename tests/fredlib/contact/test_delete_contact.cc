@@ -16,66 +16,15 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <memory>
-#include <iostream>
-#include <string>
-#include <algorithm>
-#include <functional>
-#include <numeric>
-#include <map>
-#include <exception>
-#include <queue>
-#include <sys/time.h>
-#include <time.h>
-#include <string.h>
-
-#include <boost/algorithm/string.hpp>
-#include <boost/function.hpp>
-#include <boost/format.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/thread.hpp>
-#include <boost/thread/barrier.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/date_time.hpp>
-#include <boost/assign/list_of.hpp>
-
-//#include <omniORB4/fixed.h>
-
-#include "setup_server_decl.h"
-#include "time_clock.h"
-#include "src/fredlib/registrar.h"
-#include "src/fredlib/domain/update_domain.h"
-#include "src/fredlib/nsset/update_nsset.h"
-#include "src/fredlib/keyset/update_keyset.h"
-#include "src/fredlib/contact/delete_contact.h"
-#include "src/fredlib/contact/create_contact.h"
-#include "src/fredlib/contact/info_contact.h"
-#include "src/fredlib/nsset/create_nsset.h"
-#include "src/fredlib/keyset/create_keyset.h"
-#include "src/fredlib/domain/create_domain.h"
-#include "src/fredlib/opexception.h"
-#include "util/util.h"
-
-#include "src/fredlib/contact_verification/contact.h"
-#include "src/fredlib/object_states.h"
-#include "src/contact_verification/contact_verification_impl.h"
-#include "random_data_generator.h"
-#include "concurrent_queue.h"
-
-
-#include "src/fredlib/db_settings.h"
-
-#include "cfg/handle_general_args.h"
-#include "cfg/handle_server_args.h"
-#include "cfg/handle_logging_args.h"
-#include "cfg/handle_database_args.h"
-#include "cfg/handle_threadgroup_args.h"
-#include "cfg/handle_corbanameservice_args.h"
-
-#include "cfg/config_handler_decl.h"
 #include <boost/test/unit_test.hpp>
+#include <string>
+#include <boost/asio/ip/address.hpp>
 
+#include "src/fredlib/opcontext.h"
+#include <fredlib/contact.h>
+#include <fredlib/nsset.h>
+
+#include "util/random_data_generator.h"
 #include "tests/setup/fixtures.h"
 
 const std::string server_name = "test-delete-contact";
