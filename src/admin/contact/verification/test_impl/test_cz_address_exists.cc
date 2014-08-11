@@ -104,13 +104,11 @@ namespace ContactVerification {
         string postal_code;
 
         try {
-            string normalized_street1(data.street1_);
-            boost::algorithm::trim(normalized_street1);
             // TODO erase č.p. variants
-            street = parse_street1(
-                normalized_street1,
-                street_delimiters_,
-                street_shortened_word_signs_);
+                street = parse_street1(
+                    boost::algorithm::trim_copy(data.street1_),
+                    street_delimiters_,
+                    street_shortened_word_signs_);
             street.first = rtrim_numbers(street.first, 2);
 
             string normalized_city(data.city_);
