@@ -67,6 +67,10 @@ namespace ContactVerification {
         const char* what() const throw() {return "missing house number";}
     };
 
+    struct ExceptionInvalidPostalCode : virtual Fred::OperationException {
+        const char* what() const throw() {return "invalid postalcode";}
+    };
+
     TestCzAddress& TestCzAddress::set_mvcr_address_xml_filename(const std::string& _mvcr_address_xml_filename) {
         /* Load XML document */
         doc_ = xmlParseFile(_mvcr_address_xml_filename.c_str());
@@ -148,6 +152,9 @@ namespace ContactVerification {
             postal_code = parse_postal_code(static_cast<string>(data.postalcode_));
 
         } catch (const ExceptionMissingHouseNumber& e) {
+            return TestRunResult (Fred::ContactTestStatus::FAIL, e.what() );
+
+        } catch (const ExceptionInvalidPostalCode& e) {
             return TestRunResult (Fred::ContactTestStatus::FAIL, e.what() );
 
         } catch (...) {
@@ -475,7 +482,7 @@ namespace ContactVerification {
             result.append(captures[1].first, captures[1].second);
             result.append(captures[2].first, captures[2].second);
         } else {
-            throw Fred::InternalError("invalid postal code");
+            throw ExceptionInvalidPostalCode();
         }
 
         return result;
