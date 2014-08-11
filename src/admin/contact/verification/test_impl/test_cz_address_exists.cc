@@ -63,6 +63,10 @@ namespace ContactVerification {
     const std::string TestCzAddress::city_delimiters_("-()\\, \t\n\r");
     const std::string TestCzAddress::city_shortened_word_signs_("./");
 
+    struct ExceptionMissingHouseNumber : virtual Fred::OperationException {
+        const char* what() const throw() {return "missing house number";}
+    };
+
     TestCzAddress& TestCzAddress::set_mvcr_address_xml_filename(const std::string& _mvcr_address_xml_filename) {
         /* Load XML document */
         doc_ = xmlParseFile(_mvcr_address_xml_filename.c_str());
@@ -105,10 +109,24 @@ namespace ContactVerification {
 
         try {
             // TODO erase č.p. variants
+            try {
                 street = parse_street1(
                     boost::algorithm::trim_copy(data.street1_),
                     street_delimiters_,
                     street_shortened_word_signs_);
+            } catch (const ExceptionMissingHouseNumber&) {
+                try {
+                    street = parse_street1(
+                        boost::algorithm::trim_copy(data.street1_ + " " + data.street2_),
+                        street_delimiters_,
+                        street_shortened_word_signs_);
+                } catch (const ExceptionMissingHouseNumber&) {
+                    street = parse_street1(
+                        boost::algorithm::trim_copy(data.street1_ + " " + data.street2_ + " " + data.street3_),
+                        street_delimiters_,
+                        street_shortened_word_signs_);
+                }
+            }
             street.first = rtrim_numbers(street.first, 2);
 
             string normalized_city(data.city_);
@@ -128,6 +146,10 @@ namespace ContactVerification {
                 return TestRunResult (Fred::ContactTestStatus::FAIL, string("city is missing content") );
             }
             postal_code = parse_postal_code(static_cast<string>(data.postalcode_));
+
+        } catch (const ExceptionMissingHouseNumber& e) {
+            return TestRunResult (Fred::ContactTestStatus::FAIL, e.what() );
+
         } catch (...) {
             return TestRunResult (Fred::ContactTestStatus::FAIL, string("exception during parsing") );
         }
@@ -422,7 +444,7 @@ namespace ContactVerification {
         }
 
         if(house_numbers.size() < 1) {
-           throw Fred::InternalError("no house number");
+           throw ExceptionMissingHouseNumber();
         }
         // using only last two "numbers"
         if(house_numbers.size() > 2) {
