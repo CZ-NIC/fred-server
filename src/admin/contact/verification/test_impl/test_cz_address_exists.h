@@ -94,12 +94,16 @@ namespace ContactVerification
       _inheritTestRegName<TestCzAddress>
     {
         std::string street1_;
+        std::string street2_;
+        std::string street3_;
         std::string city_;
         std::string postalcode_;
         std::string country_;
 
         virtual void store_data(const Fred::InfoContactOutput& _data) {
             street1_ = boost::algorithm::trim_copy(_data.info_contact_data.place.get_value_or_default().street1);
+            street2_ = boost::algorithm::trim_copy(_data.info_contact_data.place.get_value_or_default().street2.get_value_or_default());
+            street3_ = boost::algorithm::trim_copy(_data.info_contact_data.place.get_value_or_default().street3.get_value_or_default());
             city_ = boost::algorithm::trim_copy(_data.info_contact_data.place.get_value_or_default().city);
             postalcode_ = boost::algorithm::trim_copy(_data.info_contact_data.place.get_value_or_default().postalcode);
             country_ = boost::algorithm::trim_copy(_data.info_contact_data.place.get_value_or_default().country);
