@@ -467,10 +467,8 @@ namespace Test {
 
         static Fred::InfoContactData make(Fred::OperationContext& _ctx) {
             return exec(
-                generate_test_data(
-                    CreateX_factory<Fred::CreateContact>().make(
-                        registrar(_ctx).info_data.handle
-                    )
+                CreateX_factory<Fred::CreateContact>().make(
+                    registrar(_ctx).info_data.handle
                 ),
                 _ctx
             );
@@ -492,11 +490,9 @@ namespace Test {
 
         static Fred::InfoDomainData make(Fred::OperationContext& _ctx) {
             return exec(
-                generate_test_data(
-                    CreateX_factory<Fred::CreateDomain>().make(
-                        registrar(_ctx).info_data.handle,
-                        contact(_ctx).info_data.handle
-                    )
+                CreateX_factory<Fred::CreateDomain>().make(
+                    registrar(_ctx).info_data.handle,
+                    contact(_ctx).info_data.handle
                 ),
                 _ctx
             );
@@ -518,10 +514,8 @@ namespace Test {
 
         static Fred::InfoNssetData make(Fred::OperationContext& _ctx) {
             return exec(
-                generate_test_data(
-                    CreateX_factory<Fred::CreateNsset>().make(
-                        registrar(_ctx).info_data.handle
-                    )
+                CreateX_factory<Fred::CreateNsset>().make(
+                    registrar(_ctx).info_data.handle
                 ),
                 _ctx
             );
@@ -543,10 +537,8 @@ namespace Test {
 
         static Fred::InfoKeysetData make(Fred::OperationContext& _ctx) {
             return exec(
-                generate_test_data(
-                    CreateX_factory<Fred::CreateKeyset>().make(
-                        registrar(_ctx).info_data.handle
-                    )
+                CreateX_factory<Fred::CreateKeyset>().make(
+                    registrar(_ctx).info_data.handle
                 ),
                 _ctx
             );
