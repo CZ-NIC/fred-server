@@ -444,20 +444,20 @@ namespace Test {
     struct registrar {
         Fred::InfoRegistrarData info_data;
 
-        static Fred::InfoRegistrarData make(Fred::OperationContext& _ctx) {
+        static Fred::InfoRegistrarData make(Fred::OperationContext& _ctx, Optional<std::string> _handle = Optional<std::string>() ) {
             return exec(
-                CreateX_factory<Fred::CreateRegistrar>().make(),
+                CreateX_factory<Fred::CreateRegistrar>().make(_handle),
                 _ctx
             );
         }
 
-        registrar(Fred::OperationContext& _ctx) {
-            info_data = make(_ctx);
+        registrar(Fred::OperationContext& _ctx, Optional<std::string> _handle = Optional<std::string>()) {
+            info_data = make(_ctx, _handle);
         }
 
-        registrar() {
+        registrar(Optional<std::string> _handle = Optional<std::string>()) {
             Fred::OperationContext ctx;
-            info_data = make(ctx);
+            info_data = make(ctx, _handle);
             ctx.commit_transaction();
         }
     };
@@ -465,22 +465,33 @@ namespace Test {
     struct contact {
         Fred::InfoContactData info_data;
 
-        static Fred::InfoContactData make(Fred::OperationContext& _ctx) {
-            return exec(
-                CreateX_factory<Fred::CreateContact>().make(
-                    registrar(_ctx).info_data.handle
-                ),
-                _ctx
-            );
+        static Fred::InfoContactData make(Fred::OperationContext& _ctx, Optional<std::string> _handle = Optional<std::string>(), Optional<std::string> _registrar_handle = Optional<std::string>()) {
+            if(_registrar_handle.isset()) {
+                return exec(
+                    CreateX_factory<Fred::CreateContact>().make(
+                        _registrar_handle.get_value_or_default(),
+                        _handle
+                    ),
+                    _ctx
+                );
+            } else {
+                return exec(
+                    CreateX_factory<Fred::CreateContact>().make(
+                        registrar(_ctx).info_data.handle,
+                        _handle
+                    ),
+                    _ctx
+                );
+            }
         }
 
-        contact(Fred::OperationContext& _ctx) {
-            info_data = make(_ctx);
+        contact(Fred::OperationContext& _ctx, Optional<std::string> _handle = Optional<std::string>(), Optional<std::string> _registrar_handle = Optional<std::string>()) {
+            info_data = make(_ctx, _handle, _registrar_handle);
         }
 
-        contact() {
+        contact(Optional<std::string> _handle = Optional<std::string>(), Optional<std::string> _registrar_handle = Optional<std::string>()) {
             Fred::OperationContext ctx;
-            info_data = make(ctx);
+            info_data = make(ctx, _handle, _registrar_handle);
             ctx.commit_transaction();
         }
     };
@@ -512,22 +523,33 @@ namespace Test {
     struct nsset {
         Fred::InfoNssetData info_data;
 
-        static Fred::InfoNssetData make(Fred::OperationContext& _ctx) {
-            return exec(
-                CreateX_factory<Fred::CreateNsset>().make(
-                    registrar(_ctx).info_data.handle
-                ),
-                _ctx
-            );
+        static Fred::InfoNssetData make(Fred::OperationContext& _ctx, Optional<std::string> _handle = Optional<std::string>(), Optional<std::string> _registrar_handle = Optional<std::string>()) {
+            if(_registrar_handle.isset()) {
+                return exec(
+                    CreateX_factory<Fred::CreateNsset>().make(
+                        _registrar_handle.get_value_or_default(),
+                        _handle
+                    ),
+                    _ctx
+                );
+            } else {
+                return exec(
+                    CreateX_factory<Fred::CreateNsset>().make(
+                        registrar(_ctx).info_data.handle,
+                        _handle
+                    ),
+                    _ctx
+                );
+            }
         }
 
-        nsset(Fred::OperationContext& _ctx) {
-            info_data = make(_ctx);
+        nsset(Fred::OperationContext& _ctx, Optional<std::string> _handle = Optional<std::string>(), Optional<std::string> _registrar_handle = Optional<std::string>()) {
+            info_data = make(_ctx, _handle, _registrar_handle);
         }
 
-        nsset() {
+        nsset(Optional<std::string> _handle = Optional<std::string>(), Optional<std::string> _registrar_handle = Optional<std::string>()) {
             Fred::OperationContext ctx;
-            info_data = make(ctx);
+            info_data = make(ctx, _handle, _registrar_handle);
             ctx.commit_transaction();
         }
     };
@@ -535,22 +557,33 @@ namespace Test {
     struct keyset {
         Fred::InfoKeysetData info_data;
 
-        static Fred::InfoKeysetData make(Fred::OperationContext& _ctx) {
-            return exec(
-                CreateX_factory<Fred::CreateKeyset>().make(
-                    registrar(_ctx).info_data.handle
-                ),
-                _ctx
-            );
+        static Fred::InfoKeysetData make(Fred::OperationContext& _ctx, Optional<std::string> _handle = Optional<std::string>(), Optional<std::string> _registrar_handle = Optional<std::string>()) {
+            if(_registrar_handle.isset()) {
+                return exec(
+                    CreateX_factory<Fred::CreateKeyset>().make(
+                        _registrar_handle.get_value_or_default(),
+                        _handle
+                    ),
+                    _ctx
+                );
+            } else {
+                return exec(
+                    CreateX_factory<Fred::CreateKeyset>().make(
+                        registrar(_ctx).info_data.handle,
+                        _handle
+                    ),
+                    _ctx
+                );
+            }
         }
 
-        keyset(Fred::OperationContext& _ctx) {
-            info_data = make(_ctx);
+        keyset(Fred::OperationContext& _ctx, Optional<std::string> _handle = Optional<std::string>(), Optional<std::string> _registrar_handle = Optional<std::string>()) {
+            info_data = make(_ctx, _handle, _registrar_handle);
         }
 
-        keyset() {
+        keyset(Optional<std::string> _handle = Optional<std::string>(), Optional<std::string> _registrar_handle = Optional<std::string>()) {
             Fred::OperationContext ctx;
-            info_data = make(ctx);
+            info_data = make(ctx, _handle, _registrar_handle);
             ctx.commit_transaction();
         }
     };
