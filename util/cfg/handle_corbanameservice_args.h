@@ -73,7 +73,7 @@ public:
     void handle( int argc, char* argv[],  FakedArgs &fa)
     {
         boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
 
         nameservice_host = (vm.count("nameservice.host") == 0
                 ? std::string("localhost") : vm["nameservice.host"].as<std::string>());

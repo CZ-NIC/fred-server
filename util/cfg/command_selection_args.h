@@ -175,7 +175,7 @@ public:
         }
 
         boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm
+        handler_parse_args()(get_options_description(), vm
                 , first_fa.get_argc(), first_fa.get_argv()
                 , fa_not_recognized);
 

@@ -70,7 +70,7 @@ public:
     void handle( int argc, char* argv[],  FakedArgs &fa)
     {
         po::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
 
         adifd_session_max = vm["adifd.session_max"].as<unsigned>();
         adifd_session_timeout = vm["adifd.session_timeout"].as<unsigned>();

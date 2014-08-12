@@ -86,7 +86,7 @@ public:
                gen_opts->add_options()
                        ("config,C", boost::program_options
                                ::value<std::string>(), "path to configuration file");
-        handler_parse_args(gen_opts, vm, argc, argv, tmp_fa);
+        handler_parse_args()(gen_opts, vm, argc, argv, tmp_fa);
 
         if (tmp_fa.get_argc() > 1)
         {

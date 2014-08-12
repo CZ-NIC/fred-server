@@ -129,7 +129,7 @@ namespace Fixture {
     void HandleAdminDatabaseArgs::handle( int argc, char* argv[],  FakedArgs &fa) {
         po::variables_map vm;
 
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
 
         /* construct connection string */
         host = vm.count("admin_database.host") == 0

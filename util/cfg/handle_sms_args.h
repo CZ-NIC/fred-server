@@ -61,7 +61,7 @@ public:
     void handle( int argc, char* argv[],  FakedArgs &fa)
     {
         po::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
 
         command = (vm.count("sms.command") == 0
                 ? std::string() : vm["sms.command"].as<std::string>());
