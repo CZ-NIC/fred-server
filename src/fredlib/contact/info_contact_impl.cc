@@ -128,6 +128,11 @@ namespace Fred
         " WHERE "
         " cobr.type = (SELECT id FROM enum_object_type eot WHERE eot.name='contact'::text) ";
 
+        if(!history_query_)
+        {
+            sql << " AND cobr.erdate IS NULL ";
+        }
+
         if(contact_handle_.isset())
         {
             params.push_back(contact_handle_);

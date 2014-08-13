@@ -129,6 +129,10 @@ namespace Fred
         " WHERE "
         " nobr.type = (SELECT id FROM enum_object_type eot WHERE eot.name='nsset'::text) ";
 
+        if(!history_query_)
+        {
+            sql << " AND nobr.erdate IS NULL ";
+        }
 
         if(handle_.isset())
         {

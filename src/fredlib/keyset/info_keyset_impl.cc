@@ -127,6 +127,10 @@ namespace Fred
         " WHERE "
         " kobr.type = (SELECT id FROM enum_object_type eot WHERE eot.name='keyset'::text) ";
 
+        if(!history_query_)
+        {
+            sql << " AND kobr.erdate IS NULL ";
+        }
 
         if(handle_.isset())
         {
