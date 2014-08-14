@@ -14,6 +14,8 @@
 #include "public_request_verification_impl.h"
 #include "mojeid_validators.h"
 
+#include <boost/assign/list_of.hpp>
+
 namespace Fred {
 namespace PublicRequest {
 
@@ -328,12 +330,35 @@ public:
 
     void sendPasswords()
     {
+        /* get configured forwarding service type */
+        Database::Connection conn = Database::Manager::acquire();
+        Database::Result fs = conn.exec(
+                "SELECT mtfsm.service_handle"
+                " FROM message_type_forwarding_service_map mtfsm"
+                " JOIN message_type mt ON mt.id = mtfsm.message_type_id"
+                " WHERE mt.type = 'mojeid_pin3'"
+                " FOR SHARE OF mtfsm");
+        if (fs.size() != 1)
+        {
+            throw std::runtime_error("message forwarding service not configured for 'mojeid_pin3'!");
+        }
+
+        const std::string service = static_cast<std::string>(fs[0]["service_handle"]);
+
+        /* XXX: mapping should be in database */
+        typedef std::map<std::string, Fred::Document::GenerationType> ServiceTemplateMap;
+        const ServiceTemplateMap service_to_template = boost::assign::map_list_of
+            ("POSTSERVIS", Fred::Document::GT_CONTACT_IDENTIFICATION_LETTER_PIN3)
+            ("OPTYS", Fred::Document::GT_CONTACT_IDENTIFICATION_LETTER_PIN3_OPTYS);
+
+        ServiceTemplateMap::const_iterator it = service_to_template.find(service);
+        if (it == service_to_template.end())
+        {
+            throw std::runtime_error("unknown mapping for message forwarding service"
+                   " to document template for 'mojeid_pin3'!");
+        }
         /* contact is already conditionally identified - send pin3 */
-        contact_verification_passwd_.sendLetterPassword("pin3"
-                , Fred::Document::GT_CONTACT_IDENTIFICATION_LETTER_PIN3
-                , "mojeid_pin3"
-                , "letter"
-                );
+        contact_verification_passwd_.sendLetterPassword("pin3", it->second, "mojeid_pin3", "letter");
     }
 
     static std::string registration_name()
