@@ -1170,7 +1170,7 @@ namespace Registry
                     {   //select domains with given keyset
                         if(list_domains_for_nsset_id.isset())
                         {
-                            sql << " AND";
+                            sql << " AND ";
                         }
                         sql << "keyset=$" << idx_of_keyset_id << "::BIGINT";
                     }
