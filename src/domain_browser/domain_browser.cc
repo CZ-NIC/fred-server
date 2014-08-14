@@ -1382,42 +1382,44 @@ namespace Registry
                     ? list_keysets_for_contact_id.get_value() : user_contact_id;
 
                 Database::Result keyset_list_result = ctx.get_conn().exec_params(
-                    "SELECT keyset_list.id, keyset_list.handle, "
-                        " keyset_list.registrar_handle, keyset_list.registrar_name "
-                        " , keyset_list.domain_number, "
-                    " COALESCE(BIT_OR(CASE WHEN eos.external THEN eos.importance ELSE NULL END), 0) AS external_importance, "
-                    " SUM(CASE WHEN eos.name = 'serverBlocked' THEN 1 ELSE 0 END) AS is_server_blocked, "
-                    " ARRAY_TO_STRING(ARRAY_AGG((CASE WHEN eos.external THEN eosd.description ELSE NULL END) ORDER BY eos.importance), '|') AS state_desc "
-                    "FROM "
-                    "(SELECT oreg.id AS id "
-                    ", oreg.name AS handle "
-                    ", registrar.handle AS registrar_handle "
-                    ", registrar.name AS registrar_name "
-                    ", COALESCE(domains.number,0) AS domain_number "
-                    " FROM object_registry oreg "
-                    " JOIN object obj ON obj.id = oreg.id "
-                    " JOIN registrar ON registrar.id = obj.clid "
-                    " JOIN keyset_contact_map kcm ON kcm.keysetid = oreg.id "
-                    " LEFT JOIN (SELECT d.keyset AS keyset, count(d.id) AS number FROM domain d "
-                    " JOIN keyset_contact_map kcm ON  d.keyset = kcm.keysetid "
-                    " WHERE kcm.contactid = $1::bigint "
-                    " GROUP BY d.keyset) AS domains ON domains.keyset = oreg.id "
-                    " WHERE kcm.contactid = $1::bigint "
-                    " AND oreg.type = (SELECT id FROM enum_object_type eot WHERE eot.name='keyset'::text) AND oreg.erdate IS NULL "
-                    ") AS keyset_list "
-                    " LEFT JOIN object_state os ON os.object_id = keyset_list.id "
-                        " AND os.valid_from <= CURRENT_TIMESTAMP "
-                        " AND (os.valid_to IS NULL OR os.valid_to > CURRENT_TIMESTAMP) "
-                    " LEFT JOIN enum_object_states eos ON eos.id = os.state_id "
-                    " LEFT JOIN enum_object_states_desc eosd ON os.state_id = eosd.state_id AND UPPER(eosd.lang) = UPPER($4::text) "//lang
-                    " GROUP BY keyset_list.id, keyset_list.handle, "
-                        " keyset_list.registrar_handle, keyset_list.registrar_name "
-                        " , keyset_list.domain_number "
-                    " ORDER BY keyset_list.id "
-                    " LIMIT $2::bigint OFFSET $3::bigint ",
-                    Database::query_param_list(contact_id)(keyset_list_limit_+1)(offset)(lang));
+"SELECT keyset_list.id,keyset_list.handle,keyset_list.registrar_handle,keyset_list.registrar_name,"
+       "keyset_list.domain_number,"
+       "COALESCE(BIT_OR(CASE WHEN eos.external THEN eos.importance ELSE 0 END),0) AS external_importance,"
+       "COALESCE(BOOL_OR(eos.name='serverBlocked'),false) AS is_server_blocked,"
+       "ARRAY_TO_STRING(ARRAY_AGG((CASE WHEN eos.external THEN eosd.description ELSE NULL END) ORDER BY eos.importance), '|') AS state_desc "
+"FROM (WITH keyset AS ("
+          "SELECT keysetid AS id "
+          "FROM keyset_contact_map "
+          "WHERE contactid=$1::BIGINT " // $1=contact_id
+          "ORDER BY 1 "
+          "OFFSET $2::BIGINT LIMIT $3::BIGINT) "
+      "SELECT oreg.id AS id,oreg.name AS handle,registrar.handle AS registrar_handle,"
+             "registrar.name AS registrar_name,"
+             "COALESCE(domains.number,0) AS domain_number "
+      "FROM keyset k "
+      "JOIN object_registry oreg ON oreg.id=k.id "
+      "JOIN object obj ON obj.id=oreg.id "
+      "JOIN registrar ON registrar.id=obj.clid "
+      "LEFT JOIN (SELECT d.keyset,count(d.id) AS number "
+                 "FROM keyset_contact_map kcm "
+                 "JOIN domain d ON d.keyset=kcm.keysetid "
+                 "WHERE kcm.contactid=$1::BIGINT " // $1=contact_id
+                 "GROUP BY d.keyset) "
+                "AS domains ON domains.keyset=oreg.id "
+      "WHERE oreg.type=(SELECT id FROM enum_object_type eot WHERE eot.name='keyset') AND "
+            "oreg.erdate IS NULL) AS keyset_list "
+"LEFT JOIN object_state os ON os.object_id=keyset_list.id AND "
+                             "os.valid_from<=CURRENT_TIMESTAMP AND (CURRENT_TIMESTAMP<os.valid_to OR "
+                                                                   "os.valid_to IS NULL) "
+"LEFT JOIN enum_object_states eos ON eos.id=os.state_id "
+"LEFT JOIN enum_object_states_desc eosd ON os.state_id=eosd.state_id AND "
+                                          "UPPER(eosd.lang)=UPPER($4::TEXT) " // $4=lang
+"GROUP BY keyset_list.id,keyset_list.handle,keyset_list.registrar_handle,keyset_list.registrar_name,"
+         "keyset_list.domain_number "
+"ORDER BY keyset_list.id",
+                    Database::query_param_list(contact_id)(offset)(keyset_list_limit_ + 1)(lang));
 
-                unsigned long long limited_keyset_list_size = (keyset_list_result.size() > keyset_list_limit_)
+                const unsigned long long limited_keyset_list_size = keyset_list_limit_ < keyset_list_result.size()
                     ? keyset_list_limit_ : keyset_list_result.size();
 
                 keyset_list_out.reserve(limited_keyset_list_size);
@@ -1431,17 +1433,19 @@ namespace Registry
                     row.at(4) = static_cast<std::string>(keyset_list_result[i]["registrar_name"]);
 
                     unsigned int external_status_importance = static_cast<unsigned int>(keyset_list_result[i]["external_importance"]);
+                    // nebylo by lepší tohle? :
+                    //   external_status_importance < minimal_status_importance_ ? minimal_status_importance_ : external_status_importance
                     row.at(5) = boost::lexical_cast<std::string>(external_status_importance == 0 ? minimal_status_importance_ : external_status_importance);
 
                     row.at(6) = static_cast<std::string>(keyset_list_result[i]["state_desc"]);
 
-                    bool server_blocked = static_cast<unsigned int>(keyset_list_result[i]["is_server_blocked"]);
-                    row.at(7) = server_blocked ? "t":"f";
+                    row.at(7) = static_cast<bool>(keyset_list_result[i]["is_server_blocked"]) ? "t":"f";
 
                     keyset_list_out.push_back(row);
                 }
 
-                return keyset_list_result.size() > keyset_list_limit_;
+                const bool limit_reached = keyset_list_limit_ < keyset_list_result.size();
+                return limit_reached;
             }
             catch(...)
             {
