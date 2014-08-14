@@ -1089,95 +1089,134 @@ namespace Registry
                     check_contact_id<ObjectNotExists>(ctx, list_domains_for_contact_id.get_value());
                 }
 
-                unsigned long long contact_id = list_domains_for_contact_id.isset()
+                const unsigned long long contact_id = list_domains_for_contact_id.isset()
                         ? list_domains_for_contact_id.get_value() : user_contact_id;
 
+                Database::QueryParams params(contact_id);
+                const int idx_of_contact_id = params.size();
+
+                params.push_back(domain_list_limit_+1);
+                const int idx_of_limit = params.size();
+
+                params.push_back(offset);
+                const int idx_of_offset = params.size();
+
+                params.push_back(lang);
+                const int idx_of_lang = params.size();
+
+                int idx_of_nsset_id = -1;
                 if(list_domains_for_nsset_id.isset())
                 {
                     //check nsset owned by user contact
                     Database::Result nsset_ownership_result = ctx.get_conn().exec_params(
-                    "SELECT * FROM nsset_contact_map WHERE nssetid = $1::bigint AND contactid = $2::bigint"
+                    "SELECT 1 "
+                    "FROM nsset_contact_map "
+                    "WHERE nssetid=$1::bigint AND contactid=$2::bigint"
                     , Database::query_param_list (list_domains_for_nsset_id.get_value())(contact_id));
                     if(nsset_ownership_result.size() == 0) throw AccessDenied();
+                    params.push_back(list_domains_for_nsset_id.get_value());
+                    idx_of_nsset_id = params.size();
                 }
 
+                int idx_of_keyset_id = -1;
                 if(list_domains_for_keyset_id.isset())
                 {
                     //check keyset owned by user contact
                     Database::Result keyset_ownership_result = ctx.get_conn().exec_params(
-                    "SELECT * FROM keyset_contact_map WHERE keysetid = $1::bigint AND contactid = $2::bigint"
+                    "SELECT 1 "
+                    "FROM keyset_contact_map "
+                    "WHERE keysetid=$1::bigint AND contactid=$2::bigint"
                     , Database::query_param_list (list_domains_for_keyset_id.get_value())(contact_id));
                     if(keyset_ownership_result.size() == 0) throw AccessDenied();
+                    params.push_back(list_domains_for_keyset_id.get_value());
+                    idx_of_keyset_id = params.size();
                 }
 
-                Database::QueryParams params;
                 std::ostringstream sql;
-                params.push_back(contact_id);
-                sql <<  "SELECT domain_list.id, domain_list.fqdn, domain_list.registrar_handle, domain_list.registrar_name, "
-                        " domain_list.expiration_date, domain_list.registrant_id, domain_list.have_keyset, domain_list.user_role, "
-                        " domain_list.today_date, domain_list.outzone_date,domain_list.delete_date, "
-                        " COALESCE(bit_or(CASE WHEN eos.external THEN eos.importance ELSE NULL END),0) AS external_importance, "
-                        " SUM(CASE WHEN eos.name = 'serverBlocked' THEN 1 ELSE 0 END) AS is_server_blocked, "
-                        " array_to_string(ARRAY_AGG((CASE WHEN eos.external THEN eosd.description ELSE NULL END) ORDER BY eos.importance), '|') AS state_desc "
-                        " FROM "
-                        "(SELECT "
-                        "oreg.id AS id, "
-                        "oreg.name AS fqdn, "
-                        "registrar.handle AS registrar_handle, "
-                        "registrar.name AS registrar_name, "
-                        "domain.exdate AS expiration_date, "
-                        "domain.registrant AS registrant_id, "
-                        "domain.keyset IS NOT NULL AS have_keyset, "
-                        "CASE WHEN domain.registrant = $" << params.size() << "::bigint THEN 'holder'::text ELSE "
-                            "CASE WHEN domain_contact_map.contactid = $" << params.size() << "::bigint THEN 'admin'::text ELSE ''::text END "
-                        "END AS user_role,"
-                        "CURRENT_DATE AS today_date, "
-                        "(domain.exdate + (SELECT val || ' day' FROM enum_parameters "
-                        " WHERE name = 'expiration_dns_protection_period')::interval)::date as outzone_date, "
-                        "(domain.exdate + (SELECT val || ' day' FROM enum_parameters "
-                        " WHERE name = 'expiration_registration_protection_period')::interval)::date as delete_date "
-                    "FROM object_registry oreg "
-                    "JOIN domain ON oreg.id = domain.id "
-                    "JOIN object ON object.id = oreg.id "
-                    "JOIN registrar ON registrar.id = object.clid "
-                    "LEFT JOIN domain_contact_map ON domain_contact_map.domainid = domain.id "
-                        "AND domain_contact_map.role = 1 " //admin
-                        "AND domain_contact_map.contactid = $" << params.size() << "::bigint "
-                    "WHERE oreg.type = (SELECT id FROM enum_object_type eot WHERE eot.name='domain'::text) AND oreg.erdate IS NULL ";
+                sql <<
+"WITH outzone_period AS ("
+    "SELECT (val||' day')::INTERVAL AS val FROM enum_parameters "
+    "WHERE name='expiration_dns_protection_period'),"
 
-                    if(!list_domains_for_nsset_id.isset() && !list_domains_for_keyset_id.isset())
-                    {   //select domains related to user_contact_id
-                        sql << "AND (domain_contact_map.contactid = $" << params.size() << "::bigint "
-                                "OR domain.registrant = $" << params.size() << "::bigint) ";
-                    }
+     "delete_period AS ("
+    "SELECT (val||' day')::INTERVAL AS val FROM enum_parameters "
+    "WHERE name='expiration_registration_protection_period'),"
 
+     "domain_list AS ("
+    "WITH domains AS (";
+
+                if(!list_domains_for_nsset_id.isset() && !list_domains_for_keyset_id.isset())
+                {   //select domains related to user_contact_id
+                    sql <<
+        "SELECT d.id,d.exdate,d.registrant,d.keyset "
+        "FROM domain d "
+        "LEFT JOIN domain_contact_map dcm ON dcm.domainid=d.id AND "
+                                            "dcm.role=1 AND "
+                                            "dcm.contactid=$" << idx_of_contact_id << "::BIGINT "
+        "WHERE $" << idx_of_contact_id << "::BIGINT IN (dcm.contactid,d.registrant) "
+        "ORDER BY d.exdate,d.id";
+                }
+                else
+                {
+                    sql <<
+        "SELECT id,exdate,registrant,keyset "
+        "FROM domain WHERE ";
                     if(list_domains_for_nsset_id.isset())
                     {   //select domains with given nsset
-                        params.push_back(list_domains_for_nsset_id.get_value());
-                        sql << "AND domain.nsset = $" << params.size() << "::bigint ";
+                        sql << "nsset=$" << idx_of_nsset_id << "::BIGINT";
                     }
 
                     if(list_domains_for_keyset_id.isset())
                     {   //select domains with given keyset
-                        params.push_back(list_domains_for_keyset_id.get_value());
-                        sql << "AND domain.keyset = $" << params.size() << "::bigint ";
+                        if(list_domains_for_nsset_id.isset())
+                        {
+                            sql << " AND";
+                        }
+                        sql << "keyset=$" << idx_of_keyset_id << "::BIGINT";
                     }
-
-                params.push_back(lang);
-                sql <<" ) AS domain_list "
-                " LEFT JOIN object_state os ON os.object_id = domain_list.id AND os.valid_from <= CURRENT_TIMESTAMP AND (os.valid_to IS NULL OR os.valid_to > CURRENT_TIMESTAMP) "
-                " LEFT JOIN enum_object_states eos ON eos.id = os.state_id "
-                " LEFT JOIN enum_object_states_desc eosd ON os.state_id = eosd.state_id AND UPPER(eosd.lang) = UPPER($" << params.size() << "::text) "//lang
-                " GROUP BY domain_list.id, domain_list.fqdn, domain_list.registrar_handle, domain_list.registrar_name, "
-                " domain_list.expiration_date, domain_list.registrant_id, domain_list.have_keyset, domain_list.user_role, "
-                " domain_list.today_date, domain_list.outzone_date,domain_list.delete_date ";
-
-                params.push_back(domain_list_limit_+1);
-                sql << "ORDER BY domain_list.expiration_date,domain_list.id "
-                    "LIMIT $" << params.size() << "::bigint ";
-
-                params.push_back(offset);
-                sql << "OFFSET $" << params.size() << "::bigint ";
+                    sql << " "
+        "ORDER BY exdate,id";
+                }
+                sql << " "
+        "OFFSET $" << idx_of_offset << "::BIGINT "
+        "LIMIT $" << idx_of_limit << "::BIGINT) "
+"SELECT d.id,oreg.name AS fqdn,r.handle AS registrar_handle,"
+       "r.name AS registrar_name,d.exdate AS expiration_date,"
+       "d.registrant AS registrant_id,d.keyset IS NOT NULL AS have_keyset "
+"FROM domains d "
+"JOIN object_registry oreg ON oreg.id=d.id AND "
+                             "oreg.type=(SELECT id FROM enum_object_type WHERE name='domain') AND "
+                             "oreg.erdate IS NULL "
+"JOIN object o ON o.id=d.id "
+"JOIN registrar r ON r.id=o.clid) "
+"SELECT dl.id,dl.fqdn,dl.registrar_handle,dl.registrar_name,dl.expiration_date,"
+       "dl.registrant_id,dl.have_keyset,"
+       "CASE WHEN dl.registrant_id=$" << idx_of_contact_id << "::BIGINT "
+            "THEN 'holder' "
+            "WHEN (SELECT role=1 FROM domain_contact_map "
+                  "WHERE domainid=dl.id AND "
+                        "contactid=$" << idx_of_contact_id << "::BIGINT) "
+            "THEN 'admin' "
+            "ELSE '' "
+            "END AS user_role,"
+       "CURRENT_DATE AS today_date,"
+       "(SELECT (dl.expiration_date+val)::DATE FROM outzone_period) AS outzone_date,"
+       "(SELECT (dl.expiration_date+val)::DATE FROM delete_period) AS delete_date,"
+       "COALESCE(BIT_OR(eos.external::INTEGER*eos.importance),0) AS external_importance,"
+       "COALESCE(BOOL_OR(eos.name='serverBlocked'),false) AS is_server_blocked,"
+       "ARRAY_TO_STRING(ARRAY_AGG((CASE WHEN eos.external THEN eosd.description "
+                                                         "ELSE NULL END) "
+                                 "ORDER BY eos.importance),'|') AS state_desc "
+"FROM domain_list dl "
+"LEFT JOIN object_state os ON os.object_id=dl.id AND "
+                             "os.valid_from<=CURRENT_TIMESTAMP AND (CURRENT_TIMESTAMP<os.valid_to OR "
+                                                                   "os.valid_to IS NULL) "
+"LEFT JOIN enum_object_states eos ON eos.id=os.state_id "
+"LEFT JOIN enum_object_states_desc eosd ON os.state_id=eosd.state_id AND "
+                                           "UPPER(eosd.lang)=UPPER($" << idx_of_lang << "::TEXT) "
+"GROUP BY dl.expiration_date,dl.id,dl.fqdn,dl.registrar_handle,dl.registrar_name,"
+         "dl.registrant_id,dl.have_keyset,user_role "
+"ORDER BY dl.expiration_date,dl.id";
 
                 Database::Result domain_list_result = ctx.get_conn().exec_params(sql.str(), params);
 
@@ -1213,13 +1252,14 @@ namespace Registry
 
                     row.at(9) = static_cast<std::string>(domain_list_result[i]["state_desc"]);
 
-                    bool server_blocked = static_cast<unsigned int>(domain_list_result[i]["is_server_blocked"]);
-                    row.at(10) = server_blocked ? "t":"f";
+                    row.at(10) = static_cast<bool>(domain_list_result[i]["is_server_blocked"]) ? "t" :
+                                                                                                 "f";
 
                     domain_list_out.push_back(row);
                 }
 
-                return domain_list_result.size() > domain_list_limit_;
+                const bool limit_reached = domain_list_limit_ < domain_list_result.size();
+                return limit_reached;
             }
             catch(...)
             {
