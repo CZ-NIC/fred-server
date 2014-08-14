@@ -1231,6 +1231,8 @@ namespace Registry
                     row.at(1) = static_cast<std::string>(domain_list_result[i]["fqdn"]);
 
                     unsigned int external_status_importance = static_cast<unsigned int>(domain_list_result[i]["external_importance"]);
+                    // nebylo by lepší tohle? :
+                    //   external_status_importance < minimal_status_importance_ ? minimal_status_importance_ : external_status_importance
                     row.at(2) = boost::lexical_cast<std::string>(external_status_importance == 0 ? minimal_status_importance_ : external_status_importance);
 
                     boost::gregorian::date today_date = domain_list_result[i]["today_date"].isnull() ? boost::gregorian::date()
