@@ -1092,7 +1092,8 @@ namespace Registry
                 const unsigned long long contact_id = list_domains_for_contact_id.isset()
                         ? list_domains_for_contact_id.get_value() : user_contact_id;
 
-                Database::QueryParams params(contact_id);
+                Database::QueryParams params;
+                params.push_back(contact_id);
                 const int idx_of_contact_id = params.size();
 
                 params.push_back(domain_list_limit_+1);
