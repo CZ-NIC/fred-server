@@ -148,6 +148,10 @@ namespace Fred
         " WHERE "
         " dobr.type = (SELECT id FROM enum_object_type eot WHERE eot.name='domain'::text) ";
 
+        if(!history_query_)
+        {
+            sql << " AND dobr.erdate IS NULL ";
+        }
 
         if(fqdn_.isset())
         {
