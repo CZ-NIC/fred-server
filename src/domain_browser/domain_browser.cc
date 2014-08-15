@@ -1416,7 +1416,7 @@ namespace Registry
 "GROUP BY keyset_list.id,keyset_list.handle,keyset_list.registrar_handle,keyset_list.registrar_name,"
          "keyset_list.domain_number "
 "ORDER BY keyset_list.id",
-                    Database::query_param_list(contact_id)(offset)(keyset_list_limit_ + 1)(lang));
+                    Database::query_param_list(contact_id)(offset)(keyset_list_limit_ + 1)(lang));// limit + 1 => exceeding detection
 
                 const unsigned long long limited_keyset_list_size = keyset_list_limit_ < keyset_list_result.size()
                     ? keyset_list_limit_ : keyset_list_result.size();
