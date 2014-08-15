@@ -1096,7 +1096,7 @@ namespace Registry
                 params.push_back(contact_id);
                 const int idx_of_contact_id = params.size();
 
-                params.push_back(domain_list_limit_+1);
+                params.push_back(domain_list_limit_ + 1);// limit + 1 => exceeding detection
                 const int idx_of_limit = params.size();
 
                 params.push_back(offset);
@@ -1232,12 +1232,6 @@ namespace Registry
                     row.at(1) = static_cast<std::string>(domain_list_result[i]["fqdn"]);
 
                     unsigned int external_status_importance = static_cast<unsigned int>(domain_list_result[i]["external_importance"]);
-                    // NOTE: nebylo by lepší tohle?
-                    //   external_status_importance < minimal_status_importance_ ? minimal_status_importance_ : external_status_importance
-                    // SOLUTION: asi ne, když platí
-                    //   minimal_status_importance = SELECT 2*MAX(importance) FROM enum_object_states
-                    // QUESTION: znamená to, že čím vyšší číslo tím nižší importance?
-                    //           a co změnit importance na triviality? :-)
                     row.at(2) = boost::lexical_cast<std::string>(external_status_importance == 0 ? minimal_status_importance_ : external_status_importance);
 
                     boost::gregorian::date today_date = domain_list_result[i]["today_date"].isnull() ? boost::gregorian::date()
@@ -1438,8 +1432,6 @@ namespace Registry
                     row.at(4) = static_cast<std::string>(keyset_list_result[i]["registrar_name"]);
 
                     unsigned int external_status_importance = static_cast<unsigned int>(keyset_list_result[i]["external_importance"]);
-                    // nebylo by lepší tohle? :
-                    //   external_status_importance < minimal_status_importance_ ? minimal_status_importance_ : external_status_importance
                     row.at(5) = boost::lexical_cast<std::string>(external_status_importance == 0 ? minimal_status_importance_ : external_status_importance);
 
                     row.at(6) = static_cast<std::string>(keyset_list_result[i]["state_desc"]);
