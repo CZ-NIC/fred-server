@@ -551,7 +551,7 @@ public:
                     class ClearOnExit
                     {
                     public:
-                        typedef typeof(state_ids) Type;
+                        typedef std::vector<TID> Type;
                         ClearOnExit(Type &_obj): obj_(_obj) { }
                         ~ClearOnExit() { obj_.clear(); }
                     private:
