@@ -538,7 +538,9 @@ public:
                     , unsigned long long contact_object_registry_id
                     , unsigned long long contact_history_historyid
                     ) {
-                if(gPDF.get() == NULL || trans == NULL) return;
+                if ((gPDF.get() == NULL) || (trans == NULL)) {
+                    return;
+                }
                 try {
                     if (state_ids.empty()) {
                       std::string errmsg("ERROR: no registrant ID specified by caller. Wrong usage of API.");
@@ -546,11 +548,21 @@ public:
                       throw std::runtime_error(errmsg);
                     }
 
-                    std::ostream& out(gPDF->getInput());
-                    std::stringstream sql;
+                    class ClearOnExit
+                    {
+                    public:
+                        typedef std::vector<TID> Type;
+                        ClearOnExit(Type &_obj): obj_(_obj) { }
+                        ~ClearOnExit() { obj_.clear(); }
+                    private:
+                        Type &obj_;
+                    } clear_on_exit(state_ids);
 
-                    out << "</holder>";
-                    out << "</messages>";
+                    {
+                        std::ostream &out = gPDF->getInput();
+                        out << "</holder>";
+                        out << "</messages>";
+                    }
 
                     // TODO there's still some room for more DB OPTIMIZATION if
                     // whole operation was made atomic and this query was run
@@ -561,8 +573,8 @@ public:
                     // records stored in vector could be used in a simple insert
                     //
                     Connection conn = Database::Manager::acquire();
-                    std::vector<TID>::iterator it = state_ids.begin();
-                    TID filePDF = gPDF->closeInput();
+                    const TID filePDF = gPDF->closeInput();
+                    gPDF.reset(NULL);
 
                     Fred::Messages::PostalAddress pa;
                     pa.name = contact_name;
@@ -575,32 +587,33 @@ public:
                     pa.code = contact_code;
                     pa.country = contact_country;
 
-                    TID letter_id = msgm->save_letter_to_send(contact_handle.c_str()
-                            , pa,filePDF
-                            ,"domain_expiration"
-                            ,contact_object_registry_id
+                    const TID letter_id = msgm->save_letter_to_send(contact_handle.c_str()
+                            , pa, filePDF
+                            , "domain_expiration"
+                            , contact_object_registry_id
                             , contact_history_historyid
                             , "letter");
 
-                    sql << "INSERT INTO notify_letters (state_id, letter_id) VALUES ("
-                        << *it << ", " << letter_id << ")";
+                    std::vector<TID>::const_iterator it = state_ids.begin();
+                    std::ostringstream sql;
+                    sql << "INSERT INTO notify_letters (state_id,letter_id) VALUES ("
+                        << *it << "," << letter_id << ")";
 
-                    it++;
-                    for (;it != state_ids.end();it++) {
-                        sql << ", (" << *it << ", " << letter_id << ")";
+                    ++it;
+                    for (; it != state_ids.end(); ++it) {
+                        sql << ",(" << *it << "," << letter_id << ")";
                     }
 
                     conn.exec(sql.str());
                     trans->savepoint();
 
-                    gPDF.reset(NULL);
-                    state_ids.clear();
-
-                } catch (std::exception &e) {
+                }
+                catch (const std::exception &e) {
                     LOGGER(PACKAGE).error(
-                            boost::format("~GenMultipleFiles() : caught exception: %1%") % e.what());
-                } catch (...) {
-                    LOGGER(PACKAGE).error("~GenMultipleFiles(): Caught unknown exception. ");
+                            boost::format("GenMultipleFiles::endFile(): Caught exception: %1%") % e.what());
+                }
+                catch (...) {
+                    LOGGER(PACKAGE).error("GenMultipleFiles::endFile(): Caught unknown exception.");
                 }
             }
 
