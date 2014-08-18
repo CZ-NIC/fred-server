@@ -25,7 +25,8 @@ namespace Fred
       GT_CONTACT_VALIDATION_REQUEST_PIN3,  ///< PDF with validation request
       GT_CONTACT_VERIFICATION_LETTER_PIN3,  ///< contact verification letter with pin3 code
       GT_ADMIN_CONTACT_VERIFICATION_CONTACT_CHECK_NOTICE,
-      GT_ADMIN_CONTACT_VERIFICATION_CONTACT_CHECK_THANK_YOU
+      GT_ADMIN_CONTACT_VERIFICATION_CONTACT_CHECK_THANK_YOU,
+      GT_CONTACT_IDENTIFICATION_LETTER_PIN3_OPTYS
     };
     /// generator that has to be filled with stream of data
     class Generator {

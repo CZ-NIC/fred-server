@@ -253,7 +253,11 @@ namespace Fred
         templateMap[GT_ADMIN_CONTACT_VERIFICATION_CONTACT_CHECK_THANK_YOU] = GenProcType(
           "confirm_correction.xsl", true, "application/pdf"
         );
-      }      
+        templateMap[GT_CONTACT_IDENTIFICATION_LETTER_PIN3_OPTYS] = GenProcType(
+          "mojeid_auth_owner_optys.xsl", true, "application/pdf"
+        );
+
+      }
       std::auto_ptr<Fred::Document::Generator> createOutputGenerator(
         GenerationType type, std::ostream& output,
         const std::string& lang

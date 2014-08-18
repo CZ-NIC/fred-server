@@ -168,6 +168,20 @@ void ContactVerificationPassword::sendLetterPassword( const std::string& custom_
 
     std::string letter_xml("<?xml version='1.0' encoding='utf-8'?>");
 
+    /* HACK: here we create input data for template but we take advantage of the fact
+     * that document is created without errors even if there are unknown input data tags for given template.
+     * (for mojeid_pin3 letter send by OPTYS service there are two extra tags - 'sex' and 'mobile')
+     * Appropritate template for service type is deduced before call.
+     *
+     * It's quite a mess :(
+     */
+    const std::string lastname = map_at(data, "lastname");
+    static const char female_suffix[] = "á"; // utf-8 encoded
+    enum { FEMALE_SUFFIX_LEN = sizeof(female_suffix) - 1 };
+    const std::string sex = (FEMALE_SUFFIX_LEN <= lastname.length()) &&
+                            (std::strcmp(lastname.c_str() + lastname.length() - FEMALE_SUFFIX_LEN,
+                                         female_suffix) == 0) ? "female" : "male";
+
     Util::XmlTagPair("contact_auth", Util::vector_of<Util::XmlCallback>
         (Util::XmlTagPair("user", Util::vector_of<Util::XmlCallback>
             (Util::XmlTagPair("actual_date", Util::XmlUnparsedCData(map_at(data, "reqdate"))))
@@ -183,6 +197,8 @@ void ContactVerificationPassword::sendLetterPassword( const std::string& custom_
                 (Util::XmlTagPair("first_name", Util::XmlUnparsedCData(map_at(data, "firstname"))))
                 (Util::XmlTagPair("last_name", Util::XmlUnparsedCData(map_at(data, "lastname"))))
                 (Util::XmlTagPair("email", Util::XmlUnparsedCData(map_at(data, "email"))))
+                (Util::XmlTagPair("sex", Util::XmlUnparsedCData(sex)))
+                (Util::XmlTagPair("mobile", Util::XmlUnparsedCData(map_at(data, "phone"))))
             ))
             (Util::XmlTagPair("auth", Util::vector_of<Util::XmlCallback>
                 (Util::XmlTagPair("codes", Util::vector_of<Util::XmlCallback>
