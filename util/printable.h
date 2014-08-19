@@ -151,32 +151,6 @@ namespace Util
     };
 
     /**
-     * Print vector of elements into the string. Values from input vector have to have conversion to string.
-     * @param IN is input vector element type
-     * @param in is input vector
-     * @return description of input vector using implemented format
-     */
-    template<class IN> std::string format_vector(const std::vector<IN>& in, std::string separator = " ")
-    {
-        std::string out;
-        typename std::vector<IN>::const_iterator i = in.begin();
-
-        if(i != in.end())
-        {
-            out += printable_conversion_to_string(*i,EnumType<ConversionToString<IN>::result >());
-            ++i;
-        }
-
-        for(; i != in.end(); ++i)
-        {
-            out += separator;
-            out += printable_conversion_to_string(*i,EnumType<ConversionToString<IN>::result >());
-        }
-        return out;
-    }
-
-
-    /**
      * Print container of elements into the string. Values from input container have to have conversion to string.
      * C++11 traits solution is a bit nicer viz http://stackoverflow.com/questions/7728478/c-template-class-function-with-arbitrary-container-type-how-to-define-it
      * @param in is input container with value_type member
