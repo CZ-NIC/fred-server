@@ -166,7 +166,7 @@ namespace Fred
         std::string query_plan("\nRegistrar query: EXPLAIN ANALYZE ");
         query_plan += query.first;
         query_plan += "\n\nParams: ";
-        query_plan += Util::format_vector(query.second);
+        query_plan += Util::format_container(query.second);
         query_plan += "\n\nPlan:\n";
 
         Database::Result query_result = ctx.get_conn().exec_params(std::string("EXPLAIN ANALYZE ") + query.first,query.second);

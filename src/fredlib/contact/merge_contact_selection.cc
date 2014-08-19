@@ -96,7 +96,7 @@ namespace Fred
     {
         std::vector<std::pair<std::string,std::string> > data;
 
-        data.push_back((std::make_pair("contact_handle",Util::format_vector(contact_handle_))));
+        data.push_back((std::make_pair("contact_handle",Util::format_container(contact_handle_))));
         std::ostringstream os;
         for(std::vector<std::pair<std::string, boost::shared_ptr<ContactSelectionFilterBase> > >::const_iterator ci = ff_.begin()
                 ; ci != ff_.end() ; ++ci) os << " " << ci->first;

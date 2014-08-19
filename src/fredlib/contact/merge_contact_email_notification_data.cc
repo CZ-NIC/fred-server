@@ -214,7 +214,7 @@ namespace Fred
     {
         return Util::format_operation_state("MergeContactEmailNotificationData",
         Util::vector_of<std::pair<std::string,std::string> >
-        (std::make_pair("merge_contact_data",Util::format_vector(merge_contact_data_)))
+        (std::make_pair("merge_contact_data",Util::format_container(merge_contact_data_)))
         );
     }
 
@@ -271,7 +271,7 @@ namespace Fred
     {
         return Util::format_operation_state("MergeContactNotificationEmailAddr",
         Util::vector_of<std::pair<std::string,std::string> >
-        (std::make_pair("email_data",Util::format_vector(email_data_)))
+        (std::make_pair("email_data",Util::format_container(email_data_)))
         );
     }
 

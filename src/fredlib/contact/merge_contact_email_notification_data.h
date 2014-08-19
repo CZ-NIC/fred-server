@@ -86,12 +86,12 @@ namespace Fred
             Util::vector_of<std::pair<std::string,std::string> >
             (std::make_pair("dst_contact_handle",dst_contact_handle))
             (std::make_pair("dst_contact_roid",dst_contact_roid))
-            (std::make_pair("domain_registrant_list",Util::format_vector(domain_registrant_list)))
-            (std::make_pair("domain_admin_list",Util::format_vector(domain_admin_list)))
-            (std::make_pair("nsset_tech_list",Util::format_vector(nsset_tech_list)))
-            (std::make_pair("keyset_tech_list",Util::format_vector(keyset_tech_list)))
-            (std::make_pair("removed_list",Util::format_vector(removed_list)))
-            (std::make_pair("removed_roid_list",Util::format_vector(removed_roid_list)))
+            (std::make_pair("domain_registrant_list",Util::format_container(domain_registrant_list)))
+            (std::make_pair("domain_admin_list",Util::format_container(domain_admin_list)))
+            (std::make_pair("nsset_tech_list",Util::format_container(nsset_tech_list)))
+            (std::make_pair("keyset_tech_list",Util::format_container(keyset_tech_list)))
+            (std::make_pair("removed_list",Util::format_container(removed_list)))
+            (std::make_pair("removed_roid_list",Util::format_container(removed_roid_list)))
             );
         }
     };
