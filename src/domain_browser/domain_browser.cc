@@ -57,6 +57,7 @@ namespace Registry
 {
     namespace DomainBrowserImpl
     {
+        const std::string DomainBrowser::output_timezone("UTC");
         /**
          * String for logging context
          * @param _name is server name
@@ -98,14 +99,14 @@ namespace Registry
          * @return contact info or if contact is deleted throw @ref EXCEPTION.
          */
         template <class EXCEPTION> Fred::InfoContactOutput check_contact_id(Fred::OperationContext& ctx,
-                unsigned long long user_contact_id, bool lock_contact_for_update = false)
+                unsigned long long user_contact_id, const std::string& output_timezone, bool lock_contact_for_update = false)
         {
             Fred::InfoContactOutput info;
             try
             {
                 Fred::InfoContactById info_contact_by_id(user_contact_id);
                 if(lock_contact_for_update) info_contact_by_id.set_lock();
-                info = info_contact_by_id.exec(ctx, "UTC");
+                info = info_contact_by_id.exec(ctx, output_timezone);
             }
             catch(const Fred::InfoContactById::Exception& ex)
             {
@@ -129,9 +130,9 @@ namespace Registry
          * @return contact info or if user contact is deleted or don't have mojeidContact state throw @ref EXCEPTION.
          */
         template <class EXCEPTION> Fred::InfoContactOutput check_user_contact_id(Fred::OperationContext& ctx,
-                unsigned long long user_contact_id, bool lock_contact_for_update = false)
+                unsigned long long user_contact_id, const std::string& output_timezone, bool lock_contact_for_update = false)
         {
-            Fred::InfoContactOutput info = check_contact_id<EXCEPTION>(ctx, user_contact_id, lock_contact_for_update);
+            Fred::InfoContactOutput info = check_contact_id<EXCEPTION>(ctx, user_contact_id, output_timezone, lock_contact_for_update);
 
             if(!Fred::ObjectHasState(user_contact_id,Fred::ObjectState::MOJEID_CONTACT).exec(ctx))
             {
@@ -277,12 +278,12 @@ namespace Registry
             Fred::OperationContext ctx;
             try
             {
-                check_user_contact_id<UserNotExists>(ctx, user_contact_id);
+                check_user_contact_id<UserNotExists>(ctx, user_contact_id, output_timezone);
 
                 Fred::InfoRegistrarOutput registar_info;
                 try
                 {
-                    registar_info = Fred::InfoRegistrarByHandle(registrar_handle).exec(ctx, "UTC");
+                    registar_info = Fred::InfoRegistrarByHandle(registrar_handle).exec(ctx, output_timezone);
                 }
                 catch(const Fred::InfoRegistrarByHandle::Exception& ex)
                 {
@@ -361,12 +362,12 @@ namespace Registry
             Fred::OperationContext ctx;
             try
             {
-                check_user_contact_id<UserNotExists>(ctx, user_contact_id);
+                check_user_contact_id<UserNotExists>(ctx, user_contact_id, output_timezone);
 
                 Fred::InfoContactOutput contact_info;
                 try
                 {
-                    contact_info = Fred::InfoContactById(contact_id).exec(ctx, "UTC");
+                    contact_info = Fred::InfoContactById(contact_id).exec(ctx, output_timezone);
                 }
                 catch(const Fred::InfoContactById::Exception& ex)
                 {
@@ -379,7 +380,7 @@ namespace Registry
                 }
 
                 Fred::InfoRegistrarOutput sponsoring_registar_info = Fred::InfoRegistrarByHandle(
-                    contact_info.info_contact_data.sponsoring_registrar_handle).exec(ctx, "UTC");
+                    contact_info.info_contact_data.sponsoring_registrar_handle).exec(ctx, output_timezone);
 
                 RegistryReference sponsoring_registrar;
                 sponsoring_registrar.id = sponsoring_registar_info.info_registrar_data.id;
@@ -450,12 +451,12 @@ namespace Registry
             Fred::OperationContext ctx;
             try
             {
-                check_user_contact_id<UserNotExists>(ctx, user_contact_id);
+                check_user_contact_id<UserNotExists>(ctx, user_contact_id, output_timezone);
 
                 Fred::InfoDomainOutput domain_info;
                 try
                 {
-                    domain_info = Fred::InfoDomainById(domain_id).exec(ctx, "UTC");
+                    domain_info = Fred::InfoDomainById(domain_id).exec(ctx, output_timezone);
                 }
                 catch(const Fred::InfoDomainById::Exception& ex)
                 {
@@ -468,7 +469,7 @@ namespace Registry
                 }
 
                 Fred::InfoRegistrarOutput sponsoring_registar_info = Fred::InfoRegistrarByHandle(
-                    domain_info.info_domain_data.sponsoring_registrar_handle).exec(ctx, "UTC");
+                    domain_info.info_domain_data.sponsoring_registrar_handle).exec(ctx, output_timezone);
 
                 RegistryReference sponsoring_registrar;
                 sponsoring_registrar.id = sponsoring_registar_info.info_registrar_data.id;
@@ -476,7 +477,7 @@ namespace Registry
                 sponsoring_registrar.name = sponsoring_registar_info.info_registrar_data.name.get_value_or_default();
 
                 Fred::InfoContactOutput registrant_contact_info = Fred::InfoContactById(
-                    domain_info.info_domain_data.registrant.id).exec(ctx, "UTC");
+                    domain_info.info_domain_data.registrant.id).exec(ctx, output_timezone);
 
                 RegistryReference registrant;
                 registrant.id = registrant_contact_info.info_contact_data.id;
@@ -514,7 +515,7 @@ namespace Registry
                 for(std::vector<Fred::ObjectIdHandlePair>::const_iterator ci = domain_info.info_domain_data.admin_contacts.begin();
                         ci != domain_info.info_domain_data.admin_contacts.end(); ++ci)
                 {
-                    Fred::InfoContactOutput admin_contact_info = Fred::InfoContactById(ci->id).exec(ctx, "UTC");
+                    Fred::InfoContactOutput admin_contact_info = Fred::InfoContactById(ci->id).exec(ctx, output_timezone);
 
                     RegistryReference admin;
                     admin.id = admin_contact_info.info_contact_data.id;
@@ -551,12 +552,12 @@ namespace Registry
             Fred::OperationContext ctx;
             try
             {
-                check_user_contact_id<UserNotExists>(ctx, user_contact_id);
+                check_user_contact_id<UserNotExists>(ctx, user_contact_id, output_timezone);
 
                 Fred::InfoNssetOutput nsset_info;
                 try
                 {
-                    nsset_info = Fred::InfoNssetById(nsset_id).exec(ctx, "UTC");
+                    nsset_info = Fred::InfoNssetById(nsset_id).exec(ctx, output_timezone);
                 }
                 catch(const Fred::InfoNssetById::Exception& ex)
                 {
@@ -569,7 +570,7 @@ namespace Registry
                 }
 
                 Fred::InfoRegistrarOutput sponsoring_registar_info = Fred::InfoRegistrarByHandle(
-                    nsset_info.info_nsset_data.sponsoring_registrar_handle).exec(ctx, "UTC");
+                    nsset_info.info_nsset_data.sponsoring_registrar_handle).exec(ctx, output_timezone);
                 RegistryReference sponsoring_registrar;
                 sponsoring_registrar.id = sponsoring_registar_info.info_registrar_data.id;
                 sponsoring_registrar.handle = sponsoring_registar_info.info_registrar_data.handle;
@@ -577,7 +578,7 @@ namespace Registry
 
 
                 Fred::InfoRegistrarOutput create_registar_info = Fred::InfoRegistrarByHandle(
-                    nsset_info.info_nsset_data.create_registrar_handle).exec(ctx, "UTC");
+                    nsset_info.info_nsset_data.create_registrar_handle).exec(ctx, output_timezone);
                 RegistryReference create_registrar;
                 create_registrar.id = create_registar_info.info_registrar_data.id;
                 create_registrar.handle = create_registar_info.info_registrar_data.handle;
@@ -587,7 +588,7 @@ namespace Registry
                 if(!nsset_info.info_nsset_data.update_registrar_handle.isnull())
                 {
                     Fred::InfoRegistrarOutput update_registar_info = Fred::InfoRegistrarByHandle(
-                        nsset_info.info_nsset_data.update_registrar_handle.get_value()).exec(ctx, "UTC");
+                        nsset_info.info_nsset_data.update_registrar_handle.get_value()).exec(ctx, output_timezone);
                     update_registrar.id = update_registar_info.info_registrar_data.id;
                     update_registrar.handle = update_registar_info.info_registrar_data.handle;
                     update_registrar.name = update_registar_info.info_registrar_data.name.get_value_or_default();
@@ -611,7 +612,7 @@ namespace Registry
                 for(std::vector<Fred::ObjectIdHandlePair>::const_iterator ci = nsset_info.info_nsset_data.tech_contacts.begin();
                         ci != nsset_info.info_nsset_data.tech_contacts.end(); ++ci)
                 {
-                    Fred::InfoContactOutput tech_contact_info = Fred::InfoContactById(ci->id).exec(ctx, "UTC");
+                    Fred::InfoContactOutput tech_contact_info = Fred::InfoContactById(ci->id).exec(ctx, output_timezone);
 
                     RegistryReference admin;
                     admin.id = tech_contact_info.info_contact_data.id;
@@ -660,12 +661,12 @@ namespace Registry
 
             try
             {
-                check_user_contact_id<UserNotExists>(ctx, user_contact_id);
+                check_user_contact_id<UserNotExists>(ctx, user_contact_id, output_timezone);
 
                 Fred::InfoKeysetOutput keyset_info;
                 try
                 {
-                    keyset_info = Fred::InfoKeysetById(keyset_id).exec(ctx, "UTC");
+                    keyset_info = Fred::InfoKeysetById(keyset_id).exec(ctx, output_timezone);
                 }
                 catch(const Fred::InfoKeysetById::Exception& ex)
                 {
@@ -678,14 +679,14 @@ namespace Registry
                 }
 
                 Fred::InfoRegistrarOutput sponsoring_registar_info = Fred::InfoRegistrarByHandle(
-                    keyset_info.info_keyset_data.sponsoring_registrar_handle).exec(ctx, "UTC");
+                    keyset_info.info_keyset_data.sponsoring_registrar_handle).exec(ctx, output_timezone);
                 RegistryReference sponsoring_registrar;
                 sponsoring_registrar.id = sponsoring_registar_info.info_registrar_data.id;
                 sponsoring_registrar.handle = sponsoring_registar_info.info_registrar_data.handle;
                 sponsoring_registrar.name = sponsoring_registar_info.info_registrar_data.name.get_value_or_default();
 
                 Fred::InfoRegistrarOutput create_registar_info = Fred::InfoRegistrarByHandle(
-                    keyset_info.info_keyset_data.create_registrar_handle).exec(ctx, "UTC");
+                    keyset_info.info_keyset_data.create_registrar_handle).exec(ctx, output_timezone);
                 RegistryReference create_registrar;
                 create_registrar.id = create_registar_info.info_registrar_data.id;
                 create_registrar.handle = create_registar_info.info_registrar_data.handle;
@@ -695,7 +696,7 @@ namespace Registry
                 if(!keyset_info.info_keyset_data.update_registrar_handle.isnull())
                 {
                     Fred::InfoRegistrarOutput update_registar_info = Fred::InfoRegistrarByHandle(
-                        keyset_info.info_keyset_data.update_registrar_handle.get_value()).exec(ctx, "UTC");
+                        keyset_info.info_keyset_data.update_registrar_handle.get_value()).exec(ctx, output_timezone);
                     update_registrar.id = update_registar_info.info_registrar_data.id;
                     update_registrar.handle = update_registar_info.info_registrar_data.handle;
                     update_registrar.name = update_registar_info.info_registrar_data.name.get_value_or_default();
@@ -719,7 +720,7 @@ namespace Registry
                 for(std::vector<Fred::ObjectIdHandlePair>::const_iterator ci = keyset_info.info_keyset_data.tech_contacts.begin();
                         ci != keyset_info.info_keyset_data.tech_contacts.end(); ++ci)
                 {
-                    Fred::InfoContactOutput tech_contact_info = Fred::InfoContactById(ci->id).exec(ctx, "UTC");
+                    Fred::InfoContactOutput tech_contact_info = Fred::InfoContactById(ci->id).exec(ctx, output_timezone);
 
                     RegistryReference admin;
                     admin.id = tech_contact_info.info_contact_data.id;
@@ -769,7 +770,7 @@ namespace Registry
             Fred::OperationContext ctx;
             try
             {
-                Fred::InfoContactOutput contact_info = check_user_contact_id<UserNotExists>(ctx, contact_id, true);
+                Fred::InfoContactOutput contact_info = check_user_contact_id<UserNotExists>(ctx, contact_id, output_timezone, true);
 
                 if(!(Fred::ObjectHasState(contact_id,Fred::ObjectState::IDENTIFIED_CONTACT).exec(ctx)
                     || Fred::ObjectHasState(contact_id,Fred::ObjectState::VALIDATED_CONTACT).exec(ctx)))
@@ -860,7 +861,7 @@ namespace Registry
             Fred::OperationContext ctx;
             try
             {
-                Fred::InfoContactOutput contact_info = check_user_contact_id<UserNotExists>(ctx, user_contact_id, true);
+                Fred::InfoContactOutput contact_info = check_user_contact_id<UserNotExists>(ctx, user_contact_id, output_timezone, true);
 
                 if(contact_id != contact_info.info_contact_data.id)
                 {
@@ -910,7 +911,7 @@ namespace Registry
             Fred::OperationContext ctx;
             try
             {
-                Fred::InfoContactOutput contact_info = check_user_contact_id<UserNotExists>(ctx, user_contact_id);
+                Fred::InfoContactOutput contact_info = check_user_contact_id<UserNotExists>(ctx, user_contact_id, output_timezone);
 
                 if(!Fred::ObjectHasState(user_contact_id,Fred::ObjectState::VALIDATED_CONTACT).exec(ctx))
                 {
@@ -1082,11 +1083,11 @@ namespace Registry
             Fred::OperationContext ctx;
             try
             {
-                check_user_contact_id<UserNotExists>(ctx, user_contact_id);
+                check_user_contact_id<UserNotExists>(ctx, user_contact_id, output_timezone);
 
                 if(list_domains_for_contact_id.isset())
                 {
-                    check_contact_id<ObjectNotExists>(ctx, list_domains_for_contact_id.get_value());
+                    check_contact_id<ObjectNotExists>(ctx, list_domains_for_contact_id.get_value(), output_timezone);
                 }
 
                 const unsigned long long contact_id = list_domains_for_contact_id.isset()
@@ -1132,6 +1133,9 @@ namespace Registry
                     params.push_back(list_domains_for_keyset_id.get_value());
                     idx_of_keyset_id = params.size();
                 }
+
+                params.push_back(output_timezone);
+                const int idx_timezone(params.size());
 
                 std::ostringstream sql;
                 sql <<
@@ -1190,7 +1194,7 @@ namespace Registry
                              "oreg.erdate IS NULL "
 "JOIN object o ON o.id=d.id "
 "JOIN registrar r ON r.id=o.clid) "
-"SELECT dl.id,dl.fqdn,dl.registrar_handle,dl.registrar_name,dl.expiration_date,"
+"SELECT dl.id,dl.fqdn,dl.registrar_handle,dl.registrar_name,dl.expiration_date AT TIME ZONE 'utc' AT TIME ZONE $"<< idx_timezone << "::text AS expiration_date,"
        "dl.registrant_id,dl.have_keyset,"
        "CASE WHEN dl.registrant_id=$" << idx_of_contact_id << "::BIGINT "
             "THEN 'holder' "
@@ -1201,8 +1205,8 @@ namespace Registry
             "ELSE '' "
             "END AS user_role,"
        "CURRENT_DATE AS today_date,"
-       "(SELECT (dl.expiration_date+val)::DATE FROM outzone_period) AS outzone_date,"
-       "(SELECT (dl.expiration_date+val)::DATE FROM delete_period) AS delete_date,"
+       "(SELECT (dl.expiration_date AT TIME ZONE 'utc' AT TIME ZONE $"<< idx_timezone << "::text + val)::DATE FROM outzone_period) AS outzone_date,"
+       "(SELECT (dl.expiration_date AT TIME ZONE 'utc' AT TIME ZONE $"<< idx_timezone << "::text + val)::DATE FROM delete_period) AS delete_date,"
        "COALESCE(BIT_OR(eos.external::INTEGER*eos.importance),0) AS external_importance,"
        "COALESCE(BOOL_OR(eos.name='serverBlocked'),false) AS is_server_blocked,"
        "ARRAY_TO_STRING(ARRAY_AGG((CASE WHEN eos.external THEN eosd.description "
@@ -1281,11 +1285,11 @@ namespace Registry
             Fred::OperationContext ctx;
             try
             {
-                check_user_contact_id<UserNotExists>(ctx, user_contact_id);
+                check_user_contact_id<UserNotExists>(ctx, user_contact_id, output_timezone);
 
                 if(list_nssets_for_contact_id.isset())
                 {
-                    check_contact_id<ObjectNotExists>(ctx, list_nssets_for_contact_id.get_value());
+                    check_contact_id<ObjectNotExists>(ctx, list_nssets_for_contact_id.get_value(), output_timezone);
                 }
 
                 unsigned long long contact_id = list_nssets_for_contact_id.isset()
@@ -1371,11 +1375,11 @@ namespace Registry
             Fred::OperationContext ctx;
             try
             {
-                check_user_contact_id<UserNotExists>(ctx, user_contact_id);
+                check_user_contact_id<UserNotExists>(ctx, user_contact_id, output_timezone);
 
                 if(list_keysets_for_contact_id.isset())
                 {
-                    check_contact_id<ObjectNotExists>(ctx, list_keysets_for_contact_id.get_value());
+                    check_contact_id<ObjectNotExists>(ctx, list_keysets_for_contact_id.get_value(), output_timezone);
                 }
 
                 unsigned long long contact_id = list_keysets_for_contact_id.isset()
@@ -1545,7 +1549,7 @@ namespace Registry
             Fred::OperationContext ctx;
             try
             {
-                check_user_contact_id<UserNotExists>(ctx, user_contact_id);
+                check_user_contact_id<UserNotExists>(ctx, user_contact_id, output_timezone);
 
                 Database::Result candidate_list_result = ctx.get_conn().exec_params(
                     " SELECT oreg_src.id AS id, oreg_src.name AS handle"
@@ -1621,7 +1625,7 @@ namespace Registry
             Fred::OperationContext ctx;
             try
             {
-                Fred::InfoContactOutput dst = check_user_contact_id<UserNotExists>(ctx, dst_contact_id);
+                Fred::InfoContactOutput dst = check_user_contact_id<UserNotExists>(ctx, dst_contact_id, output_timezone);
                 if(contact_list.empty()) throw Registry::DomainBrowserImpl::InvalidContacts();
 
                 //get src contact handle
