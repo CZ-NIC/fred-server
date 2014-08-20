@@ -400,7 +400,9 @@ namespace Registry
         static const unsigned INVALID_BLOCK_TYPE = 10;
         class DomainBrowser
         {
+        public:
             static const std::string output_timezone;
+        private:
             std::string server_name_;
             std::string update_registrar_;/**< handle of registrar performing the updates */
             unsigned int domain_list_limit_;/**< domain list chunk size */
