@@ -1242,10 +1242,11 @@ namespace Registry
                                 : boost::gregorian::from_string(static_cast<std::string>(domain_list_result[i]["outzone_date"]));
                     boost::gregorian::date delete_date = domain_list_result[i]["delete_date"].isnull() ? boost::gregorian::date()
                                 : boost::gregorian::from_string(static_cast<std::string>(domain_list_result[i]["delete_date"]));
+
                     NextDomainState next = getNextDomainState(today_date,expiration_date,outzone_date,delete_date);
 
                     row.at(3) = next.state;
-                    row.at(4) = boost::gregorian::to_iso_extended_string(next.state_date);
+                    row.at(4) = next.state_date.is_special() ? "" : boost::gregorian::to_iso_extended_string(next.state_date);
                     row.at(5) = static_cast<std::string>(domain_list_result[i]["have_keyset"]);
                     row.at(6) = static_cast<std::string>(domain_list_result[i]["user_role"]);
                     row.at(7) = static_cast<std::string>(domain_list_result[i]["registrar_handle"]);
