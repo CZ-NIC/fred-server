@@ -969,7 +969,7 @@ namespace Registry
             }
         }//MojeIDImpl::createValidationRequest
 
-        std::vector<ContactStateData> MojeIDImpl::getContactsStates(unsigned long _last_hours)
+        std::vector<ContactStateData> MojeIDImpl::getContactsStateChanges(unsigned long _last_hours)
         {
             Logging::Context ctx_server(create_ctx_name(get_server_name()));
             Logging::Context ctx("get-contacts-states");
@@ -980,45 +980,47 @@ namespace Registry
                 Database::Connection conn = Database::Manager::acquire();
                 std::vector<ContactStateData> csdv;
                 Database::Result rstates = conn.exec_params(
-                "SELECT cc.id,eos.name,"                               //arguments GROUP BY clause
-                       "MAX(os.valid_from),"                           //valid from
-                       "BOOL_OR(os.valid_from<=(NOW()-$2::interval))," //present on begin
-                       "BOOL_OR(os.valid_to IS NULL) "                 //present still
-                "FROM ("
+                "WITH mojeid AS (SELECT id AS state_id FROM enum_object_states WHERE name='mojeidContact'),"
+                     "observed AS ("
+                    "SELECT id AS state_id,name AS state_name "
+                    "FROM enum_object_states "
+                    "WHERE name IN ('conditionallyIdentifiedContact',"
+                                   "'identifiedContact',"
+                                   "'validatedContact',"
+                                   "'mojeidContact')),"
+                     "changed_object AS ("
+                    "SELECT DISTINCT object_id "
+                    "FROM object_state "
+                    "WHERE state_id IN (SELECT state_id FROM observed) AND "
+                          "(((NOW()-$2::INTERVAL)<valid_from AND "
+                                                 "valid_from<(NOW()-$3::INTERVAL)) OR "
+                           "((NOW()-$2::INTERVAL)<valid_to AND "
+                                                 "valid_to<(NOW()-$3::INTERVAL)))),"
+                     "changed_mojeid_contact AS ("
                     "SELECT c.id "
-                    "FROM ("
-                        "SELECT object_id "
-                        "FROM object_state "
-                        "WHERE state_id IN (SELECT id "
-                                           "FROM enum_object_states "
-                                           "WHERE name IN ('conditionallyIdentifiedContact',"
-                                                          "'identifiedContact',"
-                                                          "'validatedContact')"
-                                          ") AND "
-                              "(((NOW()-$2::interval)<valid_from) OR "
-                               "((NOW()-$2::interval)<valid_to)) "
-                        "GROUP BY object_id"
-                        ") AS co " //objects whose observed states changed
+                    "FROM changed_object co "
                     "JOIN contact c ON c.id=co.object_id "
                     "JOIN object o ON o.id=co.object_id "
-                    "JOIN registrar r ON r.id=o.clid "
-                    "JOIN object_state os ON os.object_id=co.object_id "
-                    "JOIN enum_object_states eos ON eos.id=os.state_id "
-                    "WHERE os.valid_to IS NULL AND "
-                          "r.handle=$1::text AND "
-                          "eos.name='mojeidContact'"
-                    ") AS cc " //mojeID contacts whose observed states changed
-                "JOIN object_state os ON os.object_id=cc.id "
-                "JOIN enum_object_states eos ON eos.id=os.state_id "
-                "WHERE eos.name IN ('conditionallyIdentifiedContact',"
-                                   "'identifiedContact',"
-                                   "'validatedContact') AND "
-                      "((NOW()-$2::interval)<os.valid_to OR os.valid_to IS NULL) "
-                "GROUP BY cc.id,eos.name "
-                "ORDER BY cc.id,eos.name",
+                    "JOIN registrar r ON r.id=o.clid AND "
+                                        "r.handle=$1::TEXT "
+                    "JOIN object_state os ON os.object_id=co.object_id AND "
+                                            "os.state_id=(SELECT state_id FROM mojeid) "
+                    "WHERE (NOW()-$3::INTERVAL)<=os.valid_to OR os.valid_to IS NULL) "
+                "SELECT cmc.id,o.state_name,"                         //arguments GROUP BY clause
+                       "MAX(os.valid_from),"                          //valid from
+                       "BOOL_OR(os.valid_from<=(NOW()-$2::INTERVAL)),"//present on begin
+                       "BOOL_OR(os.valid_to IS NULL) "                //present still
+                "FROM changed_mojeid_contact cmc "
+                "JOIN object_state os ON os.object_id=cmc.id "
+                "JOIN observed o ON o.state_id=os.state_id "
+                "WHERE os.valid_from<(NOW()-$3::INTERVAL) AND "
+                      "((NOW()-$2::INTERVAL)<os.valid_to OR os.valid_to IS NULL) "
+                "GROUP BY 1,2 "
+                "ORDER BY 1,2",
                 Database::query_param_list
                     (server_conf_->registrar_handle)
-                    (boost::lexical_cast< std::string >(_last_hours) + " hours"));
+                    (boost::lexical_cast< std::string >(_last_hours) + " HOUR")
+                    ("1 MINUTE")); // observe interval (now - last_hours, now - 1 minute)
 
                 enum { INVALID_ID = 0 };
                 ContactStateData csd;

@@ -147,7 +147,7 @@ namespace Registry
                 unsigned long long  _contact_id
                 , unsigned long long  _request_id);
 
-            std::vector<ContactStateData> getContactsStates(unsigned long _last_hours);
+            std::vector<ContactStateData> getContactsStateChanges(unsigned long _last_hours);
 
             ContactStateData getContactState(unsigned long long _contact_id);
 
