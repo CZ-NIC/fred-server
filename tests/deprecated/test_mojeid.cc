@@ -1020,7 +1020,7 @@ BOOST_FIXTURE_TEST_CASE(get_contact_states, create_mojeid_contact_fixture)
     typedef Registry::MojeID::ContactStateData StateData;
     typedef std::vector< Registry::MojeID::ContactStateData > StatesData;
     typedef Registry::MojeID::ContactStateData::StateValidFrom StateValidFrom;
-    StatesData states = mojeid_pimpl->getContactsStates(1);
+    StatesData states = mojeid_pimpl->getContactsStateChanges(1);
     for (StatesData::const_iterator data_ptr = states.begin(); data_ptr != states.end(); ++data_ptr) {
         if (contacts.count(data_ptr->contact_id) == 0) {
             continue;
@@ -1038,7 +1038,7 @@ BOOST_FIXTURE_TEST_CASE(get_contact_states, create_mojeid_contact_fixture)
         const ChangedCurrentState cb = set_contact_state_history(contact_b.first, (::uint8_t[3]){0, history, 0});
         const ChangedCurrentState cc = set_contact_state_history(contact_c.first, (::uint8_t[3]){0, 0, history});
         const ChangedCurrentState cd = set_contact_state_history(contact_d.first, (::uint8_t[3]){history, history, history});
-        states = mojeid_pimpl->getContactsStates(1);
+        states = mojeid_pimpl->getContactsStateChanges(1);
         bool ca_find = !ca.changed;
         bool cb_find = !cb.changed;
         bool cc_find = !cc.changed;
