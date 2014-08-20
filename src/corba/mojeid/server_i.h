@@ -136,10 +136,10 @@ namespace Registry
                   ::CORBA::ULongLong contact_id
                    , ::CORBA::ULongLong request_id);
 
-          Registry::MojeID::ContactStateInfoList* getContactsStates(
+          Registry::MojeID::ContactStateInfoList* getContactsStateChanges(
                   ::CORBA::ULong last_hours);
 
-          Registry::MojeID::ContactStateInfo getContactState(
+          Registry::MojeID::ContactStateInfo* getContactState(
                   ::CORBA::ULongLong contact_id);
 
           ::CORBA::ULongLong getContactId(

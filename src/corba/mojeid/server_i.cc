@@ -420,43 +420,41 @@ namespace Registry
             }
         }//createValidationRequest
 
-        Registry::MojeID::ContactStateInfoList* Server_i::getContactsStates(
+        Registry::MojeID::ContactStateInfoList* Server_i::getContactsStateChanges(
                 ::CORBA::ULong _last_hours)
         {
             try
             {
-                std::vector<ContactStateData> csdv = pimpl_->getContactsStates(_last_hours);
+                std::vector<ContactStateData> csdv = pimpl_->getContactsStateChanges(_last_hours);
                 ContactStateInfoList_var ret = new ContactStateInfoList;
                 ret->length(0);
 
                 for (std::vector<ContactStateData>::const_iterator csdvi
                     = csdv.begin(); csdvi != csdv.end(); ++csdvi)
                 {
-                    Registry::MojeID::ContactStateData::StateValidFrom::const_iterator sum_state_ptr =
-                        csdvi->get_sum_state();
-                    if (sum_state_ptr != csdvi->state.end()) {
+                    if (!csdvi->state.empty()) {
                         Registry::MojeID::ContactStateInfo sinfo;
                         sinfo.contact_id = csdvi->contact_id;
-                        unsigned int act_size = ret->length();
-
-                        if (sum_state_ptr->first == Fred::ObjectState::VALIDATED_CONTACT) {
-                            ret->length(act_size + 1);
-                            sinfo.state = Registry::MojeID::VALIDATED;
-                            sinfo.valid_from = corba_wrap_date(sum_state_ptr->second);
-                            ret[act_size] = sinfo;
+                        Registry::MojeID::ContactStateData::StateValidFrom::const_iterator state_ptr =
+                            csdvi->state.find(Fred::ObjectState::VALIDATED_CONTACT);
+                        if (state_ptr != csdvi->state.end()) {
+                            sinfo.validation_date = new Registry::MojeID::NullableDate(corba_wrap_date(state_ptr->second));
                         }
-                        else if (sum_state_ptr->first == Fred::ObjectState::IDENTIFIED_CONTACT) {
-                            ret->length(act_size + 1);
-                            sinfo.state = Registry::MojeID::IDENTIFIED;
-                            sinfo.valid_from = corba_wrap_date(sum_state_ptr->second);
-                            ret[act_size] = sinfo;
+                        state_ptr = csdvi->state.find(Fred::ObjectState::IDENTIFIED_CONTACT);
+                        if (state_ptr != csdvi->state.end()) {
+                            sinfo.identification_date = new Registry::MojeID::NullableDate(corba_wrap_date(state_ptr->second));
                         }
-                        else if (sum_state_ptr->first == Fred::ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT) {
-                            ret->length(act_size + 1);
-                            sinfo.state = Registry::MojeID::CONDITIONALLY_IDENTIFIED;
-                            sinfo.valid_from = corba_wrap_date(sum_state_ptr->second);
-                            ret[act_size] = sinfo;
+                        state_ptr = csdvi->state.find(Fred::ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT);
+                        if (state_ptr != csdvi->state.end()) {
+                            sinfo.conditionally_identification_date = new Registry::MojeID::NullableDate(corba_wrap_date(state_ptr->second));
                         }
+                        state_ptr = csdvi->state.find(Fred::ObjectState::MOJEID_CONTACT);
+                        if (state_ptr != csdvi->state.end()) {
+                            sinfo.mojeid_activation_date = new Registry::MojeID::NullableDate(corba_wrap_date(state_ptr->second));
+                        }
+                        const unsigned int act_size = ret->length();
+                        ret->length(act_size + 1);
+                        ret[act_size] = sinfo;
                     }
                 }//for
 
@@ -473,32 +471,33 @@ namespace Registry
             }
         }//getContactsStates
 
-        Registry::MojeID::ContactStateInfo Server_i::getContactState(
+        Registry::MojeID::ContactStateInfo* Server_i::getContactState(
                 ::CORBA::ULongLong _contact_id)
         {
             try
             {
-                ContactStateData csd = pimpl_->getContactState(_contact_id);
+                const Registry::MojeID::ContactStateData csd = pimpl_->getContactState(_contact_id);
                 Registry::MojeID::ContactStateInfo_var sinfo;
                 sinfo->contact_id = csd.contact_id;
-                Registry::MojeID::ContactStateData::StateValidFrom::const_iterator sum_state_ptr =
-                    csd.get_sum_state();
-                if (sum_state_ptr != csd.state.end()) {
-                    if (sum_state_ptr->first == Fred::ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT) {
-                        sinfo->state = Registry::MojeID::CONDITIONALLY_IDENTIFIED;
-                        sinfo->valid_from = corba_wrap_date(sum_state_ptr->second);
-                    }
-                    else if (sum_state_ptr->first == Fred::ObjectState::IDENTIFIED_CONTACT) {
-                        sinfo->state = Registry::MojeID::IDENTIFIED;
-                        sinfo->valid_from = corba_wrap_date(sum_state_ptr->second);
-                    }
-                    else if (sum_state_ptr->first == Fred::ObjectState::VALIDATED_CONTACT) {
-                        sinfo->state = Registry::MojeID::VALIDATED;
-                        sinfo->valid_from = corba_wrap_date(sum_state_ptr->second);
-                    }
+                Registry::MojeID::ContactStateData::StateValidFrom::const_iterator state_ptr =
+                    csd.state.find(Fred::ObjectState::VALIDATED_CONTACT);
+                if (state_ptr != csd.state.end()) {
+                    sinfo->validation_date = new Registry::MojeID::NullableDate(corba_wrap_date(state_ptr->second));
                 }
-                else {
-                    sinfo->state = Registry::MojeID::NOT_IDENTIFIED;
+
+                state_ptr = csd.state.find(Fred::ObjectState::IDENTIFIED_CONTACT);
+                if (state_ptr != csd.state.end()) {
+                    sinfo->identification_date = new Registry::MojeID::NullableDate(corba_wrap_date(state_ptr->second));
+                }
+
+                state_ptr = csd.state.find(Fred::ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT);
+                if (state_ptr != csd.state.end()) {
+                    sinfo->conditionally_identification_date = new Registry::MojeID::NullableDate(corba_wrap_date(state_ptr->second));
+                }
+
+                state_ptr = csd.state.find(Fred::ObjectState::MOJEID_CONTACT);
+                if (state_ptr != csd.state.end()) {
+                    sinfo->mojeid_activation_date = new Registry::MojeID::NullableDate(corba_wrap_date(state_ptr->second));
                 }
                 return sinfo._retn();
             }
