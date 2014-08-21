@@ -128,7 +128,7 @@ struct user_contact_fixture
             .set_city("Praha").set_postalcode("11150").set_country("CZ")
             .exec(ctx);
 
-        user_contact_info = Fred::InfoContactByHandle(user_contact_handle).exec(ctx);
+        user_contact_info = Fred::InfoContactByHandle(user_contact_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
 
         ctx.commit_transaction();//commit fixture
     }
@@ -192,7 +192,7 @@ struct admin_contact_fixture
             .set_city("Praha").set_postalcode("11150").set_country("CZ")
             .set_discloseaddress(true)
             .exec(ctx);
-        test_contact_info = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
+        test_contact_info = Fred::InfoContactByHandle(test_contact_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
         ctx.commit_transaction();//commit fixture
     }
     ~admin_contact_fixture()
@@ -219,7 +219,7 @@ struct nsset_fixture
                 (boost::asio::ip::address::from_string("127.1.1.4")))) //add_dns
             ).exec(ctx);
 
-        nsset_info = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
+        nsset_info = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
 
         Fred::CreateObjectStateRequestId(nsset_info.info_nsset_data.id,
             Util::set_of<std::string>(Fred::ObjectState::SERVER_DELETE_PROHIBITED)).exec(ctx);
@@ -245,7 +245,7 @@ struct keyset_fixture
         .set_dns_keys(Util::vector_of<Fred::DnsKey> (Fred::DnsKey(257, 3, 5, "AwEAAddt2AkLfYGKgiEZB5SmIF8EvrjxNMH6HtxWEA4RJ9Ao6LCWheg8")))
                 .exec(ctx);
 
-        keyset_info = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
+        keyset_info = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
 
         Fred::CreateObjectStateRequestId(keyset_info.info_keyset_data.id,
             Util::set_of<std::string>(Fred::ObjectState::SERVER_DELETE_PROHIBITED)).exec(ctx);
@@ -272,7 +272,7 @@ struct get_registrar_fixture
 BOOST_FIXTURE_TEST_CASE(get_registrar_detail, get_registrar_fixture )
 {
     Fred::OperationContext ctx;
-    Fred::InfoRegistrarOutput registrar_info = Fred::InfoRegistrarByHandle(test_registrar_handle).exec(ctx);
+    Fred::InfoRegistrarOutput registrar_info = Fred::InfoRegistrarByHandle(test_registrar_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
     Registry::DomainBrowserImpl::RegistrarDetail rd = impl.getRegistrarDetail(user_contact_info.info_contact_data.id,
             test_registrar_handle);
 
@@ -302,7 +302,7 @@ BOOST_FIXTURE_TEST_CASE(get_registrar_detail_no_user, get_registrar_detail_no_us
     try
     {
         Fred::OperationContext ctx;
-        Fred::InfoRegistrarOutput registrar_info = Fred::InfoRegistrarByHandle(test_registrar_handle).exec(ctx);
+        Fred::InfoRegistrarOutput registrar_info = Fred::InfoRegistrarByHandle(test_registrar_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
         Registry::DomainBrowserImpl::RegistrarDetail rd = impl.getRegistrarDetail(0, test_registrar_handle);
         BOOST_ERROR("unreported missing user contact");
     }
@@ -329,7 +329,7 @@ BOOST_FIXTURE_TEST_CASE(get_registrar_detail_not_mojeid_user, get_registrar_deta
     try
     {
         Fred::OperationContext ctx;
-        Fred::InfoRegistrarOutput registrar_info = Fred::InfoRegistrarByHandle(test_registrar_handle).exec(ctx);
+        Fred::InfoRegistrarOutput registrar_info = Fred::InfoRegistrarByHandle(test_registrar_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
         Registry::DomainBrowserImpl::RegistrarDetail rd = impl.getRegistrarDetail(user_contact_info.info_contact_data.id,
                 test_registrar_handle);
         BOOST_ERROR("unreported mojeidContact state");
@@ -407,8 +407,8 @@ struct get_my_contact_detail_fixture
 BOOST_FIXTURE_TEST_CASE(get_my_contact_detail, get_my_contact_detail_fixture )
 {
     Fred::OperationContext ctx;
-    Fred::InfoContactOutput my_contact_info = Fred::InfoContactByHandle(user_contact_handle).exec(ctx);
-    Fred::InfoRegistrarOutput sponsoring_registrar_info = Fred::InfoRegistrarByHandle(my_contact_info.info_contact_data.sponsoring_registrar_handle).exec(ctx);
+    Fred::InfoContactOutput my_contact_info = Fred::InfoContactByHandle(user_contact_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
+    Fred::InfoRegistrarOutput sponsoring_registrar_info = Fred::InfoRegistrarByHandle(my_contact_info.info_contact_data.sponsoring_registrar_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
 
     Registry::DomainBrowserImpl::ContactDetail cd = impl.getContactDetail(user_contact_info.info_contact_data.id,
             my_contact_info.info_contact_data.id, "CS");
@@ -468,8 +468,8 @@ struct get_contact_fixture
 BOOST_FIXTURE_TEST_CASE(get_contact_detail, get_contact_fixture )
 {
     Fred::OperationContext ctx;
-    Fred::InfoContactOutput test_contact_info = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
-    Fred::InfoRegistrarOutput sponsoring_registrar_info = Fred::InfoRegistrarByHandle(test_contact_info.info_contact_data.sponsoring_registrar_handle).exec(ctx);
+    Fred::InfoContactOutput test_contact_info = Fred::InfoContactByHandle(test_contact_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
+    Fred::InfoRegistrarOutput sponsoring_registrar_info = Fred::InfoRegistrarByHandle(test_contact_info.info_contact_data.sponsoring_registrar_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
 
     Registry::DomainBrowserImpl::ContactDetail cd = impl.getContactDetail(user_contact_info.info_contact_data.id,
             test_contact_info.info_contact_data.id, "CS");
@@ -531,7 +531,7 @@ BOOST_FIXTURE_TEST_CASE(get_contact_detail_no_user, get_contact_detail_no_user_f
     try
     {
         Fred::OperationContext ctx;
-        Fred::InfoContactOutput test_contact_info = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
+        Fred::InfoContactOutput test_contact_info = Fred::InfoContactByHandle(test_contact_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
         Registry::DomainBrowserImpl::ContactDetail cd = impl.getContactDetail(0,test_contact_info.info_contact_data.id, "CS");
 
         BOOST_ERROR("unreported missing user contact");
@@ -557,7 +557,7 @@ BOOST_FIXTURE_TEST_CASE(get_contact_detail_not_mojeid_user, get_contact_detail_n
     try
     {
         Fred::OperationContext ctx;
-        Fred::InfoContactOutput test_contact_info = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
+        Fred::InfoContactOutput test_contact_info = Fred::InfoContactByHandle(test_contact_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
         Registry::DomainBrowserImpl::ContactDetail cd = impl.getContactDetail(user_contact_info.info_contact_data.id,
                 test_contact_info.info_contact_data.id, "CS");
         BOOST_ERROR("unreported mojeidContact state");
@@ -645,7 +645,7 @@ struct get_my_domain_fixture
                     ).exec(ctx);
 
 
-        Fred::InfoDomainOutput domain_info = Fred::InfoDomainByHandle(test_fqdn).exec(ctx);
+        Fred::InfoDomainOutput domain_info = Fred::InfoDomainByHandle(test_fqdn).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
 
         Fred::CreateObjectStateRequestId(domain_info.info_domain_data.id,
             Util::set_of<std::string>(Fred::ObjectState::SERVER_BLOCKED)).exec(ctx);
@@ -696,13 +696,13 @@ struct get_domain_fixture
 BOOST_FIXTURE_TEST_CASE(get_my_domain_detail, get_my_domain_fixture )
 {
     Fred::OperationContext ctx;
-    Fred::InfoDomainOutput my_domain_info = Fred::InfoDomainByHandle(test_fqdn).exec(ctx);
-    Fred::InfoRegistrarOutput sponsoring_registrar_info = Fred::InfoRegistrarByHandle(my_domain_info.info_domain_data.sponsoring_registrar_handle).exec(ctx);
+    Fred::InfoDomainOutput my_domain_info = Fred::InfoDomainByHandle(test_fqdn).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
+    Fred::InfoRegistrarOutput sponsoring_registrar_info = Fred::InfoRegistrarByHandle(my_domain_info.info_domain_data.sponsoring_registrar_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
 
-    Fred::InfoNssetOutput nsset_info = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
-    Fred::InfoKeysetOutput keyset_info = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
+    Fred::InfoNssetOutput nsset_info = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
+    Fred::InfoKeysetOutput keyset_info = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
 
-    Fred::InfoContactOutput admin_contact_info = Fred::InfoContactByHandle(admin_contact_fixture::test_contact_handle).exec(ctx);
+    Fred::InfoContactOutput admin_contact_info = Fred::InfoContactByHandle(admin_contact_fixture::test_contact_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
 
     Registry::DomainBrowserImpl::DomainDetail d = impl.getDomainDetail(user_contact_info.info_contact_data.id,
             my_domain_info.info_domain_data.id, "CS");
@@ -777,9 +777,9 @@ struct get_nsset_fixture
 BOOST_FIXTURE_TEST_CASE(get_nsset_detail, get_nsset_fixture )
 {
     Fred::OperationContext ctx;
-    Fred::InfoNssetOutput nsset_info = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
-    Fred::InfoRegistrarOutput sponsoring_registrar_info = Fred::InfoRegistrarByHandle(nsset_info.info_nsset_data.sponsoring_registrar_handle).exec(ctx);
-    Fred::InfoContactOutput admin_contact_info = Fred::InfoContactByHandle(admin_contact_fixture::test_contact_handle).exec(ctx);
+    Fred::InfoNssetOutput nsset_info = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
+    Fred::InfoRegistrarOutput sponsoring_registrar_info = Fred::InfoRegistrarByHandle(nsset_info.info_nsset_data.sponsoring_registrar_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
+    Fred::InfoContactOutput admin_contact_info = Fred::InfoContactByHandle(admin_contact_fixture::test_contact_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
 
     Registry::DomainBrowserImpl::NssetDetail n = impl.getNssetDetail(user_contact_info.info_contact_data.id,
             nsset_info.info_nsset_data.id, "CS");
@@ -865,9 +865,9 @@ struct get_keyset_fixture
 BOOST_FIXTURE_TEST_CASE(get_keyset_detail, get_keyset_fixture )
 {
     Fred::OperationContext ctx;
-    Fred::InfoKeysetOutput keyset_info = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
-    Fred::InfoRegistrarOutput sponsoring_registrar_info = Fred::InfoRegistrarByHandle(keyset_info.info_keyset_data.sponsoring_registrar_handle).exec(ctx);
-    Fred::InfoContactOutput admin_contact_info = Fred::InfoContactByHandle(admin_contact_fixture::test_contact_handle).exec(ctx);
+    Fred::InfoKeysetOutput keyset_info = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
+    Fred::InfoRegistrarOutput sponsoring_registrar_info = Fred::InfoRegistrarByHandle(keyset_info.info_keyset_data.sponsoring_registrar_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
+    Fred::InfoContactOutput admin_contact_info = Fred::InfoContactByHandle(admin_contact_fixture::test_contact_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
 
     Registry::DomainBrowserImpl::KeysetDetail k = impl.getKeysetDetail(user_contact_info.info_contact_data.id,
             keyset_info.info_keyset_data.id, "CS");
@@ -971,7 +971,7 @@ BOOST_FIXTURE_TEST_CASE(set_contact_disclose_flags, set_contact_disclose_flags_f
     set_flags.vat = true;
     impl.setContactDiscloseFlags(user_contact_info.info_contact_data.id,set_flags, 42);
 
-    Fred::InfoContactOutput my_contact_info = Fred::InfoContactByHandle(user_contact_handle).exec(ctx);
+    Fred::InfoContactOutput my_contact_info = Fred::InfoContactByHandle(user_contact_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
     BOOST_CHECK(!my_contact_info.info_contact_data.disclosename);
     BOOST_CHECK(!my_contact_info.info_contact_data.discloseorganization);
     BOOST_CHECK(my_contact_info.info_contact_data.discloseemail);
@@ -1015,7 +1015,7 @@ BOOST_FIXTURE_TEST_CASE(set_validated_contact_disclose_flags, set_validated_cont
     set_flags.vat = true;
     impl.setContactDiscloseFlags(user_contact_info.info_contact_data.id,set_flags, 0);
 
-    Fred::InfoContactOutput my_contact_info = Fred::InfoContactByHandle(user_contact_handle).exec(ctx);
+    Fred::InfoContactOutput my_contact_info = Fred::InfoContactByHandle(user_contact_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
     BOOST_CHECK(!my_contact_info.info_contact_data.disclosename);
     BOOST_CHECK(!my_contact_info.info_contact_data.discloseorganization);
     BOOST_CHECK(my_contact_info.info_contact_data.discloseemail);
@@ -1174,7 +1174,7 @@ BOOST_FIXTURE_TEST_CASE(set_contact_authinfo, set_contact_authinfo_fixture )
         user_contact_info.info_contact_data.id,
         user_contact_info.info_contact_data.id,"newauthinfo", 42));
 
-    Fred::InfoContactOutput my_contact_info = Fred::InfoContactByHandle(user_contact_handle).exec(ctx);
+    Fred::InfoContactOutput my_contact_info = Fred::InfoContactByHandle(user_contact_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
     BOOST_CHECK(my_contact_info.info_contact_data.authinfopw.compare("newauthinfo")==0);
     BOOST_CHECK(!my_contact_info.logd_request_id.isnull() && my_contact_info.logd_request_id.get_value() == 42);
 }
@@ -1202,7 +1202,7 @@ BOOST_FIXTURE_TEST_CASE(set_validated_contact_authinfo, set_validated_contact_au
         user_contact_info.info_contact_data.id,
         user_contact_info.info_contact_data.id,"newauthinfo", 0));
 
-    Fred::InfoContactOutput my_contact_info = Fred::InfoContactByHandle(user_contact_handle).exec(ctx);
+    Fred::InfoContactOutput my_contact_info = Fred::InfoContactByHandle(user_contact_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
     BOOST_CHECK(my_contact_info.info_contact_data.authinfopw.compare("newauthinfo")==0);
 }
 
@@ -1417,7 +1417,7 @@ struct registrant_domain_fixture
                     , 0//const Optional<unsigned long long> logd_request_id
                     ).exec(ctx);
 
-        domain_info = Fred::InfoDomainByHandle(test_fqdn).exec(ctx);
+        domain_info = Fred::InfoDomainByHandle(test_fqdn).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
         ctx.commit_transaction();//commit fixture
     }
 
@@ -1531,7 +1531,7 @@ struct admin_domain_fixture
                     , 0//const Optional<unsigned long long> logd_request_id
                     ).exec(ctx);
 
-        domain_info = Fred::InfoDomainByHandle(test_fqdn).exec(ctx);
+        domain_info = Fred::InfoDomainByHandle(test_fqdn).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
         ctx.commit_transaction();//commit fixture
     }
 
@@ -1641,7 +1641,7 @@ struct admin_nsset_fixture
                     (boost::asio::ip::address::from_string("127.1.1.4")))) //add_dns
             ).exec(ctx);
 
-        nsset_info = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
+        nsset_info = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
 
         Fred::CreateObjectStateRequestId(nsset_info.info_nsset_data.id,
             Util::set_of<std::string>(Fred::ObjectState::SERVER_DELETE_PROHIBITED)).exec(ctx);
@@ -1750,7 +1750,7 @@ struct admin_keyset_fixture
         .set_dns_keys(Util::vector_of<Fred::DnsKey> (Fred::DnsKey(257, 3, 5, "AwEAAddt2AkLfYGKgiEZB5SmIF8EvrjxNMH6HtxWEA4RJ9Ao6LCWheg8")))
                 .exec(ctx);
 
-        keyset_info = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
+        keyset_info = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
 
         Fred::CreateObjectStateRequestId(keyset_info.info_keyset_data.id,
             Util::set_of<std::string>(Fred::ObjectState::SERVER_DELETE_PROHIBITED)).exec(ctx);
@@ -2098,7 +2098,7 @@ struct get_my_domains_fixture
                 , 0//const Optional<unsigned long long> logd_request_id
                 ).exec(ctx);
 
-            domain_info[fqdn.str()]= Fred::InfoDomainByHandle(fqdn.str()).exec(ctx);
+            domain_info[fqdn.str()]= Fred::InfoDomainByHandle(fqdn.str()).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
 
             if(i%2)
             {
@@ -2122,14 +2122,14 @@ struct get_my_domains_fixture
             Fred::UpdateDomain(fqdn.str(), test_registrar_handle).set_domain_expiration(
                     current_local_day - boost::gregorian::days(1)).exec(ctx);
 
-            domain_info[fqdn.str()]= Fred::InfoDomainByHandle(fqdn.str()).exec(ctx);
+            domain_info[fqdn.str()]= Fred::InfoDomainByHandle(fqdn.str()).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
         }
 
         {   std::ostringstream fqdn;
             fqdn << "n"<<2<<test_fqdn;
             Fred::UpdateDomain(fqdn.str(), test_registrar_handle).set_domain_expiration(
                     current_local_day - boost::gregorian::days(outzone_protection+1)).exec(ctx);
-            domain_info[fqdn.str()]= Fred::InfoDomainByHandle(fqdn.str()).exec(ctx);
+            domain_info[fqdn.str()]= Fred::InfoDomainByHandle(fqdn.str()).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
         }
 
         ctx.commit_transaction();//commit fixture
@@ -2539,7 +2539,7 @@ struct get_my_nssets_fixture
                         (boost::asio::ip::address::from_string("127.1.1.4")))) //add_dns
                 ).exec(ctx);
 
-            nsset_info[nsset_handle.str()]= Fred::InfoNssetByHandle(nsset_handle.str()).exec(ctx);
+            nsset_info[nsset_handle.str()]= Fred::InfoNssetByHandle(nsset_handle.str()).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
 
             if(i%2)
             {
@@ -2705,7 +2705,7 @@ struct get_my_keysets_fixture
                 .set_dns_keys(Util::vector_of<Fred::DnsKey> (Fred::DnsKey(257, 3, 5, "AwEAAddt2AkLfYGKgiEZB5SmIF8EvrjxNMH6HtxWEA4RJ9Ao6LCWheg8")))
                 .exec(ctx);
 
-            keyset_info[keyset_handle.str()]= Fred::InfoKeysetByHandle(keyset_handle.str()).exec(ctx);
+            keyset_info[keyset_handle.str()]= Fred::InfoKeysetByHandle(keyset_handle.str()).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
 
             if(i%2)
             {
@@ -2933,7 +2933,7 @@ struct merge_contacts_fixture
                 .set_city("Praha").set_postalcode("11150").set_country("CZ")
                 .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
                 .exec(ctx);
-            user_contact_info = Fred::InfoContactByHandle(user_contact_handle).exec(ctx);
+            user_contact_info = Fred::InfoContactByHandle(user_contact_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
             Fred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id, Util::set_of<std::string>(Fred::ObjectState::MOJEID_CONTACT)).exec(ctx);
             Fred::PerformObjectStateRequest(user_contact_info.info_contact_data.id).exec(ctx);
             ctx.commit_transaction();//commit fixture
@@ -3308,7 +3308,7 @@ struct merge_contacts_fixture
                     break;
             }
 
-            contact_info[contact_handle.str()] = Fred::InfoContactByHandle(contact_handle.str()).exec(ctx);
+            contact_info[contact_handle.str()] = Fred::InfoContactByHandle(contact_handle.str()).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
             if (merge_candidate)
             {
                 contact_merge_candidates_ids.insert(contact_info.at(contact_handle.str()).info_contact_data.id);
@@ -3478,7 +3478,7 @@ struct merge_contacts_no_src_contacts_fixture
             .set_city("Praha").set_postalcode("11150").set_country("CZ")
             .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
             .exec(ctx);
-        user_contact_info = Fred::InfoContactByHandle(user_contact_handle).exec(ctx);
+        user_contact_info = Fred::InfoContactByHandle(user_contact_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
         Fred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id, Util::set_of<std::string>(Fred::ObjectState::MOJEID_CONTACT)).exec(ctx);
         Fred::PerformObjectStateRequest(user_contact_info.info_contact_data.id).exec(ctx);
         ctx.commit_transaction();//commit fixture
