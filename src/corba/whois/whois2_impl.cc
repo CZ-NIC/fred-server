@@ -15,6 +15,8 @@
 namespace Registry {
 namespace Whois {
 
+    const std::string Server_impl::output_timezone("UTC");
+
     DisclosableString* wrap_disclosable_string(const Nullable<std::string>& in, bool to_disclose) {
         if(!to_disclose) {
             return NULL;
@@ -334,7 +336,7 @@ namespace Whois {
                 wrap_registrar(
                     Fred::InfoRegistrarByHandle(
                         Corba::unwrap_string(handle)
-                    ).exec(ctx)
+                    ).exec(ctx, output_timezone)
                     .info_registrar_data
                 );
 
@@ -356,7 +358,7 @@ namespace Whois {
                 wrap_contact(
                     Fred::InfoContactByHandle(
                         Corba::unwrap_string(handle)
-                    ).exec(ctx)
+                    ).exec(ctx, output_timezone)
                     .info_contact_data
                 );
 
@@ -378,7 +380,7 @@ namespace Whois {
                 wrap_nsset(
                     Fred::InfoNssetByHandle(
                         Corba::unwrap_string(handle)
-                    ).exec(ctx)
+                    ).exec(ctx, output_timezone)
                     .info_nsset_data
                 );
 
@@ -425,7 +427,7 @@ namespace Whois {
                 wrap_keyset(
                     Fred::InfoKeysetByHandle(
                         Corba::unwrap_string(handle)
-                    ).exec(ctx)
+                    ).exec(ctx, output_timezone)
                     .info_keyset_data
                 );
 
@@ -450,7 +452,7 @@ namespace Whois {
                 wrap_domain(
                     Fred::InfoDomainByHandle(
                         Corba::unwrap_string(handle)
-                    ).exec(ctx)
+                    ).exec(ctx, output_timezone)
                     .info_domain_data
                 );
 
