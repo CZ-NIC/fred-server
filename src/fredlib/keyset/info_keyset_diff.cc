@@ -37,6 +37,29 @@ namespace Fred
     InfoKeysetDiff::InfoKeysetDiff()
     {}
 
+    std::set<std::string> InfoKeysetDiff::changed_fields() const
+    {
+        std::set<std::string> fields;
+        if(crhistoryid.isset()) fields.insert("crhistoryid");
+        if(historyid.isset()) fields.insert("historyid");
+        if(delete_time.isset()) fields.insert("delete_time");
+        if(handle.isset()) fields.insert("handle");
+        if(roid.isset()) fields.insert("roid");
+        if(sponsoring_registrar_handle.isset()) fields.insert("sponsoring_registrar_handle");
+        if(create_registrar_handle.isset()) fields.insert("create_registrar_handle");
+        if(update_registrar_handle.isset()) fields.insert("update_registrar_handle");
+        if(creation_time.isset()) fields.insert("creation_time");
+        if(update_time.isset()) fields.insert("update_time");
+        if(transfer_time.isset()) fields.insert("transfer_time");
+        if(authinfopw.isset()) fields.insert("authinfopw");
+
+        if(dns_keys.isset()) fields.insert("dns_keys");
+        if(tech_contacts.isset()) fields.insert("tech_contacts");
+        if(id.isset()) fields.insert("id");
+
+        return fields;
+    }
+
     std::string InfoKeysetDiff::to_string() const
     {
         return Util::format_data_structure("InfoKeysetDiff",
