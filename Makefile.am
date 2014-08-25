@@ -2321,6 +2321,7 @@ tests_test_fredlib_SOURCES = \
 		tests/fredlib/contact/test_create_contact.cc \
 		tests/fredlib/contact/test_info_contact.cc \
 		tests/fredlib/contact/test_merge_contact.cc \
+		tests/fredlib/contact/test_merge_contact_fixture.h \
 		tests/fredlib/contact/test_update_contact.cc \
 		tests/fredlib/contact/test_copy_contact.cc \
 		tests/fredlib/domain/test_update_domain.cc \
