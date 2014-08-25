@@ -35,6 +35,52 @@ namespace Fred
     InfoContactDiff::InfoContactDiff()
     {}
 
+    std::set<std::string> InfoContactDiff::changed_fields() const
+    {
+        std::set<std::string> fields;
+        if(crhistoryid.isset()) fields.insert("crhistoryid");
+        if(historyid.isset()) fields.insert("historyid");
+        if(delete_time.isset()) fields.insert("delete_time");
+        if(handle.isset()) fields.insert("handle");
+        if(roid.isset()) fields.insert("roid");
+        if(sponsoring_registrar_handle.isset()) fields.insert("sponsoring_registrar_handle");
+        if(create_registrar_handle.isset()) fields.insert("create_registrar_handle");
+        if(update_registrar_handle.isset()) fields.insert("update_registrar_handle");
+        if(creation_time.isset()) fields.insert("creation_time");
+        if(update_time.isset()) fields.insert("update_time");
+        if(transfer_time.isset()) fields.insert("transfer_time");
+        if(authinfopw.isset()) fields.insert("authinfopw");
+        if(name.isset()) fields.insert("name");
+        if(organization.isset()) fields.insert("organization");
+        if(street1.isset()) fields.insert("street1");
+        if(street2.isset()) fields.insert("street2");
+        if(street3.isset()) fields.insert("street3");
+        if(city.isset()) fields.insert("city");
+        if(stateorprovince.isset()) fields.insert("stateorprovince");
+        if(postalcode.isset()) fields.insert("postalcode");
+        if(country.isset()) fields.insert("country");
+        if(telephone.isset()) fields.insert("telephone");
+        if(fax.isset()) fields.insert("fax");
+        if(email.isset()) fields.insert("email");
+        if(notifyemail.isset()) fields.insert("notifyemail");
+        if(vat.isset()) fields.insert("vat");
+        if(ssntype.isset()) fields.insert("ssntype");
+        if(ssn.isset()) fields.insert("ssn");
+        if(disclosename.isset()) fields.insert("disclosename");
+        if(discloseorganization.isset()) fields.insert("discloseorganization");
+        if(discloseaddress.isset()) fields.insert("discloseaddress");
+        if(disclosetelephone.isset()) fields.insert("disclosetelephone");
+        if(disclosefax.isset()) fields.insert("disclosefax");
+        if(discloseemail.isset()) fields.insert("discloseemail");
+        if(disclosevat.isset()) fields.insert("disclosevat");
+        if(discloseident.isset()) fields.insert("discloseident");
+        if(disclosenotifyemail.isset()) fields.insert("disclosenotifyemail");
+        if(id.isset()) fields.insert("id");
+
+        return  fields;
+    }
+
+
     std::string InfoContactDiff::to_string() const
     {
         return Util::format_data_structure("InfoContactDiff",
