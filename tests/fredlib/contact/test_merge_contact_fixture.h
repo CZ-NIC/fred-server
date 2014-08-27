@@ -21,8 +21,6 @@
  *  merge contact test fixture
  */
 
-//test_merge_contact_fixture.h
-
 #ifndef TEST_MERGE_CONTACT_FIXTURE_H_7b8f6ad0c0a540419a8a9b52ba626425
 #define TEST_MERGE_CONTACT_FIXTURE_H_7b8f6ad0c0a540419a8a9b52ba626425
 
@@ -67,19 +65,28 @@
 namespace MergeContactFixture
 {
     /**
-     * Setup database for MergeContact related tests
+     * Setup test data for MergeContact related tests
      */
     struct mergeable_contact_grps_with_linked_objects_and_blocking_states : virtual Test::Fixture::instantiate_db_template
     {
+        /**
+         * Create handle of contact not meant to be merged because of unique data.
+         * @param registrar_handle is registrar of the contact
+         * @param idtag is number to make object different
+         * @return contact handle composed of given params
+         */
         std::string create_non_mergeable_contact_handle(
             const std::string& registrar_handle
-            , unsigned idtag //to make object unique
-            )//return contact handle composed of given params
+            , unsigned idtag
+            )
         {
             std::string s_idtag = boost::lexical_cast<std::string>(idtag);
             return non_mergeable_contact_handle + registrar_handle + "_" + s_idtag;
         }
 
+        /**
+         * Create handle of contact meant to be merged because of the same data with some other contact in group of mergeable contacts.
+         */
         std::string create_mergeable_contact_handle(
             const std::string& registrar_handle
             , unsigned grpidtag //to make group of mergeable objects unique
@@ -98,6 +105,9 @@ namespace MergeContactFixture
                 +"_Q" + boost::lexical_cast<std::string>(quantity_case);
         }
 
+        /**
+         * Create handle of nsset linked to some contact.
+         */
         std::string create_nsset_with_tech_contact_handle(
                     unsigned linked_object_state_case
                     , unsigned quantity_case
@@ -120,6 +130,9 @@ namespace MergeContactFixture
             return handle;
         }
 
+        /**
+         * Create handle of keyset linked to some contact.
+         */
         std::string create_keyset_with_tech_contact_handle(
             unsigned linked_object_state_case
             , unsigned quantity_case
@@ -143,6 +156,9 @@ namespace MergeContactFixture
             return handle;
         }
 
+        /**
+         * Create fqdn of domain linked to some contact via owner.
+         */
         std::string create_domain_with_owner_contact_fqdn(
             unsigned linked_object_state_case
             , unsigned quantity_case
@@ -170,6 +186,9 @@ namespace MergeContactFixture
             return fqdn;
         }
 
+        /**
+         * Create fqdn of domain linked to some contact via admin.
+         */
         std::string create_domain_with_admin_contact_fqdn(
             unsigned linked_object_state_case
             , unsigned quantity_case
@@ -196,17 +215,27 @@ namespace MergeContactFixture
                 boost::algorithm::replace_all_copy(admin_contact_handle,"_", "-")) + additional_admin_contacts_in_fqdn + ".cz";
             return fqdn;
         }
-
+    /**
+     * Default set of configurations of linked objects.
+     * Need to be kept in sync with implementation in @ref create_linked_object .
+     */
         static std::set<unsigned> init_linked_object_combinations()
         {
             return Util::set_of<unsigned>(0)(1)(2)(3)(4)(5)(6)(7)(8)(9)(10)(11)(12)(13)(14)(15)(16)(17)(18)(19)(20);
         }
 
+        /**
+         * Default set of quantities of linked object configurations.
+         */
         static std::vector<unsigned> init_linked_object_quantities()
         {
             return Util::vector_of<unsigned>(0)(1)(2)(5);
         }
 
+        /**
+         * Default set of configurations of mergeable contact states.
+         * First two stateless states are abused in linked objects configuration (when two almost the same contacts are needed), second stateless state is also used in tests as dest. contact.
+         */
         static std::vector<std::set<std::string> > init_set_of_contact_state_combinations()
         {
             std::vector<std::set<std::string> > states_;
@@ -271,6 +300,9 @@ namespace MergeContactFixture
             return states_;
         }
 
+        /**
+         * Default set of configurations of states of primary linked object within linked object configuration.
+         */
         static std::vector<std::set<std::string> > init_set_of_linked_object_state_combinations()
         {
             std::vector<std::set<std::string> > states_;
@@ -283,12 +315,16 @@ namespace MergeContactFixture
                 return states_;
         }
 
-
     private:
+
+        /**
+         * Create contact not meant to be merged with unique enough data and save its data for later comparison.
+         * @return handle of created object
+         */
         std::string create_non_mergeable_contact(Fred::OperationContext& ctx
             , const std::string& registrar_handle
             , unsigned idtag //to make object unique
-            )//return handle of created object
+            )
         {
             std::string s_idtag = boost::lexical_cast<std::string>(idtag);
             std::string handle = create_non_mergeable_contact_handle(registrar_handle, idtag);
@@ -326,6 +362,16 @@ namespace MergeContactFixture
             return handle;
         }
 
+        /**
+         * Create contact meant to be mergeable within group of mergeable contacts and save its data for later comparison.
+         * @param registrar_handle is contact registar
+         * @param grpidtag is identification number of group of test data with otherwise the same configuration
+         * @param state_case designates object states configuration of given contact as index to @ref contact_states
+         * @param linked_object_case is configuration of objects linked to the contact
+         * @param linked_object_state_case is configuration of object states of linked object
+         * @param quantity_case designates how many linked object configurations will be linked to given contact
+         * @return handle of created object
+         */
         std::string create_mergeable_contact(//except the contact states that shall block merge
             Fred::OperationContext& ctx
             , const std::string& registrar_handle
@@ -334,7 +380,7 @@ namespace MergeContactFixture
             , unsigned linked_object_case
             , unsigned linked_object_state_case
             , unsigned quantity_case
-            )//return handle of created object
+            )
         {
             std::string s_grpidtag = boost::lexical_cast<std::string>(grpidtag);
             std::string handle = create_mergeable_contact_handle(registrar_handle
@@ -374,6 +420,16 @@ namespace MergeContactFixture
             return handle;
         }
 
+        /**
+         * Create nsset linked via tech contact and save its data for later comparison.
+         * @param registrar_handle is nsset registar
+         * @param linked_object_state_case is configuration of object states of linked object, might not be this one but linked to the common contact
+         * @param quantity_case designates how many linked object configurations will be linked to given contact
+         * @param number_in_quantity is object borg collective designation e.g. 7 of 9 tertiary adjunct of unimatrix 01 starting from 0
+         * @param tech_contact_handle is linked contact handle
+         * @param additional_tech_contacts are other linked contact handles
+         * @return handle of created object
+         */
         std::string create_nsset_with_tech_contact(
             Fred::OperationContext& ctx
             , const std::string& registrar_handle
@@ -382,7 +438,7 @@ namespace MergeContactFixture
             , unsigned number_in_quantity
             , const std::string& tech_contact_handle
             , std::vector<std::string> additional_tech_contacts = std::vector<std::string>()
-            )//return handle of created object
+            )
         {
             std::string handle = create_nsset_with_tech_contact_handle(
                 linked_object_state_case
@@ -400,6 +456,16 @@ namespace MergeContactFixture
             return handle;
         }
 
+        /**
+         * Create keyset linked via tech contact and save its data for later comparison.
+         * @param registrar_handle is keyset registar
+         * @param linked_object_state_case is configuration of object states of linked object, might not be this one but linked to the common contact
+         * @param quantity_case designates how many linked object configurations will be linked to given contact
+         * @param number_in_quantity is object borg collective designation e.g. 7 of 9 tertiary adjunct of unimatrix 01 starting from 0
+         * @param tech_contact_handle is linked contact handle
+         * @param additional_tech_contacts are other linked contact handles
+         * @return handle of created object
+         */
         std::string create_keyset_with_tech_contact(
             Fred::OperationContext& ctx
             , const std::string& registrar_handle
@@ -408,7 +474,7 @@ namespace MergeContactFixture
             , unsigned number_in_quantity
             , const std::string& tech_contact_handle
             , std::vector<std::string> additional_tech_contacts = std::vector<std::string>()
-            )//return handle of created object
+            )
         {
             std::string handle = create_keyset_with_tech_contact_handle(
                 linked_object_state_case
@@ -426,6 +492,16 @@ namespace MergeContactFixture
             return handle;
         }
 
+        /**
+         * Create domain linked via owner contact and save its data for later comparison.
+         * @param registrar_handle is domain sponsoring registar
+         * @param linked_object_state_case is configuration of object states of linked object, might not be this one but linked to the common contact
+         * @param quantity_case designates how many linked object configurations will be linked to given contact
+         * @param number_in_quantity is object borg collective designation e.g. 7 of 9 tertiary adjunct of unimatrix 01 starting from 0
+         * @param owner_contact_handle is linked owner contact handle
+         * @param admin_contacts are other linked contact handles
+         * @return fqdn
+         */
         std::string create_domain_with_owner_contact(
             Fred::OperationContext& ctx
             , const std::string& registrar_handle
@@ -434,7 +510,7 @@ namespace MergeContactFixture
             , unsigned number_in_quantity
             , const std::string& owner_contact_handle
             , std::vector<std::string> admin_contacts = std::vector<std::string>()
-            )//return fqdn of created object
+            )
         {
             std::string fqdn = create_domain_with_owner_contact_fqdn(
                 linked_object_state_case
@@ -452,6 +528,17 @@ namespace MergeContactFixture
             return fqdn;
         }
 
+        /**
+         * Create domain linked via admin contact and save its data for later comparison.
+         * @param registrar_handle is domain sponsoring registar
+         * @param linked_object_state_case is configuration of object states of linked object, might not be this one but linked to the common contact
+         * @param quantity_case designates how many linked object configurations will be linked to given contact
+         * @param number_in_quantity is object borg collective designation e.g. 7 of 9 tertiary adjunct of unimatrix 01 starting from 0
+         * @param owner_contact_handle is linked owner contact handle
+         * @param admin_contact_handle is linked admin contact handle
+         * @param admin_contacts are other linked admin contact handles
+         * @return fqdn
+         */
         std::string create_domain_with_admin_contact(
             Fred::OperationContext& ctx
             , const std::string& registrar_handle
@@ -461,7 +548,7 @@ namespace MergeContactFixture
             , const std::string& owner_contact_handle
             , const std::string& admin_contact_handle
             , std::vector<std::string> additional_admin_contacts = std::vector<std::string>()
-            )//return fqdn of created object
+            )
         {
             std::string fqdn = create_domain_with_admin_contact_fqdn(
                 linked_object_state_case
@@ -480,7 +567,12 @@ namespace MergeContactFixture
             return fqdn;
         }
 
-
+        /**
+         * Create object state requests.
+         * Regardless of states allowed in enum_object_states.types.
+         * @param id is database id of the object
+         * @param state_set is set of required states from enum_object_states.name
+         */
         void insert_state_requests(
             Fred::OperationContext& ctx
             , unsigned long long id
@@ -496,8 +588,18 @@ namespace MergeContactFixture
                 " WHERE name = $2::text))", Database::query_param_list(id)(*ci));
             }
         }
-
-        //return id of object created according to linked objects cases
+        /**
+         * Create linked object configurations with numbered cases.
+         * @param contact_handle is contact linked to created objects, there may also be other contacts linked to the same objects, specified in implementation of linked_object_case
+         * @param registrar_handle is default registar, others may be specified in implementation
+         * @param grpidtag is identification number of group of test data with otherwise the same configuration
+         * @param contact_state_case designates object states configuration of given contact as index to @ref contact_states
+         * @param linked_object_case is configuration of objects linked to given contact and specification of object that may have set some states according to @ref linked_object_states
+         * @param linked_object_state_case is configuration of object states of linked object designated by returned id
+         * @param quantity_case designates how many linked object configurations will be linked to given contact
+         * @param number_in_quantity is object borg collective designation e.g. 7 of 9 tertiary adjunct of unimatrix 01 starting from 0
+         * @return id of primary object created according to linked objects case or 0, id is meant to be used for setting object states configurations
+         */
         unsigned long long create_linked_object(
             Fred::OperationContext& ctx
             , const std::string& contact_handle
@@ -805,24 +907,27 @@ namespace MergeContactFixture
         std::string registrar_mc_2_handle;
         std::string registrar_mojeid_handle;
         std::string registrar_sys_handle;
-        std::vector<std::string> registrar_vect;
-        std::map<std::string, Fred::InfoRegistrarData> registrar_info;
+        std::vector<std::string> registrar_vect;/**< test registrar handles*/
+        std::map<std::string, Fred::InfoRegistrarData> registrar_info;/**< map of test registrar info data by handle*/
 
         std::string mergeable_contact_handle;
-        std::string non_mergeable_contact_handle;
+        std::string non_mergeable_contact_handle;/**< prefix of handle of contact that is not meant to be merged */
 
-        std::map<std::string, Fred::InfoContactData> contact_info;
-        std::map<std::string, Fred::InfoNssetData> nsset_info;
-        std::map<std::string, Fred::InfoKeysetData> keyset_info;
-        std::map<std::string, Fred::InfoDomainData> domain_info;
-        unsigned mergeable_contact_group_count;//number of groups of mergeable contacts
-        std::vector<std::set<std::string> > contact_states; //combinations of contact states
-        std::set<unsigned> linked_object_cases;//(0)(1)(2)..(15)
-        //unsigned linked_object_case_count; //number of linked object configurations 1-16 , impl in switch in create_linked_object
-        std::vector<std::set<std::string> > linked_object_states; //combinations of linked object states
-         std::vector<unsigned> linked_object_quantities;//
+        std::map<std::string, Fred::InfoContactData> contact_info;/**< map of test contact info data by handle*/
+        std::map<std::string, Fred::InfoNssetData> nsset_info;/**< map of test nsset info data by handle*/
+        std::map<std::string, Fred::InfoKeysetData> keyset_info;/**< map of test keyset info data by handle*/
+        std::map<std::string, Fred::InfoDomainData> domain_info;/**< map of test domain info data by fqdn*/
+        unsigned mergeable_contact_group_count;/**< number of groups of mergeable contacts */
+        std::vector<std::set<std::string> > contact_states; /**< set of combinations of contact states*/
+        std::set<unsigned> linked_object_cases;/**< set of combinations of linked objects configurations*/
+        std::vector<std::set<std::string> > linked_object_states; /**< set of combinations of primary linked object states*/
+         std::vector<unsigned> linked_object_quantities;/**< set of quantities of linked objects configurations*/
 
-         //diff saved info data with current data in db
+         /**
+          * Get contacts changed since fixture init.
+          * Contacts are expected to be deleted in tests, therefore saved info data are compared against the last record in history.
+          * @return map of changed contact handles with changed data
+          */
          std::map<std::string, Fred::InfoContactDiff> diff_contacts()
          {
              Fred::OperationContext ctx;
@@ -835,6 +940,12 @@ namespace MergeContactFixture
              }
              return diff_map;
          }
+
+         /**
+          * Get nssets changed since fixture init.
+          * Nssets are not expected to be deleted in tests, therefore saved info data are compared against current record of object, in case of deleted or missing object it shall fail.
+          * @return map of changed nsset handles with changed data
+          */
          std::map<std::string, Fred::InfoNssetDiff> diff_nssets()
          {
              Fred::OperationContext ctx;
@@ -846,6 +957,12 @@ namespace MergeContactFixture
              }
              return diff_map;
          }
+
+         /**
+          * Get keysets changed since fixture init.
+          * Keysets are not expected to be deleted in tests, therefore saved info data are compared against current record of object, in case of deleted or missing object it shall fail.
+          * @return map of changed keyset handles with changed data
+          */
          std::map<std::string, Fred::InfoKeysetDiff> diff_keysets()
          {
              Fred::OperationContext ctx;
@@ -857,6 +974,12 @@ namespace MergeContactFixture
              }
              return diff_map;
          }
+
+         /**
+          * Get domains changed since fixture init.
+          * Domains are not expected to be deleted in tests, therefore saved info data are compared against current record of object, in case of deleted or missing object it shall fail.
+          * @return map of changed domains, fqdn with changed data
+          */
          std::map<std::string, Fred::InfoDomainDiff> diff_domains()
          {
              Fred::OperationContext ctx;
@@ -869,6 +992,11 @@ namespace MergeContactFixture
              return diff_map;
          }
 
+         /**
+          * Get registrars changed since fixture init.
+          * Registrars are not expected to be deleted (nor changed) in tests, therefore saved info data are compared against current record of object, in case of deleted or missing object it shall fail.
+          * @return map of changed keyset handles with changed data
+          */
          std::map<std::string, Fred::InfoRegistrarDiff> diff_registrars()
          {
              Fred::OperationContext ctx;
@@ -882,6 +1010,32 @@ namespace MergeContactFixture
          }
 
     private:
+
+         /**
+          * Common init procedure.
+          * Create two test registrars, assemble vector of registrar handles from test registrars and pre-created mojeid registrar and save registrar info data into map by handle for later comparison.
+          * For each test registrar create two different nonmergeable test contacts with linked nsset, keyset, domain via owner and domain via admin, that are not meant to be updated.
+          * Testcase implementation should check, that nonmergeable objects are not changed by test of merge contact operation.
+          * For each test registrar create mergeable test contacts according to set of parameters describing test data configuration:
+          *
+          * grpidtag enable to have more groups of test data with otherwise the same configuration, these numbers just have to be unique so customization in ctor is count of groups @ref mergeable_contact_group_count
+          *
+          * state_case designates object states configuration of given contact as index of @ref contact_states, default set of contact state configuration is provided by @ref init_set_of_contact_state_combinations()
+          * and can be customized in corresponding ctor parameter @ref contact_state_combinations
+          *
+          * linked_object_case designates configuration of objects linked to given contact implemented if @ref create_linked_object, it also contains specification of object that may later have set some states according to @ref linked_object_states
+          *
+          * linked_object_state_case designates configuration of object states set to object given by @ref create_linked_object (if any) according to linked_object_case configuration
+          *
+          * quantity_case designates how many linked object configurations will be linked to given contact
+          *
+          * Contacts are created before linked objects because linked object may be linked to more then one contact
+          * , this also creates situations where e.g. similar contacts with state_case 0 and 1 are linked to one object so
+          * , that merge contact may update linked objects with both contact state cases.
+          *
+          * The same set of parameters is used for creation of linked objects with their states. At the end is called db function update_object_states for all objects.
+          */
+
         void init_fixture()
         {
             Fred::OperationContext ctx;
@@ -909,7 +1063,6 @@ namespace MergeContactFixture
             for(std::vector<std::string>::const_iterator reg_ci = registrar_vect.begin()
                 ; reg_ci != registrar_vect.end(); ++reg_ci)
             {
-                //non-mergeable contacts 2xreg * 2xnon-mergeable contacts
                 std::string nmch1 = create_non_mergeable_contact(ctx, *reg_ci, 1u);
                 std::string nss_nmch1 = create_nsset_with_tech_contact(ctx,*reg_ci,0, 1, 0, nmch1);
                 std::string ks_nmch1 = create_keyset_with_tech_contact(ctx,*reg_ci, 0, 1, 0, nmch1);
@@ -1004,6 +1157,9 @@ namespace MergeContactFixture
             ctx.commit_transaction();
         }
 public:
+        /**
+         * Default fixture setup.
+         */
         mergeable_contact_grps_with_linked_objects_and_blocking_states()
         : registrar_mc_1_handle("REG-1")
         , registrar_mc_2_handle("REG-2")
@@ -1022,6 +1178,14 @@ public:
             init_fixture();
         }
 
+        /**
+         * Custom fixture setup.
+         * @param mergeable_contact_group_count is number of different groups of test data with otherwise the same configuration
+         * @param _linked_object_cases is selection of linked object configurations from @ref create_linked_object
+         * @param contact_state_combinations is selection of contact states combinations with first two stateless cases, something like provided by @ref init_set_of_contact_state_combinations()
+         * @param linked_object_state_combinations is selection of object state configurations of object selected by _linked_object_cases , something like provided by @ref init_set_of_linked_object_state_combinations()
+         * @param _linked_object_quantities is selection of linked object configurations quantities per contact, like @ref init_linked_object_quantities()
+         */
         explicit mergeable_contact_grps_with_linked_objects_and_blocking_states(
             unsigned mergeable_contact_group_count,
             std::set<unsigned> _linked_object_cases,
