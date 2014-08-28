@@ -86,15 +86,22 @@ namespace MergeContactFixture
 
         /**
          * Create handle of contact meant to be merged because of the same data with some other contact in group of mergeable contacts.
+         * @param registrar_handle is contact registar
+         * @param grpidtag is identification number of group of test data with otherwise the same configuration
+         * @param state_case designates object states configuration of given contact as index to @ref contact_states
+         * @param linked_object_case is configuration of objects linked to the contact
+         * @param linked_object_state_case is configuration of object states of linked object
+         * @param quantity_case designates how many linked object configurations will be linked to given contact
+         * @return contact handle composed of given params
          */
         std::string create_mergeable_contact_handle(
             const std::string& registrar_handle
-            , unsigned grpidtag //to make group of mergeable objects unique
+            , unsigned grpidtag
             , unsigned state_case
             , unsigned linked_object_case
             , unsigned linked_object_state_case
             , unsigned quantity_case
-            )//return contact handle composed of given params
+            )
         {
             std::string s_state_case = boost::lexical_cast<std::string>(state_case);
             std::string s_linked_objects_case = boost::lexical_cast<std::string>(linked_object_case);
@@ -107,6 +114,12 @@ namespace MergeContactFixture
 
         /**
          * Create handle of nsset linked to some contact.
+         * @param linked_object_state_case is configuration of object states of linked object, might not be this one but linked to the common contact
+         * @param quantity_case designates how many linked object configurations will be linked to given contact
+         * @param number_in_quantity is object borg collective designation e.g. 7 of 9 tertiary adjunct of unimatrix 01 starting from 0
+         * @param tech_contact_handle is linked contact handle
+         * @param additional_tech_contacts are other linked contact handles
+         * @return nsset handle
          */
         std::string create_nsset_with_tech_contact_handle(
                     unsigned linked_object_state_case
@@ -114,7 +127,7 @@ namespace MergeContactFixture
                     , unsigned number_in_quantity
                     , const std::string& tech_contact_handle
                     , std::vector<std::string> additional_tech_contacts = std::vector<std::string>()
-                    )//return handle
+                    )
         {
             std::string handle = std::string("NSS_TECH_")
             +"LOS"+ boost::lexical_cast<std::string>(linked_object_state_case)
@@ -132,6 +145,12 @@ namespace MergeContactFixture
 
         /**
          * Create handle of keyset linked to some contact.
+         * @param linked_object_state_case is configuration of object states of linked object, might not be this one but linked to the common contact
+         * @param quantity_case designates how many linked object configurations will be linked to given contact
+         * @param number_in_quantity is object borg collective designation e.g. 7 of 9 tertiary adjunct of unimatrix 01 starting from 0
+         * @param tech_contact_handle is linked contact handle
+         * @param additional_tech_contacts are other linked contact handles
+         * @return keyset handle
          */
         std::string create_keyset_with_tech_contact_handle(
             unsigned linked_object_state_case
@@ -139,7 +158,7 @@ namespace MergeContactFixture
             , unsigned number_in_quantity
             , const std::string& tech_contact_handle
             , std::vector<std::string> additional_tech_contacts = std::vector<std::string>()
-            )//return handle
+            )
         {
             std::string handle = std::string("KS_TECH_")
             +"LOS"+ boost::lexical_cast<std::string>(linked_object_state_case)
@@ -158,6 +177,12 @@ namespace MergeContactFixture
 
         /**
          * Create fqdn of domain linked to some contact via owner.
+         * @param linked_object_state_case is configuration of object states of linked object, might not be this one but linked to the common contact
+         * @param quantity_case designates how many linked object configurations will be linked to given contact
+         * @param number_in_quantity is object borg collective designation e.g. 7 of 9 tertiary adjunct of unimatrix 01 starting from 0
+         * @param owner_contact_handle is linked owner contact handle
+         * @param admin_contacts are other linked contact handles
+         * @return fqdn
          */
         std::string create_domain_with_owner_contact_fqdn(
             unsigned linked_object_state_case
@@ -165,7 +190,7 @@ namespace MergeContactFixture
             , unsigned number_in_quantity
             , const std::string& owner_contact_handle
             , std::vector<std::string> admin_contacts = std::vector<std::string>()
-            )//return fqdn
+            )
         {
             std::string admin_contacts_in_fqdn;
             if(!admin_contacts.empty())
@@ -188,6 +213,13 @@ namespace MergeContactFixture
 
         /**
          * Create fqdn of domain linked to some contact via admin.
+         * @param linked_object_state_case is configuration of object states of linked object, might not be this one but linked to the common contact
+         * @param quantity_case designates how many linked object configurations will be linked to given contact
+         * @param number_in_quantity is object borg collective designation e.g. 7 of 9 tertiary adjunct of unimatrix 01 starting from 0
+         * @param owner_contact_handle is linked owner contact handle
+         * @param admin_contact_handle is linked admin contact handle
+         * @param admin_contacts are other linked admin contact handles
+         * @return fqdn
          */
         std::string create_domain_with_admin_contact_fqdn(
             unsigned linked_object_state_case
@@ -196,7 +228,7 @@ namespace MergeContactFixture
             , const std::string& owner_contact_handle
             , const std::string& admin_contact_handle
             , std::vector<std::string> additional_admin_contacts = std::vector<std::string>()
-            )//return fqdn
+            )
         {
             std::string additional_admin_contacts_in_fqdn;
             if(!additional_admin_contacts.empty())
@@ -319,6 +351,8 @@ namespace MergeContactFixture
 
         /**
          * Create contact not meant to be merged with unique enough data and save its data for later comparison.
+         * @param registrar_handle is registrar of the contact
+         * @param idtag is number to make object different
          * @return handle of created object
          */
         std::string create_non_mergeable_contact(Fred::OperationContext& ctx
