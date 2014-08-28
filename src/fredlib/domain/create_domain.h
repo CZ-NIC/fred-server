@@ -51,6 +51,7 @@ namespace Fred
     */
     class CreateDomain : public Util::Printable
     {
+    protected:
         const std::string fqdn_;/**< fully qualified domain name */
         const std::string registrar_;/**< handle of registrar performing the create */
         Optional<std::string> authinfo_;/**< transfer password */
@@ -126,6 +127,8 @@ namespace Fred
                 , const Optional<boost::gregorian::date>& enum_validation_expiration
                 , const Optional<bool>& enum_publish_flag
                 , const Optional<unsigned long long> logd_request_id);
+
+        virtual ~CreateDomain() { }
 
         /**
         * Sets domain transfer password.

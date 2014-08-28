@@ -61,7 +61,7 @@ int main( int argc, char* argv[] )
     FakedArgs fa;
     try
     {
-        fa = CfgArgs::init<HandleGeneralArgs>(global_hpv)->handle(argc, argv).copy_onlynospaces_args();
+        fa = CfgArgs::init<HandleTestsArgs>(global_hpv)->handle(argc, argv).copy_onlynospaces_args();
     }
     catch(const ReturnFromMain&)
     {

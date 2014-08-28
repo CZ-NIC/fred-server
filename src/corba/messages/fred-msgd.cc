@@ -66,6 +66,7 @@ int main(int argc, char** argv)
 
         {//db connection, test only
             Database::Connection conn = Database::Manager::acquire();
+            Database::Manager::release();
         }
 
         corba_init();

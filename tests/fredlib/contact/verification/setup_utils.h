@@ -4,35 +4,7 @@
 #include <string>
 #include <vector>
 
-#include "src/fredlib/contact/info_contact.h"
-
-struct setup_get_registrar_handle
-{
-    std::string registrar_handle;
-
-    setup_get_registrar_handle( );
-};
-
-struct setup_contact {
-    std::string contact_handle;
-    setup_get_registrar_handle registrar;
-    Fred::InfoContactOutput data_;
-    unsigned long long contact_id_;
-
-    setup_contact();
-};
-
-struct setup_nonexistent_contact_handle {
-    std::string contact_handle;
-
-    setup_nonexistent_contact_handle();
-};
-
-struct setup_nonexistent_contact_id {
-        unsigned long long contact_id_;
-
-    setup_nonexistent_contact_id();
-};
+#include "tests/setup/fixtures_utils.h"
 
 struct setup_testdef {
     long testdef_id_;
@@ -105,7 +77,7 @@ struct setup_error_msg {
 struct setup_check {
     std::string check_handle_;
     Optional<unsigned long long> logd_request_;
-    setup_contact contact_;
+    Test::contact contact_;
 
     setup_check(const std::string& _testsuite_handle, Optional<unsigned long long> _logd_request = Optional<unsigned long long>());
 };
@@ -137,36 +109,6 @@ struct setup_nonexistent_test_status_handle {
     std::string status_handle;
 
     setup_nonexistent_test_status_handle();
-};
-
-class autoclean_contact_verification_db {
-    std::vector<unsigned long long> object_ids_to_preserve_;
-
-    public:
-        typedef
-            std::vector<
-                boost::tuple<
-                    std::string,
-                    std::string,
-                    std::string,
-                    std::string,
-                    std::string
-                >
-            > T_foreign_keys;
-
-    private:
-        static T_foreign_keys foreign_keys;
-
-    private:
-        void set_cascading_fkeys(Fred::OperationContext& _ctx);
-
-        void restore_fkeys(Fred::OperationContext& _ctx);
-    public:
-        autoclean_contact_verification_db();
-
-        void clean(Fred::OperationContext& _ctx);
-
-        ~autoclean_contact_verification_db();
 };
 
 #endif

@@ -51,6 +51,7 @@ namespace Fred
     */
     class CreateNsset : public Util::Printable
     {
+    protected:
         const std::string handle_;/**< nsset identifier */
         const std::string registrar_;/**< handle of registrar performing the create */
         Optional<std::string> authinfo_;/**< transfer password */
@@ -100,6 +101,8 @@ namespace Fred
                 , const std::vector<std::string>& tech_contacts
                 , const Optional<unsigned long long> logd_request_id
                 );
+
+        virtual ~CreateNsset() { }
 
         /**
         * Sets nsset transfer password.

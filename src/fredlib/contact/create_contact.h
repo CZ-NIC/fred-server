@@ -62,7 +62,7 @@ namespace Fred
           , ExceptionData_unknown_country<Exception>
         {};
 
-    private:
+    protected:
         const std::string handle_;/**< contact identifier */
         const std::string registrar_;/**< handle of registrar performing the create */
         Optional<std::string> authinfo_;/**< transfer password */
@@ -164,6 +164,8 @@ namespace Fred
                 , const Optional<bool>& disclosenotifyemail
                 , const Optional<unsigned long long> logd_request_id
                 );
+
+        virtual ~CreateContact() { }
 
         /**
         * Sets contact transfer password.
