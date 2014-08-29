@@ -965,17 +965,18 @@ StateHistory set_object_state_history(::size_t object_id, ::uint8_t history, con
         const ::uint8_t mask = 0x80 >> idx;
         const bool current = history & mask;
         if (previous != current) {
-            std::ostringstream now;
-            now << ((120 * (7 - idx)) / 7) << " MINUTES";
-            param(now.str());
+            const int dT = ((120 * (7 - idx)) / 7);
+            std::ostringstream in_past;
+            in_past << dT << " MINUTES";
+            param(in_past.str());
             if (current) {
                 if (!values.str().empty()) {
                     values << ",";
                 }
-                values << "($1::bigint,$2::bigint,NOW()-$" << param.size() << "::interval,";
+                values << "($1::bigint,$2::bigint,NOW()-$" << param.size() << "::INTERVAL,";
             }
             else {
-                values << "NOW()-$" << param.size() << "::interval)";
+                values << "NOW()-$" << param.size() << "::INTERVAL)";
             }
             previous = current;
         }
@@ -987,7 +988,7 @@ StateHistory set_object_state_history(::size_t object_id, ::uint8_t history, con
                                 "(object_id,state_id,valid_from,valid_to) VALUES" +
                             values.str();
     conn.exec_params(sql, param);
-    return StateHistory(history & 0x10, history & 0x01);
+    return StateHistory(history & 0x10, history & 0x02);
 }
 
 typedef std::set< std::string > CurrentState;
@@ -1021,11 +1022,12 @@ BOOST_FIXTURE_TEST_CASE(get_contact_states, create_mojeid_contact_fixture)
     typedef std::vector< Registry::MojeID::ContactStateData > StatesData;
     typedef Registry::MojeID::ContactStateData::StateValidFrom StateValidFrom;
     StatesData states = mojeid_pimpl->getContactsStateChanges(1);
-    for (StatesData::const_iterator data_ptr = states.begin(); data_ptr != states.end(); ++data_ptr) {
+    for (StatesData::iterator data_ptr = states.begin(); data_ptr != states.end(); ++data_ptr) {
         if (contacts.count(data_ptr->contact_id) == 0) {
             continue;
         }
         StateData state_data = mojeid_pimpl->getContactState(data_ptr->contact_id);
+        BOOST_CHECK(data_ptr->state.erase("mojeidContact") == 1);
         BOOST_CHECK(data_ptr->contact_id == state_data.contact_id);
         BOOST_CHECK(data_ptr->state.size() == state_data.state.size());
         for (StateValidFrom::const_iterator state_ptr = data_ptr->state.begin(); state_ptr != data_ptr->state.end(); ++state_ptr) {
@@ -1043,7 +1045,8 @@ BOOST_FIXTURE_TEST_CASE(get_contact_states, create_mojeid_contact_fixture)
         bool cb_find = !cb.changed;
         bool cc_find = !cc.changed;
         bool cd_find = !cd.changed;
-        for (StatesData::const_iterator data_ptr = states.begin(); data_ptr != states.end(); ++data_ptr) {
+        for (StatesData::iterator data_ptr = states.begin(); data_ptr != states.end(); ++data_ptr) {
+            BOOST_CHECK(data_ptr->state.erase("mojeidContact") == 1);
             if (data_ptr->contact_id == contact_a.first) {
                 BOOST_CHECK(ca.changed);
                 if (ca.changed) {
