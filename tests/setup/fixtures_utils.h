@@ -301,17 +301,20 @@ namespace Test {
     template<> inline Fred::CreateContact generate_test_data<>(Fred::CreateContact obj) {
         RandomDataGenerator rnd;
 
+        Fred::Contact::PlaceAddress place;
+        place.street1 = std::string("Na rynku ") + rnd.xnumstring(3) + "/" + rnd.xnumstring(2);
+        place.street2 = rnd.xnumstring(1) + ". patro";
+        place.street3 = rnd.xnumstring(1) + ". dvere vlevo";
+        place.city = std::string("Praha ") + rnd.xnumstring(1);
+        place.stateorprovince = std::string("Kraj c.") + rnd.xnumstring(2);
+        place.postalcode = rnd.xnumstring(3) + " " + rnd.xnumstring(2);
+        static const std::string country("CZ");
+        place.country = country;
+
         obj.set_authinfo(rnd.xnstring(10));
         obj.set_name("Jan " + rnd.xnstring(7) + " Novak");
         obj.set_organization("Zakoupil a Zboril a " + rnd.xnstring(7) + " s. r. o.");
-        obj.set_street1("Na rynku " + rnd.xnumstring(3) + "/" + rnd.xnumstring(2));
-        obj.set_street2(rnd.xnumstring(1) + ". patro");
-        obj.set_street3(rnd.xnumstring(1) + ". dvere vlevo");
-        obj.set_city("Praha " + rnd.xnumstring(1));
-        obj.set_stateorprovince("Kraj c." + rnd.xnumstring(2));
-        obj.set_postalcode(rnd.xnumstring(3) + " " + rnd.xnumstring(2));
-        static const std::string country("CZ");
-        obj.set_country(country);
+        obj.set_place(place);
         obj.set_telephone("+" + rnd.xnumstring(3) + " " + rnd.xnumstring(9));
         obj.set_fax("+" + rnd.xnumstring(3) + " " + rnd.xnumstring(9));
         const std::string email(rnd.xnstring(7) + "@" + rnd.xnstring(7) + "." + country);
