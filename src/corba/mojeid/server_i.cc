@@ -477,7 +477,7 @@ namespace Registry
             try
             {
                 const Registry::MojeID::ContactStateData csd = pimpl_->getContactState(_contact_id);
-                Registry::MojeID::ContactStateInfo_var sinfo;
+                Registry::MojeID::ContactStateInfo_var sinfo = new Registry::MojeID::ContactStateInfo;
                 sinfo->contact_id = csd.contact_id;
                 Registry::MojeID::ContactStateData::StateValidFrom::const_iterator state_ptr =
                     csd.state.find(Fred::ObjectState::VALIDATED_CONTACT);
