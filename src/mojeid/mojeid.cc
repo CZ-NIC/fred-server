@@ -1009,7 +1009,8 @@ namespace Registry
                 "SELECT cmc.id,o.state_name,"                         //arguments GROUP BY clause
                        "MAX(os.valid_from),"                          //valid from
                        "BOOL_OR(os.valid_from<=(NOW()-$2::INTERVAL)),"//present on begin
-                       "BOOL_OR(os.valid_to IS NULL) "                //present still
+                       "BOOL_OR((NOW()-$3::INTERVAL)<=os.valid_to OR "//present still
+                                "os.valid_to IS NULL) "
                 "FROM changed_mojeid_contact cmc "
                 "JOIN object_state os ON os.object_id=cmc.id "
                 "JOIN observed o ON o.state_id=os.state_id "
