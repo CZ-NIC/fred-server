@@ -39,7 +39,7 @@
  * @namespace TestMergeContactSeparatedFixture
  * MergeContact test with separated fixture suite
  */
-BOOST_FIXTURE_TEST_SUITE(TestMergeContactSeparatedFixture, Test::Fixture::instantiate_db_template)
+BOOST_AUTO_TEST_SUITE(TestMergeContactSeparatedFixture)
 
 /**
  * @namespace ObjectCombinations
