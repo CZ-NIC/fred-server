@@ -662,7 +662,7 @@ namespace MergeContactFixture
                 {
                     return map_at(nsset_info,create_nsset_with_tech_contact(ctx,registrar_handle, linked_object_state_case
                         , quantity_case, number_in_quantity, contact_handle
-                        , Util::vector_of<std::string>(create_non_mergeable_contact_handle(registrar_handle, 1u)))).id;
+                        , Util::vector_of<std::string>(create_non_mergeable_contact_handle(registrar_handle, 1)))).id;
                 }
                     break;
 
@@ -693,7 +693,7 @@ namespace MergeContactFixture
                             , linked_object_state_case
                             , quantity_case
                         ))
-                        (create_non_mergeable_contact_handle(registrar_handle, 1u))
+                        (create_non_mergeable_contact_handle(registrar_handle, 1))
                         )).id;
                 }
                     break;
@@ -709,7 +709,7 @@ namespace MergeContactFixture
                 {
                     return map_at(keyset_info,create_keyset_with_tech_contact(ctx,registrar_handle, linked_object_state_case
                         , quantity_case, number_in_quantity, contact_handle
-                        , Util::vector_of<std::string>(create_non_mergeable_contact_handle(registrar_handle, 1u)))).id;
+                        , Util::vector_of<std::string>(create_non_mergeable_contact_handle(registrar_handle, 1)))).id;
                 }
                     break;
 
@@ -740,7 +740,7 @@ namespace MergeContactFixture
                             , linked_object_state_case
                             , quantity_case
                         ))
-                        (create_non_mergeable_contact_handle(registrar_handle, 1u))
+                        (create_non_mergeable_contact_handle(registrar_handle, 1))
                         )).id;
                 }
                     break;
@@ -749,7 +749,7 @@ namespace MergeContactFixture
                 {
                     return map_at(domain_info,create_domain_with_admin_contact(ctx,registrar_handle, linked_object_state_case
                         , quantity_case, number_in_quantity
-                        , create_non_mergeable_contact_handle(registrar_handle, 1u), contact_handle)).id;
+                        , create_non_mergeable_contact_handle(registrar_handle, 1), contact_handle)).id;
                 }
                     break;
 
@@ -757,8 +757,8 @@ namespace MergeContactFixture
                 {
                     return map_at(domain_info,create_domain_with_admin_contact(ctx,registrar_handle, linked_object_state_case
                         , quantity_case, number_in_quantity
-                        , create_non_mergeable_contact_handle(registrar_handle, 1u), contact_handle
-                        , Util::vector_of<std::string>(create_non_mergeable_contact_handle(registrar_handle, 1u)))).id;
+                        , create_non_mergeable_contact_handle(registrar_handle, 1), contact_handle
+                        , Util::vector_of<std::string>(create_non_mergeable_contact_handle(registrar_handle, 1)))).id;
                 }
                     break;
 
@@ -766,7 +766,7 @@ namespace MergeContactFixture
                 {
                     return map_at(domain_info, create_domain_with_admin_contact(ctx,registrar_handle, linked_object_state_case
                         , quantity_case, number_in_quantity
-                        , create_non_mergeable_contact_handle(registrar_handle, 1u), contact_handle
+                        , create_non_mergeable_contact_handle(registrar_handle, 1), contact_handle
                         , Util::vector_of<std::string>(
                             create_mergeable_contact_handle(
                                 registrar_handle//registrar_handle
@@ -783,7 +783,7 @@ namespace MergeContactFixture
                 {
                     return map_at(domain_info, create_domain_with_admin_contact(ctx,registrar_handle, linked_object_state_case
                         , quantity_case, number_in_quantity
-                        , create_non_mergeable_contact_handle(registrar_handle, 1u), contact_handle
+                        , create_non_mergeable_contact_handle(registrar_handle, 1), contact_handle
                         , Util::vector_of<std::string>(
                             create_mergeable_contact_handle(
                                 registrar_handle//registrar_handle
@@ -793,7 +793,7 @@ namespace MergeContactFixture
                                 , linked_object_state_case
                                 , quantity_case
                         ))
-                        (create_non_mergeable_contact_handle(registrar_handle, 1u))
+                        (create_non_mergeable_contact_handle(registrar_handle, 1))
                         )).id;
                 }
                     break;
@@ -832,7 +832,7 @@ namespace MergeContactFixture
                         , quantity_case, number_in_quantity, contact_handle);
                     create_domain_with_admin_contact(ctx,registrar_handle, linked_object_state_case
                         , quantity_case, number_in_quantity
-                        , create_non_mergeable_contact_handle(registrar_handle, 1u), contact_handle);
+                        , create_non_mergeable_contact_handle(registrar_handle, 1), contact_handle);
                     create_domain_with_owner_contact(ctx,registrar_handle, linked_object_state_case
                         , quantity_case, number_in_quantity, contact_handle);
                 }
@@ -847,7 +847,7 @@ namespace MergeContactFixture
                         , quantity_case, number_in_quantity, contact_handle);
                     create_domain_with_admin_contact(ctx,registrar_handle, linked_object_state_case
                         , quantity_case, number_in_quantity
-                        , create_non_mergeable_contact_handle(registrar_handle, 1u), contact_handle);
+                        , create_non_mergeable_contact_handle(registrar_handle, 1), contact_handle);
                     create_domain_with_owner_contact(ctx,registrar_handle, linked_object_state_case
                         , quantity_case, number_in_quantity, contact_handle);
                     return map_at(nsset_info,create_nsset_with_tech_contact(ctx,registrar_handle, linked_object_state_case
@@ -865,7 +865,7 @@ namespace MergeContactFixture
 
                     create_domain_with_admin_contact(ctx,registrar_handle, linked_object_state_case
                         , quantity_case, number_in_quantity
-                        , create_non_mergeable_contact_handle(registrar_handle, 1u), contact_handle);
+                        , create_non_mergeable_contact_handle(registrar_handle, 1), contact_handle);
                     create_domain_with_owner_contact(ctx,registrar_handle, linked_object_state_case
                         , quantity_case, number_in_quantity, contact_handle);
 
@@ -889,7 +889,7 @@ namespace MergeContactFixture
 
                     return map_at(domain_info,create_domain_with_admin_contact(ctx,registrar_handle, linked_object_state_case
                         , quantity_case, number_in_quantity
-                        , create_non_mergeable_contact_handle(registrar_handle, 1u), contact_handle)).id;
+                        , create_non_mergeable_contact_handle(registrar_handle, 1), contact_handle)).id;
                 }
                     break;
 
@@ -904,7 +904,7 @@ namespace MergeContactFixture
                         , quantity_case, number_in_quantity, contact_handle);
                     create_domain_with_admin_contact(ctx,registrar_handle, linked_object_state_case
                         , quantity_case, number_in_quantity
-                        , create_non_mergeable_contact_handle(registrar_handle, 1u), contact_handle);
+                        , create_non_mergeable_contact_handle(registrar_handle, 1), contact_handle);
 
                     return map_at(domain_info,create_domain_with_owner_contact(ctx,registrar_handle, linked_object_state_case
                         , quantity_case, number_in_quantity, contact_handle)).id;
@@ -1097,12 +1097,12 @@ namespace MergeContactFixture
             for(std::vector<std::string>::const_iterator reg_ci = registrar_vect.begin()
                 ; reg_ci != registrar_vect.end(); ++reg_ci)
             {
-                std::string nmch1 = create_non_mergeable_contact(ctx, *reg_ci, 1u);
+                std::string nmch1 = create_non_mergeable_contact(ctx, *reg_ci, 1);
                 std::string nss_nmch1 = create_nsset_with_tech_contact(ctx,*reg_ci,0, 1, 0, nmch1);
                 std::string ks_nmch1 = create_keyset_with_tech_contact(ctx,*reg_ci, 0, 1, 0, nmch1);
                 std::string dmo_nmch1 = create_domain_with_owner_contact(ctx, *reg_ci, 0, 1, 0, nmch1);
 
-                std::string nmch2 = create_non_mergeable_contact(ctx, *reg_ci, 2u);
+                std::string nmch2 = create_non_mergeable_contact(ctx, *reg_ci, 2);
                 std::string nss_nmch2 = create_nsset_with_tech_contact(ctx,*reg_ci,0, 1, 0, nmch2);
                 std::string ks_nmch2 = create_keyset_with_tech_contact(ctx,*reg_ci,0, 1, 0, nmch2);
                 std::string dmo_nmch2 = create_domain_with_owner_contact(ctx, *reg_ci, 0, 1, 0, nmch2);

@@ -55,7 +55,7 @@ struct merge_fixture : MergeContactFixture::mergeable_contact_grps_with_linked_o
 {
     merge_fixture()
     : MergeContactFixture::mergeable_contact_grps_with_linked_objects_and_blocking_states(
-        1u//mergeable_contact_group_count
+        1//mergeable_contact_group_count
         ,Util::set_of<unsigned>(0)(1)(2)(3)(4)(5)(6)(7)(8)(9)(10)(11)(12)(13)(14)(15)(20)//linked_object_cases
         , Util::vector_of<std::set<std::string> > (std::set<std::string>())(std::set<std::string>())//contact_state_combinations//stateless states 0, 1
         , Util::vector_of<std::set<std::string> > (std::set<std::string>())//linked_object_state_combinations
@@ -861,7 +861,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_domain_via_admin, merge_fixture)
         , 1//quantity_case
         , 0//number in quantity
         , create_non_mergeable_contact_handle(registrar_vect.at(0)//registrar handle
-            , 1u) //owner contact
+            , 1) //owner contact
         , contact_handle_src //admin contact
     );
     BOOST_MESSAGE(fqdn);
@@ -1311,7 +1311,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_domain_via_admin_5, merge_fixture)
             , domain_quantity//quantity_case
             , number//number in quantity
             , create_non_mergeable_contact_handle(registrar_vect.at(0)//registrar handle
-                , 1u) //owner contact
+                , 1) //owner contact
             , contact_handle_src //admin contact
         );
         BOOST_MESSAGE(fqdn);
@@ -1383,7 +1383,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_nsset_keyset_domain_via_admin_domain_via_own
         std::map<std::string, Fred::InfoContactDiff> changed_contacts = diff_contacts();
 
         //accumulated changed contacts 2,4,8,...
-        BOOST_CHECK(changed_contacts.size() == (2u+2*(loq_ci - linked_object_quantities.begin()))); //deleted src contact, updated dst contact authinfo
+        BOOST_CHECK(changed_contacts.size() == (2+2*(loq_ci - linked_object_quantities.begin()))); //deleted src contact, updated dst contact authinfo
 
         BOOST_MESSAGE(std::string("changed src contact fields: (\"")
             + Util::format_container(map_at(changed_contacts,contact_handle_src).changed_fields(), "\")(\"") + "\")");
@@ -1517,7 +1517,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_nsset_keyset_domain_via_admin_domain_via_own
                 , *loq_ci//quantity_case
                 , number//number in quantity
                 , create_non_mergeable_contact_handle(registrar_vect.at(0)//registrar handle
-                    , 1u) //owner contact
+                    , 1) //owner contact
                 , contact_handle_src //admin contact
             );
             BOOST_MESSAGE(admin_fqdn);
@@ -1656,7 +1656,7 @@ BOOST_FIXTURE_TEST_CASE(test_different_dst_contact, merge_fixture)
     BOOST_MESSAGE(contact_handle_src);
 
     std::string contact_handle_dst = create_non_mergeable_contact_handle(registrar_vect.at(0)//registrar handle
-        , 1u); //owner contact
+        , 1); //owner contact
     BOOST_MESSAGE(contact_handle_dst);
 
     try
@@ -1695,7 +1695,7 @@ BOOST_FIXTURE_TEST_CASE(test_different_dst_contact, merge_fixture)
 BOOST_FIXTURE_TEST_CASE(test_different_src_contact, merge_fixture)
 {
     std::string contact_handle_src = create_non_mergeable_contact_handle(registrar_vect.at(0)//registrar handle
-        , 1u); //owner contact
+        , 1); //owner contact
     BOOST_MESSAGE(contact_handle_src);
 
     std::string contact_handle_dst = create_mergeable_contact_handle(
@@ -1964,7 +1964,7 @@ struct merge_with_states_fixture : MergeContactFixture::mergeable_contact_grps_w
 {
     merge_with_states_fixture()
     : MergeContactFixture::mergeable_contact_grps_with_linked_objects_and_blocking_states(
-        1u//mergeable_contact_group_count
+        1//mergeable_contact_group_count
         ,Util::set_of<unsigned>(15)(18)(19)(20)//linked_object_cases
         , init_set_of_contact_state_combinations()//contact_state_combinations//stateless states 0, 1
         , init_set_of_linked_object_state_combinations()//linked_object_state_combinations
@@ -2253,7 +2253,7 @@ BOOST_FIXTURE_TEST_CASE(test_src_contact_linked_domain_via_admin_serverblocked, 
             2 //linked_object_state_case
             , 1 //quantity_case
             , 0 //number in quantity
-            , create_non_mergeable_contact_handle(registrar_vect.at(0), 1u) //owner contact
+            , create_non_mergeable_contact_handle(registrar_vect.at(0), 1) //owner contact
             , contact_handle_src//admin contact
             ));
     }
