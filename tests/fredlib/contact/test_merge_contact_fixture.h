@@ -1128,11 +1128,11 @@ namespace MergeContactFixture
                                         , *q_ci);
                                     insert_state_requests(ctx, contact_info[mch1].id, contact_states.at(state_num));//set states mch1
                                 }
-                            }//for linked_object_state_case
-                        }//for linked_object_case
-                    }//for states
-                }//for mergeable groups
-            }//registrar_vect
+                            }
+                        }
+                    }
+                }
+            }
 
             //linked objects need pre-created contacts
             BOOST_MESSAGE("create_linked_object");
@@ -1149,8 +1149,6 @@ namespace MergeContactFixture
 
                         for(std::set<unsigned>::const_iterator linked_object_cases_ci = linked_object_cases.begin()
                             ; linked_object_cases_ci != linked_object_cases.end(); ++linked_object_cases_ci)
-
-                        //for(unsigned linked_object_case = 0; linked_object_case < linked_object_case_count; ++linked_object_case)
                         {
                             BOOST_MESSAGE(std::string("linked_object_case: ") + boost::lexical_cast<std::string>(*linked_object_cases_ci));
                             for(unsigned linked_object_state_case = 0; linked_object_state_case < linked_object_states.size(); ++linked_object_state_case)
@@ -1176,13 +1174,13 @@ namespace MergeContactFixture
                                         {
                                             insert_state_requests(ctx, object_id, linked_object_states.at(linked_object_state_case));//set states
                                         }
-                                    }//for number
-                                }//for linked_object_quantities
-                            }//for linked_object_state_case
-                        }//for linked_objects_case
-                    }//for state_case
-                }//for grpidtag
-            }//for registrar_vect
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
 
             //bug: Fred::PerformObjectStateRequest().exec(ctx);
             ctx.get_conn().exec("SELECT update_object_states(0)");
