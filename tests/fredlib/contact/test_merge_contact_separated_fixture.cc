@@ -134,14 +134,10 @@ BOOST_FIXTURE_TEST_CASE(test_no_linked_objects_no_states, merge_fixture)
     BOOST_CHECK(map_at(changed_contacts,contact_handle_dst).update_registrar_handle.get_value().second.get_value() == registrar_sys_handle);
 
     //no other changes
-    std::map<std::string, Fred::InfoNssetDiff> changed_nssets = diff_nssets();
-    BOOST_CHECK(changed_nssets.empty());
-    std::map<std::string, Fred::InfoKeysetDiff> changed_keysets = diff_keysets();
-    BOOST_CHECK(changed_keysets.empty());
-    std::map<std::string, Fred::InfoDomainDiff> changed_domains = diff_domains();
-    BOOST_CHECK(changed_domains.empty());
-    std::map<std::string, Fred::InfoRegistrarDiff> changed_registrars = diff_registrars();
-    BOOST_CHECK(changed_registrars.empty());
+    BOOST_CHECK(diff_nssets().empty());
+    BOOST_CHECK(diff_keysets().empty());
+    BOOST_CHECK(diff_domains().empty());
+    BOOST_CHECK(diff_registrars().empty());
 }
 
 /**
@@ -243,12 +239,9 @@ BOOST_FIXTURE_TEST_CASE(test_linked_nsset, merge_fixture)
     BOOST_CHECK(!map_at(changed_nssets,nsset_handle).update_time.get_value().second.isnull());
 
     //no other changes
-    std::map<std::string, Fred::InfoKeysetDiff> changed_keysets = diff_keysets();
-    BOOST_CHECK(changed_keysets.empty());
-    std::map<std::string, Fred::InfoDomainDiff> changed_domains = diff_domains();
-    BOOST_CHECK(changed_domains.empty());
-    std::map<std::string, Fred::InfoRegistrarDiff> changed_registrars = diff_registrars();
-    BOOST_CHECK(changed_registrars.empty());
+    BOOST_CHECK(diff_keysets().empty());
+    BOOST_CHECK(diff_domains().empty());
+    BOOST_CHECK(diff_registrars().empty());
 }
 
 /**
@@ -394,12 +387,9 @@ BOOST_FIXTURE_TEST_CASE(test_linked_nsset_with_added_tech_contact, merge_fixture
     BOOST_CHECK(!map_at(changed_nssets,nsset2_handle).update_time.get_value().second.isnull());
 
     //no other changes
-    std::map<std::string, Fred::InfoKeysetDiff> changed_keysets = diff_keysets();
-    BOOST_CHECK(changed_keysets.empty());
-    std::map<std::string, Fred::InfoDomainDiff> changed_domains = diff_domains();
-    BOOST_CHECK(changed_domains.empty());
-    std::map<std::string, Fred::InfoRegistrarDiff> changed_registrars = diff_registrars();
-    BOOST_CHECK(changed_registrars.empty());
+    BOOST_CHECK(diff_keysets().empty());
+    BOOST_CHECK(diff_domains().empty());
+    BOOST_CHECK(diff_registrars().empty());
 }
 
 /**
@@ -470,8 +460,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_keyset, merge_fixture)
     BOOST_CHECK(map_at(changed_contacts,contact_handle_dst).update_registrar_handle.get_value().second.get_value() == registrar_sys_handle);
 
     //no nsset changes
-    std::map<std::string, Fred::InfoNssetDiff> changed_nssets = diff_nssets();
-    BOOST_CHECK(changed_nssets.empty());
+    BOOST_CHECK(diff_nssets().empty());
 
     //keyset changes
     std::map<std::string, Fred::InfoKeysetDiff> changed_keysets = diff_keysets();
@@ -506,10 +495,8 @@ BOOST_FIXTURE_TEST_CASE(test_linked_keyset, merge_fixture)
     BOOST_CHECK(!map_at(changed_keysets,keyset_handle).update_time.get_value().second.isnull());
 
     //no other changes
-    std::map<std::string, Fred::InfoDomainDiff> changed_domains = diff_domains();
-    BOOST_CHECK(changed_domains.empty());
-    std::map<std::string, Fred::InfoRegistrarDiff> changed_registrars = diff_registrars();
-    BOOST_CHECK(changed_registrars.empty());
+    BOOST_CHECK(diff_domains().empty());
+    BOOST_CHECK(diff_registrars().empty());
 }
 
 /**
@@ -580,8 +567,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_keyset_with_added_tech_contact, merge_fixtur
     BOOST_CHECK(map_at(changed_contacts,contact_handle_dst).update_registrar_handle.get_value().second.get_value() == registrar_sys_handle);
 
     //no nsset changes
-    std::map<std::string, Fred::InfoNssetDiff> changed_nssets = diff_nssets();
-    BOOST_CHECK(changed_nssets.empty());
+    BOOST_CHECK(diff_nssets().empty());
 
     //keyset changes
     std::map<std::string, Fred::InfoKeysetDiff> changed_keysets = diff_keysets();
@@ -658,13 +644,9 @@ BOOST_FIXTURE_TEST_CASE(test_linked_keyset_with_added_tech_contact, merge_fixtur
     BOOST_CHECK(map_at(changed_keysets,keyset2_handle).update_time.get_value().first.isnull());
     BOOST_CHECK(!map_at(changed_keysets,keyset2_handle).update_time.get_value().second.isnull());
 
-
-
     //no other changes
-    std::map<std::string, Fred::InfoDomainDiff> changed_domains = diff_domains();
-    BOOST_CHECK(changed_domains.empty());
-    std::map<std::string, Fred::InfoRegistrarDiff> changed_registrars = diff_registrars();
-    BOOST_CHECK(changed_registrars.empty());
+    BOOST_CHECK(diff_domains().empty());
+    BOOST_CHECK(diff_registrars().empty());
 }
 
 /**
@@ -735,12 +717,10 @@ BOOST_FIXTURE_TEST_CASE(test_linked_domain_via_owner, merge_fixture)
     BOOST_CHECK(map_at(changed_contacts,contact_handle_dst).update_registrar_handle.get_value().second.get_value() == registrar_sys_handle);
 
     //no nsset changes
-    std::map<std::string, Fred::InfoNssetDiff> changed_nssets = diff_nssets();
-    BOOST_CHECK(changed_nssets.empty());
+    BOOST_CHECK(diff_nssets().empty());
 
     //no keyset changes
-    std::map<std::string, Fred::InfoKeysetDiff> changed_keysets = diff_keysets();
-    BOOST_CHECK(changed_keysets.empty());
+    BOOST_CHECK(diff_keysets().empty());
 
     //domain changes
     std::map<std::string, Fred::InfoDomainDiff> changed_domains = diff_domains();
@@ -773,8 +753,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_domain_via_owner, merge_fixture)
     BOOST_CHECK(!map_at(changed_domains,fqdn).update_time.get_value().second.isnull());
 
     //no registrar changes
-    std::map<std::string, Fred::InfoRegistrarDiff> changed_registrars = diff_registrars();
-    BOOST_CHECK(changed_registrars.empty());
+    BOOST_CHECK(diff_registrars().empty());
 }
 
 /**
@@ -845,12 +824,10 @@ BOOST_FIXTURE_TEST_CASE(test_linked_domain_via_admin, merge_fixture)
     BOOST_CHECK(map_at(changed_contacts,contact_handle_dst).update_registrar_handle.get_value().second.get_value() == registrar_sys_handle);
 
     //no nsset changes
-    std::map<std::string, Fred::InfoNssetDiff> changed_nssets = diff_nssets();
-    BOOST_CHECK(changed_nssets.empty());
+    BOOST_CHECK(diff_nssets().empty());
 
     //no keyset changes
-    std::map<std::string, Fred::InfoKeysetDiff> changed_keysets = diff_keysets();
-    BOOST_CHECK(changed_keysets.empty());
+    BOOST_CHECK(diff_keysets().empty());
 
     //domain changes
     std::map<std::string, Fred::InfoDomainDiff> changed_domains = diff_domains();
@@ -885,8 +862,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_domain_via_admin, merge_fixture)
     BOOST_CHECK(!map_at(changed_domains,fqdn).update_time.get_value().second.isnull());
 
     //no registrar changes
-    std::map<std::string, Fred::InfoRegistrarDiff> changed_registrars = diff_registrars();
-    BOOST_CHECK(changed_registrars.empty());
+    BOOST_CHECK(diff_registrars().empty());
 }
 
 /**
@@ -991,12 +967,9 @@ BOOST_FIXTURE_TEST_CASE(test_linked_nsset_5, merge_fixture)
     }
 
     //no other changes
-    std::map<std::string, Fred::InfoKeysetDiff> changed_keysets = diff_keysets();
-    BOOST_CHECK(changed_keysets.empty());
-    std::map<std::string, Fred::InfoDomainDiff> changed_domains = diff_domains();
-    BOOST_CHECK(changed_domains.empty());
-    std::map<std::string, Fred::InfoRegistrarDiff> changed_registrars = diff_registrars();
-    BOOST_CHECK(changed_registrars.empty());
+    BOOST_CHECK(diff_keysets().empty());
+    BOOST_CHECK(diff_domains().empty());
+    BOOST_CHECK(diff_registrars().empty());
 }
 
 /**
@@ -1068,8 +1041,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_keyset_5, merge_fixture)
     BOOST_CHECK(map_at(changed_contacts,contact_handle_dst).update_registrar_handle.get_value().second.get_value() == registrar_sys_handle);
 
     //no nsset changes
-    std::map<std::string, Fred::InfoNssetDiff> changed_nssets = diff_nssets();
-    BOOST_CHECK(changed_nssets.empty());
+    BOOST_CHECK(diff_nssets().empty());
 
     //keyset changes
     std::map<std::string, Fred::InfoKeysetDiff> changed_keysets = diff_keysets();
@@ -1106,10 +1078,8 @@ BOOST_FIXTURE_TEST_CASE(test_linked_keyset_5, merge_fixture)
         BOOST_CHECK(!map_at(changed_keysets,keyset_handle).update_time.get_value().second.isnull());
     }
     //no other changes
-    std::map<std::string, Fred::InfoDomainDiff> changed_domains = diff_domains();
-    BOOST_CHECK(changed_domains.empty());
-    std::map<std::string, Fred::InfoRegistrarDiff> changed_registrars = diff_registrars();
-    BOOST_CHECK(changed_registrars.empty());
+    BOOST_CHECK(diff_domains().empty());
+    BOOST_CHECK(diff_registrars().empty());
 }
 
 /**
@@ -1181,12 +1151,10 @@ BOOST_FIXTURE_TEST_CASE(test_linked_domain_via_owner_5, merge_fixture)
     BOOST_CHECK(map_at(changed_contacts,contact_handle_dst).update_registrar_handle.get_value().second.get_value() == registrar_sys_handle);
 
     //no nsset changes
-    std::map<std::string, Fred::InfoNssetDiff> changed_nssets = diff_nssets();
-    BOOST_CHECK(changed_nssets.empty());
+    BOOST_CHECK(diff_nssets().empty());
 
     //no keyset changes
-    std::map<std::string, Fred::InfoKeysetDiff> changed_keysets = diff_keysets();
-    BOOST_CHECK(changed_keysets.empty());
+    BOOST_CHECK(diff_keysets().empty());
 
     //domain changes
     std::map<std::string, Fred::InfoDomainDiff> changed_domains = diff_domains();
@@ -1221,8 +1189,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_domain_via_owner_5, merge_fixture)
         BOOST_CHECK(!map_at(changed_domains,fqdn).update_time.get_value().second.isnull());
     }
     //no registrar changes
-    std::map<std::string, Fred::InfoRegistrarDiff> changed_registrars = diff_registrars();
-    BOOST_CHECK(changed_registrars.empty());
+    BOOST_CHECK(diff_registrars().empty());
 }
 
 /**
@@ -1294,12 +1261,10 @@ BOOST_FIXTURE_TEST_CASE(test_linked_domain_via_admin_5, merge_fixture)
     BOOST_CHECK(map_at(changed_contacts,contact_handle_dst).update_registrar_handle.get_value().second.get_value() == registrar_sys_handle);
 
     //no nsset changes
-    std::map<std::string, Fred::InfoNssetDiff> changed_nssets = diff_nssets();
-    BOOST_CHECK(changed_nssets.empty());
+    BOOST_CHECK(diff_nssets().empty());
 
     //no keyset changes
-    std::map<std::string, Fred::InfoKeysetDiff> changed_keysets = diff_keysets();
-    BOOST_CHECK(changed_keysets.empty());
+    BOOST_CHECK(diff_keysets().empty());
 
     //domain changes
     std::map<std::string, Fred::InfoDomainDiff> changed_domains = diff_domains();
@@ -1335,8 +1300,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_domain_via_admin_5, merge_fixture)
         BOOST_CHECK(!map_at(changed_domains,fqdn).update_time.get_value().second.isnull());
     }
     //no registrar changes
-    std::map<std::string, Fred::InfoRegistrarDiff> changed_registrars = diff_registrars();
-    BOOST_CHECK(changed_registrars.empty());
+    BOOST_CHECK(diff_registrars().empty());
 }
 /**
  * Merge two mergeable contacts with linked nsset, keyset and two domains linked via admin and owner and no object states for given linked object configuration quantities.
@@ -1541,8 +1505,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_nsset_keyset_domain_via_admin_domain_via_own
             BOOST_CHECK(!map_at(changed_domains,admin_fqdn).update_time.get_value().second.isnull());
         }
 
-        std::map<std::string, Fred::InfoRegistrarDiff> changed_registrars = diff_registrars();
-        BOOST_CHECK(changed_registrars.empty());
+        BOOST_CHECK(diff_registrars().empty());
     }//for linked object quantities
 }
 
@@ -1578,18 +1541,12 @@ BOOST_FIXTURE_TEST_CASE(test_non_existing_src_contact, merge_fixture)
         BOOST_CHECK(ex.get_unknown_source_contact_handle().compare(contact_handle_src) == 0);
     }
 
-
     //no changes
-    std::map<std::string, Fred::InfoContactDiff> changed_contacts = diff_contacts();
-    BOOST_CHECK(changed_contacts.empty());
-    std::map<std::string, Fred::InfoNssetDiff> changed_nssets = diff_nssets();
-    BOOST_CHECK(changed_nssets.empty());
-    std::map<std::string, Fred::InfoKeysetDiff> changed_keysets = diff_keysets();
-    BOOST_CHECK(changed_keysets.empty());
-    std::map<std::string, Fred::InfoDomainDiff> changed_domains = diff_domains();
-    BOOST_CHECK(changed_domains.empty());
-    std::map<std::string, Fred::InfoRegistrarDiff> changed_registrars = diff_registrars();
-    BOOST_CHECK(changed_registrars.empty());
+    BOOST_CHECK(diff_contacts().empty());
+    BOOST_CHECK(diff_nssets().empty());
+    BOOST_CHECK(diff_keysets().empty());
+    BOOST_CHECK(diff_domains().empty());
+    BOOST_CHECK(diff_registrars().empty());
 }
 
 /**
@@ -1627,16 +1584,11 @@ BOOST_FIXTURE_TEST_CASE(test_non_existing_dst_contact, merge_fixture)
     }
 
     //no changes
-    std::map<std::string, Fred::InfoContactDiff> changed_contacts = diff_contacts();
-    BOOST_CHECK(changed_contacts.empty());
-    std::map<std::string, Fred::InfoNssetDiff> changed_nssets = diff_nssets();
-    BOOST_CHECK(changed_nssets.empty());
-    std::map<std::string, Fred::InfoKeysetDiff> changed_keysets = diff_keysets();
-    BOOST_CHECK(changed_keysets.empty());
-    std::map<std::string, Fred::InfoDomainDiff> changed_domains = diff_domains();
-    BOOST_CHECK(changed_domains.empty());
-    std::map<std::string, Fred::InfoRegistrarDiff> changed_registrars = diff_registrars();
-    BOOST_CHECK(changed_registrars.empty());
+    BOOST_CHECK(diff_contacts().empty());
+    BOOST_CHECK(diff_nssets().empty());
+    BOOST_CHECK(diff_keysets().empty());
+    BOOST_CHECK(diff_domains().empty());
+    BOOST_CHECK(diff_registrars().empty());
 }
 
 /**
@@ -1676,16 +1628,11 @@ BOOST_FIXTURE_TEST_CASE(test_different_dst_contact, merge_fixture)
     }
 
     //no changes
-    std::map<std::string, Fred::InfoContactDiff> changed_contacts = diff_contacts();
-    BOOST_CHECK(changed_contacts.empty());
-    std::map<std::string, Fred::InfoNssetDiff> changed_nssets = diff_nssets();
-    BOOST_CHECK(changed_nssets.empty());
-    std::map<std::string, Fred::InfoKeysetDiff> changed_keysets = diff_keysets();
-    BOOST_CHECK(changed_keysets.empty());
-    std::map<std::string, Fred::InfoDomainDiff> changed_domains = diff_domains();
-    BOOST_CHECK(changed_domains.empty());
-    std::map<std::string, Fred::InfoRegistrarDiff> changed_registrars = diff_registrars();
-    BOOST_CHECK(changed_registrars.empty());
+    BOOST_CHECK(diff_contacts().empty());
+    BOOST_CHECK(diff_nssets().empty());
+    BOOST_CHECK(diff_keysets().empty());
+    BOOST_CHECK(diff_domains().empty());
+    BOOST_CHECK(diff_registrars().empty());
 }
 
 /**
@@ -1725,16 +1672,11 @@ BOOST_FIXTURE_TEST_CASE(test_different_src_contact, merge_fixture)
     }
 
     //no changes
-    std::map<std::string, Fred::InfoContactDiff> changed_contacts = diff_contacts();
-    BOOST_CHECK(changed_contacts.empty());
-    std::map<std::string, Fred::InfoNssetDiff> changed_nssets = diff_nssets();
-    BOOST_CHECK(changed_nssets.empty());
-    std::map<std::string, Fred::InfoKeysetDiff> changed_keysets = diff_keysets();
-    BOOST_CHECK(changed_keysets.empty());
-    std::map<std::string, Fred::InfoDomainDiff> changed_domains = diff_domains();
-    BOOST_CHECK(changed_domains.empty());
-    std::map<std::string, Fred::InfoRegistrarDiff> changed_registrars = diff_registrars();
-    BOOST_CHECK(changed_registrars.empty());
+    BOOST_CHECK(diff_contacts().empty());
+    BOOST_CHECK(diff_nssets().empty());
+    BOOST_CHECK(diff_keysets().empty());
+    BOOST_CHECK(diff_domains().empty());
+    BOOST_CHECK(diff_registrars().empty());
 }
 
 /**
@@ -1772,16 +1714,11 @@ BOOST_FIXTURE_TEST_CASE(test_identical_contact, merge_fixture)
     }
 
     //no changes
-    std::map<std::string, Fred::InfoContactDiff> changed_contacts = diff_contacts();
-    BOOST_CHECK(changed_contacts.empty());
-    std::map<std::string, Fred::InfoNssetDiff> changed_nssets = diff_nssets();
-    BOOST_CHECK(changed_nssets.empty());
-    std::map<std::string, Fred::InfoKeysetDiff> changed_keysets = diff_keysets();
-    BOOST_CHECK(changed_keysets.empty());
-    std::map<std::string, Fred::InfoDomainDiff> changed_domains = diff_domains();
-    BOOST_CHECK(changed_domains.empty());
-    std::map<std::string, Fred::InfoRegistrarDiff> changed_registrars = diff_registrars();
-    BOOST_CHECK(changed_registrars.empty());
+    BOOST_CHECK(diff_contacts().empty());
+    BOOST_CHECK(diff_nssets().empty());
+    BOOST_CHECK(diff_keysets().empty());
+    BOOST_CHECK(diff_domains().empty());
+    BOOST_CHECK(diff_registrars().empty());
 }
 
 /**
@@ -1858,10 +1795,8 @@ BOOST_FIXTURE_TEST_CASE(test_src_contact_linked_domain_via_owner_with_the_same_a
     BOOST_CHECK(map_at(changed_contacts,contact_handle_dst).update_registrar_handle.get_value().second.get_value() == registrar_sys_handle);
 
     //no changes
-    std::map<std::string, Fred::InfoNssetDiff> changed_nssets = diff_nssets();
-    BOOST_CHECK(changed_nssets.empty());
-    std::map<std::string, Fred::InfoKeysetDiff> changed_keysets = diff_keysets();
-    BOOST_CHECK(changed_keysets.empty());
+    BOOST_CHECK(diff_nssets().empty());
+    BOOST_CHECK(diff_keysets().empty());
 
     //domain changes
     std::map<std::string, Fred::InfoDomainDiff> changed_domains = diff_domains();
@@ -1943,8 +1878,7 @@ BOOST_FIXTURE_TEST_CASE(test_src_contact_linked_domain_via_owner_with_the_same_a
     BOOST_CHECK(!map_at(changed_domains,fqdn2).update_time.get_value().second.isnull());
 
     //no registrar changes
-    std::map<std::string, Fred::InfoRegistrarDiff> changed_registrars = diff_registrars();
-    BOOST_CHECK(changed_registrars.empty());
+    BOOST_CHECK(diff_registrars().empty());
 }
 
 BOOST_AUTO_TEST_SUITE_END();//ObjectCombinations
@@ -1979,16 +1913,11 @@ struct merge_with_states_fixture : MergeContactFixture::mergeable_contact_grps_w
 BOOST_FIXTURE_TEST_CASE(test_merge_with_states_fixture, merge_with_states_fixture)
 {
     //no changes
-    std::map<std::string, Fred::InfoContactDiff> changed_contacts = diff_contacts();
-    BOOST_CHECK(changed_contacts.empty());
-    std::map<std::string, Fred::InfoNssetDiff> changed_nssets = diff_nssets();
-    BOOST_CHECK(changed_nssets.empty());
-    std::map<std::string, Fred::InfoKeysetDiff> changed_keysets = diff_keysets();
-    BOOST_CHECK(changed_keysets.empty());
-    std::map<std::string, Fred::InfoDomainDiff> changed_domains = diff_domains();
-    BOOST_CHECK(changed_domains.empty());
-    std::map<std::string, Fred::InfoRegistrarDiff> changed_registrars = diff_registrars();
-    BOOST_CHECK(changed_registrars.empty());
+    BOOST_CHECK(diff_contacts().empty());
+    BOOST_CHECK(diff_nssets().empty());
+    BOOST_CHECK(diff_keysets().empty());
+    BOOST_CHECK(diff_domains().empty());
+    BOOST_CHECK(diff_registrars().empty());
 }
 
 /**
@@ -2033,16 +1962,11 @@ BOOST_FIXTURE_TEST_CASE(test_invalid_src_mojeid_contact, merge_with_states_fixtu
     }
 
     //no changes
-    std::map<std::string, Fred::InfoContactDiff> changed_contacts = diff_contacts();
-    BOOST_CHECK(changed_contacts.empty());
-    std::map<std::string, Fred::InfoNssetDiff> changed_nssets = diff_nssets();
-    BOOST_CHECK(changed_nssets.empty());
-    std::map<std::string, Fred::InfoKeysetDiff> changed_keysets = diff_keysets();
-    BOOST_CHECK(changed_keysets.empty());
-    std::map<std::string, Fred::InfoDomainDiff> changed_domains = diff_domains();
-    BOOST_CHECK(changed_domains.empty());
-    std::map<std::string, Fred::InfoRegistrarDiff> changed_registrars = diff_registrars();
-    BOOST_CHECK(changed_registrars.empty());
+    BOOST_CHECK(diff_contacts().empty());
+    BOOST_CHECK(diff_nssets().empty());
+    BOOST_CHECK(diff_keysets().empty());
+    BOOST_CHECK(diff_domains().empty());
+    BOOST_CHECK(diff_registrars().empty());
 }
 
 
@@ -2089,16 +2013,11 @@ BOOST_FIXTURE_TEST_CASE(test_invalid_src_serverblocked_contact, merge_with_state
     }
 
     //no changes
-    std::map<std::string, Fred::InfoContactDiff> changed_contacts = diff_contacts();
-    BOOST_CHECK(changed_contacts.empty());
-    std::map<std::string, Fred::InfoNssetDiff> changed_nssets = diff_nssets();
-    BOOST_CHECK(changed_nssets.empty());
-    std::map<std::string, Fred::InfoKeysetDiff> changed_keysets = diff_keysets();
-    BOOST_CHECK(changed_keysets.empty());
-    std::map<std::string, Fred::InfoDomainDiff> changed_domains = diff_domains();
-    BOOST_CHECK(changed_domains.empty());
-    std::map<std::string, Fred::InfoRegistrarDiff> changed_registrars = diff_registrars();
-    BOOST_CHECK(changed_registrars.empty());
+    BOOST_CHECK(diff_contacts().empty());
+    BOOST_CHECK(diff_nssets().empty());
+    BOOST_CHECK(diff_keysets().empty());
+    BOOST_CHECK(diff_domains().empty());
+    BOOST_CHECK(diff_registrars().empty());
 }
 
 /**
@@ -2144,16 +2063,11 @@ BOOST_FIXTURE_TEST_CASE(test_invalid_src_deleteprohibited_contact, merge_with_st
     }
 
     //no changes
-    std::map<std::string, Fred::InfoContactDiff> changed_contacts = diff_contacts();
-    BOOST_CHECK(changed_contacts.empty());
-    std::map<std::string, Fred::InfoNssetDiff> changed_nssets = diff_nssets();
-    BOOST_CHECK(changed_nssets.empty());
-    std::map<std::string, Fred::InfoKeysetDiff> changed_keysets = diff_keysets();
-    BOOST_CHECK(changed_keysets.empty());
-    std::map<std::string, Fred::InfoDomainDiff> changed_domains = diff_domains();
-    BOOST_CHECK(changed_domains.empty());
-    std::map<std::string, Fred::InfoRegistrarDiff> changed_registrars = diff_registrars();
-    BOOST_CHECK(changed_registrars.empty());
+    BOOST_CHECK(diff_contacts().empty());
+    BOOST_CHECK(diff_nssets().empty());
+    BOOST_CHECK(diff_keysets().empty());
+    BOOST_CHECK(diff_domains().empty());
+    BOOST_CHECK(diff_registrars().empty());
 }
 
 /**
@@ -2199,16 +2113,11 @@ BOOST_FIXTURE_TEST_CASE(test_invalid_dst_serverblocked_contact, merge_with_state
     }
 
     //no changes
-    std::map<std::string, Fred::InfoContactDiff> changed_contacts = diff_contacts();
-    BOOST_CHECK(changed_contacts.empty());
-    std::map<std::string, Fred::InfoNssetDiff> changed_nssets = diff_nssets();
-    BOOST_CHECK(changed_nssets.empty());
-    std::map<std::string, Fred::InfoKeysetDiff> changed_keysets = diff_keysets();
-    BOOST_CHECK(changed_keysets.empty());
-    std::map<std::string, Fred::InfoDomainDiff> changed_domains = diff_domains();
-    BOOST_CHECK(changed_domains.empty());
-    std::map<std::string, Fred::InfoRegistrarDiff> changed_registrars = diff_registrars();
-    BOOST_CHECK(changed_registrars.empty());
+    BOOST_CHECK(diff_contacts().empty());
+    BOOST_CHECK(diff_nssets().empty());
+    BOOST_CHECK(diff_keysets().empty());
+    BOOST_CHECK(diff_domains().empty());
+    BOOST_CHECK(diff_registrars().empty());
 }
 
 /**
@@ -2259,16 +2168,11 @@ BOOST_FIXTURE_TEST_CASE(test_src_contact_linked_domain_via_admin_serverblocked, 
     }
 
     //no changes
-    std::map<std::string, Fred::InfoContactDiff> changed_contacts = diff_contacts();
-    BOOST_CHECK(changed_contacts.empty());
-    std::map<std::string, Fred::InfoNssetDiff> changed_nssets = diff_nssets();
-    BOOST_CHECK(changed_nssets.empty());
-    std::map<std::string, Fred::InfoKeysetDiff> changed_keysets = diff_keysets();
-    BOOST_CHECK(changed_keysets.empty());
-    std::map<std::string, Fred::InfoDomainDiff> changed_domains = diff_domains();
-    BOOST_CHECK(changed_domains.empty());
-    std::map<std::string, Fred::InfoRegistrarDiff> changed_registrars = diff_registrars();
-    BOOST_CHECK(changed_registrars.empty());
+    BOOST_CHECK(diff_contacts().empty());
+    BOOST_CHECK(diff_nssets().empty());
+    BOOST_CHECK(diff_keysets().empty());
+    BOOST_CHECK(diff_domains().empty());
+    BOOST_CHECK(diff_registrars().empty());
 }
 
 /**
@@ -2318,16 +2222,11 @@ BOOST_FIXTURE_TEST_CASE(test_src_contact_linked_domain_via_owner_serverblocked, 
     }
 
     //no changes
-    std::map<std::string, Fred::InfoContactDiff> changed_contacts = diff_contacts();
-    BOOST_CHECK(changed_contacts.empty());
-    std::map<std::string, Fred::InfoNssetDiff> changed_nssets = diff_nssets();
-    BOOST_CHECK(changed_nssets.empty());
-    std::map<std::string, Fred::InfoKeysetDiff> changed_keysets = diff_keysets();
-    BOOST_CHECK(changed_keysets.empty());
-    std::map<std::string, Fred::InfoDomainDiff> changed_domains = diff_domains();
-    BOOST_CHECK(changed_domains.empty());
-    std::map<std::string, Fred::InfoRegistrarDiff> changed_registrars = diff_registrars();
-    BOOST_CHECK(changed_registrars.empty());
+    BOOST_CHECK(diff_contacts().empty());
+    BOOST_CHECK(diff_nssets().empty());
+    BOOST_CHECK(diff_keysets().empty());
+    BOOST_CHECK(diff_domains().empty());
+    BOOST_CHECK(diff_registrars().empty());
 }
 
 /**
@@ -2404,10 +2303,8 @@ BOOST_FIXTURE_TEST_CASE(test_src_contact_updateprohibited_linked_domain_via_owne
     BOOST_CHECK(map_at(changed_contacts,contact_handle_dst).update_registrar_handle.get_value().second.get_value() == registrar_sys_handle);
 
     //no changes
-    std::map<std::string, Fred::InfoNssetDiff> changed_nssets = diff_nssets();
-    BOOST_CHECK(changed_nssets.empty());
-    std::map<std::string, Fred::InfoKeysetDiff> changed_keysets = diff_keysets();
-    BOOST_CHECK(changed_keysets.empty());
+    BOOST_CHECK(diff_nssets().empty());
+    BOOST_CHECK(diff_keysets().empty());
 
     //domain changes
     std::map<std::string, Fred::InfoDomainDiff> changed_domains = diff_domains();
@@ -2456,8 +2353,7 @@ BOOST_FIXTURE_TEST_CASE(test_src_contact_updateprohibited_linked_domain_via_owne
     BOOST_CHECK(!map_at(changed_domains,fqdn).update_time.get_value().second.isnull());
 
     //no registrar changes
-    std::map<std::string, Fred::InfoRegistrarDiff> changed_registrars = diff_registrars();
-    BOOST_CHECK(changed_registrars.empty());
+    BOOST_CHECK(diff_registrars().empty());
 }
 
 BOOST_AUTO_TEST_SUITE_END();//StateCombinations
