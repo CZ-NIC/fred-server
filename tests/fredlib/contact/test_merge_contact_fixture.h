@@ -116,7 +116,7 @@ namespace MergeContactFixture
          * Create handle of nsset linked to some contact.
          * @param linked_object_state_case is configuration of object states of linked object, might not be this one but linked to the common contact
          * @param quantity_case designates how many linked object configurations will be linked to given contact
-         * @param number_in_quantity is object borg collective designation e.g. 7 of 9 tertiary adjunct of unimatrix 01 starting from 0
+         * @param number_in_quantity is ordinal number in the linked object configuration quantity
          * @param tech_contact_handle is linked contact handle
          * @param additional_tech_contacts are other linked contact handles
          * @return nsset handle
@@ -147,7 +147,7 @@ namespace MergeContactFixture
          * Create handle of keyset linked to some contact.
          * @param linked_object_state_case is configuration of object states of linked object, might not be this one but linked to the common contact
          * @param quantity_case designates how many linked object configurations will be linked to given contact
-         * @param number_in_quantity is object borg collective designation e.g. 7 of 9 tertiary adjunct of unimatrix 01 starting from 0
+         * @param number_in_quantity is ordinal number in the linked object configuration quantity
          * @param tech_contact_handle is linked contact handle
          * @param additional_tech_contacts are other linked contact handles
          * @return keyset handle
@@ -179,7 +179,7 @@ namespace MergeContactFixture
          * Create fqdn of domain linked to some contact via owner.
          * @param linked_object_state_case is configuration of object states of linked object, might not be this one but linked to the common contact
          * @param quantity_case designates how many linked object configurations will be linked to given contact
-         * @param number_in_quantity is object borg collective designation e.g. 7 of 9 tertiary adjunct of unimatrix 01 starting from 0
+         * @param number_in_quantity is ordinal number in the linked object configuration quantity
          * @param owner_contact_handle is linked owner contact handle
          * @param admin_contacts are other linked contact handles
          * @return fqdn
@@ -215,7 +215,7 @@ namespace MergeContactFixture
          * Create fqdn of domain linked to some contact via admin.
          * @param linked_object_state_case is configuration of object states of linked object, might not be this one but linked to the common contact
          * @param quantity_case designates how many linked object configurations will be linked to given contact
-         * @param number_in_quantity is object borg collective designation e.g. 7 of 9 tertiary adjunct of unimatrix 01 starting from 0
+         * @param number_in_quantity is ordinal number in the linked object configuration quantity
          * @param owner_contact_handle is linked owner contact handle
          * @param admin_contact_handle is linked admin contact handle
          * @param admin_contacts are other linked admin contact handles
@@ -459,7 +459,7 @@ namespace MergeContactFixture
          * @param registrar_handle is nsset registar
          * @param linked_object_state_case is configuration of object states of linked object, might not be this one but linked to the common contact
          * @param quantity_case designates how many linked object configurations will be linked to given contact
-         * @param number_in_quantity is object borg collective designation e.g. 7 of 9 tertiary adjunct of unimatrix 01 starting from 0
+         * @param number_in_quantity is ordinal number in the linked object configuration quantity
          * @param tech_contact_handle is linked contact handle
          * @param additional_tech_contacts are other linked contact handles
          * @return handle of created object
@@ -495,7 +495,7 @@ namespace MergeContactFixture
          * @param registrar_handle is keyset registar
          * @param linked_object_state_case is configuration of object states of linked object, might not be this one but linked to the common contact
          * @param quantity_case designates how many linked object configurations will be linked to given contact
-         * @param number_in_quantity is object borg collective designation e.g. 7 of 9 tertiary adjunct of unimatrix 01 starting from 0
+         * @param number_in_quantity is ordinal number in the linked object configuration quantity
          * @param tech_contact_handle is linked contact handle
          * @param additional_tech_contacts are other linked contact handles
          * @return handle of created object
@@ -531,7 +531,7 @@ namespace MergeContactFixture
          * @param registrar_handle is domain sponsoring registar
          * @param linked_object_state_case is configuration of object states of linked object, might not be this one but linked to the common contact
          * @param quantity_case designates how many linked object configurations will be linked to given contact
-         * @param number_in_quantity is object borg collective designation e.g. 7 of 9 tertiary adjunct of unimatrix 01 starting from 0
+         * @param number_in_quantity is ordinal number in the linked object configuration quantity
          * @param owner_contact_handle is linked owner contact handle
          * @param admin_contacts are other linked contact handles
          * @return fqdn
@@ -567,7 +567,7 @@ namespace MergeContactFixture
          * @param registrar_handle is domain sponsoring registar
          * @param linked_object_state_case is configuration of object states of linked object, might not be this one but linked to the common contact
          * @param quantity_case designates how many linked object configurations will be linked to given contact
-         * @param number_in_quantity is object borg collective designation e.g. 7 of 9 tertiary adjunct of unimatrix 01 starting from 0
+         * @param number_in_quantity is ordinal number in the linked object configuration quantity
          * @param owner_contact_handle is linked owner contact handle
          * @param admin_contact_handle is linked admin contact handle
          * @param admin_contacts are other linked admin contact handles
@@ -631,7 +631,7 @@ namespace MergeContactFixture
          * @param linked_object_case is configuration of objects linked to given contact and specification of object that may have set some states according to @ref linked_object_states
          * @param linked_object_state_case is configuration of object states of linked object designated by returned id
          * @param quantity_case designates how many linked object configurations will be linked to given contact
-         * @param number_in_quantity is object borg collective designation e.g. 7 of 9 tertiary adjunct of unimatrix 01 starting from 0
+         * @param number_in_quantity is ordinal number in the linked object configuration quantity
          * @return id of primary object created according to linked objects case or 0, id is meant to be used for setting object states configurations
          */
         unsigned long long create_linked_object(
@@ -958,7 +958,7 @@ namespace MergeContactFixture
          std::vector<unsigned> linked_object_quantities;/**< set of quantities of linked objects configurations*/
 
          /**
-          * Get contacts changed since fixture init.
+          * Get contacts changed or deleted since fixture init.
           * Contacts are expected to be deleted in tests, therefore saved info data are compared against the last record in history.
           * @return map of changed contact handles with changed data
           */
