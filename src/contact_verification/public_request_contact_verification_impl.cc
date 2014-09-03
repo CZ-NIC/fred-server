@@ -91,7 +91,7 @@ public:
         contact_verification_passwd_.sendSmsPassword(
                  boost::format(
                  "Potvrzujeme zahajeni procesu verifikace kontaktu v registru domen. "
-                 "Prvni krok spociva v zadani PIN1 a PIN2. PIN1 Vam byl zaslan e-mailem, PIN2 je: %1%. "),
+                 "Prvni krok spociva v zadani PIN1 a PIN2. PIN1 Vam byl zaslan e-mailem, PIN2 je: %1%"),
                  "contact_verification_pin2");
     }
 
