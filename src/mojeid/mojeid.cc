@@ -32,6 +32,7 @@
 #include "src/fredlib/registry.h"
 #include "src/fredlib/contact.h"
 #include "src/fredlib/public_request/public_request.h"
+#include "src/fredlib/public_request/public_request_impl.h"
 #include "src/fredlib/object_states.h"
 #include "src/fredlib/contact_verification/contact.h"
 #include "src/mojeid/request.h"
@@ -430,15 +431,46 @@ namespace Registry
                         Fred::cancel_object_state(cid, Fred::ObjectState::VALIDATED_CONTACT);
                     }
                 }
-                if (contact_state.has_all(Fred::Contact::Verification::State::cIvm)) {// already I
-                    if (!Fred::Contact::Verification::check_identified_contact_diff(_contact,
-                             Fred::Contact::Verification::contact_info(cid))) {
+
+                unsigned long long prid = 0; // new public request id
+                if (!Fred::Contact::Verification::check_identified_contact_diff(_contact, Fred::Contact::Verification::contact_info(cid)))
+                {
+                    if (contact_state.has_all(Fred::Contact::Verification::State::cIvm))
+                    {
                         /* drop contact identified status */
                         Fred::cancel_object_state(cid, Fred::ObjectState::IDENTIFIED_CONTACT);
+                    }
+
+                    if (Fred::PublicRequest::check_public_request(cid, Fred::PublicRequest::PRT_MOJEID_CONTACT_IDENTIFICATION))
+                    {
+                        Fred::PublicRequest::cancel_public_request(cid, Fred::PublicRequest::PRT_MOJEID_CONTACT_IDENTIFICATION, request.get_request_id());
+                        /* create public request */
+                        Fred::PublicRequest::Type type = Fred::PublicRequest::PRT_MOJEID_CONTACT_IDENTIFICATION;
+                        IdentificationRequestPtr new_request(mailer_, type);
+                        new_request->setRegistrarId(request.get_registrar_id());
+                        new_request->setRequestId(request.get_request_id());
+                        new_request->addObject(Fred::PublicRequest::OID(
+                                    cid, _contact_username, Fred::PublicRequest::OT_CONTACT));
+                        new_request->save();
+                        prid = new_request->getId();
+                    }
+                    else
+                    {
+                        Fred::PublicRequest::cancel_public_request(cid, Fred::PublicRequest::PRT_MOJEID_CONTACT_REIDENTIFICATION, request.get_request_id());
+                        /* create public request */
+                        Fred::PublicRequest::Type type = Fred::PublicRequest::PRT_MOJEID_CONTACT_REIDENTIFICATION;
+                        IdentificationRequestPtr new_request(mailer_, type);
+                        new_request->setRegistrarId(request.get_registrar_id());
+                        new_request->setRequestId(request.get_request_id());
+                        new_request->addObject(Fred::PublicRequest::OID(
+                                    cid, _contact_username, Fred::PublicRequest::OT_CONTACT));
+                        new_request->save();
+                        prid = new_request->getId();
                     }
                 }
 
                 contact_disclose_policy.apply(_contact);
+
 
                 unsigned long long hid = Fred::Contact::Verification::contact_update(
                         request.get_request_id(),
@@ -462,6 +494,7 @@ namespace Registry
                 trans_data tr_data(MOJEID_CONTACT_UPDATE);
 
                 tr_data.cid = cid;
+                tr_data.prid = prid;
                 tr_data.request_id = request.get_request_id();
 
                 boost::mutex::scoped_lock td_lock(td_mutex);
@@ -707,9 +740,13 @@ namespace Registry
 
             // send identification password if operation is contact create
             if(tr_data.op == MOJEID_CONTACT_CREATE
-                    || tr_data.op == MOJEID_CONTACT_TRANSFER)
+                    || tr_data.op == MOJEID_CONTACT_TRANSFER
+                    || tr_data.op == MOJEID_CONTACT_UPDATE)
             {
-                sendAuthPasswords(tr_data.cid, tr_data.prid);
+                if (tr_data.prid != 0)
+                {
+                    sendAuthPasswords(tr_data.cid, tr_data.prid);
+                }
             }
 
             if(tr_data.op == MOJEID_CONTACT_UPDATE

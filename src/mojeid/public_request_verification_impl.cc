@@ -376,19 +376,24 @@ class MojeIDContactReidentification
 {
 public:
     MojeIDContactReidentification()
-    :   contact_identification_impl(this,
-        Fred::Contact::Verification::create_finish_identification_validator_mojeid()),
-        contact_verification_passwd_(this)
+        : contact_verification_passwd_(this)
     {}
 
     std::string generatePasswords()
     {
-        return contact_identification_impl.generate_passwords();
+        /* generate pin3 */
+        if(this->getPublicRequestManager()->getDemoMode())
+        {
+            return std::string(contact_verification_passwd_.get_password_chunk_length(), '4');
+        }
+        else
+        {
+            return contact_verification_passwd_.generateRandomPassword();
+        }
     }
 
     void save()
     {
-        contact_identification_impl.pre_save_check();
         if (!this->getId())
         {
             const ::uint64_t contact_id = this->getObject(0).id;
@@ -396,14 +401,17 @@ public:
                     (ObjectState::SERVER_DELETE_PROHIBITED)
                     (ObjectState::SERVER_UPDATE_PROHIBITED)
                     (ObjectState::SERVER_TRANSFER_PROHIBITED)
-                    (::MojeID::ObjectState::MOJEID_CONTACT)))
+                    (::MojeID::ObjectState::MOJEID_CONTACT)
+                    (ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT)))
             {
                 throw Fred::PublicRequest::NotApplicable("pre_save_check: failed");
             }
 
-            /* if there is another open CI close it */
-            cancel_public_request(contact_id, PRT_MOJEID_CONTACT_IDENTIFICATION,
-                    this->getRequestId());
+            if (check_public_request(contact_id, PRT_MOJEID_CONTACT_IDENTIFICATION))
+            {
+                throw Fred::PublicRequest::NotApplicable("pre_save_check: failed");
+            }
+
             cancel_public_request(contact_id, PRT_MOJEID_CONTACT_REIDENTIFICATION,
                     this->getRequestId());
         }
@@ -419,11 +427,14 @@ public:
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
 
-        contact_identification_impl.pre_process_check(_check);
-        contact_identification_impl.process_action(_check);
+        unsigned long long oid = this->getObject(0).id;
+        Fred::Contact::Verification::Contact cdata = Fred::Contact::Verification::contact_info(oid);
+        Fred::Contact::Verification::create_finish_identification_validator_mojeid().check(cdata);
+
+        Fred::PublicRequest::insertNewStateRequest(this->getId(), oid, ObjectState::IDENTIFIED_CONTACT);
 
         /* update states */
-        Fred::update_object_states(this->getObject(0).id);
+        Fred::update_object_states(oid);
         tx.commit();
     }
 
@@ -443,7 +454,6 @@ public:
     }
 
 private:
-    Fred::Contact::Verification::ContactIdentificationImpl contact_identification_impl;
     ContactVerificationPassword contact_verification_passwd_;
 };
 

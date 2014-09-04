@@ -13,14 +13,14 @@ namespace Verification {
 bool ContactAddress::operator==(const ContactAddress &_b)const
 {
     return this->type == _b.type &&
-           this->company_name == _b.company_name &&
-           this->street1 == _b.street1 &&
-           this->street2 == _b.street2 &&
-           this->street3 == _b.street3 &&
-           this->city == _b.city &&
-           this->stateorprovince == _b.stateorprovince &&
-           this->postalcode == _b.postalcode &&
-           this->country == _b.country;
+           this->company_name.get_value_or_default() == _b.company_name.get_value_or_default() &&
+           this->street1.get_value_or_default() == _b.street1.get_value_or_default() &&
+           this->street2.get_value_or_default() == _b.street2.get_value_or_default() &&
+           this->street3.get_value_or_default() == _b.street3.get_value_or_default() &&
+           this->city.get_value_or_default() == _b.city.get_value_or_default() &&
+           this->stateorprovince.get_value_or_default() == _b.stateorprovince.get_value_or_default() &&
+           this->postalcode.get_value_or_default() == _b.postalcode.get_value_or_default() &&
+           this->country.get_value_or_default() == _b.country.get_value_or_default();
 }
 
 ContactAddress Contact::get_mailing_address()const
