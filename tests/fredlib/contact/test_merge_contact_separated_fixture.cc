@@ -65,7 +65,9 @@ struct merge_fixture : MergeContactFixture::mergeable_contact_grps_with_linked_o
 };
 
 /**
- * Merge two mergeable contacts with no linked objects nor object states.
+ * Merge two mergeable contacts
+ *  - no linked objects
+ *  - no contact states
  */
 BOOST_FIXTURE_TEST_CASE(test_no_linked_objects_no_states, merge_fixture)
 {
@@ -141,7 +143,16 @@ BOOST_FIXTURE_TEST_CASE(test_no_linked_objects_no_states, merge_fixture)
 }
 
 /**
- * Merge two mergeable contacts with linked nsset and no object states.
+ * Merge two mergeable contacts:
+ *  - source contact as tech contact of nsset
+ *  - destination contact with no linked objects
+ *  .
+ *  Linked objects:
+ *  - nsset having source contact as tech contact
+ *  .
+ * Object States:
+ *  - no contact states
+ *  - no nsset states
  */
 BOOST_FIXTURE_TEST_CASE(test_linked_nsset, merge_fixture)
 {
@@ -245,7 +256,17 @@ BOOST_FIXTURE_TEST_CASE(test_linked_nsset, merge_fixture)
 }
 
 /**
- * Merge two mergeable contacts both tech contacts of two linked nssets and no object states.
+ * Merge two mergeable contacts.
+ *  - source contact as tech contact of nsset1 and nsset2
+ *  - destination contact as tech contact of nsset1 and nsset2
+ *  .
+ *  Linked objects:
+ *  - nsset1 having source contact and destination contact as tech contacts
+ *  - nsset2 having destination contact and source contact as tech contacts
+ *  .
+ *  Object states:
+ *  - no contact states
+ *  - no nsset states
  */
 BOOST_FIXTURE_TEST_CASE(test_linked_nsset_with_added_tech_contact, merge_fixture)
 {
@@ -393,7 +414,16 @@ BOOST_FIXTURE_TEST_CASE(test_linked_nsset_with_added_tech_contact, merge_fixture
 }
 
 /**
- * Merge two mergeable contacts with linked keyset and no object states.
+ * Merge two mergeable contacts:
+ *  - source contact as tech contact of keyset
+ *  - destination contact with no linked objects
+ *  .
+ *  Linked objects:
+ *  - keyset having source contact as tech contact
+ *  .
+ * Object States:
+ *  - no contact states
+ *  - no keyset states
  */
 BOOST_FIXTURE_TEST_CASE(test_linked_keyset, merge_fixture)
 {
@@ -500,7 +530,17 @@ BOOST_FIXTURE_TEST_CASE(test_linked_keyset, merge_fixture)
 }
 
 /**
- * Merge two mergeable contacts both tech contacts of two linked keysets and no object states.
+ * Merge two mergeable contacts:
+ *  - source contact as tech contact of keyset1 and keyset2
+ *  - destination contact as tech contact of keyset1 and keyset2
+ *  .
+ *  Linked objects:
+ *  - keyset1 having source contact and destination contact as tech contacts
+ *  - keyset2 having destination contact and source contact as tech contacts
+ *  .
+ *  Object states:
+ *  - no contact states
+ *  - no keyset states
  */
 BOOST_FIXTURE_TEST_CASE(test_linked_keyset_with_added_tech_contact, merge_fixture)
 {
@@ -650,7 +690,16 @@ BOOST_FIXTURE_TEST_CASE(test_linked_keyset_with_added_tech_contact, merge_fixtur
 }
 
 /**
- * Merge two mergeable contacts with domain linked via owner and no object states.
+ * Merge two mergeable contacts.
+ *  - source contact as owner of domain
+ *  - destination contact with no linked objects
+ *  .
+ *  Linked objects:
+ *  - domain having source contact as owner
+ *  .
+ * Object States:
+ *  - no contact states
+ *  - no domain states
  */
 BOOST_FIXTURE_TEST_CASE(test_linked_domain_via_owner, merge_fixture)
 {
@@ -757,7 +806,16 @@ BOOST_FIXTURE_TEST_CASE(test_linked_domain_via_owner, merge_fixture)
 }
 
 /**
- * Merge two mergeable contacts with domain linked via admin and no object states.
+ * Merge two mergeable contacts:
+ *  - source contact as admin of domain
+ *  - destination contact with no linked objects
+ *  .
+ *  Linked objects:
+ *  - domain having source contact as admin
+ *  .
+ * Object States:
+ *  - no contact states
+ *  - no domain states
  */
 BOOST_FIXTURE_TEST_CASE(test_linked_domain_via_admin, merge_fixture)
 {
@@ -866,7 +924,16 @@ BOOST_FIXTURE_TEST_CASE(test_linked_domain_via_admin, merge_fixture)
 }
 
 /**
- * Merge two mergeable contacts with five linked nssets and no object states.
+ * Merge two mergeable contacts:
+ *  - source contact as tech contact of five nssets
+ *  - destination contact with no linked objects
+ *  .
+ *  Linked objects:
+ *  - each nsset having source contact as tech contact
+ *  .
+ * Object States:
+ *  - no contact states
+ *  - no nsset states
  */
 BOOST_FIXTURE_TEST_CASE(test_linked_nsset_5, merge_fixture)
 {
@@ -973,7 +1040,16 @@ BOOST_FIXTURE_TEST_CASE(test_linked_nsset_5, merge_fixture)
 }
 
 /**
- * Merge two mergeable contacts with five linked keysets and no object states.
+ * Merge two mergeable contacts:
+ *  - source contact as tech contact of five keysets
+ *  - destination contact with no linked objects
+ *  .
+ *  Linked objects:
+ *  - each keyset having source contact as tech contact
+ *  .
+ * Object States:
+ *  - no contact states
+ *  - no keyset states
  */
 BOOST_FIXTURE_TEST_CASE(test_linked_keyset_5, merge_fixture)
 {
@@ -1083,7 +1159,16 @@ BOOST_FIXTURE_TEST_CASE(test_linked_keyset_5, merge_fixture)
 }
 
 /**
- * Merge two mergeable contacts with five domains linked via owner and no object states.
+ * Merge two mergeable contacts:
+ *  - source contact as owner of five domains
+ *  - destination contact with no linked objects
+ *  .
+ *  Linked objects:
+ *  - each domain having source contact as owner
+ *  .
+ * Object States:
+ *  - no contact states
+ *  - no domain states
  */
 BOOST_FIXTURE_TEST_CASE(test_linked_domain_via_owner_5, merge_fixture)
 {
@@ -1193,7 +1278,16 @@ BOOST_FIXTURE_TEST_CASE(test_linked_domain_via_owner_5, merge_fixture)
 }
 
 /**
- * Merge two mergeable contacts with five domains linked via admin and no object states.
+ * Merge two mergeable contacts:
+ *  - source contact as admin of five domains
+ *  - destination contact with no linked objects
+ *  .
+ *  Linked objects:
+ *  - each domain having source contact as admin contact
+ *  .
+ * Object States:
+ *  - no contact states
+ *  - no domain states
  */
 BOOST_FIXTURE_TEST_CASE(test_linked_domain_via_admin_5, merge_fixture)
 {
@@ -1303,7 +1397,47 @@ BOOST_FIXTURE_TEST_CASE(test_linked_domain_via_admin_5, merge_fixture)
     BOOST_CHECK(diff_registrars().empty());
 }
 /**
- * Merge two mergeable contacts with linked nsset, keyset and two domains linked via admin and owner and no object states for given linked object configuration quantities.
+ * Merge two mergeable contacts for quantity 0 with:
+ *  - no linked objects
+ *  - no contact states
+ *  .
+ * then merge two mergeable contacts for quantity 1 with:
+ *  - source contact as tech contact of nsset
+ *  - source contact as tech contact of keyset
+ *  - source contact as admin contact of domain in variable admin_fqdn
+ *  - source contact as owner contact of domain in variable owner_fqdn
+ *  - destination contact with no linked objects
+ *  .
+ * then merge two mergeable contacts for quantity 2 with:
+ *  - source contact as tech contact of two nssets
+ *  - source contact as tech contact of two keysets
+ *  - source contact as admin contact of two domains in variable admin_fqdn
+ *  - source contact as owner contact of two domain in variable owner_fqdn
+ *  - destination contact with no linked objects
+ *  - no linked object states
+ *  - no contact states
+ *  .
+ * then merge two mergeable contacts for quantity 5 with:
+ *  - source contact as tech contact of five nssets
+ *  - source contact as tech contact of five keysets
+ *  - source contact as admin contact of five domains in variable admin_fqdn
+ *  - source contact as owner contact of five domain in variable owner_fqdn
+ *  - destination contact with no linked objects
+ *  - no linked object states
+ *  - no contact states
+ *  .
+ *  Linked objects:
+ *  - each nsset having source contact for its quantity as tech contact
+ *  - each keyset having source contact for its quantity as tech contact
+ *  - each domain in variable admin_fqdn having source contact for its quantity as admin contact
+ *  - each domain in variable owner_fqdn having source contact for its quantity as owner contact
+ *  .
+ * Object States:
+ *  - no contact states
+ *  - no nsset states
+ *  - no keyset states
+ *  - no domain states
+ *  .
  */
 BOOST_FIXTURE_TEST_CASE(test_linked_nsset_keyset_domain_via_admin_domain_via_owner, merge_fixture)
 {
@@ -1510,7 +1644,10 @@ BOOST_FIXTURE_TEST_CASE(test_linked_nsset_keyset_domain_via_admin_domain_via_own
 }
 
 /**
- * Try to merge nonexisting contact to existing one.
+ * Try to merge nonexisting source contact to existing destination contact.
+ *  - no linked objects
+ *  - no contact states
+ *  .
  * Check exception have set unknown_source_contact_handle.
  */
 BOOST_FIXTURE_TEST_CASE(test_non_existing_src_contact, merge_fixture)
@@ -1550,7 +1687,24 @@ BOOST_FIXTURE_TEST_CASE(test_non_existing_src_contact, merge_fixture)
 }
 
 /**
- * Try to merge existing contact with linked nsset, keyset and two domains linked via admin and owner and no object states to nonexisting contact.
+ * Try to merge existing source contact to nonexisting destination contact.
+ *  - source contact as tech contact of nsset
+ *  - source contact as tech contact of keyset
+ *  - source contact as admin contact of domain1
+ *  - source contact as owner contact of domain2
+ *  .
+ *  Linked objects:
+ *  - nsset having source contact as tech contact
+ *  - keyset having source contact as tech contact
+ *  - domain1 having source contact as admin contact
+ *  - domain2 having source contact as owner contact
+ *  .
+ * Object states:
+ *  - no contact states
+ *  - no nsset states
+ *  - no keyset states
+ *  - no domain states
+ *  .
  * Check exception have set unknown_destination_contact_handle.
  */
 BOOST_FIXTURE_TEST_CASE(test_non_existing_dst_contact, merge_fixture)
@@ -1592,7 +1746,24 @@ BOOST_FIXTURE_TEST_CASE(test_non_existing_dst_contact, merge_fixture)
 }
 
 /**
- * Try to merge existing contact with linked nsset, keyset and two domains linked via admin and owner and no object states to nonmergeable contact.
+ * Try to merge existing source contact to destination contact with different contact data.
+ *  - source contact as tech contact of nsset
+ *  - source contact as tech contact of keyset
+ *  - source contact as admin contact of domain1
+ *  - source contact as owner contact of domain2
+ *  .
+ * Linked objects:
+ *  - nsset having source contact as tech contact
+ *  - keyset having source contact as tech contact
+ *  - domain1 having source contact as admin contact
+ *  - domain2 having source contact as owner contact
+ *  .
+ * Object states:
+ *  - no contact states
+ *  - no nsset states
+ *  - no keyset states
+ *  - no domain states
+ *  .
  * Check exception have set contacts_differ.
  */
 BOOST_FIXTURE_TEST_CASE(test_different_dst_contact, merge_fixture)
@@ -1636,7 +1807,24 @@ BOOST_FIXTURE_TEST_CASE(test_different_dst_contact, merge_fixture)
 }
 
 /**
- * Try to merge nonmergeable contact to contact with linked nsset, keyset and two domains linked via admin and owner and no object states.
+ * Try to merge existing source contact to destination contact with different contact data.
+ *  - destination contact as tech contact of nsset
+ *  - destination contact as tech contact of keyset
+ *  - destination contact as admin contact of domain1
+ *  - destination contact as owner contact of domain2
+ *  .
+ * Linked objects:
+ *  - nsset having destination contact as tech contact
+ *  - keyset having destination contact as tech contact
+ *  - domain1 having destination contact as admin contact
+ *  - domain2 having destination contact as owner contact
+ *  .
+ * Object states:
+ *  - no contact states
+ *  - no nsset states
+ *  - no keyset states
+ *  - no domain states
+ *  .
  * Check exception have set contacts_differ.
  */
 BOOST_FIXTURE_TEST_CASE(test_different_src_contact, merge_fixture)
@@ -1680,7 +1868,24 @@ BOOST_FIXTURE_TEST_CASE(test_different_src_contact, merge_fixture)
 }
 
 /**
- * Try to merge contact with linked nsset, keyset and two domains linked via admin and owner and no object states to oneself.
+ * Try to merge existing source contact to to oneself.
+ *  - source contact as tech contact of nsset
+ *  - source contact as tech contact of keyset
+ *  - source contact as admin contact of domain1
+ *  - source contact as owner contact of domain2
+ *  .
+ * Linked objects:
+ *  - nsset having source contact as tech contact
+ *  - keyset having source contact as tech contact
+ *  - domain1 having source contact as admin contact
+ *  - domain2 having source contact as owner contact
+ *  .
+ * Object states:
+ *  - no contact states
+ *  - no nsset states
+ *  - no keyset states
+ *  - no domain states
+ *  .
  * Check exception have set identical_contacts.
  */
 BOOST_FIXTURE_TEST_CASE(test_identical_contact, merge_fixture)
@@ -1722,8 +1927,22 @@ BOOST_FIXTURE_TEST_CASE(test_identical_contact, merge_fixture)
 }
 
 /**
- * Merge two mergeable contacts with two linked domains. First domain with owner src contact and admin src and dest contacts,
- * second domain with owner dest contact and admin src and dest contact.
+ * Merge two mergeable contacts:
+ *  - source contact as owner contact of domain fqdn1
+ *  - source contact as admin contact of domain fqdn1
+ *  - destination contact as admin contact of domain fqdn1
+ *  - destination contact as owner contact of domain fqdn2
+ *  - source contact as admin contact of domain fqdn2
+ *  - destination contact as admin contact of domain fqdn2
+ * .
+ * Linked objects:
+ *  - domain fqdn1 having source contact as admin and owner contact and destination contact as admin contact
+ *  - domain fqdn2 having destination contact as admin and owner contact and source contact as admin contact
+ *  .
+ * Object states:
+ *  - no contact states
+ *  - no domain states
+ *  .
  */
 BOOST_FIXTURE_TEST_CASE(test_src_contact_linked_domain_via_owner_with_the_same_admin_and_merged_to_different_mergeable_admin_contact, merge_fixture)
 {
@@ -1921,7 +2140,33 @@ BOOST_FIXTURE_TEST_CASE(test_merge_with_states_fixture, merge_with_states_fixtur
 }
 
 /**
- * Try to merge contact with linked nsset, keyset and two domains linked via admin and owner and  mojeidContact object state to otherwise mergeable contact.
+ * Try to merge source contact with mojeidContact object state to destination contact with the same data.
+ *  - source contact as tech contact of nsset1
+ *  - source contact as tech contact of keyset1
+ *  - source contact as admin contact of domain1
+ *  - source contact as owner contact of domain2
+ *  - destination contact as tech contact of nsset2
+ *  - destination contact as tech contact of keyset2
+ *  - destination contact as admin contact of domain3
+ *  - destination contact as owner contact of domain4
+ *  .
+ * Linked objects:
+ *  - nsset1 having source contact as tech contact
+ *  - keyset1 having source contact as tech contact
+ *  - domain1 having source contact as admin contact
+ *  - domain2 having source contact as owner contact
+ *  - nsset2 having destination contact as tech contact
+ *  - keyset2 having destination contact as tech contact
+ *  - domain3 having destination contact as admin contact
+ *  - domain4 having destination contact as owner contact
+ *  .
+ * Object states:
+ *  - source contact in mojeidContact state
+ *  - no destination contact states
+ *  - no nsset states
+ *  - no keyset states
+ *  - no domain states
+ *  .
  * Check exception have set src_contact_invalid.
  */
 BOOST_FIXTURE_TEST_CASE(test_invalid_src_mojeid_contact, merge_with_states_fixture)
@@ -1969,10 +2214,34 @@ BOOST_FIXTURE_TEST_CASE(test_invalid_src_mojeid_contact, merge_with_states_fixtu
     BOOST_CHECK(diff_registrars().empty());
 }
 
-
 /**
- * Try to merge contact with linked nsset, keyset and two domains linked via admin and owner
- * and serverBlocked object state to otherwise mergeable contact.
+ * Try to merge source contact with serverBlocked object state to destination contact with the same data.
+ *  - source contact as tech contact of nsset1
+ *  - source contact as tech contact of keyset1
+ *  - source contact as admin contact of domain1
+ *  - source contact as owner contact of domain2
+ *  - destination contact as tech contact of nsset2
+ *  - destination contact as tech contact of keyset2
+ *  - destination contact as admin contact of domain3
+ *  - destination contact as owner contact of domain4
+ *  .
+ * Linked objects:
+ *  - nsset1 having source contact as tech contact
+ *  - keyset1 having source contact as tech contact
+ *  - domain1 having source contact as admin contact
+ *  - domain2 having source contact as owner contact
+ *  - nsset2 having destination contact as tech contact
+ *  - keyset2 having destination contact as tech contact
+ *  - domain3 having destination contact as admin contact
+ *  - domain4 having destination contact as owner contact
+ *  .
+ * Object states:
+ *  - source contact in serverBlocked state
+ *  - no destination contact states
+ *  - no nsset states
+ *  - no keyset states
+ *  - no domain states
+ *  .
  * Check exception have set src_contact_invalid.
  */
 BOOST_FIXTURE_TEST_CASE(test_invalid_src_serverblocked_contact, merge_with_states_fixture)
@@ -2021,8 +2290,33 @@ BOOST_FIXTURE_TEST_CASE(test_invalid_src_serverblocked_contact, merge_with_state
 }
 
 /**
- * Try to merge contact with linked nsset, keyset and two domains linked via admin and owner
- * and serverDeleteProhibited object state to otherwise mergeable contact.
+ * Try to merge source contact with serverDeleteProhibited object state to destination contact with the same data.
+ *  - source contact as tech contact of nsset1
+ *  - source contact as tech contact of keyset1
+ *  - source contact as admin contact of domain1
+ *  - source contact as owner contact of domain2
+ *  - destination contact as tech contact of nsset2
+ *  - destination contact as tech contact of keyset2
+ *  - destination contact as admin contact of domain3
+ *  - destination contact as owner contact of domain4
+ *  .
+ * Linked objects:
+ *  - nsset1 having source contact as tech contact
+ *  - keyset1 having source contact as tech contact
+ *  - domain1 having source contact as admin contact
+ *  - domain2 having source contact as owner contact
+ *  - nsset2 having destination contact as tech contact
+ *  - keyset2 having destination contact as tech contact
+ *  - domain3 having destination contact as admin contact
+ *  - domain4 having destination contact as owner contact
+ *  .
+ * Object states:
+ *  - source contact in serverDeleteProhibited state
+ *  - no destination contact states
+ *  - no nsset states
+ *  - no keyset states
+ *  - no domain states
+ *  .
  * Check exception have set src_contact_invalid.
  */
 BOOST_FIXTURE_TEST_CASE(test_invalid_src_deleteprohibited_contact, merge_with_states_fixture)
@@ -2071,10 +2365,36 @@ BOOST_FIXTURE_TEST_CASE(test_invalid_src_deleteprohibited_contact, merge_with_st
 }
 
 /**
- * Try to merge contact to otherwise mergeable contact with linked nsset, keyset and two domains linked via admin and owner
- * and serverBlocked object state.
+ * Try to merge source contact to destination contact with the same data and serverBlocked object state.
+ *  - source contact as tech contact of nsset1
+ *  - source contact as tech contact of keyset1
+ *  - source contact as admin contact of domain1
+ *  - source contact as owner contact of domain2
+ *  - destination contact as tech contact of nsset2
+ *  - destination contact as tech contact of keyset2
+ *  - destination contact as admin contact of domain3
+ *  - destination contact as owner contact of domain4
+ *  .
+ * Linked objects:
+ *  - nsset1 having source contact as tech contact
+ *  - keyset1 having source contact as tech contact
+ *  - domain1 having source contact as admin contact
+ *  - domain2 having source contact as owner contact
+ *  - nsset2 having destination contact as tech contact
+ *  - keyset2 having destination contact as tech contact
+ *  - domain3 having destination contact as admin contact
+ *  - domain4 having destination contact as owner contact
+ *  .
+ * Object states:
+ *  - no source contact states
+ *  - destination contact in serverBlocked state
+ *  - no nsset states
+ *  - no keyset states
+ *  - no domain states
+ *  .
  * Check exception have set dst_contact_invalid.
  */
+
 BOOST_FIXTURE_TEST_CASE(test_invalid_dst_serverblocked_contact, merge_with_states_fixture)
 {
     std::string contact_handle_src = create_mergeable_contact_handle(
