@@ -2441,7 +2441,32 @@ BOOST_FIXTURE_TEST_CASE(test_invalid_dst_serverblocked_contact, merge_with_state
 }
 
 /**
- * Try to merge contact with domain in serverBlocked object state linked via admin.
+ * Try to merge source contact to destination contact with the same data.
+ *  - source contact as tech contact of nsset1
+ *  - source contact as tech contact of keyset1
+ *  - source contact as admin contact of domain1
+ *  - source contact as owner contact of domain2
+ *  - destination contact as tech contact of nsset2
+ *  - destination contact as tech contact of keyset2
+ *  - destination contact as admin contact of domain3
+ *  - destination contact as owner contact of domain4
+ *  .
+ * Linked objects:
+ *  - nsset1 having source contact as tech contact
+ *  - keyset1 having source contact as tech contact
+ *  - domain1 having source contact as admin contact
+ *  - domain2 having source contact as owner contact
+ *  - nsset2 having destination contact as tech contact
+ *  - keyset2 having destination contact as tech contact
+ *  - domain3 having destination contact as admin contact
+ *  - domain4 having destination contact as owner contact
+ *  .
+ * Object states:
+ *  - no contact states
+ *  - no nsset states
+ *  - no keyset states
+ *  - domain1 in serverBlocked object state
+ *  .
  * Check exception have set object_blocked.
  */
 BOOST_FIXTURE_TEST_CASE(test_src_contact_linked_domain_via_admin_serverblocked, merge_with_states_fixture)
@@ -2496,8 +2521,33 @@ BOOST_FIXTURE_TEST_CASE(test_src_contact_linked_domain_via_admin_serverblocked, 
 }
 
 /**
- * Try to merge contact with domain in serverBlocked object state linked via owner.
- * Check exception have set dst_contact_invalid.
+ * Try to merge source contact to destination contact with the same data.
+ *  - source contact as tech contact of nsset1
+ *  - source contact as tech contact of keyset1
+ *  - source contact as admin contact of domain1
+ *  - source contact as owner contact of domain2
+ *  - destination contact as tech contact of nsset2
+ *  - destination contact as tech contact of keyset2
+ *  - destination contact as admin contact of domain3
+ *  - destination contact as owner contact of domain4
+ *  .
+ * Linked objects:
+ *  - nsset1 having source contact as tech contact
+ *  - keyset1 having source contact as tech contact
+ *  - domain1 having source contact as admin contact
+ *  - domain2 having source contact as owner contact
+ *  - nsset2 having destination contact as tech contact
+ *  - keyset2 having destination contact as tech contact
+ *  - domain3 having destination contact as admin contact
+ *  - domain4 having destination contact as owner contact
+ *  .
+ * Object states:
+ *  - no contact states
+ *  - no nsset states
+ *  - no keyset states
+ *  - domain2 in serverBlocked object state
+ *  .
+ * Check exception have set object_blocked.
  */
 BOOST_FIXTURE_TEST_CASE(test_src_contact_linked_domain_via_owner_serverblocked, merge_with_states_fixture)
 {
@@ -2550,8 +2600,22 @@ BOOST_FIXTURE_TEST_CASE(test_src_contact_linked_domain_via_owner_serverblocked, 
 }
 
 /**
- * Merge two mergeable contacts with two linked domains. First domain in serverUpdateProhibited object state with owner src contact and admin src and dest contacts,
- * second domain with owner dest contact and admin src and dest contact.
+ * Merge two mergeable contacts:
+ *  - source contact as owner contact of domain fqdn1
+ *  - source contact as admin contact of domain fqdn1
+ *  - destination contact as admin contact of domain fqdn1
+ *  - destination contact as owner contact of domain fqdn2
+ *  - unrelated contact (state case 1) as admin contact of domain fqdn2
+ *  - destination contact as admin contact of domain fqdn2
+ * .
+ * Linked objects:
+ *  - domain fqdn1 having source contact as admin and owner contact and destination contact as admin contact
+ *  - domain fqdn2 having destination contact as admin and owner contact and unrelated contact (state case 1) as admin contact
+ *  .
+ * Object states:
+ *  - source contact in serverUpdateProhibited state
+ *  - no domain states
+ *  .
  */
 BOOST_FIXTURE_TEST_CASE(test_src_contact_updateprohibited_linked_domain_via_owner_with_the_same_admin_and_merged_to_different_mergeable_admin_contact, merge_with_states_fixture)
 {
@@ -2635,42 +2699,42 @@ BOOST_FIXTURE_TEST_CASE(test_src_contact_updateprohibited_linked_domain_via_owne
 
     BOOST_CHECK(changed_domains.size() == 1); //updated domain, owner and admin contact changed from src contact to dst contact
 
-    std::string fqdn= create_domain_with_owner_contact_fqdn(
+    std::string fqdn1= create_domain_with_owner_contact_fqdn(
         0//linked_object_state_case
         , 1//quantity_case
         , 0//number in quantity
         , contact_handle_src //owner contact
         ,  Util::vector_of<std::string>(contact_handle_src)(contact_handle_dst)
     );
-    BOOST_MESSAGE(fqdn);
+    BOOST_MESSAGE(fqdn1);
 
     BOOST_MESSAGE(std::string("changed domain fields: (\"")
-        + Util::format_container(map_at(changed_domains,fqdn).changed_fields(), "\")(\"") + "\")");
-    BOOST_CHECK(map_at(changed_domains,fqdn).changed_fields()
+        + Util::format_container(map_at(changed_domains,fqdn1).changed_fields(), "\")(\"") + "\")");
+    BOOST_CHECK(map_at(changed_domains,fqdn1).changed_fields()
         == Util::set_of<std::string>("admin_contacts")("historyid")("registrant")("update_registrar_handle")("update_time"));
 
-    BOOST_CHECK(map_at(changed_domains,fqdn).admin_contacts.isset());
-    BOOST_CHECK(map_at(changed_domains,fqdn).admin_contacts.get_value().first.size() == 2);
+    BOOST_CHECK(map_at(changed_domains,fqdn1).admin_contacts.isset());
+    BOOST_CHECK(map_at(changed_domains,fqdn1).admin_contacts.get_value().first.size() == 2);
 
-    BOOST_CHECK(Util::set_of<std::string>(map_at(changed_domains,fqdn).admin_contacts.get_value().first.at(0).handle)
-        (map_at(changed_domains,fqdn).admin_contacts.get_value().first.at(1).handle)
+    BOOST_CHECK(Util::set_of<std::string>(map_at(changed_domains,fqdn1).admin_contacts.get_value().first.at(0).handle)
+        (map_at(changed_domains,fqdn1).admin_contacts.get_value().first.at(1).handle)
         == Util::set_of<std::string>(contact_handle_src)(contact_handle_dst));
 
-    BOOST_CHECK(map_at(changed_domains,fqdn).admin_contacts.get_value().second.size() == 1);
-    BOOST_CHECK(map_at(changed_domains,fqdn).admin_contacts.get_value().second.at(0).handle == contact_handle_dst);
+    BOOST_CHECK(map_at(changed_domains,fqdn1).admin_contacts.get_value().second.size() == 1);
+    BOOST_CHECK(map_at(changed_domains,fqdn1).admin_contacts.get_value().second.at(0).handle == contact_handle_dst);
 
-    BOOST_CHECK(map_at(changed_domains,fqdn).historyid.isset());
+    BOOST_CHECK(map_at(changed_domains,fqdn1).historyid.isset());
 
-    BOOST_CHECK(map_at(changed_domains,fqdn).registrant.isset());
-    BOOST_CHECK(map_at(changed_domains,fqdn).registrant.get_value().first.handle == contact_handle_src);
-    BOOST_CHECK(map_at(changed_domains,fqdn).registrant.get_value().second.handle == contact_handle_dst);
+    BOOST_CHECK(map_at(changed_domains,fqdn1).registrant.isset());
+    BOOST_CHECK(map_at(changed_domains,fqdn1).registrant.get_value().first.handle == contact_handle_src);
+    BOOST_CHECK(map_at(changed_domains,fqdn1).registrant.get_value().second.handle == contact_handle_dst);
 
-    BOOST_CHECK(map_at(changed_domains,fqdn).update_registrar_handle.isset());
-    BOOST_CHECK(map_at(changed_domains,fqdn).update_registrar_handle.get_value().first.isnull());
-    BOOST_CHECK(map_at(changed_domains,fqdn).update_registrar_handle.get_value().second.get_value() == registrar_sys_handle);
+    BOOST_CHECK(map_at(changed_domains,fqdn1).update_registrar_handle.isset());
+    BOOST_CHECK(map_at(changed_domains,fqdn1).update_registrar_handle.get_value().first.isnull());
+    BOOST_CHECK(map_at(changed_domains,fqdn1).update_registrar_handle.get_value().second.get_value() == registrar_sys_handle);
 
-    BOOST_CHECK(map_at(changed_domains,fqdn).update_time.get_value().first.isnull());
-    BOOST_CHECK(!map_at(changed_domains,fqdn).update_time.get_value().second.isnull());
+    BOOST_CHECK(map_at(changed_domains,fqdn1).update_time.get_value().first.isnull());
+    BOOST_CHECK(!map_at(changed_domains,fqdn1).update_time.get_value().second.isnull());
 
     //no registrar changes
     BOOST_CHECK(diff_registrars().empty());
