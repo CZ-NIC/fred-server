@@ -1,8 +1,10 @@
-2014-09-01 Jan Korous, Jan Zima (2.19.1)
+2014-09-01 Jan Korous, Jan Zima, Jiri Sadek (2.19.1)
 
   * rdap - fix - return timestamps in UTC
 
   * domainbrowser - fix - canceling multiple object state requests
+
+  * mojeid/verification - fix sms text
 
 2014-08-01 Jan Korous, Jan Zima, Michal Strnad, Jiri Sadek (2.19.0)
 
