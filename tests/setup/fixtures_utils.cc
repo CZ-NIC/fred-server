@@ -92,6 +92,17 @@ namespace Test {
 
         return result;
     }
+
+    unsigned long long get_cz_zone_id(Fred::OperationContext& ctx) {
+        return
+            ctx.get_conn().exec_params(
+                "SELECT id "
+                    "FROM zone "
+                    "WHERE fqdn=$1::text ",
+                Database::query_param_list("cz")
+        )[0]["id"];
+    }
+
     add_admin_contacts_to_domain::add_admin_contacts_to_domain(
         const std::string& _domain_handle,
         const std::string& _registrar_handle
