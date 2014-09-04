@@ -75,6 +75,23 @@ namespace Test {
 
         return result;
     }
+    unsigned long long  get_nonexistent_zone_id(Fred::OperationContext& ctx) {
+        unsigned long long result;
+
+        Database::Result check;
+        // guarantee non-existence
+        do {
+            Fred::OperationContext ctx;
+            result = RandomDataGenerator().xint();
+            check = ctx.get_conn().exec_params(
+                "SELECT id "
+                    "FROM zone "
+                    "WHERE id=$1::bigint ",
+                    Database::query_param_list(result) );
+        } while(check.size() != 0);
+
+        return result;
+    }
     add_admin_contacts_to_domain::add_admin_contacts_to_domain(
         const std::string& _domain_handle,
         const std::string& _registrar_handle

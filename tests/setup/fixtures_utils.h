@@ -373,6 +373,7 @@ namespace Test {
     unsigned long long  get_nonexistent_object_historyid(Fred::OperationContext& ctx);
     std::string         get_nonexistent_object_handle(Fred::OperationContext& ctx);
     unsigned long long  get_nonexistent_registrar_id(Fred::OperationContext& ctx);
+    unsigned long long  get_nonexistent_zone_id(Fred::OperationContext& ctx);
 
     // for use with temporary object - copying arguments - suboptimal but hopefully adequate enough
     template<typename TCreateOper> typename util::InfoXData_type<TCreateOper>::type exec(TCreateOper create, Fred::OperationContext& ctx) {
