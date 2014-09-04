@@ -9,7 +9,7 @@ namespace Test {
         // guarantee non-existence
         do {
             Fred::OperationContext ctx;
-            // warning: type of column id in postgres is "integer", implicitly assuming POSITIVE
+            // warning: postgres BIGINT value range is POSITIVE part of SIGNED long long so be careful about overflow during conversion
             result = std::abs(RandomDataGenerator().xint());
             check = ctx.get_conn().exec_params(
                 "SELECT id "
@@ -28,7 +28,7 @@ namespace Test {
         // guarantee non-existence
         do {
             Fred::OperationContext ctx;
-            // warning: type of column id in postgres is "integer", implicitly assuming POSITIVE
+            // warning: postgres BIGINT value range is POSITIVE part of SIGNED long long so be careful about overflow during conversion
             result = std::abs(RandomDataGenerator().xint());
             check = ctx.get_conn().exec_params(
                 "SELECT historyid "
@@ -65,7 +65,8 @@ namespace Test {
         // guarantee non-existence
         do {
             Fred::OperationContext ctx;
-            result = RandomDataGenerator().xint();
+            // warning: postgres BIGINT value range is POSITIVE part of SIGNED long long so be careful about overflow during conversion
+            result = std::abs(RandomDataGenerator().xint());
             check = ctx.get_conn().exec_params(
                 "SELECT id "
                     "FROM registrar "
@@ -82,7 +83,8 @@ namespace Test {
         // guarantee non-existence
         do {
             Fred::OperationContext ctx;
-            result = RandomDataGenerator().xint();
+            // warning: postgres BIGINT value range is POSITIVE part of SIGNED long long so be careful about overflow during conversion
+            result = std::abs(RandomDataGenerator().xint());
             check = ctx.get_conn().exec_params(
                 "SELECT id "
                     "FROM zone "
