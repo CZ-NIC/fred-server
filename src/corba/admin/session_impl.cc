@@ -1546,6 +1546,9 @@ Registry::PublicRequest::Detail* ccReg_Session_i::createPublicRequestDetail(Fred
   else if (_request->getType() == Fred::PublicRequest::PRT_MOJEID_CONTACT_VALIDATION) {
       detail->type = Registry::PublicRequest::PRT_MOJEID_CONTACT_VALIDATION;
   }
+  else if (_request->getType() == Fred::PublicRequest::PRT_MOJEID_CONTACT_REIDENTIFICATION) {
+      detail->type = Registry::PublicRequest::PRT_MOJEID_CONTACT_REIDENTIFICATION;
+  }
   else {
       throw std::runtime_error("unknown public request type");
   }
