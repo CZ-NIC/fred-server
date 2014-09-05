@@ -2027,6 +2027,7 @@ tools_contact_migration_mojeid_contact_address_import_LDADD = \
 SERVER_TESTS = \
 		tests/test-server \
 		tests/interfaces/test-admin-contact-verification \
+		tests/interfaces/test-admin-contact-automerge \
 		tests/test-exception \
 		tests/test-blocking \
 		tests/test-fredlib \
@@ -2070,6 +2071,38 @@ tests_interfaces_test_admin_contact_verification_LDADD = \
 		$(BOOST_UNIT_TEST_FRAMEWORK_LIB)
 #
 # tests/interfaces/test-admin-contact-verification
+
+# tests/interfaces/test-admin-contact-automerge
+#
+tests_interfaces_test_admin_contact_automerge_SOURCES = \
+		tests/interfaces/admin/contact/automerge/main.cc \
+		tests/interfaces/admin/contact/automerge/test-merge-auto-proc.cc \
+		tests/setup/fixtures_utils.h \
+		tests/setup/fixtures_utils.cc \
+		tests/setup/fixtures.h \
+		tests/setup/fixtures.cc
+
+tests_interfaces_test_admin_contact_automerge_LDFLAGS = \
+		$(POSTGRESQL_LDFLAGS) \
+		$(BOOST_LDFLAGS) \
+		$(AM_LDFLAGS)
+
+tests_interfaces_test_admin_contact_automerge_LDADD = \
+		src/fredlib/libfred.a \
+		util/log/liblog.a \
+		src/corba/libcorba.a \
+		util/libutil.a \
+		$(BOOST_PROGRAM_OPTIONS_LIB) \
+		$(BOOST_DATE_TIME_LIB) \
+		$(BOOST_REGEX_LIB) \
+		$(OMNIORB4_LIBS) \
+		$(BOOST_THREAD_LIB) \
+		$(BOOST_SERIALIZATION_LIB) \
+		$(POSTGRESQL_LIB) \
+		$(BOOST_SYSTEM_LIB) \
+		$(BOOST_UNIT_TEST_FRAMEWORK_LIB)
+#
+# tests/interfaces/test-admin-contact-automerge
 
 
 # tests/test_server
