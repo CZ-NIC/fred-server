@@ -2077,6 +2077,14 @@ tests_interfaces_test_admin_contact_verification_LDADD = \
 tests_interfaces_test_admin_contact_automerge_SOURCES = \
 		tests/interfaces/admin/contact/automerge/main.cc \
 		tests/interfaces/admin/contact/automerge/test-merge-auto-proc.cc \
+		src/admin/contact/merge_contact.cc \
+		src/admin/contact/merge_contact.h \
+		src/admin/contact/merge_contact_logger.cc \
+		src/admin/contact/merge_contact_logger.h \
+		src/admin/contact/merge_contact_auto_procedure.cc \
+		src/admin/contact/merge_contact_auto_procedure.h \
+		src/admin/contact/merge_contact_reporting.cc \
+		src/admin/contact/merge_contact_reporting.h \
 		tests/setup/fixtures_utils.h \
 		tests/setup/fixtures_utils.cc \
 		tests/setup/fixtures.h \
@@ -2089,8 +2097,19 @@ tests_interfaces_test_admin_contact_automerge_LDFLAGS = \
 
 tests_interfaces_test_admin_contact_automerge_LDADD = \
 		src/fredlib/libfred.a \
-		util/log/liblog.a \
+		src/model/libmodel.a \
 		src/corba/libcorba.a \
+		src/corba/libcorbalogger.a \
+		src/corba/libcorbaregistry.a \
+		src/corba/libcorbafilters.a \
+		src/corba/libcorbadatatypes.a \
+		src/corba/libmailer.a \
+		src/corba/libfilemanager.a \
+		src/fredlib/requests/librequests.a \
+		util/log/liblog.a \
+		util/types/libtypes.a \
+		util/db/libdb.a \
+		src/old_utils/liboldutils.a \
 		util/libutil.a \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(BOOST_DATE_TIME_LIB) \

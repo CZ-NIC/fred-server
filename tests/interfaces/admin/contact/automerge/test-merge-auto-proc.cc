@@ -53,7 +53,7 @@
 
 #include "cfg/config_handler_decl.h"
 #include <boost/test/unit_test.hpp>
-//#include "util/log/logger.h"
+#include "util/log/logger.h"
 #include "util/corba_wrapper_decl.h"
 #include "src/corba/mailer_manager.h"
 #include "src/admin/contact/merge_contact_auto_procedure.h"
@@ -78,10 +78,10 @@ struct auto_proc_fixture : MergeContactFixture::mergeable_contact_grps_with_link
     auto_proc_fixture()
     : MergeContactFixture::mergeable_contact_grps_with_linked_objects_and_blocking_states(
         1u//mergeable_contact_group_count
-        ,Util::set_of<unsigned>(15)(18)(19)(20)//linked_object_cases
+        , init_linked_object_combinations()//linked_object_cases
         , init_set_of_contact_state_combinations()//contact_state_combinations//stateless states 0, 1
         , init_set_of_linked_object_state_combinations()//linked_object_state_combinations
-        , Util::vector_of<unsigned>(0)(1)//linked_object_quantities
+        , Util::vector_of<unsigned>(0)(1)(2)//linked_object_quantities
         )
     {}
 };
@@ -99,7 +99,7 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc, auto_proc_fixture )
             , ns_args_ptr->nameservice_host
             , ns_args_ptr->nameservice_port
             , ns_args_ptr->nameservice_context);
-/*
+
     boost::shared_ptr<Fred::Mailer::Manager> mm( new MailerManager(CorbaContainer::get_instance()->getNS()));
     std::auto_ptr<Fred::Logger::LoggerClient> logger_client(
             new Fred::Logger::LoggerCorbaClientImpl());
@@ -107,12 +107,13 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc, auto_proc_fixture )
     Admin::MergeContactAutoProcedure(
             *(mm.get()),
             *(logger_client.get()))
-        .set_registrar(registrar_handle + boost::lexical_cast<std::string>(0))
+        .set_registrar(registrar_mc_1_handle)
         .set_limit(Optional<unsigned long long>())
         .set_dry_run(Optional<bool>(false))
-        //.set_verbose(Optional<unsigned short>(10))
+        .set_verbose(Optional<unsigned short>(10))
     .exec();
 
+    /*
     //check merge
     Fred::OperationContext ctx;
     BOOST_CHECK(1 == static_cast<int>(ctx.get_conn().exec_params(
