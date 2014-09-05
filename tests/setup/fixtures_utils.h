@@ -369,11 +369,38 @@ namespace Test {
         return obj;
     }
 
+    unsigned long long generate_random_bigserial();
+    std::string generate_random_handle();
+
     unsigned long long  get_nonexistent_object_id(Fred::OperationContext& ctx);
     unsigned long long  get_nonexistent_object_historyid(Fred::OperationContext& ctx);
     std::string         get_nonexistent_object_handle(Fred::OperationContext& ctx);
     unsigned long long  get_nonexistent_registrar_id(Fred::OperationContext& ctx);
     unsigned long long  get_nonexistent_zone_id(Fred::OperationContext& ctx);
+
+    template<typename T> T get_nonexistent_value(
+        Fred::OperationContext& ctx,
+        const std::string& table,
+        const std::string& column,
+        const std::string& postgres_type,
+        T (*random_generator) ()
+    ) {
+        T result;
+
+        Database::Result check;
+        // guarantee non-existence
+        do {
+            Fred::OperationContext ctx;
+            result = random_generator();
+            check = ctx.get_conn().exec_params(
+                "SELECT "+ column +" "
+                    "FROM "+ table +" "
+                    "WHERE "+ column +"=$1::"+postgres_type,
+                    Database::query_param_list(result) );
+        } while(check.size() != 0);
+
+        return result;
+    }
 
     // TODO XXX - casem zrusit zavislost testu na existenci cz zony
     unsigned long long  get_cz_zone_id(Fred::OperationContext& ctx);
