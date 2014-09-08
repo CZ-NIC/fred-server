@@ -16,7 +16,7 @@ namespace Admin {
 
 
 
-void email_notification(Fred::Mailer::Manager& mm
+    std::vector<Fred::MergeContactNotificationEmailWithAddr> email_notification(Fred::Mailer::Manager& mm
         , const std::vector<Fred::MergeContactEmailNotificationInput>& email_notification_input_vector)
 {
     Fred::OperationContext enctx;
@@ -97,6 +97,7 @@ void email_notification(Fred::Mailer::Manager& mm
             enctx.get_log().error(errmsg.str());
         }
     }//for emails
+    return notif_emails;
 }
 
 
@@ -234,8 +235,9 @@ unsigned short MergeContactAutoProcedure::get_verbose_level() const
 }
 
 
-void MergeContactAutoProcedure::exec()
+std::vector<Fred::MergeContactNotificationEmailWithAddr> MergeContactAutoProcedure::exec()
 {
+    std::vector<Fred::MergeContactNotificationEmailWithAddr> ret_email_notifications;
     Fred::OperationContext octx;
     /* get system registrar - XXX: should be a parameter?? */
     Database::Result system_registrar_result = octx.get_conn().exec(
@@ -407,7 +409,7 @@ void MergeContactAutoProcedure::exec()
         }
         else {
             /* send email notifications */
-            email_notification(mm_, email_notification_input_vector);
+            ret_email_notifications = email_notification(mm_, email_notification_input_vector);
         }
         any_dup_set = new_dup_search.exec(octx);
     }
@@ -420,6 +422,7 @@ void MergeContactAutoProcedure::exec()
     if (!this->is_set_dry_run()) {
         octx.commit_transaction();
     }
+    return ret_email_notifications;
 }
 
 

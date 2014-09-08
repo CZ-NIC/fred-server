@@ -5,6 +5,7 @@
 #include "src/fredlib/logger_client.h"
 #include "src/fredlib/mailer.h"
 #include "src/fredlib/contact/merge_contact_selection.h"
+#include "src/fredlib/contact/merge_contact_email_notification_data.h"
 
 
 
@@ -35,7 +36,7 @@ public:
 
     MergeContactAutoProcedure& set_verbose(const Optional<unsigned short> &_verbose);
 
-    void exec();
+    std::vector<Fred::MergeContactNotificationEmailWithAddr> exec();
 
 
 private:
