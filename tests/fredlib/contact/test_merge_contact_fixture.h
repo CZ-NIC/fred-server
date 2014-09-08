@@ -1043,6 +1043,18 @@ namespace MergeContactFixture
              return diff_map;
          }
 
+         /**
+          * Check given registrar is system registrar
+          * @param registrar_handle
+          * @return true if registrar is system registrar, or false if it's not
+          */
+         bool is_system_registrar(const std::string registrar_handle)
+         {
+             Fred::OperationContext ctx;
+             return ctx.get_conn().exec_params("SELECT id FROM registrar r WHERE r.system IS TRUE AND r.handle = $1::text"
+             , Database::query_param_list(registrar_handle)).size() == 1;
+         }
+
     private:
 
          /**

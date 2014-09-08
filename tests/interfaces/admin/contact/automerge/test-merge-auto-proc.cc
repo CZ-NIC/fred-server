@@ -78,7 +78,7 @@ struct auto_proc_fixture : MergeContactFixture::mergeable_contact_grps_with_link
     auto_proc_fixture()
     : MergeContactFixture::mergeable_contact_grps_with_linked_objects_and_blocking_states(
         1u//mergeable_contact_group_count
-        , init_linked_object_combinations()//linked_object_cases
+        , Util::set_of<unsigned>(0)(15)(16)(17)(18)(19)(20)//init_linked_object_combinations()//linked_object_cases
         , init_set_of_contact_state_combinations()//contact_state_combinations//stateless states 0, 1
         , init_set_of_linked_object_state_combinations()//linked_object_state_combinations
         , Util::vector_of<unsigned>(0)(1)(2)//linked_object_quantities
@@ -87,7 +87,7 @@ struct auto_proc_fixture : MergeContactFixture::mergeable_contact_grps_with_link
 };
 
 
-BOOST_FIXTURE_TEST_CASE( test_auto_proc, auto_proc_fixture )
+BOOST_FIXTURE_TEST_CASE( test_auto_proc_given_registrar, auto_proc_fixture )
 {
     //corba config
     FakedArgs fa = CfgArgs::instance()->fa;
@@ -108,10 +108,55 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc, auto_proc_fixture )
             *(mm.get()),
             *(logger_client.get()))
         .set_registrar(registrar_mc_1_handle)
-        .set_limit(Optional<unsigned long long>())
-        .set_dry_run(Optional<bool>(false))
-        .set_verbose(Optional<unsigned short>(10))
+        //.set_limit(Optional<unsigned long long>())
+        //.set_dry_run(Optional<bool>(false))
+        //.set_verbose(Optional<unsigned short>(10))
     .exec();
+
+    //contact changes
+    std::map<std::string, Fred::InfoContactDiff> changed_contacts = diff_contacts();
+    for(std::map<std::string, Fred::InfoContactDiff>::const_iterator ci = changed_contacts.begin(); ci != changed_contacts.end(); ++ci)
+    {
+        //check update registrar is system registrar
+        if(ci->second.update_registrar_handle.isset())
+        {
+            BOOST_CHECK(is_system_registrar(ci->second.update_registrar_handle.get_value().second.get_value()));
+        }
+    }
+
+    //nsset changes
+    std::map<std::string, Fred::InfoNssetDiff> changed_nssets = diff_nssets();
+    for(std::map<std::string, Fred::InfoNssetDiff>::const_iterator ci = changed_nssets.begin(); ci != changed_nssets.end(); ++ci)
+    {
+        //check update registrar is system registrar
+        if(ci->second.update_registrar_handle.isset())
+        {
+            BOOST_CHECK(is_system_registrar(ci->second.update_registrar_handle.get_value().second.get_value()));
+        }
+    }
+
+    //keyset changes
+    std::map<std::string, Fred::InfoKeysetDiff> changed_keysets = diff_keysets();
+    for(std::map<std::string, Fred::InfoKeysetDiff>::const_iterator ci = changed_keysets.begin(); ci != changed_keysets.end(); ++ci)
+    {
+        //check update registrar is system registrar
+        if(ci->second.update_registrar_handle.isset())
+        {
+            BOOST_CHECK(is_system_registrar(ci->second.update_registrar_handle.get_value().second.get_value()));
+        }
+    }
+
+    //domain changes
+    std::map<std::string, Fred::InfoDomainDiff> changed_domains = diff_domains();
+    for(std::map<std::string, Fred::InfoDomainDiff>::const_iterator ci = changed_domains.begin(); ci != changed_domains.end(); ++ci)
+    {
+        if(ci->second.update_registrar_handle.isset())
+        {
+            BOOST_CHECK(is_system_registrar(ci->second.update_registrar_handle.get_value().second.get_value()));
+        }
+        //BOOST_ERROR("changed_domain fqdn: " << ci->first);
+    }
+
 
     /*
     //check merge
