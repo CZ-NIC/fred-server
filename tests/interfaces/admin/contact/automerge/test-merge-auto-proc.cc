@@ -78,10 +78,10 @@ struct auto_proc_fixture : MergeContactFixture::mergeable_contact_grps_with_link
     auto_proc_fixture()
     : MergeContactFixture::mergeable_contact_grps_with_linked_objects_and_blocking_states(
         1u//mergeable_contact_group_count
-        , Util::set_of<unsigned>(0)(15)(16)(17)(18)(19)(20)//init_linked_object_combinations()//linked_object_cases
+        , Util::set_of<unsigned>(1)(5)(9)(13)//init_linked_object_combinations()//linked_object_cases
         , init_set_of_contact_state_combinations()//contact_state_combinations//stateless states 0, 1
         , init_set_of_linked_object_state_combinations()//linked_object_state_combinations
-        , Util::vector_of<unsigned>(0)(1)(2)//linked_object_quantities
+        , Util::vector_of<unsigned>(1)//linked_object_quantities
         )
     {}
 };
@@ -133,7 +133,8 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc_given_registrar, auto_proc_fixture )
     std::auto_ptr<Fred::Logger::LoggerClient> logger_client(
             new Fred::Logger::LoggerCorbaClientImpl());
 
-    Admin::MergeContactAutoProcedure(
+    std::vector<Fred::MergeContactNotificationEmailWithAddr> nemail
+    = Admin::MergeContactAutoProcedure(
             *(mm.get()),
             *(logger_client.get()))
         .set_registrar(registrar_mc_1_handle)
@@ -141,6 +142,8 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc_given_registrar, auto_proc_fixture )
         //.set_dry_run(Optional<bool>(false))
         //.set_verbose(Optional<unsigned short>(10))
     .exec();
+
+    BOOST_ERROR("nemail size: " << nemail.size());
 
     //contact changes
     std::map<std::string, Fred::InfoContactDiff> changed_contacts = diff_contacts();
