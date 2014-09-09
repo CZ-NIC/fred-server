@@ -34,6 +34,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time.hpp>
 #include <boost/assign/list_of.hpp>
+#include <boost/regex.hpp>
 
 #include "time_clock.h"
 #include "random_data_generator.h"
@@ -155,19 +156,43 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc_given_registrar, auto_proc_fixture )
         }
 
         if(ci->second.delete_time.isset())
-        {
+        {//source contact
+
+            /**
+             * forbidden states of source contact
+             * from fixture setup:
+             * _S4 - SERVER_DELETE_PROHIBITED
+             * _S5 - SERVER_BLOCKED
+             * _S6 - MOJEID_CONTACT
+             */
+            static const  boost::regex src_contact_forbidden_states_regex("_S4|_S5|_S6");
+            BOOST_CHECK(!boost::regex_match(ci->first, src_contact_forbidden_states_regex));
+
             removed_contact_handle.insert(ci->first);
         }
         else
-        {//have to be destination contact if not deleted
+        {//destination contact
             BOOST_CHECK(ci->first == nemail.at(0).email_data.dst_contact_handle);
+
+            /**
+             * forbidden state of destination contact
+             * from fixture setup:
+             * _S5 - SERVER_BLOCKED
+             */
+            static const  boost::regex dst_contact_forbidden_states_regex("_S5");
+            BOOST_CHECK(!boost::regex_match(ci->first, dst_contact_forbidden_states_regex));
         }
     }
-
-    //BOOST_ERROR("changed_contact_handle: "<< Util::format_container(changed_contact_handle));
-
     //check all removed contacts are notified
     BOOST_CHECK(std::set<std::string>(nemail.at(0).email_data.removed_list.begin(), nemail.at(0).email_data.removed_list.end()) == removed_contact_handle);
+
+    /**
+     * forbidden states of linked object from fixture setup:
+     * _LOS1   SERVER_UPDATE_PROHIBITED
+     * _LOS2 - SERVER_BLOCKED
+     * _LOS3 - SERVER_BLOCKED + SERVER_UPDATE_PROHIBITED
+     */
+    static const  boost::regex linked_object_forbidden_states_regex("_LOS1|_LOS2|_LOS3");
 
     //nsset changes
     std::set<std::string> changed_nsset_handle;
@@ -181,6 +206,9 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc_given_registrar, auto_proc_fixture )
         }
 
         changed_nsset_handle.insert(ci->first);
+
+        //check linked object for forbidden state
+        BOOST_CHECK(!boost::regex_match(ci->first, linked_object_forbidden_states_regex));
     }
     //check all updated nssets are notified
     BOOST_CHECK(std::set<std::string>(nemail.at(0).email_data.nsset_tech_list.begin(), nemail.at(0).email_data.nsset_tech_list.end()) == changed_nsset_handle);
@@ -196,6 +224,9 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc_given_registrar, auto_proc_fixture )
             BOOST_CHECK(is_system_registrar(ci->second.update_registrar_handle.get_value().second.get_value()));
         }
         changed_keyset_handle.insert(ci->first);
+
+        //check linked object for forbidden state
+        BOOST_CHECK(!boost::regex_match(ci->first, linked_object_forbidden_states_regex));
     }
     //check all updated keysets are notified
     BOOST_CHECK(std::set<std::string>(nemail.at(0).email_data.keyset_tech_list.begin(), nemail.at(0).email_data.keyset_tech_list.end()) == changed_keyset_handle);
@@ -214,6 +245,9 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc_given_registrar, auto_proc_fixture )
         if(ci->second.admin_contacts.isset()) changed_domain_admin_fqdn.insert(ci->first);
         if(ci->second.registrant.isset()) changed_domain_owner_fqdn.insert(ci->first);
         //BOOST_ERROR("changed_domain fqdn: " << ci->first);
+
+        //check linked object for forbidden state
+        BOOST_CHECK(!boost::regex_match(ci->first, linked_object_forbidden_states_regex));
     }
 
     BOOST_CHECK(std::set<std::string>(nemail.at(0).email_data.domain_admin_list.begin(), nemail.at(0).email_data.domain_admin_list.end()) == changed_domain_admin_fqdn);
