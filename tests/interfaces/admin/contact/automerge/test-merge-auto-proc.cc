@@ -40,6 +40,7 @@
 
 #include "setup_server_decl.h"
 
+#include "util/printable.h"
 #include "cfg/handle_general_args.h"
 #include "cfg/handle_server_args.h"
 #include "cfg/handle_logging_args.h"
@@ -77,11 +78,11 @@ struct auto_proc_fixture : MergeContactFixture::mergeable_contact_grps_with_link
 {
     auto_proc_fixture()
     : MergeContactFixture::mergeable_contact_grps_with_linked_objects_and_blocking_states(
-        1u//mergeable_contact_group_count
-        , Util::set_of<unsigned>(1)(5)(9)(13)//init_linked_object_combinations()//linked_object_cases
-        , init_set_of_contact_state_combinations()//contact_state_combinations//stateless states 0, 1
-        , init_set_of_linked_object_state_combinations()//linked_object_state_combinations
-        , Util::vector_of<unsigned>(1)//linked_object_quantities
+        1//mergeable_contact_group_count
+        , Util::set_of<unsigned>(1)(5)(9)(13)////linked_object_cases: nsset, keyset, domain via admin, domain via owner
+        , init_set_of_contact_state_combinations()//all contact_state_combinations, stateless states 0, 1
+        , init_set_of_linked_object_state_combinations()//all linked_object_state_combinations
+        , Util::vector_of<unsigned>(1)//with one linked object per contact
         )
     {}
 };
@@ -138,14 +139,12 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc_given_registrar, auto_proc_fixture )
             *(mm.get()),
             *(logger_client.get()))
         .set_registrar(registrar_mc_1_handle)
-        //.set_limit(Optional<unsigned long long>())
-        //.set_dry_run(Optional<bool>(false))
-        //.set_verbose(Optional<unsigned short>(10))
     .exec();
 
-    BOOST_ERROR("nemail size: " << nemail.size());
+    BOOST_CHECK(nemail.size() == 1);//have just 1 group of mergeable contacts with given registrar
 
     //contact changes
+    std::set<std::string> removed_contact_handle;
     std::map<std::string, Fred::InfoContactDiff> changed_contacts = diff_contacts();
     for(std::map<std::string, Fred::InfoContactDiff>::const_iterator ci = changed_contacts.begin(); ci != changed_contacts.end(); ++ci)
     {
@@ -154,9 +153,24 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc_given_registrar, auto_proc_fixture )
         {
             BOOST_CHECK(is_system_registrar(ci->second.update_registrar_handle.get_value().second.get_value()));
         }
+
+        if(ci->second.delete_time.isset())
+        {
+            removed_contact_handle.insert(ci->first);
+        }
+        else
+        {//have to be destination contact if not deleted
+            BOOST_CHECK(ci->first == nemail.at(0).email_data.dst_contact_handle);
+        }
     }
 
+    //BOOST_ERROR("changed_contact_handle: "<< Util::format_container(changed_contact_handle));
+
+    //check all removed contacts are notified
+    BOOST_CHECK(std::set<std::string>(nemail.at(0).email_data.removed_list.begin(), nemail.at(0).email_data.removed_list.end()) == removed_contact_handle);
+
     //nsset changes
+    std::set<std::string> changed_nsset_handle;
     std::map<std::string, Fred::InfoNssetDiff> changed_nssets = diff_nssets();
     for(std::map<std::string, Fred::InfoNssetDiff>::const_iterator ci = changed_nssets.begin(); ci != changed_nssets.end(); ++ci)
     {
@@ -165,9 +179,14 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc_given_registrar, auto_proc_fixture )
         {
             BOOST_CHECK(is_system_registrar(ci->second.update_registrar_handle.get_value().second.get_value()));
         }
+
+        changed_nsset_handle.insert(ci->first);
     }
+    //check all updated nssets are notified
+    BOOST_CHECK(std::set<std::string>(nemail.at(0).email_data.nsset_tech_list.begin(), nemail.at(0).email_data.nsset_tech_list.end()) == changed_nsset_handle);
 
     //keyset changes
+    std::set<std::string> changed_keyset_handle;
     std::map<std::string, Fred::InfoKeysetDiff> changed_keysets = diff_keysets();
     for(std::map<std::string, Fred::InfoKeysetDiff>::const_iterator ci = changed_keysets.begin(); ci != changed_keysets.end(); ++ci)
     {
@@ -176,9 +195,14 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc_given_registrar, auto_proc_fixture )
         {
             BOOST_CHECK(is_system_registrar(ci->second.update_registrar_handle.get_value().second.get_value()));
         }
+        changed_keyset_handle.insert(ci->first);
     }
+    //check all updated keysets are notified
+    BOOST_CHECK(std::set<std::string>(nemail.at(0).email_data.keyset_tech_list.begin(), nemail.at(0).email_data.keyset_tech_list.end()) == changed_keyset_handle);
 
     //domain changes
+    std::set<std::string> changed_domain_admin_fqdn;
+    std::set<std::string> changed_domain_owner_fqdn;
     std::map<std::string, Fred::InfoDomainDiff> changed_domains = diff_domains();
     for(std::map<std::string, Fred::InfoDomainDiff>::const_iterator ci = changed_domains.begin(); ci != changed_domains.end(); ++ci)
     {
@@ -186,17 +210,14 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc_given_registrar, auto_proc_fixture )
         {
             BOOST_CHECK(is_system_registrar(ci->second.update_registrar_handle.get_value().second.get_value()));
         }
+
+        if(ci->second.admin_contacts.isset()) changed_domain_admin_fqdn.insert(ci->first);
+        if(ci->second.registrant.isset()) changed_domain_owner_fqdn.insert(ci->first);
         //BOOST_ERROR("changed_domain fqdn: " << ci->first);
     }
 
-
-    /*
-    //check merge
-    Fred::OperationContext ctx;
-    BOOST_CHECK(1 == static_cast<int>(ctx.get_conn().exec_params(
-        "SELECT count(*) FROM object_registry oreg JOIN contact c ON oreg.id = c.id WHERE oreg.name like $1::text"
-        , Database::query_param_list(contact_handle+"%"))[0][0]));
-    */
+    BOOST_CHECK(std::set<std::string>(nemail.at(0).email_data.domain_admin_list.begin(), nemail.at(0).email_data.domain_admin_list.end()) == changed_domain_admin_fqdn);
+    BOOST_CHECK(std::set<std::string>(nemail.at(0).email_data.domain_registrant_list.begin(), nemail.at(0).email_data.domain_registrant_list.end()) == changed_domain_owner_fqdn);
 
 }
 
