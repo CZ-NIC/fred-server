@@ -144,6 +144,9 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc_given_registrar, auto_proc_fixture )
 
     BOOST_CHECK(nemail.size() == 1);//have just 1 group of mergeable contacts with given registrar
 
+    std::map<std::string, unsigned long long> del_contact_poll_msg = get_del_contact_poll_msg();
+
+
     //contact changes
     std::set<std::string> removed_contact_handle;
     std::map<std::string, Fred::InfoContactDiff> changed_contacts = diff_contacts();
@@ -167,6 +170,9 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc_given_registrar, auto_proc_fixture )
              */
             static const  boost::regex src_contact_forbidden_states_regex("_S4|_S5|_S6");
             BOOST_CHECK(!boost::regex_match(ci->first, src_contact_forbidden_states_regex));
+
+            //check if poll message exists for deleted contact
+            BOOST_CHECK(del_contact_poll_msg.find(ci->first) != del_contact_poll_msg.end());
 
             removed_contact_handle.insert(ci->first);
         }

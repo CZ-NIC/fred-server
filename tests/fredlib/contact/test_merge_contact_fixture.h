@@ -1055,6 +1055,27 @@ namespace MergeContactFixture
              , Database::query_param_list(registrar_handle)).size() == 1;
          }
 
+         /**
+          * Get poll notifications of deleted contacts
+          */
+         std::map<std::string, unsigned long long> get_del_contact_poll_msg()
+         {
+             Fred::OperationContext ctx;
+             Database::Result poll_res =
+             ctx.get_conn().exec("SELECT oreg.name as handle, m.id as msgid "
+                 " FROM poll_eppaction pe "
+                 " JOIN message m  ON pe.msgid= m.id "
+                 " JOIN object_registry oreg ON oreg.id = pe.objid "
+                 " JOIN messagetype mt ON mt.id = m.msgtype "
+                 " WHERE mt.name = 'delete_contact' ");
+             std::map<std::string, unsigned long long> ret;
+             for(unsigned long long i = 0; i < poll_res.size(); ++i)
+             {
+                 ret[poll_res[i]["handle"]]=poll_res[i]["msgid"];
+             }
+             return ret;
+         }
+
     private:
 
          /**
