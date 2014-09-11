@@ -182,6 +182,11 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc_given_registrar, auto_proc_fixture )
 
     std::map<std::string, unsigned long long> del_contact_poll_msg = get_del_contact_poll_msg();
 
+    /**
+     * the other registrar of objects that shouldn't be changed within the same mergeable group (domains are lower case) from fixture setup:
+     * REG-2
+     */
+    static const  boost::regex forbidden_registrar_regex("_"+registrar_mc_2_handle, boost::regex::icase);
 
     //contact changes
     std::set<std::string> removed_contact_handle;
@@ -224,6 +229,9 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc_given_registrar, auto_proc_fixture )
             static const  boost::regex dst_contact_forbidden_states_regex("_S5");
             BOOST_CHECK(!boost::regex_match(ci->first, dst_contact_forbidden_states_regex));
         }
+
+        //check that objects of other registrar are not changed
+        BOOST_CHECK(!boost::regex_match(ci->first, forbidden_registrar_regex));
     }
     //check all removed contacts are notified
     BOOST_CHECK(std::set<std::string>(nemail.at(0).email_data.removed_list.begin(), nemail.at(0).email_data.removed_list.end()) == removed_contact_handle);
@@ -251,6 +259,9 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc_given_registrar, auto_proc_fixture )
 
         //check linked object for forbidden state
         BOOST_CHECK(!boost::regex_match(ci->first, linked_object_forbidden_states_regex));
+
+        //check that objects of other registrar are not changed
+        BOOST_CHECK(!boost::regex_match(ci->first, forbidden_registrar_regex));
     }
     //check all updated nssets are notified
     BOOST_CHECK(std::set<std::string>(nemail.at(0).email_data.nsset_tech_list.begin(), nemail.at(0).email_data.nsset_tech_list.end()) == changed_nsset_handle);
@@ -269,6 +280,9 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc_given_registrar, auto_proc_fixture )
 
         //check linked object for forbidden state
         BOOST_CHECK(!boost::regex_match(ci->first, linked_object_forbidden_states_regex));
+
+        //check that objects of other registrar are not changed
+        BOOST_CHECK(!boost::regex_match(ci->first, forbidden_registrar_regex));
     }
     //check all updated keysets are notified
     BOOST_CHECK(std::set<std::string>(nemail.at(0).email_data.keyset_tech_list.begin(), nemail.at(0).email_data.keyset_tech_list.end()) == changed_keyset_handle);
@@ -290,6 +304,9 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc_given_registrar, auto_proc_fixture )
 
         //check linked object for forbidden state
         BOOST_CHECK(!boost::regex_match(ci->first, linked_object_forbidden_states_regex));
+
+        //check that objects of other registrar are not changed
+        BOOST_CHECK(!boost::regex_match(ci->first, forbidden_registrar_regex));
     }
 
     BOOST_CHECK(std::set<std::string>(nemail.at(0).email_data.domain_admin_list.begin(), nemail.at(0).email_data.domain_admin_list.end()) == changed_domain_admin_fqdn);
