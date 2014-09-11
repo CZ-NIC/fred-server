@@ -135,8 +135,44 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc_given_registrar, auto_proc_fixture )
     std::auto_ptr<Fred::Logger::LoggerClient> logger_client(
             new Fred::Logger::LoggerCorbaClientImpl());
 
-    std::vector<Fred::MergeContactNotificationEmailWithAddr> nemail
-    = Admin::MergeContactAutoProcedure(
+    std::vector<Fred::MergeContactNotificationEmailWithAddr> nemail;
+
+    nemail = Admin::MergeContactAutoProcedure(
+            *(mm.get()),
+            *(logger_client.get()))
+        .set_registrar(registrar_mc_1_handle)
+        .set_dry_run(true)
+    .exec();
+
+    BOOST_CHECK(nemail.size() == 0);//dry run, no notifications
+
+    //no changes
+    BOOST_CHECK(diff_contacts().empty());
+    BOOST_CHECK(diff_nssets().empty());
+    BOOST_CHECK(diff_keysets().empty());
+    BOOST_CHECK(diff_domains().empty());
+    BOOST_CHECK(diff_registrars().empty());
+
+
+    nemail = Admin::MergeContactAutoProcedure(
+            *(mm.get()),
+            *(logger_client.get()))
+        .set_registrar(registrar_mc_1_handle)
+        .set_verbose(100)
+        .set_dry_run(true)
+    .exec();
+
+    BOOST_CHECK(nemail.size() == 0);//dry run, no notifications
+
+    //no changes
+    BOOST_CHECK(diff_contacts().empty());
+    BOOST_CHECK(diff_nssets().empty());
+    BOOST_CHECK(diff_keysets().empty());
+    BOOST_CHECK(diff_domains().empty());
+    BOOST_CHECK(diff_registrars().empty());
+
+
+    nemail = Admin::MergeContactAutoProcedure(
             *(mm.get()),
             *(logger_client.get()))
         .set_registrar(registrar_mc_1_handle)
