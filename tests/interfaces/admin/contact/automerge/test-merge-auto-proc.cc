@@ -229,12 +229,12 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc_given_registrar, auto_proc_fixture )
     BOOST_CHECK(std::set<std::string>(nemail.at(0).email_data.removed_list.begin(), nemail.at(0).email_data.removed_list.end()) == removed_contact_handle);
 
     /**
-     * forbidden states of linked object from fixture setup:
+     * forbidden states of linked object (domains are lower case) from fixture setup:
      * _LOS1   SERVER_UPDATE_PROHIBITED
      * _LOS2 - SERVER_BLOCKED
      * _LOS3 - SERVER_BLOCKED + SERVER_UPDATE_PROHIBITED
      */
-    static const  boost::regex linked_object_forbidden_states_regex("_LOS1|_LOS2|_LOS3");
+    static const  boost::regex linked_object_forbidden_states_regex("_LOS1|_LOS2|_LOS3", boost::regex::icase);
 
     //nsset changes
     std::set<std::string> changed_nsset_handle;
