@@ -62,81 +62,81 @@ namespace Registry
                 const char* handle);
 
             Registry::DomainBrowser::RecordSet* getDomainList(
-                const Registry::DomainBrowser::RegistryReference& user_contact,
-                const Registry::DomainBrowser::RegistryReference& contact,
+                ::CORBA::ULongLong user_contact_id,
+                 ::CORBA::ULongLong contact_id,
                 const char* lang,
                 ::CORBA::ULong offset,
                 ::CORBA::Boolean& limit_exceeded);
 
             Registry::DomainBrowser::RecordSet* getNssetList(
-                const Registry::DomainBrowser::RegistryReference& user_contact,
-                const Registry::DomainBrowser::RegistryReference& contact,
+                ::CORBA::ULongLong user_contact_id,
+                 ::CORBA::ULongLong contact_id,
                 const char* lang,
                 ::CORBA::ULong offset,
                  ::CORBA::Boolean& limit_exceeded);
 
             Registry::DomainBrowser::RecordSet* getKeysetList(
-                const Registry::DomainBrowser::RegistryReference& user_contact,
-                const Registry::DomainBrowser::RegistryReference& contact,
+                ::CORBA::ULongLong user_contact_id,
+                 ::CORBA::ULongLong contact_id,
                 const char* lang,
                 ::CORBA::ULong offset,
                  ::CORBA::Boolean& limit_exceeded);
 
             Registry::DomainBrowser::RecordSet* getDomainsForKeyset(
-                const Registry::DomainBrowser::RegistryReference& contact,
-                const Registry::DomainBrowser::RegistryReference& keyset,
+                ::CORBA::ULongLong contact_id,
+                 ::CORBA::ULongLong keyset_id,
                 const char* lang,
                 ::CORBA::ULong offset,
                 ::CORBA::Boolean& limit_exceeded);
 
             Registry::DomainBrowser::RecordSet* getDomainsForNsset(
-                const Registry::DomainBrowser::RegistryReference& contact,
-                const Registry::DomainBrowser::RegistryReference& nsset,
+                ::CORBA::ULongLong contact_id,
+                 ::CORBA::ULongLong nsset_id,
                 const char* lang,
                 ::CORBA::ULong offset,
                 ::CORBA::Boolean& limit_exceeded);
 
             Registry::DomainBrowser::ContactDetail* getContactDetail(
-                const Registry::DomainBrowser::RegistryReference& contact,
-                const Registry::DomainBrowser::RegistryReference& detail,
+                ::CORBA::ULongLong contact_id,
+                 ::CORBA::ULongLong detail_id,
                 const char* lang,
                 Registry::DomainBrowser::DataAccessLevel& auth_result);
 
             Registry::DomainBrowser::NSSetDetail* getNssetDetail(
-                const Registry::DomainBrowser::RegistryReference& contact,
-                const Registry::DomainBrowser::RegistryReference& nsset,
+                ::CORBA::ULongLong contact_id,
+                 ::CORBA::ULongLong nsset_id,
                 const char* lang,
                 Registry::DomainBrowser::DataAccessLevel& auth_result);
 
             Registry::DomainBrowser::DomainDetail* getDomainDetail(
-                const Registry::DomainBrowser::RegistryReference& contact,
-                const Registry::DomainBrowser::RegistryReference& domain,
+                ::CORBA::ULongLong contact_id,
+                 ::CORBA::ULongLong domain_id,
                 const char* lang,
                 Registry::DomainBrowser::DataAccessLevel& auth_result);
 
             Registry::DomainBrowser::KeysetDetail* getKeysetDetail(
-                const Registry::DomainBrowser::RegistryReference& contact,
-                const Registry::DomainBrowser::RegistryReference& keyset,
+                ::CORBA::ULongLong contact_id,
+                 ::CORBA::ULongLong keyset_id,
                 const char* lang,
                 Registry::DomainBrowser::DataAccessLevel& auth_result);
 
             Registry::DomainBrowser::RegistrarDetail* getRegistrarDetail(
-                const Registry::DomainBrowser::RegistryReference& contact,
+                ::CORBA::ULongLong contact_id,
                 const char* handle);
 
             ::CORBA::Boolean setContactDiscloseFlags(
-                const Registry::DomainBrowser::RegistryReference& contact,
+                ::CORBA::ULongLong contact_id,
                 const Registry::DomainBrowser::UpdateContactDiscloseFlags& flags,
                 ::CORBA::ULongLong request_id);
 
             ::CORBA::Boolean setAuthInfo(
-                const Registry::DomainBrowser::RegistryReference& contact,
+                ::CORBA::ULongLong contact_id,
                 const char* objtype,
-                const Registry::DomainBrowser::RegistryReference& objref,
+                ::CORBA::ULongLong objref_id,
                 const char* auth_info,
                 ::CORBA::ULongLong request_id);
 
-            ::CORBA::Boolean setObjectBlockStatus(const Registry::DomainBrowser::RegistryReference& contact,
+            ::CORBA::Boolean setObjectBlockStatus(::CORBA::ULongLong contact_id,
                 const char* objtype,
                 const Registry::DomainBrowser::ObjectIdSeq& objects,
                 Registry::DomainBrowser::ObjectBlockType block,
@@ -145,11 +145,11 @@ namespace Registry
             Registry::DomainBrowser::RecordSequence* getPublicStatusDesc(const char* lang);
 
             Registry::DomainBrowser::RecordSet* getMergeContactCandidateList(
-                const Registry::DomainBrowser::RegistryReference& contact,
+                ::CORBA::ULongLong contact_id,
                 ::CORBA::ULong offset,
                 ::CORBA::Boolean& limit_exceeded);
 
-            void mergeContacts(const Registry::DomainBrowser::RegistryReference& dst_contact,
+            void mergeContacts(::CORBA::ULongLong dst_contact_id,
                 const Registry::DomainBrowser::ObjectIdSeq& src_contact_id_list,
                 ::CORBA::ULongLong request_id);
 

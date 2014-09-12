@@ -72,8 +72,8 @@ namespace Registry
         }
 
         Registry::DomainBrowser::RecordSet* Server_i::getDomainList(
-            const Registry::DomainBrowser::RegistryReference& user_contact,
-            const Registry::DomainBrowser::RegistryReference& contact,
+            ::CORBA::ULongLong user_contact_id,
+             ::CORBA::ULongLong contact_id,
             const char* lang,
             ::CORBA::ULong offset,
              ::CORBA::Boolean& limit_exceeded)
@@ -81,8 +81,8 @@ namespace Registry
             try
             {
                 std::vector<std::vector<std::string> > domain_list_out;
-                limit_exceeded = pimpl_->getDomainList(user_contact.id,
-                    (contact.id > 0) ? Optional<unsigned long long>(contact.id) : Optional<unsigned long long>(),
+                limit_exceeded = pimpl_->getDomainList(user_contact_id,
+                    (contact_id > 0) ? Optional<unsigned long long>(contact_id) : Optional<unsigned long long>(),
                     Optional<unsigned long long>(), Optional<unsigned long long>(),
                     lang, offset, domain_list_out);
 
@@ -119,8 +119,8 @@ namespace Registry
         }
 
         Registry::DomainBrowser::RecordSet* Server_i::getNssetList(
-            const Registry::DomainBrowser::RegistryReference& user_contact,
-            const Registry::DomainBrowser::RegistryReference& contact,
+            ::CORBA::ULongLong user_contact_id,
+             ::CORBA::ULongLong contact_id,
             const char* lang,
             ::CORBA::ULong offset,
              ::CORBA::Boolean& limit_exceeded)
@@ -128,8 +128,8 @@ namespace Registry
             try
             {
                 std::vector<std::vector<std::string> > nsset_list_out;
-                limit_exceeded = pimpl_->getNssetList(user_contact.id,
-                    (contact.id > 0) ? Optional<unsigned long long>(contact.id) : Optional<unsigned long long>(),
+                limit_exceeded = pimpl_->getNssetList(user_contact_id,
+                    (contact_id > 0) ? Optional<unsigned long long>(contact_id) : Optional<unsigned long long>(),
                     lang, offset, nsset_list_out);
 
                 RecordSet_var rs = new RecordSet;
@@ -165,8 +165,8 @@ namespace Registry
         }
 
         Registry::DomainBrowser::RecordSet* Server_i::getKeysetList(
-            const Registry::DomainBrowser::RegistryReference& user_contact,
-            const Registry::DomainBrowser::RegistryReference& contact,
+            ::CORBA::ULongLong user_contact_id,
+             ::CORBA::ULongLong contact_id,
             const char* lang,
             ::CORBA::ULong offset,
              ::CORBA::Boolean& limit_exceeded)
@@ -174,8 +174,8 @@ namespace Registry
             try
             {
                 std::vector<std::vector<std::string> > keyset_list_out;
-                limit_exceeded = pimpl_->getKeysetList(user_contact.id,
-                    (contact.id > 0) ? Optional<unsigned long long>(contact.id) : Optional<unsigned long long>(),
+                limit_exceeded = pimpl_->getKeysetList(user_contact_id,
+                    (contact_id > 0) ? Optional<unsigned long long>(contact_id) : Optional<unsigned long long>(),
                     lang, offset, keyset_list_out);
 
                 RecordSet_var rs = new RecordSet;
@@ -211,8 +211,8 @@ namespace Registry
         }
 
         Registry::DomainBrowser::RecordSet* Server_i::getDomainsForKeyset(
-            const Registry::DomainBrowser::RegistryReference& contact,
-            const Registry::DomainBrowser::RegistryReference& keyset,
+            ::CORBA::ULongLong contact_id,
+             ::CORBA::ULongLong keyset_id,
             const char* lang,
             ::CORBA::ULong offset,
             ::CORBA::Boolean& limit_exceeded)
@@ -220,10 +220,10 @@ namespace Registry
             try
             {
                 std::vector<std::vector<std::string> > domain_list_out;
-                limit_exceeded = pimpl_->getDomainList(contact.id,
+                limit_exceeded = pimpl_->getDomainList(contact_id,
                         Optional<unsigned long long>(),
                         Optional<unsigned long long>(),
-                        Optional<unsigned long long>(keyset.id), lang, offset, domain_list_out);
+                        Optional<unsigned long long>(keyset_id), lang, offset, domain_list_out);
 
                 RecordSet_var rs = new RecordSet;
                 rs->length(domain_list_out.size());
@@ -262,8 +262,8 @@ namespace Registry
         }
 
         Registry::DomainBrowser::RecordSet* Server_i::getDomainsForNsset(
-            const Registry::DomainBrowser::RegistryReference& contact,
-            const Registry::DomainBrowser::RegistryReference& nsset,
+            ::CORBA::ULongLong contact_id,
+             ::CORBA::ULongLong nsset_id,
             const char* lang,
             ::CORBA::ULong offset,
             ::CORBA::Boolean& limit_exceeded)
@@ -271,9 +271,9 @@ namespace Registry
             try
             {
                 std::vector<std::vector<std::string> > domain_list_out;
-                limit_exceeded = pimpl_->getDomainList(contact.id,
+                limit_exceeded = pimpl_->getDomainList(contact_id,
                         Optional<unsigned long long>(),
-                        Optional<unsigned long long>(nsset.id),
+                        Optional<unsigned long long>(nsset_id),
                         Optional<unsigned long long>(), lang, offset, domain_list_out);
 
                 RecordSet_var rs = new RecordSet;
@@ -313,15 +313,15 @@ namespace Registry
         }
 
         Registry::DomainBrowser::ContactDetail* Server_i::getContactDetail(
-            const Registry::DomainBrowser::RegistryReference& contact,
-            const Registry::DomainBrowser::RegistryReference& detail,
+            ::CORBA::ULongLong contact_id,
+             ::CORBA::ULongLong detail_id,
             const char* lang,
             Registry::DomainBrowser::DataAccessLevel& auth_result)
         {
             try
             {
                 Registry::DomainBrowserImpl::ContactDetail detail_impl
-                    = pimpl_->getContactDetail(contact.id, detail.id, lang);
+                    = pimpl_->getContactDetail(contact_id, detail_id, lang);
 
                 ContactDetail_var contact_detail = new ContactDetail;
                 contact_detail->id = detail_impl.id;
@@ -390,15 +390,15 @@ namespace Registry
         }
 
         Registry::DomainBrowser::NSSetDetail* Server_i::getNssetDetail(
-            const Registry::DomainBrowser::RegistryReference& contact,
-            const Registry::DomainBrowser::RegistryReference& nsset,
+            ::CORBA::ULongLong contact_id,
+             ::CORBA::ULongLong nsset_id,
             const char* lang,
             Registry::DomainBrowser::DataAccessLevel& auth_result)
         {
             try
             {
                 Registry::DomainBrowserImpl::NssetDetail detail_impl
-                    = pimpl_->getNssetDetail(contact.id, nsset.id, lang);
+                    = pimpl_->getNssetDetail(contact_id, nsset_id, lang);
 
                 NSSetDetail_var nsset_detail = new NSSetDetail;
 
@@ -471,15 +471,15 @@ namespace Registry
         }
 
         Registry::DomainBrowser::DomainDetail* Server_i::getDomainDetail(
-            const Registry::DomainBrowser::RegistryReference& contact,
-            const Registry::DomainBrowser::RegistryReference& domain,
+            ::CORBA::ULongLong contact_id,
+             ::CORBA::ULongLong domain_id,
             const char* lang,
             Registry::DomainBrowser::DataAccessLevel& auth_result)
         {
             try
             {
                 Registry::DomainBrowserImpl::DomainDetail detail_impl
-                    = pimpl_->getDomainDetail(contact.id, domain.id, lang);
+                    = pimpl_->getDomainDetail(contact_id, domain_id, lang);
 
                 DomainDetail_var domain_detail = new DomainDetail;
                 domain_detail->id = detail_impl.id;
@@ -556,15 +556,15 @@ namespace Registry
         }
 
         Registry::DomainBrowser::KeysetDetail* Server_i::getKeysetDetail(
-            const Registry::DomainBrowser::RegistryReference& contact,
-            const Registry::DomainBrowser::RegistryReference& keyset,
+            ::CORBA::ULongLong contact_id,
+             ::CORBA::ULongLong keyset_id,
             const char* lang,
             Registry::DomainBrowser::DataAccessLevel& auth_result)
         {
             try
             {
                 Registry::DomainBrowserImpl::KeysetDetail detail_impl
-                    = pimpl_->getKeysetDetail(contact.id, keyset.id, lang);
+                    = pimpl_->getKeysetDetail(contact_id, keyset_id, lang);
 
                 KeysetDetail_var keyset_detail = new KeysetDetail;
 
@@ -636,13 +636,13 @@ namespace Registry
         }
 
         Registry::DomainBrowser::RegistrarDetail* Server_i::getRegistrarDetail(
-            const Registry::DomainBrowser::RegistryReference& contact,
+            ::CORBA::ULongLong contact_id,
             const char* handle)
         {
             try
             {
                 Registry::DomainBrowserImpl::RegistrarDetail detail_impl
-                    = pimpl_->getRegistrarDetail(contact.id, handle);
+                    = pimpl_->getRegistrarDetail(contact_id, handle);
 
                 RegistrarDetail_var registrar_detail = new RegistrarDetail;
                 registrar_detail->id = detail_impl.id;
@@ -670,7 +670,7 @@ namespace Registry
         }
 
         ::CORBA::Boolean Server_i::setContactDiscloseFlags(
-            const Registry::DomainBrowser::RegistryReference& contact,
+            ::CORBA::ULongLong contact_id,
             const Registry::DomainBrowser::UpdateContactDiscloseFlags& flags,
             ::CORBA::ULongLong request_id)
         {
@@ -684,7 +684,7 @@ namespace Registry
                 flags_.ident = flags.ident;
                 flags_.vat = flags.vat;
                 flags_.notify_email = flags.notify_email;
-                return pimpl_->setContactDiscloseFlags(contact.id, flags_, request_id);
+                return pimpl_->setContactDiscloseFlags(contact_id, flags_, request_id);
             }//try
             catch (const Registry::DomainBrowserImpl::UserNotExists& )
             {
@@ -709,9 +709,9 @@ namespace Registry
         }
 
         ::CORBA::Boolean Server_i::setAuthInfo(
-            const Registry::DomainBrowser::RegistryReference& contact,
+            ::CORBA::ULongLong contact_id,
             const char* objtype,
-            const Registry::DomainBrowser::RegistryReference& objref,
+            ::CORBA::ULongLong objref_id,
             const char* auth_info,
             ::CORBA::ULongLong request_id)
         {
@@ -721,7 +721,7 @@ namespace Registry
                 {
                     throw Registry::DomainBrowserImpl::IncorrectUsage();
                 }
-                return pimpl_->setContactAuthInfo(contact.id, objref.id, auth_info, request_id);
+                return pimpl_->setContactAuthInfo(contact_id, objref_id, auth_info, request_id);
             }//try
             catch (const Registry::DomainBrowserImpl::ObjectNotExists& )
             {
@@ -750,7 +750,7 @@ namespace Registry
         }
 
         ::CORBA::Boolean Server_i::setObjectBlockStatus(
-            const Registry::DomainBrowser::RegistryReference& contact,
+            ::CORBA::ULongLong contact_id,
             const char* objtype,
             const Registry::DomainBrowser::ObjectIdSeq& objects,
             Registry::DomainBrowser::ObjectBlockType block,
@@ -766,7 +766,7 @@ namespace Registry
                 }
                 std::vector<std::string> blocked_objects;
 
-                bool ret = pimpl_->setObjectBlockStatus(contact.id, objtype, objects_id,
+                bool ret = pimpl_->setObjectBlockStatus(contact_id, objtype, objects_id,
                         (block == Registry::DomainBrowser::BLOCK_TRANSFER) ? Registry::DomainBrowserImpl::BLOCK_TRANSFER
                         : (block == Registry::DomainBrowser::UNBLOCK_TRANSFER) ? Registry::DomainBrowserImpl::UNBLOCK_TRANSFER
                         : (block == Registry::DomainBrowser::BLOCK_TRANSFER_AND_UPDATE) ? Registry::DomainBrowserImpl::BLOCK_TRANSFER_AND_UPDATE
@@ -832,13 +832,13 @@ namespace Registry
 
 
         Registry::DomainBrowser::RecordSet* Server_i::getMergeContactCandidateList(
-            const Registry::DomainBrowser::RegistryReference& contact,
+            ::CORBA::ULongLong contact_id,
             ::CORBA::ULong offset, ::CORBA::Boolean& limit_exceeded)
         {
             try
             {
                 std::vector<std::vector<std::string> > contact_list_out;
-                limit_exceeded = pimpl_->getMergeContactCandidateList(contact.id,
+                limit_exceeded = pimpl_->getMergeContactCandidateList(contact_id,
                     offset, contact_list_out);
 
                 RecordSet_var rs = new RecordSet;
@@ -869,7 +869,7 @@ namespace Registry
             }
         }
 
-        void Server_i::mergeContacts(const Registry::DomainBrowser::RegistryReference& dst_contact,
+        void Server_i::mergeContacts(::CORBA::ULongLong dst_contact_id,
             const Registry::DomainBrowser::ObjectIdSeq& src_contact_id_list,
             ::CORBA::ULongLong request_id)
         {
@@ -881,7 +881,7 @@ namespace Registry
                 {
                     contact_list.push_back(src_contact_id_list[i]);
                 }
-                pimpl_->mergeContacts(dst_contact.id, contact_list, request_id);
+                pimpl_->mergeContacts(dst_contact_id, contact_list, request_id);
             }//try
             catch (const Registry::DomainBrowserImpl::UserNotExists& )
             {
