@@ -47,7 +47,7 @@ namespace Registry
         {}
 
         //   Methods corresponding to IDL attributes and operations
-        Registry::DomainBrowser::TID Server_i::getObjectRegistryId(
+        ::CORBA::ULongLong Server_i::getObjectRegistryId(
             const char* objtype,
             const char* handle)
         {
@@ -672,7 +672,7 @@ namespace Registry
         ::CORBA::Boolean Server_i::setContactDiscloseFlags(
             const Registry::DomainBrowser::RegistryReference& contact,
             const Registry::DomainBrowser::UpdateContactDiscloseFlags& flags,
-            Registry::DomainBrowser::TID request_id)
+            ::CORBA::ULongLong request_id)
         {
             try
             {
@@ -713,7 +713,7 @@ namespace Registry
             const char* objtype,
             const Registry::DomainBrowser::RegistryReference& objref,
             const char* auth_info,
-            Registry::DomainBrowser::TID request_id)
+            ::CORBA::ULongLong request_id)
         {
             try
             {
@@ -871,7 +871,7 @@ namespace Registry
 
         void Server_i::mergeContacts(const Registry::DomainBrowser::RegistryReference& dst_contact,
             const Registry::DomainBrowser::RegistryReferenceSeq& src_contact_list,
-            Registry::DomainBrowser::TID request_id)
+            ::CORBA::ULongLong request_id)
         {
             try
             {

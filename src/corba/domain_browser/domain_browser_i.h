@@ -57,7 +57,7 @@ namespace Registry
 
             virtual ~Server_i();
             // methods corresponding to defined IDL attributes and operations
-            Registry::DomainBrowser::TID getObjectRegistryId(
+            ::CORBA::ULongLong getObjectRegistryId(
                 const char* objtype,
                 const char* handle);
 
@@ -127,14 +127,14 @@ namespace Registry
             ::CORBA::Boolean setContactDiscloseFlags(
                 const Registry::DomainBrowser::RegistryReference& contact,
                 const Registry::DomainBrowser::UpdateContactDiscloseFlags& flags,
-                Registry::DomainBrowser::TID request_id);
+                ::CORBA::ULongLong request_id);
 
             ::CORBA::Boolean setAuthInfo(
                 const Registry::DomainBrowser::RegistryReference& contact,
                 const char* objtype,
                 const Registry::DomainBrowser::RegistryReference& objref,
                 const char* auth_info,
-                Registry::DomainBrowser::TID request_id);
+                ::CORBA::ULongLong request_id);
 
             ::CORBA::Boolean setObjectBlockStatus(const Registry::DomainBrowser::RegistryReference& contact,
                 const char* objtype,
@@ -151,7 +151,7 @@ namespace Registry
 
             void mergeContacts(const Registry::DomainBrowser::RegistryReference& dst_contact,
                 const Registry::DomainBrowser::RegistryReferenceSeq& src_contact_list,
-                Registry::DomainBrowser::TID request_id);
+                ::CORBA::ULongLong request_id);
 
         };//class Server_i
     }//namespace DomainBrowser
