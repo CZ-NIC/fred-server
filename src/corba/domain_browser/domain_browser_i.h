@@ -138,7 +138,7 @@ namespace Registry
 
             ::CORBA::Boolean setObjectBlockStatus(const Registry::DomainBrowser::RegistryReference& contact,
                 const char* objtype,
-                const Registry::DomainBrowser::RegistryReferenceSeq& objects,
+                const Registry::DomainBrowser::ObjectIdSeq& objects,
                 Registry::DomainBrowser::ObjectBlockType block,
                 Registry::DomainBrowser::RecordSequence_out blocked);
 
@@ -150,7 +150,7 @@ namespace Registry
                 ::CORBA::Boolean& limit_exceeded);
 
             void mergeContacts(const Registry::DomainBrowser::RegistryReference& dst_contact,
-                const Registry::DomainBrowser::RegistryReferenceSeq& src_contact_list,
+                const Registry::DomainBrowser::ObjectIdSeq& src_contact_id_list,
                 ::CORBA::ULongLong request_id);
 
         };//class Server_i

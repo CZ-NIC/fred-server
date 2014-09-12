@@ -752,7 +752,7 @@ namespace Registry
         ::CORBA::Boolean Server_i::setObjectBlockStatus(
             const Registry::DomainBrowser::RegistryReference& contact,
             const char* objtype,
-            const Registry::DomainBrowser::RegistryReferenceSeq& objects,
+            const Registry::DomainBrowser::ObjectIdSeq& objects,
             Registry::DomainBrowser::ObjectBlockType block,
             Registry::DomainBrowser::RecordSequence_out blocked)
         {
@@ -762,7 +762,7 @@ namespace Registry
                 objects_id.reserve(objects.length());
                 for(std::size_t i = 0; i < objects.length(); ++i)
                 {
-                    objects_id.push_back(objects[i].id);
+                    objects_id.push_back(objects[i]);
                 }
                 std::vector<std::string> blocked_objects;
 
@@ -870,16 +870,16 @@ namespace Registry
         }
 
         void Server_i::mergeContacts(const Registry::DomainBrowser::RegistryReference& dst_contact,
-            const Registry::DomainBrowser::RegistryReferenceSeq& src_contact_list,
+            const Registry::DomainBrowser::ObjectIdSeq& src_contact_id_list,
             ::CORBA::ULongLong request_id)
         {
             try
             {
                 std::vector<unsigned long long> contact_list;
-                contact_list.reserve(src_contact_list.length());
-                for(std::size_t i = 0; i < src_contact_list.length(); ++i)
+                contact_list.reserve(src_contact_id_list.length());
+                for(std::size_t i = 0; i < src_contact_id_list.length(); ++i)
                 {
-                    contact_list.push_back(src_contact_list[i].id);
+                    contact_list.push_back(src_contact_id_list[i]);
                 }
                 pimpl_->mergeContacts(dst_contact.id, contact_list, request_id);
             }//try
