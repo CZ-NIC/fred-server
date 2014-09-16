@@ -88,42 +88,10 @@ struct auto_proc_fixture : MergeContactFixture::mergeable_contact_grps_with_link
     {}
 };
 
-BOOST_FIXTURE_TEST_CASE( test_auto_proc_no_optional_params, auto_proc_fixture )
-{
-    //corba config
-    FakedArgs fa = CfgArgs::instance()->fa;
-    //conf pointers
-    HandleCorbaNameServiceArgs* ns_args_ptr=CfgArgs::instance()->
-                get_handler_ptr_by_type<HandleCorbaNameServiceArgs>();
-
-    CorbaContainer::set_instance(fa.get_argc(), fa.get_argv()
-            , ns_args_ptr->nameservice_host
-            , ns_args_ptr->nameservice_port
-            , ns_args_ptr->nameservice_context);
-
-    boost::shared_ptr<Fred::Mailer::Manager> mm( new MailerManager(CorbaContainer::get_instance()->getNS()));
-    std::auto_ptr<Fred::Logger::LoggerClient> logger_client(
-            new Fred::Logger::DummyLoggerCorbaClientImpl());
-
-    try
-    {
-        Admin::MergeContactAutoProcedure(
-                *(mm.get()),
-                *(logger_client.get()),
-                registrar_mc_1_handle)
-        .exec();
-    }
-    catch(...)
-    {
-        BOOST_ERROR("got exception from auto procedure");
-    }
-}
-
-
 /**
  * check that dry run do no changes
  */
-BOOST_FIXTURE_TEST_CASE( test_auto_proc_given_registrar_dry_run, auto_proc_fixture )
+BOOST_FIXTURE_TEST_CASE( test_auto_proc_dry_run, auto_proc_fixture )
 {
     //corba config
     FakedArgs fa = CfgArgs::instance()->fa;
@@ -178,7 +146,7 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc_given_registrar_dry_run, auto_proc_fixtu
 
 }
 /**
- * check merge with given registrar
+ * check merge with given registrar and no optional parameters
  *  - check that merged objects have selected registrar and objects with other registrar are not changed
  *  - check that update registrar of merged objects is system registrar
  *  - check that source contacts with object states SERVER_DELETE_PROHIBITED, SERVER_BLOCKED and MOJEID_CONTACT are not changed
@@ -188,7 +156,7 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc_given_registrar_dry_run, auto_proc_fixtu
  *  - check that deleted source contacts are present in notification data
  *  - check that changed objects are present in notification data
  */
-BOOST_FIXTURE_TEST_CASE( test_auto_proc_given_registrar, auto_proc_fixture )
+BOOST_FIXTURE_TEST_CASE( test_auto_proc, auto_proc_fixture )
 {
     //corba config
     FakedArgs fa = CfgArgs::instance()->fa;
