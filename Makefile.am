@@ -2095,15 +2095,17 @@ tests_interfaces_test_admin_contact_automerge_LDFLAGS = \
 		$(BOOST_LDFLAGS) \
 		$(AM_LDFLAGS)
 
+#src/corba/libcorbalogger.a
+
 tests_interfaces_test_admin_contact_automerge_LDADD = \
+		src/corba/libcorbadatatypes.a \
 		src/fredlib/libfred.a \
 		src/model/libmodel.a \
 		src/corba/libcorba.a \
-		src/corba/libcorbalogger.a \
 		src/corba/libcorbaregistry.a \
 		src/corba/libcorbafilters.a \
-		src/corba/libcorbadatatypes.a \
 		src/corba/libmailer.a \
+		src/corba/libcorbadatatypes.a \
 		src/corba/libfilemanager.a \
 		src/fredlib/requests/librequests.a \
 		util/log/liblog.a \

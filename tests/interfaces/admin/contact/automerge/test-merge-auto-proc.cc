@@ -59,7 +59,7 @@
 #include "util/corba_wrapper_decl.h"
 #include "src/corba/mailer_manager.h"
 #include "src/admin/contact/merge_contact_auto_procedure.h"
-#include "src/corba/logger_client_impl.h"
+#include "tests/mockup/logger_client_dummy.h"
 
 #include "src/fredlib/contact/create_contact.h"
 #include "src/fredlib/registrar/create_registrar.h"
@@ -103,7 +103,10 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc_no_optional_params, auto_proc_fixture )
 
     boost::shared_ptr<Fred::Mailer::Manager> mm( new MailerManager(CorbaContainer::get_instance()->getNS()));
     std::auto_ptr<Fred::Logger::LoggerClient> logger_client(
-            new Fred::Logger::LoggerCorbaClientImpl());
+            new Fred::Logger::DummyLoggerCorbaClientImpl());
+
+    //std::auto_ptr<Fred::Logger::LoggerClient> logger_client_(
+    //            new Fred::Logger::LoggerCorbaClientImpl());
 
     try
     {
@@ -118,7 +121,11 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc_no_optional_params, auto_proc_fixture )
     }
 }
 
-BOOST_FIXTURE_TEST_CASE( test_auto_proc_given_registrar, auto_proc_fixture )
+
+/**
+ * check that dry run do no changes
+ */
+BOOST_FIXTURE_TEST_CASE( test_auto_proc_given_registrar_dry_run, auto_proc_fixture )
 {
     //corba config
     FakedArgs fa = CfgArgs::instance()->fa;
@@ -133,7 +140,7 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc_given_registrar, auto_proc_fixture )
 
     boost::shared_ptr<Fred::Mailer::Manager> mm( new MailerManager(CorbaContainer::get_instance()->getNS()));
     std::auto_ptr<Fred::Logger::LoggerClient> logger_client(
-            new Fred::Logger::LoggerCorbaClientImpl());
+            new Fred::Logger::DummyLoggerCorbaClientImpl());
 
     std::vector<Fred::MergeContactNotificationEmailWithAddr> nemail;
 
@@ -144,7 +151,7 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc_given_registrar, auto_proc_fixture )
         .set_dry_run(true)
     .exec();
 
-    BOOST_CHECK(nemail.size() == 0);//dry run, no notifications
+    BOOST_CHECK(nemail.empty());//no notifications
 
     //no changes
     BOOST_CHECK(diff_contacts().empty());
@@ -162,7 +169,7 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc_given_registrar, auto_proc_fixture )
         .set_dry_run(true)
     .exec();
 
-    BOOST_CHECK(nemail.size() == 0);//dry run, no notifications
+    BOOST_CHECK(nemail.empty());//no notifications
 
     //no changes
     BOOST_CHECK(diff_contacts().empty());
@@ -171,6 +178,36 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc_given_registrar, auto_proc_fixture )
     BOOST_CHECK(diff_domains().empty());
     BOOST_CHECK(diff_registrars().empty());
 
+}
+/**
+ * check merge with given registrar
+ *  - check that merged objects have selected registrar and objects with other registrar are not changed
+ *  - check that update registrar of merged objects is system registrar
+ *  - check that source contacts with object states SERVER_DELETE_PROHIBITED, SERVER_BLOCKED and MOJEID_CONTACT are not changed
+ *  - check that destination contacts with object state SERVER_BLOCKED are not changed
+ *  - check that linked objects with object states SERVER_UPDATE_PROHIBITED, SERVER_BLOCKED and SERVER_BLOCKED + SERVER_UPDATE_PROHIBITED are not changed
+ *  - check that poll messages exists for deleted source contacts
+ *  - check that deleted source contacts are present in notification data
+ *  - check that changed objects are present in notification data
+ */
+BOOST_FIXTURE_TEST_CASE( test_auto_proc_given_registrar, auto_proc_fixture )
+{
+    //corba config
+    FakedArgs fa = CfgArgs::instance()->fa;
+    //conf pointers
+    HandleCorbaNameServiceArgs* ns_args_ptr=CfgArgs::instance()->
+                get_handler_ptr_by_type<HandleCorbaNameServiceArgs>();
+
+    CorbaContainer::set_instance(fa.get_argc(), fa.get_argv()
+            , ns_args_ptr->nameservice_host
+            , ns_args_ptr->nameservice_port
+            , ns_args_ptr->nameservice_context);
+
+    boost::shared_ptr<Fred::Mailer::Manager> mm( new MailerManager(CorbaContainer::get_instance()->getNS()));
+    std::auto_ptr<Fred::Logger::LoggerClient> logger_client(
+            new Fred::Logger::DummyLoggerCorbaClientImpl());
+
+    std::vector<Fred::MergeContactNotificationEmailWithAddr> nemail;
 
     nemail = Admin::MergeContactAutoProcedure(
             *(mm.get()),
@@ -300,7 +337,6 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc_given_registrar, auto_proc_fixture )
 
         if(ci->second.admin_contacts.isset()) changed_domain_admin_fqdn.insert(ci->first);
         if(ci->second.registrant.isset()) changed_domain_owner_fqdn.insert(ci->first);
-        //BOOST_ERROR("changed_domain fqdn: " << ci->first);
 
         //check linked object for forbidden state
         BOOST_CHECK(!boost::regex_match(ci->first, linked_object_forbidden_states_regex));
@@ -311,7 +347,230 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc_given_registrar, auto_proc_fixture )
 
     BOOST_CHECK(std::set<std::string>(nemail.at(0).email_data.domain_admin_list.begin(), nemail.at(0).email_data.domain_admin_list.end()) == changed_domain_admin_fqdn);
     BOOST_CHECK(std::set<std::string>(nemail.at(0).email_data.domain_registrant_list.begin(), nemail.at(0).email_data.domain_registrant_list.end()) == changed_domain_owner_fqdn);
+}
+
+
+/**
+ * check that merge with set verbosity have the same effect as merge with no verbosity set
+ * except of timestamps of changes and random authinfo changes
+ */
+BOOST_AUTO_TEST_CASE(test_compare_verbose)
+{
+    //corba config
+    FakedArgs fa = CfgArgs::instance()->fa;
+    //conf pointers
+    HandleCorbaNameServiceArgs* ns_args_ptr=CfgArgs::instance()->
+                get_handler_ptr_by_type<HandleCorbaNameServiceArgs>();
+
+    CorbaContainer::set_instance(fa.get_argc(), fa.get_argv()
+            , ns_args_ptr->nameservice_host
+            , ns_args_ptr->nameservice_port
+            , ns_args_ptr->nameservice_context);
+
+    boost::shared_ptr<Fred::Mailer::Manager> mm( new MailerManager(CorbaContainer::get_instance()->getNS()));
+    std::auto_ptr<Fred::Logger::LoggerClient> logger_client(
+            new Fred::Logger::DummyLoggerCorbaClientImpl());
+
+    //non verbose test data
+    std::vector<Fred::MergeContactNotificationEmailWithAddr> nemail1;
+    std::map<std::string, Fred::InfoContactDiff> contact_changes1;
+    std::map<std::string, Fred::InfoNssetDiff> nsset_changes1;
+    std::map<std::string, Fred::InfoKeysetDiff> keyset_changes1;
+    std::map<std::string, Fred::InfoDomainDiff> domain_changes1;
+
+    //verbose test data
+    std::vector<Fred::MergeContactNotificationEmailWithAddr> nemail2;
+    std::map<std::string, Fred::InfoContactDiff> contact_changes2;
+    std::map<std::string, Fred::InfoNssetDiff> nsset_changes2;
+    std::map<std::string, Fred::InfoKeysetDiff> keyset_changes2;
+    std::map<std::string, Fred::InfoDomainDiff> domain_changes2;
+
+    /**
+     * non-verbose merge
+     */
+    {
+        auto_proc_fixture fixture;
+
+        nemail1 = Admin::MergeContactAutoProcedure(
+            *(mm.get()),
+            *(logger_client.get()))
+        .set_registrar(fixture.registrar_mc_1_handle)
+        .exec();
+
+        //data changes
+        contact_changes1 = fixture.diff_contacts();
+        nsset_changes1 = fixture.diff_nssets();
+        keyset_changes1 = fixture.diff_keysets();
+        domain_changes1 = fixture.diff_domains();
+
+        BOOST_CHECK(fixture.diff_registrars().empty());
+    }
+
+    /**
+     * verbose merge
+     */
+    {
+        auto_proc_fixture fixture;
+
+        nemail2 = Admin::MergeContactAutoProcedure(
+            *(mm.get()),
+            *(logger_client.get()))
+        .set_registrar(fixture.registrar_mc_1_handle)
+        .set_verbose(100)
+        .exec();
+
+        //data changes
+        contact_changes2 = fixture.diff_contacts();
+        nsset_changes2 = fixture.diff_nssets();
+        keyset_changes2 = fixture.diff_keysets();
+        domain_changes2 = fixture.diff_domains();
+
+        BOOST_CHECK(fixture.diff_registrars().empty());
+    }
+
+  //comparison
+  for(unsigned i = 0 ; i < nemail1.size(); ++i)
+  {
+      BOOST_CHECK(nemail1.at(i).notification_email_addr == nemail2.at(i).notification_email_addr);
+      BOOST_CHECK(nemail1.at(i).email_data.to_string() == nemail2.at(i).email_data.to_string());
+  }
+
+  for(std::map<std::string, Fred::InfoContactDiff>::const_iterator ci = contact_changes1.begin(); ci != contact_changes1.end(); ++ci)
+  {
+      Fred::InfoContactDiff contact_diff;
+      try
+      {
+          contact_diff = map_at(contact_changes2, ci->first);
+
+          //except of timestamp and authinfo
+          if(contact_diff.delete_time.isset())
+          {
+              BOOST_CHECK(contact_diff.delete_time.get_value().first.isnull());
+              BOOST_CHECK(!contact_diff.delete_time.get_value().second.isnull());
+              BOOST_CHECK(ci->second.delete_time.get_value().first.isnull());
+              BOOST_CHECK(!ci->second.delete_time.get_value().second.isnull());
+              contact_diff.delete_time = ci->second.delete_time;
+          }
+
+          if(contact_diff.update_time.isset())
+          {
+              BOOST_CHECK(contact_diff.update_time.get_value().first.isnull());
+              BOOST_CHECK(!contact_diff.update_time.get_value().second.isnull());
+              BOOST_CHECK(ci->second.update_time.get_value().first.isnull());
+              BOOST_CHECK(!ci->second.update_time.get_value().second.isnull());
+              contact_diff.update_time = ci->second.update_time;
+          }
+
+          if(contact_diff.authinfopw.isset())
+          {
+              contact_diff.authinfopw = ci->second.authinfopw;
+          }
+
+          BOOST_CHECK(ci->second.to_string() == contact_diff.to_string());
+
+          if(ci->second.to_string() != contact_diff.to_string())
+          {
+              BOOST_ERROR(ci->second.to_string());
+              BOOST_ERROR(contact_diff.to_string());
+          }
+      }
+      catch(const std::exception& ex)
+      {
+          BOOST_ERROR(ex.what());
+      }
+  }
+
+  for(std::map<std::string, Fred::InfoNssetDiff>::const_iterator ci = nsset_changes1.begin(); ci != nsset_changes1.end(); ++ci)
+  {
+      Fred::InfoNssetDiff nsset_diff;
+      try
+      {
+          nsset_diff = map_at(nsset_changes2, ci->first);
+          //except of timestamp
+          if(nsset_diff.update_time.isset())
+          {
+              BOOST_CHECK(nsset_diff.update_time.get_value().first.isnull());
+              BOOST_CHECK(!nsset_diff.update_time.get_value().second.isnull());
+              BOOST_CHECK(ci->second.update_time.get_value().first.isnull());
+              BOOST_CHECK(!ci->second.update_time.get_value().second.isnull());
+              nsset_diff.update_time = ci->second.update_time;
+          }
+
+          BOOST_CHECK(ci->second.to_string() == nsset_diff.to_string());
+
+          if(ci->second.to_string() != nsset_diff.to_string())
+          {
+              BOOST_ERROR(ci->second.to_string());
+              BOOST_ERROR(nsset_diff.to_string());
+          }
+      }
+      catch(const std::exception& ex)
+      {
+          BOOST_ERROR(ex.what());
+      }
+  }
+
+  for(std::map<std::string, Fred::InfoKeysetDiff>::const_iterator ci = keyset_changes1.begin(); ci != keyset_changes1.end(); ++ci)
+  {
+      Fred::InfoKeysetDiff keyset_diff;
+      try
+      {
+          keyset_diff = map_at(keyset_changes2, ci->first);
+          //except of timestamp
+          if(keyset_diff.update_time.isset())
+          {
+              BOOST_CHECK(keyset_diff.update_time.get_value().first.isnull());
+              BOOST_CHECK(!keyset_diff.update_time.get_value().second.isnull());
+              BOOST_CHECK(ci->second.update_time.get_value().first.isnull());
+              BOOST_CHECK(!ci->second.update_time.get_value().second.isnull());
+              keyset_diff.update_time = ci->second.update_time;
+          }
+
+          BOOST_CHECK(ci->second.to_string() == keyset_diff.to_string());
+
+          if(ci->second.to_string() != keyset_diff.to_string())
+          {
+              BOOST_ERROR(ci->second.to_string());
+              BOOST_ERROR(keyset_diff.to_string());
+          }
+      }
+      catch(const std::exception& ex)
+      {
+          BOOST_ERROR(ex.what());
+      }
+  }
+
+  for(std::map<std::string, Fred::InfoDomainDiff>::const_iterator ci = domain_changes1.begin(); ci != domain_changes1.end(); ++ci)
+  {
+      Fred::InfoDomainDiff domain_diff;
+      try
+      {
+          domain_diff = map_at(domain_changes2, ci->first);
+          //except of timestamp
+          if(domain_diff.update_time.isset())
+          {
+              BOOST_CHECK(domain_diff.update_time.get_value().first.isnull());
+              BOOST_CHECK(!domain_diff.update_time.get_value().second.isnull());
+              BOOST_CHECK(ci->second.update_time.get_value().first.isnull());
+              BOOST_CHECK(!ci->second.update_time.get_value().second.isnull());
+              domain_diff.update_time = ci->second.update_time;
+          }
+
+          BOOST_CHECK(ci->second.to_string() == domain_diff.to_string());
+
+          if(ci->second.to_string() != domain_diff.to_string())
+          {
+              BOOST_ERROR(ci->second.to_string());
+              BOOST_ERROR(domain_diff.to_string());
+          }
+      }
+      catch(const std::exception& ex)
+      {
+          BOOST_ERROR(ex.what());
+      }
+  }
 
 }
 
-BOOST_AUTO_TEST_SUITE_END();//TestContactVerification
+
+BOOST_AUTO_TEST_SUITE_END();
