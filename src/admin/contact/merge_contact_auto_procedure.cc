@@ -136,9 +136,11 @@ struct MergeContactDryRunInfo
 
 MergeContactAutoProcedure::MergeContactAutoProcedure(
         Fred::Mailer::Manager& mm,
-        Fred::Logger::LoggerClient &_logger_client)
+        Fred::Logger::LoggerClient &_logger_client,
+        const std::string& _registrar)
     : mm_(mm)
     , logger_client_(_logger_client)
+    , registrar_(_registrar)
 {
 }
 
@@ -146,7 +148,7 @@ MergeContactAutoProcedure::MergeContactAutoProcedure(
 MergeContactAutoProcedure::MergeContactAutoProcedure(
         Fred::Mailer::Manager& mm,
         Fred::Logger::LoggerClient &_logger_client,
-        const Optional<std::string> &_registrar,
+        const std::string& _registrar,
         const Optional<unsigned long long> &_limit,
         const Optional<bool> &_dry_run,
         const Optional<unsigned short> &_verbose)
@@ -158,15 +160,6 @@ MergeContactAutoProcedure::MergeContactAutoProcedure(
       verbose_(_verbose)
 {
 }
-
-
-MergeContactAutoProcedure& MergeContactAutoProcedure::set_registrar(
-        const Optional<std::string> &_registrar)
-{
-    registrar_ = _registrar;
-    return *this;
-}
-
 
 MergeContactAutoProcedure& MergeContactAutoProcedure::set_limit(
         const Optional<unsigned long long> &_limit)
@@ -249,12 +242,12 @@ std::vector<Fred::MergeContactNotificationEmailWithAddr> MergeContactAutoProcedu
     //check registrar
     Database::Result registrar_res = octx.get_conn().exec_params(
         "SELECT id FROM registrar WHERE handle = UPPER($1::text)"
-        , Database::query_param_list(registrar_.get_value()));
+        , Database::query_param_list(registrar_));
 
     if(registrar_res.size() == 0)//registrar not found
     {
         throw std::runtime_error(std::string("registrar: '")
-            + registrar_.get_value()+"' not found");
+            + registrar_ +"' not found");
     }
 
     std::string system_registrar = static_cast<std::string>(system_registrar_result[0][0]);
@@ -273,13 +266,13 @@ std::vector<Fred::MergeContactNotificationEmailWithAddr> MergeContactAutoProcedu
 
     if (this->get_verbose_level() > 0) {
         out_stream << format_header(str(boost::format("REGISTRAR: %1%")
-            % (registrar_.isset() ? registrar_.get_value(): std::string("n/a"))), indenter);
+            % registrar_), indenter);
     }
 
 
 
     /* find any contact duplicates set (optionally for specific registrar only) */
-    std::set<std::string> any_dup_set = Fred::Contact::FindContactDuplicates().set_registrar(registrar_).exec(octx);
+    std::set<std::string> any_dup_set = Fred::Contact::FindContactDuplicates().set_registrar(Optional<std::string>(registrar_)).exec(octx);
     std::set<std::string> skip_invalid_contact_set;
 
     while (any_dup_set.size() >= 2)
@@ -403,7 +396,7 @@ std::vector<Fred::MergeContactNotificationEmailWithAddr> MergeContactAutoProcedu
         }
 
         Fred::Contact::FindContactDuplicates new_dup_search = Fred::Contact::FindContactDuplicates()
-            .set_registrar(registrar_).set_exclude_contacts(skip_invalid_contact_set);
+            .set_registrar(Optional<std::string>(registrar_)).set_exclude_contacts(skip_invalid_contact_set);
         if (this->is_set_dry_run()) {
             new_dup_search.set_exclude_contacts(dry_run_info.any_search_excluded);
         }

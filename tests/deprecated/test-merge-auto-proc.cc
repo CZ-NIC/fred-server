@@ -130,8 +130,8 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc, auto_proc_fixture )
 
     Admin::MergeContactAutoProcedure(
             *(mm.get()),
-            *(logger_client.get()))
-        .set_registrar(registrar_handle + boost::lexical_cast<std::string>(0))
+            *(logger_client.get()),
+            registrar_handle + boost::lexical_cast<std::string>(0))
         .set_limit(Optional<unsigned long long>())
         .set_dry_run(Optional<bool>(false))
         //.set_verbose(Optional<unsigned short>(10))

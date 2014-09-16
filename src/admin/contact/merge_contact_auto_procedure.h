@@ -15,17 +15,15 @@ namespace Admin {
 class MergeContactAutoProcedure
 {
 public:
-    MergeContactAutoProcedure(Fred::Mailer::Manager& mm, Fred::Logger::LoggerClient &_logger_client);
+    MergeContactAutoProcedure(Fred::Mailer::Manager& mm, Fred::Logger::LoggerClient &_logger_client, const std::string& _registrar);
 
     MergeContactAutoProcedure(
             Fred::Mailer::Manager& mm,
             Fred::Logger::LoggerClient &_logger_client,
-            const Optional<std::string> &_registrar,
+            const std::string& _registrar,
             const Optional<unsigned long long> &_limit,
             const Optional<bool> &_dry_run,
             const Optional<unsigned short> &_verbose);
-
-    MergeContactAutoProcedure& set_registrar(const Optional<std::string> &_registrar);
 
     MergeContactAutoProcedure& set_limit(const Optional<unsigned long long> &_limit);
 
@@ -49,7 +47,7 @@ private:
     Fred::Mailer::Manager& mm_;
     Fred::Logger::LoggerClient &logger_client_;
 
-    Optional<std::string> registrar_;
+    std::string registrar_;
     Optional<unsigned long long> limit_;
     Optional<bool> dry_run_;
     std::vector<Fred::ContactSelectionFilterType> selection_filter_order_;

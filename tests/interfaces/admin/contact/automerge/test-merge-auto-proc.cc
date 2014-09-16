@@ -105,14 +105,12 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc_no_optional_params, auto_proc_fixture )
     std::auto_ptr<Fred::Logger::LoggerClient> logger_client(
             new Fred::Logger::DummyLoggerCorbaClientImpl());
 
-    //std::auto_ptr<Fred::Logger::LoggerClient> logger_client_(
-    //            new Fred::Logger::LoggerCorbaClientImpl());
-
     try
     {
         Admin::MergeContactAutoProcedure(
                 *(mm.get()),
-                *(logger_client.get()))
+                *(logger_client.get()),
+                registrar_mc_1_handle)
         .exec();
     }
     catch(...)
@@ -146,8 +144,8 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc_given_registrar_dry_run, auto_proc_fixtu
 
     nemail = Admin::MergeContactAutoProcedure(
             *(mm.get()),
-            *(logger_client.get()))
-        .set_registrar(registrar_mc_1_handle)
+            *(logger_client.get()),
+            registrar_mc_1_handle)
         .set_dry_run(true)
     .exec();
 
@@ -163,8 +161,8 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc_given_registrar_dry_run, auto_proc_fixtu
 
     nemail = Admin::MergeContactAutoProcedure(
             *(mm.get()),
-            *(logger_client.get()))
-        .set_registrar(registrar_mc_1_handle)
+            *(logger_client.get()),
+            registrar_mc_1_handle)
         .set_verbose(100)
         .set_dry_run(true)
     .exec();
@@ -211,8 +209,8 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc_given_registrar, auto_proc_fixture )
 
     nemail = Admin::MergeContactAutoProcedure(
             *(mm.get()),
-            *(logger_client.get()))
-        .set_registrar(registrar_mc_1_handle)
+            *(logger_client.get()),
+            registrar_mc_1_handle)
     .exec();
 
     BOOST_CHECK(nemail.size() == 1);//have just 1 group of mergeable contacts with given registrar
@@ -393,8 +391,8 @@ BOOST_AUTO_TEST_CASE(test_compare_verbose)
 
         nemail1 = Admin::MergeContactAutoProcedure(
             *(mm.get()),
-            *(logger_client.get()))
-        .set_registrar(fixture.registrar_mc_1_handle)
+            *(logger_client.get()),
+            fixture.registrar_mc_1_handle)
         .exec();
 
         //data changes
@@ -414,8 +412,8 @@ BOOST_AUTO_TEST_CASE(test_compare_verbose)
 
         nemail2 = Admin::MergeContactAutoProcedure(
             *(mm.get()),
-            *(logger_client.get()))
-        .set_registrar(fixture.registrar_mc_1_handle)
+            *(logger_client.get()),
+            fixture.registrar_mc_1_handle)
         .set_verbose(100)
         .exec();
 
