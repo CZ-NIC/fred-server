@@ -374,7 +374,7 @@ namespace Test {
 
     /** @returns value not used in object_registry.id. No other qualities (e. g. being constant, non-repeating, ...) are quaranteed. */
     unsigned long long  get_nonexistent_object_id(Fred::OperationContext& ctx);
-    /** @returns value not used in history.historyid. No other qualities (e. g. being constant, non-repeating, ...) are quaranteed. */
+    /** @returns value not used in object_history.historyid. No other qualities (e. g. being constant, non-repeating, ...) are quaranteed. */
     unsigned long long  get_nonexistent_object_historyid(Fred::OperationContext& ctx);
     /** @returns value not used in object_registry.handle. No other qualities (e. g. being constant, non-repeating, ...) are quaranteed. */
     std::string         get_nonexistent_object_handle(Fred::OperationContext& ctx);

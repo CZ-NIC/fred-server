@@ -16,7 +16,7 @@ namespace Test {
     }
 
     unsigned long long get_nonexistent_object_historyid(Fred::OperationContext& ctx) {
-        return get_nonexistent_value(ctx, "history", "historyid", "bigint", generate_random_bigserial);
+        return get_nonexistent_value(ctx, "object_history", "historyid", "bigint", generate_random_bigserial);
     }
 
     std::string get_nonexistent_object_handle(Fred::OperationContext& ctx) {
