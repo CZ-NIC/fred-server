@@ -75,7 +75,7 @@ public:
     void handle( int argc, char* argv[],  FakedArgs &fa)
     {
         boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
 
         /* construct connection string */
         std::string dbhost = (vm.count("database.host") == 0 ? ""

@@ -122,7 +122,7 @@ public:
     void handle( int argc, char* argv[],  FakedArgs &fa)
     {
         boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
 
         boost::program_options::variables_map::iterator it;
         for(it = vm.begin(); it != vm.end(); it++) {
@@ -229,7 +229,7 @@ public:
     std::size_t handle( int argc, char* argv[],  FakedArgs &fa, std::size_t option_group_index)
     {
         boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
 
         boost::program_options::variables_map::iterator it;
         for(it = vm.begin(); it != vm.end(); it++) {

@@ -93,7 +93,7 @@ public:
     void handle( int argc, char* argv[],  FakedArgs &fa)
     {
         po::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
 
         restricted_handles = vm["registry.restricted_handles"].as<bool>();
         disable_epp_notifier = vm["registry.disable_epp_notifier"].as<bool>();

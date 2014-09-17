@@ -169,7 +169,7 @@ public:
             , std::size_t option_group_index)
     {
         boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
         return option_group_index;
     }//handle
 };//class HandleAdminClientDomainListArgsGrp
@@ -250,7 +250,7 @@ public:
             , std::size_t option_group_index)
     {
         boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
         return option_group_index;
     }//handle
 };//class HandleAdminClientKeySetListArgsGrp
@@ -279,7 +279,7 @@ public:
             , std::size_t option_group_index)
     {
         boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
 
         //general config actions
         if (vm.count("help_dates"))
@@ -334,7 +334,7 @@ public:
             , std::size_t option_group_index)
     {
         boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
         return option_group_index;
     }//handle
 };//class HandleAdminClientContactReminderArgsGrp
@@ -394,7 +394,7 @@ public:
             , std::size_t option_group_index)
     {
         boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
         return option_group_index;
     }//handle
 };//class HandleAdminClientContactMergeDuplicateAutoArgsGrp
@@ -437,7 +437,7 @@ public:
             , std::size_t option_group_index)
     {
         boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
         return option_group_index;
     }//handle
 };
@@ -529,7 +529,7 @@ public:
             , std::size_t option_group_index)
     {
         boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
         return option_group_index;
     }//handle
 };//class HandleAdminClientContactListArgsGrp
@@ -602,7 +602,7 @@ public:
             , std::size_t option_group_index)
     {
         boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
         return option_group_index;
     }//handle
 };//class HandleAdminClientInvoiceListArgsGrp
@@ -640,7 +640,7 @@ public:
             , std::size_t option_group_index)
     {
         boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
         return option_group_index;
     }//handle
 };//class HandleAdminClientInvoiceArchiveArgsGrp
@@ -688,7 +688,7 @@ public:
             , std::size_t option_group_index)
     {
         boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
         return option_group_index;
     }//handle
 };//class HandleAdminClientInvoiceCreditArgsGrp
@@ -743,7 +743,7 @@ public:
             , std::size_t option_group_index)
     {
         boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
         return option_group_index;
     }//handle
 };//class HandleAdminClientInvoiceBillingArgsGrp
@@ -793,7 +793,7 @@ public:
             , std::size_t option_group_index)
     {
         boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
         return option_group_index;
     }//handle
 };//class HandleAdminClientInvoiceAddPrefixArgsGrp
@@ -832,7 +832,7 @@ public:
             , std::size_t option_group_index)
     {
         boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
         return option_group_index;
     }//handle
 };//class HandleAdminClientCreateInvoicePrefixesArgsGrp
@@ -877,7 +877,7 @@ public:
             , std::size_t option_group_index)
     {
         boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
         return option_group_index;
     }//handle
 };//class HandleAdminClientAddInvoiceNumberPrefixArgsGrp
@@ -919,7 +919,7 @@ public:
             , std::size_t option_group_index)
     {
         boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
         return option_group_index;
     }//handle
 };//class HandleAdminClientInvoiceCreateArgsGrp
@@ -962,7 +962,7 @@ public:
             , std::size_t option_group_index)
     {
         boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
         return option_group_index;
     }//handle
 };//class HandleAdminClientBankPaymentListArgsGrp
@@ -1006,7 +1006,7 @@ public:
             , std::size_t option_group_index)
     {
         boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
         return option_group_index;
     }//handle
 };//class HandleAdminClientBankImportXMLArgsGrp
@@ -1050,7 +1050,7 @@ public:
             , std::size_t option_group_index)
     {
         boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
         return option_group_index;
     }//handle
 };//class HandleAdminClientBankAddAccountArgsGrp
@@ -1094,7 +1094,7 @@ public:
             , std::size_t option_group_index)
     {
         boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
         return option_group_index;
     }//handle
 };//class HandleAdminClientPollListAllArgsGrp
@@ -1136,7 +1136,7 @@ public:
             , std::size_t option_group_index)
     {
         boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
         return option_group_index;
     }//handle
 };//class HandleAdminClientPollCreateStatechangesArgsGrp
@@ -1172,7 +1172,7 @@ public:
             , std::size_t option_group_index)
     {
         boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
         return option_group_index;
     }//handle
 };//class HandleAdminClientPollCreateRequestFeeMessagesArgsGrp
@@ -1205,7 +1205,7 @@ public:
             , std::size_t option_group_index)
     {
         boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
         return option_group_index;
     }//handle
 };
@@ -1238,7 +1238,7 @@ public:
             , std::size_t option_group_index)
     {
         boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
         return option_group_index;
     }//handle
 };
@@ -1271,7 +1271,7 @@ public:
             , std::size_t option_group_index)
     {
         boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
         return option_group_index;
     }//handle
 };
@@ -1311,7 +1311,7 @@ public:
             , std::size_t option_group_index)
     {
         boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
         return option_group_index;
     }//handle
 };
@@ -1373,7 +1373,7 @@ public:
             , std::size_t option_group_index)
     {
         boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
         return option_group_index;
     }//handle
 };//class HandleAdminClientZoneAddArgsGrp
@@ -1463,7 +1463,7 @@ public:
             , std::size_t option_group_index)
     {
         boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
         return option_group_index;
     }//handle
 };//class HandleAdminClientRegistrarAddArgsGrp
@@ -1507,7 +1507,7 @@ public:
             , std::size_t option_group_index)
     {
         boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
         return option_group_index;
     }//handle
 };//class HandleAdminClientRegistrarAddZoneArgsGrp
@@ -1557,7 +1557,7 @@ public:
             , std::size_t option_group_index)
     {
         boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
         return option_group_index;
     }//handle
 };//class HandleAdminClientRegistrarCreateCertificationArgsGrp
@@ -1592,7 +1592,7 @@ public:
             , std::size_t option_group_index)
     {
         boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
         return option_group_index;
     }//handle
 };//class HandleAdminClientRegistrarCreateGroupArgsGrp
@@ -1636,7 +1636,7 @@ public:
             , std::size_t option_group_index)
     {
         boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
         return option_group_index;
     }//handle
 };//class HandleAdminClientRegistrarIntoGroupArgsGrp
@@ -1689,7 +1689,7 @@ public:
             , std::size_t option_group_index)
     {
         boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
         return option_group_index;
     }//handle
 };//class HandleAdminClientRegistrarListArgsGrp
@@ -1733,7 +1733,7 @@ public:
             , std::size_t option_group_index)
     {
         boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
         return option_group_index;
     }//handle
 };//class HandleAdminClientZoneNsAddArgsGrp
@@ -1774,7 +1774,7 @@ public:
             , std::size_t option_group_index)
     {
         boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
         return option_group_index;
     }//handle
 };//class HandleAdminClientRegistrarAclAddArgsGrp
@@ -1830,7 +1830,7 @@ public:
             , std::size_t option_group_index)
     {
         boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
         return option_group_index;
     }//handle
 };//class HandleAdminClientRegistrarAclAddArgsGrp
@@ -1875,7 +1875,7 @@ public:
             , std::size_t option_group_index)
     {
         boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
         return option_group_index;
     }//handle
 };
@@ -1919,7 +1919,7 @@ public:
             , std::size_t option_group_index)
     {
         boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
         return option_group_index;
     }//handle
 };//class HandleAdminClientNotifyStateChangesArgsGrp
@@ -1956,7 +1956,7 @@ public:
             , std::size_t option_group_index)
     {
         boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
         return option_group_index;
     }//handle
 };//class HandleAdminClientNotifyLettersPostservisSendArgsGrp
@@ -2002,7 +2002,7 @@ public:
             , std::size_t option_group_index)
     {
         boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
         return option_group_index;
     }//handle
 };//class HandleAdminClientNotifyRegisteredLettersManualSendArgsGrp
@@ -2039,7 +2039,7 @@ public:
             , std::size_t option_group_index)
     {
         boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
         return option_group_index;
     }//handle
 };//class HandleAdminClientNotifyLettersPostservisSendArgsGrp
@@ -2077,7 +2077,7 @@ public:
             , std::size_t option_group_index)
     {
         boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
         return option_group_index;
     }//handle
 };//class HandleAdminClientEnumParameterChangeArgsGrp
@@ -2155,7 +2155,7 @@ public:
             , std::size_t option_group_index)
     {
         boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
         return option_group_index;
     }//handle
 };//class HandleAdminClientObjectNewStateRequestNameArgsGrp
@@ -2190,7 +2190,7 @@ public:
             , std::size_t option_group_index)
     {
         boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
         return option_group_index;
     }//handle
 };//class HandleAdminClientObjectUpdateStatesArgsGrp
@@ -2237,7 +2237,7 @@ public:
             , std::size_t option_group_index)
     {
         boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
         return option_group_index;
     }//handle
 };//class HandleAdminClientObjectDeleteCandidatesArgsGrp
@@ -2291,7 +2291,7 @@ public:
             , std::size_t option_group_index)
     {
         boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
         return option_group_index;
     }//handle
 };//class HandleAdminClientObjectRegularProcedureArgsGrp
@@ -2346,7 +2346,7 @@ public:
             , std::size_t option_group_index)
     {
         boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
         return option_group_index;
     }//handle
 };//class HandleAdminClientFileListArgsGrp
@@ -2388,7 +2388,7 @@ public:
             , std::size_t option_group_index)
     {
         boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
         return option_group_index;
     }//handle
 };//class HandleInitDomainNameValidationCheckersArgsGrp
@@ -2426,7 +2426,7 @@ public:
             , std::size_t option_group_index)
     {
         boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
         return option_group_index;
     }//handle
 };//class HandleDomainNameValidationByZoneArgsGrp
@@ -2480,7 +2480,7 @@ class HandleContactVerificationFillQueueArgsGrp : public HandleCommandGrpArgs {
 
         std::size_t handle( int argc, char* argv[],  FakedArgs &fa, std::size_t option_group_index) {
             boost::program_options::variables_map vm;
-            handler_parse_args(get_options_description(), vm, argc, argv, fa);
+            handler_parse_args()(get_options_description(), vm, argc, argv, fa);
 
             return option_group_index;
         }
@@ -2517,7 +2517,7 @@ class HandleContactVerificationEnqueueCheckArgsGrp : public HandleCommandGrpArgs
 
         std::size_t handle( int argc, char* argv[],  FakedArgs &fa, std::size_t option_group_index) {
             boost::program_options::variables_map vm;
-            handler_parse_args(get_options_description(), vm, argc, argv, fa);
+            handler_parse_args()(get_options_description(), vm, argc, argv, fa);
 
             return option_group_index;
         }
@@ -2552,7 +2552,7 @@ class HandleContactVerificationStartEnqueuedChecksArgsGrp : public HandleCommand
 
         std::size_t handle( int argc, char* argv[],  FakedArgs &fa, std::size_t option_group_index) {
             boost::program_options::variables_map vm;
-            handler_parse_args(get_options_description(), vm, argc, argv, fa);
+            handler_parse_args()(get_options_description(), vm, argc, argv, fa);
 
             return option_group_index;
         }
@@ -2590,7 +2590,7 @@ public:
             , std::size_t option_group_index)
     {
         boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
         return option_group_index;
     }//handle
 };//class HandleAdminClientNotifyLettersOptysSendArgsGrp

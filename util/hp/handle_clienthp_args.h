@@ -59,7 +59,7 @@ public:
     void handle( int argc, char* argv[],  FakedArgs &fa)
     {
         boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
 
         do_action = (vm.count("do") == 0 ? "" : vm["do"].as<std::string>());
 
@@ -90,7 +90,7 @@ public:
     std::size_t handle( int argc, char* argv[],  FakedArgs &fa , std::size_t option_group_index)
     {
         boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
 
         do_action = (vm.count("do") == 0 ? "" : vm["do"].as<std::string>());
 

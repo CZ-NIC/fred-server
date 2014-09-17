@@ -88,7 +88,9 @@ public:
 
 
 ///common parsing using program_options
-static void handler_parse_args(
+struct handler_parse_args
+{
+    void operator()(
         boost::shared_ptr<boost::program_options::options_description> opts_descs
         , boost::program_options::variables_map& vm
         , int argc, char* argv[],  FakedArgs &fa)
@@ -132,7 +134,8 @@ static void handler_parse_args(
         fa.add_argv(*i);//string
     }//for i
 
-}//handler_parse_args
+}
+};//handler_parse_args
 
 //owning container of handlers
 typedef boost::shared_ptr<HandleArgs> HandleArgsPtr;

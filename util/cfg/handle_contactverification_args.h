@@ -66,7 +66,7 @@ public:
     void handle( int argc, char* argv[],  FakedArgs &fa)
     {
         boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
 
         hostname = vm["contact_verification.hostname"].as<std::string>();
         demo_mode = vm["contact_verification.demo_mode"].as<bool>();

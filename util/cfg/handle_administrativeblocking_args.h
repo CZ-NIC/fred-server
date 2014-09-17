@@ -74,7 +74,7 @@ public:
     void handle( int argc, char* argv[],  FakedArgs &fa)
     {
         boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
 
         registrar_handle = vm["administrativeblocking.registrar_handle"].as<std::string>();
         hostname = vm["administrativeblocking.hostname"].as<std::string>();

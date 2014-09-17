@@ -68,7 +68,7 @@ public:
     void handle( int argc, char* argv[],  FakedArgs &fa)
     {
         boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
 
         domain_list_limit = vm["domain_browser.list_domains_limit"].as<unsigned int>();
         nsset_list_limit = vm["domain_browser.list_nssets_limit"].as<unsigned int>();

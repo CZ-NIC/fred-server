@@ -73,7 +73,7 @@ public:
     void handle( int argc, char* argv[],  FakedArgs &fa)
     {
         boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
 
         log_type = (vm.count("log.type") == 0)
                 ? 0 : vm["log.type"].as<unsigned>();

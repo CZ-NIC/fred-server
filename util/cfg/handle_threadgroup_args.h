@@ -63,7 +63,7 @@ public:
     void handle( int argc, char* argv[],  FakedArgs &fa)
     {
         boost::program_options::variables_map vm;
-        handler_parse_args(get_options_description(), vm, argc, argv, fa);
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
 
         thread_number = (vm.count("thread_number") == 0
                 ? 50 : vm["thread_number"].as<unsigned>());
