@@ -372,10 +372,15 @@ namespace Test {
     unsigned long long generate_random_bigserial();
     std::string generate_random_handle();
 
+    /** @returns value not used in object_registry.id. No other qualities (e. g. being constant, non-repeating, ...) are quaranteed. */
     unsigned long long  get_nonexistent_object_id(Fred::OperationContext& ctx);
+    /** @returns value not used in history.historyid. No other qualities (e. g. being constant, non-repeating, ...) are quaranteed. */
     unsigned long long  get_nonexistent_object_historyid(Fred::OperationContext& ctx);
+    /** @returns value not used in object_registry.handle. No other qualities (e. g. being constant, non-repeating, ...) are quaranteed. */
     std::string         get_nonexistent_object_handle(Fred::OperationContext& ctx);
+    /** @returns value not used in registrar.id. No other qualities (e. g. being constant, non-repeating, ...) are quaranteed. */
     unsigned long long  get_nonexistent_registrar_id(Fred::OperationContext& ctx);
+    /** @returns value not used in zone.id. No other qualities (e. g. being constant, non-repeating, ...) are quaranteed. */
     unsigned long long  get_nonexistent_zone_id(Fred::OperationContext& ctx);
 
     template<typename T> T get_nonexistent_value(
@@ -402,7 +407,7 @@ namespace Test {
         return result;
     }
 
-    // TODO XXX - casem zrusit zavislost testu na existenci cz zony
+    // TODO XXX - hopefully one day we break the dependency on cz zone creation before running tests
     unsigned long long  get_cz_zone_id(Fred::OperationContext& ctx);
 
     // for use with temporary object - copying arguments - suboptimal but hopefully adequate enough

@@ -32,12 +32,11 @@ namespace Test {
 
     unsigned long long get_cz_zone_id(Fred::OperationContext& ctx) {
         return
-            ctx.get_conn().exec_params(
+            ctx.get_conn().exec(
                 "SELECT id "
                     "FROM zone "
-                    "WHERE fqdn=$1::text ",
-                Database::query_param_list("cz")
-        )[0]["id"];
+                    "WHERE fqdn='cz'"
+            )[0]["id"];
     }
 
     add_admin_contacts_to_domain::add_admin_contacts_to_domain(
