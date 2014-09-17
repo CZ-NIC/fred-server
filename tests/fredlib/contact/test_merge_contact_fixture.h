@@ -1182,7 +1182,6 @@ namespace MergeContactFixture
                 }
             }
 
-            //bug: Fred::PerformObjectStateRequest().exec(ctx);
             ctx.get_conn().exec("SELECT update_object_states(0)");
 
             BOOST_MESSAGE("commit");
