@@ -321,9 +321,9 @@ BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_contact_id)
         ctx.commit_transaction();
     } catch(const Fred::ExceptionUnknownContactId& exp) {
         caught_the_right_exception = true;
-    } catch(const std::exception& e) {
-        BOOST_FAIL(std::string("incorrect exception caught \n") + boost::diagnostic_information(e));
     } catch(const Database::ResultFailed& e) {
+        BOOST_FAIL(std::string("incorrect exception caught \n") + boost::diagnostic_information(e));
+    } catch(const std::exception& e) {
         BOOST_FAIL(std::string("incorrect exception caught \n") + boost::diagnostic_information(e));
     } catch(...) {
         BOOST_FAIL("incorrect exception caught \n");
