@@ -369,9 +369,46 @@ namespace Test {
         return obj;
     }
 
+    unsigned long long generate_random_bigserial();
+    std::string generate_random_handle();
+
+    /** @returns value not used in object_registry.id. No other qualities (e. g. being constant, non-repeating, ...) are quaranteed. */
     unsigned long long  get_nonexistent_object_id(Fred::OperationContext& ctx);
+    /** @returns value not used in object_history.historyid. No other qualities (e. g. being constant, non-repeating, ...) are quaranteed. */
     unsigned long long  get_nonexistent_object_historyid(Fred::OperationContext& ctx);
+    /** @returns value not used in object_registry.handle. No other qualities (e. g. being constant, non-repeating, ...) are quaranteed. */
     std::string         get_nonexistent_object_handle(Fred::OperationContext& ctx);
+    /** @returns value not used in registrar.id. No other qualities (e. g. being constant, non-repeating, ...) are quaranteed. */
+    unsigned long long  get_nonexistent_registrar_id(Fred::OperationContext& ctx);
+    /** @returns value not used in zone.id. No other qualities (e. g. being constant, non-repeating, ...) are quaranteed. */
+    unsigned long long  get_nonexistent_zone_id(Fred::OperationContext& ctx);
+
+    template<typename T> T get_nonexistent_value(
+        Fred::OperationContext& ctx,
+        const std::string& table,
+        const std::string& column,
+        const std::string& postgres_type,
+        T (*random_generator) ()
+    ) {
+        T result;
+
+        Database::Result check;
+        // guarantee non-existence
+        do {
+            Fred::OperationContext ctx;
+            result = random_generator();
+            check = ctx.get_conn().exec_params(
+                "SELECT "+ column +" "
+                    "FROM "+ table +" "
+                    "WHERE "+ column +"=$1::"+postgres_type,
+                    Database::query_param_list(result) );
+        } while(check.size() != 0);
+
+        return result;
+    }
+
+    // TODO XXX - hopefully one day we break the dependency on cz zone creation before running tests
+    unsigned long long  get_cz_zone_id(Fred::OperationContext& ctx);
 
     // for use with temporary object - copying arguments - suboptimal but hopefully adequate enough
     template<typename TCreateOper> typename util::InfoXData_type<TCreateOper>::type exec(TCreateOper create, Fred::OperationContext& ctx) {

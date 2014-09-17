@@ -2,60 +2,41 @@
 #include <cmath>
 
 namespace Test {
+
+    unsigned long long generate_random_bigserial() {
+        return std::abs(RandomDataGenerator().xint());
+    }
+
+    std::string generate_random_handle() {
+        return RandomDataGenerator().xnumstring(20);
+    }
+
     unsigned long long get_nonexistent_object_id(Fred::OperationContext& ctx) {
-        unsigned long long result;
-
-        Database::Result check;
-        // guarantee non-existence
-        do {
-            Fred::OperationContext ctx;
-            // warning: type of column id in postgres is "integer", implicitly assuming POSITIVE
-            result = std::abs(RandomDataGenerator().xint());
-            check = ctx.get_conn().exec_params(
-                "SELECT id "
-                    "FROM object_registry "
-                    "WHERE id=$1::bigint ",
-                    Database::query_param_list(result) );
-        } while(check.size() != 0);
-
-        return result;
+        return get_nonexistent_value(ctx, "object_registry", "id", "bigint", generate_random_bigserial);
     }
 
     unsigned long long get_nonexistent_object_historyid(Fred::OperationContext& ctx) {
-        unsigned long long result;
-
-        Database::Result check;
-        // guarantee non-existence
-        do {
-            Fred::OperationContext ctx;
-            // warning: type of column id in postgres is "integer", implicitly assuming POSITIVE
-            result = std::abs(RandomDataGenerator().xint());
-            check = ctx.get_conn().exec_params(
-                "SELECT historyid "
-                    "FROM object_history "
-                    "WHERE id=$1::bigint ",
-                    Database::query_param_list(result) );
-        } while(check.size() != 0);
-
-        return result;
+        return get_nonexistent_value(ctx, "object_history", "historyid", "bigint", generate_random_bigserial);
     }
 
     std::string get_nonexistent_object_handle(Fred::OperationContext& ctx) {
-        std::string result;
+        return get_nonexistent_value(ctx, "object_registry", "handle", "text", generate_random_handle);
+    }
 
-        Database::Result check;
-        // guarantee non-existence
-        do {
-            Fred::OperationContext ctx;
-            result = "OBJECT_" + RandomDataGenerator().xnumstring(20);
-            check = ctx.get_conn().exec_params(
-                "SELECT name "
-                    "FROM object_registry "
-                    "WHERE name=$1::varchar ",
-                    Database::query_param_list(result) );
-        } while(check.size() != 0);
+    unsigned long long get_nonexistent_registrar_id(Fred::OperationContext& ctx) {
+        return get_nonexistent_value(ctx, "registrar", "id", "bigint", generate_random_bigserial);
+    }
+    unsigned long long  get_nonexistent_zone_id(Fred::OperationContext& ctx) {
+        return get_nonexistent_value(ctx, "zone", "id", "bigint", generate_random_bigserial);
+    }
 
-        return result;
+    unsigned long long get_cz_zone_id(Fred::OperationContext& ctx) {
+        return
+            ctx.get_conn().exec(
+                "SELECT id "
+                    "FROM zone "
+                    "WHERE fqdn='cz'"
+            )[0]["id"];
     }
 
     add_admin_contacts_to_domain::add_admin_contacts_to_domain(
