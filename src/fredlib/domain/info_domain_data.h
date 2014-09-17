@@ -63,6 +63,7 @@ namespace Fred
         unsigned long long historyid;/**< last historyid of domain history*/
         unsigned long long crhistoryid;/**< first historyid of domain history*/
         unsigned long long id;/**< id of the domain object*/
+        ObjectIdHandlePair zone;/**< zone of domain*/
 
         /**
         * Constructor of domain data structure.

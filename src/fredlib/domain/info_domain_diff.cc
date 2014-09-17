@@ -63,6 +63,7 @@ namespace Fred
         (std::make_pair("enum_domain_validation", enum_domain_validation.print_quoted()))
         (std::make_pair("outzone_time", outzone_time.print_quoted()))
         (std::make_pair("cancel_time", cancel_time.print_quoted()))
+        (std::make_pair("zone", zone.print_quoted()))
 
         (std::make_pair("id", id.print_quoted()))
         );//format_data_structure InfoDomainDiff
@@ -92,6 +93,7 @@ namespace Fred
             || enum_domain_validation.isset()
             || outzone_time.isset()
             || cancel_time.isset()
+            || zone.isset()
 
             || id.isset()
             );
@@ -221,6 +223,11 @@ namespace Fred
         if(first.cancel_time != second.cancel_time)
         {
             diff.cancel_time = std::make_pair(first.cancel_time,second.cancel_time);
+        }
+
+        if(first.zone != second.zone)
+        {
+            diff.zone = std::make_pair(first.zone, second.zone);
         }
 
         if(first.id != second.id)

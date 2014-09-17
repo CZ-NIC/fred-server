@@ -68,8 +68,11 @@ namespace Fred
         DiffMemeber<Nullable<ENUMValidationExtension> >::Type enum_domain_validation;/**< ENUM domain validation extension info */
         DiffMemeber<boost::posix_time::ptime>::Type outzone_time;/**< domain outzone time in regular_day_procedure_zone from table enum_parameters */
         DiffMemeber<boost::posix_time::ptime>::Type cancel_time;/**< domain cancel time in regular_day_procedure_zone from table enum_parameters */
+        DiffMemeber<Fred::ObjectIdHandlePair>::Type zone;
 
         DiffMemeber<unsigned long long>::Type id;/**< id of the domain object*/
+
+
 
         /**
         * Constructor of the domain data diff structure.
