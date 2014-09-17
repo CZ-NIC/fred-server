@@ -67,7 +67,7 @@ namespace MergeContactFixture
     /**
      * Setup test data for MergeContact related tests
      */
-    struct mergeable_contact_grps_with_linked_objects_and_blocking_states : virtual Test::Fixture::instantiate_db_template
+    struct mergeable_contact_grps_with_linked_objects_and_blocking_states : Test::Fixture::instantiate_db_template
     {
         /**
          * Create handle of contact not meant to be merged because of unique data.
@@ -1244,6 +1244,8 @@ public:
 
         /**
          * Custom fixture setup.
+         * db_name_suffix
+         * @param db_name_suffix is unique suffix of test database instance name
          * @param mergeable_contact_group_count is number of different groups of test data with otherwise the same configuration
          * @param _linked_object_cases is selection of linked object configurations from @ref create_linked_object
          * @param contact_state_combinations is selection of contact states combinations with first two stateless cases, something like provided by @ref init_set_of_contact_state_combinations()
@@ -1251,13 +1253,15 @@ public:
          * @param _linked_object_quantities is selection of linked object configurations quantities per contact, like @ref init_linked_object_quantities()
          */
         explicit mergeable_contact_grps_with_linked_objects_and_blocking_states(
+            const std::string& db_name_suffix,
             unsigned mergeable_contact_group_count,
             std::set<unsigned> _linked_object_cases,
             std::vector<std::set<std::string> > contact_state_combinations = Util::vector_of<std::set<std::string> > (std::set<std::string>())(std::set<std::string>()),//stateless states 0, 1
             std::vector<std::set<std::string> > linked_object_state_combinations = Util::vector_of<std::set<std::string> > (std::set<std::string>()),
             std::vector<unsigned> _linked_object_quantities = Util::vector_of<unsigned>(0)
             )
-        : registrar_mc_1_handle("REG-1")
+        : Test::Fixture::instantiate_db_template(db_name_suffix)
+        , registrar_mc_1_handle("REG-1")
         , registrar_mc_2_handle("REG-2")
         , registrar_mojeid_handle("REG-MOJEID")
         , registrar_sys_handle("REG-SYS")

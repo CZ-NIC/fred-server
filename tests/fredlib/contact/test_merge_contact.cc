@@ -51,7 +51,8 @@ struct merge_fixture : MergeContactFixture::mergeable_contact_grps_with_linked_o
 {
     merge_fixture()
     : MergeContactFixture::mergeable_contact_grps_with_linked_objects_and_blocking_states(
-        1//mergeable_contact_group_count
+        ""//empty db name suffix
+        ,1//mergeable_contact_group_count
         ,Util::set_of<unsigned>(0)(1)(2)(3)(4)(5)(6)(7)(8)(9)(10)(11)(12)(13)(14)(15)(20)//linked_object_cases
         , Util::vector_of<std::set<std::string> > (std::set<std::string>())(std::set<std::string>())//contact_state_combinations//stateless states 0, 1
         , Util::vector_of<std::set<std::string> > (std::set<std::string>())//linked_object_state_combinations
@@ -2115,7 +2116,8 @@ struct merge_with_states_fixture : MergeContactFixture::mergeable_contact_grps_w
 {
     merge_with_states_fixture()
     : MergeContactFixture::mergeable_contact_grps_with_linked_objects_and_blocking_states(
-        1//mergeable_contact_group_count
+        ""//empty db name suffix
+        ,1//mergeable_contact_group_count
         ,Util::set_of<unsigned>(15)(18)(19)(20)//linked_object_cases
         , init_set_of_contact_state_combinations()//contact_state_combinations//stateless states 0, 1
         , init_set_of_linked_object_state_combinations()//linked_object_state_combinations

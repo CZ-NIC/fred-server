@@ -77,9 +77,10 @@ const std::string server_name = "test-merge-contact-auto-proc";
  */
 struct auto_proc_fixture : MergeContactFixture::mergeable_contact_grps_with_linked_objects_and_blocking_states
 {
-    auto_proc_fixture()
+    auto_proc_fixture(const std::string& db_name_suffix = "")
     : MergeContactFixture::mergeable_contact_grps_with_linked_objects_and_blocking_states(
-        1//mergeable_contact_group_count
+        db_name_suffix
+        , 1//mergeable_contact_group_count
         , Util::set_of<unsigned>(1)(5)(9)(13)////linked_object_cases: nsset, keyset, domain via admin, domain via owner
         , init_set_of_contact_state_combinations()//all contact_state_combinations, stateless states 0, 1
         , init_set_of_linked_object_state_combinations()//all linked_object_state_combinations
@@ -355,7 +356,7 @@ BOOST_AUTO_TEST_CASE(test_compare_verbose)
      * non-verbose merge
      */
     {
-        auto_proc_fixture fixture;
+        auto_proc_fixture fixture("_1");
 
         nemail1 = Admin::MergeContactAutoProcedure(
             *(mm.get()),
@@ -376,7 +377,7 @@ BOOST_AUTO_TEST_CASE(test_compare_verbose)
      * verbose merge
      */
     {
-        auto_proc_fixture fixture;
+        auto_proc_fixture fixture("_2");
 
         nemail2 = Admin::MergeContactAutoProcedure(
             *(mm.get()),
