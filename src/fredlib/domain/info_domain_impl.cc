@@ -120,6 +120,8 @@ namespace Fred
         " , (CURRENT_TIMESTAMP AT TIME ZONE 'UTC')::timestamp AS utc_timestamp "// utc timestamp 32
         " , (CURRENT_TIMESTAMP AT TIME ZONE 'UTC' AT TIME ZONE $1::text)::timestamp AS local_timestamp  "// local zone timestamp 33
         " , z.enum_zone "//is ENUM domain flag 34
+        " , z.id    AS zone_id_ "
+        " , z.fqdn  AS zone_fqdn_ "
         " FROM object_registry dobr ";
 
         if(history_query_)
@@ -312,6 +314,12 @@ namespace Fred
             : boost::posix_time::time_from_string(static_cast<std::string>(query_result[i][29]));//canceldate
 
             info_domain_output.info_domain_data.crhistoryid = static_cast<unsigned long long>(query_result[i][30]);//dobr.crhistoryid
+
+            info_domain_output.info_domain_data.zone =
+                ObjectIdHandlePair(
+                    static_cast<unsigned long long>(query_result[i]["zone_id_"]),
+                    static_cast<std::string>(query_result[i]["zone_fqdn_"])
+                );
 
             info_domain_output.logd_request_id = query_result[i][31].isnull() ? Nullable<unsigned long long>()
                 : Nullable<unsigned long long>(static_cast<unsigned long long>(query_result[i][31]));
