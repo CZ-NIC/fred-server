@@ -10,6 +10,12 @@
 #include "util/cfg/handle_args.h"
 #include "src/fredlib/db_settings.h"
 
+/**
+ * @file fixtures for data isolation in tests
+ * for more info see documentation with examples:
+ * https://admin.nic.cz/wiki/developers/fred/tests
+ */
+
 namespace Test {
 namespace Fixture {
 
