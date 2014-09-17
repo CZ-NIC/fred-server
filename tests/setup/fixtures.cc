@@ -61,7 +61,9 @@ namespace Fixture {
 
 
 
-    instantiate_db_template::instantiate_db_template() {
+    instantiate_db_template::instantiate_db_template(const std::string& db_name_suffix)
+    : db_name_suffix_(db_name_suffix)
+    {
         force_copy_db(
             create_db_template::get_db_template_name(),
             get_original_db_name(),
@@ -72,6 +74,7 @@ namespace Fixture {
     instantiate_db_template::~instantiate_db_template() {
         std::string log_db_name(get_original_db_name() + "_");
         log_db_name += boost::unit_test::framework::current_test_case().p_name;
+        log_db_name += db_name_suffix_;
 
         const std::auto_ptr<Database::StandaloneConnection> conn =
             CfgArgs::instance()->get_handler_ptr_by_type<HandleAdminDatabaseArgs>()->get_admin_connection();

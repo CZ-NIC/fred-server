@@ -6,6 +6,7 @@
 #ifndef TESTS_SETUP_FIXTURES_41215653023
 #define TESTS_SETUP_FIXTURES_41215653023
 
+#include <string>
 #include "util/cfg/handle_args.h"
 #include "src/fredlib/db_settings.h"
 
@@ -29,8 +30,10 @@ namespace Fixture {
 
 
     struct instantiate_db_template {
-        instantiate_db_template();
+        const std::string db_name_suffix_;
+        instantiate_db_template(const std::string& db_name_suffix = "");
         virtual ~instantiate_db_template();
+
     };
 
 
