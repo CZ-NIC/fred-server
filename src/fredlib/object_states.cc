@@ -134,7 +134,7 @@ bool cancel_object_state(
 
         std::string rid;
         if (rid_result.size() == 0) {
-            throw std::runtime_error("cancel_object_state: object state request not found for object state");
+            throw ExceptionObjectStateRequestNotFound("cancel_object_state: object state request not found for object state");
         }
         else {
             rid = "cancel_object_state: canceled request id:";
@@ -150,6 +150,30 @@ bool cancel_object_state(
     }
 
     return false;
+}
+
+void cancel_object_state_request(
+    const unsigned long long &_object_id,
+    const std::string &_state_name
+) {
+    Database::Connection conn = Database::Manager::acquire();
+    Database::Transaction tx(conn);
+
+    lock_object_state_request_lock(_state_name,_object_id);
+
+    Database::Result rid_result = conn.exec_params(
+        "UPDATE object_state_request SET canceled = CURRENT_TIMESTAMP WHERE id IN ("
+        " SELECT osr.id FROM object_state_request osr"
+        " JOIN enum_object_states eos ON eos.id = osr.state_id"
+        " WHERE eos.name = $1::text AND (osr.valid_to is NULL OR osr.valid_to > CURRENT_TIMESTAMP)"
+        " AND osr.valid_from <= CURRENT_TIMESTAMP "
+        " AND osr.canceled is NULL AND osr.object_id = $2::integer ) RETURNING id",
+        Database::query_param_list
+            (_state_name)
+            (_object_id)
+    );
+
+    tx.commit();
 }
 
 void cancel_multiple_object_states(

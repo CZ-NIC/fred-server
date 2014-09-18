@@ -136,7 +136,7 @@ namespace AdminContactVerificationObjectStates
                 const std::string& object_state,
                 Admin::AdminContactVerificationObjectStates::get_final()
             ) {
-                Fred::cancel_object_state(contact_id, object_state);
+                Fred::cancel_object_state_request(contact_id, object_state);
             }
 
             return true;

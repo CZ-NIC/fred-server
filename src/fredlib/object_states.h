@@ -5,9 +5,8 @@
 #include "util/types/optional.h"
 #include "src/fredlib/object_state/object_state_name.h"
 
-
 #include <string>
-
+#include <exception>
 
 namespace Fred {
 
@@ -27,7 +26,22 @@ unsigned long long insert_object_state(
         const unsigned long long &_object_id,
         const std::string &_state_name);
 
+struct ExceptionObjectStateRequestNotFound : public std::runtime_error {
+    explicit ExceptionObjectStateRequestNotFound(const std::string& _msg)
+    : std::runtime_error(_msg)
+    { }
+};
+
 bool cancel_object_state(
+        const unsigned long long &_object_id,
+        const std::string &_state_name);
+
+/**
+ * try to cancel object state request
+ * don't throw exception if request not found
+ * don't cancel related object state
+ */
+void cancel_object_state_request(
         const unsigned long long &_object_id,
         const std::string &_state_name);
 
