@@ -6,6 +6,7 @@
 #include "types/sqlize.h"
 #include "random.h"
 #include "src/fredlib/object_states.h"
+#include "src/fredlib/messages/messages_impl.h"
 
 #include <string>
 #include <vector>
@@ -155,6 +156,28 @@ void cancel_public_request(
                     (PRS_INVALID)
                     (_request_id != 0 ? _request_id : Database::QPNull)
                     (prid));
+
+        /* if there are associated letters for invalidated public request ... */
+        Database::Result letter_ids = conn.exec_params(
+            "SELECT la.id "
+                "FROM "
+                    "public_request pr "
+                    "JOIN enum_public_request_type eprt ON eprt.id = pr.request_type "
+                    "JOIN public_request_objects_map prom ON prom.request_id = pr.id "
+                    "JOIN public_request_messages_map prmm ON prmm.public_request_id = pr.id "
+                    "JOIN letter_archive la ON la.id = prmm.message_archive_id "
+                "WHERE "
+                    "prom.object_id = $1::bigint "
+                    "AND pr.id = $2::bigint "
+                    "AND eprt.name = $3::varchar",
+            Database::query_param_list(_object_id)(prid)(_type));
+
+        /* ... we also try to cancel send */
+        Fred::Messages::ManagerPtr msg_mgr = Fred::Messages::create_manager();
+        for (Database::Result::size_type i = 0; i < letter_ids.size(); ++i)
+        {
+            msg_mgr->cancel_letter_send(static_cast<unsigned long long>(letter_ids[i]["id"]));
+        }
     }
 }
 

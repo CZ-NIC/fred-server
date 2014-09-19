@@ -193,6 +193,9 @@ public:
             , const std::string& comm_type //letter or registered_letter
             );
 
+    //cancel letter sending if hasn't been already sent
+    void cancel_letter_send(unsigned long long letter_id);
+
     //copy message for later send
     unsigned long long copy_letter_to_send(unsigned long long letter_id);
 
