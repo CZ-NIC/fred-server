@@ -273,22 +273,46 @@ namespace Registry
          */
         struct NextDomainState
         {
-            std::string state; /**< next state */
-            boost::gregorian::date state_date; /**< next state date*/
+            std::string state_code; /**< next state code */
+            boost::gregorian::date state_date; /**< next state date */
 
             /**
              * Default state is "N/A" and default date is not_a_date_time.
              */
             NextDomainState()
-            : state("N/A")
+            : state_code("N/A")
             {}
 
             /**
              * Init both members.
              */
-            NextDomainState(const std::string& _state, const boost::gregorian::date& _state_date)
-            : state(_state)
+            NextDomainState(const std::string& _state_code, const boost::gregorian::date& _state_date)
+            : state_code(_state_code)
             , state_date(_state_date)
+            {}
+        };
+
+        /**
+         * element of DomainList
+         */
+        struct DomainListData
+        {
+            unsigned long long id;/**< id of the domain */
+            std::string fqdn;/**< fully qualified domain name */
+            unsigned long long external_importance;/**<  bitwise OR of importance values of states with external flag or @ref lowest_status_importance_ value if bitwise OR is zero */
+            NextDomainState next_state;/**< next state of the domain according to current date and expiration date, outzone date and delete date of the domain with its date*/
+            bool have_keyset; /**< domain have keyset flag */
+            std::string user_role; /**< domainbrowser user relation to the domain (holder/admin/'') */
+            std::string registrar_handle; /**< domain registrar handle*/
+            std::string registrar_name; /**< domain registrar name*/
+            std::vector<std::string> state_code;/**< domain states*/
+            bool is_server_blocked; /**< domain blocked flag */
+
+            DomainListData()
+            : id(0)
+            , external_importance(0)
+            , have_keyset(false)
+            , is_server_blocked(false)
             {}
         };
 
@@ -410,7 +434,7 @@ namespace Registry
             unsigned int keyset_list_limit_;/**< keyset list chunk size */
             unsigned int contact_list_limit_;/**< contact list chunk size */
 
-            unsigned int lowest_status_importance_;/**< the lower the importance, the higher the importance value, so that the lowest importance is MAX(enum_object_states.importance) * 2 */
+            unsigned long long lowest_status_importance_;/**< the lower the importance, the higher the importance value, so that the lowest importance is MAX(enum_object_states.importance) * 2 */
 
             /**
              * Fill object state codes and description into given strings.
@@ -571,18 +595,16 @@ namespace Registry
              * @param list_domains_for_contact_id if set list domains linked to contact with given id regardless of user contact relation to listed domains
              * @param list_domains_for_nsset_id if set list domains linked to nsset with given id regardless of user contact relation to listed domains
              * @param list_domains_for_keyset_id if set list domains linked to keyset with given id regardless of user contact relation to listed domains
-             * @param lang contains language for state description "EN" or "CS"
              * @param offset contains list offset
-             * @param  domain_list_out references output domain list
+             * @param  domain_list_out references output domain data list
              * @return limit_exceeded flag
              */
             bool getDomainList(unsigned long long user_contact_id,
                 const Optional<unsigned long long>& list_domains_for_contact_id,
                 const Optional<unsigned long long>& list_domains_for_nsset_id,
                 const Optional<unsigned long long>& list_domains_for_keyset_id,
-                const std::string& lang,
                 unsigned long long offset,
-                std::vector<std::vector<std::string> >& domain_list_out);
+                std::vector<DomainListData>& domain_list_out);
 
             /**
              * Get list of nssets administered by user contact.

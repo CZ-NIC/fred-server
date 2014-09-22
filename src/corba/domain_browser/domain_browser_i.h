@@ -61,10 +61,9 @@ namespace Registry
                 const char* objtype,
                 const char* handle);
 
-            Registry::DomainBrowser::RecordSet* getDomainList(
+            Registry::DomainBrowser::DomainList* getDomainList(
                 ::CORBA::ULongLong user_contact_id,
-                 ::CORBA::ULongLong contact_id,
-                const char* lang,
+                ::CORBA::ULongLong contact_id,
                 ::CORBA::ULong offset,
                 ::CORBA::Boolean& limit_exceeded);
 
@@ -82,17 +81,15 @@ namespace Registry
                 ::CORBA::ULong offset,
                  ::CORBA::Boolean& limit_exceeded);
 
-            Registry::DomainBrowser::RecordSet* getDomainsForKeyset(
+            Registry::DomainBrowser::DomainList* getDomainsForKeyset(
                 ::CORBA::ULongLong contact_id,
-                 ::CORBA::ULongLong keyset_id,
-                const char* lang,
+                ::CORBA::ULongLong keyset_id,
                 ::CORBA::ULong offset,
                 ::CORBA::Boolean& limit_exceeded);
 
-            Registry::DomainBrowser::RecordSet* getDomainsForNsset(
+            Registry::DomainBrowser::DomainList* getDomainsForNsset(
                 ::CORBA::ULongLong contact_id,
-                 ::CORBA::ULongLong nsset_id,
-                const char* lang,
+                ::CORBA::ULongLong nsset_id,
                 ::CORBA::ULong offset,
                 ::CORBA::Boolean& limit_exceeded);
 

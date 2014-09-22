@@ -23,6 +23,7 @@
 
 #include <string>
 #include <vector>
+#include <algorithm>
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/random/mersenne_twister.hpp>
@@ -34,6 +35,7 @@
 #include "util/random.h"
 #include "util/log/context.h"
 #include "util/map_at.h"
+#include "util/db/pg_array_utils.h"
 #include "util/util.h"
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/object/object_impl.h"
@@ -1089,9 +1091,8 @@ namespace Registry
             const Optional<unsigned long long>& list_domains_for_contact_id,
             const Optional<unsigned long long>& list_domains_for_nsset_id,
             const Optional<unsigned long long>& list_domains_for_keyset_id,
-            const std::string& lang,
             unsigned long long offset,
-            std::vector<std::vector<std::string> >& domain_list_out)
+            std::vector<DomainListData>& domain_list_out)
         {
             Logging::Context lctx_server(create_ctx_name(get_server_name()));
             Logging::Context lctx("get-domain-list");
@@ -1117,9 +1118,6 @@ namespace Registry
 
                 params.push_back(offset);
                 const int idx_of_offset = params.size();
-
-                params.push_back(lang);
-                const int idx_of_lang = params.size();
 
                 int idx_of_nsset_id = -1;
                 if(list_domains_for_nsset_id.isset())
@@ -1224,16 +1222,14 @@ namespace Registry
        "(SELECT (dl.expiration_date AT TIME ZONE 'utc' AT TIME ZONE $"<< idx_timezone << "::text + val)::DATE FROM delete_period) AS delete_date,"
        "COALESCE(BIT_OR(eos.external::INTEGER*eos.importance),0) AS external_importance,"
        "COALESCE(BOOL_OR(eos.name='serverBlocked'),false) AS is_server_blocked,"
-       "ARRAY_TO_STRING(ARRAY_AGG((CASE WHEN eos.external THEN eosd.description "
+       "ARRAY_FILTER_NULL(ARRAY_AGG((CASE WHEN eos.external THEN eos.name "
                                                          "ELSE NULL END) "
-                                 "ORDER BY eos.importance),'|') AS state_desc "
+                                 "ORDER BY eos.importance))::text[] AS state_code "
 "FROM domain_list dl "
 "LEFT JOIN object_state os ON os.object_id=dl.id AND "
                              "os.valid_from<=CURRENT_TIMESTAMP AND (CURRENT_TIMESTAMP<os.valid_to OR "
                                                                    "os.valid_to IS NULL) "
 "LEFT JOIN enum_object_states eos ON eos.id=os.state_id "
-"LEFT JOIN enum_object_states_desc eosd ON os.state_id=eosd.state_id AND "
-                                           "UPPER(eosd.lang)=UPPER($" << idx_of_lang << "::TEXT) "
 "GROUP BY dl.expiration_date,dl.id,dl.fqdn,dl.registrar_handle,dl.registrar_name,"
          "dl.registrant_id,dl.have_keyset,user_role "
 "ORDER BY dl.expiration_date,dl.id";
@@ -1246,12 +1242,12 @@ namespace Registry
                 domain_list_out.reserve(limited_domain_list_size);
                 for (unsigned long long i = 0;i < limited_domain_list_size;++i)
                 {
-                    std::vector<std::string> row(11);
-                    row.at(0) = static_cast<std::string>(domain_list_result[i]["id"]);
-                    row.at(1) = static_cast<std::string>(domain_list_result[i]["fqdn"]);
+                    DomainListData dld;
+                    dld.id = static_cast<unsigned long long>(domain_list_result[i]["id"]);
+                    dld.fqdn = static_cast<std::string>(domain_list_result[i]["fqdn"]);
 
-                    unsigned int external_status_importance = static_cast<unsigned int>(domain_list_result[i]["external_importance"]);
-                    row.at(2) = boost::lexical_cast<std::string>(external_status_importance == 0 ? lowest_status_importance_ : external_status_importance);
+                    unsigned long long external_status_importance = static_cast<unsigned long long>(domain_list_result[i]["external_importance"]);
+                    dld.external_importance = boost::lexical_cast<unsigned long long>(external_status_importance == 0 ? lowest_status_importance_ : external_status_importance);
 
                     boost::gregorian::date today_date = domain_list_result[i]["today_date"].isnull() ? boost::gregorian::date()
                                 : boost::gregorian::from_string(static_cast<std::string>(domain_list_result[i]["today_date"]));
@@ -1264,19 +1260,21 @@ namespace Registry
 
                     NextDomainState next = getNextDomainState(today_date,expiration_date,outzone_date,delete_date);
 
-                    row.at(3) = next.state;
-                    row.at(4) = next.state_date.is_special() ? "" : boost::gregorian::to_iso_extended_string(next.state_date);
-                    row.at(5) = static_cast<std::string>(domain_list_result[i]["have_keyset"]);
-                    row.at(6) = static_cast<std::string>(domain_list_result[i]["user_role"]);
-                    row.at(7) = static_cast<std::string>(domain_list_result[i]["registrar_handle"]);
-                    row.at(8) = static_cast<std::string>(domain_list_result[i]["registrar_name"]);
+                    dld.next_state = next;
 
-                    row.at(9) = static_cast<std::string>(domain_list_result[i]["state_desc"]);
+                    dld.have_keyset = static_cast<bool>(domain_list_result[i]["have_keyset"]);
+                    dld.user_role = static_cast<std::string>(domain_list_result[i]["user_role"]);
+                    dld.registrar_handle = static_cast<std::string>(domain_list_result[i]["registrar_handle"]);
+                    dld.registrar_name = static_cast<std::string>(domain_list_result[i]["registrar_name"]);
 
-                    row.at(10) = static_cast<bool>(domain_list_result[i]["is_server_blocked"]) ? "t" :
-                                                                                                 "f";
+                    std::vector<Nullable<std::string> > state_code = PgArray(static_cast<std::string>(domain_list_result[i]["state_code"])).parse();
 
-                    domain_list_out.push_back(row);
+                    for(std::vector<Nullable<std::string> >::const_iterator ci = state_code.begin();
+                        ci != state_code.end(); ++ci) dld.state_code.push_back(ci->get_value());//null is filtered in query by fn. ARRAY_FILTER_NULL
+
+                    dld.is_server_blocked = static_cast<bool>(domain_list_result[i]["is_server_blocked"]);
+
+                    domain_list_out.push_back(dld);
                 }
 
                 const bool limit_reached = domain_list_limit_ < domain_list_result.size();

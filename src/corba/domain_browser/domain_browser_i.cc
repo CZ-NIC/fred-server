@@ -27,6 +27,8 @@
 #include "src/corba/DomainBrowser.hh"
 #include <string>
 
+#include <boost/date_time/gregorian/gregorian.hpp>
+
 
 namespace Registry
 {
@@ -71,34 +73,54 @@ namespace Registry
 
         }
 
-        Registry::DomainBrowser::RecordSet* Server_i::getDomainList(
+        DomainList_var corba_wrap_domain_list(const std::vector<Registry::DomainBrowserImpl::DomainListData>& domain_list)
+        {
+            DomainList_var dl = new DomainList;
+            dl->length(domain_list.size());
+            for(unsigned long long i = 0 ; i < domain_list.size(); ++i)
+            {
+                DomainListData dld;
+                dld.id = domain_list.at(i).id;
+                dld.fqdn = CORBA::string_dup(domain_list.at(i).fqdn.c_str());
+                dld.external_importance = domain_list.at(i).external_importance;
+                dld.next_state.state_code = CORBA::string_dup(domain_list.at(i).next_state.state_code.c_str());
+                std::string next_state_date = domain_list.at(i).next_state.state_date.is_special()
+                    ? "" : boost::gregorian::to_iso_extended_string(domain_list.at(i).next_state.state_date);
+                dld.next_state.state_date = CORBA::string_dup(next_state_date.c_str());
+                dld.have_keyset = domain_list.at(i).have_keyset;
+                dld.user_role = CORBA::string_dup(domain_list.at(i).user_role.c_str());
+                dld.registrar_handle = CORBA::string_dup(domain_list.at(i).registrar_handle.c_str());
+                dld.registrar_name = CORBA::string_dup(domain_list.at(i).registrar_name.c_str());
+
+                dld.state_code.length(domain_list.at(i).state_code.size());
+                for(unsigned long long j = 0; j < domain_list.at(i).state_code.size(); ++j)
+                {
+                    dld.state_code[j] = CORBA::string_dup(domain_list.at(i).state_code.at(j).c_str());
+                }
+
+                dld.is_server_blocked = domain_list.at(i).is_server_blocked;
+
+                dl[i] = dld;
+            }
+            return dl;
+        }
+
+        Registry::DomainBrowser::DomainList* Server_i::getDomainList(
             ::CORBA::ULongLong user_contact_id,
-             ::CORBA::ULongLong contact_id,
-            const char* lang,
+            ::CORBA::ULongLong contact_id,
             ::CORBA::ULong offset,
-             ::CORBA::Boolean& limit_exceeded)
+            ::CORBA::Boolean& limit_exceeded)
         {
             try
             {
-                std::vector<std::vector<std::string> > domain_list_out;
+                std::vector<Registry::DomainBrowserImpl::DomainListData> domain_list_out;
                 limit_exceeded = pimpl_->getDomainList(user_contact_id,
                     (contact_id > 0) ? Optional<unsigned long long>(contact_id) : Optional<unsigned long long>(),
                     Optional<unsigned long long>(), Optional<unsigned long long>(),
-                    lang, offset, domain_list_out);
+                    offset, domain_list_out);
 
-                RecordSet_var rs = new RecordSet;
-                rs->length(domain_list_out.size());
-                for(unsigned long long i = 0 ; i < domain_list_out.size(); ++i)
-                {
-                    RecordSequence rseq;
-                    rseq.length(domain_list_out.at(i).size());
-                    for(unsigned long long j = 0 ; j < domain_list_out.at(i).size(); ++j)
-                    {
-                        rseq[j] = CORBA::string_dup(domain_list_out.at(i).at(j).c_str());
-                    }
-                    rs[i] = rseq;
-                }
-                return rs._retn();
+                DomainList_var dl = corba_wrap_domain_list(domain_list_out);
+                return dl._retn();
             }//try
             catch (const Registry::DomainBrowserImpl::ObjectNotExists& )
             {
@@ -210,34 +232,22 @@ namespace Registry
             }
         }
 
-        Registry::DomainBrowser::RecordSet* Server_i::getDomainsForKeyset(
+        Registry::DomainBrowser::DomainList*  Server_i::getDomainsForKeyset(
             ::CORBA::ULongLong contact_id,
-             ::CORBA::ULongLong keyset_id,
-            const char* lang,
+            ::CORBA::ULongLong keyset_id,
             ::CORBA::ULong offset,
             ::CORBA::Boolean& limit_exceeded)
         {
             try
             {
-                std::vector<std::vector<std::string> > domain_list_out;
+                std::vector<Registry::DomainBrowserImpl::DomainListData> domain_list_out;
                 limit_exceeded = pimpl_->getDomainList(contact_id,
                         Optional<unsigned long long>(),
                         Optional<unsigned long long>(),
-                        Optional<unsigned long long>(keyset_id), lang, offset, domain_list_out);
+                        Optional<unsigned long long>(keyset_id), offset, domain_list_out);
 
-                RecordSet_var rs = new RecordSet;
-                rs->length(domain_list_out.size());
-                for(unsigned long long i = 0 ; i < domain_list_out.size(); ++i)
-                {
-                    RecordSequence rseq;
-                    rseq.length(domain_list_out.at(i).size());
-                    for(unsigned long long j = 0 ; j < domain_list_out.at(i).size(); ++j)
-                    {
-                        rseq[j] = CORBA::string_dup(domain_list_out.at(i).at(j).c_str());
-                    }
-                    rs[i] = rseq;
-                }
-                return rs._retn();
+                DomainList_var dl = corba_wrap_domain_list(domain_list_out);
+                return dl._retn();
             }//try
             catch (const Registry::DomainBrowserImpl::AccessDenied&)
             {
@@ -261,34 +271,23 @@ namespace Registry
             }
         }
 
-        Registry::DomainBrowser::RecordSet* Server_i::getDomainsForNsset(
+        Registry::DomainBrowser::DomainList* Server_i::getDomainsForNsset(
             ::CORBA::ULongLong contact_id,
-             ::CORBA::ULongLong nsset_id,
-            const char* lang,
+            ::CORBA::ULongLong nsset_id,
             ::CORBA::ULong offset,
             ::CORBA::Boolean& limit_exceeded)
         {
             try
             {
-                std::vector<std::vector<std::string> > domain_list_out;
+                std::vector<Registry::DomainBrowserImpl::DomainListData> domain_list_out;
+
                 limit_exceeded = pimpl_->getDomainList(contact_id,
                         Optional<unsigned long long>(),
                         Optional<unsigned long long>(nsset_id),
-                        Optional<unsigned long long>(), lang, offset, domain_list_out);
+                        Optional<unsigned long long>(), offset, domain_list_out);
 
-                RecordSet_var rs = new RecordSet;
-                rs->length(domain_list_out.size());
-                for(unsigned long long i = 0 ; i < domain_list_out.size(); ++i)
-                {
-                    RecordSequence rseq;
-                    rseq.length(domain_list_out.at(i).size());
-                    for(unsigned long long j = 0 ; j < domain_list_out.at(i).size(); ++j)
-                    {
-                        rseq[j] = CORBA::string_dup(domain_list_out.at(i).at(j).c_str());
-                    }
-                    rs[i] = rseq;
-                }
-                return rs._retn();
+                DomainList_var dl = corba_wrap_domain_list(domain_list_out);
+                return dl._retn();
             }//try
             catch (const Registry::DomainBrowserImpl::AccessDenied&)
             {
