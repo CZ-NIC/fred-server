@@ -410,9 +410,7 @@ namespace Registry
             unsigned int keyset_list_limit_;/**< keyset list chunk size */
             unsigned int contact_list_limit_;/**< contact list chunk size */
 
-            unsigned int minimal_status_importance_;// NOTE: rename to lowest_status_importance_ or
-                                                    //                 default_status_importance_value_ or
-                                                    //                 the_most_trivial_status
+            unsigned int lowest_status_importance_;/**< the lower the importance, the higher the importance value, so that the lowest importance is MAX(enum_object_states.importance) * 2 */
 
             /**
              * Fill object state codes and description into given strings.

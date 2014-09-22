@@ -241,7 +241,7 @@ namespace Registry
             Fred::OperationContext ctx;
             Database::Result db_config = ctx.get_conn().exec(
                 "SELECT MAX(importance) * 2 AS minimal_status_importance FROM enum_object_states");
-            minimal_status_importance_ = static_cast<unsigned int>(db_config[0]["minimal_status_importance"]);
+            lowest_status_importance_ = static_cast<unsigned int>(db_config[0]["minimal_status_importance"]);
         }
 
         DomainBrowser::~DomainBrowser()
@@ -1251,7 +1251,7 @@ namespace Registry
                     row.at(1) = static_cast<std::string>(domain_list_result[i]["fqdn"]);
 
                     unsigned int external_status_importance = static_cast<unsigned int>(domain_list_result[i]["external_importance"]);
-                    row.at(2) = boost::lexical_cast<std::string>(external_status_importance == 0 ? minimal_status_importance_ : external_status_importance);
+                    row.at(2) = boost::lexical_cast<std::string>(external_status_importance == 0 ? lowest_status_importance_ : external_status_importance);
 
                     boost::gregorian::date today_date = domain_list_result[i]["today_date"].isnull() ? boost::gregorian::date()
                                 : boost::gregorian::from_string(static_cast<std::string>(domain_list_result[i]["today_date"]));
@@ -1360,7 +1360,7 @@ namespace Registry
                     row.at(4) = static_cast<std::string>(nsset_list_result[i]["registrar_name"]);
 
                     unsigned int external_status_importance = static_cast<unsigned int>(nsset_list_result[i]["external_importance"]);
-                    row.at(5) = boost::lexical_cast<std::string>(external_status_importance == 0 ? minimal_status_importance_ : external_status_importance);
+                    row.at(5) = boost::lexical_cast<std::string>(external_status_importance == 0 ? lowest_status_importance_ : external_status_importance);
 
                     row.at(6) = static_cast<std::string>(nsset_list_result[i]["state_desc"]);
 
@@ -1452,7 +1452,7 @@ namespace Registry
                     row.at(4) = static_cast<std::string>(keyset_list_result[i]["registrar_name"]);
 
                     unsigned int external_status_importance = static_cast<unsigned int>(keyset_list_result[i]["external_importance"]);
-                    row.at(5) = boost::lexical_cast<std::string>(external_status_importance == 0 ? minimal_status_importance_ : external_status_importance);
+                    row.at(5) = boost::lexical_cast<std::string>(external_status_importance == 0 ? lowest_status_importance_ : external_status_importance);
 
                     row.at(6) = static_cast<std::string>(keyset_list_result[i]["state_desc"]);
 
