@@ -36,6 +36,7 @@ const std::string field_status       = "contact.status";
 
 
 bool contact_checker_name(const Contact &_data, FieldErrorMap &_errors);
+bool contact_checker_phone_cz_sk_format(const Contact &_data, FieldErrorMap &_errors);
 bool contact_checker_phone_format(const Contact &_data, FieldErrorMap &_errors);
 bool contact_checker_fax_format(const Contact &_data, FieldErrorMap &_errors);
 bool contact_checker_auth_info(const Contact &_data, FieldErrorMap &_errors);

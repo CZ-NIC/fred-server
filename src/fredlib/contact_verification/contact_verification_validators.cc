@@ -23,8 +23,6 @@ ContactValidator create_conditional_identification_validator()
 {
     ContactValidator tmp = create_default_contact_validator();
     tmp.add_checker(contact_checker_email_unique);
-    tmp.add_checker(contact_checker_address_country);
-    tmp.add_checker(contact_checker_address_postalcode_format_cz);
     tmp.add_checker(contact_checker_phone_required);
     tmp.add_checker(contact_checker_phone_unique);
     return tmp;
@@ -34,8 +32,6 @@ ContactValidator create_conditional_identification_validator()
 ContactValidator create_identification_validator()
 {
     ContactValidator tmp = create_default_contact_validator();
-    tmp.add_checker(contact_checker_address_country);
-    tmp.add_checker(contact_checker_address_postalcode_format_cz);
     tmp.add_checker(contact_checker_email_unique);
     return tmp;
 }
@@ -44,8 +40,6 @@ ContactValidator create_identification_validator()
 ContactValidator create_finish_identification_validator()
 {
     ContactValidator tmp = create_default_contact_validator();
-    tmp.add_checker(contact_checker_address_country);
-    tmp.add_checker(contact_checker_address_postalcode_format_cz);
     return tmp;
 }
 

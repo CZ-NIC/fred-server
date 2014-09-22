@@ -48,6 +48,19 @@ bool generic_checker_phone_format(const std::string &_phone, const boost::regex 
 
 bool contact_checker_phone_format(const Contact &_data, FieldErrorMap &_errors)
 {
+    bool result = generic_checker_phone_format(
+            _data.telephone.get_value_or_default(),
+            PHONE_PATTERN);
+    if (result == false) {
+        _errors[field_phone] = INVALID;
+    }
+    return result;
+}
+
+
+
+bool contact_checker_cz_sk_phone_format(const Contact &_data, FieldErrorMap &_errors)
+{
     bool result = true;
 
     if (generic_checker_phone_format(
