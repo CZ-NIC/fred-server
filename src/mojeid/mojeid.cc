@@ -1379,6 +1379,9 @@ namespace Registry
                         (Fred::PublicRequest::PRT_MOJEID_CONTACT_REIDENTIFICATION)
                         (Fred::PublicRequest::PRT_MOJEID_CONTACT_VALIDATION));
 
+                Fred::Contact::Verification::Contact contact = Fred::Contact::Verification::contact_info(_contact_id);
+                contact.addresses.clear();
+                Fred::Contact::Verification::contact_update(_request_id, this->mojeid_registrar_id_, contact);
 
                 tx.prepare(_trans_id);
 
