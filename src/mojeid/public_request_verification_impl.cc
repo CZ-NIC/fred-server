@@ -547,15 +547,6 @@ public:
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
 
-        /* check if contact is already identified (22) and cancel status */
-        const Contact::Verification::State contact_state =
-            Contact::Verification::get_contact_verification_state(pri_ptr_->getObject(0).id);
-        if (!contact_state.has_all(Contact::Verification::State::cIvm)) {
-            /* otherwise there could be identification request */
-            cancel_public_request(pri_ptr_->getObject(0).id
-                    , PRT_MOJEID_CONTACT_IDENTIFICATION, pri_ptr_->getResolveRequestId());
-        }
-
         /* set new state */
         insertNewStateRequest(pri_ptr_->getId(), pri_ptr_->getObject(0).id
                 , ObjectState::VALIDATED_CONTACT);
