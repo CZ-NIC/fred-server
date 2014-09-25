@@ -206,6 +206,7 @@ Fred::Contact::Verification::Contact corba_unwrap_contact(const Contact &_contac
         else {
             Fred::Contact::Verification::ContactAddress addr;
             addr.type = type;
+            addr.company_name = corba_unwrap_nullable_string(_contact.addresses[i].company_name);
             addr.street1 = corba_unwrap_string(_contact.addresses[i].street1);
             addr.street2 = corba_unwrap_nullable_string(_contact.addresses[i].street2);
             addr.street3 = corba_unwrap_nullable_string(_contact.addresses[i].street3);
