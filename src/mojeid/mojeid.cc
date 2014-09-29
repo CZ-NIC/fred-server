@@ -441,32 +441,24 @@ namespace Registry
                         Fred::cancel_object_state(cid, Fred::ObjectState::IDENTIFIED_CONTACT);
                     }
 
+                    Fred::PublicRequest::Type type;
                     if (Fred::PublicRequest::check_public_request(cid, Fred::PublicRequest::PRT_MOJEID_CONTACT_IDENTIFICATION))
                     {
                         Fred::PublicRequest::cancel_public_request(cid, Fred::PublicRequest::PRT_MOJEID_CONTACT_IDENTIFICATION, request.get_request_id());
-                        /* create public request */
-                        Fred::PublicRequest::Type type = Fred::PublicRequest::PRT_MOJEID_CONTACT_IDENTIFICATION;
-                        IdentificationRequestPtr new_request(mailer_, type);
-                        new_request->setRegistrarId(request.get_registrar_id());
-                        new_request->setRequestId(request.get_request_id());
-                        new_request->addObject(Fred::PublicRequest::OID(
-                                    cid, _contact_username, Fred::PublicRequest::OT_CONTACT));
-                        new_request->save();
-                        prid = new_request->getId();
+                        type = Fred::PublicRequest::PRT_MOJEID_CONTACT_IDENTIFICATION;
                     }
                     else
                     {
                         Fred::PublicRequest::cancel_public_request(cid, Fred::PublicRequest::PRT_MOJEID_CONTACT_REIDENTIFICATION, request.get_request_id());
-                        /* create public request */
-                        Fred::PublicRequest::Type type = Fred::PublicRequest::PRT_MOJEID_CONTACT_REIDENTIFICATION;
-                        IdentificationRequestPtr new_request(mailer_, type);
-                        new_request->setRegistrarId(request.get_registrar_id());
-                        new_request->setRequestId(request.get_request_id());
-                        new_request->addObject(Fred::PublicRequest::OID(
-                                    cid, _contact_username, Fred::PublicRequest::OT_CONTACT));
-                        new_request->save();
-                        prid = new_request->getId();
+                        type = Fred::PublicRequest::PRT_MOJEID_CONTACT_REIDENTIFICATION;
                     }
+                    IdentificationRequestPtr new_request(mailer_, type);
+                    new_request->setRegistrarId(request.get_registrar_id());
+                    new_request->setRequestId(request.get_request_id());
+                    new_request->addObject(Fred::PublicRequest::OID(
+                                cid, _contact_username, Fred::PublicRequest::OT_CONTACT));
+                    new_request->save();
+                    prid = new_request->getId();
                 }
 
                 contact_disclose_policy.apply(_contact);
