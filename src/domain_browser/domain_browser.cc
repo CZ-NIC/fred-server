@@ -1247,7 +1247,7 @@ namespace Registry
                     dld.fqdn = static_cast<std::string>(domain_list_result[i]["fqdn"]);
 
                     unsigned long long external_status_importance = static_cast<unsigned long long>(domain_list_result[i]["external_importance"]);
-                    dld.external_importance = boost::lexical_cast<unsigned long long>(external_status_importance == 0 ? lowest_status_importance_ : external_status_importance);
+                    dld.external_importance = external_status_importance == 0 ? lowest_status_importance_ : external_status_importance;
 
                     boost::gregorian::date today_date = domain_list_result[i]["today_date"].isnull() ? boost::gregorian::date()
                                 : boost::gregorian::from_string(static_cast<std::string>(domain_list_result[i]["today_date"]));
@@ -1289,9 +1289,8 @@ namespace Registry
 
         bool DomainBrowser::getNssetList(unsigned long long user_contact_id,
                     const Optional<unsigned long long>& list_nssets_for_contact_id,
-                    const std::string& lang,
                     unsigned long long offset,
-                    std::vector<std::vector<std::string> >& nsset_list_out)
+                    std::vector<NssetListData>& nsset_list_out)
         {
             Logging::Context lctx_server(create_ctx_name(get_server_name()));
             Logging::Context lctx("get-nsset-list");
@@ -1314,7 +1313,7 @@ namespace Registry
                         " , nsset_list.domain_number, "
                     " COALESCE(BIT_OR(CASE WHEN eos.external THEN eos.importance ELSE NULL END), 0) AS external_importance, "
                     " SUM(CASE WHEN eos.name = 'serverBlocked' THEN 1 ELSE 0 END) AS is_server_blocked, "
-                    " ARRAY_TO_STRING(ARRAY_AGG((CASE WHEN eos.external THEN eosd.description ELSE NULL END) ORDER BY eos.importance), '|') AS state_desc "
+                    " ARRAY_FILTER_NULL(ARRAY_AGG((CASE WHEN eos.external THEN eos.name ELSE NULL END) ORDER BY eos.importance))::text[] AS state_code "
                     "FROM "
                     "(SELECT oreg.id AS id "
                     ", oreg.name AS handle "
@@ -1336,13 +1335,12 @@ namespace Registry
                         " AND os.valid_from <= CURRENT_TIMESTAMP "
                         " AND (os.valid_to IS NULL OR os.valid_to > CURRENT_TIMESTAMP) "
                     " LEFT JOIN enum_object_states eos ON eos.id = os.state_id "
-                    " LEFT JOIN enum_object_states_desc eosd ON os.state_id = eosd.state_id AND UPPER(eosd.lang) = UPPER($4::text) "//lang
                     " GROUP BY nsset_list.id, nsset_list.handle, "
                         " nsset_list.registrar_handle, nsset_list.registrar_name "
                         " , nsset_list.domain_number "
                     " ORDER BY nsset_list.id "
                     " LIMIT $2::bigint OFFSET $3::bigint ",
-                    Database::query_param_list(contact_id)(nsset_list_limit_+1)(offset)(lang));
+                    Database::query_param_list(contact_id)(nsset_list_limit_+1)(offset));
 
                 unsigned long long limited_nsset_list_size = (nsset_list_result.size() > nsset_list_limit_)
                     ? nsset_list_limit_ : nsset_list_result.size();
@@ -1350,22 +1348,19 @@ namespace Registry
                 nsset_list_out.reserve(limited_nsset_list_size);
                 for (unsigned long long i = 0;i < limited_nsset_list_size;++i)
                 {
-                    std::vector<std::string> row(8);
-                    row.at(0) = static_cast<std::string>(nsset_list_result[i]["id"]);
-                    row.at(1) = static_cast<std::string>(nsset_list_result[i]["handle"]);
-                    row.at(2) = static_cast<std::string>(nsset_list_result[i]["domain_number"]);
-                    row.at(3) = static_cast<std::string>(nsset_list_result[i]["registrar_handle"]);
-                    row.at(4) = static_cast<std::string>(nsset_list_result[i]["registrar_name"]);
-
-                    unsigned int external_status_importance = static_cast<unsigned int>(nsset_list_result[i]["external_importance"]);
-                    row.at(5) = boost::lexical_cast<std::string>(external_status_importance == 0 ? lowest_status_importance_ : external_status_importance);
-
-                    row.at(6) = static_cast<std::string>(nsset_list_result[i]["state_desc"]);
-
-                    bool server_blocked = static_cast<unsigned int>(nsset_list_result[i]["is_server_blocked"]);
-                    row.at(7) = server_blocked ? "t":"f";
-
-                    nsset_list_out.push_back(row);
+                    NssetListData nld;
+                    nld.id = static_cast<unsigned long long>(nsset_list_result[i]["id"]);
+                    nld.handle = static_cast<std::string>(nsset_list_result[i]["handle"]);
+                    nld.domain_count = static_cast<unsigned long long>(nsset_list_result[i]["domain_number"]);
+                    nld.registrar_handle = static_cast<std::string>(nsset_list_result[i]["registrar_handle"]);
+                    nld.registrar_name = static_cast<std::string>(nsset_list_result[i]["registrar_name"]);
+                    unsigned long long external_status_importance = static_cast<unsigned long long>(nsset_list_result[i]["external_importance"]);
+                    nld.external_importance = external_status_importance == 0 ? lowest_status_importance_ : external_status_importance;
+                    std::vector<Nullable<std::string> > state_code = PgArray(static_cast<std::string>(nsset_list_result[i]["state_code"])).parse();
+                    for(std::vector<Nullable<std::string> >::const_iterator ci = state_code.begin();
+                        ci != state_code.end(); ++ci) nld.state_code.push_back(ci->get_value());//null is filtered in query by fn. ARRAY_FILTER_NULL
+                    nld.is_server_blocked = static_cast<bool>(nsset_list_result[i]["is_server_blocked"]);
+                    nsset_list_out.push_back(nld);
                 }
 
                 return nsset_list_result.size() > nsset_list_limit_;
@@ -1379,9 +1374,8 @@ namespace Registry
 
         bool DomainBrowser::getKeysetList(unsigned long long user_contact_id,
             const Optional<unsigned long long>& list_keysets_for_contact_id,
-            const std::string& lang,
             unsigned long long offset,
-            std::vector<std::vector<std::string> >& keyset_list_out)
+            std::vector<KeysetListData>& keyset_list_out)
         {
             Logging::Context lctx_server(create_ctx_name(get_server_name()));
             Logging::Context lctx("get-keyset-list");
@@ -1403,7 +1397,7 @@ namespace Registry
        "keyset_list.domain_number,"
        "COALESCE(BIT_OR(CASE WHEN eos.external THEN eos.importance ELSE 0 END),0) AS external_importance,"
        "COALESCE(BOOL_OR(eos.name='serverBlocked'),false) AS is_server_blocked,"
-       "ARRAY_TO_STRING(ARRAY_AGG((CASE WHEN eos.external THEN eosd.description ELSE NULL END) ORDER BY eos.importance), '|') AS state_desc "
+       "ARRAY_FILTER_NULL(ARRAY_AGG((CASE WHEN eos.external THEN eos.name ELSE NULL END) ORDER BY eos.importance))::text[] AS state_code "
 "FROM (WITH keyset AS ("
           "SELECT keysetid AS id "
           "FROM keyset_contact_map "
@@ -1429,12 +1423,10 @@ namespace Registry
                              "os.valid_from<=CURRENT_TIMESTAMP AND (CURRENT_TIMESTAMP<os.valid_to OR "
                                                                    "os.valid_to IS NULL) "
 "LEFT JOIN enum_object_states eos ON eos.id=os.state_id "
-"LEFT JOIN enum_object_states_desc eosd ON os.state_id=eosd.state_id AND "
-                                          "UPPER(eosd.lang)=UPPER($4::TEXT) " // $4=lang
 "GROUP BY keyset_list.id,keyset_list.handle,keyset_list.registrar_handle,keyset_list.registrar_name,"
          "keyset_list.domain_number "
 "ORDER BY keyset_list.id",
-                    Database::query_param_list(contact_id)(offset)(keyset_list_limit_ + 1)(lang));// limit + 1 => exceeding detection
+                    Database::query_param_list(contact_id)(offset)(keyset_list_limit_ + 1));// limit + 1 => exceeding detection
 
                 const unsigned long long limited_keyset_list_size = keyset_list_limit_ < keyset_list_result.size()
                     ? keyset_list_limit_ : keyset_list_result.size();
@@ -1442,21 +1434,19 @@ namespace Registry
                 keyset_list_out.reserve(limited_keyset_list_size);
                 for (unsigned long long i = 0;i < limited_keyset_list_size;++i)
                 {
-                    std::vector<std::string> row(8);
-                    row.at(0) = static_cast<std::string>(keyset_list_result[i]["id"]);
-                    row.at(1) = static_cast<std::string>(keyset_list_result[i]["handle"]);
-                    row.at(2) = static_cast<std::string>(keyset_list_result[i]["domain_number"]);
-                    row.at(3) = static_cast<std::string>(keyset_list_result[i]["registrar_handle"]);
-                    row.at(4) = static_cast<std::string>(keyset_list_result[i]["registrar_name"]);
-
-                    unsigned int external_status_importance = static_cast<unsigned int>(keyset_list_result[i]["external_importance"]);
-                    row.at(5) = boost::lexical_cast<std::string>(external_status_importance == 0 ? lowest_status_importance_ : external_status_importance);
-
-                    row.at(6) = static_cast<std::string>(keyset_list_result[i]["state_desc"]);
-
-                    row.at(7) = static_cast<bool>(keyset_list_result[i]["is_server_blocked"]) ? "t":"f";
-
-                    keyset_list_out.push_back(row);
+                    KeysetListData kld;
+                    kld.id = static_cast<unsigned long long>(keyset_list_result[i]["id"]);
+                    kld.handle = static_cast<std::string>(keyset_list_result[i]["handle"]);
+                    kld.domain_count = static_cast<unsigned long long>(keyset_list_result[i]["domain_number"]);
+                    kld.registrar_handle = static_cast<std::string>(keyset_list_result[i]["registrar_handle"]);
+                    kld.registrar_name = static_cast<std::string>(keyset_list_result[i]["registrar_name"]);
+                    unsigned long long external_status_importance = static_cast<unsigned long long>(keyset_list_result[i]["external_importance"]);
+                    kld.external_importance = external_status_importance == 0 ? lowest_status_importance_ : external_status_importance;
+                    std::vector<Nullable<std::string> > state_code = PgArray(static_cast<std::string>(keyset_list_result[i]["state_code"])).parse();
+                    for(std::vector<Nullable<std::string> >::const_iterator ci = state_code.begin();
+                        ci != state_code.end(); ++ci) kld.state_code.push_back(ci->get_value());//null is filtered in query by fn. ARRAY_FILTER_NULL
+                    kld.is_server_blocked = static_cast<bool>(keyset_list_result[i]["is_server_blocked"]);
+                    keyset_list_out.push_back(kld);
                 }
 
                 const bool limit_reached = keyset_list_limit_ < keyset_list_result.size();

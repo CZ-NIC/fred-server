@@ -317,6 +317,51 @@ namespace Registry
         };
 
         /**
+         * element of NssetList
+         */
+        struct NssetListData
+        {
+            unsigned long long id;/**< id of the nsset */
+            std::string handle;/**< nsset handle */
+            unsigned long long domain_count;/**<  number of domains using this nsset */
+            std::string registrar_handle; /**< nsset registrar handle*/
+            std::string registrar_name; /**< nsset registrar name*/
+            unsigned long long external_importance;/**<  bitwise OR of importance values of states with external flag or next higher power of 2 value if bitwise OR is zero */
+            std::vector<std::string> state_code;/**< nsset states*/
+            bool is_server_blocked; /**< whether nsset have serverBlocked state */
+
+            NssetListData()
+            : id(0)
+            , domain_count(0)
+            , external_importance(0)
+            , is_server_blocked(false)
+            {}
+        };
+
+        /**
+         * element of KeysetList
+         */
+        struct KeysetListData
+        {
+            unsigned long long id;/**< id of the keyset */
+            std::string handle;/**< keyset handle */
+            unsigned long long domain_count;/**<  number of domains using this keyset */
+            std::string registrar_handle; /**< keyset registrar handle*/
+            std::string registrar_name; /**< keyset registrar name*/
+            unsigned long long external_importance;/**<  bitwise OR of importance values of states with external flag or next higher power of 2 value if bitwise OR is zero */
+            std::vector<std::string> state_code;/**< keyset states*/
+            bool is_server_blocked; /**< whether keyset have serverBlocked state*/
+
+            KeysetListData()
+            : id(0)
+            , domain_count(0)
+            , external_importance(0)
+            , is_server_blocked(false)
+            {}
+        };
+
+
+        /**
          * Internal server error.
          * Unexpected failure, requires maintenance.
          */
@@ -596,7 +641,7 @@ namespace Registry
              * @param list_domains_for_nsset_id if set list domains linked to nsset with given id regardless of user contact relation to listed domains
              * @param list_domains_for_keyset_id if set list domains linked to keyset with given id regardless of user contact relation to listed domains
              * @param offset contains list offset
-             * @param  domain_list_out references output domain data list
+             * @param domain_list_out references output domain data list
              * @return limit_exceeded flag
              */
             bool getDomainList(unsigned long long user_contact_id,
@@ -610,31 +655,27 @@ namespace Registry
              * Get list of nssets administered by user contact.
              * @param user_contact_id contains database id of the user contact
              * @param list_nssets_for_contact_id if set list nssets linked to contact with given id regardless of user contact relation to listed nssets
-             * @param lang contains language for state description "EN" or "CS"
              * @param offset contains list offset
-             * @param  nsset_list_out references output nsset list
+             * @param nsset_list_out references output nsset data list
              * @return limit_exceeded flag
              */
             bool getNssetList(unsigned long long user_contact_id,
                 const Optional<unsigned long long>& list_nssets_for_contact_id,
-                const std::string& lang,
                 unsigned long long offset,
-                std::vector<std::vector<std::string> >& nsset_list_out);
+                std::vector<NssetListData>& nsset_list_out);
 
             /**
              * Get list of keysets administered by user contact.
              * @param user_contact_id contains database id of the user contact
              * @param list_keysets_for_contact_id if set list keysets linked to contact with given id regardless of user contact relation to listed keysets
-             * @param lang contains language for state description "EN" or "CS"
              * @param offset contains list offset
-             * @param  keyset_list_out references output keyset list
+             * @param keyset_list_out references output keyset data list
              * @return limit_exceeded flag
              */
             bool getKeysetList(unsigned long long user_contact_id,
                 const Optional<unsigned long long>& list_keysets_for_contact_id,
-                const std::string& lang,
                 unsigned long long offset,
-                std::vector<std::vector<std::string> >& keyset_list_out);
+                std::vector<KeysetListData>& keyset_list_out);
 
             /**
              * Get descriptions of public states.

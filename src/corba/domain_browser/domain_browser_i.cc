@@ -140,33 +140,48 @@ namespace Registry
             }
         }
 
-        Registry::DomainBrowser::RecordSet* Server_i::getNssetList(
+
+        NssetList_var corba_wrap_nsset_list(const std::vector<Registry::DomainBrowserImpl::NssetListData>& nsset_list)
+        {
+            NssetList_var nl = new NssetList;
+            nl->length(nsset_list.size());
+
+            for(unsigned long long i = 0 ; i < nsset_list.size(); ++i)
+            {
+                NssetListData nld;
+                nld.id = nsset_list.at(i).id;
+                nld.handle = CORBA::string_dup(nsset_list.at(i).handle.c_str());
+                nld.domain_count = nsset_list.at(i).domain_count;
+                nld.registrar_handle = CORBA::string_dup(nsset_list.at(i).registrar_handle.c_str());
+                nld.registrar_name = CORBA::string_dup(nsset_list.at(i).registrar_name.c_str());
+                nld.external_importance = nsset_list.at(i).external_importance;
+                nld.state_code.length(nsset_list.at(i).state_code.size());
+                for(unsigned long long j = 0; j < nsset_list.at(i).state_code.size(); ++j)
+                {
+                    nld.state_code[j] = CORBA::string_dup(nsset_list.at(i).state_code.at(j).c_str());
+                }
+                nld.is_server_blocked = nsset_list.at(i).is_server_blocked;
+                nl[i] = nld;
+            }
+
+            return nl;
+        }
+
+        Registry::DomainBrowser::NssetList* Server_i::getNssetList(
             ::CORBA::ULongLong user_contact_id,
              ::CORBA::ULongLong contact_id,
-            const char* lang,
             ::CORBA::ULong offset,
              ::CORBA::Boolean& limit_exceeded)
         {
             try
             {
-                std::vector<std::vector<std::string> > nsset_list_out;
+                std::vector<Registry::DomainBrowserImpl::NssetListData> nsset_list_out;
                 limit_exceeded = pimpl_->getNssetList(user_contact_id,
                     (contact_id > 0) ? Optional<unsigned long long>(contact_id) : Optional<unsigned long long>(),
-                    lang, offset, nsset_list_out);
+                    offset, nsset_list_out);
 
-                RecordSet_var rs = new RecordSet;
-                rs->length(nsset_list_out.size());
-                for(unsigned long long i = 0 ; i < nsset_list_out.size(); ++i)
-                {
-                    RecordSequence rseq;
-                    rseq.length(nsset_list_out.at(i).size());
-                    for(unsigned long long j = 0 ; j < nsset_list_out.at(i).size(); ++j)
-                    {
-                        rseq[j] = CORBA::string_dup(nsset_list_out.at(i).at(j).c_str());
-                    }
-                    rs[i] = rseq;
-                }
-                return rs._retn();
+                NssetList_var nl = corba_wrap_nsset_list(nsset_list_out);
+                return nl._retn();
             }//try
             catch (const Registry::DomainBrowserImpl::ObjectNotExists& )
             {
@@ -186,33 +201,46 @@ namespace Registry
             }
         }
 
-        Registry::DomainBrowser::RecordSet* Server_i::getKeysetList(
+        KeysetList_var corba_wrap_keyset_list(const std::vector<Registry::DomainBrowserImpl::KeysetListData>& keyset_list)
+        {
+            KeysetList_var kl = new KeysetList;
+            kl->length(keyset_list.size());
+
+            for(unsigned long long i = 0 ; i < keyset_list.size(); ++i)
+            {
+                KeysetListData kld;
+                kld.id = keyset_list.at(i).id;
+                kld.handle = CORBA::string_dup(keyset_list.at(i).handle.c_str());
+                kld.domain_count = keyset_list.at(i).domain_count;
+                kld.registrar_handle = CORBA::string_dup(keyset_list.at(i).registrar_handle.c_str());
+                kld.registrar_name = CORBA::string_dup(keyset_list.at(i).registrar_name.c_str());
+                kld.external_importance = keyset_list.at(i).external_importance;
+                kld.state_code.length(keyset_list.at(i).state_code.size());
+                for(unsigned long long j = 0; j < keyset_list.at(i).state_code.size(); ++j)
+                {
+                    kld.state_code[j] = CORBA::string_dup(keyset_list.at(i).state_code.at(j).c_str());
+                }
+                kld.is_server_blocked = keyset_list.at(i).is_server_blocked;
+                kl[i] = kld;
+            }
+
+            return kl;
+        }
+
+        Registry::DomainBrowser::KeysetList* Server_i::getKeysetList(
             ::CORBA::ULongLong user_contact_id,
              ::CORBA::ULongLong contact_id,
-            const char* lang,
             ::CORBA::ULong offset,
              ::CORBA::Boolean& limit_exceeded)
         {
             try
             {
-                std::vector<std::vector<std::string> > keyset_list_out;
+                std::vector<Registry::DomainBrowserImpl::KeysetListData> keyset_list_out;
                 limit_exceeded = pimpl_->getKeysetList(user_contact_id,
                     (contact_id > 0) ? Optional<unsigned long long>(contact_id) : Optional<unsigned long long>(),
-                    lang, offset, keyset_list_out);
-
-                RecordSet_var rs = new RecordSet;
-                rs->length(keyset_list_out.size());
-                for(unsigned long long i = 0 ; i < keyset_list_out.size(); ++i)
-                {
-                    RecordSequence rseq;
-                    rseq.length(keyset_list_out.at(i).size());
-                    for(unsigned long long j = 0 ; j < keyset_list_out.at(i).size(); ++j)
-                    {
-                        rseq[j] = CORBA::string_dup(keyset_list_out.at(i).at(j).c_str());
-                    }
-                    rs[i] = rseq;
-                }
-                return rs._retn();
+                    offset, keyset_list_out);
+                KeysetList_var kl = corba_wrap_keyset_list(keyset_list_out);
+                return kl._retn();
             }//try
             catch (const Registry::DomainBrowserImpl::ObjectNotExists& )
             {
