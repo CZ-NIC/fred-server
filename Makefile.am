@@ -2260,7 +2260,7 @@ tests_test_blocking_LDADD = \
 tests_test_fredlib_SOURCES = \
 		tests/fredlib/main.cc \
 		tests/fredlib/registrar/test_info_registrar.cc \
-		tests/fredlib/registrar/test_create_registrar.cc \		
+		tests/fredlib/registrar/test_create_registrar.cc \
 		tests/fredlib/contact/test_delete_contact.cc \
 		tests/fredlib/contact/test_create_contact.cc \
 		tests/fredlib/contact/test_info_contact.cc \
