@@ -3,6 +3,7 @@
 #include "src/fredlib/db_settings.h"
 #include "util/types/birthdate.h"
 #include "util/random.h"
+#include <map>
 
 
 namespace Fred {
@@ -233,10 +234,223 @@ void db_contact_update(Contact &_data)
     Database::Connection conn = Database::Manager::acquire();
     Database::Result rcontact = conn.exec_params(qcontact, pcontact);
 
-    Database::Result daddress = conn.exec_params(
-            "DELETE FROM contact_address WHERE contactid = $1::integer",
-            Database::query_param_list(_data.id));
-    db_contact_addresses_insert(_data);
+    typedef std::vector< ContactAddress > Addresses;
+    typedef std::map< std::string, ContactAddress > TypeToAddress;
+    TypeToAddress current_addresses;
+    TypeToAddress required_addresses;
+    std::ostringstream types_to_delete;
+    Database::query_param_list to_delete_param(_data.id);
+
+    for (Addresses::const_iterator pca = _data.addresses.begin();
+         pca != _data.addresses.end(); ++pca) {
+        required_addresses[pca->type] = *pca;
+    }
+
+    Database::Result res_addr = conn.exec_params(
+        "SELECT type,company_name,street1,street2,street3,city,stateorprovince,"
+               "postalcode,country "
+        "FROM contact_address "
+        "WHERE contactid=$1::integer",
+        Database::query_param_list(_data.id));
+    for (::size_t idx = 0; idx < res_addr.size(); ++idx) {
+        ContactAddress current_address;
+        current_address.type = static_cast< std::string >(res_addr[idx][0]);
+        if (required_addresses.find(current_address.type) == required_addresses.end()) {
+            to_delete_param(current_address.type);
+            if (!types_to_delete.str().empty()) {
+                types_to_delete << ",";
+            }
+            types_to_delete << "$" << to_delete_param.size() << "::text";
+            continue;
+        }
+        if (!res_addr[idx][1].isnull()) {
+            current_address.company_name = static_cast< std::string >(res_addr[idx][1]);
+        }
+        if (!res_addr[idx][2].isnull()) {
+          current_address.street1 = static_cast< std::string >(res_addr[idx][2]);
+        }
+        if (!res_addr[idx][3].isnull()) {
+          current_address.street2 = static_cast< std::string >(res_addr[idx][3]);
+        }
+        if (!res_addr[idx][4].isnull()) {
+          current_address.street3 = static_cast< std::string >(res_addr[idx][4]);
+        }
+        if (!res_addr[idx][5].isnull()) {
+          current_address.city = static_cast< std::string >(res_addr[idx][5]);
+        }
+        if (!res_addr[idx][6].isnull()) {
+          current_address.stateorprovince = static_cast< std::string >(res_addr[idx][6]);
+        }
+        if (!res_addr[idx][7].isnull()) {
+          current_address.postalcode = static_cast< std::string >(res_addr[idx][7]);
+        }
+        if (!res_addr[idx][8].isnull()) {
+          current_address.country = static_cast< std::string >(res_addr[idx][8]);
+        }
+        current_addresses[current_address.type] = current_address;
+    }
+
+    if (!types_to_delete.str().empty()) {
+        conn.exec_params("DELETE FROM contact_address "
+                         "WHERE contactid=$1::integer AND "
+                               "type IN (" + types_to_delete.str() + ")", to_delete_param);
+    }
+
+    std::ostringstream values_to_insert;
+    Database::query_param_list to_insert_param(_data.id);
+    for (TypeToAddress::const_iterator ptr_required_addr = required_addresses.begin();
+         ptr_required_addr != required_addresses.end(); ++ptr_required_addr) {
+        const ContactAddress &required_addr = ptr_required_addr->second;
+        TypeToAddress::const_iterator ptr_current_addr = current_addresses.find(required_addr.type);
+        if (ptr_current_addr == current_addresses.end()) { // required address doesn't exist => insert
+            if (!values_to_insert.str().empty()) {
+                values_to_insert << ",";
+            }
+            values_to_insert << "($1::integer";
+            to_insert_param(required_addr.type);
+            values_to_insert << ",$" << to_insert_param.size() << "::contact_address_type";
+            if (!required_addr.company_name.isnull()) {
+                to_insert_param(required_addr.company_name.get_value());
+                values_to_insert << ",$" << to_insert_param.size() << "::text";
+            }
+            else {
+                values_to_insert << ",NULL";
+            }
+            if (!required_addr.street1.isnull()) {
+                to_insert_param(required_addr.street1.get_value());
+                values_to_insert << ",$" << to_insert_param.size() << "::text";
+            }
+            else {
+                values_to_insert << ",NULL";
+            }
+            if (!required_addr.street2.isnull()) {
+                to_insert_param(required_addr.street2.get_value());
+                values_to_insert << ",$" << to_insert_param.size() << "::text";
+            }
+            else {
+                values_to_insert << ",NULL";
+            }
+            if (!required_addr.street3.isnull()) {
+                to_insert_param(required_addr.street3.get_value());
+                values_to_insert << ",$" << to_insert_param.size() << "::text";
+            }
+            else {
+                values_to_insert << ",NULL";
+            }
+            if (!required_addr.city.isnull()) {
+                to_insert_param(required_addr.city.get_value());
+                values_to_insert << ",$" << to_insert_param.size() << "::text";
+            }
+            else {
+                values_to_insert << ",NULL";
+            }
+            if (!required_addr.stateorprovince.isnull()) {
+                to_insert_param(required_addr.stateorprovince.get_value());
+                values_to_insert << ",$" << to_insert_param.size() << "::text";
+            }
+            else {
+                values_to_insert << ",NULL";
+            }
+            if (!required_addr.postalcode.isnull()) {
+                to_insert_param(required_addr.postalcode.get_value());
+                values_to_insert << ",$" << to_insert_param.size() << "::text";
+            }
+            else {
+                values_to_insert << ",NULL";
+            }
+            if (!required_addr.country.isnull()) {
+                to_insert_param(required_addr.country.get_value());
+                values_to_insert << ",$" << to_insert_param.size() << "::text";
+            }
+            else {
+                values_to_insert << ",NULL";
+            }
+            values_to_insert << ")";
+        }
+        else { // required address exists => update?
+            const ContactAddress &current_addr = ptr_current_addr->second;
+            if (current_addr != required_addr) {
+                std::ostringstream to_update_set;
+                Database::query_param_list to_update_param(_data.id);
+                to_update_param(required_addr.type);
+                to_update_set << "company_name=";
+                if (!required_addr.company_name.isnull()) {
+                    to_update_param(required_addr.company_name.get_value());
+                    to_update_set << "$" << to_update_param.size() << "::text,";
+                }
+                else {
+                    to_update_set << "NULL,";
+                }
+                to_update_set << "street1=";
+                if (!required_addr.street1.isnull()) {
+                    to_update_param(required_addr.street1.get_value());
+                    to_update_set << "$" << to_update_param.size() << "::text,";
+                }
+                else {
+                    to_update_set << "NULL,";
+                }
+                to_update_set << "street2=";
+                if (!required_addr.street2.isnull()) {
+                    to_update_param(required_addr.street2.get_value());
+                    to_update_set << "$" << to_update_param.size() << "::text,";
+                }
+                else {
+                    to_update_set << "NULL,";
+                }
+                to_update_set << "street3=";
+                if (!required_addr.street3.isnull()) {
+                    to_update_param(required_addr.street3.get_value());
+                    to_update_set << "$" << to_update_param.size() << "::text,";
+                }
+                else {
+                    to_update_set << "NULL,";
+                }
+                to_update_set << "city=";
+                if (!required_addr.city.isnull()) {
+                    to_update_param(required_addr.city.get_value());
+                    to_update_set << "$" << to_update_param.size() << "::text,";
+                }
+                else {
+                    to_update_set << "NULL,";
+                }
+                to_update_set << "stateorprovince=";
+                if (!required_addr.stateorprovince.isnull()) {
+                    to_update_param(required_addr.stateorprovince.get_value());
+                    to_update_set << "$" << to_update_param.size() << "::text,";
+                }
+                else {
+                    to_update_set << "NULL,";
+                }
+                to_update_set << "postalcode=";
+                if (!required_addr.postalcode.isnull()) {
+                    to_update_param(required_addr.postalcode.get_value());
+                    to_update_set << "$" << to_update_param.size() << "::text,";
+                }
+                else {
+                    to_update_set << "NULL,";
+                }
+                to_update_set << "country=";
+                if (!required_addr.country.isnull()) {
+                    to_update_param(required_addr.country.get_value());
+                    to_update_set << "$" << to_update_param.size() << "::text";
+                }
+                else {
+                    to_update_set << "NULL";
+                }
+                conn.exec_params("UPDATE contact_address "
+                                 "SET " + to_update_set.str() + " "
+                                 "WHERE contactid=$1::integer AND "
+                                       "type=$2::contact_address_type", to_update_param);
+            }
+        }
+    }
+
+    if (!values_to_insert.str().empty()) {
+        conn.exec_params("INSERT INTO contact_address (contactid,type,company_name,"
+                                                      "street1,street2,street3,city,"
+                                                      "stateorprovince,postalcode,country) "
+                         "VALUES " + values_to_insert.str(), to_insert_param);
+    }
 }
 
 
