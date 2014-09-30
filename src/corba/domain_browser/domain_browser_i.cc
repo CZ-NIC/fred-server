@@ -781,7 +781,7 @@ namespace Registry
             const char* objtype,
             const Registry::DomainBrowser::ObjectIdSeq& objects,
             Registry::DomainBrowser::ObjectBlockType block,
-            Registry::DomainBrowser::RecordSequence_out blocked)
+            Registry::DomainBrowser::RefusedObjectHandleSequence_out change_prohibited)
         {
             try
             {
@@ -801,14 +801,14 @@ namespace Registry
                         : Registry::DomainBrowserImpl::INVALID_BLOCK_TYPE
                         , blocked_objects);
 
-                Registry::DomainBrowser::RecordSequence_var blocked_var = new Registry::DomainBrowser::RecordSequence;
-                blocked_var->length(blocked_objects.size());
+                Registry::DomainBrowser::RefusedObjectHandleSequence_var change_prohibited_var = new Registry::DomainBrowser::RefusedObjectHandleSequence;
+                change_prohibited_var->length(blocked_objects.size());
                 for(std::size_t i = 0; i < blocked_objects.size(); ++i)
                 {
-                    blocked_var[i] = CORBA::string_dup(blocked_objects.at(i).c_str());
+                    change_prohibited_var[i] = CORBA::string_dup(blocked_objects.at(i).c_str());
                 }
 
-                blocked = blocked_var._retn();//transfer ownership to the out parameter, no exceptions allowed after this point
+                change_prohibited = change_prohibited_var._retn();//transfer ownership to the out parameter, no exceptions allowed after this point
                 return ret;
             }//try
             catch (const Registry::DomainBrowserImpl::ObjectNotExists& )

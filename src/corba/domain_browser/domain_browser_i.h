@@ -135,7 +135,7 @@ namespace Registry
                 const char* objtype,
                 const Registry::DomainBrowser::ObjectIdSeq& objects,
                 Registry::DomainBrowser::ObjectBlockType block,
-                Registry::DomainBrowser::RecordSequence_out blocked);
+                Registry::DomainBrowser::RefusedObjectHandleSequence_out change_prohibited);
 
             Registry::DomainBrowser::RecordSequence* getPublicStatusDesc(const char* lang);
 
