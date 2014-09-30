@@ -3211,24 +3211,9 @@ BOOST_AUTO_TEST_SUITE(getMergeContactCandidateList)
 BOOST_FIXTURE_TEST_CASE(get_candidate_contact_list, merge_contacts_fixture )
 {
     Fred::OperationContext ctx;
-    std::vector<std::vector<std::string> > contact_list_out;
-    bool limit_exceeded = impl.getMergeContactCandidateList(user_contact_info.info_contact_data.id,
+    std::vector<Registry::DomainBrowserImpl::MergeContactCandidateData> contact_list_out;
+    impl.getMergeContactCandidateList(user_contact_info.info_contact_data.id,
         0,contact_list_out);
-
-    std::ostringstream list_out;
-    list_out << "contact_list_out: \n";
-
-    for(unsigned long long i = 0; i < contact_list_out.size(); ++i)
-    {
-        for(unsigned long long j = 0; j < contact_list_out.at(i).size(); ++j)
-        {
-            list_out << " " <<contact_list_out.at(i).at(j);
-        }
-
-        list_out << "\n";
-    }
-    BOOST_MESSAGE(list_out.str());
-    BOOST_MESSAGE("limit_exceeded: " << limit_exceeded);
 
     BOOST_CHECK(contact_list_out.size() == contact_merge_candidates_ids.size());
 
@@ -3236,26 +3221,26 @@ BOOST_FIXTURE_TEST_CASE(get_candidate_contact_list, merge_contacts_fixture )
 
     for(unsigned long long i = 0; i < contact_list_out.size(); ++i)
     {
-        unsigned long long id = map_at(contact_info,contact_list_out.at(i).at(1)).info_contact_data.id;
-        BOOST_CHECK(contact_list_out.at(i).at(0) == boost::lexical_cast<std::string>(id));
-        BOOST_CHECK(contact_list_out.at(i).at(1) == map_at(contact_info,contact_list_out.at(i).at(1)).info_contact_data.handle);
+        unsigned long long id = map_at(contact_info,contact_list_out.at(i).handle).info_contact_data.id;
+        BOOST_CHECK(contact_list_out.at(i).id == id);
+        BOOST_CHECK(contact_list_out.at(i).handle == map_at(contact_info,contact_list_out.at(i).handle).info_contact_data.handle);
         contact_list_out_ids.insert(id);
 
         if(i == 0)
         {
-            BOOST_CHECK(contact_list_out.at(i).at(2) == "1");
-            BOOST_CHECK(contact_list_out.at(i).at(3) == "1");
-            BOOST_CHECK(contact_list_out.at(i).at(4) == "1");
+            BOOST_CHECK(contact_list_out.at(i).domain_count == 1);
+            BOOST_CHECK(contact_list_out.at(i).nsset_count == 1);
+            BOOST_CHECK(contact_list_out.at(i).keyset_count == 1);
         }
         else
         {
-            BOOST_CHECK(contact_list_out.at(i).at(2) == "0");
-            BOOST_CHECK(contact_list_out.at(i).at(3) == "0");
-            BOOST_CHECK(contact_list_out.at(i).at(4) == "0");
+            BOOST_CHECK(contact_list_out.at(i).domain_count == 0);
+            BOOST_CHECK(contact_list_out.at(i).nsset_count == 0);
+            BOOST_CHECK(contact_list_out.at(i).keyset_count == 0);
         }
 
-        BOOST_CHECK(contact_list_out.at(i).at(5) == std::string("TEST-REGISTRAR-HANDLE")+test_registrar_fixture::xmark);
-        BOOST_CHECK(contact_list_out.at(i).at(6) == std::string("TEST-REGISTRAR NAME")+test_registrar_fixture::xmark);
+        BOOST_CHECK(contact_list_out.at(i).registrar_handle == std::string("TEST-REGISTRAR-HANDLE")+test_registrar_fixture::xmark);
+        BOOST_CHECK(contact_list_out.at(i).registrar_name == std::string("TEST-REGISTRAR NAME")+test_registrar_fixture::xmark);
     }
 
     BOOST_CHECK(contact_list_out_ids == contact_merge_candidates_ids);
@@ -3275,7 +3260,7 @@ BOOST_FIXTURE_TEST_CASE(get_candidate_contact_list_user_not_in_mojeid, get_domai
     try
     {
         Fred::OperationContext ctx;
-        std::vector<std::vector<std::string> > contact_list_out;
+        std::vector<Registry::DomainBrowserImpl::MergeContactCandidateData> contact_list_out;
         impl.getMergeContactCandidateList(user_contact_info.info_contact_data.id,
             0,contact_list_out);
 

@@ -1545,7 +1545,7 @@ namespace Registry
 
         bool DomainBrowser::getMergeContactCandidateList(unsigned long long user_contact_id,
             unsigned long long offset,
-            std::vector<std::vector<std::string> >& contact_list_out)
+            std::vector<MergeContactCandidateData>& contact_list_out)
         {
             Logging::Context lctx_server(create_ctx_name(get_server_name()));
             Logging::Context lctx("get-merge-contact-candidate-list");
@@ -1598,16 +1598,16 @@ namespace Registry
                 contact_list_out.reserve(limited_contact_list_size);
                 for (unsigned long long i = 0;i < limited_contact_list_size;++i)
                 {
-                    std::vector<std::string> row(7);
-                    row.at(0) = static_cast<std::string>(candidate_list_result[i]["id"]);
-                    row.at(1) = static_cast<std::string>(candidate_list_result[i]["handle"]);
-                    row.at(2) = static_cast<std::string>(candidate_list_result[i]["domain_count"]);
-                    row.at(3) = static_cast<std::string>(candidate_list_result[i]["nsset_count"]);
-                    row.at(4) = static_cast<std::string>(candidate_list_result[i]["keyset_count"]);
-                    row.at(5) = static_cast<std::string>(candidate_list_result[i]["registrar_handle"]);
-                    row.at(6) = static_cast<std::string>(candidate_list_result[i]["registrar_name"]);
+                    MergeContactCandidateData cd;
+                    cd.id = static_cast<unsigned long long>(candidate_list_result[i]["id"]);
+                    cd.handle = static_cast<std::string>(candidate_list_result[i]["handle"]);
+                    cd.domain_count = static_cast<unsigned long long>(candidate_list_result[i]["domain_count"]);
+                    cd.nsset_count = static_cast<unsigned long long>(candidate_list_result[i]["nsset_count"]);
+                    cd.keyset_count = static_cast<unsigned long long>(candidate_list_result[i]["keyset_count"]);
+                    cd.registrar_handle = static_cast<std::string>(candidate_list_result[i]["registrar_handle"]);
+                    cd.registrar_name = static_cast<std::string>(candidate_list_result[i]["registrar_name"]);
 
-                    contact_list_out.push_back(row);
+                    contact_list_out.push_back(cd);
                 }
 
                 return candidate_list_result.size() > contact_list_limit_;

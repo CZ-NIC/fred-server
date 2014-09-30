@@ -857,30 +857,41 @@ namespace Registry
             }
         }
 
+        MergeContactCandidateList_var corba_wrap_merge_contact_candidate_list(const std::vector<Registry::DomainBrowserImpl::MergeContactCandidateData>& candidate_list)
+        {
+            MergeContactCandidateList_var cl = new MergeContactCandidateList;
+            cl->length(candidate_list.size());
 
-        Registry::DomainBrowser::RecordSet* Server_i::getMergeContactCandidateList(
+            for(unsigned long long i = 0 ; i < candidate_list.size(); ++i)
+            {
+                MergeContactCandidateData cld;
+                cld.id = candidate_list.at(i).id;
+                cld.handle = CORBA::string_dup(candidate_list.at(i).handle.c_str());
+                cld.domain_count = candidate_list.at(i).domain_count;
+                cld.nsset_count = candidate_list.at(i).nsset_count;
+                cld.keyset_count = candidate_list.at(i).keyset_count;
+                cld.registrar_handle = CORBA::string_dup(candidate_list.at(i).registrar_handle.c_str());
+                cld.registrar_name = CORBA::string_dup(candidate_list.at(i).registrar_name.c_str());
+
+                cl[i] = cld;
+            }
+
+            return cl;
+        }
+
+
+        Registry::DomainBrowser::MergeContactCandidateList* Server_i::getMergeContactCandidateList(
             ::CORBA::ULongLong contact_id,
             ::CORBA::ULong offset, ::CORBA::Boolean& limit_exceeded)
         {
             try
             {
-                std::vector<std::vector<std::string> > contact_list_out;
+                std::vector<Registry::DomainBrowserImpl::MergeContactCandidateData> contact_list_out;
                 limit_exceeded = pimpl_->getMergeContactCandidateList(contact_id,
                     offset, contact_list_out);
 
-                RecordSet_var rs = new RecordSet;
-                rs->length(contact_list_out.size());
-                for(unsigned long long i = 0 ; i < contact_list_out.size(); ++i)
-                {
-                    RecordSequence rseq;
-                    rseq.length(contact_list_out.at(i).size());
-                    for(unsigned long long j = 0 ; j < contact_list_out.at(i).size(); ++j)
-                    {
-                        rseq[j] = CORBA::string_dup(contact_list_out.at(i).at(j).c_str());
-                    }
-                    rs[i] = rseq;
-                }
-                return rs._retn();
+                MergeContactCandidateList_var cl = corba_wrap_merge_contact_candidate_list(contact_list_out);
+                return cl._retn();
             }//try
             catch (const Registry::DomainBrowserImpl::UserNotExists& )
             {

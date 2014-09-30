@@ -360,6 +360,26 @@ namespace Registry
             {}
         };
 
+        /**
+         * element of MergeContactCandidateList
+         */
+        struct MergeContactCandidateData
+        {
+            unsigned long long id;/**< id of the contact */
+            std::string handle;/**< contact handle */
+            unsigned long long domain_count;/**<  number of domains linked with this contact */
+            unsigned long long nsset_count;/**<  number of nssets linked with this contact */
+            unsigned long long keyset_count;/**<  number of keysets linked with this contact */
+            std::string registrar_handle; /**< contact registrar handle*/
+            std::string registrar_name; /**< contact registrar name*/
+
+            MergeContactCandidateData()
+            : id(0)
+            , domain_count(0)
+            , nsset_count(0)
+            , keyset_count(0)
+            {}
+        };
 
         /**
          * Internal server error.
@@ -694,7 +714,7 @@ namespace Registry
              */
             bool getMergeContactCandidateList(unsigned long long user_contact_id,
                 unsigned long long offset,
-                std::vector<std::vector<std::string> >& contact_list_out);
+                std::vector<MergeContactCandidateData>& contact_list_out);
 
             /**
              * Merge contact list to destination contact

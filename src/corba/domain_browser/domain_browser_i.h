@@ -139,7 +139,7 @@ namespace Registry
 
             Registry::DomainBrowser::RecordSequence* getPublicStatusDesc(const char* lang);
 
-            Registry::DomainBrowser::RecordSet* getMergeContactCandidateList(
+            Registry::DomainBrowser::MergeContactCandidateList* getMergeContactCandidateList(
                 ::CORBA::ULongLong contact_id,
                 ::CORBA::ULong offset,
                 ::CORBA::Boolean& limit_exceeded);
