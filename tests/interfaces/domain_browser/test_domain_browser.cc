@@ -2737,15 +2737,15 @@ BOOST_AUTO_TEST_SUITE_END();//getKeysetList
 
 BOOST_AUTO_TEST_SUITE(getPublicStatusDesc)
 
-BOOST_FIXTURE_TEST_CASE(get_public_sattus_desc, domain_browser_impl_instance_fixture)
+BOOST_FIXTURE_TEST_CASE(get_public_status_desc, domain_browser_impl_instance_fixture)
 {
     Fred::OperationContext ctx;
-    std::vector<std::string> status_desc_out;
+    std::vector<Registry::DomainBrowserImpl::StatusDesc> status_desc_out;
     impl.getPublicStatusDesc("CS",status_desc_out);
-    for(std::vector<std::string>::const_iterator ci = status_desc_out.begin();
-        ci!=status_desc_out.end(); ++ci)
+
+    for(unsigned long long i = 0 ; i < status_desc_out.size(); ++i)
     {
-        BOOST_MESSAGE((*ci));
+        BOOST_MESSAGE(std::string("code: ") << status_desc_out.at(i).state_code << std::string(" desc: ") << status_desc_out.at(i).state_desc);
     }
 }
 

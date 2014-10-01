@@ -1461,19 +1461,28 @@ namespace Registry
 
 
         void DomainBrowser::getPublicStatusDesc(const std::string& lang,
-            std::vector<std::string>& status_description_out)
+            std::vector<StatusDesc>& status_description_out)
         {
             Logging::Context lctx_server(create_ctx_name(get_server_name()));
             Logging::Context lctx("get-public-status-desc");
             Fred::OperationContext ctx;
             try
             {
-                std::map<unsigned long long, std::string> state_desc_map = Fred::GetObjectStateDescriptions(lang)
-                    .set_external().exec(ctx);
+                Database::Result state_desc_res = ctx.get_conn().exec_params(
+                "SELECT eos.name AS name, COALESCE(eosd.description, '') AS description "
+                " FROM enum_object_states_desc eosd "
+                " JOIN enum_object_states eos ON eos.id = eosd.state_id "
+                " WHERE UPPER(eosd.lang) = UPPER($1::text) "
+                " AND eos.external = TRUE "
+                " ORDER BY eos.id ", Database::query_param_list(lang));
 
-                status_description_out.reserve(state_desc_map.size());
-                for(std::map<unsigned long long, std::string>::const_iterator ci = state_desc_map.begin()
-                    ; ci != state_desc_map.end(); ++ci) status_description_out.push_back(ci->second);
+                status_description_out.reserve(state_desc_res.size());
+                for(unsigned long long i = 0; i < state_desc_res.size(); ++i)
+                {
+                    status_description_out.push_back(StatusDesc(
+                        static_cast<std::string>(state_desc_res[i]["name"])
+                        , static_cast<std::string>(state_desc_res[i]["description"])));
+                }
             }
             catch(...)
             {

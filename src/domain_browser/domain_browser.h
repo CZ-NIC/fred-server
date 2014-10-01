@@ -382,6 +382,20 @@ namespace Registry
         };
 
         /**
+         * object state description
+         */
+        struct StatusDesc
+        {
+            std::string state_code;/**< state name */
+            std::string state_desc;/**< state description in some language */
+
+            StatusDesc(const std::string& _state_code, const std::string& _state_desc)
+            : state_code(_state_code)
+            , state_desc(_state_desc)
+            {}
+        };
+
+        /**
          * Internal server error.
          * Unexpected failure, requires maintenance.
          */
@@ -700,10 +714,10 @@ namespace Registry
             /**
              * Get descriptions of public states.
              * @param lang contains language for state description "EN" or "CS"
-             * @param  status_description_out references output list of descriptions
+             * @param  status_description_out references output list of status codes and descriptions
              */
             void getPublicStatusDesc(const std::string& lang,
-                std::vector<std::string>& status_description_out);
+                std::vector<StatusDesc>& status_description_out);
 
             /**
              * Get list of contacts mergeable to user contact.

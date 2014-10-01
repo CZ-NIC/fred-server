@@ -137,7 +137,7 @@ namespace Registry
                 Registry::DomainBrowser::ObjectBlockType block,
                 Registry::DomainBrowser::RefusedObjectHandleSequence_out change_prohibited);
 
-            Registry::DomainBrowser::RecordSequence* getPublicStatusDesc(const char* lang);
+            Registry::DomainBrowser::StatusDescList* getPublicStatusDesc(const char* lang);
 
             Registry::DomainBrowser::MergeContactCandidateList* getMergeContactCandidateList(
                 ::CORBA::ULongLong contact_id,
