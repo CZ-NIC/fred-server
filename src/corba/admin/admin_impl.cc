@@ -961,6 +961,11 @@ ccReg::TID ccReg_Admin_i::resendPin3Letter(ccReg::TID publicRequestId)
         LOGGER(PACKAGE).error(boost::format("Database::NoDataFound: %1%") % ex.what());
         throw ccReg::Admin::ObjectNotFound();
     }
+    catch (Fred::Messages::MessageCopyProhibited &ex)
+    {
+        LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
+        throw ccReg::Admin::MessageCopyProhibited();
+    }
     catch (Database::Exception &ex) {
         LOGGER(PACKAGE).error(boost::format("Database problem: %1%") % ex.what());
         throw ccReg::Admin::InternalServerError();
