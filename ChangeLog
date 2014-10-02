@@ -6,6 +6,8 @@
 
   * mojeid/verification - fix sms text
 
+  * adifd - fix resending public request messages (PIN3)
+
 2014-08-01 Jan Korous, Jan Zima, Michal Strnad, Jiri Sadek (2.19.0)
 
   * domain browser
