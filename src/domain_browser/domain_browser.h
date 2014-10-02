@@ -127,8 +127,7 @@ namespace Registry
             Nullable<std::string> ssntype;/**< type of identification from enumssntype table */
             Nullable<std::string> ssn;/**< unambiguous identification number e.g. social security number, identity card number, date of birth */
             ContactDiscloseFlags disclose_flags;/**< contact fields disclose flags*/
-            std::string states;/**< object states descriptions in given language from db. table enum_object_states_desc delimited by pipe '|' character */
-            std::string state_codes;/**< object states names from db. table enum_object_states delimited by coma ',' character */
+            std::vector<std::string> state_codes;/**< object states names from db. table enum_object_states*/
             bool is_owner;/**< whether user contact is the same as requested contact */
 
             ContactDetail()
@@ -156,8 +155,7 @@ namespace Registry
             RegistryReference nsset; /**< domain nsset */
             RegistryReference keyset;/**< domain keyset */
             std::vector<RegistryReference> admins; /**< domain admin contacts */
-            std::string states;/**< object states descriptions in given language from db. table enum_object_states_desc delimited by pipe '|' character */
-            std::string state_codes;/**< object states names from db. table enum_object_states delimited by coma ',' character */
+            std::vector<std::string> state_codes;/**< object state names from db. table enum_object_states */
             bool is_owner;/**< whether user contact is the same as domain owner*/
 
             DomainDetail()
@@ -193,8 +191,7 @@ namespace Registry
             std::string authinfopw;/**< password for transfer */
             std::vector<RegistryReference> admins; /**< nsset admin contacts */
             std::vector<DNSHost> hosts; /**< nsset DNS hosts */
-            std::string states;/**< object states descriptions in given language from db. table enum_object_states_desc delimited by pipe '|' character */
-            std::string state_codes;/**< object states names from db. table enum_object_states delimited by coma ',' character */
+            std::vector<std::string> state_codes;/**< object states names from db. table enum_object_states*/
             short report_level; /**< nsset level of technical checks */
             bool is_owner;/**< user contact is owner of the nsset if it's also admin contact*/
 
@@ -234,8 +231,7 @@ namespace Registry
             std::string authinfopw;/**< password for transfer */
             std::vector<RegistryReference> admins; /**< keyset admin contacts */
             std::vector<DNSKey> dnskeys; /**< DNS keys */
-            std::string states;/**< object states descriptions in given language from db. table enum_object_states_desc delimited by pipe '|' character */
-            std::string state_codes;/**< object states names from db. table enum_object_states delimited by coma ',' character */
+            std::vector<std::string> state_codes;/**< object states names from db. table enum_object_states */
             bool is_owner;/**< user contact is owner of the keyset if it's also admin contact*/
 
             KeysetDetail()
@@ -516,15 +512,13 @@ namespace Registry
             unsigned long long lowest_status_importance_;/**< the lower the importance, the higher the importance value, so that the lowest importance is MAX(enum_object_states.importance) * 2 */
 
             /**
-             * Fill object state codes and description into given strings.
+             * Fill object state codes.
              * @param ctx contains reference to database and logging interface
              * @param object_id is database id of object
-             * @param lang is required language of object state description e.g. "EN" or "CS"
-             * @param state_codes is output string of object state codes delimited by '|'
-             * @param states is output string with descriptions of external object states delimited by ','
+             * @param state_codes is output list of object state codes
              */
-             void get_object_states(Fred::OperationContext& ctx, unsigned long long object_id, const std::string& lang
-                     , std::string& state_codes, std::string& states);
+             void get_object_states(Fred::OperationContext& ctx, unsigned long long object_id
+                     , std::vector<std::string>& state_codes);
 
             /**
              * Fill authinfo into given string.
@@ -588,45 +582,33 @@ namespace Registry
              * Returns contact detail.
              * @param user_contact_id contains database id of the user contact
              * @param contact_id contains database id of the contact
-             * @param lang contains language for state description "EN" or "CS"
              * @return contact detail data.
              */
-            ContactDetail getContactDetail(unsigned long long user_contact_id,
-                    unsigned long long contact_id,
-                    const std::string& lang);
+            ContactDetail getContactDetail(unsigned long long user_contact_id, unsigned long long contact_id);
 
             /**
              * Returns domain detail.
              * @param user_contact_id contains database id of the user contact
              * @param domain_id contains database id of the domain
-             * @param lang contains language for state description "EN" or "CS"
              * @return domain detail data.
              */
-            DomainDetail getDomainDetail(unsigned long long user_contact_id,
-                    unsigned long long domain_id,
-                    const std::string& lang);
+            DomainDetail getDomainDetail(unsigned long long user_contact_id, unsigned long long domain_id);
 
             /**
              * Returns nsset detail.
              * @param user_contact_id contains database id of the user contact
              * @param nsset_id contains database id of the nsset
-             * @param lang contains language for state description "EN" or "CS"
              * @return nsset detail data.
              */
-            NssetDetail getNssetDetail(unsigned long long user_contact_id,
-                    unsigned long long nsset_id,
-                    const std::string& lang);
+            NssetDetail getNssetDetail(unsigned long long user_contact_id, unsigned long long nsset_id);
 
             /**
              * Returns keyset detail.
              * @param user_contact_id contains database id of the user contact
              * @param keyset_id contains database id of the keyset
-             * @param lang contains language for state description "EN" or "CS"
              * @return keyset detail data.
              */
-            KeysetDetail getKeysetDetail(unsigned long long user_contact_id,
-                    unsigned long long keyset_id,
-                    const std::string& lang);
+            KeysetDetail getKeysetDetail(unsigned long long user_contact_id, unsigned long long keyset_id);
 
             /**
              * Sets contact disclose flags.

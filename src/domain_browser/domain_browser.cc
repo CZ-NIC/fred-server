@@ -158,22 +158,23 @@ namespace Registry
             return info;
         }
 
-        void DomainBrowser::get_object_states(Fred::OperationContext& ctx, unsigned long long object_id, const std::string& lang
-            , std::string& state_codes, std::string& states)
+        void DomainBrowser::get_object_states(Fred::OperationContext& ctx, unsigned long long object_id
+            , std::vector<std::string>& state_codes)
         {
             Database::Result state_res = ctx.get_conn().exec_params(
-                "SELECT ARRAY_TO_STRING(ARRAY_AGG(CASE WHEN eos.external THEN eosd.description ELSE NULL END ORDER BY eos.importance), '|') AS state_descs, "
-                    " ARRAY_TO_STRING(ARRAY_AGG(eos.name ORDER BY eos.importance), ',') AS state_codes "
+                "SELECT ARRAY_FILTER_NULL(ARRAY_AGG(eos.name ORDER BY eos.importance))::text[] AS state_codes "
                 " FROM object_state os "
                 " JOIN enum_object_states eos ON eos.id = os.state_id "
-                " LEFT JOIN enum_object_states_desc eosd ON os.state_id = eosd.state_id AND UPPER(eosd.lang) = UPPER($2::text) "
                 " WHERE os.object_id = $1::bigint "
                     " AND os.valid_from <= CURRENT_TIMESTAMP "
                     " AND (os.valid_to IS NULL OR os.valid_to > CURRENT_TIMESTAMP) "
-                    , Database::query_param_list(object_id)(lang));
+                    , Database::query_param_list(object_id));
 
-            state_codes = static_cast<std::string>(state_res[0]["state_codes"]);
-            states = static_cast<std::string>(state_res[0]["state_descs"]);
+            std::string state_codes_str = static_cast<std::string>(state_res[0]["state_codes"]);
+            if(state_codes_str.empty()) return;//no states found
+            std::vector<Nullable<std::string> > nullable_state_codes = PgArray(state_codes_str).parse();
+            for(std::vector<Nullable<std::string> >::const_iterator ci = nullable_state_codes.begin();
+                ci != nullable_state_codes.end(); ++ci) state_codes.push_back(ci->get_value());//null is filtered in query by fn. ARRAY_FILTER_NULL
         }
 
         std::string DomainBrowser::filter_authinfo(bool user_is_owner, const std::string& authinfopw)
@@ -370,8 +371,7 @@ namespace Registry
         }
 
         ContactDetail DomainBrowser::getContactDetail(unsigned long long user_contact_id,
-                unsigned long long contact_id,
-                const std::string& lang)
+                unsigned long long contact_id)
         {
             Logging::Context lctx_server(create_ctx_name(get_server_name()));
             Logging::Context lctx("get-contact-detail");
@@ -447,8 +447,7 @@ namespace Registry
                 detail.disclose_flags = disclose_flags;
 
                 //get states
-                get_object_states(ctx, contact_info.info_contact_data.id,lang
-                    , detail.state_codes, detail.states);
+                get_object_states(ctx, contact_info.info_contact_data.id, detail.state_codes);
 
                 return detail;
             }
@@ -460,8 +459,7 @@ namespace Registry
         }
 
         DomainDetail DomainBrowser::getDomainDetail(unsigned long long user_contact_id,
-                unsigned long long domain_id,
-                const std::string& lang)
+                unsigned long long domain_id)
         {
             Logging::Context lctx_server(create_ctx_name(get_server_name()));
             Logging::Context lctx("get-domain-detail");
@@ -548,8 +546,7 @@ namespace Registry
 
                 detail.authinfopw =filter_authinfo(set_authinfo, domain_info.info_domain_data.authinfopw);
 
-                get_object_states(ctx, domain_info.info_domain_data.id,lang
-                    , detail.state_codes, detail.states);
+                get_object_states(ctx, domain_info.info_domain_data.id, detail.state_codes);
 
                 return detail;
             }
@@ -561,8 +558,7 @@ namespace Registry
         }
 
         NssetDetail DomainBrowser::getNssetDetail(unsigned long long user_contact_id,
-                unsigned long long nsset_id,
-                const std::string& lang)
+                unsigned long long nsset_id)
         {
             Logging::Context lctx_server(create_ctx_name(get_server_name()));
             Logging::Context lctx("get-nsset-detail");
@@ -654,8 +650,7 @@ namespace Registry
                     detail.hosts.push_back(host);
                 }
 
-                get_object_states(ctx, nsset_info.info_nsset_data.id,lang
-                    , detail.state_codes, detail.states);
+                get_object_states(ctx, nsset_info.info_nsset_data.id, detail.state_codes);
 
                 detail.report_level = nsset_info.info_nsset_data.tech_check_level.get_value_or_default();
 
@@ -669,8 +664,7 @@ namespace Registry
         }
 
         KeysetDetail DomainBrowser::getKeysetDetail(unsigned long long user_contact_id,
-                unsigned long long keyset_id,
-                const std::string& lang)
+                unsigned long long keyset_id)
         {
             Logging::Context lctx_server(create_ctx_name(get_server_name()));
             Logging::Context lctx("get-keyset-detail");
@@ -765,8 +759,7 @@ namespace Registry
                     detail.dnskeys.push_back(dnskey);
                 }
 
-                get_object_states(ctx, keyset_info.info_keyset_data.id,lang
-                    , detail.state_codes, detail.states);
+                get_object_states(ctx, keyset_info.info_keyset_data.id, detail.state_codes);
 
                 return detail;
             }

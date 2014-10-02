@@ -342,13 +342,12 @@ namespace Registry
         Registry::DomainBrowser::ContactDetail* Server_i::getContactDetail(
             ::CORBA::ULongLong contact_id,
              ::CORBA::ULongLong detail_id,
-            const char* lang,
             Registry::DomainBrowser::DataAccessLevel& auth_result)
         {
             try
             {
                 Registry::DomainBrowserImpl::ContactDetail detail_impl
-                    = pimpl_->getContactDetail(contact_id, detail_id, lang);
+                    = pimpl_->getContactDetail(contact_id, detail_id);
 
                 ContactDetail_var contact_detail = new ContactDetail;
                 contact_detail->id = detail_impl.id;
@@ -357,10 +356,10 @@ namespace Registry
                 contact_detail->registrar.id = detail_impl.sponsoring_registrar.id;
                 contact_detail->registrar.handle = CORBA::string_dup(detail_impl.sponsoring_registrar.handle.c_str());
                 contact_detail->registrar.name = CORBA::string_dup(detail_impl.sponsoring_registrar.name.c_str());
-                contact_detail->create_date = CORBA::string_dup(boost::posix_time::to_iso_extended_string(detail_impl.creation_time).c_str());
-                contact_detail->transfer_date = CORBA::string_dup(detail_impl.transfer_time.isnull()
+                contact_detail->create_time = CORBA::string_dup(boost::posix_time::to_iso_extended_string(detail_impl.creation_time).c_str());
+                contact_detail->transfer_time = CORBA::string_dup(detail_impl.transfer_time.isnull()
                     ? "" : boost::posix_time::to_iso_extended_string(detail_impl.transfer_time.get_value()).c_str());
-                contact_detail->update_date = CORBA::string_dup(detail_impl.update_time.isnull()
+                contact_detail->update_time = CORBA::string_dup(detail_impl.update_time.isnull()
                     ? "" : boost::posix_time::to_iso_extended_string(detail_impl.update_time.get_value()).c_str());
                 contact_detail->auth_info = CORBA::string_dup(detail_impl.authinfopw.c_str());
                 contact_detail->name = CORBA::string_dup(detail_impl.name.get_value_or_default().c_str());
@@ -388,8 +387,12 @@ namespace Registry
                 contact_detail->disclose_flags.organization = detail_impl.disclose_flags.organization;
                 contact_detail->disclose_flags.telephone = detail_impl.disclose_flags.telephone;
                 contact_detail->disclose_flags.vat = detail_impl.disclose_flags.vat;
-                contact_detail->states = CORBA::string_dup(detail_impl.states.c_str());
-                contact_detail->state_codes = CORBA::string_dup(detail_impl.state_codes.c_str());
+
+                contact_detail->state_codes.length(detail_impl.state_codes.size());
+                for(unsigned long long j = 0; j < detail_impl.state_codes.size(); ++j)
+                {
+                    contact_detail->state_codes[j] = CORBA::string_dup(detail_impl.state_codes.at(j).c_str());
+                }
 
                 if(detail_impl.is_owner)
                 {
@@ -419,13 +422,12 @@ namespace Registry
         Registry::DomainBrowser::NSSetDetail* Server_i::getNssetDetail(
             ::CORBA::ULongLong contact_id,
              ::CORBA::ULongLong nsset_id,
-            const char* lang,
             Registry::DomainBrowser::DataAccessLevel& auth_result)
         {
             try
             {
                 Registry::DomainBrowserImpl::NssetDetail detail_impl
-                    = pimpl_->getNssetDetail(contact_id, nsset_id, lang);
+                    = pimpl_->getNssetDetail(contact_id, nsset_id);
 
                 NSSetDetail_var nsset_detail = new NSSetDetail;
 
@@ -435,10 +437,10 @@ namespace Registry
                 nsset_detail->registrar.id = detail_impl.sponsoring_registrar.id;
                 nsset_detail->registrar.handle = CORBA::string_dup(detail_impl.sponsoring_registrar.handle.c_str());
                 nsset_detail->registrar.name = CORBA::string_dup(detail_impl.sponsoring_registrar.name.c_str());
-                nsset_detail->create_date = CORBA::string_dup(boost::posix_time::to_iso_extended_string(detail_impl.creation_time).c_str());
-                nsset_detail->transfer_date = CORBA::string_dup(detail_impl.transfer_time.isnull()
+                nsset_detail->create_time = CORBA::string_dup(boost::posix_time::to_iso_extended_string(detail_impl.creation_time).c_str());
+                nsset_detail->transfer_time = CORBA::string_dup(detail_impl.transfer_time.isnull()
                     ? "" : boost::posix_time::to_iso_extended_string(detail_impl.transfer_time.get_value()).c_str());
-                nsset_detail->update_date = CORBA::string_dup(detail_impl.update_time.isnull()
+                nsset_detail->update_time = CORBA::string_dup(detail_impl.update_time.isnull()
                     ? "" : boost::posix_time::to_iso_extended_string(detail_impl.update_time.get_value()).c_str());
 
                 nsset_detail->create_registrar.id = detail_impl.create_registrar.id;
@@ -466,9 +468,12 @@ namespace Registry
                     nsset_detail->hosts[i].inet = CORBA::string_dup(detail_impl.hosts[i].inet_addr.c_str());
                 }
 
+                nsset_detail->state_codes.length(detail_impl.state_codes.size());
+                for(unsigned long long j = 0; j < detail_impl.state_codes.size(); ++j)
+                {
+                    nsset_detail->state_codes[j] = CORBA::string_dup(detail_impl.state_codes.at(j).c_str());
+                }
 
-                nsset_detail->states = CORBA::string_dup(detail_impl.states.c_str());
-                nsset_detail->state_codes = CORBA::string_dup(detail_impl.state_codes.c_str());
 
                 nsset_detail->report_level = detail_impl.report_level;
 
@@ -500,13 +505,12 @@ namespace Registry
         Registry::DomainBrowser::DomainDetail* Server_i::getDomainDetail(
             ::CORBA::ULongLong contact_id,
              ::CORBA::ULongLong domain_id,
-            const char* lang,
             Registry::DomainBrowser::DataAccessLevel& auth_result)
         {
             try
             {
                 Registry::DomainBrowserImpl::DomainDetail detail_impl
-                    = pimpl_->getDomainDetail(contact_id, domain_id, lang);
+                    = pimpl_->getDomainDetail(contact_id, domain_id);
 
                 DomainDetail_var domain_detail = new DomainDetail;
                 domain_detail->id = detail_impl.id;
@@ -515,8 +519,8 @@ namespace Registry
                 domain_detail->registrar.id = detail_impl.sponsoring_registrar.id;
                 domain_detail->registrar.handle = CORBA::string_dup(detail_impl.sponsoring_registrar.handle.c_str());
                 domain_detail->registrar.name = CORBA::string_dup(detail_impl.sponsoring_registrar.name.c_str());
-                domain_detail->create_date = CORBA::string_dup(boost::posix_time::to_iso_extended_string(detail_impl.creation_time).c_str());
-                domain_detail->update_date = CORBA::string_dup(detail_impl.update_time.isnull()
+                domain_detail->create_time = CORBA::string_dup(boost::posix_time::to_iso_extended_string(detail_impl.creation_time).c_str());
+                domain_detail->update_time = CORBA::string_dup(detail_impl.update_time.isnull()
                     ? "" : boost::posix_time::to_iso_extended_string(detail_impl.update_time.get_value()).c_str());
                 domain_detail->auth_info = CORBA::string_dup(detail_impl.authinfopw.c_str());
                 domain_detail->registrant.id = detail_impl.registrant.id;
@@ -554,8 +558,12 @@ namespace Registry
                     domain_detail->admins[i].name = CORBA::string_dup(detail_impl.admins[i].name.c_str());
                 }
 
-                domain_detail->states = CORBA::string_dup(detail_impl.states.c_str());
-                domain_detail->state_codes = CORBA::string_dup(detail_impl.state_codes.c_str());
+                domain_detail->state_codes.length(detail_impl.state_codes.size());
+                for(unsigned long long j = 0; j < detail_impl.state_codes.size(); ++j)
+                {
+                    domain_detail->state_codes[j] = CORBA::string_dup(detail_impl.state_codes.at(j).c_str());
+                }
+
 
                 if(detail_impl.is_owner)
                 {
@@ -585,13 +593,12 @@ namespace Registry
         Registry::DomainBrowser::KeysetDetail* Server_i::getKeysetDetail(
             ::CORBA::ULongLong contact_id,
              ::CORBA::ULongLong keyset_id,
-            const char* lang,
             Registry::DomainBrowser::DataAccessLevel& auth_result)
         {
             try
             {
                 Registry::DomainBrowserImpl::KeysetDetail detail_impl
-                    = pimpl_->getKeysetDetail(contact_id, keyset_id, lang);
+                    = pimpl_->getKeysetDetail(contact_id, keyset_id);
 
                 KeysetDetail_var keyset_detail = new KeysetDetail;
 
@@ -601,10 +608,10 @@ namespace Registry
                 keyset_detail->registrar.id = detail_impl.sponsoring_registrar.id;
                 keyset_detail->registrar.handle = CORBA::string_dup(detail_impl.sponsoring_registrar.handle.c_str());
                 keyset_detail->registrar.name = CORBA::string_dup(detail_impl.sponsoring_registrar.name.c_str());
-                keyset_detail->create_date = CORBA::string_dup(boost::posix_time::to_iso_extended_string(detail_impl.creation_time).c_str());
-                keyset_detail->transfer_date = CORBA::string_dup(detail_impl.transfer_time.isnull()
+                keyset_detail->create_time = CORBA::string_dup(boost::posix_time::to_iso_extended_string(detail_impl.creation_time).c_str());
+                keyset_detail->transfer_time = CORBA::string_dup(detail_impl.transfer_time.isnull()
                     ? "" : boost::posix_time::to_iso_extended_string(detail_impl.transfer_time.get_value()).c_str());
-                keyset_detail->update_date = CORBA::string_dup(detail_impl.update_time.isnull()
+                keyset_detail->update_time = CORBA::string_dup(detail_impl.update_time.isnull()
                     ? "" : boost::posix_time::to_iso_extended_string(detail_impl.update_time.get_value()).c_str());
 
                 keyset_detail->create_registrar.id = detail_impl.create_registrar.id;
@@ -634,8 +641,11 @@ namespace Registry
                     keyset_detail->dnskeys[i].key = CORBA::string_dup(detail_impl.dnskeys[i].key.c_str());
                 }
 
-                keyset_detail->states = CORBA::string_dup(detail_impl.states.c_str());
-                keyset_detail->state_codes = CORBA::string_dup(detail_impl.state_codes.c_str());
+                keyset_detail->state_codes.length(detail_impl.state_codes.size());
+                for(unsigned long long j = 0; j < detail_impl.state_codes.size(); ++j)
+                {
+                    keyset_detail->state_codes[j] = CORBA::string_dup(detail_impl.state_codes.at(j).c_str());
+                }
 
                 if(detail_impl.is_owner)
                 {

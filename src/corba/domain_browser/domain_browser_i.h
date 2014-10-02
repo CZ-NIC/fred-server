@@ -94,25 +94,21 @@ namespace Registry
             Registry::DomainBrowser::ContactDetail* getContactDetail(
                 ::CORBA::ULongLong contact_id,
                  ::CORBA::ULongLong detail_id,
-                const char* lang,
                 Registry::DomainBrowser::DataAccessLevel& auth_result);
 
             Registry::DomainBrowser::NSSetDetail* getNssetDetail(
                 ::CORBA::ULongLong contact_id,
                  ::CORBA::ULongLong nsset_id,
-                const char* lang,
                 Registry::DomainBrowser::DataAccessLevel& auth_result);
 
             Registry::DomainBrowser::DomainDetail* getDomainDetail(
                 ::CORBA::ULongLong contact_id,
                  ::CORBA::ULongLong domain_id,
-                const char* lang,
                 Registry::DomainBrowser::DataAccessLevel& auth_result);
 
             Registry::DomainBrowser::KeysetDetail* getKeysetDetail(
                 ::CORBA::ULongLong contact_id,
                  ::CORBA::ULongLong keyset_id,
-                const char* lang,
                 Registry::DomainBrowser::DataAccessLevel& auth_result);
 
             Registry::DomainBrowser::RegistrarDetail* getRegistrarDetail(

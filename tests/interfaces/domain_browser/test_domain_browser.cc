@@ -426,7 +426,7 @@ BOOST_FIXTURE_TEST_CASE(get_my_contact_detail, get_my_contact_detail_fixture )
     Fred::InfoRegistrarOutput sponsoring_registrar_info = Fred::InfoRegistrarByHandle(my_contact_info.info_contact_data.sponsoring_registrar_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
 
     Registry::DomainBrowserImpl::ContactDetail cd = impl.getContactDetail(user_contact_info.info_contact_data.id,
-            my_contact_info.info_contact_data.id, "CS");
+            my_contact_info.info_contact_data.id);
     const Fred::Contact::PlaceAddress mci_place = my_contact_info.info_contact_data.place.get_value_or_default();
 
     BOOST_CHECK(cd.id == my_contact_info.info_contact_data.id);
@@ -464,12 +464,9 @@ BOOST_FIXTURE_TEST_CASE(get_my_contact_detail, get_my_contact_detail_fixture )
     BOOST_CHECK(cd.disclose_flags.ident == my_contact_info.info_contact_data.discloseident);
     BOOST_CHECK(cd.disclose_flags.vat == my_contact_info.info_contact_data.disclosevat);
     BOOST_CHECK(cd.disclose_flags.notify_email == my_contact_info.info_contact_data.disclosenotifyemail);
-    BOOST_CHECK(cd.states.find_first_of("MojeID contact") != std::string::npos);
-    BOOST_CHECK(cd.state_codes.find_first_of("mojeidContact") != std::string::npos);
+    BOOST_CHECK(std::find(cd.state_codes.begin(), cd.state_codes.end(),"mojeidContact")!= cd.state_codes.end());
     BOOST_CHECK(cd.is_owner == true);
 
-    BOOST_MESSAGE(cd.states);
-    BOOST_MESSAGE(cd.state_codes);
 }
 
 struct get_contact_fixture
@@ -488,7 +485,7 @@ BOOST_FIXTURE_TEST_CASE(get_contact_detail, get_contact_fixture )
     Fred::InfoRegistrarOutput sponsoring_registrar_info = Fred::InfoRegistrarByHandle(test_contact_info.info_contact_data.sponsoring_registrar_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
 
     Registry::DomainBrowserImpl::ContactDetail cd = impl.getContactDetail(user_contact_info.info_contact_data.id,
-            test_contact_info.info_contact_data.id, "CS");
+            test_contact_info.info_contact_data.id);
     const Fred::Contact::PlaceAddress tci_place = test_contact_info.info_contact_data.place.get_value_or_default();
 
     BOOST_CHECK(cd.id == test_contact_info.info_contact_data.id);
@@ -526,12 +523,8 @@ BOOST_FIXTURE_TEST_CASE(get_contact_detail, get_contact_fixture )
     BOOST_CHECK(cd.disclose_flags.ident == test_contact_info.info_contact_data.discloseident);
     BOOST_CHECK(cd.disclose_flags.vat == test_contact_info.info_contact_data.disclosevat);
     BOOST_CHECK(cd.disclose_flags.notify_email == test_contact_info.info_contact_data.disclosenotifyemail);
-    BOOST_CHECK(cd.states.find_first_of("MojeID contact") == std::string::npos);
-    BOOST_CHECK(cd.state_codes.find_first_of("mojeidContact") == std::string::npos);
+    BOOST_CHECK(std::find(cd.state_codes.begin(), cd.state_codes.end(),"mojeidContact") == cd.state_codes.end());
     BOOST_CHECK(cd.is_owner == false);
-
-    BOOST_MESSAGE(cd.states);
-    BOOST_MESSAGE(cd.state_codes);
 }
 
 
@@ -549,7 +542,7 @@ BOOST_FIXTURE_TEST_CASE(get_contact_detail_no_user, get_contact_detail_no_user_f
     {
         Fred::OperationContext ctx;
         Fred::InfoContactOutput test_contact_info = Fred::InfoContactByHandle(test_contact_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
-        Registry::DomainBrowserImpl::ContactDetail cd = impl.getContactDetail(0,test_contact_info.info_contact_data.id, "CS");
+        Registry::DomainBrowserImpl::ContactDetail cd = impl.getContactDetail(0,test_contact_info.info_contact_data.id);
 
         BOOST_ERROR("unreported missing user contact");
     }
@@ -576,7 +569,7 @@ BOOST_FIXTURE_TEST_CASE(get_contact_detail_not_mojeid_user, get_contact_detail_n
         Fred::OperationContext ctx;
         Fred::InfoContactOutput test_contact_info = Fred::InfoContactByHandle(test_contact_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
         Registry::DomainBrowserImpl::ContactDetail cd = impl.getContactDetail(user_contact_info.info_contact_data.id,
-                test_contact_info.info_contact_data.id, "CS");
+                test_contact_info.info_contact_data.id);
         BOOST_ERROR("unreported mojeidContact state");
     }
     catch( const Registry::DomainBrowserImpl::UserNotExists& ex)
@@ -599,7 +592,7 @@ BOOST_FIXTURE_TEST_CASE(get_contact_detail_no_test_contact, get_contact_detail_n
     try
     {
         Fred::OperationContext ctx;
-        Registry::DomainBrowserImpl::ContactDetail d = impl.getContactDetail(user_contact_info.info_contact_data.id,0, "CS");
+        Registry::DomainBrowserImpl::ContactDetail d = impl.getContactDetail(user_contact_info.info_contact_data.id,0);
         BOOST_ERROR("unreported missing test contact");
     }
     catch( const Registry::DomainBrowserImpl::ObjectNotExists& ex)
@@ -726,7 +719,7 @@ BOOST_FIXTURE_TEST_CASE(get_my_domain_detail, get_my_domain_fixture )
     Fred::InfoContactOutput admin_contact_info = Fred::InfoContactByHandle(admin_contact_fixture::test_contact_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
 
     Registry::DomainBrowserImpl::DomainDetail d = impl.getDomainDetail(user_contact_info.info_contact_data.id,
-            my_domain_info.info_domain_data.id, "CS");
+            my_domain_info.info_domain_data.id);
 
     BOOST_CHECK(d.id == my_domain_info.info_domain_data.id);
     BOOST_CHECK(d.fqdn == my_domain_info.info_domain_data.fqdn);
@@ -754,8 +747,7 @@ BOOST_FIXTURE_TEST_CASE(get_my_domain_detail, get_my_domain_fixture )
         ? admin_contact_info.info_contact_data.name.get_value_or_default()
         : admin_contact_info.info_contact_data.organization.get_value_or_default()));
     BOOST_CHECK(d.admins.size() == 1);
-    BOOST_CHECK(d.states.compare("Doména je blokována") == 0);
-    BOOST_CHECK(d.state_codes.compare(Fred::ObjectState::SERVER_BLOCKED) == 0);
+    BOOST_CHECK(std::find(d.state_codes.begin(), d.state_codes.end(),Fred::ObjectState::SERVER_BLOCKED)!= d.state_codes.end());
     BOOST_CHECK(d.is_owner == true);
 }
 
@@ -772,7 +764,7 @@ BOOST_FIXTURE_TEST_CASE(get_domain_detail_no_domain, get_domain_detail_no_domain
     try
     {
         Fred::OperationContext ctx;
-        Registry::DomainBrowserImpl::DomainDetail d = impl.getDomainDetail(user_contact_info.info_contact_data.id,0, "CS");
+        Registry::DomainBrowserImpl::DomainDetail d = impl.getDomainDetail(user_contact_info.info_contact_data.id,0);
         BOOST_ERROR("unreported missing test domain");
     }
     catch( const Registry::DomainBrowserImpl::ObjectNotExists& ex)
@@ -803,7 +795,7 @@ BOOST_FIXTURE_TEST_CASE(get_nsset_detail, get_nsset_fixture )
     Fred::InfoContactOutput admin_contact_info = Fred::InfoContactByHandle(admin_contact_fixture::test_contact_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
 
     Registry::DomainBrowserImpl::NssetDetail n = impl.getNssetDetail(user_contact_info.info_contact_data.id,
-            nsset_info.info_nsset_data.id, "CS");
+            nsset_info.info_nsset_data.id);
 
     BOOST_CHECK(n.id == nsset_info.info_nsset_data.id);
     BOOST_CHECK(n.handle == nsset_info.info_nsset_data.handle);
@@ -836,10 +828,7 @@ BOOST_FIXTURE_TEST_CASE(get_nsset_detail, get_nsset_fixture )
     BOOST_CHECK(n.hosts.at(0).inet_addr.compare("127.0.0.3, 127.1.1.3") == 0);
     BOOST_CHECK(n.hosts.at(1).fqdn.compare("b.ns.nic.cz") == 0);
     BOOST_CHECK(n.hosts.at(1).inet_addr.compare("127.0.0.4, 127.1.1.4") == 0);
-
-    BOOST_CHECK(n.states.compare("Není povoleno smazání") == 0);
-    BOOST_CHECK(n.state_codes.compare(Fred::ObjectState::SERVER_DELETE_PROHIBITED) == 0);
-
+    BOOST_CHECK(std::find(n.state_codes.begin(), n.state_codes.end(),Fred::ObjectState::SERVER_DELETE_PROHIBITED)!= n.state_codes.end());
     BOOST_CHECK(n.report_level == 0);
 
     BOOST_CHECK(n.is_owner == false);
@@ -859,7 +848,7 @@ BOOST_FIXTURE_TEST_CASE(get_nsset_detail_no_nsset, get_nsset_detail_no_nsset_fix
     try
     {
         Fred::OperationContext ctx;
-        Registry::DomainBrowserImpl::NssetDetail d = impl.getNssetDetail(user_contact_info.info_contact_data.id,0, "CS");
+        Registry::DomainBrowserImpl::NssetDetail d = impl.getNssetDetail(user_contact_info.info_contact_data.id,0);
         BOOST_ERROR("unreported missing test nsset");
     }
     catch( const Registry::DomainBrowserImpl::ObjectNotExists& ex)
@@ -891,7 +880,7 @@ BOOST_FIXTURE_TEST_CASE(get_keyset_detail, get_keyset_fixture )
     Fred::InfoContactOutput admin_contact_info = Fred::InfoContactByHandle(admin_contact_fixture::test_contact_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
 
     Registry::DomainBrowserImpl::KeysetDetail k = impl.getKeysetDetail(user_contact_info.info_contact_data.id,
-            keyset_info.info_keyset_data.id, "CS");
+            keyset_info.info_keyset_data.id);
 
     BOOST_CHECK(k.id == keyset_info.info_keyset_data.id);
     BOOST_CHECK(k.handle == keyset_info.info_keyset_data.handle);
@@ -926,8 +915,7 @@ BOOST_FIXTURE_TEST_CASE(get_keyset_detail, get_keyset_fixture )
     BOOST_CHECK(k.dnskeys.at(0).alg == 5);
     BOOST_CHECK(k.dnskeys.at(0).key.compare("AwEAAddt2AkLfYGKgiEZB5SmIF8EvrjxNMH6HtxWEA4RJ9Ao6LCWheg8") == 0);
 
-    BOOST_CHECK(k.states.compare("Není povoleno smazání") == 0);
-    BOOST_CHECK(k.state_codes.compare(Fred::ObjectState::SERVER_DELETE_PROHIBITED) == 0);
+    BOOST_CHECK(std::find(k.state_codes.begin(), k.state_codes.end(),Fred::ObjectState::SERVER_DELETE_PROHIBITED)!= k.state_codes.end());
 
     BOOST_CHECK(k.is_owner == false);
 
@@ -946,7 +934,7 @@ BOOST_FIXTURE_TEST_CASE(get_keyset_detail_no_keyset, get_keyset_detail_no_keyset
     try
     {
         Fred::OperationContext ctx;
-        Registry::DomainBrowserImpl::KeysetDetail d = impl.getKeysetDetail(user_contact_info.info_contact_data.id,0, "CS");
+        Registry::DomainBrowserImpl::KeysetDetail d = impl.getKeysetDetail(user_contact_info.info_contact_data.id,0);
         BOOST_ERROR("unreported missing test keyset");
     }
     catch( const Registry::DomainBrowserImpl::ObjectNotExists& ex)
