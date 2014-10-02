@@ -46,6 +46,16 @@ namespace Fred
 namespace Messages
 {
 
+
+struct MessageCopyProhibited : virtual std::exception
+{
+    const char* what() const throw()
+    {
+        return "message copy is prohibited by status";
+    }
+};
+
+
 struct PostalAddress
 {
     std::string name;

@@ -883,7 +883,11 @@ ccReg::TID ccReg_Admin_i::resendPin3Letter(ccReg::TID publicRequestId)
                     "FROM enum_public_request_status WHERE id=pr.status),"
                    "prmm.id IS NULL,"         // [2] - have any message
                    "prmm.message_archive_id," // [3] - sms/letter id
-                   "ma.id "                   // [4] - id of pin3 letter
+                   "ma.id, "                  // [4] - id of pin3 letter
+                   "NOT (array_agg(status_id) over ()) "
+                       "&& (SELECT array_agg(id) "
+                                "FROM enum_send_status "
+                              "WHERE status_name NOT IN ('sent', 'no_processing')) AS copy_allowed "
             "FROM public_request pr "
             "LEFT JOIN public_request_messages_map prmm ON prmm.public_request_id=pr.id "
             "LEFT JOIN message_archive ma ON ("
@@ -933,6 +937,12 @@ ccReg::TID ccReg_Admin_i::resendPin3Letter(ccReg::TID publicRequestId)
                 % static_cast< ccReg::TID >(res[0][3]));
             throw ccReg::Admin::ObjectNotFound();
         }
+        if (!static_cast<bool>(res[0][5])) {
+            LOGGER(PACKAGE).warning(boost::format("letter id=%1% has copy prohibited status")
+                    % static_cast<unsigned long long>(res[0][3]));
+            throw Fred::Messages::MessageCopyProhibited();
+        }
+
         const ccReg::TID letterId = static_cast< ccReg::TID >(res[0][4]);
         Fred::Messages::ManagerPtr msgMan = Fred::Messages::create_manager();
         const ccReg::TID newLetterId = msgMan->copy_letter_to_send(letterId);
@@ -960,6 +970,11 @@ ccReg::TID ccReg_Admin_i::resendPin3Letter(ccReg::TID publicRequestId)
     catch (Database::NoDataFound &ex) {
         LOGGER(PACKAGE).error(boost::format("Database::NoDataFound: %1%") % ex.what());
         throw ccReg::Admin::ObjectNotFound();
+    }
+    catch (Fred::Messages::MessageCopyProhibited &ex)
+    {
+        LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
+        throw ccReg::Admin::MessageCopyProhibited();
     }
     catch (Database::Exception &ex) {
         LOGGER(PACKAGE).error(boost::format("Database problem: %1%") % ex.what());
