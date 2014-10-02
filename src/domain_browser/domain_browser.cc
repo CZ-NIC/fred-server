@@ -638,17 +638,7 @@ namespace Registry
                     if(admin.id == user_contact_id) detail.is_owner = true;//reveal authinfo
                 }
                 detail.authinfopw =filter_authinfo(detail.is_owner, nsset_info.info_nsset_data.authinfopw);
-
-                detail.hosts.reserve(nsset_info.info_nsset_data.dns_hosts.size());
-                for(std::vector<Fred::DnsHost>::const_iterator ci = nsset_info.info_nsset_data.dns_hosts.begin();
-                        ci != nsset_info.info_nsset_data.dns_hosts.end(); ++ci)
-                {
-                    DNSHost host;
-                    host.fqdn = ci->get_fqdn();
-                    host.inet_addr = Util::format_container(ci->get_inet_addr() , ", ");
-
-                    detail.hosts.push_back(host);
-                }
+                detail.hosts = nsset_info.info_nsset_data.dns_hosts;
 
                 get_object_states(ctx, nsset_info.info_nsset_data.id, detail.state_codes);
 

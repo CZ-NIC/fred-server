@@ -824,10 +824,13 @@ BOOST_FIXTURE_TEST_CASE(get_nsset_detail, get_nsset_fixture )
         : admin_contact_info.info_contact_data.organization.get_value_or_default()));
     BOOST_CHECK(n.admins.size() == 1);
 
-    BOOST_CHECK(n.hosts.at(0).fqdn.compare("a.ns.nic.cz") == 0);
-    BOOST_CHECK(n.hosts.at(0).inet_addr.compare("127.0.0.3, 127.1.1.3") == 0);
-    BOOST_CHECK(n.hosts.at(1).fqdn.compare("b.ns.nic.cz") == 0);
-    BOOST_CHECK(n.hosts.at(1).inet_addr.compare("127.0.0.4, 127.1.1.4") == 0);
+    BOOST_CHECK(n.hosts.at(0).get_fqdn().compare("a.ns.nic.cz") == 0);
+    BOOST_CHECK(n.hosts.at(0).get_inet_addr().at(0).to_string().compare("127.0.0.3") == 0);
+    BOOST_CHECK(n.hosts.at(0).get_inet_addr().at(1).to_string().compare("127.1.1.3") == 0);
+    BOOST_CHECK(n.hosts.at(1).get_fqdn().compare("b.ns.nic.cz") == 0);
+    BOOST_CHECK(n.hosts.at(1).get_inet_addr().at(0).to_string().compare("127.0.0.4") == 0);
+    BOOST_CHECK(n.hosts.at(1).get_inet_addr().at(1).to_string().compare("127.1.1.4") == 0);
+
     BOOST_CHECK(std::find(n.state_codes.begin(), n.state_codes.end(),Fred::ObjectState::SERVER_DELETE_PROHIBITED)!= n.state_codes.end());
     BOOST_CHECK(n.report_level == 0);
 

@@ -31,6 +31,7 @@
 
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/domain/enum_validation_extension.h"
+#include "src/fredlib/nsset/nsset_dns_host.h"
 #include "util/db/nullable.h"
 #include "util/optional_value.h"
 
@@ -165,15 +166,6 @@ namespace Registry
         };
 
         /**
-         * DNSHost data
-         */
-        struct DNSHost
-        {
-            std::string fqdn;/**< fully qualified name of the nameserver host*/
-            std::string inet_addr;/**< list of IPv4 or IPv6 addresses of the nameserver host*/
-        };
-
-        /**
          * Nsset detail data
          * Returned by @ref getNssetDetail.
          */
@@ -190,7 +182,7 @@ namespace Registry
             RegistryReference update_registrar;/**< registrar that updated the nsset */
             std::string authinfopw;/**< password for transfer */
             std::vector<RegistryReference> admins; /**< nsset admin contacts */
-            std::vector<DNSHost> hosts; /**< nsset DNS hosts */
+            std::vector<Fred::DnsHost> hosts; /**< nsset DNS hosts */
             std::vector<std::string> state_codes;/**< object states names from db. table enum_object_states*/
             short report_level; /**< nsset level of technical checks */
             bool is_owner;/**< user contact is owner of the nsset if it's also admin contact*/

@@ -464,8 +464,14 @@ namespace Registry
                 nsset_detail->hosts.length(detail_impl.hosts.size());
                 for(std::size_t i = 0; i < detail_impl.hosts.size(); ++i)
                 {
-                    nsset_detail->hosts[i].fqdn = CORBA::string_dup(detail_impl.hosts[i].fqdn.c_str());
-                    nsset_detail->hosts[i].inet = CORBA::string_dup(detail_impl.hosts[i].inet_addr.c_str());
+                    nsset_detail->hosts[i].fqdn = CORBA::string_dup(detail_impl.hosts[i].get_fqdn().c_str());
+
+                    std::vector<boost::asio::ip::address> inet_addrs = detail_impl.hosts[i].get_inet_addr();
+                    nsset_detail->hosts[i].inet.length(inet_addrs.size());
+                    for(std::size_t j = 0; j < inet_addrs.size(); ++j)
+                    {
+                        nsset_detail->hosts[i].inet[j] = CORBA::string_dup(inet_addrs.at(j).to_string().c_str());
+                    }
                 }
 
                 nsset_detail->state_codes.length(detail_impl.state_codes.size());
