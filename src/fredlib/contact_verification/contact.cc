@@ -178,89 +178,40 @@ unsigned long long db_contact_insert(Contact &_data)
     return _data.id;
 }
 
-
-void db_contact_update(Contact &_data)
+namespace
 {
-    if (static_cast<unsigned long long>(_data.id) == 0) {
-        throw std::runtime_error("cannot update contact record without contact id");
-    }
 
-    std::string qcontact =
-        "UPDATE contact SET"
-                 " name = $1::text, organization = $2::text,"
-                 " street1 = $3::text, street2 = $4::text,"
-                 " street3 = $5::text, city = $6::text,"
-                 " stateorprovince = $7::text, postalcode = $8::text,"
-                 " country = $9::text, telephone = $10::text,"
-                 " fax = $11::text, email = $12::text, notifyemail = $13::text,"
-                 " vat = $14::text, ssn = $15::text,"
-                 " ssntype = (SELECT id FROM enum_ssntype WHERE type = $16::text),"
-                 " disclosename = $17::boolean, discloseorganization = $18::boolean,"
-                 " discloseaddress = $19::boolean, disclosetelephone = $20::boolean,"
-                 " disclosefax = $21::boolean, discloseemail = $22::boolean,"
-                 " disclosenotifyemail = $23::boolean, disclosevat = $24::boolean,"
-                 " discloseident = $25::boolean"
-            " WHERE"
-                " id = $26::integer";
+typedef std::vector< ContactAddress > Addresses;
+typedef std::map< std::string, ContactAddress > TypeToAddress;
 
-    Database::QueryParams pcontact = Database::query_param_list
-        (_data.name)
-        (_data.organization)
-        (_data.street1)
-        (_data.street2)
-        (_data.street3)
-        (_data.city)
-        (_data.stateorprovince)
-        (_data.postalcode)
-        (_data.country)
-        (_data.telephone)
-        (_data.fax)
-        (_data.email)
-        (_data.notifyemail)
-        (_data.vat)
-        (_data.ssn)
-        (_data.ssntype)
-        (_data.disclosename)
-        (_data.discloseorganization)
-        (_data.discloseaddress)
-        (_data.disclosetelephone)
-        (_data.disclosefax)
-        (_data.discloseemail)
-        (_data.disclosenotifyemail)
-        (_data.disclosevat)
-        (_data.discloseident)
-        (_data.id);
-
-    Database::Connection conn = Database::Manager::acquire();
-    Database::Result rcontact = conn.exec_params(qcontact, pcontact);
-
-    typedef std::vector< ContactAddress > Addresses;
-    typedef std::map< std::string, ContactAddress > TypeToAddress;
-    TypeToAddress current_addresses;
-    TypeToAddress required_addresses;
+void db_contact_delete_unnecessary(Database::Connection &_conn, unsigned long long _contactid,
+                                   const Addresses &_addresses, TypeToAddress &_current_addresses,
+                                   TypeToAddress &_required_addresses)
+{
     std::ostringstream types_to_delete;
-    Database::query_param_list to_delete_param(_data.id);
+    Database::query_param_list to_delete_param(_contactid);
+    _current_addresses.clear();
+    _required_addresses.clear();
 
-    for (Addresses::const_iterator pca = _data.addresses.begin();
-         pca != _data.addresses.end(); ++pca) {
-        required_addresses[pca->type] = *pca;
+    for (Addresses::const_iterator pca = _addresses.begin(); pca != _addresses.end(); ++pca) {
+        _required_addresses[pca->type] = *pca;
     }
 
-    Database::Result res_addr = conn.exec_params(
+    Database::Result res_addr = _conn.exec_params(
         "SELECT type,company_name,street1,street2,street3,city,stateorprovince,"
                "postalcode,country "
         "FROM contact_address "
         "WHERE contactid=$1::integer",
-        Database::query_param_list(_data.id));
+        Database::query_param_list(_contactid));
     for (::size_t idx = 0; idx < res_addr.size(); ++idx) {
         ContactAddress current_address;
         current_address.type = static_cast< std::string >(res_addr[idx][0]);
-        if (required_addresses.find(current_address.type) == required_addresses.end()) {
+        if (_required_addresses.find(current_address.type) == _required_addresses.end()) {
             to_delete_param(current_address.type);
             if (!types_to_delete.str().empty()) {
                 types_to_delete << ",";
             }
-            types_to_delete << "$" << to_delete_param.size() << "::text";
+            types_to_delete << "$" << to_delete_param.size() << "::contact_address_type";
             continue;
         }
         if (!res_addr[idx][1].isnull()) {
@@ -287,22 +238,27 @@ void db_contact_update(Contact &_data)
         if (!res_addr[idx][8].isnull()) {
           current_address.country = static_cast< std::string >(res_addr[idx][8]);
         }
-        current_addresses[current_address.type] = current_address;
+        _current_addresses[current_address.type] = current_address;
     }
 
     if (!types_to_delete.str().empty()) {
-        conn.exec_params("DELETE FROM contact_address "
-                         "WHERE contactid=$1::integer AND "
-                               "type IN (" + types_to_delete.str() + ")", to_delete_param);
+        _conn.exec_params("DELETE FROM contact_address "
+                          "WHERE contactid=$1::integer AND "
+                                "type IN (" + types_to_delete.str() + ")", to_delete_param);
     }
+}
 
+void db_contact_insert_or_update(Database::Connection &_conn, unsigned long long _contactid,
+                                 const TypeToAddress &_current_addresses,
+                                 const TypeToAddress &_required_addresses)
+{
     std::ostringstream values_to_insert;
-    Database::query_param_list to_insert_param(_data.id);
-    for (TypeToAddress::const_iterator ptr_required_addr = required_addresses.begin();
-         ptr_required_addr != required_addresses.end(); ++ptr_required_addr) {
+    Database::query_param_list to_insert_param(_contactid);
+    for (TypeToAddress::const_iterator ptr_required_addr = _required_addresses.begin();
+         ptr_required_addr != _required_addresses.end(); ++ptr_required_addr) {
         const ContactAddress &required_addr = ptr_required_addr->second;
-        TypeToAddress::const_iterator ptr_current_addr = current_addresses.find(required_addr.type);
-        if (ptr_current_addr == current_addresses.end()) { // required address doesn't exist => insert
+        TypeToAddress::const_iterator ptr_current_addr = _current_addresses.find(required_addr.type);
+        if (ptr_current_addr == _current_addresses.end()) { // required address doesn't exist => insert
             if (!values_to_insert.str().empty()) {
                 values_to_insert << ",";
             }
@@ -371,7 +327,7 @@ void db_contact_update(Contact &_data)
             const ContactAddress &current_addr = ptr_current_addr->second;
             if (current_addr != required_addr) {
                 std::ostringstream to_update_set;
-                Database::query_param_list to_update_param(_data.id);
+                Database::query_param_list to_update_param(_contactid);
                 to_update_param(required_addr.type);
                 to_update_set << "company_name=";
                 if (!required_addr.company_name.isnull()) {
@@ -437,20 +393,84 @@ void db_contact_update(Contact &_data)
                 else {
                     to_update_set << "NULL";
                 }
-                conn.exec_params("UPDATE contact_address "
-                                 "SET " + to_update_set.str() + " "
-                                 "WHERE contactid=$1::integer AND "
-                                       "type=$2::contact_address_type", to_update_param);
+                _conn.exec_params("UPDATE contact_address "
+                                  "SET " + to_update_set.str() + " "
+                                  "WHERE contactid=$1::integer AND "
+                                        "type=$2::contact_address_type", to_update_param);
             }
         }
     }
 
     if (!values_to_insert.str().empty()) {
-        conn.exec_params("INSERT INTO contact_address (contactid,type,company_name,"
-                                                      "street1,street2,street3,city,"
-                                                      "stateorprovince,postalcode,country) "
-                         "VALUES " + values_to_insert.str(), to_insert_param);
+        _conn.exec_params("INSERT INTO contact_address (contactid,type,company_name,"
+                                                       "street1,street2,street3,city,"
+                                                       "stateorprovince,postalcode,country) "
+                          "VALUES " + values_to_insert.str(), to_insert_param);
     }
+}
+
+}
+
+void db_contact_update(Contact &_data)
+{
+    if (static_cast<unsigned long long>(_data.id) == 0) {
+        throw std::runtime_error("cannot update contact record without contact id");
+    }
+
+    std::string qcontact =
+        "UPDATE contact SET"
+                 " name = $1::text, organization = $2::text,"
+                 " street1 = $3::text, street2 = $4::text,"
+                 " street3 = $5::text, city = $6::text,"
+                 " stateorprovince = $7::text, postalcode = $8::text,"
+                 " country = $9::text, telephone = $10::text,"
+                 " fax = $11::text, email = $12::text, notifyemail = $13::text,"
+                 " vat = $14::text, ssn = $15::text,"
+                 " ssntype = (SELECT id FROM enum_ssntype WHERE type = $16::text),"
+                 " disclosename = $17::boolean, discloseorganization = $18::boolean,"
+                 " discloseaddress = $19::boolean, disclosetelephone = $20::boolean,"
+                 " disclosefax = $21::boolean, discloseemail = $22::boolean,"
+                 " disclosenotifyemail = $23::boolean, disclosevat = $24::boolean,"
+                 " discloseident = $25::boolean"
+            " WHERE"
+                " id = $26::integer";
+
+    Database::QueryParams pcontact = Database::query_param_list
+        (_data.name)
+        (_data.organization)
+        (_data.street1)
+        (_data.street2)
+        (_data.street3)
+        (_data.city)
+        (_data.stateorprovince)
+        (_data.postalcode)
+        (_data.country)
+        (_data.telephone)
+        (_data.fax)
+        (_data.email)
+        (_data.notifyemail)
+        (_data.vat)
+        (_data.ssn)
+        (_data.ssntype)
+        (_data.disclosename)
+        (_data.discloseorganization)
+        (_data.discloseaddress)
+        (_data.disclosetelephone)
+        (_data.disclosefax)
+        (_data.discloseemail)
+        (_data.disclosenotifyemail)
+        (_data.disclosevat)
+        (_data.discloseident)
+        (_data.id);
+
+    Database::Connection conn = Database::Manager::acquire();
+    Database::Result rcontact = conn.exec_params(qcontact, pcontact);
+
+    TypeToAddress current_addresses;
+    TypeToAddress required_addresses;
+    db_contact_delete_unnecessary(conn, _data.id, _data.addresses, current_addresses,
+                                  required_addresses);
+    db_contact_insert_or_update(conn, _data.id, current_addresses, required_addresses);
 }
 
 
