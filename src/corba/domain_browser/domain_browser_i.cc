@@ -137,10 +137,6 @@ namespace Registry
             {
                 throw Registry::DomainBrowser::USER_NOT_EXISTS();
             }
-            catch (const Registry::DomainBrowserImpl::IncorrectUsage& )
-            {
-                throw Registry::DomainBrowser::INCORRECT_USAGE();
-            }
             catch (...)
             {
                 throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
@@ -198,10 +194,6 @@ namespace Registry
             {
                 throw Registry::DomainBrowser::USER_NOT_EXISTS();
             }
-            catch (const Registry::DomainBrowserImpl::IncorrectUsage& )
-            {
-                throw Registry::DomainBrowser::INCORRECT_USAGE();
-            }
             catch (...)
             {
                 throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
@@ -257,10 +249,6 @@ namespace Registry
             {
                 throw Registry::DomainBrowser::USER_NOT_EXISTS();
             }
-            catch (const Registry::DomainBrowserImpl::IncorrectUsage& )
-            {
-                throw Registry::DomainBrowser::INCORRECT_USAGE();
-            }
             catch (...)
             {
                 throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
@@ -288,17 +276,9 @@ namespace Registry
             {
                 throw Registry::DomainBrowser::ACCESS_DENIED();
             }
-            catch (const Registry::DomainBrowserImpl::ObjectNotExists&)
-            {
-                throw Registry::DomainBrowser::OBJECT_NOT_EXISTS();
-            }
             catch (const Registry::DomainBrowserImpl::UserNotExists& )
             {
                 throw Registry::DomainBrowser::USER_NOT_EXISTS();
-            }
-            catch (const Registry::DomainBrowserImpl::IncorrectUsage& )
-            {
-                throw Registry::DomainBrowser::INCORRECT_USAGE();
             }
             catch (...)
             {
@@ -328,17 +308,9 @@ namespace Registry
             {
                 throw Registry::DomainBrowser::ACCESS_DENIED();
             }
-            catch (const Registry::DomainBrowserImpl::ObjectNotExists&)
-            {
-                throw Registry::DomainBrowser::OBJECT_NOT_EXISTS();
-            }
             catch (const Registry::DomainBrowserImpl::UserNotExists& )
             {
                 throw Registry::DomainBrowser::USER_NOT_EXISTS();
-            }
-            catch (const Registry::DomainBrowserImpl::IncorrectUsage& )
-            {
-                throw Registry::DomainBrowser::INCORRECT_USAGE();
             }
             catch (...)
             {
@@ -930,10 +902,6 @@ namespace Registry
                 }
                 return  status_description_var._retn();
             }//try
-            catch (const Registry::DomainBrowserImpl::IncorrectUsage& )
-            {
-                throw Registry::DomainBrowser::INCORRECT_USAGE();
-            }
             catch (...)
             {
                 throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
@@ -979,10 +947,6 @@ namespace Registry
             catch (const Registry::DomainBrowserImpl::UserNotExists& )
             {
                 throw Registry::DomainBrowser::USER_NOT_EXISTS();
-            }
-            catch (const Registry::DomainBrowserImpl::IncorrectUsage& )
-            {
-                throw Registry::DomainBrowser::INCORRECT_USAGE();
             }
             catch (...)
             {
