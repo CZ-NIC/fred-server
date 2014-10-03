@@ -2161,20 +2161,20 @@ BOOST_FIXTURE_TEST_CASE(get_my_domain_list, get_my_domains_fixture )
     impl.getDomainList(user_contact_info.info_contact_data.id, Optional<unsigned long long>(),
             Optional<unsigned long long>(), Optional<unsigned long long>(),0,domain_list_out);
 
-    BOOST_CHECK(domain_list_out.at(0).next_state.state_code == "deleteCandidate");
-    BOOST_CHECK(domain_list_out.at(0).next_state.state_date == (map_at(domain_info,domain_list_out.at(0).fqdn).info_domain_data.expiration_date + boost::gregorian::days(registration_protection)));
+    BOOST_CHECK(domain_list_out.at(0).next_state.get_value().state_code == "deleteCandidate");
+    BOOST_CHECK(domain_list_out.at(0).next_state.get_value().state_date == (map_at(domain_info,domain_list_out.at(0).fqdn).info_domain_data.expiration_date + boost::gregorian::days(registration_protection)));
 
     BOOST_CHECK(std::find(domain_list_out.at(0).state_code.begin(), domain_list_out.at(0).state_code.end(), "expired") != domain_list_out.at(0).state_code.end());
     BOOST_CHECK(std::find(domain_list_out.at(0).state_code.begin(), domain_list_out.at(0).state_code.end(), "outzone") != domain_list_out.at(0).state_code.end());
 
-    BOOST_CHECK(domain_list_out.at(1).next_state.state_code == "outzone");
-    BOOST_CHECK(domain_list_out.at(1).next_state.state_date == (map_at(domain_info,domain_list_out.at(1).fqdn).info_domain_data.expiration_date + boost::gregorian::days(outzone_protection)));
+    BOOST_CHECK(domain_list_out.at(1).next_state.get_value().state_code == "outzone");
+    BOOST_CHECK(domain_list_out.at(1).next_state.get_value().state_date == (map_at(domain_info,domain_list_out.at(1).fqdn).info_domain_data.expiration_date + boost::gregorian::days(outzone_protection)));
 
     BOOST_CHECK(std::find(domain_list_out.at(1).state_code.begin(), domain_list_out.at(1).state_code.end(), "expired") != domain_list_out.at(1).state_code.end());
     BOOST_CHECK(std::find(domain_list_out.at(1).state_code.begin(), domain_list_out.at(1).state_code.end(), "serverBlocked") != domain_list_out.at(1).state_code.end());
 
-    BOOST_CHECK(domain_list_out.at(2).next_state.state_code == "expired");
-    BOOST_CHECK(domain_list_out.at(2).next_state.state_date == (map_at(domain_info,domain_list_out.at(2).fqdn).info_domain_data.expiration_date));
+    BOOST_CHECK(domain_list_out.at(2).next_state.get_value().state_code == "expired");
+    BOOST_CHECK(domain_list_out.at(2).next_state.get_value().state_date == (map_at(domain_info,domain_list_out.at(2).fqdn).info_domain_data.expiration_date));
     BOOST_CHECK(domain_list_out.at(2).state_code.empty());
     for(unsigned long long i = 0; i < domain_list_out.size(); ++i)
     {
@@ -2209,20 +2209,20 @@ BOOST_FIXTURE_TEST_CASE(get_my_domain_list_by_contact, get_my_domains_fixture )
             Optional<unsigned long long>(),
             Optional<unsigned long long>(),0,domain_list_out);
 
-    BOOST_CHECK(domain_list_out.at(0).next_state.state_code == "deleteCandidate");
-    BOOST_CHECK(domain_list_out.at(0).next_state.state_date == (map_at(domain_info,domain_list_out.at(0).fqdn).info_domain_data.expiration_date + boost::gregorian::days(registration_protection)));
+    BOOST_CHECK(domain_list_out.at(0).next_state.get_value().state_code == "deleteCandidate");
+    BOOST_CHECK(domain_list_out.at(0).next_state.get_value().state_date == (map_at(domain_info,domain_list_out.at(0).fqdn).info_domain_data.expiration_date + boost::gregorian::days(registration_protection)));
 
     BOOST_CHECK(std::find(domain_list_out.at(0).state_code.begin(), domain_list_out.at(0).state_code.end(), "expired") != domain_list_out.at(0).state_code.end());
     BOOST_CHECK(std::find(domain_list_out.at(0).state_code.begin(), domain_list_out.at(0).state_code.end(), "outzone") != domain_list_out.at(0).state_code.end());
 
-    BOOST_CHECK(domain_list_out.at(1).next_state.state_code == "outzone");
-    BOOST_CHECK(domain_list_out.at(1).next_state.state_date == (map_at(domain_info,domain_list_out.at(1).fqdn).info_domain_data.expiration_date + boost::gregorian::days(outzone_protection)));
+    BOOST_CHECK(domain_list_out.at(1).next_state.get_value().state_code == "outzone");
+    BOOST_CHECK(domain_list_out.at(1).next_state.get_value().state_date == (map_at(domain_info,domain_list_out.at(1).fqdn).info_domain_data.expiration_date + boost::gregorian::days(outzone_protection)));
 
     BOOST_CHECK(std::find(domain_list_out.at(1).state_code.begin(), domain_list_out.at(1).state_code.end(), "expired") != domain_list_out.at(1).state_code.end());
     BOOST_CHECK(std::find(domain_list_out.at(1).state_code.begin(), domain_list_out.at(1).state_code.end(), "serverBlocked") != domain_list_out.at(1).state_code.end());
 
-    BOOST_CHECK(domain_list_out.at(2).next_state.state_code == "expired");
-    BOOST_CHECK(domain_list_out.at(2).next_state.state_date == (map_at(domain_info,domain_list_out.at(2).fqdn).info_domain_data.expiration_date));
+    BOOST_CHECK(domain_list_out.at(2).next_state.get_value().state_code == "expired");
+    BOOST_CHECK(domain_list_out.at(2).next_state.get_value().state_date == (map_at(domain_info,domain_list_out.at(2).fqdn).info_domain_data.expiration_date));
     BOOST_CHECK(domain_list_out.at(2).state_code.empty());
     for(unsigned long long i = 0; i < domain_list_out.size(); ++i)
     {
@@ -2265,20 +2265,20 @@ BOOST_FIXTURE_TEST_CASE(get_my_domain_list_by_nsset, get_my_domains_fixture )
             Optional<unsigned long long>(nsset_info.info_nsset_data.id),
             Optional<unsigned long long>(),0,domain_list_out);
 
-    BOOST_CHECK(domain_list_out.at(0).next_state.state_code == "deleteCandidate");
-    BOOST_CHECK(domain_list_out.at(0).next_state.state_date == (map_at(domain_info,domain_list_out.at(0).fqdn).info_domain_data.expiration_date + boost::gregorian::days(registration_protection)));
+    BOOST_CHECK(domain_list_out.at(0).next_state.get_value().state_code == "deleteCandidate");
+    BOOST_CHECK(domain_list_out.at(0).next_state.get_value().state_date == (map_at(domain_info,domain_list_out.at(0).fqdn).info_domain_data.expiration_date + boost::gregorian::days(registration_protection)));
 
     BOOST_CHECK(std::find(domain_list_out.at(0).state_code.begin(), domain_list_out.at(0).state_code.end(), "expired") != domain_list_out.at(0).state_code.end());
     BOOST_CHECK(std::find(domain_list_out.at(0).state_code.begin(), domain_list_out.at(0).state_code.end(), "outzone") != domain_list_out.at(0).state_code.end());
 
-    BOOST_CHECK(domain_list_out.at(1).next_state.state_code == "outzone");
-    BOOST_CHECK(domain_list_out.at(1).next_state.state_date == (map_at(domain_info,domain_list_out.at(1).fqdn).info_domain_data.expiration_date + boost::gregorian::days(outzone_protection)));
+    BOOST_CHECK(domain_list_out.at(1).next_state.get_value().state_code == "outzone");
+    BOOST_CHECK(domain_list_out.at(1).next_state.get_value().state_date == (map_at(domain_info,domain_list_out.at(1).fqdn).info_domain_data.expiration_date + boost::gregorian::days(outzone_protection)));
 
     BOOST_CHECK(std::find(domain_list_out.at(1).state_code.begin(), domain_list_out.at(1).state_code.end(), "expired") != domain_list_out.at(1).state_code.end());
     BOOST_CHECK(std::find(domain_list_out.at(1).state_code.begin(), domain_list_out.at(1).state_code.end(), "serverBlocked") != domain_list_out.at(1).state_code.end());
 
-    BOOST_CHECK(domain_list_out.at(2).next_state.state_code == "expired");
-    BOOST_CHECK(domain_list_out.at(2).next_state.state_date == (map_at(domain_info,domain_list_out.at(2).fqdn).info_domain_data.expiration_date));
+    BOOST_CHECK(domain_list_out.at(2).next_state.get_value().state_code == "expired");
+    BOOST_CHECK(domain_list_out.at(2).next_state.get_value().state_date == (map_at(domain_info,domain_list_out.at(2).fqdn).info_domain_data.expiration_date));
     BOOST_CHECK(domain_list_out.at(2).state_code.empty());
     for(unsigned long long i = 0; i < domain_list_out.size(); ++i)
     {
@@ -2320,20 +2320,20 @@ BOOST_FIXTURE_TEST_CASE(get_my_domain_list_by_keyset, get_my_domains_fixture )
             Optional<unsigned long long>(),
             Optional<unsigned long long>(keyset_info.info_keyset_data.id),0,domain_list_out);
 
-    BOOST_CHECK(domain_list_out.at(0).next_state.state_code == "deleteCandidate");
-    BOOST_CHECK(domain_list_out.at(0).next_state.state_date == (map_at(domain_info,domain_list_out.at(0).fqdn).info_domain_data.expiration_date + boost::gregorian::days(registration_protection)));
+    BOOST_CHECK(domain_list_out.at(0).next_state.get_value().state_code == "deleteCandidate");
+    BOOST_CHECK(domain_list_out.at(0).next_state.get_value().state_date == (map_at(domain_info,domain_list_out.at(0).fqdn).info_domain_data.expiration_date + boost::gregorian::days(registration_protection)));
 
     BOOST_CHECK(std::find(domain_list_out.at(0).state_code.begin(), domain_list_out.at(0).state_code.end(), "expired") != domain_list_out.at(0).state_code.end());
     BOOST_CHECK(std::find(domain_list_out.at(0).state_code.begin(), domain_list_out.at(0).state_code.end(), "outzone") != domain_list_out.at(0).state_code.end());
 
-    BOOST_CHECK(domain_list_out.at(1).next_state.state_code == "outzone");
-    BOOST_CHECK(domain_list_out.at(1).next_state.state_date == (map_at(domain_info,domain_list_out.at(1).fqdn).info_domain_data.expiration_date + boost::gregorian::days(outzone_protection)));
+    BOOST_CHECK(domain_list_out.at(1).next_state.get_value().state_code == "outzone");
+    BOOST_CHECK(domain_list_out.at(1).next_state.get_value().state_date == (map_at(domain_info,domain_list_out.at(1).fqdn).info_domain_data.expiration_date + boost::gregorian::days(outzone_protection)));
 
     BOOST_CHECK(std::find(domain_list_out.at(1).state_code.begin(), domain_list_out.at(1).state_code.end(), "expired") != domain_list_out.at(1).state_code.end());
     BOOST_CHECK(std::find(domain_list_out.at(1).state_code.begin(), domain_list_out.at(1).state_code.end(), "serverBlocked") != domain_list_out.at(1).state_code.end());
 
-    BOOST_CHECK(domain_list_out.at(2).next_state.state_code == "expired");
-    BOOST_CHECK(domain_list_out.at(2).next_state.state_date == (map_at(domain_info,domain_list_out.at(2).fqdn).info_domain_data.expiration_date));
+    BOOST_CHECK(domain_list_out.at(2).next_state.get_value().state_code == "expired");
+    BOOST_CHECK(domain_list_out.at(2).next_state.get_value().state_date == (map_at(domain_info,domain_list_out.at(2).fqdn).info_domain_data.expiration_date));
     BOOST_CHECK(domain_list_out.at(2).state_code.empty());
     for(unsigned long long i = 0; i < domain_list_out.size(); ++i)
     {

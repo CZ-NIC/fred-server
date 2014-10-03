@@ -77,10 +77,23 @@ namespace Registry
                 dld.id = domain_list.at(i).id;
                 dld.fqdn = CORBA::string_dup(domain_list.at(i).fqdn.c_str());
                 dld.external_importance = domain_list.at(i).external_importance;
-                dld.next_state.state_code = CORBA::string_dup(domain_list.at(i).next_state.state_code.c_str());
-                std::string next_state_date = domain_list.at(i).next_state.state_date.is_special()
-                    ? "" : boost::gregorian::to_iso_extended_string(domain_list.at(i).next_state.state_date);
-                dld.next_state.state_date = CORBA::string_dup(next_state_date.c_str());
+
+                if(domain_list.at(i).next_state.isnull())
+                {
+                    dld.next_state = 0;
+                }
+                else
+                {
+                    dld.next_state = new NullableNextDomainState();
+                    dld.next_state->state_code(CORBA::string_dup(domain_list.at(i).next_state.get_value().state_code.c_str()));
+                    if(domain_list.at(i).next_state.get_value().state_date.is_special())
+                    {
+                        throw std::runtime_error("next domain state date is special");
+                    }
+                    dld.next_state->state_date(CORBA::string_dup(boost::gregorian::to_iso_extended_string(
+                        domain_list.at(i).next_state.get_value().state_date).c_str()));
+                }
+
                 dld.have_keyset = domain_list.at(i).have_keyset;
                 dld.user_role = CORBA::string_dup(domain_list.at(i).user_role.c_str());
                 dld.registrar_handle = CORBA::string_dup(domain_list.at(i).registrar_handle.c_str());

@@ -264,11 +264,7 @@ namespace Registry
             std::string state_code; /**< next state code */
             boost::gregorian::date state_date; /**< next state date */
 
-            /**
-             * Default state is "N/A" and default date is not_a_date_time.
-             */
             NextDomainState()
-            : state_code("N/A")
             {}
 
             /**
@@ -288,7 +284,7 @@ namespace Registry
             unsigned long long id;/**< id of the domain */
             std::string fqdn;/**< fully qualified domain name */
             unsigned long long external_importance;/**<  bitwise OR of importance values of states with external flag or @ref lowest_status_importance_ value if bitwise OR is zero */
-            NextDomainState next_state;/**< next state of the domain according to current date and expiration date, outzone date and delete date of the domain with its date*/
+            Nullable<NextDomainState> next_state;/**< next state of the domain (if any) according to current date and expiration date, outzone date and delete date of the domain with its date*/
             bool have_keyset; /**< domain have keyset flag */
             std::string user_role; /**< domainbrowser user relation to the domain (holder/admin/'') */
             std::string registrar_handle; /**< domain registrar handle*/
@@ -537,8 +533,9 @@ namespace Registry
              * @param expiration_date domain expiration
              * @param outzone_date domain outzone date
              * @param delete_date domain delete date
+             * @return next domain state if there is one
              */
-            NextDomainState getNextDomainState(
+            Nullable<NextDomainState> getNextDomainState(
                 const boost::gregorian::date&  today_date,
                 const boost::gregorian::date& expiration_date,
                 const boost::gregorian::date& outzone_date,

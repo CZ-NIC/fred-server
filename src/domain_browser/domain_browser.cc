@@ -187,16 +187,16 @@ namespace Registry
             return "********";//if not
         }
 
-        NextDomainState DomainBrowser::getNextDomainState(
+        Nullable<NextDomainState> DomainBrowser::getNextDomainState(
             const boost::gregorian::date& today_date,
             const boost::gregorian::date& expiration_date,
             const boost::gregorian::date& outzone_date,
             const boost::gregorian::date& delete_date)
         {
-            NextDomainState next;
+            Nullable<NextDomainState> next;
             if(today_date < expiration_date)
             {
-                next = NextDomainState("expired", expiration_date);
+                next = Nullable<NextDomainState>(NextDomainState("expired", expiration_date));
             }
             else if((today_date < delete_date) || (today_date < outzone_date))
                 {
@@ -204,22 +204,22 @@ namespace Registry
                     {
                         if(today_date < outzone_date)
                         {
-                            next = NextDomainState("outzone", outzone_date);
+                            next = Nullable<NextDomainState>(NextDomainState("outzone", outzone_date));
                         }
                         else
                         {
-                            next = NextDomainState("deleteCandidate", delete_date);
+                            next = Nullable<NextDomainState>(NextDomainState("deleteCandidate", delete_date));
                         }
                     }
                     else //posibly bad config
                     {
                         if(today_date < delete_date)
                         {
-                            next = NextDomainState("deleteCandidate", delete_date);
+                            next = Nullable<NextDomainState>(NextDomainState("deleteCandidate", delete_date));
                         }
                         else
                         {
-                            next = NextDomainState("outzone", outzone_date);
+                            next = Nullable<NextDomainState>(NextDomainState("outzone", outzone_date));
                         }
                     }
                 }
@@ -1232,9 +1232,7 @@ namespace Registry
                     boost::gregorian::date delete_date = domain_list_result[i]["delete_date"].isnull() ? boost::gregorian::date()
                                 : boost::gregorian::from_string(static_cast<std::string>(domain_list_result[i]["delete_date"]));
 
-                    NextDomainState next = getNextDomainState(today_date,expiration_date,outzone_date,delete_date);
-
-                    dld.next_state = next;
+                    dld.next_state = getNextDomainState(today_date,expiration_date,outzone_date,delete_date);
 
                     dld.have_keyset = static_cast<bool>(domain_list_result[i]["have_keyset"]);
                     dld.user_role = static_cast<std::string>(domain_list_result[i]["user_role"]);
