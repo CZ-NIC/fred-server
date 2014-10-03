@@ -364,10 +364,25 @@ namespace Registry
                 contact_detail->registrar.handle = CORBA::string_dup(detail_impl.sponsoring_registrar.handle.c_str());
                 contact_detail->registrar.name = CORBA::string_dup(detail_impl.sponsoring_registrar.name.c_str());
                 contact_detail->create_time = CORBA::string_dup(boost::posix_time::to_iso_extended_string(detail_impl.creation_time).c_str());
-                contact_detail->transfer_time = CORBA::string_dup(detail_impl.transfer_time.isnull()
-                    ? "" : boost::posix_time::to_iso_extended_string(detail_impl.transfer_time.get_value()).c_str());
-                contact_detail->update_time = CORBA::string_dup(detail_impl.update_time.isnull()
-                    ? "" : boost::posix_time::to_iso_extended_string(detail_impl.update_time.get_value()).c_str());
+
+                if(!detail_impl.transfer_time.isnull() && !detail_impl.transfer_time.get_value().is_special())
+                {
+                    contact_detail->transfer_time = new NullableDateTime(boost::posix_time::to_iso_extended_string(detail_impl.transfer_time.get_value()).c_str());
+                }
+                else
+                {
+                    contact_detail->transfer_time = 0;
+                }
+
+                if(!detail_impl.update_time.isnull() && !detail_impl.update_time.get_value().is_special())
+                {
+                    contact_detail->update_time = new NullableDateTime(boost::posix_time::to_iso_extended_string(detail_impl.update_time.get_value()).c_str());
+                }
+                else
+                {
+                    contact_detail->update_time = 0;
+                }
+
                 contact_detail->auth_info = CORBA::string_dup(detail_impl.authinfopw.c_str());
                 contact_detail->name = CORBA::string_dup(detail_impl.name.get_value_or_default().c_str());
                 contact_detail->organization = CORBA::string_dup(detail_impl.organization.get_value_or_default().c_str());
@@ -445,10 +460,24 @@ namespace Registry
                 nsset_detail->registrar.handle = CORBA::string_dup(detail_impl.sponsoring_registrar.handle.c_str());
                 nsset_detail->registrar.name = CORBA::string_dup(detail_impl.sponsoring_registrar.name.c_str());
                 nsset_detail->create_time = CORBA::string_dup(boost::posix_time::to_iso_extended_string(detail_impl.creation_time).c_str());
-                nsset_detail->transfer_time = CORBA::string_dup(detail_impl.transfer_time.isnull()
-                    ? "" : boost::posix_time::to_iso_extended_string(detail_impl.transfer_time.get_value()).c_str());
-                nsset_detail->update_time = CORBA::string_dup(detail_impl.update_time.isnull()
-                    ? "" : boost::posix_time::to_iso_extended_string(detail_impl.update_time.get_value()).c_str());
+
+                if(!detail_impl.transfer_time.isnull() && !detail_impl.transfer_time.get_value().is_special())
+                {
+                    nsset_detail->transfer_time = new NullableDateTime(boost::posix_time::to_iso_extended_string(detail_impl.transfer_time.get_value()).c_str());
+                }
+                else
+                {
+                    nsset_detail->transfer_time = 0;
+                }
+
+                if(!detail_impl.update_time.isnull() && !detail_impl.update_time.get_value().is_special())
+                {
+                    nsset_detail->update_time = new NullableDateTime(boost::posix_time::to_iso_extended_string(detail_impl.update_time.get_value()).c_str());
+                }
+                else
+                {
+                    nsset_detail->update_time = 0;
+                }
 
                 nsset_detail->create_registrar.id = detail_impl.create_registrar.id;
                 nsset_detail->create_registrar.handle = CORBA::string_dup(detail_impl.create_registrar.handle.c_str());
@@ -533,8 +562,16 @@ namespace Registry
                 domain_detail->registrar.handle = CORBA::string_dup(detail_impl.sponsoring_registrar.handle.c_str());
                 domain_detail->registrar.name = CORBA::string_dup(detail_impl.sponsoring_registrar.name.c_str());
                 domain_detail->create_time = CORBA::string_dup(boost::posix_time::to_iso_extended_string(detail_impl.creation_time).c_str());
-                domain_detail->update_time = CORBA::string_dup(detail_impl.update_time.isnull()
-                    ? "" : boost::posix_time::to_iso_extended_string(detail_impl.update_time.get_value()).c_str());
+
+                if(!detail_impl.update_time.isnull() && !detail_impl.update_time.get_value().is_special())
+                {
+                    domain_detail->update_time = new NullableDateTime(boost::posix_time::to_iso_extended_string(detail_impl.update_time.get_value()).c_str());
+                }
+                else
+                {
+                    domain_detail->update_time = 0;
+                }
+
                 domain_detail->auth_info = CORBA::string_dup(detail_impl.authinfopw.c_str());
                 domain_detail->registrant.id = detail_impl.registrant.id;
                 domain_detail->registrant.handle = CORBA::string_dup(detail_impl.registrant.handle.c_str());
@@ -622,10 +659,24 @@ namespace Registry
                 keyset_detail->registrar.handle = CORBA::string_dup(detail_impl.sponsoring_registrar.handle.c_str());
                 keyset_detail->registrar.name = CORBA::string_dup(detail_impl.sponsoring_registrar.name.c_str());
                 keyset_detail->create_time = CORBA::string_dup(boost::posix_time::to_iso_extended_string(detail_impl.creation_time).c_str());
-                keyset_detail->transfer_time = CORBA::string_dup(detail_impl.transfer_time.isnull()
-                    ? "" : boost::posix_time::to_iso_extended_string(detail_impl.transfer_time.get_value()).c_str());
-                keyset_detail->update_time = CORBA::string_dup(detail_impl.update_time.isnull()
-                    ? "" : boost::posix_time::to_iso_extended_string(detail_impl.update_time.get_value()).c_str());
+
+                if(!detail_impl.transfer_time.isnull() && !detail_impl.transfer_time.get_value().is_special())
+                {
+                    keyset_detail->transfer_time = new NullableDateTime(boost::posix_time::to_iso_extended_string(detail_impl.transfer_time.get_value()).c_str());
+                }
+                else
+                {
+                    keyset_detail->transfer_time = 0;
+                }
+
+                if(!detail_impl.update_time.isnull() && !detail_impl.update_time.get_value().is_special())
+                {
+                    keyset_detail->update_time = new NullableDateTime(boost::posix_time::to_iso_extended_string(detail_impl.update_time.get_value()).c_str());
+                }
+                else
+                {
+                    keyset_detail->update_time = 0;
+                }
 
                 keyset_detail->create_registrar.id = detail_impl.create_registrar.id;
                 keyset_detail->create_registrar.handle = CORBA::string_dup(detail_impl.create_registrar.handle.c_str());
