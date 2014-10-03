@@ -554,14 +554,12 @@ namespace Registry
             virtual ~DomainBrowser();
 
             /**
-             * Gets database id of the object.
-             * @param objtype is type of the object from table enum_object_type
-             * @param handle is object registry handle of the object
-             * @return object database id
-             * @throw @ref IncorrectUsage if objype not found, @ref ObjectNotExists if object with given type not found or anything else in case of failure
+             * Gets database id of the contact.
+             * @param handle is object registry handle of the contact
+             * @return contact database id
+             * @throw @ref ObjectNotExists if contact not found or anything else in case of failure
              */
-            unsigned long long getObjectRegistryId(const std::string& objtype, const std::string& handle);
-
+            unsigned long long getContactId(const std::string& handle);
             /**
              * Returns registrar detail.
              * @param user_contact_id contains database id of the user contact

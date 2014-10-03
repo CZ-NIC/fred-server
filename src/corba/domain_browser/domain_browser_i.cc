@@ -49,22 +49,16 @@ namespace Registry
         {}
 
         //   Methods corresponding to IDL attributes and operations
-        ::CORBA::ULongLong Server_i::getObjectRegistryId(
-            const char* objtype,
-            const char* handle)
+        ::CORBA::ULongLong Server_i::getContactId(const char* handle)
         {
             try
             {
-                unsigned long long id = pimpl_->getObjectRegistryId(objtype,handle);
+                unsigned long long id = pimpl_->getContactId(handle);
                 return id;
             }//try
             catch (const Registry::DomainBrowserImpl::ObjectNotExists&)
             {
                 throw Registry::DomainBrowser::OBJECT_NOT_EXISTS();
-            }
-            catch (const Registry::DomainBrowserImpl::IncorrectUsage& )
-            {
-                throw Registry::DomainBrowser::INCORRECT_USAGE();
             }
             catch (...)
             {

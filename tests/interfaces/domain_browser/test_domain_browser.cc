@@ -2752,8 +2752,8 @@ struct get_my_contact_object_fixture
 BOOST_FIXTURE_TEST_CASE(get_object_id, get_my_contact_object_fixture)
 {
     Fred::OperationContext ctx;
-    BOOST_CHECK(user_contact_info.info_contact_data.id == impl.getObjectRegistryId(
-        "contact",user_contact_info.info_contact_data.handle));
+    BOOST_CHECK(user_contact_info.info_contact_data.id == impl.getContactId(
+        user_contact_info.info_contact_data.handle));
 }
 
 BOOST_FIXTURE_TEST_CASE(get_object_id_by_wrong_handle, get_my_contact_object_fixture )
@@ -2761,27 +2761,11 @@ BOOST_FIXTURE_TEST_CASE(get_object_id_by_wrong_handle, get_my_contact_object_fix
     try
     {
         Fred::OperationContext ctx;
-        impl.getObjectRegistryId("contact","_WRONG_HANDLE_");
+        impl.getContactId("_WRONG_HANDLE_");
 
         BOOST_ERROR("unreported wrong handle");
     }
     catch( const Registry::DomainBrowserImpl::ObjectNotExists& ex)
-    {
-        BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
-    }
-}
-
-BOOST_FIXTURE_TEST_CASE(get_object_id_by_objtype, get_my_contact_object_fixture )
-{
-    try
-    {
-        Fred::OperationContext ctx;
-        impl.getObjectRegistryId("wrongtype","_WRONG_HANDLE_");
-
-        BOOST_ERROR("unreported wrong object type");
-    }
-    catch( const Registry::DomainBrowserImpl::IncorrectUsage& ex)
     {
         BOOST_CHECK(true);
         BOOST_MESSAGE(boost::diagnostic_information(ex));

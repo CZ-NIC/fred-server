@@ -57,9 +57,7 @@ namespace Registry
 
             virtual ~Server_i();
             // methods corresponding to defined IDL attributes and operations
-            ::CORBA::ULongLong getObjectRegistryId(
-                const char* objtype,
-                const char* handle);
+            ::CORBA::ULongLong getContactId(const char* handle);
 
             Registry::DomainBrowser::DomainList* getDomainList(
                 ::CORBA::ULongLong user_contact_id,

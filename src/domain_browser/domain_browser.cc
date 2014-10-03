@@ -259,23 +259,14 @@ namespace Registry
             }
         };
 
-        unsigned long long DomainBrowser::getObjectRegistryId(const std::string& objtype, const std::string& handle)
+        unsigned long long DomainBrowser::getContactId(const std::string& handle)
         {
             Logging::Context lctx_server(create_ctx_name(get_server_name()));
             Logging::Context lctx("get-object-registry-id");
             Fred::OperationContext ctx;
             try
             {
-                try
-                {
-                    get_object_type_id(ctx, objtype);
-                }
-                catch(const std::exception&)
-                {
-                    throw IncorrectUsage();
-                }
-
-                return Fred::get_object_id_by_handle_and_type_with_lock(ctx,handle, objtype,
+                return Fred::get_object_id_by_handle_and_type_with_lock(ctx,handle, "contact",
                     static_cast<ObjectNotExistsWithDummyHandleSetter*>(NULL),
                     &ObjectNotExistsWithDummyHandleSetter::set_handle);
             }
