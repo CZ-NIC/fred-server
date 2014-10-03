@@ -582,13 +582,21 @@ namespace Registry
                 if(domain_detail->is_enum)
                 {
                     domain_detail->publish = detail_impl.enum_domain_validation.get_value().publish;
-                    domain_detail->val_ex_date = CORBA::string_dup(boost::gregorian::to_iso_extended_string(
-                        detail_impl.enum_domain_validation.get_value().validation_expiration).c_str());
+
+                    if(!detail_impl.enum_domain_validation.get_value().validation_expiration.is_special())
+                    {
+                        domain_detail->val_ex_date = new NullableDate(boost::gregorian::to_iso_extended_string(
+                            detail_impl.enum_domain_validation.get_value().validation_expiration).c_str());
+                    }
+                    else
+                    {
+                        domain_detail->val_ex_date = 0;
+                    }
                 }
                 else
                 {
                     domain_detail->publish = false;
-                    domain_detail->val_ex_date = CORBA::string_dup("");
+                    domain_detail->val_ex_date = 0;
                 }
 
                 domain_detail->nsset.id = detail_impl.nsset.id;
