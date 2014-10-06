@@ -998,7 +998,7 @@ struct ChangedCurrentState
     CurrentState state;
 };
 
-ChangedCurrentState set_contact_state_history(::size_t object_id, ::uint8_t history[3])
+ChangedCurrentState set_contact_state_history(::size_t object_id, const ::uint8_t history[3])
 {
     ChangedCurrentState result;
     result.changed = false;
@@ -1016,7 +1016,7 @@ ChangedCurrentState set_contact_state_history(::size_t object_id, ::uint8_t hist
     return result;
 }
 
-BOOST_FIXTURE_TEST_CASE(get_contact_states, create_mojeid_contact_fixture)
+BOOST_FIXTURE_TEST_CASE(get_contacts_state_changes, create_mojeid_contact_fixture)
 {
     typedef Registry::MojeID::ContactStateData StateData;
     typedef std::vector< Registry::MojeID::ContactStateData > StatesData;
@@ -1036,10 +1036,14 @@ BOOST_FIXTURE_TEST_CASE(get_contact_states, create_mojeid_contact_fixture)
         }
     }
     for (int history = 0; history <= 0xff; ++history) {
-        const ChangedCurrentState ca = set_contact_state_history(contact_a.first, (::uint8_t[3]){history, 0, 0});
-        const ChangedCurrentState cb = set_contact_state_history(contact_b.first, (::uint8_t[3]){0, history, 0});
-        const ChangedCurrentState cc = set_contact_state_history(contact_c.first, (::uint8_t[3]){0, 0, history});
-        const ChangedCurrentState cd = set_contact_state_history(contact_d.first, (::uint8_t[3]){history, history, history});
+        const ::uint8_t csha[3] = {::uint8_t(history), ::uint8_t(0), ::uint8_t(0)};
+        const ChangedCurrentState ca = set_contact_state_history(contact_a.first, csha);
+        const ::uint8_t cshb[3] = {::uint8_t(0), ::uint8_t(history), ::uint8_t(0)};
+        const ChangedCurrentState cb = set_contact_state_history(contact_b.first, cshb);
+        const ::uint8_t cshc[3] = {::uint8_t(0), ::uint8_t(0), ::uint8_t(history)};
+        const ChangedCurrentState cc = set_contact_state_history(contact_c.first, cshc);
+        const ::uint8_t cshd[3] = {::uint8_t(history), ::uint8_t(history), ::uint8_t(history)};
+        const ChangedCurrentState cd = set_contact_state_history(contact_d.first, cshd);
         states = mojeid_pimpl->getContactsStateChanges(1);
         bool ca_find = !ca.changed;
         bool cb_find = !cb.changed;
