@@ -752,7 +752,7 @@ namespace Registry
         }
 
         bool DomainBrowser::setContactDiscloseFlags(
-            unsigned long long contact_id,
+            unsigned long long user_contact_id,
             const ContactDiscloseFlagsToSet& flags,
             unsigned long long request_id)
         {
@@ -761,15 +761,15 @@ namespace Registry
             Fred::OperationContext ctx;
             try
             {
-                Fred::InfoContactOutput contact_info = check_user_contact_id<UserNotExists>(ctx, contact_id, output_timezone, true);
+                Fred::InfoContactOutput contact_info = check_user_contact_id<UserNotExists>(ctx, user_contact_id, output_timezone, true);
 
-                if(!(Fred::ObjectHasState(contact_id,Fred::ObjectState::IDENTIFIED_CONTACT).exec(ctx)
-                    || Fred::ObjectHasState(contact_id,Fred::ObjectState::VALIDATED_CONTACT).exec(ctx)))
+                if(!(Fred::ObjectHasState(user_contact_id,Fred::ObjectState::IDENTIFIED_CONTACT).exec(ctx)
+                    || Fred::ObjectHasState(user_contact_id,Fred::ObjectState::VALIDATED_CONTACT).exec(ctx)))
                 {
                     throw AccessDenied();
                 }
 
-                if(Fred::ObjectHasState(contact_id,Fred::ObjectState::SERVER_BLOCKED).exec(ctx))
+                if(Fred::ObjectHasState(user_contact_id,Fred::ObjectState::SERVER_BLOCKED).exec(ctx))
                 {
                     throw ObjectBlocked();
                 }
@@ -780,7 +780,7 @@ namespace Registry
                     throw IncorrectUsage();
                 }
 
-                Fred::UpdateContactById update_contact(contact_id, update_registrar_);
+                Fred::UpdateContactById update_contact(user_contact_id, update_registrar_);
                 bool exec_update = false;
                 if(flags.email != contact_info.info_contact_data.discloseemail)
                 {

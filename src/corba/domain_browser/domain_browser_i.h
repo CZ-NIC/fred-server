@@ -78,7 +78,7 @@ namespace Registry
                 ::CORBA::Boolean& limit_exceeded);
 
             Registry::DomainBrowser::DomainList* getDomainsForKeyset(
-                ::CORBA::ULongLong contact_id,
+                ::CORBA::ULongLong user_contact_id,
                 ::CORBA::ULongLong keyset_id,
                 ::CORBA::ULong offset,
                 ::CORBA::Boolean& limit_exceeded);
@@ -90,31 +90,31 @@ namespace Registry
                 ::CORBA::Boolean& limit_exceeded);
 
             Registry::DomainBrowser::ContactDetail* getContactDetail(
-                ::CORBA::ULongLong contact_id,
+                ::CORBA::ULongLong user_contact_id,
                  ::CORBA::ULongLong detail_id,
                 Registry::DomainBrowser::DataAccessLevel& auth_result);
 
             Registry::DomainBrowser::NSSetDetail* getNssetDetail(
-                ::CORBA::ULongLong contact_id,
+                ::CORBA::ULongLong user_contact_id,
                  ::CORBA::ULongLong nsset_id,
                 Registry::DomainBrowser::DataAccessLevel& auth_result);
 
             Registry::DomainBrowser::DomainDetail* getDomainDetail(
-                ::CORBA::ULongLong contact_id,
+                ::CORBA::ULongLong user_contact_id,
                  ::CORBA::ULongLong domain_id,
                 Registry::DomainBrowser::DataAccessLevel& auth_result);
 
             Registry::DomainBrowser::KeysetDetail* getKeysetDetail(
-                ::CORBA::ULongLong contact_id,
+                ::CORBA::ULongLong user_contact_id,
                  ::CORBA::ULongLong keyset_id,
                 Registry::DomainBrowser::DataAccessLevel& auth_result);
 
             Registry::DomainBrowser::RegistrarDetail* getRegistrarDetail(
-                ::CORBA::ULongLong contact_id,
+                ::CORBA::ULongLong user_contact_id,
                 const char* handle);
 
             ::CORBA::Boolean setContactDiscloseFlags(
-                ::CORBA::ULongLong contact_id,
+                ::CORBA::ULongLong user_contact_id,
                 const Registry::DomainBrowser::UpdateContactDiscloseFlags& flags,
                 ::CORBA::ULongLong request_id);
 
@@ -123,7 +123,7 @@ namespace Registry
                 const char* auth_info,
                 ::CORBA::ULongLong request_id);
 
-            ::CORBA::Boolean setObjectBlockStatus(::CORBA::ULongLong contact_id,
+            ::CORBA::Boolean setObjectBlockStatus(::CORBA::ULongLong user_contact_id,
                 const char* objtype,
                 const Registry::DomainBrowser::ObjectIdSeq& objects,
                 Registry::DomainBrowser::ObjectBlockType block,

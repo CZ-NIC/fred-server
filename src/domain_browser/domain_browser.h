@@ -599,13 +599,13 @@ namespace Registry
 
             /**
              * Sets contact disclose flags.
-             * @param contact_id contains database id of the contact
+             * @param user_contact_id contains database id of the user contact
              * @param flags contains contact disclose flags
              * @param request_id is id of the new entry in log_entry database table
              * @return true if disclose flags were set, false if not or exception in case of failure
              */
             bool setContactDiscloseFlags(
-                unsigned long long contact_id,
+                unsigned long long user_contact_id,
                 const ContactDiscloseFlagsToSet& flags,
                 unsigned long long request_id);
 
