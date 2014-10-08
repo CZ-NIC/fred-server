@@ -417,8 +417,8 @@ public:
     if (limit) {
       where << "LIMIT " << load_limit_ << " ";
     }
-    sql << from.rdbuf();
-    sql << where.rdbuf();
+    sql << from.str();
+    sql << where.str();
   }
   void reload() {
     std::map<TID,std::string> registrars;
