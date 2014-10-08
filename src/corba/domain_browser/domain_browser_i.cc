@@ -789,20 +789,14 @@ namespace Registry
             }
         }
 
-        ::CORBA::Boolean Server_i::setAuthInfo(
-            ::CORBA::ULongLong contact_id,
-            const char* objtype,
-            ::CORBA::ULongLong objref_id,
+        ::CORBA::Boolean Server_i::setContactAuthInfo(
+            ::CORBA::ULongLong user_contact_id,
             const char* auth_info,
             ::CORBA::ULongLong request_id)
         {
             try
             {
-                if(std::string("contact") != objtype)
-                {
-                    throw Registry::DomainBrowserImpl::IncorrectUsage();
-                }
-                return pimpl_->setContactAuthInfo(contact_id, objref_id, auth_info, request_id);
+                return pimpl_->setContactAuthInfo(user_contact_id, auth_info, request_id);
             }//try
             catch (const Registry::DomainBrowserImpl::ObjectNotExists& )
             {

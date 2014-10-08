@@ -1183,7 +1183,6 @@ BOOST_FIXTURE_TEST_CASE(set_contact_authinfo, set_contact_authinfo_fixture )
 
     Fred::OperationContext ctx;
     BOOST_CHECK(impl.setContactAuthInfo(
-        user_contact_info.info_contact_data.id,
         user_contact_info.info_contact_data.id,"newauthinfo", 42));
 
     Fred::InfoContactOutput my_contact_info = Fred::InfoContactByHandle(user_contact_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
@@ -1211,7 +1210,6 @@ BOOST_FIXTURE_TEST_CASE(set_validated_contact_authinfo, set_validated_contact_au
 
     Fred::OperationContext ctx;
     BOOST_CHECK(impl.setContactAuthInfo(
-        user_contact_info.info_contact_data.id,
         user_contact_info.info_contact_data.id,"newauthinfo", 0));
 
     Fred::InfoContactOutput my_contact_info = Fred::InfoContactByHandle(user_contact_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
@@ -1232,7 +1230,6 @@ BOOST_FIXTURE_TEST_CASE(set_contact_authinfo_user_not_in_mojeid, set_contact_aut
     {
         Fred::OperationContext ctx;
         impl.setContactAuthInfo(
-            user_contact_info.info_contact_data.id,
             user_contact_info.info_contact_data.id,"newauthinfo", 0);
         BOOST_ERROR("unreported missing user");
     }
@@ -1257,7 +1254,6 @@ BOOST_FIXTURE_TEST_CASE(set_contact_authinfo_user_not_identified, set_contact_au
     {
         Fred::OperationContext ctx;
         impl.setContactAuthInfo(
-            user_contact_info.info_contact_data.id,
             user_contact_info.info_contact_data.id,"newauthinfo", 0);
         BOOST_ERROR("unreported missing user identification");
     }
@@ -1289,7 +1285,6 @@ BOOST_FIXTURE_TEST_CASE(set_contact_authinfo_contact_blocked, set_contact_authin
     {
         Fred::OperationContext ctx;
         impl.setContactAuthInfo(
-            user_contact_info.info_contact_data.id,
             user_contact_info.info_contact_data.id,"newauthinfo", 0);
         BOOST_ERROR("unreported blocked user contact");
     }
@@ -1322,7 +1317,6 @@ BOOST_FIXTURE_TEST_CASE(set_contact_authinfo_the_same, set_contact_authinfo_the_
         Fred::OperationContext ctx;
         BOOST_CHECK(impl.setContactAuthInfo(
             user_contact_info.info_contact_data.id,
-            user_contact_info.info_contact_data.id,
             user_contact_info.info_contact_data.authinfopw, 0) == false);
     }
 }
@@ -1331,35 +1325,6 @@ struct set_contact_authinfo_not_owner_fixture
 : mojeid_user_contact_fixture
 , domain_browser_impl_instance_fixture
 {};
-/**
- * test setContactAuthInfo not owner
- */
-BOOST_FIXTURE_TEST_CASE(set_contact_authinfo_not_owner, set_contact_authinfo_not_owner_fixture)
-{
-    {
-        Fred::OperationContext ctx;
-        Fred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id
-        , Util::set_of<std::string>(Fred::ObjectState::IDENTIFIED_CONTACT)).exec(ctx);
-        Fred::PerformObjectStateRequest(user_contact_info.info_contact_data.id).exec(ctx);
-        ctx.commit_transaction();
-    }
-
-    user_contact_fixture another_contact;
-
-    try
-    {
-        Fred::OperationContext ctx;
-        impl.setContactAuthInfo(
-            user_contact_info.info_contact_data.id,
-            another_contact.user_contact_info.info_contact_data.id,"newauthinfo", 0);
-        BOOST_ERROR("unreported non-owner user contact");
-    }
-    catch( const Registry::DomainBrowserImpl::AccessDenied& ex)
-    {
-        BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
-    }
-}
 
 struct set_contact_authinfo_too_long_fixture
 : mojeid_user_contact_fixture
@@ -1382,7 +1347,6 @@ BOOST_FIXTURE_TEST_CASE(set_contact_authinfo_too_long, set_contact_authinfo_too_
     {
         Fred::OperationContext ctx;
         impl.setContactAuthInfo(
-            user_contact_info.info_contact_data.id,
             user_contact_info.info_contact_data.id,
             "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
             "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"

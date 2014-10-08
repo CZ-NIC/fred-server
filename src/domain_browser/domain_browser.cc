@@ -843,7 +843,6 @@ namespace Registry
 
         bool DomainBrowser::setContactAuthInfo(
             unsigned long long user_contact_id,
-            unsigned long long contact_id,
             const std::string& authinfo,
             unsigned long long request_id)
         {
@@ -854,10 +853,7 @@ namespace Registry
             {
                 Fred::InfoContactOutput contact_info = check_user_contact_id<UserNotExists>(ctx, user_contact_id, output_timezone, true);
 
-                if(contact_id != contact_info.info_contact_data.id)
-                {
-                    throw AccessDenied();
-                }
+                unsigned long long contact_id = contact_info.info_contact_data.id;
 
                 const unsigned MAX_AUTH_INFO_LENGTH = 300u;
                 if(authinfo.length() > MAX_AUTH_INFO_LENGTH)

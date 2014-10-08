@@ -118,10 +118,8 @@ namespace Registry
                 const Registry::DomainBrowser::UpdateContactDiscloseFlags& flags,
                 ::CORBA::ULongLong request_id);
 
-            ::CORBA::Boolean setAuthInfo(
-                ::CORBA::ULongLong contact_id,
-                const char* objtype,
-                ::CORBA::ULongLong objref_id,
+            ::CORBA::Boolean setContactAuthInfo(
+                ::CORBA::ULongLong user_contact_id,
                 const char* auth_info,
                 ::CORBA::ULongLong request_id);
 
