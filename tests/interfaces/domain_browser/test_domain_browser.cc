@@ -439,10 +439,10 @@ BOOST_FIXTURE_TEST_CASE(get_my_contact_detail, get_my_contact_detail_fixture )
     BOOST_CHECK(cd.name.get_value_or_default() == my_contact_info.info_contact_data.name.get_value_or_default());
     BOOST_CHECK(cd.organization.get_value_or_default() == my_contact_info.info_contact_data.organization.get_value_or_default());
     BOOST_CHECK(cd.street1.get_value_or_default() == mci_place.street1);
-    BOOST_CHECK(cd.street2.get_value_or_default() == mci_place.street2);
-    BOOST_CHECK(cd.street3.get_value_or_default() == mci_place.street3);
+    BOOST_CHECK(cd.street2.get_value_or_default() == mci_place.street2.get_value_or_default());
+    BOOST_CHECK(cd.street3.get_value_or_default() == mci_place.street3.get_value_or_default());
     BOOST_CHECK(cd.city.get_value_or_default() == mci_place.city);
-    BOOST_CHECK(cd.stateorprovince.get_value_or_default() == mci_place.stateorprovince);
+    BOOST_CHECK(cd.stateorprovince.get_value_or_default() == mci_place.stateorprovince.get_value_or_default());
     BOOST_CHECK(cd.postalcode.get_value_or_default() == mci_place.postalcode);
     BOOST_CHECK(cd.country.get_value_or_default() == mci_place.country);
     BOOST_CHECK(cd.telephone.get_value_or_default() == my_contact_info.info_contact_data.telephone.get_value_or_default());
@@ -501,10 +501,10 @@ BOOST_FIXTURE_TEST_CASE(get_contact_detail, get_contact_fixture )
     BOOST_CHECK(cd.name.get_value_or_default() == test_contact_info.info_contact_data.name.get_value_or_default());
     BOOST_CHECK(cd.organization.get_value_or_default() == test_contact_info.info_contact_data.organization.get_value_or_default());
     BOOST_CHECK(cd.street1.get_value_or_default() == tci_place.street1);
-    BOOST_CHECK(cd.street2.get_value_or_default() == tci_place.street2);
-    BOOST_CHECK(cd.street3.get_value_or_default() == tci_place.street3);
+    BOOST_CHECK(cd.street2.get_value_or_default() == tci_place.street2.get_value_or_default());
+    BOOST_CHECK(cd.street3.get_value_or_default() == tci_place.street3.get_value_or_default());
     BOOST_CHECK(cd.city.get_value_or_default() == tci_place.city);
-    BOOST_CHECK(cd.stateorprovince.get_value_or_default() == tci_place.stateorprovince);
+    BOOST_CHECK(cd.stateorprovince.get_value_or_default() == tci_place.stateorprovince.get_value_or_default());
     BOOST_CHECK(cd.postalcode.get_value_or_default() == tci_place.postalcode);
     BOOST_CHECK(cd.country.get_value_or_default() == tci_place.country);
     BOOST_CHECK(cd.telephone.get_value_or_default() == test_contact_info.info_contact_data.telephone.get_value_or_default());
