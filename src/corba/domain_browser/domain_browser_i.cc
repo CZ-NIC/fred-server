@@ -114,7 +114,7 @@ namespace Registry
 
         Registry::DomainBrowser::DomainList* Server_i::getDomainList(
             ::CORBA::ULongLong user_contact_id,
-            ::CORBA::ULongLong contact_id,
+             Registry::DomainBrowser::NullableULongLong* contact_id_ptr,
             ::CORBA::ULong offset,
             ::CORBA::Boolean& limit_exceeded)
         {
@@ -122,7 +122,7 @@ namespace Registry
             {
                 std::vector<Registry::DomainBrowserImpl::DomainListData> domain_list_out;
                 limit_exceeded = pimpl_->getDomainList(user_contact_id,
-                    (contact_id > 0) ? Optional<unsigned long long>(contact_id) : Optional<unsigned long long>(),
+                    (contact_id_ptr) ? Optional<unsigned long long>(contact_id_ptr->_value()) : Optional<unsigned long long>(),
                     Optional<unsigned long long>(), Optional<unsigned long long>(),
                     offset, domain_list_out);
 
@@ -172,7 +172,7 @@ namespace Registry
 
         Registry::DomainBrowser::NssetList* Server_i::getNssetList(
             ::CORBA::ULongLong user_contact_id,
-             ::CORBA::ULongLong contact_id,
+             Registry::DomainBrowser::NullableULongLong* contact_id_ptr,
             ::CORBA::ULong offset,
              ::CORBA::Boolean& limit_exceeded)
         {
@@ -180,7 +180,7 @@ namespace Registry
             {
                 std::vector<Registry::DomainBrowserImpl::NssetListData> nsset_list_out;
                 limit_exceeded = pimpl_->getNssetList(user_contact_id,
-                    (contact_id > 0) ? Optional<unsigned long long>(contact_id) : Optional<unsigned long long>(),
+                    (contact_id_ptr) ? Optional<unsigned long long>(contact_id_ptr->_value()) : Optional<unsigned long long>(),
                     offset, nsset_list_out);
 
                 NssetList_var nl = corba_wrap_nsset_list(nsset_list_out);
@@ -228,7 +228,7 @@ namespace Registry
 
         Registry::DomainBrowser::KeysetList* Server_i::getKeysetList(
             ::CORBA::ULongLong user_contact_id,
-             ::CORBA::ULongLong contact_id,
+             Registry::DomainBrowser::NullableULongLong* contact_id_ptr,
             ::CORBA::ULong offset,
              ::CORBA::Boolean& limit_exceeded)
         {
@@ -236,7 +236,7 @@ namespace Registry
             {
                 std::vector<Registry::DomainBrowserImpl::KeysetListData> keyset_list_out;
                 limit_exceeded = pimpl_->getKeysetList(user_contact_id,
-                    (contact_id > 0) ? Optional<unsigned long long>(contact_id) : Optional<unsigned long long>(),
+                    (contact_id_ptr) ? Optional<unsigned long long>(contact_id_ptr->_value()) : Optional<unsigned long long>(),
                     offset, keyset_list_out);
                 KeysetList_var kl = corba_wrap_keyset_list(keyset_list_out);
                 return kl._retn();

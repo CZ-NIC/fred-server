@@ -61,19 +61,19 @@ namespace Registry
 
             Registry::DomainBrowser::DomainList* getDomainList(
                 ::CORBA::ULongLong user_contact_id,
-                ::CORBA::ULongLong contact_id,
+                 Registry::DomainBrowser::NullableULongLong* contact_id_ptr,
                 ::CORBA::ULong offset,
                 ::CORBA::Boolean& limit_exceeded);
 
             Registry::DomainBrowser::NssetList* getNssetList(
                 ::CORBA::ULongLong user_contact_id,
-                ::CORBA::ULongLong contact_id,
+                 Registry::DomainBrowser::NullableULongLong* contact_id_ptr,
                 ::CORBA::ULong offset,
                 ::CORBA::Boolean& limit_exceeded);
 
             Registry::DomainBrowser::KeysetList* getKeysetList(
                 ::CORBA::ULongLong user_contact_id,
-                ::CORBA::ULongLong contact_id,
+                 Registry::DomainBrowser::NullableULongLong* contact_id_ptr,
                 ::CORBA::ULong offset,
                 ::CORBA::Boolean& limit_exceeded);
 
