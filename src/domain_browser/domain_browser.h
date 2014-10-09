@@ -158,10 +158,12 @@ namespace Registry
             std::vector<RegistryReference> admins; /**< domain admin contacts */
             std::vector<std::string> state_codes;/**< object state names from db. table enum_object_states */
             bool is_owner;/**< whether user contact is the same as domain owner*/
+            bool is_admin;/**< whether user contact is the same as domain admin*/
 
             DomainDetail()
             : id(0)
             , is_owner(false)
+            , is_admin(false)
             {}
         };
 

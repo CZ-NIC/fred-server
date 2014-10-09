@@ -595,7 +595,7 @@ namespace Registry
                 }
 
 
-                if(detail_impl.is_owner)
+                if(detail_impl.is_owner || detail_impl.is_admin)
                 {
                     auth_result = PRIVATE_DATA;
                 }

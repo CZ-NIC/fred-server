@@ -532,7 +532,11 @@ namespace Registry
 
                     detail.admins.push_back(admin);
 
-                    if(admin.id == user_contact_id) set_authinfo = true;//reveal authinfo to admin
+                    if(admin.id == user_contact_id)
+                    {
+                        set_authinfo = true;//reveal authinfo to admin
+                        detail.is_admin = true;
+                    }
                 }
 
                 detail.authinfopw =filter_authinfo(set_authinfo, domain_info.info_domain_data.authinfopw);
