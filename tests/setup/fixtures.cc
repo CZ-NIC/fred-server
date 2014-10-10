@@ -14,8 +14,29 @@ namespace Fixture {
     namespace po = boost::program_options;
 
 
-    static void terminate_persistent_connections(const std::auto_ptr<Database::StandaloneConnection>& conn) {
-        conn->exec("SELECT pg_terminate_backend(procpid) FROM pg_stat_activity WHERE usename='fred';");
+    static void disable_connections_add_terminate_persistent_connections(const std::auto_ptr<Database::StandaloneConnection>& conn, const std::string& database_name_disable_connection) {
+
+        conn->exec_params("UPDATE pg_database SET datallowconn = false WHERE datname = $1::text"
+            , Database::query_param_list (database_name_disable_connection));
+
+        while(conn->exec_params("SELECT procpid, pg_terminate_backend(procpid) FROM pg_stat_activity "
+            "WHERE usename='fred' OR (datname = $1::text AND procpid <> pg_backend_pid())"
+            , Database::query_param_list (database_name_disable_connection)).size() != 0)
+        {}
+    }
+
+    static void enable_connections(const std::auto_ptr<Database::StandaloneConnection>& conn, const std::string& database_name)
+    {
+        conn->exec_params("UPDATE pg_database SET datallowconn = true WHERE datname = $1::text"
+            , Database::query_param_list (database_name));
+    }
+
+    static void force_drop_db(
+        const std::string& db_name,
+        const std::auto_ptr<Database::StandaloneConnection>& conn
+    ) {
+        disable_connections_add_terminate_persistent_connections(conn, db_name);
+        conn->exec("DROP DATABASE IF EXISTS "+ db_name +";");
     }
 
     static void force_copy_db(
@@ -23,20 +44,9 @@ namespace Fixture {
         const std::string& dst_name,
         const std::auto_ptr<Database::StandaloneConnection>& conn
     ) {
-        terminate_persistent_connections(conn);
-        conn->exec("DROP DATABASE IF EXISTS "+ dst_name +";");
+        force_drop_db(dst_name, conn);
         conn->exec("CREATE DATABASE "+ dst_name +" TEMPLATE "+ src_name +";");
     }
-
-    static void force_drop_db(
-        const std::string& db_name,
-        const std::auto_ptr<Database::StandaloneConnection>& conn
-    ) {
-        terminate_persistent_connections(conn);
-        conn->exec("DROP DATABASE IF EXISTS "+ db_name +";");
-    }
-
-
 
     create_db_template::create_db_template() {
         force_copy_db(
@@ -79,15 +89,16 @@ namespace Fixture {
         const std::auto_ptr<Database::StandaloneConnection> conn =
             CfgArgs::instance()->get_handler_ptr_by_type<HandleAdminDatabaseArgs>()->get_admin_connection();
 
+        disable_connections_add_terminate_persistent_connections(conn, get_original_db_name());
+
         force_drop_db(
             log_db_name,
             conn
         );
-
         conn->exec("ALTER DATABASE "+ get_original_db_name() +" RENAME TO " + log_db_name );
+
+        enable_connections(conn, log_db_name);
     }
-
-
 
 
     boost::shared_ptr<po::options_description> HandleAdminDatabaseArgs::get_options_description() {
