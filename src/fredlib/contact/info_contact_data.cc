@@ -80,6 +80,12 @@ namespace Fred
                this->company_name == _b.company_name;
     }
 
+    struct ContactAddress& ContactAddress::operator=(const ContactAddress &_src)
+    {
+        this->company_name = _src.company_name;
+        return this->operator=(static_cast< const Contact::PlaceAddress& >(_src));
+    }
+
     struct ContactAddress& ContactAddress::operator=(const Contact::PlaceAddress &_src)
     {
         static_cast< Contact::PlaceAddress& >(*this) = _src;

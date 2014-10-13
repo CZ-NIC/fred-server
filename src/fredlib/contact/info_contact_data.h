@@ -158,6 +158,12 @@ namespace Fred
          */
         bool operator==(const struct ContactAddress &_b)const;
         /**
+         * Assign operator.
+         * @param _src assigned instance
+         * @return self reference
+         */
+        struct ContactAddress& operator=(const ContactAddress &_src);
+        /**
          * Assign operator, sets PlaceAddress part.
          * @param _src assigned instance
          * @return self reference
