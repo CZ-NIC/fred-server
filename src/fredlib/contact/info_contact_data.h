@@ -114,16 +114,15 @@ namespace Fred
         }
         /**
          * Comparison operator.
-         * @param _value is right hand side of the comparison
-         * @return true if equal, false otherwise
-         */
-        bool operator==(Value _value)const { return this->value == _value; }
-        /**
-         * Comparison operator.
+         * @param _a is left hand side of the comparison
          * @param _b is right hand side of the comparison
          * @return true if equal, false otherwise
          */
-        bool operator==(const struct ContactAddressType &_b)const { return this->value == _b.value; }
+        friend bool operator==(const struct ContactAddressType &_a,
+                               const struct ContactAddressType &_b)
+        {
+            return _a.value == _b.value;
+        }
         /**
          * Comparison operator.
          * @param _b is right hand side of the comparison
