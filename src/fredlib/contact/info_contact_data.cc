@@ -46,7 +46,7 @@ namespace Fred
         }
         std::ostringstream msg;
         msg << "invalid value " << static_cast< int >(_value) << " of ContactAddressType";
-        throw std::runtime_error(msg.str());
+        throw ConversionError(msg.str());
     }
 
     ContactAddressType::Value ContactAddressType::from_string(const std::string &_src)
@@ -62,7 +62,7 @@ namespace Fred
         }
         std::ostringstream msg;
         msg << "\"" << _src << "\" unable convert to ContactAddressType";
-        throw std::runtime_error(msg.str());
+        throw ConversionError(msg.str());
     }
 
     std::string ContactAddress::to_string()const
@@ -101,7 +101,7 @@ namespace Fred
     struct InfoContactData::Address InfoContactData::get_permanent_address()const
     {
         if (place.isnull()) {
-            throw std::runtime_error("no address present");
+            throw AddressDoesntExist("no address present");
         }
         struct Address address;
         address = place.get_value();

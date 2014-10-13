@@ -82,30 +82,38 @@ namespace Fred
         }
         Value value;/**< one of possible values */
         /**
+         * Exception class for error signaling.
+         */
+        class ConversionError:public std::runtime_error
+        {
+        public:
+            ConversionError(const std::string &_msg):std::runtime_error(_msg) { }
+        };
+        /**
          * Dumps @a _value into the string.
          * @param _value will be converted to string
          * @return string representation of @a _value
-         * @throw std::runtime_error if conversion is impossible
+         * @throw ConversionError if conversion is impossible
          */
         static std::string to_string(Value _value);
         /**
          * Dumps content of the instance into the string.
          * @return string representation of @ref value
-         * @throw std::runtime_error if conversion is impossible
+         * @throw ConversionError if conversion is impossible
          */
         std::string to_string()const { return to_string(value); }
         /**
          * Converts string @a _value into one of possible integer values.
          * @param _value string representation of address type
          * @return one of possible integer values that conform string @a _value
-         * @throw std::runtime_error if conversion is impossible
+         * @throw ConversionError if conversion is impossible
          */
         static Value from_string(const std::string &_value);
         /**
          * Sets to corresponding value.
          * @param _value string representation of address type
          * @return self reference
-         * @throw std::runtime_error if conversion is impossible
+         * @throw ConversionError if conversion is impossible
          */
         struct ContactAddressType& set_value(const std::string &_value)
         {
@@ -242,16 +250,25 @@ namespace Fred
         };
 
         /**
+         * Exception class for error signaling.
+         */
+        class AddressDoesntExist:public std::runtime_error
+        {
+        public:
+            AddressDoesntExist(const std::string &_msg):std::runtime_error(_msg) { }
+        };
+
+        /**
          * Get permanent address of contact.
          * @return permanent address of contact
-         * @throw std::runtime_error if no address exists
+         * @throw AddressDoesntExist if no address exists
          */
         struct Address get_permanent_address()const;
         /**
          * Get address for given purpose.
          * @tparam purpose specifies usage of address
          * @return contact address for given purpose
-         * @throw std::runtime_error if no usable address exists
+         * @throw AddressDoesntExist if no usable address exists
          */
         template < ContactAddressType::Value purpose >
         struct Address get_address()const;
