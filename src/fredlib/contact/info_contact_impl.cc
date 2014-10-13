@@ -287,31 +287,31 @@ namespace Fred
             ContactAddressList addresses;
             for(::size_t idx = 0; idx < subquery_result.size(); ++idx) {
                 const struct ContactAddressType type(ContactAddressType::from_string(
-                     static_cast< std::string >(subquery_result[idx][0])));
+                     static_cast< std::string >(subquery_result[idx]["type"])));
                 struct ContactAddress address;
-                if (!subquery_result[idx][1].isnull()) {
-                    address.company_name = static_cast< std::string >(subquery_result[idx][1]);
+                if (!subquery_result[idx]["company_name"].isnull()) {
+                    address.company_name = static_cast< std::string >(subquery_result[idx]["company_name"]);
                 }
-                if (!subquery_result[idx][2].isnull()) {
-                    address.street1 = static_cast< std::string >(subquery_result[idx][2]);
+                if (!subquery_result[idx]["street1"].isnull()) {
+                    address.street1 = static_cast< std::string >(subquery_result[idx]["street1"]);
                 }
-                if (!subquery_result[idx][3].isnull()) {
-                    address.street2 = static_cast< std::string >(subquery_result[idx][3]);
+                if (!subquery_result[idx]["street2"].isnull()) {
+                    address.street2 = static_cast< std::string >(subquery_result[idx]["street2"]);
                 }
-                if (!subquery_result[idx][4].isnull()) {
-                    address.street3 = static_cast< std::string >(subquery_result[idx][4]);
+                if (!subquery_result[idx]["street3"].isnull()) {
+                    address.street3 = static_cast< std::string >(subquery_result[idx]["street3"]);
                 }
-                if (!subquery_result[idx][5].isnull()) {
-                    address.city = static_cast< std::string >(subquery_result[idx][5]);
+                if (!subquery_result[idx]["city"].isnull()) {
+                    address.city = static_cast< std::string >(subquery_result[idx]["city"]);
                 }
-                if (!subquery_result[idx][6].isnull()) {
-                    address.stateorprovince = static_cast< std::string >(subquery_result[idx][6]);
+                if (!subquery_result[idx]["stateorprovince"].isnull()) {
+                    address.stateorprovince = static_cast< std::string >(subquery_result[idx]["stateorprovince"]);
                 }
-                if (!subquery_result[idx][7].isnull()) {
-                    address.postalcode = static_cast< std::string >(subquery_result[idx][7]);
+                if (!subquery_result[idx]["postalcode"].isnull()) {
+                    address.postalcode = static_cast< std::string >(subquery_result[idx]["postalcode"]);
                 }
-                if (!subquery_result[idx][8].isnull()) {
-                    address.country = static_cast< std::string >(subquery_result[idx][8]);
+                if (!subquery_result[idx]["country"].isnull()) {
+                    address.country = static_cast< std::string >(subquery_result[idx]["country"]);
                 }
                 addresses[type] = address;
             }
