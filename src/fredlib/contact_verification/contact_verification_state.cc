@@ -33,7 +33,7 @@ enum State::Value State::str2value(const std::string &_state)
     if (value_ptr != str2value.end()) {
         return value_ptr->second;
     }
-    throw std::invalid_argument("unknown contact verification state name: " + _state);
+    throw ConversionFailure("unknown contact verification state name: " + _state);
 }
 
 const std::string State::STR_C = "conditionallyIdentifiedContact";
@@ -66,7 +66,7 @@ void lock_contact_verification_states(::uint64_t _contact_id)
         "WHERE obr.name=$1::text AND obr.erdate IS NULL";
     Database::Result res = conn.exec_params(sql, Database::query_param_list(_contact_handle));
     if (res.size() <= 0) {
-        throw std::runtime_error("contact handle '" + _contact_handle + "' not found");
+        throw ContactNotFound("contact handle '" + _contact_handle + "' not found");
     }
     const ::uint64_t contact_id = static_cast< ::uint64_t >(res[0][0]);
     lock_contact_verification_states(contact_id);
@@ -95,7 +95,7 @@ State get_contact_verification_state_without_lock(::uint64_t _contact_id)
     if (res.size() <= 0) {
         std::ostringstream msg;
         msg << "contact id " << _contact_id << " not found";
-        throw std::runtime_error(msg.str());
+        throw ContactNotFound(msg.str());
     }
     return State((static_cast< std::string >(res[0][0]) == "f" ? State::c :
                                                                  State::C) |

@@ -77,19 +77,37 @@ public:
         CIVM = C | I | V | M,///< CIVM
     };
     State(enum Value _value = civm):value_(_value) { }
+    /**
+     * @throw ConversionFailure if _state doesn't represent any
+     */
     State(const std::string &_state):value_(str2value(_state)) { }
     State(const State &_src):value_(_src.value_) { }
     State& operator=(enum Value _value) { value_ = _value; return *this; }
+    /**
+     * @throw ConversionFailure if _state doesn't represent any
+     */
     State& operator=(const std::string &_state) { return *this = str2value(_state); }
     State& operator=(const State &_src) { value_ = _src.value_; return *this; }
+    /**
+     * @throw ConversionFailure if _state doesn't represent any
+     */
     State& set(const std::string &_state) { return *this = _state; }
+    /**
+     * @throw ConversionFailure if _state doesn't represent any
+     */
     State& add(const std::string &_state);
     enum Value get()const { return value_; }
+    /**
+     * Exception class.
+     */
     class ResultUndefined:public std::runtime_error
     {
     public:
         ResultUndefined(const std::string &_msg):std::runtime_error(_msg) { }
     };
+    /**
+     * @throw ResultUndefined if _mask is empty
+     */
     bool has_all(enum Value _mask)const
     {
         if (_mask != civm) {
@@ -97,6 +115,9 @@ public:
         }
         throw ResultUndefined("empty mask");
     }
+    /**
+     * @throw ResultUndefined if _mask is empty
+     */
     bool has_any(enum Value _mask)const
     {
         if (_mask != civm) {
@@ -105,6 +126,17 @@ public:
         throw ResultUndefined("empty mask");
     }
     bool operator==(enum Value _value)const { return value_ == _value; }
+    /**
+     * Exception class.
+     */
+    class ConversionFailure:public std::runtime_error
+    {
+    public:
+        ConversionFailure(const std::string &_msg):std::runtime_error(_msg) { }
+    };
+    /**
+     * @throw ConversionFailure if _state doesn't represent any
+     */
     static enum Value str2value(const std::string &_state);
     static const std::string STR_C;///< conditionallyIdentifiedContact
     static const std::string STR_I;///< identifiedContact
@@ -121,10 +153,18 @@ private:
 void lock_contact_verification_states(::uint64_t _contact_id);
 
 /**
+ * Exception class.
+ */
+class ContactNotFound:public std::runtime_error
+{
+public:
+    ContactNotFound(const std::string &_msg):std::runtime_error(_msg) { }
+};
+/**
  * Lock four verification states of contact.
  * @param _contact_handle contact handle
  * @return contact id
- * @throw std::runtime_error if contact handle doesn't exist
+ * @throw ContactNotFound if contact handle doesn't exist
  */
 ::uint64_t lock_contact_verification_states(const std::string &_contact_handle);
 
@@ -132,7 +172,7 @@ void lock_contact_verification_states(::uint64_t _contact_id);
  * Get four verification states of contact.
  * @param _contact_id contact id
  * @return four verification states of contact
- * @throw std::runtime_error if contact od doesn't exist
+ * @throw ContactNotFound if contact od doesn't exist
  * @note contact states must be locked
  */
 State get_contact_verification_state(::uint64_t _contact_id);
@@ -141,7 +181,7 @@ State get_contact_verification_state(::uint64_t _contact_id);
  * Get four verification states of contact.
  * @param _contact_handle contact handle
  * @return four verification states of contact
- * @throw std::runtime_error if contact handle doesn't exist
+ * @throw ContactNotFound if contact handle doesn't exist
  * @note contact states must be locked
  */
 State get_contact_verification_state(const std::string &_contact_handle);
