@@ -13,6 +13,7 @@ namespace Verification {
 
 bool ContactAddress::operator==(const ContactAddress &_b)const
 {
+    // compare default values because frontend doesn't preserve NULL values
     return this->type == _b.type &&
            this->company_name.get_value_or_default() == _b.company_name.get_value_or_default() &&
            this->street1.get_value_or_default() == _b.street1.get_value_or_default() &&
