@@ -84,8 +84,25 @@ public:
     State& set(const std::string &_state) { return *this = _state; }
     State& add(const std::string &_state);
     enum Value get()const { return value_; }
-    bool has_all(enum Value _mask)const { return (value_ & _mask) == _mask; }
-    bool has_any(enum Value _mask)const { return (value_ & _mask) != civm; }
+    class ResultUndefined:public std::runtime_error
+    {
+    public:
+        ResultUndefined(const std::string &_msg):std::runtime_error(_msg) { }
+    };
+    bool has_all(enum Value _mask)const
+    {
+        if (_mask != civm) {
+            return (value_ & _mask) == _mask;
+        }
+        throw ResultUndefined("empty mask");
+    }
+    bool has_any(enum Value _mask)const
+    {
+        if (_mask != civm) {
+            return (value_ & _mask) != civm;
+        }
+        throw ResultUndefined("empty mask");
+    }
     bool operator==(enum Value _value)const { return value_ == _value; }
     static enum Value str2value(const std::string &_state);
     static const std::string STR_C;///< conditionallyIdentifiedContact
