@@ -5,6 +5,8 @@
 #include <fredlib/fredlib.h>
 #include "src/fredlib/registrar/info_registrar_data.h"
 
+#include <string>
+
 namespace Registry {
 namespace Whois {
 
@@ -17,6 +19,8 @@ namespace Whois {
     class Server_impl :
         public POA_Registry::Whois::WhoisIntf
     {
+        private:
+            static const std::string output_timezone;
         public:
             virtual ~Server_impl() {};
 

@@ -425,6 +425,21 @@ unsigned long long Manager::copy_letter_to_send(unsigned long long letter_id)
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
 
+        Database::Result rcopy_ok = conn.exec_params(
+                "SELECT ess.status_name IN ('sent', 'no_processing') AS copy_allowed "
+                    "FROM message_archive ma "
+                    "JOIN enum_send_status ess ON ess.id = ma.status_id "
+                  "WHERE ma.id = $1::bigint ",
+                  Database::query_param_list(letter_id));
+        if (rcopy_ok.size() <= 0)
+        {
+            throw Database::NoDataFound("letter not found");
+        }
+        if (!static_cast<bool>(rcopy_ok[0]["copy_allowed"]))
+        {
+            throw MessageCopyProhibited();
+        }
+
         Database::Result res = conn.exec_params(
                 "INSERT INTO message_archive "
                        "(crdate,"

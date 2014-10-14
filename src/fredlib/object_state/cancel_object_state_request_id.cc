@@ -115,7 +115,20 @@ namespace Fred
             STATE_ID_IDX   = 1,
         };
         Database::Result cmd_result = _ctx.get_conn().exec_params(cmd.str(), param);
-        if (cmd_result.size() == state_id_map.size()) {
+
+        std::set<unsigned long long> result_state_id;
+        for(unsigned long long i = 0; i < cmd_result.size(); ++i){
+            result_state_id.insert(cmd_result[i][1]);
+        }
+
+        std::set<unsigned long long> required_state_id;
+        for (StateIdMap::const_iterator pStateId = state_id_map.begin();
+             pStateId != state_id_map.end(); ++pStateId) {
+            const ObjectStateId object_state_id = pStateId->second;
+            required_state_id.insert(object_state_id);
+        }
+
+        if (cmd_result.size() >= state_id_map.size() && result_state_id == required_state_id) {
             std::string rid = "CancelObjectStateRequest::exec canceled request id:";
             for (Database::Result::Iterator pRow = cmd_result.begin(); pRow != cmd_result.end(); ++pRow) {
                 rid += " " + std::string((*pRow)[REQUEST_ID_IDX]);
