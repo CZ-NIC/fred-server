@@ -26,6 +26,7 @@
 
 #include <stdint.h>
 #include <string>
+#include <stdexcept>
 
 /** Fred */
 namespace Fred {
