@@ -629,7 +629,6 @@ std::pair< ::size_t, std::string > create_mojeid_contact(const std::string &xmar
     std::string trans_id;
     std::string identification;
     std::pair< ::size_t, std::string > result;
-    BOOST_CHECK(true);
 
     {
         //get db connection
@@ -643,7 +642,6 @@ std::pair< ::size_t, std::string > create_mojeid_contact(const std::string &xmar
             throw std::runtime_error("Registrar does not exist");
         }
 
-        BOOST_CHECK(true);
         //create test contact
         fcvc.handle = std::string("TESTMOJEID-HANDLE") + xmark;
         result.second = fcvc.handle;
@@ -719,7 +717,6 @@ std::pair< ::size_t, std::string > create_mojeid_contact(const std::string &xmar
 
     BOOST_TEST_MESSAGE("password: " << password);
 
-    BOOST_CHECK(true);
     mojeid_pimpl.processIdentification(identification.c_str(), password.c_str(), request_id);
 
     {
