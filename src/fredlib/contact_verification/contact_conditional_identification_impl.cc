@@ -17,13 +17,14 @@
  */
 
 /**
- *  @conditional_contact_identification_impl.cc
+ *  @file
  *  common part of conditional contact identification implementation
  */
 
-#include <string>
 #include "src/fredlib/contact_verification/contact_conditional_identification_impl.h"
+#include "src/fredlib/contact_verification/contact_verification_state.h"
 #include "src/fredlib/object_states.h"
+#include <string>
 
 namespace Fred {
 namespace Contact {
@@ -58,18 +59,13 @@ void ConditionalContactIdentificationImpl::pre_save_check()
     /* insert */
     if (!pra_impl_ptr_->getId())
     {
+        const unsigned long long contact_id = pra_impl_ptr_->getObject(0).id;
         Fred::Contact::Verification::Contact cdata
-            = Fred::Contact::Verification::contact_info(
-                    pra_impl_ptr_->getObject(0).id);
+            = Fred::Contact::Verification::contact_info(contact_id);
         contact_validator_.check(cdata);
 
-        if (object_has_one_of_states(pra_impl_ptr_->getObject(0).id
-            , Util::vector_of<std::string>
-            (ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT)// already CI
-            (ObjectState::IDENTIFIED_CONTACT)// already I
-            (ObjectState::VALIDATED_CONTACT))// already V
-        )
-        {
+        const State contact_state = get_contact_verification_state(contact_id);
+        if (contact_state.has_all(State::Civm)) {// already C
             throw Fred::PublicRequest::NotApplicable("pre_save_check: failed!");
         }
     }
@@ -99,4 +95,3 @@ void ConditionalContactIdentificationImpl::process_action(bool _check)
 
 
 }}}
-

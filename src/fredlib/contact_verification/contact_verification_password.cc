@@ -36,18 +36,31 @@ namespace PublicRequest {
 const ContactVerificationPassword::MessageData ContactVerificationPassword::collectMessageData()
 {
     Database::Connection conn = Database::Manager::acquire();
-    Database::Result result = conn.exec_params(
-            "SELECT c.name, c.organization, c.street1, c.city,"
-            " c.stateorprovince, c.postalcode, c.country, c.email,"
-            " oreg.historyid, c.telephone, ec.country, ec.country_cs"
-            " FROM contact c"
-            " JOIN object_registry oreg ON oreg.id = c.id"
-            " JOIN enum_country ec ON ec.id = c.country "
-            " WHERE c.id = $1::integer",
+    Database::Result result = conn.exec_params( // contact mailing address first
+            "SELECT c.name,ca.company_name,ca.street1,ca.city,"
+             "ca.stateorprovince,ca.postalcode,ca.country,c.email,"
+             "oreg.historyid,c.telephone,ec.country,ec.country_cs "
+             "FROM contact c "
+             "JOIN object_registry oreg ON oreg.id=c.id "
+             "JOIN contact_address ca ON ca.contactid=c.id "
+             "JOIN enum_country ec ON ec.id=ca.country "
+             "WHERE c.id=$1::integer AND ca.type='MAILING' LIMIT 1",
             Database::query_param_list(prai_ptr_->getObject(0).id));
     if (result.size() != 1)
-        throw std::runtime_error("unable to get data for"
-                " password messages");
+    {
+        result = conn.exec_params( // contact "main" address next
+                "SELECT c.name, c.organization, c.street1, c.city,"
+                " c.stateorprovince, c.postalcode, c.country, c.email,"
+                " oreg.historyid, c.telephone, ec.country, ec.country_cs"
+                " FROM contact c"
+                " JOIN object_registry oreg ON oreg.id = c.id"
+                " JOIN enum_country ec ON ec.id = c.country "
+                " WHERE c.id = $1::integer",
+                Database::query_param_list(prai_ptr_->getObject(0).id));
+        if (result.size() != 1) {
+            throw std::runtime_error("unable to get data for password messages");
+        }
+    }
 
     MessageData data;
 
@@ -195,7 +208,8 @@ void ContactVerificationPassword::sendLetterPassword( const std::string& custom_
             (Util::XmlTagPair("account", Util::vector_of<Util::XmlCallback>
                 (Util::XmlTagPair("username", Util::XmlUnparsedCData(map_at(data, "handle"))))
                 (Util::XmlTagPair("first_name", Util::XmlUnparsedCData(map_at(data, "firstname"))))
-                (Util::XmlTagPair("last_name", Util::XmlUnparsedCData(map_at(data, "lastname"))))
+                (Util::XmlTagPair("last_name", Util::XmlUnparsedCData(lastname)))
+                (Util::XmlTagPair("sex", Util::XmlUnparsedCData(sex)))
                 (Util::XmlTagPair("email", Util::XmlUnparsedCData(map_at(data, "email"))))
                 (Util::XmlTagPair("sex", Util::XmlUnparsedCData(sex)))
                 (Util::XmlTagPair("mobile", Util::XmlUnparsedCData(map_at(data, "phone"))))

@@ -34,6 +34,8 @@
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
 #include "util/printable.h"
+#include "src/fredlib/contact/place_address.h"
+#include "src/fredlib/contact/info_contact_data.h"
 
 
 namespace Fred
@@ -68,13 +70,7 @@ namespace Fred
         Optional<std::string> authinfo_;/**< transfer password */
         Optional<std::string> name_ ;/**< name of contact person */
         Optional<std::string> organization_;/**< full trade name of organization */
-        Optional<std::string> street1_;/**< part of address */
-        Optional<std::string> street2_;/**< part of address */
-        Optional<std::string> street3_;/**< part of address*/
-        Optional<std::string> city_;/**< part of address - city */
-        Optional<std::string> stateorprovince_;/**< part of address - region */
-        Optional<std::string> postalcode_;/**< part of address - postal code */
-        Optional<std::string> country_;/**< two character country code or country name */
+        Optional< Fred::Contact::PlaceAddress > place_;/**< place address of contact */
         Optional<std::string> telephone_;/**<  telephone number */
         Optional<std::string> fax_;/**< fax number */
         Optional<std::string> email_;/**< e-mail address */
@@ -82,6 +78,7 @@ namespace Fred
         Optional<std::string> vat_;/**< taxpayer identification number */
         Optional<std::string> ssntype_;/**< type of identification from enum_ssntype table */
         Optional<std::string> ssn_;/**< unambiguous identification number e.g. social security number, identity card number, date of birth */
+        Optional< Fred::ContactAddressList > addresses_;/**< additional contact addresses */
         Optional<bool> disclosename_;/**< whether to reveal contact name */
         Optional<bool> discloseorganization_;/**< whether to reveal organization */
         Optional<bool> discloseaddress_;/**< whether to reveal address */
@@ -109,13 +106,7 @@ namespace Fred
         * @param authinfo sets transfer password into @ref authinfo_ attribute
         * @param name sets name of contact person into @ref name_ attribute
         * @param organization sets full trade name of organization into @ref organization_ attribute
-        * @param street1 sets part of address into @ref street1_ attribute
-        * @param street2 sets part of address into @ref street2_ attribute
-        * @param street3 sets part of address into @ref street3_ attribute
-        * @param city sets part of address - city into @ref city_ attribute
-        * @param stateorprovince sets part of address - region into @ref stateorprovince_ attribute
-        * @param postalcode sets part of address - postal code into @ref postalcode_ attribute
-        * @param country sets two character country code or country name  into @ref country_ attribute
+        * @param place sets contact address into @ref place_ attribute
         * @param telephone sets telephone number into @ref telephone_ attribute
         * @param fax sets fax number into @ref fax_ attribute
         * @param email sets e-mail address into @ref email_ attribute
@@ -123,6 +114,7 @@ namespace Fred
         * @param vat sets taxpayer identification number into @ref vat_ attribute
         * @param ssntype sets type of identification into @ref ssntype_ attribute
         * @param ssn sets unambiguous identification number into @ref ssn_ attribute
+        * @param addresses sets additional contact addresses into @ref addresses_ attribute
         * @param disclosename sets whether to reveal contact name into @ref disclosename_ attribute
         * @param discloseorganization sets whether to reveal organization name into @ref discloseorganization_ attribute
         * @param discloseaddress sets whether to reveal contact address into @ref discloseaddress_ attribute
@@ -139,13 +131,7 @@ namespace Fred
                 , const Optional<std::string>& authinfo
                 , const Optional<std::string>& name
                 , const Optional<std::string>& organization
-                , const Optional<std::string>& street1
-                , const Optional<std::string>& street2
-                , const Optional<std::string>& street3
-                , const Optional<std::string>& city
-                , const Optional<std::string>& stateorprovince
-                , const Optional<std::string>& postalcode
-                , const Optional<std::string>& country
+                , const Optional< Fred::Contact::PlaceAddress > &place
                 , const Optional<std::string>& telephone
                 , const Optional<std::string>& fax
                 , const Optional<std::string>& email
@@ -153,6 +139,7 @@ namespace Fred
                 , const Optional<std::string>& vat
                 , const Optional<std::string>& ssntype
                 , const Optional<std::string>& ssn
+                , const Optional< Fred::ContactAddressList >& addresses
                 , const Optional<bool>& disclosename
                 , const Optional<bool>& discloseorganization
                 , const Optional<bool>& discloseaddress
@@ -189,53 +176,11 @@ namespace Fred
         CreateContact& set_organization(const std::string& organization);
 
         /**
-        * Sets contact street1 part of address.
-        * @param street1 sets part of address into @ref street1_ attribute
+        * Sets contact place address.
+        * @param place sets place address into @ref place_ attribute
         * @return operation instance reference to allow method chaining
         */
-        CreateContact& set_street1(const std::string& street1);
-
-        /**
-        * Sets contact street2 part of address.
-        * @param street2 sets part of address into @ref street2_ attribute
-        * @return operation instance reference to allow method chaining
-        */
-        CreateContact& set_street2(const std::string& street2);
-
-        /**
-        * Sets contact street3 part of address.
-        * @param street3 sets part of address into @ref street3_ attribute
-        * @return operation instance reference to allow method chaining
-        */
-        CreateContact& set_street3(const std::string& street3);
-
-        /**
-        * Sets contact city part of address.
-        * @param city sets part of address - city into @ref city_ attribute
-        * @return operation instance reference to allow method chaining
-        */
-        CreateContact& set_city(const std::string& city);
-
-        /**
-        * Sets contact region part of address.
-        * @param stateorprovince sets part of address - region into @ref stateorprovince_ attribute
-        * @return operation instance reference to allow method chaining
-        */
-        CreateContact& set_stateorprovince(const std::string& stateorprovince);
-
-        /**
-        * Sets contact postal code part of address.
-        * @param postalcode sets part of address - postal code into @ref postalcode_ attribute
-        * @return operation instance reference to allow method chaining
-        */
-        CreateContact& set_postalcode(const std::string& postalcode);
-
-        /**
-        * Sets contact country part of address.
-        * @param country sets two character country code or country name into @ref country_ attribute
-        * @return operation instance reference to allow method chaining
-        */
-        CreateContact& set_country(const std::string& country);
+        CreateContact& set_place(const Fred::Contact::PlaceAddress &place);
 
         /**
         * Sets contact telephone number.
@@ -285,6 +230,13 @@ namespace Fred
         * @return operation instance reference to allow method chaining
         */
         CreateContact& set_ssn(const std::string& ssn);
+
+        /**
+        * Sets additional contact addresses.
+        * @param addresses sets additional contact addresses into @ref addresses_ attribute
+        * @return operation instance reference to allow method chaining
+        */
+        CreateContact& set_addresses(const Fred::ContactAddressList& addresses);
 
         /**
         * Sets whether to reveal contact name.

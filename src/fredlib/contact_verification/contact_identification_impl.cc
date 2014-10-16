@@ -17,11 +17,12 @@
  */
 
 /**
- *  @contact_identification_impl.cc
+ *  @file
  *  common part of contact identification implementation
  */
 
 #include "src/fredlib/contact_verification/contact_identification_impl.h"
+#include "src/fredlib/contact_verification/contact_verification_state.h"
 #include "src/fredlib/object_states.h"
 #include "src/fredlib/public_request/public_request_impl.h"
 
@@ -53,23 +54,14 @@ std::string ContactIdentificationImpl::generate_passwords()
 
 void ContactIdentificationImpl::pre_save_check()
 {
-    if (!pra_impl_ptr_->getId())
-    {
+    if (!pra_impl_ptr_->getId()) {
+        const unsigned long long contact_id = pra_impl_ptr_->getObject(0).id;
         Fred::Contact::Verification::Contact cdata
-            = Fred::Contact::Verification::contact_info(
-                    pra_impl_ptr_->getObject(0).id);
+            = Fred::Contact::Verification::contact_info(contact_id);
         contact_validator_.check(cdata);
 
-        if (((object_has_state(pra_impl_ptr_->getObject(0).id
-                , ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT) == false)
-            ||
-            object_has_one_of_states(
-                pra_impl_ptr_->getObject(0).id
-                , Util::vector_of<std::string>
-                (ObjectState::IDENTIFIED_CONTACT) // already I
-                (ObjectState::VALIDATED_CONTACT)) // already V
-        ))
-        {
+        const State contact_state = get_contact_verification_state(contact_id);
+        if (contact_state.has_all(State::cIvm)) {// already I
             throw Fred::PublicRequest::NotApplicable("pre_save_check: failed!");
         }
     }
@@ -77,12 +69,6 @@ void ContactIdentificationImpl::pre_save_check()
 
 void ContactIdentificationImpl::pre_process_check(bool _check)
 {
-    if (object_has_state(pra_impl_ptr_->getObject(0).id,
-            ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT) == false)
-    {
-        throw Fred::PublicRequest::NotApplicable("pre_process_check: failed!");
-    }
-
     Fred::Contact::Verification::Contact cdata
         = Fred::Contact::Verification::contact_info(
                 pra_impl_ptr_->getObject(0).id);
@@ -91,9 +77,6 @@ void ContactIdentificationImpl::pre_process_check(bool _check)
 
 void ContactIdentificationImpl::process_action(bool _check)
 {
-        Fred::cancel_object_state(pra_impl_ptr_->getObject(0).id,
-                Fred::ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT);
-
         Fred::PublicRequest::insertNewStateRequest(
                 pra_impl_ptr_->getId(),
                 pra_impl_ptr_->getObject(0).id,
@@ -101,6 +84,3 @@ void ContactIdentificationImpl::process_action(bool _check)
 }
 
 }}}
-
-
-

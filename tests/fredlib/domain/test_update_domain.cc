@@ -75,19 +75,22 @@ struct update_domain_fixture : virtual public Test::Fixture::instantiate_db_temp
                 "SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]);
         BOOST_CHECK(!registrar_handle.empty());//expecting existing system registrar
 
+        Fred::Contact::PlaceAddress place;
+        place.street1 = std::string("STR1") + xmark;
+        place.city = "Praha";
+        place.postalcode = "11150";
+        place.country = "CZ";
         Fred::CreateContact(admin_contact2_handle,registrar_handle)
             .set_name(std::string("TEST-ADMIN-CONTACT3 NAME")+xmark)
             .set_disclosename(true)
-            .set_street1(std::string("STR1")+xmark)
-            .set_city("Praha").set_postalcode("11150").set_country("CZ")
+            .set_place(place)
             .set_discloseaddress(true)
             .exec(ctx);
 
         Fred::CreateContact(registrant_contact_handle,registrar_handle)
                 .set_name(std::string("TEST-REGISTRANT-CONTACT NAME")+xmark)
                 .set_disclosename(true)
-                .set_street1(std::string("STR1")+xmark)
-                .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                .set_place(place)
                 .set_discloseaddress(true)
                 .exec(ctx);
 
@@ -132,19 +135,22 @@ struct update_domain_admin_nsset_keyset_fixture
         namespace ip = boost::asio::ip;
         Fred::OperationContext ctx;
 
+        Fred::Contact::PlaceAddress place;
+        place.street1 = std::string("STR1") + xmark;
+        place.city = "Praha";
+        place.postalcode = "11150";
+        place.country = "CZ";
         Fred::CreateContact(admin_contact_handle,registrar_handle)
             .set_name(std::string("TEST-ADMIN-CONTACT NAME")+xmark)
             .set_disclosename(true)
-            .set_street1(std::string("STR1")+xmark)
-            .set_city("Praha").set_postalcode("11150").set_country("CZ")
+            .set_place(place)
             .set_discloseaddress(true)
             .exec(ctx);
 
         Fred::CreateContact(admin_contact1_handle,registrar_handle)
             .set_name(std::string("TEST-ADMIN-CONTACT2 NAME")+xmark)
             .set_disclosename(true)
-            .set_street1(std::string("STR1")+xmark)
-            .set_city("Praha").set_postalcode("11150").set_country("CZ")
+            .set_place(place)
             .set_discloseaddress(true)
             .exec(ctx);
 

@@ -17,7 +17,7 @@
  */
 
 /**
- *  @mojeid.cc
+ *  @file
  *  mojeid implementation
  */
 
@@ -26,11 +26,13 @@
 #include "src/mojeid/mojeid_identification.h"
 #include "src/mojeid/mojeid_notifier.h"
 #include "src/mojeid/mojeid_contact_states.h"
+#include "src/fredlib/contact_verification/contact_verification_state.h"
 
 #include "src/fredlib/db_settings.h"
 #include "src/fredlib/registry.h"
 #include "src/fredlib/contact.h"
 #include "src/fredlib/public_request/public_request.h"
+#include "src/fredlib/public_request/public_request_impl.h"
 #include "src/fredlib/object_states.h"
 #include "src/fredlib/contact_verification/contact.h"
 #include "src/mojeid/request.h"
@@ -68,6 +70,20 @@ namespace Registry
 {
     namespace MojeID
     {
+        ContactStateData::StateValidFrom::const_iterator ContactStateData::get_sum_state() const
+        {
+            StateValidFrom::const_iterator state_ptr = state.find(Fred::ObjectState::VALIDATED_CONTACT);
+            if (state_ptr != state.end()) {
+                return state_ptr;
+            }
+            state_ptr = state.find(Fred::ObjectState::IDENTIFIED_CONTACT);
+            if (state_ptr != state.end()) {
+                return state_ptr;
+            }
+            return state.find(Fred::ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT);
+        }
+
+
         MojeIDImpl::MojeIDImpl(const std::string &_server_name
                 , boost::shared_ptr<Fred::Mailer::Manager> _mailer)
         : registry_conf_(CfgArgs::instance()
@@ -101,6 +117,7 @@ namespace Registry
                 ::KeyVector required_keys = boost::assign::list_of
                     (Fred::PublicRequest::PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION)
                     (Fred::PublicRequest::PRT_MOJEID_CONTACT_IDENTIFICATION)
+                    (Fred::PublicRequest::PRT_MOJEID_CONTACT_REIDENTIFICATION)
                     (Fred::PublicRequest::PRT_MOJEID_CONTACT_VALIDATION)
                     (Fred::PublicRequest::PRT_MOJEID_CONDITIONALLY_IDENTIFIED_CONTACT_TRANSFER)
                     (Fred::PublicRequest::PRT_MOJEID_IDENTIFIED_CONTACT_TRANSFER);
@@ -256,20 +273,21 @@ namespace Registry
 
                 Fred::Contact::Verification::FieldErrorMap errors;
 
-                if (Fred::object_has_state(cinfo.id, Fred::ObjectState::VALIDATED_CONTACT) == true)
-                {
+                const Fred::Contact::Verification::State contact_state =
+                    Fred::Contact::Verification::get_contact_verification_state(cinfo.id);
+                if (contact_state.has_all(Fred::Contact::Verification::State::ciVm)) {// already V
                     errors[Fred::Contact::Verification::field_status]
                            = Fred::Contact::Verification::NOT_AVAILABLE;
                 }
-                else if ((Fred::object_has_state(cinfo.id
-                            , Fred::ObjectState::SERVER_TRANSFER_PROHIBITED) == true)
-                        || (Fred::object_has_state(cinfo.id
-                            , Fred::ObjectState::SERVER_UPDATE_PROHIBITED) == true)) {
+                else if (Fred::object_has_state(cinfo.id
+                            , Fred::ObjectState::SERVER_TRANSFER_PROHIBITED) ||
+                         Fred::object_has_state(cinfo.id
+                            , Fred::ObjectState::SERVER_UPDATE_PROHIBITED)) {
 
                     errors[Fred::Contact::Verification::field_status]
                            = Fred::Contact::Verification::INVALID;
                 }
-                if (errors.size() > 0) {
+                if (0 < errors.size()) {
                     throw Fred::Contact::Verification
                         ::DataValidationError(errors);
                 }
@@ -277,13 +295,11 @@ namespace Registry
                 /* create public request */
                 Fred::PublicRequest::Type type;
 
-                if (Fred::object_has_state(cinfo.id, Fred::ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT))
-                {
-                    type = Fred::PublicRequest::PRT_MOJEID_CONDITIONALLY_IDENTIFIED_CONTACT_TRANSFER;
-                }
-                else if (Fred::object_has_state(cinfo.id, Fred::ObjectState::IDENTIFIED_CONTACT))
-                {
+                if (contact_state.has_all(Fred::Contact::Verification::State::cIvm)) {// already I
                     type = Fred::PublicRequest::PRT_MOJEID_IDENTIFIED_CONTACT_TRANSFER;
+                }
+                else if (contact_state.has_all(Fred::Contact::Verification::State::Civm)) {// already C
+                    type = Fred::PublicRequest::PRT_MOJEID_CONDITIONALLY_IDENTIFIED_CONTACT_TRANSFER;
                 }
                 else {
                     type = Fred::PublicRequest::PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION;
@@ -406,17 +422,47 @@ namespace Registry
 
                 DiscloseFlagPolicy contact_disclose_policy (pcv);
 
-                if (Fred::object_has_state(cid, Fred::ObjectState::VALIDATED_CONTACT) == true) {
-                    if (Fred::Contact::Verification::check_validated_contact_diff(_contact
-                            , Fred::Contact::Verification::contact_info(cid)) == false) {
-                        /* change contact status to identified */
-                        if (Fred::cancel_object_state(cid, Fred::ObjectState::VALIDATED_CONTACT)) {
-                            Fred::insert_object_state(cid, Fred::ObjectState::IDENTIFIED_CONTACT);
-                        }
+                const Fred::Contact::Verification::State contact_state =
+                    Fred::Contact::Verification::get_contact_verification_state(cid);
+                if (contact_state.has_all(Fred::Contact::Verification::State::ciVm)) {// already V
+                    if (!Fred::Contact::Verification::check_validated_contact_diff(_contact
+                            , Fred::Contact::Verification::contact_info(cid))) {
+                        /* drop contact validated status */
+                        Fred::cancel_object_state(cid, Fred::ObjectState::VALIDATED_CONTACT);
                     }
                 }
 
+                unsigned long long prid = 0; // new public request id
+                if (!Fred::Contact::Verification::check_identified_contact_diff(_contact, Fred::Contact::Verification::contact_info(cid)))
+                {
+                    if (contact_state.has_all(Fred::Contact::Verification::State::cIvm))
+                    {
+                        /* drop contact identified status */
+                        Fred::cancel_object_state(cid, Fred::ObjectState::IDENTIFIED_CONTACT);
+                    }
+
+                    Fred::PublicRequest::Type type;
+                    if (Fred::PublicRequest::check_public_request(cid, Fred::PublicRequest::PRT_MOJEID_CONTACT_IDENTIFICATION))
+                    {
+                        Fred::PublicRequest::cancel_public_request(cid, Fred::PublicRequest::PRT_MOJEID_CONTACT_IDENTIFICATION, request.get_request_id());
+                        type = Fred::PublicRequest::PRT_MOJEID_CONTACT_IDENTIFICATION;
+                    }
+                    else
+                    {
+                        Fred::PublicRequest::cancel_public_request(cid, Fred::PublicRequest::PRT_MOJEID_CONTACT_REIDENTIFICATION, request.get_request_id());
+                        type = Fred::PublicRequest::PRT_MOJEID_CONTACT_REIDENTIFICATION;
+                    }
+                    IdentificationRequestPtr new_request(mailer_, type);
+                    new_request->setRegistrarId(request.get_registrar_id());
+                    new_request->setRequestId(request.get_request_id());
+                    new_request->addObject(Fred::PublicRequest::OID(
+                                cid, _contact_username, Fred::PublicRequest::OT_CONTACT));
+                    new_request->save();
+                    prid = new_request->getId();
+                }
+
                 contact_disclose_policy.apply(_contact);
+
 
                 unsigned long long hid = Fred::Contact::Verification::contact_update(
                         request.get_request_id(),
@@ -440,6 +486,7 @@ namespace Registry
                 trans_data tr_data(MOJEID_CONTACT_UPDATE);
 
                 tr_data.cid = cid;
+                tr_data.prid = prid;
                 tr_data.request_id = request.get_request_id();
 
                 boost::mutex::scoped_lock td_lock(td_mutex);
@@ -594,9 +641,9 @@ namespace Registry
                 IdentificationRequestManagerPtr request_manager(mailer_  );
                 std::vector<Fred::PublicRequest::Type> request_type_list
                     = boost::assign::list_of
-                        (Fred::PublicRequest
-                            ::PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION)
-                        (Fred::PublicRequest::PRT_MOJEID_CONTACT_IDENTIFICATION);
+                        (Fred::PublicRequest::PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION)
+                        (Fred::PublicRequest::PRT_MOJEID_CONTACT_IDENTIFICATION)
+                        (Fred::PublicRequest::PRT_MOJEID_CONTACT_REIDENTIFICATION);
                 unsigned long long cid = static_cast<unsigned long long>(
                         _contact_id);
 
@@ -685,9 +732,13 @@ namespace Registry
 
             // send identification password if operation is contact create
             if(tr_data.op == MOJEID_CONTACT_CREATE
-                    || tr_data.op == MOJEID_CONTACT_TRANSFER)
+                    || tr_data.op == MOJEID_CONTACT_TRANSFER
+                    || tr_data.op == MOJEID_CONTACT_UPDATE)
             {
-                sendAuthPasswords(tr_data.cid, tr_data.prid);
+                if (tr_data.prid != 0)
+                {
+                    sendAuthPasswords(tr_data.cid, tr_data.prid);
+                }
             }
 
             if(tr_data.op == MOJEID_CONTACT_UPDATE
@@ -947,7 +998,7 @@ namespace Registry
             }
         }//MojeIDImpl::createValidationRequest
 
-        std::vector<ContactStateData> MojeIDImpl::getContactsStates(unsigned long _last_hours)
+        std::vector<ContactStateData> MojeIDImpl::getContactsStateChanges(unsigned long _last_hours)
         {
             Logging::Context ctx_server(create_ctx_name(get_server_name()));
             Logging::Context ctx("get-contacts-states");
@@ -958,46 +1009,78 @@ namespace Registry
                 Database::Connection conn = Database::Manager::acquire();
                 std::vector<ContactStateData> csdv;
                 Database::Result rstates = conn.exec_params(
-                "SELECT mojeid_contact.id, os.valid_from, CASE "
-                 " WHEN bool_or (eos.name = 'validatedContact') "
-                  " THEN 'validatedContact' "
-                 " WHEN bool_or (eos.name = 'identifiedContact') "
-                   " THEN 'identifiedContact' "
-                 " WHEN bool_or (eos.name = 'conditionallyIdentifiedContact') "
-                  " THEN 'conditionallyIdentifiedContact' "
-                 " END AS name "
-                " FROM (SELECT c.id AS id "
-                  " FROM contact c "
-                   " JOIN object o ON c.id=o.id "
-                   " JOIN registrar r on o.clid = r.id "
-                   " JOIN object_state os ON o.id = os.object_id "
-                   " JOIN enum_object_states eos ON eos.id = os.state_id "
-                  " WHERE os.valid_to IS NULL "
-                   " AND r.handle=$1::text "
-                   " AND eos.name = 'mojeidContact') AS mojeid_contact "
-                 " JOIN object_state os ON mojeid_contact.id = os.object_id "
-                 " JOIN enum_object_states eos ON eos.id = os.state_id "
-                " WHERE os.valid_to IS NULL "
-                   " AND os.valid_from > now() - $2::interval "
-                  " AND eos.name = ANY ('{\"conditionallyIdentifiedContact\", \"identifiedContact\", \"validatedContact\"}') "
-                " GROUP BY mojeid_contact.id, os.valid_from "
-                , Database::query_param_list
-                (server_conf_->registrar_handle)
-                (boost::lexical_cast<std::string>(_last_hours) + " hours"));
+                "WITH mojeid AS (SELECT id AS state_id FROM enum_object_states WHERE name='mojeidContact'),"
+                     "observed AS ("
+                    "SELECT id AS state_id,name AS state_name "
+                    "FROM enum_object_states "
+                    "WHERE name IN ('conditionallyIdentifiedContact',"
+                                   "'identifiedContact',"
+                                   "'validatedContact',"
+                                   "'mojeidContact')),"
+                     "changed_object AS ("
+                    "SELECT DISTINCT object_id "
+                    "FROM object_state "
+                    "WHERE state_id IN (SELECT state_id FROM observed) AND "
+                          "(((NOW()-$2::INTERVAL)<valid_from AND "
+                                                 "valid_from<(NOW()-$3::INTERVAL)) OR "
+                           "((NOW()-$2::INTERVAL)<valid_to AND "
+                                                 "valid_to<(NOW()-$3::INTERVAL)))),"
+                     "changed_mojeid_contact AS ("
+                    "SELECT c.id "
+                    "FROM changed_object co "
+                    "JOIN contact c ON c.id=co.object_id "
+                    "JOIN object o ON o.id=co.object_id "
+                    "JOIN registrar r ON r.id=o.clid AND "
+                                        "r.handle=$1::TEXT "
+                    "JOIN object_state os ON os.object_id=co.object_id AND "
+                                            "os.state_id=(SELECT state_id FROM mojeid) "
+                    "WHERE (NOW()-$3::INTERVAL)<=os.valid_to OR os.valid_to IS NULL) "
+                "SELECT cmc.id,o.state_name,"                         //arguments GROUP BY clause
+                       "MAX(os.valid_from),"                          //valid from
+                       "BOOL_OR(os.valid_from<=(NOW()-$2::INTERVAL)),"//present on begin
+                       "BOOL_OR((NOW()-$3::INTERVAL)<=os.valid_to OR "//present still
+                                "os.valid_to IS NULL) "
+                "FROM changed_mojeid_contact cmc "
+                "JOIN object_state os ON os.object_id=cmc.id "
+                "JOIN observed o ON o.state_id=os.state_id "
+                "WHERE os.valid_from<(NOW()-$3::INTERVAL) AND "
+                      "((NOW()-$2::INTERVAL)<os.valid_to OR os.valid_to IS NULL) "
+                "GROUP BY 1,2 "
+                "ORDER BY 1,2",
+                Database::query_param_list
+                    (server_conf_->registrar_handle)
+                    (boost::lexical_cast< std::string >(_last_hours) + " HOUR")
+                    ("1 MINUTE")); // observe interval (now - last_hours, now - 1 minute)
 
-                for (Database::Result::size_type i = 0; i < rstates.size(); ++i)
-                {
-                    ContactStateData csd;
-                    csd.contact_id = static_cast<unsigned long long>(
-                            rstates[i][0]);
-                    csd.valid_from = rstates[i][1].isnull()
-                            ? boost::gregorian::date()
-                            : boost::gregorian::from_string(
-                                static_cast<std::string>(rstates[i][1]));
-                    csd.state_name = static_cast<std::string>(rstates[i][2]);
+                enum { INVALID_ID = 0 };
+                ContactStateData csd;
+                csd.contact_id = INVALID_ID;
+                bool status_differ = false;
+                for (::size_t idx = 0; idx < rstates.size(); ++idx) {
+                    const ::size_t contact_id = static_cast< ::size_t    >(rstates[idx][0]);
+                    const std::string state   = static_cast< std::string >(rstates[idx][1]);
+                    const bool present_before = static_cast< std::string >(rstates[idx][3]) == "t";
+                    const bool present_still  = static_cast< std::string >(rstates[idx][4]) == "t";
 
-                    csdv.push_back(csd);
+                    if (csd.contact_id != contact_id) {
+                        if (status_differ) {
+                            csdv.push_back(csd);
+                            status_differ = false;
+                        }
+                        csd.contact_id = contact_id;
+                        csd.state.clear();
+                    }
+
+                    status_differ |= present_before != present_still;
+                    if (present_still) {
+                        const boost::gregorian::date valid_from =
+                            boost::gregorian::from_string(static_cast< std::string >(rstates[idx][2]));
+                        csd.state[state] = valid_from;
+                    }
                 }//for
+                if (status_differ) {
+                    csdv.push_back(csd);
+                }
 
                 return csdv;
             }
@@ -1023,49 +1106,42 @@ namespace Registry
                 Database::Connection conn = Database::Manager::acquire();
                 ContactStateData csd;
                 Database::Result rstates = conn.exec_params(
-                        "SELECT c.id, mcs.valid_from, mcs.name FROM contact c "
-                        " LEFT JOIN (SELECT mojeid_contact.id, os.valid_from, CASE "
-                        " WHEN bool_or (eos.name = 'validatedContact') "
-                        "   THEN 'validatedContact' "
-                        "  WHEN bool_or (eos.name = 'identifiedContact') "
-                        "   THEN 'identifiedContact' "
-                        "  WHEN bool_or (eos.name = 'conditionallyIdentifiedContact') "
-                        "   THEN 'conditionallyIdentifiedContact' "
-                        "  END AS name "
-                        " FROM (SELECT c.id AS id "
-                        "   FROM contact c "
-                        "    JOIN object o ON c.id=o.id "
-                        "    JOIN registrar r on o.clid = r.id "
-                        "    JOIN object_state os ON o.id = os.object_id "
-                        "    JOIN enum_object_states eos ON eos.id = os.state_id "
-                        "   WHERE os.valid_to IS NULL "
-                        "    AND r.handle=$1::text "
-                        "    AND c.id = $2::bigint "
-                        "    AND eos.name = 'mojeidContact') AS mojeid_contact "
-                        "  JOIN object_state os ON mojeid_contact.id = os.object_id "
-                        "  JOIN enum_object_states eos ON eos.id = os.state_id "
-                        " WHERE os.valid_to IS NULL "
-                        "   AND eos.name = ANY ('{\"conditionallyIdentifiedContact\", \"identifiedContact\", \"validatedContact\"}') "
-                        " GROUP BY mojeid_contact.id, os.valid_from "
-                        " ) AS mcs ON mcs.id = c.id "
-                        " WHERE c.id = $2::bigint "
-                        , Database::query_param_list
-                            (server_conf_->registrar_handle)
-                            (_contact_id));
+                    "SELECT eos.name,os.valid_from "
+                    "FROM contact c "
+                    "JOIN object o ON o.id=c.id "
+                    "JOIN registrar r on r.id=o.clid "
+                    "JOIN object_state os ON os.object_id=o.id "
+                    "JOIN enum_object_states eos ON eos.id=os.state_id "
+                    "WHERE c.id=(SELECT os.object_id "
+                                "FROM object_state os "
+                                "JOIN enum_object_states eos ON eos.id=os.state_id "
+                                "WHERE os.object_id=$2::bigint AND "
+                                      "os.valid_to IS NULL AND "
+                                      "eos.name='mojeidContact'"
+                               ") AND "
+                          "os.valid_to IS NULL AND "
+                          "r.handle=$1::text AND "
+                          "eos.name IN ('conditionallyIdentifiedContact',"
+                                       "'identifiedContact',"
+                                       "'validatedContact')",
+                    Database::query_param_list
+                        (server_conf_->registrar_handle)
+                        (_contact_id));
 
                 if (rstates.size() == 0) {
-                    throw Registry::MojeID::OBJECT_NOT_EXISTS();
-                }
-                else if (rstates.size() != 1) {
-                    throw std::runtime_error("Object appears to be in several exclusive states");
+                    if (conn.exec_params("SELECT 1 FROM contact WHERE id=$1::bigint",
+                                         Database::query_param_list(_contact_id)).size() == 0) {
+                        throw Registry::MojeID::OBJECT_NOT_EXISTS();
+                    }
                 }
 
-                csd.contact_id = static_cast<unsigned long long>(rstates[0][0]);;
-                csd.valid_from = rstates[0][1].isnull()
-                        ? boost::gregorian::date()
-                        : boost::gregorian::from_string(
-                            static_cast<std::string>(rstates[0][1]));
-                csd.state_name = static_cast<std::string>(rstates[0][2]);
+                csd.contact_id = _contact_id;
+                for (::size_t idx = 0; idx < rstates.size(); ++idx) {
+                    const std::string name = static_cast< std::string >(rstates[idx][0]);
+                    const boost::gregorian::date valid_from =
+                        boost::gregorian::from_string(static_cast< std::string >(rstates[idx][1]));
+                    csd.state[name] = valid_from;
+                }
                 return csd;
             }//try
             catch (std::exception &_ex)
@@ -1220,8 +1296,7 @@ namespace Registry
                     throw Registry::MojeID::OBJECT_NOT_EXISTS();
                 }
 
-                if(!isMojeidContact(_contact_id))
-                {
+                if (!isMojeidContact(_contact_id)) {
                     throw std::runtime_error(
                             "Contact is not registered with MojeID");
                 }
@@ -1235,64 +1310,70 @@ namespace Registry
                         (Fred::ObjectState::SERVER_UPDATE_PROHIBITED)
                         (Fred::ObjectState::VALIDATED_CONTACT) );
 
-                if(!Fred::cancel_object_state(
-                    _contact_id, ::MojeID::ObjectState::MOJEID_CONTACT))
-                {
+                if (!Fred::cancel_object_state(
+                    _contact_id, ::MojeID::ObjectState::MOJEID_CONTACT)) {
                     throw std::runtime_error(
                             "Fred::cancel_object_state mojeidContact failed");
                 }
 
-                if(!Fred::cancel_object_state(
-                    _contact_id, Fred::ObjectState::SERVER_DELETE_PROHIBITED))
-                {
+                if (!Fred::cancel_object_state(
+                    _contact_id, Fred::ObjectState::SERVER_DELETE_PROHIBITED)) {
                     throw std::runtime_error(
                         "Fred::cancel_object_state serverDeleteProhibited failed");
                 }
 
-                if(!Fred::cancel_object_state(
-                    _contact_id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED))
-                {
+                if (!Fred::cancel_object_state(
+                    _contact_id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED)) {
                     throw std::runtime_error(
                         "Fred::cancel_object_state serverTransferProhibited failed");
                 }
 
-                if(!Fred::cancel_object_state(
-                    _contact_id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED))
-                {
+                if (!Fred::cancel_object_state(
+                    _contact_id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED)) {
                     throw std::runtime_error(
                         "Fred::cancel_object_state serverUpdateProhibited failed");
                 }
 
-                if(Fred::object_has_state(_contact_id, Fred::ObjectState::VALIDATED_CONTACT))
-                {
+                if (Fred::object_has_state(_contact_id, Fred::ObjectState::VALIDATED_CONTACT)) {
                     //cancel validated
-                    if(!Fred::cancel_object_state(_contact_id
-                            , Fred::ObjectState::VALIDATED_CONTACT))
-                    {
+                    if (!Fred::cancel_object_state(_contact_id
+                            , Fred::ObjectState::VALIDATED_CONTACT)) {
                         throw std::runtime_error(
                             "Fred::cancel_object_state validatedContact failed");
                     }
-
-                    //set identified contact
-                    Fred::insert_object_state(
-                            _contact_id, Fred::ObjectState::IDENTIFIED_CONTACT);
                 }
 
                 //lock public requests
                 Fred::PublicRequest::lock_public_request_lock(
-                    Fred::PublicRequest::PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION,_contact_id);
+                    Fred::PublicRequest::PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION, _contact_id);
                 Fred::PublicRequest::lock_public_request_lock(
-                    Fred::PublicRequest::PRT_MOJEID_CONTACT_IDENTIFICATION,_contact_id);
+                    Fred::PublicRequest::PRT_MOJEID_CONTACT_IDENTIFICATION, _contact_id);
                 Fred::PublicRequest::lock_public_request_lock(
-                    Fred::PublicRequest::PRT_MOJEID_CONTACT_VALIDATION,_contact_id);
+                    Fred::PublicRequest::PRT_MOJEID_CONTACT_REIDENTIFICATION, _contact_id);
+                Fred::PublicRequest::lock_public_request_lock(
+                    Fred::PublicRequest::PRT_MOJEID_CONTACT_VALIDATION, _contact_id);
 
-                conn.exec_params("UPDATE public_request pr SET status=2 "
-                    " , resolve_time = CURRENT_TIMESTAMP "
-                    " FROM public_request_objects_map prom WHERE (prom.request_id = pr.id) "
-                    " AND pr.resolve_time IS NULL AND pr.status = 0 "
-                    " AND pr.request_type IN (12,13,14) AND object_id = $1::integer",
-                        Database::query_param_list(_contact_id));
+                conn.exec_params(
+                    "UPDATE public_request pr "
+                    "SET status=(SELECT id FROM enum_public_request_status WHERE name='invalidated'),"
+                        "resolve_time=CURRENT_TIMESTAMP "
+                    "FROM public_request_objects_map prom "
+                    "WHERE prom.object_id=$1::integer AND "
+                          "pr.id=prom.request_id AND "
+                          "pr.resolve_time IS NULL AND "
+                          "pr.status=(SELECT id FROM enum_public_request_status WHERE name='new') AND "
+                          "pr.request_type IN "
+                              "(SELECT id FROM enum_public_request_type "
+                               "WHERE name IN ($2::text,$3::text,$4::text,$5::text))",
+                    Database::query_param_list(_contact_id)
+                        (Fred::PublicRequest::PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION)
+                        (Fred::PublicRequest::PRT_MOJEID_CONTACT_IDENTIFICATION)
+                        (Fred::PublicRequest::PRT_MOJEID_CONTACT_REIDENTIFICATION)
+                        (Fred::PublicRequest::PRT_MOJEID_CONTACT_VALIDATION));
 
+                Fred::Contact::Verification::Contact contact = Fred::Contact::Verification::contact_info(_contact_id);
+                contact.addresses.clear();
+                Fred::Contact::Verification::contact_update(_request_id, this->mojeid_registrar_id_, contact);
 
                 tx.prepare(_trans_id);
 
@@ -1350,22 +1431,17 @@ namespace Registry
                 (server_conf_->registrar_handle)
                 (_contact_id));
 
-            if(contact_result.size() == 0)
-            {
+            if (contact_result.size() == 0) {
                 throw std::runtime_error(
                         "MojeIDImpl::isMojeidContact: contact doesn't exist");
             }
 
-            if(std::string(contact_result[0]["mojeidContact"])
-                .compare("f") == 0)
-            {
+            if (std::string(contact_result[0]["mojeidContact"]) == "f") {
                 //not mojeidContact - ok
                 return false;
             }
 
-            if(std::string(contact_result[0]["is_mojeid_registrar"])
-                .compare("f") == 0)
-            {
+            if (std::string(contact_result[0]["is_mojeid_registrar"]) == "f") {
                 //contact is in state mojeidContact
                 // and do not have mojeid registrar - nok
                 throw std::runtime_error(
@@ -1373,23 +1449,14 @@ namespace Registry
                     " mojeidContact and don't have mojeid registrar");
             }
 
-            if(
-                (std::string(contact_result[0]["conditionallyIdentifiedContact"])
-                .compare("t") == 0)
-                || (std::string(contact_result[0]["identifiedContact"])
-                .compare("t") == 0)
-                || (std::string(contact_result[0]["validatedContact"])
-                .compare("t") == 0)
-            )
-            {
+            if ((std::string(contact_result[0]["conditionallyIdentifiedContact"]) == "t") ||
+                (std::string(contact_result[0]["identifiedContact"]) == "t") ||
+                (std::string(contact_result[0]["validatedContact"]) == "t")) {
                 return true;//ok
             }
-            else
-            {
-                //contact lack identification state - nok
-                throw std::runtime_error(
-                    "MojeIDImpl::isMojeidContact: missing identification state");
-            }
+            //contact lack identification state - nok
+            throw std::runtime_error(
+                "MojeIDImpl::isMojeidContact: missing identification state");
         }//MojeIDImpl::isMojeidContact by id
 
         ///check if contact is mojeid contact
@@ -1402,13 +1469,12 @@ namespace Registry
                 " WHERE obr.name = $1::text "
                 , Database::query_param_list(_contact_handle));
 
-            if(contact_result.size() == 0)
-            {
+            if (contact_result.size() == 0) {
                 throw std::runtime_error(
                     "MojeIDImpl::isMojeidContact: "
                     " contact handle doesn't exist");
             }
-            unsigned long long contact_id (contact_result[0][0]);
+            const unsigned long long contact_id(contact_result[0][0]);
             return isMojeidContact(contact_id);
         }//MojeIDImpl::isMojeidContact by handle
 
@@ -1429,13 +1495,11 @@ namespace Registry
                     dynamic_cast<Fred::PublicRequest::PublicRequestAuth*>
                         (list->get(0));
 
-                if (new_auth_req == NULL)
-                {
+                if (new_auth_req == NULL) {
                     LOGGER(PACKAGE).error(
                             "unable to create identfication request - wrong type");
                 }
-                else
-                {
+                else {
                     new_auth_req->sendPasswords();
                 }
                 tx.commit();
@@ -1480,6 +1544,3 @@ namespace Registry
 
     }//namespace MojeID
 }//namespace Registry
-
-
-

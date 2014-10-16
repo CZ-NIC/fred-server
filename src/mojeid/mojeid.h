@@ -74,12 +74,13 @@ namespace Registry
         struct ContactStateData
         {
             unsigned long long contact_id;
-            boost::gregorian::date valid_from;
-            std::string state_name;
+            typedef std::map< std::string, boost::gregorian::date > StateValidFrom;
+            StateValidFrom state;
 
             ContactStateData()
             : contact_id(0)
             {}
+            StateValidFrom::const_iterator get_sum_state() const;
         };
 
         class MojeIDImpl
@@ -146,7 +147,7 @@ namespace Registry
                 unsigned long long  _contact_id
                 , unsigned long long  _request_id);
 
-            std::vector<ContactStateData> getContactsStates(unsigned long _last_hours);
+            std::vector<ContactStateData> getContactsStateChanges(unsigned long _last_hours);
 
             ContactStateData getContactState(unsigned long long _contact_id);
 

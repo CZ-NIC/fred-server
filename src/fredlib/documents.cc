@@ -241,6 +241,9 @@ namespace Fred
         templateMap[GT_CONTACT_IDENTIFICATION_LETTER_PIN3] = GenProcType(
           "mojeid_auth_owner.xsl", true, "application/pdf"
         );
+        templateMap[GT_CONTACT_REIDENTIFICATION_LETTER_PIN3] = GenProcType(
+          "mojeid_auth_owner_change_optys.xsl", true, "application/pdf"
+        );
         templateMap[GT_CONTACT_VALIDATION_REQUEST_PIN3] = GenProcType(
           "mojeid_validate.xsl", true, "application/pdf"
         );

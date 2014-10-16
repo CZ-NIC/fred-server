@@ -162,7 +162,7 @@ BOOST_AUTO_TEST_CASE( test_primary_phone_format_checker )
             Fred::Contact::Verification::FieldErrorMap errors;
             c.telephone = (*it) + std::string("000000");
             BOOST_TEST_MESSAGE("telephone: " << c.telephone.get_value());
-            bool check_result = contact_checker_phone_format(c, errors);
+            const bool check_result = contact_checker_phone_cz_sk_format(c, errors);
             BOOST_CHECK(check_result == false
                 && errors[Fred::Contact::Verification::field_phone] == Fred::Contact::Verification::INVALID);
         }
@@ -177,7 +177,7 @@ BOOST_AUTO_TEST_CASE( test_primary_phone_format_checker )
         /* CZ_CODE + 6010000000 */
         c.telephone = CZ_CODE + "6010000000";
         BOOST_TEST_MESSAGE("telephone: " << c.telephone.get_value());
-        bool check_result = contact_checker_phone_format(c, errors);
+        const bool check_result = contact_checker_phone_cz_sk_format(c, errors);
         BOOST_CHECK(check_result == false
                 && errors[Fred::Contact::Verification::field_phone] == Fred::Contact::Verification::INVALID);
     }
@@ -191,7 +191,7 @@ BOOST_AUTO_TEST_CASE( test_primary_phone_format_checker )
 
         c.telephone = CZ_CODE + "60100000";
         BOOST_TEST_MESSAGE("telephone: " << c.telephone.get_value());
-        bool check_result = contact_checker_phone_format(c, errors);
+        const bool check_result = contact_checker_phone_cz_sk_format(c, errors);
         BOOST_CHECK(check_result == false
                 && errors[Fred::Contact::Verification::field_phone] == Fred::Contact::Verification::INVALID);
     }
@@ -229,7 +229,7 @@ BOOST_AUTO_TEST_CASE( test_primary_phone_format_checker )
 
         c.telephone = std::string("+423.601000000");
         BOOST_TEST_MESSAGE("telephone: " << c.telephone.get_value());
-        bool check_result = contact_checker_phone_format(c, errors);
+        const bool check_result = contact_checker_phone_cz_sk_format(c, errors);
         BOOST_CHECK(check_result == false
                 && errors[Fred::Contact::Verification::field_phone] == Fred::Contact::Verification::INVALID);
     }
@@ -914,6 +914,149 @@ BOOST_FIXTURE_TEST_CASE( contact_verification_in_threads, Case_contact_verificat
                 << " description: " << thread_result.desc);
         }
     }//for i
+}
+
+BOOST_AUTO_TEST_CASE( test_contact_create_update_info )
+{
+    //corba config
+    FakedArgs fa = CfgArgs::instance()->fa;
+    //conf pointers
+    HandleCorbaNameServiceArgs* const ns_args_ptr = CfgArgs::instance()->
+        get_handler_ptr_by_type< HandleCorbaNameServiceArgs >();
+    CorbaContainer::set_instance(fa.get_argc(), fa.get_argv(),
+        ns_args_ptr->nameservice_host,
+        ns_args_ptr->nameservice_port,
+        ns_args_ptr->nameservice_context);
+
+    boost::shared_ptr< Fred::Mailer::Manager > mm(new MailerManager(CorbaContainer::get_instance()->getNS()));
+    const std::auto_ptr< Registry::Contact::Verification::ContactVerificationImpl > cv(
+        new Registry::Contact::Verification::ContactVerificationImpl(server_name, mm));
+
+    //get db connection
+    Database::Connection conn = Database::Manager::acquire();
+
+    //get registrar id
+    static const std::string registrar_handle = "REG-FRED_A";
+    Database::Result res_reg = conn.exec_params(
+        "SELECT id FROM registrar WHERE handle=$1::text",
+        Database::query_param_list(registrar_handle));
+    if (res_reg.size() == 0) {
+        throw std::runtime_error("Registrar does not exist");
+    }
+    const unsigned long long registrar_id = static_cast< unsigned long long >(res_reg[0][0]);
+
+    RandomDataGenerator rdg;
+
+    //create test contact
+    Fred::Contact::Verification::Contact fcvc;
+    const std::string xmark = rdg.xnumstring(6);
+    fcvc.handle = std::string("TESTCCUI-HANDLE") + xmark;
+    fcvc.name = std::string("TESTCCUI NAME") + xmark;
+    fcvc.organization = std::string("TESTCCUI-ORG") + xmark;
+    fcvc.street1 = std::string("TESTCCUI-STR1") + xmark;
+    fcvc.city = std::string("Praha");
+    fcvc.postalcode = std::string("11150");
+    fcvc.country = std::string("CZ");
+    fcvc.telephone = std::string("+420.728") + xmark;
+    fcvc.email = std::string("test") + xmark + "@nic.cz";
+    fcvc.ssn = std::string("1980-01-01");
+    fcvc.ssntype = std::string("BIRTHDAY");
+    fcvc.auth_info = rdg.xnstring(8);
+
+    fcvc.disclosename = true;
+    fcvc.discloseorganization = true;
+    fcvc.discloseaddress = true;
+    fcvc.disclosetelephone = true;
+    fcvc.disclosefax = true;
+    fcvc.discloseemail = true;
+    fcvc.disclosevat = true;
+    fcvc.discloseident = true;
+    fcvc.disclosenotifyemail = true;
+
+    Fred::Contact::Verification::ContactAddress mailing_addr;
+    mailing_addr.type = "MAILING";
+    mailing_addr.company_name = "Korespondenční s.r.o.";
+    mailing_addr.street1 = fcvc.street1;
+    mailing_addr.city = fcvc.city;
+    mailing_addr.postalcode = fcvc.postalcode;
+    mailing_addr.country = fcvc.country;
+
+    Fred::Contact::Verification::ContactAddress billing_addr;
+    billing_addr.type = "BILLING";
+    billing_addr.company_name = "Fakturační s.r.o.";
+    billing_addr.street1 = fcvc.street1;
+    billing_addr.city = fcvc.city;
+    billing_addr.postalcode = fcvc.postalcode;
+    billing_addr.country = fcvc.country;
+
+    Fred::Contact::Verification::ContactAddress shipping_addr;
+    shipping_addr.type = "SHIPPING";
+    shipping_addr.company_name = "Doručovací s.r.o.";
+    shipping_addr.street1 = fcvc.street1;
+    shipping_addr.city = fcvc.city;
+    shipping_addr.postalcode = fcvc.postalcode;
+    shipping_addr.country = fcvc.country;
+
+    fcvc.addresses.push_back(mailing_addr);
+    fcvc.addresses.push_back(billing_addr);
+    fcvc.addresses.push_back(shipping_addr);
+    BOOST_CHECK(fcvc.addresses.size() == 3);
+
+    enum { DEFAULT_REQUEST_ID = 0 };
+    static const unsigned long long request_id = DEFAULT_REQUEST_ID;
+
+    unsigned long long history_id = Fred::Contact::Verification::contact_create(request_id, registrar_id, fcvc);
+
+    Fred::Contact::Verification::Contact fcvc_res = Fred::Contact::Verification::contact_info(fcvc.id);
+    BOOST_CHECK(fcvc.addresses.size() == fcvc_res.addresses.size());
+
+    typedef std::vector< Fred::Contact::Verification::ContactAddress > CAddresses;
+    for (CAddresses::const_iterator ptr_src = fcvc.addresses.begin();
+         ptr_src != fcvc.addresses.end(); ++ptr_src) {
+        bool found = false;
+        for (CAddresses::const_iterator ptr_dst = fcvc_res.addresses.begin();
+            ptr_dst != fcvc_res.addresses.end(); ++ptr_dst) {
+            if (ptr_src->type == ptr_dst->type) {
+                BOOST_CHECK(*ptr_src == *ptr_dst);
+                found = true;
+                break;
+            }
+        }
+        BOOST_CHECK(found);
+    }
+
+    for (CAddresses::iterator pa = fcvc.addresses.begin(); pa != fcvc.addresses.end(); ++pa) {
+        if (pa->type == "BILLING") {
+            fcvc.addresses.erase(pa);
+            break;
+        }
+    }
+
+    for (CAddresses::iterator pa = fcvc.addresses.begin(); pa != fcvc.addresses.end(); ++pa) {
+        if (pa->type == "SHIPPING") {
+            pa->city = Nullable< std::string >();
+            pa->postalcode = Nullable< std::string >();
+            break;
+        }
+    }
+
+    history_id = Fred::Contact::Verification::contact_update(request_id, registrar_id, fcvc);
+    fcvc_res = Fred::Contact::Verification::contact_info(fcvc.id);
+    BOOST_CHECK(fcvc.addresses.size() == fcvc_res.addresses.size());
+
+    for (CAddresses::const_iterator ptr_src = fcvc.addresses.begin();
+         ptr_src != fcvc.addresses.end(); ++ptr_src) {
+        bool found = false;
+        for (CAddresses::const_iterator ptr_dst = fcvc_res.addresses.begin();
+            ptr_dst != fcvc_res.addresses.end(); ++ptr_dst) {
+            if (ptr_src->type == ptr_dst->type) {
+                BOOST_CHECK(*ptr_src == *ptr_dst);
+                found = true;
+                break;
+            }
+        }
+        BOOST_CHECK(found);
+    }
 }
 
 

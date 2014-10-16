@@ -411,6 +411,41 @@ unsigned long long Manager::save_letter_to_send(const char* contact_handle
     return message_archive_id;
 }
 
+
+void Manager::cancel_letter_send(unsigned long long letter_id)
+{
+    try
+    {
+        LOGGER(PACKAGE).debug(boost::format("Messages::cancel_letter_send(%1%)") % letter_id);
+        Database::Connection conn = Database::Manager::acquire();
+        Database::Transaction tx(conn);
+
+        Database::Result r = conn.exec_params(
+            "UPDATE message_archive AS ma "
+               "SET moddate = now(), "
+                   "status_id = (SELECT id FROM enum_send_status WHERE status_name = 'no_processing') "
+               "FROM letter_archive AS la "
+               "WHERE "
+                    "la.id = ma.id "
+                    "AND ma.id = $1::bigint "
+                    "AND ma.status_id IN (SELECT id FROM enum_send_status WHERE status_name IN ('sent_failed', 'ready'))",
+            Database::query_param_list(letter_id));
+        tx.commit();
+    }
+    catch (const std::exception &ex)
+    {
+        LOGGER(PACKAGE).error(boost::format("Messages::cancel_letter_send(%1%) (ex: %2%)") % letter_id % ex.what());
+        throw;
+    }
+    catch (...)
+    {
+        LOGGER(PACKAGE).error(boost::format("Messages::cancel_letter_send(%1%)") % letter_id);
+        throw;
+    }
+
+}
+
+
 unsigned long long Manager::copy_letter_to_send(unsigned long long letter_id)
 {
     try

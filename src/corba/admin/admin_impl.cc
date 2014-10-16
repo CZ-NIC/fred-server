@@ -29,8 +29,8 @@
 #include <iomanip>
 #include "src/corba/Admin.hh"
 
-#include "common.h"
-#include "admin_impl.h"
+#include "src/corba/admin/common.h"
+#include "src/corba/admin/admin_impl.h"
 #include "src/old_utils/log.h"
 #include "src/old_utils/dbsql.h"
 #include "src/fredlib/registry.h"
@@ -45,9 +45,11 @@
 #include "util/factory_check.h"
 #include "log/logger.h"
 #include "log/context.h"
-#include "random.h"
+#include "util/random.h"
 #include "src/corba/connection_releaser.h"
 #include "src/corba/epp_corba_client_impl.h"
+#include "src/mojeid/public_request_verification_impl.h"
+#include "src/contact_verification/public_request_contact_verification_impl.h"
 
 class Registry_RegistrarCertification_i;
 class Registry_RegistrarGroup_i;
@@ -1024,8 +1026,8 @@ ccReg::TID ccReg_Admin_i::resendPin2SMS(ccReg::TID publicRequestId)
             throw ccReg::Admin::ObjectNotFound();
         }
         const std::string typeOfRequest = static_cast< std::string >(res[0][0]);
-        if ((typeOfRequest != "mojeid_contact_conditional_identification") &&
-            (typeOfRequest != "contact_conditional_identification")) {
+        if ((typeOfRequest != Fred::PublicRequest::PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION) &&
+            (typeOfRequest != Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION)) {
             LOGGER(PACKAGE).error(boost::format("publicRequestId: %1% of %2% type is not PIN2 request")
                 % publicRequestId
                 % typeOfRequest);

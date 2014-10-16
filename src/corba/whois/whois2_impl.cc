@@ -26,7 +26,23 @@ namespace Whois {
     }
 
     // at least contact and registrar have address (result of different info operations == different types) ...
-    template<typename Tinfo> PlaceAddress wrap_address(const Tinfo& in) {
+    template<typename Tinfo> PlaceAddress wrap_address(const Tinfo& in);
+
+    template<> PlaceAddress wrap_address(const Fred::InfoContactData& in) {
+        const Fred::Contact::PlaceAddress in_place = in.place.get_value_or_default();
+        PlaceAddress result;
+        result.street1 =          Corba::wrap_string(in_place.street1);
+        result.street2 =          Corba::wrap_string(in_place.street2.get_value_or_default());
+        result.street3 =          Corba::wrap_string(in_place.street3.get_value_or_default());
+        result.city =             Corba::wrap_string(in_place.city);
+        result.postalcode =       Corba::wrap_string(in_place.postalcode);
+        result.stateorprovince =  Corba::wrap_string(in_place.stateorprovince.get_value_or_default());
+        result.country_code =     Corba::wrap_string(in_place.country);
+
+        return result;
+    }
+
+    template<> PlaceAddress wrap_address(const Fred::InfoRegistrarData& in) {
         PlaceAddress result;
         result.street1 =          Corba::wrap_string(in.street1.get_value_or_default());
         result.street2 =          Corba::wrap_string(in.street2.get_value_or_default());

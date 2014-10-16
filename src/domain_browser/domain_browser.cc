@@ -413,13 +413,14 @@ namespace Registry
 
                 detail.name = contact_info.info_contact_data.name;
                 detail.organization = contact_info.info_contact_data.organization;
-                detail.street1 = contact_info.info_contact_data.street1;
-                detail.street2 = contact_info.info_contact_data.street2;
-                detail.street3 = contact_info.info_contact_data.street3;
-                detail.city = contact_info.info_contact_data.city;
-                detail.stateorprovince = contact_info.info_contact_data.stateorprovince;
-                detail.postalcode = contact_info.info_contact_data.postalcode;
-                detail.country = contact_info.info_contact_data.country;
+                const Fred::Contact::PlaceAddress ci_place = contact_info.info_contact_data.place.get_value_or_default();
+                detail.street1 = ci_place.street1;
+                detail.street2 = ci_place.street2.get_value_or_default();
+                detail.street3 = ci_place.street3.get_value_or_default();
+                detail.city = ci_place.city;
+                detail.stateorprovince = ci_place.stateorprovince.get_value_or_default();
+                detail.postalcode = ci_place.postalcode;
+                detail.country = ci_place.country;
                 detail.telephone = contact_info.info_contact_data.telephone;
                 detail.fax = contact_info.info_contact_data.fax;
                 detail.email = contact_info.info_contact_data.email;

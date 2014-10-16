@@ -236,20 +236,18 @@ namespace Fred
                     : Nullable<std::string> (static_cast<std::string>(query_result[i][21]));
             info_contact_output.info_contact_data.organization = query_result[i][22].isnull() ? Nullable<std::string>()
                     : Nullable<std::string> (static_cast<std::string>(query_result[i][22]));
-            info_contact_output.info_contact_data.street1 = query_result[i][23].isnull() ? Nullable<std::string>()
-                    : Nullable<std::string> (static_cast<std::string>(query_result[i][23]));
-            info_contact_output.info_contact_data.street2 = query_result[i][24].isnull() ? Nullable<std::string>()
-                    : Nullable<std::string> (static_cast<std::string>(query_result[i][24]));
-            info_contact_output.info_contact_data.street3 = query_result[i][25].isnull() ? Nullable<std::string>()
-                    : Nullable<std::string> (static_cast<std::string>(query_result[i][25]));
-            info_contact_output.info_contact_data.city = query_result[i][26].isnull() ? Nullable<std::string>()
-                    : Nullable<std::string> (static_cast<std::string>(query_result[i][26]));
-            info_contact_output.info_contact_data.stateorprovince = query_result[i][27].isnull() ? Nullable<std::string>()
-                    : Nullable<std::string> (static_cast<std::string>(query_result[i][27]));
-            info_contact_output.info_contact_data.postalcode = query_result[i][28].isnull() ? Nullable<std::string>()
-                    : Nullable<std::string> (static_cast<std::string>(query_result[i][28]));
-            info_contact_output.info_contact_data.country = query_result[i][29].isnull() ? Nullable<std::string>()
-                    : Nullable<std::string> (static_cast<std::string>(query_result[i][29]));
+            Contact::PlaceAddress place;
+            place.street1 = static_cast<std::string>(query_result[i][23]);
+            place.street2 = query_result[i][24].isnull() ? Optional<std::string>()
+                    : Optional<std::string> (static_cast<std::string>(query_result[i][24]));
+            place.street3 = query_result[i][25].isnull() ? Optional<std::string>()
+                    : Optional<std::string> (static_cast<std::string>(query_result[i][25]));
+            place.city = static_cast<std::string>(query_result[i][26]);
+            place.stateorprovince = query_result[i][27].isnull() ? Optional<std::string>()
+                    : Optional<std::string> (static_cast<std::string>(query_result[i][27]));
+            place.postalcode = static_cast<std::string>(query_result[i][28]);
+            place.country = static_cast<std::string>(query_result[i][29]);
+            info_contact_output.info_contact_data.place = place;
             info_contact_output.info_contact_data.telephone = query_result[i][30].isnull() ? Nullable<std::string>()
                     : Nullable<std::string> (static_cast<std::string>(query_result[i][30]));
             info_contact_output.info_contact_data.fax = query_result[i][31].isnull() ? Nullable<std::string>()
@@ -278,6 +276,48 @@ namespace Fred
             : boost::posix_time::time_from_string(static_cast<std::string>(query_result[i][46]));// utc timestamp
             info_contact_output.local_timestamp = query_result[i][47].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
             : boost::posix_time::time_from_string(static_cast<std::string>(query_result[i][47]));//local zone timestamp
+
+            Database::QueryParams params;
+            const std::string sql = "SELECT type,company_name,street1,street2,street3,"
+                                           "city,stateorprovince,postalcode,country "
+                                    "FROM contact_address "
+                                    "WHERE contactid=$1::bigint";
+            params.push_back(info_contact_output.info_contact_data.id);
+            Database::Result subquery_result = ctx.get_conn().exec_params(sql, params);
+            ContactAddressList addresses;
+            for(::size_t idx = 0; idx < subquery_result.size(); ++idx) {
+                const struct ContactAddressType type(ContactAddressType::from_string(
+                     static_cast< std::string >(subquery_result[idx]["type"])));
+                struct ContactAddress address;
+                if (!subquery_result[idx]["company_name"].isnull()) {
+                    address.company_name = static_cast< std::string >(subquery_result[idx]["company_name"]);
+                }
+                if (!subquery_result[idx]["street1"].isnull()) {
+                    address.street1 = static_cast< std::string >(subquery_result[idx]["street1"]);
+                }
+                if (!subquery_result[idx]["street2"].isnull()) {
+                    address.street2 = static_cast< std::string >(subquery_result[idx]["street2"]);
+                }
+                if (!subquery_result[idx]["street3"].isnull()) {
+                    address.street3 = static_cast< std::string >(subquery_result[idx]["street3"]);
+                }
+                if (!subquery_result[idx]["city"].isnull()) {
+                    address.city = static_cast< std::string >(subquery_result[idx]["city"]);
+                }
+                if (!subquery_result[idx]["stateorprovince"].isnull()) {
+                    address.stateorprovince = static_cast< std::string >(subquery_result[idx]["stateorprovince"]);
+                }
+                if (!subquery_result[idx]["postalcode"].isnull()) {
+                    address.postalcode = static_cast< std::string >(subquery_result[idx]["postalcode"]);
+                }
+                if (!subquery_result[idx]["country"].isnull()) {
+                    address.country = static_cast< std::string >(subquery_result[idx]["country"]);
+                }
+                addresses[type] = address;
+            }
+            if (!addresses.empty()) {
+                info_contact_output.info_contact_data.addresses = addresses;
+            }
 
             result.push_back(info_contact_output);
         }//for res

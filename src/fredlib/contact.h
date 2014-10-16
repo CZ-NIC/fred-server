@@ -22,6 +22,36 @@ enum MemberType {
   MT_REGISTRAR_HANDLE, ///< registrar handle
 };
 
+class Address
+{
+public:
+  typedef struct _Type
+  {
+    static const std::string MAILING; // Fred::Contact::Address::Type::MAILING  = "MAILING"
+    static const std::string SHIPPING;// Fred::Contact::Address::Type::SHIPPING = "SHIPPING"
+    static const std::string BILLING; // Fred::Contact::Address::Type::BILLING  = "BILLING"
+  } Type;
+  virtual const std::string& getType() const = 0;
+  /// return contact company name
+  virtual const std::string& getCompanyName() const = 0;
+  /// return contact street address part 1
+  virtual const std::string& getStreet1() const = 0;
+  /// return contact street address part 2
+  virtual const std::string& getStreet2() const = 0;
+  /// return contact street address part 3
+  virtual const std::string& getStreet3() const = 0;
+  /// return contact state or province
+  virtual const std::string& getProvince() const = 0;
+  /// return contact postal code
+  virtual const std::string& getPostalCode() const = 0;
+  /// return contact city
+  virtual const std::string& getCity() const = 0;
+  /// return contact contry code
+  virtual const std::string& getCountry() const = 0;
+
+  virtual bool operator==(const Address &_other) const = 0;
+  virtual bool operator!=(const Address &_other) const = 0;
+};
 
 class Contact : virtual public Fred::Object {
 public:
@@ -82,6 +112,9 @@ public:
   virtual bool getDiscloseIdent() const = 0;
   /// return disclose attribute for contact notify email
   virtual bool getDiscloseNotifyEmail() const = 0;
+
+  virtual unsigned int getAddressCount() const = 0;
+  virtual const Address* getAddressByIdx(const unsigned int &_idx) const = 0;
 };
 
 

@@ -48,11 +48,15 @@ struct copy_contact_fixture : public Test::Fixture::instantiate_db_template
         registrar_handle = static_cast<std::string>(registrar_result[0][1]);
         BOOST_CHECK(!registrar_handle.empty());//expecting existing system registrar
 
+        Fred::Contact::PlaceAddress place;
+        place.street1 = std::string("STR1") + xmark;
+        place.city = "Praha";
+        place.postalcode = "11150";
+        place.country = "CZ";
         Fred::CreateContact(src_contact_handle, registrar_handle)
             .set_name(std::string("TEST-COPY-CONTACT NAME")+xmark)
             .set_disclosename(true)
-            .set_street1(std::string("STR1")+xmark)
-            .set_city("Praha").set_postalcode("11150").set_country("CZ")
+            .set_place(place)
             .set_discloseaddress(true)
             .exec(ctx);
 
@@ -92,27 +96,9 @@ BOOST_AUTO_TEST_CASE(copy_contact)
     BOOST_CHECK((src_contact_info.organization.isnull() == dst_contact_info.organization.isnull()) &&
                 (src_contact_info.organization.isnull() || (src_contact_info.organization.get_value().compare(
                                                             dst_contact_info.organization.get_value()) == 0)));
-    BOOST_CHECK((src_contact_info.street1.isnull() == dst_contact_info.street1.isnull()) &&
-                (src_contact_info.street1.isnull() || (src_contact_info.street1.get_value().compare(
-                                                       dst_contact_info.street1.get_value()) == 0)));
-    BOOST_CHECK((src_contact_info.street2.isnull() == dst_contact_info.street2.isnull()) &&
-                (src_contact_info.street2.isnull() || (src_contact_info.street2.get_value().compare(
-                                                       dst_contact_info.street2.get_value()) == 0)));
-    BOOST_CHECK((src_contact_info.street3.isnull() == dst_contact_info.street3.isnull()) &&
-                (src_contact_info.street3.isnull() || (src_contact_info.street3.get_value().compare(
-                                                       dst_contact_info.street3.get_value()) == 0)));
-    BOOST_CHECK((src_contact_info.city.isnull() == dst_contact_info.city.isnull()) &&
-                (src_contact_info.city.isnull() || (src_contact_info.city.get_value().compare(
-                                                    dst_contact_info.city.get_value()) == 0)));
-    BOOST_CHECK((src_contact_info.stateorprovince.isnull() == dst_contact_info.stateorprovince.isnull()) &&
-                (src_contact_info.stateorprovince.isnull() || (src_contact_info.stateorprovince.get_value().compare(
-                                                               dst_contact_info.stateorprovince.get_value()) == 0)));
-    BOOST_CHECK((src_contact_info.postalcode.isnull() == dst_contact_info.postalcode.isnull()) &&
-                (src_contact_info.postalcode.isnull() || (src_contact_info.postalcode.get_value().compare(
-                                                          dst_contact_info.postalcode.get_value()) == 0)));
-    BOOST_CHECK((src_contact_info.country.isnull() == dst_contact_info.country.isnull()) &&
-                (src_contact_info.country.isnull() || (src_contact_info.country.get_value().compare(
-                                                       dst_contact_info.country.get_value()) == 0)));
+    BOOST_CHECK((src_contact_info.place.isnull() == dst_contact_info.place.isnull()) &&
+                (src_contact_info.place.isnull() || (src_contact_info.place.get_value() ==
+                                                     dst_contact_info.place.get_value())));
     BOOST_CHECK((src_contact_info.telephone.isnull() == dst_contact_info.telephone.isnull()) &&
                 (src_contact_info.telephone.isnull() || (src_contact_info.telephone.get_value().compare(
                                                          dst_contact_info.telephone.get_value()) == 0)));

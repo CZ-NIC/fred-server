@@ -52,13 +52,7 @@ namespace Fred
             , const Optional<std::string>& authinfo
             , const Optional<std::string>& name
             , const Optional<std::string>& organization
-            , const Optional<std::string>& street1
-            , const Optional<std::string>& street2
-            , const Optional<std::string>& street3
-            , const Optional<std::string>& city
-            , const Optional<std::string>& stateorprovince
-            , const Optional<std::string>& postalcode
-            , const Optional<std::string>& country
+            , const Optional< Fred::Contact::PlaceAddress > &place
             , const Optional<std::string>& telephone
             , const Optional<std::string>& fax
             , const Optional<std::string>& email
@@ -66,6 +60,7 @@ namespace Fred
             , const Optional<std::string>& vat
             , const Optional<std::string>& ssntype
             , const Optional<std::string>& ssn
+            , const Optional<ContactAddressList>& addresses
             , const Optional<bool>& disclosename
             , const Optional<bool>& discloseorganization
             , const Optional<bool>& discloseaddress
@@ -82,13 +77,7 @@ namespace Fred
     , authinfo_(authinfo)
     , name_(name)
     , organization_(organization)
-    , street1_(street1)
-    , street2_(street2)
-    , street3_(street3)
-    , city_(city)
-    , stateorprovince_(stateorprovince)
-    , postalcode_(postalcode)
-    , country_(country)
+    , place_(place)
     , telephone_(telephone)
     , fax_(fax)
     , email_(email)
@@ -96,6 +85,7 @@ namespace Fred
     , vat_(vat)
     , ssntype_(ssntype)
     , ssn_(ssn)
+    , addresses_(addresses)
     , disclosename_(disclosename)
     , discloseorganization_(discloseorganization)
     , discloseaddress_(discloseaddress)
@@ -128,45 +118,9 @@ namespace Fred
         return *this;
     }
 
-    CreateContact& CreateContact::set_street1(const std::string& street1)
+    CreateContact& CreateContact::set_place(const Fred::Contact::PlaceAddress &place)
     {
-        street1_ = street1;
-        return *this;
-    }
-
-    CreateContact& CreateContact::set_street2(const std::string& street2)
-    {
-        street2_ = street2;
-        return *this;
-    }
-
-    CreateContact& CreateContact::set_street3(const std::string& street3)
-    {
-        street3_ = street3;
-        return *this;
-    }
-
-    CreateContact& CreateContact::set_city(const std::string& city)
-    {
-        city_ = city;
-        return *this;
-    }
-
-    CreateContact& CreateContact::set_stateorprovince(const std::string& stateorprovince)
-    {
-        stateorprovince_ = stateorprovince;
-        return *this;
-    }
-
-    CreateContact& CreateContact::set_postalcode(const std::string& postalcode)
-    {
-        postalcode_ = postalcode;
-        return *this;
-    }
-
-    CreateContact& CreateContact::set_country(const std::string& country)
-    {
-        country_ = country;
+        place_ = place;
         return *this;
     }
 
@@ -212,6 +166,12 @@ namespace Fred
         return *this;
     }
 
+    CreateContact& CreateContact::set_addresses(const ContactAddressList& addresses)
+    {
+        addresses_ = addresses;
+        return *this;
+    }
+    
     CreateContact& CreateContact::set_disclosename(const bool disclosename)
     {
         disclosename_ = disclosename;
@@ -306,7 +266,7 @@ namespace Fred
             //create contact
             {
                 Database::QueryParams params;//query params
-                std::stringstream col_sql, val_sql;
+                std::ostringstream col_sql, val_sql;
                 Util::HeadSeparator col_separator("",", "), val_separator("",", ");
 
                 col_sql <<"INSERT INTO contact (";
@@ -331,51 +291,43 @@ namespace Fred
                     val_sql << val_separator.get() << "$" << params.size() <<"::text";
                 }
 
-                if(street1_.isset())
+                if(place_.isset())
                 {
-                    params.push_back(street1_.get_value());
+                    const Fred::Contact::PlaceAddress &place = place_.get_value();
+                    params.push_back(place.street1);
                     col_sql << col_separator.get() << "street1";
                     val_sql << val_separator.get() << "$" << params.size() <<"::text";
-                }
 
-                if(street2_.isset())
-                {
-                    params.push_back(street2_.get_value());
-                    col_sql << col_separator.get() << "street2";
-                    val_sql << val_separator.get() << "$" << params.size() <<"::text";
-                }
+                    if(place.street2.isset())
+                    {
+                        params.push_back(place.street2.get_value());
+                        col_sql << col_separator.get() << "street2";
+                        val_sql << val_separator.get() << "$" << params.size() <<"::text";
+                    }
 
-                if(street3_.isset())
-                {
-                    params.push_back(street3_.get_value());
-                    col_sql << col_separator.get() << "street3";
-                    val_sql << val_separator.get() << "$" << params.size() <<"::text";
-                }
+                    if(place.street3.isset())
+                    {
+                        params.push_back(place.street3.get_value());
+                        col_sql << col_separator.get() << "street3";
+                        val_sql << val_separator.get() << "$" << params.size() <<"::text";
+                    }
 
-                if(city_.isset())
-                {
-                    params.push_back(city_.get_value());
+                    params.push_back(place.city);
                     col_sql << col_separator.get() << "city";
                     val_sql << val_separator.get() << "$" << params.size() <<"::text";
-                }
 
-                if(stateorprovince_.isset())
-                {
-                    params.push_back(stateorprovince_.get_value());
-                    col_sql << col_separator.get() << "stateorprovince";
-                    val_sql << val_separator.get() << "$" << params.size() <<"::text";
-                }
+                    if(place.stateorprovince.isset())
+                    {
+                        params.push_back(place.stateorprovince.get_value());
+                        col_sql << col_separator.get() << "stateorprovince";
+                        val_sql << val_separator.get() << "$" << params.size() <<"::text";
+                    }
 
-                if(postalcode_.isset())
-                {
-                    params.push_back(postalcode_.get_value());
+                    params.push_back(place.postalcode);
                     col_sql << col_separator.get() << "postalcode";
                     val_sql << val_separator.get() << "$" << params.size() <<"::text";
-                }
 
-                if(country_.isset())
-                {
-                    params.push_back(Contact::get_country_code(country_, ctx,
+                    params.push_back(Contact::get_country_code(place.country, ctx,
                             &create_contact_exception, &Exception::set_unknown_country));
                     col_sql << col_separator.get() << "country";
                     val_sql << val_separator.get() << "$" << params.size() <<"::text";
@@ -505,6 +457,83 @@ namespace Fred
                 //insert into contact
                 ctx.get_conn().exec_params(col_sql.str() + val_sql.str(), params);
 
+                //insert into contact_address
+                if (addresses_.isset() && !addresses_.get_value().empty()) {
+                    std::ostringstream sql;
+                    params = Database::QueryParams();
+                    params.push_back(create_object_output.object_id);//$1::bigint=contactid
+                    const ContactAddressList &addresses = addresses_.get_value();
+                    for (ContactAddressList::const_iterator addr_ptr = addresses.begin();
+                         addr_ptr != addresses.end(); ++addr_ptr) {
+                        if (sql.str().empty()) {
+                            sql << "INSERT INTO contact_address "
+                                    "("
+                                     "contactid,"
+                                     "type,"
+                                     "company_name,"
+                                     "street1,"
+                                     "street2,"
+                                     "street3,"
+                                     "city,"
+                                     "stateorprovince,"
+                                     "postalcode,"
+                                     "country"
+                                    ") VALUES ";
+                        }
+                        else {
+                            sql << ",";
+                        }
+                        //type
+                        params.push_back(addr_ptr->first.to_string());
+                        sql << "($1::bigint,$" << params.size() << "::contact_address_type,";
+                        //company_name
+                        if (addr_ptr->second.company_name.isset()) {
+                            params.push_back(addr_ptr->second.company_name.get_value());
+                            sql << "$" << params.size() << "::text,";
+                        }
+                        else {
+                            sql << "NULL,";
+                        }
+                        //street1
+                        params.push_back(addr_ptr->second.street1);
+                        sql << "$" << params.size() << "::text,";
+                        //street2
+                        if (addr_ptr->second.street2.isset()) {
+                            params.push_back(addr_ptr->second.street2.get_value());
+                            sql << "$" << params.size() << "::text,";
+                        }
+                        else {
+                            sql << "NULL,";
+                        }
+                        //street3
+                        if (addr_ptr->second.street3.isset()) {
+                            params.push_back(addr_ptr->second.street3.get_value());
+                            sql << "$" << params.size() << "::text,";
+                        }
+                        else {
+                            sql << "NULL,";
+                        }
+                        //city
+                        params.push_back(addr_ptr->second.city);
+                        sql << "$" << params.size() << "::text,";
+                        //stateorprovince
+                        if (addr_ptr->second.stateorprovince.isset()) {
+                            params.push_back(addr_ptr->second.stateorprovince.get_value());
+                            sql << "$" << params.size() << "::text,";
+                        }
+                        else {
+                            sql << "NULL,";
+                        }
+                        //postalcode
+                        params.push_back(addr_ptr->second.postalcode);
+                        sql << "$" << params.size() << "::text,";
+                        //country
+                        params.push_back(addr_ptr->second.country);
+                        sql << "$" << params.size() << "::text)";
+                    }
+                    ctx.get_conn().exec_params(sql.str(), params);
+                }
+
                 //get crdate from object_registry
                 {
                     Database::Result crdate_res = ctx.get_conn().exec_params(
@@ -541,6 +570,13 @@ namespace Fred
                     " WHERE id = $2::integer"
                     , Database::query_param_list(create_object_output.history_id)(create_object_output.object_id));
 
+                ctx.get_conn().exec_params(
+                    "INSERT INTO contact_address_history (historyid, id, contactid, type, company_name,"
+                    " street1, street2, street3, city, stateorprovince, postalcode, country)"
+                    " SELECT $1::bigint, id, contactid, type, company_name,"
+                    " street1, street2, street3, city, stateorprovince, postalcode, country"
+                    " FROM contact_address WHERE contactid=$2::bigint"
+                    , Database::query_param_list(create_object_output.history_id)(create_object_output.object_id));
             }//save history
 
         }//try
@@ -562,13 +598,7 @@ namespace Fred
         (std::make_pair("authinfo",authinfo_.print_quoted()))
         (std::make_pair("name",name_.print_quoted()))
         (std::make_pair("organization",organization_.print_quoted()))
-        (std::make_pair("street1",street1_.print_quoted()))
-        (std::make_pair("street2",street2_.print_quoted()))
-        (std::make_pair("street3",street3_.print_quoted()))
-        (std::make_pair("city",city_.print_quoted()))
-        (std::make_pair("stateorprovince",stateorprovince_.print_quoted()))
-        (std::make_pair("postalcode",postalcode_.print_quoted()))
-        (std::make_pair("country",country_.print_quoted()))
+        (std::make_pair("place",place_.print_quoted()))
         (std::make_pair("telephone",telephone_.print_quoted()))
         (std::make_pair("fax",fax_.print_quoted()))
         (std::make_pair("email",email_.print_quoted()))
@@ -576,6 +606,7 @@ namespace Fred
         (std::make_pair("vat",vat_.print_quoted()))
         (std::make_pair("ssntype",ssntype_.print_quoted()))
         (std::make_pair("ssn",ssn_.print_quoted()))
+        (std::make_pair("addresses",addresses_.print_quoted()))
         (std::make_pair("disclosename",disclosename_.print_quoted()))
         (std::make_pair("discloseorganization",discloseorganization_.print_quoted()))
         (std::make_pair("discloseaddress",discloseaddress_.print_quoted()))
@@ -590,4 +621,3 @@ namespace Fred
     }
 
 }// namespace Fred
-

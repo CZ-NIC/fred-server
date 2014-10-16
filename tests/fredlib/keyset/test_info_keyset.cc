@@ -49,11 +49,15 @@ struct info_keyset_fixture : public Test::Fixture::instantiate_db_template
     {
         BOOST_CHECK(!registrar_handle.empty());//expecting existing system registrar
 
+        Fred::Contact::PlaceAddress place;
+        place.street1 = std::string("STR1") + xmark;
+        place.city = "Praha";
+        place.postalcode = "11150";
+        place.country = "CZ";
         Fred::CreateContact(admin_contact4_handle,registrar_handle)
             .set_name(admin_contact4_handle+xmark)
             .set_disclosename(true)
-            .set_street1(std::string("STR1")+xmark)
-            .set_city("Praha").set_postalcode("11150").set_country("CZ")
+            .set_place(place)
             .set_discloseaddress(true)
             .exec(fixture_ctx);
         BOOST_MESSAGE(std::string("admin_contact4_handle: ") + admin_contact4_handle);
@@ -61,8 +65,7 @@ struct info_keyset_fixture : public Test::Fixture::instantiate_db_template
         Fred::CreateContact(admin_contact5_handle,registrar_handle)
             .set_name(admin_contact5_handle+xmark)
             .set_disclosename(true)
-            .set_street1(std::string("STR1")+xmark)
-            .set_city("Praha").set_postalcode("11150").set_country("CZ")
+            .set_place(place)
             .set_discloseaddress(true)
             .exec(fixture_ctx);
         BOOST_MESSAGE(std::string("admin_contact5_handle: ") + admin_contact5_handle);
@@ -70,8 +73,7 @@ struct info_keyset_fixture : public Test::Fixture::instantiate_db_template
         Fred::CreateContact(admin_contact6_handle,registrar_handle)
             .set_name(admin_contact6_handle+xmark)
             .set_disclosename(true)
-            .set_street1(std::string("STR1")+xmark)
-            .set_city("Praha").set_postalcode("11150").set_country("CZ")
+            .set_place(place)
             .set_discloseaddress(true)
             .exec(fixture_ctx);
         BOOST_MESSAGE(std::string("admin_contact6_handle: ") + admin_contact6_handle);

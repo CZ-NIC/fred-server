@@ -43,11 +43,15 @@ struct test_contact_fixture : public Test::Fixture::instantiate_db_template
                 "SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]);
         BOOST_CHECK(!registrar_handle.empty());//expecting existing system registrar
 
+        Fred::Contact::PlaceAddress place;
+        place.street1 = std::string("STR1") + xmark;
+        place.city = "Praha";
+        place.postalcode = "11150";
+        place.country = "CZ";
         Fred::CreateContact(test_contact_handle,registrar_handle).set_name(std::string("TEST-CONTACT NAME")+xmark)
             .set_name(std::string("TEST-CONTACT NAME")+xmark)
             .set_disclosename(true)
-            .set_street1(std::string("STR1")+xmark)
-            .set_city("Praha").set_postalcode("11150").set_country("CZ")
+            .set_place(place)
             .set_discloseaddress(true)
             .exec(ctx);
 
@@ -150,13 +154,15 @@ BOOST_AUTO_TEST_CASE(info_contact_diff)
     test_diff.authinfopw = std::make_pair(std::string("testpass1"),std::string("testpass2"));
     test_diff.name = std::make_pair(Nullable<std::string>(),Nullable<std::string>("testname2"));
     test_diff.organization = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
-    test_diff.street1 = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
-    test_diff.street2 = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
-    test_diff.street3 = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
-    test_diff.city = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
-    test_diff.stateorprovince = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
-    test_diff.postalcode = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
-    test_diff.country = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
+    Fred::Contact::PlaceAddress place;
+    place.street1 = "test2";
+    place.street2 = std::string("test2");
+    place.street3 = std::string("test2");
+    place.city = "test2";
+    place.stateorprovince = std::string("test2");
+    place.postalcode = "test2";
+    place.country = "test2";
+    test_diff.place = std::make_pair(Nullable< Fred::Contact::PlaceAddress >(), Nullable< Fred::Contact::PlaceAddress >(place));
     test_diff.telephone = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
     test_diff.fax = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
     test_diff.email = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));

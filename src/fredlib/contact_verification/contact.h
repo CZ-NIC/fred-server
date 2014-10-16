@@ -3,11 +3,28 @@
 
 #include "util/db/nullable.h"
 #include <string>
-#include <map>
+#include <vector>
 
 namespace Fred {
 namespace Contact {
 namespace Verification {
+
+
+class ContactAddress
+{
+public:
+    std::string type;
+    Nullable<std::string> company_name;
+    Nullable<std::string> street1;
+    Nullable<std::string> street2;
+    Nullable<std::string> street3;
+    Nullable<std::string> city;
+    Nullable<std::string> stateorprovince;
+    Nullable<std::string> postalcode;
+    Nullable<std::string> country;
+    bool operator==(const ContactAddress &_b)const;
+    bool operator!=(const ContactAddress &_b)const { return !this->operator==(_b); }
+};
 
 
 class Contact
@@ -54,6 +71,8 @@ public:
     bool disclosevat;
     bool discloseident;
     bool disclosenotifyemail;
+    std::vector<ContactAddress> addresses;
+    ContactAddress get_mailing_address()const;
 };
 
 

@@ -29,6 +29,7 @@
 #include "src/mojeid/mojeid.h"
 #include "src/corba/mailer_manager.h"
 #include "src/corba/MojeID.hh"
+#include "src/fredlib/object_state/object_state_name.h"
 #include <string>
 
 
@@ -419,37 +420,40 @@ namespace Registry
             }
         }//createValidationRequest
 
-        Registry::MojeID::ContactStateInfoList* Server_i::getContactsStates(
+        Registry::MojeID::ContactStateInfoList* Server_i::getContactsStateChanges(
                 ::CORBA::ULong _last_hours)
         {
             try
             {
-                std::vector<ContactStateData> csdv = pimpl_->getContactsStates(_last_hours);
+                std::vector<ContactStateData> csdv = pimpl_->getContactsStateChanges(_last_hours);
                 ContactStateInfoList_var ret = new ContactStateInfoList;
                 ret->length(0);
 
                 for (std::vector<ContactStateData>::const_iterator csdvi
                     = csdv.begin(); csdvi != csdv.end(); ++csdvi)
                 {
-                    Registry::MojeID::ContactStateInfo sinfo;
-                    sinfo.contact_id = csdvi->contact_id;
-                    sinfo.valid_from = corba_wrap_date(csdvi->valid_from);
-                    std::string state_name = csdvi->state_name;
-                    unsigned int act_size = ret->length();
-
-                    if (state_name == "conditionallyIdentifiedContact") {
+                    if (!csdvi->state.empty()) {
+                        Registry::MojeID::ContactStateInfo sinfo;
+                        sinfo.contact_id = csdvi->contact_id;
+                        Registry::MojeID::ContactStateData::StateValidFrom::const_iterator state_ptr =
+                            csdvi->state.find(Fred::ObjectState::VALIDATED_CONTACT);
+                        if (state_ptr != csdvi->state.end()) {
+                            sinfo.validation_date = new Registry::MojeID::NullableDate(corba_wrap_date(state_ptr->second));
+                        }
+                        state_ptr = csdvi->state.find(Fred::ObjectState::IDENTIFIED_CONTACT);
+                        if (state_ptr != csdvi->state.end()) {
+                            sinfo.identification_date = new Registry::MojeID::NullableDate(corba_wrap_date(state_ptr->second));
+                        }
+                        state_ptr = csdvi->state.find(Fred::ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT);
+                        if (state_ptr != csdvi->state.end()) {
+                            sinfo.conditionally_identification_date = new Registry::MojeID::NullableDate(corba_wrap_date(state_ptr->second));
+                        }
+                        state_ptr = csdvi->state.find(Fred::ObjectState::MOJEID_CONTACT);
+                        if (state_ptr != csdvi->state.end()) {
+                            sinfo.mojeid_activation_date = new Registry::MojeID::NullableDate(corba_wrap_date(state_ptr->second));
+                        }
+                        const unsigned int act_size = ret->length();
                         ret->length(act_size + 1);
-                        sinfo.state = Registry::MojeID::CONDITIONALLY_IDENTIFIED;
-                        ret[act_size] = sinfo;
-                    }
-                    else if (state_name == "identifiedContact") {
-                        ret->length(act_size + 1);
-                        sinfo.state = Registry::MojeID::IDENTIFIED;
-                        ret[act_size] = sinfo;
-                    }
-                    else if (state_name == "validatedContact") {
-                        ret->length(act_size + 1);
-                        sinfo.state = Registry::MojeID::VALIDATED;
                         ret[act_size] = sinfo;
                     }
                 }//for
@@ -467,28 +471,33 @@ namespace Registry
             }
         }//getContactsStates
 
-        Registry::MojeID::ContactStateInfo Server_i::getContactState(
+        Registry::MojeID::ContactStateInfo* Server_i::getContactState(
                 ::CORBA::ULongLong _contact_id)
         {
             try
             {
-                ContactStateData csd = pimpl_->getContactState(_contact_id);
-                Registry::MojeID::ContactStateInfo_var sinfo;
+                const Registry::MojeID::ContactStateData csd = pimpl_->getContactState(_contact_id);
+                Registry::MojeID::ContactStateInfo_var sinfo = new Registry::MojeID::ContactStateInfo;
                 sinfo->contact_id = csd.contact_id;
-                sinfo->valid_from = corba_wrap_date(csd.valid_from);
-                std::string state_name = csd.state_name;
+                Registry::MojeID::ContactStateData::StateValidFrom::const_iterator state_ptr =
+                    csd.state.find(Fred::ObjectState::VALIDATED_CONTACT);
+                if (state_ptr != csd.state.end()) {
+                    sinfo->validation_date = new Registry::MojeID::NullableDate(corba_wrap_date(state_ptr->second));
+                }
 
-                if (state_name == "conditionallyIdentifiedContact") {
-                    sinfo->state = Registry::MojeID::CONDITIONALLY_IDENTIFIED;
+                state_ptr = csd.state.find(Fred::ObjectState::IDENTIFIED_CONTACT);
+                if (state_ptr != csd.state.end()) {
+                    sinfo->identification_date = new Registry::MojeID::NullableDate(corba_wrap_date(state_ptr->second));
                 }
-                else if (state_name == "identifiedContact") {
-                    sinfo->state = Registry::MojeID::IDENTIFIED;
+
+                state_ptr = csd.state.find(Fred::ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT);
+                if (state_ptr != csd.state.end()) {
+                    sinfo->conditionally_identification_date = new Registry::MojeID::NullableDate(corba_wrap_date(state_ptr->second));
                 }
-                else if (state_name == "validatedContact") {
-                    sinfo->state = Registry::MojeID::VALIDATED;
-                }
-                else {
-                    sinfo->state = Registry::MojeID::NOT_IDENTIFIED;
+
+                state_ptr = csd.state.find(Fred::ObjectState::MOJEID_CONTACT);
+                if (state_ptr != csd.state.end()) {
+                    sinfo->mojeid_activation_date = new Registry::MojeID::NullableDate(corba_wrap_date(state_ptr->second));
                 }
                 return sinfo._retn();
             }

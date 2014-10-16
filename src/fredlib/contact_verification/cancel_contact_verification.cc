@@ -21,6 +21,7 @@
 #include "src/fredlib/db_settings.h"
 #include "src/fredlib/object_states.h"
 #include "src/fredlib/contact_verification/cancel_contact_verification.h"
+#include "src/fredlib/contact_verification/contact_verification_state.h"
 
 namespace Fred {
 namespace Contact {
@@ -43,16 +44,16 @@ bool check_contact_change_for_cancel_verification(
             Database::query_param_list(contact_handle));
         if (result.size() != 1)
             throw std::runtime_error("unable to get contact id");
-        unsigned long long contact_id = static_cast<unsigned long long>(result[0][0]);
+        const unsigned long long contact_id = static_cast<unsigned long long>(result[0][0]);
 
+        const State contact_state = get_contact_verification_state(contact_id);
         //if contact conditionally identified return true to cancel
-        if (Fred::object_has_state(contact_id, Fred::ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT))
-        {
+        if (contact_state.has_all(State::Civm)) {
             return true;
         }
 
         //diff contact change if identified
-        if (Fred::object_has_state(contact_id, Fred::ObjectState::IDENTIFIED_CONTACT))
+        if (contact_state.has_all(State::cIvm))
         {
             Database::Connection conn = Database::Manager::acquire();
             Database::Result result = conn.exec_params(
@@ -116,18 +117,16 @@ void contact_cancel_verification(
         if (result.size() != 1)
             throw std::runtime_error("unable to get contact id");
 
-        unsigned long long contact_id = static_cast<unsigned long long>(result[0][0]);
+        const unsigned long long contact_id = static_cast<unsigned long long>(result[0][0]);
 
-        if (Fred::object_has_state(contact_id, Fred::ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT))
-        {
+        const State contact_state = get_contact_verification_state(contact_id);
+        if (contact_state.has_all(State::Civm)) {
             Fred::cancel_object_state(contact_id
                 , Fred::ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT);
             update_object_states(contact_id);
         }
 
-        if (Fred::object_has_state(contact_id, Fred::ObjectState::IDENTIFIED_CONTACT)
-        )
-        {
+        if (contact_state.has_all(State::cIvm)) {
             Fred::cancel_object_state(contact_id
                 , Fred::ObjectState::IDENTIFIED_CONTACT);
             update_object_states(contact_id);

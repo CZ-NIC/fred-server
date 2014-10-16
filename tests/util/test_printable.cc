@@ -930,7 +930,9 @@ BOOST_AUTO_TEST_CASE(create_update_object_poll_message)
 
 BOOST_AUTO_TEST_CASE(update_contact_by_id)
 {
-    printable_test(Fred::UpdateContactById(5,"REGISTRAR-TEST").set_street3("test street 3"));
+    Fred::Contact::PlaceAddress place;
+    place.street3 = std::string("test street 3");
+    printable_test(Fred::UpdateContactById(5,"REGISTRAR-TEST").set_place(place));
 }
 
 /**

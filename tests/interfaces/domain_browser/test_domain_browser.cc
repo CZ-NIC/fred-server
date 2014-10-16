@@ -121,11 +121,15 @@ struct user_contact_fixture
     {
         Fred::OperationContext ctx;
 
+        Fred::Contact::PlaceAddress place;
+        place.street1 = std::string("STR1") + xmark;
+        place.city = "Praha";
+        place.postalcode = "11150";
+        place.country = "CZ";
         Fred::CreateContact(user_contact_handle,
             CfgArgs::instance()->get_handler_ptr_by_type<HandleMojeIDArgs>()->registrar_handle)//MojeID registrar
             .set_name(std::string("USER-CONTACT-HANDLE NAME")+xmark)
-            .set_street1(std::string("STR1")+xmark)
-            .set_city("Praha").set_postalcode("11150").set_country("CZ")
+            .set_place(place)
             .exec(ctx);
 
         user_contact_info = Fred::InfoContactByHandle(user_contact_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
@@ -185,11 +189,15 @@ struct admin_contact_fixture
     : test_contact_handle(std::string("TEST-ADMIN-HANDLE")+xmark)
     {
         Fred::OperationContext ctx;
+        Fred::Contact::PlaceAddress place;
+        place.street1 = std::string("STR1") + xmark;
+        place.city = "Praha";
+        place.postalcode = "11150";
+        place.country = "CZ";
         Fred::CreateContact(test_contact_handle,test_registrar_handle).set_organization(std::string("TEST-ORGANIZATION")+xmark)
             .set_name(std::string("TEST-CONTACT NAME")+xmark)
             .set_disclosename(true)
-            .set_street1(std::string("STR1")+xmark)
-            .set_city("Praha").set_postalcode("11150").set_country("CZ")
+            .set_place(place)
             .set_discloseaddress(true)
             .exec(ctx);
         test_contact_info = Fred::InfoContactByHandle(test_contact_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
@@ -381,11 +389,15 @@ struct test_contact_fixture
 
         BOOST_CHECK(!test_registrar_handle.empty());//expecting existing registrar
 
+        Fred::Contact::PlaceAddress place;
+        place.street1 = std::string("STR1") + xmark;
+        place.city = "Praha";
+        place.postalcode = "11150";
+        place.country = "CZ";
         Fred::CreateContact(test_contact_handle,test_registrar_handle).set_name(std::string("TEST-CONTACT NAME")+xmark)
             .set_name(std::string("TEST-CONTACT NAME")+xmark)
             .set_disclosename(true)
-            .set_street1(std::string("STR1")+xmark)
-            .set_city("Praha").set_postalcode("11150").set_country("CZ")
+            .set_place(place)
             .set_discloseaddress(true)
             .exec(ctx);
 
@@ -412,6 +424,7 @@ BOOST_FIXTURE_TEST_CASE(get_my_contact_detail, get_my_contact_detail_fixture )
 
     Registry::DomainBrowserImpl::ContactDetail cd = impl.getContactDetail(user_contact_info.info_contact_data.id,
             my_contact_info.info_contact_data.id, "CS");
+    const Fred::Contact::PlaceAddress mci_place = my_contact_info.info_contact_data.place.get_value_or_default();
 
     BOOST_CHECK(cd.id == my_contact_info.info_contact_data.id);
     BOOST_CHECK(cd.handle == my_contact_info.info_contact_data.handle);
@@ -425,13 +438,13 @@ BOOST_FIXTURE_TEST_CASE(get_my_contact_detail, get_my_contact_detail_fixture )
     BOOST_CHECK(cd.authinfopw == my_contact_info.info_contact_data.authinfopw);
     BOOST_CHECK(cd.name.get_value_or_default() == my_contact_info.info_contact_data.name.get_value_or_default());
     BOOST_CHECK(cd.organization.get_value_or_default() == my_contact_info.info_contact_data.organization.get_value_or_default());
-    BOOST_CHECK(cd.street1.get_value_or_default() == my_contact_info.info_contact_data.street1.get_value_or_default());
-    BOOST_CHECK(cd.street2.get_value_or_default() == my_contact_info.info_contact_data.street2.get_value_or_default());
-    BOOST_CHECK(cd.street3.get_value_or_default() == my_contact_info.info_contact_data.street3.get_value_or_default());
-    BOOST_CHECK(cd.city.get_value_or_default() == my_contact_info.info_contact_data.city.get_value_or_default());
-    BOOST_CHECK(cd.stateorprovince.get_value_or_default() == my_contact_info.info_contact_data.stateorprovince.get_value_or_default());
-    BOOST_CHECK(cd.postalcode.get_value_or_default() == my_contact_info.info_contact_data.postalcode.get_value_or_default());
-    BOOST_CHECK(cd.country.get_value_or_default() == my_contact_info.info_contact_data.country.get_value_or_default());
+    BOOST_CHECK(cd.street1.get_value_or_default() == mci_place.street1);
+    BOOST_CHECK(cd.street2.get_value_or_default() == mci_place.street2.get_value_or_default());
+    BOOST_CHECK(cd.street3.get_value_or_default() == mci_place.street3.get_value_or_default());
+    BOOST_CHECK(cd.city.get_value_or_default() == mci_place.city);
+    BOOST_CHECK(cd.stateorprovince.get_value_or_default() == mci_place.stateorprovince.get_value_or_default());
+    BOOST_CHECK(cd.postalcode.get_value_or_default() == mci_place.postalcode);
+    BOOST_CHECK(cd.country.get_value_or_default() == mci_place.country);
     BOOST_CHECK(cd.telephone.get_value_or_default() == my_contact_info.info_contact_data.telephone.get_value_or_default());
     BOOST_CHECK(cd.fax.get_value_or_default() == my_contact_info.info_contact_data.fax.get_value_or_default());
     BOOST_CHECK(cd.email.get_value_or_default() == my_contact_info.info_contact_data.email.get_value_or_default());
@@ -473,6 +486,7 @@ BOOST_FIXTURE_TEST_CASE(get_contact_detail, get_contact_fixture )
 
     Registry::DomainBrowserImpl::ContactDetail cd = impl.getContactDetail(user_contact_info.info_contact_data.id,
             test_contact_info.info_contact_data.id, "CS");
+    const Fred::Contact::PlaceAddress tci_place = test_contact_info.info_contact_data.place.get_value_or_default();
 
     BOOST_CHECK(cd.id == test_contact_info.info_contact_data.id);
     BOOST_CHECK(cd.handle == test_contact_info.info_contact_data.handle);
@@ -486,13 +500,13 @@ BOOST_FIXTURE_TEST_CASE(get_contact_detail, get_contact_fixture )
     BOOST_CHECK(cd.authinfopw == "********");
     BOOST_CHECK(cd.name.get_value_or_default() == test_contact_info.info_contact_data.name.get_value_or_default());
     BOOST_CHECK(cd.organization.get_value_or_default() == test_contact_info.info_contact_data.organization.get_value_or_default());
-    BOOST_CHECK(cd.street1.get_value_or_default() == test_contact_info.info_contact_data.street1.get_value_or_default());
-    BOOST_CHECK(cd.street2.get_value_or_default() == test_contact_info.info_contact_data.street2.get_value_or_default());
-    BOOST_CHECK(cd.street3.get_value_or_default() == test_contact_info.info_contact_data.street3.get_value_or_default());
-    BOOST_CHECK(cd.city.get_value_or_default() == test_contact_info.info_contact_data.city.get_value_or_default());
-    BOOST_CHECK(cd.stateorprovince.get_value_or_default() == test_contact_info.info_contact_data.stateorprovince.get_value_or_default());
-    BOOST_CHECK(cd.postalcode.get_value_or_default() == test_contact_info.info_contact_data.postalcode.get_value_or_default());
-    BOOST_CHECK(cd.country.get_value_or_default() == test_contact_info.info_contact_data.country.get_value_or_default());
+    BOOST_CHECK(cd.street1.get_value_or_default() == tci_place.street1);
+    BOOST_CHECK(cd.street2.get_value_or_default() == tci_place.street2.get_value_or_default());
+    BOOST_CHECK(cd.street3.get_value_or_default() == tci_place.street3.get_value_or_default());
+    BOOST_CHECK(cd.city.get_value_or_default() == tci_place.city);
+    BOOST_CHECK(cd.stateorprovince.get_value_or_default() == tci_place.stateorprovince.get_value_or_default());
+    BOOST_CHECK(cd.postalcode.get_value_or_default() == tci_place.postalcode);
+    BOOST_CHECK(cd.country.get_value_or_default() == tci_place.country);
     BOOST_CHECK(cd.telephone.get_value_or_default() == test_contact_info.info_contact_data.telephone.get_value_or_default());
     BOOST_CHECK(cd.fax.get_value_or_default() == test_contact_info.info_contact_data.fax.get_value_or_default());
     BOOST_CHECK(cd.email.get_value_or_default() == test_contact_info.info_contact_data.email.get_value_or_default());
@@ -605,11 +619,15 @@ struct registrant_contact_fixture
     :test_contact_handle(std::string("TEST-REGISTRANT-HANDLE")+xmark)
     {
         Fred::OperationContext ctx;
+        Fred::Contact::PlaceAddress place;
+        place.street1 = std::string("STR1") + xmark;
+        place.city = "Praha";
+        place.postalcode = "11150";
+        place.country = "CZ";
         Fred::CreateContact(test_contact_handle,test_registrar_handle).set_name(std::string("TEST-CONTACT NAME")+xmark)
             .set_name(std::string("TEST-CONTACT NAME")+xmark)
             .set_disclosename(true)
-            .set_street1(std::string("STR1")+xmark)
-            .set_city("Praha").set_postalcode("11150").set_country("CZ")
+            .set_place(place)
             .set_discloseaddress(true)
             .exec(ctx);
         ctx.commit_transaction();//commit fixture
@@ -2926,11 +2944,15 @@ struct merge_contacts_fixture
     {
         { //destination / user contact
             Fred::OperationContext ctx;
+            Fred::Contact::PlaceAddress place;
+            place.street1 = std::string("STR1") + user_contact_handle_fixture::xmark;
+            place.city = "Praha";
+            place.postalcode = "11150";
+            place.country = "CZ";
             Fred::CreateContact(user_contact_handle,
                 CfgArgs::instance()->get_handler_ptr_by_type<HandleMojeIDArgs>()->registrar_handle)//MojeID registrar
                 .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
-                .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
-                .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                .set_place(place)
                 .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
                 .exec(ctx);
             user_contact_info = Fred::InfoContactByHandle(user_contact_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
@@ -2946,14 +2968,18 @@ struct merge_contacts_fixture
             std::ostringstream contact_handle;
             contact_handle << test_contact_handle << i;
             bool merge_candidate = false;
+            Fred::Contact::PlaceAddress place;
+            place.street1 = std::string("STR1") + user_contact_handle_fixture::xmark;
+            place.city = "Praha";
+            place.postalcode = "11150";
+            place.country = "CZ";
 
             switch(i)
             {
                 case 0: //the same as dest. - ok
                     Fred::CreateContact(contact_handle.str(),test_registrar_handle)
                         .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
-                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
-                        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                        .set_place(place)
                         .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
                         .exec(ctx);
 
@@ -2986,8 +3012,7 @@ struct merge_contacts_fixture
                 case 1: //the same as dest. except missing vat - ok
                     Fred::CreateContact(contact_handle.str(),test_registrar_handle)
                         .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
-                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
-                        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                        .set_place(place)
                         .set_ssntype("OP").set_ssn("123456")
                         .exec(ctx);
 
@@ -2996,8 +3021,7 @@ struct merge_contacts_fixture
                 case 2: //the same as dest. except missing ssntype and ssn - ok
                     Fred::CreateContact(contact_handle.str(),test_registrar_handle)
                         .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
-                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
-                        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                        .set_place(place)
                         .set_vat("CZ1234567890")
                         .exec(ctx);
 
@@ -3006,8 +3030,7 @@ struct merge_contacts_fixture
                 case 3: //the same as dest. except missing ssntype, make no sence but - ok
                     Fred::CreateContact(contact_handle.str(),test_registrar_handle)
                         .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
-                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
-                        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                        .set_place(place)
                         .set_vat("CZ1234567890").set_ssn("123456")
                         .exec(ctx);
 
@@ -3016,8 +3039,7 @@ struct merge_contacts_fixture
                 case 4: //the same as dest. except missing ssn, make no sence but - ok
                     Fred::CreateContact(contact_handle.str(),test_registrar_handle)
                         .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
-                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
-                        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                        .set_place(place)
                         .set_vat("CZ1234567890").set_ssntype("OP")
                         .exec(ctx);
 
@@ -3026,8 +3048,7 @@ struct merge_contacts_fixture
                 case 5: //the same as dest. except spaces in vat - ok
                     Fred::CreateContact(contact_handle.str(),test_registrar_handle)
                         .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
-                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
-                        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                        .set_place(place)
                         .set_vat(" CZ1234567890 ").set_ssntype("OP").set_ssn("123456")
                         .exec(ctx);
 
@@ -3036,8 +3057,7 @@ struct merge_contacts_fixture
                 case 6: //the same as dest. except spaces in ssn - ok
                     Fred::CreateContact(contact_handle.str(),test_registrar_handle)
                         .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
-                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
-                        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                        .set_place(place)
                         .set_vat("CZ1234567890").set_ssntype("OP").set_ssn(" 123456 ")
                         .exec(ctx);
 
@@ -3046,18 +3066,17 @@ struct merge_contacts_fixture
                 case 7: //the same as dest. except spaces in name - ok
                     Fred::CreateContact(contact_handle.str(),test_registrar_handle)
                         .set_name(std::string(" USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark+" ")
-                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
-                        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                        .set_place(place)
                         .set_vat("CZ1234567890").set_ssntype("OP").set_ssn(" 123456 ")
                         .exec(ctx);
 
                     merge_candidate = true;
                     break;
                 case 8: //the same as dest. except spaces in city - ok
+                    place.city = "  Praha  ";
                     Fred::CreateContact(contact_handle.str(),test_registrar_handle)
                         .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
-                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
-                        .set_city("  Praha  ").set_postalcode("11150").set_country("CZ")
+                        .set_place(place)
                         .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
                         .exec(ctx);
 
@@ -3067,8 +3086,7 @@ struct merge_contacts_fixture
                 {
                     Fred::CreateContact(contact_handle.str(),test_registrar_handle)
                         .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
-                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
-                        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                        .set_place(place)
                         .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
                         .exec(ctx);
                         BOOST_MESSAGE(contact_handle.str() + " mojeidContact");
@@ -3084,8 +3102,7 @@ struct merge_contacts_fixture
                 {
                     Fred::CreateContact(contact_handle.str(),test_registrar_handle)
                         .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
-                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
-                        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                        .set_place(place)
                         .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
                         .exec(ctx);
                         BOOST_MESSAGE(contact_handle.str() + " serverBlocked");
@@ -3101,8 +3118,7 @@ struct merge_contacts_fixture
                 {
                     Fred::CreateContact(contact_handle.str(),test_registrar_handle)
                         .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
-                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
-                        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                        .set_place(place)
                         .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
                         .exec(ctx);
                         BOOST_MESSAGE(contact_handle.str() + " serverDeleteProhibited");
@@ -3118,8 +3134,7 @@ struct merge_contacts_fixture
                 {
                     Fred::CreateContact(contact_handle.str(),test_registrar_handle)
                         .set_name(std::string("USER-CONTACT-HANDLE DIFFERENTNAME")+user_contact_handle_fixture::xmark)
-                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
-                        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                        .set_place(place)
                         .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
                         .exec(ctx);
                         BOOST_MESSAGE(contact_handle.str() + " different name");
@@ -3132,8 +3147,7 @@ struct merge_contacts_fixture
                     Fred::CreateContact(contact_handle.str(),test_registrar_handle)
                         .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
                         .set_organization(std::string("USER-CONTACT-HANDLE ORG")+user_contact_handle_fixture::xmark)
-                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
-                        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                        .set_place(place)
                         .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
                         .exec(ctx);
                         BOOST_MESSAGE(contact_handle.str() + " different organization");
@@ -3143,10 +3157,10 @@ struct merge_contacts_fixture
                     break;
                 case 14: //the same as dest. except the street1 - nok
                 {
+                    place.street1 = std::string("DIFFERENTSTR1") + user_contact_handle_fixture::xmark;
                     Fred::CreateContact(contact_handle.str(),test_registrar_handle)
                         .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
-                        .set_street1(std::string("DIFFERENTSTR1")+user_contact_handle_fixture::xmark)
-                        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                        .set_place(place)
                         .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
                         .exec(ctx);
                         BOOST_MESSAGE(contact_handle.str() + " different street1");
@@ -3156,11 +3170,10 @@ struct merge_contacts_fixture
                     break;
                 case 15: //the same as dest. except the street2 - nok
                 {
+                    place.street2 = std::string("DIFFERENTSTR2") + user_contact_handle_fixture::xmark;
                     Fred::CreateContact(contact_handle.str(),test_registrar_handle)
                         .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
-                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
-                        .set_street2(std::string("DIFFERENTSTR2")+user_contact_handle_fixture::xmark)
-                        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                        .set_place(place)
                         .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
                         .exec(ctx);
                         BOOST_MESSAGE(contact_handle.str() + " different street2");
@@ -3170,11 +3183,10 @@ struct merge_contacts_fixture
                     break;
                 case 16: //the same as dest. except the street3 - nok
                 {
+                    place.street3 = std::string("DIFFERENTSTR3") + user_contact_handle_fixture::xmark;
                     Fred::CreateContact(contact_handle.str(),test_registrar_handle)
                         .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
-                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
-                        .set_street3(std::string("DIFFERENTSTR3")+user_contact_handle_fixture::xmark)
-                        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                        .set_place(place)
                         .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
                         .exec(ctx);
                         BOOST_MESSAGE(contact_handle.str() + " different street3");
@@ -3184,10 +3196,10 @@ struct merge_contacts_fixture
                     break;
                 case 17: //the same as dest. except the city - nok
                 {
+                    place.city = "DifferentPraha";
                     Fred::CreateContact(contact_handle.str(),test_registrar_handle)
                         .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
-                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
-                        .set_city("DifferentPraha").set_postalcode("11150").set_country("CZ")
+                        .set_place(place)
                         .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
                         .exec(ctx);
                         BOOST_MESSAGE(contact_handle.str() + " different city");
@@ -3197,10 +3209,10 @@ struct merge_contacts_fixture
                     break;
                 case 18: //the same as dest. except the postalcode - nok
                 {
+                    place.postalcode = "11151";
                     Fred::CreateContact(contact_handle.str(),test_registrar_handle)
                         .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
-                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
-                        .set_city("Praha").set_postalcode("11151").set_country("CZ")
+                        .set_place(place)
                         .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
                         .exec(ctx);
                         BOOST_MESSAGE(contact_handle.str() + " different postalcode");
@@ -3210,10 +3222,10 @@ struct merge_contacts_fixture
                     break;
                 case 19: //the same as dest. except the stateorprovince - nok
                 {
+                    place.stateorprovince = "different";
                     Fred::CreateContact(contact_handle.str(),test_registrar_handle)
                         .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
-                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
-                        .set_city("Praha").set_postalcode("11150").set_country("CZ").set_stateorprovince("different")
+                        .set_place(place)
                         .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
                         .exec(ctx);
                         BOOST_MESSAGE(contact_handle.str() + " different stateorprovince");
@@ -3223,10 +3235,10 @@ struct merge_contacts_fixture
                     break;
                 case 20: //the same as dest. except the country - nok
                 {
+                    place.country = "SK";
                     Fred::CreateContact(contact_handle.str(),test_registrar_handle)
                         .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
-                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
-                        .set_city("Praha").set_postalcode("11150").set_country("SK")
+                        .set_place(place)
                         .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
                         .exec(ctx);
                         BOOST_MESSAGE(contact_handle.str() + " different country");
@@ -3238,8 +3250,7 @@ struct merge_contacts_fixture
                 {
                     Fred::CreateContact(contact_handle.str(),test_registrar_handle)
                         .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
-                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
-                        .set_city("Praha").set_postalcode("11150").set_country("CZ").set_email("test@test.cz")
+                        .set_place(place).set_email("test@test.cz")
                         .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
                         .exec(ctx);
                         BOOST_MESSAGE(contact_handle.str() + " different email");
@@ -3251,8 +3262,7 @@ struct merge_contacts_fixture
                 {
                     Fred::CreateContact(contact_handle.str(),test_registrar_handle)
                         .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
-                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
-                        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                        .set_place(place)
                         .set_vat("SK1234567890").set_ssntype("OP").set_ssn("123456")
                         .exec(ctx);
                         BOOST_MESSAGE(contact_handle.str() + " different vat");
@@ -3264,8 +3274,7 @@ struct merge_contacts_fixture
                 {
                     Fred::CreateContact(contact_handle.str(),test_registrar_handle)
                         .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
-                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
-                        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                        .set_place(place)
                         .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("223456")
                         .exec(ctx);
                         BOOST_MESSAGE(contact_handle.str() + " different ssn");
@@ -3277,8 +3286,7 @@ struct merge_contacts_fixture
                 {
                     Fred::CreateContact(contact_handle.str(),test_registrar_handle)
                         .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
-                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
-                        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                        .set_place(place)
                         .set_vat("CZ1234567890").set_ssntype("RC").set_ssn("123456")
                         .exec(ctx);
                         BOOST_MESSAGE(contact_handle.str() + " different ssntype");
@@ -3290,8 +3298,7 @@ struct merge_contacts_fixture
                 {
                     Fred::CreateContact(contact_handle.str(),test_registrar_handle)
                         .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
-                        .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
-                        .set_city("Praha").set_postalcode("11150").set_country("CZ")
+                        .set_place(place)
                         .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
                         .exec(ctx);
                         BOOST_MESSAGE(contact_handle.str() + " serverBlocked");
@@ -3471,11 +3478,15 @@ struct merge_contacts_no_src_contacts_fixture
     {
         // user contact
         Fred::OperationContext ctx;
+        Fred::Contact::PlaceAddress place;
+        place.street1 = std::string("STR1") + user_contact_handle_fixture::xmark;
+        place.city = "Praha";
+        place.postalcode = "11150";
+        place.country = "CZ";
         Fred::CreateContact(user_contact_handle,
             CfgArgs::instance()->get_handler_ptr_by_type<HandleMojeIDArgs>()->registrar_handle)//MojeID registrar
             .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
-            .set_street1(std::string("STR1")+user_contact_handle_fixture::xmark)
-            .set_city("Praha").set_postalcode("11150").set_country("CZ")
+            .set_place(place)
             .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
             .exec(ctx);
         user_contact_info = Fred::InfoContactByHandle(user_contact_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);

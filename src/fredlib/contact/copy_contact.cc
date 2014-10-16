@@ -73,6 +73,11 @@ namespace Fred
         {
             return _n <= 0 ? Optional< unsigned long long >() : Optional< unsigned long long >(_n);
         }
+
+        Optional< ContactAddressList > to_optional(ContactAddressList _l)
+        {
+            return _l.empty() ? Optional< ContactAddressList >() : Optional< ContactAddressList >(_l);
+        }
     }
 
     ObjectId CopyContact::exec(OperationContext &_ctx)
@@ -112,13 +117,7 @@ namespace Fred
           to_optional(old_contact.info_contact_data.authinfopw),
           to_optional(old_contact.info_contact_data.name),
           to_optional(old_contact.info_contact_data.organization),
-          to_optional(old_contact.info_contact_data.street1),
-          to_optional(old_contact.info_contact_data.street2),
-          to_optional(old_contact.info_contact_data.street3),
-          to_optional(old_contact.info_contact_data.city),
-          to_optional(old_contact.info_contact_data.stateorprovince),
-          to_optional(old_contact.info_contact_data.postalcode),
-          to_optional(old_contact.info_contact_data.country),
+          to_optional(old_contact.info_contact_data.place),
           to_optional(old_contact.info_contact_data.telephone),
           to_optional(old_contact.info_contact_data.fax),
           to_optional(old_contact.info_contact_data.email),
@@ -126,6 +125,7 @@ namespace Fred
           to_optional(old_contact.info_contact_data.vat),
           to_optional(old_contact.info_contact_data.ssntype),
           to_optional(old_contact.info_contact_data.ssn),
+          to_optional(old_contact.info_contact_data.addresses),
           to_optional(old_contact.info_contact_data.disclosename),
           to_optional(old_contact.info_contact_data.discloseorganization),
           to_optional(old_contact.info_contact_data.discloseaddress),
