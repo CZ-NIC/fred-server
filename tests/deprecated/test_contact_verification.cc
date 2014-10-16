@@ -162,7 +162,7 @@ BOOST_AUTO_TEST_CASE( test_primary_phone_format_checker )
             Fred::Contact::Verification::FieldErrorMap errors;
             c.telephone = (*it) + std::string("000000");
             BOOST_TEST_MESSAGE("telephone: " << c.telephone.get_value());
-            bool check_result = contact_checker_phone_format(c, errors);
+            const bool check_result = contact_checker_phone_cz_sk_format(c, errors);
             BOOST_CHECK(check_result == false
                 && errors[Fred::Contact::Verification::field_phone] == Fred::Contact::Verification::INVALID);
         }
@@ -177,7 +177,7 @@ BOOST_AUTO_TEST_CASE( test_primary_phone_format_checker )
         /* CZ_CODE + 6010000000 */
         c.telephone = CZ_CODE + "6010000000";
         BOOST_TEST_MESSAGE("telephone: " << c.telephone.get_value());
-        bool check_result = contact_checker_phone_format(c, errors);
+        const bool check_result = contact_checker_phone_cz_sk_format(c, errors);
         BOOST_CHECK(check_result == false
                 && errors[Fred::Contact::Verification::field_phone] == Fred::Contact::Verification::INVALID);
     }
@@ -191,7 +191,7 @@ BOOST_AUTO_TEST_CASE( test_primary_phone_format_checker )
 
         c.telephone = CZ_CODE + "60100000";
         BOOST_TEST_MESSAGE("telephone: " << c.telephone.get_value());
-        bool check_result = contact_checker_phone_format(c, errors);
+        const bool check_result = contact_checker_phone_cz_sk_format(c, errors);
         BOOST_CHECK(check_result == false
                 && errors[Fred::Contact::Verification::field_phone] == Fred::Contact::Verification::INVALID);
     }
@@ -229,7 +229,7 @@ BOOST_AUTO_TEST_CASE( test_primary_phone_format_checker )
 
         c.telephone = std::string("+423.601000000");
         BOOST_TEST_MESSAGE("telephone: " << c.telephone.get_value());
-        bool check_result = contact_checker_phone_format(c, errors);
+        const bool check_result = contact_checker_phone_cz_sk_format(c, errors);
         BOOST_CHECK(check_result == false
                 && errors[Fred::Contact::Verification::field_phone] == Fred::Contact::Verification::INVALID);
     }

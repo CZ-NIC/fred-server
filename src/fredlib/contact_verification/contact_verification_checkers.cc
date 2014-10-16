@@ -59,7 +59,7 @@ bool contact_checker_phone_format(const Contact &_data, FieldErrorMap &_errors)
 
 
 
-bool contact_checker_cz_sk_phone_format(const Contact &_data, FieldErrorMap &_errors)
+bool contact_checker_phone_cz_sk_format(const Contact &_data, FieldErrorMap &_errors)
 {
     bool result = true;
 
