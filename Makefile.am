@@ -274,6 +274,8 @@ util_libutil_a_SOURCES = \
 		util/output_indenter.cc \
 		util/printable.h \
 		util/printable.cc \
+		util/csv_parser.h \
+		util/csv_parser.cc \
 		util/xmlgen.cc \
 		util/subprocess.cc
 #
@@ -2133,6 +2135,7 @@ tests_test_server_SOURCES = \
 		src/mojeid/mojeid_notifier.h \
 		tests/deprecated/checks.h \
 		tests/util/test_printable.cc \
+		tests/util/test_csv_parser.cc \
 		tests/util/test_is_equal_optional_nullable.cc \
 		src/fredlib/object_state/create_object_state_request.cc \
 		src/fredlib/object_state/create_object_state_request.h \
