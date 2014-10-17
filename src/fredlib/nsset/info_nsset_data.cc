@@ -66,8 +66,8 @@ namespace Fred
         (std::make_pair("transfer_time",transfer_time.print_quoted()))
         (std::make_pair("authinfopw",authinfopw))
         (std::make_pair("tech_check_level",tech_check_level.print_quoted()))
-        (std::make_pair("dns_hosts", Util::format_vector(dns_hosts)))
-        (std::make_pair("tech_contacts",Util::format_vector(tech_contacts)))
+        (std::make_pair("dns_hosts", Util::format_container(dns_hosts)))
+        (std::make_pair("tech_contacts",Util::format_container(tech_contacts)))
         );
     }
 

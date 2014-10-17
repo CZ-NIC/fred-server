@@ -633,7 +633,7 @@ namespace Registry
                 {
                     DNSHost host;
                     host.fqdn = ci->get_fqdn();
-                    host.inet_addr = Util::format_vector(ci->get_inet_addr() , ", ");
+                    host.inet_addr = Util::format_container(ci->get_inet_addr() , ", ");
 
                     detail.hosts.push_back(host);
                 }

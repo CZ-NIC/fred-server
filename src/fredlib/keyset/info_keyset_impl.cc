@@ -336,7 +336,7 @@ namespace Fred
         std::string query_plan("\nKeyset query: EXPLAIN ANALYZE ");
         query_plan += keyset_query.first;
         query_plan += "\n\nParams: ";
-        query_plan += Util::format_vector(keyset_query.second);
+        query_plan += Util::format_container(keyset_query.second);
         query_plan += "\n\nPlan:\n";
         Database::Result keyset_query_result = ctx.get_conn().exec_params(
             std::string("EXPLAIN ANALYZE ") + keyset_query.first,keyset_query.second);
@@ -348,7 +348,7 @@ namespace Fred
         query_plan += "\nTech contact query: EXPLAIN ANALYZE ";
         query_plan += tech_contact_query.first;
         query_plan += "\n\nParams: ";
-        query_plan += Util::format_vector(tech_contact_query.second);
+        query_plan += Util::format_container(tech_contact_query.second);
         query_plan += "\n\nPlan:\n";
         Database::Result tech_contact_result = ctx.get_conn().exec_params(
                 std::string("EXPLAIN ANALYZE ") + tech_contact_query.first,tech_contact_query.second);
@@ -360,7 +360,7 @@ namespace Fred
         query_plan += "\nDNS keys query: EXPLAIN ANALYZE ";
         query_plan += dns_keys_query.first;
         query_plan += "\n\nParams: ";
-        query_plan += Util::format_vector(dns_keys_query.second);
+        query_plan += Util::format_container(dns_keys_query.second);
         query_plan += "\n\nPlan:\n";
         Database::Result dns_keys_query_result = ctx.get_conn().exec_params(
                 std::string("EXPLAIN ANALYZE ") + dns_keys_query.first,dns_keys_query.second);

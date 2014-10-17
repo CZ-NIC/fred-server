@@ -378,7 +378,7 @@ namespace Fred
         std::string query_plan("\nNsset query: EXPLAIN ANALYZE ");
         query_plan += nsset_query.first;
         query_plan += "\n\nParams: ";
-        query_plan += Util::format_vector(nsset_query.second);
+        query_plan += Util::format_container(nsset_query.second);
         query_plan += "\n\nPlan:\n";
         Database::Result nsset_query_result = ctx.get_conn().exec_params(
             std::string("EXPLAIN ANALYZE ") + nsset_query.first,nsset_query.second);
@@ -390,7 +390,7 @@ namespace Fred
         query_plan += "\nTech contact query: EXPLAIN ANALYZE ";
         query_plan += tech_contact_query.first;
         query_plan += "\n\nParams: ";
-        query_plan += Util::format_vector(tech_contact_query.second);
+        query_plan += Util::format_container(tech_contact_query.second);
         query_plan += "\n\nPlan:\n";
         Database::Result tech_contact_result = ctx.get_conn().exec_params(
                 std::string("EXPLAIN ANALYZE ") + tech_contact_query.first,tech_contact_query.second);
@@ -402,7 +402,7 @@ namespace Fred
         query_plan += "\nDNS hosts query: EXPLAIN ANALYZE ";
         query_plan += dns_hosts_query.first;
         query_plan += "\n\nParams: ";
-        query_plan += Util::format_vector(dns_hosts_query.second);
+        query_plan += Util::format_container(dns_hosts_query.second);
         query_plan += "\n\nPlan:\n";
         Database::Result dns_hosts_query_result = ctx.get_conn().exec_params(
                 std::string("EXPLAIN ANALYZE ") + dns_hosts_query.first,dns_hosts_query.second);
@@ -415,7 +415,7 @@ namespace Fred
         query_plan += "\nDNS hosts IP addresses query: EXPLAIN ANALYZE ";
         query_plan += dns_ip_query.first;
         query_plan += "\n\nParams: ";
-        query_plan += Util::format_vector(dns_ip_query.second);
+        query_plan += Util::format_container(dns_ip_query.second);
         query_plan += "\n\nPlan:\n";
         Database::Result dns_ip_query_result = ctx.get_conn().exec_params(
                 std::string("EXPLAIN ANALYZE ") + dns_ip_query.first,dns_ip_query.second);

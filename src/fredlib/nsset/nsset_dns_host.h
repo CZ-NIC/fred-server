@@ -85,7 +85,7 @@ namespace Fred
             return Util::format_data_structure("DnsHost",
             Util::vector_of<std::pair<std::string,std::string> >
             (std::make_pair("fqdn",fqdn_))
-            (std::make_pair("inet_addr",Util::format_vector(inet_addr_)))
+            (std::make_pair("inet_addr",Util::format_container(inet_addr_)))
             );
         }
 

@@ -304,10 +304,10 @@ namespace Fred
             return Util::format_data_structure("MergeContactOutput",
             Util::vector_of<std::pair<std::string,std::string> >
             (std::make_pair("contactid",contactid.to_string()))
-            (std::make_pair("update_domain_registrant",Util::format_vector(update_domain_registrant)))
-            (std::make_pair("update_domain_admin_contact",Util::format_vector(update_domain_admin_contact)))
-            (std::make_pair("update_nsset_tech_contact",Util::format_vector(update_nsset_tech_contact)))
-            (std::make_pair("update_keyset_tech_contact",Util::format_vector(update_keyset_tech_contact)))
+            (std::make_pair("update_domain_registrant",Util::format_container(update_domain_registrant)))
+            (std::make_pair("update_domain_admin_contact",Util::format_container(update_domain_admin_contact)))
+            (std::make_pair("update_nsset_tech_contact",Util::format_container(update_nsset_tech_contact)))
+            (std::make_pair("update_keyset_tech_contact",Util::format_container(update_keyset_tech_contact)))
             );
         }
 

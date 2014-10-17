@@ -358,7 +358,7 @@ namespace Fred
         std::string query_plan("\nDomain query: EXPLAIN ANALYZE ");
         query_plan += domain_query.first;
         query_plan += "\n\nParams: ";
-        query_plan += Util::format_vector(domain_query.second);
+        query_plan += Util::format_container(domain_query.second);
         query_plan += "\n\nPlan:\n";
         Database::Result domain_query_result = ctx.get_conn().exec_params(
             std::string("EXPLAIN ANALYZE ") + domain_query.first,domain_query.second);
@@ -370,7 +370,7 @@ namespace Fred
         query_plan += "\nAdmin query: EXPLAIN ANALYZE ";
         query_plan += admin_query.first;
         query_plan += "\n\nParams: ";
-        query_plan += Util::format_vector(admin_query.second);
+        query_plan += Util::format_container(admin_query.second);
         query_plan += "\n\nPlan:\n";
         Database::Result admin_query_result = ctx.get_conn().exec_params(
                 std::string("EXPLAIN ANALYZE ") + admin_query.first,admin_query.second);

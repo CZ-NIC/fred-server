@@ -339,10 +339,10 @@ namespace Fred
         (std::make_pair("registrar",registrar_))
         (std::make_pair("sponsoring_registrar",sponsoring_registrar_.print_quoted()))
         (std::make_pair("authinfo",authinfo_.print_quoted()))
-        (std::make_pair("add_tech_contact",Util::format_vector(add_tech_contact_)))
-        (std::make_pair("rem_tech_contact",Util::format_vector(rem_tech_contact_)))
-        (std::make_pair("add_dns_key", Util::format_vector(add_dns_key_)))
-        (std::make_pair("rem_dns_key", Util::format_vector(rem_dns_key_)))
+        (std::make_pair("add_tech_contact",Util::format_container(add_tech_contact_)))
+        (std::make_pair("rem_tech_contact",Util::format_container(rem_tech_contact_)))
+        (std::make_pair("add_dns_key", Util::format_container(add_dns_key_)))
+        (std::make_pair("rem_dns_key", Util::format_container(rem_dns_key_)))
         (std::make_pair("logd_request_id",logd_request_id_.print_quoted()))
         );
     }
