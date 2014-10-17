@@ -16,7 +16,7 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+#include <sstream>
 
 #include "util/util.h"
 #include "util/printable.h"
@@ -33,40 +33,459 @@ BOOST_AUTO_TEST_SUITE(TestCsvParser)
 const std::string server_name = "test-csv-parser";
 
 
+static std::string format_csv_data(std::vector<std::vector<std::string> > data)
+{
+    std::stringstream ret;
+    for(unsigned long long i = 0; i < data.size(); ++i)
+    {
+        ret << "#" << i << " |" << Util::format_container(data.at(i),"|") << "|";
+    }
+    return ret.str();
+}
+
 /**
  * test csv_parser
  */
-BOOST_AUTO_TEST_CASE(test)
+BOOST_AUTO_TEST_CASE(test_trivial)
 {
-    std::string test_data_optys =
-        "21313131;Na uvedené adrese neznámý\n"
-        "56466466;\"Nevyzvednuto\";\"\"\n"
-        "75679799;\"Odstěhoval se\"\n"
-        "85313645;Zemřel;\n"
-        "19965465;\"Adresa\n nedostatečná\"\n"
-        "55666655;Nepřijato \n"
-        "45698705;Jiný důvod\n"
-        " \"\";2\n"
-        " \"\"\"\";4\n"
-        " \"\"\"\"\"\"\"\";8\n"
-        "\n"
-        "\n"
-        "\" \";\"\"\n"// 2 quoted fields in row
-        "\" \";\" \"\n"// 2 quoted space fields in row
-        "end\n"
-        ;
-
-    std::string test_data_bug = "\"\"\n\"\"";
-
-    std::vector<std::vector<std::string> > data = Util::CsvParser(test_data_optys).parse();
-
-    for(unsigned long long i = 0; i < data.size(); ++i)
-    {
-        BOOST_MESSAGE( i << ": |" << Util::format_container(data.at(i),"|") << "|");
-    }
-
     BOOST_CHECK(Util::CsvParser("").parse().size() == 0);
     BOOST_CHECK(Util::CsvParser("1").parse().size() == 1);
+
+    BOOST_CHECK(format_csv_data(Util::CsvParser(
+        "a1;a2;a3;a4"
+        ).parse()) ==
+        "#0 |a1|a2|a3|a4|"
+        );
+    BOOST_CHECK(format_csv_data(Util::CsvParser(
+        "a1;a2;a3;a4\n"
+        ).parse()) ==
+        "#0 |a1|a2|a3|a4|"
+        );
+
+    BOOST_CHECK(format_csv_data(Util::CsvParser(
+        "a1;a2;a3;a4\n"
+        "b1;b2;b3;b4\n"
+        "c1;c2;c3;c4\n"
+        "d1;d2;d3;d4"
+        ).parse()) ==
+        "#0 |a1|a2|a3|a4|"
+        "#1 |b1|b2|b3|b4|"
+        "#2 |c1|c2|c3|c4|"
+        "#3 |d1|d2|d3|d4|"
+        );
 }
+
+BOOST_AUTO_TEST_CASE(test_unquoting_data)
+{
+    BOOST_CHECK(format_csv_data(Util::CsvParser(
+        "a1;a2;a3;a4\n"
+        "b1;b2;b3;b4\n"
+        "c1;c2;\"c3\";c4\n"
+        "d1;d2;d3;d4"
+        ).parse()) ==
+        "#0 |a1|a2|a3|a4|"
+        "#1 |b1|b2|b3|b4|"
+        "#2 |c1|c2|c3|c4|"
+        "#3 |d1|d2|d3|d4|"
+        );
+
+    BOOST_CHECK(format_csv_data(Util::CsvParser(
+        "a1;a2;a3;a4\n"
+        "b1;b2;\"b3\";\"b4\"\n"
+        "c1;c2;c3;c4\n"
+        "d1;d2;d3;d4"
+        ).parse()) ==
+        "#0 |a1|a2|a3|a4|"
+        "#1 |b1|b2|b3|b4|"
+        "#2 |c1|c2|c3|c4|"
+        "#3 |d1|d2|d3|d4|"
+        );
+
+    BOOST_CHECK(format_csv_data(Util::CsvParser(
+        "a1;a2;a3;a4\n"
+        "\"b1\";\"b2\";\"b3\";\"b4\"\n"
+        "c1;c2;c3;c4\n"
+        "d1;d2;d3;d4"
+        ).parse()) ==
+        "#0 |a1|a2|a3|a4|"
+        "#1 |b1|b2|b3|b4|"
+        "#2 |c1|c2|c3|c4|"
+        "#3 |d1|d2|d3|d4|"
+        );
+
+    BOOST_CHECK(format_csv_data(Util::CsvParser(
+        "a1;a2;a3;a4\n"
+        "\"b1\";b2;\"b3\";\"b4\"\n"
+        "c1;c2;c3;c4\n"
+        "d1;d2;d3;d4"
+        ).parse()) ==
+        "#0 |a1|a2|a3|a4|"
+        "#1 |b1|b2|b3|b4|"
+        "#2 |c1|c2|c3|c4|"
+        "#3 |d1|d2|d3|d4|"
+        );
+
+    BOOST_CHECK(format_csv_data(Util::CsvParser(
+        "\"a1\";a2;a3;a4\n"
+        "b1;\"b2\";b3;b4\n"
+        "c1;c2;\"c3\";c4\n"
+        "d1;d2;d3;\"d4\""
+        ).parse()) ==
+        "#0 |a1|a2|a3|a4|"
+        "#1 |b1|b2|b3|b4|"
+        "#2 |c1|c2|c3|c4|"
+        "#3 |d1|d2|d3|d4|"
+        );
+
+    BOOST_CHECK(format_csv_data(Util::CsvParser(
+        "a1;a2;a3;a4\n"
+        "b1;b2;\"b3;b3\";\"b4\"\n"
+        "c1;c2;c3;c4\n"
+        "d1;d2;d3;d4"
+        ).parse()) ==
+        "#0 |a1|a2|a3|a4|"
+        "#1 |b1|b2|b3;b3|b4|"
+        "#2 |c1|c2|c3|c4|"
+        "#3 |d1|d2|d3|d4|"
+        );
+
+    BOOST_CHECK(format_csv_data(Util::CsvParser(
+        "a1;a2;a3;a4\n"
+        "\"b1;\";b2;\"b3\";\"b4\"\n"
+        "c1;c2;c3;c4\n"
+        "d1;d2;d3;d4"
+        ).parse()) ==
+        "#0 |a1|a2|a3|a4|"
+        "#1 |b1;|b2|b3|b4|"
+        "#2 |c1|c2|c3|c4|"
+        "#3 |d1|d2|d3|d4|"
+        );
+
+    BOOST_CHECK(format_csv_data(Util::CsvParser(
+        "a1;a2;a3;a4\n"
+        "b1;b2;\"b3\";\"b4;\"\n"
+        "c1;c2;c3;c4\n"
+        "d1;d2;d3;d4"
+        ).parse()) ==
+        "#0 |a1|a2|a3|a4|"
+        "#1 |b1|b2|b3|b4;|"
+        "#2 |c1|c2|c3|c4|"
+        "#3 |d1|d2|d3|d4|"
+        );
+
+    BOOST_CHECK(format_csv_data(Util::CsvParser(
+        "a1;a2;a3;a4\n"
+        "b1;b2;\"b3\";\"b4\n\"\n"
+        "c1;c2;c3;c4\n"
+        "d1;d2;d3;d4"
+        ).parse()) ==
+        "#0 |a1|a2|a3|a4|"
+        "#1 |b1|b2|b3|b4\n|"
+        "#2 |c1|c2|c3|c4|"
+        "#3 |d1|d2|d3|d4|"
+        );
+
+    BOOST_CHECK(format_csv_data(Util::CsvParser(
+        "a1;a2;a3;a4\n"
+        "\"\nb1\";b2;\"b3\";\"b4\"\n"
+        "c1;c2;c3;c4\n"
+        "d1;d2;d3;d4"
+        ).parse()) ==
+        "#0 |a1|a2|a3|a4|"
+        "#1 |\nb1|b2|b3|b4|"
+        "#2 |c1|c2|c3|c4|"
+        "#3 |d1|d2|d3|d4|"
+        );
+
+    BOOST_CHECK(format_csv_data(Util::CsvParser(
+        "a1;a2;a3;a4\n"
+        "b1;b2;\"b3\";\"\nb4\"\n"
+        "c1;c2;c3;c4\n"
+        "d1;d2;d3;d4"
+        ).parse()) ==
+        "#0 |a1|a2|a3|a4|"
+        "#1 |b1|b2|b3|\nb4|"
+        "#2 |c1|c2|c3|c4|"
+        "#3 |d1|d2|d3|d4|"
+        );
+
+    BOOST_CHECK(format_csv_data(Util::CsvParser(
+        "a1;a2;a3;a4\n"
+        "\"b1\n\";b2;\"b3\";\"b4\"\n"
+        "c1;c2;c3;c4\n"
+        "d1;d2;d3;d4"
+        ).parse()) ==
+        "#0 |a1|a2|a3|a4|"
+        "#1 |b1\n|b2|b3|b4|"
+        "#2 |c1|c2|c3|c4|"
+        "#3 |d1|d2|d3|d4|"
+        );
+}
+
+BOOST_AUTO_TEST_CASE(test_unquoting_quote)
+{
+    BOOST_CHECK(format_csv_data(Util::CsvParser(
+        "a1;a2;a3;a4\n"
+        "b1;b2;b3;\"b4\"\"\"\n"
+        "c1;c2;c3;c4\n"
+        "d1;d2;d3;d4"
+        ).parse()) ==
+        "#0 |a1|a2|a3|a4|"
+        "#1 |b1|b2|b3|b4\"|"
+        "#2 |c1|c2|c3|c4|"
+        "#3 |d1|d2|d3|d4|"
+        );
+
+    BOOST_CHECK(format_csv_data(Util::CsvParser(
+        "a1;a2;a3;a4\n"
+        "b1;b2;b3;\"\"\"b4\"\n"
+        "c1;c2;c3;c4\n"
+        "d1;d2;d3;d4"
+        ).parse()) ==
+        "#0 |a1|a2|a3|a4|"
+        "#1 |b1|b2|b3|\"b4|"
+        "#2 |c1|c2|c3|c4|"
+        "#3 |d1|d2|d3|d4|"
+        );
+
+    BOOST_CHECK(format_csv_data(Util::CsvParser(
+        "a1;a2;a3;a4\n"
+        " \"\"b1;b2;b3;b4\n"
+        "c1;c2;c3;c4\n"
+        "d1;d2;d3;d4"
+        ).parse()) ==
+        "#0 |a1|a2|a3|a4|"
+        "#1 | \"b1|b2|b3|b4|"
+        "#2 |c1|c2|c3|c4|"
+        "#3 |d1|d2|d3|d4|"
+        );
+
+    BOOST_CHECK(format_csv_data(Util::CsvParser(
+        "a1;a2;a3;a4\n"
+        " \"\"\"b1;b2;b3;b4\n"
+        "c1;c2;c3;c4\n"
+        "d1;d2;d3;d4"
+        ).parse()) ==
+        "#0 |a1|a2|a3|a4|"
+        "#1 | \"\"b1|b2|b3|b4|"
+        "#2 |c1|c2|c3|c4|"
+        "#3 |d1|d2|d3|d4|"
+        );
+
+    BOOST_CHECK(format_csv_data(Util::CsvParser(
+        "a1;a2;a3;a4\n"
+        " \"b1;b2;b3;b4\n"
+        "c1;c2;c3;c4\n"
+        "d1;d2;d3;d4"
+        ).parse()) ==
+        "#0 |a1|a2|a3|a4|"
+        "#1 | \"b1|b2|b3|b4|"
+        "#2 |c1|c2|c3|c4|"
+        "#3 |d1|d2|d3|d4|"
+        );
+
+    BOOST_CHECK(format_csv_data(Util::CsvParser(
+        "a1;a2;a3;a4\n"
+        "b1\"b1;b2;b3;b4\n"
+        "c1;c2;c3;c4\n"
+        "d1;d2;d3;d4"
+        ).parse()) ==
+        "#0 |a1|a2|a3|a4|"
+        "#1 |b1\"b1|b2|b3|b4|"
+        "#2 |c1|c2|c3|c4|"
+        "#3 |d1|d2|d3|d4|"
+        );
+
+    BOOST_CHECK(format_csv_data(Util::CsvParser(
+        "a1;a2;a3;a4\n"
+        "b1\"\"b1;b2;b3;b4\n"
+        "c1;c2;c3;c4\n"
+        "d1;d2;d3;d4"
+        ).parse()) ==
+        "#0 |a1|a2|a3|a4|"
+        "#1 |b1\"b1|b2|b3|b4|"
+        "#2 |c1|c2|c3|c4|"
+        "#3 |d1|d2|d3|d4|"
+        );
+
+    BOOST_CHECK(format_csv_data(Util::CsvParser(
+        "a1;a2;a3;a4\n"
+        "b1\"\"\"b1;b2;b3;b4\n"
+        "c1;c2;c3;c4\n"
+        "d1;d2;d3;d4"
+        ).parse()) ==
+        "#0 |a1|a2|a3|a4|"
+        "#1 |b1\"\"b1|b2|b3|b4|"
+        "#2 |c1|c2|c3|c4|"
+        "#3 |d1|d2|d3|d4|"
+        );
+
+    BOOST_CHECK(format_csv_data(Util::CsvParser(
+        "a1;a2;a3;a4\n"
+        "b1\"\"\"\"b1;b2;b3;b4\n"
+        "c1;c2;c3;c4\n"
+        "d1;d2;d3;d4"
+        ).parse()) ==
+        "#0 |a1|a2|a3|a4|"
+        "#1 |b1\"\"b1|b2|b3|b4|"
+        "#2 |c1|c2|c3|c4|"
+        "#3 |d1|d2|d3|d4|"
+        );
+
+    BOOST_CHECK(format_csv_data(Util::CsvParser(
+        "\"\"\"a1\";a2;a3;a4\n"
+        "b1;\"\"\"\"\"b2\";b3;b4\n"
+        "c1;c2;\"c3\"\"\"\"\";c4\n"
+        "d1;d2;d3;\"d4\"\"\""
+        ).parse()) ==
+        "#0 |\"a1|a2|a3|a4|"
+        "#1 |b1|\"\"b2|b3|b4|"
+        "#2 |c1|c2|c3\"\"|c4|"
+        "#3 |d1|d2|d3|d4\"|"
+        );
+
+    try
+    {
+        Util::CsvParser(
+            "a1;\"a2 \"\";a3;a4\n"
+            "b1;b2;b3;b4\n"
+            "c1;c2;c3;c4\n"
+            "d1;d2;d3;d4"
+            ).parse();
+
+        BOOST_ERROR("quoting check");
+    }
+    catch(const std::exception& exception)
+    {
+        BOOST_CHECK(&exception);
+    }
+
+}
+
+BOOST_AUTO_TEST_CASE(test_newline)
+{
+    BOOST_CHECK(format_csv_data(Util::CsvParser(
+        "a1;a2;a3;a4\n"
+        "\"b1\";b2;\"b3\";\"b4\"\n"
+        "c1;c2;c3;c4\n"
+        "d1;d2;d3;d4\n"
+        ).parse()) ==
+        "#0 |a1|a2|a3|a4|"
+        "#1 |b1|b2|b3|b4|"
+        "#2 |c1|c2|c3|c4|"
+        "#3 |d1|d2|d3|d4|"
+        );
+
+    BOOST_CHECK(format_csv_data(Util::CsvParser(
+        "\"a1\";a2;a3;a4\n"
+        "b1;\"b2\";b3;b4\n"
+        "c1;c2;\"c3\";c4\n"
+        "d1;d2;d3;\"d4\"\n"
+        ).parse()) ==
+        "#0 |a1|a2|a3|a4|"
+        "#1 |b1|b2|b3|b4|"
+        "#2 |c1|c2|c3|c4|"
+        "#3 |d1|d2|d3|d4|"
+        );
+
+    BOOST_CHECK(format_csv_data(Util::CsvParser(
+        "a1;a2;a3;a4\r\n"
+        "\"b1\";b2;\"b3\";\"b4\"\r\n"
+        "c1;c2;c3;c4\r\n"
+        "d1;d2;d3;d4\r\n"
+        ).parse()) ==
+        "#0 |a1|a2|a3|a4|"
+        "#1 |b1|b2|b3|b4|"
+        "#2 |c1|c2|c3|c4|"
+        "#3 |d1|d2|d3|d4|"
+        );
+
+    BOOST_CHECK(format_csv_data(Util::CsvParser(
+        "\"a1\";a2;a3;a4\r\n"
+        "b1;\"b2\";b3;b4\r\n"
+        "c1;c2;\"c3\";c4\r\n"
+        "d1;d2;d3;\"d4\"\r\n"
+        ).parse()) ==
+        "#0 |a1|a2|a3|a4|"
+        "#1 |b1|b2|b3|b4|"
+        "#2 |c1|c2|c3|c4|"
+        "#3 |d1|d2|d3|d4|"
+        );
+
+    BOOST_CHECK(format_csv_data(Util::CsvParser(
+        "a1;a2;a3;a4\r"
+        "\"b1\";b2;\"b3\";\"b4\"\r"
+        "c1;c2;c3;c4\r"
+        "d1;d2;d3;d4\r"
+        ).parse()) ==
+        "#0 |a1|a2|a3|a4|"
+        "#1 |b1|b2|b3|b4|"
+        "#2 |c1|c2|c3|c4|"
+        "#3 |d1|d2|d3|d4|"
+        );
+
+    BOOST_CHECK(format_csv_data(Util::CsvParser(
+        "\"a1\";a2;a3;a4\r"
+        "b1;\"b2\";b3;b4\r"
+        "c1;c2;\"c3\";c4\r"
+        "d1;d2;d3;\"d4\"\r"
+        ).parse()) ==
+        "#0 |a1|a2|a3|a4|"
+        "#1 |b1|b2|b3|b4|"
+        "#2 |c1|c2|c3|c4|"
+        "#3 |d1|d2|d3|d4|"
+        );
+
+    BOOST_CHECK(format_csv_data(Util::CsvParser(
+        "a1;a2;a3;a4\r\n"
+        "\"b1\";b2;\"b3\";\"b4\"\r\n"
+        "c1;c2;c3;c4\r\n"
+        "d1;d2;d3;d4"
+        ).parse()) ==
+        "#0 |a1|a2|a3|a4|"
+        "#1 |b1|b2|b3|b4|"
+        "#2 |c1|c2|c3|c4|"
+        "#3 |d1|d2|d3|d4|"
+        );
+
+    BOOST_CHECK(format_csv_data(Util::CsvParser(
+        "\"a1\";a2;a3;a4\r\n"
+        "b1;\"b2\";b3;b4\r\n"
+        "c1;c2;\"c3\";c4\r\n"
+        "d1;d2;d3;\"d4\""
+        ).parse()) ==
+        "#0 |a1|a2|a3|a4|"
+        "#1 |b1|b2|b3|b4|"
+        "#2 |c1|c2|c3|c4|"
+        "#3 |d1|d2|d3|d4|"
+        );
+
+    BOOST_CHECK(format_csv_data(Util::CsvParser(
+        "a1;a2;a3;a4\r"
+        "\"b1\";b2;\"b3\";\"b4\"\r"
+        "c1;c2;c3;c4\r"
+        "d1;d2;d3;d4"
+        ).parse()) ==
+        "#0 |a1|a2|a3|a4|"
+        "#1 |b1|b2|b3|b4|"
+        "#2 |c1|c2|c3|c4|"
+        "#3 |d1|d2|d3|d4|"
+        );
+
+    BOOST_CHECK(format_csv_data(Util::CsvParser(
+        "\"a1\";a2;a3;a4\r"
+        "b1;\"b2\";b3;b4\r"
+        "c1;c2;\"c3\";c4\r"
+        "d1;d2;d3;\"d4\""
+        ).parse()) ==
+        "#0 |a1|a2|a3|a4|"
+        "#1 |b1|b2|b3|b4|"
+        "#2 |c1|c2|c3|c4|"
+        "#3 |d1|d2|d3|d4|"
+        );
+
+}
+
+
 
 BOOST_AUTO_TEST_SUITE_END();

@@ -56,10 +56,12 @@ namespace Util
                 unsigned long long quotation_mark_count = 0;//number of encountered quotation marks in current field
                 for(unsigned long long i = field_start_index + 1; i < csv_file_.length(); ++i)//look for the end of the field
                 {
+                    //std::cerr <<"for i: " << i << std::endl;
                     if(csv_file_.at(i) == quotation_mark_)//look for next quotation mark
                     {
                         ++quotation_mark_count;
 
+                        //std::cerr <<"next quotation_mark: " << quotation_mark_count << " at: " << i << std::endl;
                         if(quotation_mark_count % 2 != 0)//odd quotation mark in the field
                         {
                             if(((csv_file_.length() - field_start_index)) == 2)
@@ -69,8 +71,9 @@ namespace Util
                                 return csv_data;
                             }
                             else
-                            {//have at least one char ahead
-                                if(csv_file_.at(i+1) != quotation_mark_)//look for quoted quotation mark
+                            {
+                                //std::cerr <<"look for quoted quotation mark i+1: " << (i+1) << " csv size: " << csv_file_.size() << std::endl;
+                                if((csv_file_.length() <= (i + 2)) || (csv_file_.at(i + 1) != quotation_mark_))//look for quoted quotation mark
                                 {
                                     field_end_index = i;
 
@@ -93,10 +96,15 @@ namespace Util
                             }
                         }
 
-                        if((quotation_mark_count % 2 == 0) && (csv_file_.at(i - 1) == quotation_mark_))//even quotation mark in the field check
+                        if((quotation_mark_count % 2 == 0) && (csv_file_.at(i - 1) != quotation_mark_))//even quotation mark in the field check
                         {
+                            //std::cerr <<"missing quotation mark at i -1: " << (i - 1) << std::endl;
                             throw std::runtime_error("missing quotation mark");
                         }
+                    }
+                    else
+                    {
+                        if((i+1) == csv_file_.length()) throw std::runtime_error("missing quotation mark at the end");
                     }
                 }//look for the end of the field
             }
@@ -126,28 +134,31 @@ namespace Util
                 }//look for the end of the field
             }
 
-            //find start of next field
-            if(csv_file_.at(field_end_index + 1) == delimiter_)//next in row
+            if(csv_file_.length() >= (field_end_index + 2))
             {
-                //std::cerr <<"delimiter at: " << (field_end_index + 1) << std::endl;
-                field_start_index = field_end_index + 2;
-            }
-
-            if((csv_file_.at(field_end_index + 1) == '\n') || (csv_file_.at(field_end_index + 1) == '\r'))//new row
-            {
-                //std::cerr <<"newline at: " << (field_end_index + 1) << std::endl;
-                field_start_index = field_end_index + 2;
-
-                if((field_end_index + 2) == csv_file_.length())//check next 2 chars behind end exists
+                //find start of next field
+                if(csv_file_.at(field_end_index + 1) == delimiter_)//next in row
                 {
-                    //look for next newline character
-                    if((csv_file_.at(field_end_index + 1) == '\r') && (csv_file_.at(field_end_index + 2) == '\n'))//new row for windows
-                    {
-                        field_start_index = field_end_index + 3;
-                    }
+                    //std::cerr <<"delimiter at: " << (field_end_index + 1) << std::endl;
+                    field_start_index = field_end_index + 2;
                 }
 
-                csv_data.push_back(std::vector<std::string>());//add new row
+                if((csv_file_.at(field_end_index + 1) == '\n') || (csv_file_.at(field_end_index + 1) == '\r'))//new row
+                {
+                    //std::cerr <<"newline at: " << (field_end_index + 1) << std::endl;
+                    field_start_index = field_end_index + 2;
+
+                    if((field_end_index + 3) <= csv_file_.length())//check next 2 chars behind end exists
+                    {
+                        //look for next newline character
+                        if((csv_file_.at(field_end_index + 1) == '\r') && (csv_file_.at(field_end_index + 2) == '\n'))//new row for windows
+                        {
+                            field_start_index = field_end_index + 3;
+                        }
+                    }
+
+                    csv_data.push_back(std::vector<std::string>());//add new row
+                }
             }
 
         } while((field_start_index >= field_end_index ) && ((field_start_index + 1) <= csv_file_.length()));
