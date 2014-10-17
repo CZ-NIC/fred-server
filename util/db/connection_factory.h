@@ -46,6 +46,19 @@
 
 
 namespace Database {
+
+
+static const boost::regex re_find_password("password=[^\\ ]+");
+
+/**
+ * filter out password from database connection string
+ */
+static std::string make_nopass_conn_info(const std::string& _conn_info)
+{
+    return boost::regex_replace(_conn_info, re_find_password, "password=******** ");
+}
+
+
 namespace Factory {
 
 /**
@@ -57,6 +70,7 @@ template<class conndriver>
 class Simple {
 private:
   std::string conn_info_; /**< connection string (host, database name, user, password ...) */
+  std::string nopass_conn_info_; /**< connection string without password (for logging) */
 
 public:
   typedef conndriver  connection_driver;
@@ -64,9 +78,10 @@ public:
   /**
    * Constuctors and destructor
    */
-  Simple(const std::string& _conn_info) : conn_info_(_conn_info) {
+  Simple(const std::string& _conn_info) : conn_info_(_conn_info),
+        nopass_conn_info_(make_nopass_conn_info(_conn_info)) {
 #ifdef HAVE_LOGGER
-    TRACE(boost::format("<CALL> Database::Factory::Simple::Simple('%1%')") % conn_info_);
+    TRACE(boost::format("<CALL> Database::Factory::Simple::Simple('%1%')") % nopass_conn_info_);
 #endif
   }
 
@@ -133,12 +148,13 @@ public:
                  unsigned _init_conn = 0,
                  unsigned _max_conn = 1) 
                : conn_info_(_conn_info),
+                 conn_info_(make_nopass_conn_info(_conn_info)),
                  init_conn_((_init_conn < _max_conn) ? _init_conn : _max_conn),
                  max_conn_(_max_conn) {
 #ifdef HAVE_LOGGER
     TRACE("Database::Factory::ConnectionPool::ConnectionPool()");
     LOGGER(PACKAGE).info(boost::format("connection pool configured; conn_info='%1%' (init=%2% max=%3%)")
-                                      % conn_info_ % init_conn_ % max_conn_);
+                                      % nopass_conn_info_ % init_conn_ % max_conn_);
 #endif
     relax_(init_conn_);
   }
@@ -370,6 +386,7 @@ private:
   typedef std::queue<connection_driver*>           queue_type;
 
   std::string  conn_info_;               /**< connection string (host, database name, user, password ...) */
+  std::string  nopass_conn_info_;        /**< connection string without password (for logging) */
   unsigned     init_conn_;               /**< connections established at init */
   unsigned     max_conn_;                /**< maximum number of connection */
 

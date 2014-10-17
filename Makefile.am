@@ -413,6 +413,7 @@ util_db_test_db_LDADD = \
 		$(BOOST_DATE_TIME_LIB) \
 		$(BOOST_THREAD_LIB) \
 		$(POSTGRESQL_LIB) \
+		$(BOOST_REGEX_LIB) \
 		$(BOOST_SYSTEM_LIB)
 #
 # util/db/test-db
@@ -474,6 +475,7 @@ util_db_test_mockdb_LDADD = \
 		util/types/libtypes.a \
 		$(BOOST_DATE_TIME_LIB) \
 		$(BOOST_THREAD_LIB) \
+		$(BOOST_REGEX_LIB) \
 		$(BOOST_SYSTEM_LIB)
 
 #
@@ -626,6 +628,7 @@ src_model_test_model_LDADD = \
 		$(BOOST_THREAD_LIB) \
 		$(BOOST_SERIALIZATION_LIB) \
 		$(POSTGRESQL_LIB) \
+		$(BOOST_REGEX_LIB) \
 		$(BOOST_SYSTEM_LIB)
 #
 # src/model/test-model
@@ -1974,6 +1977,7 @@ tools_logd_migration_migrate_log_LDADD = \
 		$(XML2_LIBS) \
 		$(LIBIDN_LIBS) \
 		$(POSTGRESQL_LIB) \
+		$(BOOST_REGEX_LIB) \
 		$(BOOST_SYSTEM_LIB)
 #
 # tools/logd_migration

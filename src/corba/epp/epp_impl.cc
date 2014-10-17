@@ -725,8 +725,7 @@ ccReg_EPP_i::ccReg_EPP_i(
   Database::Connection conn = Database::Manager::acquire();
   db_disconnect_guard_.reset(new DB(conn));
 
-
-  LOG(NOTICE_LOG, "successfully  connect to DATABASE %s", database.c_str());
+  LOG(NOTICE_LOG, "successfully  connect to DATABASE");
   regMan.reset(Fred::Manager::create(db_disconnect_guard_, false)); //TODO: replace 'false'
   regMan->initStates();
 }
