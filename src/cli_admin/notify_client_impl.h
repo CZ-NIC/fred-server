@@ -176,4 +176,18 @@ struct notify_letters_optys_send_impl
   }
 };
 
+/**
+ * \class notify_letters_optys_get_undelivered_impl
+ * \brief admin client implementation of notify_letters_optys_get_undelivered
+ */
+struct notify_letters_optys_get_undelivered_impl
+{
+  void operator()() const
+  {
+      Logging::Context ctx("notify_letters_optys_get_undelivered_impl");
+      Admin::notify_letters_optys_get_undelivered_impl(
+          CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientNotifyLettersOptysGetUndeliveredArgsGrp>()->optys_config);
+  }
+};
+
 #endif // NOTIFY_CLIENT_IMPL_H_

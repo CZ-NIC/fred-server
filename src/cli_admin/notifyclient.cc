@@ -22,6 +22,7 @@
 #include <unistd.h>
 #include <fstream>
 #include <sstream>
+#include <iostream>
 #include <vector>
 #include <boost/lexical_cast.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -1039,6 +1040,18 @@ void notify_letters_optys_send_impl(
         "registered_letter",service_handle, max_attempts_limit,
         zip_file_name_foreign_before_message_type, zip_filename_registered_letter_after_message_type,
         messages_manager);
+}
+
+
+
+void notify_letters_optys_get_undelivered_impl(const std::string& optys_config_file)
+{
+    //optys config
+    std::map<std::string, std::string> set_cfg = readConfigFile<HandleOptysUndeliveredArgs>(optys_config_file);
+
+    std::cerr << "config: " <<  "-p " << map_at(set_cfg,"port")
+        << " " << map_at(set_cfg,"user") << "@" << map_at(set_cfg,"host")
+        << std::endl;
 }
 
 

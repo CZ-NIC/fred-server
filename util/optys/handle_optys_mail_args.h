@@ -106,4 +106,67 @@ public:
     }//handle
 };//class HandleOptysMailArgs
 
+/**
+ * HandleOptysUndeliveredArgs
+ * Optys download client config options handler
+ */
+
+class HandleOptysUndeliveredArgs : public HandleArgs
+{
+    std::map<std::string, std::string> optys_config;
+
+public:
+    //selected optys config options values
+
+    const std::string CONFIG_PREFIX;
+
+    HandleOptysUndeliveredArgs()
+    : CONFIG_PREFIX("optys_download.")
+    {}
+
+    const std::map<std::string, std::string> get_map() { return optys_config; };
+
+    boost::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> opts_descs(
+                new boost::program_options::options_description(
+                        std::string("Optys client download configuration, sftp with public key authentication")
+                        , 140 //width of help print in cols
+                        ));
+        opts_descs->add_options()
+                ((CONFIG_PREFIX+"host,h").c_str(), boost::program_options
+                            ::value<std::string>()
+                        , "optys mail download host")
+                ((CONFIG_PREFIX+"user,u").c_str(), boost::program_options
+                            ::value<std::string>()
+                        , "optys mail download account login name")
+                ((CONFIG_PREFIX+"port,r").c_str(), boost::program_options
+                            ::value<std::string>()
+                        , "optys mail download sftp port")
+                ((CONFIG_PREFIX+"download_dir,t").c_str(), boost::program_options
+                            ::value<std::string>()
+                        , "optys download dir path")
+                 ;
+        return opts_descs;
+    }//get_options_description
+
+    void handle( int argc, char* argv[],  FakedArgs &fa)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
+
+        boost::program_options::variables_map::iterator it;
+        for(it = vm.begin(); it != vm.end(); it++) {
+                std::string key(it->first);
+                if (key.compare(0, CONFIG_PREFIX.length(), CONFIG_PREFIX)==0) {
+                        key = key.substr(CONFIG_PREFIX.length());
+                }
+                optys_config [key] = (it->second).as<std::string>();
+        }
+    }//handle
+};//class HandleOptysUndeliveredArgs
+
+
+
 #endif //OPTYS_MAIL

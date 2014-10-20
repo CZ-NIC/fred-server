@@ -139,6 +139,10 @@ void notify_letters_optys_send_impl(const std::string& nameservice_host_port
 
         );
 
+/**
+ * Get undelivered letter IDs from Optys.
+ */
+void notify_letters_optys_get_undelivered_impl(const std::string& optys_config_file);
 
 } // namespace Admin;
 
