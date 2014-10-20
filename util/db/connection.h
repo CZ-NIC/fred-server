@@ -25,6 +25,7 @@
 #define CONNECTION_H_
 
 #include <boost/noncopyable.hpp>
+#include <boost/regex.hpp>
 #include <string>
 #include <vector>
 #include "db_exceptions.h"
@@ -41,6 +42,7 @@
 
 
 namespace Database {
+
 
 /**
  * \class  ConnectionBase_
@@ -257,8 +259,9 @@ public:
               bool _lazy_connect = true) //throw (ConnectionFailed)
             : super(0),
               trans_(0),
-              conn_info_(_conn_info) {
-
+              conn_info_(_conn_info),
+              nopass_conn_info_(make_nopass_conn_info(_conn_info))
+  {
     /* lazy connection open */
     if (!_lazy_connect) {
       open(conn_info_);
@@ -286,10 +289,11 @@ public:
   virtual void open(const std::string &_conn_info) /* throw (ConnectionFailed) */{
     close();
     this->conn_info_ = _conn_info;
+    this->nopass_conn_info_ = make_nopass_conn_info(_conn_info);
     /* TODO: this should be done by manager_type! */
     this->conn_ = new connection_driver(conn_info_);
 #ifdef HAVE_LOGGER
-    LOGGER(PACKAGE).info(boost::format("connection established; (%1%)") % conn_info_);
+    LOGGER(PACKAGE).info(boost::format("connection established; (%1%)") % nopass_conn_info_);
 #endif
   }
 
@@ -303,7 +307,7 @@ public:
       this->conn_ = 0;
 #ifdef HAVE_LOGGER
       try{
-          LOGGER(PACKAGE).info(boost::format("connection closed; (%1%)") % conn_info_);
+          LOGGER(PACKAGE).info(boost::format("connection closed; (%1%)") % nopass_conn_info_);
       }catch(...){}
 #endif
     }
@@ -390,6 +394,7 @@ protected:
 
 private:
   std::string conn_info_;    /**< connection string used to open connection */
+  std::string nopass_conn_info_;  /**< connection string without password (for logging) */
 };
 
 
