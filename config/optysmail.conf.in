@@ -9,7 +9,6 @@ cleanup_zip_tmp_dir = true
 [optys_download]
 host = "localhost"
 user = @OPTYS_LOGIN_NAME@
-password = @OPTYS_LOGIN_PASSWORD@
 port = @OPTYS_LOGIN_PORT@
 download_dir = @PREFIX@/tmp/optys/download
 
