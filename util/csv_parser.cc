@@ -38,7 +38,6 @@ namespace Util
 {
     std::vector<std::vector<std::string> > CsvParser::parse()
     {
-        //std::cerr <<"CsvParser::parse data: " << csv_file_ << std::endl;
         std::vector<std::vector<std::string> > csv_data;
         if(csv_file_.empty()) return csv_data;//empty input
 
@@ -51,41 +50,34 @@ namespace Util
         {
             if(csv_file_.at(field_start_index) == quotation_mark_)
             {//quoted field
-                //std::cerr <<"quotation_mark at field_start_index: " << field_start_index << std::endl;
                 if((csv_file_.length() - field_start_index) < 2) throw std::runtime_error("invalid csv");//field length 2 suffices for quoted empty field case: ""
                 unsigned long long quotation_mark_count = 0;//number of encountered quotation marks in current field
                 for(unsigned long long i = field_start_index + 1; i < csv_file_.length(); ++i)//look for the end of the field
                 {
-                    //std::cerr <<"for i: " << i << std::endl;
                     if(csv_file_.at(i) == quotation_mark_)//look for next quotation mark
                     {
                         ++quotation_mark_count;
 
-                        //std::cerr <<"next quotation_mark: " << quotation_mark_count << " at: " << i << std::endl;
                         if(quotation_mark_count % 2 != 0)//odd quotation mark in the field
                         {
                             if(((csv_file_.length() - field_start_index)) == 2)
                             {
-                                //std::cerr <<"last empty field end quotation_mark at: " << i << std::endl;
                                 csv_data.back().push_back("");//add last empty field
                                 return csv_data;
                             }
                             else
                             {
-                                //std::cerr <<"look for quoted quotation mark i+1: " << (i+1) << " csv size: " << csv_file_.size() << std::endl;
                                 if((csv_file_.length() <= (i + 2)) || (csv_file_.at(i + 1) != quotation_mark_))//look for quoted quotation mark
                                 {
                                     field_end_index = i;
 
                                     if((field_end_index - field_start_index) < 2)//empty
                                     {
-                                        //std::cerr <<"empty field end quotation_mark at: " << i << std::endl;
                                         csv_data.back().push_back("");//add empty field
                                         break;//exit field "for loop"
                                     }
                                     else
                                     {
-                                        //std::cerr <<"non-empty field end quotation_mark at: " << i << std::endl;
                                         csv_data.back().push_back(
                                             boost::algorithm::replace_all_copy(//unquote quoted quotes
                                             csv_file_.substr(field_start_index+1,field_end_index - 1 - field_start_index)
@@ -98,7 +90,6 @@ namespace Util
 
                         if((quotation_mark_count % 2 == 0) && (csv_file_.at(i - 1) != quotation_mark_))//even quotation mark in the field check
                         {
-                            //std::cerr <<"missing quotation mark at i -1: " << (i - 1) << std::endl;
                             throw std::runtime_error("missing quotation mark");
                         }
                     }
@@ -139,13 +130,11 @@ namespace Util
                 //find start of next field
                 if(csv_file_.at(field_end_index + 1) == delimiter_)//next in row
                 {
-                    //std::cerr <<"delimiter at: " << (field_end_index + 1) << std::endl;
                     field_start_index = field_end_index + 2;
                 }
 
                 if((csv_file_.at(field_end_index + 1) == '\n') || (csv_file_.at(field_end_index + 1) == '\r'))//new row
                 {
-                    //std::cerr <<"newline at: " << (field_end_index + 1) << std::endl;
                     field_start_index = field_end_index + 2;
 
                     if((field_end_index + 3) <= csv_file_.length())//check next 2 chars behind end exists
