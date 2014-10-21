@@ -35,6 +35,7 @@
 #include "src/fredlib/public_request/public_request_impl.h"
 #include "src/fredlib/object_states.h"
 #include "src/fredlib/contact_verification/contact.h"
+#include "src/contact_verification/contact_verification_impl.h"
 #include "src/mojeid/request.h"
 #include "src/mojeid/mojeid_contact_states.h"
 #include "src/mojeid/mojeid_disclose_policy.h"
@@ -343,6 +344,11 @@ namespace Registry
                 LOGGER(PACKAGE).info(_ex.what());
                 throw;
             }
+            catch (const Registry::Contact::Verification::DATA_VALIDATION_ERROR& _ex)
+            {
+                LOGGER(PACKAGE).warning(_ex.what());
+                throw;
+            }
             catch (std::exception &_ex)
             {
                 LOGGER(PACKAGE).error(_ex.what());
@@ -473,7 +479,7 @@ namespace Registry
                 try {
                     Admin::AdminContactVerificationObjectStates::conditionally_cancel_final_states_legacy(cid);
                 } catch (...) {
-                    LOGGER(PACKAGE).error("conditionally_delete_final_states_legacy exception");
+                    LOGGER(PACKAGE).warning("conditionally_delete_final_states_legacy exception");
                     throw;
                 }
 
@@ -495,6 +501,11 @@ namespace Registry
 
                 LOGGER(PACKAGE).info("request completed successfully");
 
+            }
+            catch(Registry::MojeID::OBJECT_NOT_EXISTS& _ex)
+            {
+                LOGGER(PACKAGE).info(_ex.what());
+                throw;
             }
             catch (std::exception &_ex)
             {
@@ -537,6 +548,11 @@ namespace Registry
 
                  LOGGER(PACKAGE).info("request completed successfully");
                  return data;
+            }
+            catch(Registry::MojeID::OBJECT_NOT_EXISTS& _ex)
+            {
+                LOGGER(PACKAGE).info(_ex.what());
+                throw;
             }
             catch (std::exception &_ex)
             {
@@ -973,17 +989,17 @@ namespace Registry
                 LOGGER(PACKAGE).info("request completed successfully");
             }
             catch (Registry::MojeID::OBJECT_NOT_EXISTS&) {
-                LOGGER(PACKAGE).error("contact doesn't exists");
+                LOGGER(PACKAGE).warning("contact doesn't exists");
                 throw;
             }
             catch (Fred::PublicRequest::RequestExists &_ex)
             {
-                LOGGER(PACKAGE).error(boost::format("cannot create request (%1%)") % _ex.what());
+                LOGGER(PACKAGE).warning(boost::format("cannot create request (%1%)") % _ex.what());
                 throw;
             }
             catch (Fred::PublicRequest::NotApplicable &_ex)
             {
-                LOGGER(PACKAGE).error(boost::format("cannot create request (%1%)") % _ex.what());
+                LOGGER(PACKAGE).warning(boost::format("cannot create request (%1%)") % _ex.what());
                 throw;
             }
             catch (std::exception &_ex)
@@ -1144,6 +1160,11 @@ namespace Registry
                 }
                 return csd;
             }//try
+            catch(Registry::MojeID::OBJECT_NOT_EXISTS& _ex)
+            {
+                LOGGER(PACKAGE).info(_ex.what());
+                throw;
+            }
             catch (std::exception &_ex)
             {
                 LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % _ex.what());
@@ -1251,6 +1272,11 @@ namespace Registry
                 return std::string(res[0][0]);
 
             }//try
+            catch(Registry::MojeID::OBJECT_NOT_EXISTS& _ex)
+            {
+                LOGGER(PACKAGE).info(_ex.what());
+                throw;
+            }
             catch (std::exception &_ex) {
                 LOGGER(PACKAGE).error(boost::format("request failed (%1%)")
                     % _ex.what());
@@ -1384,6 +1410,11 @@ namespace Registry
                 transaction_data.insert(std::make_pair(_trans_id, tr_data));
 
             }//try
+            catch(Registry::MojeID::OBJECT_NOT_EXISTS& _ex)
+            {
+                LOGGER(PACKAGE).info(_ex.what());
+                throw;
+            }
             catch (std::exception &_ex)
             {
                 LOGGER(PACKAGE).error(_ex.what());
@@ -1495,9 +1526,9 @@ namespace Registry
                     dynamic_cast<Fred::PublicRequest::PublicRequestAuth*>
                         (list->get(0));
 
-                if (new_auth_req == NULL) {
-                    LOGGER(PACKAGE).error(
-                            "unable to create identfication request - wrong type");
+                if (new_auth_req == NULL)
+                {
+                    LOGGER(PACKAGE).error("unable to create identfication request - wrong type");
                 }
                 else {
                     new_auth_req->sendPasswords();

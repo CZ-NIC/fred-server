@@ -56,7 +56,7 @@ namespace Registry
                     msg+=std::string("  ")+(it->first);
                     msg+=std::string(" ")+ boost::lexical_cast<std::string>(it->second);
                 }
-                LOGGER(PACKAGE).error(msg);
+                LOGGER(PACKAGE).warning(msg);
             }
 
             static Registry::Contact::Verification::DATA_VALIDATION_ERROR
@@ -159,7 +159,7 @@ namespace Registry
                     check_result = contact_mgr->checkAvail(contact_handle, cinfo);
                     if (check_result != Fred::Contact::Manager::CA_REGISTRED)
                     {
-                        LOGGER(PACKAGE).error("checkAvail CA_REGISTRED");
+                        LOGGER(PACKAGE).warning("checkAvail CA_REGISTRED");
                         throw Registry::Contact::Verification::OBJECT_NOT_EXISTS();
                     }
 
@@ -195,9 +195,13 @@ namespace Registry
                     log_data_validation_error(_ex);
                     throw translate_data_validation_error(_ex);
                 }
-                catch (Fred::PublicRequest::NotApplicable &_ex)
+                catch (const Registry::Contact::Verification::OBJECT_NOT_EXISTS& _ex)
                 {
-                    LOGGER(PACKAGE).error(_ex.what());
+                    throw;
+                }
+                catch (const Fred::PublicRequest::NotApplicable &_ex)
+                {
+                    LOGGER(PACKAGE).warning(_ex.what());
                     throw create_data_validation_error_not_available();
                 }
                 catch (std::exception &_ex)
@@ -238,7 +242,7 @@ namespace Registry
 
                     if(res_req.size() != 1)
                     {
-                        LOGGER(PACKAGE).error(std::string("unable to find request with identification: ")
+                        LOGGER(PACKAGE).warning(std::string("unable to find request with identification: ")
                             + request_id);
                         throw Registry::Contact::Verification::IDENTIFICATION_FAILED();
                     }
@@ -247,7 +251,7 @@ namespace Registry
 
                     if(request_type != Fred::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION )
                     {
-                        LOGGER(PACKAGE).error(std::string("wrong type of request: ")
+                        LOGGER(PACKAGE).warning(std::string("wrong type of request: ")
                             + request_type);
                         throw Registry::Contact::Verification::IDENTIFICATION_FAILED();
                     }
@@ -272,30 +276,30 @@ namespace Registry
                 }
                 catch (Fred::PublicRequest::PublicRequestAuth::NotAuthenticated&)
                 {
-                    LOGGER(PACKAGE).error("PublicRequestAuth::NotAuthenticated");
+                    LOGGER(PACKAGE).warning("PublicRequestAuth::NotAuthenticated");
                     throw Registry::Contact::Verification::IDENTIFICATION_FAILED();
                 }
                 catch (Fred::PublicRequest::AlreadyProcessed &_ex)
                 {
                     if(_ex.success)
                     {
-                        LOGGER(PACKAGE).error("PublicRequest::AlreadyProcessed true");
+                        LOGGER(PACKAGE).warning("PublicRequest::AlreadyProcessed true");
                         throw Registry::Contact::Verification::IDENTIFICATION_PROCESSED();
                     }
                     else
                     {
-                        LOGGER(PACKAGE).error("PublicRequest::AlreadyProcessed false");
+                        LOGGER(PACKAGE).warning("PublicRequest::AlreadyProcessed false");
                         throw Registry::Contact::Verification::IDENTIFICATION_INVALIDATED();
                     }
                 }
                 catch (Fred::PublicRequest::ObjectChanged &)
                 {
-                    LOGGER(PACKAGE).error("Object changed");
+                    LOGGER(PACKAGE).warning("Object changed");
                     throw Registry::Contact::Verification::OBJECT_CHANGED();
                 }
                 catch (Fred::PublicRequest::NotApplicable &_ex)
                 {
-                    LOGGER(PACKAGE).error(_ex.what());
+                    LOGGER(PACKAGE).warning(_ex.what());
                     throw create_data_validation_error_not_available();
                 }
                 catch (std::exception &_ex)
@@ -337,7 +341,7 @@ namespace Registry
                     check_result = contact_mgr->checkAvail(contact_handle, cinfo);
                     if (check_result != Fred::Contact::Manager::CA_REGISTRED)
                     {
-                        LOGGER(PACKAGE).error("checkAvail CA_REGISTRED");
+                        LOGGER(PACKAGE).warning("checkAvail CA_REGISTRED");
                         throw Registry::Contact::Verification::OBJECT_NOT_EXISTS();
                     }
 
@@ -350,7 +354,7 @@ namespace Registry
                      if(request_manager->checkAlreadyProcessedPublicRequest(
                              cinfo.id, request_type_list))
                      {
-                         LOGGER(PACKAGE).error("Found already processed request");
+                         LOGGER(PACKAGE).warning("Found already processed request");
                          throw Registry::Contact::Verification::IDENTIFICATION_PROCESSED();
                      }
 
@@ -363,6 +367,10 @@ namespace Registry
 
                      return cinfo.id;
                 }//try
+                catch (const Registry::Contact::Verification::OBJECT_NOT_EXISTS& _ex)
+                {
+                    throw;
+                }
                 catch (Fred::Contact::Verification::DataValidationError& _ex)
                 {
                     log_data_validation_error(_ex);
@@ -370,36 +378,43 @@ namespace Registry
                 }
                 catch (Fred::NOT_FOUND& _ex)
                 {
-                    LOGGER(PACKAGE).error(_ex.what());
+                    LOGGER(PACKAGE).warning(_ex.what());
                     throw Registry::Contact::Verification::IDENTIFICATION_FAILED();
                 }
                 catch (Fred::PublicRequest::PublicRequestAuth::NotAuthenticated&)
                 {
-                    LOGGER(PACKAGE).error("PublicRequestAuth::NotAuthenticated");
+                    LOGGER(PACKAGE).warning("PublicRequestAuth::NotAuthenticated");
                     throw Registry::Contact::Verification::IDENTIFICATION_FAILED();
                 }
                 catch (Fred::PublicRequest::AlreadyProcessed &_ex)
                 {
                     if(_ex.success)
                     {
-                        LOGGER(PACKAGE).error("PublicRequest::AlreadyProcessed true");
+                        LOGGER(PACKAGE).warning("PublicRequest::AlreadyProcessed true");
                         throw Registry::Contact::Verification::IDENTIFICATION_PROCESSED();
                     }
                     else
                     {
-                        LOGGER(PACKAGE).error("PublicRequest::AlreadyProcessed false");
+                        LOGGER(PACKAGE).warning("PublicRequest::AlreadyProcessed false");
                         throw Registry::Contact::Verification::IDENTIFICATION_INVALIDATED();
                     }
                 }
                 catch (Fred::PublicRequest::ObjectChanged &)
                 {
-                    LOGGER(PACKAGE).error("Object changed");
+                    LOGGER(PACKAGE).warning("Object changed");
                     throw Registry::Contact::Verification::OBJECT_CHANGED();
                 }
                 catch (Fred::PublicRequest::NotApplicable &_ex)
                 {
-                    LOGGER(PACKAGE).error(_ex.what());
+                    LOGGER(PACKAGE).warning(_ex.what());
                     throw create_data_validation_error_not_available();
+                }
+                catch (const Registry::Contact::Verification::IDENTIFICATION_PROCESSED& )
+                {
+                    /* Exception is throw directly from the block above and already logged as warning.
+                     * This catch clause just prevents it to be caught by general block below and logged as error.
+                     */
+                    throw;
                 }
                 catch (std::exception &_ex)
                 {
@@ -438,11 +453,15 @@ namespace Registry
                     }
                     else
                     {
-                        LOGGER(PACKAGE).error("registrar not found");
+                        LOGGER(PACKAGE).warning("registrar not found");
                         throw Registry::Contact::Verification::OBJECT_NOT_EXISTS();
                     }
                     return registrar_name;
                 }//try
+                catch (const Registry::Contact::Verification::OBJECT_NOT_EXISTS& _ex)
+                {
+                    throw;
+                }
                 catch (std::exception &_ex)
                 {
                     LOGGER(PACKAGE).error(_ex.what());
