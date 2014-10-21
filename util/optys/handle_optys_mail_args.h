@@ -144,9 +144,12 @@ public:
                 ((CONFIG_PREFIX+"port,r").c_str(), boost::program_options
                             ::value<std::string>()
                         , "optys mail download ssh port")
-                ((CONFIG_PREFIX+"download_dir,t").c_str(), boost::program_options
+                ((CONFIG_PREFIX+"local_download_dir,l").c_str(), boost::program_options
                             ::value<std::string>()
-                        , "optys download dir path")
+                        , "local optys download dir path")
+                ((CONFIG_PREFIX+"remote_data_dir,d").c_str(), boost::program_options
+                            ::value<std::string>()
+                        , "remote optys data dir path")
                  ;
         return opts_descs;
     }//get_options_description

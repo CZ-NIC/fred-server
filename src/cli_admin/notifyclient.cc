@@ -28,6 +28,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/assign/list_of.hpp>
+#include <boost/filesystem.hpp>
 
 #include "src/corba/file_manager_client.h"
 
@@ -42,6 +43,7 @@
 #include "hp/handle_hpmail_args.h"
 
 #include "util/map_at.h"
+#include "util/subprocess.h"
 #include "util/optys/handle_optys_mail_args.h"
 #include "util/optys/upload_client.h"
 
@@ -1049,9 +1051,28 @@ void notify_letters_optys_get_undelivered_impl(const std::string& optys_config_f
     //optys config
     std::map<std::string, std::string> set_cfg = readConfigFile<HandleOptysUndeliveredArgs>(optys_config_file);
 
-    std::cerr << "config: " <<  "-p " << map_at(set_cfg,"port")
-        << " " << map_at(set_cfg,"user") << "@" << map_at(set_cfg,"host")
-        << std::endl;
+    //std::cerr << "config: " <<  "-p " << map_at(set_cfg,"port") << " " << map_at(set_cfg,"user") << "@" << map_at(set_cfg,"host") << std::endl;
+    std::string local_download_dir = map_at(set_cfg,"local_download_dir");
+    std::string remote_data_dir = map_at(set_cfg,"remote_data_dir");
+
+    if(!boost::filesystem::exists(local_download_dir))
+    {
+        throw std::runtime_error(std::string("local_download_dir: " + local_download_dir +" not found"));
+    }
+
+    std::string download_command = std::string("rsync --include=\"*.csv\" --exclude=\"*\"")
+        + " -e \"ssh -p "+ map_at(set_cfg,"port") + "\" -ai --out-format=\"%n\" --inplace "
+        + map_at(set_cfg,"user") + "@" + map_at(set_cfg,"host") + ":" + remote_data_dir + " " + local_download_dir;
+
+    std::cerr << "download_command: " << download_command << std::endl;
+/*
+    SubProcessOutput output = ShellCmd(download_command.c_str(), 3600).execute();
+    if (!output.stderr.empty() || !output.is_exited() || (output.get_exit_status() != EXIT_SUCCESS))
+    {
+        throw std::runtime_error(std::string("download command: " + download_command +" failed: ")+output.stderr);
+    }
+    */
+
 }
 
 
