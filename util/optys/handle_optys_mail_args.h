@@ -131,7 +131,7 @@ public:
     {
         boost::shared_ptr<boost::program_options::options_description> opts_descs(
                 new boost::program_options::options_description(
-                        std::string("Optys client download configuration, sftp with public key authentication")
+                        std::string("Optys client download configuration, using ssh with public key authentication")
                         , 140 //width of help print in cols
                         ));
         opts_descs->add_options()
@@ -143,7 +143,7 @@ public:
                         , "optys mail download account login name")
                 ((CONFIG_PREFIX+"port,r").c_str(), boost::program_options
                             ::value<std::string>()
-                        , "optys mail download sftp port")
+                        , "optys mail download ssh port")
                 ((CONFIG_PREFIX+"download_dir,t").c_str(), boost::program_options
                             ::value<std::string>()
                         , "optys download dir path")
