@@ -637,6 +637,9 @@ namespace Fred
 
         /**
         * Executes update
+        *
+        * WARNING: May need to perform update on object_state_request as admin contact verification states might have been cancelled
+        *
         * @param ctx contains reference to database and logging interface
         * @return new history_id
         */
@@ -750,6 +753,9 @@ namespace Fred
 
         /**
         * Executes update
+        *
+        * WARNING: May need to perform update on object_state_request as admin contact verification states might have been cancelled
+        *
         * @param ctx contains reference to database and logging interface
         * @return new history_id
         */
