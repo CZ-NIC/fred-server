@@ -6,6 +6,13 @@
 
   * tests - restructured, shared utils, testcase isolation
 
+  * filter out database password from log
+
+  * fix - admin. verification (cz postal address test)
+        - object state cancellation
+
+  * fix - log messages severity (mojeid, contact verification)
+
 2014-09-01 Jan Korous, Jan Zima, Jiri Sadek (2.19.1)
 
   * rdap - fix - return timestamps in UTC
