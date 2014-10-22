@@ -2136,6 +2136,9 @@ tests_test_server_SOURCES = \
 		tests/deprecated/checks.h \
 		tests/util/test_printable.cc \
 		tests/util/test_csv_parser.cc \
+		util/optys/download_client.cc \
+		util/optys/download_client.h \
+		tests/util/test_optys.cc \
 		tests/util/test_is_equal_optional_nullable.cc \
 		src/fredlib/object_state/create_object_state_request.cc \
 		src/fredlib/object_state/create_object_state_request.h \
@@ -2197,6 +2200,7 @@ tests_test_server_LDADD = \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(BOOST_DATE_TIME_LIB) \
 		$(BOOST_REGEX_LIB) \
+		$(BOOST_FILESYSTEM_LIB) \
 		$(OMNIORB4_LIBS) \
 		$(LIBIDN_CFLAGS) \
 		$(LIBIDN_LIBS) \

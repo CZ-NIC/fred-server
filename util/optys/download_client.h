@@ -38,20 +38,22 @@
 /**
  * Download data about letters from Optys.
  * Download csv files from Optys server save them in our download directory.
- * Return "unable to process" letters.
+ * Return undelivered letter ids.
  */
 class OptysDownloadClient
 {
     const std::string host_;
-    const int port_;
+    const std::string port_;
     const std::string user_;
-    const std::string password_;
-    const std::string download_dir_;
+    const std::string local_download_dir_;
+    const std::string remote_data_dir_;
 
 public:
-    OptysDownloadClient(const std::string& host, int port, const std::string& user, const std::string& password, const std::string& download_dir);
+    OptysDownloadClient(const std::string& host, const std::string& port, const std::string& user, const std::string& local_download_dir, const std::string& remote_data_dir);
     std::set<unsigned long long> download(); //return undelivered message archive id set or throw exception
 };
+
+std::set<std::string> downloaded_csv_data_filenames_parser(const std::string& formated_rsync_stdout);
 
 
 #endif
