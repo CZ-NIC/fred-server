@@ -52,13 +52,7 @@ namespace Fred
         if(authinfopw.isset()) fields.insert("authinfopw");
         if(name.isset()) fields.insert("name");
         if(organization.isset()) fields.insert("organization");
-        if(street1.isset()) fields.insert("street1");
-        if(street2.isset()) fields.insert("street2");
-        if(street3.isset()) fields.insert("street3");
-        if(city.isset()) fields.insert("city");
-        if(stateorprovince.isset()) fields.insert("stateorprovince");
-        if(postalcode.isset()) fields.insert("postalcode");
-        if(country.isset()) fields.insert("country");
+        if(place.isset()) fields.insert("place");
         if(telephone.isset()) fields.insert("telephone");
         if(fax.isset()) fields.insert("fax");
         if(email.isset()) fields.insert("email");
