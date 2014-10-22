@@ -369,13 +369,14 @@ namespace MergeContactFixture
                 .make(registrar_handle, Optional<std::string>(handle))
                 .set_name("Name"+s_idtag+s_idtag+" Name"+s_idtag+s_idtag+" Name"+s_idtag+s_idtag+" Name"+s_idtag+s_idtag)
                 .set_organization("")
-                .set_street1("Test"+s_idtag+" St1")
-                .set_street2("Test"+s_idtag+" St2")
-                .set_street3("Test"+s_idtag+" St3")
-                .set_city("Praha "+s_idtag)
-                .set_postalcode("12000")
-                .set_stateorprovince("")
-                .set_country("Czech Republic")
+                .set_place(Fred::Contact::PlaceAddress(
+                    "Test"+s_idtag+" St1",
+                    Optional< std::string >("Test"+s_idtag+" St2"),
+                    Optional< std::string >("Test"+s_idtag+" St3"),
+                    "Praha "+s_idtag,
+                    Optional< std::string >(""),
+                    "12000",
+                    "Czech Republic"))
                 .set_telephone("22222222"+s_idtag)
                 .set_fax("222222222"+s_idtag)
                 .set_email("testeml"+s_idtag+"@nic.cz"+s_idtag)
@@ -427,13 +428,14 @@ namespace MergeContactFixture
                 .make(registrar_handle, Optional<std::string>(handle))
                 .set_name("Name"+s_grpidtag+" Name"+s_grpidtag+" Name"+s_grpidtag+" Name"+s_grpidtag)
                 .set_organization("Org"+s_grpidtag+" s.r.o")
-                .set_street1("Test"+s_grpidtag+" St1")
-                .set_street2("Test"+s_grpidtag+" St2")
-                .set_street3("Test"+s_grpidtag+" St3")
-                .set_city("Praha "+s_grpidtag)
-                .set_postalcode("1"+s_grpidtag+"000")
-                .set_stateorprovince("")
-                .set_country("Czech Republic")
+                .set_place(Fred::Contact::PlaceAddress(
+                    "Test"+s_grpidtag+" St1",
+                    Optional< std::string >("Test"+s_grpidtag+" St2"),
+                    Optional< std::string >("Test"+s_grpidtag+" St3"),
+                    "Praha "+s_grpidtag,
+                    Optional< std::string >(""),
+                    "1"+s_grpidtag+"000",
+                    "Czech Republic"))
                 .set_telephone("11111111"+s_grpidtag)
                 .set_fax("11111111"+s_grpidtag)
                 .set_email("testeml"+s_grpidtag+"@nic.cz")

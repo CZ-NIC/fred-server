@@ -36,7 +36,7 @@ namespace Contact {
  *
  * Common type for postal addresses of contacts.
  */
-typedef struct _PlaceAddress
+typedef struct PlaceAddress
 {
     std::string street1;/**< address part 1 (required) */
     Optional< std::string > street2;/**< address part 2 (optional) */
@@ -56,8 +56,26 @@ typedef struct _PlaceAddress
      * @param _b compares @a this instance with @a _b instance
      * @return true if they are the same.
      */
-    bool operator==(const struct _PlaceAddress &_b)const;
-    struct _PlaceAddress& operator=(const struct _PlaceAddress &_src);
+    bool operator==(const struct PlaceAddress &_b)const;
+    struct PlaceAddress& operator=(const struct PlaceAddress &_src);
+
+    /**
+     * Default ctor
+     */
+    PlaceAddress();
+
+
+    /**
+     * Constructor with custom initialization of attributes
+     */
+    PlaceAddress(const std::string& _street1,
+        const Optional< std::string >& _street2,
+        const Optional< std::string >& _street3,
+        const std::string& _city,
+        const Optional< std::string >& _stateorprovince,
+        const std::string& _postalcode,
+        const std::string& _country);
+
 } PlaceAddress;
 
 }//namespace Contact
