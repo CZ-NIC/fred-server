@@ -36,7 +36,7 @@ namespace Contact {
  *
  * Common type for postal addresses of contacts.
  */
-typedef struct PlaceAddress
+struct PlaceAddress
 {
     std::string street1;/**< address part 1 (required) */
     Optional< std::string > street2;/**< address part 2 (optional) */
@@ -76,7 +76,7 @@ typedef struct PlaceAddress
         const std::string& _postalcode,
         const std::string& _country);
 
-} PlaceAddress;
+};
 
 }//namespace Contact
 }//namespace Fred
