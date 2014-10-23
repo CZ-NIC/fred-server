@@ -44,6 +44,12 @@
 
 #include "util/csv_parser.h"
 
+#include "config.h"
+
+#ifdef HAVE_LOGGER
+#include "log/logger.h"
+#endif
+
 #include "download_client.h"
 
 
@@ -84,13 +90,14 @@
 
         std::string download_command = std::string("rsync --include=\"*.csv\" --exclude=\"*\"")
             + " -e \"ssh -p "+ port_ + "\" -ai --out-format=\"%n\" --inplace "
-            + user_ + "@" + host_ + ":" + remote_data_dir_ + " " + local_download_dir_;
+            + user_ + "@" + host_ + ":" + remote_data_dir_ + "/ " + local_download_dir_;
 
         std::set<std::string> downloaded_data_filenames;
         std::set<std::string> current_downloaded_data_filenames;
         int rsync_retry_count = 0;
         do
         {
+            LOGGER(PACKAGE).debug(boost::format("download_command: %1% ") % download_command);
             SubProcessOutput output = ShellCmd(download_command.c_str(), 3600).execute();
             if (!output.stderr.empty() || !output.is_exited() || (output.get_exit_status() != EXIT_SUCCESS))
             {
@@ -145,6 +152,9 @@
 
             //remove downloaded file from optys server
             std::string remove_downloaded_file_command = std::string("ssh ") + user_ + "@" + host_ + " \"rm -f " + remote_data_dir_ +  "/" + (*ci) + "\"";
+
+            LOGGER(PACKAGE).debug(boost::format("remove_downloaded_file_command: %1% ") % remove_downloaded_file_command);
+
             SubProcessOutput output = ShellCmd(remove_downloaded_file_command.c_str(), 3600).execute();
             if (!output.stderr.empty() || !output.is_exited() || (output.get_exit_status() != EXIT_SUCCESS))
             {

@@ -1053,9 +1053,18 @@ void notify_letters_optys_get_undelivered_impl(const std::string& optys_config_f
     //optys config
     std::map<std::string, std::string> set_cfg = readConfigFile<HandleOptysUndeliveredArgs>(optys_config_file);
 
-    OptysDownloadClient(map_at(set_cfg,"host"), map_at(set_cfg,"port"), map_at(set_cfg,"user")
+    std::set<unsigned long long> undelivered_id_set = OptysDownloadClient(map_at(set_cfg,"host"), map_at(set_cfg,"port"), map_at(set_cfg,"user")
         , map_at(set_cfg,"local_download_dir")
         , map_at(set_cfg,"remote_data_dir")).download();
+
+    std::cerr << "undelivered_id_set:";
+    for(std::set<unsigned long long>::const_iterator ci = undelivered_id_set.begin()
+        ; ci != undelivered_id_set.end(); ++ci)
+    {
+        std::cerr << " " << (*ci);
+    }
+
+    std::cerr << std::endl;
 
     //TODO process ids
 }
