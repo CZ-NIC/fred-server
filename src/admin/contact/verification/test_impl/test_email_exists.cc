@@ -40,58 +40,78 @@ namespace ContactVerification {
         TestDataProvider<TestEmailExists> data;
         data.init_data(_history_id);
 
-        string email = boost::trim_copy(static_cast<string>(data.email_));
+        boost::trim(data.email_);
 
-        if(email.empty()) {
-            return TestRunResult( Fred::ContactTestStatus::FAIL, string("empty email") );
-        }
-
-        string host;
-        try {
-            host = email.substr(email.find('@') + 1);   // +1 <=> cut the '@' as well
-        } catch(...) {
-            return TestRunResult( Fred::ContactTestStatus::FAIL, string("invalid email format") );
-        }
-
-        unsigned char* buffer_ptr;
-        static const unsigned int buffer_length = 12;   // DNS header is rumored to have 12 bytes
-
-        try {
-            buffer_ptr = new unsigned char[buffer_length];
-        } catch(const std::exception&) {
-            return TestRunResult( Fred::ContactTestStatus::ERROR, string("runtime error") );
-        }
-        boost::scoped_array<unsigned char> buffer_scoped(buffer_ptr);
-        buffer_ptr = NULL;
-
-        // MX test
-        int result_len = res_query(
-            host.c_str(),
-            C_IN,
-            T_MX,
-            buffer_scoped.get(),
-            buffer_length
+        std::vector<std::string> emails;
+        boost::algorithm::split(
+            emails,
+            data.email_,
+            boost::is_any_of(",")
         );
 
-        if(result_len != -1) {
-            return TestRunResult( Fred::ContactTestStatus::OK);
+        std::vector<std::string> invalid_emails;
+
+        for(std::vector<std::string>::const_iterator it = emails.begin();
+            it != emails.end();
+            ++it
+        ) {
+            string email = boost::trim_copy(*it);
+
+            if(email.empty()) {
+                invalid_emails.push_back("\"" + *it + "\"");
+                continue;
+            }
+
+            string host;
+            try {
+                host = email.substr(email.find('@') + 1);   // +1 <=> cut the '@' as well
+            } catch(...) {
+                invalid_emails.push_back(*it);
+                continue;
+            }
+
+            unsigned char* buffer_ptr;
+            static const unsigned int buffer_length = 12;   // DNS header is rumored to have 12 bytes
+
+            try {
+                buffer_ptr = new unsigned char[buffer_length];
+            } catch(const std::exception&) {
+                return TestRunResult( Fred::ContactTestStatus::ERROR, string("runtime error") );
+            }
+            boost::scoped_array<unsigned char> buffer_scoped(buffer_ptr);
+            buffer_ptr = NULL;
+
+            // MX test
+            if( res_query(
+                    host.c_str(),
+                    C_IN,
+                    T_MX,
+                    buffer_scoped.get(),
+                    buffer_length
+                ) == -1
+            ) {
+                // fallback to A record test
+                memset(buffer_scoped.get(), 0, buffer_length);
+
+                if( res_query(
+                        host.c_str(),
+                        C_IN,
+                        T_A,
+                        buffer_scoped.get(),
+                        buffer_length
+                    ) == -1
+                ) {
+                    invalid_emails.push_back(*it);
+                    continue;
+                }
+            }
         }
 
-        // fallback to A record test
-        memset(buffer_scoped.get(), 0, buffer_length);
-        result_len = res_query(
-            host.c_str(),
-            C_IN,
-            T_A,
-            buffer_scoped.get(),
-            buffer_length
-        );
-
-        if(result_len != -1) {
-            return TestRunResult( Fred::ContactTestStatus::OK);
+        if( !invalid_emails.empty() ) {
+            return TestRunResult (Fred::ContactTestStatus::FAIL, "hostname in emails: " + boost::join(invalid_emails, ",") + " couldn't be resolved");
         }
 
-        return TestRunResult( Fred::ContactTestStatus::FAIL, string("hostname in email couldn't be resolved") );
+        return TestRunResult( Fred::ContactTestStatus::OK);
     }
 }
 }
