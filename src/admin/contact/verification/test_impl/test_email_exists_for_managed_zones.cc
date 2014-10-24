@@ -42,7 +42,7 @@ namespace ContactVerification {
         std::string email,
         const std::set<std::string>& managed_zones
     ) {
-        boost::trim_copy(email);
+        boost::trim(email);
 
         std::string at_domain;
         {
