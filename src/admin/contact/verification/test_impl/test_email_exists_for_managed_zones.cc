@@ -42,7 +42,7 @@ namespace ContactVerification {
         std::string email,
         const std::set<std::string>& managed_zones
     ) {
-        boost::trim_copy(email);
+        boost::trim(email);
 
         std::string at_domain;
         {
@@ -80,11 +80,8 @@ namespace ContactVerification {
 
         /* tricky detail: starting from begin() + 1 because email should look like:
         * alice@subdomain.zone
-        *
         * even if we would be managing myzone we can't (directly) say if
         * e-mail bob@myzone exists, we can only say so about foo@mydomain.myzone
-        *
-        *
         */
         for(std::vector<std::string::iterator>::const_iterator it = label_separator_positions.begin() + 1;
             it != label_separator_positions.end();
