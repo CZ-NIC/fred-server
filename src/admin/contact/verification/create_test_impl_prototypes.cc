@@ -6,6 +6,7 @@
 #include "src/admin/contact/verification/test_impl/test_contactability.h"
 #include "src/admin/contact/verification/test_impl/test_email_exists.h"
 #include "src/admin/contact/verification/test_impl/test_send_letter.h"
+#include "src/admin/contact/verification/test_impl/test_email_exists_for_managed_zones.h"
 #include "src/admin/contact/verification/exceptions.h"
 
 #include "util/log/context.h"
@@ -36,6 +37,10 @@ namespace  Admin {
             result[ContactVerification::TestPhoneSyntax::registration_name()] =
                 ContactVerification::test_factory::instance_ref()
                     .create_sh_ptr(ContactVerification::TestPhoneSyntax::registration_name());
+
+            result[ContactVerification::TestEmailExistsForManagedZones::registration_name()] =
+                ContactVerification::test_factory::instance_ref()
+                    .create_sh_ptr(ContactVerification::TestEmailExistsForManagedZones::registration_name());
 
             {
                 result[ContactVerification::TestCzAddress::registration_name()] =
