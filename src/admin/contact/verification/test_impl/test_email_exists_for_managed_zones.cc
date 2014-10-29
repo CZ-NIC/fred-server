@@ -46,7 +46,7 @@ namespace ContactVerification {
 
         std::string at_domain;
         {
-            unsigned int position_of_atsign = email.find_first_of("@");
+            std::string::size_type position_of_atsign = email.find_first_of("@");
             if(position_of_atsign == std::string::npos) {   // no '@'
                 return Fred::ContactTestStatus::FAIL;
             }
@@ -55,6 +55,11 @@ namespace ContactVerification {
                 return Fred::ContactTestStatus::FAIL;
             }
             // else: it is guaranteed that char at(position_of_atsign + 1) exists
+
+            // ... BTW: Now we know email is not empty
+            if(*(email.end() - 1) == '.') {
+                email.erase((email.end() - 1));
+            }
 
             at_domain = email.substr(position_of_atsign);
         }
@@ -101,10 +106,8 @@ namespace ContactVerification {
                 ctx.get_conn().exec_params(
                     "WITH normalized AS ( "
                         "SELECT "
-                            "LOWER("
-                                "TRIM( TRAILING '.' FROM "
-                                    "TRIM(BOTH ' ' FROM $1::text) "
-                                ") "
+                            "LOWER( "
+                                "$1::text "
                             ") AS email_domain "
                     ") "
                     "SELECT 1 "
