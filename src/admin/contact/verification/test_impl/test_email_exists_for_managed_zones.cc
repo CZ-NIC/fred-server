@@ -46,7 +46,7 @@ namespace ContactVerification {
 
         std::string at_domain;
         {
-            unsigned int position_of_atsign = email.find_first_of("@");
+            std::string::size_type position_of_atsign = email.find_first_of("@");
             if(position_of_atsign == std::string::npos) {   // no '@'
                 return Fred::ContactTestStatus::FAIL;
             }
