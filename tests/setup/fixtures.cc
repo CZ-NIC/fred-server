@@ -36,7 +36,7 @@ namespace Fixture {
         const std::auto_ptr<Database::StandaloneConnection>& conn
     ) {
         disable_connections_add_terminate_persistent_connections(conn, db_name);
-        conn->exec("DROP DATABASE IF EXISTS "+ db_name +";");
+        conn->exec("DROP DATABASE IF EXISTS \""+ db_name +"\";");
     }
 
     static void force_copy_db(
@@ -45,7 +45,7 @@ namespace Fixture {
         const std::auto_ptr<Database::StandaloneConnection>& conn
     ) {
         force_drop_db(dst_name, conn);
-        conn->exec("CREATE DATABASE "+ dst_name +" TEMPLATE "+ src_name +";");
+        conn->exec("CREATE DATABASE \""+ dst_name +"\" TEMPLATE \""+ src_name +"\";");
     }
 
     create_db_template::create_db_template() {
@@ -95,7 +95,7 @@ namespace Fixture {
             log_db_name,
             conn
         );
-        conn->exec("ALTER DATABASE "+ get_original_db_name() +" RENAME TO " + log_db_name );
+        conn->exec("ALTER DATABASE \""+ get_original_db_name() +"\" RENAME TO \"" + log_db_name + "\"" );
 
         enable_connections(conn, log_db_name);
     }
