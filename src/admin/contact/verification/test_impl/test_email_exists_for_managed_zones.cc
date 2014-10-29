@@ -56,6 +56,11 @@ namespace ContactVerification {
             }
             // else: it is guaranteed that char at(position_of_atsign + 1) exists
 
+            // ... BTW: Now we know email is not empty
+            if(*(email.end() - 1) == '.') {
+                email.erase((email.end() - 1));
+            }
+
             at_domain = email.substr(position_of_atsign);
         }
 
@@ -101,10 +106,8 @@ namespace ContactVerification {
                 ctx.get_conn().exec_params(
                     "WITH normalized AS ( "
                         "SELECT "
-                            "LOWER("
-                                "TRIM( TRAILING '.' FROM "
-                                    "TRIM(BOTH ' ' FROM $1::text) "
-                                ") "
+                            "LOWER( "
+                                "$1::text "
                             ") AS email_domain "
                     ") "
                     "SELECT 1 "
