@@ -39,7 +39,8 @@ namespace Fixture {
         const std::string db_name_suffix_;/**< suffix of the name of database instance left in database cluster after fixture teardown, useful in case of more database instances per testcase */
         instantiate_db_template(const std::string& db_name_suffix = "");
         virtual ~instantiate_db_template();
-
+    private:
+        std::string testcase_db_name();
     };
 
 
