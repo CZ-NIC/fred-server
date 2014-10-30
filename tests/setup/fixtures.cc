@@ -18,7 +18,10 @@ namespace Fixture {
 
     static const unsigned max_postgresql_database_name_length = 63;
 
-    static void disable_connections_add_terminate_persistent_connections(const std::auto_ptr<Database::StandaloneConnection>& conn, const std::string& database_name_disable_connection) {
+    static void disable_connections_add_terminate_persistent_connections(
+            const std::auto_ptr<Database::StandaloneConnection>& conn,
+            const std::string& database_name_disable_connection)
+    {
 
         conn->exec_params("UPDATE pg_database SET datallowconn = false WHERE datname = $1::text"
             , Database::query_param_list (database_name_disable_connection));
@@ -51,7 +54,7 @@ namespace Fixture {
     ) {
         check_dbname_length(db_name);
         disable_connections_add_terminate_persistent_connections(conn, db_name);
-        conn->exec("DROP DATABASE IF EXISTS \""+ db_name +"\";");
+        conn->exec("DROP DATABASE IF EXISTS \""+ db_name +"\"");
     }
 
     static void force_copy_db(
@@ -62,7 +65,7 @@ namespace Fixture {
         check_dbname_length(src_name);
         check_dbname_length(dst_name);
         force_drop_db(dst_name, conn);
-        conn->exec("CREATE DATABASE \""+ dst_name +"\" TEMPLATE \""+ src_name +"\";");
+        conn->exec("CREATE DATABASE \""+ dst_name +"\" TEMPLATE \""+ src_name +"\"");
     }
 
     create_db_template::create_db_template() {
@@ -121,7 +124,7 @@ namespace Fixture {
             log_db_name,
             conn
         );
-        conn->exec("ALTER DATABASE \""+ get_original_db_name() +"\" RENAME TO \"" + log_db_name + "\"" );
+        conn->exec("ALTER DATABASE \""+ get_original_db_name() +"\" RENAME TO \"" + log_db_name + "\"");
 
         enable_connections(conn, log_db_name);
     }
