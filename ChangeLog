@@ -13,6 +13,12 @@
 
   * fix - log messages severity (mojeid, contact verification)
 
+2014-10-24 Jan Korous (2.19.2)
+
+  * admin. contact verification
+     - new automatic test (email domain in managed zones)
+     - fix email host test (more email addresses comma separated)
+
 2014-09-01 Jan Korous, Jan Zima, Jiri Sadek (2.19.1)
 
   * rdap - fix - return timestamps in UTC
