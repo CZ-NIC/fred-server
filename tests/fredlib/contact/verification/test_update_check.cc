@@ -305,7 +305,7 @@ void check(
  @post correct values present in InfoContactCheck output
  @post no change in history values in InfoContactCheck output
  */
-BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_request1_to_statusX_logd_request1)
+BOOST_AUTO_TEST_CASE(test_request1_to_statusX_logd_request1)
 {
     setup_check_status status;
 
@@ -330,7 +330,7 @@ BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_request1_to_statusX_logd_request1)
  @post correct values present in InfoContactCheck output
  @post correct new record in history in InfoContactCheck output
  */
-BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_request1_to_statusY_logd_request1)
+BOOST_AUTO_TEST_CASE(test_request1_to_statusY_logd_request1)
 {
     setup_check_status status1;
     setup_check_status status2;
@@ -355,7 +355,7 @@ BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_request1_to_statusY_logd_request1)
  @post correct values present in InfoContactCheck output
  @post correct new record in history in InfoContactCheck output
  */
-BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_request1_to_statusX_logd_requestNULL)
+BOOST_AUTO_TEST_CASE(test_request1_to_statusX_logd_requestNULL)
 {
     setup_check_status status;
 
@@ -379,7 +379,7 @@ BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_request1_to_statusX_logd_requestNU
  @post correct values present in InfoContactCheck output
  @post correct new record in history in InfoContactCheck output
  */
-BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_request1_to_statusY_logd_requestNULL)
+BOOST_AUTO_TEST_CASE(test_request1_to_statusY_logd_requestNULL)
 {
     setup_check_status status1;
     setup_check_status status2;
@@ -404,7 +404,7 @@ BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_request1_to_statusY_logd_requestNU
  @post correct values present in InfoContactCheck output
  @post no change in history values in InfoContactCheck output
  */
-BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusX_logd_request1)
+BOOST_AUTO_TEST_CASE(test_requestNULL_to_statusX_logd_request1)
 {
     setup_check_status status;
 
@@ -430,7 +430,7 @@ BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusX_logd_reques
  @post correct values present in InfoContactCheck output
  @post correct new record in history in InfoContactCheck output
  */
-BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusY_logd_request1)
+BOOST_AUTO_TEST_CASE(test_requestNULL_to_statusY_logd_request1)
 {
     setup_check_status status1;
     setup_check_status status2;
@@ -455,7 +455,7 @@ BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusY_logd_reques
  @post correct values present in InfoContactCheck output
  @post no change in history in InfoContactCheck output
  */
-BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusX_logd_requestNULL)
+BOOST_AUTO_TEST_CASE(test_requestNULL_to_statusX_logd_requestNULL)
 {
     setup_check_status status;
     Optional<unsigned long long> logd_request_id1 = RandomDataGenerator().xuint();
@@ -477,7 +477,7 @@ BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusX_logd_reques
  @post correct values present in InfoContactCheck output
  @post correct new record in history in InfoContactCheck output
  */
-BOOST_AUTO_TEST_CASE(test_Update_statusX_logd_requestNULL_to_statusY_logd_requestNULL)
+BOOST_AUTO_TEST_CASE(test_requestNULL_to_statusY_logd_requestNULL)
 {
     setup_check_status status1;
     setup_check_status status2;
