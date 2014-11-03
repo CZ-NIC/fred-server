@@ -24,6 +24,7 @@
 #include <string>
 #include <stdexcept>
 #include <algorithm>
+#include <set>
 #include <functional>
 #include <sstream>
 #include <fstream>
@@ -44,6 +45,7 @@
 
 #include "util/subprocess.h"
 #include "util/printable.h"
+#include "util/util.h"
 
 #include "util/csv_parser.h"
 
@@ -122,8 +124,10 @@
             try
             {
                 csv_file_stream.open (local_csv_file_name.c_str(), std::ios::in);
-                if(!csv_file_stream.is_open()) throw std::runtime_error("csv_file_stream.open failed, "
-                    "unable to open file: "+ local_csv_file_name);
+                if(!csv_file_stream.is_open())
+                {
+                    throw std::runtime_error("unable to open file");
+                }
 
                 //read csv file
                 std::string csv_file_content;//buffer
@@ -153,17 +157,65 @@
                     file_message_id_set.insert(id);
                 }
 
-                //set state
-                //file_message_id_set;
-                Fred::OperationContext file_ctx;
-                file_ctx.get_conn();
+                //set undelivered state
+                if(!file_message_id_set.empty())
+                {
+                    Fred::OperationContext file_ctx;
+                    Database::query_param_list params;//query params
+                    std::string message_state_undelivered_query(
+                    "UPDATE message_archive SET status_id = (SELECT id FROM enum_send_status WHERE status_name = 'undelivered') "
+                    " WHERE status_id IN (SELECT id FROM enum_send_status WHERE status_name = 'sent' OR status_name = 'undelivered') "
+                    " AND service_handle = 'OPTYS' AND (");
+                    Util::HeadSeparator id_or_separator("id = ", " OR id = ");
+                    for(std::set<unsigned long long>::const_iterator id_ci = file_message_id_set.begin();
+                        id_ci != file_message_id_set.end(); ++id_ci)
+                    {
+                        message_state_undelivered_query += id_or_separator.get();
+                        message_state_undelivered_query += params.add(*id_ci);
+                        message_state_undelivered_query += "::bigint";
+                    }
+                    message_state_undelivered_query += ") RETURNING id";
 
+                    Database::Result msg_id_res = file_ctx.get_conn().exec_params(message_state_undelivered_query, params);
+
+                    std::set<unsigned long long> updated_msg_id_set;
+                    for(unsigned long long i = 0; i < msg_id_res.size(); ++i)
+                    {
+                        updated_msg_id_set.insert(static_cast<unsigned long long>(msg_id_res[i]["id"]));
+                    }
+
+                    if(updated_msg_id_set == file_message_id_set)
+                    {
+                        file_ctx.commit_transaction();
+                    }
+                    else
+                    {
+                        std::set<unsigned long long> failed_msg_id_set;//not updated message_archive.id set from current file
+                        std::set_difference(file_message_id_set.begin(), file_message_id_set.end(),
+                            updated_msg_id_set.begin(), updated_msg_id_set.end(),
+                            std::inserter(failed_msg_id_set, failed_msg_id_set.end()));
+
+                        std::string err_msg("failed to set 'undelivered' state on letter id:");
+
+                        for(std::set<unsigned long long>::const_iterator id_ci = failed_msg_id_set.begin();
+                            id_ci != failed_msg_id_set.end(); ++id_ci)
+                        {
+                            err_msg += " ";
+                            err_msg += boost::lexical_cast<std::string>(*id_ci);
+                        }
+
+                        throw std::runtime_error(err_msg);
+                    }
+                }
+                else
+                {
+                    throw std::runtime_error("no undelivered letter id found");
+                }
             }
             catch(const std::exception& ex)
             {
                 ctx.get_log().error(boost::format("file: %1% err: %2%") % local_csv_file_name % ex.what());
             }
-
         }
     }
 
