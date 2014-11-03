@@ -173,7 +173,7 @@
                     "UPDATE message_archive SET status_id = (SELECT id FROM enum_send_status WHERE status_name = 'undelivered') "
                     " WHERE status_id IN (SELECT id FROM enum_send_status WHERE status_name = 'sent' OR status_name = 'undelivered') "
                     " AND service_handle = 'OPTYS' AND (");
-                    Util::HeadSeparator id_or_separator("id = ", " OR id = ");
+                    Util::HeadSeparator id_or_separator("id = $", " OR id = $");
                     for(std::set<unsigned long long>::const_iterator id_ci = file_message_id_set.begin();
                         id_ci != file_message_id_set.end(); ++id_ci)
                     {
