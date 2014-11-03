@@ -145,16 +145,23 @@
                 std::vector<std::vector<std::string> > csv_data = Util::CsvParser(csv_file_content).parse();
                 for(std::vector<std::vector<std::string> >::const_iterator idci = csv_data.begin(); idci != csv_data.end(); ++idci)
                 {
-                    unsigned long long id = 0;
-                    try
+                    //TODO
+                    //getting additional empty row at the end of data
+                    //, this might be bug in csv parser
+                    //, not happening with the same data in test_csv_parser
+                    if((idci->size() > 0) && (idci->at(0).size() > 0))
                     {
-                        id = boost::lexical_cast<unsigned long long>(idci->at(0));
+                        unsigned long long id = 0;
+                        try
+                        {
+                            id = boost::lexical_cast<unsigned long long>(idci->at(0));
+                        }
+                        catch(...)
+                        {
+                            throw std::runtime_error("invalid csv data");
+                        }
+                        file_message_id_set.insert(id);
                     }
-                    catch(...)
-                    {
-                        throw std::runtime_error("invalid csv data");
-                    }
-                    file_message_id_set.insert(id);
                 }
 
                 //set undelivered state

@@ -76,6 +76,18 @@ BOOST_AUTO_TEST_CASE(test_trivial)
         );
 }
 
+BOOST_AUTO_TEST_CASE(test_some_data)
+{
+    BOOST_MESSAGE(format_csv_data(Util::CsvParser(
+    "2;\"nedoruceno\"\n"
+    "6;nedoruceno\n"
+    "10;taky nedoruceno\n"
+    "14;\"taky \"\"nedoruceno\"\"\"\n"
+    "18;\"adresat asi umrel\"\n"
+    ).parse()));
+}
+
+
 BOOST_AUTO_TEST_CASE(test_unquoting_data)
 {
     BOOST_CHECK(format_csv_data(Util::CsvParser(
