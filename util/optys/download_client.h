@@ -50,10 +50,11 @@ class OptysDownloadClient
 
 public:
     OptysDownloadClient(const std::string& host, const std::string& port, const std::string& user, const std::string& local_download_dir, const std::string& remote_data_dir);
-    std::set<unsigned long long> download(); //return undelivered message archive id set or throw exception
+    std::set<std::string> download(); //return undelivered message data file names or throw exception
 };
 
 std::set<std::string> downloaded_csv_data_filenames_parser(const std::string& formated_rsync_stdout);
-
+std::set<std::string> get_all_csv_file_names(const std::string& local_download_dir);
+void process_undelivered_messages_data(const std::string& local_download_dir, const std::set<std::string>& downloaded_data_filenames);
 
 #endif

@@ -185,8 +185,9 @@ struct notify_letters_optys_get_undelivered_impl
   void operator()() const
   {
       Logging::Context ctx("notify_letters_optys_get_undelivered_impl");
-      Admin::notify_letters_optys_get_undelivered_impl(
-          CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientNotifyLettersOptysGetUndeliveredArgsGrp>()->optys_config);
+      HandleAdminClientNotifyLettersOptysGetUndeliveredArgsGrp* cfg_ptr = CfgArgGroups::instance()
+          ->get_handler_ptr_by_type<HandleAdminClientNotifyLettersOptysGetUndeliveredArgsGrp>();
+      Admin::notify_letters_optys_get_undelivered_impl(cfg_ptr->optys_config, cfg_ptr->all_local_files_only);
   }
 };
 

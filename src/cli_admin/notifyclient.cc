@@ -44,7 +44,7 @@
 
 #include "util/map_at.h"
 #include "util/subprocess.h"
-#include "util/csv_parser.h"
+#include "util/printable.h"
 #include "util/optys/handle_optys_mail_args.h"
 #include "util/optys/upload_client.h"
 #include "util/optys/download_client.h"
@@ -1048,25 +1048,30 @@ void notify_letters_optys_send_impl(
 
 
 
-void notify_letters_optys_get_undelivered_impl(const std::string& optys_config_file)
+void notify_letters_optys_get_undelivered_impl(const std::string& optys_config_file, bool all_local_files_only)
 {
     //optys config
     std::map<std::string, std::string> set_cfg = readConfigFile<HandleOptysUndeliveredArgs>(optys_config_file);
+    std::string local_download_dir = map_at(set_cfg, "local_download_dir");
 
-    std::set<unsigned long long> undelivered_id_set = OptysDownloadClient(map_at(set_cfg,"host"), map_at(set_cfg,"port"), map_at(set_cfg,"user")
-        , map_at(set_cfg,"local_download_dir")
-        , map_at(set_cfg,"remote_data_dir")).download();
+    std::set<std::string> file_names;
 
-    std::cerr << "undelivered_id_set:";
-    for(std::set<unsigned long long>::const_iterator ci = undelivered_id_set.begin()
-        ; ci != undelivered_id_set.end(); ++ci)
+    if(!all_local_files_only)
     {
-        std::cerr << " " << (*ci);
+        file_names = OptysDownloadClient(map_at(set_cfg,"host"), map_at(set_cfg,"port"), map_at(set_cfg,"user")
+            , local_download_dir
+            , map_at(set_cfg,"remote_data_dir")).download();
+    }
+    else
+    {
+        file_names = get_all_csv_file_names(local_download_dir);
     }
 
+    std::cerr << "data file names:";
+    for(std::set<std::string>::const_iterator ci = file_names.begin(); ci != file_names.end(); ++ci) std::cerr << " " << (*ci);
     std::cerr << std::endl;
 
-    //TODO process ids
+    process_undelivered_messages_data(local_download_dir, file_names);
 }
 
 

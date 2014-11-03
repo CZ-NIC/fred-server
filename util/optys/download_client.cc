@@ -38,6 +38,9 @@
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/bind.hpp>
+
+#include "src/fredlib/opcontext.h"
 
 #include "util/subprocess.h"
 #include "util/printable.h"
@@ -60,7 +63,7 @@
     , local_download_dir_(local_download_dir)
     , remote_data_dir_(remote_data_dir)
     {
-        if(!boost::filesystem::exists(local_download_dir_))
+        if(!boost::filesystem::exists(local_download_dir_) || !boost::filesystem::is_directory(local_download_dir_))
         {
             throw std::runtime_error(std::string("local_download_dir: " + local_download_dir_ +" not found"));
         }
@@ -84,10 +87,88 @@
         return downloaded_data_filenames2;
     }
 
-    std::set<unsigned long long> OptysDownloadClient::download()
+    std::set<std::string> get_all_csv_file_names(const std::string& local_download_dir)
     {
-        std::set<unsigned long long> message_id_set;
+        std::set<std::string> file_names_csv;
+        if(boost::filesystem::exists(local_download_dir) && boost::filesystem::is_directory(local_download_dir))
+        {
+            for(boost::filesystem::directory_iterator di (local_download_dir); di != boost::filesystem::directory_iterator(); ++di)
+            {
+                if(!boost::filesystem::is_directory(boost::filesystem::path(*di))
+                    && boost::filesystem::is_regular_file(boost::filesystem::path(*di))
+                    && boost::iends_with(boost::filesystem::path(*di).string(), std::string(".csv")))
+                {
+                    file_names_csv.insert((*di).path().filename().string());
+                }
+            }
+        }
+        else
+        {
+            throw std::runtime_error(std::string("local_download_dir: " + local_download_dir +" not found"));
+        }
+        return file_names_csv;
+    }
 
+    void process_undelivered_messages_data(const std::string& local_download_dir, const std::set<std::string>& downloaded_data_filenames)
+    {
+        //process csv files
+        for(std::set<std::string>::const_iterator ci = downloaded_data_filenames.begin(); ci != downloaded_data_filenames.end(); ++ci)
+        {
+            std::set<unsigned long long> file_message_id_set;
+            //open csv file
+            std::ifstream csv_file_stream;
+            std::string local_csv_file_name = local_download_dir + "/" + (*ci);
+            Fred::OperationContext ctx;
+            try
+            {
+                csv_file_stream.open (local_csv_file_name.c_str(), std::ios::in);
+                if(!csv_file_stream.is_open()) throw std::runtime_error("csv_file_stream.open failed, "
+                    "unable to open file: "+ local_csv_file_name);
+
+                //read csv file
+                std::string csv_file_content;//buffer
+                csv_file_stream.seekg (0, std::ios::end);
+                long long csv_file_length = csv_file_stream.tellg();
+                csv_file_stream.seekg (0, std::ios::beg);//reset
+
+                //allocate csv file buffer
+                csv_file_content.resize(csv_file_length);
+
+                //read csv file
+                csv_file_stream.read(&csv_file_content[0], csv_file_content.size());
+
+                //parse csv
+                std::vector<std::vector<std::string> > csv_data = Util::CsvParser(csv_file_content).parse();
+                for(std::vector<std::vector<std::string> >::const_iterator idci = csv_data.begin(); idci != csv_data.end(); ++idci)
+                {
+                    unsigned long long id = 0;
+                    try
+                    {
+                        id = boost::lexical_cast<unsigned long long>(idci->at(0));
+                    }
+                    catch(...)
+                    {
+                        throw std::runtime_error("invalid csv data");
+                    }
+                    file_message_id_set.insert(id);
+                }
+
+                //set state
+                //file_message_id_set;
+                Fred::OperationContext file_ctx;
+                file_ctx.get_conn();
+
+            }
+            catch(const std::exception& ex)
+            {
+                ctx.get_log().error(boost::format("file: %1% err: %2%") % local_csv_file_name % ex.what());
+            }
+
+        }
+    }
+
+    std::set<std::string> OptysDownloadClient::download()
+    {
         std::string download_command = std::string("rsync --include=\"*.csv\" --exclude=\"*\"")
             + " -e \"ssh -p "+ port_ + "\" -ai --out-format=\"%n\" --inplace "
             + user_ + "@" + host_ + ":" + remote_data_dir_ + "/ " + local_download_dir_;
@@ -112,44 +193,8 @@
         }
         while(current_downloaded_data_filenames.size() != 0);
 
-        //process csv files
         for(std::set<std::string>::const_iterator ci = downloaded_data_filenames.begin(); ci != downloaded_data_filenames.end(); ++ci)
         {
-            //open csv file
-            std::ifstream csv_file_stream;
-            std::string local_csv_file_name = local_download_dir_ +"/" + (*ci);
-            csv_file_stream.open (local_csv_file_name.c_str(), std::ios::in);
-            if(!csv_file_stream.is_open()) throw std::runtime_error("csv_file_stream.open failed, "
-                "unable to open file: "+ local_csv_file_name);
-
-            //read csv file
-            std::string csv_file_content;//buffer
-            csv_file_stream.seekg (0, std::ios::end);
-            long long csv_file_length = csv_file_stream.tellg();
-            csv_file_stream.seekg (0, std::ios::beg);//reset
-
-            //allocate csv file buffer
-            csv_file_content.resize(csv_file_length);
-
-            //read csv file
-            csv_file_stream.read(&csv_file_content[0], csv_file_content.size());
-
-            //parse csv
-            std::vector<std::vector<std::string> > csv_data = Util::CsvParser(csv_file_content).parse();
-            for(std::vector<std::vector<std::string> >::const_iterator idci = csv_data.begin(); idci != csv_data.end(); ++idci)
-            {
-                unsigned long long id = 0;
-                try
-                {
-                    id = boost::lexical_cast<unsigned long long>(idci->at(0));
-                }
-                catch(...)
-                {
-                    throw std::runtime_error("invalid csv data");
-                }
-                message_id_set.insert(id);
-            }
-
             //remove downloaded file from optys server
             std::string remove_downloaded_file_command = std::string("ssh ") + user_ + "@" + host_ + " \"rm -f " + remote_data_dir_ +  "/" + (*ci) + "\"";
 
@@ -162,6 +207,6 @@
             }
         }
 
-        return message_id_set;
+        return downloaded_data_filenames;
     }
 
