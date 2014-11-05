@@ -24,12 +24,18 @@
 
 #include <boost/program_options.hpp>
 #include <iostream>
-
+#include <map>
+#include <string>
+#include "cfg/faked_args.h"
+#include "cfg/handle_args.h"
+//#include "cfg/config_handler_decl.h"
+#include "cfg/handle_general_args.h"
 
 #include "src/corba/admin/admin_impl.h"
 #include "src/old_utils/dbsql.h"
 #include "src/fredlib/registry.h"
 #include "baseclient.h"
+#include "read_config_file.h"
 
 #include "notify_params.h"
 
@@ -137,11 +143,6 @@ void notify_letters_optys_send_impl(const std::string& nameservice_host_port
         , const std::string& nameservice_context
         , const std::string& optys_config_file
         );
-
-/**
- * Get undelivered letter IDs from Optys.
- */
-void notify_letters_optys_get_undelivered_impl(const std::string& optys_config_file, bool all_local_files_only);
 
 } // namespace Admin;
 

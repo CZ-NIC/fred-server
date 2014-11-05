@@ -307,36 +307,6 @@ void NotifyClient::sms_send()
     };
 
 
-    /**
-     * read extra config file into key-value config map
-     */
-    template <class HANDLE_ARGS> std::map<std::string, std::string> readConfigFile(const std::string &conf_file)
-    {
-            boost::shared_ptr<HANDLE_ARGS> handle_args_ptr(new HANDLE_ARGS);
-
-            HandlerPtrVector hpv =
-                boost::assign::list_of
-                    (HandleArgsPtr(new HandleConfigFileArgs(conf_file) ))
-                    (HandleArgsPtr(handle_args_ptr));
-
-            // it always needs some argv vector, argc cannot be 0
-            FakedArgs fa;
-            fa.add_argv(std::string(""));
-
-            //handle
-            for(HandlerPtrVector::const_iterator i = hpv.begin()
-                    ; i != hpv.end(); ++i )
-            {
-                FakedArgs fa_out;
-                (*i)->handle( fa.get_argc(), fa.get_argv(), fa_out);
-                fa=fa_out;//last output to next input
-            }//for HandlerPtrVector
-
-            std::map<std::string, std::string> set_cfg = handle_args_ptr->get_map();
-
-            return set_cfg;
-    }
-
   /*
    * This method sends letters from table letter_archive
    * it sets current processed row to status=6 (under processing)
@@ -1045,35 +1015,6 @@ void notify_letters_optys_send_impl(
         zip_file_name_foreign_before_message_type, zip_filename_registered_letter_after_message_type,
         messages_manager);
 }
-
-
-
-void notify_letters_optys_get_undelivered_impl(const std::string& optys_config_file, bool all_local_files_only)
-{
-    //optys config
-    std::map<std::string, std::string> set_cfg = readConfigFile<HandleOptysUndeliveredArgs>(optys_config_file);
-    std::string local_download_dir = map_at(set_cfg, "local_download_dir");
-
-    std::set<std::string> file_names;
-
-    if(!all_local_files_only)
-    {
-        file_names = OptysDownloadClient(map_at(set_cfg,"host"), map_at(set_cfg,"port"), map_at(set_cfg,"user")
-            , local_download_dir
-            , map_at(set_cfg,"remote_data_dir")).download();
-    }
-    else
-    {
-        file_names = get_all_csv_file_names(local_download_dir);
-    }
-
-    std::cerr << "data file names:";
-    for(std::set<std::string>::const_iterator ci = file_names.begin(); ci != file_names.end(); ++ci) std::cerr << " " << (*ci);
-    std::cerr << std::endl;
-
-    process_undelivered_messages_data(local_download_dir, file_names);
-}
-
 
 } // namespace Admin;
 

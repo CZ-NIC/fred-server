@@ -39,6 +39,7 @@
 #include "notifyclient.h"
 #include "commonclient.h"
 #include "src/corba/file_manager_client.h"
+#include "optys_get_undelivered.h"
 
 
 

@@ -16,12 +16,25 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <fstream>
+#include <ios>
+#include <iterator>
+#include <iomanip>
 #include <sstream>
-
+#include <boost/filesystem.hpp>
+#include <boost/format.hpp>
+#include "config.h"
+#include "src/fredlib/opcontext.h"
+#include "src/cli_admin/optys_get_undelivered.h"
+#include "src/cli_admin/read_config_file.h"
 #include "util/util.h"
+#include "util/map_at.h"
+#include "util/subprocess.h"
 #include "util/printable.h"
 #include "util/optys/download_client.h"
 #include "util/random_data_generator.h"
+#include "util/optys/handle_optys_mail_args.h"
+#include "tests/setup/fixtures.h"
 
 //not using UTF defined main
 #define BOOST_TEST_NO_MAIN
@@ -63,6 +76,154 @@ BOOST_AUTO_TEST_CASE(test_csv_file_name)
     BOOST_CHECK(Util::format_container(downloaded_csv_data_filenames_parser(
             "\n./"),"|") ==
             "");
+}
+
+struct undelivered_fixture : virtual Test::Fixture::instantiate_db_template
+{
+    std::set<unsigned long long> msg_id_set;
+    std::string msg_id_str;
+
+    std::string test_csv_data;
+
+    undelivered_fixture()
+    {
+        Fred::OperationContext ctx;
+        Database::Result msg_id_res = ctx.get_conn().exec(
+        "INSERT INTO message_archive (status_id, comm_type_id, message_type_id, service_handle) "
+        " VALUES "
+
+        " ((SELECT id FROM enum_send_status WHERE status_name = 'sent') "
+        " , (SELECT id FROM comm_type WHERE type = 'letter') "
+        " , (SELECT id FROM message_type WHERE type = 'mojeid_pin3'), 'OPTYS'), "
+
+        " ((SELECT id FROM enum_send_status WHERE status_name = 'undelivered') "
+        " , (SELECT id FROM comm_type WHERE type = 'letter') "
+        " , (SELECT id FROM message_type WHERE type = 'mojeid_pin3'), 'OPTYS'), "
+
+        " ((SELECT id FROM enum_send_status WHERE status_name = 'sent') "
+        " , (SELECT id FROM comm_type WHERE type = 'letter') "
+        " , (SELECT id FROM message_type WHERE type = 'mojeid_pin3'), 'OPTYS'), "
+
+        " ((SELECT id FROM enum_send_status WHERE status_name = 'undelivered') "
+        " , (SELECT id FROM comm_type WHERE type = 'letter') "
+        " , (SELECT id FROM message_type WHERE type = 'mojeid_pin3'), 'OPTYS'), "
+
+        " ((SELECT id FROM enum_send_status WHERE status_name = 'sent') "
+        " , (SELECT id FROM comm_type WHERE type = 'letter') "
+        " , (SELECT id FROM message_type WHERE type = 'mojeid_pin3'), 'OPTYS'), "
+
+        " ((SELECT id FROM enum_send_status WHERE status_name = 'undelivered') "
+        " , (SELECT id FROM comm_type WHERE type = 'letter') "
+        " , (SELECT id FROM message_type WHERE type = 'mojeid_pin3'), 'OPTYS'), "
+
+        " ((SELECT id FROM enum_send_status WHERE status_name = 'sent') "
+        " , (SELECT id FROM comm_type WHERE type = 'letter') "
+        " , (SELECT id FROM message_type WHERE type = 'mojeid_pin3'), 'OPTYS'), "
+
+        " ((SELECT id FROM enum_send_status WHERE status_name = 'sent') "
+        " , (SELECT id FROM comm_type WHERE type = 'letter') "
+        " , (SELECT id FROM message_type WHERE type = 'mojeid_pin3'), 'OPTYS'), "
+
+        " ((SELECT id FROM enum_send_status WHERE status_name = 'sent') "
+        " , (SELECT id FROM comm_type WHERE type = 'letter') "
+        " , (SELECT id FROM message_type WHERE type = 'mojeid_pin3'), 'OPTYS') "
+
+        " RETURNING id "
+        );
+
+        for(unsigned long long i = 0 ; i < msg_id_res.size(); ++i)
+        {
+            msg_id_set.insert(static_cast<unsigned long long>(msg_id_res[i]["id"]));
+            msg_id_str += " " + static_cast<std::string>(msg_id_res[i]["id"]);
+        }
+
+        ctx.commit_transaction();
+        BOOST_MESSAGE(msg_id_str);
+        BOOST_REQUIRE(msg_id_set.size() == 9);
+
+        test_csv_data = (boost::format(
+            "%1%" "\x3B" "\x4E" "\x61" "\x20" "\x75" "\x76" "\x65" "\x64" "\x65" "\x6E" "\xE9" "\x20" "\x61" "\x64" "\x72" "\x65"
+                "\x73" "\x65" "\x20" "\x6E" "\x65" "\x7A" "\x6E" "\xE1" "\x6D" "\xFD" "\x0D" "\x0A"
+            "%2%" "\x3B" "\x4E" "\x65" "\x76" "\x79" "\x7A" "\x76" "\x65" "\x64" "\x6E" "\x75" "\x74" "\x6F" "\x0D" "\x0A"
+            "%3%" "\x3B" "\x4F" "\x64" "\x73" "\x74" "\xEC" "\x68" "\x6F" "\x76" "\x61" "\x6C" "\x20" "\x73" "\x65" "\x0D" "\x0A"
+            "%4%" "\x3B" "\x5A" "\x65" "\x6D" "\xF8" "\x65" "\x6C" "\x0D" "\x0A"
+            "%5%" "\x3B" "\x41" "\x64" "\x72" "\x65" "\x73" "\x61" "\x20" "\x6E" "\x65" "\x64" "\x6F" "\x73" "\x74" "\x61" "\x74"
+                "\x65" "\xE8" "\x6E" "\xE1" "\x0D" "\x0A"
+            "%6%" "\x3B" "\x4E" "\x65" "\x70" "\xF8" "\x69" "\x6A" "\x61" "\x74" "\x6F" "\x20" "\x20" "\x0D" "\x0A"
+            "%7%" "\x3B" "\x4A" "\x69" "\x6E" "\xFD" "\x20" "\x64" "\xF9" "\x76" "\x6F" "\x64" "\x0D"
+            )
+            % Util::element_of(msg_id_set,0)
+            % Util::element_of(msg_id_set,1)
+            % Util::element_of(msg_id_set,2)
+            % Util::element_of(msg_id_set,3)
+            % Util::element_of(msg_id_set,4)
+            % Util::element_of(msg_id_set,5)
+            % Util::element_of(msg_id_set,6)
+            ).str();
+
+        //optys config
+        std::map<std::string, std::string> set_cfg = Admin::readConfigFile<HandleOptysUndeliveredArgs>(std::string(OPTYS_CONFIG));
+        std::string local_download_dir = map_at(set_cfg, "local_download_dir");
+        BOOST_MESSAGE(local_download_dir);
+
+        boost::filesystem::path local_download_dir_path(local_download_dir.c_str());
+        if(!boost::filesystem::exists(local_download_dir))
+        {
+            SubProcessOutput output = ShellCmd("mkdir -p " + local_download_dir, 3600).execute();
+            BOOST_REQUIRE_MESSAGE(output.stderr.empty() && output.is_exited() && (output.get_exit_status() == EXIT_SUCCESS),
+                std::string("local download directory creation failed: ")+output.stderr);
+        }
+        BOOST_REQUIRE(boost::filesystem::is_directory(local_download_dir));
+
+        //download directory cleanup
+        SubProcessOutput output = ShellCmd("rm -f " + local_download_dir+"/*.csv", 3600).execute();
+        BOOST_REQUIRE_MESSAGE(output.stderr.empty() && output.is_exited() && (output.get_exit_status() == EXIT_SUCCESS),
+            std::string("download directory cleanup failed: ")+output.stderr);
+
+        //write test csv data file
+        std::ofstream csv_file;
+        csv_file.open((local_download_dir+"/CZ.NIC_20140717.csv").c_str(), std::ios::out | std::ios::trunc | std::ios::binary);
+        BOOST_REQUIRE(csv_file.is_open());
+        csv_file.write(test_csv_data.c_str(), test_csv_data.size());
+    }
+
+    ~undelivered_fixture(){}
+};
+
+/**
+ * test processing undelivered letters, good path
+ */
+BOOST_FIXTURE_TEST_CASE(test_undelivered_proc, undelivered_fixture)
+{
+    Admin::notify_letters_optys_get_undelivered_impl(
+        std::string(OPTYS_CONFIG),
+        true//all_local_files_only
+        );
+
+    //check undelivered
+    BOOST_CHECK(Fred::OperationContext().get_conn().exec_params(
+        "SELECT id FROM message_archive WHERE service_handle = 'OPTYS' "
+        " AND status_id = (SELECT id FROM enum_send_status WHERE status_name = 'undelivered') "
+        " AND (id = $1::bigint OR id = $2::bigint OR id = $3::bigint OR id = $4::bigint OR id = $5::bigint OR id = $6::bigint OR id = $7::bigint)"
+        ,Database::query_param_list
+        (Util::element_of(msg_id_set,0))
+        (Util::element_of(msg_id_set,1))
+        (Util::element_of(msg_id_set,2))
+        (Util::element_of(msg_id_set,3))
+        (Util::element_of(msg_id_set,4))
+        (Util::element_of(msg_id_set,5))
+        (Util::element_of(msg_id_set,6))
+    ).size() == 7);
+
+    //check delivered
+    BOOST_CHECK(Fred::OperationContext().get_conn().exec_params(
+        "SELECT id FROM message_archive WHERE service_handle = 'OPTYS' "
+        " AND status_id = (SELECT id FROM enum_send_status WHERE status_name = 'sent') "
+        " AND (id = $1::bigint OR id = $2::bigint)"
+        ,Database::query_param_list
+        (Util::element_of(msg_id_set,7))
+        (Util::element_of(msg_id_set,8))
+    ).size() == 2);
 }
 
 BOOST_AUTO_TEST_SUITE_END();
