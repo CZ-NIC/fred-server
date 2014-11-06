@@ -1680,6 +1680,13 @@ namespace Registry
                     if((merge_data.contactid.src_contact_id != static_cast<unsigned long long>(src_handle_result[i]["id"]))
                     || (merge_data.contactid.dst_contact_id != dst_contact_id))
                     {
+                        ctx.get_log().error(boost::format(
+                            "id mismatch merge_data.contactid.src_contact_id: %1% != src_handle_result[i][\"id\"]: %2% "
+                            "or merge_data.contactid.dst_contact_id: %3% != dst_contact_id: %4%")
+                            % merge_data.contactid.src_contact_id
+                            % static_cast<unsigned long long>(src_handle_result[i]["id"])
+                            % merge_data.contactid.dst_contact_id
+                            % dst_contact_id);
                         throw InternalServerError();
                     }
 
