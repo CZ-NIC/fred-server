@@ -141,6 +141,7 @@ struct undelivered_fixture : virtual Test::Fixture::instantiate_db_template
         BOOST_MESSAGE(msg_id_str);
         BOOST_REQUIRE(msg_id_set.size() == 9);
 
+        //msg id 0 - 6 undelivered, 7 and 8 delivered
         test_csv_data = (boost::format(
             "%1%" "\x3B" "\x4E" "\x61" "\x20" "\x75" "\x76" "\x65" "\x64" "\x65" "\x6E" "\xE9" "\x20" "\x61" "\x64" "\x72" "\x65"
                 "\x73" "\x65" "\x20" "\x6E" "\x65" "\x7A" "\x6E" "\xE1" "\x6D" "\xFD" "\x0D" "\x0A"
