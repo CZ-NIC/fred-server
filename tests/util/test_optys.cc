@@ -78,6 +78,9 @@ BOOST_AUTO_TEST_CASE(test_csv_file_name)
             "");
 }
 
+/**
+ * fake some 'sent' letters into message_archive
+ */
 struct undelivered_fixture : virtual Test::Fixture::instantiate_db_template
 {
     std::set<unsigned long long> msg_id_set;
@@ -226,5 +229,18 @@ BOOST_FIXTURE_TEST_CASE(test_undelivered_proc, undelivered_fixture)
         (Util::element_of(msg_id_set,8))
     ).size() == 2);
 }
+
+/**
+ * test config file not found
+ */
+BOOST_AUTO_TEST_CASE(test_bad_config_file)
+{
+    BOOST_CHECK_THROW(
+    Admin::notify_letters_optys_get_undelivered_impl(
+        std::string(OPTYS_CONFIG)+"_bad",
+        true//all_local_files_only
+        ), std::runtime_error);
+}
+
 
 BOOST_AUTO_TEST_SUITE_END();
