@@ -47,25 +47,29 @@ typedef std::map< std::string, TypeToAddress > HandleToAddresses;
 
 void get_conntact_addresses(std::istream &_data_source, HandleToAddresses &_handle_addresses);
 void import_conntact_addresses(const HandleToAddresses &_handle_addresses,
-                               Fred::OperationContext &_ctx);
+                               Fred::OperationContext &_ctx,
+                               unsigned long long _logd_request_id);
 
 int main(int argc, char *argv[])
 {
-    if (argc != 2) {
-        std::cerr << "Failure: I expect 1 argument - postgres database connection string like PQconnectdb\n\n"
-                     "Usage: " << argv[0] << " PQ_CONN_INFO\n"
-                     "       PQ_CONN_INFO ... see [http://www.postgresql.org/docs/9.1/static/libpq-connect.html]\n\n"
+    if (argc != 3) {
+        std::cerr << "Failure: I expect 2 arguments - postgres database connection string like PQconnectdb and\n"
+                     "                                logd request id\n\n"
+                     "Usage: " << argv[0] << " PQ_CONN_INFO LOGD_REQUEST_ID\n"
+                     "       PQ_CONN_INFO ...... see [http://www.postgresql.org/docs/9.1/static/libpq-connect.html]\n"
+                     "       LOGD_REQUEST_ID ... id of logger request\n\n"
                      "Example: CONN_INFO=\"host=<host> dbname=fred user=fred password=<password>\" \\\n"
-                     "         " << argv[0] << " \"$CONN_INFO\" < mojeid-contact-address.out" << std::endl;
+                     "         " << argv[0] << " \"$CONN_INFO\" 0 < mojeid-contact-address.out" << std::endl;
         return EXIT_FAILURE;
     }
     try {
         const char *const conn_info = argv[1];
+        const unsigned long long logd_request_id = boost::lexical_cast< unsigned long long >(argv[2]);
         Database::Manager::init(new Database::ConnectionFactory(conn_info));
         HandleToAddresses handle_addresses;
         get_conntact_addresses(std::cin, handle_addresses);
         Fred::OperationContext ctx;
-        import_conntact_addresses(handle_addresses, ctx);
+        import_conntact_addresses(handle_addresses, ctx, logd_request_id);
         ctx.commit_transaction();
         return EXIT_SUCCESS;
     }
@@ -137,7 +141,8 @@ void get_conntact_addresses(std::istream &_data_source, HandleToAddresses &_hand
 }
 
 void import_conntact_addresses(const HandleToAddresses &_handle_addresses,
-                               Fred::OperationContext &_ctx)
+                               Fred::OperationContext &_ctx,
+                               unsigned long long _logd_request_id)
 {
     for (HandleToAddresses::const_iterator handle_ptr = _handle_addresses.begin();
          handle_ptr != _handle_addresses.end(); ++handle_ptr)
@@ -166,6 +171,7 @@ void import_conntact_addresses(const HandleToAddresses &_handle_addresses,
         }
         try
         {
+            update_contact.set_logd_request_id(_logd_request_id);
             update_contact.exec(_ctx);
         }
         catch (const std::exception &e)
