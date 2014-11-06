@@ -69,13 +69,26 @@ namespace Registry
         }
 
         /**
-         * Logs std::exception children and other exceptions as error, then rethrows.
+         * Logs Fred::OperationException as warning, Fred::InternalError, std::exception children and other exceptions as error, then rethrows.
          * @param ctx contains reference to database and logging interface
          */
         static void log_and_rethrow_exception_handler(Fred::OperationContext& ctx)
         {
             try
             {
+                throw;
+            }
+            catch(const Fred::OperationException& ex)
+            {
+                ctx.get_log().warning(ex.what());
+                ctx.get_log().warning(boost::algorithm::replace_all_copy(boost::diagnostic_information(ex),"\n", " "));
+                throw;
+            }
+            catch(const Fred::InternalError& ex)
+            {
+                ctx.get_log().error(boost::algorithm::replace_all_copy(ex.get_exception_stack_info(),"\n", " "));
+                ctx.get_log().error(boost::algorithm::replace_all_copy(boost::diagnostic_information(ex),"\n", " "));
+                ctx.get_log().error(ex.what());
                 throw;
             }
             catch(const std::exception& ex)
