@@ -259,4 +259,62 @@ BOOST_FIXTURE_TEST_CASE(test_local_download_dir_not_found, undelivered_fixture)
         ), std::runtime_error);
 }
 
+/**
+ * test overcoming unable to read file
+ */
+BOOST_FIXTURE_TEST_CASE(test_unable_to_read_file, undelivered_fixture)
+{
+    //remove read permission
+    SubProcessOutput output = ShellCmd("chmod u-r " + local_download_dir + "/*.csv", 3600).execute();
+    BOOST_REQUIRE_MESSAGE(output.stderr.empty() && output.is_exited() && (output.get_exit_status() == EXIT_SUCCESS),
+        std::string("removal of read permission failed: ")+output.stderr);
+
+    BOOST_CHECK_NO_THROW(
+    Admin::notify_letters_optys_get_undelivered_impl(
+        std::string(OPTYS_CONFIG),
+        true//all_local_files_only
+    ));
+
+    //check undelivered not set
+    BOOST_CHECK(Fred::OperationContext().get_conn().exec_params(
+        "SELECT id FROM message_archive WHERE service_handle = 'OPTYS' "
+        " AND status_id = (SELECT id FROM enum_send_status WHERE status_name = 'sent') "
+        " AND (id = $1::bigint OR id = $2::bigint OR id = $3::bigint OR id = $4::bigint OR id = $5::bigint OR id = $6::bigint OR id = $7::bigint)"
+        ,Database::query_param_list
+        (Util::get_nth(msg_id_set,0))
+        (Util::get_nth(msg_id_set,1))
+        (Util::get_nth(msg_id_set,2))
+        (Util::get_nth(msg_id_set,3))
+        (Util::get_nth(msg_id_set,4))
+        (Util::get_nth(msg_id_set,5))
+        (Util::get_nth(msg_id_set,6))
+    ).size() == 4);
+
+    //check undelivered
+    BOOST_CHECK(Fred::OperationContext().get_conn().exec_params(
+        "SELECT id FROM message_archive WHERE service_handle = 'OPTYS' "
+        " AND status_id = (SELECT id FROM enum_send_status WHERE status_name = 'undelivered') "
+        " AND (id = $1::bigint OR id = $2::bigint OR id = $3::bigint OR id = $4::bigint OR id = $5::bigint OR id = $6::bigint OR id = $7::bigint)"
+        ,Database::query_param_list
+        (Util::get_nth(msg_id_set,0))
+        (Util::get_nth(msg_id_set,1))
+        (Util::get_nth(msg_id_set,2))
+        (Util::get_nth(msg_id_set,3))
+        (Util::get_nth(msg_id_set,4))
+        (Util::get_nth(msg_id_set,5))
+        (Util::get_nth(msg_id_set,6))
+    ).size() == 3);
+
+    //check delivered
+    BOOST_CHECK(Fred::OperationContext().get_conn().exec_params(
+        "SELECT id FROM message_archive WHERE service_handle = 'OPTYS' "
+        " AND status_id = (SELECT id FROM enum_send_status WHERE status_name = 'sent') "
+        " AND (id = $1::bigint OR id = $2::bigint)"
+        ,Database::query_param_list
+        (Util::get_nth(msg_id_set,7))
+        (Util::get_nth(msg_id_set,8))
+    ).size() == 2);
+
+}
+
 BOOST_AUTO_TEST_SUITE_END();
