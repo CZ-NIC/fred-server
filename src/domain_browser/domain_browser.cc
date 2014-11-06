@@ -1672,8 +1672,8 @@ namespace Registry
                     }
                     catch(const Fred::MergeContact::Exception& ex)
                     {
-                        ctx.get_log().error(boost::algorithm::replace_all_copy(ex.get_exception_stack_info(),"\n", " "));
-                        ctx.get_log().error(boost::algorithm::replace_all_copy(boost::diagnostic_information(ex),"\n", " "));
+                        ctx.get_log().warning(boost::algorithm::replace_all_copy(ex.get_exception_stack_info(),"\n", " "));
+                        ctx.get_log().warning(boost::algorithm::replace_all_copy(boost::diagnostic_information(ex),"\n", " "));
                         throw InvalidContacts();
                     }
 
