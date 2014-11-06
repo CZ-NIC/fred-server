@@ -11,9 +11,9 @@
 namespace Util {
 
 //get n-th element of given container or throw
-template<class CONTAINER> typename CONTAINER::value_type element_of(const CONTAINER& in, typename CONTAINER::size_type n)
+template<class CONTAINER> typename CONTAINER::value_type get_nth(const CONTAINER& in, typename CONTAINER::size_type n)
 {
-    if(in.size() <= n) throw std::out_of_range((boost::format("Util::element_of n: %1%  size: %2%") % n % in.size()).str());
+    if(in.size() <= n) throw std::out_of_range((boost::format("Util::get_nth n: %1%  size: %2%") % n % in.size()).str());
     typename CONTAINER::const_iterator i = in.begin();
     std::advance(i,n);
     return *i;

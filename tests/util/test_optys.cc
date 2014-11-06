@@ -156,13 +156,13 @@ struct undelivered_fixture : virtual Test::Fixture::instantiate_db_template
             "%6%" "\x3B" "\x4E" "\x65" "\x70" "\xF8" "\x69" "\x6A" "\x61" "\x74" "\x6F" "\x20" "\x20" "\x0D" "\x0A"
             "%7%" "\x3B" "\x4A" "\x69" "\x6E" "\xFD" "\x20" "\x64" "\xF9" "\x76" "\x6F" "\x64" "\x0D"
             )
-            % Util::element_of(msg_id_set,0)
-            % Util::element_of(msg_id_set,1)
-            % Util::element_of(msg_id_set,2)
-            % Util::element_of(msg_id_set,3)
-            % Util::element_of(msg_id_set,4)
-            % Util::element_of(msg_id_set,5)
-            % Util::element_of(msg_id_set,6)
+            % Util::get_nth(msg_id_set,0)
+            % Util::get_nth(msg_id_set,1)
+            % Util::get_nth(msg_id_set,2)
+            % Util::get_nth(msg_id_set,3)
+            % Util::get_nth(msg_id_set,4)
+            % Util::get_nth(msg_id_set,5)
+            % Util::get_nth(msg_id_set,6)
             ).str();
 
         //optys config
@@ -210,13 +210,13 @@ BOOST_FIXTURE_TEST_CASE(test_undelivered_proc, undelivered_fixture)
         " AND status_id = (SELECT id FROM enum_send_status WHERE status_name = 'undelivered') "
         " AND (id = $1::bigint OR id = $2::bigint OR id = $3::bigint OR id = $4::bigint OR id = $5::bigint OR id = $6::bigint OR id = $7::bigint)"
         ,Database::query_param_list
-        (Util::element_of(msg_id_set,0))
-        (Util::element_of(msg_id_set,1))
-        (Util::element_of(msg_id_set,2))
-        (Util::element_of(msg_id_set,3))
-        (Util::element_of(msg_id_set,4))
-        (Util::element_of(msg_id_set,5))
-        (Util::element_of(msg_id_set,6))
+        (Util::get_nth(msg_id_set,0))
+        (Util::get_nth(msg_id_set,1))
+        (Util::get_nth(msg_id_set,2))
+        (Util::get_nth(msg_id_set,3))
+        (Util::get_nth(msg_id_set,4))
+        (Util::get_nth(msg_id_set,5))
+        (Util::get_nth(msg_id_set,6))
     ).size() == 7);
 
     //check delivered
@@ -225,8 +225,8 @@ BOOST_FIXTURE_TEST_CASE(test_undelivered_proc, undelivered_fixture)
         " AND status_id = (SELECT id FROM enum_send_status WHERE status_name = 'sent') "
         " AND (id = $1::bigint OR id = $2::bigint)"
         ,Database::query_param_list
-        (Util::element_of(msg_id_set,7))
-        (Util::element_of(msg_id_set,8))
+        (Util::get_nth(msg_id_set,7))
+        (Util::get_nth(msg_id_set,8))
     ).size() == 2);
 }
 
