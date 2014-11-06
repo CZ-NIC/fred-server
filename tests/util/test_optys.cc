@@ -85,8 +85,8 @@ struct undelivered_fixture : virtual Test::Fixture::instantiate_db_template
 {
     std::set<unsigned long long> msg_id_set;
     std::string msg_id_str;
-
     std::string test_csv_data;
+    std::string local_download_dir;
 
     undelivered_fixture()
     {
@@ -167,7 +167,7 @@ struct undelivered_fixture : virtual Test::Fixture::instantiate_db_template
 
         //optys config
         std::map<std::string, std::string> set_cfg = Admin::readConfigFile<HandleOptysUndeliveredArgs>(std::string(OPTYS_CONFIG));
-        std::string local_download_dir = map_at(set_cfg, "local_download_dir");
+        local_download_dir = map_at(set_cfg, "local_download_dir");
         BOOST_MESSAGE(local_download_dir);
 
         boost::filesystem::path local_download_dir_path(local_download_dir.c_str());
@@ -242,5 +242,21 @@ BOOST_AUTO_TEST_CASE(test_bad_config_file)
         ), std::runtime_error);
 }
 
+/**
+ * test local download dir not found
+ */
+BOOST_FIXTURE_TEST_CASE(test_local_download_dir_not_found, undelivered_fixture)
+{
+    //remove download directory
+    SubProcessOutput output = ShellCmd("rm -rf " + local_download_dir, 3600).execute();
+    BOOST_REQUIRE_MESSAGE(output.stderr.empty() && output.is_exited() && (output.get_exit_status() == EXIT_SUCCESS),
+        std::string("removal of download directory failed: ")+output.stderr);
+
+    BOOST_CHECK_THROW(
+    Admin::notify_letters_optys_get_undelivered_impl(
+        std::string(OPTYS_CONFIG),
+        true//all_local_files_only
+        ), std::runtime_error);
+}
 
 BOOST_AUTO_TEST_SUITE_END();
