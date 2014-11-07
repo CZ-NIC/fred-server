@@ -39,12 +39,12 @@ namespace Util
      */
     class CsvParser
     {
-        const std::string csv_file_;
+        const std::string csv_data_;
         const char delimiter_;
         const char quotation_mark_;
     public:
-        CsvParser(const std::string& csv_file, const char delimiter = ';', const char quotation_mark = '"')
-        : csv_file_(csv_file)
+        CsvParser(const std::string& csv_data, const char delimiter = ';', const char quotation_mark = '"')
+        : csv_data_(csv_data)
         , delimiter_(delimiter)
         , quotation_mark_(quotation_mark)
         {}

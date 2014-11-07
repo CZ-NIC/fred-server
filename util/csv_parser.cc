@@ -38,7 +38,7 @@ namespace Util
     std::vector<std::vector<std::string> > CsvParser::parse()
     {
         std::vector<std::vector<std::string> > csv_data;
-        if(csv_file_.empty()) return csv_data;//empty input
+        if(csv_data_.empty()) return csv_data;//empty input
 
         unsigned long long field_start_index = 0;//start of the field index
         unsigned long long field_end_index = 0;//end of the field index
@@ -47,26 +47,26 @@ namespace Util
 
         do
         {
-            if(csv_file_.at(field_start_index) == quotation_mark_)
+            if(csv_data_.at(field_start_index) == quotation_mark_)
             {//quoted field
-                if((csv_file_.length() - field_start_index) < 2) throw std::runtime_error("invalid csv");//field length 2 suffices for quoted empty field case: ""
+                if((csv_data_.length() - field_start_index) < 2) throw std::runtime_error("invalid csv");//field length 2 suffices for quoted empty field case: ""
                 unsigned long long quotation_mark_count = 0;//number of encountered quotation marks in current field
-                for(unsigned long long i = field_start_index + 1; i < csv_file_.length(); ++i)//look for the end of the field
+                for(unsigned long long i = field_start_index + 1; i < csv_data_.length(); ++i)//look for the end of the field
                 {
-                    if(csv_file_.at(i) == quotation_mark_)//look for next quotation mark
+                    if(csv_data_.at(i) == quotation_mark_)//look for next quotation mark
                     {
                         ++quotation_mark_count;
 
                         if(quotation_mark_count % 2 != 0)//odd quotation mark in the field
                         {
-                            if(((csv_file_.length() - field_start_index)) == 2)
+                            if(((csv_data_.length() - field_start_index)) == 2)
                             {
                                 csv_data.back().push_back("");//add last empty field
                                 return csv_data;
                             }
                             else
                             {
-                                if((csv_file_.length() <= (i + 2)) || (csv_file_.at(i + 1) != quotation_mark_))//look for quoted quotation mark
+                                if((csv_data_.length() <= (i + 2)) || (csv_data_.at(i + 1) != quotation_mark_))//look for quoted quotation mark
                                 {
                                     field_end_index = i;
 
@@ -79,7 +79,7 @@ namespace Util
                                     {
                                         csv_data.back().push_back(
                                             boost::algorithm::replace_all_copy(//unquote quoted quotes
-                                            csv_file_.substr(field_start_index+1,field_end_index - 1 - field_start_index)
+                                            csv_data_.substr(field_start_index+1,field_end_index - 1 - field_start_index)
                                             , std::string(2,quotation_mark_), std::string(1,quotation_mark_)));//add non-empty field
                                         break;//exit field "for loop"
                                     }
@@ -87,59 +87,59 @@ namespace Util
                             }
                         }
 
-                        if((quotation_mark_count % 2 == 0) && (csv_file_.at(i - 1) != quotation_mark_))//even quotation mark in the field check
+                        if((quotation_mark_count % 2 == 0) && (csv_data_.at(i - 1) != quotation_mark_))//even quotation mark in the field check
                         {
                             throw std::runtime_error("missing quotation mark");
                         }
                     }
                     else
                     {
-                        if((i+1) == csv_file_.length()) throw std::runtime_error("missing quotation mark at the end");
+                        if((i+1) == csv_data_.length()) throw std::runtime_error("missing quotation mark at the end");
                     }
                 }//look for the end of the field
             }
             else
             {//non-quoted field
-                for(unsigned long long i = field_start_index; i < csv_file_.length(); ++i)//look for the end of the field
+                for(unsigned long long i = field_start_index; i < csv_data_.length(); ++i)//look for the end of the field
                 {
-                    if((csv_file_.at(i) == delimiter_) || (csv_file_.at(i) == '\n') || (csv_file_.at(i) == '\r'))//look for next delimiter or newline
+                    if((csv_data_.at(i) == delimiter_) || (csv_data_.at(i) == '\n') || (csv_data_.at(i) == '\r'))//look for next delimiter or newline
                     {
                         field_end_index = i - 1;
                         csv_data.back().push_back(
                             boost::algorithm::replace_all_copy(//unquote quoted quotes
-                            csv_file_.substr(field_start_index,field_end_index + 1 - field_start_index)
+                            csv_data_.substr(field_start_index,field_end_index + 1 - field_start_index)
                             , std::string(2,quotation_mark_), std::string(1,quotation_mark_)));//add non-empty field
                         break;//exit field "for loop"
                     }
 
-                    if((i + 1) == csv_file_.length())//look for end of input data
+                    if((i + 1) == csv_data_.length())//look for end of input data
                     {
                         field_end_index = i;
                         csv_data.back().push_back(
                             boost::algorithm::replace_all_copy(//unquote quoted quotes
-                            csv_file_.substr(field_start_index,field_end_index + 1 - field_start_index)
+                            csv_data_.substr(field_start_index,field_end_index + 1 - field_start_index)
                             , std::string(2,quotation_mark_), std::string(1,quotation_mark_)));//add last non-empty field
                         return csv_data;
                     }
                 }//look for the end of the field
             }
 
-            if(csv_file_.length() >= (field_end_index + 2))
+            if(csv_data_.length() >= (field_end_index + 2))
             {
                 //find start of next field
-                if(csv_file_.at(field_end_index + 1) == delimiter_)//next in row
+                if(csv_data_.at(field_end_index + 1) == delimiter_)//next in row
                 {
                     field_start_index = field_end_index + 2;
                 }
 
-                if((csv_file_.at(field_end_index + 1) == '\n') || (csv_file_.at(field_end_index + 1) == '\r'))//new row
+                if((csv_data_.at(field_end_index + 1) == '\n') || (csv_data_.at(field_end_index + 1) == '\r'))//new row
                 {
                     field_start_index = field_end_index + 2;
 
-                    if((field_end_index + 3) <= csv_file_.length())//check next 2 chars behind end exists
+                    if((field_end_index + 3) <= csv_data_.length())//check next 2 chars behind end exists
                     {
                         //look for next newline character
-                        if((csv_file_.at(field_end_index + 1) == '\r') && (csv_file_.at(field_end_index + 2) == '\n'))//new row for windows
+                        if((csv_data_.at(field_end_index + 1) == '\r') && (csv_data_.at(field_end_index + 2) == '\n'))//new row for windows
                         {
                             field_start_index = field_end_index + 3;
                         }
@@ -148,7 +148,7 @@ namespace Util
                     csv_data.push_back(std::vector<std::string>());//add new row
                 }
             }
-        } while(((field_start_index + 1) >= (field_end_index + 1)) && ((field_start_index + 1) <= csv_file_.length()));
+        } while(((field_start_index + 1) >= (field_end_index + 1)) && ((field_start_index + 1) <= csv_data_.length()));
 
         if(csv_data.back().empty()) csv_data.pop_back();//remove last row if empty
 
