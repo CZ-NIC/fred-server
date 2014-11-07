@@ -33,17 +33,6 @@ BOOST_AUTO_TEST_SUITE(TestCsvParser)
 
 const std::string server_name = "test-csv-parser";
 
-
-static std::string format_csv_data(std::vector<std::vector<std::string> > data)
-{
-    std::stringstream ret;
-    for(unsigned long long i = 0; i < data.size(); ++i)
-    {
-        ret << "#" << i << " |" << Util::format_container(data.at(i),"|") << "|";
-    }
-    return ret.str();
-}
-
 /**
  * test csv_parser
  */
@@ -52,18 +41,18 @@ BOOST_AUTO_TEST_CASE(test_trivial)
     BOOST_CHECK(Util::CsvParser("").parse().size() == 0);
     BOOST_CHECK(Util::CsvParser("1").parse().size() == 1);
 
-    BOOST_CHECK(format_csv_data(Util::CsvParser(
+    BOOST_CHECK(Util::format_csv_data(Util::CsvParser(
         "a1;a2;a3;a4"
         ).parse()) ==
         "#0 |a1|a2|a3|a4|"
         );
-    BOOST_CHECK(format_csv_data(Util::CsvParser(
+    BOOST_CHECK(Util::format_csv_data(Util::CsvParser(
         "a1;a2;a3;a4\n"
         ).parse()) ==
         "#0 |a1|a2|a3|a4|"
         );
 
-    BOOST_CHECK(format_csv_data(Util::CsvParser(
+    BOOST_CHECK(Util::format_csv_data(Util::CsvParser(
         "a1;a2;a3;a4\n"
         "b1;b2;b3;b4\n"
         "c1;c2;c3;c4\n"
@@ -78,7 +67,18 @@ BOOST_AUTO_TEST_CASE(test_trivial)
 
 BOOST_AUTO_TEST_CASE(test_some_data)
 {
-    BOOST_MESSAGE(format_csv_data(Util::CsvParser(
+    BOOST_MESSAGE(Util::format_csv_data(Util::CsvParser(
+    "2;\"nedoruceno\"\n"
+    "6;nedoruceno\n"
+    "10;taky nedoruceno\n"
+    "14;\"taky \"\"nedoruceno\"\"\"\n"
+    "18;\"adresat asi umrel\"\n"
+    ).parse()));
+}
+BOOST_AUTO_TEST_CASE(test_starting_empty_lines)
+{
+    BOOST_MESSAGE(Util::format_csv_data(Util::CsvParser(
+    "\n"
     "2;\"nedoruceno\"\n"
     "6;nedoruceno\n"
     "10;taky nedoruceno\n"
@@ -90,7 +90,7 @@ BOOST_AUTO_TEST_CASE(test_some_data)
 
 BOOST_AUTO_TEST_CASE(test_unquoting_data)
 {
-    BOOST_CHECK(format_csv_data(Util::CsvParser(
+    BOOST_CHECK(Util::format_csv_data(Util::CsvParser(
         "a1;a2;a3;a4\n"
         "b1;b2;b3;b4\n"
         "c1;c2;\"c3\";c4\n"
@@ -102,7 +102,7 @@ BOOST_AUTO_TEST_CASE(test_unquoting_data)
         "#3 |d1|d2|d3|d4|"
         );
 
-    BOOST_CHECK(format_csv_data(Util::CsvParser(
+    BOOST_CHECK(Util::format_csv_data(Util::CsvParser(
         "a1;a2;a3;a4\n"
         "b1;b2;\"b3\";\"b4\"\n"
         "c1;c2;c3;c4\n"
@@ -114,7 +114,7 @@ BOOST_AUTO_TEST_CASE(test_unquoting_data)
         "#3 |d1|d2|d3|d4|"
         );
 
-    BOOST_CHECK(format_csv_data(Util::CsvParser(
+    BOOST_CHECK(Util::format_csv_data(Util::CsvParser(
         "a1;a2;a3;a4\n"
         "\"b1\";\"b2\";\"b3\";\"b4\"\n"
         "c1;c2;c3;c4\n"
@@ -126,7 +126,7 @@ BOOST_AUTO_TEST_CASE(test_unquoting_data)
         "#3 |d1|d2|d3|d4|"
         );
 
-    BOOST_CHECK(format_csv_data(Util::CsvParser(
+    BOOST_CHECK(Util::format_csv_data(Util::CsvParser(
         "a1;a2;a3;a4\n"
         "\"b1\";b2;\"b3\";\"b4\"\n"
         "c1;c2;c3;c4\n"
@@ -138,7 +138,7 @@ BOOST_AUTO_TEST_CASE(test_unquoting_data)
         "#3 |d1|d2|d3|d4|"
         );
 
-    BOOST_CHECK(format_csv_data(Util::CsvParser(
+    BOOST_CHECK(Util::format_csv_data(Util::CsvParser(
         "\"a1\";a2;a3;a4\n"
         "b1;\"b2\";b3;b4\n"
         "c1;c2;\"c3\";c4\n"
@@ -150,7 +150,7 @@ BOOST_AUTO_TEST_CASE(test_unquoting_data)
         "#3 |d1|d2|d3|d4|"
         );
 
-    BOOST_CHECK(format_csv_data(Util::CsvParser(
+    BOOST_CHECK(Util::format_csv_data(Util::CsvParser(
         "a1;a2;a3;a4\n"
         "b1;b2;\"b3;b3\";\"b4\"\n"
         "c1;c2;c3;c4\n"
@@ -162,7 +162,7 @@ BOOST_AUTO_TEST_CASE(test_unquoting_data)
         "#3 |d1|d2|d3|d4|"
         );
 
-    BOOST_CHECK(format_csv_data(Util::CsvParser(
+    BOOST_CHECK(Util::format_csv_data(Util::CsvParser(
         "a1;a2;a3;a4\n"
         "\"b1;\";b2;\"b3\";\"b4\"\n"
         "c1;c2;c3;c4\n"
@@ -174,7 +174,7 @@ BOOST_AUTO_TEST_CASE(test_unquoting_data)
         "#3 |d1|d2|d3|d4|"
         );
 
-    BOOST_CHECK(format_csv_data(Util::CsvParser(
+    BOOST_CHECK(Util::format_csv_data(Util::CsvParser(
         "a1;a2;a3;a4\n"
         "b1;b2;\"b3\";\"b4;\"\n"
         "c1;c2;c3;c4\n"
@@ -186,7 +186,7 @@ BOOST_AUTO_TEST_CASE(test_unquoting_data)
         "#3 |d1|d2|d3|d4|"
         );
 
-    BOOST_CHECK(format_csv_data(Util::CsvParser(
+    BOOST_CHECK(Util::format_csv_data(Util::CsvParser(
         "a1;a2;a3;a4\n"
         "b1;b2;\"b3\";\"b4\n\"\n"
         "c1;c2;c3;c4\n"
@@ -198,7 +198,7 @@ BOOST_AUTO_TEST_CASE(test_unquoting_data)
         "#3 |d1|d2|d3|d4|"
         );
 
-    BOOST_CHECK(format_csv_data(Util::CsvParser(
+    BOOST_CHECK(Util::format_csv_data(Util::CsvParser(
         "a1;a2;a3;a4\n"
         "\"\nb1\";b2;\"b3\";\"b4\"\n"
         "c1;c2;c3;c4\n"
@@ -210,7 +210,7 @@ BOOST_AUTO_TEST_CASE(test_unquoting_data)
         "#3 |d1|d2|d3|d4|"
         );
 
-    BOOST_CHECK(format_csv_data(Util::CsvParser(
+    BOOST_CHECK(Util::format_csv_data(Util::CsvParser(
         "a1;a2;a3;a4\n"
         "b1;b2;\"b3\";\"\nb4\"\n"
         "c1;c2;c3;c4\n"
@@ -222,7 +222,7 @@ BOOST_AUTO_TEST_CASE(test_unquoting_data)
         "#3 |d1|d2|d3|d4|"
         );
 
-    BOOST_CHECK(format_csv_data(Util::CsvParser(
+    BOOST_CHECK(Util::format_csv_data(Util::CsvParser(
         "a1;a2;a3;a4\n"
         "\"b1\n\";b2;\"b3\";\"b4\"\n"
         "c1;c2;c3;c4\n"
@@ -237,7 +237,7 @@ BOOST_AUTO_TEST_CASE(test_unquoting_data)
 
 BOOST_AUTO_TEST_CASE(test_unquoting_quote)
 {
-    BOOST_CHECK(format_csv_data(Util::CsvParser(
+    BOOST_CHECK(Util::format_csv_data(Util::CsvParser(
         "a1;a2;a3;a4\n"
         "b1;b2;b3;\"b4\"\"\"\n"
         "c1;c2;c3;c4\n"
@@ -249,7 +249,7 @@ BOOST_AUTO_TEST_CASE(test_unquoting_quote)
         "#3 |d1|d2|d3|d4|"
         );
 
-    BOOST_CHECK(format_csv_data(Util::CsvParser(
+    BOOST_CHECK(Util::format_csv_data(Util::CsvParser(
         "a1;a2;a3;a4\n"
         "b1;b2;b3;\"\"\"b4\"\n"
         "c1;c2;c3;c4\n"
@@ -261,7 +261,7 @@ BOOST_AUTO_TEST_CASE(test_unquoting_quote)
         "#3 |d1|d2|d3|d4|"
         );
 
-    BOOST_CHECK(format_csv_data(Util::CsvParser(
+    BOOST_CHECK(Util::format_csv_data(Util::CsvParser(
         "a1;a2;a3;a4\n"
         " \"\"b1;b2;b3;b4\n"
         "c1;c2;c3;c4\n"
@@ -273,7 +273,7 @@ BOOST_AUTO_TEST_CASE(test_unquoting_quote)
         "#3 |d1|d2|d3|d4|"
         );
 
-    BOOST_CHECK(format_csv_data(Util::CsvParser(
+    BOOST_CHECK(Util::format_csv_data(Util::CsvParser(
         "a1;a2;a3;a4\n"
         " \"\"\"b1;b2;b3;b4\n"
         "c1;c2;c3;c4\n"
@@ -285,7 +285,7 @@ BOOST_AUTO_TEST_CASE(test_unquoting_quote)
         "#3 |d1|d2|d3|d4|"
         );
 
-    BOOST_CHECK(format_csv_data(Util::CsvParser(
+    BOOST_CHECK(Util::format_csv_data(Util::CsvParser(
         "a1;a2;a3;a4\n"
         " \"b1;b2;b3;b4\n"
         "c1;c2;c3;c4\n"
@@ -297,7 +297,7 @@ BOOST_AUTO_TEST_CASE(test_unquoting_quote)
         "#3 |d1|d2|d3|d4|"
         );
 
-    BOOST_CHECK(format_csv_data(Util::CsvParser(
+    BOOST_CHECK(Util::format_csv_data(Util::CsvParser(
         "a1;a2;a3;a4\n"
         "b1\"b1;b2;b3;b4\n"
         "c1;c2;c3;c4\n"
@@ -309,7 +309,7 @@ BOOST_AUTO_TEST_CASE(test_unquoting_quote)
         "#3 |d1|d2|d3|d4|"
         );
 
-    BOOST_CHECK(format_csv_data(Util::CsvParser(
+    BOOST_CHECK(Util::format_csv_data(Util::CsvParser(
         "a1;a2;a3;a4\n"
         "b1\"\"b1;b2;b3;b4\n"
         "c1;c2;c3;c4\n"
@@ -321,7 +321,7 @@ BOOST_AUTO_TEST_CASE(test_unquoting_quote)
         "#3 |d1|d2|d3|d4|"
         );
 
-    BOOST_CHECK(format_csv_data(Util::CsvParser(
+    BOOST_CHECK(Util::format_csv_data(Util::CsvParser(
         "a1;a2;a3;a4\n"
         "b1\"\"\"b1;b2;b3;b4\n"
         "c1;c2;c3;c4\n"
@@ -333,7 +333,7 @@ BOOST_AUTO_TEST_CASE(test_unquoting_quote)
         "#3 |d1|d2|d3|d4|"
         );
 
-    BOOST_CHECK(format_csv_data(Util::CsvParser(
+    BOOST_CHECK(Util::format_csv_data(Util::CsvParser(
         "a1;a2;a3;a4\n"
         "b1\"\"\"\"b1;b2;b3;b4\n"
         "c1;c2;c3;c4\n"
@@ -345,7 +345,7 @@ BOOST_AUTO_TEST_CASE(test_unquoting_quote)
         "#3 |d1|d2|d3|d4|"
         );
 
-    BOOST_CHECK(format_csv_data(Util::CsvParser(
+    BOOST_CHECK(Util::format_csv_data(Util::CsvParser(
         "\"\"\"a1\";a2;a3;a4\n"
         "b1;\"\"\"\"\"b2\";b3;b4\n"
         "c1;c2;\"c3\"\"\"\"\";c4\n"
@@ -377,7 +377,7 @@ BOOST_AUTO_TEST_CASE(test_unquoting_quote)
 
 BOOST_AUTO_TEST_CASE(test_newline)
 {
-    BOOST_CHECK(format_csv_data(Util::CsvParser(
+    BOOST_CHECK(Util::format_csv_data(Util::CsvParser(
         "a1;a2;a3;a4\n"
         "\"b1\";b2;\"b3\";\"b4\"\n"
         "c1;c2;c3;c4\n"
@@ -389,7 +389,7 @@ BOOST_AUTO_TEST_CASE(test_newline)
         "#3 |d1|d2|d3|d4|"
         );
 
-    BOOST_CHECK(format_csv_data(Util::CsvParser(
+    BOOST_CHECK(Util::format_csv_data(Util::CsvParser(
         "\"a1\";a2;a3;a4\n"
         "b1;\"b2\";b3;b4\n"
         "c1;c2;\"c3\";c4\n"
@@ -401,7 +401,7 @@ BOOST_AUTO_TEST_CASE(test_newline)
         "#3 |d1|d2|d3|d4|"
         );
 
-    BOOST_CHECK(format_csv_data(Util::CsvParser(
+    BOOST_CHECK(Util::format_csv_data(Util::CsvParser(
         "a1;a2;a3;a4\r\n"
         "\"b1\";b2;\"b3\";\"b4\"\r\n"
         "c1;c2;c3;c4\r\n"
@@ -413,7 +413,7 @@ BOOST_AUTO_TEST_CASE(test_newline)
         "#3 |d1|d2|d3|d4|"
         );
 
-    BOOST_CHECK(format_csv_data(Util::CsvParser(
+    BOOST_CHECK(Util::format_csv_data(Util::CsvParser(
         "\"a1\";a2;a3;a4\r\n"
         "b1;\"b2\";b3;b4\r\n"
         "c1;c2;\"c3\";c4\r\n"
@@ -425,7 +425,7 @@ BOOST_AUTO_TEST_CASE(test_newline)
         "#3 |d1|d2|d3|d4|"
         );
 
-    BOOST_CHECK(format_csv_data(Util::CsvParser(
+    BOOST_CHECK(Util::format_csv_data(Util::CsvParser(
         "a1;a2;a3;a4\r"
         "\"b1\";b2;\"b3\";\"b4\"\r"
         "c1;c2;c3;c4\r"
@@ -437,7 +437,7 @@ BOOST_AUTO_TEST_CASE(test_newline)
         "#3 |d1|d2|d3|d4|"
         );
 
-    BOOST_CHECK(format_csv_data(Util::CsvParser(
+    BOOST_CHECK(Util::format_csv_data(Util::CsvParser(
         "\"a1\";a2;a3;a4\r"
         "b1;\"b2\";b3;b4\r"
         "c1;c2;\"c3\";c4\r"
@@ -449,7 +449,7 @@ BOOST_AUTO_TEST_CASE(test_newline)
         "#3 |d1|d2|d3|d4|"
         );
 
-    BOOST_CHECK(format_csv_data(Util::CsvParser(
+    BOOST_CHECK(Util::format_csv_data(Util::CsvParser(
         "a1;a2;a3;a4\r\n"
         "\"b1\";b2;\"b3\";\"b4\"\r\n"
         "c1;c2;c3;c4\r\n"
@@ -461,7 +461,7 @@ BOOST_AUTO_TEST_CASE(test_newline)
         "#3 |d1|d2|d3|d4|"
         );
 
-    BOOST_CHECK(format_csv_data(Util::CsvParser(
+    BOOST_CHECK(Util::format_csv_data(Util::CsvParser(
         "\"a1\";a2;a3;a4\r\n"
         "b1;\"b2\";b3;b4\r\n"
         "c1;c2;\"c3\";c4\r\n"
@@ -473,7 +473,7 @@ BOOST_AUTO_TEST_CASE(test_newline)
         "#3 |d1|d2|d3|d4|"
         );
 
-    BOOST_CHECK(format_csv_data(Util::CsvParser(
+    BOOST_CHECK(Util::format_csv_data(Util::CsvParser(
         "a1;a2;a3;a4\r"
         "\"b1\";b2;\"b3\";\"b4\"\r"
         "c1;c2;c3;c4\r"
@@ -485,7 +485,7 @@ BOOST_AUTO_TEST_CASE(test_newline)
         "#3 |d1|d2|d3|d4|"
         );
 
-    BOOST_CHECK(format_csv_data(Util::CsvParser(
+    BOOST_CHECK(Util::format_csv_data(Util::CsvParser(
         "\"a1\";a2;a3;a4\r"
         "b1;\"b2\";b3;b4\r"
         "c1;c2;\"c3\";c4\r"

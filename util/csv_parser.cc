@@ -149,8 +149,7 @@ namespace Util
                     csv_data.push_back(std::vector<std::string>());//add new row
                 }
             }
-
-        } while((field_start_index >= field_end_index ) && ((field_start_index + 1) <= csv_file_.length()));
+        } while(((field_start_index + 1) >= (field_end_index + 1)) && ((field_start_index + 1) <= csv_file_.length()));
 
         if(csv_data.back().empty()) csv_data.pop_back();//remove last row if empty
 

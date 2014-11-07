@@ -143,12 +143,12 @@
 
                 //parse csv
                 std::vector<std::vector<std::string> > csv_data = Util::CsvParser(csv_file_content).parse();
+
+                //std::cerr << Util::format_csv_data(csv_data) << std::endl;
+
                 for(std::vector<std::vector<std::string> >::const_iterator idci = csv_data.begin(); idci != csv_data.end(); ++idci)
                 {
-                    //TODO
-                    //getting additional empty row at the end of data
-                    //, this might be bug in csv parser
-                    //, not happening with the same data in test_csv_parser
+                    //ignore empty row, empty row contains empty field
                     if((idci->size() > 0) && (idci->at(0).size() > 0))
                     {
                         unsigned long long id = 0;

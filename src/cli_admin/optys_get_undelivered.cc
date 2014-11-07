@@ -67,9 +67,9 @@ void notify_letters_optys_get_undelivered_impl(const std::string& optys_config_f
         file_names = get_all_csv_file_names(local_download_dir);
     }
 
-    std::cerr << "data file names:";
-    for(std::set<std::string>::const_iterator ci = file_names.begin(); ci != file_names.end(); ++ci) std::cerr << " " << (*ci);
-    std::cerr << std::endl;
+    std::cout << "data file names:";
+    for(std::set<std::string>::const_iterator ci = file_names.begin(); ci != file_names.end(); ++ci) std::cout << " " << (*ci);
+    std::cout << std::endl;
 
     process_undelivered_messages_data(local_download_dir, file_names);
 }
