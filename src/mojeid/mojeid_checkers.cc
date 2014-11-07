@@ -55,6 +55,29 @@ bool contact_checker_birthday(const Contact &_data, FieldErrorMap &_errors)
 }
 
 
+bool contact_checker_birthday_required(const Contact &_data, FieldErrorMap &_errors)
+{
+    if (_data.ssntype.get_value_or_default() != "BIRTHDAY")
+    {
+        _errors[field_birth_date] = REQUIRED;
+        return false;
+    }
+    return contact_checker_birthday(_data, _errors);
+}
+
+
+bool contact_checker_vat_id_required(const Contact &_data, FieldErrorMap &_errors)
+{
+    if (_data.ssntype.get_value_or_default() != "ICO"
+            || boost::algorithm::trim_copy(_data.ssn.get_value_or_default()).empty())
+    {
+        _errors[field_vat_id] = REQUIRED;
+        return false;
+    }
+    return true;
+}
+
+
 }
 }
 }
