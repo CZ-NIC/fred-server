@@ -67,24 +67,95 @@ BOOST_AUTO_TEST_CASE(test_trivial)
 
 BOOST_AUTO_TEST_CASE(test_some_data)
 {
-    BOOST_MESSAGE(Util::format_csv_data(Util::CsvParser(
-    "2;\"nedoruceno\"\n"
-    "6;nedoruceno\n"
-    "10;taky nedoruceno\n"
-    "14;\"taky \"\"nedoruceno\"\"\"\n"
-    "18;\"adresat asi umrel\"\n"
-    ).parse()));
+    BOOST_CHECK(Util::format_csv_data(Util::CsvParser(
+        "2;\"nedoruceno\"\n"
+        "6;nedoruceno\n"
+        "10;taky nedoruceno\n"
+        "14;\"taky \"\"nedoruceno\"\"\"\n"
+        "18;\"adresat asi umrel\"\n"
+        ).parse()) ==
+        "#0 |2|nedoruceno|"
+        "#1 |6|nedoruceno|"
+        "#2 |10|taky nedoruceno|"
+        "#3 |14|taky \"nedoruceno\"|"
+        "#4 |18|adresat asi umrel|"
+        );
 }
-BOOST_AUTO_TEST_CASE(test_starting_empty_lines)
+BOOST_AUTO_TEST_CASE(test_empty_lines)
 {
-    BOOST_MESSAGE(Util::format_csv_data(Util::CsvParser(
-    "\n"
-    "2;\"nedoruceno\"\n"
-    "6;nedoruceno\n"
-    "10;taky nedoruceno\n"
-    "14;\"taky \"\"nedoruceno\"\"\"\n"
-    "18;\"adresat asi umrel\"\n"
-    ).parse()));
+    BOOST_CHECK(Util::format_csv_data(Util::CsvParser(
+        "\n"
+        "2;\"nedoruceno\"\n"
+        "6;nedoruceno\n"
+        "10;taky nedoruceno\n"
+        "14;\"taky \"\"nedoruceno\"\"\"\n"
+        "18;\"adresat asi umrel\"\n"
+        ).parse()) ==
+        "#0 ||"
+        "#1 |2|nedoruceno|"
+        "#2 |6|nedoruceno|"
+        "#3 |10|taky nedoruceno|"
+        "#4 |14|taky \"nedoruceno\"|"
+        "#5 |18|adresat asi umrel|"
+        );
+
+    BOOST_CHECK(Util::format_csv_data(Util::CsvParser(
+        "\n\n"
+        "2;\"nedoruceno\"\n"
+        "6;nedoruceno\n"
+        "10;taky nedoruceno\n"
+        "14;\"taky \"\"nedoruceno\"\"\"\n"
+        "18;\"adresat asi umrel\"\n"
+        ).parse()) ==
+        "#0 ||"
+        "#1 ||"
+        "#2 |2|nedoruceno|"
+        "#3 |6|nedoruceno|"
+        "#4 |10|taky nedoruceno|"
+        "#5 |14|taky \"nedoruceno\"|"
+        "#6 |18|adresat asi umrel|"
+        );
+
+    BOOST_CHECK(Util::format_csv_data(Util::CsvParser(
+        "\n"
+        "2;\"nedoruceno\"\n"
+        "6;nedoruceno\n"
+        "10;taky nedoruceno\n"
+        "14;\"taky \"\"nedoruceno\"\"\"\n"
+        "\n"
+        "18;\"adresat asi umrel\"\n"
+        ).parse()) ==
+        "#0 ||"
+        "#1 |2|nedoruceno|"
+        "#2 |6|nedoruceno|"
+        "#3 |10|taky nedoruceno|"
+        "#4 |14|taky \"nedoruceno\"|"
+        "#5 ||"
+        "#6 |18|adresat asi umrel|"
+        );
+
+    BOOST_CHECK(Util::format_csv_data(Util::CsvParser(
+        "\n\n"
+        "2;\"nedoruceno\"\n"
+        "6;nedoruceno\n"
+        "10;taky nedoruceno\n"
+        "14;\"taky \"\"nedoruceno\"\"\"\n"
+        "\n\n"
+        "18;\"adresat asi umrel\"\n"
+        "\n\n"
+        ).parse()) ==
+        "#0 ||"
+        "#1 ||"
+        "#2 |2|nedoruceno|"
+        "#3 |6|nedoruceno|"
+        "#4 |10|taky nedoruceno|"
+        "#5 |14|taky \"nedoruceno\"|"
+        "#6 ||"
+        "#7 ||"
+        "#8 |18|adresat asi umrel|"
+        "#9 ||"
+        "#10 ||"
+        );
 }
 
 
