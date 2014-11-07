@@ -356,10 +356,6 @@ bool check_validated_contact_diff(
     if (_c1.organization.get_value_or_default() != _c2.organization.get_value_or_default()) {
         return false;
     }
-    /* dic */
-    if (_c1.vat.get_value_or_default() != _c2.vat.get_value_or_default()) {
-        return false;
-    }
     /* address */
     if ((_c1.street1.get_value_or_default() != _c2.street1.get_value_or_default())
             || (_c1.street2.get_value_or_default() != _c2.street2.get_value_or_default())
