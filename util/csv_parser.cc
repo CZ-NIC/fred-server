@@ -31,7 +31,6 @@
 #include <cassert>
 #include <iterator>
 
-#include "util/util.h"
 #include "util/csv_parser.h"
 
 namespace Util
