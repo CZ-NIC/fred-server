@@ -36,6 +36,8 @@ ContactValidator create_conditional_identification_validator_mojeid();
 ContactValidator create_finish_identification_validator_mojeid();
 ContactValidator create_verified_transfer_validator_mojeid();
 ContactValidator create_contact_update_validator_mojeid();
+ContactValidator create_validation_user_validator_mojeid();
+ContactValidator create_validation_company_validator_mojeid();
 
 }
 }

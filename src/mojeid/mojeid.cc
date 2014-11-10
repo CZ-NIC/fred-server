@@ -1002,6 +1002,11 @@ namespace Registry
                 LOGGER(PACKAGE).warning(boost::format("cannot create request (%1%)") % _ex.what());
                 throw;
             }
+            catch (Fred::Contact::Verification::DataValidationError &_ex)
+            {
+                LOGGER(PACKAGE).info(_ex.what());
+                throw;
+            }
             catch (std::exception &_ex)
             {
                 LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % _ex.what());

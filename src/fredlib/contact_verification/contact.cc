@@ -35,7 +35,7 @@ ContactAddress Contact::get_mailing_address()const
     }
     ContactAddress addr;
     addr.type = Address::Type::MAILING;
-    addr.company_name = this->organization;
+    addr.company_name = Nullable<std::string>();
     addr.street1 = this->street1;
     addr.street2 = this->street2;
     addr.street3 = this->street3;

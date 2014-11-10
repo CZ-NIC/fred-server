@@ -123,7 +123,7 @@ BOOST_AUTO_TEST_CASE( test_create_mojeid )
         std::string xmark = rdg.xnumstring(6);
         fcvc.handle=std::string("TESTMOJEID-HANDLE")+xmark;
         fcvc.name=std::string("TESTMOJEID NAME")+xmark;
-        fcvc.organization=std::string("TESTMOJEID-ORG")+xmark;
+        fcvc.organization=std::string();
         fcvc.street1=std::string("TESTMOJEID-STR1")+xmark;
         fcvc.city=std::string("Praha");
         fcvc.postalcode=std::string("11150");
@@ -387,7 +387,7 @@ BOOST_AUTO_TEST_CASE( test_transfer_mojeid )
         std::string xmark = rdg.xnumstring(6);
         fcvc.handle=std::string("TESTMOJEID-HANDLE")+xmark;
         fcvc.name=std::string("TESTMOJEID NAME")+xmark;
-        fcvc.organization=std::string("TESTMOJEID-ORG")+xmark;
+        fcvc.organization=std::string();
         fcvc.street1=std::string("TESTMOJEID-STR1")+xmark;
         fcvc.city=std::string("Praha");
         fcvc.postalcode=std::string("11150");
@@ -646,7 +646,7 @@ std::pair< ::size_t, std::string > create_mojeid_contact(const std::string &xmar
         fcvc.handle = std::string("TESTMOJEID-HANDLE") + xmark;
         result.second = fcvc.handle;
         fcvc.name = std::string("TESTMOJEID NAME") + xmark;
-        fcvc.organization = std::string("TESTMOJEID-ORG") + xmark;
+        fcvc.organization = std::string();
         fcvc.street1 = std::string("TESTMOJEID-STR1") + xmark;
         fcvc.city = std::string("Praha");
         fcvc.postalcode = std::string("11150");

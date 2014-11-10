@@ -13,10 +13,13 @@ const boost::regex USERNAME_PATTERN("^[a-z0-9](-?[a-z0-9])*$");
 
 const std::string field_username     = "contact.username";
 const std::string field_birth_date   = "contact.birth_date";
+const std::string field_vat_id       = "contact.vat_id";
 
 
 bool contact_checker_username(const Contact &_data, FieldErrorMap &_errors);
 bool contact_checker_birthday(const Contact &_data, FieldErrorMap &_errors);
+bool contact_checker_birthday_required(const Contact &_data, FieldErrorMap &_errors);
+bool contact_checker_vat_id_required(const Contact &_data, FieldErrorMap &_errors);
 
 
 }

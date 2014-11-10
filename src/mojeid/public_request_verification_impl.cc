@@ -16,6 +16,7 @@
 #include "src/mojeid/mojeid_validators.h"
 
 #include <boost/assign/list_of.hpp>
+#include <boost/algorithm/string.hpp>
 
 namespace Fred {
 namespace PublicRequest {
@@ -472,21 +473,31 @@ public:
 
     void save()
     {
-        if (!pri_ptr_->getId()) {
+        if (!pri_ptr_->getId())
+        {
+            const unsigned long long oid = pri_ptr_->getObject(0).id;
 
             const Contact::Verification::State contact_state =
-                Contact::Verification::get_contact_verification_state(pri_ptr_->getObject(0).id);
+                Contact::Verification::get_contact_verification_state(oid);
             if (contact_state.has_all(Contact::Verification::State::ciVm) ||
                !contact_state.has_all(Contact::Verification::State::civM)) {
                 throw NotApplicable("pre_insert_checks: failed!");
             }
 
             /* has V request */
-            if (check_public_request(pri_ptr_->getObject(0).id
-                , PRT_MOJEID_CONTACT_VALIDATION) > 0)
+            if (check_public_request(oid, PRT_MOJEID_CONTACT_VALIDATION) > 0)
             {
-                throw RequestExists(PRT_MOJEID_CONTACT_VALIDATION
-                        , pri_ptr_->getObject(0).id);
+                throw RequestExists(PRT_MOJEID_CONTACT_VALIDATION, oid);
+            }
+
+            Fred::Contact::Verification::Contact cdata = Fred::Contact::Verification::contact_info(oid);
+            if (boost::algorithm::trim_copy(cdata.organization.get_value_or_default()).empty())
+            {
+                Fred::Contact::Verification::create_validation_user_validator_mojeid().check(cdata);
+            }
+            else
+            {
+                Fred::Contact::Verification::create_validation_company_validator_mojeid().check(cdata);
             }
         }
         pri_ptr_->PublicRequestImpl::save();

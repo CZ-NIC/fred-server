@@ -57,6 +57,20 @@ ContactValidator create_contact_update_validator_mojeid()
     return tmp;
 }
 
+ContactValidator create_validation_user_validator_mojeid()
+{
+    ContactValidator tmp = create_default_contact_validator();
+    tmp.add_checker(contact_checker_birthday_required);
+    return tmp;
+}
+
+ContactValidator create_validation_company_validator_mojeid()
+{
+    ContactValidator tmp = create_default_contact_validator();
+    tmp.add_checker(contact_checker_vat_id_required);
+    return tmp;
+}
+
 
 }
 }

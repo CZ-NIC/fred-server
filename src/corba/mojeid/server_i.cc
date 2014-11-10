@@ -410,6 +410,11 @@ namespace Registry
             {
                 throw Registry::MojeID::Server::VALIDATION_ALREADY_PROCESSED();
             }
+            catch (Fred::Contact::Verification::DataValidationError &_ex)
+            {
+                throw Registry::MojeID::Server::DATA_VALIDATION_ERROR(
+                    corba_wrap_validation_error_list(_ex.errors));
+            }
             catch (std::exception &_ex)
             {
                 throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR(_ex.what());
