@@ -17,37 +17,18 @@
  */
 
 #include <memory>
-#include <iostream>
-#include <sstream>
 #include <string>
 #include <algorithm>
 #include <functional>
-#include <numeric>
 #include <map>
 #include <exception>
-#include <queue>
 #include <sys/time.h>
 #include <time.h>
 
-#include <boost/format.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/date_time.hpp>
-#include <boost/assign/list_of.hpp>
 #include <boost/regex.hpp>
 
-#include "time_clock.h"
-#include "random_data_generator.h"
-
-#include "setup_server_decl.h"
-
 #include "util/printable.h"
-#include "cfg/handle_general_args.h"
-#include "cfg/handle_server_args.h"
-#include "cfg/handle_logging_args.h"
-#include "cfg/handle_database_args.h"
 #include "cfg/handle_corbanameservice_args.h"
-#include "cfg/handle_registry_args.h"
 
 
 //not using UTF defined main
