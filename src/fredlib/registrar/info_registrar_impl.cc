@@ -64,7 +64,7 @@ namespace Fred
         params.push_back(local_timestamp_pg_time_zone_name);//refered as $1
 
         //query to get info and lock registrar row for update if set
-        sql <<"SELECT r.id, r.ico, r.dic, r.varsymb, r.vat " //0-4
+        sql <<"SELECT r.id, r.ico, r.dic, r.varsymb, r.vat AS vat_ " //0-4
             ", r.handle, r.name, r.organization "//5-7
             ", r.street1, r.street2, r.street3, r.city, r.stateorprovince, r.postalcode, r.country " //8-14
             ", r.telephone, r.fax, r.email, r.url, r.system, r.regex "//15-20
@@ -114,8 +114,7 @@ namespace Fred
                 : Nullable<std::string>(static_cast<std::string>(registrar_query_result[i][2]));//r.dic
             info_registrar_output.info_registrar_data.variable_symbol = registrar_query_result[i][3].isnull() ? Nullable<std::string>()
                 : Nullable<std::string>(static_cast<std::string>(registrar_query_result[i][3]));//r.varsymb
-            info_registrar_output.info_registrar_data.vat_payer = registrar_query_result[i][4].isnull() ? Nullable<bool>()
-                : Nullable<bool>(static_cast<bool>(registrar_query_result[i][4]));//r.vat
+            info_registrar_output.info_registrar_data.vat_payer = static_cast<bool>(registrar_query_result[i]["vat_"]);
             info_registrar_output.info_registrar_data.handle = static_cast<std::string>(registrar_query_result[i][5]);//r.handle
             info_registrar_output.info_registrar_data.name = registrar_query_result[i][6].isnull() ? Nullable<std::string>()
                 : Nullable<std::string> (static_cast<std::string>(registrar_query_result[i][6]));

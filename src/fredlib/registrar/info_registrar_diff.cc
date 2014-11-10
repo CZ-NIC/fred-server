@@ -186,7 +186,7 @@ namespace Fred
         {
             diff.payment_memo_regex = std::make_pair(first.payment_memo_regex,second.payment_memo_regex);
         }
-        if(!Util::is_equal(first.vat_payer, second.vat_payer))
+        if(first.vat_payer != second.vat_payer)
         {
             diff.vat_payer = std::make_pair(first.vat_payer,second.vat_payer);
         }

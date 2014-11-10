@@ -62,7 +62,7 @@ namespace Fred
         DiffMemeber<Nullable<std::string> >::Type dic;/**< taxpayer identification number */
         DiffMemeber<Nullable<std::string> >::Type variable_symbol;/**< registrar payments coupling tag, have to match with payment variable symbol to couple payment with registrar*/
         DiffMemeber<Nullable<std::string> >::Type payment_memo_regex;/**< registrar payments coupling alternative to variable symbol, if payment_memo_regex is set, payment_memo have to match case insesitive with payment_memo_regex to couple payment with registrar*/
-        DiffMemeber<Nullable<bool> >::Type vat_payer;/**< VAT payer flag */
+        DiffMemeber<bool>::Type vat_payer;/**< VAT payer flag */
         DiffMemeber<unsigned long long >::Type id; /**< registrar db id */
 
         /**

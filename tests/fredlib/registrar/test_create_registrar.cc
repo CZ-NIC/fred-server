@@ -68,7 +68,7 @@ struct test_registrar_fixture : virtual public Test::Fixture::instantiate_db_tem
         test_info.telephone = Nullable<std::string>("123456789");
         test_info.url = Nullable<std::string>("http://test.nic.cz");
         test_info.variable_symbol = Nullable<std::string>("1234567890");
-        test_info.vat_payer = Nullable<bool>(true);
+        test_info.vat_payer = true;
     }
     ~test_registrar_fixture()
     {}
@@ -101,7 +101,7 @@ BOOST_AUTO_TEST_CASE(create_registrar)
         .set_telephone(test_info.telephone.get_value())
         .set_url(test_info.url.get_value())
         .set_variable_symbol(test_info.variable_symbol.get_value())
-        .set_vat_payer(test_info.vat_payer.get_value())
+        .set_vat_payer(test_info.vat_payer)
         .exec(ctx);
 
     Fred::InfoRegistrarOutput registrar_info = Fred::InfoRegistrarByHandle(test_registrar_handle).exec(ctx);

@@ -34,7 +34,7 @@ namespace Fred
 {
 
     InfoRegistrarData::InfoRegistrarData()
-    : id(0)
+    : id(0), vat_payer(false)
     {}
 
     bool InfoRegistrarData::operator==(const InfoRegistrarData& rhs) const
@@ -70,7 +70,7 @@ namespace Fred
         (std::make_pair("dic",dic.print_quoted()))
         (std::make_pair("variable_symbol",variable_symbol.print_quoted()))
         (std::make_pair("payment_memo_regex",payment_memo_regex.print_quoted()))
-        (std::make_pair("vat_payer",vat_payer.print_quoted()))
+        (std::make_pair("vat_payer", boost::lexical_cast<std::string>(vat_payer)))
         (std::make_pair("id",boost::lexical_cast<std::string>(id)))
         );
     }

@@ -56,7 +56,7 @@ namespace Fred
         Nullable<std::string> dic;/**< taxpayer identification number */
         Nullable<std::string> variable_symbol;/**< registrar payments coupling tag, have to match with payment variable symbol to couple payment with registrar*/
         Nullable<std::string> payment_memo_regex;/**< registrar payments coupling alternative to variable symbol, if payment_memo_regex is set, payment_memo have to match case insesitive with payment_memo_regex to couple payment with registrar*/
-        Nullable<bool> vat_payer;/**< VAT payer flag */
+        bool                  vat_payer;/**< VAT payer flag */
         unsigned long long id; /**< registrar db id */
 
     public:
