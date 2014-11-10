@@ -2166,7 +2166,6 @@ tests_test_server_SOURCES = \
 		tests/util/test_decimal.cc \
 		tests/util/test_shellcmd.cc \
 		tests/deprecated/test_contact_verification.cc \
-		tests/deprecated/test-merge-auto-proc.cc \
 		tests/deprecated/test_locking_trigger.cc \
 		tests/deprecated/test_mojeid.cc \
 		tests/util/test_nullable.cc \
