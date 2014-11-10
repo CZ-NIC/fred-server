@@ -35,7 +35,14 @@
 namespace Util
 {
     /**
-     * csv data parser
+     * CSV like data parser.
+     * Implementation is more simple than high-performance.
+     * CSV format is RFC4180 section-2  with exception of:
+     * Quotation marks are considered doubled even in unquoted field e.g. test1""test2 -> test1"test2 and test1"test2 -> test1"test2.
+     * No header is expected, data fields are expected in the fist line of CSV data.
+     * Expected newline is LF, CR or CRLF.
+     * Accept and ignores empty lines except one optional newline at the end of data, that do not create row in output.
+     * Don't care about number of fields in row.
      */
     class CsvParser
     {
@@ -43,12 +50,24 @@ namespace Util
         const char delimiter_;
         const char quotation_mark_;
     public:
+
+        /**
+         * Ctor
+         * @param csv_data is text to be processed
+         * @param delimiter is CSV field delimiter, default semicolon
+         * @param quotation_mark is is CSV field quotation mark, default double quotes
+         */
         CsvParser(const std::string& csv_data, const char delimiter = ';', const char quotation_mark = '"')
         : csv_data_(csv_data)
         , delimiter_(delimiter)
         , quotation_mark_(quotation_mark)
         {}
 
+        /**
+         * Process data and return structured data
+         * @return rows of string fields with non uniform row lengths
+         * @throws std::runtime_error with short description of failure.
+         */
         std::vector<std::vector<std::string> > parse();
     };
 }
