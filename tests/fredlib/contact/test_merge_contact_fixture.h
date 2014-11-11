@@ -65,7 +65,60 @@
 namespace MergeContactFixture
 {
     /**
-     * Setup test data for MergeContact related tests
+     * Setup test data for MergeContact related tests.
+     *
+     * Contact handle contains:
+     * - MC if contact is considered mergeable or NMC if it's not meant to be merged
+     * - group number, default: 0 or 1
+     * - registar handle, default: REG-1 or REG-2
+     *
+     * Linked object handle or fqdn contains handles of linked contacts.
+     *
+     * In default config or its subset have numbers prefixed with uppercase letters in handle or lowercase letters in fqdn following meaning:
+     *
+     * _S<number> or -s<number> designates contact states configuration where number means:
+     * - 0 - no states
+     * - 1 - no states
+     * - 2 - SERVER_UPDATE_PROHIBITED
+     * - 3 - SERVER_TRANSFER_PROHIBITED
+     * - 4 - SERVER_DELETE_PROHIBITED
+     * - 5 - SERVER_BLOCKED
+     * - 6 - MOJEID_CONTACT
+     *
+     * _LOS<number> or -los<number> designates linked object (e.g. domain, nsset or keyset) states configuration where number means:
+     * - 0 - no states
+     * - 1 - SERVER_UPDATE_PROHIBITED
+     * - 2 - SERVER_BLOCKED
+     * - 3 - SERVER_BLOCKED SERVER_UPDATE_PROHIBITED
+     *
+     * _LO<number> or -lo<number> designates linked objects (e.g. domains, nssets or keysets) configuration where number means:
+     * - 0 - no objects linked to contact
+     * - 1 - nsset linked to mergeable tech contact
+     * - 2 - nsset linked to mergeable tech contact and to other non-mergeable tech contact
+     * - 3 - nsset linked to mergeable tech contact and to other mergeable tech contact
+     * - 4 - nsset linked to mergeable tech contact, to other mergeable tech contact and to other non-mergeable tech contact
+     * - 5 - keyset linked to mergeable tech contact
+     * - 6 - keyset linked to mergeable tech contact and to other non-mergeable tech contact
+     * - 7 - keyset linked to mergeable tech contact and to other mergeable tech contact
+     * - 8 - keyset linked to mergeable tech contact, to other mergeable tech contact and to other non-mergeable tech contact
+     * - 9 - domain linked to mergeable admin contact
+     * - 10 - domain linked to mergeable admin contact and to other non-mergeable admin contact
+     * - 11 - domain linked to mergeable admin contact and to other mergeable admin contact
+     * - 12 - domain linked to mergeable admin contact, to other mergeable admin contact and to other non-mergeable admin contact
+     * - 13 - domain linked to mergeable owner
+     * - 14 - domain linked to mergeable owner contact and other mergeable admin contact
+     * - 15 - nsset and keyset linked to mergeable tech contact, domain linked as admin to the same contact, and another domain linked as owner to the same contact, with no linked object states
+     * - 16 - nsset and keyset linked to mergeable tech contact, domain linked as admin to the same contact, and another domain linked as owner to the same contact, with linked object states on nsset
+     * - 17 - nsset and keyset linked to mergeable tech contact, domain linked as admin to the same contact, and another domain linked as owner to the same contact, with linked object states on keyset
+     * - 18 - nsset and keyset linked to mergeable tech contact, domain linked as admin to the same contact, and another domain linked as owner to the same contact, with linked object states on domain linked via admin contact
+     * - 19 - nsset and keyset linked to mergeable tech contact, domain linked as admin to the same contact, and another domain linked as owner to the same contact, with linked object states on domain linked via owner contact
+     * - 20 - domain linked to mergeable contact as owner and admin, and to other to mergeable contact as admin
+     *
+     * _Q<number> or -q<number> designates how many linked object configurations will be linked to given contact
+     * , default quantities are: 0, 1, 2, 5
+     *
+     * OF<number> or of<number> is ordinal number in the linked object configuration quantity, starting from 0
+     *
      */
     struct mergeable_contact_grps_with_linked_objects_and_blocking_states : Test::Fixture::instantiate_db_template
     {
