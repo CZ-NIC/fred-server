@@ -170,13 +170,13 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc, auto_proc_fixture )
 
     /**
      * selected registrar of objects that should be changed within the same mergeable group (domains are lower case) from fixture setup:
-     * REG-1
+     * REG1
      */
     static const  boost::regex selected_registrar_regex(registrar_mc_1_handle, boost::regex::icase);
 
     /**
      * the other registrar of objects that shouldn't be changed within the same mergeable group (domains are lower case) from fixture setup:
-     * REG-2
+     * REG2
      */
     static const  boost::regex forbidden_registrar_regex(registrar_mc_2_handle, boost::regex::icase);
 
@@ -199,11 +199,11 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc, auto_proc_fixture )
             /**
              * forbidden states of source contact
              * from fixture setup:
-             * _S4 - SERVER_DELETE_PROHIBITED
-             * _S5 - SERVER_BLOCKED
-             * _S6 - MOJEID_CONTACT
+             * ST4 - SERVER_DELETE_PROHIBITED
+             * ST5 - SERVER_BLOCKED
+             * ST6 - MOJEID_CONTACT
              */
-            static const  boost::regex src_contact_forbidden_states_regex("_S4|_S5|_S6");
+            static const  boost::regex src_contact_forbidden_states_regex("-ST4|-ST5|-ST6");
             BOOST_CHECK(!boost::regex_search(ci->first, src_contact_forbidden_states_regex));
 
             //check if poll message exists for deleted contact
@@ -218,9 +218,9 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc, auto_proc_fixture )
             /**
              * forbidden state of destination contact
              * from fixture setup:
-             * _S5 - SERVER_BLOCKED
+             * -ST5 - SERVER_BLOCKED
              */
-            static const  boost::regex dst_contact_forbidden_states_regex("_S5");
+            static const  boost::regex dst_contact_forbidden_states_regex("-ST5");
             BOOST_CHECK(!boost::regex_search(ci->first, dst_contact_forbidden_states_regex));
         }
 
@@ -236,12 +236,12 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc, auto_proc_fixture )
 
     /**
      * forbidden states of linked object (domains are lower case) from fixture setup:
-     * _LOS1   SERVER_UPDATE_PROHIBITED
-     * _LOS2 - SERVER_BLOCKED
-     * _LOS3 - SERVER_BLOCKED + SERVER_UPDATE_PROHIBITED
+     * -LS1   SERVER_UPDATE_PROHIBITED
+     * -LS2 - SERVER_BLOCKED
+     * -LS3 - SERVER_BLOCKED + SERVER_UPDATE_PROHIBITED
      */
-    static const  boost::regex linked_domain_forbidden_states_regex("_los1|_los2|_los3");
-    static const  boost::regex linked_nsset_keyset_forbidden_states_regex("_LOS1|_LOS3");
+    static const  boost::regex linked_domain_forbidden_states_regex("-ls1|-ls2|-ls3");
+    static const  boost::regex linked_nsset_keyset_forbidden_states_regex("-LS1|-LS3");
 
     //nsset changes
     std::set<std::string> changed_nsset_handle;

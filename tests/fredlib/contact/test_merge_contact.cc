@@ -68,8 +68,9 @@ struct merge_fixture : MergeContactFixture::mergeable_contact_grps_with_linked_o
  */
 BOOST_FIXTURE_TEST_CASE(test_no_linked_objects_no_states, merge_fixture)
 {
-    std::string contact_handle_src = create_mergeable_contact_handle(
+    std::string contact_handle_src = create_contact_handle(
         registrar_vect.at(0)//registrar handle
+        , 1 //contact data
         , 0 //grpidtag
         , 0//state_case
         , 0//linked_object_case
@@ -77,8 +78,9 @@ BOOST_FIXTURE_TEST_CASE(test_no_linked_objects_no_states, merge_fixture)
         , 0//quantity_case
     );
     BOOST_MESSAGE(contact_handle_src);
-    std::string contact_handle_dst = create_mergeable_contact_handle(
+    std::string contact_handle_dst = create_contact_handle(
         registrar_vect.at(0)//registrar handle
+        , 1 //contact data
         , 0 //grpidtag
         , 1//state_case
         , 0//linked_object_case
@@ -153,8 +155,9 @@ BOOST_FIXTURE_TEST_CASE(test_no_linked_objects_no_states, merge_fixture)
  */
 BOOST_FIXTURE_TEST_CASE(test_linked_nsset, merge_fixture)
 {
-    std::string contact_handle_src = create_mergeable_contact_handle(
+    std::string contact_handle_src = create_contact_handle(
         registrar_vect.at(0)//registrar handle
+        , 1 //contact data
         , 0 //grpidtag
         , 0//state_case
         , 1//linked_object_case
@@ -162,8 +165,9 @@ BOOST_FIXTURE_TEST_CASE(test_linked_nsset, merge_fixture)
         , 1//quantity_case
     );
     BOOST_MESSAGE(contact_handle_src);
-    std::string contact_handle_dst = create_mergeable_contact_handle(
+    std::string contact_handle_dst = create_contact_handle(
         registrar_vect.at(0)//registrar handle
+        , 1 //contact data
         , 0 //grpidtag
         , 1//state_case
         , 0//linked_object_case
@@ -268,8 +272,9 @@ BOOST_FIXTURE_TEST_CASE(test_linked_nsset, merge_fixture)
  */
 BOOST_FIXTURE_TEST_CASE(test_linked_nsset_with_added_tech_contact, merge_fixture)
 {
-    std::string contact_handle_src = create_mergeable_contact_handle(
+    std::string contact_handle_src = create_contact_handle(
         registrar_vect.at(0)//registrar handle
+        , 1 //contact data
         , 0 //grpidtag
         , 0//state_case
         , 3//linked_object_case
@@ -277,8 +282,9 @@ BOOST_FIXTURE_TEST_CASE(test_linked_nsset_with_added_tech_contact, merge_fixture
         , 1//quantity_case
     );
     BOOST_MESSAGE(contact_handle_src);
-    std::string contact_handle_dst = create_mergeable_contact_handle(
+    std::string contact_handle_dst = create_contact_handle(
         registrar_vect.at(0)//registrar handle
+        , 1 //contact data
         , 0 //grpidtag
         , 1//state_case
         , 3//linked_object_case
@@ -425,8 +431,9 @@ BOOST_FIXTURE_TEST_CASE(test_linked_nsset_with_added_tech_contact, merge_fixture
  */
 BOOST_FIXTURE_TEST_CASE(test_linked_keyset, merge_fixture)
 {
-    std::string contact_handle_src = create_mergeable_contact_handle(
+    std::string contact_handle_src = create_contact_handle(
         registrar_vect.at(0)//registrar handle
+        , 1 //contact data
         , 0 //grpidtag
         , 0//state_case
         , 5//linked_object_case
@@ -434,8 +441,9 @@ BOOST_FIXTURE_TEST_CASE(test_linked_keyset, merge_fixture)
         , 1//quantity_case
     );
     BOOST_MESSAGE(contact_handle_src);
-    std::string contact_handle_dst = create_mergeable_contact_handle(
+    std::string contact_handle_dst = create_contact_handle(
         registrar_vect.at(0)//registrar handle
+        , 1 //contact data
         , 0 //grpidtag
         , 1//state_case
         , 0//linked_object_case
@@ -542,8 +550,9 @@ BOOST_FIXTURE_TEST_CASE(test_linked_keyset, merge_fixture)
  */
 BOOST_FIXTURE_TEST_CASE(test_linked_keyset_with_added_tech_contact, merge_fixture)
 {
-    std::string contact_handle_src = create_mergeable_contact_handle(
+    std::string contact_handle_src = create_contact_handle(
         registrar_vect.at(0)//registrar handle
+        , 1 //contact data
         , 0 //grpidtag
         , 0//state_case
         , 7//linked_object_case
@@ -551,8 +560,9 @@ BOOST_FIXTURE_TEST_CASE(test_linked_keyset_with_added_tech_contact, merge_fixtur
         , 1//quantity_case
     );
     BOOST_MESSAGE(contact_handle_src);
-    std::string contact_handle_dst = create_mergeable_contact_handle(
+    std::string contact_handle_dst = create_contact_handle(
         registrar_vect.at(0)//registrar handle
+        , 1 //contact data
         , 0 //grpidtag
         , 1//state_case
         , 7//linked_object_case
@@ -701,8 +711,9 @@ BOOST_FIXTURE_TEST_CASE(test_linked_keyset_with_added_tech_contact, merge_fixtur
  */
 BOOST_FIXTURE_TEST_CASE(test_linked_domain_via_owner, merge_fixture)
 {
-    std::string contact_handle_src = create_mergeable_contact_handle(
+    std::string contact_handle_src = create_contact_handle(
         registrar_vect.at(0)//registrar handle
+        , 1 //contact data
         , 0 //grpidtag
         , 0//state_case
         , 13//linked_object_case
@@ -710,8 +721,9 @@ BOOST_FIXTURE_TEST_CASE(test_linked_domain_via_owner, merge_fixture)
         , 1//quantity_case
     );
     BOOST_MESSAGE(contact_handle_src);
-    std::string contact_handle_dst = create_mergeable_contact_handle(
+    std::string contact_handle_dst = create_contact_handle(
         registrar_vect.at(0)//registrar handle
+        , 1 //contact data
         , 0 //grpidtag
         , 1//state_case
         , 0//linked_object_case
@@ -817,8 +829,9 @@ BOOST_FIXTURE_TEST_CASE(test_linked_domain_via_owner, merge_fixture)
  */
 BOOST_FIXTURE_TEST_CASE(test_linked_domain_via_admin, merge_fixture)
 {
-    std::string contact_handle_src = create_mergeable_contact_handle(
+    std::string contact_handle_src = create_contact_handle(
         registrar_vect.at(0)//registrar handle
+        , 1 //contact data
         , 0 //grpidtag
         , 0//state_case
         , 9//linked_object_case
@@ -826,8 +839,9 @@ BOOST_FIXTURE_TEST_CASE(test_linked_domain_via_admin, merge_fixture)
         , 1//quantity_case
     );
     BOOST_MESSAGE(contact_handle_src);
-    std::string contact_handle_dst = create_mergeable_contact_handle(
+    std::string contact_handle_dst = create_contact_handle(
         registrar_vect.at(0)//registrar handle
+        , 1 //contact data
         , 0 //grpidtag
         , 1//state_case
         , 0//linked_object_case
@@ -893,8 +907,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_domain_via_admin, merge_fixture)
         0//linked_object_state_case
         , 1//quantity_case
         , 0//number in quantity
-        , create_non_mergeable_contact_handle(registrar_vect.at(0)//registrar handle
-            , 1) //owner contact
+        , create_contact_handle(registrar_vect.at(0), 0, 1, 0, 15, 0, 1)//owner contact
         , contact_handle_src //admin contact
     );
     BOOST_MESSAGE(fqdn);
@@ -936,8 +949,9 @@ BOOST_FIXTURE_TEST_CASE(test_linked_domain_via_admin, merge_fixture)
 BOOST_FIXTURE_TEST_CASE(test_linked_nsset_5, merge_fixture)
 {
     unsigned nsset_quantity = 5;
-    std::string contact_handle_src = create_mergeable_contact_handle(
+    std::string contact_handle_src = create_contact_handle(
         registrar_vect.at(0)//registrar handle
+        , 1 //contact data
         , 0 //grpidtag
         , 0//state_case
         , 1//linked_object_case
@@ -945,8 +959,9 @@ BOOST_FIXTURE_TEST_CASE(test_linked_nsset_5, merge_fixture)
         , nsset_quantity//quantity_case
     );
     BOOST_MESSAGE(contact_handle_src);
-    std::string contact_handle_dst = create_mergeable_contact_handle(
+    std::string contact_handle_dst = create_contact_handle(
         registrar_vect.at(0)//registrar handle
+        , 1 //contact data
         , 0 //grpidtag
         , 1//state_case
         , 0//linked_object_case
@@ -1052,8 +1067,9 @@ BOOST_FIXTURE_TEST_CASE(test_linked_nsset_5, merge_fixture)
 BOOST_FIXTURE_TEST_CASE(test_linked_keyset_5, merge_fixture)
 {
     unsigned keyset_quantity = 5;
-    std::string contact_handle_src = create_mergeable_contact_handle(
+    std::string contact_handle_src = create_contact_handle(
         registrar_vect.at(0)//registrar handle
+        , 1 //contact data
         , 0 //grpidtag
         , 0//state_case
         , 5//linked_object_case
@@ -1061,8 +1077,9 @@ BOOST_FIXTURE_TEST_CASE(test_linked_keyset_5, merge_fixture)
         , keyset_quantity//quantity_case
     );
     BOOST_MESSAGE(contact_handle_src);
-    std::string contact_handle_dst = create_mergeable_contact_handle(
+    std::string contact_handle_dst = create_contact_handle(
         registrar_vect.at(0)//registrar handle
+        , 1 //contact data
         , 0 //grpidtag
         , 1//state_case
         , 0//linked_object_case
@@ -1171,8 +1188,9 @@ BOOST_FIXTURE_TEST_CASE(test_linked_keyset_5, merge_fixture)
 BOOST_FIXTURE_TEST_CASE(test_linked_domain_via_owner_5, merge_fixture)
 {
     unsigned domain_quantity = 5;
-    std::string contact_handle_src = create_mergeable_contact_handle(
+    std::string contact_handle_src = create_contact_handle(
         registrar_vect.at(0)//registrar handle
+        , 1 //contact data
         , 0 //grpidtag
         , 0//state_case
         , 13//linked_object_case
@@ -1180,8 +1198,9 @@ BOOST_FIXTURE_TEST_CASE(test_linked_domain_via_owner_5, merge_fixture)
         , domain_quantity//quantity_case
     );
     BOOST_MESSAGE(contact_handle_src);
-    std::string contact_handle_dst = create_mergeable_contact_handle(
+    std::string contact_handle_dst = create_contact_handle(
         registrar_vect.at(0)//registrar handle
+        , 1 //contact data
         , 0 //grpidtag
         , 1//state_case
         , 0//linked_object_case
@@ -1290,8 +1309,9 @@ BOOST_FIXTURE_TEST_CASE(test_linked_domain_via_owner_5, merge_fixture)
 BOOST_FIXTURE_TEST_CASE(test_linked_domain_via_admin_5, merge_fixture)
 {
     unsigned domain_quantity = 5;
-    std::string contact_handle_src = create_mergeable_contact_handle(
+    std::string contact_handle_src = create_contact_handle(
         registrar_vect.at(0)//registrar handle
+        , 1 //contact data
         , 0 //grpidtag
         , 0//state_case
         , 9//linked_object_case
@@ -1299,8 +1319,9 @@ BOOST_FIXTURE_TEST_CASE(test_linked_domain_via_admin_5, merge_fixture)
         , domain_quantity//quantity_case
     );
     BOOST_MESSAGE(contact_handle_src);
-    std::string contact_handle_dst = create_mergeable_contact_handle(
+    std::string contact_handle_dst = create_contact_handle(
         registrar_vect.at(0)//registrar handle
+        , 1 //contact data
         , 0 //grpidtag
         , 1//state_case
         , 0//linked_object_case
@@ -1367,8 +1388,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_domain_via_admin_5, merge_fixture)
             0//linked_object_state_case
             , domain_quantity//quantity_case
             , number//number in quantity
-            , create_non_mergeable_contact_handle(registrar_vect.at(0)//registrar handle
-                , 1) //owner contact
+            , create_contact_handle(registrar_vect.at(0), 0, 1, 0, 15, 0, 1) //owner contact
             , contact_handle_src //admin contact
         );
         BOOST_MESSAGE(fqdn);
@@ -1444,8 +1464,9 @@ BOOST_FIXTURE_TEST_CASE(test_linked_nsset_keyset_domain_via_admin_domain_via_own
     {
         accumulated_linked_object_quantity += *loq_ci;
 
-        std::string contact_handle_src = create_mergeable_contact_handle(
+        std::string contact_handle_src = create_contact_handle(
             registrar_vect.at(0)//registrar handle
+            , 1 //contact data
             , 0 //grpidtag
             , 0//state_case
             , 15//linked_object_case
@@ -1453,8 +1474,9 @@ BOOST_FIXTURE_TEST_CASE(test_linked_nsset_keyset_domain_via_admin_domain_via_own
             , *loq_ci//quantity_case
         );
         BOOST_MESSAGE(contact_handle_src);
-        std::string contact_handle_dst = create_mergeable_contact_handle(
+        std::string contact_handle_dst = create_contact_handle(
             registrar_vect.at(0)//registrar handle
+            , 1 //contact data
             , 0 //grpidtag
             , 1//state_case
             , 0//linked_object_case
@@ -1612,8 +1634,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_nsset_keyset_domain_via_admin_domain_via_own
                 0//linked_object_state_case
                 , *loq_ci//quantity_case
                 , number//number in quantity
-                , create_non_mergeable_contact_handle(registrar_vect.at(0)//registrar handle
-                    , 1) //owner contact
+                , create_contact_handle(registrar_vect.at(0), 0, 1, 0, 15, 0, 1) //owner contact
                 , contact_handle_src //admin contact
             );
             BOOST_MESSAGE(admin_fqdn);
@@ -1652,8 +1673,9 @@ BOOST_FIXTURE_TEST_CASE(test_non_existing_src_contact, merge_fixture)
 {
     std::string contact_handle_src = "NONEXISTENT";
     BOOST_MESSAGE(contact_handle_src);
-    std::string contact_handle_dst = create_mergeable_contact_handle(
+    std::string contact_handle_dst = create_contact_handle(
         registrar_vect.at(0)//registrar handle
+        , 1 //contact data
         , 0 //grpidtag
         , 1//state_case
         , 0//linked_object_case
@@ -1707,8 +1729,9 @@ BOOST_FIXTURE_TEST_CASE(test_non_existing_src_contact, merge_fixture)
  */
 BOOST_FIXTURE_TEST_CASE(test_non_existing_dst_contact, merge_fixture)
 {
-    std::string contact_handle_src = create_mergeable_contact_handle(
+    std::string contact_handle_src = create_contact_handle(
         registrar_vect.at(0)//registrar handle
+        , 1 //contact data
         , 0 //grpidtag
         , 1//state_case
         , 15//linked_object_case
@@ -1766,8 +1789,9 @@ BOOST_FIXTURE_TEST_CASE(test_non_existing_dst_contact, merge_fixture)
  */
 BOOST_FIXTURE_TEST_CASE(test_different_dst_contact, merge_fixture)
 {
-    std::string contact_handle_src = create_mergeable_contact_handle(
+    std::string contact_handle_src = create_contact_handle(
         registrar_vect.at(0)//registrar handle
+        , 1 //contact data
         , 0 //grpidtag
         , 1//state_case
         , 15//linked_object_case
@@ -1776,8 +1800,7 @@ BOOST_FIXTURE_TEST_CASE(test_different_dst_contact, merge_fixture)
     );
     BOOST_MESSAGE(contact_handle_src);
 
-    std::string contact_handle_dst = create_non_mergeable_contact_handle(registrar_vect.at(0)//registrar handle
-        , 1); //owner contact
+    std::string contact_handle_dst = create_contact_handle(registrar_vect.at(0), 0, 1, 0, 15, 0, 1); //owner contact
     BOOST_MESSAGE(contact_handle_dst);
 
     try
@@ -1827,12 +1850,12 @@ BOOST_FIXTURE_TEST_CASE(test_different_dst_contact, merge_fixture)
  */
 BOOST_FIXTURE_TEST_CASE(test_different_src_contact, merge_fixture)
 {
-    std::string contact_handle_src = create_non_mergeable_contact_handle(registrar_vect.at(0)//registrar handle
-        , 1); //owner contact
+    std::string contact_handle_src = create_contact_handle(registrar_vect.at(0), 0, 1, 0, 15, 0, 1); //owner contact
     BOOST_MESSAGE(contact_handle_src);
 
-    std::string contact_handle_dst = create_mergeable_contact_handle(
+    std::string contact_handle_dst = create_contact_handle(
         registrar_vect.at(0)//registrar handle
+        , 1 //contact data
         , 0 //grpidtag
         , 1//state_case
         , 15//linked_object_case
@@ -1888,8 +1911,9 @@ BOOST_FIXTURE_TEST_CASE(test_different_src_contact, merge_fixture)
  */
 BOOST_FIXTURE_TEST_CASE(test_identical_contact, merge_fixture)
 {
-    std::string contact_handle_src = create_mergeable_contact_handle(
+    std::string contact_handle_src = create_contact_handle(
         registrar_vect.at(0)//registrar handle
+        , 1 //contact data
         , 0 //grpidtag
         , 1//state_case
         , 15//linked_object_case
@@ -1944,8 +1968,9 @@ BOOST_FIXTURE_TEST_CASE(test_identical_contact, merge_fixture)
  */
 BOOST_FIXTURE_TEST_CASE(test_src_contact_linked_domain_via_owner_with_the_same_admin_and_merged_to_different_mergeable_admin_contact, merge_fixture)
 {
-    std::string contact_handle_src = create_mergeable_contact_handle(
+    std::string contact_handle_src = create_contact_handle(
         registrar_vect.at(0)//registrar handle
+        , 1 //contact data
         , 0 //grpidtag
         , 1//state_case
         , 20//linked_object_case
@@ -1954,8 +1979,9 @@ BOOST_FIXTURE_TEST_CASE(test_src_contact_linked_domain_via_owner_with_the_same_a
     );
     BOOST_MESSAGE(contact_handle_src);
 
-    std::string contact_handle_dst = create_mergeable_contact_handle(
+    std::string contact_handle_dst = create_contact_handle(
         registrar_vect.at(0)//registrar handle
+        , 1 //contact data
         , 0 //grpidtag
         , 0//state_case
         , 20//linked_object_case
@@ -2171,8 +2197,9 @@ BOOST_FIXTURE_TEST_CASE(test_merge_with_states_fixture, merge_with_states_fixtur
  */
 BOOST_FIXTURE_TEST_CASE(test_invalid_src_mojeid_contact, merge_with_states_fixture)
 {
-    std::string contact_handle_src = create_mergeable_contact_handle(
+    std::string contact_handle_src = create_contact_handle(
         registrar_vect.at(0)//registrar handle
+        , 1 //contact data
         , 0 //grpidtag
         , 6//state_case
         , 15//linked_object_case
@@ -2181,8 +2208,9 @@ BOOST_FIXTURE_TEST_CASE(test_invalid_src_mojeid_contact, merge_with_states_fixtu
     );
     BOOST_MESSAGE(contact_handle_src);
 
-    std::string contact_handle_dst = create_mergeable_contact_handle(
+    std::string contact_handle_dst = create_contact_handle(
         registrar_vect.at(0)//registrar handle
+        , 1 //contact data
         , 0 //grpidtag
         , 1//state_case
         , 15//linked_object_case
@@ -2246,8 +2274,9 @@ BOOST_FIXTURE_TEST_CASE(test_invalid_src_mojeid_contact, merge_with_states_fixtu
  */
 BOOST_FIXTURE_TEST_CASE(test_invalid_src_serverblocked_contact, merge_with_states_fixture)
 {
-    std::string contact_handle_src = create_mergeable_contact_handle(
+    std::string contact_handle_src = create_contact_handle(
         registrar_vect.at(0)//registrar handle
+        , 1 //contact data
         , 0 //grpidtag
         , 5//state_case
         , 15//linked_object_case
@@ -2256,8 +2285,9 @@ BOOST_FIXTURE_TEST_CASE(test_invalid_src_serverblocked_contact, merge_with_state
     );
     BOOST_MESSAGE(contact_handle_src);
 
-    std::string contact_handle_dst = create_mergeable_contact_handle(
+    std::string contact_handle_dst = create_contact_handle(
         registrar_vect.at(0)//registrar handle
+        , 1 //contact data
         , 0 //grpidtag
         , 1//state_case
         , 15//linked_object_case
@@ -2321,8 +2351,9 @@ BOOST_FIXTURE_TEST_CASE(test_invalid_src_serverblocked_contact, merge_with_state
  */
 BOOST_FIXTURE_TEST_CASE(test_invalid_src_deleteprohibited_contact, merge_with_states_fixture)
 {
-    std::string contact_handle_src = create_mergeable_contact_handle(
+    std::string contact_handle_src = create_contact_handle(
         registrar_vect.at(0)//registrar handle
+        , 1 //contact data
         , 0 //grpidtag
         , 4//state_case
         , 15//linked_object_case
@@ -2331,8 +2362,9 @@ BOOST_FIXTURE_TEST_CASE(test_invalid_src_deleteprohibited_contact, merge_with_st
     );
     BOOST_MESSAGE(contact_handle_src);
 
-    std::string contact_handle_dst = create_mergeable_contact_handle(
+    std::string contact_handle_dst = create_contact_handle(
         registrar_vect.at(0)//registrar handle
+        , 1 //contact data
         , 0 //grpidtag
         , 1//state_case
         , 15//linked_object_case
@@ -2397,8 +2429,9 @@ BOOST_FIXTURE_TEST_CASE(test_invalid_src_deleteprohibited_contact, merge_with_st
 
 BOOST_FIXTURE_TEST_CASE(test_invalid_dst_serverblocked_contact, merge_with_states_fixture)
 {
-    std::string contact_handle_src = create_mergeable_contact_handle(
+    std::string contact_handle_src = create_contact_handle(
         registrar_vect.at(0)//registrar handle
+        , 1 //contact data
         , 0 //grpidtag
         , 1//state_case
         , 15//linked_object_case
@@ -2407,8 +2440,9 @@ BOOST_FIXTURE_TEST_CASE(test_invalid_dst_serverblocked_contact, merge_with_state
     );
     BOOST_MESSAGE(contact_handle_src);
 
-    std::string contact_handle_dst = create_mergeable_contact_handle(
+    std::string contact_handle_dst = create_contact_handle(
         registrar_vect.at(0)//registrar handle
+        , 1 //contact data
         , 0 //grpidtag
         , 5//state_case
         , 15//linked_object_case
@@ -2471,8 +2505,9 @@ BOOST_FIXTURE_TEST_CASE(test_invalid_dst_serverblocked_contact, merge_with_state
  */
 BOOST_FIXTURE_TEST_CASE(test_src_contact_linked_domain_via_admin_serverblocked, merge_with_states_fixture)
 {
-    std::string contact_handle_src = create_mergeable_contact_handle(
+    std::string contact_handle_src = create_contact_handle(
         registrar_vect.at(0)//registrar handle
+        , 1 //contact data
         , 0 //grpidtag
         , 0//state_case
         , 18//linked_object_case
@@ -2481,8 +2516,9 @@ BOOST_FIXTURE_TEST_CASE(test_src_contact_linked_domain_via_admin_serverblocked, 
     );
     BOOST_MESSAGE(contact_handle_src);
 
-    std::string contact_handle_dst = create_mergeable_contact_handle(
+    std::string contact_handle_dst = create_contact_handle(
         registrar_vect.at(0)//registrar handle
+        , 1 //contact data
         , 0 //grpidtag
         , 1//state_case
         , 15//linked_object_case
@@ -2507,7 +2543,7 @@ BOOST_FIXTURE_TEST_CASE(test_src_contact_linked_domain_via_admin_serverblocked, 
             2 //linked_object_state_case
             , 1 //quantity_case
             , 0 //number in quantity
-            , create_non_mergeable_contact_handle(registrar_vect.at(0), 1) //owner contact
+            , create_contact_handle(registrar_vect.at(0), 0, 1, 0, 15, 0, 1) //owner contact
             , contact_handle_src//admin contact
             ));
     }
@@ -2551,8 +2587,9 @@ BOOST_FIXTURE_TEST_CASE(test_src_contact_linked_domain_via_admin_serverblocked, 
  */
 BOOST_FIXTURE_TEST_CASE(test_src_contact_linked_domain_via_owner_serverblocked, merge_with_states_fixture)
 {
-    std::string contact_handle_src = create_mergeable_contact_handle(
+    std::string contact_handle_src = create_contact_handle(
         registrar_vect.at(0)//registrar handle
+        , 1 //contact data
         , 0 //grpidtag
         , 0//state_case
         , 19//linked_object_case
@@ -2561,8 +2598,9 @@ BOOST_FIXTURE_TEST_CASE(test_src_contact_linked_domain_via_owner_serverblocked, 
     );
     BOOST_MESSAGE(contact_handle_src);
 
-    std::string contact_handle_dst = create_mergeable_contact_handle(
+    std::string contact_handle_dst = create_contact_handle(
         registrar_vect.at(0)//registrar handle
+        , 1 //contact data
         , 0 //grpidtag
         , 1//state_case
         , 15//linked_object_case
@@ -2619,8 +2657,9 @@ BOOST_FIXTURE_TEST_CASE(test_src_contact_linked_domain_via_owner_serverblocked, 
  */
 BOOST_FIXTURE_TEST_CASE(test_src_contact_updateprohibited_linked_domain_via_owner_with_the_same_admin_and_merged_to_different_mergeable_admin_contact, merge_with_states_fixture)
 {
-    std::string contact_handle_src = create_mergeable_contact_handle(
+    std::string contact_handle_src = create_contact_handle(
         registrar_vect.at(0)//registrar handle
+        , 1 //contact data
         , 0 //grpidtag
         , 2//state_case
         , 20//linked_object_case
@@ -2629,8 +2668,9 @@ BOOST_FIXTURE_TEST_CASE(test_src_contact_updateprohibited_linked_domain_via_owne
     );
     BOOST_MESSAGE(contact_handle_src);
 
-    std::string contact_handle_dst = create_mergeable_contact_handle(
+    std::string contact_handle_dst = create_contact_handle(
         registrar_vect.at(0)//registrar handle
+        , 1 //contact data
         , 0 //grpidtag
         , 0//state_case
         , 20//linked_object_case
