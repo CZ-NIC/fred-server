@@ -113,6 +113,7 @@
 
     void process_undelivered_messages_data(const std::string& local_download_dir, const std::set<std::string>& downloaded_data_filenames)
     {
+        std::string err_msg;
         //process csv files
         for(std::set<std::string>::const_iterator ci = downloaded_data_filenames.begin(); ci != downloaded_data_filenames.end(); ++ci)
         {
@@ -221,9 +222,10 @@
             }
             catch(const std::exception& ex)
             {
-                ctx.get_log().error(boost::format("file: %1% err: %2%") % local_csv_file_name % ex.what());
+                err_msg += (boost::format(" file: %1% err: %2%") % local_csv_file_name % ex.what()).str();
             }
         }
+        if(!err_msg.empty()) throw std::runtime_error(err_msg);
     }
 
     std::set<std::string> OptysDownloadClient::download()
