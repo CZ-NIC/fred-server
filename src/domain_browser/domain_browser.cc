@@ -69,13 +69,26 @@ namespace Registry
         }
 
         /**
-         * Logs std::exception children and other exceptions as error, then rethrows.
+         * Logs Fred::OperationException as warning, Fred::InternalError, std::exception children and other exceptions as error, then rethrows.
          * @param ctx contains reference to database and logging interface
          */
         static void log_and_rethrow_exception_handler(Fred::OperationContext& ctx)
         {
             try
             {
+                throw;
+            }
+            catch(const Fred::OperationException& ex)
+            {
+                ctx.get_log().warning(ex.what());
+                ctx.get_log().warning(boost::algorithm::replace_all_copy(boost::diagnostic_information(ex),"\n", " "));
+                throw;
+            }
+            catch(const Fred::InternalError& ex)
+            {
+                ctx.get_log().error(boost::algorithm::replace_all_copy(ex.get_exception_stack_info(),"\n", " "));
+                ctx.get_log().error(boost::algorithm::replace_all_copy(boost::diagnostic_information(ex),"\n", " "));
+                ctx.get_log().error(ex.what());
                 throw;
             }
             catch(const std::exception& ex)
@@ -1659,14 +1672,21 @@ namespace Registry
                     }
                     catch(const Fred::MergeContact::Exception& ex)
                     {
-                        ctx.get_log().error(boost::algorithm::replace_all_copy(ex.get_exception_stack_info(),"\n", " "));
-                        ctx.get_log().error(boost::algorithm::replace_all_copy(boost::diagnostic_information(ex),"\n", " "));
+                        ctx.get_log().warning(boost::algorithm::replace_all_copy(ex.get_exception_stack_info(),"\n", " "));
+                        ctx.get_log().warning(boost::algorithm::replace_all_copy(boost::diagnostic_information(ex),"\n", " "));
                         throw InvalidContacts();
                     }
 
                     if((merge_data.contactid.src_contact_id != static_cast<unsigned long long>(src_handle_result[i]["id"]))
                     || (merge_data.contactid.dst_contact_id != dst_contact_id))
                     {
+                        ctx.get_log().error(boost::format(
+                            "id mismatch merge_data.contactid.src_contact_id: %1% != src_handle_result[i][\"id\"]: %2% "
+                            "or merge_data.contactid.dst_contact_id: %3% != dst_contact_id: %4%")
+                            % merge_data.contactid.src_contact_id
+                            % static_cast<unsigned long long>(src_handle_result[i]["id"])
+                            % merge_data.contactid.dst_contact_id
+                            % dst_contact_id);
                         throw InternalServerError();
                     }
 
