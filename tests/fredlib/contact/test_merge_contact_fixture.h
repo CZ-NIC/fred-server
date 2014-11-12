@@ -67,9 +67,27 @@ namespace MergeContactFixture
     /**
      * Setup test data for MergeContact related tests.
      *
-     * Contact handle contains:
-     * - MC1 if contact is considered mergeable or MC0 if it's not meant to be merged
-     * - group number, default: 0 or 1
+     * Nsset handle:
+     *
+     * NSS-LS<linked_object_state_case_number>-Q<number>OF<quantity_case_number>-T-<tech_contact_handles>
+     *
+     * Keyset handle:
+     *
+     * KS-LS<linked_object_state_case_number>-Q<number>OF<quantity_case_number>-T-<tech_contact_handles>
+     *
+     * Domain name linked via owner:
+     *
+     * dm-own-ls<linked_object_state_case_number>-q<number>of<quantity_case_number>.own-<owner_contact_handle>.adm-<admin_contact_handles>.cz
+     *
+     * Domain name linked via admin:
+     *
+     * dm-adm-ls<linked_object_state_case_number>-q<number>of<quantity_case_number>.own-<owner_contact_handle>.adm-<admin_contact_handles>.cz
+     *
+     * Contact handle:
+     * CT-MC<contact_data_case_number>-GRP<number_of_group>-<registar_handle>-ST<state_case_number>-LO<linked_objects_case_number>-LS<linked_object_state_case_number>-Q<quantity_case_number>
+     *
+     * - contact_data_case_number is 1 if contact is considered mergeable or 0 if it's not meant to be merged
+     * - number of group, default: 0 or 1
      * - registar handle, default: REG1 or REG2
      *
      * Linked object handle or fqdn contains handles of linked contacts.
