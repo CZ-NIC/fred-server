@@ -107,7 +107,7 @@ namespace MergeContactFixture
      * - 12 - domain linked to mergeable admin contact, to other mergeable admin contact and to other non-mergeable admin contact
      * - 13 - domain linked to mergeable owner
      * - 14 - domain linked to mergeable owner contact and other mergeable admin contact
-     * - 15 - nsset and keyset linked to mergeable tech contact, domain linked as admin to the same contact, and another domain linked as owner to the same contact, with no linked object states
+     * - 15 - nsset and keyset linked to tech contact, domain linked as admin to the same contact, and another domain linked as owner to the same contact, with no linked object states
      * - 16 - nsset and keyset linked to mergeable tech contact, domain linked as admin to the same contact, and another domain linked as owner to the same contact, with linked object states on nsset
      * - 17 - nsset and keyset linked to mergeable tech contact, domain linked as admin to the same contact, and another domain linked as owner to the same contact, with linked object states on keyset
      * - 18 - nsset and keyset linked to mergeable tech contact, domain linked as admin to the same contact, and another domain linked as owner to the same contact, with linked object states on domain linked via admin contact
@@ -246,7 +246,7 @@ namespace MergeContactFixture
             +"-q" + boost::lexical_cast<std::string>(number_in_quantity)
             + "of" + boost::lexical_cast<std::string>(quantity_case)
             +".own-"+boost::algorithm::to_lower_copy(owner_contact_handle)
-            +".adm"+ admin_contacts_in_fqdn + ".cz";
+            + (admin_contacts_in_fqdn.empty() ? "" : ".adm-"+ admin_contacts_in_fqdn) + ".cz";
             return fqdn;
         }
 
@@ -282,7 +282,7 @@ namespace MergeContactFixture
             +"-q" + boost::lexical_cast<std::string>(number_in_quantity)
             + "of" + boost::lexical_cast<std::string>(quantity_case)
             +".own-"+boost::algorithm::to_lower_copy(owner_contact_handle)
-            +".adm"+boost::algorithm::to_lower_copy(admin_contact_handle) + additional_admin_contacts_in_fqdn + ".cz";
+            +".adm-"+boost::algorithm::to_lower_copy(admin_contact_handle) + additional_admin_contacts_in_fqdn + ".cz";
             return fqdn;
         }
     /**
