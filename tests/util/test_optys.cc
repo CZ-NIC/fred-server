@@ -322,11 +322,11 @@ BOOST_FIXTURE_TEST_CASE(test_unable_to_read_file, undelivered_fixture)
     BOOST_REQUIRE_MESSAGE(output.stderr.empty() && output.is_exited() && (output.get_exit_status() == EXIT_SUCCESS),
         std::string("removal of read permission failed: ")+output.stderr);
 
-    BOOST_CHECK_NO_THROW(
+    BOOST_CHECK_THROW(
     Admin::notify_letters_optys_get_undelivered_impl(
         std::string(OPTYS_CONFIG),
         true//all_local_files_only
-    ));
+    ), std::runtime_error);
 
     //check undelivered not set
     BOOST_CHECK(Fred::OperationContext().get_conn().exec_params(
@@ -380,11 +380,11 @@ BOOST_FIXTURE_TEST_CASE(test_bad_csv_data_file, undelivered_fixture)
     BOOST_REQUIRE_MESSAGE(output.stderr.empty() && output.is_exited() && (output.get_exit_status() == EXIT_SUCCESS),
         std::string("making not a number id in csv data failed: ")+output.stderr);
 
-    BOOST_CHECK_NO_THROW(
+    BOOST_CHECK_THROW(
     Admin::notify_letters_optys_get_undelivered_impl(
         std::string(OPTYS_CONFIG),
         true//all_local_files_only
-    ));
+    ), std::runtime_error);
 
     //check undelivered not set
     BOOST_CHECK(Fred::OperationContext().get_conn().exec_params(
@@ -438,11 +438,11 @@ BOOST_FIXTURE_TEST_CASE(test_wrong_id_in_csv_data, undelivered_fixture)
         ctx.commit_transaction();
     }
 
-    BOOST_CHECK_NO_THROW(
+    BOOST_CHECK_THROW(
     Admin::notify_letters_optys_get_undelivered_impl(
         std::string(OPTYS_CONFIG),
         true//all_local_files_only
-    ));
+    ), std::runtime_error);
 
     {
         Fred::OperationContext ctx;
@@ -502,11 +502,11 @@ BOOST_FIXTURE_TEST_CASE(test_empty_csv_file, undelivered_fixture)
     BOOST_REQUIRE_MESSAGE(output.stderr.empty() && output.is_exited() && (output.get_exit_status() == EXIT_SUCCESS),
         std::string("making csv file empty failed: ")+output.stderr);
 
-    BOOST_CHECK_NO_THROW(
+    BOOST_CHECK_THROW(
     Admin::notify_letters_optys_get_undelivered_impl(
         std::string(OPTYS_CONFIG),
         true//all_local_files_only
-    ));
+    ), std::runtime_error);
 
     //check undelivered not set
     BOOST_CHECK(Fred::OperationContext().get_conn().exec_params(
