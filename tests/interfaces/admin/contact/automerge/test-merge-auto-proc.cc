@@ -207,7 +207,7 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc, auto_proc_fixture )
             BOOST_CHECK(!boost::regex_search(ci->first, src_contact_forbidden_states_regex));
 
             //check if poll message exists for deleted contact
-            BOOST_CHECK(del_contact_poll_msg.find(ci->first) != del_contact_poll_msg.end());
+            BOOST_CHECK_MESSAGE(del_contact_poll_msg.find(ci->first) != del_contact_poll_msg.end(), ci->first);
 
             removed_contact_handle.insert(ci->first);
         }
