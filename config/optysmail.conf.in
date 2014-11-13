@@ -5,3 +5,11 @@ password = @OPTYS_LOGIN_PASSWORD@
 port = @OPTYS_LOGIN_PORT@
 zip_tmp_dir = @PREFIX@/tmp/optys/upload
 cleanup_zip_tmp_dir = true
+
+[optys_download]
+host = "localhost"
+user = @OPTYS_LOGIN_NAME@
+port = @OPTYS_LOGIN_PORT@
+local_download_dir = @PREFIX@/tmp/optys/download
+remote_data_dir = remote_data
+

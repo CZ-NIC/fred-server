@@ -4,9 +4,20 @@
 #include <string>
 #include <vector>
 #include <set>
+#include <iterator>
+#include <boost/format.hpp>
 #include "types/data_types.h"
 
 namespace Util {
+
+//get n-th element of given container or throw
+template<class CONTAINER> typename CONTAINER::value_type get_nth(const CONTAINER& in, typename CONTAINER::size_type n)
+{
+    if(in.size() <= n) throw std::out_of_range((boost::format("Util::get_nth n: %1%  size: %2%") % n % in.size()).str());
+    typename CONTAINER::const_iterator i = in.begin();
+    std::advance(i,n);
+    return *i;
+}
 
 //for given instance first call of get() (or first call of get() after reset() ) returns head , all other calls returns separator
 //

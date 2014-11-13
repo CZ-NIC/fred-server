@@ -39,6 +39,7 @@
 #include "notifyclient.h"
 #include "commonclient.h"
 #include "src/corba/file_manager_client.h"
+#include "optys_get_undelivered.h"
 
 
 
@@ -173,6 +174,21 @@ struct notify_letters_optys_send_impl
               , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>()->get_nameservice_context()
               , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientNotifyLettersOptysSendArgsGrp>()->optys_config
               );
+  }
+};
+
+/**
+ * \class notify_letters_optys_get_undelivered_impl
+ * \brief admin client implementation of notify_letters_optys_get_undelivered
+ */
+struct notify_letters_optys_get_undelivered_impl
+{
+  void operator()() const
+  {
+      Logging::Context ctx("notify_letters_optys_get_undelivered_impl");
+      HandleAdminClientNotifyLettersOptysGetUndeliveredArgsGrp* cfg_ptr = CfgArgGroups::instance()
+          ->get_handler_ptr_by_type<HandleAdminClientNotifyLettersOptysGetUndeliveredArgsGrp>();
+      Admin::notify_letters_optys_get_undelivered_impl(cfg_ptr->optys_config, cfg_ptr->all_local_files_only);
   }
 };
 

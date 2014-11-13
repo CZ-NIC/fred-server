@@ -2595,5 +2595,51 @@ public:
     }//handle
 };//class HandleAdminClientNotifyLettersOptysSendArgsGrp
 
+/**
+ * \class HandleAdminClientNotifyLettersOptysGetUndeliveredArgsGrp
+ * \brief admin client notify_letters_optys_get_undelivered options handler
+ */
+class HandleAdminClientNotifyLettersOptysGetUndeliveredArgsGrp : public HandleCommandGrpArgs
+{
+public:
+    optional_string optys_config;
+    bool all_local_files_only;
+
+    HandleAdminClientNotifyLettersOptysGetUndeliveredArgsGrp()
+    : all_local_files_only(false)
+    {}
+
+    CommandDescription get_command_option()
+    {
+        return CommandDescription("notify_letters_optys_get_undelivered");
+    }
+    boost::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("notify_letters_optys_get_undelivered options")));
+        cfg_opts->add_options()
+            ("notify_letters_optys_get_undelivered", "get ids of undelivered letters from optys")
+            ("optys_config", boost::program_options
+                ::value<Checked::string>()->default_value(OPTYS_CONFIG)
+                     ->notifier(save_optional_string(optys_config))
+                , "configuration file for Optys client")
+            ("local,l", boost::program_options
+                ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(all_local_files_only))
+                , "do not download new *.csv files and process all *.csv files in local_download_dir (viz Optys "
+                    "configuration file for Optys client), otherwise process only currently downloaded new files")
+                ;
+        return cfg_opts;
+    }//get_options_description
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }//handle
+};//class HandleAdminClientNotifyLettersOptysGetUndeliveredArgsGrp
+
 
 #endif //HANDLE_ADMINCLIENTSELECTION_ARGS_H_

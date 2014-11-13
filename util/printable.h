@@ -175,6 +175,19 @@ namespace Util
         return out;
     }
 
+    /**
+     * utility to check csv parser output
+     */
+    template <class T> std::string format_csv_data(std::vector<std::vector<T> > data)
+    {
+        std::stringstream ret;
+        for(unsigned long long i = 0; i < data.size(); ++i)
+        {
+            ret << "#" << i << " |" << Util::format_container(data.at(i),"|") << "|";
+        }
+        return ret.str();
+    }
+
 }//namespace Util
 
 #endif //PRINTABLE_H_

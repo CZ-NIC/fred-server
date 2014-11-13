@@ -274,6 +274,8 @@ util_libutil_a_SOURCES = \
 		util/output_indenter.cc \
 		util/printable.h \
 		util/printable.cc \
+		util/csv_parser.h \
+		util/csv_parser.cc \
 		util/xmlgen.cc \
 		util/subprocess.cc
 #
@@ -1862,6 +1864,9 @@ src_cli_admin_fred_admin_SOURCES = \
 		src/cli_admin/registrar_client_impl.h \
 		src/cli_admin/notifyclient.cc \
 		src/cli_admin/notifyclient.h \
+		src/cli_admin/read_config_file.h \
+		src/cli_admin/optys_get_undelivered.cc \
+		src/cli_admin/optys_get_undelivered.h \
 		src/cli_admin/notify_params.h \
 		src/cli_admin/notify_client_impl.h \
 		src/cli_admin/enumparamclient.cc \
@@ -1904,7 +1909,9 @@ src_cli_admin_fred_admin_SOURCES = \
 		src/fredlib/object_state/cancel_object_state_request_id.cc \
 		src/fredlib/object_state/cancel_object_state_request_id.h \
 		util/optys/upload_client.cc \
-		util/optys/upload_client.h
+		util/optys/upload_client.h \
+		util/optys/download_client.h \
+		util/optys/download_client.cc
 
 src_cli_admin_fred_admin_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS) \
@@ -2022,8 +2029,8 @@ SERVER_TESTS = \
 		tests/interfaces/test-admin-contact-verification \
 		tests/test-exception \
 		tests/test-blocking \
-		tests/test-fredlib
-
+		tests/test-fredlib \
+		tests/test-optys
 
 # tests/interfaces/test-admin-contact-verification
 #
@@ -2131,6 +2138,9 @@ tests_test_server_SOURCES = \
 		src/mojeid/mojeid_notifier.h \
 		tests/deprecated/checks.h \
 		tests/util/test_printable.cc \
+		tests/util/test_csv_parser.cc \
+		util/optys/download_client.cc \
+		util/optys/download_client.h \
 		tests/util/test_is_equal_optional_nullable.cc \
 		src/fredlib/object_state/create_object_state_request.cc \
 		src/fredlib/object_state/create_object_state_request.h \
@@ -2192,6 +2202,7 @@ tests_test_server_LDADD = \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(BOOST_DATE_TIME_LIB) \
 		$(BOOST_REGEX_LIB) \
+		$(BOOST_FILESYSTEM_LIB) \
 		$(OMNIORB4_LIBS) \
 		$(LIBIDN_CFLAGS) \
 		$(LIBIDN_LIBS) \
@@ -2372,6 +2383,48 @@ tests_test_fredlib_LDADD = \
 		$(BOOST_UNIT_TEST_FRAMEWORK_LIB)
 #
 # tests/test_fredlib
+
+# tests/test_optys
+#
+tests_test_optys_SOURCES = \
+		tests/test_optys_main.cc \
+		tests/util/test_optys.cc \
+		util/optys/download_client.cc \
+		util/optys/download_client.h \
+		src/cli_admin/optys_get_undelivered.cc \
+		src/cli_admin/optys_get_undelivered.h \
+		src/cli_admin/read_config_file.h \
+		tests/setup/fixtures_utils.h \
+		tests/setup/fixtures_utils.cc \
+		tests/setup/fixtures.h \
+		tests/setup/fixtures.cc
+
+
+
+tests_test_optys_LDFLAGS = \
+		$(POSTGRESQL_LDFLAGS) \
+		$(BOOST_LDFLAGS) \
+		$(AM_LDFLAGS)
+
+tests_test_optys_LDADD = \
+		src/fredlib/libfred.a \
+		util/libutil.a \
+		util/log/liblog.a \
+		-lmpdec -lm \
+		$(BOOST_PROGRAM_OPTIONS_LIB) \
+		$(BOOST_DATE_TIME_LIB) \
+		$(BOOST_FILESYSTEM_LIB) \
+		$(BOOST_REGEX_LIB) \
+		$(BOOST_THREAD_LIB) \
+		$(BOOST_SERIALIZATION_LIB) \
+		$(BOOST_SYSTEM_LIB) \
+		$(POSTGRESQL_LIB) \
+		$(OMNIORB4_LIBS) \
+		$(BOOST_UNIT_TEST_FRAMEWORK_LIB)
+#
+# tests/test_optys
+
+
 
 
 # non-corba tests with overloaded global operator new

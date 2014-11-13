@@ -22,11 +22,13 @@
 #include <unistd.h>
 #include <fstream>
 #include <sstream>
+#include <iostream>
 #include <vector>
 #include <boost/lexical_cast.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/assign/list_of.hpp>
+#include <boost/filesystem.hpp>
 
 #include "src/corba/file_manager_client.h"
 
@@ -41,8 +43,11 @@
 #include "hp/handle_hpmail_args.h"
 
 #include "util/map_at.h"
+#include "util/subprocess.h"
+#include "util/printable.h"
 #include "util/optys/handle_optys_mail_args.h"
 #include "util/optys/upload_client.h"
+#include "util/optys/download_client.h"
 
 
 #include "src/fredlib/db_settings.h"
@@ -301,36 +306,6 @@ void NotifyClient::sms_send()
 
     };
 
-
-    /**
-     * read extra config file into key-value config map
-     */
-    template <class HANDLE_ARGS> std::map<std::string, std::string> readConfigFile(const std::string &conf_file)
-    {
-            boost::shared_ptr<HANDLE_ARGS> handle_args_ptr(new HANDLE_ARGS);
-
-            HandlerPtrVector hpv =
-                boost::assign::list_of
-                    (HandleArgsPtr(new HandleConfigFileArgs(conf_file) ))
-                    (HandleArgsPtr(handle_args_ptr));
-
-            // it always needs some argv vector, argc cannot be 0
-            FakedArgs fa;
-            fa.add_argv(std::string(""));
-
-            //handle
-            for(HandlerPtrVector::const_iterator i = hpv.begin()
-                    ; i != hpv.end(); ++i )
-            {
-                FakedArgs fa_out;
-                (*i)->handle( fa.get_argc(), fa.get_argv(), fa_out);
-                fa=fa_out;//last output to next input
-            }//for HandlerPtrVector
-
-            std::map<std::string, std::string> set_cfg = handle_args_ptr->get_map();
-
-            return set_cfg;
-    }
 
   /*
    * This method sends letters from table letter_archive
@@ -1040,7 +1015,6 @@ void notify_letters_optys_send_impl(
         zip_file_name_foreign_before_message_type, zip_filename_registered_letter_after_message_type,
         messages_manager);
 }
-
 
 } // namespace Admin;
 
