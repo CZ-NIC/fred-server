@@ -77,11 +77,11 @@ namespace MergeContactFixture
      *
      * Domain name linked via owner:
      *
-     * dm-own-ls<linked_object_state_case_number>-q<number>of<quantity_case_number>.own-<owner_contact_handle>.adm-<admin_contact_handles>.cz
+     * dm-own-ls<linked_object_state_case_number>-q<number>of<quantity_case_number>.own-<owner_contact_handle>.adm.<admin_contact_handles>.cz
      *
      * Domain name linked via admin:
      *
-     * dm-adm-ls<linked_object_state_case_number>-q<number>of<quantity_case_number>.own-<owner_contact_handle>.adm-<admin_contact_handles>.cz
+     * dm-adm-ls<linked_object_state_case_number>-q<number>of<quantity_case_number>.own-<owner_contact_handle>.adm.<admin_contact_handles>.cz
      *
      * Contact handle:
      * CT-MC<contact_data_case_number>-GRP<number_of_group>-<registar_handle>-ST<state_case_number>-LO<linked_objects_case_number>-LS<linked_object_state_case_number>-Q<quantity_case_number>
@@ -264,7 +264,7 @@ namespace MergeContactFixture
             +"-q" + boost::lexical_cast<std::string>(number_in_quantity)
             + "of" + boost::lexical_cast<std::string>(quantity_case)
             +".own-"+boost::algorithm::to_lower_copy(owner_contact_handle)
-            + (admin_contacts_in_fqdn.empty() ? "" : ".adm-"+ admin_contacts_in_fqdn) + ".cz";
+            + (admin_contacts_in_fqdn.empty() ? "" : ".adm"+ admin_contacts_in_fqdn) + ".cz";
             return fqdn;
         }
 
@@ -300,7 +300,7 @@ namespace MergeContactFixture
             +"-q" + boost::lexical_cast<std::string>(number_in_quantity)
             + "of" + boost::lexical_cast<std::string>(quantity_case)
             +".own-"+boost::algorithm::to_lower_copy(owner_contact_handle)
-            +".adm-"+boost::algorithm::to_lower_copy(admin_contact_handle) + additional_admin_contacts_in_fqdn + ".cz";
+            +".adm"+boost::algorithm::to_lower_copy(admin_contact_handle) + additional_admin_contacts_in_fqdn + ".cz";
             return fqdn;
         }
     /**
@@ -419,39 +419,44 @@ namespace MergeContactFixture
             std::string s_idtag = boost::lexical_cast<std::string>(idtag);
             std::string handle = create_contact_handle(registrar_handle, 0,idtag, 0, 15, 0, 1);
 
-
-
             BOOST_MESSAGE(handle);
-            contact_info.insert(std::make_pair(handle
-                , Test::exec(Test::CreateX_factory<Fred::CreateContact>()
-                .make(registrar_handle, Optional<std::string>(handle))
-                .set_name("Name"+s_idtag+s_idtag+" Name"+s_idtag+s_idtag+" Name"+s_idtag+s_idtag+" Name"+s_idtag+s_idtag)
-                .set_organization("")
-                .set_place(Fred::Contact::PlaceAddress(
-                    "Test"+s_idtag+" St1",
-                    Optional< std::string >("Test"+s_idtag+" St2"),
-                    Optional< std::string >("Test"+s_idtag+" St3"),
-                    "Praha "+s_idtag,
-                    Optional< std::string >(""),
-                    "12000",
-                    "Czech Republic"))
-                .set_telephone("22222222"+s_idtag)
-                .set_fax("222222222"+s_idtag)
-                .set_email("testeml"+s_idtag+"@nic.cz"+s_idtag)
-                .set_notifyemail("testnotifyeml"+s_idtag+"@nic.cz")
-                .set_vat("222222222"+s_idtag)
-                .set_ssn("22222222"+s_idtag)
-                .set_ssntype("OP")
-                .set_disclosename(false)
-                .set_discloseorganization(false)
-                .set_discloseaddress(false)
-                .set_disclosetelephone(false)
-                .set_disclosefax(false)
-                .set_discloseemail(false)
-                .set_disclosevat(false)
-                .set_discloseident(false)
-                .set_disclosenotifyemail(false)
-                ,ctx)));
+            try
+            {
+                contact_info.insert(std::make_pair(handle
+                    , Test::exec(Test::CreateX_factory<Fred::CreateContact>()
+                    .make(registrar_handle, Optional<std::string>(handle))
+                    .set_name("Name"+s_idtag+s_idtag+" Name"+s_idtag+s_idtag+" Name"+s_idtag+s_idtag+" Name"+s_idtag+s_idtag)
+                    .set_organization("")
+                    .set_place(Fred::Contact::PlaceAddress(
+                        "Test"+s_idtag+" St1",
+                        Optional< std::string >("Test"+s_idtag+" St2"),
+                        Optional< std::string >("Test"+s_idtag+" St3"),
+                        "Praha "+s_idtag,
+                        Optional< std::string >(""),
+                        "12000",
+                        "Czech Republic"))
+                    .set_telephone("22222222"+s_idtag)
+                    .set_fax("222222222"+s_idtag)
+                    .set_email("testeml"+s_idtag+"@nic.cz"+s_idtag)
+                    .set_notifyemail("testnotifyeml"+s_idtag+"@nic.cz")
+                    .set_vat("222222222"+s_idtag)
+                    .set_ssn("22222222"+s_idtag)
+                    .set_ssntype("OP")
+                    .set_disclosename(false)
+                    .set_discloseorganization(false)
+                    .set_discloseaddress(false)
+                    .set_disclosetelephone(false)
+                    .set_disclosefax(false)
+                    .set_discloseemail(false)
+                    .set_disclosevat(false)
+                    .set_discloseident(false)
+                    .set_disclosenotifyemail(false)
+                    ,ctx)));
+            }
+            catch(...)
+            {
+                BOOST_ERROR(handle + " reg: "+registrar_handle);
+            }
             return handle;
         }
 
@@ -481,6 +486,9 @@ namespace MergeContactFixture
                 , quantity_case);
 
             BOOST_MESSAGE(handle);
+
+            try
+            {
             contact_info.insert(std::make_pair(handle
                 , Test::exec(Test::CreateX_factory<Fred::CreateContact>()
                 .make(registrar_handle, Optional<std::string>(handle))
@@ -511,6 +519,12 @@ namespace MergeContactFixture
                 .set_discloseident(false)
                 .set_disclosenotifyemail(false)
                 ,ctx)));
+            }
+            catch(...)
+            {
+                BOOST_ERROR(handle + " reg: "+registrar_handle);
+            }
+
             return handle;
         }
 
@@ -542,11 +556,19 @@ namespace MergeContactFixture
                 , additional_tech_contacts);
 
             BOOST_MESSAGE(handle);
-            nsset_info.insert(std::make_pair(handle
-            , Test::exec(Test::CreateX_factory<Fred::CreateNsset>()
-                .make(registrar_handle, Optional<std::string>(handle))
-                .set_tech_contacts(Util::vector_of<std::string>(tech_contact_handle)(additional_tech_contacts))
-                ,ctx)));
+            try
+            {
+                nsset_info.insert(std::make_pair(handle
+                , Test::exec(Test::CreateX_factory<Fred::CreateNsset>()
+                    .make(registrar_handle, Optional<std::string>(handle))
+                    .set_tech_contacts(Util::vector_of<std::string>(tech_contact_handle)(additional_tech_contacts))
+                    ,ctx)));
+            }
+            catch(...)
+            {
+                BOOST_ERROR(handle + " reg: "+registrar_handle + " tech: " + handle + " additional tech: " + Util::format_container(additional_tech_contacts));
+            }
+
             return handle;
         }
 
@@ -578,11 +600,19 @@ namespace MergeContactFixture
                 , additional_tech_contacts);
 
             BOOST_MESSAGE(handle);
-            keyset_info.insert(std::make_pair(handle
-            , Test::exec(Test::CreateX_factory<Fred::CreateKeyset>()
-                .make(registrar_handle, Optional<std::string>(handle))
-                .set_tech_contacts(Util::vector_of<std::string>(tech_contact_handle)(additional_tech_contacts))
-                ,ctx)));
+            try
+            {
+                keyset_info.insert(std::make_pair(handle
+                , Test::exec(Test::CreateX_factory<Fred::CreateKeyset>()
+                    .make(registrar_handle, Optional<std::string>(handle))
+                    .set_tech_contacts(Util::vector_of<std::string>(tech_contact_handle)(additional_tech_contacts))
+                    ,ctx)));
+            }
+            catch(...)
+            {
+                BOOST_ERROR(handle + " reg: "+registrar_handle + " tech: " + handle + " additional tech: " + Util::format_container(additional_tech_contacts));
+            }
+
             return handle;
         }
 
@@ -614,11 +644,18 @@ namespace MergeContactFixture
                 , admin_contacts);
 
             BOOST_MESSAGE(fqdn);
+            try
+            {
             domain_info.insert(std::make_pair(fqdn
             , Test::exec(Test::CreateX_factory<Fred::CreateDomain>()
                 .make(registrar_handle, owner_contact_handle, Optional<std::string>(fqdn))
                 .set_admin_contacts(admin_contacts)
                 ,ctx)));
+            }
+            catch(...)
+            {
+                BOOST_ERROR(fqdn + " reg: "+registrar_handle + " own: "+ owner_contact_handle + " adm: " + Util::format_container(admin_contacts));
+            }
             return fqdn;
         }
 
@@ -653,11 +690,21 @@ namespace MergeContactFixture
                 , additional_admin_contacts);
 
             BOOST_MESSAGE(fqdn);
-            domain_info.insert(std::make_pair(fqdn
-            , Test::exec(Test::CreateX_factory<Fred::CreateDomain>()
-                .make(registrar_handle, owner_contact_handle, Optional<std::string>(fqdn))
-                .set_admin_contacts(Util::vector_of<std::string>(admin_contact_handle)(additional_admin_contacts))
-                ,ctx)));
+            try
+            {
+                domain_info.insert(std::make_pair(fqdn
+                , Test::exec(Test::CreateX_factory<Fred::CreateDomain>()
+                    .make(registrar_handle, owner_contact_handle, Optional<std::string>(fqdn))
+                    .set_admin_contacts(Util::vector_of<std::string>(admin_contact_handle)(additional_admin_contacts))
+                    ,ctx)));
+            }
+            catch(...)
+            {
+                BOOST_ERROR(fqdn + " reg: "+registrar_handle + " own: " + owner_contact_handle
+                    + " adm: " + admin_contact_handle
+                    +" additional adm: " + Util::format_container(additional_admin_contacts));
+            }
+
             return fqdn;
         }
 

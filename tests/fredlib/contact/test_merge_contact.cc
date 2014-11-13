@@ -1966,7 +1966,7 @@ BOOST_FIXTURE_TEST_CASE(test_identical_contact, merge_fixture)
  *  - no domain states
  *  .
  */
-BOOST_FIXTURE_TEST_CASE(test_src_contact_linked_domain_via_owner_with_the_same_admin_and_merged_to_different_mergeable_admin_contact, merge_fixture)
+BOOST_FIXTURE_TEST_CASE(test_src_domain_owner_with_admin_to_different_admin, merge_fixture)
 {
     std::string contact_handle_src = create_contact_handle(
         registrar_vect.at(0)//registrar handle
@@ -2655,7 +2655,7 @@ BOOST_FIXTURE_TEST_CASE(test_src_contact_linked_domain_via_owner_serverblocked, 
  *  - no domain states
  *  .
  */
-BOOST_FIXTURE_TEST_CASE(test_src_contact_updateprohibited_linked_domain_via_owner_with_the_same_admin_and_merged_to_different_mergeable_admin_contact, merge_with_states_fixture)
+BOOST_FIXTURE_TEST_CASE(test_src_updproh_domain_owner_and_admin_to_other_admin, merge_with_states_fixture)
 {
     std::string contact_handle_src = create_contact_handle(
         registrar_vect.at(0)//registrar handle
