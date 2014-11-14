@@ -43,10 +43,17 @@ public:
 };
 
 typedef std::map< Fred::ContactAddressType, Fred::ContactAddress > TypeToAddress;
-typedef std::map< std::string, TypeToAddress > HandleToAddresses;
+struct ContactId
+{
+    ContactId(::uint64_t _id, const std::string &_handle):id(_id), handle(_handle) { }
+    ::uint64_t id;
+    std::string handle;
+    bool operator<(const ContactId &_b)const { return this->id < _b.id; }
+};
+typedef std::map< ContactId, TypeToAddress > ContactIdToAddresses;
 
-void get_conntact_addresses(std::istream &_data_source, HandleToAddresses &_handle_addresses);
-void import_conntact_addresses(const HandleToAddresses &_handle_addresses,
+void get_contact_addresses(std::istream &_data_source, ContactIdToAddresses &_addresses);
+void import_contact_addresses(const ContactIdToAddresses &_addresses,
                                Fred::OperationContext &_ctx,
                                unsigned long long _logd_request_id);
 
@@ -66,10 +73,10 @@ int main(int argc, char *argv[])
         const char *const conn_info = argv[1];
         const unsigned long long logd_request_id = boost::lexical_cast< unsigned long long >(argv[2]);
         Database::Manager::init(new Database::ConnectionFactory(conn_info));
-        HandleToAddresses handle_addresses;
-        get_conntact_addresses(std::cin, handle_addresses);
+        ContactIdToAddresses addresses;
+        get_contact_addresses(std::cin, addresses);
         Fred::OperationContext ctx;
-        import_conntact_addresses(handle_addresses, ctx, logd_request_id);
+        import_contact_addresses(addresses, ctx, logd_request_id);
         ctx.commit_transaction();
         return EXIT_SUCCESS;
     }
@@ -92,12 +99,14 @@ typedef std::vector< Column > Row;
 Column get_column(const char *&_c, bool &_eol);
 Row get_row(const char *_c);
 std::string utf8_substr(const std::string &_s, ::size_t _length);
+bool is_mojeid_contact_in_fred_db(::uint64_t _contact_id, Fred::OperationContext &_ctx);
 
 }
 
-void get_conntact_addresses(std::istream &_data_source, HandleToAddresses &_handle_addresses)
+void get_contact_addresses(std::istream &_data_source, ContactIdToAddresses &_addresses)
 {
     int line_count = 0;
+    _addresses.clear();
     while (true)
     {
         enum { MAX_LINE_LENGTH = 1024 };
@@ -115,7 +124,8 @@ void get_conntact_addresses(std::istream &_data_source, HandleToAddresses &_hand
         const char *c = line;
         // contact_id,handle,type,street1,street2,street3,city,state,postal_code,country,company_name
         const Row row = get_row(c);
-        const std::string handle = row[1].get_value();
+        const ContactId contact_id(boost::lexical_cast< ::uint64_t >(row[0].get_value()),
+                                   row[1].get_value());
         const std::string addr_type = row[2].get_value();
         const Fred::ContactAddressType type(Fred::ContactAddressType::from_string(addr_type));
         Fred::ContactAddress addr;
@@ -136,26 +146,31 @@ void get_conntact_addresses(std::istream &_data_source, HandleToAddresses &_hand
         if (!row[10].isnull() && !row[10].get_value().empty()) {
             addr.company_name = row[10].get_value();
         }
-        _handle_addresses[handle][type] = addr;
+        _addresses[contact_id][type] = addr;
     }
 }
 
-void import_conntact_addresses(const HandleToAddresses &_handle_addresses,
+void import_contact_addresses(const ContactIdToAddresses &_addresses,
                                Fred::OperationContext &_ctx,
                                unsigned long long _logd_request_id)
 {
-    for (HandleToAddresses::const_iterator handle_ptr = _handle_addresses.begin();
-         handle_ptr != _handle_addresses.end(); ++handle_ptr)
+    for (ContactIdToAddresses::const_iterator contact_ptr = _addresses.begin();
+         contact_ptr != _addresses.end(); ++contact_ptr)
     {
-        const std::string handle = handle_ptr->first;
+        const ContactId contact = contact_ptr->first;
+        if (!is_mojeid_contact_in_fred_db(contact.id, _ctx)) {
+            std::cout << "mojeid contact " << contact.id << ":" << contact.handle << " "
+                         "doesn't found in fred" << std::endl;
+            continue;
+        }
         static const std::string registrar = "REG-CZNIC";
-        Fred::UpdateContactByHandle update_contact(handle, registrar);
+        Fred::UpdateContactById update_contact(contact.id, registrar);
         std::ostringstream out;
-        for (TypeToAddress::const_iterator type_ptr = handle_ptr->second.begin();
-             type_ptr != handle_ptr->second.end(); ++type_ptr)
+        for (TypeToAddress::const_iterator type_ptr = contact_ptr->second.begin();
+             type_ptr != contact_ptr->second.end(); ++type_ptr)
         {
             const std::string addr_type = type_ptr->first.to_string();
-            out << handle << "[" << addr_type << (addr_type.length() == 8 ? "] = " : "]  = ") << type_ptr->second << std::endl;
+            out << contact.handle << "[" << addr_type << (addr_type.length() == 8 ? "] = " : "]  = ") << type_ptr->second << std::endl;
             const Fred::ContactAddress &address = type_ptr->second;
             switch (type_ptr->first.value) {
                 case Fred::ContactAddressType::MAILING:
@@ -297,6 +312,21 @@ const char* next_utf8_character(const char *_c, const char *_e)
         }
     }
     return retval;
+}
+
+bool is_mojeid_contact_in_fred_db(::uint64_t _contact_id, Fred::OperationContext &_ctx)
+{
+    Database::Result result = _ctx.get_conn().exec_params(
+        "SELECT 1 "
+        "FROM object_registry obr "
+        "JOIN contact c ON c.id=obr.id "
+        "JOIN object_state os ON os.object_id=obr.id "
+        "WHERE os.state_id=(SELECT id FROM enum_object_states "
+                           "WHERE name='mojeidContact') AND "
+              "os.valid_to IS NULL AND "
+              "obr.id=$1::BIGINT",
+        Database::query_param_list(_contact_id));
+    return 0 < result.size();
 }
 
 }
