@@ -192,7 +192,8 @@ void import_contact_addresses(const ContactIdToAddresses &_addresses,
         catch (const std::exception &e)
         {
             std::cerr << "catch exception: " << e.what() << std::endl
-                      << out.str() << std::endl;
+                      << out.str() << std::endl
+                      << boost::diagnostic_information(e) << std::endl;
             throw;
         }
     }
