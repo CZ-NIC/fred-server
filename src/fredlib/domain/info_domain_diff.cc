@@ -38,6 +38,36 @@ namespace Fred
     InfoDomainDiff::InfoDomainDiff()
     {}
 
+    std::set<std::string> InfoDomainDiff::changed_fields() const
+    {
+        std::set<std::string> fields;
+        if(crhistoryid.isset()) fields.insert("crhistoryid");
+        if(historyid.isset()) fields.insert("historyid");
+        if(delete_time.isset()) fields.insert("delete_time");
+        if(fqdn.isset()) fields.insert("fqdn");
+        if(roid.isset()) fields.insert("roid");
+        if(sponsoring_registrar_handle.isset()) fields.insert("sponsoring_registrar_handle");
+        if(create_registrar_handle.isset()) fields.insert("create_registrar_handle");
+        if(update_registrar_handle.isset()) fields.insert("update_registrar_handle");
+        if(creation_time.isset()) fields.insert("creation_time");
+        if(update_time.isset()) fields.insert("update_time");
+        if(transfer_time.isset()) fields.insert("transfer_time");
+        if(authinfopw.isset()) fields.insert("authinfopw");
+
+        if(registrant.isset()) fields.insert("registrant");
+        if(nsset.isset()) fields.insert("nsset");
+        if(keyset.isset()) fields.insert("keyset");
+        if(expiration_date.isset()) fields.insert("expiration_date");
+        if(admin_contacts.isset()) fields.insert("admin_contacts");
+        if(enum_domain_validation.isset()) fields.insert("enum_domain_validation");
+        if(outzone_time.isset()) fields.insert("outzone_time");
+        if(cancel_time.isset()) fields.insert("cancel_time");
+
+        if(id.isset()) fields.insert("id");
+
+        return fields;
+    }
+
     std::string InfoDomainDiff::to_string() const
     {
         return Util::format_data_structure("InfoDomainDiff",
@@ -57,7 +87,7 @@ namespace Fred
 
         (std::make_pair("registrant", registrant.print_quoted()))
         (std::make_pair("nsset", nsset.print_quoted()))
-        (std::make_pair("keyset_handle", keyset.print_quoted()))
+        (std::make_pair("keyset", keyset.print_quoted()))
         (std::make_pair("expiration_date", expiration_date.print_quoted()))
         (std::make_pair("admin_contacts", admin_contacts.print_quoted()))
         (std::make_pair("enum_domain_validation", enum_domain_validation.print_quoted()))

@@ -80,6 +80,12 @@ namespace Fred
         InfoDomainDiff();
 
         /**
+        * Get names of set fields.
+        * @return string names of fields that actually changed
+        */
+        std::set<std::string> changed_fields() const;
+
+        /**
         * Dumps state of the instance into the string
         * @return string with description of the instance state
         */

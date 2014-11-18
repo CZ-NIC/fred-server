@@ -41,7 +41,7 @@ std::string PlaceAddress::to_string()const
     );
 }
 
-bool PlaceAddress::operator==(const struct _PlaceAddress &_b)const
+bool PlaceAddress::operator==(const struct PlaceAddress &_b)const
 {
     return street1 == _b.street1 &&
            street2 == _b.street2 &&
@@ -63,6 +63,25 @@ PlaceAddress& PlaceAddress::operator=(const PlaceAddress &_src)
     country = _src.country;
     return *this;
 }
+
+PlaceAddress::PlaceAddress()
+{}
+
+PlaceAddress::PlaceAddress(const std::string& _street1,
+        const Optional< std::string >& _street2,
+        const Optional< std::string >& _street3,
+        const std::string& _city,
+        const Optional< std::string >& _stateorprovince,
+        const std::string& _postalcode,
+        const std::string& _country)
+    : street1(_street1)
+    , street2(_street2)
+    , street3(_street2)
+    , city(_city)
+    , stateorprovince(_stateorprovince)
+    , postalcode(_postalcode)
+    , country(_country)
+    {}
 
 }//namespace Contact
 }//namespace Fred

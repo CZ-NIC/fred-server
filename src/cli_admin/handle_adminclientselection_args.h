@@ -386,7 +386,7 @@ public:
                 "\tmcs_filter_recently_created")
             ("verbose", boost::program_options::value<Checked::ushort>()
                 ->notifier(save_optional_ushort(params.verbose)),
-                "specify output verbosity level");
+                "specify output verbosity level: 0,1,2,3, dry_run is true means 3");
         /* list of contact selection filters could be done by listing keys of ContactSelectionFilterFactory */
         return cfg_opts;
     }//get_options_description

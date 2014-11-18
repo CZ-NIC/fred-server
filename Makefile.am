@@ -2027,6 +2027,7 @@ tools_contact_migration_mojeid_contact_address_import_LDADD = \
 SERVER_TESTS = \
 		tests/test-server \
 		tests/interfaces/test-admin-contact-verification \
+		tests/interfaces/test-admin-contact-automerge \
 		tests/test-exception \
 		tests/test-blocking \
 		tests/test-fredlib \
@@ -2070,6 +2071,59 @@ tests_interfaces_test_admin_contact_verification_LDADD = \
 		$(BOOST_UNIT_TEST_FRAMEWORK_LIB)
 #
 # tests/interfaces/test-admin-contact-verification
+
+# tests/interfaces/test-admin-contact-automerge
+#
+tests_interfaces_test_admin_contact_automerge_SOURCES = \
+		tests/interfaces/admin/contact/automerge/main.cc \
+		tests/interfaces/admin/contact/automerge/test-merge-auto-proc.cc \
+		src/admin/contact/merge_contact.cc \
+		src/admin/contact/merge_contact.h \
+		src/admin/contact/merge_contact_logger.cc \
+		src/admin/contact/merge_contact_logger.h \
+		src/admin/contact/merge_contact_auto_procedure.cc \
+		src/admin/contact/merge_contact_auto_procedure.h \
+		src/admin/contact/merge_contact_reporting.cc \
+		src/admin/contact/merge_contact_reporting.h \
+		tests/setup/fixtures_utils.h \
+		tests/setup/fixtures_utils.cc \
+		tests/setup/fixtures.h \
+		tests/setup/fixtures.cc
+
+tests_interfaces_test_admin_contact_automerge_LDFLAGS = \
+		$(POSTGRESQL_LDFLAGS) \
+		$(BOOST_LDFLAGS) \
+		$(AM_LDFLAGS)
+
+#src/corba/libcorbalogger.a
+
+tests_interfaces_test_admin_contact_automerge_LDADD = \
+		src/corba/libcorbadatatypes.a \
+		src/fredlib/libfred.a \
+		src/model/libmodel.a \
+		src/corba/libcorba.a \
+		src/corba/libcorbaregistry.a \
+		src/corba/libcorbafilters.a \
+		src/corba/libmailer.a \
+		src/corba/libcorbadatatypes.a \
+		src/corba/libfilemanager.a \
+		src/fredlib/requests/librequests.a \
+		util/log/liblog.a \
+		util/types/libtypes.a \
+		util/db/libdb.a \
+		src/old_utils/liboldutils.a \
+		util/libutil.a \
+		$(BOOST_PROGRAM_OPTIONS_LIB) \
+		$(BOOST_DATE_TIME_LIB) \
+		$(BOOST_REGEX_LIB) \
+		$(OMNIORB4_LIBS) \
+		$(BOOST_THREAD_LIB) \
+		$(BOOST_SERIALIZATION_LIB) \
+		$(POSTGRESQL_LIB) \
+		$(BOOST_SYSTEM_LIB) \
+		$(BOOST_UNIT_TEST_FRAMEWORK_LIB)
+#
+# tests/interfaces/test-admin-contact-automerge
 
 
 # tests/test_server
@@ -2142,6 +2196,15 @@ tests_test_server_SOURCES = \
 		util/optys/download_client.cc \
 		util/optys/download_client.h \
 		tests/util/test_is_equal_optional_nullable.cc \
+		src/admin/contact/merge_contact.cc \
+		src/admin/contact/merge_contact.h \
+		src/admin/contact/merge_contact_logger.cc \
+		src/admin/contact/merge_contact_logger.h \
+		src/admin/contact/merge_contact_auto_procedure.cc \
+		src/admin/contact/merge_contact_auto_procedure.h \
+		src/admin/contact/merge_contact_reporting.cc \
+		src/admin/contact/merge_contact_reporting.h \
+		tests/checks.h \
 		src/fredlib/object_state/create_object_state_request.cc \
 		src/fredlib/object_state/create_object_state_request.h \
 		src/fredlib/object_state/create_object_state_request_id.cc \
@@ -2321,6 +2384,7 @@ tests_test_fredlib_SOURCES = \
 		tests/fredlib/contact/test_create_contact.cc \
 		tests/fredlib/contact/test_info_contact.cc \
 		tests/fredlib/contact/test_merge_contact.cc \
+		tests/fredlib/contact/test_merge_contact_fixture.h \
 		tests/fredlib/contact/test_update_contact.cc \
 		tests/fredlib/contact/test_copy_contact.cc \
 		tests/fredlib/domain/test_update_domain.cc \

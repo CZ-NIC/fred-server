@@ -159,8 +159,8 @@ struct contact_merge_duplicate_auto_impl
         {
             Admin::MergeContactAutoProcedure(
                     *(mm.get()),
-                    *(logger_client.get()))
-                .set_registrar(*ci)
+                    *(logger_client.get()),
+                    *ci)
                 .set_limit(params.limit.is_value_set() ? Optional<unsigned long long>(params.limit.get_value()) : Optional<unsigned long long>())
                 .set_dry_run(params.dry_run)
                 .set_verbose(params.verbose.is_value_set() ? Optional<unsigned short>(params.verbose.get_value()) : Optional<unsigned short>())
