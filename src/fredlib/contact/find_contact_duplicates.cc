@@ -34,9 +34,20 @@ std::set<std::string> FindContactDuplicates::exec(Fred::OperationContext &ctx)
 {
     if(!specific_contact_handle_.isset())
     {
+        std::string cursor_query("DECLARE get_contacts_by_name CURSOR FOR SELECT unnest(array_accum(c.id)) FROM contact c ");
+        Database::query_param_list cursor_query_params;
+
+        if(registrar_handle_.isset())
+        {
+            cursor_query += " JOIN object o ON o.id = c.id AND o.clid = (SELECT id FROM registrar WHERE handle = $";
+            cursor_query += cursor_query_params.add(registrar_handle_.get_value());
+            cursor_query += "::text) ";
+        }
+
+        cursor_query += " GROUP BY trim(both ' ' from COALESCE(c.name,'')) HAVING array_upper(array_accum(c.id), 1) > 1 ";
+
         //cursor WITHOUT HOLD released with CLOSE or at the end of the transaction
-        ctx.get_conn().exec("DECLARE get_contacts_by_name CURSOR FOR SELECT unnest(array_accum(c.id)) FROM contact c "
-            " GROUP BY trim(both ' ' from COALESCE(c.name,'')) HAVING array_upper(array_accum(c.id), 1) > 1 ");
+        ctx.get_conn().exec_params(cursor_query, cursor_query_params);
     }
 
     Database::Result contact_handle_result;
