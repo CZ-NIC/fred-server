@@ -179,7 +179,7 @@ std::set<std::string> FindContactDuplicates::exec(Fred::OperationContext &ctx)
 
         contact_handle_result = ctx.get_conn().exec_params(contact_handle_query , contact_handle_query_params);
 
-        if(contact_handle_result.size() > 0) break;
+        if(contact_handle_result.size() > 1 || specific_contact_handle_.isset()) break;
 
     }
     while(true);
