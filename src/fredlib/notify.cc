@@ -681,41 +681,46 @@ SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id
 
                               */
 
-          std::stringstream sql;
-          sql << "SELECT dobr.name,r.name,CURRENT_DATE," // 0 1 2
-              << "d.exdate::date + "
-              << "(SELECT val || ' day' FROM enum_parameters WHERE id = "
-              << EP_DELETE << ")::interval," // 3
-              << "c.name, c.organization, " // 4 5
-              << "TRIM(COALESCE(c.street1,'') || ' ' || "
-              << "COALESCE(c.street2,'') || ' ' || "
-              << "COALESCE(c.street3,'')), " //6
-              << "c.city, c.postalcode, ec.country, " // 7 8 9
-              << "TRIM( "
-               "COALESCE(c.country, '') || ' ' || " 
-               "COALESCE(c.organization, '') || ' ' || " 
-               "COALESCE(c.name, '') || ' ' || "
-               "COALESCE(c.postalcode,'') || ' ' || "
-               "COALESCE(c.street1,'') || ' ' || "
-               "COALESCE(c.street2,'') || ' ' || "
-               "COALESCE(c.street3, '') ) as distinction, " // 10
-              << "r.url, tnl.state_id, c.stateorprovince, " // 11 12 13
-              << "c.street1, c.street2, c.street3, cor.name, " // 14 15 16 17
-              << "cor.id, cor.historyid " //18 19
-              << "FROM tmp_notify_letters tnl "
-                   "JOIN object_state s               ON tnl.state_id = s.id "
-                   "JOIN domain_history d             ON d.historyid = s.ohid_from "
-                   "JOIN object_history doh           ON doh.historyid = d.historyid "
-                   "JOIN object_registry dobr         ON dobr.id = d.id "
-                   "JOIN object_registry cor          ON cor.id = d.registrant "
-                   "JOIN contact_history c            ON c.historyid = cor.historyid "
-                   "JOIN enum_country ec              ON ec.id = c.country "
-                   "JOIN registrar r                  ON r.id = doh.clid "
-
-              << "WHERE "
-              << " d.exdate::date='" << exDates[j] << "' "
-              << "ORDER BY CASE WHEN c.country='CZ' THEN 0 ELSE 1 END ASC,"
-              << " distinction, dobr.name";
+          std::ostringstream sql;
+          sql <<
+"SELECT dobr.name,r.name,CURRENT_DATE," // 0 1 2
+       "d.exdate::date+(SELECT val||' day' FROM enum_parameters "
+                       "WHERE id=" << EP_DELETE << ")::interval," // 3
+       "c.name," // 4
+       "CASE WHEN ca.id IS NULL THEN c.organization ELSE ca.company_name END AS organization," // 5
+       "TRIM(COALESCE(CASE WHEN ca.id IS NULL THEN c.street1 ELSE ca.street1 END,'')||' '||"
+            "COALESCE(CASE WHEN ca.id IS NULL THEN c.street2 ELSE ca.street2 END,'')||' '||"
+            "COALESCE(CASE WHEN ca.id IS NULL THEN c.street3 ELSE ca.street3 END,''))," // 6
+       "CASE WHEN ca.id IS NULL THEN c.city ELSE ca.city END AS city," // 7
+       "CASE WHEN ca.id IS NULL THEN c.postalcode ELSE ca.postalcode END AS postalcode," // 8
+       "ec.country," // 9
+       "TRIM(COALESCE(CASE WHEN ca.id IS NULL THEN c.country ELSE ca.country END,'')||' '||"
+            "COALESCE(CASE WHEN ca.id IS NULL THEN c.organization ELSE ca.company_name END,'')||' '||"
+            "COALESCE(c.name,'')||' '||"
+            "COALESCE(CASE WHEN ca.id IS NULL THEN c.postalcode ELSE ca.postalcode END,'')||' '||"
+            "COALESCE(CASE WHEN ca.id IS NULL THEN c.street1 ELSE ca.street1 END,'')||' '||"
+            "COALESCE(CASE WHEN ca.id IS NULL THEN c.street2 ELSE ca.street2 END,'')||' '||"
+            "COALESCE(CASE WHEN ca.id IS NULL THEN c.street3 ELSE ca.street3 END,'')) AS distinction," // 10
+       "r.url,tnl.state_id," // 11 12
+       "CASE WHEN ca.id IS NULL THEN c.stateorprovince ELSE ca.stateorprovince END AS stateorprovince," // 13
+       "CASE WHEN ca.id IS NULL THEN c.street1 ELSE ca.street1 END AS street1," // 14
+       "CASE WHEN ca.id IS NULL THEN c.street2 ELSE ca.street2 END AS street2," // 15
+       "CASE WHEN ca.id IS NULL THEN c.street3 ELSE ca.street3 END AS street3," // 16
+       "cor.name,cor.id,cor.historyid " // 17 18 19
+"FROM tmp_notify_letters tnl "
+"JOIN object_state s ON tnl.state_id=s.id "
+"JOIN domain_history d ON d.historyid=s.ohid_from "
+"JOIN object_history doh ON doh.historyid=d.historyid "
+"JOIN object_registry dobr ON dobr.id=d.id "
+"JOIN object_registry cor ON cor.id=d.registrant "
+"JOIN contact_history c ON c.historyid=cor.historyid "
+"LEFT JOIN contact_address_history ca ON ca.historyid=cor.historyid AND ca.type='MAILING' "
+"JOIN enum_country ec ON ec.id=CASE WHEN ca.id IS NULL THEN c.country ELSE ca.country END "
+"JOIN registrar r ON r.id=doh.clid "
+"WHERE d.exdate::date='" << exDates[j] << " "
+"ORDER BY CASE WHEN (ca.id IS NULL AND c.country='CZ') OR "
+                   "(ca.id IS NOT NULL AND ca.country='CZ') THEN 0 ELSE 1 END ASC,"
+         "distinction,dobr.name;";
           res = conn.exec(sql.str());
 
           std::auto_ptr<GenMultipleFiles> gen(new GenMultipleFiles);
