@@ -1,5 +1,6 @@
 #include "src/fredlib/contact_verification/contact.h"
 #include "src/fredlib/contact.h"
+#include "src/fredlib/object_states.h"
 #include "src/fredlib/db_settings.h"
 #include "util/types/birthdate.h"
 #include "util/random.h"
@@ -717,6 +718,48 @@ void contact_transfer_poll_message(const unsigned long long &_old_registrar_id,
     tx.commit();
 }
 
+void contact_delete_not_linked(const unsigned long long &_id)
+{
+    Database::Connection conn = Database::Manager::acquire();
+
+    Database::Result contact_lock_result = conn.exec_params(
+        "SELECT oreg.id AS id_ "
+        "   FROM object_registry AS oreg "
+        "   JOIN enum_object_type eot ON eot.id = oreg.type AND eot.name = 'contact'::text "
+        "   WHERE oreg.id = $1::integer "
+        "       AND oreg.erdate IS NULL "
+        "   FOR UPDATE OF oreg",
+        Database::query_param_list(_id));
+    if(contact_lock_result.size() == 0) {
+        throw std::runtime_error("contact not found");
+    }
+
+    if(!Fred::object_has_state(_id, "linked"))
+    {
+        Database::Result delete_contact_res = conn.exec_params(
+            "DELETE FROM contact WHERE id = $1::integer RETURNING id",
+            Database::query_param_list(_id));
+        if (delete_contact_res.size() != 1) {
+            throw std::runtime_error("delete contact failed");
+        }
+
+        Database::Result update_erdate_res = conn.exec_params(
+            "UPDATE object_registry "
+            "   SET erdate = now() "
+            "   WHERE id = $1::integer RETURNING id",
+            Database::query_param_list(_id));
+        if (update_erdate_res.size() != 1) {
+            throw std::runtime_error("erdate update failed");
+        }
+
+        Database::Result delete_object_res = conn.exec_params(
+            "DELETE FROM object WHERE id = $1::integer RETURNING id",
+            Database::query_param_list(_id));
+        if (delete_object_res.size() != 1) {
+            throw std::runtime_error("delete object failed");
+        }
+    }
+}
 
 }
 }
