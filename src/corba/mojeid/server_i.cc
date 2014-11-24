@@ -457,6 +457,10 @@ namespace Registry
                         if (state_ptr != csdvi->state.end()) {
                             sinfo.mojeid_activation_datetime = corba_wrap_datetime(state_ptr->second);
                         }
+                        state_ptr = csdvi->state.find(Fred::ObjectState::LINKED);
+                        if (state_ptr != csdvi->state.end()) {
+                            sinfo.linked_date = new Registry::MojeID::NullableDate(corba_wrap_date(state_ptr->second));
+                        }
                         const unsigned int act_size = ret->length();
                         ret->length(act_size + 1);
                         ret[act_size] = sinfo;
@@ -504,6 +508,12 @@ namespace Registry
                 if (state_ptr != csd.state.end()) {
                     sinfo->mojeid_activation_datetime = corba_wrap_datetime(state_ptr->second);
                 }
+
+                state_ptr = csd.state.find(Fred::ObjectState::LINKED);
+                if (state_ptr != csd.state.end()) {
+                    sinfo->linked_date = new Registry::MojeID::NullableDate(corba_wrap_date(state_ptr->second));
+                }
+
                 return sinfo._retn();
             }
             catch (Registry::MojeID::OBJECT_NOT_EXISTS &_ex)
