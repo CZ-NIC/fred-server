@@ -148,7 +148,7 @@ public:
                  unsigned _init_conn = 0,
                  unsigned _max_conn = 1) 
                : conn_info_(_conn_info),
-                 conn_info_(make_nopass_conn_info(_conn_info)),
+                 nopass_conn_info_(make_nopass_conn_info(_conn_info)),
                  init_conn_((_init_conn < _max_conn) ? _init_conn : _max_conn),
                  max_conn_(_max_conn) {
 #ifdef HAVE_LOGGER
