@@ -683,44 +683,53 @@ SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id
 
           std::ostringstream sql;
           sql <<
-"SELECT dobr.name,r.name,CURRENT_DATE," // 0 1 2
-       "d.exdate::date+(SELECT val||' day' FROM enum_parameters "
-                       "WHERE id=" << EP_DELETE << ")::interval," // 3
-       "c.name," // 4
-       "CASE WHEN ca.id IS NULL THEN c.organization ELSE ca.company_name END AS organization," // 5
-       "TRIM(COALESCE(CASE WHEN ca.id IS NULL THEN c.street1 ELSE ca.street1 END,'')||' '||"
-            "COALESCE(CASE WHEN ca.id IS NULL THEN c.street2 ELSE ca.street2 END,'')||' '||"
-            "COALESCE(CASE WHEN ca.id IS NULL THEN c.street3 ELSE ca.street3 END,''))," // 6
-       "CASE WHEN ca.id IS NULL THEN c.city ELSE ca.city END AS city," // 7
-       "CASE WHEN ca.id IS NULL THEN c.postalcode ELSE ca.postalcode END AS postalcode," // 8
-       "ec.country," // 9
-       "TRIM(COALESCE(CASE WHEN ca.id IS NULL THEN c.country ELSE ca.country END,'')||' '||"
-            "COALESCE(CASE WHEN ca.id IS NULL THEN c.organization ELSE ca.company_name END,'')||' '||"
-            "COALESCE(c.name,'')||' '||"
-            "COALESCE(CASE WHEN ca.id IS NULL THEN c.postalcode ELSE ca.postalcode END,'')||' '||"
-            "COALESCE(CASE WHEN ca.id IS NULL THEN c.street1 ELSE ca.street1 END,'')||' '||"
-            "COALESCE(CASE WHEN ca.id IS NULL THEN c.street2 ELSE ca.street2 END,'')||' '||"
-            "COALESCE(CASE WHEN ca.id IS NULL THEN c.street3 ELSE ca.street3 END,'')) AS distinction," // 10
-       "r.url,tnl.state_id," // 11 12
-       "CASE WHEN ca.id IS NULL THEN c.stateorprovince ELSE ca.stateorprovince END AS stateorprovince," // 13
-       "CASE WHEN ca.id IS NULL THEN c.street1 ELSE ca.street1 END AS street1," // 14
-       "CASE WHEN ca.id IS NULL THEN c.street2 ELSE ca.street2 END AS street2," // 15
-       "CASE WHEN ca.id IS NULL THEN c.street3 ELSE ca.street3 END AS street3," // 16
-       "cor.name,cor.id,cor.historyid " // 17 18 19
-"FROM tmp_notify_letters tnl "
-"JOIN object_state s ON tnl.state_id=s.id "
-"JOIN domain_history d ON d.historyid=s.ohid_from "
-"JOIN object_history doh ON doh.historyid=d.historyid "
-"JOIN object_registry dobr ON dobr.id=d.id "
-"JOIN object_registry cor ON cor.id=d.registrant "
-"JOIN contact_history c ON c.historyid=cor.historyid "
-"LEFT JOIN contact_address_history ca ON ca.historyid=cor.historyid AND ca.type='MAILING' "
-"JOIN enum_country ec ON ec.id=CASE WHEN ca.id IS NULL THEN c.country ELSE ca.country END "
-"JOIN registrar r ON r.id=doh.clid "
-"WHERE d.exdate::date='" << exDates[j] << " "
-"ORDER BY CASE WHEN (ca.id IS NULL AND c.country='CZ') OR "
-                   "(ca.id IS NOT NULL AND ca.country='CZ') THEN 0 ELSE 1 END ASC,"
-         "distinction,dobr.name;";
+"WITH expirated_domain AS ("
+    "SELECT dobr.name AS domain_name,r.name AS registrar_handle,"
+           "d.exdate::date+(SELECT val||' day' FROM enum_parameters "
+                           "WHERE id=" << EP_DELETE << ")::interval AS termination_date,"
+           "ca.id IS NOT NULL AS has_mailing_address,"
+           "c.name AS contact_name,c.organization,ca.company_name,"
+           "CASE WHEN ca.id IS NULL THEN c.street1 ELSE ca.street1 END AS street1,"
+           "CASE WHEN ca.id IS NULL THEN c.street2 ELSE ca.street2 END AS street2,"
+           "CASE WHEN ca.id IS NULL THEN c.street3 ELSE ca.street3 END AS street3,"
+           "CASE WHEN ca.id IS NULL THEN c.city ELSE ca.city END AS city,"
+           "CASE WHEN ca.id IS NULL THEN c.stateorprovince ELSE ca.stateorprovince END "
+               "AS stateorprovince,"
+           "CASE WHEN ca.id IS NULL THEN c.postalcode ELSE ca.postalcode END AS postalcode,"
+           "CASE WHEN ca.id IS NULL THEN c.country ELSE ca.country END AS country,"
+           "r.url AS registrar_web,tnl.state_id,cor.name AS contact_handle,"
+           "cor.id AS contact_object_registry_id,cor.historyid AS contact_history_historyid "
+    "FROM tmp_notify_letters tnl "
+    "JOIN object_state s ON tnl.state_id=s.id "
+    "JOIN domain_history d ON d.historyid=s.ohid_from "
+    "JOIN object_history doh ON doh.historyid=d.historyid "
+    "JOIN object_registry dobr ON dobr.id=d.id "
+    "JOIN object_registry cor ON cor.id=d.registrant "
+    "JOIN contact_history c ON c.historyid=cor.historyid "
+    "LEFT JOIN contact_address_history ca ON ca.historyid=cor.historyid AND ca.type='MAILING' "
+    "JOIN registrar r ON r.id=doh.clid "
+    "WHERE d.exdate::date='" << exDates[j] << "') "
+"SELECT ed.domain_name,ed.registrar_handle,CURRENT_DATE,ed.termination_date," // 0 1 2 3
+       "ed.contact_name,ed.organization," // 4 5
+       "TRIM(COALESCE(ed.street1,'')||' '||"
+            "COALESCE(ed.street2,'')||' '||"
+            "COALESCE(ed.street3,'')) AS street," // 6
+       "ed.city,ed.postalcode,ec.country," // 7 8 9
+       "TRIM(COALESCE(ed.country,'')||' '||"
+            "COALESCE(ed.organization,'')||' '||"
+            "COALESCE(ed.company_name,'')||' '||"
+            "COALESCE(ed.contact_name,'')||' '||"
+            "COALESCE(ed.postalcode,'')||' '||"
+            "COALESCE(ed.street1,'')||' '||"
+            "COALESCE(ed.street2,'')||' '||"
+            "COALESCE(ed.street3,'')) AS distinction," // 10
+       "ed.registrar_web,ed.state_id,ed.stateorprovince," // 11 12 13
+       "ed.street1,ed.street2,ed.street3," // 14 15 16
+       "ed.contact_handle,ed.contact_object_registry_id,ed.contact_history_historyid," // 17 18 19
+       "ed.company_name " // 20
+"FROM expirated_domain ed "
+"JOIN enum_country ec ON ec.id=ed.country "
+"ORDER BY ed.country='CZ' DESC,distinction,ed.domain_name";
           res = conn.exec(sql.str());
 
           std::auto_ptr<GenMultipleFiles> gen(new GenMultipleFiles);
@@ -755,7 +764,7 @@ SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id
                     gen->getInput()
                     << "<name>" << XML_DB_OUT(k,4) << "</name>"
                     << "<organization>" << XML_DB_OUT(k,5) << "</organization>"
-
+                    << "<company_name>" << XML_DB_OUT(k,20) << "</company_name>"
                     << "<street>" << XML_DB_OUT(k,6) << "</street>"
                     << "<city>" << XML_DB_OUT(k,7) << "</city>"
                     << "<stateorprovince>" << XML_DB_OUT(k,13) << "</stateorprovince>"
