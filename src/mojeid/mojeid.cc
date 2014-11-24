@@ -1071,8 +1071,9 @@ namespace Registry
                       "ic AS (SELECT id FROM enum_object_states WHERE name='identifiedContact'),"
                       "vc AS (SELECT id FROM enum_object_states WHERE name='validatedContact'),"
                       "mc AS (SELECT id FROM enum_object_states WHERE name='mojeidContact'),"
+                      "lc AS (SELECT id FROM enum_object_states WHERE name='linked'),"
 /* observed states */"obs AS (SELECT id FROM enum_object_states WHERE name IN ('conditionallyIdentifiedContact',"
-                                            "'identifiedContact','validatedContact','mojeidContact')),"
+                                            "'identifiedContact','validatedContact','mojeidContact','linked')),"
 /* contacts whose */  "cc AS (SELECT DISTINCT c.id "
 /* observed states */        "FROM contact c "
 /* start or stop in */       "JOIN object_state os ON os.object_id=c.id "
@@ -1087,6 +1088,8 @@ namespace Registry
 /* [3] - vc from */    "(SELECT valid_from FROM object_state JOIN vc ON state_id=vc.id "
                         "WHERE object_id=cc.id AND valid_to IS NULL),"
 /* [4] - mc from */    "(SELECT valid_from FROM object_state JOIN mc ON state_id=mc.id "
+                        "WHERE object_id=cc.id AND valid_to IS NULL), "
+/* [5] - lc from */    "(SELECT valid_from FROM object_state JOIN mc ON state_id=lc.id "
                         "WHERE object_id=cc.id AND valid_to IS NULL) "
                 "FROM cc "
                 "JOIN object_state os ON os.object_id=cc.id AND os.valid_to IS NULL "
@@ -1113,6 +1116,7 @@ namespace Registry
                         msg << "contact " << contact.contact_id << " hasn't mojeidContact state";
                         throw std::runtime_error(msg.str());
                     }
+                    add_state(rcontacts[idx][5], "linked", contact);
 
                     result.push_back(contact);
                 }
@@ -1148,7 +1152,10 @@ namespace Registry
                                   "state_id=(SELECT id FROM enum_object_states WHERE name='identifiedContact')),"
                            "(SELECT valid_from FROM object_state " // 4
                             "WHERE object_id=o.id AND valid_to IS NULL AND "
-                                  "state_id=(SELECT id FROM enum_object_states WHERE name='validatedContact')) "
+                                  "state_id=(SELECT id FROM enum_object_states WHERE name='validatedContact')), "
+                           "(SELECT valid_from FROM object_state " // 5
+                            "WHERE object_id=o.id AND valid_to IS NULL AND "
+                                  "state_id=(SELECT id FROM enum_object_states WHERE name='linked')) "
                     "FROM contact c "
                     "JOIN object o ON o.id=c.id "
                     "LEFT JOIN registrar r ON r.id=o.clid AND r.handle=$1::TEXT "
@@ -1185,6 +1192,7 @@ namespace Registry
                 }
                 add_state(rcontact[0][3], "identifiedContact", contact);
                 add_state(rcontact[0][4], "validatedContact", contact);
+                add_state(rcontact[0][5], "linked", contact);
                 return contact;
             }//try
             catch(Registry::MojeID::OBJECT_NOT_EXISTS& _ex)
