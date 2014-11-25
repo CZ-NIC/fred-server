@@ -129,15 +129,8 @@ namespace Fred
         GetObjectStateIdMap get_object_state_id_map(status_list_, object_type);
         typedef GetObjectStateIdMap::StateIdMap StateIdMap;
         const StateIdMap &state_id_map = get_object_state_id_map.exec(_ctx);
-        {
-            MultipleObjectStateId state_id;
-            for (StateIdMap::const_iterator pStateId = state_id_map.begin();
-                 pStateId != state_id_map.end(); ++pStateId) {
-                state_id.insert(pStateId->second);
-            }
-            
-            LockMultipleObjectStateRequestLock(state_id, object_id_).exec(_ctx);
-        }
+
+        LockMultipleObjectStateRequestLock(object_id_).exec(_ctx);
 
         std::string object_state_id_set;
         for (StateIdMap::const_iterator pStateId = state_id_map.begin();

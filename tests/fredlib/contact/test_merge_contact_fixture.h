@@ -720,9 +720,9 @@ namespace MergeContactFixture
             , std::set<std::string>  state_set
             )
         {
+            Fred::LockObjectStateRequestLock(id).exec(ctx);
             for(std::set<std::string>::const_iterator ci = state_set.begin(); ci != state_set.end(); ++ci)
             {
-                Fred::LockObjectStateRequestLock(*ci, id).exec(ctx);
                 ctx.get_conn().exec_params(
                 "INSERT INTO object_state_request (object_id, state_id)"
                 " VALUES ($1::integer, (SELECT id FROM enum_object_states"

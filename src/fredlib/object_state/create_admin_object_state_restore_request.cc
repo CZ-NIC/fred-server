@@ -96,16 +96,8 @@ namespace Fred
         }
         StatusList previous_status_list;
         if (pRow != block_history.end()) {
-            Database::Result status_result = _ctx.get_conn().exec_params(
-                "SELECT id "
-                "FROM enum_object_states "
-                "WHERE $1::integer=ANY(types)",
-                Database::query_param_list(object_type_));
-            MultipleObjectStateId status_all;
-            for (Database::Result::Iterator pStatusRow = status_result.begin(); pStatusRow != status_result.end(); ++pStatusRow) {
-                status_all.insert((*pStatusRow)[0]);
-            }
-            LockMultipleObjectStateRequestLock(status_all, object_id).exec(_ctx);
+
+            LockMultipleObjectStateRequestLock(object_id).exec(_ctx);
 
             const TID start_object_state_id = (*pRow)[OBJECT_STATE_ID_IDX];
             Database::Result previous_status_list_result = _ctx.get_conn().exec_params(
@@ -145,7 +137,7 @@ namespace Fred
             _ctx.get_log().debug("serverBlockedId = " + boost::lexical_cast< std::string >(server_blocked_id));
         }
         _ctx.get_log().debug("LockObjectStateRequestLock call");
-        LockObjectStateRequestLock(server_blocked_id, object_id).exec(_ctx);
+        LockObjectStateRequestLock(object_id).exec(_ctx);
         _ctx.get_log().debug("LockObjectStateRequestLock success");
         Database::Result rcheck = _ctx.get_conn().exec_params(
             "SELECT 1 "

@@ -43,16 +43,7 @@ const std::string State::STR_M = "mojeidContact";
 
 void lock_contact_verification_states(::uint64_t _contact_id)
 {
-    enum { VERIFICATION_STATE_COUNT = 4 };
-    static const std::string array_of_states[VERIFICATION_STATE_COUNT] = {
-        State::STR_C,
-        State::STR_I,
-        State::STR_V,
-        State::STR_M
-    };
-    static const std::vector< std::string > verification_states(
-        array_of_states, array_of_states + VERIFICATION_STATE_COUNT);
-    Fred::lock_multiple_object_states(_contact_id, verification_states);
+    Fred::lock_object_state_request_lock(_contact_id);
 }
 
 ::uint64_t lock_contact_verification_states(const std::string &_contact_handle)

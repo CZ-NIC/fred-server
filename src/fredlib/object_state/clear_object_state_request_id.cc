@@ -42,33 +42,7 @@ namespace Fred
 
     ClearObjectStateRequestId::Requests ClearObjectStateRequestId::exec(OperationContext &_ctx)
     {
-        //get object type
-        ObjectType object_type = 0;
-        Database::query_param_list param(object_id_);
-        {
-            Database::Result object_type_result = _ctx.get_conn().exec_params(
-                "SELECT type "
-                "FROM object_registry "
-                "WHERE id=$1::bigint", param);
-            if (object_type_result.size() <= 0) {
-                BOOST_THROW_EXCEPTION(Exception().set_object_id_not_found(object_id_));
-            }
-            const Database::Row &row = object_type_result[0];
-            object_type = static_cast< ObjectType >(row[0]);
-        }
-
-        Database::Result status_result = _ctx.get_conn().exec_params(
-            "SELECT id "
-            "FROM enum_object_states "
-            "WHERE $1::bigint=ANY(types) AND "
-                  "manual AND "
-                  "name LIKE 'server%'",
-            Database::query_param_list(object_type));
-        MultipleObjectStateId status_all;
-        for (Database::Result::Iterator pRow = status_result.begin(); pRow != status_result.end(); ++pRow) {
-            status_all.insert((*pRow)[0]);
-        }
-        LockMultipleObjectStateRequestLock(status_all, object_id_).exec(_ctx);
+        LockMultipleObjectStateRequestLock(object_id_).exec(_ctx);
 
         enum ResultColumnIndex
         {
@@ -88,7 +62,7 @@ namespace Fred
                          "eos.manual AND "
                          "eos.name LIKE 'server%' "
                    "LIMIT 1) IS NOT NULL "
-            "RETURNING id", param);
+            "RETURNING id", Database::query_param_list(object_id_));
         Requests result;
         if (0 < cmd_result.size()) {
             std::string rid = "ClearObjectStateRequest::exec canceled request id:";

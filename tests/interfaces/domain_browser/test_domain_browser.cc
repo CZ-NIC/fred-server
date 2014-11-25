@@ -2562,8 +2562,7 @@ struct get_my_nssets_fixture
             if(i%2)
             {
                 BOOST_MESSAGE(nsset_handle.str() + " blocked");
-                Fred::LockObjectStateRequestLock(Fred::ObjectState::SERVER_BLOCKED,
-                    map_at(nsset_info,nsset_handle.str()).info_nsset_data.id).exec(ctx);
+                Fred::LockObjectStateRequestLock(map_at(nsset_info,nsset_handle.str()).info_nsset_data.id).exec(ctx);
                 ctx.get_conn().exec_params(
                     "INSERT INTO object_state_request (object_id, state_id)"
                     " VALUES ($1::integer, (SELECT id FROM enum_object_states"
@@ -2728,8 +2727,7 @@ struct get_my_keysets_fixture
             if(i%2)
             {
                 BOOST_MESSAGE(keyset_handle.str() + " blocked");
-                Fred::LockObjectStateRequestLock(Fred::ObjectState::SERVER_BLOCKED,
-                    map_at(keyset_info,keyset_handle.str()).info_keyset_data.id).exec(ctx);
+                Fred::LockObjectStateRequestLock(map_at(keyset_info,keyset_handle.str()).info_keyset_data.id).exec(ctx);
                 ctx.get_conn().exec_params(
                     "INSERT INTO object_state_request (object_id, state_id)"
                     " VALUES ($1::integer, (SELECT id FROM enum_object_states"

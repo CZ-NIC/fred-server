@@ -67,21 +67,6 @@ namespace Fred
     
     void CreateAdminObjectStateRestoreRequestId::exec(OperationContext &_ctx)
     {
-        //get object type
-        ObjectType object_type = 0;
-        Database::query_param_list param(object_id_);
-        {
-            Database::Result object_type_result = _ctx.get_conn().exec_params(
-                "SELECT type "
-                "FROM object_registry "
-                "WHERE id=$1::bigint", param);
-            if (object_type_result.size() <= 0) {
-                BOOST_THROW_EXCEPTION(Exception().set_object_id_not_found(object_id_));
-            }
-            const Database::Row &row = object_type_result[0];
-            object_type = static_cast< ObjectType >(row[0]);
-        }
-
         const ObjectStateId server_blocked_id = this->check_server_blocked_status_present(_ctx);
         enum ResultColumnIndex
         {
@@ -117,16 +102,8 @@ namespace Fred
         }
         StatusList previous_status_list;
         if (pRow != block_history.end()) {
-            Database::Result status_result = _ctx.get_conn().exec_params(
-                "SELECT id "
-                "FROM enum_object_states "
-                "WHERE $1::integer=ANY(types)",
-                Database::query_param_list(object_type));
-            MultipleObjectStateId status_all;
-            for (Database::Result::Iterator pStatusRow = status_result.begin(); pStatusRow != status_result.end(); ++pStatusRow) {
-                status_all.insert((*pStatusRow)[0]);
-            }
-            LockMultipleObjectStateRequestLock(status_all, object_id_).exec(_ctx);
+
+            LockMultipleObjectStateRequestLock(object_id_).exec(_ctx);
 
             const TID start_object_state_id = (*pRow)[OBJECT_STATE_ID_IDX];
             Database::Result previous_status_list_result = _ctx.get_conn().exec_params(
@@ -173,7 +150,7 @@ namespace Fred
             _ctx.get_log().debug("serverBlockedId = " + boost::lexical_cast< std::string >(server_blocked_id));
         }
         _ctx.get_log().debug("LockObjectStateRequestLock call");
-        LockObjectStateRequestLock(server_blocked_id, object_id_).exec(_ctx);
+        LockObjectStateRequestLock(object_id_).exec(_ctx);
         _ctx.get_log().debug("LockObjectStateRequestLock success");
         Database::Result rcheck = _ctx.get_conn().exec_params(
             "SELECT 1 "

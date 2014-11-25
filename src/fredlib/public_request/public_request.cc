@@ -365,11 +365,13 @@ public:
 
       for(std::vector<Type>::const_iterator cit = _request_type_list.begin(); cit != _request_type_list.end(); ++cit)
       {
-          lock_public_request_lock(*cit, _contact_id);
           params.push_back(*cit);
           sql << prt_separator.get() << "eprt.name = $" << (params.size() + 2) << "::text";
       }
       sql << ")";
+
+      //lock public requests
+      Fred::PublicRequest::lock_public_request_by_object(_contact_id);
 
       return (conn.exec_params(sql.str(), Util::vector_of<QueryParam>(_contact_id)(1)(params)).size() > 0)//found answered request
           && (conn.exec_params(sql.str(), Util::vector_of<QueryParam>(_contact_id)(0)(params)).size() == 0); //and no new request

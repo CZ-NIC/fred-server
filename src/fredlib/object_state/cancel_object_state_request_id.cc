@@ -75,13 +75,7 @@ namespace Fred
         StateIdMap state_id_map;
         try {
             state_id_map = get_object_state_id_map.exec(_ctx);
-            MultipleObjectStateId state_id;
-            for (StateIdMap::const_iterator pStateId = state_id_map.begin();
-                 pStateId != state_id_map.end(); ++pStateId) {
-                state_id.insert(pStateId->second);
-            }
-            
-            LockMultipleObjectStateRequestLock(state_id, object_id_).exec(_ctx);
+            LockMultipleObjectStateRequestLock(object_id_).exec(_ctx);
         }
         catch (const GetObjectStateIdMap::Exception &ex) {
             if (ex.is_set_state_not_found()) {

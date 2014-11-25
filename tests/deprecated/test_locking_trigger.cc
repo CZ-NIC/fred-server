@@ -42,7 +42,10 @@
 #include "random_data_generator.h"
 #include "concurrent_queue.h"
 
+#include "src/fredlib/registry.h"
 #include "src/fredlib/contact/create_contact.h"
+#include "src/fredlib/contact/info_contact.h"
+#include "src/fredlib/contact/info_contact_output.h"
 #include "src/fredlib/contact/info_contact_diff.h"
 #include "src/contact_verification/public_request_contact_verification_impl.h"
 
@@ -363,8 +366,8 @@ struct Locking_object_state_request_fixture
                 , Database::query_param_list(contact_handle))[0][0]);
 
         BOOST_CHECK(info_contact_id);//expecting existing object
-        info_contact = Fred::InfoContact(contact_handle, registrar_handle).exec(ctx);
-        info_contact_history = Fred::InfoContactHistory(info_contact.info_contact_data.roid, registrar_handle).exec(ctx);
+        info_contact = Fred::InfoContactByHandle(contact_handle).exec(ctx);
+        info_contact_history = Fred::InfoContactHistory(info_contact.info_contact_data.roid).exec(ctx);
         ctx.commit_transaction();
     }
 
@@ -541,8 +544,7 @@ BOOST_FIXTURE_TEST_CASE( test_locking_object_state_request_threaded, Locking_obj
         }
     }//for i
 
-    BOOST_TEST_MESSAGE( "pass_counter: " << pass_counter );
-    BOOST_CHECK(pass_counter == 3);
+    BOOST_CHECK_MESSAGE(pass_counter == 3, "pass_counter: " << pass_counter);
 }
 
 //lock_public_request
@@ -606,8 +608,8 @@ struct Locking_public_request_fixture
                 , Database::query_param_list(contact_handle))[0][0]);
 
         BOOST_CHECK(contact_id);//expecting existing object
-        info_contact = Fred::InfoContact(contact_handle, registrar_handle).exec(ctx);
-        info_contact_history = Fred::InfoContactHistory(info_contact.info_contact_data.roid, registrar_handle).exec(ctx);
+        info_contact = Fred::InfoContactByHandle(contact_handle).exec(ctx);
+        info_contact_history = Fred::InfoContactHistory(info_contact.info_contact_data.roid).exec(ctx);
 
         ctx.commit_transaction();
 

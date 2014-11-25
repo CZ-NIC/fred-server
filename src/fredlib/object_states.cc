@@ -159,7 +159,7 @@ void cancel_object_state_request(
     Database::Connection conn = Database::Manager::acquire();
     Database::Transaction tx(conn);
 
-    lock_object_state_request_lock(_state_name,_object_id);
+    lock_object_state_request_lock(_object_id);
 
     Database::Result rid_result = conn.exec_params(
         "UPDATE object_state_request SET canceled = CURRENT_TIMESTAMP WHERE id IN ("
