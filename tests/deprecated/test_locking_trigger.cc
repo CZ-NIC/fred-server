@@ -419,42 +419,16 @@ public:
             //if(sb_ptr_) sb_ptr_->barrier2.wait();//wait for other synced threads
 
             BOOST_TEST_MESSAGE( "states thread: " << number_ << " object_id: " << fixture_ptr_->info_contact_id);
-            bool cic = Fred::object_has_state(fixture_ptr_->info_contact_id
-                , Fred::ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT);
-            bool ic = Fred::object_has_state(fixture_ptr_->info_contact_id
-                , Fred::ObjectState::IDENTIFIED_CONTACT);
-            bool vc = Fred::object_has_state(fixture_ptr_->info_contact_id
-                , Fred::ObjectState::VALIDATED_CONTACT);
 
-            BOOST_TEST_MESSAGE( "cic: " << cic << " thread: " << number_ << " object_id: " << fixture_ptr_->info_contact_id);
-            BOOST_TEST_MESSAGE( "ic: " << ic << " thread: " << number_ << " object_id: " << fixture_ptr_->info_contact_id);
-            BOOST_TEST_MESSAGE( "vc: " << vc << " thread: " << number_ << " object_id: " << fixture_ptr_->info_contact_id);
-
-            if(!cic && !ic && !vc)
+            if(!Fred::object_has_state(fixture_ptr_->info_contact_id, Fred::ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT))
             {
                 Fred::insert_object_state(fixture_ptr_->info_contact_id, Fred::ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT );
+                Fred::update_object_states(fixture_ptr_->info_contact_id);//update will unset state if by other thred set in the future according to start of the transaction timestamp
                 BOOST_TEST_MESSAGE( "set CONDITIONALLY_IDENTIFIED_CONTACT thread: " << number_ << " object_id: " << fixture_ptr_->info_contact_id);
                 res.ret = 1;
             }
-            else if (cic && !ic && !vc)
-            {
-                Fred::insert_object_state(fixture_ptr_->info_contact_id, Fred::ObjectState::IDENTIFIED_CONTACT );
-                BOOST_TEST_MESSAGE( "set IDENTIFIED_CONTACT thread: "<< number_ << " object_id: " << fixture_ptr_->info_contact_id);
-                res.ret = 1;
-            }
-            else if (cic && ic && !vc)
-            {
-                Fred::insert_object_state(fixture_ptr_->info_contact_id, Fred::ObjectState::VALIDATED_CONTACT );
-                BOOST_TEST_MESSAGE( "set VALIDATED_CONTACT thread: " << number_ << " object_id: " << fixture_ptr_->info_contact_id);
-                res.ret = 1;
-            }
-
-            BOOST_TEST_MESSAGE( "sleep thread: " << number_ << " object_id: " << fixture_ptr_->info_contact_id);
-            boost::this_thread::sleep( boost::posix_time::milliseconds(2000));
-            BOOST_TEST_MESSAGE( "update states thread: " << number_ << " object_id: " << fixture_ptr_->info_contact_id);
-            Fred::update_object_states(fixture_ptr_->info_contact_id);
             BOOST_TEST_MESSAGE( "commit thread: " << number_ << " object_id: " << fixture_ptr_->info_contact_id);
-            boost::this_thread::sleep( boost::posix_time::milliseconds(2000));
+            //boost::this_thread::sleep( boost::posix_time::milliseconds(2000));
             tx.commit();
             BOOST_TEST_MESSAGE( "end thread: " << number_ << " object_id: " << fixture_ptr_->info_contact_id);
         }
@@ -544,7 +518,7 @@ BOOST_FIXTURE_TEST_CASE( test_locking_object_state_request_threaded, Locking_obj
         }
     }//for i
 
-    BOOST_CHECK_MESSAGE(pass_counter == 3, "pass_counter: " << pass_counter);
+    BOOST_CHECK_MESSAGE(pass_counter == 1, "pass_counter: " << pass_counter);
 }
 
 //lock_public_request
