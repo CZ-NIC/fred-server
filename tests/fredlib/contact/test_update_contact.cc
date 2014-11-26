@@ -604,7 +604,8 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle_company_name)
         info_data_1 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
     }
 
-    Fred::ContactAddress address = info_data_1.get_address< Fred::ContactAddressType::SHIPPING >();
+    Fred::ContactAddress address = info_data_1.info_contact_data.
+                                       get_address< Fred::ContactAddressType::SHIPPING >();
     address.company_name = "Company GmbH.";
     {
         Fred::OperationContext ctx;//new connection to rollback on error
@@ -613,7 +614,8 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle_company_name)
             .exec(ctx);
         const Fred::InfoContactOutput info_data_2 = Fred::InfoContactByHandle(test_contact_handle).
                                                         exec(ctx);
-        BOOST_CHECK(address == info_data_2.get_address< Fred::ContactAddressType::SHIPPING >());
+        BOOST_CHECK(address == info_data_2.info_contact_data.
+                                   get_address< Fred::ContactAddressType::SHIPPING >());
     }
 
     try {

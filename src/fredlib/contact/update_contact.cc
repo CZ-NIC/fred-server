@@ -390,9 +390,10 @@ namespace Fred
                         params.push_back(type); //$2 = type
                         //company_name optional
                         if (address.company_name.isset()) {
-                            if (type != Fred::ContactAddressType::SHIPPING) {
+                            if (type != Fred::ContactAddressType::to_string(
+                                            Fred::ContactAddressType::SHIPPING)) {
                                 update_contact_exception.
-                                    set_forbidden_company_name_setting(type.to_string());
+                                    set_forbidden_company_name_setting(type);
                                 continue;
                             }
                             params.push_back(address.company_name.get_value());
@@ -460,9 +461,10 @@ namespace Fred
                         "$" << params_insert.size() << "::contact_address_type,";
                         //company_name optional
                         if (address.company_name.isset()) {
-                            if (type != Fred::ContactAddressType::SHIPPING) {
+                            if (type != Fred::ContactAddressType::to_string(
+                                            Fred::ContactAddressType::SHIPPING)) {
                                 update_contact_exception.
-                                    set_forbidden_company_name_setting(type.to_string());
+                                    set_forbidden_company_name_setting(type);
                                 continue;
                             }
                             params_insert.push_back(address.company_name.get_value());

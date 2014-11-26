@@ -67,6 +67,7 @@ namespace Fred
             , ExceptionData_unknown_sponsoring_registrar_handle<DERIVED_EXCEPTION>
             , ExceptionData_unknown_ssntype<DERIVED_EXCEPTION>
             , ExceptionData_unknown_country<DERIVED_EXCEPTION>
+            , ExceptionData_forbidden_company_name_setting<DERIVED_EXCEPTION>
         {};
 
         /**
