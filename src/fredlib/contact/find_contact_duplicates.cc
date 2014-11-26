@@ -100,29 +100,8 @@ std::set<std::string> FindContactDuplicates::exec(Fred::OperationContext &ctx)
         contact_handle_query += " ) ON TRUE "
 
         " LEFT JOIN object_state forbidden_src_os ON forbidden_src_os.object_id = c_src.id "
-        " AND forbidden_src_os.state_id IN (SELECT eos.id FROM enum_object_states eos WHERE eos.name = 'mojeidContact'::text "
-        " OR eos.name = 'serverDeleteProhibited'::text OR eos.name = 'serverBlocked'::text) "//forbidden states of src contact
+        " AND forbidden_src_os.state_id IN (SELECT eos.id FROM enum_object_states eos WHERE eos.name = 'serverBlocked'::text) "//forbidden state of src contact
         " AND forbidden_src_os.valid_from <= CURRENT_TIMESTAMP AND (forbidden_src_os.valid_to is null OR forbidden_src_os.valid_to > CURRENT_TIMESTAMP) "
-
-        " LEFT JOIN object_state forbidden_dst_os ON forbidden_dst_os.object_id = c_dst.id "
-        " AND forbidden_dst_os.state_id IN (SELECT eos.id FROM enum_object_states eos WHERE eos.name = 'serverBlocked'::text) "//forbidden state of dst contact
-        " AND forbidden_dst_os.valid_from <= CURRENT_TIMESTAMP AND (forbidden_dst_os.valid_to is null OR forbidden_dst_os.valid_to > CURRENT_TIMESTAMP) "
-
-        " LEFT JOIN object_state update_src_os ON update_src_os.object_id = c_src.id AND update_src_os.state_id IN "
-        " (SELECT eos.id FROM enum_object_states eos WHERE eos.name = 'serverUpdateProhibited'::text) "//prohibited update of src contact
-        " AND update_src_os.valid_from <= CURRENT_TIMESTAMP AND (update_src_os.valid_to IS NULL OR update_src_os.valid_to > CURRENT_TIMESTAMP) "
-
-        " LEFT JOIN object_state transfer_src_os ON transfer_src_os.object_id = c_src.id AND transfer_src_os.state_id IN "
-        " (SELECT eos.id FROM enum_object_states eos WHERE eos.name = 'serverTransferProhibited'::text) "//prohibited transfer of src contact
-        " AND transfer_src_os.valid_from <= CURRENT_TIMESTAMP AND (transfer_src_os.valid_to IS NULL OR transfer_src_os.valid_to > CURRENT_TIMESTAMP) "
-
-        " LEFT JOIN object_state update_dst_os ON update_dst_os.object_id = c_src.id AND update_dst_os.state_id IN "
-        " (SELECT eos.id FROM enum_object_states eos WHERE eos.name = 'serverUpdateProhibited'::text) "//prohibited update of dst contact
-        " AND update_dst_os.valid_from <= CURRENT_TIMESTAMP AND (update_dst_os.valid_to IS NULL OR update_dst_os.valid_to > CURRENT_TIMESTAMP) "
-
-        " LEFT JOIN object_state transfer_dst_os ON transfer_dst_os.object_id = c_src.id AND transfer_dst_os.state_id IN "
-        " (SELECT eos.id FROM enum_object_states eos WHERE eos.name = 'serverTransferProhibited'::text) "//prohibited transfer of dst contact
-        " AND transfer_dst_os.valid_from <= CURRENT_TIMESTAMP AND (transfer_dst_os.valid_to IS NULL OR transfer_dst_os.valid_to > CURRENT_TIMESTAMP) "
 
         " WHERE "
         " ( "
@@ -157,9 +136,7 @@ std::set<std::string> FindContactDuplicates::exec(Fred::OperationContext &ctx)
 
         " o_src.clid = o_dst.clid "
 
-        " AND forbidden_src_os.id IS NULL AND forbidden_dst_os.id IS NULL "
-        " AND (update_src_os.id IS NULL) = (update_dst_os.id IS NULL) "
-        " AND (transfer_src_os.id IS NULL) = (transfer_dst_os.id IS NULL) "
+        " AND forbidden_src_os.id IS NULL "
         " )) as tmp ";
 
         if(!specific_contact_handle_.isset() && !exclude_contacts_.empty())
