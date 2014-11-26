@@ -165,8 +165,8 @@ BOOST_AUTO_TEST_CASE(create_admin_object_state_restore_request_id_bad)
         BOOST_CHECK(false);
     }
     catch(const Fred::CreateAdminObjectStateRestoreRequestId::Exception &ex) {
-        BOOST_CHECK(ex.is_set_object_id_not_found());
-        BOOST_CHECK(ex.get_object_id_not_found() == not_used_id);
+        BOOST_CHECK(ex.is_set_server_blocked_absent());
+        BOOST_CHECK(ex.get_server_blocked_absent() == not_used_id);
     }
 
     {
