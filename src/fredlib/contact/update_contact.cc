@@ -390,6 +390,11 @@ namespace Fred
                         params.push_back(type); //$2 = type
                         //company_name optional
                         if (address.company_name.isset()) {
+                            if (type != Fred::ContactAddressType::SHIPPING) {
+                                update_contact_exception.
+                                    set_forbidden_company_name_setting(type.to_string());
+                                continue;
+                            }
                             params.push_back(address.company_name.get_value());
                             sql << "company_name=$" << params.size() << "::text,";
                         }
@@ -455,6 +460,11 @@ namespace Fred
                         "$" << params_insert.size() << "::contact_address_type,";
                         //company_name optional
                         if (address.company_name.isset()) {
+                            if (type != Fred::ContactAddressType::SHIPPING) {
+                                update_contact_exception.
+                                    set_forbidden_company_name_setting(type.to_string());
+                                continue;
+                            }
                             params_insert.push_back(address.company_name.get_value());
                             sql_insert << "$" << params_insert.size() << "::text,";
                         }
@@ -499,6 +509,11 @@ namespace Fred
                         sql_insert << "$" << params_insert.size() << "::text)";
                     }
                 }
+                //check exception
+                if (update_contact_exception.throw_me()) {
+                    BOOST_THROW_EXCEPTION(update_contact_exception);
+                }
+
                 if (!sql_insert.str().empty()) {
                     ctx.get_conn().exec_params(sql_insert.str(), params_insert);
                 }

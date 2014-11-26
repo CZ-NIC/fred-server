@@ -583,7 +583,6 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle_wrong_country)
 /**
  * test UpdateContactById
  */
-
 BOOST_AUTO_TEST_CASE(update_contact_by_id)
 {
     Fred::OperationContext ctx;
@@ -592,6 +591,58 @@ BOOST_AUTO_TEST_CASE(update_contact_by_id)
     place.street3 = Optional<std::string>("test street 3");
     Fred::UpdateContactById(info_data_1.info_contact_data.id,registrar_handle).set_place(place).exec(ctx);
     ctx.commit_transaction();
+}
+
+/**
+ * test UpdateContactByHandle with company_name
+ */
+BOOST_AUTO_TEST_CASE(update_contact_by_handle_company_name)
+{
+    Fred::InfoContactOutput info_data_1;
+    {
+        Fred::OperationContext ctx;
+        info_data_1 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
+    }
+
+    Fred::ContactAddress address = info_data_1.get_address< Fred::ContactAddressType::SHIPPING >();
+    address.company_name = "Company GmbH.";
+    {
+        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::UpdateContactByHandle(test_contact_handle, registrar_handle)
+            .set_address< Fred::ContactAddressType::SHIPPING >(address)
+            .exec(ctx);
+        const Fred::InfoContactOutput info_data_2 = Fred::InfoContactByHandle(test_contact_handle).
+                                                        exec(ctx);
+        BOOST_CHECK(address == info_data_2.get_address< Fred::ContactAddressType::SHIPPING >());
+    }
+
+    try {
+        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::UpdateContactByHandle(test_contact_handle, registrar_handle)
+            .set_address< Fred::ContactAddressType::BILLING >(address)
+            .exec(ctx);
+        ctx.commit_transaction();
+        BOOST_ERROR("no exception thrown");
+    }
+    catch(const Fred::UpdateContactByHandle::ExceptionType& ex) {
+        BOOST_CHECK(ex.is_set_forbidden_company_name_setting());
+        BOOST_CHECK(ex.get_forbidden_company_name_setting() ==
+                    Fred::ContactAddressType::to_string(Fred::ContactAddressType::BILLING));
+    }
+
+    try {
+        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::UpdateContactByHandle(test_contact_handle, registrar_handle)
+            .set_address< Fred::ContactAddressType::MAILING >(address)
+            .exec(ctx);
+        ctx.commit_transaction();
+        BOOST_ERROR("no exception thrown");
+    }
+    catch(const Fred::UpdateContactByHandle::ExceptionType& ex) {
+        BOOST_CHECK(ex.is_set_forbidden_company_name_setting());
+        BOOST_CHECK(ex.get_forbidden_company_name_setting() ==
+                    Fred::ContactAddressType::to_string(Fred::ContactAddressType::MAILING));
+    }
 }
 
 /**
