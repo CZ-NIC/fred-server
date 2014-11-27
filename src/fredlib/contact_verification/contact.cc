@@ -736,6 +736,9 @@ void contact_delete_not_linked(const unsigned long long &_id)
 
     if(!Fred::object_has_state(_id, "linked"))
     {
+        conn.exec_params("DELETE FROM contact_address WHERE contactid = $1::integer",
+            Database::query_param_list(_id));
+
         Database::Result delete_contact_res = conn.exec_params(
             "DELETE FROM contact WHERE id = $1::integer RETURNING id",
             Database::query_param_list(_id));
