@@ -133,6 +133,17 @@ namespace Fred
         }
         /**
          * Comparison operator.
+         * @param _a is left hand side of the comparison
+         * @param _b is right hand side of the comparison
+         * @return false if equal, true otherwise
+         */
+        friend bool operator!=(const struct ContactAddressType &_a,
+                               const struct ContactAddressType &_b)
+        {
+            return !(_a == _b);
+        }
+        /**
+         * Comparison operator.
          * @param _b is right hand side of the comparison
          * @return true if @a this smaller then @a _b, false otherwise
          */
