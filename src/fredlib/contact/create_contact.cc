@@ -488,6 +488,11 @@ namespace Fred
                         sql << "($1::bigint,$" << params.size() << "::contact_address_type,";
                         //company_name
                         if (addr_ptr->second.company_name.isset()) {
+                            if (addr_ptr->first != Fred::ContactAddressType(Fred::ContactAddressType::SHIPPING)) {
+                                create_contact_exception.
+                                    set_forbidden_company_name_setting(addr_ptr->first.to_string());
+                                continue;
+                            }
                             params.push_back(addr_ptr->second.company_name.get_value());
                             sql << "$" << params.size() << "::text,";
                         }
@@ -530,6 +535,10 @@ namespace Fred
                         //country
                         params.push_back(addr_ptr->second.country);
                         sql << "$" << params.size() << "::text)";
+                    }
+                    //check exception
+                    if (create_contact_exception.throw_me()) {
+                        BOOST_THROW_EXCEPTION(create_contact_exception);
                     }
                     ctx.get_conn().exec_params(sql.str(), params);
                 }
