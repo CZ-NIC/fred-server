@@ -73,8 +73,8 @@ std::set<std::string> FindContactDuplicates::exec(Fred::OperationContext &ctx)
         " JOIN (object_registry oreg_dst "
         " JOIN object o_dst ON o_dst.id = oreg_dst.id ";
 
-        //specific registrar restriction
-        if(registrar_handle_.isset())
+        //specific registrar restriction only when specific contact not set
+        if(registrar_handle_.isset() && !specific_contact_handle_.isset())
         {
             contact_handle_query += " AND o_dst.clid = (SELECT id FROM registrar WHERE handle = $";
             contact_handle_query += contact_handle_query_params.add(registrar_handle_.get_value());
