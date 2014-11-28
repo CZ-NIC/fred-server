@@ -44,7 +44,11 @@ std::set<std::string> FindContactDuplicates::exec(Fred::OperationContext &ctx)
             cursor_query += "::text) ";
         }
 
-        cursor_query += " GROUP BY trim(both ' ' from COALESCE(c.name,'')) HAVING array_upper(array_accum(c.id), 1) > 1 ";
+        cursor_query +=" LEFT JOIN object_state forbidden_os ON (forbidden_os.object_id = c.id "
+        " AND forbidden_os.state_id IN (SELECT eos.id FROM enum_object_states eos WHERE eos.name = 'serverBlocked'::text) "//forbidden state of contact
+        " AND forbidden_os.valid_from <= CURRENT_TIMESTAMP AND (forbidden_os.valid_to is null OR forbidden_os.valid_to > CURRENT_TIMESTAMP)) "
+        " WHERE forbidden_os.id IS NULL "
+        " GROUP BY trim(both ' ' from COALESCE(c.name,'')) HAVING array_upper(array_accum(c.id), 1) > 1 ";
 
         //cursor WITHOUT HOLD released with CLOSE or at the end of the transaction
         ctx.get_conn().exec_params(cursor_query, cursor_query_params);
@@ -97,13 +101,16 @@ std::set<std::string> FindContactDuplicates::exec(Fred::OperationContext &ctx)
             contact_handle_query += contact_handle_query_params.add(static_cast<unsigned long long>(duplicate_suspect_contact_id_result[0][0]));
             contact_handle_query += "::bigint ";
         }
-        contact_handle_query += " ) ON TRUE "
+        contact_handle_query += " ) ON TRUE ";
 
-        " LEFT JOIN object_state forbidden_src_os ON forbidden_src_os.object_id = c_src.id "
-        " AND forbidden_src_os.state_id IN (SELECT eos.id FROM enum_object_states eos WHERE eos.name = 'serverBlocked'::text) "//forbidden state of src contact
-        " AND forbidden_src_os.valid_from <= CURRENT_TIMESTAMP AND (forbidden_src_os.valid_to is null OR forbidden_src_os.valid_to > CURRENT_TIMESTAMP) "
+        if(specific_contact_handle_.isset())
+        {
+            contact_handle_query += " LEFT JOIN object_state forbidden_os ON forbidden_os.object_id = c_src.id "
+            " AND forbidden_os.state_id IN (SELECT eos.id FROM enum_object_states eos WHERE eos.name = 'serverBlocked'::text) "//forbidden state of contact
+            " AND forbidden_os.valid_from <= CURRENT_TIMESTAMP AND (forbidden_os.valid_to is null OR forbidden_os.valid_to > CURRENT_TIMESTAMP) ";
+        }
 
-        " WHERE "
+        contact_handle_query += " WHERE "
         " ( "
         //the same
         " (trim(both ' ' from COALESCE(c_src.name,'')) = trim(both ' ' from COALESCE(c_dst.name,''))) AND "
@@ -134,10 +141,11 @@ std::set<std::string> FindContactDuplicates::exec(Fred::OperationContext &ctx)
         " c_src.discloseident = c_dst.discloseident AND "
         " c_src.disclosenotifyemail = c_dst.disclosenotifyemail AND "
 
-        " o_src.clid = o_dst.clid "
+        " o_src.clid = o_dst.clid ";
 
-        " AND forbidden_src_os.id IS NULL "
-        " )) as tmp ";
+        if(specific_contact_handle_.isset()) contact_handle_query += " AND forbidden_os.id IS NULL ";
+
+        contact_handle_query += " )) as tmp ";
 
         if(!specific_contact_handle_.isset() && !exclude_contacts_.empty())
         {
