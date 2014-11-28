@@ -76,6 +76,7 @@ namespace Fred
         DiffMemeber<bool>::Type discloseident;/**< whether to reveal unambiguous identification number */
         DiffMemeber<bool>::Type disclosenotifyemail;/**< whether to reveal notify email */
         DiffMemeber<unsigned long long>::Type id;/**< id of the contact object*/
+        DiffMemeber<Fred::ContactAddressList>::Type addresses;/**< additional contact addresses */
 
         /**
         * Constructor of the contact data diff structure.

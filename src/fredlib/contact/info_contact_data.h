@@ -143,16 +143,6 @@ namespace Fred
          * @return true if @a this smaller then @a _b, false otherwise
          */
         bool operator<(const struct ContactAddressType &_b)const { return this->value < _b.value; }
-        /**
-        * Dumps content of the instance into stream
-        * @param _os contains output stream reference
-        * @param _v reference of instance to be dumped into the stream
-        * @return output stream reference
-        */
-        friend std::ostream& operator<<(std::ostream &_os, const struct ContactAddressType &_v)
-        {
-            return _os << _v.to_string();
-        }
     private:
         /**
          * Default constructor.
@@ -178,6 +168,12 @@ namespace Fred
          */
         bool operator==(const struct ContactAddress &_b)const;
         /**
+         * Check inequality of two instances.
+         * @param _b compares @a this instance with @a _b instance
+         * @return true if they differ.
+         */
+        bool operator!=(const struct ContactAddress &_b)const { return !this->operator==(_b); }
+        /**
          * Assign operator.
          * @param _src assigned instance
          * @return self reference
@@ -189,16 +185,6 @@ namespace Fred
          * @return self reference
          */
         struct ContactAddress& operator=(const Contact::PlaceAddress &_src);
-        /**
-        * Dumps content of the instance into stream
-        * @param _os contains output stream reference
-        * @param _v reference of instance to be dumped into the stream
-        * @return output stream reference
-        */
-        friend std::ostream& operator<<(std::ostream &_os, const struct ContactAddress &_v)
-        {
-            return _os << _v.to_string();
-        }
     };
     /**
      * Container of additional contact addresses.
@@ -314,5 +300,21 @@ namespace Fred
  * @return output stream reference
  */
 std::ostream& operator<<(std::ostream &os, const Fred::ContactAddressList &v);
+
+/**
+ * Dumps content of the instance into stream
+ * @param _os contains output stream reference
+ * @param _v reference of instance to be dumped into the stream
+ * @return output stream reference
+ */
+std::ostream& operator<<(std::ostream &_os, const struct Fred::ContactAddress &_v);
+
+/**
+ * Dumps content of the instance into stream
+ * @param _os contains output stream reference
+ * @param _v reference of instance to be dumped into the stream
+ * @return output stream reference
+ */
+std::ostream& operator<<(std::ostream &_os, const struct Fred::ContactAddressType &_v);
 
 #endif//INFO_CONTACT_DATA_H_

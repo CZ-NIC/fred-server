@@ -70,10 +70,21 @@ namespace Fred
         if(discloseident.isset()) fields.insert("discloseident");
         if(disclosenotifyemail.isset()) fields.insert("disclosenotifyemail");
         if(id.isset()) fields.insert("id");
+        if(addresses.isset()) fields.insert("addresses");
 
         return  fields;
     }
 
+    // náhrada za nefunkční DiffMemeber<Fred::ContactAddressList>::Type::print_quoted()
+    template < class T1, class T2 > std::string format_optional_pair(const Optional< std::pair< T1, T2 > > &_in)
+    {
+        if (!_in.isset()) {
+            return "[N/A]";
+        }
+        std::ostringstream out;
+        out << "'first: " << _in.get_value().first << " second: " << _in.get_value().second << "'";
+        return out.str();
+    }
 
     std::string InfoContactDiff::to_string() const
     {
@@ -111,6 +122,9 @@ namespace Fred
         (std::make_pair("discloseident", discloseident.print_quoted()))
         (std::make_pair("disclosenotifyemail", disclosenotifyemail.print_quoted()))
         (std::make_pair("id", id.print_quoted()))
+        // z nějakého, mně záhadného, důvodu tady nefunguje addresses.print_quoted() !?
+        // obešel jsem to tedy tímhle hackem
+        (std::make_pair("addresses", format_optional_pair(addresses)))
         );//format_data_structure InfoContactDiff
     }
 
@@ -149,7 +163,14 @@ namespace Fred
             || discloseident.isset()
             || disclosenotifyemail.isset()
             || id.isset()
+            || addresses.isset()
             );
+    }
+
+    namespace
+    {
+        bool operator==(const ContactAddressList&, const ContactAddressList&);
+        bool operator!=(const ContactAddressList &a, const ContactAddressList &b) { return !(a == b); }
     }
 
     InfoContactDiff diff_contact_data(const InfoContactData& first, const InfoContactData& second)
@@ -325,9 +346,40 @@ namespace Fred
             diff.id = std::make_pair(first.id,second.id);
         }
 
+        if(first.addresses != second.addresses)
+        {
+            diff.addresses = std::make_pair(first.addresses, second.addresses);
+        }
+
         return diff;
     }
 
 
-}//namespace Fred
+    namespace
+    {
+        bool operator==(const ContactAddressList &_a, const ContactAddressList &_b)
+        {
+            if (_a.size() != _b.size()) {
+                return false;
+            }
+            ContactAddressList::const_iterator pa = _a.begin();
+            ContactAddressList::const_iterator pb = _b.begin();
+            while (true) {
+                if (pa == _a.end()) {
+                    return pb == _b.end();
+                }
+                if (pb == _b.end()) {
+                    return false;
+                }
+                if ((pa->first != pb->first) ||
+                    (pa->second != pb->second)) {
+                    return false;
+                }
+                ++pa;
+                ++pb;
+            }
+        }
 
+    }
+
+}//namespace Fred
