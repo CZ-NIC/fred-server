@@ -46,11 +46,6 @@ namespace Fred
             SHIPPING,/**< where can I send ordered goods */
         };
         /**
-         * Default constructor.
-         * @warning No default value => default constructor not defined.
-         */
-        ContactAddressType();
-        /**
          * Init constructor.
          * @param _value initializes @ref value
          */
@@ -158,6 +153,12 @@ namespace Fred
         {
             return _os << _v.to_string();
         }
+    private:
+        /**
+         * Default constructor.
+         * @warning No default value => default constructor is private and not defined.
+         */
+        ContactAddressType();
     };
     /**
      * Additional postal address of contact.
