@@ -217,19 +217,19 @@ namespace Fred
         return *this;
     }
 
+    std::ostream& operator<<(std::ostream &os, const ContactAddressList &v)
+    {
+        return os << format_map(v);
+    }
+
+    std::ostream& operator<<(std::ostream &_os, const struct ContactAddress &_v)
+    {
+        return _os << _v.to_string();
+    }
+
+    std::ostream& operator<<(std::ostream &_os, const struct ContactAddressType &_v)
+    {
+        return _os << _v.to_string();
+    }
+
 }//namespace Fred
-
-std::ostream& operator<<(std::ostream &os, const Fred::ContactAddressList &v)
-{
-    return os << Fred::format_map(v);
-}
-
-std::ostream& operator<<(std::ostream &_os, const struct Fred::ContactAddress &_v)
-{
-    return _os << _v.to_string();
-}
-
-std::ostream& operator<<(std::ostream &_os, const struct Fred::ContactAddressType &_v)
-{
-    return _os << _v.to_string();
-}

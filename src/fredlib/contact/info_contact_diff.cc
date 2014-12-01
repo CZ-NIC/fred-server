@@ -75,17 +75,6 @@ namespace Fred
         return  fields;
     }
 
-    // náhrada za nefunkční DiffMemeber<Fred::ContactAddressList>::Type::print_quoted()
-    template < class T1, class T2 > std::string format_optional_pair(const Optional< std::pair< T1, T2 > > &_in)
-    {
-        if (!_in.isset()) {
-            return "[N/A]";
-        }
-        std::ostringstream out;
-        out << "'first: " << _in.get_value().first << " second: " << _in.get_value().second << "'";
-        return out.str();
-    }
-
     std::string InfoContactDiff::to_string() const
     {
         return Util::format_data_structure("InfoContactDiff",
@@ -122,9 +111,7 @@ namespace Fred
         (std::make_pair("discloseident", discloseident.print_quoted()))
         (std::make_pair("disclosenotifyemail", disclosenotifyemail.print_quoted()))
         (std::make_pair("id", id.print_quoted()))
-        // z nějakého, mně záhadného, důvodu tady nefunguje addresses.print_quoted() !?
-        // obešel jsem to tedy tímhle hackem
-        (std::make_pair("addresses", format_optional_pair(addresses)))
+        (std::make_pair("addresses", addresses.print_quoted()))
         );//format_data_structure InfoContactDiff
     }
 

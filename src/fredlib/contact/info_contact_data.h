@@ -291,15 +291,13 @@ namespace Fred
         std::string to_string() const;
     };
 
-}//namespace Fred
-
 /**
  * Dumps content of the instance into stream
  * @param os contains output stream reference
  * @param v reference of instance to be dumped into the stream
  * @return output stream reference
  */
-std::ostream& operator<<(std::ostream &os, const Fred::ContactAddressList &v);
+std::ostream& operator<<(std::ostream &os, const ContactAddressList &v);
 
 /**
  * Dumps content of the instance into stream
@@ -307,7 +305,7 @@ std::ostream& operator<<(std::ostream &os, const Fred::ContactAddressList &v);
  * @param _v reference of instance to be dumped into the stream
  * @return output stream reference
  */
-std::ostream& operator<<(std::ostream &_os, const struct Fred::ContactAddress &_v);
+std::ostream& operator<<(std::ostream &_os, const struct ContactAddress &_v);
 
 /**
  * Dumps content of the instance into stream
@@ -315,6 +313,8 @@ std::ostream& operator<<(std::ostream &_os, const struct Fred::ContactAddress &_
  * @param _v reference of instance to be dumped into the stream
  * @return output stream reference
  */
-std::ostream& operator<<(std::ostream &_os, const struct Fred::ContactAddressType &_v);
+std::ostream& operator<<(std::ostream &_os, const struct ContactAddressType &_v);
+
+}//namespace Fred
 
 #endif//INFO_CONTACT_DATA_H_
