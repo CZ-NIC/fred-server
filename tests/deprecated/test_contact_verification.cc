@@ -975,7 +975,6 @@ BOOST_AUTO_TEST_CASE( test_contact_create_update_info )
 
     Fred::Contact::Verification::ContactAddress mailing_addr;
     mailing_addr.type = "MAILING";
-    mailing_addr.company_name = "Korespondenční s.r.o.";
     mailing_addr.street1 = fcvc.street1;
     mailing_addr.city = fcvc.city;
     mailing_addr.postalcode = fcvc.postalcode;
@@ -983,7 +982,6 @@ BOOST_AUTO_TEST_CASE( test_contact_create_update_info )
 
     Fred::Contact::Verification::ContactAddress billing_addr;
     billing_addr.type = "BILLING";
-    billing_addr.company_name = "Fakturační s.r.o.";
     billing_addr.street1 = fcvc.street1;
     billing_addr.city = fcvc.city;
     billing_addr.postalcode = fcvc.postalcode;
