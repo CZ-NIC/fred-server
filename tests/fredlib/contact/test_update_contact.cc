@@ -286,6 +286,9 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle)
     info_data_3_with_changes.info_contact_data.disclosenotifyemail = false;
 
     //check changes made by last update
+    BOOST_CHECK(info_data_3_with_changes != info_data_4);
+    info_data_3_with_changes.info_contact_data.addresses.erase(Fred::ContactAddressType::SHIPPING);
+    info_data_3_with_changes.info_contact_data.addresses[Fred::ContactAddressType::MAILING] = new_address;
     BOOST_CHECK(info_data_3_with_changes == info_data_4);
 
     //check info contact history against info contact
@@ -371,6 +374,9 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle)
     BOOST_CHECK(4 == history_info_data_5.at(0).logd_request_id.get_value());
 
     //check changes made by last update
+    BOOST_CHECK(info_data_4_with_changes != info_data_5);
+    info_data_4_with_changes.info_contact_data.addresses[Fred::ContactAddressType::MAILING] = new_address;
+    info_data_4_with_changes.info_contact_data.addresses[Fred::ContactAddressType::SHIPPING] = new_address;
     BOOST_CHECK(info_data_4_with_changes == info_data_5);
 
     //check info contact history against info contact
