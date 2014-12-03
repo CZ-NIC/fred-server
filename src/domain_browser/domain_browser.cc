@@ -1672,7 +1672,6 @@ namespace Registry
                     }
                     catch(const Fred::MergeContact::Exception& ex)
                     {
-                        ctx.get_log().warning(boost::algorithm::replace_all_copy(ex.get_exception_stack_info(),"\n", " "));
                         ctx.get_log().warning(boost::algorithm::replace_all_copy(boost::diagnostic_information(ex),"\n", " "));
                         throw InvalidContacts();
                     }
@@ -1692,6 +1691,11 @@ namespace Registry
 
                     Fred::create_poll_messages(merge_data, ctx);
                 }
+            }
+            catch(const InvalidContacts& ex)
+            {
+                ctx.get_log().warning(ex.what());
+                throw;
             }
             catch(...)
             {
