@@ -36,30 +36,25 @@ namespace PublicRequest {
 const ContactVerificationPassword::MessageData ContactVerificationPassword::collectMessageData()
 {
     Database::Connection conn = Database::Manager::acquire();
-    Database::Result result = conn.exec_params( // contact mailing address first
-            "SELECT c.name,c.organization,ca.street1,ca.city,"
-                   "ca.stateorprovince,ca.postalcode,ca.country,c.email,"
-                   "oreg.historyid,c.telephone,ec.country,ec.country_cs "
-            "FROM contact c "
-            "JOIN object_registry oreg ON oreg.id=c.id "
-            "JOIN contact_address ca ON ca.contactid=c.id "
-            "JOIN enum_country ec ON ec.id=ca.country "
-            "WHERE c.id=$1::integer AND ca.type='MAILING' LIMIT 1",
-            Database::query_param_list(prai_ptr_->getObject(0).id));
-    if (result.size() != 1)
-    {
-        result = conn.exec_params( // contact "main" address next
-                "SELECT c.name, c.organization, c.street1, c.city,"
-                " c.stateorprovince, c.postalcode, c.country, c.email,"
-                " oreg.historyid, c.telephone, ec.country, ec.country_cs"
-                " FROM contact c"
-                " JOIN object_registry oreg ON oreg.id = c.id"
-                " JOIN enum_country ec ON ec.id = c.country "
-                " WHERE c.id = $1::integer",
-                Database::query_param_list(prai_ptr_->getObject(0).id));
-        if (result.size() != 1) {
-            throw std::runtime_error("unable to get data for password messages");
-        }
+    const Database::Result result = conn.exec_params( // contact mailing address first
+        "SELECT c.name,c.organization,"
+               "CASE WHEN mc.id IS NULL THEN c.street1 ELSE mc.street1 END,"
+               "CASE WHEN mc.id IS NULL THEN c.city ELSE mc.city END,"
+               "CASE WHEN mc.id IS NULL THEN c.stateorprovince ELSE mc.stateorprovince END,"
+               "CASE WHEN mc.id IS NULL THEN c.postalcode ELSE mc.postalcode END,"
+               "CASE WHEN mc.id IS NULL THEN c.country ELSE mc.country END,"
+               "c.email,oreg.historyid,c.telephone,"
+               "CASE WHEN mc.id IS NULL THEN cc.country ELSE mcc.country END,"
+               "CASE WHEN mc.id IS NULL THEN cc.country_cs ELSE mcc.country_cs END "
+        "FROM contact c "
+        "JOIN enum_country cc ON cc.id=c.country "
+        "JOIN object_registry oreg ON oreg.id=c.id "
+        "LEFT JOIN contact_address mc ON mc.contactid=c.id AND mc.type='MAILING' "
+        "LEFT JOIN enum_country mcc ON mcc.id=mc.country "
+        "WHERE c.id=$1::integer LIMIT 1",
+        Database::query_param_list(prai_ptr_->getObject(0).id));
+    if (result.size() != 1) {
+        throw std::runtime_error("unable to get data for password messages");
     }
 
     MessageData data;
