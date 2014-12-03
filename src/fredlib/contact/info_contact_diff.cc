@@ -70,10 +70,10 @@ namespace Fred
         if(discloseident.isset()) fields.insert("discloseident");
         if(disclosenotifyemail.isset()) fields.insert("disclosenotifyemail");
         if(id.isset()) fields.insert("id");
+        if(addresses.isset()) fields.insert("addresses");
 
         return  fields;
     }
-
 
     std::string InfoContactDiff::to_string() const
     {
@@ -111,6 +111,7 @@ namespace Fred
         (std::make_pair("discloseident", discloseident.print_quoted()))
         (std::make_pair("disclosenotifyemail", disclosenotifyemail.print_quoted()))
         (std::make_pair("id", id.print_quoted()))
+        (std::make_pair("addresses", addresses.print_quoted()))
         );//format_data_structure InfoContactDiff
     }
 
@@ -149,7 +150,14 @@ namespace Fred
             || discloseident.isset()
             || disclosenotifyemail.isset()
             || id.isset()
+            || addresses.isset()
             );
+    }
+
+    namespace
+    {
+        bool operator==(const ContactAddressList&, const ContactAddressList&);
+        bool operator!=(const ContactAddressList &a, const ContactAddressList &b) { return !(a == b); }
     }
 
     InfoContactDiff diff_contact_data(const InfoContactData& first, const InfoContactData& second)
@@ -325,9 +333,40 @@ namespace Fred
             diff.id = std::make_pair(first.id,second.id);
         }
 
+        if(first.addresses != second.addresses)
+        {
+            diff.addresses = std::make_pair(first.addresses, second.addresses);
+        }
+
         return diff;
     }
 
 
-}//namespace Fred
+    namespace
+    {
+        bool operator==(const ContactAddressList &_a, const ContactAddressList &_b)
+        {
+            if (_a.size() != _b.size()) {
+                return false;
+            }
+            ContactAddressList::const_iterator pa = _a.begin();
+            ContactAddressList::const_iterator pb = _b.begin();
+            while (true) {
+                if (pa == _a.end()) {
+                    return pb == _b.end();
+                }
+                if (pb == _b.end()) {
+                    return false;
+                }
+                if ((pa->first != pb->first) ||
+                    (pa->second != pb->second)) {
+                    return false;
+                }
+                ++pa;
+                ++pb;
+            }
+        }
 
+    }
+
+}//namespace Fred

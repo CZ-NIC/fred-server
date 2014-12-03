@@ -46,11 +46,6 @@ namespace Fred
             SHIPPING,/**< where can I send ordered goods */
         };
         /**
-         * Default constructor.
-         * @warning No default value => default constructor not defined.
-         */
-        ContactAddressType();
-        /**
          * Init constructor.
          * @param _value initializes @ref value
          */
@@ -133,20 +128,27 @@ namespace Fred
         }
         /**
          * Comparison operator.
+         * @param _a is left hand side of the comparison
+         * @param _b is right hand side of the comparison
+         * @return false if equal, true otherwise
+         */
+        friend bool operator!=(const struct ContactAddressType &_a,
+                               const struct ContactAddressType &_b)
+        {
+            return !(_a == _b);
+        }
+        /**
+         * Comparison operator.
          * @param _b is right hand side of the comparison
          * @return true if @a this smaller then @a _b, false otherwise
          */
         bool operator<(const struct ContactAddressType &_b)const { return this->value < _b.value; }
+    private:
         /**
-        * Dumps content of the instance into stream
-        * @param _os contains output stream reference
-        * @param _v reference of instance to be dumped into the stream
-        * @return output stream reference
-        */
-        friend std::ostream& operator<<(std::ostream &_os, const struct ContactAddressType &_v)
-        {
-            return _os << _v.to_string();
-        }
+         * Default constructor.
+         * @warning No default value => default constructor is private and not defined.
+         */
+        ContactAddressType();
     };
     /**
      * Additional postal address of contact.
@@ -166,6 +168,12 @@ namespace Fred
          */
         bool operator==(const struct ContactAddress &_b)const;
         /**
+         * Check inequality of two instances.
+         * @param _b compares @a this instance with @a _b instance
+         * @return true if they differ.
+         */
+        bool operator!=(const struct ContactAddress &_b)const { return !this->operator==(_b); }
+        /**
          * Assign operator.
          * @param _src assigned instance
          * @return self reference
@@ -177,16 +185,6 @@ namespace Fred
          * @return self reference
          */
         struct ContactAddress& operator=(const Contact::PlaceAddress &_src);
-        /**
-        * Dumps content of the instance into stream
-        * @param _os contains output stream reference
-        * @param _v reference of instance to be dumped into the stream
-        * @return output stream reference
-        */
-        friend std::ostream& operator<<(std::ostream &_os, const struct ContactAddress &_v)
-        {
-            return _os << _v.to_string();
-        }
     };
     /**
      * Container of additional contact addresses.
@@ -293,14 +291,30 @@ namespace Fred
         std::string to_string() const;
     };
 
-}//namespace Fred
-
 /**
  * Dumps content of the instance into stream
  * @param os contains output stream reference
  * @param v reference of instance to be dumped into the stream
  * @return output stream reference
  */
-std::ostream& operator<<(std::ostream &os, const Fred::ContactAddressList &v);
+std::ostream& operator<<(std::ostream &os, const ContactAddressList &v);
+
+/**
+ * Dumps content of the instance into stream
+ * @param _os contains output stream reference
+ * @param _v reference of instance to be dumped into the stream
+ * @return output stream reference
+ */
+std::ostream& operator<<(std::ostream &_os, const struct ContactAddress &_v);
+
+/**
+ * Dumps content of the instance into stream
+ * @param _os contains output stream reference
+ * @param _v reference of instance to be dumped into the stream
+ * @return output stream reference
+ */
+std::ostream& operator<<(std::ostream &_os, const struct ContactAddressType &_v);
+
+}//namespace Fred
 
 #endif//INFO_CONTACT_DATA_H_

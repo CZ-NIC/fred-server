@@ -36,10 +36,11 @@
 namespace Fred
 {
     static void delete_contact_impl(OperationContext& _ctx, unsigned long long _id) {
+        const Database::query_param_list params(_id);
+        _ctx.get_conn().exec_params(
+            "DELETE FROM contact_address WHERE contactid=$1::BIGINT", params);
         Database::Result delete_contact_res = _ctx.get_conn().exec_params(
-            "DELETE FROM contact "
-            "   WHERE id = $1::integer RETURNING id",
-            Database::query_param_list(_id));
+            "DELETE FROM contact WHERE id=$1::BIGINT RETURNING id", params);
 
         if (delete_contact_res.size() != 1) {
             BOOST_THROW_EXCEPTION(Fred::InternalError("delete contact failed"));

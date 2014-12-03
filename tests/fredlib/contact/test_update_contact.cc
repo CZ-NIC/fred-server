@@ -35,7 +35,6 @@ struct update_contact_fixture : public Test::Fixture::instantiate_db_template
     std::string xmark;
     std::string test_contact_handle;
     Fred::Contact::PlaceAddress place;
-    Fred::ContactAddress address;
     Fred::ContactAddressList addresses;
 
     update_contact_fixture()
@@ -51,7 +50,7 @@ struct update_contact_fixture : public Test::Fixture::instantiate_db_template
         place.city = "Praha";
         place.postalcode = "11150";
         place.country = "CZ";
-        address.company_name = "Testovací, s.r.o.";
+        Fred::ContactAddress address;
         address.street1 = "Měnitelná 1";
         address.city = "Testín pod Testerem";
         address.stateorprovince = "Testerovo";
@@ -59,6 +58,7 @@ struct update_contact_fixture : public Test::Fixture::instantiate_db_template
         address.country = "CZ";
         addresses[Fred::ContactAddressType::from_string("MAILING")] = address;
         addresses[Fred::ContactAddressType::from_string("BILLING")] = address;
+        address.company_name = "Testovací & doručovací, s.r.o.";
         addresses[Fred::ContactAddressType::from_string("SHIPPING")] = address;
         BOOST_CHECK(addresses.size() == 3);
         Fred::CreateContact(test_contact_handle,registrar_handle)
@@ -203,7 +203,7 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle)
     Fred::ContactAddressToUpdate addresses_to_update;
     addresses_to_update.remove< Fred::ContactAddressType::SHIPPING >();
     addresses_to_update.remove< Fred::ContactAddressType::MAILING >();
-    Fred::ContactAddress new_address = address;
+    Fred::ContactAddress new_address = addresses[Fred::ContactAddressType::MAILING];
     new_address.company_name = Optional< std::string >();
     new_address.street1 = "Změněná 1";
     addresses_to_update.update< Fred::ContactAddressType::MAILING >(new_address);
@@ -242,7 +242,7 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle)
     //updated addresses
     BOOST_CHECK(info_data_4.info_contact_data.addresses.size() == 2);//MAILING, BILLING
     BOOST_CHECK(info_data_4.info_contact_data.addresses[Fred::ContactAddressType::MAILING] == new_address);
-    BOOST_CHECK(info_data_4.info_contact_data.addresses[Fred::ContactAddressType::BILLING] == address);
+    BOOST_CHECK(info_data_4.info_contact_data.addresses[Fred::ContactAddressType::BILLING] == addresses[Fred::ContactAddressType::BILLING]);
     BOOST_CHECK(info_data_4.info_contact_data.addresses.find(Fred::ContactAddressType::SHIPPING) == info_data_4.info_contact_data.addresses.end());
 
     //updated historyid
@@ -286,6 +286,9 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle)
     info_data_3_with_changes.info_contact_data.disclosenotifyemail = false;
 
     //check changes made by last update
+    BOOST_CHECK(info_data_3_with_changes != info_data_4);
+    info_data_3_with_changes.info_contact_data.addresses.erase(Fred::ContactAddressType::SHIPPING);
+    info_data_3_with_changes.info_contact_data.addresses[Fred::ContactAddressType::MAILING] = new_address;
     BOOST_CHECK(info_data_3_with_changes == info_data_4);
 
     //check info contact history against info contact
@@ -338,7 +341,7 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle)
     //updated addresses
     BOOST_CHECK(info_data_5.info_contact_data.addresses.size() == 3);//MAILING, BILLING, SHIPPING
     BOOST_CHECK(info_data_5.info_contact_data.addresses[Fred::ContactAddressType::MAILING] == new_address);
-    BOOST_CHECK(info_data_5.info_contact_data.addresses[Fred::ContactAddressType::BILLING] == address);
+    BOOST_CHECK(info_data_5.info_contact_data.addresses[Fred::ContactAddressType::BILLING] == addresses[Fred::ContactAddressType::BILLING]);
     BOOST_CHECK(info_data_5.info_contact_data.addresses[Fred::ContactAddressType::SHIPPING] == new_address);
 
     //updated historyid
@@ -371,6 +374,9 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle)
     BOOST_CHECK(4 == history_info_data_5.at(0).logd_request_id.get_value());
 
     //check changes made by last update
+    BOOST_CHECK(info_data_4_with_changes != info_data_5);
+    info_data_4_with_changes.info_contact_data.addresses[Fred::ContactAddressType::MAILING] = new_address;
+    info_data_4_with_changes.info_contact_data.addresses[Fred::ContactAddressType::SHIPPING] = new_address;
     BOOST_CHECK(info_data_4_with_changes == info_data_5);
 
     //check info contact history against info contact
@@ -401,18 +407,18 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle)
 
     //insert more then one additional address (INSERT ... VALUES (...),(...),...)
     Fred::UpdateContactByHandle(test_contact_handle, registrar_handle)
-    .set_address< Fred::ContactAddressType::MAILING >(address)
-    .set_address< Fred::ContactAddressType::BILLING >(address)
-    .set_address< Fred::ContactAddressType::SHIPPING >(address)
+    .set_address< Fred::ContactAddressType::MAILING >(addresses[Fred::ContactAddressType::MAILING])
+    .set_address< Fred::ContactAddressType::BILLING >(addresses[Fred::ContactAddressType::BILLING])
+    .set_address< Fred::ContactAddressType::SHIPPING >(addresses[Fred::ContactAddressType::SHIPPING])
     .exec(ctx);
 
     Fred::InfoContactOutput info_data_7 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
 
     //updated addresses
     BOOST_CHECK(info_data_7.info_contact_data.addresses.size() == 3);//MAILING, BILLING, SHIPPING
-    BOOST_CHECK(info_data_7.info_contact_data.addresses[Fred::ContactAddressType::MAILING] == address);
-    BOOST_CHECK(info_data_7.info_contact_data.addresses[Fred::ContactAddressType::BILLING] == address);
-    BOOST_CHECK(info_data_7.info_contact_data.addresses[Fred::ContactAddressType::SHIPPING] == address);
+    BOOST_CHECK(info_data_7.info_contact_data.addresses[Fred::ContactAddressType::MAILING] == addresses[Fred::ContactAddressType::MAILING]);
+    BOOST_CHECK(info_data_7.info_contact_data.addresses[Fred::ContactAddressType::BILLING] == addresses[Fred::ContactAddressType::BILLING]);
+    BOOST_CHECK(info_data_7.info_contact_data.addresses[Fred::ContactAddressType::SHIPPING] == addresses[Fred::ContactAddressType::SHIPPING]);
 
     ctx.commit_transaction();
 }//update_contact_by_handle
@@ -583,7 +589,6 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle_wrong_country)
 /**
  * test UpdateContactById
  */
-
 BOOST_AUTO_TEST_CASE(update_contact_by_id)
 {
     Fred::OperationContext ctx;
@@ -592,6 +597,67 @@ BOOST_AUTO_TEST_CASE(update_contact_by_id)
     place.street3 = Optional<std::string>("test street 3");
     Fred::UpdateContactById(info_data_1.info_contact_data.id,registrar_handle).set_place(place).exec(ctx);
     ctx.commit_transaction();
+}
+
+/**
+ * test UpdateContactByHandle with company_name
+ */
+BOOST_AUTO_TEST_CASE(update_contact_by_handle_company_name)
+{
+    Fred::InfoContactOutput info_data_1;
+    {
+        Fred::OperationContext ctx;
+        info_data_1 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
+    }
+
+    Fred::ContactAddress address = info_data_1.info_contact_data.
+                                       get_address< Fred::ContactAddressType::SHIPPING >();
+    address.company_name = "Company GmbH.";
+    {
+        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::UpdateContactByHandle(test_contact_handle, registrar_handle)
+            .set_address< Fred::ContactAddressType::SHIPPING >(address)
+            .exec(ctx);
+        const Fred::InfoContactOutput info_data_2 = Fred::InfoContactByHandle(test_contact_handle).
+                                                        exec(ctx);
+        BOOST_CHECK(address == info_data_2.info_contact_data.
+                                   get_address< Fred::ContactAddressType::SHIPPING >());
+        ctx.commit_transaction();
+    }
+
+    try {
+        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::UpdateContactByHandle(test_contact_handle, registrar_handle)
+            .set_address< Fred::ContactAddressType::BILLING >(address)
+            .exec(ctx);
+        ctx.commit_transaction();
+        BOOST_ERROR("no exception thrown");
+    }
+    catch(const Fred::UpdateContactByHandle::ExceptionType& ex) {
+        BOOST_CHECK(ex.is_set_forbidden_company_name_setting());
+        BOOST_CHECK(ex.get_forbidden_company_name_setting() ==
+                    Fred::ContactAddressType::to_string(Fred::ContactAddressType::BILLING));
+    }
+    catch(const std::exception &ex) {
+        BOOST_ERROR("unexpected exception thrown: " + std::string(ex.what()));
+    }
+
+    try {
+        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::UpdateContactByHandle(test_contact_handle, registrar_handle)
+            .set_address< Fred::ContactAddressType::MAILING >(address)
+            .exec(ctx);
+        ctx.commit_transaction();
+        BOOST_ERROR("no exception thrown");
+    }
+    catch(const Fred::UpdateContactByHandle::ExceptionType& ex) {
+        BOOST_CHECK(ex.is_set_forbidden_company_name_setting());
+        BOOST_CHECK(ex.get_forbidden_company_name_setting() ==
+                    Fred::ContactAddressType::to_string(Fred::ContactAddressType::MAILING));
+    }
+    catch(const std::exception &ex) {
+        BOOST_ERROR("unexpected exception thrown: " + std::string(ex.what()));
+    }
 }
 
 /**

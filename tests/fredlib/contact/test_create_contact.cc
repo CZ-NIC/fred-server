@@ -43,9 +43,11 @@ struct create_contact_fixture : public virtual Test::Fixture::instantiate_db_tem
     , create_contact_handle(std::string("TEST-CREATE-CONTACT-HANDLE") + xmark)
     , contact_name(std::string("TEST-CREATE-CONTACT NAME") + xmark)
     {
-        Fred::OperationContext ctx;
-        registrar_handle = static_cast<std::string>(ctx.get_conn().exec(
-                "SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]);
+        {
+            Fred::OperationContext ctx;
+            registrar_handle = static_cast<std::string>(ctx.get_conn().exec(
+                "SELECT handle FROM registrar WHERE system ORDER BY id LIMIT 1")[0][0]);
+        }
         BOOST_CHECK(!registrar_handle.empty());//expecting existing system registrar
         place.street1 = "\"Hlavní\"";
         place.street2 = "adresa";
@@ -55,7 +57,6 @@ struct create_contact_fixture : public virtual Test::Fixture::instantiate_db_tem
         place.postalcode = "32100";
         place.country = "CZ";
         Fred::ContactAddress address;
-        address.company_name = "Testovací, s.r.o.";
         address.street1 = "Testosteronová 5";
         address.city = "Testín pod Testerem";
         address.stateorprovince = "Testerovo";
@@ -63,6 +64,7 @@ struct create_contact_fixture : public virtual Test::Fixture::instantiate_db_tem
         address.country = "CZ";
         addresses[Fred::ContactAddressType::from_string("MAILING")] = address;
         addresses[Fred::ContactAddressType::from_string("BILLING")] = address;
+        address.company_name = "Testovací & doručovací, s.r.o.";
         addresses[Fred::ContactAddressType::from_string("SHIPPING")] = address;
         BOOST_CHECK(addresses.size() == 3);
     }
@@ -129,6 +131,50 @@ BOOST_AUTO_TEST_CASE(create_contact_wrong_ssntype)
 }
 
 /**
+ * test CreateContact with wrong non-shipping address
+ */
+BOOST_AUTO_TEST_CASE(create_contact_wrong_address)
+{
+    BOOST_CHECK_EXCEPTION(
+    try {
+        Fred::OperationContext ctx;
+        Fred::ContactAddressList bad_addresses = addresses;
+        bad_addresses[Fred::ContactAddressType::MAILING].company_name = "Výjimečná & korespondenční, s.r.o.";
+        Fred::CreateContact(create_contact_handle, registrar_handle)
+        .set_authinfo("testauthinfo")
+        .set_addresses(bad_addresses)
+        .set_logd_request_id(0)
+        .exec(ctx);
+    }
+    catch(const Fred::CreateContact::Exception& ex) {
+        BOOST_TEST_MESSAGE( boost::diagnostic_information(ex));
+        BOOST_CHECK(ex.is_set_forbidden_company_name_setting());
+        throw;
+    }
+    , std::exception
+    , check_std_exception);
+
+    BOOST_CHECK_EXCEPTION(
+    try {
+        Fred::OperationContext ctx;
+        Fred::ContactAddressList bad_addresses = addresses;
+        bad_addresses[Fred::ContactAddressType::BILLING].company_name = "Výjimečná & fakturační, s.r.o.";
+        Fred::CreateContact(create_contact_handle, registrar_handle)
+        .set_authinfo("testauthinfo")
+        .set_addresses(bad_addresses)
+        .set_logd_request_id(0)
+        .exec(ctx);
+    }
+    catch(const Fred::CreateContact::Exception& ex) {
+        BOOST_TEST_MESSAGE( boost::diagnostic_information(ex));
+        BOOST_CHECK(ex.is_set_forbidden_company_name_setting());
+        throw;
+    }
+    , std::exception
+    , check_std_exception);
+}
+
+/**
  * test CreateContact with regular data
  */
 BOOST_FIXTURE_TEST_CASE(create_contact_ok, create_contact_fixture)
@@ -148,6 +194,7 @@ BOOST_FIXTURE_TEST_CASE(create_contact_ok, create_contact_fixture)
     BOOST_CHECK(output.info_contact_data.addresses.size() == addresses.size());
     for (Fred::ContactAddressList::const_iterator address_ptr = output.info_contact_data.addresses.begin();
          address_ptr != output.info_contact_data.addresses.end(); ++address_ptr) {
+        BOOST_CHECK(address_ptr->second == addresses[address_ptr->first]);
         BOOST_CHECK(address_ptr->second.company_name == addresses[address_ptr->first].company_name);
         BOOST_CHECK(address_ptr->second.street1 == addresses[address_ptr->first].street1);
         BOOST_CHECK(address_ptr->second.street2 == addresses[address_ptr->first].street2);
@@ -161,4 +208,3 @@ BOOST_FIXTURE_TEST_CASE(create_contact_ok, create_contact_fixture)
 
 
 BOOST_AUTO_TEST_SUITE_END();//TestCreateContact
-

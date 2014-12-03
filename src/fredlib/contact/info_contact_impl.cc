@@ -278,11 +278,22 @@ namespace Fred
             : boost::posix_time::time_from_string(static_cast<std::string>(query_result[i][47]));//local zone timestamp
 
             Database::QueryParams params;
-            const std::string sql = "SELECT type,company_name,street1,street2,street3,"
-                                           "city,stateorprovince,postalcode,country "
-                                    "FROM contact_address "
-                                    "WHERE contactid=$1::bigint";
             params.push_back(info_contact_output.info_contact_data.id);
+            std::string sql;
+            if(history_query_) {
+                sql = "SELECT type,company_name,street1,street2,street3,"
+                             "city,stateorprovince,postalcode,country "
+                      "FROM contact_address_history "
+                      "WHERE contactid=$1::bigint AND "
+                            "historyid=$2::bigint";
+                params.push_back(info_contact_output.info_contact_data.historyid);
+            }
+            else {
+                sql = "SELECT type,company_name,street1,street2,street3,"
+                             "city,stateorprovince,postalcode,country "
+                      "FROM contact_address "
+                      "WHERE contactid=$1::bigint";
+            }
             Database::Result subquery_result = ctx.get_conn().exec_params(sql, params);
             ContactAddressList addresses;
             for(::size_t idx = 0; idx < subquery_result.size(); ++idx) {

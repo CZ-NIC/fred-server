@@ -120,7 +120,7 @@ namespace Fred
         ContactAddressList::const_iterator ptr_contact_address = addresses.find(purpose);
         if (ptr_contact_address != addresses.end()) {
             struct Address address;
-            address = static_cast< const Contact::PlaceAddress& >(ptr_contact_address->second);
+            address = ptr_contact_address->second;
             if (!name.isnull()) {
                 address.name = name.get_value();
             }
@@ -217,9 +217,19 @@ namespace Fred
         return *this;
     }
 
-}//namespace Fred
+    std::ostream& operator<<(std::ostream &os, const ContactAddressList &v)
+    {
+        return os << format_map(v);
+    }
 
-std::ostream& operator<<(std::ostream &os, const Fred::ContactAddressList &v)
-{
-    return os << Fred::format_map(v);
-}
+    std::ostream& operator<<(std::ostream &_os, const struct ContactAddress &_v)
+    {
+        return _os << _v.to_string();
+    }
+
+    std::ostream& operator<<(std::ostream &_os, const struct ContactAddressType &_v)
+    {
+        return _os << _v.to_string();
+    }
+
+}//namespace Fred
