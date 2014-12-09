@@ -7,6 +7,7 @@
 #include "src/fredlib/registrar/info_registrar.h"
 
 #include "src/whois/nameserver_exists.h"
+#include "src/whois/is_domain_delete_pending.h"
 
 #include <boost/foreach.hpp>
 
@@ -170,6 +171,28 @@ namespace Whois {
         return new NullableContact(temp);
     }
 
+    NullableDomain* generate_obfuscate_domain_delete_candidate(const std::string& _handle, Fred::OperationContext& _ctx) {
+        Domain temp;
+
+        temp.handle = Corba::wrap_string(_handle);
+
+        temp.registrant_handle = Corba::wrap_string("");
+        temp.nsset_handle = NULL;
+        temp.keyset_handle = NULL;
+        temp.registrar_handle = Corba::wrap_string("");
+        temp.registered = Corba::wrap_time(boost::posix_time::ptime());
+        temp.changed = Corba::wrap_nullable_datetime(Nullable<boost::posix_time::ptime>());
+        temp.last_transfer = Corba::wrap_nullable_datetime(Nullable<boost::posix_time::ptime>());
+        temp.expire = Corba::wrap_date(boost::gregorian::date());
+        temp.validated_to = NULL;
+
+        std::vector<std::string> statuses;
+        statuses.push_back("deleteCandidate");
+        wrap_string_sequence(statuses, temp.statuses);
+
+        return new NullableDomain(temp);
+    }
+
     NullableDomain* wrap_domain(const Fred::InfoDomainData& in) {
 
         Domain temp;
@@ -201,8 +224,6 @@ namespace Whois {
 
         std::vector<std::string> admin_contacts;
         {
-            Fred::OperationContext ctx;
-
             BOOST_FOREACH(const Fred::ObjectIdHandlePair& contact, in.admin_contacts) {
                 admin_contacts.push_back(contact.handle);
             }
@@ -463,6 +484,10 @@ namespace Whois {
     NullableDomain* Server_impl::get_domain_by_handle(const char* handle) {
         try {
             Fred::OperationContext ctx;
+
+            if(::Whois::is_domain_delete_pending(Corba::unwrap_string(handle), ctx)) {
+                return generate_obfuscate_domain_delete_candidate(Corba::unwrap_string(handle), ctx);
+            }
 
             return
                 wrap_domain(
