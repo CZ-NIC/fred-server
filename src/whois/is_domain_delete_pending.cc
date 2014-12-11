@@ -5,19 +5,30 @@ namespace Whois {
     bool is_domain_delete_pending(const std::string &_fqdn, Fred::OperationContext& _ctx) {
 
         Database::Result result = _ctx.get_conn().exec_params(
-            "SELECT oreg.name, oreg.id, oreg.crdate FROM object_registry oreg"
-            " JOIN object_state os ON os.object_id = oreg.id"
-            " JOIN enum_object_states eos ON  eos.id = os.state_id"
-            " WHERE oreg.type = 3"
-            " AND eos.name = 'deleteCandidate'"
-            " AND os.valid_from < current_timestamp"
-            " AND (os.valid_to > current_timestamp OR os.valid_to is null)"
-            " AND (oreg.erdate is null"
-            " OR ((oreg.erdate::timestamp AT TIME ZONE 'UTC') AT TIME ZONE 'Europe/Prague'"
-            " >= date_trunc('day', (current_timestamp::timestamp AT TIME ZONE 'UTC') AT TIME ZONE 'Europe/Prague')"
-            " AND (oreg.erdate::timestamp AT TIME ZONE 'UTC') AT TIME ZONE 'Europe/Prague'"
-            " < date_trunc('day', (current_timestamp::timestamp AT TIME ZONE 'UTC') AT TIME ZONE 'Europe/Prague' +  interval '1 day')))"
-            " AND oreg.name = $1::text",
+            "SELECT "
+                "oreg.name, "
+                "oreg.id, "
+                "oreg.crdate "
+            "FROM object_registry oreg "
+                "JOIN object_state os ON os.object_id = oreg.id "
+                "JOIN enum_object_states eos ON  eos.id = os.state_id "
+            "WHERE oreg.type = 3 "
+                "AND eos.name = 'deleteCandidate' "
+                "AND os.valid_from < current_timestamp "
+                "AND (os.valid_to > current_timestamp OR os.valid_to IS NULL) "
+                "AND ("
+                    "oreg.erdate IS NULL "
+                    "OR ( "
+                        "oreg.erdate::timestamp AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Prague' "
+                        ">= "
+                        "date_trunc('day', (current_timestamp::timestamp AT TIME ZONE 'UTC') AT TIME ZONE 'Europe/Prague') "
+                        "AND "
+                        "oreg.erdate::timestamp AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Prague' "
+                        "< "
+                        "date_trunc('day', (current_timestamp::timestamp AT TIME ZONE 'UTC') AT TIME ZONE 'Europe/Prague' +  interval '1 day') "
+                    ") "
+                ") "
+                "AND oreg.name = $1::text ",
             Database::query_param_list(_fqdn)
         );
 
