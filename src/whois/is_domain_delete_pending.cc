@@ -2,7 +2,7 @@
 
 namespace Whois {
 
-    bool is_domain_delete_pending(const std::string &_fqdn, Fred::OperationContext& _ctx) {
+    bool is_domain_delete_pending(const std::string &_fqdn, Fred::OperationContext& _ctx, const std::string& _timezone) {
 
         Database::Result result = _ctx.get_conn().exec_params(
             "WITH "
@@ -14,8 +14,8 @@ namespace Whois {
             "), "
             "erdate_interval AS ( "
                 "SELECT "
-                    "date_trunc('day', NOW() AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Prague') AS from_, "
-                    "date_trunc('day', NOW() AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Prague' +  interval '1 day') AS to_ "
+                    "date_trunc('day', NOW() AT TIME ZONE 'UTC' AT TIME ZONE $2::text) AS from_, "
+                    "date_trunc('day', NOW() AT TIME ZONE 'UTC' AT TIME ZONE $2::text +  interval '1 day') AS to_ "
             ")"
             "SELECT "
                 "oreg.name, "
@@ -32,13 +32,15 @@ namespace Whois {
                 "AND ("
                     "oreg.erdate IS NULL "
                     "OR ( "
-                        "oreg.erdate::timestamp AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Prague' >= erdate_interval.from_ "
+                        "oreg.erdate::timestamp AT TIME ZONE 'UTC' AT TIME ZONE $2::text >= erdate_interval.from_ "
                         "AND "
-                        "oreg.erdate::timestamp AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Prague' < erdate_interval.to_"
+                        "oreg.erdate::timestamp AT TIME ZONE 'UTC' AT TIME ZONE $2::text < erdate_interval.to_"
                     ") "
                 ") "
                 "AND oreg.name = $1::text ",
-            Database::query_param_list(_fqdn)
+            Database::query_param_list
+                (_fqdn)
+                (_timezone)
         );
 
         if (result.size() > 0) {

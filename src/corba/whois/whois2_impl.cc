@@ -485,7 +485,7 @@ namespace Whois {
         try {
             Fred::OperationContext ctx;
 
-            if(::Whois::is_domain_delete_pending(Corba::unwrap_string(handle), ctx)) {
+            if(::Whois::is_domain_delete_pending(Corba::unwrap_string(handle), ctx, "Europe/Prague")) {
                 return generate_obfuscate_domain_delete_candidate(Corba::unwrap_string(handle), ctx);
             }
 
