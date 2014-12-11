@@ -1055,7 +1055,8 @@ namespace Registry
                                         "r.handle=$1::TEXT "
                     "JOIN object_state os ON os.object_id=co.object_id AND "
                                             "os.state_id=(SELECT state_id FROM mojeid) "
-                    "WHERE (NOW()-$3::INTERVAL)<=os.valid_to OR os.valid_to IS NULL) "
+                    "WHERE os.valid_from<(NOW()-$3::INTERVAL) AND "
+                                       "((NOW()-$3::INTERVAL)<=os.valid_to OR os.valid_to IS NULL)) "
                 "SELECT cmc.id,o.state_name,"                         //arguments GROUP BY clause
                        "MAX(os.valid_from),"                          //valid from
                        "BOOL_OR(os.valid_from<=(NOW()-$2::INTERVAL)),"//present on begin
