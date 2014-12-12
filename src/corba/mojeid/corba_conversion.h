@@ -16,20 +16,26 @@
 
 using namespace Registry::MojeID;
 
-Date corba_wrap_date(const boost::gregorian::date &_v)
+Date corba_wrap_date(const std::string &_v)
 {
+    const boost::gregorian::date gd = boost::gregorian::from_simple_string(_v);
     Date d;
-    if (_v.is_special()) {
+    if (gd.is_special()) {
         d.year  = 0;
         d.month = 0;
         d.day   = 0;
     }
     else {
-        d.year  = static_cast<int>(_v.year());
-        d.month = static_cast<int>(_v.month());
-        d.day   = static_cast<int>(_v.day());
+        d.year  = static_cast<int>(gd.year());
+        d.month = static_cast<int>(gd.month());
+        d.day   = static_cast<int>(gd.day());
     }
     return d;
+}
+
+DateTime corba_wrap_datetime(const std::string &_v)
+{
+    return corba_wrap_string(_v);
 }
 
 NullableString* corba_wrap_nullable_string(const Nullable<std::string> &_v)
