@@ -1126,13 +1126,13 @@ namespace Registry
                 Database::Connection conn = Database::Manager::acquire();
                 Database::Result rcontact = conn.exec_params(
                     "SELECT r.id IS NULL,os.valid_from," // 0,1
-                           "(SELECT valid_from AS cic_from FROM object_state " // 2
+                           "(SELECT valid_from FROM object_state " // 2
                             "WHERE object_id=o.id AND valid_to IS NULL AND "
                                   "state_id=(SELECT id FROM enum_object_states WHERE name='conditionallyIdentifiedContact')),"
-                           "(SELECT valid_from AS cic_from FROM object_state " // 3
+                           "(SELECT valid_from FROM object_state " // 3
                             "WHERE object_id=o.id AND valid_to IS NULL AND "
                                   "state_id=(SELECT id FROM enum_object_states WHERE name='identifiedContact')),"
-                           "(SELECT valid_from AS cic_from FROM object_state " // 4
+                           "(SELECT valid_from FROM object_state " // 4
                             "WHERE object_id=o.id AND valid_to IS NULL AND "
                                   "state_id=(SELECT id FROM enum_object_states WHERE name='validatedContact')) "
                     "FROM contact c "
