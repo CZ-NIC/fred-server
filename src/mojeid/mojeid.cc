@@ -57,6 +57,7 @@
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_int.hpp>
 #include <boost/random/variate_generator.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/algorithm/string.hpp>
 
@@ -1019,92 +1020,89 @@ namespace Registry
             }
         }//MojeIDImpl::createValidationRequest
 
-        std::vector<ContactStateData> MojeIDImpl::getContactsStateChanges(unsigned long _last_hours)
+        namespace
+        {
+            std::string db_timestamp_to_iso_extended(const Database::Value &_t)
+            {
+                using namespace boost::posix_time;
+                const std::string db_timestamp = static_cast< std::string >(_t);//2014-12-11 09:28:45.741828
+                const ptime posix_timestamp = time_from_string(db_timestamp);
+                return to_iso_extended_string(posix_timestamp);
+            }
+
+            typedef bool IsNotNull;
+
+            IsNotNull add_state(const Database::Value &_valid_from, const std::string &_state,
+                                ContactStateData &_contact)
+            {
+                if (_valid_from.isnull()) {
+                    return false;
+                }
+                _contact.state[_state] = db_timestamp_to_iso_extended(_valid_from);
+                return true;
+            }
+        }
+
+        ContactStateDataList MojeIDImpl::getContactsStateChanges(unsigned long _last_hours)
         {
             Logging::Context ctx_server(create_ctx_name(get_server_name()));
-            Logging::Context ctx("get-contacts-states");
+            Logging::Context ctx("get-contacts-state-changes");
             ConnectionReleaser releaser;
 
             try
             {
                 Database::Connection conn = Database::Manager::acquire();
-                std::vector<ContactStateData> csdv;
-                Database::Result rstates = conn.exec_params(
-                "WITH mojeid AS (SELECT id AS state_id FROM enum_object_states WHERE name='mojeidContact'),"
-                     "observed AS ("
-                    "SELECT id AS state_id,name AS state_name "
-                    "FROM enum_object_states "
-                    "WHERE name IN ('conditionallyIdentifiedContact',"
-                                   "'identifiedContact',"
-                                   "'validatedContact',"
-                                   "'mojeidContact')),"
-                     "changed_object AS ("
-                    "SELECT DISTINCT object_id "
-                    "FROM object_state "
-                    "WHERE state_id IN (SELECT state_id FROM observed) AND "
-                          "(((NOW()-$2::INTERVAL)<valid_from AND "
-                                                 "valid_from<(NOW()-$3::INTERVAL)) OR "
-                           "((NOW()-$2::INTERVAL)<valid_to AND "
-                                                 "valid_to<(NOW()-$3::INTERVAL)))),"
-                     "changed_mojeid_contact AS ("
-                    "SELECT c.id "
-                    "FROM changed_object co "
-                    "JOIN contact c ON c.id=co.object_id "
-                    "JOIN object o ON o.id=co.object_id "
-                    "JOIN registrar r ON r.id=o.clid AND "
-                                        "r.handle=$1::TEXT "
-                    "JOIN object_state os ON os.object_id=co.object_id AND "
-                                            "os.state_id=(SELECT state_id FROM mojeid) "
-                    "WHERE os.valid_from<(NOW()-$3::INTERVAL) AND "
-                                       "((NOW()-$3::INTERVAL)<=os.valid_to OR os.valid_to IS NULL)) "
-                "SELECT cmc.id,o.state_name,"                         //arguments GROUP BY clause
-                       "MAX(os.valid_from),"                          //valid from
-                       "BOOL_OR(os.valid_from<=(NOW()-$2::INTERVAL)),"//present on begin
-                       "BOOL_OR((NOW()-$3::INTERVAL)<=os.valid_to OR "//present still
-                                "os.valid_to IS NULL) "
-                "FROM changed_mojeid_contact cmc "
-                "JOIN object_state os ON os.object_id=cmc.id "
-                "JOIN observed o ON o.state_id=os.state_id "
-                "WHERE os.valid_from<(NOW()-$3::INTERVAL) AND "
-                      "((NOW()-$2::INTERVAL)<os.valid_to OR os.valid_to IS NULL) "
-                "GROUP BY 1,2 "
-                "ORDER BY 1,2",
+                ContactStateDataList result;
+                Database::Result rcontacts = conn.exec_params(
+                "WITH cic AS (SELECT id FROM enum_object_states WHERE name='conditionallyIdentifiedContact'),"
+                      "ic AS (SELECT id FROM enum_object_states WHERE name='identifiedContact'),"
+                      "vc AS (SELECT id FROM enum_object_states WHERE name='validatedContact'),"
+                      "mc AS (SELECT id FROM enum_object_states WHERE name='mojeidContact'),"
+/* observed states */"obs AS (SELECT id FROM enum_object_states WHERE name IN ('conditionallyIdentifiedContact',"
+                                            "'identifiedContact','validatedContact','mojeidContact')),"
+/* contacts whose */  "cc AS (SELECT DISTINCT c.id "
+/* observed states */        "FROM contact c "
+/* start or stop in */       "JOIN object_state os ON os.object_id=c.id "
+/* the course of $2 hours */ "JOIN obs ON os.state_id=obs.id "
+                             "WHERE (NOW()-$2::INTERVAL)<=os.valid_from OR (os.valid_to IS NOT NULL AND "
+                                   "(NOW()-$2::INTERVAL)<=os.valid_to)) "
+                "SELECT cc.id," // [0] - contact id
+/* [1] - cic from */   "(SELECT valid_from FROM object_state JOIN cic ON state_id=cic.id "
+                        "WHERE object_id=cc.id AND valid_to IS NULL),"
+/* [2] - ic from */    "(SELECT valid_from FROM object_state JOIN ic ON state_id=ic.id "
+                        "WHERE object_id=cc.id AND valid_to IS NULL),"
+/* [3] - vc from */    "(SELECT valid_from FROM object_state JOIN vc ON state_id=vc.id "
+                        "WHERE object_id=cc.id AND valid_to IS NULL),"
+/* [4] - mc from */    "(SELECT valid_from FROM object_state JOIN mc ON state_id=mc.id "
+                        "WHERE object_id=cc.id AND valid_to IS NULL) "
+                "FROM cc "
+                "JOIN object_state os ON os.object_id=cc.id AND os.valid_to IS NULL "
+                "JOIN mc ON mc.id=os.state_id "
+                "JOIN object o ON o.id=cc.id "
+                "JOIN registrar r ON r.id=o.clid AND r.handle=$1::TEXT",
                 Database::query_param_list
                     (server_conf_->registrar_handle)
-                    (boost::lexical_cast< std::string >(_last_hours) + " HOUR")
-                    ("1 MINUTE")); // observe interval (now - last_hours, now - 1 minute)
+                    (boost::lexical_cast< std::string >(_last_hours) + " HOUR")); // observe interval <now - last_hours, now)
 
-                enum { INVALID_ID = 0 };
-                ContactStateData csd;
-                csd.contact_id = INVALID_ID;
-                bool status_differ = false;
-                for (::size_t idx = 0; idx < rstates.size(); ++idx) {
-                    const ::size_t contact_id = static_cast< ::size_t    >(rstates[idx][0]);
-                    const std::string state   = static_cast< std::string >(rstates[idx][1]);
-                    const bool present_before = static_cast< std::string >(rstates[idx][3]) == "t";
-                    const bool present_still  = static_cast< std::string >(rstates[idx][4]) == "t";
-
-                    if (csd.contact_id != contact_id) {
-                        if (status_differ) {
-                            csdv.push_back(csd);
-                            status_differ = false;
-                        }
-                        csd.contact_id = contact_id;
-                        csd.state.clear();
+                for (::size_t idx = 0; idx < rcontacts.size(); ++idx) {
+                    ContactStateData contact;
+                    contact.contact_id = static_cast< ::size_t >(rcontacts[idx][0]);
+                    if (!add_state(rcontacts[idx][1], "conditionallyIdentifiedContact", contact)) {
+                        std::ostringstream msg;
+                        msg << "contact " << contact.contact_id << " hasn't conditionallyIdentifiedContact state";
+                        throw std::runtime_error(msg.str());
+                    }
+                    add_state(rcontacts[idx][2], "identifiedContact", contact);
+                    add_state(rcontacts[idx][3], "validatedContact", contact);
+                    if (!add_state(rcontacts[idx][4], "mojeidContact", contact)) {
+                        std::ostringstream msg;
+                        msg << "contact " << contact.contact_id << " hasn't mojeidContact state";
+                        throw std::runtime_error(msg.str());
                     }
 
-                    status_differ |= present_before != present_still;
-                    if (present_still) {
-                        const boost::gregorian::date valid_from =
-                            boost::gregorian::from_string(static_cast< std::string >(rstates[idx][2]));
-                        csd.state[state] = valid_from;
-                    }
-                }//for
-                if (status_differ) {
-                    csdv.push_back(csd);
+                    result.push_back(contact);
                 }
-
-                return csdv;
+                return result;
             }
             catch (std::exception &_ex)
             {
@@ -1116,7 +1114,7 @@ namespace Registry
                 LOGGER(PACKAGE).error("request failed (unknown error)");
                 throw;
             }
-        }//MojeIDImpl::getContactsStates
+        }//MojeIDImpl::getContactsStateChanges
 
         ContactStateData MojeIDImpl::getContactState(unsigned long long _contact_id)
         {
@@ -1160,9 +1158,7 @@ namespace Registry
                 csd.contact_id = _contact_id;
                 for (::size_t idx = 0; idx < rstates.size(); ++idx) {
                     const std::string name = static_cast< std::string >(rstates[idx][0]);
-                    const boost::gregorian::date valid_from =
-                        boost::gregorian::from_string(static_cast< std::string >(rstates[idx][1]));
-                    csd.state[name] = valid_from;
+                    add_state(rstates[idx][1], name, csd);
                 }
                 return csd;
             }//try
