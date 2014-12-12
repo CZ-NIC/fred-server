@@ -927,11 +927,11 @@ struct create_mojeid_contact_fixture
 
 struct StateHistory
 {
-    StateHistory():on_begin(false), on_end(false) { }
-    StateHistory(bool on_begin, bool on_end):on_begin(on_begin), on_end(on_end) { }
-    bool on_begin;
-    bool on_end;
-    bool changed()const { return on_begin != on_end; }
+    StateHistory(::uint8_t history):present(history & 0x01),
+                                    changed(((history & 0x1f) != 0x1f) &&
+                                            ((history & 0x1f) != 0x00)) { }
+    const bool present;
+    const bool changed;
 };
 /* 
  * -2h ___-1h  ___0h
@@ -946,9 +946,12 @@ StateHistory set_object_state_history(::size_t object_id, ::uint8_t history, con
         "DELETE FROM object_state "
         "WHERE object_id=$1::bigint AND "
               "state_id=(SELECT id FROM enum_object_states WHERE name=$2::text)",
-                Database::query_param_list(object_id)(state));
+        Database::query_param_list(object_id)(state));
+    if (state == "conditionallyIdentifiedContact") {
+        history |= 0x01;//conditionallyIdentifiedContact mustn't absent
+    }
     if (history == 0) {
-        return StateHistory(false, false);
+        return StateHistory(history);
     }
     Database::query_param_list param(object_id);
     const ::size_t state_id =
@@ -985,7 +988,7 @@ StateHistory set_object_state_history(::size_t object_id, ::uint8_t history, con
                                 "(object_id,state_id,valid_from,valid_to) VALUES" +
                             values.str();
     conn.exec_params(sql, param);
-    return StateHistory(history & 0x10, history & 0x02);
+    return StateHistory(history);
 }
 
 typedef std::set< std::string > CurrentState;
@@ -1005,11 +1008,12 @@ ChangedCurrentState set_contact_state_history(::size_t object_id, const ::uint8_
             "identifiedContact",
             "validatedContact"};
         const StateHistory sh = set_object_state_history(object_id, history[idx], state[idx]);
-        result.changed |= sh.changed();
-        if (sh.on_end) {
+        result.changed |= sh.changed;
+        if (sh.present) {
             result.state.insert(state[idx]);
         }
     }
+    result.state.insert("mojeidContact");
     return result;
 }
 
@@ -1018,19 +1022,24 @@ BOOST_FIXTURE_TEST_CASE(get_contacts_state_changes, create_mojeid_contact_fixtur
     typedef Registry::MojeID::ContactStateData StateData;
     typedef std::vector< Registry::MojeID::ContactStateData > StatesData;
     typedef Registry::MojeID::ContactStateData::StateValidFrom StateValidFrom;
-    StatesData states = mojeid_pimpl->getContactsStateChanges(1);
-    for (StatesData::iterator data_ptr = states.begin(); data_ptr != states.end(); ++data_ptr) {
-        if (contacts.count(data_ptr->contact_id) == 0) {
-            continue;
+    try {
+        const StatesData states = mojeid_pimpl->getContactsStateChanges(1);
+        for (StatesData::const_iterator data_ptr = states.begin(); data_ptr != states.end(); ++data_ptr) {
+            if (contacts.count(data_ptr->contact_id) == 0) {
+                continue;
+            }
+            StateData state_data = mojeid_pimpl->getContactState(data_ptr->contact_id);
+            BOOST_CHECK(data_ptr->state.find("mojeidContact") != data_ptr->state.end());
+            BOOST_CHECK(data_ptr->contact_id == state_data.contact_id);
+            BOOST_CHECK(data_ptr->state.size() == state_data.state.size());
+            for (StateValidFrom::const_iterator state_ptr = data_ptr->state.begin(); state_ptr != data_ptr->state.end(); ++state_ptr) {
+                BOOST_CHECK(state_data.state.count(state_ptr->first) == 1);
+                BOOST_CHECK(state_data.state[state_ptr->first] == state_ptr->second);
+            }
         }
-        StateData state_data = mojeid_pimpl->getContactState(data_ptr->contact_id);
-        BOOST_CHECK(data_ptr->state.erase("mojeidContact") == 1);
-        BOOST_CHECK(data_ptr->contact_id == state_data.contact_id);
-        BOOST_CHECK(data_ptr->state.size() == state_data.state.size());
-        for (StateValidFrom::const_iterator state_ptr = data_ptr->state.begin(); state_ptr != data_ptr->state.end(); ++state_ptr) {
-            BOOST_CHECK(state_data.state.count(state_ptr->first) == 1);
-            BOOST_CHECK(state_data.state[state_ptr->first] == state_ptr->second);
-        }
+    }
+    catch (const std::exception &e) {
+        BOOST_TEST_MESSAGE(std::string("unexpected exception: ") + e.what());
     }
     for (int history = 0; history <= 0xff; ++history) {
         const ::uint8_t csha[3] = {::uint8_t(history), ::uint8_t(0), ::uint8_t(0)};
@@ -1041,13 +1050,13 @@ BOOST_FIXTURE_TEST_CASE(get_contacts_state_changes, create_mojeid_contact_fixtur
         const ChangedCurrentState cc = set_contact_state_history(contact_c.first, cshc);
         const ::uint8_t cshd[3] = {::uint8_t(history), ::uint8_t(history), ::uint8_t(history)};
         const ChangedCurrentState cd = set_contact_state_history(contact_d.first, cshd);
-        states = mojeid_pimpl->getContactsStateChanges(1);
+        const StatesData states = mojeid_pimpl->getContactsStateChanges(1);
         bool ca_find = !ca.changed;
         bool cb_find = !cb.changed;
         bool cc_find = !cc.changed;
         bool cd_find = !cd.changed;
-        for (StatesData::iterator data_ptr = states.begin(); data_ptr != states.end(); ++data_ptr) {
-            BOOST_CHECK(data_ptr->state.erase("mojeidContact") == 1);
+        for (StatesData::const_iterator data_ptr = states.begin(); data_ptr != states.end(); ++data_ptr) {
+            BOOST_CHECK(data_ptr->state.find("mojeidContact") != data_ptr->state.end());
             if (data_ptr->contact_id == contact_a.first) {
                 BOOST_CHECK(ca.changed);
                 if (ca.changed) {
