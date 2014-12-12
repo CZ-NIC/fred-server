@@ -1124,47 +1124,58 @@ namespace Registry
 
             try {
                 Database::Connection conn = Database::Manager::acquire();
-                ContactStateData csd;
-                Database::Result rstates = conn.exec_params(
-                    "SELECT eos.name,os.valid_from "
+                Database::Result rcontact = conn.exec_params(
+                    "SELECT r.id IS NULL,os.valid_from," // 0,1
+                           "(SELECT valid_from AS cic_from FROM object_state " // 2
+                            "WHERE object_id=o.id AND valid_to IS NULL AND "
+                                  "state_id=(SELECT id FROM enum_object_states WHERE name='conditionallyIdentifiedContact')),"
+                           "(SELECT valid_from AS cic_from FROM object_state " // 3
+                            "WHERE object_id=o.id AND valid_to IS NULL AND "
+                                  "state_id=(SELECT id FROM enum_object_states WHERE name='identifiedContact')),"
+                           "(SELECT valid_from AS cic_from FROM object_state " // 4
+                            "WHERE object_id=o.id AND valid_to IS NULL AND "
+                                  "state_id=(SELECT id FROM enum_object_states WHERE name='validatedContact')) "
                     "FROM contact c "
                     "JOIN object o ON o.id=c.id "
-                    "JOIN registrar r on r.id=o.clid "
-                    "JOIN object_state os ON os.object_id=o.id "
-                    "JOIN enum_object_states eos ON eos.id=os.state_id "
-                    "WHERE c.id=(SELECT os.object_id "
-                                "FROM object_state os "
-                                "JOIN enum_object_states eos ON eos.id=os.state_id "
-                                "WHERE os.object_id=$2::bigint AND "
-                                      "os.valid_to IS NULL AND "
-                                      "eos.name='mojeidContact'"
-                               ") AND "
-                          "os.valid_to IS NULL AND "
-                          "r.handle=$1::text AND "
-                          "eos.name IN ('conditionallyIdentifiedContact',"
-                                       "'identifiedContact',"
-                                       "'validatedContact')",
+                    "LEFT JOIN registrar r ON r.id=o.clid AND r.handle=$1::TEXT "
+                    "LEFT JOIN object_state os ON os.object_id=o.id AND os.valid_to IS NULL AND "
+                                                 "os.state_id=(SELECT id FROM enum_object_states WHERE name='mojeidContact') "
+                    "WHERE c.id=$2::BIGINT",
                     Database::query_param_list
                         (server_conf_->registrar_handle)
                         (_contact_id));
 
-                if (rstates.size() == 0) {
-                    if (conn.exec_params("SELECT 1 FROM contact WHERE id=$1::bigint",
-                                         Database::query_param_list(_contact_id)).size() == 0) {
-                        throw Registry::MojeID::OBJECT_NOT_EXISTS();
-                    }
+                if (rcontact.size() == 0) {
+                    throw Registry::MojeID::OBJECT_NOT_EXISTS();
                 }
 
-                csd.contact_id = _contact_id;
-                for (::size_t idx = 0; idx < rstates.size(); ++idx) {
-                    const std::string name = static_cast< std::string >(rstates[idx][0]);
-                    add_state(rstates[idx][1], name, csd);
+                if (1 < rcontact.size()) {
+                    std::ostringstream msg;
+                    msg << "contact " << _contact_id << " returns multiple (" << rcontact.size() << ") records";
+                    throw std::runtime_error(msg.str());
                 }
-                return csd;
+
+                if (static_cast< bool >(rcontact[0][0])) { // contact's registrar missing
+                    throw Registry::MojeID::OBJECT_NOT_EXISTS();
+                }
+
+                ContactStateData contact;
+                contact.contact_id = _contact_id;
+                if (!add_state(rcontact[0][1], "mojeidContact", contact)) {
+                    throw Registry::MojeID::OBJECT_NOT_EXISTS();
+                }
+                if (!add_state(rcontact[0][2], "conditionallyIdentifiedContact", contact)) {
+                    std::ostringstream msg;
+                    msg << "contact " << _contact_id << " hasn't conditionallyIdentifiedContact state";
+                    throw std::runtime_error(msg.str());
+                }
+                add_state(rcontact[0][3], "identifiedContact", contact);
+                add_state(rcontact[0][4], "validatedContact", contact);
+                return contact;
             }//try
             catch(Registry::MojeID::OBJECT_NOT_EXISTS& _ex)
             {
-                LOGGER(PACKAGE).info(_ex.what());
+                LOGGER(PACKAGE).warning(_ex.what());
                 throw;
             }
             catch (std::exception &_ex)

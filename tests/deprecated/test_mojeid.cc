@@ -1013,6 +1013,7 @@ ChangedCurrentState set_contact_state_history(::size_t object_id, const ::uint8_
             result.state.insert(state[idx]);
         }
     }
+    result.state.insert("mojeidContact");
     return result;
 }
 
@@ -1022,13 +1023,13 @@ BOOST_FIXTURE_TEST_CASE(get_contacts_state_changes, create_mojeid_contact_fixtur
     typedef std::vector< Registry::MojeID::ContactStateData > StatesData;
     typedef Registry::MojeID::ContactStateData::StateValidFrom StateValidFrom;
     try {
-        StatesData states = mojeid_pimpl->getContactsStateChanges(1);
-        for (StatesData::iterator data_ptr = states.begin(); data_ptr != states.end(); ++data_ptr) {
+        const StatesData states = mojeid_pimpl->getContactsStateChanges(1);
+        for (StatesData::const_iterator data_ptr = states.begin(); data_ptr != states.end(); ++data_ptr) {
             if (contacts.count(data_ptr->contact_id) == 0) {
                 continue;
             }
             StateData state_data = mojeid_pimpl->getContactState(data_ptr->contact_id);
-            BOOST_CHECK(data_ptr->state.erase("mojeidContact") == 1);
+            BOOST_CHECK(data_ptr->state.find("mojeidContact") != data_ptr->state.end());
             BOOST_CHECK(data_ptr->contact_id == state_data.contact_id);
             BOOST_CHECK(data_ptr->state.size() == state_data.state.size());
             for (StateValidFrom::const_iterator state_ptr = data_ptr->state.begin(); state_ptr != data_ptr->state.end(); ++state_ptr) {
@@ -1049,13 +1050,13 @@ BOOST_FIXTURE_TEST_CASE(get_contacts_state_changes, create_mojeid_contact_fixtur
         const ChangedCurrentState cc = set_contact_state_history(contact_c.first, cshc);
         const ::uint8_t cshd[3] = {::uint8_t(history), ::uint8_t(history), ::uint8_t(history)};
         const ChangedCurrentState cd = set_contact_state_history(contact_d.first, cshd);
-        StatesData states = mojeid_pimpl->getContactsStateChanges(1);
+        const StatesData states = mojeid_pimpl->getContactsStateChanges(1);
         bool ca_find = !ca.changed;
         bool cb_find = !cb.changed;
         bool cc_find = !cc.changed;
         bool cd_find = !cd.changed;
-        for (StatesData::iterator data_ptr = states.begin(); data_ptr != states.end(); ++data_ptr) {
-            BOOST_CHECK(data_ptr->state.erase("mojeidContact") == 1);
+        for (StatesData::const_iterator data_ptr = states.begin(); data_ptr != states.end(); ++data_ptr) {
+            BOOST_CHECK(data_ptr->state.find("mojeidContact") != data_ptr->state.end());
             if (data_ptr->contact_id == contact_a.first) {
                 BOOST_CHECK(ca.changed);
                 if (ca.changed) {
