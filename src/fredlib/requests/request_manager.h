@@ -137,14 +137,14 @@ public:
   std::auto_ptr<RequestCountInfo> i_getRequestCountUsers(const boost::posix_time::ptime &datetime_from, const boost::posix_time::ptime &datetime_to, const std::string &service);
 
   // for migration tool (util/logd_migration)
-  void insert_props_pub(DateTime entry_time, ServiceType request_service_id, bool monitoring, Database::ID request_id, const Fred::Logger::RequestProperties& props);
+  void insert_props_pub(Database::DateTime entry_time, ServiceType request_service_id, bool monitoring, Database::ID request_id, const Fred::Logger::RequestProperties& props);
 
   List* createList() const;
 
 private:
 
-  void insert_props(DateTime entry_time, ServiceType service, bool monitoring, ID request_id, const Fred::Logger::RequestProperties& props, Connection &conn, bool output);
-  void insert_obj_ref(DateTime entry_time, ServiceType service, bool monitoring, ID request_id, const Fred::Logger::ObjectReferences& props, Connection &conn);
+  void insert_props(Database::DateTime entry_time, ServiceType service, bool monitoring, ID request_id, const Fred::Logger::RequestProperties& props, Connection &conn, bool output);
+  void insert_obj_ref(Database::DateTime entry_time, ServiceType service, bool monitoring, ID request_id, const Fred::Logger::ObjectReferences& props, Connection &conn);
   bool record_check(Database::ID id, Connection &conn);
 
   inline Database::ID find_last_property_value_id(Connection &conn);
