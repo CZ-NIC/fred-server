@@ -283,7 +283,6 @@ Contact* corba_wrap_contact(const Fred::Contact::Verification::Contact &_contact
 
     data->organization = corba_wrap_nullable_string(_contact.organization);
     data->vat_reg_num  = corba_wrap_nullable_string(_contact.vat);
-    data->ssn_type     = corba_wrap_nullable_string(_contact.ssntype);
 
     std::string type = _contact.ssntype.get_value_or_default();
     data->id_card_num  = type == "OP"       ? corba_wrap_nullable_string(_contact.ssn) : 0;
