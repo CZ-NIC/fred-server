@@ -11,6 +11,7 @@
 #include <string>
 #include <boost/algorithm/string.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
+#include <boost/assign/list_of.hpp>
 
 
 using namespace Registry::MojeID;
@@ -168,6 +169,40 @@ Nullable<std::string> corba_unwrap_nullable_date(const NullableDate *_v)
 }
 
 
+Nullable<std::pair<std::string, std::string> > corba_unwrap_ssn_value_by_priority(const Contact& _contact)
+{
+    typedef std::pair<std::string, Nullable<std::string> > SSN;
+    /* NOTE: all detections for not set value on Nullables here is done by default value getter
+     * because frontend don't preseve NULL values :( */
+
+    /* priority order depends on organization value */
+    bool is_org = !(corba_unwrap_nullable_string(_contact.organization).get_value_or_default().empty());
+
+    SSN ico = std::make_pair("ICO", corba_unwrap_nullable_string(_contact.vat_id_num));
+    SSN birthday = std::make_pair("BIRTHDAY", corba_unwrap_nullable_date(_contact.birth_date));
+
+    /* list of all possible values ordered by priority (higher first) */
+    const std::vector<SSN> all_values = boost::assign::list_of
+        (is_org ? ico : birthday)
+        (is_org ? birthday : ico)
+        (std::make_pair("OP", corba_unwrap_nullable_string(_contact.id_card_num)))
+        (std::make_pair("PASS", corba_unwrap_nullable_string(_contact.passport_num)))
+        (std::make_pair("MPSV", corba_unwrap_nullable_string(_contact.ssn_id_num)));
+
+    /* get first nonempty value */
+    Nullable<std::pair<std::string, std::string> > ret;
+    for (std::vector<SSN>::const_iterator it = all_values.begin(); it != all_values.end(); ++it)
+    {
+        if (!(it->second.get_value_or_default().empty()))
+        {
+            ret = std::make_pair(it->first, it->second.get_value_or_default());
+            break;
+        }
+    }
+    return ret;
+}
+
+
 Fred::Contact::Verification::Contact corba_unwrap_contact(const Contact &_contact)
 {
     Fred::Contact::Verification::Contact data;
@@ -218,21 +253,18 @@ Fred::Contact::Verification::Contact corba_unwrap_contact(const Contact &_contac
         }
     }
 
-    if (_contact.ssn_type) {
-        std::string type = boost::to_upper_copy(static_cast<std::string>(_contact.ssn_type->_value()));
-        data.ssntype = type;
-        if (type == "OP")            data.ssn = corba_unwrap_nullable_string(_contact.id_card_num);
-        else if (type == "PASS")     data.ssn = corba_unwrap_nullable_string(_contact.passport_num);
-        else if (type == "ICO")      data.ssn = corba_unwrap_nullable_string(_contact.vat_id_num);
-        else if (type == "MPSV")     data.ssn = corba_unwrap_nullable_string(_contact.ssn_id_num);
-        else if (type == "BIRTHDAY") data.ssn = corba_unwrap_nullable_date(_contact.birth_date);
-    }
-
     data.id = corba_unwrap_nullable_ulonglong(_contact.id).get_value_or_default();
     data.name = corba_unwrap_string(_contact.first_name) + " " + corba_unwrap_string(_contact.last_name);
     data.handle = corba_unwrap_string(_contact.username);
     data.organization = corba_unwrap_nullable_string(_contact.organization);
     data.vat = corba_unwrap_nullable_string(_contact.vat_reg_num);
+
+    Nullable<std::pair<std::string, std::string> > ssn = corba_unwrap_ssn_value_by_priority(_contact);
+    if (!ssn.isnull())
+    {
+        data.ssntype = ssn.get_value().first;
+        data.ssn = ssn.get_value().second;
+    }
 
     return data;
 }
@@ -251,7 +283,6 @@ Contact* corba_wrap_contact(const Fred::Contact::Verification::Contact &_contact
 
     data->organization = corba_wrap_nullable_string(_contact.organization);
     data->vat_reg_num  = corba_wrap_nullable_string(_contact.vat);
-    data->ssn_type     = corba_wrap_nullable_string(_contact.ssntype);
 
     std::string type = _contact.ssntype.get_value_or_default();
     data->id_card_num  = type == "OP"       ? corba_wrap_nullable_string(_contact.ssn) : 0;
