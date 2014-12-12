@@ -16,9 +16,10 @@
 
 using namespace Registry::MojeID;
 
-Date corba_wrap_date(const std::string &_v)
+Date corba_wrap_date(const std::string &_v)//_v="2014-12-21T17:38:25,123456789"
 {
-    const boost::gregorian::date gd = boost::gregorian::from_simple_string(_v);
+    enum { GREGORIAN_DATE_LENGTH = 10 };
+    const boost::gregorian::date gd = boost::gregorian::from_simple_string(_v.substr(0, GREGORIAN_DATE_LENGTH));
     Date d;
     if (gd.is_special()) {
         d.year  = 0;
