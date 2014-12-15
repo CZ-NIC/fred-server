@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
             std::cout << "id=" << contact_id << " username='" << username << "'" << std::endl;
             Database::Result to_fix = ctx.get_conn().exec_params(
                "SELECT"
-                   " oreg.id, oreg.name, est.type as ssn_type, c.ssn, os.id is not null AS validated"
+                   " oreg.id, lower(oreg.name) AS name, est.type as ssn_type, c.ssn, os.id is not null AS validated"
                  " FROM object_registry oreg"
                    " JOIN contact c ON c.id = oreg.id"
                    " LEFT JOIN enum_ssntype est ON est.id = c.ssntype"
@@ -71,6 +71,14 @@ int main(int argc, char *argv[])
                           << " id=" << contact_id
                           << " username='" << username << "'" << std::endl;
                 continue;
+            }
+
+            if (static_cast<std::string>(to_fix[0]["name"]) != username)
+            {
+                std::cerr << "OOPS: id from input data doesn't refer to same username!"
+                          << " id=" << contact_id << ";"
+                          << " aborting, check your input!" << std::endl;
+                throw std::runtime_error("inconsistent input");
             }
 
             if (static_cast<std::string>(to_fix[0]["ssn_type"]) == "ICO")
