@@ -48,10 +48,21 @@ namespace Registry
                 return Registry::Contact::Verification::DATA_VALIDATION_ERROR(errors);
             }
 
-            static void log_data_validation_error(Fred::Contact::Verification::DataValidationError& _ex)
+            static void log_data_validation_error(const Fred::Contact::Verification::DataValidationError& _ex)
             {
                 std::string msg("Fred::Contact::Verification::DataValidationError:");
                 for (Fred::Contact::Verification::FieldErrorMap::const_iterator it = _ex.errors.begin()
+                        ; it != _ex.errors.end(); ++it) {
+                    msg+=std::string("  ")+(it->first);
+                    msg+=std::string(" ")+ boost::lexical_cast<std::string>(it->second);
+                }
+                LOGGER(PACKAGE).warning(msg);
+            }
+
+            static void log_data_validation_error(const Registry::Contact::Verification::DATA_VALIDATION_ERROR& _ex)
+            {
+                std::string msg("Registry::Contact::Verification::DATA_VALIDATION_ERROR:");
+                for (Registry::Contact::Verification::FIELD_ERROR_MAP::const_iterator it = _ex.errors.begin()
                         ; it != _ex.errors.end(); ++it) {
                     msg+=std::string("  ")+(it->first);
                     msg+=std::string(" ")+ boost::lexical_cast<std::string>(it->second);
@@ -375,6 +386,11 @@ namespace Registry
                 {
                     log_data_validation_error(_ex);
                     throw translate_data_validation_error(_ex);
+                }
+                catch (const Registry::Contact::Verification::DATA_VALIDATION_ERROR& _ex)
+                {
+                    log_data_validation_error(_ex);
+                    throw;
                 }
                 catch (Fred::NOT_FOUND& _ex)
                 {

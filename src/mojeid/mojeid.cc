@@ -350,6 +350,11 @@ namespace Registry
                 LOGGER(PACKAGE).warning(_ex.what());
                 throw;
             }
+            catch (const Fred::Contact::Verification::DataValidationError& _ex)
+            {
+                LOGGER(PACKAGE).warning(_ex.what());
+                throw;
+            }
             catch (std::exception &_ex)
             {
                 LOGGER(PACKAGE).error(_ex.what());
@@ -626,7 +631,16 @@ namespace Registry
                 LOGGER(PACKAGE).info("identification not found");
                 throw;
             }
-
+            catch (const Registry::Contact::Verification::DATA_VALIDATION_ERROR& _ex)
+            {
+                LOGGER(PACKAGE).warning(_ex.what());
+                throw;
+            }
+            catch (const Fred::Contact::Verification::DataValidationError& _ex)
+            {
+                LOGGER(PACKAGE).warning(_ex.what());
+                throw;
+            }
             catch (std::exception &_ex)
             {
                 LOGGER(PACKAGE).error(_ex.what());
