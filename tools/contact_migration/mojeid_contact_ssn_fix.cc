@@ -47,12 +47,17 @@ int main(int argc, char *argv[])
             std::cout << "id=" << contact_id << " username='" << username << "'" << std::endl;
             Database::Result to_fix = ctx.get_conn().exec_params(
                "SELECT"
-                   " oreg.id, lower(oreg.name) AS name, est.type as ssn_type, c.ssn, os.id is not null AS validated"
+                   " oreg.id, lower(oreg.name) AS name,"
+                   " est.type as ssn_type, c.ssn,"
+                   " os_v.id is not null AS validated,"
+                   " os_m.id is not null AS is_mojeid"
                  " FROM object_registry oreg"
                    " JOIN contact c ON c.id = oreg.id"
                    " LEFT JOIN enum_ssntype est ON est.id = c.ssntype"
-                   " LEFT JOIN object_state os ON os.object_id = c.id AND os.valid_to is null"
-                       " AND os.state_id = (SELECT id FROM enum_object_states WHERE name = 'validatedContact')"
+                   " LEFT JOIN object_state os_v ON os_v.object_id = c.id AND os_v.valid_to is null"
+                       " AND os_v.state_id = (SELECT id FROM enum_object_states WHERE name = 'validatedContact')"
+                   " LEFT JOIN object_state os_m ON os_m.object_id = c.id AND os_m.valid_to is null"
+                       " AND os_m.state_id = (SELECT id FROM enum_object_states WHERE name = 'mojeidContact')"
                  " WHERE c.id = $1::bigint",
                  Database::query_param_list(contact_id)
             );
@@ -68,6 +73,14 @@ int main(int argc, char *argv[])
             if (static_cast<std::string>(to_fix[0]["validated"]) == "t")
             {
                 std::cerr << "Warning: already validated; skipping"
+                          << " id=" << contact_id
+                          << " username='" << username << "'" << std::endl;
+                continue;
+            }
+
+            if (static_cast<std::string>(to_fix[0]["is_mojeid"]) == "f")
+            {
+                std::cerr << "Warning: not mojeid contact; skipping"
                           << " id=" << contact_id
                           << " username='" << username << "'" << std::endl;
                 continue;
