@@ -1090,7 +1090,8 @@ namespace Registry
                     if (!add_state(rcontacts[idx][1], "conditionallyIdentifiedContact", contact)) {
                         std::ostringstream msg;
                         msg << "contact " << contact.contact_id << " hasn't conditionallyIdentifiedContact state";
-                        throw std::runtime_error(msg.str());
+                        LOGGER(PACKAGE).error(msg.str());
+                        continue;
                     }
                     add_state(rcontacts[idx][2], "identifiedContact", contact);
                     add_state(rcontacts[idx][3], "validatedContact", contact);
