@@ -65,7 +65,7 @@ void ConditionalContactIdentificationImpl::pre_save_check()
         contact_validator_.check(cdata);
 
         const State contact_state = get_contact_verification_state(contact_id);
-        if (contact_state.has_all(State::Civm)) {// already C
+        if (contact_state.has_any(State::CIVm)) {// already C or I or V
             throw Fred::PublicRequest::NotApplicable("pre_save_check: failed!");
         }
     }
