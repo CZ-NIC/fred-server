@@ -430,12 +430,12 @@ namespace Registry
         {
             try
             {
-                std::vector<ContactStateData> csdv = pimpl_->getContactsStateChanges(_last_hours);
+                ContactStateDataList csdv = pimpl_->getContactsStateChanges(_last_hours);
                 ContactStateInfoList_var ret = new ContactStateInfoList;
                 ret->length(0);
 
-                for (std::vector<ContactStateData>::const_iterator csdvi
-                    = csdv.begin(); csdvi != csdv.end(); ++csdvi)
+                for (ContactStateDataList::const_iterator csdvi = csdv.begin();
+                     csdvi != csdv.end(); ++csdvi)
                 {
                     if (!csdvi->state.empty()) {
                         Registry::MojeID::ContactStateInfo sinfo;
@@ -451,11 +451,11 @@ namespace Registry
                         }
                         state_ptr = csdvi->state.find(Fred::ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT);
                         if (state_ptr != csdvi->state.end()) {
-                            sinfo.conditionally_identification_date = new Registry::MojeID::NullableDate(corba_wrap_date(state_ptr->second));
+                            sinfo.conditionally_identification_date = corba_wrap_date(state_ptr->second);
                         }
                         state_ptr = csdvi->state.find(Fred::ObjectState::MOJEID_CONTACT);
                         if (state_ptr != csdvi->state.end()) {
-                            sinfo.mojeid_activation_date = new Registry::MojeID::NullableDate(corba_wrap_date(state_ptr->second));
+                            sinfo.mojeid_activation_datetime = corba_wrap_datetime(state_ptr->second);
                         }
                         const unsigned int act_size = ret->length();
                         ret->length(act_size + 1);
@@ -474,7 +474,7 @@ namespace Registry
             {
                 throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR();
             }
-        }//getContactsStates
+        }//getContactsStateChanges
 
         Registry::MojeID::ContactStateInfo* Server_i::getContactState(
                 ::CORBA::ULongLong _contact_id)
@@ -497,12 +497,12 @@ namespace Registry
 
                 state_ptr = csd.state.find(Fred::ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT);
                 if (state_ptr != csd.state.end()) {
-                    sinfo->conditionally_identification_date = new Registry::MojeID::NullableDate(corba_wrap_date(state_ptr->second));
+                    sinfo->conditionally_identification_date = corba_wrap_date(state_ptr->second);
                 }
 
                 state_ptr = csd.state.find(Fred::ObjectState::MOJEID_CONTACT);
                 if (state_ptr != csd.state.end()) {
-                    sinfo->mojeid_activation_date = new Registry::MojeID::NullableDate(corba_wrap_date(state_ptr->second));
+                    sinfo->mojeid_activation_datetime = corba_wrap_datetime(state_ptr->second);
                 }
                 return sinfo._retn();
             }

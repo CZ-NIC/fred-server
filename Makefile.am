@@ -263,7 +263,8 @@ sbin_PROGRAMS = \
 		src/corba/domain_browser/fred-dbifd \
 		src/cli_admin/fred-admin \
 		tools/logd_migration/migrate_log \
-		tools/contact_migration/mojeid_contact_address_import
+		tools/contact_migration/mojeid_contact_address_import \
+		tools/contact_migration/mojeid_contact_ssn_fix
 
 
 # util/libutil.a
@@ -2008,6 +2009,29 @@ tools_contact_migration_mojeid_contact_address_import_LDFLAGS = \
 		$(AM_LDFLAGS)
 
 tools_contact_migration_mojeid_contact_address_import_LDADD = \
+		src/fredlib/libfred.a \
+		util/log/liblog.a \
+		util/db/libdb.a \
+		util/libutil.a \
+		$(BOOST_DATE_TIME_LIB) \
+		$(BOOST_THREAD_LIB) \
+		$(LIBIDN_LIBS) \
+		$(POSTGRESQL_LIB) \
+		$(BOOST_REGEX_LIB) \
+		$(BOOST_SYSTEM_LIB)
+
+
+tools_contact_migration_mojeid_contact_ssn_fix_SOURCES = \
+		tools/contact_migration/mojeid_contact_ssn_fix.cc
+
+tools_contact_migration_mojeid_contact_ssn_fix_CPPFLAGS = \
+		$(AM_CPPFLAGS) \
+		$(LIBIDN_CFLAGS)
+
+tools_contact_migration_mojeid_contact_ssn_fix_LDFLAGS = \
+		$(AM_LDFLAGS)
+
+tools_contact_migration_mojeid_contact_ssn_fix_LDADD = \
 		src/fredlib/libfred.a \
 		util/log/liblog.a \
 		util/db/libdb.a \

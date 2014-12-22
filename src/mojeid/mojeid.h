@@ -29,7 +29,6 @@
 
 #include <string>
 #include <vector>
-#include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/thread/mutex.hpp>
 
 #include "cfg/handle_registry_args.h"
@@ -74,14 +73,15 @@ namespace Registry
         struct ContactStateData
         {
             unsigned long long contact_id;
-            typedef std::map< std::string, boost::gregorian::date > StateValidFrom;
+            typedef std::string DateTime;// iso (extended) format: YYYY-MM-DDTHH:MM:SS,fffffffff
+            typedef std::map< std::string, DateTime > StateValidFrom;
             StateValidFrom state;
 
-            ContactStateData()
-            : contact_id(0)
-            {}
+            ContactStateData(): contact_id(0) { }
             StateValidFrom::const_iterator get_sum_state() const;
         };
+
+        typedef std::vector< ContactStateData > ContactStateDataList;
 
         class MojeIDImpl
         {
@@ -147,7 +147,7 @@ namespace Registry
                 unsigned long long  _contact_id
                 , unsigned long long  _request_id);
 
-            std::vector<ContactStateData> getContactsStateChanges(unsigned long _last_hours);
+            ContactStateDataList getContactsStateChanges(unsigned long _last_hours);
 
             ContactStateData getContactState(unsigned long long _contact_id);
 

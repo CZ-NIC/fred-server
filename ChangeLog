@@ -1,3 +1,10 @@
+2014-12-12 Jiri Sadek, Jan Korous, Jan Zima, Michal Strnad (2.20.1)
+
+  * mojeid - fix methods for verification states synchronization
+           - fix priority of contact ssn type/value save due to
+             validation requirements
+           - removed unused ssn_type from corba interface
+
 2014-10-17 Jiri Sadek, Jan Korous, Jan Zima, Michal Strnad (2.20.0)
 
   * mojeid - contact - additional addresses (mailing, shipping, billing)
