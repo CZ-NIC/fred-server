@@ -34,7 +34,8 @@
 
 /**
  * postgresql array parser
- * implemented postgresql v9.1 array output syntax with backslash unquoting, except of box type
+ * implemented postgresql v9.1 array output syntax with backslash unquoting, except of box type and strings like {"acb\\\\"}
+ * prototypes parsers are here: http://ideone.com/0QVwu0 http://ideone.com/gdgEOl
  */
 class PgArray
 {
@@ -59,7 +60,7 @@ public:
     : array_literal_(array_literal)
     {}
 
-    std::vector<Nullable<std::string> > parse()/**< postgresql text[] output parser, other types convertible to text will also work except of postgresql box type with ; delimiter (is not implemented, and will cause undefined output)*/
+    std::vector<Nullable<std::string> > parse()
     {
         std::vector<Nullable<std::string> > ret;
         if(!array_literal_.empty() && array_literal_[0] == '{' && array_literal_[array_literal_.length()-1] == '}')
