@@ -128,7 +128,7 @@ namespace Registry
 
                 DomainList_var dl = corba_wrap_domain_list(domain_list_out);
                 return dl._retn();
-            }//try
+            }
             catch (const Registry::DomainBrowserImpl::ObjectNotExists& )
             {
                 throw Registry::DomainBrowser::OBJECT_NOT_EXISTS();
@@ -185,7 +185,7 @@ namespace Registry
 
                 NssetList_var nl = corba_wrap_nsset_list(nsset_list_out);
                 return nl._retn();
-            }//try
+            }
             catch (const Registry::DomainBrowserImpl::ObjectNotExists& )
             {
                 throw Registry::DomainBrowser::OBJECT_NOT_EXISTS();
@@ -240,7 +240,7 @@ namespace Registry
                     offset, keyset_list_out);
                 KeysetList_var kl = corba_wrap_keyset_list(keyset_list_out);
                 return kl._retn();
-            }//try
+            }
             catch (const Registry::DomainBrowserImpl::ObjectNotExists& )
             {
                 throw Registry::DomainBrowser::OBJECT_NOT_EXISTS();
@@ -271,7 +271,7 @@ namespace Registry
 
                 DomainList_var dl = corba_wrap_domain_list(domain_list_out);
                 return dl._retn();
-            }//try
+            }
             catch (const Registry::DomainBrowserImpl::AccessDenied&)
             {
                 throw Registry::DomainBrowser::ACCESS_DENIED();
@@ -303,7 +303,7 @@ namespace Registry
 
                 DomainList_var dl = corba_wrap_domain_list(domain_list_out);
                 return dl._retn();
-            }//try
+            }
             catch (const Registry::DomainBrowserImpl::AccessDenied&)
             {
                 throw Registry::DomainBrowser::ACCESS_DENIED();
@@ -398,7 +398,7 @@ namespace Registry
                 }
 
                 return contact_detail._retn();
-            }//try
+            }
             catch (const Registry::DomainBrowserImpl::ObjectNotExists& )
             {
                 throw Registry::DomainBrowser::OBJECT_NOT_EXISTS();
@@ -501,7 +501,7 @@ namespace Registry
                 }
 
                 return nsset_detail._retn();
-            }//try
+            }
             catch (const Registry::DomainBrowserImpl::ObjectNotExists& )
             {
                 throw Registry::DomainBrowser::OBJECT_NOT_EXISTS();
@@ -605,7 +605,7 @@ namespace Registry
                 }
 
                 return domain_detail._retn();
-            }//try
+            }
             catch (const Registry::DomainBrowserImpl::ObjectNotExists& )
             {
                 throw Registry::DomainBrowser::OBJECT_NOT_EXISTS();
@@ -701,7 +701,7 @@ namespace Registry
                 }
 
                 return keyset_detail._retn();
-            }//try
+            }
             catch (const Registry::DomainBrowserImpl::ObjectNotExists& )
             {
                 throw Registry::DomainBrowser::OBJECT_NOT_EXISTS();
@@ -735,7 +735,7 @@ namespace Registry
                 registrar_detail->address = CORBA::string_dup(detail_impl.address.c_str());
 
                 return registrar_detail._retn();
-            }//try
+            }
             catch (const Registry::DomainBrowserImpl::ObjectNotExists& )
             {
                 throw Registry::DomainBrowser::OBJECT_NOT_EXISTS();
@@ -766,7 +766,7 @@ namespace Registry
                 flags_.vat = flags.vat;
                 flags_.notify_email = flags.notify_email;
                 return pimpl_->setContactDiscloseFlags(user_contact_id, flags_, request_id);
-            }//try
+            }
             catch (const Registry::DomainBrowserImpl::UserNotExists& )
             {
                 throw Registry::DomainBrowser::USER_NOT_EXISTS();
@@ -797,7 +797,7 @@ namespace Registry
             try
             {
                 return pimpl_->setContactAuthInfo(user_contact_id, auth_info, request_id);
-            }//try
+            }
             catch (const Registry::DomainBrowserImpl::ObjectNotExists& )
             {
                 throw Registry::DomainBrowser::OBJECT_NOT_EXISTS();
@@ -858,7 +858,7 @@ namespace Registry
 
                 change_prohibited = change_prohibited_var._retn();//transfer ownership to the out parameter, no exceptions allowed after this point
                 return ret;
-            }//try
+            }
             catch (const Registry::DomainBrowserImpl::ObjectNotExists& )
             {
                 throw Registry::DomainBrowser::OBJECT_NOT_EXISTS();
@@ -895,7 +895,7 @@ namespace Registry
                     status_description_var[i].state_desc = CORBA::string_dup(status_description_out.at(i).state_desc.c_str());
                 }
                 return  status_description_var._retn();
-            }//try
+            }
             catch (...)
             {
                 throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
@@ -937,7 +937,7 @@ namespace Registry
 
                 MergeContactCandidateList_var cl = corba_wrap_merge_contact_candidate_list(contact_list_out);
                 return cl._retn();
-            }//try
+            }
             catch (const Registry::DomainBrowserImpl::UserNotExists& )
             {
                 throw Registry::DomainBrowser::USER_NOT_EXISTS();
@@ -961,7 +961,7 @@ namespace Registry
                     contact_list.push_back(src_contact_id_list[i]);
                 }
                 pimpl_->mergeContacts(dst_contact_id, contact_list, request_id);
-            }//try
+            }
             catch (const Registry::DomainBrowserImpl::UserNotExists& )
             {
                 throw Registry::DomainBrowser::USER_NOT_EXISTS();
