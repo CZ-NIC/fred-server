@@ -252,7 +252,7 @@ void createObjectStateRequestName(
         throw std::runtime_error("object not found");
 
     unsigned long long object_id = obj_id_res[0][0];
-
+    lock_object_state_request_lock(object_id);
 
     for (std::vector<std::string>::iterator i= _object_state_name.begin()
             ; i != _object_state_name.end()
@@ -272,8 +272,6 @@ void createObjectStateRequestName(
         throw std::runtime_error("object state not found");
 
     unsigned long long object_state_id = obj_state_res[0][0];
-
-    lock_object_state_request_lock(object_id);
 
     //get existing state requests for object and state
     //assuming requests for different states of the same object may overlay
