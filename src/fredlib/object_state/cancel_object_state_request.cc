@@ -24,7 +24,7 @@
 #include "src/fredlib/object_state/cancel_object_state_request.h"
 #include "src/fredlib/object_state/get_blocking_status_desc_list.h"
 #include "src/fredlib/object_state/get_object_state_id_map.h"
-#include "lock_multiple_object_state_request_lock.h"
+#include "lock_object_state_request_lock.h"
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/db_settings.h"
 #include "util/optional_value.h"
@@ -65,7 +65,7 @@ namespace Fred
         typedef GetObjectStateIdMap::StateIdMap StateIdMap;
         StateIdMap &state_id_map = get_object_state_id_map.exec(_ctx);
 
-        LockMultipleObjectStateRequestLock(object_id).exec(_ctx);
+        LockObjectStateRequestLock(object_id).exec(_ctx);
 
         Database::query_param_list param(object_id);
         std::ostringstream cmd;

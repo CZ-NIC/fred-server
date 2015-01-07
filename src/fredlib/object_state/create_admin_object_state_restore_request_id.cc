@@ -25,7 +25,7 @@
 #include "src/fredlib/object_state/clear_admin_object_state_request_id.h"
 #include "src/fredlib/object_state/clear_object_state_request_id.h"
 #include "src/fredlib/object_state/get_blocking_status_desc_list.h"
-#include "lock_multiple_object_state_request_lock.h"
+#include "lock_object_state_request_lock.h"
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/db_settings.h"
 #include "util/optional_value.h"
@@ -103,7 +103,7 @@ namespace Fred
         StatusList previous_status_list;
         if (pRow != block_history.end()) {
 
-            LockMultipleObjectStateRequestLock(object_id_).exec(_ctx);
+            LockObjectStateRequestLock(object_id_).exec(_ctx);
 
             const TID start_object_state_id = (*pRow)[OBJECT_STATE_ID_IDX];
             Database::Result previous_status_list_result = _ctx.get_conn().exec_params(

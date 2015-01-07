@@ -879,8 +879,6 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/object_state/object_state_name.h \
 		src/fredlib/object_state/object_has_state.h \
 		src/fredlib/object_state/object_has_state.cc \
-		src/fredlib/object_state/lock_multiple_object_state_request_lock.cc \
-		src/fredlib/object_state/lock_multiple_object_state_request_lock.h \
 		src/fredlib/object_state/lock_object_state_request_lock.h \
 		src/fredlib/object_state/lock_object_state_request_lock.cc \
 		src/fredlib/object_state/get_object_state_descriptions.h \
