@@ -2439,7 +2439,6 @@ tests_test_fredlib_SOURCES = \
 		tests/fredlib/object_state/test_create_admin_object_block_request_id.cc \
 		tests/fredlib/object_state/test_create_admin_object_state_restore_request_id.cc \
 		tests/fredlib/object_state/test_cancel_object_state_request_id.cc \
-		tests/fredlib/object_state/test_clear_admin_object_state_request_id.cc \
 		tests/fredlib/test_opexception.cc \
 		tests/fredlib/test_check_handle.cc \
 		tests/setup/fixtures_utils.h \
