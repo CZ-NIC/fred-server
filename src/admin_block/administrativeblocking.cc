@@ -26,7 +26,6 @@
 #include "src/fredlib/object_state/get_object_state_id_map.h"
 #include "src/fredlib/object_state/create_admin_object_block_request.h"
 #include "src/fredlib/object_state/create_admin_object_block_request_id.h"
-#include "src/fredlib/object_state/create_admin_object_state_restore_request.h"
 #include "src/fredlib/object_state/create_admin_object_state_restore_request_id.h"
 #include "src/fredlib/domain/create_domain_name_blacklist.h"
 #include "src/fredlib/domain/create_domain_name_blacklist_id.h"
