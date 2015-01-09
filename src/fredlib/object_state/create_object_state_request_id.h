@@ -24,8 +24,6 @@
 #ifndef CREATE_OBJECT_STATE_REQUEST_ID_H_
 #define CREATE_OBJECT_STATE_REQUEST_ID_H_
 
-#include "src/fredlib/object_state/create_object_state_request.h"
-
 #include <utility>
 
 namespace Fred

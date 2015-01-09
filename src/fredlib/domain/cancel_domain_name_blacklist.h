@@ -24,8 +24,6 @@
 #ifndef CANCEL_DOMAIN_NAME_BLACKLIST_H_
 #define CANCEL_DOMAIN_NAME_BLACKLIST_H_
 
-#include "create_object_state_request.h"
-
 namespace Fred
 {
 

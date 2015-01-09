@@ -42,7 +42,7 @@ namespace Fred
     class CreateAdminObjectBlockRequestId
     {
     public:
-        typedef CreateObjectStateRequest::Time Time; /**< common @ref Fred::CreateObjectStateRequestId::Time "time" type */
+        typedef CreateObjectStateRequestId::Time Time; /**< common @ref Fred::CreateObjectStateRequestId::Time "time" type */
 
         /**
         * Constructor with mandatory parameters.

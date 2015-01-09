@@ -24,8 +24,6 @@
 #ifndef COPY_CONTACT_H_
 #define COPY_CONTACT_H_
 
-#include "src/fredlib/object_state/create_object_state_request.h"
-
 namespace Fred
 {
 
