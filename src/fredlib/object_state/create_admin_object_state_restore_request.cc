@@ -22,7 +22,6 @@
  */
 
 #include "src/fredlib/object_state/create_admin_object_state_restore_request.h"
-#include "src/fredlib/object_state/clear_object_state_request.h"
 #include "src/fredlib/object_state/get_blocking_status_desc_list.h"
 #include "lock_object_state_request_lock.h"
 #include "src/fredlib/opcontext.h"
@@ -113,7 +112,7 @@ namespace Fred
                 previous_status_list.insert((*pName)[0]);
             }
         }
-        ClearObjectStateRequest(object_handle_, object_type_).exec(_ctx);
+        //ClearObjectStateRequest(object_handle_, object_type_).exec(_ctx);
         if (!previous_status_list.empty()) {
             CreateObjectStateRequest(object_handle_, object_type_, previous_status_list).exec(_ctx);
         }
