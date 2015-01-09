@@ -891,8 +891,6 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/object_state/get_blocking_status_desc_list.h \
 		src/fredlib/object_state/perform_object_state_request.h \
 		src/fredlib/object_state/perform_object_state_request.cc \
-		src/fredlib/object_state/cancel_object_state_request.cc \
-		src/fredlib/object_state/cancel_object_state_request.h \
 		src/fredlib/object_state/cancel_object_state_request_id.cc \
 		src/fredlib/object_state/cancel_object_state_request_id.h \
 		src/fredlib/object_state/create_object_state_request.cc \
@@ -1903,8 +1901,6 @@ src_cli_admin_fred_admin_SOURCES = \
 		src/fredlib/object_state/create_object_state_request_id.h \
 		src/fredlib/object_state/get_object_state_id_map.cc \
 		src/fredlib/object_state/get_object_state_id_map.h \
-		src/fredlib/object_state/cancel_object_state_request.cc \
-		src/fredlib/object_state/cancel_object_state_request.h \
 		src/fredlib/object_state/cancel_object_state_request_id.cc \
 		src/fredlib/object_state/cancel_object_state_request_id.h \
 		util/optys/upload_client.cc \
@@ -2233,8 +2229,6 @@ tests_test_server_SOURCES = \
 		src/fredlib/object_state/create_object_state_request_id.h \
 		src/fredlib/object_state/get_object_state_id_map.cc \
 		src/fredlib/object_state/get_object_state_id_map.h \
-		src/fredlib/object_state/cancel_object_state_request.cc \
-		src/fredlib/object_state/cancel_object_state_request.h \
 		src/fredlib/object_state/cancel_object_state_request_id.cc \
 		src/fredlib/object_state/cancel_object_state_request_id.h \
 		src/domain_browser/domain_browser.cc \
