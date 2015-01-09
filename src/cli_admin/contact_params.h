@@ -109,7 +109,6 @@ struct ContactMergeDuplicateAutoArgs
 {
     std::vector<std::string> registrar;
     std::vector<std::string> except_registrar;
-    optional_ulonglong limit;
     bool dry_run;
     std::vector<std::string> selection_filter_order;
     optional_ushort verbose;
@@ -128,7 +127,6 @@ struct ContactMergeDuplicateAutoArgs
             const optional_ushort &_verbose)
         : registrar(_registrar),
           except_registrar(_except_registrar),
-          limit(_limit),
           dry_run(_dry_run),
           selection_filter_order(_selection_filter_order),
           verbose(_verbose)
