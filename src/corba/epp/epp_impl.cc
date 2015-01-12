@@ -2851,13 +2851,16 @@ ccReg::Response * ccReg_EPP_i::ContactUpdate(
         */
         id = getIdOfContact(action.getDB(), handle, restricted_handles_
                 , lock_epp_commands_, true);
-        // for notification to old notify address, this address must be
-        // discovered before change happen
+
         std::string oldNotifyEmail;
-        if (strlen(c.NotifyEmail) && !disable_epp_notifier_)
-            oldNotifyEmail = action.getDB()->GetValueFromTable(
-                    "contact", "notifyemail", "id", id
-                    );
+        if (id > 0) {
+            // for notification to old notify address, this address must be
+            // discovered before change happen
+            if (strlen(c.NotifyEmail) && !disable_epp_notifier_)
+                oldNotifyEmail = action.getDB()->GetValueFromTable(
+                        "contact", "notifyemail", "id", id
+                        );
+        }
         if (id < 0) {
             LOG(WARNING_LOG, "bad format of contact [%s]", handle);
             code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
@@ -2883,31 +2886,35 @@ ccReg::Response * ccReg_EPP_i::ContactUpdate(
             code = COMMAND_FAILED;
         }
 
-        //discloseaddress conditions #7493
-        bool hidden_address_allowed_by_contact_state
-            = Fred::object_has_state(id, Fred::ObjectState::IDENTIFIED_CONTACT)
-                || Fred::object_has_state(id, Fred::ObjectState::VALIDATED_CONTACT);
-
+        bool hidden_address_allowed_by_contact_state = false;
         bool hidden_address_allowed_by_organization = false;
-        if(c.Organization.in()[0] == '\0') // no change so we need to check current value
-        {
-            Database::Result result = Database::Manager::acquire().exec_params(
-                "SELECT c.organization FROM contact c WHERE c.id = $1::bigint "
-                , Database::query_param_list(id));
-            if (result.size() == 1) {
-                hidden_address_allowed_by_organization = std::string(result[0][0]).empty();
-            }
-        }
-        else if(c.Organization.in()[0] == '\b')  // erasing current value (see EPP hack - grep "\\\b")
-        {
-            hidden_address_allowed_by_organization = true;
-        }
 
-        //if not allowed to hide but set to hide address return epp error
-        if(!(hidden_address_allowed_by_contact_state && hidden_address_allowed_by_organization)
-            && ((c.DiscloseAddress == true) && (c.DiscloseFlag == ccReg::DISCL_HIDE)))
-        {
-            code = COMMAND_STATUS_PROHIBITS_OPERATION;
+        if (!code) {
+            //discloseaddress conditions #7493
+            hidden_address_allowed_by_contact_state
+                = Fred::object_has_state(id, Fred::ObjectState::IDENTIFIED_CONTACT)
+                    || Fred::object_has_state(id, Fred::ObjectState::VALIDATED_CONTACT);
+
+            if(c.Organization.in()[0] == '\0') // no change so we need to check current value
+            {
+                Database::Result result = Database::Manager::acquire().exec_params(
+                    "SELECT c.organization FROM contact c WHERE c.id = $1::bigint "
+                    , Database::query_param_list(id));
+                if (result.size() == 1) {
+                    hidden_address_allowed_by_organization = std::string(result[0][0]).empty();
+                }
+            }
+            else if(c.Organization.in()[0] == '\b')  // erasing current value (see EPP hack - grep "\\\b")
+            {
+                hidden_address_allowed_by_organization = true;
+            }
+
+            //if not allowed to hide but set to hide address return epp error
+            if(!(hidden_address_allowed_by_contact_state && hidden_address_allowed_by_organization)
+                && ((c.DiscloseAddress == true) && (c.DiscloseFlag == ccReg::DISCL_HIDE)))
+            {
+                code = COMMAND_STATUS_PROHIBITS_OPERATION;
+            }
         }
 
         if (!code) {
