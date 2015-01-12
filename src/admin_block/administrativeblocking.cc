@@ -26,7 +26,7 @@
 #include "src/fredlib/object_state/get_object_state_id_map.h"
 #include "src/fredlib/object_state/create_admin_object_block_request_id.h"
 #include "src/fredlib/object_state/create_admin_object_state_restore_request_id.h"
-#include "src/fredlib/domain/create_domain_name_blacklist.h"
+#include "src/fredlib/object_state/perform_object_state_request.h"
 #include "src/fredlib/domain/create_domain_name_blacklist_id.h"
 #include "src/fredlib/object_state/clear_admin_object_state_request_id.h"
 #include "src/fredlib/domain/update_domain.h"
@@ -34,6 +34,7 @@
 #include "src/fredlib/domain/info_domain.h"
 #include "src/fredlib/contact/copy_contact.h"
 #include "src/fredlib/poll/create_update_object_poll_message.h"
+
 
 #include "util/log/context.h"
 #include "util/random.h"

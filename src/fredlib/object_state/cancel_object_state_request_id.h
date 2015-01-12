@@ -23,6 +23,11 @@
 
 #ifndef CANCEL_OBJECT_STATE_REQUEST_ID_H_
 #define CANCEL_OBJECT_STATE_REQUEST_ID_H_
+#include <boost/date_time/posix_time/posix_time.hpp>
+
+#include "src/fredlib/opexception.h"
+#include "src/fredlib/opcontext.h"
+#include "src/fredlib/object_state/typedefs.h"
 
 namespace Fred
 {

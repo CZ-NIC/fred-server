@@ -24,6 +24,11 @@
 #ifndef COPY_CONTACT_H_
 #define COPY_CONTACT_H_
 
+#include "src/fredlib/opexception.h"
+#include "src/fredlib/opcontext.h"
+#include "src/fredlib/object_state/typedefs.h"
+#include "util/optional_value.h"
+
 namespace Fred
 {
 

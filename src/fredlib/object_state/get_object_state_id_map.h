@@ -32,11 +32,9 @@ ziska relaci stav blokovani objektu -> id stavu blokovani objektu
 
 #include "src/fredlib/opexception.h"
 #include "src/fredlib/opcontext.h"
-#include "util/optional_value.h"
-#include "util/db/nullable.h"
+#include "src/fredlib/object_state/typedefs.h"
 
 #include <string>
-#include <vector>
 #include <map>
 
 namespace Fred

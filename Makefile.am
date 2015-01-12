@@ -903,6 +903,7 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/object_state/clear_admin_object_state_request_id.h \
 		src/fredlib/object_state/clear_object_state_request_id.cc \
 		src/fredlib/object_state/clear_object_state_request_id.h \
+		src/fredlib/object_state/typedefs.h \
 		src/fredlib/object/object_id_handle_pair.h \
 		src/fredlib/object/object_id_handle_pair.cc
 #
@@ -1464,8 +1465,6 @@ src_corba_fred_adifd_SOURCES = \
 		src/corba/fred-adifd.cc \
 		src/admin_block/administrativeblocking.cc \
 		src/admin_block/administrativeblocking.h \
-		src/fredlib/domain/create_domain_name_blacklist.cc \
-		src/fredlib/domain/create_domain_name_blacklist.h \
 		src/fredlib/domain/create_domain_name_blacklist_id.cc \
 		src/fredlib/domain/create_domain_name_blacklist_id.h \
 		src/fredlib/domain/update_domain.cc \

@@ -39,6 +39,9 @@
 #include "src/fredlib/object_state/object_has_state.h"
 #include "src/fredlib/object_state/create_object_state_request_id.h"
 #include "src/fredlib/object_state/cancel_object_state_request_id.h"
+#include "src/fredlib/object_state/perform_object_state_request.h"
+#include "src/fredlib/object_state/lock_object_state_request_lock.h"
+
 #include "src/fredlib/registrar/create_registrar.h"
 #include "src/fredlib/registrar/info_registrar.h"
 #include "src/fredlib/registrar/info_registrar_diff.h"
