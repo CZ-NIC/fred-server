@@ -24,7 +24,7 @@
 #include "src/fredlib/object_state/create_admin_object_block_request_id.h"
 #include "src/fredlib/object_state/clear_object_state_request_id.h"
 #include "src/fredlib/object_state/get_blocking_status_desc_list.h"
-#include "lock_multiple_object_state_request_lock.h"
+#include "lock_object_state_request_lock.h"
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/db_settings.h"
 #include "util/optional_value.h"
@@ -172,7 +172,7 @@ namespace Fred
             _ctx.get_log().debug("serverBlockedId = " + boost::lexical_cast< std::string >(serverBlockedId));
         }
         _ctx.get_log().debug("LockObjectStateRequestLock call");
-        LockObjectStateRequestLock(serverBlockedId, object_id_).exec(_ctx);
+        LockObjectStateRequestLock(object_id_).exec(_ctx);
         _ctx.get_log().debug("LockObjectStateRequestLock success");
         Database::Result rcheck = _ctx.get_conn().exec_params(
             "SELECT 1 "

@@ -1003,7 +1003,7 @@ BOOST_AUTO_TEST_CASE( test_contact_create_update_info )
     enum { DEFAULT_REQUEST_ID = 0 };
     static const unsigned long long request_id = DEFAULT_REQUEST_ID;
 
-    unsigned long long history_id = Fred::Contact::Verification::contact_create(request_id, registrar_id, fcvc);
+    Fred::Contact::Verification::contact_create(request_id, registrar_id, fcvc);
 
     Fred::Contact::Verification::Contact fcvc_res = Fred::Contact::Verification::contact_info(fcvc.id);
     BOOST_CHECK(fcvc.addresses.size() == fcvc_res.addresses.size());
@@ -1038,7 +1038,7 @@ BOOST_AUTO_TEST_CASE( test_contact_create_update_info )
         }
     }
 
-    history_id = Fred::Contact::Verification::contact_update(request_id, registrar_id, fcvc);
+    Fred::Contact::Verification::contact_update(request_id, registrar_id, fcvc);
     fcvc_res = Fred::Contact::Verification::contact_info(fcvc.id);
     BOOST_CHECK(fcvc.addresses.size() == fcvc_res.addresses.size());
 

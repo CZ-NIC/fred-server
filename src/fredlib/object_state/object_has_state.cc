@@ -36,7 +36,7 @@ namespace Fred
 
     bool ObjectHasState::exec(OperationContext &ctx)
     {
-        LockObjectStateRequestLock(state_name_, object_id_).exec(ctx);
+        LockObjectStateRequestLock(object_id_).exec(ctx);
 
         Database::Result rcheck = ctx.get_conn().exec_params(
             "SELECT count(*) FROM object_state os"

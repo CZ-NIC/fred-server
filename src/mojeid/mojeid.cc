@@ -875,8 +875,7 @@ namespace Registry
                 Database::Connection conn = Database::Manager::acquire();
                 Database::Transaction tx(conn);
 
-                Fred::PublicRequest::lock_public_request_lock(
-                        Fred::PublicRequest::PRT_MOJEID_CONTACT_VALIDATION,_contact_id);
+                Fred::PublicRequest::lock_public_request_by_object(_contact_id);
 
                 Database::Result res = conn.exec_params(
                     "SELECT "
@@ -1355,14 +1354,8 @@ namespace Registry
                             "Contact is not registered with MojeID");
                 }
 
-                //try lock object states
-                Fred::lock_multiple_object_states(_contact_id
-                    , Util::vector_of<std::string>
-                        (::MojeID::ObjectState::MOJEID_CONTACT)
-                        (Fred::ObjectState::SERVER_DELETE_PROHIBITED)
-                        (Fred::ObjectState::SERVER_TRANSFER_PROHIBITED)
-                        (Fred::ObjectState::SERVER_UPDATE_PROHIBITED)
-                        (Fred::ObjectState::VALIDATED_CONTACT) );
+                //lock object states
+                Fred::lock_object_state_request_lock(_contact_id);
 
                 if (!Fred::cancel_object_state(
                     _contact_id, ::MojeID::ObjectState::MOJEID_CONTACT)) {
@@ -1398,14 +1391,7 @@ namespace Registry
                 }
 
                 //lock public requests
-                Fred::PublicRequest::lock_public_request_lock(
-                    Fred::PublicRequest::PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION, _contact_id);
-                Fred::PublicRequest::lock_public_request_lock(
-                    Fred::PublicRequest::PRT_MOJEID_CONTACT_IDENTIFICATION, _contact_id);
-                Fred::PublicRequest::lock_public_request_lock(
-                    Fred::PublicRequest::PRT_MOJEID_CONTACT_REIDENTIFICATION, _contact_id);
-                Fred::PublicRequest::lock_public_request_lock(
-                    Fred::PublicRequest::PRT_MOJEID_CONTACT_VALIDATION, _contact_id);
+                Fred::PublicRequest::lock_public_request_by_object(_contact_id);
 
                 conn.exec_params(
                     "UPDATE public_request pr "

@@ -9,7 +9,7 @@ bool object_has_state(
         const std::string &_state_name)
 {
     Database::Connection conn = Database::Manager::acquire();
-    lock_object_state_request_lock(_state_name, _object_id);
+    lock_object_state_request_lock(_object_id);
     Database::Result rcheck = conn.exec_params(
             "SELECT count(*) FROM object_state os"
             " JOIN enum_object_states eos ON eos.id = os.state_id"
@@ -52,7 +52,7 @@ unsigned long long insert_object_state(
         const std::string &_state_name)
 {
     Database::Connection conn = Database::Manager::acquire();
-    lock_object_state_request_lock(_state_name, _object_id);
+    lock_object_state_request_lock(_object_id);
     Database::Result reqid =conn.exec_params(
             "INSERT INTO object_state_request (object_id, state_id)"
             " VALUES ($1::integer, (SELECT id FROM enum_object_states"
@@ -119,7 +119,7 @@ bool cancel_object_state(
     if (object_has_state(_object_id, _state_name) == true) {
         Database::Transaction tx(conn);
 
-        lock_object_state_request_lock(_state_name,_object_id);
+        lock_object_state_request_lock(_object_id);
 
         Database::Result rid_result = conn.exec_params(
                 "UPDATE object_state_request SET canceled = CURRENT_TIMESTAMP WHERE id IN ("
@@ -159,7 +159,7 @@ void cancel_object_state_request(
     Database::Connection conn = Database::Manager::acquire();
     Database::Transaction tx(conn);
 
-    lock_object_state_request_lock(_state_name,_object_id);
+    lock_object_state_request_lock(_object_id);
 
     Database::Result rid_result = conn.exec_params(
         "UPDATE object_state_request SET canceled = CURRENT_TIMESTAMP WHERE id IN ("
@@ -207,21 +207,6 @@ void cancel_multiple_object_states(
 
 }
 
-void lock_multiple_object_states(
-    const unsigned long long _object_id
-    , const std::vector<std::string> &_states_names)
-{
-    if(_states_names.empty()) return;
-
-    Database::Connection conn = Database::Manager::acquire();
-
-    for (std::vector<std::string>::const_iterator state_name_it = _states_names.begin()
-            ; state_name_it != _states_names.end(); ++state_name_it)
-    {
-        lock_object_state_request_lock(*state_name_it, _object_id);
-    }
-}
-
 void update_object_states(
         const unsigned long long &_object_id)
 {
@@ -267,7 +252,7 @@ void createObjectStateRequestName(
         throw std::runtime_error("object not found");
 
     unsigned long long object_id = obj_id_res[0][0];
-
+    lock_object_state_request_lock(object_id);
 
     for (std::vector<std::string>::iterator i= _object_state_name.begin()
             ; i != _object_state_name.end()
@@ -276,110 +261,108 @@ void createObjectStateRequestName(
 
         std::string object_state_name(*i);
 
-    //get object state
-    Database::Result obj_state_res = conn.exec_params(
-                "SELECT id FROM enum_object_states "
-                " WHERE name=$1::text"
-                , Database::query_param_list
-                    (object_state_name));
+        //get object state
+        Database::Result obj_state_res = conn.exec_params(
+                    "SELECT id FROM enum_object_states "
+                    " WHERE name=$1::text"
+                    , Database::query_param_list
+                        (object_state_name));
 
-    if(obj_state_res.size() !=1)
-        throw std::runtime_error("object state not found");
+        if(obj_state_res.size() !=1)
+            throw std::runtime_error("object state not found");
 
-    unsigned long long object_state_id = obj_state_res[0][0];
+        unsigned long long object_state_id = obj_state_res[0][0];
 
-    lock_object_state_request_lock(object_state_id, object_id);
+        //get existing state requests for object and state
+        //assuming requests for different states of the same object may overlay
+        Database::Result requests_result = conn.exec_params(
+            "SELECT valid_from, valid_to, canceled FROM object_state_request "
+            " WHERE object_id=$1::bigint AND state_id=$2::bigint "
+            , Database::query_param_list(object_id)(object_state_id));
 
-    //get existing state requests for object and state
-    //assuming requests for different states of the same object may overlay
-    Database::Result requests_result = conn.exec_params(
-        "SELECT valid_from, valid_to, canceled FROM object_state_request "
-        " WHERE object_id=$1::bigint AND state_id=$2::bigint "
-        , Database::query_param_list(object_id)(object_state_id));
-
-    //check time
-    std::string tmp_time_from ( valid_from.get_value());
-    if (!tmp_time_from.empty()) {
-        size_t idx_from = tmp_time_from.find('T');
-        if(idx_from == std::string::npos) {
-            throw std::runtime_error("Wrong date format in valid_from");
+        //check time
+        std::string tmp_time_from ( valid_from.get_value());
+        if (!tmp_time_from.empty()) {
+            size_t idx_from = tmp_time_from.find('T');
+            if(idx_from == std::string::npos) {
+                throw std::runtime_error("Wrong date format in valid_from");
+            }
+            tmp_time_from[idx_from] = ' ';
         }
-        tmp_time_from[idx_from] = ' ';
-    }
 
-    boost::posix_time::ptime new_valid_from;
-    if (!tmp_time_from.empty())
-    {
-        new_valid_from = boost::posix_time::time_from_string(tmp_time_from);
-    }
-    else
-    {
-        new_valid_from = time_from_string(static_cast<std::string>(conn.exec("SELECT now()")[0][0]));
-    }
-
-    std::string tmp_time_to ( valid_to.get_value());
-    if(!tmp_time_to.empty()) {
-        size_t idx_to = tmp_time_to.find('T');   
-        if(idx_to == std::string::npos) {
-            throw std::runtime_error("Wrong date format in valid_to");
-        }
-        tmp_time_to[idx_to] = ' ';
-    }
-
-    boost::posix_time::ptime new_valid_to
-        = tmp_time_to.empty() ? boost::posix_time::pos_infin
-            : boost::posix_time::time_from_string(tmp_time_to);
-
-    if(new_valid_from > new_valid_to )
-        throw std::runtime_error("new_valid_from > new_valid_to");
-
-    for(std::size_t i = 0 ; i < requests_result.size(); ++i)
-    {
-        boost::posix_time::ptime obj_valid_from = requests_result[i][0];
-
-        boost::posix_time::ptime obj_valid_to = requests_result[i][1];
-
-        //if obj_canceled is not null
-        if(requests_result[i][2].isnull() == false)
+        boost::posix_time::ptime new_valid_from;
+        if (!tmp_time_from.empty())
         {
-            boost::posix_time::ptime obj_canceled = requests_result[i][2];
+            new_valid_from = boost::posix_time::time_from_string(tmp_time_from);
+        }
+        else
+        {
+            new_valid_from = time_from_string(static_cast<std::string>(conn.exec("SELECT now()")[0][0]));
+        }
 
-            if (obj_canceled < obj_valid_to) obj_valid_to = obj_canceled;
-        }//if obj_canceled is not null
+        std::string tmp_time_to ( valid_to.get_value());
+        if(!tmp_time_to.empty()) {
+            size_t idx_to = tmp_time_to.find('T');
+            if(idx_to == std::string::npos) {
+                throw std::runtime_error("Wrong date format in valid_to");
+            }
+            tmp_time_to[idx_to] = ' ';
+        }
 
-        if(obj_valid_from > obj_valid_to )
-            throw std::runtime_error("obj_valid_from > obj_valid_to");
+        boost::posix_time::ptime new_valid_to
+            = tmp_time_to.empty() ? boost::posix_time::pos_infin
+                : boost::posix_time::time_from_string(tmp_time_to);
 
-        if(obj_valid_to.is_special())
-            obj_valid_to = boost::posix_time::pos_infin;
+        if(new_valid_from > new_valid_to )
+            throw std::runtime_error("new_valid_from > new_valid_to");
 
-        Logging::Manager::instance_ref().get(PACKAGE).debug(std::string(
-            "createObjectStateRequestName new_valid_from: ")
-            + boost::posix_time::to_iso_extended_string(new_valid_from)
-            + " new_valid_to: " + boost::posix_time::to_iso_extended_string(new_valid_to)
-            + " obj_valid_from: " + boost::posix_time::to_iso_extended_string(obj_valid_from)
-            + " obj_valid_to: " + boost::posix_time::to_iso_extended_string(obj_valid_to)
-        );
+        for(std::size_t i = 0 ; i < requests_result.size(); ++i)
+        {
+            boost::posix_time::ptime obj_valid_from = requests_result[i][0];
+
+            boost::posix_time::ptime obj_valid_to = requests_result[i][1];
+
+            //if obj_canceled is not null
+            if(requests_result[i][2].isnull() == false)
+            {
+                boost::posix_time::ptime obj_canceled = requests_result[i][2];
+
+                if (obj_canceled < obj_valid_to) obj_valid_to = obj_canceled;
+            }//if obj_canceled is not null
+
+            if(obj_valid_from > obj_valid_to )
+                throw std::runtime_error("obj_valid_from > obj_valid_to");
+
+            if(obj_valid_to.is_special())
+                obj_valid_to = boost::posix_time::pos_infin;
+
+            Logging::Manager::instance_ref().get(PACKAGE).debug(std::string(
+                "createObjectStateRequestName new_valid_from: ")
+                + boost::posix_time::to_iso_extended_string(new_valid_from)
+                + " new_valid_to: " + boost::posix_time::to_iso_extended_string(new_valid_to)
+                + " obj_valid_from: " + boost::posix_time::to_iso_extended_string(obj_valid_from)
+                + " obj_valid_to: " + boost::posix_time::to_iso_extended_string(obj_valid_to)
+            );
 
 
-        //check overlay
-        if(((new_valid_from >= obj_valid_from) && (new_valid_from < obj_valid_to))
-          || ((new_valid_to > obj_valid_from) && (new_valid_to <= obj_valid_to)))
-            throw std::runtime_error("overlayed validity time intervals");
-    }//for check with existing object state requests
+            //check overlay
+            if(((new_valid_from >= obj_valid_from) && (new_valid_from < obj_valid_to))
+              || ((new_valid_to > obj_valid_from) && (new_valid_to <= obj_valid_to)))
+                throw std::runtime_error("overlayed validity time intervals");
+        }//for check with existing object state requests
 
-    conn.exec_params(
-        "INSERT INTO object_state_request "
-        "(object_id,state_id,crdate, valid_from,valid_to) VALUES "
-        "( $1::bigint , $2::bigint "
-        ",CURRENT_TIMESTAMP, $3::timestamp, "
-        "$4::timestamp )"
-        , Database::query_param_list
-            (object_id)(object_state_id)
-            (new_valid_from)(new_valid_to.is_special()
-                    ? Database::QPNull
-                            : Database::QueryParam(new_valid_to) )
-        );
+        conn.exec_params(
+            "INSERT INTO object_state_request "
+            "(object_id,state_id,crdate, valid_from,valid_to) VALUES "
+            "( $1::bigint , $2::bigint "
+            ",CURRENT_TIMESTAMP, $3::timestamp, "
+            "$4::timestamp )"
+            , Database::query_param_list
+                (object_id)(object_state_id)
+                (new_valid_from)(new_valid_to.is_special()
+                        ? Database::QPNull
+                                : Database::QueryParam(new_valid_to) )
+            );
 
     }//for object_state
 
@@ -393,38 +376,12 @@ void createObjectStateRequestName(
     return;
 }//createObjectStateRequestName
 
-//select for update by state_id from enum_object_states.id and object_id from object_registry.id
-void lock_object_state_request_lock(unsigned long long state_id, unsigned long long object_id)
-{
-    {//insert separately
-        typedef std::auto_ptr<Database::StandaloneConnection> StandaloneConnectionPtr;
-        Database::StandaloneManager sm = Database::StandaloneManager(
-                new Database::StandaloneConnectionFactory(Database::Manager::getConnectionString()));
-        StandaloneConnectionPtr conn_standalone(sm.acquire());
-        conn_standalone->exec_params(
-            "INSERT INTO object_state_request_lock (id, state_id, object_id) "
-            " VALUES (DEFAULT, $1::bigint, $2::bigint)"
-            , Database::query_param_list(state_id)(object_id));
-    }
-
-    Database::Connection conn = Database::Manager::acquire();
-    conn.exec_params("SELECT lock_object_state_request_lock($1::bigint, $2::bigint)"
-        , Database::query_param_list(state_id)(object_id));
-
-}
-
-//select for update by state_name from enum_object_states.name and object_id from object_registry.id
-void lock_object_state_request_lock(const std::string& state_name, unsigned long long object_id)
+//select for update by object_id from object_registry.id
+void lock_object_state_request_lock(unsigned long long object_id)
 {
     Database::Connection conn = Database::Manager::acquire();
-    Database::Result res_state_id = conn.exec_params("SELECT id FROM enum_object_states "
-        " WHERE name=$1::text ", Database::query_param_list (state_name));
-
-    if(res_state_id.size() == 1)
-    {
-        lock_object_state_request_lock(static_cast<unsigned long long>(res_state_id[0][0])
-                , object_id);
-    }
+    conn.exec_params("SELECT lock_object_state_request_lock($1::bigint)"
+        , Database::query_param_list(object_id));
 }
 
 };

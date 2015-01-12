@@ -73,7 +73,7 @@ bool queryBlockRequest(
     Database::Transaction tx(conn);
 
     //lock public_request
-    if (blockRequestID) lock_public_request_lock(blockRequestID);
+    if (blockRequestID) lock_public_request_id(blockRequestID);
 
     //already blocked
     if(object_has_one_of_states(objectId,Util::vector_of<std::string>(ObjectState::MOJEID_CONTACT)(ObjectState::SERVER_BLOCKED))) return false;
@@ -117,7 +117,7 @@ unsigned long long check_public_request(
     Database::Connection conn = Database::Manager::acquire();
 
     //get lock to the end of transaction for given object and request type
-    lock_public_request_lock(_type,_object_id);
+    lock_public_request_by_object(_object_id);
 
     Database::Result rcheck = conn.exec_params(
             "SELECT pr.id FROM public_request pr"
@@ -185,7 +185,7 @@ void cancel_public_request(
 bool object_was_changed_since_request_create(const unsigned long long _request_id)
 {
     Database::Connection conn = Database::Manager::acquire();
-    lock_public_request_lock(_request_id);
+    lock_public_request_id(_request_id);
     Database::Result rnot_changed = conn.exec_params(
             "SELECT ((o.update IS NULL OR o.update <= pr.create_time)"
              " AND (o.trdate IS NULL OR o.trdate <= pr.create_time))"

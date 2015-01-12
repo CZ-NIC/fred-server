@@ -288,7 +288,7 @@ public:
   }
 
   List *loadRequest(Database::ID id) const {
-    lock_public_request_lock(id);
+    lock_public_request_id(id);
     Database::Filters::PublicRequest *prf = new Database::Filters::PublicRequestImpl();
     prf->addId().setValue(id);
     Database::Filters::Union uf;
@@ -309,7 +309,7 @@ public:
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
 
-        lock_public_request_lock(_id);
+        lock_public_request_id(_id);
       std::auto_ptr<List> l(loadRequest(_id));
       l->get(0)->process(_invalidate, check, _request_id);
       tx.commit();
@@ -365,11 +365,13 @@ public:
 
       for(std::vector<Type>::const_iterator cit = _request_type_list.begin(); cit != _request_type_list.end(); ++cit)
       {
-          lock_public_request_lock(*cit, _contact_id);
           params.push_back(*cit);
           sql << prt_separator.get() << "eprt.name = $" << (params.size() + 2) << "::text";
       }
       sql << ")";
+
+      //lock public requests
+      Fred::PublicRequest::lock_public_request_by_object(_contact_id);
 
       return (conn.exec_params(sql.str(), Util::vector_of<QueryParam>(_contact_id)(1)(params)).size() > 0)//found answered request
           && (conn.exec_params(sql.str(), Util::vector_of<QueryParam>(_contact_id)(0)(params)).size() == 0); //and no new request
@@ -380,10 +382,8 @@ public:
           const std::vector<Type> &_request_type_list)
   {
       Database::Connection conn = Database::Manager::acquire();
-      for(std::vector<Type>::const_iterator cit = _request_type_list.begin(); cit != _request_type_list.end(); ++cit )
-      {
-          lock_public_request_lock(*cit, _contact_id);
-      }
+
+      lock_public_request_by_object(_contact_id);
 
       Database::Result rid = conn.exec_params(
               "SELECT identification FROM public_request_auth pra"
@@ -464,40 +464,13 @@ std::vector<std::string> get_enum_public_request_type()
     return public_request_types;
 }//enum_public_request_type
 
-//lock public_request for public_request_type_id from enum_public_request_type.id and object_id from object_registry.id
-void lock_public_request_lock(unsigned long long public_request_type_id, unsigned long long object_id)
-{
-
-    {//insert separately
-        typedef std::auto_ptr<Database::StandaloneConnection> StandaloneConnectionPtr;
-        Database::StandaloneManager sm = Database::StandaloneManager(
-                new Database::StandaloneConnectionFactory(Database::Manager::getConnectionString()));
-        StandaloneConnectionPtr conn_standalone(sm.acquire());
-        conn_standalone->exec_params(
-            "INSERT INTO public_request_lock (id, request_type, object_id) "
-            " VALUES (DEFAULT, $1::bigint, $2::bigint)"
-            , Database::query_param_list(public_request_type_id)(object_id));
-    }
-
-    Database::Connection conn = Database::Manager::acquire();
-    //get lock to the end of transaction for given object and request type
-    conn.exec_params("SELECT lock_public_request_lock($1::bigint,$2::bigint)"
-        , Database::query_param_list(public_request_type_id)(object_id));
-
-}
-
-//lock public_request for public_request_type_name from enum_public_request_type.name and object_id from object_registry.id
-void lock_public_request_lock(const std::string& public_request_type_name, unsigned long long object_id)
+//lock public_request for object_id from object_registry.id
+void lock_public_request_by_object(unsigned long long object_id)
 {
     Database::Connection conn = Database::Manager::acquire();
-    //get lock to the end of transaction for given object and request type
-    Database::Result res_prt_id = conn.exec_params(
-            "SELECT id FROM enum_public_request_type WHERE name=$1::text"
-        , Database::query_param_list(public_request_type_name));
-    if(res_prt_id.size() == 1)
-    {
-        lock_public_request_lock(static_cast<unsigned long long>(res_prt_id[0][0]), object_id);
-    }
+    //get lock to the end of transaction for given object
+    conn.exec_params("SELECT lock_public_request_lock($1::bigint)"
+        , Database::query_param_list(object_id));
 }
 
 //lock public_request by public_request_auth.identification
@@ -505,33 +478,29 @@ void lock_public_request_lock(const std::string& identification)
 {
     Database::Connection conn = Database::Manager::acquire();
     Database::Result res_req = conn.exec_params(
-    "SELECT eprt.id, prom.object_id FROM public_request pr "
+    "SELECT prom.object_id FROM public_request pr "
     " JOIN public_request_objects_map prom ON prom.request_id = pr.id "
-    " JOIN enum_public_request_type eprt ON eprt.id = pr.request_type "
     " JOIN public_request_auth pra ON pra.id = pr.id "
     " WHERE pra.identification = $1::text "
     , Database::query_param_list(identification));
     if(res_req.size() == 1)
     {
-        lock_public_request_lock(static_cast<unsigned long long>(res_req[0][0])
-                , static_cast<unsigned long long>(res_req[0][1]));
+        lock_public_request_by_object(static_cast<unsigned long long>(res_req[0][0]));
     }
 }
 
-//lock public_request by public_request.id
-void lock_public_request_lock(unsigned long long public_request_id)
+//lock public_request object by public_request.id
+void lock_public_request_id(unsigned long long public_request_id)
 {
     Database::Connection conn = Database::Manager::acquire();
     Database::Result res_req = conn.exec_params(
-    "SELECT eprt.id, prom.object_id FROM public_request pr "
+    "SELECT prom.object_id FROM public_request pr "
     " JOIN public_request_objects_map prom ON prom.request_id = pr.id "
-    " JOIN enum_public_request_type eprt ON eprt.id = pr.request_type "
     " WHERE pr.id = $1::bigint "
     , Database::query_param_list(public_request_id));
     if(res_req.size() == 1)
     {
-        lock_public_request_lock(static_cast<unsigned long long>(res_req[0][0])
-                , static_cast<unsigned long long>(res_req[0][1]));
+        lock_public_request_by_object(static_cast<unsigned long long>(res_req[0][0]));
     }
 }
 

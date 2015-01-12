@@ -24,7 +24,7 @@
 #include "src/fredlib/object_state/clear_object_state_request.h"
 #include "src/fredlib/object_state/get_blocking_status_desc_list.h"
 #include "src/fredlib/object_state/get_object_state_id_map.h"
-#include "lock_multiple_object_state_request_lock.h"
+#include "lock_object_state_request_lock.h"
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/db_settings.h"
 #include "util/optional_value.h"
@@ -47,16 +47,7 @@ namespace Fred
         //get object
         const ObjectId object_id = GetObjectId(object_handle_, object_type_).exec(_ctx);
 
-        Database::Result status_result = _ctx.get_conn().exec_params(
-            "SELECT id "
-            "FROM enum_object_states "
-            "WHERE $1::integer=ANY(types)",
-            Database::query_param_list(object_type_));
-        MultipleObjectStateId status_all;
-        for (Database::Result::Iterator pRow = status_result.begin(); pRow != status_result.end(); ++pRow) {
-            status_all.insert((*pRow)[0]);
-        }
-        LockMultipleObjectStateRequestLock(status_all, object_id).exec(_ctx);
+        LockObjectStateRequestLock(object_id).exec(_ctx);
 
         Database::query_param_list param(object_id);
         std::ostringstream cmd;

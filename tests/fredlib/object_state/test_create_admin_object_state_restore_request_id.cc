@@ -149,41 +149,4 @@ BOOST_AUTO_TEST_CASE(create_admin_object_state_restore_request_id)
     BOOST_CHECK(success); // status_list_before == status_list_sum
 }
 
-///**
-// * test CreateAdminObjectStateRestoreRequestIdBad
-// * ...
-// * calls in test shouldn't throw
-// */
-BOOST_AUTO_TEST_CASE(create_admin_object_state_restore_request_id_bad)
-{
-    Fred::ObjectId not_used_id;
-    try {
-        Fred::OperationContext ctx;//new connection to rollback on error
-        not_used_id = static_cast< Fred::ObjectId >(ctx.get_conn().exec("SELECT (MAX(id)+1000)*2 FROM object_registry")[0][0]);
-        Fred::CreateAdminObjectStateRestoreRequestId(not_used_id, "test CreateAdminObjectStateRestoreRequestId operation", logd_request_id).exec(ctx);
-        ctx.commit_transaction();
-        BOOST_CHECK(false);
-    }
-    catch(const Fred::CreateAdminObjectStateRestoreRequestId::Exception &ex) {
-        BOOST_CHECK(ex.is_set_object_id_not_found());
-        BOOST_CHECK(ex.get_object_id_not_found() == not_used_id);
-    }
-
-    {
-        Fred::OperationContext ctx;//new connection to rollback on error
-        Fred::CreateAdminObjectStateRestoreRequestId(test_domain_id, "test CreateAdminObjectStateRestoreRequestId operation", logd_request_id).exec(ctx);
-        ctx.commit_transaction();
-    }
-    try {
-        Fred::OperationContext ctx;//new connection to rollback on error
-        Fred::CreateAdminObjectStateRestoreRequestId(test_domain_id, "test CreateAdminObjectStateRestoreRequestId operation", logd_request_id).exec(ctx);
-        ctx.commit_transaction();
-        BOOST_CHECK(false);
-    }
-    catch(const Fred::CreateAdminObjectStateRestoreRequestId::Exception &ex) {
-        BOOST_CHECK(ex.is_set_server_blocked_absent());
-        BOOST_CHECK(ex.get_server_blocked_absent() == test_domain_id);
-    }
-}
-
 BOOST_AUTO_TEST_SUITE_END();//TestCreateAdminObjectStateRestoreRequestId

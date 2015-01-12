@@ -24,7 +24,7 @@
 #include "src/fredlib/object_state/cancel_object_state_request_id.h"
 #include "src/fredlib/object_state/get_blocking_status_desc_list.h"
 #include "src/fredlib/object_state/get_object_state_id_map.h"
-#include "lock_multiple_object_state_request_lock.h"
+#include "lock_object_state_request_lock.h"
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/db_settings.h"
 #include "util/optional_value.h"
@@ -75,13 +75,7 @@ namespace Fred
         StateIdMap state_id_map;
         try {
             state_id_map = get_object_state_id_map.exec(_ctx);
-            MultipleObjectStateId state_id;
-            for (StateIdMap::const_iterator pStateId = state_id_map.begin();
-                 pStateId != state_id_map.end(); ++pStateId) {
-                state_id.insert(pStateId->second);
-            }
-            
-            LockMultipleObjectStateRequestLock(state_id, object_id_).exec(_ctx);
+            LockObjectStateRequestLock(object_id_).exec(_ctx);
         }
         catch (const GetObjectStateIdMap::Exception &ex) {
             if (ex.is_set_state_not_found()) {
