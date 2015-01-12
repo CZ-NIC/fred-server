@@ -149,25 +149,15 @@ MergeContactAutoProcedure::MergeContactAutoProcedure(
         Fred::Mailer::Manager& mm,
         Fred::Logger::LoggerClient &_logger_client,
         const std::string& _registrar,
-        const Optional<unsigned long long> &_limit,
         const Optional<bool> &_dry_run,
         const Optional<unsigned short> &_verbose)
     : mm_(mm),
       logger_client_(_logger_client),
       registrar_(_registrar),
-      limit_(_limit),
       dry_run_(_dry_run),
       verbose_(_verbose)
 {
 }
-
-MergeContactAutoProcedure& MergeContactAutoProcedure::set_limit(
-        const Optional<unsigned long long> &_limit)
-{
-    limit_ = _limit;
-    return *this;
-}
-
 
 MergeContactAutoProcedure& MergeContactAutoProcedure::set_dry_run(
         const Optional<bool> &_dry_run)
