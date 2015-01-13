@@ -246,6 +246,68 @@ BOOST_AUTO_TEST_CASE( test_primary_phone_format_checker )
     }
 }
 
+/**
+testing email checker
+*/
+BOOST_AUTO_TEST_CASE(test_email_check)
+{
+    Fred::Contact::Verification::Contact test_contact;
+    test_contact.email = Nullable<std::string>("");
+
+    Fred::Contact::Verification::FieldErrorMap err_map;
+    bool test_result = false;
+    test_result = Fred::Contact::Verification::contact_checker_email_format(test_contact, err_map);
+    BOOST_CHECK(test_result);
+
+    Fred::Contact::Verification::ContactEmailFormat email;
+    Fred::Contact::Verification::ContactEmailFormat email_localdomain(Util::vector_of<std::string>("localdomain"));
+
+    BOOST_CHECK(!email.check(""));
+    BOOST_CHECK(email.check("test@nic.cz"));
+    BOOST_CHECK(email.check("test@nicž.cz"));
+    BOOST_CHECK(email.check("test@localhost"));
+    BOOST_CHECK(!email.check("@localhost"));
+    BOOST_CHECK(!email.check("test@"));
+    BOOST_CHECK(!email.check("@"));
+
+
+    //tests data from https://github.com/django/django/blob/1.6.9/tests/validators/tests.py
+    BOOST_CHECK(email.check("email@here.com"));
+    BOOST_CHECK(email.check("weirder-email@here.and.there.com"));
+    BOOST_CHECK(email.check("email@[127.0.0.1]"));
+    BOOST_CHECK(email.check("example@valid-----hyphens.com"));
+    BOOST_CHECK(email.check("example@valid-with-hyphens.com"));
+    BOOST_CHECK(email.check("test@domain.with.idn.tld.उदाहरण.परीक्षा"));
+    BOOST_CHECK(email.check("email@localhost"));
+    BOOST_CHECK(email_localdomain.check("email@localdomain"));
+    BOOST_CHECK(email.check("\"test@test\"@example.com"));
+
+    BOOST_CHECK(!email.check("abc"));
+    BOOST_CHECK(!email.check("abc@"));
+    BOOST_CHECK(!email.check("abc@bar"));
+    BOOST_CHECK(!email.check("a @x.cz"));
+    BOOST_CHECK(!email.check("abc@.com"));
+    BOOST_CHECK(!email.check("something@@somewhere.com"));
+    BOOST_CHECK(!email.check("email@127.0.0.1"));
+    BOOST_CHECK(!email.check("example@invalid-.com"));
+    BOOST_CHECK(!email.check("example@-invalid.com"));
+    BOOST_CHECK(!email.check("example@invalid.com-"));
+    BOOST_CHECK(!email.check("example@inv-.alid-.com"));
+    BOOST_CHECK(!email.check("example@inv-.-alid.com"));
+    BOOST_CHECK(!email.check("test@example.com\n\n<script src=\"x.js\">"));
+
+    BOOST_CHECK(email.check("\"\\\011\"@here.com"));
+    BOOST_CHECK(!email.check("\"\\\012\"@here.com"));
+    BOOST_CHECK(!email.check("trailingdot@shouldfail.com."));
+
+    // Max length of email in mojeid is 200
+    //max label length 64
+    BOOST_CHECK(!email.check("a@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.usa"));
+    //max label length 63
+    BOOST_CHECK(email.check("a@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.usaaaa"));
+    BOOST_CHECK(!email.check("a@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.usaaaaa"));
+}
+
 
 BOOST_AUTO_TEST_CASE( test_contact_verification )
 {
