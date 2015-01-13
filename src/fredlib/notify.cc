@@ -688,7 +688,7 @@ SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id
            "d.exdate::date+(SELECT val||' day' FROM enum_parameters "
                            "WHERE id=" << EP_DELETE << ")::interval AS termination_date,"
            "ca.id IS NOT NULL AS has_mailing_address,"
-           "c.name AS contact_name,c.organization,ca.company_name,"
+           "c.name AS contact_name,c.organization,"
            "CASE WHEN ca.id IS NULL THEN c.street1 ELSE ca.street1 END AS street1,"
            "CASE WHEN ca.id IS NULL THEN c.street2 ELSE ca.street2 END AS street2,"
            "CASE WHEN ca.id IS NULL THEN c.street3 ELSE ca.street3 END AS street3,"
@@ -717,7 +717,6 @@ SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id
        "ed.city,ed.postalcode,ec.country," // 7 8 9
        "TRIM(COALESCE(ed.country,'')||' '||"
             "COALESCE(ed.organization,'')||' '||"
-            "COALESCE(ed.company_name,'')||' '||"
             "COALESCE(ed.contact_name,'')||' '||"
             "COALESCE(ed.postalcode,'')||' '||"
             "COALESCE(ed.street1,'')||' '||"
@@ -725,8 +724,7 @@ SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id
             "COALESCE(ed.street3,'')) AS distinction," // 10
        "ed.registrar_web,ed.state_id,ed.stateorprovince," // 11 12 13
        "ed.street1,ed.street2,ed.street3," // 14 15 16
-       "ed.contact_handle,ed.contact_object_registry_id,ed.contact_history_historyid," // 17 18 19
-       "ed.company_name " // 20
+       "ed.contact_handle,ed.contact_object_registry_id,ed.contact_history_historyid " // 17 18 19
 "FROM expirated_domain ed "
 "JOIN enum_country ec ON ec.id=ed.country "
 "ORDER BY ed.country='CZ' DESC,distinction,ed.domain_name";
@@ -764,7 +762,6 @@ SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id
                     gen->getInput()
                     << "<name>" << XML_DB_OUT(k,4) << "</name>"
                     << "<organization>" << XML_DB_OUT(k,5) << "</organization>"
-                    << "<company_name>" << XML_DB_OUT(k,20) << "</company_name>"
                     << "<street>" << XML_DB_OUT(k,6) << "</street>"
                     << "<city>" << XML_DB_OUT(k,7) << "</city>"
                     << "<stateorprovince>" << XML_DB_OUT(k,13) << "</stateorprovince>"
