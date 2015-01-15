@@ -42,6 +42,7 @@
 #include "concurrent_queue.h"
 
 #include "src/contact_verification/public_request_contact_verification_impl.h"
+#include "src/fredlib/contact_verification/django_email_format.h"
 
 #include "setup_server_decl.h"
 
@@ -252,24 +253,38 @@ testing email checker
 BOOST_AUTO_TEST_CASE(test_email_check)
 {
     Fred::Contact::Verification::Contact test_contact;
-    test_contact.email = Nullable<std::string>("");
-
     Fred::Contact::Verification::FieldErrorMap err_map;
-    bool test_result = false;
-    test_result = Fred::Contact::Verification::contact_checker_email_format(test_contact, err_map);
-    BOOST_CHECK(test_result);
 
-    Fred::Contact::Verification::ContactEmailFormat email;
-    Fred::Contact::Verification::ContactEmailFormat email_localdomain(Util::vector_of<std::string>("localdomain"));
+    test_contact.email = Nullable<std::string>("");
+    BOOST_CHECK(Fred::Contact::Verification::contact_checker_email_format(test_contact, err_map));
 
-    BOOST_CHECK(!email.check(""));
-    BOOST_CHECK(email.check("test@nic.cz"));
-    BOOST_CHECK(email.check("test@nicž.cz"));
-    BOOST_CHECK(email.check("test@localhost"));
-    BOOST_CHECK(!email.check("@localhost"));
-    BOOST_CHECK(!email.check("test@"));
-    BOOST_CHECK(!email.check("@"));
+    test_contact.email = Nullable<std::string>("test@nic.cz");
+    BOOST_CHECK(Fred::Contact::Verification::contact_checker_email_format(test_contact, err_map));
 
+    test_contact.email = Nullable<std::string>("test@nicž.cz");
+    BOOST_CHECK(Fred::Contact::Verification::contact_checker_email_format(test_contact, err_map));
+
+    test_contact.email = Nullable<std::string>("test@localhost");
+    BOOST_CHECK(Fred::Contact::Verification::contact_checker_email_format(test_contact, err_map));
+
+    test_contact.email = Nullable<std::string>("@localhost");
+    BOOST_CHECK(!Fred::Contact::Verification::contact_checker_email_format(test_contact, err_map));
+
+    test_contact.email = Nullable<std::string>("test@");
+    BOOST_CHECK(!Fred::Contact::Verification::contact_checker_email_format(test_contact, err_map));
+
+    test_contact.email = Nullable<std::string>("@");
+    BOOST_CHECK(!Fred::Contact::Verification::contact_checker_email_format(test_contact, err_map));
+
+    // max length of email in mojeid is 200
+    test_contact.email = Nullable<std::string>("a@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.usaaaa");
+    BOOST_CHECK(Fred::Contact::Verification::contact_checker_email_format(test_contact, err_map));
+
+    test_contact.email = Nullable<std::string>("a@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.usaaaaa");
+    BOOST_CHECK(!Fred::Contact::Verification::contact_checker_email_format(test_contact, err_map));
+
+    DjangoEmailFormat email;
+    DjangoEmailFormat email_localdomain(Util::vector_of<std::string>("localdomain"));
 
     //tests data from https://github.com/django/django/blob/1.6.9/tests/validators/tests.py
     BOOST_CHECK(email.check("email@here.com"));
@@ -282,6 +297,7 @@ BOOST_AUTO_TEST_CASE(test_email_check)
     BOOST_CHECK(email_localdomain.check("email@localdomain"));
     BOOST_CHECK(email.check("\"test@test\"@example.com"));
 
+    BOOST_CHECK(!email.check(""));
     BOOST_CHECK(!email.check("abc"));
     BOOST_CHECK(!email.check("abc@"));
     BOOST_CHECK(!email.check("abc@bar"));
@@ -300,12 +316,11 @@ BOOST_AUTO_TEST_CASE(test_email_check)
     BOOST_CHECK(!email.check("\"\\\012\"@here.com"));
     BOOST_CHECK(!email.check("trailingdot@shouldfail.com."));
 
-    // Max length of email in mojeid is 200
-    //max label length 64
+     //max label length 64
     BOOST_CHECK(!email.check("a@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.usa"));
     //max label length 63
     BOOST_CHECK(email.check("a@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.usaaaa"));
-    BOOST_CHECK(!email.check("a@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.usaaaaa"));
+
 }
 
 

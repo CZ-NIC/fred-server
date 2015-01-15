@@ -1011,6 +1011,7 @@ src_fredlib_contact_verification_libcontact_verification_a_SOURCES = \
 		util/db/nullable.h \
 		src/fredlib/contact_verification/contact.h \
 		src/fredlib/contact_verification/contact.cc \
+		src/fredlib/contact_verification/django_email_format.h \
 		src/fredlib/contact_verification/contact_verification_checkers.h \
 		src/fredlib/contact_verification/contact_verification_checkers.cc \
 		src/fredlib/contact_verification/contact_conditional_identification_impl.cc \
