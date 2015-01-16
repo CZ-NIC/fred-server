@@ -1076,7 +1076,7 @@ namespace Registry
                         "WHERE object_id=cc.id AND valid_to IS NULL),"
 /* [4] - mc from */    "(SELECT valid_from FROM object_state JOIN mc ON state_id=mc.id "
                         "WHERE object_id=cc.id AND valid_to IS NULL), "
-/* [5] - lc from */    "(SELECT valid_from FROM object_state JOIN mc ON state_id=lc.id "
+/* [5] - lc from */    "(SELECT valid_from FROM object_state JOIN lc ON state_id=lc.id "
                         "WHERE object_id=cc.id AND valid_to IS NULL) "
                 "FROM cc "
                 "JOIN object_state os ON os.object_id=cc.id AND os.valid_to IS NULL "
