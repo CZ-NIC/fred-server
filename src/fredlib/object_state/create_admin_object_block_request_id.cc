@@ -172,7 +172,7 @@ namespace Fred
             _ctx.get_log().debug("serverBlockedId = " + boost::lexical_cast< std::string >(serverBlockedId));
         }
         _ctx.get_log().debug("LockObjectStateRequestLock call");
-        Fred::LockObjectStateRequestLock(object_id_).exec(_ctx);
+        LockObjectStateRequestLock(object_id_).exec(_ctx);
         _ctx.get_log().debug("LockObjectStateRequestLock success");
         Database::Result rcheck = _ctx.get_conn().exec_params(
             "SELECT 1 "
