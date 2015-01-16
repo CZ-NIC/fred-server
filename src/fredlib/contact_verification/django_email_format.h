@@ -40,7 +40,11 @@ class DjangoEmailFormat
         UTF8ToPunnycode(const std::string& utf8_str)
         : out_p(0)
         {
-            if(idna_to_ascii_8z(utf8_str.c_str(), &out_p, 0) != IDNA_SUCCESS) out_p = 0;
+            if(idna_to_ascii_8z(utf8_str.c_str(), &out_p, 0) != IDNA_SUCCESS)
+            {
+                free(out_p);
+                out_p = 0;
+            }
         }
 
         ~UTF8ToPunnycode()
