@@ -1,6 +1,7 @@
 #include "log/logger.h"
 #include "src/fredlib/db_settings.h"
 #include "util/types/birthdate.h"
+#include "util/idn_utils.h"
 #include "src/fredlib/contact_verification/contact_verification_checkers.h"
 #include "src/fredlib/contact_verification/contact_verification_validators.h"
 
@@ -137,7 +138,7 @@ bool contact_checker_email_format(const Contact &_data, FieldErrorMap &_errors)
 {
     static const std::string::size_type MAX_MOJEID_EMAIL_LENGTH = 200; //max mojeid email length
     bool result = boost::algorithm::trim_copy(_data.email.get_value_or_default()).length() > 0
-        ? ((_data.email.get_value_or_default().length() <= MAX_MOJEID_EMAIL_LENGTH)
+        ? ((Util::get_utf8_char_len(_data.email.get_value_or_default()) <= MAX_MOJEID_EMAIL_LENGTH)
             && DjangoEmailFormat().check(_data.email.get_value_or_default()))
         : true;//no email to check
     if (result == false) {

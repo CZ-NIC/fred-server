@@ -67,7 +67,7 @@
 #include "src/contact_verification/contact_verification_impl.h"
 #include "checks.h"
 #include "src/fredlib/contact_verification/contact_verification_checkers.h"
-
+#include "util/idn_utils.h"
 //test-contact-verification.cc
 
 BOOST_AUTO_TEST_SUITE(TestContactVerification_old)
@@ -283,6 +283,12 @@ BOOST_AUTO_TEST_CASE(test_email_check)
     test_contact.email = Nullable<std::string>("a@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.usaaaaa");
     BOOST_CHECK(!Fred::Contact::Verification::contact_checker_email_format(test_contact, err_map));
 
+    test_contact.email = Nullable<std::string>("test1@дольор.еюж.едквюэ.дёжкэрэ.эю.векж.нобёз.дольор.еюж.едквюэ.дёжкэрэ.эю.векж.нобёз.дольор.еюж.едквюэ.дёжкэрэ.эю.векж.нобёз.дольор.еюж.едквюэ.дёжкэрэ.эю.векж.нобёз.дольор.еюж.едквюэ.дёжкэрэ.эю.ве.рф");
+    BOOST_CHECK(Fred::Contact::Verification::contact_checker_email_format(test_contact, err_map));
+
+    test_contact.email = Nullable<std::string>("test1@дольор.еюж.едквюэ.дёжкэрэ.эю.векж.нобёз.дольор.еюж.едквюэ.дёжкэрэ.эю.векж.нобёз.дольор.еюж.едквюэ.дёжкэрэ.эю.векж.нобёз.дольор.еюж.едквюэ.дёжкэрэ.эю.векж.нобёз.дольор.еюж.едквюэ.дёжкэрэ.эю.век.рф");
+    BOOST_CHECK(!Fred::Contact::Verification::contact_checker_email_format(test_contact, err_map));
+
     DjangoEmailFormat email;
     DjangoEmailFormat email_localdomain(Util::vector_of<std::string>("localdomain"));
 
@@ -321,6 +327,9 @@ BOOST_AUTO_TEST_CASE(test_email_check)
     //max label length 63
     BOOST_CHECK(email.check("a@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.usaaaa"));
 
+    BOOST_CHECK(email.check("test1@дольор.еюж.едквюэ.дёжкэрэ.эю.векж.нобёз.дольор.еюж.едквюэ.дёжкэрэ.эю.векж.нобёз.дольор.еюж.едквюэ.дёжкэрэ.эю.векж.нобёз.дольор.еюж.едквюэ.дёжкэрэ.эю.векж.нобёз.дольор.еюж.едквюэ.дёжкэрэ.эю.ве.рф"));
+    BOOST_CHECK(Util::get_utf8_char_len("test1@дольор.еюж.едквюэ.дёжкэрэ.эю.векж.нобёз.дольор.еюж.едквюэ.дёжкэрэ.эю.векж.нобёз.дольор.еюж.едквюэ.дёжкэрэ.эю.векж.нобёз.дольор.еюж.едквюэ.дёжкэрэ.эю.векж.нобёз.дольор.еюж.едквюэ.дёжкэрэ.эю.ве.рф")==200);
+    BOOST_CHECK(std::string("test1@дольор.еюж.едквюэ.дёжкэрэ.эю.векж.нобёз.дольор.еюж.едквюэ.дёжкэрэ.эю.векж.нобёз.дольор.еюж.едквюэ.дёжкэрэ.эю.векж.нобёз.дольор.еюж.едквюэ.дёжкэрэ.эю.векж.нобёз.дольор.еюж.едквюэ.дёжкэрэ.эю.ве.рф").length() == 360);
 }
 
 

@@ -278,7 +278,9 @@ util_libutil_a_SOURCES = \
 		util/csv_parser.h \
 		util/csv_parser.cc \
 		util/xmlgen.cc \
-		util/subprocess.cc
+		util/subprocess.cc \
+		util/idn_utils.h \
+		util/idn_utils.cc
 #
 # util/libutil.a
 
