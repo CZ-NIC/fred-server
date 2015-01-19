@@ -26,7 +26,7 @@
 #define IDN_UTIL_H_328c50f4056c45c4a284b437935ccc77
 
 #include <string>
-#include <boost/noncopyable.hpp>
+#include "util/optional_value.h"
 
 namespace Util {
 
@@ -34,8 +34,14 @@ namespace Util {
  *  Number of characters in UTF-8 encoded string
  *  @return number of characters in UTF8 encoded string
  */
-
 std::string::size_type get_utf8_char_len(const std::string& utf8str);
+
+
+/**
+ *  Conversion of UTF-8 encoded string to punnycode
+ *  @return punnycode or not set in case of conversion failure
+ */
+Optional<std::string> convert_utf8_to_punnycode(const std::string& utf8str);
 
 }
 #endif

@@ -23,6 +23,8 @@
 
 
 #include "util/idn_utils.h"
+#include <idna.h>
+#include <boost/noncopyable.hpp>
 
 namespace Util {
 
@@ -38,6 +40,39 @@ namespace Util {
             len += (utf8str.at(i) & 0xc0) != 0x80;
         }
         return len;
+    }
+
+    Optional<std::string> convert_utf8_to_punnycode(const std::string& utf8str)
+    {
+        class UTF8ToPunnycode : boost::noncopyable
+        {
+            char *out_p;
+        public:
+            UTF8ToPunnycode(const std::string& utf8_str)
+            : out_p(0)
+            {
+                if(idna_to_ascii_8z(utf8_str.c_str(), &out_p, 0) != IDNA_SUCCESS)
+                {
+                    free(out_p);
+                    out_p = 0;
+                }
+            }
+
+            ~UTF8ToPunnycode()
+            {
+                free(out_p);
+            }
+
+            Optional<std::string> get()
+            {
+                if(out_p != 0)
+                    return Optional<std::string>(std::string(out_p));
+                else
+                    return Optional<std::string>();
+            }
+        };
+
+        return UTF8ToPunnycode(utf8str).get();
     }
 
 }

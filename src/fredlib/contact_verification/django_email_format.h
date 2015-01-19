@@ -20,11 +20,12 @@
 #define DJANGO_EMAIL_FORMAT_H_3edd58bf751d4e4f878abe4cbb114982
 
 #include "util/optional_value.h"
-#include <boost/noncopyable.hpp>
+#include "util/idn_utils.h"
+
 #include <boost/regex.hpp>
 #include <string>
 #include <algorithm>
-#include <idna.h>
+
 
 /**
  * should work the same as django validator viz https://github.com/django/django/blob/1.6.9/django/core/validators.py#L80-L124
@@ -32,34 +33,6 @@
 class DjangoEmailFormat
 {
     const std::vector<std::string> domain_whitelist_;
-
-    class UTF8ToPunnycode : boost::noncopyable
-    {
-        char *out_p;
-    public:
-        UTF8ToPunnycode(const std::string& utf8_str)
-        : out_p(0)
-        {
-            if(idna_to_ascii_8z(utf8_str.c_str(), &out_p, 0) != IDNA_SUCCESS)
-            {
-                free(out_p);
-                out_p = 0;
-            }
-        }
-
-        ~UTF8ToPunnycode()
-        {
-            free(out_p);
-        }
-
-        Optional<std::string> get()
-        {
-            if(out_p != 0)
-                return Optional<std::string>(std::string(out_p));
-            else
-                return Optional<std::string>();
-        }
-    };
 
 public:
     DjangoEmailFormat(const std::vector<std::string>& domain_whitelist = std::vector<std::string>(1,"localhost"))
@@ -99,7 +72,7 @@ public:
             if (!boost::regex_match(domain_part,domain_regex))
             {
                 //domain part idn conversion
-                std::string converted_domain_part = UTF8ToPunnycode(domain_part).get().get_value_or_default();
+                std::string converted_domain_part = Util::convert_utf8_to_punnycode(domain_part).get_value_or_default();
 
                 if(converted_domain_part.empty()) return false;
 
