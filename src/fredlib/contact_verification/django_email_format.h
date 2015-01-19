@@ -49,7 +49,7 @@ class DjangoEmailFormat
 
         ~UTF8ToPunnycode()
         {
-            if(out_p != 0) free(out_p);
+            free(out_p);
         }
 
         Optional<std::string> get()
