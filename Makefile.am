@@ -2441,6 +2441,7 @@ tests_test_fredlib_LDADD = \
 		util/libutil.a \
 		util/log/liblog.a \
 		-lmpdec -lm \
+		$(LIBIDN_LIBS) \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(BOOST_DATE_TIME_LIB) \
 		$(BOOST_REGEX_LIB) \
