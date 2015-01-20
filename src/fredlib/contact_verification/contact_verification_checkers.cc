@@ -136,7 +136,7 @@ bool contact_checker_phone_unique(const Contact &_data, FieldErrorMap &_errors)
 
 bool contact_checker_email_format(const Contact &_data, FieldErrorMap &_errors)
 {
-    static const std::string::size_type MAX_MOJEID_EMAIL_LENGTH = 200; //max mojeid email length
+    const std::string::size_type MAX_MOJEID_EMAIL_LENGTH = 200;
     const std::string contact_email = _data.email.get_value_or_default();
 
     bool result = true;
