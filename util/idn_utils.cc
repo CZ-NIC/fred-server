@@ -35,9 +35,9 @@ namespace Util {
         {
             //count UTF-8 single byte characters and leading bytes of multiple byte characters,
             //i.e. bytes different from continuation bytes with 10xxxxxx bit pattern
-            //0xc0 is mask of bits which differentiates single byte characters, leading bytes and continuation bytes
-            //0x80 is result of bitwise ANDing continuation byte with mask
-            len += (utf8str.at(i) & 0xc0) != 0x80;
+            const unsigned char UTF8_CONTINUATION_BYTE_MASK = 0xc0;//mask of bits which differentiates single byte characters, leading bytes and continuation bytes
+            const unsigned char UTF8_CONTINUATION_BYTE_PREFIX = 0x80;//result of bitwise ANDing continuation byte with mask
+            len += (utf8str.at(i) & UTF8_CONTINUATION_BYTE_MASK) != UTF8_CONTINUATION_BYTE_PREFIX;
         }
         return len;
     }

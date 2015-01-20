@@ -31,7 +31,7 @@
 namespace Util {
 
 /**
- *  Number of characters in UTF-8 encoded string
+ *  Number of characters in UTF-8 encoded string, no validation performed on input
  *  @return number of characters in UTF8 encoded string
  */
 std::string::size_type get_utf8_char_len(const std::string& utf8str);
