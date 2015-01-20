@@ -891,28 +891,19 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/object_state/get_blocking_status_desc_list.h \
 		src/fredlib/object_state/perform_object_state_request.h \
 		src/fredlib/object_state/perform_object_state_request.cc \
-		src/fredlib/object_state/cancel_object_state_request.cc \
-		src/fredlib/object_state/cancel_object_state_request.h \
 		src/fredlib/object_state/cancel_object_state_request_id.cc \
 		src/fredlib/object_state/cancel_object_state_request_id.h \
-		src/fredlib/object_state/create_object_state_request.cc \
-		src/fredlib/object_state/create_object_state_request.h \
 		src/fredlib/object_state/create_object_state_request_id.cc \
 		src/fredlib/object_state/create_object_state_request_id.h \
-		src/fredlib/object_state/create_admin_object_block_request.cc \
-		src/fredlib/object_state/create_admin_object_block_request.h \
 		src/fredlib/object_state/create_admin_object_block_request_id.cc \
 		src/fredlib/object_state/create_admin_object_block_request_id.h \
-		src/fredlib/object_state/create_admin_object_state_restore_request.cc \
-		src/fredlib/object_state/create_admin_object_state_restore_request.h \
 		src/fredlib/object_state/create_admin_object_state_restore_request_id.cc \
 		src/fredlib/object_state/create_admin_object_state_restore_request_id.h \
 		src/fredlib/object_state/clear_admin_object_state_request_id.cc \
 		src/fredlib/object_state/clear_admin_object_state_request_id.h \
-		src/fredlib/object_state/clear_object_state_request.cc \
-		src/fredlib/object_state/clear_object_state_request.h \
 		src/fredlib/object_state/clear_object_state_request_id.cc \
 		src/fredlib/object_state/clear_object_state_request_id.h \
+		src/fredlib/object_state/typedefs.h \
 		src/fredlib/object/object_id_handle_pair.h \
 		src/fredlib/object/object_id_handle_pair.cc
 #
@@ -1474,8 +1465,6 @@ src_corba_fred_adifd_SOURCES = \
 		src/corba/fred-adifd.cc \
 		src/admin_block/administrativeblocking.cc \
 		src/admin_block/administrativeblocking.h \
-		src/fredlib/domain/create_domain_name_blacklist.cc \
-		src/fredlib/domain/create_domain_name_blacklist.h \
 		src/fredlib/domain/create_domain_name_blacklist_id.cc \
 		src/fredlib/domain/create_domain_name_blacklist_id.h \
 		src/fredlib/domain/update_domain.cc \
@@ -1897,14 +1886,10 @@ src_cli_admin_fred_admin_SOURCES = \
 		src/admin/contact/merge_contact_reporting.h \
 		src/cli_admin/domain_name_validation_params.h \
 		src/cli_admin/domain_name_validation_init.h \
-		src/fredlib/object_state/create_object_state_request.cc \
-		src/fredlib/object_state/create_object_state_request.h \
 		src/fredlib/object_state/create_object_state_request_id.cc \
 		src/fredlib/object_state/create_object_state_request_id.h \
 		src/fredlib/object_state/get_object_state_id_map.cc \
 		src/fredlib/object_state/get_object_state_id_map.h \
-		src/fredlib/object_state/cancel_object_state_request.cc \
-		src/fredlib/object_state/cancel_object_state_request.h \
 		src/fredlib/object_state/cancel_object_state_request_id.cc \
 		src/fredlib/object_state/cancel_object_state_request_id.h \
 		util/optys/upload_client.cc \
@@ -2227,14 +2212,10 @@ tests_test_server_SOURCES = \
 		src/admin/contact/merge_contact_reporting.cc \
 		src/admin/contact/merge_contact_reporting.h \
 		tests/checks.h \
-		src/fredlib/object_state/create_object_state_request.cc \
-		src/fredlib/object_state/create_object_state_request.h \
 		src/fredlib/object_state/create_object_state_request_id.cc \
 		src/fredlib/object_state/create_object_state_request_id.h \
 		src/fredlib/object_state/get_object_state_id_map.cc \
 		src/fredlib/object_state/get_object_state_id_map.h \
-		src/fredlib/object_state/cancel_object_state_request.cc \
-		src/fredlib/object_state/cancel_object_state_request.h \
 		src/fredlib/object_state/cancel_object_state_request_id.cc \
 		src/fredlib/object_state/cancel_object_state_request_id.h \
 		src/domain_browser/domain_browser.cc \
@@ -2332,7 +2313,6 @@ tests_test_blocking_SOURCES = \
 		src/fredlib/object_state/clear_admin_object_state_request_id.cc \
 		src/fredlib/object_state/clear_object_state_request_id.cc \
 		src/fredlib/object_state/create_object_state_request_id.cc \
-		src/fredlib/object_state/create_object_state_request.cc \
 		src/fredlib/object_state/create_admin_object_block_request_id.cc \
 		src/fredlib/object_state/create_admin_object_state_restore_request_id.cc \
 		src/fredlib/object_state/cancel_object_state_request_id.cc \

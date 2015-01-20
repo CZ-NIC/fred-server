@@ -24,7 +24,12 @@
 #ifndef CREATE_ADMIN_OBJECT_STATE_RESTORE_REQUEST_ID_H_
 #define CREATE_ADMIN_OBJECT_STATE_RESTORE_REQUEST_ID_H_
 
-#include "src/fredlib/object_state/create_object_state_request_id.h"
+#include <string>
+
+#include "src/fredlib/opexception.h"
+#include "src/fredlib/opcontext.h"
+#include "src/fredlib/object_state/typedefs.h"
+#include "util/optional_value.h"
 
 namespace Fred
 {

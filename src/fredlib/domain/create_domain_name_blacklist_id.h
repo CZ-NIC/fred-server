@@ -24,7 +24,13 @@
 #ifndef CREATE_DOMAIN_NAME_BLACKLIST_ID_H_
 #define CREATE_DOMAIN_NAME_BLACKLIST_ID_H_
 
-#include "src/fredlib/object_state/create_object_state_request.h"
+#include <boost/date_time/posix_time/posix_time.hpp>
+
+#include "src/fredlib/opexception.h"
+#include "src/fredlib/opcontext.h"
+#include "src/fredlib/object_state/typedefs.h"
+#include "util/optional_value.h"
+
 
 namespace Fred
 {

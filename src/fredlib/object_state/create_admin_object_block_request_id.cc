@@ -24,7 +24,7 @@
 #include "src/fredlib/object_state/create_admin_object_block_request_id.h"
 #include "src/fredlib/object_state/clear_object_state_request_id.h"
 #include "src/fredlib/object_state/get_blocking_status_desc_list.h"
-#include "lock_object_state_request_lock.h"
+#include "src/fredlib/object_state/lock_object_state_request_lock.h"
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/db_settings.h"
 #include "util/optional_value.h"
@@ -158,7 +158,7 @@ namespace Fred
 
     void CreateAdminObjectBlockRequestId::check_server_blocked_status_absent(OperationContext &_ctx) const
     {
-        static TID serverBlockedId = 0;
+        static unsigned long long serverBlockedId = 0;
         if (serverBlockedId == 0) {
             Database::Result obj_state_res = _ctx.get_conn().exec(
                 "SELECT id "

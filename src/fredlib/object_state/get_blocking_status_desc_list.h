@@ -29,9 +29,9 @@ ziska seznam vsech stavu blokovani objektu GetBlockingStatusDescList
 #ifndef GET_BLOCKING_STATUS_DESC_LIST_H_
 #define GET_BLOCKING_STATUS_DESC_LIST_H_
 
-#include "src/fredlib/object_state/create_object_state_request.h"
 #include "src/fredlib/opexception.h"
 #include "src/fredlib/opcontext.h"
+#include "src/fredlib/object_state/typedefs.h"
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
 
@@ -52,8 +52,8 @@ namespace Fred
 
         typedef struct _StatusDesc
         {
-            _StatusDesc() {}
-            _StatusDesc(TID _state_id, std::string _status, std::string _desc)
+            _StatusDesc() : state_id(0) {}
+            _StatusDesc(unsigned long long _state_id, std::string _status, std::string _desc)
             :   state_id(_state_id),
                 status(_status),
                 desc(_desc)
@@ -63,7 +63,7 @@ namespace Fred
                 status(_src.status),
                 desc(_src.desc)
             {}
-            TID state_id;
+            unsigned long long state_id;
             std::string status;
             std::string desc;
         } StatusDesc;
