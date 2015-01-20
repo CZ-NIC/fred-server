@@ -2414,6 +2414,7 @@ tests_test_fredlib_SOURCES = \
 		tests/fredlib/contact/verification/test_info_check.cc \
 		tests/fredlib/contact/verification/test_list_checks.cc \
 		tests/fredlib/contact/verification/test_list_enum_objects.cc \
+		tests/fredlib/contact/verification/test_django_email_format_check.cc \
 		tests/fredlib/poll/test_create_delete_contact_poll_message.cc \
 		tests/fredlib/poll/test_create_delete_domain_poll_message.cc \
 		tests/fredlib/poll/test_create_update_object_poll_message.cc \
