@@ -38,7 +38,7 @@ std::string::size_type get_utf8_char_len(const std::string& utf8str);
 
 
 /**
- *  Conversion of UTF-8 encoded string to punnycode
+ *  Conversion of UTF-8 encoded string to punnycode, no validation performed on input
  *  @return punnycode or not set in case of conversion failure
  */
 Optional<std::string> convert_utf8_to_punnycode(const std::string& utf8str);
