@@ -339,7 +339,7 @@ namespace Registry
 
                 if(!detail_impl.transfer_time.isnull() && !detail_impl.transfer_time.get_value().is_special())
                 {
-                    contact_detail->transfer_time = new NullableDateTime(boost::posix_time::to_iso_extended_string(detail_impl.transfer_time.get_value()).c_str());
+                    contact_detail->transfer_time = new NullableDateTimeIsoString(boost::posix_time::to_iso_extended_string(detail_impl.transfer_time.get_value()).c_str());
                 }
                 else
                 {
@@ -348,7 +348,7 @@ namespace Registry
 
                 if(!detail_impl.update_time.isnull() && !detail_impl.update_time.get_value().is_special())
                 {
-                    contact_detail->update_time = new NullableDateTime(boost::posix_time::to_iso_extended_string(detail_impl.update_time.get_value()).c_str());
+                    contact_detail->update_time = new NullableDateTimeIsoString(boost::posix_time::to_iso_extended_string(detail_impl.update_time.get_value()).c_str());
                 }
                 else
                 {
@@ -435,7 +435,7 @@ namespace Registry
 
                 if(!detail_impl.transfer_time.isnull() && !detail_impl.transfer_time.get_value().is_special())
                 {
-                    nsset_detail->transfer_time = new NullableDateTime(boost::posix_time::to_iso_extended_string(detail_impl.transfer_time.get_value()).c_str());
+                    nsset_detail->transfer_time = new NullableDateTimeIsoString(boost::posix_time::to_iso_extended_string(detail_impl.transfer_time.get_value()).c_str());
                 }
                 else
                 {
@@ -444,7 +444,7 @@ namespace Registry
 
                 if(!detail_impl.update_time.isnull() && !detail_impl.update_time.get_value().is_special())
                 {
-                    nsset_detail->update_time = new NullableDateTime(boost::posix_time::to_iso_extended_string(detail_impl.update_time.get_value()).c_str());
+                    nsset_detail->update_time = new NullableDateTimeIsoString(boost::posix_time::to_iso_extended_string(detail_impl.update_time.get_value()).c_str());
                 }
                 else
                 {
@@ -537,7 +537,7 @@ namespace Registry
 
                 if(!detail_impl.update_time.isnull() && !detail_impl.update_time.get_value().is_special())
                 {
-                    domain_detail->update_time = new NullableDateTime(boost::posix_time::to_iso_extended_string(detail_impl.update_time.get_value()).c_str());
+                    domain_detail->update_time = new NullableDateTimeIsoString(boost::posix_time::to_iso_extended_string(detail_impl.update_time.get_value()).c_str());
                 }
                 else
                 {
@@ -642,7 +642,7 @@ namespace Registry
 
                 if(!detail_impl.transfer_time.isnull() && !detail_impl.transfer_time.get_value().is_special())
                 {
-                    keyset_detail->transfer_time = new NullableDateTime(boost::posix_time::to_iso_extended_string(detail_impl.transfer_time.get_value()).c_str());
+                    keyset_detail->transfer_time = new NullableDateTimeIsoString(boost::posix_time::to_iso_extended_string(detail_impl.transfer_time.get_value()).c_str());
                 }
                 else
                 {
@@ -651,7 +651,7 @@ namespace Registry
 
                 if(!detail_impl.update_time.isnull() && !detail_impl.update_time.get_value().is_special())
                 {
-                    keyset_detail->update_time = new NullableDateTime(boost::posix_time::to_iso_extended_string(detail_impl.update_time.get_value()).c_str());
+                    keyset_detail->update_time = new NullableDateTimeIsoString(boost::posix_time::to_iso_extended_string(detail_impl.update_time.get_value()).c_str());
                 }
                 else
                 {
