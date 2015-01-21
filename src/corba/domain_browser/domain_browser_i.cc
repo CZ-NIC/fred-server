@@ -798,10 +798,6 @@ namespace Registry
             {
                 return pimpl_->setContactAuthInfo(user_contact_id, auth_info, request_id);
             }
-            catch (const Registry::DomainBrowserImpl::ObjectNotExists& )
-            {
-                throw Registry::DomainBrowser::OBJECT_NOT_EXISTS();
-            }
             catch (const Registry::DomainBrowserImpl::UserNotExists& )
             {
                 throw Registry::DomainBrowser::USER_NOT_EXISTS();
