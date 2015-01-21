@@ -724,11 +724,11 @@ void contact_delete_not_linked(const unsigned long long &_id)
 
     Database::Result contact_lock_result = conn.exec_params(
         "SELECT oreg.id AS id_ "
-        "   FROM object_registry AS oreg "
-        "   JOIN enum_object_type eot ON eot.id = oreg.type AND eot.name = 'contact'::text "
-        "   WHERE oreg.id = $1::integer "
-        "       AND oreg.erdate IS NULL "
-        "   FOR UPDATE OF oreg",
+           "FROM object_registry AS oreg "
+           "JOIN enum_object_type eot ON eot.id = oreg.type AND eot.name = 'contact'::text "
+           "WHERE oreg.id = $1::integer "
+               "AND oreg.erdate IS NULL "
+           "FOR UPDATE OF oreg",
         Database::query_param_list(_id));
     if(contact_lock_result.size() == 0) {
         throw std::runtime_error("contact not found");
@@ -748,8 +748,8 @@ void contact_delete_not_linked(const unsigned long long &_id)
 
         Database::Result update_erdate_res = conn.exec_params(
             "UPDATE object_registry "
-            "   SET erdate = now() "
-            "   WHERE id = $1::integer RETURNING id",
+                "SET erdate = now() "
+                "WHERE id = $1::integer RETURNING id",
             Database::query_param_list(_id));
         if (update_erdate_res.size() != 1) {
             throw std::runtime_error("erdate update failed");

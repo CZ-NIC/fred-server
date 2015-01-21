@@ -1139,7 +1139,7 @@ namespace Registry
                                   "state_id=(SELECT id FROM enum_object_states WHERE name='identifiedContact')),"
                            "(SELECT valid_from FROM object_state " // 4
                             "WHERE object_id=o.id AND valid_to IS NULL AND "
-                                  "state_id=(SELECT id FROM enum_object_states WHERE name='validatedContact')), "
+                                  "state_id=(SELECT id FROM enum_object_states WHERE name='validatedContact')),"
                            "(SELECT valid_from FROM object_state " // 5
                             "WHERE object_id=o.id AND valid_to IS NULL AND "
                                   "state_id=(SELECT id FROM enum_object_states WHERE name='linked')) "
