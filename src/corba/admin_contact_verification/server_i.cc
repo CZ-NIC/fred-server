@@ -54,7 +54,12 @@ namespace Corba {
         {
             Fred::OperationContext ctx;
             contact_info_historical = Fred::InfoContactHistoryByHistoryid(in.contact_history_id).exec(ctx);
-            contact_info_current = Fred::InfoContactById(contact_info_historical.info_contact_data.id).exec(ctx);
+            contact_info_current =
+                // looks strange but in case contact was deleted it's current data are not accessible via Fred::InfoContact anymore
+                // so the most recent history is used instead
+                Fred::InfoContactHistoryById(contact_info_historical.info_contact_data.id)
+                    .exec(ctx)
+                    .at(0);
         }
 
         out->check_handle =         Corba::wrap_string(in.handle);
