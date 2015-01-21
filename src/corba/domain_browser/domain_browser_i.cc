@@ -557,7 +557,7 @@ namespace Registry
 
                     if(!detail_impl.enum_domain_validation.get_value().validation_expiration.is_special())
                     {
-                        domain_detail->val_ex_date = new NullableDate(boost::gregorian::to_iso_extended_string(
+                        domain_detail->val_ex_date = new NullableDateIsoString(boost::gregorian::to_iso_extended_string(
                             detail_impl.enum_domain_validation.get_value().validation_expiration).c_str());
                     }
                     else
