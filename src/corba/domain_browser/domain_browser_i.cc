@@ -24,6 +24,7 @@
 
 #include "domain_browser_i.h"
 #include "src/domain_browser/domain_browser.h"
+#include "src/corba/util/corba_conversions_string.h"
 #include "src/corba/DomainBrowser.hh"
 #include <string>
 
@@ -53,7 +54,7 @@ namespace Registry
         {
             try
             {
-                unsigned long long id = pimpl_->getContactId(handle);
+                unsigned long long id = pimpl_->getContactId(Corba::unwrap_string_from_const_char_ptr(handle));
                 return id;
             }//try
             catch (const Registry::DomainBrowserImpl::ObjectNotExists&)

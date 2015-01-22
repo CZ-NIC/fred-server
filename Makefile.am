@@ -1805,6 +1805,7 @@ src_corba_domain_browser_fred_dbifd_LDFLAGS = \
 src_corba_domain_browser_fred_dbifd_LDADD = \
 		src/corba/libcorbadomainbrowser.a \
 		src/fredlib/libfred.a \
+		src/corba/util/libcorbautil.a \
 		util/libutil.a \
 		util/log/liblog.a \
 		util/db/libdb.a \
