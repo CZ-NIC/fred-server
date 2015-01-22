@@ -23,6 +23,24 @@ namespace Corba {
      * In case @in is a special value (not a date, infinity etc.) all members of returned struct are set to zero.
      */
     ccReg::DateType wrap_date(date in);
+
+
+    /**
+     * Make CORBA string from boost date
+     * @param in is input date
+     * @return string with date in text form YYYY-MM-DD allocated by CORBA::string_dup
+     * @throws std::exception if in is not valid date
+     */
+    CORBA::String_var wrap_date_to_corba_string(boost::gregorian::date in);
+
+    /**
+     * Make CORBA string from boost ptime
+     * @param in is input posix time
+     * @return string with date and time in text form YYYY-MM-DDTHH:MM:SS.fffffffff
+     * dot with decimal fractions are optional, allocated by CORBA::string_dup
+     * @throws std::exception if in is not valid posix time
+     */
+    CORBA::String_var wrap_ptime_to_corba_string(boost::posix_time::ptime in);
 }
 
 #endif // end of #include guard
