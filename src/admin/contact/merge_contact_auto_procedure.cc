@@ -332,6 +332,19 @@ std::vector<Fred::MergeContactNotificationEmailWithAddr> MergeContactAutoProcedu
                     email_notification_input_vector.push_back(
                             Fred::MergeContactEmailNotificationInput(pick_one, winner_handle, merge_data));
                 }
+
+                //output only if no exception is thrown before
+                if (this->get_verbose_level() > 0) {
+                    merge_operation_info.add_merge_output(merge_data);
+                    merge_set_operation_info.add_merge_output(merge_data);
+                    all_merge_operation_info.add_merge_output(merge_data);
+                }
+
+                if (this->get_verbose_level() > 2) {
+                    out_stream << format_merge_contact_output(merge_data, pick_one, winner_handle, summary_info, indenter);
+                    out_stream << merge_operation_info.format(indenter.dive());
+                }
+
             }
             catch(const Fred::MergeContact::Exception& ex)
             {
@@ -356,17 +369,6 @@ std::vector<Fred::MergeContactNotificationEmailWithAddr> MergeContactAutoProcedu
                 {
                     throw;
                 }
-            }
-
-            if (this->get_verbose_level() > 0) {
-                merge_operation_info.add_merge_output(merge_data);
-                merge_set_operation_info.add_merge_output(merge_data);
-                all_merge_operation_info.add_merge_output(merge_data);
-            }
-
-            if (this->get_verbose_level() > 2) {
-                out_stream << format_merge_contact_output(merge_data, pick_one, winner_handle, summary_info, indenter);
-                out_stream << merge_operation_info.format(indenter.dive());
             }
 
             /* find contact duplicates for winner contact - if nothing changed in registry data this
