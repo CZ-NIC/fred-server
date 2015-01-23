@@ -27,6 +27,17 @@ namespace Corba {
 
     Nullable<std::string> unwrap_nullable_string(const Registry::NullableString * in);
     Optional<std::string> unwrap_nullable_string_to_optional(const Registry::NullableString * in);
+
+    /**
+     * Make CORBA valuetype from underlying CORBA type
+     */
+    template <class CORBA_VALUE_TYPE, class CORBA_TYPE>  typename CORBA_VALUE_TYPE::_var_type
+    wrap_nullable_corba_type_to_corba_valuetype(const Nullable<CORBA_TYPE>& in)
+    {
+        if(in.isnull()) return 0;
+
+        return  new CORBA_VALUE_TYPE(in.get_value());
+    }
 }
 
 #endif // end of #include guard

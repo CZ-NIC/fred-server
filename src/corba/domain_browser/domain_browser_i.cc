@@ -26,6 +26,7 @@
 #include "src/domain_browser/domain_browser.h"
 #include "src/corba/util/corba_conversions_string.h"
 #include "src/corba/util/corba_conversions_datetime.h"
+#include "src/corba/util/corba_conversions_nullable_types.h"
 #include "src/corba/DomainBrowser.hh"
 #include <string>
 
@@ -69,6 +70,19 @@ namespace Registry
 
         }
 
+        Nullable<Registry::DomainBrowser::NextDomainState> corba_wrap_nullable_next_domain_state
+            (const Nullable<Registry::DomainBrowserImpl::NextDomainState>& in)
+        {
+            if(in.isnull()) return Nullable<Registry::DomainBrowser::NextDomainState>();
+
+            Registry::DomainBrowser::NextDomainState ret;
+            Registry::DomainBrowserImpl::NextDomainState next_state = in.get_value();
+
+            ret.state_code = Corba::wrap_string_to_corba_string(next_state.state_code);
+            ret.state_date = Corba::wrap_date_to_corba_string(next_state.state_date);
+            return Nullable<Registry::DomainBrowser::NextDomainState>(ret);
+        }
+
         DomainList_var corba_wrap_domain_list(const std::vector<Registry::DomainBrowserImpl::DomainListData>& domain_list)
         {
             DomainList_var dl = new DomainList;
@@ -80,17 +94,10 @@ namespace Registry
                 dld.fqdn = Corba::wrap_string_to_corba_string(domain_list.at(i).fqdn);
                 dld.external_importance = domain_list.at(i).external_importance;
 
-                if(domain_list.at(i).next_state.isnull())
-                {
-                    dld.next_state = 0;
-                }
-                else
-                {
-                    dld.next_state = new NullableNextDomainState();
-                    Registry::DomainBrowserImpl::NextDomainState next_state = domain_list.at(i).next_state.get_value();
-                    dld.next_state->state_code(Corba::wrap_string_to_corba_string(next_state.state_code));
-                    dld.next_state->state_date(Corba::wrap_date_to_corba_string(next_state.state_date));
-                }
+                Registry::DomainBrowser::NextDomainState corba_next_domain_state;
+
+                dld.next_state = Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableNextDomainState>(
+                    corba_wrap_nullable_next_domain_state(domain_list.at(i).next_state));
 
                 dld.have_keyset = domain_list.at(i).have_keyset;
                 dld.user_role = Corba::wrap_string_to_corba_string(domain_list.at(i).user_role);
