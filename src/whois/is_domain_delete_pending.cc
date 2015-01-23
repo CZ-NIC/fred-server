@@ -14,6 +14,7 @@ namespace Whois {
             "), "
             "erdate_interval AS ( "
                 "SELECT "
+                    // conversions are necessary because we are interested in start/end of day in local time zone
                     "date_trunc('day', NOW() AT TIME ZONE 'UTC' AT TIME ZONE $2::text) AS from_, "
                     "date_trunc('day', NOW() AT TIME ZONE 'UTC' AT TIME ZONE $2::text +  interval '1 day') AS to_ "
             ")"
