@@ -347,23 +347,23 @@ namespace Registry
                 contact_detail->update_time = Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableDateTimeIsoString>(
                     Corba::wrap_nullable_ptime_to_nullable_corba_string(detail_impl.update_time));
 
-                contact_detail->auth_info = CORBA::string_dup(detail_impl.authinfopw.c_str());
-                contact_detail->name = CORBA::string_dup(detail_impl.name.get_value_or_default().c_str());
-                contact_detail->organization = CORBA::string_dup(detail_impl.organization.get_value_or_default().c_str());
-                contact_detail->street1 = CORBA::string_dup(detail_impl.street1.get_value_or_default().c_str());
-                contact_detail->street2 = CORBA::string_dup(detail_impl.street2.get_value_or_default().c_str());
-                contact_detail->street3 = CORBA::string_dup(detail_impl.street3.get_value_or_default().c_str());
-                contact_detail->province = CORBA::string_dup(detail_impl.stateorprovince.get_value_or_default().c_str());
-                contact_detail->postalcode = CORBA::string_dup(detail_impl.postalcode.get_value_or_default().c_str());
-                contact_detail->city = CORBA::string_dup(detail_impl.city.get_value_or_default().c_str());
-                contact_detail->country = CORBA::string_dup(detail_impl.country.get_value_or_default().c_str());
-                contact_detail->telephone = CORBA::string_dup(detail_impl.telephone.get_value_or_default().c_str());
-                contact_detail->fax = CORBA::string_dup(detail_impl.fax.get_value_or_default().c_str());
-                contact_detail->email = CORBA::string_dup(detail_impl.email.get_value_or_default().c_str());
-                contact_detail->notify_email = CORBA::string_dup(detail_impl.notifyemail.get_value_or_default().c_str());
-                contact_detail->ssn = CORBA::string_dup(detail_impl.ssn.get_value_or_default().c_str());
-                contact_detail->ssn_type = CORBA::string_dup(detail_impl.ssntype.get_value_or_default().c_str());
-                contact_detail->vat = CORBA::string_dup(detail_impl.vat.get_value_or_default().c_str());
+                contact_detail->auth_info = Corba::wrap_string_to_corba_string(detail_impl.authinfopw);
+                contact_detail->name = Corba::wrap_string_to_corba_string(detail_impl.name.get_value_or_default());
+                contact_detail->organization = Corba::wrap_string_to_corba_string(detail_impl.organization.get_value_or_default());
+                contact_detail->street1 = Corba::wrap_string_to_corba_string(detail_impl.street1.get_value_or_default());
+                contact_detail->street2 = Corba::wrap_string_to_corba_string(detail_impl.street2.get_value_or_default());
+                contact_detail->street3 = Corba::wrap_string_to_corba_string(detail_impl.street3.get_value_or_default());
+                contact_detail->province = Corba::wrap_string_to_corba_string(detail_impl.stateorprovince.get_value_or_default());
+                contact_detail->postalcode = Corba::wrap_string_to_corba_string(detail_impl.postalcode.get_value_or_default());
+                contact_detail->city = Corba::wrap_string_to_corba_string(detail_impl.city.get_value_or_default());
+                contact_detail->country = Corba::wrap_string_to_corba_string(detail_impl.country.get_value_or_default());
+                contact_detail->telephone = Corba::wrap_string_to_corba_string(detail_impl.telephone.get_value_or_default());
+                contact_detail->fax = Corba::wrap_string_to_corba_string(detail_impl.fax.get_value_or_default());
+                contact_detail->email = Corba::wrap_string_to_corba_string(detail_impl.email.get_value_or_default());
+                contact_detail->notify_email = Corba::wrap_string_to_corba_string(detail_impl.notifyemail.get_value_or_default());
+                contact_detail->ssn = Corba::wrap_string_to_corba_string(detail_impl.ssn.get_value_or_default());
+                contact_detail->ssn_type = Corba::wrap_string_to_corba_string(detail_impl.ssntype.get_value_or_default());
+                contact_detail->vat = Corba::wrap_string_to_corba_string(detail_impl.vat.get_value_or_default());
                 contact_detail->disclose_flags.address = detail_impl.disclose_flags.address;
                 contact_detail->disclose_flags.email = detail_impl.disclose_flags.email;
                 contact_detail->disclose_flags.fax = detail_impl.disclose_flags.fax;
@@ -377,7 +377,7 @@ namespace Registry
                 contact_detail->state_codes.length(detail_impl.state_codes.size());
                 for(unsigned long long j = 0; j < detail_impl.state_codes.size(); ++j)
                 {
-                    contact_detail->state_codes[j] = CORBA::string_dup(detail_impl.state_codes.at(j).c_str());
+                    contact_detail->state_codes[j] = Corba::wrap_string_to_corba_string(detail_impl.state_codes.at(j));
                 }
 
                 if(detail_impl.is_owner)
@@ -418,66 +418,53 @@ namespace Registry
                 NSSetDetail_var nsset_detail = new NSSetDetail;
 
                 nsset_detail->id = detail_impl.id;
-                nsset_detail->handle = CORBA::string_dup(detail_impl.handle.c_str());
-                nsset_detail->roid = CORBA::string_dup(detail_impl.roid.c_str());
+                nsset_detail->handle = Corba::wrap_string_to_corba_string(detail_impl.handle);
+                nsset_detail->roid = Corba::wrap_string_to_corba_string(detail_impl.roid);
                 nsset_detail->registrar.id = detail_impl.sponsoring_registrar.id;
-                nsset_detail->registrar.handle = CORBA::string_dup(detail_impl.sponsoring_registrar.handle.c_str());
-                nsset_detail->registrar.name = CORBA::string_dup(detail_impl.sponsoring_registrar.name.c_str());
-                nsset_detail->create_time = CORBA::string_dup(boost::posix_time::to_iso_extended_string(detail_impl.creation_time).c_str());
+                nsset_detail->registrar.handle = Corba::wrap_string_to_corba_string(detail_impl.sponsoring_registrar.handle);
+                nsset_detail->registrar.name = Corba::wrap_string_to_corba_string(detail_impl.sponsoring_registrar.name);
+                nsset_detail->create_time = Corba::wrap_ptime_to_corba_string(detail_impl.creation_time);
 
-                if(!detail_impl.transfer_time.isnull() && !detail_impl.transfer_time.get_value().is_special())
-                {
-                    nsset_detail->transfer_time = new NullableDateTimeIsoString(boost::posix_time::to_iso_extended_string(detail_impl.transfer_time.get_value()).c_str());
-                }
-                else
-                {
-                    nsset_detail->transfer_time = 0;
-                }
-
-                if(!detail_impl.update_time.isnull() && !detail_impl.update_time.get_value().is_special())
-                {
-                    nsset_detail->update_time = new NullableDateTimeIsoString(boost::posix_time::to_iso_extended_string(detail_impl.update_time.get_value()).c_str());
-                }
-                else
-                {
-                    nsset_detail->update_time = 0;
-                }
+                nsset_detail->transfer_time = Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableDateTimeIsoString>(
+                    Corba::wrap_nullable_ptime_to_nullable_corba_string(detail_impl.transfer_time));
+                nsset_detail->update_time = Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableDateTimeIsoString>(
+                    Corba::wrap_nullable_ptime_to_nullable_corba_string(detail_impl.update_time));
 
                 nsset_detail->create_registrar.id = detail_impl.create_registrar.id;
-                nsset_detail->create_registrar.handle = CORBA::string_dup(detail_impl.create_registrar.handle.c_str());
-                nsset_detail->create_registrar.name = CORBA::string_dup(detail_impl.create_registrar.name.c_str());
+                nsset_detail->create_registrar.handle = Corba::wrap_string_to_corba_string(detail_impl.create_registrar.handle);
+                nsset_detail->create_registrar.name = Corba::wrap_string_to_corba_string(detail_impl.create_registrar.name);
 
                 nsset_detail->update_registrar.id = detail_impl.update_registrar.id;
-                nsset_detail->update_registrar.handle = CORBA::string_dup(detail_impl.update_registrar.handle.c_str());
-                nsset_detail->update_registrar.name = CORBA::string_dup(detail_impl.update_registrar.name.c_str());
+                nsset_detail->update_registrar.handle = Corba::wrap_string_to_corba_string(detail_impl.update_registrar.handle);
+                nsset_detail->update_registrar.name = Corba::wrap_string_to_corba_string(detail_impl.update_registrar.name);
 
-                nsset_detail->auth_info = CORBA::string_dup(detail_impl.authinfopw.c_str());
+                nsset_detail->auth_info = Corba::wrap_string_to_corba_string(detail_impl.authinfopw);
 
                 nsset_detail->admins.length(detail_impl.admins.size());
                 for(std::size_t i = 0; i < detail_impl.admins.size(); ++i)
                 {
                     nsset_detail->admins[i].id = detail_impl.admins[i].id;
-                    nsset_detail->admins[i].handle = CORBA::string_dup(detail_impl.admins[i].handle.c_str());
-                    nsset_detail->admins[i].name = CORBA::string_dup(detail_impl.admins[i].name.c_str());
+                    nsset_detail->admins[i].handle = Corba::wrap_string_to_corba_string(detail_impl.admins[i].handle);
+                    nsset_detail->admins[i].name = Corba::wrap_string_to_corba_string(detail_impl.admins[i].name);
                 }
 
                 nsset_detail->hosts.length(detail_impl.hosts.size());
                 for(std::size_t i = 0; i < detail_impl.hosts.size(); ++i)
                 {
-                    nsset_detail->hosts[i].fqdn = CORBA::string_dup(detail_impl.hosts[i].get_fqdn().c_str());
+                    nsset_detail->hosts[i].fqdn = Corba::wrap_string_to_corba_string(detail_impl.hosts[i].get_fqdn());
 
                     std::vector<boost::asio::ip::address> inet_addrs = detail_impl.hosts[i].get_inet_addr();
                     nsset_detail->hosts[i].inet.length(inet_addrs.size());
                     for(std::size_t j = 0; j < inet_addrs.size(); ++j)
                     {
-                        nsset_detail->hosts[i].inet[j] = CORBA::string_dup(inet_addrs.at(j).to_string().c_str());
+                        nsset_detail->hosts[i].inet[j] = Corba::wrap_string_to_corba_string(inet_addrs.at(j).to_string());
                     }
                 }
 
                 nsset_detail->state_codes.length(detail_impl.state_codes.size());
                 for(unsigned long long j = 0; j < detail_impl.state_codes.size(); ++j)
                 {
-                    nsset_detail->state_codes[j] = CORBA::string_dup(detail_impl.state_codes.at(j).c_str());
+                    nsset_detail->state_codes[j] = Corba::wrap_string_to_corba_string(detail_impl.state_codes.at(j));
                 }
 
 
@@ -520,27 +507,22 @@ namespace Registry
 
                 DomainDetail_var domain_detail = new DomainDetail;
                 domain_detail->id = detail_impl.id;
-                domain_detail->fqdn = CORBA::string_dup(detail_impl.fqdn.c_str());
-                domain_detail->roid = CORBA::string_dup(detail_impl.roid.c_str());
+                domain_detail->fqdn = Corba::wrap_string_to_corba_string(detail_impl.fqdn);
+                domain_detail->roid = Corba::wrap_string_to_corba_string(detail_impl.roid);
                 domain_detail->registrar.id = detail_impl.sponsoring_registrar.id;
-                domain_detail->registrar.handle = CORBA::string_dup(detail_impl.sponsoring_registrar.handle.c_str());
-                domain_detail->registrar.name = CORBA::string_dup(detail_impl.sponsoring_registrar.name.c_str());
-                domain_detail->create_time = CORBA::string_dup(boost::posix_time::to_iso_extended_string(detail_impl.creation_time).c_str());
+                domain_detail->registrar.handle = Corba::wrap_string_to_corba_string(detail_impl.sponsoring_registrar.handle);
+                domain_detail->registrar.name = Corba::wrap_string_to_corba_string(detail_impl.sponsoring_registrar.name);
+                domain_detail->create_time = Corba::wrap_ptime_to_corba_string(detail_impl.creation_time);
 
-                if(!detail_impl.update_time.isnull() && !detail_impl.update_time.get_value().is_special())
-                {
-                    domain_detail->update_time = new NullableDateTimeIsoString(boost::posix_time::to_iso_extended_string(detail_impl.update_time.get_value()).c_str());
-                }
-                else
-                {
-                    domain_detail->update_time = 0;
-                }
+                domain_detail->update_time = Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableDateTimeIsoString>(
+                    Corba::wrap_nullable_ptime_to_nullable_corba_string(detail_impl.update_time));
 
-                domain_detail->auth_info = CORBA::string_dup(detail_impl.authinfopw.c_str());
+                domain_detail->auth_info = Corba::wrap_string_to_corba_string(detail_impl.authinfopw);
                 domain_detail->registrant.id = detail_impl.registrant.id;
-                domain_detail->registrant.handle = CORBA::string_dup(detail_impl.registrant.handle.c_str());
-                domain_detail->registrant.name = CORBA::string_dup(detail_impl.registrant.name.c_str());
-                domain_detail->expiration_date = CORBA::string_dup(boost::gregorian::to_iso_extended_string(detail_impl.expiration_date).c_str());
+                domain_detail->registrant.handle = Corba::wrap_string_to_corba_string(detail_impl.registrant.handle);
+                domain_detail->registrant.name = Corba::wrap_string_to_corba_string(detail_impl.registrant.name);
+
+                domain_detail->expiration_date = Corba::wrap_date_to_corba_string(detail_impl.expiration_date);
 
                 domain_detail->is_enum = !detail_impl.enum_domain_validation.isnull();
                 if(domain_detail->is_enum)
