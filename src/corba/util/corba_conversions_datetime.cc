@@ -59,4 +59,18 @@ namespace Corba {
         return CORBA::string_dup(boost::posix_time::to_iso_extended_string(in).c_str());
     }
 
+    Nullable<CORBA::String_var> wrap_nullable_date_to_nullable_corba_string(const Nullable<boost::gregorian::date>& in)
+    {
+        if(in.isnull() || in.get_value().is_special()) return Nullable<CORBA::String_var>();
+
+        return Nullable<CORBA::String_var>(CORBA::string_dup(boost::gregorian::to_iso_extended_string(in.get_value()).c_str()));
+    }
+
+    Nullable<CORBA::String_var> wrap_nullable_ptime_to_nullable_corba_string(const Nullable<boost::posix_time::ptime>& in)
+    {
+        if(in.isnull() || in.get_value().is_special()) return Nullable<CORBA::String_var>();
+
+        return Nullable<CORBA::String_var>(CORBA::string_dup(boost::posix_time::to_iso_extended_string(in.get_value()).c_str()));
+    }
+
 }

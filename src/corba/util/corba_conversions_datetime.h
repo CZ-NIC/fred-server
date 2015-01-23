@@ -4,6 +4,7 @@
 #include "src/corba/DateTime.hh"
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time/gregorian/gregorian_types.hpp>
+#include "util/db/nullable.h"
 
 /**
  *  @file
@@ -24,7 +25,6 @@ namespace Corba {
      */
     ccReg::DateType wrap_date(date in);
 
-
     /**
      * Make CORBA string from boost date
      * @param in is input date
@@ -41,6 +41,21 @@ namespace Corba {
      * @throws std::exception if in is not valid posix time
      */
     CORBA::String_var wrap_ptime_to_corba_string(boost::posix_time::ptime in);
+
+    /**
+     * Make nullable CORBA string from nullable boost date for generic CORBA valuetype wrapper
+     * @param in is input nullable date
+     * @return nullable string with date in text form YYYY-MM-DD allocated by CORBA::string_dupm or is_null if in is null or special
+     */
+    Nullable<CORBA::String_var> wrap_nullable_date_to_nullable_corba_string(const Nullable<boost::gregorian::date>& in);
+
+    /**
+     * Make nullable CORBA string from nullable boost ptime for generic CORBA valuetype wrapper
+     * @param in is input nullable posix time
+     * @return nullable string with date and time in text form YYYY-MM-DDTHH:MM:SS.fffffffff  is_null if in is null or special
+     * dot with decimal fractions are optional, allocated by CORBA::string_dup
+     */
+    Nullable<CORBA::String_var> wrap_nullable_ptime_to_nullable_corba_string(const Nullable<boost::posix_time::ptime>& in);
 }
 
 #endif // end of #include guard

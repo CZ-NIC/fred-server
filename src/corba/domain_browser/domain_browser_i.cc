@@ -342,23 +342,10 @@ namespace Registry
                 contact_detail->registrar.name = Corba::wrap_string_to_corba_string(detail_impl.sponsoring_registrar.name);
                 contact_detail->create_time = Corba::wrap_ptime_to_corba_string(detail_impl.creation_time);
 
-                if(!detail_impl.transfer_time.isnull() && !detail_impl.transfer_time.get_value().is_special())
-                {
-                    contact_detail->transfer_time = new NullableDateTimeIsoString(boost::posix_time::to_iso_extended_string(detail_impl.transfer_time.get_value()).c_str());
-                }
-                else
-                {
-                    contact_detail->transfer_time = 0;
-                }
-
-                if(!detail_impl.update_time.isnull() && !detail_impl.update_time.get_value().is_special())
-                {
-                    contact_detail->update_time = new NullableDateTimeIsoString(boost::posix_time::to_iso_extended_string(detail_impl.update_time.get_value()).c_str());
-                }
-                else
-                {
-                    contact_detail->update_time = 0;
-                }
+                contact_detail->transfer_time = Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableDateTimeIsoString>(
+                    Corba::wrap_nullable_ptime_to_nullable_corba_string(detail_impl.transfer_time));
+                contact_detail->update_time = Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableDateTimeIsoString>(
+                    Corba::wrap_nullable_ptime_to_nullable_corba_string(detail_impl.update_time));
 
                 contact_detail->auth_info = CORBA::string_dup(detail_impl.authinfopw.c_str());
                 contact_detail->name = CORBA::string_dup(detail_impl.name.get_value_or_default().c_str());
