@@ -23,7 +23,7 @@ namespace Whois {
                 "oreg.crdate "
             "FROM object_registry AS oreg "
                 "JOIN object_state AS os        ON oreg.id = os.object_id  "
-                "JOIN delete_candidate_state    ON os.id = delete_candidate_state.id "
+                "JOIN delete_candidate_state    ON os.state_id = delete_candidate_state.id "
                 "JOIN domain_object_type        ON oreg.type = domain_object_type.id, "
                 "erdate_interval "
             "WHERE "
