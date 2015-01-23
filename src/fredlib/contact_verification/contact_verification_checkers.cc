@@ -1,17 +1,16 @@
 #include "log/logger.h"
 #include "src/fredlib/db_settings.h"
 #include "util/types/birthdate.h"
+#include "util/idn_utils.h"
 #include "src/fredlib/contact_verification/contact_verification_checkers.h"
 #include "src/fredlib/contact_verification/contact_verification_validators.h"
 
 #include <boost/algorithm/string.hpp>
+#include "src/fredlib/contact_verification/django_email_format.h"
 
 namespace Fred {
 namespace Contact {
 namespace Verification {
-
-
-
 
 
 bool contact_checker_name(const Contact &_data, FieldErrorMap &_errors)
@@ -135,32 +134,31 @@ bool contact_checker_phone_unique(const Contact &_data, FieldErrorMap &_errors)
     return result;
 }
 
-
-bool generic_checker_email_format(const std::string &_email)
-{
-    if (boost::algorithm::trim_copy(_email).length() > 0
-            && !boost::regex_search(
-                    _email,
-                    EMAIL_PATTERN)) {
-        return false;
-    }
-    return true;
-}
-
-
 bool contact_checker_email_format(const Contact &_data, FieldErrorMap &_errors)
 {
-    bool result = generic_checker_email_format(_data.email.get_value_or_default());
-    if (result == false) {
+    const std::string::size_type MAX_MOJEID_EMAIL_LENGTH = 200;
+    const std::string contact_email = _data.email.get_value_or_default();
+
+    bool result = true;
+
+    if(!contact_email.empty())
+    {
+        result = ((Util::get_utf8_char_len(contact_email) <= MAX_MOJEID_EMAIL_LENGTH)
+            && DjangoEmailFormat().check(contact_email));
+    }
+
+    if (result == false)
+    {
         _errors[field_email] = INVALID;
     }
+
     return result;
 }
 
-
 bool contact_checker_notify_email_format(const Contact &_data, FieldErrorMap &_errors)
 {
-    bool result = generic_checker_email_format(_data.notifyemail.get_value_or_default());
+    FieldErrorMap dummy_errors;
+    bool result = contact_checker_email_format(_data, dummy_errors);
     if (result == false) {
        _errors[field_notify_email] = INVALID;
     }

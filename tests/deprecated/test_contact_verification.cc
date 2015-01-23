@@ -66,7 +66,7 @@
 #include "src/contact_verification/contact_verification_impl.h"
 #include "checks.h"
 #include "src/fredlib/contact_verification/contact_verification_checkers.h"
-
+#include "util/idn_utils.h"
 //test-contact-verification.cc
 
 BOOST_AUTO_TEST_SUITE(TestContactVerification_old)
@@ -244,6 +244,49 @@ BOOST_AUTO_TEST_CASE( test_primary_phone_format_checker )
         bool check_result = contact_checker_phone_format(c, errors);
         BOOST_CHECK(check_result == true && errors.empty());
     }
+}
+
+/**
+testing email checker
+*/
+BOOST_AUTO_TEST_CASE(test_email_check)
+{
+    Fred::Contact::Verification::Contact test_contact;
+    Fred::Contact::Verification::FieldErrorMap err_map;
+
+    test_contact.email = Nullable<std::string>("");
+    BOOST_CHECK(Fred::Contact::Verification::contact_checker_email_format(test_contact, err_map));
+
+    test_contact.email = Nullable<std::string>("test@nic.cz");
+    BOOST_CHECK(Fred::Contact::Verification::contact_checker_email_format(test_contact, err_map));
+
+    test_contact.email = Nullable<std::string>("test@nicž.cz");
+    BOOST_CHECK(Fred::Contact::Verification::contact_checker_email_format(test_contact, err_map));
+
+    test_contact.email = Nullable<std::string>("test@localhost");
+    BOOST_CHECK(Fred::Contact::Verification::contact_checker_email_format(test_contact, err_map));
+
+    test_contact.email = Nullable<std::string>("@localhost");
+    BOOST_CHECK(!Fred::Contact::Verification::contact_checker_email_format(test_contact, err_map));
+
+    test_contact.email = Nullable<std::string>("test@");
+    BOOST_CHECK(!Fred::Contact::Verification::contact_checker_email_format(test_contact, err_map));
+
+    test_contact.email = Nullable<std::string>("@");
+    BOOST_CHECK(!Fred::Contact::Verification::contact_checker_email_format(test_contact, err_map));
+
+    // max length of email in mojeid is 200
+    test_contact.email = Nullable<std::string>("a@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.usaaaa");
+    BOOST_CHECK(Fred::Contact::Verification::contact_checker_email_format(test_contact, err_map));
+
+    test_contact.email = Nullable<std::string>("a@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.usaaaaa");
+    BOOST_CHECK(!Fred::Contact::Verification::contact_checker_email_format(test_contact, err_map));
+
+    test_contact.email = Nullable<std::string>("test1@дольор.еюж.едквюэ.дёжкэрэ.эю.векж.нобёз.дольор.еюж.едквюэ.дёжкэрэ.эю.векж.нобёз.дольор.еюж.едквюэ.дёжкэрэ.эю.векж.нобёз.дольор.еюж.едквюэ.дёжкэрэ.эю.векж.нобёз.дольор.еюж.едквюэ.дёжкэрэ.эю.ве.рф");
+    BOOST_CHECK(Fred::Contact::Verification::contact_checker_email_format(test_contact, err_map));
+
+    test_contact.email = Nullable<std::string>("test1@дольор.еюж.едквюэ.дёжкэрэ.эю.векж.нобёз.дольор.еюж.едквюэ.дёжкэрэ.эю.векж.нобёз.дольор.еюж.едквюэ.дёжкэрэ.эю.векж.нобёз.дольор.еюж.едквюэ.дёжкэрэ.эю.векж.нобёз.дольор.еюж.едквюэ.дёжкэрэ.эю.век.рф");
+    BOOST_CHECK(!Fred::Contact::Verification::contact_checker_email_format(test_contact, err_map));
 }
 
 

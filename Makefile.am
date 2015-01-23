@@ -278,7 +278,9 @@ util_libutil_a_SOURCES = \
 		util/csv_parser.h \
 		util/csv_parser.cc \
 		util/xmlgen.cc \
-		util/subprocess.cc
+		util/subprocess.cc \
+		util/idn_utils.h \
+		util/idn_utils.cc
 #
 # util/libutil.a
 
@@ -1011,6 +1013,7 @@ src_fredlib_contact_verification_libcontact_verification_a_SOURCES = \
 		util/db/nullable.h \
 		src/fredlib/contact_verification/contact.h \
 		src/fredlib/contact_verification/contact.cc \
+		src/fredlib/contact_verification/django_email_format.h \
 		src/fredlib/contact_verification/contact_verification_checkers.h \
 		src/fredlib/contact_verification/contact_verification_checkers.cc \
 		src/fredlib/contact_verification/contact_conditional_identification_impl.cc \
@@ -2411,6 +2414,7 @@ tests_test_fredlib_SOURCES = \
 		tests/fredlib/contact/verification/test_info_check.cc \
 		tests/fredlib/contact/verification/test_list_checks.cc \
 		tests/fredlib/contact/verification/test_list_enum_objects.cc \
+		tests/fredlib/contact/verification/test_django_email_format_check.cc \
 		tests/fredlib/poll/test_create_delete_contact_poll_message.cc \
 		tests/fredlib/poll/test_create_delete_domain_poll_message.cc \
 		tests/fredlib/poll/test_create_update_object_poll_message.cc \
@@ -2437,6 +2441,7 @@ tests_test_fredlib_LDADD = \
 		util/libutil.a \
 		util/log/liblog.a \
 		-lmpdec -lm \
+		$(LIBIDN_LIBS) \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(BOOST_DATE_TIME_LIB) \
 		$(BOOST_REGEX_LIB) \
