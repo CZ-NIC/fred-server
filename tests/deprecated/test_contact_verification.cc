@@ -264,9 +264,9 @@ BOOST_AUTO_TEST_CASE(test_email_check)
     BOOST_CHECK(Fred::Contact::Verification::contact_checker_email_format(test_contact, err_map));
 
     test_contact.email = Nullable<std::string>("test@localhost");
-    BOOST_CHECK(Fred::Contact::Verification::contact_checker_email_format(test_contact, err_map));
+    BOOST_CHECK(!Fred::Contact::Verification::contact_checker_email_format(test_contact, err_map));
 
-    test_contact.email = Nullable<std::string>("@localhost");
+    test_contact.email = Nullable<std::string>("@nic.cz");
     BOOST_CHECK(!Fred::Contact::Verification::contact_checker_email_format(test_contact, err_map));
 
     test_contact.email = Nullable<std::string>("test@");

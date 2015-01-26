@@ -42,6 +42,7 @@ BOOST_AUTO_TEST_CASE(test_email_format)
 
     DjangoEmailFormat email;
     DjangoEmailFormat email_localdomain(Util::vector_of<std::string>("localdomain"));
+    DjangoEmailFormat email_localhost(Util::vector_of<std::string>("localhost"));
 
     //tests data from https://github.com/django/django/blob/1.6.9/tests/validators/tests.py
     BOOST_CHECK(email.check("email@here.com"));
@@ -50,7 +51,8 @@ BOOST_AUTO_TEST_CASE(test_email_format)
     BOOST_CHECK(email.check("example@valid-----hyphens.com"));
     BOOST_CHECK(email.check("example@valid-with-hyphens.com"));
     BOOST_CHECK(email.check("test@domain.with.idn.tld.उदाहरण.परीक्षा"));
-    BOOST_CHECK(email.check("email@localhost"));
+    BOOST_CHECK(email_localhost.check("email@localhost"));
+    BOOST_CHECK(!email.check("email@localhost"));
     BOOST_CHECK(email_localdomain.check("email@localdomain"));
     BOOST_CHECK(email.check("\"test@test\"@example.com"));
 
