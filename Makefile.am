@@ -1373,7 +1373,9 @@ src_corba_whois_libwhois2_impl_a_SOURCES = \
 		src/corba/whois/whois2_impl.cc \
 		src/corba/whois/whois2_impl.h \
 		src/whois/nameserver_exists.h \
-		src/whois/nameserver_exists.cc
+		src/whois/nameserver_exists.cc \
+		src/whois/is_domain_delete_pending.h \
+		src/whois/is_domain_delete_pending.cc
 #
 # src/corba/whois/libwhois2_impl.a
 
