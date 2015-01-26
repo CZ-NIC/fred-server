@@ -79,10 +79,15 @@ void ConditionalContactIdentificationImpl::pre_process_check(bool _check)
         throw Fred::PublicRequest::ObjectChanged();
     }
 
+    const unsigned long long contact_id = pra_impl_ptr_->getObject(0).id;
     Fred::Contact::Verification::Contact cdata
-        = Fred::Contact::Verification::contact_info(
-                pra_impl_ptr_->getObject(0).id);
+        = Fred::Contact::Verification::contact_info(contact_id);
     contact_validator_.check(cdata);
+
+    const State contact_state = get_contact_verification_state(contact_id);
+    if (contact_state.has_any(State::CIVm)) {// already C or I or V
+        throw Fred::PublicRequest::NotApplicable("pre_process_check: failed!");
+    }
 }
 
 void ConditionalContactIdentificationImpl::process_action(bool _check)
