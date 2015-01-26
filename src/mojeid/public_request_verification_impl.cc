@@ -558,10 +558,18 @@ public:
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
 
+        const unsigned long long oid = pri_ptr_->getObject(0).id;
+
+        const Contact::Verification::State contact_state =
+            Contact::Verification::get_contact_verification_state(oid);
+        if (contact_state.has_all(Contact::Verification::State::ciVm) ||
+           !contact_state.has_all(Contact::Verification::State::CivM)) {
+            throw NotApplicable("pre_insert_checks: failed!");
+        }
+
         /* set new state */
-        insertNewStateRequest(pri_ptr_->getId(), pri_ptr_->getObject(0).id
-                , ObjectState::VALIDATED_CONTACT);
-        Fred::update_object_states(pri_ptr_->getObject(0).id);
+        insertNewStateRequest(pri_ptr_->getId(), oid, ObjectState::VALIDATED_CONTACT);
+        Fred::update_object_states(oid);
         tx.commit();
     }
 };
