@@ -35,7 +35,7 @@ class DjangoEmailFormat
     const std::vector<std::string> domain_whitelist_;
 
 public:
-    DjangoEmailFormat(const std::vector<std::string>& domain_whitelist = std::vector<std::string>(1,"localhost"))
+    DjangoEmailFormat(const std::vector<std::string>& domain_whitelist = std::vector<std::string>())
     : domain_whitelist_(domain_whitelist)
     {}
 
