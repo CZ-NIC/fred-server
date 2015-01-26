@@ -142,7 +142,7 @@ public:
         {
             const Contact::Verification::State contact_state =
                 Contact::Verification::get_contact_verification_state(this->getObject(0).id);
-            if (!contact_state.has_all(Contact::Verification::State::cIvm)) {
+            if (!contact_state.has_all(Contact::Verification::State::CIvm)) {
                 throw Fred::PublicRequest::NotApplicable("pre_save_check: failed");
             }
 
@@ -480,7 +480,7 @@ public:
             const Contact::Verification::State contact_state =
                 Contact::Verification::get_contact_verification_state(oid);
             if (contact_state.has_all(Contact::Verification::State::ciVm) ||
-               !contact_state.has_all(Contact::Verification::State::civM)) {
+               !contact_state.has_all(Contact::Verification::State::CivM)) {
                 throw NotApplicable("pre_insert_checks: failed!");
             }
 
