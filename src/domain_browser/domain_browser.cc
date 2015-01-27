@@ -35,7 +35,6 @@
 #include "util/random.h"
 #include "util/log/context.h"
 #include "util/map_at.h"
-#include "util/db/pg_array_utils.h"
 #include "util/util.h"
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/object/object_impl.h"

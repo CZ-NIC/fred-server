@@ -184,7 +184,6 @@ noinst_HEADERS = \
 		src/corba/contact_verification/corba_conversion.h \
 		util/optional_value.h \
 		util/is_equal_optional_nullable.h \
-		util/db/pg_array_utils.h \
 		util/output_indenter.h \
 		src/corba/util/corba_conversions_datetime.h \
 		src/corba/util/corba_conversions_nullable_types.h \
