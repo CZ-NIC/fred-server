@@ -1244,7 +1244,7 @@ namespace Registry
                     ret.dld.push_back(dld);
                 }
 
-                ret.limit_reached = domain_list_limit_ < domain_list_result.size();
+                ret.limit_exceeded = domain_list_limit_ < domain_list_result.size();
                 return ret;
             }
             catch(...)
@@ -1418,8 +1418,8 @@ namespace Registry
                     keyset_list_out.push_back(kld);
                 }
 
-                const bool limit_reached = keyset_list_limit_ < keyset_list_result.size();
-                return limit_reached;
+                const bool limit_exceeded = keyset_list_limit_ < keyset_list_result.size();
+                return limit_exceeded;
             }
             catch(...)
             {

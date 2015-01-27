@@ -308,10 +308,10 @@ namespace Registry
         struct DomainList
         {
             std::vector<DomainListData> dld;/**< list of domain data */
-            bool limit_reached;/**< there are more data to get using higher offset in next call*/
+            bool limit_exceeded;/**< there are more data to get using higher offset in next call*/
 
             DomainList()
-            : limit_reached(false)
+            : limit_exceeded(false)
             {}
         };
 
