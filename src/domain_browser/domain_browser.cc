@@ -196,30 +196,30 @@ namespace Registry
                 next = Nullable<NextDomainState>(NextDomainState("expired", expiration_date));
             }
             else if((today_date < delete_date) || (today_date < outzone_date))
+            {
+                if(outzone_date < delete_date)
                 {
-                    if(outzone_date < delete_date)
+                    if(today_date < outzone_date)
                     {
-                        if(today_date < outzone_date)
-                        {
-                            next = Nullable<NextDomainState>(NextDomainState("outzone", outzone_date));
-                        }
-                        else
-                        {
-                            next = Nullable<NextDomainState>(NextDomainState("deleteCandidate", delete_date));
-                        }
+                        next = Nullable<NextDomainState>(NextDomainState("outzone", outzone_date));
                     }
-                    else //posibly bad config
+                    else
                     {
-                        if(today_date < delete_date)
-                        {
-                            next = Nullable<NextDomainState>(NextDomainState("deleteCandidate", delete_date));
-                        }
-                        else
-                        {
-                            next = Nullable<NextDomainState>(NextDomainState("outzone", outzone_date));
-                        }
+                        next = Nullable<NextDomainState>(NextDomainState("deleteCandidate", delete_date));
                     }
                 }
+                else //posibly bad config
+                {
+                    if(today_date < delete_date)
+                    {
+                        next = Nullable<NextDomainState>(NextDomainState("deleteCandidate", delete_date));
+                    }
+                    else
+                    {
+                        next = Nullable<NextDomainState>(NextDomainState("outzone", outzone_date));
+                    }
+                }
+            }
             return next;
         }
 
