@@ -870,11 +870,9 @@ namespace Registry
         {
             try
             {
-                std::vector<Registry::DomainBrowserImpl::MergeContactCandidateData> contact_list_out;
-                limit_exceeded = pimpl_->getMergeContactCandidateList(user_contact_id,
-                    offset, contact_list_out);
-
-                return corba_wrap_merge_contact_candidate_list(contact_list_out)._retn();
+                Registry::DomainBrowserImpl::MergeContactCandidateList mcl = pimpl_->getMergeContactCandidateList(user_contact_id, offset);
+                limit_exceeded = mcl.limit_exceeded;
+                return corba_wrap_merge_contact_candidate_list(mcl.mccl)._retn();
             }
             catch (const Registry::DomainBrowserImpl::UserNotExists& )
             {

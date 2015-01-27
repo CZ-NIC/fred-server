@@ -407,6 +407,19 @@ namespace Registry
         };
 
         /**
+         * complete merge contact candidates list data
+         */
+        struct MergeContactCandidateList
+        {
+            std::vector<MergeContactCandidateData> mccl;/**< list of merge contact candidates data */
+            bool limit_exceeded;/**< there are more data to get using higher offset in next call*/
+
+            MergeContactCandidateList()
+            : limit_exceeded(false)
+            {}
+        };
+
+        /**
          * object state description
          */
         struct StatusDesc
@@ -724,12 +737,10 @@ namespace Registry
              * Get list of contacts mergeable to user contact.
              * @param user_contact_id contains database id of the user contact
              * @param offset contains list offset
-             * @param  contact_list_out references output candidate contact list
-             * @return limit_exceeded flag
+             * @return merge candidate contact list with limit_exceeded flag
              */
-            bool getMergeContactCandidateList(unsigned long long user_contact_id,
-                unsigned long long offset,
-                std::vector<MergeContactCandidateData>& contact_list_out);
+            MergeContactCandidateList getMergeContactCandidateList(unsigned long long user_contact_id,
+                unsigned long long offset);
 
             /**
              * Merge contact list to destination contact

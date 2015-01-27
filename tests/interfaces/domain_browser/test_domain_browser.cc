@@ -3136,9 +3136,8 @@ BOOST_AUTO_TEST_SUITE(getMergeContactCandidateList)
 BOOST_FIXTURE_TEST_CASE(get_candidate_contact_list, merge_contacts_fixture )
 {
     Fred::OperationContext ctx;
-    std::vector<Registry::DomainBrowserImpl::MergeContactCandidateData> contact_list_out;
-    impl.getMergeContactCandidateList(user_contact_info.info_contact_data.id,
-        0,contact_list_out);
+    Registry::DomainBrowserImpl::MergeContactCandidateList mcl = impl.getMergeContactCandidateList(user_contact_info.info_contact_data.id, 0);
+    std::vector<Registry::DomainBrowserImpl::MergeContactCandidateData> contact_list_out = mcl.mccl;
 
     BOOST_CHECK(contact_list_out.size() == contact_merge_candidates_ids.size());
 
@@ -3185,9 +3184,7 @@ BOOST_FIXTURE_TEST_CASE(get_candidate_contact_list_user_not_in_mojeid, get_domai
     try
     {
         Fred::OperationContext ctx;
-        std::vector<Registry::DomainBrowserImpl::MergeContactCandidateData> contact_list_out;
-        impl.getMergeContactCandidateList(user_contact_info.info_contact_data.id,
-            0,contact_list_out);
+        impl.getMergeContactCandidateList(user_contact_info.info_contact_data.id, 0);
 
         BOOST_ERROR("unreported missing user");
     }

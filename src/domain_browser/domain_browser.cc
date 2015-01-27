@@ -1524,9 +1524,8 @@ namespace Registry
             }
         };
 
-        bool DomainBrowser::getMergeContactCandidateList(unsigned long long user_contact_id,
-            unsigned long long offset,
-            std::vector<MergeContactCandidateData>& contact_list_out)
+        MergeContactCandidateList DomainBrowser::getMergeContactCandidateList(unsigned long long user_contact_id,
+            unsigned long long offset)
         {
             Logging::Context lctx_server(create_ctx_name(get_server_name()));
             Logging::Context lctx("get-merge-contact-candidate-list");
@@ -1575,8 +1574,8 @@ namespace Registry
 
                 unsigned long long limited_contact_list_size = (candidate_list_result.size() > contact_list_limit_)
                     ? contact_list_limit_ : candidate_list_result.size();
-
-                contact_list_out.reserve(limited_contact_list_size);
+                MergeContactCandidateList ret;
+                ret.mccl.reserve(limited_contact_list_size);
                 for (unsigned long long i = 0;i < limited_contact_list_size;++i)
                 {
                     MergeContactCandidateData cd;
@@ -1588,16 +1587,16 @@ namespace Registry
                     cd.registrar_handle = static_cast<std::string>(candidate_list_result[i]["registrar_handle"]);
                     cd.registrar_name = static_cast<std::string>(candidate_list_result[i]["registrar_name"]);
 
-                    contact_list_out.push_back(cd);
+                    ret.mccl.push_back(cd);
                 }
-
-                return candidate_list_result.size() > contact_list_limit_;
+                ret.limit_exceeded = candidate_list_result.size() > contact_list_limit_;
+                return ret;
             }
             catch(...)
             {
                 log_and_rethrow_exception_handler(ctx);
             }
-            return false;
+            return MergeContactCandidateList();
         }
 
         void DomainBrowser::mergeContacts(unsigned long long dst_contact_id,
