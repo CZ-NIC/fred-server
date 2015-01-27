@@ -2183,7 +2183,6 @@ tests_test_server_SOURCES = \
 		tests/deprecated/test_contact_verification.cc \
 		tests/deprecated/test_locking_trigger.cc \
 		tests/deprecated/test_mojeid.cc \
-		tests/util/test_pg_array_utils.cc \
 		tests/util/test_nullable.cc \
 		tests/util/test_optional.cc \
 		src/corba/epp_corba_client_impl.cc \
