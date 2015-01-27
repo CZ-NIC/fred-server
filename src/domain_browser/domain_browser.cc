@@ -1430,8 +1430,7 @@ namespace Registry
         }
 
 
-        void DomainBrowser::getPublicStatusDesc(const std::string& lang,
-            std::vector<StatusDesc>& status_description_out)
+        std::vector<StatusDesc> DomainBrowser::getPublicStatusDesc(const std::string& lang)
         {
             Logging::Context lctx_server(create_ctx_name(get_server_name()));
             Logging::Context lctx("get-public-status-desc");
@@ -1446,18 +1445,21 @@ namespace Registry
                 " AND eos.external = TRUE "
                 " ORDER BY eos.id ", Database::query_param_list(lang));
 
-                status_description_out.reserve(state_desc_res.size());
+                std::vector<StatusDesc> ret;
+                ret.reserve(state_desc_res.size());
                 for(unsigned long long i = 0; i < state_desc_res.size(); ++i)
                 {
-                    status_description_out.push_back(StatusDesc(
+                    ret.push_back(StatusDesc(
                         static_cast<std::string>(state_desc_res[i]["name"])
                         , static_cast<std::string>(state_desc_res[i]["description"])));
                 }
+                return ret;
             }
             catch(...)
             {
                 log_and_rethrow_exception_handler(ctx);
             }
+            return std::vector<StatusDesc>();
         }
 
         struct MergeContactDiffContacts

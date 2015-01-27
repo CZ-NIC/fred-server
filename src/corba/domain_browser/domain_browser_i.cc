@@ -825,14 +825,13 @@ namespace Registry
         {
             try
             {
-                std::vector<Registry::DomainBrowserImpl::StatusDesc> status_description_out;
-                pimpl_->getPublicStatusDesc(lang, status_description_out);
+                std::vector<Registry::DomainBrowserImpl::StatusDesc> status_description = pimpl_->getPublicStatusDesc(lang);
                 Registry::DomainBrowser::StatusDescList_var status_description_var = new Registry::DomainBrowser::StatusDescList;
-                status_description_var->length(status_description_out.size());
-                for(std::size_t i = 0; i < status_description_out.size(); ++i)
+                status_description_var->length(status_description.size());
+                for(std::size_t i = 0; i < status_description.size(); ++i)
                 {
-                    status_description_var[i].state_code = Corba::wrap_string_to_corba_string(status_description_out.at(i).state_code);
-                    status_description_var[i].state_desc = Corba::wrap_string_to_corba_string(status_description_out.at(i).state_desc);
+                    status_description_var[i].state_code = Corba::wrap_string_to_corba_string(status_description.at(i).state_code);
+                    status_description_var[i].state_desc = Corba::wrap_string_to_corba_string(status_description.at(i).state_desc);
                 }
                 return  status_description_var._retn();
             }

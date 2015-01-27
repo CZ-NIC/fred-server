@@ -2682,8 +2682,7 @@ BOOST_AUTO_TEST_SUITE(getPublicStatusDesc)
 BOOST_FIXTURE_TEST_CASE(get_public_status_desc, domain_browser_impl_instance_fixture)
 {
     Fred::OperationContext ctx;
-    std::vector<Registry::DomainBrowserImpl::StatusDesc> status_desc_out;
-    impl.getPublicStatusDesc("CS",status_desc_out);
+    std::vector<Registry::DomainBrowserImpl::StatusDesc> status_desc_out = impl.getPublicStatusDesc("CS");
 
     for(unsigned long long i = 0 ; i < status_desc_out.size(); ++i)
     {
