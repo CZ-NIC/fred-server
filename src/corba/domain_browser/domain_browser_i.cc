@@ -131,8 +131,7 @@ namespace Registry
                     Optional<unsigned long long>(), Optional<unsigned long long>(),
                     offset, domain_list_out);
 
-                DomainList_var dl = corba_wrap_domain_list(domain_list_out);
-                return dl._retn();
+                return corba_wrap_domain_list(domain_list_out)._retn();
             }
             catch (const Registry::DomainBrowserImpl::ObjectNotExists& )
             {
@@ -188,8 +187,7 @@ namespace Registry
                     (contact_id_ptr) ? Optional<unsigned long long>(contact_id_ptr->_value()) : Optional<unsigned long long>(),
                     offset, nsset_list_out);
 
-                NssetList_var nl = corba_wrap_nsset_list(nsset_list_out);
-                return nl._retn();
+                return corba_wrap_nsset_list(nsset_list_out)._retn();
             }
             catch (const Registry::DomainBrowserImpl::ObjectNotExists& )
             {
@@ -243,8 +241,7 @@ namespace Registry
                 limit_exceeded = pimpl_->getKeysetList(user_contact_id,
                     (contact_id_ptr) ? Optional<unsigned long long>(contact_id_ptr->_value()) : Optional<unsigned long long>(),
                     offset, keyset_list_out);
-                KeysetList_var kl = corba_wrap_keyset_list(keyset_list_out);
-                return kl._retn();
+                return corba_wrap_keyset_list(keyset_list_out)._retn();
             }
             catch (const Registry::DomainBrowserImpl::ObjectNotExists& )
             {
@@ -274,8 +271,7 @@ namespace Registry
                         Optional<unsigned long long>(),
                         Optional<unsigned long long>(keyset_id), offset, domain_list_out);
 
-                DomainList_var dl = corba_wrap_domain_list(domain_list_out);
-                return dl._retn();
+                return corba_wrap_domain_list(domain_list_out)._retn();
             }
             catch (const Registry::DomainBrowserImpl::AccessDenied&)
             {
@@ -306,8 +302,7 @@ namespace Registry
                         Optional<unsigned long long>(nsset_id),
                         Optional<unsigned long long>(), offset, domain_list_out);
 
-                DomainList_var dl = corba_wrap_domain_list(domain_list_out);
-                return dl._retn();
+                return corba_wrap_domain_list(domain_list_out)._retn();
             }
             catch (const Registry::DomainBrowserImpl::AccessDenied&)
             {
@@ -886,8 +881,7 @@ namespace Registry
                 limit_exceeded = pimpl_->getMergeContactCandidateList(user_contact_id,
                     offset, contact_list_out);
 
-                MergeContactCandidateList_var cl = corba_wrap_merge_contact_candidate_list(contact_list_out);
-                return cl._retn();
+                return corba_wrap_merge_contact_candidate_list(contact_list_out)._retn();
             }
             catch (const Registry::DomainBrowserImpl::UserNotExists& )
             {
