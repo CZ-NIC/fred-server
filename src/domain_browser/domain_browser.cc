@@ -1058,12 +1058,11 @@ namespace Registry
             return false;
         }
 
-        bool DomainBrowser::getDomainList(unsigned long long user_contact_id,
+        DomainList DomainBrowser::getDomainList(unsigned long long user_contact_id,
             const Optional<unsigned long long>& list_domains_for_contact_id,
             const Optional<unsigned long long>& list_domains_for_nsset_id,
             const Optional<unsigned long long>& list_domains_for_keyset_id,
-            unsigned long long offset,
-            std::vector<DomainListData>& domain_list_out)
+            unsigned long long offset)
         {
             Logging::Context lctx_server(create_ctx_name(get_server_name()));
             Logging::Context lctx("get-domain-list");
@@ -1210,7 +1209,8 @@ namespace Registry
                 unsigned long long limited_domain_list_size = (domain_list_result.size() > domain_list_limit_)
                     ? domain_list_limit_ : domain_list_result.size();
 
-                domain_list_out.reserve(limited_domain_list_size);
+                DomainList ret;
+                ret.dld.reserve(limited_domain_list_size);
                 for (unsigned long long i = 0;i < limited_domain_list_size;++i)
                 {
                     DomainListData dld;
@@ -1241,17 +1241,17 @@ namespace Registry
 
                     dld.is_server_blocked = static_cast<bool>(domain_list_result[i]["is_server_blocked"]);
 
-                    domain_list_out.push_back(dld);
+                    ret.dld.push_back(dld);
                 }
 
-                const bool limit_reached = domain_list_limit_ < domain_list_result.size();
-                return limit_reached;
+                ret.limit_reached = domain_list_limit_ < domain_list_result.size();
+                return ret;
             }
             catch(...)
             {
                 log_and_rethrow_exception_handler(ctx);
             }
-            return false;
+            return DomainList();
         }
 
         bool DomainBrowser::getNssetList(unsigned long long user_contact_id,

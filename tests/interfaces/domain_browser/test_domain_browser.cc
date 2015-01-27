@@ -2121,9 +2121,9 @@ struct get_my_domains_fixture
 BOOST_FIXTURE_TEST_CASE(get_my_domain_list, get_my_domains_fixture )
 {
     Fred::OperationContext ctx;
-    std::vector<Registry::DomainBrowserImpl::DomainListData> domain_list_out;
-    impl.getDomainList(user_contact_info.info_contact_data.id, Optional<unsigned long long>(),
-            Optional<unsigned long long>(), Optional<unsigned long long>(),0,domain_list_out);
+    Registry::DomainBrowserImpl::DomainList dl = impl.getDomainList(user_contact_info.info_contact_data.id, Optional<unsigned long long>(),
+        Optional<unsigned long long>(), Optional<unsigned long long>(),0);
+    std::vector<Registry::DomainBrowserImpl::DomainListData> domain_list_out = dl.dld;
 
     BOOST_CHECK(domain_list_out.at(0).next_state.get_value().state_code == "deleteCandidate");
     BOOST_CHECK(domain_list_out.at(0).next_state.get_value().state_date == (map_at(domain_info,domain_list_out.at(0).fqdn).info_domain_data.expiration_date + boost::gregorian::days(registration_protection)));
@@ -2167,11 +2167,11 @@ BOOST_FIXTURE_TEST_CASE(get_my_domain_list, get_my_domains_fixture )
 BOOST_FIXTURE_TEST_CASE(get_my_domain_list_by_contact, get_my_domains_fixture )
 {
     Fred::OperationContext ctx;
-    std::vector<Registry::DomainBrowserImpl::DomainListData> domain_list_out;
-    impl.getDomainList(user_contact_info.info_contact_data.id,
+    Registry::DomainBrowserImpl::DomainList dl =  impl.getDomainList(user_contact_info.info_contact_data.id,
             Optional<unsigned long long>(admin_contact_fixture::test_contact_info.info_contact_data.id),
             Optional<unsigned long long>(),
-            Optional<unsigned long long>(),0,domain_list_out);
+            Optional<unsigned long long>(),0);
+    std::vector<Registry::DomainBrowserImpl::DomainListData> domain_list_out = dl.dld;
 
     BOOST_CHECK(domain_list_out.at(0).next_state.get_value().state_code == "deleteCandidate");
     BOOST_CHECK(domain_list_out.at(0).next_state.get_value().state_date == (map_at(domain_info,domain_list_out.at(0).fqdn).info_domain_data.expiration_date + boost::gregorian::days(registration_protection)));
@@ -2223,11 +2223,11 @@ BOOST_FIXTURE_TEST_CASE(get_my_domain_list_by_nsset, get_my_domains_fixture )
     }
 
     Fred::OperationContext ctx;
-    std::vector<Registry::DomainBrowserImpl::DomainListData> domain_list_out;
-    impl.getDomainList(user_contact_info.info_contact_data.id,
+    Registry::DomainBrowserImpl::DomainList dl =  impl.getDomainList(user_contact_info.info_contact_data.id,
             Optional<unsigned long long>(),
             Optional<unsigned long long>(nsset_info.info_nsset_data.id),
-            Optional<unsigned long long>(),0,domain_list_out);
+            Optional<unsigned long long>(),0);
+    std::vector<Registry::DomainBrowserImpl::DomainListData> domain_list_out = dl.dld;
 
     BOOST_CHECK(domain_list_out.at(0).next_state.get_value().state_code == "deleteCandidate");
     BOOST_CHECK(domain_list_out.at(0).next_state.get_value().state_date == (map_at(domain_info,domain_list_out.at(0).fqdn).info_domain_data.expiration_date + boost::gregorian::days(registration_protection)));
@@ -2278,11 +2278,11 @@ BOOST_FIXTURE_TEST_CASE(get_my_domain_list_by_keyset, get_my_domains_fixture )
     }
 
     Fred::OperationContext ctx;
-    std::vector<Registry::DomainBrowserImpl::DomainListData> domain_list_out;
-    impl.getDomainList(user_contact_info.info_contact_data.id,
+    Registry::DomainBrowserImpl::DomainList dl = impl.getDomainList(user_contact_info.info_contact_data.id,
             Optional<unsigned long long>(),
             Optional<unsigned long long>(),
-            Optional<unsigned long long>(keyset_info.info_keyset_data.id),0,domain_list_out);
+            Optional<unsigned long long>(keyset_info.info_keyset_data.id),0);
+    std::vector<Registry::DomainBrowserImpl::DomainListData> domain_list_out = dl.dld;
 
     BOOST_CHECK(domain_list_out.at(0).next_state.get_value().state_code == "deleteCandidate");
     BOOST_CHECK(domain_list_out.at(0).next_state.get_value().state_date == (map_at(domain_info,domain_list_out.at(0).fqdn).info_domain_data.expiration_date + boost::gregorian::days(registration_protection)));
@@ -2336,12 +2336,10 @@ BOOST_FIXTURE_TEST_CASE(get_domain_list_user_not_in_mojeid, get_domain_list_user
     try
     {
         Fred::OperationContext ctx;
-        std::vector<Registry::DomainBrowserImpl::DomainListData> domain_list_out;
-
         impl.getDomainList(user_contact_info.info_contact_data.id,
             Optional<unsigned long long>(),
             Optional<unsigned long long>(),Optional<unsigned long long>()
-            ,0,domain_list_out);
+            ,0);
 
         BOOST_ERROR("unreported missing user");
     }
@@ -2364,7 +2362,7 @@ BOOST_FIXTURE_TEST_CASE(get_domain_list_for_nsset_user_not_nsset_admin, get_my_d
         impl.getDomainList(user_contact_info.info_contact_data.id,
             Optional<unsigned long long>(),
             Optional<unsigned long long>(nsset_info.info_nsset_data.id),
-            Optional<unsigned long long>(),0,domain_list_out);
+            Optional<unsigned long long>(),0);
 
         BOOST_ERROR("unreported missing nsset admin contact");
     }
@@ -2387,7 +2385,7 @@ BOOST_FIXTURE_TEST_CASE(get_domain_list_for_keyset_user_not_keyset_admin, get_my
         impl.getDomainList(user_contact_info.info_contact_data.id,
             Optional<unsigned long long>(),
             Optional<unsigned long long>(),
-            Optional<unsigned long long>(keyset_info.info_keyset_data.id),0,domain_list_out);
+            Optional<unsigned long long>(keyset_info.info_keyset_data.id),0);
 
         BOOST_ERROR("unreported missing keyset admin contact");
     }
@@ -2410,7 +2408,7 @@ BOOST_FIXTURE_TEST_CASE(get_domain_list_for_not_existing_contact, get_my_domains
         impl.getDomainList(user_contact_info.info_contact_data.id,
             Optional<unsigned long long>(0),
             Optional<unsigned long long>(),
-            Optional<unsigned long long>(),0,domain_list_out);
+            Optional<unsigned long long>(),0);
 
         BOOST_ERROR("unreported missing contact");
     }

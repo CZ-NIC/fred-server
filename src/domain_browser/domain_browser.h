@@ -303,6 +303,19 @@ namespace Registry
         };
 
         /**
+         * complete domain list data
+         */
+        struct DomainList
+        {
+            std::vector<DomainListData> dld;/**< list of domain data */
+            bool limit_reached;/**< there are more data to get using higher offset in next call*/
+
+            DomainList()
+            : limit_reached(false)
+            {}
+        };
+
+        /**
          * element of NssetList
          */
         struct NssetListData
@@ -644,15 +657,13 @@ namespace Registry
              * @param list_domains_for_nsset_id if set list domains linked to nsset with given id regardless of user contact relation to listed domains
              * @param list_domains_for_keyset_id if set list domains linked to keyset with given id regardless of user contact relation to listed domains
              * @param offset contains list offset
-             * @param domain_list_out references output domain data list
-             * @return limit_exceeded flag
+             * @return list of domain data with limit_exceeded flag
              */
-            bool getDomainList(unsigned long long user_contact_id,
+            DomainList getDomainList(unsigned long long user_contact_id,
                 const Optional<unsigned long long>& list_domains_for_contact_id,
                 const Optional<unsigned long long>& list_domains_for_nsset_id,
                 const Optional<unsigned long long>& list_domains_for_keyset_id,
-                unsigned long long offset,
-                std::vector<DomainListData>& domain_list_out);
+                unsigned long long offset);
 
             /**
              * Get list of nssets administered by user contact.

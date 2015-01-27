@@ -125,13 +125,11 @@ namespace Registry
         {
             try
             {
-                std::vector<Registry::DomainBrowserImpl::DomainListData> domain_list_out;
-                limit_exceeded = pimpl_->getDomainList(user_contact_id,
+                Registry::DomainBrowserImpl::DomainList dl = pimpl_->getDomainList(user_contact_id,
                     (contact_id_ptr) ? Optional<unsigned long long>(contact_id_ptr->_value()) : Optional<unsigned long long>(),
-                    Optional<unsigned long long>(), Optional<unsigned long long>(),
-                    offset, domain_list_out);
-
-                return corba_wrap_domain_list(domain_list_out)._retn();
+                    Optional<unsigned long long>(), Optional<unsigned long long>(), offset);
+                limit_exceeded = dl.limit_reached;
+                return corba_wrap_domain_list(dl.dld)._retn();
             }
             catch (const Registry::DomainBrowserImpl::ObjectNotExists& )
             {
@@ -265,13 +263,12 @@ namespace Registry
         {
             try
             {
-                std::vector<Registry::DomainBrowserImpl::DomainListData> domain_list_out;
-                limit_exceeded = pimpl_->getDomainList(user_contact_id,
+                Registry::DomainBrowserImpl::DomainList dl = pimpl_->getDomainList(user_contact_id,
                         Optional<unsigned long long>(),
                         Optional<unsigned long long>(),
-                        Optional<unsigned long long>(keyset_id), offset, domain_list_out);
-
-                return corba_wrap_domain_list(domain_list_out)._retn();
+                        Optional<unsigned long long>(keyset_id), offset);
+                limit_exceeded = dl.limit_reached;
+                return corba_wrap_domain_list(dl.dld)._retn();
             }
             catch (const Registry::DomainBrowserImpl::AccessDenied&)
             {
@@ -295,14 +292,12 @@ namespace Registry
         {
             try
             {
-                std::vector<Registry::DomainBrowserImpl::DomainListData> domain_list_out;
-
-                limit_exceeded = pimpl_->getDomainList(user_contact_id,
+                Registry::DomainBrowserImpl::DomainList dl = pimpl_->getDomainList(user_contact_id,
                         Optional<unsigned long long>(),
                         Optional<unsigned long long>(nsset_id),
-                        Optional<unsigned long long>(), offset, domain_list_out);
-
-                return corba_wrap_domain_list(domain_list_out)._retn();
+                        Optional<unsigned long long>(), offset);
+                limit_exceeded = dl.limit_reached;
+                return corba_wrap_domain_list(dl.dld)._retn();
             }
             catch (const Registry::DomainBrowserImpl::AccessDenied&)
             {
