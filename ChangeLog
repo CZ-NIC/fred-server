@@ -1,3 +1,20 @@
+2015-01-27 Jiri Sadek, Jan Korous, Jan Zima, Michal Strnad (2.21.0)
+
+  * contact merge procedure - removed unused option
+                            - fixed duplicated contact search query
+
+  * public request and object state request locking simplified
+
+  * fredlib - object state impl. cleanup
+
+  * mojeid - cancel account method now also delete contact
+             if is not linked to other object
+           - fix e-mail format check
+
+  * rdap backend - 'delete pending' status handling
+
+  * log severity fixes
+
 2014-12-31 Jan Zima (2.20.2)
 
   * company address change
