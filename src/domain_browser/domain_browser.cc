@@ -1254,10 +1254,9 @@ namespace Registry
             return DomainList();
         }
 
-        bool DomainBrowser::getNssetList(unsigned long long user_contact_id,
+        NssetList DomainBrowser::getNssetList(unsigned long long user_contact_id,
                     const Optional<unsigned long long>& list_nssets_for_contact_id,
-                    unsigned long long offset,
-                    std::vector<NssetListData>& nsset_list_out)
+                    unsigned long long offset)
         {
             Logging::Context lctx_server(create_ctx_name(get_server_name()));
             Logging::Context lctx("get-nsset-list");
@@ -1312,7 +1311,8 @@ namespace Registry
                 unsigned long long limited_nsset_list_size = (nsset_list_result.size() > nsset_list_limit_)
                     ? nsset_list_limit_ : nsset_list_result.size();
 
-                nsset_list_out.reserve(limited_nsset_list_size);
+                NssetList ret;
+                ret.nld.reserve(limited_nsset_list_size);
                 for (unsigned long long i = 0;i < limited_nsset_list_size;++i)
                 {
                     NssetListData nld;
@@ -1328,22 +1328,22 @@ namespace Registry
                     if(!state_codes_str.empty()) boost::split(nld.state_code,state_codes_str , boost::is_any_of(","));//null is filtered in query by fn. ARRAY_FILTER_NULL
 
                     nld.is_server_blocked = static_cast<bool>(nsset_list_result[i]["is_server_blocked"]);
-                    nsset_list_out.push_back(nld);
+                    ret.nld.push_back(nld);
                 }
 
-                return nsset_list_result.size() > nsset_list_limit_;
+                ret.limit_exceeded = nsset_list_result.size() > nsset_list_limit_;
+                return ret;
             }
             catch(...)
             {
                 log_and_rethrow_exception_handler(ctx);
             }
-            return false;
+            return NssetList();
         }
 
-        bool DomainBrowser::getKeysetList(unsigned long long user_contact_id,
+        KeysetList DomainBrowser::getKeysetList(unsigned long long user_contact_id,
             const Optional<unsigned long long>& list_keysets_for_contact_id,
-            unsigned long long offset,
-            std::vector<KeysetListData>& keyset_list_out)
+            unsigned long long offset)
         {
             Logging::Context lctx_server(create_ctx_name(get_server_name()));
             Logging::Context lctx("get-keyset-list");
@@ -1399,7 +1399,8 @@ namespace Registry
                 const unsigned long long limited_keyset_list_size = keyset_list_limit_ < keyset_list_result.size()
                     ? keyset_list_limit_ : keyset_list_result.size();
 
-                keyset_list_out.reserve(limited_keyset_list_size);
+                KeysetList ret;
+                ret.kld.reserve(limited_keyset_list_size);
                 for (unsigned long long i = 0;i < limited_keyset_list_size;++i)
                 {
                     KeysetListData kld;
@@ -1415,17 +1416,17 @@ namespace Registry
                     if(!state_codes_str.empty()) boost::split(kld.state_code,state_codes_str , boost::is_any_of(","));//null is filtered in query by fn. ARRAY_FILTER_NULL
 
                     kld.is_server_blocked = static_cast<bool>(keyset_list_result[i]["is_server_blocked"]);
-                    keyset_list_out.push_back(kld);
+                   ret.kld.push_back(kld);
                 }
 
-                const bool limit_exceeded = keyset_list_limit_ < keyset_list_result.size();
-                return limit_exceeded;
+                ret.limit_exceeded = keyset_list_limit_ < keyset_list_result.size();
+                return ret;
             }
             catch(...)
             {
                 log_and_rethrow_exception_handler(ctx);
             }
-            return false;
+            return KeysetList();
         }
 
 

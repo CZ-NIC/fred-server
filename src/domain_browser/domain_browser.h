@@ -338,6 +338,19 @@ namespace Registry
         };
 
         /**
+         * complete nsset list data
+         */
+        struct NssetList
+        {
+            std::vector<NssetListData> nld;/**< list of nsset data */
+            bool limit_exceeded;/**< there are more data to get using higher offset in next call*/
+
+            NssetList()
+            : limit_exceeded(false)
+            {}
+        };
+
+        /**
          * element of KeysetList
          */
         struct KeysetListData
@@ -356,6 +369,19 @@ namespace Registry
             , domain_count(0)
             , external_importance(0)
             , is_server_blocked(false)
+            {}
+        };
+
+        /**
+         * complete keyset list data
+         */
+        struct KeysetList
+        {
+            std::vector<KeysetListData> kld;/**< list of keyset data */
+            bool limit_exceeded;/**< there are more data to get using higher offset in next call*/
+
+            KeysetList()
+            : limit_exceeded(false)
             {}
         };
 
@@ -670,26 +696,22 @@ namespace Registry
              * @param user_contact_id contains database id of the user contact
              * @param list_nssets_for_contact_id if set list nssets linked to contact with given id regardless of user contact relation to listed nssets
              * @param offset contains list offset
-             * @param nsset_list_out references output nsset data list
-             * @return limit_exceeded flag
+             * @return list of nsset data with limit_exceeded flag
              */
-            bool getNssetList(unsigned long long user_contact_id,
+            NssetList getNssetList(unsigned long long user_contact_id,
                 const Optional<unsigned long long>& list_nssets_for_contact_id,
-                unsigned long long offset,
-                std::vector<NssetListData>& nsset_list_out);
+                unsigned long long offset);
 
             /**
              * Get list of keysets administered by user contact.
              * @param user_contact_id contains database id of the user contact
              * @param list_keysets_for_contact_id if set list keysets linked to contact with given id regardless of user contact relation to listed keysets
              * @param offset contains list offset
-             * @param keyset_list_out references output keyset data list
-             * @return limit_exceeded flag
+             * @return list of keyset data with limit_exceeded flag
              */
-            bool getKeysetList(unsigned long long user_contact_id,
+            KeysetList getKeysetList(unsigned long long user_contact_id,
                 const Optional<unsigned long long>& list_keysets_for_contact_id,
-                unsigned long long offset,
-                std::vector<KeysetListData>& keyset_list_out);
+                unsigned long long offset);
 
             /**
              * Get descriptions of public states.

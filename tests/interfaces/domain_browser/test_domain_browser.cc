@@ -2481,9 +2481,8 @@ struct get_my_nssets_fixture
 BOOST_FIXTURE_TEST_CASE(get_my_nsset_list, get_my_nssets_fixture )
 {
     Fred::OperationContext ctx;
-    std::vector<Registry::DomainBrowserImpl::NssetListData> nsset_list_out;
-    impl.getNssetList(user_contact_info.info_contact_data.id, Optional<unsigned long long>(),
-        0,nsset_list_out);
+    Registry::DomainBrowserImpl::NssetList nl = impl.getNssetList(user_contact_info.info_contact_data.id, Optional<unsigned long long>(),0);
+    std::vector<Registry::DomainBrowserImpl::NssetListData> nsset_list_out = nl.nld;
 
     for(unsigned long long i = 0; i < nsset_list_out.size(); ++i)
     {
@@ -2508,11 +2507,9 @@ BOOST_FIXTURE_TEST_CASE(get_my_nsset_list, get_my_nssets_fixture )
 BOOST_FIXTURE_TEST_CASE(get_nsset_list_by_contact, get_my_nssets_fixture )
 {
     Fred::OperationContext ctx;
-    std::vector<Registry::DomainBrowserImpl::NssetListData> nsset_list_out;
-    impl.getNssetList(user_contact_info.info_contact_data.id,
-        Optional<unsigned long long>(admin_contact_fixture::test_contact_info.info_contact_data.id),
-        0,nsset_list_out);
-
+    Registry::DomainBrowserImpl::NssetList nl = impl.getNssetList(user_contact_info.info_contact_data.id,
+        Optional<unsigned long long>(admin_contact_fixture::test_contact_info.info_contact_data.id), 0);
+    std::vector<Registry::DomainBrowserImpl::NssetListData> nsset_list_out = nl.nld;
     for(unsigned long long i = 0; i < nsset_list_out.size(); ++i)
     {
         BOOST_CHECK(nsset_list_out.at(i).id == map_at(nsset_info,nsset_list_out.at(i).handle).info_nsset_data.id);
@@ -2541,11 +2538,8 @@ BOOST_FIXTURE_TEST_CASE(get_nsset_list_for_not_existing_contact, get_my_nssets_f
     try
     {
         Fred::OperationContext ctx;
-        std::vector<Registry::DomainBrowserImpl::NssetListData> nsset_list_out;
         impl.getNssetList(user_contact_info.info_contact_data.id,
-            Optional<unsigned long long>(0),
-            0,nsset_list_out);
-
+            Optional<unsigned long long>(0), 0);
         BOOST_ERROR("unreported missing contact");
     }
     catch( const Registry::DomainBrowserImpl::ObjectNotExists& ex)
@@ -2612,10 +2606,8 @@ struct get_my_keysets_fixture
 BOOST_FIXTURE_TEST_CASE(get_my_keyset_list, get_my_keysets_fixture )
 {
     Fred::OperationContext ctx;
-    std::vector<Registry::DomainBrowserImpl::KeysetListData> keyset_list_out;
-    impl.getKeysetList(user_contact_info.info_contact_data.id, Optional<unsigned long long>(),
-        0,keyset_list_out);
-
+    Registry::DomainBrowserImpl::KeysetList kl = impl.getKeysetList(user_contact_info.info_contact_data.id, Optional<unsigned long long>(),0);
+    std::vector<Registry::DomainBrowserImpl::KeysetListData> keyset_list_out = kl.kld;
     for(unsigned long long i = 0; i < keyset_list_out.size(); ++i)
     {
         BOOST_CHECK(keyset_list_out.at(i).id == map_at(keyset_info,keyset_list_out.at(i).handle).info_keyset_data.id);
@@ -2639,10 +2631,9 @@ BOOST_FIXTURE_TEST_CASE(get_my_keyset_list, get_my_keysets_fixture )
 BOOST_FIXTURE_TEST_CASE(get_keyset_list_by_contact, get_my_keysets_fixture )
 {
     Fred::OperationContext ctx;
-    std::vector<Registry::DomainBrowserImpl::KeysetListData> keyset_list_out;
-    impl.getKeysetList(user_contact_info.info_contact_data.id,
-        Optional<unsigned long long>(admin_contact_fixture::test_contact_info.info_contact_data.id),
-        0,keyset_list_out);
+    Registry::DomainBrowserImpl::KeysetList kl = impl.getKeysetList(user_contact_info.info_contact_data.id,
+        Optional<unsigned long long>(admin_contact_fixture::test_contact_info.info_contact_data.id),0);
+    std::vector<Registry::DomainBrowserImpl::KeysetListData> keyset_list_out = kl.kld;
 
     for(unsigned long long i = 0; i < keyset_list_out.size(); ++i)
     {
@@ -2672,10 +2663,8 @@ BOOST_FIXTURE_TEST_CASE(get_keyset_list_for_not_existing_contact, get_my_keysets
     try
     {
         Fred::OperationContext ctx;
-        std::vector<Registry::DomainBrowserImpl::KeysetListData> keyset_list_out;
         impl.getKeysetList(user_contact_info.info_contact_data.id,
-            Optional<unsigned long long>(0),
-            0,keyset_list_out);
+            Optional<unsigned long long>(0),0);
 
         BOOST_ERROR("unreported missing contact");
     }
