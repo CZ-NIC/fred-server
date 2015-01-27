@@ -171,7 +171,7 @@ namespace Registry
                     , Database::query_param_list(object_id));
 
             std::string state_codes_str = static_cast<std::string>(state_res[0]["state_codes"]);
-            boost::split(state_codes,state_codes_str , boost::is_any_of(","));//null is filtered in query by fn. ARRAY_FILTER_NULL
+            if(!state_codes_str.empty()) boost::split(state_codes,state_codes_str , boost::is_any_of(","));//null is filtered in query by fn. ARRAY_FILTER_NULL
         }
 
         std::string DomainBrowser::filter_authinfo(bool user_is_owner, const std::string& authinfopw)
@@ -1237,7 +1237,7 @@ namespace Registry
                     dld.registrar_name = static_cast<std::string>(domain_list_result[i]["registrar_name"]);
 
                     std::string state_codes_str = static_cast<std::string>(domain_list_result[i]["state_code"]);
-                    boost::split(dld.state_code,state_codes_str, boost::is_any_of(","));//null is filtered in query by fn. ARRAY_FILTER_NULL
+                    if(!state_codes_str.empty()) boost::split(dld.state_code,state_codes_str, boost::is_any_of(","));//null is filtered in query by fn. ARRAY_FILTER_NULL
 
                     dld.is_server_blocked = static_cast<bool>(domain_list_result[i]["is_server_blocked"]);
 
@@ -1325,7 +1325,7 @@ namespace Registry
                     nld.external_importance = external_status_importance == 0 ? lowest_status_importance_ : external_status_importance;
 
                     std::string state_codes_str = static_cast<std::string>(nsset_list_result[i]["state_code"]);
-                    boost::split(nld.state_code,state_codes_str , boost::is_any_of(","));//null is filtered in query by fn. ARRAY_FILTER_NULL
+                    if(!state_codes_str.empty()) boost::split(nld.state_code,state_codes_str , boost::is_any_of(","));//null is filtered in query by fn. ARRAY_FILTER_NULL
 
                     nld.is_server_blocked = static_cast<bool>(nsset_list_result[i]["is_server_blocked"]);
                     nsset_list_out.push_back(nld);
@@ -1412,7 +1412,7 @@ namespace Registry
                     kld.external_importance = external_status_importance == 0 ? lowest_status_importance_ : external_status_importance;
 
                     std::string state_codes_str = static_cast<std::string>(keyset_list_result[i]["state_code"]);
-                    boost::split(kld.state_code,state_codes_str , boost::is_any_of(","));//null is filtered in query by fn. ARRAY_FILTER_NULL
+                    if(!state_codes_str.empty()) boost::split(kld.state_code,state_codes_str , boost::is_any_of(","));//null is filtered in query by fn. ARRAY_FILTER_NULL
 
                     kld.is_server_blocked = static_cast<bool>(keyset_list_result[i]["is_server_blocked"]);
                     keyset_list_out.push_back(kld);
