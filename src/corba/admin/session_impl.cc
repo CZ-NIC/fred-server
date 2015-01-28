@@ -738,6 +738,7 @@ void fillPaymentDetail(Registry::Banking::BankItem::Detail &d, const Fred::Banki
         d.invoiceId       = _payment->getAdvanceInvoiceId();
         d.accountName     = DUPSTRFUN(_payment->getAccountName);
         d.crTime          = DUPSTRDATE(_payment->getCrTime);
+        d.destAccountNumber = DUPSTRFUN(_payment->getDestAccount);
 }
 
 Registry::Banking::BankItem::Detail *ccReg_Session_i::createPaymentDetail(Fred::Banking::Payment *_payment) {
