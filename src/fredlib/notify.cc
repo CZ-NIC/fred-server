@@ -607,6 +607,9 @@ public:
                     conn.exec(sql.str());
                     trans->savepoint();
 
+                }catch (Fred::Messages::WrongPostalAddress& e) {
+                    LOGGER(PACKAGE).warning(
+                            boost::format("GenMultipleFiles::endFile(): Caught exception: %1%") % e.what());
                 }
                 catch (const std::exception &e) {
                     LOGGER(PACKAGE).error(
@@ -621,7 +624,6 @@ public:
 
 #define XML_DB_OUT(x,y) "<![CDATA[" << std::string(res[x][y]) << "]]>"
       virtual void generateLetters(unsigned item_count_limit)
-        throw (SQL_ERROR)
       {
         TRACE("[CALL] Fred::Notify::generateLetters()");
     	// transaction is needed for 'ON COMMIT DROP' functionality
