@@ -61,7 +61,8 @@ void ContactIdentificationImpl::pre_save_check()
         contact_validator_.check(cdata);
 
         const State contact_state = get_contact_verification_state(contact_id);
-        if (contact_state.has_all(State::cIvm)) {// already I
+        if (!contact_state.has_all(State::Civm) ||// missing C
+             contact_state.has_all(State::cIvm)) {// already I
             throw Fred::PublicRequest::NotApplicable("pre_save_check: failed!");
         }
     }
@@ -69,9 +70,15 @@ void ContactIdentificationImpl::pre_save_check()
 
 void ContactIdentificationImpl::pre_process_check(bool _check)
 {
+    const unsigned long long contact_id = pra_impl_ptr_->getObject(0).id;
+    const State contact_state = get_contact_verification_state(contact_id);
+    if (!contact_state.has_all(State::Civm) ||// missing C
+         contact_state.has_all(State::cIvm)) {// already I
+        throw Fred::PublicRequest::NotApplicable("pre_process_check: failed!");
+    }
+
     Fred::Contact::Verification::Contact cdata
-        = Fred::Contact::Verification::contact_info(
-                pra_impl_ptr_->getObject(0).id);
+        = Fred::Contact::Verification::contact_info(contact_id);
     contact_validator_.check(cdata);
 }
 
