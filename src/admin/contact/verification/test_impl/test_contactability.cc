@@ -18,6 +18,7 @@
 
 #include "src/admin/contact/verification/test_impl/test_contactability.h"
 #include "src/fredlib/contact/verification/enum_test_status.h"
+#include "src/admin/contact/verification/test_impl/util.h"
 
 #include <fredlib/contact.h>
 
@@ -112,12 +113,17 @@ namespace ContactVerification {
         address.city    = data.city_;
         address.state   = data.stateorprovince_;
         address.code    = data.postalcode_;
-        address.country = data.country_;
 
+        Fred::OperationContext ctx;
+
+        try {
+            address.country = Util::get_country_name(ctx, data.country_);
+        } catch(...) {
+            return TestRunResult (Fred::ContactTestStatus::ERROR, std::string("failed to get country name") );
+        }
 
         unsigned long long generated_pdf_id;
 
-        Fred::OperationContext ctx;
         Fred::InfoContactData contact_data = Fred::InfoContactHistoryByHistoryid(_history_id)
             .exec(ctx)
                 .info_contact_data;
