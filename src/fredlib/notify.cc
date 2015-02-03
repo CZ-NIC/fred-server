@@ -650,6 +650,8 @@ public:
           " JOIN domain_history d      ON d.historyid = s.ohid_from "
           " JOIN zone z                ON z.id = d.zone "
           "WHERE s.state_id=19 AND s.valid_to ISNULL AND nl.state_id ISNULL "
+          " AND s.valid_from > (now() - (((SELECT (val||' day')::interval FROM enum_parameters  WHERE name='expiration_registration_protection_period') "
+          " - (SELECT (val||' day')::interval FROM enum_parameters  WHERE name='expiration_letter_warning_period'))/2)::interval) "
           " AND z.warning_letter=true ";
         conn.exec(fixateStates);
         // select all expiration dates of domain to notify
