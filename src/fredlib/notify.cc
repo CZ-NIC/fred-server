@@ -573,8 +573,6 @@ public:
                     // records stored in vector could be used in a simple insert
                     //
                     Connection conn = Database::Manager::acquire();
-                    const TID filePDF = gPDF->closeInput();
-                    gPDF.reset(NULL);
 
                     Fred::Messages::PostalAddress pa;
                     pa.name = contact_name;
@@ -586,6 +584,11 @@ public:
                     pa.state = contact_state;
                     pa.code = contact_code;
                     pa.country = contact_country;
+
+                    Fred::Messages::check_postal_address(pa);
+
+                    const TID filePDF = gPDF->closeInput();
+                    gPDF.reset(NULL);
 
                     const TID letter_id = msgm->save_letter_to_send(contact_handle.c_str()
                             , pa, filePDF

@@ -87,6 +87,11 @@ public:
     {}
 };
 
+/**
+ * Check that postal address fields: name, street1, city, postal code and country are not empty after trimming spaces.
+ * @throw std::runtime_error if not filled address field found
+ */
+void check_postal_address(const PostalAddress& address);
 
 unsigned long long get_filetype_id(std::string file_type);
 
