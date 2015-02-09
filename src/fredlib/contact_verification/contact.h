@@ -97,6 +97,8 @@ void contact_load_disclose_flags(Contact &_data);
 void contact_transfer_poll_message(const unsigned long long &_old_registrar_id,
                                    const unsigned long long &_contact_id);
 
+void contact_delete_not_linked(const unsigned long long &_id);
+
 }
 }
 }
