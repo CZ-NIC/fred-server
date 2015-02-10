@@ -1399,6 +1399,8 @@ namespace Registry
                 new_request->addObject(Fred::PublicRequest::OID(
                                 _contact_id, contact_handle, Fred::PublicRequest::OT_CONTACT));
                 new_request->save();
+                new_request->sendPasswords();
+                tx.commit();
 
                 LOGGER(PACKAGE).info("request completed successfully");
 
