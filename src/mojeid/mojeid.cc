@@ -85,17 +85,20 @@ namespace Registry
             return state.find(Fred::ObjectState::CONDITIONALLY_IDENTIFIED_CONTACT);
         }
 
-
-        std::string get_contact_handle(unsigned long long _contact_id, Database::Connection &_conn) {
-            Database::Result result = _conn.exec_params(
-                "SELECT obr.name "
-                "FROM contact c "
-                "JOIN object_registry obr ON obr.id=c.id "
-                "WHERE c.id=$1::BIGINT", Database::query_param_list(_contact_id));
-            if (0 < result.size()) {
-                return static_cast< std::string >(result[0][0]);
+        namespace
+        {
+            std::string get_contact_handle(unsigned long long _contact_id, Database::Connection &_conn)
+            {
+                const Database::Result result = _conn.exec_params(
+                    "SELECT obr.name "
+                    "FROM contact c "
+                    "JOIN object_registry obr ON obr.id=c.id "
+                    "WHERE c.id=$1::BIGINT", Database::query_param_list(_contact_id));
+                if (0 < result.size()) {
+                    return static_cast< std::string >(result[0][0]);
+                }
+                throw Registry::MojeID::OBJECT_NOT_EXISTS();
             }
-            throw Registry::MojeID::OBJECT_NOT_EXISTS();
         }
 
         MojeIDImpl::MojeIDImpl(const std::string &_server_name
