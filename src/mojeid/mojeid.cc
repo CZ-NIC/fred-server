@@ -1357,6 +1357,15 @@ namespace Registry
 
                 const std::string contact_handle = get_contact_handle(_contact_id, conn);
 
+                {
+                    const Fred::Contact::Verification::State contact_state =
+                        Fred::Contact::Verification::get_contact_verification_state(_contact_id);
+                    if (contact_state.has_all(Fred::Contact::Verification::State::cIvm)) {
+                        /* drop contact identified status */
+                        Fred::cancel_object_state(_contact_id, Fred::ObjectState::IDENTIFIED_CONTACT);
+                    }
+                }
+
                 // check if the contact with ID _contact_id exists
                 Fred::NameIdPair cinfo;
                 DBSharedPtr nodb;
