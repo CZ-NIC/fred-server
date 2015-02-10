@@ -86,6 +86,18 @@ namespace Registry
         }
 
 
+        std::string get_contact_handle(unsigned long long _contact_id, Database::Connection &_conn) {
+            Database::Result result = _conn.exec_params(
+                "SELECT obr.name "
+                "FROM contact c "
+                "JOIN object_registry obr ON obr.id=c.id "
+                "WHERE c.id=$1::BIGINT", Database::query_param_list(_contact_id));
+            if (0 < result.size()) {
+                return static_cast< std::string >(result[0][0]);
+            }
+            throw Registry::MojeID::OBJECT_NOT_EXISTS();
+        }
+
         MojeIDImpl::MojeIDImpl(const std::string &_server_name
                 , boost::shared_ptr<Fred::Mailer::Manager> _mailer)
         : registry_conf_(CfgArgs::instance()
@@ -1321,6 +1333,89 @@ namespace Registry
                 throw;
             }
         }
+
+        void MojeIDImpl::resendPIN3(
+            unsigned long long _contact_id,
+            unsigned long long _request_id)
+        {
+            Logging::Context ctx_server(create_ctx_name(get_server_name()));
+            Logging::Context ctx("resend-pin3");
+            ConnectionReleaser releaser;
+
+            LOGGER(PACKAGE).info(boost::format("resendPIN3 --"
+                    "  contact_id: %1%  request_id: %2%")
+                        % _contact_id % _request_id);
+
+            try {
+                enum { INVALID_CONTACT_ID = 0 };
+                if (_contact_id == INVALID_CONTACT_ID) {
+                    throw std::runtime_error("_contact_id is invalid");
+                }
+
+                Database::Connection conn = Database::Manager::acquire();
+                Database::Transaction tx(conn);
+
+                const std::string contact_handle = get_contact_handle(_contact_id, conn);
+
+                // check if the contact with ID _contact_id exists
+                Fred::NameIdPair cinfo;
+                DBSharedPtr nodb;
+                Fred::Contact::ManagerPtr contact_mgr(
+                    Fred::Contact::Manager::create(nodb, registry_conf_->restricted_handles));
+
+                Fred::Contact::Manager::CheckAvailType check_result;
+                check_result = contact_mgr->checkAvail(_contact_id, cinfo);
+
+                if (check_result != Fred::Contact::Manager::CA_REGISTRED ||
+                    !this->isMojeidContact(_contact_id)) {
+                    /* contact doesn't exists */
+                    throw Registry::MojeID::OBJECT_NOT_EXISTS();
+                }
+
+                enum { INVALID_PUBLIC_REQUEST_ID = 0 };
+                Fred::PublicRequest::Type type = Fred::PublicRequest::PRT_MOJEID_CONTACT_IDENTIFICATION;
+                if (Fred::PublicRequest::check_public_request(_contact_id, type) != INVALID_PUBLIC_REQUEST_ID) {
+                    Fred::PublicRequest::cancel_public_request(_contact_id, type, _request_id);
+                }
+                else {
+                    type = Fred::PublicRequest::PRT_MOJEID_CONTACT_REIDENTIFICATION;
+                    if (Fred::PublicRequest::check_public_request(_contact_id, type) == INVALID_PUBLIC_REQUEST_ID) {
+                        throw Registry::MojeID::IDENTIFICATION_REQUEST_NOT_EXISTS();
+                    }
+                    Fred::PublicRequest::cancel_public_request(_contact_id, type, _request_id);
+                }
+
+                IdentificationRequestPtr new_request(mailer_, type);
+                new_request->setRegistrarId(mojeid_registrar_id_);
+                new_request->setRequestId(_request_id);
+                new_request->addObject(Fred::PublicRequest::OID(
+                                _contact_id, contact_handle, Fred::PublicRequest::OT_CONTACT));
+                new_request->save();
+
+                LOGGER(PACKAGE).info("request completed successfully");
+
+            }
+            catch(const Registry::MojeID::OBJECT_NOT_EXISTS &e)
+            {
+                LOGGER(PACKAGE).info(e.what());
+                throw;
+            }
+            catch(const Registry::MojeID::IDENTIFICATION_REQUEST_NOT_EXISTS &e)
+            {
+                LOGGER(PACKAGE).info(e.what());
+                throw;
+            }
+            catch (const std::exception &e)
+            {
+                LOGGER(PACKAGE).error(e.what());
+                throw;
+            }
+            catch (...)
+            {
+                LOGGER(PACKAGE).error("unknown exception");
+                throw;
+            }
+        }//MojeIDImpl::resendPIN3
 
         ///cancel mojeidContact state
         void MojeIDImpl::contactCancelAccountPrepare(

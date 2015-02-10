@@ -155,6 +155,10 @@ namespace Registry
           Registry::MojeID::ContactHandleListIter_ptr getUnregistrableHandlesIter();
 
           char* contactAuthInfo(::CORBA::ULongLong contact_id);
+
+          void resendPIN3(
+              ::CORBA::ULongLong contact_id,
+              ::CORBA::ULongLong request_id);
         };//class Server_i
     }//namespace MojeID
 }//namespace Registry
