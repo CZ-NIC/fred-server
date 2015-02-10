@@ -1361,8 +1361,7 @@ namespace Registry
                     const Fred::Contact::Verification::State contact_state =
                         Fred::Contact::Verification::get_contact_verification_state(_contact_id);
                     if (contact_state.has_all(Fred::Contact::Verification::State::cIvm)) {
-                        /* drop contact identified status */
-                        Fred::cancel_object_state(_contact_id, Fred::ObjectState::IDENTIFIED_CONTACT);
+                        throw Registry::MojeID::IDENTIFICATION_REQUEST_NOT_EXISTS();
                     }
                 }
 
