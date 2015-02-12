@@ -2886,37 +2886,6 @@ ccReg::Response * ccReg_EPP_i::ContactUpdate(
             code = COMMAND_FAILED;
         }
 
-        bool hidden_address_allowed_by_contact_state = false;
-        bool hidden_address_allowed_by_organization = false;
-
-        if (!code) {
-            //discloseaddress conditions #7493
-            hidden_address_allowed_by_contact_state
-                = Fred::object_has_state(id, Fred::ObjectState::IDENTIFIED_CONTACT)
-                    || Fred::object_has_state(id, Fred::ObjectState::VALIDATED_CONTACT);
-
-            if(c.Organization.in()[0] == '\0') // no change so we need to check current value
-            {
-                Database::Result result = Database::Manager::acquire().exec_params(
-                    "SELECT c.organization FROM contact c WHERE c.id = $1::bigint "
-                    , Database::query_param_list(id));
-                if (result.size() == 1) {
-                    hidden_address_allowed_by_organization = std::string(result[0][0]).empty();
-                }
-            }
-            else if(c.Organization.in()[0] == '\b')  // erasing current value (see EPP hack - grep "\\\b")
-            {
-                hidden_address_allowed_by_organization = true;
-            }
-
-            //if not allowed to hide but set to hide address return epp error
-            if(!(hidden_address_allowed_by_contact_state && hidden_address_allowed_by_organization)
-                && ((c.DiscloseAddress == true) && (c.DiscloseFlag == ccReg::DISCL_HIDE)))
-            {
-                code = COMMAND_STATUS_PROHIBITS_OPERATION;
-            }
-        }
-
         if (!code) {
             if ( !TestCountryCode(c.CC) ) {
                 LOG(WARNING_LOG, "Reason: unknown country code: %s", (const char *)c.CC);
@@ -2990,18 +2959,8 @@ ccReg::Response * ccReg_EPP_i::ContactUpdate(
                             c.DiscloseFlag) );
                 action.getDB()->SETBOOL("DiscloseOrganization", update_DISCLOSE(
                             c.DiscloseOrganization, c.DiscloseFlag) );
-
-                //if hidden address not allowed then disclose address
-                if(!(hidden_address_allowed_by_contact_state && hidden_address_allowed_by_organization))
-                {
-                    action.getDB()->SETBOOL("DiscloseAddress", 't');
-                }
-                else //ok
-                {
-                    action.getDB()->SETBOOL("DiscloseAddress", update_DISCLOSE(
+               action.getDB()->SETBOOL("DiscloseAddress", update_DISCLOSE(
                             c.DiscloseAddress, c.DiscloseFlag) );
-                }
-
                 action.getDB()->SETBOOL("DiscloseTelephone", update_DISCLOSE(
                             c.DiscloseTelephone, c.DiscloseFlag) );
                 action.getDB()->SETBOOL("DiscloseFax", update_DISCLOSE(c.DiscloseFax,
@@ -3055,6 +3014,28 @@ ccReg::Response * ccReg_EPP_i::ContactUpdate(
                     }
             }
         }
+
+        //check disclose address
+        {
+            //discloseaddress conditions #7493
+            bool hidden_address_allowed_by_contact_state
+                = Fred::object_has_state(id, Fred::ObjectState::IDENTIFIED_CONTACT)
+                    || Fred::object_has_state(id, Fred::ObjectState::VALIDATED_CONTACT);
+
+            Database::Result result = Database::Manager::acquire().exec_params(
+                "SELECT c.organization, c.discloseaddress FROM contact c WHERE c.id = $1::bigint "
+                , Database::query_param_list(id));
+
+            if(result.size() == 1)
+            {
+                std::string organization = static_cast<std::string>(result[0]["organization"]);
+                bool discloseaddress = static_cast<bool>(result[0]["discloseaddress"]);
+
+                if((discloseaddress == false) && (!organization.empty() || !hidden_address_allowed_by_contact_state))
+                code = COMMAND_STATUS_PROHIBITS_OPERATION;
+            }
+        }
+
         if (code == COMMAND_OK) // run notifier
         {
             ntf.reset(new EPPNotifier(
