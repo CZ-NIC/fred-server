@@ -48,7 +48,7 @@ bool check_contact_change_for_cancel_verification(
 
         const State contact_state = get_contact_verification_state(contact_id);
         //if contact conditionally identified return true to cancel
-        if (contact_state.has_all(State::Civm)) {
+        if (contact_state.has_all(State::Civm) && !contact_state.has_all(State::cIvm)) {
             return true;
         }
 
