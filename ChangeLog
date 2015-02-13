@@ -7,13 +7,15 @@
 
   * fredlib - object state impl. cleanup
 
-  * mojeid - cancel account method now also delete contact
-             if is not linked to other object
-           - fix e-mail format check
+  * mojeid - fix e-mail format check
 
   * rdap backend - 'delete pending' status handling
 
   * log severity fixes
+
+2015-02-09 Jan Zima (2.20.4)
+
+  * mojeid - cancel account method now also delete contact
 
 2015-01-27 Jan Korous (2.20.3)
 
