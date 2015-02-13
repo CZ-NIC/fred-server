@@ -2886,6 +2886,76 @@ ccReg::Response * ccReg_EPP_i::ContactUpdate(
             code = COMMAND_FAILED;
         }
 
+        bool disclose_address = false;
+
+        if (!code)
+        {
+            //discloseaddress conditions #12563
+            if(c.DiscloseAddress == false)//discloseaddress not changed
+            {
+                if(c.Organization.in()[0] == '\0') // no change so we need to check current value
+                {
+                    Database::Result result = Database::Manager::acquire().exec_params(
+                    "SELECT c.organization FROM contact c WHERE c.id = $1::bigint "
+                    , Database::query_param_list(id));
+                    if (result.size() == 1)
+                    {
+                        if(!std::string(result[0][0]).empty())
+                        {
+                            disclose_address = true;
+                        }
+                    }
+                }
+                else if(c.Organization.in()[0] != '\b') //not erasing current value (see EPP hack - grep "\\\b") effectively sets the organization
+                {
+                    disclose_address = true;
+                }
+
+                {//check data change ending identification state of the contact
+                    Database::Result result = Database::Manager::acquire().exec_params(
+                    "SELECT c.email, c.telephone, c.name, c.organization, c.street1, c.street2, c.street3 "
+                    ", c.city, c.stateorprovince, c.postalcode, c.country FROM contact c WHERE c.id = $1::bigint"
+                    , Database::query_param_list(id));
+
+                    if (result.size() == 1)
+                    {
+                        std::string email = static_cast<std::string>(result[0]["email"]);
+                        std::string telephone = static_cast<std::string>(result[0]["telephone"]);
+                        std::string name = static_cast<std::string>(result[0]["name"]);
+                        std::string organization = static_cast<std::string>(result[0]["organization"]);
+                        std::string street1 = static_cast<std::string>(result[0]["street1"]);
+                        std::string street2 = static_cast<std::string>(result[0]["street2"]);
+                        std::string street3 = static_cast<std::string>(result[0]["street3"]);
+                        std::string city = static_cast<std::string>(result[0]["city"]);
+                        std::string stateorprovince = static_cast<std::string>(result[0]["stateorprovince"]);
+                        std::string postalcode = static_cast<std::string>(result[0]["postalcode"]);
+                        std::string country = static_cast<std::string>(result[0]["country"]);
+
+                        if(((c.Email.in()[0] != '\0') && (email != c.Email.in()))
+                        || ((c.Telephone.in()[0] != '\0') && (telephone != c.Telephone.in()))
+                        || ((c.Name.in()[0] != '\0') && (name != c.Name.in()))
+                        || ((c.Organization.in()[0] != '\0') && (organization != c.Organization.in()))
+                        || ((c.Streets.length() > 0) && (c.Streets[0].in()[0] != '\0') && (street1 != c.Streets[0].in()))
+                        || ((c.Streets.length() > 1) && (c.Streets[1].in()[0] != '\0') && (street2 != c.Streets[1].in()))
+                        || ((c.Streets.length() > 2) && (c.Streets[2].in()[0] != '\0') && (street3 != c.Streets[2].in()))
+                        || ((c.City.in()[0] != '\0') && (city != c.City.in()))
+                        || ((c.StateOrProvince.in()[0] != '\0') && (stateorprovince != c.StateOrProvince.in()))
+                        || ((c.PostalCode.in()[0] != '\0') && (postalcode != c.PostalCode.in()))
+                        || ((c.CC.in()[0] != '\0') && (country != c.CC.in())))
+                        {
+                            disclose_address = true;
+                        }
+                    }
+                }
+
+                if(!(Fred::object_has_state(id, Fred::ObjectState::IDENTIFIED_CONTACT)
+                    || Fred::object_has_state(id, Fred::ObjectState::VALIDATED_CONTACT)))
+                {
+                    disclose_address = true;
+                }
+            }
+        }
+
         if (!code) {
             if ( !TestCountryCode(c.CC) ) {
                 LOG(WARNING_LOG, "Reason: unknown country code: %s", (const char *)c.CC);
@@ -2959,8 +3029,17 @@ ccReg::Response * ccReg_EPP_i::ContactUpdate(
                             c.DiscloseFlag) );
                 action.getDB()->SETBOOL("DiscloseOrganization", update_DISCLOSE(
                             c.DiscloseOrganization, c.DiscloseFlag) );
-               action.getDB()->SETBOOL("DiscloseAddress", update_DISCLOSE(
+
+               //if hidden address not allowed then disclose address
+               if(disclose_address)
+               {
+                   action.getDB()->SETBOOL("DiscloseAddress", 't');
+               }
+               else //ok
+               {
+                   action.getDB()->SETBOOL("DiscloseAddress", update_DISCLOSE(
                             c.DiscloseAddress, c.DiscloseFlag) );
+               }
                 action.getDB()->SETBOOL("DiscloseTelephone", update_DISCLOSE(
                             c.DiscloseTelephone, c.DiscloseFlag) );
                 action.getDB()->SETBOOL("DiscloseFax", update_DISCLOSE(c.DiscloseFax,
