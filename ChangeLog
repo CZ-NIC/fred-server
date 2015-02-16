@@ -1,3 +1,7 @@
+2015-02-16 Jan Korous (2.20.5)
+
+  * admin. contact verification - fix check detail for deleted contact
+
 2015-02-09 Jan Zima (2.20.4)
 
   * mojeid - cancel account method now also delete contact
