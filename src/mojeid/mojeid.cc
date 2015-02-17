@@ -893,9 +893,8 @@ namespace Registry
 
                 Database::Result res = conn.exec_params(
                     "SELECT "
-                    " (pr.create_time::timestamptz AT TIME ZONE 'Europe/Prague')::date,"
                     " pr.id, "
-                    " c.name, c. organization, c.ssn, c.ssntype, "
+                    " c.name, c.organization, c.ssn, c.ssntype, "
                     " c.street1 || ' ' || COALESCE(c.street2,'') || ' ' ||"
                     " COALESCE(c.street3,' ') || ', ' || "
                     " c.postalcode || ' ' || c.city || ', ' || c.country, "
@@ -920,21 +919,19 @@ namespace Registry
                                 "cs"
                         )
                 );
-                unsigned identType = res[0][5];
-                Database::Date d = res[0][0];
+                const unsigned identType = static_cast< unsigned >(res[0][4]);
                 //g->getInput().imbue(std::locale(std::locale(""),new date_facet("%x")));
 
                 std::string letter_xml("<?xml version='1.0' encoding='utf-8'?>");
 
                 Util::XmlTagPair("mojeid_valid", Util::vector_of<Util::XmlCallback>
-                    (Util::XmlTagPair("request_date", Util::XmlUnparsedCData(stringify(d.get()))))
-                    (Util::XmlTagPair("request_id", Util::XmlUnparsedCData(static_cast<std::string>(res[0][1]))))
-                    (Util::XmlTagPair("handle", Util::XmlUnparsedCData(static_cast<std::string>(res[0][7]))))
-                    (Util::XmlTagPair("name", Util::XmlUnparsedCData(static_cast<std::string>(res[0][2]))))
-                    (Util::XmlTagPair("organization", Util::XmlUnparsedCData(static_cast<std::string>(res[0][3]))))
-                    (Util::XmlTagPair("ic", Util::XmlUnparsedCData(identType == 4 ? static_cast<std::string>(res[0][4]) : "")))
-                    (Util::XmlTagPair("birth_date", Util::XmlUnparsedCData(identType == 6 ? stringify(birthdate_from_string_to_date(res[0][4])) : "")))
-                    (Util::XmlTagPair("address", Util::XmlUnparsedCData(static_cast<std::string>(res[0][6]))))
+                    (Util::XmlTagPair("request_id", Util::XmlUnparsedCData(static_cast<std::string>(res[0][0]))))
+                    (Util::XmlTagPair("handle", Util::XmlUnparsedCData(static_cast<std::string>(res[0][6]))))
+                    (Util::XmlTagPair("name", Util::XmlUnparsedCData(static_cast<std::string>(res[0][1]))))
+                    (Util::XmlTagPair("organization", Util::XmlUnparsedCData(static_cast<std::string>(res[0][2]))))
+                    (Util::XmlTagPair("ic", Util::XmlUnparsedCData(identType == 4 ? static_cast<std::string>(res[0][3]) : "")))
+                    (Util::XmlTagPair("birth_date", Util::XmlUnparsedCData(identType == 6 ? stringify(birthdate_from_string_to_date(res[0][3])) : "")))
+                    (Util::XmlTagPair("address", Util::XmlUnparsedCData(static_cast<std::string>(res[0][5]))))
                 )(letter_xml);
 
                 g->getInput() << letter_xml;
