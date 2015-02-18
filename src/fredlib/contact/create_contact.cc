@@ -488,9 +488,11 @@ namespace Fred
                         sql << "($1::bigint,$" << params.size() << "::contact_address_type,";
                         //company_name
                         if (addr_ptr->second.company_name.isset()) {
-                            if (addr_ptr->first != Fred::ContactAddressType(Fred::ContactAddressType::SHIPPING)) {
-                                create_contact_exception.
-                                    set_forbidden_company_name_setting(addr_ptr->first.to_string());
+                            if (addr_ptr->first != Fred::ContactAddressType(Fred::ContactAddressType::SHIPPING)
+                                    && addr_ptr->first != Fred::ContactAddressType(Fred::ContactAddressType::SHIPPING_2)
+                                    && addr_ptr->first != Fred::ContactAddressType(Fred::ContactAddressType::SHIPPING_3))
+                            {
+                                create_contact_exception.set_forbidden_company_name_setting(addr_ptr->first.to_string());
                                 continue;
                             }
                             params.push_back(addr_ptr->second.company_name.get_value());

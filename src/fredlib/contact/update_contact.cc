@@ -72,6 +72,12 @@ namespace Fred
     update< ContactAddressType::SHIPPING >(const struct ContactAddress &_address);
 
     template ContactAddressToUpdate& ContactAddressToUpdate::
+    update< ContactAddressType::SHIPPING_2 >(const struct ContactAddress &_address);
+
+    template ContactAddressToUpdate& ContactAddressToUpdate::
+    update< ContactAddressType::SHIPPING_3 >(const struct ContactAddress &_address);
+
+    template ContactAddressToUpdate& ContactAddressToUpdate::
     remove< ContactAddressType::MAILING >();
 
     template ContactAddressToUpdate& ContactAddressToUpdate::
@@ -79,6 +85,12 @@ namespace Fred
 
     template ContactAddressToUpdate& ContactAddressToUpdate::
     remove< ContactAddressType::SHIPPING >();
+
+    template ContactAddressToUpdate& ContactAddressToUpdate::
+    remove< ContactAddressType::SHIPPING_2 >();
+
+    template ContactAddressToUpdate& ContactAddressToUpdate::
+    remove< ContactAddressType::SHIPPING_3 >();
 
     std::string ContactAddressToUpdate::to_string()const
     {
@@ -390,10 +402,11 @@ namespace Fred
                         params.push_back(type); //$2 = type
                         //company_name optional
                         if (address.company_name.isset()) {
-                            if (type != Fred::ContactAddressType::to_string(
-                                            Fred::ContactAddressType::SHIPPING)) {
-                                update_contact_exception.
-                                    set_forbidden_company_name_setting(type);
+                            if (type != Fred::ContactAddressType::to_string(Fred::ContactAddressType::SHIPPING)
+                                    && type != Fred::ContactAddressType::to_string(Fred::ContactAddressType::SHIPPING_2)
+                                    && type != Fred::ContactAddressType::to_string(Fred::ContactAddressType::SHIPPING_3))
+                            {
+                                update_contact_exception.set_forbidden_company_name_setting(type);
                                 continue;
                             }
                             params.push_back(address.company_name.get_value());
@@ -461,10 +474,11 @@ namespace Fred
                         "$" << params_insert.size() << "::contact_address_type,";
                         //company_name optional
                         if (address.company_name.isset()) {
-                            if (type != Fred::ContactAddressType::to_string(
-                                            Fred::ContactAddressType::SHIPPING)) {
-                                update_contact_exception.
-                                    set_forbidden_company_name_setting(type);
+                            if (type != Fred::ContactAddressType::to_string(Fred::ContactAddressType::SHIPPING)
+                                    && type != Fred::ContactAddressType::to_string(Fred::ContactAddressType::SHIPPING_2)
+                                    && type != Fred::ContactAddressType::to_string(Fred::ContactAddressType::SHIPPING_3))
+                            {
+                                update_contact_exception.set_forbidden_company_name_setting(type);
                                 continue;
                             }
                             params_insert.push_back(address.company_name.get_value());

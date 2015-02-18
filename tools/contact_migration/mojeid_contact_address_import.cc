@@ -186,6 +186,12 @@ void import_contact_addresses(const ContactIdToAddresses &_addresses,
                 case Fred::ContactAddressType::SHIPPING:
                     update_contact.set_address< Fred::ContactAddressType::SHIPPING >(address);
                     break;
+                case Fred::ContactAddressType::SHIPPING_2:
+                    update_contact.set_address< Fred::ContactAddressType::SHIPPING_2 >(address);
+                    break;
+                case Fred::ContactAddressType::SHIPPING_3:
+                    update_contact.set_address< Fred::ContactAddressType::SHIPPING_3 >(address);
+                    break;
             }
         }
         try

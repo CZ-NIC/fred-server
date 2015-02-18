@@ -44,6 +44,8 @@ namespace Fred
             MAILING,/**< where can I send letters */
             BILLING,/**< where can I send bills */
             SHIPPING,/**< where can I send ordered goods */
+            SHIPPING_2,
+            SHIPPING_3
         };
         /**
          * Init constructor.
