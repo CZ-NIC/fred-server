@@ -445,7 +445,7 @@ namespace MergeContactFixture
                     .set_ssntype("OP")
                     .set_disclosename(false)
                     .set_discloseorganization(false)
-                    .set_discloseaddress(false)
+                    .set_discloseaddress(true)
                     .set_disclosetelephone(false)
                     .set_disclosefax(false)
                     .set_discloseemail(false)
