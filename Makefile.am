@@ -1746,6 +1746,7 @@ src_corba_mojeid_fred_mifd_SOURCES = \
 		src/mojeid/mojeid_notifier.h \
 		src/mojeid/mojeid_contact_states.h \
 		src/mojeid/mojeid_disclose_policy.h \
+		src/mojeid/mojeid_disclose_policy.cc \
 		src/mojeid/mojeid_identification.h \
 		src/mojeid/mojeid.cc \
 		src/mojeid/mojeid.h \
@@ -2210,6 +2211,8 @@ tests_test_server_SOURCES = \
 		src/mojeid/mojeid_contact_transfer_request_impl.cc \
 		src/mojeid/public_request_verification_impl.cc \
 		src/mojeid/public_request_verification_impl.h \
+		src/mojeid/mojeid_disclose_policy.h \
+		src/mojeid/mojeid_disclose_policy.cc \
 		src/mojeid/mojeid.cc \
 		src/mojeid/mojeid.h \
 		src/mojeid/mojeid_notifier.cc \
@@ -2327,6 +2330,8 @@ tests_test_blocking_SOURCES = \
 		src/mojeid/mojeid_contact_transfer_request_impl.cc \
 		src/mojeid/public_request_verification_impl.cc \
 		src/mojeid/public_request_verification_impl.h \
+		src/mojeid/mojeid_disclose_policy.h \
+		src/mojeid/mojeid_disclose_policy.cc \
 		src/mojeid/mojeid.cc \
 		src/mojeid/mojeid.h \
 		src/mojeid/mojeid_notifier.cc \
