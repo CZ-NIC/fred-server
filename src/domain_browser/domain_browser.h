@@ -557,10 +557,10 @@ namespace Registry
              * Fill object state codes.
              * @param ctx contains reference to database and logging interface
              * @param object_id is database id of object
-             * @param state_codes is output list of object state codes
+             * @returns list of object state codes
              */
-             void get_object_states(Fred::OperationContext& ctx, unsigned long long object_id
-                     , std::vector<std::string>& state_codes);
+             std::vector<std::string> get_object_states(Fred::OperationContext& ctx, unsigned long long object_id);
+
 
             /**
              * Fill authinfo into given string.

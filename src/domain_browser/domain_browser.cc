@@ -157,8 +157,7 @@ namespace Registry
             return info;
         }
 
-        void DomainBrowser::get_object_states(Fred::OperationContext& ctx, unsigned long long object_id
-            , std::vector<std::string>& state_codes)
+        std::vector<std::string> DomainBrowser::get_object_states(Fred::OperationContext& ctx, unsigned long long object_id)
         {
             Database::Result state_res = ctx.get_conn().exec_params(
                 "SELECT ARRAY_TO_STRING(ARRAY_FILTER_NULL(ARRAY_AGG(eos.name ORDER BY eos.importance))::text[],',') AS state_codes "
@@ -169,8 +168,10 @@ namespace Registry
                     " AND (os.valid_to IS NULL OR os.valid_to > CURRENT_TIMESTAMP) "
                     , Database::query_param_list(object_id));
 
+            std::vector<std::string> state_codes;
             std::string state_codes_str = static_cast<std::string>(state_res[0]["state_codes"]);
             if(!state_codes_str.empty()) boost::split(state_codes,state_codes_str , boost::is_any_of(","));//null is filtered in query by fn. ARRAY_FILTER_NULL
+            return state_codes;
         }
 
         std::string DomainBrowser::filter_authinfo(bool user_is_owner, const std::string& authinfopw)
@@ -434,7 +435,7 @@ namespace Registry
                 detail.disclose_flags = disclose_flags;
 
                 //get states
-                get_object_states(ctx, contact_info.info_contact_data.id, detail.state_codes);
+                detail.state_codes = get_object_states(ctx, contact_info.info_contact_data.id);
 
                 return detail;
             }
@@ -537,7 +538,7 @@ namespace Registry
 
                 detail.authinfopw =filter_authinfo(set_authinfo, domain_info.info_domain_data.authinfopw);
 
-                get_object_states(ctx, domain_info.info_domain_data.id, detail.state_codes);
+                detail.state_codes = get_object_states(ctx, domain_info.info_domain_data.id);
 
                 return detail;
             }
@@ -631,7 +632,7 @@ namespace Registry
                 detail.authinfopw =filter_authinfo(detail.is_owner, nsset_info.info_nsset_data.authinfopw);
                 detail.hosts = nsset_info.info_nsset_data.dns_hosts;
 
-                get_object_states(ctx, nsset_info.info_nsset_data.id, detail.state_codes);
+                detail.state_codes = get_object_states(ctx, nsset_info.info_nsset_data.id);
 
                 detail.report_level = nsset_info.info_nsset_data.tech_check_level.get_value_or_default();
 
@@ -740,7 +741,7 @@ namespace Registry
                     detail.dnskeys.push_back(dnskey);
                 }
 
-                get_object_states(ctx, keyset_info.info_keyset_data.id, detail.state_codes);
+                detail.state_codes = get_object_states(ctx, keyset_info.info_keyset_data.id);
 
                 return detail;
             }
