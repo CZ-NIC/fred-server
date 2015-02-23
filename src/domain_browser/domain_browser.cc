@@ -156,11 +156,27 @@ namespace Registry
 
             return info;
         }
+        /**
+         * Split object states string
+         * @param _array_string object state codes delimited with ','
+         * @return vector of state codes
+         */
+        static std::vector<std::string> split_object_states_string(const std::string& _array_string) {
+            if(_array_string.empty()) {
+                return std::vector<std::string>();
+
+            } else {
+                std::vector<std::string> result;
+                boost::split(result, _array_string, boost::is_any_of(","));
+
+                return result;
+            }
+        }
 
         std::vector<std::string> DomainBrowser::get_object_states(Fred::OperationContext& ctx, unsigned long long object_id)
         {
             Database::Result state_res = ctx.get_conn().exec_params(
-                "SELECT ARRAY_TO_STRING(ARRAY_FILTER_NULL(ARRAY_AGG(eos.name ORDER BY eos.importance))::text[],',') AS state_codes "
+                "SELECT ARRAY_TO_STRING(ARRAY_AGG(eos.name ORDER BY eos.importance)::text[],',') AS state_codes "
                 " FROM object_state os "
                 " JOIN enum_object_states eos ON eos.id = os.state_id "
                 " WHERE os.object_id = $1::bigint "
@@ -168,10 +184,7 @@ namespace Registry
                     " AND (os.valid_to IS NULL OR os.valid_to > CURRENT_TIMESTAMP) "
                     , Database::query_param_list(object_id));
 
-            std::vector<std::string> state_codes;
-            std::string state_codes_str = static_cast<std::string>(state_res[0]["state_codes"]);
-            if(!state_codes_str.empty()) boost::split(state_codes,state_codes_str , boost::is_any_of(","));//null is filtered in query by fn. ARRAY_FILTER_NULL
-            return state_codes;
+            return split_object_states_string(static_cast<std::string>(state_res[0]["state_codes"]));
         }
 
         std::string DomainBrowser::filter_authinfo(bool user_is_owner, const std::string& authinfopw)
@@ -1192,9 +1205,9 @@ namespace Registry
        "(SELECT (dl.expiration_date AT TIME ZONE 'utc' AT TIME ZONE $"<< idx_timezone << "::text + val)::DATE FROM delete_period) AS delete_date,"
        "COALESCE(BIT_OR(eos.external::INTEGER*eos.importance),0) AS external_importance,"
        "COALESCE(BOOL_OR(eos.name='serverBlocked'),false) AS is_server_blocked,"
-       "ARRAY_TO_STRING(ARRAY_FILTER_NULL(ARRAY_AGG((CASE WHEN eos.external THEN eos.name "
+       "ARRAY_TO_STRING(ARRAY_AGG((CASE WHEN eos.external THEN eos.name "
                                                          "ELSE NULL END) "
-                                 "ORDER BY eos.importance))::text[],',') AS state_code "
+                                 "ORDER BY eos.importance)::text[],',') AS state_code "
 "FROM domain_list dl "
 "LEFT JOIN object_state os ON os.object_id=dl.id AND "
                              "os.valid_from<=CURRENT_TIMESTAMP AND (CURRENT_TIMESTAMP<os.valid_to OR "
@@ -1235,10 +1248,7 @@ namespace Registry
                     dld.user_role = static_cast<std::string>(domain_list_result[i]["user_role"]);
                     dld.registrar_handle = static_cast<std::string>(domain_list_result[i]["registrar_handle"]);
                     dld.registrar_name = static_cast<std::string>(domain_list_result[i]["registrar_name"]);
-
-                    std::string state_codes_str = static_cast<std::string>(domain_list_result[i]["state_code"]);
-                    if(!state_codes_str.empty()) boost::split(dld.state_code,state_codes_str, boost::is_any_of(","));//null is filtered in query by fn. ARRAY_FILTER_NULL
-
+                    dld.state_code = split_object_states_string(static_cast<std::string>(domain_list_result[i]["state_code"]));
                     dld.is_server_blocked = static_cast<bool>(domain_list_result[i]["is_server_blocked"]);
 
                     ret.dld.push_back(dld);
@@ -1279,7 +1289,7 @@ namespace Registry
                         " , nsset_list.domain_number, "
                     " COALESCE(BIT_OR(CASE WHEN eos.external THEN eos.importance ELSE NULL END), 0) AS external_importance, "
                     " SUM(CASE WHEN eos.name = 'serverBlocked' THEN 1 ELSE 0 END) AS is_server_blocked, "
-                    " ARRAY_TO_STRING(ARRAY_FILTER_NULL(ARRAY_AGG((CASE WHEN eos.external THEN eos.name ELSE NULL END) ORDER BY eos.importance))::text[],',') AS state_code "
+                    " ARRAY_TO_STRING(ARRAY_AGG((CASE WHEN eos.external THEN eos.name ELSE NULL END) ORDER BY eos.importance)::text[],',') AS state_code "
                     "FROM "
                     "(SELECT oreg.id AS id "
                     ", oreg.name AS handle "
@@ -1323,10 +1333,7 @@ namespace Registry
                     nld.registrar_name = static_cast<std::string>(nsset_list_result[i]["registrar_name"]);
                     unsigned long long external_status_importance = static_cast<unsigned long long>(nsset_list_result[i]["external_importance"]);
                     nld.external_importance = external_status_importance == 0 ? lowest_status_importance_ : external_status_importance;
-
-                    std::string state_codes_str = static_cast<std::string>(nsset_list_result[i]["state_code"]);
-                    if(!state_codes_str.empty()) boost::split(nld.state_code,state_codes_str , boost::is_any_of(","));//null is filtered in query by fn. ARRAY_FILTER_NULL
-
+                    nld.state_code = split_object_states_string(static_cast<std::string>(nsset_list_result[i]["state_code"]));
                     nld.is_server_blocked = static_cast<bool>(nsset_list_result[i]["is_server_blocked"]);
                     ret.nld.push_back(nld);
                 }
@@ -1365,7 +1372,7 @@ namespace Registry
        "keyset_list.domain_number,"
        "COALESCE(BIT_OR(CASE WHEN eos.external THEN eos.importance ELSE 0 END),0) AS external_importance,"
        "COALESCE(BOOL_OR(eos.name='serverBlocked'),false) AS is_server_blocked,"
-       "ARRAY_TO_STRING(ARRAY_FILTER_NULL(ARRAY_AGG((CASE WHEN eos.external THEN eos.name ELSE NULL END) ORDER BY eos.importance))::text[],',') AS state_code "
+       "ARRAY_TO_STRING(ARRAY_AGG((CASE WHEN eos.external THEN eos.name ELSE NULL END) ORDER BY eos.importance)::text[],',') AS state_code "
 "FROM (WITH keyset AS ("
           "SELECT keysetid AS id "
           "FROM keyset_contact_map "
@@ -1411,10 +1418,7 @@ namespace Registry
                     kld.registrar_name = static_cast<std::string>(keyset_list_result[i]["registrar_name"]);
                     unsigned long long external_status_importance = static_cast<unsigned long long>(keyset_list_result[i]["external_importance"]);
                     kld.external_importance = external_status_importance == 0 ? lowest_status_importance_ : external_status_importance;
-
-                    std::string state_codes_str = static_cast<std::string>(keyset_list_result[i]["state_code"]);
-                    if(!state_codes_str.empty()) boost::split(kld.state_code,state_codes_str , boost::is_any_of(","));//null is filtered in query by fn. ARRAY_FILTER_NULL
-
+                    kld.state_code = split_object_states_string(static_cast<std::string>(keyset_list_result[i]["state_code"]));
                     kld.is_server_blocked = static_cast<bool>(keyset_list_result[i]["is_server_blocked"]);
                    ret.kld.push_back(kld);
                 }
