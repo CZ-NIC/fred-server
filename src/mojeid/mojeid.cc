@@ -427,13 +427,6 @@ namespace Registry
                     = Fred::Contact::Verification::create_contact_update_validator_mojeid();
                 validator.check(_contact);
 
-                DiscloseFlagPolicy::PolicyCallbackVector pcv
-                    = boost::assign::list_of
-                        (DiscloseFlagPolicy::PolicyCallback(SetDiscloseAddrTrueIfOrganization()))
-                        (DiscloseFlagPolicy::PolicyCallback(SetDiscloseAddrTrueIfNotIdentified()));
-
-                DiscloseFlagPolicy contact_disclose_policy (pcv);
-
                 const Fred::Contact::Verification::State contact_state =
                     Fred::Contact::Verification::get_contact_verification_state(cid);
                 if (contact_state.has_all(Fred::Contact::Verification::State::ciVm)) {// already V
@@ -473,8 +466,14 @@ namespace Registry
                     prid = new_request->getId();
                 }
 
-                contact_disclose_policy.apply(_contact);
+                DiscloseFlagPolicy::PolicyCallbackVector pcv
+                    = boost::assign::list_of
+                        (DiscloseFlagPolicy::PolicyCallback(SetDiscloseAddrTrueIfOrganization()))
+                        (DiscloseFlagPolicy::PolicyCallback(SetDiscloseAddrTrueIfNotIdentified()));
 
+                DiscloseFlagPolicy contact_disclose_policy (pcv);
+
+                contact_disclose_policy.apply(_contact);
 
                 unsigned long long hid = Fred::Contact::Verification::contact_update(
                         request.get_request_id(),

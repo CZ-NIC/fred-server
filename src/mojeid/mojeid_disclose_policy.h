@@ -25,15 +25,8 @@
 
 #include <string>
 #include <vector>
-#include <stdexcept>
 #include <boost/noncopyable.hpp>
 #include <boost/function.hpp>
-#include <boost/assign.hpp>
-
-#include "src/fredlib/object_states.h"
-#include "src/fredlib/contact_verification/contact.h"
-#include "src/fredlib/contact_verification/contact_verification_state.h"
-#include "src/mojeid/mojeid_contact_states.h"
 
 class DiscloseFlagPolicy
 : public boost::noncopyable
@@ -45,76 +38,27 @@ private:
     Fred::Contact::Verification::Contact* contact_ptr_;
     PolicyCallbackVector policy_vect_;
 public:
-
-    DiscloseFlagPolicy(PolicyCallbackVector policy_vect)
-    :contact_ptr_(0)
-    , policy_vect_(policy_vect)
-    {}
-
+    DiscloseFlagPolicy(PolicyCallbackVector policy_vect);
     virtual ~DiscloseFlagPolicy(){}
-
-    void append_policy_callback(PolicyCallback pc)
-    {
-        policy_vect_.push_back(pc);
-    }
-
-    void clear_policy_callback()
-    {
-        policy_vect_.clear();
-    }
-
-
-    void apply(Fred::Contact::Verification::Contact& contact)
-    {
-        contact_ptr_ = &contact;
-        for(PolicyCallbackVector::iterator it = policy_vect_.begin()
-            ; it != policy_vect_.end(); ++it)
-        {
-            if(*it) it->operator()(*this);
-        }
-
-    }
-
-    Fred::Contact::Verification::Contact& get_contact()
-    {
-        if(contact_ptr_ == 0)
-        {
-            throw std::runtime_error("CznicDiscloseFlagPolicy::get_contact()"
-                " error - pointer to contact not set");
-        }
-        return *contact_ptr_;
-    }
+    void append_policy_callback(PolicyCallback pc);
+    void clear_policy_callback();
+    void apply(Fred::Contact::Verification::Contact& contact);
+    Fred::Contact::Verification::Contact& get_contact();
 };
 
 struct SetDiscloseAddrTrue
 {
-    void operator()(DiscloseFlagPolicy& policy)
-    {
-        policy.get_contact().discloseaddress=true;
-    }
+    void operator()(DiscloseFlagPolicy& policy);
 };
 
 struct SetDiscloseAddrTrueIfOrganization
 {
-    void operator()(DiscloseFlagPolicy& policy)
-    {
-        if(policy.get_contact().organization.get_value_or_default().compare("") != 0)
-        {
-            policy.get_contact().discloseaddress=true;
-        }
-    }
+    void operator()(DiscloseFlagPolicy& policy);
 };
 
 struct SetDiscloseAddrTrueIfNotIdentified
 {
-    void operator()(DiscloseFlagPolicy& policy)
-    {
-        const Fred::Contact::Verification::State contact_state =
-            Fred::Contact::Verification::get_contact_verification_state(policy.get_contact().id);
-        if (!contact_state.has_any(Fred::Contact::Verification::State::cIVm)) {
-            policy.get_contact().discloseaddress = true;
-        }
-    }
+    void operator()(DiscloseFlagPolicy& policy);
 };
 
 
