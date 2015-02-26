@@ -1364,7 +1364,8 @@ namespace Registry
                     const Fred::Contact::Verification::State contact_state =
                         Fred::Contact::Verification::get_contact_verification_state(_contact_id);
                     if (contact_state.has_all(Fred::Contact::Verification::State::cIvm)) {
-                        // hack for unpredictable case; nothing to do when contact is already identified
+                        // nothing to send if contact is identified
+                        // IDENTIFICATION_REQUEST_NOT_EXISTS isn't error in frontend
                         throw Registry::MojeID::IDENTIFICATION_REQUEST_NOT_EXISTS();
                     }
                 }
