@@ -655,13 +655,13 @@ namespace Registry
             }
         }
 
-        void Server_i::resendPIN3(
+        void Server_i::sendNewPIN3(
               ::CORBA::ULongLong contact_id,
               ::CORBA::ULongLong request_id)
         {
             try
             {
-                pimpl_->resendPIN3(contact_id, request_id);
+                pimpl_->sendNewPIN3(contact_id, request_id);
                 return;
             }
             catch (const Registry::MojeID::OBJECT_NOT_EXISTS&)

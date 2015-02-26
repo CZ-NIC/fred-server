@@ -1337,7 +1337,7 @@ namespace Registry
             }
         }
 
-        void MojeIDImpl::resendPIN3(
+        void MojeIDImpl::sendNewPIN3(
             unsigned long long _contact_id,
             unsigned long long _request_id)
         {
@@ -1345,7 +1345,7 @@ namespace Registry
             Logging::Context ctx("resend-pin3");
             ConnectionReleaser releaser;
 
-            LOGGER(PACKAGE).info(boost::format("resendPIN3 --"
+            LOGGER(PACKAGE).info(boost::format("sendNewPIN3 --"
                     "  contact_id: %1%  request_id: %2%")
                         % _contact_id % _request_id);
 
@@ -1429,7 +1429,7 @@ namespace Registry
                 LOGGER(PACKAGE).error("unknown exception");
                 throw;
             }
-        }//MojeIDImpl::resendPIN3
+        }//MojeIDImpl::sendNewPIN3
 
         ///cancel mojeidContact state
         void MojeIDImpl::contactCancelAccountPrepare(

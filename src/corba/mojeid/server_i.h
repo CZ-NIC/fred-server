@@ -156,7 +156,7 @@ namespace Registry
 
           char* contactAuthInfo(::CORBA::ULongLong contact_id);
 
-          void resendPIN3(
+          void sendNewPIN3(
               ::CORBA::ULongLong contact_id,
               ::CORBA::ULongLong request_id);
         };//class Server_i

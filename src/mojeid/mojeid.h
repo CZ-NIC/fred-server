@@ -162,7 +162,7 @@ namespace Registry
             std::vector<std::string> getUnregistrableHandles();
             std::string contactAuthInfo(const unsigned long long _contact_id);
 
-            void resendPIN3(
+            void sendNewPIN3(
                 unsigned long long _contact_id,
                 unsigned long long _request_id);
 
