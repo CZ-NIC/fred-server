@@ -375,6 +375,9 @@ struct contact_verification_start_enqueued_checks_impl
       HandleCorbaNameServiceArgsGrp* ns_args_ptr=CfgArgGroups::instance()->
          get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>();
 
+      orb_fa.add_argv(std::string("-ORBnativeCharCodeSet"));
+      orb_fa.add_argv(std::string("UTF-8"));
+
       CorbaContainer::set_instance(
           orb_fa.get_argc(),
           orb_fa.get_argv(),
