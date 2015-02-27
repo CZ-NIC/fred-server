@@ -305,6 +305,12 @@ void PublicRequestImpl::save()
     else {
       try {
         Database::Transaction transaction(conn);
+
+        for(std::vector<OID>::size_type i = 0 ; i < objects_.size(); ++i)
+        {
+           lock_public_request_by_object(objects_.at(i).id);
+        }
+
         conn.exec_params(
                 "INSERT INTO public_request"
                 " (request_type, create_request_id,"
