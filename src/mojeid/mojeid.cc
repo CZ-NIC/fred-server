@@ -1342,7 +1342,7 @@ namespace Registry
             unsigned long long _request_id)
         {
             Logging::Context ctx_server(create_ctx_name(get_server_name()));
-            Logging::Context ctx("resend-pin3");
+            Logging::Context ctx("send-new-pin3");
             ConnectionReleaser releaser;
 
             LOGGER(PACKAGE).info(boost::format("sendNewPIN3 --"
