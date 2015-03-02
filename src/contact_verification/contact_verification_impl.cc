@@ -9,6 +9,7 @@
 #include "src/fredlib/object_states.h"
 #include "src/fredlib/contact_verification/contact.h"
 #include "src/fredlib/contact_verification/contact_verification_validators.h"
+#include "src/fredlib/contact_verification/contact_verification_state.h"
 #include "util/factory_check.h"
 #include "util/util.h"
 
@@ -368,6 +369,14 @@ namespace Registry
                          LOGGER(PACKAGE).warning("Found already processed request");
                          throw Registry::Contact::Verification::IDENTIFICATION_PROCESSED();
                      }
+
+                    const Fred::Contact::Verification::State contact_state =
+                        Fred::Contact::Verification::get_contact_verification_state(cinfo.id);
+                    if (!contact_state.has_any(Fred::Contact::Verification::State::cIvm))
+                    {// lost identifiedContact state
+                         LOGGER(PACKAGE).warning("Lost 'identifiedContact' state");
+                         throw Registry::Contact::Verification::IDENTIFICATION_FAILED();
+                    }
 
                      std::string request_id = request_manager->getPublicRequestAuthIdentification(
                              cinfo.id, request_type_list);
