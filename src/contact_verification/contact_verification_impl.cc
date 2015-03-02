@@ -372,9 +372,9 @@ namespace Registry
 
                     const Fred::Contact::Verification::State contact_state =
                         Fred::Contact::Verification::get_contact_verification_state(cinfo.id);
-                    if (!contact_state.has_any(Fred::Contact::Verification::State::cIvm))
-                    {// lost identifiedContact state
-                         LOGGER(PACKAGE).warning("Lost 'identifiedContact' state");
+                    if (!contact_state.has_any(Fred::Contact::Verification::State::Civm))
+                    {// lost conditionallyIdentifiedContact state
+                         LOGGER(PACKAGE).warning("Lost 'conditionallyIdentifiedContact' state");
                          const unsigned long long public_request_id =
                             Fred::PublicRequest::check_public_request(
                                 cinfo.id,
