@@ -140,6 +140,7 @@ namespace Fred
 
     /**
     * Contact history info by registry object identifier  and optional time.
+    * Output data are arranged in descending order by historyid.
     * Contact registry object identifier to get history info about the contact is set via constructor.
     * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
     */
@@ -188,7 +189,7 @@ namespace Fred
         * Executes getting history info about the contact.
         * @param ctx contains reference to database and logging interface
         * @param local_timestamp_pg_time_zone_name is postgresql time zone name of the returned data
-        * @return history info data about the contact
+        * @return history info data about the contact in descending order by historyid
         * @throws Exception in case of wrong input data or other predictable and superable failure.
         * @throws InternalError otherwise
         * When exception is thrown changes to database are considered inconsistent and should be rolled back by the caller.
@@ -205,6 +206,7 @@ namespace Fred
 
     /**
     * Contact info by id including history.
+    * Output data are arranged in descending order by historyid.
     * Contact id to get info about the contact is set via constructor.
     * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
     */
@@ -238,7 +240,7 @@ namespace Fred
         * Executes getting history info about the contact.
         * @param ctx contains reference to database and logging interface
         * @param local_timestamp_pg_time_zone_name is postgresql time zone name of the returned data
-        * @return history info data about the contact
+        * @return history info data about the contact in descending order by historyid
         * @throws Exception in case of wrong input data or other predictable and superable failure.
         * @throws InternalError otherwise
         * When exception is thrown changes to database are considered inconsistent and should be rolled back by the caller.
