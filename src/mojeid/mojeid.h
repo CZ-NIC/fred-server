@@ -70,6 +70,12 @@ namespace Registry
             {}
         };
 
+        struct IDENTIFICATION_REQUEST_NOT_EXISTS : public std::runtime_error
+        {
+            IDENTIFICATION_REQUEST_NOT_EXISTS() : std::runtime_error("identification request does not exist")
+            {}
+        };
+
         struct ContactStateData
         {
             unsigned long long contact_id;
@@ -155,6 +161,10 @@ namespace Registry
 
             std::vector<std::string> getUnregistrableHandles();
             std::string contactAuthInfo(const unsigned long long _contact_id);
+
+            void sendNewPIN3(
+                unsigned long long _contact_id,
+                unsigned long long _request_id);
 
             void contactCancelAccountPrepare(
                 unsigned long long _contact_id
