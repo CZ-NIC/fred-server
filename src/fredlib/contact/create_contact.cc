@@ -45,6 +45,7 @@ namespace Fred
                 , const std::string& registrar)
     : handle_(handle)
     , registrar_(registrar)
+    , discloseaddress_(true)
     {}
 
     CreateContact::CreateContact(const std::string& handle
