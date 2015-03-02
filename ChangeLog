@@ -7,9 +7,14 @@
 
   * fredlib - object state impl. cleanup
 
-  * mojeid - fix e-mail format check
+  * mojeid
+        - new pin3 resending
+        - fix e-mail format check
+        - add 2 aditional shipping address types
 
   * rdap backend - 'delete pending' status handling
+
+  * fixed set/unset discloseaddress flag (mojeid, epp)
 
   * log severity fixes
 
