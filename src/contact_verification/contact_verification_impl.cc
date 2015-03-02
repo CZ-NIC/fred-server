@@ -5,7 +5,7 @@
 #include "src/fredlib/db_settings.h"
 #include "src/fredlib/registry.h"
 #include "src/fredlib/contact.h"
-#include "src/fredlib/public_request/public_request.h"
+#include "src/fredlib/public_request/public_request_impl.h"
 #include "src/fredlib/object_states.h"
 #include "src/fredlib/contact_verification/contact.h"
 #include "src/fredlib/contact_verification/contact_verification_validators.h"
@@ -357,35 +357,43 @@ namespace Registry
                         throw Registry::Contact::Verification::OBJECT_NOT_EXISTS();
                     }
 
-                     ContactIdentificationRequestManagerPtr request_manager(mailer_);
+                    ContactIdentificationRequestManagerPtr request_manager(mailer_);
 
-                     std::vector<Fred::PublicRequest::Type> request_type_list
-                                     = Util::vector_of<Fred::PublicRequest::Type>
-                                 (Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION);
+                    std::vector<Fred::PublicRequest::Type> request_type_list =
+                        Util::vector_of<Fred::PublicRequest::Type>
+                            (Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION);
 
-                     if(request_manager->checkAlreadyProcessedPublicRequest(
-                             cinfo.id, request_type_list))
-                     {
-                         LOGGER(PACKAGE).warning("Found already processed request");
-                         throw Registry::Contact::Verification::IDENTIFICATION_PROCESSED();
-                     }
+                    if (request_manager->checkAlreadyProcessedPublicRequest(
+                        cinfo.id, request_type_list))
+                    {
+                        LOGGER(PACKAGE).warning("Found already processed request");
+                        throw Registry::Contact::Verification::IDENTIFICATION_PROCESSED();
+                    }
 
                     const Fred::Contact::Verification::State contact_state =
                         Fred::Contact::Verification::get_contact_verification_state(cinfo.id);
                     if (!contact_state.has_any(Fred::Contact::Verification::State::cIvm))
                     {// lost identifiedContact state
                          LOGGER(PACKAGE).warning("Lost 'identifiedContact' state");
+                         const unsigned long long public_request_id =
+                            Fred::PublicRequest::check_public_request(
+                                cinfo.id,
+                                Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION);
+                         Fred::PublicRequest::cancel_public_request(
+                            cinfo.id,
+                            Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION,
+                            public_request_id);
                          throw Registry::Contact::Verification::IDENTIFICATION_FAILED();
                     }
 
-                     std::string request_id = request_manager->getPublicRequestAuthIdentification(
-                             cinfo.id, request_type_list);
+                    std::string request_id = request_manager->getPublicRequestAuthIdentification(
+                            cinfo.id, request_type_list);
 
-                     request_manager->processAuthRequest(request_id, password, log_id);
+                    request_manager->processAuthRequest(request_id, password, log_id);
 
-                     trans.commit();
+                    trans.commit();
 
-                     return cinfo.id;
+                    return cinfo.id;
                 }//try
                 catch (const Registry::Contact::Verification::OBJECT_NOT_EXISTS& _ex)
                 {
@@ -435,6 +443,13 @@ namespace Registry
                     throw create_data_validation_error_not_available();
                 }
                 catch (const Registry::Contact::Verification::IDENTIFICATION_PROCESSED& )
+                {
+                    /* Exception is throw directly from the block above and already logged as warning.
+                     * This catch clause just prevents it to be caught by general block below and logged as error.
+                     */
+                    throw;
+                }
+                catch (const Registry::Contact::Verification::IDENTIFICATION_FAILED& )
                 {
                     /* Exception is throw directly from the block above and already logged as warning.
                      * This catch clause just prevents it to be caught by general block below and logged as error.
