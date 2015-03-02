@@ -22,21 +22,22 @@
 #include "src/fredlib/opcontext.h"
 #include <fredlib/contact.h>
 #include "src/fredlib/contact/info_contact_impl.h"
-
 #include "util/random_data_generator.h"
 #include "tests/setup/fixtures.h"
 
 const std::string server_name = "test-info-contact";
-
-struct test_contact_fixture : public Test::Fixture::instantiate_db_template
+//unique global name of the fixture
+struct test_contact_fixture_6da88b63b0bc46e29f6d0ce3181fd5d8 : public Test::Fixture::instantiate_db_template
 {
     std::string registrar_handle;
     std::string xmark;
     std::string test_contact_handle;
+    std::string test_contact_history_handle;
 
-    test_contact_fixture()
+    test_contact_fixture_6da88b63b0bc46e29f6d0ce3181fd5d8()
     :xmark(RandomDataGenerator().xnumstring(6))
     , test_contact_handle(std::string("TEST-CONTACT-HANDLE")+xmark)
+    , test_contact_history_handle(std::string("TEST-CONTACT-HISTORY-HANDLE")+xmark)
     {
         Fred::OperationContext ctx;
         registrar_handle = static_cast<std::string>(ctx.get_conn().exec(
@@ -55,14 +56,25 @@ struct test_contact_fixture : public Test::Fixture::instantiate_db_template
             .set_discloseaddress(true)
             .exec(ctx);
 
+        Fred::CreateContact(test_contact_history_handle,registrar_handle)
+            .set_name(std::string("TEST-CONTACT-HISTORY NAME")+xmark)
+            .set_disclosename(true)
+            .set_place(place)
+            .set_discloseaddress(true)
+            .exec(ctx);
+
+        Fred::UpdateContactByHandle(test_contact_history_handle,registrar_handle)
+            .set_name(std::string("TEST-CONTACT-HISTORY NAME1")+xmark)
+            .exec(ctx);
+
         ctx.commit_transaction();//commit fixture
     }
-    ~test_contact_fixture()
+    ~test_contact_fixture_6da88b63b0bc46e29f6d0ce3181fd5d8()
     {}
 };
 
 
-BOOST_FIXTURE_TEST_SUITE(TestInfoContact, test_contact_fixture)
+BOOST_FIXTURE_TEST_SUITE(TestInfoContact, test_contact_fixture_6da88b63b0bc46e29f6d0ce3181fd5d8)
 
 /**
  * test call InfoContact
@@ -191,6 +203,30 @@ BOOST_AUTO_TEST_CASE(info_contact_diff)
     //because of changes to Nullable::operator<<
     BOOST_CHECK(ctx.get_conn().exec_params("select $1::text", Database::query_param_list(Database::QPNull))[0][0].isnull());
     BOOST_CHECK(ctx.get_conn().exec_params("select $1::text", Database::query_param_list(Nullable<std::string>()))[0][0].isnull());
+}
+
+/**
+ * test InfoContactHistory output data sorted by historyid in descending order (current data first, older next)
+*/
+
+BOOST_AUTO_TEST_CASE(info_contact_history_order)
+{
+    Fred::OperationContext ctx;
+    Fred::InfoContactOutput contact_history_info = Fred::InfoContactByHandle(test_contact_history_handle).exec(ctx);
+
+    std::vector<Fred::InfoContactOutput> contact_history_info_by_roid = Fred::InfoContactHistory(contact_history_info.info_contact_data.roid).exec(ctx);
+    BOOST_CHECK(contact_history_info_by_roid.size() == 2);
+    BOOST_CHECK(contact_history_info_by_roid.at(0).info_contact_data.historyid > contact_history_info_by_roid.at(1).info_contact_data.historyid);
+
+    BOOST_CHECK(contact_history_info_by_roid.at(0).info_contact_data.name.get_value() == std::string("TEST-CONTACT-HISTORY NAME1")+xmark);
+    BOOST_CHECK(contact_history_info_by_roid.at(1).info_contact_data.name.get_value() == std::string("TEST-CONTACT-HISTORY NAME")+xmark);
+
+    std::vector<Fred::InfoContactOutput> contact_history_info_by_id = Fred::InfoContactHistoryById(contact_history_info.info_contact_data.id).exec(ctx);
+    BOOST_CHECK(contact_history_info_by_id.size() == 2);
+    BOOST_CHECK(contact_history_info_by_id.at(0).info_contact_data.historyid > contact_history_info_by_id.at(1).info_contact_data.historyid);
+
+    BOOST_CHECK(contact_history_info_by_id.at(0).info_contact_data.name.get_value() == std::string("TEST-CONTACT-HISTORY NAME1")+xmark);
+    BOOST_CHECK(contact_history_info_by_id.at(1).info_contact_data.name.get_value() == std::string("TEST-CONTACT-HISTORY NAME")+xmark);
 }
 
 
