@@ -66,7 +66,9 @@ struct create_contact_fixture : public virtual Test::Fixture::instantiate_db_tem
         addresses[Fred::ContactAddressType::from_string("BILLING")] = address;
         address.company_name = "Testovací & doručovací, s.r.o.";
         addresses[Fred::ContactAddressType::from_string("SHIPPING")] = address;
-        BOOST_CHECK(addresses.size() == 3);
+        addresses[Fred::ContactAddressType::from_string("SHIPPING_2")] = address;
+        addresses[Fred::ContactAddressType::from_string("SHIPPING_3")] = address;
+        BOOST_CHECK(addresses.size() == 5);
     }
     ~create_contact_fixture()
     {}
@@ -175,7 +177,7 @@ BOOST_AUTO_TEST_CASE(create_contact_wrong_address)
 }
 
 /**
- * test CreateContact with regular data
+ * test CreateContact with regular data and full available set of address types
  */
 BOOST_FIXTURE_TEST_CASE(create_contact_ok, create_contact_fixture)
 {
@@ -204,6 +206,25 @@ BOOST_FIXTURE_TEST_CASE(create_contact_ok, create_contact_fixture)
         BOOST_CHECK(address_ptr->second.postalcode == addresses[address_ptr->first].postalcode);
         BOOST_CHECK(address_ptr->second.country == addresses[address_ptr->first].country);
     }
+}
+
+
+/**
+ * test CreateContact with regular data and no additional address
+ */
+BOOST_FIXTURE_TEST_CASE(create_contact_ok_without_addresses, create_contact_fixture)
+{
+    Fred::OperationContext ctx;
+    Fred::CreateContact(create_contact_handle, registrar_handle)
+        .set_name(contact_name)
+        .set_place(place)
+        .exec(ctx);
+    const Fred::InfoContactOutput output = Fred::InfoContactByHandle(create_contact_handle).exec(ctx);
+    ctx.commit_transaction();
+    BOOST_CHECK(output.info_contact_data.handle == create_contact_handle);
+    BOOST_CHECK(output.info_contact_data.name == contact_name);
+    BOOST_CHECK(output.info_contact_data.place == place);
+    BOOST_CHECK(output.info_contact_data.addresses.size() == 0);
 }
 
 

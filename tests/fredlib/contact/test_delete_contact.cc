@@ -49,11 +49,30 @@ struct test_contact_fixture  : public Test::Fixture::instantiate_db_template
         place.city = "Praha";
         place.postalcode = "11150";
         place.country = "CZ";
+
+        Fred::ContactAddress address_no_company_name;
+        address_no_company_name.street1 = "Betelgeuze 42";
+        address_no_company_name.city = "Orion";
+        address_no_company_name.postalcode = "11150";
+        address_no_company_name.country = "MZ";
+
+        Fred::ContactAddress address_with_company_name;
+        address_with_company_name = address_no_company_name;
+        address_with_company_name.company_name = "Granule pro šneky s.r.o.";
+
+        Fred::ContactAddressList addr_list;
+        addr_list[Fred::ContactAddressType::from_string("MAILING")] = address_no_company_name;
+        addr_list[Fred::ContactAddressType::from_string("BILLING")] = address_no_company_name;
+        addr_list[Fred::ContactAddressType::from_string("SHIPPING")] = address_with_company_name;
+        addr_list[Fred::ContactAddressType::from_string("SHIPPING_2")] = address_with_company_name;
+        addr_list[Fred::ContactAddressType::from_string("SHIPPING_3")] = address_with_company_name;
+
         Fred::CreateContact(test_contact_handle,registrar_handle).set_name(std::string("TEST-CONTACT NAME")+xmark)
             .set_name(std::string("TEST-CONTACT NAME")+xmark)
             .set_disclosename(true)
             .set_place(place)
             .set_discloseaddress(true)
+            .set_addresses(addr_list)
             .exec(ctx);
 
         ctx.commit_transaction();//commit fixture

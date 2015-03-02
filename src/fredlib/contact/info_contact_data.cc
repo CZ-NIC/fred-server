@@ -43,6 +43,10 @@ namespace Fred
                 return "BILLING";
             case SHIPPING:
                 return "SHIPPING";
+            case SHIPPING_2:
+                return "SHIPPING_2";
+            case SHIPPING_3:
+                return "SHIPPING_3";
         }
         std::ostringstream msg;
         msg << "invalid value " << static_cast< int >(_value) << " of ContactAddressType";
@@ -59,6 +63,12 @@ namespace Fred
         }
         if (_src == "SHIPPING") {
             return SHIPPING;
+        }
+        if (_src == "SHIPPING_2") {
+            return SHIPPING_2;
+        }
+        if (_src == "SHIPPING_3") {
+            return SHIPPING_3;
         }
         std::ostringstream msg;
         msg << "\"" << _src << "\" unable convert to ContactAddressType";
@@ -140,6 +150,12 @@ namespace Fred
 
     template
     struct InfoContactData::Address InfoContactData::get_address< ContactAddressType::SHIPPING >()const;
+
+    template
+    struct InfoContactData::Address InfoContactData::get_address< ContactAddressType::SHIPPING_2 >()const;
+
+    template
+    struct InfoContactData::Address InfoContactData::get_address< ContactAddressType::SHIPPING_3 >()const;
 
     bool InfoContactData::operator==(const InfoContactData& rhs) const
     {

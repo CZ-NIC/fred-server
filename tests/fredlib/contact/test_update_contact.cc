@@ -60,7 +60,9 @@ struct update_contact_fixture : public Test::Fixture::instantiate_db_template
         addresses[Fred::ContactAddressType::from_string("BILLING")] = address;
         address.company_name = "Testovací & doručovací, s.r.o.";
         addresses[Fred::ContactAddressType::from_string("SHIPPING")] = address;
-        BOOST_CHECK(addresses.size() == 3);
+        addresses[Fred::ContactAddressType::from_string("SHIPPING_2")] = address;
+        addresses[Fred::ContactAddressType::from_string("SHIPPING_3")] = address;
+        BOOST_CHECK(addresses.size() == 5);
         Fred::CreateContact(test_contact_handle,registrar_handle)
             .set_name(std::string("TEST-CONTACT NAME")+xmark)
             .set_disclosename(true)
@@ -202,6 +204,7 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle)
     place.country = "Czech Republic";
     Fred::ContactAddressToUpdate addresses_to_update;
     addresses_to_update.remove< Fred::ContactAddressType::SHIPPING >();
+    addresses_to_update.remove< Fred::ContactAddressType::SHIPPING_2 >();
     addresses_to_update.remove< Fred::ContactAddressType::MAILING >();
     Fred::ContactAddress new_address = addresses[Fred::ContactAddressType::MAILING];
     new_address.company_name = Optional< std::string >();
@@ -221,7 +224,7 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle)
                 , Optional<std::string>("7805962556")//vat is TID
                 , Optional<std::string>("ICO")//ssntype
                 , Optional<std::string>("7805962556")//ssn
-                , addresses_to_update//addresses MAILING change, BILLING don't touch, SHIPPING remove
+                , addresses_to_update//addresses MAILING change, BILLING don't touch, SHIPPING remove, SHIPPING_2 remove
                 , Optional<bool>(true)//disclosename
                 , Optional<bool>(true)//discloseorganization
                 , Optional<bool>(true)//discloseaddress
@@ -240,10 +243,11 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle)
     Fred::InfoContactOutput info_data_3_with_changes = info_data_3;
 
     //updated addresses
-    BOOST_CHECK(info_data_4.info_contact_data.addresses.size() == 2);//MAILING, BILLING
+    BOOST_CHECK(info_data_4.info_contact_data.addresses.size() == 3);//MAILING, BILLING, SHIPPING_3
     BOOST_CHECK(info_data_4.info_contact_data.addresses[Fred::ContactAddressType::MAILING] == new_address);
     BOOST_CHECK(info_data_4.info_contact_data.addresses[Fred::ContactAddressType::BILLING] == addresses[Fred::ContactAddressType::BILLING]);
     BOOST_CHECK(info_data_4.info_contact_data.addresses.find(Fred::ContactAddressType::SHIPPING) == info_data_4.info_contact_data.addresses.end());
+    BOOST_CHECK(info_data_4.info_contact_data.addresses.find(Fred::ContactAddressType::SHIPPING_2) == info_data_4.info_contact_data.addresses.end());
 
     //updated historyid
     BOOST_CHECK(info_data_3.info_contact_data.historyid !=info_data_4.info_contact_data.historyid);
@@ -288,6 +292,7 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle)
     //check changes made by last update
     BOOST_CHECK(info_data_3_with_changes != info_data_4);
     info_data_3_with_changes.info_contact_data.addresses.erase(Fred::ContactAddressType::SHIPPING);
+    info_data_3_with_changes.info_contact_data.addresses.erase(Fred::ContactAddressType::SHIPPING_2);
     info_data_3_with_changes.info_contact_data.addresses[Fred::ContactAddressType::MAILING] = new_address;
     BOOST_CHECK(info_data_3_with_changes == info_data_4);
 
@@ -321,6 +326,7 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle)
     .set_ssn("7805962556")
     .set_address< Fred::ContactAddressType::MAILING >(new_address)
     .set_address< Fred::ContactAddressType::SHIPPING >(new_address)
+    .set_address< Fred::ContactAddressType::SHIPPING_2 >(new_address)
     .set_disclosename(true)
     .set_discloseorganization(true)
     .set_discloseaddress(true)
@@ -339,10 +345,11 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle)
     Fred::InfoContactOutput info_data_4_with_changes = info_data_4;
 
     //updated addresses
-    BOOST_CHECK(info_data_5.info_contact_data.addresses.size() == 3);//MAILING, BILLING, SHIPPING
+    BOOST_CHECK(info_data_5.info_contact_data.addresses.size() == 5);//MAILING, BILLING, SHIPPING, SHIPPING_2, SHIPPING_3
     BOOST_CHECK(info_data_5.info_contact_data.addresses[Fred::ContactAddressType::MAILING] == new_address);
     BOOST_CHECK(info_data_5.info_contact_data.addresses[Fred::ContactAddressType::BILLING] == addresses[Fred::ContactAddressType::BILLING]);
     BOOST_CHECK(info_data_5.info_contact_data.addresses[Fred::ContactAddressType::SHIPPING] == new_address);
+    BOOST_CHECK(info_data_5.info_contact_data.addresses[Fred::ContactAddressType::SHIPPING_2] == new_address);
 
     //updated historyid
     BOOST_CHECK(info_data_4.info_contact_data.historyid !=info_data_5.info_contact_data.historyid);
@@ -377,6 +384,7 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle)
     BOOST_CHECK(info_data_4_with_changes != info_data_5);
     info_data_4_with_changes.info_contact_data.addresses[Fred::ContactAddressType::MAILING] = new_address;
     info_data_4_with_changes.info_contact_data.addresses[Fred::ContactAddressType::SHIPPING] = new_address;
+    info_data_4_with_changes.info_contact_data.addresses[Fred::ContactAddressType::SHIPPING_2] = new_address;
     BOOST_CHECK(info_data_4_with_changes == info_data_5);
 
     //check info contact history against info contact
@@ -398,6 +406,8 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle)
     .reset_address< Fred::ContactAddressType::MAILING >()
     .reset_address< Fred::ContactAddressType::BILLING >()
     .reset_address< Fred::ContactAddressType::SHIPPING >()
+    .reset_address< Fred::ContactAddressType::SHIPPING_2 >()
+    .reset_address< Fred::ContactAddressType::SHIPPING_3 >()
     .exec(ctx);
 
     Fred::InfoContactOutput info_data_6 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
@@ -410,15 +420,19 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle)
     .set_address< Fred::ContactAddressType::MAILING >(addresses[Fred::ContactAddressType::MAILING])
     .set_address< Fred::ContactAddressType::BILLING >(addresses[Fred::ContactAddressType::BILLING])
     .set_address< Fred::ContactAddressType::SHIPPING >(addresses[Fred::ContactAddressType::SHIPPING])
+    .set_address< Fred::ContactAddressType::SHIPPING_2 >(addresses[Fred::ContactAddressType::SHIPPING_2])
+    .set_address< Fred::ContactAddressType::SHIPPING_3 >(addresses[Fred::ContactAddressType::SHIPPING_3])
     .exec(ctx);
 
     Fred::InfoContactOutput info_data_7 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
 
     //updated addresses
-    BOOST_CHECK(info_data_7.info_contact_data.addresses.size() == 3);//MAILING, BILLING, SHIPPING
+    BOOST_CHECK(info_data_7.info_contact_data.addresses.size() == 5);//MAILING, BILLING, SHIPPING, SHIPING_2, SHIPPING_3
     BOOST_CHECK(info_data_7.info_contact_data.addresses[Fred::ContactAddressType::MAILING] == addresses[Fred::ContactAddressType::MAILING]);
     BOOST_CHECK(info_data_7.info_contact_data.addresses[Fred::ContactAddressType::BILLING] == addresses[Fred::ContactAddressType::BILLING]);
     BOOST_CHECK(info_data_7.info_contact_data.addresses[Fred::ContactAddressType::SHIPPING] == addresses[Fred::ContactAddressType::SHIPPING]);
+    BOOST_CHECK(info_data_7.info_contact_data.addresses[Fred::ContactAddressType::SHIPPING_2] == addresses[Fred::ContactAddressType::SHIPPING_2]);
+    BOOST_CHECK(info_data_7.info_contact_data.addresses[Fred::ContactAddressType::SHIPPING_3] == addresses[Fred::ContactAddressType::SHIPPING_3]);
 
     ctx.commit_transaction();
 }//update_contact_by_handle
