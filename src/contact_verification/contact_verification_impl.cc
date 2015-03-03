@@ -374,16 +374,12 @@ namespace Registry
                         Fred::Contact::Verification::get_contact_verification_state(cinfo.id);
                     if (!contact_state.has_any(Fred::Contact::Verification::State::Civm))
                     {// lost conditionallyIdentifiedContact state
-                         LOGGER(PACKAGE).warning("Lost 'conditionallyIdentifiedContact' state");
-                         const unsigned long long public_request_id =
-                            Fred::PublicRequest::check_public_request(
-                                cinfo.id,
-                                Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION);
-                         Fred::PublicRequest::cancel_public_request(
+                        LOGGER(PACKAGE).warning("Lost 'conditionallyIdentifiedContact' state");
+                        Fred::PublicRequest::cancel_public_request(
                             cinfo.id,
                             Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION,
-                            public_request_id);
-                         throw Registry::Contact::Verification::IDENTIFICATION_FAILED();
+                            log_id);
+                        throw Registry::Contact::Verification::IDENTIFICATION_INVALIDATED();
                     }
 
                     std::string request_id = request_manager->getPublicRequestAuthIdentification(
@@ -449,7 +445,7 @@ namespace Registry
                      */
                     throw;
                 }
-                catch (const Registry::Contact::Verification::IDENTIFICATION_FAILED& )
+                catch (Registry::Contact::Verification::IDENTIFICATION_INVALIDATED&)
                 {
                     /* Exception is throw directly from the block above and already logged as warning.
                      * This catch clause just prevents it to be caught by general block below and logged as error.
