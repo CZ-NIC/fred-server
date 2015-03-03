@@ -379,6 +379,7 @@ namespace Registry
                             cinfo.id,
                             Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION,
                             log_id);
+                        trans.commit();
                         throw Registry::Contact::Verification::IDENTIFICATION_INVALIDATED();
                     }
 
