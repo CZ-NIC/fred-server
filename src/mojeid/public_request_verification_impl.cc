@@ -515,9 +515,9 @@ public:
         Database::Result res = conn.exec_params(
                 "SELECT "
                 " c.name, c. organization, c.ssn, c.ssntype, "
-                " c.street1 || ' ' || COALESCE(c.street2,'') || ' ' ||"
-                " COALESCE(c.street3,' ') || ', ' || "
-                " c.postalcode || ' ' || c.city || ', ' || c.country "
+                " concat_ws(', ', nullif(btrim(c.street1), ''), nullif(btrim(c.street2), ''), "
+                " nullif(btrim(c.street3), ''), nullif(btrim(c.postalcode), ''), "
+                " nullif(btrim(c.city), ''), c.country) "
                 "FROM public_request pr"
                 " JOIN public_request_objects_map prom ON (prom.request_id=pr.id) "
                 " JOIN contact c ON (c.id = prom.object_id) "
