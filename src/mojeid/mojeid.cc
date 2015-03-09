@@ -100,15 +100,15 @@ namespace Registry
                 throw Registry::MojeID::OBJECT_NOT_EXISTS();
             }
 
-            std::string check_sent_letters_limit(unsigned long long _contact_id,
-                                                 unsigned _max_sent_letters,
-                                                 unsigned _watched_period_in_days,
-                                                 Database::Connection &_conn)
+            void check_sent_letters_limit(unsigned long long _contact_id,
+                                          unsigned _max_sent_letters,
+                                          unsigned _watched_period_in_days,
+                                          Database::Connection &_conn)
             {
                 const Database::Result result = _conn.exec_params(
                     "SELECT limit_expire_date,letters_sent,during_period_in_days "
                     "FROM mojeid_check_sent_letters_limit($1::INTEGER,$2::INTEGER,$3::INTEGER)",
-                    Database::query_param_list(_contact_id, _max_sent_letters, _watched_period_in_days));
+                    Database::query_param_list(_contact_id)(_max_sent_letters)(_watched_period_in_days));
                 if (result.size() <= 0) {
                     return;
                 }
@@ -490,9 +490,13 @@ namespace Registry
                         Fred::PublicRequest::cancel_public_request(cid, Fred::PublicRequest::PRT_MOJEID_CONTACT_REIDENTIFICATION, request.get_request_id());
                         type = Fred::PublicRequest::PRT_MOJEID_CONTACT_REIDENTIFICATION;
                     }
-                    check_sent_letters_limit(cid,
-                                             server_conf_->letter_limit_count,
-                                             server_conf_->letter_limit_interval);
+                    {
+                        Database::Connection conn = Database::Manager::acquire();
+                        check_sent_letters_limit(cid,
+                                                 server_conf_->letter_limit_count,
+                                                 server_conf_->letter_limit_interval,
+                                                 conn);
+                    }
                     IdentificationRequestPtr new_request(mailer_, type);
                     new_request->setRegistrarId(request.get_registrar_id());
                     new_request->setRequestId(request.get_request_id());
@@ -1423,9 +1427,13 @@ namespace Registry
                     Fred::PublicRequest::cancel_public_request(_contact_id, type, _request_id);
                 }
 
-                check_sent_letters_limit(_contact_id,
-                                         server_conf_->letter_limit_count,
-                                         server_conf_->letter_limit_interval);
+                {
+                    Database::Connection conn = Database::Manager::acquire();
+                    check_sent_letters_limit(_contact_id,
+                                             server_conf_->letter_limit_count,
+                                             server_conf_->letter_limit_interval,
+                                             conn);
+                }
                 IdentificationRequestPtr new_request(mailer_, type);
                 new_request->setRegistrarId(mojeid_registrar_id_);
                 new_request->setRequestId(_request_id);

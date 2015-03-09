@@ -87,6 +87,7 @@ namespace Registry
                 letters_sent(_letters_sent),
                 during_period_in_days(_during_period_in_days)
             { }
+            ~MESSAGE_LIMIT_EXCEEDED()throw() { }
             Date limit_expire_date;
             unsigned letters_sent;
             unsigned during_period_in_days;
