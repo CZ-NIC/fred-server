@@ -234,6 +234,13 @@ namespace Registry
             {
                 throw Registry::MojeID::Server::OBJECT_NOT_EXISTS();
             }
+            catch (const Registry::MojeID::MESSAGE_LIMIT_EXCEEDED &_ex)
+            {
+                throw Registry::MojeID::Server::MESSAGE_LIMIT_EXCEEDED(
+                          corba_wrap_date(_ex.limit_expire_date),
+                          _ex.letters_sent,
+                          _ex.during_period_in_days);
+            }
             catch (Fred::Contact::Verification::DataValidationError &_ex)
             {
                 throw Registry::MojeID::Server::DATA_VALIDATION_ERROR(
@@ -667,6 +674,13 @@ namespace Registry
             catch (const Registry::MojeID::OBJECT_NOT_EXISTS&)
             {
                 throw Registry::MojeID::Server::OBJECT_NOT_EXISTS();
+            }
+            catch (const Registry::MojeID::MESSAGE_LIMIT_EXCEEDED &_ex)
+            {
+                throw Registry::MojeID::Server::MESSAGE_LIMIT_EXCEEDED(
+                          corba_wrap_date(_ex.limit_expire_date),
+                          _ex.letters_sent,
+                          _ex.during_period_in_days);
             }
             catch (const Registry::MojeID::IDENTIFICATION_REQUEST_NOT_EXISTS&)
             {

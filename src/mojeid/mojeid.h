@@ -76,6 +76,22 @@ namespace Registry
             {}
         };
 
+        struct MESSAGE_LIMIT_EXCEEDED : public std::runtime_error
+        {
+            typedef std::string Date;// format: YYYY-MM-DD
+            MESSAGE_LIMIT_EXCEEDED(const Date &_limit_expire_date,
+                                   unsigned _letters_sent,
+                                   unsigned _during_period_in_days)
+            :   std::runtime_error("too many letters sent"),
+                limit_expire_date(_limit_expire_date),
+                letters_sent(_letters_sent),
+                during_period_in_days(_during_period_in_days)
+            { }
+            Date limit_expire_date;
+            unsigned letters_sent;
+            unsigned during_period_in_days;
+        };
+
         struct ContactStateData
         {
             unsigned long long contact_id;
