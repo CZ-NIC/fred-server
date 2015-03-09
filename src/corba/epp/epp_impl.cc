@@ -2890,6 +2890,10 @@ ccReg::Response * ccReg_EPP_i::ContactUpdate(
 
         if (!code)
         {
+            //lock and update states of contact
+            Fred::lock_object_state_request_lock(id);
+            Fred::update_object_states(id);
+
             //discloseaddress conditions #12563
             if(c.DiscloseFlag == ccReg::DISCL_EMPTY)//discloseaddress not changed
             {
