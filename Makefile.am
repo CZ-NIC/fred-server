@@ -2210,7 +2210,6 @@ tests_test_server_SOURCES = \
 		src/admin/contact/merge_contact_auto_procedure.h \
 		src/admin/contact/merge_contact_reporting.cc \
 		src/admin/contact/merge_contact_reporting.h \
-		tests/checks.h \
 		src/fredlib/object_state/create_object_state_request_id.cc \
 		src/fredlib/object_state/create_object_state_request_id.h \
 		src/fredlib/object_state/get_object_state_id_map.cc \
@@ -2319,9 +2318,8 @@ tests_test_blocking_SOURCES = \
 		src/fredlib/object_state/cancel_object_state_request_id.cc \
 		src/fredlib/object_state/get_object_state_id_map.cc \
 		src/fredlib/object_state/get_blocking_status_desc_list.cc \
-		src/fredlib/domain/create_domain_name_blacklist_id.cc \
-		tests/checks.h
-		
+		src/fredlib/domain/create_domain_name_blacklist_id.cc
+
 tests_test_blocking_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS) \
 		$(BOOST_LDFLAGS) \
