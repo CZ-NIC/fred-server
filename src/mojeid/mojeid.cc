@@ -1355,6 +1355,23 @@ namespace Registry
                 Database::Connection conn = Database::Manager::acquire();
                 Database::Transaction tx(conn);
 
+                // check if the contact with ID _contact_id exists
+                {
+                    Fred::NameIdPair cinfo;
+                    DBSharedPtr nodb;
+                    Fred::Contact::ManagerPtr contact_mgr(
+                        Fred::Contact::Manager::create(nodb, registry_conf_->restricted_handles));
+
+                    Fred::Contact::Manager::CheckAvailType check_result;
+                    check_result = contact_mgr->checkAvail(_contact_id, cinfo);
+
+                    if (check_result != Fred::Contact::Manager::CA_REGISTRED ||
+                        !this->isMojeidContact(_contact_id)) {
+                        /* contact doesn't exists */
+                        throw Registry::MojeID::OBJECT_NOT_EXISTS();
+                    }
+                }
+
                 const std::string contact_handle = get_contact_handle(_contact_id, conn);
 
                 {
@@ -1365,21 +1382,6 @@ namespace Registry
                         // IDENTIFICATION_REQUEST_NOT_EXISTS isn't error in frontend
                         throw Registry::MojeID::IDENTIFICATION_REQUEST_NOT_EXISTS();
                     }
-                }
-
-                // check if the contact with ID _contact_id exists
-                Fred::NameIdPair cinfo;
-                DBSharedPtr nodb;
-                Fred::Contact::ManagerPtr contact_mgr(
-                    Fred::Contact::Manager::create(nodb, registry_conf_->restricted_handles));
-
-                Fred::Contact::Manager::CheckAvailType check_result;
-                check_result = contact_mgr->checkAvail(_contact_id, cinfo);
-
-                if (check_result != Fred::Contact::Manager::CA_REGISTRED ||
-                    !this->isMojeidContact(_contact_id)) {
-                    /* contact doesn't exists */
-                    throw Registry::MojeID::OBJECT_NOT_EXISTS();
                 }
 
                 enum { INVALID_PUBLIC_REQUEST_ID = 0 };
