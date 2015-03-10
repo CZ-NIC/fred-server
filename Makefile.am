@@ -170,6 +170,7 @@ noinst_HEADERS = \
 		util/cfg/validate_args.h \
 		util/cfg/handle_sms_args.h \
 		util/cfg/handle_contactverification_args.h \
+		util/cfg/handle_tests_args.h \
 		util/optys/handle_optys_mail_args.h \
 		util/types/optional.h \
 		util/types/optional_from_program_options.h \
@@ -189,6 +190,8 @@ noinst_HEADERS = \
 		src/corba/util/corba_conversions_nullable_types.h \
 		src/corba/util/corba_conversions_string.h \
 		util/is_equal_optional_nullable.h \
+		tests/fredlib/util.h \
+		tests/mockup/logger_client_dummy.h \
 		src/fredlib/contact/verification/enum_testsuite_handle.h \
 		src/fredlib/contact/verification/enum_check_status.h \
 		src/fredlib/contact/verification/enum_test_status.h \
@@ -1051,6 +1054,7 @@ src_admin_contact_verification_libadmin_contact_verification_a_SOURCES = \
 		src/admin/contact/verification/contact_states/enum.h \
 		src/admin/contact/verification/contact_states/delete_all.h \
 		src/admin/contact/verification/contact_states/delete_all.cc \
+		src/admin/contact/verification/test_impl/util.h \
 		src/admin/contact/verification/test_impl/test_contactability.h \
 		src/admin/contact/verification/test_impl/test_contactability.cc \
 		src/admin/contact/verification/test_impl/test_cz_address_exists.h \
