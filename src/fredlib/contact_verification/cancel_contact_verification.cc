@@ -47,13 +47,9 @@ bool check_contact_change_for_cancel_verification(
         const unsigned long long contact_id = static_cast<unsigned long long>(result[0][0]);
 
         const State contact_state = get_contact_verification_state(contact_id);
-        //if contact conditionally identified return true to cancel
-        if (contact_state.has_all(State::Civm) && !contact_state.has_all(State::cIvm)) {
-            return true;
-        }
 
-        //diff contact change if identified
-        if (contact_state.has_all(State::cIvm))
+        //diff contact change if conditionally identified or identified
+        if (contact_state.has_any(State::CIvm))
         {
             Database::Connection conn = Database::Manager::acquire();
             Database::Result result = conn.exec_params(
