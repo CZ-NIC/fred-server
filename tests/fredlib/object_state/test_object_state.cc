@@ -35,13 +35,13 @@ BOOST_FIXTURE_TEST_SUITE(TestObjectState, Test::Fixture::instantiate_db_template
 const std::string server_name = "test-object-state";
 
 
-struct test_contact_fixture : public Test::Fixture::instantiate_db_template
+struct test_contact_fixture_8470af40b863415588b78b1fb1782e7e : public Test::Fixture::instantiate_db_template
 {
     std::string registrar_handle;
     std::string xmark;
     std::string test_contact_handle;
 
-    test_contact_fixture()
+    test_contact_fixture_8470af40b863415588b78b1fb1782e7e()
     :xmark(RandomDataGenerator().xnumstring(6))
     , test_contact_handle(std::string("TEST-CONTACT-HANDLE")+xmark)
     {
@@ -64,12 +64,12 @@ struct test_contact_fixture : public Test::Fixture::instantiate_db_template
 
         ctx.commit_transaction();//commit fixture
     }
-    ~test_contact_fixture()
+    ~test_contact_fixture_8470af40b863415588b78b1fb1782e7e()
     {}
 };
 
 
-BOOST_FIXTURE_TEST_CASE(get_object_states, test_contact_fixture )
+BOOST_FIXTURE_TEST_CASE(get_object_states, test_contact_fixture_8470af40b863415588b78b1fb1782e7e )
 {
     Fred::OperationContext ctx;
     Fred::InfoContactOutput contact_info1 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
