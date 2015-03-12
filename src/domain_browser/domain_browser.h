@@ -32,6 +32,7 @@
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/domain/enum_validation_extension.h"
 #include "src/fredlib/nsset/nsset_dns_host.h"
+#include "src/fredlib/contact/place_address.h"
 #include "util/db/nullable.h"
 #include "util/optional_value.h"
 
@@ -96,7 +97,6 @@ namespace Registry
             {}
         };
 
-
         /**
          * Contact detail data.
          * Returned by @ref getContactDetail.
@@ -113,13 +113,8 @@ namespace Registry
             std::string authinfopw;/**< password for transfer */
             Nullable<std::string> name ;/**< name of contact person */
             Nullable<std::string> organization;/**< full trade name of organization */
-            Nullable<std::string> street1;/**< part of address */
-            Nullable<std::string> street2;/**< part of address */
-            Nullable<std::string> street3;/**< part of address*/
-            Nullable<std::string> city;/**< part of address - city */
-            Nullable<std::string> stateorprovince;/**< part of address - region */
-            Nullable<std::string> postalcode;/**< part of address - postal code */
-            Nullable<std::string> country;/**< two character country code or country name */
+            Fred::Contact::PlaceAddress permanent_address;/**< required contact address */
+            Nullable<Fred::Contact::PlaceAddress> mailing_address; /**< optional mailing address */
             Nullable<std::string> telephone;/**<  telephone number */
             Nullable<std::string> fax;/**< fax number */
             Nullable<std::string> email;/**< e-mail address */

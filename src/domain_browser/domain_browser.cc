@@ -430,14 +430,8 @@ namespace Registry
 
                 detail.name = contact_info.info_contact_data.name;
                 detail.organization = contact_info.info_contact_data.organization;
-                const Fred::Contact::PlaceAddress ci_place = contact_info.info_contact_data.place.get_value_or_default();
-                detail.street1 = ci_place.street1;
-                detail.street2 = ci_place.street2.get_value_or_default();
-                detail.street3 = ci_place.street3.get_value_or_default();
-                detail.city = ci_place.city;
-                detail.stateorprovince = ci_place.stateorprovince.get_value_or_default();
-                detail.postalcode = ci_place.postalcode;
-                detail.country = ci_place.country;
+                detail.permanent_address = contact_info.info_contact_data.place.get_value_or_default();
+                detail.mailing_address = optional_map_at<Nullable>(contact_info.info_contact_data.addresses,Fred::ContactAddressType::MAILING);
                 detail.telephone = contact_info.info_contact_data.telephone;
                 detail.fax = contact_info.info_contact_data.fax;
                 detail.email = contact_info.info_contact_data.email;
