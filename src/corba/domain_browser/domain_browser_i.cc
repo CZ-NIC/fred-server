@@ -373,6 +373,9 @@ namespace Registry
                 contact_detail->permanent_address.city = Corba::wrap_string_to_corba_string(detail_impl.permanent_address.city);
                 contact_detail->permanent_address.country = Corba::wrap_string_to_corba_string(detail_impl.permanent_address.country);
 
+                contact_detail->mailing_address= Corba::wrap_nullable_corba_type_to_corba_valuetype<NullablePlaceAddress>(
+                    corba_wrap_nullable_placeaddress(detail_impl.mailing_address));
+
                 contact_detail->telephone = Corba::wrap_string_to_corba_string(detail_impl.telephone.get_value_or_default());
                 contact_detail->fax = Corba::wrap_string_to_corba_string(detail_impl.fax.get_value_or_default());
                 contact_detail->email = Corba::wrap_string_to_corba_string(detail_impl.email.get_value_or_default());
