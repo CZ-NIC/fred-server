@@ -16,6 +16,7 @@ const typename T::mapped_type& map_at(
 }
 /**
  * if value is found in map by the key, return set optional map value, if not return unset optional map value
+ * ReturnOptionalTypeTemplate might be Optional or Nullable template
  */
 template<template <typename> class ReturnOptionalTypeTemplate, typename T>
 ReturnOptionalTypeTemplate<typename T::mapped_type> optional_map_at(
