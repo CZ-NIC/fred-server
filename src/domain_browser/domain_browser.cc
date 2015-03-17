@@ -1676,6 +1676,15 @@ namespace Registry
             }
             ctx.commit_transaction();
         }
+
+        void DomainBrowser::sendExpirationLetters(
+            unsigned long long user_contact_id,
+            bool enable_flag,
+            unsigned long long request_id)
+        {
+
+        }
+
     }//namespace DomainBrowserImpl
 }//namespace Registry
 

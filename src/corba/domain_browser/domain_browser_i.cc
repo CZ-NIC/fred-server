@@ -912,6 +912,34 @@ namespace Registry
             }
         }
 
+        void Server_i::sendExpirationLetters(
+            ::CORBA::ULongLong user_contact_id,
+             ::CORBA::Boolean enable_flag,
+            ::CORBA::ULongLong request_id)
+        {
+            try
+            {
+                return pimpl_->sendExpirationLetters(user_contact_id, enable_flag, request_id);
+            }
+            catch (const Registry::DomainBrowserImpl::UserNotExists& )
+            {
+                throw Registry::DomainBrowser::USER_NOT_EXISTS();
+            }
+            catch (const Registry::DomainBrowserImpl::ObjectBlocked& )
+            {
+                throw Registry::DomainBrowser::OBJECT_BLOCKED();
+            }
+            catch (const Registry::DomainBrowserImpl::AccessDenied& )
+            {
+                throw Registry::DomainBrowser::ACCESS_DENIED();
+            }
+            catch (...)
+            {
+                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
+            }
+
+        }
+
 
     }//namespace DomainBrowser
 }//namespace Registry

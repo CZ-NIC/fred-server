@@ -757,6 +757,13 @@ namespace Registry
              * @return name for logging context
              */
             std::string get_server_name();
+
+
+            void sendExpirationLetters(
+                unsigned long long user_contact_id,
+                bool enable_flag,
+                unsigned long long request_id);
+
         };//class DomainBrowser
 
     }//namespace DomainBrowserImpl
