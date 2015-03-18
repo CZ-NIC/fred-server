@@ -162,6 +162,7 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle)
             , Optional<bool>()//disclosevat
             , Optional<bool>()//discloseident
             , Optional<bool>()//disclosenotifyemail
+            , Optional<bool>()//domain_expiration_letter_flag
             , Optional<unsigned long long>() //logd_request_id
             ).exec(ctx);
 
@@ -234,6 +235,7 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle)
                 , Optional<bool>(true)//disclosevat
                 , Optional<bool>(true)//discloseident
                 , Optional<bool>(false)//disclosenotifyemail
+                , Optional<bool>()//domain_expiration_letter_flag
                 , Optional<unsigned long long>(0) //logd_request_id
                 ).exec(ctx);
 
