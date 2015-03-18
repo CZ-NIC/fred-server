@@ -1701,8 +1701,9 @@ namespace Registry
                     throw ObjectBlocked();
                 }
 
-                //TODO: update contact.warning_letter
-                //Fred::UpdateContactById(contact_id, update_registrar_).set_authinfo(authinfo).set_logd_request_id(request_id).exec(ctx);
+                Fred::UpdateContactById(contact_id, update_registrar_)
+                    .set_domain_expiration_letter_flag(enable_flag)
+                    .set_logd_request_id(request_id).exec(ctx);
                 ctx.commit_transaction();
             }
             catch(...)
