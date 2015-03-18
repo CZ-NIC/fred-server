@@ -665,22 +665,6 @@ public:
         // for every expiration date generate PDF
         for (unsigned j=0; j<exDates.size(); j++) {
 
-            /*
-SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id) where s.state_id=19 and s.valid_to isnull and nl.state_id isnull
-                -- general query for testing purposes
-            SELECT dobr.name, d.exdate, cor.name, c.name, c.organization, d.registrant
-                   FROM
-                   object_state s 
-                   LEFT JOIN notify_letters nl  ON nl.state_id=s.id
-                   JOIN domain_history d             ON d.historyid = s.ohid_from
-                   JOIN object_registry dobr         ON dobr.id = d.id
-
-                   JOIN object_registry cor          ON cor.id = d.registrant
-                   JOIN contact_history c            ON c.historyid = cor.historyid
-                   WHERE s.state_id=19 AND s.valid_to ISNULL AND nl.state_id ISNULL
-
-                              */
-
           std::ostringstream sql;
           sql <<
 "WITH expirated_domain AS ("
