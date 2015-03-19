@@ -759,7 +759,13 @@ namespace Registry
             std::string get_server_name();
 
 
-            void sendExpirationLetters(
+            /**
+             * Sets contact preference for sending domain expiration letters.
+             * @param user_contact_id contains database id of the user contact, to set any preference contact have to be mojeid contact, to set FALSE, contact have to be validated mojeid contact
+             * @param enable_flag is user preference whether to send domain expiration letters, if TRUE then send domain expiration letters, if FALSE don't send domain expiration letters
+             * @param request_id is id of the new entry in log_entry database table
+             */
+            void setContactPreferenceForDomainExpirationLetters(
                 unsigned long long user_contact_id,
                 bool enable_flag,
                 unsigned long long request_id);

@@ -140,7 +140,7 @@ namespace Registry
                 const Registry::DomainBrowser::ObjectIdSeq& src_contact_id_list,
                 ::CORBA::ULongLong request_id);
 
-            void sendExpirationLetters(
+            void setContactPreferenceForDomainExpirationLetters(
                 ::CORBA::ULongLong user_contact_id,
                  ::CORBA::Boolean enable_flag,
                 ::CORBA::ULongLong request_id);

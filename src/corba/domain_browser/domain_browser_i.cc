@@ -912,14 +912,14 @@ namespace Registry
             }
         }
 
-        void Server_i::sendExpirationLetters(
+        void Server_i::setContactPreferenceForDomainExpirationLetters(
             ::CORBA::ULongLong user_contact_id,
              ::CORBA::Boolean enable_flag,
             ::CORBA::ULongLong request_id)
         {
             try
             {
-                return pimpl_->sendExpirationLetters(user_contact_id, enable_flag, request_id);
+                return pimpl_->setContactPreferenceForDomainExpirationLetters(user_contact_id, enable_flag, request_id);
             }
             catch (const Registry::DomainBrowserImpl::UserNotExists& )
             {
