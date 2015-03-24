@@ -159,6 +159,10 @@ namespace Registry
           void sendNewPIN3(
               ::CORBA::ULongLong contact_id,
               ::CORBA::ULongLong request_id);
+
+          void sendMojeIDCard(
+              ::CORBA::ULongLong contact_id,
+              ::CORBA::ULongLong request_id);
         };//class Server_i
     }//namespace MojeID
 }//namespace Registry

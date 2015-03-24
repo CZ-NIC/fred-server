@@ -1489,6 +1489,13 @@ namespace Registry
             }
         }//MojeIDImpl::sendNewPIN3
 
+        //send MojeID (emergency) card
+        void MojeIDImpl::sendMojeIDCard(
+            unsigned long long _contact_id,
+            unsigned long long _request_id)
+        {
+        }
+
         ///cancel mojeidContact state
         void MojeIDImpl::contactCancelAccountPrepare(
             unsigned long long _contact_id

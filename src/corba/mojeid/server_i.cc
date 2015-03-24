@@ -696,5 +696,33 @@ namespace Registry
                 throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR();
             }
         }
+
+        void Server_i::sendMojeIDCard(
+              ::CORBA::ULongLong contact_id,
+              ::CORBA::ULongLong request_id)
+        {
+            try
+            {
+                pimpl_->sendMojeIDCard(contact_id, request_id);
+                return;
+            }
+            catch (const Registry::MojeID::OBJECT_NOT_EXISTS&)
+            {
+                throw Registry::MojeID::Server::OBJECT_NOT_EXISTS();
+            }
+            catch (const Registry::MojeID::IDENTIFICATION_REQUEST_NOT_EXISTS&)
+            {
+                throw Registry::MojeID::Server::IDENTIFICATION_REQUEST_NOT_EXISTS();
+            }
+            catch (const std::exception &_ex)
+            {
+                throw Registry::MojeID::Server
+                    ::INTERNAL_SERVER_ERROR(_ex.what());
+            }
+            catch (...)
+            {
+                throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR();
+            }
+        }
     }//namespace MojeID
 }//namespace Registry
