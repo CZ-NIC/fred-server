@@ -28,7 +28,7 @@ namespace Fred
       GT_ADMIN_CONTACT_VERIFICATION_CONTACT_CHECK_NOTICE,
       GT_ADMIN_CONTACT_VERIFICATION_CONTACT_CHECK_THANK_YOU,
       GT_CONTACT_IDENTIFICATION_LETTER_PIN3_OPTYS,
-      GT_MOJEID_EMERGENCY_CARD, ///< letter with emergency card
+      GT_MOJEID_CARD, ///< letter with mojeid (emergency) card
     };
     /// generator that has to be filled with stream of data
     class Generator {
