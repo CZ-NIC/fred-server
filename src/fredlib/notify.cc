@@ -592,7 +592,7 @@ public:
                             , "domain_expiration"
                             , contact_object_registry_id
                             , contact_history_historyid
-                            , "letter");
+                            , "letter", true);
 
                     std::vector<TID>::const_iterator it = state_ids.begin();
                     std::ostringstream sql;
