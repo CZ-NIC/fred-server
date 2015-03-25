@@ -14,24 +14,29 @@
 #include <boost/assign/list_of.hpp>
 
 
-using namespace Registry::MojeID;
+using namespace Registry::MojeID;//tohle snad do headeru vůbec nepatří!!!
 
-Date corba_wrap_date(const std::string &_v)//_v="2014-12-21T17:38:25,123456789"
+Registry::MojeID::Date corba_wrap_date(const boost::gregorian::date &_v)
 {
-    enum { GREGORIAN_DATE_LENGTH = 10 };
-    const boost::gregorian::date gd = boost::gregorian::from_simple_string(_v.substr(0, GREGORIAN_DATE_LENGTH));
-    Date d;
-    if (gd.is_special()) {
+    Registry::MojeID::Date d;
+    if (_v.is_special()) {
         d.year  = 0;
         d.month = 0;
         d.day   = 0;
     }
     else {
-        d.year  = static_cast<int>(gd.year());
-        d.month = static_cast<int>(gd.month());
-        d.day   = static_cast<int>(gd.day());
+        d.year  = static_cast<int>(_v.year());
+        d.month = static_cast<int>(_v.month());
+        d.day   = static_cast<int>(_v.day());
     }
     return d;
+}
+
+Registry::MojeID::Date corba_wrap_date(const std::string &_v)//_v="2014-12-21T17:38:25,123456789"
+{
+    enum { GREGORIAN_DATE_LENGTH = 10 };
+    const std::string str_date = _v.substr(0, GREGORIAN_DATE_LENGTH);
+    return corba_wrap_date(boost::gregorian::from_simple_string(str_date));
 }
 
 DateTime corba_wrap_datetime(const std::string &_v)
