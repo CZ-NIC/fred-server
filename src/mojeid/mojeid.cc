@@ -106,16 +106,32 @@ namespace Registry
                                           Database::Connection &_conn)
             {
                 const Database::Result result = _conn.exec_params(
-                    "SELECT limit_expire_date,letters_sent,during_period_in_days "
-                    "FROM mojeid_check_sent_letters_limit($1::INTEGER,$2::INTEGER,$3::INTEGER)",
-                    Database::query_param_list(_contact_id)(_max_sent_letters)(_watched_period_in_days));
+"WITH comm_type_letter AS (SELECT id FROM comm_type WHERE type='letter'),"
+     "message_types AS (SELECT id FROM message_type WHERE type IN ('mojeid_pin3')),"
+     "send_states AS (SELECT id FROM enum_send_status WHERE status_name IN ('send_failed',"
+                                                                           "'sent',"
+                                                                           "'being_sent',"
+                                                                           "'undelivered'))"
+"SELECT (ma.moddate+($3::TEXT||'DAYS')::INTERVAL)::DATE "
+"FROM message_archive ma "
+"JOIN message_contact_history_map mc ON mc.message_archive_id=ma.id "
+"WHERE ma.message_type_id IN (SELECT id FROM message_types) AND "
+      "ma.comm_type_id=(SELECT id FROM comm_type_letter) AND "
+      "ma.status_id IN (SELECT id FROM send_states) AND "
+      "(NOW()-($3::TEXT||'DAYS')::INTERVAL)::DATE<ma.moddate::DATE AND "
+      "mc.contact_object_registry_id=$1::INTEGER "
+"ORDER BY 1 DESC OFFSET ($2::INTEGER-1) LIMIT 1",
+                    Database::query_param_list(_contact_id)               // used as $1::INTEGER
+                                              (_max_sent_letters)         // used as $2::INTEGER
+                                              (_watched_period_in_days)); // used as $3::TEXT
                 if (result.size() <= 0) {
                     return;
                 }
-                throw Registry::MojeID::MESSAGE_LIMIT_EXCEEDED(
-                          static_cast< std::string >(result[0][0]),
-                          static_cast< unsigned >(result[0][1]),
-                          static_cast< unsigned >(result[0][2]));
+                throw MESSAGE_LIMIT_EXCEEDED(
+                          boost::gregorian::from_simple_string(
+                              static_cast< std::string >(result[0][0])),
+                          _max_sent_letters,
+                          _watched_period_in_days);
             }
         }
 
