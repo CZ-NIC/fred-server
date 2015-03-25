@@ -86,7 +86,7 @@ public:
                  "maximum number of letters sent by one contact in a letter_limit_interval days")
                 ("mojeid.letter_limit_interval",
                  po::value<unsigned>()->default_value(30),
-                 "interval for cheking number of sent letters");
+                 "interval for checking number of sent letters");
 
         return cfg_opts;
     }//get_options_description
