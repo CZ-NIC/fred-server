@@ -714,10 +714,14 @@ namespace Registry
             {
                 throw Registry::MojeID::Server::IDENTIFICATION_REQUEST_NOT_EXISTS();
             }
+            catch (const Fred::Contact::Verification::DataValidationError &_ex)
+            {
+                throw Registry::MojeID::Server::DATA_VALIDATION_ERROR(
+                    corba_wrap_validation_error_list(_ex.errors));
+            }
             catch (const std::exception &_ex)
             {
-                throw Registry::MojeID::Server
-                    ::INTERNAL_SERVER_ERROR(_ex.what());
+                throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR(_ex.what());
             }
             catch (...)
             {
