@@ -27,6 +27,7 @@
 #include "src/mojeid/mojeid_notifier.h"
 #include "src/mojeid/mojeid_contact_states.h"
 #include "src/fredlib/contact_verification/contact_verification_state.h"
+#include "src/fredlib/contact_verification/contact_verification_password.h"
 
 #include "src/fredlib/db_settings.h"
 #include "src/fredlib/registry.h"
@@ -43,6 +44,7 @@
 #include "src/mojeid/mojeid_validators.h"
 #include "util/factory_check.h"
 #include "util/util.h"
+#include "util/map_at.h"
 #include "util/xmlgen.h"
 
 #include "cfg/config_handler_decl.h"
@@ -1489,12 +1491,188 @@ namespace Registry
             }
         }//MojeIDImpl::sendNewPIN3
 
-        //send MojeID (emergency) card
+        namespace
+        {
+            void send_mojeid_card_letter(unsigned long long _contact_id,
+                                         Database::Connection &_conn)
+//                const std::string &custom_tag, //tag in template xml params: "pin2",  "pin3"
+//                Fred::Document::GenerationType doc_type, //type for document generator
+//                const std::string &message_type, //for message_archive: "contact_verification_pin2", "contact_verification_pin3"
+//                const std::string& comm_type //for message_archive: "letter"
+            {
+                Fred::PublicRequest::ContactVerificationPassword::MessageData data;
+                Fred::PublicRequest::collect_message_data(_contact_id, _conn, data);
+
+                const std::string country_cs_name = map_at(data, "country_cs_name");
+                const std::string addr_country = country_cs_name.empty()
+                                                 ? map_at(data, "country_name")
+                                                 : country_cs_name;
+
+                std::string letter_xml("<?xml version='1.0' encoding='utf-8'?>");
+
+                const std::string lastname = map_at(data, "lastname");
+                static const char female_suffix[] = "á"; // utf-8 encoded
+                enum { FEMALE_SUFFIX_LEN = sizeof(female_suffix) - 1 };
+                const std::string sex = (FEMALE_SUFFIX_LEN <= lastname.length()) &&
+                                        (std::strcmp(lastname.c_str() + lastname.length() - FEMALE_SUFFIX_LEN,
+                                                     female_suffix) == 0) ? "female" : "male";
+
+                Util::XmlTagPair("contact_auth", Util::vector_of<Util::XmlCallback>
+                    (Util::XmlTagPair("user", Util::vector_of<Util::XmlCallback>
+                        (Util::XmlTagPair("actual_date", Util::XmlUnparsedCData(map_at(data, "reqdate"))))
+                        (Util::XmlTagPair("name", Util::XmlUnparsedCData(map_at(data, "firstname")+ " " + map_at(data, "lastname"))))
+                        (Util::XmlTagPair("organization", Util::XmlUnparsedCData(map_at(data, "organization"))))
+                        (Util::XmlTagPair("street", Util::XmlUnparsedCData(map_at(data, "street"))))
+                        (Util::XmlTagPair("city", Util::XmlUnparsedCData(map_at(data, "city"))))
+                        (Util::XmlTagPair("stateorprovince", Util::XmlUnparsedCData(map_at(data, "stateorprovince"))))
+                        (Util::XmlTagPair("postal_code", Util::XmlUnparsedCData(map_at(data, "postalcode"))))
+                        (Util::XmlTagPair("country", Util::XmlUnparsedCData(addr_country)))
+                        (Util::XmlTagPair("account", Util::vector_of<Util::XmlCallback>
+                            (Util::XmlTagPair("username", Util::XmlUnparsedCData(map_at(data, "handle"))))
+                            (Util::XmlTagPair("first_name", Util::XmlUnparsedCData(map_at(data, "firstname"))))
+                            (Util::XmlTagPair("last_name", Util::XmlUnparsedCData(lastname)))
+                            (Util::XmlTagPair("sex", Util::XmlUnparsedCData(sex)))
+                            (Util::XmlTagPair("email", Util::XmlUnparsedCData(map_at(data, "email"))))
+                            (Util::XmlTagPair("sex", Util::XmlUnparsedCData(sex)))
+                            (Util::XmlTagPair("mobile", Util::XmlUnparsedCData(map_at(data, "phone"))))
+                        ))
+                        (Util::XmlTagPair("auth", Util::vector_of<Util::XmlCallback>
+                            (Util::XmlTagPair("codes", Util::vector_of<Util::XmlCallback>
+                                (Util::XmlTagPair(custom_tag, Util::XmlUnparsedCData(map_at(data, custom_tag))))
+                            ))
+                            (Util::XmlTagPair("link",
+                                Util::XmlUnparsedCData(((message_type == "contact_verification_pin3")
+                                    ? std::string("https://") + map_at(data, "hostname") +
+                                        std::string("/verification/identify/letter/?handle=") + map_at(data, "handle")
+                                    : map_at(data, "hostname"))
+                                )
+                            ))
+                        ))
+                    ))
+                )(letter_xml);
+
+                std::ostringstream xmldata;
+                xmldata << letter_xml;
+
+                const unsigned long long file_id = prai_ptr_->getPublicRequestManager()
+                    ->getDocumentManager()->generateDocumentAndSave(
+                        doc_type,
+                        xmldata,
+                        "identification_request-" +
+                            boost::lexical_cast<std::string>(prai_ptr_->getId()) +
+                            ".pdf",
+                        7,
+                        "");
+
+                Fred::Messages::PostalAddress pa;
+                pa.name    = map_at(data, "firstname") + " " + map_at(data, "lastname");
+                pa.org     = map_at(data, "organization");
+                pa.street1 = map_at(data, "street");
+                pa.street2 = std::string("");
+                pa.street3 = std::string("");
+                pa.city    = map_at(data, "city");
+                pa.state   = map_at(data, "stateorprovince");
+                pa.code    = map_at(data, "postalcode");
+                pa.country = map_at(data, "country_name");
+
+                const unsigned long long message_id =
+                    prai_ptr_->getPublicRequestManager()->getMessagesManager()
+                        ->save_letter_to_send(
+                            map_at(data, "handle"),//contact handle
+                            pa,
+                            file_id,
+                            message_type,
+                            boost::lexical_cast<unsigned long >(map_at(data,
+                                "contact_id")),//contact object_registry.id
+                            boost::lexical_cast<unsigned long >(map_at(data,
+                                "contact_hid")),//contact_history.historyid
+                            comm_type//comm_type letter or registered_letter
+                            );
+            }
+        }
+
+        //send mojeID (emergency) card
         void MojeIDImpl::sendMojeIDCard(
             unsigned long long _contact_id,
             unsigned long long _request_id)
         {
-        }
+            Logging::Context ctx_server(create_ctx_name(get_server_name()));
+            Logging::Context ctx("send-mojeid-card");
+            ConnectionReleaser releaser;
+
+            LOGGER(PACKAGE).info(boost::format("sendMojeIDCard --"
+                    "  contact_id: %1%  request_id: %2%")
+                        % _contact_id % _request_id);
+
+            try {
+                enum { INVALID_CONTACT_ID = 0 };
+                if (_contact_id == INVALID_CONTACT_ID) {
+                    throw std::runtime_error("_contact_id is invalid");
+                }
+
+                Database::Connection conn = Database::Manager::acquire();
+                Database::Transaction tx(conn);
+
+                // check if the contact with ID _contact_id exists
+                {
+                    Fred::NameIdPair cinfo;
+                    DBSharedPtr nodb;
+                    Fred::Contact::ManagerPtr contact_mgr(
+                        Fred::Contact::Manager::create(nodb, registry_conf_->restricted_handles));
+
+                    Fred::Contact::Manager::CheckAvailType check_result;
+                    check_result = contact_mgr->checkAvail(_contact_id, cinfo);
+
+                    if (check_result != Fred::Contact::Manager::CA_REGISTRED ||
+                        !this->isMojeidContact(_contact_id)) {
+                        /* contact doesn't exists */
+                        throw Registry::MojeID::OBJECT_NOT_EXISTS();
+                    }
+                }
+
+                const std::string contact_handle = get_contact_handle(_contact_id, conn);
+
+                {
+                    const Fred::Contact::Verification::State contact_state =
+                        Fred::Contact::Verification::get_contact_verification_state(_contact_id);
+                    if (!contact_state.has_all(Fred::Contact::Verification::State::cIvm)) {
+                        Fred::Contact::Verification::FieldErrorMap errors;
+                        errors["status"] = Fred::Contact::Verification::INVALID;
+                        throw Fred::Contact::Verification::DataValidationError(errors);
+                    }
+                }
+
+                tx.commit();
+
+                LOGGER(PACKAGE).info("request completed successfully");
+
+            }
+            catch(const Registry::MojeID::OBJECT_NOT_EXISTS &e)
+            {
+                LOGGER(PACKAGE).info(e.what());
+                throw;
+            }
+            catch(const Registry::MojeID::IDENTIFICATION_REQUEST_NOT_EXISTS &e)
+            {
+                LOGGER(PACKAGE).info(e.what());
+                throw;
+            }
+            catch (Fred::Contact::Verification::DataValidationError &e)
+            {
+                LOGGER(PACKAGE).info(e.what());
+                throw;
+            }
+            catch (const std::exception &e)
+            {
+                LOGGER(PACKAGE).error(e.what());
+                throw;
+            }
+            catch (...)
+            {
+                LOGGER(PACKAGE).error("unknown exception");
+                throw;
+            }
+        }//MojeIDImpl::sendMojeIDCard
 
         ///cancel mojeidContact state
         void MojeIDImpl::contactCancelAccountPrepare(
