@@ -1642,6 +1642,7 @@ namespace Registry
                     }
                 }
 
+                send_mojeid_card_letter(_contact_id, conn);
                 tx.commit();
 
                 LOGGER(PACKAGE).info("request completed successfully");
