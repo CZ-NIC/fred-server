@@ -33,48 +33,14 @@
 namespace Fred {
 namespace PublicRequest {
 
-const ContactVerificationPassword::MessageData ContactVerificationPassword::collectMessageData()
+ContactVerificationPassword::MessageData ContactVerificationPassword::collectMessageData()const
 {
     Database::Connection conn = Database::Manager::acquire();
-    const Database::Result result = conn.exec_params( // contact mailing address first
-        "SELECT c.name,c.organization,"
-               "CASE WHEN mc.id IS NULL THEN c.street1 ELSE mc.street1 END,"
-               "CASE WHEN mc.id IS NULL THEN c.city ELSE mc.city END,"
-               "CASE WHEN mc.id IS NULL THEN c.stateorprovince ELSE mc.stateorprovince END,"
-               "CASE WHEN mc.id IS NULL THEN c.postalcode ELSE mc.postalcode END,"
-               "CASE WHEN mc.id IS NULL THEN c.country ELSE mc.country END,"
-               "c.email,oreg.historyid,c.telephone,"
-               "CASE WHEN mc.id IS NULL THEN cc.country ELSE mcc.country END,"
-               "CASE WHEN mc.id IS NULL THEN cc.country_cs ELSE mcc.country_cs END "
-        "FROM contact c "
-        "JOIN enum_country cc ON cc.id=c.country "
-        "JOIN object_registry oreg ON oreg.id=c.id "
-        "LEFT JOIN contact_address mc ON mc.contactid=c.id AND mc.type='MAILING' "
-        "LEFT JOIN enum_country mcc ON mcc.id=mc.country "
-        "WHERE c.id=$1::integer LIMIT 1",
-        Database::query_param_list(prai_ptr_->getObject(0).id));
-    if (result.size() != 1) {
-        throw std::runtime_error("unable to get data for password messages");
-    }
-
     MessageData data;
-
-    std::string name = static_cast<std::string>(result[0][0]);
-    std::size_t pos = name.find_last_of(" ");
-    data["firstname"] = name.substr(0, pos);
-    data["lastname"] = name.substr(pos + 1);
-    data["organization"] = static_cast<std::string>(result[0][1]);
-    data["street"] = static_cast<std::string>(result[0][2]);
-    data["city"] = static_cast<std::string>(result[0][3]);
-    data["stateorprovince"] = static_cast<std::string>(result[0][4]);
-    data["postalcode"] = static_cast<std::string>(result[0][5]);
-    data["country"] = static_cast<std::string>(result[0][6]);
-    data["email"] = static_cast<std::string>(result[0][7]);
-    data["hostname"] = prai_ptr_->getPublicRequestManager()\
+    data["hostname"] = prai_ptr_->getPublicRequestManager()
             ->getIdentificationMailAuthHostname();
     data["identification"] = prai_ptr_->getIdentification();
-    data["handle"] = boost::algorithm::to_lower_copy(
-            prai_ptr_->getObject(0).handle);
+    data["handle"] = boost::algorithm::to_lower_copy(prai_ptr_->getObject(0).handle);
     /* password split */
     const std::string password = prai_ptr_->getPassword();
     data["pin1"] = password.substr(
@@ -84,17 +50,10 @@ const ContactVerificationPassword::MessageData ContactVerificationPassword::coll
     data["pin3"] = password;
     data["reqdate"] = boost::gregorian::to_iso_extended_string(
             prai_ptr_->getCreateTime().date());
-    data["contact_id"] = boost::lexical_cast<std::string>(
-            prai_ptr_->getObject(0).id);
-    data["contact_hid"] = static_cast<std::string>(result[0][8]);
-    data["phone"] = static_cast<std::string>(result[0][9]);
-    data["country_name"] = static_cast<std::string>(result[0][10]);
-    data["country_cs_name"] = static_cast<std::string>(result[0][11]);
-
-    return data;
+    return collect_message_data(prai_ptr_->getObject(0).id, conn, data);
 }
 
-size_t ContactVerificationPassword::get_password_chunk_length()
+size_t ContactVerificationPassword::get_password_chunk_length()const
 {
     static const size_t PASSWORD_CHUNK_LENGTH = 8;
     return PASSWORD_CHUNK_LENGTH;
@@ -206,7 +165,6 @@ void ContactVerificationPassword::sendLetterPassword( const std::string& custom_
                 (Util::XmlTagPair("last_name", Util::XmlUnparsedCData(lastname)))
                 (Util::XmlTagPair("sex", Util::XmlUnparsedCData(sex)))
                 (Util::XmlTagPair("email", Util::XmlUnparsedCData(map_at(data, "email"))))
-                (Util::XmlTagPair("sex", Util::XmlUnparsedCData(sex)))
                 (Util::XmlTagPair("mobile", Util::XmlUnparsedCData(map_at(data, "phone"))))
             ))
             (Util::XmlTagPair("auth", Util::vector_of<Util::XmlCallback>
@@ -365,6 +323,52 @@ std::string ContactVerificationPassword::generateAuthInfoPassword()
         }
     }
     return passwd;
+}
+
+ContactVerificationPassword::MessageData& collect_message_data(
+    unsigned long long _contact_id,
+    Database::Connection &_conn,
+    ContactVerificationPassword::MessageData &_data)
+{
+    const Database::Result result = _conn.exec_params( // contact mailing address first
+        "SELECT c.name,c.organization,"
+               "CASE WHEN mc.id IS NULL THEN c.street1 ELSE mc.street1 END,"
+               "CASE WHEN mc.id IS NULL THEN c.city ELSE mc.city END,"
+               "CASE WHEN mc.id IS NULL THEN c.stateorprovince ELSE mc.stateorprovince END,"
+               "CASE WHEN mc.id IS NULL THEN c.postalcode ELSE mc.postalcode END,"
+               "CASE WHEN mc.id IS NULL THEN c.country ELSE mc.country END,"
+               "c.email,oreg.historyid,c.telephone,"
+               "CASE WHEN mc.id IS NULL THEN cc.country ELSE mcc.country END,"
+               "CASE WHEN mc.id IS NULL THEN cc.country_cs ELSE mcc.country_cs END "
+        "FROM contact c "
+        "JOIN enum_country cc ON cc.id=c.country "
+        "JOIN object_registry oreg ON oreg.id=c.id "
+        "LEFT JOIN contact_address mc ON mc.contactid=c.id AND mc.type='MAILING' "
+        "LEFT JOIN enum_country mcc ON mcc.id=mc.country "
+        "WHERE c.id=$1::INTEGER LIMIT 1",
+        Database::query_param_list(_contact_id));
+    if (result.size() != 1) {
+        throw std::runtime_error("unable to get data for password messages");
+    }
+
+    const std::string name   = static_cast<std::string>(result[0][0]);
+    const std::size_t pos    = name.find_last_of(" ");
+    _data["firstname"]       = name.substr(0, pos);
+    _data["lastname"]        = name.substr(pos + 1);
+    _data["organization"]    = static_cast<std::string>(result[0][1]);
+    _data["street"]          = static_cast<std::string>(result[0][2]);
+    _data["city"]            = static_cast<std::string>(result[0][3]);
+    _data["stateorprovince"] = static_cast<std::string>(result[0][4]);
+    _data["postalcode"]      = static_cast<std::string>(result[0][5]);
+    _data["country"]         = static_cast<std::string>(result[0][6]);
+    _data["email"]           = static_cast<std::string>(result[0][7]);
+    _data["contact_id"]      = boost::lexical_cast<std::string>(_contact_id);
+    _data["contact_hid"]     = static_cast<std::string>(result[0][8]);
+    _data["phone"]           = static_cast<std::string>(result[0][9]);
+    _data["country_name"]    = static_cast<std::string>(result[0][10]);
+    _data["country_cs_name"] = static_cast<std::string>(result[0][11]);
+
+    return _data;
 }
 
 }}
