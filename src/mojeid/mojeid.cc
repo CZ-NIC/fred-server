@@ -1495,10 +1495,6 @@ namespace Registry
         {
             void send_mojeid_card_letter(unsigned long long _contact_id,
                                          Database::Connection &_conn)
-//                const std::string &custom_tag, //tag in template xml params: "pin2",  "pin3"
-//                Fred::Document::GenerationType doc_type, //type for document generator
-//                const std::string &message_type, //for message_archive: "contact_verification_pin2", "contact_verification_pin3"
-//                const std::string& comm_type //for message_archive: "letter"
             {
                 Fred::PublicRequest::ContactVerificationPassword::MessageData data;
                 Fred::PublicRequest::collect_message_data(_contact_id, _conn, data);
@@ -1551,7 +1547,7 @@ namespace Registry
                         rconf->fileclient_path,
                         CfgArgs::instance()->get_handler_ptr_by_type< HandleCorbaNameServiceArgs >()
                             ->get_nameservice_host_port());
-                enum { FILETYPE_MOJEID_CARD = 7 };
+                enum { FILETYPE_MOJEID_CARD = 10 };
                 const unsigned long long file_id = doc_manager->generateDocumentAndSave(
                         Fred::Document::GT_MOJEID_CARD,
                         xmldata,
