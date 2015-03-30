@@ -966,10 +966,6 @@ src_fredlib_messages_libmessages_a_SOURCES = \
 src_fredlib_requests_librequests_a_SOURCES = \
 		src/fredlib/requests/model_request_property_name.h \
 		src/fredlib/requests/model_request.cc \
-		src/fredlib/requests/model_request_property_value.cc \
-		src/fredlib/requests/model_request_data.cc \
-		src/fredlib/requests/model_request_property_value.h \
-		src/fredlib/requests/model_request_data.h \
 		src/fredlib/requests/model_session.cc \
 		src/fredlib/requests/model_request.h \
 		src/fredlib/requests/model_session.h \
