@@ -1536,33 +1536,29 @@ namespace Registry
                             (Util::XmlTagPair("sex", Util::XmlUnparsedCData(sex)))
                             (Util::XmlTagPair("mobile", Util::XmlUnparsedCData(map_at(data, "phone"))))
                         ))
-                        (Util::XmlTagPair("auth", Util::vector_of<Util::XmlCallback>
-                            (Util::XmlTagPair("codes", Util::vector_of<Util::XmlCallback>
-                                (Util::XmlTagPair(custom_tag, Util::XmlUnparsedCData(map_at(data, custom_tag))))
-                            ))
-                            (Util::XmlTagPair("link",
-                                Util::XmlUnparsedCData(((message_type == "contact_verification_pin3")
-                                    ? std::string("https://") + map_at(data, "hostname") +
-                                        std::string("/verification/identify/letter/?handle=") + map_at(data, "handle")
-                                    : map_at(data, "hostname"))
-                                )
-                            ))
-                        ))
                     ))
                 )(letter_xml);
 
-                std::ostringstream xmldata;
+                std::stringstream xmldata;
                 xmldata << letter_xml;
 
-                const unsigned long long file_id = prai_ptr_->getPublicRequestManager()
-                    ->getDocumentManager()->generateDocumentAndSave(
-                        doc_type,
+                HandleRegistryArgs *const rconf =
+                    CfgArgs::instance()->get_handler_ptr_by_type< HandleRegistryArgs >();
+                std::auto_ptr< Fred::Document::Manager > doc_manager =
+                    Fred::Document::Manager::create(
+                        rconf->docgen_path,
+                        rconf->docgen_template_path,
+                        rconf->fileclient_path,
+                        CfgArgs::instance()->get_handler_ptr_by_type< HandleCorbaNameServiceArgs >()
+                            ->get_nameservice_host_port());
+                enum { FILETYPE_MOJEID_CARD = 7 };
+                const unsigned long long file_id = doc_manager->generateDocumentAndSave(
+                        Fred::Document::GT_MOJEID_CARD,
                         xmldata,
-                        "identification_request-" +
-                            boost::lexical_cast<std::string>(prai_ptr_->getId()) +
-                            ".pdf",
-                        7,
-                        "");
+                        "mojeid_card-" +
+                            boost::lexical_cast<std::string>(_contact_id) + "-" +
+                            boost::lexical_cast<std::string>(::time(NULL)) + ".pdf",
+                        FILETYPE_MOJEID_CARD, "");
 
                 Fred::Messages::PostalAddress pa;
                 pa.name    = map_at(data, "firstname") + " " + map_at(data, "lastname");
@@ -1575,19 +1571,24 @@ namespace Registry
                 pa.code    = map_at(data, "postalcode");
                 pa.country = map_at(data, "country_name");
 
-                const unsigned long long message_id =
-                    prai_ptr_->getPublicRequestManager()->getMessagesManager()
-                        ->save_letter_to_send(
-                            map_at(data, "handle"),//contact handle
-                            pa,
-                            file_id,
-                            message_type,
-                            boost::lexical_cast<unsigned long >(map_at(data,
-                                "contact_id")),//contact object_registry.id
-                            boost::lexical_cast<unsigned long >(map_at(data,
-                                "contact_hid")),//contact_history.historyid
-                            comm_type//comm_type letter or registered_letter
-                            );
+                DBSharedPtr nodb;
+                std::auto_ptr< Fred::Manager > registry_manager;
+                registry_manager.reset(
+                    Fred::Manager::create(
+                        nodb,
+                        rconf->restricted_handles));
+                const unsigned long long message_id = registry_manager->getMessageManager()
+                    ->save_letter_to_send(
+                        map_at(data, "handle").c_str(),//contact handle
+                        pa,
+                        file_id,
+                        "mojeid_emergency_card",
+                        boost::lexical_cast<unsigned long >(map_at(data,
+                            "contact_id")),//contact object_registry.id
+                        boost::lexical_cast<unsigned long >(map_at(data,
+                            "contact_hid")),//contact_history.historyid
+                        "letter"
+                    );
             }
         }
 
