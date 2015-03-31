@@ -1496,6 +1496,28 @@ namespace Registry
             void send_mojeid_card_letter(unsigned long long _contact_id,
                                          Database::Connection &_conn)
             {
+                LOGGER(PACKAGE).info(
+                    boost::format("send_mojeid_card_letter --  contact_id: %1%") % _contact_id);
+                const std::string comm_type = "letter";
+                const std::string message_type = "mojeid_card";
+                const Database::Result result = _conn.exec_params(
+                    "UPDATE message_archive ma "
+                    "SET moddate=NOW(),"
+                        "status_id=(SELECT id FROM enum_send_status WHERE status_name='no_processing') "
+                    "FROM message_contact_history_map mchm "
+                    "JOIN letter_archive la ON la.id=mchm.message_archive_id "
+                    "WHERE mchm.message_archive_id=ma.id AND "
+                          "mchm.contact_object_registry_id=$1::INTEGER AND "
+                          "ma.status_id IN (SELECT id FROM enum_send_status "
+                                           "WHERE status_name IN ('sent_failed','ready')) AND "
+                          "ma.comm_type_id=(SELECT id FROM comm_type WHERE type=$2::TEXT) AND "
+                          "ma.message_type_id=(SELECT id FROM message_type WHERE type=$3::TEXT) "
+                    "RETURNING ma.id",
+                    Database::query_param_list(_contact_id)(comm_type)(message_type));
+                LOGGER(PACKAGE).info(
+                    boost::format("%1% %2%s of %3% type canceled")
+                                   % result.size() % comm_type % message_type);
+
                 Fred::PublicRequest::ContactVerificationPassword::MessageData data;
                 Fred::PublicRequest::collect_message_data(_contact_id, _conn, data);
 
@@ -1529,7 +1551,6 @@ namespace Registry
                             (Util::XmlTagPair("last_name", Util::XmlUnparsedCData(lastname)))
                             (Util::XmlTagPair("sex", Util::XmlUnparsedCData(sex)))
                             (Util::XmlTagPair("email", Util::XmlUnparsedCData(map_at(data, "email"))))
-                            (Util::XmlTagPair("sex", Util::XmlUnparsedCData(sex)))
                             (Util::XmlTagPair("mobile", Util::XmlUnparsedCData(map_at(data, "phone"))))
                         ))
                     ))
@@ -1573,17 +1594,12 @@ namespace Registry
                     Fred::Manager::create(
                         nodb,
                         rconf->restricted_handles));
-                const unsigned long long message_id = registry_manager->getMessageManager()
-                    ->save_letter_to_send(
+                const unsigned long long message_id =
+                    registry_manager->getMessageManager()->save_letter_to_send(
                         map_at(data, "handle").c_str(),//contact handle
-                        pa,
-                        file_id,
-                        "mojeid_emergency_card",
-                        boost::lexical_cast<unsigned long >(map_at(data,
-                            "contact_id")),//contact object_registry.id
-                        boost::lexical_cast<unsigned long >(map_at(data,
-                            "contact_hid")),//contact_history.historyid
-                        "letter"
+                        pa, file_id, message_type.c_str(), _contact_id,
+                        boost::lexical_cast<unsigned long >(map_at(data, "contact_hid")),
+                        comm_type
                     );
             }
         }
