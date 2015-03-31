@@ -453,11 +453,37 @@ namespace Registry
                 return static_cast< MessageId >(result[0][0]);
             }
 
+            MessageId get_mojeid_card_letter(unsigned long long _contact_id,
+                                             Database::Connection &_conn)
+            {
+                LOGGER(PACKAGE).info(
+                    boost::format("get_mojeid_card_letter --  contact_id: %1%") % _contact_id);
+                const Database::Result result = _conn.exec_params(
+                    "SELECT ma.id "
+                    "FROM message_archive ma "
+                    "JOIN message_contact_history_map mchm ON mchm.message_archive_id=ma.id"
+                    "JOIN letter_archive la ON la.id=mchm.message_archive_id "
+                    "JOIN object_registry obr ON obr.id=mchm.contact_object_registry_id "
+                    "WHERE obr.id=$1::INTEGER AND "
+                          "ma.status_id IN (SELECT id FROM enum_send_status "
+                                           "WHERE status_name IN ('send_failed','ready')) AND "
+                          "ma.comm_type_id=(SELECT id FROM comm_type WHERE type=$2::TEXT) AND "
+                          "ma.message_type_id=(SELECT id FROM message_type WHERE type=$3::TEXT) AND "
+                          "mchm.contact_history_historyid=obr.historyid",
+                    Database::query_param_list(_contact_id)(comm_type)(message_type));
+                return 0 < result.size() ? static_cast< MessageId >(result[0][0])
+                                         : MessageId(INVALID_MESSAGE_ID);
+            }
+
             MessageId send_mojeid_card_letter(unsigned long long _contact_id,
                                               Database::Connection &_conn)
             {
                 LOGGER(PACKAGE).info(
                     boost::format("send_mojeid_card_letter --  contact_id: %1%") % _contact_id);
+                const MessageId existing_letter_id = get_mojeid_card_letter(_contact_id, _conn);
+                if (existing_letter_id != INVALID_MESSAGE_ID) {
+                    return existing_letter_id;
+                }
                 cancel_mojeid_card_letter(_contact_id, _conn);
 
                 Fred::PublicRequest::ContactVerificationPassword::MessageData data;
