@@ -308,7 +308,7 @@ void ManagerImpl::insert_props(DateTime request_time, ServiceType service, bool 
     for (unsigned i = 1; i < props.size(); i++) {
         property_name_id = pcache->find_property_name_id(props[i].name, conn);
 
-        unsigned aux_last_id = insert_property_record_impl(
+        unsigned long long aux_last_id = insert_property_record_impl(
             conn,
             request_time,
             service,
