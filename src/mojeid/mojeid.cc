@@ -1509,7 +1509,7 @@ namespace Registry
                     "WHERE mchm.message_archive_id=ma.id AND "
                           "mchm.contact_object_registry_id=$1::INTEGER AND "
                           "ma.status_id IN (SELECT id FROM enum_send_status "
-                                           "WHERE status_name IN ('sent_failed','ready')) AND "
+                                           "WHERE status_name IN ('send_failed','ready')) AND "
                           "ma.comm_type_id=(SELECT id FROM comm_type WHERE type=$2::TEXT) AND "
                           "ma.message_type_id=(SELECT id FROM message_type WHERE type=$3::TEXT) "
                     "RETURNING ma.id",
