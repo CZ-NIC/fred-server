@@ -418,6 +418,135 @@ namespace Registry
             }
         }//MojeIDImpl::contactTransferPrepare
 
+        namespace
+        {
+            typedef unsigned long long MessageId;
+            enum { INVALID_MESSAGE_ID = 0 };
+            const std::string comm_type = "letter";
+            const std::string message_type = "mojeid_card";
+
+            MessageId cancel_mojeid_card_letter(unsigned long long _contact_id,
+                                                Database::Connection &_conn)
+            {
+                LOGGER(PACKAGE).info(
+                    boost::format("cancel_mojeid_card_letter --  contact_id: %1%") % _contact_id);
+                const Database::Result result = _conn.exec_params(
+                    "UPDATE message_archive ma "
+                    "SET moddate=NOW(),"
+                        "status_id=(SELECT id FROM enum_send_status WHERE status_name='no_processing') "
+                    "FROM message_contact_history_map mchm "
+                    "JOIN letter_archive la ON la.id=mchm.message_archive_id "
+                    "WHERE mchm.message_archive_id=ma.id AND "
+                          "mchm.contact_object_registry_id=$1::INTEGER AND "
+                          "ma.status_id IN (SELECT id FROM enum_send_status "
+                                           "WHERE status_name IN ('send_failed','ready')) AND "
+                          "ma.comm_type_id=(SELECT id FROM comm_type WHERE type=$2::TEXT) AND "
+                          "ma.message_type_id=(SELECT id FROM message_type WHERE type=$3::TEXT) "
+                    "RETURNING ma.id",
+                    Database::query_param_list(_contact_id)(comm_type)(message_type));
+                LOGGER(PACKAGE).info(
+                    boost::format("%1% %2%s of %3% type canceled")
+                                   % result.size() % comm_type % message_type);
+                if (result.size() <= 0) {
+                    return INVALID_MESSAGE_ID;
+                }
+                return static_cast< MessageId >(result[0][0]);
+            }
+
+            MessageId send_mojeid_card_letter(unsigned long long _contact_id,
+                                              Database::Connection &_conn)
+            {
+                LOGGER(PACKAGE).info(
+                    boost::format("send_mojeid_card_letter --  contact_id: %1%") % _contact_id);
+                cancel_mojeid_card_letter(_contact_id, _conn);
+
+                Fred::PublicRequest::ContactVerificationPassword::MessageData data;
+                Fred::PublicRequest::collect_message_data(_contact_id, _conn, data);
+
+                const std::string country_cs_name = map_at(data, "country_cs_name");
+                const std::string addr_country = country_cs_name.empty()
+                                                 ? map_at(data, "country_name")
+                                                 : country_cs_name;
+
+                std::string letter_xml("<?xml version='1.0' encoding='utf-8'?>");
+
+                const std::string lastname = map_at(data, "lastname");
+                static const char female_suffix[] = "á"; // utf-8 encoded
+                enum { FEMALE_SUFFIX_LEN = sizeof(female_suffix) - 1 };
+                const std::string sex = (FEMALE_SUFFIX_LEN <= lastname.length()) &&
+                                        (std::strcmp(lastname.c_str() + lastname.length() - FEMALE_SUFFIX_LEN,
+                                                     female_suffix) == 0) ? "female" : "male";
+
+                Util::XmlTagPair("contact_auth", Util::vector_of<Util::XmlCallback>
+                    (Util::XmlTagPair("user", Util::vector_of<Util::XmlCallback>
+                        (Util::XmlTagPair("actual_date", Util::XmlUnparsedCData(map_at(data, "reqdate"))))
+                        (Util::XmlTagPair("name", Util::XmlUnparsedCData(map_at(data, "firstname")+ " " + map_at(data, "lastname"))))
+                        (Util::XmlTagPair("organization", Util::XmlUnparsedCData(map_at(data, "organization"))))
+                        (Util::XmlTagPair("street", Util::XmlUnparsedCData(map_at(data, "street"))))
+                        (Util::XmlTagPair("city", Util::XmlUnparsedCData(map_at(data, "city"))))
+                        (Util::XmlTagPair("stateorprovince", Util::XmlUnparsedCData(map_at(data, "stateorprovince"))))
+                        (Util::XmlTagPair("postal_code", Util::XmlUnparsedCData(map_at(data, "postalcode"))))
+                        (Util::XmlTagPair("country", Util::XmlUnparsedCData(addr_country)))
+                        (Util::XmlTagPair("account", Util::vector_of<Util::XmlCallback>
+                            (Util::XmlTagPair("username", Util::XmlUnparsedCData(map_at(data, "handle"))))
+                            (Util::XmlTagPair("first_name", Util::XmlUnparsedCData(map_at(data, "firstname"))))
+                            (Util::XmlTagPair("last_name", Util::XmlUnparsedCData(lastname)))
+                            (Util::XmlTagPair("sex", Util::XmlUnparsedCData(sex)))
+                            (Util::XmlTagPair("email", Util::XmlUnparsedCData(map_at(data, "email"))))
+                            (Util::XmlTagPair("mobile", Util::XmlUnparsedCData(map_at(data, "phone"))))
+                        ))
+                    ))
+                )(letter_xml);
+
+                std::stringstream xmldata;
+                xmldata << letter_xml;
+
+                HandleRegistryArgs *const rconf =
+                    CfgArgs::instance()->get_handler_ptr_by_type< HandleRegistryArgs >();
+                std::auto_ptr< Fred::Document::Manager > doc_manager =
+                    Fred::Document::Manager::create(
+                        rconf->docgen_path,
+                        rconf->docgen_template_path,
+                        rconf->fileclient_path,
+                        CfgArgs::instance()->get_handler_ptr_by_type< HandleCorbaNameServiceArgs >()
+                            ->get_nameservice_host_port());
+                enum { FILETYPE_MOJEID_CARD = 10 };
+                const unsigned long long file_id = doc_manager->generateDocumentAndSave(
+                        Fred::Document::GT_MOJEID_CARD,
+                        xmldata,
+                        "mojeid_card-" +
+                            boost::lexical_cast<std::string>(_contact_id) + "-" +
+                            boost::lexical_cast<std::string>(::time(NULL)) + ".pdf",
+                        FILETYPE_MOJEID_CARD, "");
+
+                Fred::Messages::PostalAddress pa;
+                pa.name    = map_at(data, "firstname") + " " + map_at(data, "lastname");
+                pa.org     = map_at(data, "organization");
+                pa.street1 = map_at(data, "street");
+                pa.street2 = std::string("");
+                pa.street3 = std::string("");
+                pa.city    = map_at(data, "city");
+                pa.state   = map_at(data, "stateorprovince");
+                pa.code    = map_at(data, "postalcode");
+                pa.country = map_at(data, "country_name");
+
+                DBSharedPtr nodb;
+                std::auto_ptr< Fred::Manager > registry_manager;
+                registry_manager.reset(
+                    Fred::Manager::create(
+                        nodb,
+                        rconf->restricted_handles));
+                const MessageId message_id =
+                    registry_manager->getMessageManager()->save_letter_to_send(
+                        map_at(data, "handle").c_str(),//contact handle
+                        pa, file_id, message_type.c_str(), _contact_id,
+                        boost::lexical_cast<unsigned long >(map_at(data, "contact_hid")),
+                        comm_type
+                    );
+                return message_id;
+            }
+        }
+
         void MojeIDImpl::contactUpdatePrepare(
             const std::string & _contact_username
             , Fred::Contact::Verification::Contact& _contact
@@ -488,8 +617,21 @@ namespace Registry
                     }
                 }
 
+                const Fred::Contact::Verification::Contact old_contact =
+                    Fred::Contact::Verification::contact_info(cid);
+                const bool keep_identification =
+                    Fred::Contact::Verification::check_identified_contact_diff(_contact, old_contact);
+                if (!keep_identification ||
+                    (_contact.email.get_value_or_default() !=
+                     old_contact.email.get_value_or_default()))
+                {
+                    Database::Connection conn = Database::Manager::acquire();
+                    Database::Transaction tx(conn);
+                    cancel_mojeid_card_letter(_contact.id, conn);
+                    tx.commit();
+                }
                 unsigned long long prid = 0; // new public request id
-                if (!Fred::Contact::Verification::check_identified_contact_diff(_contact, Fred::Contact::Verification::contact_info(cid)))
+                if (!keep_identification)
                 {
                     if (contact_state.has_all(Fred::Contact::Verification::State::cIvm))
                     {
@@ -1445,13 +1587,11 @@ namespace Registry
                     Fred::PublicRequest::cancel_public_request(_contact_id, type, _request_id);
                 }
 
-                {
-                    Database::Connection conn = Database::Manager::acquire();
-                    check_sent_letters_limit(_contact_id,
-                                             server_conf_->letter_limit_count,
-                                             server_conf_->letter_limit_interval,
-                                             conn);
-                }
+                check_sent_letters_limit(_contact_id,
+                                         server_conf_->letter_limit_count,
+                                         server_conf_->letter_limit_interval,
+                                         conn);
+                cancel_mojeid_card_letter(_contact_id, conn);
                 IdentificationRequestPtr new_request(mailer_, type);
                 new_request->setRegistrarId(mojeid_registrar_id_);
                 new_request->setRequestId(_request_id);
@@ -1490,119 +1630,6 @@ namespace Registry
                 throw;
             }
         }//MojeIDImpl::sendNewPIN3
-
-        namespace
-        {
-            void send_mojeid_card_letter(unsigned long long _contact_id,
-                                         Database::Connection &_conn)
-            {
-                LOGGER(PACKAGE).info(
-                    boost::format("send_mojeid_card_letter --  contact_id: %1%") % _contact_id);
-                const std::string comm_type = "letter";
-                const std::string message_type = "mojeid_card";
-                const Database::Result result = _conn.exec_params(
-                    "UPDATE message_archive ma "
-                    "SET moddate=NOW(),"
-                        "status_id=(SELECT id FROM enum_send_status WHERE status_name='no_processing') "
-                    "FROM message_contact_history_map mchm "
-                    "JOIN letter_archive la ON la.id=mchm.message_archive_id "
-                    "WHERE mchm.message_archive_id=ma.id AND "
-                          "mchm.contact_object_registry_id=$1::INTEGER AND "
-                          "ma.status_id IN (SELECT id FROM enum_send_status "
-                                           "WHERE status_name IN ('send_failed','ready')) AND "
-                          "ma.comm_type_id=(SELECT id FROM comm_type WHERE type=$2::TEXT) AND "
-                          "ma.message_type_id=(SELECT id FROM message_type WHERE type=$3::TEXT) "
-                    "RETURNING ma.id",
-                    Database::query_param_list(_contact_id)(comm_type)(message_type));
-                LOGGER(PACKAGE).info(
-                    boost::format("%1% %2%s of %3% type canceled")
-                                   % result.size() % comm_type % message_type);
-
-                Fred::PublicRequest::ContactVerificationPassword::MessageData data;
-                Fred::PublicRequest::collect_message_data(_contact_id, _conn, data);
-
-                const std::string country_cs_name = map_at(data, "country_cs_name");
-                const std::string addr_country = country_cs_name.empty()
-                                                 ? map_at(data, "country_name")
-                                                 : country_cs_name;
-
-                std::string letter_xml("<?xml version='1.0' encoding='utf-8'?>");
-
-                const std::string lastname = map_at(data, "lastname");
-                static const char female_suffix[] = "á"; // utf-8 encoded
-                enum { FEMALE_SUFFIX_LEN = sizeof(female_suffix) - 1 };
-                const std::string sex = (FEMALE_SUFFIX_LEN <= lastname.length()) &&
-                                        (std::strcmp(lastname.c_str() + lastname.length() - FEMALE_SUFFIX_LEN,
-                                                     female_suffix) == 0) ? "female" : "male";
-
-                Util::XmlTagPair("contact_auth", Util::vector_of<Util::XmlCallback>
-                    (Util::XmlTagPair("user", Util::vector_of<Util::XmlCallback>
-                        (Util::XmlTagPair("actual_date", Util::XmlUnparsedCData(map_at(data, "reqdate"))))
-                        (Util::XmlTagPair("name", Util::XmlUnparsedCData(map_at(data, "firstname")+ " " + map_at(data, "lastname"))))
-                        (Util::XmlTagPair("organization", Util::XmlUnparsedCData(map_at(data, "organization"))))
-                        (Util::XmlTagPair("street", Util::XmlUnparsedCData(map_at(data, "street"))))
-                        (Util::XmlTagPair("city", Util::XmlUnparsedCData(map_at(data, "city"))))
-                        (Util::XmlTagPair("stateorprovince", Util::XmlUnparsedCData(map_at(data, "stateorprovince"))))
-                        (Util::XmlTagPair("postal_code", Util::XmlUnparsedCData(map_at(data, "postalcode"))))
-                        (Util::XmlTagPair("country", Util::XmlUnparsedCData(addr_country)))
-                        (Util::XmlTagPair("account", Util::vector_of<Util::XmlCallback>
-                            (Util::XmlTagPair("username", Util::XmlUnparsedCData(map_at(data, "handle"))))
-                            (Util::XmlTagPair("first_name", Util::XmlUnparsedCData(map_at(data, "firstname"))))
-                            (Util::XmlTagPair("last_name", Util::XmlUnparsedCData(lastname)))
-                            (Util::XmlTagPair("sex", Util::XmlUnparsedCData(sex)))
-                            (Util::XmlTagPair("email", Util::XmlUnparsedCData(map_at(data, "email"))))
-                            (Util::XmlTagPair("mobile", Util::XmlUnparsedCData(map_at(data, "phone"))))
-                        ))
-                    ))
-                )(letter_xml);
-
-                std::stringstream xmldata;
-                xmldata << letter_xml;
-
-                HandleRegistryArgs *const rconf =
-                    CfgArgs::instance()->get_handler_ptr_by_type< HandleRegistryArgs >();
-                std::auto_ptr< Fred::Document::Manager > doc_manager =
-                    Fred::Document::Manager::create(
-                        rconf->docgen_path,
-                        rconf->docgen_template_path,
-                        rconf->fileclient_path,
-                        CfgArgs::instance()->get_handler_ptr_by_type< HandleCorbaNameServiceArgs >()
-                            ->get_nameservice_host_port());
-                enum { FILETYPE_MOJEID_CARD = 10 };
-                const unsigned long long file_id = doc_manager->generateDocumentAndSave(
-                        Fred::Document::GT_MOJEID_CARD,
-                        xmldata,
-                        "mojeid_card-" +
-                            boost::lexical_cast<std::string>(_contact_id) + "-" +
-                            boost::lexical_cast<std::string>(::time(NULL)) + ".pdf",
-                        FILETYPE_MOJEID_CARD, "");
-
-                Fred::Messages::PostalAddress pa;
-                pa.name    = map_at(data, "firstname") + " " + map_at(data, "lastname");
-                pa.org     = map_at(data, "organization");
-                pa.street1 = map_at(data, "street");
-                pa.street2 = std::string("");
-                pa.street3 = std::string("");
-                pa.city    = map_at(data, "city");
-                pa.state   = map_at(data, "stateorprovince");
-                pa.code    = map_at(data, "postalcode");
-                pa.country = map_at(data, "country_name");
-
-                DBSharedPtr nodb;
-                std::auto_ptr< Fred::Manager > registry_manager;
-                registry_manager.reset(
-                    Fred::Manager::create(
-                        nodb,
-                        rconf->restricted_handles));
-                const unsigned long long message_id =
-                    registry_manager->getMessageManager()->save_letter_to_send(
-                        map_at(data, "handle").c_str(),//contact handle
-                        pa, file_id, message_type.c_str(), _contact_id,
-                        boost::lexical_cast<unsigned long >(map_at(data, "contact_hid")),
-                        comm_type
-                    );
-            }
-        }
 
         //send mojeID (emergency) card
         void MojeIDImpl::sendMojeIDCard(
