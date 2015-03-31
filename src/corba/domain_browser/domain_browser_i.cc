@@ -378,6 +378,8 @@ namespace Registry
                     auth_result = PUBLIC_DATA;
                 }
 
+                contact_detail->warning_letter = Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableBoolean>(detail_impl.warning_letter);
+
                 return contact_detail._retn();
             }
             catch (const Registry::DomainBrowserImpl::ObjectNotExists& )

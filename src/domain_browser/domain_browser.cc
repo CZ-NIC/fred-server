@@ -450,6 +450,8 @@ namespace Registry
                 //get states
                 detail.state_codes = get_object_states(ctx, contact_info.info_contact_data.id);
 
+                detail.warning_letter = contact_info.info_contact_data.warning_letter;
+
                 return detail;
             }
             catch(...)

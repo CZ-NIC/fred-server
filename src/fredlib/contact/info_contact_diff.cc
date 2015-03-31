@@ -71,6 +71,7 @@ namespace Fred
         if(disclosenotifyemail.isset()) fields.insert("disclosenotifyemail");
         if(id.isset()) fields.insert("id");
         if(addresses.isset()) fields.insert("addresses");
+        if(warning_letter.isset()) fields.insert("warning_letter");
 
         return  fields;
     }
@@ -112,6 +113,7 @@ namespace Fred
         (std::make_pair("disclosenotifyemail", disclosenotifyemail.print_quoted()))
         (std::make_pair("id", id.print_quoted()))
         (std::make_pair("addresses", addresses.print_quoted()))
+        (std::make_pair("warning_letter", warning_letter.print_quoted()))
         );//format_data_structure InfoContactDiff
     }
 
@@ -151,6 +153,7 @@ namespace Fred
             || disclosenotifyemail.isset()
             || id.isset()
             || addresses.isset()
+            || warning_letter.isset()
             );
     }
 
@@ -336,6 +339,11 @@ namespace Fred
         if(first.addresses != second.addresses)
         {
             diff.addresses = std::make_pair(first.addresses, second.addresses);
+        }
+
+        if(!Util::is_equal(first.warning_letter, second.warning_letter))
+        {
+            diff.warning_letter = std::make_pair(first.warning_letter,second.warning_letter);
         }
 
         return diff;

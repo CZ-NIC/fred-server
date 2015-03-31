@@ -130,6 +130,7 @@ namespace Registry
             ContactDiscloseFlags disclose_flags;/**< contact fields disclose flags*/
             std::vector<std::string> state_codes;/**< object states names from db. table enum_object_states*/
             bool is_owner;/**< whether user contact is the same as requested contact */
+            Nullable<bool> warning_letter;/**< contact preference for sending domain expiration letters */
 
             ContactDetail()
             : id(0)

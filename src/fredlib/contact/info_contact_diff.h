@@ -77,6 +77,7 @@ namespace Fred
         DiffMemeber<bool>::Type disclosenotifyemail;/**< whether to reveal notify email */
         DiffMemeber<unsigned long long>::Type id;/**< id of the contact object*/
         DiffMemeber<Fred::ContactAddressList>::Type addresses;/**< additional contact addresses */
+        DiffMemeber<Nullable<bool> >::Type warning_letter;/**< contact preference for sending domain expiration letters */
 
         /**
         * Constructor of the contact data diff structure.
