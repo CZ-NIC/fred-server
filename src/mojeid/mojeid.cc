@@ -461,7 +461,7 @@ namespace Registry
                 const Database::Result result = _conn.exec_params(
                     "SELECT ma.id "
                     "FROM message_archive ma "
-                    "JOIN message_contact_history_map mchm ON mchm.message_archive_id=ma.id"
+                    "JOIN message_contact_history_map mchm ON mchm.message_archive_id=ma.id "
                     "JOIN letter_archive la ON la.id=mchm.message_archive_id "
                     "JOIN object_registry obr ON obr.id=mchm.contact_object_registry_id "
                     "WHERE obr.id=$1::INTEGER AND "
