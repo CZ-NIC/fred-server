@@ -476,6 +476,8 @@ namespace Registry
             }
 
             MessageId send_mojeid_card_letter(unsigned long long _contact_id,
+                                              unsigned _limit_count,
+                                              unsigned _limit_interval,
                                               Database::Connection &_conn)
             {
                 LOGGER(PACKAGE).info(
@@ -485,6 +487,7 @@ namespace Registry
                     return existing_letter_id;
                 }
                 cancel_mojeid_card_letter(_contact_id, _conn);
+                check_sent_letters_limit(_contact_id, _limit_count, _limit_interval, _conn);
 
                 Fred::PublicRequest::ContactVerificationPassword::MessageData data;
                 Fred::PublicRequest::collect_message_data(_contact_id, _conn, data);
@@ -1616,11 +1619,11 @@ namespace Registry
                     Fred::PublicRequest::cancel_public_request(_contact_id, type, _request_id);
                 }
 
+                cancel_mojeid_card_letter(_contact_id, conn);
                 check_sent_letters_limit(_contact_id,
                                          server_conf_->letter_limit_count,
                                          server_conf_->letter_limit_interval,
                                          conn);
-                cancel_mojeid_card_letter(_contact_id, conn);
                 IdentificationRequestPtr new_request(mailer_, type);
                 new_request->setRegistrarId(mojeid_registrar_id_);
                 new_request->setRequestId(_request_id);
@@ -1638,7 +1641,7 @@ namespace Registry
                 LOGGER(PACKAGE).info(e.what());
                 throw;
             }
-            catch(Registry::MojeID::MESSAGE_LIMIT_EXCEEDED &e)
+            catch(const Registry::MojeID::MESSAGE_LIMIT_EXCEEDED &e)
             {
                 LOGGER(PACKAGE).info(e.what());
                 throw;
@@ -1711,7 +1714,10 @@ namespace Registry
                     }
                 }
 
-                send_mojeid_card_letter(_contact_id, conn);
+                send_mojeid_card_letter(_contact_id,
+                                        server_conf_->letter_limit_count,
+                                        server_conf_->letter_limit_interval,
+                                        conn);
                 tx.commit();
 
                 LOGGER(PACKAGE).info("request completed successfully");
@@ -1727,7 +1733,12 @@ namespace Registry
                 LOGGER(PACKAGE).info(e.what());
                 throw;
             }
-            catch (Fred::Contact::Verification::DataValidationError &e)
+            catch (const Fred::Contact::Verification::DataValidationError &e)
+            {
+                LOGGER(PACKAGE).info(e.what());
+                throw;
+            }
+            catch(const Registry::MojeID::MESSAGE_LIMIT_EXCEEDED &e)
             {
                 LOGGER(PACKAGE).info(e.what());
                 throw;
