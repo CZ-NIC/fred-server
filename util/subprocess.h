@@ -30,8 +30,137 @@
 #include <sys/time.h>
 
 #include <string>
+#include <vector>
+#include <memory>
 
 #include <boost/noncopyable.hpp>
+
+/**
+ * @class CmdResult
+ * @brief wrapper of exec() functions family
+ */
+class CmdResult:public boost::noncopyable
+{
+public:
+    /**
+     * @class Args
+     * @brief Command arguments.
+     */
+    typedef std::vector< std::string > Args;
+
+    /**
+     * Execute command @arg _cmd using execv/execvp function in forked child process.
+     * @param _cmd executable file
+     * @param _args command arguments
+     * @param _respecting_path_env search executable in PATH environment variable
+     * @note Sets and restores SIGCHLD handler
+     * 
+     * Run <em>_cmd [_args...]</em>
+     */
+    CmdResult(const std::string &_cmd, const Args &_args, bool _respecting_path_env = false);
+
+    /**
+     * @note Kills child process if one is already alive
+     */
+    ~CmdResult();
+
+    /**
+     * @class RelativeTimeInSeconds
+     * @brief Represents time meassured in seconds.
+     */
+    typedef typeof(::timeval().tv_sec) Seconds;
+
+    enum { INFINITE_TIME = 0 };
+
+    /**
+     * Wait as long as command @arg _cmd runs.
+     * @param _stdin_content data delivered to @arg _cmd via standard input
+     * @param _respecting_path_env search executable in PATH environment variable
+     */
+    CmdResult& wait_until_done(
+        const std::string &_stdin_content = std::string(),
+        Seconds _rel_timeout = INFINITE_TIME);
+
+    /**
+     * Terminated normally
+     * @return true if process terminated normally, that is, by calling exit
+     *         or _exit, or by returning from main()
+     */
+    bool is_exited()const;
+
+    /**
+     * Exit status of the normally terminated process
+     * @return The exit status of the child. This consists of the least significant
+     *         8 bits of the status argument that the child specified in a call to
+     *         exit or _exit or as the argument for a return statement in main().
+     * @note @ref is_exited() must be true
+     */
+    int get_exit_status()const;
+
+    /**
+     * Terminated by a signal
+     * @return true if the child process was terminated by a signal
+     */
+    bool is_signaled()const;
+
+    /**
+     * Number of the signal
+     * @return the number of the signal that caused the child process to terminate
+     * @note @ref is_signaled() must be true
+     */
+    int get_term_sig()const;
+
+#ifdef WCOREDUMP
+    /**
+     * Produced a core dump
+     * @return true if the child process produced a core dump
+     */
+    bool is_core_dump()const;
+#endif
+    /**
+     * Command's standard output content
+     * @return standard output content produced by command
+     */
+    std::string get_stdout()const;
+
+    /**
+     * Command's error output content
+     * @return error output content produced by command
+     */
+    std::string get_stderr()const;
+
+    int get_raw_exit_status()const { return exit_status_; }
+private:
+    void kill_child(int *_status = NULL) throw();
+    bool is_process_done()const;
+
+    class Pipe;
+    class ImReader;
+    class ImWriter;
+    class SaveAndRestoreSigChldHandler;
+    class DataChannel
+    {
+    public:
+        DataChannel();
+        ~DataChannel();
+    private:
+        friend class Pipe;
+        int fd_[2];
+    };
+
+    DataChannel std_in_;
+    DataChannel std_out_;
+    DataChannel std_err_;
+    ::pid_t child_pid_;
+    std::auto_ptr< ImWriter > child_std_in_;
+    std::auto_ptr< ImReader > child_std_out_;
+    std::auto_ptr< ImReader > child_std_err_;
+    std::auto_ptr< SaveAndRestoreSigChldHandler > save_and_restore_sig_chld_handler_;
+
+    std::string stdout_content_;
+    std::string stderr_content_;
+    int exit_status_;
+};//class CmdResult
 
 /**
  * @class SubProcessOutput
@@ -94,7 +223,7 @@ public:
      * @class RelativeTimeInSeconds
      * @brief Represents relative (from now) time meassured in seconds.
      */
-    typedef typeof(::timeval().tv_sec) RelativeTimeInSeconds;
+    typedef CmdResult::Seconds RelativeTimeInSeconds;
 
     /**
      * Constructor with mandatory parameters.
@@ -141,9 +270,6 @@ private:
     const std::string cmd_; /**< Command executed by @ref shell_. */
     const std::string shell_; /**< Shell executes command @ref cmd_. */
     const RelativeTimeInSeconds timeout_; /**< Maximal command lifetime in seconds. */
-    ::pid_t child_pid_;
-
-    void kill_child(int *_status = NULL) throw();
 };//class ShellCmd
 
 #endif//SUBPROCESS_H_
