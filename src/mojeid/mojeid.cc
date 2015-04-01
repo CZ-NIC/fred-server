@@ -109,17 +109,15 @@ namespace Registry
             {
                 const Database::Result result = _conn.exec_params(
 "WITH comm_type_letter AS (SELECT id FROM comm_type WHERE type='letter'),"
-     "message_types AS (SELECT id FROM message_type WHERE type IN ('mojeid_pin3')),"
-     "send_states AS (SELECT id FROM enum_send_status WHERE status_name IN ('send_failed',"
-                                                                           "'sent',"
-                                                                           "'being_sent',"
-                                                                           "'undelivered'))"
+     "message_types AS (SELECT id FROM message_type WHERE type IN ('mojeid_pin3',"
+                                                                  "'mojeid_card')),"
+     "send_states_ignore AS (SELECT id FROM enum_send_status WHERE status_name='no_processing')"
 "SELECT (ma.moddate+($3::TEXT||'DAYS')::INTERVAL)::DATE "
 "FROM message_archive ma "
 "JOIN message_contact_history_map mc ON mc.message_archive_id=ma.id "
 "WHERE ma.message_type_id IN (SELECT id FROM message_types) AND "
       "ma.comm_type_id=(SELECT id FROM comm_type_letter) AND "
-      "ma.status_id IN (SELECT id FROM send_states) AND "
+      "ma.status_id NOT IN (SELECT id FROM send_states_ignore) AND "
       "(NOW()-($3::TEXT||'DAYS')::INTERVAL)::DATE<ma.moddate::DATE AND "
       "mc.contact_object_registry_id=$1::INTEGER "
 "ORDER BY 1 DESC OFFSET ($2::INTEGER-1) LIMIT 1",
