@@ -496,6 +496,7 @@ namespace Registry
 
                 std::string letter_xml("<?xml version='1.0' encoding='utf-8'?>");
 
+                const std::string firstname = map_at(data, "firstname");
                 const std::string lastname = map_at(data, "lastname");
                 static const char female_suffix[] = "á"; // utf-8 encoded
                 enum { FEMALE_SUFFIX_LEN = sizeof(female_suffix) - 1 };
@@ -503,19 +504,32 @@ namespace Registry
                                         (std::strcmp(lastname.c_str() + lastname.length() - FEMALE_SUFFIX_LEN,
                                                      female_suffix) == 0) ? "female" : "male";
 
+                Fred::Messages::PostalAddress pa;
+                pa.name    = firstname + " " + lastname;
+                pa.org     = map_at(data, "organization");
+                pa.street1 = map_at(data, "street");
+                pa.street2 = std::string();
+                pa.street3 = std::string();
+                pa.city    = map_at(data, "city");
+                pa.state   = map_at(data, "stateorprovince");
+                pa.code    = map_at(data, "postalcode");
+                pa.country = map_at(data, "country_name");
+
+                const std::string contact_handle = map_at(data, "handle");
+
                 Util::XmlTagPair("contact_auth", Util::vector_of<Util::XmlCallback>
                     (Util::XmlTagPair("user", Util::vector_of<Util::XmlCallback>
                         (Util::XmlTagPair("actual_date", Util::XmlUnparsedCData(map_at(data, "reqdate"))))
-                        (Util::XmlTagPair("name", Util::XmlUnparsedCData(map_at(data, "firstname")+ " " + map_at(data, "lastname"))))
-                        (Util::XmlTagPair("organization", Util::XmlUnparsedCData(map_at(data, "organization"))))
-                        (Util::XmlTagPair("street", Util::XmlUnparsedCData(map_at(data, "street"))))
-                        (Util::XmlTagPair("city", Util::XmlUnparsedCData(map_at(data, "city"))))
-                        (Util::XmlTagPair("stateorprovince", Util::XmlUnparsedCData(map_at(data, "stateorprovince"))))
-                        (Util::XmlTagPair("postal_code", Util::XmlUnparsedCData(map_at(data, "postalcode"))))
+                        (Util::XmlTagPair("name", Util::XmlUnparsedCData(pa.name)))
+                        (Util::XmlTagPair("organization", Util::XmlUnparsedCData(pa.org)))
+                        (Util::XmlTagPair("street", Util::XmlUnparsedCData(pa.street1)))
+                        (Util::XmlTagPair("city", Util::XmlUnparsedCData(pa.city)))
+                        (Util::XmlTagPair("stateorprovince", Util::XmlUnparsedCData(pa.state)))
+                        (Util::XmlTagPair("postal_code", Util::XmlUnparsedCData(pa.code)))
                         (Util::XmlTagPair("country", Util::XmlUnparsedCData(addr_country)))
                         (Util::XmlTagPair("account", Util::vector_of<Util::XmlCallback>
-                            (Util::XmlTagPair("username", Util::XmlUnparsedCData(map_at(data, "handle"))))
-                            (Util::XmlTagPair("first_name", Util::XmlUnparsedCData(map_at(data, "firstname"))))
+                            (Util::XmlTagPair("username", Util::XmlUnparsedCData(contact_handle)))
+                            (Util::XmlTagPair("first_name", Util::XmlUnparsedCData(firstname)))
                             (Util::XmlTagPair("last_name", Util::XmlUnparsedCData(lastname)))
                             (Util::XmlTagPair("sex", Util::XmlUnparsedCData(sex)))
                             (Util::XmlTagPair("email", Util::XmlUnparsedCData(map_at(data, "email"))))
@@ -538,23 +552,12 @@ namespace Registry
                             ->get_nameservice_host_port());
                 enum { FILETYPE_MOJEID_CARD = 10 };
                 const unsigned long long file_id = doc_manager->generateDocumentAndSave(
-                        Fred::Document::GT_MOJEID_CARD,
-                        xmldata,
-                        "mojeid_card-" +
-                            boost::lexical_cast<std::string>(_contact_id) + "-" +
-                            boost::lexical_cast<std::string>(::time(NULL)) + ".pdf",
-                        FILETYPE_MOJEID_CARD, "");
-
-                Fred::Messages::PostalAddress pa;
-                pa.name    = map_at(data, "firstname") + " " + map_at(data, "lastname");
-                pa.org     = map_at(data, "organization");
-                pa.street1 = map_at(data, "street");
-                pa.street2 = std::string("");
-                pa.street3 = std::string("");
-                pa.city    = map_at(data, "city");
-                pa.state   = map_at(data, "stateorprovince");
-                pa.code    = map_at(data, "postalcode");
-                pa.country = map_at(data, "country_name");
+                    Fred::Document::GT_MOJEID_CARD,
+                    xmldata,
+                    "mojeid_card-" +
+                        boost::lexical_cast<std::string>(_contact_id) + "-" +
+                        boost::lexical_cast<std::string>(::time(NULL)) + ".pdf",
+                    FILETYPE_MOJEID_CARD, "");
 
                 DBSharedPtr nodb;
                 std::auto_ptr< Fred::Manager > registry_manager;
@@ -564,7 +567,7 @@ namespace Registry
                         rconf->restricted_handles));
                 const MessageId message_id =
                     registry_manager->getMessageManager()->save_letter_to_send(
-                        map_at(data, "handle").c_str(),//contact handle
+                        contact_handle.c_str(),
                         pa, file_id, message_type.c_str(), _contact_id,
                         boost::lexical_cast<unsigned long >(map_at(data, "contact_hid")),
                         comm_type
