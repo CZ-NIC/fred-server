@@ -396,27 +396,21 @@ private:
     SubProcessOutput out_;
 
     static void handler(int) { }
+    void set_handler();
+    void restore_handler();
     struct ::sigaction old_act_;
     ::sigset_t old_set_;
+    bool is_handler_set_;
 };
 
 CmdResult::ImParent::ImParent(CmdResult &cmd, ::pid_t _child_pid)
 :   child_pid_(_child_pid),
     child_std_in_(cmd.std_in_),
     child_std_out_(cmd.std_out_),
-    child_std_err_(cmd.std_err_)
+    child_std_err_(cmd.std_err_),
+    is_handler_set_(false)
 {
-    struct ::sigaction new_act;
-    new_act.sa_handler = handler;
-    ::sigemptyset(&new_act.sa_mask);
-    new_act.sa_flags = 0;
-    ::sigaction(SIGCHLD, &new_act, &old_act_);
-
-    ::sigset_t new_set;
-    ::sigemptyset(&new_set);
-    ::sigaddset(&new_set, SIGCHLD);
-    ::sigprocmask(SIG_UNBLOCK, &new_set, &old_set_);
-
+    this->set_handler();
     child_std_in_ .set_nonblocking();
     child_std_out_.set_nonblocking();
     child_std_err_.set_nonblocking();
@@ -424,8 +418,33 @@ CmdResult::ImParent::ImParent(CmdResult &cmd, ::pid_t _child_pid)
 
 CmdResult::ImParent::~ImParent()
 {
-    ::sigprocmask(SIG_SETMASK, &old_set_, NULL);
-    ::sigaction(SIGCHLD, &old_act_, NULL);
+    this->restore_handler();
+}
+
+void CmdResult::ImParent::restore_handler()
+{
+    if (is_handler_set_) {
+        ::sigprocmask(SIG_SETMASK, &old_set_, NULL);
+        ::sigaction(SIGCHLD, &old_act_, NULL);
+        is_handler_set_ = false;
+    }
+}
+
+void CmdResult::ImParent::set_handler()
+{
+    if (!is_handler_set_) {
+        struct ::sigaction new_act;
+        new_act.sa_handler = handler;
+        ::sigemptyset(&new_act.sa_mask);
+        new_act.sa_flags = 0;
+        ::sigaction(SIGCHLD, &new_act, &old_act_);
+
+        ::sigset_t new_set;
+        ::sigemptyset(&new_set);
+        ::sigaddset(&new_set, SIGCHLD);
+        ::sigprocmask(SIG_UNBLOCK, &new_set, &old_set_);
+        is_handler_set_ = true;
+    }
 }
 
 const SubProcessOutput& CmdResult::ImParent::wait_until_done(
@@ -524,6 +543,7 @@ const SubProcessOutput& CmdResult::ImParent::wait_until_done(
             child_pid_ = IM_CHILD;//child done
             break;
         }
+        this->restore_handler();
     }
     return out_;
 }
@@ -592,7 +612,7 @@ void CmdResult::ImParent::kill_child()
     }
 }
 
-CmdResult::CmdResult(const std::string &_cmd, const Args &_args, bool _respecting_path_env)
+CmdResult::CmdResult(const std::string &_cmd, const Args &_args, bool _respect_path)
 {
     const ::pid_t child_pid = ::fork();
     if (child_pid == FAILURE) {
@@ -619,19 +639,20 @@ CmdResult::CmdResult(const std::string &_cmd, const Args &_args, bool _respectin
         //duplicate writable end of stderr pipe into stderr
         stderr.dup(STDERR_FILENO);
 
-        char *argv[1/*cmd*/ + _args.size() + 1/*NULL*/];
+        const Args::Items &args = _args.items_;
+        char *argv[1/*cmd*/ + args.size() + 1/*NULL*/];
         char **argv_ptr = argv;
         *argv_ptr = const_cast< char* >(_cmd.c_str());
         ++argv_ptr;
-        for (Args::const_iterator pArg = _args.begin(); pArg != _args.end(); ++pArg) {
+        for (Args::Items::const_iterator pArg = args.begin(); pArg != args.end(); ++pArg) {
             *argv_ptr = const_cast< char* >(pArg->c_str());
             ++argv_ptr;
         }
         *argv_ptr = NULL;
 
         //command execute
-        const int retval = _respecting_path_env ? ::execvp(argv[0], argv)
-                                                : ::execv (argv[0], argv);
+        const int retval = _respect_path ? ::execvp(argv[0], argv)
+                                         : ::execv (argv[0], argv);
         if (retval == FAILURE) {
             //failed to launch command
             std::string err_msg(std::strerror(errno));
@@ -693,11 +714,8 @@ ShellCmd::~ShellCmd()
 {
 }
 
-SubProcessOutput ShellCmd::execute(std::string stdin_str)
+SubProcessOutput ShellCmd::execute(const std::string &stdin_str)
 {
-    CmdResult::Args args;
-    args.push_back("-c");
-    args.push_back(cmd_);
-    CmdResult cmd(shell_, args, true);
-    return cmd.wait_until_done(stdin_str, timeout_);
+    return CmdResult(shell_, CmdResult::Args("-c")(cmd_), false)
+               .wait_until_done(stdin_str, timeout_);
 }

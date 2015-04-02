@@ -39,7 +39,7 @@
  * @class SubProcessOutput
  * @brief command outputs and process exit status
  * 
- * Result of @ref ShellCmd::execute.
+ * Result of process's run.
  */
 struct SubProcessOutput
 {
@@ -96,21 +96,32 @@ public:
      * @class Args
      * @brief Command arguments.
      */
-    typedef std::vector< std::string > Args;
+    class Args
+    {
+    public:
+        Args() { }
+        Args(const Args &_src):items_(_src.items_) { }
+        Args(const std::string &_item) { items_.push_back(_item); }
+        Args& operator()(const std::string &_item) { items_.push_back(_item); return *this; }
+    private:
+        typedef std::vector< std::string > Items;
+        Items items_;
+        friend class CmdResult;
+    };
 
     /**
      * Execute command @arg _cmd using execv/execvp function in forked child process.
      * @param _cmd executable file
      * @param _args command arguments
-     * @param _respecting_path_env search executable in PATH environment variable
-     * @note Sets and restores SIGCHLD handler
+     * @param _respect_path search executable @arg _cmd considering PATH environment variable
+     * @note Sets SIGCHLD handler.
      * 
      * Run <em>_cmd [_args...]</em>
      */
-    CmdResult(const std::string &_cmd, const Args &_args, bool _respecting_path_env = false);
+    CmdResult(const std::string &_cmd, const Args &_args, bool _respect_path = false);
 
     /**
-     * @note Kills child process if one is already alive
+     * @note Kills child process if one is already alive.
      */
     ~CmdResult();
 
@@ -122,9 +133,11 @@ public:
     enum { INFINITE_TIME = 0 };
 
     /**
-     * Wait as long as command @arg _cmd runs.
+     * Wait as long as command runs.
      * @param _stdin_content data delivered to command via standard input
-     * @param _respecting_path_env search executable in PATH environment variable
+     * @param _rel_timeout maximal command lifetime in seconds, 0 means infinity.
+     * @return Command's standard and error outputs and its exit status.
+     * @note Restores SIGCHLD handler.
      */
     const SubProcessOutput& wait_until_done(
         const std::string &_stdin_content = std::string(),
@@ -152,6 +165,8 @@ private:
 /**
  * @class ShellCmd
  * @brief shell command wrapper
+ * @warning With externally gained data use @ref CmdResult instead!
+ *          There is a danger of security incident (shell injection).
  */
 class ShellCmd:public boost::noncopyable
 {
@@ -201,12 +216,12 @@ public:
      * 
      * Run <em>echo $stdin_str|$shell_ -c "$cmd_"</em>
      */
-    SubProcessOutput execute(std::string stdin_str = std::string());
+    SubProcessOutput execute(const std::string &stdin_str = std::string());
 
 private:
     const std::string cmd_; /**< Command executed by @ref shell_. */
     const std::string shell_; /**< Shell executes command @ref cmd_. */
-    const RelativeTimeInSeconds timeout_; /**< Maximal command lifetime in seconds. */
+    const RelativeTimeInSeconds timeout_; /**< Maximal command lifetime in seconds, 0 means infinity. */
 };//class ShellCmd
 
 #endif//SUBPROCESS_H_
