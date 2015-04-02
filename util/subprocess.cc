@@ -613,6 +613,7 @@ void CmdResult::ImParent::kill_child()
 }
 
 CmdResult::CmdResult(const std::string &_cmd, const Args &_args, bool _respect_path)
+:   parent_(NULL)
 {
     const ::pid_t child_pid = ::fork();
     if (child_pid == FAILURE) {
@@ -621,7 +622,7 @@ CmdResult::CmdResult(const std::string &_cmd, const Args &_args, bool _respect_p
     }
     //parent and child now share the pipes
     if (child_pid != IM_CHILD) {//im parent
-        parent_.reset(new ImParent(*this, child_pid));//create and store parent process data
+        parent_ = new ImParent(*this, child_pid);//create parent process data
         return;
     }
     //in a child
@@ -668,17 +669,18 @@ CmdResult::CmdResult(const std::string &_cmd, const Args &_args, bool _respect_p
 CmdResult::~CmdResult()
 {
     try {
-        parent_.reset(NULL);
+        delete parent_;
     }
     catch(...) {
     }
+    parent_ = NULL;
 }
 
 const SubProcessOutput& CmdResult::wait_until_done(
     const std::string &_stdin_content,
     Seconds _rel_timeout)
 {
-    if (parent_.get() != NULL) {
+    if (parent_ != NULL) {
         return parent_->wait_until_done(_stdin_content, _rel_timeout);
     }
     throw std::runtime_error("CmdResult::wait_until_done() invalid usage");

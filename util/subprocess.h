@@ -31,7 +31,6 @@
 
 #include <string>
 #include <vector>
-#include <memory>
 
 #include <boost/noncopyable.hpp>
 
@@ -114,6 +113,7 @@ public:
      * @param _cmd executable file
      * @param _args command arguments
      * @param _respect_path search executable @arg _cmd considering PATH environment variable
+     * @throw std::runtime_error if something wrong happens
      * @note Sets SIGCHLD handler.
      * 
      * Run <em>_cmd [_args...]</em>
@@ -137,6 +137,7 @@ public:
      * @param _stdin_content data delivered to command via standard input
      * @param _rel_timeout maximal command lifetime in seconds, 0 means infinity.
      * @return Command's standard and error outputs and its exit status.
+     * @throw std::runtime_error if something wrong happens
      * @note Restores SIGCHLD handler.
      */
     const SubProcessOutput& wait_until_done(
@@ -159,7 +160,7 @@ private:
     DataChannel std_err_;
 
     class ImParent;
-    std::auto_ptr< ImParent > parent_;
+    ImParent *parent_;
 };//class CmdResult
 
 /**
