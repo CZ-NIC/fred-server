@@ -539,24 +539,20 @@ void notify_registered_letters_manual_send_impl(const std::string& nameservice_h
         //checks
 
         //if rm is there
-        {
-          SubProcessOutput sub_output = ShellCmd("rm --version", timeout).execute();
-          if (!sub_output.stderr.empty()) throw std::runtime_error(sub_output.stderr);
+        if (!Cmd::Executable("which", true)("rm").run(timeout).succeeded()) {
+          throw std::runtime_error("rm: command not found");
         }
         //if gs is there
-        {
-          SubProcessOutput sub_output = ShellCmd("gs --version", timeout).execute();
-          if (!sub_output.stderr.empty()) throw std::runtime_error(sub_output.stderr);
+        if (!Cmd::Executable("which", true)("gs").run(timeout).succeeded()) {
+          throw std::runtime_error("gs: command not found");
         }
         //if base64 is there
-        {
-          SubProcessOutput sub_output = ShellCmd("base64 --version", timeout).execute();
-          if (!sub_output.stderr.empty()) throw std::runtime_error(sub_output.stderr);
+        if (!Cmd::Executable("which", true)("base64").run(timeout).succeeded()) {
+          throw std::runtime_error("base64: command not found");
         }
         //if sendmail is there
-        {
-          SubProcessOutput sub_output = ShellCmd("ls /usr/sbin/sendmail", timeout).execute();
-          if (!sub_output.stderr.empty()) throw std::runtime_error(sub_output.stderr);
+        if (!Cmd::Executable("test", true)("-x")("/usr/sbin/sendmail").run(timeout).succeeded()) {
+          throw std::runtime_error("/usr/sbin/sendmail: command not found");
         }
 
         // init file manager
