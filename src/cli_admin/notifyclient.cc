@@ -579,15 +579,20 @@ void notify_registered_letters_manual_send_impl(const std::string& nameservice_h
               if(email.empty()) throw std::runtime_error("email required");
 
               {
-                  std::string cmd=
-                  std::string("{\n"
-                  "echo \"Subject: No new registered letters $(date +'%Y-%m-%d')\n"
-                  "From: ")+email+"\nContent-Type: text/plain; charset=UTF-8; format=flowed"
-                  "\nContent-Transfer-Encoding: 8bit\n\nno new registered letters\n\";"
-                  "\n} | /usr/sbin/sendmail "+email;
-
-                  SubProcessOutput sub_output = ShellCmd(cmd, timeout).execute();
-                  if (!sub_output.stderr.empty()) throw std::runtime_error(sub_output.stderr);
+                  const std::string date = Cmd::Executable("date", true)("+'%Y-%m-%d'")
+                                           .run(timeout).stdout;
+                  const std::string data =
+                      "Subject: No new registered letters " + date + "\n"
+                      "From: " + email + "\n"
+                      "Content-Type: text/plain; charset=UTF-8; format=flowed\n"
+                      "Content-Transfer-Encoding: 8bit\n"
+                      "\n"
+                      "no new registered letters\n";
+                  const SubProcessOutput sub_output =
+                      Cmd::Data(data).into("/usr/sbin/sendmail", false)(email).run(timeout);
+                  if (!sub_output.succeeded()) {
+                      throw std::runtime_error(sub_output.stderr);
+                  }
               }
 
               std::cout << "no new registered letters found" << std::endl;
@@ -597,11 +602,15 @@ void notify_registered_letters_manual_send_impl(const std::string& nameservice_h
           //remove old letter files
           {
             SubProcessOutput sub_output = ShellCmd("rm -f letter*.pdf", timeout).execute();
-            if (!sub_output.stderr.empty()) throw std::runtime_error(sub_output.stderr);
+            if (!sub_output.succeeded()) {
+                throw std::runtime_error(sub_output.stderr);
+            }
           }
           {
             SubProcessOutput sub_output = ShellCmd("rm -f all.pdf", timeout).execute();
-            if (!sub_output.stderr.empty()) throw std::runtime_error(sub_output.stderr);
+            if (!sub_output.succeeded()) {
+                throw std::runtime_error(sub_output.stderr);
+            }
           }
 
           std::string addr_list;
@@ -681,21 +690,30 @@ void notify_registered_letters_manual_send_impl(const std::string& nameservice_h
           if(email.empty()) throw std::runtime_error("email required");
 
           {
-              std::string cmd=
-              std::string("{\n"
-              "echo \"Subject: Registered letters to send $(date +'%Y-%m-%d')\n"
-              "From: ")+email+"\nContent-Type: multipart/mixed; boundary=\"SSSSSS\""
-              "\n--SSSSSS\nContent-Disposition: attachment; filename=registered_letters_$(date +'%Y-%m-%d').pdf"
-              "\nContent-Type: application/pdf; charset=UTF-8\nContent-Transfer-Encoding: base64\n\n\";"
-              "\nbase64 ./all.pdf\n "
-              "echo \"\n\n--SSSSSS\n\nbatch id: "+batch_id+"\n\n\";"
-              +addr_list+
-              "\n} | /usr/sbin/sendmail "+email;
-
-              SubProcessOutput sub_output = ShellCmd(cmd, timeout).execute();
-              //std::cout << "out: " << sub_output.stdout<< "out length: " << sub_output.stdout.length()
-                //            << " err: " << sub_output.stderr << " err length: " << sub_output.stderr.length() << std::endl;
-              if (!sub_output.stderr.empty()) throw std::runtime_error(sub_output.stderr);
+              const std::string date = Cmd::Executable("date", true)("+'%Y-%m-%d'")
+                                       .run(timeout).stdout;
+              const std::string data =
+                  "Subject: Registered letters to send " + date + "\n"
+                  "From: " + email + "\n"
+                  "Content-Type: multipart/mixed; boundary=\"SSSSSS\"\n"
+                  "--SSSSSS\n"
+                  "Content-Disposition: attachment; filename=registered_letters_" + date + ".pdf\n"
+                  "Content-Type: application/pdf; charset=UTF-8\n"
+                  "Content-Transfer-Encoding: base64\n"
+                  "\n" +
+                  Cmd::Executable("base64", true)("./all.pdf").run(timeout).stdout + "\n"
+                  "\n"
+                  "--SSSSSS\n"
+                  "\n"
+                  "batch id: " + batch_id + "\n"
+                  "\n" + addr_list;
+              SubProcessOutput sub_output = Cmd::Data(data).into("/usr/sbin/sendmail", false)(email)
+                                            .run(timeout);
+              //std::cout <<  "out: " << sub_output.stdout << " out length: " << sub_output.stdout.length()
+              //          << " err: " << sub_output.stderr << " err length: " << sub_output.stderr.length() << std::endl;
+              if (!sub_output.succeeded()) {
+                  throw std::runtime_error(sub_output.stderr);
+              }
           }
 
 
