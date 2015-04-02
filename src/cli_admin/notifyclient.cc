@@ -654,17 +654,16 @@ void notify_registered_letters_manual_send_impl(const std::string& nameservice_h
                 throw std::runtime_error("letterfile open error");
             }
 
-            addr_list+=std::string("echo \"\n")
-                    +" "+proc_reg_letters[i].postal_address.name +" ;"
-                    +" "+proc_reg_letters[i].postal_address.org +" ;"
-                    +" "+proc_reg_letters[i].postal_address.street1 +" ;"
-                    +" "+proc_reg_letters[i].postal_address.street2 +" ;"
-                    +" "+proc_reg_letters[i].postal_address.street3 +" ;"
-                    +" "+proc_reg_letters[i].postal_address.city +" ;"
-                    +" "+proc_reg_letters[i].postal_address.state +" ;"
-                    +" "+proc_reg_letters[i].postal_address.code +" ;"
-                    +" "+proc_reg_letters[i].postal_address.country +" ;"
-                    +"\";";
+            addr_list += "\n " +
+                proc_reg_letters[i].postal_address.name    + " ; " +
+                proc_reg_letters[i].postal_address.org     + " ; " +
+                proc_reg_letters[i].postal_address.street1 + " ; " +
+                proc_reg_letters[i].postal_address.street2 + " ; " +
+                proc_reg_letters[i].postal_address.street3 + " ; " +
+                proc_reg_letters[i].postal_address.city    + " ; " +
+                proc_reg_letters[i].postal_address.state   + " ; " +
+                proc_reg_letters[i].postal_address.code    + " ; " +
+                proc_reg_letters[i].postal_address.country + " ;";
 
           }//for letter files
 
