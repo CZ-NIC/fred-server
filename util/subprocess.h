@@ -172,7 +172,7 @@ private:
 /**
  * @class ShellCmd
  * @brief shell command wrapper
- * @warning With externally gained data use @ref CmdResult instead!
+ * @warning With externally gained data use @ref Cmd::Executable instead!
  *          There is a danger of security incident (shell injection).
  */
 class ShellCmd:public boost::noncopyable
