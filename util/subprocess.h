@@ -31,6 +31,7 @@
 
 #include <string>
 #include <vector>
+#include <cstdlib>
 
 #include <boost/noncopyable.hpp>
 
@@ -63,6 +64,12 @@ struct SubProcessOutput
     int get_exit_status()const { return WEXITSTATUS(status); }
 
     /**
+     * Process successfully finished
+     * @return true if process finished successfully
+     */
+    bool succeeded()const { return this->is_exited() && this->get_exit_status() == EXIT_SUCCESS; }
+
+    /**
      * Terminated by a signal
      * @return true if the child process was terminated by a signal
      */
@@ -84,84 +91,83 @@ struct SubProcessOutput
 #endif
 };
 
+namespace Cmd
+{
+
+class Data;
+
 /**
- * @class CmdResult
+ * @class Executable
  * @brief wrapper of exec() functions family
  */
-class CmdResult:public boost::noncopyable
+class Executable:public boost::noncopyable
 {
 public:
     /**
-     * @class Args
-     * @brief Command arguments.
-     */
-    class Args
-    {
-    public:
-        Args() { }
-        Args(const Args &_src):items_(_src.items_) { }
-        Args(const std::string &_item) { items_.push_back(_item); }
-        Args& operator()(const std::string &_item) { items_.push_back(_item); return *this; }
-    private:
-        typedef std::vector< std::string > Items;
-        Items items_;
-        friend class CmdResult;
-    };
-
-    /**
      * Execute command @arg _cmd using execv/execvp function in forked child process.
      * @param _cmd executable file
-     * @param _args command arguments
-     * @param _respect_path search executable @arg _cmd considering PATH environment variable
+     * @param _search_path search executable @arg _cmd considering PATH environment variable
      * @throw std::runtime_error if something wrong happens
      * @note Sets SIGCHLD handler.
      * 
      * Run <em>_cmd [_args...]</em>
      */
-    CmdResult(const std::string &_cmd, const Args &_args, bool _respect_path = false);
+    Executable(const std::string &_cmd, bool _search_path = false);
+
+    ~Executable() { }
+    
+    /**
+     * Add command argument.
+     * @return Command's standard and error outputs and its exit status.
+     * @throw std::runtime_error if something wrong happens
+     * @note Restores SIGCHLD handler.
+     */
+    Executable& operator()(const std::string &_arg);
 
     /**
-     * @note Kills child process if one is already alive.
+     * Wait as long as command runs.
+     * @return Command's standard and error outputs and its exit status.
+     * @throw std::runtime_error if something wrong happens
+     * @note Restores SIGCHLD handler.
      */
-    ~CmdResult();
+    SubProcessOutput run();
 
     /**
      * @class Seconds
      * @brief Represents time meassured in seconds.
      */
     typedef typeof(::timeval().tv_sec) Seconds;
-    enum { INFINITE_TIME = 0 };
 
     /**
-     * Wait as long as command runs.
-     * @param _stdin_content data delivered to command via standard input
-     * @param _rel_timeout maximal command lifetime in seconds, 0 means infinity.
+     * Wait as long as command runs, at most _max_lifetime_sec seconds.
+     * @param _max_lifetime_sec maximal command lifetime in seconds
      * @return Command's standard and error outputs and its exit status.
      * @throw std::runtime_error if something wrong happens
      * @note Restores SIGCHLD handler.
      */
-    const SubProcessOutput& wait_until_done(
-        const std::string &_stdin_content = std::string(),
-        Seconds _rel_timeout = INFINITE_TIME);
+    SubProcessOutput run(Seconds _max_lifetime_sec);
 private:
-    class Pipe;
-    class DataChannel
-    {
-    public:
-        DataChannel();
-        ~DataChannel();
-    private:
-        friend class Pipe;
-        int fd_[2];
-    };
+    Executable(const std::string &_data, const std::string &_cmd, bool _search_path);
+    const std::string data_;
+    const std::string cmd_;
+    const bool search_path_;
+    typedef std::vector< std::string > Args;
+    Args args_;
+    friend class Data;
+};//class Executable
 
-    DataChannel std_in_;
-    DataChannel std_out_;
-    DataChannel std_err_;
+class Data:public boost::noncopyable
+{
+public:
+    Data(const std::string &_data);
+    ~Data();
+    Executable& into(const std::string &_cmd, bool _search_path = false);
+private:
+    Executable *cmd_;
+    const std::string data_;
+};
 
-    class ImParent;
-    ImParent *parent_;
-};//class CmdResult
+}
 
 /**
  * @class ShellCmd
@@ -176,7 +182,7 @@ public:
      * @class RelativeTimeInSeconds
      * @brief Represents relative (from now) time meassured in seconds.
      */
-    typedef CmdResult::Seconds RelativeTimeInSeconds;
+    typedef Cmd::Executable::Seconds RelativeTimeInSeconds;
 
     /**
      * Constructor with mandatory parameters.
