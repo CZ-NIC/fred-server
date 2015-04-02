@@ -156,6 +156,19 @@ private:
   void incrementRequestCounts(RequestCountInfo *inf_ptr, Result res);
 };
 
+  unsigned long long insert_property_record_impl(
+      Database::Connection &_conn,
+      const Database::DateTime &_request_time,
+      ServiceType _service,
+      bool _monitoring,
+      unsigned long long _request_id,
+      unsigned long long _property_name_id,
+      const std::string &_value,
+      bool _output,
+      unsigned long long _parent_id
+  );
+
+
 }
 }
 

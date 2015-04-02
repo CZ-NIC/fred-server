@@ -27,9 +27,7 @@
 #include "request_list.h"
 
 #include "model_session.h"
-#include "model_request_data.h"
 #include "model_request.h"
-#include "model_request_property_value.h"
 
 
 namespace Fred {
@@ -90,6 +88,67 @@ public:
 private:
     Database::Transaction *tx;
 };
+
+
+unsigned long long insert_property_record_impl(
+    Database::Connection &_conn,
+    const DateTime &_request_time,
+    ServiceType _service,
+    bool _monitoring,
+    unsigned long long _request_id,
+    unsigned long long _property_name_id,
+    const std::string &_value,
+    bool _output,
+    unsigned long long _parent_id)
+{
+    _conn.exec_params(
+        "INSERT INTO request_property_value"
+        " (request_time_begin, request_service_id, request_monitoring, request_id, property_name_id, value, output, parent_id)"
+        " VALUES"
+        " ($1::timestamp, $2::bigint, $3::boolean, $4::bigint, $5::bigint, $6::text, $7::boolean, $8::bigint)",
+        Database::query_param_list
+            (_request_time)
+            (_service)
+            (_monitoring)
+            (_request_id)
+            (_property_name_id)
+            (_value)
+            (_output)
+            ((_parent_id == 0) ? Database::QPNull : _parent_id)
+    );
+    Database::Result rprop_id = _conn.exec("SELECT currval('request_property_value_id_seq'::regclass)");
+    if (rprop_id.size() != 1)
+    {
+        throw std::runtime_error("cannot get id of last inserted property");
+    }
+    return static_cast<unsigned long long>(rprop_id[0][0]);
+}
+
+
+void insert_request_data_impl(
+    Database::Connection &_conn,
+    const DateTime &_time,
+    ServiceType _service,
+    bool _monitoring,
+    unsigned long long _request_id,
+    const std::string &_content,
+    bool _is_response
+)
+{
+    _conn.exec_params("INSERT INTO request_data"
+        " (request_time_begin, request_service_id, request_monitoring,"
+        " request_id, content, is_response)"
+        " VALUES"
+        " ($1::timestamp, $2::bigint, $3::boolean, $4::bigint, $5::text, $6::boolean)",
+        Database::query_param_list
+            (_time)
+            (_service)
+            (_monitoring)
+            (_request_id)
+            (_content)
+            (_is_response ? "True" : "False")
+    );
+}
 
 
 Result ManagerImpl::i_getRequestTypesByService(ServiceType service) 
@@ -218,8 +277,8 @@ bool ManagerImpl::record_check(ID id, Connection &conn)
 // insert properties for the given request record
 void ManagerImpl::insert_props(DateTime request_time, ServiceType service, bool monitoring, ID request_id,  const Fred::Logger::RequestProperties& props, Connection &conn, bool output)
 {
-        TRACE("[CALL] Fred::Logger::ManagerImpl::insert_props");
-    ID property_name_id, last_id = 0;
+    TRACE("[CALL] Fred::Logger::ManagerImpl::insert_props");
+    unsigned long long property_name_id, last_id = 0;
 
     if(props.size() == 0) {
         return;
@@ -228,49 +287,45 @@ void ManagerImpl::insert_props(DateTime request_time, ServiceType service, bool 
     // process the first record
     property_name_id = pcache->find_property_name_id(props[0].name, conn);
 
-    if (props[0].child) {
+    if (props[0].child)
+    {
         // the first property is set to child - this is an error
         logger_error(boost::format("entry ID %1%: first property marked as child. Ignoring this flag ") % request_id);
     }
 
-    ModelRequestPropertyValue pv_first;
-    pv_first.setRequestTimeBegin(request_time);
-    pv_first.setRequestServiceId(service);
-    pv_first.setRequestMonitoring(monitoring);
-    pv_first.setRequestId(request_id);
-    pv_first.setPropertyNameId(property_name_id);
-    pv_first.setValue (props[0].value);
-    pv_first.setOutput(output);
-
-    pv_first.insert();
-        last_id = pv_first.getId();
-
+    last_id = insert_property_record_impl(
+        conn,
+        request_time,
+        service,
+        monitoring,
+        request_id,
+        property_name_id,
+        props[0].value,
+        output,
+        0
+    );
     // process the rest of the sequence
     for (unsigned i = 1; i < props.size(); i++) {
         property_name_id = pcache->find_property_name_id(props[i].name, conn);
 
-        // create a new object for each iteration
-        // because ParentId must alternate between NULL and some value
-        ModelRequestPropertyValue pv;
-        pv.setRequestTimeBegin(request_time);
-        pv.setRequestServiceId(service);
-        pv.setRequestMonitoring(monitoring);
-        pv.setRequestId(request_id);
-        pv.setPropertyNameId(property_name_id);
-        pv.setValue (props[i].value);
-        pv.setOutput(output);
-
-        if(props[i].child) {
-            pv.setParentId(last_id);
-            pv.insert();
-        } else {
-            pv.insert();
-                        last_id = pv.getId();
+        unsigned long long aux_last_id = insert_property_record_impl(
+            conn,
+            request_time,
+            service,
+            monitoring,
+            request_id,
+            property_name_id,
+            props[i].value,
+            output,
+            (props[i].child ? last_id : 0)
+        );
+        if (props[i].child == false)
+        {
+            last_id = aux_last_id;
         }
     }
 
-        logger_notice(boost::format("Inserted %1% properties") % props.size());
-
+    logger_notice(boost::format("Inserted %1% properties") % props.size());
 }
 
 void ManagerImpl::insert_obj_ref(DateTime request_time, ServiceType service, bool monitoring, ID request_id,  const Fred::Logger::ObjectReferences &refs, Connection &conn)
@@ -371,19 +426,18 @@ ID ManagerImpl::i_createRequest(const char *sourceIP, ServiceType service, const
     ctx_entry.reset(new Logging::Context(request_fmt.str()));
 #endif
 
-
-    ModelRequestData data;
-
     // insert into request_data
-    if(content != NULL && content[0] != '\0') {
-        data.setRequestTimeBegin(time);
-        data.setRequestServiceId(service);
-        data.setRequestMonitoring(monitoring);
-        data.setRequestId(request_id);
-        data.setContent(content);
-        data.setIsResponse(false);
-
-        data.insert();
+    if(content != NULL && content[0] != '\0')
+    {
+        insert_request_data_impl(
+            db,
+            time,
+            service,
+            monitoring,
+            request_id,
+            content,
+            false
+        );
     }
 
     if(props.size() > 0) {
@@ -621,16 +675,17 @@ bool ManagerImpl::i_closeRequest(
     db.exec_params(query, update_request_params);
 
     // insert output content
-    if(content != NULL && content[0] != '\0') {
-        ModelRequestData data;
-        // insert into request_data
-        data.setRequestTimeBegin(request_time);
-        data.setRequestServiceId(service_id);
-        data.setRequestMonitoring(monitoring);
-        data.setRequestId(id);
-        data.setContent(content);
-        data.setIsResponse(true);
-        data.insert();
+    if(content != NULL && content[0] != '\0')
+    {
+        insert_request_data_impl(
+            db,
+            request_time,
+            service_id,
+            monitoring,
+            id,
+            content,
+            true
+        );
     }
 
     // insert properties

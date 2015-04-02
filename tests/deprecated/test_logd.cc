@@ -17,8 +17,6 @@
 #include "src/fredlib/requests/request_impl.h"
 #include "src/fredlib/requests/request.h"
 #include "src/fredlib/requests/request_manager.h"
-#include "src/fredlib/requests/model_request_property_name.h"
-#include "src/fredlib/requests/model_request_property_value.h"
 
 #include "util/corba_wrapper_decl.h"
 #include "src/corba/Logger.hh"
@@ -822,16 +820,17 @@ BOOST_AUTO_TEST_CASE( partitions )
 				if(PARTITIONS_TEST_PROPERTIES) {
                                         fmt = boost::format("%1% 9:%2%:00") % date % i;
 
-                                        ModelRequestPropertyValue pv;
-                                        pv.setRequestTimeBegin(fmt.str());
-                                        pv.setRequestServiceId(service_id);
-                                        pv.setRequestMonitoring(false);
-                                        pv.setRequestId(rid1);
-                                        pv.setPropertyNameId(13);
-                                        pv.setValue ("valuevalue");
-                                        pv.insert();
-
-                                        Database::ID prop_id1 = pv.getId();
+                                        Database::ID prop_id1 = insert_property_record_impl(
+                                            conn,
+                                            fmt.str(),
+                                            service_id,
+                                            false,
+                                            rid1,
+                                            13,
+                                            "valuevalue",
+                                            false,
+                                            0
+                                        );
 
 					boost::format test1 = boost::format("select request_time_begin from request_property_value_%1% where id = %2%") % get_table_postfix(2009, i, (ServiceType)service_id, false) % prop_id1;
 					res = conn.exec(test1.str());
@@ -840,17 +839,19 @@ BOOST_AUTO_TEST_CASE( partitions )
 						BOOST_ERROR(" Record not found in the correct partition ");
 					}
 
-                                        pv.setRequestTimeBegin(fmt.str());
-                                        pv.setRequestServiceId(service_id);
-                                        pv.setRequestMonitoring(true);
-                                        pv.setRequestId(rid2);
-                                        pv.setPropertyNameId(13);
-                                        pv.setValue ("valuevalue");
-                                        pv.insert();
+                                        Database::ID prop_id2 = insert_property_record_impl(
+                                            conn,
+                                            fmt.str(),
+                                            service_id,
+                                            true,
+                                            rid2,
+                                            13,
+                                            "valuevalue",
+                                            false,
+                                            0
+                                        );
 
-                                        Database::ID prop_id2 = pv.getId();
-
-					boost::format test2 = boost::format("select request_time_begin from request_property_value_%1% where id = %2%") % get_table_postfix(2009, i, (ServiceType)service_id, false) % prop_id2;
+					boost::format test2 = boost::format("select request_time_begin from request_property_value_%1% where id = %2%") % get_table_postfix(2009, i, (ServiceType)service_id, true) % prop_id2;
 					res = conn.exec(test2.str());
 
 					if(res.size() == 0) {
