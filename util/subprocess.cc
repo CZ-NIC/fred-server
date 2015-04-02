@@ -60,6 +60,12 @@ class CmdResult::Pipe
 {
 public:
     Pipe(DataChannel &_data_channel):fd_(_data_channel.fd_) { }
+
+    //public read end of pipe interface, hide write end of pipe
+    class ImReader;
+
+    //public write end of pipe interface, hide read end of pipe
+    class ImWriter;
 private:
     Pipe& close_read_end();
     Pipe& dup_read_end(int _new_fd);
@@ -247,8 +253,7 @@ void CmdResult::Pipe::set_nonblocking(Idx _idx)const
     }
 }
 
-//public read end of pipe interface, hide write end of pipe
-class CmdResult::ImReader:public boost::noncopyable
+class CmdResult::Pipe::ImReader:public boost::noncopyable
 {
 public:
     ImReader(DataChannel &_data_channel);
@@ -266,8 +271,60 @@ private:
     Pipe pipe_;
 };
 
-//public write end of pipe interface, hide read end of pipe
-class CmdResult::ImWriter:public boost::noncopyable
+CmdResult::Pipe::ImReader::ImReader(DataChannel &_data_channel)
+:   pipe_(_data_channel)
+{
+    pipe_.close_write_end();
+}
+
+CmdResult::Pipe::ImReader& CmdResult::Pipe::ImReader::dup(int _new_fd)
+{
+    pipe_.dup_read_end(_new_fd);
+    return *this;
+}
+
+CmdResult::Pipe::ImReader& CmdResult::Pipe::ImReader::close()
+{
+    pipe_.close_read_end();
+    return *this;
+}
+
+CmdResult::Pipe::ImReader& CmdResult::Pipe::ImReader::append(std::string &_buf)
+{
+    enum { DATA_CHUNK_SIZE = 1024 };
+    char data[DATA_CHUNK_SIZE];
+    const ::size_t bytes = this->read(data, DATA_CHUNK_SIZE);
+    enum { READ_END_OF_FILE = 0 };
+    if (bytes == READ_END_OF_FILE) {
+        this->close();
+    }
+    else {//have data in buf
+        _buf.append(data, bytes);
+    }
+    return *this;
+}
+
+void CmdResult::Pipe::ImReader::set_nonblocking()const
+{
+    pipe_.set_nonblocking_read_end();
+}
+
+void CmdResult::Pipe::ImReader::watch(::fd_set &_set, int &_max_fd)const
+{
+    pipe_.watch_ready_for_read(_set, _max_fd);
+}
+
+bool CmdResult::Pipe::ImReader::is_ready(const ::fd_set &_set)const
+{
+    return pipe_.is_ready_for_read(_set);
+}
+
+::size_t CmdResult::Pipe::ImReader::read(void *_buf, ::size_t _buf_size)const
+{
+    return pipe_.read(_buf, _buf_size);
+}
+
+class CmdResult::Pipe::ImWriter:public boost::noncopyable
 {
 public:
     ImWriter(DataChannel &_data_channel);
@@ -284,108 +341,70 @@ private:
     Pipe pipe_;
 };
 
-CmdResult::ImReader::ImReader(DataChannel &_data_channel)
-:   pipe_(_data_channel)
-{
-    pipe_.close_write_end();
-}
-
-CmdResult::ImReader& CmdResult::ImReader::dup(int _new_fd)
-{
-    pipe_.dup_read_end(_new_fd);
-    return *this;
-}
-
-CmdResult::ImReader& CmdResult::ImReader::close()
-{
-    pipe_.close_read_end();
-    return *this;
-}
-
-CmdResult::ImReader& CmdResult::ImReader::append(std::string &_buf)
-{
-    enum { DATA_CHUNK_SIZE = 1024 };
-    char data[DATA_CHUNK_SIZE];
-    const ::size_t bytes = this->read(data, DATA_CHUNK_SIZE);
-    if (bytes == 0) {//eof
-        this->close();
-    }
-    else {//have data in buf
-        _buf.append(data, bytes);
-    }
-    return *this;
-}
-
-void CmdResult::ImReader::set_nonblocking()const
-{
-    pipe_.set_nonblocking_read_end();
-}
-
-void CmdResult::ImReader::watch(::fd_set &_set, int &_max_fd)const
-{
-    pipe_.watch_ready_for_read(_set, _max_fd);
-}
-
-bool CmdResult::ImReader::is_ready(const ::fd_set &_set)const
-{
-    return pipe_.is_ready_for_read(_set);
-}
-
-::size_t CmdResult::ImReader::read(void *_buf, ::size_t _buf_size)const
-{
-    return pipe_.read(_buf, _buf_size);
-}
-
-CmdResult::ImWriter::ImWriter(DataChannel &_data_channel)
+CmdResult::Pipe::ImWriter::ImWriter(DataChannel &_data_channel)
 :   pipe_(_data_channel)
 {
     pipe_.close_read_end();
 }
 
-CmdResult::ImWriter& CmdResult::ImWriter::dup(int _new_fd)
+CmdResult::Pipe::ImWriter& CmdResult::Pipe::ImWriter::dup(int _new_fd)
 {
     pipe_.dup_write_end(_new_fd);
     return *this;
 }
 
-CmdResult::ImWriter& CmdResult::ImWriter::close()
+CmdResult::Pipe::ImWriter& CmdResult::Pipe::ImWriter::close()
 {
     pipe_.close_write_end();
     return *this;
 }
 
-void CmdResult::ImWriter::set_nonblocking()const
+void CmdResult::Pipe::ImWriter::set_nonblocking()const
 {
     pipe_.set_nonblocking_write_end();
 }
 
-void CmdResult::ImWriter::watch(::fd_set &_set, int &_max_fd)const
+void CmdResult::Pipe::ImWriter::watch(::fd_set &_set, int &_max_fd)const
 {
     pipe_.watch_ready_for_write(_set, _max_fd);
 }
 
-bool CmdResult::ImWriter::is_ready(const ::fd_set &_set)const
+bool CmdResult::Pipe::ImWriter::is_ready(const ::fd_set &_set)const
 {
     return pipe_.is_ready_for_write(_set);
 }
 
-::size_t CmdResult::ImWriter::write(const void *_data, ::size_t _data_size)const
+::size_t CmdResult::Pipe::ImWriter::write(const void *_data, ::size_t _data_size)const
 {
     return pipe_.write(_data, _data_size);
 }
 
-class CmdResult::SaveAndRestoreSigChldHandler
+class CmdResult::ImParent
 {
 public:
-    SaveAndRestoreSigChldHandler();
-    ~SaveAndRestoreSigChldHandler();
+    ImParent(CmdResult &cmd, ::pid_t _child_pid);
+    ~ImParent();
+    const SubProcessOutput& wait_until_done(const std::string &_stdin_content, Seconds _rel_timeout);
 private:
+    void kill_child();
+
+    ::pid_t child_pid_;
+    Pipe::ImWriter child_std_in_;
+    Pipe::ImReader child_std_out_;
+    Pipe::ImReader child_std_err_;
+
+    SubProcessOutput out_;
+
     static void handler(int) { }
     struct ::sigaction old_act_;
     ::sigset_t old_set_;
 };
 
-CmdResult::SaveAndRestoreSigChldHandler::SaveAndRestoreSigChldHandler()
+CmdResult::ImParent::ImParent(CmdResult &cmd, ::pid_t _child_pid)
+:   child_pid_(_child_pid),
+    child_std_in_(cmd.std_in_),
+    child_std_out_(cmd.std_out_),
+    child_std_err_(cmd.std_err_)
 {
     struct ::sigaction new_act;
     new_act.sa_handler = handler;
@@ -397,255 +416,119 @@ CmdResult::SaveAndRestoreSigChldHandler::SaveAndRestoreSigChldHandler()
     ::sigemptyset(&new_set);
     ::sigaddset(&new_set, SIGCHLD);
     ::sigprocmask(SIG_UNBLOCK, &new_set, &old_set_);
+
+    child_std_in_ .set_nonblocking();
+    child_std_out_.set_nonblocking();
+    child_std_err_.set_nonblocking();
 }
 
-CmdResult::SaveAndRestoreSigChldHandler::~SaveAndRestoreSigChldHandler()
+CmdResult::ImParent::~ImParent()
 {
     ::sigprocmask(SIG_SETMASK, &old_set_, NULL);
     ::sigaction(SIGCHLD, &old_act_, NULL);
 }
 
-CmdResult::CmdResult(const std::string &_cmd, const Args &_args, bool _respecting_path_env)
-:   child_pid_(::fork())
+const SubProcessOutput& CmdResult::ImParent::wait_until_done(
+    const std::string &_stdin_content,
+    Seconds _rel_timeout)
 {
-    if (child_pid_ == FAILURE) {
-        std::string err_msg(std::strerror(errno));
-        throw std::runtime_error("CmdResult::CmdResult() fork error: " + err_msg);
-    }
-    //parent and child now share the pipe's
-    if (child_pid_ == IM_CHILD) {
-        //in child
-        try {
-
-            //close writable end of stdin
-            ImReader stdin(std_in_);
-            //close readable end of stdout and stderr
-            ImWriter stdout(std_out_);
-            ImWriter stderr(std_err_);
-
-            //duplicate readable end of stdin pipe into stdin
-            stdin.dup(STDIN_FILENO);
-            //duplicate writable end of stdout pipe into stdout
-            stdout.dup(STDOUT_FILENO);
-            //duplicate writable end of stderr pipe into stderr
-            stderr.dup(STDERR_FILENO);
-
-            char *argv[1/*cmd*/ + _args.size() + 1/*NULL*/];
-            argv[0] = const_cast< char* >(_cmd.c_str());
-            char **argv_ptr = argv + 1;
-            for (Args::const_iterator pArg = _args.begin(); pArg != _args.end(); ++pArg) {
-                *argv_ptr = const_cast< char* >(pArg->c_str());
-                ++argv_ptr;
-            }
-            *argv_ptr = NULL;
-
-            //shell exec
-            const int retval = _respecting_path_env ? ::execvp(argv[0], argv)
-                                                    : ::execv (argv[0], argv);
-            if (retval == FAILURE) {
-                //failed to launch command
-                std::string err_msg(std::strerror(errno));
-                Logging::Manager::instance_ref()
-                .get(PACKAGE).error("CmdResult::CmdResult execv failed: " + err_msg);
-            }
+    if (child_pid_ != IM_CHILD) {
+        //set select timeout
+        struct ::timeval timeout;
+        struct ::timeval *timeout_ptr = NULL;
+        if (_rel_timeout != INFINITE_TIME) {
+            timeout.tv_sec = _rel_timeout;
+            timeout.tv_usec = 0;
+            timeout_ptr = &timeout;
         }
-        catch (...) {
+
+        //communication with child process
+        const char *data = _stdin_content.c_str();
+        const char *const data_end = data + _stdin_content.length();
+        if (_stdin_content.empty()) { //no input data => close stdin
+            child_std_in_.close();
         }
-        ::_exit(EXIT_FAILURE);
-    }
 
-    save_and_restore_sig_chld_handler_.reset(new SaveAndRestoreSigChldHandler);
+        while (true) {
+            //init fd sets for reading and writing
+            ::fd_set rfds, wfds;
+            FD_ZERO(&rfds);
+            FD_ZERO(&wfds);
+            int nfds = 0;
 
-    child_std_in_ .reset(new ImWriter(std_in_));
-    child_std_out_.reset(new ImReader(std_out_));
-    child_std_err_.reset(new ImReader(std_err_));
+            //watch events on stdin, stdout, stderr
+            child_std_in_ .watch(wfds, nfds);
+            child_std_out_.watch(rfds, nfds);
+            child_std_err_.watch(rfds, nfds);
 
-    child_std_in_ ->set_nonblocking();
-    child_std_out_->set_nonblocking();
-    child_std_err_->set_nonblocking();
-}
-
-CmdResult::~CmdResult()
-{
-    try {
-        this->kill_child();
-    }
-    catch(...) {
-    }
-}
-
-bool CmdResult::is_process_done()const
-{
-    return (child_pid_ == IM_CHILD) || (child_std_in_.get() == NULL);
-}
-
-CmdResult& CmdResult::wait_until_done(const std::string &_stdin_content, Seconds _rel_timeout)
-{
-    if (this->is_process_done()) {
-        throw std::runtime_error("CmdResult::wait_until_done() invalid repetitive usage");
-    }
-    //set select timeout
-    struct ::timeval timeout;
-    struct ::timeval *timeout_ptr;
-    if (_rel_timeout != INFINITE_TIME) {
-        timeout.tv_sec = _rel_timeout;
-        timeout.tv_usec = 0;
-        timeout_ptr = &timeout;
-    }
-    else {
-        timeout_ptr = NULL;
-    }
-
-    //communication with child process
-    int nfds;
-    const char *data = _stdin_content.c_str();
-    const char *const data_end = data + _stdin_content.length();
-    if (_stdin_content.empty()) { //no input data, close stdin
-        child_std_in_->close();
-    }
-
-    do {
-        //init fd sets for reading and writing
-        ::fd_set rfds, wfds;
-        FD_ZERO(&rfds);
-        FD_ZERO(&wfds);
-        nfds = 0;
-
-        //watch events on stdin, stdout, stderr
-        child_std_in_ ->watch(wfds, nfds);
-        child_std_out_->watch(rfds, nfds);
-        child_std_err_->watch(rfds, nfds);
-
-        if (0 < nfds) {//if have fd to wait for
+            if (nfds <= 0) {//nothing to do
+                break;
+            }
 
             const int events = ::select(nfds + 1, &rfds, &wfds, NULL, timeout_ptr);
 
-            if (events == 0) {//timeout
-                child_std_in_ ->close();
-                child_std_out_->close();
-                child_std_err_->close();
+            if (events == 0) {//no event => timeout
+                child_std_in_ .close();
+                child_std_out_.close();
+                child_std_err_.close();
                 this->kill_child();
                 throw std::runtime_error("CmdResult::wait_until_done() timeout reached");
             }
 
-            if (events == FAILURE) {
-                if (errno == EINTR) {
+            if (events == FAILURE) { //select broken
+                if (errno == EINTR) {//by a signal
                     continue;
                 }
-                //error
                 std::string err_msg(std::strerror(errno));
                 throw std::runtime_error("CmdResult::wait_until_done() failure in select: " + err_msg);
             }
 
             //check child stdin
-            if (child_std_in_->is_ready(wfds)) {
+            if (child_std_in_.is_ready(wfds)) {
                 if (data < data_end) {
-                    const ::size_t wbytes = child_std_in_->write(data, data_end - data);
+                    const ::size_t wbytes = child_std_in_.write(data, data_end - data);
                     data += wbytes;
                     if (data_end <= data) {
-                        child_std_in_->close();
+                        child_std_in_.close();
                     }
                 }
-            }//if stdin ready
+            }
 
             //check child stdout
-            if (child_std_out_->is_ready(rfds)) {
-                child_std_out_->append(stdout_content_);
+            if (child_std_out_.is_ready(rfds)) {
+                child_std_out_.append(out_.stdout);
             }
 
             //check child stderr
-            if (child_std_err_->is_ready(rfds)) {
-                child_std_err_->append(stderr_content_);
+            if (child_std_err_.is_ready(rfds)) {
+                child_std_err_.append(out_.stderr);
             }
 
-        }//if nfds
-
-    }
-    while(0 < nfds);  //communication with child process
-
-    //check for child completion
-    const ::pid_t dp = ::waitpid(child_pid_, &exit_status_, WNOHANG);//death pid
-
-    switch (dp) {
-    case FAILURE:
-        throw std::runtime_error("CmdResult::wait_until_done() waitpid failure: " + std::string(std::strerror(errno)));
-    case 0: //child is still running
-        this->kill_child(&exit_status_);
-        break;
-    default:
-        if (dp != child_pid_) {
-            std::ostringstream msg;
-            msg << "CmdResult::wait_until_done() waitpid(" << child_pid_ << ") failure: return unexpected value " << dp;
-            throw std::runtime_error(msg.str());
         }
-        child_pid_ = IM_CHILD;//child done
-        break;
+
+        //check for child completion
+        const ::pid_t dp = ::waitpid(child_pid_, &out_.status, WNOHANG);//death pid
+
+        switch (dp) {
+        case FAILURE:
+            throw std::runtime_error("CmdResult::wait_until_done() waitpid failure: " + std::string(std::strerror(errno)));
+        case 0: //child is still running
+            this->kill_child();
+            break;
+        default:
+            if (dp != child_pid_) {
+                std::ostringstream msg;
+                msg << "CmdResult::wait_until_done() waitpid(" << child_pid_ << ") failure: return unexpected value " << dp;
+                throw std::runtime_error(msg.str());
+            }
+            child_pid_ = IM_CHILD;//child done
+            break;
+        }
     }
-    child_std_err_.reset(NULL);
-    child_std_out_.reset(NULL);
-    child_std_in_ .reset(NULL);
-    return *this;
+    return out_;
 }
 
-bool CmdResult::is_exited()const
-{
-    if (this->is_process_done()) {
-        return WIFEXITED(exit_status_);
-    }
-    throw std::runtime_error("CmdResult::is_exited() failure: process is still running");
-}
-
-int CmdResult::get_exit_status()const
-{
-    if (this->is_process_done()) {
-        return WEXITSTATUS(exit_status_);
-    }
-    throw std::runtime_error("CmdResult::get_exit_status() failure: process is still running");
-}
-
-bool CmdResult::is_signaled()const
-{
-    if (this->is_process_done()) {
-        return WIFSIGNALED(exit_status_);
-    }
-    throw std::runtime_error("CmdResult::is_signaled() failure: process is still running");
-}
-
-int CmdResult::get_term_sig()const
-{
-    if (this->is_process_done()) {
-        return WTERMSIG(exit_status_);
-    }
-    throw std::runtime_error("CmdResult::get_term_sig() failure: process is still running");
-}
-
-#ifdef WCOREDUMP
-bool CmdResult::is_core_dump()const
-{
-    if (this->is_process_done()) {
-        return this->is_signaled() && (WCOREDUMP(exit_status_));
-    }
-    throw std::runtime_error("CmdResult::is_core_dump() failure: process is still running");
-}
-#endif
-
-std::string CmdResult::get_stdout()const
-{
-    if (this->is_process_done()) {
-        return stdout_content_;
-    }
-    throw std::runtime_error("CmdResult::get_stdout() failure: process is still running");
-}
-
-std::string CmdResult::get_stderr()const
-{
-    if (this->is_process_done()) {
-        return stderr_content_;
-    }
-    throw std::runtime_error("CmdResult::get_stderr() failure: process is still running");
-}
-
-void CmdResult::kill_child(int *_status) throw()
+void CmdResult::ImParent::kill_child()
 {
     if ((child_pid_ == IM_CHILD) ||
         (child_pid_ == FAILURE)) {
@@ -669,44 +552,115 @@ void CmdResult::kill_child(int *_status) throw()
     }
 
     enum { PASS_MAX = 10 };
-    for (int pass = 0; ; ++pass) {
-        const ::pid_t dp = ::waitpid(child_pid_, _status, WNOHANG); //death pid
-
-        if (dp == FAILURE) {
-            try {
-                std::string err_msg(std::strerror(errno));
-                Logging::Manager::instance_ref()
-                .get(PACKAGE).error("CmdResult::kill_child error in waitpid: " + err_msg);
-            }
-            catch (...) { }
-            break;
-        }
+    int pass = 0;
+    while (true) {
+        const ::pid_t dp = ::waitpid(child_pid_, &out_.status, WNOHANG); //death pid
 
         if (dp == child_pid_) {//if killed child done
             try {
                 Logging::Manager::instance_ref()
-                .get(PACKAGE).debug("CmdResult::kill_child, killed child done");
+                .get(PACKAGE).debug("CmdResult::ImParent::kill_child success: killed child done");
             }
             catch (...) { }
             child_pid_ = IM_CHILD;
             return;
         }
 
-        //killed child is still running
-        if (PASS_MAX <= (pass + 1)) {
+        if (dp == FAILURE) {
             try {
+                std::string err_msg(std::strerror(errno));
                 Logging::Manager::instance_ref()
-                .get(PACKAGE).debug("CmdResult::kill_child, killed child is still running");
+                .get(PACKAGE).error("CmdResult::ImParent::kill_child waitpid() failure: " + err_msg);
             }
             catch (...) { }
             break;
         }
+
+        ++pass;
+        //killed child is still running
+        if (PASS_MAX <= pass) {
+            try {
+                Logging::Manager::instance_ref()
+                .get(PACKAGE).debug("CmdResult::ImParent::kill_child continue: killed child is still running");
+            }
+            catch (...) { }
+            out_.status = EXIT_FAILURE;
+            child_pid_ = IM_CHILD;
+            return;
+        }
         ::usleep(10 * 1000);//wait for child stop (SIGCHLD), max 10ms
     }
-    if (_status != NULL) {
-        *_status = EXIT_FAILURE;
+}
+
+CmdResult::CmdResult(const std::string &_cmd, const Args &_args, bool _respecting_path_env)
+{
+    const ::pid_t child_pid = ::fork();
+    if (child_pid == FAILURE) {
+        std::string err_msg(std::strerror(errno));
+        throw std::runtime_error("CmdResult::CmdResult() fork error: " + err_msg);
     }
-    child_pid_ = IM_CHILD;
+    //parent and child now share the pipes
+    if (child_pid != IM_CHILD) {//im parent
+        parent_.reset(new ImParent(*this, child_pid));//create and store parent process data
+        return;
+    }
+    //in a child
+    try {
+        //close writable end of stdin
+        Pipe::ImReader stdin(std_in_);
+        //close readable end of stdout and stderr
+        Pipe::ImWriter stdout(std_out_);
+        Pipe::ImWriter stderr(std_err_);
+
+        //duplicate readable end of stdin pipe into stdin
+        stdin.dup(STDIN_FILENO);
+        //duplicate writable end of stdout pipe into stdout
+        stdout.dup(STDOUT_FILENO);
+        //duplicate writable end of stderr pipe into stderr
+        stderr.dup(STDERR_FILENO);
+
+        char *argv[1/*cmd*/ + _args.size() + 1/*NULL*/];
+        char **argv_ptr = argv;
+        *argv_ptr = const_cast< char* >(_cmd.c_str());
+        ++argv_ptr;
+        for (Args::const_iterator pArg = _args.begin(); pArg != _args.end(); ++pArg) {
+            *argv_ptr = const_cast< char* >(pArg->c_str());
+            ++argv_ptr;
+        }
+        *argv_ptr = NULL;
+
+        //command execute
+        const int retval = _respecting_path_env ? ::execvp(argv[0], argv)
+                                                : ::execv (argv[0], argv);
+        if (retval == FAILURE) {
+            //failed to launch command
+            std::string err_msg(std::strerror(errno));
+            Logging::Manager::instance_ref()
+            .get(PACKAGE).error("CmdResult::CmdResult execv failed: " + err_msg);
+        }
+    }
+    catch (...) {
+    }
+    ::_exit(EXIT_FAILURE);
+}
+
+CmdResult::~CmdResult()
+{
+    try {
+        parent_.reset(NULL);
+    }
+    catch(...) {
+    }
+}
+
+const SubProcessOutput& CmdResult::wait_until_done(
+    const std::string &_stdin_content,
+    Seconds _rel_timeout)
+{
+    if (parent_.get() != NULL) {
+        return parent_->wait_until_done(_stdin_content, _rel_timeout);
+    }
+    throw std::runtime_error("CmdResult::wait_until_done() invalid usage");
 }
 
 ShellCmd::ShellCmd(const std::string &_cmd)
@@ -741,14 +695,9 @@ ShellCmd::~ShellCmd()
 
 SubProcessOutput ShellCmd::execute(std::string stdin_str)
 {
-    SubProcessOutput ret;
     CmdResult::Args args;
     args.push_back("-c");
     args.push_back(cmd_);
     CmdResult cmd(shell_, args, true);
-    cmd.wait_until_done(stdin_str, timeout_);
-    ret.stdout = cmd.get_stdout();
-    ret.stderr = cmd.get_stderr();
-    ret.status = cmd.get_raw_exit_status();
-    return ret;//return outputs
+    return cmd.wait_until_done(stdin_str, timeout_);
 }
