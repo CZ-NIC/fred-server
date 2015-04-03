@@ -628,33 +628,30 @@ void kill_child(::pid_t _child_pid, int *_status)
         return;
     }
 
-    try {
-        Logging::Manager::instance_ref()
-        .get(PACKAGE).error("kill_child call");
-    }
-    catch (...) { }
-
-    if (::kill(_child_pid, SIGKILL) == FAILURE) {
-        std::string err_msg(std::strerror(errno));
-        try {
-            Logging::Manager::instance_ref()
-            .get(PACKAGE).error("kill_child kill() failure: " + err_msg);
-        }
-        catch (...) { }
-        return;
-    }
-
     enum { PASS_MAX = 10 };
     int pass = 0;
+    bool signal_sent = false;
     while (true) {
+        if (::usleep(1000) == FAILURE) {//wait for child stop (SIGCHLD), max 1ms
+            const int c_errno = errno;
+            if (c_errno != EINTR) {
+                try {
+                    Logging::Manager::instance_ref()
+                    .get(PACKAGE).info("kill_child usleep() failure: " + std::string(std::strerror(c_errno)));
+                }
+                catch (...) { }
+            }
+        }
         const ::pid_t dp = ::waitpid(_child_pid, _status, WNOHANG); //death pid
 
         if (dp == _child_pid) {//if killed child done
-            try {
-                Logging::Manager::instance_ref()
-                .get(PACKAGE).debug("kill_child success: killed child done");
+            if (signal_sent) {
+                try {
+                    Logging::Manager::instance_ref()
+                    .get(PACKAGE).debug("kill_child success: killed child done");
+                }
+                catch (...) { }
             }
-            catch (...) { }
             return;
         }
 
@@ -666,6 +663,25 @@ void kill_child(::pid_t _child_pid, int *_status)
             }
             catch (...) { }
             break;
+        }
+
+        if (!signal_sent) {
+            try {
+                Logging::Manager::instance_ref()
+                .get(PACKAGE).debug("kill_child call");
+            }
+            catch (...) { }
+
+            if (::kill(_child_pid, SIGKILL) == FAILURE) {
+                std::string err_msg(std::strerror(errno));
+                try {
+                    Logging::Manager::instance_ref()
+                    .get(PACKAGE).error("kill_child kill() failure: " + err_msg);
+                }
+                catch (...) { }
+                return;
+            }
+            signal_sent = true;
         }
 
         ++pass;
@@ -681,7 +697,6 @@ void kill_child(::pid_t _child_pid, int *_status)
             }
             return;
         }
-        ::usleep(10 * 1000);//wait for child stop (SIGCHLD), max 10ms
     }
 }
 
