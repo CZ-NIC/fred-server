@@ -108,27 +108,23 @@ public:
      * @param _cmd executable file
      * @param _search_path search executable @arg _cmd considering PATH environment variable
      * @throw std::runtime_error if something wrong happens
-     * @note Sets SIGCHLD handler.
      * 
      * Run <em>_cmd [_args...]</em>
      */
-    Executable(const std::string &_cmd, bool _search_path = false);
+    Executable(std::string _cmd, bool _search_path = false);
 
     ~Executable() { }
     
     /**
      * Add command argument.
-     * @return Command's standard and error outputs and its exit status.
-     * @throw std::runtime_error if something wrong happens
-     * @note Restores SIGCHLD handler.
      */
-    Executable& operator()(const std::string &_arg);
+    Executable& operator()(std::string _arg);
 
     /**
      * Wait as long as command runs.
      * @return Command's standard and error outputs and its exit status.
      * @throw std::runtime_error if something wrong happens
-     * @note Restores SIGCHLD handler.
+     * @note Sets and restores SIGCHLD handler.
      */
     SubProcessOutput run();
 
@@ -143,11 +139,11 @@ public:
      * @param _max_lifetime_sec maximal command lifetime in seconds
      * @return Command's standard and error outputs and its exit status.
      * @throw std::runtime_error if something wrong happens
-     * @note Restores SIGCHLD handler.
+     * @note Sets and restores SIGCHLD handler.
      */
     SubProcessOutput run(Seconds _max_lifetime_sec);
 private:
-    Executable(const std::string &_data, const std::string &_cmd, bool _search_path);
+    Executable(std::string _data, std::string _cmd, bool _search_path);
     const std::string data_;
     const std::string cmd_;
     const bool search_path_;
@@ -156,12 +152,25 @@ private:
     friend class Data;
 };//class Executable
 
+/**
+ * @class Data
+ * @brief Contains data for dispatching to the process via standard input stream.
+ */
 class Data:public boost::noncopyable
 {
 public:
-    Data(const std::string &_data);
+    /**
+     * Store data.
+     * @param _data contains data for dispatching to the process via standard input stream
+     */
+    Data(std::string _data);
     ~Data();
-    Executable& into(const std::string &_cmd, bool _search_path = false);
+    /**
+     * Connects data with process.
+     * @param _cmd command for execution
+     * @param _search_path search executable @arg _cmd considering PATH environment variable
+     */
+    Executable& into(std::string _cmd, bool _search_path = false);
 private:
     Executable *cmd_;
     const std::string data_;
@@ -188,14 +197,14 @@ public:
      * Constructor with mandatory parameters.
      * @param _cmd sets command into @ref cmd_ attribute
      */
-    ShellCmd(const std::string &_cmd);
+    ShellCmd(std::string _cmd);
 
     /**
      * Constructor with mandatory parameters.
      * @param _cmd sets command into @ref cmd_ attribute
      * @param _timeout sets maximal command lifetime into @ref timeout_ attribute
      */
-    ShellCmd(const std::string &_cmd,
+    ShellCmd(std::string _cmd,
              RelativeTimeInSeconds _timeout
             );
 
@@ -205,8 +214,8 @@ public:
      * @param _shell sets shell into @ref shell_ attribute
      * @param _timeout sets maximal command lifetime into @ref timeout_ attribute
      */
-    ShellCmd(const std::string &_cmd,
-             const std::string &_shell,
+    ShellCmd(std::string _cmd,
+             std::string _shell,
              RelativeTimeInSeconds _timeout
             );
 
@@ -223,7 +232,7 @@ public:
      * 
      * Run <em>echo $stdin_str|$shell_ -c "$cmd_"</em>
      */
-    SubProcessOutput execute(const std::string &stdin_str = std::string());
+    SubProcessOutput execute(std::string stdin_str = std::string());
 
 private:
     const std::string cmd_; /**< Command executed by @ref shell_. */

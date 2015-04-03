@@ -130,20 +130,20 @@ void kill_child(::pid_t _child_pid, int *_status);
 namespace Cmd
 {
 
-Executable::Executable(const std::string &_cmd, bool _search_path)
+Executable::Executable(std::string _cmd, bool _search_path)
 :   cmd_(_cmd),
     search_path_(_search_path)
 {
 }
 
-Executable::Executable(const std::string &_data, const std::string &_cmd, bool _search_path)
+Executable::Executable(std::string _data, std::string _cmd, bool _search_path)
 :   data_(_data),
     cmd_(_cmd),
     search_path_(_search_path)
 {
 }
 
-Executable& Executable::operator()(const std::string &_arg)
+Executable& Executable::operator()(std::string _arg)
 {
     args_.push_back(_arg);
     return *this;
@@ -162,7 +162,7 @@ SubProcessOutput Executable::run(Seconds _max_lifetime_sec)
     return cmd_run(data_, cmd_, search_path_, args_, &timeout);
 }
 
-Data::Data(const std::string &_data)
+Data::Data(std::string _data)
 :   cmd_(NULL),
     data_(_data)
 {
@@ -173,7 +173,7 @@ Data::~Data()
     try { delete cmd_; } catch (...) { } cmd_ = NULL;
 }
 
-Executable& Data::into(const std::string &_cmd, bool _search_path)
+Executable& Data::into(std::string _cmd, bool _search_path)
 {
     delete cmd_;
     cmd_ = new Executable(data_, _cmd, _search_path);
@@ -687,14 +687,14 @@ void kill_child(::pid_t _child_pid, int *_status)
 
 }
 
-ShellCmd::ShellCmd(const std::string &_cmd)
+ShellCmd::ShellCmd(std::string _cmd)
 :   cmd_(_cmd),
     shell_(DEFAULT_BASH),
     timeout_(DEFAULT_TIMEOUT_SEC)
 {
 }
 
-ShellCmd::ShellCmd(const std::string &_cmd,
+ShellCmd::ShellCmd(std::string _cmd,
                    RelativeTimeInSeconds _timeout
                   )
 :   cmd_(_cmd),
@@ -703,8 +703,8 @@ ShellCmd::ShellCmd(const std::string &_cmd,
 {
 }
 
-ShellCmd::ShellCmd(const std::string &_cmd,
-                   const std::string &_shell,
+ShellCmd::ShellCmd(std::string _cmd,
+                   std::string _shell,
                    RelativeTimeInSeconds _timeout
                   )
 :   cmd_(_cmd),
@@ -717,7 +717,7 @@ ShellCmd::~ShellCmd()
 {
 }
 
-SubProcessOutput ShellCmd::execute(const std::string &stdin_str)
+SubProcessOutput ShellCmd::execute(std::string stdin_str)
 {
     return Cmd::Data(stdin_str).into(shell_, false)("-c")(cmd_).run(timeout_);
 }
