@@ -237,11 +237,12 @@
         std::set<std::string> downloaded_data_filenames;
         std::set<std::string> current_downloaded_data_filenames;
         int rsync_retry_count = 0;
+        enum { COMMAND_LIFETIME_MAX = 3600 };// 3600s = 1hour
         do
         {
             LOGGER(PACKAGE).debug(boost::format("download_command: %1% ") % download_command);
-            SubProcessOutput output = ShellCmd(download_command.c_str(), 3600).execute();
-            if (!output.stderr.empty() || !output.is_exited() || (output.get_exit_status() != EXIT_SUCCESS))
+            SubProcessOutput output = ShellCmd(download_command.c_str(), COMMAND_LIFETIME_MAX).execute();
+            if (!output.stderr.empty() || !output.succeeded())
             {
                 throw std::runtime_error(std::string("download command: " + download_command +" failed: ")+output.stderr);
             }
@@ -257,14 +258,17 @@
         for(std::set<std::string>::const_iterator ci = downloaded_data_filenames.begin(); ci != downloaded_data_filenames.end(); ++ci)
         {
             //remove downloaded file from optys server
-            std::string remove_downloaded_file_command = std::string("ssh ") + user_ + "@" + host_ + " \"rm -f " + remote_data_dir_ +  "/" + (*ci) + "\"";
+            const std::string ssh_account = user_ + "@" + host_;
+            const std::string remote_command = "rm -f " + remote_data_dir_ +  "/" + (*ci);
+            const std::string local_command = "ssh \"" + ssh_account + "\" \"" + remote_command + "\"";
 
-            LOGGER(PACKAGE).debug(boost::format("remove_downloaded_file_command: %1% ") % remove_downloaded_file_command);
+            LOGGER(PACKAGE).debug("remove_downloaded_file_command: " + local_command);
 
-            SubProcessOutput output = ShellCmd(remove_downloaded_file_command.c_str(), 3600).execute();
-            if (!output.stderr.empty() || !output.is_exited() || (output.get_exit_status() != EXIT_SUCCESS))
+            const SubProcessOutput output = Cmd::Executable("ssh", true)(ssh_account)(remote_command)
+                                                .run(COMMAND_LIFETIME_MAX);
+            if (!output.stderr.empty() || !output.succeeded())
             {
-                throw std::runtime_error(std::string("remove command: " + remove_downloaded_file_command +" failed: ")+output.stderr);
+                throw std::runtime_error("remove command: " + local_command + " failed: " + output.stderr);
             }
         }
 
