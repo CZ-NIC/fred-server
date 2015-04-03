@@ -3098,7 +3098,7 @@ ccReg::Response * ccReg_EPP_i::ContactUpdate(
             }
         }
 
-        //check disclose address
+        if (code == COMMAND_OK)//check disclose address
         {
             //discloseaddress conditions #7493
             bool hidden_address_allowed_by_contact_state
