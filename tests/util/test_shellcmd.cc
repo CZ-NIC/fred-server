@@ -485,7 +485,7 @@ public:
         }
         catch(const std::exception& ex)
         {
-#pragma message "Remember to fix this: unsafe usage of BOOST_TEST_MESSAGE"
+            /* WARNING: unsafe usage of BOOST_TEST_MESSAGE; it isn't thread safe */
             BOOST_TEST_MESSAGE("exception 1 in operator() thread number: " << number_
                     << " reason: " << ex.what() );
             res.ret = 134217728;
@@ -494,7 +494,7 @@ public:
         }
         catch(...)
         {
-#pragma message "Remember to fix this: unsafe usage of BOOST_TEST_MESSAGE"
+            /* WARNING: unsafe usage of BOOST_TEST_MESSAGE; it isn't thread safe */
             BOOST_TEST_MESSAGE("exception 2 in operator() thread number: " << number_ );
             res.ret = 268435456;
             res.desc = std::string("unknown exception");
