@@ -95,6 +95,26 @@ BOOST_AUTO_TEST_CASE( test_shellcmd_wrapper )
     }
 }
 
+BOOST_AUTO_TEST_CASE( test_exec_wrapper )
+{
+    for (int i = 0; i < 100; ++i) {
+        const SubProcessOutput sub_output1 = Cmd::Data("a u a u").into("tr", true)("u")("-").run(10);
+        BOOST_CHECK(sub_output1.succeeded());
+        BOOST_CHECK(sub_output1.stderr.empty());
+        BOOST_CHECK(sub_output1.stdout == "a - a -");
+
+        const SubProcessOutput sub_output2 =
+            Cmd::Data(Cmd::Data(Cmd::Data(Cmd::Data
+            ("kuk\n").into("grep", true)("kuk").run(10).stdout)
+                     .into("grep", true)("-v")("juk").run(10).stdout)
+                     .into("grep", true)("kuk").run(10).stdout)
+                     .into("grep", true)("-v")("juk").run(10);
+        BOOST_CHECK(sub_output2.succeeded());
+        BOOST_CHECK(sub_output2.stderr.empty());
+        BOOST_CHECK(sub_output2.stdout == "kuk\n");
+    }
+}
+
 BOOST_AUTO_TEST_CASE( test_shellcmd_wrapper1 )
 {
 
@@ -168,6 +188,60 @@ BOOST_AUTO_TEST_CASE( test_shellcmd_wrapper1 )
 
 }
 
+BOOST_AUTO_TEST_CASE( test_exec_wrapper1 )
+{
+
+    {
+        const SubProcessOutput sub_output = Cmd::Data("a u a u").into("tr", true)("u")("-").run(10);
+        BOOST_CHECK(sub_output.succeeded());
+        BOOST_CHECK(sub_output.stderr.empty());
+        BOOST_CHECK(sub_output.stdout == "a - a -");
+    }
+
+    const SubProcessOutput sub_output1 = Cmd::Executable("echo", true)("kuk").run(10);
+    BOOST_CHECK(sub_output1.succeeded());
+    BOOST_CHECK(sub_output1.stderr.empty());
+    BOOST_CHECK(sub_output1.stdout == "kuk\n");
+
+    const SubProcessOutput sub_output2 = Cmd::Data("kuk").into("head", true).run(10);
+    BOOST_CHECK(sub_output2.succeeded());
+    BOOST_CHECK(sub_output2.stderr.empty());
+    BOOST_CHECK(sub_output2.stdout == "kuk");
+
+    {
+        SubProcessOutput sub_output;
+        try {
+            sub_output = Cmd::Data("kuk").into("head", true).run(10);
+        }
+        catch(const std::exception &ex) {
+            std::cout << "std::exception: " << ex.what() << std::endl;
+        }
+
+        BOOST_CHECK(sub_output.succeeded());
+        BOOST_CHECK(sub_output.stderr.empty());
+        BOOST_CHECK(sub_output.stdout == "kuk");
+    }
+
+    //checks from notify_registered_letters_manual_send_impl
+    //if rm is there
+    {
+      BOOST_CHECK(Cmd::Executable("which", true)("rm").run(10).succeeded());
+    }
+    //if gs is there
+    {
+      BOOST_CHECK(Cmd::Executable("which", true)("gs").run(10).succeeded());
+    }
+    //if base64 is there
+    {
+      BOOST_CHECK(Cmd::Executable("which", true)("base64").run(10).succeeded());
+    }
+    //if sendmail is there
+    {
+      BOOST_CHECK(Cmd::Executable("test", true)("-x")("/usr/sbin/sendmail").run(10).succeeded());
+    }
+
+}
+
 BOOST_AUTO_TEST_CASE( test_shellcmd_wrapper_stdout )
 {
     std::size_t slen =  16777216;//1073741824;//536870912;//268435456;//134217728; //67108864;//33554432;//16777216;
@@ -176,6 +250,17 @@ BOOST_AUTO_TEST_CASE( test_shellcmd_wrapper_stdout )
     BOOST_CHECK(sub_output1.stderr.empty());
     BOOST_CHECK(sub_output1.stdout.compare(std::string(slen,'-')) == 0);
     //std::cout << "sub_output1.stdout.length(): " << sub_output1.stdout.length() << " slen: " << slen << std::endl;
+    BOOST_CHECK(sub_output1.stdout.length() == slen);
+}
+
+BOOST_AUTO_TEST_CASE( test_exec_wrapper_stdout )
+{
+    const std::size_t slen = 16777216;
+    const SubProcessOutput sub_output1 = Cmd::Data(std::string(slen, 'u'))
+        .into("tr", true)("u")("-").run(10);
+    BOOST_CHECK(sub_output1.succeeded());
+    BOOST_CHECK(sub_output1.stderr.empty());
+    BOOST_CHECK(sub_output1.stdout == std::string(slen,'-'));
     BOOST_CHECK(sub_output1.stdout.length() == slen);
 }
 
@@ -204,6 +289,11 @@ BOOST_AUTO_TEST_CASE( test_shellcmd_wrapper_timeout )
         , check_std_exception);
 }
 
+BOOST_AUTO_TEST_CASE( test_exec_wrapper_timeout )
+{
+    BOOST_CHECK_EXCEPTION(Cmd::Executable("sleep", true)("20").run(1),
+        std::exception, check_std_exception);
+}
 
 //shell cmd threaded test
 struct TestParams
@@ -318,33 +408,66 @@ public:
 
         try
         {
-            //std::cout << "waiting: " << number_ << std::endl;
+#if 0
+            {
+                std::ostringstream out;
+                out << "waiting: " << number_ << std::endl;
+                std::cout << out.str() << std::flush;
+            }
+#endif
             if(sb_ptr_)
                 sb_ptr_->barrier.wait();//wait for other synced threads
-            //std::cout << "start: " << number_ << std::endl;
+#if 0
+            {
+                std::ostringstream out;
+                out << "start: " << number_ << std::endl;
+                std::cout << out.str() << std::flush;
+            }
+#endif
 
             //some tests
 
             for(int i = 0; i < 10 ; ++i)
             {
-                SubProcessOutput sub_output3;// = ShellCmd(" echo kuk | grep kuk | grep -v juk | grep kuk | grep -v juk",10).execute();
+                SubProcessOutput sub_output;// = ShellCmd(" echo kuk | grep kuk | grep -v juk | grep kuk | grep -v juk",10).execute();
 
-                sub_output3 = ShellCmd(" echo kuk | grep kuk | grep -v juk | grep kuk | grep -v juk",10).execute();
+                sub_output = ShellCmd(" echo kuk | grep kuk | grep -v juk | grep kuk | grep -v juk",10).execute();
 
-                if(!sub_output3.stderr.empty())
+                if(!sub_output.stderr.empty())
                 {
                     res.ret = 1;
-                    res.desc = std::string("stderr: ") + sub_output3.stderr;
+                    res.desc = std::string("stderr: ") + sub_output.stderr;
                     break;
                 }
 
-                if(sub_output3.stdout.compare("kuk\n") != 0)
+                if(sub_output.stdout.compare("kuk\n") != 0)
                 {
                     res.ret = 2;
-                    res.desc = std::string("expected kuk in stdout and got : ") + sub_output3.stdout;
+                    res.desc = std::string("expected kuk in stdout and got : ") + sub_output.stdout;
                     break;
                 }
 
+                sub_output =
+                    Cmd::Data(Cmd::Data(Cmd::Data(Cmd::Data
+                        ("kuk\n").into("grep", true)("kuk").run(10).stdout)
+                                 .into("grep", true)("-v")("juk").run(10).stdout)
+                                 .into("grep", true)("kuk").run(10).stdout)
+                                 .into("grep", true)("-v")("juk").run(10);
+
+                if (!sub_output.succeeded() || !sub_output.stderr.empty())
+                {
+                    res.ret = 1;
+                    res.desc = std::string("stderr: ") + sub_output.stderr;
+                    break;
+                }
+
+                if(sub_output.stdout != "kuk\n")
+                {
+                    res.ret = 2;
+                    res.desc = std::string("expected kuk in stdout and got : ") + sub_output.stdout;
+                    break;
+                }
+#if 0
                 //db
                 Database::Connection conn = Database::Manager::acquire();
 
@@ -356,7 +479,7 @@ public:
                     res.desc = std::string("select 1 failed");
                     break;
                 }
-
+#endif
             }//for i
 
         }
@@ -377,7 +500,13 @@ public:
         }
 
         if(rsq_ptr) rsq_ptr->push(res);
-        //std::cout << "end: " << number_ << std::endl;
+#if 0
+        {
+            std::ostringstream out;
+            out << "end: " << number_ << std::endl;
+            std::cout << out.str() << std::flush;
+        }
+#endif
     }
 
 private:
