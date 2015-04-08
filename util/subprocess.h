@@ -237,7 +237,7 @@ public:
 private:
     const std::string cmd_; /**< Command executed by @ref shell_. */
     const std::string shell_; /**< Shell executes command @ref cmd_. */
-    const RelativeTimeInSeconds timeout_; /**< Maximal command lifetime in seconds, 0 means infinity. */
+    const RelativeTimeInSeconds timeout_; /**< Maximal command lifetime in seconds. */
 };//class ShellCmd
 
 #endif//SUBPROCESS_H_
