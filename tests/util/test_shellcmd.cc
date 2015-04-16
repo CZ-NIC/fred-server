@@ -71,7 +71,7 @@ static bool check_std_exception(std::exception const & ex)
     std::string ex_msg(ex.what());
     return (ex_msg.length() != 0);
 }
-
+#if 1 //enables single-threaded tests
 BOOST_AUTO_TEST_CASE( test_shellcmd_wrapper )
 {
     for(int i = 0; i < 100; ++i)
@@ -294,7 +294,7 @@ BOOST_AUTO_TEST_CASE( test_exec_wrapper_timeout )
     BOOST_CHECK_EXCEPTION(Cmd::Executable("sleep", true)("20").run(1),
         std::exception, check_std_exception);
 }
-
+#endif
 //shell cmd threaded test
 struct TestParams
 {
@@ -490,7 +490,6 @@ public:
                     << " reason: " << ex.what() );
             res.ret = 134217728;
             res.desc = std::string(ex.what());
-            return;
         }
         catch(...)
         {
@@ -498,7 +497,6 @@ public:
             BOOST_TEST_MESSAGE("exception 2 in operator() thread number: " << number_ );
             res.ret = 268435456;
             res.desc = std::string("unknown exception");
-            return;
         }
 
         if(rsq_ptr) rsq_ptr->push(res);
