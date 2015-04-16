@@ -76,15 +76,15 @@ private:
     void send_block_notification()
     {
         // check if sendmail is present
-        if (!Cmd::Executable("test", true)("-x")("/usr/sbin/sendmail")
-                .run(params.shell_cmd_timeout).succeeded()) {
+        if (!Cmd::Executable("test")("-x")("/usr/sbin/sendmail")
+                .run_with_path(params.shell_cmd_timeout).succeeded()) {
             LOGGER(PACKAGE).error("/usr/sbin/sendmail: command not found");
         }
 
         BlockedRegistrars blocked_registrars = regMan->getRegistrarsBlockedToday();
 
-        const std::string date = Cmd::Executable("date", true)("+'%Y-%m-%d'")
-                                    .run(params.shell_cmd_timeout).stdout;
+        const std::string date = Cmd::Executable("date")("+'%Y-%m-%d'")
+                                    .run_with_path(params.shell_cmd_timeout).stdout;
         std::string data;
         if(blocked_registrars->empty()) {
             data =
@@ -123,7 +123,7 @@ private:
         }
 
         const SubProcessOutput sub_output =
-            Cmd::Data(data).into("/usr/sbin/sendmail", false)(params.notify_email)
+            Cmd::Data(data).into("/usr/sbin/sendmail")(params.notify_email)
                 .run(params.shell_cmd_timeout);
         if (!sub_output.succeeded()) {
             throw std::runtime_error(sub_output.stderr);

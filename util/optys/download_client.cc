@@ -231,7 +231,7 @@
     std::set<std::string> OptysDownloadClient::download()
     {
         const std::string ssh_account = user_ + "@" + host_;
-        Cmd::Executable download_command("rsync", true);
+        Cmd::Executable download_command("rsync");
         download_command("--include=\"*.csv\"")("--exclude=\"*\"")("-e")("ssh -p " + port_)("-ai")
             ("--out-format=\"%n\"")("--inplace")(ssh_account + ":" + remote_data_dir_ + "/")
             (local_download_dir_);
@@ -243,7 +243,7 @@
         do
         {
             LOGGER(PACKAGE).debug("download_command: rsync");
-            const SubProcessOutput output = download_command.run(COMMAND_LIFETIME_MAX);
+            const SubProcessOutput output = download_command.run_with_path(COMMAND_LIFETIME_MAX);
             if (!output.stderr.empty() || !output.succeeded())
             {
                 throw std::runtime_error("download command: rsync failed: " + output.stderr);
@@ -268,8 +268,8 @@
 
             LOGGER(PACKAGE).debug("remove_downloaded_file_command: " + local_command);
 
-            const SubProcessOutput output = Cmd::Executable("ssh", true)(ssh_account)(remote_command)
-                                                .run(COMMAND_LIFETIME_MAX);
+            const SubProcessOutput output = Cmd::Executable("ssh")(ssh_account)(remote_command)
+                                                .run_with_path(COMMAND_LIFETIME_MAX);
             if (!output.stderr.empty() || !output.succeeded())
             {
                 throw std::runtime_error("remove command: " + local_command + " failed: " + output.stderr);

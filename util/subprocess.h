@@ -106,12 +106,11 @@ public:
     /**
      * Execute command @arg _cmd using execv/execvp function in forked child process.
      * @param _cmd executable file
-     * @param _search_path search executable @arg _cmd considering PATH environment variable
      * @throw std::runtime_error if something wrong happens
      * 
-     * Run <em>_cmd [_args...]</em>
+     * Run <em>_cmd [args...]</em>
      */
-    Executable(std::string _cmd, bool _search_path = false);
+    Executable(std::string _cmd);
 
     ~Executable() { }
     
@@ -142,11 +141,30 @@ public:
      * @note Sets and restores SIGCHLD handler.
      */
     SubProcessOutput run(Seconds _max_lifetime_sec);
+
+    /**
+     * Wait as long as command runs.
+     * @param _search_path 
+     * @return Command's standard and error outputs and its exit status.
+     * @throw std::runtime_error if something wrong happens
+     * @note Sets and restores SIGCHLD handler. Searches executable file
+     *       considering PATH environment variable - it's less safe variant.
+     */
+    SubProcessOutput run_with_path();
+
+    /**
+     * Wait as long as command runs, at most _max_lifetime_sec seconds.
+     * @param _max_lifetime_sec maximal command lifetime in seconds
+     * @return Command's standard and error outputs and its exit status.
+     * @throw std::runtime_error if something wrong happens
+     * @note Sets and restores SIGCHLD handler. Searches executable file
+     *       considering PATH environment variable - it's less safe variant.
+     */
+    SubProcessOutput run_with_path(Seconds _max_lifetime_sec);
 private:
-    Executable(std::string _data, std::string _cmd, bool _search_path);
+    Executable(std::string _data, std::string _cmd);
     const std::string data_;
     const std::string cmd_;
-    const bool search_path_;
     typedef std::vector< std::string > Args;
     Args args_;
     friend class Data;
@@ -168,9 +186,8 @@ public:
     /**
      * Connects data with process.
      * @param _cmd command for execution
-     * @param _search_path search executable @arg _cmd considering PATH environment variable
      */
-    Executable& into(std::string _cmd, bool _search_path = false);
+    Executable& into(std::string _cmd);
 private:
     Executable *cmd_;
     const std::string data_;

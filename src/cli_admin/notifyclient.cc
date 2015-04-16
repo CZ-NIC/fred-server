@@ -539,19 +539,19 @@ void notify_registered_letters_manual_send_impl(const std::string& nameservice_h
         //checks
 
         //if rm is there
-        if (!Cmd::Executable("which", true)("rm").run(timeout).succeeded()) {
+        if (!Cmd::Executable("which")("rm").run_with_path(timeout).succeeded()) {
           throw std::runtime_error("rm: command not found");
         }
         //if gs is there
-        if (!Cmd::Executable("which", true)("gs").run(timeout).succeeded()) {
+        if (!Cmd::Executable("which")("gs").run_with_path(timeout).succeeded()) {
           throw std::runtime_error("gs: command not found");
         }
         //if base64 is there
-        if (!Cmd::Executable("which", true)("base64").run(timeout).succeeded()) {
+        if (!Cmd::Executable("which")("base64").run_with_path(timeout).succeeded()) {
           throw std::runtime_error("base64: command not found");
         }
         //if sendmail is there
-        if (!Cmd::Executable("test", true)("-x")("/usr/sbin/sendmail").run(timeout).succeeded()) {
+        if (!Cmd::Executable("test")("-x")("/usr/sbin/sendmail").run_with_path(timeout).succeeded()) {
           throw std::runtime_error("/usr/sbin/sendmail: command not found");
         }
 
@@ -579,8 +579,8 @@ void notify_registered_letters_manual_send_impl(const std::string& nameservice_h
               if(email.empty()) throw std::runtime_error("email required");
 
               {
-                  const std::string date = Cmd::Executable("date", true)("+'%Y-%m-%d'")
-                                           .run(timeout).stdout;
+                  const std::string date = Cmd::Executable("date")("+'%Y-%m-%d'")
+                                           .run_with_path(timeout).stdout;
                   const std::string data =
                       "Subject: No new registered letters " + date + "\n"
                       "From: " + email + "\n"
@@ -589,7 +589,7 @@ void notify_registered_letters_manual_send_impl(const std::string& nameservice_h
                       "\n"
                       "no new registered letters\n";
                   const SubProcessOutput sub_output =
-                      Cmd::Data(data).into("/usr/sbin/sendmail", false)(email).run(timeout);
+                      Cmd::Data(data).into("/usr/sbin/sendmail")(email).run(timeout);
                   if (!sub_output.succeeded()) {
                       throw std::runtime_error(sub_output.stderr);
                   }
@@ -689,8 +689,8 @@ void notify_registered_letters_manual_send_impl(const std::string& nameservice_h
           if(email.empty()) throw std::runtime_error("email required");
 
           {
-              const std::string date = Cmd::Executable("date", true)("+'%Y-%m-%d'")
-                                       .run(timeout).stdout;
+              const std::string date = Cmd::Executable("date")("+'%Y-%m-%d'")
+                                       .run_with_path(timeout).stdout;
               const std::string data =
                   "Subject: Registered letters to send " + date + "\n"
                   "From: " + email + "\n"
@@ -700,13 +700,13 @@ void notify_registered_letters_manual_send_impl(const std::string& nameservice_h
                   "Content-Type: application/pdf; charset=UTF-8\n"
                   "Content-Transfer-Encoding: base64\n"
                   "\n" +
-                  Cmd::Executable("base64", true)("./all.pdf").run(timeout).stdout + "\n"
+                  Cmd::Executable("base64")("./all.pdf").run_with_path(timeout).stdout + "\n"
                   "\n"
                   "--SSSSSS\n"
                   "\n"
                   "batch id: " + batch_id + "\n"
                   "\n" + addr_list;
-              SubProcessOutput sub_output = Cmd::Data(data).into("/usr/sbin/sendmail", false)(email)
+              SubProcessOutput sub_output = Cmd::Data(data).into("/usr/sbin/sendmail")(email)
                                             .run(timeout);
               //std::cout <<  "out: " << sub_output.stdout << " out length: " << sub_output.stdout.length()
               //          << " err: " << sub_output.stderr << " err length: " << sub_output.stderr.length() << std::endl;
