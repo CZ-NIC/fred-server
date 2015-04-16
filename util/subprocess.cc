@@ -1,8 +1,10 @@
 #include "util/subprocess.h"
 
+#include <pthread.h>
 #include <sys/select.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <time.h>
 
 #include <cstdlib>
 #include <cerrno>
@@ -442,6 +444,33 @@ bool ImWriter::is_ready(const ::fd_set &_set)const
     return pipe_.write(_data, _data_size);
 }
 
+class TimedLockGuard
+{
+public:
+    TimedLockGuard(
+        ::pthread_mutex_t &_mtx,
+        unsigned short _max_delay_sec)
+    :   mtx_(_mtx)
+    {
+        struct ::timespec abs_time;
+        ::clock_gettime(CLOCK_REALTIME, &abs_time);
+        abs_time.tv_sec += _max_delay_sec;
+        const int retval = ::pthread_mutex_timedlock(&mtx_, &abs_time);
+        if (retval != SUCCESS) {
+            throw std::runtime_error(std::string("pthread_mutex_timedlock() failure: ") +
+                                     std::strerror(retval));
+        }
+    }
+    ~TimedLockGuard()
+    {
+        ::pthread_mutex_unlock(&mtx_);
+    }
+private:
+    ::pthread_mutex_t &mtx_;
+};
+
+::pthread_mutex_t cmd_run_mtx = PTHREAD_MUTEX_INITIALIZER;
+
 SubProcessOutput cmd_run(
     const std::string &_stdin_content,
     const std::string &_cmd,
@@ -449,6 +478,11 @@ SubProcessOutput cmd_run(
     const std::vector< std::string > &_args,
     struct ::timeval *_timeout_ptr)
 {
+    enum { LOCK_GUARD_DELAY_MAX = 10 };
+    TimedLockGuard lock(cmd_run_mtx, (_timeout_ptr == NULL) ||
+                                     (LOCK_GUARD_DELAY_MAX < _timeout_ptr->tv_sec)
+                                     ?   LOCK_GUARD_DELAY_MAX
+                                     :   _timeout_ptr->tv_sec);
     Pipe std_in;
     Pipe std_out;
     Pipe std_err;
