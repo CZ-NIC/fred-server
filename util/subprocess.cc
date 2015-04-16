@@ -480,6 +480,24 @@ private:
     ::pthread_mutex_t &mtx_;
 };
 
+bool is_child_done(::pid_t _child_pid, int *_status)
+{
+    const ::pid_t dp = ::waitpid(_child_pid, _status, WNOHANG); //dead child pid
+    if (dp == _child_pid) {//child done
+        return true;
+    }
+    if (dp == 0) {//child is still running
+        return false;
+    }
+    const std::string err_msg = std::string("wait_child waitpid() failure: ") +
+                                std::strerror(errno);
+    try {
+        Logging::Manager::instance_ref().get(PACKAGE).error(err_msg);
+    }
+    catch (...) { }
+    throw std::runtime_error(err_msg);
+}
+
 ::pthread_mutex_t cmd_run_mtx = PTHREAD_MUTEX_INITIALIZER;
 
 SubProcessOutput cmd_run(
@@ -646,22 +664,8 @@ SubProcessOutput cmd_run(
 
     }
 
-    //check for child completion
-    const ::pid_t dp = ::waitpid(child_pid, &out.status, WNOHANG);//death pid
-
-    switch (dp) {
-    case FAILURE:
-        throw std::runtime_error("cmd_run() waitpid failure: " + std::string(std::strerror(errno)));
-    case 0: //child is still running
+    if (!is_child_done(child_pid, &out.status)) {
         kill_child(child_pid, &out.status);
-        break;
-    default:
-        if (dp != child_pid) {
-            std::ostringstream msg;
-            msg << "cmd_run() waitpid(" << child_pid << ") failure: return unexpected value " << dp;
-            throw std::runtime_error(msg.str());
-        }
-        break;
     }
     return out;
 }
@@ -673,76 +677,80 @@ void kill_child(::pid_t _child_pid, int *_status)
         return;
     }
 
-    enum { PASS_MAX = 10 };
-    int pass = 0;
-    bool signal_sent = false;
+    enum { CHILD_EXIT_WAIT_MAX_NANOSEC = 10 * 1000 * 1000 }; // 10ms
+    struct ::timespec sleep_limit;
+    sleep_limit.tv_sec = 0;
+    sleep_limit.tv_nsec = CHILD_EXIT_WAIT_MAX_NANOSEC;
     while (true) {
-        if (::usleep(1000) == FAILURE) {//wait for child stop (SIGCHLD), max 1ms
-            const int c_errno = errno;
-            if (c_errno != EINTR) {
-                try {
-                    Logging::Manager::instance_ref()
-                    .get(PACKAGE).info("kill_child usleep() failure: " + std::string(std::strerror(c_errno)));
-                }
-                catch (...) { }
-            }
+        struct ::timespec sleep_remainder;
+        if (::nanosleep(&sleep_limit, &sleep_remainder) == SUCCESS) {//wait for child stop (SIGCHLD)
+            break;
         }
-        const ::pid_t dp = ::waitpid(_child_pid, _status, WNOHANG); //death pid
-
-        if (dp == _child_pid) {//if killed child done
-            if (signal_sent) {
-                try {
-                    Logging::Manager::instance_ref()
-                    .get(PACKAGE).debug("kill_child success: killed child done");
-                }
-                catch (...) { }
-            }
-            return;
-        }
-
-        if (dp == FAILURE) {
+        const int c_errno = errno;
+        if (c_errno != EINTR) {
             try {
-                std::string err_msg(std::strerror(errno));
-                Logging::Manager::instance_ref()
-                .get(PACKAGE).error("kill_child waitpid() failure: " + err_msg);
+                const std::string err_msg = std::string("kill_child nanosleep() failure: ") +
+                                            std::strerror(errno);
+                Logging::Manager::instance_ref().get(PACKAGE).info(err_msg);
             }
             catch (...) { }
             break;
         }
-
-        if (!signal_sent) {
-            try {
-                Logging::Manager::instance_ref()
-                .get(PACKAGE).debug("kill_child call");
-            }
-            catch (...) { }
-
-            if (::kill(_child_pid, SIGKILL) == FAILURE) {
-                std::string err_msg(std::strerror(errno));
-                try {
-                    Logging::Manager::instance_ref()
-                    .get(PACKAGE).error("kill_child kill() failure: " + err_msg);
-                }
-                catch (...) { }
-                return;
-            }
-            signal_sent = true;
+        if (is_child_done(_child_pid, _status)) {
+            return;
         }
+        if ((sleep_remainder.tv_nsec == 0) &&
+            (sleep_remainder.tv_sec == 0)) {
+            break;
+        }
+        sleep_limit = sleep_remainder;
+    }
 
-        ++pass;
-        //killed child is still running
-        if (PASS_MAX <= pass) {
-            try {
-                Logging::Manager::instance_ref()
-                .get(PACKAGE).debug("kill_child continue: killed child is still running");
-            }
-            catch (...) { }
+    try { Logging::Manager::instance_ref().get(PACKAGE).debug("kill_child call"); } catch (...) { }
+
+    if (::kill(_child_pid, SIGKILL) == FAILURE) {
+        const std::string err_msg = std::string("kill_child kill() failure: ") + std::strerror(errno);
+        try {
+            Logging::Manager::instance_ref().get(PACKAGE).error(err_msg);
+        }
+        catch (...) { }
+        throw std::runtime_error(err_msg);
+    }
+
+    sleep_limit.tv_sec = 0;
+    sleep_limit.tv_nsec = CHILD_EXIT_WAIT_MAX_NANOSEC;
+    while (!is_child_done(_child_pid, _status)) {
+        struct ::timespec sleep_remainder;
+        if (::nanosleep(&sleep_limit, &sleep_remainder) == SUCCESS) {//wait for child stop (SIGCHLD)
             if (_status != NULL) {
                 *_status = EXIT_FAILURE;
             }
-            return;
+            return;// child is still running
         }
+        const int c_errno = errno;
+        if (c_errno != EINTR) {
+            const std::string err_msg = std::string("kill_child nanosleep() failure: ") +
+                                        std::strerror(errno);
+            try {
+                Logging::Manager::instance_ref().get(PACKAGE).info(err_msg);
+            }
+            catch (...) { }
+            throw std::runtime_error(err_msg);
+        }
+        if ((sleep_remainder.tv_nsec == 0) &&
+            (sleep_remainder.tv_sec == 0)) {
+            if (_status != NULL) {
+                *_status = EXIT_FAILURE;
+            }
+            return;// child is still running
+        }
+        sleep_limit = sleep_remainder;
     }
+    try {
+        Logging::Manager::instance_ref()
+        .get(PACKAGE).debug("kill_child success: killed child done");
+    }
+    catch (...) { }
 }
 
 }
