@@ -1697,8 +1697,6 @@ namespace Registry
                     }
                 }
 
-                const std::string contact_handle = get_contact_handle(_contact_id, conn);
-
                 {
                     const Fred::Contact::Verification::State contact_state =
                         Fred::Contact::Verification::get_contact_verification_state(_contact_id);
