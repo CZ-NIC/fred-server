@@ -655,10 +655,7 @@ namespace Registry
                     (_contact.email.get_value_or_default() !=
                      old_contact.email.get_value_or_default()))
                 {
-                    Database::Connection conn = Database::Manager::acquire();
-                    Database::Transaction tx(conn);
-                    cancel_mojeid_card_letter(_contact.id, conn);
-                    tx.commit();
+                    cancel_mojeid_card_letter(_contact.id, Database::Manager::acquire());
                 }
                 unsigned long long prid = 0; // new public request id
                 if (!keep_identification)
