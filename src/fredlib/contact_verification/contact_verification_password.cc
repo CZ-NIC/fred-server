@@ -40,7 +40,6 @@ ContactVerificationPassword::MessageData ContactVerificationPassword::collectMes
     data["hostname"] = prai_ptr_->getPublicRequestManager()
             ->getIdentificationMailAuthHostname();
     data["identification"] = prai_ptr_->getIdentification();
-    data["handle"] = boost::algorithm::to_lower_copy(prai_ptr_->getObject(0).handle);
     /* password split */
     const std::string password = prai_ptr_->getPassword();
     data["pin1"] = password.substr(
@@ -339,7 +338,8 @@ ContactVerificationPassword::MessageData& collect_message_data(
                "CASE WHEN mc.id IS NULL THEN c.country ELSE mc.country END,"
                "c.email,oreg.historyid,c.telephone,"
                "CASE WHEN mc.id IS NULL THEN cc.country ELSE mcc.country END,"
-               "CASE WHEN mc.id IS NULL THEN cc.country_cs ELSE mcc.country_cs END "
+               "CASE WHEN mc.id IS NULL THEN cc.country_cs ELSE mcc.country_cs END,"
+               "LOWER(oreg.name) "
         "FROM contact c "
         "JOIN enum_country cc ON cc.id=c.country "
         "JOIN object_registry oreg ON oreg.id=c.id "
@@ -367,6 +367,7 @@ ContactVerificationPassword::MessageData& collect_message_data(
     _data["phone"]           = static_cast<std::string>(result[0][9]);
     _data["country_name"]    = static_cast<std::string>(result[0][10]);
     _data["country_cs_name"] = static_cast<std::string>(result[0][11]);
+    _data["handle"]          = static_cast<std::string>(result[0][12]);
 
     return _data;
 }
