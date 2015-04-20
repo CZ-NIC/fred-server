@@ -56,6 +56,7 @@ private:
     PublicRequestAuthImpl* prai_ptr_;
 };//class ContactVerificationPassword
 
+//TODO: move this function into more convenient place
 ContactVerificationPassword::MessageData& collect_message_data(
     unsigned long long _contact_id,
     Database::Connection &_conn,
