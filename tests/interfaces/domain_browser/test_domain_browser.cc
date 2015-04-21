@@ -446,14 +446,6 @@ BOOST_FIXTURE_TEST_CASE(get_my_contact_detail, get_my_contact_detail_fixture )
     BOOST_CHECK(cd.permanent_address == mci_place);
     BOOST_CHECK(cd.mailing_address == mci_mailing);
 
-    BOOST_CHECK(cd.permanent_address.street1 == mci_place.street1);
-    BOOST_CHECK(cd.permanent_address.street2.get_value_or_default() == mci_place.street2.get_value_or_default());
-    BOOST_CHECK(cd.permanent_address.street3.get_value_or_default() == mci_place.street3.get_value_or_default());
-    BOOST_CHECK(cd.permanent_address.city == mci_place.city);
-    BOOST_CHECK(cd.permanent_address.stateorprovince.get_value_or_default() == mci_place.stateorprovince.get_value_or_default());
-    BOOST_CHECK(cd.permanent_address.postalcode == mci_place.postalcode);
-    BOOST_CHECK(cd.permanent_address.country == mci_place.country);
-
     BOOST_CHECK(cd.telephone.get_value_or_default() == my_contact_info.info_contact_data.telephone.get_value_or_default());
     BOOST_CHECK(cd.fax.get_value_or_default() == my_contact_info.info_contact_data.fax.get_value_or_default());
     BOOST_CHECK(cd.email.get_value_or_default() == my_contact_info.info_contact_data.email.get_value_or_default());
