@@ -260,7 +260,7 @@ namespace Fred
           "mojeid_auth_owner_optys.xsl", true, "application/pdf"
         );
         templateMap[GT_MOJEID_CARD] = GenProcType(
-          "mojeid_card.xsl", true, "application/pdf"
+          "mojeid_card_optys.xsl", true, "application/pdf"
         );
 
       }
