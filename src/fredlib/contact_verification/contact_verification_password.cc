@@ -339,7 +339,7 @@ ContactVerificationPassword::MessageData& collect_message_data(
                "c.email,oreg.historyid,c.telephone,"
                "CASE WHEN mc.id IS NULL THEN cc.country ELSE mcc.country END,"
                "CASE WHEN mc.id IS NULL THEN cc.country_cs ELSE mcc.country_cs END,"
-               "LOWER(oreg.name) "
+               "LOWER(oreg.name),NOW()::DATE "
         "FROM contact c "
         "JOIN enum_country cc ON cc.id=c.country "
         "JOIN object_registry oreg ON oreg.id=c.id "
@@ -368,6 +368,7 @@ ContactVerificationPassword::MessageData& collect_message_data(
     _data["country_name"]    = static_cast<std::string>(result[0][10]);
     _data["country_cs_name"] = static_cast<std::string>(result[0][11]);
     _data["handle"]          = static_cast<std::string>(result[0][12]);
+    _data["reqdate"]         = static_cast<std::string>(result[0][13]);
 
     return _data;
 }
