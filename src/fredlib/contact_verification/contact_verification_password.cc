@@ -339,7 +339,12 @@ ContactVerificationPassword::MessageData& collect_message_data(
                "c.email,oreg.historyid,c.telephone,"
                "CASE WHEN mc.id IS NULL THEN cc.country ELSE mcc.country END,"
                "CASE WHEN mc.id IS NULL THEN cc.country_cs ELSE mcc.country_cs END,"
-               "LOWER(oreg.name),NOW()::DATE "
+               "LOWER(oreg.name),NOW()::DATE,"
+               "EXISTS(SELECT 1 FROM object_state os "
+                      "WHERE os.object_id=c.id AND "
+                            "os.state_id=(SELECT id FROM enum_object_states "
+                                         "WHERE name='validatedContact') AND "
+                            "os.valid_to IS NULL) "
         "FROM contact c "
         "JOIN enum_country cc ON cc.id=c.country "
         "JOIN object_registry oreg ON oreg.id=c.id "
@@ -369,6 +374,9 @@ ContactVerificationPassword::MessageData& collect_message_data(
     _data["country_cs_name"] = static_cast<std::string>(result[0][11]);
     _data["handle"]          = static_cast<std::string>(result[0][12]);
     _data["reqdate"]         = static_cast<std::string>(result[0][13]);
+    if (static_cast< bool >(result[0][14])) {
+        _data["state"] = "validated";
+    }
 
     return _data;
 }
