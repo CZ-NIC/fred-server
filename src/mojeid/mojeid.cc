@@ -487,7 +487,8 @@ namespace Registry
                 cancel_mojeid_card_letter(_contact_id, _conn);
                 check_sent_letters_limit(_contact_id, _limit_count, _limit_interval, _conn);
 
-                Fred::PublicRequest::ContactVerificationPassword::MessageData data;
+                typedef Fred::PublicRequest::ContactVerificationPassword::MessageData MessageData;
+                MessageData data;
                 Fred::PublicRequest::collect_message_data(_contact_id, _conn, data);
 
                 const std::string country_cs_name = map_at(data, "country_cs_name");
@@ -517,6 +518,10 @@ namespace Registry
                 pa.country = map_at(data, "country_name");
 
                 const std::string contact_handle = map_at(data, "handle");
+                const MessageData::const_iterator contact_state_ptr = data.find("state");
+                const std::string contact_state = contact_state_ptr == data.end()
+                                                  ?   std::string()
+                                                  :   contact_state_ptr->second;
 
                 Util::XmlTagPair("contact_auth", Util::vector_of<Util::XmlCallback>
                     (Util::XmlTagPair("user", Util::vector_of<Util::XmlCallback>
@@ -535,6 +540,7 @@ namespace Registry
                             (Util::XmlTagPair("sex", Util::XmlUnparsedCData(sex)))
                             (Util::XmlTagPair("email", Util::XmlUnparsedCData(map_at(data, "email"))))
                             (Util::XmlTagPair("mobile", Util::XmlUnparsedCData(map_at(data, "phone"))))
+                            (Util::XmlTagPair("state", Util::XmlUnparsedCData(contact_state)))
                         ))
                     ))
                 )(letter_xml);
