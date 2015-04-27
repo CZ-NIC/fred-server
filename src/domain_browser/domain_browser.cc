@@ -1693,7 +1693,7 @@ namespace Registry
 
                 unsigned long long contact_id = contact_info.info_contact_data.id;
 
-                if(enable_flag == false && !Fred::ObjectHasState(contact_id,Fred::ObjectState::VALIDATED_CONTACT).exec(ctx))
+                if(!enable_flag && !Fred::ObjectHasState(contact_id,Fred::ObjectState::VALIDATED_CONTACT).exec(ctx))
                 {
                     throw AccessDenied();
                 }
