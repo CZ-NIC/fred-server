@@ -649,7 +649,8 @@ public:
           " JOIN zone z                ON z.id = d.zone "
           " JOIN object_registry cor ON cor.id=d.registrant "
           " JOIN contact_history c ON c.historyid=cor.historyid "
-          "WHERE s.state_id=19 AND s.valid_to ISNULL AND nl.state_id ISNULL "
+          "WHERE s.state_id = (SELECT id FROM enum_object_states WHERE name = 'deleteWarning') "
+          " AND s.valid_to ISNULL AND nl.state_id ISNULL "
           " AND z.warning_letter=true "
           " AND (c.warning_letter IS NULL OR c.warning_letter=true) ";
         conn.exec(fixateStates);
