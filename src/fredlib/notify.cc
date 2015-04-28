@@ -641,6 +641,10 @@ public:
         // populate temporary table with states to notify
         conn.exec(create);
 
+         // select valid domain states 'deleteWarning' to notify that:
+         // - was not notified so far with the notification letter
+         // - belongs to domains whose zone have set warning_letter flag to send
+         // - belongs to domains whose owner have set warning_letter flag to send or unspecified
         const char *fixateStates =
           "INSERT INTO tmp_notify_letters "
           "SELECT s.id FROM object_state s "
