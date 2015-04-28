@@ -142,7 +142,7 @@ namespace Registry
 
             void setContactPreferenceForDomainExpirationLetters(
                 ::CORBA::ULongLong user_contact_id,
-                ::CORBA::Boolean enable_flag,
+                ::CORBA::Boolean send_expiration_letters,
                 ::CORBA::ULongLong request_id);
 
         };//class Server_i

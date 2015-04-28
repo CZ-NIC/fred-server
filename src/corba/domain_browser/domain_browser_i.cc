@@ -916,12 +916,12 @@ namespace Registry
 
         void Server_i::setContactPreferenceForDomainExpirationLetters(
             ::CORBA::ULongLong user_contact_id,
-             ::CORBA::Boolean enable_flag,
+             ::CORBA::Boolean send_expiration_letters,
             ::CORBA::ULongLong request_id)
         {
             try
             {
-                return pimpl_->setContactPreferenceForDomainExpirationLetters(user_contact_id, enable_flag, request_id);
+                return pimpl_->setContactPreferenceForDomainExpirationLetters(user_contact_id, send_expiration_letters, request_id);
             }
             catch (const Registry::DomainBrowserImpl::UserNotExists& )
             {
