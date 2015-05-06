@@ -47,10 +47,10 @@ typedef ::size_t PublicRequestId;
 typedef ::size_t RegistrarId;
 typedef ::size_t ObjectId;
 
-class PublicRequestLockGuard
+class PublicRequestObjectLockGuard
 {
 public:
-    PublicRequestLockGuard(OperationContext &_ctx, ObjectId _object_id);
+    PublicRequestObjectLockGuard(OperationContext &_ctx, ObjectId _object_id);
     ObjectId get_object_id()const { return object_id_; }
 private:
     const ObjectId object_id_;
@@ -58,7 +58,7 @@ private:
 
 PublicRequestId create_public_request(
     OperationContext &_ctx,
-    const PublicRequestLockGuard &_locked_object,
+    const PublicRequestObjectLockGuard &_locked_object,
     PublicRequestType _type,
     const Optional< std::string > &_reason,
     const Optional< std::string > &_email_to_answer,

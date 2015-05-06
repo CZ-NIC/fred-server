@@ -118,7 +118,7 @@ PublicRequestType str2prt(const std::string &_str)
     throw BadConversion("str2prt failure: unable convert string to PublicRequestType");
 }
 
-PublicRequestLockGuard::PublicRequestLockGuard(OperationContext &_ctx, ObjectId _object_id)
+PublicRequestObjectLockGuard::PublicRequestObjectLockGuard(OperationContext &_ctx, ObjectId _object_id)
 :   object_id_(_object_id)
 {
     //get lock to the end of transaction for given object
@@ -128,7 +128,7 @@ PublicRequestLockGuard::PublicRequestLockGuard(OperationContext &_ctx, ObjectId 
 
 PublicRequestId create_public_request(
     OperationContext &_ctx,
-    const PublicRequestLockGuard &_locked_object,
+    const PublicRequestObjectLockGuard &_locked_object,
     PublicRequestType _type,
     const Optional< std::string > &_reason,
     const Optional< std::string > &_email_to_answer,
