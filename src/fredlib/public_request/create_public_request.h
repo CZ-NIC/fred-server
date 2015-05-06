@@ -33,6 +33,22 @@ enum PublicRequestType {
     PRT_ITEMS //doesn't represent any public request type
 };
 
+class PublicRequestType2
+{
+public:
+    virtual std::string get_public_request_type()const = 0;
+protected:
+    virtual ~PublicRequestType2() { }
+};
+
+class PrtAuthinfoAutoRifType:public PublicRequestType2
+{
+public:
+    ~PrtAuthinfoAutoRifType() { }
+protected:
+    std::string get_public_request_type()const { return "authinfo_auto_rif"; }
+};
+
 class BadConversion:std::runtime_error
 {
 public:
@@ -59,7 +75,7 @@ private:
 PublicRequestId create_public_request(
     OperationContext &_ctx,
     const PublicRequestObjectLockGuard &_locked_object,
-    PublicRequestType _type,
+    const PublicRequestType2 &_type,
     const Optional< std::string > &_reason,
     const Optional< std::string > &_email_to_answer,
     const Optional< RegistrarId > &_registrar_id);

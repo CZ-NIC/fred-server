@@ -129,13 +129,13 @@ PublicRequestObjectLockGuard::PublicRequestObjectLockGuard(OperationContext &_ct
 PublicRequestId create_public_request(
     OperationContext &_ctx,
     const PublicRequestObjectLockGuard &_locked_object,
-    PublicRequestType _type,
+    const PublicRequestType2 &_type,
     const Optional< std::string > &_reason,
     const Optional< std::string > &_email_to_answer,
     const Optional< RegistrarId > &_registrar_id)
 {
     try {
-        Database::query_param_list params(prt2str(_type));
+        Database::query_param_list params(_type.get_public_request_type());
         params(_locked_object.get_object_id())
               (_reason.isset() ? _reason.get_value() : Database::QPNull)
               (_email_to_answer.isset() ? _email_to_answer.get_value() : Database::QPNull);
