@@ -408,6 +408,8 @@ namespace Registry
                     auth_result = PUBLIC_DATA;
                 }
 
+                contact_detail->warning_letter = Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableBoolean>(detail_impl.warning_letter);
+
                 return contact_detail._retn();
             }
             catch (const Registry::DomainBrowserImpl::ObjectNotExists& )
@@ -940,6 +942,34 @@ namespace Registry
             {
                 throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
             }
+        }
+
+        void Server_i::setContactPreferenceForDomainExpirationLetters(
+            ::CORBA::ULongLong user_contact_id,
+             ::CORBA::Boolean send_expiration_letters,
+            ::CORBA::ULongLong request_id)
+        {
+            try
+            {
+                return pimpl_->setContactPreferenceForDomainExpirationLetters(user_contact_id, send_expiration_letters, request_id);
+            }
+            catch (const Registry::DomainBrowserImpl::UserNotExists& )
+            {
+                throw Registry::DomainBrowser::USER_NOT_EXISTS();
+            }
+            catch (const Registry::DomainBrowserImpl::ObjectBlocked& )
+            {
+                throw Registry::DomainBrowser::OBJECT_BLOCKED();
+            }
+            catch (const Registry::DomainBrowserImpl::AccessDenied& )
+            {
+                throw Registry::DomainBrowser::ACCESS_DENIED();
+            }
+            catch (...)
+            {
+                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
+            }
+
         }
 
 

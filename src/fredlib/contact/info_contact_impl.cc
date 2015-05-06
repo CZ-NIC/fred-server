@@ -108,6 +108,7 @@ namespace Fred
         " , ct.discloseemail, ct.disclosevat, ct.discloseident, ct.disclosenotifyemail "
         " , (CURRENT_TIMESTAMP AT TIME ZONE 'UTC')::timestamp AS utc_timestamp "// utc timestamp 46
         " , (CURRENT_TIMESTAMP AT TIME ZONE 'UTC' AT TIME ZONE $1::text)::timestamp AS local_timestamp  "// local zone timestamp 47
+        " , ct.warning_letter "//domain expiration letter preference 48
         " FROM object_registry cobr ";
         if(history_query_)
         {
@@ -276,6 +277,9 @@ namespace Fred
             : boost::posix_time::time_from_string(static_cast<std::string>(query_result[i][46]));// utc timestamp
             info_contact_output.local_timestamp = query_result[i][47].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
             : boost::posix_time::time_from_string(static_cast<std::string>(query_result[i][47]));//local zone timestamp
+
+            info_contact_output.info_contact_data.warning_letter = query_result[i][48].isnull() ? Nullable<bool>()
+                    : Nullable<bool>(static_cast<bool>(query_result[i][48]));
 
             Database::QueryParams params;
             params.push_back(info_contact_output.info_contact_data.id);

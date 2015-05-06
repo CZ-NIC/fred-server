@@ -413,7 +413,7 @@ void db_contact_insert_or_update(Database::Connection &_conn, unsigned long long
 
 }
 
-void db_contact_update(Contact &_data)
+void db_contact_update(Contact &_data, const Optional<Nullable<bool> >& contact_warning_letter_preference)
 {
     if (static_cast<unsigned long long>(_data.id) == 0) {
         throw std::runtime_error("cannot update contact record without contact id");
@@ -433,7 +433,7 @@ void db_contact_update(Contact &_data)
                  " discloseaddress = $19::boolean, disclosetelephone = $20::boolean,"
                  " disclosefax = $21::boolean, discloseemail = $22::boolean,"
                  " disclosenotifyemail = $23::boolean, disclosevat = $24::boolean,"
-                 " discloseident = $25::boolean"
+                 " discloseident = $25::boolean" + std::string(contact_warning_letter_preference.isset() ? ", warning_letter = $27::boolean" : "") +
             " WHERE"
                 " id = $26::integer";
 
@@ -464,6 +464,19 @@ void db_contact_update(Contact &_data)
         (_data.disclosevat)
         (_data.discloseident)
         (_data.id);
+
+    if(contact_warning_letter_preference.isset())
+    {
+        Nullable<bool> new_warning_letter = contact_warning_letter_preference.get_value();
+        if(new_warning_letter.isnull())
+        {
+            pcontact.push_back(Database::NullQueryParam);//NULL
+        }
+        else
+        {
+            pcontact.push_back(new_warning_letter.get_value());
+        }
+    }
 
     Database::Connection conn = Database::Manager::acquire();
     Database::Result rcontact = conn.exec_params(qcontact, pcontact);
@@ -509,12 +522,12 @@ unsigned long long db_contact_insert_history(const unsigned long long &_request_
             "INSERT INTO contact_history (historyid, id, name, organization, street1, street2, street3,"
             " city, stateorprovince, postalcode, country, telephone, fax, email, disclosename,"
             " discloseorganization, discloseaddress, disclosetelephone, disclosefax, discloseemail,"
-            " notifyemail, vat, ssn, ssntype, disclosevat, discloseident, disclosenotifyemail)"
+            " notifyemail, vat, ssn, ssntype, disclosevat, discloseident, disclosenotifyemail, warning_letter)"
             " SELECT $1::integer, c.id, c.name, c.organization, c.street1, c.street2, c.street3,"
             " c.city, c.stateorprovince, c.postalcode, c.country, c.telephone, c.fax, c.email,"
             " c.disclosename, c.discloseorganization, c.discloseaddress, c.disclosetelephone, c.disclosefax,"
             " c.discloseemail, c.notifyemail, c.vat, c.ssn, c.ssntype, c.disclosevat, c.discloseident,"
-            " c.disclosenotifyemail FROM contact c WHERE c.id = $2::integer",
+            " c.disclosenotifyemail, c.warning_letter FROM contact c WHERE c.id = $2::integer",
             Database::query_param_list(history_id)(_contact_id));
 
     Database::Result rcontact_address_history = conn.exec_params(
@@ -571,7 +584,7 @@ unsigned long long contact_transfer(const unsigned long long &_request_id,
 
 unsigned long long contact_update(const unsigned long long &_request_id,
                                   const unsigned long long &_registrar_id,
-                                  Contact &_data)
+                                  Contact &_data, const Optional<Nullable<bool> >& contact_warning_letter_preference)
 {
     transform_ssn_birthday_value(_data);
     Database::Connection conn = Database::Manager::acquire();
@@ -580,7 +593,7 @@ unsigned long long contact_update(const unsigned long long &_request_id,
                      Database::query_param_list
                         (_registrar_id)
                         (_data.id));
-    db_contact_update(_data);
+    db_contact_update(_data, contact_warning_letter_preference);
     return db_contact_insert_history(_request_id, _data.id);
 }
 

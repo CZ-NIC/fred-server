@@ -186,8 +186,8 @@ namespace Fred
         Optional<bool> disclosevat_;/**< whether to reveal taxpayer identification number */
         Optional<bool> discloseident_;/**< whether to reveal unambiguous identification number */
         Optional<bool> disclosenotifyemail_;/**< whether to reveal notify email */
+        Optional<Nullable<bool> > domain_expiration_letter_flag_;/**< user preference whether to send domain expiration letters for domains linked to this contact, if TRUE then send domain expiration letters, if FALSE don't send domain expiration letters, if is NULL no user preference set */
         Nullable<unsigned long long> logd_request_id_; /**< id of the new entry in log_entry database table, id is used in other calls to logging within current request */
-
     protected:
         /**
          * Empty destructor meant to be called by derived class.
@@ -227,6 +227,7 @@ namespace Fred
         * @param disclosevat sets whether to reveal taxpayer identification number into @ref disclosevat_ attribute
         * @param discloseident sets whether to reveal unambiguous identification number into @ref discloseident_ attribute
         * @param disclosenotifyemail sets whether to reveal e-mail address for notifications into @ref disclosenotifyemail_ attribute
+        * @param domain_expiration_letter_flag sets user preference whether to send domain expiration letters for domains linked to this contact, if TRUE then send domain expiration letters, if FALSE don't send domain expiration letters, if is NULL no user preference set
         * @param logd_request_id sets logger request id into @ref logd_request_id_ attribute
         */
         UpdateContact(const std::string& registrar
@@ -252,6 +253,7 @@ namespace Fred
             , const Optional<bool>& disclosevat
             , const Optional<bool>& discloseident
             , const Optional<bool>& disclosenotifyemail
+            , const Optional<Nullable<bool> >& domain_expiration_letter_flag
             , const Optional<unsigned long long>& logd_request_id
             );
 
@@ -512,6 +514,28 @@ namespace Fred
         }
 
         /**
+        * Sets user preference whether to send domain expiration letters for domains linked to this contact.
+        * @param domain_expiration_letter_flag sets user preference whether to send domain expiration letters for domains linked to this contact into @ref domain_expiration_letter_flag_ attribute.
+        * @return operation instance reference to allow method chaining
+        */
+        DERIVED& set_domain_expiration_letter_flag(const bool domain_expiration_letter_flag)
+        {
+            domain_expiration_letter_flag_ = Nullable<bool>(domain_expiration_letter_flag);
+            return static_cast<DERIVED&>(*this);
+        }
+
+        /**
+        * Unsets user preference whether to send domain expiration letters for domains linked to this contact.
+        * Sets NULL into @ref domain_expiration_letter_flag_ attribute.
+        * @return operation instance reference to allow method chaining
+        */
+        DERIVED& unset_domain_expiration_letter_flag()
+        {
+            domain_expiration_letter_flag_ = Nullable<bool>();
+            return static_cast<DERIVED&>(*this);
+        }
+
+        /**
         * Sets logger request id
         * @param logd_request_id sets logger request id into @ref logd_request_id_ attribute
         * @return operation instance reference to allow method chaining
@@ -608,6 +632,7 @@ namespace Fred
         * @param disclosevat sets whether to reveal taxpayer identification number into UpdateContact base
         * @param discloseident sets whether to reveal unambiguous identification number into UpdateContact base
         * @param disclosenotifyemail sets whether to reveal e-mail address for notifications into UpdateContact base
+        * @param domain_expiration_letter_flag sets user preference whether to send domain expiration letters for domains linked to this contact, if TRUE then send domain expiration letters, if FALSE don't send domain expiration letters, if is NULL no user preference set
         * @param logd_request_id sets logger request id into UpdateContact base
         */
         UpdateContactById(unsigned long long id
@@ -634,6 +659,7 @@ namespace Fred
                 , const Optional<bool>& disclosevat
                 , const Optional<bool>& discloseident
                 , const Optional<bool>& disclosenotifyemail
+                , const Optional<Nullable<bool> >& domain_expiration_letter_flag
                 , const Optional<unsigned long long>& logd_request_id
                 );
 
@@ -724,6 +750,7 @@ namespace Fred
         * @param disclosevat sets whether to reveal taxpayer identification number into UpdateContact base
         * @param discloseident sets whether to reveal unambiguous identification number into UpdateContact base
         * @param disclosenotifyemail sets whether to reveal e-mail address for notifications into UpdateContact base
+        * @param domain_expiration_letter_flag sets user preference whether to send domain expiration letters for domains linked to this contact, if TRUE then send domain expiration letters, if FALSE don't send domain expiration letters, if is NULL no user preference set
         * @param logd_request_id sets logger request id into UpdateContact base
         */
         UpdateContactByHandle(const std::string& handle
@@ -750,13 +777,14 @@ namespace Fred
                 , const Optional<bool>& disclosevat
                 , const Optional<bool>& discloseident
                 , const Optional<bool>& disclosenotifyemail
+                , const Optional<Nullable<bool> >& domain_expiration_letter_flag
                 , const Optional<unsigned long long> logd_request_id
                 );
 
         /**
         * Executes update
         *
-        * WARNING: May need to perform update on object_state_request as admin contact verification states might have been cancelled
+        * WARNING: May need to perform update on object_state_request as admin contact verification states might have been cancelled, but not here, keep that mess somewhere else
         *
         * @param ctx contains reference to database and logging interface
         * @return new history_id

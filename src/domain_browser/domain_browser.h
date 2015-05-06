@@ -125,6 +125,7 @@ namespace Registry
             ContactDiscloseFlags disclose_flags;/**< contact fields disclose flags*/
             std::vector<std::string> state_codes;/**< object states names from db. table enum_object_states*/
             bool is_owner;/**< whether user contact is the same as requested contact */
+            Nullable<bool> warning_letter;/**< contact preference for sending domain expiration letters */
 
             ContactDetail()
             : id(0)
@@ -752,6 +753,19 @@ namespace Registry
              * @return name for logging context
              */
             std::string get_server_name();
+
+
+            /**
+             * Sets contact preference for sending domain expiration letters.
+             * @param user_contact_id contains database id of the user contact, to set any preference contact have to be mojeid contact, to set FALSE, contact have to be validated mojeid contact
+             * @param send_expiration_letters is user preference whether to send domain expiration letters, if TRUE then send domain expiration letters, if FALSE don't send domain expiration letters
+             * @param request_id is id of the new entry in log_entry database table
+             */
+            void setContactPreferenceForDomainExpirationLetters(
+                unsigned long long user_contact_id,
+                bool send_expiration_letters,
+                unsigned long long request_id);
+
         };//class DomainBrowser
 
     }//namespace DomainBrowserImpl

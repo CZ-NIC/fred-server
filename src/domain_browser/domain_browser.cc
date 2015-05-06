@@ -444,6 +444,8 @@ namespace Registry
                 //get states
                 detail.state_codes = get_object_states(ctx, contact_info.info_contact_data.id);
 
+                detail.warning_letter = contact_info.info_contact_data.warning_letter;
+
                 return detail;
             }
             catch(...)
@@ -1670,6 +1672,42 @@ namespace Registry
             }
             ctx.commit_transaction();
         }
+
+        void DomainBrowser::setContactPreferenceForDomainExpirationLetters(
+            unsigned long long user_contact_id,
+            bool send_expiration_letters,
+            unsigned long long request_id)
+        {
+            Logging::Context lctx_server(create_ctx_name(get_server_name()));
+            Logging::Context lctx("set-contact-auth-info");
+            Fred::OperationContext ctx;
+            try
+            {
+                Fred::InfoContactOutput contact_info = check_user_contact_id<UserNotExists>(ctx, user_contact_id, output_timezone, true);
+
+                unsigned long long contact_id = contact_info.info_contact_data.id;
+
+                if(!send_expiration_letters && !Fred::ObjectHasState(contact_id,Fred::ObjectState::VALIDATED_CONTACT).exec(ctx))
+                {
+                    throw AccessDenied();
+                }
+
+                if(Fred::ObjectHasState(contact_id,Fred::ObjectState::SERVER_BLOCKED).exec(ctx))
+                {
+                    throw ObjectBlocked();
+                }
+
+                Fred::UpdateContactById(contact_id, update_registrar_)
+                    .set_domain_expiration_letter_flag(send_expiration_letters)
+                    .set_logd_request_id(request_id).exec(ctx);
+                ctx.commit_transaction();
+            }
+            catch(...)
+            {
+                log_and_rethrow_exception_handler(ctx);
+            }
+        }
+
     }//namespace DomainBrowserImpl
 }//namespace Registry
 

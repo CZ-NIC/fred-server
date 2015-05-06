@@ -1529,7 +1529,9 @@ namespace Registry
 
                 Fred::Contact::Verification::Contact contact = Fred::Contact::Verification::contact_info(_contact_id);
                 contact.addresses.clear();
-                Fred::Contact::Verification::contact_update(_request_id, this->mojeid_registrar_id_, contact);
+                Fred::Contact::Verification::contact_update(_request_id, this->mojeid_registrar_id_, contact
+                    , Nullable<bool>() //remove contact domain expiration warning_letter preference
+                    );
                 Fred::Contact::Verification::contact_delete_not_linked(_contact_id);
                 tx.prepare(_trans_id);
 

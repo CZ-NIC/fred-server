@@ -231,6 +231,7 @@ namespace Fred
         bool disclosenotifyemail;/**< whether to reveal notify email */
         unsigned long long id;/**< id of the contact object*/
         ContactAddressList addresses;/**< additional contact addresses */
+        Nullable<bool> warning_letter;/**< contact preference for sending domain expiration letters */
 
     public:
         /**

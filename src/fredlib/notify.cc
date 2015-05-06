@@ -641,14 +641,22 @@ public:
         // populate temporary table with states to notify
         conn.exec(create);
 
+         // select valid domain states 'deleteWarning' to notify that:
+         // - was not notified so far with the notification letter
+         // - belongs to domains whose zone have set warning_letter flag to send
+         // - belongs to domains whose owner have set warning_letter flag to send or unspecified
         const char *fixateStates =
           "INSERT INTO tmp_notify_letters "
           "SELECT s.id FROM object_state s "
           "LEFT JOIN notify_letters nl ON (s.id=nl.state_id) "
           " JOIN domain_history d      ON d.historyid = s.ohid_from "
           " JOIN zone z                ON z.id = d.zone "
-          "WHERE s.state_id=19 AND s.valid_to ISNULL AND nl.state_id ISNULL "
-          " AND z.warning_letter=true ";
+          " JOIN object_registry cor ON cor.id=d.registrant "
+          " JOIN contact_history c ON c.historyid=cor.historyid "
+          "WHERE s.state_id = (SELECT id FROM enum_object_states WHERE name = 'deleteWarning') "
+          " AND s.valid_to ISNULL AND nl.state_id ISNULL "
+          " AND z.warning_letter=true "
+          " AND (c.warning_letter IS NULL OR c.warning_letter=true) ";
         conn.exec(fixateStates);
         // select all expiration dates of domain to notify
         const char *selectExDates =
@@ -664,22 +672,6 @@ public:
 
         // for every expiration date generate PDF
         for (unsigned j=0; j<exDates.size(); j++) {
-
-            /*
-SELECT s.id from object_state s left join notify_letters nl ON (s.id=nl.state_id) where s.state_id=19 and s.valid_to isnull and nl.state_id isnull
-                -- general query for testing purposes
-            SELECT dobr.name, d.exdate, cor.name, c.name, c.organization, d.registrant
-                   FROM
-                   object_state s 
-                   LEFT JOIN notify_letters nl  ON nl.state_id=s.id
-                   JOIN domain_history d             ON d.historyid = s.ohid_from
-                   JOIN object_registry dobr         ON dobr.id = d.id
-
-                   JOIN object_registry cor          ON cor.id = d.registrant
-                   JOIN contact_history c            ON c.historyid = cor.historyid
-                   WHERE s.state_id=19 AND s.valid_to ISNULL AND nl.state_id ISNULL
-
-                              */
 
           std::ostringstream sql;
           sql <<
