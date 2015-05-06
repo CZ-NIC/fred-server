@@ -80,6 +80,8 @@ std::string prt2str(PublicRequestType _prt)
         return "mojeid_identified_contact_transfer";
     case PRT_MOJEID_CONTACT_REIDENTIFICATION:
         return "mojeid_contact_reidentification";
+    case PRT_ITEMS:
+        break;
     }
     throw BadConversion("prt2str failure: unable convert PublicRequestType to string");
 }
@@ -92,9 +94,13 @@ PublicRequestType str2prt(const std::string &_str)
         static ::pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
         LockGuard lock(mutex);
         if (convertor_ptr == NULL) {
-            enum { PRT_ITEMS = 20 };
+            enum
+            {
+                PRTID_BEGIN = 0,
+                PRTID_END   = PRTID_BEGIN + PRT_ITEMS
+            };
             static Str2Prt convertor;
-            for (int prt_id = 0; prt_id < PRT_ITEMS; ++prt_id) {
+            for (int prt_id = PRTID_BEGIN; prt_id < PRTID_END; ++prt_id) {
                 const PublicRequestType prt = static_cast< PublicRequestType >(prt_id);
                 const std::string str = prt2str(prt);
                 const bool item_already_exists = !convertor.insert(std::make_pair(str, prt)).second;
