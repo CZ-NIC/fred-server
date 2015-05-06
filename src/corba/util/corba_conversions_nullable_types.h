@@ -31,7 +31,7 @@ namespace Corba {
     /**
      * Make CORBA valuetype from underlying CORBA type
      */
-    template <class CORBA_VALUE_TYPE, class CORBA_TYPE>  typename CORBA_VALUE_TYPE::_var_type
+    template <class CORBA_VALUE_TYPE, class CORBA_TYPE> typename CORBA_VALUE_TYPE::_var_type
     wrap_nullable_corba_type_to_corba_valuetype(const Nullable<CORBA_TYPE>& in)
     {
         if(in.isnull()) return 0;

@@ -428,6 +428,7 @@ BOOST_FIXTURE_TEST_CASE(get_my_contact_detail, get_my_contact_detail_fixture )
     Registry::DomainBrowserImpl::ContactDetail cd = impl.getContactDetail(user_contact_info.info_contact_data.id,
             my_contact_info.info_contact_data.id);
     const Fred::Contact::PlaceAddress mci_place = my_contact_info.info_contact_data.place.get_value_or_default();
+    const Nullable<Fred::Contact::PlaceAddress> mci_mailing = optional_map_at<Nullable>(my_contact_info.info_contact_data.addresses,Fred::ContactAddressType::MAILING);
 
     BOOST_CHECK(cd.id == my_contact_info.info_contact_data.id);
     BOOST_CHECK(cd.handle == my_contact_info.info_contact_data.handle);
@@ -441,13 +442,10 @@ BOOST_FIXTURE_TEST_CASE(get_my_contact_detail, get_my_contact_detail_fixture )
     BOOST_CHECK(cd.authinfopw == my_contact_info.info_contact_data.authinfopw);
     BOOST_CHECK(cd.name.get_value_or_default() == my_contact_info.info_contact_data.name.get_value_or_default());
     BOOST_CHECK(cd.organization.get_value_or_default() == my_contact_info.info_contact_data.organization.get_value_or_default());
-    BOOST_CHECK(cd.street1.get_value_or_default() == mci_place.street1);
-    BOOST_CHECK(cd.street2.get_value_or_default() == mci_place.street2.get_value_or_default());
-    BOOST_CHECK(cd.street3.get_value_or_default() == mci_place.street3.get_value_or_default());
-    BOOST_CHECK(cd.city.get_value_or_default() == mci_place.city);
-    BOOST_CHECK(cd.stateorprovince.get_value_or_default() == mci_place.stateorprovince.get_value_or_default());
-    BOOST_CHECK(cd.postalcode.get_value_or_default() == mci_place.postalcode);
-    BOOST_CHECK(cd.country.get_value_or_default() == mci_place.country);
+
+    BOOST_CHECK(cd.permanent_address == mci_place);
+    BOOST_CHECK(cd.mailing_address == mci_mailing);
+
     BOOST_CHECK(cd.telephone.get_value_or_default() == my_contact_info.info_contact_data.telephone.get_value_or_default());
     BOOST_CHECK(cd.fax.get_value_or_default() == my_contact_info.info_contact_data.fax.get_value_or_default());
     BOOST_CHECK(cd.email.get_value_or_default() == my_contact_info.info_contact_data.email.get_value_or_default());
@@ -466,7 +464,6 @@ BOOST_FIXTURE_TEST_CASE(get_my_contact_detail, get_my_contact_detail_fixture )
     BOOST_CHECK(cd.disclose_flags.notify_email == my_contact_info.info_contact_data.disclosenotifyemail);
     BOOST_CHECK(std::find(cd.state_codes.begin(), cd.state_codes.end(),"mojeidContact")!= cd.state_codes.end());
     BOOST_CHECK(cd.is_owner == true);
-
 }
 
 struct get_contact_fixture
@@ -487,6 +484,7 @@ BOOST_FIXTURE_TEST_CASE(get_contact_detail, get_contact_fixture )
     Registry::DomainBrowserImpl::ContactDetail cd = impl.getContactDetail(user_contact_info.info_contact_data.id,
             test_contact_info.info_contact_data.id);
     const Fred::Contact::PlaceAddress tci_place = test_contact_info.info_contact_data.place.get_value_or_default();
+    const Nullable<Fred::Contact::PlaceAddress> tci_mailing = optional_map_at<Nullable>(test_contact_info.info_contact_data.addresses,Fred::ContactAddressType::MAILING);
 
     BOOST_CHECK(cd.id == test_contact_info.info_contact_data.id);
     BOOST_CHECK(cd.handle == test_contact_info.info_contact_data.handle);
@@ -500,13 +498,10 @@ BOOST_FIXTURE_TEST_CASE(get_contact_detail, get_contact_fixture )
     BOOST_CHECK(cd.authinfopw == "********");
     BOOST_CHECK(cd.name.get_value_or_default() == test_contact_info.info_contact_data.name.get_value_or_default());
     BOOST_CHECK(cd.organization.get_value_or_default() == test_contact_info.info_contact_data.organization.get_value_or_default());
-    BOOST_CHECK(cd.street1.get_value_or_default() == tci_place.street1);
-    BOOST_CHECK(cd.street2.get_value_or_default() == tci_place.street2.get_value_or_default());
-    BOOST_CHECK(cd.street3.get_value_or_default() == tci_place.street3.get_value_or_default());
-    BOOST_CHECK(cd.city.get_value_or_default() == tci_place.city);
-    BOOST_CHECK(cd.stateorprovince.get_value_or_default() == tci_place.stateorprovince.get_value_or_default());
-    BOOST_CHECK(cd.postalcode.get_value_or_default() == tci_place.postalcode);
-    BOOST_CHECK(cd.country.get_value_or_default() == tci_place.country);
+
+    BOOST_CHECK(cd.permanent_address == tci_place);
+    BOOST_CHECK(cd.mailing_address == tci_mailing);
+
     BOOST_CHECK(cd.telephone.get_value_or_default() == test_contact_info.info_contact_data.telephone.get_value_or_default());
     BOOST_CHECK(cd.fax.get_value_or_default() == test_contact_info.info_contact_data.fax.get_value_or_default());
     BOOST_CHECK(cd.email.get_value_or_default() == test_contact_info.info_contact_data.email.get_value_or_default());

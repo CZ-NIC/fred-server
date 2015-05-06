@@ -8,6 +8,7 @@
 
 #include <omniORB4/CORBA.h>
 #include <string>
+#include "util/db/nullable.h"
 
 
 namespace Corba {
@@ -37,6 +38,25 @@ namespace Corba {
      */
     CORBA::String_var wrap_string_to_corba_string(const std::string& in);
 
+    /**
+     * Make Nullable CORBA string from optional string.
+     * Method get_value() of input value throwing std::exception if value is missing required.
+     * @param in is input data
+     * @return input data allocated by CORBA::string_dup
+     */
+    template <class OPTIONAL_TYPE> Nullable<CORBA::String_var> wrap_optional_string_to_nullable_corba_string(const OPTIONAL_TYPE& in)
+    {
+        try
+        {
+            in.get_value();
+        }
+        catch(std::exception&)
+        {
+            return Nullable<CORBA::String_var>();
+        }
+
+        return Nullable<CORBA::String_var>(CORBA::string_dup(in.get_value().c_str()));
+    }
 }
 
 #endif // end of #include guard

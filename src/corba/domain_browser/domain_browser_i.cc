@@ -312,6 +312,28 @@ namespace Registry
             }
         }
 
+        Nullable<Registry::DomainBrowser::PlaceAddress> corba_wrap_nullable_placeaddress
+            (const Nullable<Fred::Contact::PlaceAddress>& in)
+        {
+            if(in.isnull()) return Nullable<Registry::DomainBrowser::PlaceAddress>();
+
+            Registry::DomainBrowser::PlaceAddress ret;
+            Fred::Contact::PlaceAddress mailing_addr = in.get_value();
+
+            ret.street1 = Corba::wrap_string_to_corba_string(mailing_addr.street1);
+            ret.street2 = Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableString>(
+                Corba::wrap_optional_string_to_nullable_corba_string(mailing_addr.street2));
+            ret.street3 = Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableString>(
+                Corba::wrap_optional_string_to_nullable_corba_string(mailing_addr.street3));
+            ret.state = Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableString>(
+                Corba::wrap_optional_string_to_nullable_corba_string(mailing_addr.stateorprovince));
+            ret.postal_code = Corba::wrap_string_to_corba_string(mailing_addr.postalcode);
+            ret.city = Corba::wrap_string_to_corba_string(mailing_addr.city);
+            ret.country = Corba::wrap_string_to_corba_string(mailing_addr.country);
+
+            return Nullable<Registry::DomainBrowser::PlaceAddress>(ret);
+        }
+
         Registry::DomainBrowser::ContactDetail* Server_i::getContactDetail(
             ::CORBA::ULongLong user_contact_id,
              ::CORBA::ULongLong detail_id,
@@ -339,13 +361,21 @@ namespace Registry
                 contact_detail->auth_info = Corba::wrap_string_to_corba_string(detail_impl.authinfopw);
                 contact_detail->name = Corba::wrap_string_to_corba_string(detail_impl.name.get_value_or_default());
                 contact_detail->organization = Corba::wrap_string_to_corba_string(detail_impl.organization.get_value_or_default());
-                contact_detail->street1 = Corba::wrap_string_to_corba_string(detail_impl.street1.get_value_or_default());
-                contact_detail->street2 = Corba::wrap_string_to_corba_string(detail_impl.street2.get_value_or_default());
-                contact_detail->street3 = Corba::wrap_string_to_corba_string(detail_impl.street3.get_value_or_default());
-                contact_detail->province = Corba::wrap_string_to_corba_string(detail_impl.stateorprovince.get_value_or_default());
-                contact_detail->postalcode = Corba::wrap_string_to_corba_string(detail_impl.postalcode.get_value_or_default());
-                contact_detail->city = Corba::wrap_string_to_corba_string(detail_impl.city.get_value_or_default());
-                contact_detail->country = Corba::wrap_string_to_corba_string(detail_impl.country.get_value_or_default());
+
+                contact_detail->permanent_address.street1 = Corba::wrap_string_to_corba_string(detail_impl.permanent_address.street1);
+                contact_detail->permanent_address.street2 = Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableString>(
+                    Corba::wrap_optional_string_to_nullable_corba_string(detail_impl.permanent_address.street2));
+                contact_detail->permanent_address.street3 = Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableString>(
+                    Corba::wrap_optional_string_to_nullable_corba_string(detail_impl.permanent_address.street3));
+                contact_detail->permanent_address.state = Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableString>(
+                    Corba::wrap_optional_string_to_nullable_corba_string(detail_impl.permanent_address.stateorprovince));
+                contact_detail->permanent_address.postal_code = Corba::wrap_string_to_corba_string(detail_impl.permanent_address.postalcode);
+                contact_detail->permanent_address.city = Corba::wrap_string_to_corba_string(detail_impl.permanent_address.city);
+                contact_detail->permanent_address.country = Corba::wrap_string_to_corba_string(detail_impl.permanent_address.country);
+
+                contact_detail->mailing_address= Corba::wrap_nullable_corba_type_to_corba_valuetype<NullablePlaceAddress>(
+                    corba_wrap_nullable_placeaddress(detail_impl.mailing_address));
+
                 contact_detail->telephone = Corba::wrap_string_to_corba_string(detail_impl.telephone.get_value_or_default());
                 contact_detail->fax = Corba::wrap_string_to_corba_string(detail_impl.fax.get_value_or_default());
                 contact_detail->email = Corba::wrap_string_to_corba_string(detail_impl.email.get_value_or_default());
