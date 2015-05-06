@@ -15,10 +15,10 @@ enum
     FAILURE = -1,
 };
 
-class MutexGuard
+class LockGuard
 {
 public:
-    MutexGuard(::pthread_mutex_t &_mutex)
+    LockGuard(::pthread_mutex_t &_mutex)
     :   mutex_(_mutex)
     {
         const int c_errno = ::pthread_mutex_lock(&mutex_);
@@ -27,7 +27,7 @@ public:
         }
         throw std::runtime_error(std::string("pthread_mutex_lock() failure: ") + std::strerror(c_errno));
     }
-    ~MutexGuard()
+    ~LockGuard()
     {
         ::pthread_mutex_unlock(&mutex_);
     }
@@ -90,7 +90,7 @@ PublicRequestType str2prt(const std::string &_str)
     static Str2Prt *convertor_ptr = NULL;
     if (convertor_ptr == NULL) {
         static ::pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-        MutexGuard lock(mutex);
+        LockGuard lock(mutex);
         if (convertor_ptr == NULL) {
             enum { PRT_ITEMS = 20 };
             static Str2Prt convertor;
