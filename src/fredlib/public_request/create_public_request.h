@@ -9,59 +9,30 @@
 
 namespace Fred {
 
-enum PublicRequestType {
-    PRT_AUTHINFO_AUTO_RIF,
-    PRT_AUTHINFO_AUTO_PIF,
-    PRT_AUTHINFO_EMAIL_PIF,
-    PRT_AUTHINFO_POST_PIF,
-    PRT_BLOCK_CHANGES_EMAIL_PIF,
-    PRT_BLOCK_CHANGES_POST_PIF,
-    PRT_BLOCK_TRANSFER_EMAIL_PIF,
-    PRT_BLOCK_TRANSFER_POST_PIF,
-    PRT_UNBLOCK_CHANGES_EMAIL_PIF,
-    PRT_UNBLOCK_CHANGES_POST_PIF,
-    PRT_UNBLOCK_TRANSFER_EMAIL_PIF,
-    PRT_UNBLOCK_TRANSFER_POST_PIF,
-    PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION,
-    PRT_MOJEID_CONTACT_IDENTIFICATION,
-    PRT_MOJEID_CONTACT_VALIDATION,
-    PRT_CONTACT_CONDITIONAL_IDENTIFICATION,
-    PRT_CONTACT_IDENTIFICATION,
-    PRT_MOJEID_CONDITIONALLY_IDENTIFIED_CONTACT_TRANSFER,
-    PRT_MOJEID_IDENTIFIED_CONTACT_TRANSFER,
-    PRT_MOJEID_CONTACT_REIDENTIFICATION,
-    PRT_ITEMS //doesn't represent any public request type
-};
-
-class PublicRequestType2
+class PublicRequestTypeIface
 {
 public:
     virtual std::string get_public_request_type()const = 0;
 protected:
-    virtual ~PublicRequestType2() { }
+    virtual ~PublicRequestTypeIface() { }
 };
 
-class PrtAuthinfoAutoRifType:public PublicRequestType2
+namespace PublicRequest
+{
+
+class AuthinfoAutoRifType:public PublicRequestTypeIface
 {
 public:
-    ~PrtAuthinfoAutoRifType() { }
+    ~AuthinfoAutoRifType() { }
 protected:
     std::string get_public_request_type()const { return "authinfo_auto_rif"; }
 };
 
-class BadConversion:std::runtime_error
-{
-public:
-    BadConversion(const std::string &_msg):std::runtime_error(_msg) { }
-    virtual ~BadConversion()throw() { }
-};
+}//Fred::PublicRequest
 
-std::string prt2str(PublicRequestType _prt);
-PublicRequestType str2prt(const std::string &_str);
-
-typedef ::size_t PublicRequestId;
-typedef ::size_t RegistrarId;
-typedef ::size_t ObjectId;
+typedef ::uint64_t ObjectId;
+typedef ObjectId PublicRequestId;
+typedef ObjectId RegistrarId;
 
 class PublicRequestObjectLockGuard
 {
@@ -75,7 +46,7 @@ private:
 PublicRequestId create_public_request(
     OperationContext &_ctx,
     const PublicRequestObjectLockGuard &_locked_object,
-    const PublicRequestType2 &_type,
+    const PublicRequestTypeIface &_type,
     const Optional< std::string > &_reason,
     const Optional< std::string > &_email_to_answer,
     const Optional< RegistrarId > &_registrar_id);
