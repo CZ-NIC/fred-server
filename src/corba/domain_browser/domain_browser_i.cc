@@ -24,8 +24,13 @@
 
 #include "domain_browser_i.h"
 #include "src/domain_browser/domain_browser.h"
+#include "src/corba/util/corba_conversions_string.h"
+#include "src/corba/util/corba_conversions_datetime.h"
+#include "src/corba/util/corba_conversions_nullable_types.h"
 #include "src/corba/DomainBrowser.hh"
 #include <string>
+
+#include <boost/date_time/gregorian/gregorian.hpp>
 
 
 namespace Registry
@@ -47,23 +52,17 @@ namespace Registry
         {}
 
         //   Methods corresponding to IDL attributes and operations
-        Registry::DomainBrowser::TID Server_i::getObjectRegistryId(
-            const char* objtype,
-            const char* handle)
+        ::CORBA::ULongLong Server_i::getContactId(const char* handle)
         {
             try
             {
-                unsigned long long id = pimpl_->getObjectRegistryId(objtype,handle);
+                unsigned long long id = pimpl_->getContactId(Corba::unwrap_string_from_const_char_ptr(handle));
                 return id;
             }//try
             catch (const Registry::DomainBrowserImpl::ObjectNotExists&)
             {
                 throw Registry::DomainBrowser::OBJECT_NOT_EXISTS();
             }
-            catch (const Registry::DomainBrowserImpl::IncorrectUsage& )
-            {
-                throw Registry::DomainBrowser::INCORRECT_USAGE();
-            }
             catch (...)
             {
                 throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
@@ -71,189 +70,74 @@ namespace Registry
 
         }
 
-        Registry::DomainBrowser::RecordSet* Server_i::getDomainList(
-            const Registry::DomainBrowser::RegistryReference& user_contact,
-            const Registry::DomainBrowser::RegistryReference& contact,
-            const char* lang,
-            ::CORBA::ULong offset,
-             ::CORBA::Boolean& limit_exceeded)
+        Nullable<Registry::DomainBrowser::NextDomainState> corba_wrap_nullable_next_domain_state
+            (const Nullable<Registry::DomainBrowserImpl::NextDomainState>& in)
         {
-            try
-            {
-                std::vector<std::vector<std::string> > domain_list_out;
-                limit_exceeded = pimpl_->getDomainList(user_contact.id,
-                    (contact.id > 0) ? Optional<unsigned long long>(contact.id) : Optional<unsigned long long>(),
-                    Optional<unsigned long long>(), Optional<unsigned long long>(),
-                    lang, offset, domain_list_out);
+            if(in.isnull()) return Nullable<Registry::DomainBrowser::NextDomainState>();
 
-                RecordSet_var rs = new RecordSet;
-                rs->length(domain_list_out.size());
-                for(unsigned long long i = 0 ; i < domain_list_out.size(); ++i)
-                {
-                    RecordSequence rseq;
-                    rseq.length(domain_list_out.at(i).size());
-                    for(unsigned long long j = 0 ; j < domain_list_out.at(i).size(); ++j)
-                    {
-                        rseq[j] = CORBA::string_dup(domain_list_out.at(i).at(j).c_str());
-                    }
-                    rs[i] = rseq;
-                }
-                return rs._retn();
-            }//try
-            catch (const Registry::DomainBrowserImpl::ObjectNotExists& )
-            {
-                throw Registry::DomainBrowser::OBJECT_NOT_EXISTS();
-            }
-            catch (const Registry::DomainBrowserImpl::UserNotExists& )
-            {
-                throw Registry::DomainBrowser::USER_NOT_EXISTS();
-            }
-            catch (const Registry::DomainBrowserImpl::IncorrectUsage& )
-            {
-                throw Registry::DomainBrowser::INCORRECT_USAGE();
-            }
-            catch (...)
-            {
-                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
-            }
+            Registry::DomainBrowser::NextDomainState ret;
+            Registry::DomainBrowserImpl::NextDomainState next_state = in.get_value();
+
+            ret.state_code = Corba::wrap_string_to_corba_string(next_state.state_code);
+            ret.state_date = Corba::wrap_date_to_corba_string(next_state.state_date);
+            return Nullable<Registry::DomainBrowser::NextDomainState>(ret);
         }
 
-        Registry::DomainBrowser::RecordSet* Server_i::getNssetList(
-            const Registry::DomainBrowser::RegistryReference& user_contact,
-            const Registry::DomainBrowser::RegistryReference& contact,
-            const char* lang,
-            ::CORBA::ULong offset,
-             ::CORBA::Boolean& limit_exceeded)
+        DomainList_var corba_wrap_domain_list(const std::vector<Registry::DomainBrowserImpl::DomainListData>& domain_list)
         {
-            try
+            DomainList_var dl = new DomainList;
+            dl->length(domain_list.size());
+            for(unsigned long long i = 0 ; i < domain_list.size(); ++i)
             {
-                std::vector<std::vector<std::string> > nsset_list_out;
-                limit_exceeded = pimpl_->getNssetList(user_contact.id,
-                    (contact.id > 0) ? Optional<unsigned long long>(contact.id) : Optional<unsigned long long>(),
-                    lang, offset, nsset_list_out);
+                DomainListData dld;
+                dld.id = domain_list.at(i).id;
+                dld.fqdn = Corba::wrap_string_to_corba_string(domain_list.at(i).fqdn);
+                dld.external_importance = domain_list.at(i).external_importance;
 
-                RecordSet_var rs = new RecordSet;
-                rs->length(nsset_list_out.size());
-                for(unsigned long long i = 0 ; i < nsset_list_out.size(); ++i)
+                Registry::DomainBrowser::NextDomainState corba_next_domain_state;
+
+                dld.next_state = Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableNextDomainState>(
+                    corba_wrap_nullable_next_domain_state(domain_list.at(i).next_state));
+
+                dld.have_keyset = domain_list.at(i).have_keyset;
+                dld.user_role = Corba::wrap_string_to_corba_string(domain_list.at(i).user_role);
+                dld.registrar_handle = Corba::wrap_string_to_corba_string(domain_list.at(i).registrar_handle);
+                dld.registrar_name = Corba::wrap_string_to_corba_string(domain_list.at(i).registrar_name);
+
+                dld.state_code.length(domain_list.at(i).state_code.size());
+                for(unsigned long long j = 0; j < domain_list.at(i).state_code.size(); ++j)
                 {
-                    RecordSequence rseq;
-                    rseq.length(nsset_list_out.at(i).size());
-                    for(unsigned long long j = 0 ; j < nsset_list_out.at(i).size(); ++j)
-                    {
-                        rseq[j] = CORBA::string_dup(nsset_list_out.at(i).at(j).c_str());
-                    }
-                    rs[i] = rseq;
+                    dld.state_code[j] = Corba::wrap_string_to_corba_string(domain_list.at(i).state_code.at(j));
                 }
-                return rs._retn();
-            }//try
-            catch (const Registry::DomainBrowserImpl::ObjectNotExists& )
-            {
-                throw Registry::DomainBrowser::OBJECT_NOT_EXISTS();
+
+                dld.is_server_blocked = domain_list.at(i).is_server_blocked;
+
+                dl[i] = dld;
             }
-            catch (const Registry::DomainBrowserImpl::UserNotExists& )
-            {
-                throw Registry::DomainBrowser::USER_NOT_EXISTS();
-            }
-            catch (const Registry::DomainBrowserImpl::IncorrectUsage& )
-            {
-                throw Registry::DomainBrowser::INCORRECT_USAGE();
-            }
-            catch (...)
-            {
-                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
-            }
+            return dl;
         }
 
-        Registry::DomainBrowser::RecordSet* Server_i::getKeysetList(
-            const Registry::DomainBrowser::RegistryReference& user_contact,
-            const Registry::DomainBrowser::RegistryReference& contact,
-            const char* lang,
-            ::CORBA::ULong offset,
-             ::CORBA::Boolean& limit_exceeded)
-        {
-            try
-            {
-                std::vector<std::vector<std::string> > keyset_list_out;
-                limit_exceeded = pimpl_->getKeysetList(user_contact.id,
-                    (contact.id > 0) ? Optional<unsigned long long>(contact.id) : Optional<unsigned long long>(),
-                    lang, offset, keyset_list_out);
-
-                RecordSet_var rs = new RecordSet;
-                rs->length(keyset_list_out.size());
-                for(unsigned long long i = 0 ; i < keyset_list_out.size(); ++i)
-                {
-                    RecordSequence rseq;
-                    rseq.length(keyset_list_out.at(i).size());
-                    for(unsigned long long j = 0 ; j < keyset_list_out.at(i).size(); ++j)
-                    {
-                        rseq[j] = CORBA::string_dup(keyset_list_out.at(i).at(j).c_str());
-                    }
-                    rs[i] = rseq;
-                }
-                return rs._retn();
-            }//try
-            catch (const Registry::DomainBrowserImpl::ObjectNotExists& )
-            {
-                throw Registry::DomainBrowser::OBJECT_NOT_EXISTS();
-            }
-            catch (const Registry::DomainBrowserImpl::UserNotExists& )
-            {
-                throw Registry::DomainBrowser::USER_NOT_EXISTS();
-            }
-            catch (const Registry::DomainBrowserImpl::IncorrectUsage& )
-            {
-                throw Registry::DomainBrowser::INCORRECT_USAGE();
-            }
-            catch (...)
-            {
-                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
-            }
-        }
-
-        Registry::DomainBrowser::RecordSet* Server_i::getDomainsForKeyset(
-            const Registry::DomainBrowser::RegistryReference& contact,
-            const Registry::DomainBrowser::RegistryReference& keyset,
-            const char* lang,
+        Registry::DomainBrowser::DomainList* Server_i::getDomainList(
+            ::CORBA::ULongLong user_contact_id,
+             Registry::DomainBrowser::NullableULongLong* contact_id_ptr,
             ::CORBA::ULong offset,
             ::CORBA::Boolean& limit_exceeded)
         {
             try
             {
-                std::vector<std::vector<std::string> > domain_list_out;
-                limit_exceeded = pimpl_->getDomainList(contact.id,
-                        Optional<unsigned long long>(),
-                        Optional<unsigned long long>(),
-                        Optional<unsigned long long>(keyset.id), lang, offset, domain_list_out);
-
-                RecordSet_var rs = new RecordSet;
-                rs->length(domain_list_out.size());
-                for(unsigned long long i = 0 ; i < domain_list_out.size(); ++i)
-                {
-                    RecordSequence rseq;
-                    rseq.length(domain_list_out.at(i).size());
-                    for(unsigned long long j = 0 ; j < domain_list_out.at(i).size(); ++j)
-                    {
-                        rseq[j] = CORBA::string_dup(domain_list_out.at(i).at(j).c_str());
-                    }
-                    rs[i] = rseq;
-                }
-                return rs._retn();
-            }//try
-            catch (const Registry::DomainBrowserImpl::AccessDenied&)
-            {
-                throw Registry::DomainBrowser::ACCESS_DENIED();
+                Registry::DomainBrowserImpl::DomainList dl = pimpl_->getDomainList(user_contact_id,
+                    (contact_id_ptr) ? Optional<unsigned long long>(contact_id_ptr->_value()) : Optional<unsigned long long>(),
+                    Optional<unsigned long long>(), Optional<unsigned long long>(), offset);
+                limit_exceeded = dl.limit_exceeded;
+                return corba_wrap_domain_list(dl.dld)._retn();
             }
-            catch (const Registry::DomainBrowserImpl::ObjectNotExists&)
+            catch (const Registry::DomainBrowserImpl::ObjectNotExists& )
             {
                 throw Registry::DomainBrowser::OBJECT_NOT_EXISTS();
             }
             catch (const Registry::DomainBrowserImpl::UserNotExists& )
             {
                 throw Registry::DomainBrowser::USER_NOT_EXISTS();
-            }
-            catch (const Registry::DomainBrowserImpl::IncorrectUsage& )
-            {
-                throw Registry::DomainBrowser::INCORRECT_USAGE();
             }
             catch (...)
             {
@@ -261,40 +145,48 @@ namespace Registry
             }
         }
 
-        Registry::DomainBrowser::RecordSet* Server_i::getDomainsForNsset(
-            const Registry::DomainBrowser::RegistryReference& contact,
-            const Registry::DomainBrowser::RegistryReference& nsset,
-            const char* lang,
+
+        NssetList_var corba_wrap_nsset_list(const std::vector<Registry::DomainBrowserImpl::NssetListData>& nsset_list)
+        {
+            NssetList_var nl = new NssetList;
+            nl->length(nsset_list.size());
+
+            for(unsigned long long i = 0 ; i < nsset_list.size(); ++i)
+            {
+                NssetListData nld;
+                nld.id = nsset_list.at(i).id;
+                nld.handle = Corba::wrap_string_to_corba_string(nsset_list.at(i).handle);
+                nld.domain_count = nsset_list.at(i).domain_count;
+                nld.registrar_handle = Corba::wrap_string_to_corba_string(nsset_list.at(i).registrar_handle);
+                nld.registrar_name = Corba::wrap_string_to_corba_string(nsset_list.at(i).registrar_name);
+                nld.external_importance = nsset_list.at(i).external_importance;
+                nld.state_code.length(nsset_list.at(i).state_code.size());
+                for(unsigned long long j = 0; j < nsset_list.at(i).state_code.size(); ++j)
+                {
+                    nld.state_code[j] = Corba::wrap_string_to_corba_string(nsset_list.at(i).state_code.at(j));
+                }
+                nld.is_server_blocked = nsset_list.at(i).is_server_blocked;
+                nl[i] = nld;
+            }
+
+            return nl;
+        }
+
+        Registry::DomainBrowser::NssetList* Server_i::getNssetList(
+            ::CORBA::ULongLong user_contact_id,
+             Registry::DomainBrowser::NullableULongLong* contact_id_ptr,
             ::CORBA::ULong offset,
             ::CORBA::Boolean& limit_exceeded)
         {
             try
             {
-                std::vector<std::vector<std::string> > domain_list_out;
-                limit_exceeded = pimpl_->getDomainList(contact.id,
-                        Optional<unsigned long long>(),
-                        Optional<unsigned long long>(nsset.id),
-                        Optional<unsigned long long>(), lang, offset, domain_list_out);
-
-                RecordSet_var rs = new RecordSet;
-                rs->length(domain_list_out.size());
-                for(unsigned long long i = 0 ; i < domain_list_out.size(); ++i)
-                {
-                    RecordSequence rseq;
-                    rseq.length(domain_list_out.at(i).size());
-                    for(unsigned long long j = 0 ; j < domain_list_out.at(i).size(); ++j)
-                    {
-                        rseq[j] = CORBA::string_dup(domain_list_out.at(i).at(j).c_str());
-                    }
-                    rs[i] = rseq;
-                }
-                return rs._retn();
-            }//try
-            catch (const Registry::DomainBrowserImpl::AccessDenied&)
-            {
-                throw Registry::DomainBrowser::ACCESS_DENIED();
+                Registry::DomainBrowserImpl::NssetList nl = pimpl_->getNssetList(user_contact_id,
+                    (contact_id_ptr) ? Optional<unsigned long long>(contact_id_ptr->_value()) : Optional<unsigned long long>(),
+                    offset);
+                limit_exceeded = nl.limit_exceeded;
+                return corba_wrap_nsset_list(nl.nld)._retn();
             }
-            catch (const Registry::DomainBrowserImpl::ObjectNotExists&)
+            catch (const Registry::DomainBrowserImpl::ObjectNotExists& )
             {
                 throw Registry::DomainBrowser::OBJECT_NOT_EXISTS();
             }
@@ -302,9 +194,117 @@ namespace Registry
             {
                 throw Registry::DomainBrowser::USER_NOT_EXISTS();
             }
-            catch (const Registry::DomainBrowserImpl::IncorrectUsage& )
+            catch (...)
             {
-                throw Registry::DomainBrowser::INCORRECT_USAGE();
+                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
+            }
+        }
+
+        KeysetList_var corba_wrap_keyset_list(const std::vector<Registry::DomainBrowserImpl::KeysetListData>& keyset_list)
+        {
+            KeysetList_var kl = new KeysetList;
+            kl->length(keyset_list.size());
+
+            for(unsigned long long i = 0 ; i < keyset_list.size(); ++i)
+            {
+                KeysetListData kld;
+                kld.id = keyset_list.at(i).id;
+                kld.handle = Corba::wrap_string_to_corba_string(keyset_list.at(i).handle);
+                kld.domain_count = keyset_list.at(i).domain_count;
+                kld.registrar_handle = Corba::wrap_string_to_corba_string(keyset_list.at(i).registrar_handle);
+                kld.registrar_name = Corba::wrap_string_to_corba_string(keyset_list.at(i).registrar_name);
+                kld.external_importance = keyset_list.at(i).external_importance;
+                kld.state_code.length(keyset_list.at(i).state_code.size());
+                for(unsigned long long j = 0; j < keyset_list.at(i).state_code.size(); ++j)
+                {
+                    kld.state_code[j] = Corba::wrap_string_to_corba_string(keyset_list.at(i).state_code.at(j));
+                }
+                kld.is_server_blocked = keyset_list.at(i).is_server_blocked;
+                kl[i] = kld;
+            }
+
+            return kl;
+        }
+
+        Registry::DomainBrowser::KeysetList* Server_i::getKeysetList(
+            ::CORBA::ULongLong user_contact_id,
+             Registry::DomainBrowser::NullableULongLong* contact_id_ptr,
+            ::CORBA::ULong offset,
+             ::CORBA::Boolean& limit_exceeded)
+        {
+            try
+            {
+                Registry::DomainBrowserImpl::KeysetList kl = pimpl_->getKeysetList(user_contact_id,
+                    (contact_id_ptr) ? Optional<unsigned long long>(contact_id_ptr->_value()) : Optional<unsigned long long>(),
+                    offset);
+                limit_exceeded = kl.limit_exceeded;
+                return corba_wrap_keyset_list(kl.kld)._retn();
+            }
+            catch (const Registry::DomainBrowserImpl::ObjectNotExists& )
+            {
+                throw Registry::DomainBrowser::OBJECT_NOT_EXISTS();
+            }
+            catch (const Registry::DomainBrowserImpl::UserNotExists& )
+            {
+                throw Registry::DomainBrowser::USER_NOT_EXISTS();
+            }
+            catch (...)
+            {
+                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
+            }
+        }
+
+        Registry::DomainBrowser::DomainList*  Server_i::getDomainsForKeyset(
+            ::CORBA::ULongLong user_contact_id,
+            ::CORBA::ULongLong keyset_id,
+            ::CORBA::ULong offset,
+            ::CORBA::Boolean& limit_exceeded)
+        {
+            try
+            {
+                Registry::DomainBrowserImpl::DomainList dl = pimpl_->getDomainList(user_contact_id,
+                        Optional<unsigned long long>(),
+                        Optional<unsigned long long>(),
+                        Optional<unsigned long long>(keyset_id), offset);
+                limit_exceeded = dl.limit_exceeded;
+                return corba_wrap_domain_list(dl.dld)._retn();
+            }
+            catch (const Registry::DomainBrowserImpl::AccessDenied&)
+            {
+                throw Registry::DomainBrowser::ACCESS_DENIED();
+            }
+            catch (const Registry::DomainBrowserImpl::UserNotExists& )
+            {
+                throw Registry::DomainBrowser::USER_NOT_EXISTS();
+            }
+            catch (...)
+            {
+                throw Registry::DomainBrowser::INTERNAL_SERVER_ERROR();
+            }
+        }
+
+        Registry::DomainBrowser::DomainList* Server_i::getDomainsForNsset(
+            ::CORBA::ULongLong user_contact_id,
+            ::CORBA::ULongLong nsset_id,
+            ::CORBA::ULong offset,
+            ::CORBA::Boolean& limit_exceeded)
+        {
+            try
+            {
+                Registry::DomainBrowserImpl::DomainList dl = pimpl_->getDomainList(user_contact_id,
+                        Optional<unsigned long long>(),
+                        Optional<unsigned long long>(nsset_id),
+                        Optional<unsigned long long>(), offset);
+                limit_exceeded = dl.limit_exceeded;
+                return corba_wrap_domain_list(dl.dld)._retn();
+            }
+            catch (const Registry::DomainBrowserImpl::AccessDenied&)
+            {
+                throw Registry::DomainBrowser::ACCESS_DENIED();
+            }
+            catch (const Registry::DomainBrowserImpl::UserNotExists& )
+            {
+                throw Registry::DomainBrowser::USER_NOT_EXISTS();
             }
             catch (...)
             {
@@ -313,45 +313,46 @@ namespace Registry
         }
 
         Registry::DomainBrowser::ContactDetail* Server_i::getContactDetail(
-            const Registry::DomainBrowser::RegistryReference& contact,
-            const Registry::DomainBrowser::RegistryReference& detail,
-            const char* lang,
+            ::CORBA::ULongLong user_contact_id,
+             ::CORBA::ULongLong detail_id,
             Registry::DomainBrowser::DataAccessLevel& auth_result)
         {
             try
             {
                 Registry::DomainBrowserImpl::ContactDetail detail_impl
-                    = pimpl_->getContactDetail(contact.id, detail.id, lang);
+                    = pimpl_->getContactDetail(user_contact_id, detail_id);
 
                 ContactDetail_var contact_detail = new ContactDetail;
                 contact_detail->id = detail_impl.id;
-                contact_detail->handle = CORBA::string_dup(detail_impl.handle.c_str());
-                contact_detail->roid = CORBA::string_dup(detail_impl.roid.c_str());
+                contact_detail->handle = Corba::wrap_string_to_corba_string(detail_impl.handle);
+                contact_detail->roid = Corba::wrap_string_to_corba_string(detail_impl.roid);
                 contact_detail->registrar.id = detail_impl.sponsoring_registrar.id;
-                contact_detail->registrar.handle = CORBA::string_dup(detail_impl.sponsoring_registrar.handle.c_str());
-                contact_detail->registrar.name = CORBA::string_dup(detail_impl.sponsoring_registrar.name.c_str());
-                contact_detail->create_date = CORBA::string_dup(boost::posix_time::to_iso_extended_string(detail_impl.creation_time).c_str());
-                contact_detail->transfer_date = CORBA::string_dup(detail_impl.transfer_time.isnull()
-                    ? "" : boost::posix_time::to_iso_extended_string(detail_impl.transfer_time.get_value()).c_str());
-                contact_detail->update_date = CORBA::string_dup(detail_impl.update_time.isnull()
-                    ? "" : boost::posix_time::to_iso_extended_string(detail_impl.update_time.get_value()).c_str());
-                contact_detail->auth_info = CORBA::string_dup(detail_impl.authinfopw.c_str());
-                contact_detail->name = CORBA::string_dup(detail_impl.name.get_value_or_default().c_str());
-                contact_detail->organization = CORBA::string_dup(detail_impl.organization.get_value_or_default().c_str());
-                contact_detail->street1 = CORBA::string_dup(detail_impl.street1.get_value_or_default().c_str());
-                contact_detail->street2 = CORBA::string_dup(detail_impl.street2.get_value_or_default().c_str());
-                contact_detail->street3 = CORBA::string_dup(detail_impl.street3.get_value_or_default().c_str());
-                contact_detail->province = CORBA::string_dup(detail_impl.stateorprovince.get_value_or_default().c_str());
-                contact_detail->postalcode = CORBA::string_dup(detail_impl.postalcode.get_value_or_default().c_str());
-                contact_detail->city = CORBA::string_dup(detail_impl.city.get_value_or_default().c_str());
-                contact_detail->country = CORBA::string_dup(detail_impl.country.get_value_or_default().c_str());
-                contact_detail->telephone = CORBA::string_dup(detail_impl.telephone.get_value_or_default().c_str());
-                contact_detail->fax = CORBA::string_dup(detail_impl.fax.get_value_or_default().c_str());
-                contact_detail->email = CORBA::string_dup(detail_impl.email.get_value_or_default().c_str());
-                contact_detail->notify_email = CORBA::string_dup(detail_impl.notifyemail.get_value_or_default().c_str());
-                contact_detail->ssn = CORBA::string_dup(detail_impl.ssn.get_value_or_default().c_str());
-                contact_detail->ssn_type = CORBA::string_dup(detail_impl.ssntype.get_value_or_default().c_str());
-                contact_detail->vat = CORBA::string_dup(detail_impl.vat.get_value_or_default().c_str());
+                contact_detail->registrar.handle = Corba::wrap_string_to_corba_string(detail_impl.sponsoring_registrar.handle);
+                contact_detail->registrar.name = Corba::wrap_string_to_corba_string(detail_impl.sponsoring_registrar.name);
+                contact_detail->create_time = Corba::wrap_ptime_to_corba_string(detail_impl.creation_time);
+
+                contact_detail->transfer_time = Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableDateTimeIsoString>(
+                    Corba::wrap_nullable_ptime_to_nullable_corba_string(detail_impl.transfer_time));
+                contact_detail->update_time = Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableDateTimeIsoString>(
+                    Corba::wrap_nullable_ptime_to_nullable_corba_string(detail_impl.update_time));
+
+                contact_detail->auth_info = Corba::wrap_string_to_corba_string(detail_impl.authinfopw);
+                contact_detail->name = Corba::wrap_string_to_corba_string(detail_impl.name.get_value_or_default());
+                contact_detail->organization = Corba::wrap_string_to_corba_string(detail_impl.organization.get_value_or_default());
+                contact_detail->street1 = Corba::wrap_string_to_corba_string(detail_impl.street1.get_value_or_default());
+                contact_detail->street2 = Corba::wrap_string_to_corba_string(detail_impl.street2.get_value_or_default());
+                contact_detail->street3 = Corba::wrap_string_to_corba_string(detail_impl.street3.get_value_or_default());
+                contact_detail->province = Corba::wrap_string_to_corba_string(detail_impl.stateorprovince.get_value_or_default());
+                contact_detail->postalcode = Corba::wrap_string_to_corba_string(detail_impl.postalcode.get_value_or_default());
+                contact_detail->city = Corba::wrap_string_to_corba_string(detail_impl.city.get_value_or_default());
+                contact_detail->country = Corba::wrap_string_to_corba_string(detail_impl.country.get_value_or_default());
+                contact_detail->telephone = Corba::wrap_string_to_corba_string(detail_impl.telephone.get_value_or_default());
+                contact_detail->fax = Corba::wrap_string_to_corba_string(detail_impl.fax.get_value_or_default());
+                contact_detail->email = Corba::wrap_string_to_corba_string(detail_impl.email.get_value_or_default());
+                contact_detail->notify_email = Corba::wrap_string_to_corba_string(detail_impl.notifyemail.get_value_or_default());
+                contact_detail->ssn = Corba::wrap_string_to_corba_string(detail_impl.ssn.get_value_or_default());
+                contact_detail->ssn_type = Corba::wrap_string_to_corba_string(detail_impl.ssntype.get_value_or_default());
+                contact_detail->vat = Corba::wrap_string_to_corba_string(detail_impl.vat.get_value_or_default());
                 contact_detail->disclose_flags.address = detail_impl.disclose_flags.address;
                 contact_detail->disclose_flags.email = detail_impl.disclose_flags.email;
                 contact_detail->disclose_flags.fax = detail_impl.disclose_flags.fax;
@@ -361,8 +362,12 @@ namespace Registry
                 contact_detail->disclose_flags.organization = detail_impl.disclose_flags.organization;
                 contact_detail->disclose_flags.telephone = detail_impl.disclose_flags.telephone;
                 contact_detail->disclose_flags.vat = detail_impl.disclose_flags.vat;
-                contact_detail->states = CORBA::string_dup(detail_impl.states.c_str());
-                contact_detail->state_codes = CORBA::string_dup(detail_impl.state_codes.c_str());
+
+                contact_detail->state_codes.length(detail_impl.state_codes.size());
+                for(unsigned long long j = 0; j < detail_impl.state_codes.size(); ++j)
+                {
+                    contact_detail->state_codes[j] = Corba::wrap_string_to_corba_string(detail_impl.state_codes.at(j));
+                }
 
                 if(detail_impl.is_owner)
                 {
@@ -374,7 +379,7 @@ namespace Registry
                 }
 
                 return contact_detail._retn();
-            }//try
+            }
             catch (const Registry::DomainBrowserImpl::ObjectNotExists& )
             {
                 throw Registry::DomainBrowser::OBJECT_NOT_EXISTS();
@@ -390,58 +395,67 @@ namespace Registry
         }
 
         Registry::DomainBrowser::NSSetDetail* Server_i::getNssetDetail(
-            const Registry::DomainBrowser::RegistryReference& contact,
-            const Registry::DomainBrowser::RegistryReference& nsset,
-            const char* lang,
+            ::CORBA::ULongLong user_contact_id,
+             ::CORBA::ULongLong nsset_id,
             Registry::DomainBrowser::DataAccessLevel& auth_result)
         {
             try
             {
                 Registry::DomainBrowserImpl::NssetDetail detail_impl
-                    = pimpl_->getNssetDetail(contact.id, nsset.id, lang);
+                    = pimpl_->getNssetDetail(user_contact_id, nsset_id);
 
                 NSSetDetail_var nsset_detail = new NSSetDetail;
 
                 nsset_detail->id = detail_impl.id;
-                nsset_detail->handle = CORBA::string_dup(detail_impl.handle.c_str());
-                nsset_detail->roid = CORBA::string_dup(detail_impl.roid.c_str());
+                nsset_detail->handle = Corba::wrap_string_to_corba_string(detail_impl.handle);
+                nsset_detail->roid = Corba::wrap_string_to_corba_string(detail_impl.roid);
                 nsset_detail->registrar.id = detail_impl.sponsoring_registrar.id;
-                nsset_detail->registrar.handle = CORBA::string_dup(detail_impl.sponsoring_registrar.handle.c_str());
-                nsset_detail->registrar.name = CORBA::string_dup(detail_impl.sponsoring_registrar.name.c_str());
-                nsset_detail->create_date = CORBA::string_dup(boost::posix_time::to_iso_extended_string(detail_impl.creation_time).c_str());
-                nsset_detail->transfer_date = CORBA::string_dup(detail_impl.transfer_time.isnull()
-                    ? "" : boost::posix_time::to_iso_extended_string(detail_impl.transfer_time.get_value()).c_str());
-                nsset_detail->update_date = CORBA::string_dup(detail_impl.update_time.isnull()
-                    ? "" : boost::posix_time::to_iso_extended_string(detail_impl.update_time.get_value()).c_str());
+                nsset_detail->registrar.handle = Corba::wrap_string_to_corba_string(detail_impl.sponsoring_registrar.handle);
+                nsset_detail->registrar.name = Corba::wrap_string_to_corba_string(detail_impl.sponsoring_registrar.name);
+                nsset_detail->create_time = Corba::wrap_ptime_to_corba_string(detail_impl.creation_time);
+
+                nsset_detail->transfer_time = Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableDateTimeIsoString>(
+                    Corba::wrap_nullable_ptime_to_nullable_corba_string(detail_impl.transfer_time));
+                nsset_detail->update_time = Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableDateTimeIsoString>(
+                    Corba::wrap_nullable_ptime_to_nullable_corba_string(detail_impl.update_time));
 
                 nsset_detail->create_registrar.id = detail_impl.create_registrar.id;
-                nsset_detail->create_registrar.handle = CORBA::string_dup(detail_impl.create_registrar.handle.c_str());
-                nsset_detail->create_registrar.name = CORBA::string_dup(detail_impl.create_registrar.name.c_str());
+                nsset_detail->create_registrar.handle = Corba::wrap_string_to_corba_string(detail_impl.create_registrar.handle);
+                nsset_detail->create_registrar.name = Corba::wrap_string_to_corba_string(detail_impl.create_registrar.name);
 
                 nsset_detail->update_registrar.id = detail_impl.update_registrar.id;
-                nsset_detail->update_registrar.handle = CORBA::string_dup(detail_impl.update_registrar.handle.c_str());
-                nsset_detail->update_registrar.name = CORBA::string_dup(detail_impl.update_registrar.name.c_str());
+                nsset_detail->update_registrar.handle = Corba::wrap_string_to_corba_string(detail_impl.update_registrar.handle);
+                nsset_detail->update_registrar.name = Corba::wrap_string_to_corba_string(detail_impl.update_registrar.name);
 
-                nsset_detail->auth_info = CORBA::string_dup(detail_impl.authinfopw.c_str());
+                nsset_detail->auth_info = Corba::wrap_string_to_corba_string(detail_impl.authinfopw);
 
                 nsset_detail->admins.length(detail_impl.admins.size());
                 for(std::size_t i = 0; i < detail_impl.admins.size(); ++i)
                 {
                     nsset_detail->admins[i].id = detail_impl.admins[i].id;
-                    nsset_detail->admins[i].handle = CORBA::string_dup(detail_impl.admins[i].handle.c_str());
-                    nsset_detail->admins[i].name = CORBA::string_dup(detail_impl.admins[i].name.c_str());
+                    nsset_detail->admins[i].handle = Corba::wrap_string_to_corba_string(detail_impl.admins[i].handle);
+                    nsset_detail->admins[i].name = Corba::wrap_string_to_corba_string(detail_impl.admins[i].name);
                 }
 
                 nsset_detail->hosts.length(detail_impl.hosts.size());
                 for(std::size_t i = 0; i < detail_impl.hosts.size(); ++i)
                 {
-                    nsset_detail->hosts[i].fqdn = CORBA::string_dup(detail_impl.hosts[i].fqdn.c_str());
-                    nsset_detail->hosts[i].inet = CORBA::string_dup(detail_impl.hosts[i].inet_addr.c_str());
+                    nsset_detail->hosts[i].fqdn = Corba::wrap_string_to_corba_string(detail_impl.hosts[i].get_fqdn());
+
+                    std::vector<boost::asio::ip::address> inet_addrs = detail_impl.hosts[i].get_inet_addr();
+                    nsset_detail->hosts[i].inet.length(inet_addrs.size());
+                    for(std::size_t j = 0; j < inet_addrs.size(); ++j)
+                    {
+                        nsset_detail->hosts[i].inet[j] = Corba::wrap_string_to_corba_string(inet_addrs.at(j).to_string());
+                    }
                 }
 
+                nsset_detail->state_codes.length(detail_impl.state_codes.size());
+                for(unsigned long long j = 0; j < detail_impl.state_codes.size(); ++j)
+                {
+                    nsset_detail->state_codes[j] = Corba::wrap_string_to_corba_string(detail_impl.state_codes.at(j));
+                }
 
-                nsset_detail->states = CORBA::string_dup(detail_impl.states.c_str());
-                nsset_detail->state_codes = CORBA::string_dup(detail_impl.state_codes.c_str());
 
                 nsset_detail->report_level = detail_impl.report_level;
 
@@ -455,7 +469,7 @@ namespace Registry
                 }
 
                 return nsset_detail._retn();
-            }//try
+            }
             catch (const Registry::DomainBrowserImpl::ObjectNotExists& )
             {
                 throw Registry::DomainBrowser::OBJECT_NOT_EXISTS();
@@ -471,66 +485,74 @@ namespace Registry
         }
 
         Registry::DomainBrowser::DomainDetail* Server_i::getDomainDetail(
-            const Registry::DomainBrowser::RegistryReference& contact,
-            const Registry::DomainBrowser::RegistryReference& domain,
-            const char* lang,
+            ::CORBA::ULongLong user_contact_id,
+             ::CORBA::ULongLong domain_id,
             Registry::DomainBrowser::DataAccessLevel& auth_result)
         {
             try
             {
                 Registry::DomainBrowserImpl::DomainDetail detail_impl
-                    = pimpl_->getDomainDetail(contact.id, domain.id, lang);
+                    = pimpl_->getDomainDetail(user_contact_id, domain_id);
 
                 DomainDetail_var domain_detail = new DomainDetail;
                 domain_detail->id = detail_impl.id;
-                domain_detail->fqdn = CORBA::string_dup(detail_impl.fqdn.c_str());
-                domain_detail->roid = CORBA::string_dup(detail_impl.roid.c_str());
+                domain_detail->fqdn = Corba::wrap_string_to_corba_string(detail_impl.fqdn);
+                domain_detail->roid = Corba::wrap_string_to_corba_string(detail_impl.roid);
                 domain_detail->registrar.id = detail_impl.sponsoring_registrar.id;
-                domain_detail->registrar.handle = CORBA::string_dup(detail_impl.sponsoring_registrar.handle.c_str());
-                domain_detail->registrar.name = CORBA::string_dup(detail_impl.sponsoring_registrar.name.c_str());
-                domain_detail->create_date = CORBA::string_dup(boost::posix_time::to_iso_extended_string(detail_impl.creation_time).c_str());
-                domain_detail->update_date = CORBA::string_dup(detail_impl.update_time.isnull()
-                    ? "" : boost::posix_time::to_iso_extended_string(detail_impl.update_time.get_value()).c_str());
-                domain_detail->auth_info = CORBA::string_dup(detail_impl.authinfopw.c_str());
+                domain_detail->registrar.handle = Corba::wrap_string_to_corba_string(detail_impl.sponsoring_registrar.handle);
+                domain_detail->registrar.name = Corba::wrap_string_to_corba_string(detail_impl.sponsoring_registrar.name);
+                domain_detail->create_time = Corba::wrap_ptime_to_corba_string(detail_impl.creation_time);
+
+                domain_detail->update_time = Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableDateTimeIsoString>(
+                    Corba::wrap_nullable_ptime_to_nullable_corba_string(detail_impl.update_time));
+
+                domain_detail->auth_info = Corba::wrap_string_to_corba_string(detail_impl.authinfopw);
                 domain_detail->registrant.id = detail_impl.registrant.id;
-                domain_detail->registrant.handle = CORBA::string_dup(detail_impl.registrant.handle.c_str());
-                domain_detail->registrant.name = CORBA::string_dup(detail_impl.registrant.name.c_str());
-                domain_detail->expiration_date = CORBA::string_dup(boost::gregorian::to_iso_extended_string(detail_impl.expiration_date).c_str());
+                domain_detail->registrant.handle = Corba::wrap_string_to_corba_string(detail_impl.registrant.handle);
+                domain_detail->registrant.name = Corba::wrap_string_to_corba_string(detail_impl.registrant.name);
+
+                domain_detail->expiration_date = Corba::wrap_date_to_corba_string(detail_impl.expiration_date);
 
                 domain_detail->is_enum = !detail_impl.enum_domain_validation.isnull();
                 if(domain_detail->is_enum)
                 {
                     domain_detail->publish = detail_impl.enum_domain_validation.get_value().publish;
-                    domain_detail->val_ex_date = CORBA::string_dup(boost::gregorian::to_iso_extended_string(
-                        detail_impl.enum_domain_validation.get_value().validation_expiration).c_str());
+
+                    domain_detail->val_ex_date = Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableDateIsoString>(
+                    Corba::wrap_nullable_date_to_nullable_corba_string(
+                        Nullable<boost::gregorian::date>(detail_impl.enum_domain_validation.get_value().validation_expiration)));
                 }
                 else
                 {
                     domain_detail->publish = false;
-                    domain_detail->val_ex_date = CORBA::string_dup("");
+                    domain_detail->val_ex_date = 0;
                 }
 
                 domain_detail->nsset.id = detail_impl.nsset.id;
-                domain_detail->nsset.handle = CORBA::string_dup(detail_impl.nsset.handle.c_str());
-                domain_detail->nsset.name = CORBA::string_dup(detail_impl.nsset.name.c_str());
+                domain_detail->nsset.handle = Corba::wrap_string_to_corba_string(detail_impl.nsset.handle);
+                domain_detail->nsset.name = Corba::wrap_string_to_corba_string(detail_impl.nsset.name);
 
                 domain_detail->keyset.id = detail_impl.keyset.id;
-                domain_detail->keyset.handle = CORBA::string_dup(detail_impl.keyset.handle.c_str());
-                domain_detail->keyset.name = CORBA::string_dup(detail_impl.keyset.name.c_str());
+                domain_detail->keyset.handle = Corba::wrap_string_to_corba_string(detail_impl.keyset.handle);
+                domain_detail->keyset.name = Corba::wrap_string_to_corba_string(detail_impl.keyset.name);
 
                 domain_detail->admins.length(detail_impl.admins.size());
 
                 for(std::size_t i = 0; i < detail_impl.admins.size(); ++i)
                 {
                     domain_detail->admins[i].id = detail_impl.admins[i].id;
-                    domain_detail->admins[i].handle = CORBA::string_dup(detail_impl.admins[i].handle.c_str());
-                    domain_detail->admins[i].name = CORBA::string_dup(detail_impl.admins[i].name.c_str());
+                    domain_detail->admins[i].handle = Corba::wrap_string_to_corba_string(detail_impl.admins[i].handle);
+                    domain_detail->admins[i].name = Corba::wrap_string_to_corba_string(detail_impl.admins[i].name);
                 }
 
-                domain_detail->states = CORBA::string_dup(detail_impl.states.c_str());
-                domain_detail->state_codes = CORBA::string_dup(detail_impl.state_codes.c_str());
+                domain_detail->state_codes.length(detail_impl.state_codes.size());
+                for(unsigned long long j = 0; j < detail_impl.state_codes.size(); ++j)
+                {
+                    domain_detail->state_codes[j] = Corba::wrap_string_to_corba_string(detail_impl.state_codes.at(j));
+                }
 
-                if(detail_impl.is_owner)
+
+                if(detail_impl.is_owner || detail_impl.is_admin)
                 {
                     auth_result = PRIVATE_DATA;
                 }
@@ -540,7 +562,7 @@ namespace Registry
                 }
 
                 return domain_detail._retn();
-            }//try
+            }
             catch (const Registry::DomainBrowserImpl::ObjectNotExists& )
             {
                 throw Registry::DomainBrowser::OBJECT_NOT_EXISTS();
@@ -556,46 +578,46 @@ namespace Registry
         }
 
         Registry::DomainBrowser::KeysetDetail* Server_i::getKeysetDetail(
-            const Registry::DomainBrowser::RegistryReference& contact,
-            const Registry::DomainBrowser::RegistryReference& keyset,
-            const char* lang,
+            ::CORBA::ULongLong user_contact_id,
+             ::CORBA::ULongLong keyset_id,
             Registry::DomainBrowser::DataAccessLevel& auth_result)
         {
             try
             {
                 Registry::DomainBrowserImpl::KeysetDetail detail_impl
-                    = pimpl_->getKeysetDetail(contact.id, keyset.id, lang);
+                    = pimpl_->getKeysetDetail(user_contact_id, keyset_id);
 
                 KeysetDetail_var keyset_detail = new KeysetDetail;
 
                 keyset_detail->id = detail_impl.id;
-                keyset_detail->handle = CORBA::string_dup(detail_impl.handle.c_str());
-                keyset_detail->roid = CORBA::string_dup(detail_impl.roid.c_str());
+                keyset_detail->handle = Corba::wrap_string_to_corba_string(detail_impl.handle);
+                keyset_detail->roid = Corba::wrap_string_to_corba_string(detail_impl.roid);
                 keyset_detail->registrar.id = detail_impl.sponsoring_registrar.id;
-                keyset_detail->registrar.handle = CORBA::string_dup(detail_impl.sponsoring_registrar.handle.c_str());
-                keyset_detail->registrar.name = CORBA::string_dup(detail_impl.sponsoring_registrar.name.c_str());
-                keyset_detail->create_date = CORBA::string_dup(boost::posix_time::to_iso_extended_string(detail_impl.creation_time).c_str());
-                keyset_detail->transfer_date = CORBA::string_dup(detail_impl.transfer_time.isnull()
-                    ? "" : boost::posix_time::to_iso_extended_string(detail_impl.transfer_time.get_value()).c_str());
-                keyset_detail->update_date = CORBA::string_dup(detail_impl.update_time.isnull()
-                    ? "" : boost::posix_time::to_iso_extended_string(detail_impl.update_time.get_value()).c_str());
+                keyset_detail->registrar.handle = Corba::wrap_string_to_corba_string(detail_impl.sponsoring_registrar.handle);
+                keyset_detail->registrar.name = Corba::wrap_string_to_corba_string(detail_impl.sponsoring_registrar.name);
+                keyset_detail->create_time = Corba::wrap_ptime_to_corba_string(detail_impl.creation_time);
+
+                keyset_detail->transfer_time = Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableDateTimeIsoString>(
+                    Corba::wrap_nullable_ptime_to_nullable_corba_string(detail_impl.transfer_time));
+                keyset_detail->update_time = Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableDateTimeIsoString>(
+                    Corba::wrap_nullable_ptime_to_nullable_corba_string(detail_impl.update_time));
 
                 keyset_detail->create_registrar.id = detail_impl.create_registrar.id;
-                keyset_detail->create_registrar.handle = CORBA::string_dup(detail_impl.create_registrar.handle.c_str());
-                keyset_detail->create_registrar.name = CORBA::string_dup(detail_impl.create_registrar.name.c_str());
+                keyset_detail->create_registrar.handle = Corba::wrap_string_to_corba_string(detail_impl.create_registrar.handle);
+                keyset_detail->create_registrar.name = Corba::wrap_string_to_corba_string(detail_impl.create_registrar.name);
 
                 keyset_detail->update_registrar.id = detail_impl.update_registrar.id;
-                keyset_detail->update_registrar.handle = CORBA::string_dup(detail_impl.update_registrar.handle.c_str());
-                keyset_detail->update_registrar.name = CORBA::string_dup(detail_impl.update_registrar.name.c_str());
+                keyset_detail->update_registrar.handle = Corba::wrap_string_to_corba_string(detail_impl.update_registrar.handle);
+                keyset_detail->update_registrar.name = Corba::wrap_string_to_corba_string(detail_impl.update_registrar.name);
 
-                keyset_detail->auth_info = CORBA::string_dup(detail_impl.authinfopw.c_str());
+                keyset_detail->auth_info = Corba::wrap_string_to_corba_string(detail_impl.authinfopw);
 
                 keyset_detail->admins.length(detail_impl.admins.size());
                 for(std::size_t i = 0; i < detail_impl.admins.size(); ++i)
                 {
                     keyset_detail->admins[i].id = detail_impl.admins[i].id;
-                    keyset_detail->admins[i].handle = CORBA::string_dup(detail_impl.admins[i].handle.c_str());
-                    keyset_detail->admins[i].name = CORBA::string_dup(detail_impl.admins[i].name.c_str());
+                    keyset_detail->admins[i].handle = Corba::wrap_string_to_corba_string(detail_impl.admins[i].handle);
+                    keyset_detail->admins[i].name = Corba::wrap_string_to_corba_string(detail_impl.admins[i].name);
                 }
 
                 keyset_detail->dnskeys.length(detail_impl.dnskeys.size());
@@ -604,11 +626,14 @@ namespace Registry
                     keyset_detail->dnskeys[i].flags = detail_impl.dnskeys[i].flags;
                     keyset_detail->dnskeys[i].protocol = detail_impl.dnskeys[i].protocol;
                     keyset_detail->dnskeys[i].alg = detail_impl.dnskeys[i].alg;
-                    keyset_detail->dnskeys[i].key = CORBA::string_dup(detail_impl.dnskeys[i].key.c_str());
+                    keyset_detail->dnskeys[i].key = Corba::wrap_string_to_corba_string(detail_impl.dnskeys[i].key);
                 }
 
-                keyset_detail->states = CORBA::string_dup(detail_impl.states.c_str());
-                keyset_detail->state_codes = CORBA::string_dup(detail_impl.state_codes.c_str());
+                keyset_detail->state_codes.length(detail_impl.state_codes.size());
+                for(unsigned long long j = 0; j < detail_impl.state_codes.size(); ++j)
+                {
+                    keyset_detail->state_codes[j] = Corba::wrap_string_to_corba_string(detail_impl.state_codes.at(j));
+                }
 
                 if(detail_impl.is_owner)
                 {
@@ -620,7 +645,7 @@ namespace Registry
                 }
 
                 return keyset_detail._retn();
-            }//try
+            }
             catch (const Registry::DomainBrowserImpl::ObjectNotExists& )
             {
                 throw Registry::DomainBrowser::OBJECT_NOT_EXISTS();
@@ -636,25 +661,25 @@ namespace Registry
         }
 
         Registry::DomainBrowser::RegistrarDetail* Server_i::getRegistrarDetail(
-            const Registry::DomainBrowser::RegistryReference& contact,
+            ::CORBA::ULongLong user_contact_id,
             const char* handle)
         {
             try
             {
                 Registry::DomainBrowserImpl::RegistrarDetail detail_impl
-                    = pimpl_->getRegistrarDetail(contact.id, handle);
+                    = pimpl_->getRegistrarDetail(user_contact_id, handle);
 
                 RegistrarDetail_var registrar_detail = new RegistrarDetail;
                 registrar_detail->id = detail_impl.id;
-                registrar_detail->handle = CORBA::string_dup(detail_impl.handle.c_str());
-                registrar_detail->name = CORBA::string_dup(detail_impl.name.c_str());
-                registrar_detail->phone = CORBA::string_dup(detail_impl.phone.c_str());
-                registrar_detail->fax = CORBA::string_dup(detail_impl.fax.c_str());
-                registrar_detail->url = CORBA::string_dup(detail_impl.url.c_str());
-                registrar_detail->address = CORBA::string_dup(detail_impl.address.c_str());
+                registrar_detail->handle = Corba::wrap_string_to_corba_string(detail_impl.handle);
+                registrar_detail->name = Corba::wrap_string_to_corba_string(detail_impl.name);
+                registrar_detail->phone = Corba::wrap_string_to_corba_string(detail_impl.phone);
+                registrar_detail->fax = Corba::wrap_string_to_corba_string(detail_impl.fax);
+                registrar_detail->url = Corba::wrap_string_to_corba_string(detail_impl.url);
+                registrar_detail->address = Corba::wrap_string_to_corba_string(detail_impl.address);
 
                 return registrar_detail._retn();
-            }//try
+            }
             catch (const Registry::DomainBrowserImpl::ObjectNotExists& )
             {
                 throw Registry::DomainBrowser::OBJECT_NOT_EXISTS();
@@ -670,9 +695,9 @@ namespace Registry
         }
 
         ::CORBA::Boolean Server_i::setContactDiscloseFlags(
-            const Registry::DomainBrowser::RegistryReference& contact,
+            ::CORBA::ULongLong user_contact_id,
             const Registry::DomainBrowser::UpdateContactDiscloseFlags& flags,
-            Registry::DomainBrowser::TID request_id)
+            ::CORBA::ULongLong request_id)
         {
             try
             {
@@ -684,8 +709,8 @@ namespace Registry
                 flags_.ident = flags.ident;
                 flags_.vat = flags.vat;
                 flags_.notify_email = flags.notify_email;
-                return pimpl_->setContactDiscloseFlags(contact.id, flags_, request_id);
-            }//try
+                return pimpl_->setContactDiscloseFlags(user_contact_id, flags_, request_id);
+            }
             catch (const Registry::DomainBrowserImpl::UserNotExists& )
             {
                 throw Registry::DomainBrowser::USER_NOT_EXISTS();
@@ -708,24 +733,14 @@ namespace Registry
             }
         }
 
-        ::CORBA::Boolean Server_i::setAuthInfo(
-            const Registry::DomainBrowser::RegistryReference& contact,
-            const char* objtype,
-            const Registry::DomainBrowser::RegistryReference& objref,
+        ::CORBA::Boolean Server_i::setContactAuthInfo(
+            ::CORBA::ULongLong user_contact_id,
             const char* auth_info,
-            Registry::DomainBrowser::TID request_id)
+            ::CORBA::ULongLong request_id)
         {
             try
             {
-                if(std::string("contact") != objtype)
-                {
-                    throw Registry::DomainBrowserImpl::IncorrectUsage();
-                }
-                return pimpl_->setContactAuthInfo(contact.id, objref.id, auth_info, request_id);
-            }//try
-            catch (const Registry::DomainBrowserImpl::ObjectNotExists& )
-            {
-                throw Registry::DomainBrowser::OBJECT_NOT_EXISTS();
+                return pimpl_->setContactAuthInfo(user_contact_id, auth_info, request_id);
             }
             catch (const Registry::DomainBrowserImpl::UserNotExists& )
             {
@@ -750,11 +765,11 @@ namespace Registry
         }
 
         ::CORBA::Boolean Server_i::setObjectBlockStatus(
-            const Registry::DomainBrowser::RegistryReference& contact,
+            ::CORBA::ULongLong user_contact_id,
             const char* objtype,
-            const Registry::DomainBrowser::RegistryReferenceSeq& objects,
+            const Registry::DomainBrowser::ObjectIdSeq& objects,
             Registry::DomainBrowser::ObjectBlockType block,
-            Registry::DomainBrowser::RecordSequence_out blocked)
+            Registry::DomainBrowser::RefusedObjectHandleSequence_out change_prohibited)
         {
             try
             {
@@ -762,11 +777,11 @@ namespace Registry
                 objects_id.reserve(objects.length());
                 for(std::size_t i = 0; i < objects.length(); ++i)
                 {
-                    objects_id.push_back(objects[i].id);
+                    objects_id.push_back(objects[i]);
                 }
                 std::vector<std::string> blocked_objects;
 
-                bool ret = pimpl_->setObjectBlockStatus(contact.id, objtype, objects_id,
+                bool ret = pimpl_->setObjectBlockStatus(user_contact_id, objtype, objects_id,
                         (block == Registry::DomainBrowser::BLOCK_TRANSFER) ? Registry::DomainBrowserImpl::BLOCK_TRANSFER
                         : (block == Registry::DomainBrowser::UNBLOCK_TRANSFER) ? Registry::DomainBrowserImpl::UNBLOCK_TRANSFER
                         : (block == Registry::DomainBrowser::BLOCK_TRANSFER_AND_UPDATE) ? Registry::DomainBrowserImpl::BLOCK_TRANSFER_AND_UPDATE
@@ -774,16 +789,16 @@ namespace Registry
                         : Registry::DomainBrowserImpl::INVALID_BLOCK_TYPE
                         , blocked_objects);
 
-                Registry::DomainBrowser::RecordSequence_var blocked_var = new Registry::DomainBrowser::RecordSequence;
-                blocked_var->length(blocked_objects.size());
+                Registry::DomainBrowser::RefusedObjectHandleSequence_var change_prohibited_var = new Registry::DomainBrowser::RefusedObjectHandleSequence;
+                change_prohibited_var->length(blocked_objects.size());
                 for(std::size_t i = 0; i < blocked_objects.size(); ++i)
                 {
-                    blocked_var[i] = CORBA::string_dup(blocked_objects.at(i).c_str());
+                    change_prohibited_var[i] = Corba::wrap_string_to_corba_string(blocked_objects.at(i));
                 }
 
-                blocked = blocked_var._retn();//transfer ownership to the out parameter, no exceptions allowed after this point
+                change_prohibited = change_prohibited_var._retn();//transfer ownership to the out parameter, no exceptions allowed after this point
                 return ret;
-            }//try
+            }
             catch (const Registry::DomainBrowserImpl::ObjectNotExists& )
             {
                 throw Registry::DomainBrowser::OBJECT_NOT_EXISTS();
@@ -806,23 +821,19 @@ namespace Registry
             }
         }
 
-        Registry::DomainBrowser::RecordSequence* Server_i::getPublicStatusDesc(const char* lang)
+        Registry::DomainBrowser::StatusDescList* Server_i::getPublicStatusDesc(const char* lang)
         {
             try
             {
-                std::vector<std::string> status_description_out;
-                pimpl_->getPublicStatusDesc(lang, status_description_out);
-                Registry::DomainBrowser::RecordSequence_var status_description_var = new Registry::DomainBrowser::RecordSequence;
-                status_description_var->length(status_description_out.size());
-                for(std::size_t i = 0; i < status_description_out.size(); ++i)
+                std::vector<Registry::DomainBrowserImpl::StatusDesc> status_description = pimpl_->getPublicStatusDesc(lang);
+                Registry::DomainBrowser::StatusDescList_var status_description_var = new Registry::DomainBrowser::StatusDescList;
+                status_description_var->length(status_description.size());
+                for(std::size_t i = 0; i < status_description.size(); ++i)
                 {
-                    status_description_var[i] = CORBA::string_dup(status_description_out.at(i).c_str());
+                    status_description_var[i].state_code = Corba::wrap_string_to_corba_string(status_description.at(i).state_code);
+                    status_description_var[i].state_desc = Corba::wrap_string_to_corba_string(status_description.at(i).state_desc);
                 }
                 return  status_description_var._retn();
-            }//try
-            catch (const Registry::DomainBrowserImpl::IncorrectUsage& )
-            {
-                throw Registry::DomainBrowser::INCORRECT_USAGE();
             }
             catch (...)
             {
@@ -830,38 +841,42 @@ namespace Registry
             }
         }
 
+        MergeContactCandidateList_var corba_wrap_merge_contact_candidate_list(const std::vector<Registry::DomainBrowserImpl::MergeContactCandidateData>& candidate_list)
+        {
+            MergeContactCandidateList_var cl = new MergeContactCandidateList;
+            cl->length(candidate_list.size());
 
-        Registry::DomainBrowser::RecordSet* Server_i::getMergeContactCandidateList(
-            const Registry::DomainBrowser::RegistryReference& contact,
+            for(unsigned long long i = 0 ; i < candidate_list.size(); ++i)
+            {
+                MergeContactCandidateData cld;
+                cld.id = candidate_list.at(i).id;
+                cld.handle = Corba::wrap_string_to_corba_string(candidate_list.at(i).handle);
+                cld.domain_count = candidate_list.at(i).domain_count;
+                cld.nsset_count = candidate_list.at(i).nsset_count;
+                cld.keyset_count = candidate_list.at(i).keyset_count;
+                cld.registrar_handle = Corba::wrap_string_to_corba_string(candidate_list.at(i).registrar_handle);
+                cld.registrar_name = Corba::wrap_string_to_corba_string(candidate_list.at(i).registrar_name);
+
+                cl[i] = cld;
+            }
+
+            return cl;
+        }
+
+
+        Registry::DomainBrowser::MergeContactCandidateList* Server_i::getMergeContactCandidateList(
+            ::CORBA::ULongLong user_contact_id,
             ::CORBA::ULong offset, ::CORBA::Boolean& limit_exceeded)
         {
             try
             {
-                std::vector<std::vector<std::string> > contact_list_out;
-                limit_exceeded = pimpl_->getMergeContactCandidateList(contact.id,
-                    offset, contact_list_out);
-
-                RecordSet_var rs = new RecordSet;
-                rs->length(contact_list_out.size());
-                for(unsigned long long i = 0 ; i < contact_list_out.size(); ++i)
-                {
-                    RecordSequence rseq;
-                    rseq.length(contact_list_out.at(i).size());
-                    for(unsigned long long j = 0 ; j < contact_list_out.at(i).size(); ++j)
-                    {
-                        rseq[j] = CORBA::string_dup(contact_list_out.at(i).at(j).c_str());
-                    }
-                    rs[i] = rseq;
-                }
-                return rs._retn();
-            }//try
+                Registry::DomainBrowserImpl::MergeContactCandidateList mcl = pimpl_->getMergeContactCandidateList(user_contact_id, offset);
+                limit_exceeded = mcl.limit_exceeded;
+                return corba_wrap_merge_contact_candidate_list(mcl.mccl)._retn();
+            }
             catch (const Registry::DomainBrowserImpl::UserNotExists& )
             {
                 throw Registry::DomainBrowser::USER_NOT_EXISTS();
-            }
-            catch (const Registry::DomainBrowserImpl::IncorrectUsage& )
-            {
-                throw Registry::DomainBrowser::INCORRECT_USAGE();
             }
             catch (...)
             {
@@ -869,20 +884,20 @@ namespace Registry
             }
         }
 
-        void Server_i::mergeContacts(const Registry::DomainBrowser::RegistryReference& dst_contact,
-            const Registry::DomainBrowser::RegistryReferenceSeq& src_contact_list,
-            Registry::DomainBrowser::TID request_id)
+        void Server_i::mergeContacts(::CORBA::ULongLong dst_contact_id,
+            const Registry::DomainBrowser::ObjectIdSeq& src_contact_id_list,
+            ::CORBA::ULongLong request_id)
         {
             try
             {
                 std::vector<unsigned long long> contact_list;
-                contact_list.reserve(src_contact_list.length());
-                for(std::size_t i = 0; i < src_contact_list.length(); ++i)
+                contact_list.reserve(src_contact_id_list.length());
+                for(std::size_t i = 0; i < src_contact_id_list.length(); ++i)
                 {
-                    contact_list.push_back(src_contact_list[i].id);
+                    contact_list.push_back(src_contact_id_list[i]);
                 }
-                pimpl_->mergeContacts(dst_contact.id, contact_list, request_id);
-            }//try
+                pimpl_->mergeContacts(dst_contact_id, contact_list, request_id);
+            }
             catch (const Registry::DomainBrowserImpl::UserNotExists& )
             {
                 throw Registry::DomainBrowser::USER_NOT_EXISTS();
