@@ -234,6 +234,13 @@ namespace Registry
             {
                 throw Registry::MojeID::Server::OBJECT_NOT_EXISTS();
             }
+            catch (const Registry::MojeID::MESSAGE_LIMIT_EXCEEDED &_ex)
+            {
+                throw Registry::MojeID::Server::MESSAGE_LIMIT_EXCEEDED(
+                          corba_wrap_date(_ex.limit_expire_date),
+                          _ex.max_number_of_messages,
+                          _ex.watched_period_in_days);
+            }
             catch (Fred::Contact::Verification::DataValidationError &_ex)
             {
                 throw Registry::MojeID::Server::DATA_VALIDATION_ERROR(
@@ -668,6 +675,13 @@ namespace Registry
             {
                 throw Registry::MojeID::Server::OBJECT_NOT_EXISTS();
             }
+            catch (const Registry::MojeID::MESSAGE_LIMIT_EXCEEDED &_ex)
+            {
+                throw Registry::MojeID::Server::MESSAGE_LIMIT_EXCEEDED(
+                          corba_wrap_date(_ex.limit_expire_date),
+                          _ex.max_number_of_messages,
+                          _ex.watched_period_in_days);
+            }
             catch (const Registry::MojeID::IDENTIFICATION_REQUEST_NOT_EXISTS&)
             {
                 throw Registry::MojeID::Server::IDENTIFICATION_REQUEST_NOT_EXISTS();
@@ -676,6 +690,45 @@ namespace Registry
             {
                 throw Registry::MojeID::Server
                     ::INTERNAL_SERVER_ERROR(_ex.what());
+            }
+            catch (...)
+            {
+                throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR();
+            }
+        }
+
+        void Server_i::sendMojeIDCard(
+              ::CORBA::ULongLong contact_id,
+              ::CORBA::ULongLong request_id)
+        {
+            try
+            {
+                pimpl_->sendMojeIDCard(contact_id, request_id);
+                return;
+            }
+            catch (const Registry::MojeID::OBJECT_NOT_EXISTS&)
+            {
+                throw Registry::MojeID::Server::OBJECT_NOT_EXISTS();
+            }
+            catch (const Registry::MojeID::MESSAGE_LIMIT_EXCEEDED &_ex)
+            {
+                throw Registry::MojeID::Server::MESSAGE_LIMIT_EXCEEDED(
+                          corba_wrap_date(_ex.limit_expire_date),
+                          _ex.max_number_of_messages,
+                          _ex.watched_period_in_days);
+            }
+            catch (const Registry::MojeID::IDENTIFICATION_REQUEST_NOT_EXISTS&)
+            {
+                throw Registry::MojeID::Server::IDENTIFICATION_REQUEST_NOT_EXISTS();
+            }
+            catch (const Fred::Contact::Verification::DataValidationError &_ex)
+            {
+                throw Registry::MojeID::Server::DATA_VALIDATION_ERROR(
+                    corba_wrap_validation_error_list(_ex.errors));
+            }
+            catch (const std::exception &_ex)
+            {
+                throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR(_ex.what());
             }
             catch (...)
             {

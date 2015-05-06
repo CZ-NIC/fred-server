@@ -34,13 +34,9 @@ namespace PublicRequest {
 
 class ContactVerificationPassword
 {
-    PublicRequestAuthImpl* prai_ptr_;
 public:
     typedef std::map<std::string, std::string> MessageData;
-private:
-    const MessageData collectMessageData();
-public:
-    size_t get_password_chunk_length();
+    size_t get_password_chunk_length()const;
     ContactVerificationPassword(PublicRequestAuthImpl* _prai_ptr);
     void sendEmailPassword(const std::string& mailTemplate //db table mail_type.name
             );
@@ -55,9 +51,18 @@ public:
     std::string generateRandomPassword(const size_t _length);
     std::string generateRandomPassword();
     std::string generateAuthInfoPassword();
+private:
+    MessageData collectMessageData()const;
+    PublicRequestAuthImpl* prai_ptr_;
 };//class ContactVerificationPassword
 
-}}
+//TODO: move this function into more convenient place
+ContactVerificationPassword::MessageData& collect_message_data(
+    unsigned long long _contact_id,
+    Database::Connection &_conn,
+    ContactVerificationPassword::MessageData &_data);
+}//PublicRequest
+}//Fred
 
 
 #endif // CONTACT_VERIFICATION_PASSWORD_H_

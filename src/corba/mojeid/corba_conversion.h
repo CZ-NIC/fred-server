@@ -13,70 +13,72 @@
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/assign/list_of.hpp>
 
-
-using namespace Registry::MojeID;
-
-Date corba_wrap_date(const std::string &_v)//_v="2014-12-21T17:38:25,123456789"
+Registry::MojeID::Date corba_wrap_date(const boost::gregorian::date &_v)
 {
-    enum { GREGORIAN_DATE_LENGTH = 10 };
-    const boost::gregorian::date gd = boost::gregorian::from_simple_string(_v.substr(0, GREGORIAN_DATE_LENGTH));
-    Date d;
-    if (gd.is_special()) {
+    Registry::MojeID::Date d;
+    if (_v.is_special()) {
         d.year  = 0;
         d.month = 0;
         d.day   = 0;
     }
     else {
-        d.year  = static_cast<int>(gd.year());
-        d.month = static_cast<int>(gd.month());
-        d.day   = static_cast<int>(gd.day());
+        d.year  = static_cast<int>(_v.year());
+        d.month = static_cast<int>(_v.month());
+        d.day   = static_cast<int>(_v.day());
     }
     return d;
 }
 
-DateTime corba_wrap_datetime(const std::string &_v)
+Registry::MojeID::Date corba_wrap_date(const std::string &_v)//_v="2014-12-21T17:38:25,123456789"
+{
+    enum { GREGORIAN_DATE_LENGTH = 10 };
+    const std::string str_date = _v.substr(0, GREGORIAN_DATE_LENGTH);
+    return corba_wrap_date(boost::gregorian::from_simple_string(str_date));
+}
+
+Registry::MojeID::DateTime corba_wrap_datetime(const std::string &_v)
 {
     return corba_wrap_string(_v);
 }
 
-NullableString* corba_wrap_nullable_string(const Nullable<std::string> &_v)
+Registry::MojeID::NullableString* corba_wrap_nullable_string(const Nullable<std::string> &_v)
 {
     if (_v.isnull()) {
         return 0;
     }
     else {
-        return new NullableString(_v.get_value().c_str());
+        return new Registry::MojeID::NullableString(_v.get_value().c_str());
     }
 }
 
-NullableBoolean* corba_wrap_nullable_boolean(const Nullable<bool> &_v)
+Registry::MojeID::NullableBoolean* corba_wrap_nullable_boolean(const Nullable<bool> &_v)
 {
     if (_v.isnull()) {
         return 0;
     }
     else {
-        return new NullableBoolean(_v.get_value());
+        return new Registry::MojeID::NullableBoolean(_v.get_value());
     }
 }
 
-NullableBoolean* corba_wrap_nullable_boolean(const bool _v)
+Registry::MojeID::NullableBoolean* corba_wrap_nullable_boolean(const bool _v)
 {
-    return new NullableBoolean(_v);
+    return new Registry::MojeID::NullableBoolean(_v);
 }
 
 
-NullableULongLong* corba_wrap_nullable_ulonglong(const Nullable<unsigned long long> &_v)
+Registry::MojeID::NullableULongLong* corba_wrap_nullable_ulonglong(const Nullable<unsigned long long> &_v)
 {
     if (_v.isnull()) {
         return 0;
     }
     else {
-        return new NullableULongLong(_v.get_value());
+        return new Registry::MojeID::NullableULongLong(_v.get_value());
     }
 }
 
 
-NullableDate* corba_wrap_nullable_date(const Nullable<std::string> &_v)
+Registry::MojeID::NullableDate* corba_wrap_nullable_date(const Nullable<std::string> &_v)
 {
     if (_v.isnull()) {
         return 0;
@@ -87,17 +89,17 @@ NullableDate* corba_wrap_nullable_date(const Nullable<std::string> &_v)
             return 0;
         }
         else {
-            Date d;
+            Registry::MojeID::Date d;
             d.year  = static_cast<int>(tmp.year());
             d.month = static_cast<int>(tmp.month());
             d.day   = static_cast<int>(tmp.day());
-            return new NullableDate(d);
+            return new Registry::MojeID::NullableDate(d);
         }
     }
 }
 
 
-Nullable<unsigned long long> corba_unwrap_nullable_ulonglong(const NullableULongLong *_v)
+Nullable<unsigned long long> corba_unwrap_nullable_ulonglong(const Registry::MojeID::NullableULongLong *_v)
 {
     if (_v) {
         return static_cast<unsigned long long>(_v->_value());
@@ -108,7 +110,7 @@ Nullable<unsigned long long> corba_unwrap_nullable_ulonglong(const NullableULong
 }
 
 
-Nullable<std::string> corba_unwrap_nullable_string(const NullableString *_v)
+Nullable<std::string> corba_unwrap_nullable_string(const Registry::MojeID::NullableString *_v)
 {
     if (_v) {
         return std::string(_v->_value());
@@ -123,7 +125,7 @@ bool is_not_normal(int c)
     return c == '\r' || c == '\n' || c == '\t';
 }
 
-Nullable<std::string> corba_unwrap_normalize_nullable_string(const NullableString *_v)
+Nullable<std::string> corba_unwrap_normalize_nullable_string(const Registry::MojeID::NullableString *_v)
 {
     if (_v)
     {
@@ -139,7 +141,7 @@ Nullable<std::string> corba_unwrap_normalize_nullable_string(const NullableStrin
     }
 }
 
-Nullable<bool> corba_unwrap_nullable_boolean(const NullableBoolean *_v)
+Nullable<bool> corba_unwrap_nullable_boolean(const Registry::MojeID::NullableBoolean *_v)
 {
     if (_v) {
         return _v->_value();
@@ -149,7 +151,7 @@ Nullable<bool> corba_unwrap_nullable_boolean(const NullableBoolean *_v)
     }
 }
 
-bool corba_unwrap_nullable_boolean(const NullableBoolean *_v, const bool null_value)
+bool corba_unwrap_nullable_boolean(const Registry::MojeID::NullableBoolean *_v, const bool null_value)
 {
     if (_v) {
         return _v->_value();
@@ -160,7 +162,7 @@ bool corba_unwrap_nullable_boolean(const NullableBoolean *_v, const bool null_va
 }
 
 
-Nullable<std::string> corba_unwrap_nullable_date(const NullableDate *_v)
+Nullable<std::string> corba_unwrap_nullable_date(const Registry::MojeID::NullableDate *_v)
 {
     if (_v) {
         boost::format date_fmt = boost::format("%1%-%2$02d-%3$02d")
@@ -176,7 +178,7 @@ Nullable<std::string> corba_unwrap_nullable_date(const NullableDate *_v)
 }
 
 
-Nullable<std::pair<std::string, std::string> > corba_unwrap_ssn_value_by_priority(const Contact& _contact)
+Nullable<std::pair<std::string, std::string> > corba_unwrap_ssn_value_by_priority(const Registry::MojeID::Contact& _contact)
 {
     typedef std::pair<std::string, Nullable<std::string> > SSN;
     /* NOTE: all detections for not set value on Nullables here is done by default value getter
@@ -210,7 +212,7 @@ Nullable<std::pair<std::string, std::string> > corba_unwrap_ssn_value_by_priorit
 }
 
 
-Fred::Contact::Verification::Contact corba_unwrap_contact(const Contact &_contact)
+Fred::Contact::Verification::Contact corba_unwrap_contact(const Registry::MojeID::Contact &_contact)
 {
     Fred::Contact::Verification::Contact data;
 
@@ -276,9 +278,9 @@ Fred::Contact::Verification::Contact corba_unwrap_contact(const Contact &_contac
     return data;
 }
 
-Contact* corba_wrap_contact(const Fred::Contact::Verification::Contact &_contact)
+Registry::MojeID::Contact* corba_wrap_contact(const Fred::Contact::Verification::Contact &_contact)
 {
-    Contact *data = new Contact();
+    Registry::MojeID::Contact *data = new Registry::MojeID::Contact();
     data->id           = corba_wrap_nullable_ulonglong(_contact.id);
     data->username     = corba_wrap_string(_contact.handle);
 

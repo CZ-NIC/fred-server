@@ -50,6 +50,8 @@ public:
     bool notify_commands;
     boost::posix_time::time_duration uho_scavenger_thread_period;
     boost::posix_time::time_duration uho_scavenger_object_max_idle_period;
+    unsigned letter_limit_count;
+    unsigned letter_limit_interval;
 
     boost::shared_ptr<boost::program_options::options_description>
     get_options_description()
@@ -78,7 +80,13 @@ public:
                 ("mojeid.uho_scavenger_object_max_idle_period",
                  po::value<int>()->default_value(300),
                  "unregistrable handles iterator object scavenger thread configuration"
-                 " - maximal object idle period (timeout) in seconds");
+                 " - maximal object idle period (timeout) in seconds")
+                ("mojeid.letter_limit_count",
+                 po::value<unsigned>()->default_value(6),
+                 "maximum number of letters sent by one contact in a letter_limit_interval days")
+                ("mojeid.letter_limit_interval",
+                 po::value<unsigned>()->default_value(30),
+                 "interval for checking number of sent letters");
 
         return cfg_opts;
     }//get_options_description
@@ -95,6 +103,8 @@ public:
                 vm["mojeid.uho_scavenger_thread_period"].as<int>());
         uho_scavenger_object_max_idle_period = boost::posix_time::seconds(
                 vm["mojeid.uho_scavenger_object_max_idle_period"].as<int>());
+        letter_limit_count    = vm["mojeid.letter_limit_count"   ].as<unsigned>();
+        letter_limit_interval = vm["mojeid.letter_limit_interval"].as<unsigned>();
     }//handle
 };
 
