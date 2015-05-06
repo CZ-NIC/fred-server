@@ -99,6 +99,40 @@ namespace Registry
                 }
                 throw Registry::MojeID::OBJECT_NOT_EXISTS();
             }
+
+            void check_sent_letters_limit(unsigned long long _contact_id,
+                                          unsigned _max_sent_letters,
+                                          unsigned _watched_period_in_days,
+                                          Database::Connection &_conn)
+            {
+                const Database::Result result = _conn.exec_params(
+"WITH comm_type_letter AS (SELECT id FROM comm_type WHERE type='letter'),"
+     "message_types AS (SELECT id FROM message_type WHERE type IN ('mojeid_pin3')),"
+     "send_states AS (SELECT id FROM enum_send_status WHERE status_name IN ('send_failed',"
+                                                                           "'sent',"
+                                                                           "'being_sent',"
+                                                                           "'undelivered'))"
+"SELECT (ma.moddate+($3::TEXT||'DAYS')::INTERVAL)::DATE "
+"FROM message_archive ma "
+"JOIN message_contact_history_map mc ON mc.message_archive_id=ma.id "
+"WHERE ma.message_type_id IN (SELECT id FROM message_types) AND "
+      "ma.comm_type_id=(SELECT id FROM comm_type_letter) AND "
+      "ma.status_id IN (SELECT id FROM send_states) AND "
+      "(NOW()-($3::TEXT||'DAYS')::INTERVAL)::DATE<ma.moddate::DATE AND "
+      "mc.contact_object_registry_id=$1::INTEGER "
+"ORDER BY 1 DESC OFFSET ($2::INTEGER-1) LIMIT 1",
+                    Database::query_param_list(_contact_id)               // used as $1::INTEGER
+                                              (_max_sent_letters)         // used as $2::INTEGER
+                                              (_watched_period_in_days)); // used as $3::TEXT
+                if (result.size() <= 0) {
+                    return;
+                }
+                throw MESSAGE_LIMIT_EXCEEDED(
+                          boost::gregorian::from_simple_string(
+                              static_cast< std::string >(result[0][0])),
+                          _max_sent_letters,
+                          _watched_period_in_days);
+            }
         }
 
         MojeIDImpl::MojeIDImpl(const std::string &_server_name
@@ -472,6 +506,13 @@ namespace Registry
                         Fred::PublicRequest::cancel_public_request(cid, Fred::PublicRequest::PRT_MOJEID_CONTACT_REIDENTIFICATION, request.get_request_id());
                         type = Fred::PublicRequest::PRT_MOJEID_CONTACT_REIDENTIFICATION;
                     }
+                    {
+                        Database::Connection conn = Database::Manager::acquire();
+                        check_sent_letters_limit(cid,
+                                                 server_conf_->letter_limit_count,
+                                                 server_conf_->letter_limit_interval,
+                                                 conn);
+                    }
                     IdentificationRequestPtr new_request(mailer_, type);
                     new_request->setRegistrarId(request.get_registrar_id());
                     new_request->setRequestId(request.get_request_id());
@@ -523,6 +564,11 @@ namespace Registry
 
             }
             catch(Registry::MojeID::OBJECT_NOT_EXISTS& _ex)
+            {
+                LOGGER(PACKAGE).info(_ex.what());
+                throw;
+            }
+            catch(Registry::MojeID::MESSAGE_LIMIT_EXCEEDED &_ex)
             {
                 LOGGER(PACKAGE).info(_ex.what());
                 throw;
@@ -1397,6 +1443,13 @@ namespace Registry
                     Fred::PublicRequest::cancel_public_request(_contact_id, type, _request_id);
                 }
 
+                {
+                    Database::Connection conn = Database::Manager::acquire();
+                    check_sent_letters_limit(_contact_id,
+                                             server_conf_->letter_limit_count,
+                                             server_conf_->letter_limit_interval,
+                                             conn);
+                }
                 IdentificationRequestPtr new_request(mailer_, type);
                 new_request->setRegistrarId(mojeid_registrar_id_);
                 new_request->setRequestId(_request_id);
@@ -1410,6 +1463,11 @@ namespace Registry
 
             }
             catch(const Registry::MojeID::OBJECT_NOT_EXISTS &e)
+            {
+                LOGGER(PACKAGE).info(e.what());
+                throw;
+            }
+            catch(Registry::MojeID::MESSAGE_LIMIT_EXCEEDED &e)
             {
                 LOGGER(PACKAGE).info(e.what());
                 throw;

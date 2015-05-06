@@ -76,6 +76,23 @@ namespace Registry
             {}
         };
 
+        struct MESSAGE_LIMIT_EXCEEDED : public std::runtime_error
+        {
+            typedef boost::gregorian::date Date;
+            MESSAGE_LIMIT_EXCEEDED(const Date &_limit_expire_date,
+                                   unsigned _max_number_of_messages,
+                                   unsigned _watched_period_in_days)
+            :   std::runtime_error("too many letters sent"),
+                limit_expire_date(_limit_expire_date),
+                max_number_of_messages(_max_number_of_messages),
+                watched_period_in_days(_watched_period_in_days)
+            { }
+            ~MESSAGE_LIMIT_EXCEEDED()throw() { }
+            Date limit_expire_date;
+            unsigned max_number_of_messages;
+            unsigned watched_period_in_days;
+        };
+
         struct ContactStateData
         {
             unsigned long long contact_id;
