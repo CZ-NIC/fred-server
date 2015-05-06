@@ -183,6 +183,10 @@ namespace Registry
                 unsigned long long _contact_id,
                 unsigned long long _request_id);
 
+            void sendMojeIDCard(
+                unsigned long long _contact_id,
+                unsigned long long _request_id);
+
             void contactCancelAccountPrepare(
                 unsigned long long _contact_id
                  , const char* _trans_id

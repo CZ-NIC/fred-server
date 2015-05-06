@@ -27,6 +27,7 @@
 #include "src/mojeid/mojeid_notifier.h"
 #include "src/mojeid/mojeid_contact_states.h"
 #include "src/fredlib/contact_verification/contact_verification_state.h"
+#include "src/fredlib/contact_verification/contact_verification_password.h"
 
 #include "src/fredlib/db_settings.h"
 #include "src/fredlib/registry.h"
@@ -43,6 +44,7 @@
 #include "src/mojeid/mojeid_validators.h"
 #include "util/factory_check.h"
 #include "util/util.h"
+#include "util/map_at.h"
 #include "util/xmlgen.h"
 
 #include "cfg/config_handler_decl.h"
@@ -106,21 +108,19 @@ namespace Registry
                                           Database::Connection &_conn)
             {
                 const Database::Result result = _conn.exec_params(
-"WITH comm_type_letter AS (SELECT id FROM comm_type WHERE type='letter'),"
-     "message_types AS (SELECT id FROM message_type WHERE type IN ('mojeid_pin3')),"
-     "send_states AS (SELECT id FROM enum_send_status WHERE status_name IN ('send_failed',"
-                                                                           "'sent',"
-                                                                           "'being_sent',"
-                                                                           "'undelivered'))"
-"SELECT (ma.moddate+($3::TEXT||'DAYS')::INTERVAL)::DATE "
-"FROM message_archive ma "
-"JOIN message_contact_history_map mc ON mc.message_archive_id=ma.id "
-"WHERE ma.message_type_id IN (SELECT id FROM message_types) AND "
-      "ma.comm_type_id=(SELECT id FROM comm_type_letter) AND "
-      "ma.status_id IN (SELECT id FROM send_states) AND "
-      "(NOW()-($3::TEXT||'DAYS')::INTERVAL)::DATE<ma.moddate::DATE AND "
-      "mc.contact_object_registry_id=$1::INTEGER "
-"ORDER BY 1 DESC OFFSET ($2::INTEGER-1) LIMIT 1",
+                    "WITH comm_type_letter AS (SELECT id FROM comm_type WHERE type = 'letter'),"
+                         "message_types AS (SELECT id FROM message_type WHERE type IN ('mojeid_pin3',"
+                                                                                      "'mojeid_card')),"
+                         "send_states_ignore AS (SELECT id FROM enum_send_status WHERE status_name = 'no_processing')"
+                    "SELECT (ma.moddate + ($3::TEXT || 'DAYS')::INTERVAL)::DATE "
+                    "FROM message_archive ma "
+                    "JOIN message_contact_history_map mc ON mc.message_archive_id = ma.id "
+                    "WHERE ma.message_type_id IN (SELECT id FROM message_types) AND "
+                          "ma.comm_type_id = (SELECT id FROM comm_type_letter) AND "
+                          "ma.status_id NOT IN (SELECT id FROM send_states_ignore) AND "
+                          "(NOW() - ($3::TEXT || 'DAYS')::INTERVAL)::DATE < ma.moddate::DATE AND "
+                          "mc.contact_object_registry_id = $1::INTEGER "
+                    "ORDER BY 1 DESC OFFSET ($2::INTEGER - 1) LIMIT 1",
                     Database::query_param_list(_contact_id)               // used as $1::INTEGER
                                               (_max_sent_letters)         // used as $2::INTEGER
                                               (_watched_period_in_days)); // used as $3::TEXT
@@ -416,6 +416,173 @@ namespace Registry
             }
         }//MojeIDImpl::contactTransferPrepare
 
+        namespace
+        {
+            typedef unsigned long long MessageId;
+            enum { INVALID_MESSAGE_ID = 0 };
+            const std::string comm_type = "letter";
+            const std::string message_type = "mojeid_card";
+
+            MessageId cancel_mojeid_card_letter(unsigned long long _contact_id,
+                                                Database::Connection &_conn)
+            {
+                LOGGER(PACKAGE).info(
+                    boost::format("cancel_mojeid_card_letter --  contact_id: %1%") % _contact_id);
+                const Database::Result result = _conn.exec_params(
+                    "UPDATE message_archive ma "
+                    "SET moddate=NOW(),"
+                        "status_id=(SELECT id FROM enum_send_status WHERE status_name='no_processing') "
+                    "FROM message_contact_history_map mchm "
+                    "JOIN letter_archive la ON la.id=mchm.message_archive_id "
+                    "WHERE mchm.message_archive_id=ma.id AND "
+                          "mchm.contact_object_registry_id=$1::INTEGER AND "
+                          "ma.status_id IN (SELECT id FROM enum_send_status "
+                                           "WHERE status_name IN ('send_failed','ready')) AND "
+                          "ma.comm_type_id=(SELECT id FROM comm_type WHERE type=$2::TEXT) AND "
+                          "ma.message_type_id=(SELECT id FROM message_type WHERE type=$3::TEXT) "
+                    "RETURNING ma.id",
+                    Database::query_param_list(_contact_id)(comm_type)(message_type));
+                LOGGER(PACKAGE).info(
+                    boost::format("%1% %2%s of %3% type canceled")
+                                   % result.size() % comm_type % message_type);
+                if (result.size() <= 0) {
+                    return INVALID_MESSAGE_ID;
+                }
+                return static_cast< MessageId >(result[0][0]);
+            }
+
+            MessageId get_mojeid_card_letter(unsigned long long _contact_id,
+                                             Database::Connection &_conn)
+            {
+                LOGGER(PACKAGE).info(
+                    boost::format("get_mojeid_card_letter --  contact_id: %1%") % _contact_id);
+                const Database::Result result = _conn.exec_params(
+                    "SELECT ma.id "
+                    "FROM message_archive ma "
+                    "JOIN message_contact_history_map mchm ON mchm.message_archive_id=ma.id "
+                    "JOIN letter_archive la ON la.id=mchm.message_archive_id "
+                    "JOIN object_registry obr ON obr.id=mchm.contact_object_registry_id "
+                    "WHERE obr.id=$1::INTEGER AND "
+                          "ma.status_id IN (SELECT id FROM enum_send_status "
+                                           "WHERE status_name IN ('send_failed','ready')) AND "
+                          "ma.comm_type_id=(SELECT id FROM comm_type WHERE type=$2::TEXT) AND "
+                          "ma.message_type_id=(SELECT id FROM message_type WHERE type=$3::TEXT) AND "
+                          "mchm.contact_history_historyid=obr.historyid",
+                    Database::query_param_list(_contact_id)(comm_type)(message_type));
+                return 0 < result.size() ? static_cast< MessageId >(result[0][0])
+                                         : MessageId(INVALID_MESSAGE_ID);
+            }
+
+            MessageId send_mojeid_card_letter(unsigned long long _contact_id,
+                                              unsigned _limit_count,
+                                              unsigned _limit_interval,
+                                              Database::Connection &_conn)
+            {
+                LOGGER(PACKAGE).info(
+                    boost::format("send_mojeid_card_letter --  contact_id: %1%") % _contact_id);
+                const MessageId existing_letter_id = get_mojeid_card_letter(_contact_id, _conn);
+                if (existing_letter_id != INVALID_MESSAGE_ID) {
+                    return existing_letter_id;
+                }
+                cancel_mojeid_card_letter(_contact_id, _conn);
+                check_sent_letters_limit(_contact_id, _limit_count, _limit_interval, _conn);
+
+                typedef Fred::PublicRequest::ContactVerificationPassword::MessageData MessageData;
+                MessageData data;
+                Fred::PublicRequest::collect_message_data(_contact_id, _conn, data);
+
+                const std::string country_cs_name = map_at(data, "country_cs_name");
+                const std::string addr_country = country_cs_name.empty()
+                                                 ? map_at(data, "country_name")
+                                                 : country_cs_name;
+
+                std::string letter_xml("<?xml version='1.0' encoding='utf-8'?>");
+
+                const std::string firstname = map_at(data, "firstname");
+                const std::string lastname = map_at(data, "lastname");
+                static const char female_suffix[] = "á"; // utf-8 encoded
+                enum { FEMALE_SUFFIX_LEN = sizeof(female_suffix) - 1 };
+                const std::string sex = (FEMALE_SUFFIX_LEN <= lastname.length()) &&
+                                        (std::strcmp(lastname.c_str() + lastname.length() - FEMALE_SUFFIX_LEN,
+                                                     female_suffix) == 0) ? "female" : "male";
+
+                Fred::Messages::PostalAddress pa;
+                pa.name    = firstname + " " + lastname;
+                pa.org     = map_at(data, "organization");
+                pa.street1 = map_at(data, "street");
+                pa.street2 = std::string();
+                pa.street3 = std::string();
+                pa.city    = map_at(data, "city");
+                pa.state   = map_at(data, "stateorprovince");
+                pa.code    = map_at(data, "postalcode");
+                pa.country = map_at(data, "country_name");
+
+                const std::string contact_handle = map_at(data, "handle");
+                const MessageData::const_iterator contact_state_ptr = data.find("state");
+                const std::string contact_state = contact_state_ptr == data.end()
+                                                  ?   std::string()
+                                                  :   contact_state_ptr->second;
+
+                Util::XmlTagPair("contact_auth", Util::vector_of<Util::XmlCallback>
+                    (Util::XmlTagPair("user", Util::vector_of<Util::XmlCallback>
+                        (Util::XmlTagPair("actual_date", Util::XmlUnparsedCData(map_at(data, "reqdate"))))
+                        (Util::XmlTagPair("name", Util::XmlUnparsedCData(pa.name)))
+                        (Util::XmlTagPair("organization", Util::XmlUnparsedCData(pa.org)))
+                        (Util::XmlTagPair("street", Util::XmlUnparsedCData(pa.street1)))
+                        (Util::XmlTagPair("city", Util::XmlUnparsedCData(pa.city)))
+                        (Util::XmlTagPair("stateorprovince", Util::XmlUnparsedCData(pa.state)))
+                        (Util::XmlTagPair("postal_code", Util::XmlUnparsedCData(pa.code)))
+                        (Util::XmlTagPair("country", Util::XmlUnparsedCData(addr_country)))
+                        (Util::XmlTagPair("account", Util::vector_of<Util::XmlCallback>
+                            (Util::XmlTagPair("username", Util::XmlUnparsedCData(contact_handle)))
+                            (Util::XmlTagPair("first_name", Util::XmlUnparsedCData(firstname)))
+                            (Util::XmlTagPair("last_name", Util::XmlUnparsedCData(lastname)))
+                            (Util::XmlTagPair("sex", Util::XmlUnparsedCData(sex)))
+                            (Util::XmlTagPair("email", Util::XmlUnparsedCData(map_at(data, "email"))))
+                            (Util::XmlTagPair("mobile", Util::XmlUnparsedCData(map_at(data, "phone"))))
+                            (Util::XmlTagPair("state", Util::XmlUnparsedCData(contact_state)))
+                        ))
+                    ))
+                )(letter_xml);
+
+                std::stringstream xmldata;
+                xmldata << letter_xml;
+
+                HandleRegistryArgs *const rconf =
+                    CfgArgs::instance()->get_handler_ptr_by_type< HandleRegistryArgs >();
+                std::auto_ptr< Fred::Document::Manager > doc_manager =
+                    Fred::Document::Manager::create(
+                        rconf->docgen_path,
+                        rconf->docgen_template_path,
+                        rconf->fileclient_path,
+                        CfgArgs::instance()->get_handler_ptr_by_type< HandleCorbaNameServiceArgs >()
+                            ->get_nameservice_host_port());
+                enum { FILETYPE_MOJEID_CARD = 10 };
+                const unsigned long long file_id = doc_manager->generateDocumentAndSave(
+                    Fred::Document::GT_MOJEID_CARD,
+                    xmldata,
+                    "mojeid_card-" +
+                        boost::lexical_cast<std::string>(_contact_id) + "-" +
+                        boost::lexical_cast<std::string>(::time(NULL)) + ".pdf",
+                    FILETYPE_MOJEID_CARD, "");
+
+                DBSharedPtr nodb;
+                std::auto_ptr< Fred::Manager > registry_manager;
+                registry_manager.reset(
+                    Fred::Manager::create(
+                        nodb,
+                        rconf->restricted_handles));
+                const MessageId message_id =
+                    registry_manager->getMessageManager()->save_letter_to_send(
+                        contact_handle.c_str(),
+                        pa, file_id, message_type.c_str(), _contact_id,
+                        boost::lexical_cast<unsigned long >(map_at(data, "contact_hid")),
+                        comm_type
+                    );
+                return message_id;
+            }
+        }
+
         void MojeIDImpl::contactUpdatePrepare(
             const std::string & _contact_username
             , Fred::Contact::Verification::Contact& _contact
@@ -486,8 +653,19 @@ namespace Registry
                     }
                 }
 
+                const Fred::Contact::Verification::Contact old_contact =
+                    Fred::Contact::Verification::contact_info(cid);
+                const bool keep_identification =
+                    Fred::Contact::Verification::check_identified_contact_diff(_contact, old_contact);
+                if (!keep_identification ||
+                    (_contact.email.get_value_or_default() !=
+                     old_contact.email.get_value_or_default()))
+                {
+                    Database::Connection conn = Database::Manager::acquire();
+                    cancel_mojeid_card_letter(_contact.id, conn);
+                }
                 unsigned long long prid = 0; // new public request id
-                if (!Fred::Contact::Verification::check_identified_contact_diff(_contact, Fred::Contact::Verification::contact_info(cid)))
+                if (!keep_identification)
                 {
                     if (contact_state.has_all(Fred::Contact::Verification::State::cIvm))
                     {
@@ -1443,13 +1621,11 @@ namespace Registry
                     Fred::PublicRequest::cancel_public_request(_contact_id, type, _request_id);
                 }
 
-                {
-                    Database::Connection conn = Database::Manager::acquire();
-                    check_sent_letters_limit(_contact_id,
-                                             server_conf_->letter_limit_count,
-                                             server_conf_->letter_limit_interval,
-                                             conn);
-                }
+                cancel_mojeid_card_letter(_contact_id, conn);
+                check_sent_letters_limit(_contact_id,
+                                         server_conf_->letter_limit_count,
+                                         server_conf_->letter_limit_interval,
+                                         conn);
                 IdentificationRequestPtr new_request(mailer_, type);
                 new_request->setRegistrarId(mojeid_registrar_id_);
                 new_request->setRequestId(_request_id);
@@ -1467,7 +1643,7 @@ namespace Registry
                 LOGGER(PACKAGE).info(e.what());
                 throw;
             }
-            catch(Registry::MojeID::MESSAGE_LIMIT_EXCEEDED &e)
+            catch(const Registry::MojeID::MESSAGE_LIMIT_EXCEEDED &e)
             {
                 LOGGER(PACKAGE).info(e.what());
                 throw;
@@ -1488,6 +1664,96 @@ namespace Registry
                 throw;
             }
         }//MojeIDImpl::sendNewPIN3
+
+        //send mojeID (emergency) card
+        void MojeIDImpl::sendMojeIDCard(
+            unsigned long long _contact_id,
+            unsigned long long _request_id)
+        {
+            Logging::Context ctx_server(create_ctx_name(get_server_name()));
+            Logging::Context ctx("send-mojeid-card");
+            ConnectionReleaser releaser;
+
+            LOGGER(PACKAGE).info(boost::format("sendMojeIDCard --"
+                    "  contact_id: %1%  request_id: %2%")
+                        % _contact_id % _request_id);
+
+            try {
+                enum { INVALID_CONTACT_ID = 0 };
+                if (_contact_id == INVALID_CONTACT_ID) {
+                    throw std::runtime_error("_contact_id is invalid");
+                }
+
+                Database::Connection conn = Database::Manager::acquire();
+                Database::Transaction tx(conn);
+
+                // check if the contact with ID _contact_id exists
+                {
+                    Fred::NameIdPair cinfo;
+                    DBSharedPtr nodb;
+                    Fred::Contact::ManagerPtr contact_mgr(
+                        Fred::Contact::Manager::create(nodb, registry_conf_->restricted_handles));
+
+                    Fred::Contact::Manager::CheckAvailType check_result;
+                    check_result = contact_mgr->checkAvail(_contact_id, cinfo);
+
+                    if (check_result != Fred::Contact::Manager::CA_REGISTRED ||
+                        !this->isMojeidContact(_contact_id)) {
+                        /* contact doesn't exists */
+                        throw Registry::MojeID::OBJECT_NOT_EXISTS();
+                    }
+                }
+
+                {
+                    const Fred::Contact::Verification::State contact_state =
+                        Fred::Contact::Verification::get_contact_verification_state(_contact_id);
+                    if (!contact_state.has_all(Fred::Contact::Verification::State::cIvm)) {
+                        Fred::Contact::Verification::FieldErrorMap errors;
+                        errors["status"] = Fred::Contact::Verification::INVALID;
+                        throw Fred::Contact::Verification::DataValidationError(errors);
+                    }
+                }
+
+                send_mojeid_card_letter(_contact_id,
+                                        server_conf_->letter_limit_count,
+                                        server_conf_->letter_limit_interval,
+                                        conn);
+                tx.commit();
+
+                LOGGER(PACKAGE).info("request completed successfully");
+
+            }
+            catch(const Registry::MojeID::OBJECT_NOT_EXISTS &e)
+            {
+                LOGGER(PACKAGE).info(e.what());
+                throw;
+            }
+            catch(const Registry::MojeID::IDENTIFICATION_REQUEST_NOT_EXISTS &e)
+            {
+                LOGGER(PACKAGE).info(e.what());
+                throw;
+            }
+            catch (const Fred::Contact::Verification::DataValidationError &e)
+            {
+                LOGGER(PACKAGE).info(e.what());
+                throw;
+            }
+            catch(const Registry::MojeID::MESSAGE_LIMIT_EXCEEDED &e)
+            {
+                LOGGER(PACKAGE).info(e.what());
+                throw;
+            }
+            catch (const std::exception &e)
+            {
+                LOGGER(PACKAGE).error(e.what());
+                throw;
+            }
+            catch (...)
+            {
+                LOGGER(PACKAGE).error("unknown exception");
+                throw;
+            }
+        }//MojeIDImpl::sendMojeIDCard
 
         ///cancel mojeidContact state
         void MojeIDImpl::contactCancelAccountPrepare(

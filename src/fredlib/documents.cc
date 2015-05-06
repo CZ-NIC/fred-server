@@ -259,6 +259,9 @@ namespace Fred
         templateMap[GT_CONTACT_IDENTIFICATION_LETTER_PIN3_OPTYS] = GenProcType(
           "mojeid_auth_owner_optys.xsl", true, "application/pdf"
         );
+        templateMap[GT_MOJEID_CARD] = GenProcType(
+          "mojeid_card_optys.xsl", true, "application/pdf"
+        );
 
       }
       std::auto_ptr<Fred::Document::Generator> createOutputGenerator(
