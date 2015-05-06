@@ -51,6 +51,33 @@ PublicRequestId create_public_request(
     const Optional< std::string > &_email_to_answer,
     const Optional< RegistrarId > &_registrar_id);
 
+enum { PUBLIC_REQUEST_AUTH_IDENTIFICATION_LENGTH = 32 };
+
+struct CreatePublicRequestAuthResult
+{
+    CreatePublicRequestAuthResult() { }
+    CreatePublicRequestAuthResult(const CreatePublicRequestAuthResult &_src)
+    :   public_request_id(_src.public_request_id),
+        identification(_src.identification)
+    { }
+    CreatePublicRequestAuthResult& operator=(const CreatePublicRequestAuthResult &_src)
+    {
+        public_request_id = _src.public_request_id;
+        identification = _src.identification;
+        return *this;
+    }
+    PublicRequestId public_request_id;
+    std::string identification;
+};
+
+CreatePublicRequestAuthResult create_public_request_auth(
+    OperationContext &_ctx,
+    const PublicRequestObjectLockGuard &_locked_object,
+    const PublicRequestTypeIface &_type,
+    const Optional< std::string > &_reason,
+    const Optional< std::string > &_email_to_answer,
+    const Optional< RegistrarId > &_registrar_id);
+
 }//namespace Fred
 
 #endif//CREATE_PUBLIC_REQUEST_H_4C9FE3D9B8BB0233CD814C7F0E46D4C9
