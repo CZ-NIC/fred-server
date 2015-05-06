@@ -83,7 +83,7 @@ std::string prt2str(PublicRequestType _prt)
     case PRT_ITEMS:
         break;
     }
-    throw BadConversion("prt2str failure: unable convert PublicRequestType to string");
+    throw BadConversion("prt2str failure: unable convert invalid PublicRequestType to string");
 }
 
 PublicRequestType str2prt(const std::string &_str)
@@ -149,7 +149,7 @@ PublicRequestId create_public_request(
             "WITH request AS ("
                 "INSERT INTO public_request "
                     "(request_type,status,resolve_time,reason,email_to_answer,answer_email_id,registrar_id,"
-                    "create_request_id,resolve_request_id) "
+                     "create_request_id,resolve_request_id) "
                 "VALUES ((SELECT id FROM enum_public_request_type WHERE name=$1::TEXT),"
                         "(SELECT id FROM enum_public_request_status WHERE name='new'),"
                         "NULL,$3::TEXT,$4::TEXT,NULL,$5::BIGINT,NULL,NULL) "
