@@ -218,6 +218,7 @@ void ContactVerificationPassword::sendLetterPassword( const std::string& custom_
                     , boost::lexical_cast<unsigned long >(map_at(data
                             , "contact_hid"))//contact_history.historyid
                     , comm_type.c_str()//comm_type letter or registered_letter
+                    , true //check postal address filed
                     );
 
         Database::Connection conn = Database::Manager::acquire();

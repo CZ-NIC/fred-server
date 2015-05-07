@@ -180,7 +180,8 @@ namespace ContactVerification {
                 letter_message_type_.c_str(),
                 _contact_id,
                 _contact_history_id,
-                letter_comm_type_.c_str() );
+                letter_comm_type_.c_str(),
+                false);
     }
 }
 }

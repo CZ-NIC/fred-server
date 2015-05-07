@@ -121,6 +121,7 @@ CORBA::ULongLong Registry_Messages_i::saveLetterToSend(const char* contact_handl
                 , contact_object_registry_id
                 , contact_history_historyid
                 , comm_type
+                , true
                 );//call of impl
 
     }//try

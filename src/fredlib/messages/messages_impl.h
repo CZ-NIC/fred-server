@@ -191,6 +191,7 @@ public:
             , unsigned long contact_object_registry_id
             , unsigned long contact_history_historyid
             , const std::string& comm_type //letter or registered_letter
+            , bool do_check_postal_address //if true then check postall that address fields: name, street1, city, postalcode and country contains something beside the spaces, if false then don't
             );
 
     //cancel letter sending if hasn't been already sent

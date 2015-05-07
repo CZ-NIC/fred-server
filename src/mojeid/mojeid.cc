@@ -577,7 +577,8 @@ namespace Registry
                         contact_handle.c_str(),
                         pa, file_id, message_type.c_str(), _contact_id,
                         boost::lexical_cast<unsigned long >(map_at(data, "contact_hid")),
-                        comm_type
+                        comm_type,
+                        true
                     );
                 return message_id;
             }
