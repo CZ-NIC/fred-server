@@ -62,6 +62,7 @@ namespace Fred
         if(enum_domain_validation.isset()) fields.insert("enum_domain_validation");
         if(outzone_time.isset()) fields.insert("outzone_time");
         if(cancel_time.isset()) fields.insert("cancel_time");
+        if(zone.isset()) fields.insert("zone");
 
         if(id.isset()) fields.insert("id");
 
