@@ -137,6 +137,7 @@ namespace Fred
 
     /**
     * Keyset history info.
+    * Output data are arranged in descending order by historyid.
     * Keyset registry object identifier to get history info about the keyset is set via constructor.
     * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
     */
@@ -184,7 +185,7 @@ namespace Fred
         * Executes getting history info about the keyset.
         * @param ctx contains reference to database and logging interface
         * @param local_timestamp_pg_time_zone_name is postgresql time zone name of the returned data
-        * @return history info data about the keyset
+        * @return history info data about the keyset in descending order by historyid
         * @throws Exception in case of wrong input data or other predictable and superable failure.
         * @throws InternalError otherwise
         * When exception is thrown changes to database are considered inconsistent and should be rolled back by the caller.
@@ -200,6 +201,7 @@ namespace Fred
 
     /**
     * Keyset info by id including history.
+    * Output data are arranged in descending order by historyid.
     * Keyset id to get info about the keyset is set via constructor.
     * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
     */
@@ -233,7 +235,7 @@ namespace Fred
         * Executes getting history info about the keyset.
         * @param ctx contains reference to database and logging interface
         * @param local_timestamp_pg_time_zone_name is postgresql time zone name of the returned data
-        * @return history info data about the keyset
+        * @return history info data about the keyset in descending order by historyid
         * @throws Exception in case of wrong input data or other predictable and superable failure.
         * @throws InternalError otherwise
         * When exception is thrown changes to database are considered inconsistent and should be rolled back by the caller.

@@ -139,6 +139,7 @@ namespace Fred
 
     /**
     * Domain history info.
+    * Output data are arranged in descending order by historyid.
     * Domain registry object identifier to get history info about the domain is set via constructor.
     * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
     */
@@ -187,7 +188,7 @@ namespace Fred
         * Executes getting history info about the domain.
         * @param ctx contains reference to database and logging interface
         * @param local_timestamp_pg_time_zone_name is postgresql time zone name of the returned data
-        * @return history info data about the domain
+        * @return history info data about the domain in descending order by historyid
         * @throws Exception in case of wrong input data or other predictable and superable failure.
         * @throws InternalError otherwise
         * When exception is thrown changes to database are considered inconsistent and should be rolled back by the caller.
@@ -204,6 +205,7 @@ namespace Fred
 
     /**
     * Domain info by id including history.
+    * Output data are arranged in descending order by historyid.
     * Domain id to get info about the domain is set via constructor.
     * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
     */
@@ -237,7 +239,7 @@ namespace Fred
         * Executes getting history info about the domain.
         * @param ctx contains reference to database and logging interface
         * @param local_timestamp_pg_time_zone_name is postgresql time zone name of the returned data
-        * @return history info data about the domain
+        * @return history info data about the domain in descending order by historyid
         * @throws Exception in case of wrong input data or other predictable and superable failure.
         * @throws InternalError otherwise
         * When exception is thrown changes to database are considered inconsistent and should be rolled back by the caller.

@@ -236,4 +236,29 @@ BOOST_AUTO_TEST_CASE(info_domain_diff)
 }
 
 
+/**
+ * test InfoDomainHistory output data sorted by historyid in descending order (current data first, older next)
+*/
+
+BOOST_AUTO_TEST_CASE(info_domain_history_order)
+{
+    Fred::OperationContext ctx;
+    Fred::InfoDomainOutput domain_history_info = Fred::InfoDomainByHandle(test_fqdn).exec(ctx);
+
+    std::vector<Fred::InfoDomainOutput> domain_history_info_by_roid = Fred::InfoDomainHistory(domain_history_info.info_domain_data.roid).exec(ctx);
+    BOOST_CHECK(domain_history_info_by_roid.size() == 2);
+    BOOST_CHECK(domain_history_info_by_roid.at(0).info_domain_data.historyid > domain_history_info_by_roid.at(1).info_domain_data.historyid);
+
+    BOOST_CHECK(domain_history_info_by_roid.at(0).info_domain_data.admin_contacts.at(0).handle == admin_contact1_handle);
+    BOOST_CHECK(domain_history_info_by_roid.at(1).info_domain_data.admin_contacts.at(0).handle == admin_contact2_handle);
+
+    std::vector<Fred::InfoDomainOutput> domain_history_info_by_id = Fred::InfoDomainHistoryById(domain_history_info.info_domain_data.id).exec(ctx);
+    BOOST_CHECK(domain_history_info_by_id.size() == 2);
+    BOOST_CHECK(domain_history_info_by_id.at(0).info_domain_data.historyid > domain_history_info_by_roid.at(1).info_domain_data.historyid);
+
+    BOOST_CHECK(domain_history_info_by_id.at(0).info_domain_data.admin_contacts.at(0).handle == admin_contact1_handle);
+    BOOST_CHECK(domain_history_info_by_id.at(1).info_domain_data.admin_contacts.at(0).handle == admin_contact2_handle);
+}
+
+
 BOOST_AUTO_TEST_SUITE_END();//TestInfoDomain

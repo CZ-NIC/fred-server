@@ -140,6 +140,7 @@ namespace Fred
 
     /**
     * Nsset history info.
+    * Output data are arranged in descending order by historyid.
     * Nsset registry object identifier to get history info about the nsset is set via constructor.
     * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
     */
@@ -188,7 +189,7 @@ namespace Fred
         * Executes getting history info about the nsset.
         * @param ctx contains reference to database and logging interface
         * @param local_timestamp_pg_time_zone_name is postgresql time zone name of the returned data
-        * @return history info data about the nsset
+        * @return history info data about the nsset in descending order by historyid
         * @throws Exception in case of wrong input data or other predictable and superable failure.
         * @throws InternalError otherwise
         * When exception is thrown changes to database are considered inconsistent and should be rolled back by the caller.
@@ -205,6 +206,7 @@ namespace Fred
 
     /**
     * Nsset info by id including history.
+    * Output data are arranged in descending order by historyid.
     * Nsset id to get info about the nsset is set via constructor.
     * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
     */
@@ -238,7 +240,7 @@ namespace Fred
         * Executes getting history info about the nsset.
         * @param ctx contains reference to database and logging interface
         * @param local_timestamp_pg_time_zone_name is postgresql time zone name of the returned data
-        * @return history info data about the nsset
+        * @return history info data about the nsset in descending order by historyid
         * @throws Exception in case of wrong input data or other predictable and superable failure.
         * @throws InternalError otherwise
         * When exception is thrown changes to database are considered inconsistent and should be rolled back by the caller.

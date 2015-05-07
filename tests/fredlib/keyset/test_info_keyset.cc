@@ -38,6 +38,7 @@ struct info_keyset_fixture : public Test::Fixture::instantiate_db_template
     std::string admin_contact5_handle;
     std::string admin_contact6_handle;
     std::string test_keyset_handle;
+    std::string test_keyset_history_handle;
 
     info_keyset_fixture()
     :registrar_handle (static_cast<std::string>(fixture_ctx.get_conn().exec("SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]))
@@ -46,6 +47,7 @@ struct info_keyset_fixture : public Test::Fixture::instantiate_db_template
     , admin_contact5_handle(std::string("TEST-ADMIN-CONTACT5-HANDLE")+xmark)
     , admin_contact6_handle(std::string("TEST-ADMIN-CONTACT6-HANDLE")+xmark)
     , test_keyset_handle(std::string("TEST-KEYSET-HANDLE")+xmark)
+    , test_keyset_history_handle(std::string("TEST-KEYSET-HISTORY-HANDLE")+xmark)
     {
         BOOST_CHECK(!registrar_handle.empty());//expecting existing system registrar
 
@@ -83,6 +85,18 @@ struct info_keyset_fixture : public Test::Fixture::instantiate_db_template
                 .set_dns_keys(Util::vector_of<Fred::DnsKey> (Fred::DnsKey(257, 3, 5, "AwEAAddt2AkLfYGKgiEZB5SmIF8EvrjxNMH6HtxWEA4RJ9Ao6LCWheg8")))
                 .exec(fixture_ctx);
         BOOST_MESSAGE(std::string("test_keyset_handle: ") + test_keyset_handle);
+
+        Fred::CreateKeyset(test_keyset_history_handle, registrar_handle)
+                .set_tech_contacts(Util::vector_of<std::string>(admin_contact6_handle))
+                .set_dns_keys(Util::vector_of<Fred::DnsKey> (Fred::DnsKey(257, 3, 5, "AwEAAddt2AkLfYGKgiEZB5SmIF8EvrjxNMH6HtxWEA4RJ9Ao6LCWheg8")))
+                .exec(fixture_ctx);
+        BOOST_MESSAGE(std::string("test_keyset_handle: ") + test_keyset_handle);
+        fixture_ctx.commit_transaction();
+
+        Fred::UpdateKeyset(test_keyset_history_handle, registrar_handle)
+            .rem_tech_contact(admin_contact6_handle)
+            .exec(fixture_ctx);
+
         fixture_ctx.commit_transaction();
     }
     ~info_keyset_fixture()
@@ -187,6 +201,30 @@ BOOST_AUTO_TEST_CASE(info_keyset_diff)
     //because of changes to Nullable::operator<<
     BOOST_CHECK(ctx.get_conn().exec_params("select $1::text", Database::query_param_list(Database::QPNull))[0][0].isnull());
     BOOST_CHECK(ctx.get_conn().exec_params("select $1::text", Database::query_param_list(Nullable<std::string>()))[0][0].isnull());
+}
+
+/**
+ * test InfoKeysetHistory output data sorted by historyid in descending order (current data first, older next)
+*/
+
+BOOST_AUTO_TEST_CASE(info_keyset_history_order)
+{
+    Fred::OperationContext ctx;
+    Fred::InfoKeysetOutput keyset_history_info = Fred::InfoKeysetByHandle(test_keyset_history_handle).exec(ctx);
+
+    std::vector<Fred::InfoKeysetOutput> keyset_history_info_by_roid = Fred::InfoKeysetHistory(keyset_history_info.info_keyset_data.roid).exec(ctx);
+    BOOST_CHECK(keyset_history_info_by_roid.size() == 2);
+    BOOST_CHECK(keyset_history_info_by_roid.at(0).info_keyset_data.historyid > keyset_history_info_by_roid.at(1).info_keyset_data.historyid);
+
+    BOOST_CHECK(keyset_history_info_by_roid.at(0).info_keyset_data.tech_contacts.empty());
+    BOOST_CHECK(keyset_history_info_by_roid.at(1).info_keyset_data.tech_contacts.at(0).handle == admin_contact6_handle);
+
+    std::vector<Fred::InfoKeysetOutput> keyset_history_info_by_id = Fred::InfoKeysetHistoryById(keyset_history_info.info_keyset_data.id).exec(ctx);
+    BOOST_CHECK(keyset_history_info_by_id.size() == 2);
+    BOOST_CHECK(keyset_history_info_by_id.at(0).info_keyset_data.historyid > keyset_history_info_by_roid.at(1).info_keyset_data.historyid);
+
+    BOOST_CHECK(keyset_history_info_by_id.at(0).info_keyset_data.tech_contacts.empty());
+    BOOST_CHECK(keyset_history_info_by_id.at(1).info_keyset_data.tech_contacts.at(0).handle == admin_contact6_handle);
 }
 
 
