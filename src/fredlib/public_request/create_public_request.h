@@ -1,11 +1,8 @@
 #ifndef CREATE_PUBLIC_REQUEST_H_4C9FE3D9B8BB0233CD814C7F0E46D4C9//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
 #define CREATE_PUBLIC_REQUEST_H_4C9FE3D9B8BB0233CD814C7F0E46D4C9
 
-#include "src/fredlib/opexception.h"
 #include "src/fredlib/opcontext.h"
 #include "util/optional_value.h"
-
-#include <stdexcept>
 
 namespace Fred {
 
@@ -68,12 +65,14 @@ struct CreatePublicRequestAuthResult
     }
     PublicRequestId public_request_id;
     std::string identification;
+    std::string password;
 };
 
 CreatePublicRequestAuthResult create_public_request_auth(
     OperationContext &_ctx,
     const PublicRequestObjectLockGuard &_locked_object,
     const PublicRequestTypeIface &_type,
+    const std::string &_password,
     const Optional< std::string > &_reason,
     const Optional< std::string > &_email_to_answer,
     const Optional< RegistrarId > &_registrar_id);
