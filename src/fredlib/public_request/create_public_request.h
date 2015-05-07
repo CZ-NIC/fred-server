@@ -19,9 +19,7 @@ namespace PublicRequest
 
 class AuthinfoAutoRifType:public PublicRequestTypeIface
 {
-public:
-    ~AuthinfoAutoRifType() { }
-protected:
+private:
     std::string get_public_request_type()const { return "authinfo_auto_rif"; }
 };
 
@@ -40,42 +38,69 @@ private:
     const ObjectId object_id_;
 };
 
-PublicRequestId create_public_request(
-    OperationContext &_ctx,
-    const PublicRequestObjectLockGuard &_locked_object,
-    const PublicRequestTypeIface &_type,
-    const Optional< std::string > &_reason,
-    const Optional< std::string > &_email_to_answer,
-    const Optional< RegistrarId > &_registrar_id);
+class CreatePublicRequest
+{
+public:
+    CreatePublicRequest(const PublicRequestTypeIface &_type);
+    CreatePublicRequest(const PublicRequestTypeIface &_type,
+                        const Optional< std::string > &_reason,
+                        const Optional< std::string > &_email_to_answer,
+                        const Optional< RegistrarId > &_registrar_id);
+    ~CreatePublicRequest() { }
+    CreatePublicRequest& set_reason(const std::string &_reason);
+    CreatePublicRequest& set_email_to_answer(const std::string &_email);
+    CreatePublicRequest& set_registrar_id(RegistrarId _id);
+    PublicRequestId exec(OperationContext &_ctx, const PublicRequestObjectLockGuard &_locked_object)const;
+private:
+    const std::string type_;
+    Optional< std::string > reason_;
+    Optional< std::string > email_to_answer_;
+    Optional< RegistrarId > registrar_id_;
+};
 
 enum { PUBLIC_REQUEST_AUTH_IDENTIFICATION_LENGTH = 32 };
 
-struct CreatePublicRequestAuthResult
+class CreatePublicRequestAuth
 {
-    CreatePublicRequestAuthResult() { }
-    CreatePublicRequestAuthResult(const CreatePublicRequestAuthResult &_src)
-    :   public_request_id(_src.public_request_id),
-        identification(_src.identification)
-    { }
-    CreatePublicRequestAuthResult& operator=(const CreatePublicRequestAuthResult &_src)
+public:
+    CreatePublicRequestAuth(const PublicRequestTypeIface &_type,
+                            const std::string &_password);
+    CreatePublicRequestAuth(const PublicRequestTypeIface &_type,
+                            const std::string &_password,
+                            const Optional< std::string > &_reason,
+                            const Optional< std::string > &_email_to_answer,
+                            const Optional< RegistrarId > &_registrar_id);
+    ~CreatePublicRequestAuth() { }
+    CreatePublicRequestAuth& set_reason(const std::string &_reason);
+    CreatePublicRequestAuth& set_email_to_answer(const std::string &_email);
+    CreatePublicRequestAuth& set_registrar_id(RegistrarId _id);
+    struct Result
     {
-        public_request_id = _src.public_request_id;
-        identification = _src.identification;
-        return *this;
-    }
-    PublicRequestId public_request_id;
-    std::string identification;
-    std::string password;
+        Result() { }
+        Result(const Result &_src)
+        :   public_request_id(_src.public_request_id),
+            identification(_src.identification),
+            password(_src.password)
+        { }
+        Result& operator=(const Result &_src)
+        {
+            public_request_id = _src.public_request_id;
+            identification = _src.identification;
+            password = _src.password;
+            return *this;
+        }
+        PublicRequestId public_request_id;
+        std::string identification;
+        std::string password;
+    };
+    Result exec(OperationContext &_ctx, const PublicRequestObjectLockGuard &_locked_object)const;
+private:
+    const std::string type_;
+    const std::string password_;
+    Optional< std::string > reason_;
+    Optional< std::string > email_to_answer_;
+    Optional< RegistrarId > registrar_id_;
 };
-
-CreatePublicRequestAuthResult create_public_request_auth(
-    OperationContext &_ctx,
-    const PublicRequestObjectLockGuard &_locked_object,
-    const PublicRequestTypeIface &_type,
-    const std::string &_password,
-    const Optional< std::string > &_reason,
-    const Optional< std::string > &_email_to_answer,
-    const Optional< RegistrarId > &_registrar_id);
 
 }//namespace Fred
 

@@ -11,21 +11,50 @@ PublicRequestObjectLockGuard::PublicRequestObjectLockGuard(OperationContext &_ct
         Database::query_param_list(object_id_));
 }
 
-PublicRequestId create_public_request(
-    OperationContext &_ctx,
-    const PublicRequestObjectLockGuard &_locked_object,
-    const PublicRequestTypeIface &_type,
-    const Optional< std::string > &_reason,
-    const Optional< std::string > &_email_to_answer,
-    const Optional< RegistrarId > &_registrar_id)
+CreatePublicRequest::CreatePublicRequest(const PublicRequestTypeIface &_type)
+:   type_(_type.get_public_request_type())
+{
+}
+
+CreatePublicRequest::CreatePublicRequest(const PublicRequestTypeIface &_type,
+                                         const Optional< std::string > &_reason,
+                                         const Optional< std::string > &_email_to_answer,
+                                         const Optional< RegistrarId > &_registrar_id)
+:   type_(_type.get_public_request_type()),
+    reason_(_reason),
+    email_to_answer_(_email_to_answer),
+    registrar_id_(_registrar_id)
+{
+}
+
+CreatePublicRequest& CreatePublicRequest::set_reason(const std::string &_reason)
+{
+    reason_ = _reason;
+    return *this;
+}
+
+CreatePublicRequest& CreatePublicRequest::set_email_to_answer(const std::string &_email)
+{
+    email_to_answer_ = _email;
+    return *this;
+}
+
+CreatePublicRequest& CreatePublicRequest::set_registrar_id(RegistrarId _id)
+{
+    registrar_id_ = _id;
+    return *this;
+}
+
+PublicRequestId CreatePublicRequest::exec(OperationContext &_ctx,
+                                          const PublicRequestObjectLockGuard &_locked_object)const
 {
     try {
-        Database::query_param_list params(_type.get_public_request_type());
+        Database::query_param_list params(type_);
         params(_locked_object.get_object_id())
-              (_reason.isset() ? _reason.get_value() : Database::QPNull)
-              (_email_to_answer.isset() ? _email_to_answer.get_value() : Database::QPNull);
-        if (_registrar_id.isset()) {
-            params(_registrar_id.get_value());
+              (reason_.isset() ? reason_.get_value() : Database::QPNull)
+              (email_to_answer_.isset() ? email_to_answer_.get_value() : Database::QPNull);
+        if (registrar_id_.isset()) {
+            params(registrar_id_.get_value());
         }
         else {
             params(Database::QPNull);
@@ -50,26 +79,58 @@ PublicRequestId create_public_request(
     }
 }
 
-CreatePublicRequestAuthResult create_public_request_auth(
-    OperationContext &_ctx,
-    const PublicRequestObjectLockGuard &_locked_object,
-    const PublicRequestTypeIface &_type,
-    const std::string &_password,
-    const Optional< std::string > &_reason,
-    const Optional< std::string > &_email_to_answer,
-    const Optional< RegistrarId > &_registrar_id)
+CreatePublicRequestAuth::CreatePublicRequestAuth(const PublicRequestTypeIface &_type,
+                                                 const std::string &_password)
+:   type_(_type.get_public_request_type()),
+    password_(_password)
+{
+}
+
+CreatePublicRequestAuth::CreatePublicRequestAuth(const PublicRequestTypeIface &_type,
+                                                 const std::string &_password,
+                                                 const Optional< std::string > &_reason,
+                                                 const Optional< std::string > &_email_to_answer,
+                                                 const Optional< RegistrarId > &_registrar_id)
+:   type_(_type.get_public_request_type()),
+    password_(_password),
+    reason_(_reason),
+    email_to_answer_(_email_to_answer),
+    registrar_id_(_registrar_id)
+{
+}
+
+CreatePublicRequestAuth& CreatePublicRequestAuth::set_reason(const std::string &_reason)
+{
+    reason_ = _reason;
+    return *this;
+}
+
+CreatePublicRequestAuth& CreatePublicRequestAuth::set_email_to_answer(const std::string &_email)
+{
+    email_to_answer_ = _email;
+    return *this;
+}
+
+CreatePublicRequestAuth& CreatePublicRequestAuth::set_registrar_id(RegistrarId _id)
+{
+    registrar_id_ = _id;
+    return *this;
+}
+
+CreatePublicRequestAuth::Result CreatePublicRequestAuth::exec(OperationContext &_ctx,
+                                                              const PublicRequestObjectLockGuard &_locked_object)const
 {
     try {
-        CreatePublicRequestAuthResult result;
+        Result result;
         result.identification = Random::string_alpha(PUBLIC_REQUEST_AUTH_IDENTIFICATION_LENGTH);
-        Database::query_param_list params(_type.get_public_request_type());
+        Database::query_param_list params(type_);
         params(result.identification)
               (_locked_object.get_object_id())
-              (_password)
-              (_reason.isset() ? _reason.get_value() : Database::QPNull)
-              (_email_to_answer.isset() ? _email_to_answer.get_value() : Database::QPNull);
-        if (_registrar_id.isset()) {
-            params(_registrar_id.get_value());
+              (password_)
+              (reason_.isset() ? reason_.get_value() : Database::QPNull)
+              (email_to_answer_.isset() ? email_to_answer_.get_value() : Database::QPNull);
+        if (registrar_id_.isset()) {
+            params(registrar_id_.get_value());
         }
         else {
             params(Database::QPNull);
