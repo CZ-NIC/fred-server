@@ -1,6 +1,7 @@
 #ifndef CREATE_PUBLIC_REQUEST_H_4C9FE3D9B8BB0233CD814C7F0E46D4C9//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
 #define CREATE_PUBLIC_REQUEST_H_4C9FE3D9B8BB0233CD814C7F0E46D4C9
 
+#include "src/fredlib/opexception.h"
 #include "src/fredlib/opcontext.h"
 #include "util/optional_value.h"
 
@@ -32,6 +33,11 @@ typedef ObjectId RegistrarId;
 class PublicRequestObjectLockGuard
 {
 public:
+    DECLARE_EXCEPTION_DATA(object_doesnt_exist, ObjectId);/**< exception members for bad object_id*/
+    struct Exception
+    :   virtual Fred::OperationException,
+        ExceptionData_object_doesnt_exist< Exception >
+    {};
     PublicRequestObjectLockGuard(OperationContext &_ctx, ObjectId _object_id);
     ObjectId get_object_id()const { return object_id_; }
 private:
@@ -41,6 +47,11 @@ private:
 class CreatePublicRequest
 {
 public:
+    DECLARE_EXCEPTION_DATA(bad_type, std::string);/**< exception members for bad public request type*/
+    struct Exception
+    :   virtual Fred::OperationException,
+        ExceptionData_bad_type< Exception >
+    {};
     CreatePublicRequest(const PublicRequestTypeIface &_type);
     CreatePublicRequest(const PublicRequestTypeIface &_type,
                         const Optional< std::string > &_reason,
@@ -63,6 +74,11 @@ enum { PUBLIC_REQUEST_AUTH_IDENTIFICATION_LENGTH = 32 };
 class CreatePublicRequestAuth
 {
 public:
+    DECLARE_EXCEPTION_DATA(bad_type, std::string);/**< exception members for bad public request type*/
+    struct Exception
+    :   virtual Fred::OperationException,
+        ExceptionData_bad_type< Exception >
+    {};
     CreatePublicRequestAuth(const PublicRequestTypeIface &_type,
                             const std::string &_password);
     CreatePublicRequestAuth(const PublicRequestTypeIface &_type,
