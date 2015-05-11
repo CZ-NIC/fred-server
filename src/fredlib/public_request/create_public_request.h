@@ -1,19 +1,12 @@
 #ifndef CREATE_PUBLIC_REQUEST_H_4C9FE3D9B8BB0233CD814C7F0E46D4C9//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
 #define CREATE_PUBLIC_REQUEST_H_4C9FE3D9B8BB0233CD814C7F0E46D4C9
 
+#include "src/fredlib/public_request/public_request_type_iface.h"
 #include "src/fredlib/opexception.h"
 #include "src/fredlib/opcontext.h"
 #include "util/optional_value.h"
 
 namespace Fred {
-
-class PublicRequestTypeIface
-{
-public:
-    virtual std::string get_public_request_type()const = 0;
-protected:
-    virtual ~PublicRequestTypeIface() { }
-};
 
 namespace PublicRequest
 {
