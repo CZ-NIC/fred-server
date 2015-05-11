@@ -8,17 +8,6 @@
 
 namespace Fred {
 
-namespace PublicRequest
-{
-
-class AuthinfoAutoRifType:public PublicRequestTypeIface
-{
-private:
-    std::string get_public_request_type()const { return "authinfo_auto_rif"; }
-};
-
-}//Fred::PublicRequest
-
 typedef ::uint64_t ObjectId;
 typedef ObjectId PublicRequestId;
 typedef ObjectId RegistrarId;
