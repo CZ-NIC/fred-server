@@ -3,19 +3,6 @@
 
 namespace Fred {
 
-PublicRequestObjectLockGuard::PublicRequestObjectLockGuard(OperationContext &_ctx, ObjectId _object_id)
-:   object_id_(_object_id)
-{
-    //get lock to the end of transaction for given object
-    if (0 < _ctx.get_conn().exec_params("SELECT lock_public_request_lock(id) "
-                                        "FROM object "
-                                        "WHERE id=$1::BIGINT",
-                                        Database::query_param_list(object_id_)).size()) {
-        return;
-    }
-    BOOST_THROW_EXCEPTION(Exception().set_object_doesnt_exist(object_id_));
-}
-
 CreatePublicRequest::CreatePublicRequest(const PublicRequestTypeIface &_type)
 :   type_(_type.get_public_request_type())
 {
