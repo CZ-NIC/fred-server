@@ -2,15 +2,12 @@
 #define CREATE_PUBLIC_REQUEST_H_4C9FE3D9B8BB0233CD814C7F0E46D4C9
 
 #include "src/fredlib/public_request/public_request_type_iface.h"
+#include "src/fredlib/object_state/typedefs.h"
 #include "src/fredlib/opexception.h"
 #include "src/fredlib/opcontext.h"
 #include "util/optional_value.h"
 
 namespace Fred {
-
-typedef ::uint64_t ObjectId;
-typedef ObjectId PublicRequestId;
-typedef ObjectId RegistrarId;
 
 class PublicRequestObjectLockGuard
 {

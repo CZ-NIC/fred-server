@@ -35,6 +35,8 @@ namespace Fred
     typedef std::set< ObjectStateId > MultipleObjectStateId;
     typedef short int ObjectType;
     typedef std::set< std::string > StatusList;
+    typedef ObjectId PublicRequestId;
+    typedef ObjectId RegistrarId;
 }
 
 #endif
