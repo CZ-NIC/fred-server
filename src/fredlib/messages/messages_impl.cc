@@ -142,6 +142,29 @@ std::string get_file_name_by_file_id(unsigned long long file_id)
     return fname;
 }
 
+void check_postal_address(const PostalAddress& address)
+{
+    std::string trimed_address_name_string
+        = boost::algorithm::trim_copy(static_cast<std::string>(address.name));
+    if(trimed_address_name_string.empty()) throw WrongPostalAddress("empty address.name",address);
+
+    std::string trimed_address_street1_string
+        = boost::algorithm::trim_copy(static_cast<std::string>(address.street1));
+    if(trimed_address_street1_string.empty()) throw WrongPostalAddress("empty address.street1",address);
+
+    std::string trimed_address_city_string
+        = boost::algorithm::trim_copy(static_cast<std::string>(address.city));
+    if(trimed_address_city_string.empty()) throw WrongPostalAddress("empty address.city",address);
+
+    std::string trimed_address_code_string
+        = boost::algorithm::trim_copy(static_cast<std::string>(address.code));
+    if(trimed_address_code_string.empty()) throw WrongPostalAddress("empty address.code",address);
+
+    std::string trimed_address_country_string
+        = boost::algorithm::trim_copy(static_cast<std::string>(address.country));
+    if(trimed_address_country_string.empty()) throw WrongPostalAddress("empty address.country",address);
+}
+
 unsigned long long get_filetype_id(std::string file_type)
 {
     unsigned long long filetype_id=0;
@@ -331,25 +354,7 @@ unsigned long long Manager::save_letter_to_send(const char* contact_handle
         if(do_check_postal_address)
         {
             //check snail mail address (name, street1, city, postalcode, country)
-            std::string trimed_address_name_string
-                = boost::algorithm::trim_copy(static_cast<std::string>(address.name));
-            if(trimed_address_name_string.empty()) throw WrongPostalAddress("empty address.name",address);
-
-            std::string trimed_address_street1_string
-                = boost::algorithm::trim_copy(static_cast<std::string>(address.street1));
-            if(trimed_address_street1_string.empty()) throw WrongPostalAddress("empty address.street1",address);
-
-            std::string trimed_address_city_string
-                = boost::algorithm::trim_copy(static_cast<std::string>(address.city));
-            if(trimed_address_city_string.empty()) throw WrongPostalAddress("empty address.city",address);
-
-            std::string trimed_address_code_string
-                = boost::algorithm::trim_copy(static_cast<std::string>(address.code));
-            if(trimed_address_code_string.empty()) throw WrongPostalAddress("empty address.code",address);
-
-            std::string trimed_address_country_string
-                = boost::algorithm::trim_copy(static_cast<std::string>(address.country));
-            if(trimed_address_country_string.empty()) throw WrongPostalAddress("empty address.country",address);
+            check_postal_address(address);
         }
 
         Database::Connection conn = Database::Manager::acquire();
