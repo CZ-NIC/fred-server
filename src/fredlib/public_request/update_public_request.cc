@@ -78,6 +78,7 @@ UpdatePublicRequest::Result UpdatePublicRequest::exec(OperationContext &_ctx,
         const PublicRequestId public_request_id = _locked_public_request.get_public_request_id();
         Database::query_param_list params(public_request_id);
         std::ostringstream sql_set;
+        Exception bad_params;
 
         if (status_.isset()) {
             sql_set << "status=(SELECT id FROM enum_public_request_status WHERE name=$"
@@ -111,6 +112,15 @@ UpdatePublicRequest::Result UpdatePublicRequest::exec(OperationContext &_ctx,
                     << (answer_email_id_.get_value().isnull() ? params.add(Database::QPNull)
                                                               : params.add(answer_email_id_.get_value().get_value()))
                     << "::BIGINT,";
+            if (!answer_email_id_.get_value().isnull()) {
+                const EmailId email_id = answer_email_id_.get_value().get_value();
+                const bool answer_email_id_exists = static_cast< bool >(_ctx.get_conn().exec_params(
+                    "SELECT EXISTS(SELECT * FROM mail_archive WHERE id=$1::BIGINT)",
+                    Database::query_param_list(email_id))[0][0]);
+                if (!answer_email_id_exists) {
+                    bad_params.set_unknown_email_id(email_id);
+                }
+            }
         }
 
         if (registrar_id_.isset()) {
@@ -118,6 +128,15 @@ UpdatePublicRequest::Result UpdatePublicRequest::exec(OperationContext &_ctx,
                     << (registrar_id_.get_value().isnull() ? params.add(Database::QPNull)
                                                            : params.add(registrar_id_.get_value().get_value()))
                     << "::BIGINT,";
+            if (!registrar_id_.get_value().isnull()) {
+                const RegistrarId registrar_id = registrar_id_.get_value().get_value();
+                const bool registrar_id_exists = static_cast< bool >(_ctx.get_conn().exec_params(
+                    "SELECT EXISTS(SELECT * FROM registrar WHERE id=$1::BIGINT)",
+                    Database::query_param_list(registrar_id))[0][0]);
+                if (!registrar_id_exists) {
+                    bad_params.set_unknown_registrar_id(registrar_id);
+                }
+            }
         }
 
         if (create_request_id_.isset()) {
@@ -135,7 +154,10 @@ UpdatePublicRequest::Result UpdatePublicRequest::exec(OperationContext &_ctx,
         }
 
         if (sql_set.str().empty()) {
-            BOOST_THROW_EXCEPTION(Exception().set_nothing_to_do(public_request_id));
+            BOOST_THROW_EXCEPTION(bad_params.set_nothing_to_do(public_request_id));
+        }
+        if (bad_params.throw_me()) {
+            BOOST_THROW_EXCEPTION(bad_params);
         }
         const std::string to_set = sql_set.str().substr(0, sql_set.str().length() - 1);//last ',' removed
         const Database::Result res = _ctx.get_conn().exec_params(
@@ -151,7 +173,10 @@ UpdatePublicRequest::Result UpdatePublicRequest::exec(OperationContext &_ctx,
             result.object_id           = static_cast< ObjectId        >(res[0][2]);
             return result;
         }
-        BOOST_THROW_EXCEPTION(Exception().set_public_request_doesnt_exist(public_request_id));
+        BOOST_THROW_EXCEPTION(bad_params.set_public_request_doesnt_exist(public_request_id));
+    }
+    catch (const PublicRequestStatusBadConversion&) {
+        BOOST_THROW_EXCEPTION(Exception().set_bad_public_request_status(status_.get_value()));
     }
     catch (const Exception&) {
         throw;

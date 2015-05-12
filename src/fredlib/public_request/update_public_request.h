@@ -33,10 +33,16 @@ public:
     typedef ObjectId RequestId;
     DECLARE_EXCEPTION_DATA(nothing_to_do, PublicRequestId);/**< exception members in case of all items empty*/
     DECLARE_EXCEPTION_DATA(public_request_doesnt_exist, PublicRequestId);/**< exception members in case of bad public_request_id*/
+    DECLARE_EXCEPTION_DATA(unknown_email_id, EmailId);/**< exception members in case of bad answer_email_id*/
+    DECLARE_EXCEPTION_DATA(unknown_registrar_id, RegistrarId);/**< exception members in case of bad registrar_id*/
+    DECLARE_EXCEPTION_DATA(bad_public_request_status, PublicRequestStatus);/**< exception members in case of invalid value of status*/
     struct Exception
     :   virtual Fred::OperationException,
         ExceptionData_nothing_to_do< Exception >,
-        ExceptionData_public_request_doesnt_exist< Exception >
+        ExceptionData_public_request_doesnt_exist< Exception >,
+        ExceptionData_unknown_email_id< Exception >,
+        ExceptionData_unknown_registrar_id< Exception >,
+        ExceptionData_bad_public_request_status< Exception >
     {};
     UpdatePublicRequest() { }
     UpdatePublicRequest(const Optional< PublicRequestStatus > &_status,
