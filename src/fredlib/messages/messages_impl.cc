@@ -333,23 +333,23 @@ unsigned long long Manager::save_letter_to_send(const char* contact_handle
             //check snail mail address (name, street1, city, postalcode, country)
             std::string trimed_address_name_string
                 = boost::algorithm::trim_copy(static_cast<std::string>(address.name));
-            if(trimed_address_name_string.empty()) throw std::runtime_error("empty address.name");
+            if(trimed_address_name_string.empty()) throw WrongPostalAddress("empty address.name",address);
 
             std::string trimed_address_street1_string
                 = boost::algorithm::trim_copy(static_cast<std::string>(address.street1));
-            if(trimed_address_street1_string.empty()) throw std::runtime_error("empty address.street1");
+            if(trimed_address_street1_string.empty()) throw WrongPostalAddress("empty address.street1",address);
 
             std::string trimed_address_city_string
                 = boost::algorithm::trim_copy(static_cast<std::string>(address.city));
-            if(trimed_address_city_string.empty()) throw std::runtime_error("empty address.city");
+            if(trimed_address_city_string.empty()) throw WrongPostalAddress("empty address.city",address);
 
             std::string trimed_address_code_string
                 = boost::algorithm::trim_copy(static_cast<std::string>(address.code));
-            if(trimed_address_code_string.empty()) throw std::runtime_error("empty address.code");
+            if(trimed_address_code_string.empty()) throw WrongPostalAddress("empty address.code",address);
 
             std::string trimed_address_country_string
                 = boost::algorithm::trim_copy(static_cast<std::string>(address.country));
-            if(trimed_address_country_string.empty()) throw std::runtime_error("empty address.country");
+            if(trimed_address_country_string.empty()) throw WrongPostalAddress("empty address.country",address);
         }
 
         Database::Connection conn = Database::Manager::acquire();
@@ -401,6 +401,11 @@ unsigned long long Manager::save_letter_to_send(const char* contact_handle
 
         tx.commit();
     }//try
+    catch (Fred::Messages::WrongPostalAddress& e)
+    {
+        LOGGER(PACKAGE).warning(boost::format("Messages::save_letter_to_send exception: %1%") % e.what());
+        throw;
+    }
     catch(const std::exception& ex)
     {
         LOGGER(PACKAGE).error(boost::format(

@@ -69,6 +69,25 @@ struct PostalAddress
     std::string country;
 };//struct PostalAddress
 
+class WrongPostalAddress : public std::runtime_error
+{
+public:
+    WrongPostalAddress(const std::string& what,const PostalAddress & wrong_postal_address)
+    : std::runtime_error(std::string("wrong postal address: ") + what
+        + std::string(" name: ") + wrong_postal_address.name
+        + std::string(" org: ") + wrong_postal_address.org
+        + std::string(" street1: ") + wrong_postal_address.street1
+        + std::string(" street2: ") + wrong_postal_address.street2
+        + std::string(" street3: ") + wrong_postal_address.street3
+        + std::string(" state: ") + wrong_postal_address.state
+        + std::string(" city: ") + wrong_postal_address.city
+        + std::string(" code: ") + wrong_postal_address.code
+        + std::string(" country: ") + wrong_postal_address.country
+        )
+    {}
+};
+
+
 unsigned long long get_filetype_id(std::string file_type);
 
 struct letter_proc {
