@@ -4,6 +4,11 @@
 
 namespace Fred {
 
+UpdatePublicRequest::UpdatePublicRequest()
+:   is_resolve_time_set_to_now_(false)
+{
+}
+
 UpdatePublicRequest::UpdatePublicRequest(const Optional< PublicRequestStatus > &_status,
                                          const Optional< Nullable< Time > > &_resolve_time,
                                          const Optional< Nullable< std::string > > &_reason,
@@ -14,6 +19,7 @@ UpdatePublicRequest::UpdatePublicRequest(const Optional< PublicRequestStatus > &
                                          const Optional< Nullable< RequestId > > &_resolve_request_id)
 :   status_(_status),
     resolve_time_(_resolve_time),
+    is_resolve_time_set_to_now_(false),
     reason_(_reason),
     email_to_answer_(_email_to_answer),
     answer_email_id_(_answer_email_id),
@@ -32,6 +38,12 @@ UpdatePublicRequest& UpdatePublicRequest::set_status(PublicRequestStatus _status
 UpdatePublicRequest& UpdatePublicRequest::set_resolve_time(const Nullable< Time > &_time)
 {
     resolve_time_ = _time;
+    return *this;
+}
+
+UpdatePublicRequest& UpdatePublicRequest::set_resolve_time_to_now()
+{
+    is_resolve_time_set_to_now_ = true;
     return *this;
 }
 
@@ -86,7 +98,10 @@ UpdatePublicRequest::Result UpdatePublicRequest::exec(OperationContext &_ctx,
                     << "::TEXT),";
         }
 
-        if (resolve_time_.isset()) {
+        if (is_resolve_time_set_to_now_) {
+            sql_set << "resolve_time=NOW()";
+        }
+        else if (resolve_time_.isset()) {
             sql_set << "resolve_time=$"
                     << (resolve_time_.get_value().isnull() ? params.add(Database::QPNull)
                                                            : params.add(resolve_time_.get_value().get_value()))

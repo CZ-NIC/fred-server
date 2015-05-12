@@ -44,7 +44,7 @@ public:
         ExceptionData_unknown_registrar_id< Exception >,
         ExceptionData_bad_public_request_status< Exception >
     {};
-    UpdatePublicRequest() { }
+    UpdatePublicRequest();
     UpdatePublicRequest(const Optional< PublicRequestStatus > &_status,
                         const Optional< Nullable< Time > > &_resolve_time,
                         const Optional< Nullable< std::string > > &_reason,
@@ -56,6 +56,7 @@ public:
     ~UpdatePublicRequest() { }
     UpdatePublicRequest& set_status(PublicRequestStatus _status);
     UpdatePublicRequest& set_resolve_time(const Nullable< Time > &_time);
+    UpdatePublicRequest& set_resolve_time_to_now();
     UpdatePublicRequest& set_reason(const Nullable< std::string > &_reason);
     UpdatePublicRequest& set_email_to_answer(const Nullable< std::string > &_email);
     UpdatePublicRequest& set_answer_email_id(const Nullable< EmailId > &_id);
@@ -75,6 +76,7 @@ public:
 private:
     Optional< PublicRequestStatus > status_;
     Optional< Nullable< Time > > resolve_time_;
+    bool is_resolve_time_set_to_now_;
     Optional< Nullable< std::string > > reason_;
     Optional< Nullable< std::string > > email_to_answer_;
     Optional< Nullable< EmailId > > answer_email_id_;
