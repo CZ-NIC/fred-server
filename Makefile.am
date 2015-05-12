@@ -2466,6 +2466,7 @@ tests_test_fredlib_SOURCES = \
 		tests/fredlib/nsset/test_update_nsset.cc \
 		tests/fredlib/nsset/test_delete_nsset.cc \
 		tests/fredlib/nsset/test_info_nsset.cc \
+		tests/fredlib/public_request/test_create_public_request.cc \
 		tests/fredlib/contact/verification/setup_utils.h \
 		tests/fredlib/contact/verification/setup_utils.cc \
 		tests/fredlib/contact/verification/test_create_check.cc \
@@ -2548,6 +2549,7 @@ tests_test_fredlib_LDADD = \
 		src/corba/libcorba.a \
 		src/corba/libmailer.a \
 		src/corba/libcorbadatatypes.a \
+		src/fredlib/public_request/libpublic_request.a \
 		$(LIBIDN_LIBS) \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(BOOST_DATE_TIME_LIB) \
