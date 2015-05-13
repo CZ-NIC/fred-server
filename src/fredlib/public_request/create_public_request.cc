@@ -40,15 +40,22 @@ PublicRequestId CreatePublicRequest::exec(OperationContext &_ctx,
                                           const PublicRequestObjectLockGuard &_locked_object)const
 {
     try {
-        Database::query_param_list params(type_);
-        params(_locked_object.get_object_id())
-              (reason_.isset() ? reason_.get_value() : Database::QPNull)
-              (email_to_answer_.isset() ? email_to_answer_.get_value() : Database::QPNull);
+        Database::query_param_list params(type_);                                           // $1::TEXT
+        params(_locked_object.get_object_id())                                              // $2::BIGINT
+              (reason_.isset() ? reason_.get_value() : Database::QPNull)                    // $3::TEXT
+              (email_to_answer_.isset() ? email_to_answer_.get_value() : Database::QPNull); // $4::TEXT
         if (registrar_id_.isset()) {
-            params(registrar_id_.get_value());
+            const RegistrarId registrar_id = registrar_id_.get_value();
+            const bool registrar_id_exists = static_cast< bool >(_ctx.get_conn().exec_params(
+                "SELECT EXISTS(SELECT * FROM registrar WHERE id=$1::BIGINT)",
+                Database::query_param_list(registrar_id))[0][0]);
+            if (!registrar_id_exists) {
+                BOOST_THROW_EXCEPTION(Exception().set_unknown_registrar(registrar_id));
+            }
+            params(registrar_id);                                                           // $5::BIGINT
         }
         else {
-            params(Database::QPNull);
+            params(Database::QPNull);                                                       // $5::BIGINT
         };
         const Database::Result res = _ctx.get_conn().exec_params(
             "WITH request AS ("
@@ -67,12 +74,12 @@ PublicRequestId CreatePublicRequest::exec(OperationContext &_ctx,
             const PublicRequestId public_request_id = static_cast< PublicRequestId >(res[0][0]);
             return public_request_id;
         }
-        BOOST_THROW_EXCEPTION(Exception().set_bad_type(type_));
+        BOOST_THROW_EXCEPTION(Exception().set_unknown_type(type_));
     }
     catch (const Exception&) {
         throw;
     }
-    catch (const std::runtime_error &e) {
+    catch (const std::runtime_error&) {
         throw;
     }
 }
