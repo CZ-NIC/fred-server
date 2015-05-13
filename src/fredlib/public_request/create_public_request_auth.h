@@ -12,10 +12,12 @@ enum { PUBLIC_REQUEST_AUTH_IDENTIFICATION_LENGTH = 32 };
 class CreatePublicRequestAuth
 {
 public:
-    DECLARE_EXCEPTION_DATA(bad_type, std::string);/**< exception members for bad public request type*/
+    DECLARE_EXCEPTION_DATA(unknown_type, std::string);/**< exception members for bad public request type*/
+    DECLARE_EXCEPTION_DATA(unknown_registrar, RegistrarId);/**< exception members for bad registrar id*/
     struct Exception
     :   virtual Fred::OperationException,
-        ExceptionData_bad_type< Exception >
+        ExceptionData_unknown_type< Exception >,
+        ExceptionData_unknown_registrar< Exception >
     {};
     CreatePublicRequestAuth(const PublicRequestTypeIface &_type,
                             const std::string &_password);

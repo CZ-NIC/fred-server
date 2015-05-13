@@ -54,7 +54,14 @@ CreatePublicRequestAuth::Result CreatePublicRequestAuth::exec(OperationContext &
               (reason_.isset() ? reason_.get_value() : Database::QPNull)                    // $5::TEXT
               (email_to_answer_.isset() ? email_to_answer_.get_value() : Database::QPNull); // $6::TEXT
         if (registrar_id_.isset()) {
-            params(registrar_id_.get_value());                                              // $7::BIGINT
+            const RegistrarId registrar_id = registrar_id_.get_value();
+            const bool registrar_id_exists = static_cast< bool >(_ctx.get_conn().exec_params(
+                "SELECT EXISTS(SELECT * FROM registrar WHERE id=$1::BIGINT)",
+                Database::query_param_list(registrar_id))[0][0]);
+            if (!registrar_id_exists) {
+                BOOST_THROW_EXCEPTION(Exception().set_unknown_registrar(registrar_id));
+            }
+            params(registrar_id);                                                           // $7::BIGINT
         }
         else {
             params(Database::QPNull);                                                       // $7::BIGINT
@@ -82,7 +89,7 @@ CreatePublicRequestAuth::Result CreatePublicRequestAuth::exec(OperationContext &
             result.password          = static_cast< std::string     >(res[0][2]);
             return result;
         }
-        BOOST_THROW_EXCEPTION(Exception().set_bad_type(type_));
+        BOOST_THROW_EXCEPTION(Exception().set_unknown_type(type_));
     }
     catch (const Exception&) {
         throw;
