@@ -1586,10 +1586,6 @@ src_corba_fred_pifd_SOURCES = \
 		src/contact_verification/contact_verification_impl.cc \
 		src/contact_verification/contact_verification_impl.h \
 		src/contact_verification/public_request_contact_verification_wrapper.h \
-		src/domain_browser/domain_browser.cc \
-		src/domain_browser/domain_browser.h \
-		src/corba/domain_browser/domain_browser_i.cc \
-		src/corba/domain_browser/domain_browser_i.h \
 		src/corba/fred-pifd.cc
 
 src_corba_fred_pifd_LDADD = \
@@ -1601,13 +1597,11 @@ src_corba_fred_pifd_LDADD = \
 		src/corba/libcorbaadmin.a \
 		src/corba/libcorbaregistry.a \
 		src/corba/libcorbafilters.a \
-		src/corba/libcorbazone.a \
 		src/corba/libmailer.a \
 		src/corba/libcorbadatatypes.a \
 		src/corba/libcorba.a \
 		src/corba/libcorbaepp.a \
 		src/corba/libfilemanager.a \
-		src/corba/libcorbadomainbrowser.a \
 		src/corba/libcorbalogger.a \
 		src/corba/util/libcorbautil.a \
 		src/corba/libcorbanullabletypes.a \
