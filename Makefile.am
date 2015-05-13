@@ -2467,6 +2467,7 @@ tests_test_fredlib_SOURCES = \
 		tests/fredlib/nsset/test_delete_nsset.cc \
 		tests/fredlib/nsset/test_info_nsset.cc \
 		tests/fredlib/public_request/test_create_public_request.cc \
+		tests/fredlib/public_request/test_create_public_request_auth.cc \
 		tests/fredlib/contact/verification/setup_utils.h \
 		tests/fredlib/contact/verification/setup_utils.cc \
 		tests/fredlib/contact/verification/test_create_check.cc \
