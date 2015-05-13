@@ -69,11 +69,14 @@ struct create_public_request_fixture : public virtual Test::Fixture::instantiate
     Fred::ObjectId contact_id;
 };
 
-class PublicRequestType:public Fred::PublicRequestTypeIface
+class PublicRequestTypeFake:public Fred::PublicRequestTypeIface
 {
 public:
-    std::string get_public_request_type()const { return "mojeid_contact_identification"; }
-    ~PublicRequestType() { }
+    PublicRequestTypeFake(const std::string &_type):type_(_type) { }
+    std::string get_public_request_type()const { return type_; }
+    ~PublicRequestTypeFake() { }
+private:
+    const std::string type_;
 };
 
 BOOST_FIXTURE_TEST_SUITE(TestCreatePublicRequest, create_public_request_fixture)
@@ -92,13 +95,25 @@ BOOST_AUTO_TEST_CASE(create_public_request_wrong_registrar)
     BOOST_CHECK_EXCEPTION(
     try
     {
-        Fred::CreatePublicRequest(PublicRequestType())
+        Fred::CreatePublicRequest(PublicRequestTypeFake("mojeid_contact_identification"))
             .set_registrar_id(bad_registrar_id)
             .exec(ctx, Fred::PublicRequestObjectLockGuard(ctx, contact_id));
     }
     catch(const Fred::CreatePublicRequest::Exception &e)
     {
+        BOOST_CHECK(e.is_set_unknown_registrar());
+        BOOST_CHECK(e.get_unknown_registrar() == bad_registrar_id);
         BOOST_TEST_MESSAGE(boost::diagnostic_information(e));
+        throw;
+    }
+    catch(const std::exception &e)
+    {
+        BOOST_ERROR(boost::diagnostic_information(e));
+        throw;
+    }
+    catch(...)
+    {
+        BOOST_ERROR("unexpected exception occurs");
         throw;
     },
     std::exception,
