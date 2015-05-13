@@ -81,8 +81,6 @@ private:
 
 BOOST_FIXTURE_TEST_SUITE(TestCreatePublicRequest, create_public_request_fixture)
 
-DECLARE_EXCEPTION_DATA(unknown_registrar_handle, std::string);
-
 /**
  * test PublicRequestObjectLockGuard with wrong object_id
  */
