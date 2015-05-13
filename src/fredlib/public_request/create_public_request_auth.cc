@@ -66,7 +66,7 @@ CreatePublicRequestAuth::Result CreatePublicRequestAuth::exec(OperationContext &
                      "create_request_id,resolve_request_id) "
                 "SELECT eprt.id,eprs.id,NULL,$5::TEXT,$6::TEXT,NULL,$7::BIGINT,NULL,NULL "
                 "FROM enum_public_request_type eprt,"
-                     "enum_public_request_status eprs"
+                     "enum_public_request_status eprs "
                 "WHERE eprt.name=$1::TEXT AND eprs.name='new' "
                 "RETURNING id),"
                  "request_object AS ("

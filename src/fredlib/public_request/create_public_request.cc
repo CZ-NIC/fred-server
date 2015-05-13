@@ -64,7 +64,7 @@ PublicRequestId CreatePublicRequest::exec(OperationContext &_ctx,
                      "create_request_id,resolve_request_id) "
                 "SELECT eprt.id,eprs.id,NULL,$3::TEXT,$4::TEXT,NULL,$5::BIGINT,NULL,NULL "
                 "FROM enum_public_request_type eprt,"
-                     "enum_public_request_status eprs"
+                     "enum_public_request_status eprs "
                 "WHERE eprt.name=$1::TEXT AND eprs.name='new' "
                 "RETURNING id) "
             "INSERT INTO public_request_objects_map (request_id,object_id) "
