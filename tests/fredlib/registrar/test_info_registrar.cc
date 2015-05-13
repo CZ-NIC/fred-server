@@ -184,7 +184,7 @@ BOOST_AUTO_TEST_CASE(info_registrar_diff)
     test_diff.dic = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
     test_diff.variable_symbol = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
     test_diff.payment_memo_regex = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
-    test_diff.vat_payer= std::make_pair(Nullable<bool>(),Nullable<bool>(true));
+    test_diff.vat_payer= std::make_pair(false,true);
 
     BOOST_MESSAGE(test_diff.to_string());
     BOOST_MESSAGE(test_empty_diff.to_string());
