@@ -81,7 +81,7 @@ CreatePublicRequestAuth::Result CreatePublicRequestAuth::exec(OperationContext &
                     "SELECT id,$4::BIGINT FROM request "
                 "RETURNING request_id,object_id) "
             "INSERT INTO public_request_auth (id,identification,password) "
-                "SELECT request_id,$2::TEXT,$3::TEXT "
+                "SELECT request_id,$2::TEXT,$3::TEXT FROM request_object "
             "RETURNING id,identification,password", params);
         if (0 < res.size()) {
             result.public_request_id = static_cast< PublicRequestId >(res[0][0]);
