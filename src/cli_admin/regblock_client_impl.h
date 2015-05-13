@@ -75,53 +75,59 @@ private:
 
     void send_block_notification()
     {
-       // check if sendmail is present
-       SubProcessOutput sub_output_test = ShellCmd("ls /usr/sbin/sendmail", params.shell_cmd_timeout).execute();
-       if (!sub_output_test.stderr.empty()) {
-           LOGGER(PACKAGE).error(sub_output_test.stderr);
-       }
+        // check if sendmail is present
+        if (!Cmd::Executable("test")("-x")("/usr/sbin/sendmail")
+                .run_with_path(params.shell_cmd_timeout).succeeded()) {
+            LOGGER(PACKAGE).error("/usr/sbin/sendmail: command not found");
+        }
 
-       BlockedRegistrars blocked_registrars = regMan->getRegistrarsBlockedToday();
+        BlockedRegistrars blocked_registrars = regMan->getRegistrarsBlockedToday();
 
-       std::string cmd;
-       if(blocked_registrars->empty()) {
-           cmd = (boost::format("{\n"
-                   "echo \"Subject: No registrars blocked, date $(date +'%%Y-%%m-%%d')\n"
-                   "Content-Type: text/plain; charset=UTF-8; format=flowed"
-                   "\nContent-Transfer-Encoding: 8bit\n\n \";"
-                   "\n} | /usr/sbin/sendmail %1%" ) % params.notify_email).str();
-       } else {
-           // there are some entries to send
-           std::ostringstream msg;
+        const std::string date = Cmd::Executable("date")("+'%Y-%m-%d'")
+                                    .run_with_path(params.shell_cmd_timeout).stdout;
+        std::string data;
+        if(blocked_registrars->empty()) {
+            data =
+                "Subject: No registrars blocked, date " + date + "\n"
+                "Content-Type: text/plain; charset=UTF-8; format=flowed\n"
+                "Content-Transfer-Encoding: 8bit\n"
+                "\n"
+                " \n";
+        }
+        else {
+            // there are some entries to send
+            std::ostringstream msg;
 
-           for (
-                   std::vector<BlockedReg>::iterator it = blocked_registrars->begin();
-                   it != blocked_registrars->end();
-                   ++it) {
+            for (std::vector<BlockedReg>::iterator it = blocked_registrars->begin();
+                 it != blocked_registrars->end();
+                 ++it) {
 
-               // TODO: include price as before: "Registrar %1% blocked: price limit %2%, current price: %3%,
-               // e-mail: %4%, phone: %5%, link: https://manager.nic.cz/registrar/detail/?id=%6% \n")
-               msg << (boost::format(
-               "Registrar %1% blocked: price limit %2%, e-mail: %3%, phone: %4%, "
-               "link: https://manager.nic.cz/registrar/detail/?id=%5% \n")
-                   % it->reg_handle
-                   % it->price_limit
-                   % it->email
-                   % it->telephone
-                   % it->reg_id).str()
-               << std::endl;
-           }
-           cmd = (boost::format("{\n"
-             "echo \"Subject: REGISTRARS BLOCKED - requests over limit, date $(date +'%%Y-%%m-%%d')\n"
-             "Content-Type: text/plain; charset=UTF-8; format=flowed"
-             "\nContent-Transfer-Encoding: 8bit\n\n%1% \n\";"
-             "\n} | /usr/sbin/sendmail %2%") % msg.str() % params.notify_email).str();
-       }
+                // TODO: include price as before: "Registrar %1% blocked: price limit %2%, current price: %3%,
+                // e-mail: %4%, phone: %5%, link: https://manager.nic.cz/registrar/detail/?id=%6% \n")
+                msg << (boost::format(
+                "Registrar %1% blocked: price limit %2%, e-mail: %3%, phone: %4%, "
+                "link: https://manager.nic.cz/registrar/detail/?id=%5% \n")
+                    % it->reg_handle
+                    % it->price_limit
+                    % it->email
+                    % it->telephone
+                    % it->reg_id).str() << std::endl;
+            }
+            data =
+                "Subject: REGISTRARS BLOCKED - requests over limit, date " + date + "\n"
+                "Content-Type: text/plain; charset=UTF-8; format=flowed\n"
+                "Content-Transfer-Encoding: 8bit\n"
+                "\n" +
+                msg.str() + " \n"
+                "\n";
+        }
 
-       SubProcessOutput sub_output = ShellCmd(cmd, params.shell_cmd_timeout).execute();
-       if (!sub_output.stderr.empty()) {
-           throw std::runtime_error(sub_output.stderr);
-       }
+        const SubProcessOutput sub_output =
+            Cmd::Data(data).into("/usr/sbin/sendmail")(params.notify_email)
+                .run(params.shell_cmd_timeout);
+        if (!sub_output.succeeded()) {
+            throw std::runtime_error(sub_output.stderr);
+        }
     }
 
     void block_clients_over_limit()

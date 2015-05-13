@@ -230,41 +230,49 @@
 
     std::set<std::string> OptysDownloadClient::download()
     {
-        std::string download_command = std::string("rsync --include=\"*.csv\" --exclude=\"*\"")
-            + " -e \"ssh -p "+ port_ + "\" -ai --out-format=\"%n\" --inplace "
-            + user_ + "@" + host_ + ":" + remote_data_dir_ + "/ " + local_download_dir_;
+        const std::string ssh_account = user_ + "@" + host_;
+        Cmd::Executable download_command("rsync");
+        download_command("--include=\"*.csv\"")("--exclude=\"*\"")("-e")("ssh -p " + port_)("-ai")
+            ("--out-format=\"%n\"")("--inplace")(ssh_account + ":" + remote_data_dir_ + "/")
+            (local_download_dir_);
 
         std::set<std::string> downloaded_data_filenames;
         std::set<std::string> current_downloaded_data_filenames;
         int rsync_retry_count = 0;
+        enum { COMMAND_LIFETIME_MAX = 3600 };// 3600s = 1hour
         do
         {
-            LOGGER(PACKAGE).debug(boost::format("download_command: %1% ") % download_command);
-            SubProcessOutput output = ShellCmd(download_command.c_str(), 3600).execute();
-            if (!output.stderr.empty() || !output.is_exited() || (output.get_exit_status() != EXIT_SUCCESS))
+            LOGGER(PACKAGE).debug("download_command: rsync");
+            const SubProcessOutput output = download_command.run_with_path(COMMAND_LIFETIME_MAX);
+            if (!output.stderr.empty() || !output.succeeded())
             {
-                throw std::runtime_error(std::string("download command: " + download_command +" failed: ")+output.stderr);
+                throw std::runtime_error("download command: rsync failed: " + output.stderr);
             }
             current_downloaded_data_filenames.clear();
             current_downloaded_data_filenames = downloaded_csv_data_filenames_parser(output.stdout);
             downloaded_data_filenames.insert(current_downloaded_data_filenames.begin(), current_downloaded_data_filenames.end());
             sleep(1);//wait for changes of remote data
             ++rsync_retry_count;
-            if(rsync_retry_count > 30) throw std::runtime_error("remote data still changing");
+            enum { RETRY_COUNT_MAX = 30 };
+            if (RETRY_COUNT_MAX < rsync_retry_count) {
+                throw std::runtime_error("remote data still changing");
+            }
         }
         while(current_downloaded_data_filenames.size() != 0);
 
         for(std::set<std::string>::const_iterator ci = downloaded_data_filenames.begin(); ci != downloaded_data_filenames.end(); ++ci)
         {
             //remove downloaded file from optys server
-            std::string remove_downloaded_file_command = std::string("ssh ") + user_ + "@" + host_ + " \"rm -f " + remote_data_dir_ +  "/" + (*ci) + "\"";
+            const std::string remote_command = "rm -f " + remote_data_dir_ +  "/" + (*ci);
+            const std::string local_command = "ssh \"" + ssh_account + "\" \"" + remote_command + "\"";
 
-            LOGGER(PACKAGE).debug(boost::format("remove_downloaded_file_command: %1% ") % remove_downloaded_file_command);
+            LOGGER(PACKAGE).debug("remove_downloaded_file_command: " + local_command);
 
-            SubProcessOutput output = ShellCmd(remove_downloaded_file_command.c_str(), 3600).execute();
-            if (!output.stderr.empty() || !output.is_exited() || (output.get_exit_status() != EXIT_SUCCESS))
+            const SubProcessOutput output = Cmd::Executable("ssh")(ssh_account)(remote_command)
+                                                .run_with_path(COMMAND_LIFETIME_MAX);
+            if (!output.stderr.empty() || !output.succeeded())
             {
-                throw std::runtime_error(std::string("remove command: " + remove_downloaded_file_command +" failed: ")+output.stderr);
+                throw std::runtime_error("remove command: " + local_command + " failed: " + output.stderr);
             }
         }
 

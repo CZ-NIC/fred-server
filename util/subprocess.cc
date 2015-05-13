@@ -1,8 +1,10 @@
 #include "util/subprocess.h"
 
+#include <pthread.h>
 #include <sys/select.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <time.h>
 
 #include <cstdlib>
 #include <cerrno>
@@ -22,9 +24,6 @@
 namespace
 {
 
-class ImReader;
-class ImWriter;
-
 #define DEFAULT_BASH "/bin/sh"
 enum { DEFAULT_TIMEOUT_SEC = 10 };
 
@@ -35,7 +34,13 @@ enum {
     IM_CHILD = 0,
 };
 
-class Pipe:public boost::noncopyable
+//public read end of pipe interface, hide write end of pipe
+class ImReader;
+
+//public write end of pipe interface, hide read end of pipe
+class ImWriter;
+
+class Pipe
 {
 public:
     Pipe();
@@ -49,7 +54,6 @@ private:
     bool is_ready_for_read(const ::fd_set &_set)const;
     ::size_t read(void *_buf, ::size_t _buf_size)const;
 
-
     Pipe& close_write_end();
     Pipe& dup_write_end(int _new_fd);
 
@@ -61,24 +65,24 @@ private:
     enum Idx {
         READ_END  = 0,
         WRITE_END = 1,
+        DESCRIPTORS_COUNT = 2
     };
 
     Pipe& close(Idx _idx);
     Pipe& dup(Idx _idx, int _new_fd);
 
     bool is_closed(Idx _idx)const;
-    bool is_open(Idx _idx)const;
+    bool is_opened(Idx _idx)const;
     void watch(Idx _idx, ::fd_set &_set, int &_max_fd)const;
     bool is_set(Idx _idx, const ::fd_set &_set)const;
     void set_nonblocking(Idx _idx)const;
 
+    int fd_[DESCRIPTORS_COUNT];
+
     friend class ImReader;
     friend class ImWriter;
-
-    int fd_[2];
 };
 
-//public read end of pipe interface, hide write end of pipe
 class ImReader:public boost::noncopyable
 {
 public:
@@ -97,7 +101,6 @@ private:
     Pipe &pipe_;
 };
 
-//public write end of pipe interface, hide read end of pipe
 class ImWriter:public boost::noncopyable
 {
 public:
@@ -115,267 +118,81 @@ private:
     Pipe &pipe_;
 };
 
-class SaveAndRestoreSigChldHandler
-{
-public:
-    SaveAndRestoreSigChldHandler();
-    ~SaveAndRestoreSigChldHandler();
-private:
-    static void handler(int) { }
-    struct ::sigaction old_act_;
-    ::sigset_t old_set_;
-};
+SubProcessOutput cmd_run(
+    const std::string &_stdin_content,
+    const std::string &_cmd,
+    bool _search_path,
+    const std::vector< std::string > &_args,
+    struct ::timeval *_timeout_ptr);
+
+void kill_child(::pid_t _child_pid, int *_status);
 
 }
 
-ShellCmd::ShellCmd(const std::string &_cmd)
-    : cmd_(_cmd)
-    , shell_(DEFAULT_BASH)
-    , timeout_(DEFAULT_TIMEOUT_SEC)
-    , child_pid_(IM_CHILD)
+namespace Cmd
+{
+
+Executable::Executable(std::string _cmd)
+:   cmd_(_cmd)
 {
 }
 
-ShellCmd::ShellCmd(const std::string &_cmd,
-                   RelativeTimeInSeconds _timeout
-                  )
-    : cmd_(_cmd)
-    , shell_(DEFAULT_BASH)
-    , timeout_(_timeout)
-    , child_pid_(IM_CHILD)
+Executable::Executable(std::string _data, std::string _cmd)
+:   data_(_data),
+    cmd_(_cmd)
 {
 }
 
-ShellCmd::ShellCmd(const std::string &_cmd,
-                   const std::string &_shell,
-                   RelativeTimeInSeconds _timeout
-                  )
-    : cmd_(_cmd)
-    , shell_(_shell)
-    , timeout_(_timeout)
-    , child_pid_(IM_CHILD)
+Executable& Executable::operator()(std::string _arg)
 {
+    args_.push_back(_arg);
+    return *this;
 }
 
-ShellCmd::~ShellCmd()
+SubProcessOutput Executable::run()
 {
-    this->kill_child();//if in parent and have child
+    return cmd_run(data_, cmd_, false, args_, NULL);
 }
 
-SubProcessOutput ShellCmd::execute(std::string stdin_str)
+SubProcessOutput Executable::run(Seconds _max_lifetime_sec)
 {
-    Pipe pipe_stdin;
-    Pipe pipe_stdout;
-    Pipe pipe_stderr;
-
-    child_pid_ = ::fork();
-    if (child_pid_ == FAILURE) {
-        std::string err_msg(std::strerror(errno));
-        throw std::runtime_error("ShellCmd::execute fork error: " + err_msg);
-    }
-    //parent and child now share the pipe's
-    if (child_pid_ == IM_CHILD) {
-        //in child
-        try {
-            //close writable end of stdin
-            ImReader stdin(pipe_stdin);
-            //close readable end of stdout and stderr
-            ImWriter stdout(pipe_stdout);
-            ImWriter stderr(pipe_stderr);
-
-            //duplicate readable end of stdin pipe into stdin
-            stdin.dup(STDIN_FILENO);
-            //duplicate writable end of stdout pipe into stdout
-            stdout.dup(STDOUT_FILENO);
-            //duplicate writable end of stderr pipe into stderr
-            stderr.dup(STDERR_FILENO);
-
-            char *shell_argv[] = {
-                const_cast< char* >(shell_.c_str()),
-                const_cast< char* >("-c"),
-                const_cast< char* >(cmd_.c_str()),
-                NULL
-            };
-
-            //shell exec
-            if (::execv(shell_argv[0], shell_argv) == FAILURE) {
-                //failed to launch the shell
-                std::string err_msg(std::strerror(errno));
-                Logging::Manager::instance_ref()
-                .get(PACKAGE).error("ShellCmd::execute execv failed: " + err_msg);
-            }
-        }
-        catch (...) {
-        }
-        ::_exit(EXIT_FAILURE);
-    }
-
-    //in parent
-    //waitpid need default SIGCHLD handler to work
-    SaveAndRestoreSigChldHandler save_and_restore_sig_handler;
-
-    SubProcessOutput ret;
-    ImWriter stdin(pipe_stdin);
-    ImReader stdout(pipe_stdout);
-    ImReader stderr(pipe_stderr);
-
-    stdin.set_nonblocking();
-    stdout.set_nonblocking();
-    stderr.set_nonblocking();
-
-    //set select timeout
     struct ::timeval timeout;
-    timeout.tv_sec = timeout_;
+    timeout.tv_sec = _max_lifetime_sec;
     timeout.tv_usec = 0;
-
-    //communication with child process
-    int nfds;
-    const char *data = stdin_str.c_str();
-    const char *const data_end = data + stdin_str.length();
-    if (stdin_str.empty()) { //no input data, close stdin
-        stdin.close();
-    }
-
-    do {
-        //init fd sets for reading and writing
-        ::fd_set rfds, wfds;
-        FD_ZERO(&rfds);
-        FD_ZERO(&wfds);
-        nfds = 0;
-
-        //watch events on stdin, stdout, stderr
-        stdin.watch(wfds, nfds);
-        stdout.watch(rfds, nfds);
-        stderr.watch(rfds, nfds);
-
-        if (0 < nfds) {//if have fd to wait for
-
-            const int events = ::select(nfds + 1, &rfds, &wfds, NULL, &timeout);
-
-            if (events == 0) {//timeout
-                stdin.close();
-                stdout.close();
-                stderr.close();
-                this->kill_child();
-                throw std::runtime_error("ShellCmd::check_timeout timeout cmd: " + cmd_);
-            }
-
-            if (events == FAILURE) {
-                if (errno == EINTR) {
-                    continue;
-                }
-                //error
-                std::string err_msg(std::strerror(errno));
-                throw std::runtime_error("ShellCmd::execute error in select: " + err_msg);
-            }
-
-            //check child stdin
-            if (stdin.is_ready(wfds)) {
-                if (data < data_end) {
-                    const ::size_t wbytes = stdin.write(data, data_end - data);
-                    data += wbytes;
-                    if (data_end <= data) {
-                        stdin_str.clear();
-                        stdin.close();
-                    }
-                }
-            }//if stdin ready
-
-            //check child stdout
-            if (stdout.is_ready(rfds)) {
-                stdout.append(ret.stdout);
-            }
-
-            //check child stderr
-            if (stderr.is_ready(rfds)) {
-                stderr.append(ret.stderr);
-            }
-
-        }//if nfds
-
-    }
-    while(0 < nfds);  //communication with child process
-
-    //check for child completion
-    const ::pid_t dp = ::waitpid(child_pid_, &ret.status, WNOHANG);//death pid
-
-    switch (dp) {
-    case FAILURE:
-        throw std::runtime_error("ShellCmd::execute error waitpid: " + std::string(std::strerror(errno)));
-    case 0: //child is still running
-        this->kill_child(&ret.status);
-        break;
-    default:
-        if (dp != child_pid_) {
-            std::ostringstream msg;
-            msg << "ShellCmd::execute error waitpid(" << child_pid_ << "): return unexpected value " << dp;
-            throw std::runtime_error(msg.str());
-        }
-        child_pid_ = IM_CHILD;//child done
-        break;
-    }
-
-    return ret;//return outputs
+    return cmd_run(data_, cmd_, false, args_, &timeout);
 }
 
-void ShellCmd::kill_child(int *_status) throw()
+SubProcessOutput Executable::run_with_path()
 {
-    if (child_pid_ <= 0) {
-        return;
-    }
+    return cmd_run(data_, cmd_, true, args_, NULL);
+}
 
-    ::kill(child_pid_, SIGKILL);
+SubProcessOutput Executable::run_with_path(Seconds _max_lifetime_sec)
+{
+    struct ::timeval timeout;
+    timeout.tv_sec = _max_lifetime_sec;
+    timeout.tv_usec = 0;
+    return cmd_run(data_, cmd_, true, args_, &timeout);
+}
 
-    try {
-        Logging::Manager::instance_ref()
-        .get(PACKAGE).error("ShellCmd::kill_child command: " + cmd_);
-    }
-    catch (...) { }
+Data::Data(std::string _data)
+:   cmd_(NULL),
+    data_(_data)
+{
+}
 
-    enum { PASS_MAX = 10 };
-    for (int pass = 0; pass < PASS_MAX; ++pass) {
-        const ::pid_t dp = ::waitpid(child_pid_, _status, WNOHANG); //death pid
+Data::~Data()
+{
+    try { delete cmd_; } catch (...) { } cmd_ = NULL;
+}
 
-        if (dp == FAILURE) {
-            try {
-                std::string err_msg(std::strerror(errno));
-                Logging::Manager::instance_ref()
-                .get(PACKAGE).error("ShellCmd::kill_child error in waitpid: " + err_msg);
-            }
-            catch (...) { }
-            break;
-        }
+Executable& Data::into(std::string _cmd)
+{
+    delete cmd_;
+    cmd_ = new Executable(data_, _cmd);
+    return *cmd_;
+}
 
-        if (dp == child_pid_) {//if killed child done
-            try {
-                Logging::Manager::instance_ref()
-                .get(PACKAGE).debug("ShellCmd::kill_child, killed child done, command: " + cmd_);
-            }
-            catch (...) { }
-            child_pid_ = IM_CHILD;
-            return;
-        }
-
-        //killed child is still running
-        try {
-        }
-        catch (...) { }
-
-        if ((pass + 1) < PASS_MAX) {
-            ::usleep(10 * 1000);//wait for child stop (SIGCHLD), max 10ms
-        }
-        else {
-            try {
-                Logging::Manager::instance_ref()
-                .get(PACKAGE).debug("ShellCmd::kill_child, killed child is still running, command: " + cmd_);
-            }
-            catch (...) { }
-        }
-    }
-    if (_status != NULL) {
-        *_status = EXIT_FAILURE;
-    }
-    child_pid_ = IM_CHILD;
 }
 
 namespace
@@ -387,27 +204,20 @@ Pipe::Pipe()
     if (ret_val != SUCCESS) {
         const int c_errno = errno;
         std::ostringstream msg;
-        msg << "Pipe::Pipe() pipe() call failure: " << std::strerror(c_errno);
+        msg << __PRETTY_FUNCTION__ << " pipe() failure: " << std::strerror(c_errno);
         throw std::runtime_error(msg.str());
     }
 }
 
 Pipe::~Pipe()
 {
-    try {
-        this->close_read_end();
-    }
-    catch (...) { }
-
-    try {
-        this->close_write_end();
-    }
-    catch (...) { }
+    try { this->close_read_end(); } catch (...) { }
+    try { this->close_write_end(); } catch (...) { }
 }
 
 Pipe& Pipe::close_read_end()
 {
-    if (this->is_open(READ_END)) {
+    if (this->is_opened(READ_END)) {
         this->close(READ_END);
     }
     return *this;
@@ -441,13 +251,13 @@ bool Pipe::is_ready_for_read(const ::fd_set &_set)const
     }
     const int c_errno = errno;
     std::ostringstream msg;
-    msg << "Pipe::read() read() call failure: " << std::strerror(c_errno);
+    msg << "Pipe::read() read() failure: " << std::strerror(c_errno);
     throw std::runtime_error(msg.str());
 }
 
 Pipe& Pipe::close_write_end()
 {
-    if (this->is_open(WRITE_END)) {
+    if (this->is_opened(WRITE_END)) {
         this->close(WRITE_END);
     }
     return *this;
@@ -481,7 +291,7 @@ bool Pipe::is_ready_for_write(const ::fd_set &_set)const
     }
     const int c_errno = errno;
     std::ostringstream msg;
-    msg << "Pipe::write() write() call failure: " << std::strerror(c_errno);
+    msg << "Pipe::write() write() failure: " << std::strerror(c_errno);
     throw std::runtime_error(msg.str());
 }
 
@@ -507,7 +317,7 @@ Pipe& Pipe::dup(Idx _idx, int _new_fd)
     }
     const int c_errno = errno;
     std::ostringstream msg;
-    msg << "Pipe::dup(" << _idx << ") dup2(" << fd_[_idx] << ", " << _new_fd << ") call failure: " << std::strerror(c_errno);
+    msg << "Pipe::dup(" << _idx << ") dup2(" << fd_[_idx] << ", " << _new_fd << ") failure: " << std::strerror(c_errno);
     throw std::runtime_error(msg.str());
 }
 
@@ -516,14 +326,14 @@ bool Pipe::is_closed(Idx _idx)const
     return fd_[_idx] == INVALID_DESCRIPTOR;
 }
 
-bool Pipe::is_open(Idx _idx)const
+bool Pipe::is_opened(Idx _idx)const
 {
     return !this->is_closed(_idx);
 }
 
 void Pipe::watch(Idx _idx, ::fd_set &_set, int &_max_fd)const
 {
-    if (this->is_open(_idx)) {
+    if (this->is_opened(_idx)) {
         FD_SET(fd_[_idx], &_set);
         if (_max_fd < fd_[_idx]) {
             _max_fd = fd_[_idx];
@@ -533,7 +343,7 @@ void Pipe::watch(Idx _idx, ::fd_set &_set, int &_max_fd)const
 
 bool Pipe::is_set(Idx _idx, const ::fd_set &_set)const
 {
-    return this->is_open(_idx) && FD_ISSET(fd_[_idx], &_set);
+    return this->is_opened(_idx) && FD_ISSET(fd_[_idx], &_set);
 }
 
 void Pipe::set_nonblocking(Idx _idx)const
@@ -542,19 +352,20 @@ void Pipe::set_nonblocking(Idx _idx)const
     if (flags == FAILURE) {
         const int c_errno = errno;
         std::ostringstream msg;
-        msg << "Pipe::set_nonblocking(" << _idx << ") fcntl(" << fd_[_idx] << ", F_GETFL) call failure: " << std::strerror(c_errno);
+        msg << "Pipe::set_nonblocking(" << _idx << ") fcntl(" << fd_[_idx] << ", F_GETFL) failure: " << std::strerror(c_errno);
         throw std::runtime_error(msg.str());
     }
     flags |= O_NONBLOCK;
     if (::fcntl(fd_[_idx], F_SETFL, flags) != SUCCESS) {
         const int c_errno = errno;
         std::ostringstream msg;
-        msg << "Pipe::set_nonblocking(" << _idx << ") fcntl(" << fd_[_idx] << ", F_SETFL, " << flags << ") call failure: " << std::strerror(c_errno);
+        msg << "Pipe::set_nonblocking(" << _idx << ") fcntl(" << fd_[_idx] << ", F_SETFL, " << flags << ") failure: " << std::strerror(c_errno);
         throw std::runtime_error(msg.str());
     }
 }
 
-ImReader::ImReader(Pipe &_pipe):pipe_(_pipe)
+ImReader::ImReader(Pipe &_pipe)
+:   pipe_(_pipe)
 {
     pipe_.close_write_end();
 }
@@ -573,9 +384,11 @@ ImReader& ImReader::close()
 
 ImReader& ImReader::append(std::string &_buf)
 {
-    char data[1024];
-    const ::size_t bytes = this->read(data, sizeof(data));
-    if (bytes == 0) {//eof
+    enum { DATA_CHUNK_SIZE = 1024 };
+    char data[DATA_CHUNK_SIZE];
+    const ::size_t bytes = this->read(data, DATA_CHUNK_SIZE);
+    enum { READ_END_OF_FILE = 0 };
+    if (bytes == READ_END_OF_FILE) {
         this->close();
     }
     else {//have data in buf
@@ -604,7 +417,8 @@ bool ImReader::is_ready(const ::fd_set &_set)const
     return pipe_.read(_buf, _buf_size);
 }
 
-ImWriter::ImWriter(Pipe &_pipe):pipe_(_pipe)
+ImWriter::ImWriter(Pipe &_pipe)
+:   pipe_(_pipe)
 {
     pipe_.close_read_end();
 }
@@ -641,24 +455,337 @@ bool ImWriter::is_ready(const ::fd_set &_set)const
     return pipe_.write(_data, _data_size);
 }
 
-SaveAndRestoreSigChldHandler::SaveAndRestoreSigChldHandler()
+class TimedLockGuard
 {
-    struct ::sigaction new_act;
-    new_act.sa_handler = handler;
-    ::sigemptyset(&new_act.sa_mask);
-    new_act.sa_flags = 0;
-    ::sigaction(SIGCHLD, &new_act, &old_act_);
+public:
+    TimedLockGuard(
+        ::pthread_mutex_t &_mtx,
+        unsigned short _max_delay_sec)
+    :   mtx_(_mtx)
+    {
+        struct ::timespec abs_time;
+        ::clock_gettime(CLOCK_REALTIME, &abs_time);
+        abs_time.tv_sec += _max_delay_sec;
+        const int retval = ::pthread_mutex_timedlock(&mtx_, &abs_time);
+        if (retval != SUCCESS) {
+            throw std::runtime_error(std::string("pthread_mutex_timedlock() failure: ") +
+                                     std::strerror(retval));
+        }
+    }
+    ~TimedLockGuard()
+    {
+        ::pthread_mutex_unlock(&mtx_);
+    }
+private:
+    ::pthread_mutex_t &mtx_;
+};
 
-    ::sigset_t new_set;
-    ::sigemptyset(&new_set);
-    ::sigaddset(&new_set, SIGCHLD);
-    ::sigprocmask(SIG_UNBLOCK, &new_set, &old_set_);
+bool is_child_done(::pid_t _child_pid, int *_status)
+{
+    const ::pid_t dp = ::waitpid(_child_pid, _status, WNOHANG); //dead child pid
+    if (dp == _child_pid) {//child done
+        return true;
+    }
+    if (dp == 0) {//child is still running
+        return false;
+    }
+    const std::string err_msg = std::string("wait_child waitpid() failure: ") +
+                                std::strerror(errno);
+    try {
+        Logging::Manager::instance_ref().get(PACKAGE).error(err_msg);
+    }
+    catch (...) { }
+    throw std::runtime_error(err_msg);
 }
 
-SaveAndRestoreSigChldHandler::~SaveAndRestoreSigChldHandler()
+::pthread_mutex_t cmd_run_mtx = PTHREAD_MUTEX_INITIALIZER;
+
+SubProcessOutput cmd_run(
+    const std::string &_stdin_content,
+    const std::string &_cmd,
+    bool _search_path,
+    const std::vector< std::string > &_args,
+    struct ::timeval *_timeout_ptr)
 {
-    ::sigprocmask(SIG_SETMASK, &old_set_, NULL);
-    ::sigaction(SIGCHLD, &old_act_, NULL);
+    enum { LOCK_GUARD_DELAY_MAX = 10 };
+    TimedLockGuard lock(cmd_run_mtx, (_timeout_ptr == NULL) ||
+                                     (LOCK_GUARD_DELAY_MAX < _timeout_ptr->tv_sec)
+                                     ?   LOCK_GUARD_DELAY_MAX
+                                     :   _timeout_ptr->tv_sec);
+    Pipe std_in;
+    Pipe std_out;
+    Pipe std_err;
+
+    const ::pid_t child_pid = ::fork();//parent and child now share the pipes
+
+    if (child_pid == FAILURE) {
+        std::string err_msg(std::strerror(errno));
+        throw std::runtime_error("cmd_run() fork error: " + err_msg);
+    }
+
+    if (child_pid == IM_CHILD) {
+        //in a child
+        try {
+            //close writable end of stdin
+            ImReader stdin(std_in);
+            //close readable end of stdout and stderr
+            ImWriter stdout(std_out);
+            ImWriter stderr(std_err);
+
+            //duplicate readable end of stdin pipe into stdin
+            stdin.dup(STDIN_FILENO);
+            //duplicate writable end of stdout pipe into stdout
+            stdout.dup(STDOUT_FILENO);
+            //duplicate writable end of stderr pipe into stderr
+            stderr.dup(STDERR_FILENO);
+
+            char *argv[1/*cmd*/ + _args.size() + 1/*NULL*/];
+            char **argv_ptr = argv;
+            *argv_ptr = const_cast< char* >(_cmd.c_str());
+            ++argv_ptr;
+            for (std::vector< std::string >::const_iterator item_ptr = _args.begin();
+                 item_ptr != _args.end(); ++item_ptr)
+            {
+                *argv_ptr = const_cast< char* >(item_ptr->c_str());
+                ++argv_ptr;
+            }
+            *argv_ptr = NULL;
+
+            //command execute
+            const int retval = _search_path ? ::execvp(argv[0], argv)
+                                            : ::execv (argv[0], argv);
+            if (retval == FAILURE) { //failed to launch command
+                std::string err_msg(std::strerror(errno));
+                Logging::Manager::instance_ref()
+                .get(PACKAGE).error("cmd_run() execv failed: " + err_msg);
+            }
+        }
+        catch (...) { }
+        ::_exit(EXIT_FAILURE);
+    }
+
+    class SetSigHandler
+    {
+    public:
+        SetSigHandler()
+        {
+            struct ::sigaction new_act;
+            new_act.sa_handler = handler;
+            ::sigemptyset(&new_act.sa_mask);
+            new_act.sa_flags = 0;
+            ::sigaction(SIGCHLD, &new_act, &old_act_);
+
+            ::sigset_t new_set;
+            ::sigemptyset(&new_set);
+            ::sigaddset(&new_set, SIGCHLD);
+            ::sigprocmask(SIG_UNBLOCK, &new_set, &old_set_);
+        }
+        ~SetSigHandler()
+        {
+            ::sigprocmask(SIG_SETMASK, &old_set_, NULL);
+            ::sigaction(SIGCHLD, &old_act_, NULL);
+        }
+    private:
+        static void handler(int) { }
+        struct ::sigaction old_act_;
+        ::sigset_t old_set_;
+    } set_sig_handler;
+
+    ImWriter child_stdin(std_in);
+    child_stdin.set_nonblocking();
+    ImReader child_stdout(std_out);
+    child_stdout.set_nonblocking();
+    ImReader child_stderr(std_err);
+    child_stderr.set_nonblocking();
+
+    SubProcessOutput out;
+
+    //communication with child process
+    const char *data = _stdin_content.c_str();
+    const char *const data_end = data + _stdin_content.length();
+    if (_stdin_content.empty()) { //no input data => close stdin
+        child_stdin.close();
+    }
+
+    while (true) {
+        //init fd sets for reading and writing
+        ::fd_set rfds, wfds;
+        FD_ZERO(&rfds);
+        FD_ZERO(&wfds);
+        int nfds = 0;
+
+        //watch events on stdin, stdout, stderr
+        child_stdin .watch(wfds, nfds);
+        child_stdout.watch(rfds, nfds);
+        child_stderr.watch(rfds, nfds);
+
+        if (nfds <= 0) {//nothing to do
+            break;
+        }
+
+        const int events = ::select(nfds + 1, &rfds, &wfds, NULL, _timeout_ptr);
+
+        if (events == 0) {//no event => timeout
+            child_stdin .close();
+            child_stdout.close();
+            child_stderr.close();
+            kill_child(child_pid, NULL);
+            throw std::runtime_error("cmd_run() failure: timeout reached");
+        }
+
+        if (events == FAILURE) { //select broken
+            if (errno == EINTR) {//by a signal
+                continue;
+            }
+            std::string err_msg(std::strerror(errno));
+            throw std::runtime_error("cmd_run() failure in select: " + err_msg);
+        }
+
+        //check child's stdin
+        if (child_stdin.is_ready(wfds)) {
+            if (data < data_end) {
+                const ::size_t wbytes = child_stdin.write(data, data_end - data);
+                data += wbytes;
+                if (data_end <= data) {
+                    child_stdin.close();
+                }
+            }
+        }
+
+        //check child's stdout
+        if (child_stdout.is_ready(rfds)) {
+            child_stdout.append(out.stdout);
+        }
+
+        //check child stderr
+        if (child_stderr.is_ready(rfds)) {
+            child_stderr.append(out.stderr);
+        }
+
+    }
+
+    if (!is_child_done(child_pid, &out.status)) {
+        kill_child(child_pid, &out.status);
+    }
+    return out;
 }
 
+void kill_child(::pid_t _child_pid, int *_status)
+{
+    if ((_child_pid == IM_CHILD) ||
+        (_child_pid == FAILURE)) {
+        return;
+    }
+
+    enum { CHILD_EXIT_WAIT_MAX_NANOSEC = 10 * 1000 * 1000 }; // 10ms
+    struct ::timespec sleep_limit;
+    sleep_limit.tv_sec = 0;
+    sleep_limit.tv_nsec = CHILD_EXIT_WAIT_MAX_NANOSEC;
+    while (true) {
+        struct ::timespec sleep_remainder;
+        if (::nanosleep(&sleep_limit, &sleep_remainder) == SUCCESS) {//wait for child stop (SIGCHLD)
+            break;
+        }
+        const int c_errno = errno;
+        if (c_errno != EINTR) {
+            try {
+                const std::string err_msg = std::string("kill_child nanosleep() failure: ") +
+                                            std::strerror(errno);
+                Logging::Manager::instance_ref().get(PACKAGE).info(err_msg);
+            }
+            catch (...) { }
+            break;
+        }
+        if (is_child_done(_child_pid, _status)) {
+            return;
+        }
+        if ((sleep_remainder.tv_nsec == 0) &&
+            (sleep_remainder.tv_sec == 0)) {
+            break;
+        }
+        sleep_limit = sleep_remainder;
+    }
+
+    try { Logging::Manager::instance_ref().get(PACKAGE).debug("kill_child call"); } catch (...) { }
+
+    if (::kill(_child_pid, SIGKILL) == FAILURE) {
+        const std::string err_msg = std::string("kill_child kill() failure: ") + std::strerror(errno);
+        try {
+            Logging::Manager::instance_ref().get(PACKAGE).error(err_msg);
+        }
+        catch (...) { }
+        throw std::runtime_error(err_msg);
+    }
+
+    sleep_limit.tv_sec = 0;
+    sleep_limit.tv_nsec = CHILD_EXIT_WAIT_MAX_NANOSEC;
+    while (!is_child_done(_child_pid, _status)) {
+        struct ::timespec sleep_remainder;
+        if (::nanosleep(&sleep_limit, &sleep_remainder) == SUCCESS) {//wait for child stop (SIGCHLD)
+            if (_status != NULL) {
+                *_status = EXIT_FAILURE;
+            }
+            return;// child is still running
+        }
+        const int c_errno = errno;
+        if (c_errno != EINTR) {
+            const std::string err_msg = std::string("kill_child nanosleep() failure: ") +
+                                        std::strerror(errno);
+            try {
+                Logging::Manager::instance_ref().get(PACKAGE).info(err_msg);
+            }
+            catch (...) { }
+            throw std::runtime_error(err_msg);
+        }
+        if ((sleep_remainder.tv_nsec == 0) &&
+            (sleep_remainder.tv_sec == 0)) {
+            if (_status != NULL) {
+                *_status = EXIT_FAILURE;
+            }
+            return;// child is still running
+        }
+        sleep_limit = sleep_remainder;
+    }
+    try {
+        Logging::Manager::instance_ref()
+        .get(PACKAGE).debug("kill_child success: killed child done");
+    }
+    catch (...) { }
+}
+
+}
+
+ShellCmd::ShellCmd(std::string _cmd)
+:   cmd_(_cmd),
+    shell_(DEFAULT_BASH),
+    timeout_(DEFAULT_TIMEOUT_SEC)
+{
+}
+
+ShellCmd::ShellCmd(std::string _cmd,
+                   RelativeTimeInSeconds _timeout
+                  )
+:   cmd_(_cmd),
+    shell_(DEFAULT_BASH),
+    timeout_(_timeout)
+{
+}
+
+ShellCmd::ShellCmd(std::string _cmd,
+                   std::string _shell,
+                   RelativeTimeInSeconds _timeout
+                  )
+:   cmd_(_cmd),
+    shell_(_shell),
+    timeout_(_timeout)
+{
+}
+
+ShellCmd::~ShellCmd()
+{
+}
+
+SubProcessOutput ShellCmd::execute(std::string stdin_str)
+{
+    return Cmd::Data(stdin_str).into(shell_)("-c")(cmd_).run(timeout_);
 }

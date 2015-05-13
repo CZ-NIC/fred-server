@@ -539,24 +539,20 @@ void notify_registered_letters_manual_send_impl(const std::string& nameservice_h
         //checks
 
         //if rm is there
-        {
-          SubProcessOutput sub_output = ShellCmd("rm --version", timeout).execute();
-          if (!sub_output.stderr.empty()) throw std::runtime_error(sub_output.stderr);
+        if (!Cmd::Executable("which")("rm").run_with_path(timeout).succeeded()) {
+          throw std::runtime_error("rm: command not found");
         }
         //if gs is there
-        {
-          SubProcessOutput sub_output = ShellCmd("gs --version", timeout).execute();
-          if (!sub_output.stderr.empty()) throw std::runtime_error(sub_output.stderr);
+        if (!Cmd::Executable("which")("gs").run_with_path(timeout).succeeded()) {
+          throw std::runtime_error("gs: command not found");
         }
         //if base64 is there
-        {
-          SubProcessOutput sub_output = ShellCmd("base64 --version", timeout).execute();
-          if (!sub_output.stderr.empty()) throw std::runtime_error(sub_output.stderr);
+        if (!Cmd::Executable("which")("base64").run_with_path(timeout).succeeded()) {
+          throw std::runtime_error("base64: command not found");
         }
         //if sendmail is there
-        {
-          SubProcessOutput sub_output = ShellCmd("ls /usr/sbin/sendmail", timeout).execute();
-          if (!sub_output.stderr.empty()) throw std::runtime_error(sub_output.stderr);
+        if (!Cmd::Executable("test")("-x")("/usr/sbin/sendmail").run_with_path(timeout).succeeded()) {
+          throw std::runtime_error("/usr/sbin/sendmail: command not found");
         }
 
         // init file manager
@@ -583,15 +579,20 @@ void notify_registered_letters_manual_send_impl(const std::string& nameservice_h
               if(email.empty()) throw std::runtime_error("email required");
 
               {
-                  std::string cmd=
-                  std::string("{\n"
-                  "echo \"Subject: No new registered letters $(date +'%Y-%m-%d')\n"
-                  "From: ")+email+"\nContent-Type: text/plain; charset=UTF-8; format=flowed"
-                  "\nContent-Transfer-Encoding: 8bit\n\nno new registered letters\n\";"
-                  "\n} | /usr/sbin/sendmail "+email;
-
-                  SubProcessOutput sub_output = ShellCmd(cmd, timeout).execute();
-                  if (!sub_output.stderr.empty()) throw std::runtime_error(sub_output.stderr);
+                  const std::string date = Cmd::Executable("date")("+'%Y-%m-%d'")
+                                           .run_with_path(timeout).stdout;
+                  const std::string data =
+                      "Subject: No new registered letters " + date + "\n"
+                      "From: " + email + "\n"
+                      "Content-Type: text/plain; charset=UTF-8; format=flowed\n"
+                      "Content-Transfer-Encoding: 8bit\n"
+                      "\n"
+                      "no new registered letters\n";
+                  const SubProcessOutput sub_output =
+                      Cmd::Data(data).into("/usr/sbin/sendmail")(email).run(timeout);
+                  if (!sub_output.succeeded()) {
+                      throw std::runtime_error(sub_output.stderr);
+                  }
               }
 
               std::cout << "no new registered letters found" << std::endl;
@@ -601,11 +602,15 @@ void notify_registered_letters_manual_send_impl(const std::string& nameservice_h
           //remove old letter files
           {
             SubProcessOutput sub_output = ShellCmd("rm -f letter*.pdf", timeout).execute();
-            if (!sub_output.stderr.empty()) throw std::runtime_error(sub_output.stderr);
+            if (!sub_output.succeeded()) {
+                throw std::runtime_error(sub_output.stderr);
+            }
           }
           {
             SubProcessOutput sub_output = ShellCmd("rm -f all.pdf", timeout).execute();
-            if (!sub_output.stderr.empty()) throw std::runtime_error(sub_output.stderr);
+            if (!sub_output.succeeded()) {
+                throw std::runtime_error(sub_output.stderr);
+            }
           }
 
           std::string addr_list;
@@ -649,17 +654,16 @@ void notify_registered_letters_manual_send_impl(const std::string& nameservice_h
                 throw std::runtime_error("letterfile open error");
             }
 
-            addr_list+=std::string("echo \"\n")
-                    +" "+proc_reg_letters[i].postal_address.name +" ;"
-                    +" "+proc_reg_letters[i].postal_address.org +" ;"
-                    +" "+proc_reg_letters[i].postal_address.street1 +" ;"
-                    +" "+proc_reg_letters[i].postal_address.street2 +" ;"
-                    +" "+proc_reg_letters[i].postal_address.street3 +" ;"
-                    +" "+proc_reg_letters[i].postal_address.city +" ;"
-                    +" "+proc_reg_letters[i].postal_address.state +" ;"
-                    +" "+proc_reg_letters[i].postal_address.code +" ;"
-                    +" "+proc_reg_letters[i].postal_address.country +" ;"
-                    +"\";";
+            addr_list += "\n " +
+                proc_reg_letters[i].postal_address.name    + " ; " +
+                proc_reg_letters[i].postal_address.org     + " ; " +
+                proc_reg_letters[i].postal_address.street1 + " ; " +
+                proc_reg_letters[i].postal_address.street2 + " ; " +
+                proc_reg_letters[i].postal_address.street3 + " ; " +
+                proc_reg_letters[i].postal_address.city    + " ; " +
+                proc_reg_letters[i].postal_address.state   + " ; " +
+                proc_reg_letters[i].postal_address.code    + " ; " +
+                proc_reg_letters[i].postal_address.country + " ;";
 
           }//for letter files
 
@@ -685,21 +689,30 @@ void notify_registered_letters_manual_send_impl(const std::string& nameservice_h
           if(email.empty()) throw std::runtime_error("email required");
 
           {
-              std::string cmd=
-              std::string("{\n"
-              "echo \"Subject: Registered letters to send $(date +'%Y-%m-%d')\n"
-              "From: ")+email+"\nContent-Type: multipart/mixed; boundary=\"SSSSSS\""
-              "\n--SSSSSS\nContent-Disposition: attachment; filename=registered_letters_$(date +'%Y-%m-%d').pdf"
-              "\nContent-Type: application/pdf; charset=UTF-8\nContent-Transfer-Encoding: base64\n\n\";"
-              "\nbase64 ./all.pdf\n "
-              "echo \"\n\n--SSSSSS\n\nbatch id: "+batch_id+"\n\n\";"
-              +addr_list+
-              "\n} | /usr/sbin/sendmail "+email;
-
-              SubProcessOutput sub_output = ShellCmd(cmd, timeout).execute();
-              //std::cout << "out: " << sub_output.stdout<< "out length: " << sub_output.stdout.length()
-                //            << " err: " << sub_output.stderr << " err length: " << sub_output.stderr.length() << std::endl;
-              if (!sub_output.stderr.empty()) throw std::runtime_error(sub_output.stderr);
+              const std::string date = Cmd::Executable("date")("+'%Y-%m-%d'")
+                                       .run_with_path(timeout).stdout;
+              const std::string data =
+                  "Subject: Registered letters to send " + date + "\n"
+                  "From: " + email + "\n"
+                  "Content-Type: multipart/mixed; boundary=\"SSSSSS\"\n"
+                  "--SSSSSS\n"
+                  "Content-Disposition: attachment; filename=registered_letters_" + date + ".pdf\n"
+                  "Content-Type: application/pdf; charset=UTF-8\n"
+                  "Content-Transfer-Encoding: base64\n"
+                  "\n" +
+                  Cmd::Executable("base64")("./all.pdf").run_with_path(timeout).stdout + "\n"
+                  "\n"
+                  "--SSSSSS\n"
+                  "\n"
+                  "batch id: " + batch_id + "\n"
+                  "\n" + addr_list;
+              SubProcessOutput sub_output = Cmd::Data(data).into("/usr/sbin/sendmail")(email)
+                                            .run(timeout);
+              //std::cout <<  "out: " << sub_output.stdout << " out length: " << sub_output.stdout.length()
+              //          << " err: " << sub_output.stderr << " err length: " << sub_output.stderr.length() << std::endl;
+              if (!sub_output.succeeded()) {
+                  throw std::runtime_error(sub_output.stderr);
+              }
           }
 
 

@@ -30,14 +30,16 @@
 #include <sys/time.h>
 
 #include <string>
+#include <vector>
+#include <cstdlib>
 
 #include <boost/noncopyable.hpp>
 
 /**
  * @class SubProcessOutput
- * @brief shell command outputs and process exit status
+ * @brief command outputs and process exit status
  * 
- * Result of @ref ShellCmd::execute.
+ * Result of process's run.
  */
 struct SubProcessOutput
 {
@@ -62,6 +64,12 @@ struct SubProcessOutput
     int get_exit_status()const { return WEXITSTATUS(status); }
 
     /**
+     * Process successfully finished
+     * @return true if process finished successfully
+     */
+    bool succeeded()const { return this->is_exited() && this->get_exit_status() == EXIT_SUCCESS; }
+
+    /**
      * Terminated by a signal
      * @return true if the child process was terminated by a signal
      */
@@ -83,9 +91,115 @@ struct SubProcessOutput
 #endif
 };
 
+namespace Cmd
+{
+
+class Data;
+
+/**
+ * @class Executable
+ * @brief wrapper of exec() functions family
+ */
+class Executable:public boost::noncopyable
+{
+public:
+    /**
+     * Execute command @arg _cmd using execv/execvp function in forked child process.
+     * @param _cmd executable file
+     * @throw std::runtime_error if something wrong happens
+     * 
+     * Run <em>_cmd [args...]</em>
+     */
+    Executable(std::string _cmd);
+
+    ~Executable() { }
+    
+    /**
+     * Add command argument.
+     */
+    Executable& operator()(std::string _arg);
+
+    /**
+     * Wait as long as command runs.
+     * @return Command's standard and error outputs and its exit status.
+     * @throw std::runtime_error if something wrong happens
+     * @note Sets and restores SIGCHLD handler.
+     */
+    SubProcessOutput run();
+
+    /**
+     * @class Seconds
+     * @brief Represents time meassured in seconds.
+     */
+    typedef typeof(::timeval().tv_sec) Seconds;
+
+    /**
+     * Wait as long as command runs, at most _max_lifetime_sec seconds.
+     * @param _max_lifetime_sec maximal command lifetime in seconds
+     * @return Command's standard and error outputs and its exit status.
+     * @throw std::runtime_error if something wrong happens
+     * @note Sets and restores SIGCHLD handler.
+     */
+    SubProcessOutput run(Seconds _max_lifetime_sec);
+
+    /**
+     * Wait as long as command runs.
+     * @param _search_path 
+     * @return Command's standard and error outputs and its exit status.
+     * @throw std::runtime_error if something wrong happens
+     * @note Sets and restores SIGCHLD handler. Searches executable file
+     *       considering PATH environment variable - it's less safe variant.
+     */
+    SubProcessOutput run_with_path();
+
+    /**
+     * Wait as long as command runs, at most _max_lifetime_sec seconds.
+     * @param _max_lifetime_sec maximal command lifetime in seconds
+     * @return Command's standard and error outputs and its exit status.
+     * @throw std::runtime_error if something wrong happens
+     * @note Sets and restores SIGCHLD handler. Searches executable file
+     *       considering PATH environment variable - it's less safe variant.
+     */
+    SubProcessOutput run_with_path(Seconds _max_lifetime_sec);
+private:
+    Executable(std::string _data, std::string _cmd);
+    const std::string data_;
+    const std::string cmd_;
+    typedef std::vector< std::string > Args;
+    Args args_;
+    friend class Data;
+};//class Executable
+
+/**
+ * @class Data
+ * @brief Contains data for dispatching to the process via standard input stream.
+ */
+class Data:public boost::noncopyable
+{
+public:
+    /**
+     * Store data.
+     * @param _data contains data for dispatching to the process via standard input stream
+     */
+    Data(std::string _data);
+    ~Data();
+    /**
+     * Connects data with process.
+     * @param _cmd command for execution
+     */
+    Executable& into(std::string _cmd);
+private:
+    Executable *cmd_;
+    const std::string data_;
+};
+
+}
+
 /**
  * @class ShellCmd
  * @brief shell command wrapper
+ * @warning With externally gained data use @ref Cmd::Executable instead!
+ *          There is a danger of security incident (shell injection).
  */
 class ShellCmd:public boost::noncopyable
 {
@@ -94,20 +208,20 @@ public:
      * @class RelativeTimeInSeconds
      * @brief Represents relative (from now) time meassured in seconds.
      */
-    typedef typeof(::timeval().tv_sec) RelativeTimeInSeconds;
+    typedef Cmd::Executable::Seconds RelativeTimeInSeconds;
 
     /**
      * Constructor with mandatory parameters.
      * @param _cmd sets command into @ref cmd_ attribute
      */
-    ShellCmd(const std::string &_cmd);
+    ShellCmd(std::string _cmd);
 
     /**
      * Constructor with mandatory parameters.
      * @param _cmd sets command into @ref cmd_ attribute
      * @param _timeout sets maximal command lifetime into @ref timeout_ attribute
      */
-    ShellCmd(const std::string &_cmd,
+    ShellCmd(std::string _cmd,
              RelativeTimeInSeconds _timeout
             );
 
@@ -117,8 +231,8 @@ public:
      * @param _shell sets shell into @ref shell_ attribute
      * @param _timeout sets maximal command lifetime into @ref timeout_ attribute
      */
-    ShellCmd(const std::string &_cmd,
-             const std::string &_shell,
+    ShellCmd(std::string _cmd,
+             std::string _shell,
              RelativeTimeInSeconds _timeout
             );
 
@@ -141,9 +255,6 @@ private:
     const std::string cmd_; /**< Command executed by @ref shell_. */
     const std::string shell_; /**< Shell executes command @ref cmd_. */
     const RelativeTimeInSeconds timeout_; /**< Maximal command lifetime in seconds. */
-    ::pid_t child_pid_;
-
-    void kill_child(int *_status = NULL) throw();
 };//class ShellCmd
 
 #endif//SUBPROCESS_H_

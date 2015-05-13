@@ -1435,7 +1435,7 @@ src_corba_fred_rifd_LDADD = \
 		util/log/liblog.a \
 		src/old_utils/liboldutils.a \
 		util/libutil.a \
-		-lmpdec -lm \
+		-lmpdec -lm -lrt \
 		$(OMNIORB4_LIBS) \
 		$(LIBIDN_LIBS) \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
@@ -1556,7 +1556,7 @@ src_corba_fred_adifd_LDADD = \
 		util/log/liblog.a \
 		src/old_utils/liboldutils.a \
 		util/libutil.a \
-		-lmpdec -lm \
+		-lmpdec -lm -lrt \
 		-lresolv \
 		$(OMNIORB4_LIBS) \
 		$(LIBIDN_LIBS) \
@@ -1618,7 +1618,7 @@ src_corba_fred_pifd_LDADD = \
 		src/old_utils/liboldutils.a \
 		util/log/liblog.a \
 		util/libutil.a \
-		-lmpdec -lm \
+		-lmpdec -lm -lrt \
 		$(OMNIORB4_LIBS) \
 		$(LIBIDN_LIBS) \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
@@ -1657,7 +1657,7 @@ src_corba_fred_logd_LDADD = \
 		util/log/liblog.a \
 		util/libutil.a \
 		src/old_utils/liboldutils.a \
-		-lmpdec -lm \
+		-lmpdec -lm -lrt \
 		$(OMNIORB4_LIBS) \
 		$(LIBIDN_LIBS) \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
@@ -1762,7 +1762,7 @@ src_corba_mojeid_fred_mifd_LDADD = \
 		util/types/libtypes.a \
 		util/db/libdb.a \
 		src/old_utils/liboldutils.a \
-		-lmpdec -lm \
+		-lmpdec -lm -lrt \
 		$(LIBIDN_LIBS) \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(OMNIORB4_LIBS) \
@@ -1797,7 +1797,7 @@ src_corba_domain_browser_fred_dbifd_LDADD = \
 		util/libutil.a \
 		util/log/liblog.a \
 		util/db/libdb.a \
-		-lmpdec -lm \
+		-lmpdec -lm -lrt \
 		$(LIBIDN_LIBS) \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(OMNIORB4_LIBS) \
@@ -1919,7 +1919,7 @@ src_cli_admin_fred_admin_LDADD = \
 		src/old_utils/liboldutils.a \
 		util/libutil.a \
 		util/hp/libhp.a \
-		-lmpdec -lm \
+		-lmpdec -lm -lrt \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(BOOST_DATE_TIME_LIB) \
 		$(BOOST_REGEX_LIB) \
@@ -2262,7 +2262,7 @@ tests_test_server_LDADD = \
 		src/corba/libcorbafilters.a \
 		src/corba/libcorbadatatypes.a \
 		src/corba/libmailer.a \
-		-lmpdec -lm \
+		-lmpdec -lm -lrt \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(BOOST_DATE_TIME_LIB) \
 		$(BOOST_REGEX_LIB) \
@@ -2361,7 +2361,7 @@ tests_test_blocking_LDADD = \
 		src/corba/libcorbafilters.a \
 		src/corba/libcorbadatatypes.a \
 		src/corba/libmailer.a \
-		-lmpdec -lm \
+		-lmpdec -lm -lrt \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(BOOST_DATE_TIME_LIB) \
 		$(BOOST_REGEX_LIB) \
@@ -2437,7 +2437,7 @@ tests_test_fredlib_LDADD = \
 		src/fredlib/libfred.a \
 		util/libutil.a \
 		util/log/liblog.a \
-		-lmpdec -lm \
+		-lmpdec -lm -lrt \
 		$(LIBIDN_LIBS) \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(BOOST_DATE_TIME_LIB) \
@@ -2477,7 +2477,7 @@ tests_test_optys_LDADD = \
 		src/fredlib/libfred.a \
 		util/libutil.a \
 		util/log/liblog.a \
-		-lmpdec -lm \
+		-lmpdec -lm -lrt \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(BOOST_DATE_TIME_LIB) \
 		$(BOOST_FILESYSTEM_LIB) \
