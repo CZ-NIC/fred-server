@@ -15,7 +15,7 @@ protected:
     virtual ~PublicRequestLockGuard() { }
 };
 
-class PublicRequestLockGuardByIdentification
+class PublicRequestLockGuardByIdentification:public PublicRequestLockGuard
 {
 public:
     DECLARE_EXCEPTION_DATA(public_request_doesnt_exist, std::string);/**< exception members for unknown identification*/
@@ -30,7 +30,7 @@ private:
     const PublicRequestId public_request_id_;
 };
 
-class PublicRequestLockGuardById
+class PublicRequestLockGuardById:public PublicRequestLockGuard
 {
 public:
     DECLARE_EXCEPTION_DATA(public_request_doesnt_exist, PublicRequestId);/**< exception members for unknown id*/

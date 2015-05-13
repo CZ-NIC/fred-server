@@ -266,4 +266,4 @@ BOOST_AUTO_TEST_CASE(create_public_request_auth_ok)
     ctx.commit_transaction();
 }
 
-BOOST_AUTO_TEST_SUITE_END();//TestCreateContactAuth
+BOOST_AUTO_TEST_SUITE_END();//TestCreatePublicRequestAuth
