@@ -99,7 +99,7 @@ UpdatePublicRequest::Result UpdatePublicRequest::exec(OperationContext &_ctx,
         }
 
         if (is_resolve_time_set_to_now_) {
-            sql_set << "resolve_time=NOW()";
+            sql_set << "resolve_time=NOW(),";
         }
         else if (resolve_time_.isset()) {
             sql_set << "resolve_time=$"
@@ -169,7 +169,7 @@ UpdatePublicRequest::Result UpdatePublicRequest::exec(OperationContext &_ctx,
         }
 
         if (sql_set.str().empty()) {
-            BOOST_THROW_EXCEPTION(bad_params.set_nothing_to_do(public_request_id));
+            bad_params.set_nothing_to_do(public_request_id);
         }
         if (bad_params.throw_me()) {
             BOOST_THROW_EXCEPTION(bad_params);
