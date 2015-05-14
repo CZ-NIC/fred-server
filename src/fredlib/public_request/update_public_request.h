@@ -1,3 +1,26 @@
+/*
+ * Copyright (C) 2015  CZ.NIC, z.s.p.o.
+ *
+ * This file is part of FRED.
+ *
+ * FRED is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 2 of the License.
+ *
+ * FRED is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/**
+ *  @file
+ *  declaration of UpdatePublicRequest class
+ */
+
 #ifndef UPDATE_PUBLIC_REQUEST_H_9F964452619CB937F93C2B144C8A204D//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
 #define UPDATE_PUBLIC_REQUEST_H_9F964452619CB937F93C2B144C8A204D
 
@@ -8,6 +31,9 @@
 
 namespace Fred {
 
+/**
+ * Public request status collection
+ */
 enum PublicRequestStatus
 {
     PRS_NEW,        ///< Request was created and waiting for autorization 
@@ -15,28 +41,51 @@ enum PublicRequestStatus
     PRS_INVALIDATED ///< Time passed without authorization
 };
 
+/**
+ * Exception class for conversion operations between string and PublicRequestStatus.
+ */
 class PublicRequestStatusBadConversion:public std::runtime_error
 {
 public:
+    /**
+     * Constructor with error message specification.
+     * @param _message error message
+     */
     PublicRequestStatusBadConversion(const std::string &_message)
     :   std::runtime_error(_message) { }
 };
 
+/**
+ * Convert PublicRequestStatus value into its string representation usable in database.
+ * @param _status PublicRequestStatus value
+ * @return its string representation
+ * @throw PublicRequestStatusBadConversion when conversion is impossible
+ */
 std::string public_request_status2str(PublicRequestStatus _status);
+
+/**
+ * Convert string representation of public request status into its numeric identification.
+ * @param _status string representation of public request status
+ * @return its numeric identification
+ * @throw PublicRequestStatusBadConversion when conversion is impossible
+ */
 PublicRequestStatus str2public_request_status(const std::string &_status);
 
+/**
+ * Operation for public request update.
+ */
 class UpdatePublicRequest
 {
 public:
-    typedef boost::posix_time::ptime Time;
-    typedef ObjectId EmailId;
-    typedef ObjectId RequestId;
-    DECLARE_EXCEPTION_DATA(nothing_to_do, PublicRequestId);/**< exception members in case of all items empty*/
-    DECLARE_EXCEPTION_DATA(public_request_doesnt_exist, PublicRequestId);/**< exception members in case of bad public_request_id*/
-    DECLARE_EXCEPTION_DATA(unknown_email_id, EmailId);/**< exception members in case of bad answer_email_id*/
-    DECLARE_EXCEPTION_DATA(unknown_registrar_id, RegistrarId);/**< exception members in case of bad registrar_id*/
-    DECLARE_EXCEPTION_DATA(bad_public_request_status, PublicRequestStatus);/**< exception members in case of invalid value of status*/
-    struct Exception
+    typedef boost::posix_time::ptime Time;///< class for time representation
+    typedef ObjectId EmailId;///< email database identification
+    typedef ObjectId RequestId;///< some request identification
+    DECLARE_EXCEPTION_DATA(nothing_to_do, PublicRequestId);///< exception members in case of all items empty
+    DECLARE_EXCEPTION_DATA(public_request_doesnt_exist, PublicRequestId);///< exception members in case of bad public_request_id
+    DECLARE_EXCEPTION_DATA(unknown_email_id, EmailId);///< exception members in case of bad answer_email_id
+    DECLARE_EXCEPTION_DATA(unknown_registrar_id, RegistrarId);///< exception members in case of bad registrar_id
+    DECLARE_EXCEPTION_DATA(bad_public_request_status, PublicRequestStatus);///< exception members in case of invalid value of status
+    struct Exception /// Something wrong happened
     :   virtual Fred::OperationException,
         ExceptionData_nothing_to_do< Exception >,
         ExceptionData_public_request_doesnt_exist< Exception >,
@@ -44,7 +93,22 @@ public:
         ExceptionData_unknown_registrar_id< Exception >,
         ExceptionData_bad_public_request_status< Exception >
     {};
+
+    /**
+     * Constructor without parameters.
+     */
     UpdatePublicRequest();
+
+    /**
+     * Constructor with all parameters.
+     * @param _status can set public request status
+     * @param _reason can set reason of public request creation
+     * @param _email_to_answer can set the answer recipient's email address
+     * @param _answer_email_id can set the email id
+     * @param _registrar_id can set but I don't know relationship between this registrar and public request!
+     * @param _create_request_id can set create_request_id whatever it means
+     * @param _resolve_request_id can set resolve_request_id whatever it means
+     */
     UpdatePublicRequest(const Optional< PublicRequestStatus > &_status,
                         const Optional< Nullable< Time > > &_resolve_time,
                         const Optional< Nullable< std::string > > &_reason,
@@ -54,24 +118,89 @@ public:
                         const Optional< Nullable< RequestId > > &_create_request_id,
                         const Optional< Nullable< RequestId > > &_resolve_request_id);
     ~UpdatePublicRequest() { }
+
+    /**
+     * Sets status of public request.
+     * @param _status sets status of public request
+     * @return operation instance reference to allow method chaining
+     */
     UpdatePublicRequest& set_status(PublicRequestStatus _status);
+
+    /**
+     * Sets time of public request resolving.
+     * @param _time time of public request resolving
+     * @return operation instance reference to allow method chaining
+     */
     UpdatePublicRequest& set_resolve_time(const Nullable< Time > &_time);
+
+    /**
+     * Sets time of public request resolving to current time.
+     * @return operation instance reference to allow method chaining
+     */
     UpdatePublicRequest& set_resolve_time_to_now();
+
+    /**
+     * Sets reason of last public request operation.
+     * @param _reason reason of last public request operation
+     * @return operation instance reference to allow method chaining
+     */
     UpdatePublicRequest& set_reason(const Nullable< std::string > &_reason);
+
+    /**
+     * Sets email address of answer recipient's.
+     * @param _email email address of answer recipient's
+     * @return operation instance reference to allow method chaining
+     */
     UpdatePublicRequest& set_email_to_answer(const Nullable< std::string > &_email);
+
+    /**
+     * Sets email id of answer.
+     * @param _id email id of answer
+     * @return operation instance reference to allow method chaining
+     */
     UpdatePublicRequest& set_answer_email_id(const Nullable< EmailId > &_id);
+
+    /**
+     * Sets id of registrar.
+     * @param _id registrar id
+     * @return operation instance reference to allow method chaining
+     */
     UpdatePublicRequest& set_registrar_id(const Nullable< RegistrarId > _id);
+
+    /**
+     * Sets create_request_id.
+     * @param _id create_request_id
+     * @return operation instance reference to allow method chaining
+     */
     UpdatePublicRequest& set_create_request_id(const Nullable< RequestId > &_id);
+
+    /**
+     * Sets resolve_request_id.
+     * @param _id resolve_request_id
+     * @return operation instance reference to allow method chaining
+     */
     UpdatePublicRequest& set_resolve_request_id(const Nullable< RequestId > &_id);
+
+    /**
+     * Result of update operation.
+     */
     struct Result
     {
         Result() { }
         Result(const Result &_src);
         Result& operator=(const Result &_src);
-        PublicRequestId public_request_id;
-        std::string public_request_type;
-        ObjectId object_id;
+        PublicRequestId public_request_id;///< unique numeric identification of this public request
+        std::string public_request_type;///< string representation of public request type
+        ObjectId object_id;///< id of object associated with this public request
     };
+
+    /**
+     * Executes update.
+     * @param _ctx contains reference to database and logging interface
+     * @param _locked_public_request guarantees exclusive access to public request data
+     * @return @ref Result object corresponding with performed operation
+     * @throw Exception if something wrong happened
+     */
     Result exec(OperationContext &_ctx, const PublicRequestLockGuard &_locked_public_request)const;
 private:
     Optional< PublicRequestStatus > status_;

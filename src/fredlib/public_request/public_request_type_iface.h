@@ -18,7 +18,7 @@
 
 /**
  *  @file
- *  declaration of class PublicRequestTypeIface
+ *  declaration of PublicRequestTypeIface class
  */
 
 #ifndef PUBLIC_REQUEST_TYPE_IFACE_H_E9BC2123C0A6C5F6CF12FF83939D575D//date "+%s"|md5sum|tr "[a-f]" "[A-F]"

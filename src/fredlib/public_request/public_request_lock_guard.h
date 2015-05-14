@@ -56,13 +56,13 @@ protected:
 class PublicRequestLockGuardByIdentification:public PublicRequestLockGuard
 {
 public:
-    DECLARE_EXCEPTION_DATA(public_request_doesnt_exist, std::string);/**< exception members for unknown identification*/
-    struct Exception
+    DECLARE_EXCEPTION_DATA(public_request_doesnt_exist, std::string);///< exception members for unknown identification
+    struct Exception /// Something wrong happened
     :   virtual Fred::OperationException,
         ExceptionData_public_request_doesnt_exist< Exception >
     {};
     /**
-     * Obtain exclusive access to public request identified by @ref _identification. Operation context @ref _ctx
+     * Obtain exclusive access to public request identified by _identification. Operation context _ctx
      * can manipulate public request data from now until this transaction will finish.
      * @param _ctx use database connection from this operation context
      * @param _identification unique string identification of public request with authentication
@@ -84,13 +84,13 @@ private:
 class PublicRequestLockGuardById:public PublicRequestLockGuard
 {
 public:
-    DECLARE_EXCEPTION_DATA(public_request_doesnt_exist, PublicRequestId);/**< exception members for unknown id*/
-    struct Exception
+    DECLARE_EXCEPTION_DATA(public_request_doesnt_exist, PublicRequestId);///< exception members for unknown id
+    struct Exception /// Something wrong happened
     :   virtual Fred::OperationException,
         ExceptionData_public_request_doesnt_exist< Exception >
     {};
     /**
-     * Obtain exclusive access to public request identified by @ref _id. Operation context @ref _ctx
+     * Obtain exclusive access to public request identified by _id. Operation context _ctx
      * can manipulate public request data from now until this transaction will finish.
      * @param _ctx use database connection from this operation context
      * @param _id unique numeric identification of public request

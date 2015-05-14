@@ -36,9 +36,9 @@ namespace Fred {
 class CreatePublicRequest
 {
 public:
-    DECLARE_EXCEPTION_DATA(unknown_type, std::string);/**< exception members for bad public request type*/
-    DECLARE_EXCEPTION_DATA(unknown_registrar_id, RegistrarId);/**< exception members for bad registrar id*/
-    struct Exception
+    DECLARE_EXCEPTION_DATA(unknown_type, std::string);///< exception members for bad public request type
+    DECLARE_EXCEPTION_DATA(unknown_registrar_id, RegistrarId);///< exception members for bad registrar id
+    struct Exception /// Something wrong happened
     :   virtual Fred::OperationException,
         ExceptionData_unknown_type< Exception >,
         ExceptionData_unknown_registrar_id< Exception >
@@ -71,14 +71,14 @@ public:
     CreatePublicRequest& set_reason(const std::string &_reason);
 
     /**
-     * Sets reason of public request creation.
+     * Sets email address of answer recipient's.
      * @param _email sets email address of answer recipient's
      * @return operation instance reference to allow method chaining
      */
     CreatePublicRequest& set_email_to_answer(const std::string &_email);
 
     /**
-     * Sets reason of public request creation.
+     * Sets id of registrar.
      * @param _id sets registrar id
      * @return operation instance reference to allow method chaining
      */

@@ -30,7 +30,7 @@
 
 namespace Fred {
 
-enum { PUBLIC_REQUEST_AUTH_IDENTIFICATION_LENGTH = 32 };/**< length of string for identification of public request with authentication*/
+enum { PUBLIC_REQUEST_AUTH_IDENTIFICATION_LENGTH = 32 };///< length of string for identification of public request with authentication
 
 /**
  * Operation for creation of public request with authentication.
@@ -38,9 +38,9 @@ enum { PUBLIC_REQUEST_AUTH_IDENTIFICATION_LENGTH = 32 };/**< length of string fo
 class CreatePublicRequestAuth
 {
 public:
-    DECLARE_EXCEPTION_DATA(unknown_type, std::string);/**< exception members for bad public request type*/
-    DECLARE_EXCEPTION_DATA(unknown_registrar_id, RegistrarId);/**< exception members for bad registrar id*/
-    struct Exception
+    DECLARE_EXCEPTION_DATA(unknown_type, std::string);///< exception members for bad public request type
+    DECLARE_EXCEPTION_DATA(unknown_registrar_id, RegistrarId);///< exception members for bad registrar id
+    struct Exception /// Something wrong happened
     :   virtual Fred::OperationException,
         ExceptionData_unknown_type< Exception >,
         ExceptionData_unknown_registrar_id< Exception >
@@ -98,9 +98,9 @@ public:
         Result() { }
         Result(const Result &_src);
         Result& operator=(const Result &_src);
-        PublicRequestId public_request_id;/**< unique numeric identification of just created public request*/
-        std::string identification;/**< unique string identification of just created public request*/
-        std::string password;/**< authentication string of just created public request*/
+        PublicRequestId public_request_id;///< unique numeric identification of just created public request
+        std::string identification;///< unique string identification of just created public request
+        std::string password;///< authentication string of just created public request
     };
 
     /**

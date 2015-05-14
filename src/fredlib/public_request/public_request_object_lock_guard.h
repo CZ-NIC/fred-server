@@ -40,14 +40,14 @@ namespace Fred {
 class PublicRequestObjectLockGuard
 {
 public:
-    DECLARE_EXCEPTION_DATA(object_doesnt_exist, ObjectId);/**< exception members for bad object_id*/
-    struct Exception
+    DECLARE_EXCEPTION_DATA(object_doesnt_exist, ObjectId);///< exception members for bad object_id
+    struct Exception /// Something wrong happened
     :   virtual Fred::OperationException,
         ExceptionData_object_doesnt_exist< Exception >
     {};
     /**
-     * Obtain exclusive access to all public requests on object identified by @ref _object_id. Operation context
-     * @ref _ctx can manipulate public request data from now until this transaction will finish.
+     * Obtain exclusive access to all public requests on object identified by _object_id. Operation context
+     * _ctx can manipulate public request data from now until this transaction will finish.
      * @param _ctx use database connection from this operation context
      * @param _object_id unique numeric identification of object
      */
