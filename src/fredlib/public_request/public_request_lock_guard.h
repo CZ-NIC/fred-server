@@ -1,3 +1,26 @@
+/*
+ * Copyright (C) 2015  CZ.NIC, z.s.p.o.
+ *
+ * This file is part of FRED.
+ *
+ * FRED is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 2 of the License.
+ *
+ * FRED is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/**
+ *  @file
+ *  declaration of PublicRequestLockGuard class family
+ */
+
 #ifndef PUBLIC_REQUEST_LOCK_GUARD_H_F77FFFF66AD58705219B2B82AA1969FA//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
 #define PUBLIC_REQUEST_LOCK_GUARD_H_F77FFFF66AD58705219B2B82AA1969FA
 
@@ -7,14 +30,29 @@
 
 namespace Fred {
 
+/**
+ * Common class guaranteeing exclusive access to public request data.
+ * @note It would be suitable to remember reference to operation context object and make this reference
+ *       accessible too because this guard joins locked entity with particular database connection.
+ */
 class PublicRequestLockGuard
 {
 public:
+    /**
+     * Return numeric id of guarded public request.
+     * @return id of guarded public request
+     */
     virtual PublicRequestId get_public_request_id()const = 0;
 protected:
+    /**
+     * It should unlock public request in derived class but ...
+     */
     virtual ~PublicRequestLockGuard() { }
 };
 
+/**
+ * Obtain exclusive access to public request data identified by string identification.
+ */
 class PublicRequestLockGuardByIdentification:public PublicRequestLockGuard
 {
 public:
@@ -23,13 +61,26 @@ public:
     :   virtual Fred::OperationException,
         ExceptionData_public_request_doesnt_exist< Exception >
     {};
+    /**
+     * Obtain exclusive access to public request identified by @ref _identification. Operation context @ref _ctx
+     * can manipulate public request data from now until this transaction will finish.
+     * @param _ctx use database connection from this operation context
+     * @param _identification unique string identification of public request with authentication
+     */
     PublicRequestLockGuardByIdentification(OperationContext &_ctx, const std::string &_identification);
+    /**
+     * @warning It doesn't release lock contrary to expectations. The one will release by finishing of
+     *          transaction wherein it was created.
+     */
     virtual ~PublicRequestLockGuardByIdentification() { }
 private:
     PublicRequestId get_public_request_id()const { return public_request_id_; }
     const PublicRequestId public_request_id_;
 };
 
+/**
+ * Obtain exclusive access to public request data identified by string identification.
+ */
 class PublicRequestLockGuardById:public PublicRequestLockGuard
 {
 public:
@@ -38,7 +89,17 @@ public:
     :   virtual Fred::OperationException,
         ExceptionData_public_request_doesnt_exist< Exception >
     {};
+    /**
+     * Obtain exclusive access to public request identified by @ref _id. Operation context @ref _ctx
+     * can manipulate public request data from now until this transaction will finish.
+     * @param _ctx use database connection from this operation context
+     * @param _id unique numeric identification of public request
+     */
     PublicRequestLockGuardById(OperationContext &_ctx, PublicRequestId _id);
+    /**
+     * @warning It doesn't release lock contrary to expectations. The one will release by finishing of
+     *          transaction wherein it was created.
+     */
     virtual ~PublicRequestLockGuardById() { }
 private:
     PublicRequestId get_public_request_id()const { return public_request_id_; }
