@@ -2,6 +2,7 @@
 #define VERIFICATION_CONTACT_H_
 
 #include "util/db/nullable.h"
+#include "util/optional_value.h"
 #include <string>
 #include <vector>
 
@@ -86,7 +87,7 @@ unsigned long long contact_transfer(const unsigned long long &_request_id,
 
 unsigned long long contact_update(const unsigned long long &_request_id,
                                   const unsigned long long &_registrar_id,
-                                  Contact &_data);
+                                  Contact &_data, const Optional<Nullable<bool> >& contact_warning_letter_preference = Optional<Nullable<bool> >());
 
 const Contact contact_info(const unsigned long long &_id);
 

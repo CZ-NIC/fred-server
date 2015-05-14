@@ -23,6 +23,7 @@
 
 #include <string>
 #include <vector>
+#include <algorithm>
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/random/mersenne_twister.hpp>
@@ -155,23 +156,35 @@ namespace Registry
 
             return info;
         }
+        /**
+         * Split object states string
+         * @param _array_string object state codes delimited with ','
+         * @return vector of state codes
+         */
+        static std::vector<std::string> split_object_states_string(const std::string& _array_string) {
+            if(_array_string.empty()) {
+                return std::vector<std::string>();
 
-        void DomainBrowser::get_object_states(Fred::OperationContext& ctx, unsigned long long object_id, const std::string& lang
-            , std::string& state_codes, std::string& states)
+            } else {
+                std::vector<std::string> result;
+                boost::split(result, _array_string, boost::is_any_of(","));
+
+                return result;
+            }
+        }
+
+        std::vector<std::string> DomainBrowser::get_object_states(Fred::OperationContext& ctx, unsigned long long object_id)
         {
             Database::Result state_res = ctx.get_conn().exec_params(
-                "SELECT ARRAY_TO_STRING(ARRAY_AGG(CASE WHEN eos.external THEN eosd.description ELSE NULL END ORDER BY eos.importance), '|') AS state_descs, "
-                    " ARRAY_TO_STRING(ARRAY_AGG(eos.name ORDER BY eos.importance), ',') AS state_codes "
+                "SELECT ARRAY_TO_STRING(ARRAY_AGG(eos.name ORDER BY eos.importance)::text[],',') AS state_codes "
                 " FROM object_state os "
                 " JOIN enum_object_states eos ON eos.id = os.state_id "
-                " LEFT JOIN enum_object_states_desc eosd ON os.state_id = eosd.state_id AND UPPER(eosd.lang) = UPPER($2::text) "
                 " WHERE os.object_id = $1::bigint "
                     " AND os.valid_from <= CURRENT_TIMESTAMP "
                     " AND (os.valid_to IS NULL OR os.valid_to > CURRENT_TIMESTAMP) "
-                    , Database::query_param_list(object_id)(lang));
+                    , Database::query_param_list(object_id));
 
-            state_codes = static_cast<std::string>(state_res[0]["state_codes"]);
-            states = static_cast<std::string>(state_res[0]["state_descs"]);
+            return split_object_states_string(static_cast<std::string>(state_res[0]["state_codes"]));
         }
 
         std::string DomainBrowser::filter_authinfo(bool user_is_owner, const std::string& authinfopw)
@@ -184,42 +197,42 @@ namespace Registry
             return "********";//if not
         }
 
-        NextDomainState DomainBrowser::getNextDomainState(
+        Nullable<NextDomainState> DomainBrowser::getNextDomainState(
             const boost::gregorian::date& today_date,
             const boost::gregorian::date& expiration_date,
             const boost::gregorian::date& outzone_date,
             const boost::gregorian::date& delete_date)
         {
-            NextDomainState next;
+            Nullable<NextDomainState> next;
             if(today_date < expiration_date)
             {
-                next = NextDomainState("expired", expiration_date);
+                next = Nullable<NextDomainState>(NextDomainState("expired", expiration_date));
             }
             else if((today_date < delete_date) || (today_date < outzone_date))
+            {
+                if(outzone_date < delete_date)
                 {
-                    if(outzone_date < delete_date)
+                    if(today_date < outzone_date)
                     {
-                        if(today_date < outzone_date)
-                        {
-                            next = NextDomainState("outzone", outzone_date);
-                        }
-                        else
-                        {
-                            next = NextDomainState("deleteCandidate", delete_date);
-                        }
+                        next = Nullable<NextDomainState>(NextDomainState("outzone", outzone_date));
                     }
-                    else //posibly bad config
+                    else
                     {
-                        if(today_date < delete_date)
-                        {
-                            next = NextDomainState("deleteCandidate", delete_date);
-                        }
-                        else
-                        {
-                            next = NextDomainState("outzone", outzone_date);
-                        }
+                        next = Nullable<NextDomainState>(NextDomainState("deleteCandidate", delete_date));
                     }
                 }
+                else //posibly bad config
+                {
+                    if(today_date < delete_date)
+                    {
+                        next = Nullable<NextDomainState>(NextDomainState("deleteCandidate", delete_date));
+                    }
+                    else
+                    {
+                        next = Nullable<NextDomainState>(NextDomainState("outzone", outzone_date));
+                    }
+                }
+            }
             return next;
         }
 
@@ -241,7 +254,7 @@ namespace Registry
             Fred::OperationContext ctx;
             Database::Result db_config = ctx.get_conn().exec(
                 "SELECT MAX(importance) * 2 AS minimal_status_importance FROM enum_object_states");
-            minimal_status_importance_ = static_cast<unsigned int>(db_config[0]["minimal_status_importance"]);
+            lowest_status_importance_ = static_cast<unsigned int>(db_config[0]["minimal_status_importance"]);
         }
 
         DomainBrowser::~DomainBrowser()
@@ -256,23 +269,14 @@ namespace Registry
             }
         };
 
-        unsigned long long DomainBrowser::getObjectRegistryId(const std::string& objtype, const std::string& handle)
+        unsigned long long DomainBrowser::getContactId(const std::string& handle)
         {
             Logging::Context lctx_server(create_ctx_name(get_server_name()));
             Logging::Context lctx("get-object-registry-id");
             Fred::OperationContext ctx;
             try
             {
-                try
-                {
-                    get_object_type_id(ctx, objtype);
-                }
-                catch(const std::exception&)
-                {
-                    throw IncorrectUsage();
-                }
-
-                return Fred::get_object_id_by_handle_and_type_with_lock(ctx,handle, objtype,
+                return Fred::get_object_id_by_handle_and_type_with_lock(ctx,handle, "contact",
                     static_cast<ObjectNotExistsWithDummyHandleSetter*>(NULL),
                     &ObjectNotExistsWithDummyHandleSetter::set_handle);
             }
@@ -368,8 +372,7 @@ namespace Registry
         }
 
         ContactDetail DomainBrowser::getContactDetail(unsigned long long user_contact_id,
-                unsigned long long contact_id,
-                const std::string& lang)
+                unsigned long long contact_id)
         {
             Logging::Context lctx_server(create_ctx_name(get_server_name()));
             Logging::Context lctx("get-contact-detail");
@@ -427,14 +430,8 @@ namespace Registry
 
                 detail.name = contact_info.info_contact_data.name;
                 detail.organization = contact_info.info_contact_data.organization;
-                const Fred::Contact::PlaceAddress ci_place = contact_info.info_contact_data.place.get_value_or_default();
-                detail.street1 = ci_place.street1;
-                detail.street2 = ci_place.street2.get_value_or_default();
-                detail.street3 = ci_place.street3.get_value_or_default();
-                detail.city = ci_place.city;
-                detail.stateorprovince = ci_place.stateorprovince.get_value_or_default();
-                detail.postalcode = ci_place.postalcode;
-                detail.country = ci_place.country;
+                detail.permanent_address = contact_info.info_contact_data.place.get_value_or_default();
+                detail.mailing_address = optional_map_at<Nullable>(contact_info.info_contact_data.addresses,Fred::ContactAddressType::MAILING);
                 detail.telephone = contact_info.info_contact_data.telephone;
                 detail.fax = contact_info.info_contact_data.fax;
                 detail.email = contact_info.info_contact_data.email;
@@ -445,8 +442,9 @@ namespace Registry
                 detail.disclose_flags = disclose_flags;
 
                 //get states
-                get_object_states(ctx, contact_info.info_contact_data.id,lang
-                    , detail.state_codes, detail.states);
+                detail.state_codes = get_object_states(ctx, contact_info.info_contact_data.id);
+
+                detail.warning_letter = contact_info.info_contact_data.warning_letter;
 
                 return detail;
             }
@@ -458,8 +456,7 @@ namespace Registry
         }
 
         DomainDetail DomainBrowser::getDomainDetail(unsigned long long user_contact_id,
-                unsigned long long domain_id,
-                const std::string& lang)
+                unsigned long long domain_id)
         {
             Logging::Context lctx_server(create_ctx_name(get_server_name()));
             Logging::Context lctx("get-domain-detail");
@@ -541,13 +538,16 @@ namespace Registry
 
                     detail.admins.push_back(admin);
 
-                    if(admin.id == user_contact_id) set_authinfo = true;//reveal authinfo to admin
+                    if(admin.id == user_contact_id)
+                    {
+                        set_authinfo = true;//reveal authinfo to admin
+                        detail.is_admin = true;
+                    }
                 }
 
                 detail.authinfopw =filter_authinfo(set_authinfo, domain_info.info_domain_data.authinfopw);
 
-                get_object_states(ctx, domain_info.info_domain_data.id,lang
-                    , detail.state_codes, detail.states);
+                detail.state_codes = get_object_states(ctx, domain_info.info_domain_data.id);
 
                 return detail;
             }
@@ -559,8 +559,7 @@ namespace Registry
         }
 
         NssetDetail DomainBrowser::getNssetDetail(unsigned long long user_contact_id,
-                unsigned long long nsset_id,
-                const std::string& lang)
+                unsigned long long nsset_id)
         {
             Logging::Context lctx_server(create_ctx_name(get_server_name()));
             Logging::Context lctx("get-nsset-detail");
@@ -640,20 +639,9 @@ namespace Registry
                     if(admin.id == user_contact_id) detail.is_owner = true;//reveal authinfo
                 }
                 detail.authinfopw =filter_authinfo(detail.is_owner, nsset_info.info_nsset_data.authinfopw);
+                detail.hosts = nsset_info.info_nsset_data.dns_hosts;
 
-                detail.hosts.reserve(nsset_info.info_nsset_data.dns_hosts.size());
-                for(std::vector<Fred::DnsHost>::const_iterator ci = nsset_info.info_nsset_data.dns_hosts.begin();
-                        ci != nsset_info.info_nsset_data.dns_hosts.end(); ++ci)
-                {
-                    DNSHost host;
-                    host.fqdn = ci->get_fqdn();
-                    host.inet_addr = Util::format_container(ci->get_inet_addr() , ", ");
-
-                    detail.hosts.push_back(host);
-                }
-
-                get_object_states(ctx, nsset_info.info_nsset_data.id,lang
-                    , detail.state_codes, detail.states);
+                detail.state_codes = get_object_states(ctx, nsset_info.info_nsset_data.id);
 
                 detail.report_level = nsset_info.info_nsset_data.tech_check_level.get_value_or_default();
 
@@ -667,8 +655,7 @@ namespace Registry
         }
 
         KeysetDetail DomainBrowser::getKeysetDetail(unsigned long long user_contact_id,
-                unsigned long long keyset_id,
-                const std::string& lang)
+                unsigned long long keyset_id)
         {
             Logging::Context lctx_server(create_ctx_name(get_server_name()));
             Logging::Context lctx("get-keyset-detail");
@@ -763,8 +750,7 @@ namespace Registry
                     detail.dnskeys.push_back(dnskey);
                 }
 
-                get_object_states(ctx, keyset_info.info_keyset_data.id,lang
-                    , detail.state_codes, detail.states);
+                detail.state_codes = get_object_states(ctx, keyset_info.info_keyset_data.id);
 
                 return detail;
             }
@@ -776,7 +762,7 @@ namespace Registry
         }
 
         bool DomainBrowser::setContactDiscloseFlags(
-            unsigned long long contact_id,
+            unsigned long long user_contact_id,
             const ContactDiscloseFlagsToSet& flags,
             unsigned long long request_id)
         {
@@ -785,15 +771,15 @@ namespace Registry
             Fred::OperationContext ctx;
             try
             {
-                Fred::InfoContactOutput contact_info = check_user_contact_id<UserNotExists>(ctx, contact_id, output_timezone, true);
+                Fred::InfoContactOutput contact_info = check_user_contact_id<UserNotExists>(ctx, user_contact_id, output_timezone, true);
 
-                if(!(Fred::ObjectHasState(contact_id,Fred::ObjectState::IDENTIFIED_CONTACT).exec(ctx)
-                    || Fred::ObjectHasState(contact_id,Fred::ObjectState::VALIDATED_CONTACT).exec(ctx)))
+                if(!(Fred::ObjectHasState(user_contact_id,Fred::ObjectState::IDENTIFIED_CONTACT).exec(ctx)
+                    || Fred::ObjectHasState(user_contact_id,Fred::ObjectState::VALIDATED_CONTACT).exec(ctx)))
                 {
                     throw AccessDenied();
                 }
 
-                if(Fred::ObjectHasState(contact_id,Fred::ObjectState::SERVER_BLOCKED).exec(ctx))
+                if(Fred::ObjectHasState(user_contact_id,Fred::ObjectState::SERVER_BLOCKED).exec(ctx))
                 {
                     throw ObjectBlocked();
                 }
@@ -804,7 +790,7 @@ namespace Registry
                     throw IncorrectUsage();
                 }
 
-                Fred::UpdateContactById update_contact(contact_id, update_registrar_);
+                Fred::UpdateContactById update_contact(user_contact_id, update_registrar_);
                 bool exec_update = false;
                 if(flags.email != contact_info.info_contact_data.discloseemail)
                 {
@@ -867,7 +853,6 @@ namespace Registry
 
         bool DomainBrowser::setContactAuthInfo(
             unsigned long long user_contact_id,
-            unsigned long long contact_id,
             const std::string& authinfo,
             unsigned long long request_id)
         {
@@ -878,10 +863,7 @@ namespace Registry
             {
                 Fred::InfoContactOutput contact_info = check_user_contact_id<UserNotExists>(ctx, user_contact_id, output_timezone, true);
 
-                if(contact_id != contact_info.info_contact_data.id)
-                {
-                    throw AccessDenied();
-                }
+                unsigned long long contact_id = contact_info.info_contact_data.id;
 
                 const unsigned MAX_AUTH_INFO_LENGTH = 300u;
                 if(authinfo.length() > MAX_AUTH_INFO_LENGTH)
@@ -1085,13 +1067,11 @@ namespace Registry
             return false;
         }
 
-        bool DomainBrowser::getDomainList(unsigned long long user_contact_id,
+        DomainList DomainBrowser::getDomainList(unsigned long long user_contact_id,
             const Optional<unsigned long long>& list_domains_for_contact_id,
             const Optional<unsigned long long>& list_domains_for_nsset_id,
             const Optional<unsigned long long>& list_domains_for_keyset_id,
-            const std::string& lang,
-            unsigned long long offset,
-            std::vector<std::vector<std::string> >& domain_list_out)
+            unsigned long long offset)
         {
             Logging::Context lctx_server(create_ctx_name(get_server_name()));
             Logging::Context lctx("get-domain-list");
@@ -1117,9 +1097,6 @@ namespace Registry
 
                 params.push_back(offset);
                 const int idx_of_offset = params.size();
-
-                params.push_back(lang);
-                const int idx_of_lang = params.size();
 
                 int idx_of_nsset_id = -1;
                 if(list_domains_for_nsset_id.isset())
@@ -1224,16 +1201,14 @@ namespace Registry
        "(SELECT (dl.expiration_date AT TIME ZONE 'utc' AT TIME ZONE $"<< idx_timezone << "::text + val)::DATE FROM delete_period) AS delete_date,"
        "COALESCE(BIT_OR(eos.external::INTEGER*eos.importance),0) AS external_importance,"
        "COALESCE(BOOL_OR(eos.name='serverBlocked'),false) AS is_server_blocked,"
-       "ARRAY_TO_STRING(ARRAY_AGG((CASE WHEN eos.external THEN eosd.description "
+       "ARRAY_TO_STRING(ARRAY_AGG((CASE WHEN eos.external THEN eos.name "
                                                          "ELSE NULL END) "
-                                 "ORDER BY eos.importance),'|') AS state_desc "
+                                 "ORDER BY eos.importance)::text[],',') AS state_code "
 "FROM domain_list dl "
 "LEFT JOIN object_state os ON os.object_id=dl.id AND "
                              "os.valid_from<=CURRENT_TIMESTAMP AND (CURRENT_TIMESTAMP<os.valid_to OR "
                                                                    "os.valid_to IS NULL) "
 "LEFT JOIN enum_object_states eos ON eos.id=os.state_id "
-"LEFT JOIN enum_object_states_desc eosd ON os.state_id=eosd.state_id AND "
-                                           "UPPER(eosd.lang)=UPPER($" << idx_of_lang << "::TEXT) "
 "GROUP BY dl.expiration_date,dl.id,dl.fqdn,dl.registrar_handle,dl.registrar_name,"
          "dl.registrant_id,dl.have_keyset,user_role "
 "ORDER BY dl.expiration_date,dl.id";
@@ -1243,15 +1218,16 @@ namespace Registry
                 unsigned long long limited_domain_list_size = (domain_list_result.size() > domain_list_limit_)
                     ? domain_list_limit_ : domain_list_result.size();
 
-                domain_list_out.reserve(limited_domain_list_size);
+                DomainList ret;
+                ret.dld.reserve(limited_domain_list_size);
                 for (unsigned long long i = 0;i < limited_domain_list_size;++i)
                 {
-                    std::vector<std::string> row(11);
-                    row.at(0) = static_cast<std::string>(domain_list_result[i]["id"]);
-                    row.at(1) = static_cast<std::string>(domain_list_result[i]["fqdn"]);
+                    DomainListData dld;
+                    dld.id = static_cast<unsigned long long>(domain_list_result[i]["id"]);
+                    dld.fqdn = static_cast<std::string>(domain_list_result[i]["fqdn"]);
 
-                    unsigned int external_status_importance = static_cast<unsigned int>(domain_list_result[i]["external_importance"]);
-                    row.at(2) = boost::lexical_cast<std::string>(external_status_importance == 0 ? minimal_status_importance_ : external_status_importance);
+                    unsigned long long external_status_importance = static_cast<unsigned long long>(domain_list_result[i]["external_importance"]);
+                    dld.external_importance = external_status_importance == 0 ? lowest_status_importance_ : external_status_importance;
 
                     boost::gregorian::date today_date = domain_list_result[i]["today_date"].isnull() ? boost::gregorian::date()
                                 : boost::gregorian::from_string(static_cast<std::string>(domain_list_result[i]["today_date"]));
@@ -1262,38 +1238,31 @@ namespace Registry
                     boost::gregorian::date delete_date = domain_list_result[i]["delete_date"].isnull() ? boost::gregorian::date()
                                 : boost::gregorian::from_string(static_cast<std::string>(domain_list_result[i]["delete_date"]));
 
-                    NextDomainState next = getNextDomainState(today_date,expiration_date,outzone_date,delete_date);
+                    dld.next_state = getNextDomainState(today_date,expiration_date,outzone_date,delete_date);
 
-                    row.at(3) = next.state;
-                    row.at(4) = next.state_date.is_special() ? "" : boost::gregorian::to_iso_extended_string(next.state_date);
-                    row.at(5) = static_cast<std::string>(domain_list_result[i]["have_keyset"]);
-                    row.at(6) = static_cast<std::string>(domain_list_result[i]["user_role"]);
-                    row.at(7) = static_cast<std::string>(domain_list_result[i]["registrar_handle"]);
-                    row.at(8) = static_cast<std::string>(domain_list_result[i]["registrar_name"]);
+                    dld.have_keyset = static_cast<bool>(domain_list_result[i]["have_keyset"]);
+                    dld.user_role = static_cast<std::string>(domain_list_result[i]["user_role"]);
+                    dld.registrar_handle = static_cast<std::string>(domain_list_result[i]["registrar_handle"]);
+                    dld.registrar_name = static_cast<std::string>(domain_list_result[i]["registrar_name"]);
+                    dld.state_code = split_object_states_string(static_cast<std::string>(domain_list_result[i]["state_code"]));
+                    dld.is_server_blocked = static_cast<bool>(domain_list_result[i]["is_server_blocked"]);
 
-                    row.at(9) = static_cast<std::string>(domain_list_result[i]["state_desc"]);
-
-                    row.at(10) = static_cast<bool>(domain_list_result[i]["is_server_blocked"]) ? "t" :
-                                                                                                 "f";
-
-                    domain_list_out.push_back(row);
+                    ret.dld.push_back(dld);
                 }
 
-                const bool limit_reached = domain_list_limit_ < domain_list_result.size();
-                return limit_reached;
+                ret.limit_exceeded = domain_list_limit_ < domain_list_result.size();
+                return ret;
             }
             catch(...)
             {
                 log_and_rethrow_exception_handler(ctx);
             }
-            return false;
+            return DomainList();
         }
 
-        bool DomainBrowser::getNssetList(unsigned long long user_contact_id,
+        NssetList DomainBrowser::getNssetList(unsigned long long user_contact_id,
                     const Optional<unsigned long long>& list_nssets_for_contact_id,
-                    const std::string& lang,
-                    unsigned long long offset,
-                    std::vector<std::vector<std::string> >& nsset_list_out)
+                    unsigned long long offset)
         {
             Logging::Context lctx_server(create_ctx_name(get_server_name()));
             Logging::Context lctx("get-nsset-list");
@@ -1316,7 +1285,7 @@ namespace Registry
                         " , nsset_list.domain_number, "
                     " COALESCE(BIT_OR(CASE WHEN eos.external THEN eos.importance ELSE NULL END), 0) AS external_importance, "
                     " SUM(CASE WHEN eos.name = 'serverBlocked' THEN 1 ELSE 0 END) AS is_server_blocked, "
-                    " ARRAY_TO_STRING(ARRAY_AGG((CASE WHEN eos.external THEN eosd.description ELSE NULL END) ORDER BY eos.importance), '|') AS state_desc "
+                    " ARRAY_TO_STRING(ARRAY_AGG((CASE WHEN eos.external THEN eos.name ELSE NULL END) ORDER BY eos.importance)::text[],',') AS state_code "
                     "FROM "
                     "(SELECT oreg.id AS id "
                     ", oreg.name AS handle "
@@ -1338,52 +1307,46 @@ namespace Registry
                         " AND os.valid_from <= CURRENT_TIMESTAMP "
                         " AND (os.valid_to IS NULL OR os.valid_to > CURRENT_TIMESTAMP) "
                     " LEFT JOIN enum_object_states eos ON eos.id = os.state_id "
-                    " LEFT JOIN enum_object_states_desc eosd ON os.state_id = eosd.state_id AND UPPER(eosd.lang) = UPPER($4::text) "//lang
                     " GROUP BY nsset_list.id, nsset_list.handle, "
                         " nsset_list.registrar_handle, nsset_list.registrar_name "
                         " , nsset_list.domain_number "
                     " ORDER BY nsset_list.id "
                     " LIMIT $2::bigint OFFSET $3::bigint ",
-                    Database::query_param_list(contact_id)(nsset_list_limit_+1)(offset)(lang));
+                    Database::query_param_list(contact_id)(nsset_list_limit_+1)(offset));
 
                 unsigned long long limited_nsset_list_size = (nsset_list_result.size() > nsset_list_limit_)
                     ? nsset_list_limit_ : nsset_list_result.size();
 
-                nsset_list_out.reserve(limited_nsset_list_size);
+                NssetList ret;
+                ret.nld.reserve(limited_nsset_list_size);
                 for (unsigned long long i = 0;i < limited_nsset_list_size;++i)
                 {
-                    std::vector<std::string> row(8);
-                    row.at(0) = static_cast<std::string>(nsset_list_result[i]["id"]);
-                    row.at(1) = static_cast<std::string>(nsset_list_result[i]["handle"]);
-                    row.at(2) = static_cast<std::string>(nsset_list_result[i]["domain_number"]);
-                    row.at(3) = static_cast<std::string>(nsset_list_result[i]["registrar_handle"]);
-                    row.at(4) = static_cast<std::string>(nsset_list_result[i]["registrar_name"]);
-
-                    unsigned int external_status_importance = static_cast<unsigned int>(nsset_list_result[i]["external_importance"]);
-                    row.at(5) = boost::lexical_cast<std::string>(external_status_importance == 0 ? minimal_status_importance_ : external_status_importance);
-
-                    row.at(6) = static_cast<std::string>(nsset_list_result[i]["state_desc"]);
-
-                    bool server_blocked = static_cast<unsigned int>(nsset_list_result[i]["is_server_blocked"]);
-                    row.at(7) = server_blocked ? "t":"f";
-
-                    nsset_list_out.push_back(row);
+                    NssetListData nld;
+                    nld.id = static_cast<unsigned long long>(nsset_list_result[i]["id"]);
+                    nld.handle = static_cast<std::string>(nsset_list_result[i]["handle"]);
+                    nld.domain_count = static_cast<unsigned long long>(nsset_list_result[i]["domain_number"]);
+                    nld.registrar_handle = static_cast<std::string>(nsset_list_result[i]["registrar_handle"]);
+                    nld.registrar_name = static_cast<std::string>(nsset_list_result[i]["registrar_name"]);
+                    unsigned long long external_status_importance = static_cast<unsigned long long>(nsset_list_result[i]["external_importance"]);
+                    nld.external_importance = external_status_importance == 0 ? lowest_status_importance_ : external_status_importance;
+                    nld.state_code = split_object_states_string(static_cast<std::string>(nsset_list_result[i]["state_code"]));
+                    nld.is_server_blocked = static_cast<bool>(nsset_list_result[i]["is_server_blocked"]);
+                    ret.nld.push_back(nld);
                 }
 
-                return nsset_list_result.size() > nsset_list_limit_;
+                ret.limit_exceeded = nsset_list_result.size() > nsset_list_limit_;
+                return ret;
             }
             catch(...)
             {
                 log_and_rethrow_exception_handler(ctx);
             }
-            return false;
+            return NssetList();
         }
 
-        bool DomainBrowser::getKeysetList(unsigned long long user_contact_id,
+        KeysetList DomainBrowser::getKeysetList(unsigned long long user_contact_id,
             const Optional<unsigned long long>& list_keysets_for_contact_id,
-            const std::string& lang,
-            unsigned long long offset,
-            std::vector<std::vector<std::string> >& keyset_list_out)
+            unsigned long long offset)
         {
             Logging::Context lctx_server(create_ctx_name(get_server_name()));
             Logging::Context lctx("get-keyset-list");
@@ -1405,7 +1368,7 @@ namespace Registry
        "keyset_list.domain_number,"
        "COALESCE(BIT_OR(CASE WHEN eos.external THEN eos.importance ELSE 0 END),0) AS external_importance,"
        "COALESCE(BOOL_OR(eos.name='serverBlocked'),false) AS is_server_blocked,"
-       "ARRAY_TO_STRING(ARRAY_AGG((CASE WHEN eos.external THEN eosd.description ELSE NULL END) ORDER BY eos.importance), '|') AS state_desc "
+       "ARRAY_TO_STRING(ARRAY_AGG((CASE WHEN eos.external THEN eos.name ELSE NULL END) ORDER BY eos.importance)::text[],',') AS state_code "
 "FROM (WITH keyset AS ("
           "SELECT keysetid AS id "
           "FROM keyset_contact_map "
@@ -1431,66 +1394,72 @@ namespace Registry
                              "os.valid_from<=CURRENT_TIMESTAMP AND (CURRENT_TIMESTAMP<os.valid_to OR "
                                                                    "os.valid_to IS NULL) "
 "LEFT JOIN enum_object_states eos ON eos.id=os.state_id "
-"LEFT JOIN enum_object_states_desc eosd ON os.state_id=eosd.state_id AND "
-                                          "UPPER(eosd.lang)=UPPER($4::TEXT) " // $4=lang
 "GROUP BY keyset_list.id,keyset_list.handle,keyset_list.registrar_handle,keyset_list.registrar_name,"
          "keyset_list.domain_number "
 "ORDER BY keyset_list.id",
-                    Database::query_param_list(contact_id)(offset)(keyset_list_limit_ + 1)(lang));// limit + 1 => exceeding detection
+                    Database::query_param_list(contact_id)(offset)(keyset_list_limit_ + 1));// limit + 1 => exceeding detection
 
                 const unsigned long long limited_keyset_list_size = keyset_list_limit_ < keyset_list_result.size()
                     ? keyset_list_limit_ : keyset_list_result.size();
 
-                keyset_list_out.reserve(limited_keyset_list_size);
+                KeysetList ret;
+                ret.kld.reserve(limited_keyset_list_size);
                 for (unsigned long long i = 0;i < limited_keyset_list_size;++i)
                 {
-                    std::vector<std::string> row(8);
-                    row.at(0) = static_cast<std::string>(keyset_list_result[i]["id"]);
-                    row.at(1) = static_cast<std::string>(keyset_list_result[i]["handle"]);
-                    row.at(2) = static_cast<std::string>(keyset_list_result[i]["domain_number"]);
-                    row.at(3) = static_cast<std::string>(keyset_list_result[i]["registrar_handle"]);
-                    row.at(4) = static_cast<std::string>(keyset_list_result[i]["registrar_name"]);
-
-                    unsigned int external_status_importance = static_cast<unsigned int>(keyset_list_result[i]["external_importance"]);
-                    row.at(5) = boost::lexical_cast<std::string>(external_status_importance == 0 ? minimal_status_importance_ : external_status_importance);
-
-                    row.at(6) = static_cast<std::string>(keyset_list_result[i]["state_desc"]);
-
-                    row.at(7) = static_cast<bool>(keyset_list_result[i]["is_server_blocked"]) ? "t":"f";
-
-                    keyset_list_out.push_back(row);
+                    KeysetListData kld;
+                    kld.id = static_cast<unsigned long long>(keyset_list_result[i]["id"]);
+                    kld.handle = static_cast<std::string>(keyset_list_result[i]["handle"]);
+                    kld.domain_count = static_cast<unsigned long long>(keyset_list_result[i]["domain_number"]);
+                    kld.registrar_handle = static_cast<std::string>(keyset_list_result[i]["registrar_handle"]);
+                    kld.registrar_name = static_cast<std::string>(keyset_list_result[i]["registrar_name"]);
+                    unsigned long long external_status_importance = static_cast<unsigned long long>(keyset_list_result[i]["external_importance"]);
+                    kld.external_importance = external_status_importance == 0 ? lowest_status_importance_ : external_status_importance;
+                    kld.state_code = split_object_states_string(static_cast<std::string>(keyset_list_result[i]["state_code"]));
+                    kld.is_server_blocked = static_cast<bool>(keyset_list_result[i]["is_server_blocked"]);
+                   ret.kld.push_back(kld);
                 }
 
-                const bool limit_reached = keyset_list_limit_ < keyset_list_result.size();
-                return limit_reached;
+                ret.limit_exceeded = keyset_list_limit_ < keyset_list_result.size();
+                return ret;
             }
             catch(...)
             {
                 log_and_rethrow_exception_handler(ctx);
             }
-            return false;
+            return KeysetList();
         }
 
 
-        void DomainBrowser::getPublicStatusDesc(const std::string& lang,
-            std::vector<std::string>& status_description_out)
+        std::vector<StatusDesc> DomainBrowser::getPublicStatusDesc(const std::string& lang)
         {
             Logging::Context lctx_server(create_ctx_name(get_server_name()));
             Logging::Context lctx("get-public-status-desc");
             Fred::OperationContext ctx;
             try
             {
-                std::map<unsigned long long, std::string> state_desc_map = Fred::GetObjectStateDescriptions(lang)
-                    .set_external().exec(ctx);
+                Database::Result state_desc_res = ctx.get_conn().exec_params(
+                "SELECT eos.name AS name, COALESCE(eosd.description, '') AS description "
+                " FROM enum_object_states_desc eosd "
+                " JOIN enum_object_states eos ON eos.id = eosd.state_id "
+                " WHERE UPPER(eosd.lang) = UPPER($1::text) "
+                " AND eos.external = TRUE "
+                " ORDER BY eos.id ", Database::query_param_list(lang));
 
-                status_description_out.reserve(state_desc_map.size());
-                for(std::map<unsigned long long, std::string>::const_iterator ci = state_desc_map.begin()
-                    ; ci != state_desc_map.end(); ++ci) status_description_out.push_back(ci->second);
+                std::vector<StatusDesc> ret;
+                ret.reserve(state_desc_res.size());
+                for(unsigned long long i = 0; i < state_desc_res.size(); ++i)
+                {
+                    ret.push_back(StatusDesc(
+                        static_cast<std::string>(state_desc_res[i]["name"])
+                        , static_cast<std::string>(state_desc_res[i]["description"])));
+                }
+                return ret;
             }
             catch(...)
             {
                 log_and_rethrow_exception_handler(ctx);
             }
+            return std::vector<StatusDesc>();
         }
 
         struct MergeContactDiffContacts
@@ -1555,9 +1524,8 @@ namespace Registry
             }
         };
 
-        bool DomainBrowser::getMergeContactCandidateList(unsigned long long user_contact_id,
-            unsigned long long offset,
-            std::vector<std::vector<std::string> >& contact_list_out)
+        MergeContactCandidateList DomainBrowser::getMergeContactCandidateList(unsigned long long user_contact_id,
+            unsigned long long offset)
         {
             Logging::Context lctx_server(create_ctx_name(get_server_name()));
             Logging::Context lctx("get-merge-contact-candidate-list");
@@ -1606,29 +1574,29 @@ namespace Registry
 
                 unsigned long long limited_contact_list_size = (candidate_list_result.size() > contact_list_limit_)
                     ? contact_list_limit_ : candidate_list_result.size();
-
-                contact_list_out.reserve(limited_contact_list_size);
+                MergeContactCandidateList ret;
+                ret.mccl.reserve(limited_contact_list_size);
                 for (unsigned long long i = 0;i < limited_contact_list_size;++i)
                 {
-                    std::vector<std::string> row(7);
-                    row.at(0) = static_cast<std::string>(candidate_list_result[i]["id"]);
-                    row.at(1) = static_cast<std::string>(candidate_list_result[i]["handle"]);
-                    row.at(2) = static_cast<std::string>(candidate_list_result[i]["domain_count"]);
-                    row.at(3) = static_cast<std::string>(candidate_list_result[i]["nsset_count"]);
-                    row.at(4) = static_cast<std::string>(candidate_list_result[i]["keyset_count"]);
-                    row.at(5) = static_cast<std::string>(candidate_list_result[i]["registrar_handle"]);
-                    row.at(6) = static_cast<std::string>(candidate_list_result[i]["registrar_name"]);
+                    MergeContactCandidateData cd;
+                    cd.id = static_cast<unsigned long long>(candidate_list_result[i]["id"]);
+                    cd.handle = static_cast<std::string>(candidate_list_result[i]["handle"]);
+                    cd.domain_count = static_cast<unsigned long long>(candidate_list_result[i]["domain_count"]);
+                    cd.nsset_count = static_cast<unsigned long long>(candidate_list_result[i]["nsset_count"]);
+                    cd.keyset_count = static_cast<unsigned long long>(candidate_list_result[i]["keyset_count"]);
+                    cd.registrar_handle = static_cast<std::string>(candidate_list_result[i]["registrar_handle"]);
+                    cd.registrar_name = static_cast<std::string>(candidate_list_result[i]["registrar_name"]);
 
-                    contact_list_out.push_back(row);
+                    ret.mccl.push_back(cd);
                 }
-
-                return candidate_list_result.size() > contact_list_limit_;
+                ret.limit_exceeded = candidate_list_result.size() > contact_list_limit_;
+                return ret;
             }
             catch(...)
             {
                 log_and_rethrow_exception_handler(ctx);
             }
-            return false;
+            return MergeContactCandidateList();
         }
 
         void DomainBrowser::mergeContacts(unsigned long long dst_contact_id,
@@ -1704,6 +1672,42 @@ namespace Registry
             }
             ctx.commit_transaction();
         }
+
+        void DomainBrowser::setContactPreferenceForDomainExpirationLetters(
+            unsigned long long user_contact_id,
+            bool send_expiration_letters,
+            unsigned long long request_id)
+        {
+            Logging::Context lctx_server(create_ctx_name(get_server_name()));
+            Logging::Context lctx("set-contact-auth-info");
+            Fred::OperationContext ctx;
+            try
+            {
+                Fred::InfoContactOutput contact_info = check_user_contact_id<UserNotExists>(ctx, user_contact_id, output_timezone, true);
+
+                unsigned long long contact_id = contact_info.info_contact_data.id;
+
+                if(!send_expiration_letters && !Fred::ObjectHasState(contact_id,Fred::ObjectState::VALIDATED_CONTACT).exec(ctx))
+                {
+                    throw AccessDenied();
+                }
+
+                if(Fred::ObjectHasState(contact_id,Fred::ObjectState::SERVER_BLOCKED).exec(ctx))
+                {
+                    throw ObjectBlocked();
+                }
+
+                Fred::UpdateContactById(contact_id, update_registrar_)
+                    .set_domain_expiration_letter_flag(send_expiration_letters)
+                    .set_logd_request_id(request_id).exec(ctx);
+                ctx.commit_transaction();
+            }
+            catch(...)
+            {
+                log_and_rethrow_exception_handler(ctx);
+            }
+        }
+
     }//namespace DomainBrowserImpl
 }//namespace Registry
 

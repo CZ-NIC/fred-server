@@ -31,6 +31,8 @@
 
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/domain/enum_validation_extension.h"
+#include "src/fredlib/nsset/nsset_dns_host.h"
+#include "src/fredlib/contact/place_address.h"
 #include "util/db/nullable.h"
 #include "util/optional_value.h"
 
@@ -95,7 +97,6 @@ namespace Registry
             {}
         };
 
-
         /**
          * Contact detail data.
          * Returned by @ref getContactDetail.
@@ -112,13 +113,8 @@ namespace Registry
             std::string authinfopw;/**< password for transfer */
             Nullable<std::string> name ;/**< name of contact person */
             Nullable<std::string> organization;/**< full trade name of organization */
-            Nullable<std::string> street1;/**< part of address */
-            Nullable<std::string> street2;/**< part of address */
-            Nullable<std::string> street3;/**< part of address*/
-            Nullable<std::string> city;/**< part of address - city */
-            Nullable<std::string> stateorprovince;/**< part of address - region */
-            Nullable<std::string> postalcode;/**< part of address - postal code */
-            Nullable<std::string> country;/**< two character country code or country name */
+            Fred::Contact::PlaceAddress permanent_address;/**< required contact address */
+            Nullable<Fred::Contact::PlaceAddress> mailing_address; /**< optional mailing address */
             Nullable<std::string> telephone;/**<  telephone number */
             Nullable<std::string> fax;/**< fax number */
             Nullable<std::string> email;/**< e-mail address */
@@ -127,9 +123,9 @@ namespace Registry
             Nullable<std::string> ssntype;/**< type of identification from enumssntype table */
             Nullable<std::string> ssn;/**< unambiguous identification number e.g. social security number, identity card number, date of birth */
             ContactDiscloseFlags disclose_flags;/**< contact fields disclose flags*/
-            std::string states;/**< object states descriptions in given language from db. table enum_object_states_desc delimited by pipe '|' character */
-            std::string state_codes;/**< object states names from db. table enum_object_states delimited by coma ',' character */
+            std::vector<std::string> state_codes;/**< object states names from db. table enum_object_states*/
             bool is_owner;/**< whether user contact is the same as requested contact */
+            Nullable<bool> warning_letter;/**< contact preference for sending domain expiration letters */
 
             ContactDetail()
             : id(0)
@@ -156,23 +152,15 @@ namespace Registry
             RegistryReference nsset; /**< domain nsset */
             RegistryReference keyset;/**< domain keyset */
             std::vector<RegistryReference> admins; /**< domain admin contacts */
-            std::string states;/**< object states descriptions in given language from db. table enum_object_states_desc delimited by pipe '|' character */
-            std::string state_codes;/**< object states names from db. table enum_object_states delimited by coma ',' character */
+            std::vector<std::string> state_codes;/**< object state names from db. table enum_object_states */
             bool is_owner;/**< whether user contact is the same as domain owner*/
+            bool is_admin;/**< whether user contact is the same as domain admin*/
 
             DomainDetail()
             : id(0)
             , is_owner(false)
+            , is_admin(false)
             {}
-        };
-
-        /**
-         * DNSHost data
-         */
-        struct DNSHost
-        {
-            std::string fqdn;/**< fully qualified name of the nameserver host*/
-            std::string inet_addr;/**< list of IPv4 or IPv6 addresses of the nameserver host*/
         };
 
         /**
@@ -192,9 +180,8 @@ namespace Registry
             RegistryReference update_registrar;/**< registrar that updated the nsset */
             std::string authinfopw;/**< password for transfer */
             std::vector<RegistryReference> admins; /**< nsset admin contacts */
-            std::vector<DNSHost> hosts; /**< nsset DNS hosts */
-            std::string states;/**< object states descriptions in given language from db. table enum_object_states_desc delimited by pipe '|' character */
-            std::string state_codes;/**< object states names from db. table enum_object_states delimited by coma ',' character */
+            std::vector<Fred::DnsHost> hosts; /**< nsset DNS hosts */
+            std::vector<std::string> state_codes;/**< object states names from db. table enum_object_states*/
             short report_level; /**< nsset level of technical checks */
             bool is_owner;/**< user contact is owner of the nsset if it's also admin contact*/
 
@@ -234,8 +221,7 @@ namespace Registry
             std::string authinfopw;/**< password for transfer */
             std::vector<RegistryReference> admins; /**< keyset admin contacts */
             std::vector<DNSKey> dnskeys; /**< DNS keys */
-            std::string states;/**< object states descriptions in given language from db. table enum_object_states_desc delimited by pipe '|' character */
-            std::string state_codes;/**< object states names from db. table enum_object_states delimited by coma ',' character */
+            std::vector<std::string> state_codes;/**< object states names from db. table enum_object_states */
             bool is_owner;/**< user contact is owner of the keyset if it's also admin contact*/
 
             KeysetDetail()
@@ -273,22 +259,173 @@ namespace Registry
          */
         struct NextDomainState
         {
-            std::string state; /**< next state */
-            boost::gregorian::date state_date; /**< next state date*/
+            std::string state_code; /**< next state code */
+            boost::gregorian::date state_date; /**< next state date */
 
-            /**
-             * Default state is "N/A" and default date is not_a_date_time.
-             */
             NextDomainState()
-            : state("N/A")
             {}
 
             /**
              * Init both members.
              */
-            NextDomainState(const std::string& _state, const boost::gregorian::date& _state_date)
-            : state(_state)
+            NextDomainState(const std::string& _state_code, const boost::gregorian::date& _state_date)
+            : state_code(_state_code)
             , state_date(_state_date)
+            {}
+        };
+
+        /**
+         * element of DomainList
+         */
+        struct DomainListData
+        {
+            unsigned long long id;/**< id of the domain */
+            std::string fqdn;/**< fully qualified domain name */
+            unsigned long long external_importance;/**<  bitwise OR of importance values of states with external flag or @ref lowest_status_importance_ value if bitwise OR is zero */
+            Nullable<NextDomainState> next_state;/**< next state of the domain (if any) according to current date and expiration date, outzone date and delete date of the domain with its date*/
+            bool have_keyset; /**< domain have keyset flag */
+            std::string user_role; /**< domainbrowser user relation to the domain (holder/admin/'') */
+            std::string registrar_handle; /**< domain registrar handle*/
+            std::string registrar_name; /**< domain registrar name*/
+            std::vector<std::string> state_code;/**< domain states*/
+            bool is_server_blocked; /**< domain blocked flag */
+
+            DomainListData()
+            : id(0)
+            , external_importance(0)
+            , have_keyset(false)
+            , is_server_blocked(false)
+            {}
+        };
+
+        /**
+         * complete domain list data
+         */
+        struct DomainList
+        {
+            std::vector<DomainListData> dld;/**< list of domain data */
+            bool limit_exceeded;/**< there are more data to get using higher offset in next call*/
+
+            DomainList()
+            : limit_exceeded(false)
+            {}
+        };
+
+        /**
+         * element of NssetList
+         */
+        struct NssetListData
+        {
+            unsigned long long id;/**< id of the nsset */
+            std::string handle;/**< nsset handle */
+            unsigned long long domain_count;/**<  number of domains using this nsset */
+            std::string registrar_handle; /**< nsset registrar handle*/
+            std::string registrar_name; /**< nsset registrar name*/
+            unsigned long long external_importance;/**<  bitwise OR of importance values of states with external flag or next higher power of 2 value if bitwise OR is zero */
+            std::vector<std::string> state_code;/**< nsset states*/
+            bool is_server_blocked; /**< whether nsset have serverBlocked state */
+
+            NssetListData()
+            : id(0)
+            , domain_count(0)
+            , external_importance(0)
+            , is_server_blocked(false)
+            {}
+        };
+
+        /**
+         * complete nsset list data
+         */
+        struct NssetList
+        {
+            std::vector<NssetListData> nld;/**< list of nsset data */
+            bool limit_exceeded;/**< there are more data to get using higher offset in next call*/
+
+            NssetList()
+            : limit_exceeded(false)
+            {}
+        };
+
+        /**
+         * element of KeysetList
+         */
+        struct KeysetListData
+        {
+            unsigned long long id;/**< id of the keyset */
+            std::string handle;/**< keyset handle */
+            unsigned long long domain_count;/**<  number of domains using this keyset */
+            std::string registrar_handle; /**< keyset registrar handle*/
+            std::string registrar_name; /**< keyset registrar name*/
+            unsigned long long external_importance;/**<  bitwise OR of importance values of states with external flag or next higher power of 2 value if bitwise OR is zero */
+            std::vector<std::string> state_code;/**< keyset states*/
+            bool is_server_blocked; /**< whether keyset have serverBlocked state*/
+
+            KeysetListData()
+            : id(0)
+            , domain_count(0)
+            , external_importance(0)
+            , is_server_blocked(false)
+            {}
+        };
+
+        /**
+         * complete keyset list data
+         */
+        struct KeysetList
+        {
+            std::vector<KeysetListData> kld;/**< list of keyset data */
+            bool limit_exceeded;/**< there are more data to get using higher offset in next call*/
+
+            KeysetList()
+            : limit_exceeded(false)
+            {}
+        };
+
+        /**
+         * element of MergeContactCandidateList
+         */
+        struct MergeContactCandidateData
+        {
+            unsigned long long id;/**< id of the contact */
+            std::string handle;/**< contact handle */
+            unsigned long long domain_count;/**<  number of domains linked with this contact */
+            unsigned long long nsset_count;/**<  number of nssets linked with this contact */
+            unsigned long long keyset_count;/**<  number of keysets linked with this contact */
+            std::string registrar_handle; /**< contact registrar handle*/
+            std::string registrar_name; /**< contact registrar name*/
+
+            MergeContactCandidateData()
+            : id(0)
+            , domain_count(0)
+            , nsset_count(0)
+            , keyset_count(0)
+            {}
+        };
+
+        /**
+         * complete merge contact candidates list data
+         */
+        struct MergeContactCandidateList
+        {
+            std::vector<MergeContactCandidateData> mccl;/**< list of merge contact candidates data */
+            bool limit_exceeded;/**< there are more data to get using higher offset in next call*/
+
+            MergeContactCandidateList()
+            : limit_exceeded(false)
+            {}
+        };
+
+        /**
+         * object state description
+         */
+        struct StatusDesc
+        {
+            std::string state_code;/**< state name */
+            std::string state_desc;/**< state description in some language */
+
+            StatusDesc(const std::string& _state_code, const std::string& _state_desc)
+            : state_code(_state_code)
+            , state_desc(_state_desc)
             {}
         };
 
@@ -410,20 +547,16 @@ namespace Registry
             unsigned int keyset_list_limit_;/**< keyset list chunk size */
             unsigned int contact_list_limit_;/**< contact list chunk size */
 
-            unsigned int minimal_status_importance_;// NOTE: rename to lowest_status_importance_ or
-                                                    //                 default_status_importance_value_ or
-                                                    //                 the_most_trivial_status
+            unsigned long long lowest_status_importance_;/**< the lower the importance, the higher the importance value, so that the lowest importance is MAX(enum_object_states.importance) * 2 */
 
             /**
-             * Fill object state codes and description into given strings.
+             * Fill object state codes.
              * @param ctx contains reference to database and logging interface
              * @param object_id is database id of object
-             * @param lang is required language of object state description e.g. "EN" or "CS"
-             * @param state_codes is output string of object state codes delimited by '|'
-             * @param states is output string with descriptions of external object states delimited by ','
+             * @returns list of object state codes
              */
-             void get_object_states(Fred::OperationContext& ctx, unsigned long long object_id, const std::string& lang
-                     , std::string& state_codes, std::string& states);
+             std::vector<std::string> get_object_states(Fred::OperationContext& ctx, unsigned long long object_id);
+
 
             /**
              * Fill authinfo into given string.
@@ -450,8 +583,9 @@ namespace Registry
              * @param expiration_date domain expiration
              * @param outzone_date domain outzone date
              * @param delete_date domain delete date
+             * @return next domain state if there is one
              */
-            NextDomainState getNextDomainState(
+            Nullable<NextDomainState> getNextDomainState(
                 const boost::gregorian::date&  today_date,
                 const boost::gregorian::date& expiration_date,
                 const boost::gregorian::date& outzone_date,
@@ -467,14 +601,12 @@ namespace Registry
             virtual ~DomainBrowser();
 
             /**
-             * Gets database id of the object.
-             * @param objtype is type of the object from table enum_object_type
-             * @param handle is object registry handle of the object
-             * @return object database id
-             * @throw @ref IncorrectUsage if objype not found, @ref ObjectNotExists if object with given type not found or anything else in case of failure
+             * Gets database id of the contact.
+             * @param handle is object registry handle of the contact
+             * @return contact database id
+             * @throw @ref ObjectNotExists if contact not found or anything else in case of failure
              */
-            unsigned long long getObjectRegistryId(const std::string& objtype, const std::string& handle);
-
+            unsigned long long getContactId(const std::string& handle);
             /**
              * Returns registrar detail.
              * @param user_contact_id contains database id of the user contact
@@ -487,68 +619,54 @@ namespace Registry
              * Returns contact detail.
              * @param user_contact_id contains database id of the user contact
              * @param contact_id contains database id of the contact
-             * @param lang contains language for state description "EN" or "CS"
              * @return contact detail data.
              */
-            ContactDetail getContactDetail(unsigned long long user_contact_id,
-                    unsigned long long contact_id,
-                    const std::string& lang);
+            ContactDetail getContactDetail(unsigned long long user_contact_id, unsigned long long contact_id);
 
             /**
              * Returns domain detail.
              * @param user_contact_id contains database id of the user contact
              * @param domain_id contains database id of the domain
-             * @param lang contains language for state description "EN" or "CS"
              * @return domain detail data.
              */
-            DomainDetail getDomainDetail(unsigned long long user_contact_id,
-                    unsigned long long domain_id,
-                    const std::string& lang);
+            DomainDetail getDomainDetail(unsigned long long user_contact_id, unsigned long long domain_id);
 
             /**
              * Returns nsset detail.
              * @param user_contact_id contains database id of the user contact
              * @param nsset_id contains database id of the nsset
-             * @param lang contains language for state description "EN" or "CS"
              * @return nsset detail data.
              */
-            NssetDetail getNssetDetail(unsigned long long user_contact_id,
-                    unsigned long long nsset_id,
-                    const std::string& lang);
+            NssetDetail getNssetDetail(unsigned long long user_contact_id, unsigned long long nsset_id);
 
             /**
              * Returns keyset detail.
              * @param user_contact_id contains database id of the user contact
              * @param keyset_id contains database id of the keyset
-             * @param lang contains language for state description "EN" or "CS"
              * @return keyset detail data.
              */
-            KeysetDetail getKeysetDetail(unsigned long long user_contact_id,
-                    unsigned long long keyset_id,
-                    const std::string& lang);
+            KeysetDetail getKeysetDetail(unsigned long long user_contact_id, unsigned long long keyset_id);
 
             /**
              * Sets contact disclose flags.
-             * @param contact_id contains database id of the contact
+             * @param user_contact_id contains database id of the user contact
              * @param flags contains contact disclose flags
              * @param request_id is id of the new entry in log_entry database table
              * @return true if disclose flags were set, false if not or exception in case of failure
              */
             bool setContactDiscloseFlags(
-                unsigned long long contact_id,
+                unsigned long long user_contact_id,
                 const ContactDiscloseFlagsToSet& flags,
                 unsigned long long request_id);
 
             /**
              * Sets contact transfer password.
-             * @param user_contact_id contains database id of the user contact
-             * @param contact_id is database id of the contact to be modified
+             * @param user_contact_id contains database id of the user contact which is the contact to be modified
              * @param authinfo is new transfer password
              * @param request_id is id of the new entry in log_entry database table
              * @return true if authinfo were set, false if not or exception in case of failure
              */
             bool setContactAuthInfo(unsigned long long user_contact_id,
-                unsigned long long contact_id,
                 const std::string& authinfo,
                 unsigned long long request_id);
 
@@ -573,67 +691,52 @@ namespace Registry
              * @param list_domains_for_contact_id if set list domains linked to contact with given id regardless of user contact relation to listed domains
              * @param list_domains_for_nsset_id if set list domains linked to nsset with given id regardless of user contact relation to listed domains
              * @param list_domains_for_keyset_id if set list domains linked to keyset with given id regardless of user contact relation to listed domains
-             * @param lang contains language for state description "EN" or "CS"
              * @param offset contains list offset
-             * @param  domain_list_out references output domain list
-             * @return limit_exceeded flag
+             * @return list of domain data with limit_exceeded flag
              */
-            bool getDomainList(unsigned long long user_contact_id,
+            DomainList getDomainList(unsigned long long user_contact_id,
                 const Optional<unsigned long long>& list_domains_for_contact_id,
                 const Optional<unsigned long long>& list_domains_for_nsset_id,
                 const Optional<unsigned long long>& list_domains_for_keyset_id,
-                const std::string& lang,
-                unsigned long long offset,
-                std::vector<std::vector<std::string> >& domain_list_out);
+                unsigned long long offset);
 
             /**
              * Get list of nssets administered by user contact.
              * @param user_contact_id contains database id of the user contact
              * @param list_nssets_for_contact_id if set list nssets linked to contact with given id regardless of user contact relation to listed nssets
-             * @param lang contains language for state description "EN" or "CS"
              * @param offset contains list offset
-             * @param  nsset_list_out references output nsset list
-             * @return limit_exceeded flag
+             * @return list of nsset data with limit_exceeded flag
              */
-            bool getNssetList(unsigned long long user_contact_id,
+            NssetList getNssetList(unsigned long long user_contact_id,
                 const Optional<unsigned long long>& list_nssets_for_contact_id,
-                const std::string& lang,
-                unsigned long long offset,
-                std::vector<std::vector<std::string> >& nsset_list_out);
+                unsigned long long offset);
 
             /**
              * Get list of keysets administered by user contact.
              * @param user_contact_id contains database id of the user contact
              * @param list_keysets_for_contact_id if set list keysets linked to contact with given id regardless of user contact relation to listed keysets
-             * @param lang contains language for state description "EN" or "CS"
              * @param offset contains list offset
-             * @param  keyset_list_out references output keyset list
-             * @return limit_exceeded flag
+             * @return list of keyset data with limit_exceeded flag
              */
-            bool getKeysetList(unsigned long long user_contact_id,
+            KeysetList getKeysetList(unsigned long long user_contact_id,
                 const Optional<unsigned long long>& list_keysets_for_contact_id,
-                const std::string& lang,
-                unsigned long long offset,
-                std::vector<std::vector<std::string> >& keyset_list_out);
+                unsigned long long offset);
 
             /**
              * Get descriptions of public states.
              * @param lang contains language for state description "EN" or "CS"
-             * @param  status_description_out references output list of descriptions
+             * @return list of status codes and descriptions
              */
-            void getPublicStatusDesc(const std::string& lang,
-                std::vector<std::string>& status_description_out);
+            std::vector<StatusDesc> getPublicStatusDesc(const std::string& lang);
 
             /**
              * Get list of contacts mergeable to user contact.
              * @param user_contact_id contains database id of the user contact
              * @param offset contains list offset
-             * @param  contact_list_out references output candidate contact list
-             * @return limit_exceeded flag
+             * @return merge candidate contact list with limit_exceeded flag
              */
-            bool getMergeContactCandidateList(unsigned long long user_contact_id,
-                unsigned long long offset,
-                std::vector<std::vector<std::string> >& contact_list_out);
+            MergeContactCandidateList getMergeContactCandidateList(unsigned long long user_contact_id,
+                unsigned long long offset);
 
             /**
              * Merge contact list to destination contact
@@ -650,6 +753,19 @@ namespace Registry
              * @return name for logging context
              */
             std::string get_server_name();
+
+
+            /**
+             * Sets contact preference for sending domain expiration letters.
+             * @param user_contact_id contains database id of the user contact, to set any preference contact have to be mojeid contact, to set FALSE, contact have to be validated mojeid contact
+             * @param send_expiration_letters is user preference whether to send domain expiration letters, if TRUE then send domain expiration letters, if FALSE don't send domain expiration letters
+             * @param request_id is id of the new entry in log_entry database table
+             */
+            void setContactPreferenceForDomainExpirationLetters(
+                unsigned long long user_contact_id,
+                bool send_expiration_letters,
+                unsigned long long request_id);
+
         };//class DomainBrowser
 
     }//namespace DomainBrowserImpl

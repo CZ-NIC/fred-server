@@ -218,6 +218,7 @@ namespace Fred
         (std::make_pair("disclosevat",disclosevat ? "true" : "false"))
         (std::make_pair("discloseident",discloseident ? "true" : "false"))
         (std::make_pair("disclosenotifyemail",disclosenotifyemail ? "true" : "false"))
+        (std::make_pair("warning_letter",warning_letter.print_quoted()))
         );
     }
 

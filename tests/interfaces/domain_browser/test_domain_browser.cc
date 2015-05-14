@@ -426,8 +426,9 @@ BOOST_FIXTURE_TEST_CASE(get_my_contact_detail, get_my_contact_detail_fixture )
     Fred::InfoRegistrarOutput sponsoring_registrar_info = Fred::InfoRegistrarByHandle(my_contact_info.info_contact_data.sponsoring_registrar_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
 
     Registry::DomainBrowserImpl::ContactDetail cd = impl.getContactDetail(user_contact_info.info_contact_data.id,
-            my_contact_info.info_contact_data.id, "CS");
+            my_contact_info.info_contact_data.id);
     const Fred::Contact::PlaceAddress mci_place = my_contact_info.info_contact_data.place.get_value_or_default();
+    const Nullable<Fred::Contact::PlaceAddress> mci_mailing = optional_map_at<Nullable>(my_contact_info.info_contact_data.addresses,Fred::ContactAddressType::MAILING);
 
     BOOST_CHECK(cd.id == my_contact_info.info_contact_data.id);
     BOOST_CHECK(cd.handle == my_contact_info.info_contact_data.handle);
@@ -441,13 +442,10 @@ BOOST_FIXTURE_TEST_CASE(get_my_contact_detail, get_my_contact_detail_fixture )
     BOOST_CHECK(cd.authinfopw == my_contact_info.info_contact_data.authinfopw);
     BOOST_CHECK(cd.name.get_value_or_default() == my_contact_info.info_contact_data.name.get_value_or_default());
     BOOST_CHECK(cd.organization.get_value_or_default() == my_contact_info.info_contact_data.organization.get_value_or_default());
-    BOOST_CHECK(cd.street1.get_value_or_default() == mci_place.street1);
-    BOOST_CHECK(cd.street2.get_value_or_default() == mci_place.street2.get_value_or_default());
-    BOOST_CHECK(cd.street3.get_value_or_default() == mci_place.street3.get_value_or_default());
-    BOOST_CHECK(cd.city.get_value_or_default() == mci_place.city);
-    BOOST_CHECK(cd.stateorprovince.get_value_or_default() == mci_place.stateorprovince.get_value_or_default());
-    BOOST_CHECK(cd.postalcode.get_value_or_default() == mci_place.postalcode);
-    BOOST_CHECK(cd.country.get_value_or_default() == mci_place.country);
+
+    BOOST_CHECK(cd.permanent_address == mci_place);
+    BOOST_CHECK(cd.mailing_address == mci_mailing);
+
     BOOST_CHECK(cd.telephone.get_value_or_default() == my_contact_info.info_contact_data.telephone.get_value_or_default());
     BOOST_CHECK(cd.fax.get_value_or_default() == my_contact_info.info_contact_data.fax.get_value_or_default());
     BOOST_CHECK(cd.email.get_value_or_default() == my_contact_info.info_contact_data.email.get_value_or_default());
@@ -464,12 +462,8 @@ BOOST_FIXTURE_TEST_CASE(get_my_contact_detail, get_my_contact_detail_fixture )
     BOOST_CHECK(cd.disclose_flags.ident == my_contact_info.info_contact_data.discloseident);
     BOOST_CHECK(cd.disclose_flags.vat == my_contact_info.info_contact_data.disclosevat);
     BOOST_CHECK(cd.disclose_flags.notify_email == my_contact_info.info_contact_data.disclosenotifyemail);
-    BOOST_CHECK(cd.states.find_first_of("MojeID contact") != std::string::npos);
-    BOOST_CHECK(cd.state_codes.find_first_of("mojeidContact") != std::string::npos);
+    BOOST_CHECK(std::find(cd.state_codes.begin(), cd.state_codes.end(),"mojeidContact")!= cd.state_codes.end());
     BOOST_CHECK(cd.is_owner == true);
-
-    BOOST_MESSAGE(cd.states);
-    BOOST_MESSAGE(cd.state_codes);
 }
 
 struct get_contact_fixture
@@ -488,8 +482,9 @@ BOOST_FIXTURE_TEST_CASE(get_contact_detail, get_contact_fixture )
     Fred::InfoRegistrarOutput sponsoring_registrar_info = Fred::InfoRegistrarByHandle(test_contact_info.info_contact_data.sponsoring_registrar_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
 
     Registry::DomainBrowserImpl::ContactDetail cd = impl.getContactDetail(user_contact_info.info_contact_data.id,
-            test_contact_info.info_contact_data.id, "CS");
+            test_contact_info.info_contact_data.id);
     const Fred::Contact::PlaceAddress tci_place = test_contact_info.info_contact_data.place.get_value_or_default();
+    const Nullable<Fred::Contact::PlaceAddress> tci_mailing = optional_map_at<Nullable>(test_contact_info.info_contact_data.addresses,Fred::ContactAddressType::MAILING);
 
     BOOST_CHECK(cd.id == test_contact_info.info_contact_data.id);
     BOOST_CHECK(cd.handle == test_contact_info.info_contact_data.handle);
@@ -503,13 +498,10 @@ BOOST_FIXTURE_TEST_CASE(get_contact_detail, get_contact_fixture )
     BOOST_CHECK(cd.authinfopw == "********");
     BOOST_CHECK(cd.name.get_value_or_default() == test_contact_info.info_contact_data.name.get_value_or_default());
     BOOST_CHECK(cd.organization.get_value_or_default() == test_contact_info.info_contact_data.organization.get_value_or_default());
-    BOOST_CHECK(cd.street1.get_value_or_default() == tci_place.street1);
-    BOOST_CHECK(cd.street2.get_value_or_default() == tci_place.street2.get_value_or_default());
-    BOOST_CHECK(cd.street3.get_value_or_default() == tci_place.street3.get_value_or_default());
-    BOOST_CHECK(cd.city.get_value_or_default() == tci_place.city);
-    BOOST_CHECK(cd.stateorprovince.get_value_or_default() == tci_place.stateorprovince.get_value_or_default());
-    BOOST_CHECK(cd.postalcode.get_value_or_default() == tci_place.postalcode);
-    BOOST_CHECK(cd.country.get_value_or_default() == tci_place.country);
+
+    BOOST_CHECK(cd.permanent_address == tci_place);
+    BOOST_CHECK(cd.mailing_address == tci_mailing);
+
     BOOST_CHECK(cd.telephone.get_value_or_default() == test_contact_info.info_contact_data.telephone.get_value_or_default());
     BOOST_CHECK(cd.fax.get_value_or_default() == test_contact_info.info_contact_data.fax.get_value_or_default());
     BOOST_CHECK(cd.email.get_value_or_default() == test_contact_info.info_contact_data.email.get_value_or_default());
@@ -526,12 +518,8 @@ BOOST_FIXTURE_TEST_CASE(get_contact_detail, get_contact_fixture )
     BOOST_CHECK(cd.disclose_flags.ident == test_contact_info.info_contact_data.discloseident);
     BOOST_CHECK(cd.disclose_flags.vat == test_contact_info.info_contact_data.disclosevat);
     BOOST_CHECK(cd.disclose_flags.notify_email == test_contact_info.info_contact_data.disclosenotifyemail);
-    BOOST_CHECK(cd.states.find_first_of("MojeID contact") == std::string::npos);
-    BOOST_CHECK(cd.state_codes.find_first_of("mojeidContact") == std::string::npos);
+    BOOST_CHECK(std::find(cd.state_codes.begin(), cd.state_codes.end(),"mojeidContact") == cd.state_codes.end());
     BOOST_CHECK(cd.is_owner == false);
-
-    BOOST_MESSAGE(cd.states);
-    BOOST_MESSAGE(cd.state_codes);
 }
 
 
@@ -549,7 +537,7 @@ BOOST_FIXTURE_TEST_CASE(get_contact_detail_no_user, get_contact_detail_no_user_f
     {
         Fred::OperationContext ctx;
         Fred::InfoContactOutput test_contact_info = Fred::InfoContactByHandle(test_contact_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
-        Registry::DomainBrowserImpl::ContactDetail cd = impl.getContactDetail(0,test_contact_info.info_contact_data.id, "CS");
+        Registry::DomainBrowserImpl::ContactDetail cd = impl.getContactDetail(0,test_contact_info.info_contact_data.id);
 
         BOOST_ERROR("unreported missing user contact");
     }
@@ -576,7 +564,7 @@ BOOST_FIXTURE_TEST_CASE(get_contact_detail_not_mojeid_user, get_contact_detail_n
         Fred::OperationContext ctx;
         Fred::InfoContactOutput test_contact_info = Fred::InfoContactByHandle(test_contact_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
         Registry::DomainBrowserImpl::ContactDetail cd = impl.getContactDetail(user_contact_info.info_contact_data.id,
-                test_contact_info.info_contact_data.id, "CS");
+                test_contact_info.info_contact_data.id);
         BOOST_ERROR("unreported mojeidContact state");
     }
     catch( const Registry::DomainBrowserImpl::UserNotExists& ex)
@@ -599,7 +587,7 @@ BOOST_FIXTURE_TEST_CASE(get_contact_detail_no_test_contact, get_contact_detail_n
     try
     {
         Fred::OperationContext ctx;
-        Registry::DomainBrowserImpl::ContactDetail d = impl.getContactDetail(user_contact_info.info_contact_data.id,0, "CS");
+        Registry::DomainBrowserImpl::ContactDetail d = impl.getContactDetail(user_contact_info.info_contact_data.id,0);
         BOOST_ERROR("unreported missing test contact");
     }
     catch( const Registry::DomainBrowserImpl::ObjectNotExists& ex)
@@ -726,7 +714,7 @@ BOOST_FIXTURE_TEST_CASE(get_my_domain_detail, get_my_domain_fixture )
     Fred::InfoContactOutput admin_contact_info = Fred::InfoContactByHandle(admin_contact_fixture::test_contact_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
 
     Registry::DomainBrowserImpl::DomainDetail d = impl.getDomainDetail(user_contact_info.info_contact_data.id,
-            my_domain_info.info_domain_data.id, "CS");
+            my_domain_info.info_domain_data.id);
 
     BOOST_CHECK(d.id == my_domain_info.info_domain_data.id);
     BOOST_CHECK(d.fqdn == my_domain_info.info_domain_data.fqdn);
@@ -754,8 +742,7 @@ BOOST_FIXTURE_TEST_CASE(get_my_domain_detail, get_my_domain_fixture )
         ? admin_contact_info.info_contact_data.name.get_value_or_default()
         : admin_contact_info.info_contact_data.organization.get_value_or_default()));
     BOOST_CHECK(d.admins.size() == 1);
-    BOOST_CHECK(d.states.compare("Doména je blokována") == 0);
-    BOOST_CHECK(d.state_codes.compare(Fred::ObjectState::SERVER_BLOCKED) == 0);
+    BOOST_CHECK(std::find(d.state_codes.begin(), d.state_codes.end(),Fred::ObjectState::SERVER_BLOCKED)!= d.state_codes.end());
     BOOST_CHECK(d.is_owner == true);
 }
 
@@ -772,7 +759,7 @@ BOOST_FIXTURE_TEST_CASE(get_domain_detail_no_domain, get_domain_detail_no_domain
     try
     {
         Fred::OperationContext ctx;
-        Registry::DomainBrowserImpl::DomainDetail d = impl.getDomainDetail(user_contact_info.info_contact_data.id,0, "CS");
+        Registry::DomainBrowserImpl::DomainDetail d = impl.getDomainDetail(user_contact_info.info_contact_data.id,0);
         BOOST_ERROR("unreported missing test domain");
     }
     catch( const Registry::DomainBrowserImpl::ObjectNotExists& ex)
@@ -803,7 +790,7 @@ BOOST_FIXTURE_TEST_CASE(get_nsset_detail, get_nsset_fixture )
     Fred::InfoContactOutput admin_contact_info = Fred::InfoContactByHandle(admin_contact_fixture::test_contact_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
 
     Registry::DomainBrowserImpl::NssetDetail n = impl.getNssetDetail(user_contact_info.info_contact_data.id,
-            nsset_info.info_nsset_data.id, "CS");
+            nsset_info.info_nsset_data.id);
 
     BOOST_CHECK(n.id == nsset_info.info_nsset_data.id);
     BOOST_CHECK(n.handle == nsset_info.info_nsset_data.handle);
@@ -832,14 +819,14 @@ BOOST_FIXTURE_TEST_CASE(get_nsset_detail, get_nsset_fixture )
         : admin_contact_info.info_contact_data.organization.get_value_or_default()));
     BOOST_CHECK(n.admins.size() == 1);
 
-    BOOST_CHECK(n.hosts.at(0).fqdn.compare("a.ns.nic.cz") == 0);
-    BOOST_CHECK(n.hosts.at(0).inet_addr.compare("127.0.0.3, 127.1.1.3") == 0);
-    BOOST_CHECK(n.hosts.at(1).fqdn.compare("b.ns.nic.cz") == 0);
-    BOOST_CHECK(n.hosts.at(1).inet_addr.compare("127.0.0.4, 127.1.1.4") == 0);
+    BOOST_CHECK(n.hosts.at(0).get_fqdn().compare("a.ns.nic.cz") == 0);
+    BOOST_CHECK(n.hosts.at(0).get_inet_addr().at(0).to_string().compare("127.0.0.3") == 0);
+    BOOST_CHECK(n.hosts.at(0).get_inet_addr().at(1).to_string().compare("127.1.1.3") == 0);
+    BOOST_CHECK(n.hosts.at(1).get_fqdn().compare("b.ns.nic.cz") == 0);
+    BOOST_CHECK(n.hosts.at(1).get_inet_addr().at(0).to_string().compare("127.0.0.4") == 0);
+    BOOST_CHECK(n.hosts.at(1).get_inet_addr().at(1).to_string().compare("127.1.1.4") == 0);
 
-    BOOST_CHECK(n.states.compare("Není povoleno smazání") == 0);
-    BOOST_CHECK(n.state_codes.compare(Fred::ObjectState::SERVER_DELETE_PROHIBITED) == 0);
-
+    BOOST_CHECK(std::find(n.state_codes.begin(), n.state_codes.end(),Fred::ObjectState::SERVER_DELETE_PROHIBITED)!= n.state_codes.end());
     BOOST_CHECK(n.report_level == 0);
 
     BOOST_CHECK(n.is_owner == false);
@@ -859,7 +846,7 @@ BOOST_FIXTURE_TEST_CASE(get_nsset_detail_no_nsset, get_nsset_detail_no_nsset_fix
     try
     {
         Fred::OperationContext ctx;
-        Registry::DomainBrowserImpl::NssetDetail d = impl.getNssetDetail(user_contact_info.info_contact_data.id,0, "CS");
+        Registry::DomainBrowserImpl::NssetDetail d = impl.getNssetDetail(user_contact_info.info_contact_data.id,0);
         BOOST_ERROR("unreported missing test nsset");
     }
     catch( const Registry::DomainBrowserImpl::ObjectNotExists& ex)
@@ -891,7 +878,7 @@ BOOST_FIXTURE_TEST_CASE(get_keyset_detail, get_keyset_fixture )
     Fred::InfoContactOutput admin_contact_info = Fred::InfoContactByHandle(admin_contact_fixture::test_contact_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
 
     Registry::DomainBrowserImpl::KeysetDetail k = impl.getKeysetDetail(user_contact_info.info_contact_data.id,
-            keyset_info.info_keyset_data.id, "CS");
+            keyset_info.info_keyset_data.id);
 
     BOOST_CHECK(k.id == keyset_info.info_keyset_data.id);
     BOOST_CHECK(k.handle == keyset_info.info_keyset_data.handle);
@@ -926,8 +913,7 @@ BOOST_FIXTURE_TEST_CASE(get_keyset_detail, get_keyset_fixture )
     BOOST_CHECK(k.dnskeys.at(0).alg == 5);
     BOOST_CHECK(k.dnskeys.at(0).key.compare("AwEAAddt2AkLfYGKgiEZB5SmIF8EvrjxNMH6HtxWEA4RJ9Ao6LCWheg8") == 0);
 
-    BOOST_CHECK(k.states.compare("Není povoleno smazání") == 0);
-    BOOST_CHECK(k.state_codes.compare(Fred::ObjectState::SERVER_DELETE_PROHIBITED) == 0);
+    BOOST_CHECK(std::find(k.state_codes.begin(), k.state_codes.end(),Fred::ObjectState::SERVER_DELETE_PROHIBITED)!= k.state_codes.end());
 
     BOOST_CHECK(k.is_owner == false);
 
@@ -946,7 +932,7 @@ BOOST_FIXTURE_TEST_CASE(get_keyset_detail_no_keyset, get_keyset_detail_no_keyset
     try
     {
         Fred::OperationContext ctx;
-        Registry::DomainBrowserImpl::KeysetDetail d = impl.getKeysetDetail(user_contact_info.info_contact_data.id,0, "CS");
+        Registry::DomainBrowserImpl::KeysetDetail d = impl.getKeysetDetail(user_contact_info.info_contact_data.id,0);
         BOOST_ERROR("unreported missing test keyset");
     }
     catch( const Registry::DomainBrowserImpl::ObjectNotExists& ex)
@@ -1192,7 +1178,6 @@ BOOST_FIXTURE_TEST_CASE(set_contact_authinfo, set_contact_authinfo_fixture )
 
     Fred::OperationContext ctx;
     BOOST_CHECK(impl.setContactAuthInfo(
-        user_contact_info.info_contact_data.id,
         user_contact_info.info_contact_data.id,"newauthinfo", 42));
 
     Fred::InfoContactOutput my_contact_info = Fred::InfoContactByHandle(user_contact_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
@@ -1220,7 +1205,6 @@ BOOST_FIXTURE_TEST_CASE(set_validated_contact_authinfo, set_validated_contact_au
 
     Fred::OperationContext ctx;
     BOOST_CHECK(impl.setContactAuthInfo(
-        user_contact_info.info_contact_data.id,
         user_contact_info.info_contact_data.id,"newauthinfo", 0));
 
     Fred::InfoContactOutput my_contact_info = Fred::InfoContactByHandle(user_contact_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
@@ -1241,7 +1225,6 @@ BOOST_FIXTURE_TEST_CASE(set_contact_authinfo_user_not_in_mojeid, set_contact_aut
     {
         Fred::OperationContext ctx;
         impl.setContactAuthInfo(
-            user_contact_info.info_contact_data.id,
             user_contact_info.info_contact_data.id,"newauthinfo", 0);
         BOOST_ERROR("unreported missing user");
     }
@@ -1266,7 +1249,6 @@ BOOST_FIXTURE_TEST_CASE(set_contact_authinfo_user_not_identified, set_contact_au
     {
         Fred::OperationContext ctx;
         impl.setContactAuthInfo(
-            user_contact_info.info_contact_data.id,
             user_contact_info.info_contact_data.id,"newauthinfo", 0);
         BOOST_ERROR("unreported missing user identification");
     }
@@ -1298,7 +1280,6 @@ BOOST_FIXTURE_TEST_CASE(set_contact_authinfo_contact_blocked, set_contact_authin
     {
         Fred::OperationContext ctx;
         impl.setContactAuthInfo(
-            user_contact_info.info_contact_data.id,
             user_contact_info.info_contact_data.id,"newauthinfo", 0);
         BOOST_ERROR("unreported blocked user contact");
     }
@@ -1331,7 +1312,6 @@ BOOST_FIXTURE_TEST_CASE(set_contact_authinfo_the_same, set_contact_authinfo_the_
         Fred::OperationContext ctx;
         BOOST_CHECK(impl.setContactAuthInfo(
             user_contact_info.info_contact_data.id,
-            user_contact_info.info_contact_data.id,
             user_contact_info.info_contact_data.authinfopw, 0) == false);
     }
 }
@@ -1340,35 +1320,6 @@ struct set_contact_authinfo_not_owner_fixture
 : mojeid_user_contact_fixture
 , domain_browser_impl_instance_fixture
 {};
-/**
- * test setContactAuthInfo not owner
- */
-BOOST_FIXTURE_TEST_CASE(set_contact_authinfo_not_owner, set_contact_authinfo_not_owner_fixture)
-{
-    {
-        Fred::OperationContext ctx;
-        Fred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id
-        , Util::set_of<std::string>(Fred::ObjectState::IDENTIFIED_CONTACT)).exec(ctx);
-        Fred::PerformObjectStateRequest(user_contact_info.info_contact_data.id).exec(ctx);
-        ctx.commit_transaction();
-    }
-
-    user_contact_fixture another_contact;
-
-    try
-    {
-        Fred::OperationContext ctx;
-        impl.setContactAuthInfo(
-            user_contact_info.info_contact_data.id,
-            another_contact.user_contact_info.info_contact_data.id,"newauthinfo", 0);
-        BOOST_ERROR("unreported non-owner user contact");
-    }
-    catch( const Registry::DomainBrowserImpl::AccessDenied& ex)
-    {
-        BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
-    }
-}
 
 struct set_contact_authinfo_too_long_fixture
 : mojeid_user_contact_fixture
@@ -1391,7 +1342,6 @@ BOOST_FIXTURE_TEST_CASE(set_contact_authinfo_too_long, set_contact_authinfo_too_
     {
         Fred::OperationContext ctx;
         impl.setContactAuthInfo(
-            user_contact_info.info_contact_data.id,
             user_contact_info.info_contact_data.id,
             "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
             "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
@@ -2166,61 +2116,45 @@ struct get_my_domains_fixture
 BOOST_FIXTURE_TEST_CASE(get_my_domain_list, get_my_domains_fixture )
 {
     Fred::OperationContext ctx;
-    std::vector<std::vector<std::string> > domain_list_out;
-    bool limit_exceeded = impl.getDomainList(user_contact_info.info_contact_data.id, Optional<unsigned long long>(),
-            Optional<unsigned long long>(), Optional<unsigned long long>(),"CS",0,domain_list_out);
+    Registry::DomainBrowserImpl::DomainList dl = impl.getDomainList(user_contact_info.info_contact_data.id, Optional<unsigned long long>(),
+        Optional<unsigned long long>(), Optional<unsigned long long>(),0);
+    std::vector<Registry::DomainBrowserImpl::DomainListData> domain_list_out = dl.dld;
 
-    std::ostringstream list_out;
-    list_out << "domain_list_out: \n";
+    BOOST_CHECK(domain_list_out.at(0).next_state.get_value().state_code == "deleteCandidate");
+    BOOST_CHECK(domain_list_out.at(0).next_state.get_value().state_date == (map_at(domain_info,domain_list_out.at(0).fqdn).info_domain_data.expiration_date + boost::gregorian::days(registration_protection)));
 
+    BOOST_CHECK(std::find(domain_list_out.at(0).state_code.begin(), domain_list_out.at(0).state_code.end(), "expired") != domain_list_out.at(0).state_code.end());
+    BOOST_CHECK(std::find(domain_list_out.at(0).state_code.begin(), domain_list_out.at(0).state_code.end(), "outzone") != domain_list_out.at(0).state_code.end());
+
+    BOOST_CHECK(domain_list_out.at(1).next_state.get_value().state_code == "outzone");
+    BOOST_CHECK(domain_list_out.at(1).next_state.get_value().state_date == (map_at(domain_info,domain_list_out.at(1).fqdn).info_domain_data.expiration_date + boost::gregorian::days(outzone_protection)));
+
+    BOOST_CHECK(std::find(domain_list_out.at(1).state_code.begin(), domain_list_out.at(1).state_code.end(), "expired") != domain_list_out.at(1).state_code.end());
+    BOOST_CHECK(std::find(domain_list_out.at(1).state_code.begin(), domain_list_out.at(1).state_code.end(), "serverBlocked") != domain_list_out.at(1).state_code.end());
+
+    BOOST_CHECK(domain_list_out.at(2).next_state.get_value().state_code == "expired");
+    BOOST_CHECK(domain_list_out.at(2).next_state.get_value().state_date == (map_at(domain_info,domain_list_out.at(2).fqdn).info_domain_data.expiration_date));
+    BOOST_CHECK(domain_list_out.at(2).state_code.empty());
     for(unsigned long long i = 0; i < domain_list_out.size(); ++i)
     {
-        for(unsigned long long j = 0; j < domain_list_out.at(i).size(); ++j)
-        {
-            list_out << " " <<domain_list_out.at(i).at(j);
-        }
+        BOOST_CHECK(domain_list_out.at(i).id == map_at(domain_info,domain_list_out.at(i).fqdn).info_domain_data.id);
+        BOOST_CHECK(domain_list_out.at(i).fqdn == map_at(domain_info,domain_list_out.at(i).fqdn).info_domain_data.fqdn);
 
-        list_out << "\n";
-    }
-    BOOST_MESSAGE(list_out.str());
-    BOOST_MESSAGE("limit_exceeded: " << limit_exceeded);
-
-
-    BOOST_CHECK(domain_list_out.at(0).at(3) == "deleteCandidate");
-    BOOST_CHECK(boost::gregorian::from_simple_string(domain_list_out.at(0).at(4)) == (map_at(domain_info,domain_list_out.at(0).at(1)).info_domain_data.expiration_date + boost::gregorian::days(registration_protection)));
-
-    BOOST_CHECK(domain_list_out.at(0).at(9).find("Doména je po expiraci") != std::string::npos);
-    BOOST_CHECK(domain_list_out.at(0).at(9).find("Doména není generována do zóny") != std::string::npos);
-
-    BOOST_CHECK(domain_list_out.at(1).at(3) == "outzone");
-    BOOST_CHECK(boost::gregorian::from_simple_string(domain_list_out.at(1).at(4)) == (map_at(domain_info,domain_list_out.at(1).at(1)).info_domain_data.expiration_date + boost::gregorian::days(outzone_protection)));
-
-    BOOST_CHECK(domain_list_out.at(1).at(9).find("Doména je po expiraci") != std::string::npos);
-    BOOST_CHECK(domain_list_out.at(1).at(9).find("Doména je blokována") != std::string::npos);
-
-    BOOST_CHECK(domain_list_out.at(2).at(3) == "expired");
-    BOOST_CHECK(boost::gregorian::from_simple_string(domain_list_out.at(2).at(4)) == (map_at(domain_info,domain_list_out.at(2).at(1)).info_domain_data.expiration_date));
-    BOOST_CHECK(domain_list_out.at(2).at(9) == "");
-    for(unsigned long long i = 0; i < domain_list_out.size(); ++i)
-    {
-        BOOST_CHECK(domain_list_out.at(i).at(0) == boost::lexical_cast<std::string>(map_at(domain_info,domain_list_out.at(i).at(1)).info_domain_data.id));
-        BOOST_CHECK(domain_list_out.at(i).at(1) == map_at(domain_info,domain_list_out.at(i).at(1)).info_domain_data.fqdn);
-
-        BOOST_CHECK(domain_list_out.at(i).at(5) == "t");//have keyset
-        BOOST_CHECK(domain_list_out.at(i).at(6) == "holder");//role
-        BOOST_CHECK(domain_list_out.at(i).at(7) == test_registrar_handle);//registrar handle
-        BOOST_CHECK(domain_list_out.at(i).at(8) == boost::algorithm::replace_first_copy(test_registrar_handle, "-HANDLE", " NAME"));//registrar name
+        BOOST_CHECK(domain_list_out.at(i).have_keyset);
+        BOOST_CHECK(domain_list_out.at(i).user_role == "holder");
+        BOOST_CHECK(domain_list_out.at(i).registrar_handle == test_registrar_handle);
+        BOOST_CHECK(domain_list_out.at(i).registrar_name == boost::algorithm::replace_first_copy(test_registrar_handle, "-HANDLE", " NAME"));
 
         if(i%2)
         {
-            BOOST_MESSAGE(domain_list_out.at(i).at(10));
-            BOOST_CHECK(domain_list_out.at(i).at(10) == "t");
-            if(i > 2) BOOST_CHECK(domain_list_out.at(i).at(9) == "Doména je blokována");
+            //BOOST_MESSAGE(domain_list_out.at(i).is_server_blocked ? "is_server_blocked: true" : "is_server_blocked: false");
+            BOOST_CHECK(domain_list_out.at(i).is_server_blocked);
+            if(i > 2) BOOST_CHECK(std::find(domain_list_out.at(i).state_code.begin(), domain_list_out.at(i).state_code.end(), "serverBlocked") != domain_list_out.at(i).state_code.end());
         }
         else
         {
-            BOOST_MESSAGE(domain_list_out.at(i).at(10));
-            BOOST_CHECK(domain_list_out.at(i).at(10) == "f");
+            //BOOST_MESSAGE(domain_list_out.at(i).is_server_blocked ? "is_server_blocked: true" : "is_server_blocked: false");
+            BOOST_CHECK(domain_list_out.at(i).is_server_blocked == false);
         }
     }
 }
@@ -2228,63 +2162,47 @@ BOOST_FIXTURE_TEST_CASE(get_my_domain_list, get_my_domains_fixture )
 BOOST_FIXTURE_TEST_CASE(get_my_domain_list_by_contact, get_my_domains_fixture )
 {
     Fred::OperationContext ctx;
-    std::vector<std::vector<std::string> > domain_list_out;
-    bool limit_exceeded = impl.getDomainList(user_contact_info.info_contact_data.id,
+    Registry::DomainBrowserImpl::DomainList dl =  impl.getDomainList(user_contact_info.info_contact_data.id,
             Optional<unsigned long long>(admin_contact_fixture::test_contact_info.info_contact_data.id),
             Optional<unsigned long long>(),
-            Optional<unsigned long long>(),"CS",0,domain_list_out);
+            Optional<unsigned long long>(),0);
+    std::vector<Registry::DomainBrowserImpl::DomainListData> domain_list_out = dl.dld;
 
-    std::ostringstream list_out;
-    list_out << "domain_list_out: \n";
+    BOOST_CHECK(domain_list_out.at(0).next_state.get_value().state_code == "deleteCandidate");
+    BOOST_CHECK(domain_list_out.at(0).next_state.get_value().state_date == (map_at(domain_info,domain_list_out.at(0).fqdn).info_domain_data.expiration_date + boost::gregorian::days(registration_protection)));
 
+    BOOST_CHECK(std::find(domain_list_out.at(0).state_code.begin(), domain_list_out.at(0).state_code.end(), "expired") != domain_list_out.at(0).state_code.end());
+    BOOST_CHECK(std::find(domain_list_out.at(0).state_code.begin(), domain_list_out.at(0).state_code.end(), "outzone") != domain_list_out.at(0).state_code.end());
+
+    BOOST_CHECK(domain_list_out.at(1).next_state.get_value().state_code == "outzone");
+    BOOST_CHECK(domain_list_out.at(1).next_state.get_value().state_date == (map_at(domain_info,domain_list_out.at(1).fqdn).info_domain_data.expiration_date + boost::gregorian::days(outzone_protection)));
+
+    BOOST_CHECK(std::find(domain_list_out.at(1).state_code.begin(), domain_list_out.at(1).state_code.end(), "expired") != domain_list_out.at(1).state_code.end());
+    BOOST_CHECK(std::find(domain_list_out.at(1).state_code.begin(), domain_list_out.at(1).state_code.end(), "serverBlocked") != domain_list_out.at(1).state_code.end());
+
+    BOOST_CHECK(domain_list_out.at(2).next_state.get_value().state_code == "expired");
+    BOOST_CHECK(domain_list_out.at(2).next_state.get_value().state_date == (map_at(domain_info,domain_list_out.at(2).fqdn).info_domain_data.expiration_date));
+    BOOST_CHECK(domain_list_out.at(2).state_code.empty());
     for(unsigned long long i = 0; i < domain_list_out.size(); ++i)
     {
-        for(unsigned long long j = 0; j < domain_list_out.at(i).size(); ++j)
-        {
-            list_out << " " <<domain_list_out.at(i).at(j);
-        }
+        BOOST_CHECK(domain_list_out.at(i).id == map_at(domain_info,domain_list_out.at(i).fqdn).info_domain_data.id);
+        BOOST_CHECK(domain_list_out.at(i).fqdn == map_at(domain_info,domain_list_out.at(i).fqdn).info_domain_data.fqdn);
 
-        list_out << "\n";
-    }
-    BOOST_MESSAGE(list_out.str());
-    BOOST_MESSAGE("limit_exceeded: " << limit_exceeded);
-
-
-    BOOST_CHECK(domain_list_out.at(0).at(3) == "deleteCandidate");
-    BOOST_CHECK(boost::gregorian::from_simple_string(domain_list_out.at(0).at(4)) == (map_at(domain_info,domain_list_out.at(0).at(1)).info_domain_data.expiration_date + boost::gregorian::days(registration_protection)));
-
-    BOOST_CHECK(domain_list_out.at(0).at(9).find("Doména je po expiraci") != std::string::npos);
-    BOOST_CHECK(domain_list_out.at(0).at(9).find("Doména není generována do zóny") != std::string::npos);
-
-    BOOST_CHECK(domain_list_out.at(1).at(3) == "outzone");
-    BOOST_CHECK(boost::gregorian::from_simple_string(domain_list_out.at(1).at(4)) == (map_at(domain_info,domain_list_out.at(1).at(1)).info_domain_data.expiration_date + boost::gregorian::days(outzone_protection)));
-
-    BOOST_CHECK(domain_list_out.at(1).at(9).find("Doména je po expiraci") != std::string::npos);
-    BOOST_CHECK(domain_list_out.at(1).at(9).find("Doména je blokována") != std::string::npos);
-
-    BOOST_CHECK(domain_list_out.at(2).at(3) == "expired");
-    BOOST_CHECK(boost::gregorian::from_simple_string(domain_list_out.at(2).at(4)) == (map_at(domain_info,domain_list_out.at(2).at(1)).info_domain_data.expiration_date));
-    BOOST_CHECK(domain_list_out.at(2).at(9) == "");
-    for(unsigned long long i = 0; i < domain_list_out.size(); ++i)
-    {
-        BOOST_CHECK(domain_list_out.at(i).at(0) == boost::lexical_cast<std::string>(map_at(domain_info,domain_list_out.at(i).at(1)).info_domain_data.id));
-        BOOST_CHECK(domain_list_out.at(i).at(1) == map_at(domain_info,domain_list_out.at(i).at(1)).info_domain_data.fqdn);
-
-        BOOST_CHECK(domain_list_out.at(i).at(5) == "t");//have keyset
-        BOOST_CHECK(domain_list_out.at(i).at(6) == "admin");//role
-        BOOST_CHECK(domain_list_out.at(i).at(7) == test_registrar_handle);//registrar handle
-        BOOST_CHECK(domain_list_out.at(i).at(8) == boost::algorithm::replace_first_copy(test_registrar_handle, "-HANDLE", " NAME"));//registrar name
+        BOOST_CHECK(domain_list_out.at(i).have_keyset);
+        BOOST_CHECK(domain_list_out.at(i).user_role == "admin");
+        BOOST_CHECK(domain_list_out.at(i).registrar_handle == test_registrar_handle);
+        BOOST_CHECK(domain_list_out.at(i).registrar_name == boost::algorithm::replace_first_copy(test_registrar_handle, "-HANDLE", " NAME"));
 
         if(i%2)
         {
-            BOOST_MESSAGE(domain_list_out.at(i).at(10));
-            BOOST_CHECK(domain_list_out.at(i).at(10) == "t");
-            if(i > 2) BOOST_CHECK(domain_list_out.at(i).at(9) == "Doména je blokována");
+            //BOOST_MESSAGE(domain_list_out.at(i).is_server_blocked ? "is_server_blocked: true" : "is_server_blocked: false");
+            BOOST_CHECK(domain_list_out.at(i).is_server_blocked);
+            if(i > 2) BOOST_CHECK(std::find(domain_list_out.at(i).state_code.begin(), domain_list_out.at(i).state_code.end(), "serverBlocked") != domain_list_out.at(i).state_code.end());
         }
         else
         {
-            BOOST_MESSAGE(domain_list_out.at(i).at(10));
-            BOOST_CHECK(domain_list_out.at(i).at(10) == "f");
+            //BOOST_MESSAGE(domain_list_out.at(i).is_server_blocked ? "is_server_blocked: true" : "is_server_blocked: false");
+            BOOST_CHECK(domain_list_out.at(i).is_server_blocked == false);
         }
     }
 }
@@ -2300,63 +2218,47 @@ BOOST_FIXTURE_TEST_CASE(get_my_domain_list_by_nsset, get_my_domains_fixture )
     }
 
     Fred::OperationContext ctx;
-    std::vector<std::vector<std::string> > domain_list_out;
-    bool limit_exceeded = impl.getDomainList(user_contact_info.info_contact_data.id,
+    Registry::DomainBrowserImpl::DomainList dl =  impl.getDomainList(user_contact_info.info_contact_data.id,
             Optional<unsigned long long>(),
             Optional<unsigned long long>(nsset_info.info_nsset_data.id),
-            Optional<unsigned long long>(),"CS",0,domain_list_out);
+            Optional<unsigned long long>(),0);
+    std::vector<Registry::DomainBrowserImpl::DomainListData> domain_list_out = dl.dld;
 
-    std::ostringstream list_out;
-    list_out << "domain_list_out: \n";
+    BOOST_CHECK(domain_list_out.at(0).next_state.get_value().state_code == "deleteCandidate");
+    BOOST_CHECK(domain_list_out.at(0).next_state.get_value().state_date == (map_at(domain_info,domain_list_out.at(0).fqdn).info_domain_data.expiration_date + boost::gregorian::days(registration_protection)));
 
+    BOOST_CHECK(std::find(domain_list_out.at(0).state_code.begin(), domain_list_out.at(0).state_code.end(), "expired") != domain_list_out.at(0).state_code.end());
+    BOOST_CHECK(std::find(domain_list_out.at(0).state_code.begin(), domain_list_out.at(0).state_code.end(), "outzone") != domain_list_out.at(0).state_code.end());
+
+    BOOST_CHECK(domain_list_out.at(1).next_state.get_value().state_code == "outzone");
+    BOOST_CHECK(domain_list_out.at(1).next_state.get_value().state_date == (map_at(domain_info,domain_list_out.at(1).fqdn).info_domain_data.expiration_date + boost::gregorian::days(outzone_protection)));
+
+    BOOST_CHECK(std::find(domain_list_out.at(1).state_code.begin(), domain_list_out.at(1).state_code.end(), "expired") != domain_list_out.at(1).state_code.end());
+    BOOST_CHECK(std::find(domain_list_out.at(1).state_code.begin(), domain_list_out.at(1).state_code.end(), "serverBlocked") != domain_list_out.at(1).state_code.end());
+
+    BOOST_CHECK(domain_list_out.at(2).next_state.get_value().state_code == "expired");
+    BOOST_CHECK(domain_list_out.at(2).next_state.get_value().state_date == (map_at(domain_info,domain_list_out.at(2).fqdn).info_domain_data.expiration_date));
+    BOOST_CHECK(domain_list_out.at(2).state_code.empty());
     for(unsigned long long i = 0; i < domain_list_out.size(); ++i)
     {
-        for(unsigned long long j = 0; j < domain_list_out.at(i).size(); ++j)
-        {
-            list_out << " " <<domain_list_out.at(i).at(j);
-        }
+        BOOST_CHECK(domain_list_out.at(i).id == map_at(domain_info,domain_list_out.at(i).fqdn).info_domain_data.id);
+        BOOST_CHECK(domain_list_out.at(i).fqdn == map_at(domain_info,domain_list_out.at(i).fqdn).info_domain_data.fqdn);
 
-        list_out << "\n";
-    }
-    BOOST_MESSAGE(list_out.str());
-    BOOST_MESSAGE("limit_exceeded: " << limit_exceeded);
-
-
-    BOOST_CHECK(domain_list_out.at(0).at(3) == "deleteCandidate");
-    BOOST_CHECK(boost::gregorian::from_simple_string(domain_list_out.at(0).at(4)) == (map_at(domain_info,domain_list_out.at(0).at(1)).info_domain_data.expiration_date + boost::gregorian::days(registration_protection)));
-
-    BOOST_CHECK(domain_list_out.at(0).at(9).find("Doména je po expiraci") != std::string::npos);
-    BOOST_CHECK(domain_list_out.at(0).at(9).find("Doména není generována do zóny") != std::string::npos);
-
-    BOOST_CHECK(domain_list_out.at(1).at(3) == "outzone");
-    BOOST_CHECK(boost::gregorian::from_simple_string(domain_list_out.at(1).at(4)) == (map_at(domain_info,domain_list_out.at(1).at(1)).info_domain_data.expiration_date + boost::gregorian::days(outzone_protection)));
-
-    BOOST_CHECK(domain_list_out.at(1).at(9).find("Doména je po expiraci") != std::string::npos);
-    BOOST_CHECK(domain_list_out.at(1).at(9).find("Doména je blokována") != std::string::npos);
-
-    BOOST_CHECK(domain_list_out.at(2).at(3) == "expired");
-    BOOST_CHECK(boost::gregorian::from_simple_string(domain_list_out.at(2).at(4)) == (map_at(domain_info,domain_list_out.at(2).at(1)).info_domain_data.expiration_date));
-    BOOST_CHECK(domain_list_out.at(2).at(9) == "");
-    for(unsigned long long i = 0; i < domain_list_out.size(); ++i)
-    {
-        BOOST_CHECK(domain_list_out.at(i).at(0) == boost::lexical_cast<std::string>(map_at(domain_info,domain_list_out.at(i).at(1)).info_domain_data.id));
-        BOOST_CHECK(domain_list_out.at(i).at(1) == map_at(domain_info,domain_list_out.at(i).at(1)).info_domain_data.fqdn);
-
-        BOOST_CHECK(domain_list_out.at(i).at(5) == "t");//have keyset
-        BOOST_CHECK(domain_list_out.at(i).at(6) == "holder");//role
-        BOOST_CHECK(domain_list_out.at(i).at(7) == test_registrar_handle);//registrar handle
-        BOOST_CHECK(domain_list_out.at(i).at(8) == boost::algorithm::replace_first_copy(test_registrar_handle, "-HANDLE", " NAME"));//registrar name
+        BOOST_CHECK(domain_list_out.at(i).have_keyset);
+        BOOST_CHECK(domain_list_out.at(i).user_role == "holder");
+        BOOST_CHECK(domain_list_out.at(i).registrar_handle == test_registrar_handle);
+        BOOST_CHECK(domain_list_out.at(i).registrar_name == boost::algorithm::replace_first_copy(test_registrar_handle, "-HANDLE", " NAME"));
 
         if(i%2)
         {
-            BOOST_MESSAGE(domain_list_out.at(i).at(10));
-            BOOST_CHECK(domain_list_out.at(i).at(10) == "t");
-            if(i > 2) BOOST_CHECK(domain_list_out.at(i).at(9) == "Doména je blokována");
+            //BOOST_MESSAGE(domain_list_out.at(i).is_server_blocked ? "is_server_blocked: true" : "is_server_blocked: false");
+            BOOST_CHECK(domain_list_out.at(i).is_server_blocked);
+            if(i > 2) BOOST_CHECK(std::find(domain_list_out.at(i).state_code.begin(), domain_list_out.at(i).state_code.end(), "serverBlocked") != domain_list_out.at(i).state_code.end());
         }
         else
         {
-            BOOST_MESSAGE(domain_list_out.at(i).at(10));
-            BOOST_CHECK(domain_list_out.at(i).at(10) == "f");
+            //BOOST_MESSAGE(domain_list_out.at(i).is_server_blocked ? "is_server_blocked: true" : "is_server_blocked: false");
+            BOOST_CHECK(domain_list_out.at(i).is_server_blocked == false);
         }
     }
 }
@@ -2371,62 +2273,47 @@ BOOST_FIXTURE_TEST_CASE(get_my_domain_list_by_keyset, get_my_domains_fixture )
     }
 
     Fred::OperationContext ctx;
-    std::vector<std::vector<std::string> > domain_list_out;
-    bool limit_exceeded = impl.getDomainList(user_contact_info.info_contact_data.id,
+    Registry::DomainBrowserImpl::DomainList dl = impl.getDomainList(user_contact_info.info_contact_data.id,
             Optional<unsigned long long>(),
             Optional<unsigned long long>(),
-            Optional<unsigned long long>(keyset_info.info_keyset_data.id),"CS",0,domain_list_out);
+            Optional<unsigned long long>(keyset_info.info_keyset_data.id),0);
+    std::vector<Registry::DomainBrowserImpl::DomainListData> domain_list_out = dl.dld;
 
-    std::ostringstream list_out;
-    list_out << "domain_list_out: \n";
+    BOOST_CHECK(domain_list_out.at(0).next_state.get_value().state_code == "deleteCandidate");
+    BOOST_CHECK(domain_list_out.at(0).next_state.get_value().state_date == (map_at(domain_info,domain_list_out.at(0).fqdn).info_domain_data.expiration_date + boost::gregorian::days(registration_protection)));
 
+    BOOST_CHECK(std::find(domain_list_out.at(0).state_code.begin(), domain_list_out.at(0).state_code.end(), "expired") != domain_list_out.at(0).state_code.end());
+    BOOST_CHECK(std::find(domain_list_out.at(0).state_code.begin(), domain_list_out.at(0).state_code.end(), "outzone") != domain_list_out.at(0).state_code.end());
+
+    BOOST_CHECK(domain_list_out.at(1).next_state.get_value().state_code == "outzone");
+    BOOST_CHECK(domain_list_out.at(1).next_state.get_value().state_date == (map_at(domain_info,domain_list_out.at(1).fqdn).info_domain_data.expiration_date + boost::gregorian::days(outzone_protection)));
+
+    BOOST_CHECK(std::find(domain_list_out.at(1).state_code.begin(), domain_list_out.at(1).state_code.end(), "expired") != domain_list_out.at(1).state_code.end());
+    BOOST_CHECK(std::find(domain_list_out.at(1).state_code.begin(), domain_list_out.at(1).state_code.end(), "serverBlocked") != domain_list_out.at(1).state_code.end());
+
+    BOOST_CHECK(domain_list_out.at(2).next_state.get_value().state_code == "expired");
+    BOOST_CHECK(domain_list_out.at(2).next_state.get_value().state_date == (map_at(domain_info,domain_list_out.at(2).fqdn).info_domain_data.expiration_date));
+    BOOST_CHECK(domain_list_out.at(2).state_code.empty());
     for(unsigned long long i = 0; i < domain_list_out.size(); ++i)
     {
-        for(unsigned long long j = 0; j < domain_list_out.at(i).size(); ++j)
-        {
-            list_out << " " <<domain_list_out.at(i).at(j);
-        }
+        BOOST_CHECK(domain_list_out.at(i).id == map_at(domain_info,domain_list_out.at(i).fqdn).info_domain_data.id);
+        BOOST_CHECK(domain_list_out.at(i).fqdn == map_at(domain_info,domain_list_out.at(i).fqdn).info_domain_data.fqdn);
 
-        list_out << "\n";
-    }
-    BOOST_MESSAGE(list_out.str());
-    BOOST_MESSAGE("limit_exceeded: " << limit_exceeded);
-
-    BOOST_CHECK(domain_list_out.at(0).at(3) == "deleteCandidate");
-    BOOST_CHECK(boost::gregorian::from_simple_string(domain_list_out.at(0).at(4)) == (map_at(domain_info,domain_list_out.at(0).at(1)).info_domain_data.expiration_date + boost::gregorian::days(registration_protection)));
-
-    BOOST_CHECK(domain_list_out.at(0).at(9).find("Doména je po expiraci") != std::string::npos);
-    BOOST_CHECK(domain_list_out.at(0).at(9).find("Doména není generována do zóny") != std::string::npos);
-
-    BOOST_CHECK(domain_list_out.at(1).at(3) == "outzone");
-    BOOST_CHECK(boost::gregorian::from_simple_string(domain_list_out.at(1).at(4)) == (map_at(domain_info,domain_list_out.at(1).at(1)).info_domain_data.expiration_date + boost::gregorian::days(outzone_protection)));
-
-    BOOST_CHECK(domain_list_out.at(1).at(9).find("Doména je po expiraci") != std::string::npos);
-    BOOST_CHECK(domain_list_out.at(1).at(9).find("Doména je blokována") != std::string::npos);
-
-    BOOST_CHECK(domain_list_out.at(2).at(3) == "expired");
-    BOOST_CHECK(boost::gregorian::from_simple_string(domain_list_out.at(2).at(4)) == (map_at(domain_info,domain_list_out.at(2).at(1)).info_domain_data.expiration_date));
-    BOOST_CHECK(domain_list_out.at(2).at(9) == "");
-    for(unsigned long long i = 0; i < domain_list_out.size(); ++i)
-    {
-        BOOST_CHECK(domain_list_out.at(i).at(0) == boost::lexical_cast<std::string>(map_at(domain_info,domain_list_out.at(i).at(1)).info_domain_data.id));
-        BOOST_CHECK(domain_list_out.at(i).at(1) == map_at(domain_info,domain_list_out.at(i).at(1)).info_domain_data.fqdn);
-
-        BOOST_CHECK(domain_list_out.at(i).at(5) == "t");//have keyset
-        BOOST_CHECK(domain_list_out.at(i).at(6) == "holder");//role
-        BOOST_CHECK(domain_list_out.at(i).at(7) == test_registrar_handle);//registrar handle
-        BOOST_CHECK(domain_list_out.at(i).at(8) == boost::algorithm::replace_first_copy(test_registrar_handle, "-HANDLE", " NAME"));//registrar name
+        BOOST_CHECK(domain_list_out.at(i).have_keyset);
+        BOOST_CHECK(domain_list_out.at(i).user_role == "holder");
+        BOOST_CHECK(domain_list_out.at(i).registrar_handle == test_registrar_handle);
+        BOOST_CHECK(domain_list_out.at(i).registrar_name == boost::algorithm::replace_first_copy(test_registrar_handle, "-HANDLE", " NAME"));
 
         if(i%2)
         {
-            BOOST_MESSAGE(domain_list_out.at(i).at(10));
-            BOOST_CHECK(domain_list_out.at(i).at(10) == "t");
-            if(i > 2) BOOST_CHECK(domain_list_out.at(i).at(9) == "Doména je blokována");
+            //BOOST_MESSAGE(domain_list_out.at(i).is_server_blocked ? "is_server_blocked: true" : "is_server_blocked: false");
+            BOOST_CHECK(domain_list_out.at(i).is_server_blocked);
+            if(i > 2) BOOST_CHECK(std::find(domain_list_out.at(i).state_code.begin(), domain_list_out.at(i).state_code.end(), "serverBlocked") != domain_list_out.at(i).state_code.end());
         }
         else
         {
-            BOOST_MESSAGE(domain_list_out.at(i).at(10));
-            BOOST_CHECK(domain_list_out.at(i).at(10) == "f");
+            //BOOST_MESSAGE(domain_list_out.at(i).is_server_blocked ? "is_server_blocked: true" : "is_server_blocked: false");
+            BOOST_CHECK(domain_list_out.at(i).is_server_blocked == false);
         }
     }
 }
@@ -2444,11 +2331,10 @@ BOOST_FIXTURE_TEST_CASE(get_domain_list_user_not_in_mojeid, get_domain_list_user
     try
     {
         Fred::OperationContext ctx;
-        std::vector<std::vector<std::string> > domain_list_out;
         impl.getDomainList(user_contact_info.info_contact_data.id,
             Optional<unsigned long long>(),
             Optional<unsigned long long>(),Optional<unsigned long long>()
-            ,"CS",0,domain_list_out);
+            ,0);
 
         BOOST_ERROR("unreported missing user");
     }
@@ -2467,11 +2353,11 @@ BOOST_FIXTURE_TEST_CASE(get_domain_list_for_nsset_user_not_nsset_admin, get_my_d
     try
     {
         Fred::OperationContext ctx;
-        std::vector<std::vector<std::string> > domain_list_out;
+        std::vector<Registry::DomainBrowserImpl::DomainListData> domain_list_out;
         impl.getDomainList(user_contact_info.info_contact_data.id,
             Optional<unsigned long long>(),
             Optional<unsigned long long>(nsset_info.info_nsset_data.id),
-            Optional<unsigned long long>(),"CS",0,domain_list_out);
+            Optional<unsigned long long>(),0);
 
         BOOST_ERROR("unreported missing nsset admin contact");
     }
@@ -2490,11 +2376,11 @@ BOOST_FIXTURE_TEST_CASE(get_domain_list_for_keyset_user_not_keyset_admin, get_my
     try
     {
         Fred::OperationContext ctx;
-        std::vector<std::vector<std::string> > domain_list_out;
+        std::vector<Registry::DomainBrowserImpl::DomainListData> domain_list_out;
         impl.getDomainList(user_contact_info.info_contact_data.id,
             Optional<unsigned long long>(),
             Optional<unsigned long long>(),
-            Optional<unsigned long long>(keyset_info.info_keyset_data.id),"CS",0,domain_list_out);
+            Optional<unsigned long long>(keyset_info.info_keyset_data.id),0);
 
         BOOST_ERROR("unreported missing keyset admin contact");
     }
@@ -2513,11 +2399,11 @@ BOOST_FIXTURE_TEST_CASE(get_domain_list_for_not_existing_contact, get_my_domains
     try
     {
         Fred::OperationContext ctx;
-        std::vector<std::vector<std::string> > domain_list_out;
+        std::vector<Registry::DomainBrowserImpl::DomainListData> domain_list_out;
         impl.getDomainList(user_contact_info.info_contact_data.id,
             Optional<unsigned long long>(0),
             Optional<unsigned long long>(),
-            Optional<unsigned long long>(),"CS",0,domain_list_out);
+            Optional<unsigned long long>(),0);
 
         BOOST_ERROR("unreported missing contact");
     }
@@ -2590,43 +2476,25 @@ struct get_my_nssets_fixture
 BOOST_FIXTURE_TEST_CASE(get_my_nsset_list, get_my_nssets_fixture )
 {
     Fred::OperationContext ctx;
-    std::vector<std::vector<std::string> > nsset_list_out;
-    bool limit_exceeded = impl.getNssetList(user_contact_info.info_contact_data.id, Optional<unsigned long long>(),
-        "CS",0,nsset_list_out);
-
-    std::ostringstream list_out;
-    list_out << "nsset_list_out: \n";
+    Registry::DomainBrowserImpl::NssetList nl = impl.getNssetList(user_contact_info.info_contact_data.id, Optional<unsigned long long>(),0);
+    std::vector<Registry::DomainBrowserImpl::NssetListData> nsset_list_out = nl.nld;
 
     for(unsigned long long i = 0; i < nsset_list_out.size(); ++i)
     {
-        for(unsigned long long j = 0; j < nsset_list_out.at(i).size(); ++j)
-        {
-            list_out << " " <<nsset_list_out.at(i).at(j);
-        }
+        BOOST_CHECK(nsset_list_out.at(i).id == map_at(nsset_info,nsset_list_out.at(i).handle).info_nsset_data.id);
+        BOOST_CHECK(nsset_list_out.at(i).handle == map_at(nsset_info,nsset_list_out.at(i).handle).info_nsset_data.handle);
 
-        list_out << "\n";
-    }
-    BOOST_MESSAGE(list_out.str());
-    BOOST_MESSAGE("limit_exceeded: " << limit_exceeded);
-
-    for(unsigned long long i = 0; i < nsset_list_out.size(); ++i)
-    {
-        BOOST_CHECK(nsset_list_out.at(i).at(0) == boost::lexical_cast<std::string>(map_at(nsset_info,nsset_list_out.at(i).at(1)).info_nsset_data.id));
-        BOOST_CHECK(nsset_list_out.at(i).at(1) == map_at(nsset_info,nsset_list_out.at(i).at(1)).info_nsset_data.handle);
-
-        BOOST_CHECK(nsset_list_out.at(i).at(3) == test_registrar_handle);//registrar handle
-        BOOST_CHECK(nsset_list_out.at(i).at(4) == boost::algorithm::replace_first_copy(test_registrar_handle, "-HANDLE", " NAME"));//registrar name
+        BOOST_CHECK(nsset_list_out.at(i).registrar_handle == test_registrar_handle);//registrar handle
+        BOOST_CHECK(nsset_list_out.at(i).registrar_name == boost::algorithm::replace_first_copy(test_registrar_handle, "-HANDLE", " NAME"));//registrar name
 
         if(i%2)
         {
-            BOOST_MESSAGE(nsset_list_out.at(i).at(7));
-            BOOST_CHECK(nsset_list_out.at(i).at(7) == "t");
-            if(i > 2) BOOST_CHECK(nsset_list_out.at(i).at(6) == "Doména je blokována");
+            BOOST_CHECK(nsset_list_out.at(i).is_server_blocked);
+            if(i > 2) BOOST_CHECK(std::find(nsset_list_out.at(i).state_code.begin(), nsset_list_out.at(i).state_code.end(), "serverBlocked") != nsset_list_out.at(i).state_code.end());
         }
         else
         {
-            BOOST_MESSAGE(nsset_list_out.at(i).at(7));
-            BOOST_CHECK(nsset_list_out.at(i).at(7) == "f");
+            BOOST_CHECK(nsset_list_out.at(i).is_server_blocked == false);
         }
     }
 }
@@ -2634,44 +2502,25 @@ BOOST_FIXTURE_TEST_CASE(get_my_nsset_list, get_my_nssets_fixture )
 BOOST_FIXTURE_TEST_CASE(get_nsset_list_by_contact, get_my_nssets_fixture )
 {
     Fred::OperationContext ctx;
-    std::vector<std::vector<std::string> > nsset_list_out;
-    bool limit_exceeded = impl.getNssetList(user_contact_info.info_contact_data.id,
-        Optional<unsigned long long>(admin_contact_fixture::test_contact_info.info_contact_data.id),
-        "CS",0,nsset_list_out);
-
-    std::ostringstream list_out;
-    list_out << "nsset_list_out: \n";
-
+    Registry::DomainBrowserImpl::NssetList nl = impl.getNssetList(user_contact_info.info_contact_data.id,
+        Optional<unsigned long long>(admin_contact_fixture::test_contact_info.info_contact_data.id), 0);
+    std::vector<Registry::DomainBrowserImpl::NssetListData> nsset_list_out = nl.nld;
     for(unsigned long long i = 0; i < nsset_list_out.size(); ++i)
     {
-        for(unsigned long long j = 0; j < nsset_list_out.at(i).size(); ++j)
-        {
-            list_out << " " <<nsset_list_out.at(i).at(j);
-        }
+        BOOST_CHECK(nsset_list_out.at(i).id == map_at(nsset_info,nsset_list_out.at(i).handle).info_nsset_data.id);
+        BOOST_CHECK(nsset_list_out.at(i).handle == map_at(nsset_info,nsset_list_out.at(i).handle).info_nsset_data.handle);
 
-        list_out << "\n";
-    }
-    BOOST_MESSAGE(list_out.str());
-    BOOST_MESSAGE("limit_exceeded: " << limit_exceeded);
-
-    for(unsigned long long i = 0; i < nsset_list_out.size(); ++i)
-    {
-        BOOST_CHECK(nsset_list_out.at(i).at(0) == boost::lexical_cast<std::string>(map_at(nsset_info,nsset_list_out.at(i).at(1)).info_nsset_data.id));
-        BOOST_CHECK(nsset_list_out.at(i).at(1) == map_at(nsset_info,nsset_list_out.at(i).at(1)).info_nsset_data.handle);
-
-        BOOST_CHECK(nsset_list_out.at(i).at(3) == test_registrar_handle);//registrar handle
-        BOOST_CHECK(nsset_list_out.at(i).at(4) == boost::algorithm::replace_first_copy(test_registrar_handle, "-HANDLE", " NAME"));//registrar name
+        BOOST_CHECK(nsset_list_out.at(i).registrar_handle == test_registrar_handle);//registrar handle
+        BOOST_CHECK(nsset_list_out.at(i).registrar_name == boost::algorithm::replace_first_copy(test_registrar_handle, "-HANDLE", " NAME"));//registrar name
 
         if(i%2)
         {
-            BOOST_MESSAGE(nsset_list_out.at(i).at(7));
-            BOOST_CHECK(nsset_list_out.at(i).at(7) == "t");
-            if(i > 2) BOOST_CHECK(nsset_list_out.at(i).at(6) == "Doména je blokována");
+            BOOST_CHECK(nsset_list_out.at(i).is_server_blocked);
+            if(i > 2) BOOST_CHECK(std::find(nsset_list_out.at(i).state_code.begin(), nsset_list_out.at(i).state_code.end(), "serverBlocked") != nsset_list_out.at(i).state_code.end());
         }
         else
         {
-            BOOST_MESSAGE(nsset_list_out.at(i).at(7));
-            BOOST_CHECK(nsset_list_out.at(i).at(7) == "f");
+            BOOST_CHECK(nsset_list_out.at(i).is_server_blocked == false);
         }
     }
 }
@@ -2684,11 +2533,8 @@ BOOST_FIXTURE_TEST_CASE(get_nsset_list_for_not_existing_contact, get_my_nssets_f
     try
     {
         Fred::OperationContext ctx;
-        std::vector<std::vector<std::string> > nsset_list_out;
         impl.getNssetList(user_contact_info.info_contact_data.id,
-            Optional<unsigned long long>(0),
-            "CS",0,nsset_list_out);
-
+            Optional<unsigned long long>(0), 0);
         BOOST_ERROR("unreported missing contact");
     }
     catch( const Registry::DomainBrowserImpl::ObjectNotExists& ex)
@@ -2755,43 +2601,24 @@ struct get_my_keysets_fixture
 BOOST_FIXTURE_TEST_CASE(get_my_keyset_list, get_my_keysets_fixture )
 {
     Fred::OperationContext ctx;
-    std::vector<std::vector<std::string> > keyset_list_out;
-    bool limit_exceeded = impl.getKeysetList(user_contact_info.info_contact_data.id, Optional<unsigned long long>(),
-        "CS",0,keyset_list_out);
-
-    std::ostringstream list_out;
-    list_out << "keyset_list_out: \n";
-
+    Registry::DomainBrowserImpl::KeysetList kl = impl.getKeysetList(user_contact_info.info_contact_data.id, Optional<unsigned long long>(),0);
+    std::vector<Registry::DomainBrowserImpl::KeysetListData> keyset_list_out = kl.kld;
     for(unsigned long long i = 0; i < keyset_list_out.size(); ++i)
     {
-        for(unsigned long long j = 0; j < keyset_list_out.at(i).size(); ++j)
-        {
-            list_out << " " <<keyset_list_out.at(i).at(j);
-        }
+        BOOST_CHECK(keyset_list_out.at(i).id == map_at(keyset_info,keyset_list_out.at(i).handle).info_keyset_data.id);
+        BOOST_CHECK(keyset_list_out.at(i).handle == map_at(keyset_info,keyset_list_out.at(i).handle).info_keyset_data.handle);
 
-        list_out << "\n";
-    }
-    BOOST_MESSAGE(list_out.str());
-    BOOST_MESSAGE("limit_exceeded: " << limit_exceeded);
-
-    for(unsigned long long i = 0; i < keyset_list_out.size(); ++i)
-    {
-        BOOST_CHECK(keyset_list_out.at(i).at(0) == boost::lexical_cast<std::string>(map_at(keyset_info,keyset_list_out.at(i).at(1)).info_keyset_data.id));
-        BOOST_CHECK(keyset_list_out.at(i).at(1) == map_at(keyset_info,keyset_list_out.at(i).at(1)).info_keyset_data.handle);
-
-        BOOST_CHECK(keyset_list_out.at(i).at(3) == test_registrar_handle);//registrar handle
-        BOOST_CHECK(keyset_list_out.at(i).at(4) == boost::algorithm::replace_first_copy(test_registrar_handle, "-HANDLE", " NAME"));//registrar name
+        BOOST_CHECK(keyset_list_out.at(i).registrar_handle == test_registrar_handle);//registrar handle
+        BOOST_CHECK(keyset_list_out.at(i).registrar_name == boost::algorithm::replace_first_copy(test_registrar_handle, "-HANDLE", " NAME"));//registrar name
 
         if(i%2)
         {
-            BOOST_MESSAGE(keyset_list_out.at(i).at(7));
-            BOOST_CHECK(keyset_list_out.at(i).at(7) == "t");
-            BOOST_CHECK(keyset_list_out.at(i).at(6) == "Doména je blokována");
+            BOOST_CHECK(keyset_list_out.at(i).is_server_blocked);
+            if(i > 2) BOOST_CHECK(std::find(keyset_list_out.at(i).state_code.begin(), keyset_list_out.at(i).state_code.end(), "serverBlocked") != keyset_list_out.at(i).state_code.end());
         }
         else
         {
-            BOOST_MESSAGE(keyset_list_out.at(i).at(7));
-            BOOST_CHECK(keyset_list_out.at(i).at(7) == "f");
+            BOOST_CHECK(keyset_list_out.at(i).is_server_blocked == false);
         }
     }
 }
@@ -2799,44 +2626,26 @@ BOOST_FIXTURE_TEST_CASE(get_my_keyset_list, get_my_keysets_fixture )
 BOOST_FIXTURE_TEST_CASE(get_keyset_list_by_contact, get_my_keysets_fixture )
 {
     Fred::OperationContext ctx;
-    std::vector<std::vector<std::string> > keyset_list_out;
-    bool limit_exceeded = impl.getKeysetList(user_contact_info.info_contact_data.id,
-        Optional<unsigned long long>(admin_contact_fixture::test_contact_info.info_contact_data.id),
-        "CS",0,keyset_list_out);
-
-    std::ostringstream list_out;
-    list_out << "keyset_list_out: \n";
+    Registry::DomainBrowserImpl::KeysetList kl = impl.getKeysetList(user_contact_info.info_contact_data.id,
+        Optional<unsigned long long>(admin_contact_fixture::test_contact_info.info_contact_data.id),0);
+    std::vector<Registry::DomainBrowserImpl::KeysetListData> keyset_list_out = kl.kld;
 
     for(unsigned long long i = 0; i < keyset_list_out.size(); ++i)
     {
-        for(unsigned long long j = 0; j < keyset_list_out.at(i).size(); ++j)
-        {
-            list_out << " " <<keyset_list_out.at(i).at(j);
-        }
+        BOOST_CHECK(keyset_list_out.at(i).id == map_at(keyset_info,keyset_list_out.at(i).handle).info_keyset_data.id);
+        BOOST_CHECK(keyset_list_out.at(i).handle == map_at(keyset_info,keyset_list_out.at(i).handle).info_keyset_data.handle);
 
-        list_out << "\n";
-    }
-    BOOST_MESSAGE(list_out.str());
-    BOOST_MESSAGE("limit_exceeded: " << limit_exceeded);
-
-    for(unsigned long long i = 0; i < keyset_list_out.size(); ++i)
-    {
-        BOOST_CHECK(keyset_list_out.at(i).at(0) == boost::lexical_cast<std::string>(map_at(keyset_info,keyset_list_out.at(i).at(1)).info_keyset_data.id));
-        BOOST_CHECK(keyset_list_out.at(i).at(1) == map_at(keyset_info,keyset_list_out.at(i).at(1)).info_keyset_data.handle);
-
-        BOOST_CHECK(keyset_list_out.at(i).at(3) == test_registrar_handle);//registrar handle
-        BOOST_CHECK(keyset_list_out.at(i).at(4) == boost::algorithm::replace_first_copy(test_registrar_handle, "-HANDLE", " NAME"));//registrar name
+        BOOST_CHECK(keyset_list_out.at(i).registrar_handle == test_registrar_handle);//registrar handle
+        BOOST_CHECK(keyset_list_out.at(i).registrar_name == boost::algorithm::replace_first_copy(test_registrar_handle, "-HANDLE", " NAME"));//registrar name
 
         if(i%2)
         {
-            BOOST_MESSAGE(keyset_list_out.at(i).at(7));
-            BOOST_CHECK(keyset_list_out.at(i).at(7) == "t");
-            BOOST_CHECK(keyset_list_out.at(i).at(6) == "Doména je blokována");
+            BOOST_CHECK(keyset_list_out.at(i).is_server_blocked);
+            if(i > 2) BOOST_CHECK(std::find(keyset_list_out.at(i).state_code.begin(), keyset_list_out.at(i).state_code.end(), "serverBlocked") != keyset_list_out.at(i).state_code.end());
         }
         else
         {
-            BOOST_MESSAGE(keyset_list_out.at(i).at(7));
-            BOOST_CHECK(keyset_list_out.at(i).at(7) == "f");
+            BOOST_CHECK(keyset_list_out.at(i).is_server_blocked == false);
         }
     }
 }
@@ -2849,10 +2658,8 @@ BOOST_FIXTURE_TEST_CASE(get_keyset_list_for_not_existing_contact, get_my_keysets
     try
     {
         Fred::OperationContext ctx;
-        std::vector<std::vector<std::string> > keyset_list_out;
         impl.getKeysetList(user_contact_info.info_contact_data.id,
-            Optional<unsigned long long>(0),
-            "CS",0,keyset_list_out);
+            Optional<unsigned long long>(0),0);
 
         BOOST_ERROR("unreported missing contact");
     }
@@ -2867,15 +2674,14 @@ BOOST_AUTO_TEST_SUITE_END();//getKeysetList
 
 BOOST_AUTO_TEST_SUITE(getPublicStatusDesc)
 
-BOOST_FIXTURE_TEST_CASE(get_public_sattus_desc, domain_browser_impl_instance_fixture)
+BOOST_FIXTURE_TEST_CASE(get_public_status_desc, domain_browser_impl_instance_fixture)
 {
     Fred::OperationContext ctx;
-    std::vector<std::string> status_desc_out;
-    impl.getPublicStatusDesc("CS",status_desc_out);
-    for(std::vector<std::string>::const_iterator ci = status_desc_out.begin();
-        ci!=status_desc_out.end(); ++ci)
+    std::vector<Registry::DomainBrowserImpl::StatusDesc> status_desc_out = impl.getPublicStatusDesc("CS");
+
+    for(unsigned long long i = 0 ; i < status_desc_out.size(); ++i)
     {
-        BOOST_MESSAGE((*ci));
+        BOOST_MESSAGE(std::string("code: ") << status_desc_out.at(i).state_code << std::string(" desc: ") << status_desc_out.at(i).state_desc);
     }
 }
 
@@ -2891,8 +2697,8 @@ struct get_my_contact_object_fixture
 BOOST_FIXTURE_TEST_CASE(get_object_id, get_my_contact_object_fixture)
 {
     Fred::OperationContext ctx;
-    BOOST_CHECK(user_contact_info.info_contact_data.id == impl.getObjectRegistryId(
-        "contact",user_contact_info.info_contact_data.handle));
+    BOOST_CHECK(user_contact_info.info_contact_data.id == impl.getContactId(
+        user_contact_info.info_contact_data.handle));
 }
 
 BOOST_FIXTURE_TEST_CASE(get_object_id_by_wrong_handle, get_my_contact_object_fixture )
@@ -2900,27 +2706,11 @@ BOOST_FIXTURE_TEST_CASE(get_object_id_by_wrong_handle, get_my_contact_object_fix
     try
     {
         Fred::OperationContext ctx;
-        impl.getObjectRegistryId("contact","_WRONG_HANDLE_");
+        impl.getContactId("_WRONG_HANDLE_");
 
         BOOST_ERROR("unreported wrong handle");
     }
     catch( const Registry::DomainBrowserImpl::ObjectNotExists& ex)
-    {
-        BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
-    }
-}
-
-BOOST_FIXTURE_TEST_CASE(get_object_id_by_objtype, get_my_contact_object_fixture )
-{
-    try
-    {
-        Fred::OperationContext ctx;
-        impl.getObjectRegistryId("wrongtype","_WRONG_HANDLE_");
-
-        BOOST_ERROR("unreported wrong object type");
-    }
-    catch( const Registry::DomainBrowserImpl::IncorrectUsage& ex)
     {
         BOOST_CHECK(true);
         BOOST_MESSAGE(boost::diagnostic_information(ex));
@@ -3341,24 +3131,8 @@ BOOST_AUTO_TEST_SUITE(getMergeContactCandidateList)
 BOOST_FIXTURE_TEST_CASE(get_candidate_contact_list, merge_contacts_fixture )
 {
     Fred::OperationContext ctx;
-    std::vector<std::vector<std::string> > contact_list_out;
-    bool limit_exceeded = impl.getMergeContactCandidateList(user_contact_info.info_contact_data.id,
-        0,contact_list_out);
-
-    std::ostringstream list_out;
-    list_out << "contact_list_out: \n";
-
-    for(unsigned long long i = 0; i < contact_list_out.size(); ++i)
-    {
-        for(unsigned long long j = 0; j < contact_list_out.at(i).size(); ++j)
-        {
-            list_out << " " <<contact_list_out.at(i).at(j);
-        }
-
-        list_out << "\n";
-    }
-    BOOST_MESSAGE(list_out.str());
-    BOOST_MESSAGE("limit_exceeded: " << limit_exceeded);
+    Registry::DomainBrowserImpl::MergeContactCandidateList mcl = impl.getMergeContactCandidateList(user_contact_info.info_contact_data.id, 0);
+    std::vector<Registry::DomainBrowserImpl::MergeContactCandidateData> contact_list_out = mcl.mccl;
 
     BOOST_CHECK(contact_list_out.size() == contact_merge_candidates_ids.size());
 
@@ -3366,26 +3140,26 @@ BOOST_FIXTURE_TEST_CASE(get_candidate_contact_list, merge_contacts_fixture )
 
     for(unsigned long long i = 0; i < contact_list_out.size(); ++i)
     {
-        unsigned long long id = map_at(contact_info,contact_list_out.at(i).at(1)).info_contact_data.id;
-        BOOST_CHECK(contact_list_out.at(i).at(0) == boost::lexical_cast<std::string>(id));
-        BOOST_CHECK(contact_list_out.at(i).at(1) == map_at(contact_info,contact_list_out.at(i).at(1)).info_contact_data.handle);
+        unsigned long long id = map_at(contact_info,contact_list_out.at(i).handle).info_contact_data.id;
+        BOOST_CHECK(contact_list_out.at(i).id == id);
+        BOOST_CHECK(contact_list_out.at(i).handle == map_at(contact_info,contact_list_out.at(i).handle).info_contact_data.handle);
         contact_list_out_ids.insert(id);
 
         if(i == 0)
         {
-            BOOST_CHECK(contact_list_out.at(i).at(2) == "1");
-            BOOST_CHECK(contact_list_out.at(i).at(3) == "1");
-            BOOST_CHECK(contact_list_out.at(i).at(4) == "1");
+            BOOST_CHECK(contact_list_out.at(i).domain_count == 1);
+            BOOST_CHECK(contact_list_out.at(i).nsset_count == 1);
+            BOOST_CHECK(contact_list_out.at(i).keyset_count == 1);
         }
         else
         {
-            BOOST_CHECK(contact_list_out.at(i).at(2) == "0");
-            BOOST_CHECK(contact_list_out.at(i).at(3) == "0");
-            BOOST_CHECK(contact_list_out.at(i).at(4) == "0");
+            BOOST_CHECK(contact_list_out.at(i).domain_count == 0);
+            BOOST_CHECK(contact_list_out.at(i).nsset_count == 0);
+            BOOST_CHECK(contact_list_out.at(i).keyset_count == 0);
         }
 
-        BOOST_CHECK(contact_list_out.at(i).at(5) == std::string("TEST-REGISTRAR-HANDLE")+test_registrar_fixture::xmark);
-        BOOST_CHECK(contact_list_out.at(i).at(6) == std::string("TEST-REGISTRAR NAME")+test_registrar_fixture::xmark);
+        BOOST_CHECK(contact_list_out.at(i).registrar_handle == std::string("TEST-REGISTRAR-HANDLE")+test_registrar_fixture::xmark);
+        BOOST_CHECK(contact_list_out.at(i).registrar_name == std::string("TEST-REGISTRAR NAME")+test_registrar_fixture::xmark);
     }
 
     BOOST_CHECK(contact_list_out_ids == contact_merge_candidates_ids);
@@ -3405,9 +3179,7 @@ BOOST_FIXTURE_TEST_CASE(get_candidate_contact_list_user_not_in_mojeid, get_domai
     try
     {
         Fred::OperationContext ctx;
-        std::vector<std::vector<std::string> > contact_list_out;
-        impl.getMergeContactCandidateList(user_contact_info.info_contact_data.id,
-            0,contact_list_out);
+        impl.getMergeContactCandidateList(user_contact_info.info_contact_data.id, 0);
 
         BOOST_ERROR("unreported missing user");
     }

@@ -147,6 +147,7 @@ namespace Fred
         , const Optional<bool>& disclosevat
         , const Optional<bool>& discloseident
         , const Optional<bool>& disclosenotifyemail
+        , const Optional<Nullable<bool> >& domain_expiration_letter_flag
         , const Optional<unsigned long long>& logd_request_id
         )
     :   registrar_(registrar)
@@ -172,6 +173,7 @@ namespace Fred
     ,   disclosevat_(disclosevat)
     ,   discloseident_(discloseident)
     ,   disclosenotifyemail_(disclosenotifyemail)
+    ,   domain_expiration_letter_flag_(domain_expiration_letter_flag)
     ,   logd_request_id_(logd_request_id.isset()
             ? Nullable<unsigned long long>(logd_request_id.get_value())
             : Nullable<unsigned long long>())//is NULL if not set
@@ -335,6 +337,20 @@ namespace Fred
             if (disclosenotifyemail_.isset()) {
                 params.push_back(disclosenotifyemail_.get_value());
                 sql << set_separator.get() << "disclosenotifyemail = $" << params.size() << "::boolean ";
+            }
+
+            if (domain_expiration_letter_flag_.isset()) {
+                Nullable<bool> new_domain_expiration_letter_flag = domain_expiration_letter_flag_.get_value();
+                if(new_domain_expiration_letter_flag.isnull())
+                {
+                    params.push_back(Database::NullQueryParam);
+                    sql << set_separator.get() << "warning_letter = $" << params.size() << "::boolean ";
+                }
+                else
+                {
+                    params.push_back(new_domain_expiration_letter_flag.get_value());
+                    sql << set_separator.get() << "warning_letter = $" << params.size() << "::boolean ";
+                }
             }
 
             params.push_back(contact.info_contact_data.id);
@@ -565,12 +581,14 @@ namespace Fred
                 " , country, telephone, fax, email, notifyemail, vat, ssntype, ssn"
                 " , disclosename, discloseorganization, discloseaddress, disclosetelephone"
                 " , disclosefax, discloseemail, disclosevat, discloseident, disclosenotifyemail"
+                " , warning_letter"
                 ") "
                  "SELECT $1::bigint, id "
                 " , name, organization, street1, street2, street3, city, stateorprovince, postalcode "
                 " , country, telephone, fax, email, notifyemail, vat, ssntype, ssn "
                 " , disclosename, discloseorganization, discloseaddress, disclosetelephone "
                 " , disclosefax, discloseemail, disclosevat, discloseident, disclosenotifyemail "
+                " , warning_letter "
                 " FROM contact "
                 " WHERE id = $2::integer"
                 , Database::query_param_list(history_id)(contact.info_contact_data.id));
@@ -615,6 +633,7 @@ namespace Fred
         (std::make_pair("disclosevat",disclosevat_.print_quoted()))
         (std::make_pair("discloseident",discloseident_.print_quoted()))
         (std::make_pair("disclosenotifyemail",disclosenotifyemail_.print_quoted()))
+        (std::make_pair("domain_expiration_letter_flag",domain_expiration_letter_flag_.isset() ? domain_expiration_letter_flag_.get_value().print_quoted() : domain_expiration_letter_flag_.print_quoted()))
         (std::make_pair("logd_request_id",logd_request_id_.print_quoted()))
         );
     }
@@ -649,6 +668,7 @@ namespace Fred
             , const Optional<bool>& disclosevat
             , const Optional<bool>& discloseident
             , const Optional<bool>& disclosenotifyemail
+            , const Optional<Nullable<bool> >& domain_expiration_letter_flag
             , const Optional<unsigned long long>& logd_request_id
             )
     : UpdateContact<UpdateContactById>(registrar
@@ -674,6 +694,7 @@ namespace Fred
               , disclosevat
               , discloseident
               , disclosenotifyemail
+              , domain_expiration_letter_flag
               , logd_request_id
               )
     , id_(id)
@@ -808,6 +829,7 @@ namespace Fred
             , const Optional<bool>& disclosevat
             , const Optional<bool>& discloseident
             , const Optional<bool>& disclosenotifyemail
+            , const Optional<Nullable<bool> >& domain_expiration_letter_flag
             , const Optional<unsigned long long> logd_request_id
             )
     : UpdateContact<UpdateContactByHandle>(registrar
@@ -833,6 +855,7 @@ namespace Fred
             , disclosevat
             , discloseident
             , disclosenotifyemail
+            , domain_expiration_letter_flag
             , logd_request_id
             )
     , handle_(handle)
