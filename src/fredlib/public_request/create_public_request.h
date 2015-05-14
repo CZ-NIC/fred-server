@@ -11,11 +11,11 @@ class CreatePublicRequest
 {
 public:
     DECLARE_EXCEPTION_DATA(unknown_type, std::string);/**< exception members for bad public request type*/
-    DECLARE_EXCEPTION_DATA(unknown_registrar, RegistrarId);/**< exception members for bad registrar id*/
+    DECLARE_EXCEPTION_DATA(unknown_registrar_id, RegistrarId);/**< exception members for bad registrar id*/
     struct Exception
     :   virtual Fred::OperationException,
         ExceptionData_unknown_type< Exception >,
-        ExceptionData_unknown_registrar< Exception >
+        ExceptionData_unknown_registrar_id< Exception >
     {};
     CreatePublicRequest(const PublicRequestTypeIface &_type);
     CreatePublicRequest(const PublicRequestTypeIface &_type,

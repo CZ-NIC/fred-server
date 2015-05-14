@@ -99,8 +99,9 @@ BOOST_AUTO_TEST_CASE(create_public_request_auth_wrong_registrar)
             .exec(ctx, Fred::PublicRequestObjectLockGuard(ctx, contact_id));
     }
     catch(const Fred::CreatePublicRequestAuth::Exception &e) {
-        BOOST_CHECK(e.is_set_unknown_registrar());
-        BOOST_CHECK(e.get_unknown_registrar() == bad_registrar_id);
+        BOOST_CHECK(!e.is_set_unknown_type());
+        BOOST_CHECK(e.is_set_unknown_registrar_id());
+        BOOST_CHECK(e.get_unknown_registrar_id() == bad_registrar_id);
         BOOST_TEST_MESSAGE(boost::diagnostic_information(e));
         throw;
     }
@@ -131,6 +132,7 @@ BOOST_AUTO_TEST_CASE(create_public_request_auth_wrong_type)
     }
     catch(const Fred::CreatePublicRequestAuth::Exception &e) {
         BOOST_CHECK(e.is_set_unknown_type());
+        BOOST_CHECK(!e.is_set_unknown_registrar_id());
         BOOST_CHECK(e.get_unknown_type() == bad_type);
         BOOST_TEST_MESSAGE(boost::diagnostic_information(e));
         throw;

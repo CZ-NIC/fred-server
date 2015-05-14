@@ -50,7 +50,7 @@ PublicRequestId CreatePublicRequest::exec(OperationContext &_ctx,
                 "SELECT EXISTS(SELECT * FROM registrar WHERE id=$1::BIGINT)",
                 Database::query_param_list(registrar_id))[0][0]);
             if (!registrar_id_exists) {
-                BOOST_THROW_EXCEPTION(Exception().set_unknown_registrar(registrar_id));
+                BOOST_THROW_EXCEPTION(Exception().set_unknown_registrar_id(registrar_id));
             }
             params(registrar_id);                                                           // $5::BIGINT
         }
