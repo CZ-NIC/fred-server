@@ -102,6 +102,7 @@ public:
     /**
      * Constructor with all parameters.
      * @param _status can set public request status
+     * @param _resolve_time can set time of public request resolving
      * @param _reason can set reason of public request creation
      * @param _email_to_answer can set the answer recipient's email address
      * @param _answer_email_id can set the email id
