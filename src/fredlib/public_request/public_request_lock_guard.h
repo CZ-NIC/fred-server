@@ -42,12 +42,19 @@ public:
      * Return numeric id of guarded public request.
      * @return id of guarded public request
      */
-    virtual PublicRequestId get_public_request_id()const = 0;
+    PublicRequestId get_public_request_id()const { return public_request_id_; }
 protected:
+    /**
+     * Derived class can store public_request_id.
+     * @param _public_request_id value to store
+     */
+    PublicRequestLockGuard(PublicRequestId _public_request_id):public_request_id_(_public_request_id) { }
     /**
      * It should unlock public request in derived class but ...
      */
-    virtual ~PublicRequestLockGuard() { }
+    ~PublicRequestLockGuard() { }
+private:
+    const PublicRequestId public_request_id_;
 };
 
 /**
@@ -73,9 +80,6 @@ public:
      *          transaction wherein it was created.
      */
     virtual ~PublicRequestLockGuardByIdentification() { }
-private:
-    PublicRequestId get_public_request_id()const { return public_request_id_; }
-    const PublicRequestId public_request_id_;
 };
 
 /**
@@ -101,9 +105,6 @@ public:
      *          transaction wherein it was created.
      */
     virtual ~PublicRequestLockGuardById() { }
-private:
-    PublicRequestId get_public_request_id()const { return public_request_id_; }
-    const PublicRequestId public_request_id_;
 };
 
 }//namespace Fred

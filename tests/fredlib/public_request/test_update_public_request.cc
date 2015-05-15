@@ -172,8 +172,7 @@ BOOST_AUTO_TEST_CASE(public_request_lock_guard_by_id)
         "SELECT 100+2*MAX(id) FROM public_request")[0][0]);
     BOOST_CHECK_EXCEPTION(
     const Fred::PublicRequestLockGuardById locked(ctx, create_result.public_request_id);
-    BOOST_CHECK(static_cast< const Fred::PublicRequestLockGuard& >(locked).get_public_request_id() ==
-                create_result.public_request_id);
+    BOOST_CHECK(locked.get_public_request_id() == create_result.public_request_id);
     try {
         Fred::PublicRequestLockGuardById(ctx, bad_id);
     }
@@ -205,8 +204,7 @@ BOOST_AUTO_TEST_CASE(public_request_lock_guard_by_identification)
     const std::string bad_identification = create_result.identification + " ";
     BOOST_CHECK_EXCEPTION(
     const Fred::PublicRequestLockGuardByIdentification locked(ctx, create_result.identification);
-    BOOST_CHECK(static_cast< const Fred::PublicRequestLockGuard& >(locked).get_public_request_id() ==
-                create_result.public_request_id);
+    BOOST_CHECK(locked.get_public_request_id() == create_result.public_request_id);
     try {
         Fred::PublicRequestLockGuardByIdentification(ctx, bad_identification);
     }
@@ -265,11 +263,7 @@ BOOST_AUTO_TEST_CASE(update_public_request_without_changes)
 class PublicRequestLockGuardFake:public Fred::PublicRequestLockGuard
 {
 public:
-    PublicRequestLockGuardFake(Fred::PublicRequestId _public_request_id):public_request_id_(_public_request_id) { }
-    virtual Fred::PublicRequestId get_public_request_id()const { return public_request_id_; }
-    virtual ~PublicRequestLockGuardFake() { }
-private:
-    const Fred::PublicRequestId public_request_id_;
+    PublicRequestLockGuardFake(Fred::PublicRequestId _public_request_id):PublicRequestLockGuard(_public_request_id) { }
 };
 
 /**
@@ -485,7 +479,7 @@ BOOST_AUTO_TEST_CASE(update_public_request_ok)
         "FROM public_request pr "
         "WHERE id=$1::BIGINT",
         Database::query_param_list
-            (static_cast< const Fred::PublicRequestLockGuard& >(locked_request).get_public_request_id())
+            (locked_request.get_public_request_id())
             (public_request_type.get_public_request_type())
             (str_status)
             (reason)
@@ -536,7 +530,7 @@ BOOST_AUTO_TEST_CASE(update_public_request_ok)
         "FROM public_request pr "
         "WHERE id=$1::BIGINT",
         Database::query_param_list
-            (static_cast< const Fred::PublicRequestLockGuard& >(locked_request).get_public_request_id())
+            (locked_request.get_public_request_id())
             (public_request_type.get_public_request_type())
             (str_status)
             (resolve_time));
