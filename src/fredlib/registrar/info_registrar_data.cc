@@ -34,7 +34,7 @@ namespace Fred
 {
 
     InfoRegistrarData::InfoRegistrarData()
-    : id(0), vat_payer(false)
+    : vat_payer(false), id(0)
     {}
 
     bool InfoRegistrarData::operator==(const InfoRegistrarData& rhs) const
