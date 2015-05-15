@@ -26,7 +26,6 @@
 
 #include "util/random_data_generator.h"
 #include "tests/setup/fixtures.h"
-#include "tests/fredlib/util.h"
 
 BOOST_FIXTURE_TEST_SUITE(TestCheckHandle, Test::Fixture::instantiate_db_template)
 

@@ -31,7 +31,6 @@
 #include "util/map_at.h"
 #include "src/fredlib/opcontext.h"
 #include "tests/setup/fixtures.h"
-#include "tests/fredlib/util.h"
 
 #include "test_merge_contact_fixture.h"
 
