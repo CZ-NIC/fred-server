@@ -79,7 +79,7 @@ public:
      * @warning It doesn't release lock contrary to expectations. The one will release by finishing of
      *          transaction wherein it was created.
      */
-    virtual ~PublicRequestLockGuardByIdentification() { }
+    ~PublicRequestLockGuardByIdentification() { }
 };
 
 /**
@@ -104,7 +104,7 @@ public:
      * @warning It doesn't release lock contrary to expectations. The one will release by finishing of
      *          transaction wherein it was created.
      */
-    virtual ~PublicRequestLockGuardById() { }
+    ~PublicRequestLockGuardById() { }
 };
 
 }//namespace Fred
