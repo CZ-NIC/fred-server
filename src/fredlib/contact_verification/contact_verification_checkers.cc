@@ -37,7 +37,7 @@ bool generic_checker_phone_format(const std::string &_phone, const boost::regex 
 {
     if (boost::algorithm::trim_copy(_phone).length() > 0
                 && !boost::regex_search(
-                        _phone,
+                        boost::algorithm::trim_copy(_phone),
                         _pattern)) {
         return false;
     }
