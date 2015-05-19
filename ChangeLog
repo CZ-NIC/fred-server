@@ -1,3 +1,39 @@
+2015-05-19 Jiri Sadek, Jan Korous, Jan Zima, Michal Strnad (2.22.0)
+
+  * build warnings and distribution fixes
+
+  * fredlib fixes
+    * InfoContactData constructor initialization
+    * UpdateContactByHandle discard reference from 'handle' member
+    * InfoRegistrarData.vat_payer not Nullable
+    * tests added
+
+  * domainbrowser
+    * interface reworked (simplified)
+    * add mailing address to signed-on user contact info
+    * add flag to change user preference whether send domain warning letter or not
+
+  * mojeid
+    * new method for (re)send mojeid card
+    * add configuration for letter sending limits
+
+  * mojeid/verification - phone format checker fix (discard leading/trailing spaces)
+
+  * expiration warning letters
+    * log severity fixes
+    * contact address validity check improved
+    * fix - not to send/generate letters for outdated domain states (expirationWarning)
+
+  * epp - update contact error handling fix
+
+  * epp/verification - changes conditions for canceling contact verification states
+                       (name, organization, e-mail, telephone, address)
+
+  * messaging - allow to send letter to invalid address (used in admin contact
+                verification)
+
+  * adifd - add destination account number to payment detail
+
 2015-03-30 Jiri Sadek (2.21.1)
 
   * logger - fix - insert to request_data and request_property_values tables
