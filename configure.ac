@@ -18,7 +18,7 @@ DX_PDF_FEATURE(OFF)
 DX_PS_FEATURE(OFF)
 DX_INIT_DOXYGEN(fred-server, doxy.conf, [doc])
 
-AM_INIT_AUTOMAKE([subdir-objects])
+AM_INIT_AUTOMAKE([subdir-objects tar-ustar filename-length-max=220])
 m4_pattern_allow([^AC_MSG_])
 
 AC_DEFUN([AS_AC_TEST_CORBA_PORTS],

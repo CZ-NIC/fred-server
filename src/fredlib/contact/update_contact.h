@@ -711,7 +711,7 @@ namespace Fred
         public ExceptionTraits<UpdateContactByHandle>,
         public UpdateContact<UpdateContactByHandle>
     {
-        const std::string& handle_;
+        const std::string handle_;
         Fred::InfoContactByHandle select_contact_by_handle_;
     public:
 

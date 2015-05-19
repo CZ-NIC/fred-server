@@ -105,6 +105,15 @@ namespace Fred
     InfoContactData::InfoContactData()
     : crhistoryid(0)
     , historyid(0)
+    , disclosename(false)
+    , discloseorganization(false)
+    , discloseaddress(true)
+    , disclosetelephone(false)
+    , disclosefax(false)
+    , discloseemail(false)
+    , disclosevat(false)
+    , discloseident(false)
+    , disclosenotifyemail(false)
     , id(0)
     {}
 
