@@ -82,7 +82,7 @@ struct check_contact_email_validity
 struct check_contact_email_availability:check_contact_email_presence
 {
     check_contact_email_availability(const Contact::Verification::Contact &_data, OperationContext &_ctx);
-    bool success()const { return !used_recently; }
+    bool success()const { return this->check_contact_email_presence::success() && !used_recently; }
     bool used_recently:1;
 };
 
@@ -103,7 +103,7 @@ struct check_contact_phone_validity
 struct check_contact_phone_availability:check_contact_phone_presence
 {
     check_contact_phone_availability(const Contact::Verification::Contact &_data, OperationContext &_ctx);
-    bool success()const { return !used_recently; }
+    bool success()const { return this->check_contact_phone_presence::success() && !used_recently; }
     bool used_recently:1;
 };
 
