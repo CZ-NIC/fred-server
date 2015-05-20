@@ -24,17 +24,88 @@
 #ifndef CHECKERS_H_D5C22F5DFA53E06F6886FD6DE0FD30C6//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
 #define CHECKERS_H_D5C22F5DFA53E06F6886FD6DE0FD30C6
 
-#include <string>
+#include "src/fredlib/contact_verification/contact.h"
+#include "src/fredlib/opcontext.h"
+
 #include <boost/static_assert.hpp>
 #include <boost/mpl/list.hpp>
 #include <boost/mpl/front.hpp>
 #include <boost/mpl/pop_front.hpp>
 #include <boost/mpl/size.hpp>
+#include <boost/regex.hpp>
 
 /// Fred
 namespace Fred {
 /// PublicRequest
 namespace PublicRequest {
+
+std::string email_phone_protection_period() { return "1MONTH"; }
+
+const boost::regex& phone_pattern()
+{
+    static const boost::regex pattern("^\\+[0-9]{1,3}\\.[0-9]{1,14}$");
+    return pattern;
+};
+
+struct check_contact_name
+{
+    check_contact_name(const Contact::Verification::Contact &_data);
+    bool success()const { return !(first_name_absents || last_name_absents); }
+    bool first_name_absents:1;
+    bool last_name_absents:1;
+};
+
+struct check_contact_mailing_address
+{
+    check_contact_mailing_address(const Contact::Verification::Contact &_data);
+    bool success()const { return !(street1_absents || city_absents || postalcode_absents || country_absents); }
+    bool street1_absents:1;
+    bool city_absents:1;
+    bool postalcode_absents:1;
+    bool country_absents:1;
+};
+
+struct check_contact_email_presence
+{
+    check_contact_email_presence(const Contact::Verification::Contact &_data);
+    bool success()const { return !absents; }
+    bool absents:1;
+};
+
+struct check_contact_email_validity
+{
+    check_contact_email_validity(const Contact::Verification::Contact &_data);
+    bool success()const { return !invalid; }
+    bool invalid:1;
+};
+
+struct check_contact_email_availability:check_contact_email_presence
+{
+    check_contact_email_availability(const Contact::Verification::Contact &_data, OperationContext &_ctx);
+    bool success()const { return !used_recently; }
+    bool used_recently:1;
+};
+
+struct check_contact_phone_presence
+{
+    check_contact_phone_presence(const Contact::Verification::Contact &_data);
+    bool success()const { return !absents; }
+    bool absents:1;
+};
+
+struct check_contact_phone_validity
+{
+    check_contact_phone_validity(const Contact::Verification::Contact &_data);
+    bool success()const { return !invalid; }
+    bool invalid:1;
+};
+
+struct check_contact_phone_availability:check_contact_phone_presence
+{
+    check_contact_phone_availability(const Contact::Verification::Contact &_data, OperationContext &_ctx);
+    bool success()const { return !used_recently; }
+    bool used_recently:1;
+};
 
 /**
  * Executes partial checks and collects results of theirs.
@@ -42,7 +113,7 @@ namespace PublicRequest {
  * @param SIZE number of partial checks, don't touch!!!
  * @note  CHECKERS is [boost::mpl::list](http://www.boost.org/doc/libs/1_48_0/libs/mpl/doc/refmanual/list.html)
  *        where each item represents one partial check class. Each item has to contain constructor with the
- *        same data type argument and const method `success` without arguments like this example:
+ *        same arguments and const method `success` without arguments like this example:
 ~~~~~~~~~~~~~~{.cpp}
 struct partial_check_one
 {
@@ -177,6 +248,16 @@ struct Check
         Others(_data)
     { }
     /**
+     * Executes collection of partial checks on arbitrary two arguments.
+     * @param _data checked data
+     * @param _ctx context for data checking
+     */
+    template < typename DATA, typename CTX >
+    Check(DATA _data, CTX _ctx)
+    :   Current(_data, _ctx),
+        Others(_data, _ctx)
+    { }
+    /**
      * Checks finished successfully.
      * @return true if all partial checks finished successfully
      */
@@ -198,6 +279,10 @@ struct Check< CHECKERS, 1 >
     template < typename DATA >
     Check(DATA _data)
     :   Current(_data)
+    { }
+    template < typename DATA, typename CTX >
+    Check(DATA _data, CTX _ctx)
+    :   Current(_data, _ctx)
     { }
     bool success()const
     {
