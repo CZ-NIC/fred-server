@@ -44,7 +44,7 @@ bool absent_or_empty(const Nullable< std::string > &_data)
 bool presents_and_matches_pattern(const std::string &_str, const boost::regex &_pattern)
 {
     return !nothing_else_whitespaces(_str) &&
-           boost::regex_search(_str, _pattern);
+           boost::regex_match(_str, _pattern);
 }
 
 }//Fred::PublicRequest::{anonymous}
