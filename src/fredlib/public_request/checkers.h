@@ -107,6 +107,13 @@ struct check_contact_phone_availability:check_contact_phone_presence
     bool used_recently:1;
 };
 
+struct check_contact_fax_validity
+{
+    check_contact_fax_validity(const Contact::Verification::Contact &_data);
+    bool success()const { return !invalid; }
+    bool invalid:1;
+};
+
 namespace MojeID {
 
 const boost::regex& username_pattern()

@@ -41,10 +41,16 @@ bool absent_or_empty(const Nullable< std::string > &_data)
     return _data.isnull() || nothing_else_whitespaces(_data.get_value());
 }
 
-bool presents_and_matches_pattern(const std::string &_str, const boost::regex &_pattern)
+bool absents_or_matches_pattern(const std::string &_str, const boost::regex &_pattern)
 {
-    return !nothing_else_whitespaces(_str) &&
+    return nothing_else_whitespaces(_str) ||
            boost::regex_match(_str, _pattern);
+}
+
+bool absents_or_matches_pattern(const Nullable< std::string > &_str, const boost::regex &_pattern)
+{
+    return _str.isnull() ||
+           absents_or_matches_pattern(_str.get_value(), _pattern);
 }
 
 }//Fred::PublicRequest::{anonymous}
@@ -110,7 +116,7 @@ check_contact_phone_presence::check_contact_phone_presence(const Contact::Verifi
 }
 
 check_contact_phone_validity::check_contact_phone_validity(const Contact::Verification::Contact &_data)
-:   invalid(!presents_and_matches_pattern(_data.telephone.get_value_or_default(), phone_pattern()))
+:   invalid(!absents_or_matches_pattern(_data.telephone, phone_pattern()))
 {
 }
 
@@ -139,11 +145,16 @@ check_contact_phone_availability::check_contact_phone_availability(
     used_recently = static_cast< bool >(ucheck[0][0]);
 }
 
+check_contact_fax_validity::check_contact_fax_validity(const Contact::Verification::Contact &_data)
+:   invalid(!absents_or_matches_pattern(_data.fax, phone_pattern()))
+{
+}
+
 namespace MojeID {
 
 check_contact_username::check_contact_username(const Contact::Verification::Contact &_data)
 :   absents(nothing_else_whitespaces(_data.handle)),
-    invalid(!presents_and_matches_pattern(_data.handle, username_pattern()))
+    invalid(!absents_or_matches_pattern(_data.handle, username_pattern()))
 {
 }
 
