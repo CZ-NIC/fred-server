@@ -31,7 +31,9 @@
 #include <boost/mpl/list.hpp>
 #include <boost/mpl/front.hpp>
 #include <boost/mpl/pop_front.hpp>
+#include <boost/mpl/push_front.hpp>
 #include <boost/mpl/size.hpp>
+#include <boost/mpl/void.hpp>
 #include <boost/regex.hpp>
 
 /// Fred
@@ -265,11 +267,12 @@ int main()
 template < typename CHECKERS, ::size_t SIZE = boost::mpl::size< CHECKERS >::type::value >
 struct Check
 :   boost::mpl::front< CHECKERS >::type,
-    Check< typename boost::mpl::pop_front< CHECKERS >::type, SIZE - 1 >
+    Check< typename boost::mpl::pop_front< CHECKERS >::type >
 {
+    BOOST_STATIC_ASSERT(2 < SIZE);
     BOOST_STATIC_ASSERT(SIZE == boost::mpl::size< CHECKERS >::type::value);
     typedef typename boost::mpl::front< CHECKERS >::type Current;
-    typedef Check< typename boost::mpl::pop_front< CHECKERS >::type, SIZE - 1 > Others;
+    typedef Check< typename boost::mpl::pop_front< CHECKERS >::type > Others;
     /**
      * Executes collection of partial checks on arbitrary data type.
      * @param _data checked data
@@ -281,13 +284,21 @@ struct Check
     { }
     /**
      * Executes collection of partial checks on arbitrary two arguments.
-     * @param _data checked data
-     * @param _ctx context for data checking
+     * @param _data0 first argument
+     * @param _data1 second argument
      */
-    template < typename DATA, typename CTX >
-    Check(DATA _data, CTX _ctx)
-    :   Current(_data, _ctx),
-        Others(_data, _ctx)
+    template < typename DATA0, typename DATA1 >
+    Check(DATA0 _data0, DATA1 _data1)
+    :   Current(_data0, _data1),
+        Others(_data0, _data1)
+    { }
+    /**
+     * Copy constructor.
+     * @param _src source data
+     */
+    Check(const Check &_src)
+    :   Current(_src),
+        Others(_src)
     { }
     /**
      * Checks finished successfully.
@@ -300,25 +311,168 @@ struct Check
 };
 
 /**
- * Specialization for SIZE=1. It stops the recursion.
+ * Specialization for SIZE=2. It stops the recursion.
  */
 template < typename CHECKERS >
-struct Check< CHECKERS, 1 >
-:   boost::mpl::front< CHECKERS >::type
+struct Check< CHECKERS, 2 >
+:   boost::mpl::front< CHECKERS >::type,
+    boost::mpl::front< typename boost::mpl::pop_front< CHECKERS >::type >::type
 {
-    BOOST_STATIC_ASSERT(boost::mpl::size< CHECKERS >::type::value == 1);
+    BOOST_STATIC_ASSERT(boost::mpl::size< CHECKERS >::type::value == 2);
     typedef typename boost::mpl::front< CHECKERS >::type Current;
+    typedef typename boost::mpl::front< typename boost::mpl::pop_front< CHECKERS >::type >::type Last;
     template < typename DATA >
     Check(DATA _data)
-    :   Current(_data)
+    :   Current(_data),
+        Last(_data)
     { }
-    template < typename DATA, typename CTX >
-    Check(DATA _data, CTX _ctx)
-    :   Current(_data, _ctx)
+    template < typename DATA0, typename DATA1 >
+    Check(DATA0 _data0, DATA1 _data1)
+    :   Current(_data0, _data1),
+        Last(_data0, _data1)
+    { }
+    Check(const Check &_src)
+    :   Current(_src),
+        Last(_src)
     { }
     bool success()const
     {
-        return this->Current::success();
+        return this->Current::success() && this->Last::success();
+    }
+};
+
+/**
+ * Collects results of set of homogeneous partial checks into one object, restricted to a maximum 5 checks.
+ * @param CHECK0 first set of partial checks
+ * @param CHECK1 second set of partial checks
+ * @param CHECK2 third set of partial checks
+ * @param CHECK3 fourth set of partial checks
+ * @param CHECK4 fifth set of partial checks
+ * @note  Each check has to contain copy constructor and const method `success` without arguments like this example:
+~~~~~~~~~~~~~~{.cpp}
+struct checkA0
+{
+    checkA0(int) { }
+    bool success()const { return !invalid; }
+    bool invalid:1;
+};
+
+struct checkA1
+{
+    checkA1(int) { }
+    bool success()const { return !invalid; }
+    bool invalid:1;
+};
+
+typedef Check< list< checkA0, checkA1 > > checkA;
+
+struct checkB
+{
+    checkB(std::string) { }
+    bool success()const { return !invalid; }
+    bool invalid:1;
+};
+
+struct checkC
+{
+    checkC(void*, int) { }
+    bool success()const { return !invalid; }
+    bool invalid:1;
+};
+
+typedef HeterogeneousCheck< checkA, checkB, checkC > checkABC;
+
+checkABC result(checkA(0), checkB("1"), checkC(NULL, 2));
+~~~~~~~~~~~~~~
+ */
+template < typename CHECK0, typename CHECK1, typename CHECK2 = boost::mpl::void_,
+           typename CHECK3 = boost::mpl::void_, typename CHECK4 = boost::mpl::void_ >
+struct HeterogeneousCheck
+:   CHECK0,
+    HeterogeneousCheck< CHECK1, CHECK2, CHECK3, CHECK4 >
+{
+    typedef CHECK0 Current;
+    typedef HeterogeneousCheck< CHECK1, CHECK2, CHECK3, CHECK4 > Others;
+    /**
+     * List of all homogeneous checks.
+     */
+    typedef boost::mpl::push_front< CHECK0, typename Others::Checks > Checks;
+    /**
+     * Constructs one object from results of 5 sets of homogeneous checks.
+     * @param _c0 result of first homogeneous checks
+     * @param _c1 result of second homogeneous checks
+     * @param _c2 result of third homogeneous checks
+     * @param _c3 result of fourth homogeneous checks
+     * @param _c4 result of fifth homogeneous checks
+     */
+    HeterogeneousCheck(const CHECK0 &_c0, const CHECK1 &_c1, const CHECK2 &_c2, const CHECK3 &_c3, const CHECK4 &_c4)
+    :   Current(_c0),
+        Others(_c1, _c2, _c3, _c4)
+    { }
+    /**
+     * Checks finished successfully.
+     * @return true if all sets of homogeneous checks finished successfully
+     */
+    bool success()const
+    {
+        return this->Current::success() && this->Others::success();
+    }
+};
+
+template < typename CHECK0, typename CHECK1, typename CHECK2, typename CHECK3 >
+struct HeterogeneousCheck< CHECK0, CHECK1, CHECK2, CHECK3 >
+:   CHECK0,
+    HeterogeneousCheck< CHECK1, CHECK2, CHECK3 >
+{
+    typedef CHECK0 Current;
+    typedef HeterogeneousCheck< CHECK1, CHECK2, CHECK3 > Others;
+    typedef boost::mpl::push_front< CHECK0, typename Others::Checks > Checks;
+    HeterogeneousCheck(const CHECK0 &_c0, const CHECK1 &_c1, const CHECK2 &_c2, const CHECK3 &_c3)
+    :   Current(_c0),
+        Others(_c1, _c2, _c3)
+    { }
+    bool success()const
+    {
+        return this->Current::success() && this->Others::success();
+    }
+};
+
+template < typename CHECK0, typename CHECK1, typename CHECK2 >
+struct HeterogeneousCheck< CHECK0, CHECK1, CHECK2 >
+:   CHECK0,
+    HeterogeneousCheck< CHECK1, CHECK2 >
+{
+    typedef CHECK0 Current;
+    typedef HeterogeneousCheck< CHECK1, CHECK2 > Others;
+    typedef boost::mpl::push_front< CHECK0, typename Others::Checks > Checks;
+    HeterogeneousCheck(const CHECK0 &_c0, const CHECK1 &_c1, const CHECK2 &_c2)
+    :   Current(_c0),
+        Others(_c1, _c2)
+    { }
+    bool success()const
+    {
+        return this->Current::success() && this->Others::success();
+    }
+};
+
+/**
+ * Specialization for two checks. It stops the recursion.
+ */
+template < typename CHECK0, typename CHECK1 >
+struct HeterogeneousCheck< CHECK0, CHECK1 >
+:   CHECK0,
+    CHECK1
+{
+    typedef CHECK0 Current;
+    typedef CHECK1 Last;
+    typedef boost::mpl::list< CHECK0, CHECK1 > Checks;
+    HeterogeneousCheck(const CHECK0 &_c0, const CHECK1 &_c1)
+    :   Current(_c0),
+        Last(_c1)
+    { }
+    bool success()const
+    {
+        return this->Current::success() && this->Last::success();
     }
 };
 
