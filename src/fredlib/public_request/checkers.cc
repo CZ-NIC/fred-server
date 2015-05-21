@@ -31,14 +31,19 @@ namespace PublicRequest {
 
 namespace {
 
-bool absent_or_empty(const Nullable< std::string > _data)
+bool nothing_else_whitespaces(const std::string &_data)
 {
-    return _data.isnull() || boost::algorithm::all(_data.get_value(), boost::algorithm::is_space());
+    return boost::algorithm::all(_data, boost::algorithm::is_space());
+}
+
+bool absent_or_empty(const Nullable< std::string > &_data)
+{
+    return _data.isnull() || nothing_else_whitespaces(_data.get_value());
 }
 
 bool presents_and_matches_pattern(const std::string &_str, const boost::regex &_pattern)
 {
-    return !boost::algorithm::all(_str, boost::algorithm::is_space()) &&
+    return !nothing_else_whitespaces(_str) &&
            boost::regex_search(_str, _pattern);
 }
 
