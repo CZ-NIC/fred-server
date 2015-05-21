@@ -107,6 +107,24 @@ struct check_contact_phone_availability:check_contact_phone_presence
     bool used_recently:1;
 };
 
+namespace MojeID {
+
+const boost::regex& username_pattern()
+{
+    static const boost::regex pattern("[0-9A-Za-z]([-0-9A-Za-z]{0,28}[0-9A-Za-z])?");
+    return pattern;
+};
+
+struct check_contact_username
+{
+    check_contact_username(const Contact::Verification::Contact &_data);
+    bool success()const { return !(absents || invalid); }
+    bool absents:1;
+    bool invalid:1;
+};
+
+}//Fred::PublicRequest::MojeID
+
 /**
  * Executes partial checks and collects results of theirs.
  * @param CHECKERS a list of partial checks

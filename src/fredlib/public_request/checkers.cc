@@ -139,5 +139,15 @@ check_contact_phone_availability::check_contact_phone_availability(
     used_recently = static_cast< bool >(ucheck[0][0]);
 }
 
+namespace MojeID {
+
+check_contact_username::check_contact_username(const Contact::Verification::Contact &_data)
+:   absents(nothing_else_whitespaces(_data.handle)),
+    invalid(!presents_and_matches_pattern(_data.handle, username_pattern()))
+{
+}
+
+}//Fred::PublicRequest::MojeID
+
 }//Fred::PublicRequest
 }//Fred
