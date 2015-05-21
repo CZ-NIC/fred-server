@@ -19,6 +19,7 @@
 #include "src/fredlib/public_request/checkers.h"
 #include "src/fredlib/contact_verification/django_email_format.h"
 #include "util/idn_utils.h"
+#include "util/types/birthdate.h"
 
 #include <iostream>
 #include <cstdlib>
@@ -156,6 +157,19 @@ check_contact_username::check_contact_username(const Contact::Verification::Cont
 :   absents(nothing_else_whitespaces(_data.handle)),
     invalid(!absents_or_matches_pattern(_data.handle, username_pattern()))
 {
+}
+
+check_contact_birthday_validity::check_contact_birthday_validity(const Contact::Verification::Contact &_data)
+{
+    static const char *const ssntype_birthday = "BIRTHDAY";
+    try {
+        invalid = !_data.ssntype.isnull() &&
+                  (_data.ssntype.get_value() == ssntype_birthday) &&
+                  birthdate_from_string_to_date(_data.ssn.get_value()).is_special();
+    }
+    catch (...) {
+        invalid = true;
+    }
 }
 
 }//Fred::PublicRequest::MojeID

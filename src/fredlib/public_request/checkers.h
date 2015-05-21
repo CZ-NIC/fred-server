@@ -130,6 +130,13 @@ struct check_contact_username
     bool invalid:1;
 };
 
+struct check_contact_birthday_validity
+{
+    check_contact_birthday_validity(const Contact::Verification::Contact &_data);
+    bool success()const { return !invalid; }
+    bool invalid:1;
+};
+
 }//Fred::PublicRequest::MojeID
 
 /**
