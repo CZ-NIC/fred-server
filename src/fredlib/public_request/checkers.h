@@ -43,7 +43,7 @@ std::string email_phone_protection_period() { return "1MONTH"; }
 
 const boost::regex& phone_pattern()
 {
-    static const boost::regex pattern("^\\+[0-9]{1,3}\\.[0-9]{1,14}$");
+    static const boost::regex pattern("^[[:space:]]*\\+[0-9]{1,3}\\.[0-9]{1,14}[[:space:]]*$");
     return pattern;
 };
 
