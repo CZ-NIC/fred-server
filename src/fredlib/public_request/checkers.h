@@ -268,18 +268,18 @@ struct Check
 :   boost::mpl::front< CHECKERS >::type,
     Check< typename boost::mpl::pop_front< CHECKERS >::type >
 {
-    BOOST_STATIC_ASSERT(2 < SIZE);
+    BOOST_STATIC_ASSERT(1 < SIZE);
     BOOST_STATIC_ASSERT(SIZE == boost::mpl::size< CHECKERS >::type::value);
     typedef typename boost::mpl::front< CHECKERS >::type Current;
-    typedef Check< typename boost::mpl::pop_front< CHECKERS >::type > Others;
+    typedef Check< typename boost::mpl::pop_front< CHECKERS >::type > Tail;
     /**
      * Executes collection of partial checks on arbitrary data type.
      * @param _data checked data
      */
     template < typename DATA >
-    Check(DATA _data)
+    Check(DATA &_data)
     :   Current(_data),
-        Others(_data)
+        Tail(_data)
     { }
     /**
      * Executes collection of partial checks on arbitrary two arguments.
@@ -287,17 +287,9 @@ struct Check
      * @param _data1 second argument
      */
     template < typename DATA0, typename DATA1 >
-    Check(DATA0 _data0, DATA1 _data1)
+    Check(DATA0 &_data0, DATA1 &_data1)
     :   Current(_data0, _data1),
-        Others(_data0, _data1)
-    { }
-    /**
-     * Copy constructor.
-     * @param _src source data
-     */
-    Check(const Check &_src)
-    :   Current(_src),
-        Others(_src)
+        Tail(_data0, _data1)
     { }
     /**
      * Checks finished successfully.
@@ -305,101 +297,102 @@ struct Check
      */
     bool success()const
     {
-        return this->Current::success() && this->Others::success();
+        return this->Current::success() && this->Tail::success();
     }
 };
 
 /**
- * Specialization for SIZE=2. It stops the recursion.
+ * Specialization for SIZE=1. It stops the recursion.
  */
 template < typename CHECKERS >
-struct Check< CHECKERS, 2 >
-:   boost::mpl::front< CHECKERS >::type,
-    boost::mpl::front< typename boost::mpl::pop_front< CHECKERS >::type >::type
+struct Check< CHECKERS, 1 >
+:   boost::mpl::front< CHECKERS >::type
 {
-    BOOST_STATIC_ASSERT(boost::mpl::size< CHECKERS >::type::value == 2);
+    BOOST_STATIC_ASSERT(boost::mpl::size< CHECKERS >::type::value == 1);
     typedef typename boost::mpl::front< CHECKERS >::type Current;
-    typedef typename boost::mpl::front< typename boost::mpl::pop_front< CHECKERS >::type >::type Last;
     template < typename DATA >
-    Check(DATA _data)
-    :   Current(_data),
-        Last(_data)
+    Check(DATA &_data)
+    :   Current(_data)
     { }
     template < typename DATA0, typename DATA1 >
-    Check(DATA0 _data0, DATA1 _data1)
-    :   Current(_data0, _data1),
-        Last(_data0, _data1)
-    { }
-    Check(const Check &_src)
-    :   Current(_src),
-        Last(_src)
+    Check(DATA0 &_data0, DATA1 &_data1)
+    :   Current(_data0, _data1)
     { }
     bool success()const
     {
-        return this->Current::success() && this->Last::success();
+        return this->Current::success();
     }
 };
 
 /**
- * Encapsulates up to 3 function arguments into one object.
+ * Encapsulates up to 5 function arguments into one object.
  * @param T0 type of first argument
  * @param T1 type of second argument
  * @param T2 type of third argument
+ * @param T3 type of fourth argument
+ * @param T4 type of fifth argument
  */
-template < typename T0, typename T1 = boost::mpl::void_, typename T2 = boost::mpl::void_ >
-struct Args;
+template < typename T0, typename T1 = boost::mpl::void_, typename T2 = boost::mpl::void_,
+           typename T3 = boost::mpl::void_, typename T4 = boost::mpl::void_ >
+struct Args
+{
+    typedef T0 Current;
+    typedef Args< T1, T2, T3, T4 > Tail;
+    Args(T0 &_v, const Tail &_t):v(_v), t(_t) { }
+    Current& first() { return v; }
+    const Tail& rest()const { return t; }
+    template < ::size_t IDX, typename T = Current > struct At
+    {
+        typedef typename Tail::template At< IDX - 1 >::type type;
+        static type& value(const Args &_args) { return _args.rest().template value< IDX - 1 >(); }
+    };
+    template < typename T > struct At< 0, T >
+    {
+        typedef T type;
+        static type& value(const Args &_args) { return _args.v; }
+    };
+    template < ::size_t IDX >
+    typename At< IDX >::type& value()const { return At< IDX >::value(*this); }
+    Current &v;
+    Tail t;
+};
 
+/**
+ * Specialization for one argument.
+ */
 template < typename T0 >
 struct Args< T0 >
 {
     typedef T0 Current;
+    Args(T0 &_v0):v(_v0) { }
+    Current& first() { return v; }
     template < ::size_t IDX, typename T = Current > struct At;
     template < typename T > struct At< 0, T >
     {
         typedef T type;
-        static type value(const Args &_args) { return _args.v; }
+        static type& value(const Args &_args) { return _args.v; }
     };
-    Args(T0 _v0):v(_v0) { }
-    Current v;
+    template < ::size_t IDX >
+    typename At< IDX >::type& value()const { return v; }
+    Current &v;
 };
 
+/**
+ * Encapsulates one argument of arbitrary type into one object.
+ * @param a0 first argument
+ * @return object with this argument
+ */
+template < typename T0 >
+Args< T0 > make_args(T0 &a0) { return Args< T0 >(a0); }
+
+/**
+ * Joins two arguments of arbitrary types into one object.
+ * @param a0 first argument
+ * @param a1 second argument
+ * @return collection of two arguments
+ */
 template < typename T0, typename T1 >
-struct Args< T0, T1 >:Args< T1 >
-{
-    typedef T0 Current;
-    typedef Args< T1 > Others;
-    template < ::size_t IDX, typename T = Current > struct At
-    {
-        typedef typename Others::template At< IDX - 1 >::type type;
-        static type value(const Args &_args) { return Others::template At< IDX - 1 >::value(_args); }
-    };
-    template < typename T > struct At< 0, T >
-    {
-        typedef T type;
-        static type value(const Args &_args) { return _args.v; }
-    };
-    Args(T0 _v0, T1 _v1):Others(_v1), v(_v0) { }
-    Current v;
-};
-
-template < typename T0, typename T1, typename T2 >
-struct Args:Args< T1, T2 >
-{
-    typedef T0 Current;
-    typedef Args< T1, T2 > Others;
-    template < ::size_t IDX, typename T = Current > struct At
-    {
-        typedef typename Others::template At< IDX - 1 >::type type;
-        static type value(const Args &_args) { return Others::template At< IDX - 1 >::value(_args); }
-    };
-    template < typename T > struct At< 0, T >
-    {
-        typedef T type;
-        static type value(const Args &_args) { return _args.v; }
-    };
-    Args(T0 _v0, T1 _v1, T2 _v2):Others(_v1, _v2), v(_v0) { }
-    Current v;
-};
+Args< T0, T1 > make_args(T0 &a0, T1 &a1) { return Args< T0, T1 >(a0, make_args(a1)); }
 
 /**
  * Joins three arguments of arbitrary types into one object.
@@ -409,24 +402,33 @@ struct Args:Args< T1, T2 >
  * @return collection of three arguments
  */
 template < typename T0, typename T1, typename T2 >
-Args< T0, T1, T2 > make_args(T0 a0, T1 a1, T2 a2) { return Args< T0, T1, T2 >(a0, a1, a2); }
+Args< T0, T1, T2 > make_args(T0 &a0, T1 &a1, T2 &a2)
+{ return Args< T0, T1, T2 >(a0, make_args(a1, a2)); }
 
 /**
- * Joins two arguments of arbitrary types into one object.
+ * Joins four arguments of arbitrary types into one object.
  * @param a0 first argument
  * @param a1 second argument
- * @return collection of two arguments
+ * @param a2 third argument
+ * @param a3 fourth argument
+ * @return collection of four arguments
  */
-template < typename T0, typename T1 >
-Args< T0, T1 > make_args(T0 a0, T1 a1) { return Args< T0, T1 >(a0, a1); }
+template < typename T0, typename T1, typename T2, typename T3 >
+Args< T0, T1, T2 > make_args(T0 &a0, T1 &a1, T2 &a2, T3 &a3)
+{ return Args< T0, T1, T2, T3 >(a0, make_args(a1, a2, a3)); }
 
 /**
- * Encapsulates one argument of arbitrary type into one object.
+ * Joins five arguments of arbitrary types into one object.
  * @param a0 first argument
- * @return object with this argument
+ * @param a1 second argument
+ * @param a2 third argument
+ * @param a3 fourth argument
+ * @param a4 fifth argument
+ * @return collection of five arguments
  */
-template < typename T0 >
-Args< T0 > make_args(T0 a0) { return Args< T0 >(a0); }
+template < typename T0, typename T1, typename T2, typename T3, typename T4 >
+Args< T0, T1, T2 > make_args(T0 &a0, T1 &a1, T2 &a2, T3 &a3, T4 &a4)
+{ return Args< T0, T1, T2, T3, T4 >(a0, make_args(a1, a2, a3, a4)); }
 
 /**
  * Unifies constructor call with different number of arguments into one uniform interface.
@@ -436,26 +438,45 @@ template < typename C >
 struct ConstructWithArgs:C
 {
     /**
+     * Constructor with five arguments is used.
+     */
+    template < typename T0, typename T1, typename T2, typename T3, typename T4 >
+    ConstructWithArgs(const Args< T0, T1, T2, T3, T4 > &_a)
+    :   C(_a.template value< 0 >(),
+          _a.template value< 1 >(),
+          _a.template value< 2 >(),
+          _a.template value< 3 >(),
+          _a.template value< 4 >()) { }
+    /**
+     * Constructor with four arguments is used.
+     */
+    template < typename T0, typename T1, typename T2, typename T3 >
+    ConstructWithArgs(const Args< T0, T1, T2, T3 > &_a)
+    :   C(_a.template value< 0 >(),
+          _a.template value< 1 >(),
+          _a.template value< 2 >(),
+          _a.template value< 3 >()) { }
+    /**
      * Constructor with three arguments is used.
      */
     template < typename T0, typename T1, typename T2 >
     ConstructWithArgs(const Args< T0, T1, T2 > &_a)
-    :   C(Args< T0, T1, T2 >::template At< 0 >::value(_a),
-          Args< T0, T1, T2 >::template At< 1 >::value(_a),
-          Args< T0, T1, T2 >::template At< 2 >::value(_a)) { }
+    :   C(_a.template value< 0 >(),
+          _a.template value< 1 >(),
+          _a.template value< 2 >()) { }
     /**
      * Constructor with two arguments is used.
      */
     template < typename T0, typename T1 >
     ConstructWithArgs(const Args< T0, T1 > &_a)
-    :   C(Args< T0, T1 >::template At< 0 >::value(_a),
-          Args< T0, T1 >::template At< 1 >::value(_a)) { }
+    :   C(_a.template value< 0 >(),
+          _a.template value< 1 >()) { }
     /**
      * Constructor with one argument is used.
      */
     template < typename T0 >
     ConstructWithArgs(const Args< T0 > &_a)
-    :   C(Args< T0 >::template At< 0 >::value(_a)) { }
+    :   C(_a.template value< 0 >()) { }
 };
 
 /**
@@ -503,73 +524,79 @@ typedef HCheck< checkA, checkB, checkC > HCheckABC;
 HCheckABC c(make_args(0), make_args("1"), make_args((void*)NULL, 2));
 ~~~~~~~~~~~~~~
  */
-template < typename CHECK0, typename CHECK1, typename CHECK2 = boost::mpl::void_,
+template < typename CHECK0, typename CHECK1 = boost::mpl::void_, typename CHECK2 = boost::mpl::void_,
            typename CHECK3 = boost::mpl::void_, typename CHECK4 = boost::mpl::void_ >
 struct HCheck
 :   ConstructWithArgs< CHECK0 >,
     HCheck< CHECK1, CHECK2, CHECK3, CHECK4 >
 {
     typedef ConstructWithArgs< CHECK0 > Current;
-    typedef HCheck< CHECK1, CHECK2, CHECK3, CHECK4 > Others;
+    typedef HCheck< CHECK1, CHECK2, CHECK3, CHECK4 > Tail;
     /**
-     * Executes 5 checks with different sets of arguments.
-     * @param _a0 arguments for first check
-     * @param _a1 arguments for second check
-     * @param _a2 arguments for third check
-     * @param _a3 arguments for fourth check
-     * @param _a4 arguments for fifth check
+     * Executes 5 checks with different sets of arguments and stores their results into this object.
+     * @param _a0 arguments for first checks
+     * @param _a1 arguments for second checks
+     * @param _a2 arguments for third checks
+     * @param _a3 arguments for fourth checks
+     * @param _a4 arguments for fifth checks
      * @note arguments can be created by using @ref make_args template function
      */
-    template < typename ARG0, typename ARG1, typename ARG2, typename ARG3, typename ARG4 >
-    HCheck(const ARG0 &_a0, const ARG1 &_a1, const ARG2 &_a2, const ARG3 &_a3, const ARG4 &_a4)
-    : Current(_a0), Others(_a1, _a2, _a3, _a4) { }
+    template < typename T0, typename T1, typename T2, typename T3, typename T4 >
+    HCheck(const T0 &_a0, const T1 &_a1, const T2 &_a2, const T3 &_a3, const T4 &_a4)
+    :   Current(_a0),
+        Tail(_a1, _a2, _a3, _a4) { }
+    /**
+     * Executes 4 checks with different sets of arguments and stores their results into this object.
+     * @param _a0 arguments for first checks
+     * @param _a1 arguments for second checks
+     * @param _a2 arguments for third checks
+     * @param _a3 arguments for fourth checks
+     * @note arguments can be created by using @ref make_args template function
+     */
+    template < typename T0, typename T1, typename T2, typename T3 >
+    HCheck(const T0 &_a0, const T1 &_a1, const T2 &_a2, const T3 &_a3)
+    :   Current(_a0),
+        Tail(_a1, _a2, _a3) { }
+    /**
+     * Executes 3 checks with different sets of arguments and stores their results into this object.
+     * @param _a0 arguments for first checks
+     * @param _a1 arguments for second checks
+     * @param _a2 arguments for third checks
+     * @note arguments can be created by using @ref make_args template function
+     */
+    template < typename T0, typename T1, typename T2 >
+    HCheck(const T0 &_a0, const T1 &_a1, const T2 &_a2)
+    :   Current(_a0),
+        Tail(_a1, _a2) { }
+    /**
+     * Executes 2 checks with different sets of arguments and stores their results into this object.
+     * @param _a0 arguments for first checks
+     * @param _a1 arguments for second checks
+     * @note arguments can be created by using @ref make_args template function
+     */
+    template < typename T0, typename T1 >
+    HCheck(const T0 &_a0, const T1 &_a1)
+    :   Current(_a0),
+        Tail(_a1) { }
     /**
      * Checks finished successfully.
      * @return true if all checks finished successfully
      */
-    bool success()const { return this->Current::success() && this->Others::success(); }
-};
-
-template < typename CHECK0, typename CHECK1, typename CHECK2, typename CHECK3 >
-struct HCheck< CHECK0, CHECK1, CHECK2, CHECK3 >
-:   ConstructWithArgs< CHECK0 >,
-    HCheck< CHECK1, CHECK2 >
-{
-    typedef ConstructWithArgs< CHECK0 > Current;
-    typedef HCheck< CHECK1, CHECK2, CHECK3 > Others;
-    template < typename ARG0, typename ARG1, typename ARG2, typename ARG3 >
-    HCheck(const ARG0 &_a0, const ARG1 &_a1, const ARG2 &_a2, const ARG3 &_a3)
-    : Current(_a0), Others(_a1, _a2, _a3) { }
-    bool success()const { return this->Current::success() && this->Others::success(); }
-};
-
-template < typename CHECK0, typename CHECK1, typename CHECK2 >
-struct HCheck< CHECK0, CHECK1, CHECK2 >
-:   ConstructWithArgs< CHECK0 >,
-    HCheck< CHECK1, CHECK2 >
-{
-    typedef ConstructWithArgs< CHECK0 > Current;
-    typedef HCheck< CHECK1, CHECK2 > Others;
-    template < typename ARG0, typename ARG1, typename ARG2 >
-    HCheck(const ARG0 &_a0, const ARG1 &_a1, const ARG2 &_a2)
-    : Current(_a0), Others(_a1, _a2) { }
-    bool success()const { return this->Current::success() && this->Others::success(); }
+    bool success()const { return this->Current::success() && this->Tail::success(); }
 };
 
 /**
- * Specialization for two checks. It stops the recursion.
+ * Specialization for one check. It stops the recursion.
  */
-template < typename CHECK0, typename CHECK1 >
-struct HCheck< CHECK0, CHECK1 >
-:   ConstructWithArgs< CHECK0 >,
-    ConstructWithArgs< CHECK1 >
+template < typename CHECK0 >
+struct HCheck< CHECK0 >
+:   ConstructWithArgs< CHECK0 >
 {
     typedef ConstructWithArgs< CHECK0 > Current;
-    typedef ConstructWithArgs< CHECK1 > Last;
-    template < typename ARG0, typename ARG1 >
-    HCheck(const ARG0 &_a0, const ARG1 &_a1)
-    : Current(_a0), Last(_a1) { }
-    bool success()const { return this->Current::success() && this->Last::success(); }
+    template < typename T0 >
+    HCheck(const T0 &_a0)
+    :   Current(_a0) { }
+    bool success()const { return this->Current::success(); }
 };
 
 }//Fred::PublicRequest
