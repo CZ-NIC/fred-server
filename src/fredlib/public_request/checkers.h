@@ -31,7 +31,6 @@
 #include <boost/mpl/list.hpp>
 #include <boost/mpl/front.hpp>
 #include <boost/mpl/pop_front.hpp>
-#include <boost/mpl/push_front.hpp>
 #include <boost/mpl/size.hpp>
 #include <boost/mpl/void.hpp>
 #include <boost/regex.hpp>
@@ -382,7 +381,12 @@ struct checkC
 
 typedef HeterogeneousCheck< checkA, checkB, checkC > checkABC;
 
-checkABC result(checkA(0), checkB("1"), checkC(NULL, 2));
+checkABC r0(checkA(0),
+            checkB("1"),
+            checkC(NULL, 2));
+checkABC r1(checkABC::Run< 0 >::check(0),
+            checkABC::Run< 1 >::check("1"),
+            checkABC::Run< 2 >::check(NULL, 2));
 ~~~~~~~~~~~~~~
  */
 template < typename CHECK0, typename CHECK1, typename CHECK2 = boost::mpl::void_,
@@ -393,10 +397,22 @@ struct HeterogeneousCheck
 {
     typedef CHECK0 Current;
     typedef HeterogeneousCheck< CHECK1, CHECK2, CHECK3, CHECK4 > Others;
+    template < ::size_t IDX, typename C0 = Current >
+    struct CheckAt
+    {
+        typedef typename Others::template CheckAt< IDX - 1 >::type type;
+    };
+    template < typename C0 >
+    struct CheckAt< 0, C0 >
+    {
+        typedef C0 type;
+    };
     /**
-     * List of all homogeneous checks.
+     * Random access to the check type.
+     * @param IDX numeric index into array of check types
+     * @return Run< IDX >::check is requested check type
      */
-    typedef boost::mpl::push_front< CHECK0, typename Others::Checks > Checks;
+    template < ::size_t IDX > struct Run { typedef typename CheckAt< IDX >::type check; };
     /**
      * Constructs one object from results of 5 sets of homogeneous checks.
      * @param _c0 result of first homogeneous checks
@@ -426,7 +442,17 @@ struct HeterogeneousCheck< CHECK0, CHECK1, CHECK2, CHECK3 >
 {
     typedef CHECK0 Current;
     typedef HeterogeneousCheck< CHECK1, CHECK2, CHECK3 > Others;
-    typedef boost::mpl::push_front< CHECK0, typename Others::Checks > Checks;
+    template < ::size_t IDX, typename C0 = Current >
+    struct CheckAt
+    {
+        typedef typename Others::template CheckAt< IDX - 1 >::type type;
+    };
+    template < typename C0 >
+    struct CheckAt< 0, C0 >
+    {
+        typedef C0 type;
+    };
+    template < ::size_t IDX > struct Run { typedef typename CheckAt< IDX >::type check; };
     HeterogeneousCheck(const CHECK0 &_c0, const CHECK1 &_c1, const CHECK2 &_c2, const CHECK3 &_c3)
     :   Current(_c0),
         Others(_c1, _c2, _c3)
@@ -444,7 +470,17 @@ struct HeterogeneousCheck< CHECK0, CHECK1, CHECK2 >
 {
     typedef CHECK0 Current;
     typedef HeterogeneousCheck< CHECK1, CHECK2 > Others;
-    typedef boost::mpl::push_front< CHECK0, typename Others::Checks > Checks;
+    template < ::size_t IDX, typename C0 = Current >
+    struct CheckAt
+    {
+        typedef typename Others::template CheckAt< IDX - 1 >::type type;
+    };
+    template < typename C0 >
+    struct CheckAt< 0, C0 >
+    {
+        typedef C0 type;
+    };
+    template < ::size_t IDX > struct Run { typedef typename CheckAt< IDX >::type check; };
     HeterogeneousCheck(const CHECK0 &_c0, const CHECK1 &_c1, const CHECK2 &_c2)
     :   Current(_c0),
         Others(_c1, _c2)
@@ -465,7 +501,19 @@ struct HeterogeneousCheck< CHECK0, CHECK1 >
 {
     typedef CHECK0 Current;
     typedef CHECK1 Last;
-    typedef boost::mpl::list< CHECK0, CHECK1 > Checks;
+    template < ::size_t IDX, typename C0 = Current, typename C1 = Last >
+    struct CheckAt;
+    template < typename C0, typename C1 >
+    struct CheckAt< 0, C0, C1 >
+    {
+        typedef C0 type;
+    };
+    template < typename C0, typename C1 >
+    struct CheckAt< 1, C0, C1 >
+    {
+        typedef C1 type;
+    };
+    template < ::size_t IDX > struct Run { typedef typename CheckAt< IDX >::type check; };
     HeterogeneousCheck(const CHECK0 &_c0, const CHECK1 &_c1)
     :   Current(_c0),
         Last(_c1)
