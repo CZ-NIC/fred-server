@@ -341,13 +341,132 @@ struct Check< CHECKERS, 2 >
 };
 
 /**
- * Collects results of set of homogeneous partial checks into one object, restricted to a maximum 5 checks.
- * @param CHECK0 first set of partial checks
- * @param CHECK1 second set of partial checks
- * @param CHECK2 third set of partial checks
- * @param CHECK3 fourth set of partial checks
- * @param CHECK4 fifth set of partial checks
- * @note  Each check has to contain copy constructor and const method `success` without arguments like this example:
+ * Encapsulates up to 3 function arguments into one object.
+ * @param T0 type of first argument
+ * @param T1 type of second argument
+ * @param T2 type of third argument
+ */
+template < typename T0, typename T1 = boost::mpl::void_, typename T2 = boost::mpl::void_ >
+struct Args;
+
+template < typename T0 >
+struct Args< T0 >
+{
+    typedef T0 Current;
+    template < ::size_t IDX, typename T = Current > struct At;
+    template < typename T > struct At< 0, T >
+    {
+        typedef T type;
+        static type value(const Args &_args) { return _args.v; }
+    };
+    Args(T0 _v0):v(_v0) { }
+    Current v;
+};
+
+template < typename T0, typename T1 >
+struct Args< T0, T1 >:Args< T1 >
+{
+    typedef T0 Current;
+    typedef Args< T1 > Others;
+    template < ::size_t IDX, typename T = Current > struct At
+    {
+        typedef typename Others::template At< IDX - 1 >::type type;
+        static type value(const Args &_args) { return Others::template At< IDX - 1 >::value(_args); }
+    };
+    template < typename T > struct At< 0, T >
+    {
+        typedef T type;
+        static type value(const Args &_args) { return _args.v; }
+    };
+    Args(T0 _v0, T1 _v1):Others(_v1), v(_v0) { }
+    Current v;
+};
+
+template < typename T0, typename T1, typename T2 >
+struct Args:Args< T1, T2 >
+{
+    typedef T0 Current;
+    typedef Args< T1, T2 > Others;
+    template < ::size_t IDX, typename T = Current > struct At
+    {
+        typedef typename Others::template At< IDX - 1 >::type type;
+        static type value(const Args &_args) { return Others::template At< IDX - 1 >::value(_args); }
+    };
+    template < typename T > struct At< 0, T >
+    {
+        typedef T type;
+        static type value(const Args &_args) { return _args.v; }
+    };
+    Args(T0 _v0, T1 _v1, T2 _v2):Others(_v1, _v2), v(_v0) { }
+    Current v;
+};
+
+/**
+ * Joins three arguments of arbitrary types into one object.
+ * @param a0 first argument
+ * @param a1 second argument
+ * @param a2 third argument
+ * @return collection of three arguments
+ */
+template < typename T0, typename T1, typename T2 >
+Args< T0, T1, T2 > make_args(T0 a0, T1 a1, T2 a2) { return Args< T0, T1, T2 >(a0, a1, a2); }
+
+/**
+ * Joins two arguments of arbitrary types into one object.
+ * @param a0 first argument
+ * @param a1 second argument
+ * @return collection of two arguments
+ */
+template < typename T0, typename T1 >
+Args< T0, T1 > make_args(T0 a0, T1 a1) { return Args< T0, T1 >(a0, a1); }
+
+/**
+ * Encapsulates one argument of arbitrary type into one object.
+ * @param a0 first argument
+ * @return object with this argument
+ */
+template < typename T0 >
+Args< T0 > make_args(T0 a0) { return Args< T0 >(a0); }
+
+/**
+ * Unifies constructor call with different number of arguments into one uniform interface.
+ * @param C class which constructor is called
+ */
+template < typename C >
+struct ConstructWithArgs:C
+{
+    /**
+     * Constructor with three arguments is used.
+     */
+    template < typename T0, typename T1, typename T2 >
+    ConstructWithArgs(const Args< T0, T1, T2 > &_a)
+    :   C(Args< T0, T1, T2 >::template At< 0 >::value(_a),
+          Args< T0, T1, T2 >::template At< 1 >::value(_a),
+          Args< T0, T1, T2 >::template At< 2 >::value(_a)) { }
+    /**
+     * Constructor with two arguments is used.
+     */
+    template < typename T0, typename T1 >
+    ConstructWithArgs(const Args< T0, T1 > &_a)
+    :   C(Args< T0, T1 >::template At< 0 >::value(_a),
+          Args< T0, T1 >::template At< 1 >::value(_a)) { }
+    /**
+     * Constructor with one argument is used.
+     */
+    template < typename T0 >
+    ConstructWithArgs(const Args< T0 > &_a)
+    :   C(Args< T0 >::template At< 0 >::value(_a)) { }
+};
+
+/**
+ * Collection of partial checks with different arguments, restricted to a maximum 5 checks. The first 'H'
+ * means heterogeneous due to different arguments for executing partial checks.
+ * @param CHECK0 first partial check
+ * @param CHECK1 second partial check
+ * @param CHECK2 third partial check
+ * @param CHECK3 fourth partial check
+ * @param CHECK4 fifth partial check
+ * @note  Each check has to contain const method `success` without arguments like this example:
 ~~~~~~~~~~~~~~{.cpp}
 struct checkA0
 {
@@ -379,149 +498,78 @@ struct checkC
     bool invalid:1;
 };
 
-typedef HeterogeneousCheck< checkA, checkB, checkC > checkABC;
+typedef HCheck< checkA, checkB, checkC > HCheckABC;
 
-checkABC r0(checkA(0),
-            checkB("1"),
-            checkC(NULL, 2));
-checkABC r1(checkABC::Run< 0 >::check(0),
-            checkABC::Run< 1 >::check("1"),
-            checkABC::Run< 2 >::check(NULL, 2));
+HCheckABC c(make_args(0), make_args("1"), make_args((void*)NULL, 2));
 ~~~~~~~~~~~~~~
  */
 template < typename CHECK0, typename CHECK1, typename CHECK2 = boost::mpl::void_,
            typename CHECK3 = boost::mpl::void_, typename CHECK4 = boost::mpl::void_ >
-struct HeterogeneousCheck
-:   CHECK0,
-    HeterogeneousCheck< CHECK1, CHECK2, CHECK3, CHECK4 >
+struct HCheck
+:   ConstructWithArgs< CHECK0 >,
+    HCheck< CHECK1, CHECK2, CHECK3, CHECK4 >
 {
-    typedef CHECK0 Current;
-    typedef HeterogeneousCheck< CHECK1, CHECK2, CHECK3, CHECK4 > Others;
-    template < ::size_t IDX, typename C0 = Current >
-    struct CheckAt
-    {
-        typedef typename Others::template CheckAt< IDX - 1 >::type type;
-    };
-    template < typename C0 >
-    struct CheckAt< 0, C0 >
-    {
-        typedef C0 type;
-    };
+    typedef ConstructWithArgs< CHECK0 > Current;
+    typedef HCheck< CHECK1, CHECK2, CHECK3, CHECK4 > Others;
     /**
-     * Random access to the check type.
-     * @param IDX numeric index into array of check types
-     * @return Run< IDX >::check is requested check type
+     * Executes 5 checks with different sets of arguments.
+     * @param _a0 arguments for first check
+     * @param _a1 arguments for second check
+     * @param _a2 arguments for third check
+     * @param _a3 arguments for fourth check
+     * @param _a4 arguments for fifth check
+     * @note arguments can be created by using @ref make_args template function
      */
-    template < ::size_t IDX > struct Run { typedef typename CheckAt< IDX >::type check; };
-    /**
-     * Constructs one object from results of 5 sets of homogeneous checks.
-     * @param _c0 result of first homogeneous checks
-     * @param _c1 result of second homogeneous checks
-     * @param _c2 result of third homogeneous checks
-     * @param _c3 result of fourth homogeneous checks
-     * @param _c4 result of fifth homogeneous checks
-     */
-    HeterogeneousCheck(const CHECK0 &_c0, const CHECK1 &_c1, const CHECK2 &_c2, const CHECK3 &_c3, const CHECK4 &_c4)
-    :   Current(_c0),
-        Others(_c1, _c2, _c3, _c4)
-    { }
+    template < typename ARG0, typename ARG1, typename ARG2, typename ARG3, typename ARG4 >
+    HCheck(const ARG0 &_a0, const ARG1 &_a1, const ARG2 &_a2, const ARG3 &_a3, const ARG4 &_a4)
+    : Current(_a0), Others(_a1, _a2, _a3, _a4) { }
     /**
      * Checks finished successfully.
-     * @return true if all sets of homogeneous checks finished successfully
+     * @return true if all checks finished successfully
      */
-    bool success()const
-    {
-        return this->Current::success() && this->Others::success();
-    }
+    bool success()const { return this->Current::success() && this->Others::success(); }
 };
 
 template < typename CHECK0, typename CHECK1, typename CHECK2, typename CHECK3 >
-struct HeterogeneousCheck< CHECK0, CHECK1, CHECK2, CHECK3 >
-:   CHECK0,
-    HeterogeneousCheck< CHECK1, CHECK2, CHECK3 >
+struct HCheck< CHECK0, CHECK1, CHECK2, CHECK3 >
+:   ConstructWithArgs< CHECK0 >,
+    HCheck< CHECK1, CHECK2 >
 {
-    typedef CHECK0 Current;
-    typedef HeterogeneousCheck< CHECK1, CHECK2, CHECK3 > Others;
-    template < ::size_t IDX, typename C0 = Current >
-    struct CheckAt
-    {
-        typedef typename Others::template CheckAt< IDX - 1 >::type type;
-    };
-    template < typename C0 >
-    struct CheckAt< 0, C0 >
-    {
-        typedef C0 type;
-    };
-    template < ::size_t IDX > struct Run { typedef typename CheckAt< IDX >::type check; };
-    HeterogeneousCheck(const CHECK0 &_c0, const CHECK1 &_c1, const CHECK2 &_c2, const CHECK3 &_c3)
-    :   Current(_c0),
-        Others(_c1, _c2, _c3)
-    { }
-    bool success()const
-    {
-        return this->Current::success() && this->Others::success();
-    }
+    typedef ConstructWithArgs< CHECK0 > Current;
+    typedef HCheck< CHECK1, CHECK2, CHECK3 > Others;
+    template < typename ARG0, typename ARG1, typename ARG2, typename ARG3 >
+    HCheck(const ARG0 &_a0, const ARG1 &_a1, const ARG2 &_a2, const ARG3 &_a3)
+    : Current(_a0), Others(_a1, _a2, _a3) { }
+    bool success()const { return this->Current::success() && this->Others::success(); }
 };
 
 template < typename CHECK0, typename CHECK1, typename CHECK2 >
-struct HeterogeneousCheck< CHECK0, CHECK1, CHECK2 >
-:   CHECK0,
-    HeterogeneousCheck< CHECK1, CHECK2 >
+struct HCheck< CHECK0, CHECK1, CHECK2 >
+:   ConstructWithArgs< CHECK0 >,
+    HCheck< CHECK1, CHECK2 >
 {
-    typedef CHECK0 Current;
-    typedef HeterogeneousCheck< CHECK1, CHECK2 > Others;
-    template < ::size_t IDX, typename C0 = Current >
-    struct CheckAt
-    {
-        typedef typename Others::template CheckAt< IDX - 1 >::type type;
-    };
-    template < typename C0 >
-    struct CheckAt< 0, C0 >
-    {
-        typedef C0 type;
-    };
-    template < ::size_t IDX > struct Run { typedef typename CheckAt< IDX >::type check; };
-    HeterogeneousCheck(const CHECK0 &_c0, const CHECK1 &_c1, const CHECK2 &_c2)
-    :   Current(_c0),
-        Others(_c1, _c2)
-    { }
-    bool success()const
-    {
-        return this->Current::success() && this->Others::success();
-    }
+    typedef ConstructWithArgs< CHECK0 > Current;
+    typedef HCheck< CHECK1, CHECK2 > Others;
+    template < typename ARG0, typename ARG1, typename ARG2 >
+    HCheck(const ARG0 &_a0, const ARG1 &_a1, const ARG2 &_a2)
+    : Current(_a0), Others(_a1, _a2) { }
+    bool success()const { return this->Current::success() && this->Others::success(); }
 };
 
 /**
  * Specialization for two checks. It stops the recursion.
  */
 template < typename CHECK0, typename CHECK1 >
-struct HeterogeneousCheck< CHECK0, CHECK1 >
-:   CHECK0,
-    CHECK1
+struct HCheck< CHECK0, CHECK1 >
+:   ConstructWithArgs< CHECK0 >,
+    ConstructWithArgs< CHECK1 >
 {
-    typedef CHECK0 Current;
-    typedef CHECK1 Last;
-    template < ::size_t IDX, typename C0 = Current, typename C1 = Last >
-    struct CheckAt;
-    template < typename C0, typename C1 >
-    struct CheckAt< 0, C0, C1 >
-    {
-        typedef C0 type;
-    };
-    template < typename C0, typename C1 >
-    struct CheckAt< 1, C0, C1 >
-    {
-        typedef C1 type;
-    };
-    template < ::size_t IDX > struct Run { typedef typename CheckAt< IDX >::type check; };
-    HeterogeneousCheck(const CHECK0 &_c0, const CHECK1 &_c1)
-    :   Current(_c0),
-        Last(_c1)
-    { }
-    bool success()const
-    {
-        return this->Current::success() && this->Last::success();
-    }
+    typedef ConstructWithArgs< CHECK0 > Current;
+    typedef ConstructWithArgs< CHECK1 > Last;
+    template < typename ARG0, typename ARG1 >
+    HCheck(const ARG0 &_a0, const ARG1 &_a1)
+    : Current(_a0), Last(_a1) { }
+    bool success()const { return this->Current::success() && this->Last::success(); }
 };
 
 }//Fred::PublicRequest
