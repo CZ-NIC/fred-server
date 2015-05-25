@@ -16,7 +16,7 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/fredlib/public_request/checkers.h"
+#include "src/fredlib/contact/checkers.h"
 #include "src/fredlib/contact_verification/django_email_format.h"
 #include "util/idn_utils.h"
 #include "util/types/birthdate.h"
@@ -28,7 +28,6 @@
 #include <boost/algorithm/string/trim.hpp>
 
 namespace Fred {
-namespace PublicRequest {
 
 namespace {
 
@@ -42,41 +41,42 @@ bool absent_or_empty(const Nullable< std::string > &_data)
     return _data.isnull() || nothing_else_whitespaces(_data.get_value());
 }
 
-bool absents_or_matches_pattern(const std::string &_str, const boost::regex &_pattern)
+bool absent_or_match_pattern(const std::string &_str, const boost::regex &_pattern)
 {
     return nothing_else_whitespaces(_str) ||
            boost::regex_match(_str, _pattern);
 }
 
-bool absents_or_matches_pattern(const Nullable< std::string > &_str, const boost::regex &_pattern)
+bool absent_or_match_pattern(const Nullable< std::string > &_str, const boost::regex &_pattern)
 {
     return _str.isnull() ||
-           absents_or_matches_pattern(_str.get_value(), _pattern);
+           absent_or_match_pattern(_str.get_value(), _pattern);
 }
 
-}//Fred::PublicRequest::{anonymous}
+}//Fred::{anonymous}
 
-check_contact_name::check_contact_name(const Contact::Verification::Contact &_data)
+check_contact_name::check_contact_name(const InfoContactData &_data)
 {
-    const std::string name = boost::algorithm::trim_copy(_data.name);
+    const std::string name = boost::algorithm::trim_copy(_data.name.get_value_or_default());
     first_name_absents = name.empty();
     last_name_absents = name.find_last_of(' ') == std::string::npos;
 }
 
-check_contact_mailing_address::check_contact_mailing_address(const Contact::Verification::Contact &_data)
+check_contact_mailing_address::check_contact_mailing_address(const InfoContactData &_data)
 {
-    street1_absents = absent_or_empty(_data.street1);
-    city_absents = absent_or_empty(_data.city);
-    postalcode_absents = absent_or_empty(_data.postalcode);
-    country_absents = absent_or_empty(_data.country);
+    const InfoContactData::Address addr = _data.get_address< ContactAddressType::MAILING >();
+    street1_absents = nothing_else_whitespaces(addr.street1);
+    city_absents = nothing_else_whitespaces(addr.city);
+    postalcode_absents = nothing_else_whitespaces(addr.postalcode);
+    country_absents = nothing_else_whitespaces(addr.country);
 }
 
-check_contact_email_presence::check_contact_email_presence(const Contact::Verification::Contact &_data)
+check_contact_email_presence::check_contact_email_presence(const InfoContactData &_data)
 :   absents(absent_or_empty(_data.email))
 {
 }
 
-check_contact_email_validity::check_contact_email_validity(const Contact::Verification::Contact &_data)
+check_contact_email_validity::check_contact_email_validity(const InfoContactData &_data)
 {
     enum { MAX_MOJEID_EMAIL_LENGTH = 200 };
     const std::string email = _data.email.get_value_or_default();
@@ -87,7 +87,7 @@ check_contact_email_validity::check_contact_email_validity(const Contact::Verifi
 }
 
 check_contact_email_availability::check_contact_email_availability(
-    const Contact::Verification::Contact &_data,
+    const InfoContactData &_data,
     OperationContext &_ctx)
 :   check_contact_email_presence(_data)
 {
@@ -111,18 +111,18 @@ check_contact_email_availability::check_contact_email_availability(
     used_recently = static_cast< bool >(ucheck[0][0]);
 }
 
-check_contact_phone_presence::check_contact_phone_presence(const Contact::Verification::Contact &_data)
+check_contact_phone_presence::check_contact_phone_presence(const InfoContactData &_data)
 :   absents(absent_or_empty(_data.telephone))
 {
 }
 
-check_contact_phone_validity::check_contact_phone_validity(const Contact::Verification::Contact &_data)
-:   invalid(!absents_or_matches_pattern(_data.telephone, phone_pattern()))
+check_contact_phone_validity::check_contact_phone_validity(const InfoContactData &_data)
+:   invalid(!absent_or_match_pattern(_data.telephone, phone_pattern()))
 {
 }
 
 check_contact_phone_availability::check_contact_phone_availability(
-    const Contact::Verification::Contact &_data,
+    const InfoContactData &_data,
     OperationContext &_ctx)
 :   check_contact_phone_presence(_data)
 {
@@ -146,20 +146,20 @@ check_contact_phone_availability::check_contact_phone_availability(
     used_recently = static_cast< bool >(ucheck[0][0]);
 }
 
-check_contact_fax_validity::check_contact_fax_validity(const Contact::Verification::Contact &_data)
-:   invalid(!absents_or_matches_pattern(_data.fax, phone_pattern()))
+check_contact_fax_validity::check_contact_fax_validity(const InfoContactData &_data)
+:   invalid(!absent_or_match_pattern(_data.fax, phone_pattern()))
 {
 }
 
 namespace MojeID {
 
-check_contact_username::check_contact_username(const Contact::Verification::Contact &_data)
+check_contact_username::check_contact_username(const InfoContactData &_data)
 :   absents(nothing_else_whitespaces(_data.handle)),
-    invalid(!absents_or_matches_pattern(_data.handle, username_pattern()))
+    invalid(!absent_or_match_pattern(_data.handle, username_pattern()))
 {
 }
 
-check_contact_birthday_validity::check_contact_birthday_validity(const Contact::Verification::Contact &_data)
+check_contact_birthday_validity::check_contact_birthday_validity(const InfoContactData &_data)
 {
     static const char *const ssntype_birthday = "BIRTHDAY";
     try {
@@ -171,8 +171,6 @@ check_contact_birthday_validity::check_contact_birthday_validity(const Contact::
         invalid = true;
     }
 }
-
-}//Fred::PublicRequest::MojeID
 
 }//Fred::PublicRequest
 }//Fred

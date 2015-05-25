@@ -24,7 +24,7 @@
 #ifndef CHECKERS_H_D5C22F5DFA53E06F6886FD6DE0FD30C6//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
 #define CHECKERS_H_D5C22F5DFA53E06F6886FD6DE0FD30C6
 
-#include "src/fredlib/contact_verification/contact.h"
+#include "src/fredlib/contact/info_contact_data.h"
 #include "src/fredlib/opcontext.h"
 
 #include <boost/static_assert.hpp>
@@ -37,8 +37,6 @@
 
 /// Fred
 namespace Fred {
-/// PublicRequest
-namespace PublicRequest {
 
 std::string email_phone_protection_period() { return "1MONTH"; }
 
@@ -50,7 +48,7 @@ const boost::regex& phone_pattern()
 
 struct check_contact_name
 {
-    check_contact_name(const Contact::Verification::Contact &_data);
+    check_contact_name(const InfoContactData &_data);
     bool success()const { return !(first_name_absents || last_name_absents); }
     bool first_name_absents:1;
     bool last_name_absents:1;
@@ -58,7 +56,7 @@ struct check_contact_name
 
 struct check_contact_mailing_address
 {
-    check_contact_mailing_address(const Contact::Verification::Contact &_data);
+    check_contact_mailing_address(const InfoContactData &_data);
     bool success()const { return !(street1_absents || city_absents || postalcode_absents || country_absents); }
     bool street1_absents:1;
     bool city_absents:1;
@@ -68,49 +66,49 @@ struct check_contact_mailing_address
 
 struct check_contact_email_presence
 {
-    check_contact_email_presence(const Contact::Verification::Contact &_data);
+    check_contact_email_presence(const InfoContactData &_data);
     bool success()const { return !absents; }
     bool absents:1;
 };
 
 struct check_contact_email_validity
 {
-    check_contact_email_validity(const Contact::Verification::Contact &_data);
+    check_contact_email_validity(const InfoContactData &_data);
     bool success()const { return !invalid; }
     bool invalid:1;
 };
 
 struct check_contact_email_availability:check_contact_email_presence
 {
-    check_contact_email_availability(const Contact::Verification::Contact &_data, OperationContext &_ctx);
+    check_contact_email_availability(const InfoContactData &_data, OperationContext &_ctx);
     bool success()const { return this->check_contact_email_presence::success() && !used_recently; }
     bool used_recently:1;
 };
 
 struct check_contact_phone_presence
 {
-    check_contact_phone_presence(const Contact::Verification::Contact &_data);
+    check_contact_phone_presence(const InfoContactData &_data);
     bool success()const { return !absents; }
     bool absents:1;
 };
 
 struct check_contact_phone_validity
 {
-    check_contact_phone_validity(const Contact::Verification::Contact &_data);
+    check_contact_phone_validity(const InfoContactData &_data);
     bool success()const { return !invalid; }
     bool invalid:1;
 };
 
 struct check_contact_phone_availability:check_contact_phone_presence
 {
-    check_contact_phone_availability(const Contact::Verification::Contact &_data, OperationContext &_ctx);
+    check_contact_phone_availability(const InfoContactData &_data, OperationContext &_ctx);
     bool success()const { return this->check_contact_phone_presence::success() && !used_recently; }
     bool used_recently:1;
 };
 
 struct check_contact_fax_validity
 {
-    check_contact_fax_validity(const Contact::Verification::Contact &_data);
+    check_contact_fax_validity(const InfoContactData &_data);
     bool success()const { return !invalid; }
     bool invalid:1;
 };
@@ -125,7 +123,7 @@ const boost::regex& username_pattern()
 
 struct check_contact_username
 {
-    check_contact_username(const Contact::Verification::Contact &_data);
+    check_contact_username(const InfoContactData &_data);
     bool success()const { return !(absents || invalid); }
     bool absents:1;
     bool invalid:1;
@@ -133,7 +131,7 @@ struct check_contact_username
 
 struct check_contact_birthday_validity
 {
-    check_contact_birthday_validity(const Contact::Verification::Contact &_data);
+    check_contact_birthday_validity(const InfoContactData &_data);
     bool success()const { return !invalid; }
     bool invalid:1;
 };
@@ -599,7 +597,6 @@ struct HCheck< CHECK0 >
     bool success()const { return this->Current::success(); }
 };
 
-}//Fred::PublicRequest
 }//Fred
 
 #endif//CHECKERS_H_D5C22F5DFA53E06F6886FD6DE0FD30C6
