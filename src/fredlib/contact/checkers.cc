@@ -172,5 +172,5 @@ check_contact_birthday_validity::check_contact_birthday_validity(const InfoConta
     }
 }
 
-}//Fred::PublicRequest
+}//Fred::MojeID
 }//Fred
