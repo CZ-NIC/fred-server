@@ -309,7 +309,7 @@ Args< T0, T1, T2 > make_args(T0 &a0, T1 &a1, T2 &a2)
  * @return collection of four arguments
  */
 template < typename T0, typename T1, typename T2, typename T3 >
-Args< T0, T1, T2 > make_args(T0 &a0, T1 &a1, T2 &a2, T3 &a3)
+Args< T0, T1, T2, T3 > make_args(T0 &a0, T1 &a1, T2 &a2, T3 &a3)
 { return Args< T0, T1, T2, T3 >(a0, make_args(a1, a2, a3)); }
 
 /**
@@ -322,7 +322,7 @@ Args< T0, T1, T2 > make_args(T0 &a0, T1 &a1, T2 &a2, T3 &a3)
  * @return collection of five arguments
  */
 template < typename T0, typename T1, typename T2, typename T3, typename T4 >
-Args< T0, T1, T2 > make_args(T0 &a0, T1 &a1, T2 &a2, T3 &a3, T4 &a4)
+Args< T0, T1, T2, T3, T4 > make_args(T0 &a0, T1 &a1, T2 &a2, T3 &a3, T4 &a4)
 { return Args< T0, T1, T2, T3, T4 >(a0, make_args(a1, a2, a3, a4)); }
 
 /**
