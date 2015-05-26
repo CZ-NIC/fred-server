@@ -25,8 +25,11 @@
 #define CHECK_COLLECTOR_H_88829F1E63D951E2C5975F79439ECDBF
 
 #include <boost/static_assert.hpp>
-#include <boost/mpl/list.hpp>
+#include <boost/mpl/clear.hpp>
 #include <boost/mpl/front.hpp>
+#include <boost/mpl/is_sequence.hpp>
+#include <boost/mpl/list.hpp>
+#include <boost/mpl/logical.hpp>
 #include <boost/mpl/pop_front.hpp>
 #include <boost/mpl/size.hpp>
 #include <boost/mpl/void.hpp>
@@ -34,190 +37,6 @@
 
 /// Fred
 namespace Fred {
-
-/**
- * Executes partial checks and collects results of theirs.
- * @param CHECKERS a list of partial checks
- * @param SIZE number of partial checks, don't touch!!!
- * @note  CHECKERS is [boost::mpl::list](http://www.boost.org/doc/libs/1_48_0/libs/mpl/doc/refmanual/list.html)
- *        where each item represents one partial check class. Each item has to contain constructor with the
- *        same arguments and const method `success` without arguments like this example:
-~~~~~~~~~~~~~~{.cpp}
-struct partial_check_one
-{
-    partial_check_one(Data);
-    bool success()const;
-};
-
-struct partial_check_two
-{
-    partial_check_two(Data);
-    bool success()const;
-};
-
-typedef Check< list< partial_check_one, partial_check_two > > compound_check;
-~~~~~~~~~~~~~~
- * This class publicly inherits from each partial check so details of all cheks are still accessible. It's to be
- * seen in more complex example:
-~~~~~~~~~~~~~~{.cpp}
-#include "src/fredlib/public_request/checkers.h"
-#include <iostream>
-#include <cstdlib>
-
-namespace example
-{
-
-struct data
-{
-    std::string aaa;
-    std::string bbb;
-    std::string ccc;
-};
-
-struct check_item_aaa_presence_and_validity
-{
-    check_item_aaa_presence_and_validity(const data &_data)
-    :   absent(_data.aaa.empty()),
-        invalid(_data.aaa != "aaa")
-    { }
-    bool success()const { return !(absent || invalid); }
-    bool absent:1;
-    bool invalid:1;
-};
-
-struct check_item_bbb_presence_and_validity
-{
-    check_item_bbb_presence_and_validity(const data &_data)
-    :   absent(_data.bbb.empty()),
-        invalid(_data.bbb != "bbb")
-    { }
-    bool success()const { return !(absent || invalid); }
-    bool absent:1;
-    bool invalid:1;
-};
-
-struct check_item_ccc_presence_and_validity
-{
-    check_item_ccc_presence_and_validity(const data &_data)
-    :   absent(_data.ccc.empty()),
-        invalid(_data.ccc != "ccc")
-    { }
-    bool success()const { return !(absent || invalid); }
-    bool absent:1;
-    bool invalid:1;
-};
-
-typedef Fred::PublicRequest::Check< boost::mpl::list<
-            check_item_aaa_presence_and_validity,
-            check_item_bbb_presence_and_validity,
-            check_item_ccc_presence_and_validity > > check_some_data_expectations;
-
-typedef bool CheckSuccessful;
-
-CheckSuccessful check()
-{
-    data d;
-    d.aaa = "aaa";
-    d.ccc = "cccx";
-    const check_some_data_expectations r(d);
-    if (r.success()) {
-        return true;
-    }
-    if (!r.check_item_aaa_presence_and_validity::success()) {
-        if (r.check_item_aaa_presence_and_validity::absent) {
-            std::cout << "aaa absent" << std::endl;
-        }
-        if (r.check_item_aaa_presence_and_validity::invalid) {
-            std::cout << "aaa invalid" << std::endl;
-        }
-    }
-    if (!r.check_item_bbb_presence_and_validity::success()) {
-        if (r.check_item_bbb_presence_and_validity::absent) {
-            std::cout << "bbb absent" << std::endl;
-        }
-        if (r.check_item_bbb_presence_and_validity::invalid) {
-            std::cout << "bbb invalid" << std::endl;
-        }
-    }
-    if (!r.check_item_ccc_presence_and_validity::success()) {
-        if (r.check_item_ccc_presence_and_validity::absent) {
-            std::cout << "ccc absent" << std::endl;
-        }
-        if (r.check_item_ccc_presence_and_validity::invalid) {
-            std::cout << "ccc invalid" << std::endl;
-        }
-    }
-    return false;
-}
-
-}//example
-
-int main()
-{
-    return example::check() ? EXIT_SUCCESS : EXIT_FAILURE;
-}
-~~~~~~~~~~~~~~
- */
-template < typename CHECKERS, ::size_t SIZE = boost::mpl::size< CHECKERS >::type::value >
-struct Check
-:   boost::mpl::front< CHECKERS >::type,
-    Check< typename boost::mpl::pop_front< CHECKERS >::type >
-{
-    BOOST_STATIC_ASSERT(1 < SIZE);
-    BOOST_STATIC_ASSERT(SIZE == boost::mpl::size< CHECKERS >::type::value);
-    typedef typename boost::mpl::front< CHECKERS >::type Current;
-    typedef Check< typename boost::mpl::pop_front< CHECKERS >::type > Tail;
-    /**
-     * Executes collection of partial checks on arbitrary data type.
-     * @param _data checked data
-     */
-    template < typename DATA >
-    Check(DATA &_data)
-    :   Current(_data),
-        Tail(_data)
-    { }
-    /**
-     * Executes collection of partial checks on arbitrary two arguments.
-     * @param _data0 first argument
-     * @param _data1 second argument
-     */
-    template < typename DATA0, typename DATA1 >
-    Check(DATA0 &_data0, DATA1 &_data1)
-    :   Current(_data0, _data1),
-        Tail(_data0, _data1)
-    { }
-    /**
-     * Checks finished successfully.
-     * @return true if all partial checks finished successfully
-     */
-    bool success()const
-    {
-        return this->Current::success() && this->Tail::success();
-    }
-};
-
-/**
- * Specialization for SIZE=1. It stops the recursion.
- */
-template < typename CHECKERS >
-struct Check< CHECKERS, 1 >
-:   boost::mpl::front< CHECKERS >::type
-{
-    BOOST_STATIC_ASSERT(boost::mpl::size< CHECKERS >::type::value == 1);
-    typedef typename boost::mpl::front< CHECKERS >::type Current;
-    template < typename DATA >
-    Check(DATA &_data)
-    :   Current(_data)
-    { }
-    template < typename DATA0, typename DATA1 >
-    Check(DATA0 &_data0, DATA1 &_data1)
-    :   Current(_data0, _data1)
-    { }
-    bool success()const
-    {
-        return this->Current::success();
-    }
-};
 
 /**
  * Encapsulates up to 5 function arguments into one object.
@@ -374,14 +193,149 @@ struct ConstructWithArgs:C
     :   C(_a.template value< 0 >()) { }
 };
 
+template < typename LIST >
+struct contains_nonsequences_only
+:   boost::mpl::and_< boost::mpl::not_< typename boost::mpl::is_sequence< typename boost::mpl::front< LIST >::type > >,
+                      contains_nonsequences_only< typename boost::mpl::pop_front< LIST >::type >
+                    >
+{
+};
+
+template < >
+struct contains_nonsequences_only< typename boost::mpl::clear< boost::mpl::list< > >::type >:boost::true_type
+{};
+
 /**
- * Collection of partial checks with different arguments, restricted to a maximum 5 checks. The first 'H'
- * means heterogeneous due to different arguments for executing partial checks.
- * @param CHECK0 first partial check
- * @param CHECK1 second partial check
- * @param CHECK2 third partial check
- * @param CHECK3 fourth partial check
- * @param CHECK4 fifth partial check
+ * Collection of partial checks.
+ * This class publicly inherits from each partial check so details of all checks are still accessible.
+ * @param CHECK_LIST list of partial checks
+ * @param IS_HOMOGENEOUS depends on type of checks in CHECK_LIST
+ */
+template < typename CHECK_LIST, bool IS_HOMOGENEOUS = contains_nonsequences_only< CHECK_LIST >::value >
+struct Check;
+
+/**
+ * Specialization for checks with different arguments, currently restricted to a maximum 5 checks.
+ * @param HETEROGENEOUS_CHECK_LIST list of partial checks, each constructed with its own set of arguments
+ * @note  Each item of HETEROGENEOUS_CHECK_LIST has to be type list of homogeneous checks like this example:
+~~~~~~~~~~~~~~{.cpp}
+struct checkA0
+{
+    checkA0(int) { }
+    bool success()const { return !invalid; }
+    bool invalid:1;
+};
+
+struct checkA1
+{
+    checkA1(int) { }
+    bool success()const { return !invalid; }
+    bool invalid:1;
+};
+
+struct checkB
+{
+    checkB(std::string) { }
+    bool success()const { return !invalid; }
+    bool invalid:1;
+};
+
+struct checkC
+{
+    checkC(void*, int) { }
+    bool success()const { return !invalid; }
+    bool invalid:1;
+};
+
+typedef Check< boost::mpl::list< boost::mpl::list< checkA0, checkA1 >,
+                                 boost::mpl::list< checkB >,
+                                 boost::mpl::list< checkC >
+                               >
+             > CheckABC;
+
+bool check_finished_successfully(int a, const std::string &b, void *c0, int c1)
+{
+    return CheckABC(make_args(a), make_args(b), make_args(c0, c1)).success();
+}
+~~~~~~~~~~~~~~
+ */
+template < typename HETEROGENEOUS_CHECK_LIST >
+struct Check< HETEROGENEOUS_CHECK_LIST, false >
+:   ConstructWithArgs< Check< typename boost::mpl::front< HETEROGENEOUS_CHECK_LIST >::type, true > >,
+    Check< typename boost::mpl::pop_front< HETEROGENEOUS_CHECK_LIST >::type, false >
+{
+    typedef HETEROGENEOUS_CHECK_LIST Checks;
+    BOOST_MPL_ASSERT(( boost::mpl::not_< contains_nonsequences_only< Checks > > ));
+    typedef Check< typename boost::mpl::front< Checks >::type, true > Base;
+    typedef ConstructWithArgs< Base > Current;
+    typedef Check< typename boost::mpl::pop_front< Checks >::type, false > Tail;
+    /**
+     * Executes 5 checks with different sets of arguments and stores their results into this object.
+     * @param _a0 arguments for first group of checks
+     * @param _a1 arguments for second group of checks
+     * @param _a2 arguments for third group of checks
+     * @param _a3 arguments for fourth group of checks
+     * @param _a4 arguments for fifth group of checks
+     * @note arguments can be created by using @ref make_args template function
+     */
+    template < typename ARG0, typename ARG1, typename ARG2, typename ARG3, typename ARG4 >
+    Check(const ARG0 &_a0, const ARG1 &_a1, const ARG2 &_a2, const ARG3 &_a3, const ARG4 &_a4)
+    :   Current(_a0),
+        Tail(_a1, _a2, _a3, _a4) { }
+    /**
+     * Executes 4 checks with different sets of arguments and stores their results into this object.
+     * @param _a0 arguments for first group of checks
+     * @param _a1 arguments for second group of checks
+     * @param _a2 arguments for third group of checks
+     * @param _a3 arguments for fourth group of checks
+     * @note arguments can be created by using @ref make_args template function
+     */
+    template < typename ARG0, typename ARG1, typename ARG2, typename ARG3 >
+    Check(const ARG0 &_a0, const ARG1 &_a1, const ARG2 &_a2, const ARG3 &_a3)
+    :   Current(_a0),
+        Tail(_a1, _a2, _a3) { }
+    /**
+     * Executes 3 checks with different sets of arguments and stores their results into this object.
+     * @param _a0 arguments for first group of checks
+     * @param _a1 arguments for second group of checks
+     * @param _a2 arguments for third group of checks
+     * @note arguments can be created by using @ref make_args template function
+     */
+    template < typename ARG0, typename ARG1, typename ARG2 >
+    Check(const ARG0 &_a0, const ARG1 &_a1, const ARG2 &_a2)
+    :   Current(_a0),
+        Tail(_a1, _a2) { }
+    /**
+     * Executes 2 checks with different sets of arguments and stores their results into this object.
+     * @param _a0 arguments for first group of checks
+     * @param _a1 arguments for second group of checks
+     * @note arguments can be created by using @ref make_args template function
+     */
+    template < typename ARG0, typename ARG1 >
+    Check(const ARG0 &_a0, const ARG1 &_a1)
+    :   Current(_a0),
+        Tail(_a1) { }
+    /**
+     * Executes 1 check and stores their result into this object.
+     * @param _a0 arguments for this group of checks
+     * @note arguments can be created by using @ref make_args template function
+     */
+    template < typename ARG0 >
+    Check(const ARG0 &_a0)
+    :   Current(_a0) { }
+    /**
+     * Checks finished successfully.
+     * @return true if all partial checks finished successfully
+     */
+    bool success()const
+    {
+        return this->Base::success() && this->Tail::success();
+    }
+};
+
+/**
+ * Specialization for checks with the same arguments.
+ * @param HOMOGENEOUS_CHECK_LIST list of partial checks, each constructed with the same set of arguments
  * @note  Each check has to contain const method `success` without arguments like this example:
 ~~~~~~~~~~~~~~{.cpp}
 struct checkA0
@@ -398,100 +352,68 @@ struct checkA1
     bool invalid:1;
 };
 
-typedef Check< list< checkA0, checkA1 > > checkA;
+typedef Check< boost::mpl::list< checkA0,
+                                 checkA1 >
+             > CheckA;
 
-struct checkB
+bool check_finished_successfully(int a)
 {
-    checkB(std::string) { }
-    bool success()const { return !invalid; }
-    bool invalid:1;
-};
-
-struct checkC
-{
-    checkC(void*, int) { }
-    bool success()const { return !invalid; }
-    bool invalid:1;
-};
-
-typedef HCheck< checkA, checkB, checkC > HCheckABC;
-
-HCheckABC c(make_args(0), make_args("1"), make_args((void*)NULL, 2));
+    return CheckA(a).success();
+}
 ~~~~~~~~~~~~~~
  */
-template < typename CHECK0, typename CHECK1 = boost::mpl::void_, typename CHECK2 = boost::mpl::void_,
-           typename CHECK3 = boost::mpl::void_, typename CHECK4 = boost::mpl::void_ >
-struct HCheck
-:   ConstructWithArgs< CHECK0 >,
-    HCheck< CHECK1, CHECK2, CHECK3, CHECK4 >
+template < typename HOMOGENEOUS_CHECK_LIST >
+struct Check< HOMOGENEOUS_CHECK_LIST, true >
+:   boost::mpl::front< HOMOGENEOUS_CHECK_LIST >::type,
+    Check< typename boost::mpl::pop_front< HOMOGENEOUS_CHECK_LIST >::type, true >
 {
-    typedef ConstructWithArgs< CHECK0 > Current;
-    typedef HCheck< CHECK1, CHECK2, CHECK3, CHECK4 > Tail;
+    typedef HOMOGENEOUS_CHECK_LIST Checks;
+    BOOST_MPL_ASSERT(( contains_nonsequences_only< Checks > ));
+    typedef typename boost::mpl::front< Checks >::type Current;
+    typedef Check< typename boost::mpl::pop_front< Checks >::type, true > Tail;
     /**
-     * Executes 5 checks with different sets of arguments and stores their results into this object.
-     * @param _a0 arguments for first checks
-     * @param _a1 arguments for second checks
-     * @param _a2 arguments for third checks
-     * @param _a3 arguments for fourth checks
-     * @param _a4 arguments for fifth checks
-     * @note arguments can be created by using @ref make_args template function
+     * Executes collection of partial checks on arbitrary data type.
+     * @param _a0 first argument
      */
-    template < typename T0, typename T1, typename T2, typename T3, typename T4 >
-    HCheck(const T0 &_a0, const T1 &_a1, const T2 &_a2, const T3 &_a3, const T4 &_a4)
+    template < typename T0 >
+    Check(T0 &_a0)
     :   Current(_a0),
-        Tail(_a1, _a2, _a3, _a4) { }
+        Tail(_a0)
+    { }
     /**
-     * Executes 4 checks with different sets of arguments and stores their results into this object.
-     * @param _a0 arguments for first checks
-     * @param _a1 arguments for second checks
-     * @param _a2 arguments for third checks
-     * @param _a3 arguments for fourth checks
-     * @note arguments can be created by using @ref make_args template function
-     */
-    template < typename T0, typename T1, typename T2, typename T3 >
-    HCheck(const T0 &_a0, const T1 &_a1, const T2 &_a2, const T3 &_a3)
-    :   Current(_a0),
-        Tail(_a1, _a2, _a3) { }
-    /**
-     * Executes 3 checks with different sets of arguments and stores their results into this object.
-     * @param _a0 arguments for first checks
-     * @param _a1 arguments for second checks
-     * @param _a2 arguments for third checks
-     * @note arguments can be created by using @ref make_args template function
-     */
-    template < typename T0, typename T1, typename T2 >
-    HCheck(const T0 &_a0, const T1 &_a1, const T2 &_a2)
-    :   Current(_a0),
-        Tail(_a1, _a2) { }
-    /**
-     * Executes 2 checks with different sets of arguments and stores their results into this object.
-     * @param _a0 arguments for first checks
-     * @param _a1 arguments for second checks
-     * @note arguments can be created by using @ref make_args template function
+     * Executes collection of partial checks on arbitrary two arguments.
+     * @param _a0 first argument
+     * @param _a1 second argument
      */
     template < typename T0, typename T1 >
-    HCheck(const T0 &_a0, const T1 &_a1)
-    :   Current(_a0),
-        Tail(_a1) { }
+    Check(T0 &_a0, T1 &_a1)
+    :   Current(_a0, _a1),
+        Tail(_a0, _a1)
+    { }
     /**
      * Checks finished successfully.
-     * @return true if all checks finished successfully
+     * @return true if all partial checks finished successfully
      */
-    bool success()const { return this->Current::success() && this->Tail::success(); }
+    bool success()const
+    {
+        return this->Current::success() && this->Tail::success();
+    }
 };
 
-/**
- * Specialization for one check. It stops the recursion.
- */
-template < typename CHECK0 >
-struct HCheck< CHECK0 >
-:   ConstructWithArgs< CHECK0 >
+template < >
+struct Check< typename boost::mpl::clear< boost::mpl::list< > >::type, false >
 {
-    typedef ConstructWithArgs< CHECK0 > Current;
-    template < typename T0 >
-    HCheck(const T0 &_a0)
-    :   Current(_a0) { }
-    bool success()const { return this->Current::success(); }
+    Check() {}
+    bool success()const { return true; }
+};
+
+template < >
+struct Check< typename boost::mpl::clear< boost::mpl::list< > >::type, true >
+{
+    Check() {}
+    template < typename T0 > Check(T0&) { }
+    template < typename T0, typename T1 > Check(T0&, T1&) {}
+    bool success()const { return true; }
 };
 
 }//Fred
