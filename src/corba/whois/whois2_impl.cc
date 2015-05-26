@@ -114,17 +114,6 @@ namespace Whois {
         }
     }
 
-    void wrap_ipaddress_sequence(const std::vector<boost::asio::ip::address>& in, IPAddressSeq& out ) {
-        out.length(in.size());
-
-        typename std::vector<boost::asio::ip::address>::size_type i = 0;
-
-        BOOST_FOREACH(const boost::asio::ip::address& address, in) {
-            wrap_ipaddress(address, out[i]);
-            ++i;
-        }
-    }
-
     NullableRegistrar*  wrap_registrar(const Fred::InfoRegistrarData& in) {
         Registrar temp;
         temp.handle = Corba::wrap_string(in.handle);
@@ -292,43 +281,83 @@ namespace Whois {
         return new NullableKeySet(temp);
     }
 
-    NullableNameServer*  wrap_nameserver( const Fred::DnsHost& in) {
-        NameServer temp;
-        temp.fqdn = Corba::wrap_string(in.get_fqdn());
-        wrap_ipaddress_sequence(in.get_inet_addr(), temp.ip_addresses);
+    /**
+     * CORBA sequence element factory, template to be specialized, there is no generic enough implementation
+     */
+    template<class CORBA_SEQ_ELEMENT, class IN_LIST_ELEMENT>
+        CORBA_SEQ_ELEMENT set_element_of_corba_seq(const IN_LIST_ELEMENT& ile);
 
-        return new NullableNameServer(temp);
+    /**
+     * generic implementation of allocation and setting CORBA sequence
+     */
+    template<class CORBA_SEQ, class CORBA_SEQ_ELEMENT,
+        class IN_LIST, class IN_LIST_ELEMENT> void set_corba_seq(CORBA_SEQ& cs, const IN_LIST& il)
+    {
+        cs.length(il.size());
+        for(unsigned long long i = 0 ; i < il.size(); ++i)
+        {
+            cs[i] = set_element_of_corba_seq<CORBA_SEQ_ELEMENT, IN_LIST_ELEMENT>(il[i]);
+        }
     }
 
-    NullableNSSet* wrap_nsset(const Fred::InfoNssetData& in) {
+    template<> IPAddress set_element_of_corba_seq<
+        IPAddress, boost::asio::ip::address>(const boost::asio::ip::address& ile)
+    {
+        IPAddress ip;
+        wrap_ipaddress(ile,ip);
+        return ip;
+    }
 
+    template<> NameServer set_element_of_corba_seq<
+        NameServer, Fred::DnsHost>(const Fred::DnsHost& ile)
+    {
+        NameServer ns;
+        ns.fqdn = Corba::wrap_string_to_corba_string(ile.get_fqdn());
+        set_corba_seq<IPAddressSeq, IPAddress,
+            std::vector<boost::asio::ip::address>,
+            boost::asio::ip::address>(ns.ip_addresses, ile.get_inet_addr());
+        return ns;
+    }
+
+    template<> CORBA::String_var set_element_of_corba_seq<
+        CORBA::String_var, Fred::ObjectIdHandlePair>(const Fred::ObjectIdHandlePair& ile)
+    {
+        return Corba::wrap_string_to_corba_string(ile.handle);
+    }
+
+    template<> CORBA::String_var set_element_of_corba_seq<
+        CORBA::String_var,Fred::ObjectStateData>(
+            const Fred::ObjectStateData& ile)
+    {
+        return Corba::wrap_string_to_corba_string(ile.state_name);
+    }
+
+    template<> CORBA::String_var set_element_of_corba_seq<
+        CORBA::String_var,std::string>(
+            const std::string& ile)
+    {
+        return Corba::wrap_string_to_corba_string(ile);
+    }
+
+
+
+
+
+    NSSet wrap_nsset(const Fred::InfoNssetData& in)
+    {
         NSSet temp;
 
-        temp.handle = Corba::wrap_string(in.handle);
-        temp.registrar_handle = Corba::wrap_string(in.sponsoring_registrar_handle);
+        temp.handle = Corba::wrap_string_to_corba_string(in.handle);
+        temp.registrar_handle = Corba::wrap_string_to_corba_string(in.sponsoring_registrar_handle);
         temp.created = Corba::wrap_time(in.creation_time);
         temp.changed = Corba::wrap_nullable_datetime(in.update_time);
         temp.last_transfer = Corba::wrap_nullable_datetime(in.transfer_time);
 
-        {
-            temp.nservers.length(in.dns_hosts.size());
+        set_corba_seq<NameServerSeq, NameServer,
+            std::vector<Fred::DnsHost>, Fred::DnsHost>(temp.nservers, in.dns_hosts);
 
-            unsigned long i = 0;
-            BOOST_FOREACH(const Fred::DnsHost& nsserver, in.dns_hosts) {
-                temp.nservers[i] = wrap_nameserver(nsserver)->_value();
-                ++i;
-            }
-        }
-
-        {
-            std::vector<std::string> tech_contacts;
-            {
-                BOOST_FOREACH(const Fred::ObjectIdHandlePair& tech_contact, in.tech_contacts) {
-                    tech_contacts.push_back(tech_contact.handle);
-                }
-            }
-            wrap_string_sequence(tech_contacts, temp.tech_contact_handles);
-        }
+        set_corba_seq<StringSeq, CORBA::String_var,
+            std::vector<Fred::ObjectIdHandlePair>, Fred::ObjectIdHandlePair>(temp.tech_contact_handles, in.tech_contacts);
 
         {
             std::vector<std::string> statuses;
@@ -341,12 +370,20 @@ namespace Whois {
                     }
                 }
             }
-            wrap_string_sequence(statuses, temp.statuses);
+
+            set_corba_seq<StringSeq, CORBA::String_var,
+                std::vector<std::string>, std::string>(temp.statuses, statuses);
         }
 
-        return new NullableNSSet(temp);
+        return temp;
     }
 
+    template<> NSSet set_element_of_corba_seq<NSSet,  Fred::InfoNssetOutput>
+        (const Fred::InfoNssetOutput& ile)
+    {
+        return wrap_nsset(ile.info_nsset_data);
+    }
+/*
     NSSetSeq* wrap_nsset_vector(const std::vector<Fred::InfoNssetOutput>& in) {
         NSSetSeq_var result(new NSSetSeq);
 
@@ -363,7 +400,7 @@ namespace Whois {
         return result._retn();
     }
 
-
+*/
 
     NullableRegistrar* Server_impl::get_registrar_by_handle(const char* handle) {
         try {
@@ -413,13 +450,10 @@ namespace Whois {
         try {
             Fred::OperationContext ctx;
 
-            return
-                wrap_nsset(
-                    Fred::InfoNssetByHandle(
-                        Corba::unwrap_string(handle)
-                    ).exec(ctx, output_timezone)
-                    .info_nsset_data
-                );
+            return Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableNSSet>(
+                Nullable<NSSet>(wrap_nsset(Fred::InfoNssetByHandle(Corba::unwrap_string(handle)
+                    ).exec(ctx, output_timezone).info_nsset_data))
+                )._retn();
 
         } catch(const Fred::InfoNssetByHandle::Exception& e) {
             if(e.is_set_unknown_handle()) {
@@ -431,9 +465,54 @@ namespace Whois {
         throw INTERNAL_SERVER_ERROR();
     }
 
-    // TODO XXX Just to have RDAP prototype quickly deployable (Ticket #10627). Must be implemented later.
-    NSSetSeq* Server_impl::get_nssets_by_ns(const char* handle) { return NULL; }
-    NSSetSeq* Server_impl::get_nssets_by_tech_c(const char* handle) { return NULL; }
+    NSSetSeq* Server_impl::get_nssets_by_ns(const char* handle)
+    {
+        try
+        {
+            Fred::OperationContext ctx;
+            NSSetSeq_var nss_seq = new NSSetSeq;
+            try
+            {
+                std::vector<Fred::InfoNssetOutput> nss_info = Fred::InfoNssetByDNSFqdn(
+                    Corba::unwrap_string(handle)).exec(ctx, output_timezone);
+
+                set_corba_seq<NSSetSeq, NSSet,std::vector<Fred::InfoNssetOutput>, Fred::InfoNssetOutput>
+                    (nss_seq.inout(), nss_info);
+
+                return nss_seq._retn();
+            }
+            catch(const Fred::InfoNssetByDNSFqdn::Exception& e)
+            {
+                    if(e.is_set_unknown_fqdn()) {
+                        return nss_seq._retn();
+                    }
+            }
+        } catch (...) { }
+
+        // default exception handling
+        throw INTERNAL_SERVER_ERROR();
+    }
+
+    NSSetSeq* Server_impl::get_nssets_by_tech_c(const char* handle)
+    {
+        try
+        {
+            Fred::OperationContext ctx;
+            NSSetSeq_var nss_seq = new NSSetSeq;
+
+            std::vector<Fred::InfoNssetOutput> nss_info = Fred::InfoNssetByTechContactHandle(
+                Corba::unwrap_string(handle)).exec(ctx, output_timezone);
+
+            set_corba_seq<NSSetSeq, NSSet,std::vector<Fred::InfoNssetOutput>, Fred::InfoNssetOutput>
+                (nss_seq.inout(), nss_info);
+
+            return nss_seq._retn();
+        } catch (...) { }
+
+        // default exception handling
+        throw INTERNAL_SERVER_ERROR();
+    }
+
 
     NullableNameServer* Server_impl::get_nameserver_by_fqdn(const char* fqdn) {
         try {

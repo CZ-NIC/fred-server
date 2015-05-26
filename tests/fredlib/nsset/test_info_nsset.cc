@@ -37,6 +37,7 @@ struct info_nsset_fixture : public Test::Fixture::instantiate_db_template
     std::string admin_contact3_handle;
     std::string test_nsset_handle;
     std::string test_nsset_history_handle;
+    std::string test_nsset_dnsname;
 
     info_nsset_fixture()
     : xmark(RandomDataGenerator().xnumstring(6))
@@ -44,6 +45,7 @@ struct info_nsset_fixture : public Test::Fixture::instantiate_db_template
     , admin_contact3_handle(std::string("TEST-ADMIN-CONTACT3-HANDLE")+xmark)
     , test_nsset_handle ( std::string("TEST-NSSET-HANDLE")+xmark)
     , test_nsset_history_handle ( std::string("TEST-NSSET-HISTORY-HANDLE")+xmark)
+    , test_nsset_dnsname (std::string("ns")+xmark+".ns.nic.cz")
     {
         namespace ip = boost::asio::ip;
 
@@ -74,7 +76,7 @@ struct info_nsset_fixture : public Test::Fixture::instantiate_db_template
         Fred::CreateNsset(test_nsset_handle, registrar_handle)
             .set_dns_hosts(Util::vector_of<Fred::DnsHost>
                 (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<ip::address>(ip::address::from_string("127.0.0.3"))(ip::address::from_string("127.1.1.3")))) //add_dns
-                (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<ip::address>(ip::address::from_string("127.0.0.4"))(ip::address::from_string("127.1.1.4")))) //add_dns
+                (Fred::DnsHost(test_nsset_dnsname,  Util::vector_of<ip::address>(ip::address::from_string("127.0.0.4"))(ip::address::from_string("127.1.1.4")))) //add_dns
                 )
                 .set_tech_contacts(Util::vector_of<std::string>(admin_contact3_handle))
                 .exec(ctx);
@@ -82,7 +84,7 @@ struct info_nsset_fixture : public Test::Fixture::instantiate_db_template
         Fred::CreateNsset(test_nsset_history_handle, registrar_handle)
             .set_dns_hosts(Util::vector_of<Fred::DnsHost>
                 (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<ip::address>(ip::address::from_string("127.0.0.3"))(ip::address::from_string("127.1.1.3")))) //add_dns
-                (Fred::DnsHost("b.ns.nic.cz",  Util::vector_of<ip::address>(ip::address::from_string("127.0.0.4"))(ip::address::from_string("127.1.1.4")))) //add_dns
+                (Fred::DnsHost("c.ns.nic.cz",  Util::vector_of<ip::address>(ip::address::from_string("127.0.0.4"))(ip::address::from_string("127.1.1.4")))) //add_dns
                 )
                 .set_tech_contacts(Util::vector_of<std::string>(admin_contact3_handle))
                 .exec(ctx);
@@ -109,14 +111,63 @@ BOOST_AUTO_TEST_CASE(info_nsset)
     std::vector<Fred::InfoNssetOutput> nsset_res;
 
     BOOST_MESSAGE(Fred::InfoNsset()
-                .set_handle(test_nsset_handle)
                 .set_history_query(false)
+                .explain_analyze(ctx,nsset_res,"Europe/Prague")
+                );
+
+    BOOST_MESSAGE(Fred::InfoNsset()
+                .set_inline_view_filter(Database::ParamQuery("info_nsset_handle = ").param_text(test_nsset_handle))
+                .set_history_query(false)
+                .explain_analyze(ctx,nsset_res,"Europe/Prague")
+                );
+
+    //InfoNssetByDNSFqdn
+    BOOST_MESSAGE(Fred::InfoNsset()
+                .set_cte_id_filter(Database::ParamQuery("SELECT id FROM host WHERE fqdn = ").param_text("a.ns.nic.cz"))
+                .set_history_query(false)
+                .explain_analyze(ctx,nsset_res,"Europe/Prague")
+                );
+
+    //InfoNssetByTechContactHandle
+    BOOST_MESSAGE(Fred::InfoNsset()
+                .set_cte_id_filter(Database::ParamQuery(
+                    "SELECT ncm.nssetid"
+                    " FROM object_registry oreg"
+                    " JOIN  enum_object_type eot ON oreg.type = eot.id AND eot.name = 'contact'"
+                    " JOIN nsset_contact_map ncm ON ncm.contactid = oreg.id"
+                    " WHERE oreg.name = UPPER(").param_text(admin_contact3_handle)(") AND oreg.erdate IS NULL")
+                    )
+                .set_history_query(false)
+                .explain_analyze(ctx,nsset_res,"Europe/Prague")
+                );
+
+    BOOST_MESSAGE(Fred::InfoNsset()
+                .set_cte_id_filter(Database::ParamQuery("SELECT id FROM host WHERE fqdn = ").param_text("a.ns.nic.cz"))
+                .set_inline_view_filter(Database::ParamQuery("info_nsset_handle = ").param_text(test_nsset_handle))
+                .set_history_query(false)
+                .explain_analyze(ctx,nsset_res,"Europe/Prague")
+                );
+
+    BOOST_MESSAGE(Fred::InfoNsset()
+                .set_cte_id_filter(Database::ParamQuery("SELECT id FROM host WHERE fqdn = ").param_text("a.ns.nic.cz"))
+                .set_inline_view_filter(Database::ParamQuery("info_nsset_handle = ").param_text(test_nsset_handle))
+                .set_history_query(true)
                 .explain_analyze(ctx,nsset_res,"Europe/Prague")
                 );
 
     Fred::InfoNssetOutput info_data_1 = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
     Fred::InfoNssetOutput info_data_2 = Fred::InfoNssetByHandle(test_nsset_handle).set_lock().exec(ctx);
     BOOST_CHECK(info_data_1 == info_data_2);
+
+    Fred::InfoNssetOutput info_data_dns_1 = Fred::InfoNssetByDNSFqdn(test_nsset_dnsname).exec(ctx).at(0);
+    BOOST_CHECK(info_data_1 == info_data_dns_1);
+    Fred::InfoNssetOutput info_data_dns_2 = Fred::InfoNssetByDNSFqdn(test_nsset_dnsname).set_lock().exec(ctx).at(0);
+    BOOST_CHECK(info_data_1 == info_data_dns_2);
+
+    Fred::InfoNssetOutput info_data_tc_1 = Fred::InfoNssetByTechContactHandle(admin_contact3_handle).exec(ctx).at(0);
+    BOOST_CHECK(info_data_1 == info_data_tc_1);
+    Fred::InfoNssetOutput info_data_tc_2 = Fred::InfoNssetByTechContactHandle(admin_contact3_handle).set_lock().exec(ctx).at(0);
+    BOOST_CHECK(info_data_1 == info_data_tc_2);
 
     Fred::InfoNssetOutput info_data_3 = Fred::InfoNssetById(info_data_1.info_nsset_data.id).exec(ctx);
     BOOST_CHECK(info_data_1 == info_data_3);
@@ -126,32 +177,6 @@ BOOST_AUTO_TEST_CASE(info_nsset)
     BOOST_CHECK(info_data_1 == info_data_5);
     Fred::InfoNssetOutput info_data_6 = Fred::InfoNssetHistoryByHistoryid(info_data_1.info_nsset_data.historyid).exec(ctx);
     BOOST_CHECK(info_data_1 == info_data_6);
-
-    //impl
-    for( int j = 0; j < (1 << 7); ++j)
-    {
-        Fred::InfoNsset i;
-        if(j & (1 << 0)) i.set_handle(info_data_1.info_nsset_data.handle);
-        if(j & (1 << 1)) i.set_roid(info_data_1.info_nsset_data.roid);
-        if(j & (1 << 2)) i.set_id(info_data_1.info_nsset_data.id);
-        if(j & (1 << 3)) i.set_historyid(info_data_1.info_nsset_data.historyid);
-        if(j & (1 << 4)) i.set_lock();
-        if(j & (1 << 5)) i.set_history_timestamp(info_data_1.info_nsset_data.creation_time);
-        if(j & (1 << 6)) i.set_history_query(true);
-
-        std::vector<Fred::InfoNssetOutput> output;
-        BOOST_MESSAGE(i.explain_analyze(ctx,output));
-        if((j & (1 << 0)) || (j & (1 << 1)) || (j & (1 << 2)) || (j & (1 << 3)))//check if selective
-        {
-            if((info_data_1 != output.at(0)))
-            {
-                BOOST_MESSAGE(Fred::diff_nsset_data(info_data_1.info_nsset_data
-                        , output.at(0).info_nsset_data).to_string());
-            }
-            BOOST_CHECK(output.at(0) == info_data_1);
-        }
-    }
-
 
     ctx.commit_transaction();
 }

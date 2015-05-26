@@ -391,6 +391,8 @@ util_db_libdb_a_SOURCES = \
 		util/db/transaction.h \
 		util/db/connection.h \
 		util/db/query_param.h \
+		util/db/param_query_composition.h \
+		util/db/param_query_composition.cc \
 		util/db/result.h \
 		util/db/row.h \
 		util/db/value.h \
@@ -2425,6 +2427,7 @@ tests_test_fredlib_SOURCES = \
 		tests/fredlib/object_state/test_cancel_object_state_request_id.cc \
 		tests/fredlib/test_opexception.cc \
 		tests/fredlib/test_check_handle.cc \
+		tests/util/test_param_query.cc \
 		tests/setup/fixtures_utils.h \
 		tests/setup/fixtures_utils.cc \
 		tests/setup/fixtures.h \
@@ -2440,6 +2443,7 @@ tests_test_fredlib_LDADD = \
 		src/fredlib/libfred.a \
 		util/libutil.a \
 		util/log/liblog.a \
+		util/db/libdb.a \
 		-lmpdec -lm -lrt \
 		$(LIBIDN_LIBS) \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \

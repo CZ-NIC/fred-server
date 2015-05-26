@@ -54,7 +54,8 @@ namespace Fred
         try
         {
             InfoNsset in;
-            in.set_handle(handle_).set_history_query(false);
+            in.set_inline_view_filter(Database::ParamQuery("info_nsset_handle = UPPER(").param_text(handle_)(")"))
+                .set_history_query(false);
             if(lock_) in.set_lock();
             nsset_res = in.exec(ctx,local_timestamp_pg_time_zone_name);
 
@@ -104,7 +105,8 @@ namespace Fred
         try
         {
             InfoNsset in;
-            in.set_id(id_).set_history_query(false);
+            in.set_inline_view_filter(Database::ParamQuery("info_nsset_id = ").param_bigint(id_))
+                .set_history_query(false);
             if(lock_) in.set_lock();
             nsset_res = in.exec(ctx,local_timestamp_pg_time_zone_name);
 
@@ -135,6 +137,102 @@ namespace Fred
         (std::make_pair("lock",lock_ ? "true":"false"))
         );
     }
+
+
+    InfoNssetByDNSFqdn::InfoNssetByDNSFqdn(const std::string& dns_fqdn)
+        : dns_fqdn_(dns_fqdn)
+        , lock_(false)
+    {}
+
+    InfoNssetByDNSFqdn& InfoNssetByDNSFqdn::set_lock()
+    {
+        lock_ = true;
+        return *this;
+    }
+
+    std::vector<InfoNssetOutput> InfoNssetByDNSFqdn::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
+    {
+        std::vector<InfoNssetOutput> nsset_res;
+
+        try
+        {
+            InfoNsset in;
+            in.set_cte_id_filter(Database::ParamQuery("SELECT nssetid FROM host WHERE fqdn = ").param_text(dns_fqdn_))
+                .set_history_query(false);
+            if(lock_) in.set_lock();
+            nsset_res = in.exec(ctx,local_timestamp_pg_time_zone_name);
+
+            if (nsset_res.empty())
+            {
+                BOOST_THROW_EXCEPTION(Exception().set_unknown_fqdn(dns_fqdn_));
+            }
+
+        }
+        catch(ExceptionStack& ex)
+        {
+            ex.add_exception_stack_info(to_string());
+            throw;
+        }
+        return nsset_res;
+    }
+
+    std::string InfoNssetByDNSFqdn::to_string() const
+    {
+        return Util::format_operation_state("InfoNssetByDNSFqdn",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("dns_fqdn", dns_fqdn_))
+        (std::make_pair("lock",lock_ ? "true":"false"))
+        );
+    }
+
+
+    InfoNssetByTechContactHandle::InfoNssetByTechContactHandle(const std::string& tc_handle)
+        : tech_contact_handle_(tc_handle)
+        , lock_(false)
+    {}
+
+    InfoNssetByTechContactHandle& InfoNssetByTechContactHandle::set_lock()
+    {
+        lock_ = true;
+        return *this;
+    }
+
+    std::vector<InfoNssetOutput> InfoNssetByTechContactHandle::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
+    {
+        std::vector<InfoNssetOutput> nsset_res;
+
+        try
+        {
+            InfoNsset in;
+            in.set_cte_id_filter(Database::ParamQuery(
+                "SELECT ncm.nssetid"
+                " FROM object_registry oreg"
+                " JOIN  enum_object_type eot ON oreg.type = eot.id AND eot.name = 'contact'"
+                " JOIN nsset_contact_map ncm ON ncm.contactid = oreg.id"
+                " WHERE oreg.name = UPPER(").param_text(tech_contact_handle_)(") AND oreg.erdate IS NULL")
+                )
+                .set_history_query(false);
+            if(lock_) in.set_lock();
+            nsset_res = in.exec(ctx,local_timestamp_pg_time_zone_name);
+        }
+        catch(ExceptionStack& ex)
+        {
+            ex.add_exception_stack_info(to_string());
+            throw;
+        }
+        return nsset_res;
+    }
+
+
+    std::string InfoNssetByTechContactHandle::to_string() const
+    {
+        return Util::format_operation_state("InfoNssetByTechContactHandle",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("tech_contact_handle", tech_contact_handle_))
+        (std::make_pair("lock",lock_ ? "true":"false"))
+        );
+    }
+
 
     InfoNssetHistory::InfoNssetHistory(const std::string& roid
             , const Optional<boost::posix_time::ptime>& history_timestamp)
@@ -167,7 +265,8 @@ namespace Fred
         try
         {
             InfoNsset in;
-            in.set_roid(roid_).set_history_query(true);
+            in.set_inline_view_filter(Database::ParamQuery("info_nsset_roid = ").param_text(roid_))
+                .set_history_query(true);
             if(lock_) in.set_lock();
             nsset_res = in.exec(ctx,local_timestamp_pg_time_zone_name);
 
@@ -214,7 +313,8 @@ namespace Fred
         try
         {
             InfoNsset in;
-            in.set_id(id_).set_history_query(true);
+            in.set_inline_view_filter(Database::ParamQuery("info_nsset_id = ").param_bigint(id_))
+                .set_history_query(true);
             if(lock_) in.set_lock();
             nsset_history_res = in.exec(ctx,local_timestamp_pg_time_zone_name);
 
@@ -259,7 +359,8 @@ namespace Fred
         try
         {
             InfoNsset in;
-            in.set_historyid(historyid_).set_history_query(true);
+            in.set_inline_view_filter(Database::ParamQuery("info_nsset_historyid = ").param_bigint(historyid_))
+                .set_history_query(true);
             if(lock_) in.set_lock();
             nsset_history_res = in.exec(ctx,local_timestamp_pg_time_zone_name);
 

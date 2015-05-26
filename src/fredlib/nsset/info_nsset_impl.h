@@ -34,6 +34,7 @@
 #include "src/fredlib/opcontext.h"
 #include "util/optional_value.h"
 #include "util/printable.h"
+#include "util/db/param_query_composition.h"
 #include "info_nsset_output.h"
 
 namespace Fred
@@ -45,18 +46,16 @@ namespace Fred
     */
     class InfoNsset
     {
-        Optional<std::string> handle_;/**< nsset handle */
-        Optional<std::string> nsset_roid_;/**< registry object identifier of the nsset */
-        Optional<unsigned long long> nsset_id_;/**< object id of the nsset */
-        Optional<unsigned long long> nsset_historyid_;/**< history id of the nsset */
-        Optional<boost::posix_time::ptime> history_timestamp_;/**< timestamp of history state we want to get (in time zone set in @ref local_timestamp_pg_time_zone_name parameter) */
         bool history_query_;/**< flag to query history records of the nsset */
         bool lock_;/**< if set to true lock object_registry row for update, if set to false lock for share */
+        Optional<Database::ParamQuery> info_nsset_inline_view_filter_expr_;/**< where clause of the info nsset query where projection is inline view sub-select */
+        Optional<Database::ParamQuery> info_nsset_id_filter_cte_;/**< CTE query returning set of nsset id */
 
-        std::pair<std::string, Database::QueryParams> make_nsset_query(const std::string& local_timestamp_pg_time_zone_name);/**< info query generator @return pair of query string with query params*/
-        std::pair<std::string, Database::QueryParams> make_tech_contact_query(unsigned long long id, unsigned long long historyid);/**< nsset technical contacts query generator @return pair of query string with query params*/
-        std::pair<std::string, Database::QueryParams> make_dns_host_query(unsigned long long nssetid, unsigned long long historyid);/**< nsset DNS hosts query generator @return pair of query string with query params*/
-        std::pair<std::string, Database::QueryParams> make_dns_ip_query(unsigned long long hostid, unsigned long long historyid);/**< nsset DNS hosts query generator @return pair of query string with query params*/
+        Database::ParamQuery make_info_nsset_projection_query(const std::string& local_timestamp_pg_time_zone_name);/**< info query generator*/
+
+        Database::ParamQuery make_tech_contact_query(unsigned long long id, unsigned long long historyid);/**< nsset technical contacts query generator @return pair of query string with query params*/
+        Database::ParamQuery make_dns_host_query(unsigned long long nssetid, unsigned long long historyid);/**< nsset DNS hosts query generator @return pair of query string with query params*/
+        Database::ParamQuery make_dns_ip_query(unsigned long long hostid, unsigned long long historyid);/**< nsset DNS hosts query generator @return pair of query string with query params*/
     public:
 
         /**
@@ -66,39 +65,21 @@ namespace Fred
         InfoNsset();
 
         /**
-        * Sets nsset handle.
-        * @param handle sets nsset handle we want to get @ref handle_ attribute
-        * @return operation instance reference to allow method chaining
-        */
-        InfoNsset& set_handle(const std::string& handle);
+         * Sets nsset selection criteria.
+         * Filter expression, which is optional WHERE clause, has access to following info nsset projection aliases:
+         * info_nsset_id, info_nsset_roid, info_nsset_handle, info_nsset_delete_time, info_nsset_historyid,
+         * info_nsset_next_historyid, info_nsset_history_valid_from, info_nsset_history_valid_to,
+         * info_nsset_sponsoring_registrar_id, info_nsset_sponsoring_registrar_handle, info_nsset_creating_registrar_id,
+         * info_nsset_creating_registrar_handle, info_nsset_last_updated_by_registrar_id, info_nsset_last_updated_by_registrar_handle,
+         * info_nsset_creation_time, info_nsset_transfer_time, info_nsset_update_time, info_nsset_tech_check_level,
+         * info_nsset_authinfopw, info_nsset_first_historyid, info_nsset_logd_request_id, info_nsset_utc_timestamp, info_nsset_local_timestamp
+         */
+        InfoNsset& set_inline_view_filter(const Database::ParamQuery& filter_expr);
 
         /**
-        * Sets registry object identifier of the nsset.
-        * @param nsset_roid sets registry object identifier of the nsset we want to get @ref nsset_roid_ attribute
-        * @return operation instance reference to allow method chaining
-        */
-        InfoNsset& set_roid(const std::string& nsset_roid);
-
-        /**
-        * Sets database identifier of the nsset.
-        * @param nsset_id sets object identifier of the nsset we want to get @ref nsset_id_ attribute
-        * @return operation instance reference to allow method chaining
-        */
-        InfoNsset& set_id(unsigned long long nsset_id);
-
-        /**
-        * Sets history identifier of the nsset.
-        * @param nsset_historyid sets history identifier of the nsset we want to get @ref nsset_historyid_ attribute
-        * @return operation instance reference to allow method chaining
-        */
-        InfoNsset& set_historyid(unsigned long long nsset_historyid);
-
-        /**
-        * Sets timestamp of history state we want to get.
-        * @param history_timestamp sets timestamp of history state we want to get @ref history_timestamp_ attribute
-        * @return operation instance reference to allow method chaining
-        */
-        InfoNsset& set_history_timestamp(boost::posix_time::ptime history_timestamp);
+         * Sets CTE query, that returns set of nsset id.
+         */
+        InfoNsset& set_cte_id_filter(const Database::ParamQuery& filter_expr);
 
         /**
         * Sets history query flag.
