@@ -89,10 +89,10 @@ check_contact_email_validity::check_contact_email_validity(const InfoContactData
 check_contact_email_availability::check_contact_email_availability(
     const InfoContactData &_data,
     OperationContext &_ctx)
-:   check_contact_email_presence(_data)
+:   absents(check_contact_email_presence(_data).absents),
+    used_recently(!absents)
 {
-    if (!this->check_contact_email_presence::success()) {
-        used_recently = false;
+    if (absents) {
         return;
     }
     const Database::Result ucheck = _ctx.get_conn().exec_params(
@@ -124,10 +124,10 @@ check_contact_phone_validity::check_contact_phone_validity(const InfoContactData
 check_contact_phone_availability::check_contact_phone_availability(
     const InfoContactData &_data,
     OperationContext &_ctx)
-:   check_contact_phone_presence(_data)
+:   absents(check_contact_phone_presence(_data).absents),
+    used_recently(!absents)
 {
-    if (!this->check_contact_phone_presence::success()) {
-        used_recently = false;
+    if (absents) {
         return;
     }
     const Database::Result ucheck = _ctx.get_conn().exec_params(
