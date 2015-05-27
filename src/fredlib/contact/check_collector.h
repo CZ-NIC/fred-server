@@ -268,6 +268,11 @@ private:
     }
 };
 
+/**
+ * Type traits template surveys if type list contains only nonsequence types.
+ * @param LIST type list of which items aren't type lists too
+ * @note contains_nonsequences_only< LIST >::value is true or false depending on LIST traits
+ */
 template < typename LIST >
 struct contains_nonsequences_only
 :   boost::mpl::and_< boost::mpl::not_< typename boost::mpl::is_sequence< typename boost::mpl::front< LIST >::type > >,
