@@ -174,34 +174,44 @@ BOOST_AUTO_TEST_CASE(check_contact_name)
     };
     static const TestData data[] =
     {
-        TestData(false),//doesn't present
-        TestData("", false),//empty
-        TestData(" ", false),//space only
-        TestData(" \r\n\v\t", false),//white spaces only
-        TestData(" \r\n\v\tFrantišek \r\n\v\t", false),//first name only
-        TestData(" \r\n\v\tFrantišek Dobrota \r\n\v\t", true),//success
+        TestData(false),                                      //[0] doesn't present
+        TestData("", false),                                  //[1] empty
+        TestData(" ", false),                                 //[2] space only
+        TestData(" \r\n\v\t", false),                         //[3] white spaces only
+        TestData(" \r\n\v\tFrantišek \r\n\v\t", false),       //[4] first name only
+        TestData(" \r\n\v\tAnti\r\n\v\tŠek \r\n\v\t", false), //[5] first name only
+        TestData(" \r\n\v\tFrantišek Dobrota \r\n\v\t", true),//[6] success
+        TestData("František Dobrota", true),                  //[7] success
     };
     static const TestData *const data_end = data + (sizeof(data) / sizeof(*data));
+    BOOST_ASSERT(( (sizeof(data) / sizeof(*data)) == 8 ));
     for (const TestData *data_ptr = data; data_ptr < data_end; ++data_ptr) {
         Fred::OperationContext ctx;
         contact.name = data_ptr->name;
-        try {
-            const SumCheck result(Fred::make_args(contact), Fred::make_args(contact, ctx));
-            BOOST_CHECK(result.success() == data_ptr->result);
-            BOOST_CHECK(result.Fred::check_contact_name::success() == data_ptr->result);
-            BOOST_CHECK(result.Fred::check_contact_mailing_address::success());
-            BOOST_CHECK(result.Fred::check_contact_email_presence::success());
-            BOOST_CHECK(result.Fred::check_contact_email_validity::success());
-            BOOST_CHECK(result.Fred::check_contact_phone_presence::success());
-            BOOST_CHECK(result.Fred::check_contact_phone_validity::success());
-            BOOST_CHECK(result.Fred::check_contact_fax_validity::success());
-            BOOST_CHECK(result.Fred::MojeID::check_contact_username::success());
-            BOOST_CHECK(result.Fred::MojeID::check_contact_birthday_validity::success());
-            BOOST_CHECK(result.Fred::check_contact_email_availability::success());
-            BOOST_CHECK(result.Fred::check_contact_phone_availability::success());
-        }
-        catch (const std::exception &e) {
-            BOOST_FAIL("unexpected exception: " << e.what());
+        const SumCheck result(Fred::make_args(contact), Fred::make_args(contact, ctx));
+        BOOST_CHECK(result.success() == data_ptr->result);
+        BOOST_CHECK(result.Fred::check_contact_name::success() == data_ptr->result);
+        BOOST_CHECK(result.Fred::check_contact_mailing_address::success());
+        BOOST_CHECK(result.Fred::check_contact_email_presence::success());
+        BOOST_CHECK(result.Fred::check_contact_email_validity::success());
+        BOOST_CHECK(result.Fred::check_contact_phone_presence::success());
+        BOOST_CHECK(result.Fred::check_contact_phone_validity::success());
+        BOOST_CHECK(result.Fred::check_contact_fax_validity::success());
+        BOOST_CHECK(result.Fred::MojeID::check_contact_username::success());
+        BOOST_CHECK(result.Fred::MojeID::check_contact_birthday_validity::success());
+        BOOST_CHECK(result.Fred::check_contact_email_availability::success());
+        BOOST_CHECK(result.Fred::check_contact_phone_availability::success());
+        const ::size_t idx = data_ptr - data;
+        switch (idx)
+        {
+        case 0 ... 3:
+            BOOST_CHECK(result.Fred::check_contact_name::first_name_absents);
+            BOOST_CHECK(result.Fred::check_contact_name::last_name_absents);
+            break;
+        case 4 ... 5:
+            BOOST_CHECK(!result.Fred::check_contact_name::first_name_absents);
+            BOOST_CHECK(result.Fred::check_contact_name::last_name_absents);
+            break;
         }
 
         try {
@@ -242,6 +252,187 @@ BOOST_AUTO_TEST_CASE(check_contact_name)
         catch (const Fred::check_contact_name &e) {
             BOOST_CHECK(!data_ptr->result);
             BOOST_CHECK(!e.success());
+            switch (idx)
+            {
+            case 0 ... 3:
+                BOOST_CHECK(e.first_name_absents);
+                BOOST_CHECK(e.last_name_absents);
+                break;
+            case 4 ... 5:
+                BOOST_CHECK(!e.first_name_absents);
+                BOOST_CHECK(e.last_name_absents);
+                break;
+            default:
+                BOOST_FAIL("data[" << idx << "] may be valid");
+            }
+        }
+    }
+}
+
+BOOST_AUTO_TEST_CASE(check_contact_mailing_address)
+{
+    const Fred::InfoContactData::Address valid_addr = contact.get_address< Fred::ContactAddressType::MAILING >();
+    for (int idx = 0; idx < 13; ++idx) {
+        Fred::OperationContext ctx;
+        contact.addresses[Fred::ContactAddressType::MAILING] = valid_addr;
+        Fred::ContactAddress &addr = contact.addresses[Fred::ContactAddressType::MAILING];
+        bool result_success = false;
+        switch (idx)
+        {
+        case 0:
+            addr.street1 = "";//street1_absents
+            break;
+        case 1:
+            addr.street1 = " ";//street1_absents
+            break;
+        case 2:
+            addr.street1 = " \r\n\t\v";//street1_absents
+            break;
+        case 3:
+            addr.city = "";//city_absents
+            break;
+        case 4:
+            addr.city = " ";//city_absents
+            break;
+        case 5:
+            addr.city = " \r\n\t\v";//city_absents
+            break;
+        case 6:
+            addr.postalcode = "";//postalcode_absents
+            break;
+        case 7:
+            addr.postalcode = " ";//postalcode_absents
+            break;
+        case 8:
+            addr.postalcode = " \r\n\t\v";//postalcode_absents
+            break;
+        case 9:
+            addr.country = "";//country_absents
+            break;
+        case 10:
+            addr.country = " ";//country_absents
+            break;
+        case 11:
+            addr.country = " \r\n\t\v";//country_absents
+            break;
+        case 12:
+            result_success = true;
+            break;
+        }
+        const SumCheck result(Fred::make_args(contact), Fred::make_args(contact, ctx));
+        BOOST_CHECK(result.success() == result_success);
+        BOOST_CHECK(result.Fred::check_contact_name::success());
+        BOOST_CHECK(result.Fred::check_contact_mailing_address::success() == result_success);
+        BOOST_CHECK(result.Fred::check_contact_email_presence::success());
+        BOOST_CHECK(result.Fred::check_contact_email_validity::success());
+        BOOST_CHECK(result.Fred::check_contact_phone_presence::success());
+        BOOST_CHECK(result.Fred::check_contact_phone_validity::success());
+        BOOST_CHECK(result.Fred::check_contact_fax_validity::success());
+        BOOST_CHECK(result.Fred::MojeID::check_contact_username::success());
+        BOOST_CHECK(result.Fred::MojeID::check_contact_birthday_validity::success());
+        BOOST_CHECK(result.Fred::check_contact_email_availability::success());
+        BOOST_CHECK(result.Fred::check_contact_phone_availability::success());
+        switch (idx)
+        {
+        case 0 ... 2:
+            BOOST_CHECK(result.Fred::check_contact_mailing_address::street1_absents);
+            BOOST_CHECK(!result.Fred::check_contact_mailing_address::city_absents);
+            BOOST_CHECK(!result.Fred::check_contact_mailing_address::postalcode_absents);
+            BOOST_CHECK(!result.Fred::check_contact_mailing_address::country_absents);
+            break;
+        case 3 ... 5:
+            BOOST_CHECK(!result.Fred::check_contact_mailing_address::street1_absents);
+            BOOST_CHECK(result.Fred::check_contact_mailing_address::city_absents);
+            BOOST_CHECK(!result.Fred::check_contact_mailing_address::postalcode_absents);
+            BOOST_CHECK(!result.Fred::check_contact_mailing_address::country_absents);
+            break;
+        case 6 ... 8:
+            BOOST_CHECK(!result.Fred::check_contact_mailing_address::street1_absents);
+            BOOST_CHECK(!result.Fred::check_contact_mailing_address::city_absents);
+            BOOST_CHECK(result.Fred::check_contact_mailing_address::postalcode_absents);
+            BOOST_CHECK(!result.Fred::check_contact_mailing_address::country_absents);
+            break;
+        case 9 ... 11:
+            BOOST_CHECK(!result.Fred::check_contact_mailing_address::street1_absents);
+            BOOST_CHECK(!result.Fred::check_contact_mailing_address::city_absents);
+            BOOST_CHECK(!result.Fred::check_contact_mailing_address::postalcode_absents);
+            BOOST_CHECK(result.Fred::check_contact_mailing_address::country_absents);
+            break;
+        case 12:
+            BOOST_CHECK(!result.Fred::check_contact_mailing_address::street1_absents);
+            BOOST_CHECK(!result.Fred::check_contact_mailing_address::city_absents);
+            BOOST_CHECK(!result.Fred::check_contact_mailing_address::postalcode_absents);
+            BOOST_CHECK(!result.Fred::check_contact_mailing_address::country_absents);
+            break;
+        }
+
+        try {
+            const SumCheckWithException result(Fred::make_args(contact), Fred::make_args(contact, ctx));
+            BOOST_CHECK(result_success);
+            BOOST_CHECK(result.success());
+        }
+        catch (const Fred::check_contact_name&) {
+            BOOST_FAIL("Fred::check_contact_name failure");
+        }
+        catch (const Fred::check_contact_email_presence&) {
+            BOOST_FAIL("Fred::check_contact_email_presence failure");
+        }
+        catch (const Fred::check_contact_email_validity&) {
+            BOOST_FAIL("Fred::check_contact_email_validity failure");
+        }
+        catch (const Fred::check_contact_phone_presence&) {
+            BOOST_FAIL("Fred::check_contact_phone_presence failure");
+        }
+        catch (const Fred::check_contact_phone_validity&) {
+            BOOST_FAIL("Fred::check_contact_phone_validity failure");
+        }
+        catch (const Fred::check_contact_fax_validity&) {
+            BOOST_FAIL("Fred::check_contact_fax_validity failure");
+        }
+        catch (const Fred::MojeID::check_contact_username&) {
+            BOOST_FAIL("Fred::MojeID::check_contact_username failure");
+        }
+        catch (const Fred::MojeID::check_contact_birthday_validity&) {
+            BOOST_FAIL("Fred::MojeID::check_contact_birthday_validity");
+        }
+        catch (const Fred::check_contact_email_availability&) {
+            BOOST_FAIL("Fred::check_contact_email_availability failure");
+        }
+        catch (const Fred::check_contact_phone_availability&) {
+            BOOST_FAIL("Fred::check_contact_phone_availability failure");
+        }
+        catch (const Fred::check_contact_mailing_address &e) {
+            BOOST_CHECK(!result_success);
+            BOOST_CHECK(!e.success());
+            switch (idx)
+            {
+            case 0 ... 2:
+                BOOST_CHECK(e.street1_absents);
+                BOOST_CHECK(!e.city_absents);
+                BOOST_CHECK(!e.postalcode_absents);
+                BOOST_CHECK(!e.country_absents);
+                break;
+            case 3 ... 5:
+                BOOST_CHECK(!e.street1_absents);
+                BOOST_CHECK(e.city_absents);
+                BOOST_CHECK(!e.postalcode_absents);
+                BOOST_CHECK(!e.country_absents);
+                break;
+            case 6 ... 8:
+                BOOST_CHECK(!e.street1_absents);
+                BOOST_CHECK(!e.city_absents);
+                BOOST_CHECK(e.postalcode_absents);
+                BOOST_CHECK(!e.country_absents);
+                break;
+            case 9 ... 11:
+                BOOST_CHECK(!e.street1_absents);
+                BOOST_CHECK(!e.city_absents);
+                BOOST_CHECK(!e.postalcode_absents);
+                BOOST_CHECK(e.country_absents);
+                break;
+            default:
+                BOOST_FAIL("test " << idx << " may be valid");
+            }
         }
     }
 }
