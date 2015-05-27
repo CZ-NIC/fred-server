@@ -83,7 +83,7 @@ check_contact_email_validity::check_contact_email_validity(const InfoContactData
 
     invalid = email.empty() ||
               (MAX_MOJEID_EMAIL_LENGTH < Util::get_utf8_char_len(email)) ||
-              DjangoEmailFormat().check(email);
+              !DjangoEmailFormat().check(email);
 }
 
 check_contact_email_availability::check_contact_email_availability(

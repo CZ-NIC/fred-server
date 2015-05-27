@@ -35,13 +35,13 @@ namespace Fred {
  * How long can't be email or phone used for next identification request.
  * @return string value usable as parameter of INTERVAL type in SQL query
  */
-std::string email_phone_protection_period() { return "1MONTH"; }
+inline std::string email_phone_protection_period() { return "1MONTH"; }
 
 /**
  * Regular expression which match correct phone number.
  * @return pattern usable in boost::regex_match for checking correct phone number format
  */
-const boost::regex& phone_pattern()
+inline const boost::regex& phone_pattern()
 {
     static const boost::regex pattern("[[:space:]]*\\+[0-9]{1,3}\\.[0-9]{1,14}[[:space:]]*");
     return pattern;
@@ -224,7 +224,7 @@ namespace MojeID {
  * Regular expression which match correct mojeID contact handle.
  * @return pattern usable in boost::regex_match for checking correct username format
  */
-const boost::regex& username_pattern()
+inline const boost::regex& username_pattern()
 {
     static const boost::regex pattern("[0-9A-Za-z]([-0-9A-Za-z]{0,28}[0-9A-Za-z])?");
     return pattern;
