@@ -24,6 +24,7 @@
 #ifndef CHECK_COLLECTOR_H_88829F1E63D951E2C5975F79439ECDBF//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
 #define CHECK_COLLECTOR_H_88829F1E63D951E2C5975F79439ECDBF
 
+#include <stdexcept>
 #include <boost/static_assert.hpp>
 #include <boost/mpl/clear.hpp>
 #include <boost/mpl/front.hpp>
@@ -193,6 +194,70 @@ struct ConstructWithArgs:C
     :   C(_a.template value< 0 >()) { }
 };
 
+/**
+ * Wrapper for check class. This wrapper does nothing.
+ * @param CHECK wrapped class
+ */
+template < class CHECK >
+struct check_wrapper_exec_all
+{
+    typedef CHECK type;///< returns unchanged CHECK => no wrapper
+};
+
+/**
+ * Wrapper for check class. This wrapper throws exception in case the check failure.
+ * @param CHECK wrapped class
+ */
+template < class CHECK >
+struct check_wrapper_break_on_first_error:CHECK
+{
+    typedef check_wrapper_break_on_first_error type;///< returns wrapped class
+    /**
+     * Executes partial check on arbitrary data type.
+     * @param _a0 first argument
+     */
+    template < typename T0 >
+    check_wrapper_break_on_first_error(T0 &_a0)
+    :   CHECK(_a0)
+    {
+        this->throw_on_error();
+    }
+    /**
+     * Executes partial check on arbitrary two arguments.
+     * @param _a0 first argument
+     * @param _a1 second argument
+     */
+    template < typename T0, typename T1 >
+    check_wrapper_break_on_first_error(T0 &_a0, T1 &_a1)
+    :   CHECK(_a0, _a1)
+    {
+        this->throw_on_error();
+    }
+    /**
+     * Exception class signals unsuccessful check. Derived from std::runtime_error and from check class which
+     * finished unsuccessfully, so it contains details about this failed check.
+     */
+    class Exception:public std::runtime_error, public CHECK
+    {
+    public:
+        /**
+         * Creates copy of failed check.
+         * @param _src points at failed check
+         */
+        Exception(const CHECK *_src)
+        :   std::runtime_error("check failure"),
+            CHECK(*_src)
+        { }
+    };
+private:
+    void throw_on_error()const
+    {
+        if (!this->CHECK::success()) {
+            throw Exception(this);
+        }
+    }
+};
+
 template < typename LIST >
 struct contains_nonsequences_only
 :   boost::mpl::and_< boost::mpl::not_< typename boost::mpl::is_sequence< typename boost::mpl::front< LIST >::type > >,
@@ -209,14 +274,17 @@ struct contains_nonsequences_only< typename boost::mpl::clear< boost::mpl::list<
  * Collection of partial checks.
  * This class publicly inherits from each partial check so details of all checks are still accessible.
  * @param CHECK_LIST list of partial checks
+ * @param CHECK_WRAPPER can modify check behaviour
  * @param IS_HOMOGENEOUS depends on type of checks in CHECK_LIST
  */
-template < typename CHECK_LIST, bool IS_HOMOGENEOUS = contains_nonsequences_only< CHECK_LIST >::value >
+template < typename CHECK_LIST, template < class > class CHECK_WRAPPER = check_wrapper_exec_all,
+           bool IS_HOMOGENEOUS = contains_nonsequences_only< CHECK_LIST >::value >
 struct Check;
 
 /**
  * Specialization for checks with different arguments, currently restricted to a maximum 5 checks.
  * @param HETEROGENEOUS_CHECK_LIST list of partial checks, each constructed with its own set of arguments
+ * @param CHECK_WRAPPER can modify check behaviour
  * @note  Each item of HETEROGENEOUS_CHECK_LIST has to be type list of homogeneous checks like this example:
 ~~~~~~~~~~~~~~{.cpp}
 struct checkA0
@@ -259,16 +327,16 @@ bool check_finished_successfully(int a, const std::string &b, void *c0, int c1)
 }
 ~~~~~~~~~~~~~~
  */
-template < typename HETEROGENEOUS_CHECK_LIST >
-struct Check< HETEROGENEOUS_CHECK_LIST, false >
-:   ConstructWithArgs< Check< typename boost::mpl::front< HETEROGENEOUS_CHECK_LIST >::type, true > >,
-    Check< typename boost::mpl::pop_front< HETEROGENEOUS_CHECK_LIST >::type, false >
+template < typename HETEROGENEOUS_CHECK_LIST, template < class > class CHECK_WRAPPER >
+struct Check< HETEROGENEOUS_CHECK_LIST, CHECK_WRAPPER, false >
+:   ConstructWithArgs< Check< typename boost::mpl::front< HETEROGENEOUS_CHECK_LIST >::type, CHECK_WRAPPER, true > >,
+    Check< typename boost::mpl::pop_front< HETEROGENEOUS_CHECK_LIST >::type, CHECK_WRAPPER, false >
 {
     typedef HETEROGENEOUS_CHECK_LIST Checks;
     BOOST_MPL_ASSERT(( boost::mpl::not_< contains_nonsequences_only< Checks > > ));
-    typedef Check< typename boost::mpl::front< Checks >::type, true > Base;
+    typedef Check< typename boost::mpl::front< Checks >::type, CHECK_WRAPPER, true > Base;
     typedef ConstructWithArgs< Base > Current;
-    typedef Check< typename boost::mpl::pop_front< Checks >::type, false > Tail;
+    typedef Check< typename boost::mpl::pop_front< Checks >::type, CHECK_WRAPPER, false > Tail;
     /**
      * Executes 5 checks with different sets of arguments and stores their results into this object.
      * @param _a0 arguments for first group of checks
@@ -336,6 +404,7 @@ struct Check< HETEROGENEOUS_CHECK_LIST, false >
 /**
  * Specialization for checks with the same arguments.
  * @param HOMOGENEOUS_CHECK_LIST list of partial checks, each constructed with the same set of arguments
+ * @param CHECK_WRAPPER can modify check behaviour
  * @note  Each check has to contain const method `success` without arguments like this example:
 ~~~~~~~~~~~~~~{.cpp}
 struct checkA0
@@ -362,22 +431,23 @@ bool check_finished_successfully(int a)
 }
 ~~~~~~~~~~~~~~
  */
-template < typename HOMOGENEOUS_CHECK_LIST >
-struct Check< HOMOGENEOUS_CHECK_LIST, true >
-:   boost::mpl::front< HOMOGENEOUS_CHECK_LIST >::type,
-    Check< typename boost::mpl::pop_front< HOMOGENEOUS_CHECK_LIST >::type, true >
+template < typename HOMOGENEOUS_CHECK_LIST, template < class > class CHECK_WRAPPER >
+struct Check< HOMOGENEOUS_CHECK_LIST, CHECK_WRAPPER, true >
+:   CHECK_WRAPPER< typename boost::mpl::front< HOMOGENEOUS_CHECK_LIST >::type >::type,
+    Check< typename boost::mpl::pop_front< HOMOGENEOUS_CHECK_LIST >::type, CHECK_WRAPPER, true >
 {
     typedef HOMOGENEOUS_CHECK_LIST Checks;
     BOOST_MPL_ASSERT(( contains_nonsequences_only< Checks > ));
-    typedef typename boost::mpl::front< Checks >::type Current;
-    typedef Check< typename boost::mpl::pop_front< Checks >::type, true > Tail;
+    typedef typename boost::mpl::front< HOMOGENEOUS_CHECK_LIST >::type Current;
+    typedef typename CHECK_WRAPPER< Current >::type WrappedCurrent;
+    typedef Check< typename boost::mpl::pop_front< Checks >::type, CHECK_WRAPPER, true > Tail;
     /**
      * Executes collection of partial checks on arbitrary data type.
      * @param _a0 first argument
      */
     template < typename T0 >
     Check(T0 &_a0)
-    :   Current(_a0),
+    :   WrappedCurrent(_a0),
         Tail(_a0)
     { }
     /**
@@ -387,7 +457,7 @@ struct Check< HOMOGENEOUS_CHECK_LIST, true >
      */
     template < typename T0, typename T1 >
     Check(T0 &_a0, T1 &_a1)
-    :   Current(_a0, _a1),
+    :   WrappedCurrent(_a0, _a1),
         Tail(_a0, _a1)
     { }
     /**
@@ -400,15 +470,15 @@ struct Check< HOMOGENEOUS_CHECK_LIST, true >
     }
 };
 
-template < >
-struct Check< typename boost::mpl::clear< boost::mpl::list< > >::type, false >
+template < template < class > class CHECK_WRAPPER >
+struct Check< typename boost::mpl::clear< boost::mpl::list< > >::type, CHECK_WRAPPER, false >
 {
     Check() {}
     bool success()const { return true; }
 };
 
-template < >
-struct Check< typename boost::mpl::clear< boost::mpl::list< > >::type, true >
+template < template < class > class CHECK_WRAPPER >
+struct Check< typename boost::mpl::clear< boost::mpl::list< > >::type, CHECK_WRAPPER, true >
 {
     Check() {}
     template < typename T0 > Check(T0&) { }
