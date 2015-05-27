@@ -815,6 +815,7 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/contact/place_address.h \
 		src/fredlib/contact/transfer_contact.h \
 		src/fredlib/contact/transfer_contact.cc \
+		src/fredlib/contact/checkers.cc \
 		src/fredlib/object/object.h \
 		src/fredlib/object/object.cc \
 		src/fredlib/object/object_impl.h \
@@ -1543,6 +1544,7 @@ src_corba_fred_adifd_SOURCES = \
 		src/fredlib/contact/create_contact.cc \
 		src/fredlib/contact/place_address.cc \
 		src/fredlib/contact/place_address.h \
+		src/fredlib/contact/checkers.cc \
 		src/fredlib/opcontext.cc \
 		src/fredlib/opcontext.h \
 		src/corba/nameservice.cc \
@@ -2453,6 +2455,8 @@ tests_test_fredlib_SOURCES = \
 		tests/fredlib/contact/test_update_contact.cc \
 		tests/fredlib/contact/test_copy_contact.cc \
 		tests/fredlib/contact/test_transfer_contact.cc \
+		tests/fredlib/contact/test_checkers.cc \
+		util/types/birthdate.cc \
 		tests/fredlib/domain/test_update_domain.cc \
 		tests/fredlib/domain/test_info_domain.cc \
 		tests/fredlib/domain/test_delete_domain.cc \
