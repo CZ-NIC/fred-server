@@ -205,6 +205,17 @@ struct check_wrapper_exec_all
 };
 
 /**
+ * Common exception class derived from std::runtime_error signals unsuccessful check.
+ */
+class CheckFailure:public std::runtime_error
+{
+public:
+    /**
+     * Sets error message.
+     */
+    CheckFailure():std::runtime_error("check failure") { }
+};
+/**
  * Wrapper for check class. This wrapper throws exception in case the check failure.
  * @param CHECK wrapped class
  */
@@ -234,10 +245,10 @@ struct check_wrapper_break_on_first_error:CHECK
         this->throw_on_error();
     }
     /**
-     * Exception class signals unsuccessful check. Derived from std::runtime_error and from check class which
+     * Exception class signals unsuccessful check. Derived from CheckFailure and from check class which
      * finished unsuccessfully, so it contains details about this failed check.
      */
-    class Exception:public std::runtime_error, public CHECK
+    class Exception:public CheckFailure, public CHECK
     {
     public:
         /**
@@ -245,8 +256,7 @@ struct check_wrapper_break_on_first_error:CHECK
          * @param _src points at failed check
          */
         Exception(const CHECK *_src)
-        :   std::runtime_error("check failure"),
-            CHECK(*_src)
+        :   CHECK(*_src)
         { }
     };
 private:
