@@ -117,38 +117,132 @@ BOOST_AUTO_TEST_CASE(check_all_with_exceptions)
         const SumCheckWithException result(Fred::make_args(contact), Fred::make_args(contact, ctx));
         BOOST_CHECK(result.success());
     }
-    catch (const Fred::check_contact_name&) {
+    catch (const Fred::check_contact_name &e) {
         BOOST_FAIL("Fred::check_contact_name failure");
+        BOOST_CHECK(!e.success());
     }
-    catch (const Fred::check_contact_mailing_address&) {
+    catch (const Fred::check_contact_mailing_address &e) {
         BOOST_FAIL("Fred::check_contact_mailing_address failure");
+        BOOST_CHECK(!e.success());
     }
-    catch (const Fred::check_contact_email_presence&) {
+    catch (const Fred::check_contact_email_presence &e) {
         BOOST_FAIL("Fred::check_contact_email_presence failure");
+        BOOST_CHECK(!e.success());
     }
-    catch (const Fred::check_contact_email_validity&) {
+    catch (const Fred::check_contact_email_validity &e) {
         BOOST_FAIL("Fred::check_contact_email_validity failure: " + contact.email.get_value_or_default());
+        BOOST_CHECK(!e.success());
     }
-    catch (const Fred::check_contact_phone_presence&) {
+    catch (const Fred::check_contact_phone_presence &e) {
         BOOST_FAIL("Fred::check_contact_phone_presence failure");
+        BOOST_CHECK(!e.success());
     }
-    catch (const Fred::check_contact_phone_validity&) {
+    catch (const Fred::check_contact_phone_validity &e) {
         BOOST_FAIL("Fred::check_contact_phone_validity failure");
+        BOOST_CHECK(!e.success());
     }
-    catch (const Fred::check_contact_fax_validity&) {
+    catch (const Fred::check_contact_fax_validity &e) {
         BOOST_FAIL("Fred::check_contact_fax_validity failure");
+        BOOST_CHECK(!e.success());
     }
-    catch (const Fred::MojeID::check_contact_username&) {
+    catch (const Fred::MojeID::check_contact_username &e) {
         BOOST_FAIL("Fred::MojeID::check_contact_username failure");
+        BOOST_CHECK(!e.success());
     }
-    catch (const Fred::MojeID::check_contact_birthday_validity&) {
+    catch (const Fred::MojeID::check_contact_birthday_validity &e) {
         BOOST_FAIL("Fred::MojeID::check_contact_birthday_validity");
+        BOOST_CHECK(!e.success());
     }
-    catch (const Fred::check_contact_email_availability&) {
+    catch (const Fred::check_contact_email_availability &e) {
         BOOST_FAIL("Fred::check_contact_email_availability failure");
+        BOOST_CHECK(!e.success());
     }
-    catch (const Fred::check_contact_phone_availability&) {
+    catch (const Fred::check_contact_phone_availability &e) {
         BOOST_FAIL("Fred::check_contact_phone_availability failure");
+        BOOST_CHECK(!e.success());
+    }
+}
+
+BOOST_AUTO_TEST_CASE(check_contact_name)
+{
+    struct TestData
+    {
+        TestData(bool result):result(result) { }
+        TestData(const char *name, bool result):name(name),result(result) { }
+        const Nullable< std::string > name;
+        const bool result;
+    };
+    static const TestData data[] =
+    {
+        TestData(false),//doesn't present
+        TestData("", false),//empty
+        TestData(" ", false),//space only
+        TestData(" \r\n\v\t", false),//white spaces only
+        TestData(" \r\n\v\tFrantišek \r\n\v\t", false),//first name only
+        TestData(" \r\n\v\tFrantišek Dobrota \r\n\v\t", true),//success
+    };
+    static const TestData *const data_end = data + (sizeof(data) / sizeof(*data));
+    for (const TestData *data_ptr = data; data_ptr < data_end; ++data_ptr) {
+        Fred::OperationContext ctx;
+        contact.name = data_ptr->name;
+        try {
+            const SumCheck result(Fred::make_args(contact), Fred::make_args(contact, ctx));
+            BOOST_CHECK(result.success() == data_ptr->result);
+            BOOST_CHECK(result.Fred::check_contact_name::success() == data_ptr->result);
+            BOOST_CHECK(result.Fred::check_contact_mailing_address::success());
+            BOOST_CHECK(result.Fred::check_contact_email_presence::success());
+            BOOST_CHECK(result.Fred::check_contact_email_validity::success());
+            BOOST_CHECK(result.Fred::check_contact_phone_presence::success());
+            BOOST_CHECK(result.Fred::check_contact_phone_validity::success());
+            BOOST_CHECK(result.Fred::check_contact_fax_validity::success());
+            BOOST_CHECK(result.Fred::MojeID::check_contact_username::success());
+            BOOST_CHECK(result.Fred::MojeID::check_contact_birthday_validity::success());
+            BOOST_CHECK(result.Fred::check_contact_email_availability::success());
+            BOOST_CHECK(result.Fred::check_contact_phone_availability::success());
+        }
+        catch (const std::exception &e) {
+            BOOST_FAIL("unexpected exception: " << e.what());
+        }
+
+        try {
+            const SumCheckWithException result(Fred::make_args(contact), Fred::make_args(contact, ctx));
+            BOOST_CHECK(data_ptr->result);
+            BOOST_CHECK(result.success());
+        }
+        catch (const Fred::check_contact_mailing_address&) {
+            BOOST_FAIL("Fred::check_contact_mailing_address failure");
+        }
+        catch (const Fred::check_contact_email_presence&) {
+            BOOST_FAIL("Fred::check_contact_email_presence failure");
+        }
+        catch (const Fred::check_contact_email_validity&) {
+            BOOST_FAIL("Fred::check_contact_email_validity failure");
+        }
+        catch (const Fred::check_contact_phone_presence&) {
+            BOOST_FAIL("Fred::check_contact_phone_presence failure");
+        }
+        catch (const Fred::check_contact_phone_validity&) {
+            BOOST_FAIL("Fred::check_contact_phone_validity failure");
+        }
+        catch (const Fred::check_contact_fax_validity&) {
+            BOOST_FAIL("Fred::check_contact_fax_validity failure");
+        }
+        catch (const Fred::MojeID::check_contact_username&) {
+            BOOST_FAIL("Fred::MojeID::check_contact_username failure");
+        }
+        catch (const Fred::MojeID::check_contact_birthday_validity&) {
+            BOOST_FAIL("Fred::MojeID::check_contact_birthday_validity");
+        }
+        catch (const Fred::check_contact_email_availability&) {
+            BOOST_FAIL("Fred::check_contact_email_availability failure");
+        }
+        catch (const Fred::check_contact_phone_availability&) {
+            BOOST_FAIL("Fred::check_contact_phone_availability failure");
+        }
+        catch (const Fred::check_contact_name &e) {
+            BOOST_CHECK(!data_ptr->result);
+            BOOST_CHECK(!e.success());
+        }
     }
 }
 
