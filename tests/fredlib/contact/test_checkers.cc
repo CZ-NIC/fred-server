@@ -499,9 +499,9 @@ BOOST_AUTO_TEST_CASE(check_contact_email)
         TestData(bool p, bool v, bool a):present(p),valid(v),available(a) { }
         TestData(const std::string &e, bool p, bool v, bool a):email(e),present(p),valid(v),available(a) { }
         const Nullable< std::string > email;
-        const bool present;
-        const bool valid;
-        const bool available;
+        const bool present:1;
+        const bool valid:1;
+        const bool available:1;
         bool success()const { return present && valid && available; }
     };
     enum { MAX_MOJEID_EMAIL_LENGTH = 200 };
@@ -660,9 +660,9 @@ BOOST_AUTO_TEST_CASE(check_contact_phone)
         TestData(bool p, bool v, bool a):present(p),valid(v),available(a) { }
         TestData(const std::string &e, bool p, bool v, bool a):phone(e),present(p),valid(v),available(a) { }
         const Nullable< std::string > phone;
-        const bool present;
-        const bool valid;
-        const bool available;
+        const bool present:1;
+        const bool valid:1;
+        const bool available:1;
         bool success()const { return present && valid && available; }
     };
     static const TestData data[] =
@@ -891,6 +891,115 @@ BOOST_AUTO_TEST_CASE(check_contact_fax)
             switch (idx)
             {
             case 7 ... 12:
+                BOOST_CHECK(e.invalid);
+                break;
+            default:
+                BOOST_FAIL("test " << idx << " may be valid");
+            }
+        }
+    }
+}
+
+BOOST_AUTO_TEST_CASE(check_contact_username)
+{
+    struct TestData
+    {
+        TestData(const std::string &u, bool p, bool v):username(u),present(p),valid(v) { }
+        const std::string username;
+        const bool present:1;
+        const bool valid:1;
+        bool success()const { return present && valid; }
+    };
+    static const TestData data[] =
+    {
+        TestData("", false, true),
+        TestData(" ", false, true),
+        TestData(" \r\n\v\t", false, true),
+        TestData(" \r\n\v\tFRANTISEK", true, false),
+        TestData("-FRANTISEK", true, false),
+        TestData("FRANTISEK-", true, false),
+        TestData("-FRANTISEK-", true, false),
+        TestData("FRANTI--SEK", true, false),
+        TestData(std::string(Fred::MojeID::USERNAME_LENGTH_LIMIT + 1, 'A'), true, false),
+        TestData("FRANTISEK", true, true),
+        TestData("F-ANT-SEK", true, true),
+        TestData("Frant1Sek", true, true),
+        TestData("A", true, true),
+        TestData("Z", true, true),
+        TestData("a", true, true),
+        TestData("z", true, true),
+        TestData("0", true, true),
+        TestData("9", true, true),
+        TestData(std::string(Fred::MojeID::USERNAME_LENGTH_LIMIT, 'A'), true, true)
+    };
+    static const TestData *const data_end = data + (sizeof(data) / sizeof(*data));
+    BOOST_ASSERT(( (sizeof(data) / sizeof(*data)) == 19 ));
+    for (const TestData *data_ptr = data; data_ptr < data_end; ++data_ptr) {
+        Fred::OperationContext ctx;
+        contact[MAIN].handle = data_ptr->username;
+        const SumCheck result(Fred::make_args(contact[MAIN]), Fred::make_args(contact[MAIN], ctx));
+        BOOST_CHECK(result.success() == data_ptr->success());
+        BOOST_CHECK(result.Fred::check_contact_name::success());
+        BOOST_CHECK(result.Fred::check_contact_mailing_address::success());
+        BOOST_CHECK(result.Fred::check_contact_email_presence::success());
+        BOOST_CHECK(result.Fred::check_contact_email_validity::success());
+        BOOST_CHECK(result.Fred::check_contact_phone_presence::success());
+        BOOST_CHECK(result.Fred::check_contact_phone_validity::success());
+        BOOST_CHECK(result.Fred::check_contact_fax_validity::success());
+        BOOST_CHECK(result.Fred::MojeID::check_contact_username::success() == data_ptr->success());
+        BOOST_CHECK(result.Fred::MojeID::check_contact_username::absent == !data_ptr->present);
+        BOOST_CHECK(result.Fred::MojeID::check_contact_username::invalid == !data_ptr->valid);
+        BOOST_CHECK(result.Fred::MojeID::check_contact_birthday_validity::success());
+        BOOST_CHECK(result.Fred::check_contact_email_availability::success());
+        BOOST_CHECK(result.Fred::check_contact_phone_availability::success());
+
+        try {
+            const SumCheckWithException result(Fred::make_args(contact[MAIN]), Fred::make_args(contact[MAIN], ctx));
+            BOOST_CHECK(data_ptr->success());
+            BOOST_CHECK(result.success());
+        }
+        catch (const Fred::check_contact_name&) {
+            BOOST_FAIL("Fred::check_contact_name failure");
+        }
+        catch (const Fred::check_contact_mailing_address&) {
+            BOOST_FAIL("Fred::check_contact_mailing_address failure");
+        }
+        catch (const Fred::check_contact_email_presence&) {
+            BOOST_FAIL("Fred::check_contact_email_presence failure");
+        }
+        catch (const Fred::check_contact_email_validity&) {
+            BOOST_FAIL("Fred::check_contact_email_validity failure");
+        }
+        catch (const Fred::check_contact_phone_presence&) {
+            BOOST_FAIL("Fred::check_contact_phone_presence failure");
+        }
+        catch (const Fred::check_contact_phone_validity&) {
+            BOOST_FAIL("Fred::check_contact_phone_validity failure");
+        }
+        catch (const Fred::check_contact_fax_validity&) {
+            BOOST_FAIL("Fred::check_contact_fax_validity failure");
+        }
+        catch (const Fred::MojeID::check_contact_birthday_validity&) {
+            BOOST_FAIL("Fred::MojeID::check_contact_birthday_validity");
+        }
+        catch (const Fred::check_contact_email_availability&) {
+            BOOST_FAIL("Fred::check_contact_email_availability failure");
+        }
+        catch (const Fred::check_contact_phone_availability&) {
+            BOOST_FAIL("Fred::check_contact_phone_availability failure");
+        }
+        catch (const Fred::MojeID::check_contact_username &e) {
+            BOOST_CHECK(!data_ptr->success());
+            BOOST_CHECK(!e.success());
+            const ::size_t idx = data_ptr - data;
+            switch (idx)
+            {
+            case 0 ... 2:
+                BOOST_CHECK(e.absent);
+                BOOST_CHECK(!e.invalid);
+                break;
+            case 3 ... 8:
+                BOOST_CHECK(!e.absent);
                 BOOST_CHECK(e.invalid);
                 break;
             default:
