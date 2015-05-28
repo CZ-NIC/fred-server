@@ -804,4 +804,100 @@ BOOST_AUTO_TEST_CASE(check_contact_phone)
     }
 }
 
+BOOST_AUTO_TEST_CASE(check_contact_fax)
+{
+    struct TestData
+    {
+        TestData(bool result):result(result) { }
+        TestData(const std::string &fax, bool result):fax(fax),result(result) { }
+        const Nullable< std::string > fax;
+        const bool result;
+    };
+    static const TestData data[] =
+    {
+        TestData(true),
+        TestData("", true),
+        TestData(" ", true),
+        TestData(" \r\n\v\t", true),
+        TestData("+0.0", true),
+        TestData("+420.602123456", true),
+        TestData("+123.01234567890123", true),
+        TestData("+420", false),
+        TestData("+420.", false),
+        TestData("420.602123456", false),
+        TestData("+420602123456", false),
+        TestData("602123456", false),
+        TestData("+123.012345678901234", false)
+    };
+    static const TestData *const data_end = data + (sizeof(data) / sizeof(*data));
+    BOOST_ASSERT(( (sizeof(data) / sizeof(*data)) == 13 ));
+    for (const TestData *data_ptr = data; data_ptr < data_end; ++data_ptr) {
+        Fred::OperationContext ctx;
+        contact[MAIN].fax = data_ptr->fax;
+        const SumCheck result(Fred::make_args(contact[MAIN]), Fred::make_args(contact[MAIN], ctx));
+        BOOST_CHECK(result.success() == data_ptr->result);
+        BOOST_CHECK(result.Fred::check_contact_name::success());
+        BOOST_CHECK(result.Fred::check_contact_mailing_address::success());
+        BOOST_CHECK(result.Fred::check_contact_email_presence::success());
+        BOOST_CHECK(result.Fred::check_contact_email_validity::success());
+        BOOST_CHECK(result.Fred::check_contact_phone_presence::success());
+        BOOST_CHECK(result.Fred::check_contact_phone_validity::success());
+        BOOST_CHECK(result.Fred::check_contact_fax_validity::success() == data_ptr->result);
+        BOOST_CHECK(result.Fred::check_contact_fax_validity::invalid == !data_ptr->result);
+        BOOST_CHECK(result.Fred::MojeID::check_contact_username::success());
+        BOOST_CHECK(result.Fred::MojeID::check_contact_birthday_validity::success());
+        BOOST_CHECK(result.Fred::check_contact_email_availability::success());
+        BOOST_CHECK(result.Fred::check_contact_phone_availability::success());
+
+        try {
+            const SumCheckWithException result(Fred::make_args(contact[MAIN]), Fred::make_args(contact[MAIN], ctx));
+            BOOST_CHECK(data_ptr->result);
+            BOOST_CHECK(result.success());
+        }
+        catch (const Fred::check_contact_name&) {
+            BOOST_FAIL("Fred::check_contact_name failure");
+        }
+        catch (const Fred::check_contact_mailing_address&) {
+            BOOST_FAIL("Fred::check_contact_mailing_address failure");
+        }
+        catch (const Fred::check_contact_email_presence&) {
+            BOOST_FAIL("Fred::check_contact_email_presence failure");
+        }
+        catch (const Fred::check_contact_email_validity&) {
+            BOOST_FAIL("Fred::check_contact_email_validity failure");
+        }
+        catch (const Fred::check_contact_phone_presence&) {
+            BOOST_FAIL("Fred::check_contact_phone_presence failure");
+        }
+        catch (const Fred::check_contact_phone_validity&) {
+            BOOST_FAIL("Fred::check_contact_phone_validity failure");
+        }
+        catch (const Fred::MojeID::check_contact_username&) {
+            BOOST_FAIL("Fred::MojeID::check_contact_username failure");
+        }
+        catch (const Fred::MojeID::check_contact_birthday_validity&) {
+            BOOST_FAIL("Fred::MojeID::check_contact_birthday_validity");
+        }
+        catch (const Fred::check_contact_email_availability&) {
+            BOOST_FAIL("Fred::check_contact_email_availability failure");
+        }
+        catch (const Fred::check_contact_phone_availability&) {
+            BOOST_FAIL("Fred::check_contact_phone_availability failure");
+        }
+        catch (const Fred::check_contact_fax_validity &e) {
+            BOOST_CHECK(!data_ptr->result);
+            BOOST_CHECK(!e.success());
+            const ::size_t idx = data_ptr - data;
+            switch (idx)
+            {
+            case 7 ... 12:
+                BOOST_CHECK(e.invalid);
+                break;
+            default:
+                BOOST_FAIL("test " << idx << " may be valid");
+            }
+        }
+    }
+}
+
 BOOST_AUTO_TEST_SUITE_END();//TestContactCheckers
