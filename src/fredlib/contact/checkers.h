@@ -220,13 +220,15 @@ struct check_contact_fax_validity
 /// MojeID
 namespace MojeID {
 
+enum { USERNAME_LENGTH_LIMIT = 30 };
+
 /**
  * Regular expression which match correct mojeID contact handle.
  * @return pattern usable in boost::regex_match for checking correct username format
  */
 inline const boost::regex& username_pattern()
 {
-    static const boost::regex pattern("[0-9A-Za-z]([-0-9A-Za-z]{0,28}[0-9A-Za-z])?");
+    static const boost::regex pattern("[0-9A-Za-z](-?[0-9A-Za-z])*");
     return pattern;
 };
 

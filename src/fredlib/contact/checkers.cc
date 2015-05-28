@@ -41,16 +41,19 @@ bool absent_or_empty(const Nullable< std::string > &_data)
     return _data.isnull() || nothing_else_whitespaces(_data.get_value());
 }
 
-bool absent_or_match_pattern(const std::string &_str, const boost::regex &_pattern)
+bool match(const std::string &_str, const boost::regex &_pattern)
 {
-    return nothing_else_whitespaces(_str) ||
-           boost::regex_match(_str, _pattern);
+    return boost::regex_match(_str, _pattern);
 }
 
-bool absent_or_match_pattern(const Nullable< std::string > &_str, const boost::regex &_pattern)
+bool absent_or_match(const std::string &_str, const boost::regex &_pattern)
 {
-    return _str.isnull() ||
-           absent_or_match_pattern(_str.get_value(), _pattern);
+    return nothing_else_whitespaces(_str) || match(_str, _pattern);
+}
+
+bool absent_or_match(const Nullable< std::string > &_str, const boost::regex &_pattern)
+{
+    return _str.isnull() || absent_or_match(_str.get_value(), _pattern);
 }
 
 }//Fred::{anonymous}
@@ -117,7 +120,7 @@ check_contact_phone_presence::check_contact_phone_presence(const InfoContactData
 }
 
 check_contact_phone_validity::check_contact_phone_validity(const InfoContactData &_data)
-:   invalid(!absent_or_match_pattern(_data.telephone, phone_pattern()))
+:   invalid(!absent_or_match(_data.telephone, phone_pattern()))
 {
 }
 
@@ -147,16 +150,22 @@ check_contact_phone_availability::check_contact_phone_availability(
 }
 
 check_contact_fax_validity::check_contact_fax_validity(const InfoContactData &_data)
-:   invalid(!absent_or_match_pattern(_data.fax, phone_pattern()))
+:   invalid(!absent_or_match(_data.fax, phone_pattern()))
 {
 }
 
 namespace MojeID {
 
 check_contact_username::check_contact_username(const InfoContactData &_data)
-:   absent(nothing_else_whitespaces(_data.handle)),
-    invalid(!absent_or_match_pattern(_data.handle, username_pattern()))
+:   absent(nothing_else_whitespaces(_data.handle))
 {
+    if (absent) {
+        invalid = false;
+    }
+    else {
+        invalid = (USERNAME_LENGTH_LIMIT < _data.handle.length()) ||
+                  !match(_data.handle, username_pattern());
+    }
 }
 
 check_contact_birthday_validity::check_contact_birthday_validity(const InfoContactData &_data)
