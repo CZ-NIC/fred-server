@@ -61,9 +61,9 @@ struct check_contact_name
      * All checks successfully done.
      * @return true if check was successfully
      */
-    bool success()const { return !(first_name_absents || last_name_absents); }
-    bool first_name_absents:1;///< contact doesn't have first name
-    bool last_name_absents:1; ///< contact doesn't have last name
+    bool success()const { return !(first_name_absent || last_name_absent); }
+    bool first_name_absent:1;///< contact doesn't have first name
+    bool last_name_absent:1; ///< contact doesn't have last name
 };
 
 /**
@@ -80,11 +80,11 @@ struct check_contact_mailing_address
      * All checks successfully done.
      * @return true if check was successfully
      */
-    bool success()const { return !(street1_absents || city_absents || postalcode_absents || country_absents); }
-    bool street1_absents:1;   ///< contact doesn't have street1 entry
-    bool city_absents:1;      ///< contact doesn't have city entry
-    bool postalcode_absents:1;///< contact doesn't have postal code entry
-    bool country_absents:1;   ///< contact doesn't have country entry
+    bool success()const { return !(street1_absent || city_absent || postalcode_absent || country_absent); }
+    bool street1_absent:1;   ///< contact doesn't have street1 entry
+    bool city_absent:1;      ///< contact doesn't have city entry
+    bool postalcode_absent:1;///< contact doesn't have postal code entry
+    bool country_absent:1;   ///< contact doesn't have country entry
 };
 
 /**
@@ -101,8 +101,8 @@ struct check_contact_email_presence
      * Contact e-mail presents.
      * @return true if check was successfully
      */
-    bool success()const { return !absents; }
-    bool absents:1;///< contact e-mail doesn't present
+    bool success()const { return !absent; }
+    bool absent:1;///< contact e-mail doesn't present
 };
 
 /**
@@ -138,8 +138,8 @@ struct check_contact_email_availability
      * Contact e-mail is available for using in next identification request.
      * @return true if check was successfully
      */
-    bool success()const { return !(absents || used_recently); }
-    bool absents:1;      ///< contact e-mail doesn't present
+    bool success()const { return !(absent || used_recently); }
+    bool absent:1;       ///< contact e-mail doesn't present
     bool used_recently:1;///< contact e-mail used for identification request recently
 };
 
@@ -157,8 +157,8 @@ struct check_contact_phone_presence
      * Contact phone presents.
      * @return true if check was successfully
      */
-    bool success()const { return !absents; }
-    bool absents:1;///< contact phone doesn't present
+    bool success()const { return !absent; }
+    bool absent:1;///< contact phone doesn't present
 };
 
 /**
@@ -194,8 +194,8 @@ struct check_contact_phone_availability
      * Contact phone is available for using in next identification request.
      * @return true if check was successfully
      */
-    bool success()const { return !(absents || used_recently); }
-    bool absents:1;      ///< contact phone doesn't present
+    bool success()const { return !(absent || used_recently); }
+    bool absent:1;       ///< contact phone doesn't present
     bool used_recently:1;///< contact phone used for identification request recently
 };
 
@@ -244,8 +244,8 @@ struct check_contact_username
      * All checks successfully done.
      * @return true if check was successfully
      */
-    bool success()const { return !(absents || invalid); }
-    bool absents:1;///< mojeID contact handle doesn't present
+    bool success()const { return !(absent || invalid); }
+    bool absent:1; ///< mojeID contact handle doesn't present
     bool invalid:1;///< mojeID contact handle format fails to meet the requirements
 };
 

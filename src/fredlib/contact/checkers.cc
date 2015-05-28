@@ -58,21 +58,21 @@ bool absent_or_match_pattern(const Nullable< std::string > &_str, const boost::r
 check_contact_name::check_contact_name(const InfoContactData &_data)
 {
     const std::string name = boost::algorithm::trim_copy(_data.name.get_value_or_default());
-    first_name_absents = name.empty();
-    last_name_absents = name.find_last_of(' ') == std::string::npos;
+    first_name_absent = name.empty();
+    last_name_absent = name.find_last_of(' ') == std::string::npos;
 }
 
 check_contact_mailing_address::check_contact_mailing_address(const InfoContactData &_data)
 {
     const InfoContactData::Address addr = _data.get_address< ContactAddressType::MAILING >();
-    street1_absents = nothing_else_whitespaces(addr.street1);
-    city_absents = nothing_else_whitespaces(addr.city);
-    postalcode_absents = nothing_else_whitespaces(addr.postalcode);
-    country_absents = nothing_else_whitespaces(addr.country);
+    street1_absent = nothing_else_whitespaces(addr.street1);
+    city_absent = nothing_else_whitespaces(addr.city);
+    postalcode_absent = nothing_else_whitespaces(addr.postalcode);
+    country_absent = nothing_else_whitespaces(addr.country);
 }
 
 check_contact_email_presence::check_contact_email_presence(const InfoContactData &_data)
-:   absents(absent_or_empty(_data.email))
+:   absent(absent_or_empty(_data.email))
 {
 }
 
@@ -89,10 +89,10 @@ check_contact_email_validity::check_contact_email_validity(const InfoContactData
 check_contact_email_availability::check_contact_email_availability(
     const InfoContactData &_data,
     OperationContext &_ctx)
-:   absents(check_contact_email_presence(_data).absents),
-    used_recently(!absents)
+:   absent(check_contact_email_presence(_data).absent),
+    used_recently(!absent)
 {
-    if (absents) {
+    if (absent) {
         return;
     }
     const Database::Result ucheck = _ctx.get_conn().exec_params(
@@ -112,7 +112,7 @@ check_contact_email_availability::check_contact_email_availability(
 }
 
 check_contact_phone_presence::check_contact_phone_presence(const InfoContactData &_data)
-:   absents(absent_or_empty(_data.telephone))
+:   absent(absent_or_empty(_data.telephone))
 {
 }
 
@@ -124,10 +124,10 @@ check_contact_phone_validity::check_contact_phone_validity(const InfoContactData
 check_contact_phone_availability::check_contact_phone_availability(
     const InfoContactData &_data,
     OperationContext &_ctx)
-:   absents(check_contact_phone_presence(_data).absents),
-    used_recently(!absents)
+:   absent(check_contact_phone_presence(_data).absent),
+    used_recently(!absent)
 {
-    if (absents) {
+    if (absent) {
         return;
     }
     const Database::Result ucheck = _ctx.get_conn().exec_params(
@@ -154,7 +154,7 @@ check_contact_fax_validity::check_contact_fax_validity(const InfoContactData &_d
 namespace MojeID {
 
 check_contact_username::check_contact_username(const InfoContactData &_data)
-:   absents(nothing_else_whitespaces(_data.handle)),
+:   absent(nothing_else_whitespaces(_data.handle)),
     invalid(!absent_or_match_pattern(_data.handle, username_pattern()))
 {
 }
