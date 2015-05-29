@@ -353,6 +353,15 @@ struct Check< HETEROGENEOUS_CHECK_LIST, CHECK_WRAPPER, false >
     typedef ConstructWithArgs< Base > Current;
     typedef Check< typename boost::mpl::pop_front< Checks >::type, CHECK_WRAPPER, false > Tail;
     /**
+     * Generates the same Check with other wrapper.
+     * @param OTHER_CHECK_WRAPPER use this wrapper
+     */
+    template < template < class > class OTHER_CHECK_WRAPPER >
+    struct ChangeWrapper
+    {
+        typedef Check< HETEROGENEOUS_CHECK_LIST, OTHER_CHECK_WRAPPER, false > type;///< the same Check with changed wrapper
+    };
+    /**
      * Executes 5 checks with different sets of arguments and stores their results into this object.
      * @param _a0 arguments for first group of checks
      * @param _a1 arguments for second group of checks
@@ -456,6 +465,15 @@ struct Check< HOMOGENEOUS_CHECK_LIST, CHECK_WRAPPER, true >
     typedef typename boost::mpl::front< HOMOGENEOUS_CHECK_LIST >::type Current;
     typedef typename CHECK_WRAPPER< Current >::type WrappedCurrent;
     typedef Check< typename boost::mpl::pop_front< Checks >::type, CHECK_WRAPPER, true > Tail;
+    /**
+     * Generates the same Check with other wrapper.
+     * @param OTHER_CHECK_WRAPPER use this wrapper
+     */
+    template < template < class > class OTHER_CHECK_WRAPPER >
+    struct ChangeWrapper
+    {
+        typedef Check< HOMOGENEOUS_CHECK_LIST, OTHER_CHECK_WRAPPER, true > type;///< the same Check with changed wrapper
+    };
     /**
      * Executes collection of partial checks on arbitrary data type.
      * @param _a0 first argument

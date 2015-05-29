@@ -126,9 +126,7 @@ struct test_contact_checkers_fixture : public Test::Fixture::instantiate_db_temp
                               Fred::check_contact_phone_availability > list_of_checks_contact_ctx;
     typedef Fred::Check< boost::mpl::list< list_of_checks_contact,
                                            list_of_checks_contact_ctx > > SumCheck;
-    typedef Fred::Check< boost::mpl::list< list_of_checks_contact,
-                                           list_of_checks_contact_ctx >,
-                         Fred::check_wrapper_break_on_first_error > SumCheckWithException;
+    typedef SumCheck::ChangeWrapper< Fred::check_wrapper_break_on_first_error >::type SumCheckWithException;
 };
 
 
