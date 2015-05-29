@@ -168,17 +168,33 @@ check_contact_username::check_contact_username(const InfoContactData &_data)
     }
 }
 
-check_contact_birthday_validity::check_contact_birthday_validity(const InfoContactData &_data)
+namespace {
+const char *const ssntype_birthday = "BIRTHDAY";
+const char *const ssntype_vat_id = "ICO";
+bool ssntype_present(const InfoContactData &_data, const char *_ssntype)
 {
-    static const char *const ssntype_birthday = "BIRTHDAY";
-    try {
-        invalid = !_data.ssntype.isnull() &&
-                  (_data.ssntype.get_value() == ssntype_birthday) &&
-                  birthdate_from_string_to_date(_data.ssn.get_value()).is_special();
-    }
-    catch (...) {
-        invalid = true;
-    }
+    return !_data.ssntype.isnull() && (_data.ssntype.get_value() == _ssntype);
+}
+}
+
+check_contact_birthday::check_contact_birthday(const InfoContactData &_data)
+:   absent(!ssntype_present(_data, ssntype_birthday)),
+    invalid(!check_contact_birthday_validity(_data).success())
+{
+}
+
+check_contact_birthday_validity::check_contact_birthday_validity(const InfoContactData &_data)
+try:invalid(ssntype_present(_data, ssntype_birthday) &&
+            birthdate_from_string_to_date(_data.ssn.get_value()).is_special())
+{
+}
+catch (...) {
+    invalid = true;
+}
+
+check_contact_vat_id_presence::check_contact_vat_id_presence(const InfoContactData &_data)
+:   absent(!ssntype_present(_data, ssntype_vat_id) || absent_or_empty(_data.ssn))
+{
 }
 
 }//Fred::MojeID

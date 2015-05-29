@@ -82,6 +82,8 @@ struct test_contact_checkers_fixture : public Test::Fixture::instantiate_db_temp
                 .set_place(place)
                 .set_email(test_contact_email[idx])
                 .set_telephone(test_contact_phone[idx])
+                .set_ssntype("BIRTHDAY")
+                .set_ssn("1980-02-29")
                 .exec(ctx);
             contact[idx] = Fred::InfoContactByHandle(test_contact_handle[idx]).exec(ctx).info_contact_data;
         }
@@ -119,7 +121,7 @@ struct test_contact_checkers_fixture : public Test::Fixture::instantiate_db_temp
                               Fred::check_contact_phone_validity,
                               Fred::check_contact_fax_validity,
                               Fred::MojeID::check_contact_username,
-                              Fred::MojeID::check_contact_birthday_validity > list_of_checks_contact;
+                              Fred::MojeID::check_contact_birthday > list_of_checks_contact;
     typedef boost::mpl::list< Fred::check_contact_email_availability,
                               Fred::check_contact_phone_availability > list_of_checks_contact_ctx;
     typedef Fred::Check< boost::mpl::list< list_of_checks_contact,
@@ -149,7 +151,7 @@ BOOST_AUTO_TEST_CASE(check_all_without_exceptions)
         BOOST_CHECK(result.Fred::check_contact_phone_validity::success());
         BOOST_CHECK(result.Fred::check_contact_fax_validity::success());
         BOOST_CHECK(result.Fred::MojeID::check_contact_username::success());
-        BOOST_CHECK(result.Fred::MojeID::check_contact_birthday_validity::success());
+        BOOST_CHECK(result.Fred::MojeID::check_contact_birthday::success());
         BOOST_CHECK(result.Fred::check_contact_email_availability::success());
         BOOST_CHECK(result.Fred::check_contact_phone_availability::success());
     }
@@ -200,8 +202,8 @@ BOOST_AUTO_TEST_CASE(check_all_with_exceptions)
         BOOST_FAIL("Fred::MojeID::check_contact_username failure");
         BOOST_CHECK(!e.success());
     }
-    catch (const Fred::MojeID::check_contact_birthday_validity &e) {
-        BOOST_FAIL("Fred::MojeID::check_contact_birthday_validity");
+    catch (const Fred::MojeID::check_contact_birthday &e) {
+        BOOST_FAIL("Fred::MojeID::check_contact_birthday");
         BOOST_CHECK(!e.success());
     }
     catch (const Fred::check_contact_email_availability &e) {
@@ -249,7 +251,7 @@ BOOST_AUTO_TEST_CASE(check_contact_name)
         BOOST_CHECK(result.Fred::check_contact_phone_validity::success());
         BOOST_CHECK(result.Fred::check_contact_fax_validity::success());
         BOOST_CHECK(result.Fred::MojeID::check_contact_username::success());
-        BOOST_CHECK(result.Fred::MojeID::check_contact_birthday_validity::success());
+        BOOST_CHECK(result.Fred::MojeID::check_contact_birthday::success());
         BOOST_CHECK(result.Fred::check_contact_email_availability::success());
         BOOST_CHECK(result.Fred::check_contact_phone_availability::success());
         const ::size_t idx = data_ptr - data;
@@ -295,8 +297,8 @@ BOOST_AUTO_TEST_CASE(check_contact_name)
         catch (const Fred::MojeID::check_contact_username&) {
             BOOST_FAIL("Fred::MojeID::check_contact_username failure");
         }
-        catch (const Fred::MojeID::check_contact_birthday_validity&) {
-            BOOST_FAIL("Fred::MojeID::check_contact_birthday_validity");
+        catch (const Fred::MojeID::check_contact_birthday&) {
+            BOOST_FAIL("Fred::MojeID::check_contact_birthday");
         }
         catch (const Fred::check_contact_email_availability&) {
             BOOST_FAIL("Fred::check_contact_email_availability failure");
@@ -384,7 +386,7 @@ BOOST_AUTO_TEST_CASE(check_contact_mailing_address)
         BOOST_CHECK(result.Fred::check_contact_phone_validity::success());
         BOOST_CHECK(result.Fred::check_contact_fax_validity::success());
         BOOST_CHECK(result.Fred::MojeID::check_contact_username::success());
-        BOOST_CHECK(result.Fred::MojeID::check_contact_birthday_validity::success());
+        BOOST_CHECK(result.Fred::MojeID::check_contact_birthday::success());
         BOOST_CHECK(result.Fred::check_contact_email_availability::success());
         BOOST_CHECK(result.Fred::check_contact_phone_availability::success());
         switch (idx)
@@ -447,8 +449,8 @@ BOOST_AUTO_TEST_CASE(check_contact_mailing_address)
         catch (const Fred::MojeID::check_contact_username&) {
             BOOST_FAIL("Fred::MojeID::check_contact_username failure");
         }
-        catch (const Fred::MojeID::check_contact_birthday_validity&) {
-            BOOST_FAIL("Fred::MojeID::check_contact_birthday_validity");
+        catch (const Fred::MojeID::check_contact_birthday&) {
+            BOOST_FAIL("Fred::MojeID::check_contact_birthday");
         }
         catch (const Fred::check_contact_email_availability&) {
             BOOST_FAIL("Fred::check_contact_email_availability failure");
@@ -552,7 +554,7 @@ BOOST_AUTO_TEST_CASE(check_contact_email)
         BOOST_CHECK(result.Fred::check_contact_phone_validity::success());
         BOOST_CHECK(result.Fred::check_contact_fax_validity::success());
         BOOST_CHECK(result.Fred::MojeID::check_contact_username::success());
-        BOOST_CHECK(result.Fred::MojeID::check_contact_birthday_validity::success());
+        BOOST_CHECK(result.Fred::MojeID::check_contact_birthday::success());
         BOOST_CHECK(result.Fred::check_contact_email_availability::success() == data_ptr->available);
         BOOST_CHECK(result.Fred::check_contact_phone_availability::success());
         BOOST_CHECK(result.Fred::check_contact_email_presence::absent == result.Fred::check_contact_email_availability::absent);
@@ -607,8 +609,8 @@ BOOST_AUTO_TEST_CASE(check_contact_email)
         catch (const Fred::MojeID::check_contact_username&) {
             BOOST_FAIL("Fred::MojeID::check_contact_username failure");
         }
-        catch (const Fred::MojeID::check_contact_birthday_validity&) {
-            BOOST_FAIL("Fred::MojeID::check_contact_birthday_validity");
+        catch (const Fred::MojeID::check_contact_birthday&) {
+            BOOST_FAIL("Fred::MojeID::check_contact_birthday");
         }
         catch (const Fred::check_contact_phone_availability&) {
             BOOST_FAIL("Fred::check_contact_phone_availability failure");
@@ -703,7 +705,7 @@ BOOST_AUTO_TEST_CASE(check_contact_phone)
         BOOST_CHECK(result.Fred::check_contact_phone_validity::success() == data_ptr->valid);
         BOOST_CHECK(result.Fred::check_contact_fax_validity::success());
         BOOST_CHECK(result.Fred::MojeID::check_contact_username::success());
-        BOOST_CHECK(result.Fred::MojeID::check_contact_birthday_validity::success());
+        BOOST_CHECK(result.Fred::MojeID::check_contact_birthday::success());
         BOOST_CHECK(result.Fred::check_contact_email_availability::success());
         BOOST_CHECK(result.Fred::check_contact_phone_availability::success() == data_ptr->available);
         BOOST_CHECK(result.Fred::check_contact_phone_presence::absent == result.Fred::check_contact_phone_availability::absent);
@@ -758,8 +760,8 @@ BOOST_AUTO_TEST_CASE(check_contact_phone)
         catch (const Fred::MojeID::check_contact_username&) {
             BOOST_FAIL("Fred::MojeID::check_contact_username failure");
         }
-        catch (const Fred::MojeID::check_contact_birthday_validity&) {
-            BOOST_FAIL("Fred::MojeID::check_contact_birthday_validity");
+        catch (const Fred::MojeID::check_contact_birthday&) {
+            BOOST_FAIL("Fred::MojeID::check_contact_birthday");
         }
         catch (const Fred::check_contact_email_availability&) {
             BOOST_FAIL("Fred::check_contact_email_availability failure");
@@ -845,7 +847,7 @@ BOOST_AUTO_TEST_CASE(check_contact_fax)
         BOOST_CHECK(result.Fred::check_contact_fax_validity::success() == data_ptr->result);
         BOOST_CHECK(result.Fred::check_contact_fax_validity::invalid == !data_ptr->result);
         BOOST_CHECK(result.Fred::MojeID::check_contact_username::success());
-        BOOST_CHECK(result.Fred::MojeID::check_contact_birthday_validity::success());
+        BOOST_CHECK(result.Fred::MojeID::check_contact_birthday::success());
         BOOST_CHECK(result.Fred::check_contact_email_availability::success());
         BOOST_CHECK(result.Fred::check_contact_phone_availability::success());
 
@@ -875,8 +877,8 @@ BOOST_AUTO_TEST_CASE(check_contact_fax)
         catch (const Fred::MojeID::check_contact_username&) {
             BOOST_FAIL("Fred::MojeID::check_contact_username failure");
         }
-        catch (const Fred::MojeID::check_contact_birthday_validity&) {
-            BOOST_FAIL("Fred::MojeID::check_contact_birthday_validity");
+        catch (const Fred::MojeID::check_contact_birthday&) {
+            BOOST_FAIL("Fred::MojeID::check_contact_birthday");
         }
         catch (const Fred::check_contact_email_availability&) {
             BOOST_FAIL("Fred::check_contact_email_availability failure");
@@ -949,7 +951,7 @@ BOOST_AUTO_TEST_CASE(check_contact_username)
         BOOST_CHECK(result.Fred::MojeID::check_contact_username::success() == data_ptr->success());
         BOOST_CHECK(result.Fred::MojeID::check_contact_username::absent == !data_ptr->present);
         BOOST_CHECK(result.Fred::MojeID::check_contact_username::invalid == !data_ptr->valid);
-        BOOST_CHECK(result.Fred::MojeID::check_contact_birthday_validity::success());
+        BOOST_CHECK(result.Fred::MojeID::check_contact_birthday::success());
         BOOST_CHECK(result.Fred::check_contact_email_availability::success());
         BOOST_CHECK(result.Fred::check_contact_phone_availability::success());
 
@@ -979,8 +981,8 @@ BOOST_AUTO_TEST_CASE(check_contact_username)
         catch (const Fred::check_contact_fax_validity&) {
             BOOST_FAIL("Fred::check_contact_fax_validity failure");
         }
-        catch (const Fred::MojeID::check_contact_birthday_validity&) {
-            BOOST_FAIL("Fred::MojeID::check_contact_birthday_validity failure");
+        catch (const Fred::MojeID::check_contact_birthday&) {
+            BOOST_FAIL("Fred::MojeID::check_contact_birthday failure");
         }
         catch (const Fred::check_contact_email_availability&) {
             BOOST_FAIL("Fred::check_contact_email_availability failure");
@@ -1009,31 +1011,34 @@ BOOST_AUTO_TEST_CASE(check_contact_username)
     }
 }
 
-BOOST_AUTO_TEST_CASE(check_contact_birthday_validity)
+BOOST_AUTO_TEST_CASE(check_contact_birthday)
 {
     struct TestData
     {
-        TestData(const char *t, const char *v, bool r)
+        TestData(const char *t, const char *s, bool p, bool v)
         :   ssntype(t == NULL ? Nullable< std::string >() : Nullable< std::string >(t)),
-            ssn(v == NULL ? Nullable< std::string >() : Nullable< std::string >(v)),
-            result(r) { }
+            ssn(s == NULL ? Nullable< std::string >() : Nullable< std::string >(s)),
+            present(p),
+            valid(v) { }
         const Nullable< std::string > ssntype;
         const Nullable< std::string > ssn;
-        const bool result:1;
+        const bool present:1;
+        const bool valid:1;
+        bool success()const { return present && valid; }
     };
     static const TestData data[] =
     {
-        TestData(NULL, NULL, true),
-        TestData("cosi kdesi", NULL, true),
-        TestData(NULL, "bla bla", true),
-        TestData("cosi kdesi", "bla bla", true),
-        TestData("BIRTHDAY", "1980-12-01", true),
-        TestData("BIRTHDAY", "1980-12-31", true),
-        TestData("BIRTHDAY", "1980-02-29", true),
-        TestData("BIRTHDAY", "1981-02-28", true),
-        TestData("BIRTHDAY", "1980-13-01", false),
-        TestData("BIRTHDAY", "1980-02-30", false),
-        TestData("BIRTHDAY", "1981-02-29", false)
+        TestData(NULL,         NULL,         false, true),
+        TestData("cosi kdesi", NULL,         false, true),
+        TestData(NULL,         "bla bla",    false, true),
+        TestData("cosi kdesi", "bla bla",    false, true),
+        TestData("BIRTHDAY",   "1980-12-01", true,  true),
+        TestData("BIRTHDAY",   "1980-12-31", true,  true),
+        TestData("BIRTHDAY",   "1980-02-29", true,  true),
+        TestData("BIRTHDAY",   "1981-02-28", true,  true),
+        TestData("BIRTHDAY",   "1980-13-01", true,  false),
+        TestData("BIRTHDAY",   "1980-02-30", true,  false),
+        TestData("BIRTHDAY",   "1981-02-29", true,  false)
     };
     static const TestData *const data_end = data + (sizeof(data) / sizeof(*data));
     BOOST_ASSERT(( (sizeof(data) / sizeof(*data)) == 11 ));
@@ -1042,7 +1047,7 @@ BOOST_AUTO_TEST_CASE(check_contact_birthday_validity)
         contact[MAIN].ssntype = data_ptr->ssntype;
         contact[MAIN].ssn = data_ptr->ssn;
         const SumCheck result(Fred::make_args(contact[MAIN]), Fred::make_args(contact[MAIN], ctx));
-        BOOST_CHECK(result.success() == data_ptr->result);
+        BOOST_CHECK(result.success() == data_ptr->success());
         BOOST_CHECK(result.Fred::check_contact_name::success());
         BOOST_CHECK(result.Fred::check_contact_mailing_address::success());
         BOOST_CHECK(result.Fred::check_contact_email_presence::success());
@@ -1051,14 +1056,15 @@ BOOST_AUTO_TEST_CASE(check_contact_birthday_validity)
         BOOST_CHECK(result.Fred::check_contact_phone_validity::success());
         BOOST_CHECK(result.Fred::check_contact_fax_validity::success());
         BOOST_CHECK(result.Fred::MojeID::check_contact_username::success());
-        BOOST_CHECK(result.Fred::MojeID::check_contact_birthday_validity::success() == data_ptr->result);
-        BOOST_CHECK(result.Fred::MojeID::check_contact_birthday_validity::invalid == !data_ptr->result);
+        BOOST_CHECK(result.Fred::MojeID::check_contact_birthday::success() == data_ptr->success());
+        BOOST_CHECK(result.Fred::MojeID::check_contact_birthday::absent    == !data_ptr->present);
+        BOOST_CHECK(result.Fred::MojeID::check_contact_birthday::invalid   == !data_ptr->valid);
         BOOST_CHECK(result.Fred::check_contact_email_availability::success());
         BOOST_CHECK(result.Fred::check_contact_phone_availability::success());
 
         try {
             const SumCheckWithException result(Fred::make_args(contact[MAIN]), Fred::make_args(contact[MAIN], ctx));
-            BOOST_CHECK(data_ptr->result);
+            BOOST_CHECK(data_ptr->success());
             BOOST_CHECK(result.success());
         }
         catch (const Fred::check_contact_name&) {
@@ -1083,7 +1089,7 @@ BOOST_AUTO_TEST_CASE(check_contact_birthday_validity)
             BOOST_FAIL("Fred::check_contact_fax_validity failure");
         }
         catch (const Fred::MojeID::check_contact_username&) {
-            BOOST_FAIL("Fred::MojeID::check_contact_birthday_validity failure");
+            BOOST_FAIL("Fred::MojeID::check_contact_birthday failure");
         }
         catch (const Fred::check_contact_email_availability&) {
             BOOST_FAIL("Fred::check_contact_email_availability failure");
@@ -1091,13 +1097,28 @@ BOOST_AUTO_TEST_CASE(check_contact_birthday_validity)
         catch (const Fred::check_contact_phone_availability&) {
             BOOST_FAIL("Fred::check_contact_phone_availability failure");
         }
-        catch (const Fred::MojeID::check_contact_birthday_validity &e) {
-            BOOST_CHECK(!data_ptr->ssntype.isnull());
-            BOOST_CHECK(!data_ptr->ssntype.isnull() && (data_ptr->ssntype.get_value() == "BIRTHDAY"));
-            BOOST_CHECK(!data_ptr->ssn.isnull());
-            BOOST_CHECK(!data_ptr->result);
-            BOOST_CHECK(e.invalid);
+        catch (const Fred::MojeID::check_contact_birthday &e) {
+            BOOST_CHECK(!data_ptr->success());
             BOOST_CHECK(!e.success());
+            const ::size_t idx = data_ptr - data;
+            switch (idx)
+            {
+            case 0 ... 3:
+                BOOST_CHECK(e.absent);
+                BOOST_CHECK(!e.invalid);
+                BOOST_CHECK(data_ptr->ssntype.isnull() ||
+                            (data_ptr->ssntype.get_value() != "BIRTHDAY"));
+                break;
+            case 8 ... 10:
+                BOOST_CHECK(!e.absent);
+                BOOST_CHECK(e.invalid);
+                BOOST_CHECK(!data_ptr->ssntype.isnull());
+                BOOST_CHECK(!data_ptr->ssntype.isnull() && (data_ptr->ssntype.get_value() == "BIRTHDAY"));
+                BOOST_CHECK(!data_ptr->ssn.isnull());
+                break;
+            default:
+                BOOST_FAIL("test " << idx << " may be valid");
+            }
         }
     }
 }

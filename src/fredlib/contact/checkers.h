@@ -252,6 +252,25 @@ struct check_contact_username
 };
 
 /**
+ * MojeID contact birthday verification.
+ */
+struct check_contact_birthday
+{
+    /**
+     * Executes check.
+     * @param _data data to verification
+     */
+    check_contact_birthday(const InfoContactData &_data);
+    /**
+     * MojeID contact birthday presents and is correct.
+     * @return true if check was successfully
+     */
+    bool success()const { return !(absent || invalid); }
+    bool absent:1; ///< mojeID contact birthday doesn't present
+    bool invalid:1;///< mojeID contact birthday format fails to meet the requirements
+};
+
+/**
  * MojeID contact birthday format verification.
  */
 struct check_contact_birthday_validity
@@ -262,11 +281,29 @@ struct check_contact_birthday_validity
      */
     check_contact_birthday_validity(const InfoContactData &_data);
     /**
-     * MojeID contact birthday is valid.
+     * MojeID contact birthday is valid or doesn't present.
      * @return true if check was successfully
      */
     bool success()const { return !invalid; }
     bool invalid:1;///< mojeID contact birthday format fails to meet the requirements
+};
+
+/**
+ * MojeID contact vat_id presence checking.
+ */
+struct check_contact_vat_id_presence
+{
+    /**
+     * Executes check.
+     * @param _data data to verification
+     */
+    check_contact_vat_id_presence(const InfoContactData &_data);
+    /**
+     * MojeID contact vat_id presents.
+     * @return true if check was successfully
+     */
+    bool success()const { return !absent; }
+    bool absent:1;///< mojeID contact vat_id doesn't present
 };
 
 }//Fred::PublicRequest::MojeID
