@@ -56,6 +56,15 @@ bool absent_or_match(const Nullable< std::string > &_str, const boost::regex &_p
     return _str.isnull() || absent_or_match(_str.get_value(), _pattern);
 }
 
+bool email_absent_or_valid(const Nullable< std::string > &_email)
+{
+    enum { MAX_MOJEID_EMAIL_LENGTH = 200 };
+    const std::string email = boost::algorithm::trim_copy(_email.get_value_or_default());
+
+    return email.empty() ||
+           ((Util::get_utf8_char_len(email) <= MAX_MOJEID_EMAIL_LENGTH) && DjangoEmailFormat().check(email));
+}
+
 }//Fred::{anonymous}
 
 check_contact_name::check_contact_name(const InfoContactData &_data)
@@ -80,13 +89,8 @@ check_contact_email_presence::check_contact_email_presence(const InfoContactData
 }
 
 check_contact_email_validity::check_contact_email_validity(const InfoContactData &_data)
+:   invalid(!email_absent_or_valid(_data.email))
 {
-    enum { MAX_MOJEID_EMAIL_LENGTH = 200 };
-    const std::string email = _data.email.get_value_or_default();
-
-    invalid = email.empty() ||
-              (MAX_MOJEID_EMAIL_LENGTH < Util::get_utf8_char_len(email)) ||
-              !DjangoEmailFormat().check(email);
 }
 
 check_contact_email_availability::check_contact_email_availability(
@@ -112,6 +116,11 @@ check_contact_email_availability::check_contact_email_availability(
                                   (_data.email.get_value_or_default())
                                   (_data.id));
     used_recently = static_cast< bool >(ucheck[0][0]);
+}
+
+check_contact_notifyemail_validity::check_contact_notifyemail_validity(const InfoContactData &_data)
+:   invalid(!email_absent_or_valid(_data.notifyemail))
+{
 }
 
 check_contact_phone_presence::check_contact_phone_presence(const InfoContactData &_data)

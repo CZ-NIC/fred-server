@@ -518,18 +518,18 @@ BOOST_AUTO_TEST_CASE(check_contact_email)
     BOOST_CHECK(Util::get_utf8_char_len(valid_email5) == MAX_MOJEID_EMAIL_LENGTH);
     static const TestData data[] =
     {
-        TestData(false, false, false),
-        TestData("", false, false, false),
-        TestData(" ", false, false, false),
-        TestData(" \r\n\v\t", false, false, false),
-        TestData(" \r\n\v\t" + valid_email1 + " \r\n\v\t", true, false, true),
-        TestData("_" + valid_email5, true, false, true),
-        TestData(valid_email1, true, true, true),
-        TestData(valid_email2, true, true, true),
-        TestData(valid_email3, true, true, true),
-        TestData(valid_email4, true, true, true),
-        TestData(valid_email5, true, true, true),
-        TestData(contact[MAIN].email.get_value(), true, true, false)
+        TestData("_" + valid_email5,                       true,  false, true),
+        TestData(                                          false, true,  false),
+        TestData("",                                       false, true,  false),
+        TestData(" ",                                      false, true,  false),
+        TestData(" \r\n\v\t",                              false, true,  false),
+        TestData(" \r\n\v\t" + valid_email1 + " \r\n\v\t", true,  true,  true),
+        TestData(valid_email1,                             true,  true,  true),
+        TestData(valid_email2,                             true,  true,  true),
+        TestData(valid_email3,                             true,  true,  true),
+        TestData(valid_email4,                             true,  true,  true),
+        TestData(valid_email5,                             true,  true,  true),
+        TestData(contact[MAIN].email.get_value(),          true,  true,  false)
     };
     static const TestData *const data_end = data + (sizeof(data) / sizeof(*data));
     BOOST_ASSERT(( (sizeof(data) / sizeof(*data)) == 12 ));
@@ -558,19 +558,19 @@ BOOST_AUTO_TEST_CASE(check_contact_email)
         BOOST_CHECK(result.Fred::check_contact_email_presence::absent == result.Fred::check_contact_email_availability::absent);
         switch (idx)
         {
-        case 0 ... 3:
-            BOOST_CHECK(result.Fred::check_contact_email_presence::absent);
-            BOOST_CHECK(result.Fred::check_contact_email_validity::invalid);
-            BOOST_CHECK(result.Fred::check_contact_email_availability::absent);
-            BOOST_CHECK(!result.Fred::check_contact_email_availability::used_recently);
-            break;
-        case 4 ... 5:
+        case 0:
             BOOST_CHECK(!result.Fred::check_contact_email_presence::absent);
             BOOST_CHECK(result.Fred::check_contact_email_validity::invalid);
             BOOST_CHECK(!result.Fred::check_contact_email_availability::absent);
             BOOST_CHECK(!result.Fred::check_contact_email_availability::used_recently);
             break;
-        case 6 ... 10:
+        case 1 ... 4:
+            BOOST_CHECK(result.Fred::check_contact_email_presence::absent);
+            BOOST_CHECK(!result.Fred::check_contact_email_validity::invalid);
+            BOOST_CHECK(result.Fred::check_contact_email_availability::absent);
+            BOOST_CHECK(!result.Fred::check_contact_email_availability::used_recently);
+            break;
+        case 5 ... 10:
             BOOST_CHECK(!result.Fred::check_contact_email_presence::absent);
             BOOST_CHECK(!result.Fred::check_contact_email_validity::invalid);
             BOOST_CHECK(!result.Fred::check_contact_email_availability::absent);
@@ -631,7 +631,7 @@ BOOST_AUTO_TEST_CASE(check_contact_email)
             BOOST_CHECK(!e.success());
             switch (idx)
             {
-            case 4 ... 5:
+            case 0:
                 BOOST_CHECK(e.invalid);
                 break;
             default:
@@ -643,7 +643,7 @@ BOOST_AUTO_TEST_CASE(check_contact_email)
             BOOST_CHECK(!e.success());
             switch (idx)
             {
-            case 0 ... 3:
+            case 1 ... 4:
                 BOOST_CHECK(e.absent);
                 break;
             default:

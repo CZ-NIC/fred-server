@@ -116,11 +116,11 @@ struct check_contact_email_validity
      */
     check_contact_email_validity(const InfoContactData &_data);
     /**
-     * Contact e-mail is valid.
+     * Contact e-mail is valid or doesn't present.
      * @return true if check was successfully
      */
     bool success()const { return !invalid; }
-    bool invalid:1;///< contact e-mail format fails to meet the requirements
+    bool invalid:1;///< contact e-mail presents but format fails to meet the requirements
 };
 
 /**
@@ -141,6 +141,24 @@ struct check_contact_email_availability
     bool success()const { return !(absent || used_recently); }
     bool absent:1;       ///< contact e-mail doesn't present
     bool used_recently:1;///< contact e-mail used for identification request recently
+};
+
+/**
+ * Contact notify e-mail format verification.
+ */
+struct check_contact_notifyemail_validity
+{
+    /**
+     * Executes check.
+     * @param _data data to verification
+     */
+    check_contact_notifyemail_validity(const InfoContactData &_data);
+    /**
+     * Contact notify e-mail is valid or doesn't present.
+     * @return true if check was successfully
+     */
+    bool success()const { return !invalid; }
+    bool invalid:1;///< contact notify e-mail presents and its format fails to meet the requirements
 };
 
 /**
