@@ -83,12 +83,12 @@ private:
 
         BlockedRegistrars blocked_registrars = regMan->getRegistrarsBlockedToday();
 
-        const std::string date = Cmd::Executable("date")("+'%Y-%m-%d'")
+        const std::string date = Cmd::Executable("date")("+%Y-%m-%d")
                                     .run_with_path(params.shell_cmd_timeout).stdout;
         std::string data;
         if(blocked_registrars->empty()) {
             data =
-                "Subject: No registrars blocked, date " + date + "\n"
+                "Subject: No registrars blocked, date " + date +
                 "Content-Type: text/plain; charset=UTF-8; format=flowed\n"
                 "Content-Transfer-Encoding: 8bit\n"
                 "\n"
@@ -114,7 +114,7 @@ private:
                     % it->reg_id).str() << std::endl;
             }
             data =
-                "Subject: REGISTRARS BLOCKED - requests over limit, date " + date + "\n"
+                "Subject: REGISTRARS BLOCKED - requests over limit, date " + date +
                 "Content-Type: text/plain; charset=UTF-8; format=flowed\n"
                 "Content-Transfer-Encoding: 8bit\n"
                 "\n" +

@@ -579,10 +579,10 @@ void notify_registered_letters_manual_send_impl(const std::string& nameservice_h
               if(email.empty()) throw std::runtime_error("email required");
 
               {
-                  const std::string date = Cmd::Executable("date")("+'%Y-%m-%d'")
+                  const std::string date = Cmd::Executable("date")("+%Y-%m-%d")
                                            .run_with_path(timeout).stdout;
                   const std::string data =
-                      "Subject: No new registered letters " + date + "\n"
+                      "Subject: No new registered letters " + date +
                       "From: " + email + "\n"
                       "Content-Type: text/plain; charset=UTF-8; format=flowed\n"
                       "Content-Transfer-Encoding: 8bit\n"
@@ -689,14 +689,16 @@ void notify_registered_letters_manual_send_impl(const std::string& nameservice_h
           if(email.empty()) throw std::runtime_error("email required");
 
           {
-              const std::string date = Cmd::Executable("date")("+'%Y-%m-%d'")
-                                       .run_with_path(timeout).stdout;
+              const std::string filename = Cmd::Executable("date")("+registered_letters_%Y-%m-%d.pdf")
+                                           .run_with_path(timeout).stdout;
+              const std::string date = filename.substr(std::strlen("registered_letters_"),
+                                                       std::strlen("2015-06-01")) + "\n";
               const std::string data =
-                  "Subject: Registered letters to send " + date + "\n"
+                  "Subject: Registered letters to send " + date +
                   "From: " + email + "\n"
                   "Content-Type: multipart/mixed; boundary=\"SSSSSS\"\n"
                   "--SSSSSS\n"
-                  "Content-Disposition: attachment; filename=registered_letters_" + date + ".pdf\n"
+                  "Content-Disposition: attachment; filename=" + filename +
                   "Content-Type: application/pdf; charset=UTF-8\n"
                   "Content-Transfer-Encoding: base64\n"
                   "\n" +
