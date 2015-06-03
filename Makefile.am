@@ -282,6 +282,7 @@ sbin_PROGRAMS = \
 		src/corba/fred-logd \
 		src/corba/messages/fred-msgd \
 		src/corba/mojeid/fred-mifd \
+		src/corba/mojeid/fred-mifd2 \
 		src/corba/domain_browser/fred-dbifd \
 		src/cli_admin/fred-admin \
 		tools/logd_migration/migrate_log \
@@ -1839,6 +1840,56 @@ src_corba_mojeid_fred_mifd_LDADD = \
 		$(BOOST_SYSTEM_LIB)
 #
 # src/corba/mojeid/fred-mifd
+
+# src/corba/mojeid/fred-mifd2
+#
+src_corba_mojeid_fred_mifd2_SOURCES = \
+		src/mojeid/mojeid_validators.cc \
+		src/mojeid/mojeid_checkers.cc \
+		src/mojeid/mojeid_contact_transfer_request_impl.cc \
+		src/mojeid/public_request_verification_impl.cc \
+		src/mojeid/mojeid_notifier.cc \
+		src/mojeid/mojeid_disclose_policy.cc \
+		src/mojeid/mojeid.cc \
+		src/corba/nameservice.cc \
+		src/corba/mailer_manager.cc \
+		src/corba/mojeid/server2_i.cc \
+		src/corba/mojeid/fred-mifd2.cc
+
+nodist_src_corba_mojeid_fred_mifd2_SOURCES = \
+		src/corba/MojeID2SK.cc \
+		src/corba/MailerSK.cc
+
+src_corba_mojeid_fred_mifd2_LDFLAGS = \
+		$(POSTGRESQL_LDFLAGS) \
+		$(BOOST_LDFLAGS) \
+		$(AM_LDFLAGS)
+
+src_corba_mojeid_fred_mifd2_LDADD = \
+		src/corba/libcorbadatatypes.a \
+		src/fredlib/notifier/libnotifier.a \
+		src/fredlib/libfred.a \
+		src/model/libmodel.a \
+		src/fredlib/contact_verification/libcontact_verification.a \
+		src/fredlib/public_request/libpublic_request.a \
+		src/fredlib/messages/libmessages.a \
+		util/libutil.a \
+		util/log/liblog.a \
+		util/types/libtypes.a \
+		util/db/libdb.a \
+		src/old_utils/liboldutils.a \
+		-lmpdec -lm -lrt \
+		$(LIBIDN_LIBS) \
+		$(BOOST_PROGRAM_OPTIONS_LIB) \
+		$(OMNIORB4_LIBS) \
+		$(BOOST_DATE_TIME_LIB) \
+		$(BOOST_REGEX_LIB) \
+		$(BOOST_THREAD_LIB) \
+		$(BOOST_SERIALIZATION_LIB) \
+		$(POSTGRESQL_LIB) \
+		$(BOOST_SYSTEM_LIB)
+#
+# src/corba/mojeid/fred-mifd2
 
 #
 # src/corba/domain_browser/fred-dbifd
