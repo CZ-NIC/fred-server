@@ -337,6 +337,15 @@ AC_CHECK_FILE(
 )
 
 AC_CHECK_FILE(
+	[$IDLDIR/MojeID2.idl],
+	[],
+	[AC_MSG_ERROR(
+		[directory "$IDLDIR" does not contain MojeID2.idl
+		(use --with-idldir)]
+	)]
+)
+
+AC_CHECK_FILE(
 	[$IDLDIR/FileManager.idl],
 	[],
 	[AC_MSG_ERROR(

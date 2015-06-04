@@ -34,6 +34,9 @@ CLEANFILES = \
 		src/corba/MojeIDSK.cc \
 		src/corba/MojeIDDynSK.cc \
 		src/corba/MojeID.hh \
+		src/corba/MojeID2SK.cc \
+		src/corba/MojeID2DynSK.cc \
+		src/corba/MojeID2.hh \
 		src/corba/AdministrativeBlockingSK.cc \
 		src/corba/AdministrativeBlockingDynSK.cc \
 		src/corba/AdministrativeBlockingSK.h \
@@ -234,6 +237,7 @@ noinst_LIBRARIES = \
 		src/corba/libcorba.a \
 		src/corba/libcorbamessages.a \
 		src/corba/libcorbamojeid.a \
+		src/corba/libcorbamojeid2.a \
 		src/corba/libcorbazone.a \
 		src/corba/libfilemanager.a \
 		src/corba/libmailer.a \
@@ -1135,6 +1139,7 @@ src_admin_contact_verification_libadmin_contact_verification_a_SOURCES = \
 BUILT_SOURCES = \
 		src/corba/MessagesSK.cc \
 		src/corba/MojeIDSK.cc \
+		src/corba/MojeID2SK.cc \
 		src/corba/AdministrativeBlockingSK.cc \
 		src/corba/FileManagerSK.cc \
 		src/corba/MailerSK.cc \
@@ -1189,6 +1194,10 @@ nodist_src_corba_libcorbamojeid_a_SOURCES = \
 		src/corba/MojeIDSK.cc \
 		src/corba/MojeIDDynSK.cc \
 		src/corba/MojeID.hh
+
+nodist_src_corba_libcorbamojeid2_a_SOURCES = \
+		src/corba/MojeID2SK.cc \
+		src/corba/MojeID2DynSK.cc
 
 nodist_src_corba_libfilemanager_a_SOURCES = \
 		src/corba/FileManagerSK.cc \
@@ -1291,67 +1300,30 @@ nodist_src_corba_libcorbadomainbrowser_a_SOURCES = \
 # idl build
 #
 src/corba/MessagesSK.cc: $(IDLDIR)/Messages.idl
-		omniidl -bcxx -Wbuse_quotes -Wba -C$(top_builddir)/src/corba $(IDLDIR)/Messages.idl
-
 src/corba/MojeIDSK.cc: $(IDLDIR)/MojeID.idl
-		omniidl -bcxx -Wbuse_quotes -Wba -C$(top_builddir)/src/corba $(IDLDIR)/MojeID.idl
-
+src/corba/MojeID2SK.cc: $(IDLDIR)/MojeID2.idl
 src/corba/AdministrativeBlockingSK.cc: $(IDLDIR)/AdministrativeBlocking.idl
-		omniidl -bcxx -Wbuse_quotes -Wba -C$(top_builddir)/src/corba $(IDLDIR)/AdministrativeBlocking.idl
-
 src/corba/FileManagerSK.cc: $(IDLDIR)/FileManager.idl $(IDLDIR)/_dataTypes.idl
-		omniidl -bcxx -Wbuse_quotes -Wba -C$(top_builddir)/src/corba $(IDLDIR)/FileManager.idl
-
 src/corba/MailerSK.cc: $(IDLDIR)/Mailer.idl $(IDLDIR)/_dataTypes.idl
-		omniidl -bcxx -Wbuse_quotes -Wba -C$(top_builddir)/src/corba $(IDLDIR)/Mailer.idl
-
 src/corba/ZoneSK.cc: $(IDLDIR)/Zone.idl
-		omniidl -bcxx -Wbuse_quotes -Wba -C$(top_builddir)/src/corba $(IDLDIR)/Zone.idl
-
 src/corba/DateTimeSK.cc: $(IDLDIR)/DateTime.idl
-		omniidl -bcxx -Wbuse_quotes -Wba -C$(top_builddir)/src/corba $(IDLDIR)/DateTime.idl
-
 src/corba/NullableTypesSK.cc: $(IDLDIR)/NullableTypes.idl $(IDLDIR)/DateTime.idl
-		omniidl -bcxx -Wbuse_quotes -Wba -C$(top_builddir)/src/corba $(IDLDIR)/NullableTypes.idl
-
 src/corba/_dataTypesSK.cc: $(IDLDIR)/_dataTypes.idl
-		omniidl -bcxx -Wbuse_quotes -Wba -C$(top_builddir)/src/corba $(IDLDIR)/_dataTypes.idl
-
 src/corba/FiltersSK.cc: $(IDLDIR)/Filters.idl $(IDLDIR)/_dataTypes.idl
-		omniidl -bcxx -Wbuse_quotes -Wba -C$(top_builddir)/src/corba $(IDLDIR)/Filters.idl
-
 src/corba/RegistrySK.cc: $(IDLDIR)/Registry.idl $(IDLDIR)/Filters.idl $(IDLDIR)/_dataTypes.idl
-		omniidl -bcxx -Wbuse_quotes -Wba -C$(top_builddir)/src/corba $(IDLDIR)/Registry.idl
-
 src/corba/WhoisSK.cc: $(IDLDIR)/Whois.idl $(IDLDIR)/Registry.idl $(IDLDIR)/_dataTypes.idl
-		omniidl -bcxx -Wbuse_quotes -Wba -C$(top_builddir)/src/corba $(IDLDIR)/Whois.idl
-
 src/corba/Whois2SK.cc: $(IDLDIR)/Whois2.idl $(IDLDIR)/NullableTypes.idl $(IDLDIR)/DateTime.idl
-		omniidl -bcxx -Wbuse_quotes -Wba -C$(top_builddir)/src/corba $(IDLDIR)/Whois2.idl
-		
 src/corba/AdminSK.cc: $(IDLDIR)/Admin.idl $(IDLDIR)/Whois.idl $(IDLDIR)/Filters.idl $(IDLDIR)/Registry.idl $(IDLDIR)/_dataTypes.idl
-		omniidl -bcxx -Wbuse_quotes -Wba -C$(top_builddir)/src/corba $(IDLDIR)/Admin.idl
-
 src/corba/LoggerSK.cc: $(IDLDIR)/Logger.idl $(IDLDIR)/Admin.idl $(IDLDIR)/_dataTypes.idl
-		omniidl -bcxx -Wbuse_quotes -Wba -C$(top_builddir)/src/corba $(IDLDIR)/Logger.idl
-
 src/corba/TechCheckSK.cc: $(IDLDIR)/TechCheck.idl $(IDLDIR)/_dataTypes.idl
-		omniidl -bcxx -Wbuse_quotes -Wba -C$(top_builddir)/src/corba $(IDLDIR)/TechCheck.idl
-
 src/corba/EPPSK.cc: $(IDLDIR)/EPP.idl $(IDLDIR)/_dataTypes.idl
-		omniidl -bcxx -Wbuse_quotes -Wba -C$(top_builddir)/src/corba $(IDLDIR)/EPP.idl
-
 src/corba/ZoneGeneratorSK.cc: $(IDLDIR)/ZoneGenerator.idl $(IDLDIR)/_dataTypes.idl
-		omniidl -bcxx -Wbuse_quotes -Wba -C$(top_builddir)/src/corba $(IDLDIR)/ZoneGenerator.idl
-
 src/corba/ContactVerificationSK.cc: $(IDLDIR)/ContactVerification.idl
-		omniidl -bcxx -Wbuse_quotes -Wba -C$(top_builddir)/src/corba $(IDLDIR)/ContactVerification.idl
-
 src/corba/DomainBrowserSK.cc: $(IDLDIR)/DomainBrowser.idl
-		omniidl -bcxx -Wbuse_quotes -Wba -C$(top_builddir)/src/corba $(IDLDIR)/DomainBrowser.idl
-
 src/corba/AdminContactVerificationSK.cc: $(IDLDIR)/AdminContactVerification.idl $(IDLDIR)/_dataTypes.idl
-		omniidl -bcxx -Wbuse_quotes -Wba -C$(top_builddir)/src/corba $(IDLDIR)/AdminContactVerification.idl
+
+src/corba/%.cc:
+		omniidl -bcxx -Wbuse_quotes -Wba -C$(top_builddir)/src/corba $<
 
 #
 # idl build
@@ -1844,13 +1816,6 @@ src_corba_mojeid_fred_mifd_LDADD = \
 # src/corba/mojeid/fred-mifd2
 #
 src_corba_mojeid_fred_mifd2_SOURCES = \
-		src/mojeid/mojeid_validators.cc \
-		src/mojeid/mojeid_checkers.cc \
-		src/mojeid/mojeid_contact_transfer_request_impl.cc \
-		src/mojeid/public_request_verification_impl.cc \
-		src/mojeid/mojeid_notifier.cc \
-		src/mojeid/mojeid_disclose_policy.cc \
-		src/mojeid/mojeid.cc \
 		src/corba/nameservice.cc \
 		src/corba/mailer_manager.cc \
 		src/corba/mojeid/server2_i.cc \
