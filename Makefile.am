@@ -1816,8 +1816,8 @@ src_corba_mojeid_fred_mifd_LDADD = \
 # src/corba/mojeid/fred-mifd2
 #
 src_corba_mojeid_fred_mifd2_SOURCES = \
+		src/mojeid/mojeid2.cc \
 		src/corba/nameservice.cc \
-		src/corba/mailer_manager.cc \
 		src/corba/mojeid/server2_i.cc \
 		src/corba/mojeid/fred-mifd2.cc
 

@@ -55,9 +55,9 @@ int main(int argc, char *argv[])
         corba_init();
 
         //create server object with poa and nameservice registration
-        CorbaContainer::get_instance()
-            ->register_server(new Registry::MojeID::Server_i(server_name)
-            , "MojeID");
+        CorbaContainer::get_instance()->register_server(
+            new Registry::MojeID::Server_i(server_name),
+            "MojeID");
         run_server(CfgArgs::instance(), CorbaContainer::get_instance());
         return EXIT_SUCCESS;
     }//try

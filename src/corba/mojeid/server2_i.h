@@ -25,15 +25,18 @@
 #define SERVER2_I_H_4A7A4BDA1B4C87979D8B1FBE04FD1583
 
 #include "src/corba/MojeID2.hh"
+#include <memory>
 #include <string>
+#include <boost/utility.hpp>
 
 namespace Registry {
 namespace MojeID {
 
-class MojeID2Impl;//pimpl class
+class MojeID2Impl;//backend implementation class
 
 ///mojeid2 corba interface
-class Server_i: public POA_Registry::MojeID::Server
+class Server_i: private boost::noncopyable,
+                public POA_Registry::MojeID::Server
 {
 public:
     // standard constructor
@@ -41,7 +44,7 @@ public:
     virtual ~Server_i();
     // methods corresponding to defined IDL attributes and operations
     ::CORBA::ULongLong create_contact_prepare(
-        const Registry::MojeID::CreateContact &c,
+        const CreateContact &c,
         const char *trans_id,
         ::CORBA::ULongLong log_request_id,
         ::CORBA::String_out ident);
@@ -53,7 +56,7 @@ public:
         ::CORBA::String_out ident);
 
     void update_contact_prepared(
-        const Registry::MojeID::UpdateContact &c,
+        const UpdateContact &c,
         const char *trans_id,
         ::CORBA::ULongLong log_request_id);
 
@@ -73,17 +76,17 @@ public:
     void rollback_prepared_transaction(
         const char *trans_id);
 
-    Registry::MojeID::Buffer* get_validation_pdf(
+    Buffer* get_validation_pdf(
         ::CORBA::ULongLong contact_id);
 
     void create_validation_request(
         ::CORBA::ULongLong contact_id,
         ::CORBA::ULongLong log_request_id);
 
-    Registry::MojeID::ContactStateInfoList* get_contacts_state_changes(
+    ContactStateInfoList* get_contacts_state_changes(
         ::CORBA::ULong last_hours);
 
-    Registry::MojeID::ContactStateInfo* get_contact_state(
+    ContactStateInfo* get_contact_state(
         ::CORBA::ULongLong contact_id);
 
     void cancel_contact_account_prepare(
@@ -91,9 +94,9 @@ public:
         const char *trans_id,
         ::CORBA::ULongLong log_request_id);
 
-    Registry::MojeID::ContactHandleList* get_unregistrable_handles(
-        ::CORBA::ULong count,
-        ::CORBA::ULongLong &start_from);
+    ContactHandleList* get_unregistrable_handles(
+        ::CORBA::ULong _chunk_size,
+        ::CORBA::ULongLong &_start_from);
 
     void send_new_pin3(
         ::CORBA::ULongLong contact_id,
@@ -108,9 +111,10 @@ public:
 
     char* get_contact_authinfo(
         ::CORBA::ULongLong contact_id);
+
+    static void corba_conversion_test(CreateContact &c, ::CORBA::String_out so);
 private:
-    Server_i(const Server_i&);//no body
-    Server_i& operator=(const Server_i&);//no body
+    const std::auto_ptr< MojeID2Impl > impl_ptr_;
 };//class Server_i
 
 }//namespace Registry::MojeID
