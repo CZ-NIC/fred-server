@@ -66,13 +66,19 @@ corba_value_nonconst< TC* > corba_value(_CORBA_Value_Member< TC, TH > &v);
 template < typename CORBA_TYPE >
 struct corba_value_nonconst
 {
-    typedef CORBA_TYPE corba_type;
+    typedef CORBA_TYPE corba_type;///< CORBA type
+
     /**
      * Converts value of CORBA type to corresponding value of given type.
      * @return corresponding value of given type
      */
     template < typename T >
     T get()const { T dst; return corba_type_conversion< corba_type >::set(dst, c); }
+
+    /**
+     * Converts value of CORBA type to corresponding std::string value.
+     * @return corresponding std::string value
+     */
     std::string get()const { return this->get< const char* >(); }
 
     /**
@@ -82,6 +88,12 @@ struct corba_value_nonconst
      */
     template < typename T >
     T& get(T &dst)const { return corba_type_conversion< corba_type >::set(dst, c); }
+
+    /**
+     * Converts value of CORBA type to corresponding std::string value.
+     * @param dst variable that will be set
+     * @return reference to parameter dst
+     */
     std::string& get(std::string &dst)const { const char *tmp; return dst = this->get(tmp); }
 
     /**
@@ -92,10 +104,17 @@ struct corba_value_nonconst
      */
     template < typename T >
     T& get(T &dst, const T &null_value)const { return corba_type_conversion< corba_type >::set(dst, c, null_value); }
+
+    /**
+     * Converts value of CORBA type to corresponding std::string value.
+     * @param dst variable that will be set
+     * @param null_value represents null value in case CORBA type is nullable and CORBA value is null
+     * @return reference to parameter dst
+     */
     std::string& get(std::string &dst, const std::string &null_value)const
     {
         const char *tmp;
-        return dst = this->get(tmp, null_value);
+        return dst = this->get(tmp, null_value.c_str());
     }
 
     /**
@@ -105,6 +124,12 @@ struct corba_value_nonconst
      */
     template < typename T >
     corba_type& set(const T &src) { return corba_type_conversion< corba_type >::set(c, src); }
+
+    /**
+     * Converts std::string value to corresponding value of CORBA type.
+     * @param src value that will be converted to CORBA type
+     * @return reference to CORBA value
+     */
     corba_type& set(const std::string &src) { return this->set(src.c_str()); }
 private:
     corba_value_nonconst(corba_type &v):c(v) { }
@@ -335,6 +360,9 @@ struct corba_type_conversion< NC* >
     template < typename T >
     static corba_type& set(corba_type &dst, const Nullable< T > &src)
     {
+        if (src.isnull()) {
+            return dst = static_cast< corba_type >(NULL);
+        }
         return dst = nullable_corba_type< NC >::create(src.get_value());
     }
     template < typename T >
