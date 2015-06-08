@@ -169,19 +169,35 @@ char* Server_i::get_contact_authinfo(
     return NULL;
 }
 
-void Server_i::corba_conversion_test(CreateContact &c, ::CORBA::String_out so)
+void Server_i::corba_conversion_test(const Test &ct, Test &t, ::CORBA::String_out so)
 {
     corba_value(so).set(std::string("nazdar"));
     corba_value(so).set(static_cast< const char* >("prde"));
-    Nullable< std::string > organization;
-    corba_value(c.organization.in()).get(organization);
-    organization = corba_value(c.organization.in()).get< Nullable< std::string > >();
-    std::string username;
-    corba_value(c.username).get(username);
-    corba_value(c.username).set(username);
+
+    Nullable< std::string > ns;
+
+    corba_value(ct.var).get(ns);
+    ns = corba_value(ct.var).get< Nullable< std::string > >();
+
+    corba_value(ct.member).get(ns);
+    ns = corba_value(ct.member).get< Nullable< std::string > >();
+
+    corba_value(t.var).get(ns);
+    corba_value(t.var).set(ns);
+    ns = corba_value(t.var).get< Nullable< std::string > >();
+
+    corba_value(t.member).get(ns);
+    corba_value(t.member).set(ns);
+    ns = corba_value(t.member).get< Nullable< std::string > >();
+
     DateTime dt;
-    boost::posix_time::ptime t = corba_value(dt).get< boost::posix_time::ptime >();
-    corba_value(dt).set(t);
+    boost::posix_time::ptime pt = corba_value(dt).get< boost::posix_time::ptime >();
+    corba_value(dt).set(pt);
+
+    NullableString *cns = NULL;
+    corba_value(cns).get(ns);
+    corba_value(cns).set(ns);
+    ns = corba_value(cns).get< Nullable< std::string > >();
 }
 
 }//namespace Registry::MojeID

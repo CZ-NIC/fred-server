@@ -112,7 +112,12 @@ public:
     char* get_contact_authinfo(
         ::CORBA::ULongLong contact_id);
 
-    static void corba_conversion_test(CreateContact &c, ::CORBA::String_out so);
+    struct Test
+    {
+        NullableString_var    var;
+        NullableString_member member;
+    };
+    static void corba_conversion_test(const Test &ct, Test &t, ::CORBA::String_out so);
 private:
     const std::auto_ptr< MojeID2Impl > impl_ptr_;
 };//class Server_i

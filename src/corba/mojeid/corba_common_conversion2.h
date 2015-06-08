@@ -11,6 +11,10 @@ struct corba_type_conversion;
 
 template < typename C > struct corba_value_nonconst;
 template < typename C > corba_value_nonconst< C > corba_value(C&);
+template < typename TC, typename TH >
+corba_value_nonconst< TC* > corba_value(_CORBA_Value_Var< TC, TH >&);
+template < typename TC, typename TH >
+corba_value_nonconst< TC* > corba_value(_CORBA_Value_Member< TC, TH >&);
 
 template < typename C >
 struct corba_value_nonconst
@@ -28,13 +32,27 @@ private:
     corba_value_nonconst(const corba_value_nonconst &src):c(src.c) { }
     C &c;
     friend corba_value_nonconst corba_value< C >(C&);
+    template < typename TC, typename TH >
+    friend corba_value_nonconst< TC* > corba_value(_CORBA_Value_Var< TC, TH >&);
+    template < typename TC, typename TH >
+    friend corba_value_nonconst< TC* > corba_value(_CORBA_Value_Member< TC, TH >&);
 };
 
 template < typename C >
 corba_value_nonconst< C > corba_value(C &v) { return v; }
 
+template < typename TC, typename TH >
+corba_value_nonconst< TC* > corba_value(_CORBA_Value_Var< TC, TH > &v) { return v.inout(); }
+
+template < typename TC, typename TH >
+corba_value_nonconst< TC* > corba_value(_CORBA_Value_Member< TC, TH > &v) { return v.inout(); }
+
 template < typename C > struct corba_value_const;
 template < typename C > corba_value_const< C > corba_value(const C&);
+template < typename TC, typename TH >
+corba_value_const< TC* > corba_value(const _CORBA_Value_Var< TC, TH >&);
+template < typename TC, typename TH >
+corba_value_const< TC* > corba_value(const _CORBA_Value_Member< TC, TH >&);
 
 template < typename C >
 struct corba_value_const
@@ -52,10 +70,20 @@ private:
     corba_value_const(const corba_value_const &src):c(src.c) { }
     const C &c;
     friend corba_value_const corba_value< C >(const C&);
+    template < typename TC, typename TH >
+    friend corba_value_const< TC* > corba_value(const _CORBA_Value_Var< TC, TH >&);
+    template < typename TC, typename TH >
+    friend corba_value_const< TC* > corba_value(const _CORBA_Value_Member< TC, TH >&);
 };
 
 template < typename C >
 corba_value_const< C > corba_value(const C &v) { return v; }
+
+template < typename TC, typename TH >
+corba_value_const< TC* > corba_value(const _CORBA_Value_Var< TC, TH > &v) { return static_cast< TC* >(v); }
+
+template < typename TC, typename TH >
+corba_value_const< TC* > corba_value(const _CORBA_Value_Member< TC, TH > &v) { return static_cast< TC* >(v); }
 
 template < typename CORBA_TYPE, typename CONVERTIBLE_TYPE >
 struct corba_type_conversion_base
@@ -170,7 +198,7 @@ struct corba_type_conversion< NC*, T >
         if (src.isnull()) {
             return dst = NULL;
         }
-        return dst = nullable_corba_type< NC, T >(src.get_value());
+        return dst = nullable_corba_type< NC, T >::create(src.get_value());
     }
     static convertible_type& set(convertible_type &dst, const corba_type &src, const convertible_type &null_value)
     {
@@ -192,7 +220,7 @@ struct corba_type_conversion< NC*, Nullable< T > >
         if (src.isnull()) {
             return dst = NULL;
         }
-        return dst = nullable_corba_type< NC, T >(src.get_value());
+        return dst = nullable_corba_type< NC, T >::create(src.get_value());
     }
     static convertible_type& set(convertible_type &dst, const corba_type &src)
     {
