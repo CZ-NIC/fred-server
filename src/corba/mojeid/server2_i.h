@@ -117,7 +117,8 @@ public:
         NullableString_var    var;
         NullableString_member member;
     };
-    static void corba_conversion_test(const Test &ct, Test &t, ::CORBA::String_out so);
+    static void corba_conversion_test(const Test &ct, Test &t, ::CORBA::String_out so, ::CORBA::String_var sv,
+                                      ::CORBA::String_member sm);
 private:
     const std::auto_ptr< MojeID2Impl > impl_ptr_;
 };//class Server_i

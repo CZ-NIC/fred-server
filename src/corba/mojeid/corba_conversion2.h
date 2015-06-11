@@ -6,43 +6,42 @@
 
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/type_traits/is_same.hpp>
-#include <boost/static_assert.hpp>
 
-namespace Registry_MojeID_Date_and_DateTime_conditions
+namespace Corba {
+namespace Conversion {
+
+inline boost::gregorian::date& convert(const std::string &from, boost::gregorian::date &into)
 {
-BOOST_STATIC_ASSERT(( boost::is_same< Registry::MojeID::Date,     char* >::value ));
-BOOST_STATIC_ASSERT(( boost::is_same< Registry::MojeID::DateTime, char* >::value ));
-BOOST_STATIC_ASSERT(( boost::is_same< Registry::MojeID::Date,     Registry::MojeID::DateTime >::value ));
+    enum { GREGORIAN_DATE_LENGTH = 10 };
+    const std::string str_date = from.substr(0, GREGORIAN_DATE_LENGTH);
+    return into = boost::gregorian::from_simple_string(str_date);
 }
 
 template < >
-struct corba_type_conversion< char* > // Registry::MojeID::Date, Registry::MojeID::DateTime
-: corba_type_conversion_base< char* >
+struct from_into< Registry::MojeID::Date, boost::gregorian::date >
+: from_into_base< Registry::MojeID::Date, boost::gregorian::date >
 {
-    static corba_type& set(corba_type &dst, const boost::gregorian::date &src)
-    {
-        return dst = CORBA::string_dup(boost::gregorian::to_iso_extended_string(src).c_str());
-    }
-    static boost::gregorian::date& set(boost::gregorian::date &dst, const corba_type &src)
+    dst_value_ref operator()(src_value src, dst_value_ref dst)const
     {
         return dst = boost::gregorian::from_simple_string(src);
     }
-    static corba_type& set(corba_type &dst, const std::string &src)
+};
+
+template < >
+struct into_from< Registry::MojeID::Date, boost::gregorian::date >
+: into_from_base< Registry::MojeID::Date, boost::gregorian::date >
+{
+    dst_value_ref operator()(dst_value_ref dst, src_value src)const
     {
-        enum { GREGORIAN_DATE_LENGTH = 10 };
-        const std::string str_date = src.substr(0, GREGORIAN_DATE_LENGTH);
-        return corba_value(dst).set(boost::gregorian::from_simple_string(str_date));
+        return dst = CORBA::string_dup(boost::gregorian::to_iso_extended_string(src).c_str());
     }
-    static std::string& set(std::string &dst, const corba_type &src)
-    {
-        return dst = boost::gregorian::to_iso_extended_string(corba_value(src).get< boost::gregorian::date >());
-    }
-    static corba_type& set(corba_type &dst, const boost::posix_time::ptime &src)
-    {
-        return dst = CORBA::string_dup(boost::posix_time::to_iso_extended_string(src).c_str());
-    }
-    static boost::posix_time::ptime& set(boost::posix_time::ptime &dst, const corba_type &src)
+};
+
+template < >
+struct from_into< Registry::MojeID::DateTime, boost::posix_time::ptime >
+: from_into_base< Registry::MojeID::DateTime, boost::posix_time::ptime >
+{
+    dst_value_ref operator()(src_value src, dst_value_ref dst)const
     {
         std::string iso_extended = src;//2015-06-24T13:05:03.000123
         enum { T_POS = 10 };
@@ -52,5 +51,18 @@ struct corba_type_conversion< char* > // Registry::MojeID::Date, Registry::MojeI
         return dst = boost::posix_time::time_from_string(iso_extended);
     }
 };
+
+template < >
+struct into_from< Registry::MojeID::DateTime, boost::posix_time::ptime >
+: into_from_base< Registry::MojeID::DateTime, boost::posix_time::ptime >
+{
+    dst_value_ref operator()(dst_value_ref dst, src_value src)const
+    {
+        return dst = CORBA::string_dup(boost::posix_time::to_iso_extended_string(src).c_str());
+    }
+};
+
+}//Corba::Conversion
+}//Corba
 
 #endif//CORBA_CONVERSION2_H_909714E7B8BE860E87D51B0685D54965

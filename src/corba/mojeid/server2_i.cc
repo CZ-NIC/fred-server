@@ -169,35 +169,58 @@ char* Server_i::get_contact_authinfo(
     return NULL;
 }
 
-void Server_i::corba_conversion_test(const Test &ct, Test &t, ::CORBA::String_out so)
+void Server_i::corba_conversion_test(const Test &ct, Test &t, ::CORBA::String_out so, ::CORBA::String_var sv,
+                                     ::CORBA::String_member sm)
 {
-    corba_value(so).set(std::string("nazdar"));
-    corba_value(so).set(static_cast< const char* >("prde"));
-
+    const char *cs;
+    std::string s;
     Nullable< std::string > ns;
 
-    corba_value(ct.var).get(ns);
-    ns = corba_value(ct.var).get< Nullable< std::string > >();
+    ns = Corba::Conversion::from(ct.var).into< Nullable< std::string > >();
+    ns = Corba::Conversion::from(ct.var).into< std::string >();
+    ns = Corba::Conversion::from(ct.var).into(ns);
+    cs = Corba::Conversion::from(ct.var).into(cs);
+    s  = Corba::Conversion::from(ct.var).into(s);
+    cs = Corba::Conversion::from(ct.var).into(cs, "NULL");
+    s  = Corba::Conversion::from(ct.var).into(s, "NULL");
+    cs = Corba::Conversion::from(ct.var).into(cs, "NULL");
+    s  = Corba::Conversion::from(ct.var).into(s, "NULL");
+    Corba::Conversion::into(t.var).from(cs);
+    Corba::Conversion::into(t.var).from(s);
+    Corba::Conversion::into(t.var).from(ns);
 
-    corba_value(ct.member).get(ns);
-    ns = corba_value(ct.member).get< Nullable< std::string > >();
+    ns = Corba::Conversion::from(ct.member).into< std::string >();
+    ns = Corba::Conversion::from(ct.member).into(ns);
+    cs = Corba::Conversion::from(ct.member).into(cs);
+    s  = Corba::Conversion::from(ct.member).into(s);
+    cs = Corba::Conversion::from(ct.member).into(cs, "NULL");
+    s  = Corba::Conversion::from(ct.member).into(s, "NULL");
+    Corba::Conversion::into(t.member).from(cs);
+    Corba::Conversion::into(t.member).from(s);
+    Corba::Conversion::into(t.member).from(ns);
 
-    corba_value(t.var).get(ns);
-    corba_value(t.var).set(ns);
-    ns = corba_value(t.var).get< Nullable< std::string > >();
+    Corba::Conversion::into(so).from(cs);
+    Corba::Conversion::into(so).from(s);
 
-    corba_value(t.member).get(ns);
-    corba_value(t.member).set(ns);
-    ns = corba_value(t.member).get< Nullable< std::string > >();
+    cs = Corba::Conversion::from(sv).into< const char* >();
+    s  = Corba::Conversion::from(sv).into< std::string >();
+    cs = Corba::Conversion::from(sv).into(cs);
+    s  = Corba::Conversion::from(sv).into(s);
+    Corba::Conversion::into(sv).from(cs);
+    Corba::Conversion::into(sv).from(s);
+
+    cs = Corba::Conversion::from(sm).into< const char* >();
+    s  = Corba::Conversion::from(sm).into< std::string >();
+    cs = Corba::Conversion::from(sm).into(cs);
+    s  = Corba::Conversion::from(sm).into(s);
+    Corba::Conversion::into(sm).from(cs);
+    Corba::Conversion::into(sm).from(s);
 
     DateTime dt;
-    boost::posix_time::ptime pt = corba_value(dt).get< boost::posix_time::ptime >();
-    corba_value(dt).set(pt);
-
-    NullableString *cns = NULL;
-    corba_value(cns).get(ns);
-    corba_value(cns).set(ns);
-    ns = corba_value(cns).get< Nullable< std::string > >();
+    boost::posix_time::ptime pt = Corba::Conversion::from(dt).into< boost::posix_time::ptime >();
+    pt = Corba::Conversion::from(dt).into(pt);
+    pt = Corba::Conversion::from(dt).into(pt, boost::posix_time::ptime());
+    Corba::Conversion::into(dt).from(pt);
 }
 
 }//namespace Registry::MojeID
