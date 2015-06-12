@@ -45,7 +45,17 @@ Server_i::~Server_i()
     ::CORBA::ULongLong _log_request_id,
     ::CORBA::String_out _identification)
 {
-    return 0;
+    Fred::MojeID::CreateContact contact;
+//    Corba::Conversion::from(_contact).into(contact);
+    std::string ident;
+    const ContactId contact_id = impl_ptr_->create_contact_prepare(
+        contact,
+        _trans_id,
+        _log_request_id,
+        ident);
+    Corba::Conversion::into(_identification).from(ident);
+    return contact_id;
+;
 }//create_contact_prepare
 
 Registry::MojeID::InfoContact* Server_i::transfer_contact_prepare(

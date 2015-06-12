@@ -300,7 +300,9 @@ public:
             return nullable_traits< DST >::set_null_value(dst);
         }
         typedef typename nullable_traits< DST >::type wrapped_type;
-        return dst = wrapped_type(source_value_ptr_->_value());
+        wrapped_type tmp;
+        from(source_value_ptr_->_value()).into(tmp);
+        return dst = tmp;
     }
     /**
      * Sets object of DST type with converted value of source_type type or with null_value if source value is null.
@@ -326,6 +328,29 @@ private:
     friend From< CT* > from(const _CORBA_Value_Var< CT, CTH >&);
     template < typename CT, typename CTH >
     friend From< CT* > from(const _CORBA_Value_Member< CT, CTH >&);
+    template < typename C >
+    friend From< C > from(const C&);
+};
+
+template < >
+class From< const char* >
+{
+public:
+    typedef char source_type;///< value of this type is pointed by source
+    const char*& into(const char* &dst)const
+    {
+        return dst = source_value_ptr_;
+    }
+    std::string& into(std::string &dst)const
+    {
+        return dst = source_value_ptr_;
+    }
+private:
+    From(const source_type *_ptr):source_value_ptr_(_ptr) { }
+    From(const From &_src):source_value_ptr_(_src.source_value_ptr_) { }
+    const source_type *const source_value_ptr_;
+    template < typename C >
+    friend From< C > from(const C&);
 };
 
 /**

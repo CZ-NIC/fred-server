@@ -29,10 +29,64 @@
 #include <string>
 #include <vector>
 
+namespace Fred {
+namespace MojeID {
+
+struct Address
+{
+    std::string street1;
+    Nullable< std::string > street2;
+    Nullable< std::string > street3;
+    std::string city;
+    Nullable< std::string > state;
+    std::string postal_code;
+    std::string country;
+};
+
+struct ShippingAddress
+{
+    Nullable< std::string > company_name;
+    std::string street1;
+    Nullable< std::string > street2;
+    Nullable< std::string > street3;
+    std::string city;
+    Nullable< std::string > state;
+    std::string postal_code;
+    std::string country;
+};
+
+struct CreateContact
+{
+    std::string username;
+    std::string first_name;
+    std::string last_name;
+    Nullable< std::string > organization;
+    Nullable< std::string > vat_reg_num;
+    Nullable< std::string > birth_date;
+    Nullable< std::string > id_card_num;
+    Nullable< std::string > passport_num;
+    Nullable< std::string > ssn_id_num;
+    Nullable< std::string > vat_id_num;
+    Address permanent;
+    Nullable< Address > mailing;
+    Nullable< Address > billing;
+    Nullable< ShippingAddress > shipping;
+    Nullable< ShippingAddress > shipping2;
+    Nullable< ShippingAddress > shipping3;
+    std::string email;
+    Nullable< std::string > notify_email;
+    std::string teplephone;
+    Nullable< std::string > fax;
+};
+
+}//Fred::MojeID
+}//Fred
+
 namespace Registry {
 namespace MojeID {
 
 typedef unsigned long long ContactId;
+typedef unsigned long long LogRequestId;
 
 typedef std::vector< std::string > HandleList;
 
@@ -51,6 +105,12 @@ public:
         ::size_t _chunk_size,
         ContactId &_start_from,
         HandleList &_result)const;
+
+    ContactId create_contact_prepare(
+        const Fred::MojeID::CreateContact &_contact,
+        const std::string &_trans_id,
+        LogRequestId _log_request_id,
+        std::string &_ident);
 private:
     const std::string server_name_;
 };//class MojeID2Impl
