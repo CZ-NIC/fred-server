@@ -110,5 +110,15 @@ HandleList& MojeID2Impl::get_unregistrable_contact_handles(
     }
 }
 
+ContactId MojeID2Impl::create_contact_prepare(
+        Fred::OperationContext &_ctx,
+        const Fred::MojeID::CreateContact &_contact,
+        const std::string &_trans_id,
+        LogRequestId _log_request_id,
+        std::string &_ident)
+{
+    return 0;
+}
+
 }//namespace Registry::MojeID
 }//namespace Registry
