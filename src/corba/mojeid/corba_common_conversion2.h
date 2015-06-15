@@ -332,15 +332,28 @@ private:
     friend From< C > from(const C&);
 };
 
+/**
+ * Specialization for CORBA type const char* which represents general string type.
+ */
 template < >
 class From< const char* >
 {
 public:
     typedef char source_type;///< value of this type is pointed by source
+    /**
+     * Sets object of const char* type with source value of the same type.
+     * @param dst object to store destination value
+     * @return object with stored value
+     */
     const char*& into(const char* &dst)const
     {
         return dst = source_value_ptr_;
     }
+    /**
+     * Sets object of const char* type with source value of the same type.
+     * @param dst object to store destination value
+     * @return object with stored value
+     */
     std::string& into(std::string &dst)const
     {
         return dst = source_value_ptr_;
