@@ -612,7 +612,7 @@ const Contact contact_info(const unsigned long long &_id)
         " c.disclosefax,"
         " c.street1, c.street2, c.street3,"
         " c.city, c.stateorprovince, c.postalcode, c.country,"
-        " c.email, c.notifyemail, c.telephone, c.fax, est.type,"
+        " c.email, c.notifyemail, btrim(c.telephone), btrim(c.fax), est.type,"
         " o.authinfopw"
         " FROM object_registry oreg JOIN contact c ON c.id = oreg.id"
         " JOIN object o ON o.id = oreg.id"
