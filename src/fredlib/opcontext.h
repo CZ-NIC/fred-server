@@ -103,6 +103,9 @@ private:
     friend class OperationContextTwoPhaseCommitCreator;
 };
 
+/**
+ * OperationContext with two-phase commit only.
+ */
 class OperationContextTwoPhaseCommit
 :   public OperationContext
 {
@@ -143,6 +146,9 @@ public:
     void commit_transaction() { this->OperationContext::commit_transaction(); }
 };
 
+/**
+ * Makes accessible OperationContextTwoPhaseCommit instance and offers commit_transaction() method.
+ */
 class OperationContextTwoPhaseCommitCreator
 :   private boost::noncopyable,
     public OperationContextTwoPhaseCommit
