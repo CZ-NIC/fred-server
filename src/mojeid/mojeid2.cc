@@ -26,6 +26,8 @@
 #include "util/random.h"
 #include "util/log/context.h"
 
+#include <algorithm>
+
 namespace Registry {
 namespace MojeID {
 
@@ -33,16 +35,38 @@ namespace {
 
 std::string create_ctx_name(const std::string &_name)
 {
-    return str(boost::format("%1%-<%2%>")% _name % Random::integer(0, 10000));
+    return str(boost::format("%1%-<%2%>") % _name % Random::integer(0, 10000));
 }
+
+std::string create_ctx_function_name(const char *fnc)
+{
+    std::string name(fnc);
+    std::replace(name.begin(), name.end(), '_', '-');
+    return name;
+}
+
+class LogContext
+{
+public:
+    LogContext(const MojeID2Impl &_impl, const std::string &_op_name)
+    :   ctx_server_(create_ctx_name(_impl.get_server_name())),
+        ctx_operation_(_op_name)
+    {
+    }
+private:
+    Logging::Context ctx_server_;
+    Logging::Context ctx_operation_;
+    
+};
+
+#define LOGGING_CONTEXT(CTX_VAR, IMPL_OBJ) LogContext CTX_VAR((IMPL_OBJ), create_ctx_function_name(__FUNCTION__))
 
 }//Registry::MojeID::{anonymous}
 
 MojeID2Impl::MojeID2Impl(const std::string &_server_name)
 :   server_name_(_server_name)
 {
-    Logging::Context ctx_server(server_name_);
-    Logging::Context ctx("init");
+    LogContext log_ctx(*this, "init");
 }//MojeID2Impl::MojeID2Impl
 
 MojeID2Impl::~MojeID2Impl()
@@ -60,8 +84,7 @@ HandleList& MojeID2Impl::get_unregistrable_contact_handles(
         ContactId &_start_from,
         HandleList &_result)const
 {
-    Logging::Context ctx_server(create_ctx_name(get_server_name()));
-    Logging::Context ctx("get-unregistrable-contact-handles");
+    LOGGING_CONTEXT(log_ctx, *this);
 
     try {
         const Database::Result dbres = _ctx.get_conn().exec_params(
@@ -113,10 +136,10 @@ HandleList& MojeID2Impl::get_unregistrable_contact_handles(
 ContactId MojeID2Impl::create_contact_prepare(
         Fred::OperationContext &_ctx,
         const Fred::MojeID::CreateContact &_contact,
-        const std::string &_trans_id,
         LogRequestId _log_request_id,
         std::string &_ident)
 {
+    LOGGING_CONTEXT(log_ctx, *this);
     return 0;
 }
 

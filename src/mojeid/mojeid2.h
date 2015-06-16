@@ -109,7 +109,6 @@ public:
     ContactId create_contact_prepare(
         Fred::OperationContext &_ctx,
         const Fred::MojeID::CreateContact &_contact,
-        const std::string &_trans_id,
         LogRequestId _log_request_id,
         std::string &_ident);
 private:

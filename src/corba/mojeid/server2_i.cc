@@ -48,11 +48,10 @@ Server_i::~Server_i()
     Fred::MojeID::CreateContact contact;
     Corba::Conversion::from(_contact).into(contact);
     std::string ident;
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx(_trans_id);
     const ContactId contact_id = impl_ptr_->create_contact_prepare(
         ctx,
         contact,
-        _trans_id,
         _log_request_id,
         ident);
     Corba::Conversion::into(_identification).from(ident);
@@ -138,7 +137,7 @@ ContactHandleList* Server_i::get_unregistrable_handles(
 {
     try {
         HandleList chunk;
-        Fred::OperationContext _ctx;
+        Fred::OperationContextCreator _ctx;
         ContactId last_contact_id = _start_from;
         impl_ptr_->get_unregistrable_contact_handles(_ctx, _chunk_size, last_contact_id, chunk);
         ContactHandleList_var ret = new ContactHandleList;
