@@ -58,7 +58,7 @@ struct contact_name
 {
     /**
      * Executes check.
-     * @param _data data to verification
+     * @param _name contact name to verify
      */
     contact_name(const Nullable< std::string > &_name);
     /**
@@ -73,13 +73,20 @@ struct contact_name
 /**
  * Contact mailing address verification.
  */
-struct check_contact_mailing_address
+struct contact_mailing_address
 {
     /**
      * Executes check.
-     * @param _data data to verification
+     * @param _street1 contact address part to verify
+     * @param _city contact address part to verify
+     * @param _postalcode contact address part to verify
+     * @param _country contact address part to verify
      */
-    check_contact_mailing_address(const InfoContactData &_data);
+    contact_mailing_address(
+        const std::string &_street1,
+        const std::string &_city,
+        const std::string &_postalcode,
+        const std::string &_country);
     /**
      * All checks successfully done.
      * @return true if check was successfully
@@ -94,13 +101,13 @@ struct check_contact_mailing_address
 /**
  * Contact e-mail presence checking.
  */
-struct check_contact_email_presence
+struct contact_email_presence
 {
     /**
      * Executes check.
-     * @param _data data to verification
+     * @param _email contact email to verify
      */
-    check_contact_email_presence(const InfoContactData &_data);
+    contact_email_presence(const Nullable< std::string > &_email);
     /**
      * Contact e-mail presents.
      * @return true if check was successfully
@@ -112,13 +119,13 @@ struct check_contact_email_presence
 /**
  * Contact e-mail format verification.
  */
-struct check_contact_email_validity
+struct contact_email_validity
 {
     /**
      * Executes check.
-     * @param _data data to verification
+     * @param _email contact email to verify
      */
-    check_contact_email_validity(const InfoContactData &_data);
+    contact_email_validity(const Nullable< std::string > &_email);
     /**
      * Contact e-mail is valid or doesn't present.
      * @return true if check was successfully
@@ -130,14 +137,18 @@ struct check_contact_email_validity
 /**
  * Contact e-mail availability verification.
  */
-struct check_contact_email_availability
+struct contact_email_availability
 {
     /**
      * Executes check.
-     * @param _data data to verification
+     * @param _email contact email to verify
+     * @param _id contact id
      * @param _ctx operation context used to check processing
      */
-    check_contact_email_availability(const InfoContactData &_data, OperationContext &_ctx);
+    contact_email_availability(
+        const Nullable< std::string > &_email,
+        unsigned long long _id,
+        OperationContext &_ctx);
     /**
      * Contact e-mail is available for using in next identification request.
      * @return true if check was successfully
@@ -150,13 +161,13 @@ struct check_contact_email_availability
 /**
  * Contact notify e-mail format verification.
  */
-struct check_contact_notifyemail_validity
+struct contact_notifyemail_validity
 {
     /**
      * Executes check.
-     * @param _data data to verification
+     * @param _notifyemail contact email to verify
      */
-    check_contact_notifyemail_validity(const InfoContactData &_data);
+    contact_notifyemail_validity(const Nullable< std::string > &_notifyemail);
     /**
      * Contact notify e-mail is valid or doesn't present.
      * @return true if check was successfully
@@ -333,102 +344,55 @@ struct check_contact_vat_id_presence
 
 struct check_contact_name:GeneralCheck::contact_name
 {
-    check_contact_name(const InfoContactData &_data):GeneralCheck::contact_name(_data.name) { }
+    check_contact_name(const InfoContactData &_data)
+    :   GeneralCheck::contact_name(_data.name)
+    { }
 };
 
-/**
- * Contact mailing address verification.
- */
-struct check_contact_mailing_address
+struct check_contact_place_address:GeneralCheck::contact_mailing_address
 {
-    /**
-     * Executes check.
-     * @param _data data to verification
-     */
-    check_contact_mailing_address(const InfoContactData &_data);
-    /**
-     * All checks successfully done.
-     * @return true if check was successfully
-     */
-    bool success()const { return !(street1_absent || city_absent || postalcode_absent || country_absent); }
-    bool street1_absent:1;   ///< contact doesn't have street1 entry
-    bool city_absent:1;      ///< contact doesn't have city entry
-    bool postalcode_absent:1;///< contact doesn't have postal code entry
-    bool country_absent:1;   ///< contact doesn't have country entry
+    check_contact_place_address(const Contact::PlaceAddress &_data)
+    :   GeneralCheck::contact_mailing_address(
+            _data.street1,
+            _data.city,
+            _data.postalcode,
+            _data.country)
+    { }
 };
 
-/**
- * Contact e-mail presence checking.
- */
-struct check_contact_email_presence
+struct check_contact_mailing_address:check_contact_place_address
 {
-    /**
-     * Executes check.
-     * @param _data data to verification
-     */
-    check_contact_email_presence(const InfoContactData &_data);
-    /**
-     * Contact e-mail presents.
-     * @return true if check was successfully
-     */
-    bool success()const { return !absent; }
-    bool absent:1;///< contact e-mail doesn't present
+    check_contact_mailing_address(const InfoContactData &_data)
+    :   check_contact_place_address(_data.get_address< ContactAddressType::MAILING >())
+    { }
 };
 
-/**
- * Contact e-mail format verification.
- */
-struct check_contact_email_validity
+struct check_contact_email_presence:GeneralCheck::contact_email_presence
 {
-    /**
-     * Executes check.
-     * @param _data data to verification
-     */
-    check_contact_email_validity(const InfoContactData &_data);
-    /**
-     * Contact e-mail is valid or doesn't present.
-     * @return true if check was successfully
-     */
-    bool success()const { return !invalid; }
-    bool invalid:1;///< contact e-mail presents but format fails to meet the requirements
+    check_contact_email_presence(const InfoContactData &_data)
+    :   GeneralCheck::contact_email_presence(_data.email)
+    { }
 };
 
-/**
- * Contact e-mail availability verification.
- */
-struct check_contact_email_availability
+struct check_contact_email_validity:GeneralCheck::contact_email_validity
 {
-    /**
-     * Executes check.
-     * @param _data data to verification
-     * @param _ctx operation context used to check processing
-     */
-    check_contact_email_availability(const InfoContactData &_data, OperationContext &_ctx);
-    /**
-     * Contact e-mail is available for using in next identification request.
-     * @return true if check was successfully
-     */
-    bool success()const { return !(absent || used_recently); }
-    bool absent:1;       ///< contact e-mail doesn't present
-    bool used_recently:1;///< contact e-mail used for identification request recently
+    check_contact_email_validity(const InfoContactData &_data)
+    :   GeneralCheck::contact_email_validity(_data.email)
+    { }
 };
 
-/**
- * Contact notify e-mail format verification.
- */
-struct check_contact_notifyemail_validity
+struct check_contact_email_availability:GeneralCheck::contact_email_availability
 {
-    /**
-     * Executes check.
-     * @param _data data to verification
-     */
-    check_contact_notifyemail_validity(const InfoContactData &_data);
-    /**
-     * Contact notify e-mail is valid or doesn't present.
-     * @return true if check was successfully
-     */
-    bool success()const { return !invalid; }
-    bool invalid:1;///< contact notify e-mail presents and its format fails to meet the requirements
+    check_contact_email_availability(const InfoContactData &_data, OperationContext &_ctx)
+    :   GeneralCheck::contact_email_availability(_data.email, _data.id, _ctx)
+    { }
+};
+
+struct check_contact_notifyemail_validity:GeneralCheck::contact_notifyemail_validity
+{
+    check_contact_notifyemail_validity(const InfoContactData &_data)
+    :   GeneralCheck::contact_notifyemail_validity(_data.notifyemail)
+    { }
 };
 
 /**

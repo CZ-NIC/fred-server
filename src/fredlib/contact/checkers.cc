@@ -77,31 +77,30 @@ contact_name::contact_name(const Nullable< std::string > &_name)
     last_name_absent = name.find_last_of(' ') == std::string::npos;
 }
 
-}//Fred::GeneralCheck
+contact_mailing_address::contact_mailing_address(
+    const std::string &_street1,
+    const std::string &_city,
+    const std::string &_postalcode,
+    const std::string &_country)
+:   street1_absent(nothing_else_whitespaces(_street1)),
+    city_absent(nothing_else_whitespaces(_city)),
+    postalcode_absent(nothing_else_whitespaces(_postalcode)),
+    country_absent(nothing_else_whitespaces(_country))
+{ }
 
-check_contact_mailing_address::check_contact_mailing_address(const InfoContactData &_data)
-{
-    const InfoContactData::Address addr = _data.get_address< ContactAddressType::MAILING >();
-    street1_absent = nothing_else_whitespaces(addr.street1);
-    city_absent = nothing_else_whitespaces(addr.city);
-    postalcode_absent = nothing_else_whitespaces(addr.postalcode);
-    country_absent = nothing_else_whitespaces(addr.country);
-}
+contact_email_presence::contact_email_presence(const Nullable< std::string > &_email)
+:   absent(absent_or_empty(_email))
+{ }
 
-check_contact_email_presence::check_contact_email_presence(const InfoContactData &_data)
-:   absent(absent_or_empty(_data.email))
-{
-}
+contact_email_validity::contact_email_validity(const Nullable< std::string > &_email)
+:   invalid(!email_absent_or_valid(_email))
+{ }
 
-check_contact_email_validity::check_contact_email_validity(const InfoContactData &_data)
-:   invalid(!email_absent_or_valid(_data.email))
-{
-}
-
-check_contact_email_availability::check_contact_email_availability(
-    const InfoContactData &_data,
+contact_email_availability::contact_email_availability(
+    const Nullable< std::string > &_email,
+    unsigned long long _id,
     OperationContext &_ctx)
-:   absent(check_contact_email_presence(_data).absent),
+:   absent(contact_email_presence(_email).absent),
     used_recently(!absent)
 {
     if (absent) {
@@ -118,15 +117,16 @@ check_contact_email_availability::check_contact_email_availability(
                   "TRIM(LOWER(ch.email))=TRIM(LOWER($2::TEXT)) AND "
                   "ch.id!=$3::BIGINT) AS used_recently",
         Database::query_param_list(email_phone_protection_period())
-                                  (_data.email.get_value_or_default())
-                                  (_data.id));
+                                  (_email.get_value_or_default())
+                                  (_id));
     used_recently = static_cast< bool >(ucheck[0][0]);
 }
 
-check_contact_notifyemail_validity::check_contact_notifyemail_validity(const InfoContactData &_data)
-:   invalid(!email_absent_or_valid(_data.notifyemail))
-{
-}
+contact_notifyemail_validity::contact_notifyemail_validity(const Nullable< std::string > &_notifyemail)
+:   invalid(!email_absent_or_valid(_notifyemail))
+{ }
+
+}//Fred::GeneralCheck
 
 check_contact_phone_presence::check_contact_phone_presence(const InfoContactData &_data)
 :   absent(absent_or_empty(_data.telephone))
