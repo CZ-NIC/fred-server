@@ -49,48 +49,22 @@ std::auto_ptr< StandaloneConnection > get_database_conn()
     return std::auto_ptr< StandaloneConnection >(conn_ptr);
 }
 
-void start_transaction(StandaloneConnection &_conn)
-{
-    _conn.exec("START TRANSACTION ISOLATION LEVEL READ COMMITTED");
-}
-
 }//Fred::{anonymous}
 
-OperationContextDatabasePart::OperationContextDatabasePart()
-:   transaction_id_(),
-    conn_(get_database_conn())
+OperationContext::OperationContext()
+:   conn_(get_database_conn()),
+    log_(LOGGER(PACKAGE))
 {
-    start_transaction(this->get_conn());
+    conn_->exec("START TRANSACTION ISOLATION LEVEL READ COMMITTED");
 }
 
-OperationContextDatabasePart::OperationContextDatabasePart(const std::string &_transaction_id)
-:   transaction_id_(check_transaction_id(_transaction_id)),
-    conn_(get_database_conn())
-{
-    start_transaction(this->get_conn());
-}
-
-Database::StandaloneConnection& OperationContextDatabasePart::get_conn()const
+Database::StandaloneConnection& OperationContext::get_conn()const
 {
     Database::StandaloneConnection *const conn_ptr = conn_.get();
     if (conn_ptr != NULL) {
         return *conn_ptr;
     }
     throw std::runtime_error("database connection doesn't exist");
-}
-
-std::string OperationContextDatabasePart::get_transaction_id()const
-{
-    const bool process_two_phase_commit = !transaction_id_.empty();
-    if (process_two_phase_commit) {
-        return transaction_id_;
-    }
-    throw std::runtime_error("prepared transaction not in progress");
-}
-
-OperationContextLoggingPart::OperationContextLoggingPart()
-:   log_(LOGGER(PACKAGE))
-{
 }
 
 OperationContext::~OperationContext()
@@ -104,7 +78,7 @@ OperationContext::~OperationContext()
     }
     catch(...) {
         try {
-            this->get_log().error("OperationContext::~OperationContext: rollback failed");
+            log_.error("OperationContext::~OperationContext: rollback failed");
         }
         catch(...) {
         }
@@ -114,26 +88,35 @@ OperationContext::~OperationContext()
     }
     catch(...) {
         try {
-            this->get_log().error("OperationContext::~OperationContext: database connection destroying failed");
+            log_.error("OperationContext::~OperationContext: database connection destroying failed");
         }
         catch(...) {
         }
     }
 }
 
-void OperationContext::commit_transaction()
+OperationContextTwoPhaseCommit::OperationContextTwoPhaseCommit(const std::string &_transaction_id)
+:   transaction_id_(check_transaction_id(_transaction_id))
+{
+}
+
+void OperationContextCreator::commit_transaction()
 {
     Database::StandaloneConnection *const conn_ptr = conn_.get();
     if (conn_ptr == NULL) {
         throw std::runtime_error("no transaction in progress");
     }
-    const bool process_two_phase_commit = !transaction_id_.empty();
-    if (process_two_phase_commit) {
-        conn_ptr->exec_params("PREPARE TRANSACTION $1::TEXT", Database::query_param_list(transaction_id_));
+    conn_ptr->exec("COMMIT");
+    conn_.reset();
+}
+
+void OperationContextTwoPhaseCommitCreator::commit_transaction()
+{
+    Database::StandaloneConnection *const conn_ptr = conn_.get();
+    if (conn_ptr == NULL) {
+        throw std::runtime_error("no transaction in progress");
     }
-    else {
-        conn_ptr->exec("COMMIT");
-    }
+    conn_ptr->exec_params("PREPARE TRANSACTION $1::TEXT", Database::query_param_list(transaction_id_));
     conn_.reset();
 }
 

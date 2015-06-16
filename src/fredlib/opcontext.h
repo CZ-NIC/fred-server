@@ -36,68 +36,34 @@
 namespace Fred
 {
 
-class OperationContext;
 class OperationContextCreator;
 class OperationContextTwoPhaseCommit;
 class OperationContextTwoPhaseCommitCreator;
 
 /**
- * Database connection used in Fred operations.
+ * Common objects needed in Fred operations. It consists of two parts, database and logging.
  */
-class OperationContextDatabasePart
+class OperationContext
 {
 public:
-    typedef Database::StandaloneConnection Connection;///< typename alias
+    typedef Database::StandaloneConnection DbConn;///< typename alias
     /**
      * Obtain database connection with running transaction.
      * @return database connection object reference
      * @throw std::runtime_error if no transaction in progress
      */
-    Connection& get_conn()const;
-    /**
-     * Database transaction string identification which will use in first phase of two-phase commit.
-     * @throw std::runtime_error if no transaction_id was set in the past
-     */
-    std::string get_transaction_id()const;
-private:
-    OperationContextDatabasePart();
-    OperationContextDatabasePart(const std::string &_transaction_id);
-    const std::string transaction_id_;
-    typedef std::auto_ptr< Connection > ConnectionPtr;
-    ConnectionPtr conn_;
-    friend class OperationContext;
-    friend class OperationContextCreator;
-};
-
-/**
- * Logging object used in Fred operations.
- */
-class OperationContextLoggingPart
-{
-public:
+    DbConn& get_conn()const;
     /**
      * Obtain logging object.
      * @return logging object reference
      */
     Logging::Log& get_log() { return log_; }
 private:
-    OperationContextLoggingPart();
-    Logging::Log &log_;
-    friend class OperationContext;
-};
-
-/**
- * Common objects needed in Fred operations. It consists of two parts, database and logging.
- */
-class OperationContext
-:   public OperationContextDatabasePart,
-    public OperationContextLoggingPart
-{
-private:
-    OperationContext() { }
-    OperationContext(const std::string &_transaction_id):OperationContextDatabasePart(_transaction_id) { }
+    OperationContext();
     ~OperationContext();
-    void commit_transaction();
+    typedef std::auto_ptr< DbConn > DbConnPtr;
+    DbConnPtr conn_;
+    Logging::Log &log_;
     friend class OperationContextCreator;
     friend class OperationContextTwoPhaseCommit;
     friend class OperationContextTwoPhaseCommitCreator;
@@ -109,8 +75,14 @@ private:
 class OperationContextTwoPhaseCommit
 :   public OperationContext
 {
+public:
+    /**
+     * Database transaction string identification which will use in first phase of two-phase commit.
+     */
+    std::string get_transaction_id()const { return transaction_id_; }
 private:
-    OperationContextTwoPhaseCommit(const std::string &_transaction_id):OperationContext(_transaction_id) { }
+    OperationContextTwoPhaseCommit(const std::string &_transaction_id);
+    const std::string transaction_id_;
     friend class OperationContextTwoPhaseCommitCreator;
 };
 
@@ -127,23 +99,14 @@ public:
      */
     OperationContextCreator() { }
     /**
-     * Creates logging object and starts database transaction prepared for two-phase commit.
-     * @param _transaction_id database transaction string identification usable in second phase commit/rollback
-     * @throw std::runtime_error in case of empty _transaction_id
-     * @note Calling commit_transaction() will process first phase of two-phase commit.
-     */
-    OperationContextCreator(const std::string &_transaction_id)
-    :   OperationContext(_transaction_id) { }
-    /**
      * Processes database transaction rollback if transaction wasn't commited.
      */
     ~OperationContextCreator() { }
     /**
      * Commits database transaction.
      * @throw std::runtime_error if no transaction in progress
-     * @note If transaction_id was set it will process first phase of two-phase commit.
      */
-    void commit_transaction() { this->OperationContext::commit_transaction(); }
+    void commit_transaction();
 };
 
 /**
@@ -170,7 +133,7 @@ public:
      * Processes first phase of two-phase commit.
      * @throw std::runtime_error if no transaction in progress
      */
-    void commit_transaction() { this->OperationContext::commit_transaction(); }
+    void commit_transaction();
 };
 
 /**
