@@ -67,12 +67,17 @@ bool email_absent_or_valid(const Nullable< std::string > &_email)
 
 }//Fred::{anonymous}
 
-check_contact_name::check_contact_name(const InfoContactData &_data)
+namespace GeneralCheck
 {
-    const std::string name = boost::algorithm::trim_copy(_data.name.get_value_or_default());
+
+contact_name::contact_name(const Nullable< std::string > &_name)
+{
+    const std::string name = boost::algorithm::trim_copy(_name.get_value_or_default());
     first_name_absent = name.empty();
     last_name_absent = name.find_last_of(' ') == std::string::npos;
 }
+
+}//Fred::GeneralCheck
 
 check_contact_mailing_address::check_contact_mailing_address(const InfoContactData &_data)
 {

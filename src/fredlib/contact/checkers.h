@@ -47,16 +47,20 @@ inline const boost::regex& phone_pattern()
     return pattern;
 };
 
+/// General check classes
+namespace GeneralCheck
+{
+    
 /**
  * Contact name verification.
  */
-struct check_contact_name
+struct contact_name
 {
     /**
      * Executes check.
      * @param _data data to verification
      */
-    check_contact_name(const InfoContactData &_data);
+    contact_name(const Nullable< std::string > &_name);
     /**
      * All checks successfully done.
      * @return true if check was successfully
@@ -324,7 +328,273 @@ struct check_contact_vat_id_presence
     bool absent:1;///< mojeID contact vat_id doesn't present
 };
 
-}//Fred::PublicRequest::MojeID
+}//Fred::GeneralCheck::MojeID
+}//Fred::GeneralCheck
+
+struct check_contact_name:GeneralCheck::contact_name
+{
+    check_contact_name(const InfoContactData &_data):GeneralCheck::contact_name(_data.name) { }
+};
+
+/**
+ * Contact mailing address verification.
+ */
+struct check_contact_mailing_address
+{
+    /**
+     * Executes check.
+     * @param _data data to verification
+     */
+    check_contact_mailing_address(const InfoContactData &_data);
+    /**
+     * All checks successfully done.
+     * @return true if check was successfully
+     */
+    bool success()const { return !(street1_absent || city_absent || postalcode_absent || country_absent); }
+    bool street1_absent:1;   ///< contact doesn't have street1 entry
+    bool city_absent:1;      ///< contact doesn't have city entry
+    bool postalcode_absent:1;///< contact doesn't have postal code entry
+    bool country_absent:1;   ///< contact doesn't have country entry
+};
+
+/**
+ * Contact e-mail presence checking.
+ */
+struct check_contact_email_presence
+{
+    /**
+     * Executes check.
+     * @param _data data to verification
+     */
+    check_contact_email_presence(const InfoContactData &_data);
+    /**
+     * Contact e-mail presents.
+     * @return true if check was successfully
+     */
+    bool success()const { return !absent; }
+    bool absent:1;///< contact e-mail doesn't present
+};
+
+/**
+ * Contact e-mail format verification.
+ */
+struct check_contact_email_validity
+{
+    /**
+     * Executes check.
+     * @param _data data to verification
+     */
+    check_contact_email_validity(const InfoContactData &_data);
+    /**
+     * Contact e-mail is valid or doesn't present.
+     * @return true if check was successfully
+     */
+    bool success()const { return !invalid; }
+    bool invalid:1;///< contact e-mail presents but format fails to meet the requirements
+};
+
+/**
+ * Contact e-mail availability verification.
+ */
+struct check_contact_email_availability
+{
+    /**
+     * Executes check.
+     * @param _data data to verification
+     * @param _ctx operation context used to check processing
+     */
+    check_contact_email_availability(const InfoContactData &_data, OperationContext &_ctx);
+    /**
+     * Contact e-mail is available for using in next identification request.
+     * @return true if check was successfully
+     */
+    bool success()const { return !(absent || used_recently); }
+    bool absent:1;       ///< contact e-mail doesn't present
+    bool used_recently:1;///< contact e-mail used for identification request recently
+};
+
+/**
+ * Contact notify e-mail format verification.
+ */
+struct check_contact_notifyemail_validity
+{
+    /**
+     * Executes check.
+     * @param _data data to verification
+     */
+    check_contact_notifyemail_validity(const InfoContactData &_data);
+    /**
+     * Contact notify e-mail is valid or doesn't present.
+     * @return true if check was successfully
+     */
+    bool success()const { return !invalid; }
+    bool invalid:1;///< contact notify e-mail presents and its format fails to meet the requirements
+};
+
+/**
+ * Contact phone presence checking.
+ */
+struct check_contact_phone_presence
+{
+    /**
+     * Executes check.
+     * @param _data data to verification
+     */
+    check_contact_phone_presence(const InfoContactData &_data);
+    /**
+     * Contact phone presents.
+     * @return true if check was successfully
+     */
+    bool success()const { return !absent; }
+    bool absent:1;///< contact phone doesn't present
+};
+
+/**
+ * Contact phone format verification.
+ */
+struct check_contact_phone_validity
+{
+    /**
+     * Executes check.
+     * @param _data data to verification
+     */
+    check_contact_phone_validity(const InfoContactData &_data);
+    /**
+     * Contact phone is valid.
+     * @return true if check was successfully
+     */
+    bool success()const { return !invalid; }
+    bool invalid:1;///< contact phone format fails to meet the requirements
+};
+
+/**
+ * Contact phone availability verification.
+ */
+struct check_contact_phone_availability
+{
+    /**
+     * Executes check.
+     * @param _data data to verification
+     * @param _ctx operation context used to check processing
+     */
+    check_contact_phone_availability(const InfoContactData &_data, OperationContext &_ctx);
+    /**
+     * Contact phone is available for using in next identification request.
+     * @return true if check was successfully
+     */
+    bool success()const { return !(absent || used_recently); }
+    bool absent:1;       ///< contact phone doesn't present
+    bool used_recently:1;///< contact phone used for identification request recently
+};
+
+/**
+ * Contact fax format verification.
+ */
+struct check_contact_fax_validity
+{
+    /**
+     * Executes check.
+     * @param _data data to verification
+     */
+    check_contact_fax_validity(const InfoContactData &_data);
+    /**
+     * Contact fax is valid.
+     * @return true if check was successfully
+     */
+    bool success()const { return !invalid; }
+    bool invalid:1;///< contact fax format fails to meet the requirements
+};
+
+/// MojeID
+namespace MojeID {
+
+enum { USERNAME_LENGTH_LIMIT = 30 };
+
+/**
+ * Regular expression which match correct mojeID contact handle.
+ * @return pattern usable in boost::regex_match for checking correct username format
+ */
+inline const boost::regex& username_pattern()
+{
+    static const boost::regex pattern("[0-9A-Za-z](-?[0-9A-Za-z])*");
+    return pattern;
+};
+
+/**
+ * MojeID contact handle verification.
+ */
+struct check_contact_username
+{
+    /**
+     * Executes check.
+     * @param _data data to verification
+     */
+    check_contact_username(const InfoContactData &_data);
+    /**
+     * All checks successfully done.
+     * @return true if check was successfully
+     */
+    bool success()const { return !(absent || invalid); }
+    bool absent:1; ///< mojeID contact handle doesn't present
+    bool invalid:1;///< mojeID contact handle format fails to meet the requirements
+};
+
+/**
+ * MojeID contact birthday verification.
+ */
+struct check_contact_birthday
+{
+    /**
+     * Executes check.
+     * @param _data data to verification
+     */
+    check_contact_birthday(const InfoContactData &_data);
+    /**
+     * MojeID contact birthday presents and is correct.
+     * @return true if check was successfully
+     */
+    bool success()const { return !(absent || invalid); }
+    bool absent:1; ///< mojeID contact birthday doesn't present
+    bool invalid:1;///< mojeID contact birthday format fails to meet the requirements
+};
+
+/**
+ * MojeID contact birthday format verification.
+ */
+struct check_contact_birthday_validity
+{
+    /**
+     * Executes check.
+     * @param _data data to verification
+     */
+    check_contact_birthday_validity(const InfoContactData &_data);
+    /**
+     * MojeID contact birthday is valid or doesn't present.
+     * @return true if check was successfully
+     */
+    bool success()const { return !invalid; }
+    bool invalid:1;///< mojeID contact birthday format fails to meet the requirements
+};
+
+/**
+ * MojeID contact vat_id presence checking.
+ */
+struct check_contact_vat_id_presence
+{
+    /**
+     * Executes check.
+     * @param _data data to verification
+     */
+    check_contact_vat_id_presence(const InfoContactData &_data);
+    /**
+     * MojeID contact vat_id presents.
+     * @return true if check was successfully
+     */
+    bool success()const { return !absent; }
+    bool absent:1;///< mojeID contact vat_id doesn't present
+};
+
+}//Fred::MojeID
 
 }//Fred
 
