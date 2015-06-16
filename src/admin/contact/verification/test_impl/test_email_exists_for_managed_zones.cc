@@ -168,7 +168,7 @@ namespace ContactVerification {
             return TestRunResult( Fred::ContactTestStatus::OK);
         }
 
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
 
         std::set<std::string> managed_zones = get_managed_zones(ctx);
 

@@ -44,7 +44,7 @@ struct create_contact_fixture : public virtual Test::Fixture::instantiate_db_tem
     , contact_name(std::string("TEST-CREATE-CONTACT NAME") + xmark)
     {
         {
-            Fred::OperationContext ctx;
+            Fred::OperationContextCreator ctx;
             registrar_handle = static_cast<std::string>(ctx.get_conn().exec(
                 "SELECT handle FROM registrar WHERE system ORDER BY id LIMIT 1")[0][0]);
         }
@@ -83,7 +83,7 @@ DECLARE_EXCEPTION_DATA(unknown_registrar_handle, std::string);
  */
 BOOST_AUTO_TEST_CASE(create_contact_wrong_registrar)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
 
     std::string bad_registrar_handle = registrar_handle+xmark;
     BOOST_CHECK_EXCEPTION(
@@ -111,7 +111,7 @@ BOOST_AUTO_TEST_CASE(create_contact_wrong_registrar)
  */
 BOOST_AUTO_TEST_CASE(create_contact_wrong_ssntype)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     BOOST_CHECK_EXCEPTION(
     try
     {
@@ -139,7 +139,7 @@ BOOST_AUTO_TEST_CASE(create_contact_wrong_address)
 {
     BOOST_CHECK_EXCEPTION(
     try {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::ContactAddressList bad_addresses = addresses;
         bad_addresses[Fred::ContactAddressType::MAILING].company_name = "Výjimečná & korespondenční, s.r.o.";
         Fred::CreateContact(create_contact_handle, registrar_handle)
@@ -158,7 +158,7 @@ BOOST_AUTO_TEST_CASE(create_contact_wrong_address)
 
     BOOST_CHECK_EXCEPTION(
     try {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::ContactAddressList bad_addresses = addresses;
         bad_addresses[Fred::ContactAddressType::BILLING].company_name = "Výjimečná & fakturační, s.r.o.";
         Fred::CreateContact(create_contact_handle, registrar_handle)
@@ -181,7 +181,7 @@ BOOST_AUTO_TEST_CASE(create_contact_wrong_address)
  */
 BOOST_FIXTURE_TEST_CASE(create_contact_ok, create_contact_fixture)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     Fred::CreateContact(create_contact_handle, registrar_handle)
     .set_authinfo("testauthinfo")
     .set_logd_request_id(0)
@@ -214,7 +214,7 @@ BOOST_FIXTURE_TEST_CASE(create_contact_ok, create_contact_fixture)
  */
 BOOST_FIXTURE_TEST_CASE(create_contact_ok_without_addresses, create_contact_fixture)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     Fred::CreateContact(create_contact_handle, registrar_handle)
         .set_name(contact_name)
         .set_place(place)

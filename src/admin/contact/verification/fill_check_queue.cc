@@ -96,7 +96,7 @@ namespace ContactVerificationQueue {
         vector<string> joins;
         vector<string> conditions;
 
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         if(_filter.country_code.isset()) {
             conditions.push_back(
                 _contact_alias+".country = upper('"
@@ -296,7 +296,7 @@ namespace ContactVerificationQueue {
     std::vector<enqueued_check> fill_check_queue::exec() {
         Logging::Context log("fill_check_queue::exec");
 
-        Fred::OperationContext ctx1;
+        Fred::OperationContextCreator ctx1;
 
         // how many enqueued checks are there?
         Database::Result queue_count_res = ctx1.get_conn().exec_params(
@@ -364,7 +364,7 @@ namespace ContactVerificationQueue {
 
             std::vector<unsigned long long> to_enqueue_oldest_checked;
 
-            Fred::OperationContext ctx2;
+            Fred::OperationContextCreator ctx2;
             to_enqueue_oldest_checked = select_oldest_checked_contacts(
                 ctx2,
                 checks_to_enqueue_count,

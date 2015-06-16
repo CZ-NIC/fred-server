@@ -68,7 +68,7 @@ BOOST_AUTO_TEST_CASE(test_Exec_mandatory_setup)
     Fred::InfoContactCheckOutput pre_create_test_data;
 
     try {
-        Fred::OperationContext ctx1;
+        Fred::OperationContextCreator ctx1;
         pre_create_test_data = info_check.exec(ctx1, timezone);
     } catch(const Fred::InternalError& exp) {
         BOOST_FAIL("exception (1):" + boost::diagnostic_information(exp) + exp.what() );
@@ -79,7 +79,7 @@ BOOST_AUTO_TEST_CASE(test_Exec_mandatory_setup)
     }
 
     try {
-        Fred::OperationContext ctx2;
+        Fred::OperationContextCreator ctx2;
         create_test.exec(ctx2);
         ctx2.commit_transaction();
     } catch(const Fred::InternalError& exp) {
@@ -93,7 +93,7 @@ BOOST_AUTO_TEST_CASE(test_Exec_mandatory_setup)
     Fred::InfoContactCheckOutput result_data;
 
     try {
-        Fred::OperationContext ctx3;
+        Fred::OperationContextCreator ctx3;
         result_data = info_check.exec(ctx3, timezone);
     } catch(const Fred::InternalError& exp) {
         BOOST_FAIL("exception (1):" + boost::diagnostic_information(exp) + exp.what() );
@@ -153,7 +153,7 @@ BOOST_AUTO_TEST_CASE(test_Exec_optional_setup)
     Fred::InfoContactCheckOutput pre_create_test_data;
 
     try {
-        Fred::OperationContext ctx1;
+        Fred::OperationContextCreator ctx1;
         pre_create_test_data = info_check.exec(ctx1, timezone);
     } catch(const Fred::InternalError& exp) {
         BOOST_FAIL("exception (1):" + boost::diagnostic_information(exp) + exp.what() );
@@ -164,7 +164,7 @@ BOOST_AUTO_TEST_CASE(test_Exec_optional_setup)
     }
 
     try {
-        Fred::OperationContext ctx2;
+        Fred::OperationContextCreator ctx2;
         create_test.exec(ctx2);
         ctx2.commit_transaction();
     } catch(const Fred::InternalError& exp) {
@@ -178,7 +178,7 @@ BOOST_AUTO_TEST_CASE(test_Exec_optional_setup)
     Fred::InfoContactCheckOutput result_data;
 
     try {
-        Fred::OperationContext ctx3;
+        Fred::OperationContextCreator ctx3;
         result_data = info_check.exec(ctx3, timezone);
     } catch(const Fred::InternalError& exp) {
         BOOST_FAIL("exception (1):" + boost::diagnostic_information(exp) + exp.what() );
@@ -232,7 +232,7 @@ BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_check_handle)
 
     bool caught_the_right_exception = false;
     try {
-        Fred::OperationContext ctx1;
+        Fred::OperationContextCreator ctx1;
         create_test.exec(ctx1);
         ctx1.commit_transaction();
     } catch(const Fred::ExceptionUnknownCheckHandle& exp) {
@@ -262,7 +262,7 @@ BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_test_handle)
 
     bool caught_the_right_exception = false;
     try {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         create_test.exec(ctx);
         ctx.commit_transaction();
     } catch(const Fred::ExceptionUnknownTestHandle& exp) {
@@ -293,7 +293,7 @@ BOOST_AUTO_TEST_CASE(test_Exec_test_handle_not_in_suite)
 
     bool caught_the_right_exception = false;
     try {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         create_test.exec(ctx);
         ctx.commit_transaction();
     } catch(const Fred::ExceptionTestNotInMyTestsuite& exp) {
@@ -323,13 +323,13 @@ BOOST_AUTO_TEST_CASE(test_Exec_violating_unique_check_test_pair)
 
     Fred::CreateContactTest create_test(uuid::from_string(check.check_handle_), testdef.testdef_handle_);
     // preparation - the original previously existing record
-    Fred::OperationContext ctx1;
+    Fred::OperationContextCreator ctx1;
     create_test.exec(ctx1);
     ctx1.commit_transaction();
 
     bool caught_the_right_exception = false;
     try {
-        Fred::OperationContext ctx2;
+        Fred::OperationContextCreator ctx2;
         create_test.exec(ctx2);
         ctx2.commit_transaction();
     } catch(const Fred::ExceptionCheckTestPairAlreadyExists& exp) {

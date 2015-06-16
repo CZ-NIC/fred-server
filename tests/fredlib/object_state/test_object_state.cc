@@ -49,7 +49,7 @@ struct test_contact_fixture_8470af40b863415588b78b1fb1782e7e : public Test::Fixt
     :xmark(RandomDataGenerator().xnumstring(6))
     , test_contact_handle(std::string("TEST-CONTACT-HANDLE")+xmark)
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         registrar_handle = static_cast<std::string>(ctx.get_conn().exec(
                 "SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]);
         BOOST_CHECK(!registrar_handle.empty());//expecting existing system registrar
@@ -75,7 +75,7 @@ struct test_contact_fixture_8470af40b863415588b78b1fb1782e7e : public Test::Fixt
 
 BOOST_FIXTURE_TEST_CASE(get_object_states, test_contact_fixture_8470af40b863415588b78b1fb1782e7e )
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     Fred::InfoContactOutput contact_info1 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
     std::vector<Fred::ObjectStateData> states;
     states = Fred::GetObjectStates(contact_info1.info_contact_data.id).exec(ctx);
@@ -303,7 +303,7 @@ void check_object_state_desc_data(std::vector<Fred::ObjectStateDescription> test
 
 BOOST_FIXTURE_TEST_CASE(get_object_state_descriptions, object_state_description_fixture)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     check_object_state_desc_data(Fred::GetObjectStateDescriptions("EN").exec(ctx), state_desc_en_all_vect);
     check_object_state_desc_data(Fred::GetObjectStateDescriptions("EN").set_object_type("contact").exec(ctx), state_desc_en_contact_vect);
     check_object_state_desc_data(Fred::GetObjectStateDescriptions("EN").set_external().exec(ctx), state_desc_en_external_vect);

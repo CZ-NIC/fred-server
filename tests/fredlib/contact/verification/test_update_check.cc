@@ -84,7 +84,7 @@ struct setup_create_update_check {
 
         Fred::InfoContactCheck info_check( uuid::from_string( check.check_handle_) );
         try {
-            Fred::OperationContext ctx1;
+            Fred::OperationContextCreator ctx1;
             data_pre_update_ = info_check.exec(ctx1, timezone_);
         } catch(const Fred::InternalError& exp) {
            BOOST_FAIL("exception (1):" + boost::diagnostic_information(exp) + exp.what() );
@@ -100,7 +100,7 @@ struct setup_create_update_check {
             new_logd_request_);
 
         try {
-            Fred::OperationContext ctx2;
+            Fred::OperationContextCreator ctx2;
             update.exec(ctx2);
             ctx2.commit_transaction();
         } catch(const Fred::InternalError& exp) {
@@ -112,7 +112,7 @@ struct setup_create_update_check {
         }
 
         try {
-            Fred::OperationContext ctx3;
+            Fred::OperationContextCreator ctx3;
             data_post_update_ = info_check.exec(ctx3, timezone_);
         } catch(const Fred::InternalError& exp) {
             BOOST_FAIL("exception (1):" + boost::diagnostic_information(exp) + exp.what() );
@@ -163,7 +163,7 @@ struct setup_create_update_update_check  {
         Fred::InfoContactCheck info_check( uuid::from_string( check.check_handle_) );
 
         try {
-            Fred::OperationContext ctx1;
+            Fred::OperationContextCreator ctx1;
             data_post_create_ = info_check.exec(ctx1, timezone_);
         } catch(const Fred::InternalError& exp) {
             BOOST_FAIL("exception (1):" + boost::diagnostic_information(exp) + exp.what() );
@@ -179,7 +179,7 @@ struct setup_create_update_update_check  {
             logd_request2_);
 
         try {
-            Fred::OperationContext ctx2;
+            Fred::OperationContextCreator ctx2;
             reset.exec(ctx2);
             ctx2.commit_transaction();
         } catch(const Fred::InternalError& exp) {
@@ -191,7 +191,7 @@ struct setup_create_update_update_check  {
         }
 
         try {
-            Fred::OperationContext ctx3;
+            Fred::OperationContextCreator ctx3;
             data_post_reset_ = info_check.exec(ctx3, timezone_);
         } catch(const Fred::InternalError& exp) {
             BOOST_FAIL("exception (1):" + boost::diagnostic_information(exp) + exp.what() );
@@ -207,7 +207,7 @@ struct setup_create_update_update_check  {
             logd_request3_);
 
         try {
-            Fred::OperationContext ctx4;
+            Fred::OperationContextCreator ctx4;
             update.exec(ctx4);
             ctx4.commit_transaction();
         } catch(const Fred::InternalError& exp) {
@@ -219,7 +219,7 @@ struct setup_create_update_update_check  {
         }
 
         try {
-            Fred::OperationContext ctx5;
+            Fred::OperationContextCreator ctx5;
             data_post_update_ = info_check.exec(ctx5, timezone_);
         } catch(const Fred::InternalError& exp) {
             BOOST_FAIL("exception (1):" + boost::diagnostic_information(exp) + exp.what() );
@@ -511,7 +511,7 @@ BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_check_handle)
 
     bool caught_the_right_exception = false;
     try {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         dummy.exec(ctx);
         ctx.commit_transaction();
     } catch(const Fred::ExceptionUnknownCheckHandle& exp) {
@@ -543,7 +543,7 @@ BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_status_handle)
 
     bool caught_the_right_exception = false;
     try {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         dummy.exec(ctx);
         ctx.commit_transaction();
     } catch(const Fred::ExceptionUnknownCheckStatusHandle& exp) {

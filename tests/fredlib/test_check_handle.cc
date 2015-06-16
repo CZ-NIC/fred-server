@@ -54,7 +54,7 @@ struct check_handle_fixture : public Test::Fixture::instantiate_db_template
     {
         namespace ip = boost::asio::ip;
 
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         registrar_handle = static_cast<std::string>(ctx.get_conn().exec(
                 "SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]);
         BOOST_CHECK(!registrar_handle.empty());//expecting existing system registrar
@@ -117,7 +117,7 @@ struct check_handle_fixture : public Test::Fixture::instantiate_db_template
  */
 BOOST_FIXTURE_TEST_CASE(check_contact_handle_true, check_handle_fixture)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     std::string conflicting_handle;
     BOOST_CHECK(Fred::CheckContact(admin_contact_handle).is_registered(ctx, conflicting_handle));
     BOOST_CHECK(admin_contact_handle.compare(conflicting_handle) == 0);
@@ -133,7 +133,7 @@ BOOST_FIXTURE_TEST_CASE(check_contact_handle_true, check_handle_fixture)
 BOOST_FIXTURE_TEST_CASE(check_contact_handle_false, check_handle_fixture)
 {
     BOOST_CHECK(!Fred::CheckContact(admin_contact_handle).is_invalid_handle());
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     std::string conflicting_handle;
     BOOST_CHECK(!Fred::CheckContact(admin_contact_handle+xmark).is_registered(ctx, conflicting_handle));
     BOOST_CHECK(conflicting_handle.empty());
@@ -196,7 +196,7 @@ BOOST_AUTO_TEST_CASE(check_contact_handle_validity_ok)
  */
 BOOST_FIXTURE_TEST_CASE(check_nsset_handle_true, check_handle_fixture)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     std::string conflicting_handle;
     BOOST_CHECK(Fred::CheckNsset(test_nsset_handle).is_registered(ctx, conflicting_handle));
     BOOST_CHECK(test_nsset_handle.compare(conflicting_handle) == 0);
@@ -212,7 +212,7 @@ BOOST_FIXTURE_TEST_CASE(check_nsset_handle_true, check_handle_fixture)
 BOOST_FIXTURE_TEST_CASE(check_nsset_handle_false, check_handle_fixture)
 {
     BOOST_CHECK(!Fred::CheckNsset(test_nsset_handle).is_invalid_handle());
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     std::string conflicting_handle;
     BOOST_CHECK(!Fred::CheckNsset(test_nsset_handle+xmark).is_registered(ctx, conflicting_handle));
     BOOST_CHECK(conflicting_handle.empty());
@@ -226,7 +226,7 @@ BOOST_FIXTURE_TEST_CASE(check_nsset_handle_false, check_handle_fixture)
  */
 BOOST_FIXTURE_TEST_CASE(check_keyset_handle_true, check_handle_fixture)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     std::string conflicting_handle;
     BOOST_CHECK(Fred::CheckKeyset(test_keyset_handle).is_registered(ctx, conflicting_handle));
     BOOST_CHECK(test_keyset_handle.compare(conflicting_handle) == 0);
@@ -242,7 +242,7 @@ BOOST_FIXTURE_TEST_CASE(check_keyset_handle_true, check_handle_fixture)
 BOOST_FIXTURE_TEST_CASE(check_keyset_handle_false, check_handle_fixture)
 {
     BOOST_CHECK(!Fred::CheckKeyset(test_keyset_handle).is_invalid_handle());
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     std::string conflicting_handle;
     BOOST_CHECK(!Fred::CheckKeyset(test_keyset_handle+xmark).is_registered(ctx, conflicting_handle));
     BOOST_CHECK(conflicting_handle.empty());

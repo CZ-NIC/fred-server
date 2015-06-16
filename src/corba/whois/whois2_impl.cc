@@ -261,7 +261,7 @@ namespace Whois {
     {
         std::vector<std::string> statuses;
         {
-            Fred::OperationContext ctx;
+            Fred::OperationContextCreator ctx;
 
             BOOST_FOREACH(const Fred::ObjectStateData& state, Fred::GetObjectStates(object_id).exec(ctx)) {
                 if(state.is_external) {
@@ -656,7 +656,7 @@ namespace Whois {
             LOGGING_CONTEXT(log_ctx);
             try
             {
-                Fred::OperationContext ctx;
+                Fred::OperationContextCreator ctx;
                 return new Contact(
                     wrap_contact(
                         Fred::InfoContactByHandle(
@@ -664,7 +664,6 @@ namespace Whois {
                         ).exec(ctx, output_timezone)
                         .info_contact_data
                     ));
-
             }
             catch(const Fred::InfoContactByHandle::Exception& e)
             {
@@ -879,7 +878,7 @@ namespace Whois {
             LOGGING_CONTEXT(log_ctx);
             try
             {
-                Fred::OperationContext ctx;
+                Fred::OperationContextCreator ctx;
 
                 return new KeySet(wrap_keyset(Fred::InfoKeysetByHandle(
                     Corba::unwrap_string_from_const_char_ptr(handle)
@@ -967,7 +966,7 @@ namespace Whois {
             const std::string fqdn = Fred::Zone::rem_trailing_dot(fqdn_input);
 
 
-            Fred::OperationContext ctx;
+            Fred::OperationContextCreator ctx;
             try
             {
                 //check general name rules
@@ -1042,7 +1041,7 @@ namespace Whois {
         {
             LOGGING_CONTEXT(log_ctx);
 
-            Fred::OperationContext ctx;
+            Fred::OperationContextCreator ctx;
             DomainSeq_var domain_seq = new DomainSeq;
 
             std::vector<Fred::InfoDomainOutput> domain_info = Fred::InfoDomainByRegistrantHandle(
@@ -1089,7 +1088,7 @@ namespace Whois {
         {
             LOGGING_CONTEXT(log_ctx);
 
-            Fred::OperationContext ctx;
+            Fred::OperationContextCreator ctx;
             DomainSeq_var domain_seq = new DomainSeq;
 
             std::vector<Fred::InfoDomainOutput> domain_info = Fred::InfoDomainByAdminContactHandle(
@@ -1135,7 +1134,7 @@ namespace Whois {
         {
             LOGGING_CONTEXT(log_ctx);
 
-            Fred::OperationContext ctx;
+            Fred::OperationContextCreator ctx;
             DomainSeq_var domain_seq = new DomainSeq;
 
             std::vector<Fred::InfoDomainOutput> domain_info = Fred::InfoDomainByNssetHandle(
@@ -1182,7 +1181,7 @@ namespace Whois {
         {
             LOGGING_CONTEXT(log_ctx);
 
-            Fred::OperationContext ctx;
+            Fred::OperationContextCreator ctx;
             DomainSeq_var domain_seq = new DomainSeq;
 
             std::vector<Fred::InfoDomainOutput> domain_info = Fred::InfoDomainByKeysetHandle(
@@ -1253,7 +1252,7 @@ namespace Whois {
             LOGGING_CONTEXT(log_ctx);
 
             ObjectStatusDescSeq_var state_seq = new ObjectStatusDescSeq;
-            Fred::OperationContext ctx;
+            Fred::OperationContextCreator ctx;
             set_corba_seq<ObjectStatusDescSeq, ObjectStatusDesc>
             (state_seq, get_object_status_desc(
                 Corba::unwrap_string_from_const_char_ptr(lang),"domain", ctx));

@@ -46,7 +46,7 @@ struct init_domain_name_validation_impl
     {
         Logging::Context logctx("init_domain_name_validation_impl");
 
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
 
         DomainNameValidationCheckersInitArgs cfg_params
             = CfgArgGroups::instance()->get_handler_ptr_by_type<HandleInitDomainNameValidationCheckersArgsGrp>()->params;
@@ -116,7 +116,7 @@ struct set_zone_domain_name_validation_impl
     {
         Logging::Context logctx("set_zone_domain_name_validation_impl");
 
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
 
         ZoneDomainNameValidationCheckersArgs cfg_params
             = CfgArgGroups::instance()->get_handler_ptr_by_type<HandleDomainNameValidationByZoneArgsGrp>()->params;

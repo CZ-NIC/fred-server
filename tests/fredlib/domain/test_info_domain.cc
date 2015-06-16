@@ -57,7 +57,7 @@ struct test_domain_fixture : public Test::Fixture::instantiate_db_template
     , test_fqdn(std::string("fredinfo")+xmark+".cz")
     {
         namespace ip = boost::asio::ip;
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         registrar_handle = static_cast<std::string>(ctx.get_conn().exec(
                 "SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]);
         BOOST_CHECK(!registrar_handle.empty());//expecting existing system registrar
@@ -171,7 +171,8 @@ struct test_domain_fixture : public Test::Fixture::instantiate_db_template
  */
 BOOST_FIXTURE_TEST_CASE(info_domain, test_domain_fixture)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
+
     Fred::InfoDomainOutput info_data_1 = Fred::InfoDomainByHandle(test_fqdn).exec(ctx);
     BOOST_CHECK(test_info_domain_output == info_data_1);
     Fred::InfoDomainOutput info_data_2 = Fred::InfoDomainById(test_info_domain_output.info_domain_data.id).exec(ctx);
@@ -341,7 +342,7 @@ BOOST_FIXTURE_TEST_CASE(info_domain_unknown_keyset_handle, test_domain_fixture)
 */
 BOOST_FIXTURE_TEST_CASE(info_domain_diff, test_domain_fixture)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     Fred::InfoDomainOutput domain_info1 = Fred::InfoDomainByHandle(test_fqdn).exec(ctx);
     Fred::InfoDomainOutput domain_info2 = Fred::InfoDomainByHandle(test_fqdn).set_lock().exec(ctx);
 
@@ -404,7 +405,7 @@ struct test_info_domain_order_fixture : public test_domain_fixture
 
 BOOST_FIXTURE_TEST_CASE(info_domain_history_order, test_info_domain_order_fixture)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
 
     Fred::InfoDomainOutput domain_history_info = Fred::InfoDomainByHandle(test_fqdn).exec(ctx);
 

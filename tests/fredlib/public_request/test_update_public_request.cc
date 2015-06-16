@@ -38,7 +38,7 @@ struct update_public_request_fixture : virtual Test::Fixture::instantiate_db_tem
         public_request_type(*this),
         bad_enum_status(static_cast< Fred::PublicRequestStatus >(NUMBER_OF_STATES))
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Database::Result dbres = ctx.get_conn().exec(
             "SELECT id,handle FROM registrar WHERE system ORDER BY id LIMIT 1");
         BOOST_CHECK(dbres.size() == 1);//expecting existing system registrar
@@ -98,7 +98,7 @@ BOOST_FIXTURE_TEST_SUITE(TestUpdatePublicRequest, update_public_request_fixture)
  */
 BOOST_AUTO_TEST_CASE(public_request_status_conversions)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
 
     typedef std::set< std::string > StatusName;
     StatusName status_names;
@@ -166,7 +166,7 @@ BOOST_AUTO_TEST_CASE(public_request_status_conversions)
  */
 BOOST_AUTO_TEST_CASE(public_request_lock_guard_by_id)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
 
     const Fred::PublicRequestId bad_id = static_cast< Fred::PublicRequestId >(ctx.get_conn().exec(
         "SELECT 100+2*MAX(id) FROM public_request")[0][0]);
@@ -199,7 +199,7 @@ BOOST_AUTO_TEST_CASE(public_request_lock_guard_by_id)
  */
 BOOST_AUTO_TEST_CASE(public_request_lock_guard_by_identification)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
 
     const std::string bad_identification = create_result.identification + " ";
     BOOST_CHECK_EXCEPTION(
@@ -231,7 +231,7 @@ BOOST_AUTO_TEST_CASE(public_request_lock_guard_by_identification)
  */
 BOOST_AUTO_TEST_CASE(update_public_request_without_changes)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
 
     BOOST_CHECK_EXCEPTION(
     try {
@@ -271,7 +271,7 @@ public:
  */
 BOOST_AUTO_TEST_CASE(update_public_request_wrong_public_request_id)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
 
     const Fred::PublicRequestId bad_public_request_id = static_cast< Fred::RegistrarId >(ctx.get_conn().exec(
         "SELECT 100+2*MAX(id) FROM public_request")[0][0]);
@@ -308,7 +308,7 @@ BOOST_AUTO_TEST_CASE(update_public_request_wrong_public_request_id)
  */
 BOOST_AUTO_TEST_CASE(update_public_request_wrong_email_or_registrar)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
 
     const Database::Result dbres = ctx.get_conn().exec(
         "SELECT (SELECT 100+2*MAX(id) FROM mail_archive),100+2*MAX(id) FROM registrar");
@@ -404,7 +404,7 @@ BOOST_AUTO_TEST_CASE(update_public_request_wrong_email_or_registrar)
  */
 BOOST_AUTO_TEST_CASE(update_public_request_wrong_public_request_status)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
 
     BOOST_CHECK_EXCEPTION(
     try {
@@ -439,7 +439,7 @@ BOOST_AUTO_TEST_CASE(update_public_request_wrong_public_request_status)
  */
 BOOST_AUTO_TEST_CASE(update_public_request_ok)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     Fred::PublicRequestLockGuardById locked_request(ctx, create_result.public_request_id);
     const Fred::PublicRequestStatus enum_status = Fred::PRS_ANSWERED;
     const std::string str_status = Fred::public_request_status2str(enum_status);

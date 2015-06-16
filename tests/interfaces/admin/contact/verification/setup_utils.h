@@ -55,7 +55,7 @@ class DummyTestReturning: public Admin::ContactVerification::Test {
                     handle = "DUMMY_TEST_" + return_status + "_" + RandomDataGenerator().xnumstring(15);
                     description = handle + "_DESCRIPTION";
 
-                    Fred::OperationContext ctx;
+                    Fred::OperationContextCreator ctx;
                     id = static_cast<long>(
                          ctx.get_conn().exec(
                              "INSERT INTO enum_contact_test "
@@ -91,7 +91,7 @@ class DummyThrowingTest: public Admin::ContactVerification::Test {
             // prevent name collisions
             while(true) {
                 try {
-                    Fred::OperationContext ctx;
+                    Fred::OperationContextCreator ctx;
 
                     handle_ = "DUMMY_THROWING_TEST_" + RandomDataGenerator().xnumstring(15);
                     description_ = handle_ + "_DESCRIPTION";

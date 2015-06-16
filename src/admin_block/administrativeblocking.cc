@@ -64,7 +64,7 @@ namespace Registry
             Logging::Context ctx_server(create_ctx_name(this->get_server_name()));
             Logging::Context ctx_method("get-blocking-status-desc-list");
             try {
-                Fred::OperationContext ctx;
+                Fred::OperationContextCreator ctx;
                 Fred::GetBlockingStatusDescList blocking_status_desc_list;
                 blocking_status_desc_list.set_lang(_lang);
                 Fred::GetBlockingStatusDescList::StatusDescList &desc_list = blocking_status_desc_list.exec(ctx);
@@ -355,7 +355,7 @@ namespace Registry
             EX_CONTACT_BLOCK_PROHIBITED contact_block_prohibited;
             try {
                 IdlOwnerChangeList result;
-                Fred::OperationContext ctx;
+                Fred::OperationContextCreator ctx;
                 DomainIdHandle domain_id_handle;
                 get_domain_handle(_domain_list, domain_id_handle, ctx);
                 Fred::StatusList contact_status_list;
@@ -556,7 +556,7 @@ namespace Registry
 
             EX_DOMAIN_ID_NOT_BLOCKED domain_id_not_blocked;
             try {
-                Fred::OperationContext ctx;
+                Fred::OperationContextCreator ctx;
                 DomainIdHandle domain_id_handle;
                 get_domain_handle(_domain_list, domain_id_handle, ctx);
                 bool is_sys_registrar;
@@ -662,7 +662,7 @@ namespace Registry
                     block_time_limit = boost::posix_time::ptime(_block_to_date.get_value(),
                                                                 boost::posix_time::time_duration(12, 0, 0));
                 }
-                Fred::OperationContext ctx;
+                Fred::OperationContextCreator ctx;
                 for (IdlDomainIdList::const_iterator pDomainId = _domain_list.begin(); pDomainId != _domain_list.end(); ++pDomainId) {
                     const Fred::ObjectId object_id = *pDomainId;
                     try {
@@ -738,7 +738,7 @@ namespace Registry
 
             EX_DOMAIN_ID_NOT_BLOCKED domain_id_not_blocked;
             try {
-                Fred::OperationContext ctx;
+                Fred::OperationContextCreator ctx;
                 DomainIdHandle domain_id_handle;
                 get_domain_handle(_domain_list, domain_id_handle, ctx);
                 bool is_sys_registrar;
@@ -862,7 +862,7 @@ namespace Registry
                     blacklist_to_limit = boost::posix_time::ptime(_blacklist_to_date.get_value(),
                                                                   boost::posix_time::time_duration(12, 0, 0));
                 }
-                Fred::OperationContext ctx;
+                Fred::OperationContextCreator ctx;
                 for (IdlDomainIdList::const_iterator pDomainId = _domain_list.begin(); pDomainId != _domain_list.end(); ++pDomainId) {
                     const Fred::ObjectId object_id = *pDomainId;
                     Fred::CreateDomainNameBlacklistId create_domain_name_blacklist(object_id, _reason);
@@ -927,7 +927,7 @@ namespace Registry
                     blacklist_to_limit = boost::posix_time::ptime(_blacklist_to_date.get_value(),
                                                                   boost::posix_time::time_duration(12, 0, 0));
                 }
-                Fred::OperationContext ctx;
+                Fred::OperationContextCreator ctx;
                 for (IdlDomainIdList::const_iterator pDomainId = _domain_list.begin(); pDomainId != _domain_list.end(); ++pDomainId) {
                     const Fred::ObjectId object_id = *pDomainId;
                     Fred::CreateDomainNameBlacklistId create_domain_name_blacklist(object_id, "blacklistDomainsId() call");

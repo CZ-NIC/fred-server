@@ -50,7 +50,7 @@ struct info_keyset_fixture : public Test::Fixture::instantiate_db_template
     , test_keyset_handle(std::string("TEST-KEYSET-HANDLE")+xmark)
     , test_keyset_history_handle(std::string("TEST-KEYSET-HISTORY-HANDLE")+xmark)
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator fixture_ctx;
         registrar_handle = static_cast<std::string>(ctx.get_conn().exec(
             "SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]);
 
@@ -143,7 +143,7 @@ struct info_keyset_fixture : public Test::Fixture::instantiate_db_template
 */
 BOOST_FIXTURE_TEST_CASE(info_keyset, info_keyset_fixture)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
 
     Fred::InfoKeysetOutput info_data_1 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
     BOOST_CHECK(test_info_keyset_output == info_data_1);
@@ -281,7 +281,7 @@ BOOST_FIXTURE_TEST_CASE(info_keyset_tech_c_unknown_handle, info_keyset_fixture)
 */
 BOOST_FIXTURE_TEST_CASE(info_keyset_diff, info_keyset_fixture)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     Fred::InfoKeysetOutput keyset_info1 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
     Fred::InfoKeysetOutput keyset_info2 = Fred::InfoKeysetByHandle(test_keyset_handle).set_lock().exec(ctx);
 
@@ -332,7 +332,7 @@ struct info_keyset_history_order_fixture : public info_keyset_fixture
 
 BOOST_FIXTURE_TEST_CASE(info_keyset_history_order, info_keyset_history_order_fixture)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     Fred::InfoKeysetOutput keyset_history_info = Fred::InfoKeysetByHandle(test_keyset_history_handle).exec(ctx);
 
     std::vector<Fred::InfoKeysetOutput> keyset_history_info_by_roid = Fred::InfoKeysetHistoryByRoid(keyset_history_info.info_keyset_data.roid).exec(ctx);

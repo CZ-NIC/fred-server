@@ -113,7 +113,7 @@ namespace ContactVerification {
         address.code    = data.postalcode_;
 
 
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
 
         try {
             address.country = Util::get_country_name(ctx, data.country_);

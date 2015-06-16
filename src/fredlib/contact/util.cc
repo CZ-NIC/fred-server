@@ -3,7 +3,7 @@
 #include "src/fredlib/opcontext.h"
 
 std::pair<std::string, unsigned long long> Fred::ContactUtil::contact_hid_to_handle_id_pair(unsigned long long hid) {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
 
     Database::Result contact_data = ctx.get_conn().exec_params(
        "SELECT "

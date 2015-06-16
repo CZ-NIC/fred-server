@@ -58,7 +58,7 @@ void test_Resulting_check_status_impl(std::vector<std::string> _test_statuses, c
     dummy_testsuite suite(_test_statuses);
     setup_check check(suite.testsuite_handle);
 
-    Fred::OperationContext ctx1;
+    Fred::OperationContextCreator ctx1;
     Fred::UpdateContactCheck(
         uuid::from_string(check.check_handle_),
         Fred::ContactCheckStatus::ENQUEUED
@@ -74,7 +74,7 @@ void test_Resulting_check_status_impl(std::vector<std::string> _test_statuses, c
     Fred::InfoContactCheckOutput final_check_state;
 
     try {
-        Fred::OperationContext ctx2;
+        Fred::OperationContextCreator ctx2;
         final_check_state = Fred::InfoContactCheck(
             uuid::from_string( check.check_handle_)
         ).exec(ctx2);
@@ -241,7 +241,7 @@ BOOST_AUTO_TEST_CASE(test_Incorrect_test_return_handling)
 {
     // returning ENQUEUED
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
 
         boost::shared_ptr<Admin::ContactVerification::Test> temp_ptr(
             new DummyTestReturning(TestStatus::ENQUEUED));
@@ -267,7 +267,7 @@ BOOST_AUTO_TEST_CASE(test_Incorrect_test_return_handling)
 
     // returning RUNNING
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
 
         boost::shared_ptr<Admin::ContactVerification::Test> temp_ptr(
             new DummyTestReturning(TestStatus::RUNNING));
@@ -308,7 +308,7 @@ BOOST_AUTO_TEST_CASE(test_Throwing_test_handling)
     setup_testdef_in_testsuite(handle, testsuite.testsuite_handle);
     setup_check check(testsuite.testsuite_handle);
 
-    Fred::OperationContext ctx1;
+    Fred::OperationContextCreator ctx1;
     Fred::UpdateContactCheck(
         uuid::from_string(check.check_handle_),
         Fred::ContactCheckStatus::ENQUEUED
@@ -324,7 +324,7 @@ BOOST_AUTO_TEST_CASE(test_Throwing_test_handling)
     Fred::InfoContactCheckOutput final_check_state;
 
     try {
-        Fred::OperationContext ctx2;
+        Fred::OperationContextCreator ctx2;
         final_check_state = Fred::InfoContactCheck( uuid::from_string( check.check_handle_) ).exec(ctx2);
     } catch (...) {
         BOOST_FAIL("exception during Fred::InfoContactCheck");
@@ -347,7 +347,7 @@ BOOST_AUTO_TEST_CASE(test_Logd_request_id_of_related_changes)
     typedef Fred::InfoContactCheckOutput::ContactTestResultState ContactTestResultState;
 
     // creating checkdef
-    Fred::OperationContext ctx1;
+    Fred::OperationContextCreator ctx1;
 
     boost::shared_ptr<Admin::ContactVerification::Test> temp_ptr1(
         new DummyTestReturning(TestStatus::OK));
@@ -383,7 +383,7 @@ BOOST_AUTO_TEST_CASE(test_Logd_request_id_of_related_changes)
     Fred::InfoContactCheck info_op( uuid::from_string( check.check_handle_) );
     Fred::InfoContactCheckOutput info;
     try {
-        Fred::OperationContext ctx2;
+        Fred::OperationContextCreator ctx2;
         info = info_op.exec(ctx2);
     } catch(const Fred::InternalError& exp) {
         BOOST_FAIL("failed to get check info (1):" + boost::diagnostic_information(exp) + exp.what() );

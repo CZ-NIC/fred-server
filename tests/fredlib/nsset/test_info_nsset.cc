@@ -52,7 +52,7 @@ struct info_nsset_fixture : public Test::Fixture::instantiate_db_template
     {
         namespace ip = boost::asio::ip;
 
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         registrar_handle = static_cast<std::string>(ctx.get_conn().exec(
             "SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]);
         BOOST_CHECK(!registrar_handle.empty());//expecting existing system registrar
@@ -139,7 +139,7 @@ struct info_nsset_fixture : public Test::Fixture::instantiate_db_template
 */
 BOOST_FIXTURE_TEST_CASE(info_nsset, info_nsset_fixture)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     Fred::InfoNssetOutput info_data_1 = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
     BOOST_CHECK(test_info_nsset_output == info_data_1);
     Fred::InfoNssetOutput info_data_2 = Fred::InfoNssetByHandle(test_nsset_handle).set_lock().exec(ctx);
@@ -289,7 +289,7 @@ BOOST_FIXTURE_TEST_CASE(info_nsset_tech_c_unknown_handle, info_nsset_fixture)
 */
 BOOST_FIXTURE_TEST_CASE(info_nsset_diff, info_nsset_fixture)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     Fred::InfoNssetOutput nsset_info1 = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
     Fred::InfoNssetOutput nsset_info2 = Fred::InfoNssetByHandle(test_nsset_handle).set_lock().exec(ctx);
 
@@ -340,7 +340,7 @@ struct info_nsset_history_fixture : public info_nsset_fixture
 */
 BOOST_FIXTURE_TEST_CASE(info_nsset_history_order, info_nsset_history_fixture)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     Fred::InfoNssetOutput nsset_history_info = Fred::InfoNssetByHandle(test_nsset_history_handle).exec(ctx);
 
     std::vector<Fred::InfoNssetOutput> nsset_history_info_by_roid = Fred::InfoNssetHistoryByRoid(nsset_history_info.info_nsset_data.roid).exec(ctx);

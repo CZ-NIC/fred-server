@@ -90,7 +90,7 @@ struct undelivered_fixture : virtual Test::Fixture::instantiate_db_template
 
     undelivered_fixture()
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Database::Result msg_id_res = ctx.get_conn().exec(
         "INSERT INTO message_archive (status_id, comm_type_id, message_type_id, service_handle) "
         " VALUES "
@@ -207,7 +207,7 @@ BOOST_FIXTURE_TEST_CASE(test_undelivered_proc, undelivered_fixture)
 
 
     //check undelivered
-    BOOST_CHECK(Fred::OperationContext().get_conn().exec_params(
+    BOOST_CHECK(Fred::OperationContextCreator().get_conn().exec_params(
         "SELECT id FROM message_archive WHERE service_handle = 'OPTYS' "
         " AND status_id = (SELECT id FROM enum_send_status WHERE status_name = 'undelivered') "
         " AND (id = $1::bigint OR id = $2::bigint OR id = $3::bigint OR id = $4::bigint OR id = $5::bigint OR id = $6::bigint OR id = $7::bigint)"
@@ -222,7 +222,7 @@ BOOST_FIXTURE_TEST_CASE(test_undelivered_proc, undelivered_fixture)
     ).size() == 7);
 
     //check delivered
-    BOOST_CHECK(Fred::OperationContext().get_conn().exec_params(
+    BOOST_CHECK(Fred::OperationContextCreator().get_conn().exec_params(
         "SELECT id FROM message_archive WHERE service_handle = 'OPTYS' "
         " AND status_id = (SELECT id FROM enum_send_status WHERE status_name = 'sent') "
         " AND (id = $1::bigint OR id = $2::bigint)"
@@ -258,7 +258,7 @@ BOOST_FIXTURE_TEST_CASE(test_ignore_empty_line, undelivered_fixture)
     ));
 
     //check undelivered
-    BOOST_CHECK(Fred::OperationContext().get_conn().exec_params(
+    BOOST_CHECK(Fred::OperationContextCreator().get_conn().exec_params(
         "SELECT id FROM message_archive WHERE service_handle = 'OPTYS' "
         " AND status_id = (SELECT id FROM enum_send_status WHERE status_name = 'undelivered') "
         " AND (id = $1::bigint OR id = $2::bigint OR id = $3::bigint OR id = $4::bigint OR id = $5::bigint OR id = $6::bigint OR id = $7::bigint)"
@@ -273,7 +273,7 @@ BOOST_FIXTURE_TEST_CASE(test_ignore_empty_line, undelivered_fixture)
     ).size() == 7);
 
     //check delivered
-    BOOST_CHECK(Fred::OperationContext().get_conn().exec_params(
+    BOOST_CHECK(Fred::OperationContextCreator().get_conn().exec_params(
         "SELECT id FROM message_archive WHERE service_handle = 'OPTYS' "
         " AND status_id = (SELECT id FROM enum_send_status WHERE status_name = 'sent') "
         " AND (id = $1::bigint OR id = $2::bigint)"
@@ -329,7 +329,7 @@ BOOST_FIXTURE_TEST_CASE(test_unable_to_read_file, undelivered_fixture)
     ), std::runtime_error);
 
     //check undelivered not set
-    BOOST_CHECK(Fred::OperationContext().get_conn().exec_params(
+    BOOST_CHECK(Fred::OperationContextCreator().get_conn().exec_params(
         "SELECT id FROM message_archive WHERE service_handle = 'OPTYS' "
         " AND status_id = (SELECT id FROM enum_send_status WHERE status_name = 'sent') "
         " AND (id = $1::bigint OR id = $2::bigint OR id = $3::bigint OR id = $4::bigint OR id = $5::bigint OR id = $6::bigint OR id = $7::bigint)"
@@ -344,7 +344,7 @@ BOOST_FIXTURE_TEST_CASE(test_unable_to_read_file, undelivered_fixture)
     ).size() == 4);
 
     //check undelivered
-    BOOST_CHECK(Fred::OperationContext().get_conn().exec_params(
+    BOOST_CHECK(Fred::OperationContextCreator().get_conn().exec_params(
         "SELECT id FROM message_archive WHERE service_handle = 'OPTYS' "
         " AND status_id = (SELECT id FROM enum_send_status WHERE status_name = 'undelivered') "
         " AND (id = $1::bigint OR id = $2::bigint OR id = $3::bigint OR id = $4::bigint OR id = $5::bigint OR id = $6::bigint OR id = $7::bigint)"
@@ -359,7 +359,7 @@ BOOST_FIXTURE_TEST_CASE(test_unable_to_read_file, undelivered_fixture)
     ).size() == 3);
 
     //check delivered
-    BOOST_CHECK(Fred::OperationContext().get_conn().exec_params(
+    BOOST_CHECK(Fred::OperationContextCreator().get_conn().exec_params(
         "SELECT id FROM message_archive WHERE service_handle = 'OPTYS' "
         " AND status_id = (SELECT id FROM enum_send_status WHERE status_name = 'sent') "
         " AND (id = $1::bigint OR id = $2::bigint)"
@@ -387,7 +387,7 @@ BOOST_FIXTURE_TEST_CASE(test_bad_csv_data_file, undelivered_fixture)
     ), std::runtime_error);
 
     //check undelivered not set
-    BOOST_CHECK(Fred::OperationContext().get_conn().exec_params(
+    BOOST_CHECK(Fred::OperationContextCreator().get_conn().exec_params(
         "SELECT id FROM message_archive WHERE service_handle = 'OPTYS' "
         " AND status_id = (SELECT id FROM enum_send_status WHERE status_name = 'sent') "
         " AND (id = $1::bigint OR id = $2::bigint OR id = $3::bigint OR id = $4::bigint OR id = $5::bigint OR id = $6::bigint OR id = $7::bigint)"
@@ -402,7 +402,7 @@ BOOST_FIXTURE_TEST_CASE(test_bad_csv_data_file, undelivered_fixture)
     ).size() == 4);
 
     //check undelivered
-    BOOST_CHECK(Fred::OperationContext().get_conn().exec_params(
+    BOOST_CHECK(Fred::OperationContextCreator().get_conn().exec_params(
         "SELECT id FROM message_archive WHERE service_handle = 'OPTYS' "
         " AND status_id = (SELECT id FROM enum_send_status WHERE status_name = 'undelivered') "
         " AND (id = $1::bigint OR id = $2::bigint OR id = $3::bigint OR id = $4::bigint OR id = $5::bigint OR id = $6::bigint OR id = $7::bigint)"
@@ -417,7 +417,7 @@ BOOST_FIXTURE_TEST_CASE(test_bad_csv_data_file, undelivered_fixture)
     ).size() == 3);
 
     //check delivered
-    BOOST_CHECK(Fred::OperationContext().get_conn().exec_params(
+    BOOST_CHECK(Fred::OperationContextCreator().get_conn().exec_params(
         "SELECT id FROM message_archive WHERE service_handle = 'OPTYS' "
         " AND status_id = (SELECT id FROM enum_send_status WHERE status_name = 'sent') "
         " AND (id = $1::bigint OR id = $2::bigint)"
@@ -433,7 +433,7 @@ BOOST_FIXTURE_TEST_CASE(test_bad_csv_data_file, undelivered_fixture)
 BOOST_FIXTURE_TEST_CASE(test_wrong_id_in_csv_data, undelivered_fixture)
 {
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         ctx.get_conn().exec("UPDATE message_archive SET service_handle = 'MANUAL' WHERE service_handle = 'OPTYS'");
         ctx.commit_transaction();
     }
@@ -445,13 +445,13 @@ BOOST_FIXTURE_TEST_CASE(test_wrong_id_in_csv_data, undelivered_fixture)
     ), std::runtime_error);
 
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         ctx.get_conn().exec("UPDATE message_archive SET service_handle = 'OPTYS' WHERE service_handle = 'MANUAL'");
         ctx.commit_transaction();
     }
 
     //check undelivered not set
-    BOOST_CHECK(Fred::OperationContext().get_conn().exec_params(
+    BOOST_CHECK(Fred::OperationContextCreator().get_conn().exec_params(
         "SELECT id FROM message_archive WHERE service_handle = 'OPTYS' "
         " AND status_id = (SELECT id FROM enum_send_status WHERE status_name = 'sent') "
         " AND (id = $1::bigint OR id = $2::bigint OR id = $3::bigint OR id = $4::bigint OR id = $5::bigint OR id = $6::bigint OR id = $7::bigint)"
@@ -466,7 +466,7 @@ BOOST_FIXTURE_TEST_CASE(test_wrong_id_in_csv_data, undelivered_fixture)
     ).size() == 4);
 
     //check undelivered
-    BOOST_CHECK(Fred::OperationContext().get_conn().exec_params(
+    BOOST_CHECK(Fred::OperationContextCreator().get_conn().exec_params(
         "SELECT id FROM message_archive WHERE service_handle = 'OPTYS' "
         " AND status_id = (SELECT id FROM enum_send_status WHERE status_name = 'undelivered') "
         " AND (id = $1::bigint OR id = $2::bigint OR id = $3::bigint OR id = $4::bigint OR id = $5::bigint OR id = $6::bigint OR id = $7::bigint)"
@@ -481,7 +481,7 @@ BOOST_FIXTURE_TEST_CASE(test_wrong_id_in_csv_data, undelivered_fixture)
     ).size() == 3);
 
     //check delivered
-    BOOST_CHECK(Fred::OperationContext().get_conn().exec_params(
+    BOOST_CHECK(Fred::OperationContextCreator().get_conn().exec_params(
         "SELECT id FROM message_archive WHERE service_handle = 'OPTYS' "
         " AND status_id = (SELECT id FROM enum_send_status WHERE status_name = 'sent') "
         " AND (id = $1::bigint OR id = $2::bigint)"
@@ -509,7 +509,7 @@ BOOST_FIXTURE_TEST_CASE(test_empty_csv_file, undelivered_fixture)
     ), std::runtime_error);
 
     //check undelivered not set
-    BOOST_CHECK(Fred::OperationContext().get_conn().exec_params(
+    BOOST_CHECK(Fred::OperationContextCreator().get_conn().exec_params(
         "SELECT id FROM message_archive WHERE service_handle = 'OPTYS' "
         " AND status_id = (SELECT id FROM enum_send_status WHERE status_name = 'sent') "
         " AND (id = $1::bigint OR id = $2::bigint OR id = $3::bigint OR id = $4::bigint OR id = $5::bigint OR id = $6::bigint OR id = $7::bigint)"
@@ -524,7 +524,7 @@ BOOST_FIXTURE_TEST_CASE(test_empty_csv_file, undelivered_fixture)
     ).size() == 4);
 
     //check undelivered
-    BOOST_CHECK(Fred::OperationContext().get_conn().exec_params(
+    BOOST_CHECK(Fred::OperationContextCreator().get_conn().exec_params(
         "SELECT id FROM message_archive WHERE service_handle = 'OPTYS' "
         " AND status_id = (SELECT id FROM enum_send_status WHERE status_name = 'undelivered') "
         " AND (id = $1::bigint OR id = $2::bigint OR id = $3::bigint OR id = $4::bigint OR id = $5::bigint OR id = $6::bigint OR id = $7::bigint)"
@@ -539,7 +539,7 @@ BOOST_FIXTURE_TEST_CASE(test_empty_csv_file, undelivered_fixture)
     ).size() == 3);
 
     //check delivered
-    BOOST_CHECK(Fred::OperationContext().get_conn().exec_params(
+    BOOST_CHECK(Fred::OperationContextCreator().get_conn().exec_params(
         "SELECT id FROM message_archive WHERE service_handle = 'OPTYS' "
         " AND status_id = (SELECT id FROM enum_send_status WHERE status_name = 'sent') "
         " AND (id = $1::bigint OR id = $2::bigint)"

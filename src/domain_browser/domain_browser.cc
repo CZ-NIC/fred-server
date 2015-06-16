@@ -251,7 +251,7 @@ namespace Registry
         {
             Logging::Context lctx_server(server_name_);
             Logging::Context lctx("init");
-            Fred::OperationContext ctx;
+            Fred::OperationContextCreator ctx;
             Database::Result db_config = ctx.get_conn().exec(
                 "SELECT MAX(importance) * 2 AS minimal_status_importance FROM enum_object_states");
             lowest_status_importance_ = static_cast<unsigned int>(db_config[0]["minimal_status_importance"]);
@@ -273,7 +273,7 @@ namespace Registry
         {
             Logging::Context lctx_server(create_ctx_name(get_server_name()));
             Logging::Context lctx("get-object-registry-id");
-            Fred::OperationContext ctx;
+            Fred::OperationContextCreator ctx;
             try
             {
                 return Fred::get_object_id_by_handle_and_type_with_lock(ctx,handle, "contact",
@@ -293,7 +293,7 @@ namespace Registry
         {
             Logging::Context lctx_server(create_ctx_name(get_server_name()));
             Logging::Context lctx("get-registrar-detail");
-            Fred::OperationContext ctx;
+            Fred::OperationContextCreator ctx;
             try
             {
                 check_user_contact_id<UserNotExists>(ctx, user_contact_id, output_timezone);
@@ -376,7 +376,7 @@ namespace Registry
         {
             Logging::Context lctx_server(create_ctx_name(get_server_name()));
             Logging::Context lctx("get-contact-detail");
-            Fred::OperationContext ctx;
+            Fred::OperationContextCreator ctx;
             try
             {
                 check_user_contact_id<UserNotExists>(ctx, user_contact_id, output_timezone);
@@ -460,7 +460,7 @@ namespace Registry
         {
             Logging::Context lctx_server(create_ctx_name(get_server_name()));
             Logging::Context lctx("get-domain-detail");
-            Fred::OperationContext ctx;
+            Fred::OperationContextCreator ctx;
             try
             {
                 check_user_contact_id<UserNotExists>(ctx, user_contact_id, output_timezone);
@@ -563,7 +563,7 @@ namespace Registry
         {
             Logging::Context lctx_server(create_ctx_name(get_server_name()));
             Logging::Context lctx("get-nsset-detail");
-            Fred::OperationContext ctx;
+            Fred::OperationContextCreator ctx;
             try
             {
                 check_user_contact_id<UserNotExists>(ctx, user_contact_id, output_timezone);
@@ -659,7 +659,7 @@ namespace Registry
         {
             Logging::Context lctx_server(create_ctx_name(get_server_name()));
             Logging::Context lctx("get-keyset-detail");
-            Fred::OperationContext ctx;
+            Fred::OperationContextCreator ctx;
 
             try
             {
@@ -768,7 +768,7 @@ namespace Registry
         {
             Logging::Context lctx_server(create_ctx_name(get_server_name()));
             Logging::Context lctx("set-contact-disclose-flags");
-            Fred::OperationContext ctx;
+            Fred::OperationContextCreator ctx;
             try
             {
                 Fred::InfoContactOutput contact_info = check_user_contact_id<UserNotExists>(ctx, user_contact_id, output_timezone, true);
@@ -858,7 +858,7 @@ namespace Registry
         {
             Logging::Context lctx_server(create_ctx_name(get_server_name()));
             Logging::Context lctx("set-contact-auth-info");
-            Fred::OperationContext ctx;
+            Fred::OperationContextCreator ctx;
             try
             {
                 Fred::InfoContactOutput contact_info = check_user_contact_id<UserNotExists>(ctx, user_contact_id, output_timezone, true);
@@ -905,7 +905,7 @@ namespace Registry
         {
             Logging::Context lctx_server(create_ctx_name(get_server_name()));
             Logging::Context lctx("set-object-block-status");
-            Fred::OperationContext ctx;
+            Fred::OperationContextCreator ctx;
             try
             {
                 Fred::InfoContactOutput contact_info = check_user_contact_id<UserNotExists>(ctx, user_contact_id, output_timezone);
@@ -1000,7 +1000,7 @@ namespace Registry
                 for(std::set<std::pair<unsigned long long, std::string> >::const_iterator ci = object_id_name_pairs.begin()
                     ; ci != object_id_name_pairs.end(); ++ci)
                 {
-                    Fred::OperationContext ctx_per_object;
+                    Fred::OperationContextCreator ctx_per_object;
                     if(Fred::ObjectHasState(ci->first, Fred::ObjectState::SERVER_BLOCKED).exec(ctx_per_object))//object administratively blocked
                     {
                         blocked_objects.push_back(ci->second);
@@ -1075,7 +1075,7 @@ namespace Registry
         {
             Logging::Context lctx_server(create_ctx_name(get_server_name()));
             Logging::Context lctx("get-domain-list");
-            Fred::OperationContext ctx;
+            Fred::OperationContextCreator ctx;
             try
             {
                 check_user_contact_id<UserNotExists>(ctx, user_contact_id, output_timezone);
@@ -1266,7 +1266,7 @@ namespace Registry
         {
             Logging::Context lctx_server(create_ctx_name(get_server_name()));
             Logging::Context lctx("get-nsset-list");
-            Fred::OperationContext ctx;
+            Fred::OperationContextCreator ctx;
             try
             {
                 check_user_contact_id<UserNotExists>(ctx, user_contact_id, output_timezone);
@@ -1350,7 +1350,7 @@ namespace Registry
         {
             Logging::Context lctx_server(create_ctx_name(get_server_name()));
             Logging::Context lctx("get-keyset-list");
-            Fred::OperationContext ctx;
+            Fred::OperationContextCreator ctx;
             try
             {
                 check_user_contact_id<UserNotExists>(ctx, user_contact_id, output_timezone);
@@ -1434,7 +1434,7 @@ namespace Registry
         {
             Logging::Context lctx_server(create_ctx_name(get_server_name()));
             Logging::Context lctx("get-public-status-desc");
-            Fred::OperationContext ctx;
+            Fred::OperationContextCreator ctx;
             try
             {
                 Database::Result state_desc_res = ctx.get_conn().exec_params(
@@ -1529,7 +1529,7 @@ namespace Registry
         {
             Logging::Context lctx_server(create_ctx_name(get_server_name()));
             Logging::Context lctx("get-merge-contact-candidate-list");
-            Fred::OperationContext ctx;
+            Fred::OperationContextCreator ctx;
             try
             {
                 check_user_contact_id<UserNotExists>(ctx, user_contact_id, output_timezone);
@@ -1605,7 +1605,7 @@ namespace Registry
         {
             Logging::Context lctx_server(create_ctx_name(get_server_name()));
             Logging::Context lctx("get-merge-contact");
-            Fred::OperationContext ctx;
+            Fred::OperationContextCreator ctx;
             try
             {
                 Fred::InfoContactOutput dst = check_user_contact_id<UserNotExists>(ctx, dst_contact_id, output_timezone);
@@ -1680,7 +1680,7 @@ namespace Registry
         {
             Logging::Context lctx_server(create_ctx_name(get_server_name()));
             Logging::Context lctx("set-contact-auth-info");
-            Fred::OperationContext ctx;
+            Fred::OperationContextCreator ctx;
             try
             {
                 Fred::InfoContactOutput contact_info = check_user_contact_id<UserNotExists>(ctx, user_contact_id, output_timezone, true);

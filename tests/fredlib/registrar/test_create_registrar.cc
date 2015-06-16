@@ -81,7 +81,7 @@ BOOST_FIXTURE_TEST_SUITE(TestCreateRegistrar, test_registrar_fixture)
 */
 BOOST_AUTO_TEST_CASE(create_registrar)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
 
     Fred::CreateRegistrar(test_info.handle)
         .set_name(test_info.name.get_value())
@@ -122,13 +122,13 @@ BOOST_AUTO_TEST_CASE(create_registrar)
 BOOST_AUTO_TEST_CASE(create_registrar_invalid_handle)
 {
 
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     Fred::CreateRegistrar(test_registrar_handle).exec(ctx);
     ctx.commit_transaction();
 
     try
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::CreateRegistrar(test_registrar_handle).set_email("test1@nic.cz").exec(ctx);
         BOOST_ERROR("unreported invalid_registrar_handle");
     }
@@ -149,7 +149,7 @@ BOOST_AUTO_TEST_CASE(create_registrar_invalid_handle)
  */
 BOOST_AUTO_TEST_CASE(create_registrar_unknown_country)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
 
     try
     {

@@ -144,7 +144,7 @@ BOOST_AUTO_TEST_CASE(test_domain_name_validator)
 {
     typedef Fred::Domain::DomainName DomainName;
     typedef Fred::Domain::DomainNameValidator DomainNameValidator;
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
 
     // basic check
     BOOST_CHECK( DomainNameValidator()

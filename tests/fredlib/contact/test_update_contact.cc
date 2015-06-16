@@ -41,7 +41,7 @@ struct update_contact_fixture : public Test::Fixture::instantiate_db_template
     : xmark(RandomDataGenerator().xnumstring(6))
     , test_contact_handle(std::string("TEST-CONTACT-HANDLE")+xmark)
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         registrar_handle = static_cast<std::string>(ctx.get_conn().exec(
             "SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]);
         BOOST_CHECK(!registrar_handle.empty());//expecting existing system registrar
@@ -87,7 +87,7 @@ BOOST_FIXTURE_TEST_SUITE(TestUpdateContact, update_contact_fixture)
  */
 BOOST_AUTO_TEST_CASE(update_contact_by_handle)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     Fred::InfoContactOutput info_data_1 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
     std::vector<Fred::InfoContactOutput> history_info_data_1 = Fred::InfoContactHistoryByRoid(info_data_1.info_contact_data.roid).exec(ctx);
 
@@ -448,7 +448,7 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle_wrong_handle)
     std::string bad_test_contact_handle = std::string("bad")+test_contact_handle;
     try
     {
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         Fred::UpdateContactByHandle(bad_test_contact_handle, registrar_handle).exec(ctx);
         ctx.commit_transaction();
         BOOST_ERROR("no exception thrown");
@@ -468,13 +468,13 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle_wrong_registrar)
     std::string bad_registrar_handle = registrar_handle+xmark;
     Fred::InfoContactOutput info_data_1;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_1 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
     }
 
     try
     {
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         Fred::UpdateContactByHandle(test_contact_handle, bad_registrar_handle).exec(ctx);
         ctx.commit_transaction();
         BOOST_ERROR("no exception thrown");
@@ -487,7 +487,7 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle_wrong_registrar)
 
     Fred::InfoContactOutput info_data_2;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_2 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
     }
     BOOST_CHECK(info_data_1 == info_data_2);
@@ -502,13 +502,13 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle_wrong_sponsoring_registrar)
     std::string bad_registrar_handle = registrar_handle+xmark;
     Fred::InfoContactOutput info_data_1;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_1 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
     }
 
     try
     {
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         Fred::UpdateContactByHandle(test_contact_handle, registrar_handle)
             .set_sponsoring_registrar(bad_registrar_handle).exec(ctx);
         ctx.commit_transaction();
@@ -522,7 +522,7 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle_wrong_sponsoring_registrar)
 
     Fred::InfoContactOutput info_data_2;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_2 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
     }
     BOOST_CHECK(info_data_1 == info_data_2);
@@ -537,13 +537,13 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle_wrong_ssntype)
 {
     Fred::InfoContactOutput info_data_1;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_1 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
     }
 
     try
     {
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         Fred::UpdateContactByHandle(test_contact_handle, registrar_handle)
         .set_ssntype("bad-ssntype")
         .exec(ctx);
@@ -558,7 +558,7 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle_wrong_ssntype)
 
     Fred::InfoContactOutput info_data_2;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_2 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
     }
     BOOST_CHECK(info_data_1 == info_data_2);
@@ -572,7 +572,7 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle_wrong_country)
 {
     Fred::InfoContactOutput info_data_1;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_1 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
     }
 
@@ -580,7 +580,7 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle_wrong_country)
     {
         Fred::Contact::PlaceAddress place;
         place.country = "bad-country";
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         Fred::UpdateContactByHandle(test_contact_handle, registrar_handle)
         .set_place(place)
         .exec(ctx);
@@ -595,7 +595,7 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle_wrong_country)
 
     Fred::InfoContactOutput info_data_2;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_2 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
     }
     BOOST_CHECK(info_data_1 == info_data_2);
@@ -607,7 +607,7 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle_wrong_country)
  */
 BOOST_AUTO_TEST_CASE(update_contact_by_id)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     Fred::InfoContactOutput info_data_1 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
     Fred::Contact::PlaceAddress place = info_data_1.info_contact_data.place.get_value();
     place.street3 = Optional<std::string>("test street 3");
@@ -622,7 +622,7 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle_company_name)
 {
     Fred::InfoContactOutput info_data_1;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_1 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
     }
 
@@ -630,7 +630,7 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle_company_name)
                                        get_address< Fred::ContactAddressType::SHIPPING >();
     address.company_name = "Company GmbH.";
     {
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         Fred::UpdateContactByHandle(test_contact_handle, registrar_handle)
             .set_address< Fred::ContactAddressType::SHIPPING >(address)
             .exec(ctx);
@@ -642,7 +642,7 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle_company_name)
     }
 
     try {
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         Fred::UpdateContactByHandle(test_contact_handle, registrar_handle)
             .set_address< Fred::ContactAddressType::BILLING >(address)
             .exec(ctx);
@@ -659,7 +659,7 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle_company_name)
     }
 
     try {
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         Fred::UpdateContactByHandle(test_contact_handle, registrar_handle)
             .set_address< Fred::ContactAddressType::MAILING >(address)
             .exec(ctx);
@@ -683,13 +683,13 @@ BOOST_AUTO_TEST_CASE(update_contact_by_id_wrong_id)
 {
     Fred::InfoContactOutput info_data_1;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_1 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
     }
 
     try
     {
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         Fred::UpdateContactById(0, registrar_handle)
         .exec(ctx);
         ctx.commit_transaction();
@@ -703,7 +703,7 @@ BOOST_AUTO_TEST_CASE(update_contact_by_id_wrong_id)
 
     Fred::InfoContactOutput info_data_2;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_2 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
     }
     BOOST_CHECK(info_data_1 == info_data_2);

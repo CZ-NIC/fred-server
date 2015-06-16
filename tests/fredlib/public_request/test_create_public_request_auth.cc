@@ -34,7 +34,7 @@ struct create_public_request_auth_fixture : public virtual Test::Fixture::instan
     :   xmark(RandomDataGenerator().xnumstring(6)),
         password("*ovno kleslo")
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Database::Result dbres = ctx.get_conn().exec(
             "SELECT id,handle FROM registrar WHERE system ORDER BY id LIMIT 1");
         BOOST_CHECK(dbres.size() == 1);//expecting existing system registrar
@@ -88,7 +88,7 @@ BOOST_FIXTURE_TEST_SUITE(TestCreatePublicRequestAuth, create_public_request_auth
  */
 BOOST_AUTO_TEST_CASE(create_public_request_auth_wrong_registrar)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
 
     const Fred::RegistrarId bad_registrar_id = static_cast< Fred::RegistrarId >(ctx.get_conn().exec(
         "SELECT 100+2*MAX(id) FROM registrar")[0][0]);
@@ -122,7 +122,7 @@ BOOST_AUTO_TEST_CASE(create_public_request_auth_wrong_registrar)
  */
 BOOST_AUTO_TEST_CASE(create_public_request_auth_wrong_type)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     const std::string bad_type = "absolutely_wrong_prt";
 
     BOOST_CHECK_EXCEPTION(
@@ -154,7 +154,7 @@ BOOST_AUTO_TEST_CASE(create_public_request_auth_wrong_type)
  */
 BOOST_AUTO_TEST_CASE(create_public_request_auth_ok)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     typedef std::vector< std::string > TypeName;
     TypeName type_names;
     {

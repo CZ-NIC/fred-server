@@ -46,7 +46,7 @@ struct delete_enum_domain_fixture : public Test::Fixture::instantiate_db_templat
                                     +xmark.at(3)+'.'+xmark.at(4)+'.'+xmark.at(5)+'.'
                                     +xmark.at(6)+'.'+xmark.at(7)+'.'+xmark.at(8)+".0.2.4.e164.arpa")
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         registrar_handle = static_cast<std::string>(ctx.get_conn().exec(
                 "SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]);
         BOOST_CHECK(!registrar_handle.empty());//expecting existing system registrar
@@ -99,7 +99,7 @@ struct delete_domain_fixture : public Test::Fixture::instantiate_db_template
     , registrant_contact_handle(std::string("TEST-REGISTRANT-CONTACT-HANDLE") + xmark)
     , test_domain_fqdn ( std::string("fred")+xmark+".cz")
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         registrar_handle = static_cast<std::string>(ctx.get_conn().exec(
             "SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]);
         BOOST_CHECK(!registrar_handle.empty());//expecting existing system registrar
@@ -143,7 +143,7 @@ struct delete_domain_fixture : public Test::Fixture::instantiate_db_template
  */
 BOOST_FIXTURE_TEST_CASE(delete_domain, delete_domain_fixture )
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
 
     Fred::InfoDomainOutput domain_info1 = Fred::InfoDomainByHandle(test_domain_fqdn).exec(ctx);
     BOOST_CHECK(domain_info1.info_domain_data.delete_time.isnull());
@@ -197,7 +197,7 @@ BOOST_FIXTURE_TEST_CASE(delete_domain, delete_domain_fixture )
  */
 BOOST_FIXTURE_TEST_CASE(delete_enum_domain, delete_enum_domain_fixture )
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
 
     Fred::InfoDomainOutput domain_info1 = Fred::InfoDomainByHandle(test_domain_fqdn).exec(ctx);
     BOOST_CHECK(domain_info1.info_domain_data.delete_time.isnull());
@@ -254,7 +254,7 @@ BOOST_FIXTURE_TEST_CASE(delete_domain_with_wrong_fqdn, delete_domain_fixture )
     std::string bad_test_domain_fqdn = std::string("bad")+test_domain_fqdn;
     try
     {
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         Fred::DeleteDomainByHandle(bad_test_domain_fqdn).exec(ctx);
         ctx.commit_transaction();
     }

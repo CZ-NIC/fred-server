@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
         typedef std::vector<std::vector<std::string> > Table;
         Table data = Util::CsvParser(file_content, ',').parse();
 
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         for (Table::const_iterator it = data.begin(); it != data.end(); ++it)
         {
             const unsigned long long contact_id = boost::lexical_cast<unsigned long long>(it->at(0));

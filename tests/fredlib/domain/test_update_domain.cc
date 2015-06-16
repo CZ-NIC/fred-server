@@ -70,7 +70,7 @@ struct update_domain_fixture : virtual public Test::Fixture::instantiate_db_temp
                                         +xmark.at(3)+'.'+xmark.at(4)+'.'+xmark.at(5)+'.'
                                         +xmark.at(6)+'.'+xmark.at(7)+'.'+xmark.at(8)+".0.2.4.e164.arpa")
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         registrar_handle = static_cast<std::string>(ctx.get_conn().exec(
                 "SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]);
         BOOST_CHECK(!registrar_handle.empty());//expecting existing system registrar
@@ -133,7 +133,7 @@ struct update_domain_admin_nsset_keyset_fixture
     , test_keyset_handle (std::string("TEST-D-KEYSET-HANDLE")+xmark)
     {
         namespace ip = boost::asio::ip;
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
 
         Fred::Contact::PlaceAddress place;
         place.street1 = std::string("STR1") + xmark;
@@ -182,7 +182,7 @@ BOOST_FIXTURE_TEST_SUITE(TestUpdateDomain, update_domain_fixture)
  */
 BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture )
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
 
     Fred::InfoDomainOutput info_data_1 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
     std::vector<Fred::InfoDomainOutput> history_info_data_1 = Fred::InfoDomainHistoryByRoid(info_data_1.info_domain_data.roid).exec(ctx);
@@ -1043,7 +1043,7 @@ BOOST_AUTO_TEST_CASE(update_domain_wrong_fqdn)
     std::string bad_test_domain_handle = std::string("bad")+xmark+".cz";
     try
     {
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         Fred::UpdateDomain(bad_test_domain_handle, registrar_handle).exec(ctx);
         ctx.commit_transaction();
         BOOST_ERROR("no exception thrown");
@@ -1064,13 +1064,13 @@ BOOST_AUTO_TEST_CASE(update_domain_wrong_registrar)
     std::string bad_registrar_handle = registrar_handle+xmark;
     Fred::InfoDomainOutput info_data_1;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_1 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
     }
 
     try
     {
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         Fred::UpdateDomain(test_domain_handle, bad_registrar_handle).exec(ctx);
         ctx.commit_transaction();
         BOOST_ERROR("no exception thrown");
@@ -1083,7 +1083,7 @@ BOOST_AUTO_TEST_CASE(update_domain_wrong_registrar)
 
     Fred::InfoDomainOutput info_data_2;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_2 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
     }
     BOOST_CHECK(info_data_1 == info_data_2);
@@ -1099,13 +1099,13 @@ BOOST_AUTO_TEST_CASE(update_domain_wrong_sponsoring_registrar)
 
     Fred::InfoDomainOutput info_data_1;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_1 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
     }
 
     try
     {
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         Fred::UpdateDomain(test_domain_handle, registrar_handle)
             .set_sponsoring_registrar(bad_registrar_handle).exec(ctx);
         ctx.commit_transaction();
@@ -1119,7 +1119,7 @@ BOOST_AUTO_TEST_CASE(update_domain_wrong_sponsoring_registrar)
 
     Fred::InfoDomainOutput info_data_2;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_2 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
     }
     BOOST_CHECK(info_data_1 == info_data_2);
@@ -1135,13 +1135,13 @@ BOOST_AUTO_TEST_CASE(update_domain_wrong_registrant)
 
     Fred::InfoDomainOutput info_data_1;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_1 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
     }
 
     try
     {
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         Fred::UpdateDomain(test_domain_handle, registrar_handle)
         .set_registrant(bad_registrant_handle)
         .exec(ctx);
@@ -1158,7 +1158,7 @@ BOOST_AUTO_TEST_CASE(update_domain_wrong_registrant)
 
     Fred::InfoDomainOutput info_data_2;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_2 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
     }
     BOOST_CHECK(info_data_1 == info_data_2);
@@ -1174,13 +1174,13 @@ BOOST_AUTO_TEST_CASE(update_domain_add_wrong_admin)
 
     Fred::InfoDomainOutput info_data_1;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_1 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
     }
 
     try
     {
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         Fred::UpdateDomain(test_domain_handle, registrar_handle)
         .add_admin_contact(bad_admin_contact_handle)
         .exec(ctx);
@@ -1195,7 +1195,7 @@ BOOST_AUTO_TEST_CASE(update_domain_add_wrong_admin)
 
     Fred::InfoDomainOutput info_data_2;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_2 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
     }
     BOOST_CHECK(info_data_1 == info_data_2);
@@ -1210,13 +1210,13 @@ BOOST_AUTO_TEST_CASE(update_domain_add_already_added_admin)
 {
     Fred::InfoDomainOutput info_data_1;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_1 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
     }
 
     try
     {
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         Fred::UpdateDomain(test_domain_handle, registrar_handle)
         .add_admin_contact(admin_contact2_handle)
         .add_admin_contact(admin_contact2_handle)
@@ -1232,7 +1232,7 @@ BOOST_AUTO_TEST_CASE(update_domain_add_already_added_admin)
 
     Fred::InfoDomainOutput info_data_2;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_2 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
     }
     BOOST_CHECK(info_data_1 == info_data_2);
@@ -1249,13 +1249,13 @@ BOOST_AUTO_TEST_CASE(update_domain_rem_wrong_admin)
 
     Fred::InfoDomainOutput info_data_1;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_1 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
     }
 
     try
     {
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         Fred::UpdateDomain(test_domain_handle, registrar_handle)
         .rem_admin_contact(bad_admin_contact_handle)
         .exec(ctx);
@@ -1270,7 +1270,7 @@ BOOST_AUTO_TEST_CASE(update_domain_rem_wrong_admin)
 
     Fred::InfoDomainOutput info_data_2;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_2 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
     }
     BOOST_CHECK(info_data_1 == info_data_2);
@@ -1287,13 +1287,13 @@ BOOST_AUTO_TEST_CASE(update_domain_rem_unassigned_admin)
 
     Fred::InfoDomainOutput info_data_1;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_1 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
     }
 
     try
     {
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         Fred::UpdateDomain(test_domain_handle, registrar_handle)
         .rem_admin_contact(bad_admin_contact_handle)
         .exec(ctx);
@@ -1308,7 +1308,7 @@ BOOST_AUTO_TEST_CASE(update_domain_rem_unassigned_admin)
 
     Fred::InfoDomainOutput info_data_2;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_2 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
     }
     BOOST_CHECK(info_data_1 == info_data_2);
@@ -1327,12 +1327,12 @@ BOOST_AUTO_TEST_CASE(info_domain_history_test)
 {
     Fred::InfoDomainOutput info_data_1;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_1 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
     }
     //call update
     {
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         Fred::UpdateDomain(test_domain_handle, registrar_handle)
         .exec(ctx);
         ctx.commit_transaction();
@@ -1341,7 +1341,7 @@ BOOST_AUTO_TEST_CASE(info_domain_history_test)
     Fred::InfoDomainOutput info_data_2;
     std::vector<Fred::InfoDomainOutput> history_info_data;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_2 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
         history_info_data = Fred::InfoDomainHistoryByRoid(info_data_1.info_domain_data.roid).exec(ctx);
     }
@@ -1366,7 +1366,7 @@ BOOST_AUTO_TEST_CASE(update_domain_set_exdate)
 {
     Fred::InfoDomainOutput info_data_1;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_1 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
     }
 
@@ -1374,7 +1374,7 @@ BOOST_AUTO_TEST_CASE(update_domain_set_exdate)
 
     try
     {
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         Fred::UpdateDomain(test_domain_handle, registrar_handle)
         .set_domain_expiration(exdate)
         .exec(ctx);
@@ -1387,7 +1387,7 @@ BOOST_AUTO_TEST_CASE(update_domain_set_exdate)
 
     Fred::InfoDomainOutput info_data_2;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_2 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
     }
     BOOST_CHECK(info_data_2.info_domain_data.expiration_date == exdate);
@@ -1400,7 +1400,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_set_wrong_exdate, update_domain_fixture)
 {
     Fred::InfoDomainOutput info_data_1;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_1 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
     }
 
@@ -1408,7 +1408,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_set_wrong_exdate, update_domain_fixture)
 
     try
     {
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         Fred::UpdateDomain(test_domain_handle, registrar_handle)
         .set_domain_expiration(exdate)
         .exec(ctx);
@@ -1423,7 +1423,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_set_wrong_exdate, update_domain_fixture)
 
     Fred::InfoDomainOutput info_data_2;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_2 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
     }
     BOOST_CHECK(info_data_1 == info_data_2);
@@ -1437,7 +1437,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_set_valexdate, update_domain_fixture)
 {
     Fred::InfoDomainOutput info_data_1;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_1 = Fred::InfoDomainByHandle(test_enum_domain).exec(ctx);
     }
 
@@ -1445,7 +1445,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_set_valexdate, update_domain_fixture)
 
     try
     {
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         Fred::UpdateDomain(test_enum_domain, registrar_handle)
         .set_enum_validation_expiration(valexdate)
         .exec(ctx);
@@ -1458,7 +1458,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_set_valexdate, update_domain_fixture)
 
     Fred::InfoDomainOutput info_data_2;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_2 = Fred::InfoDomainByHandle(test_enum_domain).exec(ctx);
     }
     BOOST_CHECK(info_data_2.info_domain_data.enum_domain_validation.get_value()
@@ -1473,7 +1473,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_set_wrong_valexdate, update_domain_fixture
 {
     Fred::InfoDomainOutput info_data_1;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_1 = Fred::InfoDomainByHandle(test_enum_domain).exec(ctx);
     }
 
@@ -1481,7 +1481,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_set_wrong_valexdate, update_domain_fixture
 
     try
     {
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         Fred::UpdateDomain(test_enum_domain, registrar_handle)
         .set_enum_validation_expiration(valexdate)
         .exec(ctx);
@@ -1496,7 +1496,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_set_wrong_valexdate, update_domain_fixture
 
     Fred::InfoDomainOutput info_data_2;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_2 = Fred::InfoDomainByHandle(test_enum_domain).exec(ctx);
     }
     BOOST_CHECK(info_data_1 == info_data_2);
@@ -1510,7 +1510,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_set_valexdate_wrong_domain, update_domain_
 {
     Fred::InfoDomainOutput info_data_1;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_1 = Fred::InfoDomainByHandle(test_enum_domain).exec(ctx);
     }
 
@@ -1518,7 +1518,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_set_valexdate_wrong_domain, update_domain_
 
     try
     {
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         Fred::UpdateDomain(test_domain_handle, registrar_handle)
         .set_enum_validation_expiration(valexdate)
         .exec(ctx);
@@ -1532,7 +1532,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_set_valexdate_wrong_domain, update_domain_
 
     Fred::InfoDomainOutput info_data_2;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_2 = Fred::InfoDomainByHandle(test_enum_domain).exec(ctx);
     }
     BOOST_CHECK(info_data_1 == info_data_2);
@@ -1546,13 +1546,13 @@ BOOST_FIXTURE_TEST_CASE(update_domain_set_publish_wrong_domain, update_domain_fi
 {
     Fred::InfoDomainOutput info_data_1;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_1 = Fred::InfoDomainByHandle(test_enum_domain).exec(ctx);
     }
 
     try
     {
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         Fred::UpdateDomain(test_domain_handle, registrar_handle)
         .set_enum_publish_flag(true)
         .exec(ctx);
@@ -1566,7 +1566,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_set_publish_wrong_domain, update_domain_fi
 
     Fred::InfoDomainOutput info_data_2;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_2 = Fred::InfoDomainByHandle(test_enum_domain).exec(ctx);
     }
     BOOST_CHECK(info_data_1 == info_data_2);

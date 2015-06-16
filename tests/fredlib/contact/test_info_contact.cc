@@ -55,7 +55,7 @@ struct test_contact_fixture_6da88b63b0bc46e29f6d0ce3181fd5d8 : public Test::Fixt
     , test_contact_handle(std::string("TEST-CONTACT-HANDLE")+xmark)
     , test_contact_history_handle(std::string("TEST-CONTACT-HISTORY-HANDLE")+xmark)
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         registrar_handle = static_cast<std::string>(ctx.get_conn().exec(
                 "SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]);
         BOOST_CHECK(!registrar_handle.empty());//expecting existing system registrar
@@ -95,7 +95,7 @@ struct test_contact_fixture_6da88b63b0bc46e29f6d0ce3181fd5d8 : public Test::Fixt
 */
 BOOST_FIXTURE_TEST_CASE(info_contact, test_contact_fixture_6da88b63b0bc46e29f6d0ce3181fd5d8)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     Fred::InfoContactOutput contact_info1 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
     Fred::InfoContactOutput contact_info2 = Fred::InfoContactByHandle(test_contact_handle).set_lock().exec(ctx);
 
@@ -155,7 +155,7 @@ BOOST_FIXTURE_TEST_CASE(test_info_contact_output_timestamp, test_contact_fixture
 */
 BOOST_FIXTURE_TEST_CASE(info_contact_diff, test_contact_fixture_6da88b63b0bc46e29f6d0ce3181fd5d8)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     Fred::InfoContactOutput contact_info1 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
     Fred::InfoContactOutput contact_info2 = Fred::InfoContactByHandle(test_contact_handle).set_lock().exec(ctx);
 
@@ -221,7 +221,7 @@ BOOST_FIXTURE_TEST_CASE(info_contact_diff, test_contact_fixture_6da88b63b0bc46e2
 
 BOOST_FIXTURE_TEST_CASE(info_contact_history_order, test_contact_fixture_6da88b63b0bc46e29f6d0ce3181fd5d8)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     Fred::InfoContactOutput contact_history_info = Fred::InfoContactByHandle(test_contact_history_handle).exec(ctx);
 
     std::vector<Fred::InfoContactOutput> contact_history_info_by_roid = Fred::InfoContactHistoryByRoid(contact_history_info.info_contact_data.roid).exec(ctx);

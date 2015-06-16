@@ -321,7 +321,7 @@ BOOST_FIXTURE_TEST_CASE( test_locking_trigger_threaded, Case_locking_trigger_thr
 
 struct Locking_object_state_request_fixture
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     std::string registrar_handle;
     std::string xmark;
     std::string contact_handle;
@@ -525,7 +525,7 @@ BOOST_FIXTURE_TEST_CASE( test_locking_object_state_request_threaded, Locking_obj
 
 struct Locking_public_request_fixture
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     std::string registrar_handle;
     unsigned long long registrar_id;
     std::string xmark;

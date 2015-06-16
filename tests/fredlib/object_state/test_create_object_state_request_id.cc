@@ -45,7 +45,7 @@ struct create_object_state_request_id_fixture : public Test::Fixture::instantiat
     , registrant_contact_handle(std::string("TEST-OSR-REGISTRANT-CONTACT-HANDLE") + xmark)
     , test_domain_fqdn ( std::string("fred")+xmark+".cz")
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         registrar_handle = static_cast<std::string>(ctx.get_conn().exec(
             "SELECT handle FROM registrar WHERE system ORDER BY id LIMIT 1")[0][0]);
         BOOST_CHECK(!registrar_handle.empty());//expecting existing system registrar
@@ -99,12 +99,12 @@ BOOST_FIXTURE_TEST_SUITE(TestCreateObjectStateTequestId, create_object_state_req
 BOOST_AUTO_TEST_CASE(create_object_state_request_id)
 {
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         const std::string handle = Fred::CreateObjectStateRequestId(test_domain_id, status_list).exec(ctx).first;
         BOOST_CHECK(handle == test_domain_fqdn);
         ctx.commit_transaction();
     }
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     Database::Result status_result = ctx.get_conn().exec_params(
         "SELECT eos.name "
         "FROM object_state_request osr "
@@ -135,7 +135,7 @@ BOOST_AUTO_TEST_CASE(create_object_state_request_id_bad)
 {
     Fred::ObjectId not_used_id;
     try {
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         not_used_id = static_cast< Fred::ObjectId >(ctx.get_conn().exec("SELECT (MAX(id)+1000)*2 FROM object_registry")[0][0]);
         Fred::CreateObjectStateRequestId(not_used_id, status_list).exec(ctx);
         ctx.commit_transaction();
@@ -148,7 +148,7 @@ BOOST_AUTO_TEST_CASE(create_object_state_request_id_bad)
 
     Fred::StatusList bad_status_list = status_list;
     try {
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         Database::Result status_result = ctx.get_conn().exec("SELECT name FROM enum_object_states WHERE NOT (manual AND 3=ANY(types))");
         for (::size_t idx = 0; idx < status_result.size(); ++idx) {
             bad_status_list.insert(status_result[idx][0]);
@@ -164,7 +164,7 @@ BOOST_AUTO_TEST_CASE(create_object_state_request_id_bad)
     }
 
     try {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::CreateObjectStateRequestId(test_domain_id, status_list).set_valid_to(boost::posix_time::ptime(boost::gregorian::date(2005, 7, 31))).exec(ctx);
         ctx.commit_transaction();
         BOOST_CHECK(false);
@@ -174,7 +174,7 @@ BOOST_AUTO_TEST_CASE(create_object_state_request_id_bad)
     }
 
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::CreateObjectStateRequestId(test_domain_id, status_list).
             set_valid_from(boost::posix_time::ptime(boost::gregorian::date(2005, 7, 31))).
             set_valid_to(  boost::posix_time::ptime(boost::gregorian::date(2007, 7, 31))).exec(ctx);
@@ -182,7 +182,7 @@ BOOST_AUTO_TEST_CASE(create_object_state_request_id_bad)
     }
 
     try {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::CreateObjectStateRequestId(test_domain_id, status_list).
             set_valid_from(boost::posix_time::ptime(boost::gregorian::date(2006, 7, 31))).
             set_valid_to(  boost::posix_time::ptime(boost::gregorian::date(2008, 7, 31))).exec(ctx);

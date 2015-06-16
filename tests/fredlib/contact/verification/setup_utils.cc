@@ -20,7 +20,7 @@ setup_testdef::setup_testdef() {
     // prevent handle collisions
     while(true) {
         try {
-            Fred::OperationContext ctx;
+            Fred::OperationContextCreator ctx;
 
             testdef_handle_ = "TEST_" + RandomDataGenerator().xnumstring(15);
             testdef_id_ = static_cast<long>(
@@ -43,7 +43,7 @@ setup_nonexistent_testdef_handle::setup_nonexistent_testdef_handle() {
     Database::Result res;
     // prevent handle collisions
     do {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
 
         testdef_handle = "NONEX_TEST_" + RandomDataGenerator().xnumstring(15);
         res = ctx.get_conn().exec(
@@ -52,7 +52,7 @@ setup_nonexistent_testdef_handle::setup_nonexistent_testdef_handle() {
 }
 
 setup_testdef_in_testsuite::setup_testdef_in_testsuite(const std::string& testdef_handle, const std::string& testsuite_handle) {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
 
     Database::Result res = ctx.get_conn().exec(
         "INSERT INTO contact_testsuite_map "
@@ -72,7 +72,7 @@ setup_testdef_in_testsuite::setup_testdef_in_testsuite(const std::string& testde
 }
 
 setup_testdef_in_testsuite_of_check::setup_testdef_in_testsuite_of_check(const std::string testdef_handle, const std::string check_handle) {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
 
     Database::Result res =
         ctx.get_conn().exec(
@@ -96,7 +96,7 @@ setup_empty_testsuite::setup_empty_testsuite() {
     // prevent handle collisions
     while(true) {
         try {
-            Fred::OperationContext ctx;
+            Fred::OperationContextCreator ctx;
 
             testsuite_handle = "TESTSUITE_" + RandomDataGenerator().xnumstring(15) ;
             testsuite_id = static_cast<long>(
@@ -121,7 +121,7 @@ setup_empty_testsuite::setup_empty_testsuite(const std::string& _testsuite_handl
     // prevent handle collisions
     while(true) {
         try {
-            Fred::OperationContext ctx;
+            Fred::OperationContextCreator ctx;
 
             testsuite_id = static_cast<long>(
                 ctx.get_conn().exec(
@@ -148,7 +148,7 @@ setup_nonexistent_testsuite_handle::setup_nonexistent_testsuite_handle() {
     Database::Result res;
     // prevent handle collisions
     do {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
 
         testsuite_handle = "NONEX_TESTSUITE_" + RandomDataGenerator().xnumstring(15);
         res = ctx.get_conn().exec(
@@ -166,7 +166,7 @@ setup_check_status::setup_check_status() {
     // prevent handle collisions
     while(true) {
         try {
-            Fred::OperationContext ctx;
+            Fred::OperationContextCreator ctx;
 
             status_handle = "STATUS_" + RandomDataGenerator().xnumstring(15);
             res = ctx.get_conn().exec(
@@ -195,7 +195,7 @@ setup_check_status::setup_check_status(const std::string& _handle)
 
     while(true) {
         try {
-            Fred::OperationContext ctx;
+            Fred::OperationContextCreator ctx;
 
             res = ctx.get_conn().exec(
                 "INSERT "
@@ -220,7 +220,7 @@ setup_test_status::setup_test_status() {
     // prevent handle collisions
     while(true) {
         try {
-            Fred::OperationContext ctx;
+            Fred::OperationContextCreator ctx;
 
             status_handle_ = "STATUS_" + RandomDataGenerator().xnumstring(15);
             res = ctx.get_conn().exec(
@@ -248,7 +248,7 @@ setup_test_status::setup_test_status(const std::string& _handle)
 
     while(true) {
         try {
-            Fred::OperationContext ctx;
+            Fred::OperationContextCreator ctx;
 
             res = ctx.get_conn().exec(
                 "INSERT "
@@ -282,14 +282,14 @@ setup_check::setup_check(const std::string& _testsuite_handle, Optional<unsigned
         logd_request_
     );
 
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     check_handle_ = create_check.exec(ctx);
     ctx.commit_transaction();
 }
 
 setup_nonexistent_check_handle::setup_nonexistent_check_handle() {
 
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
 
     Database::Result res;
     do {
@@ -303,7 +303,7 @@ setup_nonexistent_check_handle::setup_nonexistent_check_handle() {
 }
 
 setup_nonexistent_check_status_handle::setup_nonexistent_check_status_handle() {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     // prevent handle collisions
     Database::Result res;
     do {
@@ -325,7 +325,7 @@ setup_test::setup_test(
 {
     Fred::CreateContactTest create_test(uuid::from_string(_check_handle), testdef_handle_, logd_request_);
 
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     create_test.exec(ctx);
     ctx.commit_transaction();
 }
@@ -334,7 +334,7 @@ setup_nonexistent_test_status_handle::setup_nonexistent_test_status_handle() {
     Database::Result res;
     // prevent handle collisions
     do {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         status_handle = "STATUS_" + RandomDataGenerator().xnumstring(15);
         res = ctx.get_conn().exec(
             "SELECT handle "

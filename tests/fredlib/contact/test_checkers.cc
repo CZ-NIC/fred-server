@@ -66,7 +66,7 @@ struct test_contact_checkers_fixture : public Test::Fixture::instantiate_db_temp
             "+420.987654322",
             "+420.987654321" //the same as main
         };
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         const std::string registrar_handle = static_cast< std::string >(ctx.get_conn().exec(
             "SELECT handle FROM registrar WHERE system ORDER BY id LIMIT 1")[0][0]);
         BOOST_CHECK(!registrar_handle.empty());//expecting existing system registrar
@@ -138,7 +138,7 @@ BOOST_FIXTURE_TEST_SUITE(TestContactCheckers, test_contact_checkers_fixture)
 BOOST_AUTO_TEST_CASE(check_all_without_exceptions)
 {
     try {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         const SumCheck result(Fred::make_args(contact[MAIN]), Fred::make_args(contact[MAIN], ctx));
         BOOST_CHECK(result.success());
         BOOST_CHECK(result.Fred::check_contact_name::success());
@@ -164,7 +164,7 @@ BOOST_AUTO_TEST_CASE(check_all_without_exceptions)
 BOOST_AUTO_TEST_CASE(check_all_with_exceptions)
 {
     try {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         const SumCheckWithException result(Fred::make_args(contact[MAIN]), Fred::make_args(contact[MAIN], ctx));
         BOOST_CHECK(result.success());
     }
@@ -237,7 +237,7 @@ BOOST_AUTO_TEST_CASE(check_contact_name)
     static const TestData *const data_end = data + (sizeof(data) / sizeof(*data));
     BOOST_ASSERT(( (sizeof(data) / sizeof(*data)) == 8 ));
     for (const TestData *data_ptr = data; data_ptr < data_end; ++data_ptr) {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         contact[MAIN].name = data_ptr->name;
         const SumCheck result(Fred::make_args(contact[MAIN]), Fred::make_args(contact[MAIN], ctx));
         BOOST_CHECK(result.success() == data_ptr->result);
@@ -328,7 +328,7 @@ BOOST_AUTO_TEST_CASE(check_contact_mailing_address)
 {
     const Fred::InfoContactData::Address valid_addr = contact[MAIN].get_address< Fred::ContactAddressType::MAILING >();
     for (int idx = 0; idx < 13; ++idx) {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         contact[MAIN].addresses[Fred::ContactAddressType::MAILING] = valid_addr;
         Fred::ContactAddress &addr = contact[MAIN].addresses[Fred::ContactAddressType::MAILING];
         bool result_success = false;
@@ -534,7 +534,7 @@ BOOST_AUTO_TEST_CASE(check_contact_email)
     static const TestData *const data_end = data + (sizeof(data) / sizeof(*data));
     BOOST_ASSERT(( (sizeof(data) / sizeof(*data)) == 12 ));
     for (const TestData *data_ptr = data; data_ptr < data_end; ++data_ptr) {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         const ::size_t idx = data_ptr - data;
         if (idx == 11) {
             ctx.get_conn().exec_params(
@@ -685,7 +685,7 @@ BOOST_AUTO_TEST_CASE(check_contact_phone)
     static const TestData *const data_end = data + (sizeof(data) / sizeof(*data));
     BOOST_ASSERT(( (sizeof(data) / sizeof(*data)) == 14 ));
     for (const TestData *data_ptr = data; data_ptr < data_end; ++data_ptr) {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         const ::size_t idx = data_ptr - data;
         if (idx == 13) {
             ctx.get_conn().exec_params(
@@ -832,7 +832,7 @@ BOOST_AUTO_TEST_CASE(check_contact_fax)
     static const TestData *const data_end = data + (sizeof(data) / sizeof(*data));
     BOOST_ASSERT(( (sizeof(data) / sizeof(*data)) == 13 ));
     for (const TestData *data_ptr = data; data_ptr < data_end; ++data_ptr) {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         contact[MAIN].fax = data_ptr->fax;
         const SumCheck result(Fred::make_args(contact[MAIN]), Fred::make_args(contact[MAIN], ctx));
         BOOST_CHECK(result.success() == data_ptr->result);
@@ -935,7 +935,7 @@ BOOST_AUTO_TEST_CASE(check_contact_username)
     static const TestData *const data_end = data + (sizeof(data) / sizeof(*data));
     BOOST_ASSERT(( (sizeof(data) / sizeof(*data)) == 19 ));
     for (const TestData *data_ptr = data; data_ptr < data_end; ++data_ptr) {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         contact[MAIN].handle = data_ptr->username;
         const SumCheck result(Fred::make_args(contact[MAIN]), Fred::make_args(contact[MAIN], ctx));
         BOOST_CHECK(result.success() == data_ptr->success());
@@ -1041,7 +1041,7 @@ BOOST_AUTO_TEST_CASE(check_contact_birthday)
     static const TestData *const data_end = data + (sizeof(data) / sizeof(*data));
     BOOST_ASSERT(( (sizeof(data) / sizeof(*data)) == 11 ));
     for (const TestData *data_ptr = data; data_ptr < data_end; ++data_ptr) {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         contact[MAIN].ssntype = data_ptr->ssntype;
         contact[MAIN].ssn = data_ptr->ssn;
         const SumCheck result(Fred::make_args(contact[MAIN]), Fred::make_args(contact[MAIN], ctx));

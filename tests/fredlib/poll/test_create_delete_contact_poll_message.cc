@@ -37,7 +37,7 @@ BOOST_AUTO_TEST_SUITE(TestCreateDeleteContactPollMessage)
  */
 BOOST_AUTO_TEST_CASE( test_correct_data )
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
 
     Test::contact contact(ctx);
 
@@ -98,7 +98,7 @@ BOOST_AUTO_TEST_CASE( test_correct_data )
  */
 BOOST_AUTO_TEST_CASE( test_nonexistent_historyid )
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
 
     bool correct_exception_caught = false;
     try {
@@ -123,7 +123,7 @@ BOOST_AUTO_TEST_CASE( test_nonexistent_historyid )
  */
 BOOST_AUTO_TEST_CASE( test_different_object_type )
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     Test::domain domain(ctx);
 
     bool correct_exception_caught = false;

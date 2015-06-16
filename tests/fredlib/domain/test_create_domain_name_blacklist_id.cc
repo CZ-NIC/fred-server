@@ -46,7 +46,7 @@ struct create_domain_name_blacklist_id_fixture : public Test::Fixture::instantia
     , test_domain_fqdn(std::string("fred") + xmark + ".cz")
     , regexp_test_domain_fqdn(std::string("^fred") + xmark + "\\.cz$")
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         registrar_handle = static_cast<std::string>(ctx.get_conn().exec(
             "SELECT handle FROM registrar WHERE system ORDER BY id LIMIT 1")[0][0]);
         BOOST_CHECK(!registrar_handle.empty());//expecting existing system registrar
@@ -101,11 +101,11 @@ BOOST_FIXTURE_TEST_SUITE(TestCreateDomainNameBlacklistId, create_domain_name_bla
 BOOST_AUTO_TEST_CASE(create_domain_name_blacklist_id)
 {
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::CreateDomainNameBlacklistId(test_domain_id, "successfully tested").exec(ctx);
         ctx.commit_transaction();
     }
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     Database::Result blacklist_result = ctx.get_conn().exec_params(
         "SELECT COUNT(*) "
         "FROM domain_blacklist "
@@ -124,7 +124,7 @@ BOOST_AUTO_TEST_CASE(create_domain_name_blacklist_id_bad)
 {
     Fred::ObjectId not_used_id;
     try {
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         not_used_id = static_cast< Fred::ObjectId >(ctx.get_conn().exec("SELECT (MAX(id)+1000)*2 FROM object_registry")[0][0]);
         Fred::CreateDomainNameBlacklistId(not_used_id, "must throw exception").exec(ctx);
         ctx.commit_transaction();
@@ -136,7 +136,7 @@ BOOST_AUTO_TEST_CASE(create_domain_name_blacklist_id_bad)
     }
 
     try {
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         Fred::CreateDomainNameBlacklistId(test_domain_id, "successfully tested").exec(ctx);
         Fred::CreateDomainNameBlacklistId(test_domain_id, "must throw exception").exec(ctx); // already_blacklisted_domain
         ctx.commit_transaction();
@@ -148,7 +148,7 @@ BOOST_AUTO_TEST_CASE(create_domain_name_blacklist_id_bad)
     }
 
     try {
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         Fred::CreateDomainNameBlacklistId(test_domain_id, "must throw exception",
           boost::posix_time::ptime(boost::gregorian::date(2006, 7, 31)),
           boost::posix_time::ptime(boost::gregorian::date(2005, 7, 31))).exec(ctx);
@@ -160,7 +160,7 @@ BOOST_AUTO_TEST_CASE(create_domain_name_blacklist_id_bad)
     }
 
     try {
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         Fred::CreateDomainNameBlacklistId blacklist(test_domain_id, "must throw exception");
         blacklist.set_valid_to(boost::posix_time::ptime(boost::gregorian::date(2006, 7, 31)));
         blacklist.exec(ctx);

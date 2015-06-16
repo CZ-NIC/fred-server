@@ -37,7 +37,7 @@ const std::string server_name = "test-update-nsset";
 BOOST_AUTO_TEST_CASE(info_nsset)
 {
     namespace ip = boost::asio::ip;
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
 
     std::string registrar_handle = static_cast<std::string>(
             ctx.get_conn().exec("SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]);
@@ -95,7 +95,7 @@ struct update_nsset_fixture : public Test::Fixture::instantiate_db_template
     , test_nsset_handle ( std::string("TEST-NSSET-HANDLE")+xmark)
     {
         namespace ip = boost::asio::ip;
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         registrar_handle = static_cast<std::string>(ctx.get_conn().exec(
             "SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]);
         BOOST_CHECK(!registrar_handle.empty());//expecting existing system registrar
@@ -143,7 +143,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
 {
     namespace ip = boost::asio::ip;
 
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     Fred::InfoNssetOutput info_data_1 = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
     std::vector<Fred::InfoNssetOutput> history_info_data_1 = Fred::InfoNssetHistoryByRoid(info_data_1.info_nsset_data.roid).exec(ctx);
 
@@ -693,7 +693,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset_wrong_handle, update_nsset_fixture )
     std::string bad_test_nsset_handle = std::string("bad")+test_nsset_handle;
     try
     {
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         Fred::UpdateNsset(bad_test_nsset_handle, registrar_handle).exec(ctx);
         ctx.commit_transaction();
         BOOST_ERROR("no exception thrown");
@@ -713,13 +713,13 @@ BOOST_FIXTURE_TEST_CASE(update_nsset_wrong_registrar, update_nsset_fixture)
     std::string bad_registrar_handle = registrar_handle+xmark;
     Fred::InfoNssetOutput info_data_1;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_1 = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
     }
 
     try
     {
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         Fred::UpdateNsset(test_nsset_handle, bad_registrar_handle).exec(ctx);
         ctx.commit_transaction();
         BOOST_ERROR("no exception thrown");
@@ -732,7 +732,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset_wrong_registrar, update_nsset_fixture)
 
     Fred::InfoNssetOutput info_data_2;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_2 = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
     }
     BOOST_CHECK(info_data_1 == info_data_2);
@@ -748,13 +748,13 @@ BOOST_FIXTURE_TEST_CASE(update_nsset_wrong_sponsoring_registrar, update_nsset_fi
     std::string bad_registrar_handle = registrar_handle+xmark;
     Fred::InfoNssetOutput info_data_1;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_1 = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
     }
 
     try
     {
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         Fred::UpdateNsset(test_nsset_handle, registrar_handle)
             .set_sponsoring_registrar(bad_registrar_handle).exec(ctx);
         ctx.commit_transaction();
@@ -768,7 +768,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset_wrong_sponsoring_registrar, update_nsset_fi
 
     Fred::InfoNssetOutput info_data_2;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_2 = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
     }
     BOOST_CHECK(info_data_1 == info_data_2);
@@ -785,13 +785,13 @@ BOOST_FIXTURE_TEST_CASE(update_nsset_add_wrong_tech_contact, update_nsset_fixtur
     std::string bad_tech_contact_handle = admin_contact2_handle+xmark;
     Fred::InfoNssetOutput info_data_1;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_1 = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
     }
 
     try
     {
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         Fred::UpdateNsset(test_nsset_handle, registrar_handle)
         .add_tech_contact(bad_tech_contact_handle)
         .exec(ctx);
@@ -806,7 +806,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset_add_wrong_tech_contact, update_nsset_fixtur
 
     Fred::InfoNssetOutput info_data_2;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_2 = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
     }
     BOOST_CHECK(info_data_1 == info_data_2);
@@ -820,13 +820,13 @@ BOOST_FIXTURE_TEST_CASE(update_nsset_add_already_added_tech_contact, update_nsse
 {
     Fred::InfoNssetOutput info_data_1;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_1 = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
     }
 
     try
     {
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         Fred::UpdateNsset(test_nsset_handle, registrar_handle)
         .add_tech_contact(admin_contact3_handle)//already added in fixture
         .exec(ctx);
@@ -841,7 +841,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset_add_already_added_tech_contact, update_nsse
 
     Fred::InfoNssetOutput info_data_2;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_2 = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
     }
     BOOST_CHECK(info_data_1 == info_data_2);
@@ -856,13 +856,13 @@ BOOST_FIXTURE_TEST_CASE(update_nsset_rem_wrong_tech_contact, update_nsset_fixtur
     std::string bad_tech_contact_handle = admin_contact2_handle+xmark;
     Fred::InfoNssetOutput info_data_1;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_1 = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
     }
 
     try
     {
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         Fred::UpdateNsset(test_nsset_handle, registrar_handle)
         .rem_tech_contact(bad_tech_contact_handle)
         .exec(ctx);
@@ -877,7 +877,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset_rem_wrong_tech_contact, update_nsset_fixtur
 
     Fred::InfoNssetOutput info_data_2;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_2 = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
     }
     BOOST_CHECK(info_data_1 == info_data_2);
@@ -892,13 +892,13 @@ BOOST_FIXTURE_TEST_CASE(update_nsset_rem_unassigned_tech_contact, update_nsset_f
     std::string bad_tech_contact_handle = admin_contact2_handle;
     Fred::InfoNssetOutput info_data_1;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_1 = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
     }
 
     try
     {
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         Fred::UpdateNsset(test_nsset_handle, registrar_handle)
         .rem_tech_contact(bad_tech_contact_handle)
         .exec(ctx);
@@ -913,7 +913,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset_rem_unassigned_tech_contact, update_nsset_f
 
     Fred::InfoNssetOutput info_data_2;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_2 = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
     }
     BOOST_CHECK(info_data_1 == info_data_2);
@@ -930,13 +930,13 @@ BOOST_FIXTURE_TEST_CASE(update_nsset_add_already_added_dnshost, update_nsset_fix
 
     Fred::InfoNssetOutput info_data_1;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_1 = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
     }
 
     try
     {
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         Fred::UpdateNsset(test_nsset_handle, registrar_handle)
         .add_dns(Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<ip::address>(ip::address::from_string("127.0.0.3"))(ip::address::from_string("127.1.1.3"))))//already added in fixture
         .exec(ctx);
@@ -951,7 +951,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset_add_already_added_dnshost, update_nsset_fix
 
     Fred::InfoNssetOutput info_data_2;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_2 = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
     }
     BOOST_CHECK(info_data_1 == info_data_2);
@@ -965,13 +965,13 @@ BOOST_FIXTURE_TEST_CASE(update_nsset_remove_unassigned_dnshost, update_nsset_fix
 {
     Fred::InfoNssetOutput info_data_1;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_1 = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
     }
 
     try
     {
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         Fred::UpdateNsset(test_nsset_handle, registrar_handle)
         .rem_dns("c.ns.nic.cz")
         .exec(ctx);
@@ -986,7 +986,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset_remove_unassigned_dnshost, update_nsset_fix
 
     Fred::InfoNssetOutput info_data_2;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_2 = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
     }
     BOOST_CHECK(info_data_1 == info_data_2);
@@ -1005,12 +1005,12 @@ BOOST_FIXTURE_TEST_CASE(info_nsset_history_test, update_nsset_fixture)
 {
     Fred::InfoNssetOutput info_data_1;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_1 = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
     }
     //call update
     {
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         Fred::UpdateNsset(test_nsset_handle, registrar_handle)
         .exec(ctx);
         ctx.commit_transaction();
@@ -1019,7 +1019,7 @@ BOOST_FIXTURE_TEST_CASE(info_nsset_history_test, update_nsset_fixture)
     Fred::InfoNssetOutput info_data_2;
     std::vector<Fred::InfoNssetOutput> history_info_data;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_2 = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
         history_info_data = Fred::InfoNssetHistoryByRoid(info_data_1.info_nsset_data.roid).exec(ctx);
     }

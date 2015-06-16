@@ -46,7 +46,7 @@ BOOST_AUTO_TEST_CASE(test_Enqueued_check_data)
     Test::contact contact;
     unsigned long long logd_request_id = RandomDataGenerator().xuint();
 
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     std::string check_handle = Admin::enqueue_check(
         ctx,
         contact.info_data.id,
@@ -76,7 +76,7 @@ BOOST_AUTO_TEST_CASE(test_Invalidating_old_checks)
     setup_testsuite testsuite;
     Test::contact contact;
 
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
 
     std::string invalidated_check_handle_1 = Fred::CreateContactCheck(
         contact.info_data.id,
@@ -151,7 +151,7 @@ testing correct exception throw after unknown contact id is passed
 */
 BOOST_AUTO_TEST_CASE(test_ExceptionUnknownContactId)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
 
     bool correct_exception_thrown = false;
 
@@ -179,7 +179,7 @@ testing correct exception throw after unknown testsuite handle is passed
 */
 BOOST_AUTO_TEST_CASE(test_ExceptionUnknownTestsuiteHandle)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
 
     bool correct_exception_thrown = false;
 

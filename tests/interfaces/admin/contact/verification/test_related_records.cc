@@ -51,7 +51,7 @@ BOOST_AUTO_TEST_CASE(test_Ids_of_added_related_mail)
         added_mail_archive_ids.insert(RandomDataGenerator().xuint());
     }
 
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
 
     Admin::add_related_mail(
         ctx,
@@ -100,7 +100,7 @@ BOOST_AUTO_TEST_CASE(test_Ids_of_added_related_messages)
         added_message_archive_ids.insert(RandomDataGenerator().xuint());
     }
 
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
 
     Admin::add_related_messages(
         ctx,
@@ -149,7 +149,7 @@ BOOST_AUTO_TEST_CASE(test_Ids_of_added_related_object_state_request)
         added_object_state_request_ids.insert(RandomDataGenerator().xuint());
     }
 
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
 
     Admin::add_related_object_state_requests(
         ctx,

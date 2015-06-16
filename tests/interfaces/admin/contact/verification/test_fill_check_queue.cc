@@ -52,7 +52,7 @@ void clean_queue() {
         + boost::join(Fred::ContactCheckStatus::get_not_yet_resolved(), ",")
         + "}";
 
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     ctx.get_conn().exec_params(
         "DELETE "
         "   FROM contact_test_result_history AS test_history "
@@ -129,7 +129,7 @@ int get_queue_length() {
         + boost::join(Fred::ContactCheckStatus::get_not_yet_resolved(), ",")
         + "}";
 
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     Database::Result res = ctx.get_conn().exec_params(
         "SELECT COUNT(c_ch.id) AS count_ "
         "   FROM contact_check AS c_ch "
@@ -149,7 +149,7 @@ int get_queue_length() {
 }
 
 void empty_automatic_testsuite() {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     ctx.get_conn().exec_params(
         "DELETE FROM contact_testsuite_map "
         "   WHERE enum_contact_testsuite_id = "
@@ -162,7 +162,7 @@ void empty_automatic_testsuite() {
 T_testimpl_map create_dummy_automatic_testsuite() {
     std::map< std::string, boost::shared_ptr<Admin::ContactVerification::Test> > test_impls;
 
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     boost::shared_ptr<Admin::ContactVerification::Test> temp_ptr
         (new DummyTestReturning(TestStatus::OK));
 
@@ -185,7 +185,7 @@ struct setup_already_checked_contacts {
         : count_(_count)
     {
         // create contacts if necessary and enqueue those
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
 
         int pre_existing_count = 0;
         Database::Result pre_existing_res = ctx.get_conn().exec(
@@ -213,7 +213,7 @@ struct setup_already_checked_contacts {
             started_check_handles.push_back(
                 Admin::run_all_enqueued_checks(dummy_testsuite).front()
             );
-            Fred::OperationContext ctx;
+            Fred::OperationContextCreator ctx;
             Fred::UpdateContactCheck(
                 uuid::from_string(*started_check_handles.rbegin()),
                 Fred::ContactCheckStatus::OK
@@ -227,7 +227,7 @@ struct setup_already_checked_contacts {
 };
 
 void create_check_for_all_unchecked_contacts(const std::string& testsuite_handle) {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
 
     setup_testdef testdef;
     setup_testdef_in_testsuite(testdef.testdef_handle_, testsuite_handle);
@@ -248,7 +248,7 @@ void create_check_for_all_unchecked_contacts(const std::string& testsuite_handle
         it != never_checked_contacts_res.end();
         ++it
     ) {
-        Fred::OperationContext ctx1;
+        Fred::OperationContextCreator ctx1;
         std::string handle = Fred::CreateContactCheck(
             static_cast<unsigned long long>( (*it)["contact_id_"] ),
             testsuite_handle
@@ -256,7 +256,7 @@ void create_check_for_all_unchecked_contacts(const std::string& testsuite_handle
         .exec(ctx1);
         ctx1.commit_transaction();
 
-        Fred::OperationContext ctx2;
+        Fred::OperationContextCreator ctx2;
         Fred::UpdateContactCheck(
             uuid::from_string(handle),
             Fred::ContactCheckStatus::OK
@@ -450,7 +450,7 @@ BOOST_AUTO_TEST_CASE(test_Enqueueing_already_checked_contacts)
 
     std::vector<unsigned long long> ids;
 
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
 
     Database::Result oldest_checked_res = ctx.get_conn().exec_params(
         "SELECT o_r.id AS contact_id_, MAX(c_ch.update_time) AS last_update_ "
@@ -515,7 +515,7 @@ void setup_contact_as_technical(const setup_special_contact& contact_) {
     // prevent handle collisions
     while(true) {
         try {
-            Fred::OperationContext ctx1;
+            Fred::OperationContextCreator ctx1;
 
             nsset_handle_ = "NSSET_" + RandomDataGenerator().xnumstring(15);
             Fred::CreateNsset(nsset_handle_, contact_.registrar_.info_data.handle).exec(ctx1);
@@ -530,7 +530,7 @@ void setup_contact_as_technical(const setup_special_contact& contact_) {
     }
 
     // set contact as technical
-    Fred::OperationContext ctx2;
+    Fred::OperationContextCreator ctx2;
     Fred::UpdateNsset(nsset_handle_, contact_.registrar_.info_data.handle)
         .add_tech_contact(contact_.contact_handle_).exec(ctx2);
     ctx2.commit_transaction();
@@ -542,7 +542,7 @@ void setup_contact_as_owner(const setup_special_contact& contact_) {
     // prevent name collisions
     while(true) {
         try {
-            Fred::OperationContext ctx1;
+            Fred::OperationContextCreator ctx1;
 
             domain_fqdn_ = "DOMAIN" + RandomDataGenerator().xnumstring(15) + ".cz";
 
@@ -579,7 +579,7 @@ setup_special_contact::setup_special_contact(
     // prevent name collisions
     while(true) {
         try {
-            Fred::OperationContext ctx;
+            Fred::OperationContextCreator ctx;
 
             contact_handle_ = "CONTACT_" + RandomDataGenerator().xnumstring(10);
             Fred::CreateContact create(contact_handle_, registrar_.info_data.handle);
@@ -598,7 +598,7 @@ setup_special_contact::setup_special_contact(
         break;
     }
 
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     data_ = Fred::InfoContactByHandle(contact_handle_)
         .exec(ctx);
 
