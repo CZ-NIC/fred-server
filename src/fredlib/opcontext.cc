@@ -93,7 +93,7 @@ OperationContextLoggingPart::OperationContextLoggingPart()
 {
 }
 
-OperationContextCreator::~OperationContextCreator()
+OperationContext::~OperationContext()
 {
     Database::StandaloneConnection *const conn_ptr = conn_.get();
     if (conn_ptr == NULL) {
@@ -121,7 +121,7 @@ OperationContextCreator::~OperationContextCreator()
     }
 }
 
-void OperationContextCreator::commit_transaction()
+void OperationContext::commit_transaction()
 {
     Database::StandaloneConnection *const conn_ptr = conn_.get();
     if (conn_ptr == NULL) {

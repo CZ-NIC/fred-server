@@ -38,6 +38,8 @@ namespace Fred
 
 class OperationContext;
 class OperationContextCreator;
+class OperationContextTwoPhaseCommit;
+class OperationContextTwoPhaseCommitCreator;
 
 /**
  * Database connection used in Fred operations.
@@ -94,7 +96,19 @@ class OperationContext
 private:
     OperationContext() { }
     OperationContext(const std::string &_transaction_id):OperationContextDatabasePart(_transaction_id) { }
+    ~OperationContext();
+    void commit_transaction();
     friend class OperationContextCreator;
+    friend class OperationContextTwoPhaseCommit;
+    friend class OperationContextTwoPhaseCommitCreator;
+};
+
+class OperationContextTwoPhaseCommit
+:   public OperationContext
+{
+private:
+    OperationContextTwoPhaseCommit(const std::string &_transaction_id):OperationContext(_transaction_id) { }
+    friend class OperationContextTwoPhaseCommitCreator;
 };
 
 /**
@@ -120,13 +134,37 @@ public:
     /**
      * Processes database transaction rollback if transaction wasn't commited.
      */
-    ~OperationContextCreator();
+    ~OperationContextCreator() { }
     /**
      * Commits database transaction.
      * @throw std::runtime_error if no transaction in progress
      * @note If transaction_id was set it will process first phase of two-phase commit.
      */
-    void commit_transaction();
+    void commit_transaction() { this->OperationContext::commit_transaction(); }
+};
+
+class OperationContextTwoPhaseCommitCreator
+:   private boost::noncopyable,
+    public OperationContextTwoPhaseCommit
+{
+public:
+    /**
+     * Creates logging object and starts database transaction prepared for two-phase commit.
+     * @param _transaction_id database transaction string identification usable in second phase commit/rollback
+     * @throw std::runtime_error in case of empty _transaction_id
+     * @note Calling commit_transaction() will process first phase of two-phase commit.
+     */
+    OperationContextTwoPhaseCommitCreator(const std::string &_transaction_id)
+    :   OperationContextTwoPhaseCommit(_transaction_id) { }
+    /**
+     * Processes database transaction rollback if transaction wasn't commited.
+     */
+    ~OperationContextTwoPhaseCommitCreator() { }
+    /**
+     * Processes first phase of two-phase commit.
+     * @throw std::runtime_error if no transaction in progress
+     */
+    void commit_transaction() { this->OperationContext::commit_transaction(); }
 };
 
 /**
