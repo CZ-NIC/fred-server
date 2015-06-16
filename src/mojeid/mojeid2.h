@@ -24,7 +24,7 @@
 #ifndef MOJEID2_H_06D795C17DD0FF3D98B375032F99493A//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
 #define MOJEID2_H_06D795C17DD0FF3D98B375032F99493A
 
-#include "src/fredlib/opcontext.h"
+#include "util/db/nullable.h"
 
 #include <string>
 #include <vector>
@@ -101,14 +101,13 @@ public:
     static const ContactId contact_handles_start = 0;
     static const ContactId contact_handles_end_reached = 0;
     HandleList& get_unregistrable_contact_handles(
-        Fred::OperationContext &_ctx,
         ::size_t _chunk_size,
         ContactId &_start_from,
         HandleList &_result)const;
 
     ContactId create_contact_prepare(
-        Fred::OperationContext &_ctx,
         const Fred::MojeID::CreateContact &_contact,
+        const std::string &_trans_id,
         LogRequestId _log_request_id,
         std::string &_ident);
 private:

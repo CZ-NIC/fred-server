@@ -25,6 +25,7 @@
 #include "src/mojeid/mojeid_checkers.h"
 #include "util/random.h"
 #include "util/log/context.h"
+#include "src/fredlib/opcontext.h"
 
 #include <algorithm>
 
@@ -56,7 +57,6 @@ public:
 private:
     Logging::Context ctx_server_;
     Logging::Context ctx_operation_;
-    
 };
 
 #define LOGGING_CONTEXT(CTX_VAR, IMPL_OBJ) LogContext CTX_VAR((IMPL_OBJ), create_ctx_function_name(__FUNCTION__))
@@ -79,7 +79,6 @@ const std::string& MojeID2Impl::get_server_name()const
 }
 
 HandleList& MojeID2Impl::get_unregistrable_contact_handles(
-        Fred::OperationContext &_ctx,
         ::size_t _chunk_size,
         ContactId &_start_from,
         HandleList &_result)const
@@ -87,7 +86,8 @@ HandleList& MojeID2Impl::get_unregistrable_contact_handles(
     LOGGING_CONTEXT(log_ctx, *this);
 
     try {
-        const Database::Result dbres = _ctx.get_conn().exec_params(
+        Fred::OperationContextCreator ctx;
+        const Database::Result dbres = ctx.get_conn().exec_params(
             "WITH static_data AS ("
                 "SELECT eot.id AS type_id,"
                        "NOW()::DATE-(ep.val||'MONTH')::INTERVAL AS handle_protected_to "
@@ -134,12 +134,13 @@ HandleList& MojeID2Impl::get_unregistrable_contact_handles(
 }
 
 ContactId MojeID2Impl::create_contact_prepare(
-        Fred::OperationContext &_ctx,
         const Fred::MojeID::CreateContact &_contact,
+        const std::string &_trans_id,
         LogRequestId _log_request_id,
         std::string &_ident)
 {
     LOGGING_CONTEXT(log_ctx, *this);
+    Fred::OperationContextTwoPhaseCommitCreator ctx(_trans_id);
     return 0;
 }
 
