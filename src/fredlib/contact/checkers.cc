@@ -77,7 +77,14 @@ contact_name::contact_name(const Nullable< std::string > &_name)
     last_name_absent = name.find_last_of(' ') == std::string::npos;
 }
 
-contact_mailing_address::contact_mailing_address(
+contact_name::contact_name(
+    const std::string &_first_name,
+    const std::string &_last_name)
+:   first_name_absent(nothing_else_whitespaces(_first_name)),
+    last_name_absent(nothing_else_whitespaces(_last_name))
+{ }
+
+contact_address::contact_address(
     const std::string &_street1,
     const std::string &_city,
     const std::string &_postalcode,
@@ -179,6 +186,29 @@ contact_username::contact_username(const std::string &_handle)
         invalid = (USERNAME_LENGTH_LIMIT < _handle.length()) ||
                   !match(_handle, username_pattern());
     }
+}
+
+#define CONTACT_TYPE_ID "1"
+
+contact_username_availability::contact_username_availability(
+    const std::string &_handle,
+    OperationContext &_ctx)
+{
+    const Database::Result dbres = _ctx.get_conn().exec_params(
+        "SELECT erdate IS NULL AS taken,"
+               "(SELECT (NOW()-(val::TEXT||'MONTHS')::INTERVAL)<erdate FROM enum_parameters "
+                "WHERE name='handle_registration_protection_period') AS protected "
+        "FROM object_registry "
+        "WHERE type=" CONTACT_TYPE_ID " AND "
+              "UPPER(name)=UPPER($1::TEXT) AND "               //use index (UPPER(name)) WHERE type=1
+              "(SELECT name='contact' "
+               "FROM enum_object_type WHERE id=" CONTACT_TYPE_ID ") "//make sure that type=1 is contact
+        "ORDER BY erdate IS NULL DESC,"//prefer erdate=NULL
+                 "erdate DESC "        //otherwise the newest erdate
+        "LIMIT 1",
+        Database::query_param_list(_handle));
+    taken         = (0 < dbres.size()) && static_cast< bool >(dbres[0][0]);
+    used_recently = (0 < dbres.size()) && static_cast< bool >(dbres[0][1]);
 }
 
 namespace {

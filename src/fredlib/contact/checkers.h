@@ -62,6 +62,14 @@ struct contact_name
      */
     contact_name(const Nullable< std::string > &_name);
     /**
+     * Executes check.
+     * @param _first_name contact first name to verify
+     * @param _last_name contact last name to verify
+     */
+    contact_name(
+        const std::string &_first_name,
+        const std::string &_last_name);
+    /**
      * All checks successfully done.
      * @return true if check was successfully
      */
@@ -71,9 +79,9 @@ struct contact_name
 };
 
 /**
- * Contact mailing address verification.
+ * Contact address verification.
  */
-struct contact_mailing_address
+struct contact_address
 {
     /**
      * Executes check.
@@ -82,7 +90,7 @@ struct contact_mailing_address
      * @param _postalcode contact address part to verify
      * @param _country contact address part to verify
      */
-    contact_mailing_address(
+    contact_address(
         const std::string &_street1,
         const std::string &_city,
         const std::string &_postalcode,
@@ -289,6 +297,28 @@ struct contact_username
 };
 
 /**
+ * MojeID contact handle verification.
+ */
+struct contact_username_availability
+{
+    /**
+     * Executes check.
+     * @param _handle contact handle to verify
+     * @param _ctx operation context used to check processing
+     */
+    contact_username_availability(
+        const std::string &_handle,
+        OperationContext &_ctx);
+    /**
+     * All checks successfully done.
+     * @return true if check was successfully
+     */
+    bool success()const { return !(taken || used_recently); }
+    bool taken:1;        ///< contact handle already exists
+    bool used_recently:1;///< contact used recently, isn't available so far
+};
+
+/**
  * MojeID contact birthday verification.
  */
 struct contact_birthday
@@ -362,10 +392,10 @@ struct check_contact_name:GeneralCheck::contact_name
     { }
 };
 
-struct check_contact_place_address:GeneralCheck::contact_mailing_address
+struct check_contact_place_address:GeneralCheck::contact_address
 {
     check_contact_place_address(const Contact::PlaceAddress &_data)
-    :   GeneralCheck::contact_mailing_address(
+    :   GeneralCheck::contact_address(
             _data.street1,
             _data.city,
             _data.postalcode,
@@ -443,6 +473,13 @@ struct check_contact_username:GeneralCheck::MojeID::contact_username
 {
     check_contact_username(const InfoContactData &_data)
     :   GeneralCheck::MojeID::contact_username(_data.handle)
+    { }
+};
+
+struct check_contact_username_availability:GeneralCheck::MojeID::contact_username_availability
+{
+    check_contact_username_availability(const InfoContactData &_data, OperationContext &_ctx)
+    :   GeneralCheck::MojeID::contact_username_availability(_data.handle, _ctx)
     { }
 };
 
