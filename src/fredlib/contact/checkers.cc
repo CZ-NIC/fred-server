@@ -126,22 +126,21 @@ contact_notifyemail_validity::contact_notifyemail_validity(const Nullable< std::
 :   invalid(!email_absent_or_valid(_notifyemail))
 { }
 
-}//Fred::GeneralCheck
-
-check_contact_phone_presence::check_contact_phone_presence(const InfoContactData &_data)
-:   absent(absent_or_empty(_data.telephone))
+contact_phone_presence::contact_phone_presence(const Nullable< std::string > &_telephone)
+:   absent(absent_or_empty(_telephone))
 {
 }
 
-check_contact_phone_validity::check_contact_phone_validity(const InfoContactData &_data)
-:   invalid(!absent_or_match(_data.telephone, phone_pattern()))
+contact_phone_validity::contact_phone_validity(const Nullable< std::string > &_telephone)
+:   invalid(!absent_or_match(_telephone, phone_pattern()))
 {
 }
 
-check_contact_phone_availability::check_contact_phone_availability(
-    const InfoContactData &_data,
+contact_phone_availability::contact_phone_availability(
+    const Nullable< std::string > &_telephone,
+    unsigned long long _id,
     OperationContext &_ctx)
-:   absent(check_contact_phone_presence(_data).absent),
+:   absent(contact_phone_presence(_telephone).absent),
     used_recently(!absent)
 {
     if (absent) {
@@ -158,58 +157,70 @@ check_contact_phone_availability::check_contact_phone_availability(
                   "TRIM(LOWER(ch.telephone))=TRIM(LOWER($2::TEXT)) AND "
                   "ch.id!=$3::BIGINT) AS used_recently",
         Database::query_param_list(email_phone_protection_period())
-                                  (_data.telephone.get_value_or_default())
-                                  (_data.id));
+                                  (_telephone.get_value_or_default())
+                                  (_id));
     used_recently = static_cast< bool >(ucheck[0][0]);
 }
 
-check_contact_fax_validity::check_contact_fax_validity(const InfoContactData &_data)
-:   invalid(!absent_or_match(_data.fax, phone_pattern()))
+contact_fax_validity::contact_fax_validity(const Nullable< std::string > &_fax)
+:   invalid(!absent_or_match(_fax, phone_pattern()))
 {
 }
 
 namespace MojeID {
 
-check_contact_username::check_contact_username(const InfoContactData &_data)
-:   absent(nothing_else_whitespaces(_data.handle))
+contact_username::contact_username(const std::string &_handle)
+:   absent(nothing_else_whitespaces(_handle))
 {
     if (absent) {
         invalid = false;
     }
     else {
-        invalid = (USERNAME_LENGTH_LIMIT < _data.handle.length()) ||
-                  !match(_data.handle, username_pattern());
+        invalid = (USERNAME_LENGTH_LIMIT < _handle.length()) ||
+                  !match(_handle, username_pattern());
     }
 }
 
 namespace {
+
 const char *const ssntype_birthday = "BIRTHDAY";
 const char *const ssntype_vat_id = "ICO";
-bool ssntype_present(const InfoContactData &_data, const char *_ssntype)
+
+bool ssntype_present(
+    const Nullable< std::string > &_ssntype_current,
+    const char *_ssntype_required)
 {
-    return !_data.ssntype.isnull() && (_data.ssntype.get_value() == _ssntype);
-}
+    return !_ssntype_current.isnull() && (_ssntype_current.get_value() == _ssntype_required);
 }
 
-check_contact_birthday::check_contact_birthday(const InfoContactData &_data)
-:   absent(!ssntype_present(_data, ssntype_birthday)),
-    invalid(!check_contact_birthday_validity(_data).success())
+}//Fred::GeneralCheck::MojeID::{anonymous}
+
+contact_birthday::contact_birthday(
+    const Nullable< std::string > &_ssntype,
+    const Nullable< std::string > &_ssn)
+:   absent(!ssntype_present(_ssntype, ssntype_birthday)),
+    invalid(!contact_birthday_validity(_ssntype, _ssn).success())
 {
 }
 
-check_contact_birthday_validity::check_contact_birthday_validity(const InfoContactData &_data)
-try:invalid(ssntype_present(_data, ssntype_birthday) &&
-            birthdate_from_string_to_date(_data.ssn.get_value()).is_special())
+contact_birthday_validity::contact_birthday_validity(
+    const Nullable< std::string > &_ssntype,
+    const Nullable< std::string > &_ssn)
+try:invalid(ssntype_present(_ssntype, ssntype_birthday) &&
+            birthdate_from_string_to_date(_ssn.get_value()).is_special())
 {
 }
 catch (...) {
     invalid = true;
 }
 
-check_contact_vat_id_presence::check_contact_vat_id_presence(const InfoContactData &_data)
-:   absent(!ssntype_present(_data, ssntype_vat_id) || absent_or_empty(_data.ssn))
+contact_vat_id_presence::contact_vat_id_presence(
+    const Nullable< std::string > &_ssntype,
+    const Nullable< std::string > &_ssn)
+:   absent(!ssntype_present(_ssntype, ssntype_vat_id) || absent_or_empty(_ssn))
 {
 }
 
-}//Fred::MojeID
+}//Fred::GeneralCheck::MojeID
+}//Fred::GeneralCheck
 }//Fred

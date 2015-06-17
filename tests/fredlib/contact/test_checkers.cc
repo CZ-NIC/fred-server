@@ -920,7 +920,7 @@ BOOST_AUTO_TEST_CASE(check_contact_username)
         TestData("FRANTISEK-", true, false),
         TestData("-FRANTISEK-", true, false),
         TestData("FRANTI--SEK", true, false),
-        TestData(std::string(Fred::MojeID::USERNAME_LENGTH_LIMIT + 1, 'A'), true, false),
+        TestData(std::string(Fred::GeneralCheck::MojeID::USERNAME_LENGTH_LIMIT + 1, 'A'), true, false),
         TestData("FRANTISEK", true, true),
         TestData("F-ANT-SEK", true, true),
         TestData("Frant1Sek", true, true),
@@ -930,7 +930,7 @@ BOOST_AUTO_TEST_CASE(check_contact_username)
         TestData("z", true, true),
         TestData("0", true, true),
         TestData("9", true, true),
-        TestData(std::string(Fred::MojeID::USERNAME_LENGTH_LIMIT, 'A'), true, true)
+        TestData(std::string(Fred::GeneralCheck::MojeID::USERNAME_LENGTH_LIMIT, 'A'), true, true)
     };
     static const TestData *const data_end = data + (sizeof(data) / sizeof(*data));
     BOOST_ASSERT(( (sizeof(data) / sizeof(*data)) == 19 ));

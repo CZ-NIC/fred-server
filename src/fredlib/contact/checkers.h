@@ -179,13 +179,13 @@ struct contact_notifyemail_validity
 /**
  * Contact phone presence checking.
  */
-struct check_contact_phone_presence
+struct contact_phone_presence
 {
     /**
      * Executes check.
-     * @param _data data to verification
+     * @param _telephone contact phone number to verify
      */
-    check_contact_phone_presence(const InfoContactData &_data);
+    contact_phone_presence(const Nullable< std::string > &_telephone);
     /**
      * Contact phone presents.
      * @return true if check was successfully
@@ -197,13 +197,13 @@ struct check_contact_phone_presence
 /**
  * Contact phone format verification.
  */
-struct check_contact_phone_validity
+struct contact_phone_validity
 {
     /**
      * Executes check.
-     * @param _data data to verification
+     * @param _telephone contact phone number to verify
      */
-    check_contact_phone_validity(const InfoContactData &_data);
+    contact_phone_validity(const Nullable< std::string > &_telephone);
     /**
      * Contact phone is valid.
      * @return true if check was successfully
@@ -215,14 +215,18 @@ struct check_contact_phone_validity
 /**
  * Contact phone availability verification.
  */
-struct check_contact_phone_availability
+struct contact_phone_availability
 {
     /**
      * Executes check.
-     * @param _data data to verification
+     * @param _telephone contact phone number to verify
+     * @param _id contact id
      * @param _ctx operation context used to check processing
      */
-    check_contact_phone_availability(const InfoContactData &_data, OperationContext &_ctx);
+    contact_phone_availability(
+        const Nullable< std::string > &_telephone,
+        unsigned long long _id,
+        OperationContext &_ctx);
     /**
      * Contact phone is available for using in next identification request.
      * @return true if check was successfully
@@ -235,13 +239,13 @@ struct check_contact_phone_availability
 /**
  * Contact fax format verification.
  */
-struct check_contact_fax_validity
+struct contact_fax_validity
 {
     /**
      * Executes check.
-     * @param _data data to verification
+     * @param _fax contact fax number to verify
      */
-    check_contact_fax_validity(const InfoContactData &_data);
+    contact_fax_validity(const Nullable< std::string > &_fax);
     /**
      * Contact fax is valid.
      * @return true if check was successfully
@@ -268,13 +272,13 @@ inline const boost::regex& username_pattern()
 /**
  * MojeID contact handle verification.
  */
-struct check_contact_username
+struct contact_username
 {
     /**
      * Executes check.
-     * @param _data data to verification
+     * @param _handle contact handle to verify
      */
-    check_contact_username(const InfoContactData &_data);
+    contact_username(const std::string &_handle);
     /**
      * All checks successfully done.
      * @return true if check was successfully
@@ -287,13 +291,16 @@ struct check_contact_username
 /**
  * MojeID contact birthday verification.
  */
-struct check_contact_birthday
+struct contact_birthday
 {
     /**
      * Executes check.
-     * @param _data data to verification
+     * @param _ssntype type of personal identification
+     * @param _ssn personal identification to verify
      */
-    check_contact_birthday(const InfoContactData &_data);
+    contact_birthday(
+        const Nullable< std::string > &_ssntype,
+        const Nullable< std::string > &_ssn);
     /**
      * MojeID contact birthday presents and is correct.
      * @return true if check was successfully
@@ -306,13 +313,16 @@ struct check_contact_birthday
 /**
  * MojeID contact birthday format verification.
  */
-struct check_contact_birthday_validity
+struct contact_birthday_validity
 {
     /**
      * Executes check.
-     * @param _data data to verification
+     * @param _ssntype type of personal identification
+     * @param _ssn personal identification to verify
      */
-    check_contact_birthday_validity(const InfoContactData &_data);
+    contact_birthday_validity(
+        const Nullable< std::string > &_ssntype,
+        const Nullable< std::string > &_ssn);
     /**
      * MojeID contact birthday is valid or doesn't present.
      * @return true if check was successfully
@@ -324,13 +334,16 @@ struct check_contact_birthday_validity
 /**
  * MojeID contact vat_id presence checking.
  */
-struct check_contact_vat_id_presence
+struct contact_vat_id_presence
 {
     /**
      * Executes check.
-     * @param _data data to verification
+     * @param _ssntype type of personal identification
+     * @param _ssn personal identification to verify
      */
-    check_contact_vat_id_presence(const InfoContactData &_data);
+    contact_vat_id_presence(
+        const Nullable< std::string > &_ssntype,
+        const Nullable< std::string > &_ssn);
     /**
      * MojeID contact vat_id presents.
      * @return true if check was successfully
@@ -395,167 +408,63 @@ struct check_contact_notifyemail_validity:GeneralCheck::contact_notifyemail_vali
     { }
 };
 
-/**
- * Contact phone presence checking.
- */
-struct check_contact_phone_presence
+struct check_contact_phone_presence:GeneralCheck::contact_phone_presence
 {
-    /**
-     * Executes check.
-     * @param _data data to verification
-     */
-    check_contact_phone_presence(const InfoContactData &_data);
-    /**
-     * Contact phone presents.
-     * @return true if check was successfully
-     */
-    bool success()const { return !absent; }
-    bool absent:1;///< contact phone doesn't present
+    check_contact_phone_presence(const InfoContactData &_data)
+    :   GeneralCheck::contact_phone_presence(_data.telephone)
+    { }
 };
 
-/**
- * Contact phone format verification.
- */
-struct check_contact_phone_validity
+struct check_contact_phone_validity:GeneralCheck::contact_phone_validity
 {
-    /**
-     * Executes check.
-     * @param _data data to verification
-     */
-    check_contact_phone_validity(const InfoContactData &_data);
-    /**
-     * Contact phone is valid.
-     * @return true if check was successfully
-     */
-    bool success()const { return !invalid; }
-    bool invalid:1;///< contact phone format fails to meet the requirements
+    check_contact_phone_validity(const InfoContactData &_data)
+    :   GeneralCheck::contact_phone_validity(_data.telephone)
+    { }
 };
 
-/**
- * Contact phone availability verification.
- */
-struct check_contact_phone_availability
+struct check_contact_phone_availability:GeneralCheck::contact_phone_availability
 {
-    /**
-     * Executes check.
-     * @param _data data to verification
-     * @param _ctx operation context used to check processing
-     */
-    check_contact_phone_availability(const InfoContactData &_data, OperationContext &_ctx);
-    /**
-     * Contact phone is available for using in next identification request.
-     * @return true if check was successfully
-     */
-    bool success()const { return !(absent || used_recently); }
-    bool absent:1;       ///< contact phone doesn't present
-    bool used_recently:1;///< contact phone used for identification request recently
+    check_contact_phone_availability(const InfoContactData &_data, OperationContext &_ctx)
+    :   GeneralCheck::contact_phone_availability(_data.telephone, _data.id, _ctx)
+    { }
 };
 
-/**
- * Contact fax format verification.
- */
-struct check_contact_fax_validity
+struct check_contact_fax_validity:GeneralCheck::contact_fax_validity
 {
-    /**
-     * Executes check.
-     * @param _data data to verification
-     */
-    check_contact_fax_validity(const InfoContactData &_data);
-    /**
-     * Contact fax is valid.
-     * @return true if check was successfully
-     */
-    bool success()const { return !invalid; }
-    bool invalid:1;///< contact fax format fails to meet the requirements
+    check_contact_fax_validity(const InfoContactData &_data)
+    :   GeneralCheck::contact_fax_validity(_data.fax)
+    { }
 };
 
 /// MojeID
 namespace MojeID {
 
-enum { USERNAME_LENGTH_LIMIT = 30 };
-
-/**
- * Regular expression which match correct mojeID contact handle.
- * @return pattern usable in boost::regex_match for checking correct username format
- */
-inline const boost::regex& username_pattern()
+struct check_contact_username:GeneralCheck::MojeID::contact_username
 {
-    static const boost::regex pattern("[0-9A-Za-z](-?[0-9A-Za-z])*");
-    return pattern;
+    check_contact_username(const InfoContactData &_data)
+    :   GeneralCheck::MojeID::contact_username(_data.handle)
+    { }
 };
 
-/**
- * MojeID contact handle verification.
- */
-struct check_contact_username
+struct check_contact_birthday:GeneralCheck::MojeID::contact_birthday
 {
-    /**
-     * Executes check.
-     * @param _data data to verification
-     */
-    check_contact_username(const InfoContactData &_data);
-    /**
-     * All checks successfully done.
-     * @return true if check was successfully
-     */
-    bool success()const { return !(absent || invalid); }
-    bool absent:1; ///< mojeID contact handle doesn't present
-    bool invalid:1;///< mojeID contact handle format fails to meet the requirements
+    check_contact_birthday(const InfoContactData &_data)
+    :   GeneralCheck::MojeID::contact_birthday(_data.ssntype, _data.ssn)
+    { }
 };
 
-/**
- * MojeID contact birthday verification.
- */
-struct check_contact_birthday
+struct check_contact_birthday_validity:GeneralCheck::MojeID::contact_birthday_validity
 {
-    /**
-     * Executes check.
-     * @param _data data to verification
-     */
-    check_contact_birthday(const InfoContactData &_data);
-    /**
-     * MojeID contact birthday presents and is correct.
-     * @return true if check was successfully
-     */
-    bool success()const { return !(absent || invalid); }
-    bool absent:1; ///< mojeID contact birthday doesn't present
-    bool invalid:1;///< mojeID contact birthday format fails to meet the requirements
+    check_contact_birthday_validity(const InfoContactData &_data)
+    :   GeneralCheck::MojeID::contact_birthday_validity(_data.ssntype, _data.ssn)
+    { }
 };
 
-/**
- * MojeID contact birthday format verification.
- */
-struct check_contact_birthday_validity
+struct check_contact_vat_id_presence:GeneralCheck::MojeID::contact_vat_id_presence
 {
-    /**
-     * Executes check.
-     * @param _data data to verification
-     */
-    check_contact_birthday_validity(const InfoContactData &_data);
-    /**
-     * MojeID contact birthday is valid or doesn't present.
-     * @return true if check was successfully
-     */
-    bool success()const { return !invalid; }
-    bool invalid:1;///< mojeID contact birthday format fails to meet the requirements
-};
-
-/**
- * MojeID contact vat_id presence checking.
- */
-struct check_contact_vat_id_presence
-{
-    /**
-     * Executes check.
-     * @param _data data to verification
-     */
-    check_contact_vat_id_presence(const InfoContactData &_data);
-    /**
-     * MojeID contact vat_id presents.
-     * @return true if check was successfully
-     */
-    bool success()const { return !absent; }
-    bool absent:1;///< mojeID contact vat_id doesn't present
+    check_contact_vat_id_presence(const InfoContactData &_data)
+    :   GeneralCheck::MojeID::contact_vat_id_presence(_data.ssntype, _data.ssn)
+    { }
 };
 
 }//Fred::MojeID
