@@ -22,7 +22,7 @@
  */
 
 #include "src/mojeid/mojeid2.h"
-#include "src/mojeid/mojeid_checkers.h"
+#include "src/mojeid/mojeid2_checkers.h"
 #include "util/random.h"
 #include "util/log/context.h"
 #include "src/fredlib/opcontext.h"
@@ -98,12 +98,11 @@ HandleList& MojeID2Impl::get_unregistrable_contact_handles(
             "FROM static_data sd "
             "JOIN object_registry obr ON obr.type=sd.type_id AND "
                                         "COALESCE(sd.handle_protected_to<obr.erdate,TRUE) "
-            "WHERE LOWER(obr.name)~$1::TEXT AND "
-                  "$3::BIGINT<obr.id "
+            "WHERE LOWER(obr.name)~'^[a-z0-9](-?[a-z0-9])*$' AND "
+                  "$2::BIGINT<obr.id "
             "ORDER BY obr.id "
-            "LIMIT $2::BIGINT",
+            "LIMIT $1::BIGINT",
             Database::query_param_list
-                (Fred::Contact::Verification::USERNAME_PATTERN.str())
                 (_chunk_size + 1)
                 (_start_from));
         const bool data_continues = _chunk_size < dbres.size();
@@ -140,8 +139,33 @@ ContactId MojeID2Impl::create_contact_prepare(
         std::string &_ident)
 {
     LOGGING_CONTEXT(log_ctx, *this);
-    Fred::OperationContextTwoPhaseCommitCreator ctx(_trans_id);
-    return 0;
+
+    try {
+        Fred::OperationContextTwoPhaseCommitCreator ctx(_trans_id);
+        typedef boost::mpl::list< Fred::MojeID::Check::contact_name,
+                                  Fred::MojeID::Check::contact_permanent_address,
+                                  Fred::MojeID::Check::contact_email_presence,
+                                  Fred::MojeID::Check::contact_email_validity,
+                                  Fred::MojeID::Check::contact_phone_presence,
+                                  Fred::MojeID::Check::contact_phone_validity > check_contact;
+        typedef boost::mpl::list< Fred::MojeID::Check::contact_username_availability,
+                                  Fred::MojeID::Check::contact_email_availability,
+                                  Fred::MojeID::Check::contact_phone_availability > check_contact_ctx;
+        typedef Fred::Check< boost::mpl::list< check_contact,
+                                               check_contact_ctx > > Check;
+
+        Check check_result(Fred::make_args(_contact),
+                           Fred::make_args(_contact, ctx));
+        return 0;
+    }
+    catch (const std::exception &e) {
+        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
+        throw;
+    }
+    catch (...) {
+        LOGGER(PACKAGE).error("request failed (unknown error)");
+        throw;
+    }
 }
 
 }//namespace Registry::MojeID
