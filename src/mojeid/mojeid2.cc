@@ -23,9 +23,11 @@
 
 #include "src/mojeid/mojeid2.h"
 #include "src/mojeid/mojeid2_checkers.h"
+#include "src/fredlib/contact/create_contact.h"
 #include "util/random.h"
 #include "util/log/context.h"
-#include "src/fredlib/opcontext.h"
+#include "util/cfg/handle_mojeid_args.h"
+#include "util/cfg/config_handler_decl.h"
 
 #include <algorithm>
 
@@ -61,10 +63,25 @@ private:
 
 #define LOGGING_CONTEXT(CTX_VAR, IMPL_OBJ) LogContext CTX_VAR((IMPL_OBJ), create_ctx_function_name(__FUNCTION__))
 
+std::string get_mojeid_registrar_handle()
+{
+    try {
+        const std::string handle =
+            CfgArgs::instance()->get_handler_ptr_by_type< HandleMojeIDArgs >()->registrar_handle;
+        if (!handle.empty()) {
+            return handle;
+        }
+    }
+    catch (...) {
+    }
+    throw std::runtime_error("missing configuration for dedicated registrar");
+}
+
 }//Registry::MojeID::{anonymous}
 
 MojeID2Impl::MojeID2Impl(const std::string &_server_name)
-:   server_name_(_server_name)
+:   server_name_(_server_name),
+    mojeid_registrar_handle_(Registry::MojeID::get_mojeid_registrar_handle())
 {
     LogContext log_ctx(*this, "init");
 }//MojeID2Impl::MojeID2Impl
@@ -156,7 +173,10 @@ ContactId MojeID2Impl::create_contact_prepare(
 
         Check check_result(Fred::make_args(_contact),
                            Fred::make_args(_contact, ctx));
-        return 0;
+
+        Fred::CreateContact create_contact(_contact.username, mojeid_registrar_handle_);
+        const Fred::CreateContact::Result new_contact = create_contact.exec(ctx);
+        return new_contact.object_id;
     }
     catch (const std::exception &e) {
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());

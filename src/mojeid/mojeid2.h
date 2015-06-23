@@ -112,6 +112,7 @@ public:
         std::string &_ident);
 private:
     const std::string server_name_;
+    const std::string mojeid_registrar_handle_;
 };//class MojeID2Impl
 
 }//namespace Registry::MojeID
