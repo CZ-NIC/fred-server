@@ -1,13 +1,5 @@
 #include "server2_i.h"
 
-#include <iostream>
-
-#include <boost/format.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/date_time.hpp>
-#include <boost/assign/list_of.hpp>
-
 #include "src/fredlib/db_settings.h"
 #include "util/corba_wrapper.h"
 #include "log/logger.h"
@@ -25,8 +17,16 @@
 #include "cfg/handle_corbanameservice_args.h"
 #include "cfg/handle_mojeid_args.h"
 
+#include <iostream>
 
-const std::string server_name = "fred-mifd2";
+#include <boost/format.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time.hpp>
+#include <boost/assign/list_of.hpp>
+
+
+const std::string server_name = "fred-mifd";
 
 //config args processing
 HandlerPtrVector global_hpv =
