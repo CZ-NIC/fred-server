@@ -98,7 +98,7 @@ namespace Fred
                 ctx, registrar_, static_cast<Exception*>(0)//set throw
                 , &Exception::set_unknown_registrar_handle);
 
-            CreateObjectOutput create_object_output = CreateObject("keyset", handle_, registrar_, authinfo_, logd_request_id_).exec(ctx);
+            CreateObject::Result create_object_result = CreateObject("keyset", handle_, registrar_, authinfo_, logd_request_id_).exec(ctx);
 
             Exception create_keyset_exception;
 
@@ -106,7 +106,7 @@ namespace Fred
             {
                 //insert
                 ctx.get_conn().exec_params("INSERT INTO keyset (id) VALUES ($1::integer)"
-                        , Database::query_param_list(create_object_output.object_id));
+                        , Database::query_param_list(create_object_result.object_id));
 
                 //set dns keys
                 if(!dns_keys_.empty())
@@ -119,7 +119,7 @@ namespace Fred
                             ctx.get_conn().exec_params(
                             "INSERT INTO dnskey (keysetid, flags, protocol, alg, key) VALUES($1::integer "
                             ", $2::integer, $3::integer, $4::integer, $5::text)"
-                            , Database::query_param_list(create_object_output.object_id)(i->get_flags())(i->get_protocol())(i->get_alg())(i->get_key()));
+                            , Database::query_param_list(create_object_result.object_id)(i->get_flags())(i->get_protocol())(i->get_alg())(i->get_key()));
                             ctx.get_conn().exec("RELEASE SAVEPOINT dnskey");
                         }
                         catch(const std::exception& ex)
@@ -143,7 +143,7 @@ namespace Fred
                     Database::QueryParams params;//query params
                     std::stringstream sql;
 
-                    params.push_back(create_object_output.object_id);
+                    params.push_back(create_object_result.object_id);
                     sql << "INSERT INTO keyset_contact_map(keysetid, contactid) "
                             " VALUES ($" << params.size() << "::integer, ";
 
@@ -189,7 +189,7 @@ namespace Fred
                             "SELECT crdate::timestamp AT TIME ZONE 'UTC' AT TIME ZONE $1::text "
                             "  FROM object_registry "
                             " WHERE id = $2::bigint"
-                        , Database::query_param_list(returned_timestamp_pg_time_zone_name)(create_object_output.object_id));
+                        , Database::query_param_list(returned_timestamp_pg_time_zone_name)(create_object_result.object_id));
 
                     if (crdate_res.size() != 1)
                     {
@@ -211,28 +211,28 @@ namespace Fred
                     "INSERT INTO keyset_history(historyid,id) "
                     " SELECT $1::bigint, id FROM keyset "
                     " WHERE id = $2::integer"
-                    , Database::query_param_list(create_object_output.history_id)(create_object_output.object_id));
+                    , Database::query_param_list(create_object_result.history_id)(create_object_result.object_id));
 
                 //dsrecord_history
                 ctx.get_conn().exec_params(
                     "INSERT INTO dsrecord_history(historyid, id, keysetid, keytag, alg, digesttype, digest, maxsiglife) "
                     " SELECT $1::bigint, id, keysetid, keytag, alg, digesttype, digest, maxsiglife FROM dsrecord "
                     " WHERE keysetid = $2::integer"
-                    , Database::query_param_list(create_object_output.history_id)(create_object_output.object_id));
+                    , Database::query_param_list(create_object_result.history_id)(create_object_result.object_id));
 
                 //dnskey_history
                 ctx.get_conn().exec_params(
                     "INSERT INTO dnskey_history(historyid, id, keysetid, flags, protocol, alg, key) "
                     " SELECT $1::bigint, id, keysetid, flags, protocol, alg, key FROM dnskey "
                     " WHERE keysetid = $2::integer"
-                    , Database::query_param_list(create_object_output.history_id)(create_object_output.object_id));
+                    , Database::query_param_list(create_object_result.history_id)(create_object_result.object_id));
 
                 //keyset_contact_map_history
                 ctx.get_conn().exec_params(
                     "INSERT INTO keyset_contact_map_history(historyid,keysetid, contactid) "
                     " SELECT $1::bigint, keysetid, contactid FROM keyset_contact_map "
                         " WHERE keysetid = $2::integer"
-                        , Database::query_param_list(create_object_output.history_id)(create_object_output.object_id));
+                        , Database::query_param_list(create_object_result.history_id)(create_object_result.object_id));
 
             }//save history
 

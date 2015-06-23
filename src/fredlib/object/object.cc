@@ -72,9 +72,9 @@ namespace Fred
         return *this;
     }
 
-    CreateObjectOutput  CreateObject::exec(OperationContext& ctx)
+    CreateObject::Result  CreateObject::exec(OperationContext& ctx)
     {
-        CreateObjectOutput output;
+        Result result;
 
         try
         {
@@ -96,29 +96,29 @@ namespace Fred
             {
                 BOOST_THROW_EXCEPTION(InternalError("unable to call create_object"));
             }
-            output.object_id = static_cast<unsigned long long>(id_res[0][0]);
+            result.object_id = static_cast< unsigned long long >(id_res[0][0]);
 
-            if (output.object_id == 0)
+            if (result.object_id == 0)
             {
                 BOOST_THROW_EXCEPTION(Exception().set_invalid_object_handle(handle_));
             }
 
-            if(authinfo_.get_value_or_default().empty())
+            if (authinfo_.get_value_or_default().empty())
             {
                 authinfo_ = RandomDataGenerator().xnstring(8);//former PASS_LEN
             }
 
             ctx.get_conn().exec_params("INSERT INTO object(id, clid, authinfopw) VALUES ($1::bigint "//object id from create_object
                     " , $2::integer, $3::text)"
-                    , Database::query_param_list(output.object_id)(registrar_id)(authinfo_.get_value()));
+                    , Database::query_param_list(result.object_id)(registrar_id)(authinfo_.get_value()));
 
-            output.history_id = Fred::InsertHistory(logd_request_id_, output.object_id).exec(ctx);
+            result.history_id = Fred::InsertHistory(logd_request_id_, result.object_id).exec(ctx);
 
             //object_registry historyid
             Database::Result update_historyid_res = ctx.get_conn().exec_params(
                 "UPDATE object_registry SET historyid = $1::bigint, crhistoryid = $1::bigint "
                     " WHERE id = $2::integer RETURNING id"
-                    , Database::query_param_list(output.history_id)(output.object_id));
+                    , Database::query_param_list(result.history_id)(result.object_id));
             if (update_historyid_res.size() != 1)
             {
                 BOOST_THROW_EXCEPTION(Fred::InternalError("historyid update failed"));
@@ -132,7 +132,7 @@ namespace Fred
             throw;
         }
 
-        return output;
+        return result;
     }
 
     /**
