@@ -233,17 +233,16 @@ namespace Fred
         return *this;
     }
 
-    boost::posix_time::ptime CreateContact::exec(OperationContext& ctx, const std::string& returned_timestamp_pg_time_zone_name)
+    CreateContact::Result CreateContact::exec(OperationContext &ctx, const std::string &returned_timestamp_pg_time_zone_name)
     {
-        boost::posix_time::ptime timestamp;
+        Result result;
 
         try
         {
             Exception create_contact_exception;
-            CreateObjectOutput create_object_output;
             try
             {
-                create_object_output = CreateObject(
+                static_cast< CreateObject::Result& >(result) = CreateObject(
                         "contact", handle_, registrar_, authinfo_, logd_request_id_)
                         .exec(ctx);
             }
@@ -274,7 +273,7 @@ namespace Fred
                 val_sql << " VALUES (";
 
                 //id
-                params.push_back(create_object_output.object_id);
+                params.push_back(result.object_id);
                 col_sql << col_separator.get() << "id";
                 val_sql << val_separator.get() << "$" << params.size() <<"::integer";
 
@@ -462,7 +461,7 @@ namespace Fred
                 if (addresses_.isset() && !addresses_.get_value().empty()) {
                     std::ostringstream sql;
                     params = Database::QueryParams();
-                    params.push_back(create_object_output.object_id);//$1::bigint=contactid
+                    params.push_back(result.object_id);//$1::bigint=contactid
                     const ContactAddressList &addresses = addresses_.get_value();
                     for (ContactAddressList::const_iterator addr_ptr = addresses.begin();
                          addr_ptr != addresses.end(); ++addr_ptr) {
@@ -552,14 +551,14 @@ namespace Fred
                             "SELECT crdate::timestamp AT TIME ZONE 'UTC' AT TIME ZONE $1::text "
                             "  FROM object_registry "
                             " WHERE id = $2::bigint"
-                        , Database::query_param_list(returned_timestamp_pg_time_zone_name)(create_object_output.object_id));
+                        , Database::query_param_list(returned_timestamp_pg_time_zone_name)(result.object_id));
 
                     if (crdate_res.size() != 1)
                     {
                         BOOST_THROW_EXCEPTION(Fred::InternalError("timestamp of the contact creation was not found"));
                     }
 
-                    timestamp = boost::posix_time::time_from_string(std::string(crdate_res[0][0]));
+                    result.creation_time = boost::posix_time::time_from_string(std::string(crdate_res[0][0]));
                 }
             }
 
@@ -580,7 +579,7 @@ namespace Fred
                     " , disclosefax, discloseemail, disclosevat, discloseident, disclosenotifyemail "
                     " FROM contact "
                     " WHERE id = $2::integer"
-                    , Database::query_param_list(create_object_output.history_id)(create_object_output.object_id));
+                    , Database::query_param_list(result.history_id)(result.object_id));
 
                 ctx.get_conn().exec_params(
                     "INSERT INTO contact_address_history (historyid, id, contactid, type, company_name,"
@@ -588,7 +587,7 @@ namespace Fred
                     " SELECT $1::bigint, id, contactid, type, company_name,"
                     " street1, street2, street3, city, stateorprovince, postalcode, country"
                     " FROM contact_address WHERE contactid=$2::bigint"
-                    , Database::query_param_list(create_object_output.history_id)(create_object_output.object_id));
+                    , Database::query_param_list(result.history_id)(result.object_id));
             }//save history
 
         }//try
@@ -598,7 +597,7 @@ namespace Fred
             throw;
         }
 
-        return timestamp;
+        return result;
     }
 
     std::string CreateContact::to_string() const
