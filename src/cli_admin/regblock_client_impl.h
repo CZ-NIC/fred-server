@@ -23,8 +23,6 @@
 #include "src/corba/epp_corba_client_impl.h"
 #include <boost/date_time/gregorian/gregorian.hpp>
 
-using namespace Fred::Registrar;
-
 
 namespace Admin {
 
@@ -83,7 +81,7 @@ private:
             LOGGER(PACKAGE).error("/usr/sbin/sendmail: command not found");
         }
 
-        BlockedRegistrars blocked_registrars = regMan->getRegistrarsBlockedToday();
+        Fred::Registrar::BlockedRegistrars blocked_registrars = regMan->getRegistrarsBlockedToday();
 
         const std::string date = boost::gregorian::to_iso_extended_string(boost::gregorian::day_clock::local_day());
         std::string data;
@@ -99,7 +97,7 @@ private:
             // there are some entries to send
             std::ostringstream msg;
 
-            for (std::vector<BlockedReg>::iterator it = blocked_registrars->begin();
+            for (std::vector< Fred::Registrar::BlockedReg >::iterator it = blocked_registrars->begin();
                  it != blocked_registrars->end();
                  ++it) {
 
