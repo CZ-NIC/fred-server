@@ -88,14 +88,14 @@ struct contact_email_availability:GeneralCheck::contact_email_availability
 struct contact_phone_presence:GeneralCheck::contact_phone_presence
 {
     contact_phone_presence(const CreateContact &_data)
-    :   GeneralCheck::contact_phone_presence(_data.teplephone)
+    :   GeneralCheck::contact_phone_presence(_data.telephone)
     { }
 };
 
 struct contact_phone_validity:GeneralCheck::contact_phone_validity
 {
     contact_phone_validity(const CreateContact &_data)
-    :   GeneralCheck::contact_phone_validity(_data.teplephone)
+    :   GeneralCheck::contact_phone_validity(_data.telephone)
     { }
 };
 
@@ -103,7 +103,7 @@ struct contact_phone_availability:GeneralCheck::contact_phone_availability
 {
     enum { UNUSED_CONTACT_ID = 0 };
     contact_phone_availability(const CreateContact &_data, OperationContext &_ctx)
-    :   GeneralCheck::contact_phone_availability(_data.teplephone, UNUSED_CONTACT_ID, _ctx)
+    :   GeneralCheck::contact_phone_availability(_data.telephone, UNUSED_CONTACT_ID, _ctx)
     { }
 };
 

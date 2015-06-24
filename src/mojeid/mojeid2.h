@@ -75,7 +75,7 @@ struct CreateContact
     Nullable< ShippingAddress > shipping3;
     std::string email;
     Nullable< std::string > notify_email;
-    std::string teplephone;
+    std::string telephone;
     Nullable< std::string > fax;
 };
 
