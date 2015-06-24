@@ -63,19 +63,31 @@ struct into_from< Registry::MojeID::DateTime, boost::posix_time::ptime >
     }
 };
 
+// because frontend doesn't preserve NULL values :(
+template < typename CORBA_NullableType >
+const CORBA_NullableType& empty_as_null(const CORBA_NullableType &_value)
+{
+    if ((_value.in() == NULL) ||               // is NULL or
+        (_value.in()->_value()[0] != '\0')) {  // is nonempty
+        return _value;
+    }
+    static const CORBA_NullableType null_value;// is not NULL but is empty
+    return null_value;
+}
+
 template < >
 struct from_into< Registry::MojeID::Address, Fred::MojeID::Address >
 : from_into_base< Registry::MojeID::Address, Fred::MojeID::Address >
 {
     dst_value_ref operator()(src_value src, dst_value_ref dst)const
     {
-        from(src.street1).into(dst.street1);
-        from(src.street2).into(dst.street2);
-        from(src.street3).into(dst.street3);
-        from(src.city).into(dst.city);
-        from(src.state).into(dst.state);
-        from(src.postal_code).into(dst.postal_code);
-        from(src.country).into(dst.country);
+        from(              src.street1)    .into(dst.street1);
+        from(empty_as_null(src.street2))   .into(dst.street2);
+        from(empty_as_null(src.street3))   .into(dst.street3);
+        from(              src.city)       .into(dst.city);
+        from(empty_as_null(src.state))     .into(dst.state);
+        from(              src.postal_code).into(dst.postal_code);
+        from(              src.country)    .into(dst.country);
         return dst;
     }
 };
@@ -86,41 +98,17 @@ struct from_into< Registry::MojeID::ShippingAddress, Fred::MojeID::ShippingAddre
 {
     dst_value_ref operator()(src_value src, dst_value_ref dst)const
     {
-        from(src.company_name).into(dst.company_name);
-        from(src.street1).into(dst.street1);
-        from(src.street2).into(dst.street2);
-        from(src.street3).into(dst.street3);
-        from(src.city).into(dst.city);
-        from(src.state).into(dst.state);
-        from(src.postal_code).into(dst.postal_code);
-        from(src.country).into(dst.country);
+        from(empty_as_null(src.company_name)).into(dst.company_name);
+        from(              src.street1)      .into(dst.street1);
+        from(empty_as_null(src.street2))     .into(dst.street2);
+        from(empty_as_null(src.street3))     .into(dst.street3);
+        from(              src.city)         .into(dst.city);
+        from(empty_as_null(src.state))       .into(dst.state);
+        from(              src.postal_code)  .into(dst.postal_code);
+        from(              src.country)      .into(dst.country);
         return dst;
     }
 };
-
-// because frontend don't preseve NULL values :(
-typedef Registry::MojeID::NullableString_member CORBA_NullableString;
-const CORBA_NullableString& empty_as_null(const CORBA_NullableString &_value)
-{
-    if ((_value.in() == NULL) ||              // is NULL or
-        (_value.in()->_value()[0] != '\0')) { // is nonempty
-        return _value;
-    }
-    static const CORBA_NullableString null_value;
-    return null_value;
-}
-
-// because frontend don't preseve NULL values :(
-typedef Registry::MojeID::NullableDate_member CORBA_NullableDate;
-const CORBA_NullableDate& empty_as_null(const CORBA_NullableDate &_value)
-{
-    if ((_value.in() == NULL) ||              // is NULL or
-        (_value.in()->_value()[0] != '\0')) { // is nonempty
-        return _value;
-    }
-    static const CORBA_NullableDate null_value;
-    return null_value;
-}
 
 template < >
 struct from_into< Registry::MojeID::CreateContact, Fred::MojeID::CreateContact >

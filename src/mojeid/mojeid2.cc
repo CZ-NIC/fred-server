@@ -24,6 +24,7 @@
 #include "src/mojeid/mojeid2.h"
 #include "src/mojeid/mojeid2_checkers.h"
 #include "src/fredlib/contact/create_contact.h"
+#include "src/fredlib/public_request/create_public_request.h"
 #include "util/random.h"
 #include "util/log/context.h"
 #include "util/cfg/handle_mojeid_args.h"
@@ -83,13 +84,13 @@ Fred::Contact::PlaceAddress& convert(const Fred::MojeID::Address &_src, Fred::Co
     _dst.city       = _src.city;
     _dst.postalcode = _src.postal_code;
     _dst.country    = _src.country;
-    if (!_src.street2.get_value_or_default().empty()) {
+    if (!_src.street2.isnull()) {
         _dst.street2 = _src.street2.get_value();
     }
-    if (!_src.street3.get_value_or_default().empty()) {
+    if (!_src.street3.isnull()) {
         _dst.street3 = _src.street3.get_value();
     }
-    if (!_src.state.get_value_or_default().empty()) {
+    if (!_src.state.isnull()) {
         _dst.stateorprovince = _src.state.get_value();
     }
     return _dst;
@@ -97,20 +98,20 @@ Fred::Contact::PlaceAddress& convert(const Fred::MojeID::Address &_src, Fred::Co
 
 Fred::ContactAddress& convert(const Fred::MojeID::ShippingAddress &_src, Fred::ContactAddress &_dst)
 {
-    if (!_src.company_name.get_value_or_default().empty()) {
+    if (!_src.company_name.isnull()) {
         _dst.company_name = _src.company_name.get_value();
     }
     _dst.street1    = _src.street1;
     _dst.city       = _src.city;
     _dst.postalcode = _src.postal_code;
     _dst.country    = _src.country;
-    if (!_src.street2.get_value_or_default().empty()) {
+    if (!_src.street2.isnull()) {
         _dst.street2 = _src.street2.get_value();
     }
-    if (!_src.street3.get_value_or_default().empty()) {
+    if (!_src.street3.isnull()) {
         _dst.street3 = _src.street3.get_value();
     }
-    if (!_src.state.get_value_or_default().empty()) {
+    if (!_src.state.isnull()) {
         _dst.stateorprovince = _src.state.get_value();
     }
     return _dst;
