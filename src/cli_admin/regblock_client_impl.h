@@ -21,8 +21,10 @@
 
 #include "src/corba/logger_client_impl.h"
 #include "src/corba/epp_corba_client_impl.h"
+#include <boost/date_time/gregorian/gregorian.hpp>
 
 using namespace Fred::Registrar;
+
 
 namespace Admin {
 
@@ -83,12 +85,11 @@ private:
 
         BlockedRegistrars blocked_registrars = regMan->getRegistrarsBlockedToday();
 
-        const std::string date = Cmd::Executable("date")("+%Y-%m-%d")
-                                    .run_with_path(params.shell_cmd_timeout).stdout;
+        const std::string date = boost::gregorian::to_iso_extended_string(boost::gregorian::day_clock::local_day());
         std::string data;
         if(blocked_registrars->empty()) {
             data =
-                "Subject: No registrars blocked, date " + date +
+                "Subject: No registrars blocked, date " + date + "\n"
                 "Content-Type: text/plain; charset=UTF-8; format=flowed\n"
                 "Content-Transfer-Encoding: 8bit\n"
                 "\n"
@@ -114,7 +115,7 @@ private:
                     % it->reg_id).str() << std::endl;
             }
             data =
-                "Subject: REGISTRARS BLOCKED - requests over limit, date " + date +
+                "Subject: REGISTRARS BLOCKED - requests over limit, date " + date + "\n"
                 "Content-Type: text/plain; charset=UTF-8; format=flowed\n"
                 "Content-Transfer-Encoding: 8bit\n"
                 "\n" +
