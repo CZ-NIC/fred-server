@@ -13,7 +13,7 @@ namespace Whois {
     NullableRegistrar*  wrap_registrar( const Fred::InfoRegistrarData& in);
     NullableContact*    wrap_contact(   const Fred::InfoContactData& in);
     NullableDomain*     wrap_domain(    const Fred::InfoDomainData& in);
-    NullableKeySet*     wrap_keyset(    const Fred::InfoKeysetData& in);
+    KeySet wrap_keyset(const Fred::InfoKeysetData& in);
     NSSet wrap_nsset(const Fred::InfoNssetData& in);
 
     class Server_impl :

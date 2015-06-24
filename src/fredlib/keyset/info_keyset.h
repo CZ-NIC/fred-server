@@ -300,6 +300,50 @@ namespace Fred
 
     };
 
+    /**
+    * Keyset info by tech contact handle.
+    * Tech contact handle is set via constructor.
+    * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
+    */
+    class InfoKeysetByTechContactHandle : public Util::Printable
+    {
+        const std::string tech_contact_handle_;/**< tech contact handle*/
+        bool lock_;/**< if set to true lock object_registry row for update, if set to false lock for share */
+
+    public:
+
+        /**
+        * Info keyset constructor with mandatory parameter.
+        * @param tc_handle sets tech contact handle into @ref tech_contact_handle_ attribute
+        */
+        InfoKeysetByTechContactHandle(const std::string& tc_handle);
+
+        /**
+        * Sets lock for update.
+        * Default, if not set, is lock for share.
+        * Sets true to lock flag in @ref lock_ attribute
+        * @return operation instance reference to allow method chaining
+        */
+        InfoKeysetByTechContactHandle& set_lock();
+
+        /**
+        * Executes getting info about the keyset.
+        * @param ctx contains reference to database and logging interface
+        * @param local_timestamp_pg_time_zone_name is postgresql time zone name of the returned data
+        * @return info data about the keysets
+        * @throws InternalError
+        * When exception is thrown changes to database are considered inconsistent and should be rolled back by the caller.
+        */
+        std::vector<InfoKeysetOutput> exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");
+
+        /**
+        * Dumps state of the instance into the string
+        * @return string with description of the instance state
+        */
+        std::string to_string() const;
+
+    };
+
 }//namespace Fred
 
 #endif//INFO_KEYSET_H_

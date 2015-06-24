@@ -234,53 +234,6 @@ namespace Whois {
         return new NullableDomain(temp);
     }
 
-    NullableKeySet* wrap_keyset(const Fred::InfoKeysetData& in) {
-
-        KeySet temp;
-
-        temp.handle = Corba::wrap_string(in.handle);
-        temp.registrar_handle = Corba::wrap_string(in.sponsoring_registrar_handle);
-        temp.created = Corba::wrap_time(in.creation_time);
-        temp.changed = Corba::wrap_nullable_datetime(in.update_time);
-        temp.last_transfer = Corba::wrap_nullable_datetime(in.transfer_time);
-        {
-            std::vector<std::string> tech_contacts;
-            {
-                BOOST_FOREACH(const Fred::ObjectIdHandlePair& tech_contact, in.tech_contacts) {
-                    tech_contacts.push_back(tech_contact.handle);
-                }
-            }
-            wrap_string_sequence(tech_contacts, temp.tech_contact_handles);
-        }
-        {
-            std::vector<std::string> statuses;
-            {
-                Fred::OperationContext ctx;
-
-                BOOST_FOREACH(const Fred::ObjectStateData& state, Fred::GetObjectStates(in.id).exec(ctx)) {
-                    if(state.is_external) {
-                        statuses.push_back(state.state_name);
-                    }
-                }
-            }
-            wrap_string_sequence(statuses, temp.statuses);
-        }
-
-        temp.dns_keys.length(in.dns_keys.size());
-
-        unsigned i = 0;
-        BOOST_FOREACH(const Fred::DnsKey& key, in.dns_keys) {
-            temp.dns_keys[i].flags = key.get_flags();
-            temp.dns_keys[i].protocol = key.get_protocol();
-            temp.dns_keys[i].alg = key.get_alg();
-            temp.dns_keys[i].public_key = Corba::wrap_string(key.get_key());
-
-            ++i;
-        }
-
-        return new NullableKeySet(temp);
-    }
-
     /**
      * CORBA sequence element factory, template to be specialized, there is no generic enough implementation
      */
@@ -339,8 +292,59 @@ namespace Whois {
         return Corba::wrap_string_to_corba_string(ile);
     }
 
+    //set_element_of_corba_seq<Registry::Whois::KeySet, Fred::InfoKeysetOutput>
 
+    template<> DNSKey set_element_of_corba_seq<
+    DNSKey, Fred::DnsKey>(const Fred::DnsKey& ile)
+    {
+        DNSKey key;
+        key.flags = ile.get_flags();
+        key.protocol = ile.get_protocol();
+        key.alg = ile.get_alg();
+        key.public_key = Corba::wrap_string_to_corba_string(ile.get_key());
+        return key;
+    }
 
+    KeySet wrap_keyset(const Fred::InfoKeysetData& in)
+    {
+        KeySet temp;
+
+        temp.handle = Corba::wrap_string_to_corba_string(in.handle);
+        temp.registrar_handle = Corba::wrap_string_to_corba_string(in.sponsoring_registrar_handle);
+        temp.created = Corba::wrap_time(in.creation_time);
+        temp.changed = Corba::wrap_nullable_datetime(in.update_time);
+        temp.last_transfer = Corba::wrap_nullable_datetime(in.transfer_time);
+
+        set_corba_seq<StringSeq, CORBA::String_var,
+            std::vector<Fred::ObjectIdHandlePair>, Fred::ObjectIdHandlePair>(temp.tech_contact_handles, in.tech_contacts);
+
+        {
+            std::vector<std::string> statuses;
+            {
+                Fred::OperationContext ctx;
+
+                BOOST_FOREACH(const Fred::ObjectStateData& state, Fred::GetObjectStates(in.id).exec(ctx)) {
+                    if(state.is_external) {
+                        statuses.push_back(state.state_name);
+                    }
+                }
+            }
+
+            set_corba_seq<StringSeq, CORBA::String_var,
+                std::vector<std::string>, std::string>(temp.statuses, statuses);
+        }
+
+        set_corba_seq<DNSKeySeq, DNSKey,
+            std::vector<Fred::DnsKey>, Fred::DnsKey>(temp.dns_keys, in.dns_keys);
+
+        return temp;
+    }
+
+    template<> KeySet set_element_of_corba_seq<KeySet,  Fred::InfoKeysetOutput>
+        (const Fred::InfoKeysetOutput& ile)
+    {
+        return wrap_keyset(ile.info_keyset_data);
+    }
 
 
     NSSet wrap_nsset(const Fred::InfoNssetData& in)
@@ -383,24 +387,6 @@ namespace Whois {
     {
         return wrap_nsset(ile.info_nsset_data);
     }
-/*
-    NSSetSeq* wrap_nsset_vector(const std::vector<Fred::InfoNssetOutput>& in) {
-        NSSetSeq_var result(new NSSetSeq);
-
-        result->length(in.size());
-
-        long i = 0;
-        for(std::vector<Fred::InfoNssetOutput>::const_iterator it = in.begin();
-            it != in.end();
-            ++it, ++i
-        ) {
-            result[i] = wrap_nsset(it->info_nsset_data)->_value();
-        }
-
-        return result._retn();
-    }
-
-*/
 
     NullableRegistrar* Server_impl::get_registrar_by_handle(const char* handle) {
         try {
@@ -535,17 +521,15 @@ namespace Whois {
         throw INTERNAL_SERVER_ERROR();
     }
 
-    NullableKeySet* Server_impl::get_keyset_by_handle(const char* handle) {
+    NullableKeySet* Server_impl::get_keyset_by_handle(const char* handle)
+    {
         try {
             Fred::OperationContext ctx;
 
-            return
-                wrap_keyset(
-                    Fred::InfoKeysetByHandle(
-                        Corba::unwrap_string(handle)
-                    ).exec(ctx, output_timezone)
-                    .info_keyset_data
-                );
+            return Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableKeySet>(
+                Nullable<KeySet>(wrap_keyset(Fred::InfoKeysetByHandle(Corba::unwrap_string(handle)
+                    ).exec(ctx, output_timezone).info_keyset_data))
+                )._retn();
 
         } catch(const Fred::InfoKeysetByHandle::Exception& e) {
             if(e.is_set_unknown_handle()) {
@@ -557,8 +541,26 @@ namespace Whois {
         throw INTERNAL_SERVER_ERROR();
     }
 
-    // TODO XXX Just to have RDAP prototype quickly deployable (Ticket #10627). Must be implemented later.
-    KeySetSeq* Server_impl::get_keysets_by_tech_c(const char* handle) { return NULL; }
+    KeySetSeq* Server_impl::get_keysets_by_tech_c(const char* handle)
+    {
+        try
+        {
+            Fred::OperationContext ctx;
+
+            KeySetSeq_var ks_seq = new KeySetSeq;
+
+            std::vector<Fred::InfoKeysetOutput> ks_info = Fred::InfoKeysetByTechContactHandle(
+                Corba::unwrap_string(handle)).exec(ctx, output_timezone);
+
+            set_corba_seq<KeySetSeq, KeySet,std::vector<Fred::InfoKeysetOutput>, Fred::InfoKeysetOutput>
+                (ks_seq.inout(), ks_info);
+
+            return ks_seq._retn();
+        } catch (...) { }
+
+        // default exception handling
+        throw INTERNAL_SERVER_ERROR();
+    }
 
     NullableDomain* Server_impl::get_domain_by_handle(const char* handle) {
         try {

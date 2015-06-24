@@ -91,7 +91,6 @@ struct info_keyset_fixture : public Test::Fixture::instantiate_db_template
                 .set_dns_keys(Util::vector_of<Fred::DnsKey> (Fred::DnsKey(257, 3, 5, "AwEAAddt2AkLfYGKgiEZB5SmIF8EvrjxNMH6HtxWEA4RJ9Ao6LCWheg8")))
                 .exec(fixture_ctx);
         BOOST_MESSAGE(std::string("test_keyset_handle: ") + test_keyset_handle);
-        fixture_ctx.commit_transaction();
 
         Fred::UpdateKeyset(test_keyset_history_handle, registrar_handle)
             .rem_tech_contact(admin_contact6_handle)
@@ -114,7 +113,8 @@ BOOST_AUTO_TEST_CASE(info_keyset)
     std::vector<Fred::InfoKeysetOutput> keyset_res;
 
     BOOST_MESSAGE(Fred::InfoKeyset()
-                .set_handle(test_keyset_handle)
+                .set_inline_view_filter(Database::ParamQuery("info_keyset_handle = ").param_text(test_keyset_handle))
+                .set_cte_id_filter(Database::ParamQuery("SELECT 1 id"))
                 .set_history_query(false)
                 .explain_analyze(ctx,keyset_res,"Europe/Prague")
                 );
@@ -122,6 +122,11 @@ BOOST_AUTO_TEST_CASE(info_keyset)
     Fred::InfoKeysetOutput info_data_1 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
     Fred::InfoKeysetOutput info_data_2 = Fred::InfoKeysetByHandle(test_keyset_handle).set_lock().exec(ctx);
     BOOST_CHECK(info_data_1 == info_data_2);
+
+    Fred::InfoKeysetOutput info_data_tc_1 = Fred::InfoKeysetByTechContactHandle(admin_contact6_handle).exec(ctx).at(0);
+    BOOST_CHECK(info_data_1 == info_data_tc_1);
+    Fred::InfoKeysetOutput info_data_tc_2 = Fred::InfoKeysetByTechContactHandle(admin_contact6_handle).set_lock().exec(ctx).at(0);
+    BOOST_CHECK(info_data_1 == info_data_tc_2);
 
     Fred::InfoKeysetOutput info_data_3 = Fred::InfoKeysetById(info_data_1.info_keyset_data.id).exec(ctx);
     BOOST_CHECK(info_data_1 == info_data_3);
@@ -131,31 +136,6 @@ BOOST_AUTO_TEST_CASE(info_keyset)
     BOOST_CHECK(info_data_1 == info_data_5);
     Fred::InfoKeysetOutput info_data_6 = Fred::InfoKeysetHistoryByHistoryid(info_data_1.info_keyset_data.historyid).exec(ctx);
     BOOST_CHECK(info_data_1 == info_data_6);
-
-    //impl
-    for( int j = 0; j < (1 << 7); ++j)
-    {
-        Fred::InfoKeyset i;
-        if(j & (1 << 0)) i.set_handle(info_data_1.info_keyset_data.handle);
-        if(j & (1 << 1)) i.set_roid(info_data_1.info_keyset_data.roid);
-        if(j & (1 << 2)) i.set_id(info_data_1.info_keyset_data.id);
-        if(j & (1 << 3)) i.set_historyid(info_data_1.info_keyset_data.historyid);
-        if(j & (1 << 4)) i.set_lock();
-        if(j & (1 << 5)) i.set_history_timestamp(info_data_1.info_keyset_data.creation_time);
-        if(j & (1 << 6)) i.set_history_query(true);
-
-        std::vector<Fred::InfoKeysetOutput> output;
-        BOOST_MESSAGE(i.explain_analyze(ctx,output));
-        if((j & (1 << 0)) || (j & (1 << 1)) || (j & (1 << 2)) || (j & (1 << 3)))//check if selective
-        {
-            if((info_data_1 != output.at(0)))
-            {
-                BOOST_MESSAGE(Fred::diff_keyset_data(info_data_1.info_keyset_data
-                        , output.at(0).info_keyset_data).to_string());
-            }
-            BOOST_CHECK(output.at(0) == info_data_1);
-        }
-    }
 
 
     ctx.commit_transaction();

@@ -32,6 +32,7 @@
 
 #include "src/fredlib/opcontext.h"
 #include "util/db/nullable.h"
+#include "util/db/param_query_composition.h"
 #include "info_keyset_output.h"
 #include "util/printable.h"
 namespace Fred
@@ -43,17 +44,16 @@ namespace Fred
     */
     class InfoKeyset
     {
-        Optional<std::string> handle_;/**< keyset handle */
-        Optional<std::string> keyset_roid_;/**< registry object identifier of the keyset */
-        Optional<unsigned long long> keyset_id_;/**< object id of the keyset */
-        Optional<unsigned long long> keyset_historyid_;/**< history id of the keyset */
-        Optional<boost::posix_time::ptime> history_timestamp_;/**< timestamp of history state we want to get (in time zone set in @ref local_timestamp_pg_time_zone_name parameter) */
+
         bool history_query_;/**< flag to query history records of the keyset */
         bool lock_;/**< if set to true lock object_registry row for update, if set to false lock for share */
+        Optional<Database::ParamQuery> info_keyset_inline_view_filter_expr_;/**< where clause of the info keyset query where projection is inline view sub-select */
+        Optional<Database::ParamQuery> info_keyset_id_filter_cte_;/**< CTE query returning set of keyset id */
 
-        std::pair<std::string, Database::QueryParams> make_keyset_query(const std::string& local_timestamp_pg_time_zone_name);/**< info query generator @return pair of query string with query params*/
-        std::pair<std::string, Database::QueryParams> make_tech_contact_query(unsigned long long id, unsigned long long historyid);/**< keyset technical contacts query generator @return pair of query string with query params*/
-        std::pair<std::string, Database::QueryParams> make_dns_keys_query(unsigned long long id, unsigned long long historyid);/**< keyset DNS keys query generator @return pair of query string with query params*/
+        Database::ParamQuery make_info_keyset_projection_query(const std::string& local_timestamp_pg_time_zone_name);/**< info query generator*/
+
+        Database::ParamQuery make_tech_contact_query(unsigned long long id, unsigned long long historyid);/**< keyset technical contacts query generator @return pair of query string with query params*/
+        Database::ParamQuery make_dns_keys_query(unsigned long long id, unsigned long long historyid);/**< keyset DNS keys query generator @return pair of query string with query params*/
     public:
 
         /**
@@ -63,39 +63,21 @@ namespace Fred
         InfoKeyset();
 
         /**
-        * Sets keyset handle.
-        * @param handle sets keyset handle we want to get @ref handle_ attribute
-        * @return operation instance reference to allow method chaining
-        */
-        InfoKeyset& set_handle(const std::string& handle);
+         * Sets keyset selection criteria.
+         * Filter expression, which is optional WHERE clause, has access to following info keyset projection aliases:
+         * info_keyset_id, info_keyset_roid, info_keyset_handle, info_keyset_delete_time, info_keyset_historyid,
+         * info_keyset_next_historyid, info_keyset_history_valid_from, info_keyset_history_valid_to,
+         * info_keyset_sponsoring_registrar_id, info_keyset_sponsoring_registrar_handle, info_keyset_creating_registrar_id,
+         * info_keyset_creating_registrar_handle, info_keyset_last_updated_by_registrar_id, info_keyset_last_updated_by_registrar_handle,
+         * info_keyset_creation_time, info_keyset_transfer_time, info_keyset_update_time, info_keyset_authinfopw,
+         * info_keyset_first_historyid, info_keyset_logd_request_id, info_keyset_utc_timestamp, info_keyset_local_timestamp
+         */
+        InfoKeyset& set_inline_view_filter(const Database::ParamQuery& filter_expr);
 
         /**
-        * Sets registry object identifier of the keyset.
-        * @param keyset_roid sets registry object identifier of the keyset we want to get @ref keyset_roid_ attribute
-        * @return operation instance reference to allow method chaining
-        */
-        InfoKeyset& set_roid(const std::string& keyset_roid);
-
-        /**
-        * Sets database identifier of the keyset.
-        * @param keyset_id sets object identifier of the keyset we want to get @ref keyset_id_ attribute
-        * @return operation instance reference to allow method chaining
-        */
-        InfoKeyset& set_id(unsigned long long keyset_id);
-
-        /**
-        * Sets history identifier of the keyset.
-        * @param keyset_historyid sets history identifier of the keyset we want to get @ref keyset_historyid_ attribute
-        * @return operation instance reference to allow method chaining
-        */
-        InfoKeyset& set_historyid(unsigned long long keyset_historyid);
-
-        /**
-        * Sets timestamp of history state we want to get.
-        * @param history_timestamp sets timestamp of history state we want to get @ref history_timestamp_ attribute
-        * @return operation instance reference to allow method chaining
-        */
-        InfoKeyset& set_history_timestamp(boost::posix_time::ptime history_timestamp);
+         * Sets CTE query, that returns set of keyset id.
+         */
+        InfoKeyset& set_cte_id_filter(const Database::ParamQuery& filter_expr);
 
         /**
         * Sets history query flag.

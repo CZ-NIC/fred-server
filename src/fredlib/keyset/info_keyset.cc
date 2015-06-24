@@ -57,7 +57,7 @@ namespace Fred
         try
         {
             InfoKeyset ik;
-            ik.set_handle(handle_).set_history_query(false);
+            ik.set_inline_view_filter(Database::ParamQuery("info_keyset_handle = UPPER(").param_text(handle_)(")")).set_history_query(false);
             if(lock_) ik.set_lock();
             keyset_res = ik.exec(ctx,local_timestamp_pg_time_zone_name);
 
@@ -107,7 +107,7 @@ namespace Fred
         try
         {
             InfoKeyset ik;
-            ik.set_id(id_).set_history_query(false);
+            ik.set_inline_view_filter(Database::ParamQuery("info_keyset_id = ").param_bigint(id_)).set_history_query(false);
             if(lock_) ik.set_lock();
             keyset_res = ik.exec(ctx,local_timestamp_pg_time_zone_name);
 
@@ -170,7 +170,7 @@ namespace Fred
         try
         {
             InfoKeyset ik;
-            ik.set_roid(roid_).set_history_query(true);
+            ik.set_inline_view_filter(Database::ParamQuery("info_keyset_roid = ").param_text(roid_)).set_history_query(true);
             if(lock_) ik.set_lock();
             keyset_res = ik.exec(ctx,local_timestamp_pg_time_zone_name);
 
@@ -217,7 +217,7 @@ namespace Fred
         try
         {
             InfoKeyset ik;
-            ik.set_id(id_).set_history_query(true);
+            ik.set_inline_view_filter(Database::ParamQuery("info_keyset_id = ").param_bigint(id_)).set_history_query(true);
             if(lock_) ik.set_lock();
             keyset_history_res = ik.exec(ctx,local_timestamp_pg_time_zone_name);
 
@@ -262,7 +262,7 @@ namespace Fred
         try
         {
             InfoKeyset ik;
-            ik.set_historyid(historyid_).set_history_query(true);
+            ik.set_inline_view_filter(Database::ParamQuery("info_keyset_historyid = ").param_bigint(historyid_)).set_history_query(true);
             if(lock_) ik.set_lock();
             keyset_history_res = ik.exec(ctx,local_timestamp_pg_time_zone_name);
 
@@ -293,6 +293,55 @@ namespace Fred
         (std::make_pair("lock",lock_ ? "true":"false"))
         );
     }
+
+
+    InfoKeysetByTechContactHandle::InfoKeysetByTechContactHandle(const std::string& tc_handle)
+        : tech_contact_handle_(tc_handle)
+        , lock_(false)
+    {}
+
+    InfoKeysetByTechContactHandle& InfoKeysetByTechContactHandle::set_lock()
+    {
+        lock_ = true;
+        return *this;
+    }
+
+    std::vector<InfoKeysetOutput> InfoKeysetByTechContactHandle::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
+    {
+        std::vector<InfoKeysetOutput> keyset_res;
+
+        try
+        {
+            InfoKeyset ik;
+            ik.set_cte_id_filter(Database::ParamQuery(
+                "SELECT kcm.keysetid"
+                " FROM object_registry oreg"
+                " JOIN  enum_object_type eot ON oreg.type = eot.id AND eot.name = 'contact'"
+                " JOIN keyset_contact_map kcm ON kcm.contactid = oreg.id"
+                " WHERE oreg.name = UPPER(").param_text(tech_contact_handle_)(") AND oreg.erdate IS NULL")
+                )
+                .set_history_query(false);
+            if(lock_) ik.set_lock();
+            keyset_res = ik.exec(ctx,local_timestamp_pg_time_zone_name);
+        }
+        catch(ExceptionStack& ex)
+        {
+            ex.add_exception_stack_info(to_string());
+            throw;
+        }
+        return keyset_res;
+    }
+
+
+    std::string InfoKeysetByTechContactHandle::to_string() const
+    {
+        return Util::format_operation_state("InfoKeysetByTechContactHandle",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("tech_contact_handle", tech_contact_handle_))
+        (std::make_pair("lock",lock_ ? "true":"false"))
+        );
+    }
+
 
 }//namespace Fred
 
