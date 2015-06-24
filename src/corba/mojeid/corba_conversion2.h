@@ -98,32 +98,56 @@ struct from_into< Registry::MojeID::ShippingAddress, Fred::MojeID::ShippingAddre
     }
 };
 
+// because frontend don't preseve NULL values :(
+typedef Registry::MojeID::NullableString_member CORBA_NullableString;
+const CORBA_NullableString& empty_as_null(const CORBA_NullableString &_value)
+{
+    if ((_value.in() == NULL) ||              // is NULL or
+        (_value.in()->_value()[0] != '\0')) { // is nonempty
+        return _value;
+    }
+    static const CORBA_NullableString null_value;
+    return null_value;
+}
+
+// because frontend don't preseve NULL values :(
+typedef Registry::MojeID::NullableDate_member CORBA_NullableDate;
+const CORBA_NullableDate& empty_as_null(const CORBA_NullableDate &_value)
+{
+    if ((_value.in() == NULL) ||              // is NULL or
+        (_value.in()->_value()[0] != '\0')) { // is nonempty
+        return _value;
+    }
+    static const CORBA_NullableDate null_value;
+    return null_value;
+}
+
 template < >
 struct from_into< Registry::MojeID::CreateContact, Fred::MojeID::CreateContact >
 : from_into_base< Registry::MojeID::CreateContact, Fred::MojeID::CreateContact >
 {
     dst_value_ref operator()(src_value src, dst_value_ref dst)const
     {
-        from(src.username).into(dst.username);
-        from(src.first_name).into(dst.first_name);
-        from(src.last_name).into(dst.last_name);
-        from(src.organization).into(dst.organization);
-        from(src.vat_reg_num).into(dst.vat_reg_num);
-        from(src.birth_date).into(dst.birth_date);
-        from(src.id_card_num).into(dst.id_card_num);
-        from(src.passport_num).into(dst.passport_num);
-        from(src.ssn_id_num).into(dst.ssn_id_num);
-        from(src.vat_id_num).into(dst.vat_id_num);
-        from(src.permanent).into(dst.permanent);
-        from(src.mailing).into(dst.mailing);
-        from(src.billing).into(dst.billing);
-        from(src.shipping).into(dst.shipping);
-        from(src.shipping2).into(dst.shipping2);
-        from(src.shipping3).into(dst.shipping3);
-        from(src.email).into(dst.email);
-        from(src.notify_email).into(dst.notify_email);
-        from(src.teplephone).into(dst.teplephone);
-        from(src.fax).into(dst.fax);
+        from(              src.username)     .into(dst.username);
+        from(              src.first_name)   .into(dst.first_name);
+        from(              src.last_name)    .into(dst.last_name);
+        from(empty_as_null(src.organization)).into(dst.organization);
+        from(empty_as_null(src.vat_reg_num)) .into(dst.vat_reg_num);
+        from(empty_as_null(src.birth_date))  .into(dst.birth_date);
+        from(empty_as_null(src.id_card_num)) .into(dst.id_card_num);
+        from(empty_as_null(src.passport_num)).into(dst.passport_num);
+        from(empty_as_null(src.ssn_id_num))  .into(dst.ssn_id_num);
+        from(empty_as_null(src.vat_id_num))  .into(dst.vat_id_num);
+        from(              src.permanent)    .into(dst.permanent);
+        from(              src.mailing)      .into(dst.mailing);
+        from(              src.billing)      .into(dst.billing);
+        from(              src.shipping)     .into(dst.shipping);
+        from(              src.shipping2)    .into(dst.shipping2);
+        from(              src.shipping3)    .into(dst.shipping3);
+        from(              src.email)        .into(dst.email);
+        from(empty_as_null(src.notify_email)).into(dst.notify_email);
+        from(              src.telephone)    .into(dst.telephone);
+        from(empty_as_null(src.fax))         .into(dst.fax);
         return dst;
     }
 };
