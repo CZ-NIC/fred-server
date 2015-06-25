@@ -23,8 +23,9 @@
 
 #include "src/mojeid/mojeid2.h"
 #include "src/mojeid/mojeid2_checkers.h"
+#include "src/mojeid/mojeid_public_request.h"
 #include "src/fredlib/contact/create_contact.h"
-#include "src/fredlib/public_request/create_public_request.h"
+#include "src/fredlib/public_request/create_public_request_auth.h"
 #include "util/random.h"
 #include "util/log/context.h"
 #include "util/cfg/handle_mojeid_args.h"
@@ -306,9 +307,14 @@ ContactId MojeID2Impl::create_contact_prepare(
         Check check_result(Fred::make_args(_contact),
                            Fred::make_args(_contact, ctx));
 
-        Fred::CreateContact create_contact(_contact.username, mojeid_registrar_handle_);
-        set_create_contact_arguments(_contact, create_contact);
-        const Fred::CreateContact::Result new_contact = create_contact.exec(ctx);
+        Fred::CreateContact op_create_contact(_contact.username, mojeid_registrar_handle_);
+        set_create_contact_arguments(_contact, op_create_contact);
+        const Fred::CreateContact::Result new_contact = op_create_contact.exec(ctx);
+        Fred::CreatePublicRequestAuth op_create_pub_req(
+            (Fred::MojeID::PublicRequest::ContactConditionalIdentification()));
+        Fred::PublicRequestObjectLockGuard locked_contact(ctx, new_contact.object_id);
+        op_create_pub_req.exec(ctx, locked_contact);
+        ctx.commit_transaction();
         return new_contact.object_id;
     }
     catch (const std::exception &e) {
