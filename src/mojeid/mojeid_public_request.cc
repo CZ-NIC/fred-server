@@ -59,7 +59,7 @@ std::string generate_pin1_pin2()
     return generate_pin1() + generate_pin2();
 }
 
-}
+}//Fred::{anonymous}
 
 std::string conditional_contact_identification_generate_passwords()
 {

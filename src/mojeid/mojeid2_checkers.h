@@ -54,12 +54,65 @@ struct contact_address:GeneralCheck::contact_address
             _data.postal_code,
             _data.country)
     { }
+    contact_address(const ShippingAddress &_data)
+    :   GeneralCheck::contact_address(
+            _data.street1,
+            _data.city,
+            _data.postal_code,
+            _data.country)
+    { }
 };
 
 struct contact_permanent_address:contact_address
 {
     contact_permanent_address(const CreateContact &_data)
     :   contact_address(_data.permanent)
+    { }
+};
+
+template < typename ADDRESS >
+struct optional_address
+{
+    optional_address(const Nullable< ADDRESS > &_addr)
+    :   invalid(!(_addr.isnull() ||
+                  contact_address(_addr.get_value()).success()))
+    { }
+    bool success()const { return !invalid; }
+    bool invalid:1;///< address presents but isn't valid
+};
+
+struct contact_mailing_address:optional_address< Address >
+{
+    contact_mailing_address(const CreateContact &_data)
+    :   optional_address< Address >(_data.mailing)
+    { }
+};
+
+struct contact_billing_address:optional_address< Address >
+{
+    contact_billing_address(const CreateContact &_data)
+    :   optional_address< Address >(_data.billing)
+    { }
+};
+
+struct contact_shipping_address:optional_address< ShippingAddress >
+{
+    contact_shipping_address(const CreateContact &_data)
+    :   optional_address< ShippingAddress >(_data.shipping)
+    { }
+};
+
+struct contact_shipping2_address:optional_address< ShippingAddress >
+{
+    contact_shipping2_address(const CreateContact &_data)
+    :   optional_address< ShippingAddress >(_data.shipping2)
+    { }
+};
+
+struct contact_shipping3_address:optional_address< ShippingAddress >
+{
+    contact_shipping3_address(const CreateContact &_data)
+    :   optional_address< ShippingAddress >(_data.shipping3)
     { }
 };
 

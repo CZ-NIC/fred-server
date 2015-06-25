@@ -294,6 +294,11 @@ ContactId MojeID2Impl::create_contact_prepare(
         Fred::OperationContextTwoPhaseCommitCreator ctx(_trans_id);
         typedef boost::mpl::list< Fred::MojeID::Check::contact_name,
                                   Fred::MojeID::Check::contact_permanent_address,
+                                  Fred::MojeID::Check::contact_mailing_address,
+                                  Fred::MojeID::Check::contact_billing_address,
+                                  Fred::MojeID::Check::contact_shipping_address,
+                                  Fred::MojeID::Check::contact_shipping2_address,
+                                  Fred::MojeID::Check::contact_shipping3_address,
                                   Fred::MojeID::Check::contact_email_presence,
                                   Fred::MojeID::Check::contact_email_validity,
                                   Fred::MojeID::Check::contact_phone_presence,
