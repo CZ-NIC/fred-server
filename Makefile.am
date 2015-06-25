@@ -1755,6 +1755,7 @@ src_corba_mojeid_fred_mifd_SOURCES = \
 		src/mojeid/mojeid2.cc \
 		src/corba/nameservice.cc \
 		src/corba/mojeid/server2_i.cc \
+		src/corba/mojeid/corba_conversion2.cc \
 		src/corba/mojeid/fred-mifd2.cc
 
 nodist_src_corba_mojeid_fred_mifd_SOURCES = \
