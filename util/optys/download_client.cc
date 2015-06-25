@@ -232,8 +232,8 @@
     {
         const std::string ssh_account = user_ + "@" + host_;
         Cmd::Executable download_command("rsync");
-        download_command("--include=\"*.csv\"")("--exclude=\"*\"")("-e")("ssh -p " + port_)("-ai")
-            ("--out-format=\"%n\"")("--inplace")(ssh_account + ":" + remote_data_dir_ + "/")
+        download_command("--include=*.csv")("--exclude=*")("-e")("ssh -p " + port_)("-ai")
+            ("--out-format=%n")("--inplace")(ssh_account + ":" + remote_data_dir_ + "/")
             (local_download_dir_);
 
         std::set<std::string> downloaded_data_filenames;
