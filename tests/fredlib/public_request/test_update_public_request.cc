@@ -31,7 +31,7 @@
 const std::string server_name = "test-update-public-request";
 
 struct update_public_request_fixture : virtual Test::Fixture::instantiate_db_template,
-                                       private Fred::PublicRequestTypeIface
+                                       private Fred::PublicRequestAuthTypeIface
 {
     update_public_request_fixture()
     :   xmark(RandomDataGenerator().xnumstring(6)),
@@ -71,7 +71,7 @@ struct update_public_request_fixture : virtual Test::Fixture::instantiate_db_tem
             "ORDER BY id OFFSET (SELECT COUNT(*)/2 FROM enum_public_request_type) LIMIT 1");
         BOOST_CHECK(dbres.size() == 1);//expecting existing public request type
         type_name_ = static_cast< std::string >(dbres[0][0]);
-        create_result = Fred::CreatePublicRequestAuth(public_request_type, "h*vno kleslo")
+        create_result = Fred::CreatePublicRequestAuth(public_request_type)
             .exec(ctx, locked_contact);
         ctx.commit_transaction();
     }
@@ -83,11 +83,12 @@ protected:
     Fred::RegistrarId registrar_id;
     Fred::ObjectId contact_id;
     Fred::CreatePublicRequestAuth::Result create_result;
-    const Fred::PublicRequestTypeIface &public_request_type;
+    const Fred::PublicRequestAuthTypeIface &public_request_type;
     enum { NUMBER_OF_STATES = 3 };
     const Fred::PublicRequestStatus bad_enum_status;
 private:
     std::string get_public_request_type()const { return type_name_; }
+    std::string generate_passwords()const { return "h*vno kleslo"; }
     std::string type_name_;
 };
 

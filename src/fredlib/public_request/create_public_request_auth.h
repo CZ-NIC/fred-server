@@ -24,7 +24,7 @@
 #ifndef CREATE_PUBLIC_REQUEST_AUTH_H_D034201C95EC2E9FF787F4CBF17E7802//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
 #define CREATE_PUBLIC_REQUEST_AUTH_H_D034201C95EC2E9FF787F4CBF17E7802
 
-#include "src/fredlib/public_request/public_request_type_iface.h"
+#include "src/fredlib/public_request/public_request_auth_type_iface.h"
 #include "src/fredlib/public_request/public_request_object_lock_guard.h"
 #include "util/optional_value.h"
 
@@ -47,23 +47,19 @@ public:
     {};
 
     /**
-     * Constructor with mandatory parameters.
+     * Constructor with mandatory parameter.
      * @param _type type of public request
-     * @param _password authentication string
      */
-    CreatePublicRequestAuth(const PublicRequestTypeIface &_type,
-                            const std::string &_password);
+    CreatePublicRequestAuth(const PublicRequestAuthTypeIface &_type);
 
     /**
      * Constructor with all parameters.
      * @param _type type of public request
-     * @param _password authentication string
      * @param _reason reason of public request creation
      * @param _email_to_answer the answer recipient's email address
      * @param _registrar_id I don't know relationship between this registrar and public request!
      */
-    CreatePublicRequestAuth(const PublicRequestTypeIface &_type,
-                            const std::string &_password,
+    CreatePublicRequestAuth(const PublicRequestAuthTypeIface &_type,
                             const Optional< std::string > &_reason,
                             const Optional< std::string > &_email_to_answer,
                             const Optional< RegistrarId > &_registrar_id);

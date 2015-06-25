@@ -3,20 +3,18 @@
 
 namespace Fred {
 
-CreatePublicRequestAuth::CreatePublicRequestAuth(const PublicRequestTypeIface &_type,
-                                                 const std::string &_password)
+CreatePublicRequestAuth::CreatePublicRequestAuth(const PublicRequestAuthTypeIface &_type)
 :   type_(_type.get_public_request_type()),
-    password_(_password)
+    password_(_type.generate_passwords())
 {
 }
 
-CreatePublicRequestAuth::CreatePublicRequestAuth(const PublicRequestTypeIface &_type,
-                                                 const std::string &_password,
+CreatePublicRequestAuth::CreatePublicRequestAuth(const PublicRequestAuthTypeIface &_type,
                                                  const Optional< std::string > &_reason,
                                                  const Optional< std::string > &_email_to_answer,
                                                  const Optional< RegistrarId > &_registrar_id)
 :   type_(_type.get_public_request_type()),
-    password_(_password),
+    password_(_type.generate_passwords()),
     reason_(_reason),
     email_to_answer_(_email_to_answer),
     registrar_id_(_registrar_id)
