@@ -25,137 +25,24 @@
 #define MOJEID2_CHECKERS_H_3F3071E19E8ADD1CB7438F97BBE37530
 
 #include "src/fredlib/contact/checkers.h"
-#include "src/mojeid/mojeid2.h"
+#include "src/fredlib/contact/info_contact_data.h"
 
 namespace Fred {
 namespace MojeID {
 namespace Check {
 
-struct contact_username_availability:GeneralCheck::MojeID::contact_username_availability
-{
-    contact_username_availability(const CreateContact &_data, OperationContext &_ctx)
-    :   GeneralCheck::MojeID::contact_username_availability(_data.username, _ctx)
-    { }
-};
-
-struct contact_name:GeneralCheck::contact_name
-{
-    contact_name(const CreateContact &_data)
-    :   GeneralCheck::contact_name(_data.first_name, _data.last_name)
-    { }
-};
-
-struct contact_address:GeneralCheck::contact_address
-{
-    contact_address(const Address &_data)
-    :   GeneralCheck::contact_address(
-            _data.street1,
-            _data.city,
-            _data.postal_code,
-            _data.country)
-    { }
-    contact_address(const ShippingAddress &_data)
-    :   GeneralCheck::contact_address(
-            _data.street1,
-            _data.city,
-            _data.postal_code,
-            _data.country)
-    { }
-};
-
-struct contact_permanent_address:contact_address
-{
-    contact_permanent_address(const CreateContact &_data)
-    :   contact_address(_data.permanent)
-    { }
-};
-
-template < typename ADDRESS >
-struct optional_address
-{
-    optional_address(const Nullable< ADDRESS > &_addr)
-    :   invalid(!(_addr.isnull() ||
-                  contact_address(_addr.get_value()).success()))
-    { }
-    bool success()const { return !invalid; }
-    bool invalid:1;///< address presents but isn't valid
-};
-
-struct contact_mailing_address:optional_address< Address >
-{
-    contact_mailing_address(const CreateContact &_data)
-    :   optional_address< Address >(_data.mailing)
-    { }
-};
-
-struct contact_billing_address:optional_address< Address >
-{
-    contact_billing_address(const CreateContact &_data)
-    :   optional_address< Address >(_data.billing)
-    { }
-};
-
-struct contact_shipping_address:optional_address< ShippingAddress >
-{
-    contact_shipping_address(const CreateContact &_data)
-    :   optional_address< ShippingAddress >(_data.shipping)
-    { }
-};
-
-struct contact_shipping2_address:optional_address< ShippingAddress >
-{
-    contact_shipping2_address(const CreateContact &_data)
-    :   optional_address< ShippingAddress >(_data.shipping2)
-    { }
-};
-
-struct contact_shipping3_address:optional_address< ShippingAddress >
-{
-    contact_shipping3_address(const CreateContact &_data)
-    :   optional_address< ShippingAddress >(_data.shipping3)
-    { }
-};
-
-struct contact_email_presence:GeneralCheck::contact_email_presence
-{
-    contact_email_presence(const CreateContact &_data)
-    :   GeneralCheck::contact_email_presence(_data.email)
-    { }
-};
-
-struct contact_email_validity:GeneralCheck::contact_email_validity
-{
-    contact_email_validity(const CreateContact &_data)
-    :   GeneralCheck::contact_email_validity(_data.email)
-    { }
-};
-
-struct contact_email_availability:GeneralCheck::contact_email_availability
+struct new_contact_email_availability:GeneralCheck::contact_email_availability
 {
     enum { UNUSED_CONTACT_ID = 0 };
-    contact_email_availability(const CreateContact &_data, OperationContext &_ctx)
+    new_contact_email_availability(const InfoContactData &_data, OperationContext &_ctx)
     :   GeneralCheck::contact_email_availability(_data.email, UNUSED_CONTACT_ID, _ctx)
     { }
 };
 
-struct contact_phone_presence:GeneralCheck::contact_phone_presence
-{
-    contact_phone_presence(const CreateContact &_data)
-    :   GeneralCheck::contact_phone_presence(_data.telephone)
-    { }
-};
-
-struct contact_phone_validity:GeneralCheck::contact_phone_validity
-{
-    contact_phone_validity(const CreateContact &_data)
-    :   GeneralCheck::contact_phone_validity(_data.telephone)
-    { }
-};
-
-struct contact_phone_availability:GeneralCheck::contact_phone_availability
+struct new_contact_phone_availability:GeneralCheck::contact_phone_availability
 {
     enum { UNUSED_CONTACT_ID = 0 };
-    contact_phone_availability(const CreateContact &_data, OperationContext &_ctx)
+    new_contact_phone_availability(const InfoContactData &_data, OperationContext &_ctx)
     :   GeneralCheck::contact_phone_availability(_data.telephone, UNUSED_CONTACT_ID, _ctx)
     { }
 };

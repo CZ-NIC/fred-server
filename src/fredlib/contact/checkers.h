@@ -79,18 +79,24 @@ struct contact_name
 };
 
 /**
- * Contact address verification.
+ * Contact optional address verification.
  */
-struct contact_address
+struct contact_optional_address
 {
+    /**
+     * All checks set.
+     * @param _success result of all checks
+     */
+    contact_optional_address(bool _success);
     /**
      * Executes check.
      * @param _street1 contact address part to verify
      * @param _city contact address part to verify
      * @param _postalcode contact address part to verify
      * @param _country contact address part to verify
+     * @return self reference
      */
-    contact_address(
+    contact_optional_address& operator()(
         const std::string &_street1,
         const std::string &_city,
         const std::string &_postalcode,
@@ -104,6 +110,25 @@ struct contact_address
     bool city_absent:1;      ///< contact doesn't have city entry
     bool postalcode_absent:1;///< contact doesn't have postal code entry
     bool country_absent:1;   ///< contact doesn't have country entry
+};
+
+/**
+ * Contact address verification.
+ */
+struct contact_address:contact_optional_address
+{
+    /**
+     * Executes check.
+     * @param _street1 contact address part to verify
+     * @param _city contact address part to verify
+     * @param _postalcode contact address part to verify
+     * @param _country contact address part to verify
+     */
+    contact_address(
+        const std::string &_street1,
+        const std::string &_city,
+        const std::string &_postalcode,
+        const std::string &_country);
 };
 
 /**
@@ -392,9 +417,9 @@ struct check_contact_name:GeneralCheck::contact_name
     { }
 };
 
-struct check_contact_place_address:GeneralCheck::contact_address
+struct check_place_address:GeneralCheck::contact_address
 {
-    check_contact_place_address(const Contact::PlaceAddress &_data)
+    check_place_address(const Contact::PlaceAddress &_data)
     :   GeneralCheck::contact_address(
             _data.street1,
             _data.city,
@@ -403,10 +428,55 @@ struct check_contact_place_address:GeneralCheck::contact_address
     { }
 };
 
-struct check_contact_mailing_address:check_contact_place_address
+struct check_contact_mailing_address:check_place_address
 {
     check_contact_mailing_address(const InfoContactData &_data)
-    :   check_contact_place_address(_data.get_address< ContactAddressType::MAILING >())
+    :   check_place_address(_data.get_address< ContactAddressType::MAILING >())
+    { }
+};
+
+struct check_contact_place_address:GeneralCheck::contact_optional_address
+{
+    check_contact_place_address(const InfoContactData &_data);
+};
+
+struct check_contact_addresses:GeneralCheck::contact_optional_address
+{
+    check_contact_addresses(const InfoContactData &_data, ContactAddressType _address_type);
+};
+
+struct check_contact_addresses_mailing:check_contact_addresses
+{
+    check_contact_addresses_mailing(const InfoContactData &_data)
+    :   check_contact_addresses(_data, ContactAddressType::MAILING)
+    { }
+};
+
+struct check_contact_addresses_billing:check_contact_addresses
+{
+    check_contact_addresses_billing(const InfoContactData &_data)
+    :   check_contact_addresses(_data, ContactAddressType::BILLING)
+    { }
+};
+
+struct check_contact_addresses_shipping:check_contact_addresses
+{
+    check_contact_addresses_shipping(const InfoContactData &_data)
+    :   check_contact_addresses(_data, ContactAddressType::SHIPPING)
+    { }
+};
+
+struct check_contact_addresses_shipping2:check_contact_addresses
+{
+    check_contact_addresses_shipping2(const InfoContactData &_data)
+    :   check_contact_addresses(_data, ContactAddressType::SHIPPING_2)
+    { }
+};
+
+struct check_contact_addresses_shipping3:check_contact_addresses
+{
+    check_contact_addresses_shipping3(const InfoContactData &_data)
+    :   check_contact_addresses(_data, ContactAddressType::SHIPPING_3)
     { }
 };
 

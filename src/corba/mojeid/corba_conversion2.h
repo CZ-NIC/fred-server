@@ -26,7 +26,7 @@
 
 #include "src/corba/MojeID2.hh"
 #include "src/corba/mojeid/corba_common_conversion2.h"
-#include "src/mojeid/mojeid2.h"
+#include "src/fredlib/contact/info_contact_data.h"
 
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -65,22 +65,29 @@ struct into_from< Registry::MojeID::DateTime, boost::posix_time::ptime >
 };
 
 template < >
-struct from_into< Registry::MojeID::Address, Fred::MojeID::Address >
-: from_into_base< Registry::MojeID::Address, Fred::MojeID::Address >
+struct from_into< Registry::MojeID::Address, Fred::Contact::PlaceAddress >
+: from_into_base< Registry::MojeID::Address, Fred::Contact::PlaceAddress >
 {
     dst_value_ref operator()(src_value src, dst_value_ref dst)const;
 };
 
 template < >
-struct from_into< Registry::MojeID::ShippingAddress, Fred::MojeID::ShippingAddress >
-: from_into_base< Registry::MojeID::ShippingAddress, Fred::MojeID::ShippingAddress >
+struct from_into< Registry::MojeID::Address, Fred::ContactAddress >
+: from_into_base< Registry::MojeID::Address, Fred::ContactAddress >
 {
     dst_value_ref operator()(src_value src, dst_value_ref dst)const;
 };
 
 template < >
-struct from_into< Registry::MojeID::CreateContact, Fred::MojeID::CreateContact >
-: from_into_base< Registry::MojeID::CreateContact, Fred::MojeID::CreateContact >
+struct from_into< Registry::MojeID::ShippingAddress, Fred::ContactAddress >
+: from_into_base< Registry::MojeID::ShippingAddress, Fred::ContactAddress >
+{
+    dst_value_ref operator()(src_value src, dst_value_ref dst)const;
+};
+
+template < >
+struct from_into< Registry::MojeID::CreateContact, Fred::InfoContactData >
+: from_into_base< Registry::MojeID::CreateContact, Fred::InfoContactData >
 {
     dst_value_ref operator()(src_value src, dst_value_ref dst)const;
 };

@@ -29,6 +29,8 @@
 namespace Registry {
 namespace MojeID {
 
+typedef Server IDL;
+
 Server_i::Server_i(const std::string &_server_name)
 :   impl_ptr_(new MojeID2Impl(_server_name))
 {
@@ -45,16 +47,24 @@ Server_i::~Server_i()
     ::CORBA::ULongLong _log_request_id,
     ::CORBA::String_out _identification)
 {
-    Fred::MojeID::CreateContact contact;
-    Corba::Conversion::from(_contact).into(contact);
-    std::string ident;
-    const ContactId contact_id = impl_ptr_->create_contact_prepare(
-        contact,
-        _trans_id,
-        _log_request_id,
-        ident);
-    Corba::Conversion::into(_identification).from(ident);
-    return contact_id;
+    try {
+        Fred::InfoContactData contact;
+        Corba::Conversion::from(_contact).into(contact);
+        std::string ident;
+        const ContactId contact_id = impl_ptr_->create_contact_prepare(
+            contact,
+            _trans_id,
+            _log_request_id,
+            ident);
+        Corba::Conversion::into(_identification).from(ident);
+        return contact_id;
+    }
+    catch (const MojeID2Impl::CreateContactPrepareDataValidationError &e) {
+        throw;
+    }
+    catch (...) {
+        throw IDL::INTERNAL_SERVER_ERROR();
+    }
 ;
 }//create_contact_prepare
 

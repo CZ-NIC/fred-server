@@ -84,16 +84,35 @@ contact_name::contact_name(
     last_name_absent(nothing_else_whitespaces(_last_name))
 { }
 
+contact_optional_address::contact_optional_address(bool _success)
+:   street1_absent   (!_success),
+    city_absent      (!_success),
+    postalcode_absent(!_success),
+    country_absent   (!_success)
+{ }
+
+contact_optional_address& contact_optional_address::operator()(
+        const std::string &_street1,
+        const std::string &_city,
+        const std::string &_postalcode,
+        const std::string &_country)
+{
+    street1_absent    = nothing_else_whitespaces(_street1);
+    city_absent       = nothing_else_whitespaces(_city);
+    postalcode_absent = nothing_else_whitespaces(_postalcode);
+    country_absent    = nothing_else_whitespaces(_country);
+    return *this;
+}
+
 contact_address::contact_address(
     const std::string &_street1,
     const std::string &_city,
     const std::string &_postalcode,
     const std::string &_country)
-:   street1_absent(nothing_else_whitespaces(_street1)),
-    city_absent(nothing_else_whitespaces(_city)),
-    postalcode_absent(nothing_else_whitespaces(_postalcode)),
-    country_absent(nothing_else_whitespaces(_country))
-{ }
+:   contact_optional_address(true)
+{
+    this->contact_optional_address::operator()(_street1, _city, _postalcode, _country);
+}
 
 contact_email_presence::contact_email_presence(const Nullable< std::string > &_email)
 :   absent(absent_or_empty(_email))
@@ -253,4 +272,28 @@ contact_vat_id_presence::contact_vat_id_presence(
 
 }//Fred::GeneralCheck::MojeID
 }//Fred::GeneralCheck
+
+check_contact_place_address::check_contact_place_address(const InfoContactData &_data)
+:   GeneralCheck::contact_optional_address(false)
+{
+    if (!_data.place.isnull()) {
+        this->GeneralCheck::contact_optional_address::operator()(_data.place.get_value().street1,
+                                                                 _data.place.get_value().city,
+                                                                 _data.place.get_value().postalcode,
+                                                                 _data.place.get_value().country);
+    }
+}
+
+check_contact_addresses::check_contact_addresses(const InfoContactData &_data, ContactAddressType _address_type)
+:   GeneralCheck::contact_optional_address(true)
+{
+    ContactAddressList::const_iterator addr_ptr = _data.addresses.find(_address_type);
+    if (addr_ptr != _data.addresses.end()) {
+        this->GeneralCheck::contact_optional_address::operator()(addr_ptr->second.street1,
+                                                                 addr_ptr->second.city,
+                                                                 addr_ptr->second.postalcode,
+                                                                 addr_ptr->second.country);
+    }
+}
+
 }//Fred

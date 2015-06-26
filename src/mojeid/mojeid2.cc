@@ -22,7 +22,6 @@
  */
 
 #include "src/mojeid/mojeid2.h"
-#include "src/mojeid/mojeid2_checkers.h"
 #include "src/mojeid/mojeid_public_request.h"
 #include "src/fredlib/contact/create_contact.h"
 #include "src/fredlib/public_request/create_public_request_auth.h"
@@ -79,134 +78,42 @@ std::string get_mojeid_registrar_handle()
     throw std::runtime_error("missing configuration for dedicated registrar");
 }
 
-Fred::Contact::PlaceAddress& convert(const Fred::MojeID::Address &_src, Fred::Contact::PlaceAddress &_dst)
-{
-    _dst.street1    = _src.street1;
-    _dst.city       = _src.city;
-    _dst.postalcode = _src.postal_code;
-    _dst.country    = _src.country;
-    if (!_src.street2.isnull()) {
-        _dst.street2 = _src.street2.get_value();
-    }
-    if (!_src.street3.isnull()) {
-        _dst.street3 = _src.street3.get_value();
-    }
-    if (!_src.state.isnull()) {
-        _dst.stateorprovince = _src.state.get_value();
-    }
-    return _dst;
-}
-
-Fred::ContactAddress& convert(const Fred::MojeID::ShippingAddress &_src, Fred::ContactAddress &_dst)
-{
-    if (!_src.company_name.isnull()) {
-        _dst.company_name = _src.company_name.get_value();
-    }
-    _dst.street1    = _src.street1;
-    _dst.city       = _src.city;
-    _dst.postalcode = _src.postal_code;
-    _dst.country    = _src.country;
-    if (!_src.street2.isnull()) {
-        _dst.street2 = _src.street2.get_value();
-    }
-    if (!_src.street3.isnull()) {
-        _dst.street3 = _src.street3.get_value();
-    }
-    if (!_src.state.isnull()) {
-        _dst.stateorprovince = _src.state.get_value();
-    }
-    return _dst;
-}
-
-typedef bool ValueWasSet;
-
-ValueWasSet set_create_contact_ssn(
-    const Nullable< std::string > &_ssn,
-    const char *_ssn_type,
-    Fred::CreateContact &_arguments)
-{
-    if (_ssn.isnull()) {
-        return false;
-    }
-    _arguments.set_ssntype(_ssn_type);
-    _arguments.set_ssn(_ssn.get_value());
-    return true;
-}
-
 void set_create_contact_arguments(
-    const Fred::MojeID::CreateContact &_contact,
+    const Fred::InfoContactData &_contact,
     Fred::CreateContact &_arguments)
 {
-    _arguments.set_name(_contact.first_name + " " + _contact.last_name);
-    Fred::Contact::PlaceAddress place;
-    _arguments.set_place(convert(_contact.permanent, place));
-    _arguments.set_email(_contact.email);
-    _arguments.set_telephone(_contact.telephone);
-
-    const bool contact_is_organization = !_contact.organization.isnull();
-    if (contact_is_organization) {
+    if (!_contact.name.isnull()) {
+        _arguments.set_name(_contact.name.get_value());
+    }
+    if (!_contact.place.isnull()) {
+        _arguments.set_place(_contact.place.get_value());
+    }
+    if (!_contact.email.isnull()) {
+        _arguments.set_email(_contact.email.get_value());
+    }
+    if (!_contact.telephone.isnull()) {
+        _arguments.set_telephone(_contact.telephone.get_value());
+    }
+    if (!_contact.organization.isnull()) {
         _arguments.set_organization(_contact.organization.get_value());
     }
-    if (!_contact.notify_email.isnull()) {
-        _arguments.set_notifyemail(_contact.notify_email.get_value());
+    if (!_contact.notifyemail.isnull()) {
+        _arguments.set_notifyemail(_contact.notifyemail.get_value());
     }
     if (!_contact.fax.isnull()) {
         _arguments.set_fax(_contact.fax.get_value());
     }
-
-    {
-        Fred::ContactAddressList addresses;
-        if (!_contact.mailing.isnull()) {
-            addresses[Fred::ContactAddressType::MAILING] = convert(_contact.mailing.get_value(), place);
-        }
-        if (!_contact.billing.isnull()) {
-            addresses[Fred::ContactAddressType::BILLING] = convert(_contact.billing.get_value(), place);
-        }
-
-        Fred::ContactAddress shipping;
-        if (!_contact.shipping.isnull()) {
-            addresses[Fred::ContactAddressType::SHIPPING] = convert(_contact.shipping.get_value(), shipping);
-        }
-        if (!_contact.shipping2.isnull()) {
-            addresses[Fred::ContactAddressType::SHIPPING_2] = convert(_contact.shipping2.get_value(), shipping);
-        }
-        if (!_contact.shipping3.isnull()) {
-            addresses[Fred::ContactAddressType::SHIPPING_3] = convert(_contact.shipping3.get_value(), shipping);
-        }
-
-        if (!addresses.empty()) {
-            _arguments.set_addresses(addresses);
-        }
+    if (!_contact.addresses.empty()) {
+        _arguments.set_addresses(_contact.addresses);
     }
-
-    if (!_contact.vat_reg_num.isnull()) {
-        _arguments.set_vat(_contact.vat_reg_num.get_value());
+    if (!_contact.vat.isnull()) {
+        _arguments.set_vat(_contact.vat.get_value());
     }
-
-    if (contact_is_organization) {
-        if (set_create_contact_ssn(_contact.vat_id_num, "ICO", _arguments)) {
-            return;
-        }
-        if (set_create_contact_ssn(_contact.birth_date, "BIRTHDAY", _arguments)) {
-            return;
-        }
+    if (!_contact.ssntype.isnull()) {
+        _arguments.set_ssntype(_contact.ssntype.get_value());
     }
-    else {
-        if (set_create_contact_ssn(_contact.birth_date, "BIRTHDAY", _arguments)) {
-            return;
-        }
-        if (set_create_contact_ssn(_contact.vat_id_num, "ICO", _arguments)) {
-            return;
-        }
-    }
-    if (set_create_contact_ssn(_contact.id_card_num, "OP", _arguments)) {
-        return;
-    }
-    if (set_create_contact_ssn(_contact.passport_num, "PASS", _arguments)) {
-        return;
-    }
-    if (set_create_contact_ssn(_contact.ssn_id_num, "MPSV", _arguments)) {
-        return;
+    if (!_contact.ssn.isnull()) {
+        _arguments.set_ssn(_contact.ssn.get_value());
     }
 }
 
@@ -283,7 +190,7 @@ HandleList& MojeID2Impl::get_unregistrable_contact_handles(
 }
 
 ContactId MojeID2Impl::create_contact_prepare(
-        const Fred::MojeID::CreateContact &_contact,
+        const Fred::InfoContactData &_contact,
         const std::string &_trans_id,
         LogRequestId _log_request_id,
         std::string &_ident)
@@ -292,27 +199,14 @@ ContactId MojeID2Impl::create_contact_prepare(
 
     try {
         Fred::OperationContextTwoPhaseCommitCreator ctx(_trans_id);
-        typedef boost::mpl::list< Fred::MojeID::Check::contact_name,
-                                  Fred::MojeID::Check::contact_permanent_address,
-                                  Fred::MojeID::Check::contact_mailing_address,
-                                  Fred::MojeID::Check::contact_billing_address,
-                                  Fred::MojeID::Check::contact_shipping_address,
-                                  Fred::MojeID::Check::contact_shipping2_address,
-                                  Fred::MojeID::Check::contact_shipping3_address,
-                                  Fred::MojeID::Check::contact_email_presence,
-                                  Fred::MojeID::Check::contact_email_validity,
-                                  Fred::MojeID::Check::contact_phone_presence,
-                                  Fred::MojeID::Check::contact_phone_validity > check_contact;
-        typedef boost::mpl::list< Fred::MojeID::Check::contact_username_availability,
-                                  Fred::MojeID::Check::contact_email_availability,
-                                  Fred::MojeID::Check::contact_phone_availability > check_contact_ctx;
-        typedef Fred::Check< boost::mpl::list< check_contact,
-                                               check_contact_ctx > > Check;
 
-        Check check_result(Fred::make_args(_contact),
-                           Fred::make_args(_contact, ctx));
+        const CheckCreateContactPrepare check_result(Fred::make_args(_contact),
+                                                     Fred::make_args(_contact, ctx));
+        if (!check_result.success()) {
+            throw check_result;
+        }
 
-        Fred::CreateContact op_create_contact(_contact.username, mojeid_registrar_handle_);
+        Fred::CreateContact op_create_contact(_contact.handle, mojeid_registrar_handle_);
         set_create_contact_arguments(_contact, op_create_contact);
         const Fred::CreateContact::Result new_contact = op_create_contact.exec(ctx);
         Fred::CreatePublicRequestAuth op_create_pub_req(
@@ -321,6 +215,10 @@ ContactId MojeID2Impl::create_contact_prepare(
         op_create_pub_req.exec(ctx, locked_contact);
         ctx.commit_transaction();
         return new_contact.object_id;
+    }
+    catch (const CreateContactPrepareDataValidationError&) {
+        LOGGER(PACKAGE).error("request failed (incorrect input data)");
+        throw;
     }
     catch (const std::exception &e) {
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());

@@ -24,63 +24,9 @@
 #ifndef MOJEID2_H_06D795C17DD0FF3D98B375032F99493A//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
 #define MOJEID2_H_06D795C17DD0FF3D98B375032F99493A
 
-#include "util/db/nullable.h"
+#include "src/mojeid/mojeid2_checkers.h"
 
-#include <string>
 #include <vector>
-
-namespace Fred {
-namespace MojeID {
-
-struct Address
-{
-    std::string street1;
-    Nullable< std::string > street2;
-    Nullable< std::string > street3;
-    std::string city;
-    Nullable< std::string > state;
-    std::string postal_code;
-    std::string country;
-};
-
-struct ShippingAddress
-{
-    Nullable< std::string > company_name;
-    std::string street1;
-    Nullable< std::string > street2;
-    Nullable< std::string > street3;
-    std::string city;
-    Nullable< std::string > state;
-    std::string postal_code;
-    std::string country;
-};
-
-struct CreateContact
-{
-    std::string username;
-    std::string first_name;
-    std::string last_name;
-    Nullable< std::string > organization;
-    Nullable< std::string > vat_reg_num;
-    Nullable< std::string > birth_date;
-    Nullable< std::string > id_card_num;
-    Nullable< std::string > passport_num;
-    Nullable< std::string > ssn_id_num;
-    Nullable< std::string > vat_id_num;
-    Address permanent;
-    Nullable< Address > mailing;
-    Nullable< Address > billing;
-    Nullable< ShippingAddress > shipping;
-    Nullable< ShippingAddress > shipping2;
-    Nullable< ShippingAddress > shipping3;
-    std::string email;
-    Nullable< std::string > notify_email;
-    std::string telephone;
-    Nullable< std::string > fax;
-};
-
-}//Fred::MojeID
-}//Fred
 
 namespace Registry {
 namespace MojeID {
@@ -106,10 +52,28 @@ public:
         HandleList &_result)const;
 
     ContactId create_contact_prepare(
-        const Fred::MojeID::CreateContact &_contact,
+        const Fred::InfoContactData &_contact,
         const std::string &_trans_id,
         LogRequestId _log_request_id,
         std::string &_ident);
+
+    typedef boost::mpl::list< Fred::check_contact_name,
+                              Fred::check_contact_place_address,
+                              Fred::check_contact_addresses_mailing,
+                              Fred::check_contact_addresses_billing,
+                              Fred::check_contact_addresses_shipping,
+                              Fred::check_contact_addresses_shipping2,
+                              Fred::check_contact_addresses_shipping3,
+                              Fred::check_contact_email_presence,
+                              Fred::check_contact_email_validity,
+                              Fred::check_contact_phone_presence,
+                              Fred::check_contact_phone_validity > check_create_contact_prepare;
+    typedef boost::mpl::list< Fred::MojeID::check_contact_username_availability,
+                              Fred::MojeID::Check::new_contact_email_availability,
+                              Fred::MojeID::Check::new_contact_phone_availability > check_create_contact_prepare_ctx;
+    typedef Fred::Check< boost::mpl::list< check_create_contact_prepare,
+                                           check_create_contact_prepare_ctx > > CheckCreateContactPrepare;
+    typedef CheckCreateContactPrepare CreateContactPrepareDataValidationError;
 private:
     const std::string server_name_;
     const std::string mojeid_registrar_handle_;
