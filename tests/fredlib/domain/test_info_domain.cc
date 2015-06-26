@@ -125,7 +125,7 @@ struct test_domain_fixture : public Test::Fixture::instantiate_db_template
                     , Optional<std::string>()//sponsoring registrar
                     , registrant_contact_handle //registrant - owner
                     , std::string("testauthinfo1") //authinfo
-                    , Nullable<std::string>()//unset nsset - set to null
+                    , Optional<Nullable<std::string> >()//dont change nsset
                     , Optional<Nullable<std::string> >()//dont change keyset
                     , Util::vector_of<std::string> (admin_contact1_handle)(registrant_contact_handle) //add admin contacts
                     , Util::vector_of<std::string> (admin_contact2_handle) //remove admin contacts
@@ -153,6 +153,143 @@ BOOST_AUTO_TEST_CASE(info_domain)
 {
     Fred::OperationContext ctx;
 
+    std::vector<Fred::InfoDomainOutput> domain_res;
+/* general case
+    BOOST_MESSAGE(Fred::InfoDomain()
+        .set_inline_view_filter(Database::ParamQuery("info_domain_fqdn = LOWER(").param_text(test_fqdn)(")"))
+        .set_cte_id_filter(Database::ParamQuery("SELECT 1 id"))
+        .set_history_query(false)
+        .explain_analyze(ctx,domain_res,"Europe/Prague")
+        );
+*/
+    /*ok
+    //InfoDomainByKeysetHandle
+    BOOST_MESSAGE(Fred::InfoDomain()
+        .set_inline_view_filter(Database::ParamQuery("info_domain_keyset_id = (SELECT id FROM object_registry WHERE name = UPPER(").param_text(test_keyset_handle)(")"
+            " AND type = ( SELECT id FROM enum_object_type eot WHERE eot.name='keyset'::text) AND erdate IS NULL) "))
+        .set_history_query(false)
+        .explain_analyze(ctx,domain_res,"Europe/Prague")
+        );
+    */
+    /* too slow
+    BOOST_MESSAGE(Fred::InfoDomain()
+        .set_cte_id_filter(Database::ParamQuery("SELECT d.id FROM object_registry kobr JOIN domain d ON d.keyset = kobr.id WHERE kobr.name = UPPER(").param_text(test_keyset_handle)(")"
+            " AND kobr.type = ( SELECT id FROM enum_object_type eot WHERE eot.name='keyset'::text) AND kobr.erdate IS NULL "))
+        .set_history_query(false)
+        .explain_analyze(ctx,domain_res,"Europe/Prague")
+        );
+    */
+/* ok
+    //InfoDomainByNssetHandle
+    BOOST_MESSAGE(Fred::InfoDomain()
+    .set_inline_view_filter(Database::ParamQuery(
+                    "info_domain_nsset_id = (SELECT id FROM object_registry WHERE name = UPPER(").param_text(test_nsset_handle)(")"
+                    " AND type = ( SELECT id FROM enum_object_type eot WHERE eot.name='nsset'::text) AND erdate IS NULL) "))
+        .set_history_query(false)
+        .explain_analyze(ctx,domain_res,"Europe/Prague")
+        );
+*/
+
+/* too slow
+    //InfoDomainByAdminContactHandle
+    BOOST_MESSAGE(Fred::InfoDomain()
+        .set_cte_id_filter(Database::ParamQuery(
+            "SELECT dcm.domainid"
+            " FROM object_registry oreg"
+            " JOIN  enum_object_type eot ON oreg.type = eot.id AND eot.name = 'contact'"
+            " JOIN domain_contact_map dcm ON dcm.contactid = oreg.id"
+            " WHERE oreg.name = UPPER(").param_text(admin_contact1_handle)(") AND oreg.erdate IS NULL")
+            )
+        .set_history_query(false)
+        .explain_analyze(ctx,domain_res,"Europe/Prague")
+        );
+*/
+
+/*
+    //inline view ok
+    Database::ParamQuery domain_id_by_admin_contact_handle;
+    domain_id_by_admin_contact_handle("SELECT dcm.domainid"
+        " FROM object_registry oreg"
+        " JOIN  enum_object_type eot ON oreg.type = eot.id AND eot.name = 'contact'"
+        " JOIN domain_contact_map dcm ON dcm.contactid = oreg.id"
+        " WHERE oreg.name = UPPER(").param_text(admin_contact1_handle)(") AND oreg.erdate IS NULL");
+
+    Database::Result domain_id_res = ctx.get_conn().exec_params(domain_id_by_admin_contact_handle.get_query_string(),domain_id_by_admin_contact_handle.get_query_params());
+
+    Database::ParamQuery domain_id_inline_view("info_domain_id IN (");
+    Util::HeadSeparator in_separator("",",");
+    Database::ParamQueryParameter dummy_id = Database::ParamQueryParameter(1,"bigint");
+    for (unsigned long long i = 0 ; i < 30000; ++i)
+    {
+        domain_id_inline_view(in_separator.get())
+            .param(dummy_id);
+                //.param_bigint(1);
+    }
+    domain_id_inline_view(")");
+
+    BOOST_MESSAGE(Fred::InfoDomain()
+        .set_inline_view_filter(domain_id_inline_view)
+        .set_history_query(false)
+        .explain_analyze(ctx,domain_res,"Europe/Prague")
+        );
+*/
+
+/*
+    //cte id filter slow
+        Database::ParamQuery domain_id_by_admin_contact_handle;
+        domain_id_by_admin_contact_handle("SELECT dcm.domainid"
+            " FROM object_registry oreg"
+            " JOIN  enum_object_type eot ON oreg.type = eot.id AND eot.name = 'contact'"
+            " JOIN domain_contact_map dcm ON dcm.contactid = oreg.id"
+            " WHERE oreg.name = UPPER(").param_text(admin_contact1_handle)(") AND oreg.erdate IS NULL");
+
+        Database::Result domain_id_res = ctx.get_conn().exec_params(domain_id_by_admin_contact_handle.get_query_string(),domain_id_by_admin_contact_handle.get_query_params());
+
+        Database::ParamQuery domain_id_cte_id_filter("SELECT id FROM (VALUES ");
+        Util::HeadSeparator values_separator("(","),(");
+        Database::ParamQueryParameter dummy_id = Database::ParamQueryParameter(1,"bigint");
+        for (unsigned long long i = 0 ; i < 100; ++i)
+        {
+            domain_id_cte_id_filter(values_separator.get())
+                .param_bigint(1);
+        }
+        domain_id_cte_id_filter(") ) AS tmp(id)");
+
+        BOOST_MESSAGE(Fred::InfoDomain()
+            .set_cte_id_filter(domain_id_cte_id_filter)
+            .set_history_query(false)
+            .explain_analyze(ctx,domain_res,"Europe/Prague")
+            );
+*/
+
+/* still slow
+    //InfoDomainByAdminContactHandle
+    BOOST_MESSAGE(Fred::InfoDomain()
+        .set_admin_contact_filter(Database::ParamQuery(
+            "dcm.contactid = (SELECT oreg.id"
+            " FROM object_registry oreg"
+            " JOIN  enum_object_type eot ON oreg.type = eot.id AND eot.name = 'contact'"
+            " WHERE oreg.name = UPPER(").param_text(admin_contact1_handle)(") AND oreg.erdate IS NULL) ")
+            )
+        .set_history_query(false)
+        .explain_analyze(ctx,domain_res,"Europe/Prague")
+        );
+*/
+    /*slow
+    //InfoDomainByRegistrantHandle
+    BOOST_MESSAGE(Fred::InfoDomain()
+    .set_inline_view_filter(Database::ParamQuery("info_domain_registrant_handle = UPPER(").param_text(registrant_contact_handle)(")"))
+        .set_history_query(false)
+        .explain_analyze(ctx,domain_res,"Europe/Prague")
+        );
+    */
+
+    BOOST_MESSAGE(Fred::InfoDomain()
+        .set_inline_view_filter(Database::ParamQuery("info_domain_fqdn = LOWER(").param_text(test_fqdn)(")"))
+        .set_history_query(false)
+        .explain_analyze(ctx,domain_res,"Europe/Prague")
+        );
+
     Fred::InfoDomainOutput info_data_1 = Fred::InfoDomainByHandle(test_fqdn).exec(ctx);
     Fred::InfoDomainOutput info_data_2 = Fred::InfoDomainByHandle(test_fqdn).exec(ctx);
     BOOST_CHECK(info_data_1 == info_data_2);
@@ -164,31 +301,15 @@ BOOST_AUTO_TEST_CASE(info_domain)
     BOOST_CHECK(info_data_1 == info_data_5);
     Fred::InfoDomainOutput info_data_6 = Fred::InfoDomainHistoryByHistoryid(info_data_1.info_domain_data.historyid).exec(ctx);
     BOOST_CHECK(info_data_1 == info_data_6);
+    Fred::InfoDomainOutput info_data_7 = Fred::InfoDomainByRegistrantHandle(registrant_contact_handle).exec(ctx).at(0);
+    BOOST_CHECK(info_data_1 == info_data_7);
+    Fred::InfoDomainOutput info_data_8 = Fred::InfoDomainByAdminContactHandle(admin_contact1_handle).exec(ctx).at(0);
+    BOOST_CHECK(info_data_1 == info_data_8);
+    Fred::InfoDomainOutput info_data_9 = Fred::InfoDomainByNssetHandle(test_nsset_handle).exec(ctx).at(0);
+    BOOST_CHECK(info_data_1 == info_data_9);
+    Fred::InfoDomainOutput info_data_10 = Fred::InfoDomainByKeysetHandle(test_keyset_handle).exec(ctx).at(0);
+    BOOST_CHECK(info_data_1 == info_data_10);
 
-    //impl
-    for( int j = 0; j < (1 << 7); ++j)
-    {
-        Fred::InfoDomain i;
-        if(j & (1 << 0)) i.set_fqdn(info_data_1.info_domain_data.fqdn);
-        if(j & (1 << 1)) i.set_roid(info_data_1.info_domain_data.roid);
-        if(j & (1 << 2)) i.set_id(info_data_1.info_domain_data.id);
-        if(j & (1 << 3)) i.set_historyid(info_data_1.info_domain_data.historyid);
-        if(j & (1 << 4)) i.set_lock();
-        if(j & (1 << 5)) i.set_history_timestamp(info_data_1.info_domain_data.update_time.get_value());
-        if(j & (1 << 6)) i.set_history_query(true);
-
-        std::vector<Fred::InfoDomainOutput> output;
-        BOOST_MESSAGE(i.explain_analyze(ctx,output));
-        if((j & (1 << 0)) || (j & (1 << 1)) || (j & (1 << 2)) || (j & (1 << 3)))//check if selective
-        {
-            if((info_data_1 != output.at(0)))
-            {
-                BOOST_MESSAGE(Fred::diff_domain_data(info_data_1.info_domain_data
-                        , output.at(0).info_domain_data).to_string());
-            }
-            BOOST_CHECK(output.at(0) == info_data_1);
-        }
-    }
 
 }//info_domain
 

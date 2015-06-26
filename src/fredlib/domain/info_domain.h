@@ -304,6 +304,180 @@ namespace Fred
 
     };
 
+    /**
+    * Domains info by registrant handle.
+    * Registrant handle of domains to get info about is set via constructor.
+    * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
+    */
+    class InfoDomainByRegistrantHandle : public Util::Printable
+    {
+        const std::string registrant_handle_;/**< registrant handle */
+        bool lock_;/**< if set to true lock object_registry row for update, if set to false lock for share */
+
+    public:
+
+        /**
+        * Info domain constructor with mandatory parameter.
+        * @param registrant_handle sets registrant or owner handle into @ref registrant_handle_ attribute
+        */
+        InfoDomainByRegistrantHandle(const std::string& registrant_handle);
+
+        /**
+         * Sets lock for update.
+         * Default, if not set, is lock for share.
+         * Sets true to lock flag in @ref lock_ attribute
+         * @return operation instance reference to allow method chaining
+         */
+        InfoDomainByRegistrantHandle& set_lock();
+
+        /**
+        * Executes getting info about domains.
+        * @param ctx contains reference to database and logging interface
+        * @param local_timestamp_pg_time_zone_name is postgresql time zone name of the returned data
+        * @return info data about domains
+        * When exception is thrown changes to database are considered inconsistent and should be rolled back by the caller.
+        */
+        std::vector<InfoDomainOutput> exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
+
+        /**
+        * Dumps state of the instance into the string
+        * @return string with description of the instance state
+        */
+        std::string to_string() const;
+
+    };
+
+    /**
+    * Domain info by administrator contact handle.
+    * Administrator contact handle of domains to get info about is set via constructor.
+    * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
+    */
+    class InfoDomainByAdminContactHandle : public Util::Printable
+    {
+        const std::string admin_contact_handle_;/**< administrator contact handle */
+        bool lock_;/**< if set to true lock object_registry row for update, if set to false lock for share */
+
+    public:
+
+        /**
+        * Info domain constructor with mandatory parameter.
+        * @param admin_contact_handle sets domain administrator contact handle into @ref admin_contact_handle_ attribute
+        */
+        InfoDomainByAdminContactHandle(const std::string& admin_contact_handle);
+
+        /**
+         * Sets lock for update.
+         * Default, if not set, is lock for share.
+         * Sets true to lock flag in @ref lock_ attribute
+         * @return operation instance reference to allow method chaining
+         */
+        InfoDomainByAdminContactHandle& set_lock();
+
+        /**
+        * Executes getting info about the domain.
+        * @param ctx contains reference to database and logging interface
+        * @param local_timestamp_pg_time_zone_name is postgresql time zone name of the returned data
+        * @return info data about domains
+        * When exception is thrown changes to database are considered inconsistent and should be rolled back by the caller.
+        */
+        std::vector<InfoDomainOutput> exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
+
+        /**
+        * Dumps state of the instance into the string
+        * @return string with description of the instance state
+        */
+        std::string to_string() const;
+
+    };
+
+    /**
+    * Domains info by nsset handle.
+    * Nsset handle of domains to get info about is set via constructor.
+    * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
+    */
+    class InfoDomainByNssetHandle : public Util::Printable
+    {
+        const std::string nsset_handle_;/**< nsset handle */
+        bool lock_;/**< if set to true lock object_registry row for update, if set to false lock for share */
+
+    public:
+
+        /**
+        * Info domain constructor with mandatory parameter.
+        * @param nsset_handle sets domain nsset handle into @ref nsset_handle_ attribute
+        */
+        InfoDomainByNssetHandle(const std::string& nsset_handle);
+
+        /**
+         * Sets lock for update.
+         * Default, if not set, is lock for share.
+         * Sets true to lock flag in @ref lock_ attribute
+         * @return operation instance reference to allow method chaining
+         */
+        InfoDomainByNssetHandle& set_lock();
+
+        /**
+        * Executes getting info about domains.
+        * @param ctx contains reference to database and logging interface
+        * @param local_timestamp_pg_time_zone_name is postgresql time zone name of the returned data
+        * @return info data about domains
+        * When exception is thrown changes to database are considered inconsistent and should be rolled back by the caller.
+        */
+        std::vector<InfoDomainOutput> exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
+
+        /**
+        * Dumps state of the instance into the string
+        * @return string with description of the instance state
+        */
+        std::string to_string() const;
+
+    };
+
+
+    /**
+    * Domains info by keyset handle.
+    * Keyset handle of domains to get info about is set via constructor.
+    * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
+    */
+    class InfoDomainByKeysetHandle : public Util::Printable
+    {
+        const std::string keyset_handle_;/**< keyset handle */
+        bool lock_;/**< if set to true lock object_registry row for update, if set to false lock for share */
+
+    public:
+
+        /**
+        * Info domain constructor with mandatory parameter.
+        * @param keyset_handle sets domain keyset handle into @ref keyset_handle_ attribute
+        */
+        InfoDomainByKeysetHandle(const std::string& keyset_handle);
+
+        /**
+         * Sets lock for update.
+         * Default, if not set, is lock for share.
+         * Sets true to lock flag in @ref lock_ attribute
+         * @return operation instance reference to allow method chaining
+         */
+        InfoDomainByKeysetHandle& set_lock();
+
+        /**
+        * Executes getting info about domains.
+        * @param ctx contains reference to database and logging interface
+        * @param local_timestamp_pg_time_zone_name is postgresql time zone name of the returned data
+        * @return info data about domains
+        * When exception is thrown changes to database are considered inconsistent and should be rolled back by the caller.
+        */
+        std::vector<InfoDomainOutput> exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
+
+        /**
+        * Dumps state of the instance into the string
+        * @return string with description of the instance state
+        */
+        std::string to_string() const;
+
+    };
+
+
 }//namespace Fred
 
 #endif//INFO_DOMAIN_H_

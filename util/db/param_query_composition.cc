@@ -32,6 +32,8 @@
 #include "util/db/param_query_composition.h"
 #include "util/db/query_param.h"
 #include "util/util.h"
+#include "util/map_at.h"
+#include "util/optional_value.h"
 
 namespace Database
 {
@@ -70,24 +72,26 @@ namespace Database
         return *this;
     }
 
+    //non repeatable parameter
     ParamQueryElement& ParamQueryElement::set_param(
         const Database::QueryParam& val,
         const std::string& pg_typname)
     {
         tag_ = PQE_PARAM;
-        boost::shared_ptr<int> new_lid(new int(0));
+        boost::shared_ptr<int> new_lid(static_cast<int*>(0));
         lid_ = new_lid;
         query_string_element_ = pg_typname;
         query_param_element_ = val;
         return *this;
     }
 
+    //repeatable parameter
     ParamQueryElement& ParamQueryElement::set_param(
         const Database::QueryParam& val,
         const std::string& pg_typname,
         const boost::shared_ptr<int>& lid)
     {
-        tag_ = PQE_PARAM;
+        tag_ = PQE_PARAM_REPETABLE;
         lid_ = lid;
         query_string_element_ = pg_typname;
         query_param_element_ = val;
@@ -193,7 +197,7 @@ namespace Database
 
     std::pair<std::string,query_param_list> ParamQuery::get_query()
     {
-        std::vector<boost::shared_ptr<int> > param_lid_position;
+        std::map<boost::shared_ptr<int>, std::string > param_lid_position;
         std::pair<std::string,query_param_list> query;
 
         for(std::vector<ParamQueryElement>::const_iterator
@@ -209,24 +213,37 @@ namespace Database
 
                 case ParamQueryElement::PQE_PARAM:
                 {
-                    std::vector<boost::shared_ptr<int> >::iterator
-                        param_lid_it = std::find(param_lid_position.begin(),
-                            param_lid_position.end(), ci->get_lid());
-
-                    if(param_lid_it == param_lid_position.end())//not found, got new param lid
-                    {
-                        param_lid_position.push_back(ci->get_lid());
-                        query.second.push_back(ci->get_param());//append new param
-                        param_lid_it = --param_lid_position.end();//set new lid iterator
-                    }
-
+                    std::string pos = query.second.add(ci->get_param());
                     query.first += "$";
-                    query.first += boost::lexical_cast<std::string>(
-                        param_lid_it - param_lid_position.begin() + 1);//parameter position beginning from 1
+                    query.first += pos;//parameter position beginning from 1
                     query.first += "::";
                     query.first += ci->get_string();
                 }
                 break;
+
+                case ParamQueryElement::PQE_PARAM_REPETABLE:
+                {
+                    boost::shared_ptr<int> lid = ci->get_lid();
+                    Optional<std::string> pos = optional_map_at<Optional>(param_lid_position, lid);
+
+                    if(!pos.isset()) //new parameter instance
+                    {
+                        pos = Optional<std::string>(query.second.add(ci->get_param()));
+                        std::pair<std::map<boost::shared_ptr<int>, std::string >::iterator, bool> insert_result=
+                        param_lid_position.insert(std::pair<boost::shared_ptr<int>, std::string>(lid, pos.get_value()));
+                        if(!insert_result.second)
+                        {
+                            throw std::runtime_error("ParamQueryElement::PQE_PARAM_REPETABLE insert failed");
+                        }
+                    }
+
+                    query.first += "$";
+                    query.first += pos.get_value();//parameter position beginning from 1
+                    query.first += "::";
+                    query.first += ci->get_string();
+                }
+                break;
+
 
               default:
                 throw std::runtime_error(

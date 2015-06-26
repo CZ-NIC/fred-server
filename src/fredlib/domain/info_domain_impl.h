@@ -33,6 +33,7 @@
 #include "src/fredlib/opcontext.h"
 #include "util/optional_value.h"
 #include "util/printable.h"
+#include "util/db/param_query_composition.h"
 #include "info_domain_output.h"
 
 namespace Fred
@@ -44,16 +45,14 @@ namespace Fred
     */
     class InfoDomain
     {
-        Optional<std::string> fqdn_;/**< fully qualified domain name */
-        Optional<std::string> domain_roid_;/**< registry object identifier of the domain */
-        Optional<unsigned long long> domain_id_;/**< object id of the domain */
-        Optional<unsigned long long> domain_historyid_;/**< history id of the domain */
-        Optional<boost::posix_time::ptime> history_timestamp_;/**< timestamp of history state we want to get (in time zone set in @ref local_timestamp_pg_time_zone_name parameter) */
+
         bool history_query_;/**< flag to query history records of the domain */
         bool lock_;/**< if set to true lock object_registry row for update, if set to false lock for share */
+        Optional<Database::ParamQuery> info_domain_inline_view_filter_expr_;/**< where clause of the info domain query where projection is inline view sub-select */
+        Optional<Database::ParamQuery> info_domain_id_filter_cte_;/**< CTE query returning set of domain id */
 
-        std::pair<std::string, Database::QueryParams> make_domain_query(const std::string& local_timestamp_pg_time_zone_name);/**< info query generator @return pair of query string with query params*/
-        std::pair<std::string, Database::QueryParams> make_admin_query(unsigned long long id, unsigned long long historyid);/**< info query generator @return pair of query string with query params*/
+        Database::ParamQuery make_domain_query(const std::string& local_timestamp_pg_time_zone_name);/**< info query generator @return pair of query string with query params*/
+        Database::ParamQuery make_admin_query(unsigned long long id, unsigned long long historyid);/**< info query generator @return pair of query string with query params*/
     public:
 
         /**
@@ -63,39 +62,24 @@ namespace Fred
         InfoDomain();
 
         /**
-        * Sets fully qualified domain name.
-        * @param fqdn sets fully qualified domain name we want to get @ref fqdn_ attribute
-        * @return operation instance reference to allow method chaining
-        */
-        InfoDomain& set_fqdn(const std::string& fqdn);
+         * Sets domain selection criteria.
+         * Filter expression, which is optional WHERE clause, has access to following info domain projection aliases:
+         * info_domain_id, info_domain_roid, info_domain_fqdn, info_domain_delete_time,
+         * info_domain_historyid, info_domain_next_historyid, info_domain_history_valid_from, info_domain_history_valid_to,
+         * info_domain_registrant_id, info_domain_registrant_handle, info_domain_nsset_id, info_domain_nsset_handle,
+         * info_domain_keyset_id, info_domain_keyset_handle, info_domain_sponsoring_registrar_id, info_domain_sponsoring_registrar_handle,
+         * info_domain_creating_registrar_id, info_domain_creating_registrar_handle, info_domain_last_updated_by_registrar_id,
+         * info_domain_last_updated_by_registrar_handle, info_domain_creation_time, info_domain_transfer_time, info_domain_update_time,
+         * info_domain_expiration_date, info_domain_authinfopw, info_domain_enum_validation_expiration, info_domain_enum_publish,
+         * info_domain_outzone_time, info_domain_cancel_time, info_domain_first_historyid, info_domain_logd_request_id,
+         * info_domain_utc_timestamp, info_domain_local_timestamp, info_domain_is_enum, info_domain_zone_id, info_domain_zone_fqdn
+         */
+        InfoDomain& set_inline_view_filter(const Database::ParamQuery& filter_expr);
 
         /**
-        * Sets registry object identifier of the domain.
-        * @param domain_roid sets registry object identifier of the domain we want to get @ref domain_roid_ attribute
-        * @return operation instance reference to allow method chaining
-        */
-        InfoDomain& set_roid(const std::string& domain_roid);
-
-        /**
-        * Sets database identifier of the domain.
-        * @param domain_id sets object identifier of the domain we want to get @ref domain_id_ attribute
-        * @return operation instance reference to allow method chaining
-        */
-        InfoDomain& set_id(unsigned long long domain_id);
-
-        /**
-        * Sets history identifier of the domain.
-        * @param domain_historyid sets history identifier of the domain we want to get @ref domain_historyid_ attribute
-        * @return operation instance reference to allow method chaining
-        */
-        InfoDomain& set_historyid(unsigned long long domain_historyid);
-
-        /**
-        * Sets timestamp of history state we want to get.
-        * @param history_timestamp sets timestamp of history state we want to get @ref history_timestamp_ attribute
-        * @return operation instance reference to allow method chaining
-        */
-        InfoDomain& set_history_timestamp(boost::posix_time::ptime history_timestamp);
+         * Sets CTE query, that returns set of domain id.
+         */
+        InfoDomain& set_cte_id_filter(const Database::ParamQuery& filter_expr);
 
         /**
         * Sets history query flag.

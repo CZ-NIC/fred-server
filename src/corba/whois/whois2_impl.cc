@@ -160,79 +160,6 @@ namespace Whois {
         return new NullableContact(temp);
     }
 
-    NullableDomain* generate_obfuscate_domain_delete_candidate(const std::string& _handle, Fred::OperationContext& _ctx) {
-        Domain temp;
-
-        temp.handle = Corba::wrap_string(_handle);
-
-        temp.registrant_handle = Corba::wrap_string("");
-        temp.nsset_handle = NULL;
-        temp.keyset_handle = NULL;
-        temp.registrar_handle = Corba::wrap_string("");
-        temp.registered = Corba::wrap_time(boost::posix_time::ptime());
-        temp.changed = Corba::wrap_nullable_datetime(Nullable<boost::posix_time::ptime>());
-        temp.last_transfer = Corba::wrap_nullable_datetime(Nullable<boost::posix_time::ptime>());
-        temp.expire = Corba::wrap_date(boost::gregorian::date());
-        temp.validated_to = NULL;
-
-        std::vector<std::string> statuses;
-        statuses.push_back("deleteCandidate");
-        wrap_string_sequence(statuses, temp.statuses);
-
-        return new NullableDomain(temp);
-    }
-
-    NullableDomain* wrap_domain(const Fred::InfoDomainData& in) {
-
-        Domain temp;
-
-        temp.handle = Corba::wrap_string(in.fqdn);
-        temp.registrant_handle = Corba::wrap_string(in.registrant.handle);
-        if( in.nsset.isnull() ) {
-            temp.nsset_handle = NULL;
-        } else {
-            temp.nsset_handle = new NullableString(Corba::wrap_string(in.nsset.get_value().handle));
-        }
-        if( in.keyset.isnull() ) {
-            temp.keyset_handle = NULL;
-        } else {
-            temp.keyset_handle = new NullableString(Corba::wrap_string(in.keyset.get_value().handle));
-        }
-        temp.registrar_handle = Corba::wrap_string(in.sponsoring_registrar_handle);
-        temp.registered = Corba::wrap_time(in.creation_time);
-        temp.changed = Corba::wrap_nullable_datetime(in.update_time);
-        temp.last_transfer = Corba::wrap_nullable_datetime(in.transfer_time);
-        temp.expire = Corba::wrap_date(in.expiration_date);
-        if(! in.enum_domain_validation.isnull()) {
-            temp.validated_to = new Registry::NullableDate(
-                Corba::wrap_date(in.enum_domain_validation.get_value().validation_expiration)
-            );
-        } else {
-            temp.validated_to = NULL;
-        }
-
-        std::vector<std::string> admin_contacts;
-        {
-            BOOST_FOREACH(const Fred::ObjectIdHandlePair& contact, in.admin_contacts) {
-                admin_contacts.push_back(contact.handle);
-            }
-        }
-        wrap_string_sequence(admin_contacts, temp.admin_contact_handles);
-
-        std::vector<std::string> statuses;
-        {
-            Fred::OperationContext ctx;
-
-            BOOST_FOREACH(const Fred::ObjectStateData& state, Fred::GetObjectStates(in.id).exec(ctx)) {
-                if(state.is_external) {
-                    statuses.push_back(state.state_name);
-                }
-            }
-        }
-        wrap_string_sequence(statuses, temp.statuses);
-
-        return new NullableDomain(temp);
-    }
 
     /**
      * CORBA sequence element factory, template to be specialized, there is no generic enough implementation
@@ -292,8 +219,6 @@ namespace Whois {
         return Corba::wrap_string_to_corba_string(ile);
     }
 
-    //set_element_of_corba_seq<Registry::Whois::KeySet, Fred::InfoKeysetOutput>
-
     template<> DNSKey set_element_of_corba_seq<
     DNSKey, Fred::DnsKey>(const Fred::DnsKey& ile)
     {
@@ -304,6 +229,111 @@ namespace Whois {
         key.public_key = Corba::wrap_string_to_corba_string(ile.get_key());
         return key;
     }
+
+    Domain generate_obfuscate_domain_delete_candidate(const std::string& _handle)
+    {
+        Domain temp;
+        temp.handle = Corba::wrap_string_to_corba_string(_handle);
+        temp.registrant_handle = Corba::wrap_string_to_corba_string("");
+        temp.nsset_handle = NULL;
+        temp.keyset_handle = NULL;
+        temp.registrar_handle = Corba::wrap_string_to_corba_string("");
+        temp.registered = Corba::wrap_time(boost::posix_time::ptime());
+        temp.changed = Corba::wrap_nullable_datetime(Nullable<boost::posix_time::ptime>());
+        temp.last_transfer = Corba::wrap_nullable_datetime(Nullable<boost::posix_time::ptime>());
+        temp.expire = Corba::wrap_date(boost::gregorian::date());
+        temp.validated_to = NULL;
+        {
+            std::vector<std::string> statuses;
+            statuses.push_back("deleteCandidate");
+            set_corba_seq<StringSeq, CORBA::String_var,
+                std::vector<std::string>, std::string>(temp.statuses, statuses);
+        }
+        return temp;
+    }
+
+    Domain wrap_domain(const Fred::InfoDomainData& in)
+    {
+        Domain temp;
+        temp.handle = Corba::wrap_string_to_corba_string(in.fqdn);
+        temp.registrant_handle = Corba::wrap_string_to_corba_string(in.registrant.handle);
+        if( in.nsset.isnull() ) {
+            temp.nsset_handle = NULL;
+        } else {
+            temp.nsset_handle = new NullableString(Corba::wrap_string_to_corba_string(in.nsset.get_value().handle));
+        }
+        if( in.keyset.isnull() ) {
+            temp.keyset_handle = NULL;
+        } else {
+            temp.keyset_handle = new NullableString(Corba::wrap_string_to_corba_string(in.keyset.get_value().handle));
+        }
+        temp.registrar_handle = Corba::wrap_string_to_corba_string(in.sponsoring_registrar_handle);
+        temp.registered = Corba::wrap_time(in.creation_time);
+        temp.changed = Corba::wrap_nullable_datetime(in.update_time);
+        temp.last_transfer = Corba::wrap_nullable_datetime(in.transfer_time);
+        temp.expire = Corba::wrap_date(in.expiration_date);
+        if(! in.enum_domain_validation.isnull()) {
+            temp.validated_to = new Registry::NullableDate(
+                Corba::wrap_date(in.enum_domain_validation.get_value().validation_expiration)
+            );
+        } else {
+            temp.validated_to = NULL;
+        }
+        set_corba_seq<StringSeq, CORBA::String_var,
+            std::vector<Fred::ObjectIdHandlePair>, Fred::ObjectIdHandlePair>(temp.admin_contact_handles, in.admin_contacts);
+        {
+            std::vector<std::string> statuses;
+            {
+                Fred::OperationContext ctx;
+                BOOST_FOREACH(const Fred::ObjectStateData& state, Fred::GetObjectStates(in.id).exec(ctx)) {
+                    if(state.is_external) {
+                        statuses.push_back(state.state_name);
+                    }
+                }
+            }
+            set_corba_seq<StringSeq, CORBA::String_var,
+                std::vector<std::string>, std::string>(temp.statuses, statuses);
+        }
+        return temp;
+    }
+
+    class DomainInfoWithDeleteCandidate
+    {
+        Fred::InfoDomainOutput info;
+        bool delete_candidate;
+
+    public:
+
+        DomainInfoWithDeleteCandidate(const Fred::InfoDomainOutput& _info, bool _delete_candidate)
+        : info(_info)
+        , delete_candidate(_delete_candidate)
+        {}
+
+        Fred::InfoDomainOutput get_info() const
+        {
+            return info;
+        }
+
+        bool get_delete_candidate() const
+        {
+            return delete_candidate;
+        }
+    };
+
+
+    template<> Domain set_element_of_corba_seq<Domain,  DomainInfoWithDeleteCandidate>
+        (const DomainInfoWithDeleteCandidate& ile)
+    {
+        if(ile.get_delete_candidate())
+        {
+            return generate_obfuscate_domain_delete_candidate(ile.get_info().info_domain_data.fqdn);
+        }
+        else
+        {
+            return wrap_domain(ile.get_info().info_domain_data);
+        }
+    }
+
 
     KeySet wrap_keyset(const Fred::InfoKeysetData& in)
     {
@@ -562,21 +592,25 @@ namespace Whois {
         throw INTERNAL_SERVER_ERROR();
     }
 
-    NullableDomain* Server_impl::get_domain_by_handle(const char* handle) {
-        try {
+    NullableDomain* Server_impl::get_domain_by_handle(const char* handle)
+    {
+        try
+        {
             Fred::OperationContext ctx;
 
-            if(::Whois::is_domain_delete_pending(Corba::unwrap_string(handle), ctx, "Europe/Prague")) {
-                return generate_obfuscate_domain_delete_candidate(Corba::unwrap_string(handle), ctx);
+            if(::Whois::is_domain_delete_pending(Corba::unwrap_string(handle), ctx, "Europe/Prague"))
+            {
+                return Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableDomain>(
+                    Nullable<Domain>(generate_obfuscate_domain_delete_candidate(Corba::unwrap_string(handle))))._retn();
             }
 
-            return
-                wrap_domain(
+            return Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableDomain>(
+                Nullable<Domain>(wrap_domain(
                     Fred::InfoDomainByHandle(
                         Corba::unwrap_string(handle)
                     ).exec(ctx, output_timezone)
                     .info_domain_data
-                );
+                )))._retn();
 
         } catch(const Fred::InfoDomainByHandle::Exception& e) {
             if(e.is_set_unknown_fqdn()) {
@@ -588,11 +622,103 @@ namespace Whois {
         throw INTERNAL_SERVER_ERROR();
     }
 
-    // TODO XXX Just to have RDAP prototype quickly deployable (Ticket #10627). Must be implemented later.
-    DomainSeq* Server_impl::get_domains_by_registrant(const char* handle) { return NULL; }
-    DomainSeq* Server_impl::get_domains_by_admin_contact(const char* handle) { return NULL; }
-    DomainSeq* Server_impl::get_domains_by_nsset(const char* handle) { return NULL; }
-    DomainSeq* Server_impl::get_domains_by_keyset(const char* handle) { return NULL; }
+    /**
+     * get_domains_by_* implementation of allocation and setting CORBA sequence
+     */
+    void set_domains_seq(DomainSeq& domain_seq, const std::vector<Fred::InfoDomainOutput>& il, Fred::OperationContext& ctx)
+    {
+        std::vector<DomainInfoWithDeleteCandidate> didclist;
+        didclist.reserve(il.size());
+
+        BOOST_FOREACH(const Fred::InfoDomainOutput& i, il)
+        {
+            didclist.push_back(DomainInfoWithDeleteCandidate(i,
+                ::Whois::is_domain_delete_pending(i.info_domain_data.fqdn, ctx, "Europe/Prague")));
+        }
+
+        set_corba_seq<DomainSeq, Domain, std::vector<DomainInfoWithDeleteCandidate>, DomainInfoWithDeleteCandidate>
+            (domain_seq, didclist);
+    }
+
+    DomainSeq* Server_impl::get_domains_by_registrant(const char* handle)
+    {
+        try
+        {
+            Fred::OperationContext ctx;
+
+            DomainSeq_var domain_seq = new DomainSeq;
+
+            std::vector<Fred::InfoDomainOutput> domain_info = Fred::InfoDomainByRegistrantHandle(
+                Corba::unwrap_string(handle)).exec(ctx, output_timezone);
+
+            set_domains_seq(domain_seq.inout(),domain_info,ctx);
+
+            return domain_seq._retn();
+        } catch (...) { }
+
+        // default exception handling
+        throw INTERNAL_SERVER_ERROR();
+    }
+
+    DomainSeq* Server_impl::get_domains_by_admin_contact(const char* handle)
+    {
+        try
+        {
+            Fred::OperationContext ctx;
+
+            DomainSeq_var domain_seq = new DomainSeq;
+
+            std::vector<Fred::InfoDomainOutput> domain_info = Fred::InfoDomainByAdminContactHandle(
+                Corba::unwrap_string(handle)).exec(ctx, output_timezone);
+
+            set_domains_seq(domain_seq.inout(),domain_info,ctx);
+
+            return domain_seq._retn();
+        } catch (...) { }
+
+        // default exception handling
+        throw INTERNAL_SERVER_ERROR();
+    }
+
+    DomainSeq* Server_impl::get_domains_by_nsset(const char* handle)
+    {
+        try
+        {
+            Fred::OperationContext ctx;
+
+            DomainSeq_var domain_seq = new DomainSeq;
+
+            std::vector<Fred::InfoDomainOutput> domain_info = Fred::InfoDomainByNssetHandle(
+                Corba::unwrap_string(handle)).exec(ctx, output_timezone);
+
+            set_domains_seq(domain_seq.inout(),domain_info,ctx);
+
+            return domain_seq._retn();
+        } catch (...) { }
+
+        // default exception handling
+        throw INTERNAL_SERVER_ERROR();
+    }
+
+    DomainSeq* Server_impl::get_domains_by_keyset(const char* handle)
+    {
+        try
+        {
+            Fred::OperationContext ctx;
+
+            DomainSeq_var domain_seq = new DomainSeq;
+
+            std::vector<Fred::InfoDomainOutput> domain_info = Fred::InfoDomainByKeysetHandle(
+                Corba::unwrap_string(handle)).exec(ctx, output_timezone);
+
+            set_domains_seq(domain_seq.inout(),domain_info,ctx);
+
+            return domain_seq._retn();
+        } catch (...) { }
+
+        // default exception handling
+        throw INTERNAL_SERVER_ERROR();
+    }
 
     // TODO XXX Just to have RDAP prototype quickly deployable (Ticket #10627). Must be implemented later.
     ObjectStatusDescSeq* Server_impl::get_domain_status_descriptions(const char* lang) { return NULL; }

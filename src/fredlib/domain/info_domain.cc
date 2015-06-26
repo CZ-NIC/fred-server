@@ -58,7 +58,7 @@ namespace Fred
         try
         {
             InfoDomain id;
-            id.set_fqdn(fqdn_).set_history_query(false);
+            id.set_inline_view_filter(Database::ParamQuery("info_domain_fqdn = LOWER(").param_text(fqdn_)(")")).set_history_query(false);
             if(lock_) id.set_lock();
             domain_res = id.exec(ctx,local_timestamp_pg_time_zone_name);
 
@@ -108,7 +108,7 @@ namespace Fred
         try
         {
             InfoDomain id;
-            id.set_id(id_).set_history_query(false);
+            id.set_inline_view_filter(Database::ParamQuery("info_domain_id = ").param_bigint(id_)).set_history_query(false);
             if(lock_) id.set_lock();
             domain_res = id.exec(ctx,local_timestamp_pg_time_zone_name);
 
@@ -171,7 +171,7 @@ namespace Fred
         try
         {
             InfoDomain id;
-            id.set_roid(roid_).set_history_query(true);
+            id.set_inline_view_filter(Database::ParamQuery("info_domain_roid = ").param_text(roid_)).set_history_query(true);
             if(lock_) id.set_lock();
             domain_res = id.exec(ctx,local_timestamp_pg_time_zone_name);
 
@@ -217,7 +217,7 @@ namespace Fred
         try
         {
             InfoDomain id;
-            id.set_id(id_).set_history_query(true);
+            id.set_inline_view_filter(Database::ParamQuery("info_domain_id = ").param_bigint(id_)).set_history_query(true);
             if(lock_) id.set_lock();
             domain_history_res = id.exec(ctx,local_timestamp_pg_time_zone_name);
 
@@ -262,7 +262,7 @@ namespace Fred
         try
         {
             InfoDomain id;
-            id.set_historyid(historyid_)
+            id.set_inline_view_filter(Database::ParamQuery("info_domain_historyid = ").param_bigint(historyid_))
             .set_history_query(true);
             if(lock_) id.set_lock();
             domain_history_res = id.exec(ctx,local_timestamp_pg_time_zone_name);
@@ -294,5 +294,219 @@ namespace Fred
         (std::make_pair("lock",lock_ ? "true":"false"))
         );
     }
+
+
+    InfoDomainByRegistrantHandle::InfoDomainByRegistrantHandle(const std::string& registrant_handle)
+        : registrant_handle_(registrant_handle)
+        , lock_(false)
+    {}
+
+    InfoDomainByRegistrantHandle& InfoDomainByRegistrantHandle::set_lock()
+    {
+        lock_ = true;
+        return *this;
+    }
+
+    std::vector<InfoDomainOutput> InfoDomainByRegistrantHandle::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
+    {
+        std::vector<InfoDomainOutput> domain_res;
+
+        try
+        {
+            std::pair<std::string,Database::query_param_list> domain_id_by_registrant_handle_param_query
+                = Database::ParamQuery("SELECT d.id FROM domain d "
+                "JOIN object_registry oreg ON d.registrant = oreg.id"
+                " AND oreg.name = UPPER(").param_text(registrant_handle_)(")"
+                " AND oreg.erdate IS NULL").get_query();
+
+            Database::Result domain_id_res = ctx.get_conn().exec_params(
+                domain_id_by_registrant_handle_param_query.first,
+                domain_id_by_registrant_handle_param_query.second);
+
+            Database::ParamQuery domain_id_inline_view("info_domain_id IN (");
+            Util::HeadSeparator in_separator("",",");
+
+            for (unsigned long long i = 0 ; i < domain_id_res.size(); ++i)
+            {
+                domain_id_inline_view(in_separator.get())
+                    .param_bigint(static_cast<unsigned long long>(domain_id_res[i][0]));
+            }
+            domain_id_inline_view(")");
+
+
+
+            InfoDomain id;
+            id.set_inline_view_filter(domain_id_inline_view)
+                .set_history_query(false);
+            if(lock_) id.set_lock();
+            domain_res = id.exec(ctx,local_timestamp_pg_time_zone_name);
+        }
+        catch(ExceptionStack& ex)
+        {
+            ex.add_exception_stack_info(to_string());
+            throw;
+        }
+        return domain_res;
+    }
+
+    std::string InfoDomainByRegistrantHandle::to_string() const
+    {
+        return Util::format_operation_state("InfoDomainByRegistrantHandle",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("registrant_handle", registrant_handle_))
+        (std::make_pair("lock",lock_ ? "true":"false"))
+        );
+    }
+
+
+
+
+    InfoDomainByAdminContactHandle::InfoDomainByAdminContactHandle(const std::string& admin_contact_handle)
+        : admin_contact_handle_(admin_contact_handle)
+        , lock_(false)
+    {}
+
+    InfoDomainByAdminContactHandle& InfoDomainByAdminContactHandle::set_lock()
+    {
+        lock_ = true;
+        return *this;
+    }
+
+    std::vector<InfoDomainOutput> InfoDomainByAdminContactHandle::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
+    {
+        std::vector<InfoDomainOutput> domain_res;
+
+        try
+        {
+            std::pair<std::string,Database::query_param_list> domain_id_by_admin_contact_handle_param_query
+                = Database::ParamQuery("SELECT dcm.domainid"
+                    " FROM object_registry oreg"
+                    " JOIN  enum_object_type eot ON oreg.type = eot.id AND eot.name = 'contact'"
+                    " JOIN domain_contact_map dcm ON dcm.contactid = oreg.id"
+                    " WHERE oreg.name = UPPER(").param_text(admin_contact_handle_)(") AND oreg.erdate IS NULL")
+                    .get_query();
+
+            Database::Result domain_id_res = ctx.get_conn().exec_params(
+                domain_id_by_admin_contact_handle_param_query.first,
+                domain_id_by_admin_contact_handle_param_query.second);
+
+            Database::ParamQuery domain_id_inline_view("info_domain_id IN (");
+            Util::HeadSeparator in_separator("",",");
+
+            for (unsigned long long i = 0 ; i < domain_id_res.size(); ++i)
+            {
+                domain_id_inline_view(in_separator.get())
+                    .param_bigint(static_cast<unsigned long long>(domain_id_res[i][0]));
+            }
+            domain_id_inline_view(")");
+
+            InfoDomain id;
+            id.set_inline_view_filter(domain_id_inline_view)
+                .set_history_query(false);
+            if(lock_) id.set_lock();
+            domain_res = id.exec(ctx,local_timestamp_pg_time_zone_name);
+        }
+        catch(ExceptionStack& ex)
+        {
+            ex.add_exception_stack_info(to_string());
+            throw;
+        }
+        return domain_res;
+    }
+
+    std::string InfoDomainByAdminContactHandle::to_string() const
+    {
+        return Util::format_operation_state("InfoDomainByAdminContactHandle",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("admin_contact_handle", admin_contact_handle_))
+        (std::make_pair("lock",lock_ ? "true":"false"))
+        );
+    }
+
+
+    InfoDomainByNssetHandle::InfoDomainByNssetHandle(const std::string& nsset_handle)
+        : nsset_handle_(nsset_handle)
+        , lock_(false)
+    {}
+
+    InfoDomainByNssetHandle& InfoDomainByNssetHandle::set_lock()
+    {
+        lock_ = true;
+        return *this;
+    }
+
+    std::vector<InfoDomainOutput> InfoDomainByNssetHandle::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
+    {
+        std::vector<InfoDomainOutput> domain_res;
+
+        try
+        {
+            InfoDomain id;
+            id.set_inline_view_filter(Database::ParamQuery(
+                "info_domain_nsset_id = (SELECT id FROM object_registry WHERE name = UPPER(").param_text(nsset_handle_)(")"
+                " AND type = ( SELECT id FROM enum_object_type eot WHERE eot.name='nsset'::text) AND erdate IS NULL) "))
+                .set_history_query(false);
+            if(lock_) id.set_lock();
+            domain_res = id.exec(ctx,local_timestamp_pg_time_zone_name);
+        }
+        catch(ExceptionStack& ex)
+        {
+            ex.add_exception_stack_info(to_string());
+            throw;
+        }
+        return domain_res;
+    }
+
+    std::string InfoDomainByNssetHandle::to_string() const
+    {
+        return Util::format_operation_state("InfoDomainByNssetHandle",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("nsset_handle", nsset_handle_))
+        (std::make_pair("lock",lock_ ? "true":"false"))
+        );
+    }
+
+    InfoDomainByKeysetHandle::InfoDomainByKeysetHandle(const std::string& keyset_handle)
+        : keyset_handle_(keyset_handle)
+        , lock_(false)
+    {}
+
+    InfoDomainByKeysetHandle& InfoDomainByKeysetHandle::set_lock()
+    {
+        lock_ = true;
+        return *this;
+    }
+
+    std::vector<InfoDomainOutput> InfoDomainByKeysetHandle::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
+    {
+        std::vector<InfoDomainOutput> domain_res;
+        try
+        {
+            InfoDomain id;
+            id.set_inline_view_filter(Database::ParamQuery(
+                "info_domain_keyset_id = (SELECT id FROM object_registry WHERE name = UPPER(").param_text(keyset_handle_)(")"
+                " AND type = ( SELECT id FROM enum_object_type eot WHERE eot.name='keyset'::text) AND erdate IS NULL) "))
+            .set_history_query(false);
+            if(lock_) id.set_lock();
+            domain_res = id.exec(ctx,local_timestamp_pg_time_zone_name);
+        }
+        catch(ExceptionStack& ex)
+        {
+            ex.add_exception_stack_info(to_string());
+            throw;
+        }
+        return domain_res;
+    }
+
+    std::string InfoDomainByKeysetHandle::to_string() const
+    {
+        return Util::format_operation_state("InfoDomainByKeysetHandle",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("keyset_handle", keyset_handle_))
+        (std::make_pair("lock",lock_ ? "true":"false"))
+        );
+    }
+
+
 }//namespace Fred
 

@@ -2070,6 +2070,7 @@ tests_interfaces_test_admin_contact_verification_LDADD = \
 		src/admin/contact/verification/libadmin_contact_verification.a \
 		src/fredlib/libfred.a \
 		util/log/liblog.a \
+		util/db/libdb.a \
 		util/libutil.a \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(BOOST_DATE_TIME_LIB) \

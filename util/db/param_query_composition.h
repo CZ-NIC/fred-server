@@ -66,7 +66,7 @@ namespace Database
     class ParamQueryElement
     {
     public:
-        enum TypeTag {PQE_NONE, PQE_STRING, PQE_PARAM};
+        enum TypeTag {PQE_NONE, PQE_STRING, PQE_PARAM, PQE_PARAM_REPETABLE};
     private:
         TypeTag tag_;
         boost::shared_ptr<int> lid_;

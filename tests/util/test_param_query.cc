@@ -95,4 +95,35 @@ BOOST_AUTO_TEST_CASE(query_composition)
     ctx.commit_transaction();
 }
 
+/**
+ * test 30k params query composition
+*/
+BOOST_AUTO_TEST_CASE(query_composition_30k_params)
+{
+    Database::ParamQuery test_rep_query("SELECT ");
+    Database::ParamQuery test_non_rep_query("SELECT ");
+
+    Database::ParamQueryParameter p_brm("brm", "text");
+
+    Util::HeadSeparator in_separator1("",",");
+    Util::HeadSeparator in_separator2("",",");
+
+    Database::ParamQueryParameter dummy_id = Database::ParamQueryParameter(1,"bigint");
+
+    for (unsigned long long i = 0 ; i < 30000; ++i)
+    {
+        test_rep_query(in_separator1.get()).param(dummy_id);
+        test_non_rep_query(in_separator2.get()).param_bigint(1);
+    }
+
+    //BOOST_MESSAGE(test_rep_query.get_query_string());
+    //BOOST_MESSAGE(test_non_rep_query.get_query_string());
+
+    BOOST_CHECK(test_rep_query.get_query_params().size() == 1);
+    BOOST_CHECK(test_non_rep_query.get_query_params().size() == 30000);
+
+
+
+}
+
 BOOST_AUTO_TEST_SUITE_END();//TestParamQuery
