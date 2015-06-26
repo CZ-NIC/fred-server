@@ -59,8 +59,10 @@ Server_i::~Server_i()
         Corba::Conversion::into(_identification).from(ident);
         return contact_id;
     }
-    catch (const MojeID2Impl::CreateContactPrepareDataValidationError &e) {
-        throw;
+    catch (const MojeID2Impl::CreateContactPrepareError &e) {
+        IDL::CREATE_CONTACT_PREPARE_VALIDATION_ERROR idl_error;
+        Corba::Conversion::into(idl_error).from(e);
+        throw idl_error;
     }
     catch (...) {
         throw IDL::INTERNAL_SERVER_ERROR();

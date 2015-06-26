@@ -701,6 +701,9 @@ struct into_from< CORBA_TYPE*, CONVERTIBLE_TYPE >
      */
     dst_value_ref operator()(dst_value_ref dst, src_value src)const
     {
+/*        dst = new corba_type();
+        into(dst->_value()).from(src);
+        return dst;*/
         return dst = new corba_type(src);
     }
 };

@@ -73,7 +73,7 @@ public:
                               Fred::MojeID::Check::new_contact_phone_availability > check_create_contact_prepare_ctx;
     typedef Fred::Check< boost::mpl::list< check_create_contact_prepare,
                                            check_create_contact_prepare_ctx > > CheckCreateContactPrepare;
-    typedef CheckCreateContactPrepare CreateContactPrepareDataValidationError;
+    typedef CheckCreateContactPrepare CreateContactPrepareError;
 private:
     const std::string server_name_;
     const std::string mojeid_registrar_handle_;

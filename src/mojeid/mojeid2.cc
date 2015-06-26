@@ -216,7 +216,7 @@ ContactId MojeID2Impl::create_contact_prepare(
         ctx.commit_transaction();
         return new_contact.object_id;
     }
-    catch (const CreateContactPrepareDataValidationError&) {
+    catch (const CreateContactPrepareError&) {
         LOGGER(PACKAGE).error("request failed (incorrect input data)");
         throw;
     }

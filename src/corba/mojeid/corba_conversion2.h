@@ -25,6 +25,7 @@
 #define CORBA_CONVERSION2_H_909714E7B8BE860E87D51B0685D54965
 
 #include "src/corba/MojeID2.hh"
+#include "src/mojeid/mojeid2.h"
 #include "src/corba/mojeid/corba_common_conversion2.h"
 #include "src/fredlib/contact/info_contact_data.h"
 
@@ -90,6 +91,64 @@ struct from_into< Registry::MojeID::CreateContact, Fred::InfoContactData >
 : from_into_base< Registry::MojeID::CreateContact, Fred::InfoContactData >
 {
     dst_value_ref operator()(src_value src, dst_value_ref dst)const;
+};
+
+typedef Registry::MojeID::AddressValidationError IDL_ADDRESS_VALIDATION_ERROR;
+typedef Fred::GeneralCheck::contact_optional_address IMPL_CONTACT_ADDRESS_ERROR;
+
+template < >
+struct into_from< IDL_ADDRESS_VALIDATION_ERROR, IMPL_CONTACT_ADDRESS_ERROR >
+: into_from_base< IDL_ADDRESS_VALIDATION_ERROR, IMPL_CONTACT_ADDRESS_ERROR >
+{
+    dst_value_ref operator()(dst_value_ref dst, src_value src)const;
+};
+
+template < typename CONVERTIBLE_TYPE >
+struct into_from< Registry::MojeID::NullableAddressValidationError*, CONVERTIBLE_TYPE >
+{
+    typedef Registry::MojeID::NullableAddressValidationError  corba_type;
+    typedef Registry::MojeID::NullableAddressValidationError*&dst_value_ref;
+    typedef const CONVERTIBLE_TYPE                           &src_value;
+    dst_value_ref operator()(dst_value_ref dst, src_value src)const
+    {
+        dst = new corba_type();
+        into(dst->_value()).from(src);
+        return dst;
+    }
+};
+
+typedef Registry::MojeID::ShippingAddressValidationError IDL_SHIPPING_ADDRESS_VALIDATION_ERROR;
+typedef Fred::GeneralCheck::contact_optional_address IMPL_CONTACT_ADDRESS_ERROR;
+
+template < >
+struct into_from< IDL_SHIPPING_ADDRESS_VALIDATION_ERROR, IMPL_CONTACT_ADDRESS_ERROR >
+: into_from_base< IDL_SHIPPING_ADDRESS_VALIDATION_ERROR, IMPL_CONTACT_ADDRESS_ERROR >
+{
+    dst_value_ref operator()(dst_value_ref dst, src_value src)const;
+};
+
+template < typename CONVERTIBLE_TYPE >
+struct into_from< Registry::MojeID::NullableShippingAddressValidationError*, CONVERTIBLE_TYPE >
+{
+    typedef Registry::MojeID::NullableShippingAddressValidationError  corba_type;
+    typedef Registry::MojeID::NullableShippingAddressValidationError*&dst_value_ref;
+    typedef const CONVERTIBLE_TYPE                                   &src_value;
+    dst_value_ref operator()(dst_value_ref dst, src_value src)const
+    {
+        dst = new corba_type();
+        into(dst->_value()).from(src);
+        return dst;
+    }
+};
+
+typedef Registry::MojeID::Server::CREATE_CONTACT_PREPARE_VALIDATION_ERROR IDL_CREATE_CONTACT_PREPARE_ERROR;
+typedef Registry::MojeID::MojeID2Impl::CreateContactPrepareError IMPL_CREATE_CONTACT_PREPARE_ERROR;
+
+template < >
+struct into_from< IDL_CREATE_CONTACT_PREPARE_ERROR, IMPL_CREATE_CONTACT_PREPARE_ERROR >
+: into_from_base< IDL_CREATE_CONTACT_PREPARE_ERROR, IMPL_CREATE_CONTACT_PREPARE_ERROR >
+{
+    dst_value_ref operator()(dst_value_ref dst, src_value src)const;
 };
 
 }//Corba::Conversion
