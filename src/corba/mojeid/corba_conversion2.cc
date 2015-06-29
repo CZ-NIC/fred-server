@@ -256,6 +256,39 @@ into_from< IDL_SHIPPING_ADDRESS_VALIDATION_ERROR, IMPL_CONTACT_ADDRESS_ERROR >::
 into_from< IDL_CREATE_CONTACT_PREPARE_ERROR, IMPL_CREATE_CONTACT_PREPARE_ERROR >::dst_value_ref
 into_from< IDL_CREATE_CONTACT_PREPARE_ERROR, IMPL_CREATE_CONTACT_PREPARE_ERROR >::operator()(dst_value_ref dst, src_value src)const
 {
+    if (!src.Fred::MojeID::check_contact_username_availability::success()) {
+        into(dst.username).from(Registry::MojeID::NOT_AVAILABLE);
+    }
+
+    if (!src.Fred::check_contact_name::success()) {
+        if (src.Fred::check_contact_name::first_name_absent) {
+            into(dst.first_name).from(Registry::MojeID::REQUIRED);
+        }
+        if (src.Fred::check_contact_name::last_name_absent) {
+            into(dst.last_name).from(Registry::MojeID::REQUIRED);
+        }
+    }
+
+    if (!src.Fred::check_contact_email_presence::success()) {
+        into(dst.email).from(Registry::MojeID::REQUIRED);
+    }
+    else if (!src.Fred::check_contact_email_validity::success()) {
+        into(dst.email).from(Registry::MojeID::INVALID);
+    }
+    else if (!src.Fred::MojeID::Check::new_contact_email_availability::success()) {
+        into(dst.email).from(Registry::MojeID::NOT_AVAILABLE);
+    }
+
+    if (!src.Fred::check_contact_phone_presence::success()) {
+        into(dst.phone).from(Registry::MojeID::REQUIRED);
+    }
+    else if (!src.Fred::check_contact_phone_validity::success()) {
+        into(dst.phone).from(Registry::MojeID::INVALID);
+    }
+    else if (!src.Fred::MojeID::Check::new_contact_phone_availability::success()) {
+        into(dst.phone).from(Registry::MojeID::NOT_AVAILABLE);
+    }
+
     if (!src.Fred::check_contact_place_address::success()) {
         into(dst.permanent).from(static_cast< const IMPL_CONTACT_ADDRESS_ERROR& >(
                                  static_cast< const Fred::check_contact_place_address& >(src)));
@@ -271,6 +304,14 @@ into_from< IDL_CREATE_CONTACT_PREPARE_ERROR, IMPL_CREATE_CONTACT_PREPARE_ERROR >
     if (!src.Fred::check_contact_addresses_shipping::success()) {
         into(dst.shipping).from(static_cast< const IMPL_CONTACT_ADDRESS_ERROR& >(
                                 static_cast< const Fred::check_contact_addresses_shipping& >(src)));
+    }
+    if (!src.Fred::check_contact_addresses_shipping::success()) {
+        into(dst.shipping2).from(static_cast< const IMPL_CONTACT_ADDRESS_ERROR& >(
+                                 static_cast< const Fred::check_contact_addresses_shipping2& >(src)));
+    }
+    if (!src.Fred::check_contact_addresses_shipping::success()) {
+        into(dst.shipping3).from(static_cast< const IMPL_CONTACT_ADDRESS_ERROR& >(
+                                 static_cast< const Fred::check_contact_addresses_shipping3& >(src)));
     }
     return dst;
 }
