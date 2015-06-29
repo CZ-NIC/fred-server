@@ -72,91 +72,74 @@ struct set_ssn
     }
 };
 
+template < typename T >
+class set_optional_value
+{
+public:
+    typedef T type;
+    typedef Optional< type > O;
+    typedef Nullable< type > N;
+    set_optional_value(O &_o):o_(_o) { }
+    ~set_optional_value()
+    {
+        if (!n_.isnull()) {
+            o_ = n_.get_value();
+        }
+    }
+    N& if_not_null() { return n_; }
+private:
+    set_optional_value(const set_optional_value &_src):o_(_src.o_), n_(_src.n_) { }
+    template < typename TYPE >
+    friend set_optional_value< TYPE > set_optional(Optional< TYPE > &_o);
+    O &o_;
+    N n_;
+};
+
+template < typename T >
+set_optional_value< T > set_optional(Optional< T > &_o)
+{
+    return set_optional_value< T >(_o);
+}
+
 }//Corba::Conversion::{anonymous}
 
 from_into< Registry::MojeID::Address, Fred::Contact::PlaceAddress >::dst_value_ref
 from_into< Registry::MojeID::Address, Fred::Contact::PlaceAddress >::operator()(src_value src, dst_value_ref dst)const
 {
-    Nullable< std::string > street2;
-    Nullable< std::string > street3;
-    Nullable< std::string > stateorprovince;
-
-    from(              src.street1)    .into(dst.street1);
-    from(empty_as_null(src.street2))   .into(street2);
-    from(empty_as_null(src.street3))   .into(street3);
-    from(              src.city)       .into(dst.city);
-    from(empty_as_null(src.state))     .into(stateorprovince);
-    from(              src.postal_code).into(dst.postalcode);
-    from(              src.country)    .into(dst.country);
-
-    if (!street2.isnull()) {
-        dst.street2 = street2.get_value();
-    }
-    if (!street3.isnull()) {
-        dst.street3 = street3.get_value();
-    }
-    if (!stateorprovince.isnull()) {
-        dst.stateorprovince = stateorprovince.get_value();
-    }
+    from(              src.street1)    .into(             dst.street1);
+    from(empty_as_null(src.street2))   .into(set_optional(dst.street2).if_not_null());
+    from(empty_as_null(src.street3))   .into(set_optional(dst.street3).if_not_null());
+    from(              src.city)       .into(             dst.city);
+    from(empty_as_null(src.state))     .into(set_optional(dst.stateorprovince).if_not_null());
+    from(              src.postal_code).into(             dst.postalcode);
+    from(              src.country)    .into(             dst.country);
     return dst;
 }
 
 from_into< Registry::MojeID::Address, Fred::ContactAddress >::dst_value_ref
 from_into< Registry::MojeID::Address, Fred::ContactAddress >::operator()(src_value src, dst_value_ref dst)const
 {
-    Nullable< std::string > street2;
-    Nullable< std::string > street3;
-    Nullable< std::string > stateorprovince;
-
     from(              src.street1)    .into(dst.street1);
-    from(empty_as_null(src.street2))   .into(street2);
-    from(empty_as_null(src.street3))   .into(street3);
-    from(              src.city)       .into(dst.city);
-    from(empty_as_null(src.state))     .into(stateorprovince);
+    from(empty_as_null(src.street2))   .into(set_optional(dst.street2).if_not_null());
+    from(empty_as_null(src.street3))   .into(set_optional(dst.street3).if_not_null());
+    from(              src.city)       .into(             dst.city);
+    from(empty_as_null(src.state))     .into(set_optional(dst.stateorprovince).if_not_null());
     from(              src.postal_code).into(dst.postalcode);
     from(              src.country)    .into(dst.country);
-
-    if (!street2.isnull()) {
-        dst.street2 = street2.get_value();
-    }
-    if (!street3.isnull()) {
-        dst.street3 = street3.get_value();
-    }
-    if (!stateorprovince.isnull()) {
-        dst.stateorprovince = stateorprovince.get_value();
-    }
     return dst;
 }
 
 from_into< Registry::MojeID::ShippingAddress, Fred::ContactAddress >::dst_value_ref
 from_into< Registry::MojeID::ShippingAddress, Fred::ContactAddress >::operator()(src_value src, dst_value_ref dst)const
 {
-    Nullable< std::string > company_name;
-    Nullable< std::string > street2;
-    Nullable< std::string > street3;
-    Nullable< std::string > stateorprovince;
-
-    from(empty_as_null(src.company_name)).into(company_name);
+    from(empty_as_null(src.company_name)).into(set_optional(dst.company_name).if_not_null());
     from(              src.street1)      .into(dst.street1);
-    from(empty_as_null(src.street2))     .into(street2);
-    from(empty_as_null(src.street3))     .into(street3);
-    from(              src.city)         .into(dst.city);
-    from(empty_as_null(src.state))       .into(stateorprovince);
+    from(empty_as_null(src.street2))     .into(set_optional(dst.street2).if_not_null());
+    from(empty_as_null(src.street3))     .into(set_optional(dst.street3).if_not_null());
+    from(              src.city)         .into(             dst.city);
+    from(empty_as_null(src.state))       .into(set_optional(dst.stateorprovince).if_not_null());
     from(              src.postal_code)  .into(dst.postalcode);
     from(              src.country)      .into(dst.country);
-
-    if (!company_name.isnull()) {
-        dst.company_name = company_name.get_value();
-    }
-    if (!street2.isnull()) {
-        dst.street2 = street2.get_value();
-    }
-    if (!street3.isnull()) {
-        dst.street3 = street3.get_value();
-    }
-    if (!stateorprovince.isnull()) {
-        dst.stateorprovince = stateorprovince.get_value();
-    }
     return dst;
 }
 
