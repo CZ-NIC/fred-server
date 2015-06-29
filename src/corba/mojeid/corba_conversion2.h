@@ -103,22 +103,8 @@ struct into_from< IDL_ADDRESS_VALIDATION_ERROR, IMPL_CONTACT_ADDRESS_ERROR >
     dst_value_ref operator()(dst_value_ref dst, src_value src)const;
 };
 
-template < typename CONVERTIBLE_TYPE >
-struct into_from< Registry::MojeID::NullableAddressValidationError*, CONVERTIBLE_TYPE >
-{
-    typedef Registry::MojeID::NullableAddressValidationError  corba_type;
-    typedef Registry::MojeID::NullableAddressValidationError*&dst_value_ref;
-    typedef const CONVERTIBLE_TYPE                           &src_value;
-    dst_value_ref operator()(dst_value_ref dst, src_value src)const
-    {
-        dst = new corba_type();
-        into(dst->_value()).from(src);
-        return dst;
-    }
-};
-
 typedef Registry::MojeID::ShippingAddressValidationError IDL_SHIPPING_ADDRESS_VALIDATION_ERROR;
-typedef Fred::GeneralCheck::contact_optional_address IMPL_CONTACT_ADDRESS_ERROR;
+typedef Fred::GeneralCheck::contact_optional_address     IMPL_CONTACT_ADDRESS_ERROR;
 
 template < >
 struct into_from< IDL_SHIPPING_ADDRESS_VALIDATION_ERROR, IMPL_CONTACT_ADDRESS_ERROR >
@@ -127,22 +113,8 @@ struct into_from< IDL_SHIPPING_ADDRESS_VALIDATION_ERROR, IMPL_CONTACT_ADDRESS_ER
     dst_value_ref operator()(dst_value_ref dst, src_value src)const;
 };
 
-template < typename CONVERTIBLE_TYPE >
-struct into_from< Registry::MojeID::NullableShippingAddressValidationError*, CONVERTIBLE_TYPE >
-{
-    typedef Registry::MojeID::NullableShippingAddressValidationError  corba_type;
-    typedef Registry::MojeID::NullableShippingAddressValidationError*&dst_value_ref;
-    typedef const CONVERTIBLE_TYPE                                   &src_value;
-    dst_value_ref operator()(dst_value_ref dst, src_value src)const
-    {
-        dst = new corba_type();
-        into(dst->_value()).from(src);
-        return dst;
-    }
-};
-
 typedef Registry::MojeID::Server::CREATE_CONTACT_PREPARE_VALIDATION_ERROR IDL_CREATE_CONTACT_PREPARE_ERROR;
-typedef Registry::MojeID::MojeID2Impl::CreateContactPrepareError IMPL_CREATE_CONTACT_PREPARE_ERROR;
+typedef Registry::MojeID::MojeID2Impl::CreateContactPrepareError          IMPL_CREATE_CONTACT_PREPARE_ERROR;
 
 template < >
 struct into_from< IDL_CREATE_CONTACT_PREPARE_ERROR, IMPL_CREATE_CONTACT_PREPARE_ERROR >

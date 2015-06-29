@@ -28,6 +28,7 @@
 #include <string>
 #include <stdexcept>
 #include <omniORB4/CORBA.h>
+#include </usr/include/boost/type_traits.hpp>
 
 /**
  * All about CORBA interface.
@@ -684,6 +685,25 @@ Into< CORBA_TYPE* > into(_CORBA_Value_OUT_arg< CORBA_TYPE, CORBA_TYPE_HELPER > &
     return v.ptr();
 }
 
+template < typename CORBA_TYPE, typename CONVERTIBLE_TYPE, bool IS_TRIVIAL >
+struct create_corba_from_convertible
+{
+    void operator()(CORBA_TYPE *&dst, const CONVERTIBLE_TYPE &src)const
+    {
+        dst = new CORBA_TYPE(src);
+    }
+};
+
+template < typename CORBA_TYPE, typename CONVERTIBLE_TYPE >
+struct create_corba_from_convertible< CORBA_TYPE, CONVERTIBLE_TYPE, false >
+{
+    void operator()(CORBA_TYPE *&dst, const CONVERTIBLE_TYPE &src)const
+    {
+        dst = new CORBA_TYPE;
+        into(dst->_value()).from(src);
+    }
+};
+
 /**
  * Specialization in case of CORBA type with nullable semantics.
  */
@@ -701,10 +721,10 @@ struct into_from< CORBA_TYPE*, CONVERTIBLE_TYPE >
      */
     dst_value_ref operator()(dst_value_ref dst, src_value src)const
     {
-/*        dst = new corba_type();
-        into(dst->_value()).from(src);
-        return dst;*/
-        return dst = new corba_type(src);
+        create_corba_from_convertible< CORBA_TYPE, CONVERTIBLE_TYPE,
+                                       boost::has_trivial_constructor< CONVERTIBLE_TYPE >::value > create_corba;
+        create_corba(dst, src);
+        return dst;
     }
 };
 
