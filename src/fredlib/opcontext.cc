@@ -33,10 +33,19 @@ namespace
 
 const std::string& check_transaction_id(const std::string &_value)
 {
-    if (!_value.empty()) {
-        return _value;
+    if (_value.empty()) {
+        throw std::runtime_error("prepared transaction id mustn't be empty");
     }
-    throw std::runtime_error("prepared transaction id mustn't be empty");
+    enum { MAX_LENGTH_OF_TRANSACTION_ID = 200 };
+    if (MAX_LENGTH_OF_TRANSACTION_ID < _value.length()) {
+        throw std::runtime_error("prepared transaction id too long");
+    }
+    //Postgres PREPARE TRANSACTION commands family doesn't accept parameters, requires immediate argument,
+    //so I check unsafe character(s) in transaction identifier.
+    if (_value.find('\'') != std::string::npos) {
+        throw std::runtime_error("prepared transaction id too unsafe");
+    }
+    return _value;
 }
 
 using namespace Database;
@@ -116,7 +125,8 @@ void OperationContextTwoPhaseCommitCreator::commit_transaction()
     if (conn_ptr == NULL) {
         throw std::runtime_error("no transaction in progress");
     }
-    conn_ptr->exec_params("PREPARE TRANSACTION $1::TEXT", Database::query_param_list(transaction_id_));
+    //"PREPARE TRANSACTION $1::TEXT" failed
+    conn_ptr->exec("PREPARE TRANSACTION '" + transaction_id_ + "'");
     conn_.reset();
 }
 
@@ -124,14 +134,16 @@ void commit_transaction(const std::string &_transaction_id)
 {
     check_transaction_id(_transaction_id);
     std::auto_ptr< Database::StandaloneConnection > conn_ptr = get_database_conn();
-    conn_ptr->exec_params("COMMIT PREPARED $1::TEXT", Database::query_param_list(_transaction_id));
+    //"COMMIT PREPARED $1::TEXT" failed
+    conn_ptr->exec("COMMIT PREPARED '" + _transaction_id + "'");
 }
 
 void rollback_transaction(const std::string &_transaction_id)
 {
     check_transaction_id(_transaction_id);
     std::auto_ptr< Database::StandaloneConnection > conn_ptr = get_database_conn();
-    conn_ptr->exec_params("ROLLBACK PREPARED $1::TEXT", Database::query_param_list(_transaction_id));
+    //"ROLLBACK PREPARED $1::TEXT" failed
+    conn_ptr->exec("ROLLBACK PREPARED '" + _transaction_id + "'");
 }
 
 }//Fred
