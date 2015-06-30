@@ -233,5 +233,39 @@ ContactId MojeID2Impl::create_contact_prepare(
     }
 }
 
+void MojeID2Impl::commit_prepared_transaction(const std::string &_trans_id)
+{
+    LOGGING_CONTEXT(log_ctx, *this);
+
+    try {
+        Fred::commit_transaction(_trans_id);
+    }
+    catch (const std::exception &e) {
+        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
+        throw;
+    }
+    catch (...) {
+        LOGGER(PACKAGE).error("request failed (unknown error)");
+        throw;
+    }
+}
+
+void MojeID2Impl::rollback_prepared_transaction(const std::string &_trans_id)
+{
+    LOGGING_CONTEXT(log_ctx, *this);
+
+    try {
+        Fred::rollback_transaction(_trans_id);
+    }
+    catch (const std::exception &e) {
+        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
+        throw;
+    }
+    catch (...) {
+        LOGGER(PACKAGE).error("request failed (unknown error)");
+        throw;
+    }
+}
+
 }//namespace Registry::MojeID
 }//namespace Registry

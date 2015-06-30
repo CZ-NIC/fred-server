@@ -104,11 +104,23 @@ void Server_i::process_identification_request(
 void Server_i::commit_prepared_transaction(
         const char *_trans_id)
 {
+    try {
+        impl_ptr_->commit_prepared_transaction(_trans_id);
+    }
+    catch (...) {
+        throw IDL::INTERNAL_SERVER_ERROR();
+    }
 }//commit_prepared_transaction
 
 void Server_i::rollback_prepared_transaction(
         const char *_trans_id)
 {
+    try {
+        impl_ptr_->rollback_prepared_transaction(_trans_id);
+    }
+    catch (...) {
+        throw IDL::INTERNAL_SERVER_ERROR();
+    }
 }//rollback_prepared_transaction
 
 Buffer* Server_i::get_validation_pdf(

@@ -57,6 +57,10 @@ public:
         LogRequestId _log_request_id,
         std::string &_ident);
 
+    void commit_prepared_transaction(const std::string &_trans_id);
+
+    void rollback_prepared_transaction(const std::string &_trans_id);
+
     typedef boost::mpl::list< Fred::check_contact_name,
                               Fred::check_contact_place_address,
                               Fred::check_contact_addresses_mailing,
