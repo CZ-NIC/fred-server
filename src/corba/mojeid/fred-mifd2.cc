@@ -8,14 +8,15 @@
 
 #include "setup_server.h"
 
-#include "cfg/config_handler.h"
-#include "cfg/handle_general_args.h"
-#include "cfg/handle_server_args.h"
-#include "cfg/handle_logging_args.h"
-#include "cfg/handle_database_args.h"
-#include "cfg/handle_registry_args.h"
-#include "cfg/handle_corbanameservice_args.h"
-#include "cfg/handle_mojeid_args.h"
+#include "util/cfg/config_handler.h"
+#include "util/cfg/handle_general_args.h"
+#include "util/cfg/handle_server_args.h"
+#include "util/cfg/handle_logging_args.h"
+#include "util/cfg/handle_database_args.h"
+#include "util/cfg/handle_registry_args.h"
+#include "util/cfg/handle_corbanameservice_args.h"
+#include "util/cfg/handle_mojeid_args.h"
+#include "util/cfg/handle_contactverification_args.h"
 
 #include <iostream>
 
@@ -38,7 +39,8 @@ boost::assign::list_of
     (HandleArgsPtr(new HandleDatabaseArgs))
     (HandleArgsPtr(new HandleCorbaNameServiceArgs))
     (HandleArgsPtr(new HandleRegistryArgs))
-    (HandleArgsPtr(new HandleMojeIDArgs));
+    (HandleArgsPtr(new HandleMojeIDArgs))
+    (HandleArgsPtr(new HandleContactVerificationArgs));
 
 
 
