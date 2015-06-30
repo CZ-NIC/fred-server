@@ -55,11 +55,18 @@ public:
         const Fred::InfoContactData &_contact,
         const std::string &_trans_id,
         LogRequestId _log_request_id,
-        std::string &_ident);
+        std::string &_ident)const;
 
-    void commit_prepared_transaction(const std::string &_trans_id);
+    Fred::InfoContactData& transfer_contact_prepare(
+        const std::string &_handle,
+        const std::string &_trans_id,
+        LogRequestId _log_request_id,
+        Fred::InfoContactData &_contact,
+        std::string &_ident)const;
 
-    void rollback_prepared_transaction(const std::string &_trans_id);
+    void commit_prepared_transaction(const std::string &_trans_id)const;
+
+    void rollback_prepared_transaction(const std::string &_trans_id)const;
 
     typedef boost::mpl::list< Fred::check_contact_name,
                               Fred::check_contact_place_address,

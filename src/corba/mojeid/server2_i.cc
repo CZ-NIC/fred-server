@@ -67,7 +67,6 @@ Server_i::~Server_i()
     catch (...) {
         throw IDL::INTERNAL_SERVER_ERROR();
     }
-;
 }//create_contact_prepare
 
 Registry::MojeID::InfoContact* Server_i::transfer_contact_prepare(
@@ -76,7 +75,28 @@ Registry::MojeID::InfoContact* Server_i::transfer_contact_prepare(
         ::CORBA::ULongLong _log_request_id,
         ::CORBA::String_out _identification)
 {
-    return NULL;
+    try {
+        Fred::InfoContactData contact;
+        std::string ident;
+        impl_ptr_->transfer_contact_prepare(
+            _handle,
+            _trans_id,
+            _log_request_id,
+            contact,
+            ident);
+        Corba::Conversion::into(_identification).from(ident);
+        Registry::MojeID::InfoContact *const contact_info_ptr = new Registry::MojeID::InfoContact;
+        Corba::Conversion::into(*contact_info_ptr).from(contact);
+        return contact_info_ptr;
+    }
+    catch (const MojeID2Impl::CreateContactPrepareError &e) {
+        IDL::CREATE_CONTACT_PREPARE_VALIDATION_ERROR idl_error;
+        Corba::Conversion::into(idl_error).from(e);
+        throw idl_error;
+    }
+    catch (...) {
+        throw IDL::INTERNAL_SERVER_ERROR();
+    }
 }//transfer_contact_prepare
 
 void Server_i::update_contact_prepared(
@@ -92,14 +112,14 @@ void Server_i::update_contact_prepared(
         ::CORBA::ULongLong log_request_id)
 {
     return 0;
-}//processIdentification
+}//process_registration_request
 
 void Server_i::process_identification_request(
         ::CORBA::ULongLong contact_id,
         const char *password,
         ::CORBA::ULongLong log_request_id)
 {
-}
+}//process_identification_request
 
 void Server_i::commit_prepared_transaction(
         const char *_trans_id)

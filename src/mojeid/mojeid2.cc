@@ -193,7 +193,7 @@ ContactId MojeID2Impl::create_contact_prepare(
         const Fred::InfoContactData &_contact,
         const std::string &_trans_id,
         LogRequestId _log_request_id,
-        std::string &_ident)
+        std::string &_ident)const
 {
     LOGGING_CONTEXT(log_ctx, *this);
 
@@ -233,7 +233,29 @@ ContactId MojeID2Impl::create_contact_prepare(
     }
 }
 
-void MojeID2Impl::commit_prepared_transaction(const std::string &_trans_id)
+Fred::InfoContactData& MojeID2Impl::transfer_contact_prepare(
+        const std::string &_handle,
+        const std::string &_trans_id,
+        LogRequestId _log_request_id,
+        Fred::InfoContactData &_contact,
+        std::string &_ident)const
+{
+    LOGGING_CONTEXT(log_ctx, *this);
+
+    try {
+        return _contact;
+    }
+    catch (const std::exception &e) {
+        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
+        throw;
+    }
+    catch (...) {
+        LOGGER(PACKAGE).error("request failed (unknown error)");
+        throw;
+    }
+}
+
+void MojeID2Impl::commit_prepared_transaction(const std::string &_trans_id)const
 {
     LOGGING_CONTEXT(log_ctx, *this);
 
@@ -250,7 +272,7 @@ void MojeID2Impl::commit_prepared_transaction(const std::string &_trans_id)
     }
 }
 
-void MojeID2Impl::rollback_prepared_transaction(const std::string &_trans_id)
+void MojeID2Impl::rollback_prepared_transaction(const std::string &_trans_id)const
 {
     LOGGING_CONTEXT(log_ctx, *this);
 
