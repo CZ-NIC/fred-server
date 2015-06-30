@@ -212,7 +212,10 @@ ContactId MojeID2Impl::create_contact_prepare(
         Fred::CreatePublicRequestAuth op_create_pub_req(
             (Fred::MojeID::PublicRequest::ContactConditionalIdentification()));
         Fred::PublicRequestObjectLockGuard locked_contact(ctx, new_contact.object_id);
-        op_create_pub_req.exec(ctx, locked_contact);
+        {
+            const Fred::CreatePublicRequestAuth::Result result = op_create_pub_req.exec(ctx, locked_contact);
+            _ident = result.identification;
+        }
         ctx.commit_transaction();
         return new_contact.object_id;
     }
