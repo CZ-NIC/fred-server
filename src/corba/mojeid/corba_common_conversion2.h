@@ -549,7 +549,22 @@ Into< CORBA_TYPE* > into(_CORBA_Value_OUT_arg< CORBA_TYPE, CORBA_TYPE_HELPER >&)
  * @param CONVERTIBLE_TYPE type of source value
  */
 template < typename CORBA_TYPE, typename CONVERTIBLE_TYPE >
-struct into_from;
+struct into_from
+{
+    typedef CORBA_TYPE              corba_type;   ///< type of destination object
+    typedef CORBA_TYPE             &dst_value_ref;///< reference to the destination object
+    typedef const CONVERTIBLE_TYPE &src_value;    ///< type of source value
+    /**
+     * Converts source value into destination object.
+     * @param dst destination object
+     * @param src source value
+     * @return reference to the destination object
+     */
+    dst_value_ref operator()(dst_value_ref dst, src_value src)const
+    {
+        return dst = src;
+    }
+};
 
 /**
  * Helping template class which defines derived kinds of types.
@@ -688,19 +703,20 @@ Into< CORBA_TYPE* > into(_CORBA_Value_OUT_arg< CORBA_TYPE, CORBA_TYPE_HELPER > &
 template < typename CORBA_TYPE, typename CONVERTIBLE_TYPE, bool IS_TRIVIAL >
 struct create_corba_from_convertible
 {
-    void operator()(CORBA_TYPE *&dst, const CONVERTIBLE_TYPE &src)const
+    CORBA_TYPE*& operator()(CORBA_TYPE *&dst, const CONVERTIBLE_TYPE &src)const
     {
-        dst = new CORBA_TYPE(src);
+        return dst = new CORBA_TYPE(src);
     }
 };
 
 template < typename CORBA_TYPE, typename CONVERTIBLE_TYPE >
 struct create_corba_from_convertible< CORBA_TYPE, CONVERTIBLE_TYPE, false >
 {
-    void operator()(CORBA_TYPE *&dst, const CONVERTIBLE_TYPE &src)const
+    CORBA_TYPE*& operator()(CORBA_TYPE *&dst, const CONVERTIBLE_TYPE &src)const
     {
         dst = new CORBA_TYPE;
         into(dst->_value()).from(src);
+        return dst;
     }
 };
 
@@ -723,10 +739,12 @@ struct into_from< CORBA_TYPE*, CONVERTIBLE_TYPE >
     {
         create_corba_from_convertible< CORBA_TYPE, CONVERTIBLE_TYPE,
                                        boost::has_trivial_constructor< CONVERTIBLE_TYPE >::value > create_corba;
-        create_corba(dst, src);
-        return dst;
+        return create_corba(dst, src);
     }
 };
+
+template < typename TYPE >
+struct into_from< TYPE*, TYPE* >;
 
 /**
  * Specialization in case of CORBA type with nullable semantics and source value of const char* type.

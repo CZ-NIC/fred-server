@@ -123,6 +123,13 @@ struct into_from< IDL_CREATE_CONTACT_PREPARE_ERROR, IMPL_CREATE_CONTACT_PREPARE_
     dst_value_ref operator()(dst_value_ref dst, src_value src)const;
 };
 
+template < >
+struct into_from< Registry::MojeID::UpdateContact, Fred::InfoContactData >
+: into_from_base< Registry::MojeID::UpdateContact, Fred::InfoContactData >
+{
+    dst_value_ref operator()(dst_value_ref dst, src_value src)const;
+};
+
 }//Corba::Conversion
 }//Corba
 

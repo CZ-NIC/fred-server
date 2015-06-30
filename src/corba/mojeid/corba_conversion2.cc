@@ -316,5 +316,23 @@ into_from< IDL_CREATE_CONTACT_PREPARE_ERROR, IMPL_CREATE_CONTACT_PREPARE_ERROR >
     return dst;
 }
 
+into_from< Registry::MojeID::UpdateContact, Fred::InfoContactData >::dst_value_ref
+into_from< Registry::MojeID::UpdateContact, Fred::InfoContactData >::operator()(dst_value_ref dst, src_value src)const
+{
+    const std::string full_name = src.name.get_value_or_default();
+    const std::string::size_type last_name_start = full_name.find_last_of(' ');
+    const bool last_name_present = last_name_start != std::string::npos;
+    const std::string first_name = full_name.substr(0, last_name_present ? last_name_start : 0);
+    const std::string last_name = last_name_present ? full_name.substr(last_name_start + 1) : std::string();
+
+    into(dst.id)          .from(src.id);
+    into(dst.first_name)  .from(first_name);
+    into(dst.last_name)   .from(last_name);
+    into(dst.organization).from(src.organization);
+    into(dst.vat_reg_num) .from(src.vat);
+
+    return dst;
+}
+
 }//Corba::Conversion
 }//Corba
