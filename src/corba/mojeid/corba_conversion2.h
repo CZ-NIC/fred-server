@@ -124,8 +124,29 @@ struct into_from< IDL_CREATE_CONTACT_PREPARE_ERROR, IMPL_CREATE_CONTACT_PREPARE_
 };
 
 template < >
-struct into_from< Registry::MojeID::UpdateContact, Fred::InfoContactData >
-: into_from_base< Registry::MojeID::UpdateContact, Fred::InfoContactData >
+struct into_from< Registry::MojeID::Address, Fred::Contact::PlaceAddress >
+: into_from_base< Registry::MojeID::Address, Fred::Contact::PlaceAddress >
+{
+    dst_value_ref operator()(dst_value_ref dst, src_value src)const;
+};
+
+template < >
+struct into_from< Registry::MojeID::Address, Fred::ContactAddress >
+: into_from_base< Registry::MojeID::Address, Fred::ContactAddress >
+{
+    dst_value_ref operator()(dst_value_ref dst, src_value src)const;
+};
+
+template < >
+struct into_from< Registry::MojeID::ShippingAddress, Fred::ContactAddress >
+: into_from_base< Registry::MojeID::ShippingAddress, Fred::ContactAddress >
+{
+    dst_value_ref operator()(dst_value_ref dst, src_value src)const;
+};
+
+template < >
+struct into_from< Registry::MojeID::InfoContact, Fred::InfoContactData >
+: into_from_base< Registry::MojeID::InfoContact, Fred::InfoContactData >
 {
     dst_value_ref operator()(dst_value_ref dst, src_value src)const;
 };
