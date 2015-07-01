@@ -99,7 +99,7 @@ Registry::MojeID::InfoContact* Server_i::transfer_contact_prepare(
     }
 }//transfer_contact_prepare
 
-void Server_i::update_contact_prepared(
+void Server_i::update_contact_prepare(
         const UpdateContact &_contact,
         const char *_trans_id,
         ::CORBA::ULongLong _log_request_id)

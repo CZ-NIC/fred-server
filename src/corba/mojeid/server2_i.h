@@ -55,7 +55,7 @@ public:
         ::CORBA::ULongLong log_request_id,
         ::CORBA::String_out ident);
 
-    void update_contact_prepared(
+    void update_contact_prepare(
         const UpdateContact &c,
         const char *trans_id,
         ::CORBA::ULongLong log_request_id);
