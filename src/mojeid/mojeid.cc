@@ -1000,6 +1000,13 @@ namespace Registry
                 throw;
             }
 
+            if(tr_data.op == MOJEID_CONTACT_UPDATE
+                    || tr_data.op == MOJEID_CONTACT_UNIDENTIFY
+                    || tr_data.op == MOJEID_CONTACT_CANCEL )
+            {
+                updateObjectStates(tr_data.cid);
+            }
+
             // send identification password if operation is contact create
             if(tr_data.op == MOJEID_CONTACT_CREATE
                     || tr_data.op == MOJEID_CONTACT_TRANSFER
@@ -1009,13 +1016,6 @@ namespace Registry
                 {
                     sendAuthPasswords(tr_data.cid, tr_data.prid);
                 }
-            }
-
-            if(tr_data.op == MOJEID_CONTACT_UPDATE
-                    || tr_data.op == MOJEID_CONTACT_UNIDENTIFY
-                    || tr_data.op == MOJEID_CONTACT_CANCEL )
-            {
-                updateObjectStates(tr_data.cid);
             }
 
             /* request notification */
