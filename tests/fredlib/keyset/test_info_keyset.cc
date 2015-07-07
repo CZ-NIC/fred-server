@@ -29,9 +29,10 @@
 
 const std::string server_name = "test-info-domain";
 
+BOOST_AUTO_TEST_SUITE(TestInfoKeyset);
+
 struct info_keyset_fixture : public Test::Fixture::instantiate_db_template
 {
-    Fred::OperationContext fixture_ctx;
     std::string registrar_handle;
     std::string xmark;
     std::string admin_contact4_handle;
@@ -40,15 +41,20 @@ struct info_keyset_fixture : public Test::Fixture::instantiate_db_template
     std::string test_keyset_handle;
     std::string test_keyset_history_handle;
 
+    Fred::InfoKeysetOutput test_info_keyset_output;
+
     info_keyset_fixture()
-    :registrar_handle (static_cast<std::string>(fixture_ctx.get_conn().exec("SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]))
-    , xmark(RandomDataGenerator().xnumstring(6))
+    :xmark(RandomDataGenerator().xnumstring(6))
     , admin_contact4_handle(std::string("TEST-ADMIN-CONTACT4-HANDLE")+xmark)
     , admin_contact5_handle(std::string("TEST-ADMIN-CONTACT5-HANDLE")+xmark)
     , admin_contact6_handle(std::string("TEST-ADMIN-CONTACT6-HANDLE")+xmark)
     , test_keyset_handle(std::string("TEST-KEYSET-HANDLE")+xmark)
     , test_keyset_history_handle(std::string("TEST-KEYSET-HISTORY-HANDLE")+xmark)
     {
+        Fred::OperationContext ctx;
+        registrar_handle = static_cast<std::string>(ctx.get_conn().exec(
+            "SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]);
+
         BOOST_CHECK(!registrar_handle.empty());//expecting existing system registrar
 
         Fred::Contact::PlaceAddress place;
@@ -61,7 +67,7 @@ struct info_keyset_fixture : public Test::Fixture::instantiate_db_template
             .set_disclosename(true)
             .set_place(place)
             .set_discloseaddress(true)
-            .exec(fixture_ctx);
+            .exec(ctx);
         BOOST_MESSAGE(std::string("admin_contact4_handle: ") + admin_contact4_handle);
 
         Fred::CreateContact(admin_contact5_handle,registrar_handle)
@@ -69,7 +75,7 @@ struct info_keyset_fixture : public Test::Fixture::instantiate_db_template
             .set_disclosename(true)
             .set_place(place)
             .set_discloseaddress(true)
-            .exec(fixture_ctx);
+            .exec(ctx);
         BOOST_MESSAGE(std::string("admin_contact5_handle: ") + admin_contact5_handle);
 
         Fred::CreateContact(admin_contact6_handle,registrar_handle)
@@ -77,74 +83,170 @@ struct info_keyset_fixture : public Test::Fixture::instantiate_db_template
             .set_disclosename(true)
             .set_place(place)
             .set_discloseaddress(true)
-            .exec(fixture_ctx);
+            .exec(ctx);
         BOOST_MESSAGE(std::string("admin_contact6_handle: ") + admin_contact6_handle);
 
         Fred::CreateKeyset(test_keyset_handle, registrar_handle)
+                .set_authinfo("testauthinfo1")
                 .set_tech_contacts(Util::vector_of<std::string>(admin_contact6_handle))
                 .set_dns_keys(Util::vector_of<Fred::DnsKey> (Fred::DnsKey(257, 3, 5, "AwEAAddt2AkLfYGKgiEZB5SmIF8EvrjxNMH6HtxWEA4RJ9Ao6LCWheg8")))
-                .exec(fixture_ctx);
+                .exec(ctx);
         BOOST_MESSAGE(std::string("test_keyset_handle: ") + test_keyset_handle);
 
         Fred::CreateKeyset(test_keyset_history_handle, registrar_handle)
                 .set_tech_contacts(Util::vector_of<std::string>(admin_contact6_handle))
                 .set_dns_keys(Util::vector_of<Fred::DnsKey> (Fred::DnsKey(257, 3, 5, "AwEAAddt2AkLfYGKgiEZB5SmIF8EvrjxNMH6HtxWEA4RJ9Ao6LCWheg8")))
-                .exec(fixture_ctx);
+                .exec(ctx);
         BOOST_MESSAGE(std::string("test_keyset_handle: ") + test_keyset_handle);
 
-        Fred::UpdateKeyset(test_keyset_history_handle, registrar_handle)
-            .rem_tech_contact(admin_contact6_handle)
-            .exec(fixture_ctx);
+        //id query
+        Database::Result id_res = ctx.get_conn().exec_params("SELECT"
+        " (SELECT id FROM object_registry WHERE type = (SELECT id FROM enum_object_type eot WHERE eot.name='keyset'::text) AND name = UPPER($1::text)) AS test_keyset_id"
+        ",  (SELECT roid FROM object_registry WHERE type = (SELECT id FROM enum_object_type eot WHERE eot.name='keyset'::text) AND name = UPPER($1::text)) AS test_keyset_roid"
+        ",  (SELECT crhistoryid FROM object_registry WHERE type = (SELECT id FROM enum_object_type eot WHERE eot.name='keyset'::text) AND name = UPPER($1::text)) AS test_keyset_crhistoryid"
+        ",  (SELECT historyid FROM object_registry WHERE type = (SELECT id FROM enum_object_type eot WHERE eot.name='keyset'::text) AND name = UPPER($1::text)) AS test_keyset_historyid"
+        ", (SELECT id FROM object_registry WHERE type = (SELECT id FROM enum_object_type eot WHERE eot.name='contact'::text) AND name = UPPER($2::text)) AS admin_contact6_handle_id"
+        ", (SELECT id FROM registrar WHERE handle = UPPER($3::text)) AS registrar_handle_id"
+        , Database::query_param_list(test_keyset_handle)(admin_contact6_handle)(registrar_handle));
 
-        fixture_ctx.commit_transaction();
+        //crdate fix
+        ctx.get_conn().exec_params("UPDATE object_registry SET crdate = $1::timestamp WHERE id = $2::bigint",
+            Database::query_param_list("2011-06-30T23:59:59")(static_cast<unsigned long long>(id_res[0]["test_keyset_id"])));
+
+        ctx.commit_transaction();
+
+        test_info_keyset_output.info_keyset_data.id = static_cast<unsigned long long>(id_res[0]["test_keyset_id"]);
+        test_info_keyset_output.info_keyset_data.roid = static_cast<std::string>(id_res[0]["test_keyset_roid"]);
+        test_info_keyset_output.info_keyset_data.crhistoryid = static_cast<unsigned long long>(id_res[0]["test_keyset_crhistoryid"]);
+        test_info_keyset_output.info_keyset_data.historyid = static_cast<unsigned long long>(id_res[0]["test_keyset_historyid"]);
+        test_info_keyset_output.info_keyset_data.handle = test_keyset_handle;
+        test_info_keyset_output.info_keyset_data.roid = static_cast<std::string>(id_res[0]["test_keyset_roid"]);
+        test_info_keyset_output.info_keyset_data.sponsoring_registrar_handle = registrar_handle;
+        test_info_keyset_output.info_keyset_data.create_registrar_handle = registrar_handle;
+        test_info_keyset_output.info_keyset_data.update_registrar_handle = Nullable<std::string>();
+        test_info_keyset_output.info_keyset_data.creation_time = boost::posix_time::time_from_string("2011-07-01 01:59:59");
+        test_info_keyset_output.info_keyset_data.transfer_time = Nullable<boost::posix_time::ptime>();
+        test_info_keyset_output.info_keyset_data.authinfopw = "testauthinfo1";
+        test_info_keyset_output.info_keyset_data.tech_contacts = Util::vector_of<Fred::ObjectIdHandlePair>
+            (Fred::ObjectIdHandlePair(static_cast<unsigned long long>(id_res[0]["admin_contact6_handle_id"]), admin_contact6_handle));
+        test_info_keyset_output.info_keyset_data.delete_time = Nullable<boost::posix_time::ptime>();
+        test_info_keyset_output.info_keyset_data.dns_keys = Util::vector_of<Fred::DnsKey>
+            (Fred::DnsKey(257, 3, 5, "AwEAAddt2AkLfYGKgiEZB5SmIF8EvrjxNMH6HtxWEA4RJ9Ao6LCWheg8"));
+
     }
     ~info_keyset_fixture()
     {}
 };
 
-BOOST_FIXTURE_TEST_SUITE(TestInfoKeyset, info_keyset_fixture)
 
 /**
  * test call InfoKeyset
 */
-BOOST_AUTO_TEST_CASE(info_keyset)
+BOOST_FIXTURE_TEST_CASE(info_keyset, info_keyset_fixture)
 {
     Fred::OperationContext ctx;
-    std::vector<Fred::InfoKeysetOutput> keyset_res;
-
-    BOOST_MESSAGE(Fred::InfoKeyset()
-                .set_inline_view_filter(Database::ParamQuery("info_keyset_handle = ").param_text(test_keyset_handle))
-                .set_cte_id_filter(Database::ParamQuery("SELECT 1 id"))
-                .set_history_query(false)
-                .explain_analyze(ctx,keyset_res,"Europe/Prague")
-                );
 
     Fred::InfoKeysetOutput info_data_1 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
+    BOOST_CHECK(test_info_keyset_output == info_data_1);
     Fred::InfoKeysetOutput info_data_2 = Fred::InfoKeysetByHandle(test_keyset_handle).set_lock().exec(ctx);
-    BOOST_CHECK(info_data_1 == info_data_2);
+    BOOST_CHECK(test_info_keyset_output == info_data_2);
 
-    Fred::InfoKeysetOutput info_data_tc_1 = Fred::InfoKeysetByTechContactHandle(admin_contact6_handle).exec(ctx).at(0);
-    BOOST_CHECK(info_data_1 == info_data_tc_1);
-    Fred::InfoKeysetOutput info_data_tc_2 = Fred::InfoKeysetByTechContactHandle(admin_contact6_handle).set_lock().exec(ctx).at(0);
-    BOOST_CHECK(info_data_1 == info_data_tc_2);
+    Fred::InfoKeysetOutput info_data_tc_1 = Fred::InfoKeysetByTechContactHandle(admin_contact6_handle).exec(ctx).at(1);
+    BOOST_CHECK(test_info_keyset_output == info_data_tc_1);
+    Fred::InfoKeysetOutput info_data_tc_2 = Fred::InfoKeysetByTechContactHandle(admin_contact6_handle).set_lock().exec(ctx).at(1);
+    BOOST_CHECK(test_info_keyset_output == info_data_tc_2);
 
-    Fred::InfoKeysetOutput info_data_3 = Fred::InfoKeysetById(info_data_1.info_keyset_data.id).exec(ctx);
-    BOOST_CHECK(info_data_1 == info_data_3);
-    Fred::InfoKeysetOutput info_data_4 = Fred::InfoKeysetHistory(info_data_1.info_keyset_data.roid).exec(ctx).at(0);
-    BOOST_CHECK(info_data_1 == info_data_4);
-    Fred::InfoKeysetOutput info_data_5 = Fred::InfoKeysetHistoryById(info_data_1.info_keyset_data.id).exec(ctx).at(0);
-    BOOST_CHECK(info_data_1 == info_data_5);
-    Fred::InfoKeysetOutput info_data_6 = Fred::InfoKeysetHistoryByHistoryid(info_data_1.info_keyset_data.historyid).exec(ctx);
-    BOOST_CHECK(info_data_1 == info_data_6);
+    Fred::InfoKeysetOutput info_data_3 = Fred::InfoKeysetById(test_info_keyset_output.info_keyset_data.id).exec(ctx);
+    BOOST_CHECK(test_info_keyset_output == info_data_3);
+    Fred::InfoKeysetOutput info_data_4 = Fred::InfoKeysetHistory(test_info_keyset_output.info_keyset_data.roid).exec(ctx).at(0);
+    BOOST_CHECK(test_info_keyset_output == info_data_4);
+    Fred::InfoKeysetOutput info_data_5 = Fred::InfoKeysetHistoryById(test_info_keyset_output.info_keyset_data.id).exec(ctx).at(0);
+    BOOST_CHECK(test_info_keyset_output == info_data_5);
+    Fred::InfoKeysetOutput info_data_6 = Fred::InfoKeysetHistoryByHistoryid(test_info_keyset_output.info_keyset_data.historyid).exec(ctx);
+    BOOST_CHECK(test_info_keyset_output == info_data_6);
+
+    //empty output
+    BOOST_CHECK(Fred::InfoKeysetByTechContactHandle(xmark+admin_contact6_handle).exec(ctx).empty());
+    BOOST_CHECK(Fred::InfoKeysetHistory(xmark+test_info_keyset_output.info_keyset_data.roid).exec(ctx).empty());
+    BOOST_CHECK(Fred::InfoKeysetHistoryById(0).exec(ctx).empty());
 
 
     ctx.commit_transaction();
 }
 
 /**
+ * test InfoKeysetByHandle with wrong handle
+ */
+BOOST_FIXTURE_TEST_CASE(info_keyset_wrong_handle, info_keyset_fixture)
+{
+    std::string wrong_handle = xmark+test_keyset_handle;
+
+    try
+    {
+        Fred::OperationContext ctx;
+        Fred::InfoKeysetOutput info_data_1 = Fred::InfoKeysetByHandle(wrong_handle).exec(ctx);
+        ctx.commit_transaction();
+        BOOST_ERROR("no exception thrown");
+    }
+    catch(const Fred::InfoKeysetByHandle::Exception& ex)
+    {
+        BOOST_CHECK(ex.is_set_unknown_handle());
+        BOOST_MESSAGE(wrong_handle);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_CHECK(ex.get_unknown_handle() == wrong_handle);
+    }
+}
+
+/**
+ * test InfoKeysetById with wrong id
+ */
+BOOST_FIXTURE_TEST_CASE(info_keyset_wrong_id, info_keyset_fixture)
+{
+    unsigned long long wrong_id = 0;
+
+    try
+    {
+        Fred::OperationContext ctx;
+        Fred::InfoKeysetOutput info_data_1 = Fred::InfoKeysetById(wrong_id).exec(ctx);
+        ctx.commit_transaction();
+        BOOST_ERROR("no exception thrown");
+    }
+    catch(const Fred::InfoKeysetById::Exception& ex)
+    {
+        BOOST_CHECK(ex.is_set_unknown_object_id());
+        BOOST_MESSAGE(wrong_id);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_CHECK(ex.get_unknown_object_id() == wrong_id);
+    }
+}
+
+/**
+ * test InfoKeysetHistoryByHistoryid with wrong historyid
+ */
+BOOST_FIXTURE_TEST_CASE(info_keyset_history_wrong_historyid, info_keyset_fixture)
+{
+    unsigned long long wrong_id = 0;
+
+    try
+    {
+        Fred::OperationContext ctx;
+        Fred::InfoKeysetOutput info_data_1 = Fred::InfoKeysetHistoryByHistoryid(wrong_id).exec(ctx);
+        ctx.commit_transaction();
+        BOOST_ERROR("no exception thrown");
+    }
+    catch(const Fred::InfoKeysetHistoryByHistoryid::Exception& ex)
+    {
+        BOOST_CHECK(ex.is_set_unknown_object_historyid());
+        BOOST_MESSAGE(wrong_id);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_CHECK(ex.get_unknown_object_historyid() == wrong_id);
+    }
+}
+
+/**
  * test call InfoKeysetDiff
 */
-BOOST_AUTO_TEST_CASE(info_keyset_diff)
+BOOST_FIXTURE_TEST_CASE(info_keyset_diff, info_keyset_fixture)
 {
     Fred::OperationContext ctx;
     Fred::InfoKeysetOutput keyset_info1 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
@@ -183,11 +285,23 @@ BOOST_AUTO_TEST_CASE(info_keyset_diff)
     BOOST_CHECK(ctx.get_conn().exec_params("select $1::text", Database::query_param_list(Nullable<std::string>()))[0][0].isnull());
 }
 
+struct info_keyset_history_order_fixture : public info_keyset_fixture
+{
+    info_keyset_history_order_fixture()
+    {
+        Fred::OperationContext ctx;
+        Fred::UpdateKeyset(test_keyset_history_handle, registrar_handle)
+            .rem_tech_contact(admin_contact6_handle)
+            .exec(ctx);
+        ctx.commit_transaction();
+    }
+};
+
 /**
  * test InfoKeysetHistory output data sorted by historyid in descending order (current data first, older next)
 */
 
-BOOST_AUTO_TEST_CASE(info_keyset_history_order)
+BOOST_FIXTURE_TEST_CASE(info_keyset_history_order, info_keyset_history_order_fixture)
 {
     Fred::OperationContext ctx;
     Fred::InfoKeysetOutput keyset_history_info = Fred::InfoKeysetByHandle(test_keyset_history_handle).exec(ctx);
@@ -208,4 +322,4 @@ BOOST_AUTO_TEST_CASE(info_keyset_history_order)
 }
 
 
-BOOST_AUTO_TEST_SUITE_END();//TestInfoKeyset
+BOOST_AUTO_TEST_SUITE_END();

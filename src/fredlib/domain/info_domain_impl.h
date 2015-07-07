@@ -71,7 +71,7 @@ namespace Fred
          * info_domain_creating_registrar_id, info_domain_creating_registrar_handle, info_domain_last_updated_by_registrar_id,
          * info_domain_last_updated_by_registrar_handle, info_domain_creation_time, info_domain_transfer_time, info_domain_update_time,
          * info_domain_expiration_date, info_domain_authinfopw, info_domain_enum_validation_expiration, info_domain_enum_publish,
-         * info_domain_outzone_time, info_domain_cancel_time, info_domain_first_historyid, info_domain_logd_request_id,
+         * info_domain_first_historyid, info_domain_logd_request_id,
          * info_domain_utc_timestamp, info_domain_local_timestamp, info_domain_is_enum, info_domain_zone_id, info_domain_zone_fqdn
          */
         InfoDomain& set_inline_view_filter(const Database::ParamQuery& filter_expr);

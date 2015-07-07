@@ -173,12 +173,6 @@ namespace Fred
             ik.set_inline_view_filter(Database::ParamQuery("info_keyset_roid = ").param_text(roid_)).set_history_query(true);
             if(lock_) ik.set_lock();
             keyset_res = ik.exec(ctx,local_timestamp_pg_time_zone_name);
-
-            if (keyset_res.empty())
-            {
-                BOOST_THROW_EXCEPTION(Exception().set_unknown_registry_object_identifier(roid_));
-            }
-
         }
         catch(ExceptionStack& ex)
         {
@@ -220,12 +214,6 @@ namespace Fred
             ik.set_inline_view_filter(Database::ParamQuery("info_keyset_id = ").param_bigint(id_)).set_history_query(true);
             if(lock_) ik.set_lock();
             keyset_history_res = ik.exec(ctx,local_timestamp_pg_time_zone_name);
-
-            if (keyset_history_res.empty())
-            {
-                BOOST_THROW_EXCEPTION(Exception().set_unknown_object_id(id_));
-            }
-
         }
         catch(ExceptionStack& ex)
         {

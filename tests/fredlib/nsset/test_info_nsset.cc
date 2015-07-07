@@ -27,7 +27,9 @@
 #include "util/random_data_generator.h"
 #include "tests/setup/fixtures.h"
 
-const std::string server_name = "test-info-domain";
+const std::string server_name = "test-info-nsset";
+
+BOOST_AUTO_TEST_SUITE(TestInfoNsset);
 
 struct info_nsset_fixture : public Test::Fixture::instantiate_db_template
 {
@@ -38,6 +40,8 @@ struct info_nsset_fixture : public Test::Fixture::instantiate_db_template
     std::string test_nsset_handle;
     std::string test_nsset_history_handle;
     std::string test_nsset_dnsname;
+
+    Fred::InfoNssetOutput test_info_nsset_output;
 
     info_nsset_fixture()
     : xmark(RandomDataGenerator().xnumstring(6))
@@ -78,6 +82,7 @@ struct info_nsset_fixture : public Test::Fixture::instantiate_db_template
                 (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<ip::address>(ip::address::from_string("127.0.0.3"))(ip::address::from_string("127.1.1.3")))) //add_dns
                 (Fred::DnsHost(test_nsset_dnsname,  Util::vector_of<ip::address>(ip::address::from_string("127.0.0.4"))(ip::address::from_string("127.1.1.4")))) //add_dns
                 )
+                .set_authinfo("testauthinfo1")
                 .set_tech_contacts(Util::vector_of<std::string>(admin_contact3_handle))
                 .exec(ctx);
 
@@ -89,102 +94,157 @@ struct info_nsset_fixture : public Test::Fixture::instantiate_db_template
                 .set_tech_contacts(Util::vector_of<std::string>(admin_contact3_handle))
                 .exec(ctx);
 
-        Fred::UpdateNsset(test_nsset_history_handle, registrar_handle)
-        .rem_tech_contact(admin_contact3_handle)
-        .exec(ctx);
+        //id query
+        Database::Result id_res = ctx.get_conn().exec_params("SELECT"
+        " (SELECT id FROM object_registry WHERE type = (SELECT id FROM enum_object_type eot WHERE eot.name='nsset'::text) AND name = UPPER($1::text)) AS test_nsset_id"
+        ",  (SELECT roid FROM object_registry WHERE type = (SELECT id FROM enum_object_type eot WHERE eot.name='nsset'::text) AND name = UPPER($1::text)) AS test_nsset_roid"
+        ",  (SELECT crhistoryid FROM object_registry WHERE type = (SELECT id FROM enum_object_type eot WHERE eot.name='nsset'::text) AND name = UPPER($1::text)) AS test_nsset_crhistoryid"
+        ",  (SELECT historyid FROM object_registry WHERE type = (SELECT id FROM enum_object_type eot WHERE eot.name='nsset'::text) AND name = UPPER($1::text)) AS test_nsset_historyid"
+        ", (SELECT id FROM object_registry WHERE type = (SELECT id FROM enum_object_type eot WHERE eot.name='contact'::text) AND name = UPPER($2::text)) AS admin_contact3_handle_id"
+        ", (SELECT id FROM registrar WHERE handle = UPPER($3::text)) AS registrar_handle_id"
+        , Database::query_param_list(test_nsset_handle)(admin_contact3_handle)(registrar_handle));
 
+        //crdate fix
+        ctx.get_conn().exec_params("UPDATE object_registry SET crdate = $1::timestamp WHERE id = $2::bigint",
+            Database::query_param_list("2011-06-30T23:59:59")(static_cast<unsigned long long>(id_res[0]["test_nsset_id"])));
 
-        ctx.commit_transaction();//commit fixture
+        ctx.commit_transaction();
+
+        test_info_nsset_output.info_nsset_data.id = static_cast<unsigned long long>(id_res[0]["test_nsset_id"]);
+        test_info_nsset_output.info_nsset_data.roid = static_cast<std::string>(id_res[0]["test_nsset_roid"]);
+        test_info_nsset_output.info_nsset_data.crhistoryid = static_cast<unsigned long long>(id_res[0]["test_nsset_crhistoryid"]);
+        test_info_nsset_output.info_nsset_data.historyid = static_cast<unsigned long long>(id_res[0]["test_nsset_historyid"]);
+        test_info_nsset_output.info_nsset_data.handle = test_nsset_handle;
+        test_info_nsset_output.info_nsset_data.roid = static_cast<std::string>(id_res[0]["test_nsset_roid"]);
+        test_info_nsset_output.info_nsset_data.sponsoring_registrar_handle = registrar_handle;
+        test_info_nsset_output.info_nsset_data.create_registrar_handle = registrar_handle;
+        test_info_nsset_output.info_nsset_data.update_registrar_handle = Nullable<std::string>();
+        test_info_nsset_output.info_nsset_data.creation_time = boost::posix_time::time_from_string("2011-07-01 01:59:59");
+        test_info_nsset_output.info_nsset_data.transfer_time = Nullable<boost::posix_time::ptime>();
+        test_info_nsset_output.info_nsset_data.authinfopw = "testauthinfo1";
+        test_info_nsset_output.info_nsset_data.tech_contacts = Util::vector_of<Fred::ObjectIdHandlePair>
+            (Fred::ObjectIdHandlePair(static_cast<unsigned long long>(id_res[0]["admin_contact3_handle_id"]),admin_contact3_handle));
+        test_info_nsset_output.info_nsset_data.delete_time = Nullable<boost::posix_time::ptime>();
+        test_info_nsset_output.info_nsset_data.dns_hosts = Util::vector_of<Fred::DnsHost>
+            (Fred::DnsHost("a.ns.nic.cz", Util::vector_of<ip::address>(ip::address::from_string("127.0.0.3"))(ip::address::from_string("127.1.1.3"))))
+            (Fred::DnsHost(test_nsset_dnsname, Util::vector_of<ip::address>(ip::address::from_string("127.0.0.4"))(ip::address::from_string("127.1.1.4"))));
+        test_info_nsset_output.info_nsset_data.tech_check_level = Nullable<short>(0);
+
     }
     ~info_nsset_fixture()
     {}
 };
 
-BOOST_FIXTURE_TEST_SUITE(TestInfoNsset, info_nsset_fixture)
-
 /**
  * test call InfoNsset
 */
-BOOST_AUTO_TEST_CASE(info_nsset)
+BOOST_FIXTURE_TEST_CASE(info_nsset, info_nsset_fixture)
 {
     Fred::OperationContext ctx;
-    std::vector<Fred::InfoNssetOutput> nsset_res;
-
-    BOOST_MESSAGE(Fred::InfoNsset()
-                .set_history_query(false)
-                .explain_analyze(ctx,nsset_res,"Europe/Prague")
-                );
-
-    BOOST_MESSAGE(Fred::InfoNsset()
-                .set_inline_view_filter(Database::ParamQuery("info_nsset_handle = ").param_text(test_nsset_handle))
-                .set_history_query(false)
-                .explain_analyze(ctx,nsset_res,"Europe/Prague")
-                );
-
-    //InfoNssetByDNSFqdn
-    BOOST_MESSAGE(Fred::InfoNsset()
-                .set_cte_id_filter(Database::ParamQuery("SELECT id FROM host WHERE fqdn = ").param_text("a.ns.nic.cz"))
-                .set_history_query(false)
-                .explain_analyze(ctx,nsset_res,"Europe/Prague")
-                );
-
-    //InfoNssetByTechContactHandle
-    BOOST_MESSAGE(Fred::InfoNsset()
-                .set_cte_id_filter(Database::ParamQuery(
-                    "SELECT ncm.nssetid"
-                    " FROM object_registry oreg"
-                    " JOIN  enum_object_type eot ON oreg.type = eot.id AND eot.name = 'contact'"
-                    " JOIN nsset_contact_map ncm ON ncm.contactid = oreg.id"
-                    " WHERE oreg.name = UPPER(").param_text(admin_contact3_handle)(") AND oreg.erdate IS NULL")
-                    )
-                .set_history_query(false)
-                .explain_analyze(ctx,nsset_res,"Europe/Prague")
-                );
-
-    BOOST_MESSAGE(Fred::InfoNsset()
-                .set_cte_id_filter(Database::ParamQuery("SELECT id FROM host WHERE fqdn = ").param_text("a.ns.nic.cz"))
-                .set_inline_view_filter(Database::ParamQuery("info_nsset_handle = ").param_text(test_nsset_handle))
-                .set_history_query(false)
-                .explain_analyze(ctx,nsset_res,"Europe/Prague")
-                );
-
-    BOOST_MESSAGE(Fred::InfoNsset()
-                .set_cte_id_filter(Database::ParamQuery("SELECT id FROM host WHERE fqdn = ").param_text("a.ns.nic.cz"))
-                .set_inline_view_filter(Database::ParamQuery("info_nsset_handle = ").param_text(test_nsset_handle))
-                .set_history_query(true)
-                .explain_analyze(ctx,nsset_res,"Europe/Prague")
-                );
-
     Fred::InfoNssetOutput info_data_1 = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
+    BOOST_CHECK(test_info_nsset_output == info_data_1);
     Fred::InfoNssetOutput info_data_2 = Fred::InfoNssetByHandle(test_nsset_handle).set_lock().exec(ctx);
-    BOOST_CHECK(info_data_1 == info_data_2);
-
+    BOOST_CHECK(test_info_nsset_output == info_data_2);
     Fred::InfoNssetOutput info_data_dns_1 = Fred::InfoNssetByDNSFqdn(test_nsset_dnsname).exec(ctx).at(0);
-    BOOST_CHECK(info_data_1 == info_data_dns_1);
+    BOOST_CHECK(test_info_nsset_output == info_data_dns_1);
     Fred::InfoNssetOutput info_data_dns_2 = Fred::InfoNssetByDNSFqdn(test_nsset_dnsname).set_lock().exec(ctx).at(0);
-    BOOST_CHECK(info_data_1 == info_data_dns_2);
+    BOOST_CHECK(test_info_nsset_output == info_data_dns_2);
+    Fred::InfoNssetOutput info_data_tc_1 = Fred::InfoNssetByTechContactHandle(admin_contact3_handle).exec(ctx).at(1);
+    BOOST_CHECK(test_info_nsset_output == info_data_tc_1);
+    Fred::InfoNssetOutput info_data_tc_2 = Fred::InfoNssetByTechContactHandle(admin_contact3_handle).set_lock().exec(ctx).at(1);
+    BOOST_CHECK(test_info_nsset_output == info_data_tc_2);
+    Fred::InfoNssetOutput info_data_3 = Fred::InfoNssetById(test_info_nsset_output.info_nsset_data.id).exec(ctx);
+    BOOST_CHECK(test_info_nsset_output == info_data_3);
+    Fred::InfoNssetOutput info_data_4 = Fred::InfoNssetHistory(test_info_nsset_output.info_nsset_data.roid).exec(ctx).at(0);
+    BOOST_CHECK(test_info_nsset_output == info_data_4);
+    Fred::InfoNssetOutput info_data_5 = Fred::InfoNssetHistoryById(test_info_nsset_output.info_nsset_data.id).exec(ctx).at(0);
+    BOOST_CHECK(test_info_nsset_output == info_data_5);
+    Fred::InfoNssetOutput info_data_6 = Fred::InfoNssetHistoryByHistoryid(test_info_nsset_output.info_nsset_data.historyid).exec(ctx);
+    BOOST_CHECK(test_info_nsset_output == info_data_6);
+    //empty output
+    BOOST_CHECK(Fred::InfoNssetByDNSFqdn(xmark+test_nsset_dnsname).exec(ctx).empty());
+    BOOST_CHECK(Fred::InfoNssetByDNSFqdn(xmark+test_nsset_dnsname).set_lock().exec(ctx).empty());
+    BOOST_CHECK(Fred::InfoNssetByTechContactHandle(xmark+admin_contact3_handle).exec(ctx).empty());
+    BOOST_CHECK(Fred::InfoNssetByTechContactHandle(xmark+admin_contact3_handle).set_lock().exec(ctx).empty());
+    BOOST_CHECK(Fred::InfoNssetHistory(xmark+test_info_nsset_output.info_nsset_data.roid).exec(ctx).empty());
+    BOOST_CHECK(Fred::InfoNssetHistoryById(0).exec(ctx).empty());
 
-    Fred::InfoNssetOutput info_data_tc_1 = Fred::InfoNssetByTechContactHandle(admin_contact3_handle).exec(ctx).at(0);
-    BOOST_CHECK(info_data_1 == info_data_tc_1);
-    Fred::InfoNssetOutput info_data_tc_2 = Fred::InfoNssetByTechContactHandle(admin_contact3_handle).set_lock().exec(ctx).at(0);
-    BOOST_CHECK(info_data_1 == info_data_tc_2);
-
-    Fred::InfoNssetOutput info_data_3 = Fred::InfoNssetById(info_data_1.info_nsset_data.id).exec(ctx);
-    BOOST_CHECK(info_data_1 == info_data_3);
-    Fred::InfoNssetOutput info_data_4 = Fred::InfoNssetHistory(info_data_1.info_nsset_data.roid).exec(ctx).at(0);
-    BOOST_CHECK(info_data_1 == info_data_4);
-    Fred::InfoNssetOutput info_data_5 = Fred::InfoNssetHistoryById(info_data_1.info_nsset_data.id).exec(ctx).at(0);
-    BOOST_CHECK(info_data_1 == info_data_5);
-    Fred::InfoNssetOutput info_data_6 = Fred::InfoNssetHistoryByHistoryid(info_data_1.info_nsset_data.historyid).exec(ctx);
-    BOOST_CHECK(info_data_1 == info_data_6);
-
-    ctx.commit_transaction();
 }
+
+/**
+ * test InfoNssetByHandle with wrong handle
+ */
+BOOST_FIXTURE_TEST_CASE(info_nsset_wrong_handle, info_nsset_fixture)
+{
+    std::string wrong_handle = xmark+test_nsset_handle;
+
+    try
+    {
+        Fred::OperationContext ctx;
+        Fred::InfoNssetOutput info_data_1 = Fred::InfoNssetByHandle(wrong_handle).exec(ctx);
+        ctx.commit_transaction();
+        BOOST_ERROR("no exception thrown");
+    }
+    catch(const Fred::InfoNssetByHandle::Exception& ex)
+    {
+        BOOST_CHECK(ex.is_set_unknown_handle());
+        BOOST_MESSAGE(wrong_handle);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_CHECK(ex.get_unknown_handle() == wrong_handle);
+    }
+}
+
+/**
+ * test InfoNssetById with wrong id
+ */
+BOOST_FIXTURE_TEST_CASE(info_nsset_wrong_id, info_nsset_fixture)
+{
+    unsigned long long wrong_id = 0;
+
+    try
+    {
+        Fred::OperationContext ctx;
+        Fred::InfoNssetOutput info_data_1 = Fred::InfoNssetById(wrong_id).exec(ctx);
+        ctx.commit_transaction();
+        BOOST_ERROR("no exception thrown");
+    }
+    catch(const Fred::InfoNssetById::Exception& ex)
+    {
+        BOOST_CHECK(ex.is_set_unknown_object_id());
+        BOOST_MESSAGE(wrong_id);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_CHECK(ex.get_unknown_object_id() == wrong_id);
+    }
+}
+
+/**
+ * test InfoNssetHistoryByHistoryid with wrong historyid
+ */
+BOOST_FIXTURE_TEST_CASE(info_nsset_history_wrong_historyid, info_nsset_fixture)
+{
+    unsigned long long wrong_id = 0;
+
+    try
+    {
+        Fred::OperationContext ctx;
+        Fred::InfoNssetOutput info_data_1 = Fred::InfoNssetHistoryByHistoryid(wrong_id).exec(ctx);
+        ctx.commit_transaction();
+        BOOST_ERROR("no exception thrown");
+    }
+    catch(const Fred::InfoNssetHistoryByHistoryid::Exception& ex)
+    {
+        BOOST_CHECK(ex.is_set_unknown_object_historyid());
+        BOOST_MESSAGE(wrong_id);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_CHECK(ex.get_unknown_object_historyid() == wrong_id);
+    }
+}
+
 
 /**
  * test call InfoNssetDiff
 */
-BOOST_AUTO_TEST_CASE(info_nsset_diff)
+BOOST_FIXTURE_TEST_CASE(info_nsset_diff, info_nsset_fixture)
 {
     Fred::OperationContext ctx;
     Fred::InfoNssetOutput nsset_info1 = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
@@ -223,12 +283,22 @@ BOOST_AUTO_TEST_CASE(info_nsset_diff)
     BOOST_CHECK(ctx.get_conn().exec_params("select $1::text", Database::query_param_list(Nullable<std::string>()))[0][0].isnull());
 }
 
+struct info_nsset_history_fixture : public info_nsset_fixture
+{
+    info_nsset_history_fixture()
+    {
+        Fred::OperationContext ctx;
+            Fred::UpdateNsset(test_nsset_history_handle, registrar_handle)
+            .rem_tech_contact(admin_contact3_handle)
+            .exec(ctx);
+        ctx.commit_transaction();
+    }
+};
 
 /**
  * test InfoNssetHistory output data sorted by historyid in descending order (current data first, older next)
 */
-
-BOOST_AUTO_TEST_CASE(info_nsset_history_order)
+BOOST_FIXTURE_TEST_CASE(info_nsset_history_order, info_nsset_history_fixture)
 {
     Fred::OperationContext ctx;
     Fred::InfoNssetOutput nsset_history_info = Fred::InfoNssetByHandle(test_nsset_history_handle).exec(ctx);
@@ -249,4 +319,4 @@ BOOST_AUTO_TEST_CASE(info_nsset_history_order)
 }
 
 
-BOOST_AUTO_TEST_SUITE_END();//TestInfoNsset
+BOOST_AUTO_TEST_SUITE_END();

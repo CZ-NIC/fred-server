@@ -60,8 +60,6 @@ namespace Fred
         if(expiration_date.isset()) fields.insert("expiration_date");
         if(admin_contacts.isset()) fields.insert("admin_contacts");
         if(enum_domain_validation.isset()) fields.insert("enum_domain_validation");
-        if(outzone_time.isset()) fields.insert("outzone_time");
-        if(cancel_time.isset()) fields.insert("cancel_time");
         if(zone.isset()) fields.insert("zone");
 
         if(id.isset()) fields.insert("id");
@@ -92,8 +90,6 @@ namespace Fred
         (std::make_pair("expiration_date", expiration_date.print_quoted()))
         (std::make_pair("admin_contacts", admin_contacts.print_quoted()))
         (std::make_pair("enum_domain_validation", enum_domain_validation.print_quoted()))
-        (std::make_pair("outzone_time", outzone_time.print_quoted()))
-        (std::make_pair("cancel_time", cancel_time.print_quoted()))
         (std::make_pair("zone", zone.print_quoted()))
 
         (std::make_pair("id", id.print_quoted()))
@@ -122,8 +118,6 @@ namespace Fred
             || expiration_date.isset()
             || admin_contacts.isset()
             || enum_domain_validation.isset()
-            || outzone_time.isset()
-            || cancel_time.isset()
             || zone.isset()
 
             || id.isset()
@@ -244,16 +238,6 @@ namespace Fred
         if(!Util::is_equal(first.enum_domain_validation, second.enum_domain_validation))
         {
             diff.enum_domain_validation = std::make_pair(first.enum_domain_validation,second.enum_domain_validation);
-        }
-
-        if(first.outzone_time != second.outzone_time)
-        {
-            diff.outzone_time = std::make_pair(first.outzone_time,second.outzone_time);
-        }
-
-        if(first.cancel_time != second.cancel_time)
-        {
-            diff.cancel_time = std::make_pair(first.cancel_time,second.cancel_time);
         }
 
         if(first.zone != second.zone)

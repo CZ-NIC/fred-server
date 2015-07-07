@@ -107,12 +107,6 @@ namespace Fred
         " , obj.authinfopw AS info_domain_authinfopw"
         " , ev.exdate AS info_domain_enum_validation_expiration"
         " , ev.publish AS info_domain_enum_publish"
-        " ,(((dt.exdate + (SELECT val || ' day' FROM enum_parameters WHERE id = 4)::interval)::timestamp "
-        " + (SELECT val || ' hours' FROM enum_parameters WHERE name = 'regular_day_procedure_period')::interval) "
-        " AT TIME ZONE (SELECT val FROM enum_parameters WHERE name = 'regular_day_procedure_zone'))::timestamp AS info_domain_outzone_time"
-        " ,(((dt.exdate + (SELECT val || ' day' FROM enum_parameters WHERE id = 6)::interval)::timestamp "
-        " + (SELECT val || ' hours' FROM enum_parameters WHERE name = 'regular_day_procedure_period')::interval) "
-        " AT TIME ZONE (SELECT val FROM enum_parameters WHERE name = 'regular_day_procedure_zone'))::timestamp AS info_domain_cancel_time"
         " , dobr.crhistoryid AS info_domain_first_historyid"
         " , h.request_id AS info_domain_logd_request_id"
         " , (CURRENT_TIMESTAMP AT TIME ZONE 'UTC')::timestamp AS info_domain_utc_timestamp "
@@ -297,12 +291,6 @@ namespace Fred
             : Nullable<ENUMValidationExtension>(ENUMValidationExtension(
                 boost::gregorian::from_string(static_cast<std::string>(query_result[i]["info_domain_enum_validation_expiration"]))
                 ,static_cast<bool>(query_result[i]["info_domain_enum_publish"])));
-
-            info_domain_output.info_domain_data.outzone_time = query_result[i]["info_domain_outzone_time"].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
-            : boost::posix_time::time_from_string(static_cast<std::string>(query_result[i]["info_domain_outzone_time"]));
-
-            info_domain_output.info_domain_data.cancel_time = query_result[i]["info_domain_cancel_time"].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
-            : boost::posix_time::time_from_string(static_cast<std::string>(query_result[i]["info_domain_cancel_time"]));
 
             info_domain_output.info_domain_data.crhistoryid = static_cast<unsigned long long>(query_result[i]["info_domain_first_historyid"]);
 

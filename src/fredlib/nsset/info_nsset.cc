@@ -161,12 +161,6 @@ namespace Fred
                 .set_history_query(false);
             if(lock_) in.set_lock();
             nsset_res = in.exec(ctx,local_timestamp_pg_time_zone_name);
-
-            if (nsset_res.empty())
-            {
-                BOOST_THROW_EXCEPTION(Exception().set_unknown_fqdn(dns_fqdn_));
-            }
-
         }
         catch(ExceptionStack& ex)
         {
@@ -269,12 +263,6 @@ namespace Fred
                 .set_history_query(true);
             if(lock_) in.set_lock();
             nsset_res = in.exec(ctx,local_timestamp_pg_time_zone_name);
-
-            if (nsset_res.empty())
-            {
-                BOOST_THROW_EXCEPTION(Exception().set_unknown_registry_object_identifier(roid_));
-            }
-
         }
         catch(ExceptionStack& ex)
         {
@@ -317,12 +305,6 @@ namespace Fred
                 .set_history_query(true);
             if(lock_) in.set_lock();
             nsset_history_res = in.exec(ctx,local_timestamp_pg_time_zone_name);
-
-            if (nsset_history_res.empty())
-            {
-                BOOST_THROW_EXCEPTION(Exception().set_unknown_object_id(id_));
-            }
-
         }
         catch(ExceptionStack& ex)
         {

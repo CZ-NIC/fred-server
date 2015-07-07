@@ -487,22 +487,11 @@ namespace Whois {
         {
             Fred::OperationContext ctx;
             NSSetSeq_var nss_seq = new NSSetSeq;
-            try
-            {
-                std::vector<Fred::InfoNssetOutput> nss_info = Fred::InfoNssetByDNSFqdn(
-                    Corba::unwrap_string(handle)).exec(ctx, output_timezone);
-
-                set_corba_seq<NSSetSeq, NSSet,std::vector<Fred::InfoNssetOutput>, Fred::InfoNssetOutput>
-                    (nss_seq.inout(), nss_info);
-
-                return nss_seq._retn();
-            }
-            catch(const Fred::InfoNssetByDNSFqdn::Exception& e)
-            {
-                    if(e.is_set_unknown_fqdn()) {
-                        return nss_seq._retn();
-                    }
-            }
+            std::vector<Fred::InfoNssetOutput> nss_info = Fred::InfoNssetByDNSFqdn(
+                Corba::unwrap_string(handle)).exec(ctx, output_timezone);
+            set_corba_seq<NSSetSeq, NSSet,std::vector<Fred::InfoNssetOutput>, Fred::InfoNssetOutput>
+                (nss_seq.inout(), nss_info);
+            return nss_seq._retn();
         } catch (...) { }
 
         // default exception handling

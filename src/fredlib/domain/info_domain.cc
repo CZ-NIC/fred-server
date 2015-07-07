@@ -174,12 +174,6 @@ namespace Fred
             id.set_inline_view_filter(Database::ParamQuery("info_domain_roid = ").param_text(roid_)).set_history_query(true);
             if(lock_) id.set_lock();
             domain_res = id.exec(ctx,local_timestamp_pg_time_zone_name);
-
-            if (domain_res.empty())
-            {
-                BOOST_THROW_EXCEPTION(Exception().set_unknown_registry_object_identifier(roid_));
-            }
-
         }
         catch(ExceptionStack& ex)
         {
@@ -220,12 +214,6 @@ namespace Fred
             id.set_inline_view_filter(Database::ParamQuery("info_domain_id = ").param_bigint(id_)).set_history_query(true);
             if(lock_) id.set_lock();
             domain_history_res = id.exec(ctx,local_timestamp_pg_time_zone_name);
-
-            if (domain_history_res.empty())
-            {
-                BOOST_THROW_EXCEPTION(Exception().set_unknown_object_id(id_));
-            }
-
         }
         catch(ExceptionStack& ex)
         {
@@ -323,6 +311,11 @@ namespace Fred
                 domain_id_by_registrant_handle_param_query.first,
                 domain_id_by_registrant_handle_param_query.second);
 
+            if(domain_id_res.size() == 0)//no domain id found
+            {
+                return domain_res;
+            }
+
             Database::ParamQuery domain_id_inline_view("info_domain_id IN (");
             Util::HeadSeparator in_separator("",",");
 
@@ -389,6 +382,11 @@ namespace Fred
             Database::Result domain_id_res = ctx.get_conn().exec_params(
                 domain_id_by_admin_contact_handle_param_query.first,
                 domain_id_by_admin_contact_handle_param_query.second);
+
+            if(domain_id_res.size() == 0)//no domain id found
+            {
+                return domain_res;
+            }
 
             Database::ParamQuery domain_id_inline_view("info_domain_id IN (");
             Util::HeadSeparator in_separator("",",");
