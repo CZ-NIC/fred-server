@@ -234,7 +234,7 @@ template < Type::Value OBJECT_TYPE >
             process_db_result(const Database::Row &_row):columns_(_row) { }
             void into(std::vector< Presents > &_state_presents)const
             {
-                _state_presents.push_back(static_cast< Presents >(columns_[IDX]));
+                _state_presents.push_back(!columns_[IDX].isnull() && static_cast< Presents >(columns_[IDX]));
                 process_db_result< IDX + 1, REST - 1 >(columns_).into(_state_presents);
             }
         private:
