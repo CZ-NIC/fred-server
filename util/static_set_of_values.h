@@ -107,9 +107,46 @@ struct static_set_of_values
      */
     static const bool value_is_unique = missing< value, tail >::result;
     /**
-     * Multiple values are forbidden.
+     * Auxiliary class for obtaining value position in a set.
+     * @tparam WHAT I'm looking for
+     * @tparam WHERE searched set
+     * @tparam IDX position in the set
+     * @tparam CURRENT first value in WHERE set
      */
-    BOOST_STATIC_ASSERT(( value_is_unique ));
+    template < VALUE_TYPE WHAT,
+               typename WHERE = static_set_of_values,
+               int IDX = 0,
+               VALUE_TYPE CURRENT = WHERE::value >
+    struct search;
+    /**
+     * Specialization for match.
+     */
+    template < VALUE_TYPE WHAT, typename WHERE, int IDX >
+    struct search< WHAT, WHERE, IDX, WHAT >
+    {
+        enum
+        {
+            FOUND_AT = IDX///< position of matched value
+        };
+    };
+    template < VALUE_TYPE WHAT, typename WHERE, int IDX, VALUE_TYPE CURRENT >
+    struct search
+    {
+        enum
+        {
+            FOUND_AT = search< WHAT, typename WHERE::tail, IDX + 1 >::FOUND_AT///< value position
+        };
+    };
+    /**
+     * Convert value into integer representing value position in this set.
+     * @tparam WHAT I'm looking for
+     */
+    template < VALUE_TYPE WHAT >
+    struct at
+    {
+        static const int position = search< WHAT >::FOUND_AT;///< value position in this set
+    };
+    BOOST_STATIC_ASSERT(( value_is_unique ));//multiple values are forbidden
 };
 
 /**
