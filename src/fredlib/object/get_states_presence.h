@@ -29,6 +29,7 @@
 #include "src/fredlib/opexception.h"
 
 #include <vector>
+#include <sstream>
 
 /// Fred matters
 namespace Fred {
@@ -151,8 +152,8 @@ template < Type::Value OBJECT_TYPE >
         class Get< OBJECT_TYPE >::States< STATES >::Presence::query< typename State::set< >::type, X >
         {
         private:
-            static std::string& append_column(std::string &_columns) { return _columns; }
-            template < typename FRIEND_STATES, typename FRIEND_X >
+            static void append(const std::string&, const std::string&, const Database::query_param_list&) { }
+            template < typename, typename >
             friend class query;
         };
 
@@ -162,56 +163,61 @@ template < Type::Value OBJECT_TYPE >
         class Get< OBJECT_TYPE >::States< STATES >::Presence::query
         {
         public:
-            static std::string by_id()
+            static std::string by_id(Database::query_param_list &_params)
             {
-                static std::string sql;
-                if (sql.empty()) {
-                    std::string columns;
-                    query::add_column(columns);
-                    sql = "SELECT " + columns + " "
-                          "FROM object_registry obr "
-                          "LEFT JOIN object_state os ON os.object_id=obr.id AND os.valid_to IS NULL "
-                          "LEFT JOIN enum_object_states eos ON eos.id=os.state_id "
-                          "WHERE obr.id=$1::BIGINT AND "
-                                "obr.erdate IS NULL AND "
-                                "obr.type=(SELECT id FROM enum_object_type "
-                                          "WHERE name='" + Type(OBJECT_TYPE).into< std::string >() + "') "
-                          "GROUP BY obr.id";
-                }
-                return sql;
+                return query::by(_params, ID);
             }
-            static std::string by_handle()
+            static std::string by_handle(Database::query_param_list &_params)
             {
-                static std::string sql;
-                if (sql.empty()) {
-                    std::string columns;
-                    query::add_column(columns);
-                    sql = "SELECT " + columns + " "
-                          "FROM object_registry obr "
-                          "LEFT JOIN object_state os ON os.object_id=obr.id AND os.valid_to IS NULL "
-                          "LEFT JOIN enum_object_states eos ON eos.id=os.state_id "
-                          "WHERE obr.name=$1::TEXT AND "
-                                "obr.erdate IS NULL AND "
-                                "obr.type=(SELECT id FROM enum_object_type "
-                                          "WHERE name='" + Type(OBJECT_TYPE).into< std::string >() + "') "
-                          "GROUP BY obr.id";
-                }
-                return sql;
+                return query::by(_params, HANDLE);
             }
         private:
-            static std::string& add_column(std::string &columns)
+            static void add(std::string &_columns, std::string &_states, Database::query_param_list &_params)
             {
                 static const std::string state_name = State(SET_OF_STATES::value).into< std::string >();
-                columns.append("BOOL_OR(eos.name='" + state_name + "')");
+                const std::string param_idx = _params.add(state_name);
+                std::cout << "$" << param_idx << "::TEXT = '" << state_name << "'" << std::endl;
+                _columns.append("BOOL_OR(eos.name=$" + param_idx + "::TEXT)");
+                _states.append("$" + param_idx + "::TEXT");
                 typedef query< typename SET_OF_STATES::tail, X > tail;
-                return tail::append_column(columns);
+                tail::append(_columns, _states, _params);
             }
-            static std::string& append_column(std::string &columns)
+            static void append(std::string &_columns, std::string &_states, Database::query_param_list &_params)
             {
-                columns.append(",");
-                return query::add_column(columns);
+                _columns.append(",");
+                _states.append(",");
+                query::add(_columns, _states, _params);
             }
-            template < typename FRIEND_STATES, typename FRIEND_X >
+            enum ObjectIdentifiedBy
+            {
+                ID,
+                HANDLE
+            };
+            static std::string by(Database::query_param_list &_params, ObjectIdentifiedBy _identified_by)
+            {
+                std::string columns;
+                std::string states;
+                query::add(columns, states, _params);
+                std::ostringstream condition;
+                switch (_identified_by) {
+                case HANDLE:
+                    condition << "name=$" << (_params.size() + 1) << "::TEXT";
+                    break;
+                case ID:
+                    condition << "id=$" << (_params.size() + 1) << "::BIGINT";
+                    break;
+                }
+                return "SELECT " + columns + " "
+                       "FROM object_registry obr "
+                       "LEFT JOIN object_state os ON os.object_id=obr.id AND os.valid_to IS NULL "
+                       "LEFT JOIN enum_object_states eos ON eos.id=os.state_id AND eos.name IN (" + states + ") "
+                       "WHERE obr." + condition.str() + " AND "
+                             "obr.erdate IS NULL AND "
+                             "obr.type=(SELECT id FROM enum_object_type "
+                                       "WHERE name='" + Type(OBJECT_TYPE).into< std::string >() + "') "
+                       "GROUP BY obr.id";
+            }
+            template < typename, typename >
             friend class query;
         };
 
@@ -245,9 +251,17 @@ template < Type::Value OBJECT_TYPE >
     template < typename STATES >
     Get< OBJECT_TYPE >::States< STATES >::Presence::Presence(OperationContext &_ctx, const Get &_object)
     {
-        const Database::Result dbres = _object.identified_by_handle()
-            ? _ctx.get_conn().exec_params(query<>::by_handle(), Database::query_param_list(_object.handle_))
-            : _ctx.get_conn().exec_params(query<>::by_id(),     Database::query_param_list(_object.id_));
+        std::string sql;
+        Database::query_param_list params;
+        if (_object.identified_by_handle()) {
+            sql = query<>::by_handle(params);
+            params(_object.handle_);
+        }
+        else {
+            sql = query<>::by_id(params);
+            params(_object.id_);
+        }
+        const Database::Result dbres = _ctx.get_conn().exec_params(sql, params);
         if (dbres.size() <= 0) {
             throw object_doesnt_exist();
         }
