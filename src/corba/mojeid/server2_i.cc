@@ -91,11 +91,13 @@ Registry::MojeID::InfoContact* Server_i::transfer_contact_prepare(
         Corba::Conversion::into(*contact_info_ptr).from(contact);
         return contact_info_ptr.release();
     }
-    catch (const MojeID2Impl::CreateContactPrepareError &e) {
-        IDL::CREATE_CONTACT_PREPARE_VALIDATION_ERROR idl_error;
+#if 0
+    catch (const MojeID2Impl::TransferContactPrepareError &e) {
+        IDL::TRANSFER_CONTACT_PREPARE_VALIDATION_ERROR idl_error;
         Corba::Conversion::into(idl_error).from(e);
         throw idl_error;
     }
+#endif
     catch (...) {
         throw IDL::INTERNAL_SERVER_ERROR();
     }
