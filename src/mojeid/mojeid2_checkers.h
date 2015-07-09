@@ -26,6 +26,7 @@
 
 #include "src/fredlib/contact/checkers.h"
 #include "src/fredlib/contact/info_contact_data.h"
+#include "src/fredlib/object/get_states_presence.h"
 
 namespace Fred {
 namespace MojeID {
@@ -47,15 +48,26 @@ struct new_contact_phone_availability:GeneralCheck::contact_phone_availability
     { }
 };
 
+template < typename STATES_PRESENCE >
 struct states_before_transfer_into_mojeid
 {
-    states_before_transfer_into_mojeid(const InfoContactData &_data, OperationContext &_ctx);
-    bool success()const;
+    states_before_transfer_into_mojeid(const STATES_PRESENCE &_states_presence)
+    :   server_transfer_prohibited_present(_states_presence.template get< Fred::Object::State::SERVER_TRANSFER_PROHIBITED >()),
+        server_update_prohibited_present  (_states_presence.template get< Fred::Object::State::SERVER_UPDATE_PROHIBITED >()),
+        server_delete_prohibited_present  (_states_presence.template get< Fred::Object::State::SERVER_DELETE_PROHIBITED >()),
+        mojeid_contact_present            (_states_presence.template get< Fred::Object::State::MOJEID_CONTACT >())
+    { }
+    bool success()const
+    {
+        return !(server_transfer_prohibited_present ||
+                 server_update_prohibited_present ||
+                 server_delete_prohibited_present ||
+                 mojeid_contact_present);
+    }
     bool server_transfer_prohibited_present:1;
     bool server_update_prohibited_present:1;
     bool server_delete_prohibited_present:1;
     bool mojeid_contact_present:1;
-    bool no_identified_contact_present:1;
 };
 
 }//Fred::MojeID::Check

@@ -24,6 +24,7 @@
 #include "src/mojeid/mojeid2.h"
 #include "src/mojeid/mojeid_public_request.h"
 #include "src/fredlib/contact/create_contact.h"
+#include "src/fredlib/contact/info_contact.h"
 #include "src/fredlib/public_request/create_public_request_auth.h"
 #include "util/random.h"
 #include "util/log/context.h"
@@ -243,7 +244,32 @@ Fred::InfoContactData& MojeID2Impl::transfer_contact_prepare(
     LOGGING_CONTEXT(log_ctx, *this);
 
     try {
+        Fred::OperationContextTwoPhaseCommitCreator ctx(_trans_id);
+
+        _contact = Fred::InfoContactByHandle(_handle).exec(ctx).info_contact_data;
+        const TransferContactPrepareRelatedStatesPresence states_presence =
+            GetContact(_contact.id).states< TransferContactPrepareRelatedStates >().presence(ctx);
+        const CheckTransferContactPrepare check_result(Fred::make_args(_contact),
+                                                       Fred::make_args(states_presence));
+        if (!check_result.success()) {
+            throw check_result;
+        }
         return _contact;
+    }
+    catch (const TransferContactPrepareError&) {
+        LOGGER(PACKAGE).error("request failed (incorrect input data)");
+        throw;
+    }
+    catch (const Fred::InfoContactByHandle::Exception &e) {
+        if (e.is_set_unknown_contact_handle()) {
+            LOGGER(PACKAGE).error("request failed (incorrect input data)");
+            throw Fred::Object::Get< Fred::Object::Type::CONTACT >::object_doesnt_exist();
+        }
+        throw;
+    }
+    catch (const Fred::Object::Get< Fred::Object::Type::CONTACT >::object_doesnt_exist &e) {
+        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
+        throw;
     }
     catch (const std::exception &e) {
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
