@@ -47,6 +47,17 @@ struct new_contact_phone_availability:GeneralCheck::contact_phone_availability
     { }
 };
 
+struct states_before_transfer_into_mojeid
+{
+    states_before_transfer_into_mojeid(const InfoContactData &_data, OperationContext &_ctx);
+    bool success()const;
+    bool server_transfer_prohibited_present:1;
+    bool server_update_prohibited_present:1;
+    bool server_delete_prohibited_present:1;
+    bool mojeid_contact_present:1;
+    bool no_identified_contact_present:1;
+};
+
 }//Fred::MojeID::Check
 }//Fred::MojeID
 }//Fred
