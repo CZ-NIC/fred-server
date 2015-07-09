@@ -48,6 +48,20 @@ namespace Object {
  */
 
 /**
+ * Exception class used when given object doesn't exist.
+ */
+class doesnt_exist:public std::runtime_error
+{
+public:
+    doesnt_exist()
+    :   std::runtime_error("object doesn't exist")
+    { }
+    doesnt_exist(const std::string &_msg)
+    :   std::runtime_error(_msg)
+    { }
+};
+
+/**
  * Template class for getting information about fred object of given type.
  * @tparam OBJECT_TYPE type of fred object
  */
@@ -66,13 +80,16 @@ public:
      */
     Get(const std::string &_object_handle):id_(INVALID_ID), handle_(_object_handle) { }
     /**
-     * Exception class used when given object doesn't exist.
+     * Exception class used when object of given type doesn't exist.
      */
-    class object_doesnt_exist:public std::runtime_error
+    class object_doesnt_exist:public doesnt_exist
     {
     public:
         object_doesnt_exist()
-        :   std::runtime_error(Type(OBJECT_TYPE).into< std::string >() + " doesn't exist")
+        :   doesnt_exist(Type(OBJECT_TYPE).into< std::string >() + " doesn't exist")
+        { }
+        object_doesnt_exist(const std::string &_msg)
+        :   doesnt_exist(_msg)
         { }
     };
     /**
@@ -166,11 +183,11 @@ template < Type::Value OBJECT_TYPE >
         public:
             static std::string by_id(Database::query_param_list &_params)
             {
-                return query::by(_params, ID);
+                return query::by< ID >(_params);
             }
             static std::string by_handle(Database::query_param_list &_params)
             {
-                return query::by(_params, HANDLE);
+                return query::by< HANDLE >(_params);
             }
         private:
             static void add(std::string &_columns, std::string &_states, Database::query_param_list &_params)
@@ -194,25 +211,74 @@ template < Type::Value OBJECT_TYPE >
                 ID,
                 HANDLE
             };
-            static std::string by(Database::query_param_list &_params, ObjectIdentifiedBy _identified_by)
+            template < ObjectIdentifiedBy IDENTIFIED_BY, Type::Value TYPE_OF_OBJECT = OBJECT_TYPE, int Y = 0 >
+            struct sql_object_registry;
+            template < Type::Value TYPE_OF_OBJECT, int Y >
+            struct sql_object_registry< ID, TYPE_OF_OBJECT, Y >
+            {
+                static std::string find(::size_t _param_pos, const std::string &_prefix = "")
+                {
+                    const std::string value = "$" + boost::lexical_cast< std::string >(_param_pos) + "::BIGINT";
+                    // object_registry_pkey PRIMARY KEY (id) =>
+                    //            obr.id=$1::BIGINT
+                    return _prefix + "id=" + value;
+                }
+            };
+            template < int Y >
+            struct sql_object_registry< HANDLE, Type::CONTACT, Y >
+            {
+                static std::string find(::size_t _param_pos, const std::string &_prefix = "")
+                {
+                    const std::string value = "$" + boost::lexical_cast< std::string >(_param_pos) + "::TEXT";
+                    // object_registry_upper_name_1_idx (UPPER(name)) WHERE type=1 =>
+                    //                 UPPER(obr.name)=UPPER($1::TEXT) AND obr.type=1
+                    return "UPPER(" + _prefix + "name)=UPPER(" + value + ") AND " + _prefix + "type=1";
+                }
+            };
+            template < int Y >
+            struct sql_object_registry< HANDLE, Type::NSSET, Y >
+            {
+                static std::string find(::size_t _param_pos, const std::string &_prefix = "")
+                {
+                    const std::string value = "$" + boost::lexical_cast< std::string >(_param_pos) + "::TEXT";
+                    // object_registry_upper_name_2_idx (UPPER(name)) WHERE type=2 =>
+                    //                 UPPER(obr.name)=UPPER($1::TEXT) AND obr.type=2
+                    return "UPPER(" + _prefix + "name)=UPPER(" + value + ") AND " + _prefix + "type=2";
+                }
+            };
+            template < int Y >
+            struct sql_object_registry< HANDLE, Type::DOMAIN, Y >
+            {
+                static std::string find(::size_t _param_pos, const std::string &_prefix = "")
+                {
+                    const std::string value = "$" + boost::lexical_cast< std::string >(_param_pos) + "::TEXT";
+                    // object_registr_name_3_idx (name) WHERE type=3 =>
+                    //            obr.name=$1::TEXT AND obr.type=3
+                    return _prefix + "name=" + value + " AND " + _prefix + "type=3";
+                }
+            };
+            template < int Y >
+            struct sql_object_registry< HANDLE, Type::KEYSET, Y >
+            {
+                static std::string find(::size_t _param_pos, const std::string &_prefix = "")
+                {
+                    const std::string value = "$" + boost::lexical_cast< std::string >(_param_pos) + "::TEXT";
+                    // object_registry_upper_name_4_idx (UPPER(name)) WHERE type=4 =>
+                    //                 UPPER(obr.name)=UPPER($1::TEXT) AND obr.type=4
+                    return "UPPER(" + _prefix + "name)=UPPER(" + value + ") AND " + _prefix + "type=4";
+                }
+            };
+            template < ObjectIdentifiedBy IDENTIFIED_BY >
+            static std::string by(Database::query_param_list &_params)
             {
                 std::string columns;
                 std::string states;
                 query::add(columns, states, _params);
-                std::ostringstream condition;
-                switch (_identified_by) {
-                case HANDLE:
-                    condition << "name=$" << (_params.size() + 1) << "::TEXT";
-                    break;
-                case ID:
-                    condition << "id=$" << (_params.size() + 1) << "::BIGINT";
-                    break;
-                }
                 return "SELECT " + columns + " "
                        "FROM object_registry obr "
                        "LEFT JOIN object_state os ON os.object_id=obr.id AND os.valid_to IS NULL "
                        "LEFT JOIN enum_object_states eos ON eos.id=os.state_id AND eos.name IN (" + states + ") "
-                       "WHERE obr." + condition.str() + " AND "
+                       "WHERE " + sql_object_registry< IDENTIFIED_BY >::find(_params.size() + 1, "obr.") + " AND "
                              "obr.erdate IS NULL AND "
                              "obr.type=(SELECT id FROM enum_object_type "
                                        "WHERE name='" + Type(OBJECT_TYPE).into< std::string >() + "') "
