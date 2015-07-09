@@ -123,6 +123,7 @@ public:
          * Obtains information about given states presence.
          * @param _ctx operation context
          * @return information about given states presence
+         * @throw object_doesnt_exist in case of object doesn't exist in database
          */
         Presence presence(OperationContext &_ctx)const { return Presence(_ctx, object_); }
     private:
