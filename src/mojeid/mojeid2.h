@@ -96,8 +96,6 @@ public:
     typedef Fred::Object::Get< Fred::Object::Type::CONTACT > GetContact;
     typedef GetContact::States< TransferContactPrepareRelatedStates >::Presence
             TransferContactPrepareRelatedStatesPresence;
-    typedef Fred::MojeID::Check::states_before_transfer_into_mojeid< TransferContactPrepareRelatedStatesPresence >
-            CheckTransferContactPrepareRelatedStates;
     typedef boost::mpl::list< Fred::check_contact_name,
                               Fred::check_contact_place_address,
                               Fred::check_contact_addresses_mailing,
@@ -112,7 +110,7 @@ public:
                               Fred::check_contact_fax_validity,
                               Fred::MojeID::check_contact_username,
                               Fred::MojeID::check_contact_birthday_validity > check_transfer_contact_prepare;
-    typedef boost::mpl::list< CheckTransferContactPrepareRelatedStates > check_transfer_contact_prepare_presence;
+    typedef boost::mpl::list< Fred::MojeID::Check::states_before_transfer_into_mojeid > check_transfer_contact_prepare_presence;
     typedef Fred::Check< boost::mpl::list< check_transfer_contact_prepare,
                                            check_transfer_contact_prepare_presence > > CheckTransferContactPrepare;
     typedef CheckTransferContactPrepare TransferContactPrepareError;

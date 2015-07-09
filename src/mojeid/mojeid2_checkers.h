@@ -48,9 +48,9 @@ struct new_contact_phone_availability:GeneralCheck::contact_phone_availability
     { }
 };
 
-template < typename STATES_PRESENCE >
 struct states_before_transfer_into_mojeid
 {
+    template < typename STATES_PRESENCE >
     states_before_transfer_into_mojeid(const STATES_PRESENCE &_states_presence)
     :   server_transfer_prohibited_present(_states_presence.template get< Fred::Object::State::SERVER_TRANSFER_PROHIBITED >()),
         server_update_prohibited_present  (_states_presence.template get< Fred::Object::State::SERVER_UPDATE_PROHIBITED >()),
