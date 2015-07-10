@@ -28,13 +28,37 @@
 #include "src/fredlib/public_request/public_request_auth_type_iface.h"
 
 namespace Fred {
+
+std::string conditional_contact_identification_generate_passwords();
+
 namespace MojeID {
+
+std::string contact_transfer_request_generate_passwords();
+
 namespace PublicRequest {
 
 class ContactConditionalIdentification:public PublicRequestAuthTypeIface
 {
 public:
     virtual ~ContactConditionalIdentification() { }
+private:
+    std::string get_public_request_type()const;
+    std::string generate_passwords()const;
+};
+
+class ConditionallyIdentifiedContactTransfer:public PublicRequestAuthTypeIface
+{
+public:
+    virtual ~ConditionallyIdentifiedContactTransfer() { }
+private:
+    std::string get_public_request_type()const;
+    std::string generate_passwords()const;
+};
+
+class IdentifiedContactTransfer:public PublicRequestAuthTypeIface
+{
+public:
+    virtual ~IdentifiedContactTransfer() { }
 private:
     std::string get_public_request_type()const;
     std::string generate_passwords()const;

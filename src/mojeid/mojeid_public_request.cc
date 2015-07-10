@@ -97,6 +97,28 @@ std::string ContactConditionalIdentification::generate_passwords()const
     return mtr_pass + cci_pass.substr(mtr_pass.length());
 }
 
+std::string ConditionallyIdentifiedContactTransfer::get_public_request_type()const
+{
+    static const std::string type = "mojeid_conditionally_identified_contact_transfer";
+    return type;
+}
+
+std::string ConditionallyIdentifiedContactTransfer::generate_passwords()const
+{
+    return contact_transfer_request_generate_passwords();
+}
+
+std::string IdentifiedContactTransfer::get_public_request_type()const
+{
+    static const std::string type = "mojeid_identified_contact_transfer";
+    return type;
+}
+
+std::string IdentifiedContactTransfer::generate_passwords()const
+{
+    return contact_transfer_request_generate_passwords();
+}
+
 }//Fred::MojeID::PublicRequest
 }//Fred::MojeID
 }//Fred
