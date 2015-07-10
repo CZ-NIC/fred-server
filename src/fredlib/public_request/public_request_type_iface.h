@@ -29,17 +29,43 @@
 
 namespace Fred {
 
+/**
+ * Contains template class Into of which template class BasedOn adds `iface()` methods family.
+ * @section add_iface_method_sample Sample of usage
+ * @code
+ * class SomeParticularPublicRequest:public AddIfaceMethod::Into
+ *     < SomeParticularPublicRequest >::BasedOn< PublicRequestTypeIface >
+ * {
+ * public:
+ *     virtual ~SomeParticularPublicRequest() { }
+ * private:
+ *     SomeParticularPublicRequest() { }
+ *     std::string get_public_request_type()const;
+ *     friend class BasedOn;
+ * };
+ * @endcode
+ */
 struct AddIfaceMethod
 {
+    /**
+     * Contains template class BasedOn which adds `iface()` methods family to the DERIVED class.
+     * @tparam DERIVED class derived from IFACE and extended with `iface()` methods family
+     */
     template < class DERIVED >
     struct Into
     {
+        /**
+         * Extends DERIVED class derived from IFACE class with `iface()` methods family.
+         * @tparam IFACE base class from which is derived DERIVED class
+         */
         template < class IFACE >
         class BasedOn:private IFACE
         {
         public:
-            typedef DERIVED Instanceable;
-            typedef IFACE   Iface;
+            typedef DERIVED Instanceable;///< DERIVED class is able to be instance
+            typedef IFACE   Iface;       ///< IFACE is pure virtual interface class which can't be instantiated
+            /**
+             */
             static const Iface& iface()
             {
                 static const Instanceable instance;

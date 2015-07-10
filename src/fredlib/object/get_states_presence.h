@@ -37,7 +37,7 @@ namespace Fred {
 namespace Object {
 
 /**
- * @section sample Sample of intended usage
+ * @section get_states_presence_sample Sample of intended usage
  * @code{.cpp}
  * typedef State::set< State::DELETE_CANDIDATE,
  *                     State::DELETE_WARNING,

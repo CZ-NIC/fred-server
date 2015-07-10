@@ -35,7 +35,7 @@
  * @tparam v26 last item
  * @note Element with default value isn't member of set. The unbroken series of non-default values must
  * start from v00. Maximal number of elements is currently 27.
- * @section sample Sample of usage
+ * @section static_set_of_values_sample Sample of usage
  * @code{.cpp}
  * struct Numeric
  * {
