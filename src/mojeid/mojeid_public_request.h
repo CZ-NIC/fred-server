@@ -37,29 +37,47 @@ std::string contact_transfer_request_generate_passwords();
 
 namespace PublicRequest {
 
-class ContactConditionalIdentification:public PublicRequestAuthTypeIface
+class ContactConditionalIdentification:private PublicRequestAuthTypeIface
 {
 public:
     virtual ~ContactConditionalIdentification() { }
+    static const PublicRequestAuthTypeIface& iface()
+    {
+        static const ContactConditionalIdentification instance;
+        return static_cast< const PublicRequestAuthTypeIface& >(instance);
+    }
 private:
+    ContactConditionalIdentification() { }
     std::string get_public_request_type()const;
     std::string generate_passwords()const;
 };
 
-class ConditionallyIdentifiedContactTransfer:public PublicRequestAuthTypeIface
+class ConditionallyIdentifiedContactTransfer:private PublicRequestAuthTypeIface
 {
 public:
     virtual ~ConditionallyIdentifiedContactTransfer() { }
+    static const PublicRequestAuthTypeIface& iface()
+    {
+        static const ConditionallyIdentifiedContactTransfer instance;
+        return static_cast< const PublicRequestAuthTypeIface& >(instance);
+    }
 private:
+    ConditionallyIdentifiedContactTransfer() { }
     std::string get_public_request_type()const;
     std::string generate_passwords()const;
 };
 
-class IdentifiedContactTransfer:public PublicRequestAuthTypeIface
+class IdentifiedContactTransfer:private PublicRequestAuthTypeIface
 {
 public:
     virtual ~IdentifiedContactTransfer() { }
+    static const PublicRequestAuthTypeIface& iface()
+    {
+        static const IdentifiedContactTransfer instance;
+        return static_cast< const PublicRequestAuthTypeIface& >(instance);
+    }
 private:
+    IdentifiedContactTransfer() { }
     std::string get_public_request_type()const;
     std::string generate_passwords()const;
 };

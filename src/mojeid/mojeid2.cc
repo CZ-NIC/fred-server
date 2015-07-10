@@ -211,7 +211,7 @@ ContactId MojeID2Impl::create_contact_prepare(
         set_create_contact_arguments(_contact, op_create_contact);
         const Fred::CreateContact::Result new_contact = op_create_contact.exec(ctx);
         Fred::CreatePublicRequestAuth op_create_pub_req(
-            (Fred::MojeID::PublicRequest::ContactConditionalIdentification()));
+            Fred::MojeID::PublicRequest::ContactConditionalIdentification::iface());
         Fred::PublicRequestObjectLockGuard locked_contact(ctx, new_contact.object_id);
         {
             const Fred::CreatePublicRequestAuth::Result result = op_create_pub_req.exec(ctx, locked_contact);
@@ -247,6 +247,7 @@ Fred::InfoContactData& MojeID2Impl::transfer_contact_prepare(
         Fred::OperationContextTwoPhaseCommitCreator ctx(_trans_id);
 
         _contact = Fred::InfoContactByHandle(_handle).exec(ctx).info_contact_data;
+        Fred::PublicRequestObjectLockGuard locked_contact(ctx, _contact.id);
         const TransferContactPrepareRelatedStatesPresence states_presence =
             GetContact(_contact.id).states< TransferContactPrepareRelatedStates >().presence(ctx);
         const CheckTransferContactPrepare check_result(Fred::make_args(_contact),
@@ -254,6 +255,31 @@ Fred::InfoContactData& MojeID2Impl::transfer_contact_prepare(
         if (!check_result.success()) {
             throw check_result;
         }
+
+        struct GetPublicRequestAuthType
+        {
+            static const Fred::PublicRequestAuthTypeIface& iface(
+                bool has_conditionally_identified_state,
+                bool has_identified_state)
+            {
+                switch ((has_conditionally_identified_state ? (0x01 << 0) : 0x00) |
+                        (has_identified_state               ? (0x01 << 1) : 0x00)) {
+                case 0x00://..
+                    return Fred::MojeID::PublicRequest::ContactConditionalIdentification::iface();
+                case 0x01://C.
+                    return Fred::MojeID::PublicRequest::ConditionallyIdentifiedContactTransfer::iface();
+                case 0x02://.I
+                    break;
+                case 0x03://CI
+                    return Fred::MojeID::PublicRequest::IdentifiedContactTransfer::iface();
+                }
+                throw std::runtime_error("unsupported combination of contact identification states");
+            }
+        };
+        Fred::CreatePublicRequestAuth op_create_pub_req(
+            GetPublicRequestAuthType::iface(
+                states_presence.get< Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT >(),
+                states_presence.get< Fred::Object::State::IDENTIFIED_CONTACT >()));
         return _contact;
     }
     catch (const TransferContactPrepareError&) {
