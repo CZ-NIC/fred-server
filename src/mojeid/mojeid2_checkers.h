@@ -55,23 +55,19 @@ struct states_before_transfer_into_mojeid
     :   server_transfer_prohibited_present(_states_presence.template get< Object::State::SERVER_TRANSFER_PROHIBITED >()),
         server_update_prohibited_present  (_states_presence.template get< Object::State::SERVER_UPDATE_PROHIBITED >()),
         server_delete_prohibited_present  (_states_presence.template get< Object::State::SERVER_DELETE_PROHIBITED >()),
-        mojeid_contact_present            (_states_presence.template get< Object::State::MOJEID_CONTACT >()),
-        identification_insufficient      (!_states_presence.template get< Object::State::IDENTIFIED_CONTACT >() &&
-                                          !_states_presence.template get< Object::State::CONDITIONALLY_IDENTIFIED_CONTACT >())
+        mojeid_contact_present            (_states_presence.template get< Object::State::MOJEID_CONTACT >())
     { }
     bool success()const
     {
         return !(server_transfer_prohibited_present ||
                  server_update_prohibited_present ||
                  server_delete_prohibited_present ||
-                 mojeid_contact_present ||
-                 identification_insufficient);
+                 mojeid_contact_present);
     }
     bool server_transfer_prohibited_present:1;
     bool server_update_prohibited_present:1;
     bool server_delete_prohibited_present:1;
     bool mojeid_contact_present:1;
-    bool identification_insufficient:1;
 };
 
 }//Fred::MojeID::Check
