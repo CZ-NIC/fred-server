@@ -25,8 +25,36 @@
 #define PUBLIC_REQUEST_TYPE_IFACE_H_E9BC2123C0A6C5F6CF12FF83939D575D
 
 #include <string>
+#include <memory>
 
 namespace Fred {
+
+struct AddIfaceMethod
+{
+    template < class DERIVED >
+    struct Into
+    {
+        template < class IFACE >
+        class BasedOn:private IFACE
+        {
+        public:
+            typedef DERIVED Instanceable;
+            typedef IFACE   Iface;
+            static const Iface& iface()
+            {
+                static const Instanceable instance;
+                return static_cast< const Iface& >(instance);
+            }
+            typedef std::auto_ptr< Iface > IfacePtr;
+            template < typename T >
+            static IfacePtr iface(const T &_arg) { return IfacePtr(static_cast< Iface* >(new Instanceable(_arg))); }
+            template < typename T >
+            static IfacePtr iface(T *_arg_ptr) { return IfacePtr(static_cast< Iface* >(new Instanceable(_arg_ptr))); }
+        protected:
+            ~BasedOn() { }
+        };
+    };
+};
 
 /**
  * Common class for particular public request type.
@@ -39,7 +67,9 @@ public:
      * @return string representation of this public request type
      */
     virtual std::string get_public_request_type()const = 0;
-protected:
+    /**
+     * Instance pointer is publicly deletable.
+     */
     virtual ~PublicRequestTypeIface() { }
 };
 

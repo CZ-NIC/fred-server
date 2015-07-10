@@ -24,27 +24,24 @@
 #ifndef PUBLIC_REQUEST_AUTH_TYPE_IFACE_H_F7F25DCF5675DE12A1BC3F7F86DE6750//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
 #define PUBLIC_REQUEST_AUTH_TYPE_IFACE_H_F7F25DCF5675DE12A1BC3F7F86DE6750
 
-#include <string>
+#include "src/fredlib/public_request/public_request_type_iface.h"
 
 namespace Fred {
 
 /**
  * Common class for type of particular public request with authentication.
  */
-class PublicRequestAuthTypeIface
+class PublicRequestAuthTypeIface:public PublicRequestTypeIface
 {
 public:
-    /**
-     * Convert public request type into string representation used in database.
-     * @return string representation of this public request type
-     */
-    virtual std::string get_public_request_type()const = 0;
     /**
      * Generate unique password for new public request authentication.
      * @return password
      */
     virtual std::string generate_passwords()const = 0;
-protected:
+    /**
+     * Instance pointer is publicly deletable.
+     */
     virtual ~PublicRequestAuthTypeIface() { }
 };
 

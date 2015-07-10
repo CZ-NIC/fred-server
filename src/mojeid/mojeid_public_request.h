@@ -24,7 +24,6 @@
 #ifndef MOJEID_PUBLIC_REQUEST_H_77C5F1C5C56F30200BE16A2E48A104EB//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
 #define MOJEID_PUBLIC_REQUEST_H_77C5F1C5C56F30200BE16A2E48A104EB
 
-#include "src/fredlib/public_request/public_request_type_iface.h"
 #include "src/fredlib/public_request/public_request_auth_type_iface.h"
 
 namespace Fred {
@@ -37,49 +36,40 @@ std::string contact_transfer_request_generate_passwords();
 
 namespace PublicRequest {
 
-class ContactConditionalIdentification:private PublicRequestAuthTypeIface
+class ContactConditionalIdentification:public AddIfaceMethod::Into
+    < ContactConditionalIdentification >::BasedOn< PublicRequestAuthTypeIface >
 {
 public:
     virtual ~ContactConditionalIdentification() { }
-    static const PublicRequestAuthTypeIface& iface()
-    {
-        static const ContactConditionalIdentification instance;
-        return static_cast< const PublicRequestAuthTypeIface& >(instance);
-    }
 private:
     ContactConditionalIdentification() { }
     std::string get_public_request_type()const;
     std::string generate_passwords()const;
+    friend class BasedOn;
 };
 
-class ConditionallyIdentifiedContactTransfer:private PublicRequestAuthTypeIface
+class ConditionallyIdentifiedContactTransfer:public AddIfaceMethod::Into
+    < ConditionallyIdentifiedContactTransfer >::BasedOn< PublicRequestAuthTypeIface >
 {
 public:
     virtual ~ConditionallyIdentifiedContactTransfer() { }
-    static const PublicRequestAuthTypeIface& iface()
-    {
-        static const ConditionallyIdentifiedContactTransfer instance;
-        return static_cast< const PublicRequestAuthTypeIface& >(instance);
-    }
 private:
     ConditionallyIdentifiedContactTransfer() { }
     std::string get_public_request_type()const;
     std::string generate_passwords()const;
+    friend class BasedOn;
 };
 
-class IdentifiedContactTransfer:private PublicRequestAuthTypeIface
+class IdentifiedContactTransfer:public AddIfaceMethod::Into
+    < IdentifiedContactTransfer >::BasedOn< PublicRequestAuthTypeIface >
 {
 public:
     virtual ~IdentifiedContactTransfer() { }
-    static const PublicRequestAuthTypeIface& iface()
-    {
-        static const IdentifiedContactTransfer instance;
-        return static_cast< const PublicRequestAuthTypeIface& >(instance);
-    }
 private:
     IdentifiedContactTransfer() { }
     std::string get_public_request_type()const;
     std::string generate_passwords()const;
+    friend class BasedOn;
 };
 
 }//Fred::MojeID::PublicRequest
