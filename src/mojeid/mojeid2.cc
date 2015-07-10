@@ -267,7 +267,7 @@ Fred::InfoContactData& MojeID2Impl::transfer_contact_prepare(
         }
         throw;
     }
-    catch (const Fred::Object::Get< Fred::Object::Type::CONTACT >::object_doesnt_exist &e) {
+    catch (const GetContact::object_doesnt_exist &e) {
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
         throw;
     }
