@@ -164,14 +164,7 @@ public:
      * @param dst destination object
      * @return reference to the object with converted value
      */
-    std::string& into(std::string &dst)const
-    {
-        const char *tmp;
-        if (from_into< source_type, const char* >()(source_value_, tmp) != NULL) {
-            return dst = tmp;
-        }
-        throw std::runtime_error(std::string(__PRETTY_FUNCTION__) + " failure: result is NULL");
-    }
+    inline std::string& into(std::string &dst)const;
     /**
      * Specialization for nullable types.
      * @param dst destination object
@@ -364,22 +357,24 @@ class From< char* >
 public:
     typedef char source_type;///< value of this type is pointed by source
     /**
-     * Sets object of const char* type with source value of the same type.
+     * Sets object of string type with source C-style string value.
      * @param dst object to store destination value
      * @return object with stored value
      */
-    const char*& into(const char* &dst)const
-    {
-        return dst = source_value_ptr_;
-    }
+    inline std::string& into(std::string &dst)const;
     /**
-     * Sets object of const char* type with source value of the same type.
+     * Sets object of string type abounded nullable semantics with source C-style string value.
      * @param dst object to store destination value
      * @return object with stored value
      */
-    std::string& into(std::string &dst)const
+    Nullable< std::string >& into(Nullable< std::string > &dst)const
     {
-        return dst = source_value_ptr_;
+        if (source_value_ptr_ == NULL) {
+            return dst = Nullable< std::string >();
+        }
+        std::string tmp;
+        return this->into(tmp).empty() ? dst = Nullable< std::string >()
+                                       : dst = tmp;
     }
     /**
      * Converts value of source_type into value of DST type.
@@ -423,6 +418,13 @@ public:
 private:
     From(const source_type *_ptr):source_value_ptr_(_ptr) { }
     From(const From &_src):source_value_ptr_(_src.source_value_ptr_) { }
+    /**
+     * Sets object of const char* type with source value of the same type.
+     * @param dst object to store destination value
+     * @return object with stored value
+     * @note hidden disabled operation
+     */
+    const char*& into(const char* &dst)const;
     const source_type *const source_value_ptr_;
     template < typename C >
     friend From< C* > from(C*);
@@ -473,6 +475,24 @@ struct from_into_base< CORBA_TYPE*, CONVERTIBLE_TYPE >
 };
 
 /**
+ * Specialization for conversion from CORBA::String into std::string.
+ * @note String content will be trimmed in the course of conversion.
+ */
+template < >
+struct from_into< char*, std::string >
+: from_into_base< char*, std::string >
+{
+    /**
+     * Converts source value of CORBA::String type into object of std::string type.
+     * @param src source value
+     * @param dst reference to destination object which has to be set
+     * @return destination object reference
+     * @note Destination string contains trimmed value.
+     */
+    dst_value_ref operator()(src_value src, dst_value_ref dst)const;
+};
+
+/**
  * Specialization for conversion from CORBA::String_var into const char*.
  */
 template < >
@@ -509,6 +529,21 @@ struct from_into< ::CORBA::String_member, const char* >
         return dst = static_cast< convertible_type >(src);
     }
 };
+
+template < typename CORBA_TYPE >
+std::string& From< CORBA_TYPE >::into(std::string &dst)const
+{
+    const char *tmp;
+    if (from_into< source_type, const char* >()(source_value_, tmp) != NULL) {
+        return from_into< char*, std::string >()(tmp, dst);//result will be trimmed
+    }
+    throw std::runtime_error(std::string(__PRETTY_FUNCTION__) + " failure: result is NULL");
+}
+
+std::string& From< char* >::into(std::string &dst)const
+{
+    return from_into< source_type*, std::string >()(source_value_ptr_, dst);
+}
 
 /**
  * Helping template class for conversions from standard types into CORBA types.

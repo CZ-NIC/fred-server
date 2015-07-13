@@ -246,7 +246,7 @@ void Server_i::corba_conversion_test(const Test &ct, Test &t, ::CORBA::String_ou
     ns = Corba::Conversion::from(ct.var).into< Nullable< std::string > >();
     ns = Corba::Conversion::from(ct.var).into< std::string >();
     ns = Corba::Conversion::from(ct.var).into(ns);
-    cs = Corba::Conversion::from(ct.var).into(cs);
+//    cs = Corba::Conversion::from(ct.var).into(cs);
     s  = Corba::Conversion::from(ct.var).into(s);
     cs = Corba::Conversion::from(ct.var).into(cs, "NULL");
     s  = Corba::Conversion::from(ct.var).into(s, "NULL");
@@ -258,7 +258,7 @@ void Server_i::corba_conversion_test(const Test &ct, Test &t, ::CORBA::String_ou
 
     ns = Corba::Conversion::from(ct.member).into< std::string >();
     ns = Corba::Conversion::from(ct.member).into(ns);
-    cs = Corba::Conversion::from(ct.member).into(cs);
+//    cs = Corba::Conversion::from(ct.member).into(cs);
     s  = Corba::Conversion::from(ct.member).into(s);
     cs = Corba::Conversion::from(ct.member).into(cs, "NULL");
     s  = Corba::Conversion::from(ct.member).into(s, "NULL");
@@ -271,14 +271,14 @@ void Server_i::corba_conversion_test(const Test &ct, Test &t, ::CORBA::String_ou
 
     cs = Corba::Conversion::from(sv).into< const char* >();
     s  = Corba::Conversion::from(sv).into< std::string >();
-    cs = Corba::Conversion::from(sv).into(cs);
+//    cs = Corba::Conversion::from(sv).into(cs);
     s  = Corba::Conversion::from(sv).into(s);
     Corba::Conversion::into(sv).from(cs);
     Corba::Conversion::into(sv).from(s);
 
     cs = Corba::Conversion::from(sm).into< const char* >();
     s  = Corba::Conversion::from(sm).into< std::string >();
-    cs = Corba::Conversion::from(sm).into(cs);
+//    cs = Corba::Conversion::from(sm).into(cs);
     s  = Corba::Conversion::from(sm).into(s);
     Corba::Conversion::into(sm).from(cs);
     Corba::Conversion::into(sm).from(s);
