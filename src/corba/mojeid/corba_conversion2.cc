@@ -337,6 +337,73 @@ into_from< IDL_CREATE_CONTACT_PREPARE_ERROR, IMPL_CREATE_CONTACT_PREPARE_ERROR >
     return dst;
 }
 
+
+into_from< IDL_TRANSFER_CONTACT_PREPARE_ERROR, IMPL_TRANSFER_CONTACT_PREPARE_ERROR >::dst_value_ref
+into_from< IDL_TRANSFER_CONTACT_PREPARE_ERROR, IMPL_TRANSFER_CONTACT_PREPARE_ERROR >::operator()(dst_value_ref dst, src_value src)const
+{
+    if (!src.Fred::MojeID::check_contact_username::success()) {
+        into(dst.username).from(Registry::MojeID::INVALID);
+    }
+
+    if (!src.Fred::MojeID::check_contact_birthday_validity::success()) {
+        into(dst.birth_date).from(Registry::MojeID::INVALID);
+    }
+
+    if (!src.Fred::check_contact_name::success()) {
+        if (src.Fred::check_contact_name::first_name_absent) {
+            into(dst.first_name).from(Registry::MojeID::REQUIRED);
+        }
+        if (src.Fred::check_contact_name::last_name_absent) {
+            into(dst.last_name).from(Registry::MojeID::REQUIRED);
+        }
+    }
+
+    if (!src.Fred::check_contact_email_presence::success()) {
+        into(dst.email).from(Registry::MojeID::REQUIRED);
+    }
+    else if (!src.Fred::check_contact_email_validity::success()) {
+        into(dst.email).from(Registry::MojeID::INVALID);
+    }
+
+    if (!src.Fred::check_contact_phone_validity::success()) {
+        into(dst.phone).from(Registry::MojeID::INVALID);
+    }
+
+    if (!src.Fred::check_contact_fax_validity::success()) {
+        into(dst.fax).from(Registry::MojeID::INVALID);
+    }
+
+    if (!src.Fred::check_contact_notifyemail_validity::success()) {
+        into(dst.notify_email).from(Registry::MojeID::INVALID);
+    }
+
+    if (!src.Fred::check_contact_place_address::success()) {
+        into(dst.permanent).from(static_cast< const IMPL_CONTACT_ADDRESS_ERROR& >(
+                                 static_cast< const Fred::check_contact_place_address& >(src)));
+    }
+    if (!src.Fred::check_contact_addresses_mailing::success()) {
+        into(dst.mailing).from(static_cast< const IMPL_CONTACT_ADDRESS_ERROR& >(
+                               static_cast< const Fred::check_contact_addresses_mailing& >(src)));
+    }
+    if (!src.Fred::check_contact_addresses_billing::success()) {
+        into(dst.billing).from(static_cast< const IMPL_CONTACT_ADDRESS_ERROR& >(
+                               static_cast< const Fred::check_contact_addresses_billing& >(src)));
+    }
+    if (!src.Fred::check_contact_addresses_shipping::success()) {
+        into(dst.shipping).from(static_cast< const IMPL_CONTACT_ADDRESS_ERROR& >(
+                                static_cast< const Fred::check_contact_addresses_shipping& >(src)));
+    }
+    if (!src.Fred::check_contact_addresses_shipping::success()) {
+        into(dst.shipping2).from(static_cast< const IMPL_CONTACT_ADDRESS_ERROR& >(
+                                 static_cast< const Fred::check_contact_addresses_shipping2& >(src)));
+    }
+    if (!src.Fred::check_contact_addresses_shipping::success()) {
+        into(dst.shipping3).from(static_cast< const IMPL_CONTACT_ADDRESS_ERROR& >(
+                                 static_cast< const Fred::check_contact_addresses_shipping3& >(src)));
+    }
+    return dst;
+}
+
 into_from< Registry::MojeID::Address, Fred::Contact::PlaceAddress >::dst_value_ref
 into_from< Registry::MojeID::Address, Fred::Contact::PlaceAddress >::operator()(dst_value_ref dst, src_value src)const
 {

@@ -52,21 +52,20 @@ struct states_before_transfer_into_mojeid
 {
     template < typename STATES_PRESENCE >
     states_before_transfer_into_mojeid(const STATES_PRESENCE &_states_presence)
-    :   server_transfer_prohibited_present(_states_presence.template get< Object::State::SERVER_TRANSFER_PROHIBITED >()),
-        server_update_prohibited_present  (_states_presence.template get< Object::State::SERVER_UPDATE_PROHIBITED >()),
-        server_delete_prohibited_present  (_states_presence.template get< Object::State::SERVER_DELETE_PROHIBITED >()),
-        mojeid_contact_present            (_states_presence.template get< Object::State::MOJEID_CONTACT >())
+    :   server_user_blocked   (_states_presence.template get< Object::State::SERVER_TRANSFER_PROHIBITED >() ||
+                               _states_presence.template get< Object::State::SERVER_UPDATE_PROHIBITED >() ||
+                               _states_presence.template get< Object::State::SERVER_DELETE_PROHIBITED >()),
+        server_admin_blocked  (_states_presence.template get< Object::State::SERVER_BLOCKED >()),
+        mojeid_contact_present(_states_presence.template get< Object::State::MOJEID_CONTACT >())
     { }
     bool success()const
     {
-        return !(server_transfer_prohibited_present ||
-                 server_update_prohibited_present ||
-                 server_delete_prohibited_present ||
+        return !(server_user_blocked ||
+                 server_admin_blocked ||
                  mojeid_contact_present);
     }
-    bool server_transfer_prohibited_present:1;
-    bool server_update_prohibited_present:1;
-    bool server_delete_prohibited_present:1;
+    bool server_user_blocked:1;
+    bool server_admin_blocked:1;
     bool mojeid_contact_present:1;
 };
 

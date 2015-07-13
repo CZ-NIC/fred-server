@@ -92,22 +92,21 @@ Registry::MojeID::InfoContact* Server_i::transfer_contact_prepare(
         return contact_info_ptr.release();
     }
     catch (const MojeID2Impl::TransferContactPrepareError &e) {
-#if 0
         IDL::TRANSFER_CONTACT_PREPARE_VALIDATION_ERROR idl_error;
+        if (e.Fred::MojeID::Check::states_before_transfer_into_mojeid::mojeid_contact_present) {
+            throw IDL::ALREADY_MOJEID_CONTACT();
+        }
+        if (e.Fred::MojeID::Check::states_before_transfer_into_mojeid::server_admin_blocked) {
+            throw IDL::OBJECT_ADMIN_BLOCKED();
+        }
+        if (e.Fred::MojeID::Check::states_before_transfer_into_mojeid::server_user_blocked) {
+            throw IDL::OBJECT_USER_BLOCKED();
+        }
         Corba::Conversion::into(idl_error).from(e);
         throw idl_error;
-#else
-        throw;
-#endif
     }
     catch (const MojeID2Impl::GetContact::object_doesnt_exist &e) {
-#if 0
-        IDL::TRANSFER_CONTACT_PREPARE_VALIDATION_ERROR idl_error;
-        Corba::Conversion::into(idl_error).from(e);
-        throw idl_error;
-#else
-        throw;
-#endif
+        throw IDL::OBJECT_NOT_EXISTS();
     }
     catch (...) {
         throw IDL::INTERNAL_SERVER_ERROR();

@@ -90,6 +90,7 @@ public:
                 Fred::Object::State::SERVER_TRANSFER_PROHIBITED,
                 Fred::Object::State::SERVER_UPDATE_PROHIBITED,
                 Fred::Object::State::SERVER_DELETE_PROHIBITED,
+                Fred::Object::State::SERVER_BLOCKED,
                 Fred::Object::State::MOJEID_CONTACT,
                 Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT,
                 Fred::Object::State::IDENTIFIED_CONTACT >::type TransferContactPrepareRelatedStates;
