@@ -493,49 +493,58 @@ struct from_into< char*, std::string >
 };
 
 /**
- * Specialization for conversion from CORBA::String_var into const char*.
+ * Specialization for conversion from CORBA::String_var into Nullable< std::string >.
  */
 template < >
-struct from_into< ::CORBA::String_var, const char* >
-: from_into_base< ::CORBA::String_var, const char* >
+struct from_into< ::CORBA::String_var, Nullable< std::string > >
+: from_into_base< ::CORBA::String_var, Nullable< std::string > >
 {
     /**
-     * Sets source value of CORBA::String_var type into object of const char* type.
+     * Sets source value of CORBA::String_var type into object of Nullable< std::string > type.
      * @param src source value
      * @param dst reference to destination object which has to be set
      * @return destination object reference
      */
     dst_value_ref operator()(src_value src, dst_value_ref dst)const
     {
-        return dst = static_cast< convertible_type >(src);
+        const char *const c_str = static_cast< const char* >(src);
+        if (c_str != NULL) {
+            return dst = c_str;
+        }
+        return dst = Nullable< std::string >();
     }
 };
 
 /**
- * Specialization for conversion from CORBA::String_member into const char*.
+ * Specialization for conversion from CORBA::String_member into Nullable< std::string >.
  */
 template < >
-struct from_into< ::CORBA::String_member, const char* >
-: from_into_base< ::CORBA::String_member, const char* >
+struct from_into< ::CORBA::String_member, Nullable< std::string > >
+: from_into_base< ::CORBA::String_member, Nullable< std::string > >
 {
     /**
-     * Sets source value of CORBA::String_member type into object of const char* type.
+     * Sets source value of CORBA::String_member type into object of Nullable< std::string > type.
      * @param src source value
      * @param dst reference to destination object which has to be set
      * @return destination object reference
      */
     dst_value_ref operator()(src_value src, dst_value_ref dst)const
     {
-        return dst = static_cast< convertible_type >(src);
+        const char *const c_str = static_cast< const char* >(src);
+        if (c_str != NULL) {
+            return dst = c_str;
+        }
+        return dst = Nullable< std::string >();
     }
 };
 
 template < typename CORBA_TYPE >
 std::string& From< CORBA_TYPE >::into(std::string &dst)const
 {
-    const char *tmp;
-    if (from_into< source_type, const char* >()(source_value_, tmp) != NULL) {
-        return from_into< char*, std::string >()(tmp, dst);//result will be trimmed
+    Nullable< std::string > tmp;
+    from(source_value_).into(tmp);
+    if (!tmp.isnull()) {
+        return from_into< char*, std::string >()(tmp.get_value().c_str(), dst);//result will be trimmed
     }
     throw std::runtime_error(std::string(__PRETTY_FUNCTION__) + " failure: result is NULL");
 }

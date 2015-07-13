@@ -269,14 +269,14 @@ void Server_i::corba_conversion_test(const Test &ct, Test &t, ::CORBA::String_ou
     Corba::Conversion::into(so).from(cs);
     Corba::Conversion::into(so).from(s);
 
-    cs = Corba::Conversion::from(sv).into< const char* >();
+//    cs = Corba::Conversion::from(sv).into< const char* >();
     s  = Corba::Conversion::from(sv).into< std::string >();
 //    cs = Corba::Conversion::from(sv).into(cs);
     s  = Corba::Conversion::from(sv).into(s);
     Corba::Conversion::into(sv).from(cs);
     Corba::Conversion::into(sv).from(s);
 
-    cs = Corba::Conversion::from(sm).into< const char* >();
+//    cs = Corba::Conversion::from(sm).into< const char* >();
     s  = Corba::Conversion::from(sm).into< std::string >();
 //    cs = Corba::Conversion::from(sm).into(cs);
     s  = Corba::Conversion::from(sm).into(s);
@@ -286,7 +286,6 @@ void Server_i::corba_conversion_test(const Test &ct, Test &t, ::CORBA::String_ou
     DateTime dt;
     boost::posix_time::ptime pt = Corba::Conversion::from(dt).into< boost::posix_time::ptime >();
     pt = Corba::Conversion::from(dt).into(pt);
-    pt = Corba::Conversion::from(dt).into(pt, boost::posix_time::ptime());
     Corba::Conversion::into(dt).from(pt);
 }
 

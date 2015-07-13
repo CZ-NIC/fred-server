@@ -38,6 +38,20 @@ namespace Conversion {
 boost::gregorian::date& convert(const std::string &from, boost::gregorian::date &into);
 
 template < >
+struct from_into< Registry::MojeID::Date, std::string >
+: from_into_base< Registry::MojeID::Date, std::string >
+{
+    dst_value_ref operator()(src_value src, dst_value_ref dst)const;
+};
+
+template < >
+struct into_from< Registry::MojeID::Date, const char* >
+: into_from_base< Registry::MojeID::Date, const char* >
+{
+    dst_value_ref operator()(dst_value_ref dst, src_value src)const;
+};
+
+template < >
 struct from_into< Registry::MojeID::Date, boost::gregorian::date >
 : from_into_base< Registry::MojeID::Date, boost::gregorian::date >
 {
@@ -47,6 +61,20 @@ struct from_into< Registry::MojeID::Date, boost::gregorian::date >
 template < >
 struct into_from< Registry::MojeID::Date, boost::gregorian::date >
 : into_from_base< Registry::MojeID::Date, boost::gregorian::date >
+{
+    dst_value_ref operator()(dst_value_ref dst, src_value src)const;
+};
+
+template < >
+struct from_into< Registry::MojeID::DateTime, std::string >
+: from_into_base< Registry::MojeID::DateTime, std::string >
+{
+    dst_value_ref operator()(src_value src, dst_value_ref dst)const;
+};
+
+template < >
+struct into_from< Registry::MojeID::DateTime, const char* >
+: into_from_base< Registry::MojeID::DateTime, const char* >
 {
     dst_value_ref operator()(dst_value_ref dst, src_value src)const;
 };

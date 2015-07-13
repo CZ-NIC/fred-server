@@ -10,22 +10,48 @@ boost::gregorian::date& convert(const std::string &from, boost::gregorian::date 
     return into = boost::gregorian::from_simple_string(str_date);
 }
 
+from_into< Registry::MojeID::Date, std::string >::dst_value_ref
+from_into< Registry::MojeID::Date, std::string >::operator()(src_value src, dst_value_ref dst)const
+{
+    return from(src.value).into(dst);
+}
+
+into_from< Registry::MojeID::Date, const char* >::dst_value_ref
+into_from< Registry::MojeID::Date, const char* >::operator()(dst_value_ref dst, src_value src)const
+{
+    into(dst.value).from(src);
+    return dst;
+}
+
 from_into< Registry::MojeID::Date, boost::gregorian::date >::dst_value_ref
 from_into< Registry::MojeID::Date, boost::gregorian::date >::operator()(src_value src, dst_value_ref dst)const
 {
-    return dst = boost::gregorian::from_simple_string(src);
+    return dst = boost::gregorian::from_simple_string(from(src).into< std::string >());
 }
 
 into_from< Registry::MojeID::Date, boost::gregorian::date >::dst_value_ref
 into_from< Registry::MojeID::Date, boost::gregorian::date >::operator()(dst_value_ref dst, src_value src)const
 {
-    return dst = CORBA::string_dup(boost::gregorian::to_iso_extended_string(src).c_str());
+    return into(dst).from(boost::gregorian::to_iso_extended_string(src).c_str());
+}
+
+from_into< Registry::MojeID::DateTime, std::string >::dst_value_ref
+from_into< Registry::MojeID::DateTime, std::string >::operator()(src_value src, dst_value_ref dst)const
+{
+    return from(src.value).into(dst);
+}
+
+into_from< Registry::MojeID::DateTime, const char* >::dst_value_ref
+into_from< Registry::MojeID::DateTime, const char* >::operator()(dst_value_ref dst, src_value src)const
+{
+    into(dst.value).from(src);
+    return dst;
 }
 
 from_into< Registry::MojeID::DateTime, boost::posix_time::ptime >::dst_value_ref
 from_into< Registry::MojeID::DateTime, boost::posix_time::ptime >::operator()(src_value src, dst_value_ref dst)const
 {
-    std::string iso_extended = src;//2015-06-24T13:05:03.000123
+    std::string iso_extended = from(src).into< std::string >();//2015-06-24T13:05:03.000123
     enum { T_POS = 10 };
     if ((T_POS <= iso_extended.length()) && (iso_extended[T_POS] == 'T')) {
         iso_extended[T_POS] = ' ';
@@ -36,22 +62,10 @@ from_into< Registry::MojeID::DateTime, boost::posix_time::ptime >::operator()(sr
 into_from< Registry::MojeID::DateTime, boost::posix_time::ptime >::dst_value_ref
 into_from< Registry::MojeID::DateTime, boost::posix_time::ptime >::operator()(dst_value_ref dst, src_value src)const
 {
-    return dst = CORBA::string_dup(boost::posix_time::to_iso_extended_string(src).c_str());
+    return into(dst).from(boost::posix_time::to_iso_extended_string(src).c_str());
 }
 
 namespace {
-
-// because frontend doesn't preserve NULL values :(
-template < typename CORBA_NullableType >
-const CORBA_NullableType& empty_as_null(const CORBA_NullableType &_value)
-{
-    if ((_value.in() == NULL) ||               // is NULL or
-        (_value.in()->_value()[0] != '\0')) {  // is nonempty
-        return _value;
-    }
-    static const CORBA_NullableType null_value;// is not NULL but is empty
-    return null_value;
-}
 
 struct set_ssn
 {
@@ -152,40 +166,40 @@ Nullable< VALUE > missing_as_null(const std::map< KEY, VALUE > &_dict, const CON
 from_into< Registry::MojeID::Address, Fred::Contact::PlaceAddress >::dst_value_ref
 from_into< Registry::MojeID::Address, Fred::Contact::PlaceAddress >::operator()(src_value src, dst_value_ref dst)const
 {
-    from(              src.street1)    .into(             dst.street1);
-    from(empty_as_null(src.street2))   .into(set_optional(dst.street2).if_not_null());
-    from(empty_as_null(src.street3))   .into(set_optional(dst.street3).if_not_null());
-    from(              src.city)       .into(             dst.city);
-    from(empty_as_null(src.state))     .into(set_optional(dst.stateorprovince).if_not_null());
-    from(              src.postal_code).into(             dst.postalcode);
-    from(              src.country)    .into(             dst.country);
+    from(src.street1)    .into(             dst.street1);
+    from(src.street2)    .into(set_optional(dst.street2).if_not_null());
+    from(src.street3)    .into(set_optional(dst.street3).if_not_null());
+    from(src.city)       .into(             dst.city);
+    from(src.state)      .into(set_optional(dst.stateorprovince).if_not_null());
+    from(src.postal_code).into(             dst.postalcode);
+    from(src.country)    .into(             dst.country);
     return dst;
 }
 
 from_into< Registry::MojeID::Address, Fred::ContactAddress >::dst_value_ref
 from_into< Registry::MojeID::Address, Fred::ContactAddress >::operator()(src_value src, dst_value_ref dst)const
 {
-    from(              src.street1)    .into(             dst.street1);
-    from(empty_as_null(src.street2))   .into(set_optional(dst.street2).if_not_null());
-    from(empty_as_null(src.street3))   .into(set_optional(dst.street3).if_not_null());
-    from(              src.city)       .into(             dst.city);
-    from(empty_as_null(src.state))     .into(set_optional(dst.stateorprovince).if_not_null());
-    from(              src.postal_code).into(             dst.postalcode);
-    from(              src.country)    .into(             dst.country);
+    from(src.street1)    .into(             dst.street1);
+    from(src.street2)    .into(set_optional(dst.street2).if_not_null());
+    from(src.street3)    .into(set_optional(dst.street3).if_not_null());
+    from(src.city)       .into(             dst.city);
+    from(src.state)      .into(set_optional(dst.stateorprovince).if_not_null());
+    from(src.postal_code).into(             dst.postalcode);
+    from(src.country)    .into(             dst.country);
     return dst;
 }
 
 from_into< Registry::MojeID::ShippingAddress, Fred::ContactAddress >::dst_value_ref
 from_into< Registry::MojeID::ShippingAddress, Fred::ContactAddress >::operator()(src_value src, dst_value_ref dst)const
 {
-    from(empty_as_null(src.company_name)).into(set_optional(dst.company_name).if_not_null());
-    from(              src.street1)      .into(             dst.street1);
-    from(empty_as_null(src.street2))     .into(set_optional(dst.street2).if_not_null());
-    from(empty_as_null(src.street3))     .into(set_optional(dst.street3).if_not_null());
-    from(              src.city)         .into(             dst.city);
-    from(empty_as_null(src.state))       .into(set_optional(dst.stateorprovince).if_not_null());
-    from(              src.postal_code)  .into(             dst.postalcode);
-    from(              src.country)      .into(             dst.country);
+    from(src.company_name).into(set_optional(dst.company_name).if_not_null());
+    from(src.street1)     .into(             dst.street1);
+    from(src.street2)     .into(set_optional(dst.street2).if_not_null());
+    from(src.street3)     .into(set_optional(dst.street3).if_not_null());
+    from(src.city)        .into(             dst.city);
+    from(src.state)       .into(set_optional(dst.stateorprovince).if_not_null());
+    from(src.postal_code) .into(             dst.postalcode);
+    from(src.country)     .into(             dst.country);
     return dst;
 }
 
@@ -201,26 +215,26 @@ from_into< Registry::MojeID::CreateContact, Fred::InfoContactData >::operator()(
     Nullable< std::string >            vat_id_num;
     typedef Fred::ContactAddressType   AddrType;
 
-    from(              src.username)     .into(          dst.handle);
-    from(              src.first_name)   .into(          first_name);
-    from(              src.last_name)    .into(          last_name);
-    from(empty_as_null(src.organization)).into(          dst.organization);
-    from(empty_as_null(src.vat_reg_num)) .into(          dst.vat);
-    from(empty_as_null(src.birth_date))  .into(          birth_date);
-    from(empty_as_null(src.id_card_num)) .into(          id_card_num);
-    from(empty_as_null(src.passport_num)).into(          passport_num);
-    from(empty_as_null(src.ssn_id_num))  .into(          ssn_id_num);
-    from(empty_as_null(src.vat_id_num))  .into(          vat_id_num);
-    from(              src.permanent)    .into(          dst.place);
-    from(              src.mailing)      .into(add_value(dst.addresses, AddrType::MAILING).if_not_null());
-    from(              src.billing)      .into(add_value(dst.addresses, AddrType::BILLING).if_not_null());
-    from(              src.shipping)     .into(add_value(dst.addresses, AddrType::SHIPPING).if_not_null());
-    from(              src.shipping2)    .into(add_value(dst.addresses, AddrType::SHIPPING_2).if_not_null());
-    from(              src.shipping3)    .into(add_value(dst.addresses, AddrType::SHIPPING_3).if_not_null());
-    from(              src.email)        .into(          dst.email);
-    from(empty_as_null(src.notify_email)).into(          dst.notifyemail);
-    from(              src.telephone)    .into(          dst.telephone);
-    from(empty_as_null(src.fax))         .into(          dst.fax);
+    from(src.username)    .into(          dst.handle);
+    from(src.first_name)  .into(          first_name);
+    from(src.last_name)   .into(          last_name);
+    from(src.organization).into(          dst.organization);
+    from(src.vat_reg_num) .into(          dst.vat);
+    from(src.birth_date)  .into(          birth_date);
+    from(src.id_card_num) .into(          id_card_num);
+    from(src.passport_num).into(          passport_num);
+    from(src.ssn_id_num)  .into(          ssn_id_num);
+    from(src.vat_id_num)  .into(          vat_id_num);
+    from(src.permanent)   .into(          dst.place);
+    from(src.mailing)     .into(add_value(dst.addresses, AddrType::MAILING).if_not_null());
+    from(src.billing)     .into(add_value(dst.addresses, AddrType::BILLING).if_not_null());
+    from(src.shipping)    .into(add_value(dst.addresses, AddrType::SHIPPING).if_not_null());
+    from(src.shipping2)   .into(add_value(dst.addresses, AddrType::SHIPPING_2).if_not_null());
+    from(src.shipping3)   .into(add_value(dst.addresses, AddrType::SHIPPING_3).if_not_null());
+    from(src.email)       .into(          dst.email);
+    from(src.notify_email).into(          dst.notifyemail);
+    from(src.telephone)   .into(          dst.telephone);
+    from(src.fax)         .into(          dst.fax);
 
     dst.name = first_name + " " + last_name;
     const bool contact_is_organization = !dst.organization.isnull();
@@ -464,15 +478,19 @@ into_from< Registry::MojeID::InfoContact, Fred::InfoContactData >::operator()(ds
     into(dst.last_name)   .from(last_name);
     into(dst.organization).from(src.organization);
     into(dst.vat_reg_num) .from(src.vat);
-    into(dst.birth_date)  .from(Nullable< std::string >());
-    into(dst.id_card_num) .from(Nullable< std::string >());
-    into(dst.passport_num).from(Nullable< std::string >());
-    into(dst.ssn_id_num)  .from(Nullable< std::string >());
-    into(dst.vat_id_num)  .from(Nullable< std::string >());
+         dst.birth_date   = reinterpret_cast< Registry::MojeID::NullableDate* >(NULL);
+    into(dst.id_card_num) .from(reinterpret_cast< const char* >(NULL));
+    into(dst.passport_num).from(reinterpret_cast< const char* >(NULL));
+    into(dst.ssn_id_num)  .from(reinterpret_cast< const char* >(NULL));
+    into(dst.vat_id_num)  .from(reinterpret_cast< const char* >(NULL));
     if (!src.ssntype.isnull()) {
         const std::string ssn_type = src.ssntype.get_value();
         if (ssn_type == "BIRTHDAY") {
-            into(dst.birth_date)  .from(src.ssn);
+            if (!src.ssn.isnull()) {
+                Registry::MojeID::Date birth_date;
+                into(birth_date).from(src.ssn.get_value());
+                dst.birth_date = new Registry::MojeID::NullableDate(birth_date);
+            }
         }
         else if (ssn_type == "ICO") {
             into(dst.vat_id_num)  .from(src.ssn);
