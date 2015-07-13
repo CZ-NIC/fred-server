@@ -297,6 +297,7 @@ namespace Fred
     {
         const std::string registrant_handle_;/**< registrant handle */
         bool lock_;/**< if set to true lock object_registry row for update, if set to false lock for share */
+        Optional<unsigned long long> limit_;/**< max number of returned InfoDomainOutput structures */
 
     public:
 
@@ -313,6 +314,15 @@ namespace Fred
          * @return operation instance reference to allow method chaining
          */
         InfoDomainByRegistrantHandle& set_lock();
+
+        /**
+        * Sets limit on number of returned InfoDomainOutput structures.
+        * Filter query ordered by domainid.
+        * If not set, there is no limit.
+        * Sets  @ref limit_ attribute
+        * @return operation instance reference to allow method chaining
+        */
+        InfoDomainByRegistrantHandle& set_limit(unsigned long long limit);
 
         /**
         * Executes getting info about domains.
@@ -340,6 +350,7 @@ namespace Fred
     {
         const std::string admin_contact_handle_;/**< administrator contact handle */
         bool lock_;/**< if set to true lock object_registry row for update, if set to false lock for share */
+        Optional<unsigned long long> limit_;/**< max number of returned InfoDomainOutput structures */
 
     public:
 
@@ -356,6 +367,15 @@ namespace Fred
          * @return operation instance reference to allow method chaining
          */
         InfoDomainByAdminContactHandle& set_lock();
+
+        /**
+        * Sets limit on number of returned InfoDomainOutput structures.
+        * Filter query ordered by domainid.
+        * If not set, there is no limit.
+        * Sets  @ref limit_ attribute
+        * @return operation instance reference to allow method chaining
+        */
+        InfoDomainByAdminContactHandle& set_limit(unsigned long long limit);
 
         /**
         * Executes getting info about the domain.
@@ -383,6 +403,7 @@ namespace Fred
     {
         const std::string nsset_handle_;/**< nsset handle */
         bool lock_;/**< if set to true lock object_registry row for update, if set to false lock for share */
+        Optional<unsigned long long> limit_;/**< max number of returned InfoDomainOutput structures */
 
     public:
 
@@ -399,6 +420,15 @@ namespace Fred
          * @return operation instance reference to allow method chaining
          */
         InfoDomainByNssetHandle& set_lock();
+
+        /**
+        * Sets limit on number of returned InfoDomainOutput structures.
+        * Filter query ordered by domainid.
+        * If not set, there is no limit.
+        * Sets  @ref limit_ attribute
+        * @return operation instance reference to allow method chaining
+        */
+        InfoDomainByNssetHandle& set_limit(unsigned long long limit);
 
         /**
         * Executes getting info about domains.
@@ -427,6 +457,7 @@ namespace Fred
     {
         const std::string keyset_handle_;/**< keyset handle */
         bool lock_;/**< if set to true lock object_registry row for update, if set to false lock for share */
+        Optional<unsigned long long> limit_;/**< max number of returned InfoDomainOutput structures */
 
     public:
 
@@ -443,6 +474,15 @@ namespace Fred
          * @return operation instance reference to allow method chaining
          */
         InfoDomainByKeysetHandle& set_lock();
+
+        /**
+        * Sets limit on number of returned InfoDomainOutput structures.
+        * Filter query ordered by domainid.
+        * If not set, there is no limit.
+        * Sets  @ref limit_ attribute
+        * @return operation instance reference to allow method chaining
+        */
+        InfoDomainByKeysetHandle& set_limit(unsigned long long limit);
 
         /**
         * Executes getting info about domains.

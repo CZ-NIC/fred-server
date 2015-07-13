@@ -29,19 +29,47 @@ namespace Whois {
             virtual NullableContact* get_contact_by_handle(const char* handle);
 
             virtual NullableNSSet* get_nsset_by_handle(const char* handle);
-            virtual NSSetSeq* get_nssets_by_ns(const char* handle);
-            virtual NSSetSeq* get_nssets_by_tech_c(const char* handle);
+
+            virtual NSSetSeq* get_nssets_by_ns(
+                const char* handle,
+                ::CORBA::ULong limit,
+                ::CORBA::Boolean& limit_exceeded);
+
+            virtual NSSetSeq* get_nssets_by_tech_c(
+                const char* handle,
+                ::CORBA::ULong limit,
+                ::CORBA::Boolean& limit_exceeded);
 
             virtual NullableNameServer* get_nameserver_by_fqdn(const char* handle);
 
             virtual NullableKeySet* get_keyset_by_handle(const char* handle);
-            virtual KeySetSeq* get_keysets_by_tech_c(const char* handle);
+
+            virtual KeySetSeq* get_keysets_by_tech_c(
+                const char* handle,
+                ::CORBA::ULong limit,
+                ::CORBA::Boolean& limit_exceeded);
 
             virtual NullableDomain* get_domain_by_handle(const char* handle);
-            virtual DomainSeq* get_domains_by_registrant(const char* handle);
-            virtual DomainSeq* get_domains_by_admin_contact(const char* handle);
-            virtual DomainSeq* get_domains_by_nsset(const char* handle);
-            virtual DomainSeq* get_domains_by_keyset(const char* handle);
+
+            virtual DomainSeq* get_domains_by_registrant(
+                const char* handle,
+                ::CORBA::ULong limit,
+                ::CORBA::Boolean& limit_exceeded);
+
+            virtual DomainSeq* get_domains_by_admin_contact(
+                const char* handle,
+                ::CORBA::ULong limit,
+                ::CORBA::Boolean& limit_exceeded);
+
+            virtual DomainSeq* get_domains_by_nsset(
+                const char* handle,
+                ::CORBA::ULong limit,
+                ::CORBA::Boolean& limit_exceeded);
+
+            virtual DomainSeq* get_domains_by_keyset(
+                const char* handle,
+                ::CORBA::ULong limit,
+                ::CORBA::Boolean& limit_exceeded);
 
             virtual ObjectStatusDescSeq* get_domain_status_descriptions(const char* lang);
             virtual ObjectStatusDescSeq* get_contact_status_descriptions(const char* lang);

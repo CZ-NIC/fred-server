@@ -295,17 +295,32 @@ namespace Fred
         return *this;
     }
 
+    InfoDomainByRegistrantHandle& InfoDomainByRegistrantHandle::set_limit(unsigned long long limit)
+    {
+        limit_ = Optional<unsigned long long>(limit);
+        return *this;
+    }
+
     std::vector<InfoDomainOutput> InfoDomainByRegistrantHandle::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
     {
         std::vector<InfoDomainOutput> domain_res;
 
         try
         {
-            std::pair<std::string,Database::query_param_list> domain_id_by_registrant_handle_param_query
-                = Database::ParamQuery("SELECT d.id FROM domain d "
+            Database::ParamQuery inline_view_filter_query;
+
+            inline_view_filter_query("SELECT d.id FROM domain d "
                 "JOIN object_registry oreg ON d.registrant = oreg.id"
                 " AND oreg.name = UPPER(").param_text(registrant_handle_)(")"
-                " AND oreg.erdate IS NULL").get_query();
+                " AND oreg.erdate IS NULL");
+
+            if(limit_.isset())
+            {
+                inline_view_filter_query (" ORDER BY d.id LIMIT ").param_bigint(limit_.get_value());
+            }
+
+            std::pair<std::string,Database::query_param_list> domain_id_by_registrant_handle_param_query
+                = inline_view_filter_query.get_query();
 
             Database::Result domain_id_res = ctx.get_conn().exec_params(
                 domain_id_by_registrant_handle_param_query.first,
@@ -348,6 +363,7 @@ namespace Fred
         Util::vector_of<std::pair<std::string,std::string> >
         (std::make_pair("registrant_handle", registrant_handle_))
         (std::make_pair("lock",lock_ ? "true":"false"))
+        (std::make_pair("limit",limit_.print_quoted()))
         );
     }
 
@@ -365,19 +381,33 @@ namespace Fred
         return *this;
     }
 
+    InfoDomainByAdminContactHandle& InfoDomainByAdminContactHandle::set_limit(unsigned long long limit)
+    {
+        limit_ = Optional<unsigned long long>(limit);
+        return *this;
+    }
+
     std::vector<InfoDomainOutput> InfoDomainByAdminContactHandle::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
     {
         std::vector<InfoDomainOutput> domain_res;
 
         try
         {
+            Database::ParamQuery inline_view_filter_query;
+
+            inline_view_filter_query("SELECT dcm.domainid"
+                " FROM object_registry oreg"
+                " JOIN  enum_object_type eot ON oreg.type = eot.id AND eot.name = 'contact'"
+                " JOIN domain_contact_map dcm ON dcm.contactid = oreg.id"
+                " WHERE oreg.name = UPPER(").param_text(admin_contact_handle_)(") AND oreg.erdate IS NULL");
+
+            if(limit_.isset())
+            {
+                inline_view_filter_query (" ORDER BY dcm.domainid LIMIT ").param_bigint(limit_.get_value());
+            }
+
             std::pair<std::string,Database::query_param_list> domain_id_by_admin_contact_handle_param_query
-                = Database::ParamQuery("SELECT dcm.domainid"
-                    " FROM object_registry oreg"
-                    " JOIN  enum_object_type eot ON oreg.type = eot.id AND eot.name = 'contact'"
-                    " JOIN domain_contact_map dcm ON dcm.contactid = oreg.id"
-                    " WHERE oreg.name = UPPER(").param_text(admin_contact_handle_)(") AND oreg.erdate IS NULL")
-                    .get_query();
+                = inline_view_filter_query.get_query();
 
             Database::Result domain_id_res = ctx.get_conn().exec_params(
                 domain_id_by_admin_contact_handle_param_query.first,
@@ -418,6 +448,7 @@ namespace Fred
         Util::vector_of<std::pair<std::string,std::string> >
         (std::make_pair("admin_contact_handle", admin_contact_handle_))
         (std::make_pair("lock",lock_ ? "true":"false"))
+        (std::make_pair("limit",limit_.print_quoted()))
         );
     }
 
@@ -433,16 +464,53 @@ namespace Fred
         return *this;
     }
 
+    InfoDomainByNssetHandle& InfoDomainByNssetHandle::set_limit(unsigned long long limit)
+    {
+        limit_ = Optional<unsigned long long>(limit);
+        return *this;
+    }
+
     std::vector<InfoDomainOutput> InfoDomainByNssetHandle::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
     {
         std::vector<InfoDomainOutput> domain_res;
 
         try
         {
+            Database::ParamQuery inline_view_filter_query;
+
+            inline_view_filter_query("SELECT d.id FROM domain d"
+                " JOIN object_registry noreg ON d.nsset = noreg.id AND noreg.name = UPPER(").param_text(nsset_handle_)(")"
+                " AND noreg.type = ( SELECT id FROM enum_object_type eot WHERE eot.name='nsset'::text) AND noreg.erdate IS NULL");
+
+            if(limit_.isset())
+            {
+                inline_view_filter_query (" ORDER BY d.id LIMIT ").param_bigint(limit_.get_value());
+            }
+
+            std::pair<std::string,Database::query_param_list> domain_id_by_nsset_handle_param_query
+                = inline_view_filter_query.get_query();
+
+            Database::Result domain_id_res = ctx.get_conn().exec_params(
+                domain_id_by_nsset_handle_param_query.first,
+                domain_id_by_nsset_handle_param_query.second);
+
+            if(domain_id_res.size() == 0)//no domain id found
+            {
+                return domain_res;
+            }
+
+            Database::ParamQuery domain_id_inline_view("info_domain_id IN (");
+            Util::HeadSeparator in_separator("",",");
+
+            for (unsigned long long i = 0 ; i < domain_id_res.size(); ++i)
+            {
+                domain_id_inline_view(in_separator.get())
+                    .param_bigint(static_cast<unsigned long long>(domain_id_res[i][0]));
+            }
+            domain_id_inline_view(")");
+
             InfoDomain id;
-            id.set_inline_view_filter(Database::ParamQuery(
-                "info_domain_nsset_id = (SELECT id FROM object_registry WHERE name = UPPER(").param_text(nsset_handle_)(")"
-                " AND type = ( SELECT id FROM enum_object_type eot WHERE eot.name='nsset'::text) AND erdate IS NULL) "))
+            id.set_inline_view_filter(domain_id_inline_view)
                 .set_history_query(false);
             if(lock_) id.set_lock();
             domain_res = id.exec(ctx,local_timestamp_pg_time_zone_name);
@@ -461,6 +529,7 @@ namespace Fred
         Util::vector_of<std::pair<std::string,std::string> >
         (std::make_pair("nsset_handle", nsset_handle_))
         (std::make_pair("lock",lock_ ? "true":"false"))
+        (std::make_pair("limit",limit_.print_quoted()))
         );
     }
 
@@ -475,15 +544,53 @@ namespace Fred
         return *this;
     }
 
+    InfoDomainByKeysetHandle& InfoDomainByKeysetHandle::set_limit(unsigned long long limit)
+    {
+        limit_ = Optional<unsigned long long>(limit);
+        return *this;
+    }
+
     std::vector<InfoDomainOutput> InfoDomainByKeysetHandle::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
     {
         std::vector<InfoDomainOutput> domain_res;
         try
         {
+
+            Database::ParamQuery inline_view_filter_query;
+
+            inline_view_filter_query("SELECT d.id FROM domain d"
+                " JOIN object_registry koreg ON d.keyset = koreg.id AND koreg.name = UPPER(").param_text(keyset_handle_)(")"
+                " AND koreg.type = ( SELECT id FROM enum_object_type eot WHERE eot.name='keyset'::text) AND koreg.erdate IS NULL");
+
+            if(limit_.isset())
+            {
+                inline_view_filter_query (" ORDER BY d.id LIMIT ").param_bigint(limit_.get_value());
+            }
+
+            std::pair<std::string,Database::query_param_list> domain_id_by_keyset_handle_param_query
+                = inline_view_filter_query.get_query();
+
+            Database::Result domain_id_res = ctx.get_conn().exec_params(
+                domain_id_by_keyset_handle_param_query.first,
+                domain_id_by_keyset_handle_param_query.second);
+
+            if(domain_id_res.size() == 0)//no domain id found
+            {
+                return domain_res;
+            }
+
+            Database::ParamQuery domain_id_inline_view("info_domain_id IN (");
+            Util::HeadSeparator in_separator("",",");
+
+            for (unsigned long long i = 0 ; i < domain_id_res.size(); ++i)
+            {
+                domain_id_inline_view(in_separator.get())
+                    .param_bigint(static_cast<unsigned long long>(domain_id_res[i][0]));
+            }
+            domain_id_inline_view(")");
+
             InfoDomain id;
-            id.set_inline_view_filter(Database::ParamQuery(
-                "info_domain_keyset_id = (SELECT id FROM object_registry WHERE name = UPPER(").param_text(keyset_handle_)(")"
-                " AND type = ( SELECT id FROM enum_object_type eot WHERE eot.name='keyset'::text) AND erdate IS NULL) "))
+            id.set_inline_view_filter(domain_id_inline_view)
             .set_history_query(false);
             if(lock_) id.set_lock();
             domain_res = id.exec(ctx,local_timestamp_pg_time_zone_name);
@@ -502,6 +609,7 @@ namespace Fred
         Util::vector_of<std::pair<std::string,std::string> >
         (std::make_pair("keyset_handle", keyset_handle_))
         (std::make_pair("lock",lock_ ? "true":"false"))
+        (std::make_pair("limit",limit_.print_quoted()))
         );
     }
 

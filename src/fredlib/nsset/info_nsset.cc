@@ -150,14 +150,29 @@ namespace Fred
         return *this;
     }
 
+    InfoNssetByDNSFqdn& InfoNssetByDNSFqdn::set_limit(unsigned long long limit)
+    {
+        limit_ = Optional<unsigned long long>(limit);
+        return *this;
+    }
+
     std::vector<InfoNssetOutput> InfoNssetByDNSFqdn::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
     {
         std::vector<InfoNssetOutput> nsset_res;
 
         try
         {
+            Database::ParamQuery cte_id_filter_query;
+
+            cte_id_filter_query("SELECT nssetid FROM host WHERE fqdn = ").param_text(dns_fqdn_);
+
+            if(limit_.isset())
+            {
+                cte_id_filter_query (" ORDER BY nssetid LIMIT ").param_bigint(limit_.get_value());
+            }
+
             InfoNsset in;
-            in.set_cte_id_filter(Database::ParamQuery("SELECT nssetid FROM host WHERE fqdn = ").param_text(dns_fqdn_))
+            in.set_cte_id_filter(cte_id_filter_query)
                 .set_history_query(false);
             if(lock_) in.set_lock();
             nsset_res = in.exec(ctx,local_timestamp_pg_time_zone_name);
@@ -176,6 +191,7 @@ namespace Fred
         Util::vector_of<std::pair<std::string,std::string> >
         (std::make_pair("dns_fqdn", dns_fqdn_))
         (std::make_pair("lock",lock_ ? "true":"false"))
+        (std::make_pair("limit",limit_.print_quoted()))
         );
     }
 
@@ -191,20 +207,33 @@ namespace Fred
         return *this;
     }
 
+    InfoNssetByTechContactHandle& InfoNssetByTechContactHandle::set_limit(unsigned long long limit)
+    {
+        limit_ = Optional<unsigned long long>(limit);
+        return *this;
+    }
+
     std::vector<InfoNssetOutput> InfoNssetByTechContactHandle::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
     {
         std::vector<InfoNssetOutput> nsset_res;
 
         try
         {
-            InfoNsset in;
-            in.set_cte_id_filter(Database::ParamQuery(
-                "SELECT ncm.nssetid"
+            Database::ParamQuery cte_id_filter_query;
+
+            cte_id_filter_query("SELECT ncm.nssetid"
                 " FROM object_registry oreg"
                 " JOIN  enum_object_type eot ON oreg.type = eot.id AND eot.name = 'contact'"
                 " JOIN nsset_contact_map ncm ON ncm.contactid = oreg.id"
-                " WHERE oreg.name = UPPER(").param_text(tech_contact_handle_)(") AND oreg.erdate IS NULL")
-                )
+                " WHERE oreg.name = UPPER(").param_text(tech_contact_handle_)(") AND oreg.erdate IS NULL");
+
+            if(limit_.isset())
+            {
+                cte_id_filter_query (" ORDER BY ncm.nssetid LIMIT ").param_bigint(limit_.get_value());
+            }
+
+            InfoNsset in;
+            in.set_cte_id_filter(cte_id_filter_query)
                 .set_history_query(false);
             if(lock_) in.set_lock();
             nsset_res = in.exec(ctx,local_timestamp_pg_time_zone_name);
@@ -224,6 +253,7 @@ namespace Fred
         Util::vector_of<std::pair<std::string,std::string> >
         (std::make_pair("tech_contact_handle", tech_contact_handle_))
         (std::make_pair("lock",lock_ ? "true":"false"))
+        (std::make_pair("limit",limit_.print_quoted()))
         );
     }
 

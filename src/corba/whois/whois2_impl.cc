@@ -481,14 +481,25 @@ namespace Whois {
         throw INTERNAL_SERVER_ERROR();
     }
 
-    NSSetSeq* Server_impl::get_nssets_by_ns(const char* handle)
+    NSSetSeq* Server_impl::get_nssets_by_ns(
+        const char* handle,
+        ::CORBA::ULong limit,
+        ::CORBA::Boolean& limit_exceeded)
     {
         try
         {
             Fred::OperationContext ctx;
             NSSetSeq_var nss_seq = new NSSetSeq;
             std::vector<Fred::InfoNssetOutput> nss_info = Fred::InfoNssetByDNSFqdn(
-                Corba::unwrap_string(handle)).exec(ctx, output_timezone);
+                Corba::unwrap_string(handle)).set_limit(limit + 1).exec(ctx, output_timezone);
+
+            limit_exceeded = false;
+            if(nss_info.size() > limit)
+            {
+                limit_exceeded = true;
+                nss_info.erase(nss_info.begin());//depends on InfoNsset ordering
+            }
+
             set_corba_seq<NSSetSeq, NSSet,std::vector<Fred::InfoNssetOutput>, Fred::InfoNssetOutput>
                 (nss_seq.inout(), nss_info);
             return nss_seq._retn();
@@ -498,7 +509,10 @@ namespace Whois {
         throw INTERNAL_SERVER_ERROR();
     }
 
-    NSSetSeq* Server_impl::get_nssets_by_tech_c(const char* handle)
+    NSSetSeq* Server_impl::get_nssets_by_tech_c(
+        const char* handle,
+        ::CORBA::ULong limit,
+        ::CORBA::Boolean& limit_exceeded)
     {
         try
         {
@@ -506,7 +520,14 @@ namespace Whois {
             NSSetSeq_var nss_seq = new NSSetSeq;
 
             std::vector<Fred::InfoNssetOutput> nss_info = Fred::InfoNssetByTechContactHandle(
-                Corba::unwrap_string(handle)).exec(ctx, output_timezone);
+                Corba::unwrap_string(handle)).set_limit(limit + 1).exec(ctx, output_timezone);
+
+            limit_exceeded = false;
+            if(nss_info.size() > limit)
+            {
+                limit_exceeded = true;
+                nss_info.erase(nss_info.begin());//depends on InfoNsset ordering
+            }
 
             set_corba_seq<NSSetSeq, NSSet,std::vector<Fred::InfoNssetOutput>, Fred::InfoNssetOutput>
                 (nss_seq.inout(), nss_info);
@@ -560,7 +581,10 @@ namespace Whois {
         throw INTERNAL_SERVER_ERROR();
     }
 
-    KeySetSeq* Server_impl::get_keysets_by_tech_c(const char* handle)
+    KeySetSeq* Server_impl::get_keysets_by_tech_c(
+        const char* handle,
+        ::CORBA::ULong limit,
+        ::CORBA::Boolean& limit_exceeded)
     {
         try
         {
@@ -569,7 +593,14 @@ namespace Whois {
             KeySetSeq_var ks_seq = new KeySetSeq;
 
             std::vector<Fred::InfoKeysetOutput> ks_info = Fred::InfoKeysetByTechContactHandle(
-                Corba::unwrap_string(handle)).exec(ctx, output_timezone);
+                Corba::unwrap_string(handle)).set_limit(limit + 1).exec(ctx, output_timezone);
+
+            limit_exceeded = false;
+            if(ks_info.size() > limit)
+            {
+                limit_exceeded = true;
+                ks_info.erase(ks_info.begin());//depends on InfoKeyset ordering
+            }
 
             set_corba_seq<KeySetSeq, KeySet,std::vector<Fred::InfoKeysetOutput>, Fred::InfoKeysetOutput>
                 (ks_seq.inout(), ks_info);
@@ -629,7 +660,10 @@ namespace Whois {
             (domain_seq, didclist);
     }
 
-    DomainSeq* Server_impl::get_domains_by_registrant(const char* handle)
+    DomainSeq* Server_impl::get_domains_by_registrant(
+        const char* handle,
+        ::CORBA::ULong limit,
+        ::CORBA::Boolean& limit_exceeded)
     {
         try
         {
@@ -638,7 +672,14 @@ namespace Whois {
             DomainSeq_var domain_seq = new DomainSeq;
 
             std::vector<Fred::InfoDomainOutput> domain_info = Fred::InfoDomainByRegistrantHandle(
-                Corba::unwrap_string(handle)).exec(ctx, output_timezone);
+                Corba::unwrap_string(handle)).set_limit(limit + 1).exec(ctx, output_timezone);
+
+            limit_exceeded = false;
+            if(domain_info.size() > limit)
+            {
+                limit_exceeded = true;
+                domain_info.erase(domain_info.begin());//depends on InfoDomain ordering
+            }
 
             set_domains_seq(domain_seq.inout(),domain_info,ctx);
 
@@ -649,7 +690,10 @@ namespace Whois {
         throw INTERNAL_SERVER_ERROR();
     }
 
-    DomainSeq* Server_impl::get_domains_by_admin_contact(const char* handle)
+    DomainSeq* Server_impl::get_domains_by_admin_contact(
+        const char* handle,
+        ::CORBA::ULong limit,
+        ::CORBA::Boolean& limit_exceeded)
     {
         try
         {
@@ -658,7 +702,14 @@ namespace Whois {
             DomainSeq_var domain_seq = new DomainSeq;
 
             std::vector<Fred::InfoDomainOutput> domain_info = Fred::InfoDomainByAdminContactHandle(
-                Corba::unwrap_string(handle)).exec(ctx, output_timezone);
+                Corba::unwrap_string(handle)).set_limit(limit + 1).exec(ctx, output_timezone);
+
+            limit_exceeded = false;
+            if(domain_info.size() > limit)
+            {
+                limit_exceeded = true;
+                domain_info.erase(domain_info.begin());//depends on InfoDomain ordering
+            }
 
             set_domains_seq(domain_seq.inout(),domain_info,ctx);
 
@@ -669,7 +720,10 @@ namespace Whois {
         throw INTERNAL_SERVER_ERROR();
     }
 
-    DomainSeq* Server_impl::get_domains_by_nsset(const char* handle)
+    DomainSeq* Server_impl::get_domains_by_nsset(
+        const char* handle,
+        ::CORBA::ULong limit,
+        ::CORBA::Boolean& limit_exceeded)
     {
         try
         {
@@ -678,7 +732,14 @@ namespace Whois {
             DomainSeq_var domain_seq = new DomainSeq;
 
             std::vector<Fred::InfoDomainOutput> domain_info = Fred::InfoDomainByNssetHandle(
-                Corba::unwrap_string(handle)).exec(ctx, output_timezone);
+                Corba::unwrap_string(handle)).set_limit(limit + 1).exec(ctx, output_timezone);
+
+            limit_exceeded = false;
+            if(domain_info.size() > limit)
+            {
+                limit_exceeded = true;
+                domain_info.erase(domain_info.begin());//depends on InfoDomain ordering
+            }
 
             set_domains_seq(domain_seq.inout(),domain_info,ctx);
 
@@ -689,7 +750,10 @@ namespace Whois {
         throw INTERNAL_SERVER_ERROR();
     }
 
-    DomainSeq* Server_impl::get_domains_by_keyset(const char* handle)
+    DomainSeq* Server_impl::get_domains_by_keyset(
+        const char* handle,
+        ::CORBA::ULong limit,
+        ::CORBA::Boolean& limit_exceeded)
     {
         try
         {
@@ -698,7 +762,14 @@ namespace Whois {
             DomainSeq_var domain_seq = new DomainSeq;
 
             std::vector<Fred::InfoDomainOutput> domain_info = Fred::InfoDomainByKeysetHandle(
-                Corba::unwrap_string(handle)).exec(ctx, output_timezone);
+                Corba::unwrap_string(handle)).set_limit(limit + 1).exec(ctx, output_timezone);
+
+            limit_exceeded = false;
+            if(domain_info.size() > limit)
+            {
+                limit_exceeded = true;
+                domain_info.erase(domain_info.begin());//depends on InfoDomain ordering
+            }
 
             set_domains_seq(domain_seq.inout(),domain_info,ctx);
 

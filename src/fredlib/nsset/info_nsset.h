@@ -147,6 +147,7 @@ namespace Fred
     {
         const std::string dns_fqdn_;/**< name server fqdn*/
         bool lock_;/**< if set to true lock object_registry row for update, if set to false lock for share */
+        Optional<unsigned long long> limit_;/**< max number of returned InfoNssetOutput structures */
 
     public:
         /**
@@ -162,6 +163,15 @@ namespace Fred
         * @return operation instance reference to allow method chaining
         */
         InfoNssetByDNSFqdn& set_lock();
+
+        /**
+        * Sets limit on number of returned InfoNssetOutput structures.
+        * Filter query ordered by nssetid.
+        * If not set, there is no limit.
+        * Sets  @ref limit_ attribute
+        * @return operation instance reference to allow method chaining
+        */
+        InfoNssetByDNSFqdn& set_limit(unsigned long long limit);
 
         /**
         * Executes getting info about the nsset.
@@ -190,6 +200,7 @@ namespace Fred
     {
         const std::string tech_contact_handle_;/**< tech contact handle*/
         bool lock_;/**< if set to true lock object_registry row for update, if set to false lock for share */
+        Optional<unsigned long long> limit_;/**< max number of returned InfoNssetOutput structures */
 
     public:
 
@@ -206,6 +217,15 @@ namespace Fred
         * @return operation instance reference to allow method chaining
         */
         InfoNssetByTechContactHandle& set_lock();
+
+        /**
+        * Sets limit on number of returned InfoNssetOutput structures.
+        * Filter query ordered by nssetid.
+        * If not set, there is no limit.
+        * Sets  @ref limit_ attribute
+        * @return operation instance reference to allow method chaining
+        */
+        InfoNssetByTechContactHandle& set_limit(unsigned long long limit);
 
         /**
         * Executes getting info about the nsset.

@@ -297,6 +297,7 @@ namespace Fred
     {
         const std::string tech_contact_handle_;/**< tech contact handle*/
         bool lock_;/**< if set to true lock object_registry row for update, if set to false lock for share */
+        Optional<unsigned long long> limit_;/**< max number of returned InfoKeysetOutput structures */
 
     public:
 
@@ -313,6 +314,16 @@ namespace Fred
         * @return operation instance reference to allow method chaining
         */
         InfoKeysetByTechContactHandle& set_lock();
+
+        /**
+        * Sets limit on number of returned InfoKeysetOutput structures.
+        * Filter query ordered by keysetid.
+        * If not set, there is no limit.
+        * Sets  @ref limit_ attribute
+        * @return operation instance reference to allow method chaining
+        */
+        InfoKeysetByTechContactHandle& set_limit(unsigned long long limit);
+
 
         /**
         * Executes getting info about the keyset.

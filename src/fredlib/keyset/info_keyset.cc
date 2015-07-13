@@ -294,20 +294,33 @@ namespace Fred
         return *this;
     }
 
+    InfoKeysetByTechContactHandle& InfoKeysetByTechContactHandle::set_limit(unsigned long long limit)
+    {
+        limit_ = Optional<unsigned long long>(limit);
+        return *this;
+    }
+
     std::vector<InfoKeysetOutput> InfoKeysetByTechContactHandle::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
     {
         std::vector<InfoKeysetOutput> keyset_res;
 
         try
         {
-            InfoKeyset ik;
-            ik.set_cte_id_filter(Database::ParamQuery(
-                "SELECT kcm.keysetid"
+            Database::ParamQuery cte_id_filter_query;
+
+            cte_id_filter_query("SELECT kcm.keysetid"
                 " FROM object_registry oreg"
                 " JOIN  enum_object_type eot ON oreg.type = eot.id AND eot.name = 'contact'"
                 " JOIN keyset_contact_map kcm ON kcm.contactid = oreg.id"
-                " WHERE oreg.name = UPPER(").param_text(tech_contact_handle_)(") AND oreg.erdate IS NULL")
-                )
+                " WHERE oreg.name = UPPER(").param_text(tech_contact_handle_)(") AND oreg.erdate IS NULL");
+
+            if(limit_.isset())
+            {
+                cte_id_filter_query (" ORDER BY kcm.keysetid LIMIT ").param_bigint(limit_.get_value());
+            }
+
+            InfoKeyset ik;
+            ik.set_cte_id_filter(cte_id_filter_query)
                 .set_history_query(false);
             if(lock_) ik.set_lock();
             keyset_res = ik.exec(ctx,local_timestamp_pg_time_zone_name);
@@ -327,6 +340,7 @@ namespace Fred
         Util::vector_of<std::pair<std::string,std::string> >
         (std::make_pair("tech_contact_handle", tech_contact_handle_))
         (std::make_pair("lock",lock_ ? "true":"false"))
+        (std::make_pair("limit",limit_.print_quoted()))
         );
     }
 
