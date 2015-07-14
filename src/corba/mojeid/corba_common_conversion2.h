@@ -640,7 +640,7 @@ public:
     /**
      * Sets object of corba_type with value of SRC type.
      * @tparam SRC type of source value
-     * @param src_value source value
+     * @param  src_value source value
      * @return reference to the object with converted value
      */
     template < typename SRC >
@@ -737,24 +737,27 @@ private:
 };
 
 template < typename CORBA_TYPE >
-Into< CORBA_TYPE >  into(CORBA_TYPE &v) { return v; }
+Into< CORBA_TYPE >  into(CORBA_TYPE &v)
+{
+    return v;
+}
 
 template < typename CORBA_TYPE, typename CORBA_TYPE_HELPER >
 Into< CORBA_TYPE* > into(_CORBA_Value_Var< CORBA_TYPE, CORBA_TYPE_HELPER > &v)
 {
-    return v.out();
+    return v.out();//reference to the CORBA_TYPE type instance NULL pointer
 }
 
 template < typename CORBA_TYPE, typename CORBA_TYPE_HELPER >
 Into< CORBA_TYPE* > into(_CORBA_Value_Member< CORBA_TYPE, CORBA_TYPE_HELPER > &v)
 {
-    return v.out();
+    return v.out();//reference to the CORBA_TYPE type instance NULL pointer
 }
 
 template < typename CORBA_TYPE, typename CORBA_TYPE_HELPER >
 Into< CORBA_TYPE* > into(_CORBA_Value_OUT_arg< CORBA_TYPE, CORBA_TYPE_HELPER > &v)
 {
-    return v.ptr();
+    return v.ptr();//reference to the CORBA_TYPE type instance NULL pointer
 }
 
 template < typename CORBA_TYPE, typename CONVERTIBLE_TYPE, bool IS_TRIVIAL >
@@ -762,7 +765,11 @@ struct create_corba_from_convertible
 {
     CORBA_TYPE*& operator()(CORBA_TYPE *&dst, const CONVERTIBLE_TYPE &src)const
     {
-        return dst = new CORBA_TYPE(src);
+        if (dst == NULL) {
+            return dst = new CORBA_TYPE(src);//e.g. NullableString(const char* _v)
+        }
+        throw std::runtime_error(std::string(__PRETTY_FUNCTION__) + " failure: potential memory leak "
+                                 "because overwritten destination doesn't refer to the NULL pointer");
     }
 };
 
@@ -771,9 +778,13 @@ struct create_corba_from_convertible< CORBA_TYPE, CONVERTIBLE_TYPE, false >
 {
     CORBA_TYPE*& operator()(CORBA_TYPE *&dst, const CONVERTIBLE_TYPE &src)const
     {
-        dst = new CORBA_TYPE;
-        into(dst->_value()).from(src);
-        return dst;
+        if (dst == NULL) {
+            dst = new CORBA_TYPE;         //e.g.          NullableAddress::NullableAddress()
+            into(dst->_value()).from(src);//e.g. Address& NullableAddress::_value()
+            return dst;
+        }
+        throw std::runtime_error(std::string(__PRETTY_FUNCTION__) + " failure: potential memory leak "
+                                 "because overwritten destination doesn't refer to the NULL pointer");
     }
 };
 
@@ -794,36 +805,14 @@ struct into_from< CORBA_TYPE*, CONVERTIBLE_TYPE >
      */
     dst_value_ref operator()(dst_value_ref dst, src_value src)const
     {
-        create_corba_from_convertible< CORBA_TYPE, CONVERTIBLE_TYPE,
-                                       boost::has_trivial_constructor< CONVERTIBLE_TYPE >::value > create_corba;
+        static const bool is_trivial = boost::has_trivial_constructor< CONVERTIBLE_TYPE >::value;
+        create_corba_from_convertible< CORBA_TYPE, CONVERTIBLE_TYPE, is_trivial > create_corba;
         return create_corba(dst, src);
     }
 };
 
 template < typename TYPE >
 struct into_from< TYPE*, TYPE* >;
-
-/**
- * Specialization in case of CORBA type with nullable semantics and source value of const char* type.
- */
-template < typename CORBA_TYPE >
-struct into_from< CORBA_TYPE*, const char* >
-{
-    typedef CORBA_TYPE   corba_type;   ///< type of destination object
-    typedef CORBA_TYPE* &dst_value_ref;///< reference to the destination object
-    typedef const char  *src_value;    ///< type of source value
-    /**
-     * Converts source value into destination object.
-     * @param dst destination object
-     * @param src source value
-     * @return reference to the destination object
-     */
-    dst_value_ref operator()(dst_value_ref dst, src_value src)const
-    {
-        *dst = src;
-        return dst;
-    }
-};
 
 template < typename CORBA_TYPE, typename CONVERTIBLE_TYPE >
 struct into_from_base
