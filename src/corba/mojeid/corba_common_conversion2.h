@@ -686,7 +686,11 @@ public:
         if (src_value != NULL) {
             return into_from< corba_type*, const SRC* >()(destination_, src_value);
         }
-        return destination_ = NULL;
+        if (destination_ == NULL) {
+            return destination_;
+        }
+        throw std::runtime_error(std::string(__PRETTY_FUNCTION__) + " failure: potential memory leak "
+                                 "because overwritten destination doesn't refer to the NULL pointer");
     }
     /**
      * Sets object of corba_type with value of SRC type.
@@ -720,7 +724,11 @@ public:
         if (!src_value.isnull()) {
             return this->from(src_value.get_value());
         }
-        return destination_ = NULL;
+        if (destination_ == NULL) {
+            return destination_;
+        }
+        throw std::runtime_error(std::string(__PRETTY_FUNCTION__) + " failure: potential memory leak "
+                                 "because overwritten destination doesn't refer to the NULL pointer");
     }
 private:
     Into(dst_value_ref _object):destination_(_object) { }
