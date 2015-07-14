@@ -1,4 +1,5 @@
 #include "src/corba/mojeid/corba_conversion2.h"
+#include "util/types/birthdate.h"
 
 namespace Corba {
 namespace Conversion {
@@ -8,6 +9,14 @@ boost::gregorian::date& convert(const std::string &from, boost::gregorian::date 
     enum { GREGORIAN_DATE_LENGTH = 10 };
     const std::string str_date = from.substr(0, GREGORIAN_DATE_LENGTH);
     return into = boost::gregorian::from_simple_string(str_date);
+}
+
+Nullable< boost::gregorian::date > convert_as_birthdate(const Nullable< std::string > &_birth_date)
+{
+    if (!_birth_date.isnull()) {
+        return Nullable< boost::gregorian::date >(birthdate_from_string_to_date(_birth_date.get_value()));
+    }
+    return Nullable< boost::gregorian::date >();
 }
 
 from_into< Registry::MojeID::Date, std::string >::dst_value_ref
@@ -478,7 +487,7 @@ into_from< Registry::MojeID::InfoContact, Fred::InfoContactData >::operator()(ds
     into(dst.last_name)   .from(last_name);
     into(dst.organization).from(src.organization);
     into(dst.vat_reg_num) .from(src.vat);
-         dst.birth_date   = reinterpret_cast< Registry::MojeID::NullableDate* >(NULL);
+    into(dst.birth_date)  .from(Nullable< boost::gregorian::date >());
     into(dst.id_card_num) .from(reinterpret_cast< const char* >(NULL));
     into(dst.passport_num).from(reinterpret_cast< const char* >(NULL));
     into(dst.ssn_id_num)  .from(reinterpret_cast< const char* >(NULL));
@@ -486,11 +495,7 @@ into_from< Registry::MojeID::InfoContact, Fred::InfoContactData >::operator()(ds
     if (!src.ssntype.isnull()) {
         const std::string ssn_type = src.ssntype.get_value();
         if (ssn_type == "BIRTHDAY") {
-            if (!src.ssn.isnull()) {
-                Registry::MojeID::Date birth_date;
-                into(birth_date).from(src.ssn.get_value());
-                dst.birth_date = new Registry::MojeID::NullableDate(birth_date);
-            }
+            into(dst.birth_date).from(convert_as_birthdate(src.ssn));
         }
         else if (ssn_type == "ICO") {
             into(dst.vat_id_num)  .from(src.ssn);
