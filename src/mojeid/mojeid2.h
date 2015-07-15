@@ -115,6 +115,11 @@ public:
     typedef Fred::Check< boost::mpl::list< check_transfer_contact_prepare,
                                            check_transfer_contact_prepare_presence > > CheckTransferContactPrepare;
     typedef CheckTransferContactPrepare TransferContactPrepareError;
+
+    void process_identification_request(
+        ContactId _contact_id,
+        const std::string &_password,
+        LogRequestId _log_request_id)const;
 private:
     const std::string server_name_;
     const std::string mojeid_registrar_handle_;

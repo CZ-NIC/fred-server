@@ -133,6 +133,12 @@ void Server_i::process_identification_request(
         const char *password,
         ::CORBA::ULongLong log_request_id)
 {
+    try {
+        impl_ptr_->process_identification_request(contact_id, password, log_request_id);
+    }
+    catch (...) {
+        throw IDL::INTERNAL_SERVER_ERROR();
+    }
 }//process_identification_request
 
 void Server_i::commit_prepared_transaction(

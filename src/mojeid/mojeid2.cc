@@ -307,6 +307,25 @@ Fred::InfoContactData& MojeID2Impl::transfer_contact_prepare(
     }
 }
 
+void MojeID2Impl::process_identification_request(
+        ContactId _contact_id,
+        const std::string &_password,
+        LogRequestId _log_request_id)const
+{
+    LOGGING_CONTEXT(log_ctx, *this);
+
+    try {
+    }
+    catch (const std::exception &e) {
+        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
+        throw;
+    }
+    catch (...) {
+        LOGGER(PACKAGE).error("request failed (unknown error)");
+        throw;
+    }
+}
+
 void MojeID2Impl::commit_prepared_transaction(const std::string &_trans_id)const
 {
     LOGGING_CONTEXT(log_ctx, *this);
