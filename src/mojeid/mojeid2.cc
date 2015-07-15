@@ -148,17 +148,17 @@ HandleList& MojeID2Impl::get_unregistrable_contact_handles(
         const Database::Result dbres = ctx.get_conn().exec_params(
             "WITH static_data AS ("
                 "SELECT eot.id AS type_id,"
-                       "NOW()::DATE-(ep.val||'MONTH')::INTERVAL AS handle_protected_to "
+                       "NOW()-(ep.val||'MONTH')::INTERVAL AS contact_protected_since "
                 "FROM enum_object_type eot,enum_parameters ep "
                 "WHERE eot.name='contact' AND "
                       "ep.name='handle_registration_protection_period') "
-            "SELECT obr.id,obr.name "
-            "FROM static_data sd "
-            "JOIN object_registry obr ON obr.type=sd.type_id AND "
-                                        "COALESCE(sd.handle_protected_to<obr.erdate,TRUE) "
-            "WHERE LOWER(obr.name)~'^[a-z0-9](-?[a-z0-9])*$' AND "
-                  "$2::BIGINT<obr.id "
-            "ORDER BY obr.id "
+            "SELECT id,name "
+            "FROM object_registry "
+            "WHERE type=(SELECT type_id FROM static_data) AND "
+                  "COALESCE((SELECT contact_protected_since FROM static_data)<erdate,TRUE) AND "
+                  "LOWER(name)~'^[a-z0-9](-?[a-z0-9])*$' AND "
+                  "$2::BIGINT<id "
+            "ORDER BY id "
             "LIMIT $1::BIGINT",
             Database::query_param_list
                 (_chunk_size + 1)
