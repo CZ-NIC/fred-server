@@ -10,8 +10,8 @@
 namespace Registry {
 namespace Whois {
 
-    NullableRegistrar*  wrap_registrar( const Fred::InfoRegistrarData& in);
-    NullableContact*    wrap_contact(   const Fred::InfoContactData& in);
+    Registrar wrap_registrar( const Fred::InfoRegistrarData& in);
+    Contact wrap_contact(   const Fred::InfoContactData& in);
     Domain wrap_domain(const Fred::InfoDomainData& in);
     KeySet wrap_keyset(const Fred::InfoKeysetData& in);
     NSSet wrap_nsset(const Fred::InfoNssetData& in);
@@ -24,57 +24,59 @@ namespace Whois {
         public:
             virtual ~Server_impl() {};
 
-            virtual NullableRegistrar* get_registrar_by_handle(const char* handle);
+            Registrar* get_registrar_by_handle(const char* handle);
 
-            virtual NullableContact* get_contact_by_handle(const char* handle);
+            RegistrarSeq* get_registrars();
 
-            virtual NullableNSSet* get_nsset_by_handle(const char* handle);
+            Contact* get_contact_by_handle(const char* handle);
 
-            virtual NSSetSeq* get_nssets_by_ns(
+            NSSet* get_nsset_by_handle(const char* handle);
+
+            NSSetSeq* get_nssets_by_ns(
                 const char* handle,
                 ::CORBA::ULong limit,
                 ::CORBA::Boolean& limit_exceeded);
 
-            virtual NSSetSeq* get_nssets_by_tech_c(
+            NSSetSeq* get_nssets_by_tech_c(
                 const char* handle,
                 ::CORBA::ULong limit,
                 ::CORBA::Boolean& limit_exceeded);
 
-            virtual NullableNameServer* get_nameserver_by_fqdn(const char* handle);
+            NameServer* get_nameserver_by_fqdn(const char* handle);
 
-            virtual NullableKeySet* get_keyset_by_handle(const char* handle);
+            KeySet* get_keyset_by_handle(const char* handle);
 
-            virtual KeySetSeq* get_keysets_by_tech_c(
+            KeySetSeq* get_keysets_by_tech_c(
                 const char* handle,
                 ::CORBA::ULong limit,
                 ::CORBA::Boolean& limit_exceeded);
 
-            virtual NullableDomain* get_domain_by_handle(const char* handle);
+            Domain* get_domain_by_handle(const char* handle);
 
-            virtual DomainSeq* get_domains_by_registrant(
+            DomainSeq* get_domains_by_registrant(
                 const char* handle,
                 ::CORBA::ULong limit,
                 ::CORBA::Boolean& limit_exceeded);
 
-            virtual DomainSeq* get_domains_by_admin_contact(
+            DomainSeq* get_domains_by_admin_contact(
                 const char* handle,
                 ::CORBA::ULong limit,
                 ::CORBA::Boolean& limit_exceeded);
 
-            virtual DomainSeq* get_domains_by_nsset(
+            DomainSeq* get_domains_by_nsset(
                 const char* handle,
                 ::CORBA::ULong limit,
                 ::CORBA::Boolean& limit_exceeded);
 
-            virtual DomainSeq* get_domains_by_keyset(
+            DomainSeq* get_domains_by_keyset(
                 const char* handle,
                 ::CORBA::ULong limit,
                 ::CORBA::Boolean& limit_exceeded);
 
-            virtual ObjectStatusDescSeq* get_domain_status_descriptions(const char* lang);
-            virtual ObjectStatusDescSeq* get_contact_status_descriptions(const char* lang);
-            virtual ObjectStatusDescSeq* get_nsset_status_descriptions(const char* lang);
-            virtual ObjectStatusDescSeq* get_keyset_status_descriptions(const char* lang);
+            ObjectStatusDescSeq* get_domain_status_descriptions(const char* lang);
+            ObjectStatusDescSeq* get_contact_status_descriptions(const char* lang);
+            ObjectStatusDescSeq* get_nsset_status_descriptions(const char* lang);
+            ObjectStatusDescSeq* get_keyset_status_descriptions(const char* lang);
     };
 
 }

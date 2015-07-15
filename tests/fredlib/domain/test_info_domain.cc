@@ -194,10 +194,6 @@ BOOST_FIXTURE_TEST_CASE(info_domain, test_domain_fixture)
 
     BOOST_CHECK(Fred::InfoDomainHistory(xmark+test_info_domain_output.info_domain_data.roid).exec(ctx).empty());
     BOOST_CHECK(Fred::InfoDomainHistoryById(0).exec(ctx).empty());
-    BOOST_CHECK(Fred::InfoDomainByRegistrantHandle(xmark+registrant_contact_handle).exec(ctx).empty());
-    BOOST_CHECK(Fred::InfoDomainByAdminContactHandle(xmark+admin_contact1_handle).exec(ctx).empty());
-    BOOST_CHECK(Fred::InfoDomainByNssetHandle(xmark+test_nsset_handle).exec(ctx).empty());
-    BOOST_CHECK(Fred::InfoDomainByKeysetHandle(xmark+test_keyset_handle).exec(ctx).empty());
 }
 
 /**
@@ -268,6 +264,183 @@ BOOST_FIXTURE_TEST_CASE(info_domain_history_wrong_historyid, test_domain_fixture
         BOOST_CHECK(ex.get_unknown_object_historyid() == wrong_historyid);
     }
 }
+
+/**
+ * test InfoDomainByRegistrantHandle with syntactically invalid contact handle
+ */
+BOOST_FIXTURE_TEST_CASE(info_domain_invalid_registrant_handle, test_domain_fixture)
+{
+    std::string bad_handle = registrant_contact_handle +"~";
+    try
+    {
+        Fred::OperationContext ctx;
+        Fred::InfoDomainByRegistrantHandle(bad_handle).exec(ctx);
+        ctx.commit_transaction();
+        BOOST_ERROR("no exception thrown");
+    }
+    catch(const Fred::InfoDomainByRegistrantHandle::Exception& ex)
+    {
+        BOOST_CHECK(ex.is_set_invalid_registrant_handle());
+        BOOST_MESSAGE(bad_handle);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_CHECK(ex.get_invalid_registrant_handle() == bad_handle);
+    }
+}
+
+/**
+ * test InfoDomainByRegistrantHandle with unknown contact handle
+ */
+BOOST_FIXTURE_TEST_CASE(info_domain_unknown_registrant_handle, test_domain_fixture)
+{
+    std::string bad_handle = registrant_contact_handle + xmark;
+    try
+    {
+        Fred::OperationContext ctx;
+        Fred::InfoDomainByRegistrantHandle(bad_handle).exec(ctx);
+        ctx.commit_transaction();
+        BOOST_ERROR("no exception thrown");
+    }
+    catch(const Fred::InfoDomainByRegistrantHandle::Exception& ex)
+    {
+        BOOST_CHECK(ex.is_set_unknown_registrant_handle());
+        BOOST_MESSAGE(bad_handle);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_CHECK(ex.get_unknown_registrant_handle() == bad_handle);
+    }
+}
+
+/**
+ * test InfoDomainByAdminContactHandle with syntactically invalid contact handle
+ */
+BOOST_FIXTURE_TEST_CASE(info_domain_invalid_admin_handle, test_domain_fixture)
+{
+    std::string bad_handle = admin_contact1_handle + "~";
+    try
+    {
+        Fred::OperationContext ctx;
+        Fred::InfoDomainByAdminContactHandle(bad_handle).exec(ctx);
+        ctx.commit_transaction();
+        BOOST_ERROR("no exception thrown");
+    }
+    catch(const Fred::InfoDomainByAdminContactHandle::Exception& ex)
+    {
+        BOOST_CHECK(ex.is_set_invalid_admin_contact_handle());
+        BOOST_MESSAGE(bad_handle);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_CHECK(ex.get_invalid_admin_contact_handle() == bad_handle);
+    }
+}
+
+/**
+ * test InfoDomainByAdminContactHandle with unknown contact handle
+ */
+BOOST_FIXTURE_TEST_CASE(info_domain_unknown_admin_handle, test_domain_fixture)
+{
+    std::string bad_handle = admin_contact1_handle + xmark;
+    try
+    {
+        Fred::OperationContext ctx;
+        Fred::InfoDomainByAdminContactHandle(bad_handle).exec(ctx);
+        ctx.commit_transaction();
+        BOOST_ERROR("no exception thrown");
+    }
+    catch(const Fred::InfoDomainByAdminContactHandle::Exception& ex)
+    {
+        BOOST_CHECK(ex.is_set_unknown_admin_contact_handle());
+        BOOST_MESSAGE(bad_handle);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_CHECK(ex.get_unknown_admin_contact_handle() == bad_handle);
+    }
+}
+
+/**
+ * test InfoDomainByNssetHandle with syntactically invalid nsset handle
+ */
+BOOST_FIXTURE_TEST_CASE(info_domain_invalid_nsset_handle, test_domain_fixture)
+{
+    std::string bad_handle = test_nsset_handle + "~";
+    try
+    {
+        Fred::OperationContext ctx;
+        Fred::InfoDomainByNssetHandle(bad_handle).exec(ctx);
+        ctx.commit_transaction();
+        BOOST_ERROR("no exception thrown");
+    }
+    catch(const Fred::InfoDomainByNssetHandle::Exception& ex)
+    {
+        BOOST_CHECK(ex.is_set_invalid_nsset_handle());
+        BOOST_MESSAGE(bad_handle);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_CHECK(ex.get_invalid_nsset_handle() == bad_handle);
+    }
+}
+
+/**
+ * test InfoDomainByNssetHandle with unknown nsset handle
+ */
+BOOST_FIXTURE_TEST_CASE(info_domain_unknown_nsset_handle, test_domain_fixture)
+{
+    std::string bad_handle = test_nsset_handle + xmark;
+    try
+    {
+        Fred::OperationContext ctx;
+        Fred::InfoDomainByNssetHandle(bad_handle).exec(ctx);
+        ctx.commit_transaction();
+        BOOST_ERROR("no exception thrown");
+    }
+    catch(const Fred::InfoDomainByNssetHandle::Exception& ex)
+    {
+        BOOST_CHECK(ex.is_set_unknown_nsset_handle());
+        BOOST_MESSAGE(bad_handle);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_CHECK(ex.get_unknown_nsset_handle() == bad_handle);
+    }
+}
+
+/**
+ * test InfoDomainByKeysetHandle with syntactically invalid nsset handle
+ */
+BOOST_FIXTURE_TEST_CASE(info_domain_invalid_keyset_handle, test_domain_fixture)
+{
+    std::string bad_handle = test_keyset_handle + "~";
+    try
+    {
+        Fred::OperationContext ctx;
+        Fred::InfoDomainByKeysetHandle(bad_handle).exec(ctx);
+        ctx.commit_transaction();
+        BOOST_ERROR("no exception thrown");
+    }
+    catch(const Fred::InfoDomainByKeysetHandle::Exception& ex)
+    {
+        BOOST_CHECK(ex.is_set_invalid_keyset_handle());
+        BOOST_MESSAGE(bad_handle);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_CHECK(ex.get_invalid_keyset_handle() == bad_handle);
+    }
+}
+
+/**
+ * test InfoDomainByKeysetHandle with unknown nsset handle
+ */
+BOOST_FIXTURE_TEST_CASE(info_domain_unknown_keyset_handle, test_domain_fixture)
+{
+    std::string bad_handle = test_keyset_handle + xmark;
+    try
+    {
+        Fred::OperationContext ctx;
+        Fred::InfoDomainByKeysetHandle(bad_handle).exec(ctx);
+        ctx.commit_transaction();
+        BOOST_ERROR("no exception thrown");
+    }
+    catch(const Fred::InfoDomainByKeysetHandle::Exception& ex)
+    {
+        BOOST_CHECK(ex.is_set_unknown_keyset_handle());
+        BOOST_MESSAGE(bad_handle);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_CHECK(ex.get_unknown_keyset_handle() == bad_handle);
+    }
+}
+
 
 /**
  * test call InfoDomainDiff

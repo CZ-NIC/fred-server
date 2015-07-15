@@ -37,6 +37,17 @@ namespace Fred
     CheckDomain::CheckDomain(const std::string& fqdn)
     : fqdn_(fqdn)
     {}
+
+    bool CheckDomain::is_invalid_syntax()
+    {
+        if(Domain::general_domain_name_syntax_check(fqdn_))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
     bool CheckDomain::is_invalid_handle(OperationContext& ctx)
     {
         try

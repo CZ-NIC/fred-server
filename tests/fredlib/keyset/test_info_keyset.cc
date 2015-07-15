@@ -166,11 +166,8 @@ BOOST_FIXTURE_TEST_CASE(info_keyset, info_keyset_fixture)
     BOOST_CHECK(test_info_keyset_output == info_data_6);
 
     //empty output
-    BOOST_CHECK(Fred::InfoKeysetByTechContactHandle(xmark+admin_contact6_handle).exec(ctx).empty());
     BOOST_CHECK(Fred::InfoKeysetHistory(xmark+test_info_keyset_output.info_keyset_data.roid).exec(ctx).empty());
     BOOST_CHECK(Fred::InfoKeysetHistoryById(0).exec(ctx).empty());
-
-
     ctx.commit_transaction();
 }
 
@@ -240,6 +237,52 @@ BOOST_FIXTURE_TEST_CASE(info_keyset_history_wrong_historyid, info_keyset_fixture
         BOOST_MESSAGE(wrong_id);
         BOOST_MESSAGE(boost::diagnostic_information(ex));
         BOOST_CHECK(ex.get_unknown_object_historyid() == wrong_id);
+    }
+}
+
+/**
+ * test InfoKeysetByTechContactHandle with invalid sytax tech contact handle
+ */
+BOOST_FIXTURE_TEST_CASE(info_keyset_tech_c_wrong_handle_syntax, info_keyset_fixture)
+{
+    std::string bad_tech_c_handle = admin_contact6_handle+"~";
+
+    try
+    {
+        Fred::OperationContext ctx;
+        Fred::InfoKeysetByTechContactHandle(bad_tech_c_handle).exec(ctx);
+        ctx.commit_transaction();
+        BOOST_ERROR("no exception thrown");
+    }
+    catch(const Fred::InfoKeysetByTechContactHandle::Exception& ex)
+    {
+        BOOST_CHECK(ex.is_set_invalid_tech_contact_handle());
+        BOOST_MESSAGE(bad_tech_c_handle);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_CHECK(ex.get_invalid_tech_contact_handle() == bad_tech_c_handle);
+    }
+}
+
+/**
+ * test InfoKeysetByTechContactHandle with unused tech contact handle
+ */
+BOOST_FIXTURE_TEST_CASE(info_keyset_tech_c_unknown_handle, info_keyset_fixture)
+{
+    std::string bad_tech_c_handle = admin_contact6_handle+xmark;
+
+    try
+    {
+        Fred::OperationContext ctx;
+        Fred::InfoKeysetByTechContactHandle(bad_tech_c_handle).exec(ctx);
+        ctx.commit_transaction();
+        BOOST_ERROR("no exception thrown");
+    }
+    catch(const Fred::InfoKeysetByTechContactHandle::Exception& ex)
+    {
+        BOOST_CHECK(ex.is_set_unknown_tech_contact_handle());
+        BOOST_MESSAGE(bad_tech_c_handle);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_CHECK(ex.get_unknown_tech_contact_handle() == bad_tech_c_handle);
     }
 }
 

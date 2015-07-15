@@ -115,9 +115,10 @@ BOOST_FIXTURE_TEST_SUITE(TestCheckDomain, check_domain_fixture)
 /**
  * test CheckDomain true returning cases
  */
-BOOST_AUTO_TEST_CASE(check_contact_handle_true)
+BOOST_AUTO_TEST_CASE(check_domain_handle_true)
 {
     Fred::OperationContext ctx;
+    BOOST_CHECK(Fred::CheckDomain(std::string("-..")+test_domain_name).is_invalid_syntax());
     BOOST_CHECK(Fred::CheckDomain(std::string("-")+test_domain_name).is_invalid_handle(ctx));
     BOOST_CHECK(Fred::CheckDomain(std::string("testfred")+xmark+".czz").is_bad_zone(ctx));
     BOOST_CHECK(Fred::CheckDomain(std::string("testfred")+xmark+".czz.cz").is_bad_length(ctx));
@@ -133,9 +134,10 @@ BOOST_AUTO_TEST_CASE(check_contact_handle_true)
  * test CheckDomain false returning cases
  */
 
-BOOST_AUTO_TEST_CASE(check_contact_handle_false)
+BOOST_AUTO_TEST_CASE(check_domain_handle_false)
 {
     Fred::OperationContext ctx;
+    BOOST_CHECK(!Fred::CheckDomain(test_domain_name).is_invalid_syntax());
     BOOST_CHECK(!Fred::CheckDomain(test_domain_name).is_invalid_handle(ctx));
     BOOST_CHECK(!Fred::CheckDomain(test_domain_name).is_bad_zone(ctx));
     BOOST_CHECK(!Fred::CheckDomain(test_domain_name).is_bad_length(ctx));

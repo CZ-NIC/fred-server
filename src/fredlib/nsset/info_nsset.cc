@@ -31,6 +31,8 @@
 #include "info_nsset_impl.h"
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/opexception.h"
+#include "src/fredlib/domain/check_domain.h"
+#include "src/fredlib/contact/check_contact.h"
 #include "util/util.h"
 
 namespace Fred
@@ -162,6 +164,11 @@ namespace Fred
 
         try
         {
+            if(Fred::CheckDomain(dns_fqdn_).is_invalid_syntax())
+            {
+                BOOST_THROW_EXCEPTION(Exception().set_invalid_dns_fqdn(dns_fqdn_));
+            }
+
             Database::ParamQuery cte_id_filter_query;
 
             cte_id_filter_query("SELECT nssetid FROM host WHERE fqdn = ").param_text(dns_fqdn_);
@@ -169,6 +176,13 @@ namespace Fred
             if(limit_.isset())
             {
                 cte_id_filter_query (" ORDER BY nssetid LIMIT ").param_bigint(limit_.get_value());
+            }
+
+
+            std::pair<std::string,Database::query_param_list> check_dns_fqdn_query = cte_id_filter_query.get_query();
+            if (ctx.get_conn().exec_params(check_dns_fqdn_query.first, check_dns_fqdn_query.second).size() == 0)
+            {
+                BOOST_THROW_EXCEPTION(Exception().set_unknown_dns_fqdn(dns_fqdn_));
             }
 
             InfoNsset in;
@@ -219,6 +233,11 @@ namespace Fred
 
         try
         {
+            if(Fred::CheckContact(tech_contact_handle_).is_invalid_handle())
+            {
+                BOOST_THROW_EXCEPTION(Exception().set_invalid_tech_contact_handle(tech_contact_handle_));
+            }
+
             Database::ParamQuery cte_id_filter_query;
 
             cte_id_filter_query("SELECT ncm.nssetid"
@@ -230,6 +249,12 @@ namespace Fred
             if(limit_.isset())
             {
                 cte_id_filter_query (" ORDER BY ncm.nssetid LIMIT ").param_bigint(limit_.get_value());
+            }
+
+            std::pair<std::string,Database::query_param_list> check_tech_c_query = cte_id_filter_query.get_query();
+            if (ctx.get_conn().exec_params(check_tech_c_query.first, check_tech_c_query.second).size() == 0)
+            {
+                BOOST_THROW_EXCEPTION(Exception().set_unknown_tech_contact_handle(tech_contact_handle_));
             }
 
             InfoNsset in;

@@ -42,25 +42,41 @@ namespace Fred
         return *this;
     }
 
+    GetObjectStateDescriptions& GetObjectStateDescriptions::set_object_type(const std::string& object_type)
+    {
+        object_type_ = object_type;
+        return *this;
+    }
+
     std::map<unsigned long long, std::string> GetObjectStateDescriptions::exec(OperationContext& ctx)
     {
+        Database::query_param_list params;
         std::string sql = "SELECT eosd.state_id, COALESCE(eosd.description, '') ";
         sql += " FROM enum_object_states_desc eosd ";
 
-        if(external_states)
+        if(external_states || !object_type_.empty())
         {
             sql += " JOIN enum_object_states eos ON eos.id = eosd.state_id ";
         }
 
-        sql += " WHERE UPPER(eosd.lang) = UPPER($1::text) ";
+        sql += " WHERE UPPER(eosd.lang) = UPPER($";
+        sql += params.add(description_language_);
+        sql += "::text) ";
 
         if(external_states)
         {
             sql += " AND eos.external = TRUE ";
         }
 
+        if(!object_type_.empty())
+        {
+            sql += " AND (SELECT id FROM enum_object_type WHERE name =$";
+            sql += params.add(object_type_);
+            sql += "::text) = ANY (eos.types) ";
+        }
+
         Database::Result domain_state_descriptions_result = ctx.get_conn().exec_params(
-                sql, Database::query_param_list(description_language_));
+                sql, params);
 
         std::map<unsigned long long, std::string> result;
         for(unsigned long long i = 0 ; i < domain_state_descriptions_result.size() ; ++i)

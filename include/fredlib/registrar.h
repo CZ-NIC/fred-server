@@ -27,5 +27,6 @@
 #include "src/fredlib/registrar/create_registrar.h"
 #include "src/fredlib/registrar/info_registrar.h"
 #include "src/fredlib/registrar/info_registrar_diff.h"
+#include "src/fredlib/registrar/check_registrar.h"
 
 #endif//REGISTRAR_H_690cffa6a62944cd97a261eea593e3b1

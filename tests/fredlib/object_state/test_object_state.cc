@@ -89,6 +89,8 @@ BOOST_AUTO_TEST_CASE(get_object_state_descriptions)
     Fred::OperationContext ctx;
     BOOST_CHECK(Fred::GetObjectStateDescriptions("EN").exec(ctx)[24]
         == "MojeID contact");
+    BOOST_CHECK(Fred::GetObjectStateDescriptions("EN").set_object_type("contact").exec(ctx)[24]
+            == "MojeID contact");
 }
 
 BOOST_AUTO_TEST_SUITE_END();//TestObjectState

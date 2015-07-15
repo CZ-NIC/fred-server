@@ -881,6 +881,8 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/registrar/info_registrar_output.h \
 		src/fredlib/registrar/get_registrar_handles.cc \
 		src/fredlib/registrar/get_registrar_handles.h \
+		src/fredlib/registrar/check_registrar.h \
+		src/fredlib/registrar/check_registrar.cc \
 		src/fredlib/object/object_id_handle_pair.h \
 		src/fredlib/object/object_id_handle_pair.cc \
 		src/fredlib/object_state/object_state_name.h \
@@ -1377,7 +1379,9 @@ src_corba_whois_libwhois2_impl_a_SOURCES = \
 		src/whois/nameserver_exists.h \
 		src/whois/nameserver_exists.cc \
 		src/whois/is_domain_delete_pending.h \
-		src/whois/is_domain_delete_pending.cc
+		src/whois/is_domain_delete_pending.cc \
+		src/whois/object_state.h \
+		src/whois/object_state.cc
 #
 # src/corba/whois/libwhois2_impl.a
 

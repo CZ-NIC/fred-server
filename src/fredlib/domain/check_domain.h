@@ -47,6 +47,13 @@ namespace Fred
         CheckDomain(const std::string& fqdn);
 
         /**
+        * check domain name syntax
+        * @return true if invalid, false if ok
+        */
+        bool is_invalid_syntax();
+
+
+        /**
         * check domain name syntax and zone.
         * @param ctx an operation context with database and logging interface.
         * @return true if invalid, false if ok

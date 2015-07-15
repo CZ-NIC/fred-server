@@ -41,6 +41,7 @@ namespace Fred
     {
         const std::string description_language_;/**< requested language of object state descriptions like 'EN' or 'CS'*/
         bool external_states;
+        std::string object_type_;
     public:
         /**
          * Get descriptions of object states in given language.
@@ -51,6 +52,10 @@ namespace Fred
          * Sets flag to get only the external state descriptions
          */
         GetObjectStateDescriptions& set_external();
+        /**
+         * Sets object type of states to get descriptions of
+         */
+        GetObjectStateDescriptions& set_object_type(const std::string& object_type);
         /**
          * Executes getting descriptions of object states.
          * @param ctx contains reference to database and logging interface

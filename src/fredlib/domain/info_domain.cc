@@ -34,6 +34,10 @@
 
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/opexception.h"
+#include "src/fredlib/domain/check_domain.h"
+#include "src/fredlib/contact/check_contact.h"
+#include "src/fredlib/nsset/check_nsset.h"
+#include "src/fredlib/keyset/check_keyset.h"
 #include "util/util.h"
 #include "util/printable.h"
 
@@ -307,6 +311,11 @@ namespace Fred
 
         try
         {
+            if(Fred::CheckContact(registrant_handle_).is_invalid_handle())
+            {
+                BOOST_THROW_EXCEPTION(Exception().set_invalid_registrant_handle(registrant_handle_));
+            }
+
             Database::ParamQuery inline_view_filter_query;
 
             inline_view_filter_query("SELECT d.id FROM domain d "
@@ -328,7 +337,7 @@ namespace Fred
 
             if(domain_id_res.size() == 0)//no domain id found
             {
-                return domain_res;
+                BOOST_THROW_EXCEPTION(Exception().set_unknown_registrant_handle(registrant_handle_));
             }
 
             Database::ParamQuery domain_id_inline_view("info_domain_id IN (");
@@ -393,6 +402,11 @@ namespace Fred
 
         try
         {
+            if(Fred::CheckContact(admin_contact_handle_).is_invalid_handle())
+            {
+                BOOST_THROW_EXCEPTION(Exception().set_invalid_admin_contact_handle(admin_contact_handle_));
+            }
+
             Database::ParamQuery inline_view_filter_query;
 
             inline_view_filter_query("SELECT dcm.domainid"
@@ -415,7 +429,7 @@ namespace Fred
 
             if(domain_id_res.size() == 0)//no domain id found
             {
-                return domain_res;
+                BOOST_THROW_EXCEPTION(Exception().set_unknown_admin_contact_handle(admin_contact_handle_));
             }
 
             Database::ParamQuery domain_id_inline_view("info_domain_id IN (");
@@ -476,6 +490,11 @@ namespace Fred
 
         try
         {
+            if(Fred::CheckNsset(nsset_handle_).is_invalid_handle())
+            {
+                BOOST_THROW_EXCEPTION(Exception().set_invalid_nsset_handle(nsset_handle_));
+            }
+
             Database::ParamQuery inline_view_filter_query;
 
             inline_view_filter_query("SELECT d.id FROM domain d"
@@ -496,7 +515,7 @@ namespace Fred
 
             if(domain_id_res.size() == 0)//no domain id found
             {
-                return domain_res;
+                BOOST_THROW_EXCEPTION(Exception().set_unknown_nsset_handle(nsset_handle_));
             }
 
             Database::ParamQuery domain_id_inline_view("info_domain_id IN (");
@@ -555,6 +574,10 @@ namespace Fred
         std::vector<InfoDomainOutput> domain_res;
         try
         {
+            if(Fred::CheckKeyset(keyset_handle_).is_invalid_handle())
+            {
+                BOOST_THROW_EXCEPTION(Exception().set_invalid_keyset_handle(keyset_handle_));
+            }
 
             Database::ParamQuery inline_view_filter_query;
 
@@ -576,7 +599,7 @@ namespace Fred
 
             if(domain_id_res.size() == 0)//no domain id found
             {
-                return domain_res;
+                BOOST_THROW_EXCEPTION(Exception().set_unknown_keyset_handle(keyset_handle_));
             }
 
             Database::ParamQuery domain_id_inline_view("info_domain_id IN (");
