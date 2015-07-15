@@ -686,11 +686,7 @@ public:
         if (src_value != NULL) {
             return into_from< corba_type*, const SRC* >()(destination_, src_value);
         }
-        if (destination_ == NULL) {
-            return destination_;
-        }
-        throw std::runtime_error(std::string(__PRETTY_FUNCTION__) + " failure: potential memory leak "
-                                 "because overwritten destination doesn't refer to the NULL pointer");
+        return destination_;
     }
     /**
      * Sets object of corba_type with value of SRC type.
@@ -724,14 +720,17 @@ public:
         if (!src_value.isnull()) {
             return this->from(src_value.get_value());
         }
-        if (destination_ == NULL) {
-            return destination_;
-        }
-        throw std::runtime_error(std::string(__PRETTY_FUNCTION__) + " failure: potential memory leak "
-                                 "because overwritten destination doesn't refer to the NULL pointer");
+        return destination_;
     }
 private:
-    Into(dst_value_ref _object):destination_(_object) { }
+    Into(dst_value_ref _object)
+    :   destination_(_object)
+    {
+        if (destination_ != NULL) {
+            throw std::runtime_error(std::string(__PRETTY_FUNCTION__) + " failure: potential memory leak "
+                                     "because overwritten destination doesn't refer to the NULL pointer");
+        }
+    }
     Into(const Into &_src):destination_(_src.destination_) { }
     dst_value_ref destination_;
     template < typename CT >
@@ -773,11 +772,7 @@ struct create_corba_from_convertible
 {
     CORBA_TYPE*& operator()(CORBA_TYPE *&dst, const CONVERTIBLE_TYPE &src)const
     {
-        if (dst == NULL) {
-            return dst = new CORBA_TYPE(src);//e.g. NullableString(const char* _v)
-        }
-        throw std::runtime_error(std::string(__PRETTY_FUNCTION__) + " failure: potential memory leak "
-                                 "because overwritten destination doesn't refer to the NULL pointer");
+        return dst = new CORBA_TYPE(src);//e.g. NullableString(const char* _v)
     }
 };
 
@@ -786,13 +781,9 @@ struct create_corba_from_convertible< CORBA_TYPE, CONVERTIBLE_TYPE, false >
 {
     CORBA_TYPE*& operator()(CORBA_TYPE *&dst, const CONVERTIBLE_TYPE &src)const
     {
-        if (dst == NULL) {
-            dst = new CORBA_TYPE;         //e.g.          NullableAddress::NullableAddress()
-            into(dst->_value()).from(src);//e.g. Address& NullableAddress::_value()
-            return dst;
-        }
-        throw std::runtime_error(std::string(__PRETTY_FUNCTION__) + " failure: potential memory leak "
-                                 "because overwritten destination doesn't refer to the NULL pointer");
+        dst = new CORBA_TYPE;         //e.g.          NullableAddress::NullableAddress()
+        into(dst->_value()).from(src);//e.g. Address& NullableAddress::_value()
+        return dst;
     }
 };
 
