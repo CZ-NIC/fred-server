@@ -194,23 +194,18 @@ void Server_i::cancel_contact_account_prepare(
 {
 }//cancel_contact_account_prepare
 
-ContactHandleList* Server_i::get_unregistrable_handles(
-        ::CORBA::ULong _chunk_size,
-        ::CORBA::ULongLong &_start_from)
+ContactHandleList* Server_i::get_unregistrable_handles()
 {
     try {
         HandleList chunk;
-        ContactId last_contact_id = _start_from;
-        impl_ptr_->get_unregistrable_contact_handles(_chunk_size, last_contact_id, chunk);
-        ContactHandleList_var ret = new ContactHandleList;
-        ret->length(0);
+        impl_ptr_->get_unregistrable_contact_handles(chunk);
+        ContactHandleList_var ret(new ContactHandleList);
+        ret->length(chunk.size());
 
         for (::size_t idx = 0; idx < chunk.size(); ++idx) {
-            ret->length(idx + 1);
             ret[idx] = chunk[idx].c_str();
         }
 
-        _start_from = last_contact_id;
         return ret._retn();
     }
     catch (...) {

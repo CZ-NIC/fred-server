@@ -137,47 +137,29 @@ const std::string& MojeID2Impl::get_server_name()const
 }
 
 HandleList& MojeID2Impl::get_unregistrable_contact_handles(
-        ::size_t _chunk_size,
-        ContactId &_start_from,
         HandleList &_result)const
 {
     LOGGING_CONTEXT(log_ctx, *this);
 
     try {
         Fred::OperationContextCreator ctx;
-        const Database::Result dbres = ctx.get_conn().exec_params(
+        const Database::Result dbres = ctx.get_conn().exec(
             "WITH static_data AS ("
                 "SELECT eot.id AS type_id,"
                        "NOW()-(ep.val||'MONTH')::INTERVAL AS contact_protected_since "
                 "FROM enum_object_type eot,enum_parameters ep "
                 "WHERE eot.name='contact' AND "
                       "ep.name='handle_registration_protection_period') "
-            "SELECT id,name "
+            "SELECT name "
             "FROM object_registry "
             "WHERE type=(SELECT type_id FROM static_data) AND "
                   "COALESCE((SELECT contact_protected_since FROM static_data)<erdate,TRUE) AND "
-                  "LOWER(name)~'^[a-z0-9](-?[a-z0-9])*$' AND "
-                  "$2::BIGINT<id "
-            "ORDER BY id "
-            "LIMIT $1::BIGINT",
-            Database::query_param_list
-                (_chunk_size + 1)
-                (_start_from));
-        const bool data_continues = _chunk_size < dbres.size();
-        const ::size_t items = data_continues ? _chunk_size
-                                              : dbres.size();
+                  "LOWER(name)~'^[a-z0-9](-?[a-z0-9])*$'");
         _result.clear();
-        _result.reserve(items);
-        enum
-        {
-            CONTACT_ID_IDX = 0,
-            CONTACT_HANDLE_IDX = 1,
-        };
-        for (::size_t idx = 0; idx < items; ++idx) {
-            _result.push_back(static_cast< std::string >(dbres[idx][CONTACT_HANDLE_IDX]));
+        _result.reserve(dbres.size());
+        for (::size_t idx = 0; idx < dbres.size(); ++idx) {
+            _result.push_back(static_cast< std::string >(dbres[idx][0]));
         }
-        _start_from = data_continues ? static_cast< ContactId >(dbres[_chunk_size - 1][CONTACT_ID_IDX])
-                                     : contact_handles_end_reached;
         return _result;
     }
     catch (const std::exception &e) {

@@ -94,9 +94,7 @@ public:
         const char *trans_id,
         ::CORBA::ULongLong log_request_id);
 
-    ContactHandleList* get_unregistrable_handles(
-        ::CORBA::ULong _chunk_size,
-        ::CORBA::ULongLong &_start_from);
+    ContactHandleList* get_unregistrable_handles();
 
     void send_new_pin3(
         ::CORBA::ULongLong contact_id,

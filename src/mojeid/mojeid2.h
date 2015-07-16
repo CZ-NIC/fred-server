@@ -44,11 +44,7 @@ public:
 
     const std::string& get_server_name()const;
 
-    static const ContactId contact_handles_start = 0;
-    static const ContactId contact_handles_end_reached = 0;
     HandleList& get_unregistrable_contact_handles(
-        ::size_t _chunk_size,
-        ContactId &_start_from,
         HandleList &_result)const;
 
     ContactId create_contact_prepare(
