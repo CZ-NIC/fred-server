@@ -112,6 +112,11 @@ public:
                                            check_transfer_contact_prepare_presence > > CheckTransferContactPrepare;
     typedef CheckTransferContactPrepare TransferContactPrepareError;
 
+    ContactId process_registration_request(
+        const std::string &_ident_request_id,
+        const std::string &_password,
+        LogRequestId _log_request_id)const;
+
     void process_identification_request(
         ContactId _contact_id,
         const std::string &_password,

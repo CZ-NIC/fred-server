@@ -125,7 +125,12 @@ void Server_i::update_contact_prepare(
         const char *password,
         ::CORBA::ULongLong log_request_id)
 {
-    return 0;
+    try {
+        return impl_ptr_->process_registration_request(ident_request_id, password, log_request_id);
+    }
+    catch (...) {
+        throw IDL::INTERNAL_SERVER_ERROR();
+    }
 }//process_registration_request
 
 void Server_i::process_identification_request(
