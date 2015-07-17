@@ -204,9 +204,7 @@ ContactHandleList* Server_i::get_unregistrable_handles()
     try {
         HandleList unregistrable_handles;
         impl_ptr_->get_unregistrable_contact_handles(unregistrable_handles);
-        std::auto_ptr< ContactHandleList > retval(new ContactHandleList);
-        Corba::Conversion::into(*retval).from(unregistrable_handles);
-        return retval.release();
+        return Corba::Conversion::into(new ContactHandleList).from(unregistrable_handles);
     }
     catch (...) {
         throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR();
