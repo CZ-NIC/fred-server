@@ -26,8 +26,6 @@
 #include "src/corba/mojeid/corba_conversion2.h"
 #include "src/mojeid/mojeid2.h"
 
-#include <memory>
-
 namespace Registry {
 namespace MojeID {
 
@@ -87,9 +85,7 @@ Registry::MojeID::InfoContact* Server_i::transfer_contact_prepare(
             contact,
             ident);
         Corba::Conversion::into(_identification).from(ident);
-        std::auto_ptr< Registry::MojeID::InfoContact > contact_info_ptr(new Registry::MojeID::InfoContact);
-        Corba::Conversion::into(*contact_info_ptr).from(contact);
-        return contact_info_ptr.release();
+        return Corba::Conversion::into(new Registry::MojeID::InfoContact).from(contact);
     }
     catch (const MojeID2Impl::TransferContactPrepareError &e) {
         IDL::TRANSFER_CONTACT_PREPARE_VALIDATION_ERROR idl_error;
