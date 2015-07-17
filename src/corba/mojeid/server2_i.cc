@@ -202,16 +202,11 @@ void Server_i::cancel_contact_account_prepare(
 ContactHandleList* Server_i::get_unregistrable_handles()
 {
     try {
-        HandleList chunk;
-        impl_ptr_->get_unregistrable_contact_handles(chunk);
-        ContactHandleList_var ret(new ContactHandleList);
-        ret->length(chunk.size());
-
-        for (::size_t idx = 0; idx < chunk.size(); ++idx) {
-            ret[idx] = chunk[idx].c_str();
-        }
-
-        return ret._retn();
+        HandleList unregistrable_handles;
+        impl_ptr_->get_unregistrable_contact_handles(unregistrable_handles);
+        std::auto_ptr< ContactHandleList > retval(new ContactHandleList);
+        Corba::Conversion::into(*retval).from(unregistrable_handles);
+        return retval.release();
     }
     catch (...) {
         throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR();
