@@ -27,6 +27,7 @@
 #include "src/mojeid/mojeid2_checkers.h"
 
 #include <vector>
+#include <stdexcept>
 
 namespace Registry {
 namespace MojeID {
@@ -111,6 +112,24 @@ public:
     typedef Fred::Check< boost::mpl::list< check_transfer_contact_prepare,
                                            check_transfer_contact_prepare_presence > > CheckTransferContactPrepare;
     typedef CheckTransferContactPrepare TransferContactPrepareError;
+
+    class IdentificationFailed:public std::runtime_error
+    {
+    public:
+        IdentificationFailed(const std::string &_msg):std::runtime_error(_msg) { }
+    };
+
+    class IdentificationAlreadyProcessed:public std::runtime_error
+    {
+    public:
+        IdentificationAlreadyProcessed(const std::string &_msg):std::runtime_error(_msg) { }
+    };
+
+    class IdentificationAlreadyInvalidated:public std::runtime_error
+    {
+    public:
+        IdentificationAlreadyInvalidated(const std::string &_msg):std::runtime_error(_msg) { }
+    };
 
     ContactId process_registration_request(
         const std::string &_ident_request_id,
