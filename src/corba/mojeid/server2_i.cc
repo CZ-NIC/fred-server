@@ -124,6 +124,15 @@ void Server_i::update_contact_prepare(
     try {
         return impl_ptr_->process_registration_request(ident_request_id, password, log_request_id);
     }
+    catch (const MojeID2Impl::IdentificationFailed&) {
+        throw IDL::IDENTIFICATION_FAILED();
+    }
+    catch (const MojeID2Impl::IdentificationAlreadyProcessed&) {
+        throw IDL::IDENTIFICATION_ALREADY_PROCESSED();
+    }
+    catch (const MojeID2Impl::IdentificationAlreadyInvalidated&) {
+        throw IDL::IDENTIFICATION_ALREADY_INVALIDATED();
+    }
     catch (...) {
         throw IDL::INTERNAL_SERVER_ERROR();
     }
