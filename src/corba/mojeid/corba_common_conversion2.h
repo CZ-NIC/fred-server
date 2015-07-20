@@ -785,8 +785,6 @@ private:
     }
     Into(const Into &_src):destination_(_src.destination_) { }
     dst_value_ref destination_;
-    template < typename CT >
-    friend Into< CT >  into(CT&);
     template < typename CT, typename CTH >
     friend Into< CT* > into(_CORBA_Value_Var< CT, CTH >&);
     template < typename CT, typename CTH >
