@@ -297,7 +297,46 @@ ContactId MojeID2Impl::process_registration_request(
     LOGGING_CONTEXT(log_ctx, *this);
 
     try {
-        return 0;
+        Fred::OperationContextCreator ctx;
+        const Database::Result dbres = ctx.get_conn().exec_params(
+              "SELECT pra.password=$2::TEXT AS auth_successful,"
+                     "pr.id AS pub_req_id,"
+                     "obr.id AS contact_id,"
+                     "(SELECT name FROM enum_public_request_type WHERE id=pr.request_type) AS pub_req_type,"
+                     "(SELECT name FROM enum_public_request_status WHERE id=pr.status) AS pub_req_status "
+              "FROM public_request_auth pra "
+              "LEFT JOIN public_request pr ON pr.id=pra.id "
+              "LEFT JOIN public_request_objects_map prom ON prom.request_id=pr.id "
+              "LEFT JOIN object_registry obr ON obr.id=prom.object_id AND "
+                                               "obr.type=(SELECT id FROM enum_object_type WHERE name='contact') "
+              "WHERE pra.identification=$1::TEXT",
+              Database::query_param_list(_ident_request_id)
+                                        (_password));
+        if (dbres.size() <= 0) {
+            throw IdentificationFailed("no public request found");
+        }
+        if (!static_cast< bool >(dbres[0][0])) {
+            throw IdentificationFailed("password doesn't match");
+        }
+        if (dbres[0][1].isnull()) {
+            throw std::runtime_error("no public request associated with this identification");
+        }
+        const std::string pub_req_status = static_cast< std::string >(dbres[0][4]);
+        if (pub_req_status != "new") {
+            if (pub_req_status == "answered") {
+                throw IdentificationAlreadyProcessed("identification already processed");
+            }
+            if (pub_req_status == "invalidated") {
+                throw IdentificationAlreadyInvalidated("identification already invalidated");
+            }
+            throw std::runtime_error("unexpected public request status '" + pub_req_status + "'");
+        }
+        if (dbres[0][2].isnull()) {
+            throw std::runtime_error("no contact associated with this public request");
+        }
+        const ContactId contact_id = static_cast< ContactId >(dbres[0][2]);
+        const std::string pub_req_type = static_cast< std::string >(dbres[0][3]);
+        return contact_id;
     }
     catch (const std::exception &e) {
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
