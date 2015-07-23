@@ -26,6 +26,7 @@
 #include "src/fredlib/contact/create_contact.h"
 #include "src/fredlib/contact/info_contact.h"
 #include "src/fredlib/public_request/create_public_request_auth.h"
+#include "src/fredlib/public_request/public_request_state.h"
 #include "util/random.h"
 #include "util/log/context.h"
 #include "util/cfg/handle_mojeid_args.h"
@@ -323,28 +324,29 @@ ContactId MojeID2Impl::process_registration_request(
         if (dbres.size() <= 0) {
             throw IdentificationFailed("no public request found");
         }
-        if (!static_cast< bool >(dbres[0][COL_AUTH_SUCCESSFUL])) {
+        const Database::Row pra_info = dbres[0];
+        if (!static_cast< bool >(pra_info[COL_AUTH_SUCCESSFUL])) {
             throw IdentificationFailed("password doesn't match");
         }
-        if (dbres[0][COL_PUB_REQ_ID].isnull()) {
+        if (pra_info[COL_PUB_REQ_ID].isnull()) {
             throw std::runtime_error("no public request associated with this identification");
         }
-        const std::string pub_req_status = static_cast< std::string >(dbres[0][COL_PUB_REQ_STATUS]);
-        if (pub_req_status != "new") {
-            if (pub_req_status == "answered") {
-                throw IdentificationAlreadyProcessed("identification already processed");
-            }
-            if (pub_req_status == "invalidated") {
-                throw IdentificationAlreadyInvalidated("identification already invalidated");
-            }
-            throw std::runtime_error("unexpected public request status '" + pub_req_status + "'");
+        const Fred::PublicRequest::State::Value pub_req_status = Fred::PublicRequest::State::from(
+            static_cast< std::string >(pra_info[COL_PUB_REQ_STATUS]));
+        switch (pub_req_status) {
+        case Fred::PublicRequest::State::NEW:
+            break;
+        case Fred::PublicRequest::State::ANSWERED:
+            throw IdentificationAlreadyProcessed("identification already processed");
+        case Fred::PublicRequest::State::INVALIDATED:
+            throw IdentificationAlreadyInvalidated("identification already invalidated");
         }
-        if (dbres[0][COL_CONTACT_ID].isnull()) {
+        if (pra_info[COL_CONTACT_ID].isnull()) {
             throw std::runtime_error("no contact associated with this public request");
         }
-        const Fred::PublicRequestId pub_req_id   = static_cast< Fred::PublicRequestId >(dbres[0][COL_PUB_REQ_ID]);
-        const ContactId             contact_id   = static_cast< ContactId >            (dbres[0][COL_CONTACT_ID]);
-        const std::string           pub_req_type = static_cast< std::string >          (dbres[0][COL_PUB_REQ_TYPE]);
+        const Fred::PublicRequestId pub_req_id   = static_cast< Fred::PublicRequestId >(pra_info[COL_PUB_REQ_ID]);
+        const ContactId             contact_id   = static_cast< ContactId >            (pra_info[COL_CONTACT_ID]);
+        const std::string           pub_req_type = static_cast< std::string >          (pra_info[COL_PUB_REQ_TYPE]);
         return contact_id;
     }
     catch (const std::exception &e) {
