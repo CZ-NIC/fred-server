@@ -26,7 +26,8 @@
 #include "src/fredlib/contact/create_contact.h"
 #include "src/fredlib/contact/info_contact.h"
 #include "src/fredlib/public_request/create_public_request_auth.h"
-#include "src/fredlib/public_request/public_request_state.h"
+#include "src/fredlib/public_request/public_request_status.h"
+#include "src/fredlib/public_request/public_request_lock_guard.h"
 #include "util/random.h"
 #include "util/log/context.h"
 #include "util/cfg/handle_mojeid_args.h"
@@ -307,6 +308,7 @@ ContactId MojeID2Impl::process_registration_request(
 
     try {
         Fred::OperationContextCreator ctx;
+        Fred::PublicRequestLockGuardByIdentification locked(ctx, _ident_request_id);
         const Database::Result dbres = ctx.get_conn().exec_params(
               "SELECT pra.password=$2::TEXT"                                                KNOWN_AS(COL_AUTH_SUCCESSFUL) ","
                      "pr.id"                                                                KNOWN_AS(COL_PUB_REQ_ID)      ","
@@ -331,14 +333,14 @@ ContactId MojeID2Impl::process_registration_request(
         if (pra_info[COL_PUB_REQ_ID].isnull()) {
             throw std::runtime_error("no public request associated with this identification");
         }
-        const Fred::PublicRequest::State::Value pub_req_status = Fred::PublicRequest::State::from(
+        const Fred::PublicRequest::Status::Value pub_req_status = Fred::PublicRequest::Status::from(
             static_cast< std::string >(pra_info[COL_PUB_REQ_STATUS]));
         switch (pub_req_status) {
-        case Fred::PublicRequest::State::NEW:
+        case Fred::PublicRequest::Status::NEW:
             break;
-        case Fred::PublicRequest::State::ANSWERED:
+        case Fred::PublicRequest::Status::ANSWERED:
             throw IdentificationAlreadyProcessed("identification already processed");
-        case Fred::PublicRequest::State::INVALIDATED:
+        case Fred::PublicRequest::Status::INVALIDATED:
             throw IdentificationAlreadyInvalidated("identification already invalidated");
         }
         if (pra_info[COL_CONTACT_ID].isnull()) {

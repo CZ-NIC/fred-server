@@ -18,10 +18,10 @@
 
 /**
 *  @file
-*  header of Fred::PublicRequest::State class
+*  header of Fred::PublicRequest::Status class
 */
-#ifndef PUBLIC_REQUEST_STATE_H_648D4833B94F11152913135FA0FE767E//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define PUBLIC_REQUEST_STATE_H_648D4833B94F11152913135FA0FE767E
+#ifndef PUBLIC_REQUEST_STATUS_H_648D4833B94F11152913135FA0FE767E//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
+#define PUBLIC_REQUEST_STATUS_H_648D4833B94F11152913135FA0FE767E
 
 #include <map>
 #include <stdexcept>
@@ -32,13 +32,13 @@ namespace Fred {
 namespace PublicRequest {
 
 /**
- * Bidirectional conversions between string and enum representation of public request states.
+ * Bidirectional conversions between string and enum representation of public request status.
  */
-class State
+class Status
 {
 public:
     /**
-     * Names of particular public request states.
+     * Names of particular public request status.
      */
     enum Value
     {
@@ -50,10 +50,10 @@ public:
      * From enum value creates object having methods for conversion to its string representation.
      * @param _value enum value
      */
-    explicit State(Value _value):value_(_value) { }
+    explicit Status(Value _value):value_(_value) { }
     /**
      * String value converts to its enum equivalent.
-     * @param _str database representation of public request state
+     * @param _str database representation of public request status
      * @return its enum equivalent
      * @throw std::runtime_error if conversion is impossible
      */
@@ -64,7 +64,7 @@ public:
         if (item_ptr != str2val.end()) {
             return item_ptr->second;
         }
-        throw std::runtime_error("Unknown public request state '" + _str + "'");
+        throw std::runtime_error("Unknown public request status '" + _str + "'");
     }
     /**
      * Enum value converts to its string representation.
@@ -79,7 +79,7 @@ public:
         if (item_ptr != val2str.end()) {
             return _str = item_ptr->second;
         }
-        throw std::runtime_error("Invalid object state value");
+        throw std::runtime_error("Invalid public request status value");
     }
     /**
      * Enum value converts to value of other type.
@@ -117,7 +117,7 @@ private:
                 result[ptr->second] = ptr->first;
             }
             if (str2val.size() != result.size()) {
-                throw std::runtime_error("State::str_to_value() returns map with non-unique values");
+                throw std::runtime_error("Status::str_to_value() returns map with non-unique values");
             }
         }
         return result;
@@ -127,4 +127,4 @@ private:
 }//Fred::PublicRequest
 }//Fred
 
-#endif//PUBLIC_REQUEST_STATE_H_648D4833B94F11152913135FA0FE767E
+#endif//PUBLIC_REQUEST_STATUS_H_648D4833B94F11152913135FA0FE767E

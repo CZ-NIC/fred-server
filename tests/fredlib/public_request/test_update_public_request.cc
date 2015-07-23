@@ -36,7 +36,7 @@ struct update_public_request_fixture : virtual Test::Fixture::instantiate_db_tem
     update_public_request_fixture()
     :   xmark(RandomDataGenerator().xnumstring(6)),
         public_request_type(*this),
-        bad_enum_status(static_cast< Fred::PublicRequestStatus >(NUMBER_OF_STATES))
+        bad_enum_status(static_cast< Fred::PublicRequest::Status::Value >(NUMBER_OF_STATES))
     {
         Fred::OperationContextCreator ctx;
         Database::Result dbres = ctx.get_conn().exec(
@@ -85,7 +85,7 @@ protected:
     Fred::CreatePublicRequestAuth::Result create_result;
     const Fred::PublicRequestAuthTypeIface &public_request_type;
     enum { NUMBER_OF_STATES = 3 };
-    const Fred::PublicRequestStatus bad_enum_status;
+    const Fred::PublicRequest::Status::Value bad_enum_status;
 private:
     std::string get_public_request_type()const { return type_name_; }
     std::string generate_passwords()const { return "h*vno kleslo"; }
@@ -114,17 +114,17 @@ BOOST_AUTO_TEST_CASE(public_request_status_conversions)
     static const std::string known_status[NUMBER_OF_STATES] = {"new", "answered", "invalidated"};
     for (int idx = 0; idx < NUMBER_OF_STATES; ++idx) {
         BOOST_CHECK(status_names.count(known_status[idx]) == 1);
-        const Fred::PublicRequestStatus enum_status = Fred::str2public_request_status(known_status[idx]);
-        BOOST_CHECK(Fred::public_request_status2str(enum_status) == known_status[idx]);
+        const Fred::PublicRequest::Status::Value enum_status = Fred::PublicRequest::Status::from(known_status[idx]);
+        BOOST_CHECK(Fred::PublicRequest::Status(enum_status).into< std::string >() == known_status[idx]);
     }
 
     BOOST_CHECK_EXCEPTION(
     try {
         const std::string bad_status = "newx";
         BOOST_CHECK(status_names.count(bad_status) == 0);
-        Fred::str2public_request_status(bad_status);
+        Fred::PublicRequest::Status::from(bad_status);
     }
-    catch(const Fred::PublicRequestStatusBadConversion &e) {
+    catch(const std::runtime_error &e) {
         BOOST_TEST_MESSAGE(boost::diagnostic_information(e));
         throw;
     }
@@ -141,12 +141,12 @@ BOOST_AUTO_TEST_CASE(public_request_status_conversions)
 
     BOOST_CHECK_EXCEPTION(
     try {
-        BOOST_CHECK(Fred::PRS_NEW < bad_enum_status);
-        BOOST_CHECK(Fred::PRS_ANSWERED < bad_enum_status);
-        BOOST_CHECK(Fred::PRS_INVALIDATED < bad_enum_status);
-        Fred::public_request_status2str(bad_enum_status);
+        BOOST_CHECK(Fred::PublicRequest::Status::NEW < bad_enum_status);
+        BOOST_CHECK(Fred::PublicRequest::Status::ANSWERED < bad_enum_status);
+        BOOST_CHECK(Fred::PublicRequest::Status::INVALIDATED < bad_enum_status);
+        Fred::PublicRequest::Status(bad_enum_status).into< std::string >();
     }
-    catch(const Fred::PublicRequestStatusBadConversion &e) {
+    catch(const std::runtime_error &e) {
         BOOST_TEST_MESSAGE(boost::diagnostic_information(e));
         throw;
     }
@@ -279,7 +279,7 @@ BOOST_AUTO_TEST_CASE(update_public_request_wrong_public_request_id)
     BOOST_CHECK_EXCEPTION(
     try {
         Fred::UpdatePublicRequest()
-            .set_status(Fred::PRS_NEW)
+            .set_status(Fred::PublicRequest::Status::NEW)
             .exec(ctx, PublicRequestLockGuardFake(bad_public_request_id));
     }
     catch(const Fred::UpdatePublicRequest::Exception &e) {
@@ -442,8 +442,8 @@ BOOST_AUTO_TEST_CASE(update_public_request_ok)
 {
     Fred::OperationContextCreator ctx;
     Fred::PublicRequestLockGuardById locked_request(ctx, create_result.public_request_id);
-    const Fred::PublicRequestStatus enum_status = Fred::PRS_ANSWERED;
-    const std::string str_status = Fred::public_request_status2str(enum_status);
+    const Fred::PublicRequest::Status::Value enum_status = Fred::PublicRequest::Status::ANSWERED;
+    const std::string str_status = Fred::PublicRequest::Status(enum_status).into< std::string >();
     const std::string reason = "Prostě proto.";
     const std::string email = "noreply@nic.cz";
     const Fred::UpdatePublicRequest::EmailId email_id =

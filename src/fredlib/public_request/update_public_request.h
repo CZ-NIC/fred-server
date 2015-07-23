@@ -25,51 +25,12 @@
 #define UPDATE_PUBLIC_REQUEST_H_9F964452619CB937F93C2B144C8A204D
 
 #include "src/fredlib/public_request/public_request_lock_guard.h"
+#include "src/fredlib/public_request/public_request_status.h"
 #include "util/optional_value.h"
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 namespace Fred {
-
-/**
- * Public request status collection
- */
-enum PublicRequestStatus
-{
-    PRS_NEW,        ///< Request was created and waiting for autorization 
-    PRS_ANSWERED,   ///< Email with answer was sent
-    PRS_INVALIDATED ///< Time passed without authorization
-};
-
-/**
- * Exception class for conversion operations between string and PublicRequestStatus.
- */
-class PublicRequestStatusBadConversion:public std::runtime_error
-{
-public:
-    /**
-     * Constructor with error message specification.
-     * @param _message error message
-     */
-    PublicRequestStatusBadConversion(const std::string &_message)
-    :   std::runtime_error(_message) { }
-};
-
-/**
- * Convert PublicRequestStatus value into its string representation usable in database.
- * @param _status PublicRequestStatus value
- * @return its string representation
- * @throw PublicRequestStatusBadConversion when conversion is impossible
- */
-std::string public_request_status2str(PublicRequestStatus _status);
-
-/**
- * Convert string representation of public request status into its numeric identification.
- * @param _status string representation of public request status
- * @return its numeric identification
- * @throw PublicRequestStatusBadConversion when conversion is impossible
- */
-PublicRequestStatus str2public_request_status(const std::string &_status);
 
 /**
  * Operation for public request update.
@@ -84,7 +45,7 @@ public:
     DECLARE_EXCEPTION_DATA(public_request_doesnt_exist, PublicRequestId);///< exception members in case of bad public_request_id
     DECLARE_EXCEPTION_DATA(unknown_email_id, EmailId);///< exception members in case of bad answer_email_id
     DECLARE_EXCEPTION_DATA(unknown_registrar_id, RegistrarId);///< exception members in case of bad registrar_id
-    DECLARE_EXCEPTION_DATA(bad_public_request_status, PublicRequestStatus);///< exception members in case of invalid value of status
+    DECLARE_EXCEPTION_DATA(bad_public_request_status, PublicRequest::Status::Value);///< exception members in case of invalid value of status
     struct Exception /// Something wrong happened
     :   virtual Fred::OperationException,
         ExceptionData_nothing_to_do< Exception >,
@@ -110,7 +71,7 @@ public:
      * @param _create_request_id can set create_request_id whatever it means
      * @param _resolve_request_id can set resolve_request_id whatever it means
      */
-    UpdatePublicRequest(const Optional< PublicRequestStatus > &_status,
+    UpdatePublicRequest(const Optional< PublicRequest::Status::Value > &_status,
                         const Optional< Nullable< Time > > &_resolve_time,
                         const Optional< Nullable< std::string > > &_reason,
                         const Optional< Nullable< std::string > > &_email_to_answer,
@@ -125,7 +86,7 @@ public:
      * @param _status sets status of public request
      * @return operation instance reference to allow method chaining
      */
-    UpdatePublicRequest& set_status(PublicRequestStatus _status);
+    UpdatePublicRequest& set_status(PublicRequest::Status::Value _status);
 
     /**
      * Sets time of public request resolving.
@@ -204,7 +165,7 @@ public:
      */
     Result exec(OperationContext &_ctx, const PublicRequestLockGuard &_locked_public_request)const;
 private:
-    Optional< PublicRequestStatus > status_;
+    Optional< PublicRequest::Status::Value > status_;
     Optional< Nullable< Time > > resolve_time_;
     bool is_resolve_time_set_to_now_;
     Optional< Nullable< std::string > > reason_;
