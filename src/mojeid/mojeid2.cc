@@ -33,6 +33,14 @@
 
 #include <algorithm>
 
+#define COL_AUTH_SUCCESSFUL "auth_successful"
+#define COL_PUB_REQ_ID      "pub_req_id"
+#define COL_CONTACT_ID      "contact_id"
+#define COL_PUB_REQ_TYPE    "pub_req_type"
+#define COL_PUB_REQ_STATUS  "pub_req_status"
+
+#define KNOWN_AS(NAME) " AS \"" NAME "\""
+
 namespace Registry {
 namespace MojeID {
 
@@ -299,11 +307,11 @@ ContactId MojeID2Impl::process_registration_request(
     try {
         Fred::OperationContextCreator ctx;
         const Database::Result dbres = ctx.get_conn().exec_params(
-              "SELECT pra.password=$2::TEXT AS auth_successful,"
-                     "pr.id AS pub_req_id,"
-                     "obr.id AS contact_id,"
-                     "(SELECT name FROM enum_public_request_type WHERE id=pr.request_type) AS pub_req_type,"
-                     "(SELECT name FROM enum_public_request_status WHERE id=pr.status) AS pub_req_status "
+              "SELECT pra.password=$2::TEXT"                                                KNOWN_AS(COL_AUTH_SUCCESSFUL) ","
+                     "pr.id"                                                                KNOWN_AS(COL_PUB_REQ_ID)      ","
+                     "obr.id"                                                               KNOWN_AS(COL_CONTACT_ID)      ","
+                     "(SELECT name FROM enum_public_request_type WHERE id=pr.request_type)" KNOWN_AS(COL_PUB_REQ_TYPE)    ","
+                     "(SELECT name FROM enum_public_request_status WHERE id=pr.status)"     KNOWN_AS(COL_PUB_REQ_STATUS)  " "
               "FROM public_request_auth pra "
               "LEFT JOIN public_request pr ON pr.id=pra.id "
               "LEFT JOIN public_request_objects_map prom ON prom.request_id=pr.id "
@@ -315,13 +323,13 @@ ContactId MojeID2Impl::process_registration_request(
         if (dbres.size() <= 0) {
             throw IdentificationFailed("no public request found");
         }
-        if (!static_cast< bool >(dbres[0][0])) {
+        if (!static_cast< bool >(dbres[0][COL_AUTH_SUCCESSFUL])) {
             throw IdentificationFailed("password doesn't match");
         }
-        if (dbres[0][1].isnull()) {
+        if (dbres[0][COL_PUB_REQ_ID].isnull()) {
             throw std::runtime_error("no public request associated with this identification");
         }
-        const std::string pub_req_status = static_cast< std::string >(dbres[0][4]);
+        const std::string pub_req_status = static_cast< std::string >(dbres[0][COL_PUB_REQ_STATUS]);
         if (pub_req_status != "new") {
             if (pub_req_status == "answered") {
                 throw IdentificationAlreadyProcessed("identification already processed");
@@ -331,11 +339,12 @@ ContactId MojeID2Impl::process_registration_request(
             }
             throw std::runtime_error("unexpected public request status '" + pub_req_status + "'");
         }
-        if (dbres[0][2].isnull()) {
+        if (dbres[0][COL_CONTACT_ID].isnull()) {
             throw std::runtime_error("no contact associated with this public request");
         }
-        const ContactId contact_id = static_cast< ContactId >(dbres[0][2]);
-        const std::string pub_req_type = static_cast< std::string >(dbres[0][3]);
+        const Fred::PublicRequestId pub_req_id   = static_cast< Fred::PublicRequestId >(dbres[0][COL_PUB_REQ_ID]);
+        const ContactId             contact_id   = static_cast< ContactId >            (dbres[0][COL_CONTACT_ID]);
+        const std::string           pub_req_type = static_cast< std::string >          (dbres[0][COL_PUB_REQ_TYPE]);
         return contact_id;
     }
     catch (const std::exception &e) {
