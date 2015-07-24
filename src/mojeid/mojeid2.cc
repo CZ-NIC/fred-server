@@ -36,14 +36,6 @@
 
 #include <algorithm>
 
-#define COL_AUTH_SUCCESSFUL "auth_successful"
-#define COL_PUB_REQ_ID      "pub_req_id"
-#define COL_CONTACT_ID      "contact_id"
-#define COL_PUB_REQ_TYPE    "pub_req_type"
-#define COL_PUB_REQ_STATUS  "pub_req_status"
-
-#define KNOWN_AS(NAME) " AS \"" NAME "\""
-
 namespace Registry {
 namespace MojeID {
 
@@ -310,33 +302,22 @@ ContactId MojeID2Impl::process_registration_request(
     try {
         Fred::OperationContextCreator ctx;
         Fred::PublicRequestLockGuardByIdentification locked(ctx, _ident_request_id);
+        const Fred::PublicRequestAuthInfo pub_req_info(ctx, locked);
         const Database::Result dbres = ctx.get_conn().exec_params(
-              "SELECT pra.password=$2::TEXT"                                                KNOWN_AS(COL_AUTH_SUCCESSFUL) ","
-                     "pr.id"                                                                KNOWN_AS(COL_PUB_REQ_ID)      ","
-                     "obr.id"                                                               KNOWN_AS(COL_CONTACT_ID)      ","
-                     "(SELECT name FROM enum_public_request_type WHERE id=pr.request_type)" KNOWN_AS(COL_PUB_REQ_TYPE)    ","
-                     "(SELECT name FROM enum_public_request_status WHERE id=pr.status)"     KNOWN_AS(COL_PUB_REQ_STATUS)  " "
-              "FROM public_request_auth pra "
-              "LEFT JOIN public_request pr ON pr.id=pra.id "
-              "LEFT JOIN public_request_objects_map prom ON prom.request_id=pr.id "
-              "LEFT JOIN object_registry obr ON obr.id=prom.object_id AND "
-                                               "obr.type=(SELECT id FROM enum_object_type WHERE name='contact') "
-              "WHERE pra.identification=$1::TEXT",
-              Database::query_param_list(_ident_request_id)
-                                        (_password));
+              "SELECT object_id "
+              "FROM public_request_objects_map "
+              "WHERE request_id=$1::BIGINT AND "
+                    "(SELECT type=(SELECT id FROM enum_object_type WHERE name='contact') "
+                     "FROM object_registry WHERE id=object_id)",
+              Database::query_param_list(locked.get_public_request_id()));
         if (dbres.size() <= 0) {
-            throw IdentificationFailed("no public request found");
+            throw IdentificationFailed("no contact associated with this public request");
         }
-        const Database::Row pra_info = dbres[0];
-        if (!static_cast< bool >(pra_info[COL_AUTH_SUCCESSFUL])) {
+        const ContactId contact_id = static_cast< ContactId >(dbres[0][0]);
+        if (!pub_req_info.check_password(_password)) {
             throw IdentificationFailed("password doesn't match");
         }
-        if (pra_info[COL_PUB_REQ_ID].isnull()) {
-            throw std::runtime_error("no public request associated with this identification");
-        }
-        const Fred::PublicRequest::Status::Value pub_req_status = Fred::PublicRequest::Status::from(
-            static_cast< std::string >(pra_info[COL_PUB_REQ_STATUS]));
-        switch (pub_req_status) {
+        switch (pub_req_info.get_status()) {
         case Fred::PublicRequest::Status::NEW:
             break;
         case Fred::PublicRequest::Status::ANSWERED:
@@ -344,12 +325,6 @@ ContactId MojeID2Impl::process_registration_request(
         case Fred::PublicRequest::Status::INVALIDATED:
             throw IdentificationAlreadyInvalidated("identification already invalidated");
         }
-        if (pra_info[COL_CONTACT_ID].isnull()) {
-            throw std::runtime_error("no contact associated with this public request");
-        }
-        const Fred::PublicRequestId pub_req_id   = static_cast< Fred::PublicRequestId >(pra_info[COL_PUB_REQ_ID]);
-        const ContactId             contact_id   = static_cast< ContactId >            (pra_info[COL_CONTACT_ID]);
-        const std::string           pub_req_type = static_cast< std::string >          (pra_info[COL_PUB_REQ_TYPE]);
         return contact_id;
     }
     catch (const std::exception &e) {
