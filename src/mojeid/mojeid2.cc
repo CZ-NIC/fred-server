@@ -35,6 +35,7 @@
 #include "util/cfg/config_handler_decl.h"
 
 #include <algorithm>
+#include <map>
 
 namespace Registry {
 namespace MojeID {
@@ -292,6 +293,36 @@ Fred::InfoContactData& MojeID2Impl::transfer_contact_prepare(
     }
 }
 
+namespace {
+
+struct PubReqType
+{
+    enum Value
+    {
+        CONTACT_CONDITIONAL_IDENTIFICATION,
+        CONDITIONALLY_IDENTIFIED_CONTACT_TRANSFER,
+        IDENTIFIED_CONTACT_TRANSFER,
+    };
+    static Value from(const std::string &_type)
+    {
+        typedef std::map< std::string, Value > StrToValue;
+        static StrToValue convert;
+        if (convert.empty()) {
+            using namespace Fred::MojeID::PublicRequest;
+            convert[ContactConditionalIdentification::iface().get_public_request_type()]       = CONTACT_CONDITIONAL_IDENTIFICATION;
+            convert[ConditionallyIdentifiedContactTransfer::iface().get_public_request_type()] = CONDITIONALLY_IDENTIFIED_CONTACT_TRANSFER;
+            convert[IdentifiedContactTransfer::iface().get_public_request_type()]              = IDENTIFIED_CONTACT_TRANSFER;
+        }
+        StrToValue::const_iterator value_ptr = convert.find(_type);
+        if (value_ptr != convert.end()) {
+            return value_ptr->second;
+        }
+        throw std::runtime_error("unexpected public request type " + _type);
+    }
+};
+
+}//namespace Registry::MojeID::{anonymous}
+
 ContactId MojeID2Impl::process_registration_request(
         const std::string &_ident_request_id,
         const std::string &_password,
@@ -324,6 +355,16 @@ ContactId MojeID2Impl::process_registration_request(
             throw IdentificationAlreadyProcessed("identification already processed");
         case Fred::PublicRequest::Status::INVALIDATED:
             throw IdentificationAlreadyInvalidated("identification already invalidated");
+        }
+        switch (PubReqType::from(pub_req_info.get_type())) {
+        case PubReqType::CONTACT_CONDITIONAL_IDENTIFICATION:
+            break;
+        case PubReqType::CONDITIONALLY_IDENTIFIED_CONTACT_TRANSFER:
+            break;
+        case PubReqType::IDENTIFIED_CONTACT_TRANSFER:
+            break;
+        default:
+            throw std::runtime_error("unexpected public request type " + pub_req_info.get_type());
         }
         return contact_id;
     }
