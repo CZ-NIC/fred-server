@@ -26,6 +26,7 @@
 #include "src/fredlib/contact/create_contact.h"
 #include "src/fredlib/contact/info_contact.h"
 #include "src/fredlib/public_request/create_public_request_auth.h"
+#include "src/fredlib/public_request/info_public_request_auth.h"
 #include "src/fredlib/public_request/public_request_status.h"
 #include "src/fredlib/public_request/public_request_lock_guard.h"
 #include "util/random.h"

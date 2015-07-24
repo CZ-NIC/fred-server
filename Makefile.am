@@ -984,7 +984,9 @@ src_fredlib_public_request_libpublic_request_a_SOURCES = \
 		src/fredlib/public_request/public_request_object_lock_guard.cc \
 		src/fredlib/public_request/public_request_object_lock_guard.h \
 		src/fredlib/public_request/update_public_request.cc \
-		src/fredlib/public_request/update_public_request.h
+		src/fredlib/public_request/update_public_request.h \
+		src/fredlib/public_request/info_public_request.cc \
+		src/fredlib/public_request/info_public_request_auth.cc
 #
 # src/fredlib/public_request/libpublic_request.a
 
