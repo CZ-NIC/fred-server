@@ -38,7 +38,8 @@ CreatePublicRequest& CreatePublicRequest::set_registrar_id(RegistrarId _id)
 }
 
 PublicRequestId CreatePublicRequest::exec(OperationContext &_ctx,
-                                          const PublicRequestObjectLockGuard &_locked_object)const
+                                          const PublicRequestObjectLockGuard &_locked_object,
+                                          const Optional< LogRequestId > &_create_log_request_id)const
 {
     try {
         Database::query_param_list params(type_);                                           // $1::TEXT
@@ -57,17 +58,24 @@ PublicRequestId CreatePublicRequest::exec(OperationContext &_ctx,
         }
         else {
             params(Database::QPNull);                                                       // $5::BIGINT
-        };
+        }
+        if (_create_log_request_id.isset()) {
+            params(_create_log_request_id.get_value());                                     // $6::BIGINT
+        }
+        else {
+            params(Database::QPNull);                                                       // $6::BIGINT
+        }
+        static const std::string prs_new = PublicRequest::Status(PublicRequest::Status::NEW).into< std::string >();
         const Database::Result res = _ctx.get_conn().exec_params(
             "WITH request AS ("
                 "INSERT INTO public_request "
                     "(request_type,status,resolve_time,reason,email_to_answer,answer_email_id,registrar_id,"
                      "create_request_id,resolve_request_id) "
-                "SELECT eprt.id,eprs.id,NULL,$3::TEXT,$4::TEXT,NULL,$5::BIGINT,NULL,NULL "
+                "SELECT eprt.id,eprs.id,NULL,$3::TEXT,$4::TEXT,NULL,$5::BIGINT,$6::BIGINT,NULL "
                 "FROM enum_public_request_type eprt,"
                      "enum_public_request_status eprs "
                 "WHERE eprt.name=$1::TEXT AND "
-                      "eprs.name='" + PublicRequest::Status(PublicRequest::Status::NEW).into< std::string >() + "' "
+                      "eprs.name='" + prs_new + "' "
                 "RETURNING id) "
             "INSERT INTO public_request_objects_map (request_id,object_id) "
                 "SELECT id,$2::BIGINT FROM request "

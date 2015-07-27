@@ -36,6 +36,7 @@ namespace Fred {
 class CreatePublicRequest
 {
 public:
+    typedef ::uint64_t LogRequestId;///< logging request identification
     DECLARE_EXCEPTION_DATA(unknown_type, std::string);///< exception members for bad public request type
     DECLARE_EXCEPTION_DATA(unknown_registrar_id, RegistrarId);///< exception members for bad registrar id
     struct Exception /// Something wrong happened
@@ -88,10 +89,13 @@ public:
      * Executes creation.
      * @param _ctx contains reference to database and logging interface
      * @param _locked_object guarantees exclusive access to all public requests of given object
+     * @param _create_log_request_id associated request id in logger
      * @return unique numeric identification of just created public request
      * @throw Exception if something wrong happened
      */
-    PublicRequestId exec(OperationContext &_ctx, const PublicRequestObjectLockGuard &_locked_object)const;
+    PublicRequestId exec(OperationContext &_ctx,
+                         const PublicRequestObjectLockGuard &_locked_object,
+                         const Optional< LogRequestId > &_create_log_request_id = Optional< LogRequestId >())const;
 private:
     const std::string type_;
     Optional< std::string > reason_;
