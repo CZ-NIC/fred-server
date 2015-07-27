@@ -4,46 +4,22 @@
 
 namespace Fred {
 
-UpdatePublicRequest::UpdatePublicRequest()
-:   is_resolve_time_set_to_now_(false)
-{
-}
-
 UpdatePublicRequest::UpdatePublicRequest(const Optional< PublicRequest::Status::Value > &_status,
-                                         const Optional< Nullable< Time > > &_resolve_time,
                                          const Optional< Nullable< std::string > > &_reason,
                                          const Optional< Nullable< std::string > > &_email_to_answer,
                                          const Optional< Nullable< EmailId > > &_answer_email_id,
-                                         const Optional< Nullable< RegistrarId > > &_registrar_id,
-                                         const Optional< Nullable< RequestId > > &_create_request_id,
-                                         const Optional< Nullable< RequestId > > &_resolve_request_id)
+                                         const Optional< Nullable< RegistrarId > > &_registrar_id)
 :   status_(_status),
-    resolve_time_(_resolve_time),
-    is_resolve_time_set_to_now_(false),
     reason_(_reason),
     email_to_answer_(_email_to_answer),
     answer_email_id_(_answer_email_id),
-    registrar_id_(_registrar_id),
-    create_request_id_(_create_request_id),
-    resolve_request_id_(_resolve_request_id)
+    registrar_id_(_registrar_id)
 {
 }
 
 UpdatePublicRequest& UpdatePublicRequest::set_status(PublicRequest::Status::Value _status)
 {
     status_ = _status;
-    return *this;
-}
-
-UpdatePublicRequest& UpdatePublicRequest::set_resolve_time(const Nullable< Time > &_time)
-{
-    resolve_time_ = _time;
-    return *this;
-}
-
-UpdatePublicRequest& UpdatePublicRequest::set_resolve_time_to_now()
-{
-    is_resolve_time_set_to_now_ = true;
     return *this;
 }
 
@@ -71,20 +47,9 @@ UpdatePublicRequest& UpdatePublicRequest::set_registrar_id(const Nullable< Regis
     return *this;
 }
 
-UpdatePublicRequest& UpdatePublicRequest::set_create_request_id(const Nullable< RequestId > &_id)
-{
-    create_request_id_ = _id;
-    return *this;
-}
-
-UpdatePublicRequest& UpdatePublicRequest::set_resolve_request_id(const Nullable< RequestId > &_id)
-{
-    resolve_request_id_ = _id;
-    return *this;
-}
-
 UpdatePublicRequest::Result UpdatePublicRequest::exec(OperationContext &_ctx,
-                                                      const PublicRequestLockGuard &_locked_public_request)const
+                                                      const PublicRequestLockGuard &_locked_public_request,
+                                                      const Optional< LogRequestId > &_resolve_log_request_id)const
 {
     const PublicRequestId public_request_id = _locked_public_request.get_public_request_id();
     Database::query_param_list params(public_request_id);
@@ -93,24 +58,28 @@ UpdatePublicRequest::Result UpdatePublicRequest::exec(OperationContext &_ctx,
 
     if (status_.isset()) {
         try {
+            switch (status_.get_value()) {
+            case PublicRequest::Status::ANSWERED:
+            case PublicRequest::Status::INVALIDATED:
+                break;
+            default:
+                throw std::runtime_error("unable to set other public request state than 'answered' or 'invalidated'");
+            }
             sql_set << "status=(SELECT id FROM enum_public_request_status WHERE name=$"
                     << params.add(PublicRequest::Status(status_.get_value()).into< std::string >())
-                    << "::TEXT),";
+                    << "::TEXT),"
+                       "resolve_time=CASE WHEN status=(SELECT id FROM enum_public_request_status WHERE name=$"
+                    << params.add(PublicRequest::Status(PublicRequest::Status::NEW).into< std::string >())
+                    << "::TEXT) "
+                                         "THEN NOW() "
+                                         "ELSE resolve_time "
+                                    "END,";
         }
-        catch (const std::runtime_error&) {
+        catch (const std::runtime_error &e) {
             bad_params.set_bad_public_request_status(status_.get_value());
         }
     }
 
-    if (is_resolve_time_set_to_now_) {
-        sql_set << "resolve_time=NOW(),";
-    }
-    else if (resolve_time_.isset()) {
-        sql_set << "resolve_time=$"
-                << (resolve_time_.get_value().isnull() ? params.add(Database::QPNull)
-                                                       : params.add(resolve_time_.get_value().get_value()))
-                << "::TIMESTAMP WITHOUT TIME ZONE,";
-    }
 
     if (reason_.isset()) {
         sql_set << "reason=$"
@@ -158,18 +127,8 @@ UpdatePublicRequest::Result UpdatePublicRequest::exec(OperationContext &_ctx,
         }
     }
 
-    if (create_request_id_.isset()) {
-        sql_set << "create_request_id=$"
-                << (create_request_id_.get_value().isnull() ? params.add(Database::QPNull)
-                                                            : params.add(create_request_id_.get_value().get_value()))
-                << "::BIGINT,";
-    }
-
-    if (resolve_request_id_.isset()) {
-        sql_set << "resolve_request_id=$"
-                << (resolve_request_id_.get_value().isnull() ? params.add(Database::QPNull)
-                                                             : params.add(resolve_request_id_.get_value().get_value()))
-                << "::BIGINT,";
+    if (_resolve_log_request_id.isset()) {
+        sql_set << "resolve_request_id=$" << params.add(_resolve_log_request_id.get_value()) << "::BIGINT,";
     }
 
     if (sql_set.str().empty()) {

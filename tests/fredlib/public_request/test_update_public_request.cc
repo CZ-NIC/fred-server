@@ -279,7 +279,7 @@ BOOST_AUTO_TEST_CASE(update_public_request_wrong_public_request_id)
     BOOST_CHECK_EXCEPTION(
     try {
         Fred::UpdatePublicRequest()
-            .set_status(Fred::PublicRequest::Status::NEW)
+            .set_status(Fred::PublicRequest::Status::ANSWERED)
             .exec(ctx, PublicRequestLockGuardFake(bad_public_request_id));
     }
     catch(const Fred::UpdatePublicRequest::Exception &e) {
@@ -407,10 +407,12 @@ BOOST_AUTO_TEST_CASE(update_public_request_wrong_public_request_status)
 {
     Fred::OperationContextCreator ctx;
 
+    const std::string email = "noreply@nic.cz";
     BOOST_CHECK_EXCEPTION(
     try {
         Fred::UpdatePublicRequest()
             .set_status(bad_enum_status)
+            .set_email_to_answer(email)
             .exec(ctx, Fred::PublicRequestLockGuardById(ctx, create_result.public_request_id));
     }
     catch(const Fred::UpdatePublicRequest::Exception &e) {
@@ -449,18 +451,14 @@ BOOST_AUTO_TEST_CASE(update_public_request_ok)
     const Fred::UpdatePublicRequest::EmailId email_id =
         static_cast< Fred::UpdatePublicRequest::EmailId >(ctx.get_conn().exec(
         "SELECT MAX(id) FROM mail_archive")[0][0]);
-    const Fred::UpdatePublicRequest::RequestId create_request_id = 10;
-    const Fred::UpdatePublicRequest::RequestId resolve_request_id = 2 * create_request_id + 10;
+    const Fred::UpdatePublicRequest::RequestId resolve_request_id = 20;
     Fred::UpdatePublicRequest::Result result = Fred::UpdatePublicRequest()
         .set_status(enum_status)
-        .set_resolve_time_to_now()
         .set_reason(reason)
         .set_email_to_answer(email)
         .set_answer_email_id(email_id)
         .set_registrar_id(registrar_id)
-        .set_create_request_id(create_request_id)
-        .set_resolve_request_id(resolve_request_id)
-        .exec(ctx, locked_request);
+        .exec(ctx, locked_request, resolve_request_id);
     BOOST_CHECK(result.public_request_id == create_result.public_request_id);
     BOOST_CHECK(result.public_request_type == public_request_type.get_public_request_type());
     BOOST_CHECK(result.object_id == contact_id);
@@ -475,8 +473,7 @@ BOOST_AUTO_TEST_CASE(update_public_request_ok)
             "email_to_answer=$5::TEXT,"
             "answer_email_id=$6::BIGINT,"
             "registrar_id=$7::BIGINT,"
-            "create_request_id=$8::BIGINT,"
-            "resolve_request_id=$9::BIGINT "
+            "resolve_request_id=$8::BIGINT "
         "FROM public_request pr "
         "WHERE id=$1::BIGINT",
         Database::query_param_list
@@ -487,7 +484,6 @@ BOOST_AUTO_TEST_CASE(update_public_request_ok)
             (email)
             (email_id)
             (registrar_id)
-            (create_request_id)
             (resolve_request_id));
     BOOST_CHECK(res.size() == 1);
     BOOST_CHECK(static_cast< Fred::PublicRequestId >(res[0][0]) == create_result.public_request_id);
@@ -500,53 +496,6 @@ BOOST_AUTO_TEST_CASE(update_public_request_ok)
     BOOST_CHECK(!res[0][7].isnull() && static_cast< bool >(res[0][7]));
     BOOST_CHECK(!res[0][8].isnull() && static_cast< bool >(res[0][8]));
     BOOST_CHECK(!res[0][9].isnull() && static_cast< bool >(res[0][9]));
-    BOOST_CHECK(!res[0][10].isnull() && static_cast< bool >(res[0][10]));
-
-    const std::string resolve_time = "2015-05-14 10:11:12";
-    result = Fred::UpdatePublicRequest()
-        .set_resolve_time(boost::posix_time::time_from_string(resolve_time))
-        .set_reason(Nullable< std::string >())
-        .set_email_to_answer(Nullable< std::string >())
-        .set_answer_email_id(Nullable< Fred::UpdatePublicRequest::EmailId >())
-        .set_registrar_id(Nullable< Fred::RegistrarId >())
-        .set_create_request_id(Nullable< Fred::UpdatePublicRequest::RequestId >())
-        .set_resolve_request_id(Nullable< Fred::UpdatePublicRequest::RequestId >())
-        .exec(ctx, locked_request);
-    BOOST_CHECK(result.public_request_id == create_result.public_request_id);
-    BOOST_CHECK(result.public_request_type == public_request_type.get_public_request_type());
-    BOOST_CHECK(result.object_id == contact_id);
-    res = ctx.get_conn().exec_params(
-        "SELECT "
-            "id,"
-            "(SELECT name=$2::TEXT FROM enum_public_request_type WHERE id=pr.request_type),"
-            "create_time<NOW(),"
-            "(SELECT name=$3::TEXT FROM enum_public_request_status WHERE id=pr.status),"
-            "resolve_time=$4::TIMESTAMP WITHOUT TIME ZONE,"
-            "reason IS NULL,"
-            "email_to_answer IS NULL,"
-            "answer_email_id IS NULL,"
-            "registrar_id IS NULL,"
-            "create_request_id IS NULL,"
-            "resolve_request_id IS NULL "
-        "FROM public_request pr "
-        "WHERE id=$1::BIGINT",
-        Database::query_param_list
-            (locked_request.get_public_request_id())
-            (public_request_type.get_public_request_type())
-            (str_status)
-            (resolve_time));
-    BOOST_CHECK(res.size() == 1);
-    BOOST_CHECK(static_cast< Fred::PublicRequestId >(res[0][0]) == create_result.public_request_id);
-    BOOST_CHECK(!res[0][1].isnull() && static_cast< bool >(res[0][1]));
-    BOOST_CHECK(static_cast< bool >(res[0][2]));
-    BOOST_CHECK(!res[0][3].isnull() && static_cast< bool >(res[0][3]));
-    BOOST_CHECK(!res[0][4].isnull() && static_cast< bool >(res[0][4]));
-    BOOST_CHECK(static_cast< bool >(res[0][5]));
-    BOOST_CHECK(static_cast< bool >(res[0][6]));
-    BOOST_CHECK(static_cast< bool >(res[0][7]));
-    BOOST_CHECK(static_cast< bool >(res[0][8]));
-    BOOST_CHECK(static_cast< bool >(res[0][9]));
-    BOOST_CHECK(static_cast< bool >(res[0][10]));
 
     ctx.commit_transaction();
 }
