@@ -335,19 +335,26 @@ ContactId MojeID2Impl::process_registration_request(
         Fred::PublicRequestLockGuardByIdentification locked(ctx, _ident_request_id);
         const Fred::PublicRequestAuthInfo pub_req_info(ctx, locked);
         const Database::Result dbres = ctx.get_conn().exec_params(
-              "SELECT object_id "
+              "SELECT object_id,"
+                     "EXISTS(SELECT 1 FROM public_request pr "
+                            "WHERE pr.id=request_id AND "
+                                  "pr.create_time<(SELECT GREATEST(o.update,o.trdate) FROM object o "
+                                                  "WHERE o.id=object_id)"
+                           ") AS object_changed "
               "FROM public_request_objects_map "
               "WHERE request_id=$1::BIGINT AND "
                     "(SELECT type=(SELECT id FROM enum_object_type WHERE name='contact') "
                      "FROM object_registry WHERE id=object_id)",
               Database::query_param_list(locked.get_public_request_id()));
+
         if (dbres.size() <= 0) {
             throw IdentificationFailed("no contact associated with this public request");
         }
-        const ContactId contact_id = static_cast< ContactId >(dbres[0][0]);
+
         if (!pub_req_info.check_password(_password)) {
             throw IdentificationFailed("password doesn't match");
         }
+
         switch (pub_req_info.get_status()) {
         case Fred::PublicRequest::Status::NEW:
             break;
@@ -356,6 +363,13 @@ ContactId MojeID2Impl::process_registration_request(
         case Fred::PublicRequest::Status::INVALIDATED:
             throw IdentificationAlreadyInvalidated("identification already invalidated");
         }
+
+        const bool contact_changed = static_cast< bool >(dbres[0][1]);
+        if (contact_changed) {
+            throw ContactChanged("contact data changed after the public request had been created");
+        }
+
+        const ContactId contact_id = static_cast< ContactId >(dbres[0][0]);
         switch (PubReqType::from(pub_req_info.get_type())) {
         case PubReqType::CONTACT_CONDITIONAL_IDENTIFICATION:
             break;

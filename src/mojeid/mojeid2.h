@@ -131,6 +131,12 @@ public:
         IdentificationAlreadyInvalidated(const std::string &_msg):std::runtime_error(_msg) { }
     };
 
+    class ContactChanged:public std::runtime_error
+    {
+    public:
+        ContactChanged(const std::string &_msg):std::runtime_error(_msg) { }
+    };
+
     ContactId process_registration_request(
         const std::string &_ident_request_id,
         const std::string &_password,
