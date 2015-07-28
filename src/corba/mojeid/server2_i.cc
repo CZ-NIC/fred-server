@@ -133,6 +133,9 @@ void Server_i::update_contact_prepare(
     catch (const MojeID2Impl::IdentificationAlreadyInvalidated&) {
         throw IDL::IDENTIFICATION_ALREADY_INVALIDATED();
     }
+    catch (const MojeID2Impl::ContactChanged&) {
+        throw IDL::OBJECT_CHANGED();
+    }
     catch (...) {
         throw IDL::INTERNAL_SERVER_ERROR();
     }
