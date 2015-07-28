@@ -24,6 +24,7 @@
 #ifndef MOJEID2_H_06D795C17DD0FF3D98B375032F99493A//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
 #define MOJEID2_H_06D795C17DD0FF3D98B375032F99493A
 
+#include "src/corba/MojeID2.hh"
 #include "src/mojeid/mojeid2_checkers.h"
 
 #include <vector>
@@ -31,9 +32,6 @@
 
 namespace Registry {
 namespace MojeID {
-
-typedef unsigned long long ContactId;
-typedef unsigned long long LogRequestId;
 
 typedef std::vector< std::string > HandleList;
 

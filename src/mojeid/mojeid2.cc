@@ -385,7 +385,7 @@ ContactId MojeID2Impl::process_registration_request(
             throw IdentificationFailed(msg);
         }
 
-        const ContactId contact_id = pub_req_info.get_object_id().get_value();
+        const Fred::ObjectId object_id = pub_req_info.get_object_id().get_value();
         const Database::Result dbres = ctx.get_conn().exec_params(
               "SELECT EXISTS(SELECT 1 FROM public_request "
                             "WHERE id=$1::BIGINT AND "
@@ -393,7 +393,7 @@ ContactId MojeID2Impl::process_registration_request(
                                                "WHERE id=$2::BIGINT)"
                            ") AS object_changed",
               Database::query_param_list(locked_request.get_public_request_id())//$1::BIGINT
-                                        (contact_id));                          //$2::BIGINT
+                                        (object_id));                           //$2::BIGINT
 
         if (dbres.size() != 1) {
             throw std::runtime_error("something wrong happened database is crazy");
@@ -410,7 +410,8 @@ ContactId MojeID2Impl::process_registration_request(
             throw IdentificationFailed("password doesn't match");
         }
 
-        const Fred::InfoContactData contact = Fred::InfoContactById(contact_id).exec(ctx).info_contact_data;
+        const Fred::InfoContactData contact = Fred::InfoContactById(object_id).exec(ctx).info_contact_data;
+
         switch (pub_req_type) {
         case PubReqType::CONTACT_CONDITIONAL_IDENTIFICATION:
             break;
@@ -419,7 +420,7 @@ ContactId MojeID2Impl::process_registration_request(
         case PubReqType::IDENTIFIED_CONTACT_TRANSFER:
             break;
         }
-        return contact_id;
+        return contact.id;
     }
     catch (const Fred::InfoContactById::Exception &e) {
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());

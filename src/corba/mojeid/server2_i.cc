@@ -41,10 +41,10 @@ Server_i::~Server_i()
 }
 
 //   Methods corresponding to IDL attributes and operations
-::CORBA::ULongLong Server_i::create_contact_prepare(
+ContactId Server_i::create_contact_prepare(
     const CreateContact &_contact,
     const char *_trans_id,
-    ::CORBA::ULongLong _log_request_id,
+    LogRequestId _log_request_id,
     ::CORBA::String_out _identification)
 {
     try {
@@ -72,7 +72,7 @@ Server_i::~Server_i()
 Registry::MojeID::InfoContact* Server_i::transfer_contact_prepare(
         const char *_handle,
         const char *_trans_id,
-        ::CORBA::ULongLong _log_request_id,
+        LogRequestId _log_request_id,
         ::CORBA::String_out _identification)
 {
     try {
@@ -112,14 +112,14 @@ Registry::MojeID::InfoContact* Server_i::transfer_contact_prepare(
 void Server_i::update_contact_prepare(
         const UpdateContact &_contact,
         const char *_trans_id,
-        ::CORBA::ULongLong _log_request_id)
+        LogRequestId _log_request_id)
 {
 }//update_contact_prepared
 
 ::CORBA::ULongLong Server_i::process_registration_request(
         const char *ident_request_id,
         const char *password,
-        ::CORBA::ULongLong log_request_id)
+        LogRequestId log_request_id)
 {
     try {
         return impl_ptr_->process_registration_request(ident_request_id, password, log_request_id);
@@ -144,7 +144,7 @@ void Server_i::update_contact_prepare(
 void Server_i::process_identification_request(
         ::CORBA::ULongLong contact_id,
         const char *password,
-        ::CORBA::ULongLong log_request_id)
+        LogRequestId log_request_id)
 {
     try {
         impl_ptr_->process_identification_request(contact_id, password, log_request_id);
@@ -184,7 +184,7 @@ Buffer* Server_i::get_validation_pdf(
 
 void Server_i::create_validation_request(
         ::CORBA::ULongLong _contact_id,
-        ::CORBA::ULongLong _log_request_id)
+        LogRequestId _log_request_id)
 {
 }//create_validation_request
 
@@ -195,17 +195,17 @@ ContactStateInfoList* Server_i::get_contacts_state_changes(
 }//get_contacts_state_changes
 
 ContactStateInfo* Server_i::get_contact_state(
-        ::CORBA::ULongLong _contact_id)
+        ContactId _contact_id)
 {
     return NULL;
 }//get_contact_state
 
-void Server_i::cancel_contact_account_prepare(
-        ::CORBA::ULongLong _contact_id,
+void Server_i::cancel_account_prepare(
+        ContactId _contact_id,
         const char *_trans_id,
-        ::CORBA::ULongLong _log_request_id)
+        LogRequestId _log_request_id)
 {
-}//cancel_contact_account_prepare
+}//cancel_account_prepare
 
 ContactHandleList* Server_i::get_unregistrable_handles()
 {
@@ -220,25 +220,25 @@ ContactHandleList* Server_i::get_unregistrable_handles()
 }//get_unregistrable_handles
 
 void Server_i::send_new_pin3(
-      ::CORBA::ULongLong contact_id,
-      ::CORBA::ULongLong log_request_id)
+      ContactId contact_id,
+      LogRequestId log_request_id)
 {
 }
 
 void Server_i::send_mojeid_card(
-      ::CORBA::ULongLong contact_id,
-      ::CORBA::ULongLong log_request_id)
+      ContactId contact_id,
+      LogRequestId log_request_id)
 {
 }
 
-::CORBA::ULongLong Server_i::get_contact_id(
+ContactId Server_i::get_contact_id(
         const char *_handle)
 {
     return 0;
 }//get_contact_id
 
 char* Server_i::get_contact_authinfo(
-        ::CORBA::ULongLong contact_id)
+        ContactId contact_id)
 {
     return NULL;
 }

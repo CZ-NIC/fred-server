@@ -43,32 +43,32 @@ public:
     Server_i(const std::string &_server_name);
     virtual ~Server_i();
     // methods corresponding to defined IDL attributes and operations
-    ::CORBA::ULongLong create_contact_prepare(
+    ContactId create_contact_prepare(
         const CreateContact &c,
         const char *trans_id,
-        ::CORBA::ULongLong log_request_id,
+        LogRequestId log_request_id,
         ::CORBA::String_out ident);
 
     Registry::MojeID::InfoContact* transfer_contact_prepare(
         const char *handle,
         const char *trans_id,
-        ::CORBA::ULongLong log_request_id,
+        LogRequestId log_request_id,
         ::CORBA::String_out ident);
 
     void update_contact_prepare(
         const UpdateContact &c,
         const char *trans_id,
-        ::CORBA::ULongLong log_request_id);
+        LogRequestId log_request_id);
 
     ::CORBA::ULongLong process_registration_request(
         const char *ident_request_id,
         const char *password,
-        ::CORBA::ULongLong log_request_id);
+        LogRequestId log_request_id);
 
     void process_identification_request(
-        ::CORBA::ULongLong contact_id,
+        ContactId contact_id,
         const char *password,
-        ::CORBA::ULongLong log_request_id);
+        LogRequestId log_request_id);
 
     void commit_prepared_transaction(
         const char *trans_id);
@@ -77,38 +77,38 @@ public:
         const char *trans_id);
 
     Buffer* get_validation_pdf(
-        ::CORBA::ULongLong contact_id);
+        ContactId contact_id);
 
     void create_validation_request(
-        ::CORBA::ULongLong contact_id,
-        ::CORBA::ULongLong log_request_id);
+        ContactId contact_id,
+        LogRequestId log_request_id);
 
     ContactStateInfoList* get_contacts_state_changes(
         ::CORBA::ULong last_hours);
 
     ContactStateInfo* get_contact_state(
-        ::CORBA::ULongLong contact_id);
+        ContactId contact_id);
 
-    void cancel_contact_account_prepare(
-        ::CORBA::ULongLong contact_id,
+    void cancel_account_prepare(
+        ContactId contact_id,
         const char *trans_id,
-        ::CORBA::ULongLong log_request_id);
+        LogRequestId log_request_id);
 
     ContactHandleList* get_unregistrable_handles();
 
     void send_new_pin3(
-        ::CORBA::ULongLong contact_id,
-        ::CORBA::ULongLong log_request_id);
+        ContactId contact_id,
+        LogRequestId log_request_id);
 
     void send_mojeid_card(
-        ::CORBA::ULongLong contact_id,
-        ::CORBA::ULongLong log_request_id);
+        ContactId contact_id,
+        LogRequestId log_request_id);
 
-    ::CORBA::ULongLong get_contact_id(
+    ContactId get_contact_id(
         const char *handle);
 
     char* get_contact_authinfo(
-        ::CORBA::ULongLong contact_id);
+        ContactId contact_id);
 
     struct Test
     {
