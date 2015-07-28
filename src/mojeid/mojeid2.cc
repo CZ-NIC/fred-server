@@ -27,6 +27,7 @@
 #include "src/fredlib/contact/info_contact.h"
 #include "src/fredlib/public_request/create_public_request_auth.h"
 #include "src/fredlib/public_request/info_public_request_auth.h"
+#include "src/fredlib/public_request/update_public_request.h"
 #include "src/fredlib/public_request/public_request_status.h"
 #include "src/fredlib/public_request/public_request_lock_guard.h"
 #include "util/random.h"
@@ -309,9 +310,9 @@ struct PubReqType
         static StrToValue convert;
         if (convert.empty()) {
             using namespace Fred::MojeID::PublicRequest;
-            convert[ContactConditionalIdentification::iface().get_public_request_type()]       = CONTACT_CONDITIONAL_IDENTIFICATION;
-            convert[ConditionallyIdentifiedContactTransfer::iface().get_public_request_type()] = CONDITIONALLY_IDENTIFIED_CONTACT_TRANSFER;
-            convert[IdentifiedContactTransfer::iface().get_public_request_type()]              = IDENTIFIED_CONTACT_TRANSFER;
+            convert[into_string< ContactConditionalIdentification >()]       = CONTACT_CONDITIONAL_IDENTIFICATION;
+            convert[into_string< ConditionallyIdentifiedContactTransfer >()] = CONDITIONALLY_IDENTIFIED_CONTACT_TRANSFER;
+            convert[into_string< IdentifiedContactTransfer >()]              = IDENTIFIED_CONTACT_TRANSFER;
         }
         StrToValue::const_iterator value_ptr = convert.find(_type);
         if (value_ptr != convert.end()) {
@@ -319,7 +320,31 @@ struct PubReqType
         }
         throw std::runtime_error("unexpected public request type " + _type);
     }
+    template < class PUB_REQ >
+    static std::string into_string()
+    {
+        return PUB_REQ::iface().get_public_request_type();
+    }
 };
+
+enum { INVALID_LOG_REQUEST_ID = 0 };
+
+Fred::UpdatePublicRequest::Result invalidate(
+    Fred::OperationContext &_ctx,
+    const Fred::PublicRequestLockGuard &_locked_request,
+    const std::string &_reason = "",
+    LogRequestId _log_request_id = INVALID_LOG_REQUEST_ID)
+{
+    Fred::UpdatePublicRequest op_update_public_request;
+    op_update_public_request.set_status(Fred::PublicRequest::Status::INVALIDATED);
+    if (!_reason.empty()) {
+        op_update_public_request.set_reason(_reason);
+    }
+    if (_log_request_id == INVALID_LOG_REQUEST_ID) {
+        return op_update_public_request.exec(_ctx, _locked_request);
+    }
+    return op_update_public_request.exec(_ctx, _locked_request, _log_request_id);
+}
 
 }//namespace Registry::MojeID::{anonymous}
 
@@ -332,28 +357,8 @@ ContactId MojeID2Impl::process_registration_request(
 
     try {
         Fred::OperationContextCreator ctx;
-        Fred::PublicRequestLockGuardByIdentification locked(ctx, _ident_request_id);
-        const Fred::PublicRequestAuthInfo pub_req_info(ctx, locked);
-        const Database::Result dbres = ctx.get_conn().exec_params(
-              "SELECT object_id,"
-                     "EXISTS(SELECT 1 FROM public_request pr "
-                            "WHERE pr.id=request_id AND "
-                                  "pr.create_time<(SELECT GREATEST(o.update,o.trdate) FROM object o "
-                                                  "WHERE o.id=object_id)"
-                           ") AS object_changed "
-              "FROM public_request_objects_map "
-              "WHERE request_id=$1::BIGINT AND "
-                    "(SELECT type=(SELECT id FROM enum_object_type WHERE name='contact') "
-                     "FROM object_registry WHERE id=object_id)",
-              Database::query_param_list(locked.get_public_request_id()));
-
-        if (dbres.size() <= 0) {
-            throw IdentificationFailed("no contact associated with this public request");
-        }
-
-        if (!pub_req_info.check_password(_password)) {
-            throw IdentificationFailed("password doesn't match");
-        }
+        Fred::PublicRequestLockGuardByIdentification locked_request(ctx, _ident_request_id);
+        const Fred::PublicRequestAuthInfo pub_req_info(ctx, locked_request);
 
         switch (pub_req_info.get_status()) {
         case Fred::PublicRequest::Status::NEW:
@@ -364,23 +369,64 @@ ContactId MojeID2Impl::process_registration_request(
             throw IdentificationAlreadyInvalidated("identification already invalidated");
         }
 
-        const bool contact_changed = static_cast< bool >(dbres[0][1]);
-        if (contact_changed) {
-            throw ContactChanged("contact data changed after the public request had been created");
+        const PubReqType::Value pub_req_type = PubReqType::from(pub_req_info.get_type());
+        switch (pub_req_type) {
+        case PubReqType::CONTACT_CONDITIONAL_IDENTIFICATION:
+        case PubReqType::CONDITIONALLY_IDENTIFIED_CONTACT_TRANSFER:
+        case PubReqType::IDENTIFIED_CONTACT_TRANSFER:
+            break;
+        default:
+            throw std::runtime_error("unexpected public request type " + pub_req_info.get_type());
         }
 
-        const ContactId contact_id = static_cast< ContactId >(dbres[0][0]);
-        switch (PubReqType::from(pub_req_info.get_type())) {
+        if (pub_req_info.get_object_id().isnull()) {
+            static const std::string msg = "no object associated with this public request";
+            invalidate(ctx, locked_request, msg, _log_request_id);
+            throw IdentificationFailed(msg);
+        }
+
+        const ContactId contact_id = pub_req_info.get_object_id().get_value();
+        const Database::Result dbres = ctx.get_conn().exec_params(
+              "SELECT EXISTS(SELECT 1 FROM public_request "
+                            "WHERE id=$1::BIGINT AND "
+                                  "create_time<(SELECT GREATEST(update,trdate) FROM object "
+                                               "WHERE id=$2::BIGINT)"
+                           ") AS object_changed",
+              Database::query_param_list(locked_request.get_public_request_id())//$1::BIGINT
+                                        (contact_id));                          //$2::BIGINT
+
+        if (dbres.size() != 1) {
+            throw std::runtime_error("something wrong happened database is crazy");
+        }
+
+        const bool contact_changed = static_cast< bool >(dbres[0][0]);
+        if (contact_changed) {
+            static const std::string msg = "contact data changed after the public request had been created";
+            invalidate(ctx, locked_request, msg, _log_request_id);
+            throw ContactChanged(msg);
+        }
+
+        if (!pub_req_info.check_password(_password)) {
+            throw IdentificationFailed("password doesn't match");
+        }
+
+        const Fred::InfoContactData contact = Fred::InfoContactById(contact_id).exec(ctx).info_contact_data;
+        switch (pub_req_type) {
         case PubReqType::CONTACT_CONDITIONAL_IDENTIFICATION:
             break;
         case PubReqType::CONDITIONALLY_IDENTIFIED_CONTACT_TRANSFER:
             break;
         case PubReqType::IDENTIFIED_CONTACT_TRANSFER:
             break;
-        default:
-            throw std::runtime_error("unexpected public request type " + pub_req_info.get_type());
         }
         return contact_id;
+    }
+    catch (const Fred::InfoContactById::Exception &e) {
+        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
+        if (e.is_set_unknown_object_id()) {
+            throw IdentificationFailed("no contact associated with this public request");
+        }
+        throw;
     }
     catch (const std::exception &e) {
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
