@@ -83,6 +83,7 @@ public:
     const Nullable< RegistrarId >&  get_registrar_id()const       { return registrar_id_; }
     const Nullable< LogRequestId >& get_create_request_id()const  { return create_request_id_; }
     const Nullable< LogRequestId >& get_resolve_request_id()const { return resolve_request_id_; }
+    const Nullable< ObjectId >&     get_object_id()const          { return object_id_; }
 private:
     PublicRequestId              id_;
     std::string                  type_;
@@ -95,6 +96,7 @@ private:
     Nullable< RegistrarId >      registrar_id_;
     Nullable< LogRequestId >     create_request_id_;
     Nullable< LogRequestId >     resolve_request_id_;
+    Nullable< ObjectId >         object_id_;
     friend class PublicRequestAuthInfo;
     friend bool ::operator==(const Fred::PublicRequestLockGuard&, const Fred::PublicRequestInfo&);
 };
