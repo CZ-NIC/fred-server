@@ -13,6 +13,7 @@
 #include "src/whois/nameserver_exists.h"
 #include "src/whois/is_domain_delete_pending.h"
 #include "src/whois/object_state.h"
+#include "src/whois/registrar_group.h"
 
 #include <boost/foreach.hpp>
 #include <boost/asio.hpp>
@@ -119,9 +120,10 @@ namespace Whois {
         class IN_LIST, class IN_LIST_ELEMENT> void set_corba_seq(CORBA_SEQ& cs, const IN_LIST& il)
     {
         cs.length(il.size());
-        for(unsigned long long i = 0 ; i < il.size(); ++i)
+        unsigned long long i = 0;
+        for(typename IN_LIST::const_iterator ci = il.begin() ; ci != il.end(); ++ci,++i)
         {
-            cs[i] = set_element_of_corba_seq<CORBA_SEQ_ELEMENT, IN_LIST_ELEMENT>(il[i]);
+            cs[i] = set_element_of_corba_seq<CORBA_SEQ_ELEMENT, IN_LIST_ELEMENT>(*ci);
         }
     }
 
@@ -179,6 +181,24 @@ namespace Whois {
     Registrar, Fred::InfoRegistrarData>(const Fred::InfoRegistrarData& ile)
     {
         return wrap_registrar(ile);
+    }
+
+
+    RegistrarGroup wrap_registrar_group(const std::pair<std::string, std::vector<std::string> >& in)
+    {
+        RegistrarGroup temp;
+         temp.name = Corba::wrap_string_to_corba_string(in.first);
+
+         set_corba_seq<RegistrarHandleList, CORBA::String_var,
+             std::vector<std::string>, std::string>(temp.members, in.second);
+
+         return temp;
+     }
+
+    template<> RegistrarGroup set_element_of_corba_seq<
+    RegistrarGroup, std::pair<std::string, std::vector<std::string> > >(const std::pair<std::string, std::vector<std::string> >& ile)
+    {
+        return wrap_registrar_group(ile);
     }
 
     void wrap_object_states(StringSeq& states_seq, unsigned long long object_id)
@@ -423,6 +443,24 @@ namespace Whois {
                     registrar_seq, registrar_data_list);
 
             return registrar_seq._retn();
+        }
+        catch (...)
+        {}
+
+        // default exception handling
+        throw INTERNAL_SERVER_ERROR();
+    }
+
+    RegistrarGroupList* Server_impl::get_registrar_groups()
+    {
+        try
+        {
+            RegistrarGroupList_var reg_grp_seq = new RegistrarGroupList;
+            Fred::OperationContext ctx;
+            set_corba_seq<RegistrarGroupList, RegistrarGroup,
+                std::map<std::string, std::vector<std::string> >, std::pair<std::string, std::vector<std::string> > >(
+                reg_grp_seq, ::Whois::get_registrar_groups(ctx));
+            return reg_grp_seq._retn();
         }
         catch (...)
         {}
