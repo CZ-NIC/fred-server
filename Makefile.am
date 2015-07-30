@@ -1383,7 +1383,9 @@ src_corba_whois_libwhois2_impl_a_SOURCES = \
 		src/whois/object_state.h \
 		src/whois/object_state.cc \
 		src/whois/registrar_group.h \
-		src/whois/registrar_group.cc
+		src/whois/registrar_group.cc \
+		src/whois/registrar_certification.h \
+		src/whois/registrar_certification.cc
 #
 # src/corba/whois/libwhois2_impl.a
 

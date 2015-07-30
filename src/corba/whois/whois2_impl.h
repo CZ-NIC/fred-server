@@ -30,6 +30,8 @@ namespace Whois {
 
             RegistrarGroupList* get_registrar_groups();
 
+            RegistrarCertificationList* get_registrar_certification_list();
+
             Contact* get_contact_by_handle(const char* handle);
 
             NSSet* get_nsset_by_handle(const char* handle);

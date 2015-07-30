@@ -14,6 +14,7 @@
 #include "src/whois/is_domain_delete_pending.h"
 #include "src/whois/object_state.h"
 #include "src/whois/registrar_group.h"
+#include "src/whois/registrar_certification.h"
 
 #include <boost/foreach.hpp>
 #include <boost/asio.hpp>
@@ -200,6 +201,23 @@ namespace Whois {
     {
         return wrap_registrar_group(ile);
     }
+
+
+    RegistrarCertification wrap_registrar_certification(const ::Whois::RegistrarCertificationData& in)
+    {
+        RegistrarCertification temp;
+         temp.registrar_handle = Corba::wrap_string_to_corba_string(in.get_registrar_handle());
+         temp.score = in.get_registrar_score();
+         temp.evaluation_file_id = in.get_registrar_evaluation_file_id();
+         return temp;
+     }
+
+    template<> RegistrarCertification set_element_of_corba_seq<
+    RegistrarCertification, ::Whois::RegistrarCertificationData >(const ::Whois::RegistrarCertificationData& ile)
+    {
+        return wrap_registrar_certification(ile);
+    }
+
 
     void wrap_object_states(StringSeq& states_seq, unsigned long long object_id)
     {
@@ -461,6 +479,24 @@ namespace Whois {
                 std::map<std::string, std::vector<std::string> >, std::pair<std::string, std::vector<std::string> > >(
                 reg_grp_seq, ::Whois::get_registrar_groups(ctx));
             return reg_grp_seq._retn();
+        }
+        catch (...)
+        {}
+
+        // default exception handling
+        throw INTERNAL_SERVER_ERROR();
+    }
+
+    RegistrarCertificationList* Server_impl::get_registrar_certification_list()
+    {
+        try
+        {
+            RegistrarCertificationList_var reg_cert_seq = new RegistrarCertificationList;
+            Fred::OperationContext ctx;
+            set_corba_seq<RegistrarCertificationList, RegistrarCertification,
+                std::vector< ::Whois::RegistrarCertificationData>, ::Whois::RegistrarCertificationData >
+                (reg_cert_seq, ::Whois::get_registrar_certifications(ctx));
+            return reg_cert_seq._retn();
         }
         catch (...)
         {}
