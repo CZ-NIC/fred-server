@@ -60,7 +60,7 @@ public:
         const char *trans_id,
         LogRequestId log_request_id);
 
-    ::CORBA::ULongLong process_registration_request(
+    ContactId process_registration_request(
         const char *ident_request_id,
         const char *password,
         LogRequestId log_request_id);

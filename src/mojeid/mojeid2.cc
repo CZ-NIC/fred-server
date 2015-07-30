@@ -24,6 +24,7 @@
 #include "src/mojeid/mojeid2.h"
 #include "src/mojeid/mojeid_public_request.h"
 #include "src/fredlib/contact/create_contact.h"
+#include "src/fredlib/contact/update_contact.h"
 #include "src/fredlib/contact/info_contact.h"
 #include "src/fredlib/public_request/create_public_request_auth.h"
 #include "src/fredlib/public_request/info_public_request_auth.h"
@@ -127,7 +128,7 @@ void set_create_contact_arguments(
 
 MojeID2Impl::MojeID2Impl(const std::string &_server_name)
 :   server_name_(_server_name),
-    mojeid_registrar_handle_(Registry::MojeID::get_mojeid_registrar_handle())
+    mojeid_registrar_handle_(get_mojeid_registrar_handle())
 {
     LogContext log_ctx(*this, "init");
 }//MojeID2Impl::MojeID2Impl
@@ -329,14 +330,15 @@ struct PubReqType
 
 enum { INVALID_LOG_REQUEST_ID = 0 };
 
-Fred::UpdatePublicRequest::Result invalidate(
+Fred::UpdatePublicRequest::Result set_status(
     Fred::OperationContext &_ctx,
     const Fred::PublicRequestLockGuard &_locked_request,
-    const std::string &_reason = "",
-    LogRequestId _log_request_id = INVALID_LOG_REQUEST_ID)
+    Fred::PublicRequest::Status::Value _status,
+    const std::string &_reason,
+    LogRequestId _log_request_id)
 {
     Fred::UpdatePublicRequest op_update_public_request;
-    op_update_public_request.set_status(Fred::PublicRequest::Status::INVALIDATED);
+    op_update_public_request.set_status(_status);
     if (!_reason.empty()) {
         op_update_public_request.set_reason(_reason);
     }
@@ -344,6 +346,24 @@ Fred::UpdatePublicRequest::Result invalidate(
         return op_update_public_request.exec(_ctx, _locked_request);
     }
     return op_update_public_request.exec(_ctx, _locked_request, _log_request_id);
+}
+
+Fred::UpdatePublicRequest::Result answer(
+    Fred::OperationContext &_ctx,
+    const Fred::PublicRequestLockGuard &_locked_request,
+    const std::string &_reason = "",
+    LogRequestId _log_request_id = INVALID_LOG_REQUEST_ID)
+{
+    return set_status(_ctx, _locked_request, Fred::PublicRequest::Status::ANSWERED, _reason, _log_request_id);
+}
+
+Fred::UpdatePublicRequest::Result invalidate(
+    Fred::OperationContext &_ctx,
+    const Fred::PublicRequestLockGuard &_locked_request,
+    const std::string &_reason = "",
+    LogRequestId _log_request_id = INVALID_LOG_REQUEST_ID)
+{
+    return set_status(_ctx, _locked_request, Fred::PublicRequest::Status::INVALIDATED, _reason, _log_request_id);
 }
 
 }//namespace Registry::MojeID::{anonymous}
@@ -382,6 +402,7 @@ ContactId MojeID2Impl::process_registration_request(
         if (pub_req_info.get_object_id().isnull()) {
             static const std::string msg = "no object associated with this public request";
             invalidate(ctx, locked_request, msg, _log_request_id);
+            ctx.commit_transaction();
             throw IdentificationFailed(msg);
         }
 
@@ -403,6 +424,7 @@ ContactId MojeID2Impl::process_registration_request(
         if (contact_changed) {
             static const std::string msg = "contact data changed after the public request had been created";
             invalidate(ctx, locked_request, msg, _log_request_id);
+            ctx.commit_transaction();
             throw ContactChanged(msg);
         }
 
@@ -414,13 +436,32 @@ ContactId MojeID2Impl::process_registration_request(
 
         switch (pub_req_type) {
         case PubReqType::CONTACT_CONDITIONAL_IDENTIFICATION:
+            try {
+                this->process_contact_conditional_identification(ctx, contact, _log_request_id);
+            }
+            catch (const IdentificationAlreadyProcessed &e) {
+                invalidate(ctx, locked_request, e.what(), _log_request_id);
+                ctx.commit_transaction();
+                throw;
+            }
             break;
         case PubReqType::CONDITIONALLY_IDENTIFIED_CONTACT_TRANSFER:
+            this->process_conditionally_identified_contact_transfer(ctx, contact, _log_request_id);
             break;
         case PubReqType::IDENTIFIED_CONTACT_TRANSFER:
+            this->process_identified_contact_transfer(ctx, contact, _log_request_id);
             break;
         }
+        answer(ctx, locked_request, "process_registration_request call", _log_request_id);
+        ctx.commit_transaction();
         return contact.id;
+    }
+    catch (const Fred::PublicRequestLockGuardByIdentification::Exception &e) {
+        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
+        if (e.is_set_public_request_doesnt_exist()) {
+            throw PublicRequestDoesntExist(e.what());
+        }
+        throw std::runtime_error(e.what());
     }
     catch (const Fred::InfoContactById::Exception &e) {
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
@@ -490,6 +531,57 @@ void MojeID2Impl::rollback_prepared_transaction(const std::string &_trans_id)con
         LOGGER(PACKAGE).error("request failed (unknown error)");
         throw;
     }
+}
+
+void MojeID2Impl::process_contact_conditional_identification(
+        Fred::OperationContext &_ctx,
+        const Fred::InfoContactData &_contact,
+        LogRequestId _log_request_id)const
+{
+    using namespace Fred::Object;
+    typedef State::set<
+                State::SERVER_TRANSFER_PROHIBITED,
+                State::SERVER_UPDATE_PROHIBITED,
+                State::SERVER_DELETE_PROHIBITED,
+                State::SERVER_BLOCKED,
+                State::MOJEID_CONTACT,
+                State::CONDITIONALLY_IDENTIFIED_CONTACT >::type RelatedStates;
+    const Get< Type::CONTACT >::States< RelatedStates >::Presence presence =
+        Get< Type::CONTACT >(_contact.id).states< RelatedStates >().presence(_ctx);
+    if (presence.get< State::CONDITIONALLY_IDENTIFIED_CONTACT >()) {
+        throw IdentificationAlreadyProcessed("contact already conditionally identified");
+    }
+    if (presence.get< State::MOJEID_CONTACT >()) {
+        throw IdentificationFailed("contact mustn't be in mojeidContact state");
+    }
+    if (_contact.sponsoring_registrar_handle != mojeid_registrar_handle_) {
+        if (presence.get< State::SERVER_TRANSFER_PROHIBITED >() ||
+            presence.get< State::SERVER_UPDATE_PROHIBITED >() ||
+            presence.get< State::SERVER_DELETE_PROHIBITED >() ||
+            presence.get< State::SERVER_BLOCKED >()) {
+            throw IdentificationFailed("contact protected against changes");
+        }
+        Fred::UpdateContactById op_update_contact(_contact.id, mojeid_registrar_handle_);
+        op_update_contact.set_sponsoring_registrar(mojeid_registrar_handle_);
+        if (_log_request_id != INVALID_LOG_REQUEST_ID) {
+            op_update_contact.set_logd_request_id(_log_request_id);
+        }
+        op_update_contact.exec(_ctx);
+    }
+}
+
+void MojeID2Impl::process_conditionally_identified_contact_transfer(
+        Fred::OperationContext &_ctx,
+        const Fred::InfoContactData &_contact,
+        LogRequestId _log_request_id)const
+{
+}
+
+void MojeID2Impl::process_identified_contact_transfer(
+        Fred::OperationContext &_ctx,
+        const Fred::InfoContactData &_contact,
+        LogRequestId _log_request_id)const
+{
 }
 
 }//namespace Registry::MojeID

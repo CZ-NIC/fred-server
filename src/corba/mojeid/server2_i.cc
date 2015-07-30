@@ -116,13 +116,16 @@ void Server_i::update_contact_prepare(
 {
 }//update_contact_prepared
 
-::CORBA::ULongLong Server_i::process_registration_request(
+ContactId Server_i::process_registration_request(
         const char *ident_request_id,
         const char *password,
         LogRequestId log_request_id)
 {
     try {
         return impl_ptr_->process_registration_request(ident_request_id, password, log_request_id);
+    }
+    catch (const MojeID2Impl::PublicRequestDoesntExist&) {
+        throw IDL::IDENTIFICATION_REQUEST_NOT_EXISTS();
     }
     catch (const MojeID2Impl::IdentificationFailed&) {
         throw IDL::IDENTIFICATION_FAILED();
@@ -142,7 +145,7 @@ void Server_i::update_contact_prepare(
 }//process_registration_request
 
 void Server_i::process_identification_request(
-        ::CORBA::ULongLong contact_id,
+        ContactId contact_id,
         const char *password,
         LogRequestId log_request_id)
 {
@@ -177,13 +180,13 @@ void Server_i::rollback_prepared_transaction(
 }//rollback_prepared_transaction
 
 Buffer* Server_i::get_validation_pdf(
-        ::CORBA::ULongLong _contact_id)
+        ContactId _contact_id)
 {
     return NULL;
 }//get_validation_pdf
 
 void Server_i::create_validation_request(
-        ::CORBA::ULongLong _contact_id,
+        ContactId _contact_id,
         LogRequestId _log_request_id)
 {
 }//create_validation_request

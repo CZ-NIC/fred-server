@@ -135,6 +135,12 @@ public:
         ContactChanged(const std::string &_msg):std::runtime_error(_msg) { }
     };
 
+    class PublicRequestDoesntExist:public std::runtime_error
+    {
+    public:
+        PublicRequestDoesntExist(const std::string &_msg):std::runtime_error(_msg) { }
+    };
+
     ContactId process_registration_request(
         const std::string &_ident_request_id,
         const std::string &_password,
@@ -145,6 +151,21 @@ public:
         const std::string &_password,
         LogRequestId _log_request_id)const;
 private:
+    void process_contact_conditional_identification(
+        Fred::OperationContext &_ctx,
+        const Fred::InfoContactData &_contact,
+        LogRequestId _log_request_id)const;
+
+    void process_conditionally_identified_contact_transfer(
+        Fred::OperationContext &_ctx,
+        const Fred::InfoContactData &_contact,
+        LogRequestId _log_request_id)const;
+
+    void process_identified_contact_transfer(
+        Fred::OperationContext &_ctx,
+        const Fred::InfoContactData &_contact,
+        LogRequestId _log_request_id)const;
+
     const std::string server_name_;
     const std::string mojeid_registrar_handle_;
 };//class MojeID2Impl
