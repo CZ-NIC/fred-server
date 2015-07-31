@@ -141,6 +141,24 @@ public:
         PublicRequestDoesntExist(const std::string &_msg):std::runtime_error(_msg) { }
     };
 
+    class ObjectAdminBlocked:public std::runtime_error
+    {
+    public:
+        ObjectAdminBlocked(const std::string &_msg):std::runtime_error(_msg) { }
+    };
+
+    class ObjectUserBlocked:public std::runtime_error
+    {
+    public:
+        ObjectUserBlocked(const std::string &_msg):std::runtime_error(_msg) { }
+    };
+
+    class AlreadyMojeidContact:public std::runtime_error
+    {
+    public:
+        AlreadyMojeidContact(const std::string &_msg):std::runtime_error(_msg) { }
+    };
+
     ContactId process_registration_request(
         const std::string &_ident_request_id,
         const std::string &_password,

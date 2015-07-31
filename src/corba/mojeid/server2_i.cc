@@ -139,6 +139,15 @@ ContactId Server_i::process_registration_request(
     catch (const MojeID2Impl::ContactChanged&) {
         throw IDL::OBJECT_CHANGED();
     }
+    catch (const MojeID2Impl::AlreadyMojeidContact&) {
+        throw IDL::ALREADY_MOJEID_CONTACT();
+    }
+    catch (const MojeID2Impl::ObjectAdminBlocked&) {
+        throw IDL::OBJECT_ADMIN_BLOCKED();
+    }
+    catch (const MojeID2Impl::ObjectUserBlocked&) {
+        throw IDL::OBJECT_USER_BLOCKED();
+    }
     catch (...) {
         throw IDL::INTERNAL_SERVER_ERROR();
     }

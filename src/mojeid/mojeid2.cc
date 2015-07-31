@@ -189,10 +189,12 @@ ContactId MojeID2Impl::create_contact_prepare(
     try {
         Fred::OperationContextTwoPhaseCommitCreator ctx(_trans_id);
 
-        const CheckCreateContactPrepare check_result(Fred::make_args(_contact),
-                                                     Fred::make_args(_contact, ctx));
-        if (!check_result.success()) {
-            throw check_result;
+        {
+            const CheckCreateContactPrepare check_contact_data(Fred::make_args(_contact),
+                                                               Fred::make_args(_contact, ctx));
+            if (!check_contact_data.success()) {
+                throw check_contact_data;
+            }
         }
 
         Fred::CreateContact op_create_contact(_contact.handle, mojeid_registrar_handle_);
@@ -434,23 +436,38 @@ ContactId MojeID2Impl::process_registration_request(
 
         const Fred::InfoContactData contact = Fred::InfoContactById(object_id).exec(ctx).info_contact_data;
 
-        switch (pub_req_type) {
-        case PubReqType::CONTACT_CONDITIONAL_IDENTIFICATION:
-            try {
+        try {
+            switch (pub_req_type) {
+            case PubReqType::CONTACT_CONDITIONAL_IDENTIFICATION:
                 this->process_contact_conditional_identification(ctx, contact, _log_request_id);
+                break;
+            case PubReqType::CONDITIONALLY_IDENTIFIED_CONTACT_TRANSFER:
+                this->process_conditionally_identified_contact_transfer(ctx, contact, _log_request_id);
+                break;
+            case PubReqType::IDENTIFIED_CONTACT_TRANSFER:
+                this->process_identified_contact_transfer(ctx, contact, _log_request_id);
+                break;
             }
-            catch (const IdentificationAlreadyProcessed &e) {
-                invalidate(ctx, locked_request, e.what(), _log_request_id);
-                ctx.commit_transaction();
-                throw;
-            }
-            break;
-        case PubReqType::CONDITIONALLY_IDENTIFIED_CONTACT_TRANSFER:
-            this->process_conditionally_identified_contact_transfer(ctx, contact, _log_request_id);
-            break;
-        case PubReqType::IDENTIFIED_CONTACT_TRANSFER:
-            this->process_identified_contact_transfer(ctx, contact, _log_request_id);
-            break;
+        }
+        catch (const IdentificationAlreadyProcessed &e) {
+            invalidate(ctx, locked_request, e.what(), _log_request_id);
+            ctx.commit_transaction();
+            throw;
+        }
+        catch (const AlreadyMojeidContact &e) {
+            invalidate(ctx, locked_request, e.what(), _log_request_id);
+            ctx.commit_transaction();
+            throw;
+        }
+        catch (const ObjectAdminBlocked &e) {
+            invalidate(ctx, locked_request, e.what(), _log_request_id);
+            ctx.commit_transaction();
+            throw;
+        }
+        catch (const ObjectUserBlocked &e) {
+            invalidate(ctx, locked_request, e.what(), _log_request_id);
+            ctx.commit_transaction();
+            throw;
         }
         answer(ctx, locked_request, "process_registration_request call", _log_request_id);
         ctx.commit_transaction();
@@ -538,6 +555,14 @@ void MojeID2Impl::process_contact_conditional_identification(
         const Fred::InfoContactData &_contact,
         LogRequestId _log_request_id)const
 {
+    {
+        const CheckCreateContactPrepare check_contact_data(Fred::make_args(_contact),
+                                                           Fred::make_args(_contact, _ctx));
+        if (!check_contact_data.success()) {
+            throw check_contact_data;
+        }
+    }
+
     using namespace Fred::Object;
     typedef State::set<
                 State::SERVER_TRANSFER_PROHIBITED,
@@ -548,19 +573,26 @@ void MojeID2Impl::process_contact_conditional_identification(
                 State::CONDITIONALLY_IDENTIFIED_CONTACT >::type RelatedStates;
     const Get< Type::CONTACT >::States< RelatedStates >::Presence presence =
         Get< Type::CONTACT >(_contact.id).states< RelatedStates >().presence(_ctx);
+
     if (presence.get< State::CONDITIONALLY_IDENTIFIED_CONTACT >()) {
         throw IdentificationAlreadyProcessed("contact already conditionally identified");
     }
+
     if (presence.get< State::MOJEID_CONTACT >()) {
-        throw IdentificationFailed("contact mustn't be in mojeidContact state");
+        throw AlreadyMojeidContact("contact mustn't be in mojeidContact state");
     }
+
+    if (presence.get< State::SERVER_BLOCKED >()) {
+        throw ObjectAdminBlocked("contact administratively protected against changes");
+    }
+
+    if (presence.get< State::SERVER_TRANSFER_PROHIBITED >() ||
+        presence.get< State::SERVER_UPDATE_PROHIBITED >() ||
+        presence.get< State::SERVER_DELETE_PROHIBITED >()) {
+        throw ObjectUserBlocked("contact protected against changes");
+    }
+
     if (_contact.sponsoring_registrar_handle != mojeid_registrar_handle_) {
-        if (presence.get< State::SERVER_TRANSFER_PROHIBITED >() ||
-            presence.get< State::SERVER_UPDATE_PROHIBITED >() ||
-            presence.get< State::SERVER_DELETE_PROHIBITED >() ||
-            presence.get< State::SERVER_BLOCKED >()) {
-            throw IdentificationFailed("contact protected against changes");
-        }
         Fred::UpdateContactById op_update_contact(_contact.id, mojeid_registrar_handle_);
         op_update_contact.set_sponsoring_registrar(mojeid_registrar_handle_);
         if (_log_request_id != INVALID_LOG_REQUEST_ID) {
