@@ -15,6 +15,7 @@
 #include "src/whois/object_state.h"
 #include "src/whois/registrar_group.h"
 #include "src/whois/registrar_certification.h"
+#include "src/whois/zone_list.h"
 
 #include <boost/foreach.hpp>
 #include <boost/asio.hpp>
@@ -504,6 +505,25 @@ namespace Whois {
         // default exception handling
         throw INTERNAL_SERVER_ERROR();
     }
+
+    ZoneFqdnList* Server_impl::get_managed_zone_list()
+    {
+        try
+        {
+            ZoneFqdnList_var zone_seq = new ZoneFqdnList;
+            Fred::OperationContext ctx;
+            set_corba_seq<ZoneFqdnList, CORBA::String_var,
+                std::vector<std::string>, std::string>
+                (zone_seq, ::Whois::get_managed_zone_list(ctx));
+            return zone_seq._retn();
+        }
+        catch (...)
+        {}
+
+        // default exception handling
+        throw INTERNAL_SERVER_ERROR();
+    }
+
 
     Contact* Server_impl::get_contact_by_handle(const char* handle)
     {
