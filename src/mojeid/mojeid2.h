@@ -26,6 +26,7 @@
 
 #include "src/corba/MojeID2.hh"
 #include "src/mojeid/mojeid2_checkers.h"
+#include "src/mojeid/state_machine.h"
 
 #include <vector>
 #include <stdexcept>
