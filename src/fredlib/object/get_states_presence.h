@@ -41,8 +41,8 @@ namespace Object {
  * @code{.cpp}
  * typedef State::set< State::DELETE_CANDIDATE,
  *                     State::DELETE_WARNING,
- *                     State::VALIDATED_CONTACT > states_for_check;
- * const Get< Type::CONTACT >::States< SetOfStates >::Presence states_presence =
+ *                     State::VALIDATED_CONTACT >::type states_for_check;
+ * const Get< Type::CONTACT >::States< states_for_check >::Presence states_presence =
  *     Get< Type::CONTACT >(contact_id).states< states_for_check >().presence(ctx);
  * @endcode
  */
