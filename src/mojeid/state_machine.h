@@ -24,7 +24,7 @@
 #ifndef STATE_MACHINE_H_6F28C6F85A47DBFD2DEEDA5E508AB751//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
 #define STATE_MACHINE_H_6F28C6F85A47DBFD2DEEDA5E508AB751
 
-#include "src/fredlib/object/object_state.h"
+#include "src/fredlib/object/get_states_presence.h"
 
 #include <boost/static_assert.hpp>
 #include <boost/mpl/set.hpp>
@@ -38,17 +38,16 @@
 #include <boost/mpl/front.hpp>
 #include <boost/mpl/erase_key.hpp>
 #include <boost/mpl/lambda.hpp>
+#include <boost/mpl/empty.hpp>
 
-#include <iostream>
 #include <stdexcept>
 
 namespace Registry {
 namespace MojeID {
-/**
- * MojeID contact verification states.
- */
+/// MojeID contact verification states.
 namespace VrfState {
 
+/// Converts enum value into type.
 template < Fred::Object::State::Value FRED_STATE >
 struct single
 {
@@ -57,50 +56,53 @@ struct single
     BOOST_STATIC_ASSERT_MSG(0 < value, "FRED_STATE too big");
 };
 
-/**
- * conditionallyIdentifiedContact
- */
+/// Represents conditionallyIdentifiedContact
 struct C:single< Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT > { };
 
-/**
- * identifiedContact
- */
+/// Represents identifiedContact
 struct I:single< Fred::Object::State::IDENTIFIED_CONTACT > { };
 
-/**
- * validatedContact
- */
+/// Represents validatedContact
 struct V:single< Fred::Object::State::VALIDATED_CONTACT > { };
 
-/**
- * mojeidContact
- */
+/// Represents mojeidContact
 struct M:single< Fred::Object::State::MOJEID_CONTACT > { };
 
-template < typename STATES >
-struct composed_id
+/// Contains summary value of individual states
+template < typename STATES, bool NO_STATE = boost::mpl::empty< STATES >::value >
+struct summary_value
 {
     typedef typename boost::mpl::front< STATES >::type            first;
     typedef typename boost::mpl::erase_key< STATES, first >::type tail;
-    static const unsigned value = first::value + composed_id< tail >::value;
+    static const unsigned value = first::value + summary_value< tail >::value;
 };
 
-template < >
-struct composed_id< boost::mpl::set0< > >
+/// Specialization for empty set
+template < typename STATES >
+struct summary_value< STATES, true >
 {
     static const unsigned value = 0;
 };
 
-template < typename STATES >
-struct composed:composed_id< STATES >
+/// Actions called on coresponding event
+template < typename COMPOSED >
+struct on_transition_actions
 {
-    typedef STATES states;
     template < typename EVENT >
     static void on_entry(const EVENT &event);
     template < typename EVENT >
     static void on_exit(const EVENT &event);
 };
 
+/// Combination of many single states.
+template < typename STATES >
+struct composed:summary_value< STATES >,
+                on_transition_actions< composed< STATES > >
+{
+    typedef STATES states;
+};
+
+// names for particular states combinations
 typedef composed< boost::mpl::set<            >::type > civm;
 typedef composed< boost::mpl::set< C          >::type > Civm;
 typedef composed< boost::mpl::set<    I       >::type > cIvm;
@@ -118,6 +120,7 @@ typedef composed< boost::mpl::set< C,    V, M >::type > CiVM;
 typedef composed< boost::mpl::set<    I, V, M >::type > cIVM;
 typedef composed< boost::mpl::set< C, I, V, M >::type > CIVM;
 
+/// Helping template which contains all items from A set which didn't find in B set.
 template < typename A, typename B >
 struct a_not_in_b:boost::mpl::copy_if< A,
                                        boost::mpl::not_< boost::mpl::contains< B, boost::mpl::_1 > >,
@@ -128,22 +131,39 @@ struct a_not_in_b:boost::mpl::copy_if< A,
                                      >
 { };
 
+/**
+ * Sets and resets particular states so the composed state transits from START into NEXT.
+ * @tparam START beginning composed state
+ * @tparam NEXT terminal composed state
+ * @tparam EVENT what happened
+ * @param event object necessary for transition completion
+ */
 template < typename START, typename NEXT, typename EVENT >
 static void set(const EVENT &event)
 {
-    std::cout << __PRETTY_FUNCTION__ << std::endl;
     typedef typename a_not_in_b< START, NEXT >::type to_reset;
     typedef typename a_not_in_b< NEXT, START >::type to_set;
 }
 
-/**
- * State machine implementation (transitions between states).
- */
+/// State machine implementation (transitions between states).
 namespace Machine {
 
-/**
- * Events that can occur.
- */
+/// Exception thrown when corresponding transition isn't specified in @ref transition_table.
+class transition_not_allowed:public std::runtime_error
+{
+public:
+    transition_not_allowed(const std::string &_msg):std::runtime_error(_msg) { }
+};
+
+/// Exception thrown when corresponding reaction on given EVENT isn't specified in @ref transition_table.
+template < typename EVENT >
+class transition_not_allowed_on:public transition_not_allowed
+{
+public:
+    transition_not_allowed_on(const std::string &_msg):transition_not_allowed(_msg) { }
+};
+
+/// Events that can occur.
 namespace Event {
 
 struct into_mojeid_request
@@ -156,24 +176,27 @@ struct enter_pin12
 
 }//namespace Registry::MojeID::VrfState::Machine::Event
 
-/**
- * Actions called when event occur.
- */
+/// Actions called when event occur.
 namespace Action {
 
+/// Default action used when transition wasn't found in @ref transition_table.
 template < typename CURRENT, typename EVENT >
 struct transition_disabled
 {
     template < typename STATE_PRESENT >
     void operator()(const EVENT&, const STATE_PRESENT&)const
     {
-        throw std::runtime_error(__PRETTY_FUNCTION__);
+        throw transition_not_allowed_on< EVENT >(__PRETTY_FUNCTION__);
     }
 };
 
 struct send_pin12
 {
-    void operator()(const Event::into_mojeid_request&, int)const { std::cout << __PRETTY_FUNCTION__ << std::endl; }
+    template < typename STATE_PRESENT >
+    void operator()(const Event::into_mojeid_request&, const STATE_PRESENT&)const
+    {
+        std::cout << __PRETTY_FUNCTION__ << std::endl;
+    }
 };
 
 }//namespace Registry::MojeID::VrfState::Machine::Action
@@ -183,21 +206,22 @@ struct send_pin12
  */
 namespace Guard {
 
+/// Default guard, does nothing.
 struct no_guard
 {
     template < typename EVENT, typename STATE_PRESENT >
-    void operator()(const EVENT&, const STATE_PRESENT&)const { std::cout << __PRETTY_FUNCTION__ << std::endl; }
+    void operator()(const EVENT&, const STATE_PRESENT&)const { }
 };
 
 }//namespace Registry::MojeID::VrfState::Machine::Guard
 
 /**
- * process(event, states) will be called on event EVENT for object in CURRENT state:
- *     GUARD()(event, states);
- *     ACTION()(event, states);
- *     CURRENT::on_exit(event, states);
- *     VrfState::set< CURRENT, NEXT >(event);
- *     NEXT::on_entry(event, states);
+ * Specifies what to do when some event occurs and some states reign.
+ * @tparam CURRENT actual state
+ * @tparam EVENT what happened
+ * @tparam ACTION what to do
+ * @tparam GUARD check called before action; it has to throw exception when something wrong happened
+ * @tparam NEXT at the end transits into this state
  */
 template < typename CURRENT,
            typename EVENT,
@@ -213,16 +237,19 @@ struct a_row
     typedef NEXT    next;
 };
 
+/// Helping template for searching row in transition table. Compares CURRENT and EVENT with given A_ROW.
 template < typename CURRENT, typename EVENT,
            typename A_ROW >
 struct hit:boost::mpl::and_< boost::is_same< CURRENT, typename A_ROW::current >,
                              boost::is_same< EVENT,   typename A_ROW::event   > >
 { };
 
+/// Crucial component of state machine. Specifies reactions on events in a given state.
 typedef boost::mpl::set<
     a_row< civm, Event::into_mojeid_request, Action::send_pin12, Guard::no_guard, civm >
 > transition_table;
 
+/// Helping template for searching row in transition table. Searched row present or doesn't present.
 template < typename CURRENT, typename EVENT >
 struct event_traits
 {
@@ -231,6 +258,7 @@ struct event_traits
     BOOST_STATIC_ASSERT_MSG((count::value == 0) || (count::value == 1), "too many rows with the same key");
 };
 
+/// Helping template returning searched row when its present.
 template < typename CURRENT, typename EVENT,
            bool TRANSITION_FOUND = event_traits< CURRENT, EVENT >::transition_found >
 struct get
@@ -239,12 +267,15 @@ struct get
     typedef typename boost::mpl::deref< typename find_transition::type >::type transition;
 };
 
+/// Helping template returning default row when searching isn't successful.
 template < typename CURRENT, typename EVENT >
 struct get< CURRENT, EVENT, false >
 {
     typedef a_row< CURRENT, EVENT, Action::transition_disabled< CURRENT, EVENT > > transition;
 };
 
+/// Helping template for calling actions which transits from initial state into final state. When initial
+/// and final state is the same then does nothing.
 template < typename CURRENT >
 struct from
 {
@@ -270,6 +301,21 @@ struct from
     };
 };
 
+/**
+ * Looks into @ref transition_table and does what is specified.
+ * @tparam CURRENT_STATE type representing current state
+ * @tparam EVENT type of occured event
+ * @tparam STATE_PRESENT type with actual informations about present of all relevant states
+ *
+ * Sequence of actions:
+ * @code{.cpp}
+ *     GUARD()(event, states);
+ *     ACTION()(event, states);
+ *     CURRENT::on_exit(event, states);
+ *     VrfState::set< CURRENT, NEXT >(event);
+ *     NEXT::on_entry(event, states);
+ * @endcode
+ */
 template < typename CURRENT_STATE, typename EVENT, typename STATE_PRESENT >
 void on_event(const EVENT &event, const STATE_PRESENT &states)
 {
@@ -288,13 +334,41 @@ void on_event(const EVENT &event, const STATE_PRESENT &states)
     from_into::transit(event);
 }
 
+/**
+ * It converts states into a number.
+ * @tparam STATES type with actual informations about present of all relevant states
+ * @param states actual present of all relevant states
+ * 
+ */
 template < typename STATES >
 unsigned to_number(const STATES &states)
 {
-    std::cout << __PRETTY_FUNCTION__ << std::endl;
-    return civm::value;
+    unsigned retval = 0;
+    if (states.STATES::template get< C::state >()) {
+        retval |= C::value;
+    }
+    if (states.STATES::template get< I::state >()) {
+        retval |= I::value;
+    }
+    if (states.STATES::template get< V::state >()) {
+        retval |= V::value;
+    }
+    if (states.STATES::template get< M::state >()) {
+        retval |= M::value;
+    }
+    std::cout << "to_number() = " << retval << std::endl;
+    return retval;
 }
 
+/**
+ * The main function called when an event occurs.
+ * @tparam EVENT type of occured event
+ * @tparam STATE_PRESENT type with actual informations about present of all relevant states
+ * @param event object with information about occured event
+ * @param states actual present of all relevant states
+ * 
+ * It converts states into a number and in dependence on this number calls corresponding event handler.
+ */
 template < typename EVENT, typename STATE_PRESENT >
 void process(const EVENT &event, const STATE_PRESENT &states)
 {
