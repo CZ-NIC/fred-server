@@ -25,6 +25,8 @@
 #define STATE_MACHINE_H_6F28C6F85A47DBFD2DEEDA5E508AB751
 
 #include "src/fredlib/object/get_states_presence.h"
+#include "src/fredlib/object_state/create_object_state_request_id.h"
+#include "src/fredlib/object_state/cancel_object_state_request_id.h"
 
 #include <boost/static_assert.hpp>
 #include <boost/mpl/set.hpp>
@@ -131,6 +133,64 @@ struct a_not_in_b:boost::mpl::copy_if< A,
                                      >
 { };
 
+template < typename STATES, bool NO_STATE = boost::mpl::empty< STATES >::value >
+struct state_manipulation
+{
+    typedef Fred::StatusList state_container;
+    typedef state_container::key_type state_item;
+
+    static void add_state_into(state_container &_status_list)
+    {
+        typedef typename boost::mpl::front< STATES >::type            front;
+        typedef typename boost::mpl::erase_key< STATES, front >::type tail;
+        _status_list.insert(Fred::Object::State(front::state).into< state_item >());
+        state_manipulation< tail >::add_state_into(_status_list);
+    }
+
+    static void states_into(state_container &_status_list)
+    {
+        _status_list.clear();
+        add_state_into(_status_list);
+        for (state_container::const_iterator s_ptr = _status_list.begin(); s_ptr != _status_list.end(); ++s_ptr) {
+            if (s_ptr != _status_list.begin()) {
+                std::cout << ", ";
+            }
+            std::cout << (*s_ptr);
+        }
+        if (!_status_list.empty()) {
+            std::cout << std::endl;
+        }
+    }
+
+    template < typename EVENT >
+    static void set(const EVENT &event)
+    {
+        Fred::StatusList status_list;
+        states_into(status_list);
+    }
+
+    template < typename EVENT >
+    static void reset(const EVENT &event)
+    {
+        Fred::StatusList status_list;
+        states_into(status_list);
+    }
+};
+
+template < typename STATES >
+struct state_manipulation< STATES, true >
+{
+    typedef Fred::StatusList state_container;
+
+    static void add_state_into(const state_container&) { }
+
+    template < typename EVENT >
+    static void set(const EVENT&) { }
+
+    template < typename EVENT >
+    static void reset(const EVENT&) { }
+};
+
 /**
  * Sets and resets particular states so the composed state transits from START into NEXT.
  * @tparam START beginning composed state
@@ -139,10 +199,13 @@ struct a_not_in_b:boost::mpl::copy_if< A,
  * @param event object necessary for transition completion
  */
 template < typename START, typename NEXT, typename EVENT >
-static void set(const EVENT &event)
+void set(const EVENT &event)
 {
     typedef typename a_not_in_b< START, NEXT >::type to_reset;
     typedef typename a_not_in_b< NEXT, START >::type to_set;
+    std::cout << __PRETTY_FUNCTION__ << std::endl;
+    state_manipulation< to_reset >::reset(event);
+    state_manipulation< to_set >::set(event);
 }
 
 /// State machine implementation (transitions between states).
