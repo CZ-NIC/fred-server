@@ -22,6 +22,7 @@
  */
 
 #include "src/mojeid/mojeid2.h"
+#include "src/mojeid/safe_data_storage.h"
 #include "src/mojeid/mojeid_public_request.h"
 #include "src/fredlib/contact/create_contact.h"
 #include "src/fredlib/contact/update_contact.h"
