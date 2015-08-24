@@ -32,6 +32,7 @@
 #include "src/fredlib/public_request/update_public_request.h"
 #include "src/fredlib/public_request/public_request_status.h"
 #include "src/fredlib/public_request/public_request_lock_guard.h"
+#include "src/fredlib/object_state/perform_object_state_request.h"
 #include "util/random.h"
 #include "util/log/context.h"
 #include "util/cfg/handle_mojeid_args.h"
@@ -125,6 +126,9 @@ void set_create_contact_arguments(
     }
 }
 
+typedef data_storage< std::string, ContactId >::safe prepare_transaction_storage;
+typedef prepare_transaction_storage::object_type::data_not_found prepare_transaction_data_not_found;
+
 }//Registry::MojeID::{anonymous}
 
 MojeID2Impl::MojeID2Impl(const std::string &_server_name)
@@ -208,6 +212,7 @@ ContactId MojeID2Impl::create_contact_prepare(
             const Fred::CreatePublicRequestAuth::Result result = op_create_pub_req.exec(ctx, locked_contact);
             _ident = result.identification;
         }
+        prepare_transaction_storage()->store(_trans_id, new_contact.object_id);
         ctx.commit_transaction();
         return new_contact.object_id;
     }
@@ -271,6 +276,8 @@ Fred::InfoContactData& MojeID2Impl::transfer_contact_prepare(
             GetPublicRequestAuthType::iface(
                 states_presence.get< Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT >(),
                 states_presence.get< Fred::Object::State::IDENTIFIED_CONTACT >()));
+        prepare_transaction_storage()->store(_trans_id, _contact.id);
+        ctx.commit_transaction();
         return _contact;
     }
     catch (const TransferContactPrepareError&) {
@@ -532,6 +539,17 @@ void MojeID2Impl::commit_prepared_transaction(const std::string &_trans_id)const
         LOGGER(PACKAGE).error("request failed (unknown error)");
         throw;
     }
+    try {
+        const ContactId contact_id = prepare_transaction_storage()->get(_trans_id);
+        Fred::OperationContextCreator ctx;
+        Fred::PerformObjectStateRequest(contact_id).exec(ctx);
+        ctx.commit_transaction();
+        prepare_transaction_storage()->release(_trans_id);
+    }
+    catch (const prepare_transaction_data_not_found&) {
+        LOGGER(PACKAGE).error("request failed (cannot retrieve saved transaction data "
+                              "using transaction identifier " + _trans_id + ")");
+    }
 }
 
 void MojeID2Impl::rollback_prepared_transaction(const std::string &_trans_id)const
@@ -548,6 +566,13 @@ void MojeID2Impl::rollback_prepared_transaction(const std::string &_trans_id)con
     catch (...) {
         LOGGER(PACKAGE).error("request failed (unknown error)");
         throw;
+    }
+    try {
+        prepare_transaction_storage()->release(_trans_id);
+    }
+    catch (const prepare_transaction_data_not_found&) {
+        LOGGER(PACKAGE).error("request failed (cannot retrieve saved transaction data "
+                              "using transaction identifier " + _trans_id + ")");
     }
 }
 
