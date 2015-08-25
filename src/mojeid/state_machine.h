@@ -91,9 +91,9 @@ template < typename COMPOSED >
 struct on_transition_actions
 {
     template < typename EVENT >
-    static void on_entry(const EVENT &event);
+    static void on_entry(const EVENT&) { }
     template < typename EVENT >
-    static void on_exit(const EVENT &event);
+    static void on_exit(const EVENT&) { }
 };
 
 /// Combination of many single states.
@@ -151,6 +151,7 @@ struct state_manipulation
     {
         _status_list.clear();
         add_state_into(_status_list);
+#if 1
         for (state_container::const_iterator s_ptr = _status_list.begin(); s_ptr != _status_list.end(); ++s_ptr) {
             if (s_ptr != _status_list.begin()) {
                 std::cout << ", ";
@@ -160,20 +161,23 @@ struct state_manipulation
         if (!_status_list.empty()) {
             std::cout << std::endl;
         }
+#endif
     }
 
     template < typename EVENT >
     static void set(const EVENT &event)
     {
-        Fred::StatusList status_list;
-        states_into(status_list);
+        Fred::StatusList to_set;
+        states_into(to_set);
+        Fred::CreateObjectStateRequestId(event.get_object_id(), to_set).exec(event.get_operation_context());
     }
 
     template < typename EVENT >
     static void reset(const EVENT &event)
     {
-        Fred::StatusList status_list;
-        states_into(status_list);
+        Fred::StatusList to_reset;
+        states_into(to_reset);
+        Fred::CancelObjectStateRequestId(event.get_object_id(), to_reset).exec(event.get_operation_context());
     }
 };
 
@@ -211,14 +215,14 @@ void set(const EVENT &event)
 /// State machine implementation (transitions between states).
 namespace Machine {
 
-/// Exception thrown when corresponding transition isn't specified in @ref transition_table.
+/// Exception thrown when corresponding transition isn't specified in a transition table.
 class transition_not_allowed:public std::runtime_error
 {
 public:
     transition_not_allowed(const std::string &_msg):std::runtime_error(_msg) { }
 };
 
-/// Exception thrown when corresponding reaction on given EVENT isn't specified in @ref transition_table.
+/// Exception thrown when corresponding reaction on given EVENT isn't specified in a transition table.
 template < typename EVENT >
 class transition_not_allowed_on:public transition_not_allowed
 {
@@ -242,7 +246,7 @@ struct enter_pin12
 /// Actions called when event occur.
 namespace Action {
 
-/// Default action used when transition wasn't found in @ref transition_table.
+/// Default action used when transition wasn't found in a transition table.
 template < typename CURRENT, typename EVENT >
 struct transition_disabled
 {
@@ -307,32 +311,27 @@ struct hit:boost::mpl::and_< boost::is_same< CURRENT, typename A_ROW::current >,
                              boost::is_same< EVENT,   typename A_ROW::event   > >
 { };
 
-/// Crucial component of state machine. Specifies reactions on events in a given state.
-typedef boost::mpl::set<
-    a_row< civm, Event::into_mojeid_request, Action::send_pin12, Guard::no_guard, civm >
-> transition_table;
-
 /// Helping template for searching row in transition table. Searched row present or doesn't present.
-template < typename CURRENT, typename EVENT >
+template < typename TRANSITION_TABLE, typename CURRENT, typename EVENT >
 struct event_traits
 {
-    typedef boost::mpl::count_if< transition_table, hit< CURRENT, EVENT, boost::mpl::_1 > > count;
+    typedef boost::mpl::count_if< TRANSITION_TABLE, hit< CURRENT, EVENT, boost::mpl::_1 > > count;
     static const bool transition_found = 0 < count::value;
     BOOST_STATIC_ASSERT_MSG((count::value == 0) || (count::value == 1), "too many rows with the same key");
 };
 
 /// Helping template returning searched row when its present.
-template < typename CURRENT, typename EVENT,
-           bool TRANSITION_FOUND = event_traits< CURRENT, EVENT >::transition_found >
+template < typename TRANSITION_TABLE, typename CURRENT, typename EVENT,
+           bool TRANSITION_FOUND = event_traits< TRANSITION_TABLE, CURRENT, EVENT >::transition_found >
 struct get
 {
-    typedef boost::mpl::find_if< transition_table, hit< CURRENT, EVENT, boost::mpl::_1 > > find_transition;
+    typedef boost::mpl::find_if< TRANSITION_TABLE, hit< CURRENT, EVENT, boost::mpl::_1 > > find_transition;
     typedef typename boost::mpl::deref< typename find_transition::type >::type transition;
 };
 
 /// Helping template returning default row when searching isn't successful.
-template < typename CURRENT, typename EVENT >
-struct get< CURRENT, EVENT, false >
+template < typename TRANSITION_TABLE, typename CURRENT, typename EVENT >
+struct get< TRANSITION_TABLE, CURRENT, EVENT, false >
 {
     typedef a_row< CURRENT, EVENT, Action::transition_disabled< CURRENT, EVENT > > transition;
 };
@@ -343,15 +342,17 @@ template < typename CURRENT >
 struct from
 {
     typedef CURRENT start_state;
+    typedef typename start_state::states from_states;
     template < typename NEXT, typename STATE_CHANGED = typename boost::is_same< CURRENT, NEXT >::type >
     struct into
     {
         typedef NEXT finish_state;
+        typedef typename finish_state::states to_states;
         template < typename EVENT >
         static void transit(const EVENT &event)
         {
             start_state::on_exit(event);
-            VrfState::set< start_state, finish_state >(event);
+            VrfState::set< from_states, to_states >(event);
             finish_state::on_entry(event);
         }
     };
@@ -360,12 +361,16 @@ struct from
     {
         typedef start_state finish_state;
         template < typename EVENT >
-        static void transit(const EVENT&) { std::cout << __PRETTY_FUNCTION__ << std::endl; }
+        static void transit(const EVENT&)
+        {
+            std::cout << __PRETTY_FUNCTION__ << std::endl;
+        }
     };
 };
 
 /**
- * Looks into @ref transition_table and does what is specified.
+ * Looks into TRANSITION_TABLE and does what is specified.
+ * @tparam TRANSITION_TABLE crucial component of state machine, specifies reactions on events in a given state
  * @tparam CURRENT_STATE type representing current state
  * @tparam EVENT type of occured event
  * @tparam STATE_PRESENT type with actual informations about present of all relevant states
@@ -379,11 +384,12 @@ struct from
  *     NEXT::on_entry(event, states);
  * @endcode
  */
-template < typename CURRENT_STATE, typename EVENT, typename STATE_PRESENT >
+template < typename TRANSITION_TABLE, typename CURRENT_STATE, typename EVENT, typename STATE_PRESENT >
 void on_event(const EVENT &event, const STATE_PRESENT &states)
 {
+    typedef TRANSITION_TABLE transition_table;
     typedef CURRENT_STATE current_state;
-    typedef typename get< current_state, EVENT >::transition transition;
+    typedef typename get< transition_table, current_state, EVENT >::transition transition;
     typedef typename transition::guard  guard;
     typedef typename transition::action action;
     typedef typename transition::next   next_state;
@@ -425,6 +431,7 @@ unsigned to_number(const STATES &states)
 
 /**
  * The main function called when an event occurs.
+ * @tparam TRANSITION_TABLE crucial component of state machine, specifies reactions on events in a given state
  * @tparam EVENT type of occured event
  * @tparam STATE_PRESENT type with actual informations about present of all relevant states
  * @param event object with information about occured event
@@ -432,57 +439,57 @@ unsigned to_number(const STATES &states)
  * 
  * It converts states into a number and in dependence on this number calls corresponding event handler.
  */
-template < typename EVENT, typename STATE_PRESENT >
+template < typename TRANSITION_TABLE, typename EVENT, typename STATE_PRESENT >
 void process(const EVENT &event, const STATE_PRESENT &states)
 {
     switch (to_number(states)) {
     case VrfState::civm::value:
-        on_event< VrfState::civm, EVENT, STATE_PRESENT >(event, states);
+        on_event< TRANSITION_TABLE, VrfState::civm >(event, states);
         return;
     case VrfState::Civm::value:
-        on_event< VrfState::Civm, EVENT, STATE_PRESENT >(event, states);
+        on_event< TRANSITION_TABLE, VrfState::Civm >(event, states);
         return;
     case VrfState::cIvm::value:
-        on_event< VrfState::cIvm, EVENT, STATE_PRESENT >(event, states);
+        on_event< TRANSITION_TABLE, VrfState::cIvm >(event, states);
         return;
     case VrfState::CIvm::value:
-        on_event< VrfState::CIvm, EVENT, STATE_PRESENT >(event, states);
+        on_event< TRANSITION_TABLE, VrfState::CIvm >(event, states);
         return;
     case VrfState::ciVm::value:
-        on_event< VrfState::ciVm, EVENT, STATE_PRESENT >(event, states);
+        on_event< TRANSITION_TABLE, VrfState::ciVm >(event, states);
         return;
     case VrfState::CiVm::value:
-        on_event< VrfState::CiVm, EVENT, STATE_PRESENT >(event, states);
+        on_event< TRANSITION_TABLE, VrfState::CiVm >(event, states);
         return;
     case VrfState::cIVm::value:
-        on_event< VrfState::cIVm, EVENT, STATE_PRESENT >(event, states);
+        on_event< TRANSITION_TABLE, VrfState::cIVm >(event, states);
         return;
     case VrfState::CIVm::value:
-        on_event< VrfState::CIVm, EVENT, STATE_PRESENT >(event, states);
+        on_event< TRANSITION_TABLE, VrfState::CIVm >(event, states);
         return;
     case VrfState::civM::value:
-        on_event< VrfState::civM, EVENT, STATE_PRESENT >(event, states);
+        on_event< TRANSITION_TABLE, VrfState::civM >(event, states);
         return;
     case VrfState::CivM::value:
-        on_event< VrfState::CivM, EVENT, STATE_PRESENT >(event, states);
+        on_event< TRANSITION_TABLE, VrfState::CivM >(event, states);
         return;
     case VrfState::cIvM::value:
-        on_event< VrfState::cIvM, EVENT, STATE_PRESENT >(event, states);
+        on_event< TRANSITION_TABLE, VrfState::cIvM >(event, states);
         return;
     case VrfState::CIvM::value:
-        on_event< VrfState::CIvM, EVENT, STATE_PRESENT >(event, states);
+        on_event< TRANSITION_TABLE, VrfState::CIvM >(event, states);
         return;
     case VrfState::ciVM::value:
-        on_event< VrfState::ciVM, EVENT, STATE_PRESENT >(event, states);
+        on_event< TRANSITION_TABLE, VrfState::ciVM >(event, states);
         return;
     case VrfState::CiVM::value:
-        on_event< VrfState::CiVM, EVENT, STATE_PRESENT >(event, states);
+        on_event< TRANSITION_TABLE, VrfState::CiVM >(event, states);
         return;
     case VrfState::cIVM::value:
-        on_event< VrfState::cIVM, EVENT, STATE_PRESENT >(event, states);
+        on_event< TRANSITION_TABLE, VrfState::cIVM >(event, states);
         return;
     case VrfState::CIVM::value:
-        on_event< VrfState::CIVM, EVENT, STATE_PRESENT >(event, states);
+        on_event< TRANSITION_TABLE, VrfState::CIVM >(event, states);
         return;
     }
     throw std::runtime_error("unexpected state reigns");
