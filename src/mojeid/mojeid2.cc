@@ -21,6 +21,7 @@
  *  mojeid2 implementation
  */
 
+#include "src/mojeid/state_machine.h"
 #include "src/mojeid/mojeid2.h"
 #include "src/mojeid/safe_data_storage.h"
 #include "src/mojeid/mojeid_public_request.h"
@@ -33,6 +34,9 @@
 #include "src/fredlib/public_request/public_request_status.h"
 #include "src/fredlib/public_request/public_request_lock_guard.h"
 #include "src/fredlib/object_state/perform_object_state_request.h"
+#include "src/fredlib/object/get_states_presence.h"
+#include "src/fredlib/object_state/create_object_state_request_id.h"
+#include "src/fredlib/object_state/cancel_object_state_request_id.h"
 #include "util/random.h"
 #include "util/log/context.h"
 #include "util/cfg/handle_mojeid_args.h"
@@ -40,6 +44,11 @@
 
 #include <algorithm>
 #include <map>
+
+#include <boost/mpl/contains.hpp>
+#include <boost/mpl/copy_if.hpp>
+#include <boost/mpl/list.hpp>
+#include <boost/mpl/set.hpp>
 
 namespace Registry {
 namespace MojeID {
@@ -128,6 +137,212 @@ void set_create_contact_arguments(
 
 typedef data_storage< std::string, ContactId >::safe prepare_transaction_storage;
 typedef prepare_transaction_storage::object_type::data_not_found prepare_transaction_data_not_found;
+
+class transitions:public StateMachine::base< transitions >
+{
+public:
+    typedef StateMachine::base< transitions > base_state_machine;
+    template < Fred::Object::State::Value FRED_STATE >
+    struct single:boost::integral_constant< Fred::Object::State::Value, FRED_STATE > { };
+
+    /// Represents conditionallyIdentifiedContact
+    struct C:single< Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT > { };
+
+    /// Represents identifiedContact
+    struct I:single< Fred::Object::State::IDENTIFIED_CONTACT > { };
+
+    /// Represents validatedContact
+    struct V:single< Fred::Object::State::VALIDATED_CONTACT > { };
+
+    /// Represents mojeidContact
+    struct M:single< Fred::Object::State::MOJEID_CONTACT > { };
+
+    template < bool HAS_C, bool HAS_I, bool HAS_V, bool HAS_M >
+    struct civm_collection:StateMachine::state_on_change_action< civm_collection< HAS_C, HAS_I, HAS_V, HAS_M > >
+    {
+        static const bool has_c = HAS_C;
+        static const bool has_i = HAS_I;
+        static const bool has_v = HAS_V;
+        static const bool has_m = HAS_M;
+
+        static const bool has_any = has_c || has_i || has_v || has_m;
+
+        template < typename STATE >
+        struct add
+        {
+            typedef civm_collection< has_c || boost::is_same< STATE, C >::value,
+                                     has_i || boost::is_same< STATE, I >::value,
+                                     has_v || boost::is_same< STATE, V >::value,
+                                     has_m || boost::is_same< STATE, M >::value > type;
+        };
+
+        typedef Fred::StatusList state_container;
+        typedef state_container::key_type state_item;
+
+        template < typename STATE, bool PRESENT >
+        struct into_container
+        {
+            static void add(state_container &_status_list)
+            {
+                _status_list.insert(Fred::Object::State(STATE::value).into< state_item >());
+            }
+        };
+
+        template < typename STATE >
+        struct into_container< STATE, false >
+        {
+            static void add(const state_container&) { }
+        };
+
+        static const state_container& as_state_container()
+        {
+            static state_container status_list;
+            if (has_any && status_list.empty()) {
+                into_container< C, has_c >::add(status_list);
+                into_container< I, has_i >::add(status_list);
+                into_container< V, has_v >::add(status_list);
+                into_container< M, has_m >::add(status_list);
+            }
+            return status_list;
+        }
+
+        template < typename EVENT >
+        static void set(const EVENT &event)
+        {
+            if (has_any) {
+                const state_container &to_set = as_state_container();
+                Fred::CreateObjectStateRequestId(event.get_object_id(), to_set).exec(event.get_operation_context());
+            }
+        }
+
+        template < typename EVENT >
+        static void reset(const EVENT &event)
+        {
+            if (has_any) {
+                const state_container &to_reset = as_state_container();
+                Fred::CancelObjectStateRequestId(event.get_object_id(), to_reset).exec(event.get_operation_context());
+            }
+        }
+    };
+
+    template < typename STATES >
+    struct collect
+    {
+        typedef civm_collection< boost::mpl::contains< STATES, C >::value,
+                                 boost::mpl::contains< STATES, I >::value,
+                                 boost::mpl::contains< STATES, V >::value,
+                                 boost::mpl::contains< STATES, M >::value > type;
+    };
+
+    typedef typename collect< boost::mpl::set<            > >::type civm;
+    typedef typename collect< boost::mpl::set< C          > >::type Civm;
+    typedef typename collect< boost::mpl::set<    I       > >::type cIvm;
+    typedef typename collect< boost::mpl::set< C, I       > >::type CIvm;
+    typedef typename collect< boost::mpl::set<       V    > >::type ciVm;
+    typedef typename collect< boost::mpl::set< C,    V    > >::type CiVm;
+    typedef typename collect< boost::mpl::set<    I, V    > >::type cIVm;
+    typedef typename collect< boost::mpl::set< C, I, V    > >::type CIVm;
+    typedef typename collect< boost::mpl::set<          M > >::type civM;
+    typedef typename collect< boost::mpl::set< C,       M > >::type CivM;
+    typedef typename collect< boost::mpl::set<    I,    M > >::type cIvM;
+    typedef typename collect< boost::mpl::set< C, I,    M > >::type CIvM;
+    typedef typename collect< boost::mpl::set<       V, M > >::type ciVM;
+    typedef typename collect< boost::mpl::set< C,    V, M > >::type CiVM;
+    typedef typename collect< boost::mpl::set<    I, V, M > >::type cIVM;
+    typedef typename collect< boost::mpl::set< C, I, V, M > >::type CIVM;
+
+    template < typename STATE >
+    struct single_state
+    {
+        template < typename STATE_PRESENT >
+        static bool present_in(const STATE_PRESENT &states)
+        {
+            return states.STATE_PRESENT::template get< STATE::value >();
+        }
+        template < typename STATES >
+        struct add_into
+        {
+            typedef typename STATES::template add< STATE >::type type;
+        };
+    };
+
+    template < typename STATES >
+    struct state_collection
+    {
+        template < typename A, typename B >
+        struct in_a_and_not_in_b
+        {
+            typedef civm_collection< A::has_c && !B::has_c,
+                                     A::has_i && !B::has_i,
+                                     A::has_v && !B::has_v,
+                                     A::has_m && !B::has_m > type;
+        };
+        template < typename NEXT, typename EVENT >
+        static void set(const EVENT &event)
+        {
+            typedef STATES current;
+            typedef NEXT next;
+            typedef typename in_a_and_not_in_b< current, next >::type to_reset;
+            typedef typename in_a_and_not_in_b< next, current >::type to_set;
+            to_reset::reset(event);
+            to_set::set(event);
+        }
+    };
+
+    struct event
+    {
+        class base
+        {
+        protected:
+            base(unsigned _id, Fred::OperationContext &_ctx):id_(_id), ctx_(_ctx) { }
+            const unsigned id_;
+            Fred::OperationContext &ctx_;
+        };
+
+        template < typename BASE >
+        struct method:protected base
+        {
+            method(unsigned _id, Fred::OperationContext &_ctx = *reinterpret_cast< Fred::OperationContext* >(NULL))
+            :   base(_id, _ctx) { }
+            unsigned get_object_id()const { return id_; }
+            Fred::OperationContext& get_operation_context()const { return ctx_; }
+        };
+
+        struct test1:method< test1 >
+        {
+            test1(unsigned _id = 0, Fred::OperationContext &_ctx = *reinterpret_cast< Fred::OperationContext* >(NULL))
+            :   method(_id, _ctx) { }
+            struct exception:std::runtime_error
+            {
+                exception():std::runtime_error("no context available") { }
+            };
+            Fred::OperationContext& get_operation_context()const { throw exception(); }
+        };
+
+        struct test2:test1
+        {
+            test2(unsigned _id = 0, Fred::OperationContext &_ctx = *reinterpret_cast< Fred::OperationContext* >(NULL))
+            :   test1(_id, _ctx) { }
+        };
+
+    };
+
+    struct action:base_state_machine::action
+    {
+        struct test
+        {
+            template < typename EVENT, typename STATE_PRESENT >
+            void operator()(const EVENT&, const STATE_PRESENT&)const { }
+        };
+    };
+
+    typedef boost::mpl::set<
+        a_row< Civm, event::test1, action::test, guard::no_guard, Civm >,
+        a_row< Civm, event::test2, action::test, guard::no_guard, civM >
+    >                                      transition_table;
+    typedef civm                           empty_state_collection;
+    typedef boost::mpl::list< C, I, V, M > list_of_checked_states;
+};
 
 }//Registry::MojeID::{anonymous}
 
