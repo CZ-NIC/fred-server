@@ -36,7 +36,7 @@ namespace MojeID {
 
 typedef std::vector< std::string > HandleList;
 
-class MojeID2Impl
+class MojeID2Impl:private StateMachine::base< MojeID2Impl >
 {
 public:
     MojeID2Impl(const std::string &_server_name);
