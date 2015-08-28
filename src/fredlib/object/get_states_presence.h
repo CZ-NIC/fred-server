@@ -246,13 +246,16 @@ template < Type::Value OBJECT_TYPE >
                     return "UPPER(" + _prefix + "name)=UPPER(" + value + ") AND " + _prefix + "type=2";
                 }
             };
+#ifdef DOMAIN
+#undef DOMAIN
+#endif
             template < int Y >
             struct sql_object_registry< HANDLE, Type::DOMAIN, Y >
             {
                 static std::string find(::size_t _param_pos, const std::string &_prefix = "")
                 {
                     const std::string value = "$" + boost::lexical_cast< std::string >(_param_pos) + "::TEXT";
-                    // object_registr_name_3_idx (name) WHERE type=3 =>
+                    // object_registry_name_3_idx (name) WHERE type=3 =>
                     //            obr.name=$1::TEXT AND obr.type=3
                     return _prefix + "name=" + value + " AND " + _prefix + "type=3";
                 }
