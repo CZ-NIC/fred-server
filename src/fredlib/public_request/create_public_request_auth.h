@@ -40,10 +40,12 @@ class CreatePublicRequestAuth
 public:
     DECLARE_EXCEPTION_DATA(unknown_type, std::string);///< exception members for bad public request type
     DECLARE_EXCEPTION_DATA(unknown_registrar_id, RegistrarId);///< exception members for bad registrar id
+    DECLARE_EXCEPTION_DATA(unknown_registrar_handle, std::string);///< exception members for bad registrar handle
     struct Exception /// Something wrong happened
     :   virtual Fred::OperationException,
         ExceptionData_unknown_type< Exception >,
-        ExceptionData_unknown_registrar_id< Exception >
+        ExceptionData_unknown_registrar_id< Exception >,
+        ExceptionData_unknown_registrar_handle< Exception >
     {};
 
     /**
@@ -73,18 +75,26 @@ public:
     CreatePublicRequestAuth& set_reason(const std::string &_reason);
 
     /**
-     * Sets reason of public request creation.
+     * Sets email address for sending answers of public request creation.
      * @param _email sets email address of answer recipient's
      * @return operation instance reference to allow method chaining
      */
     CreatePublicRequestAuth& set_email_to_answer(const std::string &_email);
 
     /**
-     * Sets reason of public request creation.
+     * Sets registrar id of public request creation.
      * @param _id sets registrar id
      * @return operation instance reference to allow method chaining
      */
     CreatePublicRequestAuth& set_registrar_id(RegistrarId _id);
+
+    /**
+     * Sets registrar id of public request creation.
+     * @param _ctx contains reference to database and logging interface
+     * @param _registrar_handle sets registrar id of registrar with this handle
+     * @return operation instance reference to allow method chaining
+     */
+    CreatePublicRequestAuth& set_registrar_id(OperationContext &_ctx, const std::string &_registrar_handle);
 
     /**
      * Result of creation operation.

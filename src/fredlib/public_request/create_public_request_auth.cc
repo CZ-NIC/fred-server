@@ -39,6 +39,19 @@ CreatePublicRequestAuth& CreatePublicRequestAuth::set_registrar_id(RegistrarId _
     return *this;
 }
 
+CreatePublicRequestAuth& CreatePublicRequestAuth::set_registrar_id(
+    OperationContext &_ctx,
+    const std::string &_registrar_handle)
+{
+    const Database::Result res = _ctx.get_conn().exec_params(
+        "SELECT id FROM registrar WHERE handle=$1::TEXT", Database::query_param_list(_registrar_handle));
+    if (res.size() <= 0) {
+        BOOST_THROW_EXCEPTION(Exception().set_unknown_registrar_handle(_registrar_handle));
+    }
+    registrar_id_ = static_cast< RegistrarId >(res[0][0]);
+    return *this;
+}
+
 CreatePublicRequestAuth::Result CreatePublicRequestAuth::exec(OperationContext &_ctx,
                                                               const PublicRequestObjectLockGuard &_locked_object)const
 {
