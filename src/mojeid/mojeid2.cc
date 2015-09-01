@@ -145,16 +145,9 @@ public:
     template < Fred::Object::State::Value FRED_STATE >
     struct single:boost::integral_constant< Fred::Object::State::Value, FRED_STATE > { };
 
-    /// Represents conditionallyIdentifiedContact
     struct C:single< Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT > { };
-
-    /// Represents identifiedContact
     struct I:single< Fred::Object::State::IDENTIFIED_CONTACT > { };
-
-    /// Represents validatedContact
     struct V:single< Fred::Object::State::VALIDATED_CONTACT > { };
-
-    /// Represents mojeidContact
     struct M:single< Fred::Object::State::MOJEID_CONTACT > { };
 
     template < bool HAS_C, bool HAS_I, bool HAS_V, bool HAS_M >
@@ -291,54 +284,85 @@ public:
 
     struct event
     {
-        class base
+        class transfer_contact_prepare
         {
-        protected:
-            base(unsigned _id, Fred::OperationContext &_ctx):id_(_id), ctx_(_ctx) { }
-            const unsigned id_;
-            Fred::OperationContext &ctx_;
-        };
-
-        template < typename BASE >
-        struct method:protected base
-        {
-            method(unsigned _id, Fred::OperationContext &_ctx = *reinterpret_cast< Fred::OperationContext* >(NULL))
-            :   base(_id, _ctx) { }
-            unsigned get_object_id()const { return id_; }
+        public:
+            transfer_contact_prepare(
+                Fred::OperationContext &_ctx,
+                const Fred::InfoContactData &_contact,
+                const std::string &_trans_id,
+                const std::string &_registrar_handle,
+                LogRequestId _log_request_id,
+                std::string &_ident);
             Fred::OperationContext& get_operation_context()const { return ctx_; }
+            const Fred::InfoContactData& get_contact()const { return contact_; }
+            Fred::ObjectId get_object_id()const { return contact_.id; }
+            const std::string& get_trans_id()const { return trans_id_; }
+            const std::string& get_registrar_handle()const { return registrar_handle_; }
+            void set_ident(const std::string &_value)const { ident_ = _value; }
+            const Fred::PublicRequestObjectLockGuard& get_locked_contact()const { return locked_contact_; }
+            typedef Fred::Object::State::set<
+                        Fred::Object::State::SERVER_TRANSFER_PROHIBITED,
+                        Fred::Object::State::SERVER_UPDATE_PROHIBITED,
+                        Fred::Object::State::SERVER_DELETE_PROHIBITED,
+                        Fred::Object::State::SERVER_BLOCKED,
+                        Fred::Object::State::MOJEID_CONTACT,
+                        Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT,
+                        Fred::Object::State::IDENTIFIED_CONTACT,
+                        Fred::Object::State::VALIDATED_CONTACT >::type RelatedStates;
+            typedef MojeID2Impl::GetContact::States< RelatedStates >::Presence StatesPresence;
+        private:
+            Fred::OperationContext &ctx_;
+            const Fred::InfoContactData &contact_;
+            const std::string trans_id_;
+            const std::string registrar_handle_;
+            const LogRequestId log_request_id_;
+            std::string &ident_;
+            Fred::PublicRequestObjectLockGuard locked_contact_;
         };
+    };
 
-        struct test1:method< test1 >
+    struct guard
+    {
+        struct transfer_contact_prepare
         {
-            test1(unsigned _id = 0, Fred::OperationContext &_ctx = *reinterpret_cast< Fred::OperationContext* >(NULL))
-            :   method(_id, _ctx) { }
-            struct exception:std::runtime_error
-            {
-                exception():std::runtime_error("no context available") { }
-            };
-            Fred::OperationContext& get_operation_context()const { throw exception(); }
+            void operator()(const event::transfer_contact_prepare &_event,
+                            const event::transfer_contact_prepare::StatesPresence &_states)const;
         };
-
-        struct test2:test1
-        {
-            test2(unsigned _id = 0, Fred::OperationContext &_ctx = *reinterpret_cast< Fred::OperationContext* >(NULL))
-            :   test1(_id, _ctx) { }
-        };
-
     };
 
     struct action:base_state_machine::action
     {
-        struct test
+        struct transfer_contact_prepare_civm
         {
-            template < typename EVENT, typename STATE_PRESENT >
-            void operator()(const EVENT&, const STATE_PRESENT&)const { }
+            void operator()(const event::transfer_contact_prepare &_event,
+                            const event::transfer_contact_prepare::StatesPresence &_states)const;
+        };
+        struct transfer_contact_prepare_Civm
+        {
+            void operator()(const event::transfer_contact_prepare &_event,
+                            const event::transfer_contact_prepare::StatesPresence &_states)const;
+        };
+        struct transfer_contact_prepare_CIvm
+        {
+            void operator()(const event::transfer_contact_prepare &_event,
+                            const event::transfer_contact_prepare::StatesPresence &_states)const;
         };
     };
 
     typedef boost::mpl::set<
-        a_row< Civm, event::test1, action::test, guard::no_guard, Civm >,
-        a_row< Civm, event::test2, action::test, guard::no_guard, civM >
+        a_row< civm,  event::transfer_contact_prepare,
+                     action::transfer_contact_prepare_civm,
+                      guard::transfer_contact_prepare,
+               civm >,
+        a_row< Civm,  event::transfer_contact_prepare,
+                     action::transfer_contact_prepare_Civm,
+                      guard::transfer_contact_prepare,
+               Civm >,
+        a_row< CIvm,  event::transfer_contact_prepare,
+                     action::transfer_contact_prepare_CIvm,
+                      guard::transfer_contact_prepare,
+               CIvm >
     >                                      transition_table;
     typedef civm                           empty_state_collection;
     typedef boost::mpl::list< C, I, V, M > list_of_checked_states;
@@ -456,42 +480,11 @@ Fred::InfoContactData& MojeID2Impl::transfer_contact_prepare(
 
     try {
         Fred::OperationContextTwoPhaseCommitCreator ctx(_trans_id);
-
         _contact = Fred::InfoContactByHandle(_handle).exec(ctx).info_contact_data;
-        Fred::PublicRequestObjectLockGuard locked_contact(ctx, _contact.id);
-        const TransferContactPrepareRelatedStatesPresence states_presence =
-            GetContact(_contact.id).states< TransferContactPrepareRelatedStates >().presence(ctx);
-        const CheckTransferContactPrepare check_result(Fred::make_args(_contact),
-                                                       Fred::make_args(states_presence));
-        if (!check_result.success()) {
-            throw check_result;
-        }
-
-        struct GetPublicRequestAuthType
-        {
-            static const Fred::PublicRequestAuthTypeIface& iface(
-                bool has_conditionally_identified_state,
-                bool has_identified_state)
-            {
-                switch ((has_conditionally_identified_state ? (0x01 << 0) : 0x00) |
-                        (has_identified_state               ? (0x01 << 1) : 0x00)) {
-                case 0x00://..
-                    return Fred::MojeID::PublicRequest::ContactConditionalIdentification::iface();
-                case 0x01://C.
-                    return Fred::MojeID::PublicRequest::ConditionallyIdentifiedContactTransfer::iface();
-                case 0x02://.I
-                    break;
-                case 0x03://CI
-                    return Fred::MojeID::PublicRequest::IdentifiedContactTransfer::iface();
-                }
-                throw std::runtime_error("unsupported combination of contact identification states");
-            }
-        };
-        Fred::CreatePublicRequestAuth op_create_pub_req(
-            GetPublicRequestAuthType::iface(
-                states_presence.get< Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT >(),
-                states_presence.get< Fred::Object::State::IDENTIFIED_CONTACT >()));
-        prepare_transaction_storage()->store(_trans_id, _contact.id);
+        typedef transitions::event::transfer_contact_prepare occurred_event;
+        transitions::process(
+            occurred_event(ctx, _contact, _trans_id, mojeid_registrar_handle_, _log_request_id, _ident),
+            GetContact(_contact.id).states< occurred_event::RelatedStates >().presence(ctx));
         ctx.commit_transaction();
         return _contact;
     }
@@ -857,5 +850,75 @@ void MojeID2Impl::process_identified_contact_transfer(
 {
 }
 
+namespace {
+
+transitions::event::transfer_contact_prepare::transfer_contact_prepare(
+    Fred::OperationContext &_ctx,
+    const Fred::InfoContactData &_contact,
+    const std::string &_trans_id,
+    const std::string &_registrar_handle,
+    LogRequestId _log_request_id,
+    std::string &_ident)
+:   ctx_(_ctx),
+    contact_(_contact),
+    trans_id_(_trans_id),
+    registrar_handle_(_registrar_handle),
+    log_request_id_(_log_request_id),
+    ident_(_ident),
+    locked_contact_(ctx_, _contact.id)
+{
+}
+
+void transitions::guard::transfer_contact_prepare::operator()(
+    const event::transfer_contact_prepare &_event,
+    const event::transfer_contact_prepare::StatesPresence &_states)const
+{
+    const MojeID2Impl::CheckTransferContactPrepare check_result(Fred::make_args(_event.get_contact()),
+                                                                Fred::make_args(_states));
+    if (!check_result.success()) {
+        throw check_result;
+    }
+}
+
+void action_transfer_contact_prepare(
+    const Fred::PublicRequestAuthTypeIface &_iface,
+    const transitions::event::transfer_contact_prepare &_event)
+{
+    Fred::CreatePublicRequestAuth op_create_pub_req(_iface);
+    if (!_event.get_contact().notifyemail.isnull()) {
+        op_create_pub_req.set_email_to_answer(_event.get_contact().notifyemail.get_value());
+    }
+    op_create_pub_req.set_registrar_id(_event.get_operation_context(), _event.get_registrar_handle());
+    const Fred::CreatePublicRequestAuth::Result result =
+        op_create_pub_req.exec(_event.get_operation_context(), _event.get_locked_contact());
+    _event.set_ident(result.identification);
+    prepare_transaction_storage()->store(_event.get_trans_id(), _event.get_object_id());
+}
+
+void transitions::action::transfer_contact_prepare_civm::operator()(
+    const event::transfer_contact_prepare &_event,
+    const event::transfer_contact_prepare::StatesPresence &_states)const
+{
+    action_transfer_contact_prepare(Fred::MojeID::PublicRequest::ContactConditionalIdentification::iface(),
+                                    _event);
+}
+
+void transitions::action::transfer_contact_prepare_Civm::operator()(
+    const event::transfer_contact_prepare &_event,
+    const event::transfer_contact_prepare::StatesPresence &_states)const
+{
+    action_transfer_contact_prepare(Fred::MojeID::PublicRequest::ConditionallyIdentifiedContactTransfer::iface(),
+                                    _event);
+}
+
+void transitions::action::transfer_contact_prepare_CIvm::operator()(
+    const event::transfer_contact_prepare &_event,
+    const event::transfer_contact_prepare::StatesPresence &_states)const
+{
+    action_transfer_contact_prepare(Fred::MojeID::PublicRequest::IdentifiedContactTransfer::iface(),
+                                    _event);
+}
+
+}//Registry::MojeID::{anonymous}
 }//namespace Registry::MojeID
 }//namespace Registry
