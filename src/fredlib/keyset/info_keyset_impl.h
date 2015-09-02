@@ -99,7 +99,7 @@ namespace Fred
         * Executes getting info about the keyset.
         * @param ctx contains reference to database and logging interface
         * @param local_timestamp_pg_time_zone_name is postgresql time zone name of the returned data
-        * @return info data about the keyset
+        * @return info data about the keyset descendingly ordered by keyset historyid
         */
         std::vector<InfoKeysetOutput> exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "UTC");//return data
 

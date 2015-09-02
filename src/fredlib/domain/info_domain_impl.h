@@ -100,7 +100,7 @@ namespace Fred
         * Executes getting info about the domain.
         * @param ctx contains reference to database and logging interface
         * @param local_timestamp_pg_time_zone_name is postgresql time zone name of the returned data
-        * @return info data about the domain
+        * @return info data about the domain descendingly ordered by domain historyid
         */
         std::vector<InfoDomainOutput> exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "UTC");//return data
 
