@@ -40,7 +40,7 @@ namespace Database
      * Independent query parameter.
      * May be repeatedly added to ParamQuery instances.
      */
-    class ParamQueryParameter
+    class ReusableParameter
     {
         boost::shared_ptr<int> lid_;
         std::string type_;
@@ -50,7 +50,7 @@ namespace Database
          * @param value is the value of query parameter of any type QueryParam can handle
          * @param type is the postgresql type, it will be used in parameterized query for parameter value cast like: $1::type
          */
-        ParamQueryParameter(
+        ReusableParameter(
             const Database::QueryParam& value,
             const std::string& type);
 
@@ -173,7 +173,7 @@ namespace Database
          * Adds independent query parameter instance.
          * The same independent query parameter instance can be added repeatedly.
          */
-        ParamQuery& param(const Database::ParamQueryParameter& p);
+        ParamQuery& param(const Database::ReusableParameter& p);
 
         /**
          * Generates SQL query.

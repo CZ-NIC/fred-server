@@ -71,7 +71,7 @@ namespace Fred
 
     Database::ParamQuery InfoNsset::make_info_nsset_projection_query(const std::string& local_timestamp_pg_time_zone_name)
     {
-        Database::ParamQueryParameter p_local_zone(local_timestamp_pg_time_zone_name, "text");
+        Database::ReusableParameter p_local_zone(local_timestamp_pg_time_zone_name, "text");
         Database::ParamQuery info_nsset_query;
 
         if(info_nsset_id_filter_cte_.isset())

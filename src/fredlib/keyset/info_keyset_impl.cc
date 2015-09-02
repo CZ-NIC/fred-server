@@ -70,7 +70,7 @@ namespace Fred
 
     Database::ParamQuery InfoKeyset::make_info_keyset_projection_query(const std::string& local_timestamp_pg_time_zone_name)
     {
-        Database::ParamQueryParameter p_local_zone(local_timestamp_pg_time_zone_name, "text");
+        Database::ReusableParameter p_local_zone(local_timestamp_pg_time_zone_name, "text");
         Database::ParamQuery info_keyset_query;
 
         if(info_keyset_id_filter_cte_.isset())

@@ -52,7 +52,7 @@ BOOST_AUTO_TEST_CASE(query_composition)
                 ("\"ccc\"")
                 ("}'::text[]");
 
-    Database::ParamQueryParameter p_brm("brm", "text");
+    Database::ReusableParameter p_brm("brm", "text");
 
     Database::ParamQuery projection_query = Database::ParamQuery
             ("select ")
@@ -103,12 +103,12 @@ BOOST_AUTO_TEST_CASE(query_composition_30k_params)
     Database::ParamQuery test_rep_query("SELECT ");
     Database::ParamQuery test_non_rep_query("SELECT ");
 
-    Database::ParamQueryParameter p_brm("brm", "text");
+    Database::ReusableParameter p_brm("brm", "text");
 
     Util::HeadSeparator in_separator1("",",");
     Util::HeadSeparator in_separator2("",",");
 
-    Database::ParamQueryParameter dummy_id = Database::ParamQueryParameter(1,"bigint");
+    Database::ReusableParameter dummy_id = Database::ReusableParameter(1,"bigint");
 
     for (unsigned long long i = 0 ; i < 30000; ++i)
     {

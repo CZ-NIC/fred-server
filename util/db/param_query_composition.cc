@@ -37,7 +37,7 @@
 
 namespace Database
 {
-    ParamQueryParameter::ParamQueryParameter(
+    ReusableParameter::ReusableParameter(
         const Database::QueryParam& value,
         const std::string& type)
     : lid_(new int(0))
@@ -45,17 +45,17 @@ namespace Database
     , value_(value)
     {}
 
-    boost::shared_ptr<int> ParamQueryParameter::get_lid() const
+    boost::shared_ptr<int> ReusableParameter::get_lid() const
     {
         return lid_;
     }
 
-    std::string ParamQueryParameter::get_type() const
+    std::string ReusableParameter::get_type() const
     {
         return type_;
     }
 
-    Database::QueryParam ParamQueryParameter::get_value() const
+    Database::QueryParam ReusableParameter::get_value() const
     {
         return value_;
     }
@@ -182,7 +182,7 @@ namespace Database
     }
 
 
-    ParamQuery& ParamQuery::param(const Database::ParamQueryParameter& p)
+    ParamQuery& ParamQuery::param(const Database::ReusableParameter& p)
     {
         param_query_.push_back(
             Element().set_param(p.get_value(),
