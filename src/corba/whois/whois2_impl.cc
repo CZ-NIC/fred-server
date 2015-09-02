@@ -117,15 +117,17 @@ namespace Whois {
 
     /**
      * generic implementation of allocation and setting CORBA sequence
+     * from container with begin(), end(), size() and value_type member
      */
     template<class CORBA_SEQ, class CORBA_SEQ_ELEMENT,
-        class IN_LIST, class IN_LIST_ELEMENT> void set_corba_seq(CORBA_SEQ& cs, const IN_LIST& il)
+        class IN_LIST>
+    void set_corba_seq(CORBA_SEQ& cs, const IN_LIST& il)
     {
         cs.length(il.size());
         unsigned long long i = 0;
         for(typename IN_LIST::const_iterator ci = il.begin() ; ci != il.end(); ++ci,++i)
         {
-            cs[i] = set_element_of_corba_seq<CORBA_SEQ_ELEMENT, IN_LIST_ELEMENT>(*ci);
+            cs[i] = set_element_of_corba_seq<CORBA_SEQ_ELEMENT, typename IN_LIST::value_type >(*ci);
         }
     }
 
@@ -142,9 +144,7 @@ namespace Whois {
     {
         NameServer ns;
         ns.fqdn = Corba::wrap_string_to_corba_string(ile.get_fqdn());
-        set_corba_seq<IPAddressSeq, IPAddress,
-            std::vector<boost::asio::ip::address>,
-            boost::asio::ip::address>(ns.ip_addresses, ile.get_inet_addr());
+        set_corba_seq<IPAddressSeq, IPAddress>(ns.ip_addresses, ile.get_inet_addr());
         return ns;
     }
 
@@ -186,19 +186,18 @@ namespace Whois {
     }
 
 
-    RegistrarGroup wrap_registrar_group(const std::pair<std::string, std::vector<std::string> >& in)
+    RegistrarGroup wrap_registrar_group(const std::pair<const std::string, std::vector<std::string> >& in)
     {
         RegistrarGroup temp;
          temp.name = Corba::wrap_string_to_corba_string(in.first);
 
-         set_corba_seq<RegistrarHandleList, CORBA::String_var,
-             std::vector<std::string>, std::string>(temp.members, in.second);
+         set_corba_seq<RegistrarHandleList, CORBA::String_var>(temp.members, in.second);
 
          return temp;
      }
 
     template<> RegistrarGroup set_element_of_corba_seq<
-    RegistrarGroup, std::pair<std::string, std::vector<std::string> > >(const std::pair<std::string, std::vector<std::string> >& ile)
+    RegistrarGroup, std::pair<const std::string, std::vector<std::string> > >(const std::pair<const std::string, std::vector<std::string> >& ile)
     {
         return wrap_registrar_group(ile);
     }
@@ -233,8 +232,7 @@ namespace Whois {
             }
         }
 
-        set_corba_seq<StringSeq, CORBA::String_var,
-            std::vector<std::string>, std::string>(states_seq, statuses);
+        set_corba_seq<StringSeq, CORBA::String_var>(states_seq, statuses);
     }
 
     Contact wrap_contact(const Fred::InfoContactData& in)
@@ -280,8 +278,7 @@ namespace Whois {
         {
             std::vector<std::string> statuses;
             statuses.push_back("deleteCandidate");
-            set_corba_seq<StringSeq, CORBA::String_var,
-                std::vector<std::string>, std::string>(temp.statuses, statuses);
+            set_corba_seq<StringSeq, CORBA::String_var>(temp.statuses, statuses);
         }
         return temp;
     }
@@ -313,8 +310,7 @@ namespace Whois {
         } else {
             temp.validated_to = NULL;
         }
-        set_corba_seq<StringSeq, CORBA::String_var,
-            std::vector<Fred::ObjectIdHandlePair>, Fred::ObjectIdHandlePair>(temp.admin_contact_handles, in.admin_contacts);
+        set_corba_seq<StringSeq, CORBA::String_var>(temp.admin_contact_handles, in.admin_contacts);
 
         wrap_object_states(temp.statuses, in.id);
         return temp;
@@ -367,13 +363,11 @@ namespace Whois {
         temp.changed = Corba::wrap_nullable_datetime(in.update_time);
         temp.last_transfer = Corba::wrap_nullable_datetime(in.transfer_time);
 
-        set_corba_seq<StringSeq, CORBA::String_var,
-            std::vector<Fred::ObjectIdHandlePair>, Fred::ObjectIdHandlePair>(temp.tech_contact_handles, in.tech_contacts);
+        set_corba_seq<StringSeq, CORBA::String_var>(temp.tech_contact_handles, in.tech_contacts);
 
         wrap_object_states(temp.statuses, in.id);
 
-        set_corba_seq<DNSKeySeq, DNSKey,
-            std::vector<Fred::DnsKey>, Fred::DnsKey>(temp.dns_keys, in.dns_keys);
+        set_corba_seq<DNSKeySeq, DNSKey>(temp.dns_keys, in.dns_keys);
 
         return temp;
     }
@@ -395,11 +389,9 @@ namespace Whois {
         temp.changed = Corba::wrap_nullable_datetime(in.update_time);
         temp.last_transfer = Corba::wrap_nullable_datetime(in.transfer_time);
 
-        set_corba_seq<NameServerSeq, NameServer,
-            std::vector<Fred::DnsHost>, Fred::DnsHost>(temp.nservers, in.dns_hosts);
+        set_corba_seq<NameServerSeq, NameServer>(temp.nservers, in.dns_hosts);
 
-        set_corba_seq<StringSeq, CORBA::String_var,
-            std::vector<Fred::ObjectIdHandlePair>, Fred::ObjectIdHandlePair>(temp.tech_contact_handles, in.tech_contacts);
+        set_corba_seq<StringSeq, CORBA::String_var>(temp.tech_contact_handles, in.tech_contacts);
 
         wrap_object_states(temp.statuses, in.id);
         return temp;
@@ -457,8 +449,7 @@ namespace Whois {
                 registrar_data_list.push_back(Fred::InfoRegistrarByHandle(registrar_handle
                     ).exec(ctx, output_timezone).info_registrar_data);
             }
-            set_corba_seq<RegistrarSeq, Registrar,
-                std::vector<Fred::InfoRegistrarData>, Fred::InfoRegistrarData>(
+            set_corba_seq<RegistrarSeq, Registrar>(
                     registrar_seq, registrar_data_list);
 
             return registrar_seq._retn();
@@ -476,9 +467,10 @@ namespace Whois {
         {
             RegistrarGroupList_var reg_grp_seq = new RegistrarGroupList;
             Fred::OperationContext ctx;
-            set_corba_seq<RegistrarGroupList, RegistrarGroup,
-                std::map<std::string, std::vector<std::string> >, std::pair<std::string, std::vector<std::string> > >(
+
+            set_corba_seq<RegistrarGroupList, RegistrarGroup>(
                 reg_grp_seq, ::Whois::get_registrar_groups(ctx));
+
             return reg_grp_seq._retn();
         }
         catch (...)
@@ -494,8 +486,7 @@ namespace Whois {
         {
             RegistrarCertificationList_var reg_cert_seq = new RegistrarCertificationList;
             Fred::OperationContext ctx;
-            set_corba_seq<RegistrarCertificationList, RegistrarCertification,
-                std::vector< ::Whois::RegistrarCertificationData>, ::Whois::RegistrarCertificationData >
+            set_corba_seq<RegistrarCertificationList, RegistrarCertification>
                 (reg_cert_seq, ::Whois::get_registrar_certifications(ctx));
             return reg_cert_seq._retn();
         }
@@ -512,8 +503,7 @@ namespace Whois {
         {
             ZoneFqdnList_var zone_seq = new ZoneFqdnList;
             Fred::OperationContext ctx;
-            set_corba_seq<ZoneFqdnList, CORBA::String_var,
-                std::vector<std::string>, std::string>
+            set_corba_seq<ZoneFqdnList, CORBA::String_var>
                 (zone_seq, ::Whois::get_managed_zone_list(ctx));
             return zone_seq._retn();
         }
@@ -612,8 +602,7 @@ namespace Whois {
                 nss_info.erase(nss_info.begin());//depends on InfoNsset ordering
             }
 
-            set_corba_seq<NSSetSeq, NSSet,std::vector<Fred::InfoNssetOutput>, Fred::InfoNssetOutput>
-                (nss_seq.inout(), nss_info);
+            set_corba_seq<NSSetSeq, NSSet>(nss_seq.inout(), nss_info);
             return nss_seq._retn();
         }
         catch(const Fred::InfoNssetByDNSFqdn::Exception& e)
@@ -654,8 +643,7 @@ namespace Whois {
                 nss_info.erase(nss_info.begin());//depends on InfoNsset ordering
             }
 
-            set_corba_seq<NSSetSeq, NSSet,std::vector<Fred::InfoNssetOutput>, Fred::InfoNssetOutput>
-                (nss_seq.inout(), nss_info);
+            set_corba_seq<NSSetSeq, NSSet>(nss_seq.inout(), nss_info);
 
             return nss_seq._retn();
         }
@@ -766,8 +754,7 @@ namespace Whois {
                 ks_info.erase(ks_info.begin());//depends on InfoKeyset ordering
             }
 
-            set_corba_seq<KeySetSeq, KeySet,std::vector<Fred::InfoKeysetOutput>, Fred::InfoKeysetOutput>
-                (ks_seq.inout(), ks_info);
+            set_corba_seq<KeySetSeq, KeySet>(ks_seq.inout(), ks_info);
 
             return ks_seq._retn();
         }
@@ -855,8 +842,7 @@ namespace Whois {
                 ::Whois::is_domain_delete_pending(i.info_domain_data.fqdn, ctx, "Europe/Prague")));
         }
 
-        set_corba_seq<DomainSeq, Domain, std::vector<DomainInfoWithDeleteCandidate>, DomainInfoWithDeleteCandidate>
-            (domain_seq, didclist);
+        set_corba_seq<DomainSeq, Domain>(domain_seq, didclist);
     }
 
     DomainSeq* Server_impl::get_domains_by_registrant(
@@ -1041,6 +1027,7 @@ namespace Whois {
         for(std::map<unsigned long long, std::string>::const_iterator ci
                 = states.begin(); ci != states.end(); ++ci)
         {
+
             temp.push_back(std::make_pair(
                 ::Whois::get_object_state_name_by_state_id(ci->first, ctx), ci->second));
         }
@@ -1063,8 +1050,7 @@ namespace Whois {
         {
             ObjectStatusDescSeq_var state_seq = new ObjectStatusDescSeq;
             Fred::OperationContext ctx;
-            set_corba_seq<ObjectStatusDescSeq, ObjectStatusDesc,
-            std::vector< std::pair<std::string, std::string> >, std::pair<std::string, std::string> >
+            set_corba_seq<ObjectStatusDescSeq, ObjectStatusDesc>
             (state_seq, wrap_status_desc(
                 Corba::unwrap_string_from_const_char_ptr(lang),"domain", ctx));
             return state_seq._retn();
@@ -1085,8 +1071,7 @@ namespace Whois {
         {
             ObjectStatusDescSeq_var state_seq = new ObjectStatusDescSeq;
             Fred::OperationContext ctx;
-            set_corba_seq<ObjectStatusDescSeq, ObjectStatusDesc,
-            std::vector< std::pair<std::string, std::string> >, std::pair<std::string, std::string> >
+            set_corba_seq<ObjectStatusDescSeq, ObjectStatusDesc>
             (state_seq, wrap_status_desc(
                 Corba::unwrap_string_from_const_char_ptr(lang),"contact", ctx));
             return state_seq._retn();
@@ -1106,8 +1091,7 @@ namespace Whois {
         {
             ObjectStatusDescSeq_var state_seq = new ObjectStatusDescSeq;
             Fred::OperationContext ctx;
-            set_corba_seq<ObjectStatusDescSeq, ObjectStatusDesc,
-            std::vector< std::pair<std::string, std::string> >, std::pair<std::string, std::string> >
+            set_corba_seq<ObjectStatusDescSeq, ObjectStatusDesc>
             (state_seq, wrap_status_desc(
                 Corba::unwrap_string_from_const_char_ptr(lang),"nsset", ctx));
             return state_seq._retn();
@@ -1127,8 +1111,7 @@ namespace Whois {
         {
             ObjectStatusDescSeq_var state_seq = new ObjectStatusDescSeq;
             Fred::OperationContext ctx;
-            set_corba_seq<ObjectStatusDescSeq, ObjectStatusDesc,
-            std::vector< std::pair<std::string, std::string> >, std::pair<std::string, std::string> >
+            set_corba_seq<ObjectStatusDescSeq, ObjectStatusDesc>
             (state_seq, wrap_status_desc(
                 Corba::unwrap_string_from_const_char_ptr(lang),"keyset", ctx));
             return state_seq._retn();
