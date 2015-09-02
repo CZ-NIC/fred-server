@@ -38,6 +38,7 @@ enum { PUBLIC_REQUEST_AUTH_IDENTIFICATION_LENGTH = 32 };///< length of string fo
 class CreatePublicRequestAuth
 {
 public:
+    typedef ::uint64_t LogRequestId;///< logging request identification
     DECLARE_EXCEPTION_DATA(unknown_type, std::string);///< exception members for bad public request type
     DECLARE_EXCEPTION_DATA(unknown_registrar_id, RegistrarId);///< exception members for bad registrar id
     DECLARE_EXCEPTION_DATA(unknown_registrar_handle, std::string);///< exception members for bad registrar handle
@@ -113,10 +114,13 @@ public:
      * Executes creation.
      * @param _ctx contains reference to database and logging interface
      * @param _locked_object guarantees exclusive access to all public requests of given object
+     * @param _create_log_request_id associated request id in logger
      * @return @ref Result object corresponding with performed operation
      * @throw Exception if something wrong happened
      */
-    Result exec(OperationContext &_ctx, const PublicRequestObjectLockGuard &_locked_object)const;
+    Result exec(OperationContext &_ctx,
+                const PublicRequestObjectLockGuard &_locked_object,
+                const Optional< LogRequestId > &_create_log_request_id = Optional< LogRequestId >())const;
 private:
     const std::string type_;
     const std::string password_;
