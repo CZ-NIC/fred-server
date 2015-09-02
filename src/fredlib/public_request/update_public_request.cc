@@ -47,6 +47,30 @@ UpdatePublicRequest& UpdatePublicRequest::set_registrar_id(const Nullable< Regis
     return *this;
 }
 
+namespace {
+
+::size_t stop_letter_sending(OperationContext &_ctx,
+                             const PublicRequestLockGuard &_locked_public_request)
+{
+    const PublicRequestId public_request_id = _locked_public_request.get_public_request_id();
+    Database::query_param_list params(public_request_id);                           //$1::BIGINT
+    params(PublicRequest::Status(PublicRequest::Status::NEW).into< std::string >());//$2::TEXT
+    const Database::Result res = _ctx.get_conn().exec_params(
+        "UPDATE message_archive ma "
+        "SET status_id=(SELECT id FROM enum_send_status WHERE status_name='no_processing'),"
+            "moddate=NOW() "
+        "FROM public_request pr "
+        "JOIN public_request_messages_map prmm ON prmm.public_request_id=pr.id "
+        "WHERE pr.id=$1::BIGINT AND "
+              "pr.status=(SELECT id FROM enum_public_request_status WHERE name=$2::TEXT) AND "
+              "ma.id=prmm.message_archive_id AND "
+              "ma.status_id IN (SELECT id FROM enum_send_status WHERE status_name IN ('ready','send_failed')) "
+        "RETURNING ma.id", params);
+    return res.size();
+}
+
+}
+
 UpdatePublicRequest::Result UpdatePublicRequest::exec(OperationContext &_ctx,
                                                       const PublicRequestLockGuard &_locked_public_request,
                                                       const Optional< LogRequestId > &_resolve_log_request_id)const
@@ -60,7 +84,9 @@ UpdatePublicRequest::Result UpdatePublicRequest::exec(OperationContext &_ctx,
         try {
             switch (status_.get_value()) {
             case PublicRequest::Status::ANSWERED:
+                break;
             case PublicRequest::Status::INVALIDATED:
+                stop_letter_sending(_ctx, _locked_public_request);
                 break;
             default:
                 throw std::runtime_error("unable to set other public request state than 'answered' or 'invalidated'");
