@@ -210,7 +210,7 @@ namespace Database
 
                 case Element::PQE_PARAM:
                 {
-                    std::string pos = query.second.add(ci->get_param());
+                    const std::string pos = query.second.add(ci->get_param());
                     query.first += "$";
                     query.first += pos;//parameter position beginning from 1
                     query.first += "::";
