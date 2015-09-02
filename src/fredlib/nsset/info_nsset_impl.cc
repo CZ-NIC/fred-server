@@ -165,13 +165,12 @@ namespace Fred
     Database::ParamQuery InfoNsset::make_tech_contact_query(
             unsigned long long id, unsigned long long historyid)
     {
-        //technical contacts query
-        Database::ParamQuery query;
+        Database::ParamQuery technical_contacts;
 
-        query("SELECT cobr.id AS tech_contact_id, cobr.name AS tech_contact_handle");
+        technical_contacts("SELECT cobr.id AS tech_contact_id, cobr.name AS tech_contact_handle");
         if(history_query_)
         {
-            query(" FROM nsset_contact_map_history ncm "
+            technical_contacts(" FROM nsset_contact_map_history ncm "
                 " JOIN object_registry cobr ON ncm.contactid = cobr.id "
                 " JOIN enum_object_type ceot ON ceot.id = cobr.type AND ceot.name='contact'::text "
                 " WHERE ncm.nssetid = ").param_bigint(id)
@@ -179,14 +178,14 @@ namespace Fred
         }
         else
         {
-            query(" FROM nsset_contact_map ncm "
+            technical_contacts(" FROM nsset_contact_map ncm "
                 " JOIN object_registry cobr ON ncm.contactid = cobr.id AND cobr.erdate IS NULL "
                 " JOIN enum_object_type ceot ON ceot.id = cobr.type AND ceot.name='contact'::text "
                 " WHERE ncm.nssetid = ").param_bigint(id);
         }
-        query(" ORDER BY cobr.name ");
+        technical_contacts(" ORDER BY cobr.name ");
 
-        return query;
+        return technical_contacts;
     }
 
     Database::ParamQuery InfoNsset::make_dns_host_query(
