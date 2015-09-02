@@ -58,7 +58,10 @@ namespace Fred
             InfoNsset in;
             in.set_inline_view_filter(Database::ParamQuery("info_nsset_handle = UPPER(").param_text(handle_)(")"))
                 .set_history_query(false);
-            if(lock_) in.set_lock();
+            if(lock_)
+            {
+                in.set_lock();
+            }
             nsset_res = in.exec(ctx,local_timestamp_pg_time_zone_name);
 
             if (nsset_res.empty())
@@ -109,7 +112,10 @@ namespace Fred
             InfoNsset in;
             in.set_inline_view_filter(Database::ParamQuery("info_nsset_id = ").param_bigint(id_))
                 .set_history_query(false);
-            if(lock_) in.set_lock();
+            if(lock_)
+            {
+                in.set_lock();
+            }
             nsset_res = in.exec(ctx,local_timestamp_pg_time_zone_name);
 
             if (nsset_res.empty())
@@ -188,7 +194,10 @@ namespace Fred
             InfoNsset in;
             in.set_cte_id_filter(cte_id_filter_query)
                 .set_history_query(false);
-            if(lock_) in.set_lock();
+            if(lock_)
+            {
+                in.set_lock();
+            }
             nsset_res = in.exec(ctx,local_timestamp_pg_time_zone_name);
         }
         catch(ExceptionStack& ex)
@@ -260,7 +269,10 @@ namespace Fred
             InfoNsset in;
             in.set_cte_id_filter(cte_id_filter_query)
                 .set_history_query(false);
-            if(lock_) in.set_lock();
+            if(lock_)
+            {
+                in.set_lock();
+            }
             nsset_res = in.exec(ctx,local_timestamp_pg_time_zone_name);
         }
         catch(ExceptionStack& ex)
@@ -316,7 +328,10 @@ namespace Fred
             InfoNsset in;
             in.set_inline_view_filter(Database::ParamQuery("info_nsset_roid = ").param_text(roid_))
                 .set_history_query(true);
-            if(lock_) in.set_lock();
+            if(lock_)
+            {
+                in.set_lock();
+            }
             nsset_res = in.exec(ctx,local_timestamp_pg_time_zone_name);
         }
         catch(ExceptionStack& ex)
@@ -358,7 +373,10 @@ namespace Fred
             InfoNsset in;
             in.set_inline_view_filter(Database::ParamQuery("info_nsset_id = ").param_bigint(id_))
                 .set_history_query(true);
-            if(lock_) in.set_lock();
+            if(lock_)
+            {
+                in.set_lock();
+            }
             nsset_history_res = in.exec(ctx,local_timestamp_pg_time_zone_name);
         }
         catch(ExceptionStack& ex)
@@ -398,7 +416,10 @@ namespace Fred
             InfoNsset in;
             in.set_inline_view_filter(Database::ParamQuery("info_nsset_historyid = ").param_bigint(historyid_))
                 .set_history_query(true);
-            if(lock_) in.set_lock();
+            if(lock_)
+            {
+                in.set_lock();
+            }
             nsset_history_res = in.exec(ctx,local_timestamp_pg_time_zone_name);
 
             if (nsset_history_res.empty())
