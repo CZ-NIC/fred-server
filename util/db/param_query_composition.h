@@ -54,45 +54,17 @@ namespace Database
             const Database::QueryParam& value,
             const std::string& type);
 
+        /**
+         * Gets identification of query parameter instance.
+         * Identification is valid and unique in process scope.
+         */
         boost::shared_ptr<int> get_lid() const;
+        /**
+         * Gets postgresql type of parameter.
+         *
+         */
         std::string get_type() const;
         Database::QueryParam get_value() const;
-    };
-
-    /**
-     * Implementation of ParamQuery element.
-     * Not meant to be used directly.
-     */
-    class ParamQueryElement
-    {
-    public:
-        enum TypeTag {PQE_NONE, PQE_STRING, PQE_PARAM, PQE_PARAM_REPETABLE};
-    private:
-        TypeTag tag_;
-        boost::shared_ptr<int> lid_;
-        std::string query_string_element_;
-        Database::QueryParam query_param_element_;
-    public:
-        ParamQueryElement();
-
-        ParamQueryElement& set_string(const std::string& val);
-
-        ParamQueryElement& set_param(
-            const Database::QueryParam& val,
-            const std::string& pg_typname);
-
-        ParamQueryElement& set_param(
-            const Database::QueryParam& val,
-            const std::string& pg_typname,
-            const boost::shared_ptr<int>& lid);
-
-        TypeTag get_tag() const;
-
-        boost::shared_ptr<int> get_lid() const;
-
-        std::string get_string() const;
-
-        Database::QueryParam get_param() const;
     };
 
     /**
@@ -101,17 +73,64 @@ namespace Database
      */
     class ParamQuery
     {
-        std::vector<ParamQueryElement> param_query_;
+        class Element
+        {
+        public:
+            enum TypeTag {PQE_NONE, PQE_STRING, PQE_PARAM, PQE_PARAM_REPETABLE};
+        private:
+            TypeTag tag_;
+            boost::shared_ptr<int> lid_;
+            std::string query_string_element_;
+            Database::QueryParam query_param_element_;
+        public:
+            Element();
+
+            Element& set_string(const std::string& val);
+
+            Element& set_param(
+                const Database::QueryParam& val,
+                const std::string& pg_typname);
+
+            Element& set_param(
+                const Database::QueryParam& val,
+                const std::string& pg_typname,
+                const boost::shared_ptr<int>& lid);
+
+            TypeTag get_tag() const;
+
+            boost::shared_ptr<int> get_lid() const;
+
+            std::string get_string() const;
+
+            Database::QueryParam get_param() const;
+        };
+
+        std::vector<Element> param_query_;
     public:
 
+        /**
+         * Makes empty query.
+         */
         ParamQuery();
 
+        /**
+         * Makes copy.
+         */
         ParamQuery(const ParamQuery& val);
 
+        /**
+         * Makes query from text string, no parameters.
+         */
         ParamQuery(const std::string& val);
 
+        /**
+         * Adds query part to the query, concatenates them into a single query.
+         */
         ParamQuery& operator()(const ParamQuery& val);
 
+        /**
+         * Adds text string to the query.
+         */
         ParamQuery& operator()(const std::string& val);
 
         /**
@@ -120,16 +139,34 @@ namespace Database
         ParamQuery& param(const Database::QueryParam& val,
             const std::string& pg_typname);
 
+        /**
+         * Adds query parameter of postgresql type "bigint".
+         */
         ParamQuery& param_bigint(const Database::QueryParam& val);
 
+        /**
+         * Adds query parameter of postgresql type "numeric".
+         */
         ParamQuery& param_numeric(const Database::QueryParam& val);
 
+        /**
+         * Adds query parameter of postgresql type "text".
+         */
         ParamQuery& param_text(const Database::QueryParam& val);
 
+        /**
+         * Adds query parameter of postgresql type "timestamp".
+         */
         ParamQuery& param_timestamp(const Database::QueryParam& val);
 
+        /**
+         * Adds query parameter of postgresql type "date".
+         */
         ParamQuery& param_date(const Database::QueryParam& val);
 
+        /**
+         * Adds query parameter of postgresql type "bool".
+         */
         ParamQuery& param_bool(const Database::QueryParam& val);
 
         /**
@@ -139,13 +176,10 @@ namespace Database
         ParamQuery& param(const Database::ParamQueryParameter& p);
 
         /**
-         * Generates SQL query string with parameter numbers and list of query parameter values.
+         * Generates SQL query.
+         * @return pair of SQL string with parameter numbers (first) and list of query parameter values (second).
          */
         std::pair<std::string,query_param_list> get_query();
-
-        std::string get_query_string();
-
-        QueryParams get_query_params();
     };
 };
 

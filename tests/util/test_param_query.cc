@@ -63,7 +63,7 @@ BOOST_AUTO_TEST_CASE(query_composition)
             (", ").param_text("test text")(" as f5")(", ").param(p_brm)(" as f6")
             (", ").param_bigint(10)(" as f7")(", ").param(p_brm)(" as f8");
 
-    BOOST_CHECK(projection_query.get_query_string()
+    BOOST_CHECK(projection_query.get_query().first
         == "select $1::integer as f1, '{\"aaa\",\"bbb\",\"ccc\"}'::text[] as f2"
         ", $2::text as f3, $2::text as f4, $3::text as f5, $2::text as f6"
         ", $4::bigint as f7, $2::text as f8");
@@ -74,7 +74,7 @@ BOOST_AUTO_TEST_CASE(query_composition)
                 (" and f3 = ").param(p_brm)
                 (" and f5 <> ").param(p_brm);
 
-    BOOST_CHECK(filter_query.get_query_string() ==
+    BOOST_CHECK(filter_query.get_query().first ==
     "select * from (select $1::integer as f1, '{\"aaa\",\"bbb\",\"ccc\"}'::text[] as f2"
         ", $2::text as f3, $2::text as f4, $3::text as f5, $2::text as f6"
         ", $4::bigint as f7, $2::text as f8"
@@ -119,8 +119,8 @@ BOOST_AUTO_TEST_CASE(query_composition_30k_params)
     //BOOST_MESSAGE(test_rep_query.get_query_string());
     //BOOST_MESSAGE(test_non_rep_query.get_query_string());
 
-    BOOST_CHECK(test_rep_query.get_query_params().size() == 1);
-    BOOST_CHECK(test_non_rep_query.get_query_params().size() == 30000);
+    BOOST_CHECK(test_rep_query.get_query().second.size() == 1);
+    BOOST_CHECK(test_non_rep_query.get_query().second.size() == 30000);
 
 
 

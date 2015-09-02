@@ -61,11 +61,11 @@ namespace Database
     }
 
 
-    ParamQueryElement::ParamQueryElement()
+    ParamQuery::Element::Element()
     : tag_ (PQE_NONE)
     {}
 
-    ParamQueryElement& ParamQueryElement::set_string(const std::string& val)
+    ParamQuery::Element& ParamQuery::Element::set_string(const std::string& val)
     {
         tag_ = PQE_STRING;
         query_string_element_ = val;
@@ -73,7 +73,7 @@ namespace Database
     }
 
     //non repeatable parameter
-    ParamQueryElement& ParamQueryElement::set_param(
+    ParamQuery::Element& ParamQuery::Element::set_param(
         const Database::QueryParam& val,
         const std::string& pg_typname)
     {
@@ -86,7 +86,7 @@ namespace Database
     }
 
     //repeatable parameter
-    ParamQueryElement& ParamQueryElement::set_param(
+    ParamQuery::Element& ParamQuery::Element::set_param(
         const Database::QueryParam& val,
         const std::string& pg_typname,
         const boost::shared_ptr<int>& lid)
@@ -99,22 +99,22 @@ namespace Database
         return *this;
     }
 
-    ParamQueryElement::TypeTag ParamQueryElement::get_tag() const
+    ParamQuery::Element::TypeTag ParamQuery::Element::get_tag() const
     {
         return tag_;
     }
 
-    boost::shared_ptr<int> ParamQueryElement::get_lid() const
+    boost::shared_ptr<int> ParamQuery::Element::get_lid() const
     {
         return lid_;
     }
 
-    std::string ParamQueryElement::get_string() const
+    std::string ParamQuery::Element::get_string() const
     {
         return query_string_element_;
     }
 
-    Database::QueryParam ParamQueryElement::get_param() const
+    Database::QueryParam ParamQuery::Element::get_param() const
     {
         return query_param_element_;
     }
@@ -128,7 +128,7 @@ namespace Database
     {}
 
     ParamQuery::ParamQuery(const std::string& val)
-    : param_query_(1,ParamQueryElement().set_string(val))
+    : param_query_(1,Element().set_string(val))
     {}
 
     ParamQuery& ParamQuery::operator()(const ParamQuery& val)
@@ -140,16 +140,14 @@ namespace Database
 
     ParamQuery& ParamQuery::operator()(const std::string& val)
     {
-        param_query_.push_back(ParamQueryElement()
-            .set_string(val));
+        param_query_.push_back(Element().set_string(val));
         return *this;
     }
 
     ParamQuery& ParamQuery::param(const Database::QueryParam& val,
         const std::string& pg_typname)
     {
-        param_query_.push_back(ParamQueryElement()
-            .set_param(val, pg_typname));
+        param_query_.push_back(Element().set_param(val, pg_typname));
         return *this;
     }
 
@@ -187,8 +185,7 @@ namespace Database
     ParamQuery& ParamQuery::param(const Database::ParamQueryParameter& p)
     {
         param_query_.push_back(
-            ParamQueryElement()
-            .set_param(p.get_value(),
+            Element().set_param(p.get_value(),
                 p.get_type(),
                 p.get_lid())
             );
@@ -200,18 +197,18 @@ namespace Database
         std::map<boost::shared_ptr<int>, std::string > param_lid_position;
         std::pair<std::string,query_param_list> query;
 
-        for(std::vector<ParamQueryElement>::const_iterator
+        for(std::vector<Element>::const_iterator
             ci = param_query_.begin(); ci != param_query_.end(); ++ci)
         {
             switch (ci->get_tag())
             {
-                case ParamQueryElement::PQE_STRING:
+                case Element::PQE_STRING:
                 {
                     query.first += ci->get_string();
                 }
                 break;
 
-                case ParamQueryElement::PQE_PARAM:
+                case Element::PQE_PARAM:
                 {
                     std::string pos = query.second.add(ci->get_param());
                     query.first += "$";
@@ -221,7 +218,7 @@ namespace Database
                 }
                 break;
 
-                case ParamQueryElement::PQE_PARAM_REPETABLE:
+                case Element::PQE_PARAM_REPETABLE:
                 {
                     boost::shared_ptr<int> lid = ci->get_lid();
                     Optional<std::string> pos = optional_map_at<Optional>(param_lid_position, lid);
@@ -233,7 +230,7 @@ namespace Database
                         param_lid_position.insert(std::pair<boost::shared_ptr<int>, std::string>(lid, pos.get_value()));
                         if(!insert_result.second)
                         {
-                            throw std::runtime_error("ParamQueryElement::PQE_PARAM_REPETABLE insert failed");
+                            throw std::runtime_error("ParamQuery::Element::PQE_PARAM_REPETABLE insert failed");
                         }
                     }
 
@@ -247,24 +244,13 @@ namespace Database
 
               default:
                 throw std::runtime_error(
-                    "unknown ParamQueryElement tag");
+                    "unknown ParamQuery::Element tag");
                 break;
             };
         }
 
         return query;
     }
-
-    std::string ParamQuery::get_query_string()
-    {
-        return get_query().first;
-    }
-
-    QueryParams ParamQuery::get_query_params()
-    {
-        return get_query().second;
-    }
-
 
 };
 
