@@ -1,4 +1,6 @@
 #include "src/fredlib/public_request/create_public_request.h"
+#include "src/fredlib/public_request/update_public_request.h"
+#include "src/fredlib/public_request/public_request_lock_guard.h"
 #include "src/fredlib/public_request/public_request_status.h"
 
 namespace Fred {
@@ -42,6 +44,7 @@ PublicRequestId CreatePublicRequest::exec(OperationContext &_ctx,
                                           const Optional< LogRequestId > &_create_log_request_id)const
 {
     try {
+        invalidate_the_same(_ctx, type_, _locked_object, registrar_id_, _create_log_request_id);
         Database::query_param_list params(type_);                                           // $1::TEXT
         params(_locked_object.get_object_id())                                              // $2::BIGINT
               (reason_.isset() ? reason_.get_value() : Database::QPNull)                    // $3::TEXT
@@ -92,6 +95,35 @@ PublicRequestId CreatePublicRequest::exec(OperationContext &_ctx,
     catch (const std::runtime_error&) {
         throw;
     }
+}
+
+::size_t CreatePublicRequest::invalidate_the_same(OperationContext &_ctx,
+                                                  const std::string &_type,
+                                                  const PublicRequestObjectLockGuard &_locked_object,
+                                                  const Optional< RegistrarId > _registrar_id,
+                                                  const Optional< LogRequestId > &_log_request_id)
+{
+    Database::query_param_list params(_locked_object.get_object_id());              // $1::BIGINT
+    params(_type);                                                                  // $2::TEXT
+    params(PublicRequest::Status(PublicRequest::Status::NEW).into< std::string >());// $3::TEXT
+    const Database::Result res = _ctx.get_conn().exec_params(
+        "SELECT pr.id "
+        "FROM public_request pr "
+        "JOIN public_request_objects_map prom ON prom.request_id=pr.id "
+        "WHERE prom.object_id=$1::BIGINT AND "
+              "pr.request_type=(SELECT id FROM enum_public_request_type WHERE name=$2::TEXT) AND "
+              "pr.status=(SELECT id FROM enum_public_request_status WHERE name=$3::TEXT)", params);
+    for (::size_t idx = 0; idx < res.size(); ++idx) {
+        const PublicRequestId public_request_id = static_cast< PublicRequestId >(res[idx][0]);
+        UpdatePublicRequest update_public_request_op;
+        update_public_request_op.set_status(PublicRequest::Status::INVALIDATED);
+        if (_registrar_id.isset()) {
+            update_public_request_op.set_registrar_id(_registrar_id.get_value());
+        }
+        PublicRequestLockGuardById locked_public_request( _ctx, public_request_id);
+        update_public_request_op.exec(_ctx, locked_public_request, _log_request_id);
+    }
+    return res.size();
 }
 
 }//namespace Fred

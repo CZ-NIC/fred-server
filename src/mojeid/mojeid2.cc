@@ -919,6 +919,6 @@ void transitions::action::transfer_contact_prepare_CIvm::operator()(
                                     _event);
 }
 
-}//Registry::MojeID::{anonymous}
+}//namespace Registry::MojeID::{anonymous}
 }//namespace Registry::MojeID
 }//namespace Registry

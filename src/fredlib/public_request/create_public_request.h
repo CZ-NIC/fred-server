@@ -96,6 +96,22 @@ public:
     PublicRequestId exec(OperationContext &_ctx,
                          const PublicRequestObjectLockGuard &_locked_object,
                          const Optional< LogRequestId > &_create_log_request_id = Optional< LogRequestId >())const;
+
+    /**
+     * Invalidates my opened requests of the same type.
+     * @param _ctx contains reference to database and logging interface
+     * @param _type type of public request
+     * @param _locked_object guarantees exclusive access to all public requests of given object
+     * @param _registrar_id registrar which calls this function
+     * @param _log_request_id associated request id in logger
+     * @return the number of invalidated public requests
+     * @throw Exception if something wrong happened
+     */
+    static ::size_t invalidate_the_same(OperationContext &_ctx,
+                                        const std::string &_type,
+                                        const PublicRequestObjectLockGuard &_locked_object,
+                                        const Optional< RegistrarId > _registrar_id = Optional< RegistrarId >(),
+                                        const Optional< LogRequestId > &_log_request_id = Optional< LogRequestId >());
 private:
     const std::string type_;
     Optional< std::string > reason_;

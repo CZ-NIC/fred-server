@@ -1,4 +1,5 @@
 #include "src/fredlib/public_request/create_public_request_auth.h"
+#include "src/fredlib/public_request/create_public_request.h"
 #include "util/random.h"
 
 namespace Fred {
@@ -53,9 +54,11 @@ CreatePublicRequestAuth& CreatePublicRequestAuth::set_registrar_id(
 }
 
 CreatePublicRequestAuth::Result CreatePublicRequestAuth::exec(OperationContext &_ctx,
-                                                              const PublicRequestObjectLockGuard &_locked_object)const
+                                                              const PublicRequestObjectLockGuard &_locked_object,
+                                                              const Optional< LogRequestId > &_create_log_request_id)const
 {
     try {
+        CreatePublicRequest::invalidate_the_same(_ctx, type_, _locked_object, registrar_id_, _create_log_request_id);
         Result result;
         result.identification = Random::string_alpha(PUBLIC_REQUEST_AUTH_IDENTIFICATION_LENGTH);
         Database::query_param_list params(type_);                                           // $1::TEXT
@@ -77,12 +80,18 @@ CreatePublicRequestAuth::Result CreatePublicRequestAuth::exec(OperationContext &
         else {
             params(Database::QPNull);                                                       // $7::BIGINT
         };
+        if (_create_log_request_id.isset()) {
+            params(_create_log_request_id.get_value());                                     // $8::BIGINT
+        }
+        else {
+            params(Database::QPNull);                                                       // $8::BIGINT
+        }
         const Database::Result res = _ctx.get_conn().exec_params(
             "WITH request AS ("
                 "INSERT INTO public_request "
                     "(request_type,status,resolve_time,reason,email_to_answer,answer_email_id,registrar_id,"
                      "create_request_id,resolve_request_id) "
-                "SELECT eprt.id,eprs.id,NULL,$5::TEXT,$6::TEXT,NULL,$7::BIGINT,NULL,NULL "
+                "SELECT eprt.id,eprs.id,NULL,$5::TEXT,$6::TEXT,NULL,$7::BIGINT,$8::BIGINT,NULL "
                 "FROM enum_public_request_type eprt,"
                      "enum_public_request_status eprs "
                 "WHERE eprt.name=$1::TEXT AND eprs.name='new' "
