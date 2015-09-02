@@ -225,30 +225,30 @@ namespace Fred
             info_keyset_output.info_keyset_data.roid = static_cast<std::string>(query_result[i]["info_keyset_roid"]);
             info_keyset_output.info_keyset_data.handle = static_cast<std::string>(query_result[i]["info_keyset_handle"]);
             info_keyset_output.info_keyset_data.delete_time = query_result[i]["info_keyset_delete_time"].isnull() ? Nullable<boost::posix_time::ptime>()
-            : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(query_result[i]["info_keyset_delete_time"])));
+                : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(query_result[i]["info_keyset_delete_time"])));
             info_keyset_output.info_keyset_data.historyid = static_cast<unsigned long long>(query_result[i]["info_keyset_historyid"]);
             info_keyset_output.next_historyid = query_result[i]["info_keyset_next_historyid"].isnull() ? Nullable<unsigned long long>()
-            : Nullable<unsigned long long>(static_cast<unsigned long long>(query_result[i]["info_keyset_next_historyid"]));
+                : Nullable<unsigned long long>(static_cast<unsigned long long>(query_result[i]["info_keyset_next_historyid"]));
             info_keyset_output.history_valid_from = boost::posix_time::time_from_string(static_cast<std::string>(query_result[i]["info_keyset_history_valid_from"]));
             info_keyset_output.history_valid_to = query_result[i]["info_keyset_history_valid_to"].isnull() ? Nullable<boost::posix_time::ptime>()
-            : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(query_result[i]["info_keyset_history_valid_to"])));
+                : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(query_result[i]["info_keyset_history_valid_to"])));
             info_keyset_output.info_keyset_data.sponsoring_registrar_handle = static_cast<std::string>(query_result[i]["info_keyset_sponsoring_registrar_handle"]);
             info_keyset_output.info_keyset_data.create_registrar_handle = static_cast<std::string>(query_result[i]["info_keyset_creating_registrar_handle"]);
             info_keyset_output.info_keyset_data.update_registrar_handle = query_result[i]["info_keyset_last_updated_by_registrar_handle"].isnull() ? Nullable<std::string>()
-            : Nullable<std::string> (static_cast<std::string>(query_result[i]["info_keyset_last_updated_by_registrar_handle"]));
+                : Nullable<std::string> (static_cast<std::string>(query_result[i]["info_keyset_last_updated_by_registrar_handle"]));
             info_keyset_output.info_keyset_data.creation_time = boost::posix_time::time_from_string(static_cast<std::string>(query_result[i]["info_keyset_creation_time"]));
             info_keyset_output.info_keyset_data.transfer_time = query_result[i]["info_keyset_transfer_time"].isnull() ? Nullable<boost::posix_time::ptime>()
-            : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(query_result[i]["info_keyset_transfer_time"])));
+                : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(query_result[i]["info_keyset_transfer_time"])));
             info_keyset_output.info_keyset_data.update_time = query_result[i]["info_keyset_update_time"].isnull() ? Nullable<boost::posix_time::ptime>()
-            : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(query_result[i]["info_keyset_update_time"])));
+                : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(query_result[i]["info_keyset_update_time"])));
             info_keyset_output.info_keyset_data.authinfopw = static_cast<std::string>(query_result[i]["info_keyset_authinfopw"]);
             info_keyset_output.info_keyset_data.crhistoryid = static_cast<unsigned long long>(query_result[i]["info_keyset_first_historyid"]);
             info_keyset_output.logd_request_id = query_result[i]["info_keyset_logd_request_id"].isnull() ? Nullable<unsigned long long>()
                 : Nullable<unsigned long long>(static_cast<unsigned long long>(query_result[i]["info_keyset_logd_request_id"]));
             info_keyset_output.utc_timestamp = query_result[i]["info_keyset_utc_timestamp"].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
-            : boost::posix_time::time_from_string(static_cast<std::string>(query_result[i]["info_keyset_utc_timestamp"]));
+                : boost::posix_time::time_from_string(static_cast<std::string>(query_result[i]["info_keyset_utc_timestamp"]));
             info_keyset_output.local_timestamp = query_result[i]["info_keyset_local_timestamp"].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
-            : boost::posix_time::time_from_string(static_cast<std::string>(query_result[i]["info_keyset_local_timestamp"]));
+                : boost::posix_time::time_from_string(static_cast<std::string>(query_result[i]["info_keyset_local_timestamp"]));
 
             //tech contacts
             std::pair<std::string, Database::QueryParams> tech_contact_query = make_tech_contact_query(
