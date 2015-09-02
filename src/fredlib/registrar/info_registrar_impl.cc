@@ -103,7 +103,7 @@ namespace Fred
         std::pair<std::string, Database::QueryParams> registrar_query = make_registrar_query(local_timestamp_pg_time_zone_name);
 
         Database::Result registrar_query_result = ctx.get_conn().exec_params(registrar_query.first,registrar_query.second);
-        result.reserve(registrar_query_result.size());//alloc
+        result.reserve(registrar_query_result.size());
         for(Database::Result::size_type i = 0; i < registrar_query_result.size(); ++i)
         {
             InfoRegistrarOutput info_registrar_output;

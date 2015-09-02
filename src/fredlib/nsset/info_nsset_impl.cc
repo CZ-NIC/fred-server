@@ -248,7 +248,7 @@ namespace Fred
         Database::Result param_query_result = ctx.get_conn().exec_params(
             nsset_query_with_params.first, nsset_query_with_params.second);
 
-        result.reserve(param_query_result.size());//alloc
+        result.reserve(param_query_result.size());
 
         for(Database::Result::size_type i = 0; i < param_query_result.size(); ++i)
         {

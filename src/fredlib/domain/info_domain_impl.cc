@@ -229,7 +229,7 @@ namespace Fred
         std::pair<std::string, Database::QueryParams> domain_query = make_domain_query(local_timestamp_pg_time_zone_name).get_query();
         Database::Result query_result = ctx.get_conn().exec_params(domain_query.first,domain_query.second);
 
-        result.reserve(query_result.size());//alloc
+        result.reserve(query_result.size());
 
         for(Database::Result::size_type i = 0; i < query_result.size(); ++i)
         {

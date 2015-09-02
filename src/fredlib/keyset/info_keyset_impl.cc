@@ -216,7 +216,7 @@ namespace Fred
 
         Database::Result query_result = ctx.get_conn().exec_params(keyset_query_with_params.first,keyset_query_with_params.second);
 
-        result.reserve(query_result.size());//alloc
+        result.reserve(query_result.size());
 
         for(Database::Result::size_type i = 0; i < query_result.size(); ++i)
         {
