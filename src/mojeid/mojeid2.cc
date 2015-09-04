@@ -816,38 +816,168 @@ void MojeID2Impl::process_contact_conditional_identification(
         throw AlreadyMojeidContact("contact mustn't be in mojeidContact state");
     }
 
-    if (presence.get< State::SERVER_BLOCKED >()) {
-        throw ObjectAdminBlocked("contact administratively protected against changes");
-    }
+ContactStateDataList& MojeID2Impl::get_contacts_state_changes(
+    unsigned long _last_hours,
+    ContactStateDataList &_result)const
+{
+    LOGGING_CONTEXT(log_ctx, *this);
 
-    if (presence.get< State::SERVER_TRANSFER_PROHIBITED >() ||
-        presence.get< State::SERVER_UPDATE_PROHIBITED >() ||
-        presence.get< State::SERVER_DELETE_PROHIBITED >()) {
-        throw ObjectUserBlocked("contact protected against changes");
-    }
+    try {
+        typedef Fred::Object::State FOS;
+        Fred::OperationContextCreator ctx;
+        Database::query_param_list params(mojeid_registrar_handle_);             //$1::TEXT
+        params(_last_hours);                                                     //$2::TEXT
+        params(FOS(FOS::CONDITIONALLY_IDENTIFIED_CONTACT).into< std::string >());//$3::TEXT
+        params(FOS(FOS::IDENTIFIED_CONTACT).into< std::string >());              //$4::TEXT
+        params(FOS(FOS::VALIDATED_CONTACT).into< std::string >());               //$5::TEXT
+        params(FOS(FOS::MOJEID_CONTACT).into< std::string >());                  //$6::TEXT
+        params(FOS(FOS::LINKED).into< std::string >());                          //$7::TEXT
+        const Database::Result rcontacts = ctx.get_conn().exec_params(// observe interval <now - last_hours, now)
+            "WITH cic AS (SELECT id FROM enum_object_states WHERE name=$3::TEXT),"
+                  "ic AS (SELECT id FROM enum_object_states WHERE name=$4::TEXT),"
+                  "vc AS (SELECT id FROM enum_object_states WHERE name=$5::TEXT),"
+                  "mc AS (SELECT id FROM enum_object_states WHERE name=$6::TEXT),"
+                  "lc AS (SELECT id FROM enum_object_states WHERE name=$7::TEXT),"
+                 "obs AS (SELECT id FROM enum_object_states WHERE name IN "//observed states
+                                                                 "($3::TEXT,$4::TEXT,$5::TEXT,$6::TEXT,$7::TEXT)),"
+                  "cc AS (SELECT DISTINCT c.id "//contacts whose observed states start
+                         "FROM contact c "      //or stop in the course of $2 hours
+                         "JOIN object_state os ON os.object_id=c.id "
+                         "JOIN obs ON os.state_id=obs.id "
+                         "WHERE (NOW()-($2::TEXT||'HOUR')::INTERVAL)<=os.valid_from OR (os.valid_to IS NOT NULL AND "
+                               "(NOW()-($2::TEXT||'HOUR')::INTERVAL)<=os.valid_to)) "
+            "SELECT cc.id,"                                                           // [0] - contact id
+                   "(SELECT valid_from FROM object_state JOIN cic ON state_id=cic.id "// [1] - cic from
+                    "WHERE object_id=cc.id AND valid_to IS NULL),"
+                   "(SELECT valid_from FROM object_state JOIN ic ON state_id=ic.id "  // [2] - ic from
+                    "WHERE object_id=cc.id AND valid_to IS NULL),"
+                   "(SELECT valid_from FROM object_state JOIN vc ON state_id=vc.id "  // [3] - vc from
+                    "WHERE object_id=cc.id AND valid_to IS NULL),"
+                   "(SELECT valid_from FROM object_state JOIN mc ON state_id=mc.id "  // [4] - mc from
+                    "WHERE object_id=cc.id AND valid_to IS NULL), "
+                   "(SELECT valid_from FROM object_state JOIN lc ON state_id=lc.id "  // [5] - lc from
+                    "WHERE object_id=cc.id AND valid_to IS NULL) "
+            "FROM cc "
+            "JOIN object_state os ON os.object_id=cc.id AND os.valid_to IS NULL "
+            "JOIN mc ON mc.id=os.state_id "
+            "JOIN object o ON o.id=cc.id "
+            "JOIN registrar r ON r.id=o.clid AND r.handle=$1::TEXT", params);
 
-    if (_contact.sponsoring_registrar_handle != mojeid_registrar_handle_) {
-        Fred::UpdateContactById op_update_contact(_contact.id, mojeid_registrar_handle_);
-        op_update_contact.set_sponsoring_registrar(mojeid_registrar_handle_);
-        if (_log_request_id != INVALID_LOG_REQUEST_ID) {
-            op_update_contact.set_logd_request_id(_log_request_id);
+        _result.clear();
+        _result.reserve(rcontacts.size());
+        for (::size_t idx = 0; idx < rcontacts.size(); ++idx) {
+            ContactStateData data(static_cast< ContactId >(rcontacts[idx][0]));
+            if (!add_state(rcontacts[idx][1], FOS::CONDITIONALLY_IDENTIFIED_CONTACT, data)) {
+                std::ostringstream msg;
+                msg << "contact " << data.get_contact_id() << " hasn't "
+                    << FOS(FOS::CONDITIONALLY_IDENTIFIED_CONTACT).into< std::string >() << " state";
+                LOGGER(PACKAGE).error(msg.str());
+                continue;
+            }
+            add_state(rcontacts[idx][2], FOS::IDENTIFIED_CONTACT, data);
+            add_state(rcontacts[idx][3], FOS::VALIDATED_CONTACT, data);
+            if (!add_state(rcontacts[idx][4], FOS::MOJEID_CONTACT, data)) {
+                std::ostringstream msg;
+                msg << "contact " << data.get_contact_id() << " hasn't "
+                    << FOS(FOS::MOJEID_CONTACT).into< std::string >() << " state";
+                throw std::runtime_error(msg.str());
+            }
+            add_state(rcontacts[idx][5], FOS::LINKED, data);
+            _result.push_back(data);
         }
-        op_update_contact.exec(_ctx);
+        return _result;
     }
+    catch (const std::exception &e) {
+        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
+        throw;
+    }
+    catch (...) {
+        LOGGER(PACKAGE).error("request failed (unknown error)");
+        throw;
+    }
+    return _result;
 }
 
-void MojeID2Impl::process_conditionally_identified_contact_transfer(
-        Fred::OperationContext &_ctx,
-        const Fred::InfoContactData &_contact,
-        LogRequestId _log_request_id)const
+ContactStateData& MojeID2Impl::get_contact_state(
+    ContactId _contact_id,
+    ContactStateData &_result)const
 {
-}
+    LOGGING_CONTEXT(log_ctx, *this);
 
-void MojeID2Impl::process_identified_contact_transfer(
-        Fred::OperationContext &_ctx,
-        const Fred::InfoContactData &_contact,
-        LogRequestId _log_request_id)const
-{
+    try {
+        typedef Fred::Object::State FOS;
+        Fred::OperationContextCreator ctx;
+        Database::query_param_list params(mojeid_registrar_handle_);             //$1::TEXT
+        params(_contact_id);                                                     //$2::BIGINT
+        params(FOS(FOS::MOJEID_CONTACT).into< std::string >());                  //$3::TEXT
+        params(FOS(FOS::CONDITIONALLY_IDENTIFIED_CONTACT).into< std::string >());//$4::TEXT
+        params(FOS(FOS::IDENTIFIED_CONTACT).into< std::string >());              //$5::TEXT
+        params(FOS(FOS::VALIDATED_CONTACT).into< std::string >());               //$6::TEXT
+        params(FOS(FOS::LINKED).into< std::string >());                          //$7::TEXT
+        const Database::Result rcontact = ctx.get_conn().exec_params(
+            "SELECT r.id IS NULL,"                         // 0
+                   "(SELECT valid_from FROM object_state " // 1
+                    "WHERE object_id=o.id AND valid_to IS NULL AND "
+                          "state_id=(SELECT id FROM enum_object_states WHERE name=$3::TEXT)),"
+                   "(SELECT valid_from FROM object_state " // 2
+                    "WHERE object_id=o.id AND valid_to IS NULL AND "
+                          "state_id=(SELECT id FROM enum_object_states WHERE name=$4::TEXT)),"
+                   "(SELECT valid_from FROM object_state " // 3
+                    "WHERE object_id=o.id AND valid_to IS NULL AND "
+                          "state_id=(SELECT id FROM enum_object_states WHERE name=$5::TEXT)),"
+                   "(SELECT valid_from FROM object_state " // 4
+                    "WHERE object_id=o.id AND valid_to IS NULL AND "
+                          "state_id=(SELECT id FROM enum_object_states WHERE name=$6::TEXT)),"
+                   "(SELECT valid_from FROM object_state " // 5
+                    "WHERE object_id=o.id AND valid_to IS NULL AND "
+                          "state_id=(SELECT id FROM enum_object_states WHERE name=$7::TEXT)) "
+            "FROM contact c "
+            "JOIN object o ON o.id=c.id "
+            "LEFT JOIN registrar r ON r.id=o.clid AND r.handle=$1::TEXT "
+            "WHERE c.id=$2::BIGINT", params);
+
+        if (rcontact.size() == 0) {
+            throw ObjectDoesntExist();
+        }
+
+        if (1 < rcontact.size()) {
+            std::ostringstream msg;
+            msg << "contact " << _contact_id << " returns multiple (" << rcontact.size() << ") records";
+            throw std::runtime_error(msg.str());
+        }
+
+        if (static_cast< bool >(rcontact[0][0])) { // contact's registrar missing
+            throw ObjectDoesntExist();
+        }
+
+        _result.clear();
+        _result.set_contact_id(_contact_id);
+        if (!add_state(rcontact[0][1], FOS::MOJEID_CONTACT, _result)) {
+            throw ObjectDoesntExist();
+        }
+        if (!add_state(rcontact[0][2], FOS::CONDITIONALLY_IDENTIFIED_CONTACT, _result)) {
+            std::ostringstream msg;
+            msg << "contact " << _contact_id << " hasn't "
+                << FOS(FOS::CONDITIONALLY_IDENTIFIED_CONTACT).into< std::string >() << " state";
+            throw std::runtime_error(msg.str());
+        }
+        add_state(rcontact[0][3], FOS::IDENTIFIED_CONTACT, _result);
+        add_state(rcontact[0][4], FOS::VALIDATED_CONTACT, _result);
+        add_state(rcontact[0][5], FOS::LINKED, _result);
+        return _result;
+    }//try
+    catch (const ObjectDoesntExist &e) {
+        LOGGER(PACKAGE).warning(e.what());
+        throw;
+    }
+    catch (const std::exception &e) {
+        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
+        throw;
+    }
+    catch (...) {
+        LOGGER(PACKAGE).error("request failed (unknown error)");
+        throw;
+    }
 }
 
 namespace {

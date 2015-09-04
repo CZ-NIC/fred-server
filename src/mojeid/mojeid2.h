@@ -24,20 +24,70 @@
 #ifndef MOJEID2_H_06D795C17DD0FF3D98B375032F99493A//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
 #define MOJEID2_H_06D795C17DD0FF3D98B375032F99493A
 
-#include "src/corba/MojeID2.hh"
 #include "src/mojeid/mojeid2_checkers.h"
+#include "src/fredlib/object/object_state.h"
 
 #include <vector>
 #include <stdexcept>
+
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 namespace Registry {
 namespace MojeID {
 
 typedef std::vector< std::string > HandleList;
 
+class ContactStateData
+{
+public:
+    typedef unsigned long long          ContactId;
+    typedef boost::posix_time::ptime    DateTime;
+    typedef Fred::Object::State::Value  State;
+    typedef std::map< State, DateTime > StateValidFrom;
+
+    ContactStateData():contact_id_(INVALID_CONTACT_ID) { }
+    ContactStateData(ContactId _contact_id):contact_id_(_contact_id) { }
+
+    ContactId get_contact_id()const { return contact_id_; }
+    bool presents(State _state)const { return 0 < validity_.count(_state); }
+    DateTime get_validity(State _state)const
+    {
+        StateValidFrom::const_iterator iter = validity_.find(_state);
+        if (iter != validity_.end()) {
+            return iter->second;
+        }
+        throw std::runtime_error("state not found");
+    }
+    StateValidFrom::const_iterator get_sum_state()const;
+
+    ContactStateData& set_contact_id(ContactId _value)
+    {
+        contact_id_ = _value;
+        return *this;
+    }
+    ContactStateData& set_validity(State _state, const DateTime &_valid_from)
+    {
+        validity_.insert(std::make_pair(_state, _valid_from));
+        return *this;
+    }
+    ContactStateData& clear()
+    {
+        validity_.clear();
+        return this->set_contact_id(INVALID_CONTACT_ID);
+    }
+private:
+    enum { INVALID_CONTACT_ID = 0 };
+    ContactId      contact_id_;
+    StateValidFrom validity_;
+};
+
+typedef std::vector< ContactStateData > ContactStateDataList;
+
 class MojeID2Impl
 {
 public:
+    typedef unsigned long long ContactId;
+    typedef unsigned long long LogRequestId;
     MojeID2Impl(const std::string &_server_name);
     ~MojeID2Impl();
 
@@ -150,6 +200,12 @@ public:
         AlreadyMojeidContact(const std::string &_msg):std::runtime_error(_msg) { }
     };
 
+    class ObjectDoesntExist:public std::runtime_error
+    {
+    public:
+        ObjectDoesntExist(const std::string &_msg = ""):std::runtime_error(_msg) { }
+    };
+
     ContactId process_registration_request(
         const std::string &_ident_request_id,
         const std::string &_password,
@@ -159,22 +215,15 @@ public:
         ContactId _contact_id,
         const std::string &_password,
         LogRequestId _log_request_id)const;
+
+    ContactStateDataList& get_contacts_state_changes(
+        unsigned long _last_hours,
+        ContactStateDataList &_result)const;
+
+    ContactStateData& get_contact_state(
+        ContactId _contact_id,
+        ContactStateData &_result)const;
 private:
-    void process_contact_conditional_identification(
-        Fred::OperationContext &_ctx,
-        const Fred::InfoContactData &_contact,
-        LogRequestId _log_request_id)const;
-
-    void process_conditionally_identified_contact_transfer(
-        Fred::OperationContext &_ctx,
-        const Fred::InfoContactData &_contact,
-        LogRequestId _log_request_id)const;
-
-    void process_identified_contact_transfer(
-        Fred::OperationContext &_ctx,
-        const Fred::InfoContactData &_contact,
-        LogRequestId _log_request_id)const;
-
     const std::string server_name_;
     const std::string mojeid_registrar_handle_;
 };//class MojeID2Impl
