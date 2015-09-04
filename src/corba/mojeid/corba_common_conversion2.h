@@ -612,6 +612,13 @@ template < typename CORBA_TYPE, typename CORBA_TYPE_HELPER >
 Into< CORBA_TYPE* > into(_CORBA_Value_OUT_arg< CORBA_TYPE, CORBA_TYPE_HELPER >&);
 
 /**
+ * Specialization for _CORBA_String_element.
+ * @param _element instance of _CORBA_String_element
+ * @return temporary object with conversion functions
+ */
+inline Into< _CORBA_String_element > into(_CORBA_String_element _element);
+
+/**
  * Basic template class which specializations set object of CORBA_TYPE from value of CONVERTIBLE_TYPE.
  * @param CORBA_TYPE type of destination object into which will be source value converted
  * @param CONVERTIBLE_TYPE type of source value
@@ -703,12 +710,10 @@ private:
     {
         typedef SRC_CONTAINER                          src_container;
         typedef typename src_container::const_iterator src_iterator;
-        typedef typename corba_type::ElemT             dst_item_ref;
         destination_.length(src_values.size());
         ::size_t dst_idx = 0;
         for (src_iterator src_ptr = src_values.begin(); src_ptr != src_values.end(); ++src_ptr, ++dst_idx) {
-            dst_item_ref item = destination_[dst_idx];
-            into(item).from(*src_ptr);
+            into(destination_[dst_idx]).from(*src_ptr);
         }
         return destination_;
     }
@@ -826,6 +831,41 @@ private:
     friend Into< dst_value_safe_ptr > into< corba_type >(dst_value_ptr);
 };
 
+/**
+ * Specialization for conversions into _CORBA_String_element type.
+ * @note _CORBA_String_element is briefly char*& wrapper
+ */
+template < >
+class Into< _CORBA_String_element >
+{
+public:
+    typedef _CORBA_String_element dst_type;///< type of destination object
+    /**
+     * Sets destination object with value of const char* type.
+     * @param  src_value source value
+     * @return object with converted value
+     */
+    dst_type from(const char *src_value)
+    {
+        destination_ = src_value;
+        return destination_;
+    }
+    /**
+     * Specialization for std::string type.
+     * @param src_value source value
+     * @return reference to the object with converted value
+     */
+    dst_type from(const std::string &src_value)
+    {
+        return this->from(src_value.c_str());
+    }
+private:
+    Into(dst_type _object):destination_(_object) { }
+    Into(const Into &_src):destination_(_src.destination_) { }
+    dst_type destination_;
+    friend Into< dst_type > into(dst_type);
+};
+
 template < typename CORBA_TYPE >
 Into< CORBA_TYPE >  into(CORBA_TYPE &v)
 {
@@ -854,6 +894,11 @@ template < typename CORBA_TYPE, typename CORBA_TYPE_HELPER >
 Into< CORBA_TYPE* > into(_CORBA_Value_OUT_arg< CORBA_TYPE, CORBA_TYPE_HELPER > &v)
 {
     return v.ptr();//reference to the CORBA_TYPE type instance NULL pointer
+}
+
+inline Into< _CORBA_String_element > into(_CORBA_String_element _element)
+{
+    return _element;
 }
 
 template < typename CORBA_TYPE, typename CONVERTIBLE_TYPE, bool IS_TRIVIAL >
