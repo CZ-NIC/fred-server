@@ -203,13 +203,30 @@ void Server_i::create_validation_request(
 ContactStateInfoList* Server_i::get_contacts_state_changes(
         ::CORBA::ULong _last_hours)
 {
-    return NULL;
+    try {
+        ContactStateDataList contacts_state_changes;
+        impl_ptr_->get_contacts_state_changes(_last_hours, contacts_state_changes);
+        return Corba::Conversion::into(new ContactStateInfoList).from(contacts_state_changes);
+    }
+    catch (...) {
+        throw IDL::INTERNAL_SERVER_ERROR();
+    }
 }//get_contacts_state_changes
 
 ContactStateInfo* Server_i::get_contact_state(
         ContactId _contact_id)
 {
-    return NULL;
+    try {
+        ContactStateData data;
+        impl_ptr_->get_contact_state(_contact_id, data);
+        return Corba::Conversion::into(new ContactStateInfo).from(data);
+    }
+    catch (const MojeID2Impl::ObjectDoesntExist&) {
+        throw IDL::OBJECT_NOT_EXISTS();
+    }
+    catch (...) {
+        throw IDL::INTERNAL_SERVER_ERROR();
+    }
 }//get_contact_state
 
 void Server_i::cancel_account_prepare(
@@ -227,7 +244,7 @@ ContactHandleList* Server_i::get_unregistrable_handles()
         return Corba::Conversion::into(new ContactHandleList).from(unregistrable_handles);
     }
     catch (...) {
-        throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR();
+        throw IDL::INTERNAL_SERVER_ERROR();
     }
 }//get_unregistrable_handles
 
