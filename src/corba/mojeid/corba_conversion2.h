@@ -94,6 +94,13 @@ struct into_from< Registry::MojeID::DateTime, boost::posix_time::ptime >
 };
 
 template < >
+struct into_from< Registry::MojeID::Date, boost::posix_time::ptime >
+: into_from_base< Registry::MojeID::Date, boost::posix_time::ptime >
+{
+    dst_value_ref operator()(dst_value_ref dst, src_value src)const;
+};
+
+template < >
 struct from_into< Registry::MojeID::Address, Fred::Contact::PlaceAddress >
 : from_into_base< Registry::MojeID::Address, Fred::Contact::PlaceAddress >
 {
@@ -188,6 +195,20 @@ struct into_from< Registry::MojeID::InfoContact, Fred::InfoContactData >
 {
     dst_value_ref operator()(dst_value_ref dst, src_value src)const;
 };
+
+template < >
+struct into_from< Registry::MojeID::ContactStateInfo, Registry::MojeID::ContactStateData >
+: into_from_base< Registry::MojeID::ContactStateInfo, Registry::MojeID::ContactStateData >
+{
+    dst_value_ref operator()(dst_value_ref dst, src_value src)const;
+};
+
+/*template < >
+struct into_from< Registry::MojeID::ContactStateInfoList, Registry::MojeID::ContactStateDataList >
+: into_from_base< Registry::MojeID::ContactStateInfoList, Registry::MojeID::ContactStateDataList >
+{
+    dst_value_ref operator()(dst_value_ref dst, src_value src)const;
+};*/
 
 }//Corba::Conversion
 }//Corba

@@ -74,6 +74,12 @@ into_from< Registry::MojeID::DateTime, boost::posix_time::ptime >::operator()(ds
     return into(dst).from(boost::posix_time::to_iso_extended_string(src).c_str());
 }
 
+into_from< Registry::MojeID::Date, boost::posix_time::ptime >::dst_value_ref
+into_from< Registry::MojeID::Date, boost::posix_time::ptime >::operator()(dst_value_ref dst, src_value src)const
+{
+    return into(dst).from(src.date());
+}
+
 namespace {
 
 struct set_ssn
@@ -520,6 +526,39 @@ into_from< Registry::MojeID::InfoContact, Fred::InfoContactData >::operator()(ds
     into(dst.notify_email).from(                src.notifyemail);
     into(dst.telephone)   .from(                src.telephone);
     into(dst.fax)         .from(                src.fax);
+    return dst;
+}
+
+
+into_from< Registry::MojeID::ContactStateInfo, Registry::MojeID::ContactStateData >::dst_value_ref
+into_from< Registry::MojeID::ContactStateInfo, Registry::MojeID::ContactStateData >::operator()(
+    dst_value_ref dst,
+    src_value src)const
+{
+    into(dst.contact_id).from(src.get_contact_id());
+    into(dst.mojeid_activation_datetime).from(src.get_validity(Fred::Object::State::MOJEID_CONTACT));
+    if (!src.presents(Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT)) {
+        throw std::runtime_error("Bad contact: conditionallyIdentifiedContact state doesn't present");
+    }
+    into(dst.conditionally_identification_date).from(src.get_validity(Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT));
+    if (!src.presents(Fred::Object::State::IDENTIFIED_CONTACT)) {
+        into(dst.identification_date).from(Nullable< boost::posix_time::ptime >());
+    }
+    else {
+        into(dst.identification_date).from(src.get_validity(Fred::Object::State::IDENTIFIED_CONTACT));
+    }
+    if (!src.presents(Fred::Object::State::VALIDATED_CONTACT)) {
+        into(dst.validation_date).from(Nullable< boost::posix_time::ptime >());
+    }
+    else {
+        into(dst.validation_date).from(src.get_validity(Fred::Object::State::VALIDATED_CONTACT));
+    }
+    if (!src.presents(Fred::Object::State::LINKED)) {
+        into(dst.linked_date).from(Nullable< boost::posix_time::ptime >());
+    }
+    else {
+        into(dst.linked_date).from(src.get_validity(Fred::Object::State::LINKED));
+    }
     return dst;
 }
 
