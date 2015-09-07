@@ -177,7 +177,7 @@ namespace Fred
 
             Database::ParamQuery cte_id_filter_query;
 
-            cte_id_filter_query("SELECT nssetid FROM host WHERE fqdn = ").param_text(dns_fqdn_);
+            cte_id_filter_query("SELECT DISTINCT nssetid FROM host WHERE fqdn = ").param_text(dns_fqdn_);
 
             if(limit_.isset())
             {
