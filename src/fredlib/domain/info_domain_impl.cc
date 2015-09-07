@@ -80,40 +80,40 @@ namespace Fred
 
         info_domain_query(
         "SELECT * FROM ("
-        "SELECT dobr.id AS info_domain_id"
-        " , dobr.roid AS info_domain_roid"
-        " , dobr.name AS info_domain_fqdn"
-        " , (dobr.erdate AT TIME ZONE 'UTC' ) AT TIME ZONE ").param(p_local_zone)(" AS info_domain_delete_time"
-        " , h.id AS info_domain_historyid"
-        " , h.next AS info_domain_next_historyid"
-        " , (h.valid_from AT TIME ZONE 'UTC') AT TIME ZONE ").param(p_local_zone)(" AS info_domain_history_valid_from"
-        " , (h.valid_to AT TIME ZONE 'UTC') AT TIME ZONE ").param(p_local_zone)(" AS info_domain_history_valid_to"
-        " , cor.id AS info_domain_registrant_id"
-        " , cor.name  AS info_domain_registrant_handle"
-        " , dt.nsset AS info_domain_nsset_id"
-        " , nobr.name  AS info_domain_nsset_handle"
-        " , dt.keyset AS info_domain_keyset_id"
-        " , kobr.name  AS info_domain_keyset_handle"
-        " , obj.clid AS info_domain_sponsoring_registrar_id"
-        " , clr.handle AS info_domain_sponsoring_registrar_handle"
-        " , dobr.crid AS info_domain_creating_registrar_id"
-        " , crr.handle AS info_domain_creating_registrar_handle"
-        " , obj.upid AS info_domain_last_updated_by_registrar_id"
-        " , upr.handle AS info_domain_last_updated_by_registrar_handle"
-        " , (dobr.crdate AT TIME ZONE 'UTC') AT TIME ZONE ").param(p_local_zone)(" AS info_domain_creation_time"
-        " , (obj.trdate AT TIME ZONE 'UTC') AT TIME ZONE ").param(p_local_zone)(" AS info_domain_transfer_time"
-        " , (obj.update AT TIME ZONE 'UTC') AT TIME ZONE ").param(p_local_zone)(" AS info_domain_update_time"
-        " , dt.exdate AS info_domain_expiration_date"
-        " , obj.authinfopw AS info_domain_authinfopw"
-        " , ev.exdate AS info_domain_enum_validation_expiration"
-        " , ev.publish AS info_domain_enum_publish"
-        " , dobr.crhistoryid AS info_domain_first_historyid"
-        " , h.request_id AS info_domain_logd_request_id"
-        " , (CURRENT_TIMESTAMP AT TIME ZONE 'UTC')::timestamp AS info_domain_utc_timestamp "
-        " , (CURRENT_TIMESTAMP AT TIME ZONE 'UTC' AT TIME ZONE ").param(p_local_zone)(")::timestamp AS info_domain_local_timestamp"
-        " , z.enum_zone AS info_domain_is_enum"
-        " , z.id AS info_domain_zone_id"
-        " , z.fqdn AS info_domain_zone_fqdn"
+        "SELECT dobr.id AS ")(GetAlias::id())(
+        " , dobr.roid AS ")(GetAlias::roid())(
+        " , dobr.name AS ")(GetAlias::fqdn())(
+        " , (dobr.erdate AT TIME ZONE 'UTC' ) AT TIME ZONE ").param(p_local_zone)(" AS ")(GetAlias::delete_time())(
+        " , h.id AS ")(GetAlias::historyid())(
+        " , h.next AS ")(GetAlias::next_historyid())(
+        " , (h.valid_from AT TIME ZONE 'UTC') AT TIME ZONE ").param(p_local_zone)(" AS ")(GetAlias::history_valid_from())(
+        " , (h.valid_to AT TIME ZONE 'UTC') AT TIME ZONE ").param(p_local_zone)(" AS ")(GetAlias::history_valid_to())(
+        " , cor.id AS ")(GetAlias::registrant_id())(
+        " , cor.name  AS ")(GetAlias::registrant_handle())(
+        " , dt.nsset AS ")(GetAlias::nsset_id())(
+        " , nobr.name  AS ")(GetAlias::nsset_handle())(
+        " , dt.keyset AS ")(GetAlias::keyset_id())(
+        " , kobr.name  AS ")(GetAlias::keyset_handle())(
+        " , obj.clid AS ")(GetAlias::sponsoring_registrar_id())(
+        " , clr.handle AS ")(GetAlias::sponsoring_registrar_handle())(
+        " , dobr.crid AS ")(GetAlias::creating_registrar_id())(
+        " , crr.handle AS ")(GetAlias::creating_registrar_handle())(
+        " , obj.upid AS ")(GetAlias::last_updated_by_registrar_id())(
+        " , upr.handle AS ")(GetAlias::last_updated_by_registrar_handle())(
+        " , (dobr.crdate AT TIME ZONE 'UTC') AT TIME ZONE ").param(p_local_zone)(" AS ")(GetAlias::creation_time())(
+        " , (obj.trdate AT TIME ZONE 'UTC') AT TIME ZONE ").param(p_local_zone)(" AS ")(GetAlias::transfer_time())(
+        " , (obj.update AT TIME ZONE 'UTC') AT TIME ZONE ").param(p_local_zone)(" AS ")(GetAlias::update_time())(
+        " , dt.exdate AS ")(GetAlias::expiration_date())(
+        " , obj.authinfopw AS ")(GetAlias::authinfopw())(
+        " , ev.exdate AS ")(GetAlias::enum_validation_expiration())(
+        " , ev.publish AS ")(GetAlias::enum_publish())(
+        " , dobr.crhistoryid AS ")(GetAlias::first_historyid())(
+        " , h.request_id AS ")(GetAlias::logd_request_id())(
+        " , (CURRENT_TIMESTAMP AT TIME ZONE 'UTC')::timestamp AS ")(GetAlias::utc_timestamp())(
+        " , (CURRENT_TIMESTAMP AT TIME ZONE 'UTC' AT TIME ZONE ").param(p_local_zone)(")::timestamp AS ")(GetAlias::local_timestamp())(
+        " , z.enum_zone AS ")(GetAlias::is_enum())(
+        " , z.id AS ")(GetAlias::zone_id())(
+        " , z.fqdn AS ")(GetAlias::zone_fqdn())(
         " FROM object_registry dobr ");
 
         if(history_query_)
@@ -189,10 +189,9 @@ namespace Fred
             info_domain_query(" WHERE ")(info_domain_inline_view_filter_expr_.get_value());
         }
 
-        info_domain_query(" ORDER BY info_domain_historyid DESC ");
+        info_domain_query(" ORDER BY ")(GetAlias::historyid())(" DESC ");
 
         return info_domain_query;
-
     }
 
     Database::ParamQuery InfoDomain::make_admin_query(unsigned long long id, unsigned long long historyid)
@@ -234,79 +233,79 @@ namespace Fred
         for(Database::Result::size_type i = 0; i < query_result.size(); ++i)
         {
             InfoDomainOutput info_domain_output;
-            info_domain_output.info_domain_data.id = static_cast<unsigned long long>(query_result[i]["info_domain_id"]);
-            info_domain_output.info_domain_data.roid = static_cast<std::string>(query_result[i]["info_domain_roid"]);
-            info_domain_output.info_domain_data.fqdn = static_cast<std::string>(query_result[i]["info_domain_fqdn"]);
+            info_domain_output.info_domain_data.id = static_cast<unsigned long long>(query_result[i][GetAlias::id()]);
+            info_domain_output.info_domain_data.roid = static_cast<std::string>(query_result[i][GetAlias::roid()]);
+            info_domain_output.info_domain_data.fqdn = static_cast<std::string>(query_result[i][GetAlias::fqdn()]);
 
-            info_domain_output.info_domain_data.delete_time = query_result[i]["info_domain_delete_time"].isnull() ? Nullable<boost::posix_time::ptime>()
-            : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(query_result[i]["info_domain_delete_time"])));
+            info_domain_output.info_domain_data.delete_time = query_result[i][GetAlias::delete_time()].isnull() ? Nullable<boost::posix_time::ptime>()
+            : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(query_result[i][GetAlias::delete_time()])));
 
-            info_domain_output.info_domain_data.historyid = static_cast<unsigned long long>(query_result[i]["info_domain_historyid"]);
+            info_domain_output.info_domain_data.historyid = static_cast<unsigned long long>(query_result[i][GetAlias::historyid()]);
 
-            info_domain_output.next_historyid = query_result[i]["info_domain_next_historyid"].isnull() ? Nullable<unsigned long long>()
-            : Nullable<unsigned long long>(static_cast<unsigned long long>(query_result[i]["info_domain_next_historyid"]));
+            info_domain_output.next_historyid = query_result[i][GetAlias::historyid()].isnull() ? Nullable<unsigned long long>()
+            : Nullable<unsigned long long>(static_cast<unsigned long long>(query_result[i][GetAlias::next_historyid()]));
 
-            info_domain_output.history_valid_from = boost::posix_time::time_from_string(static_cast<std::string>(query_result[i]["info_domain_history_valid_from"]));
+            info_domain_output.history_valid_from = boost::posix_time::time_from_string(static_cast<std::string>(query_result[i][GetAlias::history_valid_from()]));
 
-            info_domain_output.history_valid_to = query_result[i]["info_domain_history_valid_to"].isnull() ? Nullable<boost::posix_time::ptime>()
-            : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(query_result[i]["info_domain_history_valid_to"])));
+            info_domain_output.history_valid_to = query_result[i][GetAlias::history_valid_to()].isnull() ? Nullable<boost::posix_time::ptime>()
+            : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(query_result[i][GetAlias::history_valid_to()])));
 
             info_domain_output.info_domain_data.registrant = Fred::ObjectIdHandlePair(
-                static_cast<unsigned long long>(query_result[i]["info_domain_registrant_id"])
-                , static_cast<std::string>(query_result[i]["info_domain_registrant_handle"]));
+                static_cast<unsigned long long>(query_result[i][GetAlias::registrant_id()])
+                , static_cast<std::string>(query_result[i][GetAlias::registrant_handle()]));
 
-            info_domain_output.info_domain_data.nsset = (query_result[i]["info_domain_nsset_id"].isnull() || query_result[i]["info_domain_nsset_handle"].isnull())
+            info_domain_output.info_domain_data.nsset = (query_result[i][GetAlias::nsset_id()].isnull() || query_result[i][GetAlias::nsset_handle()].isnull())
                 ? Nullable<Fred::ObjectIdHandlePair>()
                 : Nullable<Fred::ObjectIdHandlePair> (Fred::ObjectIdHandlePair(
-                    static_cast<unsigned long long>(query_result[i]["info_domain_nsset_id"]),
-                    static_cast<std::string>(query_result[i]["info_domain_nsset_handle"])));
+                    static_cast<unsigned long long>(query_result[i][GetAlias::nsset_id()]),
+                    static_cast<std::string>(query_result[i][GetAlias::nsset_handle()])));
 
-            info_domain_output.info_domain_data.keyset =(query_result[i]["info_domain_keyset_id"].isnull() || query_result[i]["info_domain_keyset_handle"].isnull())
+            info_domain_output.info_domain_data.keyset =(query_result[i][GetAlias::keyset_id()].isnull() || query_result[i][GetAlias::keyset_handle()].isnull())
                 ? Nullable<Fred::ObjectIdHandlePair>()
                 : Nullable<Fred::ObjectIdHandlePair> (Fred::ObjectIdHandlePair(
-                    static_cast<unsigned long long>(query_result[i]["info_domain_keyset_id"]),
-                    static_cast<std::string>(query_result[i]["info_domain_keyset_handle"])));
+                    static_cast<unsigned long long>(query_result[i][GetAlias::keyset_id()]),
+                    static_cast<std::string>(query_result[i][GetAlias::keyset_handle()])));
 
-            info_domain_output.info_domain_data.sponsoring_registrar_handle = static_cast<std::string>(query_result[i]["info_domain_sponsoring_registrar_handle"]);
-            info_domain_output.info_domain_data.create_registrar_handle = static_cast<std::string>(query_result[i]["info_domain_creating_registrar_handle"]);
+            info_domain_output.info_domain_data.sponsoring_registrar_handle = static_cast<std::string>(query_result[i][GetAlias::sponsoring_registrar_handle()]);
+            info_domain_output.info_domain_data.create_registrar_handle = static_cast<std::string>(query_result[i][GetAlias::creating_registrar_handle()]);
 
-            info_domain_output.info_domain_data.update_registrar_handle = query_result[i]["info_domain_last_updated_by_registrar_handle"].isnull() ? Nullable<std::string>()
-            : Nullable<std::string> (static_cast<std::string>(query_result[i]["info_domain_last_updated_by_registrar_handle"]));//upr.handle
+            info_domain_output.info_domain_data.update_registrar_handle = query_result[i][GetAlias::last_updated_by_registrar_handle()].isnull() ? Nullable<std::string>()
+            : Nullable<std::string> (static_cast<std::string>(query_result[i][GetAlias::last_updated_by_registrar_handle()]));
 
-            info_domain_output.info_domain_data.creation_time = boost::posix_time::time_from_string(static_cast<std::string>(query_result[i]["info_domain_creation_time"]));
+            info_domain_output.info_domain_data.creation_time = boost::posix_time::time_from_string(static_cast<std::string>(query_result[i][GetAlias::creation_time()]));
 
-            info_domain_output.info_domain_data.transfer_time = query_result[i]["info_domain_transfer_time"].isnull() ? Nullable<boost::posix_time::ptime>()
-            : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(query_result[i]["info_domain_transfer_time"])));
+            info_domain_output.info_domain_data.transfer_time = query_result[i][GetAlias::transfer_time()].isnull() ? Nullable<boost::posix_time::ptime>()
+            : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(query_result[i][GetAlias::transfer_time()])));
 
-            info_domain_output.info_domain_data.update_time = query_result[i]["info_domain_update_time"].isnull() ? Nullable<boost::posix_time::ptime>()
-            : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(query_result[i]["info_domain_update_time"])));
+            info_domain_output.info_domain_data.update_time = query_result[i][GetAlias::update_time()].isnull() ? Nullable<boost::posix_time::ptime>()
+            : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(query_result[i][GetAlias::update_time()])));
 
-            info_domain_output.info_domain_data.expiration_date = query_result[i]["info_domain_expiration_date"].isnull() ? boost::gregorian::date()
-            : boost::gregorian::from_string(static_cast<std::string>(query_result[i]["info_domain_expiration_date"]));
+            info_domain_output.info_domain_data.expiration_date = query_result[i][GetAlias::expiration_date()].isnull() ? boost::gregorian::date()
+            : boost::gregorian::from_string(static_cast<std::string>(query_result[i][GetAlias::expiration_date()]));
 
-            info_domain_output.info_domain_data.authinfopw = static_cast<std::string>(query_result[i]["info_domain_authinfopw"]);
+            info_domain_output.info_domain_data.authinfopw = static_cast<std::string>(query_result[i][GetAlias::authinfopw()]);
 
-            info_domain_output.info_domain_data.enum_domain_validation = (static_cast<bool>(query_result[i]["info_domain_is_enum"]) == false)//if not ENUM
+            info_domain_output.info_domain_data.enum_domain_validation = (static_cast<bool>(query_result[i][GetAlias::is_enum()]) == false)//if not ENUM
             ? Nullable<ENUMValidationExtension>()
             : Nullable<ENUMValidationExtension>(ENUMValidationExtension(
-                boost::gregorian::from_string(static_cast<std::string>(query_result[i]["info_domain_enum_validation_expiration"]))
-                ,static_cast<bool>(query_result[i]["info_domain_enum_publish"])));
+                boost::gregorian::from_string(static_cast<std::string>(query_result[i][GetAlias::enum_validation_expiration()]))
+                ,static_cast<bool>(query_result[i][GetAlias::enum_publish()])));
 
-            info_domain_output.info_domain_data.crhistoryid = static_cast<unsigned long long>(query_result[i]["info_domain_first_historyid"]);
+            info_domain_output.info_domain_data.crhistoryid = static_cast<unsigned long long>(query_result[i][GetAlias::first_historyid()]);
 
             info_domain_output.info_domain_data.zone =
                 ObjectIdHandlePair(
-                    static_cast<unsigned long long>(query_result[i]["info_domain_zone_id"]),
-                    static_cast<std::string>(query_result[i]["info_domain_zone_fqdn"])
+                    static_cast<unsigned long long>(query_result[i][GetAlias::zone_id()]),
+                    static_cast<std::string>(query_result[i][GetAlias::zone_fqdn()])
                 );
 
-            info_domain_output.logd_request_id = query_result[i]["info_domain_logd_request_id"].isnull() ? Nullable<unsigned long long>()
-                : Nullable<unsigned long long>(static_cast<unsigned long long>(query_result[i]["info_domain_logd_request_id"]));
+            info_domain_output.logd_request_id = query_result[i][GetAlias::logd_request_id()].isnull() ? Nullable<unsigned long long>()
+                : Nullable<unsigned long long>(static_cast<unsigned long long>(query_result[i][GetAlias::logd_request_id()]));
 
-            info_domain_output.utc_timestamp = query_result[i]["info_domain_utc_timestamp"].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
-            : boost::posix_time::time_from_string(static_cast<std::string>(query_result[i]["info_domain_utc_timestamp"]));
-            info_domain_output.local_timestamp = query_result[i]["info_domain_local_timestamp"].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
-            : boost::posix_time::time_from_string(static_cast<std::string>(query_result[i]["info_domain_local_timestamp"]));
+            info_domain_output.utc_timestamp = query_result[i][GetAlias::utc_timestamp()].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
+            : boost::posix_time::time_from_string(static_cast<std::string>(query_result[i][GetAlias::utc_timestamp()]));
+            info_domain_output.local_timestamp = query_result[i][GetAlias::local_timestamp()].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
+            : boost::posix_time::time_from_string(static_cast<std::string>(query_result[i][GetAlias::local_timestamp()]));
 
             //admin contacts
             std::pair<std::string, Database::QueryParams> admin_query = make_admin_query(

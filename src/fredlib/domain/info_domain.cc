@@ -62,7 +62,7 @@ namespace Fred
         try
         {
             InfoDomain id;
-            id.set_inline_view_filter(Database::ParamQuery("info_domain_fqdn = LOWER(").param_text(fqdn_)(")")).set_history_query(false);
+            id.set_inline_view_filter(Database::ParamQuery(InfoDomain::GetAlias::fqdn())(" = LOWER(").param_text(fqdn_)(")")).set_history_query(false);
             if(lock_) id.set_lock();
             domain_res = id.exec(ctx,local_timestamp_pg_time_zone_name);
 
@@ -112,7 +112,7 @@ namespace Fred
         try
         {
             InfoDomain id;
-            id.set_inline_view_filter(Database::ParamQuery("info_domain_id = ").param_bigint(id_)).set_history_query(false);
+            id.set_inline_view_filter(Database::ParamQuery(InfoDomain::GetAlias::id())(" = ").param_bigint(id_)).set_history_query(false);
             if(lock_) id.set_lock();
             domain_res = id.exec(ctx,local_timestamp_pg_time_zone_name);
 
@@ -175,7 +175,7 @@ namespace Fred
         try
         {
             InfoDomain id;
-            id.set_inline_view_filter(Database::ParamQuery("info_domain_roid = ").param_text(roid_)).set_history_query(true);
+            id.set_inline_view_filter(Database::ParamQuery(InfoDomain::GetAlias::roid())(" = ").param_text(roid_)).set_history_query(true);
             if(lock_) id.set_lock();
             domain_res = id.exec(ctx,local_timestamp_pg_time_zone_name);
         }
@@ -215,7 +215,7 @@ namespace Fred
         try
         {
             InfoDomain id;
-            id.set_inline_view_filter(Database::ParamQuery("info_domain_id = ").param_bigint(id_)).set_history_query(true);
+            id.set_inline_view_filter(Database::ParamQuery(InfoDomain::GetAlias::id())(" = ").param_bigint(id_)).set_history_query(true);
             if(lock_) id.set_lock();
             domain_history_res = id.exec(ctx,local_timestamp_pg_time_zone_name);
         }
@@ -254,7 +254,7 @@ namespace Fred
         try
         {
             InfoDomain id;
-            id.set_inline_view_filter(Database::ParamQuery("info_domain_historyid = ").param_bigint(historyid_))
+            id.set_inline_view_filter(Database::ParamQuery(InfoDomain::GetAlias::historyid())(" = ").param_bigint(historyid_))
             .set_history_query(true);
             if(lock_) id.set_lock();
             domain_history_res = id.exec(ctx,local_timestamp_pg_time_zone_name);
@@ -340,7 +340,8 @@ namespace Fred
                 BOOST_THROW_EXCEPTION(Exception().set_unknown_registrant_handle(registrant_handle_));
             }
 
-            Database::ParamQuery domain_id_inline_view("info_domain_id IN (");
+            Database::ParamQuery domain_id_inline_view;
+            domain_id_inline_view(InfoDomain::GetAlias::id())(" IN (");
             Util::HeadSeparator in_separator("",",");
 
             for (unsigned long long i = 0 ; i < domain_id_res.size(); ++i)
@@ -432,7 +433,8 @@ namespace Fred
                 BOOST_THROW_EXCEPTION(Exception().set_unknown_admin_contact_handle(admin_contact_handle_));
             }
 
-            Database::ParamQuery domain_id_inline_view("info_domain_id IN (");
+            Database::ParamQuery domain_id_inline_view;
+            domain_id_inline_view(InfoDomain::GetAlias::id())(" IN (");
             Util::HeadSeparator in_separator("",",");
 
             for (unsigned long long i = 0 ; i < domain_id_res.size(); ++i)
@@ -518,7 +520,8 @@ namespace Fred
                 BOOST_THROW_EXCEPTION(Exception().set_unknown_nsset_handle(nsset_handle_));
             }
 
-            Database::ParamQuery domain_id_inline_view("info_domain_id IN (");
+            Database::ParamQuery domain_id_inline_view;
+            domain_id_inline_view(InfoDomain::GetAlias::id())(" IN (");
             Util::HeadSeparator in_separator("",",");
 
             for (unsigned long long i = 0 ; i < domain_id_res.size(); ++i)
@@ -602,7 +605,8 @@ namespace Fred
                 BOOST_THROW_EXCEPTION(Exception().set_unknown_keyset_handle(keyset_handle_));
             }
 
-            Database::ParamQuery domain_id_inline_view("info_domain_id IN (");
+            Database::ParamQuery domain_id_inline_view;
+            domain_id_inline_view(InfoDomain::GetAlias::id())(" IN (");
             Util::HeadSeparator in_separator("",",");
 
             for (unsigned long long i = 0 ; i < domain_id_res.size(); ++i)

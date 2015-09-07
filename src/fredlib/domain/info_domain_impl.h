@@ -62,17 +62,51 @@ namespace Fred
         InfoDomain();
 
         /**
+         * Domain info query projection aliases.
+         * Set of constants for building inline view filter expressions.
+         */
+        struct GetAlias
+        {
+            static const char* id(){return "info_domain_id";}
+            static const char* roid(){return "info_domain_roid";}
+            static const char* fqdn(){return "info_domain_fqdn";}
+            static const char* delete_time(){return "info_domain_delete_time";}
+            static const char* historyid(){return "info_domain_historyid";}
+            static const char* next_historyid(){return "info_domain_next_historyid";}
+            static const char* history_valid_from(){return "info_domain_history_valid_from";}
+            static const char* history_valid_to(){return "info_domain_history_valid_to";}
+            static const char* registrant_id(){return "info_domain_registrant_id";}
+            static const char* registrant_handle(){return "info_domain_registrant_handle";}
+            static const char* nsset_id(){return "info_domain_nsset_id";}
+            static const char* nsset_handle(){return "info_domain_nsset_handle";}
+            static const char* keyset_id(){return "info_domain_keyset_id";}
+            static const char* keyset_handle(){return "info_domain_keyset_handle";}
+            static const char* sponsoring_registrar_id(){return "info_domain_sponsoring_registrar_id";}
+            static const char* sponsoring_registrar_handle(){return "info_domain_sponsoring_registrar_handle";}
+            static const char* creating_registrar_id(){return "info_domain_creating_registrar_id";}
+            static const char* creating_registrar_handle(){return "info_domain_creating_registrar_handle";}
+            static const char* last_updated_by_registrar_id(){return "info_domain_last_updated_by_registrar_id";}
+            static const char* last_updated_by_registrar_handle(){return "info_domain_last_updated_by_registrar_handle";}
+            static const char* creation_time(){return "info_domain_creation_time";}
+            static const char* transfer_time(){return "info_domain_transfer_time";}
+            static const char* update_time(){return "info_domain_update_time";}
+            static const char* expiration_date(){return "info_domain_expiration_date";}
+            static const char* authinfopw(){return "info_domain_authinfopw";}
+            static const char* enum_validation_expiration(){return "info_domain_enum_validation_expiration";}
+            static const char* enum_publish(){return "info_domain_enum_publish";}
+            static const char* first_historyid(){return "info_domain_first_historyid";}
+            static const char* logd_request_id(){return "info_domain_logd_request_id";}
+            static const char* utc_timestamp(){return "info_domain_utc_timestamp";}
+            static const char* local_timestamp(){return "info_domain_local_timestamp";}
+            static const char* is_enum(){return "info_domain_is_enum";}
+            static const char* zone_id(){return "info_domain_zone_id";}
+            static const char* zone_fqdn(){return "info_domain_zone_fqdn";}
+        };
+
+        /**
          * Sets domain selection criteria.
-         * Filter expression, which is optional WHERE clause, has access to following info domain projection aliases:
-         * info_domain_id, info_domain_roid, info_domain_fqdn, info_domain_delete_time,
-         * info_domain_historyid, info_domain_next_historyid, info_domain_history_valid_from, info_domain_history_valid_to,
-         * info_domain_registrant_id, info_domain_registrant_handle, info_domain_nsset_id, info_domain_nsset_handle,
-         * info_domain_keyset_id, info_domain_keyset_handle, info_domain_sponsoring_registrar_id, info_domain_sponsoring_registrar_handle,
-         * info_domain_creating_registrar_id, info_domain_creating_registrar_handle, info_domain_last_updated_by_registrar_id,
-         * info_domain_last_updated_by_registrar_handle, info_domain_creation_time, info_domain_transfer_time, info_domain_update_time,
-         * info_domain_expiration_date, info_domain_authinfopw, info_domain_enum_validation_expiration, info_domain_enum_publish,
-         * info_domain_first_historyid, info_domain_logd_request_id,
-         * info_domain_utc_timestamp, info_domain_local_timestamp, info_domain_is_enum, info_domain_zone_id, info_domain_zone_fqdn
+         * Filter expression, which is optional WHERE clause, has access to @ref GetAlias info domain projection aliases.
+         * Simple usage example: .set_inline_view_filter(Database::ParamQuery(InfoDomain::GetAlias::id())(" = ").param_bigint(id_))
          */
         InfoDomain& set_inline_view_filter(const Database::ParamQuery& filter_expr);
 
@@ -83,7 +117,7 @@ namespace Fred
 
         /**
         * Sets history query flag.
-        * @param history_query sets history query flag into @ref history query_ attribute
+        * @param history_query sets history query flag into @ref history_query_ attribute
         * @return operation instance reference to allow method chaining
         */
         InfoDomain& set_history_query(bool history_query);
