@@ -192,7 +192,7 @@ namespace Database
         return *this;
     }
 
-    std::pair<std::string,query_param_list> ParamQuery::get_query()
+    std::pair<std::string,query_param_list> ParamQuery::get_query() const
     {
         std::map<boost::shared_ptr<int>, std::string > param_lid_position;
         std::pair<std::string,query_param_list> query;

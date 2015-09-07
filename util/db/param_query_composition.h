@@ -179,7 +179,7 @@ namespace Database
          * Generates SQL query.
          * @return pair of SQL string with parameter numbers (first) and list of query parameter values (second).
          */
-        std::pair<std::string,query_param_list> get_query();
+        std::pair<std::string,query_param_list> get_query() const;
     };
 };
 
