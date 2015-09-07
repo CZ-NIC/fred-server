@@ -329,34 +329,5 @@ namespace Fred
         return result;
     }
 
-    std::string InfoDomain::explain_analyze(OperationContext& ctx, std::vector<InfoDomainOutput>& result
-            , const std::string& local_timestamp_pg_time_zone_name)
-    {
-        result = exec(ctx,local_timestamp_pg_time_zone_name);
-        std::pair<std::string, Database::QueryParams> domain_query = make_domain_query(local_timestamp_pg_time_zone_name).get_query();
-        std::string query_plan("\nDomain query: EXPLAIN (ANALYZE, VERBOSE, BUFFERS) ");
-        query_plan += domain_query.first;
-        query_plan += "\n\nParams: ";
-        query_plan += Util::format_container(domain_query.second);
-        query_plan += "\n\nPlan:\n";
-        Database::Result domain_query_result = ctx.get_conn().exec_params(
-            std::string("EXPLAIN (ANALYZE, VERBOSE, BUFFERS) ") + domain_query.first,domain_query.second);
-        for(Database::Result::size_type i = 0; i < domain_query_result.size(); ++i)
-            query_plan += std::string(domain_query_result[i][0])+"\n";
-
-        std::pair<std::string, Database::QueryParams> admin_query = make_admin_query(1,1).get_query();
-        query_plan += "\nAdmin query: EXPLAIN (ANALYZE, VERBOSE, BUFFERS) ";
-        query_plan += admin_query.first;
-        query_plan += "\n\nParams: ";
-        query_plan += Util::format_container(admin_query.second);
-        query_plan += "\n\nPlan:\n";
-        Database::Result admin_query_result = ctx.get_conn().exec_params(
-                std::string("EXPLAIN (ANALYZE, VERBOSE, BUFFERS) ") + admin_query.first,admin_query.second);
-        for(Database::Result::size_type i = 0; i < admin_query_result.size(); ++i)
-                query_plan += std::string(admin_query_result[i][0])+"\n";
-
-        return query_plan;
-    }
-
 }//namespace Fred
 

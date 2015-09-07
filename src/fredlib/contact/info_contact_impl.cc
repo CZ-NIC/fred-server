@@ -340,21 +340,5 @@ namespace Fred
         return result;
     }
 
-    std::string InfoContact::explain_analyze(OperationContext& ctx, std::vector<InfoContactOutput>& result
-            , const std::string& local_timestamp_pg_time_zone_name)
-    {
-        result = exec(ctx,local_timestamp_pg_time_zone_name);
-        std::pair<std::string, Database::QueryParams> query = make_query(local_timestamp_pg_time_zone_name);
-        std::string query_plan("\nEXPLAIN ANALYZE ");
-        query_plan += query.first;
-        query_plan += "\n\nParams: ";
-        query_plan += Util::format_container(query.second);
-        query_plan += "\n\nPlan:\n";
-
-        Database::Result query_result = ctx.get_conn().exec_params(std::string("EXPLAIN ANALYZE ") + query.first,query.second);
-        for(Database::Result::size_type i = 0; i < query_result.size(); ++i) query_plan += std::string(query_result[i][0])+"\n";
-        return query_plan;
-    }
-
 }//namespace Fred
 

@@ -84,27 +84,6 @@ BOOST_AUTO_TEST_CASE(info_registrar)
 
     BOOST_CHECK(registrar_info1 == registrar_info3);
 
-    //impl
-    for( int j = 0; j < (1 << 3); ++j)
-    {
-        Fred::InfoRegistrar i;
-        if(j & (1 << 0)) i.set_handle(registrar_info1.info_registrar_data.handle);
-        if(j & (1 << 1)) i.set_id(registrar_info1.info_registrar_data.id);
-        if(j & (1 << 2)) i.set_lock(true);
-
-        std::vector<Fred::InfoRegistrarOutput> output;
-        BOOST_MESSAGE(i.explain_analyze(ctx,output));
-        if((j & (1 << 0)) || (j & (1 << 1)))//check if selective
-        {
-            if((registrar_info1 != output.at(0)))
-            {
-                BOOST_MESSAGE(Fred::diff_registrar_data(registrar_info1.info_registrar_data
-                        , output.at(0).info_registrar_data).to_string());
-            }
-            BOOST_CHECK(output.at(0) == registrar_info1);
-        }
-    }
-
 }
 
 /**

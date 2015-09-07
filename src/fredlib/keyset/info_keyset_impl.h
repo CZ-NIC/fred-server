@@ -103,14 +103,6 @@ namespace Fred
         */
         std::vector<InfoKeysetOutput> exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "UTC");//return data
 
-        /**
-        * Executes explain analyze and getting info about the keyset for testing purposes.
-        * @param ctx contains reference to database and logging interface
-        * @param local_timestamp_pg_time_zone_name is postgresql time zone name of the returned data and history_timestamp
-        * @param result info data about the keyset
-        * @return query and plan
-        */
-        std::string explain_analyze(OperationContext& ctx, std::vector<InfoKeysetOutput>& result, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return query plan
     };
 
 }//namespace Fred

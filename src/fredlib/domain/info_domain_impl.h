@@ -104,14 +104,6 @@ namespace Fred
         */
         std::vector<InfoDomainOutput> exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "UTC");//return data
 
-        /**
-        * Executes explain analyze and getting info about the domain for testing purposes.
-        * @param ctx contains reference to database and logging interface
-        * @param local_timestamp_pg_time_zone_name is postgresql time zone name of the returned data and history_timestamp
-        * @param result info data about the domain
-        * @return query and plan
-        */
-        std::string explain_analyze(OperationContext& ctx, std::vector<InfoDomainOutput>& result, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return query plan
     };
 
 }//namespace Fred

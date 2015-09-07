@@ -109,31 +109,6 @@ BOOST_AUTO_TEST_CASE(info_contact)
 
     BOOST_CHECK(contact_history_info1.at(0) == contact_history_info5);
 
-    //impl
-    for( int j = 0; j < (1 << 7); ++j)
-    {
-        Fred::InfoContact i;
-        if(j & (1 << 0)) i.set_handle(contact_info1.info_contact_data.handle);
-        if(j & (1 << 1)) i.set_roid(contact_info1.info_contact_data.roid);
-        if(j & (1 << 2)) i.set_id(contact_info1.info_contact_data.id);
-        if(j & (1 << 3)) i.set_historyid(contact_info1.info_contact_data.historyid);
-        if(j & (1 << 4)) i.set_lock();
-        if(j & (1 << 5)) i.set_history_timestamp(contact_info1.info_contact_data.creation_time);
-        if(j & (1 << 6)) i.set_history_query(true);
-
-        std::vector<Fred::InfoContactOutput> output;
-        BOOST_MESSAGE(i.explain_analyze(ctx,output));
-        if((j & (1 << 0)) || (j & (1 << 1)) || (j & (1 << 2)) || (j & (1 << 3)))//check if selective
-        {
-            if((contact_info1 != output.at(0)))
-            {
-                BOOST_MESSAGE(Fred::diff_contact_data(contact_info1.info_contact_data
-                        , output.at(0).info_contact_data).to_string());
-            }
-            BOOST_CHECK(output.at(0) == contact_info1);
-        }
-    }
-
 }
 
 /**
