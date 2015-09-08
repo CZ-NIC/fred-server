@@ -986,7 +986,8 @@ src_fredlib_public_request_libpublic_request_a_SOURCES = \
 		src/fredlib/public_request/update_public_request.cc \
 		src/fredlib/public_request/update_public_request.h \
 		src/fredlib/public_request/info_public_request.cc \
-		src/fredlib/public_request/info_public_request_auth.cc
+		src/fredlib/public_request/info_public_request_auth.cc \
+		src/fredlib/public_request/get_active_public_request.cc
 #
 # src/fredlib/public_request/libpublic_request.a
 
