@@ -56,7 +56,7 @@ namespace Fred
         try
         {
             InfoNsset in;
-            in.set_inline_view_filter(Database::ParamQuery("info_nsset_handle = UPPER(").param_text(handle_)(")"))
+            in.set_inline_view_filter(Database::ParamQuery(InfoNsset::GetAlias::handle())(" = UPPER(").param_text(handle_)(")"))
                 .set_history_query(false);
             if(lock_)
             {
@@ -110,7 +110,7 @@ namespace Fred
         try
         {
             InfoNsset in;
-            in.set_inline_view_filter(Database::ParamQuery("info_nsset_id = ").param_bigint(id_))
+            in.set_inline_view_filter(Database::ParamQuery(InfoNsset::GetAlias::id())(" = ").param_bigint(id_))
                 .set_history_query(false);
             if(lock_)
             {
@@ -326,7 +326,7 @@ namespace Fred
         try
         {
             InfoNsset in;
-            in.set_inline_view_filter(Database::ParamQuery("info_nsset_roid = ").param_text(roid_))
+            in.set_inline_view_filter(Database::ParamQuery(InfoNsset::GetAlias::roid())(" = ").param_text(roid_))
                 .set_history_query(true);
             if(lock_)
             {
@@ -371,7 +371,7 @@ namespace Fred
         try
         {
             InfoNsset in;
-            in.set_inline_view_filter(Database::ParamQuery("info_nsset_id = ").param_bigint(id_))
+            in.set_inline_view_filter(Database::ParamQuery(InfoNsset::GetAlias::id())(" = ").param_bigint(id_))
                 .set_history_query(true);
             if(lock_)
             {
@@ -414,7 +414,7 @@ namespace Fred
         try
         {
             InfoNsset in;
-            in.set_inline_view_filter(Database::ParamQuery("info_nsset_historyid = ").param_bigint(historyid_))
+            in.set_inline_view_filter(Database::ParamQuery(InfoNsset::GetAlias::historyid())(" = ").param_bigint(historyid_))
                 .set_history_query(true);
             if(lock_)
             {

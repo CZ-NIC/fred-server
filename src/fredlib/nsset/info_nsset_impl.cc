@@ -81,29 +81,29 @@ namespace Fred
 
         info_nsset_query(
         "SELECT * FROM ("
-        "SELECT nobr.id AS info_nsset_id"
-        " , nobr.roid AS info_nsset_roid"
-        " , nobr.name AS info_nsset_handle"
-        " , (nobr.erdate AT TIME ZONE 'UTC' ) AT TIME ZONE ").param(p_local_zone)(" AS info_nsset_delete_time"
-        " , h.id AS info_nsset_historyid"
-        " , h.next AS info_nsset_next_historyid"
-        " , (h.valid_from AT TIME ZONE 'UTC') AT TIME ZONE ").param(p_local_zone)(" AS info_nsset_history_valid_from"
-        " , (h.valid_to AT TIME ZONE 'UTC') AT TIME ZONE ").param(p_local_zone)(" AS info_nsset_history_valid_to"
-        " , obj.clid AS info_nsset_sponsoring_registrar_id"
-        " , clr.handle AS info_nsset_sponsoring_registrar_handle"
-        " , nobr.crid AS info_nsset_creating_registrar_id"
-        " , crr.handle AS info_nsset_creating_registrar_handle"
-        " , obj.upid AS info_nsset_last_updated_by_registrar_id"
-        " , upr.handle AS info_nsset_last_updated_by_registrar_handle"
-        " , (nobr.crdate AT TIME ZONE 'UTC') AT TIME ZONE ").param(p_local_zone)(" AS info_nsset_creation_time"
-        " , (obj.trdate AT TIME ZONE 'UTC') AT TIME ZONE ").param(p_local_zone)(" AS info_nsset_transfer_time"
-        " , (obj.update AT TIME ZONE 'UTC') AT TIME ZONE ").param(p_local_zone)(" AS info_nsset_update_time"
-        " , nt.checklevel AS info_nsset_tech_check_level"
-        " , obj.authinfopw AS info_nsset_authinfopw"
-        " , nobr.crhistoryid AS info_nsset_first_historyid"
-        " , h.request_id AS info_nsset_logd_request_id"
-        " , (CURRENT_TIMESTAMP AT TIME ZONE 'UTC')::timestamp AS info_nsset_utc_timestamp"
-        " , (CURRENT_TIMESTAMP AT TIME ZONE 'UTC' AT TIME ZONE ").param(p_local_zone)(")::timestamp AS info_nsset_local_timestamp"
+        "SELECT nobr.id AS ")(GetAlias::id())(
+        " , nobr.roid AS ")(GetAlias::roid())(
+        " , nobr.name AS ")(GetAlias::handle())(
+        " , (nobr.erdate AT TIME ZONE 'UTC' ) AT TIME ZONE ").param(p_local_zone)(" AS ")(GetAlias::delete_time())(
+        " , h.id AS ")(GetAlias::historyid())(
+        " , h.next AS ")(GetAlias::next_historyid())(
+        " , (h.valid_from AT TIME ZONE 'UTC') AT TIME ZONE ").param(p_local_zone)(" AS ")(GetAlias::history_valid_from())(
+        " , (h.valid_to AT TIME ZONE 'UTC') AT TIME ZONE ").param(p_local_zone)(" AS ")(GetAlias::history_valid_to())(
+        " , obj.clid AS ")(GetAlias::sponsoring_registrar_id())(
+        " , clr.handle AS ")(GetAlias::sponsoring_registrar_handle())(
+        " , nobr.crid AS ")(GetAlias::creating_registrar_id())(
+        " , crr.handle AS ")(GetAlias::creating_registrar_handle())(
+        " , obj.upid AS ")(GetAlias::last_updated_by_registrar_id())(
+        " , upr.handle AS ")(GetAlias::last_updated_by_registrar_handle())(
+        " , (nobr.crdate AT TIME ZONE 'UTC') AT TIME ZONE ").param(p_local_zone)(" AS ")(GetAlias::creation_time())(
+        " , (obj.trdate AT TIME ZONE 'UTC') AT TIME ZONE ").param(p_local_zone)(" AS ")(GetAlias::transfer_time())(
+        " , (obj.update AT TIME ZONE 'UTC') AT TIME ZONE ").param(p_local_zone)(" AS ")(GetAlias::update_time())(
+        " , nt.checklevel AS ")(GetAlias::tech_check_level())(
+        " , obj.authinfopw AS ")(GetAlias::authinfopw())(
+        " , nobr.crhistoryid AS ")(GetAlias::first_historyid())(
+        " , h.request_id AS ")(GetAlias::logd_request_id())(
+        " , (CURRENT_TIMESTAMP AT TIME ZONE 'UTC')::timestamp AS ")(GetAlias::utc_timestamp())(
+        " , (CURRENT_TIMESTAMP AT TIME ZONE 'UTC' AT TIME ZONE ").param(p_local_zone)(")::timestamp AS ")(GetAlias::local_timestamp())(
         " FROM object_registry nobr ");
         if(history_query_)
         {
@@ -156,7 +156,7 @@ namespace Fred
         }
 
         info_nsset_query(
-            " ORDER BY info_nsset_historyid DESC ");
+            " ORDER BY ")(GetAlias::historyid())(" DESC ");
 
         return info_nsset_query;
     }
@@ -252,36 +252,36 @@ namespace Fred
         for(Database::Result::size_type i = 0; i < param_query_result.size(); ++i)
         {
             InfoNssetOutput info_nsset_output;
-            info_nsset_output.info_nsset_data.id = static_cast<unsigned long long>(param_query_result[i]["info_nsset_id"]);
-            info_nsset_output.info_nsset_data.roid = static_cast<std::string>(param_query_result[i]["info_nsset_roid"]);
-            info_nsset_output.info_nsset_data.handle = static_cast<std::string>(param_query_result[i]["info_nsset_handle"]);
-            info_nsset_output.info_nsset_data.delete_time = param_query_result[i]["info_nsset_delete_time"].isnull() ? Nullable<boost::posix_time::ptime>()
-                : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(param_query_result[i]["info_nsset_delete_time"])));
-            info_nsset_output.info_nsset_data.historyid = static_cast<unsigned long long>(param_query_result[i]["info_nsset_historyid"]);
-            info_nsset_output.next_historyid = param_query_result[i]["info_nsset_next_historyid"].isnull() ? Nullable<unsigned long long>()
-                : Nullable<unsigned long long>(static_cast<unsigned long long>(param_query_result[i]["info_nsset_next_historyid"]));
-            info_nsset_output.history_valid_from = boost::posix_time::time_from_string(static_cast<std::string>(param_query_result[i]["info_nsset_history_valid_from"]));
-            info_nsset_output.history_valid_to = param_query_result[i]["info_nsset_history_valid_to"].isnull() ? Nullable<boost::posix_time::ptime>()
-                : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(param_query_result[i]["info_nsset_history_valid_to"])));
-            info_nsset_output.info_nsset_data.sponsoring_registrar_handle = static_cast<std::string>(param_query_result[i]["info_nsset_sponsoring_registrar_handle"]);
-            info_nsset_output.info_nsset_data.create_registrar_handle = static_cast<std::string>(param_query_result[i]["info_nsset_creating_registrar_handle"]);
-            info_nsset_output.info_nsset_data.update_registrar_handle = param_query_result[i]["info_nsset_last_updated_by_registrar_handle"].isnull() ? Nullable<std::string>()
-                : Nullable<std::string> (static_cast<std::string>(param_query_result[i]["info_nsset_last_updated_by_registrar_handle"]));
-            info_nsset_output.info_nsset_data.creation_time = boost::posix_time::time_from_string(static_cast<std::string>(param_query_result[i]["info_nsset_creation_time"]));
-            info_nsset_output.info_nsset_data.transfer_time = param_query_result[i]["info_nsset_transfer_time"].isnull() ? Nullable<boost::posix_time::ptime>()
-                : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(param_query_result[i]["info_nsset_transfer_time"])));
-            info_nsset_output.info_nsset_data.update_time = param_query_result[i]["info_nsset_update_time"].isnull() ? Nullable<boost::posix_time::ptime>()
-                : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(param_query_result[i]["info_nsset_update_time"])));
-            info_nsset_output.info_nsset_data.tech_check_level = param_query_result[i]["info_nsset_tech_check_level"].isnull() ? Nullable<short>()
-                : Nullable<short>(static_cast<short>(param_query_result[i]["info_nsset_tech_check_level"]));
-            info_nsset_output.info_nsset_data.authinfopw = static_cast<std::string>(param_query_result[i]["info_nsset_authinfopw"]);
-            info_nsset_output.info_nsset_data.crhistoryid = static_cast<unsigned long long>(param_query_result[i]["info_nsset_first_historyid"]);
-            info_nsset_output.logd_request_id = param_query_result[i]["info_nsset_logd_request_id"].isnull() ? Nullable<unsigned long long>()
-                : Nullable<unsigned long long>(static_cast<unsigned long long>(param_query_result[i]["info_nsset_logd_request_id"]));
-            info_nsset_output.utc_timestamp = param_query_result[i]["info_nsset_utc_timestamp"].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
-                : boost::posix_time::time_from_string(static_cast<std::string>(param_query_result[i]["info_nsset_utc_timestamp"]));
-            info_nsset_output.local_timestamp = param_query_result[i]["info_nsset_local_timestamp"].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
-                : boost::posix_time::time_from_string(static_cast<std::string>(param_query_result[i]["info_nsset_local_timestamp"]));
+            info_nsset_output.info_nsset_data.id = static_cast<unsigned long long>(param_query_result[i][GetAlias::id()]);
+            info_nsset_output.info_nsset_data.roid = static_cast<std::string>(param_query_result[i][GetAlias::roid()]);
+            info_nsset_output.info_nsset_data.handle = static_cast<std::string>(param_query_result[i][GetAlias::handle()]);
+            info_nsset_output.info_nsset_data.delete_time = param_query_result[i][GetAlias::delete_time()].isnull() ? Nullable<boost::posix_time::ptime>()
+                : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(param_query_result[i][GetAlias::delete_time()])));
+            info_nsset_output.info_nsset_data.historyid = static_cast<unsigned long long>(param_query_result[i][GetAlias::historyid()]);
+            info_nsset_output.next_historyid = param_query_result[i][GetAlias::next_historyid()].isnull() ? Nullable<unsigned long long>()
+                : Nullable<unsigned long long>(static_cast<unsigned long long>(param_query_result[i][GetAlias::next_historyid()]));
+            info_nsset_output.history_valid_from = boost::posix_time::time_from_string(static_cast<std::string>(param_query_result[i][GetAlias::history_valid_from()]));
+            info_nsset_output.history_valid_to = param_query_result[i][GetAlias::history_valid_to()].isnull() ? Nullable<boost::posix_time::ptime>()
+                : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(param_query_result[i][GetAlias::history_valid_to()])));
+            info_nsset_output.info_nsset_data.sponsoring_registrar_handle = static_cast<std::string>(param_query_result[i][GetAlias::sponsoring_registrar_handle()]);
+            info_nsset_output.info_nsset_data.create_registrar_handle = static_cast<std::string>(param_query_result[i][GetAlias::creating_registrar_handle()]);
+            info_nsset_output.info_nsset_data.update_registrar_handle = param_query_result[i][GetAlias::last_updated_by_registrar_handle()].isnull() ? Nullable<std::string>()
+                : Nullable<std::string> (static_cast<std::string>(param_query_result[i][GetAlias::last_updated_by_registrar_handle()]));
+            info_nsset_output.info_nsset_data.creation_time = boost::posix_time::time_from_string(static_cast<std::string>(param_query_result[i][GetAlias::creation_time()]));
+            info_nsset_output.info_nsset_data.transfer_time = param_query_result[i][GetAlias::transfer_time()].isnull() ? Nullable<boost::posix_time::ptime>()
+                : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(param_query_result[i][GetAlias::transfer_time()])));
+            info_nsset_output.info_nsset_data.update_time = param_query_result[i][GetAlias::update_time()].isnull() ? Nullable<boost::posix_time::ptime>()
+                : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(param_query_result[i][GetAlias::update_time()])));
+            info_nsset_output.info_nsset_data.tech_check_level = param_query_result[i][GetAlias::tech_check_level()].isnull() ? Nullable<short>()
+                : Nullable<short>(static_cast<short>(param_query_result[i][GetAlias::tech_check_level()]));
+            info_nsset_output.info_nsset_data.authinfopw = static_cast<std::string>(param_query_result[i][GetAlias::authinfopw()]);
+            info_nsset_output.info_nsset_data.crhistoryid = static_cast<unsigned long long>(param_query_result[i][GetAlias::first_historyid()]);
+            info_nsset_output.logd_request_id = param_query_result[i][GetAlias::logd_request_id()].isnull() ? Nullable<unsigned long long>()
+                : Nullable<unsigned long long>(static_cast<unsigned long long>(param_query_result[i][GetAlias::logd_request_id()]));
+            info_nsset_output.utc_timestamp = param_query_result[i][GetAlias::utc_timestamp()].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
+                : boost::posix_time::time_from_string(static_cast<std::string>(param_query_result[i][GetAlias::utc_timestamp()]));
+            info_nsset_output.local_timestamp = param_query_result[i][GetAlias::local_timestamp()].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
+                : boost::posix_time::time_from_string(static_cast<std::string>(param_query_result[i][GetAlias::local_timestamp()]));
 
             //tech contacts
             std::pair<std::string, Database::QueryParams> tech_contact_query = make_tech_contact_query(

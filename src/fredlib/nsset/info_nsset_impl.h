@@ -65,14 +65,40 @@ namespace Fred
         InfoNsset();
 
         /**
+         * Nsset info query projection aliases.
+         * Set of constants for building inline view filter expressions.
+         */
+        struct GetAlias
+        {
+            static const char* id(){return "info_nsset_id";}
+            static const char* roid(){return "info_nsset_roid";}
+            static const char* handle(){return "info_nsset_handle";}
+            static const char* delete_time(){return "info_nsset_delete_time";}
+            static const char* historyid(){return "info_nsset_historyid";}
+            static const char* next_historyid(){return "info_nsset_next_historyid";}
+            static const char* history_valid_from(){return "info_nsset_history_valid_from";}
+            static const char* history_valid_to(){return "info_nsset_history_valid_to";}
+            static const char* sponsoring_registrar_id(){return "info_nsset_sponsoring_registrar_id";}
+            static const char* sponsoring_registrar_handle(){return "info_nsset_sponsoring_registrar_handle";}
+            static const char* creating_registrar_id(){return "info_nsset_creating_registrar_id";}
+            static const char* creating_registrar_handle(){return "info_nsset_creating_registrar_handle";}
+            static const char* last_updated_by_registrar_id(){return "info_nsset_last_updated_by_registrar_id";}
+            static const char* last_updated_by_registrar_handle(){return "info_nsset_last_updated_by_registrar_handle";}
+            static const char* creation_time(){return "info_nsset_creation_time";}
+            static const char* transfer_time(){return "info_nsset_transfer_time";}
+            static const char* update_time(){return "info_nsset_update_time";}
+            static const char* tech_check_level(){return "info_nsset_tech_check_level";}
+            static const char* authinfopw(){return "info_nsset_authinfopw";}
+            static const char* first_historyid(){return "info_nsset_first_historyid";}
+            static const char* logd_request_id(){return "info_nsset_logd_request_id";}
+            static const char* utc_timestamp(){return "info_nsset_utc_timestamp";}
+            static const char* local_timestamp(){return "info_nsset_local_timestamp";}
+        };
+
+        /**
          * Sets nsset selection criteria.
-         * Filter expression, which is optional WHERE clause, has access to following info nsset projection aliases:
-         * info_nsset_id, info_nsset_roid, info_nsset_handle, info_nsset_delete_time, info_nsset_historyid,
-         * info_nsset_next_historyid, info_nsset_history_valid_from, info_nsset_history_valid_to,
-         * info_nsset_sponsoring_registrar_id, info_nsset_sponsoring_registrar_handle, info_nsset_creating_registrar_id,
-         * info_nsset_creating_registrar_handle, info_nsset_last_updated_by_registrar_id, info_nsset_last_updated_by_registrar_handle,
-         * info_nsset_creation_time, info_nsset_transfer_time, info_nsset_update_time, info_nsset_tech_check_level,
-         * info_nsset_authinfopw, info_nsset_first_historyid, info_nsset_logd_request_id, info_nsset_utc_timestamp, info_nsset_local_timestamp
+         * Filter expression, which is optional WHERE clause, has access to @ref GetAlias info nsset projection aliases.
+         * Simple usage example: .set_inline_view_filter(Database::ParamQuery(InfoNsset::GetAlias::id())(" = ").param_bigint(id_))
          */
         InfoNsset& set_inline_view_filter(const Database::ParamQuery& filter_expr);
 
