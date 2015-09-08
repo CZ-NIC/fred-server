@@ -242,7 +242,7 @@ namespace Fred
 
             info_domain_output.info_domain_data.historyid = static_cast<unsigned long long>(query_result[i][GetAlias::historyid()]);
 
-            info_domain_output.next_historyid = query_result[i][GetAlias::historyid()].isnull() ? Nullable<unsigned long long>()
+            info_domain_output.next_historyid = query_result[i][GetAlias::next_historyid()].isnull() ? Nullable<unsigned long long>()
             : Nullable<unsigned long long>(static_cast<unsigned long long>(query_result[i][GetAlias::next_historyid()]));
 
             info_domain_output.history_valid_from = boost::posix_time::time_from_string(static_cast<std::string>(query_result[i][GetAlias::history_valid_from()]));
