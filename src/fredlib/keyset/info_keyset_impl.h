@@ -63,14 +63,39 @@ namespace Fred
         InfoKeyset();
 
         /**
+         * Keyset info query projection aliases.
+         * Set of constants for building inline view filter expressions.
+         */
+        struct GetAlias
+        {
+            static const char* id(){return "info_keyset_id";}
+            static const char* roid(){return "info_keyset_roid";}
+            static const char* handle(){return "info_keyset_handle";}
+            static const char* delete_time(){return "info_keyset_delete_time";}
+            static const char* historyid(){return "info_keyset_historyid";}
+            static const char* next_historyid(){return "info_keyset_next_historyid";}
+            static const char* history_valid_from(){return "info_keyset_history_valid_from";}
+            static const char* history_valid_to(){return "info_keyset_history_valid_to";}
+            static const char* sponsoring_registrar_id(){return "info_keyset_sponsoring_registrar_id";}
+            static const char* sponsoring_registrar_handle(){return "info_keyset_sponsoring_registrar_handle";}
+            static const char* creating_registrar_id(){return "info_keyset_creating_registrar_id";}
+            static const char* creating_registrar_handle(){return "info_keyset_creating_registrar_handle";}
+            static const char* last_updated_by_registrar_id(){return "info_keyset_last_updated_by_registrar_id";}
+            static const char* last_updated_by_registrar_handle(){return "info_keyset_last_updated_by_registrar_handle";}
+            static const char* creation_time(){return "info_keyset_creation_time";}
+            static const char* transfer_time(){return "info_keyset_transfer_time";}
+            static const char* update_time(){return "info_keyset_update_time";}
+            static const char* authinfopw(){return "info_keyset_authinfopw";}
+            static const char* first_historyid(){return "info_keyset_first_historyid";}
+            static const char* logd_request_id(){return "info_keyset_logd_request_id";}
+            static const char* utc_timestamp(){return "info_keyset_utc_timestamp";}
+            static const char* local_timestamp(){return "info_keyset_local_timestamp";}
+        };
+
+        /**
          * Sets keyset selection criteria.
-         * Filter expression, which is optional WHERE clause, has access to following info keyset projection aliases:
-         * info_keyset_id, info_keyset_roid, info_keyset_handle, info_keyset_delete_time, info_keyset_historyid,
-         * info_keyset_next_historyid, info_keyset_history_valid_from, info_keyset_history_valid_to,
-         * info_keyset_sponsoring_registrar_id, info_keyset_sponsoring_registrar_handle, info_keyset_creating_registrar_id,
-         * info_keyset_creating_registrar_handle, info_keyset_last_updated_by_registrar_id, info_keyset_last_updated_by_registrar_handle,
-         * info_keyset_creation_time, info_keyset_transfer_time, info_keyset_update_time, info_keyset_authinfopw,
-         * info_keyset_first_historyid, info_keyset_logd_request_id, info_keyset_utc_timestamp, info_keyset_local_timestamp
+         * Filter expression, which is optional WHERE clause, has access to @ref GetAlias info keyset projection aliases.
+         * Simple usage example: .set_inline_view_filter(Database::ParamQuery(InfoKeyset::GetAlias::id())(" = ").param_bigint(id_))
          */
         InfoKeyset& set_inline_view_filter(const Database::ParamQuery& filter_expr);
 

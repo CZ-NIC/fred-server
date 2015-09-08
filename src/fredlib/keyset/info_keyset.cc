@@ -58,7 +58,7 @@ namespace Fred
         try
         {
             InfoKeyset ik;
-            ik.set_inline_view_filter(Database::ParamQuery("info_keyset_handle = UPPER(").param_text(handle_)(")")).set_history_query(false);
+            ik.set_inline_view_filter(Database::ParamQuery(InfoKeyset::GetAlias::handle())(" = UPPER(").param_text(handle_)(")")).set_history_query(false);
             if(lock_) ik.set_lock();
             keyset_res = ik.exec(ctx,local_timestamp_pg_time_zone_name);
 
@@ -108,7 +108,7 @@ namespace Fred
         try
         {
             InfoKeyset ik;
-            ik.set_inline_view_filter(Database::ParamQuery("info_keyset_id = ").param_bigint(id_)).set_history_query(false);
+            ik.set_inline_view_filter(Database::ParamQuery(InfoKeyset::GetAlias::id())(" = ").param_bigint(id_)).set_history_query(false);
             if(lock_) ik.set_lock();
             keyset_res = ik.exec(ctx,local_timestamp_pg_time_zone_name);
 
@@ -171,7 +171,7 @@ namespace Fred
         try
         {
             InfoKeyset ik;
-            ik.set_inline_view_filter(Database::ParamQuery("info_keyset_roid = ").param_text(roid_)).set_history_query(true);
+            ik.set_inline_view_filter(Database::ParamQuery(InfoKeyset::GetAlias::roid())(" = ").param_text(roid_)).set_history_query(true);
             if(lock_) ik.set_lock();
             keyset_res = ik.exec(ctx,local_timestamp_pg_time_zone_name);
         }
@@ -212,7 +212,7 @@ namespace Fred
         try
         {
             InfoKeyset ik;
-            ik.set_inline_view_filter(Database::ParamQuery("info_keyset_id = ").param_bigint(id_)).set_history_query(true);
+            ik.set_inline_view_filter(Database::ParamQuery(InfoKeyset::GetAlias::id())(" = ").param_bigint(id_)).set_history_query(true);
             if(lock_) ik.set_lock();
             keyset_history_res = ik.exec(ctx,local_timestamp_pg_time_zone_name);
         }
@@ -251,7 +251,7 @@ namespace Fred
         try
         {
             InfoKeyset ik;
-            ik.set_inline_view_filter(Database::ParamQuery("info_keyset_historyid = ").param_bigint(historyid_)).set_history_query(true);
+            ik.set_inline_view_filter(Database::ParamQuery(InfoKeyset::GetAlias::historyid())(" = ").param_bigint(historyid_)).set_history_query(true);
             if(lock_) ik.set_lock();
             keyset_history_res = ik.exec(ctx,local_timestamp_pg_time_zone_name);
 
