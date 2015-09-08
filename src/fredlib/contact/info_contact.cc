@@ -52,7 +52,7 @@ namespace Fred
         try
         {
             InfoContact ic;
-            ic.set_handle(handle_)
+            ic.set_inline_view_filter(Database::ParamQuery(InfoContact::GetAlias::handle())(" = UPPER(").param_text(handle_)(")"))
             .set_history_query(false);
             if(lock_) ic.set_lock();
             contact_res = ic.exec(ctx,local_timestamp_pg_time_zone_name);
@@ -103,7 +103,7 @@ namespace Fred
         try
         {
             InfoContact ic;
-            ic.set_id(id_)
+            ic.set_inline_view_filter(Database::ParamQuery(InfoContact::GetAlias::id())(" = ").param_bigint(id_))
             .set_history_query(false);
             if(lock_) ic.set_lock();
             contact_res = ic.exec(ctx,local_timestamp_pg_time_zone_name);
@@ -167,7 +167,7 @@ namespace Fred
         try
         {
             InfoContact ic;
-            ic.set_roid(roid_)
+            ic.set_inline_view_filter(Database::ParamQuery(InfoContact::GetAlias::roid())(" = ").param_text(roid_))
             .set_history_query(true);
             if(lock_) ic.set_lock();
             contact_history_res = ic.exec(ctx,local_timestamp_pg_time_zone_name);
@@ -213,7 +213,7 @@ namespace Fred
         try
         {
             InfoContact ic;
-            ic.set_id(id_)
+            ic.set_inline_view_filter(Database::ParamQuery(InfoContact::GetAlias::id())(" = ").param_bigint(id_))
             .set_history_query(true);
             if(lock_) ic.set_lock();
             contact_history_res = ic.exec(ctx,local_timestamp_pg_time_zone_name);
@@ -259,7 +259,7 @@ namespace Fred
         try
         {
             InfoContact ic;
-            ic.set_historyid(historyid_)
+            ic.set_inline_view_filter(Database::ParamQuery(InfoContact::GetAlias::historyid())(" = ").param_bigint(historyid_))
             .set_history_query(true);
             if(lock_) ic.set_lock();
             contact_history_res = ic.exec(ctx,local_timestamp_pg_time_zone_name);
