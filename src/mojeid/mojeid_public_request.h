@@ -34,6 +34,8 @@ namespace MojeID {
 
 std::string contact_transfer_request_generate_passwords();
 
+std::string contact_identification_generate_passwords();
+
 namespace PublicRequest {
 
 class ContactConditionalIdentification:public AddIfaceMethod::Into
@@ -43,6 +45,30 @@ public:
     virtual ~ContactConditionalIdentification() { }
 private:
     ContactConditionalIdentification() { }
+    std::string get_public_request_type()const;
+    std::string generate_passwords()const;
+    friend class BasedOn;
+};
+
+class ContactIdentification:public AddIfaceMethod::Into
+    < ContactIdentification >::BasedOn< PublicRequestAuthTypeIface >
+{
+public:
+    virtual ~ContactIdentification() { }
+private:
+    ContactIdentification() { }
+    std::string get_public_request_type()const;
+    std::string generate_passwords()const;
+    friend class BasedOn;
+};
+
+class ContactReidentification:public AddIfaceMethod::Into
+    < ContactReidentification >::BasedOn< PublicRequestAuthTypeIface >
+{
+public:
+    virtual ~ContactReidentification() { }
+private:
+    ContactReidentification() { }
     std::string get_public_request_type()const;
     std::string generate_passwords()const;
     friend class BasedOn;

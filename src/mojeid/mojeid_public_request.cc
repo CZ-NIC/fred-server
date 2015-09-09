@@ -32,6 +32,12 @@ std::string get_demo_pin2()//22222222
     return pin2;
 }
 
+std::string get_demo_pin3()//33333333
+{
+    static const std::string pin3(Password::CHUNK_LENGTH, '3');
+    return pin3;
+}
+
 std::string get_demo_pin1_pin2()
 {
     static const std::string pin1_pin2 = get_demo_pin1() +
@@ -50,6 +56,11 @@ std::string generate_pin1()
 }
 
 std::string generate_pin2()
+{
+    return generate_pin();
+}
+
+std::string generate_pin3()
 {
     return generate_pin();
 }
@@ -81,6 +92,15 @@ std::string contact_transfer_request_generate_passwords()
                              : generate_pin1();
 }
 
+std::string contact_identification_generate_passwords()
+{
+    static const bool runs_in_demo_mode =
+        CfgArgs::instance()->get_handler_ptr_by_type< HandleMojeIDArgs >()->demo_mode;
+
+    return runs_in_demo_mode ? get_demo_pin3()
+                             : generate_pin3();
+}
+
 namespace PublicRequest {
 
 std::string ContactConditionalIdentification::get_public_request_type()const
@@ -95,6 +115,30 @@ std::string ContactConditionalIdentification::generate_passwords()const
     const std::string mtr_pass = contact_transfer_request_generate_passwords();
     /* merge transfer pin with cond. contact identification */
     return mtr_pass + cci_pass.substr(mtr_pass.length());
+}
+
+std::string ContactIdentification::get_public_request_type()const
+{
+    static const std::string type = "mojeid_contact_identification";
+    return type;
+}
+
+std::string ContactIdentification::generate_passwords()const
+{
+    const std::string ci_pass = contact_identification_generate_passwords();
+    return ci_pass;
+}
+
+std::string ContactReidentification::get_public_request_type()const
+{
+    static const std::string type = "mojeid_contact_reidentification";
+    return type;
+}
+
+std::string ContactReidentification::generate_passwords()const
+{
+    const std::string ci_pass = contact_identification_generate_passwords();
+    return ci_pass;
 }
 
 std::string ConditionallyIdentifiedContactTransfer::get_public_request_type()const
