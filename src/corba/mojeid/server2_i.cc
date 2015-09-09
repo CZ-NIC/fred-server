@@ -274,6 +274,22 @@ void Server_i::send_mojeid_card(
       ContactId contact_id,
       LogRequestId log_request_id)
 {
+    try {
+        impl_ptr_->send_mojeid_card(contact_id, log_request_id);
+    }
+    catch (const MojeID2Impl::MessageLimitExceeded &e) {
+        IDL::MESSAGE_LIMIT_EXCEEDED idl_error;
+        throw Corba::Conversion::into(idl_error).from(e);
+    }
+    catch (const MojeID2Impl::PublicRequestDoesntExist&) {
+        throw IDL::IDENTIFICATION_REQUEST_NOT_EXISTS();
+    }
+    catch (const MojeID2Impl::ObjectDoesntExist&) {
+        throw IDL::OBJECT_NOT_EXISTS();
+    }
+    catch (...) {
+        throw IDL::INTERNAL_SERVER_ERROR();
+    }
 }
 
 ContactId Server_i::get_contact_id(

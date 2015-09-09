@@ -1079,6 +1079,10 @@ void MojeID2Impl::send_new_pin3(
         LOGGER(PACKAGE).info(e.what());
         throw;
     }
+    catch(const Fred::Object::Get< Fred::Object::Type::CONTACT >::object_doesnt_exist &e) {
+        LOGGER(PACKAGE).info(e.what());
+        throw ObjectDoesntExist("object not found in database");
+    }
     catch(const MessageLimitExceeded &e) {
         LOGGER(PACKAGE).info(e.what());
         throw;
@@ -1109,6 +1113,48 @@ void MojeID2Impl::send_mojeid_card(
     ContactId _contact_id,
     LogRequestId _log_request_id)const
 {
+    try {
+        Fred::OperationContextCreator ctx;
+        typedef Fred::Object::State FOS;
+        typedef FOS::set<
+            FOS::MOJEID_CONTACT,
+            FOS::IDENTIFIED_CONTACT >::type RelatedStates;
+        typedef GetContact::States< RelatedStates >::Presence StatesPresence;
+        const StatesPresence states =
+            GetContact(_contact_id).states< RelatedStates >().presence(ctx);
+        if (!states.get< FOS::MOJEID_CONTACT >()) {
+            throw ObjectDoesntExist("isn't mojeID contact");
+        }
+        if (!states.get< FOS::IDENTIFIED_CONTACT >()) {
+//            throw IdentificationRequestDoesntExist("contact already identified");
+        }
+        const HandleMojeIDArgs *const server_conf_ptr = CfgArgs::instance()->
+                                                            get_handler_ptr_by_type< HandleMojeIDArgs >();
+        check_sent_letters_limit(ctx,
+                                 _contact_id,
+                                 server_conf_ptr->letter_limit_count,
+                                 server_conf_ptr->letter_limit_interval);
+    }
+    catch(const ObjectDoesntExist &e) {
+        LOGGER(PACKAGE).info(e.what());
+        throw;
+    }
+    catch(const Fred::Object::Get< Fred::Object::Type::CONTACT >::object_doesnt_exist &e) {
+        LOGGER(PACKAGE).info(e.what());
+        throw ObjectDoesntExist("object not found in database");
+    }
+    catch(const MessageLimitExceeded &e) {
+        LOGGER(PACKAGE).info(e.what());
+        throw;
+    }
+    catch (const std::exception &e) {
+        LOGGER(PACKAGE).error(e.what());
+        throw;
+    }
+    catch (...) {
+        LOGGER(PACKAGE).error("unknown exception");
+        throw;
+    }
 }
 
 namespace {
