@@ -33,6 +33,7 @@
 #include "src/fredlib/public_request/update_public_request.h"
 #include "src/fredlib/public_request/public_request_status.h"
 #include "src/fredlib/public_request/public_request_lock_guard.h"
+#include "src/fredlib/public_request/get_active_public_request.h"
 #include "src/fredlib/object_state/perform_object_state_request.h"
 #include "src/fredlib/object/get_states_presence.h"
 #include "src/fredlib/object_state/create_object_state_request_id.h"
@@ -133,6 +134,37 @@ void set_create_contact_arguments(
     if (!_contact.ssn.isnull()) {
         _arguments.set_ssn(_contact.ssn.get_value());
     }
+}
+
+void check_sent_letters_limit(Fred::OperationContext &_ctx,
+                              MojeID2Impl::ContactId _contact_id,
+                              unsigned _max_sent_letters,
+                              unsigned _watched_period_in_days)
+{
+    const Database::Result result = _ctx.get_conn().exec_params(
+        "WITH comm_type_letter AS (SELECT id FROM comm_type WHERE type='letter'),"
+             "message_types AS (SELECT id FROM message_type WHERE type IN ('mojeid_pin3',"
+                                                                          "'mojeid_card')),"
+             "send_states_ignore AS (SELECT id FROM enum_send_status WHERE status_name='no_processing') "
+        "SELECT (ma.moddate+($3::TEXT||'DAYS')::INTERVAL)::DATE "
+        "FROM message_archive ma "
+        "JOIN message_contact_history_map mc ON mc.message_archive_id=ma.id "
+        "WHERE ma.message_type_id IN (SELECT id FROM message_types) AND "
+              "ma.comm_type_id=(SELECT id FROM comm_type_letter) AND "
+              "ma.status_id NOT IN (SELECT id FROM send_states_ignore) AND "
+              "(NOW()-($3::TEXT||'DAYS')::INTERVAL)::DATE<ma.moddate::DATE AND "
+              "mc.contact_object_registry_id=$1::BIGINT "
+        "ORDER BY 1 DESC OFFSET ($2::INTEGER-1) LIMIT 1",
+        Database::query_param_list(_contact_id)               // used as $1::BIGINT
+                                  (_max_sent_letters)         // used as $2::INTEGER
+                                  (_watched_period_in_days)); // used as $3::TEXT
+    if (result.size() <= 0) {
+        return;
+    }
+    throw MojeID2Impl::MessageLimitExceeded(
+        boost::gregorian::from_simple_string(static_cast< std::string >(result[0][0])),
+        _max_sent_letters,
+        _watched_period_in_days);
 }
 
 typedef data_storage< std::string, MojeID2Impl::ContactId >::safe prepare_transaction_storage;
@@ -388,6 +420,37 @@ public:
             const Fred::PublicRequestAuthInfo pub_req_info_;
             const PubReqType::Value pub_req_type_;
         };
+
+        class send_new_pin3
+        {
+        public:
+            send_new_pin3(
+                Fred::OperationContext &_ctx,
+                MojeID2Impl::ContactId _contact_id,
+                const std::string &_registrar_handle,
+                MojeID2Impl::LogRequestId _log_request_id);
+            Fred::OperationContext& get_operation_context()const { return ctx_; }
+            const Fred::PublicRequestObjectLockGuard& get_locked_object()const { return locked_object_; }
+            const std::string& get_registrar_handle()const { return registrar_handle_; }
+            MojeID2Impl::LogRequestId get_log_request_id()const { return log_request_id_; }
+            Fred::ObjectId get_object_id()const { return contact_id_; }
+            typedef Fred::Object::State::set<
+                        Fred::Object::State::SERVER_TRANSFER_PROHIBITED,
+                        Fred::Object::State::SERVER_UPDATE_PROHIBITED,
+                        Fred::Object::State::SERVER_DELETE_PROHIBITED,
+                        Fred::Object::State::SERVER_BLOCKED,
+                        Fred::Object::State::MOJEID_CONTACT,
+                        Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT,
+                        Fred::Object::State::IDENTIFIED_CONTACT,
+                        Fred::Object::State::VALIDATED_CONTACT >::type RelatedStates;
+            typedef MojeID2Impl::GetContact::States< RelatedStates >::Presence StatesPresence;
+        private:
+            Fred::OperationContext &ctx_;
+            const MojeID2Impl::ContactId contact_id_;
+            const Fred::PublicRequestObjectLockGuard locked_object_;
+            const std::string registrar_handle_;
+            const MojeID2Impl::LogRequestId log_request_id_;
+        };
     };
 
     struct guard
@@ -418,6 +481,12 @@ public:
         {
             void operator()(const event::process_registration_request &_event,
                             const event::process_registration_request::StatesPresence &_states)const;
+        };
+
+        struct send_new_pin3
+        {
+            void operator()(const event::send_new_pin3 &_event,
+                            const event::send_new_pin3::StatesPresence &_states)const;
         };
     };
 
@@ -454,6 +523,12 @@ public:
             void operator()(const event::process_registration_request &_event,
                             const event::process_registration_request::StatesPresence &_states)const;
         };
+
+        struct send_new_pin3
+        {
+            void operator()(const event::send_new_pin3 &_event,
+                            const event::send_new_pin3::StatesPresence &_states)const;
+        };
     };
 
     typedef boost::mpl::set<
@@ -480,7 +555,11 @@ public:
         a_row< CIvm,  event::process_registration_request,
                      action::process_identified_contact_transfer,
                       guard::process_identified_contact_transfer,
-               CIvM >
+               CIvM >,
+        a_row< CivM,  event::send_new_pin3,
+                     action::send_new_pin3,
+                      guard::send_new_pin3,
+               CivM >
     >                                      transition_table;
     typedef civm                           empty_state_collection;
     typedef boost::mpl::list< C, I, V, M > list_of_checked_states;
@@ -975,6 +1054,63 @@ ContactStateData& MojeID2Impl::get_contact_state(
     }
 }
 
+void MojeID2Impl::send_new_pin3(
+    ContactId _contact_id,
+    LogRequestId _log_request_id)const
+{
+    try {
+        Fred::OperationContextCreator ctx;
+        typedef Fred::Object::State FOS;
+        typedef transitions::event::send_new_pin3 occurred;
+        const GetContact::States< occurred::RelatedStates >::Presence states =
+            GetContact(_contact_id).states< occurred::RelatedStates >().presence(ctx);
+        if (states.get< FOS::IDENTIFIED_CONTACT >()) {
+            // nothing to send if contact is identified
+            // IdentificationRequestDoesntExist isn't error in frontend
+            throw IdentificationRequestDoesntExist("contact already identified");
+        }
+        if (!states.get< FOS::MOJEID_CONTACT >()) {
+            throw ObjectDoesntExist("isn't mojeID contact");
+        }
+        const occurred event(ctx, _contact_id, mojeid_registrar_handle_, _log_request_id);
+        transitions::process(event, states);
+    }
+    catch(const ObjectDoesntExist &e) {
+        LOGGER(PACKAGE).info(e.what());
+        throw;
+    }
+    catch(const MessageLimitExceeded &e) {
+        LOGGER(PACKAGE).info(e.what());
+        throw;
+    }
+    catch(const Fred::PublicRequestObjectLockGuard::Exception &e) {
+        if (e.is_set_object_doesnt_exist()) {
+            LOGGER(PACKAGE).info(e.what());
+            throw ObjectDoesntExist("object not found in database");
+        }
+        LOGGER(PACKAGE).error(e.what());
+        throw;
+    }
+    catch(const IdentificationRequestDoesntExist &e) {
+        LOGGER(PACKAGE).info(e.what());
+        throw;
+    }
+    catch (const std::exception &e) {
+        LOGGER(PACKAGE).error(e.what());
+        throw;
+    }
+    catch (...) {
+        LOGGER(PACKAGE).error("unknown exception");
+        throw;
+    }
+}
+
+void MojeID2Impl::send_mojeid_card(
+    ContactId _contact_id,
+    LogRequestId _log_request_id)const
+{
+}
+
 namespace {
 
 transitions::event::transfer_contact_prepare::transfer_contact_prepare(
@@ -1261,6 +1397,96 @@ void transitions::action::process_identified_contact_transfer::operator()(
     }
     answer(_event.get_operation_context(), _event.get_locked_request(), "process_registration_request call",
            _event.get_log_request_id());
+}
+
+transitions::event::send_new_pin3::send_new_pin3(
+    Fred::OperationContext &_ctx,
+    MojeID2Impl::ContactId _contact_id,
+    const std::string &_registrar_handle,
+    MojeID2Impl::LogRequestId _log_request_id)
+:   ctx_(_ctx),
+    contact_id_(_contact_id),
+    locked_object_(_ctx, _contact_id),
+    registrar_handle_(_registrar_handle),
+    log_request_id_(_log_request_id)
+{
+}
+
+void transitions::guard::send_new_pin3::operator()(
+    const event::send_new_pin3 &_event,
+    const event::send_new_pin3::StatesPresence &_states)const
+{
+}
+
+void transitions::action::send_new_pin3::operator()(
+    const event::send_new_pin3 &_event,
+    const event::send_new_pin3::StatesPresence &_states)const
+{
+    bool has_identification_request = false;
+    try {
+        const Fred::PublicRequestTypeIface &type = Fred::MojeID::PublicRequest::ContactIdentification::iface();
+        Fred::GetActivePublicRequest get_active_public_request_op(type);
+        Fred::OperationContext &ctx = _event.get_operation_context();
+        const Fred::PublicRequestObjectLockGuard locked_object = _event.get_locked_object();
+        while (true) {
+            const Fred::PublicRequestId request_id = get_active_public_request_op.exec(ctx, locked_object);
+            Fred::UpdatePublicRequest update_public_request_op;
+            Fred::PublicRequestLockGuardById locked_request(ctx, request_id);
+            update_public_request_op.set_status(Fred::PublicRequest::Status::INVALIDATED);
+            update_public_request_op.set_reason("new pin3 generated");
+            update_public_request_op.set_registrar_id(ctx, _event.get_registrar_handle());
+            update_public_request_op.exec(ctx, locked_request);
+            has_identification_request = true;
+        }
+    }
+    catch (const Fred::GetActivePublicRequest::Exception &e) {
+        if (!e.is_set_no_request_found()) {
+            throw;
+        }
+    }
+
+    bool has_reidentification_request = false;
+    try {
+        const Fred::PublicRequestTypeIface &type = Fred::MojeID::PublicRequest::ContactReidentification::iface();
+        Fred::GetActivePublicRequest get_active_public_request_op(type);
+        Fred::OperationContext &ctx = _event.get_operation_context();
+        const Fred::PublicRequestObjectLockGuard locked_object = _event.get_locked_object();
+        while (true) {
+            const Fred::PublicRequestId request_id = get_active_public_request_op.exec(ctx, locked_object);
+            Fred::UpdatePublicRequest update_public_request_op;
+            Fred::PublicRequestLockGuardById locked_request(ctx, request_id);
+            update_public_request_op.set_status(Fred::PublicRequest::Status::INVALIDATED);
+            update_public_request_op.set_reason("new pin3 generated");
+            update_public_request_op.set_registrar_id(ctx, _event.get_registrar_handle());
+            update_public_request_op.exec(ctx, locked_request);
+            has_reidentification_request = true;
+        }
+    }
+    catch (const Fred::GetActivePublicRequest::Exception &e) {
+        if (!e.is_set_no_request_found()) {
+            throw;
+        }
+    }
+
+    if (!has_identification_request && !has_reidentification_request) {
+        throw MojeID2Impl::IdentificationRequestDoesntExist("no usable request found");
+    }
+
+    Fred::OperationContext &ctx = _event.get_operation_context();
+    const HandleMojeIDArgs *const server_conf_ptr = CfgArgs::instance()->get_handler_ptr_by_type< HandleMojeIDArgs >();
+    check_sent_letters_limit(ctx,
+                             _event.get_object_id(),
+                             server_conf_ptr->letter_limit_count,
+                             server_conf_ptr->letter_limit_interval);
+
+    const Fred::PublicRequestAuthTypeIface &type = has_reidentification_request
+                                                   ? Fred::MojeID::PublicRequest::ContactReidentification::iface()
+                                                   : Fred::MojeID::PublicRequest::ContactIdentification::iface();
+    Fred::CreatePublicRequestAuth create_public_request_op(type);
+    create_public_request_op.set_registrar_id(ctx, _event.get_registrar_handle());
+    create_public_request_op.set_reason("send_new_pin3 call");
+    const Fred::CreatePublicRequestAuth::Result result =
+        create_public_request_op.exec(ctx, _event.get_locked_object(), _event.get_log_request_id());
 }
 
 }//namespace Registry::MojeID::{anonymous}

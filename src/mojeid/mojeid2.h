@@ -31,6 +31,7 @@
 #include <stdexcept>
 
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time/gregorian/gregorian.hpp>
 
 namespace Registry {
 namespace MojeID {
@@ -206,6 +207,29 @@ public:
         ObjectDoesntExist(const std::string &_msg = ""):std::runtime_error(_msg) { }
     };
 
+    class IdentificationRequestDoesntExist:public std::runtime_error
+    {
+    public:
+        IdentificationRequestDoesntExist(const std::string &_msg):std::runtime_error(_msg) { }
+    };
+
+    class MessageLimitExceeded:public std::runtime_error
+    {
+    public:
+        typedef boost::gregorian::date Date;
+        MessageLimitExceeded(const Date &_limit_expire_date,
+                             unsigned _limit_count,
+                             unsigned _limit_days)
+        :   std::runtime_error("no letter can be sent"),
+            limit_expire_date(_limit_expire_date),
+            limit_count(_limit_count),
+            limit_days(_limit_days)
+        { }
+        const Date limit_expire_date;///< When a new message can be sent
+        const unsigned limit_count;  ///< At most a @ref limit_count messages can be sent in a @ref limit_days days
+        const unsigned limit_days;   ///< @see limit_count
+    };
+
     ContactId process_registration_request(
         const std::string &_ident_request_id,
         const std::string &_password,
@@ -223,6 +247,14 @@ public:
     ContactStateData& get_contact_state(
         ContactId _contact_id,
         ContactStateData &_result)const;
+
+    void send_new_pin3(
+        ContactId _contact_id,
+        LogRequestId _log_request_id)const;
+
+    void send_mojeid_card(
+        ContactId _contact_id,
+        LogRequestId _log_request_id)const;
 private:
     const std::string server_name_;
     const std::string mojeid_registrar_handle_;
