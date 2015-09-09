@@ -47,6 +47,18 @@ UpdatePublicRequest& UpdatePublicRequest::set_registrar_id(const Nullable< Regis
     return *this;
 }
 
+UpdatePublicRequest& UpdatePublicRequest::set_registrar_id(OperationContext &_ctx,
+                                                           const std::string &_registrar_handle)
+{
+    const Database::Result res = _ctx.get_conn().exec_params(
+        "SELECT id FROM registrar WHERE handle=$1::TEXT",
+        Database::query_param_list(_registrar_handle));
+    if (0 < res.size()) {
+        return this->set_registrar_id(static_cast< RegistrarId >(res[0][0]));
+    }
+    return this->set_registrar_id(Nullable< RegistrarId >());
+}
+
 namespace {
 
 ::size_t stop_letter_sending(OperationContext &_ctx,

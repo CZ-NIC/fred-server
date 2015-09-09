@@ -109,6 +109,13 @@ public:
     UpdatePublicRequest& set_registrar_id(const Nullable< RegistrarId > _id);
 
     /**
+     * Sets id of registrar.
+     * @param _id registrar id
+     * @return operation instance reference to allow method chaining
+     */
+    UpdatePublicRequest& set_registrar_id(OperationContext &_ctx, const std::string &_registrar_handle);
+
+    /**
      * Result of update operation.
      */
     struct Result
