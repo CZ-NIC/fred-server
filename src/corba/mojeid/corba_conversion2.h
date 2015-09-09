@@ -203,12 +203,15 @@ struct into_from< Registry::MojeID::ContactStateInfo, Registry::MojeID::ContactS
     dst_value_ref operator()(dst_value_ref dst, src_value src)const;
 };
 
-/*template < >
-struct into_from< Registry::MojeID::ContactStateInfoList, Registry::MojeID::ContactStateDataList >
-: into_from_base< Registry::MojeID::ContactStateInfoList, Registry::MojeID::ContactStateDataList >
+typedef Registry::MojeID::Server::MESSAGE_LIMIT_EXCEEDED IDL_MESSAGE_LIMIT_EXCEEDED;
+typedef Registry::MojeID::MojeID2Impl::MessageLimitExceeded IMPL_MESSAGE_LIMIT_EXCEEDED;
+
+template < >
+struct into_from< IDL_MESSAGE_LIMIT_EXCEEDED, IMPL_MESSAGE_LIMIT_EXCEEDED >
+: into_from_base< IDL_MESSAGE_LIMIT_EXCEEDED, IMPL_MESSAGE_LIMIT_EXCEEDED >
 {
     dst_value_ref operator()(dst_value_ref dst, src_value src)const;
-};*/
+};
 
 }//Corba::Conversion
 }//Corba

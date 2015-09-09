@@ -562,5 +562,16 @@ into_from< Registry::MojeID::ContactStateInfo, Registry::MojeID::ContactStateDat
     return dst;
 }
 
+into_from< IDL_MESSAGE_LIMIT_EXCEEDED, IMPL_MESSAGE_LIMIT_EXCEEDED >::dst_value_ref
+into_from< IDL_MESSAGE_LIMIT_EXCEEDED, IMPL_MESSAGE_LIMIT_EXCEEDED >::operator()(
+    dst_value_ref dst,
+    src_value src)const
+{
+    into(dst.limit_expire_date).from(src.limit_expire_date);
+    into(dst.limit_count).from(src.limit_count);
+    into(dst.limit_days).from(src.limit_days);
+    return dst;
+}
+
 }//Corba::Conversion
 }//Corba
