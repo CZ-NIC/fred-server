@@ -110,6 +110,11 @@ public:
         Fred::InfoContactData &_contact,
         std::string &_ident)const;
 
+    void update_contact_prepare(
+        const Fred::InfoContactData &_new_data,
+        const std::string &_trans_id,
+        LogRequestId _log_request_id)const;
+
     void commit_prepared_transaction(const std::string &_trans_id)const;
 
     void rollback_prepared_transaction(const std::string &_trans_id)const;

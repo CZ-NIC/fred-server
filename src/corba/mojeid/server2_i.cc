@@ -110,10 +110,19 @@ Registry::MojeID::InfoContact* Server_i::transfer_contact_prepare(
 }//transfer_contact_prepare
 
 void Server_i::update_contact_prepare(
-        const UpdateContact &_contact,
+        const UpdateContact &_new_data,
         const char *_trans_id,
         LogRequestId _log_request_id)
 {
+    try {
+        Fred::InfoContactData new_data;
+        Corba::Conversion::from(_new_data).into(new_data);
+        impl_ptr_->update_contact_prepare(new_data, _trans_id, _log_request_id);
+        return;
+    }
+    catch (...) {
+        throw IDL::INTERNAL_SERVER_ERROR();
+    }
 }//update_contact_prepared
 
 ContactId Server_i::process_registration_request(

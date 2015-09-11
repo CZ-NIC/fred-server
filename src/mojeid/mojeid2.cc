@@ -38,6 +38,7 @@
 #include "src/fredlib/object/get_states_presence.h"
 #include "src/fredlib/object_state/create_object_state_request_id.h"
 #include "src/fredlib/object_state/cancel_object_state_request_id.h"
+#include "src/corba/mojeid/corba_conversion2.h"
 #include "util/random.h"
 #include "util/log/context.h"
 #include "util/cfg/handle_mojeid_args.h"
@@ -165,6 +166,264 @@ void check_sent_letters_limit(Fred::OperationContext &_ctx,
         boost::gregorian::from_simple_string(static_cast< std::string >(result[0][0])),
         _max_sent_letters,
         _watched_period_in_days);
+}
+
+template < typename T >
+bool differs(const Nullable< T > &a, const Nullable< T > &b)
+{
+    return a.get_value_or_default() != b.get_value_or_default();
+}
+
+template < typename T >
+bool differs(const Optional< T > &a, const Optional< T > &b)
+{
+    return (a.isset() != b.isset()) ||
+           (a.isset() && (a.get_value() != b.get_value()));
+}
+
+template < typename T >
+bool differs(const T &a, const T &b)
+{
+    return a != b;
+}
+
+bool validated_data_changed(const Fred::InfoContactData &_c1, const Fred::InfoContactData &_c2)
+{
+    if (differs(_c1.name, _c2.name)) {
+        return true;
+    }
+
+    if (differs(_c1.organization, _c2.organization)) {
+        return true;
+    }
+
+    const Fred::InfoContactData::Address a1 = _c1.get_permanent_address();
+    const Fred::InfoContactData::Address a2 = _c2.get_permanent_address();
+    if (differs(a1.street1,         a2.street1)         ||
+        differs(a1.street2,         a2.street2)         ||
+        differs(a1.street3,         a2.street3)         ||
+        differs(a1.city,            a2.city)            ||
+        differs(a1.stateorprovince, a2.stateorprovince) ||
+        differs(a1.country,         a2.country)         ||
+        differs(a1.postalcode,      a2.postalcode)) {
+        return true;
+    }
+
+    if (differs(_c1.ssntype, _c2.ssntype)) {
+        return true;
+    }
+
+    if (differs(_c1.ssn, _c2.ssn)) {
+        if (_c1.ssntype.get_value_or_default() != "BIRTHDAY") {
+            return true;
+        }
+        const Nullable< boost::gregorian::date > bd1 = Corba::Conversion::convert_as_birthdate(_c1.ssn);
+        const Nullable< boost::gregorian::date > bd2 = Corba::Conversion::convert_as_birthdate(_c2.ssn);
+        if (differs(bd1, bd2)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+class MessageType
+{
+public:
+    enum Value
+    {
+        DOMAIN_EXPIRATION,
+        MOJEID_PIN2,
+        MOJEID_PIN3,
+        MOJEID_SMS_CHANGE,
+        MONITORING,
+        CONTACT_VERIFICATION_PIN2,
+        CONTACT_VERIFICATION_PIN3,
+        MOJEID_PIN3_REMINDER,
+        CONTACT_CHECK_NOTICE,
+        CONTACT_CHECK_THANK_YOU,
+        MOJEID_CARD
+    };
+    MessageType(Value _value):value_(_value) { }
+    struct bad_conversion:std::runtime_error
+    {
+        bad_conversion(const std::string &_msg):std::runtime_error(_msg) { }
+    };
+    template < typename T >
+    T into()const { T result; return this->into(result); }
+    std::string& into(std::string &_value)const
+    {
+        typedef std::map< Value, std::string > ValueToStr;
+        static ValueToStr value_to_str;
+        if (value_to_str.empty()) {
+            value_to_str[DOMAIN_EXPIRATION]         = "domain_expiration";
+            value_to_str[MOJEID_PIN2]               = "mojeid_pin2";
+            value_to_str[MOJEID_PIN3]               = "mojeid_pin3";
+            value_to_str[MOJEID_SMS_CHANGE]         = "mojeid_sms_change";
+            value_to_str[MONITORING]                = "monitoring";
+            value_to_str[CONTACT_VERIFICATION_PIN2] = "contact_verification_pin2";
+            value_to_str[CONTACT_VERIFICATION_PIN3] = "contact_verification_pin3";
+            value_to_str[MOJEID_PIN3_REMINDER]      = "mojeid_pin3_reminder";
+            value_to_str[CONTACT_CHECK_NOTICE]      = "contact_check_notice";
+            value_to_str[CONTACT_CHECK_THANK_YOU]   = "contact_check_thank_you";
+            value_to_str[MOJEID_CARD]               = "mojeid_card";
+        }
+        ValueToStr::const_iterator item_ptr = value_to_str.find(value_);
+        if (item_ptr != value_to_str.end()) {
+            return _value = item_ptr->second;
+        }
+        throw bad_conversion("invalid value");
+    }
+private:
+    const Value value_;
+};
+
+class CommType
+{
+public:
+    enum Value
+    {
+        EMAIL,
+        LETTER,
+        SMS,
+        REGISTERED_LETTER
+    };
+    CommType(Value _value):value_(_value) { }
+    struct bad_conversion:std::runtime_error
+    {
+        bad_conversion(const std::string &_msg):std::runtime_error(_msg) { }
+    };
+    template < typename T >
+    T into()const { T result; return this->into(result); }
+    std::string& into(std::string &_value)const
+    {
+        typedef std::map< Value, std::string > ValueToStr;
+        static ValueToStr value_to_str;
+        if (value_to_str.empty()) {
+            value_to_str[EMAIL]             = "email";
+            value_to_str[LETTER]            = "letter";
+            value_to_str[SMS]               = "sms";
+            value_to_str[REGISTERED_LETTER] = "registered_letter";
+        }
+        ValueToStr::const_iterator item_ptr = value_to_str.find(value_);
+        if (item_ptr != value_to_str.end()) {
+            return _value = item_ptr->second;
+        }
+        throw bad_conversion("invalid value");
+    }
+private:
+    const Value value_;
+};
+
+class SendStatus
+{
+public:
+    enum Value
+    {
+        READY,
+        WAITING_CONFIRMATION,
+        NO_PROCESSING,
+        SEND_FAILED,
+        SENT,
+        BEING_SENT,
+        UNDELIVERED
+    };
+    SendStatus(Value _value):value_(_value) { }
+    struct bad_conversion:std::runtime_error
+    {
+        bad_conversion(const std::string &_msg):std::runtime_error(_msg) { }
+    };
+    template < typename T >
+    T into()const { T result; return this->into(result); }
+    std::string& into(std::string &_value)const
+    {
+        typedef std::map< Value, std::string > ValueToStr;
+        static ValueToStr value_to_str;
+        if (value_to_str.empty()) {
+            value_to_str[READY]                = "ready";
+            value_to_str[WAITING_CONFIRMATION] = "waiting_confirmation";
+            value_to_str[NO_PROCESSING]        = "no_processing";
+            value_to_str[SEND_FAILED]          = "send_failed";
+            value_to_str[SENT]                 = "sent";
+            value_to_str[BEING_SENT]           = "being_sent";
+            value_to_str[UNDELIVERED]          = "undelivered";
+        }
+        ValueToStr::const_iterator item_ptr = value_to_str.find(value_);
+        if (item_ptr != value_to_str.end()) {
+            return _value = item_ptr->second;
+        }
+        throw bad_conversion("invalid value");
+    }
+private:
+    const Value value_;
+};
+
+template < MessageType::Value MT, CommType::Value CT >
+::size_t cancel_message_sending(Fred::OperationContext &_ctx, MojeID2Impl::ContactId _contact_id)
+{
+    const Database::Result result = _ctx.get_conn().exec_params(
+        "UPDATE message_archive ma "
+        "SET moddate=NOW(),"
+            "status_id=(SELECT id FROM enum_send_status WHERE status_name=$4::TEXT) "
+        "FROM message_contact_history_map mchm "
+        "JOIN letter_archive la ON la.id=mchm.message_archive_id "
+        "WHERE mchm.message_archive_id=ma.id AND "
+              "mchm.contact_object_registry_id=$1::BIGINT AND "
+              "ma.status_id IN (SELECT id FROM enum_send_status "
+                               "WHERE status_name IN ($5::TEXT,$6::TEXT)) AND "
+              "ma.comm_type_id=(SELECT id FROM comm_type WHERE type=$2::TEXT) AND "
+              "ma.message_type_id=(SELECT id FROM message_type WHERE type=$3::TEXT) "
+        "RETURNING ma.id",
+        Database::query_param_list(_contact_id)                                                //$1::BIGINT
+                                  (CommType(CT).into< std::string >())                         //$2::TEXT
+                                  (MessageType(MT).into< std::string >())                      //$3::TEXT
+                                  (SendStatus(SendStatus::NO_PROCESSING).into< std::string >())//$4::TEXT
+                                  (SendStatus(SendStatus::SEND_FAILED).into< std::string >())  //$5::TEXT
+                                  (SendStatus(SendStatus::READY).into< std::string >()));      //$6::TEXT
+    return result.size();
+}
+
+bool identified_data_changed(const Fred::InfoContactData &_c1, const Fred::InfoContactData &_c2)
+{
+    if (differs(_c1.name, _c2.name)) {
+        return true;
+    }
+
+    const Fred::InfoContactData::Address a1 = _c1.get_address< Fred::ContactAddressType::MAILING >();
+    const Fred::InfoContactData::Address a2 = _c2.get_address< Fred::ContactAddressType::MAILING >();
+    if (differs(a1.name, a2.name)) {
+        const std::string name1 = a1.name.isset() ? a1.name.get_value() : _c1.name.get_value_or_default();
+        const std::string name2 = a2.name.isset() ? a2.name.get_value() : _c2.name.get_value_or_default();
+        if (differs(name1, name2)) {
+            return true;
+        }
+    }
+    if (differs(a1.street1,         a2.street1)         ||
+        differs(a1.street2,         a2.street2)         ||
+        differs(a1.street3,         a2.street3)         ||
+        differs(a1.city,            a2.city)            ||
+        differs(a1.stateorprovince, a2.stateorprovince) ||
+        differs(a1.country,         a2.country)         ||
+        differs(a1.postalcode,      a2.postalcode)) {
+        return true;
+    }
+
+    if (differs(_c1.ssntype, _c2.ssntype)) {
+        return true;
+    }
+
+    if (differs(_c1.ssn, _c2.ssn)) {
+        if (_c1.ssntype.get_value_or_default() != "BIRTHDAY") {
+            return true;
+        }
+        const Nullable< boost::gregorian::date > bd1 = Corba::Conversion::convert_as_birthdate(_c1.ssn);
+        const Nullable< boost::gregorian::date > bd2 = Corba::Conversion::convert_as_birthdate(_c2.ssn);
+        if (differs(bd1, bd2)) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 typedef data_storage< std::string, MojeID2Impl::ContactId >::safe prepare_transaction_storage;
@@ -710,6 +969,74 @@ Fred::InfoContactData& MojeID2Impl::transfer_contact_prepare(
     }
 }
 
+void MojeID2Impl::update_contact_prepare(
+        const Fred::InfoContactData &_new_data,
+        const std::string &_trans_id,
+        LogRequestId _log_request_id)const
+{
+    LOGGING_CONTEXT(log_ctx, *this);
+
+    try {
+        Fred::OperationContextTwoPhaseCommitCreator ctx(_trans_id);
+        typedef Fred::Object::State FOS;
+        typedef FOS::set<
+            FOS::SERVER_TRANSFER_PROHIBITED,
+            FOS::SERVER_UPDATE_PROHIBITED,
+            FOS::SERVER_DELETE_PROHIBITED,
+            FOS::SERVER_BLOCKED,
+            FOS::MOJEID_CONTACT,
+            FOS::CONDITIONALLY_IDENTIFIED_CONTACT,
+            FOS::IDENTIFIED_CONTACT,
+            FOS::VALIDATED_CONTACT >::type RelatedStates;
+        typedef GetContact::States< RelatedStates >::Presence StatesPresence;
+        const StatesPresence states =
+            GetContact(_new_data.id).states< RelatedStates >().presence(ctx);
+        if (!states.get< FOS::MOJEID_CONTACT >()) {
+            throw GetContact::object_doesnt_exist();
+        }
+        const Fred::InfoContactData current_data = Fred::InfoContactById(_new_data.id).exec(ctx).info_contact_data;
+        Fred::StatusList to_cancel;
+        bool drop_validation = false;
+        if (states.get< FOS::VALIDATED_CONTACT >()) {
+            drop_validation = validated_data_changed(current_data, _new_data);
+            if (drop_validation) {
+                to_cancel.insert(FOS(FOS::VALIDATED_CONTACT).into< std::string >());
+            }
+        }
+        const bool drop_identification = identified_data_changed(current_data, _new_data);
+        if (drop_identification || differs(current_data.email, _new_data.email)) {
+            cancel_message_sending< MessageType::MOJEID_CARD, CommType::LETTER >(ctx, _new_data.id);
+        }
+        if (drop_identification) {
+            if (states.get< FOS::IDENTIFIED_CONTACT >()) {
+                to_cancel.insert(FOS(FOS::IDENTIFIED_CONTACT).into< std::string >());
+                Fred::CancelObjectStateRequestId(_new_data.id, to_cancel).exec(ctx);
+            }
+            else {
+                
+            }
+        }
+        else if (!to_cancel.empty()) {
+            Fred::CancelObjectStateRequestId(_new_data.id, to_cancel).exec(ctx);
+        }
+        const Fred::PublicRequestObjectLockGuard locked_contact_(ctx, _new_data.id);
+        ctx.commit_transaction();
+        return;
+    }
+    catch (const GetContact::object_doesnt_exist &e) {
+        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
+        throw;
+    }
+    catch (const std::exception &e) {
+        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
+        throw;
+    }
+    catch (...) {
+        LOGGER(PACKAGE).error("request failed (unknown error)");
+        throw;
+    }
+}
+
 namespace {
 
 enum { INVALID_LOG_REQUEST_ID = 0 };
@@ -1062,7 +1389,7 @@ void MojeID2Impl::send_new_pin3(
         Fred::OperationContextCreator ctx;
         typedef Fred::Object::State FOS;
         typedef transitions::event::send_new_pin3 occurred;
-        const GetContact::States< occurred::RelatedStates >::Presence states =
+        const occurred::StatesPresence states =
             GetContact(_contact_id).states< occurred::RelatedStates >().presence(ctx);
         if (states.get< FOS::IDENTIFIED_CONTACT >()) {
             // nothing to send if contact is identified
