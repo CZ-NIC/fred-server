@@ -63,7 +63,12 @@ namespace Fred
         {
             InfoDomain id;
             id.set_inline_view_filter(Database::ParamQuery(InfoDomain::GetAlias::fqdn())(" = LOWER(").param_text(fqdn_)(")")).set_history_query(false);
-            if(lock_) id.set_lock();
+
+            if(lock_)
+            {
+                id.set_lock();
+            }
+
             domain_res = id.exec(ctx,local_timestamp_pg_time_zone_name);
 
             if (domain_res.empty())
@@ -113,7 +118,12 @@ namespace Fred
         {
             InfoDomain id;
             id.set_inline_view_filter(Database::ParamQuery(InfoDomain::GetAlias::id())(" = ").param_bigint(id_)).set_history_query(false);
-            if(lock_) id.set_lock();
+
+            if(lock_)
+            {
+                id.set_lock();
+            }
+
             domain_res = id.exec(ctx,local_timestamp_pg_time_zone_name);
 
             if (domain_res.empty())
@@ -176,7 +186,12 @@ namespace Fred
         {
             InfoDomain id;
             id.set_inline_view_filter(Database::ParamQuery(InfoDomain::GetAlias::roid())(" = ").param_text(roid_)).set_history_query(true);
-            if(lock_) id.set_lock();
+
+            if(lock_)
+            {
+                id.set_lock();
+            }
+
             domain_res = id.exec(ctx,local_timestamp_pg_time_zone_name);
         }
         catch(ExceptionStack& ex)
@@ -216,7 +231,12 @@ namespace Fred
         {
             InfoDomain id;
             id.set_inline_view_filter(Database::ParamQuery(InfoDomain::GetAlias::id())(" = ").param_bigint(id_)).set_history_query(true);
-            if(lock_) id.set_lock();
+
+            if(lock_)
+            {
+                id.set_lock();
+            }
+
             domain_history_res = id.exec(ctx,local_timestamp_pg_time_zone_name);
         }
         catch(ExceptionStack& ex)
@@ -256,7 +276,12 @@ namespace Fred
             InfoDomain id;
             id.set_inline_view_filter(Database::ParamQuery(InfoDomain::GetAlias::historyid())(" = ").param_bigint(historyid_))
             .set_history_query(true);
-            if(lock_) id.set_lock();
+
+            if(lock_)
+            {
+                id.set_lock();
+            }
+
             domain_history_res = id.exec(ctx,local_timestamp_pg_time_zone_name);
 
             if (domain_history_res.empty())
@@ -356,7 +381,12 @@ namespace Fred
             InfoDomain id;
             id.set_inline_view_filter(domain_id_inline_view)
                 .set_history_query(false);
-            if(lock_) id.set_lock();
+
+            if(lock_)
+            {
+                id.set_lock();
+            }
+
             domain_res = id.exec(ctx,local_timestamp_pg_time_zone_name);
         }
         catch(ExceptionStack& ex)
@@ -447,7 +477,11 @@ namespace Fred
             InfoDomain id;
             id.set_inline_view_filter(domain_id_inline_view)
                 .set_history_query(false);
-            if(lock_) id.set_lock();
+            if(lock_)
+            {
+                id.set_lock();
+            }
+
             domain_res = id.exec(ctx,local_timestamp_pg_time_zone_name);
         }
         catch(ExceptionStack& ex)
@@ -534,7 +568,12 @@ namespace Fred
             InfoDomain id;
             id.set_inline_view_filter(domain_id_inline_view)
                 .set_history_query(false);
-            if(lock_) id.set_lock();
+
+            if(lock_)
+            {
+                id.set_lock();
+            }
+
             domain_res = id.exec(ctx,local_timestamp_pg_time_zone_name);
         }
         catch(ExceptionStack& ex)
@@ -619,7 +658,12 @@ namespace Fred
             InfoDomain id;
             id.set_inline_view_filter(domain_id_inline_view)
             .set_history_query(false);
-            if(lock_) id.set_lock();
+
+            if(lock_)
+            {
+                id.set_lock();
+            }
+
             domain_res = id.exec(ctx,local_timestamp_pg_time_zone_name);
         }
         catch(ExceptionStack& ex)

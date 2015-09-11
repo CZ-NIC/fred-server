@@ -59,7 +59,12 @@ namespace Fred
         {
             InfoKeyset ik;
             ik.set_inline_view_filter(Database::ParamQuery(InfoKeyset::GetAlias::handle())(" = UPPER(").param_text(handle_)(")")).set_history_query(false);
-            if(lock_) ik.set_lock();
+
+            if(lock_)
+            {
+                ik.set_lock();
+            }
+
             keyset_res = ik.exec(ctx,local_timestamp_pg_time_zone_name);
 
             if (keyset_res.empty())
@@ -109,7 +114,12 @@ namespace Fred
         {
             InfoKeyset ik;
             ik.set_inline_view_filter(Database::ParamQuery(InfoKeyset::GetAlias::id())(" = ").param_bigint(id_)).set_history_query(false);
-            if(lock_) ik.set_lock();
+
+            if(lock_)
+            {
+                ik.set_lock();
+            }
+
             keyset_res = ik.exec(ctx,local_timestamp_pg_time_zone_name);
 
             if (keyset_res.empty())
@@ -172,7 +182,12 @@ namespace Fred
         {
             InfoKeyset ik;
             ik.set_inline_view_filter(Database::ParamQuery(InfoKeyset::GetAlias::roid())(" = ").param_text(roid_)).set_history_query(true);
-            if(lock_) ik.set_lock();
+
+            if(lock_)
+            {
+                ik.set_lock();
+            }
+
             keyset_res = ik.exec(ctx,local_timestamp_pg_time_zone_name);
         }
         catch(ExceptionStack& ex)
@@ -213,7 +228,12 @@ namespace Fred
         {
             InfoKeyset ik;
             ik.set_inline_view_filter(Database::ParamQuery(InfoKeyset::GetAlias::id())(" = ").param_bigint(id_)).set_history_query(true);
-            if(lock_) ik.set_lock();
+
+            if(lock_)
+            {
+                ik.set_lock();
+            }
+
             keyset_history_res = ik.exec(ctx,local_timestamp_pg_time_zone_name);
         }
         catch(ExceptionStack& ex)
@@ -252,7 +272,12 @@ namespace Fred
         {
             InfoKeyset ik;
             ik.set_inline_view_filter(Database::ParamQuery(InfoKeyset::GetAlias::historyid())(" = ").param_bigint(historyid_)).set_history_query(true);
-            if(lock_) ik.set_lock();
+
+            if(lock_)
+            {
+                ik.set_lock();
+            }
+
             keyset_history_res = ik.exec(ctx,local_timestamp_pg_time_zone_name);
 
             if (keyset_history_res.empty())
@@ -334,7 +359,12 @@ namespace Fred
             InfoKeyset ik;
             ik.set_cte_id_filter(cte_id_filter_query)
                 .set_history_query(false);
-            if(lock_) ik.set_lock();
+
+            if(lock_)
+            {
+                ik.set_lock();
+            }
+
             keyset_res = ik.exec(ctx,local_timestamp_pg_time_zone_name);
         }
         catch(ExceptionStack& ex)

@@ -54,7 +54,12 @@ namespace Fred
             InfoContact ic;
             ic.set_inline_view_filter(Database::ParamQuery(InfoContact::GetAlias::handle())(" = UPPER(").param_text(handle_)(")"))
             .set_history_query(false);
-            if(lock_) ic.set_lock();
+
+            if(lock_)
+            {
+                ic.set_lock();
+            }
+
             contact_res = ic.exec(ctx,local_timestamp_pg_time_zone_name);
 
             if (contact_res.empty())
@@ -105,7 +110,12 @@ namespace Fred
             InfoContact ic;
             ic.set_inline_view_filter(Database::ParamQuery(InfoContact::GetAlias::id())(" = ").param_bigint(id_))
             .set_history_query(false);
-            if(lock_) ic.set_lock();
+
+            if(lock_)
+            {
+                ic.set_lock();
+            }
+
             contact_res = ic.exec(ctx,local_timestamp_pg_time_zone_name);
 
             if (contact_res.empty())
@@ -169,7 +179,12 @@ namespace Fred
             InfoContact ic;
             ic.set_inline_view_filter(Database::ParamQuery(InfoContact::GetAlias::roid())(" = ").param_text(roid_))
             .set_history_query(true);
-            if(lock_) ic.set_lock();
+
+            if(lock_)
+            {
+                ic.set_lock();
+            }
+
             contact_history_res = ic.exec(ctx,local_timestamp_pg_time_zone_name);
 
             if (contact_history_res.empty())
@@ -215,7 +230,12 @@ namespace Fred
             InfoContact ic;
             ic.set_inline_view_filter(Database::ParamQuery(InfoContact::GetAlias::id())(" = ").param_bigint(id_))
             .set_history_query(true);
-            if(lock_) ic.set_lock();
+
+            if(lock_)
+            {
+                ic.set_lock();
+            }
+
             contact_history_res = ic.exec(ctx,local_timestamp_pg_time_zone_name);
 
             if (contact_history_res.empty())
@@ -261,7 +281,12 @@ namespace Fred
             InfoContact ic;
             ic.set_inline_view_filter(Database::ParamQuery(InfoContact::GetAlias::historyid())(" = ").param_bigint(historyid_))
             .set_history_query(true);
-            if(lock_) ic.set_lock();
+
+            if(lock_)
+            {
+                ic.set_lock();
+            }
+
             contact_history_res = ic.exec(ctx,local_timestamp_pg_time_zone_name);
 
             if (contact_history_res.empty())
