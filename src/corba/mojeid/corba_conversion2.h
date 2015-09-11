@@ -37,6 +37,8 @@ namespace Conversion {
 
 boost::gregorian::date& convert(const std::string &from, boost::gregorian::date &into);
 
+Nullable< boost::gregorian::date > convert_as_birthdate(const Nullable< std::string > &_birth_date);
+
 template < >
 struct from_into< Registry::MojeID::Date, std::string >
 : from_into_base< Registry::MojeID::Date, std::string >
@@ -124,6 +126,13 @@ struct from_into< Registry::MojeID::ShippingAddress, Fred::ContactAddress >
 template < >
 struct from_into< Registry::MojeID::CreateContact, Fred::InfoContactData >
 : from_into_base< Registry::MojeID::CreateContact, Fred::InfoContactData >
+{
+    dst_value_ref operator()(src_value src, dst_value_ref dst)const;
+};
+
+template < >
+struct from_into< Registry::MojeID::UpdateContact, Fred::InfoContactData >
+: from_into_base< Registry::MojeID::UpdateContact, Fred::InfoContactData >
 {
     dst_value_ref operator()(src_value src, dst_value_ref dst)const;
 };

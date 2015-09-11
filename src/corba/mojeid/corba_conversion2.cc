@@ -84,7 +84,8 @@ namespace {
 
 struct set_ssn
 {
-    set_ssn(const Nullable< std::string > &_ssn, const char *_ssn_type, Fred::InfoContactData &_out)
+    template < typename T >
+    set_ssn(const Nullable< T > &_ssn, const char *_ssn_type, Fred::InfoContactData &_out)
     {
         this->operator()(_ssn, _ssn_type, _out);
     }
@@ -96,6 +97,18 @@ struct set_ssn
         if (_out.ssntype.isnull() && !_ssn.isnull()) {
             _out.ssntype = _ssn_type;
             _out.ssn     = _ssn.get_value();
+        }
+        return *this;
+    }
+    typedef boost::gregorian::date Date;
+    const set_ssn& operator()(
+        const Nullable< Date > &_ssn,
+        const char *_ssn_type,
+        Fred::InfoContactData &_out)const
+    {
+        if (_out.ssntype.isnull() && !_ssn.isnull()) {
+            _out.ssntype = _ssn_type;
+            _out.ssn     = boost::gregorian::to_iso_extended_string(_ssn.get_value());
         }
         return *this;
     }
@@ -253,17 +266,56 @@ from_into< Registry::MojeID::CreateContact, Fred::InfoContactData >::operator()(
 
     dst.name = first_name + " " + last_name;
     const bool contact_is_organization = !dst.organization.isnull();
-    if (contact_is_organization) {
-        set_ssn(vat_id_num, "ICO",      dst)
-               ;//(birth_date, "BIRTHDAY", dst);
-    }
-    else {
-        set_ssn//(birth_date, "BIRTHDAY", dst)
-               (vat_id_num, "ICO",      dst);
-    }
-    set_ssn(id_card_num,  "OP",   dst)
-           (passport_num, "PASS", dst)
-           (ssn_id_num,   "MPSV", dst);
+    (contact_is_organization
+     ? set_ssn(vat_id_num,   "ICO",  dst) : set_ssn(birth_date, "BIRTHDAY", dst))
+              (id_card_num,  "OP",   dst)
+              (passport_num, "PASS", dst)
+              (ssn_id_num,   "MPSV", dst);
+    return dst;
+}
+
+from_into< Registry::MojeID::UpdateContact, Fred::InfoContactData >::dst_value_ref
+from_into< Registry::MojeID::UpdateContact, Fred::InfoContactData >::operator()(src_value src, dst_value_ref dst)const
+{
+    std::string                        first_name;
+    std::string                        last_name;
+    Nullable< boost::gregorian::date > birth_date;
+    Nullable< std::string >            id_card_num;
+    Nullable< std::string >            passport_num;
+    Nullable< std::string >            ssn_id_num;
+    Nullable< std::string >            vat_id_num;
+    typedef Fred::ContactAddressType   AddrType;
+
+    dst.id = src.id;
+    dst.handle.clear();
+
+    from(src.first_name)  .into(          first_name);
+    from(src.last_name)   .into(          last_name);
+    from(src.organization).into(          dst.organization);
+    from(src.vat_reg_num) .into(          dst.vat);
+    from(src.birth_date)  .into(          birth_date);
+    from(src.id_card_num) .into(          id_card_num);
+    from(src.passport_num).into(          passport_num);
+    from(src.ssn_id_num)  .into(          ssn_id_num);
+    from(src.vat_id_num)  .into(          vat_id_num);
+    from(src.permanent)   .into(          dst.place);
+    from(src.mailing)     .into(add_value(dst.addresses, AddrType::MAILING).if_not_null());
+    from(src.billing)     .into(add_value(dst.addresses, AddrType::BILLING).if_not_null());
+    from(src.shipping)    .into(add_value(dst.addresses, AddrType::SHIPPING).if_not_null());
+    from(src.shipping2)   .into(add_value(dst.addresses, AddrType::SHIPPING_2).if_not_null());
+    from(src.shipping3)   .into(add_value(dst.addresses, AddrType::SHIPPING_3).if_not_null());
+    from(src.email)       .into(          dst.email);
+    from(src.notify_email).into(          dst.notifyemail);
+    from(src.telephone)   .into(          dst.telephone);
+    from(src.fax)         .into(          dst.fax);
+
+    dst.name = first_name + " " + last_name;
+    const bool contact_is_organization = !dst.organization.isnull();
+    (contact_is_organization
+     ? set_ssn(vat_id_num,   "ICO",  dst) : set_ssn(birth_date, "BIRTHDAY", dst))
+              (id_card_num,  "OP",   dst)
+              (passport_num, "PASS", dst)
+              (ssn_id_num,   "MPSV", dst);
     return dst;
 }
 
