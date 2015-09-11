@@ -51,7 +51,7 @@ namespace Fred
         try
         {
             registrar_res = InfoRegistrar()
-                    .set_handle(handle_)
+                .set_inline_view_filter(Database::ParamQuery(InfoRegistrar::GetAlias::handle())(" = UPPER(").param_text(handle_)(")"))
                     .set_lock(lock_)
                     .exec(ctx,local_timestamp_pg_time_zone_name);
 
@@ -102,7 +102,7 @@ namespace Fred
         try
         {
             registrar_res = InfoRegistrar()
-                    .set_id(id_)
+                .set_inline_view_filter(Database::ParamQuery(InfoRegistrar::GetAlias::id())(" = ").param_bigint(id_))
                     .set_lock(lock_)
                     .exec(ctx,local_timestamp_pg_time_zone_name);
 
