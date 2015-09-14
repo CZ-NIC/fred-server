@@ -177,6 +177,16 @@ struct into_from< IDL_TRANSFER_CONTACT_PREPARE_ERROR, IMPL_TRANSFER_CONTACT_PREP
     dst_value_ref operator()(dst_value_ref dst, src_value src)const;
 };
 
+typedef Registry::MojeID::Server::UPDATE_CONTACT_PREPARE_VALIDATION_ERROR IDL_UPDATE_CONTACT_PREPARE_ERROR;
+typedef Registry::MojeID::MojeID2Impl::UpdateContactPrepareError          IMPL_UPDATE_CONTACT_PREPARE_ERROR;
+
+template < >
+struct into_from< IDL_UPDATE_CONTACT_PREPARE_ERROR, IMPL_UPDATE_CONTACT_PREPARE_ERROR >
+: into_from_base< IDL_UPDATE_CONTACT_PREPARE_ERROR, IMPL_UPDATE_CONTACT_PREPARE_ERROR >
+{
+    dst_value_ref operator()(dst_value_ref dst, src_value src)const;
+};
+
 template < >
 struct into_from< Registry::MojeID::Address, Fred::Contact::PlaceAddress >
 : into_from_base< Registry::MojeID::Address, Fred::Contact::PlaceAddress >
