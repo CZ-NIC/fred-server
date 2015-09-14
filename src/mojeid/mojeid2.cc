@@ -28,6 +28,7 @@
 #include "src/fredlib/contact/create_contact.h"
 #include "src/fredlib/contact/update_contact.h"
 #include "src/fredlib/contact/info_contact.h"
+#include "src/fredlib/contact/info_contact_diff.h"
 #include "src/fredlib/public_request/create_public_request_auth.h"
 #include "src/fredlib/public_request/info_public_request_auth.h"
 #include "src/fredlib/public_request/update_public_request.h"
@@ -969,6 +970,79 @@ Fred::InfoContactData& MojeID2Impl::transfer_contact_prepare(
     }
 }
 
+namespace {
+
+template < Fred::ContactAddressType::Value ADDRESS_TYPE, typename UPDATE_CONTACT >
+void update_address(const Fred::ContactAddressList &_old_addresses,
+                    const Fred::ContactAddressList &_new_addresses,
+                    Fred::UpdateContact< UPDATE_CONTACT > &_update_op)
+{
+    Fred::ContactAddressList::const_iterator old_ptr = _old_addresses.find(ADDRESS_TYPE);
+    const bool old_presents = old_ptr != _old_addresses.end();
+    Fred::ContactAddressList::const_iterator new_ptr = _new_addresses.find(ADDRESS_TYPE);
+    const bool new_presents = new_ptr != _new_addresses.end();
+    if (new_presents) {
+        if (!old_presents || (old_ptr->second != new_ptr->second)) {
+            _update_op.template set_address< ADDRESS_TYPE >(new_ptr->second);
+        }
+        return;
+    }
+    if (old_presents) {
+        _update_op.template reset_address< ADDRESS_TYPE >();
+    }
+}
+
+template < Fred::ContactAddressType::Value ADDRESS_TYPE, typename UPDATE_CONTACT >
+void update_address(const Fred::InfoContactDiff &_data_changes,
+                    Fred::UpdateContact< UPDATE_CONTACT > &_update_op)
+{
+    update_address< ADDRESS_TYPE >(_data_changes.addresses.get_value().first,
+                                   _data_changes.addresses.get_value().second,
+                                   _update_op);
+}
+
+template < typename UPDATE_CONTACT >
+void set_update_contact_op(const Fred::InfoContactDiff &_data_changes,
+                           Fred::UpdateContact< UPDATE_CONTACT > &_update_op)
+{
+    if (_data_changes.name.isset()) {
+        _update_op.set_name(_data_changes.name.get_value().second.get_value());
+    }
+    if (_data_changes.organization.isset()) {
+        _update_op.set_organization(_data_changes.organization.get_value().second.get_value_or_default());
+    }
+    if (_data_changes.ssntype.isset()) {
+        _update_op.set_ssntype(_data_changes.ssntype.get_value().second.get_value_or_default());
+    }
+    if (_data_changes.ssn.isset()) {
+        _update_op.set_ssn(_data_changes.ssn.get_value().second.get_value_or_default());
+    }
+    if (_data_changes.place.isset()) {
+        _update_op.set_place(_data_changes.place.get_value().second.get_value());
+    }
+    if (_data_changes.addresses.isset()) {
+        update_address< Fred::ContactAddressType::MAILING >   (_data_changes, _update_op);
+        update_address< Fred::ContactAddressType::BILLING >   (_data_changes, _update_op);
+        update_address< Fred::ContactAddressType::SHIPPING >  (_data_changes, _update_op);
+        update_address< Fred::ContactAddressType::SHIPPING_2 >(_data_changes, _update_op);
+        update_address< Fred::ContactAddressType::SHIPPING_3 >(_data_changes, _update_op);
+    }
+    if (_data_changes.email.isset()) {
+        _update_op.set_email(_data_changes.email.get_value().second.get_value());
+    }
+    if (_data_changes.notifyemail.isset()) {
+        _update_op.set_notifyemail(_data_changes.notifyemail.get_value().second.get_value_or_default());
+    }
+    if (_data_changes.telephone.isset()) {
+        _update_op.set_telephone(_data_changes.telephone.get_value().second.get_value_or_default());
+    }
+    if (_data_changes.fax.isset()) {
+        _update_op.set_fax(_data_changes.fax.get_value().second.get_value_or_default());
+    }
+}
+
+}
+
 void MojeID2Impl::update_contact_prepare(
         const Fred::InfoContactData &_new_data,
         const std::string &_trans_id,
@@ -987,7 +1061,9 @@ void MojeID2Impl::update_contact_prepare(
             FOS::MOJEID_CONTACT,
             FOS::CONDITIONALLY_IDENTIFIED_CONTACT,
             FOS::IDENTIFIED_CONTACT,
-            FOS::VALIDATED_CONTACT >::type RelatedStates;
+            FOS::VALIDATED_CONTACT,
+            FOS::CONTACT_FAILED_MANUAL_VERIFICATION,
+            FOS::CONTACT_PASSED_MANUAL_VERIFICATION >::type RelatedStates;
         typedef GetContact::States< RelatedStates >::Presence StatesPresence;
         const StatesPresence states =
             GetContact(_new_data.id).states< RelatedStates >().presence(ctx);
@@ -995,6 +1071,20 @@ void MojeID2Impl::update_contact_prepare(
             throw GetContact::object_doesnt_exist();
         }
         const Fred::InfoContactData current_data = Fred::InfoContactById(_new_data.id).exec(ctx).info_contact_data;
+        const Fred::InfoContactDiff data_changes = Fred::diff_contact_data(current_data, _new_data);
+        if (!(data_changes.name.isset()         ||
+              data_changes.organization.isset() ||
+              data_changes.ssntype.isset()      ||
+              data_changes.ssn.isset()          ||
+              data_changes.place.isset()        ||
+              data_changes.addresses.isset()    ||
+              data_changes.email.isset()        ||
+              data_changes.notifyemail.isset()  ||
+              data_changes.telephone.isset()    ||
+              data_changes.fax.isset())) {
+            return;
+        }
+        const Fred::PublicRequestObjectLockGuard locked_contact(ctx, _new_data.id);
         Fred::StatusList to_cancel;
         bool drop_validation = false;
         if (states.get< FOS::VALIDATED_CONTACT >()) {
@@ -1008,23 +1098,76 @@ void MojeID2Impl::update_contact_prepare(
             cancel_message_sending< MessageType::MOJEID_CARD, CommType::LETTER >(ctx, _new_data.id);
         }
         if (drop_identification) {
-            if (states.get< FOS::IDENTIFIED_CONTACT >()) {
+            const bool reidentification_needed = states.get< FOS::IDENTIFIED_CONTACT >();
+            if (reidentification_needed) {
                 to_cancel.insert(FOS(FOS::IDENTIFIED_CONTACT).into< std::string >());
-                Fred::CancelObjectStateRequestId(_new_data.id, to_cancel).exec(ctx);
             }
-            else {
-                
+            const HandleMojeIDArgs *const server_conf_ptr = CfgArgs::instance()->
+                                                                get_handler_ptr_by_type< HandleMojeIDArgs >();
+            check_sent_letters_limit(ctx,
+                                     _new_data.id,
+                                     server_conf_ptr->letter_limit_count,
+                                     server_conf_ptr->letter_limit_interval);
+            Fred::CreatePublicRequestAuth create_public_request_op(
+                reidentification_needed ? Fred::MojeID::PublicRequest::ContactReidentification::iface()
+                                        : Fred::MojeID::PublicRequest::ContactIdentification::iface());
+            create_public_request_op.set_reason("data changed");
+            create_public_request_op.set_registrar_id(ctx, mojeid_registrar_handle_);
+            create_public_request_op.exec(ctx, locked_contact, _log_request_id);
+        }
+        {
+            const CheckUpdateContactPrepare check_contact_data(_new_data);
+            if (!check_contact_data.success()) {
+                throw check_contact_data;
             }
         }
-        else if (!to_cancel.empty()) {
+        const bool manual_verification_done = states.get< FOS::CONTACT_FAILED_MANUAL_VERIFICATION >() ||
+                                              states.get< FOS::CONTACT_PASSED_MANUAL_VERIFICATION >();
+        if (manual_verification_done) {
+            const bool cancel_manual_verification = data_changes.name.isset()         ||
+                                                    data_changes.organization.isset() ||
+                                                    data_changes.ssntype.isset()      ||
+                                                    data_changes.ssn.isset()          ||
+                                                    data_changes.place.isset()        ||
+                                                    data_changes.email.isset()        ||
+                                                    data_changes.notifyemail.isset()  ||
+                                                    data_changes.telephone.isset()    ||
+                                                    data_changes.fax.isset();
+            if (cancel_manual_verification) {
+                if (states.get< FOS::CONTACT_FAILED_MANUAL_VERIFICATION >()) {
+                    to_cancel.insert(FOS(FOS::CONTACT_FAILED_MANUAL_VERIFICATION).into< std::string >());
+                }
+                if (states.get< FOS::CONTACT_PASSED_MANUAL_VERIFICATION >()) {
+                    to_cancel.insert(FOS(FOS::CONTACT_PASSED_MANUAL_VERIFICATION).into< std::string >());
+                }
+            }
+        }
+        if (!to_cancel.empty()) {
             Fred::CancelObjectStateRequestId(_new_data.id, to_cancel).exec(ctx);
         }
-        const Fred::PublicRequestObjectLockGuard locked_contact_(ctx, _new_data.id);
+        Fred::UpdateContactById update_contact_op(_new_data.id, mojeid_registrar_handle_);
+        set_update_contact_op(data_changes, update_contact_op);
+        const bool is_identified = states.get< FOS::IDENTIFIED_CONTACT >() && !drop_identification;
+        const bool is_validated  = states.get< FOS::VALIDATED_CONTACT  >() && !drop_validation;
+        const bool addr_can_be_hidden = (is_identified || is_validated) &&
+                                        _new_data.organization.get_value_or_default().empty();
+        if (!addr_can_be_hidden) {
+            update_contact_op.set_discloseaddress(true);
+        }
+        update_contact_op.exec(ctx);
         ctx.commit_transaction();
         return;
     }
     catch (const GetContact::object_doesnt_exist &e) {
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
+        throw;
+    }
+    catch(const MessageLimitExceeded &e) {
+        LOGGER(PACKAGE).info(e.what());
+        throw;
+    }
+    catch(const UpdateContactPrepareError &e) {
+        LOGGER(PACKAGE).error("request failed (incorrect input data)");
         throw;
     }
     catch (const std::exception &e) {

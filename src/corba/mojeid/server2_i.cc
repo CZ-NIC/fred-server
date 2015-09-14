@@ -120,6 +120,18 @@ void Server_i::update_contact_prepare(
         impl_ptr_->update_contact_prepare(new_data, _trans_id, _log_request_id);
         return;
     }
+    catch (const MojeID2Impl::UpdateContactPrepareError &e) {
+        IDL::UPDATE_CONTACT_PREPARE_VALIDATION_ERROR idl_error;
+        Corba::Conversion::into(idl_error).from(e);
+        throw idl_error;
+    }
+    catch (const MojeID2Impl::MessageLimitExceeded &e) {
+        IDL::MESSAGE_LIMIT_EXCEEDED idl_error;
+        throw Corba::Conversion::into(idl_error).from(e);
+    }
+    catch (const MojeID2Impl::ObjectDoesntExist&) {
+        throw IDL::OBJECT_NOT_EXISTS();
+    }
     catch (...) {
         throw IDL::INTERNAL_SERVER_ERROR();
     }

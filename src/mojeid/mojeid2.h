@@ -158,6 +158,21 @@ public:
                                            check_transfer_contact_prepare_presence > > CheckTransferContactPrepare;
     typedef CheckTransferContactPrepare TransferContactPrepareError;
 
+    typedef boost::mpl::list< Fred::check_contact_name,
+                              Fred::check_contact_place_address,
+                              Fred::check_contact_addresses_mailing,
+                              Fred::check_contact_addresses_billing,
+                              Fred::check_contact_addresses_shipping,
+                              Fred::check_contact_addresses_shipping2,
+                              Fred::check_contact_addresses_shipping3,
+                              Fred::check_contact_email_presence,
+                              Fred::check_contact_email_validity,
+                              Fred::check_contact_phone_validity,
+                              Fred::check_contact_notifyemail_validity,
+                              Fred::check_contact_fax_validity > check_update_contact_prepare;
+    typedef Fred::Check< check_update_contact_prepare > CheckUpdateContactPrepare;
+    typedef CheckUpdateContactPrepare UpdateContactPrepareError;
+
     class IdentificationFailed:public std::runtime_error
     {
     public:
