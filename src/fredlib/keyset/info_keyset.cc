@@ -150,18 +150,18 @@ namespace Fred
         );
     }
 
-    InfoKeysetHistory::InfoKeysetHistory(const std::string& roid)
+    InfoKeysetHistoryByRoid::InfoKeysetHistoryByRoid(const std::string& roid)
     : roid_(roid)
     , lock_(false)
     {}
 
-    InfoKeysetHistory& InfoKeysetHistory::set_lock()
+    InfoKeysetHistoryByRoid& InfoKeysetHistoryByRoid::set_lock()
     {
         lock_ = true;
         return *this;
     }
 
-    std::vector<InfoKeysetOutput> InfoKeysetHistory::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
+    std::vector<InfoKeysetOutput> InfoKeysetHistoryByRoid::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
     {
         std::vector<InfoKeysetOutput> keyset_res;
 
@@ -185,9 +185,9 @@ namespace Fred
         return keyset_res;
     }
 
-    std::string InfoKeysetHistory::to_string() const
+    std::string InfoKeysetHistoryByRoid::to_string() const
     {
-        return Util::format_operation_state("InfoKeysetHistory",
+        return Util::format_operation_state("InfoKeysetHistoryByRoid",
         Util::vector_of<std::pair<std::string,std::string> >
         (std::make_pair("roid",roid_))
         (std::make_pair("lock",lock_ ? "true":"false"))

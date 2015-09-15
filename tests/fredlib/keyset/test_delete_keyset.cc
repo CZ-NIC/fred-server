@@ -87,7 +87,7 @@ BOOST_AUTO_TEST_CASE(delete_keyset)
     Fred::DeleteKeysetByHandle(test_keyset_handle).exec(ctx);
     ctx.commit_transaction();
 
-    std::vector<Fred::InfoKeysetOutput> keyset_history_info1 = Fred::InfoKeysetHistory(
+    std::vector<Fred::InfoKeysetOutput> keyset_history_info1 = Fred::InfoKeysetHistoryByRoid(
     keyset_info1.info_keyset_data.roid).exec(ctx);
 
     BOOST_CHECK(!keyset_history_info1.at(0).info_keyset_data.delete_time.isnull());

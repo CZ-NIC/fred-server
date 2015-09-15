@@ -425,12 +425,12 @@ BOOST_AUTO_TEST_CASE(info_keyset_output)
 }
 
 /**
- * test InfoKeysetHistory print to string
+ * test InfoKeysetHistoryByRoid print to string
  */
 BOOST_AUTO_TEST_CASE(info_keyset_history)
 {
     printable_test(
-    Fred::InfoKeysetHistory("TEST-KEYSET-ROID")
+    Fred::InfoKeysetHistoryByRoid("TEST-KEYSET-ROID")
     );
 }
 

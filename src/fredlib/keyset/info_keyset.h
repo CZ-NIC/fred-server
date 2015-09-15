@@ -139,7 +139,7 @@ namespace Fred
     * Keyset registry object identifier to get history info about the keyset is set via constructor.
     * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
     */
-    class InfoKeysetHistory : public Util::Printable
+    class InfoKeysetHistoryByRoid : public Util::Printable
     {
         const std::string roid_;/**< registry object identifier of the keyset */
         bool lock_;/**< if set to true lock object_registry row for update, if set to false lock for share */
@@ -148,7 +148,7 @@ namespace Fred
         * Info keyset history constructor with mandatory parameter.
         * @param roid sets registry object identifier of the keyset into @ref roid_ attribute
         */
-        InfoKeysetHistory(const std::string& roid);
+        InfoKeysetHistoryByRoid(const std::string& roid);
 
         /**
          * Sets lock for update.
@@ -156,7 +156,7 @@ namespace Fred
          * Sets true to lock flag in @ref lock_ attribute
          * @return operation instance reference to allow method chaining
          */
-        InfoKeysetHistory& set_lock();
+        InfoKeysetHistoryByRoid& set_lock();
 
         /**
         * Executes getting history info about the keyset.

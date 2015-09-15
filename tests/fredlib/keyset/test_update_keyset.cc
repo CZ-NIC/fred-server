@@ -102,7 +102,7 @@ BOOST_AUTO_TEST_CASE(update_keyset)
 {
     Fred::OperationContext ctx;
     Fred::InfoKeysetOutput info_data_1 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
-    std::vector<Fred::InfoKeysetOutput> history_info_data_1 = Fred::InfoKeysetHistory(info_data_1.info_keyset_data.roid).exec(ctx);
+    std::vector<Fred::InfoKeysetOutput> history_info_data_1 = Fred::InfoKeysetHistoryByRoid(info_data_1.info_keyset_data.roid).exec(ctx);
 
     //update_registrar_handle check
     BOOST_CHECK(info_data_1.info_keyset_data.update_registrar_handle.isnull());
@@ -118,7 +118,7 @@ BOOST_AUTO_TEST_CASE(update_keyset)
     Fred::UpdateKeyset(test_keyset_handle, registrar_handle).exec(ctx);
 
     Fred::InfoKeysetOutput info_data_2 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
-    std::vector<Fred::InfoKeysetOutput> history_info_data_2 = Fred::InfoKeysetHistory(info_data_1.info_keyset_data.roid).exec(ctx);
+    std::vector<Fred::InfoKeysetOutput> history_info_data_2 = Fred::InfoKeysetHistoryByRoid(info_data_1.info_keyset_data.roid).exec(ctx);
 
     Fred::InfoKeysetOutput info_data_1_with_changes = info_data_1;
 
@@ -160,7 +160,7 @@ BOOST_AUTO_TEST_CASE(update_keyset)
         ).exec(ctx);
 
     Fred::InfoKeysetOutput info_data_3 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
-    std::vector<Fred::InfoKeysetOutput> history_info_data_3 = Fred::InfoKeysetHistory(info_data_1.info_keyset_data.roid).exec(ctx);
+    std::vector<Fred::InfoKeysetOutput> history_info_data_3 = Fred::InfoKeysetHistoryByRoid(info_data_1.info_keyset_data.roid).exec(ctx);
 
     Fred::InfoKeysetOutput info_data_2_with_changes = info_data_2;
 
@@ -219,7 +219,7 @@ BOOST_AUTO_TEST_CASE(update_keyset)
         ).exec(ctx);
 
     Fred::InfoKeysetOutput info_data_4 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
-    std::vector<Fred::InfoKeysetOutput> history_info_data_4 = Fred::InfoKeysetHistory(info_data_1.info_keyset_data.roid).exec(ctx);
+    std::vector<Fred::InfoKeysetOutput> history_info_data_4 = Fred::InfoKeysetHistoryByRoid(info_data_1.info_keyset_data.roid).exec(ctx);
 
     Fred::InfoKeysetOutput info_data_3_with_changes = info_data_3;
 
@@ -254,7 +254,7 @@ BOOST_AUTO_TEST_CASE(update_keyset)
     Fred::UpdateKeyset(test_keyset_handle, registrar_handle).set_authinfo("kukauthinfo").exec(ctx);
 
     Fred::InfoKeysetOutput info_data_5 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
-    std::vector<Fred::InfoKeysetOutput> history_info_data_5 = Fred::InfoKeysetHistory(info_data_1.info_keyset_data.roid).exec(ctx);
+    std::vector<Fred::InfoKeysetOutput> history_info_data_5 = Fred::InfoKeysetHistoryByRoid(info_data_1.info_keyset_data.roid).exec(ctx);
 
     Fred::InfoKeysetOutput info_data_4_with_changes = info_data_4;
 
@@ -295,7 +295,7 @@ BOOST_AUTO_TEST_CASE(update_keyset)
     Fred::UpdateKeyset(test_keyset_handle, registrar_handle).add_tech_contact(admin_contact4_handle).exec(ctx);
 
     Fred::InfoKeysetOutput info_data_6 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
-    std::vector<Fred::InfoKeysetOutput> history_info_data_6 = Fred::InfoKeysetHistory(info_data_1.info_keyset_data.roid).exec(ctx);
+    std::vector<Fred::InfoKeysetOutput> history_info_data_6 = Fred::InfoKeysetHistoryByRoid(info_data_1.info_keyset_data.roid).exec(ctx);
 
     Fred::InfoKeysetOutput info_data_5_with_changes = info_data_5;
 
@@ -337,7 +337,7 @@ BOOST_AUTO_TEST_CASE(update_keyset)
     Fred::UpdateKeyset(test_keyset_handle, registrar_handle).rem_tech_contact(admin_contact5_handle).exec(ctx);
 
     Fred::InfoKeysetOutput info_data_7 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
-    std::vector<Fred::InfoKeysetOutput> history_info_data_7 = Fred::InfoKeysetHistory(info_data_1.info_keyset_data.roid).exec(ctx);
+    std::vector<Fred::InfoKeysetOutput> history_info_data_7 = Fred::InfoKeysetHistoryByRoid(info_data_1.info_keyset_data.roid).exec(ctx);
 
     Fred::InfoKeysetOutput info_data_6_with_changes = info_data_6;
 
@@ -383,7 +383,7 @@ BOOST_AUTO_TEST_CASE(update_keyset)
     Fred::UpdateKeyset(test_keyset_handle, registrar_handle).add_dns_key(Fred::DnsKey(257, 3, 5, "key2")).add_dns_key(Fred::DnsKey(257, 3, 5, "key3")).exec(ctx);
 
     Fred::InfoKeysetOutput info_data_8 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
-    std::vector<Fred::InfoKeysetOutput> history_info_data_8 = Fred::InfoKeysetHistory(info_data_1.info_keyset_data.roid).exec(ctx);
+    std::vector<Fred::InfoKeysetOutput> history_info_data_8 = Fred::InfoKeysetHistoryByRoid(info_data_1.info_keyset_data.roid).exec(ctx);
 
     Fred::InfoKeysetOutput info_data_7_with_changes = info_data_7;
 
@@ -426,7 +426,7 @@ BOOST_AUTO_TEST_CASE(update_keyset)
     Fred::UpdateKeyset(test_keyset_handle, registrar_handle).rem_dns_key(Fred::DnsKey(257, 3, 5, "key")).exec(ctx);
 
     Fred::InfoKeysetOutput info_data_9 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
-    std::vector<Fred::InfoKeysetOutput> history_info_data_9 = Fred::InfoKeysetHistory(info_data_1.info_keyset_data.roid).exec(ctx);
+    std::vector<Fred::InfoKeysetOutput> history_info_data_9 = Fred::InfoKeysetHistoryByRoid(info_data_1.info_keyset_data.roid).exec(ctx);
 
     Fred::InfoKeysetOutput info_data_8_with_changes = info_data_8;
 
@@ -472,7 +472,7 @@ BOOST_AUTO_TEST_CASE(update_keyset)
     Fred::UpdateKeyset(test_keyset_handle, registrar_handle).set_logd_request_id(10).exec(ctx);
 
     Fred::InfoKeysetOutput info_data_10 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
-    std::vector<Fred::InfoKeysetOutput> history_info_data_10 = Fred::InfoKeysetHistory(info_data_1.info_keyset_data.roid).exec(ctx);
+    std::vector<Fred::InfoKeysetOutput> history_info_data_10 = Fred::InfoKeysetHistoryByRoid(info_data_1.info_keyset_data.roid).exec(ctx);
 
     //request id
     BOOST_CHECK(history_info_data_10.at(0).logd_request_id.get_value() == 10);
@@ -826,7 +826,7 @@ BOOST_AUTO_TEST_CASE(update_keyset_unassigned_dnskey)
 
 
 /**
- * test InfoKeysetHistory
+ * test InfoKeysetHistoryByRoid
  * create and update test keyset
  * compare successive states from info keyset with states from info keyset history
  * check initial and next historyid in info keyset history
@@ -852,7 +852,7 @@ BOOST_AUTO_TEST_CASE(info_keyset_history_test)
     {
         Fred::OperationContext ctx;
         info_data_2 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
-        history_info_data = Fred::InfoKeysetHistory(info_data_1.info_keyset_data.roid).exec(ctx);
+        history_info_data = Fred::InfoKeysetHistoryByRoid(info_data_1.info_keyset_data.roid).exec(ctx);
     }
 
     BOOST_CHECK(history_info_data.at(0) == info_data_2);

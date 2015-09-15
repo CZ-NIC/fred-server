@@ -158,7 +158,7 @@ BOOST_FIXTURE_TEST_CASE(info_keyset, info_keyset_fixture)
 
     Fred::InfoKeysetOutput info_data_3 = Fred::InfoKeysetById(test_info_keyset_output.info_keyset_data.id).exec(ctx);
     BOOST_CHECK(test_info_keyset_output == info_data_3);
-    Fred::InfoKeysetOutput info_data_4 = Fred::InfoKeysetHistory(test_info_keyset_output.info_keyset_data.roid).exec(ctx).at(0);
+    Fred::InfoKeysetOutput info_data_4 = Fred::InfoKeysetHistoryByRoid(test_info_keyset_output.info_keyset_data.roid).exec(ctx).at(0);
     BOOST_CHECK(test_info_keyset_output == info_data_4);
     Fred::InfoKeysetOutput info_data_5 = Fred::InfoKeysetHistoryById(test_info_keyset_output.info_keyset_data.id).exec(ctx).at(0);
     BOOST_CHECK(test_info_keyset_output == info_data_5);
@@ -166,7 +166,7 @@ BOOST_FIXTURE_TEST_CASE(info_keyset, info_keyset_fixture)
     BOOST_CHECK(test_info_keyset_output == info_data_6);
 
     //empty output
-    BOOST_CHECK(Fred::InfoKeysetHistory(xmark+test_info_keyset_output.info_keyset_data.roid).exec(ctx).empty());
+    BOOST_CHECK(Fred::InfoKeysetHistoryByRoid(xmark+test_info_keyset_output.info_keyset_data.roid).exec(ctx).empty());
     BOOST_CHECK(Fred::InfoKeysetHistoryById(0).exec(ctx).empty());
     ctx.commit_transaction();
 }
@@ -341,7 +341,7 @@ struct info_keyset_history_order_fixture : public info_keyset_fixture
 };
 
 /**
- * test InfoKeysetHistory output data sorted by historyid in descending order (current data first, older next)
+ * test InfoKeysetHistoryByRoid output data sorted by historyid in descending order (current data first, older next)
 */
 
 BOOST_FIXTURE_TEST_CASE(info_keyset_history_order, info_keyset_history_order_fixture)
@@ -349,7 +349,7 @@ BOOST_FIXTURE_TEST_CASE(info_keyset_history_order, info_keyset_history_order_fix
     Fred::OperationContext ctx;
     Fred::InfoKeysetOutput keyset_history_info = Fred::InfoKeysetByHandle(test_keyset_history_handle).exec(ctx);
 
-    std::vector<Fred::InfoKeysetOutput> keyset_history_info_by_roid = Fred::InfoKeysetHistory(keyset_history_info.info_keyset_data.roid).exec(ctx);
+    std::vector<Fred::InfoKeysetOutput> keyset_history_info_by_roid = Fred::InfoKeysetHistoryByRoid(keyset_history_info.info_keyset_data.roid).exec(ctx);
     BOOST_CHECK(keyset_history_info_by_roid.size() == 2);
     BOOST_CHECK(keyset_history_info_by_roid.at(0).info_keyset_data.historyid > keyset_history_info_by_roid.at(1).info_keyset_data.historyid);
 
