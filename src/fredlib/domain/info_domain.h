@@ -310,7 +310,7 @@ namespace Fred
 
         /**
         * Info domain constructor with mandatory parameter.
-        * @param registrant_handle sets registrant or owner handle into @ref registrant_handle_ attribute
+        * @param registrant_handle sets registrant handle into @ref registrant_handle_ attribute
         */
         InfoDomainByRegistrantHandle(const std::string& registrant_handle);
 
