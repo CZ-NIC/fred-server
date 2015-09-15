@@ -128,7 +128,7 @@ namespace Fred
         * @param local_timestamp_pg_time_zone_name is postgresql time zone name of the returned data
         * @return info data about the nsset descendingly ordered by nsset historyid
         */
-        std::vector<InfoNssetOutput> exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "UTC");//return data
+        std::vector<InfoNssetOutput> exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "UTC");
 
     };
 

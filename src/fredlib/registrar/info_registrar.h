@@ -71,7 +71,7 @@ namespace Fred
         * @param local_timestamp_pg_time_zone_name is postgresql time zone name of the returned data
         * @return info data about the registrar
         */
-        InfoRegistrarOutput exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
+        InfoRegistrarOutput exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");
 
         /**
         * Dumps state of the instance into the string
@@ -119,7 +119,7 @@ namespace Fred
         * @param local_timestamp_pg_time_zone_name is postgresql time zone name of the returned data
         * @return info data about the registrar
         */
-        InfoRegistrarOutput exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
+        InfoRegistrarOutput exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");
 
         /**
         * Dumps state of the instance into the string

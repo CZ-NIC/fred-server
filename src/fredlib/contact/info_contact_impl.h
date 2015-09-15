@@ -147,7 +147,7 @@ namespace Fred
         * @param local_timestamp_pg_time_zone_name is postgresql time zone name of the returned data and history_timestamp
         * @return info data about the contact
         */
-        std::vector<InfoContactOutput> exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "UTC");//return data
+        std::vector<InfoContactOutput> exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "UTC");
 
     };
 

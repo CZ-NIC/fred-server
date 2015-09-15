@@ -74,7 +74,7 @@ namespace Fred
         * @throws Exception in case of wrong input data or other predictable and superable failure.
         * @throws InternalError otherwise
         */
-        InfoKeysetOutput exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
+        InfoKeysetOutput exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");
 
         /**
         * Dumps state of the instance into the string
@@ -123,7 +123,7 @@ namespace Fred
         * @throws Exception in case of wrong input data or other predictable and superable failure.
         * @throws InternalError otherwise
         */
-        InfoKeysetOutput exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
+        InfoKeysetOutput exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");
 
         /**
         * Dumps state of the instance into the string
@@ -181,7 +181,7 @@ namespace Fred
         * @throws Exception in case of wrong input data or other predictable and superable failure.
         * @throws InternalError otherwise
         */
-        std::vector<InfoKeysetOutput> exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
+        std::vector<InfoKeysetOutput> exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");
 
         /**
         * Dumps state of the instance into the string
@@ -224,7 +224,7 @@ namespace Fred
         * @throws Exception in case of wrong input data or other predictable and superable failure.
         * @throws InternalError otherwise
         */
-        std::vector<InfoKeysetOutput> exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
+        std::vector<InfoKeysetOutput> exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");
 
         /**
         * Dumps state of the instance into the string
@@ -273,7 +273,7 @@ namespace Fred
         * @throws Exception in case of wrong input data or other predictable and superable failure.
         * @throws InternalError otherwise
         */
-        InfoKeysetOutput exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
+        InfoKeysetOutput exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");
 
         /**
         * Dumps state of the instance into the string

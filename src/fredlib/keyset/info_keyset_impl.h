@@ -125,7 +125,7 @@ namespace Fred
         * @param local_timestamp_pg_time_zone_name is postgresql time zone name of the returned data
         * @return info data about the keyset descendingly ordered by keyset historyid
         */
-        std::vector<InfoKeysetOutput> exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "UTC");//return data
+        std::vector<InfoKeysetOutput> exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "UTC");
 
     };
 

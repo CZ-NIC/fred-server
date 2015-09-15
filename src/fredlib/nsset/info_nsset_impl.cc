@@ -234,7 +234,7 @@ namespace Fred
 
 
     std::vector<InfoNssetOutput> InfoNsset::exec(OperationContext& ctx,
-        const std::string& local_timestamp_pg_time_zone_name)//return data
+        const std::string& local_timestamp_pg_time_zone_name)
     {
         std::vector<InfoNssetOutput> result;
 
