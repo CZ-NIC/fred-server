@@ -1201,7 +1201,7 @@ void MessageReload::operator ()
           msg_types[i->id] = i->name;
 
 
-      list.reserve(result_size);//allocate list by size
+      list.reserve(result_size);
       list.clear();
       for (std::size_t i=0; i < result_size; i++)
       {

@@ -1519,7 +1519,7 @@ public:
             << "' order by valid_from desc, id desc";
 
         Database::Result res = conn.exec(query.str());
-        ret.reserve(res.size());//prealloc
+        ret.reserve(res.size());
         for (Database::Result::Iterator it = res.begin(); it != res.end(); ++it)
         {
           Database::Row::Iterator col = (*it).begin();
@@ -1686,7 +1686,7 @@ public:
                   << "order by cancelled, short_name";
 
           Database::Result res = conn.exec(query.str());
-          ret.reserve(res.size());//prealloc
+          ret.reserve(res.size());
           for (Database::Result::Iterator it = res.begin(); it != res.end(); ++it)
           {
             Database::Row::Iterator col = (*it).begin();
@@ -1714,7 +1714,7 @@ public:
               << "' order by member_from desc, id desc";
 
           Database::Result res = conn.exec(query.str());
-          ret.reserve(res.size());//prealloc
+          ret.reserve(res.size());
           for (Database::Result::Iterator it = res.begin(); it != res.end(); ++it)
           {
             Database::Row::Iterator col = (*it).begin();
@@ -1743,7 +1743,7 @@ public:
               << "' order by member_from desc, id desc";
 
           Database::Result res = conn.exec(query.str());
-          ret.reserve(res.size());//prealloc
+          ret.reserve(res.size());
           for (Database::Result::Iterator it = res.begin(); it != res.end(); ++it)
           {
             Database::Row::Iterator col = (*it).begin();

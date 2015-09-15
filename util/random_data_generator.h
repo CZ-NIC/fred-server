@@ -143,7 +143,7 @@ public:
     std::string xstring(std::size_t length)
     {
         std::string ret;
-        ret.reserve(length);//allocation
+        ret.reserve(length);
         for(std::size_t i = 0; i < length; ++i)
             ret.push_back(xletter());
         return ret;
@@ -153,7 +153,7 @@ public:
     std::string xnumstring(std::size_t length)
     {
         std::string ret;
-        ret.reserve(length);//allocation
+        ret.reserve(length);
         for(std::size_t i = 0; i < length; ++i)
             ret.push_back(xnumletter());
         return ret;
@@ -163,7 +163,7 @@ public:
     std::string xnstring(std::size_t length)
     {
         std::string ret;
-        ret.reserve(length);//allocation
+        ret.reserve(length);
         for(std::size_t i = 0; i < length; ++i)
             ret.push_back(xnletter());
         return ret;
