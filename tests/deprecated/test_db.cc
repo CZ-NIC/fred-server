@@ -73,6 +73,11 @@ BOOST_AUTO_TEST_CASE( exec_params_test )
         try
         {   //test param data in strings
             Database::Connection conn = Database::Manager::acquire();
+
+            //because of changes to Nullable::operator<<
+            BOOST_CHECK(conn.exec_params("select $1::text", Database::query_param_list(Database::QPNull))[0][0].isnull());
+            BOOST_CHECK(conn.exec_params("select $1::text", Database::query_param_list(Nullable<std::string>()))[0][0].isnull());
+
             std::string query = "select 1 as id, $1::bigint as data1, $2::bigint as data2, $3::text as data3";
 
             std::vector<std::string> params = boost::assign::list_of("2")("3")("Kuk");

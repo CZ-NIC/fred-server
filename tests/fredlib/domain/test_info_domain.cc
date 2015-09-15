@@ -477,11 +477,6 @@ BOOST_FIXTURE_TEST_CASE(info_domain_diff, test_domain_fixture)
     BOOST_CHECK(test_empty_diff.is_empty());
 
     BOOST_MESSAGE(Fred::diff_domain_data(domain_info1.info_domain_data,domain_info2.info_domain_data).to_string());
-
-    //because of changes to Nullable::operator<<
-    BOOST_CHECK(ctx.get_conn().exec_params("select $1::text", Database::query_param_list(Database::QPNull))[0][0].isnull());
-    BOOST_CHECK(ctx.get_conn().exec_params("select $1::text", Database::query_param_list(Nullable<std::string>()))[0][0].isnull());
-
 }
 
 struct test_info_domain_order_fixture : public test_domain_fixture

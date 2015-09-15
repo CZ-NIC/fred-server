@@ -321,10 +321,6 @@ BOOST_FIXTURE_TEST_CASE(info_keyset_diff, info_keyset_fixture)
     BOOST_CHECK(test_empty_diff.is_empty());
 
     BOOST_MESSAGE(Fred::diff_keyset_data(keyset_info1.info_keyset_data,keyset_info2.info_keyset_data).to_string());
-
-    //because of changes to Nullable::operator<<
-    BOOST_CHECK(ctx.get_conn().exec_params("select $1::text", Database::query_param_list(Database::QPNull))[0][0].isnull());
-    BOOST_CHECK(ctx.get_conn().exec_params("select $1::text", Database::query_param_list(Nullable<std::string>()))[0][0].isnull());
 }
 
 struct info_keyset_history_order_fixture : public info_keyset_fixture

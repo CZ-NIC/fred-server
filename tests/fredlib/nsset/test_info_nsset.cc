@@ -364,9 +364,6 @@ BOOST_FIXTURE_TEST_CASE(info_nsset_diff, info_nsset_fixture)
 
     BOOST_MESSAGE(Fred::diff_nsset_data(nsset_info1.info_nsset_data,nsset_info2.info_nsset_data).to_string());
 
-    //because of changes to Nullable::operator<<
-    BOOST_CHECK(ctx.get_conn().exec_params("select $1::text", Database::query_param_list(Database::QPNull))[0][0].isnull());
-    BOOST_CHECK(ctx.get_conn().exec_params("select $1::text", Database::query_param_list(Nullable<std::string>()))[0][0].isnull());
 }
 
 struct info_nsset_history_fixture : public info_nsset_fixture

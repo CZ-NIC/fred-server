@@ -174,10 +174,6 @@ BOOST_AUTO_TEST_CASE(info_contact_diff)
     BOOST_CHECK(test_empty_diff.is_empty());
 
     BOOST_MESSAGE(Fred::diff_contact_data(contact_info1.info_contact_data,contact_info2.info_contact_data).to_string());
-
-    //because of changes to Nullable::operator<<
-    BOOST_CHECK(ctx.get_conn().exec_params("select $1::text", Database::query_param_list(Database::QPNull))[0][0].isnull());
-    BOOST_CHECK(ctx.get_conn().exec_params("select $1::text", Database::query_param_list(Nullable<std::string>()))[0][0].isnull());
 }
 
 /**
