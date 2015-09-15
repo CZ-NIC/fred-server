@@ -541,12 +541,12 @@ BOOST_AUTO_TEST_CASE(info_nsset_output)
 
 
 /**
- * test InfoNssetHistory print to string
+ * test InfoNssetHistoryByRoid print to string
  */
 BOOST_AUTO_TEST_CASE(info_nsset_history)
 {
     printable_test(
-    Fred::InfoNssetHistory("TEST-NSSET-ROID")
+    Fred::InfoNssetHistoryByRoid("TEST-NSSET-ROID")
     );
 }
 

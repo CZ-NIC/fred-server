@@ -106,7 +106,7 @@ BOOST_AUTO_TEST_CASE(delete_nsset)
     Fred::DeleteNssetByHandle(test_nsset_handle).exec(ctx);
     ctx.commit_transaction();
 
-    std::vector<Fred::InfoNssetOutput> nsset_history_info1 = Fred::InfoNssetHistory(
+    std::vector<Fred::InfoNssetOutput> nsset_history_info1 = Fred::InfoNssetHistoryByRoid(
     nsset_info1.info_nsset_data.roid).exec(ctx);
 
     BOOST_CHECK(!nsset_history_info1.at(0).info_nsset_data.delete_time.isnull());

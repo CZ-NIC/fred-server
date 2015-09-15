@@ -155,14 +155,14 @@ BOOST_FIXTURE_TEST_CASE(info_nsset, info_nsset_fixture)
     BOOST_CHECK(test_info_nsset_output == info_data_tc_2);
     Fred::InfoNssetOutput info_data_3 = Fred::InfoNssetById(test_info_nsset_output.info_nsset_data.id).exec(ctx);
     BOOST_CHECK(test_info_nsset_output == info_data_3);
-    Fred::InfoNssetOutput info_data_4 = Fred::InfoNssetHistory(test_info_nsset_output.info_nsset_data.roid).exec(ctx).at(0);
+    Fred::InfoNssetOutput info_data_4 = Fred::InfoNssetHistoryByRoid(test_info_nsset_output.info_nsset_data.roid).exec(ctx).at(0);
     BOOST_CHECK(test_info_nsset_output == info_data_4);
     Fred::InfoNssetOutput info_data_5 = Fred::InfoNssetHistoryById(test_info_nsset_output.info_nsset_data.id).exec(ctx).at(0);
     BOOST_CHECK(test_info_nsset_output == info_data_5);
     Fred::InfoNssetOutput info_data_6 = Fred::InfoNssetHistoryByHistoryid(test_info_nsset_output.info_nsset_data.historyid).exec(ctx);
     BOOST_CHECK(test_info_nsset_output == info_data_6);
     //empty output
-    BOOST_CHECK(Fred::InfoNssetHistory(xmark+test_info_nsset_output.info_nsset_data.roid).exec(ctx).empty());
+    BOOST_CHECK(Fred::InfoNssetHistoryByRoid(xmark+test_info_nsset_output.info_nsset_data.roid).exec(ctx).empty());
     BOOST_CHECK(Fred::InfoNssetHistoryById(0).exec(ctx).empty());
 
 }
@@ -383,14 +383,14 @@ struct info_nsset_history_fixture : public info_nsset_fixture
 };
 
 /**
- * test InfoNssetHistory output data sorted by historyid in descending order (current data first, older next)
+ * test InfoNssetHistoryByRoid output data sorted by historyid in descending order (current data first, older next)
 */
 BOOST_FIXTURE_TEST_CASE(info_nsset_history_order, info_nsset_history_fixture)
 {
     Fred::OperationContext ctx;
     Fred::InfoNssetOutput nsset_history_info = Fred::InfoNssetByHandle(test_nsset_history_handle).exec(ctx);
 
-    std::vector<Fred::InfoNssetOutput> nsset_history_info_by_roid = Fred::InfoNssetHistory(nsset_history_info.info_nsset_data.roid).exec(ctx);
+    std::vector<Fred::InfoNssetOutput> nsset_history_info_by_roid = Fred::InfoNssetHistoryByRoid(nsset_history_info.info_nsset_data.roid).exec(ctx);
     BOOST_CHECK(nsset_history_info_by_roid.size() == 2);
     BOOST_CHECK(nsset_history_info_by_roid.at(0).info_nsset_data.historyid > nsset_history_info_by_roid.at(1).info_nsset_data.historyid);
 

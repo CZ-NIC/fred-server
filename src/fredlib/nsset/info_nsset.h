@@ -265,7 +265,7 @@ namespace Fred
     * Nsset registry object identifier to get history info about the nsset is set via constructor.
     * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
     */
-    class InfoNssetHistory : public Util::Printable
+    class InfoNssetHistoryByRoid : public Util::Printable
     {
         const std::string roid_;/**< registry object identifier of the nsset */
         bool lock_;/**< if set to true lock object_registry row for update, if set to false lock for share */
@@ -275,7 +275,7 @@ namespace Fred
         * Info nsset history constructor with mandatory parameter.
         * @param roid sets registry object identifier of the nsset into @ref roid_ attribute
         */
-        InfoNssetHistory(const std::string& roid);
+        InfoNssetHistoryByRoid(const std::string& roid);
 
         /**
         * Sets lock for update.
@@ -283,7 +283,7 @@ namespace Fred
         * Sets true to lock flag in @ref lock_ attribute
         * @return operation instance reference to allow method chaining
         */
-        InfoNssetHistory& set_lock();
+        InfoNssetHistoryByRoid& set_lock();
 
         /**
         * Executes getting history info about the nsset.

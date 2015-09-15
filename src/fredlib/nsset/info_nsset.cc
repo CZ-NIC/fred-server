@@ -295,18 +295,18 @@ namespace Fred
     }
 
 
-    InfoNssetHistory::InfoNssetHistory(const std::string& roid)
+    InfoNssetHistoryByRoid::InfoNssetHistoryByRoid(const std::string& roid)
     : roid_(roid)
     , lock_(false)
     {}
 
-    InfoNssetHistory& InfoNssetHistory::set_lock()
+    InfoNssetHistoryByRoid& InfoNssetHistoryByRoid::set_lock()
     {
         lock_ = true;
         return *this;
     }
 
-    std::vector<InfoNssetOutput> InfoNssetHistory::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
+    std::vector<InfoNssetOutput> InfoNssetHistoryByRoid::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
     {
         std::vector<InfoNssetOutput> nsset_res;
 
@@ -329,9 +329,9 @@ namespace Fred
         return nsset_res;
     }
 
-    std::string InfoNssetHistory::to_string() const
+    std::string InfoNssetHistoryByRoid::to_string() const
     {
-        return Util::format_operation_state("InfoNssetHistory",
+        return Util::format_operation_state("InfoNssetHistoryByRoid",
         Util::vector_of<std::pair<std::string,std::string> >
         (std::make_pair("roid",roid_))
         (std::make_pair("lock",lock_ ? "true":"false"))
