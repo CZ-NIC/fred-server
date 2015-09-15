@@ -268,7 +268,6 @@ namespace Fred
     class InfoNssetHistory : public Util::Printable
     {
         const std::string roid_;/**< registry object identifier of the nsset */
-        Optional<boost::posix_time::ptime> history_timestamp_;/**< timestamp of history state we want to get (in time zone set in @ref local_timestamp_pg_time_zone_name parameter) */
         bool lock_;/**< if set to true lock object_registry row for update, if set to false lock for share */
 
     public:
@@ -277,20 +276,6 @@ namespace Fred
         * @param roid sets registry object identifier of the nsset into @ref roid_ attribute
         */
         InfoNssetHistory(const std::string& roid);
-
-        /**
-        * Info nsset history constructor with mandatory parameter.
-        * @param roid sets registry object identifier of the nsset into @ref roid_ attribute
-        * @param history_timestamp sets timestamp of history state we want to get @ref history_timestamp_ attribute
-        */
-        InfoNssetHistory(const std::string& roid, const Optional<boost::posix_time::ptime>& history_timestamp);
-
-        /**
-        * Sets timestamp of history state we want to get.
-        * @param history_timestamp sets timestamp of history state we want to get @ref history_timestamp_ attribute
-        * @return operation instance reference to allow method chaining
-        */
-        InfoNssetHistory& set_history_timestamp(boost::posix_time::ptime history_timestamp);
 
         /**
         * Sets lock for update.

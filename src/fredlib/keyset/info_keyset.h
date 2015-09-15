@@ -142,7 +142,6 @@ namespace Fred
     class InfoKeysetHistory : public Util::Printable
     {
         const std::string roid_;/**< registry object identifier of the keyset */
-        Optional<boost::posix_time::ptime> history_timestamp_;/**< timestamp of history state we want to get (in time zone set in @ref local_timestamp_pg_time_zone_name parameter) */
         bool lock_;/**< if set to true lock object_registry row for update, if set to false lock for share */
     public:
         /**
@@ -150,20 +149,6 @@ namespace Fred
         * @param roid sets registry object identifier of the keyset into @ref roid_ attribute
         */
         InfoKeysetHistory(const std::string& roid);
-
-        /**
-        * Info keyset history constructor with all parameters.
-        * @param roid sets registry object identifier of the keyset into @ref roid_ attribute
-        * @param history_timestamp sets timestamp of history state we want to get @ref history_timestamp_ attribute
-        */
-        InfoKeysetHistory(const std::string& roid, const Optional<boost::posix_time::ptime>& history_timestamp);
-
-        /**
-        * Sets timestamp of history state we want to get.
-        * @param history_timestamp sets timestamp of history state we want to get @ref history_timestamp_ attribute
-        * @return operation instance reference to allow method chaining
-        */
-        InfoKeysetHistory& set_history_timestamp(boost::posix_time::ptime history_timestamp);
 
         /**
          * Sets lock for update.

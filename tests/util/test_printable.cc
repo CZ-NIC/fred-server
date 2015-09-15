@@ -184,7 +184,7 @@ BOOST_AUTO_TEST_CASE(info_contact_output)
 BOOST_AUTO_TEST_CASE(info_contact_history)
 {
     printable_test(
-    Fred::InfoContactHistory("TEST-CONTACT-ROID", boost::posix_time::microsec_clock::universal_time())
+    Fred::InfoContactHistory("TEST-CONTACT-ROID")
     );
 }
 
@@ -314,7 +314,7 @@ BOOST_AUTO_TEST_CASE(info_domain_history_output)
 BOOST_AUTO_TEST_CASE(info_domain_history)
 {
     printable_test(
-    Fred::InfoDomainHistory("test-fred.cz", boost::posix_time::microsec_clock::universal_time())
+    Fred::InfoDomainHistory("test-fred.cz")
     );
 }
 
@@ -430,7 +430,7 @@ BOOST_AUTO_TEST_CASE(info_keyset_output)
 BOOST_AUTO_TEST_CASE(info_keyset_history)
 {
     printable_test(
-    Fred::InfoKeysetHistory("TEST-KEYSET-ROID", boost::posix_time::microsec_clock::universal_time())
+    Fred::InfoKeysetHistory("TEST-KEYSET-ROID")
     );
 }
 
@@ -546,7 +546,7 @@ BOOST_AUTO_TEST_CASE(info_nsset_output)
 BOOST_AUTO_TEST_CASE(info_nsset_history)
 {
     printable_test(
-    Fred::InfoNssetHistory("TEST-NSSET-ROID", boost::posix_time::microsec_clock::universal_time())
+    Fred::InfoNssetHistory("TEST-NSSET-ROID")
     );
 }
 

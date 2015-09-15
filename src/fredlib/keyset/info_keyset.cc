@@ -150,23 +150,10 @@ namespace Fred
         );
     }
 
-    InfoKeysetHistory::InfoKeysetHistory(const std::string& roid
-            , const Optional<boost::posix_time::ptime>& history_timestamp)
-        : roid_(roid)
-        , history_timestamp_(history_timestamp)
-        , lock_(false)
-    {}
-
     InfoKeysetHistory::InfoKeysetHistory(const std::string& roid)
     : roid_(roid)
     , lock_(false)
     {}
-
-    InfoKeysetHistory& InfoKeysetHistory::set_history_timestamp(boost::posix_time::ptime history_timestamp)//set history timestamp
-    {
-        history_timestamp_ = history_timestamp;
-        return *this;
-    }
 
     InfoKeysetHistory& InfoKeysetHistory::set_lock()
     {
@@ -203,7 +190,6 @@ namespace Fred
         return Util::format_operation_state("InfoKeysetHistory",
         Util::vector_of<std::pair<std::string,std::string> >
         (std::make_pair("roid",roid_))
-        (std::make_pair("history_timestamp",history_timestamp_.print_quoted()))
         (std::make_pair("lock",lock_ ? "true":"false"))
         );
     }
