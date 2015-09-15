@@ -40,7 +40,6 @@
 
 #include "tests/setup/fixtures.h"
 
-const std::string server_name = "test-info-registrar";
 
 struct test_info_registrar_fixture : virtual public Test::Fixture::instantiate_db_template
 {

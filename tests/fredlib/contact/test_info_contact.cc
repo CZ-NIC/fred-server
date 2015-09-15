@@ -25,7 +25,7 @@
 #include "util/random_data_generator.h"
 #include "tests/setup/fixtures.h"
 
-const std::string server_name = "test-info-contact";
+
 //unique global name of the fixture
 struct test_contact_fixture_6da88b63b0bc46e29f6d0ce3181fd5d8 : public Test::Fixture::instantiate_db_template
 {

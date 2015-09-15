@@ -27,7 +27,6 @@
 #include "util/random_data_generator.h"
 #include "tests/setup/fixtures.h"
 
-const std::string server_name = "test-info-nsset";
 
 BOOST_AUTO_TEST_SUITE(TestInfoNsset);
 
