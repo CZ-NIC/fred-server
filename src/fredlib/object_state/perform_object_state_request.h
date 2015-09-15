@@ -32,7 +32,6 @@ namespace Fred
     * Process object state change requests.
     * Calling database function update_object_states with optional object_id.
     * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
-    * When exception is thrown, changes to database are considered inconsistent and should be rolled back by the caller.
     * In case of insuperable failures and inconsistencies, exception is thrown.
     */
     class PerformObjectStateRequest

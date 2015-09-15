@@ -73,7 +73,6 @@ namespace Fred
         * @return info data about the keyset
         * @throws Exception in case of wrong input data or other predictable and superable failure.
         * @throws InternalError otherwise
-        * When exception is thrown changes to database are considered inconsistent and should be rolled back by the caller.
         */
         InfoKeysetOutput exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
 
@@ -123,7 +122,6 @@ namespace Fred
         * @return info data about the keyset
         * @throws Exception in case of wrong input data or other predictable and superable failure.
         * @throws InternalError otherwise
-        * When exception is thrown changes to database are considered inconsistent and should be rolled back by the caller.
         */
         InfoKeysetOutput exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
 
@@ -182,7 +180,6 @@ namespace Fred
         * @return history info data about the keyset in descending order by historyid
         * @throws Exception in case of wrong input data or other predictable and superable failure.
         * @throws InternalError otherwise
-        * When exception is thrown changes to database are considered inconsistent and should be rolled back by the caller.
         */
         std::vector<InfoKeysetOutput> exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
 
@@ -226,7 +223,6 @@ namespace Fred
         * @return history info data about the keyset in descending order by historyid
         * @throws Exception in case of wrong input data or other predictable and superable failure.
         * @throws InternalError otherwise
-        * When exception is thrown changes to database are considered inconsistent and should be rolled back by the caller.
         */
         std::vector<InfoKeysetOutput> exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
 
@@ -276,7 +272,6 @@ namespace Fred
         * @return history info data about the keyset
         * @throws Exception in case of wrong input data or other predictable and superable failure.
         * @throws InternalError otherwise
-        * When exception is thrown changes to database are considered inconsistent and should be rolled back by the caller.
         */
         InfoKeysetOutput exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
 
@@ -338,7 +333,6 @@ namespace Fred
         * @param local_timestamp_pg_time_zone_name is postgresql time zone name of the returned data
         * @return info data about the keysets
         * @throws InternalError
-        * When exception is thrown changes to database are considered inconsistent and should be rolled back by the caller.
         */
         std::vector<InfoKeysetOutput> exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");
 

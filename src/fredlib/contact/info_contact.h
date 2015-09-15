@@ -76,7 +76,6 @@ namespace Fred
         * @return info data about the contact
         * @throws Exception in case of wrong input data or other predictable and superable failure.
         * @throws InternalError otherwise
-        * When exception is thrown changes to database are considered inconsistent and should be rolled back by the caller.
         */
         InfoContactOutput exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
 
@@ -126,7 +125,6 @@ namespace Fred
         * @return info data about the contact
         * @throws Exception in case of wrong input data or other predictable and superable failure.
         * @throws InternalError otherwise
-        * When exception is thrown changes to database are considered inconsistent and should be rolled back by the caller.
         */
         InfoContactOutput exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
 
@@ -192,7 +190,6 @@ namespace Fred
         * @return history info data about the contact in descending order by historyid
         * @throws Exception in case of wrong input data or other predictable and superable failure.
         * @throws InternalError otherwise
-        * When exception is thrown changes to database are considered inconsistent and should be rolled back by the caller.
         */
         std::vector<InfoContactOutput> exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
 
@@ -243,7 +240,6 @@ namespace Fred
         * @return history info data about the contact in descending order by historyid
         * @throws Exception in case of wrong input data or other predictable and superable failure.
         * @throws InternalError otherwise
-        * When exception is thrown changes to database are considered inconsistent and should be rolled back by the caller.
         */
         std::vector<InfoContactOutput> exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
 
@@ -293,7 +289,6 @@ namespace Fred
         * @return history info data about the contact
         * @throws Exception in case of wrong input data or other predictable and superable failure.
         * @throws InternalError otherwise
-        * When exception is thrown changes to database are considered inconsistent and should be rolled back by the caller.
         */
         InfoContactOutput exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
 

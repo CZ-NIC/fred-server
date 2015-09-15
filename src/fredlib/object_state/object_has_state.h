@@ -34,7 +34,6 @@ namespace Fred
     * Locks object using object_state_request_lock table. State is not found if object was deleted.
     * Object database id and name of the state is set via constructor.
     * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
-    * When exception is thrown, changes to database are considered inconsistent and should be rolled back by the caller.
     * In case of insuperable failures and inconsistencies, the instance of @ref InternalError or other exception is thrown.
     */
     class ObjectHasState

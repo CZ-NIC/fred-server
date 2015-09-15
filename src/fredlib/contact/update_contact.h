@@ -154,7 +154,6 @@ namespace Fred
     * Created instance is modifiable by chainable methods i.e. methods returning instance reference.
     * Data set into instance by constructor and methods serve as input data of the update.
     * Update is executed by @ref exec  method on contact instance identified by @ref InfoContactOutput parameter and using database connection supplied in @ref OperationContext parameter.
-    * When exception is thrown, changes to database are considered inconsistent and should be rolled back by the caller.
     * In case of wrong input data or other predictable and superable failure, i.e. good path error, an instance of @ref UpdateContact::ExceptionType is set or set and thrown depending on the fatality of the error.
     * In case of other insuperable failures and inconsistencies, i.e. bad path error, an instance of @ref InternalError or other exception is thrown.
     */

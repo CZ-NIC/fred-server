@@ -38,7 +38,6 @@ namespace Fred
     * Created instance is modifiable by chainable methods i.e. methods returning instance reference.
     * Data set into instance by constructor and methods serve as input data of the create.
     * Create is executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
-    * When exception is thrown, changes to database are considered inconsistent and should be rolled back by the caller.
     * In case of wrong input data or other predictable and superable failure, an instance of @ref CreateRegistrar::Exception is thrown with appropriate attributes set.
     * In case of other insuperable failures and inconsistencies, an instance of @ref InternalError or other exception is thrown.
     */

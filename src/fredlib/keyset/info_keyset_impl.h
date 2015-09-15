@@ -40,7 +40,6 @@ namespace Fred
     /**
     * Keyset info implementation.
     * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
-    * When exception is thrown, changes to database are considered inconsistent and should be rolled back by the caller.
     */
     class InfoKeyset
     {
