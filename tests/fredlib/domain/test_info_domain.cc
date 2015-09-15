@@ -177,7 +177,7 @@ BOOST_FIXTURE_TEST_CASE(info_domain, test_domain_fixture)
     BOOST_CHECK(test_info_domain_output == info_data_1);
     Fred::InfoDomainOutput info_data_2 = Fred::InfoDomainById(test_info_domain_output.info_domain_data.id).exec(ctx);
     BOOST_CHECK(test_info_domain_output == info_data_2);
-    Fred::InfoDomainOutput info_data_3 = Fred::InfoDomainHistory(test_info_domain_output.info_domain_data.roid).exec(ctx).at(0);
+    Fred::InfoDomainOutput info_data_3 = Fred::InfoDomainHistoryByRoid(test_info_domain_output.info_domain_data.roid).exec(ctx).at(0);
     BOOST_CHECK(test_info_domain_output == info_data_3);
     Fred::InfoDomainOutput info_data_4 = Fred::InfoDomainHistoryById(test_info_domain_output.info_domain_data.id).exec(ctx).at(0);
     BOOST_CHECK(test_info_domain_output == info_data_4);
@@ -192,7 +192,7 @@ BOOST_FIXTURE_TEST_CASE(info_domain, test_domain_fixture)
     Fred::InfoDomainOutput info_data_9 = Fred::InfoDomainByKeysetHandle(test_keyset_handle).exec(ctx).at(0);
     BOOST_CHECK(test_info_domain_output == info_data_9);
 
-    BOOST_CHECK(Fred::InfoDomainHistory(xmark+test_info_domain_output.info_domain_data.roid).exec(ctx).empty());
+    BOOST_CHECK(Fred::InfoDomainHistoryByRoid(xmark+test_info_domain_output.info_domain_data.roid).exec(ctx).empty());
     BOOST_CHECK(Fred::InfoDomainHistoryById(0).exec(ctx).empty());
 }
 
@@ -510,7 +510,7 @@ struct test_info_domain_order_fixture : public test_domain_fixture
 };
 
 /**
- * test InfoDomainHistory output data sorted by historyid in descending order (current data first, older next)
+ * test InfoDomainHistoryByRoid output data sorted by historyid in descending order (current data first, older next)
 */
 
 BOOST_FIXTURE_TEST_CASE(info_domain_history_order, test_info_domain_order_fixture)
@@ -519,7 +519,7 @@ BOOST_FIXTURE_TEST_CASE(info_domain_history_order, test_info_domain_order_fixtur
 
     Fred::InfoDomainOutput domain_history_info = Fred::InfoDomainByHandle(test_fqdn).exec(ctx);
 
-    std::vector<Fred::InfoDomainOutput> domain_history_info_by_roid = Fred::InfoDomainHistory(domain_history_info.info_domain_data.roid).exec(ctx);
+    std::vector<Fred::InfoDomainOutput> domain_history_info_by_roid = Fred::InfoDomainHistoryByRoid(domain_history_info.info_domain_data.roid).exec(ctx);
     BOOST_CHECK(domain_history_info_by_roid.size() == 2);
     BOOST_CHECK(domain_history_info_by_roid.at(0).info_domain_data.historyid > domain_history_info_by_roid.at(1).info_domain_data.historyid);
 

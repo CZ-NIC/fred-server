@@ -154,18 +154,18 @@ namespace Fred
         );
     }
 
-    InfoDomainHistory::InfoDomainHistory(const std::string& roid)
+    InfoDomainHistoryByRoid::InfoDomainHistoryByRoid(const std::string& roid)
     : roid_(roid)
     , lock_(false)
     {}
 
-    InfoDomainHistory& InfoDomainHistory::set_lock()
+    InfoDomainHistoryByRoid& InfoDomainHistoryByRoid::set_lock()
     {
         lock_ = true;
         return *this;
     }
 
-    std::vector<InfoDomainOutput> InfoDomainHistory::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
+    std::vector<InfoDomainOutput> InfoDomainHistoryByRoid::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
     {
         std::vector<InfoDomainOutput> domain_res;
 
@@ -189,9 +189,9 @@ namespace Fred
         return domain_res;
     }
 
-    std::string InfoDomainHistory::to_string() const
+    std::string InfoDomainHistoryByRoid::to_string() const
     {
-        return Util::format_operation_state("InfoDomainHistory",
+        return Util::format_operation_state("InfoDomainHistoryByRoid",
         Util::vector_of<std::pair<std::string,std::string> >
         (std::make_pair("roid",roid_))
         (std::make_pair("lock",lock_ ? "true":"false"))

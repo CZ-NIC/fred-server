@@ -309,12 +309,12 @@ BOOST_AUTO_TEST_CASE(info_domain_history_output)
 }
 
 /**
- * test InfoDomainHistory print to string
+ * test InfoDomainHistoryByRoid print to string
  */
 BOOST_AUTO_TEST_CASE(info_domain_history)
 {
     printable_test(
-    Fred::InfoDomainHistory("test-fred.cz")
+    Fred::InfoDomainHistoryByRoid("test-fred.cz")
     );
 }
 
