@@ -179,12 +179,12 @@ BOOST_AUTO_TEST_CASE(info_contact_output)
 }
 
 /**
- * test InfoContactHistory print to string
+ * test InfoContactHistoryByRoid print to string
  */
 BOOST_AUTO_TEST_CASE(info_contact_history)
 {
     printable_test(
-    Fred::InfoContactHistory("TEST-CONTACT-ROID")
+    Fred::InfoContactHistoryByRoid("TEST-CONTACT-ROID")
     );
 }
 

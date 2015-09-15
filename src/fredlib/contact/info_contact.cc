@@ -146,18 +146,18 @@ namespace Fred
         );
     }
 
-    InfoContactHistory::InfoContactHistory(const std::string& roid)
+    InfoContactHistoryByRoid::InfoContactHistoryByRoid(const std::string& roid)
         : roid_(roid)
         , lock_(false)
     {}
 
-    InfoContactHistory& InfoContactHistory::set_lock()
+    InfoContactHistoryByRoid& InfoContactHistoryByRoid::set_lock()
     {
         lock_ = true;
         return *this;
     }
 
-    std::vector<InfoContactOutput> InfoContactHistory::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
+    std::vector<InfoContactOutput> InfoContactHistoryByRoid::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
     {
         std::vector<InfoContactOutput> contact_history_res;
 
@@ -187,9 +187,9 @@ namespace Fred
         return contact_history_res;
     }
 
-    std::string InfoContactHistory::to_string() const
+    std::string InfoContactHistoryByRoid::to_string() const
     {
-        return Util::format_operation_state("InfoContactHistory",
+        return Util::format_operation_state("InfoContactHistoryByRoid",
         Util::vector_of<std::pair<std::string,std::string> >
         (std::make_pair("roid",roid_))
         (std::make_pair("lock",lock_ ? "true":"false"))

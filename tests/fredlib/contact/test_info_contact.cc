@@ -85,7 +85,7 @@ BOOST_AUTO_TEST_CASE(info_contact)
     Fred::InfoContactOutput contact_info1 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
     Fred::InfoContactOutput contact_info2 = Fred::InfoContactByHandle(test_contact_handle).set_lock().exec(ctx);
 
-    std::vector<Fred::InfoContactOutput> contact_history_info1 = Fred::InfoContactHistory(
+    std::vector<Fred::InfoContactOutput> contact_history_info1 = Fred::InfoContactHistoryByRoid(
         contact_info1.info_contact_data.roid).exec(ctx);
 
     BOOST_CHECK(contact_info1 == contact_info2);
@@ -181,7 +181,7 @@ BOOST_AUTO_TEST_CASE(info_contact_diff)
 }
 
 /**
- * test InfoContactHistory output data sorted by historyid in descending order (current data first, older next)
+ * test InfoContactHistoryByRoid output data sorted by historyid in descending order (current data first, older next)
 */
 
 BOOST_AUTO_TEST_CASE(info_contact_history_order)
@@ -189,7 +189,7 @@ BOOST_AUTO_TEST_CASE(info_contact_history_order)
     Fred::OperationContext ctx;
     Fred::InfoContactOutput contact_history_info = Fred::InfoContactByHandle(test_contact_history_handle).exec(ctx);
 
-    std::vector<Fred::InfoContactOutput> contact_history_info_by_roid = Fred::InfoContactHistory(contact_history_info.info_contact_data.roid).exec(ctx);
+    std::vector<Fred::InfoContactOutput> contact_history_info_by_roid = Fred::InfoContactHistoryByRoid(contact_history_info.info_contact_data.roid).exec(ctx);
     BOOST_CHECK(contact_history_info_by_roid.size() == 2);
     BOOST_CHECK(contact_history_info_by_roid.at(0).info_contact_data.historyid > contact_history_info_by_roid.at(1).info_contact_data.historyid);
 
