@@ -324,7 +324,7 @@ namespace Fred
     */
     class InfoNssetHistoryById : public Util::Printable
     {
-        unsigned long long id_;/**< object id of the nsset */
+        const unsigned long long id_;/**< object id of the nsset */
         bool lock_;/**< if set to true lock object_registry row for update, if set to false lock for share */
 
     public:
@@ -364,7 +364,7 @@ namespace Fred
     */
     class InfoNssetHistoryByHistoryid : public Util::Printable
     {
-        unsigned long long historyid_;/**< history id of the nsset */
+        const unsigned long long historyid_;/**< history id of the nsset */
         bool lock_;/**< if set to true lock object_registry row for update, if set to false lock for share */
 
     public:

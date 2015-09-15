@@ -209,7 +209,7 @@ namespace Fred
     */
     class InfoContactHistoryById : public Util::Printable
     {
-        unsigned long long id_;/**< object id of the contact */
+        const unsigned long long id_;/**< object id of the contact */
         bool lock_;/**< if set to true lock object_registry row for update, if set to false lock for share */
 
     public:
@@ -258,7 +258,7 @@ namespace Fred
     */
     class InfoContactHistoryByHistoryid : public Util::Printable
     {
-        unsigned long long historyid_;/**< history id of the contact */
+        const unsigned long long historyid_;/**< history id of the contact */
         bool lock_;/**< if set to true lock object_registry row for update, if set to false lock for share */
 
     public:

@@ -198,7 +198,7 @@ namespace Fred
     */
     class InfoKeysetHistoryById : public Util::Printable
     {
-        unsigned long long id_;/**< object id of the keyset */
+        const unsigned long long id_;/**< object id of the keyset */
         bool lock_;/**< if set to true lock object_registry row for update, if set to false lock for share */
 
     public:
@@ -241,7 +241,7 @@ namespace Fred
     */
     class InfoKeysetHistoryByHistoryid : public Util::Printable
     {
-        unsigned long long historyid_;/**< history id of the keyset */
+        const unsigned long long historyid_;/**< history id of the keyset */
         bool lock_;/**< if set to true lock object_registry row for update, if set to false lock for share */
 
     public:

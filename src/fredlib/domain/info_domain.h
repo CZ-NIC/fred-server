@@ -200,7 +200,7 @@ namespace Fred
     */
     class InfoDomainHistoryById : public Util::Printable
     {
-        unsigned long long id_;/**< object id of the domain */
+        const unsigned long long id_;/**< object id of the domain */
         bool lock_;/**< if set to true lock object_registry row for update, if set to false lock for share */
 
     public:
@@ -241,7 +241,7 @@ namespace Fred
     */
     class InfoDomainHistoryByHistoryid : public Util::Printable
     {
-        unsigned long long historyid_;/**< history id of the domain */
+        const unsigned long long historyid_;/**< history id of the domain */
         bool lock_;/**< if set to true lock object_registry row for update, if set to false lock for share */
 
     public:
