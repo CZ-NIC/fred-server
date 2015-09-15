@@ -66,7 +66,7 @@ namespace Fred
 
     Database::ParamQuery InfoContact::make_query(const std::string& local_timestamp_pg_time_zone_name)
     {
-        Database::ReusableParameter p_local_zone(local_timestamp_pg_time_zone_name, "text");
+        const Database::ReusableParameter p_local_zone(local_timestamp_pg_time_zone_name, "text");
         Database::ParamQuery info_contact_query;
 
         if(info_contact_id_filter_cte_.isset())
