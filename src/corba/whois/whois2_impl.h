@@ -10,12 +10,6 @@
 namespace Registry {
 namespace Whois {
 
-    Registrar wrap_registrar( const Fred::InfoRegistrarData& in);
-    Contact wrap_contact(   const Fred::InfoContactData& in);
-    Domain wrap_domain(const Fred::InfoDomainData& in);
-    KeySet wrap_keyset(const Fred::InfoKeysetData& in);
-    NSSet wrap_nsset(const Fred::InfoNssetData& in);
-
     class Server_impl :
         public POA_Registry::Whois::WhoisIntf
     {
