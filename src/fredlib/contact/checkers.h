@@ -440,6 +440,16 @@ struct check_contact_place_address:GeneralCheck::contact_optional_address
     check_contact_place_address(const InfoContactData &_data);
 };
 
+struct check_contact_place_address_mandatory:check_contact_place_address
+{
+    check_contact_place_address_mandatory(const InfoContactData &_data)
+    :   check_contact_place_address(_data),
+        absent(_data.place.isnull())
+    { }
+    bool success()const { return !(absent || !this->check_contact_place_address::success()); }
+    bool absent:1; ///< contact place address doesn't present
+};
+
 struct check_contact_addresses:GeneralCheck::contact_optional_address
 {
     check_contact_addresses(const InfoContactData &_data, ContactAddressType _address_type);
@@ -572,6 +582,14 @@ struct check_contact_vat_id_presence:GeneralCheck::MojeID::contact_vat_id_presen
     check_contact_vat_id_presence(const InfoContactData &_data)
     :   GeneralCheck::MojeID::contact_vat_id_presence(_data.ssntype, _data.ssn)
     { }
+};
+
+struct check_contact_ssn
+{
+    check_contact_ssn(const InfoContactData &_data);
+    bool success()const { return !(absent || invalid); }
+    bool absent:1;
+    bool invalid:1;
 };
 
 }//Fred::MojeID

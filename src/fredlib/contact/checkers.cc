@@ -296,4 +296,23 @@ check_contact_addresses::check_contact_addresses(const InfoContactData &_data, C
     }
 }
 
+namespace MojeID {
+
+check_contact_ssn::check_contact_ssn(const InfoContactData &_data)
+{
+    const bool ssn_has_to_be_birthday = _data.organization.isnull() ||
+                                        _data.organization.get_value().empty();
+    if (ssn_has_to_be_birthday) {
+        const check_contact_birthday check(_data);
+        absent = check.absent;
+        invalid = check.invalid;
+    }
+    else {
+        const check_contact_vat_id_presence check(_data);
+        absent = check.absent;
+        invalid = false;
+    }
+}
+
+}//Fred::MojeID
 }//Fred
