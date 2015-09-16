@@ -119,6 +119,8 @@ public:
 
     void rollback_prepared_transaction(const std::string &_trans_id)const;
 
+    std::string get_validation_pdf(ContactId _contact_id)const;
+
     typedef Fred::Object::Get< Fred::Object::Type::CONTACT > GetContact;
 
     typedef boost::mpl::list< Fred::check_contact_name,

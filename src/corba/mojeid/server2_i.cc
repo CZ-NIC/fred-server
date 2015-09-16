@@ -212,7 +212,16 @@ void Server_i::rollback_prepared_transaction(
 Buffer* Server_i::get_validation_pdf(
         ContactId _contact_id)
 {
-    return NULL;
+    try {
+        const std::string pdf_content = impl_ptr_->get_validation_pdf(_contact_id);
+        return Corba::Conversion::Into< Buffer* >::BasedOn< _CORBA_Unbounded_Sequence_Octet >::from(pdf_content);
+    }
+    catch (const MojeID2Impl::ObjectDoesntExist&) {
+        throw IDL::OBJECT_NOT_EXISTS();
+    }
+    catch (...) {
+        throw IDL::INTERNAL_SERVER_ERROR();
+    }
 }//get_validation_pdf
 
 void Server_i::create_validation_request(

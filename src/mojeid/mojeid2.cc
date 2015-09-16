@@ -29,6 +29,7 @@
 #include "src/fredlib/contact/update_contact.h"
 #include "src/fredlib/contact/info_contact.h"
 #include "src/fredlib/contact/info_contact_diff.h"
+#include "src/fredlib/documents.h"
 #include "src/fredlib/public_request/create_public_request_auth.h"
 #include "src/fredlib/public_request/info_public_request_auth.h"
 #include "src/fredlib/public_request/update_public_request.h"
@@ -41,12 +42,17 @@
 #include "src/fredlib/object_state/cancel_object_state_request_id.h"
 #include "src/corba/mojeid/corba_conversion2.h"
 #include "util/random.h"
+#include "util/xmlgen.h"
 #include "util/log/context.h"
+#include "util/cfg/handle_corbanameservice_args.h"
 #include "util/cfg/handle_mojeid_args.h"
+#include "util/cfg/handle_registry_args.h"
 #include "util/cfg/config_handler_decl.h"
+#include "util/types/birthdate.h"
 
 #include <algorithm>
 #include <map>
+#include <iomanip>
 
 #include <boost/mpl/contains.hpp>
 #include <boost/mpl/copy_if.hpp>
@@ -1342,6 +1348,111 @@ void MojeID2Impl::rollback_prepared_transaction(const std::string &_trans_id)con
                               "using transaction identifier " + _trans_id + ")");
     }
 }
+
+namespace {
+
+std::string birthdate_into_czech_date(const std::string &_birthdate)
+{
+    const boost::gregorian::date d = birthdate_from_string_to_date(_birthdate);
+    std::ostringstream out;
+    if (!d.is_special()) {
+        const boost::gregorian::date::ymd_type ymd = d.year_month_day();
+        out << std::setw(2) << std::setfill('0') << std::right << ymd.day << "."   //dd.
+            << std::setw(2) << std::setfill('0') << std::right << ymd.month << "." //dd.mm.
+            << std::setw(0)                                    << ymd.year;        //dd.mm.yyyy
+    }
+    return out.str();
+}
+
+}
+
+std::string MojeID2Impl::get_validation_pdf(ContactId _contact_id)const
+{
+    LOGGING_CONTEXT(log_ctx, *this);
+
+    try {
+        Fred::OperationContextCreator ctx;
+
+        const Fred::PublicRequestObjectLockGuard locked_contact(ctx, _contact_id);
+
+        Database::Result res = ctx.get_conn().exec_params(
+            "SELECT pr.id,c.name,c.organization,c.ssn,"
+                   "(SELECT type FROM enum_ssntype WHERE id=c.ssntype),"
+                   "CONCAT_WS(', ',"
+                       "NULLIF(BTRIM(c.street1),''),NULLIF(BTRIM(c.street2),''),"
+                       "NULLIF(BTRIM(c.street3),''),NULLIF(BTRIM(c.postalcode),''),"
+                       "NULLIF(BTRIM(c.city),''),c.country),"
+                   "(SELECT name FROM object_registry WHERE id=c.id) "
+            "FROM public_request pr,"
+                 "contact c "
+            "WHERE pr.resolve_time IS NULL AND "
+                  "pr.status=(SELECT id FROM enum_public_request_status WHERE name=$1::TEXT) AND "
+                  "pr.request_type=(SELECT id FROM enum_public_request_type WHERE name=$2::TEXT) AND "
+                  "c.id=$3::BIGINT AND "
+                  "EXISTS(SELECT 1 FROM public_request_objects_map WHERE request_id=pr.id AND object_id=c.id)",
+            Database::query_param_list
+                (Fred::PublicRequest::Status(Fred::PublicRequest::Status::NEW).into< std::string >())
+                (Fred::MojeID::PublicRequest::ContactValidation::iface().get_public_request_type())
+                (_contact_id));
+        if (res.size() <= 0) {
+            throw ObjectDoesntExist("unable to generate pdf");
+        }
+        const HandleRegistryArgs *const reg_conf =
+            CfgArgs::instance()->get_handler_ptr_by_type< HandleRegistryArgs >();
+        HandleCorbaNameServiceArgs *const cn_conf =
+            CfgArgs::instance()->get_handler_ptr_by_type< HandleCorbaNameServiceArgs >();
+        std::auto_ptr< Fred::Document::Manager > doc_manager(
+            Fred::Document::Manager::create(
+                reg_conf->docgen_path,
+                reg_conf->docgen_template_path,
+                reg_conf->fileclient_path,
+                //doc_manager config dependence
+                cn_conf->get_nameservice_host_port()));
+        static const std::string czech_language = "cs";
+        std::ostringstream pdf_document;
+        std::auto_ptr< Fred::Document::Generator > doc_gen(
+            doc_manager->createOutputGenerator(Fred::Document::GT_CONTACT_VALIDATION_REQUEST_PIN3,
+                                               pdf_document,
+                                               czech_language));
+        const std::string request_id   = static_cast< std::string >(res[0][0]);
+        const std::string name         = static_cast< std::string >(res[0][1]);
+        const std::string organization = static_cast< std::string >(res[0][2]);
+        const std::string ssn_value    = static_cast< std::string >(res[0][3]);
+        const std::string ssn_type     = static_cast< std::string >(res[0][4]);
+        const std::string address      = static_cast< std::string >(res[0][5]);
+        const std::string handle       = static_cast< std::string >(res[0][6]);
+        const bool is_ssn_ico =      ssn_type == "ICO";
+        const std::string birthday = ssn_type == "BIRTHDAY"
+            ? birthdate_into_czech_date(ssn_value)
+            : "";
+        std::string letter_xml("<?xml version='1.0' encoding='utf-8'?>");
+        Util::XmlTagPair("mojeid_valid", Util::vector_of< Util::XmlCallback >
+            (Util::XmlTagPair("request_id",   Util::XmlUnparsedCData(request_id)))
+            (Util::XmlTagPair("handle",       Util::XmlUnparsedCData(handle)))
+            (Util::XmlTagPair("name",         Util::XmlUnparsedCData(name)))
+            (Util::XmlTagPair("organization", Util::XmlUnparsedCData(organization)))
+            (Util::XmlTagPair("ic",           Util::XmlUnparsedCData(is_ssn_ico ? ssn_value : "")))
+            (Util::XmlTagPair("birth_date",   Util::XmlUnparsedCData(birthday)))
+            (Util::XmlTagPair("address",      Util::XmlUnparsedCData(address)))
+        )(letter_xml);
+
+        doc_gen->getInput() << letter_xml;
+        doc_gen->closeInput();
+        return pdf_document.str();
+    }
+    catch (const ObjectDoesntExist &e) {
+        LOGGER(PACKAGE).warning(boost::format("request doesn exist (%1%)") % e.what());
+        throw;
+    }
+    catch (const std::exception &e) {
+        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
+        throw;
+    }
+    catch (...) {
+        LOGGER(PACKAGE).error("request failed (unknown error)");
+        throw;
+    }
+}//MojeID2Impl::get_validation_pdf
 
 namespace {
 
