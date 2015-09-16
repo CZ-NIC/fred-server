@@ -779,6 +779,18 @@ public:
         }
         return destination_;
     }
+    template < typename CORBA_BASE_TYPE >
+    struct BasedOn
+    {
+        typedef CORBA_TYPE  corba_type;   ///< type of destination object
+        typedef CORBA_TYPE *dst_value_ptr;///< the destination object
+        static dst_value_ptr from(const std::string &src_value)
+        {
+            std::auto_ptr< corba_type > dst_ptr(new corba_type);
+            into_from< CORBA_BASE_TYPE, std::string >()(static_cast< CORBA_BASE_TYPE& >(*dst_ptr), src_value);
+            return dst_ptr.release();
+        }
+    };
 private:
     Into(dst_value_ref _object)
     :   destination_(_object)
@@ -867,7 +879,7 @@ private:
 };
 
 template < typename CORBA_TYPE >
-Into< CORBA_TYPE >  into(CORBA_TYPE &v)
+Into< CORBA_TYPE > into(CORBA_TYPE &v)
 {
     return v;
 }
@@ -1024,6 +1036,39 @@ struct into_from< ::CORBA::String_out, const char* >
     dst_value_ref operator()(dst_value_ref dst, src_value src)const
     {
         return dst = src;
+    }
+};
+
+/**
+ * Specialization for conversion from std::string into any CORBA sequence type.
+ */
+template < typename CORBA_SEQUENCE_TYPE >
+struct into_from< CORBA_SEQUENCE_TYPE, std::string >
+{
+    typedef CORBA_SEQUENCE_TYPE  corba_type;      ///< name of destination CORBA type
+    typedef CORBA_SEQUENCE_TYPE &dst_value_ref;   ///< type for passing destination object into function argument
+    typedef std::string          convertible_type;///< name of source type
+    typedef const std::string   &src_value;       ///< type for passing source value into function argument
+    /**
+     * Converts source value into destination object.
+     * @param dst destination object
+     * @param src source value
+     * @return reference to the destination object
+     */
+    dst_value_ref operator()(dst_value_ref dst, src_value src)const
+    {
+        const ::size_t content_length = src.length();
+        typedef typename corba_type::T corba_element_type;
+        corba_element_type *const buffer_ptr = corba_type::allocbuf(content_length);
+        try {
+            std::memcpy(buffer_ptr, src.c_str(), content_length);
+            dst.replace(content_length, content_length, buffer_ptr, true);
+            return dst;
+        }
+        catch (...) {
+            corba_type::freebuf(buffer_ptr);
+            throw;
+        }
     }
 };
 
