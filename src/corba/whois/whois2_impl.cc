@@ -9,7 +9,6 @@
 #include "src/fredlib/registrar/check_registrar.h"
 #include "src/fredlib/registrar/get_registrar_handles.h"
 #include "src/fredlib/domain/check_domain.h"
-#include "src/fredlib/zone/zone.h"
 
 #include "src/whois/nameserver_exists.h"
 #include "src/whois/is_domain_delete_pending.h"
