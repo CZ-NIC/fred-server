@@ -783,6 +783,11 @@ namespace Whois {
 
             Fred::OperationContext ctx;
 
+            if(Fred::CheckDomain(fqdn).is_invalid_syntax())
+            {
+                throw INVALID_LABEL();
+            }
+
             if(Fred::CheckDomain(fqdn).is_bad_zone(ctx))
             {
                 throw UNMANAGED_ZONE();
