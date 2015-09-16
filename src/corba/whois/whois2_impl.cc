@@ -1021,7 +1021,7 @@ namespace Whois {
         std::map<unsigned long long, std::string> states = Fred::GetObjectStateDescriptions(
             lang).set_object_type(type).exec(ctx);
 
-        if(states.empty()) throw INVALID_LANG();
+        if(states.empty()) throw MISSING_LOCALIZATION();
 
         std::vector< std::pair<std::string, std::string> > temp;
         for(std::map<unsigned long long, std::string>::const_iterator ci
@@ -1055,7 +1055,7 @@ namespace Whois {
                 Corba::unwrap_string_from_const_char_ptr(lang),"domain", ctx));
             return state_seq._retn();
         }
-        catch(const INVALID_LANG&)
+        catch(const MISSING_LOCALIZATION&)
         {
             throw;
         }
@@ -1076,7 +1076,7 @@ namespace Whois {
                 Corba::unwrap_string_from_const_char_ptr(lang),"contact", ctx));
             return state_seq._retn();
         }
-        catch(const INVALID_LANG&)
+        catch(const MISSING_LOCALIZATION&)
         {
             throw;
         }
@@ -1096,7 +1096,7 @@ namespace Whois {
                 Corba::unwrap_string_from_const_char_ptr(lang),"nsset", ctx));
             return state_seq._retn();
         }
-        catch(const INVALID_LANG&)
+        catch(const MISSING_LOCALIZATION&)
         {
             throw;
         }
@@ -1116,7 +1116,7 @@ namespace Whois {
                 Corba::unwrap_string_from_const_char_ptr(lang),"keyset", ctx));
             return state_seq._retn();
         }
-        catch(const INVALID_LANG&)
+        catch(const MISSING_LOCALIZATION&)
         {
             throw;
         }
