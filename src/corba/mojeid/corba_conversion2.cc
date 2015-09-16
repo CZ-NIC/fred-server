@@ -337,6 +337,27 @@ into_from< IDL_ADDRESS_VALIDATION_ERROR, IMPL_CONTACT_ADDRESS_ERROR >::operator(
     return dst;
 }
 
+into_from< IDL_MANDATORY_ADDRESS_VALIDATION_ERROR, IMPL_MANDATORY_CONTACT_ADDRESS_ERROR >::dst_value_ref
+into_from< IDL_MANDATORY_ADDRESS_VALIDATION_ERROR, IMPL_MANDATORY_CONTACT_ADDRESS_ERROR >::operator()(dst_value_ref dst, src_value src)const
+{
+    if (src.absent) {
+        into(dst.address_presence).from(Registry::MojeID::REQUIRED);
+    }
+    if (src.street1_absent) {
+        into(dst.street1).from(Registry::MojeID::REQUIRED);
+    }
+    if (src.city_absent) {
+        into(dst.city).from(Registry::MojeID::REQUIRED);
+    }
+    if (src.postalcode_absent) {
+        into(dst.postal_code).from(Registry::MojeID::REQUIRED);
+    }
+    if (src.country_absent) {
+        into(dst.country).from(Registry::MojeID::REQUIRED);
+    }
+    return dst;
+}
+
 into_from< IDL_SHIPPING_ADDRESS_VALIDATION_ERROR, IMPL_CONTACT_ADDRESS_ERROR >::dst_value_ref
 into_from< IDL_SHIPPING_ADDRESS_VALIDATION_ERROR, IMPL_CONTACT_ADDRESS_ERROR >::operator()(dst_value_ref dst, src_value src)const
 {
@@ -680,6 +701,51 @@ into_from< IDL_MESSAGE_LIMIT_EXCEEDED, IMPL_MESSAGE_LIMIT_EXCEEDED >::operator()
     into(dst.limit_expire_date).from(src.limit_expire_date);
     into(dst.limit_count).from(src.limit_count);
     into(dst.limit_days).from(src.limit_days);
+    return dst;
+}
+
+into_from< IDL_CREATE_VALIDATION_REQUEST_VALIDATION_ERROR, IMPL_CREATE_VALIDATION_REQUEST_VALIDATION_ERROR >::dst_value_ref
+into_from< IDL_CREATE_VALIDATION_REQUEST_VALIDATION_ERROR, IMPL_CREATE_VALIDATION_REQUEST_VALIDATION_ERROR >::operator()(dst_value_ref dst, src_value src)const
+{
+    if (!src.Fred::check_contact_name::success()) {
+        if (src.Fred::check_contact_name::first_name_absent) {
+            into(dst.first_name).from(Registry::MojeID::REQUIRED);
+        }
+        if (src.Fred::check_contact_name::last_name_absent) {
+            into(dst.last_name).from(Registry::MojeID::REQUIRED);
+        }
+    }
+
+    if (!src.Fred::check_contact_place_address_mandatory::success()) {
+        if (!src.Fred::check_contact_place_address_mandatory::success()) {
+            into(dst.permanent).from(static_cast< const IMPL_MANDATORY_CONTACT_ADDRESS_ERROR& >(
+                                     static_cast< const Fred::check_contact_place_address_mandatory& >(src)));
+        }
+    }
+
+    if (!src.Fred::check_contact_email_presence::success()) {
+        into(dst.email).from(Registry::MojeID::REQUIRED);
+    }
+    else if (!src.Fred::check_contact_email_validity::success()) {
+        into(dst.email).from(Registry::MojeID::INVALID);
+    }
+
+    if (!src.Fred::check_contact_phone_validity::success()) {
+        into(dst.phone).from(Registry::MojeID::INVALID);
+    }
+
+    if (!src.Fred::check_contact_notifyemail_validity::success()) {
+        into(dst.notify_email).from(Registry::MojeID::INVALID);
+    }
+
+    if (!src.Fred::check_contact_fax_validity::success()) {
+        into(dst.fax).from(Registry::MojeID::INVALID);
+    }
+
+    if (!src.Fred::MojeID::check_contact_ssn::success()) {
+        into(dst.ssn).from(src.Fred::MojeID::check_contact_ssn::invalid ? Registry::MojeID::INVALID
+                                                                        : Registry::MojeID::REQUIRED);
+    }
     return dst;
 }
 

@@ -147,6 +147,16 @@ struct into_from< IDL_ADDRESS_VALIDATION_ERROR, IMPL_CONTACT_ADDRESS_ERROR >
     dst_value_ref operator()(dst_value_ref dst, src_value src)const;
 };
 
+typedef Registry::MojeID::MandatoryAddressValidationError IDL_MANDATORY_ADDRESS_VALIDATION_ERROR;
+typedef Fred::check_contact_place_address_mandatory IMPL_MANDATORY_CONTACT_ADDRESS_ERROR;
+
+template < >
+struct into_from< IDL_MANDATORY_ADDRESS_VALIDATION_ERROR, IMPL_MANDATORY_CONTACT_ADDRESS_ERROR >
+: into_from_base< IDL_MANDATORY_ADDRESS_VALIDATION_ERROR, IMPL_MANDATORY_CONTACT_ADDRESS_ERROR >
+{
+    dst_value_ref operator()(dst_value_ref dst, src_value src)const;
+};
+
 typedef Registry::MojeID::ShippingAddressValidationError IDL_SHIPPING_ADDRESS_VALIDATION_ERROR;
 typedef Fred::GeneralCheck::contact_optional_address     IMPL_CONTACT_ADDRESS_ERROR;
 
@@ -228,6 +238,16 @@ typedef Registry::MojeID::MojeID2Impl::MessageLimitExceeded IMPL_MESSAGE_LIMIT_E
 template < >
 struct into_from< IDL_MESSAGE_LIMIT_EXCEEDED, IMPL_MESSAGE_LIMIT_EXCEEDED >
 : into_from_base< IDL_MESSAGE_LIMIT_EXCEEDED, IMPL_MESSAGE_LIMIT_EXCEEDED >
+{
+    dst_value_ref operator()(dst_value_ref dst, src_value src)const;
+};
+
+typedef Registry::MojeID::Server::CREATE_VALIDATION_REQUEST_VALIDATION_ERROR IDL_CREATE_VALIDATION_REQUEST_VALIDATION_ERROR;
+typedef Registry::MojeID::MojeID2Impl::CreateValidationRequestError          IMPL_CREATE_VALIDATION_REQUEST_VALIDATION_ERROR;
+
+template < >
+struct into_from< IDL_CREATE_VALIDATION_REQUEST_VALIDATION_ERROR, IMPL_CREATE_VALIDATION_REQUEST_VALIDATION_ERROR >
+: into_from_base< IDL_CREATE_VALIDATION_REQUEST_VALIDATION_ERROR, IMPL_CREATE_VALIDATION_REQUEST_VALIDATION_ERROR >
 {
     dst_value_ref operator()(dst_value_ref dst, src_value src)const;
 };
