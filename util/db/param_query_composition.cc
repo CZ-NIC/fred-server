@@ -226,9 +226,7 @@ namespace Database
                     if(!pos.isset()) //new parameter instance
                     {
                         pos = Optional<std::string>(query.second.add(ci->get_param()));
-                        std::pair<std::map<boost::shared_ptr<int>, std::string >::iterator, bool> insert_result=
-                        param_lid_position.insert(std::pair<boost::shared_ptr<int>, std::string>(lid, pos.get_value()));
-                        if(!insert_result.second)
+                        if( ! param_lid_position.insert( std::make_pair(lid, pos.get_value()) ).second )
                         {
                             throw std::runtime_error("ParamQuery::Element::PQE_PARAM_REPETABLE insert failed");
                         }
