@@ -17,6 +17,7 @@
  */
 
 #include <boost/test/unit_test.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <string>
 #include <stack>
 
@@ -24,20 +25,7 @@
 #include "util/db/param_query_composition.h"
 #include "tests/setup/fixtures.h"
 
-const std::string server_name = "test-param-query";
-
-struct param_query_fixture : public Test::Fixture::instantiate_db_template
-{
-    param_query_fixture()
-    {
-        Fred::OperationContext ctx;
-        ctx.commit_transaction();//commit fixture
-    }
-    ~param_query_fixture()
-    {}
-};
-
-BOOST_FIXTURE_TEST_SUITE(TestParamQuery, param_query_fixture)
+BOOST_AUTO_TEST_SUITE(TestParamQuery)
 
 /**
  * test query composition
@@ -122,8 +110,138 @@ BOOST_AUTO_TEST_CASE(query_composition_30k_params)
     BOOST_CHECK(test_rep_query.get_query().second.size() == 1);
     BOOST_CHECK(test_non_rep_query.get_query().second.size() == 30000);
 
+}
 
+
+struct reusable_parameter_fixture
+{
+    const Database::ReusableParameter dummy_reusable_parameter_1;
+    const Database::ReusableParameter dummy_reusable_parameter_2;
+    Database::ReusableParameter dummy_reusable_parameter_3;
+    Database::ReusableParameter dummy_reusable_parameter_4;
+    Database::ReusableParameter dummy_reusable_parameter_5;
+    reusable_parameter_fixture()
+    : dummy_reusable_parameter_1(1,"integer")
+    , dummy_reusable_parameter_2("test text","text")
+    , dummy_reusable_parameter_3(Database::NullQueryParam, "text")
+    , dummy_reusable_parameter_4(dummy_reusable_parameter_2)
+    , dummy_reusable_parameter_5(dummy_reusable_parameter_3)
+    {
+        dummy_reusable_parameter_5 = dummy_reusable_parameter_1;
+    }
+    ~reusable_parameter_fixture()
+    {}
+};
+
+
+BOOST_FIXTURE_TEST_CASE(test_reusable_parameter, reusable_parameter_fixture)
+{
+    BOOST_CHECK(dummy_reusable_parameter_1.get_lid() != dummy_reusable_parameter_2.get_lid());
+    BOOST_CHECK(dummy_reusable_parameter_2.get_lid() != dummy_reusable_parameter_3.get_lid());
+    BOOST_CHECK(dummy_reusable_parameter_2.get_lid() == dummy_reusable_parameter_4.get_lid());
+    BOOST_CHECK(dummy_reusable_parameter_1.get_lid() == dummy_reusable_parameter_5.get_lid());
+    BOOST_CHECK(dummy_reusable_parameter_2.get_lid() != dummy_reusable_parameter_5.get_lid());
+    BOOST_CHECK(dummy_reusable_parameter_3.get_lid() != dummy_reusable_parameter_5.get_lid());
+
+    BOOST_CHECK(dummy_reusable_parameter_1.get_type() == "integer");
+    BOOST_CHECK(dummy_reusable_parameter_2.get_type() == "text");
+    BOOST_CHECK(dummy_reusable_parameter_3.get_type() == "text");
+    BOOST_CHECK(dummy_reusable_parameter_4.get_type() == "text");
+    BOOST_CHECK(dummy_reusable_parameter_5.get_type() == "integer");
+
+    BOOST_CHECK(dummy_reusable_parameter_1.get_value().to_string() == "1");
+    BOOST_CHECK(dummy_reusable_parameter_2.get_value().to_string() == "test text");
+    BOOST_CHECK(dummy_reusable_parameter_3.get_value().to_string() == "null");
+    BOOST_CHECK(dummy_reusable_parameter_4.get_value().to_string() == "test text");
+    BOOST_CHECK(dummy_reusable_parameter_5.get_value().to_string() == "1");
+}
+
+struct param_query_fixture
+{
+    Database::ParamQuery test_query_1;
+    Database::ParamQuery test_query_2;
+    Database::ParamQuery test_query_3;
+    Database::ParamQuery test_query_4;
+    Database::ParamQuery test_query_5;
+    Database::ParamQuery test_query_6;
+    Database::ParamQuery test_query_7;
+    Database::ParamQuery test_query_8;
+    const Database::ReusableParameter dummy_reusable_parameter_1;
+    Database::ParamQuery test_query_9;
+
+    param_query_fixture()
+    : test_query_1()
+    , test_query_2("select 1")
+    , test_query_3("select ")
+    , test_query_4(test_query_3)
+    , test_query_5(test_query_3)
+    , test_query_6(test_query_3)
+    , test_query_7(test_query_3)
+    , test_query_8(test_query_3)
+    , dummy_reusable_parameter_1(1,"integer")
+    , test_query_9(test_query_3)
+    {
+        test_query_3.param(42,"integer");
+
+        test_query_4.param_bigint(42);
+
+        test_query_5.param_bool(true);
+        test_query_5(", ").param_bool(false);
+
+        test_query_6.param_date("2015-01-01");
+        test_query_6(", ").param_timestamp("2015-01-01 01:02:03");
+
+        test_query_7.param_numeric("10.1");
+        test_query_7(", ").param_numeric("10.2");
+
+        test_query_8("(")(test_query_3)(") AS a, (")(test_query_3)(") AS b");
+
+        test_query_9.param(dummy_reusable_parameter_1)(", ").param(dummy_reusable_parameter_1);
+    }
+    ~param_query_fixture()
+    {}
+};
+
+BOOST_FIXTURE_TEST_CASE(test_param_query, param_query_fixture)
+{
+    BOOST_CHECK(test_query_1.get_query().first.empty());
+    BOOST_CHECK(test_query_1.get_query().second.empty());
+
+    BOOST_CHECK(test_query_2.get_query().first == "select 1");
+    BOOST_CHECK(test_query_2.get_query().second.empty());
+
+    BOOST_CHECK(test_query_3.get_query().first == "select $1::integer");
+    BOOST_CHECK(test_query_3.get_query().second.size() == 1);
+    BOOST_CHECK(test_query_3.get_query().second.at(0).to_string() == "42");
+
+    BOOST_CHECK(test_query_4.get_query().first == "select $1::bigint");
+    BOOST_CHECK(test_query_4.get_query().second.size() == 1);
+    BOOST_CHECK(test_query_4.get_query().second.at(0).to_string() == "42");
+
+    BOOST_CHECK(test_query_5.get_query().first == "select $1::bool, $2::bool");
+    BOOST_CHECK(test_query_5.get_query().second.size() == 2);
+    BOOST_CHECK(test_query_5.get_query().second.at(0).to_string() == "1");
+    BOOST_CHECK(test_query_5.get_query().second.at(1).to_string() == "0");
+
+    BOOST_CHECK(test_query_6.get_query().first == "select $1::date, $2::timestamp");
+    BOOST_CHECK(test_query_6.get_query().second.size() == 2);
+    BOOST_CHECK(test_query_6.get_query().second.at(0).to_string() == "2015-01-01");
+    BOOST_CHECK(test_query_6.get_query().second.at(1).to_string() == "2015-01-01 01:02:03");
+
+    BOOST_CHECK(test_query_7.get_query().first == "select $1::numeric, $2::numeric");
+    BOOST_CHECK(test_query_7.get_query().second.size() == 2);
+    BOOST_CHECK(test_query_7.get_query().second.at(0).to_string() == "10.1");
+    BOOST_CHECK(test_query_7.get_query().second.at(1).to_string() == "10.2");
+
+    BOOST_CHECK(test_query_8.get_query().first == "select (select $1::integer) AS a, (select $2::integer) AS b");
+    BOOST_CHECK(test_query_8.get_query().second.size() == 2);
+    BOOST_CHECK(test_query_8.get_query().second.at(0).to_string() == "42");
+    BOOST_CHECK(test_query_8.get_query().second.at(1).to_string() == "42");
+
+    BOOST_CHECK(test_query_9.get_query().first == "select $1::integer, $1::integer");
+    BOOST_CHECK(test_query_9.get_query().second.size() == 1);
+    BOOST_CHECK(test_query_9.get_query().second.at(0).to_string() == "1");
 
 }
 
-BOOST_AUTO_TEST_SUITE_END();//TestParamQuery
+BOOST_AUTO_TEST_SUITE_END();
