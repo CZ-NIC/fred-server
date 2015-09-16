@@ -141,6 +141,12 @@ std::string ContactReidentification::generate_passwords()const
     return ci_pass;
 }
 
+std::string ContactValidation::get_public_request_type()const
+{
+    static const std::string type = "mojeid_contact_validation";
+    return type;
+}
+
 std::string ConditionallyIdentifiedContactTransfer::get_public_request_type()const
 {
     static const std::string type = "mojeid_conditionally_identified_contact_transfer";

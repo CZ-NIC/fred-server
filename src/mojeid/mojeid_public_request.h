@@ -74,6 +74,17 @@ private:
     friend class BasedOn;
 };
 
+class ContactValidation:public AddIfaceMethod::Into
+    < ContactValidation >::BasedOn< PublicRequestTypeIface >
+{
+public:
+    virtual ~ContactValidation() { }
+private:
+    ContactValidation() { }
+    std::string get_public_request_type()const;
+    friend class BasedOn;
+};
+
 class ConditionallyIdentifiedContactTransfer:public AddIfaceMethod::Into
     < ConditionallyIdentifiedContactTransfer >::BasedOn< PublicRequestAuthTypeIface >
 {
