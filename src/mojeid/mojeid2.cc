@@ -30,6 +30,7 @@
 #include "src/fredlib/contact/info_contact.h"
 #include "src/fredlib/contact/info_contact_diff.h"
 #include "src/fredlib/documents.h"
+#include "src/fredlib/public_request/create_public_request.h"
 #include "src/fredlib/public_request/create_public_request_auth.h"
 #include "src/fredlib/public_request/info_public_request_auth.h"
 #include "src/fredlib/public_request/update_public_request.h"
@@ -1440,8 +1441,16 @@ std::string MojeID2Impl::get_validation_pdf(ContactId _contact_id)const
         doc_gen->closeInput();
         return pdf_document.str();
     }
+    catch (const Fred::PublicRequestObjectLockGuard::Exception &e) {
+        if (e.is_set_object_doesnt_exist()) {
+            LOGGER(PACKAGE).warning(boost::format("contact doesn't exist (%1%)") % e.what());
+            throw ObjectDoesntExist(e.what());
+        }
+        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
+        throw;
+    }
     catch (const ObjectDoesntExist &e) {
-        LOGGER(PACKAGE).warning(boost::format("request doesn exist (%1%)") % e.what());
+        LOGGER(PACKAGE).warning(boost::format("request doesn't exist (%1%)") % e.what());
         throw;
     }
     catch (const std::exception &e) {
@@ -1453,6 +1462,83 @@ std::string MojeID2Impl::get_validation_pdf(ContactId _contact_id)const
         throw;
     }
 }//MojeID2Impl::get_validation_pdf
+
+void MojeID2Impl::create_validation_request(
+        ContactId _contact_id,
+        LogRequestId _log_request_id)const
+{
+    LOGGING_CONTEXT(log_ctx, *this);
+
+    try {
+        Fred::OperationContextCreator ctx;
+        const Fred::PublicRequestObjectLockGuard locked_contact(ctx, _contact_id);
+        try {
+            Fred::GetActivePublicRequest(Fred::MojeID::PublicRequest::ContactValidation::iface())
+                .exec(ctx, locked_contact, _log_request_id);
+            throw ValidationRequestExists("public request already exists");
+        }
+        catch (const Fred::GetActivePublicRequest::Exception &e) {
+            if (!e.is_set_no_request_found()) {
+                throw;
+            }
+        }
+        typedef Fred::Object::State FOS;
+        typedef FOS::set<
+            FOS::SERVER_TRANSFER_PROHIBITED,
+            FOS::SERVER_UPDATE_PROHIBITED,
+            FOS::SERVER_DELETE_PROHIBITED,
+            FOS::SERVER_BLOCKED,
+            FOS::MOJEID_CONTACT,
+            FOS::CONDITIONALLY_IDENTIFIED_CONTACT,
+            FOS::IDENTIFIED_CONTACT,
+            FOS::VALIDATED_CONTACT >::type RelatedStates;
+        typedef GetContact::States< RelatedStates >::Presence StatesPresence;
+        const StatesPresence states = GetContact(_contact_id).states< RelatedStates >().presence(ctx);
+        if (states.get< FOS::VALIDATED_CONTACT >()) {
+            throw ValidationAlreadyProcessed("state validatedContact presents");
+        }
+        if (!states.get< FOS::MOJEID_CONTACT >()) {
+            throw ObjectDoesntExist("not mojeID contact");
+        }
+        const Fred::InfoContactData contact_data = Fred::InfoContactById(_contact_id).exec(ctx).info_contact_data;
+        {
+            const CheckCreateValidationRequest check_create_validation_request(contact_data);
+            if (!check_create_validation_request.success()) {
+                throw check_create_validation_request;
+            }
+        }
+        Fred::CreatePublicRequest create_public_request_op(Fred::MojeID::PublicRequest::ContactValidation::iface());
+        create_public_request_op.exec(ctx, locked_contact, _log_request_id);
+    }
+    catch (const Fred::PublicRequestObjectLockGuard::Exception &e) {
+        if (e.is_set_object_doesnt_exist()) {
+            LOGGER(PACKAGE).warning(boost::format("contact doesn't exist (%1%)") % e.what());
+            throw ObjectDoesntExist(e.what());
+        }
+        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
+        throw;
+    }
+    catch (const ObjectDoesntExist &e) {
+        LOGGER(PACKAGE).warning(boost::format("contact doesn't exist (%1%)") % e.what());
+        throw;
+    }
+    catch (const ValidationRequestExists &e) {
+        LOGGER(PACKAGE).warning(boost::format("unable to create new request (%1%)") % e.what());
+        throw;
+    }
+    catch (const CreateValidationRequestError &e) {
+        LOGGER(PACKAGE).warning("request failed (invalid contact data)");
+        throw;
+    }
+    catch (const std::exception &e) {
+        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
+        throw;
+    }
+    catch (...) {
+        LOGGER(PACKAGE).error("request failed (unknown error)");
+        throw;
+    }
+}
 
 namespace {
 

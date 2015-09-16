@@ -228,6 +228,26 @@ void Server_i::create_validation_request(
         ContactId _contact_id,
         LogRequestId _log_request_id)
 {
+    try {
+        impl_ptr_->create_validation_request(_contact_id, _log_request_id);
+    }
+    catch (const MojeID2Impl::ObjectDoesntExist&) {
+        throw IDL::OBJECT_NOT_EXISTS();
+    }
+    catch (const MojeID2Impl::ValidationRequestExists&) {
+        throw IDL::OBJECT_EXISTS();
+    }
+    catch (const MojeID2Impl::ValidationAlreadyProcessed&) {
+        throw IDL::VALIDATION_ALREADY_PROCESSED();
+    }
+    catch (const MojeID2Impl::CreateValidationRequestError &e) {
+        IDL::CREATE_VALIDATION_REQUEST_VALIDATION_ERROR idl_error;
+        Corba::Conversion::into(idl_error).from(e);
+        throw idl_error;
+    }
+    catch (...) {
+        throw IDL::INTERNAL_SERVER_ERROR();
+    }
 }//create_validation_request
 
 ContactStateInfoList* Server_i::get_contacts_state_changes(

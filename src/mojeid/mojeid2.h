@@ -121,6 +121,10 @@ public:
 
     std::string get_validation_pdf(ContactId _contact_id)const;
 
+    void create_validation_request(
+        ContactId contact_id,
+        LogRequestId log_request_id)const;
+
     typedef Fred::Object::Get< Fred::Object::Type::CONTACT > GetContact;
 
     typedef boost::mpl::list< Fred::check_contact_name,
@@ -174,6 +178,17 @@ public:
                               Fred::check_contact_fax_validity > check_update_contact_prepare;
     typedef Fred::Check< check_update_contact_prepare > CheckUpdateContactPrepare;
     typedef CheckUpdateContactPrepare UpdateContactPrepareError;
+
+    typedef boost::mpl::list< Fred::check_contact_name,
+                              Fred::check_contact_place_address_mandatory,
+                              Fred::check_contact_email_presence,
+                              Fred::check_contact_email_validity,
+                              Fred::check_contact_phone_validity,
+                              Fred::check_contact_notifyemail_validity,
+                              Fred::check_contact_fax_validity,
+                              Fred::MojeID::check_contact_ssn > check_create_validation_request;
+    typedef Fred::Check< check_create_validation_request > CheckCreateValidationRequest;
+    typedef CheckCreateValidationRequest CreateValidationRequestError;
 
     class IdentificationFailed:public std::runtime_error
     {
@@ -233,6 +248,18 @@ public:
     {
     public:
         IdentificationRequestDoesntExist(const std::string &_msg):std::runtime_error(_msg) { }
+    };
+
+    class ValidationRequestExists:public std::runtime_error
+    {
+    public:
+        ValidationRequestExists(const std::string &_msg):std::runtime_error(_msg) { }
+    };
+
+    class ValidationAlreadyProcessed:public std::runtime_error
+    {
+    public:
+        ValidationAlreadyProcessed(const std::string &_msg):std::runtime_error(_msg) { }
     };
 
     class MessageLimitExceeded:public std::runtime_error
