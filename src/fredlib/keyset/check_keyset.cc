@@ -38,7 +38,7 @@ namespace Fred
     CheckKeyset::CheckKeyset(const std::string& handle)
     : handle_(handle)
     {}
-    bool CheckKeyset::is_invalid_handle()
+    bool CheckKeyset::is_invalid_handle() const
     {
         try
         {
@@ -52,7 +52,7 @@ namespace Fred
         return false;//meaning handle syntax is ok
     }
 
-    bool CheckKeyset::is_registered(OperationContext& ctx, std::string& conflicting_handle_out)
+    bool CheckKeyset::is_registered(OperationContext& ctx, std::string& conflicting_handle_out) const
     {
         try
         {
@@ -66,14 +66,14 @@ namespace Fred
         return false;//meaning not protected
     }
 
-    bool CheckKeyset::is_registered(OperationContext& ctx)
+    bool CheckKeyset::is_registered(OperationContext& ctx) const
     {
         std::string conflicting_handle_out;
         return is_registered(ctx, conflicting_handle_out);
     }
 
 
-    bool CheckKeyset::is_protected(OperationContext& ctx)
+    bool CheckKeyset::is_protected(OperationContext& ctx) const
     {
         try
         {
@@ -87,7 +87,7 @@ namespace Fred
         return false;//meaning not protected
     }
 
-    bool CheckKeyset::is_free(OperationContext& ctx)
+    bool CheckKeyset::is_free(OperationContext& ctx) const
     {
         try
         {

@@ -50,7 +50,7 @@ namespace Fred
         * check domain name syntax
         * @return true if invalid, false if ok
         */
-        bool is_invalid_syntax();
+        bool is_invalid_syntax() const;
 
 
         /**
@@ -58,28 +58,28 @@ namespace Fred
         * @param ctx an operation context with database and logging interface.
         * @return true if invalid, false if ok
         */
-        bool is_invalid_handle(OperationContext& ctx);
+        bool is_invalid_handle(OperationContext& ctx) const;
 
         /**
         * check if domain have existing zone.
         * @param ctx an operation context with database and logging interface.
         * @return true if bad, false if ok
         */
-        bool is_bad_zone(OperationContext& ctx);
+        bool is_bad_zone(OperationContext& ctx) const;
 
         /**
         * check number of domain name labels.
         * @param ctx an operation context with database and logging interface.
         * @return true if bad, false if ok
         */
-        bool is_bad_length(OperationContext& ctx);
+        bool is_bad_length(OperationContext& ctx) const;
 
         /**
         * check if domain name is on blacklist.
         * @param ctx an operation context with database and logging interface.
         * @return true if blacklisted, false if ok
         */
-        bool is_blacklisted(OperationContext& ctx);
+        bool is_blacklisted(OperationContext& ctx) const;
 
         /**
         * check if domain name is registered.
@@ -87,20 +87,20 @@ namespace Fred
         * @param conflicting_fqdn_out an conflicting domain identifier reference used for output if true is returned.
         * @return true if registered, false if not
         */
-        bool is_registered(OperationContext& ctx, std::string& conflicting_fqdn_out);
+        bool is_registered(OperationContext& ctx, std::string& conflicting_fqdn_out) const;
         /**
         * check if domain name is registered.
         * @param ctx an operation context with database and logging interface.
         * @return true if registered, false if not
         */
-        bool is_registered(OperationContext& ctx);
+        bool is_registered(OperationContext& ctx) const;
 
         /**
         * check if domain name is available for registration.
         * @param ctx an operation context with database and logging interface.
         * @return true if available, false if not
         */
-        bool is_available(OperationContext& ctx);
+        bool is_available(OperationContext& ctx) const;
 
         /**
         * Dumps state of the instance into the string

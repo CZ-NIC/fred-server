@@ -37,7 +37,7 @@ namespace Fred
     CheckRegistrar::CheckRegistrar(const std::string& handle)
     : handle_(handle)
     {}
-    bool CheckRegistrar::is_invalid_handle()
+    bool CheckRegistrar::is_invalid_handle() const
     {
         static const boost::regex REGISTRAR_HANDLE_SYNTAX("[rR][eE][gG]-.*");
         return !boost::regex_match(handle_, REGISTRAR_HANDLE_SYNTAX);

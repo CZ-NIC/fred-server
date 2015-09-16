@@ -52,7 +52,7 @@ namespace Fred
         * @param ctx an operation context with database and logging interface.
         * @return true if invalid, false if ok
         */
-        bool is_invalid_handle();
+        bool is_invalid_handle() const;
 
         /**
         * Checks if contact handle is registered.
@@ -60,28 +60,28 @@ namespace Fred
         * @param conflicting_handle_out an conflicting contact identifier reference used for output if true is returned.
         * @return true if registered, false if not
         */
-        bool is_registered(OperationContext& ctx, std::string& conflicting_handle_out);
+        bool is_registered(OperationContext& ctx, std::string& conflicting_handle_out) const;
 
         /**
         * Checks if contact handle is registered.
         * @param ctx an operation context with database and logging interface.
         * @return true if registered, false if not
         */
-        bool is_registered(OperationContext& ctx);
+        bool is_registered(OperationContext& ctx) const;
 
         /**
         * Checks if contact handle is in protection period.
         * @param ctx an operation context with database and logging interface.
         * @return true if protected, false if not
         */
-        bool is_protected(OperationContext& ctx);
+        bool is_protected(OperationContext& ctx)  const;
 
         /**
         * Checks if contact handle is free for registration.
         * @param ctx an operation context with database and logging interface.
         * @return true if protected, false if not
         */
-        bool is_free(OperationContext& ctx);
+        bool is_free(OperationContext& ctx)  const;
 
         /**
         * Dumps state of the instance into the string

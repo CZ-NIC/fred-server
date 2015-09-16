@@ -50,7 +50,7 @@ namespace Fred
         * Check registrar handle syntax.
         * @return true if invalid, false if ok
         */
-        bool is_invalid_handle();
+        bool is_invalid_handle() const;
 
         /**
         * Dumps state of the instance into the string
