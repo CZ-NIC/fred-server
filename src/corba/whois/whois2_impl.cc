@@ -779,48 +779,56 @@ namespace Whois {
     {
         try
         {
-            std::string fqdn = Corba::unwrap_string_from_const_char_ptr(handle);
-
+            std::string fqdn;
             Fred::OperationContext ctx;
-
-            if(Fred::CheckDomain(fqdn).is_invalid_syntax())
+            try
             {
-                throw INVALID_LABEL();
-            }
+                fqdn = Corba::unwrap_string_from_const_char_ptr(handle);
 
-            if(Fred::CheckDomain(fqdn).is_bad_zone(ctx))
+                //check general name rules
+                if(Fred::CheckDomain(fqdn).is_invalid_syntax())
+                {
+                    throw INVALID_LABEL();
+                }
+
+                if(Fred::CheckDomain(fqdn).is_bad_zone(ctx))
+                {
+                    throw UNMANAGED_ZONE();
+                }
+
+                if(Fred::CheckDomain(fqdn).is_bad_length(ctx))
+                {
+                    throw TOO_MANY_LABELS();
+                }
+
+                Domain tmp_domain(wrap_domain(
+                            Fred::InfoDomainByHandle(
+                                Corba::unwrap_string_from_const_char_ptr(handle)
+                            ).exec(ctx, output_timezone)//this will throw if object not found
+                            .info_domain_data
+                        ));
+
+                if(::Whois::is_domain_delete_pending(Corba::unwrap_string_from_const_char_ptr(handle), ctx, "Europe/Prague"))
+                {
+                    return new Domain(generate_obfuscate_domain_delete_candidate(
+                            Corba::unwrap_string_from_const_char_ptr(handle)));
+                }
+
+                return new Domain(tmp_domain);
+
+            }
+            catch(const Fred::InfoDomainByHandle::Exception& e)
             {
-                throw UNMANAGED_ZONE();
-            }
+                if(e.is_set_unknown_fqdn())
+                {
+                    //check current registry name rules (that might change over time)
+                    if(Fred::CheckDomain(fqdn).is_invalid_handle(ctx))
+                    {
+                        throw INVALID_LABEL();
+                    }
 
-            if(Fred::CheckDomain(fqdn).is_bad_length(ctx))
-            {
-                throw TOO_MANY_LABELS();
-            }
-
-            if(Fred::CheckDomain(fqdn).is_invalid_handle(ctx))
-            {
-                throw INVALID_LABEL();
-            }
-
-            Domain tmp_domain(wrap_domain(
-                        Fred::InfoDomainByHandle(
-                            Corba::unwrap_string_from_const_char_ptr(handle)
-                        ).exec(ctx, output_timezone)//this will throw if object not found
-                        .info_domain_data
-                    ));
-
-            if(::Whois::is_domain_delete_pending(Corba::unwrap_string_from_const_char_ptr(handle), ctx, "Europe/Prague"))
-            {
-                return new Domain(generate_obfuscate_domain_delete_candidate(
-                        Corba::unwrap_string_from_const_char_ptr(handle)));
-            }
-
-            return new Domain(tmp_domain);
-
-        } catch(const Fred::InfoDomainByHandle::Exception& e) {
-            if(e.is_set_unknown_fqdn()) {
-                throw OBJECT_NOT_FOUND();
+                    throw OBJECT_NOT_FOUND();
+                }
             }
         }
         catch(const ::CORBA::UserException& )
