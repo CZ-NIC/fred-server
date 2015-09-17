@@ -329,10 +329,11 @@ namespace Fred
 
             Database::ParamQuery inline_view_filter_query;
 
-            inline_view_filter_query("SELECT d.id FROM domain d "
-                "JOIN object_registry oreg ON d.registrant = oreg.id"
-                " AND oreg.name = UPPER(").param_text(registrant_handle_)(")"
-                " AND oreg.erdate IS NULL");
+            inline_view_filter_query(
+                "SELECT d.id FROM domain d "
+                    " JOIN object_registry oreg ON d.registrant = oreg.id"
+                        " AND oreg.name = UPPER(").param_text(registrant_handle_)(")"
+                        " AND oreg.erdate IS NULL");
 
             if(limit_.isset())
             {
@@ -426,11 +427,12 @@ namespace Fred
 
             Database::ParamQuery inline_view_filter_query;
 
-            inline_view_filter_query("SELECT dcm.domainid"
-                " FROM object_registry oreg"
-                " JOIN  enum_object_type eot ON oreg.type = eot.id AND eot.name = 'contact'"
-                " JOIN domain_contact_map dcm ON dcm.contactid = oreg.id"
-                " WHERE oreg.name = UPPER(").param_text(admin_contact_handle_)(") AND oreg.erdate IS NULL");
+            inline_view_filter_query(
+                "SELECT dcm.domainid"
+                    " FROM object_registry oreg"
+                        " JOIN  enum_object_type eot ON oreg.type = eot.id AND eot.name = 'contact'"
+                        " JOIN domain_contact_map dcm ON dcm.contactid = oreg.id"
+                    " WHERE oreg.name = UPPER(").param_text(admin_contact_handle_)(") AND oreg.erdate IS NULL");
 
             if(limit_.isset())
             {
@@ -519,9 +521,10 @@ namespace Fred
 
             Database::ParamQuery inline_view_filter_query;
 
-            inline_view_filter_query("SELECT d.id FROM domain d"
-                " JOIN object_registry noreg ON d.nsset = noreg.id AND noreg.name = UPPER(").param_text(nsset_handle_)(")"
-                " AND noreg.type = ( SELECT id FROM enum_object_type eot WHERE eot.name='nsset'::text) AND noreg.erdate IS NULL");
+            inline_view_filter_query(
+                "SELECT d.id FROM domain d"
+                    " JOIN object_registry noreg ON d.nsset = noreg.id AND noreg.name = UPPER(").param_text(nsset_handle_)(")"
+                            " AND noreg.type = ( SELECT id FROM enum_object_type eot WHERE eot.name='nsset'::text) AND noreg.erdate IS NULL");
 
             if(limit_.isset())
             {
@@ -609,9 +612,10 @@ namespace Fred
 
             Database::ParamQuery inline_view_filter_query;
 
-            inline_view_filter_query("SELECT d.id FROM domain d"
-                " JOIN object_registry koreg ON d.keyset = koreg.id AND koreg.name = UPPER(").param_text(keyset_handle_)(")"
-                " AND koreg.type = ( SELECT id FROM enum_object_type eot WHERE eot.name='keyset'::text) AND koreg.erdate IS NULL");
+            inline_view_filter_query(
+                "SELECT d.id FROM domain d"
+                    " JOIN object_registry koreg ON d.keyset = koreg.id AND koreg.name = UPPER(").param_text(keyset_handle_)(")"
+                        " AND koreg.type = ( SELECT id FROM enum_object_type eot WHERE eot.name='keyset'::text) AND koreg.erdate IS NULL");
 
             if(limit_.isset())
             {

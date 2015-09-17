@@ -249,11 +249,12 @@ namespace Fred
 
             Database::ParamQuery cte_id_filter_query;
 
-            cte_id_filter_query("SELECT ncm.nssetid"
-                " FROM object_registry oreg"
-                " JOIN  enum_object_type eot ON oreg.type = eot.id AND eot.name = 'contact'"
-                " JOIN nsset_contact_map ncm ON ncm.contactid = oreg.id"
-                " WHERE oreg.name = UPPER(").param_text(tech_contact_handle_)(") AND oreg.erdate IS NULL");
+            cte_id_filter_query(
+                "SELECT ncm.nssetid"
+                    " FROM object_registry oreg"
+                        " JOIN  enum_object_type eot ON oreg.type = eot.id AND eot.name = 'contact'"
+                        " JOIN nsset_contact_map ncm ON ncm.contactid = oreg.id"
+                    " WHERE oreg.name = UPPER(").param_text(tech_contact_handle_)(") AND oreg.erdate IS NULL");
 
             if(limit_.isset())
             {
