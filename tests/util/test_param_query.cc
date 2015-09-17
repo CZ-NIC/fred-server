@@ -67,8 +67,7 @@ BOOST_AUTO_TEST_CASE(query_composition)
         ", $4::bigint as f7, $2::text as f8"
         ") as tmp where f6 = $2::text and f3 = $2::text and f5 <> $2::text");
 
-    std::pair<std::string,Database::query_param_list> query = filter_query.get_query();
-    Database::Result result_pq = ctx.get_conn().exec_params(query.first, query.second);
+    Database::Result result_pq = ctx.get_conn().exec_params(filter_query);
 
     BOOST_CHECK(static_cast<std::string>(result_pq[0]["f1"]) == "1");
     BOOST_CHECK(static_cast<std::string>(result_pq[0]["f2"]) == "{aaa,bbb,ccc}");

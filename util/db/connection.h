@@ -33,6 +33,7 @@
 #include "statement.h"
 #include "connection_factory.h"
 #include "query_param.h"
+#include "param_query_composition.h"
 
 #include "config.h"
 
@@ -351,6 +352,18 @@ public:
       }
       return super::exec_params(_stmt, params);
     }
+
+  /**
+   * ParamQuery wrapper
+   * @param _q composable query instance
+   * @return result
+   */
+
+  result_type exec_params(const ParamQuery& param_query)
+  {
+      std::pair<std::string,QueryParams> param_query_pair = param_query.get_query();
+      return this->exec_params(param_query_pair.first, param_query_pair.second);
+  }
 
   virtual inline std::string escape(const std::string &_in) {
     if (!this->conn_) {
