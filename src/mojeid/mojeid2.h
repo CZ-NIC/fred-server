@@ -297,6 +297,11 @@ public:
         ContactId _contact_id,
         ContactStateData &_result)const;
 
+    void cancel_account_prepare(
+        ContactId _contact_id,
+        const std::string &_trans_id,
+        LogRequestId _log_request_id)const;
+
     void send_new_pin3(
         ContactId _contact_id,
         LogRequestId _log_request_id)const;

@@ -284,6 +284,16 @@ void Server_i::cancel_account_prepare(
         const char *_trans_id,
         LogRequestId _log_request_id)
 {
+    try {
+        const std::string trans_id = Corba::Conversion::from(_trans_id).into< std::string >();
+        impl_ptr_->cancel_account_prepare(_contact_id, trans_id, _log_request_id);
+    }
+    catch (const MojeID2Impl::ObjectDoesntExist&) {
+        throw IDL::OBJECT_NOT_EXISTS();
+    }
+    catch (...) {
+        throw IDL::INTERNAL_SERVER_ERROR();
+    }
 }//cancel_account_prepare
 
 ContactHandleList* Server_i::get_unregistrable_handles()

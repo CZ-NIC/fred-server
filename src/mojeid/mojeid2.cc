@@ -27,6 +27,7 @@
 #include "src/mojeid/mojeid_public_request.h"
 #include "src/fredlib/contact/create_contact.h"
 #include "src/fredlib/contact/update_contact.h"
+#include "src/fredlib/contact/delete_contact.h"
 #include "src/fredlib/contact/info_contact.h"
 #include "src/fredlib/contact/info_contact_diff.h"
 #include "src/fredlib/documents.h"
@@ -1509,6 +1510,7 @@ void MojeID2Impl::create_validation_request(
         }
         Fred::CreatePublicRequest create_public_request_op(Fred::MojeID::PublicRequest::ContactValidation::iface());
         create_public_request_op.exec(ctx, locked_contact, _log_request_id);
+        ctx.commit_transaction();
     }
     catch (const Fred::PublicRequestObjectLockGuard::Exception &e) {
         if (e.is_set_object_doesnt_exist()) {
@@ -1517,6 +1519,10 @@ void MojeID2Impl::create_validation_request(
         }
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
         throw;
+    }
+    catch (const GetContact::object_doesnt_exist &e) {
+        LOGGER(PACKAGE).warning(boost::format("contact doesn't exist (%1%)") % e.what());
+        throw ObjectDoesntExist(e.what());
     }
     catch (const ObjectDoesntExist &e) {
         LOGGER(PACKAGE).warning(boost::format("contact doesn't exist (%1%)") % e.what());
@@ -1709,6 +1715,98 @@ ContactStateData& MojeID2Impl::get_contact_state(
     }//try
     catch (const ObjectDoesntExist &e) {
         LOGGER(PACKAGE).warning(e.what());
+        throw;
+    }
+    catch (const std::exception &e) {
+        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
+        throw;
+    }
+    catch (...) {
+        LOGGER(PACKAGE).error("request failed (unknown error)");
+        throw;
+    }
+}
+
+void MojeID2Impl::cancel_account_prepare(
+        ContactId _contact_id,
+        const std::string &_trans_id,
+        LogRequestId _log_request_id)const
+{
+    LOGGING_CONTEXT(log_ctx, *this);
+
+    try {
+        Fred::OperationContextCreator ctx;
+        const Fred::PublicRequestObjectLockGuard locked_contact(ctx, _contact_id);
+        typedef Fred::Object::State FOS;
+        typedef FOS::set<
+            FOS::SERVER_TRANSFER_PROHIBITED,
+            FOS::SERVER_UPDATE_PROHIBITED,
+            FOS::SERVER_DELETE_PROHIBITED,
+            FOS::SERVER_BLOCKED,
+            FOS::MOJEID_CONTACT,
+            FOS::CONDITIONALLY_IDENTIFIED_CONTACT,
+            FOS::IDENTIFIED_CONTACT,
+            FOS::VALIDATED_CONTACT,
+            FOS::LINKED >::type RelatedStates;
+        typedef GetContact::States< RelatedStates >::Presence StatesPresence;
+        const StatesPresence states = GetContact(_contact_id).states< RelatedStates >().presence(ctx);
+        if (!(states.get< FOS::MOJEID_CONTACT >() && (states.get< FOS::VALIDATED_CONTACT >()  ||
+                                                      states.get< FOS::IDENTIFIED_CONTACT >() ||
+                                                      states.get< FOS::CONDITIONALLY_IDENTIFIED_CONTACT >())
+             )) {
+            throw std::runtime_error("bad mojeID contact");
+        }
+
+        if (!states.get< FOS::LINKED >()) {
+            Fred::DeleteContactById(_contact_id).exec(ctx);
+            ctx.commit_transaction();
+            return;
+        }
+
+        Fred::StatusList to_cancel;
+        to_cancel.insert(FOS(FOS::MOJEID_CONTACT).into< std::string >());
+        if (states.get< FOS::VALIDATED_CONTACT >()) {
+            to_cancel.insert(FOS(FOS::VALIDATED_CONTACT).into< std::string >());
+        }
+        if (states.get< FOS::IDENTIFIED_CONTACT >()) {
+            to_cancel.insert(FOS(FOS::IDENTIFIED_CONTACT).into< std::string >());
+        }
+        if (states.get< FOS::CONDITIONALLY_IDENTIFIED_CONTACT >()) {
+            to_cancel.insert(FOS(FOS::CONDITIONALLY_IDENTIFIED_CONTACT).into< std::string >());
+        }
+        Fred::CancelObjectStateRequestId(_contact_id, to_cancel).exec(ctx);
+
+        Fred::UpdateContactById(_contact_id, mojeid_registrar_handle_)
+            .unset_domain_expiration_letter_flag()
+            .reset_address< Fred::ContactAddressType::MAILING >()
+            .reset_address< Fred::ContactAddressType::BILLING >()
+            .reset_address< Fred::ContactAddressType::SHIPPING >()
+            .reset_address< Fred::ContactAddressType::SHIPPING_2 >()
+            .reset_address< Fred::ContactAddressType::SHIPPING_3 >()
+            .exec(ctx);
+
+        Fred::UpdatePublicRequest().set_status(Fred::PublicRequest::Status::INVALIDATED)
+                                   .set_reason("cancel_account_prepare call")
+                                   .set_registrar_id(ctx, mojeid_registrar_handle_)
+                                   .exec(ctx,
+                                         locked_contact,
+                                         Fred::MojeID::PublicRequest::ContactValidation::iface(),
+                                         _log_request_id);
+    }
+    catch (const Fred::PublicRequestObjectLockGuard::Exception &e) {
+        if (e.is_set_object_doesnt_exist()) {
+            LOGGER(PACKAGE).warning(boost::format("contact doesn't exist (%1%)") % e.what());
+            throw ObjectDoesntExist(e.what());
+        }
+        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
+        throw;
+    }
+    catch (const GetContact::object_doesnt_exist &e) {
+        LOGGER(PACKAGE).warning(boost::format("contact doesn't exist (%1%)") % e.what());
+        throw ObjectDoesntExist(e.what());
+    }
+    catch (const ObjectDoesntExist &e) {
+        LOGGER(PACKAGE).warning(boost::format("contact doesn't exist (%1%)") % e.what());
         throw;
     }
     catch (const std::exception &e) {
