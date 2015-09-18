@@ -42,6 +42,7 @@
 #include "src/fredlib/object/get_states_presence.h"
 #include "src/fredlib/object_state/create_object_state_request_id.h"
 #include "src/fredlib/object_state/cancel_object_state_request_id.h"
+#include "src/fredlib/messages/generate.h"
 #include "src/corba/mojeid/corba_conversion2.h"
 #include "util/random.h"
 #include "util/xmlgen.h"
