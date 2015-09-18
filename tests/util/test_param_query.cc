@@ -166,6 +166,7 @@ struct param_query_fixture
     Database::ParamQuery test_query_8;
     const Database::ReusableParameter dummy_reusable_parameter_1;
     Database::ParamQuery test_query_9;
+    Database::ParamQuery test_query_10;
 
     param_query_fixture()
     : test_query_1()
@@ -178,6 +179,7 @@ struct param_query_fixture
     , test_query_8(test_query_3)
     , dummy_reusable_parameter_1(1,"integer")
     , test_query_9(test_query_3)
+    , test_query_10(test_query_3)
     {
         test_query_3.param(42,"integer");
 
@@ -195,6 +197,8 @@ struct param_query_fixture
         test_query_8("(")(test_query_3)(") AS a, (")(test_query_3)(") AS b");
 
         test_query_9.param(dummy_reusable_parameter_1)(", ").param(dummy_reusable_parameter_1);
+
+        test_query_10.param_text("test text");
     }
     ~param_query_fixture()
     {}
@@ -239,6 +243,10 @@ BOOST_FIXTURE_TEST_CASE(test_param_query, param_query_fixture)
     BOOST_CHECK(test_query_9.get_query().first == "select $1::integer, $1::integer");
     BOOST_CHECK(test_query_9.get_query().second.size() == 1);
     BOOST_CHECK(test_query_9.get_query().second.at(0).to_string() == "1");
+
+    BOOST_CHECK(test_query_10.get_query().first == "select $1::text");
+    BOOST_CHECK(test_query_10.get_query().second.size() == 1);
+    BOOST_CHECK(test_query_10.get_query().second.at(0).to_string() == "test text");
 
 }
 
