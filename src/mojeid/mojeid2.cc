@@ -1735,7 +1735,7 @@ void MojeID2Impl::cancel_account_prepare(
     LOGGING_CONTEXT(log_ctx, *this);
 
     try {
-        Fred::OperationContextCreator ctx;
+        Fred::OperationContextTwoPhaseCommitCreator ctx(_trans_id);
         const Fred::PublicRequestObjectLockGuard locked_contact(ctx, _contact_id);
         typedef Fred::Object::State FOS;
         typedef FOS::set<
@@ -1792,6 +1792,8 @@ void MojeID2Impl::cancel_account_prepare(
                                          locked_contact,
                                          Fred::MojeID::PublicRequest::ContactValidation::iface(),
                                          _log_request_id);
+        ctx.commit_transaction();
+        return;
     }
     catch (const Fred::PublicRequestObjectLockGuard::Exception &e) {
         if (e.is_set_object_doesnt_exist()) {
