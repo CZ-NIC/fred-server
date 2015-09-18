@@ -423,7 +423,7 @@ namespace Fred
             Database::ParamQuery inline_view_filter_query;
 
             inline_view_filter_query(
-                "SELECT dcm.domainid"
+                "SELECT DISTINCT dcm.domainid"
                     " FROM object_registry oreg"
                         " JOIN  enum_object_type eot ON oreg.type = eot.id AND eot.name = 'contact'"
                         " JOIN domain_contact_map dcm ON dcm.contactid = oreg.id"
