@@ -686,7 +686,7 @@ public:
       {
           Database::Row::Iterator col = (*it).begin();
           unsigned long long c_hid = *col;
-          unsigned long long c_id  = *(++col); (void)c_id;//to disable unused warning
+          ++col;//contact id
           std::string type         = *(++col);
           std::string company_name = *(++col);
           std::string street1      = *(++col);
