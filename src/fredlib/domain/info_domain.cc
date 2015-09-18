@@ -340,12 +340,7 @@ namespace Fred
                 inline_view_filter_query (" ORDER BY d.id LIMIT ").param_bigint(limit_.get_value());
             }
 
-            std::pair<std::string,Database::query_param_list> domain_id_by_registrant_handle_param_query
-                = inline_view_filter_query.get_query();
-
-            Database::Result domain_id_res = ctx.get_conn().exec_params(
-                domain_id_by_registrant_handle_param_query.first,
-                domain_id_by_registrant_handle_param_query.second);
+            Database::Result domain_id_res = ctx.get_conn().exec_params(inline_view_filter_query);
 
             if(domain_id_res.size() == 0)//no domain id found
             {
@@ -439,12 +434,7 @@ namespace Fred
                 inline_view_filter_query (" ORDER BY dcm.domainid LIMIT ").param_bigint(limit_.get_value());
             }
 
-            std::pair<std::string,Database::query_param_list> domain_id_by_admin_contact_handle_param_query
-                = inline_view_filter_query.get_query();
-
-            Database::Result domain_id_res = ctx.get_conn().exec_params(
-                domain_id_by_admin_contact_handle_param_query.first,
-                domain_id_by_admin_contact_handle_param_query.second);
+            Database::Result domain_id_res = ctx.get_conn().exec_params(inline_view_filter_query);
 
             if(domain_id_res.size() == 0)//no domain id found
             {
@@ -531,12 +521,7 @@ namespace Fred
                 inline_view_filter_query (" ORDER BY d.id LIMIT ").param_bigint(limit_.get_value());
             }
 
-            std::pair<std::string,Database::query_param_list> domain_id_by_nsset_handle_param_query
-                = inline_view_filter_query.get_query();
-
-            Database::Result domain_id_res = ctx.get_conn().exec_params(
-                domain_id_by_nsset_handle_param_query.first,
-                domain_id_by_nsset_handle_param_query.second);
+            Database::Result domain_id_res = ctx.get_conn().exec_params(inline_view_filter_query);
 
             if(domain_id_res.size() == 0)//no domain id found
             {
@@ -622,12 +607,7 @@ namespace Fred
                 inline_view_filter_query (" ORDER BY d.id LIMIT ").param_bigint(limit_.get_value());
             }
 
-            std::pair<std::string,Database::query_param_list> domain_id_by_keyset_handle_param_query
-                = inline_view_filter_query.get_query();
-
-            Database::Result domain_id_res = ctx.get_conn().exec_params(
-                domain_id_by_keyset_handle_param_query.first,
-                domain_id_by_keyset_handle_param_query.second);
+            Database::Result domain_id_res = ctx.get_conn().exec_params(inline_view_filter_query);
 
             if(domain_id_res.size() == 0)//no domain id found
             {

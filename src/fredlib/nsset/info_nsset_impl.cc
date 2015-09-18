@@ -238,14 +238,8 @@ namespace Fred
     {
         std::vector<InfoNssetOutput> result;
 
-        Database::ParamQuery nsset_param_query = make_info_nsset_projection_query(
-            local_timestamp_pg_time_zone_name);
-
-        std::pair<std::string,Database::query_param_list> nsset_query_with_params
-            = nsset_param_query.get_query();
-
         Database::Result param_query_result = ctx.get_conn().exec_params(
-            nsset_query_with_params.first, nsset_query_with_params.second);
+            make_info_nsset_projection_query(local_timestamp_pg_time_zone_name));
 
         result.reserve(param_query_result.size());
 
@@ -284,9 +278,8 @@ namespace Fred
                 : boost::posix_time::time_from_string(static_cast<std::string>(param_query_result[i][GetAlias::local_timestamp()]));
 
             //tech contacts
-            std::pair<std::string, Database::QueryParams> tech_contact_query = make_tech_contact_query(
-                    info_nsset_output.info_nsset_data.id, info_nsset_output.info_nsset_data.historyid).get_query();
-            Database::Result tech_contact_res = ctx.get_conn().exec_params(tech_contact_query.first, tech_contact_query.second);
+            Database::Result tech_contact_res = ctx.get_conn().exec_params(make_tech_contact_query(
+                info_nsset_output.info_nsset_data.id, info_nsset_output.info_nsset_data.historyid));
             info_nsset_output.info_nsset_data.tech_contacts.reserve(tech_contact_res.size());
             for(Database::Result::size_type j = 0; j < tech_contact_res.size(); ++j)
             {
@@ -297,19 +290,16 @@ namespace Fred
             }
 
             //DNS keys
-            std::pair<std::string, Database::QueryParams> dns_hosts_query = make_dns_host_query(
-                    info_nsset_output.info_nsset_data.id, info_nsset_output.info_nsset_data.historyid).get_query();
-            Database::Result dns_hosts_res = ctx.get_conn().exec_params(dns_hosts_query.first, dns_hosts_query.second);
+            Database::Result dns_hosts_res = ctx.get_conn().exec_params(make_dns_host_query(
+                info_nsset_output.info_nsset_data.id, info_nsset_output.info_nsset_data.historyid));
             info_nsset_output.info_nsset_data.dns_hosts.reserve(dns_hosts_res.size());
             for(Database::Result::size_type j = 0; j < dns_hosts_res.size(); ++j)
             {
                 unsigned long long dns_host_id = static_cast<unsigned long long>(dns_hosts_res[j]["host_id"]);
                 std::string dns_host_fqdn = static_cast<std::string>(dns_hosts_res[j]["host_fqdn"]);
 
-                std::pair<std::string, Database::QueryParams> dns_ip_query = make_dns_ip_query(
-                        dns_host_id, info_nsset_output.info_nsset_data.historyid ).get_query();
-
-                Database::Result dns_ip_res = ctx.get_conn().exec_params(dns_ip_query.first, dns_ip_query.second);
+                Database::Result dns_ip_res = ctx.get_conn().exec_params(make_dns_ip_query(
+                    dns_host_id, info_nsset_output.info_nsset_data.historyid ));
                 std::vector<boost::asio::ip::address> dns_ip;
                 dns_ip.reserve(dns_ip_res.size());
                 for(Database::Result::size_type k = 0; k < dns_ip_res.size(); ++k)

@@ -125,9 +125,7 @@ namespace Fred
     {
         std::vector<InfoRegistrarOutput> result;
 
-        std::pair<std::string, Database::QueryParams> registrar_query = make_registrar_query(local_timestamp_pg_time_zone_name).get_query();
-
-        Database::Result registrar_query_result = ctx.get_conn().exec_params(registrar_query.first,registrar_query.second);
+        Database::Result registrar_query_result = ctx.get_conn().exec_params(make_registrar_query(local_timestamp_pg_time_zone_name));
         result.reserve(registrar_query_result.size());
         for(Database::Result::size_type i = 0; i < registrar_query_result.size(); ++i)
         {

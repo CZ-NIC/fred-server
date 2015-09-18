@@ -187,10 +187,7 @@ namespace Fred
     {
         std::vector<InfoContactOutput> result;
 
-        Database::ParamQuery contact_param_query = make_query(local_timestamp_pg_time_zone_name);
-        std::pair<std::string, Database::QueryParams> query = contact_param_query.get_query();
-
-        Database::Result query_result = ctx.get_conn().exec_params(query.first,query.second);
+        Database::Result query_result = ctx.get_conn().exec_params(make_query(local_timestamp_pg_time_zone_name));
         result.reserve(query_result.size());
         for(Database::Result::size_type i = 0; i < query_result.size(); ++i)
         {

@@ -29,7 +29,7 @@ BOOST_AUTO_TEST_SUITE(TestParamQuery)
 /**
  * test query composition
 */
-BOOST_AUTO_TEST_CASE(query_composition)
+BOOST_FIXTURE_TEST_CASE(query_composition, Test::Fixture::instantiate_db_template)
 {
     Fred::OperationContext ctx;
 

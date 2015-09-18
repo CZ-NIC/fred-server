@@ -211,10 +211,7 @@ namespace Fred
     {
         std::vector<InfoKeysetOutput> result;
 
-        std::pair<std::string,Database::query_param_list> keyset_query_with_params
-            = make_info_keyset_projection_query(local_timestamp_pg_time_zone_name).get_query();
-
-        Database::Result query_result = ctx.get_conn().exec_params(keyset_query_with_params.first,keyset_query_with_params.second);
+        Database::Result query_result = ctx.get_conn().exec_params(make_info_keyset_projection_query(local_timestamp_pg_time_zone_name));
 
         result.reserve(query_result.size());
 
@@ -251,9 +248,8 @@ namespace Fred
                 : boost::posix_time::time_from_string(static_cast<std::string>(query_result[i][GetAlias::local_timestamp()]));
 
             //tech contacts
-            std::pair<std::string, Database::QueryParams> tech_contact_query = make_tech_contact_query(
-                    info_keyset_output.info_keyset_data.id, info_keyset_output.info_keyset_data.historyid).get_query();
-            Database::Result tech_contact_res = ctx.get_conn().exec_params(tech_contact_query.first, tech_contact_query.second);
+            Database::Result tech_contact_res = ctx.get_conn().exec_params(make_tech_contact_query(
+                info_keyset_output.info_keyset_data.id, info_keyset_output.info_keyset_data.historyid));
             info_keyset_output.info_keyset_data.tech_contacts.reserve(tech_contact_res.size());
             for(Database::Result::size_type j = 0; j < tech_contact_res.size(); ++j)
             {
@@ -264,9 +260,8 @@ namespace Fred
             }
 
             //DNS keys
-            std::pair<std::string, Database::QueryParams> dns_keys_query = make_dns_keys_query(
-                    info_keyset_output.info_keyset_data.id, info_keyset_output.info_keyset_data.historyid).get_query();
-            Database::Result dns_keys_res = ctx.get_conn().exec_params(dns_keys_query.first, dns_keys_query.second);
+            Database::Result dns_keys_res = ctx.get_conn().exec_params(make_dns_keys_query(
+                info_keyset_output.info_keyset_data.id, info_keyset_output.info_keyset_data.historyid));
             info_keyset_output.info_keyset_data.tech_contacts.reserve(dns_keys_res.size());
             for(Database::Result::size_type j = 0; j < dns_keys_res.size(); ++j)
             {

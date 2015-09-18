@@ -225,8 +225,7 @@ namespace Fred
     {
         std::vector<InfoDomainOutput> result;
 
-        std::pair<std::string, Database::QueryParams> domain_query = make_domain_query(local_timestamp_pg_time_zone_name).get_query();
-        Database::Result query_result = ctx.get_conn().exec_params(domain_query.first,domain_query.second);
+        Database::Result query_result = ctx.get_conn().exec_params(make_domain_query(local_timestamp_pg_time_zone_name));
 
         result.reserve(query_result.size());
 
@@ -307,12 +306,9 @@ namespace Fred
             info_domain_output.local_timestamp = query_result[i][GetAlias::local_timestamp()].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
             : boost::posix_time::time_from_string(static_cast<std::string>(query_result[i][GetAlias::local_timestamp()]));
 
-            //admin contacts
-            std::pair<std::string, Database::QueryParams> admin_query = make_admin_query(
-                    info_domain_output.info_domain_data.id, info_domain_output.info_domain_data.historyid).get_query();
-
             //list of administrative contacts
-            Database::Result admin_contact_res = ctx.get_conn().exec_params(admin_query.first, admin_query.second);
+            Database::Result admin_contact_res = ctx.get_conn().exec_params(make_admin_query(
+                info_domain_output.info_domain_data.id, info_domain_output.info_domain_data.historyid));
             info_domain_output.info_domain_data.admin_contacts.reserve(admin_contact_res.size());
             for(Database::Result::size_type j = 0; j < admin_contact_res.size(); ++j)
             {

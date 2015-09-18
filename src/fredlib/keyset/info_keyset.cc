@@ -337,8 +337,7 @@ namespace Fred
                 cte_id_filter_query (" ORDER BY kcm.keysetid LIMIT ").param_bigint(limit_.get_value());
             }
 
-            std::pair<std::string,Database::query_param_list> check_tech_c_query = cte_id_filter_query.get_query();
-            if (ctx.get_conn().exec_params(check_tech_c_query.first, check_tech_c_query.second).size() == 0)
+            if (ctx.get_conn().exec_params(cte_id_filter_query).size() == 0)
             {
                 BOOST_THROW_EXCEPTION(Exception().set_unknown_tech_contact_handle(tech_contact_handle_));
             }
