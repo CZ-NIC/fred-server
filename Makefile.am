@@ -1021,7 +1021,8 @@ src_fredlib_banking_libbanking_a_SOURCES = \
 #
 src_fredlib_messages_libmessages_a_SOURCES = \
 		src/fredlib/messages/messages_impl.cc \
-		src/fredlib/messages/messages_impl.h
+		src/fredlib/messages/messages_impl.h \
+		src/fredlib/messages/generate.cc
 #
 # src/fredlib/messages/libmessages.a
 
