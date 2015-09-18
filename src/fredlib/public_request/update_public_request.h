@@ -25,8 +25,12 @@
 #define UPDATE_PUBLIC_REQUEST_H_9F964452619CB937F93C2B144C8A204D
 
 #include "src/fredlib/public_request/public_request_lock_guard.h"
+#include "src/fredlib/public_request/public_request_object_lock_guard.h"
+#include "src/fredlib/public_request/public_request_type_iface.h"
 #include "src/fredlib/public_request/public_request_status.h"
 #include "util/optional_value.h"
+
+#include <vector>
 
 namespace Fred {
 
@@ -123,7 +127,8 @@ public:
         Result() { }
         Result(const Result &_src);
         Result& operator=(const Result &_src);
-        PublicRequestId public_request_id;///< unique numeric identification of this public request
+        typedef std::vector< PublicRequestId > AffectedRequests;
+        AffectedRequests affected_requests;///< unique numeric identification of all affected public requests
         std::string public_request_type;///< string representation of public request type
         ObjectId object_id;///< id of object associated with this public request
     };
@@ -139,7 +144,15 @@ public:
     Result exec(OperationContext &_ctx,
                 const PublicRequestLockGuard &_locked_public_request,
                 const Optional< LogRequestId > &_resolve_log_request_id = Optional< LogRequestId >())const;
+
+    Result exec(OperationContext &_ctx,
+                const PublicRequestObjectLockGuard &_locked_public_request,
+                const PublicRequestTypeIface &_public_request_type,
+                const Optional< LogRequestId > &_resolve_log_request_id = Optional< LogRequestId >())const;
 private:
+    Result update(OperationContext &_ctx,
+                  PublicRequestId _public_request_id,
+                  const Optional< LogRequestId > &_resolve_log_request_id)const;
     Optional< PublicRequest::Status::Value > status_;
     Optional< Nullable< std::string > > reason_;
     Optional< Nullable< std::string > > email_to_answer_;

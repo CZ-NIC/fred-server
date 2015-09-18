@@ -459,7 +459,9 @@ BOOST_AUTO_TEST_CASE(update_public_request_ok)
         .set_answer_email_id(email_id)
         .set_registrar_id(registrar_id)
         .exec(ctx, locked_request, resolve_request_id);
-    BOOST_CHECK(result.public_request_id == create_result.public_request_id);
+    BOOST_CHECK(result.affected_requests.size() == 1);
+    BOOST_CHECK(!result.affected_requests.empty() &&
+                (result.affected_requests[0] == create_result.public_request_id));
     BOOST_CHECK(result.public_request_type == public_request_type.get_public_request_type());
     BOOST_CHECK(result.object_id == contact_id);
     Database::Result res = ctx.get_conn().exec_params(

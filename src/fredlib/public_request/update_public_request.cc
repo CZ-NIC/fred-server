@@ -1,4 +1,5 @@
 #include "src/fredlib/public_request/update_public_request.h"
+#include "src/fredlib/public_request/get_active_public_request.h"
 
 #include <sstream>
 
@@ -62,10 +63,9 @@ UpdatePublicRequest& UpdatePublicRequest::set_registrar_id(OperationContext &_ct
 namespace {
 
 ::size_t stop_letter_sending(OperationContext &_ctx,
-                             const PublicRequestLockGuard &_locked_public_request)
+                             PublicRequestId _public_request_id)
 {
-    const PublicRequestId public_request_id = _locked_public_request.get_public_request_id();
-    Database::query_param_list params(public_request_id);                           //$1::BIGINT
+    Database::query_param_list params(_public_request_id);                          //$1::BIGINT
     params(PublicRequest::Status(PublicRequest::Status::NEW).into< std::string >());//$2::TEXT
     const Database::Result res = _ctx.get_conn().exec_params(
         "UPDATE message_archive ma "
@@ -87,8 +87,47 @@ UpdatePublicRequest::Result UpdatePublicRequest::exec(OperationContext &_ctx,
                                                       const PublicRequestLockGuard &_locked_public_request,
                                                       const Optional< LogRequestId > &_resolve_log_request_id)const
 {
-    const PublicRequestId public_request_id = _locked_public_request.get_public_request_id();
-    Database::query_param_list params(public_request_id);
+    return this->update(_ctx, _locked_public_request.get_public_request_id(), _resolve_log_request_id);
+}
+
+UpdatePublicRequest::Result UpdatePublicRequest::exec(OperationContext &_ctx,
+                                                      const PublicRequestObjectLockGuard &_locked_public_request,
+                                                      const PublicRequestTypeIface &_public_request_type,
+                                                      const Optional< LogRequestId > &_resolve_log_request_id)const
+{
+    Result result;
+    result.public_request_type = _public_request_type.get_public_request_type();
+    result.object_id           = _locked_public_request.get_object_id();
+    try {
+        while (true) {//iterate all active public requests of given type and given object
+            const PublicRequestId public_request_id = GetActivePublicRequest(_public_request_type)
+                                                          .exec(_ctx, _locked_public_request);
+            const Result updated = this->update(_ctx, public_request_id, _resolve_log_request_id);
+            if (updated.public_request_type != result.public_request_type) {
+                throw std::runtime_error("unexpected public_request_type");
+            }
+            if (updated.object_id != result.object_id) {
+                throw std::runtime_error("unexpected object_id");
+            }
+            for (Result::AffectedRequests::const_iterator public_request_id_ptr = updated.affected_requests.begin();
+                 public_request_id_ptr != updated.affected_requests.end(); ++public_request_id_ptr) {
+                result.affected_requests.push_back(*public_request_id_ptr);
+            }
+        }
+    }
+    catch (const GetActivePublicRequest::Exception &e) {
+        if (e.is_set_no_request_found()) {//no more requests to cancel
+            return result;
+        }
+        throw;
+    }
+}
+
+UpdatePublicRequest::Result UpdatePublicRequest::update(OperationContext &_ctx,
+                                                        PublicRequestId _public_request_id,
+                                                        const Optional< LogRequestId > &_resolve_log_request_id)const
+{
+    Database::query_param_list params(_public_request_id);
     std::ostringstream sql_set;
     Exception bad_params;
 
@@ -98,7 +137,7 @@ UpdatePublicRequest::Result UpdatePublicRequest::exec(OperationContext &_ctx,
             case PublicRequest::Status::ANSWERED:
                 break;
             case PublicRequest::Status::INVALIDATED:
-                stop_letter_sending(_ctx, _locked_public_request);
+                stop_letter_sending(_ctx, _public_request_id);
                 break;
             default:
                 throw std::runtime_error("unable to set other public request state than 'answered' or 'invalidated'");
@@ -170,7 +209,7 @@ UpdatePublicRequest::Result UpdatePublicRequest::exec(OperationContext &_ctx,
     }
 
     if (sql_set.str().empty()) {
-        bad_params.set_nothing_to_do(public_request_id);
+        bad_params.set_nothing_to_do(_public_request_id);
     }
     if (bad_params.throw_me()) {
         BOOST_THROW_EXCEPTION(bad_params);
@@ -184,16 +223,16 @@ UpdatePublicRequest::Result UpdatePublicRequest::exec(OperationContext &_ctx,
                   "(SELECT object_id FROM public_request_objects_map WHERE request_id=pr.id)", params);
     if (0 < res.size()) {
         Result result;
-        result.public_request_id   = static_cast< PublicRequestId >(res[0][0]);
-        result.public_request_type = static_cast< std::string     >(res[0][1]);
-        result.object_id           = static_cast< ObjectId        >(res[0][2]);
+        result.affected_requests.push_back(static_cast< PublicRequestId >(res[0][0]));
+        result.public_request_type       = static_cast< std::string     >(res[0][1]);
+        result.object_id                 = static_cast< ObjectId        >(res[0][2]);
         return result;
     }
-    BOOST_THROW_EXCEPTION(bad_params.set_public_request_doesnt_exist(public_request_id));
+    BOOST_THROW_EXCEPTION(bad_params.set_public_request_doesnt_exist(_public_request_id));
 }
 
 UpdatePublicRequest::Result::Result(const Result &_src)
-:   public_request_id(_src.public_request_id),
+:   affected_requests(_src.affected_requests),
     public_request_type(_src.public_request_type),
     object_id(_src.object_id)
 {
@@ -201,7 +240,7 @@ UpdatePublicRequest::Result::Result(const Result &_src)
 
 UpdatePublicRequest::Result& UpdatePublicRequest::Result::operator=(const Result &_src)
 {
-    public_request_id = _src.public_request_id;
+    affected_requests = _src.affected_requests;
     public_request_type = _src.public_request_type;
     object_id = _src.object_id;
     return *this;
