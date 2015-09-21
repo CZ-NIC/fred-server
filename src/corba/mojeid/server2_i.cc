@@ -352,6 +352,18 @@ void Server_i::send_mojeid_card(
     }
 }
 
+void Server_i::generate_sms_messages()
+{
+}
+
+void Server_i::generate_email_messages()
+{
+}
+
+void Server_i::generate_letter_messages()
+{
+}
+
 ContactId Server_i::get_contact_id(
         const char *_handle)
 {

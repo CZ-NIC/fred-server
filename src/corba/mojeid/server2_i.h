@@ -104,6 +104,12 @@ public:
         ContactId contact_id,
         LogRequestId log_request_id);
 
+    void generate_sms_messages();
+
+    void generate_email_messages();
+
+    void generate_letter_messages();
+
     ContactId get_contact_id(
         const char *handle);
 
