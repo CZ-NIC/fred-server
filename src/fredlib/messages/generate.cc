@@ -117,6 +117,36 @@ struct Exists< CommChannel::EMAIL >
     }
 };
 
+template < CommChannel::Value COMM_CHANNEL >
+struct Parameter;
+
+template < >
+struct Parameter< CommChannel::SMS >
+{
+    static std::string name(Database::query_param_list &_params)
+    {
+        return "$" + _params.add("async_sms_generation") + "::TEXT";
+    }
+};
+
+template < >
+struct Parameter< CommChannel::LETTER >
+{
+    static std::string name(Database::query_param_list &_params)
+    {
+        return "$" + _params.add("async_letter_generation") + "::TEXT";
+    }
+};
+
+template < >
+struct Parameter< CommChannel::EMAIL >
+{
+    static std::string name(Database::query_param_list &_params)
+    {
+        return "$" + _params.add("async_email_generation") + "::TEXT";
+    }
+};
+
 }
 
 template < CommChannel::Value COMM_CHANNEL >
@@ -137,6 +167,12 @@ void Generate::Into< COMM_CHANNEL >::exec(OperationContext &_ctx)
                      "channel_type AS ("
                          "SELECT id FROM comm_type "
                          "WHERE type=" << ChannelType< COMM_CHANNEL >::value(params) <<
+                     "),"
+                     "generation AS ("
+                         "SELECT COALESCE((SELECT LOWER(val) NOT IN ('disabled','disable','false','f','0') "
+                                          "FROM enum_parameters "
+                                          "WHERE name=" << Parameters< COMM_CHANNEL >::name(params) << "),"
+                                         "true) AS enabled"
                      ") "
                 "SELECT prom.request_id,prom.object_id,"
                        "(SELECT ch.historyid "
@@ -149,7 +185,8 @@ void Generate::Into< COMM_CHANNEL >::exec(OperationContext &_ctx)
                        "),"
                        "lock_public_request_lock(prom.object_id) "
                 "FROM public_request_objects_map prom "
-                "WHERE EXISTS(SELECT * FROM contact WHERE id=prom.object_id) AND "
+                "WHERE (SELECT enabled FROM generation) AND "
+                      "EXISTS(SELECT * FROM contact WHERE id=prom.object_id) AND "
                       "EXISTS(SELECT * FROM public_request WHERE id=prom.request_id AND "
                                                                 "status=(SELECT id FROM required_status) AND "
                                                                 "request_type IN (SELECT id FROM possible_types)) AND "
