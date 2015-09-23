@@ -318,11 +318,6 @@ namespace Fred
 
         try
         {
-            if(Fred::CheckContact(tech_contact_handle_).is_invalid_handle())
-            {
-                BOOST_THROW_EXCEPTION(Exception().set_invalid_tech_contact_handle(tech_contact_handle_));
-            }
-
             Database::ParamQuery cte_id_filter_query;
 
             cte_id_filter_query(
@@ -339,6 +334,11 @@ namespace Fred
 
             if (ctx.get_conn().exec_params(cte_id_filter_query).size() == 0)
             {
+                if(Fred::CheckContact(tech_contact_handle_).is_invalid_handle())
+                {
+                    BOOST_THROW_EXCEPTION(Exception().set_invalid_tech_contact_handle(tech_contact_handle_));
+                }
+
                 BOOST_THROW_EXCEPTION(Exception().set_unknown_tech_contact_handle(tech_contact_handle_));
             }
 

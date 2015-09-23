@@ -406,30 +406,33 @@ namespace Whois {
     {
         try
         {
-            if(Fred::CheckRegistrar(handle).is_invalid_handle())
+            try
             {
-                throw INVALID_HANDLE();
+                Fred::OperationContext ctx;
+                return new Registrar(wrap_registrar(
+                        Fred::InfoRegistrarByHandle(
+                            Corba::unwrap_string_from_const_char_ptr(handle)
+                        ).exec(ctx, output_timezone)
+                        .info_registrar_data));
             }
+            catch(const Fred::InfoRegistrarByHandle::Exception& e)
+            {
+                if(e.is_set_unknown_registrar_handle())
+                {
+                    if(Fred::CheckRegistrar(handle).is_invalid_handle())
+                    {
+                        throw INVALID_HANDLE();
+                    }
 
-            Fred::OperationContext ctx;
-            return new Registrar(wrap_registrar(
-                    Fred::InfoRegistrarByHandle(
-                        Corba::unwrap_string_from_const_char_ptr(handle)
-                    ).exec(ctx, output_timezone)
-                    .info_registrar_data));
-        }
-        catch(const Fred::InfoRegistrarByHandle::Exception& e)
-        {
-            if(e.is_set_unknown_registrar_handle()) {
-                throw OBJECT_NOT_FOUND();
+                    throw OBJECT_NOT_FOUND();
+                }
             }
         }
-        catch(const INVALID_HANDLE&)
+        catch(const ::CORBA::UserException& )
         {
             throw;
         }
-        catch (...)
-        { }
+        catch (...) { }
 
         // default exception handling
         throw INTERNAL_SERVER_ERROR();
@@ -519,28 +522,32 @@ namespace Whois {
     {
         try
         {
-            if(Fred::CheckContact(handle).is_invalid_handle())
+            try
             {
-                throw INVALID_HANDLE();
-            }
+                Fred::OperationContext ctx;
+                return new Contact(
+                    wrap_contact(
+                        Fred::InfoContactByHandle(
+                            Corba::unwrap_string_from_const_char_ptr(handle)
+                        ).exec(ctx, output_timezone)
+                        .info_contact_data
+                    ));
 
-            Fred::OperationContext ctx;
-            return new Contact(
-                wrap_contact(
-                    Fred::InfoContactByHandle(
-                        Corba::unwrap_string_from_const_char_ptr(handle)
-                    ).exec(ctx, output_timezone)
-                    .info_contact_data
-                ));
+            }
+            catch(const Fred::InfoContactByHandle::Exception& e)
+            {
+                if(e.is_set_unknown_contact_handle())
+                {
+                    if(Fred::CheckContact(handle).is_invalid_handle())
+                    {
+                        throw INVALID_HANDLE();
+                    }
 
-        }
-        catch(const Fred::InfoContactByHandle::Exception& e)
-        {
-            if(e.is_set_unknown_contact_handle()) {
-                throw OBJECT_NOT_FOUND();
+                    throw OBJECT_NOT_FOUND();
+                }
             }
         }
-        catch(const INVALID_HANDLE&)
+        catch(const ::CORBA::UserException& )
         {
             throw;
         }
@@ -555,24 +562,27 @@ namespace Whois {
     {
         try
         {
-            if(Fred::CheckNsset(handle).is_invalid_handle())
+            try
             {
-                throw INVALID_HANDLE();
+                Fred::OperationContext ctx;
+                return new NSSet(wrap_nsset(Fred::InfoNssetByHandle(
+                    Corba::unwrap_string_from_const_char_ptr(handle)
+                        ).exec(ctx, output_timezone).info_nsset_data));
             }
+            catch(const Fred::InfoNssetByHandle::Exception& e)
+            {
+                if(e.is_set_unknown_handle())
+                {
+                    if(Fred::CheckNsset(handle).is_invalid_handle())
+                    {
+                        throw INVALID_HANDLE();
+                    }
 
-            Fred::OperationContext ctx;
-            return new NSSet(wrap_nsset(Fred::InfoNssetByHandle(
-                Corba::unwrap_string_from_const_char_ptr(handle)
-                    ).exec(ctx, output_timezone).info_nsset_data));
-
-        }
-        catch(const Fred::InfoNssetByHandle::Exception& e)
-        {
-            if(e.is_set_unknown_handle()) {
-                throw OBJECT_NOT_FOUND();
+                    throw OBJECT_NOT_FOUND();
+                }
             }
         }
-        catch(const INVALID_HANDLE&)
+        catch(const ::CORBA::UserException& )
         {
             throw;
         }
@@ -671,11 +681,6 @@ namespace Whois {
         {
             std::string ns_fqdn = Corba::unwrap_string_from_const_char_ptr(fqdn);
 
-            if(Fred::CheckDomain(ns_fqdn).is_invalid_syntax())
-            {
-                throw INVALID_HANDLE();
-            }
-
             Fred::OperationContext ctx;
 
             if(::Whois::nameserver_exists(ns_fqdn,ctx))
@@ -687,6 +692,11 @@ namespace Whois {
             }
             else
             {
+                if(Fred::CheckDomain(ns_fqdn).is_invalid_syntax())
+                {
+                    throw INVALID_HANDLE();
+                }
+
                 throw OBJECT_NOT_FOUND();
             }
         }
@@ -704,25 +714,33 @@ namespace Whois {
     {
         try
         {
-            if(Fred::CheckKeyset(handle).is_invalid_handle())
+            try
             {
-                throw INVALID_HANDLE();
+                Fred::OperationContext ctx;
+
+                return new KeySet(wrap_keyset(Fred::InfoKeysetByHandle(
+                    Corba::unwrap_string_from_const_char_ptr(handle)
+                    ).exec(ctx, output_timezone).info_keyset_data));
+
             }
+            catch(const Fred::InfoKeysetByHandle::Exception& e)
+            {
+                if(e.is_set_unknown_handle())
+                {
+                    if(Fred::CheckKeyset(handle).is_invalid_handle())
+                    {
+                        throw INVALID_HANDLE();
+                    }
 
-            Fred::OperationContext ctx;
-
-            return new KeySet(wrap_keyset(Fred::InfoKeysetByHandle(
-                Corba::unwrap_string_from_const_char_ptr(handle)
-                ).exec(ctx, output_timezone).info_keyset_data));
-
-        }
-        catch(const Fred::InfoKeysetByHandle::Exception& e)
-        {
-            if(e.is_set_unknown_handle()) {
-                throw OBJECT_NOT_FOUND();
+                    throw OBJECT_NOT_FOUND();
+                }
+            }
+            catch(const INVALID_HANDLE&)
+            {
+                throw;
             }
         }
-        catch(const INVALID_HANDLE&)
+        catch(const ::CORBA::UserException& )
         {
             throw;
         }

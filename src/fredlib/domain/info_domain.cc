@@ -322,11 +322,6 @@ namespace Fred
 
         try
         {
-            if(Fred::CheckContact(registrant_handle_).is_invalid_handle())
-            {
-                BOOST_THROW_EXCEPTION(Exception().set_invalid_registrant_handle(registrant_handle_));
-            }
-
             Database::ParamQuery inline_view_filter_query;
 
             inline_view_filter_query(
@@ -344,6 +339,11 @@ namespace Fred
 
             if(domain_id_res.size() == 0)//no domain id found
             {
+                if(Fred::CheckContact(registrant_handle_).is_invalid_handle())
+                {
+                    BOOST_THROW_EXCEPTION(Exception().set_invalid_registrant_handle(registrant_handle_));
+                }
+
                 BOOST_THROW_EXCEPTION(Exception().set_unknown_registrant_handle(registrant_handle_));
             }
 
@@ -415,11 +415,6 @@ namespace Fred
 
         try
         {
-            if(Fred::CheckContact(admin_contact_handle_).is_invalid_handle())
-            {
-                BOOST_THROW_EXCEPTION(Exception().set_invalid_admin_contact_handle(admin_contact_handle_));
-            }
-
             Database::ParamQuery inline_view_filter_query;
 
             inline_view_filter_query(
@@ -438,6 +433,11 @@ namespace Fred
 
             if(domain_id_res.size() == 0)//no domain id found
             {
+                if(Fred::CheckContact(admin_contact_handle_).is_invalid_handle())
+                {
+                    BOOST_THROW_EXCEPTION(Exception().set_invalid_admin_contact_handle(admin_contact_handle_));
+                }
+
                 BOOST_THROW_EXCEPTION(Exception().set_unknown_admin_contact_handle(admin_contact_handle_));
             }
 
@@ -504,11 +504,6 @@ namespace Fred
 
         try
         {
-            if(Fred::CheckNsset(nsset_handle_).is_invalid_handle())
-            {
-                BOOST_THROW_EXCEPTION(Exception().set_invalid_nsset_handle(nsset_handle_));
-            }
-
             Database::ParamQuery inline_view_filter_query;
 
             inline_view_filter_query(
@@ -525,6 +520,11 @@ namespace Fred
 
             if(domain_id_res.size() == 0)//no domain id found
             {
+                if(Fred::CheckNsset(nsset_handle_).is_invalid_handle())
+                {
+                    BOOST_THROW_EXCEPTION(Exception().set_invalid_nsset_handle(nsset_handle_));
+                }
+
                 BOOST_THROW_EXCEPTION(Exception().set_unknown_nsset_handle(nsset_handle_));
             }
 
@@ -590,11 +590,6 @@ namespace Fred
         std::vector<InfoDomainOutput> domain_res;
         try
         {
-            if(Fred::CheckKeyset(keyset_handle_).is_invalid_handle())
-            {
-                BOOST_THROW_EXCEPTION(Exception().set_invalid_keyset_handle(keyset_handle_));
-            }
-
             Database::ParamQuery inline_view_filter_query;
 
             inline_view_filter_query(
@@ -611,6 +606,11 @@ namespace Fred
 
             if(domain_id_res.size() == 0)//no domain id found
             {
+                if(Fred::CheckKeyset(keyset_handle_).is_invalid_handle())
+                {
+                    BOOST_THROW_EXCEPTION(Exception().set_invalid_keyset_handle(keyset_handle_));
+                }
+
                 BOOST_THROW_EXCEPTION(Exception().set_unknown_keyset_handle(keyset_handle_));
             }
 
