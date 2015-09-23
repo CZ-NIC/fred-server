@@ -20,6 +20,7 @@
 #include <utility>
 
 #include <boost/lexical_cast.hpp>
+#include <boost/bind.hpp>
 
 #include "src/fredlib/registrar/create_registrar.h"
 #include "src/fredlib/registrar/info_registrar.h"
@@ -82,6 +83,12 @@ BOOST_AUTO_TEST_CASE(info_registrar)
     Fred::InfoRegistrarOutput registrar_info3 = Fred::InfoRegistrarById(registrar_info1.info_registrar_data.id).exec(ctx);
 
     BOOST_CHECK(registrar_info1 == registrar_info3);
+
+    std::vector<Fred::InfoRegistrarOutput> registrar_info4 = Fred::InfoRegistrarAll().exec(ctx);
+
+    BOOST_CHECK(
+        std::find_if(registrar_info4.begin(), registrar_info4.end(),
+            boost::bind(&Fred::InfoRegistrarOutput::info_registrar_data, _1) == registrar_info1.info_registrar_data) != registrar_info4.end());
 
 }
 

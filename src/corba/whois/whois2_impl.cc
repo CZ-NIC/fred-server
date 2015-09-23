@@ -443,11 +443,12 @@ namespace Whois {
             RegistrarSeq_var registrar_seq = new RegistrarSeq;
             std::vector<Fred::InfoRegistrarData> registrar_data_list;
             Fred::OperationContext ctx;
-            BOOST_FOREACH(const std::string& registrar_handle, Fred::Registrar::GetRegistrarHandles().exec(ctx))
+
+            BOOST_FOREACH(const Fred::InfoRegistrarOutput& registrar_output, Fred::InfoRegistrarAll().exec(ctx, output_timezone))
             {
-                registrar_data_list.push_back(Fred::InfoRegistrarByHandle(registrar_handle
-                    ).exec(ctx, output_timezone).info_registrar_data);
+                registrar_data_list.push_back(registrar_output.info_registrar_data);
             }
+
             set_corba_seq<RegistrarSeq, Registrar>(
                     registrar_seq, registrar_data_list);
 

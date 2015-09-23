@@ -134,5 +134,34 @@ namespace Fred
         );
     }
 
+    InfoRegistrarAll::InfoRegistrarAll()
+        : lock_(false)
+    {}
+
+    InfoRegistrarAll& InfoRegistrarAll::set_lock(bool lock)
+    {
+        lock_ = lock;
+        return *this;
+    }
+
+    std::vector<InfoRegistrarOutput> InfoRegistrarAll::exec(OperationContext& ctx,
+        const std::string& local_timestamp_pg_time_zone_name)
+    {
+            return InfoRegistrar()
+                    .set_lock(lock_)
+                    .exec(ctx,local_timestamp_pg_time_zone_name);
+    }
+
+    std::string InfoRegistrarAll::to_string() const
+    {
+        return Util::format_operation_state("InfoRegistrarAll",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("lock",lock_ ? "true":"false"))
+        );
+    }
+
+
+
+
 }//namespace Fred
 

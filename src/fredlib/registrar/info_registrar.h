@@ -25,6 +25,7 @@
 #define INFO_REGISTRAR_H_
 
 #include <string>
+#include <vector>
 
 #include "src/fredlib/opexception.h"
 #include "src/fredlib/opcontext.h"
@@ -79,7 +80,7 @@ namespace Fred
         */
         std::string to_string() const;
 
-    };//class InfoRegistrarByHandle
+    };
 
     /**
     * Registrar info by id.
@@ -127,7 +128,46 @@ namespace Fred
         */
         std::string to_string() const;
 
-    };//class InfoRegistrarById
+    };
+
+    /**
+    * All registrars info.
+    * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
+    * In case of other unsuperable failures and inconstistencies, the instance of @ref InternalError or other exception is thrown.
+    */
+    class InfoRegistrarAll : public Util::Printable
+    {
+        bool lock_;/**< lock object_registry row for registrar */
+
+    public:
+
+        /**
+        * Info registrar constructor.
+        */
+        InfoRegistrarAll();
+
+        /**
+        * Sets registrar lock flag.
+        * @param lock sets lock registrar flag into @ref lock_ attribute
+        * @return operation instance reference to allow method chaining
+        */
+        InfoRegistrarAll& set_lock(bool lock = true);
+
+        /**
+        * Executes getting info about the registrar.
+        * @param ctx contains reference to database and logging interface
+        * @param local_timestamp_pg_time_zone_name is postgresql time zone name of the returned data
+        * @return registrars info data list
+        */
+        std::vector<InfoRegistrarOutput> exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");
+
+        /**
+        * Dumps state of the instance into the string
+        * @return string with description of the instance state
+        */
+        std::string to_string() const;
+
+    };
 
 }//namespace Fred
 
