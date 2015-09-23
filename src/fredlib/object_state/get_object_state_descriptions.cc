@@ -65,7 +65,7 @@ namespace Fred
         if(!object_type_.empty())
         {
             query(" AND (SELECT id FROM enum_object_type WHERE name = ")
-                .param_text(object_type_)(" = ANY (eos.types)");
+                .param_text(object_type_)(") = ANY (eos.types)");
         }
 
         query(" WHERE UPPER(eosd.lang) = UPPER(").param_text(description_language_)(")");
