@@ -1,4 +1,5 @@
 #include "src/fredlib/messages/generate.h"
+#include "src/fredlib/messages/messages_impl.h"
 #include "src/fredlib/public_request/public_request_status.h"
 #include "src/mojeid/mojeid_public_request.h"
 #include "util/db/query_param.h"
@@ -93,7 +94,7 @@ struct ChannelType< CommChannel::EMAIL >
 template < CommChannel::Value COMM_CHANNEL >
 struct Exists
 {
-    static std::string messages_associated_with_request(const std::string &_request_id)
+    static std::string messages_associated_with(const std::string &_request_id)
     {
         return "EXISTS(SELECT * FROM public_request_messages_map prmm "
                       "WHERE prmm.public_request_id=" + _request_id + " AND "
@@ -108,7 +109,7 @@ struct Exists
 template < >
 struct Exists< CommChannel::EMAIL >
 {
-    static std::string messages_associated_with_request(const std::string &_request_id)
+    static std::string messages_associated_with(const std::string &_request_id)
     {
         return "EXISTS(SELECT * FROM public_request_messages_map prmm "
                       "WHERE prmm.public_request_id=" + _request_id + " AND "
@@ -147,61 +148,157 @@ struct Parameter< CommChannel::EMAIL >
     }
 };
 
+template < CommChannel::Value COMM_CHANNEL >
+struct GetData;
+
+template < CommChannel::Value COMM_CHANNEL >
+struct CollectFor
+{
+    static std::string query(Database::query_param_list &_params)
+    {
+        return "WITH required_status AS ("
+                        "SELECT id FROM enum_public_request_status "
+                        "WHERE name=" + RequiredStatus< COMM_CHANNEL >::value(_params) +
+                    "),"
+                    "possible_types AS ("
+                        "SELECT id FROM enum_public_request_type "
+                        "WHERE name IN (" + PossibleTypes< COMM_CHANNEL >::value(_params) + ")"
+                    "),"
+                    "channel_type AS ("
+                        "SELECT id FROM comm_type "
+                        "WHERE type=" + ChannelType< COMM_CHANNEL >::value(_params) +
+                    "),"
+                    "generation AS ("
+                        "SELECT COALESCE((SELECT LOWER(val) NOT IN ('disabled','disable','false','f','0') "
+                                         "FROM enum_parameters "
+                                         "WHERE name=" + Parameter< COMM_CHANNEL >::name(_params) + "),"
+                                        "true) AS enabled"
+                    "),"
+                    "to_generate AS ("
+                        "SELECT prom.request_id AS public_request_id,"
+                               "prom.object_id AS contact_id,"
+                               "(SELECT ch.historyid "
+                                "FROM contact_history ch "
+                                "JOIN history h ON h.id=ch.historyid "
+                                "JOIN public_request pr ON h.valid_from<=pr.create_time AND "
+                                                                       "(pr.create_time<h.valid_to OR "
+                                                                        "h.valid_to IS NULL) "
+                                "WHERE ch.id=prom.object_id AND "
+                                      "pr.id=prom.request_id"
+                               ") AS contact_history_id "
+                        "FROM public_request_objects_map prom "
+                        "WHERE (SELECT enabled FROM generation) AND "
+                              "EXISTS(SELECT * FROM contact WHERE id=prom.object_id) AND "
+                              "EXISTS(SELECT * FROM public_request "
+                                     "WHERE id=prom.request_id AND "
+                                           "status=(SELECT id FROM required_status) AND "
+                                           "request_type IN (SELECT id FROM possible_types) AND "
+                                           "(NOW()::DATE-'1DAY'::INTERVAL)<create_time) AND "
+                              "NOT " + Exists< COMM_CHANNEL >::messages_associated_with("prom.request_id") +
+                    ") " +
+                GetData< COMM_CHANNEL >::finish_query();
+    }
+};
+
+template < >
+struct GetData< CommChannel::SMS >
+{
+    static std::string finish_query()
+    {
+        return "SELECT tg.public_request_id,tg.contact_id,tg.contact_history_id,pra.password,ch.telephone,obr.name,"
+                      "lock_public_request_lock(tg.contact_id) "
+               "FROM to_generate tg "
+               "JOIN public_request_auth pra ON pra.id=tg.public_request_id "
+               "JOIN contact_history ch ON ch.id=tg.contact_id AND ch.historyid=tg.contact_history_id "
+               "JOIN object_registry obr ON obr.id=tg.contact_id";
+    }
+};
+
+template < >
+struct GetData< CommChannel::LETTER >
+{
+    static std::string finish_query()
+    {
+        return "";
+    }
+};
+
+template < >
+struct GetData< CommChannel::EMAIL >
+{
+    static std::string finish_query()
+    {
+        return "";
+    }
+};
+
+template < CommChannel::Value COMM_CHANNEL >
+struct ProcessFor;
+
+template < >
+struct ProcessFor< CommChannel::SMS >
+{
+    static void data(OperationContext &_ctx, const Database::Result &_dbres)
+    {
+        static const char *const message_type_mojeid_pin2 = "mojeid_pin2";
+        static ManagerPtr manager_ptr = create_manager();
+        for (::size_t idx = 0; idx < _dbres.size(); ++idx) {
+            typedef unsigned long long GeneralId;
+            const GeneralId   public_request_id  = static_cast< GeneralId   >(_dbres[idx][0]);
+            const GeneralId   contact_id         = static_cast< GeneralId   >(_dbres[idx][1]);
+            const GeneralId   contact_history_id = static_cast< GeneralId   >(_dbres[idx][2]);
+            const std::string password           = static_cast< std::string >(_dbres[idx][3]);
+            const std::string contact_phone      = static_cast< std::string >(_dbres[idx][4]);
+            const std::string contact_handle     = static_cast< std::string >(_dbres[idx][5]);
+
+            const std::string pin2 = MojeID::PublicRequest::ContactConditionalIdentification::get_pin2_part(password);
+            const std::string sms_content = "Potvrzujeme uspesne zalozeni uctu mojeID. "
+                                            "Pro aktivaci Vaseho uctu je nutne vlozit kody "
+                                            "PIN1 a PIN2. PIN1 Vam byl zaslan emailem, PIN2 je: " + pin2;
+
+            const GeneralId message_id = manager_ptr->save_sms_to_send(contact_handle.c_str(),
+                                                                       contact_phone.c_str(),
+                                                                       sms_content.c_str(),
+                                                                       message_type_mojeid_pin2,
+                                                                       contact_id,
+                                                                       contact_history_id);
+            _ctx.get_conn().exec_params(
+                "INSERT INTO public_request_messages_map (public_request_id,"
+                                                         "message_archive_id,"
+                                                         "mail_archive_id) "
+                "VALUES ($1::BIGINT,"//public_request_id
+                        "$2::BIGINT,"//message_archive_id
+                        "NULL)",     //mail_archive_id
+                Database::query_param_list(public_request_id)(message_id));
+        }
+    }
+};
+
+template < >
+struct ProcessFor< CommChannel::LETTER >
+{
+    static void data(OperationContext &_ctx, const Database::Result &_dbres)
+    {
+    }
+};
+
+template < >
+struct ProcessFor< CommChannel::EMAIL >
+{
+    static void data(OperationContext &_ctx, const Database::Result &_dbres)
+    {
+    }
+};
+
 }
 
 template < CommChannel::Value COMM_CHANNEL >
 void Generate::Into< COMM_CHANNEL >::exec(OperationContext &_ctx)
 {
-    static std::string sql;
     static Database::query_param_list params;
-    if (sql.empty()) {
-        std::ostringstream ssql;
-        ssql << "WITH required_status AS ("
-                         "SELECT id FROM enum_public_request_status "
-                         "WHERE name=" << RequiredStatus< COMM_CHANNEL >::value(params) <<
-                     "),"
-                     "possible_types AS ("
-                         "SELECT id FROM enum_public_request_type "
-                         "WHERE name IN (" << PossibleTypes< COMM_CHANNEL >::value(params) << ")"
-                     "),"
-                     "channel_type AS ("
-                         "SELECT id FROM comm_type "
-                         "WHERE type=" << ChannelType< COMM_CHANNEL >::value(params) <<
-                     "),"
-                     "generation AS ("
-                         "SELECT COALESCE((SELECT LOWER(val) NOT IN ('disabled','disable','false','f','0') "
-                                          "FROM enum_parameters "
-                                          "WHERE name=" << Parameters< COMM_CHANNEL >::name(params) << "),"
-                                         "true) AS enabled"
-                     ") "
-                "SELECT prom.request_id,prom.object_id,"
-                       "(SELECT ch.historyid "
-                        "FROM contact_history ch "
-                        "JOIN history h ON h.id=ch.historyid "
-                        "JOIN public_request pr ON h.valid_from<=pr.create_time AND "
-                                                               "(pr.create_time<h.valid_to OR h.valid_to IS NULL)"
-                        "WHERE ch.id=prom.object_id AND "
-                              "pr.id=prom.request_id"
-                       "),"
-                       "lock_public_request_lock(prom.object_id) "
-                "FROM public_request_objects_map prom "
-                "WHERE (SELECT enabled FROM generation) AND "
-                      "EXISTS(SELECT * FROM contact WHERE id=prom.object_id) AND "
-                      "EXISTS(SELECT * FROM public_request WHERE id=prom.request_id AND "
-                                                                "status=(SELECT id FROM required_status) AND "
-                                                                "request_type IN (SELECT id FROM possible_types)) AND "
-                      "NOT " << Exists< COMM_CHANNEL >::messages_associated_with_request("prom.request_id");
-        sql = ssql.str();
-    }
+    static const std::string sql = CollectFor< COMM_CHANNEL >::query(params);
     const Database::Result dbres = _ctx.get_conn().exec_params(sql, params);
-    for (::size_t idx = 0; idx < dbres.size(); ++idx) {
-        typedef unsigned long long PublicRequestId;
-        typedef unsigned long long ContactId;
-        typedef unsigned long long ContactHistoryId;
-        const PublicRequestId  public_request_id  = static_cast< PublicRequestId  >(dbres[idx][0]);
-        const ContactId        contact_id         = static_cast< ContactId        >(dbres[idx][1]);
-        const ContactHistoryId contact_history_id = static_cast< ContactHistoryId >(dbres[idx][2]);
-    }
+    ProcessFor< COMM_CHANNEL >::data(_ctx, dbres);
 }
 
 template void Generate::Into< CommChannel::SMS    >::exec(OperationContext &_ctx);
