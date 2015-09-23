@@ -48,48 +48,39 @@ namespace Fred
         return *this;
     }
 
-    std::map<unsigned long long, std::string> GetObjectStateDescriptions::exec(OperationContext& ctx)
+    std::vector<ObjectStateDescription> GetObjectStateDescriptions::exec(OperationContext& ctx)
     {
-        Database::query_param_list params;
-        std::string sql = "SELECT eosd.state_id, COALESCE(eosd.description, '') ";
-        sql += " FROM enum_object_states_desc eosd ";
-
-        if(external_states || !object_type_.empty())
-        {
-            sql += " JOIN enum_object_states eos ON eos.id = eosd.state_id ";
-        }
-
-        sql += " WHERE UPPER(eosd.lang) = UPPER($";
-        sql += params.add(description_language_);
-        sql += "::text) ";
+        Database::ParamQuery query(
+            "SELECT eosd.state_id AS id"
+                    ", eos.name AS handle"
+                    ", eosd.description AS description"
+                " FROM enum_object_states_desc eosd"
+                    " JOIN enum_object_states eos ON eosd.state_id = eos.id");
 
         if(external_states)
         {
-            sql += " AND eos.external = TRUE ";
+            query(" AND eos.external = TRUE");
         }
 
         if(!object_type_.empty())
         {
-            sql += " AND (SELECT id FROM enum_object_type WHERE name =$";
-            sql += params.add(object_type_);
-            sql += "::text) = ANY (eos.types) ";
+            query(" AND (SELECT id FROM enum_object_type WHERE name = ")
+                .param_text(object_type_)(" = ANY (eos.types)");
         }
 
-        Database::Result domain_state_descriptions_result = ctx.get_conn().exec_params(
-                sql, params);
+        query(" WHERE UPPER(eosd.lang) = UPPER(").param_text(description_language_)(")");
 
-        std::map<unsigned long long, std::string> result;
+        Database::Result domain_state_descriptions_result = ctx.get_conn().exec_params(query);
+
+        std::vector<ObjectStateDescription> result;
         for(unsigned long long i = 0 ; i < domain_state_descriptions_result.size() ; ++i)
         {
-            std::pair<std::map<unsigned long long, std::string>::iterator,bool> iret = result.insert(std::make_pair(
-            static_cast<unsigned long long>(domain_state_descriptions_result[i][0])
-            , static_cast<std::string>(domain_state_descriptions_result[i][1]))
-            );
-            if(!iret.second)//insert into map failed
-            {
-                BOOST_THROW_EXCEPTION(Fred::InternalError("insert into map of object state descriptions failed"));
-            }
-        }//for i
+            result.push_back(ObjectStateDescription(
+                static_cast<unsigned long long>(domain_state_descriptions_result[i]["id"]),
+                static_cast<std::string>(domain_state_descriptions_result[i]["handle"]),
+                static_cast<std::string>(domain_state_descriptions_result[i]["description"])
+            ));
+        }
 
         return result;
     }

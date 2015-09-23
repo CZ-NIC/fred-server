@@ -12,7 +12,6 @@
 
 #include "src/whois/nameserver_exists.h"
 #include "src/whois/is_domain_delete_pending.h"
-#include "src/whois/object_state.h"
 #include "src/whois/registrar_group.h"
 #include "src/whois/registrar_certification.h"
 #include "src/whois/zone_list.h"
@@ -1031,18 +1030,16 @@ namespace Whois {
     std::vector< std::pair<std::string, std::string> > wrap_status_desc(
         const std::string& lang,const std::string& type, Fred::OperationContext& ctx)
     {
-        std::map<unsigned long long, std::string> states = Fred::GetObjectStateDescriptions(
+        std::vector<Fred::ObjectStateDescription> states = Fred::GetObjectStateDescriptions(
             lang).set_object_type(type).exec(ctx);
 
         if(states.empty()) throw MISSING_LOCALIZATION();
 
         std::vector< std::pair<std::string, std::string> > temp;
-        for(std::map<unsigned long long, std::string>::const_iterator ci
+        for(std::vector<Fred::ObjectStateDescription>::const_iterator ci
                 = states.begin(); ci != states.end(); ++ci)
         {
-
-            temp.push_back(std::make_pair(
-                ::Whois::get_object_state_name_by_state_id(ci->first, ctx), ci->second));
+            temp.push_back(std::make_pair(ci->handle, ci->description));
         }
 
         return temp;

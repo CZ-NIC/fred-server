@@ -17,6 +17,7 @@
  */
 
 #include <boost/test/unit_test.hpp>
+#include <boost/foreach.hpp>
 #include <string>
 
 #include "src/fredlib/opcontext.h"
@@ -27,6 +28,7 @@
 #include "src/fredlib/object_state/get_object_state_descriptions.h"
 #include "src/fredlib/object_state/object_state_name.h"
 
+#include "util/util.h"
 #include "util/random_data_generator.h"
 #include "tests/setup/fixtures.h"
 
@@ -87,10 +89,31 @@ BOOST_FIXTURE_TEST_CASE(get_object_states, test_contact_fixture_8470af40b8634155
 BOOST_AUTO_TEST_CASE(get_object_state_descriptions)
 {
     Fred::OperationContext ctx;
-    BOOST_CHECK(Fred::GetObjectStateDescriptions("EN").exec(ctx)[24]
-        == "MojeID contact");
-    BOOST_CHECK(Fred::GetObjectStateDescriptions("EN").set_object_type("contact").exec(ctx)[24]
-            == "MojeID contact");
+
+    std::vector<Fred::ObjectStateDescription> contact_osd = Fred::GetObjectStateDescriptions("EN").set_object_type("contact").exec(ctx);
+
+    std::set<unsigned long long> contact_osd_id_set;
+    std::set<std::string> contact_osd_handle_set;
+    std::set<std::string> contact_osd_description_set;
+
+    BOOST_FOREACH(Fred::ObjectStateDescription i, contact_osd)
+    {
+        contact_osd_id_set.insert(i.id);
+        contact_osd_handle_set.insert(i.handle);
+        contact_osd_description_set.insert(i.description);
+    }
+
+    BOOST_CHECK(contact_osd_id_set == Util::set_of<unsigned long long>(1)(7)(3)(22)(23)(17)(24)(21)(16)(4)(25)(26)(27));
+    BOOST_CHECK(contact_osd_handle_set == Util::set_of<std::string>("serverDeleteProhibited")("serverBlocked")("serverTransferProhibited")
+        ("identifiedContact")("validatedContact")("deleteCandidate")("mojeidContact")("conditionallyIdentifiedContact")("linked")
+        ("serverUpdateProhibited")("contactPassedManualVerification")("contactInManualVerification")("contactFailedManualVerification"));
+
+    BOOST_CHECK(contact_osd_description_set == Util::set_of<std::string>("Domain blocked")("Contact is conditionally identified")
+        ("Contact is identified")("Contact is validated")("To be deleted")("MojeID contact")
+        ("Has relation to other records in the registry")("Deletion forbidden")("Sponsoring registrar change forbidden")
+        ("Update forbidden")("Contact has been verified by CZ.NIC customer support")
+        ("Contact is being verified by CZ.NIC customer support")("Contact has failed the verification by CZ.NIC customer support"));
+
 }
 
 BOOST_AUTO_TEST_SUITE_END();//TestObjectState
