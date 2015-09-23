@@ -103,6 +103,16 @@ std::string contact_identification_generate_passwords()
 
 namespace PublicRequest {
 
+std::string ContactConditionalIdentification::get_pin1_part(const std::string &_summary_password)
+{
+    return _summary_password.substr(0, Password::CHUNK_LENGTH);
+}
+
+std::string ContactConditionalIdentification::get_pin2_part(const std::string &_summary_password)
+{
+    return _summary_password.substr(Password::CHUNK_LENGTH, Password::CHUNK_LENGTH);
+}
+
 std::string ContactConditionalIdentification::get_public_request_type()const
 {
     static const std::string type = "mojeid_contact_conditional_identification";

@@ -43,6 +43,8 @@ class ContactConditionalIdentification:public AddIfaceMethod::Into
 {
 public:
     virtual ~ContactConditionalIdentification() { }
+    static std::string get_pin1_part(const std::string &_summary_password);
+    static std::string get_pin2_part(const std::string &_summary_password);
 private:
     ContactConditionalIdentification() { }
     std::string get_public_request_type()const;
