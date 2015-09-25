@@ -26,6 +26,7 @@
 
 #include "src/mojeid/mojeid2_checkers.h"
 #include "src/fredlib/object/object_state.h"
+#include "src/fredlib/messages/messages_impl.h"
 
 #include <vector>
 #include <stdexcept>
@@ -88,6 +89,7 @@ class MojeID2Impl
 {
 public:
     typedef unsigned long long ContactId;
+    typedef unsigned long long MessageId;
     typedef unsigned long long LogRequestId;
     MojeID2Impl(const std::string &_server_name);
     ~MojeID2Impl();
@@ -309,6 +311,20 @@ public:
     void send_mojeid_card(
         ContactId _contact_id,
         LogRequestId _log_request_id)const;
+
+    void generate_sms_messages()const;
+
+    void generate_letter_messages()const;
+
+    static MessageId send_mojeid_card(
+        Fred::OperationContext &_ctx,
+        Fred::Messages::Manager *_msg_manager_ptr,
+        const Fred::InfoContactData &_data,
+        unsigned _limit_count,
+        unsigned _limit_interval,
+        LogRequestId _log_request_id,
+        const Optional< boost::posix_time::ptime > &_letter_time = Optional< boost::posix_time::ptime >(),
+        const Optional< bool > &_validated_contact = Optional< bool >());
 private:
     const std::string server_name_;
     const std::string mojeid_registrar_handle_;

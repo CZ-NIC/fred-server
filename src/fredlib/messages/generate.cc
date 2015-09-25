@@ -1,13 +1,22 @@
 #include "src/fredlib/messages/generate.h"
 #include "src/fredlib/messages/messages_impl.h"
+#include "src/fredlib/object/object_state.h"
 #include "src/fredlib/public_request/public_request_status.h"
+#include "src/fredlib/contact/info_contact.h"
 #include "src/mojeid/mojeid_public_request.h"
+#include "src/mojeid/mojeid2.h"
+#include "util/cfg/config_handler_decl.h"
+#include "util/cfg/handle_mojeid_args.h"
 #include "util/db/query_param.h"
+
+#include <boost/date_time/gregorian/gregorian.hpp>
 
 namespace Fred {
 namespace Messages {
 
 namespace {
+
+typedef unsigned long long GeneralId;
 
 template < CommChannel::Value >
 struct RequiredStatus
@@ -196,44 +205,58 @@ struct CollectFor
                                            "(NOW()::DATE-'1DAY'::INTERVAL)<create_time) AND "
                               "NOT " + Exists< COMM_CHANNEL >::messages_associated_with("prom.request_id") +
                     ") " +
-                GetData< COMM_CHANNEL >::finish_query();
+                GetData< COMM_CHANNEL >::finish_query(_params);
+    }
+};
+
+template < CommChannel::Value COMM_CHANNEL >
+struct ProcessFor;
+
+template < CommChannel::Value COMM_CHANNEL >
+struct JoinMessage
+{
+    static void with_public_request(OperationContext &_ctx, GeneralId _public_request_id, GeneralId _message_id)
+    {
+        _ctx.get_conn().exec_params(
+            "INSERT INTO public_request_messages_map (public_request_id,"
+                                                     "message_archive_id,"
+                                                     "mail_archive_id) "
+            "VALUES ($1::BIGINT,"//public_request_id
+                    "$2::BIGINT,"//message_archive_id
+                    "NULL)",     //mail_archive_id
+            Database::query_param_list(_public_request_id)(_message_id));
+    }
+};
+
+template < >
+struct JoinMessage< CommChannel::EMAIL >
+{
+    static void with_public_request(OperationContext &_ctx, GeneralId _public_request_id, GeneralId _message_id)
+    {
+        _ctx.get_conn().exec_params(
+            "INSERT INTO public_request_messages_map (public_request_id,"
+                                                     "message_archive_id,"
+                                                     "mail_archive_id) "
+            "VALUES ($1::BIGINT," //public_request_id
+                    "NULL,"       //message_archive_id
+                    "$2::BIGINT)",//mail_archive_id
+            Database::query_param_list(_public_request_id)(_message_id));
     }
 };
 
 template < >
 struct GetData< CommChannel::SMS >
 {
-    static std::string finish_query()
+    static std::string finish_query(const Database::query_param_list&)
     {
-        return "SELECT tg.public_request_id,tg.contact_id,tg.contact_history_id,pra.password,ch.telephone,obr.name,"
-                      "lock_public_request_lock(tg.contact_id) "
+        return "SELECT tg.public_request_id,tg.contact_id,tg.contact_history_id,pra.password,ch.telephone,"
+                      "LOWER(obr.name),lock_public_request_lock(tg.contact_id) "
                "FROM to_generate tg "
                "JOIN public_request_auth pra ON pra.id=tg.public_request_id "
                "JOIN contact_history ch ON ch.id=tg.contact_id AND ch.historyid=tg.contact_history_id "
                "JOIN object_registry obr ON obr.id=tg.contact_id";
     }
 };
-
-template < >
-struct GetData< CommChannel::LETTER >
-{
-    static std::string finish_query()
-    {
-        return "";
-    }
-};
-
-template < >
-struct GetData< CommChannel::EMAIL >
-{
-    static std::string finish_query()
-    {
-        return "";
-    }
-};
-
-template < CommChannel::Value COMM_CHANNEL >
-struct ProcessFor;
 
 template < >
 struct ProcessFor< CommChannel::SMS >
@@ -262,15 +285,31 @@ struct ProcessFor< CommChannel::SMS >
                                                                        message_type_mojeid_pin2,
                                                                        contact_id,
                                                                        contact_history_id);
-            _ctx.get_conn().exec_params(
-                "INSERT INTO public_request_messages_map (public_request_id,"
-                                                         "message_archive_id,"
-                                                         "mail_archive_id) "
-                "VALUES ($1::BIGINT,"//public_request_id
-                        "$2::BIGINT,"//message_archive_id
-                        "NULL)",     //mail_archive_id
-                Database::query_param_list(public_request_id)(message_id));
+            JoinMessage< CommChannel::LETTER >::with_public_request(_ctx, public_request_id, message_id);
         }
+    }
+};
+
+template < >
+struct GetData< CommChannel::LETTER >
+{
+    static std::string finish_query(Database::query_param_list &_params)
+    {
+        typedef Fred::Object::State FOS;
+        const std::string state_validated_contact = FOS(FOS::VALIDATED_CONTACT).into< std::string >();
+        return "SELECT tg.public_request_id,tg.contact_history_id,"
+                      "(SELECT name FROM enum_public_request_type WHERE id=pr.request_type) AS public_request_type,"
+                      "pr.create_time,"
+                      "EXISTS(SELECT * FROM object_state os "
+                             "WHERE os.object_id=tg.contact_id AND "
+                                   "os.state_id=(SELECT id FROM enum_object_states "
+                                                "WHERE name=$" + _params.add(state_validated_contact) + "::TEXT) AND "
+                                   "os.valid_from<=pr.create_time AND "
+                                                 "(pr.create_time<os.valid_to OR os.valid_to IS NULL)"
+                            ") AS is_validated,"
+                      "lock_public_request_lock(tg.contact_id) "
+               "FROM to_generate tg "
+               "JOIN public_request pr ON pr.id=tg.public_request_id";
     }
 };
 
@@ -279,6 +318,50 @@ struct ProcessFor< CommChannel::LETTER >
 {
     static void data(OperationContext &_ctx, const Database::Result &_dbres)
     {
+        static const HandleMojeIDArgs *const server_conf_ptr =
+            CfgArgs::instance()->get_handler_ptr_by_type< HandleMojeIDArgs >();
+        static ManagerPtr manager_ptr = create_manager();
+        for (::size_t idx = 0; idx < _dbres.size(); ++idx) {
+            try {
+                const GeneralId   public_request_id   = static_cast< GeneralId   >(_dbres[idx][0]);
+                const GeneralId   contact_history_id  = static_cast< GeneralId   >(_dbres[idx][1]);
+                const std::string public_request_type = static_cast< std::string >(_dbres[idx][2]);
+                const std::string public_request_time = static_cast< std::string >(_dbres[idx][3]);
+                const bool        validated_contact   = static_cast< bool        >(_dbres[idx][4]);
+                namespace FMPR = Fred::MojeID::PublicRequest;
+                if ((public_request_type != FMPR::ContactIdentification::iface().get_public_request_type()) &&
+                    (public_request_type != FMPR::ContactReidentification::iface().get_public_request_type())) {
+                    continue;
+                }
+
+                const InfoContactData contact_data = InfoContactHistoryByHistoryid(contact_history_id)
+                                                         .exec(_ctx).info_contact_data;
+                namespace bptime = boost::posix_time;
+                const bptime::ptime letter_time = bptime::time_from_string(public_request_time);
+                enum { DONT_USE_LOG_REQUEST_ID = 0 };
+                const GeneralId message_id = Registry::MojeID::MojeID2Impl::send_mojeid_card(
+                    _ctx,
+                    manager_ptr.get(),
+                    contact_data,
+                    server_conf_ptr->letter_limit_count,
+                    server_conf_ptr->letter_limit_interval,
+                    DONT_USE_LOG_REQUEST_ID,
+                    letter_time,
+                    validated_contact);
+                JoinMessage< CommChannel::LETTER >::with_public_request(_ctx, public_request_id, message_id);
+            }
+            catch (...) {
+            }
+        }
+    }
+};
+
+template < >
+struct GetData< CommChannel::EMAIL >
+{
+    static std::string finish_query(Database::query_param_list &_params)
+    {
+        return "";
     }
 };
 

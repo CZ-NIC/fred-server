@@ -43,6 +43,7 @@
 #include "src/fredlib/object_state/create_object_state_request_id.h"
 #include "src/fredlib/object_state/cancel_object_state_request_id.h"
 #include "src/fredlib/messages/generate.h"
+#include "src/fredlib/messages/messages_impl.h"
 #include "src/corba/mojeid/corba_conversion2.h"
 #include "util/random.h"
 #include "util/xmlgen.h"
@@ -1826,6 +1827,8 @@ void MojeID2Impl::send_new_pin3(
     ContactId _contact_id,
     LogRequestId _log_request_id)const
 {
+    LOGGING_CONTEXT(log_ctx, *this);
+
     try {
         Fred::OperationContextCreator ctx;
         typedef Fred::Object::State FOS;
@@ -1881,12 +1884,15 @@ void MojeID2Impl::send_mojeid_card(
     ContactId _contact_id,
     LogRequestId _log_request_id)const
 {
+    LOGGING_CONTEXT(log_ctx, *this);
+
     try {
         Fred::OperationContextCreator ctx;
         typedef Fred::Object::State FOS;
         typedef FOS::set<
             FOS::MOJEID_CONTACT,
-            FOS::IDENTIFIED_CONTACT >::type RelatedStates;
+            FOS::IDENTIFIED_CONTACT,
+            FOS::VALIDATED_CONTACT >::type RelatedStates;
         typedef GetContact::States< RelatedStates >::Presence StatesPresence;
         const StatesPresence states =
             GetContact(_contact_id).states< RelatedStates >().presence(ctx);
@@ -1898,10 +1904,17 @@ void MojeID2Impl::send_mojeid_card(
         }
         const HandleMojeIDArgs *const server_conf_ptr = CfgArgs::instance()->
                                                             get_handler_ptr_by_type< HandleMojeIDArgs >();
-        check_sent_letters_limit(ctx,
-                                 _contact_id,
-                                 server_conf_ptr->letter_limit_count,
-                                 server_conf_ptr->letter_limit_interval);
+        const Fred::InfoContactData data = Fred::InfoContactById(_contact_id).exec(ctx).info_contact_data;
+        const Fred::Messages::ManagerPtr manager_ptr = Fred::Messages::create_manager();
+        MojeID2Impl::send_mojeid_card(
+            ctx,
+            manager_ptr.get(),
+            data,
+            server_conf_ptr->letter_limit_count,
+            server_conf_ptr->letter_limit_interval,
+            _log_request_id,
+            Optional< boost::posix_time::ptime >(),
+            states.get< FOS::VALIDATED_CONTACT >());
     }
     catch(const ObjectDoesntExist &e) {
         LOGGER(PACKAGE).info(e.what());
@@ -1923,6 +1936,163 @@ void MojeID2Impl::send_mojeid_card(
         LOGGER(PACKAGE).error("unknown exception");
         throw;
     }
+}
+
+void MojeID2Impl::generate_sms_messages()const
+{
+    LOGGING_CONTEXT(log_ctx, *this);
+
+    try {
+        Fred::OperationContextCreator ctx;
+        Fred::Messages::Generate::Into< Fred::Messages::CommChannel::SMS >::exec(ctx);
+        ctx.commit_transaction();
+    }
+    catch (const std::exception &e) {
+        LOGGER(PACKAGE).error(e.what());
+        throw;
+    }
+    catch (...) {
+        LOGGER(PACKAGE).error("unknown exception");
+        throw;
+    }
+}
+
+void MojeID2Impl::generate_letter_messages()const
+{
+    LOGGING_CONTEXT(log_ctx, *this);
+
+    try {
+        Fred::OperationContextCreator ctx;
+        Fred::Messages::Generate::Into< Fred::Messages::CommChannel::LETTER >::exec(ctx);
+        ctx.commit_transaction();
+    }
+    catch (const std::exception &e) {
+        LOGGER(PACKAGE).error(e.what());
+        throw;
+    }
+    catch (...) {
+        LOGGER(PACKAGE).error("unknown exception");
+        throw;
+    }
+}
+
+MojeID2Impl::MessageId MojeID2Impl::send_mojeid_card(
+    Fred::OperationContext &_ctx,
+    Fred::Messages::Manager *_msg_manager_ptr,
+    const Fred::InfoContactData &_data,
+    unsigned _limit_count,
+    unsigned _limit_interval,
+    LogRequestId _log_request_id,
+    const Optional< boost::posix_time::ptime > &_letter_time,
+    const Optional< bool > &_validated_contact)
+{
+    check_sent_letters_limit(_ctx, _data.id, _limit_count, _limit_interval);
+    std::string letter_xml("<?xml version='1.0' encoding='utf-8'?>");
+
+    const std::string name = _data.name.get_value_or_default();
+    const std::string::size_type name_delimiter_pos = name.find_last_of(' ');
+    const std::string firstname = name_delimiter_pos != std::string::npos
+                                  ? name.substr(0, name_delimiter_pos)
+                                  : name;
+    const std::string lastname = name_delimiter_pos != std::string::npos
+                                 ? name.substr(name_delimiter_pos + 1)
+                                 : std::string();
+    static const char female_suffix[] = "á"; // utf-8 encoded
+    enum { FEMALE_SUFFIX_LEN = sizeof(female_suffix) - 1,
+           STR_EQUAL = 0 };
+    const std::string sex = (FEMALE_SUFFIX_LEN <= name.length()) &&
+                            (std::strcmp(name.c_str() + name.length() - FEMALE_SUFFIX_LEN, female_suffix) == STR_EQUAL)
+                            ? "female"
+                            : "male";
+
+    const Fred::InfoContactData::Address addr = _data.get_address< Fred::ContactAddressType::MAILING >();
+    Fred::Messages::PostalAddress pa;
+    pa.name    = name;
+    pa.org     = _data.organization.get_value_or_default();
+    pa.street1 = addr.street1;
+    pa.city    = addr.city;
+    pa.state   = addr.stateorprovince.get_value_or_default();
+    pa.code    = addr.postalcode;
+    pa.country = addr.country;
+
+    Database::query_param_list params(pa.country);
+    std::string sql = "SELECT (SELECT country_cs FROM enum_country WHERE country=$1::TEXT)";
+    if (!_validated_contact.isset()) {
+        params(_data.id)
+              (Fred::Object::State(Fred::Object::State::VALIDATED_CONTACT).into< std::string >());
+        sql.append(",EXISTS(SELECT * FROM object_state "
+                           "WHERE object_id=$2::BIGINT AND "
+                                 "state_id=(SELECT id FROM enum_object_states WHERE name=$3::TEXT) AND "
+                                 "valid_to IS NULL)");
+    }
+    const Database::Result dbres = _ctx.get_conn().exec_params(sql, params);
+    const std::string addr_country = dbres[0][0].isnull()
+                                     ? pa.country
+                                     : static_cast< std::string >(dbres[0][0]);
+    const std::string contact_handle = _data.handle;
+    const boost::gregorian::date letter_date = _letter_time.isset()
+                                               ? _letter_time.get_value().date()
+                                               : boost::gregorian::day_clock::local_day();
+    const std::string contact_state = (_validated_contact.isset() && _validated_contact.get_value()) ||
+                                      (!_validated_contact.isset() && static_cast< bool >(dbres[0][1]))
+                                      ? "validated"
+                                      : "";
+
+    Util::XmlTagPair("contact_auth", Util::vector_of<Util::XmlCallback>
+        (Util::XmlTagPair("user", Util::vector_of<Util::XmlCallback>
+            (Util::XmlTagPair("actual_date", Util::XmlUnparsedCData(boost::gregorian::to_iso_extended_string(letter_date))))
+            (Util::XmlTagPair("name", Util::XmlUnparsedCData(pa.name)))
+            (Util::XmlTagPair("organization", Util::XmlUnparsedCData(pa.org)))
+            (Util::XmlTagPair("street", Util::XmlUnparsedCData(pa.street1)))
+            (Util::XmlTagPair("city", Util::XmlUnparsedCData(pa.city)))
+            (Util::XmlTagPair("stateorprovince", Util::XmlUnparsedCData(pa.state)))
+            (Util::XmlTagPair("postal_code", Util::XmlUnparsedCData(pa.code)))
+            (Util::XmlTagPair("country", Util::XmlUnparsedCData(addr_country)))
+            (Util::XmlTagPair("account", Util::vector_of<Util::XmlCallback>
+                (Util::XmlTagPair("username", Util::XmlUnparsedCData(contact_handle)))
+                (Util::XmlTagPair("first_name", Util::XmlUnparsedCData(firstname)))
+                (Util::XmlTagPair("last_name", Util::XmlUnparsedCData(lastname)))
+                (Util::XmlTagPair("sex", Util::XmlUnparsedCData(sex)))
+                (Util::XmlTagPair("email", Util::XmlUnparsedCData(_data.email.get_value_or_default())))
+                (Util::XmlTagPair("mobile", Util::XmlUnparsedCData(_data.telephone.get_value_or_default())))
+                (Util::XmlTagPair("state", Util::XmlUnparsedCData(contact_state)))
+            ))
+        ))
+    )(letter_xml);
+
+    std::stringstream xmldata;
+    xmldata << letter_xml;
+
+    const HandleRegistryArgs *const rconf =
+        CfgArgs::instance()->get_handler_ptr_by_type< HandleRegistryArgs >();
+    std::auto_ptr< Fred::Document::Manager > doc_manager_ptr =
+        Fred::Document::Manager::create(
+            rconf->docgen_path,
+            rconf->docgen_template_path,
+            rconf->fileclient_path,
+            CfgArgs::instance()->get_handler_ptr_by_type< HandleCorbaNameServiceArgs >()
+                ->get_nameservice_host_port());
+    enum { FILETYPE_MOJEID_CARD = 10 };
+    const unsigned long long file_id = doc_manager_ptr->generateDocumentAndSave(
+        Fred::Document::GT_MOJEID_CARD,
+        xmldata,
+        "mojeid_card-" + boost::lexical_cast< std::string >(_data.id) + "-" +
+                         boost::lexical_cast< std::string >(::time(NULL)) + ".pdf",
+        FILETYPE_MOJEID_CARD, "");
+
+    static const std::string comm_type = "letter";
+    static const char *const message_type = "mojeid_card";
+    const MessageId message_id =
+        _msg_manager_ptr->save_letter_to_send(
+            contact_handle.c_str(),
+            pa,
+            file_id,
+            message_type,
+            _data.id,
+            _data.historyid,
+            comm_type,
+            true);
+    return message_id;
 }
 
 namespace {

@@ -354,6 +354,12 @@ void Server_i::send_mojeid_card(
 
 void Server_i::generate_sms_messages()
 {
+    try {
+        impl_ptr_->generate_sms_messages();
+    }
+    catch (...) {
+        throw IDL::INTERNAL_SERVER_ERROR();
+    }
 }
 
 void Server_i::generate_email_messages()
@@ -362,6 +368,12 @@ void Server_i::generate_email_messages()
 
 void Server_i::generate_letter_messages()
 {
+    try {
+        impl_ptr_->generate_letter_messages();
+    }
+    catch (...) {
+        throw IDL::INTERNAL_SERVER_ERROR();
+    }
 }
 
 ContactId Server_i::get_contact_id(

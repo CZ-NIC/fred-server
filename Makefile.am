@@ -1777,10 +1777,10 @@ src_corba_mojeid_fred_mifd_LDADD = \
 		src/corba/libcorbadatatypes.a \
 		src/fredlib/notifier/libnotifier.a \
 		src/fredlib/libfred.a \
+		src/fredlib/messages/libmessages.a \
 		src/model/libmodel.a \
 		src/fredlib/contact_verification/libcontact_verification.a \
 		src/fredlib/public_request/libpublic_request.a \
-		src/fredlib/messages/libmessages.a \
 		util/libutil.a \
 		util/log/liblog.a \
 		util/types/libtypes.a \
