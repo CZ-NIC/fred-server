@@ -1786,6 +1786,7 @@ src_corba_mojeid_fred_mifd_LDADD = \
 		util/types/libtypes.a \
 		util/db/libdb.a \
 		src/old_utils/liboldutils.a \
+		src/corba/libcorba.a \
 		-lmpdec -lm -lrt \
 		$(LIBIDN_LIBS) \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \

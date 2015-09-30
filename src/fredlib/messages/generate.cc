@@ -5,9 +5,11 @@
 #include "src/fredlib/contact/info_contact.h"
 #include "src/mojeid/mojeid_public_request.h"
 #include "src/mojeid/mojeid2.h"
+#include "src/corba/mailer_manager.h"
 #include "util/cfg/config_handler_decl.h"
 #include "util/cfg/handle_mojeid_args.h"
 #include "util/db/query_param.h"
+#include "util/corba_wrapper_decl.h"
 
 #include <boost/date_time/gregorian/gregorian.hpp>
 
@@ -261,7 +263,7 @@ struct GetData< CommChannel::SMS >
 template < >
 struct ProcessFor< CommChannel::SMS >
 {
-    static void data(OperationContext &_ctx, const Database::Result &_dbres)
+    static void data(const Database::Result &_dbres)
     {
         static const char *const message_type_mojeid_pin2 = "mojeid_pin2";
         static ManagerPtr manager_ptr = create_manager();
@@ -279,13 +281,19 @@ struct ProcessFor< CommChannel::SMS >
                                             "Pro aktivaci Vaseho uctu je nutne vlozit kody "
                                             "PIN1 a PIN2. PIN1 Vam byl zaslan emailem, PIN2 je: " + pin2;
 
-            const GeneralId message_id = manager_ptr->save_sms_to_send(contact_handle.c_str(),
-                                                                       contact_phone.c_str(),
-                                                                       sms_content.c_str(),
-                                                                       message_type_mojeid_pin2,
-                                                                       contact_id,
-                                                                       contact_history_id);
-            JoinMessage< CommChannel::LETTER >::with_public_request(_ctx, public_request_id, message_id);
+            try {
+                const GeneralId message_id = manager_ptr->save_sms_to_send(contact_handle.c_str(),
+                                                                           contact_phone.c_str(),
+                                                                           sms_content.c_str(),
+                                                                           message_type_mojeid_pin2,
+                                                                           contact_id,
+                                                                           contact_history_id);
+                OperationContextCreator ctx;
+                JoinMessage< CommChannel::LETTER >::with_public_request(ctx, public_request_id, message_id);
+                ctx.commit_transaction();
+            }
+            catch (...) {
+            }
         }
     }
 };
@@ -316,7 +324,7 @@ struct GetData< CommChannel::LETTER >
 template < >
 struct ProcessFor< CommChannel::LETTER >
 {
-    static void data(OperationContext &_ctx, const Database::Result &_dbres)
+    static void data(const Database::Result &_dbres)
     {
         static const HandleMojeIDArgs *const server_conf_ptr =
             CfgArgs::instance()->get_handler_ptr_by_type< HandleMojeIDArgs >();
@@ -334,13 +342,14 @@ struct ProcessFor< CommChannel::LETTER >
                     continue;
                 }
 
+                OperationContextCreator ctx;
                 const InfoContactData contact_data = InfoContactHistoryByHistoryid(contact_history_id)
-                                                         .exec(_ctx).info_contact_data;
+                                                         .exec(ctx).info_contact_data;
                 namespace bptime = boost::posix_time;
                 const bptime::ptime letter_time = bptime::time_from_string(public_request_time);
                 enum { DONT_USE_LOG_REQUEST_ID = 0 };
                 const GeneralId message_id = Registry::MojeID::MojeID2Impl::send_mojeid_card(
-                    _ctx,
+                    ctx,
                     manager_ptr.get(),
                     contact_data,
                     server_conf_ptr->letter_limit_count,
@@ -348,7 +357,8 @@ struct ProcessFor< CommChannel::LETTER >
                     DONT_USE_LOG_REQUEST_ID,
                     letter_time,
                     validated_contact);
-                JoinMessage< CommChannel::LETTER >::with_public_request(_ctx, public_request_id, message_id);
+                JoinMessage< CommChannel::LETTER >::with_public_request(ctx, public_request_id, message_id);
+                ctx.commit_transaction();
             }
             catch (...) {
             }
@@ -361,15 +371,48 @@ struct GetData< CommChannel::EMAIL >
 {
     static std::string finish_query(Database::query_param_list &_params)
     {
-        return "";
+        return "SELECT tg.public_request_id,UPPER(obr.name),c.email,"
+                      "lock_public_request_lock(tg.contact_id) "
+               "FROM to_generate tg "
+               "JOIN public_request pr ON pr.id=tg.public_request_id "
+               "JOIN object_registry obr ON obr.id=tg.contact_id "
+               "JOIN contact_history c ON c.historyid=tg.contact_history_id";
     }
 };
 
 template < >
 struct ProcessFor< CommChannel::EMAIL >
 {
-    static void data(OperationContext &_ctx, const Database::Result &_dbres)
+    static void data(const Database::Result &_dbres)
     {
+        typedef std::auto_ptr< Mailer::Manager > MailerPtr;
+        const MailerPtr mailer_ptr(new MailerManager(CorbaContainer::get_instance()->getNS()));
+        for (::size_t idx = 0; idx < _dbres.size(); ++idx) {
+            try {
+                const GeneralId   public_request_id = static_cast< GeneralId   >(_dbres[idx][0]);
+                const std::string contact_handle    = static_cast< std::string >(_dbres[idx][1]);
+                const std::string contact_email     = static_cast< std::string >(_dbres[idx][2]);
+
+                Mailer::Parameters params;
+                Mailer::Handles handles;
+                handles.push_back(contact_handle);
+                Mailer::Attachments attach;
+                const GeneralId message_id = mailer_ptr->sendEmail(
+                    "",           //from:         default sender from notification system
+                    contact_email,//to:
+                    "",           //subject:      default subject is taken from template
+                    "",           //mailTemplate:
+                    params,       //params:
+                    handles,      //handles:
+                    attach);      //attach:
+
+                OperationContextCreator ctx;
+                JoinMessage< CommChannel::LETTER >::with_public_request(ctx, public_request_id, message_id);
+                ctx.commit_transaction();
+            }
+            catch (...) {
+            }
+        }
     }
 };
 
@@ -381,7 +424,7 @@ void Generate::Into< COMM_CHANNEL >::exec(OperationContext &_ctx)
     static Database::query_param_list params;
     static const std::string sql = CollectFor< COMM_CHANNEL >::query(params);
     const Database::Result dbres = _ctx.get_conn().exec_params(sql, params);
-    ProcessFor< COMM_CHANNEL >::data(_ctx, dbres);
+    ProcessFor< COMM_CHANNEL >::data(dbres);
 }
 
 template void Generate::Into< CommChannel::SMS    >::exec(OperationContext &_ctx);

@@ -1976,6 +1976,25 @@ void MojeID2Impl::generate_letter_messages()const
     }
 }
 
+void MojeID2Impl::generate_email_messages()const
+{
+    LOGGING_CONTEXT(log_ctx, *this);
+
+    try {
+        Fred::OperationContextCreator ctx;
+        Fred::Messages::Generate::Into< Fred::Messages::CommChannel::EMAIL >::exec(ctx);
+        ctx.commit_transaction();
+    }
+    catch (const std::exception &e) {
+        LOGGER(PACKAGE).error(e.what());
+        throw;
+    }
+    catch (...) {
+        LOGGER(PACKAGE).error("unknown exception");
+        throw;
+    }
+}
+
 MojeID2Impl::MessageId MojeID2Impl::send_mojeid_card(
     Fred::OperationContext &_ctx,
     Fred::Messages::Manager *_msg_manager_ptr,

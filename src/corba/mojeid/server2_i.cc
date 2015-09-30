@@ -364,6 +364,12 @@ void Server_i::generate_sms_messages()
 
 void Server_i::generate_email_messages()
 {
+    try {
+        impl_ptr_->generate_email_messages();
+    }
+    catch (...) {
+        throw IDL::INTERNAL_SERVER_ERROR();
+    }
 }
 
 void Server_i::generate_letter_messages()

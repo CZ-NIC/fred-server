@@ -316,6 +316,8 @@ public:
 
     void generate_letter_messages()const;
 
+    void generate_email_messages()const;
+
     static MessageId send_mojeid_card(
         Fred::OperationContext &_ctx,
         Fred::Messages::Manager *_msg_manager_ptr,
