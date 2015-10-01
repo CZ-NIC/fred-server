@@ -1957,6 +1957,25 @@ void MojeID2Impl::generate_sms_messages()const
     }
 }
 
+void MojeID2Impl::enable_sms_messages_generation(bool enable)const
+{
+    LOGGING_CONTEXT(log_ctx, *this);
+
+    try {
+        Fred::OperationContextCreator ctx;
+        Fred::Messages::Generate::enable< Fred::Messages::CommChannel::SMS >(ctx, enable);
+        ctx.commit_transaction();
+    }
+    catch (const std::exception &e) {
+        LOGGER(PACKAGE).error(e.what());
+        throw;
+    }
+    catch (...) {
+        LOGGER(PACKAGE).error("unknown exception");
+        throw;
+    }
+}
+
 void MojeID2Impl::generate_letter_messages()const
 {
     LOGGING_CONTEXT(log_ctx, *this);
@@ -1976,6 +1995,25 @@ void MojeID2Impl::generate_letter_messages()const
     }
 }
 
+void MojeID2Impl::enable_letter_messages_generation(bool enable)const
+{
+    LOGGING_CONTEXT(log_ctx, *this);
+
+    try {
+        Fred::OperationContextCreator ctx;
+        Fred::Messages::Generate::enable< Fred::Messages::CommChannel::LETTER >(ctx, enable);
+        ctx.commit_transaction();
+    }
+    catch (const std::exception &e) {
+        LOGGER(PACKAGE).error(e.what());
+        throw;
+    }
+    catch (...) {
+        LOGGER(PACKAGE).error("unknown exception");
+        throw;
+    }
+}
+
 void MojeID2Impl::generate_email_messages()const
 {
     LOGGING_CONTEXT(log_ctx, *this);
@@ -1983,6 +2021,25 @@ void MojeID2Impl::generate_email_messages()const
     try {
         Fred::OperationContextCreator ctx;
         Fred::Messages::Generate::Into< Fred::Messages::CommChannel::EMAIL >::exec(ctx);
+        ctx.commit_transaction();
+    }
+    catch (const std::exception &e) {
+        LOGGER(PACKAGE).error(e.what());
+        throw;
+    }
+    catch (...) {
+        LOGGER(PACKAGE).error("unknown exception");
+        throw;
+    }
+}
+
+void MojeID2Impl::enable_email_messages_generation(bool enable)const
+{
+    LOGGING_CONTEXT(log_ctx, *this);
+
+    try {
+        Fred::OperationContextCreator ctx;
+        Fred::Messages::Generate::enable< Fred::Messages::CommChannel::EMAIL >(ctx, enable);
         ctx.commit_transaction();
     }
     catch (const std::exception &e) {

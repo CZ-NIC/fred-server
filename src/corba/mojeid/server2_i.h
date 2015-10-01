@@ -105,10 +105,13 @@ public:
         LogRequestId log_request_id);
 
     void generate_sms_messages();
+    void enable_sms_messages_generation(::CORBA::Boolean enable);
 
     void generate_email_messages();
+    void enable_email_messages_generation(::CORBA::Boolean enable);
 
     void generate_letter_messages();
+    void enable_letter_messages_generation(::CORBA::Boolean enable);
 
     ContactId get_contact_id(
         const char *handle);

@@ -431,5 +431,19 @@ template void Generate::Into< CommChannel::SMS    >::exec(OperationContext &_ctx
 template void Generate::Into< CommChannel::EMAIL  >::exec(OperationContext &_ctx);
 template void Generate::Into< CommChannel::LETTER >::exec(OperationContext &_ctx);
 
+template < CommChannel::Value COMM_CHANNEL >
+void Generate::enable(OperationContext &_ctx, bool flag)
+{
+    Database::query_param_list params;
+    const std::string sql = "UPDATE enum_parameters "
+                            "SET val=$" + params.add(flag ? "enabled" : "disabled") + "::TEXT "
+                            "WHERE name=" + Parameter< COMM_CHANNEL >::name(params);
+    _ctx.get_conn().exec_params(sql, params);
+}
+
+template void Generate::enable< CommChannel::SMS    >(OperationContext &_ctx, bool flag);
+template void Generate::enable< CommChannel::EMAIL  >(OperationContext &_ctx, bool flag);
+template void Generate::enable< CommChannel::LETTER >(OperationContext &_ctx, bool flag);
+
 }//namespace Fred::Messages
 }//namespace Fred

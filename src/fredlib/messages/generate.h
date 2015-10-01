@@ -47,6 +47,8 @@ public:
     {
         static void exec(OperationContext &_ctx);
     };
+    template < CommChannel::Value COMM_CHANNEL >
+    static void enable(OperationContext &_ctx, bool flag);
 };
 
 }//namespace Fred::Messages
