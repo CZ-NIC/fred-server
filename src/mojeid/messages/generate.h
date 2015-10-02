@@ -25,9 +25,14 @@
 #define GENERATE_H_919490122FEE4648D5B94BDAC5299EAC
 
 #include "src/fredlib/opcontext.h"
+#include "src/fredlib/public_request/public_request_lock_guard.h"
+#include "src/fredlib/public_request/public_request_object_lock_guard.h"
+#include "util/optional_value.h"
 
 namespace MojeID {
 namespace Messages {
+
+typedef unsigned long long GeneralId;
 
 struct CommChannel
 {
@@ -42,11 +47,20 @@ struct CommChannel
 class Generate
 {
 public:
+    typedef GeneralId MessageId;
     template < CommChannel::Value COMM_CHANNEL >
     struct Into
     {
-        static void exec(Fred::OperationContext &_ctx);
+        static void for_new_requests(Fred::OperationContext &_ctx);
+
+        template < typename PUBLIC_REQUEST_TYPE >
+        static MessageId for_given_request(
+            Fred::OperationContext &_ctx,
+            const Fred::PublicRequestLockGuard &_locked_request,
+            const Fred::PublicRequestObjectLockGuard &_locked_contact,
+            const Optional< GeneralId > &_contact_history_id = Optional< GeneralId >());
     };
+
     template < CommChannel::Value COMM_CHANNEL >
     static void enable(Fred::OperationContext &_ctx, bool flag);
 };

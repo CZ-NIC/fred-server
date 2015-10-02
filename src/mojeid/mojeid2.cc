@@ -25,6 +25,7 @@
 #include "src/mojeid/mojeid2.h"
 #include "src/mojeid/safe_data_storage.h"
 #include "src/mojeid/mojeid_public_request.h"
+#include "src/mojeid/messages/generate.h"
 #include "src/fredlib/contact/create_contact.h"
 #include "src/fredlib/contact/update_contact.h"
 #include "src/fredlib/contact/delete_contact.h"
@@ -42,7 +43,6 @@
 #include "src/fredlib/object/get_states_presence.h"
 #include "src/fredlib/object_state/create_object_state_request_id.h"
 #include "src/fredlib/object_state/cancel_object_state_request_id.h"
-#include "src/fredlib/messages/generate.h"
 #include "src/fredlib/messages/messages_impl.h"
 #include "src/corba/mojeid/corba_conversion2.h"
 #include "util/random.h"
@@ -651,7 +651,7 @@ public:
             const std::string registrar_handle_;
             const MojeID2Impl::LogRequestId log_request_id_;
             std::string &ident_;
-            const Fred::PublicRequestObjectLockGuard locked_contact_;
+            const Fred::PublicRequestObjectLockGuardByObjectId locked_contact_;
         };
 
         class process_registration_request
@@ -717,7 +717,7 @@ public:
         private:
             Fred::OperationContext &ctx_;
             const MojeID2Impl::ContactId contact_id_;
-            const Fred::PublicRequestObjectLockGuard locked_object_;
+            const Fred::PublicRequestObjectLockGuardByObjectId locked_object_;
             const std::string registrar_handle_;
             const MojeID2Impl::LogRequestId log_request_id_;
         };
@@ -913,7 +913,7 @@ MojeID2Impl::ContactId MojeID2Impl::create_contact_prepare(
         const Fred::CreateContact::Result new_contact = op_create_contact.exec(ctx);
         Fred::CreatePublicRequestAuth op_create_pub_req(
             Fred::MojeID::PublicRequest::ContactConditionalIdentification::iface());
-        Fred::PublicRequestObjectLockGuard locked_contact(ctx, new_contact.object_id);
+        Fred::PublicRequestObjectLockGuardByObjectId locked_contact(ctx, new_contact.object_id);
         {
             const Fred::CreatePublicRequestAuth::Result result = op_create_pub_req.exec(ctx, locked_contact);
             _ident = result.identification;
@@ -1094,7 +1094,7 @@ void MojeID2Impl::update_contact_prepare(
               data_changes.fax.isset())) {
             return;
         }
-        const Fred::PublicRequestObjectLockGuard locked_contact(ctx, _new_data.id);
+        const Fred::PublicRequestObjectLockGuardByObjectId locked_contact(ctx, _new_data.id);
         Fred::StatusList to_cancel;
         bool drop_validation = false;
         if (states.get< FOS::VALIDATED_CONTACT >()) {
@@ -1377,7 +1377,7 @@ std::string MojeID2Impl::get_validation_pdf(ContactId _contact_id)const
     try {
         Fred::OperationContextCreator ctx;
 
-        const Fred::PublicRequestObjectLockGuard locked_contact(ctx, _contact_id);
+        const Fred::PublicRequestObjectLockGuardByObjectId locked_contact(ctx, _contact_id);
 
         Database::Result res = ctx.get_conn().exec_params(
             "SELECT pr.id,c.name,c.organization,c.ssn,"
@@ -1444,7 +1444,7 @@ std::string MojeID2Impl::get_validation_pdf(ContactId _contact_id)const
         doc_gen->closeInput();
         return pdf_document.str();
     }
-    catch (const Fred::PublicRequestObjectLockGuard::Exception &e) {
+    catch (const Fred::PublicRequestObjectLockGuardByObjectId::Exception &e) {
         if (e.is_set_object_doesnt_exist()) {
             LOGGER(PACKAGE).warning(boost::format("contact doesn't exist (%1%)") % e.what());
             throw ObjectDoesntExist(e.what());
@@ -1474,7 +1474,7 @@ void MojeID2Impl::create_validation_request(
 
     try {
         Fred::OperationContextCreator ctx;
-        const Fred::PublicRequestObjectLockGuard locked_contact(ctx, _contact_id);
+        const Fred::PublicRequestObjectLockGuardByObjectId locked_contact(ctx, _contact_id);
         try {
             Fred::GetActivePublicRequest(Fred::MojeID::PublicRequest::ContactValidation::iface())
                 .exec(ctx, locked_contact, _log_request_id);
@@ -1514,7 +1514,7 @@ void MojeID2Impl::create_validation_request(
         create_public_request_op.exec(ctx, locked_contact, _log_request_id);
         ctx.commit_transaction();
     }
-    catch (const Fred::PublicRequestObjectLockGuard::Exception &e) {
+    catch (const Fred::PublicRequestObjectLockGuardByObjectId::Exception &e) {
         if (e.is_set_object_doesnt_exist()) {
             LOGGER(PACKAGE).warning(boost::format("contact doesn't exist (%1%)") % e.what());
             throw ObjectDoesntExist(e.what());
@@ -1738,7 +1738,7 @@ void MojeID2Impl::cancel_account_prepare(
 
     try {
         Fred::OperationContextTwoPhaseCommitCreator ctx(_trans_id);
-        const Fred::PublicRequestObjectLockGuard locked_contact(ctx, _contact_id);
+        const Fred::PublicRequestObjectLockGuardByObjectId locked_contact(ctx, _contact_id);
         typedef Fred::Object::State FOS;
         typedef FOS::set<
             FOS::SERVER_TRANSFER_PROHIBITED,
@@ -1797,7 +1797,7 @@ void MojeID2Impl::cancel_account_prepare(
         ctx.commit_transaction();
         return;
     }
-    catch (const Fred::PublicRequestObjectLockGuard::Exception &e) {
+    catch (const Fred::PublicRequestObjectLockGuardByObjectId::Exception &e) {
         if (e.is_set_object_doesnt_exist()) {
             LOGGER(PACKAGE).warning(boost::format("contact doesn't exist (%1%)") % e.what());
             throw ObjectDoesntExist(e.what());
@@ -1858,7 +1858,7 @@ void MojeID2Impl::send_new_pin3(
         LOGGER(PACKAGE).info(e.what());
         throw;
     }
-    catch(const Fred::PublicRequestObjectLockGuard::Exception &e) {
+    catch(const Fred::PublicRequestObjectLockGuardByObjectId::Exception &e) {
         if (e.is_set_object_doesnt_exist()) {
             LOGGER(PACKAGE).info(e.what());
             throw ObjectDoesntExist("object not found in database");
@@ -1944,7 +1944,8 @@ void MojeID2Impl::generate_sms_messages()const
 
     try {
         Fred::OperationContextCreator ctx;
-        Fred::Messages::Generate::Into< Fred::Messages::CommChannel::SMS >::exec(ctx);
+        typedef ::MojeID::Messages::CommChannel CommChannel;
+        ::MojeID::Messages::Generate::Into< CommChannel::SMS >::for_new_requests(ctx);
         ctx.commit_transaction();
     }
     catch (const std::exception &e) {
@@ -1963,7 +1964,7 @@ void MojeID2Impl::enable_sms_messages_generation(bool enable)const
 
     try {
         Fred::OperationContextCreator ctx;
-        Fred::Messages::Generate::enable< Fred::Messages::CommChannel::SMS >(ctx, enable);
+        ::MojeID::Messages::Generate::enable< ::MojeID::Messages::CommChannel::SMS >(ctx, enable);
         ctx.commit_transaction();
     }
     catch (const std::exception &e) {
@@ -1982,7 +1983,8 @@ void MojeID2Impl::generate_letter_messages()const
 
     try {
         Fred::OperationContextCreator ctx;
-        Fred::Messages::Generate::Into< Fred::Messages::CommChannel::LETTER >::exec(ctx);
+        typedef ::MojeID::Messages::CommChannel CommChannel;
+        ::MojeID::Messages::Generate::Into< CommChannel::LETTER >::for_new_requests(ctx);
         ctx.commit_transaction();
     }
     catch (const std::exception &e) {
@@ -2001,7 +2003,7 @@ void MojeID2Impl::enable_letter_messages_generation(bool enable)const
 
     try {
         Fred::OperationContextCreator ctx;
-        Fred::Messages::Generate::enable< Fred::Messages::CommChannel::LETTER >(ctx, enable);
+        ::MojeID::Messages::Generate::enable< ::MojeID::Messages::CommChannel::LETTER >(ctx, enable);
         ctx.commit_transaction();
     }
     catch (const std::exception &e) {
@@ -2020,7 +2022,8 @@ void MojeID2Impl::generate_email_messages()const
 
     try {
         Fred::OperationContextCreator ctx;
-        Fred::Messages::Generate::Into< Fred::Messages::CommChannel::EMAIL >::exec(ctx);
+        typedef ::MojeID::Messages::CommChannel CommChannel;
+        ::MojeID::Messages::Generate::Into< CommChannel::EMAIL >::for_new_requests(ctx);
         ctx.commit_transaction();
     }
     catch (const std::exception &e) {
@@ -2039,7 +2042,7 @@ void MojeID2Impl::enable_email_messages_generation(bool enable)const
 
     try {
         Fred::OperationContextCreator ctx;
-        Fred::Messages::Generate::enable< Fred::Messages::CommChannel::EMAIL >(ctx, enable);
+        ::MojeID::Messages::Generate::enable< ::MojeID::Messages::CommChannel::EMAIL >(ctx, enable);
         ctx.commit_transaction();
     }
     catch (const std::exception &e) {
@@ -2487,7 +2490,7 @@ void transitions::action::send_new_pin3::operator()(
         const Fred::PublicRequestTypeIface &type = Fred::MojeID::PublicRequest::ContactIdentification::iface();
         Fred::GetActivePublicRequest get_active_public_request_op(type);
         Fred::OperationContext &ctx = _event.get_operation_context();
-        const Fred::PublicRequestObjectLockGuard locked_object = _event.get_locked_object();
+        const Fred::PublicRequestObjectLockGuard &locked_object = _event.get_locked_object();
         while (true) {
             const Fred::PublicRequestId request_id = get_active_public_request_op.exec(ctx, locked_object);
             Fred::UpdatePublicRequest update_public_request_op;
@@ -2510,7 +2513,7 @@ void transitions::action::send_new_pin3::operator()(
         const Fred::PublicRequestTypeIface &type = Fred::MojeID::PublicRequest::ContactReidentification::iface();
         Fred::GetActivePublicRequest get_active_public_request_op(type);
         Fred::OperationContext &ctx = _event.get_operation_context();
-        const Fred::PublicRequestObjectLockGuard locked_object = _event.get_locked_object();
+        const Fred::PublicRequestObjectLockGuard &locked_object = _event.get_locked_object();
         while (true) {
             const Fred::PublicRequestId request_id = get_active_public_request_op.exec(ctx, locked_object);
             Fred::UpdatePublicRequest update_public_request_op;
