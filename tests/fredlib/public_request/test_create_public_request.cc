@@ -92,9 +92,9 @@ BOOST_AUTO_TEST_CASE(public_request_object_lock_guard_wrong_id)
         "SELECT 100+2*MAX(id) FROM object")[0][0]);
     BOOST_CHECK_EXCEPTION(
     try {
-        Fred::PublicRequestObjectLockGuard(ctx, bad_object_id);
+        Fred::PublicRequestObjectLockGuardByObjectId(ctx, bad_object_id);
     }
-    catch(const Fred::PublicRequestObjectLockGuard::Exception &e) {
+    catch(const Fred::PublicRequestObjectLockGuardByObjectId::Exception &e) {
         BOOST_CHECK(e.is_set_object_doesnt_exist());
         BOOST_CHECK(e.get_object_doesnt_exist() == bad_object_id);
         BOOST_TEST_MESSAGE(boost::diagnostic_information(e));
@@ -125,7 +125,7 @@ BOOST_AUTO_TEST_CASE(create_public_request_wrong_registrar)
     try {
         Fred::CreatePublicRequest(PublicRequestTypeFake("mojeid_contact_identification"))
             .set_registrar_id(bad_registrar_id)
-            .exec(ctx, Fred::PublicRequestObjectLockGuard(ctx, contact_id));
+            .exec(ctx, Fred::PublicRequestObjectLockGuardByObjectId(ctx, contact_id));
     }
     catch(const Fred::CreatePublicRequest::Exception &e) {
         BOOST_CHECK(!e.is_set_unknown_type());
@@ -157,7 +157,7 @@ BOOST_AUTO_TEST_CASE(create_public_request_wrong_type)
     BOOST_CHECK_EXCEPTION(
     try {
         Fred::CreatePublicRequest(PublicRequestTypeFake(bad_type))
-            .exec(ctx, Fred::PublicRequestObjectLockGuard(ctx, contact_id));
+            .exec(ctx, Fred::PublicRequestObjectLockGuardByObjectId(ctx, contact_id));
     }
     catch(const Fred::CreatePublicRequest::Exception &e) {
         BOOST_CHECK(e.is_set_unknown_type());
@@ -195,7 +195,7 @@ BOOST_AUTO_TEST_CASE(create_public_request_ok)
         BOOST_CHECK(type_names.size() == res.size());
     }
 
-    Fred::PublicRequestObjectLockGuard locked_contact(ctx, contact_id);
+    Fred::PublicRequestObjectLockGuardByObjectId locked_contact(ctx, contact_id);
     for (TypeName::const_iterator name_ptr = type_names.begin(); name_ptr != type_names.end(); ++name_ptr) {
         const PublicRequestTypeFake public_request_type(*name_ptr);
         const Fred::PublicRequestId public_request_id = Fred::CreatePublicRequest(public_request_type)

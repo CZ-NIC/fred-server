@@ -101,7 +101,7 @@ BOOST_AUTO_TEST_CASE(create_public_request_auth_wrong_registrar)
     try {
         Fred::CreatePublicRequestAuth(PublicRequestTypeFake("mojeid_contact_identification", password))
             .set_registrar_id(bad_registrar_id)
-            .exec(ctx, Fred::PublicRequestObjectLockGuard(ctx, contact_id));
+            .exec(ctx, Fred::PublicRequestObjectLockGuardByObjectId(ctx, contact_id));
     }
     catch(const Fred::CreatePublicRequestAuth::Exception &e) {
         BOOST_CHECK(!e.is_set_unknown_type());
@@ -133,7 +133,7 @@ BOOST_AUTO_TEST_CASE(create_public_request_auth_wrong_type)
     BOOST_CHECK_EXCEPTION(
     try {
         Fred::CreatePublicRequestAuth(PublicRequestTypeFake(bad_type, password))
-            .exec(ctx, Fred::PublicRequestObjectLockGuard(ctx, contact_id));
+            .exec(ctx, Fred::PublicRequestObjectLockGuardByObjectId(ctx, contact_id));
     }
     catch(const Fred::CreatePublicRequestAuth::Exception &e) {
         BOOST_CHECK(e.is_set_unknown_type());
@@ -171,7 +171,7 @@ BOOST_AUTO_TEST_CASE(create_public_request_auth_ok)
         BOOST_CHECK(type_names.size() == res.size());
     }
 
-    Fred::PublicRequestObjectLockGuard locked_contact(ctx, contact_id);
+    Fred::PublicRequestObjectLockGuardByObjectId locked_contact(ctx, contact_id);
     for (TypeName::const_iterator name_ptr = type_names.begin(); name_ptr != type_names.end(); ++name_ptr) {
         const PublicRequestTypeFake public_request_type(*name_ptr, password);
         const Fred::CreatePublicRequestAuth::Result result = Fred::CreatePublicRequestAuth(public_request_type)

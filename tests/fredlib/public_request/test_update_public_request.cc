@@ -64,7 +64,7 @@ struct update_public_request_fixture : virtual Test::Fixture::instantiate_db_tem
             Database::query_param_list(contact_handle));
         BOOST_CHECK(dbres.size() == 1);//expecting existing system registrar
         contact_id = static_cast< Fred::ObjectId >(dbres[0][0]);
-        Fred::PublicRequestObjectLockGuard locked_contact(ctx, contact_id);
+        Fred::PublicRequestObjectLockGuardByObjectId locked_contact(ctx, contact_id);
 
         dbres = ctx.get_conn().exec(
             "SELECT name FROM enum_public_request_type "

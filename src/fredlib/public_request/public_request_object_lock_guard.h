@@ -31,13 +31,38 @@
 namespace Fred {
 
 /**
- * Obtain exclusive access to all public requests of given object.
+ * Common class guaranteeing exclusive access to all public requests of given object.
  * @warning Destructor doesn't release lock contrary to expectations. The one will release by finishing of
  *          transaction wherein it was created.
  * @note It would be suitable to remember reference to operation context object and make this reference
  *       accessible too because this guard joins locked entity with particular database connection.
  */
 class PublicRequestObjectLockGuard
+{
+public:
+    /**
+     * Return object's numeric id whose public requests guards.
+     * @return object's numeric id whose public requests guards
+     */
+    ObjectId get_object_id()const { return object_id_; }
+protected:
+    /**
+     * Derived class can store object_id.
+     * @param _object_id unique numeric identification of object
+     */
+    PublicRequestObjectLockGuard(ObjectId _object_id):object_id_(_object_id) { }
+private:
+    const ObjectId object_id_;
+};
+
+/**
+ * Obtain exclusive access to all public requests of given object.
+ * @warning Destructor doesn't release lock contrary to expectations. The one will release by finishing of
+ *          transaction wherein it was created.
+ * @note It would be suitable to remember reference to operation context object and make this reference
+ *       accessible too because this guard joins locked entity with particular database connection.
+ */
+class PublicRequestObjectLockGuardByObjectId:public PublicRequestObjectLockGuard
 {
 public:
     DECLARE_EXCEPTION_DATA(object_doesnt_exist, ObjectId);///< exception members for bad object_id
@@ -51,14 +76,7 @@ public:
      * @param _ctx use database connection from this operation context
      * @param _object_id unique numeric identification of object
      */
-    PublicRequestObjectLockGuard(OperationContext &_ctx, ObjectId _object_id);
-    /**
-     * Return object's numeric id whose public requests guards.
-     * @return object's numeric id whose public requests guards
-     */
-    ObjectId get_object_id()const { return object_id_; }
-private:
-    const ObjectId object_id_;
+    PublicRequestObjectLockGuardByObjectId(OperationContext &_ctx, ObjectId _object_id);
 };
 
 }//namespace Fred
