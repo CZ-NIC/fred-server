@@ -1021,8 +1021,7 @@ src_fredlib_banking_libbanking_a_SOURCES = \
 #
 src_fredlib_messages_libmessages_a_SOURCES = \
 		src/fredlib/messages/messages_impl.cc \
-		src/fredlib/messages/messages_impl.h \
-		src/fredlib/messages/generate.cc
+		src/fredlib/messages/messages_impl.h
 #
 # src/fredlib/messages/libmessages.a
 
@@ -1758,6 +1757,7 @@ src_corba_messages_fred_msgd_LDADD = \
 src_corba_mojeid_fred_mifd_SOURCES = \
 		src/mojeid/mojeid2.cc \
 		src/mojeid/mojeid_public_request.cc \
+		src/mojeid/messages/generate.cc \
 		src/corba/nameservice.cc \
 		src/corba/mojeid/server2_i.cc \
 		src/corba/mojeid/corba_common_conversion2.cc \

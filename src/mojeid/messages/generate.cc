@@ -1,4 +1,4 @@
-#include "src/fredlib/messages/generate.h"
+#include "src/mojeid/messages/generate.h"
 #include "src/fredlib/messages/messages_impl.h"
 #include "src/fredlib/object/object_state.h"
 #include "src/fredlib/public_request/public_request_status.h"
@@ -13,7 +13,7 @@
 
 #include <boost/date_time/gregorian/gregorian.hpp>
 
-namespace Fred {
+namespace MojeID {
 namespace Messages {
 
 namespace {
@@ -25,7 +25,8 @@ struct RequiredStatus
 {
     static std::string value(Database::query_param_list &_params)
     {
-        static const std::string status_new = PublicRequest::Status(PublicRequest::Status::NEW).into< std::string >();
+        typedef Fred::PublicRequest::Status FPRS;
+        static const std::string status_new = FPRS(FPRS::NEW).into< std::string >();
         return "$" + _params.add(status_new) + "::TEXT";
     }
 };
@@ -39,7 +40,7 @@ struct PossibleTypes< CommChannel::SMS >
     static std::string value(Database::query_param_list &_params)
     {
         static const std::string type[] = {
-            MojeID::PublicRequest::ContactConditionalIdentification::iface().get_public_request_type() };
+            Fred::MojeID::PublicRequest::ContactConditionalIdentification::iface().get_public_request_type() };
         return "$" + _params.add(type[0]) + "::TEXT";
     }
 };
@@ -50,8 +51,8 @@ struct PossibleTypes< CommChannel::LETTER >
     static std::string value(Database::query_param_list &_params)
     {
         static const std::string type[] = {
-            MojeID::PublicRequest::ContactIdentification::iface().get_public_request_type(),
-            MojeID::PublicRequest::ContactReidentification::iface().get_public_request_type() };
+            Fred::MojeID::PublicRequest::ContactIdentification::iface().get_public_request_type(),
+            Fred::MojeID::PublicRequest::ContactReidentification::iface().get_public_request_type() };
         return "$" + _params.add(type[0]) + "::TEXT,"
                "$" + _params.add(type[1]) + "::TEXT";
     }
@@ -63,9 +64,9 @@ struct PossibleTypes< CommChannel::EMAIL >
     static std::string value(Database::query_param_list &_params)
     {
         static const std::string type[] = {
-            MojeID::PublicRequest::ContactConditionalIdentification::iface().get_public_request_type(),
-            MojeID::PublicRequest::ConditionallyIdentifiedContactTransfer::iface().get_public_request_type(),
-            MojeID::PublicRequest::IdentifiedContactTransfer::iface().get_public_request_type() };
+            Fred::MojeID::PublicRequest::ContactConditionalIdentification::iface().get_public_request_type(),
+            Fred::MojeID::PublicRequest::ConditionallyIdentifiedContactTransfer::iface().get_public_request_type(),
+            Fred::MojeID::PublicRequest::IdentifiedContactTransfer::iface().get_public_request_type() };
         return "$" + _params.add(type[0]) + "::TEXT,"
                "$" + _params.add(type[1]) + "::TEXT,"
                "$" + _params.add(type[2]) + "::TEXT";
@@ -217,7 +218,9 @@ struct ProcessFor;
 template < CommChannel::Value COMM_CHANNEL >
 struct JoinMessage
 {
-    static void with_public_request(OperationContext &_ctx, GeneralId _public_request_id, GeneralId _message_id)
+    static void with_public_request(Fred::OperationContext &_ctx,
+                                    GeneralId _public_request_id,
+                                    GeneralId _message_id)
     {
         _ctx.get_conn().exec_params(
             "INSERT INTO public_request_messages_map (public_request_id,"
@@ -233,7 +236,9 @@ struct JoinMessage
 template < >
 struct JoinMessage< CommChannel::EMAIL >
 {
-    static void with_public_request(OperationContext &_ctx, GeneralId _public_request_id, GeneralId _message_id)
+    static void with_public_request(Fred::OperationContext &_ctx,
+                                    GeneralId _public_request_id,
+                                    GeneralId _message_id)
     {
         _ctx.get_conn().exec_params(
             "INSERT INTO public_request_messages_map (public_request_id,"
@@ -266,7 +271,7 @@ struct ProcessFor< CommChannel::SMS >
     static void data(const Database::Result &_dbres)
     {
         static const char *const message_type_mojeid_pin2 = "mojeid_pin2";
-        static ManagerPtr manager_ptr = create_manager();
+        static Fred::Messages::ManagerPtr manager_ptr = Fred::Messages::create_manager();
         for (::size_t idx = 0; idx < _dbres.size(); ++idx) {
             typedef unsigned long long GeneralId;
             const GeneralId   public_request_id  = static_cast< GeneralId   >(_dbres[idx][0]);
@@ -276,7 +281,8 @@ struct ProcessFor< CommChannel::SMS >
             const std::string contact_phone      = static_cast< std::string >(_dbres[idx][4]);
             const std::string contact_handle     = static_cast< std::string >(_dbres[idx][5]);
 
-            const std::string pin2 = MojeID::PublicRequest::ContactConditionalIdentification::get_pin2_part(password);
+            const std::string pin2 = Fred::MojeID::PublicRequest::ContactConditionalIdentification::
+                                         get_pin2_part(password);
             const std::string sms_content = "Potvrzujeme uspesne zalozeni uctu mojeID. "
                                             "Pro aktivaci Vaseho uctu je nutne vlozit kody "
                                             "PIN1 a PIN2. PIN1 Vam byl zaslan emailem, PIN2 je: " + pin2;
@@ -288,7 +294,7 @@ struct ProcessFor< CommChannel::SMS >
                                                                            message_type_mojeid_pin2,
                                                                            contact_id,
                                                                            contact_history_id);
-                OperationContextCreator ctx;
+                Fred::OperationContextCreator ctx;
                 JoinMessage< CommChannel::LETTER >::with_public_request(ctx, public_request_id, message_id);
                 ctx.commit_transaction();
             }
@@ -328,7 +334,7 @@ struct ProcessFor< CommChannel::LETTER >
     {
         static const HandleMojeIDArgs *const server_conf_ptr =
             CfgArgs::instance()->get_handler_ptr_by_type< HandleMojeIDArgs >();
-        static ManagerPtr manager_ptr = create_manager();
+        static Fred::Messages::ManagerPtr manager_ptr = Fred::Messages::create_manager();
         for (::size_t idx = 0; idx < _dbres.size(); ++idx) {
             try {
                 const GeneralId   public_request_id   = static_cast< GeneralId   >(_dbres[idx][0]);
@@ -342,9 +348,9 @@ struct ProcessFor< CommChannel::LETTER >
                     continue;
                 }
 
-                OperationContextCreator ctx;
-                const InfoContactData contact_data = InfoContactHistoryByHistoryid(contact_history_id)
-                                                         .exec(ctx).info_contact_data;
+                Fred::OperationContextCreator ctx;
+                const Fred::InfoContactData contact_data = Fred::InfoContactHistoryByHistoryid(contact_history_id)
+                                                               .exec(ctx).info_contact_data;
                 namespace bptime = boost::posix_time;
                 const bptime::ptime letter_time = bptime::time_from_string(public_request_time);
                 enum { DONT_USE_LOG_REQUEST_ID = 0 };
@@ -385,7 +391,7 @@ struct ProcessFor< CommChannel::EMAIL >
 {
     static void data(const Database::Result &_dbres)
     {
-        typedef std::auto_ptr< Mailer::Manager > MailerPtr;
+        typedef std::auto_ptr< Fred::Mailer::Manager > MailerPtr;
         const MailerPtr mailer_ptr(new MailerManager(CorbaContainer::get_instance()->getNS()));
         for (::size_t idx = 0; idx < _dbres.size(); ++idx) {
             try {
@@ -393,10 +399,10 @@ struct ProcessFor< CommChannel::EMAIL >
                 const std::string contact_handle    = static_cast< std::string >(_dbres[idx][1]);
                 const std::string contact_email     = static_cast< std::string >(_dbres[idx][2]);
 
-                Mailer::Parameters params;
-                Mailer::Handles handles;
+                Fred::Mailer::Parameters params;
+                Fred::Mailer::Handles handles;
                 handles.push_back(contact_handle);
-                Mailer::Attachments attach;
+                Fred::Mailer::Attachments attach;
                 const GeneralId message_id = mailer_ptr->sendEmail(
                     "",           //from:         default sender from notification system
                     contact_email,//to:
@@ -406,7 +412,7 @@ struct ProcessFor< CommChannel::EMAIL >
                     handles,      //handles:
                     attach);      //attach:
 
-                OperationContextCreator ctx;
+                Fred::OperationContextCreator ctx;
                 JoinMessage< CommChannel::LETTER >::with_public_request(ctx, public_request_id, message_id);
                 ctx.commit_transaction();
             }
@@ -419,7 +425,7 @@ struct ProcessFor< CommChannel::EMAIL >
 }
 
 template < CommChannel::Value COMM_CHANNEL >
-void Generate::Into< COMM_CHANNEL >::exec(OperationContext &_ctx)
+void Generate::Into< COMM_CHANNEL >::exec(Fred::OperationContext &_ctx)
 {
     static Database::query_param_list params;
     static const std::string sql = CollectFor< COMM_CHANNEL >::query(params);
@@ -427,12 +433,12 @@ void Generate::Into< COMM_CHANNEL >::exec(OperationContext &_ctx)
     ProcessFor< COMM_CHANNEL >::data(dbres);
 }
 
-template void Generate::Into< CommChannel::SMS    >::exec(OperationContext &_ctx);
-template void Generate::Into< CommChannel::EMAIL  >::exec(OperationContext &_ctx);
-template void Generate::Into< CommChannel::LETTER >::exec(OperationContext &_ctx);
+template void Generate::Into< CommChannel::SMS    >::exec(Fred::OperationContext &_ctx);
+template void Generate::Into< CommChannel::EMAIL  >::exec(Fred::OperationContext &_ctx);
+template void Generate::Into< CommChannel::LETTER >::exec(Fred::OperationContext &_ctx);
 
 template < CommChannel::Value COMM_CHANNEL >
-void Generate::enable(OperationContext &_ctx, bool flag)
+void Generate::enable(Fred::OperationContext &_ctx, bool flag)
 {
     Database::query_param_list params;
     const std::string sql = "UPDATE enum_parameters "
@@ -441,9 +447,9 @@ void Generate::enable(OperationContext &_ctx, bool flag)
     _ctx.get_conn().exec_params(sql, params);
 }
 
-template void Generate::enable< CommChannel::SMS    >(OperationContext &_ctx, bool flag);
-template void Generate::enable< CommChannel::EMAIL  >(OperationContext &_ctx, bool flag);
-template void Generate::enable< CommChannel::LETTER >(OperationContext &_ctx, bool flag);
+template void Generate::enable< CommChannel::SMS    >(Fred::OperationContext &_ctx, bool flag);
+template void Generate::enable< CommChannel::EMAIL  >(Fred::OperationContext &_ctx, bool flag);
+template void Generate::enable< CommChannel::LETTER >(Fred::OperationContext &_ctx, bool flag);
 
-}//namespace Fred::Messages
-}//namespace Fred
+}//namespace MojeID::Messages
+}//namespace MojeID

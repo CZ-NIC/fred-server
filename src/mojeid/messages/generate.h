@@ -26,7 +26,7 @@
 
 #include "src/fredlib/opcontext.h"
 
-namespace Fred {
+namespace MojeID {
 namespace Messages {
 
 struct CommChannel
@@ -45,13 +45,13 @@ public:
     template < CommChannel::Value COMM_CHANNEL >
     struct Into
     {
-        static void exec(OperationContext &_ctx);
+        static void exec(Fred::OperationContext &_ctx);
     };
     template < CommChannel::Value COMM_CHANNEL >
-    static void enable(OperationContext &_ctx, bool flag);
+    static void enable(Fred::OperationContext &_ctx, bool flag);
 };
 
-}//namespace Fred::Messages
-}//namespace Fred
+}//namespace MojeID::Messages
+}//namespace MojeID
 
 #endif//GENERATE_H_919490122FEE4648D5B94BDAC5299EAC
