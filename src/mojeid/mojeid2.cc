@@ -179,6 +179,35 @@ void check_sent_letters_limit(Fred::OperationContext &_ctx,
         _watched_period_in_days);
 }
 
+struct check_limits
+{
+    class sent_letters:public ::MojeID::Messages::Generate::message_checker
+    {
+    public:
+        sent_letters(unsigned _max_sent_letters,
+                     unsigned _watched_period_in_days)
+        :   max_sent_letters_(_max_sent_letters),
+            watched_period_in_days_(_watched_period_in_days)
+        { }
+        sent_letters(const HandleMojeIDArgs *_server_conf_ptr = CfgArgs::instance()->
+                                                                get_handler_ptr_by_type< HandleMojeIDArgs >())
+        :   max_sent_letters_(_server_conf_ptr->letter_limit_count),
+            watched_period_in_days_(_server_conf_ptr->letter_limit_interval)
+        { }
+        void operator()(Fred::OperationContext &_ctx, Fred::ObjectId _object_id)const
+        {
+            check_sent_letters_limit(_ctx,
+                                     _object_id,
+                                     max_sent_letters_,
+                                     watched_period_in_days_);
+        }
+        ~sent_letters() { }
+    private:
+        const unsigned max_sent_letters_;
+        const unsigned watched_period_in_days_;
+    };
+};
+
 template < typename T >
 bool differs(const Nullable< T > &a, const Nullable< T > &b)
 {
@@ -1943,14 +1972,9 @@ void MojeID2Impl::generate_sms_messages()const
     LOGGING_CONTEXT(log_ctx, *this);
 
     try {
-        const HandleMojeIDArgs *const server_conf_ptr = CfgArgs::instance()->
-                                                            get_handler_ptr_by_type< HandleMojeIDArgs >();
         Fred::OperationContextCreator ctx;
         typedef ::MojeID::Messages::CommChannel CommChannel;
-        ::MojeID::Messages::Generate::Into< CommChannel::SMS >::for_new_requests(
-            ctx,
-            server_conf_ptr->letter_limit_count,
-            server_conf_ptr->letter_limit_interval);
+        ::MojeID::Messages::Generate::Into< CommChannel::SMS >::for_new_requests(ctx);
         ctx.commit_transaction();
     }
     catch (const std::exception &e) {
@@ -1987,14 +2011,10 @@ void MojeID2Impl::generate_letter_messages()const
     LOGGING_CONTEXT(log_ctx, *this);
 
     try {
-        const HandleMojeIDArgs *const server_conf_ptr = CfgArgs::instance()->
-                                                            get_handler_ptr_by_type< HandleMojeIDArgs >();
         Fred::OperationContextCreator ctx;
         typedef ::MojeID::Messages::CommChannel CommChannel;
         ::MojeID::Messages::Generate::Into< CommChannel::LETTER >::for_new_requests(
-            ctx,
-            server_conf_ptr->letter_limit_count,
-            server_conf_ptr->letter_limit_interval);
+            ctx, check_limits::sent_letters());
         ctx.commit_transaction();
     }
     catch (const std::exception &e) {
@@ -2031,14 +2051,9 @@ void MojeID2Impl::generate_email_messages()const
     LOGGING_CONTEXT(log_ctx, *this);
 
     try {
-        const HandleMojeIDArgs *const server_conf_ptr = CfgArgs::instance()->
-                                                            get_handler_ptr_by_type< HandleMojeIDArgs >();
         Fred::OperationContextCreator ctx;
         typedef ::MojeID::Messages::CommChannel CommChannel;
-        ::MojeID::Messages::Generate::Into< CommChannel::EMAIL >::for_new_requests(
-            ctx,
-            server_conf_ptr->letter_limit_count,
-            server_conf_ptr->letter_limit_interval);
+        ::MojeID::Messages::Generate::Into< CommChannel::EMAIL >::for_new_requests(ctx);
         ctx.commit_transaction();
     }
     catch (const std::exception &e) {

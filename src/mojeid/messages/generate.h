@@ -48,21 +48,33 @@ class Generate
 {
 public:
     typedef GeneralId MessageId;
+    class message_checker
+    {
+    public:
+        virtual void operator()(Fred::OperationContext &_ctx,
+                                Fred::ObjectId _object_id)const = 0;
+    protected:
+        virtual ~message_checker() { }
+    };
+    struct message_checker_always_success:message_checker
+    {
+        void operator()(Fred::OperationContext&, Fred::ObjectId)const { }
+        ~message_checker_always_success() { }
+    };
+
     template < CommChannel::Value COMM_CHANNEL >
     struct Into
     {
         static void for_new_requests(
             Fred::OperationContext &_ctx,
-            unsigned _letter_limit_count,
-            unsigned _letter_limit_interval);
+            const message_checker &_check_message_limits = message_checker_always_success());
 
         template < typename PUBLIC_REQUEST_TYPE >
         static MessageId for_given_request(
             Fred::OperationContext &_ctx,
             const Fred::PublicRequestLockGuard &_locked_request,
             const Fred::PublicRequestObjectLockGuard &_locked_contact,
-            unsigned _letter_limit_count,
-            unsigned _letter_limit_interval,
+            const message_checker &_check_message_limits = message_checker_always_success(),
             const Optional< GeneralId > &_contact_history_id = Optional< GeneralId >());
     };
 

@@ -47,8 +47,7 @@ struct PossibleRequestTypes< CommChannel::SMS >
         const std::string &_public_request_type,
         const Fred::PublicRequestLockGuard &_locked_request,
         const Fred::PublicRequestObjectLockGuard &_locked_contact,
-        unsigned _letter_limit_count,
-        unsigned _letter_limit_interval,
+        const Generate::message_checker &_check_message_limits,
         GeneralId _contact_history_id)
     {
         if (PubReqCCI::iface().get_public_request_type() == _public_request_type) {
@@ -56,8 +55,7 @@ struct PossibleRequestTypes< CommChannel::SMS >
                 _ctx,
                 _locked_request,
                 _locked_contact,
-                _letter_limit_count,
-                _letter_limit_interval,
+                _check_message_limits,
                 _contact_history_id);
             return message_id;
         }
@@ -83,8 +81,7 @@ struct PossibleRequestTypes< CommChannel::LETTER >
         const std::string &_public_request_type,
         const Fred::PublicRequestLockGuard &_locked_request,
         const Fred::PublicRequestObjectLockGuard &_locked_contact,
-        unsigned _letter_limit_count,
-        unsigned _letter_limit_interval,
+        const Generate::message_checker &_check_message_limits,
         GeneralId _contact_history_id)
     {
         static const CommChannel::Value channel_letter = CommChannel::LETTER;
@@ -93,8 +90,7 @@ struct PossibleRequestTypes< CommChannel::LETTER >
                 _ctx,
                 _locked_request,
                 _locked_contact,
-                _letter_limit_count,
-                _letter_limit_interval,
+                _check_message_limits,
                 _contact_history_id);
             return message_id;
         }
@@ -103,8 +99,7 @@ struct PossibleRequestTypes< CommChannel::LETTER >
                 _ctx,
                 _locked_request,
                 _locked_contact,
-                _letter_limit_count,
-                _letter_limit_interval,
+                _check_message_limits,
                 _contact_history_id);
             return message_id;
         }
@@ -133,8 +128,7 @@ struct PossibleRequestTypes< CommChannel::EMAIL >
         const std::string &_public_request_type,
         const Fred::PublicRequestLockGuard &_locked_request,
         const Fred::PublicRequestObjectLockGuard &_locked_contact,
-        unsigned _letter_limit_count,
-        unsigned _letter_limit_interval,
+        const Generate::message_checker &_check_message_limits,
         GeneralId _contact_history_id)
     {
         static const CommChannel::Value channel_letter = CommChannel::EMAIL;
@@ -143,8 +137,7 @@ struct PossibleRequestTypes< CommChannel::EMAIL >
                 _ctx,
                 _locked_request,
                 _locked_contact,
-                _letter_limit_count,
-                _letter_limit_interval,
+                _check_message_limits,
                 _contact_history_id);
             return message_id;
         }
@@ -153,8 +146,7 @@ struct PossibleRequestTypes< CommChannel::EMAIL >
                 _ctx,
                 _locked_request,
                 _locked_contact,
-                _letter_limit_count,
-                _letter_limit_interval,
+                _check_message_limits,
                 _contact_history_id);
             return message_id;
         }
@@ -163,8 +155,7 @@ struct PossibleRequestTypes< CommChannel::EMAIL >
                 _ctx,
                 _locked_request,
                 _locked_contact,
-                _letter_limit_count,
-                _letter_limit_interval,
+                _check_message_limits,
                 _contact_history_id);
             return message_id;
         }
@@ -319,13 +310,10 @@ struct CollectFor
 };
 
 template < CommChannel::Value COMM_CHANNEL >
-struct ProcessFor;
-
-template < CommChannel::Value COMM_CHANNEL >
 struct JoinMessage
 {
     static void with_public_request(Fred::OperationContext &_ctx,
-                                    GeneralId _public_request_id,
+                                    const Fred::PublicRequestLockGuard &_locked_request,
                                     GeneralId _message_id)
     {
         _ctx.get_conn().exec_params(
@@ -335,7 +323,8 @@ struct JoinMessage
             "VALUES ($1::BIGINT,"//public_request_id
                     "$2::BIGINT,"//message_archive_id
                     "NULL)",     //mail_archive_id
-            Database::query_param_list(_public_request_id)(_message_id));
+            Database::query_param_list(_locked_request.get_public_request_id())
+                                      (_message_id));
     }
 };
 
@@ -343,7 +332,7 @@ template < >
 struct JoinMessage< CommChannel::EMAIL >
 {
     static void with_public_request(Fred::OperationContext &_ctx,
-                                    GeneralId _public_request_id,
+                                    const Fred::PublicRequestLockGuard &_locked_request,
                                     GeneralId _message_id)
     {
         _ctx.get_conn().exec_params(
@@ -353,178 +342,8 @@ struct JoinMessage< CommChannel::EMAIL >
             "VALUES ($1::BIGINT," //public_request_id
                     "NULL,"       //message_archive_id
                     "$2::BIGINT)",//mail_archive_id
-            Database::query_param_list(_public_request_id)(_message_id));
-    }
-};
-
-template < >
-struct GetData< CommChannel::SMS >
-{
-    static std::string finish_query(const Database::query_param_list&)
-    {
-        return "SELECT tg.public_request_id,tg.contact_id,tg.contact_history_id,pra.password,ch.telephone,"
-                      "LOWER(obr.name),lock_public_request_lock(tg.contact_id) "
-               "FROM to_generate tg "
-               "JOIN public_request_auth pra ON pra.id=tg.public_request_id "
-               "JOIN contact_history ch ON ch.id=tg.contact_id AND ch.historyid=tg.contact_history_id "
-               "JOIN object_registry obr ON obr.id=tg.contact_id";
-    }
-};
-
-template < >
-struct ProcessFor< CommChannel::SMS >
-{
-    static void data(const Database::Result &_dbres)
-    {
-        static const char *const message_type_mojeid_pin2 = "mojeid_pin2";
-        static Fred::Messages::ManagerPtr manager_ptr = Fred::Messages::create_manager();
-        for (::size_t idx = 0; idx < _dbres.size(); ++idx) {
-            typedef unsigned long long GeneralId;
-            const GeneralId   public_request_id  = static_cast< GeneralId   >(_dbres[idx][0]);
-            const GeneralId   contact_id         = static_cast< GeneralId   >(_dbres[idx][1]);
-            const GeneralId   contact_history_id = static_cast< GeneralId   >(_dbres[idx][2]);
-            const std::string password           = static_cast< std::string >(_dbres[idx][3]);
-            const std::string contact_phone      = static_cast< std::string >(_dbres[idx][4]);
-            const std::string contact_handle     = static_cast< std::string >(_dbres[idx][5]);
-
-            const std::string pin2 = Fred::MojeID::PublicRequest::ContactConditionalIdentification::
-                                         get_pin2_part(password);
-            const std::string sms_content = "Potvrzujeme uspesne zalozeni uctu mojeID. "
-                                            "Pro aktivaci Vaseho uctu je nutne vlozit kody "
-                                            "PIN1 a PIN2. PIN1 Vam byl zaslan emailem, PIN2 je: " + pin2;
-
-            try {
-                const GeneralId message_id = manager_ptr->save_sms_to_send(contact_handle.c_str(),
-                                                                           contact_phone.c_str(),
-                                                                           sms_content.c_str(),
-                                                                           message_type_mojeid_pin2,
-                                                                           contact_id,
-                                                                           contact_history_id);
-                Fred::OperationContextCreator ctx;
-                JoinMessage< CommChannel::LETTER >::with_public_request(ctx, public_request_id, message_id);
-                ctx.commit_transaction();
-            }
-            catch (...) {
-            }
-        }
-    }
-};
-
-template < >
-struct GetData< CommChannel::LETTER >
-{
-    static std::string finish_query(Database::query_param_list &_params)
-    {
-        typedef Fred::Object::State FOS;
-        const std::string state_validated_contact = FOS(FOS::VALIDATED_CONTACT).into< std::string >();
-        return "SELECT tg.public_request_id,tg.contact_history_id,"
-                      "(SELECT name FROM enum_public_request_type WHERE id=pr.request_type) AS public_request_type,"
-                      "pr.create_time,"
-                      "EXISTS(SELECT * FROM object_state os "
-                             "WHERE os.object_id=tg.contact_id AND "
-                                   "os.state_id=(SELECT id FROM enum_object_states "
-                                                "WHERE name=$" + _params.add(state_validated_contact) + "::TEXT) AND "
-                                   "os.valid_from<=pr.create_time AND "
-                                                 "(pr.create_time<os.valid_to OR os.valid_to IS NULL)"
-                            ") AS is_validated,"
-                      "lock_public_request_lock(tg.contact_id) "
-               "FROM to_generate tg "
-               "JOIN public_request pr ON pr.id=tg.public_request_id";
-    }
-};
-
-template < >
-struct ProcessFor< CommChannel::LETTER >
-{
-    static void data(const Database::Result &_dbres)
-    {
-        static const HandleMojeIDArgs *const server_conf_ptr =
-            CfgArgs::instance()->get_handler_ptr_by_type< HandleMojeIDArgs >();
-        static Fred::Messages::ManagerPtr manager_ptr = Fred::Messages::create_manager();
-        for (::size_t idx = 0; idx < _dbres.size(); ++idx) {
-            try {
-                const GeneralId   public_request_id   = static_cast< GeneralId   >(_dbres[idx][0]);
-                const GeneralId   contact_history_id  = static_cast< GeneralId   >(_dbres[idx][1]);
-                const std::string public_request_type = static_cast< std::string >(_dbres[idx][2]);
-                const std::string public_request_time = static_cast< std::string >(_dbres[idx][3]);
-                const bool        validated_contact   = static_cast< bool        >(_dbres[idx][4]);
-                namespace FMPR = Fred::MojeID::PublicRequest;
-                if ((public_request_type != FMPR::ContactIdentification::iface().get_public_request_type()) &&
-                    (public_request_type != FMPR::ContactReidentification::iface().get_public_request_type())) {
-                    continue;
-                }
-
-                Fred::OperationContextCreator ctx;
-                const Fred::InfoContactData contact_data = Fred::InfoContactHistoryByHistoryid(contact_history_id)
-                                                               .exec(ctx).info_contact_data;
-                namespace bptime = boost::posix_time;
-                const bptime::ptime letter_time = bptime::time_from_string(public_request_time);
-                enum { DONT_USE_LOG_REQUEST_ID = 0 };
-                const GeneralId message_id = Registry::MojeID::MojeID2Impl::send_mojeid_card(
-                    ctx,
-                    manager_ptr.get(),
-                    contact_data,
-                    server_conf_ptr->letter_limit_count,
-                    server_conf_ptr->letter_limit_interval,
-                    DONT_USE_LOG_REQUEST_ID,
-                    letter_time,
-                    validated_contact);
-                JoinMessage< CommChannel::LETTER >::with_public_request(ctx, public_request_id, message_id);
-                ctx.commit_transaction();
-            }
-            catch (...) {
-            }
-        }
-    }
-};
-
-template < >
-struct GetData< CommChannel::EMAIL >
-{
-    static std::string finish_query(Database::query_param_list &_params)
-    {
-        return "SELECT tg.public_request_id,UPPER(obr.name),c.email,"
-                      "lock_public_request_lock(tg.contact_id) "
-               "FROM to_generate tg "
-               "JOIN public_request pr ON pr.id=tg.public_request_id "
-               "JOIN object_registry obr ON obr.id=tg.contact_id "
-               "JOIN contact_history c ON c.historyid=tg.contact_history_id";
-    }
-};
-
-template < >
-struct ProcessFor< CommChannel::EMAIL >
-{
-    static void data(const Database::Result &_dbres)
-    {
-        typedef std::auto_ptr< Fred::Mailer::Manager > MailerPtr;
-        const MailerPtr mailer_ptr(new MailerManager(CorbaContainer::get_instance()->getNS()));
-        for (::size_t idx = 0; idx < _dbres.size(); ++idx) {
-            try {
-                const GeneralId   public_request_id = static_cast< GeneralId   >(_dbres[idx][0]);
-                const std::string contact_handle    = static_cast< std::string >(_dbres[idx][1]);
-                const std::string contact_email     = static_cast< std::string >(_dbres[idx][2]);
-
-                Fred::Mailer::Parameters params;
-                Fred::Mailer::Handles handles;
-                handles.push_back(contact_handle);
-                Fred::Mailer::Attachments attach;
-                const GeneralId message_id = mailer_ptr->sendEmail(
-                    "",           //from:         default sender from notification system
-                    contact_email,//to:
-                    "",           //subject:      default subject is taken from template
-                    "",           //mailTemplate:
-                    params,       //params:
-                    handles,      //handles:
-                    attach);      //attach:
-
-                Fred::OperationContextCreator ctx;
-                JoinMessage< CommChannel::LETTER >::with_public_request(ctx, public_request_id, message_id);
-                ctx.commit_transaction();
-            }
-            catch (...) {
-            }
-        }
+            Database::query_param_list(_locked_request.get_public_request_id())
+                                      (_message_id));
     }
 };
 
@@ -542,13 +361,244 @@ public:
     :   Fred::PublicRequestObjectLockGuard(_locked_object_id) { }
 };
 
+template < CommChannel::Value COMM_CHANNEL, typename PUBLIC_REQUEST_TYPE >
+struct generate_message;
+
+template < >
+struct generate_message< CommChannel::SMS, Fred::MojeID::PublicRequest::ContactConditionalIdentification >
+{
+    static Generate::MessageId for_given_request(
+        Fred::OperationContext &_ctx,
+        const Fred::PublicRequestLockGuard &_locked_request,
+        const Fred::PublicRequestObjectLockGuard &_locked_contact,
+        const Generate::message_checker &_check_message_limits,
+        const Optional< GeneralId > &_contact_history_id)
+    {
+        const Database::Result dbres = _ctx.get_conn().exec_params(
+            "SELECT (SELECT password FROM public_request_auth WHERE id=$1::BIGINT),"
+                   "ch.telephone,LOWER(obr.name) "
+            "FROM contact_history ch "
+            "JOIN object_registry obr ON obr.id=ch.id "
+            "WHERE ch.id=$2::BIGINT AND ch.historyid=$3::BIGINT",
+            Database::query_param_list(_locked_request.get_public_request_id())
+                                      (_locked_contact.get_object_id())
+                                      (_contact_history_id.get_value()));
+        static const char *const message_type_mojeid_pin2 = "mojeid_pin2";
+        static Fred::Messages::ManagerPtr manager_ptr = Fred::Messages::create_manager();
+        const std::string password       = static_cast< std::string >(dbres[0][0]);
+        const std::string contact_phone  = static_cast< std::string >(dbres[0][1]);
+        const std::string contact_handle = static_cast< std::string >(dbres[0][2]);
+
+        const std::string pin2 = Fred::MojeID::PublicRequest::ContactConditionalIdentification::
+                                     get_pin2_part(password);
+        const std::string sms_content = "Potvrzujeme uspesne zalozeni uctu mojeID. "
+                                        "Pro aktivaci Vaseho uctu je nutne vlozit kody "
+                                        "PIN1 a PIN2. PIN1 Vam byl zaslan emailem, PIN2 je: " + pin2;
+
+        const GeneralId message_id = manager_ptr->save_sms_to_send(contact_handle.c_str(),
+                                                                   contact_phone.c_str(),
+                                                                   sms_content.c_str(),
+                                                                   message_type_mojeid_pin2,
+                                                                   _locked_contact.get_object_id(),
+                                                                   _contact_history_id.get_value());
+        return message_id;
+    }
+};
+
+template < >
+struct generate_message< CommChannel::LETTER, Fred::MojeID::PublicRequest::ContactIdentification >
+{
+    static Generate::MessageId for_given_request(
+        Fred::OperationContext &_ctx,
+        const Fred::PublicRequestLockGuard &_locked_request,
+        const Fred::PublicRequestObjectLockGuard &_locked_contact,
+        const Generate::message_checker &_check_message_limits,
+        const Optional< GeneralId > &_contact_history_id)
+    {
+        typedef Fred::Object::State FOS;
+        const std::string state_validated_contact = FOS(FOS::VALIDATED_CONTACT).into< std::string >();
+        static const std::string message_type_mojeid_pin3 = "mojeid_pin3";
+        const Database::Result dbres = _ctx.get_conn().exec_params(
+            "SELECT create_time,"
+                   "EXISTS(SELECT * FROM object_state os "
+                          "WHERE os.object_id=$2::BIGINT AND "
+                                "os.state_id=(SELECT id FROM enum_object_states WHERE name=$3::TEXT) AND "
+                                "os.valid_from<=pr.create_time AND (pr.create_time<os.valid_to OR "
+                                                                   "os.valid_to IS NULL)"
+                         ") AS is_validated,"
+                   "(SELECT mtfsm.service_handle "
+                    "FROM message_type mt "
+                    "JOIN message_type_forwarding_service_map mtfsm ON mtfsm.message_type_id=mt.id "
+                    "WHERE mt.type=$4::TEXT) AS message_service_handle "
+            "FROM public_request pr "
+            "WHERE id=$1::BIGINT",
+            Database::query_param_list(_locked_request.get_public_request_id())
+                                      (_locked_contact.get_object_id())
+                                      (state_validated_contact)
+                                      (message_type_mojeid_pin3));
+        if (dbres.size() <= 0) {
+            throw std::runtime_error("no public request found");
+        }
+        if (dbres[0][2].isnull()) {
+            throw std::runtime_error("no message service handle asociated with '" + 
+                                     message_type_mojeid_pin3 + "' message type");
+        }
+
+        const std::string public_request_time    = static_cast< std::string >(dbres[0][0]);
+        const bool        validated_contact      = static_cast< bool        >(dbres[0][1]);
+        const std::string message_service_handle = static_cast< std::string >(dbres[0][2]);
+
+        const bool send_via_optys      =                     message_service_handle == "OPTYS";
+        const bool send_via_postservis = !send_via_optys && (message_service_handle == "POSTSERVIS");
+        if (!(send_via_optys || send_via_postservis)) {
+            throw std::runtime_error("unexpected service handle: " + message_service_handle);
+        }
+
+        static const std::string template_file_via_optys      = "mojeid_auth_owner_optys.xsl";
+        static const std::string template_file_via_postservis = "mojeid_auth_owner.xsl";
+        const std::string template_file = send_via_optys ? template_file_via_optys
+                                                         : template_file_via_postservis;
+        static const std::string mime_type_app_pdf       = "application/pdf";
+        const Fred::InfoContactData contact_data = Fred::InfoContactHistoryByHistoryid(_contact_history_id.get_value())
+                                                       .exec(_ctx).info_contact_data;
+        namespace bptime = boost::posix_time;
+        const bptime::ptime letter_time = bptime::time_from_string(public_request_time);
+        _check_message_limits(_ctx, contact_data.id);
+
+        enum { DONT_USE_LOG_REQUEST_ID = 0 };
+        static Fred::Messages::ManagerPtr manager_ptr = Fred::Messages::create_manager();
+        const GeneralId message_id = Registry::MojeID::MojeID2Impl::send_mojeid_card(
+            _ctx,
+            manager_ptr.get(),
+            contact_data,
+            0,
+            0,
+            DONT_USE_LOG_REQUEST_ID,
+            letter_time,
+            validated_contact);
+        return message_id;
+    }
+};
+
+template < >
+struct generate_message< CommChannel::LETTER, Fred::MojeID::PublicRequest::ContactReidentification >
+{
+    static Generate::MessageId for_given_request(
+        Fred::OperationContext &_ctx,
+        const Fred::PublicRequestLockGuard &_locked_request,
+        const Fred::PublicRequestObjectLockGuard &_locked_contact,
+        const Generate::message_checker &_check_message_limits,
+        const Optional< GeneralId > &_contact_history_id)
+    {
+        typedef Fred::Object::State FOS;
+        const std::string state_validated_contact = FOS(FOS::VALIDATED_CONTACT).into< std::string >();
+        const Database::Result dbres = _ctx.get_conn().exec_params(
+            "SELECT create_time,"
+                   "EXISTS(SELECT * FROM object_state os "
+                          "WHERE os.object_id=$2::BIGINT AND "
+                                "os.state_id=(SELECT id FROM enum_object_states WHERE name=$3::TEXT) AND "
+                                "os.valid_from<=pr.create_time AND (pr.create_time<os.valid_to OR "
+                                                                   "os.valid_to IS NULL)"
+                         ") AS is_validated "
+            "FROM public_request pr "
+            "WHERE id=$1::BIGINT",
+            Database::query_param_list(_locked_request.get_public_request_id())
+                                      (_locked_contact.get_object_id())
+                                      (state_validated_contact));
+        static Fred::Messages::ManagerPtr manager_ptr = Fred::Messages::create_manager();
+        const std::string public_request_time = static_cast< std::string >(dbres[0][0]);
+        const bool        validated_contact   = static_cast< bool        >(dbres[0][1]);
+        const Fred::InfoContactData contact_data = Fred::InfoContactHistoryByHistoryid(_contact_history_id.get_value())
+                                                       .exec(_ctx).info_contact_data;
+        namespace bptime = boost::posix_time;
+        const bptime::ptime letter_time = bptime::time_from_string(public_request_time);
+        enum { DONT_USE_LOG_REQUEST_ID = 0 };
+        const GeneralId message_id = Registry::MojeID::MojeID2Impl::send_mojeid_card(
+            _ctx,
+            manager_ptr.get(),
+            contact_data,
+            0,
+            0,
+            DONT_USE_LOG_REQUEST_ID,
+            letter_time,
+            validated_contact);
+        return message_id;
+    }
+};
+
+template < >
+struct generate_message< CommChannel::EMAIL, Fred::MojeID::PublicRequest::ContactConditionalIdentification >
+{
+    static Generate::MessageId for_given_request(
+        Fred::OperationContext &_ctx,
+        const Fred::PublicRequestLockGuard &_locked_request,
+        const Fred::PublicRequestObjectLockGuard &_locked_contact,
+        const Generate::message_checker &_check_message_limits,
+        const Optional< GeneralId > &_contact_history_id)
+    {
+        const Database::Result dbres = _ctx.get_conn().exec_params(
+            "SELECT UPPER(obr.name),c.email "
+            "FROM object_registry obr "
+            "JOIN contact_history c ON c.id=obr.id "
+            "WHERE obr.id=$1::BIGINT AND "
+                  "c.historyid=$2::BIGINT",
+            Database::query_param_list(_locked_contact.get_object_id())
+                                      (_contact_history_id.get_value()));
+        typedef std::auto_ptr< Fred::Mailer::Manager > MailerPtr;
+        const MailerPtr mailer_ptr(new MailerManager(CorbaContainer::get_instance()->getNS()));
+        const std::string contact_handle = static_cast< std::string >(dbres[0][0]);
+        const std::string contact_email  = static_cast< std::string >(dbres[0][1]);
+
+        Fred::Mailer::Parameters params;
+        Fred::Mailer::Handles handles;
+        handles.push_back(contact_handle);
+        Fred::Mailer::Attachments attach;
+        const GeneralId message_id = mailer_ptr->sendEmail(
+            "",           //from:         default sender from notification system
+            contact_email,//to:
+            "",           //subject:      default subject is taken from template
+            "",           //mailTemplate:
+            params,       //params:
+            handles,      //handles:
+            attach);      //attach:
+        return message_id;
+    }
+};
+
+template < >
+struct generate_message< CommChannel::EMAIL, Fred::MojeID::PublicRequest::ConditionallyIdentifiedContactTransfer >
+{
+    static Generate::MessageId for_given_request(
+        Fred::OperationContext &_ctx,
+        const Fred::PublicRequestLockGuard &_locked_request,
+        const Fred::PublicRequestObjectLockGuard &_locked_contact,
+        const Generate::message_checker &_check_message_limits,
+        const Optional< GeneralId > &_contact_history_id)
+    {
+        throw std::runtime_error("not implemented yet");
+    }
+};
+
+template < >
+struct generate_message< CommChannel::EMAIL, Fred::MojeID::PublicRequest::IdentifiedContactTransfer >
+{
+    static Generate::MessageId for_given_request(
+        Fred::OperationContext &_ctx,
+        const Fred::PublicRequestLockGuard &_locked_request,
+        const Fred::PublicRequestObjectLockGuard &_locked_contact,
+        const Generate::message_checker &_check_message_limits,
+        const Optional< GeneralId > &_contact_history_id)
+    {
+        throw std::runtime_error("not implemented yet");
+    }
+};
+
 }//namespace MojeID::Messages::{anonymous}
 
 template < CommChannel::Value COMM_CHANNEL >
 void Generate::Into< COMM_CHANNEL >::for_new_requests(
         Fred::OperationContext &_ctx,
-        unsigned _letter_limit_count,
-        unsigned _letter_limit_interval)
+        const message_checker &_check_message_limits)
 {
     static Database::query_param_list params;
     static const std::string sql = CollectFor< COMM_CHANNEL >::query(params);
@@ -565,10 +615,9 @@ void Generate::Into< COMM_CHANNEL >::for_new_requests(
                 public_request_type,
                 locked_request,
                 locked_contact,
-                _letter_limit_count,
-                _letter_limit_interval,
+                _check_message_limits,
                 contact_history_id);
-            JoinMessage< COMM_CHANNEL >::with_public_request(ctx, locked_request.get_public_request_id(), message_id);
+            JoinMessage< COMM_CHANNEL >::with_public_request(ctx, locked_request, message_id);
             ctx.commit_transaction();
         }
         catch (const std::exception &e) {
@@ -582,16 +631,13 @@ void Generate::Into< COMM_CHANNEL >::for_new_requests(
 
 template void Generate::Into< CommChannel::SMS    >::for_new_requests(
         Fred::OperationContext &_ctx,
-        unsigned _letter_limit_count,
-        unsigned _letter_limit_interval);
+        const message_checker &_check_message_limits);
 template void Generate::Into< CommChannel::EMAIL  >::for_new_requests(
         Fred::OperationContext &_ctx,
-        unsigned _letter_limit_count,
-        unsigned _letter_limit_interval);
+        const message_checker &_check_message_limits);
 template void Generate::Into< CommChannel::LETTER >::for_new_requests(
         Fred::OperationContext &_ctx,
-        unsigned _letter_limit_count,
-        unsigned _letter_limit_interval);
+        const message_checker &_check_message_limits);
 
 template < CommChannel::Value COMM_CHANNEL >
 void Generate::enable(Fred::OperationContext &_ctx, bool flag)
@@ -613,11 +659,15 @@ Generate::MessageId Generate::Into< COMM_CHANNEL >::for_given_request(
         Fred::OperationContext &_ctx,
         const Fred::PublicRequestLockGuard &_locked_request,
         const Fred::PublicRequestObjectLockGuard &_locked_contact,
-        unsigned _letter_limit_count,
-        unsigned _letter_limit_interval,
+        const message_checker &_check_message_limits,
         const Optional< GeneralId > &_contact_history_id)
 {
-    throw std::runtime_error("not implemented");
+    return generate_message< COMM_CHANNEL, PUBLIC_REQUEST_TYPE >::for_given_request(
+        _ctx,
+        _locked_request,
+        _locked_contact,
+        _check_message_limits,
+        _contact_history_id);
 }
 
 template Generate::MessageId Generate::Into< CommChannel::SMS >::
@@ -625,8 +675,7 @@ template Generate::MessageId Generate::Into< CommChannel::SMS >::
         Fred::OperationContext &_ctx,
         const Fred::PublicRequestLockGuard &_locked_request,
         const Fred::PublicRequestObjectLockGuard &_locked_contact,
-        unsigned _letter_limit_count,
-        unsigned _letter_limit_interval,
+        const message_checker &_check_message_limits,
         const Optional< GeneralId > &_contact_history_id);
 
 template Generate::MessageId Generate::Into< CommChannel::LETTER >::
@@ -634,8 +683,7 @@ template Generate::MessageId Generate::Into< CommChannel::LETTER >::
         Fred::OperationContext &_ctx,
         const Fred::PublicRequestLockGuard &_locked_request,
         const Fred::PublicRequestObjectLockGuard &_locked_contact,
-        unsigned _letter_limit_count,
-        unsigned _letter_limit_interval,
+        const message_checker &_check_message_limits,
         const Optional< GeneralId > &_contact_history_id);
 
 template Generate::MessageId Generate::Into< CommChannel::LETTER >::
@@ -643,8 +691,7 @@ template Generate::MessageId Generate::Into< CommChannel::LETTER >::
         Fred::OperationContext &_ctx,
         const Fred::PublicRequestLockGuard &_locked_request,
         const Fred::PublicRequestObjectLockGuard &_locked_contact,
-        unsigned _letter_limit_count,
-        unsigned _letter_limit_interval,
+        const message_checker &_check_message_limits,
         const Optional< GeneralId > &_contact_history_id);
 
 template Generate::MessageId Generate::Into< CommChannel::EMAIL >::
@@ -652,8 +699,7 @@ template Generate::MessageId Generate::Into< CommChannel::EMAIL >::
         Fred::OperationContext &_ctx,
         const Fred::PublicRequestLockGuard &_locked_request,
         const Fred::PublicRequestObjectLockGuard &_locked_contact,
-        unsigned _letter_limit_count,
-        unsigned _letter_limit_interval,
+        const message_checker &_check_message_limits,
         const Optional< GeneralId > &_contact_history_id);
 
 template Generate::MessageId Generate::Into< CommChannel::EMAIL >::
@@ -661,8 +707,7 @@ template Generate::MessageId Generate::Into< CommChannel::EMAIL >::
         Fred::OperationContext &_ctx,
         const Fred::PublicRequestLockGuard &_locked_request,
         const Fred::PublicRequestObjectLockGuard &_locked_contact,
-        unsigned _letter_limit_count,
-        unsigned _letter_limit_interval,
+        const message_checker &_check_message_limits,
         const Optional< GeneralId > &_contact_history_id);
 
 template Generate::MessageId Generate::Into< CommChannel::EMAIL >::
@@ -670,8 +715,7 @@ template Generate::MessageId Generate::Into< CommChannel::EMAIL >::
         Fred::OperationContext &_ctx,
         const Fred::PublicRequestLockGuard &_locked_request,
         const Fred::PublicRequestObjectLockGuard &_locked_contact,
-        unsigned _letter_limit_count,
-        unsigned _letter_limit_interval,
+        const message_checker &_check_message_limits,
         const Optional< GeneralId > &_contact_history_id);
 
 }//namespace MojeID::Messages
