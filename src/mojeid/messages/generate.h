@@ -51,13 +51,18 @@ public:
     template < CommChannel::Value COMM_CHANNEL >
     struct Into
     {
-        static void for_new_requests(Fred::OperationContext &_ctx);
+        static void for_new_requests(
+            Fred::OperationContext &_ctx,
+            unsigned _letter_limit_count,
+            unsigned _letter_limit_interval);
 
         template < typename PUBLIC_REQUEST_TYPE >
         static MessageId for_given_request(
             Fred::OperationContext &_ctx,
             const Fred::PublicRequestLockGuard &_locked_request,
             const Fred::PublicRequestObjectLockGuard &_locked_contact,
+            unsigned _letter_limit_count,
+            unsigned _letter_limit_interval,
             const Optional< GeneralId > &_contact_history_id = Optional< GeneralId >());
     };
 

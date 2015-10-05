@@ -47,6 +47,8 @@ struct PossibleRequestTypes< CommChannel::SMS >
         const std::string &_public_request_type,
         const Fred::PublicRequestLockGuard &_locked_request,
         const Fred::PublicRequestObjectLockGuard &_locked_contact,
+        unsigned _letter_limit_count,
+        unsigned _letter_limit_interval,
         GeneralId _contact_history_id)
     {
         if (PubReqCCI::iface().get_public_request_type() == _public_request_type) {
@@ -54,6 +56,8 @@ struct PossibleRequestTypes< CommChannel::SMS >
                 _ctx,
                 _locked_request,
                 _locked_contact,
+                _letter_limit_count,
+                _letter_limit_interval,
                 _contact_history_id);
             return message_id;
         }
@@ -79,6 +83,8 @@ struct PossibleRequestTypes< CommChannel::LETTER >
         const std::string &_public_request_type,
         const Fred::PublicRequestLockGuard &_locked_request,
         const Fred::PublicRequestObjectLockGuard &_locked_contact,
+        unsigned _letter_limit_count,
+        unsigned _letter_limit_interval,
         GeneralId _contact_history_id)
     {
         static const CommChannel::Value channel_letter = CommChannel::LETTER;
@@ -87,6 +93,8 @@ struct PossibleRequestTypes< CommChannel::LETTER >
                 _ctx,
                 _locked_request,
                 _locked_contact,
+                _letter_limit_count,
+                _letter_limit_interval,
                 _contact_history_id);
             return message_id;
         }
@@ -95,6 +103,8 @@ struct PossibleRequestTypes< CommChannel::LETTER >
                 _ctx,
                 _locked_request,
                 _locked_contact,
+                _letter_limit_count,
+                _letter_limit_interval,
                 _contact_history_id);
             return message_id;
         }
@@ -123,6 +133,8 @@ struct PossibleRequestTypes< CommChannel::EMAIL >
         const std::string &_public_request_type,
         const Fred::PublicRequestLockGuard &_locked_request,
         const Fred::PublicRequestObjectLockGuard &_locked_contact,
+        unsigned _letter_limit_count,
+        unsigned _letter_limit_interval,
         GeneralId _contact_history_id)
     {
         static const CommChannel::Value channel_letter = CommChannel::EMAIL;
@@ -131,6 +143,8 @@ struct PossibleRequestTypes< CommChannel::EMAIL >
                 _ctx,
                 _locked_request,
                 _locked_contact,
+                _letter_limit_count,
+                _letter_limit_interval,
                 _contact_history_id);
             return message_id;
         }
@@ -139,6 +153,8 @@ struct PossibleRequestTypes< CommChannel::EMAIL >
                 _ctx,
                 _locked_request,
                 _locked_contact,
+                _letter_limit_count,
+                _letter_limit_interval,
                 _contact_history_id);
             return message_id;
         }
@@ -147,6 +163,8 @@ struct PossibleRequestTypes< CommChannel::EMAIL >
                 _ctx,
                 _locked_request,
                 _locked_contact,
+                _letter_limit_count,
+                _letter_limit_interval,
                 _contact_history_id);
             return message_id;
         }
@@ -527,7 +545,10 @@ public:
 }//namespace MojeID::Messages::{anonymous}
 
 template < CommChannel::Value COMM_CHANNEL >
-void Generate::Into< COMM_CHANNEL >::for_new_requests(Fred::OperationContext &_ctx)
+void Generate::Into< COMM_CHANNEL >::for_new_requests(
+        Fred::OperationContext &_ctx,
+        unsigned _letter_limit_count,
+        unsigned _letter_limit_interval)
 {
     static Database::query_param_list params;
     static const std::string sql = CollectFor< COMM_CHANNEL >::query(params);
@@ -544,6 +565,8 @@ void Generate::Into< COMM_CHANNEL >::for_new_requests(Fred::OperationContext &_c
                 public_request_type,
                 locked_request,
                 locked_contact,
+                _letter_limit_count,
+                _letter_limit_interval,
                 contact_history_id);
             JoinMessage< COMM_CHANNEL >::with_public_request(ctx, locked_request.get_public_request_id(), message_id);
             ctx.commit_transaction();
@@ -557,9 +580,18 @@ void Generate::Into< COMM_CHANNEL >::for_new_requests(Fred::OperationContext &_c
     }
 }
 
-template void Generate::Into< CommChannel::SMS    >::for_new_requests(Fred::OperationContext &_ctx);
-template void Generate::Into< CommChannel::EMAIL  >::for_new_requests(Fred::OperationContext &_ctx);
-template void Generate::Into< CommChannel::LETTER >::for_new_requests(Fred::OperationContext &_ctx);
+template void Generate::Into< CommChannel::SMS    >::for_new_requests(
+        Fred::OperationContext &_ctx,
+        unsigned _letter_limit_count,
+        unsigned _letter_limit_interval);
+template void Generate::Into< CommChannel::EMAIL  >::for_new_requests(
+        Fred::OperationContext &_ctx,
+        unsigned _letter_limit_count,
+        unsigned _letter_limit_interval);
+template void Generate::Into< CommChannel::LETTER >::for_new_requests(
+        Fred::OperationContext &_ctx,
+        unsigned _letter_limit_count,
+        unsigned _letter_limit_interval);
 
 template < CommChannel::Value COMM_CHANNEL >
 void Generate::enable(Fred::OperationContext &_ctx, bool flag)
@@ -581,6 +613,8 @@ Generate::MessageId Generate::Into< COMM_CHANNEL >::for_given_request(
         Fred::OperationContext &_ctx,
         const Fred::PublicRequestLockGuard &_locked_request,
         const Fred::PublicRequestObjectLockGuard &_locked_contact,
+        unsigned _letter_limit_count,
+        unsigned _letter_limit_interval,
         const Optional< GeneralId > &_contact_history_id)
 {
     throw std::runtime_error("not implemented");
@@ -591,6 +625,8 @@ template Generate::MessageId Generate::Into< CommChannel::SMS >::
         Fred::OperationContext &_ctx,
         const Fred::PublicRequestLockGuard &_locked_request,
         const Fred::PublicRequestObjectLockGuard &_locked_contact,
+        unsigned _letter_limit_count,
+        unsigned _letter_limit_interval,
         const Optional< GeneralId > &_contact_history_id);
 
 template Generate::MessageId Generate::Into< CommChannel::LETTER >::
@@ -598,6 +634,8 @@ template Generate::MessageId Generate::Into< CommChannel::LETTER >::
         Fred::OperationContext &_ctx,
         const Fred::PublicRequestLockGuard &_locked_request,
         const Fred::PublicRequestObjectLockGuard &_locked_contact,
+        unsigned _letter_limit_count,
+        unsigned _letter_limit_interval,
         const Optional< GeneralId > &_contact_history_id);
 
 template Generate::MessageId Generate::Into< CommChannel::LETTER >::
@@ -605,6 +643,8 @@ template Generate::MessageId Generate::Into< CommChannel::LETTER >::
         Fred::OperationContext &_ctx,
         const Fred::PublicRequestLockGuard &_locked_request,
         const Fred::PublicRequestObjectLockGuard &_locked_contact,
+        unsigned _letter_limit_count,
+        unsigned _letter_limit_interval,
         const Optional< GeneralId > &_contact_history_id);
 
 template Generate::MessageId Generate::Into< CommChannel::EMAIL >::
@@ -612,6 +652,8 @@ template Generate::MessageId Generate::Into< CommChannel::EMAIL >::
         Fred::OperationContext &_ctx,
         const Fred::PublicRequestLockGuard &_locked_request,
         const Fred::PublicRequestObjectLockGuard &_locked_contact,
+        unsigned _letter_limit_count,
+        unsigned _letter_limit_interval,
         const Optional< GeneralId > &_contact_history_id);
 
 template Generate::MessageId Generate::Into< CommChannel::EMAIL >::
@@ -619,6 +661,8 @@ template Generate::MessageId Generate::Into< CommChannel::EMAIL >::
         Fred::OperationContext &_ctx,
         const Fred::PublicRequestLockGuard &_locked_request,
         const Fred::PublicRequestObjectLockGuard &_locked_contact,
+        unsigned _letter_limit_count,
+        unsigned _letter_limit_interval,
         const Optional< GeneralId > &_contact_history_id);
 
 template Generate::MessageId Generate::Into< CommChannel::EMAIL >::
@@ -626,6 +670,8 @@ template Generate::MessageId Generate::Into< CommChannel::EMAIL >::
         Fred::OperationContext &_ctx,
         const Fred::PublicRequestLockGuard &_locked_request,
         const Fred::PublicRequestObjectLockGuard &_locked_contact,
+        unsigned _letter_limit_count,
+        unsigned _letter_limit_interval,
         const Optional< GeneralId > &_contact_history_id);
 
 }//namespace MojeID::Messages

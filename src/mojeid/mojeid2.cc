@@ -1943,9 +1943,14 @@ void MojeID2Impl::generate_sms_messages()const
     LOGGING_CONTEXT(log_ctx, *this);
 
     try {
+        const HandleMojeIDArgs *const server_conf_ptr = CfgArgs::instance()->
+                                                            get_handler_ptr_by_type< HandleMojeIDArgs >();
         Fred::OperationContextCreator ctx;
         typedef ::MojeID::Messages::CommChannel CommChannel;
-        ::MojeID::Messages::Generate::Into< CommChannel::SMS >::for_new_requests(ctx);
+        ::MojeID::Messages::Generate::Into< CommChannel::SMS >::for_new_requests(
+            ctx,
+            server_conf_ptr->letter_limit_count,
+            server_conf_ptr->letter_limit_interval);
         ctx.commit_transaction();
     }
     catch (const std::exception &e) {
@@ -1982,9 +1987,14 @@ void MojeID2Impl::generate_letter_messages()const
     LOGGING_CONTEXT(log_ctx, *this);
 
     try {
+        const HandleMojeIDArgs *const server_conf_ptr = CfgArgs::instance()->
+                                                            get_handler_ptr_by_type< HandleMojeIDArgs >();
         Fred::OperationContextCreator ctx;
         typedef ::MojeID::Messages::CommChannel CommChannel;
-        ::MojeID::Messages::Generate::Into< CommChannel::LETTER >::for_new_requests(ctx);
+        ::MojeID::Messages::Generate::Into< CommChannel::LETTER >::for_new_requests(
+            ctx,
+            server_conf_ptr->letter_limit_count,
+            server_conf_ptr->letter_limit_interval);
         ctx.commit_transaction();
     }
     catch (const std::exception &e) {
@@ -2021,9 +2031,14 @@ void MojeID2Impl::generate_email_messages()const
     LOGGING_CONTEXT(log_ctx, *this);
 
     try {
+        const HandleMojeIDArgs *const server_conf_ptr = CfgArgs::instance()->
+                                                            get_handler_ptr_by_type< HandleMojeIDArgs >();
         Fred::OperationContextCreator ctx;
         typedef ::MojeID::Messages::CommChannel CommChannel;
-        ::MojeID::Messages::Generate::Into< CommChannel::EMAIL >::for_new_requests(ctx);
+        ::MojeID::Messages::Generate::Into< CommChannel::EMAIL >::for_new_requests(
+            ctx,
+            server_conf_ptr->letter_limit_count,
+            server_conf_ptr->letter_limit_interval);
         ctx.commit_transaction();
     }
     catch (const std::exception &e) {
