@@ -2014,7 +2014,7 @@ void MojeID2Impl::generate_letter_messages()const
         Fred::OperationContextCreator ctx;
         typedef ::MojeID::Messages::CommChannel CommChannel;
         ::MojeID::Messages::Generate::Into< CommChannel::LETTER >::for_new_requests(
-            ctx, check_limits::sent_letters());
+            ctx, ::MojeID::Messages::DefaultMultimanager(), check_limits::sent_letters());
         ctx.commit_transaction();
     }
     catch (const std::exception &e) {

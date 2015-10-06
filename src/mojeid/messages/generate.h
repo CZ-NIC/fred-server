@@ -28,6 +28,9 @@
 #include "src/fredlib/public_request/public_request_lock_guard.h"
 #include "src/fredlib/public_request/public_request_object_lock_guard.h"
 #include "util/optional_value.h"
+#include "src/fredlib/documents.h"
+#include "src/fredlib/mailer.h"
+#include "src/fredlib/messages/messages_impl.h"
 
 namespace MojeID {
 namespace Messages {
@@ -42,6 +45,31 @@ struct CommChannel
         EMAIL,
         LETTER,
     };
+};
+
+class Multimanager
+{
+public:
+    template < typename MANAGER >
+    MANAGER& select()const;
+protected:
+    virtual ~Multimanager() { }
+private:
+    virtual Fred::Document::Manager* document()const = 0;
+    virtual Fred::Mailer::Manager*   mailer()const = 0;
+    virtual Fred::Messages::Manager* messages()const = 0;
+    template < typename MANAGER, bool > struct traits;
+};
+
+class DefaultMultimanager:public Multimanager
+{
+public:
+    DefaultMultimanager() { }
+    ~DefaultMultimanager() { }
+private:
+    virtual Fred::Document::Manager* document()const;
+    virtual Fred::Mailer::Manager*   mailer()const;
+    virtual Fred::Messages::Manager* messages()const;
 };
 
 class Generate
@@ -67,11 +95,13 @@ public:
     {
         static void for_new_requests(
             Fred::OperationContext &_ctx,
+            const Multimanager &_multimanager = DefaultMultimanager(),
             const message_checker &_check_message_limits = message_checker_always_success());
 
         template < typename PUBLIC_REQUEST_TYPE >
         static MessageId for_given_request(
             Fred::OperationContext &_ctx,
+            const Multimanager &_multimanager,
             const Fred::PublicRequestLockGuard &_locked_request,
             const Fred::PublicRequestObjectLockGuard &_locked_contact,
             const message_checker &_check_message_limits = message_checker_always_success(),
