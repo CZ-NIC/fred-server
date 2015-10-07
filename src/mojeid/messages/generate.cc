@@ -1,4 +1,5 @@
 #include "src/mojeid/messages/generate.h"
+#include "src/fredlib/common_object.h"
 #include "src/fredlib/object/object_state.h"
 #include "src/fredlib/public_request/public_request_status.h"
 #include "src/fredlib/contact/info_contact.h"
@@ -11,9 +12,11 @@
 #include "util/cfg/handle_registry_args.h"
 #include "util/db/query_param.h"
 #include "util/corba_wrapper_decl.h"
+#include "util/types/birthdate.h"
 #include "util/xmlgen.h"
 
 #include <boost/date_time/gregorian/gregorian.hpp>
+#include <boost/algorithm/string/trim.hpp>
 
 namespace MojeID {  //MojeID
 namespace Messages {//MojeID::Messages
@@ -545,7 +548,7 @@ struct generate_message< CommChannel::LETTER, Fred::MojeID::PublicRequest::Conta
               (message_type_mojeid_pin3);
         const Database::Result dbres = _ctx.get_conn().exec_params(
             "SELECT create_time,"
-                   "(SELECT password FROM public_request_auth WHERE id=pr.id)"
+                   "(SELECT password FROM public_request_auth WHERE id=pr.id),"
                    "EXISTS(SELECT * FROM object_state os "
                           "WHERE os.object_id=$2::BIGINT AND "
                                 "os.state_id=(SELECT id FROM enum_object_states WHERE name=$3::TEXT) AND "
@@ -590,7 +593,6 @@ struct generate_message< CommChannel::LETTER, Fred::MojeID::PublicRequest::Conta
         const bptime::ptime letter_time = bptime::time_from_string(public_request_time);
         _check_message_limits(_ctx, contact_data.id);
 
-        static Fred::Messages::ManagerPtr manager_ptr = Fred::Messages::create_manager();
         const Generate::MessageId message_id = send_auth_owner_letter(
             _ctx,
             _multimanager.select< Fred::Messages::Manager >(),
@@ -624,7 +626,7 @@ struct generate_message< CommChannel::LETTER, Fred::MojeID::PublicRequest::Conta
               (state_validated_contact);
         const Database::Result dbres = _ctx.get_conn().exec_params(
             "SELECT create_time,"
-                   "(SELECT password FROM public_request_auth WHERE id=pr.id)"
+                   "(SELECT password FROM public_request_auth WHERE id=pr.id),"
                    "EXISTS(SELECT * FROM object_state os "
                           "WHERE os.object_id=$2::BIGINT AND "
                                 "os.state_id=(SELECT id FROM enum_object_states WHERE name=$3::TEXT) AND "
@@ -652,7 +654,6 @@ struct generate_message< CommChannel::LETTER, Fred::MojeID::PublicRequest::Conta
         const bptime::ptime letter_time = bptime::time_from_string(public_request_time);
         _check_message_limits(_ctx, contact_data.id);
 
-        static Fred::Messages::ManagerPtr manager_ptr = Fred::Messages::create_manager();
         const Generate::MessageId message_id = send_auth_owner_letter(
             _ctx,
             _multimanager.select< Fred::Messages::Manager >(),
@@ -667,6 +668,141 @@ struct generate_message< CommChannel::LETTER, Fred::MojeID::PublicRequest::Conta
     }
 };
 
+class to_string
+{
+public:
+    to_string(std::string &_dst):dst_(_dst) { }
+    const to_string& concat(const std::string &_delimiter, const std::string &_untrimmed_data)const
+    {
+        const std::string trimmed_data = boost::algorithm::trim_copy(_untrimmed_data);
+        if (!trimmed_data.empty()) {
+            if (!dst_.empty()) {
+                dst_.append(_delimiter);
+            }
+            dst_.append(trimmed_data);
+        }
+        return *this;
+    }
+    const to_string& concat(const std::string &_delimiter, const Optional< std::string > &_untrimmed_data)const
+    {
+        if (_untrimmed_data.isset()) {
+            this->concat(_delimiter, _untrimmed_data.get_value());
+        }
+        return *this;
+    }
+private:
+    std::string &dst_;
+};
+
+std::string collect_address(const Fred::Contact::PlaceAddress &_addr)
+{
+    std::string result;
+    to_string(result).concat(", ", _addr.street1)
+                     .concat(", ", _addr.street2)
+                     .concat(", ", _addr.street3)
+                     .concat(", ", _addr.postalcode)
+                     .concat(", ", _addr.city)
+                     .concat(", ", _addr.country);
+    return result;
+}
+
+std::string collect_address(const Nullable< Fred::Contact::PlaceAddress > &_addr)
+{
+    if (_addr.isnull()) {
+        return collect_address(_addr.get_value());
+    }
+    return std::string();
+}
+
+Generate::MessageId send_email(
+    const std::string &_mail_template,
+    Fred::OperationContext &_ctx,
+    const Multimanager &_multimanager,
+    const Fred::PublicRequestLockGuard &_locked_request,
+    const Fred::PublicRequestObjectLockGuard &_locked_contact,
+    const Generate::message_checker &_check_message_limits,
+    const Optional< GeneralId > &_contact_history_id)
+{
+    Database::query_param_list params;
+    params(_locked_request.get_public_request_id())
+          (_locked_contact.get_object_id());
+    const Database::Result dbres = _ctx.get_conn().exec_params(
+        "SELECT pr.create_time,"
+               "pra.identification,"
+               "pra.password,"
+               "(SELECT UPPER(name) FROM object_registry WHERE id=$2::BIGINT) "
+        "FROM public_request pr "
+        "JOIN public_request_auth pra ON pra.id=pr.id "
+        "WHERE pr.id=$1::BIGINT", params);
+    if (dbres.size() <= 0) {
+        throw std::runtime_error("no public request found");
+    }
+
+    const std::string public_request_time = static_cast< std::string >(dbres[0][0]);
+    const std::string identification      = static_cast< std::string >(dbres[0][1]);
+    const std::string password            = static_cast< std::string >(dbres[0][2]);
+    const std::string contact_handle      = static_cast< std::string >(dbres[0][3]);
+
+    const bool use_historic_data = _contact_history_id.isset();
+    const Fred::InfoContactData contact_data = use_historic_data
+                                               ? Fred::InfoContactHistoryByHistoryid(
+                                                     _contact_history_id.get_value()).exec(_ctx).info_contact_data
+                                               : Fred::InfoContactById(
+                                                     _locked_contact.get_object_id()).exec(_ctx).info_contact_data;
+    const std::string pin1 = Fred::MojeID::PublicRequest::ContactConditionalIdentification::
+                                 get_pin1_part(password);
+
+    const std::string sender;//default sender from notification system
+    const std::string recipient = contact_data.email.get_value_or_default();
+    const std::string subject;//default subject is taken from template
+
+    Fred::Mailer::Parameters mail_params;
+    namespace bptime = boost::posix_time;
+    const bptime::ptime email_time = bptime::time_from_string(public_request_time);
+    const std::string contact_name = contact_data.name.get_value_or_default();
+    const std::string::size_type name_delimiter_pos = contact_name.find_last_of(' ');
+    const std::string firstname = name_delimiter_pos != std::string::npos
+                                  ? contact_name.substr(                     0, name_delimiter_pos)
+                                  : contact_name;
+    const std::string lastname  = name_delimiter_pos != std::string::npos
+                                  ? contact_name.substr(name_delimiter_pos + 1, std::string::npos)
+                                  : std::string();
+
+    mail_params["reqdate"]        = boost::gregorian::to_iso_extended_string(email_time.date());
+    mail_params["reqid"]          = boost::lexical_cast< std::string >(_locked_request.get_public_request_id());
+    mail_params["type"]           = boost::lexical_cast< std::string >(Fred::FT_CONTACT);
+    mail_params["handle"]         = contact_handle;
+    mail_params["name"]           = contact_data.name.get_value_or_default();
+    mail_params["org"]            = contact_data.organization.get_value_or_default();
+    mail_params["ic"]             = contact_data.ssntype.get_value_or_default() == "ICO"
+                                    ? contact_data.ssn.get_value_or_default()
+                                    : std::string();
+    mail_params["birthdate"]      = contact_data.ssntype.get_value_or_default() == "BIRTHDAY"
+                                    ? boost::gregorian::to_iso_extended_string(
+                                          birthdate_from_string_to_date(contact_data.ssn.get_value_or_default()))
+                                    : std::string();
+    mail_params["address"]        = collect_address(contact_data.place);
+    mail_params["status"]         = "2";//public_request.status == "answered" ? "1" : "2"
+    mail_params["hostname"]       = CfgArgs::instance()->get_handler_ptr_by_type< HandleMojeIDArgs >()->hostname;
+    mail_params["firstname"]      = firstname;
+    mail_params["lastname"]       = lastname;
+    mail_params["email"]          = recipient;
+    mail_params["identification"] = identification;
+    mail_params["passwd"]         = pin1;
+
+    Fred::Mailer::Handles handles;
+    handles.push_back(contact_handle);
+    const GeneralId message_id = _multimanager.select< Fred::Mailer::Manager >().sendEmail(
+        sender,                          
+        recipient,
+        subject,
+        _mail_template,
+        mail_params,
+        handles,
+        Fred::Mailer::Attachments());
+    return message_id;
+}
+
 template < >
 struct generate_message< CommChannel::EMAIL, Fred::MojeID::PublicRequest::ContactConditionalIdentification >
 {
@@ -678,32 +814,15 @@ struct generate_message< CommChannel::EMAIL, Fred::MojeID::PublicRequest::Contac
         const Generate::message_checker &_check_message_limits,
         const Optional< GeneralId > &_contact_history_id)
     {
-        const Database::Result dbres = _ctx.get_conn().exec_params(
-            "SELECT UPPER(obr.name),c.email "
-            "FROM object_registry obr "
-            "JOIN contact_history c ON c.id=obr.id "
-            "WHERE obr.id=$1::BIGINT AND "
-                  "c.historyid=$2::BIGINT",
-            Database::query_param_list(_locked_contact.get_object_id())
-                                      (_contact_history_id.get_value()));
-        typedef std::auto_ptr< Fred::Mailer::Manager > MailerPtr;
-        const MailerPtr mailer_ptr(new MailerManager(CorbaContainer::get_instance()->getNS()));
-        const std::string contact_handle = static_cast< std::string >(dbres[0][0]);
-        const std::string contact_email  = static_cast< std::string >(dbres[0][1]);
-
-        Fred::Mailer::Parameters params;
-        Fred::Mailer::Handles handles;
-        handles.push_back(contact_handle);
-        Fred::Mailer::Attachments attach;
-        const GeneralId message_id = mailer_ptr->sendEmail(
-            "",           //from:         default sender from notification system
-            contact_email,//to:
-            "",           //subject:      default subject is taken from template
-            "",           //mailTemplate:
-            params,       //params:
-            handles,      //handles:
-            attach);      //attach:
-        return message_id;
+        //db table mail_type: 21,'mojeid_identification','[mojeID] Založení účtu - PIN1 pro aktivaci mojeID'
+        static const std::string mail_template = "mojeid_identification";
+        return send_email(mail_template,
+                         _ctx,
+                         _multimanager,
+                         _locked_request,
+                         _locked_contact,
+                         _check_message_limits,
+                         _contact_history_id);
     }
 };
 
@@ -718,7 +837,15 @@ struct generate_message< CommChannel::EMAIL, Fred::MojeID::PublicRequest::Condit
         const Generate::message_checker &_check_message_limits,
         const Optional< GeneralId > &_contact_history_id)
     {
-        throw std::runtime_error("not implemented yet");
+        //db table mail_type: 27,'mojeid_verified_contact_transfer','Založení účtu mojeID'
+        static const std::string mail_template = "mojeid_verified_contact_transfer";
+        return send_email(mail_template,
+                         _ctx,
+                         _multimanager,
+                         _locked_request,
+                         _locked_contact,
+                         _check_message_limits,
+                         _contact_history_id);
     }
 };
 
@@ -733,7 +860,15 @@ struct generate_message< CommChannel::EMAIL, Fred::MojeID::PublicRequest::Identi
         const Generate::message_checker &_check_message_limits,
         const Optional< GeneralId > &_contact_history_id)
     {
-        throw std::runtime_error("not implemented yet");
+        //db table mail_type: 27,'mojeid_verified_contact_transfer','Založení účtu mojeID'
+        static const std::string mail_template = "mojeid_verified_contact_transfer";
+        return send_email(mail_template,
+                         _ctx,
+                         _multimanager,
+                         _locked_request,
+                         _locked_contact,
+                         _check_message_limits,
+                         _contact_history_id);
     }
 };
 
