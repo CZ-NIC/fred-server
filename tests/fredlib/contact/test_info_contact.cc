@@ -25,6 +25,22 @@
 #include "util/random_data_generator.h"
 #include "tests/setup/fixtures.h"
 
+namespace boost { namespace test_tools {
+    template<> void print_log_value<Fred::Contact::PlaceAddress>::operator()(std::ostream& _stream, const Fred::Contact::PlaceAddress& _address) {
+        _stream << "{"
+                << _address.street1 << ", "
+                << _address.street2 << ", "
+                << _address.street3 << ", "
+                << _address.city    << ", "
+                << _address.stateorprovince << ", "
+                << _address.postalcode << ", "
+                << _address.country << " "
+                << "}";
+    }
+}}
+
+BOOST_AUTO_TEST_SUITE(TestInfoContact)
+
 const std::string server_name = "test-info-contact";
 //unique global name of the fixture
 struct test_contact_fixture_6da88b63b0bc46e29f6d0ce3181fd5d8 : public Test::Fixture::instantiate_db_template
@@ -74,12 +90,10 @@ struct test_contact_fixture_6da88b63b0bc46e29f6d0ce3181fd5d8 : public Test::Fixt
 };
 
 
-BOOST_FIXTURE_TEST_SUITE(TestInfoContact, test_contact_fixture_6da88b63b0bc46e29f6d0ce3181fd5d8)
-
 /**
  * test call InfoContact
 */
-BOOST_AUTO_TEST_CASE(info_contact)
+BOOST_FIXTURE_TEST_CASE(info_contact, test_contact_fixture_6da88b63b0bc46e29f6d0ce3181fd5d8)
 {
     Fred::OperationContext ctx;
     Fred::InfoContactOutput contact_info1 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
@@ -139,7 +153,7 @@ BOOST_AUTO_TEST_CASE(info_contact)
 /**
  * test call InfoContactDiff
 */
-BOOST_AUTO_TEST_CASE(info_contact_diff)
+BOOST_FIXTURE_TEST_CASE(info_contact_diff, test_contact_fixture_6da88b63b0bc46e29f6d0ce3181fd5d8)
 {
     Fred::OperationContext ctx;
     Fred::InfoContactOutput contact_info1 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
@@ -209,7 +223,7 @@ BOOST_AUTO_TEST_CASE(info_contact_diff)
  * test InfoContactHistory output data sorted by historyid in descending order (current data first, older next)
 */
 
-BOOST_AUTO_TEST_CASE(info_contact_history_order)
+BOOST_FIXTURE_TEST_CASE(info_contact_history_order, test_contact_fixture_6da88b63b0bc46e29f6d0ce3181fd5d8)
 {
     Fred::OperationContext ctx;
     Fred::InfoContactOutput contact_history_info = Fred::InfoContactByHandle(test_contact_history_handle).exec(ctx);
@@ -229,5 +243,277 @@ BOOST_AUTO_TEST_CASE(info_contact_history_order)
     BOOST_CHECK(contact_history_info_by_id.at(1).info_contact_data.name.get_value() == std::string("TEST-CONTACT-HISTORY NAME")+xmark);
 }
 
+BOOST_AUTO_TEST_CASE(test_ContactAddressType) {
+    const Fred::ContactAddressType::Value mailing = Fred::ContactAddressType::MAILING;
+    const Fred::ContactAddressType::Value shipping = Fred::ContactAddressType::SHIPPING;
+
+    // using built-in comparison operators of enum, std::string...
+    {
+        // ctor
+        const Fred::ContactAddressType type_ctor(mailing);
+        BOOST_CHECK_EQUAL(type_ctor.value, mailing);
+
+        // copy ctor
+        const Fred::ContactAddressType type_copy(type_ctor);
+        BOOST_CHECK_EQUAL(type_copy.value, mailing);
+
+        // copy assignment
+        Fred::ContactAddressType type_copy_assign(mailing);
+        type_copy_assign = shipping;
+        BOOST_CHECK_EQUAL(type_copy_assign.value, shipping);
+
+        // assignment
+        Fred::ContactAddressType type_assign(shipping);
+        type_assign = type_ctor;
+        BOOST_CHECK_EQUAL(type_assign.value, mailing);
+
+        // to_string
+        BOOST_CHECK_EQUAL(type_ctor.to_string(), Fred::ContactAddressType::to_string(mailing) );
+        BOOST_CHECK_EQUAL(type_ctor.to_string(), "MAILING" );
+
+        // from_string
+        Fred::ContactAddressType set_value(mailing);
+        set_value.set_value("MAILING");
+        BOOST_CHECK_EQUAL(set_value.value, Fred::ContactAddressType::from_string("MAILING"));
+        BOOST_CHECK_EQUAL(set_value.value, Fred::ContactAddressType::MAILING);
+    }
+
+    // custom comparison operators
+    {
+        BOOST_CHECK( mailing == mailing );
+        BOOST_CHECK( !(mailing == shipping) );
+
+        BOOST_CHECK( mailing != shipping );
+        BOOST_CHECK( !( mailing != mailing ) );
+
+        BOOST_CHECK( mailing < shipping );
+        BOOST_CHECK( !( mailing < mailing ) );
+    }
+}
+
+BOOST_AUTO_TEST_CASE(test_PlaceAddress) {
+    const std::string           street1             = "sdfsfsf 345";
+    const Optional<std::string> street2             = "Tertq 74374";
+    const Optional<std::string> street3             = "jioiutqrej 0128";
+    const std::string           city                = "iouronhf";
+    const Optional<std::string> stateorprovince     = "hiufaaoh";
+    const std::string           postalcode          = "89745";
+    const std::string           country             = "CZ";
+
+    const Fred::Contact::PlaceAddress ctor(
+        street1,
+        street2,
+        street3,
+        city,
+        stateorprovince,
+        postalcode,
+        country
+    );
+
+    BOOST_CHECK_EQUAL(ctor.street1,           street1);
+    BOOST_CHECK_EQUAL(ctor.street2,           street2);
+    BOOST_CHECK_EQUAL(ctor.street3,           street3);
+    BOOST_CHECK_EQUAL(ctor.city,              city);
+    BOOST_CHECK_EQUAL(ctor.stateorprovince,   stateorprovince);
+    BOOST_CHECK_EQUAL(ctor.postalcode,        postalcode);
+    BOOST_CHECK_EQUAL(ctor.country,           country);
+
+    Fred::Contact::PlaceAddress assign;
+
+    assign.street1 =           street1;
+    assign.street2 =           street2;
+    assign.street3 =           street3;
+    assign.city =              city;
+    assign.stateorprovince =   stateorprovince;
+    assign.postalcode =        postalcode;
+    assign.country =           country;
+
+    BOOST_CHECK_EQUAL(assign.street1,           street1);
+    BOOST_CHECK_EQUAL(assign.street2,           street2);
+    BOOST_CHECK_EQUAL(assign.street3,           street3);
+    BOOST_CHECK_EQUAL(assign.city,              city);
+    BOOST_CHECK_EQUAL(assign.stateorprovince,   stateorprovince);
+    BOOST_CHECK_EQUAL(assign.postalcode,        postalcode);
+    BOOST_CHECK_EQUAL(assign.country,           country);
+
+    BOOST_CHECK_EQUAL(ctor, assign);
+}
+
+BOOST_AUTO_TEST_CASE(test_ContactAddress) {
+    const Optional<std::string> company_name    = "ffsfsgdigofleh";
+    const std::string           street1         = "sdfsfsf 345";
+    const Optional<std::string> street2         = "Tertq 74374";
+    const Optional<std::string> street3         = "jioiutqrej 0128";
+    const std::string           city            = "iouronhf";
+    const Optional<std::string> stateorprovince = "hiufaaoh";
+    const std::string           postalcode      = "89745";
+    const std::string           country         = "CZ";
+
+    const Fred::ContactAddress ctor_atomics(
+        company_name,
+        street1,
+        street2,
+        street3,
+        city,
+        stateorprovince,
+        postalcode,
+        country
+    );
+
+    BOOST_CHECK_EQUAL(ctor_atomics.company_name,      company_name);
+    BOOST_CHECK_EQUAL(ctor_atomics.street1,           street1);
+    BOOST_CHECK_EQUAL(ctor_atomics.street2,           street2);
+    BOOST_CHECK_EQUAL(ctor_atomics.street3,           street3);
+    BOOST_CHECK_EQUAL(ctor_atomics.city,              city);
+    BOOST_CHECK_EQUAL(ctor_atomics.stateorprovince,   stateorprovince);
+    BOOST_CHECK_EQUAL(ctor_atomics.postalcode,        postalcode);
+    BOOST_CHECK_EQUAL(ctor_atomics.country,           country);
+
+
+    const Fred::ContactAddress ctor_delegated(
+        company_name,
+        Fred::Contact::PlaceAddress(
+            street1,
+            street2,
+            street3,
+            city,
+            stateorprovince,
+            postalcode,
+            country
+        )
+    );
+
+    BOOST_CHECK_EQUAL(ctor_delegated.company_name,      company_name);
+    BOOST_CHECK_EQUAL(ctor_delegated.street1,           street1);
+    BOOST_CHECK_EQUAL(ctor_delegated.street2,           street2);
+    BOOST_CHECK_EQUAL(ctor_delegated.street3,           street3);
+    BOOST_CHECK_EQUAL(ctor_delegated.city,              city);
+    BOOST_CHECK_EQUAL(ctor_delegated.stateorprovince,   stateorprovince);
+    BOOST_CHECK_EQUAL(ctor_delegated.postalcode,        postalcode);
+    BOOST_CHECK_EQUAL(ctor_delegated.country,           country);
+
+    Fred::ContactAddress assign;
+
+    assign.company_name =      company_name;
+    assign.street1 =           street1;
+    assign.street2 =           street2;
+    assign.street3 =           street3;
+    assign.city =              city;
+    assign.stateorprovince =   stateorprovince;
+    assign.postalcode =        postalcode;
+    assign.country =           country;
+
+    BOOST_CHECK_EQUAL(assign.company_name,      company_name);
+    BOOST_CHECK_EQUAL(assign.street1,           street1);
+    BOOST_CHECK_EQUAL(assign.street2,           street2);
+    BOOST_CHECK_EQUAL(assign.street3,           street3);
+    BOOST_CHECK_EQUAL(assign.city,              city);
+    BOOST_CHECK_EQUAL(assign.stateorprovince,   stateorprovince);
+    BOOST_CHECK_EQUAL(assign.postalcode,        postalcode);
+    BOOST_CHECK_EQUAL(assign.country,           country);
+
+    BOOST_CHECK_EQUAL(ctor_atomics, assign);
+    BOOST_CHECK_EQUAL(assign, ctor_atomics);
+    BOOST_CHECK_EQUAL(ctor_delegated, assign);
+    BOOST_CHECK_EQUAL(assign, ctor_delegated);
+    BOOST_CHECK_EQUAL(ctor_atomics, ctor_delegated);
+    BOOST_CHECK_EQUAL(ctor_delegated, ctor_atomics);
+}
+
+BOOST_AUTO_TEST_CASE(test_Address) {
+    const Optional<std::string> name                = "fas fdjao juhf";
+    const Optional<std::string> organization        = "dfadflaisfjlhfi";
+    const Optional<std::string> company_name        = "ffsfsgdigofleh";
+    const std::string           street1             = "sdfsfsf 345";
+    const Optional<std::string> street2             = "Tertq 74374";
+    const Optional<std::string> street3             = "jioiutqrej 0128";
+    const std::string           city                = "iouronhf";
+    const Optional<std::string> stateorprovince     = "hiufaaoh";
+    const std::string           postalcode          = "89745";
+    const std::string           country             = "CZ";
+
+    const Fred::InfoContactData::Address ctor_atomics(
+        name,
+        organization,
+        company_name,
+        street1,
+        street2,
+        street3,
+        city,
+        stateorprovince,
+        postalcode,
+        country
+    );
+
+    BOOST_CHECK_EQUAL(ctor_atomics.name,              name);
+    BOOST_CHECK_EQUAL(ctor_atomics.organization,      organization);
+    BOOST_CHECK_EQUAL(ctor_atomics.company_name,      company_name);
+    BOOST_CHECK_EQUAL(ctor_atomics.street1,           street1);
+    BOOST_CHECK_EQUAL(ctor_atomics.street2,           street2);
+    BOOST_CHECK_EQUAL(ctor_atomics.street3,           street3);
+    BOOST_CHECK_EQUAL(ctor_atomics.city,              city);
+    BOOST_CHECK_EQUAL(ctor_atomics.stateorprovince,   stateorprovince);
+    BOOST_CHECK_EQUAL(ctor_atomics.postalcode,        postalcode);
+    BOOST_CHECK_EQUAL(ctor_atomics.country,           country);
+
+    const Fred::InfoContactData::Address ctor_delegated(
+        name,
+        organization,
+        Fred::ContactAddress(
+            company_name,
+            Fred::Contact::PlaceAddress(
+                street1,
+                street2,
+                street3,
+                city,
+                stateorprovince,
+                postalcode,
+                country
+            )
+        )
+    );
+
+    BOOST_CHECK_EQUAL(ctor_delegated.name,              name);
+    BOOST_CHECK_EQUAL(ctor_delegated.organization,      organization);
+    BOOST_CHECK_EQUAL(ctor_delegated.company_name,      company_name);
+    BOOST_CHECK_EQUAL(ctor_delegated.street1,           street1);
+    BOOST_CHECK_EQUAL(ctor_delegated.street2,           street2);
+    BOOST_CHECK_EQUAL(ctor_delegated.street3,           street3);
+    BOOST_CHECK_EQUAL(ctor_delegated.city,              city);
+    BOOST_CHECK_EQUAL(ctor_delegated.stateorprovince,   stateorprovince);
+    BOOST_CHECK_EQUAL(ctor_delegated.postalcode,        postalcode);
+    BOOST_CHECK_EQUAL(ctor_delegated.country,           country);
+
+    Fred::InfoContactData::Address assign;
+
+    assign.name =              name;
+    assign.organization =      organization;
+    assign.company_name =      company_name;
+    assign.street1 =           street1;
+    assign.street2 =           street2;
+    assign.street3 =           street3;
+    assign.city =              city;
+    assign.stateorprovince =   stateorprovince;
+    assign.postalcode =        postalcode;
+    assign.country =           country;
+
+    BOOST_CHECK_EQUAL(assign.name,              name);
+    BOOST_CHECK_EQUAL(assign.organization,      organization);
+    BOOST_CHECK_EQUAL(assign.company_name,      company_name);
+    BOOST_CHECK_EQUAL(assign.street1,           street1);
+    BOOST_CHECK_EQUAL(assign.street2,           street2);
+    BOOST_CHECK_EQUAL(assign.street3,           street3);
+    BOOST_CHECK_EQUAL(assign.city,              city);
+    BOOST_CHECK_EQUAL(assign.stateorprovince,   stateorprovince);
+    BOOST_CHECK_EQUAL(assign.postalcode,        postalcode);
+    BOOST_CHECK_EQUAL(assign.country,           country);
+
+    BOOST_CHECK_EQUAL(ctor_atomics, assign);
+    BOOST_CHECK_EQUAL(assign, ctor_atomics);
+    BOOST_CHECK_EQUAL(ctor_delegated, assign);
+    BOOST_CHECK_EQUAL(assign, ctor_delegated);
+    BOOST_CHECK_EQUAL(ctor_atomics, ctor_delegated);
+    BOOST_CHECK_EQUAL(ctor_delegated, ctor_atomics);
+}
 
 BOOST_AUTO_TEST_SUITE_END();//TestInfoContact
