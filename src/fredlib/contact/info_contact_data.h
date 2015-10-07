@@ -144,6 +144,39 @@ namespace Fred
     struct ContactAddress : Contact::PlaceAddress
     {
         Optional< std::string > company_name;/**< company name (optional) */
+
+        ContactAddress() {}
+
+        ContactAddress(
+            const Optional<std::string>&    _company_name,
+            const Contact::PlaceAddress&    _place_address
+        ) :
+            PlaceAddress(_place_address),
+            company_name(_company_name)
+        { }
+
+        ContactAddress(
+            const Optional<std::string>&    _company_name,
+            const std::string&              _street1,
+            const Optional<std::string>&    _street2,
+            const Optional<std::string>&    _street3,
+            const std::string&              _city,
+            const Optional<std::string>&    _stateorprovince,
+            const std::string&              _postalcode,
+            const std::string&              _country
+        ) :
+            PlaceAddress(
+                _street1,
+                _street2,
+                _street3,
+                _city,
+                _stateorprovince,
+                _postalcode,
+                _country
+            ),
+            company_name(_company_name)
+        { }
+
         /**
          * Dumps content into the string.
          * @return string with description of the instance content
@@ -220,6 +253,44 @@ namespace Fred
         {
             Optional< std::string > name;/**< person name (optional) */
             Optional< std::string > organization;/**< organization name (optional) */
+
+            Address() {}
+
+            Address(
+                const Optional<std::string>& _name,
+                const Optional<std::string>& _organization,
+                const ContactAddress&        _contact_address
+            ) :
+                ContactAddress(_contact_address),
+                name(_name),
+                organization(_organization)
+            { }
+
+            Address(
+                const Optional<std::string>& _name,
+                const Optional<std::string>& _organization,
+                const Optional<std::string>& _company_name,
+                const std::string&           _street1,
+                const Optional<std::string>& _street2,
+                const Optional<std::string>& _street3,
+                const std::string&           _city,
+                const Optional<std::string>& _stateorprovince,
+                const std::string&           _postalcode,
+                const std::string&           _country
+            ) :
+                ContactAddress(
+                    _company_name,
+                    _street1,
+                    _street2,
+                    _street3,
+                    _city,
+                    _stateorprovince,
+                    _postalcode,
+                    _country
+                ),
+                name(_name),
+                organization(_organization)
+            { }
         };
 
         /**

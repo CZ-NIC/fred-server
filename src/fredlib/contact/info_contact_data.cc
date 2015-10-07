@@ -110,8 +110,14 @@ namespace Fred
         if (place.isnull()) {
             throw AddressDoesntExist("no address present");
         }
-        struct Address address;
-        address = place.get_value();
+        Address address(
+            Optional<std::string>(),
+            Optional<std::string>(),
+            ContactAddress(
+                Optional<std::string>(),
+                place.get_value()
+            )
+        );
         if (!name.isnull()) {
             address.name = name.get_value();
         }
@@ -126,8 +132,11 @@ namespace Fred
     {
         ContactAddressList::const_iterator ptr_contact_address = addresses.find(purpose);
         if (ptr_contact_address != addresses.end()) {
-            struct Address address;
-            address = ptr_contact_address->second;
+            Address address(
+                Optional<std::string>(),
+                Optional<std::string>(),
+                ptr_contact_address->second
+            );
             if (!name.isnull()) {
                 address.name = name.get_value();
             }
