@@ -57,7 +57,6 @@ struct PlaceAddress
      * @return true if they are the same.
      */
     bool operator==(const struct PlaceAddress &_b)const;
-    struct PlaceAddress& operator=(const struct PlaceAddress &_src);
 
     /**
      * Default ctor

@@ -52,21 +52,7 @@ namespace Fred
          * @param _value initializes @ref value
          */
         ContactAddressType(Value _value):value(_value) { }
-        /**
-         * Copy constructor.
-         * @param _src is copied instance
-         */
-        ContactAddressType(const struct ContactAddressType &_src):value(_src.value) { }
-        /**
-         * Assign operator.
-         * @param _src assigned instance
-         * @return self reference
-         */
-        struct ContactAddressType& operator=(const struct ContactAddressType &_src)
-        {
-            value = _src.value;
-            return *this;
-        }
+
         /**
          * Assign operator.
          * @param _value assigned value
@@ -175,12 +161,6 @@ namespace Fred
          * @return true if they differ.
          */
         bool operator!=(const struct ContactAddress &_b)const { return !this->operator==(_b); }
-        /**
-         * Assign operator.
-         * @param _src assigned instance
-         * @return self reference
-         */
-        struct ContactAddress& operator=(const ContactAddress &_src);
         /**
          * Assign operator, sets PlaceAddress part.
          * @param _src assigned instance

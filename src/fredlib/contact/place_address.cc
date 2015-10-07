@@ -52,18 +52,6 @@ bool PlaceAddress::operator==(const struct PlaceAddress &_b)const
            country == _b.country;
 }
 
-PlaceAddress& PlaceAddress::operator=(const PlaceAddress &_src)
-{
-    street1 = _src.street1;
-    street2 = _src.street2;
-    street3 = _src.street3;
-    city = _src.city;
-    stateorprovince = _src.stateorprovince;
-    postalcode = _src.postalcode;
-    country = _src.country;
-    return *this;
-}
-
 PlaceAddress::PlaceAddress()
 {}
 
