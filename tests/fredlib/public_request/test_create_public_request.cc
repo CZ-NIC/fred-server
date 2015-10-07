@@ -17,6 +17,7 @@
  */
 
 #include "src/fredlib/public_request/create_public_request.h"
+#include "src/fredlib/public_request/public_request_status.h"
 #include "src/fredlib/contact/create_contact.h"
 
 #include "util/random_data_generator.h"
@@ -248,7 +249,7 @@ BOOST_AUTO_TEST_CASE(create_public_request_ok)
             "id,"
             "(SELECT name=$3::TEXT FROM enum_public_request_type WHERE id=pr.request_type),"
             "create_time=NOW(),"
-            "(SELECT name='new' FROM enum_public_request_status WHERE id=pr.status),"
+            "(SELECT name FROM enum_public_request_status WHERE id=pr.status),"
             "resolve_time IS NULL,"
             "reason=$4::TEXT,"
             "email_to_answer=$5::TEXT,"
@@ -265,8 +266,12 @@ BOOST_AUTO_TEST_CASE(create_public_request_ok)
         BOOST_CHECK(static_cast< Fred::PublicRequestId >(res[idx][0]) == public_request_id[idx]);
         BOOST_CHECK(!res[idx][1].isnull() && static_cast< bool >(res[idx][1]));
         BOOST_CHECK(!res[idx][2].isnull() && static_cast< bool >(res[idx][2]));
-        BOOST_CHECK(!res[idx][3].isnull() && static_cast< bool >(res[idx][3]));
-        BOOST_CHECK(static_cast< bool >(res[idx][4]));
+        const std::string status = Fred::PublicRequest::Status(idx == 0
+                                                               ? Fred::PublicRequest::Status::INVALIDATED
+                                                               : Fred::PublicRequest::Status::NEW)
+                                       .into< std::string >();
+        BOOST_CHECK(!res[idx][3].isnull() && (static_cast< std::string >(res[idx][3]) == status));
+        BOOST_CHECK(static_cast< bool >(res[idx][4]) == (idx != 0));
         BOOST_CHECK(!res[idx][5].isnull() && static_cast< bool >(res[idx][5]));
         BOOST_CHECK(!res[idx][6].isnull() && static_cast< bool >(res[idx][6]));
         BOOST_CHECK(static_cast< bool >(res[idx][7]));

@@ -17,6 +17,7 @@
  */
 
 #include "src/fredlib/public_request/create_public_request_auth.h"
+#include "src/fredlib/public_request/public_request_status.h"
 #include "src/fredlib/contact/create_contact.h"
 
 #include "util/random_data_generator.h"
@@ -71,16 +72,16 @@ struct create_public_request_auth_fixture : public virtual Test::Fixture::instan
     Fred::ObjectId contact_id;
 };
 
-class PublicRequestTypeFake:public Fred::PublicRequestAuthTypeIface
+class PublicRequestAuthTypeFake:public Fred::PublicRequestAuthTypeIface
 {
 public:
-    PublicRequestTypeFake(const std::string &_type,
+    PublicRequestAuthTypeFake(const std::string &_type,
                           const std::string &_password)
     :   type_(_type),
         password_(_password) { }
-    std::string get_public_request_type()const { return type_; }
-    std::string generate_passwords()const { return password_; }
-    ~PublicRequestTypeFake() { }
+    virtual std::string get_public_request_type()const { return type_; }
+    virtual std::string generate_passwords()const { return password_; }
+    virtual ~PublicRequestAuthTypeFake() { }
 private:
     const std::string type_;
     const std::string password_;
@@ -99,7 +100,7 @@ BOOST_AUTO_TEST_CASE(create_public_request_auth_wrong_registrar)
         "SELECT 100+2*MAX(id) FROM registrar")[0][0]);
     BOOST_CHECK_EXCEPTION(
     try {
-        Fred::CreatePublicRequestAuth(PublicRequestTypeFake("mojeid_contact_identification", password))
+        Fred::CreatePublicRequestAuth(PublicRequestAuthTypeFake("mojeid_contact_identification", password))
             .set_registrar_id(bad_registrar_id)
             .exec(ctx, Fred::PublicRequestObjectLockGuardByObjectId(ctx, contact_id));
     }
@@ -132,7 +133,7 @@ BOOST_AUTO_TEST_CASE(create_public_request_auth_wrong_type)
 
     BOOST_CHECK_EXCEPTION(
     try {
-        Fred::CreatePublicRequestAuth(PublicRequestTypeFake(bad_type, password))
+        Fred::CreatePublicRequestAuth(PublicRequestAuthTypeFake(bad_type, password))
             .exec(ctx, Fred::PublicRequestObjectLockGuardByObjectId(ctx, contact_id));
     }
     catch(const Fred::CreatePublicRequestAuth::Exception &e) {
@@ -173,7 +174,7 @@ BOOST_AUTO_TEST_CASE(create_public_request_auth_ok)
 
     Fred::PublicRequestObjectLockGuardByObjectId locked_contact(ctx, contact_id);
     for (TypeName::const_iterator name_ptr = type_names.begin(); name_ptr != type_names.end(); ++name_ptr) {
-        const PublicRequestTypeFake public_request_type(*name_ptr, password);
+        const PublicRequestAuthTypeFake public_request_type(*name_ptr, password);
         const Fred::CreatePublicRequestAuth::Result result = Fred::CreatePublicRequestAuth(public_request_type)
             .exec(ctx, locked_contact);
         BOOST_CHECK(result.identification != result.password);
@@ -218,7 +219,7 @@ BOOST_AUTO_TEST_CASE(create_public_request_auth_ok)
     const std::string reason = "Naprosto bezdůvodně!";
     const std::string email_to_answer = "noreply@nic.cz";
     BOOST_CHECK(reason != email_to_answer);
-    const PublicRequestTypeFake public_request_type(*type_names.begin(), password);
+    const PublicRequestAuthTypeFake public_request_type(*type_names.begin(), password);
     Fred::CreatePublicRequestAuth::Result result[2];
     result[0] = Fred::CreatePublicRequestAuth(
         public_request_type, reason, email_to_answer, registrar_id)
@@ -233,7 +234,7 @@ BOOST_AUTO_TEST_CASE(create_public_request_auth_ok)
             "pr.id,"
             "(SELECT name=$7::TEXT FROM enum_public_request_type WHERE id=pr.request_type),"
             "pr.create_time=NOW(),"
-            "(SELECT name='new' FROM enum_public_request_status WHERE id=pr.status),"
+            "(SELECT name FROM enum_public_request_status WHERE id=pr.status),"
             "pr.resolve_time IS NULL,"
             "pr.reason=$8::TEXT,"
             "pr.email_to_answer=$9::TEXT,"
@@ -257,8 +258,12 @@ BOOST_AUTO_TEST_CASE(create_public_request_auth_ok)
         BOOST_CHECK(static_cast< Fred::PublicRequestId >(res[idx][0]) == result[idx].public_request_id);
         BOOST_CHECK(!res[idx][1].isnull() && static_cast< bool >(res[idx][1]));
         BOOST_CHECK(!res[idx][2].isnull() && static_cast< bool >(res[idx][2]));
-        BOOST_CHECK(!res[idx][3].isnull() && static_cast< bool >(res[idx][3]));
-        BOOST_CHECK(static_cast< bool >(res[idx][4]));
+        const std::string status = Fred::PublicRequest::Status(idx == 0
+                                                               ? Fred::PublicRequest::Status::INVALIDATED
+                                                               : Fred::PublicRequest::Status::NEW)
+                                       .into< std::string >();
+        BOOST_CHECK(!res[idx][3].isnull() && (static_cast< std::string >(res[idx][3]) == status));
+        BOOST_CHECK(static_cast< bool >(res[idx][4]) == (idx != 0));
         BOOST_CHECK(!res[idx][5].isnull() && static_cast< bool >(res[idx][5]));
         BOOST_CHECK(!res[idx][6].isnull() && static_cast< bool >(res[idx][6]));
         BOOST_CHECK(static_cast< bool >(res[idx][7]));
