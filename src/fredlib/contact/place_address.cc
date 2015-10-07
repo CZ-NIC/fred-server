@@ -64,7 +64,7 @@ PlaceAddress::PlaceAddress(const std::string& _street1,
         const std::string& _country)
     : street1(_street1)
     , street2(_street2)
-    , street3(_street2)
+    , street3(_street3)
     , city(_city)
     , stateorprovince(_stateorprovince)
     , postalcode(_postalcode)
