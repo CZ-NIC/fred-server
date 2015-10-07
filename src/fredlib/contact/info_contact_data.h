@@ -161,12 +161,6 @@ namespace Fred
          * @return true if they differ.
          */
         bool operator!=(const struct ContactAddress &_b)const { return !this->operator==(_b); }
-        /**
-         * Assign operator, sets PlaceAddress part.
-         * @param _src assigned instance
-         * @return self reference
-         */
-        struct ContactAddress& operator=(const Contact::PlaceAddress &_src);
     };
     /**
      * Container of additional contact addresses.
@@ -226,8 +220,6 @@ namespace Fred
         {
             Optional< std::string > name;/**< person name (optional) */
             Optional< std::string > organization;/**< organization name (optional) */
-            struct Address& operator=(const ContactAddress &_src);/**< set ContactAddress part */
-            struct Address& operator=(const Contact::PlaceAddress &_src);/**< set PlaceAddress part */
         };
 
         /**

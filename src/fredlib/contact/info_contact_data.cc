@@ -90,13 +90,6 @@ namespace Fred
                this->company_name == _b.company_name;
     }
 
-
-    struct ContactAddress& ContactAddress::operator=(const Contact::PlaceAddress &_src)
-    {
-        static_cast< Contact::PlaceAddress& >(*this) = _src;
-        return *this;
-    }
-
     InfoContactData::InfoContactData()
     : crhistoryid(0)
     , historyid(0)
@@ -224,18 +217,6 @@ namespace Fred
         (std::make_pair("disclosenotifyemail",disclosenotifyemail ? "true" : "false"))
         (std::make_pair("warning_letter",warning_letter.print_quoted()))
         );
-    }
-
-    struct InfoContactData::Address& InfoContactData::Address::operator=(const ContactAddress &_src)
-    {
-        static_cast< ContactAddress& >(*this) = _src;
-        return *this;
-    }
-
-    struct InfoContactData::Address& InfoContactData::Address::operator=(const Contact::PlaceAddress &_src)
-    {
-        static_cast< Contact::PlaceAddress& >(*this) = _src;
-        return *this;
     }
 
     std::ostream& operator<<(std::ostream &os, const ContactAddressList &v)
