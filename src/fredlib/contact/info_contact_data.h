@@ -58,7 +58,7 @@ namespace Fred
          * @param _value assigned value
          * @return self reference
          */
-        struct ContactAddressType& operator=(Value _value)
+        ContactAddressType& operator=(Value _value)
         {
             value = _value;
             return *this;
@@ -98,7 +98,7 @@ namespace Fred
          * @return self reference
          * @throw ConversionError if conversion is impossible
          */
-        struct ContactAddressType& set_value(const std::string &_value)
+        ContactAddressType& set_value(const std::string &_value)
         {
             value = from_string(_value);
             return *this;
@@ -109,8 +109,8 @@ namespace Fred
          * @param _b is right hand side of the comparison
          * @return true if equal, false otherwise
          */
-        friend bool operator==(const struct ContactAddressType &_a,
-                               const struct ContactAddressType &_b)
+        friend bool operator==(const ContactAddressType &_a,
+                               const ContactAddressType &_b)
         {
             return _a.value == _b.value;
         }
@@ -120,8 +120,8 @@ namespace Fred
          * @param _b is right hand side of the comparison
          * @return false if equal, true otherwise
          */
-        friend bool operator!=(const struct ContactAddressType &_a,
-                               const struct ContactAddressType &_b)
+        friend bool operator!=(const ContactAddressType &_a,
+                               const ContactAddressType &_b)
         {
             return !(_a == _b);
         }
@@ -130,7 +130,7 @@ namespace Fred
          * @param _b is right hand side of the comparison
          * @return true if @a this smaller then @a _b, false otherwise
          */
-        bool operator<(const struct ContactAddressType &_b)const { return this->value < _b.value; }
+        bool operator<(const ContactAddressType &_b)const { return this->value < _b.value; }
     private:
         /**
          * Default constructor.
@@ -187,18 +187,18 @@ namespace Fred
          * @param _b compares @a this instance with @a _b instance
          * @return true if they are the same.
          */
-        bool operator==(const struct ContactAddress &_b)const;
+        bool operator==(const ContactAddress &_b)const;
         /**
          * Check inequality of two instances.
          * @param _b compares @a this instance with @a _b instance
          * @return true if they differ.
          */
-        bool operator!=(const struct ContactAddress &_b)const { return !this->operator==(_b); }
+        bool operator!=(const ContactAddress &_b)const { return !this->operator==(_b); }
     };
     /**
      * Container of additional contact addresses.
      */
-    typedef std::map< struct ContactAddressType, struct ContactAddress > ContactAddressList;
+    typedef std::map< ContactAddressType, ContactAddress > ContactAddressList;
     /**
      * Common data of contact.
      * Current or history state of the contact.
@@ -307,7 +307,7 @@ namespace Fred
          * @return permanent address of contact
          * @throw AddressDoesntExist if no address exists
          */
-        struct Address get_permanent_address()const;
+        Address get_permanent_address()const;
         /**
          * Get address for given purpose.
          * @tparam purpose specifies usage of address
@@ -315,7 +315,7 @@ namespace Fred
          * @throw AddressDoesntExist if no usable address exists
          */
         template < ContactAddressType::Value purpose >
-        struct Address get_address()const;
+        Address get_address()const;
         /**
         * Equality of the contact data structure operator.
         * @param rhs is right hand side of the contact data comparison
@@ -351,7 +351,7 @@ std::ostream& operator<<(std::ostream &os, const ContactAddressList &v);
  * @param _v reference of instance to be dumped into the stream
  * @return output stream reference
  */
-std::ostream& operator<<(std::ostream &_os, const struct ContactAddress &_v);
+std::ostream& operator<<(std::ostream &_os, const ContactAddress &_v);
 
 /**
  * Dumps content of the instance into stream
@@ -359,7 +359,7 @@ std::ostream& operator<<(std::ostream &_os, const struct ContactAddress &_v);
  * @param _v reference of instance to be dumped into the stream
  * @return output stream reference
  */
-std::ostream& operator<<(std::ostream &_os, const struct ContactAddressType &_v);
+std::ostream& operator<<(std::ostream &_os, const ContactAddressType &_v);
 
 }//namespace Fred
 

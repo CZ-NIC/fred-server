@@ -84,7 +84,7 @@ namespace Fred
         );
     }
 
-    bool ContactAddress::operator==(const struct ContactAddress &_b)const
+    bool ContactAddress::operator==(const ContactAddress &_b)const
     {
         return static_cast< const Contact::PlaceAddress& >(*this) == static_cast< const Contact::PlaceAddress& >(_b) &&
                this->company_name == _b.company_name;
@@ -105,7 +105,7 @@ namespace Fred
     , id(0)
     {}
 
-    struct InfoContactData::Address InfoContactData::get_permanent_address()const
+    InfoContactData::Address InfoContactData::get_permanent_address()const
     {
         if (place.isnull()) {
             throw AddressDoesntExist("no address present");
@@ -128,7 +128,7 @@ namespace Fred
     }
 
     template < ContactAddressType::Value purpose >
-    struct InfoContactData::Address InfoContactData::get_address()const
+    InfoContactData::Address InfoContactData::get_address()const
     {
         ContactAddressList::const_iterator ptr_contact_address = addresses.find(purpose);
         if (ptr_contact_address != addresses.end()) {
@@ -149,19 +149,19 @@ namespace Fred
     }
 
     template
-    struct InfoContactData::Address InfoContactData::get_address< ContactAddressType::MAILING >()const;
+    InfoContactData::Address InfoContactData::get_address< ContactAddressType::MAILING >()const;
 
     template
-    struct InfoContactData::Address InfoContactData::get_address< ContactAddressType::BILLING >()const;
+    InfoContactData::Address InfoContactData::get_address< ContactAddressType::BILLING >()const;
 
     template
-    struct InfoContactData::Address InfoContactData::get_address< ContactAddressType::SHIPPING >()const;
+    InfoContactData::Address InfoContactData::get_address< ContactAddressType::SHIPPING >()const;
 
     template
-    struct InfoContactData::Address InfoContactData::get_address< ContactAddressType::SHIPPING_2 >()const;
+    InfoContactData::Address InfoContactData::get_address< ContactAddressType::SHIPPING_2 >()const;
 
     template
-    struct InfoContactData::Address InfoContactData::get_address< ContactAddressType::SHIPPING_3 >()const;
+    InfoContactData::Address InfoContactData::get_address< ContactAddressType::SHIPPING_3 >()const;
 
     bool InfoContactData::operator==(const InfoContactData& rhs) const
     {
@@ -233,12 +233,12 @@ namespace Fred
         return os << format_map(v);
     }
 
-    std::ostream& operator<<(std::ostream &_os, const struct ContactAddress &_v)
+    std::ostream& operator<<(std::ostream &_os, const ContactAddress &_v)
     {
         return _os << _v.to_string();
     }
 
-    std::ostream& operator<<(std::ostream &_os, const struct ContactAddressType &_v)
+    std::ostream& operator<<(std::ostream &_os, const ContactAddressType &_v)
     {
         return _os << _v.to_string();
     }

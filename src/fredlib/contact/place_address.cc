@@ -41,7 +41,7 @@ std::string PlaceAddress::to_string()const
     );
 }
 
-bool PlaceAddress::operator==(const struct PlaceAddress &_b)const
+bool PlaceAddress::operator==(const PlaceAddress &_b)const
 {
     return street1 == _b.street1 &&
            street2 == _b.street2 &&
