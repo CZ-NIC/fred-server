@@ -71,7 +71,10 @@ Database::StandaloneConnection& OperationContext::get_conn()const
 {
     Database::StandaloneConnection *const conn_ptr = conn_.get();
     if (conn_ptr != NULL) {
-        return *conn_ptr;
+        if (conn_ptr->in_valid_transaction()) {
+            return *conn_ptr;
+        }
+        throw std::runtime_error("database transaction broken");
     }
     throw std::runtime_error("database connection doesn't exist");
 }
@@ -111,22 +114,14 @@ OperationContextTwoPhaseCommit::OperationContextTwoPhaseCommit(const std::string
 
 void OperationContextCreator::commit_transaction()
 {
-    Database::StandaloneConnection *const conn_ptr = conn_.get();
-    if (conn_ptr == NULL) {
-        throw std::runtime_error("no transaction in progress");
-    }
-    conn_ptr->exec("COMMIT");
+    this->get_conn().exec("COMMIT");
     conn_.reset();
 }
 
 void OperationContextTwoPhaseCommitCreator::commit_transaction()
 {
-    Database::StandaloneConnection *const conn_ptr = conn_.get();
-    if (conn_ptr == NULL) {
-        throw std::runtime_error("no transaction in progress");
-    }
     //"PREPARE TRANSACTION $1::TEXT" failed
-    conn_ptr->exec("PREPARE TRANSACTION '" + transaction_id_ + "'");
+    this->get_conn().exec("PREPARE TRANSACTION '" + transaction_id_ + "'");
     conn_.reset();
 }
 
