@@ -54,6 +54,7 @@ struct PossibleRequestTypes< CommChannel::SMS >
         const Fred::PublicRequestLockGuard &_locked_request,
         const Fred::PublicRequestObjectLockGuard &_locked_contact,
         const Generate::message_checker &_check_message_limits,
+        const std::string &_link_hostname_part,
         GeneralId _contact_history_id)
     {
         if (PubReqCCI::iface().get_public_request_type() == _public_request_type) {
@@ -63,6 +64,7 @@ struct PossibleRequestTypes< CommChannel::SMS >
                 _locked_request,
                 _locked_contact,
                 _check_message_limits,
+                _link_hostname_part,
                 _contact_history_id);
             return message_id;
         }
@@ -90,6 +92,7 @@ struct PossibleRequestTypes< CommChannel::LETTER >
         const Fred::PublicRequestLockGuard &_locked_request,
         const Fred::PublicRequestObjectLockGuard &_locked_contact,
         const Generate::message_checker &_check_message_limits,
+        const std::string &_link_hostname_part,
         GeneralId _contact_history_id)
     {
         static const CommChannel::Value channel_letter = CommChannel::LETTER;
@@ -100,6 +103,7 @@ struct PossibleRequestTypes< CommChannel::LETTER >
                 _locked_request,
                 _locked_contact,
                 _check_message_limits,
+                _link_hostname_part,
                 _contact_history_id);
             return message_id;
         }
@@ -110,6 +114,7 @@ struct PossibleRequestTypes< CommChannel::LETTER >
                 _locked_request,
                 _locked_contact,
                 _check_message_limits,
+                _link_hostname_part,
                 _contact_history_id);
             return message_id;
         }
@@ -140,6 +145,7 @@ struct PossibleRequestTypes< CommChannel::EMAIL >
         const Fred::PublicRequestLockGuard &_locked_request,
         const Fred::PublicRequestObjectLockGuard &_locked_contact,
         const Generate::message_checker &_check_message_limits,
+        const std::string &_link_hostname_part,
         GeneralId _contact_history_id)
     {
         static const CommChannel::Value channel_letter = CommChannel::EMAIL;
@@ -150,6 +156,7 @@ struct PossibleRequestTypes< CommChannel::EMAIL >
                 _locked_request,
                 _locked_contact,
                 _check_message_limits,
+                _link_hostname_part,
                 _contact_history_id);
             return message_id;
         }
@@ -160,6 +167,7 @@ struct PossibleRequestTypes< CommChannel::EMAIL >
                 _locked_request,
                 _locked_contact,
                 _check_message_limits,
+                _link_hostname_part,
                 _contact_history_id);
             return message_id;
         }
@@ -170,6 +178,7 @@ struct PossibleRequestTypes< CommChannel::EMAIL >
                 _locked_request,
                 _locked_contact,
                 _check_message_limits,
+                _link_hostname_part,
                 _contact_history_id);
             return message_id;
         }
@@ -387,6 +396,7 @@ struct generate_message< CommChannel::SMS, Fred::MojeID::PublicRequest::ContactC
         const Fred::PublicRequestLockGuard &_locked_request,
         const Fred::PublicRequestObjectLockGuard &_locked_contact,
         const Generate::message_checker &_check_message_limits,
+        const std::string &_link_hostname_part,
         const Optional< GeneralId > &_contact_history_id)
     {
         const Database::Result dbres = _ctx.get_conn().exec_params(
@@ -536,6 +546,7 @@ struct generate_message< CommChannel::LETTER, Fred::MojeID::PublicRequest::Conta
         const Fred::PublicRequestLockGuard &_locked_request,
         const Fred::PublicRequestObjectLockGuard &_locked_contact,
         const Generate::message_checker &_check_message_limits,
+        const std::string &_link_hostname_part,
         const Optional< GeneralId > &_contact_history_id)
     {
         typedef Fred::Object::State FOS;
@@ -616,6 +627,7 @@ struct generate_message< CommChannel::LETTER, Fred::MojeID::PublicRequest::Conta
         const Fred::PublicRequestLockGuard &_locked_request,
         const Fred::PublicRequestObjectLockGuard &_locked_contact,
         const Generate::message_checker &_check_message_limits,
+        const std::string &_link_hostname_part,
         const Optional< GeneralId > &_contact_history_id)
     {
         typedef Fred::Object::State FOS;
@@ -714,6 +726,58 @@ std::string collect_address(const Nullable< Fred::Contact::PlaceAddress > &_addr
     return std::string();
 }
 
+/********************************************************************************************************
+ * mail_type.name='mojeid_identification'                                                               *
+ ********************************************************************************************************
+Vážený uživateli,
+
+před tím, než Vám aktivujeme účet mojeID, musíme ověřit správnost Vašich
+kontaktních údajů, a to prostřednictvím kódů PIN1 a PIN2.
+
+PIN1: <?cs var:passwd ?>
+PIN2: Vám byl zaslán pomocí SMS.
+
+Do formuláře pro zadání těchto kódů budete přesměrováni po kliknutí na
+následující odkaz:
+
+https://<?cs var:hostname ?>/identify/email-sms/<?cs var:identification ?>/?password1=<?cs var:passwd ?>
+
+Po úspěšném odeslání formuláře budete moci začít Váš účet mojeID používat.
+Zároveň Vám pošleme poštou dopis s kódem PIN3, po jehož zadání bude Váš
+účet plně aktivní.
+
+Základní údaje o Vašem účtu:
+
+účet mojeID: <?cs var:handle ?>
+jméno:       <?cs var:firstname ?>
+příjmení:    <?cs var:lastname ?>
+e-mail:      <?cs var:email ?>
+
+Váš tým <?cs var:defaults.company ?>
+
+ ********************************************************************************************************
+ * mail_type.name='mojeid_verified_contact_transfer'                                                    *
+ ********************************************************************************************************
+Vážený uživateli,
+
+tento e-mail potvrzuje úspěšné založení účtu mojeID s těmito údaji:
+
+účet mojeID: <?cs var:handle ?>
+jméno:       <?cs var:firstname ?>
+příjmení:    <?cs var:lastname ?>
+e-mail:      <?cs var:email ?>
+
+Pro aktivaci Vašeho účtu je nutné vložit kód PIN1.
+
+PIN1: <?cs var:passwd ?>
+
+Aktivaci účtu proveďte kliknutím na následující odkaz:
+
+https://<?cs var:hostname ?>/identify/email/<?cs var:identification ?>/?password1=<?cs var:passwd ?>
+
+Váš tým <?cs var:defaults.company ?>
+
+*/
 Generate::MessageId send_email(
     const std::string &_mail_template,
     Fred::OperationContext &_ctx,
@@ -721,6 +785,7 @@ Generate::MessageId send_email(
     const Fred::PublicRequestLockGuard &_locked_request,
     const Fred::PublicRequestObjectLockGuard &_locked_contact,
     const Generate::message_checker &_check_message_limits,
+    const std::string &_link_hostname_part,
     const Optional< GeneralId > &_contact_history_id)
 {
     Database::query_param_list params;
@@ -783,7 +848,7 @@ Generate::MessageId send_email(
                                     : std::string();
     mail_params["address"]        = collect_address(contact_data.place);
     mail_params["status"]         = "2";//public_request.status == "answered" ? "1" : "2"
-    mail_params["hostname"]       = CfgArgs::instance()->get_handler_ptr_by_type< HandleMojeIDArgs >()->hostname;
+    mail_params["hostname"]       = _link_hostname_part;
     mail_params["firstname"]      = firstname;
     mail_params["lastname"]       = lastname;
     mail_params["email"]          = recipient;
@@ -812,6 +877,7 @@ struct generate_message< CommChannel::EMAIL, Fred::MojeID::PublicRequest::Contac
         const Fred::PublicRequestLockGuard &_locked_request,
         const Fred::PublicRequestObjectLockGuard &_locked_contact,
         const Generate::message_checker &_check_message_limits,
+        const std::string &_link_hostname_part,
         const Optional< GeneralId > &_contact_history_id)
     {
         //db table mail_type: 21,'mojeid_identification','[mojeID] Založení účtu - PIN1 pro aktivaci mojeID'
@@ -822,6 +888,7 @@ struct generate_message< CommChannel::EMAIL, Fred::MojeID::PublicRequest::Contac
                          _locked_request,
                          _locked_contact,
                          _check_message_limits,
+                         _link_hostname_part,
                          _contact_history_id);
     }
 };
@@ -835,6 +902,7 @@ struct generate_message< CommChannel::EMAIL, Fred::MojeID::PublicRequest::Condit
         const Fred::PublicRequestLockGuard &_locked_request,
         const Fred::PublicRequestObjectLockGuard &_locked_contact,
         const Generate::message_checker &_check_message_limits,
+        const std::string &_link_hostname_part,
         const Optional< GeneralId > &_contact_history_id)
     {
         //db table mail_type: 27,'mojeid_verified_contact_transfer','Založení účtu mojeID'
@@ -845,6 +913,7 @@ struct generate_message< CommChannel::EMAIL, Fred::MojeID::PublicRequest::Condit
                          _locked_request,
                          _locked_contact,
                          _check_message_limits,
+                         _link_hostname_part,
                          _contact_history_id);
     }
 };
@@ -858,6 +927,7 @@ struct generate_message< CommChannel::EMAIL, Fred::MojeID::PublicRequest::Identi
         const Fred::PublicRequestLockGuard &_locked_request,
         const Fred::PublicRequestObjectLockGuard &_locked_contact,
         const Generate::message_checker &_check_message_limits,
+        const std::string &_link_hostname_part,
         const Optional< GeneralId > &_contact_history_id)
     {
         //db table mail_type: 27,'mojeid_verified_contact_transfer','Založení účtu mojeID'
@@ -868,6 +938,7 @@ struct generate_message< CommChannel::EMAIL, Fred::MojeID::PublicRequest::Identi
                          _locked_request,
                          _locked_contact,
                          _check_message_limits,
+                         _link_hostname_part,
                          _contact_history_id);
     }
 };
@@ -930,7 +1001,8 @@ template < CommChannel::Value COMM_CHANNEL >
 void Generate::Into< COMM_CHANNEL >::for_new_requests(
         Fred::OperationContext &_ctx,
         const Multimanager &_multimanager,
-        const message_checker &_check_message_limits)
+        const message_checker &_check_message_limits,
+        const std::string &_link_hostname_part)
 {
     static Database::query_param_list params;
     static const std::string sql = CollectFor< COMM_CHANNEL >::query(params);
@@ -949,6 +1021,7 @@ void Generate::Into< COMM_CHANNEL >::for_new_requests(
                 locked_request,
                 locked_contact,
                 _check_message_limits,
+                _link_hostname_part,
                 contact_history_id);
             JoinMessage< COMM_CHANNEL >::with_public_request(ctx, locked_request, message_id);
             ctx.commit_transaction();
@@ -965,15 +1038,18 @@ void Generate::Into< COMM_CHANNEL >::for_new_requests(
 template void Generate::Into< CommChannel::SMS    >::for_new_requests(
         Fred::OperationContext &_ctx,
         const Multimanager &_multimanager,
-        const message_checker &_check_message_limits);
+        const message_checker &_check_message_limits,
+        const std::string &_link_hostname_part);
 template void Generate::Into< CommChannel::EMAIL  >::for_new_requests(
         Fred::OperationContext &_ctx,
         const Multimanager &_multimanager,
-        const message_checker &_check_message_limits);
+        const message_checker &_check_message_limits,
+        const std::string &_link_hostname_part);
 template void Generate::Into< CommChannel::LETTER >::for_new_requests(
         Fred::OperationContext &_ctx,
         const Multimanager &_multimanager,
-        const message_checker &_check_message_limits);
+        const message_checker &_check_message_limits,
+        const std::string &_link_hostname_part);
 
 template < CommChannel::Value COMM_CHANNEL >
 void Generate::enable(Fred::OperationContext &_ctx, bool flag)
@@ -997,6 +1073,7 @@ Generate::MessageId Generate::Into< COMM_CHANNEL >::for_given_request(
         const Fred::PublicRequestLockGuard &_locked_request,
         const Fred::PublicRequestObjectLockGuard &_locked_contact,
         const message_checker &_check_message_limits,
+        const std::string &_link_hostname_part,
         const Optional< GeneralId > &_contact_history_id)
 {
     return generate_message< COMM_CHANNEL, PUBLIC_REQUEST_TYPE >::for_given_request(
@@ -1005,6 +1082,7 @@ Generate::MessageId Generate::Into< COMM_CHANNEL >::for_given_request(
         _locked_request,
         _locked_contact,
         _check_message_limits,
+        _link_hostname_part,
         _contact_history_id);
 }
 
@@ -1015,6 +1093,7 @@ template Generate::MessageId Generate::Into< CommChannel::SMS >::
         const Fred::PublicRequestLockGuard &_locked_request,
         const Fred::PublicRequestObjectLockGuard &_locked_contact,
         const message_checker &_check_message_limits,
+        const std::string &_link_hostname_part,
         const Optional< GeneralId > &_contact_history_id);
 
 template Generate::MessageId Generate::Into< CommChannel::LETTER >::
@@ -1024,6 +1103,7 @@ template Generate::MessageId Generate::Into< CommChannel::LETTER >::
         const Fred::PublicRequestLockGuard &_locked_request,
         const Fred::PublicRequestObjectLockGuard &_locked_contact,
         const message_checker &_check_message_limits,
+        const std::string &_link_hostname_part,
         const Optional< GeneralId > &_contact_history_id);
 
 template Generate::MessageId Generate::Into< CommChannel::LETTER >::
@@ -1033,6 +1113,7 @@ template Generate::MessageId Generate::Into< CommChannel::LETTER >::
         const Fred::PublicRequestLockGuard &_locked_request,
         const Fred::PublicRequestObjectLockGuard &_locked_contact,
         const message_checker &_check_message_limits,
+        const std::string &_link_hostname_part,
         const Optional< GeneralId > &_contact_history_id);
 
 template Generate::MessageId Generate::Into< CommChannel::EMAIL >::
@@ -1042,6 +1123,7 @@ template Generate::MessageId Generate::Into< CommChannel::EMAIL >::
         const Fred::PublicRequestLockGuard &_locked_request,
         const Fred::PublicRequestObjectLockGuard &_locked_contact,
         const message_checker &_check_message_limits,
+        const std::string &_link_hostname_part,
         const Optional< GeneralId > &_contact_history_id);
 
 template Generate::MessageId Generate::Into< CommChannel::EMAIL >::
@@ -1051,6 +1133,7 @@ template Generate::MessageId Generate::Into< CommChannel::EMAIL >::
         const Fred::PublicRequestLockGuard &_locked_request,
         const Fred::PublicRequestObjectLockGuard &_locked_contact,
         const message_checker &_check_message_limits,
+        const std::string &_link_hostname_part,
         const Optional< GeneralId > &_contact_history_id);
 
 template Generate::MessageId Generate::Into< CommChannel::EMAIL >::
@@ -1060,6 +1143,7 @@ template Generate::MessageId Generate::Into< CommChannel::EMAIL >::
         const Fred::PublicRequestLockGuard &_locked_request,
         const Fred::PublicRequestObjectLockGuard &_locked_contact,
         const message_checker &_check_message_limits,
+        const std::string &_link_hostname_part,
         const Optional< GeneralId > &_contact_history_id);
 
 }//namespace MojeID::Messages

@@ -96,7 +96,8 @@ public:
         static void for_new_requests(
             Fred::OperationContext &_ctx,
             const Multimanager &_multimanager = DefaultMultimanager(),
-            const message_checker &_check_message_limits = message_checker_always_success());
+            const message_checker &_check_message_limits = message_checker_always_success(),
+            const std::string &_link_hostname_part = "");
 
         template < typename PUBLIC_REQUEST_TYPE >
         static MessageId for_given_request(
@@ -105,6 +106,7 @@ public:
             const Fred::PublicRequestLockGuard &_locked_request,
             const Fred::PublicRequestObjectLockGuard &_locked_contact,
             const message_checker &_check_message_limits = message_checker_always_success(),
+            const std::string &_link_hostname_part = "",
             const Optional< GeneralId > &_contact_history_id = Optional< GeneralId >());
     };
 

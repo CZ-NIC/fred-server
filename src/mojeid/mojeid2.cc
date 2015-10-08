@@ -2053,7 +2053,14 @@ void MojeID2Impl::generate_email_messages()const
     try {
         Fred::OperationContextCreator ctx;
         typedef ::MojeID::Messages::CommChannel CommChannel;
-        ::MojeID::Messages::Generate::Into< CommChannel::EMAIL >::for_new_requests(ctx);
+        static const std::string link_hostname_part = CfgArgs::instance()
+                                                          ->get_handler_ptr_by_type< HandleMojeIDArgs >()
+                                                              ->hostname;
+        ::MojeID::Messages::Generate::Into< CommChannel::EMAIL >::for_new_requests(
+            ctx,
+            ::MojeID::Messages::DefaultMultimanager(),
+            ::MojeID::Messages::Generate::message_checker_always_success(),
+            link_hostname_part);
         ctx.commit_transaction();
     }
     catch (const std::exception &e) {
