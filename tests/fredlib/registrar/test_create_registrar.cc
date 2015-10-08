@@ -122,9 +122,11 @@ BOOST_AUTO_TEST_CASE(create_registrar)
 BOOST_AUTO_TEST_CASE(create_registrar_invalid_handle)
 {
 
-    Fred::OperationContextCreator ctx;
-    Fred::CreateRegistrar(test_registrar_handle).exec(ctx);
-    ctx.commit_transaction();
+    {
+        Fred::OperationContextCreator ctx;
+        Fred::CreateRegistrar(test_registrar_handle).exec(ctx);
+        ctx.commit_transaction();
+    }
 
     try
     {
@@ -139,8 +141,11 @@ BOOST_AUTO_TEST_CASE(create_registrar_invalid_handle)
         BOOST_CHECK(ex.get_invalid_registrar_handle().compare(test_registrar_handle) == 0);
     }
 
-    Fred::InfoRegistrarOutput registrar_info = Fred::InfoRegistrarByHandle(test_registrar_handle).exec(ctx);
-    BOOST_CHECK(test_info.handle == registrar_info.info_registrar_data.handle);
+    {
+        Fred::OperationContextCreator ctx;
+        Fred::InfoRegistrarOutput registrar_info = Fred::InfoRegistrarByHandle(test_registrar_handle).exec(ctx);
+        BOOST_CHECK(test_info.handle == registrar_info.info_registrar_data.handle);
+    }
 
 }
 
