@@ -149,7 +149,6 @@ BOOST_FIXTURE_TEST_CASE(delete_domain, delete_domain_fixture )
     BOOST_CHECK(domain_info1.info_domain_data.delete_time.isnull());
 
     Fred::DeleteDomainByHandle(test_domain_fqdn).exec(ctx);
-    ctx.commit_transaction();
 
     std::vector<Fred::InfoDomainOutput> domain_history_info1 = Fred::InfoDomainHistoryByRoid(
     domain_info1.info_domain_data.roid).exec(ctx);
@@ -188,6 +187,7 @@ BOOST_FIXTURE_TEST_CASE(delete_domain, delete_domain_fixture )
         "SELECT ev.domainid FROM enumval ev JOIN object_registry oreg ON ev.domainid = oreg.id WHERE oreg.name = $1::text"
         , Database::query_param_list(test_domain_fqdn)).size() == 0);
 
+    ctx.commit_transaction();
 }//delete_domain
 
 /**
@@ -203,7 +203,6 @@ BOOST_FIXTURE_TEST_CASE(delete_enum_domain, delete_enum_domain_fixture )
     BOOST_CHECK(domain_info1.info_domain_data.delete_time.isnull());
 
     Fred::DeleteDomainByHandle(test_domain_fqdn).exec(ctx);
-    ctx.commit_transaction();
 
     std::vector<Fred::InfoDomainOutput> domain_history_info1 = Fred::InfoDomainHistoryByRoid(
     domain_info1.info_domain_data.roid).exec(ctx);
@@ -242,6 +241,7 @@ BOOST_FIXTURE_TEST_CASE(delete_enum_domain, delete_enum_domain_fixture )
         "SELECT ev.domainid FROM enumval ev JOIN object_registry oreg ON ev.domainid = oreg.id WHERE oreg.name = $1::text"
         , Database::query_param_list(test_domain_fqdn)).size() == 0);
 
+    ctx.commit_transaction();
 }//delete_domain
 
 

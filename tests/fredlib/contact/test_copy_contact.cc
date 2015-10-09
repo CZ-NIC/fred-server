@@ -81,9 +81,9 @@ BOOST_AUTO_TEST_CASE(copy_contact)
     BOOST_CHECK(src_contact_info.delete_time.isnull());
 
     Fred::CopyContact(src_contact_handle, dst_contact_handle, sys_registrar_handle, 0).exec(ctx);
-    ctx.commit_transaction();
 
     const Fred::InfoContactData dst_contact_info = Fred::InfoContactByHandle(dst_contact_handle).exec(ctx).info_contact_data;
+    ctx.commit_transaction();
 
     BOOST_CHECK(src_contact_info.roid != dst_contact_info.roid);
     BOOST_CHECK(boost::algorithm::to_upper_copy(src_contact_info.handle).compare(boost::algorithm::to_upper_copy(dst_contact_info.handle)) != 0);

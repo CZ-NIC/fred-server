@@ -85,7 +85,6 @@ BOOST_AUTO_TEST_CASE(delete_keyset)
     BOOST_CHECK(keyset_info1.info_keyset_data.delete_time.isnull());
 
     Fred::DeleteKeysetByHandle(test_keyset_handle).exec(ctx);
-    ctx.commit_transaction();
 
     std::vector<Fred::InfoKeysetOutput> keyset_history_info1 = Fred::InfoKeysetHistoryByRoid(
     keyset_info1.info_keyset_data.roid).exec(ctx);
@@ -120,6 +119,7 @@ BOOST_AUTO_TEST_CASE(delete_keyset)
         "SELECT kcm.contactid FROM keyset_contact_map kcm JOIN object_registry oreg ON kcm.keysetid = oreg.id WHERE oreg.name = $1::text"
         , Database::query_param_list(test_keyset_handle)).size() == 0);
 
+    ctx.commit_transaction();
 }//delete_keyset
 
 

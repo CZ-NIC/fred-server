@@ -104,7 +104,6 @@ BOOST_AUTO_TEST_CASE(delete_nsset)
     BOOST_CHECK(nsset_info1.info_nsset_data.delete_time.isnull());
 
     Fred::DeleteNssetByHandle(test_nsset_handle).exec(ctx);
-    ctx.commit_transaction();
 
     std::vector<Fred::InfoNssetOutput> nsset_history_info1 = Fred::InfoNssetHistoryByRoid(
     nsset_info1.info_nsset_data.roid).exec(ctx);
@@ -139,6 +138,7 @@ BOOST_AUTO_TEST_CASE(delete_nsset)
         "SELECT ncm.contactid FROM nsset_contact_map ncm JOIN object_registry oreg ON ncm.nssetid = oreg.id WHERE oreg.name = $1::text"
         , Database::query_param_list(test_nsset_handle)).size() == 0);
 
+    ctx.commit_transaction();
 }//delete_nsset
 
 

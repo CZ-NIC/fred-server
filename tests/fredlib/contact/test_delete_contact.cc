@@ -95,7 +95,6 @@ BOOST_AUTO_TEST_CASE(delete_contact)
     BOOST_CHECK(contact_info1.info_contact_data.delete_time.isnull());
 
     Fred::DeleteContactByHandle(test_contact_handle).exec(ctx);
-    ctx.commit_transaction();
 
     std::vector<Fred::InfoContactOutput> contact_history_info1 = Fred::InfoContactHistoryByRoid(
         contact_info1.info_contact_data.roid).exec(ctx);
@@ -117,6 +116,7 @@ BOOST_AUTO_TEST_CASE(delete_contact)
     BOOST_CHECK(static_cast<bool>(ctx.get_conn().exec_params(
         "select erdate is not null from object_registry where name = $1::text"
         , Database::query_param_list(test_contact_handle))[0][0]));
+    ctx.commit_transaction();
 }//delete_contact
 
 

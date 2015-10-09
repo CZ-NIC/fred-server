@@ -1020,9 +1020,6 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     BOOST_CHECK(history_info_data_18.at(0).info_domain_data.crhistoryid == info_data_18.info_domain_data.crhistoryid);
 
 
-    //commit db transaction
-    ctx.commit_transaction();
-
     BOOST_CHECK(static_cast<bool>(ctx.get_conn().exec_params(
         "SELECT o.authinfopw = $1::text "
         //" AND "
@@ -1030,6 +1027,9 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
         " JOIN object o ON o.id = oreg.id "
         " WHERE oreg.name = $2::text"
         ,Database::query_param_list("testauthinfo")(test_domain_handle))[0][0]));
+
+    //commit db transaction
+    ctx.commit_transaction();
 }//update_domain
 
 
