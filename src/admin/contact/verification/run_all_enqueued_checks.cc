@@ -351,22 +351,29 @@ namespace  Admin {
                 std::set<unsigned long long> related_message_ids;
                 while(true) {
                     while(true) {
-                        Fred::OperationContextCreator ctx_test_process;
-                        Optional<string> test_handle_to_process = lock_some_running_test(ctx_test_process, check_uuid_to_process );
-                        if( !test_handle_to_process.isset() ) {
-                            break;
-                        }
-                        try {
-                            run_test(
-                                ctx_test_process, _tests,
-                                check_uuid_to_process, test_handle_to_process.get_value(),
-                                related_mail_ids, related_message_ids,
-                                _logd_request_id);
-                        } catch(...) {
+                        bool error_occurred = false;
+                        Optional< string > test_handle_to_process;
+                        {
+                            Fred::OperationContextCreator ctx_test_process;
+                            test_handle_to_process = lock_some_running_test(ctx_test_process, check_uuid_to_process);
+                            if( !test_handle_to_process.isset() ) {
+                                break;
+                            }
                             try {
-                                ctx_test_process.get_conn().exec("ROLLBACK");
+                                run_test(
+                                    ctx_test_process, _tests,
+                                    check_uuid_to_process, test_handle_to_process.get_value(),
+                                    related_mail_ids, related_message_ids,
+                                    _logd_request_id);
+                                ctx_test_process.commit_transaction();
+                            }
+                            catch(...) {
+                                error_occurred = true;
+                            }
+                        }
+                        if (error_occurred) {
+                            try {
                                 Fred::OperationContextCreator ctx_testrun_error;
-
                                 Fred::UpdateContactTest(
                                     check_uuid_to_process, test_handle_to_process.get_value(),
                                     Fred::ContactTestStatus::ERROR,
@@ -376,11 +383,11 @@ namespace  Admin {
 
                                 ctx_testrun_error.get_log().warning( (string("exception in test implementation ") + test_handle_to_process.get_value()).c_str());
                                 ctx_testrun_error.commit_transaction();
-                            } catch(...) {
+                            }
+                            catch(...) {
                                 throw Fred::InternalError( (string("problem when setting test status to ERROR; check_handle=") + check_handle_to_process.get_value() + "; test_handle=" + test_handle_to_process.get_value()).c_str() );
                             }
                         }
-                        ctx_test_process.commit_transaction();
                     }
 
                     Fred::OperationContextCreator ctx_test_preprocess;
