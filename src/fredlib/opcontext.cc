@@ -71,7 +71,7 @@ Database::StandaloneConnection& OperationContext::get_conn()const
 {
     Database::StandaloneConnection *const conn_ptr = conn_.get();
     if (conn_ptr != NULL) {
-        if (conn_ptr->in_valid_transaction()) {
+        if (conn_ptr->inTransaction()) {
             return *conn_ptr;
         }
         throw std::runtime_error("database transaction broken");
