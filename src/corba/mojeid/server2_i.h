@@ -112,20 +112,6 @@ public:
 
     void generate_letter_messages();
     void enable_letter_messages_generation(::CORBA::Boolean enable);
-
-    ContactId get_contact_id(
-        const char *handle);
-
-    char* get_contact_authinfo(
-        ContactId contact_id);
-
-    struct Test
-    {
-        NullableString_var    var;
-        NullableString_member member;
-    };
-    static void corba_conversion_test(const Test &ct, Test &t, ::CORBA::String_out so, ::CORBA::String_var sv,
-                                      ::CORBA::String_member sm);
 private:
     const std::auto_ptr< MojeID2Impl > impl_ptr_;
 };//class Server_i
