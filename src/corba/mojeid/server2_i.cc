@@ -215,6 +215,23 @@ void Server_i::process_identification_request(
     try {
         impl_ptr_->process_identification_request(contact_id, password, log_request_id);
     }
+    catch (const MojeID2Impl::GetContact::object_doesnt_exist &e) {
+        throw IDL::OBJECT_NOT_EXISTS();
+    }
+    catch (const MojeID2Impl::PublicRequestDoesntExist&) {
+        throw IDL::IDENTIFICATION_REQUEST_NOT_EXISTS();
+    }
+    catch (const MojeID2Impl::IdentificationFailed&) {
+        throw IDL::IDENTIFICATION_FAILED();
+    }
+    catch (const MojeID2Impl::IdentificationAlreadyProcessed&) {
+        throw IDL::IDENTIFICATION_ALREADY_PROCESSED();
+    }
+    catch (const MojeID2Impl::ProcessIdentificationRequestError &e) {
+        IDL::UPDATE_CONTACT_PREPARE_VALIDATION_ERROR idl_error;
+        Corba::Conversion::into(idl_error).from(e);
+        throw idl_error;
+    }
     catch (...) {
         throw IDL::INTERNAL_SERVER_ERROR();
     }

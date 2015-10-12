@@ -185,6 +185,10 @@ public:
     typedef Fred::Check< check_update_contact_prepare > CheckUpdateContactPrepare;
     typedef CheckUpdateContactPrepare UpdateContactPrepareError;
 
+    typedef check_update_contact_prepare check_process_identification_request;
+    typedef Fred::Check< check_process_identification_request > CheckProcessIdentificationRequest;
+    typedef CheckProcessIdentificationRequest ProcessIdentificationRequestError;
+
     typedef boost::mpl::list< Fred::check_contact_name,
                               Fred::check_contact_place_address_mandatory,
                               Fred::check_contact_email_presence,

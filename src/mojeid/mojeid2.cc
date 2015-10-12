@@ -1353,6 +1353,88 @@ void MojeID2Impl::process_identification_request(
     LOGGING_CONTEXT(log_ctx, *this);
 
     try {
+        Fred::OperationContextCreator ctx;
+        const Fred::PublicRequestObjectLockGuardByObjectId locked_contact(ctx, _contact_id);
+        Fred::PublicRequestId public_request_id;
+        try {
+            public_request_id = Fred::GetActivePublicRequest(
+                Fred::MojeID::PublicRequest::ContactIdentification::iface())
+                .exec(ctx, locked_contact, _log_request_id);
+        }
+        catch (const Fred::GetActivePublicRequest::Exception &e) {
+            if (!e.is_set_no_request_found()) {
+                throw;
+            }
+            try {
+                public_request_id = Fred::GetActivePublicRequest(
+                    Fred::MojeID::PublicRequest::ContactReidentification::iface())
+                    .exec(ctx, locked_contact, _log_request_id);
+            }
+            catch (const Fred::GetActivePublicRequest::Exception &e) {
+                if (e.is_set_no_request_found()) {
+                    throw PublicRequestDoesntExist("no public request found");
+                }
+                throw;
+            }
+        }
+        typedef Fred::Object::State FOS;
+        typedef FOS::set<
+            FOS::SERVER_TRANSFER_PROHIBITED,
+            FOS::SERVER_UPDATE_PROHIBITED,
+            FOS::SERVER_DELETE_PROHIBITED,
+            FOS::SERVER_BLOCKED,
+            FOS::MOJEID_CONTACT,
+            FOS::CONDITIONALLY_IDENTIFIED_CONTACT,
+            FOS::IDENTIFIED_CONTACT >::type RelatedStates;
+        typedef GetContact::States< RelatedStates >::Presence StatesPresence;
+        const StatesPresence states =
+            GetContact(_contact_id).states< RelatedStates >().presence(ctx);
+        if (!states.get< FOS::MOJEID_CONTACT >()) {
+            throw GetContact::object_doesnt_exist();
+        }
+        if (!states.get< FOS::CONDITIONALLY_IDENTIFIED_CONTACT >()) {
+            throw std::runtime_error("state conditionallyIdentifiedContact missing");
+        }
+        if (states.get< FOS::IDENTIFIED_CONTACT >()) {
+            throw IdentificationAlreadyProcessed("contact already identified");;
+        }
+        if (states.get< FOS::SERVER_BLOCKED >()) {
+            throw ObjectAdminBlocked("contact administratively protected against changes");
+        }
+        if (!(states.get< FOS::SERVER_TRANSFER_PROHIBITED >() &&
+              states.get< FOS::SERVER_UPDATE_PROHIBITED >()   &&
+              states.get< FOS::SERVER_DELETE_PROHIBITED >())) {
+            throw std::runtime_error("contact not protected against changes");
+        }
+
+        const Fred::InfoContactData current_data = Fred::InfoContactById(_contact_id).exec(ctx).info_contact_data;
+        {
+            const CheckProcessIdentificationRequest check_contact_data(current_data);
+            if (!check_contact_data.success()) {
+                throw check_contact_data;
+            }
+        }
+        Fred::PublicRequestLockGuardById locked_request(ctx, public_request_id);
+        if (!Fred::PublicRequestAuthInfo(ctx, locked_request).check_password(_password)) {
+            throw IdentificationFailed("password doesn't match");
+        }
+        Fred::StatusList to_set;
+        to_set.insert(FOS(FOS::IDENTIFIED_CONTACT).into< std::string >());
+        Fred::CreateObjectStateRequestId(_contact_id, to_set).exec(ctx);
+        answer(ctx, locked_request, "successfully processed", _log_request_id);
+        ctx.commit_transaction();
+    }
+    catch (const GetContact::object_doesnt_exist &e) {
+        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
+        throw;
+    }
+    catch (const IdentificationAlreadyProcessed &e) {
+        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
+        throw;
+    }
+    catch (const IdentificationFailed &e) {
+        LOGGER(PACKAGE).warning(boost::format("request failed (%1%)") % e.what());
+        throw;
     }
     catch (const std::exception &e) {
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
