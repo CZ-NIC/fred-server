@@ -1310,7 +1310,7 @@ MojeID2Impl::ContactId MojeID2Impl::process_registration_request(
                 event,
                 GetContact(event.get_object_id()).states< occurred::RelatedStates >().presence(ctx));
             ctx.commit_transaction();
-            return;
+            return event.get_object_id();
         }
         catch (const IdentificationFailed&) {
             ctx.commit_transaction();
@@ -1320,7 +1320,6 @@ MojeID2Impl::ContactId MojeID2Impl::process_registration_request(
             ctx.commit_transaction();
             throw;
         }
-        return event.get_object_id();
     }
     catch (const Fred::PublicRequestLockGuardByIdentification::Exception &e) {
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
