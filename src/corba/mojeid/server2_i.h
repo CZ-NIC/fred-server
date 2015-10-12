@@ -60,6 +60,15 @@ public:
         const char *trans_id,
         LogRequestId log_request_id);
 
+    Registry::MojeID::InfoContact* update_transfer_contact_prepare(
+        const char *username,
+        const SetContact& c,
+        const char *trans_id,
+        ::CORBA::ULongLong request_id);
+
+    Registry::MojeID::InfoContact* info_contact(
+        const char *username);
+
     ContactId process_registration_request(
         const char *ident_request_id,
         const char *password,

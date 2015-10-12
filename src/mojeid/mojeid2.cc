@@ -1261,6 +1261,39 @@ Fred::UpdatePublicRequest::Result invalidate(
 
 }//namespace Registry::MojeID::{anonymous}
 
+Fred::InfoContactData& MojeID2Impl::info_contact(
+        const std::string &_username,
+        Fred::InfoContactData &_result)const
+{
+    LOGGING_CONTEXT(log_ctx, *this);
+
+    try {
+        Fred::OperationContextCreator ctx;
+        _result = Fred::InfoContactByHandle(_username).exec(ctx).info_contact_data;
+        ctx.commit_transaction();
+        return _result;
+    }
+    catch (const Fred::InfoContactByHandle::Exception &e) {
+        if (e.is_set_unknown_contact_handle()) {
+            LOGGER(PACKAGE).error("request failed (incorrect input data)");
+            throw Fred::Object::Get< Fred::Object::Type::CONTACT >::object_doesnt_exist();
+        }
+        throw;
+    }
+    catch (const GetContact::object_doesnt_exist &e) {
+        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
+        throw;
+    }
+    catch (const std::exception &e) {
+        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
+        throw;
+    }
+    catch (...) {
+        LOGGER(PACKAGE).error("request failed (unknown error)");
+        throw;
+    }
+}
+
 MojeID2Impl::ContactId MojeID2Impl::process_registration_request(
         const std::string &_ident_request_id,
         const std::string &_password,

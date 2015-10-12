@@ -137,6 +137,39 @@ void Server_i::update_contact_prepare(
     }
 }//update_contact_prepared
 
+Registry::MojeID::InfoContact* Server_i::update_transfer_contact_prepare(
+        const char *username,
+        const SetContact& c,
+        const char *trans_id,
+        ::CORBA::ULongLong request_id)
+{
+    try {
+//        Fred::InfoContactData new_data;
+//        Corba::Conversion::from(_new_data).into(new_data);
+//        impl_ptr_->update_contact_prepare(new_data, _trans_id, _log_request_id);
+        return NULL;
+    }
+    catch (...) {
+        throw IDL::INTERNAL_SERVER_ERROR();
+    }
+}
+
+Registry::MojeID::InfoContact* Server_i::info_contact(
+        const char *username)
+{
+    try {
+        Fred::InfoContactData contact;
+        impl_ptr_->info_contact(username, contact);
+        return Corba::Conversion::into(new Registry::MojeID::InfoContact).from(contact);
+    }
+    catch (const MojeID2Impl::GetContact::object_doesnt_exist &e) {
+        throw IDL::OBJECT_NOT_EXISTS();
+    }
+    catch (...) {
+        throw IDL::INTERNAL_SERVER_ERROR();
+    }
+}
+
 ContactId Server_i::process_registration_request(
         const char *ident_request_id,
         const char *password,

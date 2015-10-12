@@ -117,6 +117,10 @@ public:
         const std::string &_trans_id,
         LogRequestId _log_request_id)const;
 
+    Fred::InfoContactData& info_contact(
+        const std::string &_username,
+        Fred::InfoContactData &_result)const;
+
     void commit_prepared_transaction(const std::string &_trans_id)const;
 
     void rollback_prepared_transaction(const std::string &_trans_id)const;
