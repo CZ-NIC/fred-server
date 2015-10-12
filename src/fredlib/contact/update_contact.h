@@ -113,7 +113,7 @@ namespace Fred
          * @return self instance reference to allow method chaining
          */
         template < ContactAddressType::Value type >
-        ContactAddressToUpdate& update(const struct ContactAddress &_address);
+        ContactAddressToUpdate& update(const ContactAddress &_address);
         /**
          * Contact address given purpose to be removed.
          * @tparam type purpose of address
@@ -396,7 +396,7 @@ namespace Fred
          * @return self instance reference to allow method chaining
          */
         template < ContactAddressType::Value type >
-        DERIVED& set_address(const struct ContactAddress &_address)
+        DERIVED& set_address(const ContactAddress &_address)
         {
             addresses_.update< type >(_address);
             return static_cast<DERIVED&>(*this);

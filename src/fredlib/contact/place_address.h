@@ -56,14 +56,12 @@ struct PlaceAddress
      * @param _b compares @a this instance with @a _b instance
      * @return true if they are the same.
      */
-    bool operator==(const struct PlaceAddress &_b)const;
-    struct PlaceAddress& operator=(const struct PlaceAddress &_src);
+    bool operator==(const PlaceAddress &_b)const;
 
     /**
      * Default ctor
      */
     PlaceAddress();
-
 
     /**
      * Constructor with custom initialization of attributes

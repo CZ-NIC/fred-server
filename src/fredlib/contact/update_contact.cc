@@ -47,7 +47,7 @@ namespace Fred
     }
 
     template < ContactAddressType::Value type >
-    ContactAddressToUpdate& ContactAddressToUpdate::update(const struct ContactAddress &_address)
+    ContactAddressToUpdate& ContactAddressToUpdate::update(const ContactAddress &_address)
     {
         to_update_[type] = _address;
         to_remove_.erase(type);
@@ -63,19 +63,19 @@ namespace Fred
     }
 
     template ContactAddressToUpdate& ContactAddressToUpdate::
-    update< ContactAddressType::MAILING >(const struct ContactAddress &_address);
+    update< ContactAddressType::MAILING >(const ContactAddress &_address);
 
     template ContactAddressToUpdate& ContactAddressToUpdate::
-    update< ContactAddressType::BILLING >(const struct ContactAddress &_address);
+    update< ContactAddressType::BILLING >(const ContactAddress &_address);
 
     template ContactAddressToUpdate& ContactAddressToUpdate::
-    update< ContactAddressType::SHIPPING >(const struct ContactAddress &_address);
+    update< ContactAddressType::SHIPPING >(const ContactAddress &_address);
 
     template ContactAddressToUpdate& ContactAddressToUpdate::
-    update< ContactAddressType::SHIPPING_2 >(const struct ContactAddress &_address);
+    update< ContactAddressType::SHIPPING_2 >(const ContactAddress &_address);
 
     template ContactAddressToUpdate& ContactAddressToUpdate::
-    update< ContactAddressType::SHIPPING_3 >(const struct ContactAddress &_address);
+    update< ContactAddressType::SHIPPING_3 >(const ContactAddress &_address);
 
     template ContactAddressToUpdate& ContactAddressToUpdate::
     remove< ContactAddressType::MAILING >();

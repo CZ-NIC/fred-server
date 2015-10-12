@@ -301,9 +301,9 @@ namespace Fred
             Database::Result subquery_result = ctx.get_conn().exec_params(sql, params);
             ContactAddressList addresses;
             for(::size_t idx = 0; idx < subquery_result.size(); ++idx) {
-                const struct ContactAddressType type(ContactAddressType::from_string(
+                const ContactAddressType type(ContactAddressType::from_string(
                      static_cast< std::string >(subquery_result[idx]["type"])));
-                struct ContactAddress address;
+                ContactAddress address;
                 if (!subquery_result[idx]["company_name"].isnull()) {
                     address.company_name = static_cast< std::string >(subquery_result[idx]["company_name"]);
                 }
