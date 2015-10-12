@@ -1309,6 +1309,8 @@ MojeID2Impl::ContactId MojeID2Impl::process_registration_request(
             transitions::process(
                 event,
                 GetContact(event.get_object_id()).states< occurred::RelatedStates >().presence(ctx));
+            ctx.commit_transaction();
+            return;
         }
         catch (const IdentificationFailed&) {
             ctx.commit_transaction();
@@ -1575,6 +1577,7 @@ void MojeID2Impl::create_validation_request(
         Fred::CreatePublicRequest create_public_request_op(Fred::MojeID::PublicRequest::ContactValidation::iface());
         create_public_request_op.exec(ctx, locked_contact, _log_request_id);
         ctx.commit_transaction();
+        return;
     }
     catch (const Fred::PublicRequestObjectLockGuardByObjectId::Exception &e) {
         if (e.is_set_object_doesnt_exist()) {
@@ -1907,6 +1910,8 @@ void MojeID2Impl::send_new_pin3(
         }
         const occurred event(ctx, _contact_id, mojeid_registrar_handle_, _log_request_id);
         transitions::process(event, states);
+        ctx.commit_transaction();
+        return;
     }
     catch(const ObjectDoesntExist &e) {
         LOGGER(PACKAGE).info(e.what());
@@ -1977,6 +1982,8 @@ void MojeID2Impl::send_mojeid_card(
             _log_request_id,
             Optional< boost::posix_time::ptime >(),
             states.get< FOS::VALIDATED_CONTACT >());
+        ctx.commit_transaction();
+        return;
     }
     catch(const ObjectDoesntExist &e) {
         LOGGER(PACKAGE).info(e.what());
@@ -2009,6 +2016,7 @@ void MojeID2Impl::generate_sms_messages()const
         typedef ::MojeID::Messages::CommChannel CommChannel;
         ::MojeID::Messages::Generate::Into< CommChannel::SMS >::for_new_requests(ctx);
         ctx.commit_transaction();
+        return;
     }
     catch (const std::exception &e) {
         LOGGER(PACKAGE).error(e.what());
@@ -2028,6 +2036,7 @@ void MojeID2Impl::enable_sms_messages_generation(bool enable)const
         Fred::OperationContextCreator ctx;
         ::MojeID::Messages::Generate::enable< ::MojeID::Messages::CommChannel::SMS >(ctx, enable);
         ctx.commit_transaction();
+        return;
     }
     catch (const std::exception &e) {
         LOGGER(PACKAGE).error(e.what());
@@ -2049,6 +2058,7 @@ void MojeID2Impl::generate_letter_messages()const
         ::MojeID::Messages::Generate::Into< CommChannel::LETTER >::for_new_requests(
             ctx, ::MojeID::Messages::DefaultMultimanager(), check_limits::sent_letters());
         ctx.commit_transaction();
+        return;
     }
     catch (const std::exception &e) {
         LOGGER(PACKAGE).error(e.what());
@@ -2068,6 +2078,7 @@ void MojeID2Impl::enable_letter_messages_generation(bool enable)const
         Fred::OperationContextCreator ctx;
         ::MojeID::Messages::Generate::enable< ::MojeID::Messages::CommChannel::LETTER >(ctx, enable);
         ctx.commit_transaction();
+        return;
     }
     catch (const std::exception &e) {
         LOGGER(PACKAGE).error(e.what());
@@ -2095,6 +2106,7 @@ void MojeID2Impl::generate_email_messages()const
             ::MojeID::Messages::Generate::message_checker_always_success(),
             link_hostname_part);
         ctx.commit_transaction();
+        return;
     }
     catch (const std::exception &e) {
         LOGGER(PACKAGE).error(e.what());
@@ -2114,6 +2126,7 @@ void MojeID2Impl::enable_email_messages_generation(bool enable)const
         Fred::OperationContextCreator ctx;
         ::MojeID::Messages::Generate::enable< ::MojeID::Messages::CommChannel::EMAIL >(ctx, enable);
         ctx.commit_transaction();
+        return;
     }
     catch (const std::exception &e) {
         LOGGER(PACKAGE).error(e.what());
