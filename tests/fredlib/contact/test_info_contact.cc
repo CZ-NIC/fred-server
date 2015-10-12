@@ -291,6 +291,10 @@ BOOST_AUTO_TEST_CASE(test_ContactAddressType) {
     }
 }
 
+
+/*
+ * also for regression #14102 (bug in PlaceAddress ctor init list)
+ */
 BOOST_AUTO_TEST_CASE(test_PlaceAddress) {
     const std::string           street1             = "sdfsfsf 345";
     const Optional<std::string> street2             = "Tertq 74374";
