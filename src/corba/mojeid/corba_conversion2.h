@@ -137,6 +137,13 @@ struct from_into< Registry::MojeID::UpdateContact, Fred::InfoContactData >
     dst_value_ref operator()(src_value src, dst_value_ref dst)const;
 };
 
+template < >
+struct from_into< Registry::MojeID::SetContact, Fred::InfoContactData >
+: from_into_base< Registry::MojeID::SetContact, Fred::InfoContactData >
+{
+    dst_value_ref operator()(src_value src, dst_value_ref dst)const;
+};
+
 typedef Registry::MojeID::AddressValidationError IDL_ADDRESS_VALIDATION_ERROR;
 typedef Fred::GeneralCheck::contact_optional_address IMPL_CONTACT_ADDRESS_ERROR;
 
@@ -193,6 +200,16 @@ typedef Registry::MojeID::MojeID2Impl::UpdateContactPrepareError          IMPL_U
 template < >
 struct into_from< IDL_UPDATE_CONTACT_PREPARE_ERROR, IMPL_UPDATE_CONTACT_PREPARE_ERROR >
 : into_from_base< IDL_UPDATE_CONTACT_PREPARE_ERROR, IMPL_UPDATE_CONTACT_PREPARE_ERROR >
+{
+    dst_value_ref operator()(dst_value_ref dst, src_value src)const;
+};
+
+typedef Registry::MojeID::Server::UPDATE_TRANSFER_VALIDATION_ERROR IDL_UPDATE_TRANSFER_ERROR;
+typedef Registry::MojeID::MojeID2Impl::UpdateTransferError         IMPL_UPDATE_TRANSFER_ERROR;
+
+template < >
+struct into_from< IDL_UPDATE_TRANSFER_ERROR, IMPL_UPDATE_TRANSFER_ERROR >
+: into_from_base< IDL_UPDATE_TRANSFER_ERROR, IMPL_UPDATE_TRANSFER_ERROR >
 {
     dst_value_ref operator()(dst_value_ref dst, src_value src)const;
 };

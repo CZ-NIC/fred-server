@@ -1219,6 +1219,174 @@ void MojeID2Impl::update_contact_prepare(
     }
 }
 
+void MojeID2Impl::update_transfer_contact_prepare(
+        const std::string &_username,
+        Fred::InfoContactData &_new_data,
+        const std::string &_trans_id,
+        LogRequestId _log_request_id)const
+{
+    LOGGING_CONTEXT(log_ctx, *this);
+
+    try {
+        Fred::OperationContextTwoPhaseCommitCreator ctx(_trans_id);
+        //check contact is registered
+        const Fred::InfoContactData current_data = Fred::InfoContactByHandle(_username).exec(ctx).info_contact_data;
+        _new_data.id     = current_data.id;
+        _new_data.handle = current_data.handle;
+        typedef Fred::Object::State FOS;
+        typedef FOS::set<
+            FOS::SERVER_TRANSFER_PROHIBITED,
+            FOS::SERVER_UPDATE_PROHIBITED,
+            FOS::SERVER_DELETE_PROHIBITED,
+            FOS::SERVER_BLOCKED,
+            FOS::MOJEID_CONTACT,
+            FOS::CONDITIONALLY_IDENTIFIED_CONTACT,
+            FOS::IDENTIFIED_CONTACT,
+            FOS::VALIDATED_CONTACT >::type RelatedStates;
+        typedef GetContact::States< RelatedStates >::Presence StatesPresence;
+        const StatesPresence states =
+            GetContact(_new_data.id).states< RelatedStates >().presence(ctx);
+        //check contact is 'mojeidContact', if true throw ALREADY_MOJEID_CONTACT
+        if (states.get< FOS::MOJEID_CONTACT >()) {
+            throw AlreadyMojeidContact("unable to transfer mojeID contact into mojeID");
+        }
+        //throw OBJECT_ADMIN_BLOCKED if contact is administrative blocked
+        if (states.get< FOS::SERVER_BLOCKED >()) {
+            throw ObjectAdminBlocked("unable to transfer administrative blocked contact into mojeID");
+        }
+        //throw OBJECT_USER_BLOCKED if contact is blocked by user
+        if (states.get< FOS::SERVER_TRANSFER_PROHIBITED >() ||
+            states.get< FOS::SERVER_UPDATE_PROHIBITED >() ||
+            states.get< FOS::SERVER_DELETE_PROHIBITED >()) {
+            throw ObjectUserBlocked("unable to transfer user blocked contact into mojeID");
+        }
+        //transfer contact to 'REG-MOJEID' sponsoring registrar
+        if (current_data.sponsoring_registrar_handle != mojeid_registrar_handle_) {
+            Fred::UpdateContactById op_update_contact(current_data.id, mojeid_registrar_handle_);
+            op_update_contact.set_sponsoring_registrar(mojeid_registrar_handle_);
+            op_update_contact.set_logd_request_id(_log_request_id);
+            op_update_contact.exec(ctx);
+        }
+        check_limits::sent_letters()(ctx, current_data.id);
+        const Fred::PublicRequestObjectLockGuardByObjectId locked_contact(ctx, _new_data.id);
+        bool drop_identification      = false;
+        bool drop_cond_identification = false;
+        {
+            if (states.get< FOS::IDENTIFIED_CONTACT >()) {
+                const Fred::InfoContactData &c1 = current_data;
+                const Fred::InfoContactData &c2 = _new_data;
+                drop_identification = c1.name.get_value_or_default() != c2.name.get_value_or_default();
+                if (!drop_identification) {
+                    const Fred::InfoContactData::Address a1 = c1.get_address< Fred::ContactAddressType::MAILING >();
+                    const Fred::InfoContactData::Address a2 = c2.get_address< Fred::ContactAddressType::MAILING >();
+                    drop_identification =
+                        (a1.name.get_value_or_default()            != a2.name.get_value_or_default())            ||
+                        (a1.organization.get_value_or_default()    != a2.organization.get_value_or_default())    ||
+                        (a1.company_name.get_value_or_default()    != a2.company_name.get_value_or_default())    ||
+                        (a1.street1                                != a2.street1)                                ||
+                        (a1.street2.get_value_or_default()         != a2.street2.get_value_or_default())         ||
+                        (a1.street3.get_value_or_default()         != a2.street3.get_value_or_default())         ||
+                        (a1.city                                   != a2.city)                                   ||
+                        (a1.stateorprovince.get_value_or_default() != a2.stateorprovince.get_value_or_default()) ||
+                        (a1.postalcode                             != a2.postalcode)                             ||
+                        (a1.country                                != a2.country);
+                }
+            }
+            if (states.get< FOS::CONDITIONALLY_IDENTIFIED_CONTACT >() ||
+                (!drop_identification && states.get< FOS::IDENTIFIED_CONTACT >()))
+            {
+                const Fred::InfoContactData &c1 = current_data;
+                const Fred::InfoContactData &c2 = _new_data;
+                drop_cond_identification =
+                    (c1.telephone.get_value_or_default() != c2.telephone.get_value_or_default()) ||
+                    (c1.email.get_value_or_default()     != c2.email.get_value_or_default());
+                drop_identification |= drop_cond_identification;
+            }
+            if (drop_cond_identification || drop_identification) {
+                Fred::StatusList to_cancel;
+                //drop conditionally identified flag if e-mail or mobile changed
+                if (drop_cond_identification) {
+                    to_cancel.insert(FOS(FOS::CONDITIONALLY_IDENTIFIED_CONTACT).into< std::string >());
+                }
+                //drop identified flag if name, mailing address, e-mail or mobile changed
+                if (drop_identification) {
+                    to_cancel.insert(FOS(FOS::IDENTIFIED_CONTACT).into< std::string >());
+                }
+                Fred::CreateObjectStateRequestId(current_data.id, to_cancel).exec(ctx);
+            }
+
+            const CheckUpdateTransfer check_contact_data(_new_data);
+            if (!check_contact_data.success()) {
+                throw check_contact_data;
+            }
+            //perform changes
+            Fred::UpdateContactById update_contact_op(_new_data.id, mojeid_registrar_handle_);
+            set_update_contact_op(Fred::diff_contact_data(current_data, _new_data), update_contact_op);
+            update_contact_op.exec(ctx);
+        }
+        const bool is_identified      = states.get< FOS::IDENTIFIED_CONTACT >() &&
+                                        !drop_identification;
+        const bool is_cond_identified = states.get< FOS::CONDITIONALLY_IDENTIFIED_CONTACT >() &&
+                                        !drop_cond_identification;
+        Fred::CreatePublicRequestAuth op_create_pub_req(
+            //for 'identifiedContact' create 'mojeid_identified_contact_transfer' public request
+            is_identified      ? Fred::MojeID::PublicRequest::IdentifiedContactTransfer::iface() :
+            //for 'conditionallyIdentifiedContact' create 'mojeid_conditionally_identified_contact_transfer' public request
+            is_cond_identified ? Fred::MojeID::PublicRequest::ConditionallyIdentifiedContactTransfer::iface()
+            //in other cases create 'mojeid_contact_conditional_identification' public request
+                               : Fred::MojeID::PublicRequest::ContactConditionalIdentification::iface());
+        if (!current_data.notifyemail.get_value_or_default().empty()) {
+            op_create_pub_req.set_email_to_answer(current_data.notifyemail.get_value());
+        }
+        op_create_pub_req.set_registrar_id(ctx, mojeid_registrar_handle_);
+        const Fred::CreatePublicRequestAuth::Result result =
+            op_create_pub_req.exec(ctx, locked_contact, _log_request_id);
+        //second phase commit will change contact states
+        prepare_transaction_storage()->store(_trans_id, current_data.id);
+
+        _new_data = Fred::InfoContactById(current_data.id).exec(ctx).info_contact_data;
+        ctx.commit_transaction();
+        return;
+    }
+    catch (const Fred::InfoContactByHandle::Exception &e) {
+        //check contact is registered, throw OBJECT_NOT_EXISTS if isn't
+        if (e.is_set_unknown_contact_handle()) {
+            LOGGER(PACKAGE).info(boost::format("request failed (%1%)") % e.what());
+            throw ObjectDoesntExist("no contact associated with this handle");
+        }
+        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
+        throw;
+    }
+    catch (const AlreadyMojeidContact &e) {
+        LOGGER(PACKAGE).info(boost::format("request failed (%1%)") % e.what());
+        throw;
+    }
+    catch (const ObjectAdminBlocked &e) {
+        LOGGER(PACKAGE).info(boost::format("request failed (%1%)") % e.what());
+        throw;
+    }
+    catch (const ObjectUserBlocked &e) {
+        LOGGER(PACKAGE).info(boost::format("request failed (%1%)") % e.what());
+        throw;
+    }
+    catch (const UpdateTransferError &e) {
+        LOGGER(PACKAGE).info("request failed (UpdateTransferError)");
+        throw;
+    }
+    catch(const MessageLimitExceeded &e) {
+        LOGGER(PACKAGE).info(e.what());
+        throw;
+    }
+    catch (const std::exception &e) {
+        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
+        throw;
+    }
+    catch (...) {
+        LOGGER(PACKAGE).error("request failed (unknown error)");
+        throw;
+    }
+}
+
 namespace {
 
 enum { INVALID_LOG_REQUEST_ID = 0 };

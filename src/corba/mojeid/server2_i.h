@@ -62,9 +62,9 @@ public:
 
     Registry::MojeID::InfoContact* update_transfer_contact_prepare(
         const char *username,
-        const SetContact& c,
+        const SetContact& contact_data,
         const char *trans_id,
-        ::CORBA::ULongLong request_id);
+        LogRequestId request_id);
 
     Registry::MojeID::InfoContact* info_contact(
         const char *username);

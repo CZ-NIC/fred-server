@@ -117,6 +117,12 @@ public:
         const std::string &_trans_id,
         LogRequestId _log_request_id)const;
 
+    void update_transfer_contact_prepare(
+        const std::string &_username,
+        Fred::InfoContactData &_new_data,
+        const std::string &_trans_id,
+        LogRequestId _log_request_id)const;
+
     Fred::InfoContactData& info_contact(
         const std::string &_username,
         Fred::InfoContactData &_result)const;
@@ -184,6 +190,17 @@ public:
                               Fred::check_contact_fax_validity > check_update_contact_prepare;
     typedef Fred::Check< check_update_contact_prepare > CheckUpdateContactPrepare;
     typedef CheckUpdateContactPrepare UpdateContactPrepareError;
+
+    typedef boost::mpl::list< Fred::check_contact_name,
+                              Fred::check_contact_place_address,
+                              Fred::check_contact_addresses_mailing,
+                              Fred::check_contact_email_presence,
+                              Fred::check_contact_email_validity,
+                              Fred::check_contact_phone_validity,
+                              Fred::check_contact_notifyemail_validity,
+                              Fred::check_contact_fax_validity > check_update_transfer;
+    typedef Fred::Check< check_update_transfer > CheckUpdateTransfer;
+    typedef CheckUpdateTransfer UpdateTransferError;
 
     typedef check_update_contact_prepare check_process_identification_request;
     typedef Fred::Check< check_process_identification_request > CheckProcessIdentificationRequest;

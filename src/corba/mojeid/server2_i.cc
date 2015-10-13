@@ -138,16 +138,30 @@ void Server_i::update_contact_prepare(
 }//update_contact_prepared
 
 Registry::MojeID::InfoContact* Server_i::update_transfer_contact_prepare(
-        const char *username,
-        const SetContact& c,
-        const char *trans_id,
-        ::CORBA::ULongLong request_id)
+        const char *_username,
+        const SetContact& _contact_data,
+        const char *_trans_id,
+        ::CORBA::ULongLong _log_request_id)
 {
     try {
-//        Fred::InfoContactData new_data;
-//        Corba::Conversion::from(_new_data).into(new_data);
-//        impl_ptr_->update_contact_prepare(new_data, _trans_id, _log_request_id);
-        return NULL;
+        Fred::InfoContactData contact_data;
+        Corba::Conversion::from(_contact_data).into(contact_data);
+        impl_ptr_->update_transfer_contact_prepare(_username, contact_data, _trans_id, _log_request_id);
+        return Corba::Conversion::into(new Registry::MojeID::InfoContact).from(contact_data);
+    }
+    catch (const MojeID2Impl::ObjectDoesntExist &e) {
+        throw IDL::OBJECT_NOT_EXISTS();
+    }
+    catch (const MojeID2Impl::ObjectAdminBlocked &e) {
+        throw IDL::OBJECT_ADMIN_BLOCKED();
+    }
+    catch (const MojeID2Impl::ObjectUserBlocked &e) {
+        throw IDL::OBJECT_USER_BLOCKED();
+    }
+    catch (const MojeID2Impl::UpdateTransferError &e) {
+        IDL::UPDATE_TRANSFER_VALIDATION_ERROR idl_error;
+        Corba::Conversion::into(idl_error).from(e);
+        throw idl_error;
     }
     catch (...) {
         throw IDL::INTERNAL_SERVER_ERROR();
