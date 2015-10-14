@@ -660,12 +660,13 @@ namespace Whois {
         }
         catch(const Fred::InfoNssetByTechContactHandle::Exception& e)
         {
-            if(e.is_set_invalid_tech_contact_handle())
+            if(e.is_set_unknown_tech_contact_handle())
             {
-                throw INVALID_HANDLE();
-            }
+                if(Fred::CheckContact(Corba::unwrap_string_from_const_char_ptr(handle)).is_invalid_handle())
+                {
+                    throw INVALID_HANDLE();
+                }
 
-            if(e.is_set_unknown_tech_contact_handle()) {
                 throw OBJECT_NOT_FOUND();
             }
         }
