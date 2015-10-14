@@ -591,11 +591,6 @@ namespace Fred
 
             if(domain_id_res.size() == 0)//no domain id found
             {
-                if(Fred::CheckKeyset(keyset_handle_).is_invalid_handle())
-                {
-                    BOOST_THROW_EXCEPTION(Exception().set_invalid_keyset_handle(keyset_handle_));
-                }
-
                 BOOST_THROW_EXCEPTION(Exception().set_unknown_keyset_handle(keyset_handle_));
             }
 

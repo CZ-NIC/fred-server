@@ -1033,12 +1033,13 @@ namespace Whois {
         }
         catch(const Fred::InfoDomainByKeysetHandle::Exception& e)
         {
-            if(e.is_set_invalid_keyset_handle())
+            if(e.is_set_unknown_keyset_handle())
             {
-                throw INVALID_HANDLE();
-            }
+                if(Fred::CheckKeyset(Corba::unwrap_string_from_const_char_ptr(handle)).is_invalid_handle())
+                {
+                    throw INVALID_HANDLE();
+                }
 
-            if(e.is_set_unknown_keyset_handle()) {
                 throw OBJECT_NOT_FOUND();
             }
         }

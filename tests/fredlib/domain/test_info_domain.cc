@@ -331,28 +331,6 @@ BOOST_FIXTURE_TEST_CASE(info_domain_unknown_nsset_handle, test_domain_fixture)
 }
 
 /**
- * test InfoDomainByKeysetHandle with syntactically invalid nsset handle
- */
-BOOST_FIXTURE_TEST_CASE(info_domain_invalid_keyset_handle, test_domain_fixture)
-{
-    std::string bad_handle = test_keyset_handle + "~";
-    try
-    {
-        Fred::OperationContext ctx;
-        Fred::InfoDomainByKeysetHandle(bad_handle).exec(ctx);
-        ctx.commit_transaction();
-        BOOST_ERROR("no exception thrown");
-    }
-    catch(const Fred::InfoDomainByKeysetHandle::Exception& ex)
-    {
-        BOOST_CHECK(ex.is_set_invalid_keyset_handle());
-        BOOST_MESSAGE(bad_handle);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
-        BOOST_CHECK(ex.get_invalid_keyset_handle() == bad_handle);
-    }
-}
-
-/**
  * test InfoDomainByKeysetHandle with unknown nsset handle
  */
 BOOST_FIXTURE_TEST_CASE(info_domain_unknown_keyset_handle, test_domain_fixture)
