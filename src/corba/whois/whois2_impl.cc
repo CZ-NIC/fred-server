@@ -617,12 +617,13 @@ namespace Whois {
         }
         catch(const Fred::InfoNssetByDNSFqdn::Exception& e)
         {
-            if(e.is_set_invalid_dns_fqdn())
+            if(e.is_set_unknown_dns_fqdn())
             {
-                throw INVALID_HANDLE();
-            }
+                if(Fred::CheckDomain(Corba::unwrap_string_from_const_char_ptr(handle)).is_invalid_syntax())
+                {
+                    throw INVALID_HANDLE();
+                }
 
-            if(e.is_set_unknown_dns_fqdn()) {
                 throw OBJECT_NOT_FOUND();
             }
         }

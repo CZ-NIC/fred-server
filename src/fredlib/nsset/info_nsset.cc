@@ -181,11 +181,6 @@ namespace Fred
 
             if (ctx.get_conn().exec_params(cte_id_filter_query).size() == 0)
             {
-                if(Fred::CheckDomain(dns_fqdn_).is_invalid_syntax())
-                {
-                    BOOST_THROW_EXCEPTION(Exception().set_invalid_dns_fqdn(dns_fqdn_));
-                }
-
                 BOOST_THROW_EXCEPTION(Exception().set_unknown_dns_fqdn(dns_fqdn_));
             }
 
