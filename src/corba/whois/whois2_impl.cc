@@ -903,12 +903,13 @@ namespace Whois {
         }
         catch(const Fred::InfoDomainByRegistrantHandle::Exception& e)
         {
-            if(e.is_set_invalid_registrant_handle())
+            if(e.is_set_unknown_registrant_handle())
             {
-                throw INVALID_HANDLE();
-            }
+                if(Fred::CheckContact(Corba::unwrap_string_from_const_char_ptr(handle)).is_invalid_handle())
+                {
+                    throw INVALID_HANDLE();
+                }
 
-            if(e.is_set_unknown_registrant_handle()) {
                 throw OBJECT_NOT_FOUND();
             }
         }
@@ -945,12 +946,13 @@ namespace Whois {
         }
         catch(const Fred::InfoDomainByAdminContactHandle::Exception& e)
         {
-            if(e.is_set_invalid_admin_contact_handle())
+            if(e.is_set_unknown_admin_contact_handle())
             {
-                throw INVALID_HANDLE();
-            }
+                if(Fred::CheckContact(Corba::unwrap_string_from_const_char_ptr(handle)).is_invalid_handle())
+                {
+                    throw INVALID_HANDLE();
+                }
 
-            if(e.is_set_unknown_admin_contact_handle()) {
                 throw OBJECT_NOT_FOUND();
             }
         }

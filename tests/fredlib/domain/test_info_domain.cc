@@ -265,28 +265,6 @@ BOOST_FIXTURE_TEST_CASE(info_domain_history_wrong_historyid, test_domain_fixture
 }
 
 /**
- * test InfoDomainByRegistrantHandle with syntactically invalid contact handle
- */
-BOOST_FIXTURE_TEST_CASE(info_domain_invalid_registrant_handle, test_domain_fixture)
-{
-    std::string bad_handle = registrant_contact_handle +"~";
-    try
-    {
-        Fred::OperationContext ctx;
-        Fred::InfoDomainByRegistrantHandle(bad_handle).exec(ctx);
-        ctx.commit_transaction();
-        BOOST_ERROR("no exception thrown");
-    }
-    catch(const Fred::InfoDomainByRegistrantHandle::Exception& ex)
-    {
-        BOOST_CHECK(ex.is_set_invalid_registrant_handle());
-        BOOST_MESSAGE(bad_handle);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
-        BOOST_CHECK(ex.get_invalid_registrant_handle() == bad_handle);
-    }
-}
-
-/**
  * test InfoDomainByRegistrantHandle with unknown contact handle
  */
 BOOST_FIXTURE_TEST_CASE(info_domain_unknown_registrant_handle, test_domain_fixture)
@@ -305,28 +283,6 @@ BOOST_FIXTURE_TEST_CASE(info_domain_unknown_registrant_handle, test_domain_fixtu
         BOOST_MESSAGE(bad_handle);
         BOOST_MESSAGE(boost::diagnostic_information(ex));
         BOOST_CHECK(ex.get_unknown_registrant_handle() == bad_handle);
-    }
-}
-
-/**
- * test InfoDomainByAdminContactHandle with syntactically invalid contact handle
- */
-BOOST_FIXTURE_TEST_CASE(info_domain_invalid_admin_handle, test_domain_fixture)
-{
-    std::string bad_handle = admin_contact1_handle + "~";
-    try
-    {
-        Fred::OperationContext ctx;
-        Fred::InfoDomainByAdminContactHandle(bad_handle).exec(ctx);
-        ctx.commit_transaction();
-        BOOST_ERROR("no exception thrown");
-    }
-    catch(const Fred::InfoDomainByAdminContactHandle::Exception& ex)
-    {
-        BOOST_CHECK(ex.is_set_invalid_admin_contact_handle());
-        BOOST_MESSAGE(bad_handle);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
-        BOOST_CHECK(ex.get_invalid_admin_contact_handle() == bad_handle);
     }
 }
 

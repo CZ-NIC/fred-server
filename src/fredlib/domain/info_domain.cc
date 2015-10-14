@@ -339,11 +339,6 @@ namespace Fred
 
             if(domain_id_res.size() == 0)//no domain id found
             {
-                if(Fred::CheckContact(registrant_handle_).is_invalid_handle())
-                {
-                    BOOST_THROW_EXCEPTION(Exception().set_invalid_registrant_handle(registrant_handle_));
-                }
-
                 BOOST_THROW_EXCEPTION(Exception().set_unknown_registrant_handle(registrant_handle_));
             }
 
@@ -433,11 +428,6 @@ namespace Fred
 
             if(domain_id_res.size() == 0)//no domain id found
             {
-                if(Fred::CheckContact(admin_contact_handle_).is_invalid_handle())
-                {
-                    BOOST_THROW_EXCEPTION(Exception().set_invalid_admin_contact_handle(admin_contact_handle_));
-                }
-
                 BOOST_THROW_EXCEPTION(Exception().set_unknown_admin_contact_handle(admin_contact_handle_));
             }
 
