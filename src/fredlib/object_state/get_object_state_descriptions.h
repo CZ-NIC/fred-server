@@ -42,8 +42,8 @@ namespace Fred
        std::string description;
 
        ObjectStateDescription(unsigned long long _id,
-           std::string _handle,
-           std::string _description)
+           const std::string& _handle,
+           const std::string& _description)
        : id (_id)
        , handle(_handle)
        , description(_description)

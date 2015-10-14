@@ -70,15 +70,15 @@ namespace Fred
 
         query(" WHERE UPPER(eosd.lang) = UPPER(").param_text(description_language_)(")");
 
-        Database::Result domain_state_descriptions_result = ctx.get_conn().exec_params(query);
+        const Database::Result object_state_descriptions_result = ctx.get_conn().exec_params(query);
 
         std::vector<ObjectStateDescription> result;
-        for(unsigned long long i = 0 ; i < domain_state_descriptions_result.size() ; ++i)
+        for(unsigned long long i = 0 ; i < object_state_descriptions_result.size() ; ++i)
         {
             result.push_back(ObjectStateDescription(
-                static_cast<unsigned long long>(domain_state_descriptions_result[i]["id"]),
-                static_cast<std::string>(domain_state_descriptions_result[i]["handle"]),
-                static_cast<std::string>(domain_state_descriptions_result[i]["description"])
+                static_cast<unsigned long long>(object_state_descriptions_result[i]["id"]),
+                static_cast<std::string>(object_state_descriptions_result[i]["handle"]),
+                static_cast<std::string>(object_state_descriptions_result[i]["description"])
             ));
         }
 
