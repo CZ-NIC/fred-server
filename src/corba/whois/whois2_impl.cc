@@ -735,10 +735,6 @@ namespace Whois {
                     throw OBJECT_NOT_FOUND();
                 }
             }
-            catch(const INVALID_HANDLE&)
-            {
-                throw;
-            }
         }
         catch(const ::CORBA::UserException& )
         {
