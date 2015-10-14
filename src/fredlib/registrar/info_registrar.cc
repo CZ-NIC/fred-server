@@ -134,17 +134,17 @@ namespace Fred
         );
     }
 
-    InfoRegistrarAll::InfoRegistrarAll()
+    InfoRegistrarAllExceptSystem::InfoRegistrarAllExceptSystem()
         : lock_(false)
     {}
 
-    InfoRegistrarAll& InfoRegistrarAll::set_lock(bool lock)
+    InfoRegistrarAllExceptSystem& InfoRegistrarAllExceptSystem::set_lock(bool lock)
     {
         lock_ = lock;
         return *this;
     }
 
-    std::vector<InfoRegistrarOutput> InfoRegistrarAll::exec(OperationContext& ctx,
+    std::vector<InfoRegistrarOutput> InfoRegistrarAllExceptSystem::exec(OperationContext& ctx,
         const std::string& local_timestamp_pg_time_zone_name)
     {
             return InfoRegistrar()
@@ -152,9 +152,9 @@ namespace Fred
                     .exec(ctx,local_timestamp_pg_time_zone_name);
     }
 
-    std::string InfoRegistrarAll::to_string() const
+    std::string InfoRegistrarAllExceptSystem::to_string() const
     {
-        return Util::format_operation_state("InfoRegistrarAll",
+        return Util::format_operation_state("InfoRegistrarAllExceptSystem",
         Util::vector_of<std::pair<std::string,std::string> >
         (std::make_pair("lock",lock_ ? "true":"false"))
         );

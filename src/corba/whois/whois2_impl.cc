@@ -447,7 +447,7 @@ namespace Whois {
             std::vector<Fred::InfoRegistrarData> registrar_data_list;
             Fred::OperationContext ctx;
 
-            BOOST_FOREACH(const Fred::InfoRegistrarOutput& registrar_output, Fred::InfoRegistrarAll().exec(ctx, output_timezone))
+            BOOST_FOREACH(const Fred::InfoRegistrarOutput& registrar_output, Fred::InfoRegistrarAllExceptSystem().exec(ctx, output_timezone))
             {
                 registrar_data_list.push_back(registrar_output.info_registrar_data);
             }

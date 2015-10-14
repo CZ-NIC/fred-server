@@ -84,7 +84,7 @@ BOOST_AUTO_TEST_CASE(info_registrar)
 
     BOOST_CHECK(registrar_info1 == registrar_info3);
 
-    std::vector<Fred::InfoRegistrarOutput> registrar_info4 = Fred::InfoRegistrarAll().exec(ctx);
+    std::vector<Fred::InfoRegistrarOutput> registrar_info4 = Fred::InfoRegistrarAllExceptSystem().exec(ctx);
 
     BOOST_CHECK(
         std::find_if(registrar_info4.begin(), registrar_info4.end(),

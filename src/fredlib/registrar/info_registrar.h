@@ -131,11 +131,11 @@ namespace Fred
     };
 
     /**
-    * All registrars info.
+    * All registrars info, except system registrars.
     * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
     * In case of other unsuperable failures and inconstistencies, the instance of @ref InternalError or other exception is thrown.
     */
-    class InfoRegistrarAll : public Util::Printable
+    class InfoRegistrarAllExceptSystem : public Util::Printable
     {
         bool lock_;/**< lock object_registry row for registrar */
 
@@ -144,14 +144,14 @@ namespace Fred
         /**
         * Info registrar constructor.
         */
-        InfoRegistrarAll();
+        InfoRegistrarAllExceptSystem();
 
         /**
         * Sets registrar lock flag.
         * @param lock sets lock registrar flag into @ref lock_ attribute
         * @return operation instance reference to allow method chaining
         */
-        InfoRegistrarAll& set_lock(bool lock = true);
+        InfoRegistrarAllExceptSystem& set_lock(bool lock = true);
 
         /**
         * Executes getting info about the registrar.
