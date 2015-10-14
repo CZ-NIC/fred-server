@@ -1042,11 +1042,11 @@ namespace Whois {
         throw INTERNAL_SERVER_ERROR();
     }
 
-    std::vector< std::pair<std::string, std::string> > wrap_status_desc(
+    std::vector< std::pair<std::string, std::string> > get_object_status_desc(
         const std::string& lang,const std::string& type, Fred::OperationContext& ctx)
     {
         std::vector<Fred::ObjectStateDescription> states = Fred::GetObjectStateDescriptions(
-            lang).set_object_type(type).exec(ctx);
+            lang).set_object_type(type).set_external().exec(ctx);
 
         if(states.empty()) throw MISSING_LOCALIZATION();
 
@@ -1076,7 +1076,7 @@ namespace Whois {
             ObjectStatusDescSeq_var state_seq = new ObjectStatusDescSeq;
             Fred::OperationContext ctx;
             set_corba_seq<ObjectStatusDescSeq, ObjectStatusDesc>
-            (state_seq, wrap_status_desc(
+            (state_seq, get_object_status_desc(
                 Corba::unwrap_string_from_const_char_ptr(lang),"domain", ctx));
             return state_seq._retn();
         }
@@ -1097,7 +1097,7 @@ namespace Whois {
             ObjectStatusDescSeq_var state_seq = new ObjectStatusDescSeq;
             Fred::OperationContext ctx;
             set_corba_seq<ObjectStatusDescSeq, ObjectStatusDesc>
-            (state_seq, wrap_status_desc(
+            (state_seq, get_object_status_desc(
                 Corba::unwrap_string_from_const_char_ptr(lang),"contact", ctx));
             return state_seq._retn();
         }
@@ -1117,7 +1117,7 @@ namespace Whois {
             ObjectStatusDescSeq_var state_seq = new ObjectStatusDescSeq;
             Fred::OperationContext ctx;
             set_corba_seq<ObjectStatusDescSeq, ObjectStatusDesc>
-            (state_seq, wrap_status_desc(
+            (state_seq, get_object_status_desc(
                 Corba::unwrap_string_from_const_char_ptr(lang),"nsset", ctx));
             return state_seq._retn();
         }
@@ -1137,7 +1137,7 @@ namespace Whois {
             ObjectStatusDescSeq_var state_seq = new ObjectStatusDescSeq;
             Fred::OperationContext ctx;
             set_corba_seq<ObjectStatusDescSeq, ObjectStatusDesc>
-            (state_seq, wrap_status_desc(
+            (state_seq, get_object_status_desc(
                 Corba::unwrap_string_from_const_char_ptr(lang),"keyset", ctx));
             return state_seq._retn();
         }
