@@ -419,7 +419,7 @@ namespace Whois {
             {
                 if(e.is_set_unknown_registrar_handle())
                 {
-                    if(Fred::CheckRegistrar(handle).is_invalid_handle())
+                    if(Fred::CheckRegistrar(Corba::unwrap_string_from_const_char_ptr(handle)).is_invalid_handle())
                     {
                         throw INVALID_HANDLE();
                     }
@@ -538,7 +538,7 @@ namespace Whois {
             {
                 if(e.is_set_unknown_contact_handle())
                 {
-                    if(Fred::CheckContact(handle).is_invalid_handle())
+                    if(Fred::CheckContact(Corba::unwrap_string_from_const_char_ptr(handle)).is_invalid_handle())
                     {
                         throw INVALID_HANDLE();
                     }
@@ -573,7 +573,7 @@ namespace Whois {
             {
                 if(e.is_set_unknown_handle())
                 {
-                    if(Fred::CheckNsset(handle).is_invalid_handle())
+                    if(Fred::CheckNsset(Corba::unwrap_string_from_const_char_ptr(handle)).is_invalid_handle())
                     {
                         throw INVALID_HANDLE();
                     }
@@ -729,7 +729,7 @@ namespace Whois {
             {
                 if(e.is_set_unknown_handle())
                 {
-                    if(Fred::CheckKeyset(handle).is_invalid_handle())
+                    if(Fred::CheckKeyset(Corba::unwrap_string_from_const_char_ptr(handle)).is_invalid_handle())
                     {
                         throw INVALID_HANDLE();
                     }
