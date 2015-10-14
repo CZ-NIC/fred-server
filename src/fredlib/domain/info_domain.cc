@@ -510,11 +510,6 @@ namespace Fred
 
             if(domain_id_res.size() == 0)//no domain id found
             {
-                if(Fred::CheckNsset(nsset_handle_).is_invalid_handle())
-                {
-                    BOOST_THROW_EXCEPTION(Exception().set_invalid_nsset_handle(nsset_handle_));
-                }
-
                 BOOST_THROW_EXCEPTION(Exception().set_unknown_nsset_handle(nsset_handle_));
             }
 

@@ -309,28 +309,6 @@ BOOST_FIXTURE_TEST_CASE(info_domain_unknown_admin_handle, test_domain_fixture)
 }
 
 /**
- * test InfoDomainByNssetHandle with syntactically invalid nsset handle
- */
-BOOST_FIXTURE_TEST_CASE(info_domain_invalid_nsset_handle, test_domain_fixture)
-{
-    std::string bad_handle = test_nsset_handle + "~";
-    try
-    {
-        Fred::OperationContext ctx;
-        Fred::InfoDomainByNssetHandle(bad_handle).exec(ctx);
-        ctx.commit_transaction();
-        BOOST_ERROR("no exception thrown");
-    }
-    catch(const Fred::InfoDomainByNssetHandle::Exception& ex)
-    {
-        BOOST_CHECK(ex.is_set_invalid_nsset_handle());
-        BOOST_MESSAGE(bad_handle);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
-        BOOST_CHECK(ex.get_invalid_nsset_handle() == bad_handle);
-    }
-}
-
-/**
  * test InfoDomainByNssetHandle with unknown nsset handle
  */
 BOOST_FIXTURE_TEST_CASE(info_domain_unknown_nsset_handle, test_domain_fixture)
