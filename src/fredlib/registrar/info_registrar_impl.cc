@@ -71,7 +71,7 @@ namespace Fred
         "SELECT r.id AS ")(GetAlias::id())(
         " , r.ico AS ")(GetAlias::ico())(
         " , r.dic AS ")(GetAlias::dic())(
-        " , r.varsymb AS ")(GetAlias::variable_symbol())(
+        " , btrim(r.varsymb) AS ")(GetAlias::variable_symbol())(
         " , r.vat AS ")(GetAlias::vat_payer())(
         " , r.handle AS ")(GetAlias::handle())(
         " , r.name AS ")(GetAlias::name())(
