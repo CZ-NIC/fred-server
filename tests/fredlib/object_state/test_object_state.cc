@@ -295,22 +295,20 @@ void check_object_state_desc_data(const std::vector<Fred::ObjectStateDescription
     std::set<Fred::ObjectStateDescription, state_desc_less> test_osd_set(test_osd.begin(), test_osd.end());
     BOOST_REQUIRE(test_osd_set.size() == test_osd.size());//to check duplicity in vector
 
-    //data returned from GetObjectStateDescriptions equal to data in fixture
+    //data returned from GetObjectStateDescriptions::exec equals to data in fixture
     BOOST_REQUIRE(test_osd_set.size() == fixture_osd_set.size());
     std::set<Fred::ObjectStateDescription, state_desc_less>::const_iterator test_data_iterator = test_osd_set.begin();
     std::set<Fred::ObjectStateDescription, state_desc_less>::const_iterator fixture_data_iterator = fixture_osd_set.begin();
     do
     {
-        BOOST_CHECK(state_desc_equal(*test_data_iterator, *fixture_data_iterator));
-        if(!state_desc_equal(*test_data_iterator, *fixture_data_iterator))
-        {
-            BOOST_MESSAGE(test_data_iterator->id);
-            BOOST_MESSAGE(test_data_iterator->handle);
-            BOOST_MESSAGE(test_data_iterator->description);
-            BOOST_MESSAGE(fixture_data_iterator->id);
-            BOOST_MESSAGE(fixture_data_iterator->handle);
-            BOOST_MESSAGE(fixture_data_iterator->description);
-        }
+        BOOST_CHECK_MESSAGE(state_desc_equal(*test_data_iterator, *fixture_data_iterator),
+            std::string("\ntest id: ") << test_data_iterator->id
+            << std::string("\ntest handle: ") << test_data_iterator->handle
+            << std::string("\ntest description: ") << test_data_iterator->description
+            << std::string("\nfixture id: ") << fixture_data_iterator->id
+            << std::string("\nfixture handle: ") << fixture_data_iterator->handle
+            << std::string("\nfixture description: ") << fixture_data_iterator->description
+        );
     }
     while (++test_data_iterator, ++fixture_data_iterator,
         test_data_iterator != test_osd_set.end() || fixture_data_iterator != fixture_osd_set.end());
@@ -323,8 +321,6 @@ BOOST_FIXTURE_TEST_CASE(get_object_state_descriptions, object_state_description_
     check_object_state_desc_data(Fred::GetObjectStateDescriptions("EN").exec(ctx), state_desc_en_all_vect, ctx);
     check_object_state_desc_data(Fred::GetObjectStateDescriptions("EN").set_object_type("contact").exec(ctx), state_desc_en_contact_vect, ctx);
     check_object_state_desc_data(Fred::GetObjectStateDescriptions("EN").set_external().exec(ctx), state_desc_en_external_vect, ctx);
-
-
 }
 
 BOOST_AUTO_TEST_SUITE_END();//ObjectStateDescriptionWithComparison
