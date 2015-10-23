@@ -53,6 +53,8 @@ struct test_info_registrar_fixture : virtual public Test::Fixture::instantiate_d
     {
         Fred::OperationContext ctx;
 
+        ctx.get_conn().exec("TRUNCATE TABLE registrar CASCADE;");
+
         Fred::CreateRegistrar(test_registrar_handle).set_name(std::string("TEST-REGISTRAR NAME")+xmark)
             .set_name(std::string("TEST-REGISTRAR NAME")+xmark)
             .set_street1(std::string("STR1")+xmark)
