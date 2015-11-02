@@ -542,12 +542,7 @@ struct from_into< ::CORBA::String_member, Nullable< std::string > >
 template < typename CORBA_TYPE >
 std::string& From< CORBA_TYPE >::into(std::string &dst)const
 {
-    Nullable< std::string > tmp;
-    from(source_value_).into(tmp);
-    if (!tmp.isnull()) {
-        return from_into< char*, std::string >()(tmp.get_value().c_str(), dst);//result will be trimmed
-    }
-    throw std::runtime_error(std::string(__PRETTY_FUNCTION__) + " failure: result is NULL");
+    return from_into< CORBA_TYPE, std::string >()(source_value_, dst);
 }
 
 std::string& From< char* >::into(std::string &dst)const

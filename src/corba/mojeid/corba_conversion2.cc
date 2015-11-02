@@ -22,7 +22,7 @@ Nullable< boost::gregorian::date > convert_as_birthdate(const Nullable< std::str
 from_into< Registry::MojeID::Date, std::string >::dst_value_ref
 from_into< Registry::MojeID::Date, std::string >::operator()(src_value src, dst_value_ref dst)const
 {
-    return from(src.value).into(dst);
+    return from(src.value.in()).into(dst);
 }
 
 into_from< Registry::MojeID::Date, const char* >::dst_value_ref
@@ -47,7 +47,7 @@ into_from< Registry::MojeID::Date, boost::gregorian::date >::operator()(dst_valu
 from_into< Registry::MojeID::DateTime, std::string >::dst_value_ref
 from_into< Registry::MojeID::DateTime, std::string >::operator()(src_value src, dst_value_ref dst)const
 {
-    return from(src.value).into(dst);
+    return from(src.value.in()).into(dst);
 }
 
 into_from< Registry::MojeID::DateTime, const char* >::dst_value_ref
@@ -194,40 +194,40 @@ Nullable< VALUE > missing_as_null(const std::map< KEY, VALUE > &_dict, const CON
 from_into< Registry::MojeID::Address, Fred::Contact::PlaceAddress >::dst_value_ref
 from_into< Registry::MojeID::Address, Fred::Contact::PlaceAddress >::operator()(src_value src, dst_value_ref dst)const
 {
-    from(src.street1)    .into(             dst.street1);
-    from(src.street2)    .into(set_optional(dst.street2).if_not_null());
-    from(src.street3)    .into(set_optional(dst.street3).if_not_null());
-    from(src.city)       .into(             dst.city);
-    from(src.state)      .into(set_optional(dst.stateorprovince).if_not_null());
-    from(src.postal_code).into(             dst.postalcode);
-    from(src.country)    .into(             dst.country);
+    from(src.street1.in())    .into(             dst.street1);
+    from(src.street2.in())    .into(set_optional(dst.street2).if_not_null());
+    from(src.street3.in())    .into(set_optional(dst.street3).if_not_null());
+    from(src.city.in())       .into(             dst.city);
+    from(src.state.in())      .into(set_optional(dst.stateorprovince).if_not_null());
+    from(src.postal_code.in()).into(             dst.postalcode);
+    from(src.country.in())    .into(             dst.country);
     return dst;
 }
 
 from_into< Registry::MojeID::Address, Fred::ContactAddress >::dst_value_ref
 from_into< Registry::MojeID::Address, Fred::ContactAddress >::operator()(src_value src, dst_value_ref dst)const
 {
-    from(src.street1)    .into(             dst.street1);
-    from(src.street2)    .into(set_optional(dst.street2).if_not_null());
-    from(src.street3)    .into(set_optional(dst.street3).if_not_null());
-    from(src.city)       .into(             dst.city);
-    from(src.state)      .into(set_optional(dst.stateorprovince).if_not_null());
-    from(src.postal_code).into(             dst.postalcode);
-    from(src.country)    .into(             dst.country);
+    from(src.street1.in())    .into(             dst.street1);
+    from(src.street2.in())    .into(set_optional(dst.street2).if_not_null());
+    from(src.street3.in())    .into(set_optional(dst.street3).if_not_null());
+    from(src.city.in())       .into(             dst.city);
+    from(src.state.in())      .into(set_optional(dst.stateorprovince).if_not_null());
+    from(src.postal_code.in()).into(             dst.postalcode);
+    from(src.country.in())    .into(             dst.country);
     return dst;
 }
 
 from_into< Registry::MojeID::ShippingAddress, Fred::ContactAddress >::dst_value_ref
 from_into< Registry::MojeID::ShippingAddress, Fred::ContactAddress >::operator()(src_value src, dst_value_ref dst)const
 {
-    from(src.company_name).into(set_optional(dst.company_name).if_not_null());
-    from(src.street1)     .into(             dst.street1);
-    from(src.street2)     .into(set_optional(dst.street2).if_not_null());
-    from(src.street3)     .into(set_optional(dst.street3).if_not_null());
-    from(src.city)        .into(             dst.city);
-    from(src.state)       .into(set_optional(dst.stateorprovince).if_not_null());
-    from(src.postal_code) .into(             dst.postalcode);
-    from(src.country)     .into(             dst.country);
+    from(src.company_name.in()).into(set_optional(dst.company_name).if_not_null());
+    from(src.street1.in())     .into(             dst.street1);
+    from(src.street2.in())     .into(set_optional(dst.street2).if_not_null());
+    from(src.street3.in())     .into(set_optional(dst.street3).if_not_null());
+    from(src.city.in())        .into(             dst.city);
+    from(src.state.in())       .into(set_optional(dst.stateorprovince).if_not_null());
+    from(src.postal_code.in()) .into(             dst.postalcode);
+    from(src.country.in())     .into(             dst.country);
     return dst;
 }
 
@@ -243,26 +243,26 @@ from_into< Registry::MojeID::CreateContact, Fred::InfoContactData >::operator()(
     Nullable< std::string >            vat_id_num;
     typedef Fred::ContactAddressType   AddrType;
 
-    from(src.username)    .into(          dst.handle);
-    from(src.first_name)  .into(          first_name);
-    from(src.last_name)   .into(          last_name);
-    from(src.organization).into(          dst.organization);
-    from(src.vat_reg_num) .into(          dst.vat);
-    from(src.birth_date)  .into(          birth_date);
-    from(src.id_card_num) .into(          id_card_num);
-    from(src.passport_num).into(          passport_num);
-    from(src.ssn_id_num)  .into(          ssn_id_num);
-    from(src.vat_id_num)  .into(          vat_id_num);
+    from(src.username.in())    .into(          dst.handle);
+    from(src.first_name.in())  .into(          first_name);
+    from(src.last_name.in())   .into(          last_name);
+    from(src.organization.in()).into(          dst.organization);
+    from(src.vat_reg_num.in()) .into(          dst.vat);
+    from(src.birth_date.in())  .into(          birth_date);
+    from(src.id_card_num.in()) .into(          id_card_num);
+    from(src.passport_num.in()).into(          passport_num);
+    from(src.ssn_id_num.in())  .into(          ssn_id_num);
+    from(src.vat_id_num.in())  .into(          vat_id_num);
     from(src.permanent)   .into(          dst.place);
-    from(src.mailing)     .into(add_value(dst.addresses, AddrType::MAILING).if_not_null());
-    from(src.billing)     .into(add_value(dst.addresses, AddrType::BILLING).if_not_null());
-    from(src.shipping)    .into(add_value(dst.addresses, AddrType::SHIPPING).if_not_null());
-    from(src.shipping2)   .into(add_value(dst.addresses, AddrType::SHIPPING_2).if_not_null());
-    from(src.shipping3)   .into(add_value(dst.addresses, AddrType::SHIPPING_3).if_not_null());
-    from(src.email)       .into(          dst.email);
-    from(src.notify_email).into(          dst.notifyemail);
-    from(src.telephone)   .into(          dst.telephone);
-    from(src.fax)         .into(          dst.fax);
+    from(src.mailing.in())     .into(add_value(dst.addresses, AddrType::MAILING).if_not_null());
+    from(src.billing.in())     .into(add_value(dst.addresses, AddrType::BILLING).if_not_null());
+    from(src.shipping.in())    .into(add_value(dst.addresses, AddrType::SHIPPING).if_not_null());
+    from(src.shipping2.in())   .into(add_value(dst.addresses, AddrType::SHIPPING_2).if_not_null());
+    from(src.shipping3.in())   .into(add_value(dst.addresses, AddrType::SHIPPING_3).if_not_null());
+    from(src.email.in())       .into(          dst.email);
+    from(src.notify_email.in()).into(          dst.notifyemail);
+    from(src.telephone.in())   .into(          dst.telephone);
+    from(src.fax.in())         .into(          dst.fax);
 
     dst.name = first_name + " " + last_name;
     const bool contact_is_organization = !dst.organization.isnull();
@@ -289,25 +289,25 @@ from_into< Registry::MojeID::UpdateContact, Fred::InfoContactData >::operator()(
     dst.id = src.id;
     dst.handle.clear();
 
-    from(src.first_name)  .into(          first_name);
-    from(src.last_name)   .into(          last_name);
-    from(src.organization).into(          dst.organization);
-    from(src.vat_reg_num) .into(          dst.vat);
-    from(src.birth_date)  .into(          birth_date);
-    from(src.id_card_num) .into(          id_card_num);
-    from(src.passport_num).into(          passport_num);
-    from(src.ssn_id_num)  .into(          ssn_id_num);
-    from(src.vat_id_num)  .into(          vat_id_num);
+    from(src.first_name.in())  .into(          first_name);
+    from(src.last_name.in())   .into(          last_name);
+    from(src.organization.in()).into(          dst.organization);
+    from(src.vat_reg_num.in()) .into(          dst.vat);
+    from(src.birth_date.in())  .into(          birth_date);
+    from(src.id_card_num.in()) .into(          id_card_num);
+    from(src.passport_num.in()).into(          passport_num);
+    from(src.ssn_id_num.in())  .into(          ssn_id_num);
+    from(src.vat_id_num.in())  .into(          vat_id_num);
     from(src.permanent)   .into(          dst.place);
-    from(src.mailing)     .into(add_value(dst.addresses, AddrType::MAILING).if_not_null());
-    from(src.billing)     .into(add_value(dst.addresses, AddrType::BILLING).if_not_null());
-    from(src.shipping)    .into(add_value(dst.addresses, AddrType::SHIPPING).if_not_null());
-    from(src.shipping2)   .into(add_value(dst.addresses, AddrType::SHIPPING_2).if_not_null());
-    from(src.shipping3)   .into(add_value(dst.addresses, AddrType::SHIPPING_3).if_not_null());
-    from(src.email)       .into(          dst.email);
-    from(src.notify_email).into(          dst.notifyemail);
-    from(src.telephone)   .into(          dst.telephone);
-    from(src.fax)         .into(          dst.fax);
+    from(src.mailing.in())     .into(add_value(dst.addresses, AddrType::MAILING).if_not_null());
+    from(src.billing.in())     .into(add_value(dst.addresses, AddrType::BILLING).if_not_null());
+    from(src.shipping.in())    .into(add_value(dst.addresses, AddrType::SHIPPING).if_not_null());
+    from(src.shipping2.in())   .into(add_value(dst.addresses, AddrType::SHIPPING_2).if_not_null());
+    from(src.shipping3.in())   .into(add_value(dst.addresses, AddrType::SHIPPING_3).if_not_null());
+    from(src.email.in())       .into(          dst.email);
+    from(src.notify_email.in()).into(          dst.notifyemail);
+    from(src.telephone.in())   .into(          dst.telephone);
+    from(src.fax.in())         .into(          dst.fax);
 
     dst.name = first_name + " " + last_name;
     const bool contact_is_organization = !dst.organization.isnull();
@@ -326,16 +326,16 @@ from_into< Registry::MojeID::SetContact, Fred::InfoContactData >::operator()(src
     Nullable< std::string >            vat_id_num;
     typedef Fred::ContactAddressType   AddrType;
 
-    from(src.organization).into(          dst.organization);
-    from(src.vat_reg_num) .into(          dst.vat);
-    from(src.birth_date)  .into(          birth_date);
-    from(src.vat_id_num)  .into(          vat_id_num);
+    from(src.organization.in()).into(          dst.organization);
+    from(src.vat_reg_num.in()) .into(          dst.vat);
+    from(src.birth_date.in())  .into(          birth_date);
+    from(src.vat_id_num.in())  .into(          vat_id_num);
     from(src.permanent)   .into(          dst.place);
-    from(src.mailing)     .into(add_value(dst.addresses, AddrType::MAILING).if_not_null());
-    from(src.email)       .into(          dst.email);
-    from(src.notify_email).into(          dst.notifyemail);
-    from(src.telephone)   .into(          dst.telephone);
-    from(src.fax)         .into(          dst.fax);
+    from(src.mailing.in())     .into(add_value(dst.addresses, AddrType::MAILING).if_not_null());
+    from(src.email.in())       .into(          dst.email);
+    from(src.notify_email.in()).into(          dst.notifyemail);
+    from(src.telephone.in())   .into(          dst.telephone);
+    from(src.fax.in())         .into(          dst.fax);
 
     const bool contact_is_organization = !dst.organization.isnull();
     (contact_is_organization
