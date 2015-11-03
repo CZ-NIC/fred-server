@@ -47,7 +47,7 @@ PublicRequestInfo::PublicRequestInfo(OperationContext &_ctx, const PublicRequest
 {
     try {
         const Database::Result res = _ctx.get_conn().exec_params(
-            "SELECT request_type,"
+            "SELECT (SELECT name FROM enum_public_request_type WHERE id = request_type) AS request_type,"
                    "create_time,"
                    "(SELECT name FROM enum_public_request_status WHERE id = status) AS status,"
                    "resolve_time,"
