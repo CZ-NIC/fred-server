@@ -129,6 +129,9 @@ void Server_i::update_contact_prepare(
         IDL::MESSAGE_LIMIT_EXCEEDED idl_error;
         throw Corba::Conversion::into(idl_error).from(e);
     }
+    catch (const MojeID2Impl::GetContact::object_doesnt_exist &) {
+        throw IDL::OBJECT_NOT_EXISTS();
+    }
     catch (const MojeID2Impl::ObjectDoesntExist&) {
         throw IDL::OBJECT_NOT_EXISTS();
     }
