@@ -49,7 +49,7 @@ PublicRequestInfo::PublicRequestInfo(OperationContext &_ctx, const PublicRequest
         const Database::Result res = _ctx.get_conn().exec_params(
             "SELECT request_type,"
                    "create_time,"
-                   "status,"
+                   "(SELECT name FROM enum_public_request_status WHERE id = status) AS status,"
                    "resolve_time,"
                    "reason,"
                    "email_to_answer,"
