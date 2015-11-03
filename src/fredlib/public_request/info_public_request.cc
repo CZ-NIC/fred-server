@@ -57,7 +57,7 @@ PublicRequestInfo::PublicRequestInfo(OperationContext &_ctx, const PublicRequest
                    "registrar_id,"
                    "create_request_id,"
                    "resolve_request_id,"
-                   "(SELECT object_id FROM public_request_objects_map WHERE request_id=id) AS object_id"
+                   "(SELECT object_id FROM public_request_objects_map WHERE request_id=id) AS object_id "
             "FROM public_request "
             "WHERE id=$1::BIGINT", Database::query_param_list(id_));
         if (res.size() <= 0) {
