@@ -179,12 +179,11 @@ BOOST_AUTO_TEST_CASE(info_registrar)
     Fred::InfoRegistrarOutput registrar_info3 = Fred::InfoRegistrarById(test_registrar_data_1.id).exec(ctx);
     BOOST_CHECK(registrar_info3.info_registrar_data == test_registrar_data_1);
 
-    std::vector<Fred::InfoRegistrarOutput> all_registrar_infos = Fred::InfoRegistrarAllExceptSystem().exec(ctx);
+    std::vector<Fred::InfoRegistrarOutput> nosystem_registrar_infos = Fred::InfoRegistrarAllExceptSystem().exec(ctx);
 
-    BOOST_CHECK(all_registrar_infos.size() == 2 );
+    BOOST_CHECK(nosystem_registrar_infos.size() == 1 );
 
-    BOOST_CHECK(all_registrar_infos.at(0).info_registrar_data == test_registrar_data_1);
-    BOOST_CHECK(all_registrar_infos.at(1).info_registrar_data == test_registrar_data_2);
+    BOOST_CHECK(nosystem_registrar_infos.at(0).info_registrar_data == test_registrar_data_1);
 }
 
 /**

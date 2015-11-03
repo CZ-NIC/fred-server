@@ -148,6 +148,7 @@ namespace Fred
         const std::string& local_timestamp_pg_time_zone_name)
     {
             return InfoRegistrar()
+                    .set_inline_view_filter(Database::ParamQuery(InfoRegistrar::GetAlias::system())(" = FALSE"))
                     .set_lock(lock_)
                     .exec(ctx,local_timestamp_pg_time_zone_name);
     }
