@@ -151,11 +151,18 @@ public:
                               Fred::check_contact_phone_presence,
                               Fred::check_contact_phone_validity > check_create_contact_prepare;
     typedef boost::mpl::list< Fred::MojeID::check_contact_username_availability,
-                              Fred::MojeID::Check::new_contact_email_availability,
-                              Fred::MojeID::Check::new_contact_phone_availability > check_create_contact_prepare_ctx;
+                              Fred::check_contact_email_availability,
+                              Fred::check_contact_phone_availability > check_create_contact_prepare_ctx;
     typedef Fred::Check< boost::mpl::list< check_create_contact_prepare,
                                            check_create_contact_prepare_ctx > > CheckCreateContactPrepare;
     typedef CheckCreateContactPrepare CreateContactPrepareError;
+
+
+    typedef boost::mpl::list< Fred::check_contact_email_availability,
+                              Fred::check_contact_phone_availability > check_process_registration_request_ctx;
+    typedef Fred::Check< boost::mpl::list< check_create_contact_prepare,
+                    check_process_registration_request_ctx > > CheckProcessRegistrationRequest;
+
 
     typedef boost::mpl::list< Fred::check_contact_name,
                               Fred::check_contact_place_address,

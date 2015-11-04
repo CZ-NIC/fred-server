@@ -400,6 +400,7 @@ into_from< IDL_SHIPPING_ADDRESS_VALIDATION_ERROR, IMPL_CONTACT_ADDRESS_ERROR >::
     return dst;
 }
 
+
 into_from< IDL_CREATE_CONTACT_PREPARE_ERROR, IMPL_CREATE_CONTACT_PREPARE_ERROR >::dst_value_ref
 into_from< IDL_CREATE_CONTACT_PREPARE_ERROR, IMPL_CREATE_CONTACT_PREPARE_ERROR >::operator()(dst_value_ref dst, src_value src)const
 {
@@ -422,8 +423,8 @@ into_from< IDL_CREATE_CONTACT_PREPARE_ERROR, IMPL_CREATE_CONTACT_PREPARE_ERROR >
     else if (!src.Fred::check_contact_email_validity::success()) {
         into(dst.email).from(Registry::MojeID::INVALID);
     }
-    else if (!src.Fred::MojeID::Check::new_contact_email_availability::success()) {
-        into(dst.email).from(Registry::MojeID::NOT_AVAILABLE);
+    else if (!src.Fred::check_contact_email_availability::success()) {
+            into(dst.email).from(Registry::MojeID::NOT_AVAILABLE);
     }
 
     if (!src.Fred::check_contact_phone_presence::success()) {
@@ -432,7 +433,7 @@ into_from< IDL_CREATE_CONTACT_PREPARE_ERROR, IMPL_CREATE_CONTACT_PREPARE_ERROR >
     else if (!src.Fred::check_contact_phone_validity::success()) {
         into(dst.phone).from(Registry::MojeID::INVALID);
     }
-    else if (!src.Fred::MojeID::Check::new_contact_phone_availability::success()) {
+    else if (!src.Fred::check_contact_phone_availability::success()) {
         into(dst.phone).from(Registry::MojeID::NOT_AVAILABLE);
     }
 
@@ -462,7 +463,6 @@ into_from< IDL_CREATE_CONTACT_PREPARE_ERROR, IMPL_CREATE_CONTACT_PREPARE_ERROR >
     }
     return dst;
 }
-
 
 into_from< IDL_TRANSFER_CONTACT_PREPARE_ERROR, IMPL_TRANSFER_CONTACT_PREPARE_ERROR >::dst_value_ref
 into_from< IDL_TRANSFER_CONTACT_PREPARE_ERROR, IMPL_TRANSFER_CONTACT_PREPARE_ERROR >::operator()(dst_value_ref dst, src_value src)const

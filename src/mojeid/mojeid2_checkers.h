@@ -32,22 +32,6 @@ namespace Fred {
 namespace MojeID {
 namespace Check {
 
-struct new_contact_email_availability:GeneralCheck::contact_email_availability
-{
-    enum { UNUSED_CONTACT_ID = 0 };
-    new_contact_email_availability(const InfoContactData &_data, OperationContext &_ctx)
-    :   GeneralCheck::contact_email_availability(_data.email, UNUSED_CONTACT_ID, _ctx)
-    { }
-};
-
-struct new_contact_phone_availability:GeneralCheck::contact_phone_availability
-{
-    enum { UNUSED_CONTACT_ID = 0 };
-    new_contact_phone_availability(const InfoContactData &_data, OperationContext &_ctx)
-    :   GeneralCheck::contact_phone_availability(_data.telephone, UNUSED_CONTACT_ID, _ctx)
-    { }
-};
-
 struct states_before_transfer_into_mojeid
 {
     template < typename STATES_PRESENCE >

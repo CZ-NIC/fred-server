@@ -2683,7 +2683,7 @@ void transitions::action::process_contact_conditional_identification::operator()
         const Fred::InfoContactData contact = Fred::InfoContactById(_event.get_object_id())
                                                   .exec(_event.get_operation_context()).info_contact_data;
         {
-            const MojeID2Impl::CheckCreateContactPrepare check_contact_data(
+            const MojeID2Impl::CheckProcessRegistrationRequest check_contact_data(
                 Fred::make_args(contact),
                 Fred::make_args(contact, _event.get_operation_context()));
             if (!check_contact_data.success()) {
