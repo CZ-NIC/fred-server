@@ -1477,6 +1477,7 @@ MojeID2Impl::ContactId MojeID2Impl::process_registration_request(
             transitions::process(
                 event,
                 GetContact(event.get_object_id()).states< occurred::RelatedStates >().presence(ctx));
+            Fred::PerformObjectStateRequest(event.get_object_id()).exec(ctx);
             ctx.commit_transaction();
             return event.get_object_id();
         }
@@ -1589,6 +1590,7 @@ void MojeID2Impl::process_identification_request(
         Fred::StatusList to_set;
         to_set.insert(FOS(FOS::IDENTIFIED_CONTACT).into< std::string >());
         Fred::CreateObjectStateRequestId(_contact_id, to_set).exec(ctx);
+        Fred::PerformObjectStateRequest(_contact_id).exec(ctx);
         answer(ctx, locked_request, "successfully processed", _log_request_id);
         ctx.commit_transaction();
     }
