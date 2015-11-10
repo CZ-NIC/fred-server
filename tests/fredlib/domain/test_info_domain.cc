@@ -270,20 +270,10 @@ BOOST_FIXTURE_TEST_CASE(info_domain_history_wrong_historyid, test_domain_fixture
 BOOST_FIXTURE_TEST_CASE(info_domain_unknown_registrant_handle, test_domain_fixture)
 {
     std::string bad_handle = registrant_contact_handle + xmark;
-    try
-    {
-        Fred::OperationContext ctx;
-        Fred::InfoDomainByRegistrantHandle(bad_handle).exec(ctx);
-        ctx.commit_transaction();
-        BOOST_ERROR("no exception thrown");
-    }
-    catch(const Fred::InfoDomainByRegistrantHandle::Exception& ex)
-    {
-        BOOST_CHECK(ex.is_set_unknown_registrant_handle());
-        BOOST_MESSAGE(bad_handle);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
-        BOOST_CHECK(ex.get_unknown_registrant_handle() == bad_handle);
-    }
+
+    Fred::OperationContext ctx;
+    std::vector<Fred::InfoDomainOutput> info_data = Fred::InfoDomainByRegistrantHandle(bad_handle).exec(ctx);
+    BOOST_CHECK(info_data.empty());
 }
 
 /**
