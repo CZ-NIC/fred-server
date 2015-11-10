@@ -767,6 +767,16 @@ namespace Whois {
                 Corba::unwrap_string_from_const_char_ptr(handle)
                 ).set_limit(limit + 1).exec(ctx, output_timezone);
 
+            if(ks_info.empty())
+            {
+                if(Fred::CheckContact(Corba::unwrap_string_from_const_char_ptr(handle)).is_invalid_handle())
+                {
+                    throw INVALID_HANDLE();
+                }
+
+                throw OBJECT_NOT_FOUND();
+            }
+
             limit_exceeded = false;
             if(ks_info.size() > limit)
             {
@@ -778,17 +788,9 @@ namespace Whois {
 
             return ks_seq._retn();
         }
-        catch(const Fred::InfoKeysetByTechContactHandle::Exception& e)
+        catch(const ::CORBA::UserException& )
         {
-            if(e.is_set_unknown_tech_contact_handle())
-            {
-                if(Fred::CheckContact(Corba::unwrap_string_from_const_char_ptr(handle)).is_invalid_handle())
-                {
-                    throw INVALID_HANDLE();
-                }
-
-                throw OBJECT_NOT_FOUND();
-            }
+            throw;
         }
         catch (...) { }
 
