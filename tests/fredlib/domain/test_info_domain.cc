@@ -282,20 +282,10 @@ BOOST_FIXTURE_TEST_CASE(info_domain_unknown_registrant_handle, test_domain_fixtu
 BOOST_FIXTURE_TEST_CASE(info_domain_unknown_admin_handle, test_domain_fixture)
 {
     std::string bad_handle = admin_contact1_handle + xmark;
-    try
-    {
-        Fred::OperationContext ctx;
-        Fred::InfoDomainByAdminContactHandle(bad_handle).exec(ctx);
-        ctx.commit_transaction();
-        BOOST_ERROR("no exception thrown");
-    }
-    catch(const Fred::InfoDomainByAdminContactHandle::Exception& ex)
-    {
-        BOOST_CHECK(ex.is_set_unknown_admin_contact_handle());
-        BOOST_MESSAGE(bad_handle);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
-        BOOST_CHECK(ex.get_unknown_admin_contact_handle() == bad_handle);
-    }
+
+    Fred::OperationContext ctx;
+    std::vector<Fred::InfoDomainOutput> info_data = Fred::InfoDomainByAdminContactHandle(bad_handle).exec(ctx);
+    BOOST_CHECK(info_data.empty());
 }
 
 /**
