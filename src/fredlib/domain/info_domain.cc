@@ -591,7 +591,7 @@ namespace Fred
 
             if(domain_id_res.size() == 0)//no domain id found
             {
-                BOOST_THROW_EXCEPTION(Exception().set_unknown_keyset_handle(keyset_handle_));
+                return domain_res;
             }
 
             Database::ParamQuery domain_id_inline_view;

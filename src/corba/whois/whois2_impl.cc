@@ -1026,6 +1026,16 @@ namespace Whois {
             std::vector<Fred::InfoDomainOutput> domain_info = Fred::InfoDomainByKeysetHandle(
                 Corba::unwrap_string_from_const_char_ptr(handle)).set_limit(limit + 1).exec(ctx, output_timezone);
 
+            if(domain_info.empty())
+            {
+                if(Fred::CheckContact(Corba::unwrap_string_from_const_char_ptr(handle)).is_invalid_handle())
+                {
+                    throw INVALID_HANDLE();
+                }
+
+                throw OBJECT_NOT_FOUND();
+            }
+
             limit_exceeded = false;
             if(domain_info.size() > limit)
             {
@@ -1037,17 +1047,9 @@ namespace Whois {
 
             return domain_seq._retn();
         }
-        catch(const Fred::InfoDomainByKeysetHandle::Exception& e)
+        catch(const ::CORBA::UserException& )
         {
-            if(e.is_set_unknown_keyset_handle())
-            {
-                if(Fred::CheckKeyset(Corba::unwrap_string_from_const_char_ptr(handle)).is_invalid_handle())
-                {
-                    throw INVALID_HANDLE();
-                }
-
-                throw OBJECT_NOT_FOUND();
-            }
+            throw;
         }
         catch (...) { }
 
