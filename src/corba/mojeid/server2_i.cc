@@ -59,8 +59,8 @@ ContactId Server_i::create_contact_prepare(
         Corba::Conversion::into(_identification).from(ident);
         return contact_id;
     }
-    catch (const MojeID2Impl::CreateContactPrepareError &e) {
-        IDL::CREATE_CONTACT_PREPARE_VALIDATION_ERROR idl_error;
+    catch (const MojeID2Impl::CheckMojeIDRegistration &e) {
+        IDL::REGISTRATION_VALIDATION_ERROR idl_error;
         Corba::Conversion::into(idl_error).from(e);
         throw idl_error;
     }
@@ -87,8 +87,8 @@ Registry::MojeID::InfoContact* Server_i::transfer_contact_prepare(
         Corba::Conversion::into(_identification).from(ident);
         return Corba::Conversion::into(new Registry::MojeID::InfoContact).from(contact);
     }
-    catch (const MojeID2Impl::TransferContactPrepareError &e) {
-        IDL::TRANSFER_CONTACT_PREPARE_VALIDATION_ERROR idl_error;
+    catch (const MojeID2Impl::CheckMojeIDRegistration &e) {
+        IDL::REGISTRATION_VALIDATION_ERROR idl_error;
         if (e.Fred::MojeID::Check::states_before_transfer_into_mojeid::mojeid_contact_present) {
             throw IDL::ALREADY_MOJEID_CONTACT();
         }
@@ -161,8 +161,8 @@ Registry::MojeID::InfoContact* Server_i::update_transfer_contact_prepare(
     catch (const MojeID2Impl::ObjectUserBlocked &e) {
         throw IDL::OBJECT_USER_BLOCKED();
     }
-    catch (const MojeID2Impl::UpdateTransferError &e) {
-        IDL::UPDATE_TRANSFER_VALIDATION_ERROR idl_error;
+    catch (const MojeID2Impl::CheckMojeIDRegistration &e) {
+        IDL::REGISTRATION_VALIDATION_ERROR idl_error;
         Corba::Conversion::into(idl_error).from(e);
         throw idl_error;
     }

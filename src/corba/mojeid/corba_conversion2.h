@@ -174,22 +174,10 @@ struct into_from< IDL_SHIPPING_ADDRESS_VALIDATION_ERROR, IMPL_CONTACT_ADDRESS_ER
     dst_value_ref operator()(dst_value_ref dst, src_value src)const;
 };
 
-typedef Registry::MojeID::Server::CREATE_CONTACT_PREPARE_VALIDATION_ERROR IDL_CREATE_CONTACT_PREPARE_ERROR;
-typedef Registry::MojeID::MojeID2Impl::CreateContactPrepareError          IMPL_CREATE_CONTACT_PREPARE_ERROR;
 
 template < >
-struct into_from< IDL_CREATE_CONTACT_PREPARE_ERROR, IMPL_CREATE_CONTACT_PREPARE_ERROR >
-: into_from_base< IDL_CREATE_CONTACT_PREPARE_ERROR, IMPL_CREATE_CONTACT_PREPARE_ERROR >
-{
-    dst_value_ref operator()(dst_value_ref dst, src_value src)const;
-};
-
-typedef Registry::MojeID::Server::TRANSFER_CONTACT_PREPARE_VALIDATION_ERROR IDL_TRANSFER_CONTACT_PREPARE_ERROR;
-typedef Registry::MojeID::MojeID2Impl::TransferContactPrepareError          IMPL_TRANSFER_CONTACT_PREPARE_ERROR;
-
-template < >
-struct into_from< IDL_TRANSFER_CONTACT_PREPARE_ERROR, IMPL_TRANSFER_CONTACT_PREPARE_ERROR >
-: into_from_base< IDL_TRANSFER_CONTACT_PREPARE_ERROR, IMPL_TRANSFER_CONTACT_PREPARE_ERROR >
+struct into_from< Registry::MojeID::Server::REGISTRATION_VALIDATION_ERROR, Registry::MojeID::MojeID2Impl::CheckMojeIDRegistration >
+: into_from_base< Registry::MojeID::Server::REGISTRATION_VALIDATION_ERROR, Registry::MojeID::MojeID2Impl::CheckMojeIDRegistration >
 {
     dst_value_ref operator()(dst_value_ref dst, src_value src)const;
 };
@@ -204,15 +192,6 @@ struct into_from< IDL_UPDATE_CONTACT_PREPARE_ERROR, IMPL_UPDATE_CONTACT_PREPARE_
     dst_value_ref operator()(dst_value_ref dst, src_value src)const;
 };
 
-typedef Registry::MojeID::Server::UPDATE_TRANSFER_VALIDATION_ERROR IDL_UPDATE_TRANSFER_ERROR;
-typedef Registry::MojeID::MojeID2Impl::UpdateTransferError         IMPL_UPDATE_TRANSFER_ERROR;
-
-template < >
-struct into_from< IDL_UPDATE_TRANSFER_ERROR, IMPL_UPDATE_TRANSFER_ERROR >
-: into_from_base< IDL_UPDATE_TRANSFER_ERROR, IMPL_UPDATE_TRANSFER_ERROR >
-{
-    dst_value_ref operator()(dst_value_ref dst, src_value src)const;
-};
 
 template < >
 struct into_from< Registry::MojeID::Address, Fred::Contact::PlaceAddress >

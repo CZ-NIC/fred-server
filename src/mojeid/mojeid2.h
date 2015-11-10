@@ -140,7 +140,34 @@ public:
     typedef Fred::Object::Get< Fred::Object::Type::CONTACT > GetContact;
 
     typedef boost::mpl::list< Fred::check_contact_name,
+                              Fred::MojeID::check_contact_birthday,
+                              Fred::check_contact_email_presence,
+                              Fred::check_contact_email_validity,
+                              Fred::check_contact_notifyemail_validity,
+                              Fred::check_contact_phone_presence,
+                              Fred::check_contact_phone_validity,
+                              Fred::check_contact_fax_validity,
                               Fred::check_contact_place_address,
+                              Fred::check_contact_addresses_mailing,
+                              Fred::check_contact_addresses_billing,
+                              Fred::check_contact_addresses_shipping,
+                              Fred::check_contact_addresses_shipping2,
+                              Fred::check_contact_addresses_shipping3 > check_mojeid_registration;
+
+    typedef boost::mpl::list< Fred::MojeID::check_contact_username_availability,
+                              Fred::check_contact_email_availability,
+                              Fred::check_contact_phone_availability > check_mojeid_registration_ctx;
+
+    typedef boost::mpl::list< Fred::MojeID::Check::states_before_transfer_into_mojeid > check_transfer_contact_prepare_presence;
+
+    typedef Fred::Check< boost::mpl::list< check_mojeid_registration,
+                                        check_mojeid_registration_ctx,
+                                        check_transfer_contact_prepare_presence > > CheckMojeIDRegistration;
+
+
+    typedef boost::mpl::list< Fred::check_contact_name,
+                              Fred::check_contact_place_address,
+                              Fred::check_contact_place_address_mandatory,
                               Fred::check_contact_addresses_mailing,
                               Fred::check_contact_addresses_billing,
                               Fred::check_contact_addresses_shipping,
@@ -153,10 +180,6 @@ public:
     typedef boost::mpl::list< Fred::MojeID::check_contact_username_availability,
                               Fred::check_contact_email_availability,
                               Fred::check_contact_phone_availability > check_create_contact_prepare_ctx;
-    typedef Fred::Check< boost::mpl::list< check_create_contact_prepare,
-                                           check_create_contact_prepare_ctx > > CheckCreateContactPrepare;
-    typedef CheckCreateContactPrepare CreateContactPrepareError;
-
 
     typedef boost::mpl::list< Fred::check_contact_email_availability,
                               Fred::check_contact_phone_availability > check_process_registration_request_ctx;
@@ -164,24 +187,6 @@ public:
                     check_process_registration_request_ctx > > CheckProcessRegistrationRequest;
 
 
-    typedef boost::mpl::list< Fred::check_contact_name,
-                              Fred::check_contact_place_address,
-                              Fred::check_contact_addresses_mailing,
-                              Fred::check_contact_addresses_billing,
-                              Fred::check_contact_addresses_shipping,
-                              Fred::check_contact_addresses_shipping2,
-                              Fred::check_contact_addresses_shipping3,
-                              Fred::check_contact_email_presence,
-                              Fred::check_contact_email_validity,
-                              Fred::check_contact_phone_validity,
-                              Fred::check_contact_notifyemail_validity,
-                              Fred::check_contact_fax_validity,
-                              Fred::MojeID::check_contact_username,
-                              Fred::MojeID::check_contact_birthday_validity > check_transfer_contact_prepare;
-    typedef boost::mpl::list< Fred::MojeID::Check::states_before_transfer_into_mojeid > check_transfer_contact_prepare_presence;
-    typedef Fred::Check< boost::mpl::list< check_transfer_contact_prepare,
-                                           check_transfer_contact_prepare_presence > > CheckTransferContactPrepare;
-    typedef CheckTransferContactPrepare TransferContactPrepareError;
 
     typedef boost::mpl::list< Fred::check_contact_name,
                               Fred::check_contact_place_address,

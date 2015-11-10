@@ -930,8 +930,19 @@ MojeID2Impl::ContactId MojeID2Impl::create_contact_prepare(
         Fred::OperationContextTwoPhaseCommitCreator ctx(_trans_id);
 
         {
-            const CheckCreateContactPrepare check_contact_data(Fred::make_args(_contact),
-                                                               Fred::make_args(_contact, ctx));
+            const CheckMojeIDRegistration check_contact_data(
+                Fred::make_args(_contact),
+                Fred::make_args(_contact, ctx),
+                Fred::make_args(Fred::Object::Get< Fred::Object::Type::CONTACT >(_contact.id)
+                   .states< Fred::Object::State::set< Fred::Object::State::SERVER_TRANSFER_PROHIBITED,
+                       Fred::Object::State::SERVER_UPDATE_PROHIBITED,
+                       Fred::Object::State::SERVER_DELETE_PROHIBITED,
+                       Fred::Object::State::SERVER_BLOCKED,
+                       Fred::Object::State::MOJEID_CONTACT,
+                       Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT,
+                       Fred::Object::State::IDENTIFIED_CONTACT,
+                       Fred::Object::State::VALIDATED_CONTACT >::type >().presence(ctx)));
+
             if (!check_contact_data.success()) {
                 throw check_contact_data;
             }
@@ -951,7 +962,7 @@ MojeID2Impl::ContactId MojeID2Impl::create_contact_prepare(
         ctx.commit_transaction();
         return new_contact.object_id;
     }
-    catch (const CreateContactPrepareError&) {
+    catch (const CheckMojeIDRegistration&) {
         LOGGER(PACKAGE).error("request failed (incorrect input data)");
         throw;
     }
@@ -984,7 +995,7 @@ Fred::InfoContactData& MojeID2Impl::transfer_contact_prepare(
         ctx.commit_transaction();
         return _contact;
     }
-    catch (const TransferContactPrepareError&) {
+    catch (const CheckMojeIDRegistration&) {
         LOGGER(PACKAGE).error("request failed (incorrect input data)");
         throw;
     }
@@ -1315,7 +1326,7 @@ void MojeID2Impl::update_transfer_contact_prepare(
                 Fred::CreateObjectStateRequestId(current_data.id, to_cancel).exec(ctx);
             }
 
-            const CheckUpdateTransfer check_contact_data(_new_data);
+            const CheckMojeIDRegistration check_contact_data(_new_data);
             if (!check_contact_data.success()) {
                 throw check_contact_data;
             }
@@ -1369,7 +1380,7 @@ void MojeID2Impl::update_transfer_contact_prepare(
         LOGGER(PACKAGE).info(boost::format("request failed (%1%)") % e.what());
         throw;
     }
-    catch (const UpdateTransferError &e) {
+    catch (const CheckMojeIDRegistration &e) {
         LOGGER(PACKAGE).info("request failed (UpdateTransferError)");
         throw;
     }
@@ -2531,8 +2542,9 @@ void transitions::guard::transfer_contact_prepare::operator()(
     const event::transfer_contact_prepare &_event,
     const event::transfer_contact_prepare::StatesPresence &_states)const
 {
-    const MojeID2Impl::CheckTransferContactPrepare check_result(Fred::make_args(_event.get_contact()),
-                                                                Fred::make_args(_states));
+    const MojeID2Impl::CheckMojeIDRegistration check_result(Fred::make_args(_event.get_contact()),
+                                         Fred::make_args(_event.get_contact(), _event.get_operation_context()),
+                                         Fred::make_args(_states));
     if (!check_result.success()) {
         throw check_result;
     }
@@ -2687,7 +2699,9 @@ void transitions::action::process_contact_conditional_identification::operator()
         {
             const MojeID2Impl::CheckProcessRegistrationRequest check_contact_data(
                 Fred::make_args(contact),
-                Fred::make_args(contact, _event.get_operation_context()));
+                Fred::make_args(contact, _event.get_operation_context()),
+                Fred::make_args(_states));
+
             if (!check_contact_data.success()) {
                 throw check_contact_data;
             }
