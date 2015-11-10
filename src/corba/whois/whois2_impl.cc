@@ -605,6 +605,16 @@ namespace Whois {
             std::vector<Fred::InfoNssetOutput> nss_info = Fred::InfoNssetByDNSFqdn(
                 Corba::unwrap_string_from_const_char_ptr(handle)).set_limit(limit + 1).exec(ctx, output_timezone);
 
+            if(nss_info.empty())
+            {
+                if(Fred::CheckDomain(Corba::unwrap_string_from_const_char_ptr(handle)).is_invalid_syntax())
+                {
+                    throw INVALID_HANDLE();
+                }
+
+                throw OBJECT_NOT_FOUND();
+            }
+
             limit_exceeded = false;
             if(nss_info.size() > limit)
             {
@@ -615,17 +625,9 @@ namespace Whois {
             set_corba_seq<NSSetSeq, NSSet>(nss_seq.inout(), nss_info);
             return nss_seq._retn();
         }
-        catch(const Fred::InfoNssetByDNSFqdn::Exception& e)
+        catch(const ::CORBA::UserException& )
         {
-            if(e.is_set_unknown_dns_fqdn())
-            {
-                if(Fred::CheckDomain(Corba::unwrap_string_from_const_char_ptr(handle)).is_invalid_syntax())
-                {
-                    throw INVALID_HANDLE();
-                }
-
-                throw OBJECT_NOT_FOUND();
-            }
+            throw;
         }
         catch (...) { }
 

@@ -242,20 +242,9 @@ BOOST_FIXTURE_TEST_CASE(info_nsset_ns_unknown_ns, info_nsset_fixture)
 {
     std::string bad_ns_fqdn = xmark+test_nsset_dnsname;
 
-    try
-    {
-        Fred::OperationContext ctx;
-        Fred::InfoNssetByDNSFqdn(bad_ns_fqdn).exec(ctx);
-        ctx.commit_transaction();
-        BOOST_ERROR("no exception thrown");
-    }
-    catch(const Fred::InfoNssetByDNSFqdn::Exception& ex)
-    {
-        BOOST_CHECK(ex.is_set_unknown_dns_fqdn());
-        BOOST_MESSAGE(bad_ns_fqdn);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
-        BOOST_CHECK(ex.get_unknown_dns_fqdn() == bad_ns_fqdn);
-    }
+    Fred::OperationContext ctx;
+    std::vector<Fred::InfoNssetOutput> info = Fred::InfoNssetByDNSFqdn(bad_ns_fqdn).exec(ctx);
+    BOOST_CHECK(info.empty());
 }
 
 /**
