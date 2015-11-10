@@ -254,22 +254,10 @@ BOOST_FIXTURE_TEST_CASE(info_nsset_tech_c_unknown_handle, info_nsset_fixture)
 {
     std::string bad_tech_c_handle = admin_contact3_handle+xmark;
 
-    try
-    {
-        Fred::OperationContext ctx;
-        Fred::InfoNssetByTechContactHandle(bad_tech_c_handle).exec(ctx);
-        ctx.commit_transaction();
-        BOOST_ERROR("no exception thrown");
-    }
-    catch(const Fred::InfoNssetByTechContactHandle::Exception& ex)
-    {
-        BOOST_CHECK(ex.is_set_unknown_tech_contact_handle());
-        BOOST_MESSAGE(bad_tech_c_handle);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
-        BOOST_CHECK(ex.get_unknown_tech_contact_handle() == bad_tech_c_handle);
-    }
+    Fred::OperationContext ctx;
+    std::vector<Fred::InfoNssetOutput> info = Fred::InfoNssetByTechContactHandle(bad_tech_c_handle).exec(ctx);
+    BOOST_CHECK(info.empty());
 }
-
 
 /**
  * test call InfoNssetDiff

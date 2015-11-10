@@ -251,7 +251,7 @@ namespace Fred
 
             if (ctx.get_conn().exec_params(cte_id_filter_query).size() == 0)
             {
-                BOOST_THROW_EXCEPTION(Exception().set_unknown_tech_contact_handle(tech_contact_handle_));
+                return nsset_res;
             }
 
             InfoNsset in;
