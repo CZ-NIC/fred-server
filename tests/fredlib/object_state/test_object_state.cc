@@ -290,28 +290,16 @@ struct object_state_description_fixture : public Test::Fixture::instantiate_db_t
 void check_object_state_desc_data(const std::vector<Fred::ObjectStateDescription>& test_osd,
     const std::vector<Fred::ObjectStateDescription>& fixture_osd)
 {
-    std::set<Fred::ObjectStateDescription, state_desc_less> fixture_osd_set(fixture_osd.begin(), fixture_osd.end());
-    BOOST_REQUIRE(fixture_osd_set.size() == fixture_osd.size());//to check duplicity in fixture data
-    std::set<Fred::ObjectStateDescription, state_desc_less> test_osd_set(test_osd.begin(), test_osd.end());
-    BOOST_REQUIRE(test_osd_set.size() == test_osd.size());//to check duplicity in vector
+    BOOST_REQUIRE(test_osd.size() == fixture_osd.size());
+    std::vector<Fred::ObjectStateDescription> test_osd_sorted(test_osd.begin(), test_osd.end());
+    std::vector<Fred::ObjectStateDescription> fixture_osd_sorted(fixture_osd.begin(), fixture_osd.end());
+    std::sort(test_osd_sorted.begin(), test_osd_sorted.end(), state_desc_less());
+    std::sort(fixture_osd_sorted.begin(), fixture_osd_sorted.end(), state_desc_less());
 
-    //data returned from GetObjectStateDescriptions::exec equals to data in fixture
-    BOOST_REQUIRE(test_osd_set.size() == fixture_osd_set.size());
-    std::set<Fred::ObjectStateDescription, state_desc_less>::const_iterator test_data_iterator = test_osd_set.begin();
-    std::set<Fred::ObjectStateDescription, state_desc_less>::const_iterator fixture_data_iterator = fixture_osd_set.begin();
-    do
-    {
-        BOOST_CHECK_MESSAGE(state_desc_equal(*test_data_iterator, *fixture_data_iterator),
-            std::string("\ntest id: ") << test_data_iterator->id
-            << std::string("\ntest handle: ") << test_data_iterator->handle
-            << std::string("\ntest description: ") << test_data_iterator->description
-            << std::string("\nfixture id: ") << fixture_data_iterator->id
-            << std::string("\nfixture handle: ") << fixture_data_iterator->handle
-            << std::string("\nfixture description: ") << fixture_data_iterator->description
-        );
-    }
-    while (++test_data_iterator, ++fixture_data_iterator,
-        test_data_iterator != test_osd_set.end() || fixture_data_iterator != fixture_osd_set.end());
+    std::pair<std::vector<Fred::ObjectStateDescription>::const_iterator,
+        std::vector<Fred::ObjectStateDescription>::const_iterator> res
+        = std::mismatch(test_osd_sorted.begin(), test_osd_sorted.end(), fixture_osd_sorted.begin(), state_desc_equal);
+    BOOST_CHECK(res.first == test_osd_sorted.end());//check input vectors equality
 }
 
 
