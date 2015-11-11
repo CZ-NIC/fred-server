@@ -288,7 +288,7 @@ struct object_state_description_fixture : public Test::Fixture::instantiate_db_t
 };
 
 void check_object_state_desc_data(const std::vector<Fred::ObjectStateDescription>& test_osd,
-    const std::vector<Fred::ObjectStateDescription>& fixture_osd, Fred::OperationContext& ctx)
+    const std::vector<Fred::ObjectStateDescription>& fixture_osd)
 {
     std::set<Fred::ObjectStateDescription, state_desc_less> fixture_osd_set(fixture_osd.begin(), fixture_osd.end());
     BOOST_REQUIRE(fixture_osd_set.size() == fixture_osd.size());//to check duplicity in fixture data
@@ -318,9 +318,9 @@ void check_object_state_desc_data(const std::vector<Fred::ObjectStateDescription
 BOOST_FIXTURE_TEST_CASE(get_object_state_descriptions, object_state_description_fixture)
 {
     Fred::OperationContext ctx;
-    check_object_state_desc_data(Fred::GetObjectStateDescriptions("EN").exec(ctx), state_desc_en_all_vect, ctx);
-    check_object_state_desc_data(Fred::GetObjectStateDescriptions("EN").set_object_type("contact").exec(ctx), state_desc_en_contact_vect, ctx);
-    check_object_state_desc_data(Fred::GetObjectStateDescriptions("EN").set_external().exec(ctx), state_desc_en_external_vect, ctx);
+    check_object_state_desc_data(Fred::GetObjectStateDescriptions("EN").exec(ctx), state_desc_en_all_vect);
+    check_object_state_desc_data(Fred::GetObjectStateDescriptions("EN").set_object_type("contact").exec(ctx), state_desc_en_contact_vect);
+    check_object_state_desc_data(Fred::GetObjectStateDescriptions("EN").set_external().exec(ctx), state_desc_en_external_vect);
 }
 
 BOOST_AUTO_TEST_SUITE_END();//ObjectStateDescriptionWithComparison
