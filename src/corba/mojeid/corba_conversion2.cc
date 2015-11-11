@@ -490,6 +490,10 @@ into_from< IDL_UPDATE_CONTACT_PREPARE_ERROR, IMPL_UPDATE_CONTACT_PREPARE_ERROR >
         }
     }
 
+    if (!src.Fred::MojeID::check_contact_birthday::success()) {
+        into(dst.birth_date).from(Registry::MojeID::INVALID);
+    }
+
     if (!src.Fred::check_contact_email_presence::success()) {
         into(dst.email).from(Registry::MojeID::REQUIRED);
     }
@@ -497,8 +501,19 @@ into_from< IDL_UPDATE_CONTACT_PREPARE_ERROR, IMPL_UPDATE_CONTACT_PREPARE_ERROR >
         into(dst.email).from(Registry::MojeID::INVALID);
     }
 
-    if (!src.Fred::check_contact_phone_validity::success()) {
+    if (!src.Fred::check_contact_notifyemail_validity::success()) {
+        into(dst.notify_email).from(Registry::MojeID::INVALID);
+    }
+
+    if (!src.Fred::check_contact_phone_presence::success()) {
+        into(dst.phone).from(Registry::MojeID::REQUIRED);
+    }
+    else if (!src.Fred::check_contact_phone_validity::success()) {
         into(dst.phone).from(Registry::MojeID::INVALID);
+    }
+
+    if (!src.Fred::check_contact_fax_validity::success()) {
+        into(dst.fax).from(Registry::MojeID::INVALID);
     }
 
     if (!src.Fred::check_contact_place_address::success()) {
@@ -526,13 +541,6 @@ into_from< IDL_UPDATE_CONTACT_PREPARE_ERROR, IMPL_UPDATE_CONTACT_PREPARE_ERROR >
                                  static_cast< const Fred::check_contact_addresses_shipping3& >(src)));
     }
 
-    if (!src.Fred::check_contact_notifyemail_validity::success()) {
-        into(dst.notifyemail).from(Registry::MojeID::INVALID);
-    }
-
-    if (!src.Fred::check_contact_fax_validity::success()) {
-        into(dst.fax).from(Registry::MojeID::INVALID);
-    }
     return dst;
 }
 

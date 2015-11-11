@@ -177,30 +177,36 @@ public:
                               Fred::check_contact_email_validity,
                               Fred::check_contact_phone_presence,
                               Fred::check_contact_phone_validity > check_create_contact_prepare;
+
     typedef boost::mpl::list< Fred::MojeID::check_contact_username_availability,
                               Fred::check_contact_email_availability,
                               Fred::check_contact_phone_availability > check_create_contact_prepare_ctx;
 
     typedef boost::mpl::list< Fred::check_contact_email_availability,
                               Fred::check_contact_phone_availability > check_process_registration_request_ctx;
+
     typedef Fred::Check< boost::mpl::list< check_create_contact_prepare,
                     check_process_registration_request_ctx > > CheckProcessRegistrationRequest;
 
 
 
     typedef boost::mpl::list< Fred::check_contact_name,
+                              Fred::MojeID::check_contact_birthday,
+                              Fred::check_contact_email_presence,
+                              Fred::check_contact_email_validity,
+                              Fred::check_contact_notifyemail_validity,
+                              Fred::check_contact_phone_presence,
+                              Fred::check_contact_phone_validity,
+                              Fred::check_contact_fax_validity,
                               Fred::check_contact_place_address,
                               Fred::check_contact_addresses_mailing,
                               Fred::check_contact_addresses_billing,
                               Fred::check_contact_addresses_shipping,
                               Fred::check_contact_addresses_shipping2,
-                              Fred::check_contact_addresses_shipping3,
-                              Fred::check_contact_email_presence,
-                              Fred::check_contact_email_validity,
-                              Fred::check_contact_phone_validity,
-                              Fred::check_contact_notifyemail_validity,
-                              Fred::check_contact_fax_validity > check_update_contact_prepare;
+                              Fred::check_contact_addresses_shipping3 > check_update_contact_prepare;
+
     typedef Fred::Check< check_update_contact_prepare > CheckUpdateContactPrepare;
+
     typedef CheckUpdateContactPrepare UpdateContactPrepareError;
 
     typedef boost::mpl::list< Fred::check_contact_name,
