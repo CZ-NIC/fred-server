@@ -166,7 +166,6 @@ public:
 
 
     typedef boost::mpl::list< Fred::check_contact_name,
-                              Fred::check_contact_place_address,
                               Fred::check_contact_place_address_mandatory,
                               Fred::check_contact_addresses_mailing,
                               Fred::check_contact_addresses_billing,

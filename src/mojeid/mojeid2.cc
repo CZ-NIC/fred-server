@@ -930,18 +930,22 @@ MojeID2Impl::ContactId MojeID2Impl::create_contact_prepare(
         Fred::OperationContextTwoPhaseCommitCreator ctx(_trans_id);
 
         {
+            typedef Fred::Object::State::set< Fred::Object::State::SERVER_TRANSFER_PROHIBITED,
+                            Fred::Object::State::SERVER_UPDATE_PROHIBITED,
+                            Fred::Object::State::SERVER_DELETE_PROHIBITED,
+                            Fred::Object::State::SERVER_BLOCKED,
+                            Fred::Object::State::MOJEID_CONTACT,
+                            Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT,
+                            Fred::Object::State::IDENTIFIED_CONTACT,
+                            Fred::Object::State::VALIDATED_CONTACT >::type to_check;
+
+            Fred::Object::Get< Fred::Object::Type::CONTACT >::States<to_check>::Presence a = Fred::Object::Get< Fred::Object::Type::CONTACT >(_contact.id)
+                                .states<to_check>().presence(ctx);
+
               const CheckMojeIDRegistration check_contact_data(
                 Fred::make_args(_contact),
                 Fred::make_args(_contact, ctx),
-                Fred::make_args(Fred::Object::Get< Fred::Object::Type::CONTACT >(_contact.id)
-                    .states< Fred::Object::State::set< Fred::Object::State::SERVER_TRANSFER_PROHIBITED,
-                        Fred::Object::State::SERVER_UPDATE_PROHIBITED,
-                        Fred::Object::State::SERVER_DELETE_PROHIBITED,
-                        Fred::Object::State::SERVER_BLOCKED,
-                        Fred::Object::State::MOJEID_CONTACT,
-                        Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT,
-                        Fred::Object::State::IDENTIFIED_CONTACT,
-                        Fred::Object::State::VALIDATED_CONTACT >::type >().presence(ctx)));
+                Fred::make_args(a));
 
             if (!check_contact_data.success()) {
                 throw check_contact_data;
@@ -1326,7 +1330,11 @@ void MojeID2Impl::update_transfer_contact_prepare(
                 Fred::CreateObjectStateRequestId(current_data.id, to_cancel).exec(ctx);
             }
 
-            const CheckMojeIDRegistration check_contact_data(_new_data);
+            const CheckMojeIDRegistration check_contact_data(
+                Fred::make_args(_new_data),
+                Fred::make_args(_new_data, ctx),
+                Fred::make_args(states));
+
             if (!check_contact_data.success()) {
                 throw check_contact_data;
             }
@@ -2699,8 +2707,7 @@ void transitions::action::process_contact_conditional_identification::operator()
         {
             const MojeID2Impl::CheckProcessRegistrationRequest check_contact_data(
                 Fred::make_args(contact),
-                Fred::make_args(contact, _event.get_operation_context()),
-                Fred::make_args(_states));
+                Fred::make_args(contact, _event.get_operation_context()));
 
             if (!check_contact_data.success()) {
                 throw check_contact_data;
