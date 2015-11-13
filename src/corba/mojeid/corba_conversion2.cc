@@ -416,7 +416,7 @@ into_from< Registry::MojeID::Server::REGISTRATION_VALIDATION_ERROR, Registry::Mo
         }
     }
 
-    if (!src.Fred::MojeID::check_contact_birthday::success()) {
+    if (!src.Fred::MojeID::check_contact_birthday_validity::success()) {
         into(dst.birth_date).from(Registry::MojeID::INVALID);
     }
 

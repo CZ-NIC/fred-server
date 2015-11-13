@@ -60,9 +60,14 @@ ContactId Server_i::create_contact_prepare(
         return contact_id;
     }
     catch (const MojeID2Impl::CheckCreateContactPrepare &e) {
-        IDL::REGISTRATION_VALIDATION_ERROR idl_error;
-        Corba::Conversion::into(idl_error).from(e);
-        throw idl_error;
+        try {
+            IDL::REGISTRATION_VALIDATION_ERROR idl_error;
+            Corba::Conversion::into(idl_error).from(e);
+            throw idl_error;
+        }
+        catch (...) {
+                throw IDL::INTERNAL_SERVER_ERROR();
+            }
     }
     catch (...) {
         throw IDL::INTERNAL_SERVER_ERROR();

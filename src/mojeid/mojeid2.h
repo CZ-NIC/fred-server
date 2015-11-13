@@ -164,7 +164,23 @@ public:
                                         check_mojeid_registration_ctx,
                                         check_transfer_contact_prepare_presence > > CheckMojeIDRegistration;
 
-    typedef Fred::Check< boost::mpl::list< check_mojeid_registration,
+    typedef boost::mpl::list< Fred::check_contact_name,
+                              Fred::MojeID::check_contact_birthday_validity,
+                              Fred::check_contact_email_presence,
+                              Fred::check_contact_email_validity,
+                              Fred::check_contact_notifyemail_validity,
+                              Fred::check_contact_phone_presence,
+                              Fred::check_contact_phone_validity,
+                              Fred::check_contact_fax_validity,
+                              Fred::check_contact_place_address,
+                              Fred::check_contact_addresses_mailing,
+                              Fred::check_contact_addresses_billing,
+                              Fred::check_contact_addresses_shipping,
+                              Fred::check_contact_addresses_shipping2,
+                              Fred::check_contact_addresses_shipping3 > check_mojeid_create_contact;
+
+
+    typedef Fred::Check< boost::mpl::list< check_mojeid_create_contact,
                                         check_mojeid_registration_ctx > > CheckCreateContactPrepare;
 
 
