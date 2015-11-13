@@ -59,7 +59,7 @@ ContactId Server_i::create_contact_prepare(
         Corba::Conversion::into(_identification).from(ident);
         return contact_id;
     }
-    catch (const MojeID2Impl::CheckMojeIDRegistration &e) {
+    catch (const MojeID2Impl::CheckCreateContactPrepare &e) {
         IDL::REGISTRATION_VALIDATION_ERROR idl_error;
         Corba::Conversion::into(idl_error).from(e);
         throw idl_error;

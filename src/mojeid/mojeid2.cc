@@ -930,22 +930,9 @@ MojeID2Impl::ContactId MojeID2Impl::create_contact_prepare(
         Fred::OperationContextTwoPhaseCommitCreator ctx(_trans_id);
 
         {
-            typedef Fred::Object::State::set< Fred::Object::State::SERVER_TRANSFER_PROHIBITED,
-                            Fred::Object::State::SERVER_UPDATE_PROHIBITED,
-                            Fred::Object::State::SERVER_DELETE_PROHIBITED,
-                            Fred::Object::State::SERVER_BLOCKED,
-                            Fred::Object::State::MOJEID_CONTACT,
-                            Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT,
-                            Fred::Object::State::IDENTIFIED_CONTACT,
-                            Fred::Object::State::VALIDATED_CONTACT >::type to_check;
-
-            Fred::Object::Get< Fred::Object::Type::CONTACT >::States<to_check>::Presence a = Fred::Object::Get< Fred::Object::Type::CONTACT >(_contact.id)
-                                .states<to_check>().presence(ctx);
-
-              const CheckMojeIDRegistration check_contact_data(
+              const CheckCreateContactPrepare check_contact_data(
                 Fred::make_args(_contact),
-                Fred::make_args(_contact, ctx),
-                Fred::make_args(a));
+                Fred::make_args(_contact, ctx));
 
             if (!check_contact_data.success()) {
                 throw check_contact_data;
@@ -966,7 +953,7 @@ MojeID2Impl::ContactId MojeID2Impl::create_contact_prepare(
         ctx.commit_transaction();
         return new_contact.object_id;
     }
-    catch (const CheckMojeIDRegistration&) {
+    catch (const CheckCreateContactPrepare&) {
         LOGGER(PACKAGE).error("request failed (incorrect input data)");
         throw;
     }

@@ -174,6 +174,14 @@ struct into_from< IDL_SHIPPING_ADDRESS_VALIDATION_ERROR, IMPL_CONTACT_ADDRESS_ER
     dst_value_ref operator()(dst_value_ref dst, src_value src)const;
 };
 
+template < >
+struct into_from< Registry::MojeID::Server::REGISTRATION_VALIDATION_ERROR, Registry::MojeID::MojeID2Impl::CheckCreateContactPrepare >
+: into_from_base< Registry::MojeID::Server::REGISTRATION_VALIDATION_ERROR, Registry::MojeID::MojeID2Impl::CheckCreateContactPrepare >
+{
+    dst_value_ref operator()(dst_value_ref dst, src_value src)const;
+};
+
+
 
 template < >
 struct into_from< Registry::MojeID::Server::REGISTRATION_VALIDATION_ERROR, Registry::MojeID::MojeID2Impl::CheckMojeIDRegistration >
