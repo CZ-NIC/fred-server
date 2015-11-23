@@ -173,6 +173,14 @@ public:
     }
 
     /**
+     * @returns either not-null value of object or falls back to provided value in case of null
+     */
+    T get_value_or(const T& _default) const
+    {
+        return isnull_ ? _default : value_;
+    }
+
+    /**
      * Overload of assignment operator for Database::Value
      *
      * \remark In case the _v is null default value of Database::QueryParam is assigned to the object.
