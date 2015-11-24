@@ -287,19 +287,18 @@ struct object_state_description_fixture : public Test::Fixture::instantiate_db_t
     }
 };
 
-void check_object_state_desc_data(const std::vector<Fred::ObjectStateDescription>& test_osd,
-    const std::vector<Fred::ObjectStateDescription>& fixture_osd)
+void check_object_state_desc_data(std::vector<Fred::ObjectStateDescription> test_osd,
+    std::vector<Fred::ObjectStateDescription> fixture_osd)
 {
     BOOST_REQUIRE(test_osd.size() == fixture_osd.size());
-    std::vector<Fred::ObjectStateDescription> test_osd_sorted(test_osd.begin(), test_osd.end());
-    std::vector<Fred::ObjectStateDescription> fixture_osd_sorted(fixture_osd.begin(), fixture_osd.end());
-    std::sort(test_osd_sorted.begin(), test_osd_sorted.end(), state_desc_less());
-    std::sort(fixture_osd_sorted.begin(), fixture_osd_sorted.end(), state_desc_less());
+
+    std::sort(test_osd.begin(), test_osd.end(), state_desc_less());
+    std::sort(fixture_osd.begin(), fixture_osd.end(), state_desc_less());
 
     std::pair<std::vector<Fred::ObjectStateDescription>::const_iterator,
         std::vector<Fred::ObjectStateDescription>::const_iterator> res
-        = std::mismatch(test_osd_sorted.begin(), test_osd_sorted.end(), fixture_osd_sorted.begin(), state_desc_equal);
-    BOOST_CHECK(res.first == test_osd_sorted.end());//check input vectors equality
+        = std::mismatch(test_osd.begin(), test_osd.end(), fixture_osd.begin(), state_desc_equal);
+    BOOST_CHECK(res.first == test_osd.end());//check input vectors equality
 }
 
 
