@@ -295,10 +295,9 @@ void check_object_state_desc_data(std::vector<Fred::ObjectStateDescription> test
     std::sort(test_osd.begin(), test_osd.end(), state_desc_less());
     std::sort(fixture_osd.begin(), fixture_osd.end(), state_desc_less());
 
-    std::pair<std::vector<Fred::ObjectStateDescription>::const_iterator,
-        std::vector<Fred::ObjectStateDescription>::const_iterator> res
-        = std::mismatch(test_osd.begin(), test_osd.end(), fixture_osd.begin(), state_desc_equal);
-    BOOST_CHECK(res.first == test_osd.end());//check input vectors equality
+    BOOST_CHECK(
+        std::mismatch(test_osd.begin(), test_osd.end(), fixture_osd.begin(), state_desc_equal)
+        == std::make_pair(test_osd.end(), fixture_osd.end()));//check input vectors equality
 }
 
 
