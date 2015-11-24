@@ -95,7 +95,11 @@ CLEANFILES = \
 		src/corba/AdminContactVerificationSK.cc \
 		src/corba/AdminContactVerificationDynSK.cc \
 		src/corba/AdminContactVerificationSK.h \
-		src/corba/AdminContactVerification.hh
+		src/corba/AdminContactVerification.hh \
+		src/corba/corba_conversion_testSK.cc \
+		src/corba/corba_conversion_testDynSK.cc \
+		src/corba/corba_conversion_testSK.h \
+		src/corba/corba_conversion_test.hh
 
 
 
@@ -266,6 +270,7 @@ noinst_LIBRARIES = \
 		src/corba/libcorbadomainbrowser.a \
 		src/corba/libcorbaadmincontactverification.a \
 		src/corba/util/libcorbautil.a \
+		src/corba/libcorba_conversion_test.a \
 		src/admin/contact/verification/libadmin_contact_verification.a
 
 
@@ -1159,7 +1164,8 @@ BUILT_SOURCES = \
 		src/corba/ZoneGeneratorSK.cc \
 		src/corba/ContactVerificationSK.cc \
 		src/corba/DomainBrowserSK.cc \
-		src/corba/AdminContactVerificationSK.cc
+		src/corba/AdminContactVerificationSK.cc \
+		src/corba/corba_conversion_testSK.cc
 
 
 # src/corba/libcorba.a
@@ -1295,6 +1301,11 @@ nodist_src_corba_libcorbadomainbrowser_a_SOURCES = \
 		src/corba/DomainBrowserDynSK.cc \
 		src/corba/DomainBrowser.hh
 
+nodist_src_corba_libcorba_conversion_test_a_SOURCES = \
+		src/corba/corba_conversion_testSK.cc \
+		src/corba/corba_conversion_testDynSK.cc \
+		src/corba/corba_conversion_test.hh
+
 #
 # nodist corba libs
 
@@ -1326,6 +1337,9 @@ src/corba/AdminContactVerificationSK.cc: $(IDLDIR)/AdminContactVerification.idl 
 
 src/corba/%.cc:
 		omniidl -bcxx -Wbuse_quotes -Wba -C$(top_builddir)/src/corba $<
+
+src/corba/corba_conversion_testSK.cc: $(top_srcdir)/tests/util/corba_conversion_test.idl
+		omniidl -bcxx -Wbuse_quotes -Wba -C$(top_builddir)/src/corba $(top_srcdir)/tests/util/corba_conversion_test.idl
 
 #
 # idl build
@@ -2060,7 +2074,8 @@ SERVER_TESTS = \
 		tests/test-exception \
 		tests/test-blocking \
 		tests/test-fredlib \
-		tests/test-optys
+		tests/test-optys \
+		tests/test-corba-conversion
 
 # tests/interfaces/test-admin-contact-verification
 #
@@ -2569,6 +2584,42 @@ tests_test_optys_LDADD = \
 #
 # tests/test_optys
 
+# tests/test_corba_conversion
+#
+tests_test_corba_conversion_SOURCES = \
+		tests/util/test_corba_conversion_main.cc \
+		tests/util/test_corba_conversion.cc \
+		src/cli_admin/read_config_file.h \
+		util/corba_conversion.h \
+		util/corba_conversion.cc \
+		tests/setup/fixtures_utils.h \
+		tests/setup/fixtures_utils.cc \
+		tests/setup/fixtures.h \
+		tests/setup/fixtures.cc
+
+tests_test_corba_conversion_LDFLAGS = \
+		$(POSTGRESQL_LDFLAGS) \
+		$(BOOST_LDFLAGS) \
+		$(AM_LDFLAGS)
+
+tests_test_corba_conversion_LDADD = \
+		src/corba/libcorba_conversion_test.a \
+		src/fredlib/libfred.a \
+		util/libutil.a \
+		util/log/liblog.a \
+		-lmpdec -lm -lrt \
+		$(BOOST_PROGRAM_OPTIONS_LIB) \
+		$(BOOST_DATE_TIME_LIB) \
+		$(BOOST_FILESYSTEM_LIB) \
+		$(BOOST_REGEX_LIB) \
+		$(BOOST_THREAD_LIB) \
+		$(BOOST_SERIALIZATION_LIB) \
+		$(BOOST_SYSTEM_LIB) \
+		$(POSTGRESQL_LIB) \
+		$(OMNIORB4_LIBS) \
+		$(BOOST_UNIT_TEST_FRAMEWORK_LIB)
+#
+# tests/test_corba_conversion
 
 
 
