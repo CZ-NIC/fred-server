@@ -297,7 +297,7 @@ void check_object_state_desc_data(std::vector<Fred::ObjectStateDescription> test
 
     BOOST_CHECK(
         std::mismatch(test_osd.begin(), test_osd.end(), fixture_osd.begin(), state_desc_equal)
-        == std::make_pair(test_osd.end(), fixture_osd.end()));//check input vectors equality
+        == std::make_pair(test_osd.end(), fixture_osd.end()));
 }
 
 
