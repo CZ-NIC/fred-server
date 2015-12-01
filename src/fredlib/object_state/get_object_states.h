@@ -29,7 +29,7 @@
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 
-#include "src/fredlib/opexception.h"
+#include "src/fredlib/opcontext.h"
 #include "util/db/nullable.h"
 
 namespace Fred

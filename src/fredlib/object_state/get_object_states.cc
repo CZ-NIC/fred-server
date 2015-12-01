@@ -24,7 +24,6 @@
 #include <vector>
 #include <string>
 
-#include "src/fredlib/opcontext.h"
 #include "get_object_states.h"
 
 namespace Fred
