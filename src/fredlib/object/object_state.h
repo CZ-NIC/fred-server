@@ -23,10 +23,7 @@
 #ifndef OBJECT_STATE_H_29361CB88732C16EBD1D73A1BE4BFD83//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
 #define OBJECT_STATE_H_29361CB88732C16EBD1D73A1BE4BFD83
 
-#include "util/static_set_of_values.h"
-
-#include <map>
-#include <stdexcept>
+#include "util/enum_conversion.h"
 
 /// Fred matters
 namespace Fred {
@@ -71,133 +68,62 @@ public:
         VALIDATED_CONTACT,                  ///< means database `validatedContact` state
         VALIDATION_WARNING1,                ///< means database `validationWarning1` state
         VALIDATION_WARNING2,                ///< means database `validationWarning2` state
-        NO_STATE = -1,                      ///< special value doesn't represent any state
     };
-    /**
-     * From enum value creates object having methods for conversion to its string representation.
-     * @param _value enum value
-     */
-    explicit State(Value _value):value_(_value) { }
     /**
      * String value converts to its enum equivalent.
      * @param _str database representation of object state
      * @return its enum equivalent
-     * @throw std::runtime_error if conversion is impossible
+     * @throw std::invalid_argument if conversion is impossible
      */
     static Value from(const std::string &_str)
     {
-        const StrToValue& str2val = str_to_value();
-        StrToValue::const_iterator item_ptr = str2val.find(_str);
-        if (item_ptr != str2val.end()) {
-            return item_ptr->second;
-        }
-        throw std::runtime_error("Unknown object state '" + _str + "'");
-    }
-    /**
-     * Enum value converts to its string representation.
-     * @param _str where store the result
-     * @return its string representation
-     * @throw std::runtime_error if conversion is impossible
-     */
-    std::string& into(std::string &_str)const
-    {
-        const ValueToStr& val2str = value_to_str();
-        ValueToStr::const_iterator item_ptr = val2str.find(value_);
-        if (item_ptr != val2str.end()) {
-            return _str = item_ptr->second;
-        }
-        throw std::runtime_error("Invalid object state value");
-    }
-    /**
-     * Enum value converts to value of other type.
-     * @tparam T destination type
-     * @return converted value
-     * @throw std::runtime_error if conversion is impossible
-     */
-    template < typename T >
-    T into()const
-    {
-        T result;
-        this->into(result);
-        return result;
-    }
-    /**
-     * Static set of object states intended for operations with collection of object states.
-     */
-    template < Value v00 = NO_STATE, Value v01 = NO_STATE, Value v02 = NO_STATE,
-               Value v03 = NO_STATE, Value v04 = NO_STATE, Value v05 = NO_STATE,
-               Value v06 = NO_STATE, Value v07 = NO_STATE, Value v08 = NO_STATE,
-               Value v09 = NO_STATE, Value v10 = NO_STATE, Value v11 = NO_STATE,
-               Value v12 = NO_STATE, Value v13 = NO_STATE, Value v14 = NO_STATE,
-               Value v15 = NO_STATE, Value v16 = NO_STATE, Value v17 = NO_STATE,
-               Value v18 = NO_STATE, Value v19 = NO_STATE, Value v20 = NO_STATE,
-               Value v21 = NO_STATE, Value v22 = NO_STATE, Value v23 = NO_STATE,
-               Value v24 = NO_STATE, Value v25 = NO_STATE, Value v26 = NO_STATE >
-    struct set
-    {
-        /**
-         * Static (at compile time) collection of object states.
-         */
-        typedef static_set_of_values< Value, NO_STATE,
-                                      v00, v01, v02, v03, v04, v05, v06, v07, v08,
-                                      v09, v10, v11, v12, v13, v14, v15, v16, v17,
-                                      v18, v19, v20, v21, v22, v23, v24, v25, v26 > type;
-    };
-private:
-    Value value_;
-    typedef std::map< std::string, Value > StrToValue;
-    typedef std::map< Value, std::string > ValueToStr;
-    static const StrToValue& str_to_value()
-    {
-        static StrToValue result;
-        if (result.empty()) {
-            result["conditionallyIdentifiedContact"]   = CONDITIONALLY_IDENTIFIED_CONTACT;
-            result["contactFailedManualVerification"]  = CONTACT_FAILED_MANUAL_VERIFICATION;
-            result["contactInManualVerification"]      = CONTACT_IN_MANUAL_VERIFICATION;
-            result["contactPassedManualVerification"]  = CONTACT_PASSED_MANUAL_VERIFICATION;
-            result["deleteCandidate"]                  = DELETE_CANDIDATE;
-            result["deleteWarning"]                    = DELETE_WARNING;
-            result["expirationWarning"]                = EXPIRATION_WARNING;
-            result["expired"]                          = EXPIRED;
-            result["identifiedContact"]                = IDENTIFIED_CONTACT;
-            result["linked"]                           = LINKED;
-            result["mojeidContact"]                    = MOJEID_CONTACT;
-            result["notValidated"]                     = NOT_VALIDATED;
-            result["nssetMissing"]                     = NSSET_MISSING;
-            result["outzone"]                          = OUTZONE;
-            result["outzoneUnguarded"]                 = OUTZONE_UNGUARDED;
-            result["serverBlocked"]                    = SERVER_BLOCKED;
-            result["serverDeleteProhibited"]           = SERVER_DELETE_PROHIBITED;
-            result["serverInzoneManual"]               = SERVER_INZONE_MANUAL;
-            result["serverOutzoneManual"]              = SERVER_OUTZONE_MANUAL;
-            result["serverRegistrantChangeProhibited"] = SERVER_REGISTRANT_CHANGE_PROHIBITED;
-            result["serverRenewProhibited"]            = SERVER_RENEW_PROHIBITED;
-            result["serverTransferProhibited"]         = SERVER_TRANSFER_PROHIBITED;
-            result["serverUpdateProhibited"]           = SERVER_UPDATE_PROHIBITED;
-            result["unguarded"]                        = UNGUARDED;
-            result["validatedContact"]                 = VALIDATED_CONTACT;
-            result["validationWarning1"]               = VALIDATION_WARNING1;
-            result["validationWarning2"]               = VALIDATION_WARNING2;
-        }
-        return result;
-    }
-    static const ValueToStr& value_to_str()
-    {
-        static ValueToStr result;
-        if (result.empty()) {
-            const StrToValue &str2val = str_to_value();
-            for (StrToValue::const_iterator ptr = str2val.begin(); ptr != str2val.end(); ++ptr) {
-                result[ptr->second] = ptr->first;
-            }
-            if (str2val.size() != result.size()) {
-                throw std::runtime_error("State::str_to_value() returns map with non-unique values");
-            }
-        }
-        return result;
+        return Conversion::Enums::into_from< Value >::into_enum_from(_str);
     }
 };
 
 }//Fred::Object
 }//Fred
+
+namespace Conversion {
+namespace Enums {
+
+template < >
+struct tools_for< Fred::Object::State::Value >
+{
+    static void enum_to_other_init(void (*enum_to_other_set)(Fred::Object::State::Value, const std::string&))
+    {
+        using Fred::Object::State;
+        enum_to_other_set(State::CONDITIONALLY_IDENTIFIED_CONTACT,    "conditionallyIdentifiedContact");
+        enum_to_other_set(State::CONTACT_FAILED_MANUAL_VERIFICATION,  "contactFailedManualVerification");
+        enum_to_other_set(State::CONTACT_IN_MANUAL_VERIFICATION,      "contactInManualVerification");
+        enum_to_other_set(State::CONTACT_PASSED_MANUAL_VERIFICATION,  "contactPassedManualVerification");
+        enum_to_other_set(State::DELETE_CANDIDATE,                    "deleteCandidate");
+        enum_to_other_set(State::DELETE_WARNING,                      "deleteWarning");
+        enum_to_other_set(State::EXPIRATION_WARNING,                  "expirationWarning");
+        enum_to_other_set(State::EXPIRED,                             "expired");
+        enum_to_other_set(State::IDENTIFIED_CONTACT,                  "identifiedContact");
+        enum_to_other_set(State::LINKED,                              "linked");
+        enum_to_other_set(State::MOJEID_CONTACT,                      "mojeidContact");
+        enum_to_other_set(State::NOT_VALIDATED,                       "notValidated");
+        enum_to_other_set(State::NSSET_MISSING,                       "nssetMissing");
+        enum_to_other_set(State::OUTZONE,                             "outzone");
+        enum_to_other_set(State::OUTZONE_UNGUARDED,                   "outzoneUnguarded");
+        enum_to_other_set(State::SERVER_BLOCKED,                      "serverBlocked");
+        enum_to_other_set(State::SERVER_DELETE_PROHIBITED,            "serverDeleteProhibited");
+        enum_to_other_set(State::SERVER_INZONE_MANUAL,                "serverInzoneManual");
+        enum_to_other_set(State::SERVER_OUTZONE_MANUAL,               "serverOutzoneManual");
+        enum_to_other_set(State::SERVER_REGISTRANT_CHANGE_PROHIBITED, "serverRegistrantChangeProhibited");
+        enum_to_other_set(State::SERVER_RENEW_PROHIBITED,             "serverRenewProhibited");
+        enum_to_other_set(State::SERVER_TRANSFER_PROHIBITED,          "serverTransferProhibited");
+        enum_to_other_set(State::SERVER_UPDATE_PROHIBITED,            "serverUpdateProhibited");
+        enum_to_other_set(State::UNGUARDED,                           "unguarded");
+        enum_to_other_set(State::VALIDATED_CONTACT,                   "validatedContact");
+        enum_to_other_set(State::VALIDATION_WARNING1,                 "validationWarning1");
+        enum_to_other_set(State::VALIDATION_WARNING2,                 "validationWarning2");
+    }
+};
+
+}//namespace Conversion::Enums
+}//namespace Conversion
 
 #endif//OBJECT_STATE_H_29361CB88732C16EBD1D73A1BE4BFD83

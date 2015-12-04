@@ -26,7 +26,7 @@
 
 #include "src/fredlib/contact/checkers.h"
 #include "src/fredlib/contact/info_contact_data.h"
-#include "src/fredlib/object/get_states_presence.h"
+#include "src/fredlib/object/states_info.h"
 
 namespace Fred {
 namespace MojeID {
@@ -34,13 +34,12 @@ namespace Check {
 
 struct states_before_transfer_into_mojeid
 {
-    template < typename STATES_PRESENCE >
-    states_before_transfer_into_mojeid(const STATES_PRESENCE &_states_presence)
-    :   server_user_blocked   (_states_presence.template get< Object::State::SERVER_TRANSFER_PROHIBITED >() ||
-                               _states_presence.template get< Object::State::SERVER_UPDATE_PROHIBITED >() ||
-                               _states_presence.template get< Object::State::SERVER_DELETE_PROHIBITED >()),
-        server_admin_blocked  (_states_presence.template get< Object::State::SERVER_BLOCKED >()),
-        mojeid_contact_present(_states_presence.template get< Object::State::MOJEID_CONTACT >())
+    states_before_transfer_into_mojeid(const Object::StatesInfo &_states_info)
+    :   server_user_blocked   (_states_info.presents(Object::State::SERVER_TRANSFER_PROHIBITED) ||
+                               _states_info.presents(Object::State::SERVER_UPDATE_PROHIBITED) ||
+                               _states_info.presents(Object::State::SERVER_DELETE_PROHIBITED)),
+        server_admin_blocked  (_states_info.presents(Object::State::SERVER_BLOCKED)),
+        mojeid_contact_present(_states_info.presents(Object::State::MOJEID_CONTACT))
     { }
     bool success()const
     {
