@@ -21,7 +21,6 @@
  *  mojeid2 implementation
  */
 
-#include "src/mojeid/state_machine.h"
 #include "src/mojeid/mojeid2.h"
 #include "src/mojeid/safe_data_storage.h"
 #include "src/mojeid/mojeid_public_request.h"
