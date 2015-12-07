@@ -137,8 +137,6 @@ public:
         ContactId contact_id,
         LogRequestId log_request_id)const;
 
-    typedef Fred::Object::Get< Fred::Object::Type::CONTACT > GetContact;
-
     typedef boost::mpl::list< Fred::check_contact_name,
                               Fred::MojeID::check_contact_birthday,
                               Fred::check_contact_email_presence,
