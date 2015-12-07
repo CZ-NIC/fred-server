@@ -106,9 +106,6 @@ Registry::MojeID::InfoContact* Server_i::transfer_contact_prepare(
         Corba::Conversion::into(idl_error).from(e);
         throw idl_error;
     }
-    catch (const MojeID2Impl::GetContact::object_doesnt_exist &e) {
-        throw IDL::OBJECT_NOT_EXISTS();
-    }
     catch (...) {
         throw IDL::INTERNAL_SERVER_ERROR();
     }
@@ -133,9 +130,6 @@ void Server_i::update_contact_prepare(
     catch (const MojeID2Impl::MessageLimitExceeded &e) {
         IDL::MESSAGE_LIMIT_EXCEEDED idl_error;
         throw Corba::Conversion::into(idl_error).from(e);
-    }
-    catch (const MojeID2Impl::GetContact::object_doesnt_exist &) {
-        throw IDL::OBJECT_NOT_EXISTS();
     }
     catch (const MojeID2Impl::ObjectDoesntExist&) {
         throw IDL::OBJECT_NOT_EXISTS();
@@ -183,9 +177,6 @@ Registry::MojeID::InfoContact* Server_i::info_contact(
         Fred::InfoContactData contact;
         impl_ptr_->info_contact(username, contact);
         return Corba::Conversion::into(new Registry::MojeID::InfoContact).from(contact);
-    }
-    catch (const MojeID2Impl::GetContact::object_doesnt_exist &e) {
-        throw IDL::OBJECT_NOT_EXISTS();
     }
     catch (...) {
         throw IDL::INTERNAL_SERVER_ERROR();
@@ -236,9 +227,6 @@ void Server_i::process_identification_request(
 {
     try {
         impl_ptr_->process_identification_request(contact_id, password, log_request_id);
-    }
-    catch (const MojeID2Impl::GetContact::object_doesnt_exist &e) {
-        throw IDL::OBJECT_NOT_EXISTS();
     }
     catch (const MojeID2Impl::PublicRequestDoesntExist&) {
         throw IDL::IDENTIFICATION_REQUEST_NOT_EXISTS();
