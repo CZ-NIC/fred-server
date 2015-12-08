@@ -2592,6 +2592,8 @@ tests_test_corba_conversion_SOURCES = \
 		src/cli_admin/read_config_file.h \
 		util/corba_conversion.h \
 		util/corba_conversion.cc \
+		src/corba/mojeid/mojeid_corba_conversion.h \
+		src/corba/mojeid/mojeid_corba_conversion.cc \
 		tests/setup/fixtures_utils.h \
 		tests/setup/fixtures_utils.cc \
 		tests/setup/fixtures.h \

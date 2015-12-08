@@ -37,6 +37,7 @@
 #include "util/corba_conversion.h"
 
 #include "src/corba/corba_conversion_test.hh"
+#include "src/corba/mojeid/mojeid_corba_conversion.h"
 
 //not using UTF defined main
 #define BOOST_TEST_NO_MAIN
