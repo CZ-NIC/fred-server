@@ -28,6 +28,7 @@
 #include <string>
 #include <omniORB4/CORBA.h>
 
+#include "util/db/nullable.h"
 /**
  * CORBA conversions
  */
@@ -157,6 +158,7 @@ namespace CorbaConversion
         virtual ~PointerIsNULL() throw() {}
     };
 
+    //CORBA::String_var
     struct Unwrapper_String_var_into_std_string
     {
         typedef CORBA::String_var CORBA_TYPE;
@@ -183,7 +185,38 @@ namespace CorbaConversion
         typedef Wrapper_std_string_into_String_var type;
     };
 
+    //valuetype String_var
+    template< typename CORBA_VALUETYPE_STRING_VAR_TYPE >
+    struct Unwrapper_NullableString_var_into_Nullable_std_string
+    {
+        typedef CORBA_VALUETYPE_STRING_VAR_TYPE CORBA_TYPE;
+        typedef Nullable<std::string> NON_CORBA_TYPE;
 
+        static void unwrap( const CORBA_TYPE& ct_in, NON_CORBA_TYPE& nct_out)
+        {
+            if(ct_in.in() == NULL)
+            {
+                nct_out = Nullable<std::string>();
+            }
+            nct_out = Nullable<std::string>(ct_in.in()->_value());
+        }
+    };
+
+    template< typename CORBA_VALUETYPE_STRING_TYPE, typename CORBA_VALUETYPE_STRING_VAR_TYPE >
+    struct Wrapper_Nullable_std_string_into_NullableString_var
+    {
+        typedef CORBA_VALUETYPE_STRING_VAR_TYPE CORBA_TYPE;
+        typedef Nullable<std::string> NON_CORBA_TYPE;
+
+        static void wrap( const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out )
+        {
+            if(nct_in.isnull())
+            {
+                ct_out = CORBA_VALUETYPE_STRING_VAR_TYPE();
+            }
+            ct_out = new CORBA_VALUETYPE_STRING_TYPE(nct_in.get_value().c_str());
+        }
+    };
 
 }
 #endif

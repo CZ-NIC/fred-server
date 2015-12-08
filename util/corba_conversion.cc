@@ -39,4 +39,5 @@ namespace CorbaConversion
     {
         ct_out = CORBA::String_var(CORBA::string_dup(nct_in.c_str()));
     }
+
 }

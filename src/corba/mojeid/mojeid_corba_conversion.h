@@ -30,6 +30,16 @@
 namespace CorbaConversion
 {
 
+    template <> struct DEFAULT_UNWRAPPER<Registry::MojeID::NullableString_var, Nullable<std::string> >
+    {
+        typedef Unwrapper_NullableString_var_into_Nullable_std_string<Registry::MojeID::NullableString_var> type;
+    };
+
+    template <> struct DEFAULT_WRAPPER<Nullable<std::string>, Registry::MojeID::NullableString_var>
+    {
+        typedef Wrapper_Nullable_std_string_into_NullableString_var<Registry::MojeID::NullableString, Registry::MojeID::NullableString_var> type;
+    };
+
 }
 #endif
 

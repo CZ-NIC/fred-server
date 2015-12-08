@@ -2587,13 +2587,13 @@ tests_test_optys_LDADD = \
 # tests/test_corba_conversion
 #
 tests_test_corba_conversion_SOURCES = \
-		tests/util/test_corba_conversion_main.cc \
-		tests/util/test_corba_conversion.cc \
-		src/cli_admin/read_config_file.h \
 		util/corba_conversion.h \
 		util/corba_conversion.cc \
 		src/corba/mojeid/mojeid_corba_conversion.h \
 		src/corba/mojeid/mojeid_corba_conversion.cc \
+		tests/util/test_corba_conversion_main.cc \
+		tests/util/test_corba_conversion.cc \
+		src/cli_admin/read_config_file.h \
 		tests/setup/fixtures_utils.h \
 		tests/setup/fixtures_utils.cc \
 		tests/setup/fixtures.h \
@@ -2606,6 +2606,7 @@ tests_test_corba_conversion_LDFLAGS = \
 
 tests_test_corba_conversion_LDADD = \
 		src/corba/libcorba_conversion_test.a \
+		src/corba/libcorbamojeid2.a \
 		src/fredlib/libfred.a \
 		util/libutil.a \
 		util/log/liblog.a \

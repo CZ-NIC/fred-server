@@ -47,6 +47,15 @@
 
 namespace CorbaConversion
 {
+    template <> struct DEFAULT_UNWRAPPER<Test::NullableString_var, Nullable<std::string> >
+    {
+        typedef Unwrapper_NullableString_var_into_Nullable_std_string<Test::NullableString_var> type;
+    };
+
+    template <> struct DEFAULT_WRAPPER<Nullable<std::string>, Test::NullableString_var >
+    {
+        typedef Wrapper_Nullable_std_string_into_NullableString_var<Test::NullableString, Test::NullableString_var> type;
+    };
 
     //tmpl seq
     /**
@@ -187,48 +196,6 @@ namespace CorbaConversion
         typedef Unwrapper_Short_into_short type;
     };
 
-    //valuetype
-    struct Unwrapper_NullableString_var_into_Nullable_std_string
-    {
-        typedef Test::NullableString_var CORBA_TYPE;
-        typedef Nullable<std::string> NON_CORBA_TYPE;
-
-        static void unwrap( const CORBA_TYPE& ct_in, NON_CORBA_TYPE& nct_out)
-        {
-            if(ct_in.in() == NULL)
-            {
-                nct_out = Nullable<std::string>();
-            }
-            nct_out = Nullable<std::string>(ct_in.in()->_value());
-        }
-    };
-    template <> struct DEFAULT_UNWRAPPER<
-        Unwrapper_NullableString_var_into_Nullable_std_string::CORBA_TYPE,
-        Unwrapper_NullableString_var_into_Nullable_std_string::NON_CORBA_TYPE>
-    {
-        typedef Unwrapper_NullableString_var_into_Nullable_std_string type;
-    };
-
-    struct Wrapper_Nullable_std_string_into_NullableString_var
-    {
-        typedef Test::NullableString_var CORBA_TYPE;
-        typedef Nullable<std::string> NON_CORBA_TYPE;
-
-        static void wrap( const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out )
-        {
-            if(nct_in.isnull())
-            {
-                ct_out = Test::NullableString_var();
-            }
-            ct_out = new Test::NullableString(nct_in.get_value().c_str());
-        }
-    };
-    template <> struct DEFAULT_WRAPPER<
-    Wrapper_Nullable_std_string_into_NullableString_var::NON_CORBA_TYPE,
-    Wrapper_Nullable_std_string_into_NullableString_var::CORBA_TYPE>
-    {
-        typedef Wrapper_Nullable_std_string_into_NullableString_var type;
-    };
 
 }
 
@@ -367,7 +334,7 @@ BOOST_AUTO_TEST_CASE(test_interface)
         //BOOST_CHECK(CorbaConversion::wrap_into<CORBA::Short>(2ull) == 2);
     }
 
-    //valuetype
+    //valuetype string
     {
         Nullable<std::string> ns1 ("test1");
         Test::NullableString_var tnsv1 = CorbaConversion::wrap_into<Test::NullableString_var>(ns1);
@@ -377,6 +344,15 @@ BOOST_AUTO_TEST_CASE(test_interface)
         BOOST_CHECK(std::string(tnsv1->_value()) == ns2.get_value());
     }
 
+    //mojeid valuetype string
+    {
+        Nullable<std::string> ns1 ("test1");
+        Registry::MojeID::NullableString_var tnsv1 = CorbaConversion::wrap_into<Registry::MojeID::NullableString_var>(ns1);
+        BOOST_CHECK(std::string(tnsv1->_value()) == ns1.get_value());
+
+        Nullable<std::string> ns2 = CorbaConversion::unwrap_into<Nullable<std::string> >(tnsv1);
+        BOOST_CHECK(std::string(tnsv1->_value()) == ns2.get_value());
+    }
 
 
 
