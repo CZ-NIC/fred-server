@@ -27,6 +27,8 @@
 #include <stdexcept>
 #include <string>
 #include <omniORB4/CORBA.h>
+#include <boost/date_time/gregorian/gregorian.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 #include "util/db/nullable.h"
 /**
@@ -198,7 +200,10 @@ namespace CorbaConversion
             {
                 nct_out = Nullable<std::string>();
             }
-            nct_out = Nullable<std::string>(ct_in.in()->_value());
+            else
+            {
+                nct_out = Nullable<std::string>(ct_in.in()->_value());
+            }
         }
     };
 
@@ -214,7 +219,10 @@ namespace CorbaConversion
             {
                 ct_out = CORBA_VALUETYPE_STRING_VAR_TYPE();
             }
-            ct_out = new CORBA_VALUETYPE_STRING_TYPE(nct_in.get_value().c_str());
+            else
+            {
+                ct_out = new CORBA_VALUETYPE_STRING_TYPE(nct_in.get_value().c_str());
+            }
         }
     };
 
