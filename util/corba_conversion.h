@@ -29,7 +29,7 @@
 #include <omniORB4/CORBA.h>
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/static_assert.hpp>
+#include <boost/mpl/assert.hpp>
 #include <boost/type_traits.hpp>
 
 #include "util/db/nullable.h"
@@ -42,15 +42,15 @@ namespace CorbaConversion
      * Conversion given in template argument from CORBA type into non-CORBA type.
      * @tparam UNWRAP_IMPL is implementation class type with members:
      *  typedef CORBA_TYPE, typedef NON_CORBA_TYPE
-     *  and method: static void unwrap( const CORBA_TYPE& ct_in, NON_CORBA_TYPE& nct_out)
-     * @param ct is input CORBA type instance
+     *  and method compatible with: static void unwrap( const CORBA_TYPE& ct_in, NON_CORBA_TYPE& nct_out)
+     * @param in is input CORBA type instance
      * @return non-CORBA type instance
      */
     template<class UNWRAP_IMPL>
-    typename UNWRAP_IMPL::NON_CORBA_TYPE unwrap_by( typename UNWRAP_IMPL::CORBA_TYPE const & ct)
+    typename UNWRAP_IMPL::NON_CORBA_TYPE unwrap_by( typename UNWRAP_IMPL::CORBA_TYPE const & in)
     {
         typename UNWRAP_IMPL::NON_CORBA_TYPE res;
-        UNWRAP_IMPL::unwrap(ct, res);
+        UNWRAP_IMPL::unwrap(in, res);
         return res;
     }
 
@@ -58,15 +58,15 @@ namespace CorbaConversion
      * Conversion given in template argument from non-CORBA type into CORBA type.
      * @tparam WRAP_IMPL is implementation class type with members:
      *  typedef CORBA_TYPE, typedef NON_CORBA_TYPE
-     *  and method: static void wrap( const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out)
-     * @param nct is input non-CORBA type instance
+     *  and method compatible with: static void wrap( const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out)
+     * @param in is input non-CORBA type instance
      * @return CORBA type instance
      */
     template<class WRAP_IMPL>
-    typename WRAP_IMPL::CORBA_TYPE wrap_by( typename WRAP_IMPL::NON_CORBA_TYPE const & nct)
+    typename WRAP_IMPL::CORBA_TYPE wrap_by( typename WRAP_IMPL::NON_CORBA_TYPE const & in)
     {
         typename WRAP_IMPL::CORBA_TYPE res;
-        WRAP_IMPL::wrap(nct, res);
+        WRAP_IMPL::wrap(in, res);
         return res;
     }
 
@@ -75,7 +75,7 @@ namespace CorbaConversion
      * It's meant to be specialized for source and destination type for each conversion in typedef type.
      * Specialization with typedef type designates implementation class type with members:
      *  typedef CORBA_TYPE, typedef NON_CORBA_TYPE
-     *  and method: static void wrap( const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out)
+     *  and method compatible with: static void wrap( const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out)
      * @tparam NON_CORBA_TYPE is conversion source type
      * @tparam CORBA_TYPE is conversion destination type
      */
@@ -86,7 +86,7 @@ namespace CorbaConversion
      * Meant to be specialized for source and destination type for each conversion in typedef type.
      * Specialization with typedef type designates implementation class type with members:
      *  typedef CORBA_TYPE, typedef NON_CORBA_TYPE
-     *  and method: static void unwrap( const CORBA_TYPE& ct_in, NON_CORBA_TYPE& nct_out)
+     *  and method compatible with: static void unwrap( const CORBA_TYPE& ct_in, NON_CORBA_TYPE& nct_out)
      * @tparam CORBA_TYPE is conversion source type
      * @tparam NON_CORBA_TYPE is conversion destination type
      */
@@ -97,20 +97,17 @@ namespace CorbaConversion
      *  as specified in default conversion traits template specialization for given pair of types.
      * @tparam CORBA_TYPE is conversion source type
      * @tparam NON_CORBA_TYPE is conversion destination type
-     * @param ct is input CORBA type instance
-     * @param nct is output non-CORBA type instance
+     * @param in is input CORBA type instance
+     * @param out is output non-CORBA type instance
      */
     template <typename CORBA_TYPE, typename NON_CORBA_TYPE>
-    void unwrap( CORBA_TYPE const & ct, NON_CORBA_TYPE& nct )
+    void unwrap( CORBA_TYPE const & in, NON_CORBA_TYPE& out )
     {
-        BOOST_STATIC_ASSERT_MSG((boost::is_same<CORBA_TYPE,
-            typename DEFAULT_UNWRAPPER<CORBA_TYPE, NON_CORBA_TYPE>::type::CORBA_TYPE>::value)
-            , "required CORBA_TYPE have to be the same in default impl");
-        BOOST_STATIC_ASSERT_MSG((boost::is_same<NON_CORBA_TYPE,
-            typename DEFAULT_UNWRAPPER<CORBA_TYPE, NON_CORBA_TYPE>::type::NON_CORBA_TYPE>::value)
-            , "required NON_CORBA_TYPE have to be the same in default impl");
+        typedef DEFAULT_UNWRAPPER<CORBA_TYPE, NON_CORBA_TYPE> DEFAULT_CONVERSION;
+        BOOST_MPL_ASSERT((boost::is_same<CORBA_TYPE, typename DEFAULT_CONVERSION::type::CORBA_TYPE>));
+        BOOST_MPL_ASSERT((boost::is_same<NON_CORBA_TYPE, typename DEFAULT_CONVERSION::type::NON_CORBA_TYPE>));
 
-        DEFAULT_UNWRAPPER<CORBA_TYPE, NON_CORBA_TYPE>::type::unwrap(ct, nct);
+        DEFAULT_CONVERSION::type::unwrap(in, out);
     }
 
     /**
@@ -118,20 +115,17 @@ namespace CorbaConversion
      *  as specified in default conversion traits template specialization for given pair of types.
      * @tparam NON_CORBA_TYPE is conversion source type
      * @tparam CORBA_TYPE is conversion destination type
-     * @param nct is input non-CORBA type instance
-     * @param ct is output CORBA type instance
+     * @param in is input non-CORBA type instance
+     * @param out is output CORBA type instance
      */
     template <typename NON_CORBA_TYPE, typename CORBA_TYPE>
-    void wrap( NON_CORBA_TYPE const & nct, CORBA_TYPE& ct )
+    void wrap( NON_CORBA_TYPE const & in, CORBA_TYPE& out )
     {
-        BOOST_STATIC_ASSERT_MSG((boost::is_same<NON_CORBA_TYPE,
-            typename DEFAULT_WRAPPER<NON_CORBA_TYPE, CORBA_TYPE>::type::NON_CORBA_TYPE>::value)
-            , "required NON_CORBA_TYPE have to be the same in default impl");
-        BOOST_STATIC_ASSERT_MSG((boost::is_same<CORBA_TYPE,
-            typename DEFAULT_WRAPPER<NON_CORBA_TYPE, CORBA_TYPE>::type::CORBA_TYPE>::value)
-            , "required CORBA_TYPE have to be the same in default impl");
+        typedef DEFAULT_WRAPPER<NON_CORBA_TYPE, CORBA_TYPE> DEFAULT_CONVERSION;
+        BOOST_MPL_ASSERT((boost::is_same<NON_CORBA_TYPE, typename DEFAULT_CONVERSION::type::NON_CORBA_TYPE>));
+        BOOST_MPL_ASSERT((boost::is_same<CORBA_TYPE, typename DEFAULT_CONVERSION::type::CORBA_TYPE>));
 
-        DEFAULT_WRAPPER<NON_CORBA_TYPE, CORBA_TYPE>::type::wrap(nct, ct);
+        DEFAULT_CONVERSION::type::wrap(in, out);
     }
 
     /**
@@ -139,21 +133,18 @@ namespace CorbaConversion
      *  as specified in default conversion traits template specialization for given pair of types.
      * @tparam NON_CORBA_TYPE is conversion destination type
      * @tparam CORBA_TYPE is conversion source type
-     * @param ct is input CORBA type instance
+     * @param in is input CORBA type instance
      * @return non-CORBA type instance
      */
     template <typename NON_CORBA_TYPE, typename CORBA_TYPE>
-    NON_CORBA_TYPE unwrap_into( const CORBA_TYPE& ct)
+    NON_CORBA_TYPE unwrap_into( const CORBA_TYPE& in)
     {
-        BOOST_STATIC_ASSERT_MSG((boost::is_same<NON_CORBA_TYPE,
-            typename DEFAULT_UNWRAPPER<CORBA_TYPE, NON_CORBA_TYPE>::type::NON_CORBA_TYPE>::value)
-            , "required NON_CORBA_TYPE have to be the same in default impl");
-        BOOST_STATIC_ASSERT_MSG((boost::is_same<CORBA_TYPE,
-            typename DEFAULT_UNWRAPPER<CORBA_TYPE, NON_CORBA_TYPE>::type::CORBA_TYPE>::value)
-            , "required CORBA_TYPE have to be the same in default impl");
+        typedef DEFAULT_UNWRAPPER<CORBA_TYPE, NON_CORBA_TYPE> DEFAULT_CONVERSION;
+        BOOST_MPL_ASSERT((boost::is_same<NON_CORBA_TYPE, typename DEFAULT_CONVERSION::type::NON_CORBA_TYPE>));
+        BOOST_MPL_ASSERT((boost::is_same<CORBA_TYPE, typename DEFAULT_CONVERSION::type::CORBA_TYPE>));
 
-        typename DEFAULT_UNWRAPPER<CORBA_TYPE, NON_CORBA_TYPE>::type::NON_CORBA_TYPE res;
-        DEFAULT_UNWRAPPER<CORBA_TYPE, NON_CORBA_TYPE>::type::unwrap(ct, res);
+        NON_CORBA_TYPE res;
+        DEFAULT_CONVERSION::type::unwrap(in, res);
         return res;
     }
 
@@ -162,21 +153,18 @@ namespace CorbaConversion
      *  as specified in default conversion traits template specialization for given pair of types.
      * @tparam CORBA_TYPE is conversion destination type
      * @tparam NON_CORBA_TYPE is conversion source type
-     * @param nct is input non-CORBA type instance
+     * @param in is input non-CORBA type instance
      * @return CORBA type instance
      */
     template <typename CORBA_TYPE, typename NON_CORBA_TYPE>
-    CORBA_TYPE wrap_into (const NON_CORBA_TYPE& nct)
+    CORBA_TYPE wrap_into (const NON_CORBA_TYPE& in)
     {
-        BOOST_STATIC_ASSERT_MSG((boost::is_same<CORBA_TYPE,
-            typename DEFAULT_WRAPPER<NON_CORBA_TYPE, CORBA_TYPE>::type::CORBA_TYPE>::value)
-            , "required CORBA_TYPE have to be the same in default impl");
-        BOOST_STATIC_ASSERT_MSG((boost::is_same<NON_CORBA_TYPE,
-            typename DEFAULT_WRAPPER<NON_CORBA_TYPE, CORBA_TYPE>::type::NON_CORBA_TYPE>::value)
-            , "required NON_CORBA_TYPE have to be the same in default impl");
+        typedef DEFAULT_WRAPPER<NON_CORBA_TYPE, CORBA_TYPE> DEFAULT_CONVERSION;
+        BOOST_MPL_ASSERT((boost::is_same<CORBA_TYPE, typename DEFAULT_CONVERSION::type::CORBA_TYPE>));
+        BOOST_MPL_ASSERT((boost::is_same<NON_CORBA_TYPE, typename DEFAULT_CONVERSION::type::NON_CORBA_TYPE>));
 
-        typename DEFAULT_WRAPPER<NON_CORBA_TYPE, CORBA_TYPE>::type::CORBA_TYPE res;
-        DEFAULT_WRAPPER<NON_CORBA_TYPE, CORBA_TYPE>::type::wrap(nct, res);
+        CORBA_TYPE res;
+        DEFAULT_CONVERSION::type::wrap(in, res);
         return res;
     }
 
