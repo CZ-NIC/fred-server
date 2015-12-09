@@ -29,6 +29,8 @@
 #include <omniORB4/CORBA.h>
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/static_assert.hpp>
+#include <boost/type_traits.hpp>
 
 #include "util/db/nullable.h"
 /**
@@ -101,6 +103,13 @@ namespace CorbaConversion
     template <typename CORBA_TYPE, typename NON_CORBA_TYPE>
     void unwrap( CORBA_TYPE const & ct, NON_CORBA_TYPE& nct )
     {
+        BOOST_STATIC_ASSERT_MSG((boost::is_same<CORBA_TYPE,
+            typename DEFAULT_UNWRAPPER<CORBA_TYPE, NON_CORBA_TYPE>::type::CORBA_TYPE>::value)
+            , "required CORBA_TYPE have to be the same in default impl");
+        BOOST_STATIC_ASSERT_MSG((boost::is_same<NON_CORBA_TYPE,
+            typename DEFAULT_UNWRAPPER<CORBA_TYPE, NON_CORBA_TYPE>::type::NON_CORBA_TYPE>::value)
+            , "required NON_CORBA_TYPE have to be the same in default impl");
+
         DEFAULT_UNWRAPPER<CORBA_TYPE, NON_CORBA_TYPE>::type::unwrap(ct, nct);
     }
 
@@ -115,6 +124,13 @@ namespace CorbaConversion
     template <typename NON_CORBA_TYPE, typename CORBA_TYPE>
     void wrap( NON_CORBA_TYPE const & nct, CORBA_TYPE& ct )
     {
+        BOOST_STATIC_ASSERT_MSG((boost::is_same<NON_CORBA_TYPE,
+            typename DEFAULT_WRAPPER<NON_CORBA_TYPE, CORBA_TYPE>::type::NON_CORBA_TYPE>::value)
+            , "required NON_CORBA_TYPE have to be the same in default impl");
+        BOOST_STATIC_ASSERT_MSG((boost::is_same<CORBA_TYPE,
+            typename DEFAULT_WRAPPER<NON_CORBA_TYPE, CORBA_TYPE>::type::CORBA_TYPE>::value)
+            , "required CORBA_TYPE have to be the same in default impl");
+
         DEFAULT_WRAPPER<NON_CORBA_TYPE, CORBA_TYPE>::type::wrap(nct, ct);
     }
 
@@ -127,8 +143,15 @@ namespace CorbaConversion
      * @return non-CORBA type instance
      */
     template <typename NON_CORBA_TYPE, typename CORBA_TYPE>
-    typename DEFAULT_UNWRAPPER<CORBA_TYPE, NON_CORBA_TYPE>::type::NON_CORBA_TYPE unwrap_into( const CORBA_TYPE& ct)
+    NON_CORBA_TYPE unwrap_into( const CORBA_TYPE& ct)
     {
+        BOOST_STATIC_ASSERT_MSG((boost::is_same<NON_CORBA_TYPE,
+            typename DEFAULT_UNWRAPPER<CORBA_TYPE, NON_CORBA_TYPE>::type::NON_CORBA_TYPE>::value)
+            , "required NON_CORBA_TYPE have to be the same in default impl");
+        BOOST_STATIC_ASSERT_MSG((boost::is_same<CORBA_TYPE,
+            typename DEFAULT_UNWRAPPER<CORBA_TYPE, NON_CORBA_TYPE>::type::CORBA_TYPE>::value)
+            , "required CORBA_TYPE have to be the same in default impl");
+
         typename DEFAULT_UNWRAPPER<CORBA_TYPE, NON_CORBA_TYPE>::type::NON_CORBA_TYPE res;
         DEFAULT_UNWRAPPER<CORBA_TYPE, NON_CORBA_TYPE>::type::unwrap(ct, res);
         return res;
@@ -143,8 +166,15 @@ namespace CorbaConversion
      * @return CORBA type instance
      */
     template <typename CORBA_TYPE, typename NON_CORBA_TYPE>
-    typename DEFAULT_WRAPPER<NON_CORBA_TYPE, CORBA_TYPE>::type::CORBA_TYPE wrap_into (const NON_CORBA_TYPE& nct)
+    CORBA_TYPE wrap_into (const NON_CORBA_TYPE& nct)
     {
+        BOOST_STATIC_ASSERT_MSG((boost::is_same<CORBA_TYPE,
+            typename DEFAULT_WRAPPER<NON_CORBA_TYPE, CORBA_TYPE>::type::CORBA_TYPE>::value)
+            , "required CORBA_TYPE have to be the same in default impl");
+        BOOST_STATIC_ASSERT_MSG((boost::is_same<NON_CORBA_TYPE,
+            typename DEFAULT_WRAPPER<NON_CORBA_TYPE, CORBA_TYPE>::type::NON_CORBA_TYPE>::value)
+            , "required NON_CORBA_TYPE have to be the same in default impl");
+
         typename DEFAULT_WRAPPER<NON_CORBA_TYPE, CORBA_TYPE>::type::CORBA_TYPE res;
         DEFAULT_WRAPPER<NON_CORBA_TYPE, CORBA_TYPE>::type::wrap(nct, res);
         return res;
