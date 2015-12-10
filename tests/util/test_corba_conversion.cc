@@ -363,9 +363,21 @@ BOOST_AUTO_TEST_CASE(test_interface)
 
         BOOST_CHECK_THROW(CorbaConversion::wrap_into<Registry::MojeID::Date_var>(boost::gregorian::date()), CorbaConversion::ArgumentIsSpecial);
         BOOST_CHECK_THROW(CorbaConversion::unwrap_into<boost::gregorian::date>(Registry::MojeID::Date_var()), CorbaConversion::PointerIsNULL);
-        BOOST_CHECK_THROW(CorbaConversion::unwrap_into<boost::gregorian::date>(CorbaConversion::wrap_into<Registry::MojeID::Date_var>(boost::gregorian::date())), CorbaConversion::ArgumentIsSpecial);
+        BOOST_CHECK_THROW(CorbaConversion::unwrap_into<boost::gregorian::date>(
+            CorbaConversion::wrap_into<Registry::MojeID::Date_var>(boost::gregorian::date())), CorbaConversion::ArgumentIsSpecial);
     }
 
+    //Registry::MojeID::DateTime_var
+    {
+        Registry::MojeID::DateTime_var mojeid_datetime = CorbaConversion::wrap_into<Registry::MojeID::DateTime_var>(boost::posix_time::ptime(boost::gregorian::date(2015,12,10)));
+        BOOST_CHECK(CorbaConversion::unwrap_into<std::string>(CORBA::String_var(mojeid_datetime->value)) == "2015-12-10T00:00:00");
+        BOOST_CHECK(CorbaConversion::unwrap_into<boost::posix_time::ptime>(mojeid_datetime) == boost::posix_time::ptime(boost::gregorian::date(2015,12,10)));
+
+        BOOST_CHECK_THROW(CorbaConversion::wrap_into<Registry::MojeID::DateTime_var>(boost::posix_time::ptime()), CorbaConversion::ArgumentIsSpecial);
+        BOOST_CHECK_THROW(CorbaConversion::unwrap_into<boost::posix_time::ptime>(Registry::MojeID::DateTime_var()), CorbaConversion::PointerIsNULL);
+        BOOST_CHECK_THROW(CorbaConversion::unwrap_into<boost::posix_time::ptime>(
+            CorbaConversion::wrap_into<Registry::MojeID::DateTime_var>(boost::posix_time::ptime())), CorbaConversion::ArgumentIsSpecial);
+    }
 
 
 

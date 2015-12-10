@@ -77,6 +77,33 @@ namespace CorbaConversion
         typedef Wrapper_boost_date_into_Registry_MojeID_Date_var type;
     };
 
+    //Registry::MojeID::DateTime_var
+    struct Unwrapper_Registry_MojeID_DateTime_var_into_boost_ptime
+    {
+        typedef Registry::MojeID::DateTime_var CORBA_TYPE;
+        typedef boost::posix_time::ptime NON_CORBA_TYPE;
+        static void unwrap( const CORBA_TYPE& ct_in, NON_CORBA_TYPE& nct_out);
+    };
+    template <> struct DEFAULT_UNWRAPPER<
+        Unwrapper_Registry_MojeID_DateTime_var_into_boost_ptime::CORBA_TYPE,
+        Unwrapper_Registry_MojeID_DateTime_var_into_boost_ptime::NON_CORBA_TYPE>
+    {
+        typedef Unwrapper_Registry_MojeID_DateTime_var_into_boost_ptime type;
+    };
+
+    struct Wrapper_boost_ptime_into_Registry_MojeID_DateTime_var
+    {
+        typedef Registry::MojeID::DateTime_var CORBA_TYPE;
+        typedef boost::posix_time::ptime NON_CORBA_TYPE;
+        static void wrap( const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out );
+    };
+    template <> struct DEFAULT_WRAPPER<
+        Wrapper_boost_ptime_into_Registry_MojeID_DateTime_var::NON_CORBA_TYPE,
+        Wrapper_boost_ptime_into_Registry_MojeID_DateTime_var::CORBA_TYPE>
+    {
+        typedef Wrapper_boost_ptime_into_Registry_MojeID_DateTime_var type;
+    };
+
 
 }
 #endif

@@ -53,8 +53,32 @@ namespace CorbaConversion
         Registry::MojeID::Date_var res = new Registry::MojeID::Date;
         res->value = wrap_into<CORBA::String_var>(boost::gregorian::to_iso_extended_string(nct_in));
         ct_out = res._retn();
-
     }
 
+    void Unwrapper_Registry_MojeID_DateTime_var_into_boost_ptime::unwrap( const CORBA_TYPE& ct_in, NON_CORBA_TYPE& nct_out)
+    {
+        if(ct_in.operator->() == NULL)
+        {
+            throw PointerIsNULL();
+        }
 
+        nct_out = boost::date_time::parse_delimited_time<ptime>(ct_in->value.in(), 'T');
+
+        if(nct_out.is_special())
+        {
+            throw ArgumentIsSpecial();
+        }
+    }
+
+    void Wrapper_boost_ptime_into_Registry_MojeID_DateTime_var::wrap( const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out )
+    {
+        if(nct_in.is_special())
+        {
+            throw ArgumentIsSpecial();
+        }
+
+        Registry::MojeID::DateTime_var res = new Registry::MojeID::DateTime;
+        res->value = wrap_into<CORBA::String_var>(boost::posix_time::to_iso_extended_string(nct_in));
+        ct_out = res._retn();
+    }
 }
