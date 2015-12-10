@@ -499,336 +499,7 @@ struct PubReqType
     }
 };
 
-class transitions:public StateMachine::base< transitions >
-{
-public:
-    typedef StateMachine::base< transitions > base_state_machine;
-    template < Fred::Object::State::Value FRED_STATE >
-    struct single:boost::integral_constant< Fred::Object::State::Value, FRED_STATE > { };
-
-    struct C:single< Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT > { };
-    struct I:single< Fred::Object::State::IDENTIFIED_CONTACT > { };
-    struct V:single< Fred::Object::State::VALIDATED_CONTACT > { };
-    struct M:single< Fred::Object::State::MOJEID_CONTACT > { };
-
-    template < bool HAS_C, bool HAS_I, bool HAS_V, bool HAS_M >
-    struct civm_collection:StateMachine::state_on_change_action< civm_collection< HAS_C, HAS_I, HAS_V, HAS_M > >
-    {
-        static const bool has_c = HAS_C;
-        static const bool has_i = HAS_I;
-        static const bool has_v = HAS_V;
-        static const bool has_m = HAS_M;
-
-        static const bool has_any = has_c || has_i || has_v || has_m;
-
-        template < typename STATE >
-        struct add
-        {
-            typedef civm_collection< has_c || boost::is_same< STATE, C >::value,
-                                     has_i || boost::is_same< STATE, I >::value,
-                                     has_v || boost::is_same< STATE, V >::value,
-                                     has_m || boost::is_same< STATE, M >::value > type;
-        };
-
-        typedef Fred::StatusList state_container;
-        typedef state_container::key_type state_item;
-
-        template < typename STATE, bool PRESENT >
-        struct into_container
-        {
-            static void add(state_container &_status_list)
-            {
-                _status_list.insert(Fred::Object::State(STATE::value).into< state_item >());
-            }
-        };
-
-        template < typename STATE >
-        struct into_container< STATE, false >
-        {
-            static void add(const state_container&) { }
-        };
-
-        static const state_container& as_state_container()
-        {
-            static state_container status_list;
-            if (has_any && status_list.empty()) {
-                into_container< C, has_c >::add(status_list);
-                into_container< I, has_i >::add(status_list);
-                into_container< V, has_v >::add(status_list);
-                into_container< M, has_m >::add(status_list);
-            }
-            return status_list;
-        }
-
-        template < typename EVENT >
-        static void set(const EVENT &event)
-        {
-            if (has_any) {
-                const state_container &to_set = as_state_container();
-                Fred::CreateObjectStateRequestId(event.get_object_id(), to_set).exec(event.get_operation_context());
-            }
-        }
-
-        template < typename EVENT >
-        static void reset(const EVENT &event)
-        {
-            if (has_any) {
-                const state_container &to_reset = as_state_container();
-                Fred::CancelObjectStateRequestId(event.get_object_id(), to_reset).exec(event.get_operation_context());
-            }
-        }
-    };
-
-    template < typename STATES >
-    struct collect
-    {
-        typedef civm_collection< boost::mpl::contains< STATES, C >::value,
-                                 boost::mpl::contains< STATES, I >::value,
-                                 boost::mpl::contains< STATES, V >::value,
-                                 boost::mpl::contains< STATES, M >::value > type;
-    };
-
-    typedef typename collect< boost::mpl::set<            > >::type civm;
-    typedef typename collect< boost::mpl::set< C          > >::type Civm;
-    typedef typename collect< boost::mpl::set<    I       > >::type cIvm;
-    typedef typename collect< boost::mpl::set< C, I       > >::type CIvm;
-    typedef typename collect< boost::mpl::set<       V    > >::type ciVm;
-    typedef typename collect< boost::mpl::set< C,    V    > >::type CiVm;
-    typedef typename collect< boost::mpl::set<    I, V    > >::type cIVm;
-    typedef typename collect< boost::mpl::set< C, I, V    > >::type CIVm;
-    typedef typename collect< boost::mpl::set<          M > >::type civM;
-    typedef typename collect< boost::mpl::set< C,       M > >::type CivM;
-    typedef typename collect< boost::mpl::set<    I,    M > >::type cIvM;
-    typedef typename collect< boost::mpl::set< C, I,    M > >::type CIvM;
-    typedef typename collect< boost::mpl::set<       V, M > >::type ciVM;
-    typedef typename collect< boost::mpl::set< C,    V, M > >::type CiVM;
-    typedef typename collect< boost::mpl::set<    I, V, M > >::type cIVM;
-    typedef typename collect< boost::mpl::set< C, I, V, M > >::type CIVM;
-
-    template < typename STATE >
-    struct single_state
-    {
-        template < typename STATE_PRESENT >
-        static bool present_in(const STATE_PRESENT &states)
-        {
-            return states.STATE_PRESENT::template get< STATE::value >();
-        }
-        template < typename STATES >
-        struct add_into
-        {
-            typedef typename STATES::template add< STATE >::type type;
-        };
-    };
-
-    template < typename STATES >
-    struct state_collection
-    {
-        template < typename A, typename B >
-        struct in_a_and_not_in_b
-        {
-            typedef civm_collection< A::has_c && !B::has_c,
-                                     A::has_i && !B::has_i,
-                                     A::has_v && !B::has_v,
-                                     A::has_m && !B::has_m > type;
-        };
-        template < typename NEXT, typename EVENT >
-        static void set(const EVENT &event)
-        {
-            typedef STATES current;
-            typedef NEXT next;
-            typedef typename in_a_and_not_in_b< current, next >::type to_reset;
-            typedef typename in_a_and_not_in_b< next, current >::type to_set;
-            to_reset::reset(event);
-            to_set::set(event);
-        }
-    };
-
-    struct event
-    {
-        class transfer_contact_prepare
-        {
-        public:
-            transfer_contact_prepare(
-                Fred::OperationContext &_ctx,
-                const Fred::InfoContactData &_contact,
-                const std::string &_trans_id,
-                const std::string &_registrar_handle,
-                MojeID2Impl::LogRequestId _log_request_id,
-                std::string &_ident);
-            Fred::OperationContext& get_operation_context()const { return ctx_; }
-            const Fred::InfoContactData& get_contact()const { return contact_; }
-            Fred::ObjectId get_object_id()const { return contact_.id; }
-            const std::string& get_trans_id()const { return trans_id_; }
-            const std::string& get_registrar_handle()const { return registrar_handle_; }
-            void set_ident(const std::string &_value)const { ident_ = _value; }
-            const Fred::PublicRequestObjectLockGuard& get_locked_contact()const { return locked_contact_; }
-            typedef Fred::Object::State::set<
-                        Fred::Object::State::SERVER_TRANSFER_PROHIBITED,
-                        Fred::Object::State::SERVER_UPDATE_PROHIBITED,
-                        Fred::Object::State::SERVER_DELETE_PROHIBITED,
-                        Fred::Object::State::SERVER_BLOCKED,
-                        Fred::Object::State::MOJEID_CONTACT,
-                        Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT,
-                        Fred::Object::State::IDENTIFIED_CONTACT,
-                        Fred::Object::State::VALIDATED_CONTACT >::type RelatedStates;
-            typedef MojeID2Impl::GetContact::States< RelatedStates >::Presence StatesPresence;
-        private:
-            Fred::OperationContext &ctx_;
-            const Fred::InfoContactData &contact_;
-            const std::string trans_id_;
-            const std::string registrar_handle_;
-            const MojeID2Impl::LogRequestId log_request_id_;
-            std::string &ident_;
-            const Fred::PublicRequestObjectLockGuardByObjectId locked_contact_;
-        };
-
-        class process_registration_request
-        {
-        public:
-            process_registration_request(
-                Fred::OperationContext &_ctx,
-                const std::string &_ident_request_id,
-                const std::string &_password,
-                const std::string &_registrar_handle,
-                MojeID2Impl::LogRequestId _log_request_id);
-            Fred::OperationContext& get_operation_context()const { return ctx_; }
-            const std::string& get_password()const { return password_; }
-            const std::string& get_registrar_handle()const { return registrar_handle_; }
-            MojeID2Impl::LogRequestId get_log_request_id()const { return log_request_id_; }
-            const Fred::PublicRequestLockGuard& get_locked_request()const { return locked_request_; }
-            const Fred::PublicRequestAuthInfo& get_pub_req_info()const { return pub_req_info_; }
-            PubReqType::Value get_pub_req_type()const { return pub_req_type_; }
-            Fred::ObjectId get_object_id()const { return pub_req_info_.get_object_id().get_value(); }
-            typedef Fred::Object::State::set<
-                        Fred::Object::State::SERVER_TRANSFER_PROHIBITED,
-                        Fred::Object::State::SERVER_UPDATE_PROHIBITED,
-                        Fred::Object::State::SERVER_DELETE_PROHIBITED,
-                        Fred::Object::State::SERVER_BLOCKED,
-                        Fred::Object::State::MOJEID_CONTACT,
-                        Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT,
-                        Fred::Object::State::IDENTIFIED_CONTACT,
-                        Fred::Object::State::VALIDATED_CONTACT >::type RelatedStates;
-            typedef MojeID2Impl::GetContact::States< RelatedStates >::Presence StatesPresence;
-        private:
-            Fred::OperationContext &ctx_;
-            const std::string password_;
-            const std::string registrar_handle_;
-            const MojeID2Impl::LogRequestId log_request_id_;
-            const Fred::PublicRequestLockGuardByIdentification locked_request_;
-            const Fred::PublicRequestAuthInfo pub_req_info_;
-            const PubReqType::Value pub_req_type_;
-        };
-
-        class send_new_pin3
-        {
-        public:
-            send_new_pin3(
-                Fred::OperationContext &_ctx,
-                MojeID2Impl::ContactId _contact_id,
-                const std::string &_registrar_handle,
-                MojeID2Impl::LogRequestId _log_request_id);
-            Fred::OperationContext& get_operation_context()const { return ctx_; }
-            const Fred::PublicRequestObjectLockGuard& get_locked_object()const { return locked_object_; }
-            const std::string& get_registrar_handle()const { return registrar_handle_; }
-            MojeID2Impl::LogRequestId get_log_request_id()const { return log_request_id_; }
-            Fred::ObjectId get_object_id()const { return contact_id_; }
-            typedef Fred::Object::State::set<
-                        Fred::Object::State::SERVER_TRANSFER_PROHIBITED,
-                        Fred::Object::State::SERVER_UPDATE_PROHIBITED,
-                        Fred::Object::State::SERVER_DELETE_PROHIBITED,
-                        Fred::Object::State::SERVER_BLOCKED,
-                        Fred::Object::State::MOJEID_CONTACT,
-                        Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT,
-                        Fred::Object::State::IDENTIFIED_CONTACT,
-                        Fred::Object::State::VALIDATED_CONTACT >::type RelatedStates;
-            typedef MojeID2Impl::GetContact::States< RelatedStates >::Presence StatesPresence;
-        private:
-            Fred::OperationContext &ctx_;
-            const MojeID2Impl::ContactId contact_id_;
-            const Fred::PublicRequestObjectLockGuardByObjectId locked_object_;
-            const std::string registrar_handle_;
-            const MojeID2Impl::LogRequestId log_request_id_;
-        };
-    };
-
-    struct guard
-    {
-
-        struct transfer_contact_prepare
-        {
-            void operator()(const event::transfer_contact_prepare &_event,
-                            const event::transfer_contact_prepare::StatesPresence &_states)const;
-        };
-
-        struct process_registration_request
-        {
-            void operator()(const event::process_registration_request &_event,
-                            const event::process_registration_request::StatesPresence &_states)const;
-        };
-        struct process_contact_conditional_identification
-        {
-            void operator()(const event::process_registration_request &_event,
-                            const event::process_registration_request::StatesPresence &_states)const;
-        };
-        struct process_conditionally_identified_contact_transfer
-        {
-            void operator()(const event::process_registration_request &_event,
-                            const event::process_registration_request::StatesPresence &_states)const;
-        };
-        struct process_identified_contact_transfer
-        {
-            void operator()(const event::process_registration_request &_event,
-                            const event::process_registration_request::StatesPresence &_states)const;
-        };
-
-        struct send_new_pin3
-        {
-            void operator()(const event::send_new_pin3 &_event,
-                            const event::send_new_pin3::StatesPresence &_states)const;
-        };
-    };
-
-    struct action:base_state_machine::action
-    {
-        struct transfer_contact_prepare_civm
-        {
-            void operator()(const event::transfer_contact_prepare &_event,
-                            const event::transfer_contact_prepare::StatesPresence &_states)const;
-        };
-        struct transfer_contact_prepare_Civm
-        {
-            void operator()(const event::transfer_contact_prepare &_event,
-                            const event::transfer_contact_prepare::StatesPresence &_states)const;
-        };
-        struct transfer_contact_prepare_CIvm
-        {
-            void operator()(const event::transfer_contact_prepare &_event,
-                            const event::transfer_contact_prepare::StatesPresence &_states)const;
-        };
-
-        struct process_contact_conditional_identification
-        {
-            void operator()(const event::process_registration_request &_event,
-                            const event::process_registration_request::StatesPresence &_states)const;
-        };
-        struct process_conditionally_identified_contact_transfer
-        {
-            void operator()(const event::process_registration_request &_event,
-                            const event::process_registration_request::StatesPresence &_states)const;
-        };
-        struct process_identified_contact_transfer
-        {
-            void operator()(const event::process_registration_request &_event,
-                            const event::process_registration_request::StatesPresence &_states)const;
-        };
-
-        struct send_new_pin3
-        {
-            void operator()(const event::send_new_pin3 &_event,
-                            const event::send_new_pin3::StatesPresence &_states)const;
-        };
-    };
-
+#if 0
     typedef boost::mpl::set<
         a_row< civm,  event::transfer_contact_prepare,
                      action::transfer_contact_prepare_civm,
@@ -859,9 +530,7 @@ public:
                       guard::send_new_pin3,
                CivM >
     >                                      transition_table;
-    typedef civm                           empty_state_collection;
-    typedef boost::mpl::list< C, I, V, M > list_of_checked_states;
-};
+#endif
 
 }//Registry::MojeID::{anonymous}
 
@@ -966,6 +635,29 @@ MojeID2Impl::ContactId MojeID2Impl::create_contact_prepare(
     }
 }
 
+namespace {
+
+std::string action_transfer_contact_prepare(
+    const Fred::PublicRequestAuthTypeIface &_iface,
+    const std::string &_trans_id,
+    const Fred::InfoContactData &_contact,
+    const Fred::PublicRequestObjectLockGuardByObjectId &_locked_contact,
+    const std::string &_registrar_handle,
+    Fred::OperationContextTwoPhaseCommitCreator &_ctx)
+{
+    Fred::CreatePublicRequestAuth op_create_pub_req(_iface);
+    if (!_contact.notifyemail.isnull()) {
+        op_create_pub_req.set_email_to_answer(_contact.notifyemail.get_value());
+    }
+    op_create_pub_req.set_registrar_id(_ctx, _registrar_handle);
+    const Fred::CreatePublicRequestAuth::Result result =
+        op_create_pub_req.exec(_ctx, _locked_contact);
+    prepare_transaction_storage()->store(_trans_id, _contact.id);
+    return result.identification;
+}
+
+}
+
 Fred::InfoContactData& MojeID2Impl::transfer_contact_prepare(
         const std::string &_handle,
         const std::string &_trans_id,
@@ -978,10 +670,41 @@ Fred::InfoContactData& MojeID2Impl::transfer_contact_prepare(
     try {
         Fred::OperationContextTwoPhaseCommitCreator ctx(_trans_id);
         _contact = Fred::InfoContactByHandle(_handle).exec(ctx).info_contact_data;
-        typedef transitions::event::transfer_contact_prepare occurred_event;
-        transitions::process(
-            occurred_event(ctx, _contact, _trans_id, mojeid_registrar_handle_, _log_request_id, _ident),
-            GetContact(_contact.id).states< occurred_event::RelatedStates >().presence(ctx));
+        const Fred::PublicRequestObjectLockGuardByObjectId locked_contact(ctx, _contact.id);
+        const Fred::Object::StatesInfo states(Fred::GetObjectStates(_contact.id).exec(ctx));
+        const MojeID2Impl::CheckMojeIDRegistration check_result(
+            Fred::make_args(_contact), Fred::make_args(_contact, ctx), Fred::make_args(states));
+        if (!check_result.success()) {
+            throw check_result;
+        }
+
+        if (states.absents(Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT) &&
+            states.absents(Fred::Object::State::IDENTIFIED_CONTACT) &&
+            states.absents(Fred::Object::State::VALIDATED_CONTACT) &&
+            states.absents(Fred::Object::State::MOJEID_CONTACT))
+        {
+            _ident = action_transfer_contact_prepare(
+                Fred::MojeID::PublicRequest::ContactConditionalIdentification::iface(),
+                _trans_id, _contact, locked_contact, mojeid_registrar_handle_, ctx);
+        }
+        else if (states.presents(Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT) &&
+                 states.absents(Fred::Object::State::IDENTIFIED_CONTACT) &&
+                 states.absents(Fred::Object::State::VALIDATED_CONTACT) &&
+                 states.absents(Fred::Object::State::MOJEID_CONTACT))
+        {
+            _ident = action_transfer_contact_prepare(
+                Fred::MojeID::PublicRequest::ConditionallyIdentifiedContactTransfer::iface(),
+                _trans_id, _contact, locked_contact, mojeid_registrar_handle_, ctx);
+        }
+        else if (states.presents(Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT) &&
+                 states.presents(Fred::Object::State::IDENTIFIED_CONTACT) &&
+                 states.absents(Fred::Object::State::VALIDATED_CONTACT) &&
+                 states.absents(Fred::Object::State::MOJEID_CONTACT))
+        {
+            _ident = action_transfer_contact_prepare(
+                Fred::MojeID::PublicRequest::IdentifiedContactTransfer::iface(),
+                _trans_id, _contact, locked_contact, mojeid_registrar_handle_, ctx);
+        }
         ctx.commit_transaction();
         return _contact;
     }
@@ -992,12 +715,7 @@ Fred::InfoContactData& MojeID2Impl::transfer_contact_prepare(
     catch (const Fred::InfoContactByHandle::Exception &e) {
         if (e.is_set_unknown_contact_handle()) {
             LOGGER(PACKAGE).error("request failed (incorrect input data)");
-            throw Fred::Object::Get< Fred::Object::Type::CONTACT >::object_doesnt_exist();
         }
-        throw;
-    }
-    catch (const GetContact::object_doesnt_exist &e) {
-        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
         throw;
     }
     catch (const std::exception &e) {
@@ -1092,23 +810,9 @@ void MojeID2Impl::update_contact_prepare(
 
     try {
         Fred::OperationContextTwoPhaseCommitCreator ctx(_trans_id);
-        typedef Fred::Object::State FOS;
-        typedef FOS::set<
-            FOS::SERVER_TRANSFER_PROHIBITED,
-            FOS::SERVER_UPDATE_PROHIBITED,
-            FOS::SERVER_DELETE_PROHIBITED,
-            FOS::SERVER_BLOCKED,
-            FOS::MOJEID_CONTACT,
-            FOS::CONDITIONALLY_IDENTIFIED_CONTACT,
-            FOS::IDENTIFIED_CONTACT,
-            FOS::VALIDATED_CONTACT,
-            FOS::CONTACT_FAILED_MANUAL_VERIFICATION,
-            FOS::CONTACT_PASSED_MANUAL_VERIFICATION >::type RelatedStates;
-        typedef GetContact::States< RelatedStates >::Presence StatesPresence;
-        const StatesPresence states =
-            GetContact(_new_data.id).states< RelatedStates >().presence(ctx);
-        if (!states.get< FOS::MOJEID_CONTACT >()) {
-            throw GetContact::object_doesnt_exist();
+        const Fred::Object::StatesInfo states(Fred::GetObjectStates(_new_data.id).exec(ctx));
+        if (states.absents(Fred::Object::State::MOJEID_CONTACT)) {
+//            throw GetContact::object_doesnt_exist();
         }
         const Fred::InfoContactData current_data = Fred::InfoContactById(_new_data.id).exec(ctx).info_contact_data;
         const Fred::InfoContactDiff data_changes = Fred::diff_contact_data(current_data, _new_data);
@@ -1127,10 +831,10 @@ void MojeID2Impl::update_contact_prepare(
         const Fred::PublicRequestObjectLockGuardByObjectId locked_contact(ctx, _new_data.id);
         Fred::StatusList to_cancel;
         bool drop_validation = false;
-        if (states.get< FOS::VALIDATED_CONTACT >()) {
+        if (states.presents(Fred::Object::State::VALIDATED_CONTACT)) {
             drop_validation = validated_data_changed(current_data, _new_data);
             if (drop_validation) {
-                to_cancel.insert(FOS(FOS::VALIDATED_CONTACT).into< std::string >());
+                to_cancel.insert(Conversion::Enums::into< std::string >(Fred::Object::State::VALIDATED_CONTACT));
             }
         }
         const bool drop_identification = identified_data_changed(current_data, _new_data);
@@ -1138,9 +842,9 @@ void MojeID2Impl::update_contact_prepare(
             cancel_message_sending< MessageType::MOJEID_CARD, CommType::LETTER >(ctx, _new_data.id);
         }
         if (drop_identification) {
-            const bool reidentification_needed = states.get< FOS::IDENTIFIED_CONTACT >();
+            const bool reidentification_needed = states.presents(Fred::Object::State::IDENTIFIED_CONTACT);
             if (reidentification_needed) {
-                to_cancel.insert(FOS(FOS::IDENTIFIED_CONTACT).into< std::string >());
+                to_cancel.insert(Conversion::Enums::into< std::string >(Fred::Object::State::IDENTIFIED_CONTACT));
             }
             const HandleMojeIDArgs *const server_conf_ptr = CfgArgs::instance()->
                                                                 get_handler_ptr_by_type< HandleMojeIDArgs >();
@@ -1161,8 +865,8 @@ void MojeID2Impl::update_contact_prepare(
                 throw check_contact_data;
             }
         }
-        const bool manual_verification_done = states.get< FOS::CONTACT_FAILED_MANUAL_VERIFICATION >() ||
-                                              states.get< FOS::CONTACT_PASSED_MANUAL_VERIFICATION >();
+        const bool manual_verification_done = states.presents(Fred::Object::State::CONTACT_FAILED_MANUAL_VERIFICATION) ||
+                                              states.presents(Fred::Object::State::CONTACT_PASSED_MANUAL_VERIFICATION);
         if (manual_verification_done) {
             const bool cancel_manual_verification = data_changes.name.isset()         ||
                                                     data_changes.organization.isset() ||
@@ -1174,11 +878,11 @@ void MojeID2Impl::update_contact_prepare(
                                                     data_changes.telephone.isset()    ||
                                                     data_changes.fax.isset();
             if (cancel_manual_verification) {
-                if (states.get< FOS::CONTACT_FAILED_MANUAL_VERIFICATION >()) {
-                    to_cancel.insert(FOS(FOS::CONTACT_FAILED_MANUAL_VERIFICATION).into< std::string >());
+                if (states.presents(Fred::Object::State::CONTACT_FAILED_MANUAL_VERIFICATION)) {
+                    to_cancel.insert(Conversion::Enums::into< std::string >(Fred::Object::State::CONTACT_FAILED_MANUAL_VERIFICATION));
                 }
-                if (states.get< FOS::CONTACT_PASSED_MANUAL_VERIFICATION >()) {
-                    to_cancel.insert(FOS(FOS::CONTACT_PASSED_MANUAL_VERIFICATION).into< std::string >());
+                if (states.presents(Fred::Object::State::CONTACT_PASSED_MANUAL_VERIFICATION)) {
+                    to_cancel.insert(Conversion::Enums::into< std::string >(Fred::Object::State::CONTACT_PASSED_MANUAL_VERIFICATION));
                 }
             }
         }
@@ -1187,8 +891,8 @@ void MojeID2Impl::update_contact_prepare(
         }
         Fred::UpdateContactById update_contact_op(_new_data.id, mojeid_registrar_handle_);
         set_update_contact_op(data_changes, update_contact_op);
-        const bool is_identified = states.get< FOS::IDENTIFIED_CONTACT >() && !drop_identification;
-        const bool is_validated  = states.get< FOS::VALIDATED_CONTACT  >() && !drop_validation;
+        const bool is_identified = states.presents(Fred::Object::State::IDENTIFIED_CONTACT) && !drop_identification;
+        const bool is_validated  = states.presents(Fred::Object::State::VALIDATED_CONTACT) && !drop_validation;
         const bool addr_can_be_hidden = (is_identified || is_validated) &&
                                         _new_data.organization.get_value_or_default().empty();
         if (!addr_can_be_hidden) {
@@ -1198,10 +902,10 @@ void MojeID2Impl::update_contact_prepare(
         ctx.commit_transaction();
         return;
     }
-    catch (const GetContact::object_doesnt_exist &e) {
-        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
-        throw;
-    }
+//    catch (const GetContact::object_doesnt_exist &e) {
+//        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
+//        throw;
+//    }
     catch(const MessageLimitExceeded &e) {
         LOGGER(PACKAGE).info(e.what());
         throw;
@@ -1234,31 +938,19 @@ void MojeID2Impl::update_transfer_contact_prepare(
         const Fred::InfoContactData current_data = Fred::InfoContactByHandle(_username).exec(ctx).info_contact_data;
         _new_data.id     = current_data.id;
         _new_data.handle = current_data.handle;
-        typedef Fred::Object::State FOS;
-        typedef FOS::set<
-            FOS::SERVER_TRANSFER_PROHIBITED,
-            FOS::SERVER_UPDATE_PROHIBITED,
-            FOS::SERVER_DELETE_PROHIBITED,
-            FOS::SERVER_BLOCKED,
-            FOS::MOJEID_CONTACT,
-            FOS::CONDITIONALLY_IDENTIFIED_CONTACT,
-            FOS::IDENTIFIED_CONTACT,
-            FOS::VALIDATED_CONTACT >::type RelatedStates;
-        typedef GetContact::States< RelatedStates >::Presence StatesPresence;
-        const StatesPresence states =
-            GetContact(_new_data.id).states< RelatedStates >().presence(ctx);
+        const Fred::Object::StatesInfo states(Fred::GetObjectStates(_new_data.id).exec(ctx));
         //check contact is 'mojeidContact', if true throw ALREADY_MOJEID_CONTACT
-        if (states.get< FOS::MOJEID_CONTACT >()) {
+        if (states.presents(Fred::Object::State::MOJEID_CONTACT)) {
             throw AlreadyMojeidContact("unable to transfer mojeID contact into mojeID");
         }
         //throw OBJECT_ADMIN_BLOCKED if contact is administrative blocked
-        if (states.get< FOS::SERVER_BLOCKED >()) {
+        if (states.presents(Fred::Object::State::SERVER_BLOCKED)) {
             throw ObjectAdminBlocked("unable to transfer administrative blocked contact into mojeID");
         }
         //throw OBJECT_USER_BLOCKED if contact is blocked by user
-        if (states.get< FOS::SERVER_TRANSFER_PROHIBITED >() ||
-            states.get< FOS::SERVER_UPDATE_PROHIBITED >() ||
-            states.get< FOS::SERVER_DELETE_PROHIBITED >()) {
+        if (states.presents(Fred::Object::State::SERVER_TRANSFER_PROHIBITED) ||
+            states.presents(Fred::Object::State::SERVER_UPDATE_PROHIBITED) ||
+            states.presents(Fred::Object::State::SERVER_DELETE_PROHIBITED)) {
             throw ObjectUserBlocked("unable to transfer user blocked contact into mojeID");
         }
         //transfer contact to 'REG-MOJEID' sponsoring registrar
@@ -1273,7 +965,7 @@ void MojeID2Impl::update_transfer_contact_prepare(
         bool drop_identification      = false;
         bool drop_cond_identification = false;
         {
-            if (states.get< FOS::IDENTIFIED_CONTACT >()) {
+            if (states.presents(Fred::Object::State::IDENTIFIED_CONTACT)) {
                 const Fred::InfoContactData &c1 = current_data;
                 const Fred::InfoContactData &c2 = _new_data;
                 drop_identification = c1.name.get_value_or_default() != c2.name.get_value_or_default();
@@ -1293,8 +985,8 @@ void MojeID2Impl::update_transfer_contact_prepare(
                         (a1.country                                != a2.country);
                 }
             }
-            if (states.get< FOS::CONDITIONALLY_IDENTIFIED_CONTACT >() ||
-                (!drop_identification && states.get< FOS::IDENTIFIED_CONTACT >()))
+            if (states.presents(Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT) ||
+                (!drop_identification && states.presents(Fred::Object::State::IDENTIFIED_CONTACT)))
             {
                 const Fred::InfoContactData &c1 = current_data;
                 const Fred::InfoContactData &c2 = _new_data;
@@ -1307,11 +999,11 @@ void MojeID2Impl::update_transfer_contact_prepare(
                 Fred::StatusList to_cancel;
                 //drop conditionally identified flag if e-mail or mobile changed
                 if (drop_cond_identification) {
-                    to_cancel.insert(FOS(FOS::CONDITIONALLY_IDENTIFIED_CONTACT).into< std::string >());
+                    to_cancel.insert(Conversion::Enums::into< std::string >(Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT));
                 }
                 //drop identified flag if name, mailing address, e-mail or mobile changed
                 if (drop_identification) {
-                    to_cancel.insert(FOS(FOS::IDENTIFIED_CONTACT).into< std::string >());
+                    to_cancel.insert(Conversion::Enums::into< std::string >(Fred::Object::State::IDENTIFIED_CONTACT));
                 }
                 Fred::CreateObjectStateRequestId(current_data.id, to_cancel).exec(ctx);
             }
@@ -1329,9 +1021,9 @@ void MojeID2Impl::update_transfer_contact_prepare(
             set_update_contact_op(Fred::diff_contact_data(current_data, _new_data), update_contact_op);
             update_contact_op.exec(ctx);
         }
-        const bool is_identified      = states.get< FOS::IDENTIFIED_CONTACT >() &&
+        const bool is_identified      = states.presents(Fred::Object::State::IDENTIFIED_CONTACT) &&
                                         !drop_identification;
-        const bool is_cond_identified = states.get< FOS::CONDITIONALLY_IDENTIFIED_CONTACT >() &&
+        const bool is_cond_identified = states.presents(Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT) &&
                                         !drop_cond_identification;
         Fred::CreatePublicRequestAuth op_create_pub_req(
             //for 'identifiedContact' create 'mojeid_identified_contact_transfer' public request
@@ -1449,12 +1141,8 @@ Fred::InfoContactData& MojeID2Impl::info_contact(
     catch (const Fred::InfoContactByHandle::Exception &e) {
         if (e.is_set_unknown_contact_handle()) {
             LOGGER(PACKAGE).error("request failed (incorrect input data)");
-            throw Fred::Object::Get< Fred::Object::Type::CONTACT >::object_doesnt_exist();
+            throw ObjectDoesntExist("no contact associated with this handle");
         }
-        throw;
-    }
-    catch (const GetContact::object_doesnt_exist &e) {
-        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
         throw;
     }
     catch (const std::exception &e) {
@@ -1476,15 +1164,60 @@ MojeID2Impl::ContactId MojeID2Impl::process_registration_request(
 
     try {
         Fred::OperationContextCreator ctx;
-        typedef transitions::event::process_registration_request occurred;
-        const occurred event(ctx, _ident_request_id, _password, mojeid_registrar_handle_, _log_request_id);
+        const Fred::PublicRequestLockGuardByIdentification locked_request(ctx, _ident_request_id);
+        const Fred::PublicRequestAuthInfo pub_req_info(ctx, locked_request);
+        if (pub_req_info.get_object_id().isnull()) {
+            static const std::string msg = "no object associated with this public request";
+            invalidate(ctx, locked_request, msg, _log_request_id);
+            throw MojeID2Impl::IdentificationFailed(msg);
+        }
+        const Fred::ObjectId contact_id = pub_req_info.get_object_id().get_value();
+        const PubReqType::Value pub_req_type(PubReqType::from(pub_req_info.get_type()));
         try {
-            transitions::process(
-                event,
-                GetContact(event.get_object_id()).states< occurred::RelatedStates >().presence(ctx));
-            Fred::PerformObjectStateRequest(event.get_object_id()).exec(ctx);
+            switch (pub_req_info.get_status()) {
+            case Fred::PublicRequest::Status::NEW:
+                break;
+            case Fred::PublicRequest::Status::ANSWERED:
+                throw MojeID2Impl::IdentificationAlreadyProcessed("identification already processed");
+            case Fred::PublicRequest::Status::INVALIDATED:
+                throw MojeID2Impl::IdentificationAlreadyInvalidated("identification already invalidated");
+            }
+
+            switch (pub_req_type) {
+            case PubReqType::CONTACT_CONDITIONAL_IDENTIFICATION:
+            case PubReqType::CONDITIONALLY_IDENTIFIED_CONTACT_TRANSFER:
+            case PubReqType::IDENTIFIED_CONTACT_TRANSFER:
+                break;
+            default:
+                throw std::runtime_error("unexpected public request type " + pub_req_type);
+            }
+
+            const Database::Result dbres = ctx.get_conn().exec_params(
+                "SELECT EXISTS(SELECT 1 FROM public_request "
+                              "WHERE id=$1::BIGINT AND "
+                                    "create_time<(SELECT GREATEST(update,trdate) FROM object "
+                                                 "WHERE id=$2::BIGINT)"
+                             ") AS object_changed",
+                Database::query_param_list(locked_request.get_public_request_id())//$1::BIGINT
+                                          (contact_id));                          //$2::BIGINT
+
+            if (dbres.size() != 1) {
+                throw std::runtime_error("something wrong happened database is crazy");
+            }
+
+            const bool contact_changed = static_cast< bool >(dbres[0][0]);
+            if (contact_changed) {
+                static const std::string msg = "contact data changed after the public request had been created";
+                invalidate(ctx, locked_request, msg, _log_request_id);
+                throw MojeID2Impl::ContactChanged(msg);
+            }
+
+            if (!pub_req_info.check_password(_password)) {
+                throw MojeID2Impl::IdentificationFailed("password doesn't match");
+            }
+            Fred::PerformObjectStateRequest(contact_id).exec(ctx);
             ctx.commit_transaction();
-            return event.get_object_id();
+            return contact_id;
         }
         catch (const IdentificationFailed&) {
             ctx.commit_transaction();
@@ -1551,33 +1284,23 @@ void MojeID2Impl::process_identification_request(
                 throw;
             }
         }
-        typedef Fred::Object::State FOS;
-        typedef FOS::set<
-            FOS::SERVER_TRANSFER_PROHIBITED,
-            FOS::SERVER_UPDATE_PROHIBITED,
-            FOS::SERVER_DELETE_PROHIBITED,
-            FOS::SERVER_BLOCKED,
-            FOS::MOJEID_CONTACT,
-            FOS::CONDITIONALLY_IDENTIFIED_CONTACT,
-            FOS::IDENTIFIED_CONTACT >::type RelatedStates;
-        typedef GetContact::States< RelatedStates >::Presence StatesPresence;
-        const StatesPresence states =
-            GetContact(_contact_id).states< RelatedStates >().presence(ctx);
-        if (!states.get< FOS::MOJEID_CONTACT >()) {
-            throw GetContact::object_doesnt_exist();
+        const Fred::Object::StatesInfo states(Fred::GetObjectStates(_contact_id).exec(ctx));
+        if (states.absents(Fred::Object::State::MOJEID_CONTACT)) {
+//            throw GetContact::object_doesnt_exist();
         }
-        if (!states.get< FOS::CONDITIONALLY_IDENTIFIED_CONTACT >()) {
+        if (states.absents(Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT)) {
             throw std::runtime_error("state conditionallyIdentifiedContact missing");
         }
-        if (states.get< FOS::IDENTIFIED_CONTACT >()) {
+        if (states.presents(Fred::Object::State::IDENTIFIED_CONTACT)) {
             throw IdentificationAlreadyProcessed("contact already identified");;
         }
-        if (states.get< FOS::SERVER_BLOCKED >()) {
+        if (states.presents(Fred::Object::State::SERVER_BLOCKED)) {
             throw ObjectAdminBlocked("contact administratively protected against changes");
         }
-        if (!(states.get< FOS::SERVER_TRANSFER_PROHIBITED >() &&
-              states.get< FOS::SERVER_UPDATE_PROHIBITED >()   &&
-              states.get< FOS::SERVER_DELETE_PROHIBITED >())) {
+        if (states.absents(Fred::Object::State::SERVER_TRANSFER_PROHIBITED) ||
+            states.absents(Fred::Object::State::SERVER_UPDATE_PROHIBITED)   ||
+            states.absents(Fred::Object::State::SERVER_DELETE_PROHIBITED))
+        {
             throw std::runtime_error("contact not protected against changes");
         }
 
@@ -1593,16 +1316,16 @@ void MojeID2Impl::process_identification_request(
             throw IdentificationFailed("password doesn't match");
         }
         Fred::StatusList to_set;
-        to_set.insert(FOS(FOS::IDENTIFIED_CONTACT).into< std::string >());
+        to_set.insert(Conversion::Enums::into< std::string >(Fred::Object::State::IDENTIFIED_CONTACT));
         Fred::CreateObjectStateRequestId(_contact_id, to_set).exec(ctx);
         Fred::PerformObjectStateRequest(_contact_id).exec(ctx);
         answer(ctx, locked_request, "successfully processed", _log_request_id);
         ctx.commit_transaction();
     }
-    catch (const GetContact::object_doesnt_exist &e) {
-        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
-        throw;
-    }
+//    catch (const GetContact::object_doesnt_exist &e) {
+//        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
+//        throw;
+//    }
     catch (const IdentificationAlreadyProcessed &e) {
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
         throw;
@@ -1805,22 +1528,11 @@ void MojeID2Impl::create_validation_request(
                 throw;
             }
         }
-        typedef Fred::Object::State FOS;
-        typedef FOS::set<
-            FOS::SERVER_TRANSFER_PROHIBITED,
-            FOS::SERVER_UPDATE_PROHIBITED,
-            FOS::SERVER_DELETE_PROHIBITED,
-            FOS::SERVER_BLOCKED,
-            FOS::MOJEID_CONTACT,
-            FOS::CONDITIONALLY_IDENTIFIED_CONTACT,
-            FOS::IDENTIFIED_CONTACT,
-            FOS::VALIDATED_CONTACT >::type RelatedStates;
-        typedef GetContact::States< RelatedStates >::Presence StatesPresence;
-        const StatesPresence states = GetContact(_contact_id).states< RelatedStates >().presence(ctx);
-        if (states.get< FOS::VALIDATED_CONTACT >()) {
+        const Fred::Object::StatesInfo states(Fred::GetObjectStates(_contact_id).exec(ctx));
+        if (states.presents(Fred::Object::State::VALIDATED_CONTACT)) {
             throw ValidationAlreadyProcessed("state validatedContact presents");
         }
-        if (!states.get< FOS::MOJEID_CONTACT >()) {
+        if (states.absents(Fred::Object::State::MOJEID_CONTACT)) {
             throw ObjectDoesntExist("not mojeID contact");
         }
         const Fred::InfoContactData contact_data = Fred::InfoContactById(_contact_id).exec(ctx).info_contact_data;
@@ -1843,10 +1555,10 @@ void MojeID2Impl::create_validation_request(
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
         throw;
     }
-    catch (const GetContact::object_doesnt_exist &e) {
-        LOGGER(PACKAGE).warning(boost::format("contact doesn't exist (%1%)") % e.what());
-        throw ObjectDoesntExist(e.what());
-    }
+//    catch (const GetContact::object_doesnt_exist &e) {
+//        LOGGER(PACKAGE).warning(boost::format("contact doesn't exist (%1%)") % e.what());
+//        throw ObjectDoesntExist(e.what());
+//    }
     catch (const ObjectDoesntExist &e) {
         LOGGER(PACKAGE).warning(boost::format("contact doesn't exist (%1%)") % e.what());
         throw;
@@ -1893,15 +1605,14 @@ ContactStateDataList& MojeID2Impl::get_contacts_state_changes(
     LOGGING_CONTEXT(log_ctx, *this);
 
     try {
-        typedef Fred::Object::State FOS;
         Fred::OperationContextCreator ctx;
         Database::query_param_list params(mojeid_registrar_handle_);             //$1::TEXT
         params(_last_hours);                                                     //$2::TEXT
-        params(FOS(FOS::CONDITIONALLY_IDENTIFIED_CONTACT).into< std::string >());//$3::TEXT
-        params(FOS(FOS::IDENTIFIED_CONTACT).into< std::string >());              //$4::TEXT
-        params(FOS(FOS::VALIDATED_CONTACT).into< std::string >());               //$5::TEXT
-        params(FOS(FOS::MOJEID_CONTACT).into< std::string >());                  //$6::TEXT
-        params(FOS(FOS::LINKED).into< std::string >());                          //$7::TEXT
+        params(Conversion::Enums::into< std::string >(Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT));//$3::TEXT
+        params(Conversion::Enums::into< std::string >(Fred::Object::State::IDENTIFIED_CONTACT));              //$4::TEXT
+        params(Conversion::Enums::into< std::string >(Fred::Object::State::VALIDATED_CONTACT));               //$5::TEXT
+        params(Conversion::Enums::into< std::string >(Fred::Object::State::MOJEID_CONTACT));                  //$6::TEXT
+        params(Conversion::Enums::into< std::string >(Fred::Object::State::LINKED));                          //$7::TEXT
         const Database::Result rcontacts = ctx.get_conn().exec_params(// observe interval <now - last_hours, now)
             "WITH cic AS (SELECT id FROM enum_object_states WHERE name=$3::TEXT),"
                   "ic AS (SELECT id FROM enum_object_states WHERE name=$4::TEXT),"
@@ -1937,22 +1648,22 @@ ContactStateDataList& MojeID2Impl::get_contacts_state_changes(
         _result.reserve(rcontacts.size());
         for (::size_t idx = 0; idx < rcontacts.size(); ++idx) {
             ContactStateData data(static_cast< ContactId >(rcontacts[idx][0]));
-            if (!add_state(rcontacts[idx][1], FOS::CONDITIONALLY_IDENTIFIED_CONTACT, data)) {
+            if (!add_state(rcontacts[idx][1], Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT, data)) {
                 std::ostringstream msg;
                 msg << "contact " << data.get_contact_id() << " hasn't "
-                    << FOS(FOS::CONDITIONALLY_IDENTIFIED_CONTACT).into< std::string >() << " state";
+                    << Conversion::Enums::into< std::string >(Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT) << " state";
                 LOGGER(PACKAGE).error(msg.str());
                 continue;
             }
-            add_state(rcontacts[idx][2], FOS::IDENTIFIED_CONTACT, data);
-            add_state(rcontacts[idx][3], FOS::VALIDATED_CONTACT, data);
-            if (!add_state(rcontacts[idx][4], FOS::MOJEID_CONTACT, data)) {
+            add_state(rcontacts[idx][2], Fred::Object::State::IDENTIFIED_CONTACT, data);
+            add_state(rcontacts[idx][3], Fred::Object::State::VALIDATED_CONTACT, data);
+            if (!add_state(rcontacts[idx][4], Fred::Object::State::MOJEID_CONTACT, data)) {
                 std::ostringstream msg;
                 msg << "contact " << data.get_contact_id() << " hasn't "
-                    << FOS(FOS::MOJEID_CONTACT).into< std::string >() << " state";
+                    << Conversion::Enums::into< std::string >(Fred::Object::State::MOJEID_CONTACT) << " state";
                 throw std::runtime_error(msg.str());
             }
-            add_state(rcontacts[idx][5], FOS::LINKED, data);
+            add_state(rcontacts[idx][5], Fred::Object::State::LINKED, data);
             _result.push_back(data);
         }
         return _result;
@@ -1975,15 +1686,14 @@ ContactStateData& MojeID2Impl::get_contact_state(
     LOGGING_CONTEXT(log_ctx, *this);
 
     try {
-        typedef Fred::Object::State FOS;
         Fred::OperationContextCreator ctx;
-        Database::query_param_list params(mojeid_registrar_handle_);             //$1::TEXT
-        params(_contact_id);                                                     //$2::BIGINT
-        params(FOS(FOS::MOJEID_CONTACT).into< std::string >());                  //$3::TEXT
-        params(FOS(FOS::CONDITIONALLY_IDENTIFIED_CONTACT).into< std::string >());//$4::TEXT
-        params(FOS(FOS::IDENTIFIED_CONTACT).into< std::string >());              //$5::TEXT
-        params(FOS(FOS::VALIDATED_CONTACT).into< std::string >());               //$6::TEXT
-        params(FOS(FOS::LINKED).into< std::string >());                          //$7::TEXT
+        Database::query_param_list params(mojeid_registrar_handle_);                                          //$1::TEXT
+        params(_contact_id);                                                                                  //$2::BIGINT
+        params(Conversion::Enums::into< std::string >(Fred::Object::State::MOJEID_CONTACT));                  //$3::TEXT
+        params(Conversion::Enums::into< std::string >(Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT));//$4::TEXT
+        params(Conversion::Enums::into< std::string >(Fred::Object::State::IDENTIFIED_CONTACT));              //$5::TEXT
+        params(Conversion::Enums::into< std::string >(Fred::Object::State::VALIDATED_CONTACT));               //$6::TEXT
+        params(Conversion::Enums::into< std::string >(Fred::Object::State::LINKED));                          //$7::TEXT
         const Database::Result rcontact = ctx.get_conn().exec_params(
             "SELECT r.id IS NULL,"                         // 0
                    "(SELECT valid_from FROM object_state " // 1
@@ -2022,18 +1732,18 @@ ContactStateData& MojeID2Impl::get_contact_state(
 
         _result.clear();
         _result.set_contact_id(_contact_id);
-        if (!add_state(rcontact[0][1], FOS::MOJEID_CONTACT, _result)) {
+        if (!add_state(rcontact[0][1], Fred::Object::State::MOJEID_CONTACT, _result)) {
             throw ObjectDoesntExist();
         }
-        if (!add_state(rcontact[0][2], FOS::CONDITIONALLY_IDENTIFIED_CONTACT, _result)) {
+        if (!add_state(rcontact[0][2], Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT, _result)) {
             std::ostringstream msg;
             msg << "contact " << _contact_id << " hasn't "
-                << FOS(FOS::CONDITIONALLY_IDENTIFIED_CONTACT).into< std::string >() << " state";
+                << Conversion::Enums::into< std::string >(Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT) << " state";
             throw std::runtime_error(msg.str());
         }
-        add_state(rcontact[0][3], FOS::IDENTIFIED_CONTACT, _result);
-        add_state(rcontact[0][4], FOS::VALIDATED_CONTACT, _result);
-        add_state(rcontact[0][5], FOS::LINKED, _result);
+        add_state(rcontact[0][3], Fred::Object::State::IDENTIFIED_CONTACT, _result);
+        add_state(rcontact[0][4], Fred::Object::State::VALIDATED_CONTACT, _result);
+        add_state(rcontact[0][5], Fred::Object::State::LINKED, _result);
         return _result;
     }//try
     catch (const ObjectDoesntExist &e) {
@@ -2060,42 +1770,31 @@ void MojeID2Impl::cancel_account_prepare(
     try {
         Fred::OperationContextTwoPhaseCommitCreator ctx(_trans_id);
         const Fred::PublicRequestObjectLockGuardByObjectId locked_contact(ctx, _contact_id);
-        typedef Fred::Object::State FOS;
-        typedef FOS::set<
-            FOS::SERVER_TRANSFER_PROHIBITED,
-            FOS::SERVER_UPDATE_PROHIBITED,
-            FOS::SERVER_DELETE_PROHIBITED,
-            FOS::SERVER_BLOCKED,
-            FOS::MOJEID_CONTACT,
-            FOS::CONDITIONALLY_IDENTIFIED_CONTACT,
-            FOS::IDENTIFIED_CONTACT,
-            FOS::VALIDATED_CONTACT,
-            FOS::LINKED >::type RelatedStates;
-        typedef GetContact::States< RelatedStates >::Presence StatesPresence;
-        const StatesPresence states = GetContact(_contact_id).states< RelatedStates >().presence(ctx);
-        if (!(states.get< FOS::MOJEID_CONTACT >() && (states.get< FOS::VALIDATED_CONTACT >()  ||
-                                                      states.get< FOS::IDENTIFIED_CONTACT >() ||
-                                                      states.get< FOS::CONDITIONALLY_IDENTIFIED_CONTACT >())
+        const Fred::Object::StatesInfo states(Fred::GetObjectStates(_contact_id).exec(ctx));
+        if (!(states.presents(Fred::Object::State::MOJEID_CONTACT) &&
+                 (states.presents(Fred::Object::State::VALIDATED_CONTACT)  ||
+                  states.presents(Fred::Object::State::IDENTIFIED_CONTACT) ||
+                  states.presents(Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT))
              )) {
             throw std::runtime_error("bad mojeID contact");
         }
 
-        if (!states.get< FOS::LINKED >()) {
+        if (states.absents(Fred::Object::State::LINKED)) {
             Fred::DeleteContactById(_contact_id).exec(ctx);
             ctx.commit_transaction();
             return;
         }
 
         Fred::StatusList to_cancel;
-        to_cancel.insert(FOS(FOS::MOJEID_CONTACT).into< std::string >());
-        if (states.get< FOS::VALIDATED_CONTACT >()) {
-            to_cancel.insert(FOS(FOS::VALIDATED_CONTACT).into< std::string >());
+        to_cancel.insert(Conversion::Enums::into< std::string >(Fred::Object::State::MOJEID_CONTACT));
+        if (states.presents(Fred::Object::State::VALIDATED_CONTACT)) {
+            to_cancel.insert(Conversion::Enums::into< std::string >(Fred::Object::State::VALIDATED_CONTACT));
         }
-        if (states.get< FOS::IDENTIFIED_CONTACT >()) {
-            to_cancel.insert(FOS(FOS::IDENTIFIED_CONTACT).into< std::string >());
+        if (states.presents(Fred::Object::State::IDENTIFIED_CONTACT)) {
+            to_cancel.insert(Conversion::Enums::into< std::string >(Fred::Object::State::IDENTIFIED_CONTACT));
         }
-        if (states.get< FOS::CONDITIONALLY_IDENTIFIED_CONTACT >()) {
-            to_cancel.insert(FOS(FOS::CONDITIONALLY_IDENTIFIED_CONTACT).into< std::string >());
+        if (states.presents(Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT)) {
+            to_cancel.insert(Conversion::Enums::into< std::string >(Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT));
         }
         Fred::CancelObjectStateRequestId(_contact_id, to_cancel).exec(ctx);
 
@@ -2126,10 +1825,10 @@ void MojeID2Impl::cancel_account_prepare(
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
         throw;
     }
-    catch (const GetContact::object_doesnt_exist &e) {
-        LOGGER(PACKAGE).warning(boost::format("contact doesn't exist (%1%)") % e.what());
-        throw ObjectDoesntExist(e.what());
-    }
+//    catch (const GetContact::object_doesnt_exist &e) {
+//        LOGGER(PACKAGE).warning(boost::format("contact doesn't exist (%1%)") % e.what());
+//        throw ObjectDoesntExist(e.what());
+//    }
     catch (const ObjectDoesntExist &e) {
         LOGGER(PACKAGE).warning(boost::format("contact doesn't exist (%1%)") % e.what());
         throw;
@@ -2152,30 +1851,83 @@ void MojeID2Impl::send_new_pin3(
 
     try {
         Fred::OperationContextCreator ctx;
-        typedef Fred::Object::State FOS;
-        typedef transitions::event::send_new_pin3 occurred;
-        const occurred::StatesPresence states =
-            GetContact(_contact_id).states< occurred::RelatedStates >().presence(ctx);
-        if (states.get< FOS::IDENTIFIED_CONTACT >()) {
+        const Fred::PublicRequestObjectLockGuardByObjectId locked_object(ctx, _contact_id);
+        const Fred::Object::StatesInfo states(Fred::GetObjectStates(_contact_id).exec(ctx));
+        if (states.presents(Fred::Object::State::IDENTIFIED_CONTACT)) {
             // nothing to send if contact is identified
             // IdentificationRequestDoesntExist isn't error in frontend
             throw IdentificationRequestDoesntExist("contact already identified");
         }
-        if (!states.get< FOS::MOJEID_CONTACT >()) {
+        if (states.absents(Fred::Object::State::MOJEID_CONTACT)) {
             throw ObjectDoesntExist("isn't mojeID contact");
         }
-        const occurred event(ctx, _contact_id, mojeid_registrar_handle_, _log_request_id);
-        transitions::process(event, states);
+//        const occurred event(ctx, _contact_id, mojeid_registrar_handle_, _log_request_id);
+        bool has_identification_request = false;
+        try {
+            const Fred::PublicRequestTypeIface &type = Fred::MojeID::PublicRequest::ContactIdentification::iface();
+            Fred::GetActivePublicRequest get_active_public_request_op(type);
+            while (true) {
+                const Fred::PublicRequestId request_id = get_active_public_request_op.exec(ctx, locked_object);
+                Fred::UpdatePublicRequest update_public_request_op;
+                Fred::PublicRequestLockGuardById locked_request(ctx, request_id);
+                update_public_request_op.set_status(Fred::PublicRequest::Status::INVALIDATED);
+                update_public_request_op.set_reason("new pin3 generated");
+                update_public_request_op.set_registrar_id(ctx, mojeid_registrar_handle_);
+                update_public_request_op.exec(ctx, locked_request);
+                has_identification_request = true;
+            }
+        }
+        catch (const Fred::GetActivePublicRequest::Exception &e) {
+            if (!e.is_set_no_request_found()) {
+                throw;
+            }
+        }
+
+        bool has_reidentification_request = false;
+        try {
+            const Fred::PublicRequestTypeIface &type = Fred::MojeID::PublicRequest::ContactReidentification::iface();
+            Fred::GetActivePublicRequest get_active_public_request_op(type);
+            while (true) {
+                const Fred::PublicRequestId request_id = get_active_public_request_op.exec(ctx, locked_object);
+                Fred::UpdatePublicRequest update_public_request_op;
+                Fred::PublicRequestLockGuardById locked_request(ctx, request_id);
+                update_public_request_op.set_status(Fred::PublicRequest::Status::INVALIDATED);
+                update_public_request_op.set_reason("new pin3 generated");
+                update_public_request_op.set_registrar_id(ctx, mojeid_registrar_handle_);
+                update_public_request_op.exec(ctx, locked_request);
+                has_reidentification_request = true;
+            }
+        }
+        catch (const Fred::GetActivePublicRequest::Exception &e) {
+            if (!e.is_set_no_request_found()) {
+                throw;
+            }
+        }
+
+        if (!has_identification_request && !has_reidentification_request) {
+            throw MojeID2Impl::IdentificationRequestDoesntExist("no usable request found");
+        }
+
+        const HandleMojeIDArgs *const server_conf_ptr = CfgArgs::instance()->get_handler_ptr_by_type< HandleMojeIDArgs >();
+        check_sent_letters_limit(ctx,
+                                 _contact_id,
+                                 server_conf_ptr->letter_limit_count,
+                                 server_conf_ptr->letter_limit_interval);
+
+        const Fred::PublicRequestAuthTypeIface &type = has_reidentification_request
+                                                       ? Fred::MojeID::PublicRequest::ContactReidentification::iface()
+                                                       : Fred::MojeID::PublicRequest::ContactIdentification::iface();
+        Fred::CreatePublicRequestAuth create_public_request_op(type);
+        create_public_request_op.set_registrar_id(ctx, mojeid_registrar_handle_);
+        create_public_request_op.set_reason("send_new_pin3 call");
+        const Fred::CreatePublicRequestAuth::Result result =
+        create_public_request_op.exec(ctx, locked_object, _log_request_id);
         ctx.commit_transaction();
         return;
     }
     catch(const ObjectDoesntExist &e) {
         LOGGER(PACKAGE).info(e.what());
         throw;
-    }
-    catch(const Fred::Object::Get< Fred::Object::Type::CONTACT >::object_doesnt_exist &e) {
-        LOGGER(PACKAGE).info(e.what());
-        throw ObjectDoesntExist("object not found in database");
     }
     catch(const MessageLimitExceeded &e) {
         LOGGER(PACKAGE).info(e.what());
@@ -2211,18 +1963,11 @@ void MojeID2Impl::send_mojeid_card(
 
     try {
         Fred::OperationContextCreator ctx;
-        typedef Fred::Object::State FOS;
-        typedef FOS::set<
-            FOS::MOJEID_CONTACT,
-            FOS::IDENTIFIED_CONTACT,
-            FOS::VALIDATED_CONTACT >::type RelatedStates;
-        typedef GetContact::States< RelatedStates >::Presence StatesPresence;
-        const StatesPresence states =
-            GetContact(_contact_id).states< RelatedStates >().presence(ctx);
-        if (!states.get< FOS::MOJEID_CONTACT >()) {
+        const Fred::Object::StatesInfo states(Fred::GetObjectStates(_contact_id).exec(ctx));
+        if (states.absents(Fred::Object::State::MOJEID_CONTACT)) {
             throw ObjectDoesntExist("isn't mojeID contact");
         }
-        if (!states.get< FOS::IDENTIFIED_CONTACT >()) {
+        if (states.absents(Fred::Object::State::IDENTIFIED_CONTACT)) {
 //            throw IdentificationRequestDoesntExist("contact already identified");
         }
         const HandleMojeIDArgs *const server_conf_ptr = CfgArgs::instance()->
@@ -2237,17 +1982,13 @@ void MojeID2Impl::send_mojeid_card(
             server_conf_ptr->letter_limit_interval,
             _log_request_id,
             Optional< boost::posix_time::ptime >(),
-            states.get< FOS::VALIDATED_CONTACT >());
+            states.presents(Fred::Object::State::VALIDATED_CONTACT));
         ctx.commit_transaction();
         return;
     }
     catch(const ObjectDoesntExist &e) {
         LOGGER(PACKAGE).info(e.what());
         throw;
-    }
-    catch(const Fred::Object::Get< Fred::Object::Type::CONTACT >::object_doesnt_exist &e) {
-        LOGGER(PACKAGE).info(e.what());
-        throw ObjectDoesntExist("object not found in database");
     }
     catch(const MessageLimitExceeded &e) {
         LOGGER(PACKAGE).info(e.what());
@@ -2437,7 +2178,7 @@ MojeID2Impl::MessageId MojeID2Impl::send_mojeid_card(
     std::string sql = "SELECT (SELECT country_cs FROM enum_country WHERE country=$1::TEXT)";
     if (!_validated_contact.isset()) {
         params(_data.id)
-              (Fred::Object::State(Fred::Object::State::VALIDATED_CONTACT).into< std::string >());
+              (Conversion::Enums::into< std::string >(Fred::Object::State::VALIDATED_CONTACT));
         sql.append(",EXISTS(SELECT * FROM object_state "
                            "WHERE object_id=$2::BIGINT AND "
                                  "state_id=(SELECT id FROM enum_object_states WHERE name=$3::TEXT) AND "
@@ -2513,146 +2254,7 @@ MojeID2Impl::MessageId MojeID2Impl::send_mojeid_card(
     return message_id;
 }
 
-namespace {
-
-transitions::event::transfer_contact_prepare::transfer_contact_prepare(
-    Fred::OperationContext &_ctx,
-    const Fred::InfoContactData &_contact,
-    const std::string &_trans_id,
-    const std::string &_registrar_handle,
-    MojeID2Impl::LogRequestId _log_request_id,
-    std::string &_ident)
-:   ctx_(_ctx),
-    contact_(_contact),
-    trans_id_(_trans_id),
-    registrar_handle_(_registrar_handle),
-    log_request_id_(_log_request_id),
-    ident_(_ident),
-    locked_contact_(ctx_, _contact.id)
-{
-}
-
-void transitions::guard::transfer_contact_prepare::operator()(
-    const event::transfer_contact_prepare &_event,
-    const event::transfer_contact_prepare::StatesPresence &_states)const
-{
-    const MojeID2Impl::CheckMojeIDRegistration check_result(Fred::make_args(_event.get_contact()),
-                                         Fred::make_args(_event.get_contact(), _event.get_operation_context()),
-                                         Fred::make_args(_states));
-    if (!check_result.success()) {
-        throw check_result;
-    }
-}
-
-void action_transfer_contact_prepare(
-    const Fred::PublicRequestAuthTypeIface &_iface,
-    const transitions::event::transfer_contact_prepare &_event)
-{
-    Fred::CreatePublicRequestAuth op_create_pub_req(_iface);
-    if (!_event.get_contact().notifyemail.isnull()) {
-        op_create_pub_req.set_email_to_answer(_event.get_contact().notifyemail.get_value());
-    }
-    op_create_pub_req.set_registrar_id(_event.get_operation_context(), _event.get_registrar_handle());
-    const Fred::CreatePublicRequestAuth::Result result =
-        op_create_pub_req.exec(_event.get_operation_context(), _event.get_locked_contact());
-    _event.set_ident(result.identification);
-    prepare_transaction_storage()->store(_event.get_trans_id(), _event.get_object_id());
-}
-
-void transitions::action::transfer_contact_prepare_civm::operator()(
-    const event::transfer_contact_prepare &_event,
-    const event::transfer_contact_prepare::StatesPresence &_states)const
-{
-    action_transfer_contact_prepare(Fred::MojeID::PublicRequest::ContactConditionalIdentification::iface(),
-                                    _event);
-}
-
-void transitions::action::transfer_contact_prepare_Civm::operator()(
-    const event::transfer_contact_prepare &_event,
-    const event::transfer_contact_prepare::StatesPresence &_states)const
-{
-    action_transfer_contact_prepare(Fred::MojeID::PublicRequest::ConditionallyIdentifiedContactTransfer::iface(),
-                                    _event);
-}
-
-void transitions::action::transfer_contact_prepare_CIvm::operator()(
-    const event::transfer_contact_prepare &_event,
-    const event::transfer_contact_prepare::StatesPresence &_states)const
-{
-    action_transfer_contact_prepare(Fred::MojeID::PublicRequest::IdentifiedContactTransfer::iface(),
-                                    _event);
-}
-
-
-transitions::event::process_registration_request::process_registration_request(
-    Fred::OperationContext &_ctx,
-    const std::string &_ident_request_id,
-    const std::string &_password,
-    const std::string &_registrar_handle,
-    MojeID2Impl::LogRequestId _log_request_id)
-:   ctx_(_ctx),
-    password_(_password),
-    registrar_handle_(_registrar_handle),
-    log_request_id_(_log_request_id),
-    locked_request_(ctx_, _ident_request_id),
-    pub_req_info_(ctx_, locked_request_),
-    pub_req_type_(PubReqType::from(pub_req_info_.get_type()))
-{
-    if (pub_req_info_.get_object_id().isnull()) {
-        static const std::string msg = "no object associated with this public request";
-        invalidate(ctx_, locked_request_, msg, log_request_id_);
-        throw MojeID2Impl::IdentificationFailed(msg);
-    }
-}
-
-void transitions::guard::process_registration_request::operator()(
-    const event::process_registration_request &_event,
-    const event::process_registration_request::StatesPresence &_states)const
-{
-    switch (_event.get_pub_req_info().get_status()) {
-    case Fred::PublicRequest::Status::NEW:
-        break;
-    case Fred::PublicRequest::Status::ANSWERED:
-        throw MojeID2Impl::IdentificationAlreadyProcessed("identification already processed");
-    case Fred::PublicRequest::Status::INVALIDATED:
-        throw MojeID2Impl::IdentificationAlreadyInvalidated("identification already invalidated");
-    }
-
-    switch (_event.get_pub_req_type()) {
-    case PubReqType::CONTACT_CONDITIONAL_IDENTIFICATION:
-    case PubReqType::CONDITIONALLY_IDENTIFIED_CONTACT_TRANSFER:
-    case PubReqType::IDENTIFIED_CONTACT_TRANSFER:
-        break;
-    default:
-        throw std::runtime_error("unexpected public request type " + _event.get_pub_req_type());
-    }
-
-    const Fred::ObjectId object_id = _event.get_object_id();
-    const Database::Result dbres = _event.get_operation_context().get_conn().exec_params(
-        "SELECT EXISTS(SELECT 1 FROM public_request "
-                      "WHERE id=$1::BIGINT AND "
-                            "create_time<(SELECT GREATEST(update,trdate) FROM object "
-                                         "WHERE id=$2::BIGINT)"
-                     ") AS object_changed",
-        Database::query_param_list(_event.get_locked_request().get_public_request_id())//$1::BIGINT
-                                  (object_id));                                        //$2::BIGINT
-
-    if (dbres.size() != 1) {
-        throw std::runtime_error("something wrong happened database is crazy");
-    }
-
-    const bool contact_changed = static_cast< bool >(dbres[0][0]);
-    if (contact_changed) {
-        static const std::string msg = "contact data changed after the public request had been created";
-        invalidate(_event.get_operation_context(), _event.get_locked_request(), msg, _event.get_log_request_id());
-        throw MojeID2Impl::ContactChanged(msg);
-    }
-
-    if (!_event.get_pub_req_info().check_password(_event.get_password())) {
-        throw MojeID2Impl::IdentificationFailed("password doesn't match");
-    }
-}
-
+#if 0
 void transitions::guard::process_contact_conditional_identification::operator()(
     const event::process_registration_request &_event,
     const event::process_registration_request::StatesPresence &_states)const
@@ -2803,96 +2405,12 @@ void transitions::action::process_identified_contact_transfer::operator()(
            _event.get_log_request_id());
 }
 
-transitions::event::send_new_pin3::send_new_pin3(
-    Fred::OperationContext &_ctx,
-    MojeID2Impl::ContactId _contact_id,
-    const std::string &_registrar_handle,
-    MojeID2Impl::LogRequestId _log_request_id)
-:   ctx_(_ctx),
-    contact_id_(_contact_id),
-    locked_object_(_ctx, _contact_id),
-    registrar_handle_(_registrar_handle),
-    log_request_id_(_log_request_id)
-{
-}
-
-void transitions::guard::send_new_pin3::operator()(
-    const event::send_new_pin3 &_event,
-    const event::send_new_pin3::StatesPresence &_states)const
-{
-}
-
 void transitions::action::send_new_pin3::operator()(
     const event::send_new_pin3 &_event,
     const event::send_new_pin3::StatesPresence &_states)const
 {
-    bool has_identification_request = false;
-    try {
-        const Fred::PublicRequestTypeIface &type = Fred::MojeID::PublicRequest::ContactIdentification::iface();
-        Fred::GetActivePublicRequest get_active_public_request_op(type);
-        Fred::OperationContext &ctx = _event.get_operation_context();
-        const Fred::PublicRequestObjectLockGuard &locked_object = _event.get_locked_object();
-        while (true) {
-            const Fred::PublicRequestId request_id = get_active_public_request_op.exec(ctx, locked_object);
-            Fred::UpdatePublicRequest update_public_request_op;
-            Fred::PublicRequestLockGuardById locked_request(ctx, request_id);
-            update_public_request_op.set_status(Fred::PublicRequest::Status::INVALIDATED);
-            update_public_request_op.set_reason("new pin3 generated");
-            update_public_request_op.set_registrar_id(ctx, _event.get_registrar_handle());
-            update_public_request_op.exec(ctx, locked_request);
-            has_identification_request = true;
-        }
-    }
-    catch (const Fred::GetActivePublicRequest::Exception &e) {
-        if (!e.is_set_no_request_found()) {
-            throw;
-        }
-    }
-
-    bool has_reidentification_request = false;
-    try {
-        const Fred::PublicRequestTypeIface &type = Fred::MojeID::PublicRequest::ContactReidentification::iface();
-        Fred::GetActivePublicRequest get_active_public_request_op(type);
-        Fred::OperationContext &ctx = _event.get_operation_context();
-        const Fred::PublicRequestObjectLockGuard &locked_object = _event.get_locked_object();
-        while (true) {
-            const Fred::PublicRequestId request_id = get_active_public_request_op.exec(ctx, locked_object);
-            Fred::UpdatePublicRequest update_public_request_op;
-            Fred::PublicRequestLockGuardById locked_request(ctx, request_id);
-            update_public_request_op.set_status(Fred::PublicRequest::Status::INVALIDATED);
-            update_public_request_op.set_reason("new pin3 generated");
-            update_public_request_op.set_registrar_id(ctx, _event.get_registrar_handle());
-            update_public_request_op.exec(ctx, locked_request);
-            has_reidentification_request = true;
-        }
-    }
-    catch (const Fred::GetActivePublicRequest::Exception &e) {
-        if (!e.is_set_no_request_found()) {
-            throw;
-        }
-    }
-
-    if (!has_identification_request && !has_reidentification_request) {
-        throw MojeID2Impl::IdentificationRequestDoesntExist("no usable request found");
-    }
-
-    Fred::OperationContext &ctx = _event.get_operation_context();
-    const HandleMojeIDArgs *const server_conf_ptr = CfgArgs::instance()->get_handler_ptr_by_type< HandleMojeIDArgs >();
-    check_sent_letters_limit(ctx,
-                             _event.get_object_id(),
-                             server_conf_ptr->letter_limit_count,
-                             server_conf_ptr->letter_limit_interval);
-
-    const Fred::PublicRequestAuthTypeIface &type = has_reidentification_request
-                                                   ? Fred::MojeID::PublicRequest::ContactReidentification::iface()
-                                                   : Fred::MojeID::PublicRequest::ContactIdentification::iface();
-    Fred::CreatePublicRequestAuth create_public_request_op(type);
-    create_public_request_op.set_registrar_id(ctx, _event.get_registrar_handle());
-    create_public_request_op.set_reason("send_new_pin3 call");
-    const Fred::CreatePublicRequestAuth::Result result =
-        create_public_request_op.exec(ctx, _event.get_locked_object(), _event.get_log_request_id());
 }
+#endif
 
-}//namespace Registry::MojeID::{anonymous}
 }//namespace Registry::MojeID
 }//namespace Registry
