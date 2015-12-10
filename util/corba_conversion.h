@@ -103,11 +103,11 @@ namespace CorbaConversion
     template <typename CORBA_TYPE, typename NON_CORBA_TYPE>
     void unwrap( CORBA_TYPE const & in, NON_CORBA_TYPE& out )
     {
-        typedef DEFAULT_UNWRAPPER<CORBA_TYPE, NON_CORBA_TYPE> DEFAULT_CONVERSION;
-        BOOST_MPL_ASSERT((boost::is_same<CORBA_TYPE, typename DEFAULT_CONVERSION::type::CORBA_TYPE>));
-        BOOST_MPL_ASSERT((boost::is_same<NON_CORBA_TYPE, typename DEFAULT_CONVERSION::type::NON_CORBA_TYPE>));
+        typedef typename DEFAULT_UNWRAPPER<CORBA_TYPE, NON_CORBA_TYPE>::type DEFAULT_CONVERSION;
+        BOOST_MPL_ASSERT((boost::is_same<CORBA_TYPE, typename DEFAULT_CONVERSION::CORBA_TYPE>));
+        BOOST_MPL_ASSERT((boost::is_same<NON_CORBA_TYPE, typename DEFAULT_CONVERSION::NON_CORBA_TYPE>));
 
-        DEFAULT_CONVERSION::type::unwrap(in, out);
+        DEFAULT_CONVERSION::unwrap(in, out);
     }
 
     /**
@@ -121,11 +121,11 @@ namespace CorbaConversion
     template <typename NON_CORBA_TYPE, typename CORBA_TYPE>
     void wrap( NON_CORBA_TYPE const & in, CORBA_TYPE& out )
     {
-        typedef DEFAULT_WRAPPER<NON_CORBA_TYPE, CORBA_TYPE> DEFAULT_CONVERSION;
-        BOOST_MPL_ASSERT((boost::is_same<NON_CORBA_TYPE, typename DEFAULT_CONVERSION::type::NON_CORBA_TYPE>));
-        BOOST_MPL_ASSERT((boost::is_same<CORBA_TYPE, typename DEFAULT_CONVERSION::type::CORBA_TYPE>));
+        typedef typename DEFAULT_WRAPPER<NON_CORBA_TYPE, CORBA_TYPE>::type DEFAULT_CONVERSION;
+        BOOST_MPL_ASSERT((boost::is_same<NON_CORBA_TYPE, typename DEFAULT_CONVERSION::NON_CORBA_TYPE>));
+        BOOST_MPL_ASSERT((boost::is_same<CORBA_TYPE, typename DEFAULT_CONVERSION::CORBA_TYPE>));
 
-        DEFAULT_CONVERSION::type::wrap(in, out);
+        DEFAULT_CONVERSION::wrap(in, out);
     }
 
     /**
@@ -139,13 +139,11 @@ namespace CorbaConversion
     template <typename NON_CORBA_TYPE, typename CORBA_TYPE>
     NON_CORBA_TYPE unwrap_into( const CORBA_TYPE& in)
     {
-        typedef DEFAULT_UNWRAPPER<CORBA_TYPE, NON_CORBA_TYPE> DEFAULT_CONVERSION;
-        BOOST_MPL_ASSERT((boost::is_same<NON_CORBA_TYPE, typename DEFAULT_CONVERSION::type::NON_CORBA_TYPE>));
-        BOOST_MPL_ASSERT((boost::is_same<CORBA_TYPE, typename DEFAULT_CONVERSION::type::CORBA_TYPE>));
+        typedef typename DEFAULT_UNWRAPPER<CORBA_TYPE, NON_CORBA_TYPE>::type DEFAULT_CONVERSION;
+        BOOST_MPL_ASSERT((boost::is_same<NON_CORBA_TYPE, typename DEFAULT_CONVERSION::NON_CORBA_TYPE>));
+        BOOST_MPL_ASSERT((boost::is_same<CORBA_TYPE, typename DEFAULT_CONVERSION::CORBA_TYPE>));
 
-        NON_CORBA_TYPE res;
-        DEFAULT_CONVERSION::type::unwrap(in, res);
-        return res;
+        return unwrap_by<DEFAULT_CONVERSION>(in);
     }
 
     /**
@@ -159,13 +157,11 @@ namespace CorbaConversion
     template <typename CORBA_TYPE, typename NON_CORBA_TYPE>
     CORBA_TYPE wrap_into (const NON_CORBA_TYPE& in)
     {
-        typedef DEFAULT_WRAPPER<NON_CORBA_TYPE, CORBA_TYPE> DEFAULT_CONVERSION;
-        BOOST_MPL_ASSERT((boost::is_same<CORBA_TYPE, typename DEFAULT_CONVERSION::type::CORBA_TYPE>));
-        BOOST_MPL_ASSERT((boost::is_same<NON_CORBA_TYPE, typename DEFAULT_CONVERSION::type::NON_CORBA_TYPE>));
+        typedef typename DEFAULT_WRAPPER<NON_CORBA_TYPE, CORBA_TYPE>::type DEFAULT_CONVERSION;
+        BOOST_MPL_ASSERT((boost::is_same<CORBA_TYPE, typename DEFAULT_CONVERSION::CORBA_TYPE>));
+        BOOST_MPL_ASSERT((boost::is_same<NON_CORBA_TYPE, typename DEFAULT_CONVERSION::NON_CORBA_TYPE>));
 
-        CORBA_TYPE res;
-        DEFAULT_CONVERSION::type::wrap(in, res);
-        return res;
+        return wrap_by<DEFAULT_CONVERSION>(in);
     }
 
     /**
@@ -243,6 +239,7 @@ namespace CorbaConversion
             }
         }
     };
+
 
 }
 #endif
