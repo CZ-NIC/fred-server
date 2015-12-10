@@ -1,130 +1,200 @@
-# FRED server sample configuration
+################################################################################
+#                      FRED server configuration file                          #
+################################################################################
+#
 # New version for use with boost::program_option library
 # This file should be in @PREFIX@/etc/fred/server.conf
 
-##
-# DATABASE
-##
+################################################################################
+## Common settings
+################################################################################
+# These settings are common to all CORBA servers.
 
+###
+### PostgreSQL database settings
+###
 [database]
+# Database host or socket
 host = @DBHOST@
+# Database port
 port = @DBPORT@
+# Database name
 name = @DBNAME@
+# Database user
 user = @DBUSER@
+# Database password (if required)
 password = @DBPASS@
+# Query timeout (seconds)
 timeout = 2
 
-
-##
-# CORBA NAMESERVICE
-##
-
+###
+### CORBA nameservice settings
+###
 [nameservice]
+# CORBA nameservice host
 host = @NSHOST@
+# CORBA nameservice port
 port = @NSPORT@
+# CORBA nameservice context
+#   usually ``fred`` - check with ``namectl`` command::
+#
+#   $> namectl list
+#   fred.context/
+#   $> namectl list fred.context
+#   EPP.Object
+#   WebWhois.Object
+#   Whois.Object
+#   ...
+#
 context = @NSCONTEXT@
 
-##
-# LOGGING
-#
-# supported log types:
-#   0 ... console
-#   1 ... file    (parameter `file' for filename (with path) where to log)
-#   2 ... syslog  (parameter `syslog_facility' for syslog local settings) 
-#
-#
-# supported log levels:
-#   0 ... LL_EMERG
-#   1 ... LL_ALERT
-#   2 ... LL_CRIT
-#   3 ... LL_ERR
-#   4 ... LL_WARNING
-#   5 ... LL_NOTICE
-#   6 ... LL_INFO
-#   7 ... LL_DEBUG
-#   8 ... LL_TRACE (special level for really detailed output)
-##
-
+###
+### Server logging settings
+###
 [log]
+# Supported log types:
+# * 0 - console (not for production use)
+# * 1 - file (not for production use, see parameter ``file`` for filename (with path) where to log)
+# * 2 - syslog  (see parameter ``syslog_facility`` for syslog local settings)
+#
 type = 1
+# Log level
+# * 0 ... LL_EMERG
+# * 1 ... LL_ALERT
+# * 2 ... LL_CRIT
+# * 3 ... LL_ERR
+# * 4 ... LL_WARNING
+# * 5 ... LL_NOTICE
+# * 6 ... LL_INFO
+# * 7 ... LL_DEBUG
+# * 8 ... LL_TRACE (special level for really detailed output)
 level = 8
+# Specify log file (for log type = 1)
 file = @LOCALSTATEDIR@/log/fred.log
+# Specify syslog facility (for log type = 2)
 syslog_facility = 1
 
-##
-# GENERAL REGISTRY settings
-##
-
+###
+### Central registry settings // TODO this should be reworked
+###
 [registry]
+# $DEPRECATED$ Extra checking for object handle format e.g.
+#   * CID: prefix for contacts
+#   * NSSID: prefix for nssets
+#   * KEYID: prefix for keysets
 restricted_handles = false
+# Email notification for EPP commands (create/update/delete/transfer)
+# // TODO should be moved to [rifd] section
 disable_epp_notifier = false
+# $DEPRECATED$ Locking on database level - must be turned on!
 lock_epp_commands = true
+# Default report level for create_nsset command
 nsset_level = 3
 
+# Path to fred-doc2pdf utility
 docgen_path = @BINDIR@/fred-doc2pdf
+# Path to doc2pdf templates
 docgen_template_path = @DATAROOTDIR@/fred-doc2pdf/
+# Domain expiration letters - the limit of list length per letter
 docgen_domain_count_limit = 100
 
+# Path to filemanager_client
 fileclient_path = @BINDIR@/filemanager_client
 
 
-##
-# RIFD specific settings
-##
+################################################################################
+## Daemon-specific settings
+################################################################################
+#
 
+###
+### RIFD specific settings
+###
 [rifd]
+# $DEPRECATED$ Total number of sessions permitted
 session_max = 200
+# Session timeout (seconds)
 session_timeout = 300
+# Maximum of concurrent sessions per registrar
 session_registrar_max = 5
-# clear keyset when update domain command is changing nsset
+# Clear keyset when update domain command is changing nsset
 epp_update_domain_keyset_clear = true
+# Turn on/off domain create/renew operation credit charging
 epp_operations_charging = @EPP_OPERATIONS_CHARGING@
+# $DEVELOPMENT$ Turn on/off IDN support
 allow_idn = false
+# Turn on/off contact check (semi-automatic) after data change
 epp_update_contact_enqueue_check = false
 
-##
-# ADIFD specific settings
-##
-
+###
+### ADIFD specific settings
+###
 [adifd]
+# $DEPRECATED$ The total number of sessions permitted
 session_max = 0
+# $DEPRECATED$ Daphne backend session timeout in seconds
 session_timeout = 3600
+# $DEPRECATED$ Daphne backend session garbage interval in seconds
 session_garbage = 150
 
-## 
-# LOGD specific settings
-##
-
+###
+### LOGD specific settings
+###
 [logd]
+# Path to a file which contains IP addresses of monitoring app to not mix request
+# logging of regular traffic (requests from these IPs are logged to a different partition)
+# Each line in this file should contain only one IP address.
 monitoring_hosts_file = @MONITORINGIPS@
 
+###
+### SMS sender settings (CZ.NIC-specific for now)
+###
 [sms]
 command = LOGIN=login PASSWORD=pass sms_send.bash
 
 
-##
-# MIFD specific settings
-##
+###
+### MIFD specific settings
+###
 [mojeid]
+# The handle of registrar for this service
 registrar_handle = REG-MOJEID
+# Hostname (e-mail template parameter)
 hostname = demo.mojeid.cz
+# Email notification for contact commands (create/update/transfer)
 notify_commands = false
-# demo_mode = true - uses constant PINs (do not use on production)
+# Turn on/off the demo mode
+# WARNING: The demo mode uses constant PINs - do NOT use on production!
 demo_mode = false
+# If true specific correspondence type is generated synchronously with operation.
+# If false it's done by different process.
 auto_email_generation = true
 auto_sms_generation = true
 
-##
-# contact verification PIFD settings
-##
+# Maximum number of letters sent by one contact in the specified interval
+#letter_limit_count = 6
+# Interval (days) for limiting the number of sent letters
+#letter_limit_interval = 30
+
+# $DEPRECATED$
+#### Unregistrable handles iterator object scavenger thread configuration
+# - Period between garbage procedure runs in seconds
+#uho_scavenger_thread_period =
+# - Maximum object idle period (timeout) in seconds
+#uho_scavenger_object_max_idle_period =
+
+###
+### Contact verification PIFD settings
+###
 [contact_verification]
 hostname = demo.contactverification.cz
-# demo_mode = true - uses constant PINs (do not use on production)
+# Turn on/off the demo mode
+# WARNING: The demo mode uses constant PINs - do NOT use on production!
 demo_mode = false
 
-##
-# domain browser server settings
-##
+###
+### DBIFD specific settings
+###
 [domain_browser]
 list_domains_limit=5000
 list_nssets_limit=5000
