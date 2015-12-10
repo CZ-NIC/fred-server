@@ -40,6 +40,44 @@ namespace CorbaConversion
         typedef Wrapper_Nullable_std_string_into_NullableString_var<Registry::MojeID::NullableString, Registry::MojeID::NullableString_var> type;
     };
 
+    /**
+     * Exception if argument is special
+     */
+    class ArgumentIsSpecial : public std::invalid_argument
+    {
+    public:
+        ArgumentIsSpecial() : std::invalid_argument("argument is special") {}
+        virtual ~ArgumentIsSpecial() throw() {}
+    };
+
+    //Registry::MojeID::Date_var
+    struct Unwrapper_Registry_MojeID_Date_var_into_boost_date
+    {
+        typedef Registry::MojeID::Date_var CORBA_TYPE;
+        typedef boost::gregorian::date NON_CORBA_TYPE;
+        static void unwrap( const CORBA_TYPE& ct_in, NON_CORBA_TYPE& nct_out);
+    };
+    template <> struct DEFAULT_UNWRAPPER<
+        Unwrapper_Registry_MojeID_Date_var_into_boost_date::CORBA_TYPE,
+        Unwrapper_Registry_MojeID_Date_var_into_boost_date::NON_CORBA_TYPE>
+    {
+        typedef Unwrapper_Registry_MojeID_Date_var_into_boost_date type;
+    };
+
+    struct Wrapper_boost_date_into_Registry_MojeID_Date_var
+    {
+        typedef Registry::MojeID::Date_var CORBA_TYPE;
+        typedef boost::gregorian::date NON_CORBA_TYPE;
+        static void wrap( const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out );
+    };
+    template <> struct DEFAULT_WRAPPER<
+        Wrapper_boost_date_into_Registry_MojeID_Date_var::NON_CORBA_TYPE,
+        Wrapper_boost_date_into_Registry_MojeID_Date_var::CORBA_TYPE>
+    {
+        typedef Wrapper_boost_date_into_Registry_MojeID_Date_var type;
+    };
+
+
 }
 #endif
 

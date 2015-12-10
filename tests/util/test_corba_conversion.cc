@@ -354,6 +354,18 @@ BOOST_AUTO_TEST_CASE(test_interface)
         BOOST_CHECK(std::string(tnsv1->_value()) == ns2.get_value());
     }
 
+    //Registry::MojeID::Date_var
+    {
+        Registry::MojeID::Date_var mojeid_date = CorbaConversion::wrap_into<Registry::MojeID::Date_var>(boost::gregorian::date(2015,12,10));
+        mojeid_date->value;
+        BOOST_CHECK(CorbaConversion::unwrap_into<std::string>(CORBA::String_var(mojeid_date->value)) == "2015-12-10");
+        BOOST_CHECK(CorbaConversion::unwrap_into<boost::gregorian::date>(mojeid_date) == boost::gregorian::date(2015,12,10));
+
+        BOOST_CHECK_THROW(CorbaConversion::wrap_into<Registry::MojeID::Date_var>(boost::gregorian::date()), CorbaConversion::ArgumentIsSpecial);
+        BOOST_CHECK_THROW(CorbaConversion::unwrap_into<boost::gregorian::date>(Registry::MojeID::Date_var()), CorbaConversion::PointerIsNULL);
+        BOOST_CHECK_THROW(CorbaConversion::unwrap_into<boost::gregorian::date>(CorbaConversion::wrap_into<Registry::MojeID::Date_var>(boost::gregorian::date())), CorbaConversion::ArgumentIsSpecial);
+    }
+
 
 
 
