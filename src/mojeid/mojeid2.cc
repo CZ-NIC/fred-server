@@ -266,6 +266,8 @@ bool validated_data_changed(const Fred::InfoContactData &_c1, const Fred::InfoCo
     return false;
 }
 
+}//Registry::MojeID::{anonymous}
+
 class MessageType
 {
 public:
@@ -283,38 +285,10 @@ public:
         CONTACT_CHECK_THANK_YOU,
         MOJEID_CARD
     };
-    MessageType(Value _value):value_(_value) { }
-    struct bad_conversion:std::runtime_error
+    static Value from(const std::string &_str)
     {
-        bad_conversion(const std::string &_msg):std::runtime_error(_msg) { }
-    };
-    template < typename T >
-    T into()const { T result; return this->into(result); }
-    std::string& into(std::string &_value)const
-    {
-        typedef std::map< Value, std::string > ValueToStr;
-        static ValueToStr value_to_str;
-        if (value_to_str.empty()) {
-            value_to_str[DOMAIN_EXPIRATION]         = "domain_expiration";
-            value_to_str[MOJEID_PIN2]               = "mojeid_pin2";
-            value_to_str[MOJEID_PIN3]               = "mojeid_pin3";
-            value_to_str[MOJEID_SMS_CHANGE]         = "mojeid_sms_change";
-            value_to_str[MONITORING]                = "monitoring";
-            value_to_str[CONTACT_VERIFICATION_PIN2] = "contact_verification_pin2";
-            value_to_str[CONTACT_VERIFICATION_PIN3] = "contact_verification_pin3";
-            value_to_str[MOJEID_PIN3_REMINDER]      = "mojeid_pin3_reminder";
-            value_to_str[CONTACT_CHECK_NOTICE]      = "contact_check_notice";
-            value_to_str[CONTACT_CHECK_THANK_YOU]   = "contact_check_thank_you";
-            value_to_str[MOJEID_CARD]               = "mojeid_card";
-        }
-        ValueToStr::const_iterator item_ptr = value_to_str.find(value_);
-        if (item_ptr != value_to_str.end()) {
-            return _value = item_ptr->second;
-        }
-        throw bad_conversion("invalid value");
+        return Conversion::Enums::into_from< Value >::into_enum_from(_str);
     }
-private:
-    const Value value_;
 };
 
 class CommType
@@ -327,31 +301,10 @@ public:
         SMS,
         REGISTERED_LETTER
     };
-    CommType(Value _value):value_(_value) { }
-    struct bad_conversion:std::runtime_error
+    static Value from(const std::string &_str)
     {
-        bad_conversion(const std::string &_msg):std::runtime_error(_msg) { }
-    };
-    template < typename T >
-    T into()const { T result; return this->into(result); }
-    std::string& into(std::string &_value)const
-    {
-        typedef std::map< Value, std::string > ValueToStr;
-        static ValueToStr value_to_str;
-        if (value_to_str.empty()) {
-            value_to_str[EMAIL]             = "email";
-            value_to_str[LETTER]            = "letter";
-            value_to_str[SMS]               = "sms";
-            value_to_str[REGISTERED_LETTER] = "registered_letter";
-        }
-        ValueToStr::const_iterator item_ptr = value_to_str.find(value_);
-        if (item_ptr != value_to_str.end()) {
-            return _value = item_ptr->second;
-        }
-        throw bad_conversion("invalid value");
+        return Conversion::Enums::into_from< Value >::into_enum_from(_str);
     }
-private:
-    const Value value_;
 };
 
 class SendStatus
@@ -367,35 +320,107 @@ public:
         BEING_SENT,
         UNDELIVERED
     };
-    SendStatus(Value _value):value_(_value) { }
-    struct bad_conversion:std::runtime_error
+    static Value from(const std::string &_str)
     {
-        bad_conversion(const std::string &_msg):std::runtime_error(_msg) { }
+        return Conversion::Enums::into_from< Value >::into_enum_from(_str);
+    }
+};
+
+struct PubReqType
+{
+    enum Value
+    {
+        CONTACT_CONDITIONAL_IDENTIFICATION,
+        CONDITIONALLY_IDENTIFIED_CONTACT_TRANSFER,
+        IDENTIFIED_CONTACT_TRANSFER,
     };
-    template < typename T >
-    T into()const { T result; return this->into(result); }
-    std::string& into(std::string &_value)const
+    static Value from(const std::string &_str)
     {
-        typedef std::map< Value, std::string > ValueToStr;
-        static ValueToStr value_to_str;
-        if (value_to_str.empty()) {
-            value_to_str[READY]                = "ready";
-            value_to_str[WAITING_CONFIRMATION] = "waiting_confirmation";
-            value_to_str[NO_PROCESSING]        = "no_processing";
-            value_to_str[SEND_FAILED]          = "send_failed";
-            value_to_str[SENT]                 = "sent";
-            value_to_str[BEING_SENT]           = "being_sent";
-            value_to_str[UNDELIVERED]          = "undelivered";
-        }
-        ValueToStr::const_iterator item_ptr = value_to_str.find(value_);
-        if (item_ptr != value_to_str.end()) {
-            return _value = item_ptr->second;
-        }
-        throw bad_conversion("invalid value");
+        return Conversion::Enums::into_from< Value >::into_enum_from(_str);
+    }
+};
+
+}//Registry::MojeID
+}//Registry
+
+namespace Conversion {
+namespace Enums {
+
+template < >
+struct tools_for< Registry::MojeID::MessageType::Value >
+{
+    static void enum_to_other_init(void (*set_relation)(Registry::MojeID::MessageType::Value, const std::string&))
+    {
+        using Registry::MojeID::MessageType;
+        set_relation(MessageType::DOMAIN_EXPIRATION,         "domain_expiration");
+        set_relation(MessageType::MOJEID_PIN2,               "mojeid_pin2");
+        set_relation(MessageType::MOJEID_PIN3,               "mojeid_pin3");
+        set_relation(MessageType::MOJEID_SMS_CHANGE,         "mojeid_sms_change");
+        set_relation(MessageType::MONITORING,                "monitoring");
+        set_relation(MessageType::CONTACT_VERIFICATION_PIN2, "contact_verification_pin2");
+        set_relation(MessageType::CONTACT_VERIFICATION_PIN3, "contact_verification_pin3");
+        set_relation(MessageType::MOJEID_PIN3_REMINDER,      "mojeid_pin3_reminder");
+        set_relation(MessageType::CONTACT_CHECK_NOTICE,      "contact_check_notice");
+        set_relation(MessageType::CONTACT_CHECK_THANK_YOU,   "contact_check_thank_you");
+        set_relation(MessageType::MOJEID_CARD,               "mojeid_card");
+    }
+};
+
+template < >
+struct tools_for< Registry::MojeID::CommType::Value >
+{
+    static void enum_to_other_init(void (*set_relation)(Registry::MojeID::CommType::Value, const std::string&))
+    {
+        using Registry::MojeID::CommType;
+        set_relation(CommType::EMAIL,             "email");
+        set_relation(CommType::LETTER,            "letter");
+        set_relation(CommType::SMS,               "sms");
+        set_relation(CommType::REGISTERED_LETTER, "registered_letter");
+    }
+};
+
+template < >
+struct tools_for< Registry::MojeID::SendStatus::Value >
+{
+    static void enum_to_other_init(void (*set_relation)(Registry::MojeID::SendStatus::Value, const std::string&))
+    {
+        using Registry::MojeID::SendStatus;
+        set_relation(SendStatus::READY,                "ready");
+        set_relation(SendStatus::WAITING_CONFIRMATION, "waiting_confirmation");
+        set_relation(SendStatus::NO_PROCESSING,        "no_processing");
+        set_relation(SendStatus::SEND_FAILED,          "send_failed");
+        set_relation(SendStatus::SENT,                 "sent");
+        set_relation(SendStatus::BEING_SENT,           "being_sent");
+        set_relation(SendStatus::UNDELIVERED,          "undelivered");
+    }
+};
+
+template < >
+struct tools_for< Registry::MojeID::PubReqType::Value >
+{
+    static void enum_to_other_init(void (*set_relation)(Registry::MojeID::PubReqType::Value, const std::string&))
+    {
+        typedef Registry::MojeID::PubReqType ET;
+        using namespace Fred::MojeID::PublicRequest;
+        set_relation(ET::CONTACT_CONDITIONAL_IDENTIFICATION,        as_string< ContactConditionalIdentification >());
+        set_relation(ET::CONDITIONALLY_IDENTIFIED_CONTACT_TRANSFER, as_string< ConditionallyIdentifiedContactTransfer >());
+        set_relation(ET::IDENTIFIED_CONTACT_TRANSFER,               as_string< IdentifiedContactTransfer >());
     }
 private:
-    const Value value_;
+    template < class PUB_REQ >
+    static std::string as_string()
+    {
+        return PUB_REQ::iface().get_public_request_type();
+    }
 };
+
+}//namespace Conversion::Enums
+}//namespace Conversion
+
+namespace Registry {
+namespace MojeID {
+
+namespace {
 
 template < MessageType::Value MT, CommType::Value CT >
 ::size_t cancel_message_sending(Fred::OperationContext &_ctx, MojeID2Impl::ContactId _contact_id)
@@ -413,12 +438,12 @@ template < MessageType::Value MT, CommType::Value CT >
               "ma.comm_type_id=(SELECT id FROM comm_type WHERE type=$2::TEXT) AND "
               "ma.message_type_id=(SELECT id FROM message_type WHERE type=$3::TEXT) "
         "RETURNING ma.id",
-        Database::query_param_list(_contact_id)                                                //$1::BIGINT
-                                  (CommType(CT).into< std::string >())                         //$2::TEXT
-                                  (MessageType(MT).into< std::string >())                      //$3::TEXT
-                                  (SendStatus(SendStatus::NO_PROCESSING).into< std::string >())//$4::TEXT
-                                  (SendStatus(SendStatus::SEND_FAILED).into< std::string >())  //$5::TEXT
-                                  (SendStatus(SendStatus::READY).into< std::string >()));      //$6::TEXT
+        Database::query_param_list(_contact_id)                                                      //$1::BIGINT
+                                  (Conversion::Enums::into< std::string >(CT))                       //$2::TEXT
+                                  (Conversion::Enums::into< std::string >(MT))                       //$3::TEXT
+                                  (Conversion::Enums::into< std::string >(SendStatus::NO_PROCESSING))//$4::TEXT
+                                  (Conversion::Enums::into< std::string >(SendStatus::SEND_FAILED))  //$5::TEXT
+                                  (Conversion::Enums::into< std::string >(SendStatus::READY)));      //$6::TEXT
     return result.size();
 }
 
@@ -467,37 +492,6 @@ bool identified_data_changed(const Fred::InfoContactData &_c1, const Fred::InfoC
 
 typedef data_storage< std::string, MojeID2Impl::ContactId >::safe prepare_transaction_storage;
 typedef prepare_transaction_storage::object_type::data_not_found prepare_transaction_data_not_found;
-
-struct PubReqType
-{
-    enum Value
-    {
-        CONTACT_CONDITIONAL_IDENTIFICATION,
-        CONDITIONALLY_IDENTIFIED_CONTACT_TRANSFER,
-        IDENTIFIED_CONTACT_TRANSFER,
-    };
-    static Value from(const std::string &_type)
-    {
-        typedef std::map< std::string, Value > StrToValue;
-        static StrToValue convert;
-        if (convert.empty()) {
-            using namespace Fred::MojeID::PublicRequest;
-            convert[into_string< ContactConditionalIdentification >()]       = CONTACT_CONDITIONAL_IDENTIFICATION;
-            convert[into_string< ConditionallyIdentifiedContactTransfer >()] = CONDITIONALLY_IDENTIFIED_CONTACT_TRANSFER;
-            convert[into_string< IdentifiedContactTransfer >()]              = IDENTIFIED_CONTACT_TRANSFER;
-        }
-        StrToValue::const_iterator value_ptr = convert.find(_type);
-        if (value_ptr != convert.end()) {
-            return value_ptr->second;
-        }
-        throw std::runtime_error("unexpected public request type " + _type);
-    }
-    template < class PUB_REQ >
-    static std::string into_string()
-    {
-        return PUB_REQ::iface().get_public_request_type();
-    }
-};
 
 #if 0
     typedef boost::mpl::set<
