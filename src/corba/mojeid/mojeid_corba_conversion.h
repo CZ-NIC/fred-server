@@ -51,84 +51,84 @@ namespace CorbaConversion
     };
 
     //Registry::MojeID::Date_var
-    struct Unwrapper_Registry_MojeID_Date_var_into_boost_date
+    struct Unwrapper_Registry_MojeID_Date_var_into_boost_gregorian_date
     {
         typedef Registry::MojeID::Date_var CORBA_TYPE;
         typedef boost::gregorian::date NON_CORBA_TYPE;
         static void unwrap( const CORBA_TYPE& ct_in, NON_CORBA_TYPE& nct_out);
     };
     template <> struct DEFAULT_UNWRAPPER<
-        Unwrapper_Registry_MojeID_Date_var_into_boost_date::CORBA_TYPE,
-        Unwrapper_Registry_MojeID_Date_var_into_boost_date::NON_CORBA_TYPE>
+        Unwrapper_Registry_MojeID_Date_var_into_boost_gregorian_date::CORBA_TYPE,
+        Unwrapper_Registry_MojeID_Date_var_into_boost_gregorian_date::NON_CORBA_TYPE>
     {
-        typedef Unwrapper_Registry_MojeID_Date_var_into_boost_date type;
+        typedef Unwrapper_Registry_MojeID_Date_var_into_boost_gregorian_date type;
     };
 
-    struct Wrapper_boost_date_into_Registry_MojeID_Date_var
+    struct Wrapper_boost_gregorian_date_into_Registry_MojeID_Date_var
     {
         typedef Registry::MojeID::Date_var CORBA_TYPE;
         typedef boost::gregorian::date NON_CORBA_TYPE;
         static void wrap( const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out );
     };
     template <> struct DEFAULT_WRAPPER<
-        Wrapper_boost_date_into_Registry_MojeID_Date_var::NON_CORBA_TYPE,
-        Wrapper_boost_date_into_Registry_MojeID_Date_var::CORBA_TYPE>
+        Wrapper_boost_gregorian_date_into_Registry_MojeID_Date_var::NON_CORBA_TYPE,
+        Wrapper_boost_gregorian_date_into_Registry_MojeID_Date_var::CORBA_TYPE>
     {
-        typedef Wrapper_boost_date_into_Registry_MojeID_Date_var type;
+        typedef Wrapper_boost_gregorian_date_into_Registry_MojeID_Date_var type;
     };
 
     //Registry::MojeID::DateTime_var
-    struct Unwrapper_Registry_MojeID_DateTime_var_into_boost_ptime
+    struct Unwrapper_Registry_MojeID_DateTime_var_into_boost_posix_time_ptime
     {
         typedef Registry::MojeID::DateTime_var CORBA_TYPE;
         typedef boost::posix_time::ptime NON_CORBA_TYPE;
         static void unwrap( const CORBA_TYPE& ct_in, NON_CORBA_TYPE& nct_out);
     };
     template <> struct DEFAULT_UNWRAPPER<
-        Unwrapper_Registry_MojeID_DateTime_var_into_boost_ptime::CORBA_TYPE,
-        Unwrapper_Registry_MojeID_DateTime_var_into_boost_ptime::NON_CORBA_TYPE>
+        Unwrapper_Registry_MojeID_DateTime_var_into_boost_posix_time_ptime::CORBA_TYPE,
+        Unwrapper_Registry_MojeID_DateTime_var_into_boost_posix_time_ptime::NON_CORBA_TYPE>
     {
-        typedef Unwrapper_Registry_MojeID_DateTime_var_into_boost_ptime type;
+        typedef Unwrapper_Registry_MojeID_DateTime_var_into_boost_posix_time_ptime type;
     };
 
-    struct Wrapper_boost_ptime_into_Registry_MojeID_DateTime_var
+    struct Wrapper_boost_posix_time_ptime_into_Registry_MojeID_DateTime_var
     {
         typedef Registry::MojeID::DateTime_var CORBA_TYPE;
         typedef boost::posix_time::ptime NON_CORBA_TYPE;
         static void wrap( const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out );
     };
     template <> struct DEFAULT_WRAPPER<
-        Wrapper_boost_ptime_into_Registry_MojeID_DateTime_var::NON_CORBA_TYPE,
-        Wrapper_boost_ptime_into_Registry_MojeID_DateTime_var::CORBA_TYPE>
+        Wrapper_boost_posix_time_ptime_into_Registry_MojeID_DateTime_var::NON_CORBA_TYPE,
+        Wrapper_boost_posix_time_ptime_into_Registry_MojeID_DateTime_var::CORBA_TYPE>
     {
-        typedef Wrapper_boost_ptime_into_Registry_MojeID_DateTime_var type;
+        typedef Wrapper_boost_posix_time_ptime_into_Registry_MojeID_DateTime_var type;
     };
 
     //Registry::MojeID::NullableDate_var
-    struct Unwrapper_Registry_MojeID_NullableDate_var_into_Nullable_boost_date
+    struct Unwrapper_Registry_MojeID_NullableDate_var_into_Nullable_boost_gregorian_date
     {
         typedef Registry::MojeID::NullableDate_var CORBA_TYPE;
         typedef Nullable<boost::gregorian::date> NON_CORBA_TYPE;
         static void unwrap( const CORBA_TYPE& ct_in, NON_CORBA_TYPE& nct_out);
     };
     template <> struct DEFAULT_UNWRAPPER<
-    Unwrapper_Registry_MojeID_NullableDate_var_into_Nullable_boost_date::CORBA_TYPE,
-    Unwrapper_Registry_MojeID_NullableDate_var_into_Nullable_boost_date::NON_CORBA_TYPE>
+    Unwrapper_Registry_MojeID_NullableDate_var_into_Nullable_boost_gregorian_date::CORBA_TYPE,
+    Unwrapper_Registry_MojeID_NullableDate_var_into_Nullable_boost_gregorian_date::NON_CORBA_TYPE>
     {
-        typedef Unwrapper_Registry_MojeID_NullableDate_var_into_Nullable_boost_date type;
+        typedef Unwrapper_Registry_MojeID_NullableDate_var_into_Nullable_boost_gregorian_date type;
     };
 
-    struct Wrapper_Nullable_boost_date_into_Registry_MojeID_NullableDate_var
+    struct Wrapper_Nullable_boost_gregorian_date_into_Registry_MojeID_NullableDate_var
     {
         typedef Registry::MojeID::NullableDate_var CORBA_TYPE;
         typedef Nullable<boost::gregorian::date> NON_CORBA_TYPE;
         static void wrap( const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out );
     };
     template <> struct DEFAULT_WRAPPER<
-    Wrapper_Nullable_boost_date_into_Registry_MojeID_NullableDate_var::NON_CORBA_TYPE,
-    Wrapper_Nullable_boost_date_into_Registry_MojeID_NullableDate_var::CORBA_TYPE>
+    Wrapper_Nullable_boost_gregorian_date_into_Registry_MojeID_NullableDate_var::NON_CORBA_TYPE,
+    Wrapper_Nullable_boost_gregorian_date_into_Registry_MojeID_NullableDate_var::CORBA_TYPE>
     {
-        typedef Wrapper_Nullable_boost_date_into_Registry_MojeID_NullableDate_var type;
+        typedef Wrapper_Nullable_boost_gregorian_date_into_Registry_MojeID_NullableDate_var type;
     };
 
 

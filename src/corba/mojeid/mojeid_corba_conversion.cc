@@ -25,7 +25,7 @@
 
 namespace CorbaConversion
 {
-    void Unwrapper_Registry_MojeID_Date_var_into_boost_date::unwrap( const CORBA_TYPE& ct_in, NON_CORBA_TYPE& nct_out)
+    void Unwrapper_Registry_MojeID_Date_var_into_boost_gregorian_date::unwrap( const CORBA_TYPE& ct_in, NON_CORBA_TYPE& nct_out)
     {
         if(ct_in.operator->() == NULL)
         {
@@ -40,7 +40,7 @@ namespace CorbaConversion
         }
     }
 
-    void Wrapper_boost_date_into_Registry_MojeID_Date_var::wrap( const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out )
+    void Wrapper_boost_gregorian_date_into_Registry_MojeID_Date_var::wrap( const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out )
     {
         if(nct_in.is_special())
         {
@@ -52,7 +52,7 @@ namespace CorbaConversion
         ct_out = res._retn();
     }
 
-    void Unwrapper_Registry_MojeID_DateTime_var_into_boost_ptime::unwrap( const CORBA_TYPE& ct_in, NON_CORBA_TYPE& nct_out)
+    void Unwrapper_Registry_MojeID_DateTime_var_into_boost_posix_time_ptime::unwrap( const CORBA_TYPE& ct_in, NON_CORBA_TYPE& nct_out)
     {
         if(ct_in.operator->() == NULL)
         {
@@ -67,7 +67,7 @@ namespace CorbaConversion
         }
     }
 
-    void Wrapper_boost_ptime_into_Registry_MojeID_DateTime_var::wrap( const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out )
+    void Wrapper_boost_posix_time_ptime_into_Registry_MojeID_DateTime_var::wrap( const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out )
     {
         if(nct_in.is_special())
         {
@@ -79,7 +79,7 @@ namespace CorbaConversion
         ct_out = res._retn();
     }
 
-    void Unwrapper_Registry_MojeID_NullableDate_var_into_Nullable_boost_date::unwrap( const CORBA_TYPE& ct_in, NON_CORBA_TYPE& nct_out)
+    void Unwrapper_Registry_MojeID_NullableDate_var_into_Nullable_boost_gregorian_date::unwrap( const CORBA_TYPE& ct_in, NON_CORBA_TYPE& nct_out)
     {
         if(ct_in.in() == NULL)
         {
@@ -95,7 +95,7 @@ namespace CorbaConversion
         }
     }
 
-    void Wrapper_Nullable_boost_date_into_Registry_MojeID_NullableDate_var::wrap( const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out )
+    void Wrapper_Nullable_boost_gregorian_date_into_Registry_MojeID_NullableDate_var::wrap( const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out )
     {
         if(nct_in.isnull())
         {

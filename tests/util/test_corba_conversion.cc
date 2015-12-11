@@ -387,9 +387,10 @@ BOOST_AUTO_TEST_CASE(test_interface)
         BOOST_CHECK(nd2.in() == NULL);
 
         Nullable<boost::gregorian::date> res1 = CorbaConversion::unwrap_into<Nullable<boost::gregorian::date> >(nd1);
+        BOOST_CHECK(!res1.isnull());
         BOOST_CHECK(res1.get_value() == boost::gregorian::date(2015,12,10));
         Nullable<boost::gregorian::date> res2 = CorbaConversion::unwrap_into<Nullable<boost::gregorian::date> >(nd2);
-        BOOST_CHECK(res1.isnull());
+        BOOST_CHECK(res2.isnull());
     }
 
 
