@@ -379,6 +379,19 @@ BOOST_AUTO_TEST_CASE(test_interface)
             CorbaConversion::wrap_into<Registry::MojeID::DateTime_var>(boost::posix_time::ptime())), CorbaConversion::ArgumentIsSpecial);
     }
 
+    //Registry::MojeID::NullableDate_var
+    {
+        Registry::MojeID::NullableDate_var nd1 = CorbaConversion::wrap_into<Registry::MojeID::NullableDate_var>(Nullable<boost::gregorian::date>(boost::gregorian::date(2015,12,10)));
+        BOOST_CHECK(std::string(nd1->value()) == "2015-12-10");
+        Registry::MojeID::NullableDate_var nd2 = CorbaConversion::wrap_into<Registry::MojeID::NullableDate_var>(Nullable<boost::gregorian::date>());
+        BOOST_CHECK(nd2.in() == NULL);
+
+        Nullable<boost::gregorian::date> res1 = CorbaConversion::unwrap_into<Nullable<boost::gregorian::date> >(nd1);
+        BOOST_CHECK(res1.get_value() == boost::gregorian::date(2015,12,10));
+        Nullable<boost::gregorian::date> res2 = CorbaConversion::unwrap_into<Nullable<boost::gregorian::date> >(nd2);
+        BOOST_CHECK(res1.isnull());
+    }
+
 
 
 }

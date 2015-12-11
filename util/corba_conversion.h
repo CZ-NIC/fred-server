@@ -239,8 +239,6 @@ namespace CorbaConversion
             }
         }
     };
-
-
 }
 #endif
 

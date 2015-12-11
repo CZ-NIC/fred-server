@@ -104,6 +104,33 @@ namespace CorbaConversion
         typedef Wrapper_boost_ptime_into_Registry_MojeID_DateTime_var type;
     };
 
+    //Registry::MojeID::NullableDate_var
+    struct Unwrapper_Registry_MojeID_NullableDate_var_into_Nullable_boost_date
+    {
+        typedef Registry::MojeID::NullableDate_var CORBA_TYPE;
+        typedef Nullable<boost::gregorian::date> NON_CORBA_TYPE;
+        static void unwrap( const CORBA_TYPE& ct_in, NON_CORBA_TYPE& nct_out);
+    };
+    template <> struct DEFAULT_UNWRAPPER<
+    Unwrapper_Registry_MojeID_NullableDate_var_into_Nullable_boost_date::CORBA_TYPE,
+    Unwrapper_Registry_MojeID_NullableDate_var_into_Nullable_boost_date::NON_CORBA_TYPE>
+    {
+        typedef Unwrapper_Registry_MojeID_NullableDate_var_into_Nullable_boost_date type;
+    };
+
+    struct Wrapper_Nullable_boost_date_into_Registry_MojeID_NullableDate_var
+    {
+        typedef Registry::MojeID::NullableDate_var CORBA_TYPE;
+        typedef Nullable<boost::gregorian::date> NON_CORBA_TYPE;
+        static void wrap( const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out );
+    };
+    template <> struct DEFAULT_WRAPPER<
+    Wrapper_Nullable_boost_date_into_Registry_MojeID_NullableDate_var::NON_CORBA_TYPE,
+    Wrapper_Nullable_boost_date_into_Registry_MojeID_NullableDate_var::CORBA_TYPE>
+    {
+        typedef Wrapper_Nullable_boost_date_into_Registry_MojeID_NullableDate_var type;
+    };
+
 
 }
 #endif
