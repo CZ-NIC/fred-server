@@ -48,7 +48,7 @@ namespace CorbaConversion
         }
 
         Registry::MojeID::Date_var res = new Registry::MojeID::Date;
-        res->value = wrap_into<CORBA::String_var>(boost::gregorian::to_iso_extended_string(nct_in));
+        res->value = wrap_by<Wrapper_std_string_into_String_var>(boost::gregorian::to_iso_extended_string(nct_in));
         ct_out = res._retn();
     }
 
@@ -75,7 +75,7 @@ namespace CorbaConversion
         }
 
         Registry::MojeID::DateTime_var res = new Registry::MojeID::DateTime;
-        res->value = wrap_into<CORBA::String_var>(boost::posix_time::to_iso_extended_string(nct_in));
+        res->value = wrap_by<Wrapper_std_string_into_String_var>(boost::posix_time::to_iso_extended_string(nct_in));
         ct_out = res._retn();
     }
 
@@ -88,7 +88,7 @@ namespace CorbaConversion
         else
         {
             nct_out = Nullable<boost::gregorian::date>(
-                unwrap_into<boost::gregorian::date>(
+                unwrap_by<Unwrapper_Registry_MojeID_Date_var_into_boost_gregorian_date>(
                     Registry::MojeID::Date_var(
                         new Registry::MojeID::Date(
                             ct_in.in()->_boxed_in()))));
@@ -104,7 +104,7 @@ namespace CorbaConversion
         else
         {
             Registry::MojeID::NullableDate_var valuetype_date = new Registry::MojeID::NullableDate;
-            valuetype_date->value(CorbaConversion::wrap_into<Registry::MojeID::Date_var>(nct_in.get_value())->value.in());
+            valuetype_date->value(CorbaConversion::wrap_by<Wrapper_boost_gregorian_date_into_Registry_MojeID_Date_var>(nct_in.get_value())->value.in());
             ct_out = valuetype_date._retn();
         }
     }
