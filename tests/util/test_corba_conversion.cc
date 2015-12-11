@@ -394,6 +394,34 @@ BOOST_AUTO_TEST_CASE(test_interface)
     }
 
 
+    //Registry::MojeID::Address_var
+    {
+        Registry::MojeIDImplData::Address addr_impl;
+        addr_impl.street1 = "st1";
+        addr_impl.street2 = "st2";
+        addr_impl.street3 = "st3";
+        addr_impl.city = "Praha";
+        addr_impl.state = "state";
+        addr_impl.country = "Czech Republic";
+
+        Registry::MojeID::Address_var addr = CorbaConversion::wrap_into<Registry::MojeID::Address_var>(addr_impl);
+        BOOST_CHECK(std::string(addr->street1.in()) == "st1");
+        BOOST_CHECK(std::string(addr->street2.in()->_value()) == "st2");
+        BOOST_CHECK(std::string(addr->street3.in()->_value()) == "st3");
+        BOOST_CHECK(std::string(addr->city.in()) == "Praha");
+        BOOST_CHECK(std::string(addr->state.in()->_value()) == "state");
+        BOOST_CHECK(std::string(addr->country.in()) == "Czech Republic");
+
+        Registry::MojeIDImplData::Address addr_res = CorbaConversion::unwrap_into<Registry::MojeIDImplData::Address>(addr);
+        BOOST_CHECK(addr_res.street1 == "st1");
+        BOOST_CHECK(addr_res.street2.get_value() == "st2");
+        BOOST_CHECK(addr_res.street3.get_value() == "st3");
+        BOOST_CHECK(addr_res.city == "Praha");
+        BOOST_CHECK(addr_res.state.get_value() == "state");
+        BOOST_CHECK(addr_res.country == "Czech Republic");
+
+        BOOST_CHECK_THROW(CorbaConversion::unwrap_into<Registry::MojeIDImplData::Address>(Registry::MojeID::Address_var()), CorbaConversion::PointerIsNULL);
+    }
 
 }
 
