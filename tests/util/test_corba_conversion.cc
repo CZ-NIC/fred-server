@@ -259,7 +259,8 @@ BOOST_AUTO_TEST_CASE(test_string_seq_ref)
     CORBA::String_var sv1 = ssv1[1];
     BOOST_CHECK(CorbaConversion::unwrap_into<std::string>(sv1.in()) == vs1[1]);
 
-    BOOST_CHECK(CorbaConversion::unwrap_into<std::string>(ssv1[2].in()) == vs1[2]);
+    bool string_seq_element_check = (CorbaConversion::unwrap_into<std::string, const char *>(ssv1[2]) == vs1[2]);
+    BOOST_CHECK(string_seq_element_check);
 
     std::vector<std::string> vs2;
 
@@ -289,7 +290,8 @@ BOOST_AUTO_TEST_CASE(test_string_seq)
     CORBA::String_var sv1 = ssv1[1];
     BOOST_CHECK(CorbaConversion::unwrap_into<std::string>(sv1.in()) == vs1[1]);
 
-    BOOST_CHECK(CorbaConversion::unwrap_into<std::string>(ssv1[2].in()) == vs1[2]);
+    bool string_seq_element_check = (CorbaConversion::unwrap_into<std::string, const char *>(ssv1[2]) == vs1[2]);
+    BOOST_CHECK(string_seq_element_check);
 
     std::vector<std::string> vs2;
 
