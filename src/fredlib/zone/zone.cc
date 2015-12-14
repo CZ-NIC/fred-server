@@ -75,7 +75,7 @@ namespace Zone {
                 std::string zone  = static_cast<std::string>(available_zones_res[i][0]);
                 std::string dot_zone  = label_separator + zone;
                 int from = domain.length() - dot_zone.length();
-                if(from > 1)
+                if(from >= 1)
                 {
                     if (domain.find(dot_zone, from) != std::string::npos)
                     {
