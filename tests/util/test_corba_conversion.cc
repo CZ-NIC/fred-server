@@ -47,6 +47,26 @@
 
 namespace CorbaConversion
 {
+    /* DEFAULT_UNWRAPPER redefinition error
+
+    //strange string unwrap
+    struct Unwrapper_strange_const_char_ptr_into_std_string
+    {
+        typedef const char* CORBA_TYPE;
+        typedef std::string NON_CORBA_TYPE;
+        static void unwrap( CORBA_TYPE ct_in, NON_CORBA_TYPE& nct_out)
+        {
+            nct_out = "strange";
+        }
+    };
+    template <> struct DEFAULT_UNWRAPPER<
+    Unwrapper_strange_const_char_ptr_into_std_string::CORBA_TYPE,
+    Unwrapper_strange_const_char_ptr_into_std_string::NON_CORBA_TYPE>
+    {
+        typedef Unwrapper_strange_const_char_ptr_into_std_string type;
+    };
+     */
+
     template <> struct DEFAULT_UNWRAPPER<Test::NullableString*, Nullable<std::string> >
     {
         typedef Unwrapper_NullableString_ptr_into_Nullable_std_string<Test::NullableString*> type;
