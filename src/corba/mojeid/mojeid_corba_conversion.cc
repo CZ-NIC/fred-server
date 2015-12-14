@@ -25,9 +25,9 @@
 
 namespace CorbaConversion
 {
-    void Unwrapper_Registry_MojeID_Date_var_into_boost_gregorian_date::unwrap( const CORBA_TYPE& ct_in, NON_CORBA_TYPE& nct_out)
+    void Unwrapper_Registry_MojeID_Date_ptr_into_boost_gregorian_date::unwrap( CORBA_TYPE ct_in, NON_CORBA_TYPE& nct_out)
     {
-        if(ct_in.operator->() == NULL)
+        if(ct_in == NULL)
         {
             throw PointerIsNULL();
         }
@@ -52,9 +52,9 @@ namespace CorbaConversion
         ct_out = res._retn();
     }
 
-    void Unwrapper_Registry_MojeID_DateTime_var_into_boost_posix_time_ptime::unwrap( const CORBA_TYPE& ct_in, NON_CORBA_TYPE& nct_out)
+    void Unwrapper_Registry_MojeID_DateTime_ptr_into_boost_posix_time_ptime::unwrap(CORBA_TYPE ct_in, NON_CORBA_TYPE& nct_out)
     {
-        if(ct_in.operator->() == NULL)
+        if(ct_in == NULL)
         {
             throw PointerIsNULL();
         }
@@ -79,19 +79,15 @@ namespace CorbaConversion
         ct_out = res._retn();
     }
 
-    void Unwrapper_Registry_MojeID_NullableDate_var_into_Nullable_boost_gregorian_date::unwrap( const CORBA_TYPE& ct_in, NON_CORBA_TYPE& nct_out)
+    void Unwrapper_Registry_MojeID_NullableDate_ptr_into_Nullable_boost_gregorian_date::unwrap(CORBA_TYPE ct_in, NON_CORBA_TYPE& nct_out)
     {
-        if(ct_in.in() == NULL)
+        if(ct_in == NULL)
         {
             nct_out = Nullable<boost::gregorian::date>();
         }
         else
         {
-            nct_out = Nullable<boost::gregorian::date>(
-                unwrap_by<Unwrapper_Registry_MojeID_Date_var_into_boost_gregorian_date>(
-                    Registry::MojeID::Date_var(
-                        new Registry::MojeID::Date(
-                            ct_in.in()->_boxed_in()))));
+            nct_out = Nullable<boost::gregorian::date>(boost::gregorian::from_simple_string(ct_in->_value().value.in()));
         }
     }
 

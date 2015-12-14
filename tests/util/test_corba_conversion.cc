@@ -386,24 +386,25 @@ BOOST_AUTO_TEST_CASE(test_mojeid_date)
     Registry::MojeID::Date_var mojeid_date = CorbaConversion::wrap_into<Registry::MojeID::Date_var>(boost::gregorian::date(2015,12,10));
     mojeid_date->value;
     BOOST_CHECK(CorbaConversion::unwrap_into<std::string>(mojeid_date->value.in()) == "2015-12-10");
-    BOOST_CHECK(CorbaConversion::unwrap_into<boost::gregorian::date>(mojeid_date) == boost::gregorian::date(2015,12,10));
+
+    BOOST_CHECK(CorbaConversion::unwrap_into<boost::gregorian::date>(mojeid_date.operator->()) == boost::gregorian::date(2015,12,10));
 
     BOOST_CHECK_THROW(CorbaConversion::wrap_into<Registry::MojeID::Date_var>(boost::gregorian::date()), CorbaConversion::ArgumentIsSpecial);
-    BOOST_CHECK_THROW(CorbaConversion::unwrap_into<boost::gregorian::date>(Registry::MojeID::Date_var()), CorbaConversion::PointerIsNULL);
+    BOOST_CHECK_THROW(CorbaConversion::unwrap_into<boost::gregorian::date>(Registry::MojeID::Date_var().operator->()), CorbaConversion::PointerIsNULL);
     BOOST_CHECK_THROW(CorbaConversion::unwrap_into<boost::gregorian::date>(
-        CorbaConversion::wrap_into<Registry::MojeID::Date_var>(boost::gregorian::date())), CorbaConversion::ArgumentIsSpecial);
+        CorbaConversion::wrap_into<Registry::MojeID::Date_var>(boost::gregorian::date()).operator->()), CorbaConversion::ArgumentIsSpecial);
 }
 
 BOOST_AUTO_TEST_CASE(test_mojeid_datetime)
 {
     Registry::MojeID::DateTime_var mojeid_datetime = CorbaConversion::wrap_into<Registry::MojeID::DateTime_var>(boost::posix_time::ptime(boost::gregorian::date(2015,12,10)));
     BOOST_CHECK(CorbaConversion::unwrap_into<std::string>(mojeid_datetime->value.in()) == "2015-12-10T00:00:00");
-    BOOST_CHECK(CorbaConversion::unwrap_into<boost::posix_time::ptime>(mojeid_datetime) == boost::posix_time::ptime(boost::gregorian::date(2015,12,10)));
+    BOOST_CHECK(CorbaConversion::unwrap_into<boost::posix_time::ptime>(mojeid_datetime.operator->()) == boost::posix_time::ptime(boost::gregorian::date(2015,12,10)));
 
     BOOST_CHECK_THROW(CorbaConversion::wrap_into<Registry::MojeID::DateTime_var>(boost::posix_time::ptime()), CorbaConversion::ArgumentIsSpecial);
-    BOOST_CHECK_THROW(CorbaConversion::unwrap_into<boost::posix_time::ptime>(Registry::MojeID::DateTime_var()), CorbaConversion::PointerIsNULL);
+    BOOST_CHECK_THROW(CorbaConversion::unwrap_into<boost::posix_time::ptime>(Registry::MojeID::DateTime_var().operator->()), CorbaConversion::PointerIsNULL);
     BOOST_CHECK_THROW(CorbaConversion::unwrap_into<boost::posix_time::ptime>(
-        CorbaConversion::wrap_into<Registry::MojeID::DateTime_var>(boost::posix_time::ptime())), CorbaConversion::ArgumentIsSpecial);
+        CorbaConversion::wrap_into<Registry::MojeID::DateTime_var>(boost::posix_time::ptime()).operator->()), CorbaConversion::ArgumentIsSpecial);
 }
 
 BOOST_AUTO_TEST_CASE(test_mojeid_nullabledate)
@@ -413,10 +414,10 @@ BOOST_AUTO_TEST_CASE(test_mojeid_nullabledate)
     Registry::MojeID::NullableDate_var nd2 = CorbaConversion::wrap_into<Registry::MojeID::NullableDate_var>(Nullable<boost::gregorian::date>());
     BOOST_CHECK(nd2.in() == NULL);
 
-    Nullable<boost::gregorian::date> res1 = CorbaConversion::unwrap_into<Nullable<boost::gregorian::date> >(nd1);
+    Nullable<boost::gregorian::date> res1 = CorbaConversion::unwrap_into<Nullable<boost::gregorian::date> >(nd1.operator->());
     BOOST_CHECK(!res1.isnull());
     BOOST_CHECK(res1.get_value() == boost::gregorian::date(2015,12,10));
-    Nullable<boost::gregorian::date> res2 = CorbaConversion::unwrap_into<Nullable<boost::gregorian::date> >(nd2);
+    Nullable<boost::gregorian::date> res2 = CorbaConversion::unwrap_into<Nullable<boost::gregorian::date> >(nd2.operator->());
     BOOST_CHECK(res2.isnull());
 }
 
