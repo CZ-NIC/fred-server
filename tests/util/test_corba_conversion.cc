@@ -47,9 +47,9 @@
 
 namespace CorbaConversion
 {
-    template <> struct DEFAULT_UNWRAPPER<Test::NullableString_var, Nullable<std::string> >
+    template <> struct DEFAULT_UNWRAPPER<Test::NullableString*, Nullable<std::string> >
     {
-        typedef Unwrapper_NullableString_var_into_Nullable_std_string<Test::NullableString_var> type;
+        typedef Unwrapper_NullableString_ptr_into_Nullable_std_string<Test::NullableString*> type;
     };
 
     template <> struct DEFAULT_WRAPPER<Nullable<std::string>, Test::NullableString_var >
@@ -347,7 +347,7 @@ BOOST_AUTO_TEST_CASE(test_valuetype_string)
     Test::NullableString_var tnsv1 = CorbaConversion::wrap_into<Test::NullableString_var>(ns1);
     BOOST_CHECK(std::string(tnsv1->_value()) == ns1.get_value());
 
-    Nullable<std::string> ns2 = CorbaConversion::unwrap_into<Nullable<std::string> >(tnsv1);
+    Nullable<std::string> ns2 = CorbaConversion::unwrap_into<Nullable<std::string> >(tnsv1.in());
     BOOST_CHECK(std::string(tnsv1->_value()) == ns2.get_value());
 }
 
@@ -357,7 +357,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_valuetype_string)
     Registry::MojeID::NullableString_var tnsv1 = CorbaConversion::wrap_into<Registry::MojeID::NullableString_var>(ns1);
     BOOST_CHECK(std::string(tnsv1->_value()) == ns1.get_value());
 
-    Nullable<std::string> ns2 = CorbaConversion::unwrap_into<Nullable<std::string> >(tnsv1);
+    Nullable<std::string> ns2 = CorbaConversion::unwrap_into<Nullable<std::string> >(tnsv1.in());
     BOOST_CHECK(std::string(tnsv1->_value()) == ns2.get_value());
 }
 

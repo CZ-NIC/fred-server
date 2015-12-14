@@ -201,22 +201,22 @@ namespace CorbaConversion
         typedef Wrapper_std_string_into_String_var type;
     };
 
-    //valuetype String_var
-    template< typename CORBA_VALUETYPE_STRING_VAR_TYPE >
-    struct Unwrapper_NullableString_var_into_Nullable_std_string
+    //valuetype string
+    template< typename CORBA_VALUETYPE_STRING_PTR_TYPE >
+    struct Unwrapper_NullableString_ptr_into_Nullable_std_string
     {
-        typedef CORBA_VALUETYPE_STRING_VAR_TYPE CORBA_TYPE;
+        typedef CORBA_VALUETYPE_STRING_PTR_TYPE CORBA_TYPE;
         typedef Nullable<std::string> NON_CORBA_TYPE;
 
-        static void unwrap( const CORBA_TYPE& ct_in, NON_CORBA_TYPE& nct_out)
+        static void unwrap( CORBA_TYPE ct_in, NON_CORBA_TYPE& nct_out)
         {
-            if(ct_in.in() == NULL)
+            if(ct_in == NULL || ct_in->_value() == NULL)
             {
                 nct_out = Nullable<std::string>();
             }
             else
             {
-                nct_out = Nullable<std::string>(ct_in.in()->_value());
+                nct_out = Nullable<std::string>(ct_in->_value());
             }
         }
     };

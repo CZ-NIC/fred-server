@@ -29,13 +29,13 @@
 
 namespace CorbaConversion
 {
-    struct Unwrapper_Registry_MojeID_NullableString_var_into_Nullable_std_string
-        : Unwrapper_NullableString_var_into_Nullable_std_string<
-            Registry::MojeID::NullableString_var> {};
+    struct Unwrapper_Registry_MojeID_NullableString_ptr_into_Nullable_std_string
+        : Unwrapper_NullableString_ptr_into_Nullable_std_string<
+            Registry::MojeID::NullableString*> {};
 
-    template <> struct DEFAULT_UNWRAPPER<Registry::MojeID::NullableString_var, Nullable<std::string> >
+    template <> struct DEFAULT_UNWRAPPER<Registry::MojeID::NullableString*, Nullable<std::string> >
     {
-        typedef Unwrapper_Registry_MojeID_NullableString_var_into_Nullable_std_string type;
+        typedef Unwrapper_Registry_MojeID_NullableString_ptr_into_Nullable_std_string type;
     };
 
     struct Wrapper_Nullable_std_string_into_Registry_MojeID_NullableString_var
