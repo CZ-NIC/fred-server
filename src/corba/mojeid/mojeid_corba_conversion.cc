@@ -117,13 +117,13 @@ namespace CorbaConversion
         }
 
         Registry::MojeIDImplData::Address res;
-        res.street1 = unwrap_by<Unwrapper_String_var_into_std_string>(ct_in->street1);
+        res.street1 = unwrap_by<Unwrapper_const_char_ptr_into_std_string>(ct_in->street1);
         res.street2 = unwrap_by<Unwrapper_Registry_MojeID_NullableString_var_into_Nullable_std_string>(ct_in->street2);
         res.street3 = unwrap_by<Unwrapper_Registry_MojeID_NullableString_var_into_Nullable_std_string>(ct_in->street3);
-        res.city = unwrap_by<Unwrapper_String_var_into_std_string>(ct_in->city);
+        res.city = unwrap_by<Unwrapper_const_char_ptr_into_std_string>(ct_in->city);
         res.state = unwrap_by<Unwrapper_Registry_MojeID_NullableString_var_into_Nullable_std_string>(ct_in->state);
-        res.postal_code = unwrap_by<Unwrapper_String_var_into_std_string>(ct_in->postal_code);
-        res.country = unwrap_by<Unwrapper_String_var_into_std_string>(ct_in->country);
+        res.postal_code = unwrap_by<Unwrapper_const_char_ptr_into_std_string>(ct_in->postal_code);
+        res.country = unwrap_by<Unwrapper_const_char_ptr_into_std_string>(ct_in->country);
         nct_out = res;
     }
 

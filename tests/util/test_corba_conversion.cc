@@ -147,22 +147,22 @@ namespace CorbaConversion
         }
     };
     template <> struct DEFAULT_UNWRAPPER<
-        typename Unwrapper_Seq_var_into_std_vector <Unwrapper_String_var_into_std_string,
+        typename Unwrapper_Seq_var_into_std_vector <Unwrapper_const_char_ptr_into_std_string,
             CORBA::StringSeq, CORBA::StringSeq_var, std::vector<std::string> >::CORBA_TYPE,
-        typename Unwrapper_Seq_var_into_std_vector <Unwrapper_String_var_into_std_string,
+        typename Unwrapper_Seq_var_into_std_vector <Unwrapper_const_char_ptr_into_std_string,
             CORBA::StringSeq, CORBA::StringSeq_var, std::vector<std::string> >::NON_CORBA_TYPE>
     {
-        typedef Unwrapper_Seq_var_into_std_vector <Unwrapper_String_var_into_std_string,
+        typedef Unwrapper_Seq_var_into_std_vector <Unwrapper_const_char_ptr_into_std_string,
             CORBA::StringSeq, CORBA::StringSeq_var, std::vector<std::string> > type;
     };
 
     template <> struct DEFAULT_UNWRAPPER<
-        typename Unwrapper_Seq_var_into_std_vector <Unwrapper_String_var_into_std_string,
+        typename Unwrapper_Seq_var_into_std_vector <Unwrapper_const_char_ptr_into_std_string,
             Test::StringSeq, Test::StringSeq_var, std::vector<std::string> >::CORBA_TYPE,
-        typename Unwrapper_Seq_var_into_std_vector <Unwrapper_String_var_into_std_string,
+        typename Unwrapper_Seq_var_into_std_vector <Unwrapper_const_char_ptr_into_std_string,
             Test::StringSeq, Test::StringSeq_var, std::vector<std::string> >::NON_CORBA_TYPE>
     {
-        typedef Unwrapper_Seq_var_into_std_vector <Unwrapper_String_var_into_std_string,
+        typedef Unwrapper_Seq_var_into_std_vector <Unwrapper_const_char_ptr_into_std_string,
         Test::StringSeq, Test::StringSeq_var, std::vector<std::string> > type;
     };
 
@@ -208,7 +208,7 @@ BOOST_AUTO_TEST_CASE(test_string_wrap_by_unwrap_by)
 {
     CORBA::String_var sv1 = CorbaConversion::wrap_by<CorbaConversion::Wrapper_std_string_into_String_var>("test");
     BOOST_CHECK(std::string(sv1.in()) == std::string("test"));
-    std::string ss1 = CorbaConversion::unwrap_by<CorbaConversion::Unwrapper_String_var_into_std_string>(sv1);
+    std::string ss1 = CorbaConversion::unwrap_by<CorbaConversion::Unwrapper_const_char_ptr_into_std_string>(sv1);
     BOOST_CHECK(ss1 == std::string("test"));
 }
 
@@ -219,7 +219,7 @@ BOOST_AUTO_TEST_CASE(test_string_wrap_unwrap)
     CorbaConversion::wrap(ss1, sv1);
     BOOST_CHECK(std::string(sv1.in()) == ss1);
     std::string ss2;
-    CorbaConversion::unwrap(sv1, ss2);
+    CorbaConversion::unwrap(sv1.in(), ss2);
     BOOST_CHECK(std::string(sv1.in()) == ss2);
 }
 
@@ -227,7 +227,7 @@ BOOST_AUTO_TEST_CASE(test_string_wrap_into_unwrap_into)
 {
     CORBA::String_var sv1 = CorbaConversion::wrap_into<CORBA::String_var>(std::string("test"));
     BOOST_CHECK(std::string(sv1.in()) == std::string("test"));
-    std::string ss1 = CorbaConversion::unwrap_into<std::string>(sv1);
+    std::string ss1 = CorbaConversion::unwrap_into<std::string>(sv1.in());
     BOOST_CHECK(ss1 == std::string("test"));
 }
 
@@ -238,7 +238,7 @@ BOOST_AUTO_TEST_CASE(test_impl_string_wrap_unwrap)
     CorbaConversion::Wrapper_std_string_into_String_var::wrap(ss1, sv1);
     BOOST_CHECK(std::string(sv1.in()) == ss1);
     std::string ss2;
-    CorbaConversion::Unwrapper_String_var_into_std_string::unwrap(sv1, ss2);
+    CorbaConversion::Unwrapper_const_char_ptr_into_std_string::unwrap(sv1, ss2);
     BOOST_CHECK(std::string(sv1.in()) == ss2);
 }
 
@@ -254,16 +254,16 @@ BOOST_AUTO_TEST_CASE(test_string_seq_ref)
 
     CORBA::String_var sv0;
     sv0 = ssv1[0];
-    BOOST_CHECK(CorbaConversion::unwrap_into<std::string>(sv0) == vs1[0]);
+    BOOST_CHECK(CorbaConversion::unwrap_into<std::string>(sv0.in()) == vs1[0]);
 
     CORBA::String_var sv1 = ssv1[1];
-    BOOST_CHECK(CorbaConversion::unwrap_into<std::string>(sv1) == vs1[1]);
+    BOOST_CHECK(CorbaConversion::unwrap_into<std::string>(sv1.in()) == vs1[1]);
 
-    BOOST_CHECK(CorbaConversion::unwrap_into<std::string>(CORBA::String_var(ssv1[2])) == vs1[2]);
+    BOOST_CHECK(CorbaConversion::unwrap_into<std::string>(ssv1[2].in()) == vs1[2]);
 
     std::vector<std::string> vs2;
 
-    CorbaConversion::Unwrapper_Seq_into_std_vector<CorbaConversion::Unwrapper_String_var_into_std_string,
+    CorbaConversion::Unwrapper_Seq_into_std_vector<CorbaConversion::Unwrapper_const_char_ptr_into_std_string,
         CORBA::StringSeq, std::vector<std::string> >::unwrap(ssv1.in(), vs2);
 
     BOOST_CHECK(vs2.size() == vs1.size());
@@ -284,16 +284,16 @@ BOOST_AUTO_TEST_CASE(test_string_seq)
 
     CORBA::String_var sv0;
     sv0 = ssv1[0];
-    BOOST_CHECK(CorbaConversion::unwrap_into<std::string>(sv0) == vs1[0]);
+    BOOST_CHECK(CorbaConversion::unwrap_into<std::string>(sv0.in()) == vs1[0]);
 
     CORBA::String_var sv1 = ssv1[1];
-    BOOST_CHECK(CorbaConversion::unwrap_into<std::string>(sv1) == vs1[1]);
+    BOOST_CHECK(CorbaConversion::unwrap_into<std::string>(sv1.in()) == vs1[1]);
 
-    BOOST_CHECK(CorbaConversion::unwrap_into<std::string>(CORBA::String_var(ssv1[2])) == vs1[2]);
+    BOOST_CHECK(CorbaConversion::unwrap_into<std::string>(ssv1[2].in()) == vs1[2]);
 
     std::vector<std::string> vs2;
 
-    CorbaConversion::Unwrapper_Seq_var_into_std_vector <CorbaConversion::Unwrapper_String_var_into_std_string,
+    CorbaConversion::Unwrapper_Seq_var_into_std_vector <CorbaConversion::Unwrapper_const_char_ptr_into_std_string,
         CORBA::StringSeq, CORBA::StringSeq_var, std::vector<std::string> >::unwrap(ssv1, vs2);
 
     BOOST_CHECK(vs2.size() == vs1.size());
@@ -363,7 +363,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_date)
 {
     Registry::MojeID::Date_var mojeid_date = CorbaConversion::wrap_into<Registry::MojeID::Date_var>(boost::gregorian::date(2015,12,10));
     mojeid_date->value;
-    BOOST_CHECK(CorbaConversion::unwrap_into<std::string>(CORBA::String_var(mojeid_date->value)) == "2015-12-10");
+    BOOST_CHECK(CorbaConversion::unwrap_into<std::string>(mojeid_date->value.in()) == "2015-12-10");
     BOOST_CHECK(CorbaConversion::unwrap_into<boost::gregorian::date>(mojeid_date) == boost::gregorian::date(2015,12,10));
 
     BOOST_CHECK_THROW(CorbaConversion::wrap_into<Registry::MojeID::Date_var>(boost::gregorian::date()), CorbaConversion::ArgumentIsSpecial);
@@ -375,7 +375,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_date)
 BOOST_AUTO_TEST_CASE(test_mojeid_datetime)
 {
     Registry::MojeID::DateTime_var mojeid_datetime = CorbaConversion::wrap_into<Registry::MojeID::DateTime_var>(boost::posix_time::ptime(boost::gregorian::date(2015,12,10)));
-    BOOST_CHECK(CorbaConversion::unwrap_into<std::string>(CORBA::String_var(mojeid_datetime->value)) == "2015-12-10T00:00:00");
+    BOOST_CHECK(CorbaConversion::unwrap_into<std::string>(mojeid_datetime->value.in()) == "2015-12-10T00:00:00");
     BOOST_CHECK(CorbaConversion::unwrap_into<boost::posix_time::ptime>(mojeid_datetime) == boost::posix_time::ptime(boost::gregorian::date(2015,12,10)));
 
     BOOST_CHECK_THROW(CorbaConversion::wrap_into<Registry::MojeID::DateTime_var>(boost::posix_time::ptime()), CorbaConversion::ArgumentIsSpecial);

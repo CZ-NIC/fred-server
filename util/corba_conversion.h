@@ -174,18 +174,18 @@ namespace CorbaConversion
         virtual ~PointerIsNULL() throw() {}
     };
 
-    //CORBA::String_var
-    struct Unwrapper_String_var_into_std_string
+    //string
+    struct Unwrapper_const_char_ptr_into_std_string
     {
-        typedef CORBA::String_var CORBA_TYPE;
+        typedef const char* CORBA_TYPE;
         typedef std::string NON_CORBA_TYPE;
-        static void unwrap( const CORBA_TYPE& ct_in, NON_CORBA_TYPE& nct_out);
+        static void unwrap( CORBA_TYPE ct_in, NON_CORBA_TYPE& nct_out);
     };
     template <> struct DEFAULT_UNWRAPPER<
-        Unwrapper_String_var_into_std_string::CORBA_TYPE,
-        Unwrapper_String_var_into_std_string::NON_CORBA_TYPE>
+    Unwrapper_const_char_ptr_into_std_string::CORBA_TYPE,
+    Unwrapper_const_char_ptr_into_std_string::NON_CORBA_TYPE>
     {
-        typedef Unwrapper_String_var_into_std_string type;
+        typedef Unwrapper_const_char_ptr_into_std_string type;
     };
 
     struct Wrapper_std_string_into_String_var

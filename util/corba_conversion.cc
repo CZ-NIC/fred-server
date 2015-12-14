@@ -26,13 +26,13 @@
 namespace CorbaConversion
 {
 
-    void Unwrapper_String_var_into_std_string::unwrap( const CORBA_TYPE& ct_in, NON_CORBA_TYPE& nct_out)
+    void Unwrapper_const_char_ptr_into_std_string::unwrap(CORBA_TYPE ct_in, NON_CORBA_TYPE& nct_out)
     {
-        if(ct_in.in() == NULL)
+        if(ct_in == NULL)
         {
             throw PointerIsNULL();
         }
-        nct_out = std::string(ct_in.in());
+        nct_out = std::string(ct_in);
     }
 
     void Wrapper_std_string_into_String_var::wrap( const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out )
