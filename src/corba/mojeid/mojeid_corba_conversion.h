@@ -137,6 +137,33 @@ namespace CorbaConversion
     {
         typedef Wrapper_Nullable_boost_gregorian_date_into_Registry_MojeID_NullableDate_var type;
     };
+
+    //Registry::MojeID::NullableBoolean
+    struct Unwrapper_Registry_MojeID_NullableBoolean_ptr_into_Nullable_bool
+    {
+        typedef Registry::MojeID::NullableBoolean* CORBA_TYPE;
+        typedef Nullable<bool> NON_CORBA_TYPE;
+        static void unwrap(CORBA_TYPE ct_in, NON_CORBA_TYPE& nct_out);
+    };
+    template <> struct DEFAULT_UNWRAPPER<
+    Unwrapper_Registry_MojeID_NullableBoolean_ptr_into_Nullable_bool::CORBA_TYPE,
+    Unwrapper_Registry_MojeID_NullableBoolean_ptr_into_Nullable_bool::NON_CORBA_TYPE>
+    {
+        typedef Unwrapper_Registry_MojeID_NullableBoolean_ptr_into_Nullable_bool type;
+    };
+
+    struct Wrapper_Nullable_bool_into_Registry_MojeID_NullableBoolean_var
+    {
+        typedef Registry::MojeID::NullableBoolean_var CORBA_TYPE;
+        typedef Nullable<bool> NON_CORBA_TYPE;
+        static void wrap( const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out );
+    };
+    template <> struct DEFAULT_WRAPPER<
+    Wrapper_Nullable_bool_into_Registry_MojeID_NullableBoolean_var::NON_CORBA_TYPE,
+    Wrapper_Nullable_bool_into_Registry_MojeID_NullableBoolean_var::CORBA_TYPE>
+    {
+        typedef Wrapper_Nullable_bool_into_Registry_MojeID_NullableBoolean_var type;
+    };
 }
 
 namespace Registry

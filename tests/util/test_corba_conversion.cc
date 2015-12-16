@@ -419,6 +419,21 @@ BOOST_AUTO_TEST_CASE(test_mojeid_nullabledate)
     BOOST_CHECK(res2.isnull());
 }
 
+BOOST_AUTO_TEST_CASE(test_mojeid_nullableboolean)
+{
+    Registry::MojeID::NullableBoolean_var nb1 = CorbaConversion::wrap_into<Registry::MojeID::NullableBoolean_var>(Nullable<bool>(true));
+    BOOST_REQUIRE(nb1.in() != NULL);
+    BOOST_CHECK(nb1->_value() == true);
+    Registry::MojeID::NullableBoolean_var nb2 = CorbaConversion::wrap_into<Registry::MojeID::NullableBoolean_var>(Nullable<bool>());
+    BOOST_CHECK(nb2.in() == NULL);
+
+    Nullable<bool> res1 = CorbaConversion::unwrap_into<Nullable<bool> >(nb1.in());
+    BOOST_CHECK(!res1.isnull());
+    BOOST_CHECK(res1.get_value() == true);
+    Nullable<bool> res2 = CorbaConversion::unwrap_into<Nullable<bool> >(nb2.in());
+    BOOST_CHECK(res2.isnull());
+}
+
 BOOST_AUTO_TEST_CASE(test_mojeid_address)
 {
     Registry::MojeIDImplData::Address addr_impl;

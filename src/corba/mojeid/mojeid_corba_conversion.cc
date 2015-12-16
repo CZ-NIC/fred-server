@@ -96,6 +96,32 @@ namespace CorbaConversion
         }
     }
 
+    void Unwrapper_Registry_MojeID_NullableBoolean_ptr_into_Nullable_bool::unwrap(CORBA_TYPE ct_in, NON_CORBA_TYPE& nct_out)
+    {
+        if(ct_in == NULL)
+        {
+            nct_out = Nullable<bool>();
+        }
+        else
+        {
+            nct_out = Nullable<bool>(ct_in->_value());
+        }
+    }
+
+    void Wrapper_Nullable_bool_into_Registry_MojeID_NullableBoolean_var::wrap( const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out )
+    {
+        if(nct_in.isnull())
+        {
+            ct_out = NULL;
+        }
+        else
+        {
+            Registry::MojeID::NullableBoolean_var valuetype_bool = new Registry::MojeID::NullableBoolean;
+            valuetype_bool->_value(nct_in.get_value());
+            ct_out = valuetype_bool._retn();
+        }
+    }
+
     void Unwrapper_Registry_MojeID_Address_var_into_Registry_MojeIDImplData_Address::unwrap( const CORBA_TYPE& ct_in, NON_CORBA_TYPE& nct_out)
     {
         if(ct_in.operator->() == NULL)
