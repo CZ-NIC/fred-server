@@ -78,7 +78,8 @@ namespace CorbaConversion
         }
         else
         {
-            nct_out = Nullable<boost::gregorian::date>(boost::gregorian::from_simple_string(ct_in->_value().value.in()));
+            nct_out = Nullable<boost::gregorian::date>(
+                CorbaConversion::unwrap_into<boost::gregorian::date>(ct_in->_value()));
         }
     }
 
