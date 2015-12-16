@@ -148,4 +148,33 @@ namespace CorbaConversion
         ct_out = addr._retn();
     }
 
+    void Unwrapper_Registry_MojeID_NullableAddress_ptr_into_Nullable_Registry_MojeIDImplData_Address::unwrap(CORBA_TYPE ct_in, NON_CORBA_TYPE& nct_out)
+    {
+        if(ct_in == NULL)
+        {
+            nct_out = Nullable<Registry::MojeIDImplData::Address>();
+        }
+        else
+        {
+            Registry::MojeIDImplData::Address addr = CorbaConversion::unwrap_into<Registry::MojeIDImplData::Address>(ct_in->_value());
+            nct_out = Nullable<Registry::MojeIDImplData::Address>(addr);
+        }
+    }
+
+    void Wrapper_Nullable_Registry_MojeIDImplData_Address_into_Registry_MojeID_NullableAddress_var::wrap( const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out )
+    {
+        if(nct_in.isnull())
+        {
+            ct_out = NULL;
+        }
+        else
+        {
+            Registry::MojeID::NullableAddress_var valuetype_addr = new Registry::MojeID::NullableAddress;
+            const Registry::MojeID::Address_var addr_var = CorbaConversion::wrap_into<Registry::MojeID::Address_var>(nct_in.get_value());
+            valuetype_addr->_value(addr_var.in());
+            ct_out = valuetype_addr._retn();
+        }
+    }
+
+
 }

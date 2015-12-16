@@ -461,4 +461,40 @@ BOOST_AUTO_TEST_CASE(test_mojeid_address)
     BOOST_CHECK(addr_res.country == "Czech Republic");
 }
 
+
+BOOST_AUTO_TEST_CASE(test_nullable_mojeid_address)
+{
+    BOOST_CHECK(CorbaConversion::wrap_into<Registry::MojeID::NullableAddress_var>(Nullable<Registry::MojeIDImplData::Address>()).in() == NULL);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::Address> >(static_cast<Registry::MojeID::NullableAddress*>(NULL)).isnull());
+
+    Registry::MojeIDImplData::Address addr_impl;
+    addr_impl.street1 = "st1";
+    addr_impl.street2 = "st2";
+    addr_impl.street3 = "st3";
+    addr_impl.city = "Praha";
+    addr_impl.state = "state";
+    addr_impl.country = "Czech Republic";
+
+    Nullable<Registry::MojeIDImplData::Address> nullable_addr(addr_impl);
+    BOOST_CHECK(!nullable_addr.isnull());
+
+    Registry::MojeID::NullableAddress_var addr = CorbaConversion::wrap_into<Registry::MojeID::NullableAddress_var>(nullable_addr);
+    BOOST_REQUIRE(addr.in() != NULL);
+    BOOST_CHECK(std::string(addr->_value().street1.in()) == "st1");
+    BOOST_CHECK(std::string(addr->_value().street2.in()->_value()) == "st2");
+    BOOST_CHECK(std::string(addr->_value().street3.in()->_value()) == "st3");
+    BOOST_CHECK(std::string(addr->_value().city.in()) == "Praha");
+    BOOST_CHECK(std::string(addr->_value().state.in()->_value()) == "state");
+    BOOST_CHECK(std::string(addr->_value().country.in()) == "Czech Republic");
+
+    Nullable<Registry::MojeIDImplData::Address> addr_res = CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::Address> >(addr.in());
+    BOOST_REQUIRE(!addr_res.isnull());
+    BOOST_CHECK(addr_res.get_value().street1 == "st1");
+    BOOST_CHECK(addr_res.get_value().street2.get_value() == "st2");
+    BOOST_CHECK(addr_res.get_value().street3.get_value() == "st3");
+    BOOST_CHECK(addr_res.get_value().city == "Praha");
+    BOOST_CHECK(addr_res.get_value().state.get_value() == "state");
+    BOOST_CHECK(addr_res.get_value().country == "Czech Republic");
+}
+
 BOOST_AUTO_TEST_SUITE_END();
