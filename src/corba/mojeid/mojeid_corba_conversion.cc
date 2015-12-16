@@ -43,7 +43,7 @@ namespace CorbaConversion
         }
 
         Registry::MojeID::Date_var res = new Registry::MojeID::Date;
-        res->value = wrap_by<Wrapper_std_string_into_String_var>(boost::gregorian::to_iso_extended_string(nct_in));
+        res->value = wrap_into<CORBA::String_var>(boost::gregorian::to_iso_extended_string(nct_in));
         ct_out = res._retn();
     }
 
