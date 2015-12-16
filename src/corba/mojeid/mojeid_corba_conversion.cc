@@ -122,21 +122,16 @@ namespace CorbaConversion
         }
     }
 
-    void Unwrapper_Registry_MojeID_Address_var_into_Registry_MojeIDImplData_Address::unwrap( const CORBA_TYPE& ct_in, NON_CORBA_TYPE& nct_out)
+    void Unwrapper_Registry_MojeID_Address_into_Registry_MojeIDImplData_Address::unwrap( const CORBA_TYPE& ct_in, NON_CORBA_TYPE& nct_out)
     {
-        if(ct_in.operator->() == NULL)
-        {
-            throw PointerIsNULL();
-        }
-
         Registry::MojeIDImplData::Address res;
-        res.street1 = unwrap_into<std::string>(ct_in->street1.in());
-        res.street2 = unwrap_into<Nullable<std::string> >(ct_in->street2.in());
-        res.street3 = unwrap_into<Nullable<std::string> >(ct_in->street3.in());
-        res.city = unwrap_into<std::string>(ct_in->city.in());
-        res.state = unwrap_into<Nullable<std::string> >(ct_in->state.in());
-        res.postal_code = unwrap_into<std::string>(ct_in->postal_code.in());
-        res.country = unwrap_into<std::string>(ct_in->country.in());
+        res.street1 = unwrap_into<std::string>(ct_in.street1.in());
+        res.street2 = unwrap_into<Nullable<std::string> >(ct_in.street2.in());
+        res.street3 = unwrap_into<Nullable<std::string> >(ct_in.street3.in());
+        res.city = unwrap_into<std::string>(ct_in.city.in());
+        res.state = unwrap_into<Nullable<std::string> >(ct_in.state.in());
+        res.postal_code = unwrap_into<std::string>(ct_in.postal_code.in());
+        res.country = unwrap_into<std::string>(ct_in.country.in());
         nct_out = res;
     }
 

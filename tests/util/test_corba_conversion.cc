@@ -452,15 +452,13 @@ BOOST_AUTO_TEST_CASE(test_mojeid_address)
     BOOST_CHECK(std::string(addr->state.in()->_value()) == "state");
     BOOST_CHECK(std::string(addr->country.in()) == "Czech Republic");
 
-    Registry::MojeIDImplData::Address addr_res = CorbaConversion::unwrap_into<Registry::MojeIDImplData::Address>(addr);
+    Registry::MojeIDImplData::Address addr_res = CorbaConversion::unwrap_into<Registry::MojeIDImplData::Address>(addr.in());
     BOOST_CHECK(addr_res.street1 == "st1");
     BOOST_CHECK(addr_res.street2.get_value() == "st2");
     BOOST_CHECK(addr_res.street3.get_value() == "st3");
     BOOST_CHECK(addr_res.city == "Praha");
     BOOST_CHECK(addr_res.state.get_value() == "state");
     BOOST_CHECK(addr_res.country == "Czech Republic");
-
-    BOOST_CHECK_THROW(CorbaConversion::unwrap_into<Registry::MojeIDImplData::Address>(Registry::MojeID::Address_var()), CorbaConversion::PointerIsNULL);
 }
 
 BOOST_AUTO_TEST_SUITE_END();

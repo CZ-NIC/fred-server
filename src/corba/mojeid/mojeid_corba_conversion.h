@@ -185,18 +185,18 @@ namespace Registry
 
 namespace CorbaConversion
 {
-    //Registry::MojeID::Address_var
-    struct Unwrapper_Registry_MojeID_Address_var_into_Registry_MojeIDImplData_Address
+    //Registry::MojeID::Address
+    struct Unwrapper_Registry_MojeID_Address_into_Registry_MojeIDImplData_Address
     {
-        typedef Registry::MojeID::Address_var CORBA_TYPE;
+        typedef Registry::MojeID::Address CORBA_TYPE;
         typedef Registry::MojeIDImplData::Address NON_CORBA_TYPE;
         static void unwrap( const CORBA_TYPE& ct_in, NON_CORBA_TYPE& nct_out);
     };
     template <> struct DEFAULT_UNWRAPPER<
-        Unwrapper_Registry_MojeID_Address_var_into_Registry_MojeIDImplData_Address::CORBA_TYPE,
-        Unwrapper_Registry_MojeID_Address_var_into_Registry_MojeIDImplData_Address::NON_CORBA_TYPE>
+        Unwrapper_Registry_MojeID_Address_into_Registry_MojeIDImplData_Address::CORBA_TYPE,
+        Unwrapper_Registry_MojeID_Address_into_Registry_MojeIDImplData_Address::NON_CORBA_TYPE>
     {
-        typedef Unwrapper_Registry_MojeID_Address_var_into_Registry_MojeIDImplData_Address type;
+        typedef Unwrapper_Registry_MojeID_Address_into_Registry_MojeIDImplData_Address type;
     };
 
     struct Wrapper_Registry_MojeIDImplData_Address_into_Registry_MojeID_Address_var
@@ -211,7 +211,6 @@ namespace CorbaConversion
     {
         typedef Wrapper_Registry_MojeIDImplData_Address_into_Registry_MojeID_Address_var type;
     };
-
 }
 #endif
 
