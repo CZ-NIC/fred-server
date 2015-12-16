@@ -239,7 +239,84 @@ namespace CorbaConversion
     {
         typedef Wrapper_Nullable_Registry_MojeIDImplData_Address_into_Registry_MojeID_NullableAddress_var type;
     };
-
 }
+
+namespace Registry
+{
+    namespace MojeIDImplData
+    {
+        struct ShippingAddress
+        {
+            Nullable<std::string> company_name;
+            std::string street1;
+            Nullable<std::string> street2;
+            Nullable<std::string> street3;
+            std::string city;
+            Nullable<std::string> state;
+            std::string postal_code;
+            std::string country;
+        };
+    }
+}
+
+namespace CorbaConversion
+{
+    //Registry::MojeID::ShippingAddress
+    struct Unwrapper_Registry_MojeID_ShippingAddress_into_Registry_MojeIDImplData_ShippingAddress
+    {
+        typedef Registry::MojeID::ShippingAddress CORBA_TYPE;
+        typedef Registry::MojeIDImplData::ShippingAddress NON_CORBA_TYPE;
+        static void unwrap( const CORBA_TYPE& ct_in, NON_CORBA_TYPE& nct_out);
+    };
+    template <> struct DEFAULT_UNWRAPPER<
+        Unwrapper_Registry_MojeID_ShippingAddress_into_Registry_MojeIDImplData_ShippingAddress::CORBA_TYPE,
+        Unwrapper_Registry_MojeID_ShippingAddress_into_Registry_MojeIDImplData_ShippingAddress::NON_CORBA_TYPE>
+    {
+        typedef Unwrapper_Registry_MojeID_ShippingAddress_into_Registry_MojeIDImplData_ShippingAddress type;
+    };
+
+    struct Wrapper_Registry_MojeIDImplData_ShippingAddress_into_Registry_MojeID_ShippingAddress_var
+    {
+        typedef Registry::MojeID::ShippingAddress_var CORBA_TYPE;
+        typedef Registry::MojeIDImplData::ShippingAddress NON_CORBA_TYPE;
+        static void wrap( const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out );
+    };
+    template <> struct DEFAULT_WRAPPER<
+        Wrapper_Registry_MojeIDImplData_ShippingAddress_into_Registry_MojeID_ShippingAddress_var::NON_CORBA_TYPE,
+        Wrapper_Registry_MojeIDImplData_ShippingAddress_into_Registry_MojeID_ShippingAddress_var::CORBA_TYPE>
+    {
+        typedef Wrapper_Registry_MojeIDImplData_ShippingAddress_into_Registry_MojeID_ShippingAddress_var type;
+    };
+
+
+    //Registry::MojeID::NullableShippingAddress
+    struct Unwrapper_Registry_MojeID_NullableShippingAddress_ptr_into_Nullable_Registry_MojeIDImplData_ShippingAddress
+    {
+        typedef Registry::MojeID::NullableShippingAddress* CORBA_TYPE;
+        typedef Nullable<Registry::MojeIDImplData::ShippingAddress> NON_CORBA_TYPE;
+        static void unwrap(CORBA_TYPE ct_in, NON_CORBA_TYPE& nct_out);
+    };
+    template <> struct DEFAULT_UNWRAPPER<
+    Unwrapper_Registry_MojeID_NullableShippingAddress_ptr_into_Nullable_Registry_MojeIDImplData_ShippingAddress::CORBA_TYPE,
+    Unwrapper_Registry_MojeID_NullableShippingAddress_ptr_into_Nullable_Registry_MojeIDImplData_ShippingAddress::NON_CORBA_TYPE>
+    {
+        typedef Unwrapper_Registry_MojeID_NullableShippingAddress_ptr_into_Nullable_Registry_MojeIDImplData_ShippingAddress type;
+    };
+
+    struct Wrapper_Nullable_Registry_MojeIDImplData_ShippingAddress_into_Registry_MojeID_NullableShippingAddress_var
+    {
+        typedef Registry::MojeID::NullableShippingAddress_var CORBA_TYPE;
+        typedef Nullable<Registry::MojeIDImplData::ShippingAddress> NON_CORBA_TYPE;
+        static void wrap( const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out );
+    };
+    template <> struct DEFAULT_WRAPPER<
+    Wrapper_Nullable_Registry_MojeIDImplData_ShippingAddress_into_Registry_MojeID_NullableShippingAddress_var::NON_CORBA_TYPE,
+    Wrapper_Nullable_Registry_MojeIDImplData_ShippingAddress_into_Registry_MojeID_NullableShippingAddress_var::CORBA_TYPE>
+    {
+        typedef Wrapper_Nullable_Registry_MojeIDImplData_ShippingAddress_into_Registry_MojeID_NullableShippingAddress_var type;
+    };
+}
+
+
 #endif
 

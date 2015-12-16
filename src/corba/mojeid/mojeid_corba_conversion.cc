@@ -177,5 +177,60 @@ namespace CorbaConversion
         }
     }
 
+    void Unwrapper_Registry_MojeID_ShippingAddress_into_Registry_MojeIDImplData_ShippingAddress::unwrap( const CORBA_TYPE& ct_in, NON_CORBA_TYPE& nct_out)
+    {
+        Registry::MojeIDImplData::ShippingAddress res;
+        res.company_name = unwrap_into<Nullable<std::string> >(ct_in.company_name.in());
+        res.street1 = unwrap_into<std::string>(ct_in.street1.in());
+        res.street2 = unwrap_into<Nullable<std::string> >(ct_in.street2.in());
+        res.street3 = unwrap_into<Nullable<std::string> >(ct_in.street3.in());
+        res.city = unwrap_into<std::string>(ct_in.city.in());
+        res.state = unwrap_into<Nullable<std::string> >(ct_in.state.in());
+        res.postal_code = unwrap_into<std::string>(ct_in.postal_code.in());
+        res.country = unwrap_into<std::string>(ct_in.country.in());
+        nct_out = res;
+    }
+
+    void Wrapper_Registry_MojeIDImplData_ShippingAddress_into_Registry_MojeID_ShippingAddress_var::wrap( const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out )
+    {
+        Registry::MojeID::ShippingAddress_var addr = new Registry::MojeID::ShippingAddress;
+        addr->company_name = wrap_into<Registry::MojeID::NullableString_var>(nct_in.company_name);
+        addr->street1 = wrap_into<CORBA::String_var>(nct_in.street1);
+        addr->street2 = wrap_into<Registry::MojeID::NullableString_var>(nct_in.street2);
+        addr->street3 = wrap_into<Registry::MojeID::NullableString_var>(nct_in.street3);
+        addr->city = wrap_into<CORBA::String_var>(nct_in.city);
+        addr->state = wrap_into<Registry::MojeID::NullableString_var>(nct_in.state);
+        addr->postal_code = wrap_into<CORBA::String_var>(nct_in.postal_code);
+        addr->country = wrap_into<CORBA::String_var>(nct_in.country);
+        ct_out = addr._retn();
+    }
+
+    void Unwrapper_Registry_MojeID_NullableShippingAddress_ptr_into_Nullable_Registry_MojeIDImplData_ShippingAddress::unwrap(CORBA_TYPE ct_in, NON_CORBA_TYPE& nct_out)
+    {
+        if(ct_in == NULL)
+        {
+            nct_out = Nullable<Registry::MojeIDImplData::ShippingAddress>();
+        }
+        else
+        {
+            Registry::MojeIDImplData::ShippingAddress addr = CorbaConversion::unwrap_into<Registry::MojeIDImplData::ShippingAddress>(ct_in->_value());
+            nct_out = Nullable<Registry::MojeIDImplData::ShippingAddress>(addr);
+        }
+    }
+
+    void Wrapper_Nullable_Registry_MojeIDImplData_ShippingAddress_into_Registry_MojeID_NullableShippingAddress_var::wrap( const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out )
+    {
+        if(nct_in.isnull())
+        {
+            ct_out = NULL;
+        }
+        else
+        {
+            Registry::MojeID::NullableShippingAddress_var valuetype_addr = new Registry::MojeID::NullableShippingAddress;
+            const Registry::MojeID::ShippingAddress_var addr_var = CorbaConversion::wrap_into<Registry::MojeID::ShippingAddress_var>(nct_in.get_value());
+            valuetype_addr->_value(addr_var.in());
+            ct_out = valuetype_addr._retn();
+        }
+    }
 
 }
