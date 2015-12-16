@@ -139,13 +139,13 @@ namespace CorbaConversion
     void Wrapper_Registry_MojeIDImplData_Address_into_Registry_MojeID_Address_var::wrap( const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out )
     {
         Registry::MojeID::Address_var addr = new Registry::MojeID::Address;
-        addr->street1 = wrap_by<Wrapper_std_string_into_String_var>(nct_in.street1);
-        addr->street2 = wrap_by<Wrapper_Nullable_std_string_into_Registry_MojeID_NullableString_var>(nct_in.street2);
-        addr->street3 = wrap_by<Wrapper_Nullable_std_string_into_Registry_MojeID_NullableString_var>(nct_in.street3);
-        addr->city = wrap_by<Wrapper_std_string_into_String_var>(nct_in.city);
-        addr->state = wrap_by<Wrapper_Nullable_std_string_into_Registry_MojeID_NullableString_var>(nct_in.state);
-        addr->postal_code = wrap_by<Wrapper_std_string_into_String_var>(nct_in.postal_code);
-        addr->country = wrap_by<Wrapper_std_string_into_String_var>(nct_in.country);
+        addr->street1 = wrap_into<CORBA::String_var>(nct_in.street1);
+        addr->street2 = wrap_into<Registry::MojeID::NullableString_var>(nct_in.street2);
+        addr->street3 = wrap_into<Registry::MojeID::NullableString_var>(nct_in.street3);
+        addr->city = wrap_into<CORBA::String_var>(nct_in.city);
+        addr->state = wrap_into<Registry::MojeID::NullableString_var>(nct_in.state);
+        addr->postal_code = wrap_into<CORBA::String_var>(nct_in.postal_code);
+        addr->country = wrap_into<CORBA::String_var>(nct_in.country);
         ct_out = addr._retn();
     }
 
