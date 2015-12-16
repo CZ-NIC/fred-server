@@ -91,7 +91,7 @@ namespace CorbaConversion
         else
         {
             Registry::MojeID::NullableDate_var valuetype_date = new Registry::MojeID::NullableDate;
-            valuetype_date->value(CorbaConversion::wrap_by<Wrapper_boost_gregorian_date_into_Registry_MojeID_Date_var>(nct_in.get_value())->value.in());
+            valuetype_date->_value(CorbaConversion::wrap_into<Registry::MojeID::Date_var>(nct_in.get_value()).in());
             ct_out = valuetype_date._retn();
         }
     }
