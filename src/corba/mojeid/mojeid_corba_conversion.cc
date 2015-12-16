@@ -25,14 +25,9 @@
 
 namespace CorbaConversion
 {
-    void Unwrapper_Registry_MojeID_Date_ptr_into_boost_gregorian_date::unwrap( CORBA_TYPE ct_in, NON_CORBA_TYPE& nct_out)
+    void Unwrapper_Registry_MojeID_Date_into_boost_gregorian_date::unwrap( const CORBA_TYPE& ct_in, NON_CORBA_TYPE& nct_out)
     {
-        if(ct_in == NULL)
-        {
-            throw PointerIsNULL();
-        }
-
-        nct_out = boost::gregorian::from_simple_string(ct_in->value.in());
+        nct_out = boost::gregorian::from_simple_string(ct_in.value.in());
 
         if(nct_out.is_special())
         {
@@ -52,14 +47,10 @@ namespace CorbaConversion
         ct_out = res._retn();
     }
 
-    void Unwrapper_Registry_MojeID_DateTime_ptr_into_boost_posix_time_ptime::unwrap(CORBA_TYPE ct_in, NON_CORBA_TYPE& nct_out)
+    void Unwrapper_Registry_MojeID_DateTime_into_boost_posix_time_ptime::unwrap(const CORBA_TYPE& ct_in, NON_CORBA_TYPE& nct_out)
     {
-        if(ct_in == NULL)
-        {
-            throw PointerIsNULL();
-        }
 
-        nct_out = boost::date_time::parse_delimited_time<ptime>(ct_in->value.in(), 'T');
+        nct_out = boost::date_time::parse_delimited_time<ptime>(ct_in.value.in(), 'T');
 
         if(nct_out.is_special())
         {

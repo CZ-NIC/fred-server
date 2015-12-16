@@ -210,13 +210,13 @@ namespace CorbaConversion
 
         static void unwrap( CORBA_TYPE ct_in, NON_CORBA_TYPE& nct_out)
         {
-            if(ct_in == NULL || ct_in->_value() == NULL)
+            if(ct_in == NULL)
             {
                 nct_out = Nullable<std::string>();
             }
             else
             {
-                nct_out = Nullable<std::string>(ct_in->_value());
+                nct_out = unwrap_into<std::string>(ct_in->_value());
             }
         }
     };

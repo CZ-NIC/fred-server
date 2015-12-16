@@ -58,17 +58,17 @@ namespace CorbaConversion
     };
 
     //Registry::MojeID::Date
-    struct Unwrapper_Registry_MojeID_Date_ptr_into_boost_gregorian_date
+    struct Unwrapper_Registry_MojeID_Date_into_boost_gregorian_date
     {
-        typedef Registry::MojeID::Date* CORBA_TYPE;
+        typedef Registry::MojeID::Date CORBA_TYPE;
         typedef boost::gregorian::date NON_CORBA_TYPE;
-        static void unwrap(CORBA_TYPE ct_in, NON_CORBA_TYPE& nct_out);
+        static void unwrap(const CORBA_TYPE& ct_in, NON_CORBA_TYPE& nct_out);
     };
     template <> struct DEFAULT_UNWRAPPER<
-        Unwrapper_Registry_MojeID_Date_ptr_into_boost_gregorian_date::CORBA_TYPE,
-        Unwrapper_Registry_MojeID_Date_ptr_into_boost_gregorian_date::NON_CORBA_TYPE>
+        Unwrapper_Registry_MojeID_Date_into_boost_gregorian_date::CORBA_TYPE,
+        Unwrapper_Registry_MojeID_Date_into_boost_gregorian_date::NON_CORBA_TYPE>
     {
-        typedef Unwrapper_Registry_MojeID_Date_ptr_into_boost_gregorian_date type;
+        typedef Unwrapper_Registry_MojeID_Date_into_boost_gregorian_date type;
     };
 
     struct Wrapper_boost_gregorian_date_into_Registry_MojeID_Date_var
@@ -85,17 +85,17 @@ namespace CorbaConversion
     };
 
     //Registry::MojeID::DateTime
-    struct Unwrapper_Registry_MojeID_DateTime_ptr_into_boost_posix_time_ptime
+    struct Unwrapper_Registry_MojeID_DateTime_into_boost_posix_time_ptime
     {
-        typedef Registry::MojeID::DateTime* CORBA_TYPE;
+        typedef Registry::MojeID::DateTime CORBA_TYPE;
         typedef boost::posix_time::ptime NON_CORBA_TYPE;
-        static void unwrap(CORBA_TYPE ct_in, NON_CORBA_TYPE& nct_out);
+        static void unwrap(const CORBA_TYPE& ct_in, NON_CORBA_TYPE& nct_out);
     };
     template <> struct DEFAULT_UNWRAPPER<
-        Unwrapper_Registry_MojeID_DateTime_ptr_into_boost_posix_time_ptime::CORBA_TYPE,
-        Unwrapper_Registry_MojeID_DateTime_ptr_into_boost_posix_time_ptime::NON_CORBA_TYPE>
+        Unwrapper_Registry_MojeID_DateTime_into_boost_posix_time_ptime::CORBA_TYPE,
+        Unwrapper_Registry_MojeID_DateTime_into_boost_posix_time_ptime::NON_CORBA_TYPE>
     {
-        typedef Unwrapper_Registry_MojeID_DateTime_ptr_into_boost_posix_time_ptime type;
+        typedef Unwrapper_Registry_MojeID_DateTime_into_boost_posix_time_ptime type;
     };
 
     struct Wrapper_boost_posix_time_ptime_into_Registry_MojeID_DateTime_var
