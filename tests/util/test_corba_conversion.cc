@@ -565,4 +565,59 @@ BOOST_AUTO_TEST_CASE(test_nullable_mojeid_shippingaddress)
     BOOST_CHECK(addr_res.get_value().country == "Czech Republic");
 }
 
+
+/**
+ * Exception if argument value is not enum ValidationError value
+ */
+class NotEnumValidationErrorValue : public std::invalid_argument
+{
+public:
+    NotEnumValidationErrorValue() : std::invalid_argument(
+        "argument value is not enum ValidationError value") {}
+    virtual ~NotEnumValidationErrorValue() throw() {}
+};
+
+BOOST_AUTO_TEST_CASE(test_mojeid_validationerror)
+{
+    BOOST_CHECK_THROW(CorbaConversion::unwrap_into<Registry::MojeIDImplData::ValidationError::EnumType>(
+        static_cast<Registry::MojeID::ValidationError>(10)), CorbaConversion::NotEnumValidationErrorValue);
+    BOOST_CHECK_THROW(CorbaConversion::wrap_into<Registry::MojeID::ValidationError>(
+        static_cast<Registry::MojeIDImplData::ValidationError::EnumType>(10)), CorbaConversion::NotEnumValidationErrorValue);
+
+    BOOST_CHECK(Registry::MojeIDImplData::ValidationError::INVALID
+        == CorbaConversion::unwrap_into<Registry::MojeIDImplData::ValidationError::EnumType>(Registry::MojeID::INVALID));
+    BOOST_CHECK(Registry::MojeID::INVALID
+        == CorbaConversion::wrap_into<Registry::MojeID::ValidationError>(Registry::MojeIDImplData::ValidationError::INVALID));
+}
+
+BOOST_AUTO_TEST_CASE(test_mojeid_nullablevalidationerror)
+{
+    Registry::MojeID::NullableValidationError_var err_value =
+    CorbaConversion::wrap_into<Registry::MojeID::NullableValidationError_var>(
+        Nullable<Registry::MojeIDImplData::ValidationError::EnumType>(
+            Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE));
+
+    BOOST_CHECK(Registry::MojeID::NOT_AVAILABLE == err_value->_value());
+
+    BOOST_CHECK(Nullable<Registry::MojeIDImplData::ValidationError::EnumType>(
+        Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE)
+        == CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(err_value.in()));
+
+    BOOST_CHECK(CorbaConversion::wrap_into<Registry::MojeID::NullableValidationError_var>(
+        Nullable<Registry::MojeIDImplData::ValidationError::EnumType>()).operator ->() == NULL);
+
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        static_cast<Registry::MojeID::NullableValidationError*>(NULL)).isnull());
+}
+
+BOOST_AUTO_TEST_CASE(test_mojeid_addressvalidationerror)
+{
+//TODO
+}
+
+BOOST_AUTO_TEST_CASE(test_mojeid_nullableaddressvalidationerror)
+{
+//TODO
+}
+
 BOOST_AUTO_TEST_SUITE_END();

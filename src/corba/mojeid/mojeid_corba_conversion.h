@@ -318,5 +318,226 @@ namespace CorbaConversion
 }
 
 
+namespace Registry
+{
+    namespace MojeIDImplData
+    {
+        struct ValidationError
+        {
+            enum EnumType
+            {
+                NOT_AVAILABLE,
+                INVALID,
+                REQUIRED
+            };
+        };
+
+        struct AddressValidationError
+        {
+            Nullable<ValidationError::EnumType> street1;
+            Nullable<ValidationError::EnumType> city;
+            Nullable<ValidationError::EnumType> postal_code;
+            Nullable<ValidationError::EnumType> country;
+        };
+
+        struct MandatoryAddressValidationError
+        {
+            Nullable<ValidationError::EnumType> address_presence;
+            Nullable<ValidationError::EnumType> street1;
+            Nullable<ValidationError::EnumType> city;
+            Nullable<ValidationError::EnumType> postal_code;
+            Nullable<ValidationError::EnumType> country;
+        };
+
+        struct ShippingAddressValidationError
+        {
+            Nullable<ValidationError::EnumType> street1;
+            Nullable<ValidationError::EnumType> city;
+            Nullable<ValidationError::EnumType> postal_code;
+            Nullable<ValidationError::EnumType> country;
+        };
+
+        struct MessageLimitExceeded
+        {
+            boost::gregorian::date limit_expire_date;
+            unsigned short limit_count;
+            unsigned short limit_days;
+        };
+
+        struct RegistrationValidationError
+        {
+            Nullable<ValidationError::EnumType> username;
+            Nullable<ValidationError::EnumType> first_name;
+            Nullable<ValidationError::EnumType> last_name;
+            Nullable<ValidationError::EnumType> birth_date;
+            Nullable<ValidationError::EnumType> email;
+            Nullable<ValidationError::EnumType> notify_email;
+            Nullable<ValidationError::EnumType> phone;
+            Nullable<ValidationError::EnumType> fax;
+            Nullable<AddressValidationError> permanent;
+            Nullable<AddressValidationError> mailing;
+            Nullable<AddressValidationError> billing;
+            Nullable<ShippingAddressValidationError> shipping;
+            Nullable<ShippingAddressValidationError> shipping2;
+            Nullable<ShippingAddressValidationError> shipping3;
+        };
+
+        struct UpdateContactPrepareValidationError
+        {
+            Nullable<ValidationError::EnumType> first_name;
+            Nullable<ValidationError::EnumType> last_name;
+            Nullable<ValidationError::EnumType> birth_date;
+            Nullable<ValidationError::EnumType> email;
+            Nullable<ValidationError::EnumType> notify_email;
+            Nullable<ValidationError::EnumType> phone;
+            Nullable<ValidationError::EnumType> fax;
+            Nullable<AddressValidationError> permanent;
+            Nullable<AddressValidationError> mailing;
+            Nullable<AddressValidationError> billing;
+            Nullable<ShippingAddressValidationError> shipping;
+            Nullable<ShippingAddressValidationError> shipping2;
+            Nullable<ShippingAddressValidationError> shipping3;
+        };
+
+        struct CreateValidationRequestValidationError
+        {
+            Nullable<ValidationError::EnumType> first_name;
+            Nullable<ValidationError::EnumType> last_name;
+            Nullable<MandatoryAddressValidationError> permanent;
+            Nullable<ValidationError::EnumType> email;
+            Nullable<ValidationError::EnumType> phone;
+            Nullable<ValidationError::EnumType> notify_email;
+            Nullable<ValidationError::EnumType> fax;
+            Nullable<ValidationError::EnumType> ssn;
+        };
+    }
+}
+
+namespace CorbaConversion
+{
+
+    /**
+     * Exception if argument value is not enum ValidationError value
+     */
+    class NotEnumValidationErrorValue : public std::invalid_argument
+    {
+    public:
+        NotEnumValidationErrorValue() : std::invalid_argument(
+            "argument value is not enum ValidationError value") {}
+        virtual ~NotEnumValidationErrorValue() throw() {}
+    };
+
+    //Registry::MojeID::ValidationError
+    struct Unwrapper_Registry_MojeID_ValidationError_into_Registry_MojeIDImplData_ValidationError_EnumType
+    {
+        typedef Registry::MojeID::ValidationError CORBA_TYPE;
+        typedef Registry::MojeIDImplData::ValidationError::EnumType NON_CORBA_TYPE;
+        static void unwrap( CORBA_TYPE ct_in, NON_CORBA_TYPE& nct_out);
+    };
+    template <> struct DEFAULT_UNWRAPPER<
+    Unwrapper_Registry_MojeID_ValidationError_into_Registry_MojeIDImplData_ValidationError_EnumType::CORBA_TYPE,
+    Unwrapper_Registry_MojeID_ValidationError_into_Registry_MojeIDImplData_ValidationError_EnumType::NON_CORBA_TYPE>
+    {
+        typedef Unwrapper_Registry_MojeID_ValidationError_into_Registry_MojeIDImplData_ValidationError_EnumType type;
+    };
+
+    struct Wrapper_Registry_MojeIDImplData_ValidationError_EnumType_into_Registry_MojeID_ValidationError
+    {
+        typedef Registry::MojeID::ValidationError CORBA_TYPE;
+        typedef Registry::MojeIDImplData::ValidationError::EnumType NON_CORBA_TYPE;
+        static void wrap( const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out );
+    };
+    template <> struct DEFAULT_WRAPPER<
+    Wrapper_Registry_MojeIDImplData_ValidationError_EnumType_into_Registry_MojeID_ValidationError::NON_CORBA_TYPE,
+    Wrapper_Registry_MojeIDImplData_ValidationError_EnumType_into_Registry_MojeID_ValidationError::CORBA_TYPE>
+    {
+        typedef Wrapper_Registry_MojeIDImplData_ValidationError_EnumType_into_Registry_MojeID_ValidationError type;
+    };
+
+
+    //Registry::MojeID::NullableValidationError
+    struct Unwrapper_Registry_MojeID_NullableValidationError_ptr_into_Registry_MojeIDImplData_Nullable_ValidationError_EnumType
+    {
+        typedef Registry::MojeID::NullableValidationError* CORBA_TYPE;
+        typedef Nullable<Registry::MojeIDImplData::ValidationError::EnumType> NON_CORBA_TYPE;
+        static void unwrap( CORBA_TYPE ct_in, NON_CORBA_TYPE& nct_out);
+    };
+    template <> struct DEFAULT_UNWRAPPER<
+    Unwrapper_Registry_MojeID_NullableValidationError_ptr_into_Registry_MojeIDImplData_Nullable_ValidationError_EnumType::CORBA_TYPE,
+    Unwrapper_Registry_MojeID_NullableValidationError_ptr_into_Registry_MojeIDImplData_Nullable_ValidationError_EnumType::NON_CORBA_TYPE>
+    {
+        typedef Unwrapper_Registry_MojeID_NullableValidationError_ptr_into_Registry_MojeIDImplData_Nullable_ValidationError_EnumType type;
+    };
+
+    struct Wrapper_Registry_MojeIDImplData_Nullable_ValidationError_EnumType_into_Registry_MojeID_NullableValidationError_var
+    {
+        typedef Registry::MojeID::NullableValidationError_var CORBA_TYPE;
+        typedef Nullable<Registry::MojeIDImplData::ValidationError::EnumType> NON_CORBA_TYPE;
+        static void wrap( const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out );
+    };
+    template <> struct DEFAULT_WRAPPER<
+    Wrapper_Registry_MojeIDImplData_Nullable_ValidationError_EnumType_into_Registry_MojeID_NullableValidationError_var::NON_CORBA_TYPE,
+    Wrapper_Registry_MojeIDImplData_Nullable_ValidationError_EnumType_into_Registry_MojeID_NullableValidationError_var::CORBA_TYPE>
+    {
+        typedef Wrapper_Registry_MojeIDImplData_Nullable_ValidationError_EnumType_into_Registry_MojeID_NullableValidationError_var type;
+    };
+
+    //Registry::MojeID::AddressValidationError
+    struct Unwrapper_Registry_MojeID_AddressValidationError_into_Registry_MojeIDImplData_AddressValidationError
+    {
+        typedef Registry::MojeID::AddressValidationError CORBA_TYPE;
+        typedef Registry::MojeIDImplData::AddressValidationError NON_CORBA_TYPE;
+        static void unwrap( const CORBA_TYPE& ct_in, NON_CORBA_TYPE& nct_out);
+    };
+    template <> struct DEFAULT_UNWRAPPER<
+    Unwrapper_Registry_MojeID_AddressValidationError_into_Registry_MojeIDImplData_AddressValidationError::CORBA_TYPE,
+    Unwrapper_Registry_MojeID_AddressValidationError_into_Registry_MojeIDImplData_AddressValidationError::NON_CORBA_TYPE>
+    {
+        typedef Unwrapper_Registry_MojeID_AddressValidationError_into_Registry_MojeIDImplData_AddressValidationError type;
+    };
+
+    struct Wrapper_Registry_MojeIDImplData_AddressValidationError_into_Registry_MojeID_AddressValidationError_var
+    {
+        typedef Registry::MojeID::AddressValidationError_var CORBA_TYPE;
+        typedef Registry::MojeIDImplData::AddressValidationError NON_CORBA_TYPE;
+        static void wrap( const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out );
+    };
+    template <> struct DEFAULT_WRAPPER<
+    Wrapper_Registry_MojeIDImplData_AddressValidationError_into_Registry_MojeID_AddressValidationError_var::NON_CORBA_TYPE,
+    Wrapper_Registry_MojeIDImplData_AddressValidationError_into_Registry_MojeID_AddressValidationError_var::CORBA_TYPE>
+    {
+        typedef Wrapper_Registry_MojeIDImplData_AddressValidationError_into_Registry_MojeID_AddressValidationError_var type;
+    };
+
+    //Registry::MojeID::NullableAddressValidationError
+    struct Unwrapper_Registry_MojeID_NullableAddressValidationError_ptr_into_Nullable_Registry_MojeIDImplData_AddressValidationError
+    {
+        typedef Registry::MojeID::NullableAddressValidationError* CORBA_TYPE;
+        typedef Nullable<Registry::MojeIDImplData::AddressValidationError> NON_CORBA_TYPE;
+        static void unwrap(CORBA_TYPE ct_in, NON_CORBA_TYPE& nct_out);
+    };
+    template <> struct DEFAULT_UNWRAPPER<
+    Unwrapper_Registry_MojeID_NullableAddressValidationError_ptr_into_Nullable_Registry_MojeIDImplData_AddressValidationError::CORBA_TYPE,
+    Unwrapper_Registry_MojeID_NullableAddressValidationError_ptr_into_Nullable_Registry_MojeIDImplData_AddressValidationError::NON_CORBA_TYPE>
+    {
+        typedef Unwrapper_Registry_MojeID_NullableAddressValidationError_ptr_into_Nullable_Registry_MojeIDImplData_AddressValidationError type;
+    };
+
+    struct Wrapper_Nullable_Registry_MojeIDImplData_AddressValidationError_into_Registry_MojeID_NullableAddressValidationError_var
+    {
+        typedef Registry::MojeID::NullableAddressValidationError_var CORBA_TYPE;
+        typedef Nullable<Registry::MojeIDImplData::AddressValidationError> NON_CORBA_TYPE;
+        static void wrap( const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out );
+    };
+    template <> struct DEFAULT_WRAPPER<
+    Wrapper_Nullable_Registry_MojeIDImplData_AddressValidationError_into_Registry_MojeID_NullableAddressValidationError_var::NON_CORBA_TYPE,
+    Wrapper_Nullable_Registry_MojeIDImplData_AddressValidationError_into_Registry_MojeID_NullableAddressValidationError_var::CORBA_TYPE>
+    {
+        typedef Wrapper_Nullable_Registry_MojeIDImplData_AddressValidationError_into_Registry_MojeID_NullableAddressValidationError_var type;
+    };
+
+}
+
+
 #endif
 
