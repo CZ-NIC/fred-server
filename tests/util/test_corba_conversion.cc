@@ -625,6 +625,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_addressvalidationerror)
     Registry::MojeID::AddressValidationError_var addr_err = CorbaConversion::wrap_into<
         Registry::MojeID::AddressValidationError_var>(addr_err_impl);
 
+    BOOST_REQUIRE(addr_err.operator ->() != NULL);
     BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
         addr_err->street1.in()).get_value() ==  Registry::MojeIDImplData::ValidationError::INVALID);
     BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
