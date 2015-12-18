@@ -65,9 +65,12 @@ ContactId Server_i::create_contact_prepare(
             Corba::Conversion::into(idl_error).from(e);
             throw idl_error;
         }
+        catch (const IDL::REGISTRATION_VALIDATION_ERROR&) {
+            throw;
+        }
         catch (...) {
-                throw IDL::INTERNAL_SERVER_ERROR();
-            }
+            throw IDL::INTERNAL_SERVER_ERROR();
+        }
     }
     catch (...) {
         throw IDL::INTERNAL_SERVER_ERROR();
