@@ -442,13 +442,120 @@ namespace CorbaConversion
         }
     }
 
-    void Wrapper_Registry_MojeIDImplData_MessageLimitExceeded_into_Registry_MojeID_Server_MESSAGE_LIMIT_EXCEEDED::wrap( const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out )
+    void Wrapper_Registry_MojeIDImplData_MessageLimitExceeded_into_Registry_MojeID_Server_MESSAGE_LIMIT_EXCEEDED::wrap(const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out)
     {
-        Registry::MojeID::Server::MESSAGE_LIMIT_EXCEEDED res;
-        res.limit_expire_date = wrap_into<Registry::MojeID::Date_var>(nct_in.limit_expire_date);
-        res.limit_count = nct_in.limit_count;
-        res.limit_days = nct_in.limit_days;
-        ct_out = res;
+        try
+        {
+            Registry::MojeID::Server::MESSAGE_LIMIT_EXCEEDED res;
+            res.limit_expire_date = wrap_into<Registry::MojeID::Date_var>(nct_in.limit_expire_date);
+            res.limit_count = nct_in.limit_count;
+            res.limit_days = nct_in.limit_days;
+            ct_out = res;
+        }
+        catch(...)
+        {
+            throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR();
+        }
     }
 
+    void Wrapper_Registry_MojeIDImplData_RegistrationValidationError_into_Registry_MojeID_Server_REGISTRATION_VALIDATION_ERROR::wrap(const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out)
+    {
+        try
+        {
+            Registry::MojeID::Server::REGISTRATION_VALIDATION_ERROR res;
+
+            res.username = wrap_into<Registry::MojeID::NullableValidationError_var>(nct_in.username);
+            res.first_name = wrap_into<Registry::MojeID::NullableValidationError_var>(nct_in.first_name);
+            res.last_name = wrap_into<Registry::MojeID::NullableValidationError_var>(nct_in.last_name);
+            res.birth_date = wrap_into<Registry::MojeID::NullableValidationError_var>(nct_in.birth_date);
+            res.email = wrap_into<Registry::MojeID::NullableValidationError_var>(nct_in.email);
+            res.notify_email = wrap_into<Registry::MojeID::NullableValidationError_var>(nct_in.notify_email);
+            res.phone = wrap_into<Registry::MojeID::NullableValidationError_var>(nct_in.phone);
+            res.fax = wrap_into<Registry::MojeID::NullableValidationError_var>(nct_in.fax);
+
+            res.permanent = wrap_into<Registry::MojeID::NullableAddressValidationError_var>(nct_in.permanent);
+            res.mailing = wrap_into<Registry::MojeID::NullableAddressValidationError_var>(nct_in.mailing);
+            res.billing = wrap_into<Registry::MojeID::NullableAddressValidationError_var>(nct_in.billing);
+
+            res.shipping = wrap_into<Registry::MojeID::NullableShippingAddressValidationError_var>(nct_in.shipping);
+            res.shipping2 = wrap_into<Registry::MojeID::NullableShippingAddressValidationError_var>(nct_in.shipping2);
+            res.shipping3 = wrap_into<Registry::MojeID::NullableShippingAddressValidationError_var>(nct_in.shipping3);
+
+            ct_out = res;
+        }
+        catch(...)
+        {
+            throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR();
+        }
+    }
+
+    void Wrapper_Registry_MojeIDImplData_UpdateContactPrepareValidationError_into_Registry_MojeID_Server_UPDATE_CONTACT_PREPARE_VALIDATION_ERROR::wrap(const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out)
+    {
+        try
+        {
+            Registry::MojeID::Server::UPDATE_CONTACT_PREPARE_VALIDATION_ERROR res;
+
+            res.first_name = wrap_into<Registry::MojeID::NullableValidationError_var>(nct_in.first_name);
+            res.last_name = wrap_into<Registry::MojeID::NullableValidationError_var>(nct_in.last_name);
+            res.birth_date = wrap_into<Registry::MojeID::NullableValidationError_var>(nct_in.birth_date);
+            res.email = wrap_into<Registry::MojeID::NullableValidationError_var>(nct_in.email);
+            res.notify_email = wrap_into<Registry::MojeID::NullableValidationError_var>(nct_in.notify_email);
+            res.phone = wrap_into<Registry::MojeID::NullableValidationError_var>(nct_in.phone);
+            res.fax = wrap_into<Registry::MojeID::NullableValidationError_var>(nct_in.fax);
+
+            res.permanent = wrap_into<Registry::MojeID::NullableAddressValidationError_var>(nct_in.permanent);
+            res.mailing = wrap_into<Registry::MojeID::NullableAddressValidationError_var>(nct_in.mailing);
+            res.billing = wrap_into<Registry::MojeID::NullableAddressValidationError_var>(nct_in.billing);
+
+            res.shipping = wrap_into<Registry::MojeID::NullableShippingAddressValidationError_var>(nct_in.shipping);
+            res.shipping2 = wrap_into<Registry::MojeID::NullableShippingAddressValidationError_var>(nct_in.shipping2);
+            res.shipping3 = wrap_into<Registry::MojeID::NullableShippingAddressValidationError_var>(nct_in.shipping3);
+
+            ct_out = res;
+        }
+        catch(...)
+        {
+            throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR();
+        }
+    }
+
+    void Wrapper_Registry_MojeIDImplData_CreateValidationRequestValidationError_into_Registry_MojeID_Server_CREATE_VALIDATION_REQUEST_VALIDATION_ERROR::wrap(const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out)
+    {
+        try
+        {
+            Registry::MojeID::Server::CREATE_VALIDATION_REQUEST_VALIDATION_ERROR res;
+
+            res.first_name = wrap_into<Registry::MojeID::NullableValidationError_var>(nct_in.first_name);
+            res.last_name = wrap_into<Registry::MojeID::NullableValidationError_var>(nct_in.last_name);
+
+            res.permanent = wrap_into<Registry::MojeID::NullableMandatoryAddressValidationError_var>(nct_in.permanent);
+
+            res.email = wrap_into<Registry::MojeID::NullableValidationError_var>(nct_in.email);
+            res.phone = wrap_into<Registry::MojeID::NullableValidationError_var>(nct_in.phone);
+            res.notify_email = wrap_into<Registry::MojeID::NullableValidationError_var>(nct_in.notify_email);
+            res.fax = wrap_into<Registry::MojeID::NullableValidationError_var>(nct_in.fax);
+            res.ssn = wrap_into<Registry::MojeID::NullableValidationError_var>(nct_in.ssn);
+
+            ct_out = res;
+        }
+        catch(...)
+        {
+            throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR();
+        }
+    }
+
+    void Wrapper_Registry_MojeIDImplData_ProcessRegistrationValidationError_into_Registry_MojeID_Server_PROCESS_REGISTRATION_VALIDATION_ERROR::wrap(const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out)
+    {
+        try
+        {
+            Registry::MojeID::Server::PROCESS_REGISTRATION_VALIDATION_ERROR res;
+            res.email = wrap_into<Registry::MojeID::NullableValidationError_var>(nct_in.email);
+            res.phone = wrap_into<Registry::MojeID::NullableValidationError_var>(nct_in.phone);
+            ct_out = res;
+        }
+        catch(...)
+        {
+            throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR();
+        }
+    }
 }

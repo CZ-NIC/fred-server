@@ -410,6 +410,12 @@ namespace Registry
             Nullable<ValidationError::EnumType> fax;
             Nullable<ValidationError::EnumType> ssn;
         };
+
+        struct ProcessRegistrationValidationError
+        {
+            Nullable<ValidationError::EnumType> email;
+            Nullable<ValidationError::EnumType> phone;
+        };
     }
 }
 
@@ -644,11 +650,15 @@ namespace CorbaConversion
         typedef Wrapper_Nullable_Registry_MojeIDImplData_ShippingAddressValidationError_into_Registry_MojeID_NullableShippingAddressValidationError_var type;
     };
 
-    //Registry::MojeID::MESSAGE_LIMIT_EXCEEDED
+    //Registry::MojeID::Server::MESSAGE_LIMIT_EXCEEDED
     struct Wrapper_Registry_MojeIDImplData_MessageLimitExceeded_into_Registry_MojeID_Server_MESSAGE_LIMIT_EXCEEDED
     {
         typedef Registry::MojeID::Server::MESSAGE_LIMIT_EXCEEDED CORBA_TYPE;
         typedef Registry::MojeIDImplData::MessageLimitExceeded NON_CORBA_TYPE;
+        /**
+         * All exceptions gets translated to Registry::MojeID::Server::INTERNAL_SERVER_ERROR.
+         * @throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR
+         */
         static void wrap( const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out );
     };
     template <> struct DEFAULT_WRAPPER<
@@ -657,6 +667,80 @@ namespace CorbaConversion
     {
         typedef Wrapper_Registry_MojeIDImplData_MessageLimitExceeded_into_Registry_MojeID_Server_MESSAGE_LIMIT_EXCEEDED type;
     };
+
+    //Registry::MojeID::Server::REGISTRATION_VALIDATION_ERROR
+    struct Wrapper_Registry_MojeIDImplData_RegistrationValidationError_into_Registry_MojeID_Server_REGISTRATION_VALIDATION_ERROR
+    {
+        typedef Registry::MojeID::Server::REGISTRATION_VALIDATION_ERROR CORBA_TYPE;
+        typedef Registry::MojeIDImplData::RegistrationValidationError NON_CORBA_TYPE;
+        /**
+         * All exceptions gets translated to Registry::MojeID::Server::INTERNAL_SERVER_ERROR.
+         * @throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR
+         */
+        static void wrap( const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out );
+    };
+    template <> struct DEFAULT_WRAPPER<
+    Wrapper_Registry_MojeIDImplData_RegistrationValidationError_into_Registry_MojeID_Server_REGISTRATION_VALIDATION_ERROR::NON_CORBA_TYPE,
+    Wrapper_Registry_MojeIDImplData_RegistrationValidationError_into_Registry_MojeID_Server_REGISTRATION_VALIDATION_ERROR::CORBA_TYPE>
+    {
+        typedef Wrapper_Registry_MojeIDImplData_RegistrationValidationError_into_Registry_MojeID_Server_REGISTRATION_VALIDATION_ERROR type;
+    };
+
+    //Registry::MojeID::Server::UPDATE_CONTACT_PREPARE_VALIDATION_ERROR
+    struct Wrapper_Registry_MojeIDImplData_UpdateContactPrepareValidationError_into_Registry_MojeID_Server_UPDATE_CONTACT_PREPARE_VALIDATION_ERROR
+    {
+        typedef Registry::MojeID::Server::UPDATE_CONTACT_PREPARE_VALIDATION_ERROR CORBA_TYPE;
+        typedef Registry::MojeIDImplData::UpdateContactPrepareValidationError NON_CORBA_TYPE;
+        /**
+         * All exceptions gets translated to Registry::MojeID::Server::INTERNAL_SERVER_ERROR.
+         * @throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR
+         */
+        static void wrap( const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out );
+    };
+    template <> struct DEFAULT_WRAPPER<
+    Wrapper_Registry_MojeIDImplData_UpdateContactPrepareValidationError_into_Registry_MojeID_Server_UPDATE_CONTACT_PREPARE_VALIDATION_ERROR::NON_CORBA_TYPE,
+    Wrapper_Registry_MojeIDImplData_UpdateContactPrepareValidationError_into_Registry_MojeID_Server_UPDATE_CONTACT_PREPARE_VALIDATION_ERROR::CORBA_TYPE>
+    {
+        typedef Wrapper_Registry_MojeIDImplData_UpdateContactPrepareValidationError_into_Registry_MojeID_Server_UPDATE_CONTACT_PREPARE_VALIDATION_ERROR type;
+    };
+
+    //Registry::MojeID::Server::CREATE_VALIDATION_REQUEST_VALIDATION_ERROR
+    struct Wrapper_Registry_MojeIDImplData_CreateValidationRequestValidationError_into_Registry_MojeID_Server_CREATE_VALIDATION_REQUEST_VALIDATION_ERROR
+    {
+        typedef Registry::MojeID::Server::CREATE_VALIDATION_REQUEST_VALIDATION_ERROR CORBA_TYPE;
+        typedef Registry::MojeIDImplData::CreateValidationRequestValidationError NON_CORBA_TYPE;
+        /**
+         * All exceptions gets translated to Registry::MojeID::Server::INTERNAL_SERVER_ERROR.
+         * @throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR
+         */
+        static void wrap( const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out );
+    };
+    template <> struct DEFAULT_WRAPPER<
+    Wrapper_Registry_MojeIDImplData_CreateValidationRequestValidationError_into_Registry_MojeID_Server_CREATE_VALIDATION_REQUEST_VALIDATION_ERROR::NON_CORBA_TYPE,
+    Wrapper_Registry_MojeIDImplData_CreateValidationRequestValidationError_into_Registry_MojeID_Server_CREATE_VALIDATION_REQUEST_VALIDATION_ERROR::CORBA_TYPE>
+    {
+        typedef Wrapper_Registry_MojeIDImplData_CreateValidationRequestValidationError_into_Registry_MojeID_Server_CREATE_VALIDATION_REQUEST_VALIDATION_ERROR type;
+    };
+
+    //Registry::MojeID::Server::PROCESS_REGISTRATION_VALIDATION_ERROR
+    struct Wrapper_Registry_MojeIDImplData_ProcessRegistrationValidationError_into_Registry_MojeID_Server_PROCESS_REGISTRATION_VALIDATION_ERROR
+    {
+        typedef Registry::MojeID::Server::PROCESS_REGISTRATION_VALIDATION_ERROR CORBA_TYPE;
+        typedef Registry::MojeIDImplData::ProcessRegistrationValidationError NON_CORBA_TYPE;
+        /**
+         * All exceptions gets translated to Registry::MojeID::Server::INTERNAL_SERVER_ERROR.
+         * @throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR
+         */
+        static void wrap( const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out );
+    };
+    template <> struct DEFAULT_WRAPPER<
+    Wrapper_Registry_MojeIDImplData_ProcessRegistrationValidationError_into_Registry_MojeID_Server_PROCESS_REGISTRATION_VALIDATION_ERROR::NON_CORBA_TYPE,
+    Wrapper_Registry_MojeIDImplData_ProcessRegistrationValidationError_into_Registry_MojeID_Server_PROCESS_REGISTRATION_VALIDATION_ERROR::CORBA_TYPE>
+    {
+        typedef Wrapper_Registry_MojeIDImplData_ProcessRegistrationValidationError_into_Registry_MojeID_Server_PROCESS_REGISTRATION_VALIDATION_ERROR type;
+    };
+
+
 
 }
 

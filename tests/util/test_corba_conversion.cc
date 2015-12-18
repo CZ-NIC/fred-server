@@ -829,17 +829,378 @@ BOOST_AUTO_TEST_CASE(test_mojeid_nullableshippingaddressvalidationerror)
 
 BOOST_AUTO_TEST_CASE(test_mojeid_message_limit_exceeded)
 {
+    BOOST_CHECK_THROW(CorbaConversion::wrap_into<Registry::MojeID::Server::MESSAGE_LIMIT_EXCEEDED>(
+        Registry::MojeIDImplData::MessageLimitExceeded()), Registry::MojeID::Server::INTERNAL_SERVER_ERROR);
+
     Registry::MojeIDImplData::MessageLimitExceeded msg;
     msg.limit_expire_date = boost::gregorian::date(2015,12,10);
     msg.limit_count = 11;
     msg.limit_days = 12;
 
-    Registry::MojeID::Server::MESSAGE_LIMIT_EXCEEDED res = CorbaConversion::wrap_into<Registry::MojeID::Server::MESSAGE_LIMIT_EXCEEDED>(msg);
+    Registry::MojeID::Server::MESSAGE_LIMIT_EXCEEDED res = CorbaConversion::wrap_into<
+                    Registry::MojeID::Server::MESSAGE_LIMIT_EXCEEDED>(msg);
 
-    BOOST_CHECK(CorbaConversion::unwrap_into<boost::gregorian::date>(res.limit_expire_date) == msg.limit_expire_date);
+    BOOST_CHECK(CorbaConversion::unwrap_into<boost::gregorian::date>(
+        res.limit_expire_date) == msg.limit_expire_date);
     BOOST_CHECK(res.limit_count == msg.limit_count);
     BOOST_CHECK(res.limit_days == msg.limit_days);
 }
 
+BOOST_AUTO_TEST_CASE(test_mojeid_registration_validation_error)
+{
+    Registry::MojeIDImplData::RegistrationValidationError ex;
+    ex.first_name = Nullable<Registry::MojeIDImplData::ValidationError::EnumType>(
+        static_cast<Registry::MojeIDImplData::ValidationError::EnumType>(10));
+    BOOST_CHECK_THROW(CorbaConversion::wrap_into<
+        Registry::MojeID::Server::REGISTRATION_VALIDATION_ERROR>(ex),
+        Registry::MojeID::Server::INTERNAL_SERVER_ERROR);
+
+    Registry::MojeIDImplData::AddressValidationError permanent_addr_err_impl;
+    permanent_addr_err_impl.street1 = Registry::MojeIDImplData::ValidationError::INVALID;
+    permanent_addr_err_impl.city = Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE;
+    permanent_addr_err_impl.postal_code = Registry::MojeIDImplData::ValidationError::REQUIRED;
+    permanent_addr_err_impl.country = Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE;
+
+    Registry::MojeIDImplData::AddressValidationError mailing_addr_err_impl;
+    mailing_addr_err_impl.street1 = Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE;
+    mailing_addr_err_impl.city = Registry::MojeIDImplData::ValidationError::REQUIRED;
+    mailing_addr_err_impl.postal_code = Registry::MojeIDImplData::ValidationError::INVALID;
+    mailing_addr_err_impl.country = Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE;
+
+    Registry::MojeIDImplData::AddressValidationError billing_addr_err_impl;
+    billing_addr_err_impl.street1 = Registry::MojeIDImplData::ValidationError::REQUIRED;
+    billing_addr_err_impl.city = Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE;
+    billing_addr_err_impl.postal_code = Registry::MojeIDImplData::ValidationError::INVALID;
+    billing_addr_err_impl.country = Registry::MojeIDImplData::ValidationError::REQUIRED;
+
+    Registry::MojeIDImplData::ShippingAddressValidationError shipping_addr_err_impl;
+    shipping_addr_err_impl.street1 = Registry::MojeIDImplData::ValidationError::INVALID;
+    shipping_addr_err_impl.city = Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE;
+    shipping_addr_err_impl.postal_code = Registry::MojeIDImplData::ValidationError::REQUIRED;
+    shipping_addr_err_impl.country = Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE;
+
+    Registry::MojeIDImplData::ShippingAddressValidationError shipping2_addr_err_impl;
+    shipping2_addr_err_impl.street1 = Registry::MojeIDImplData::ValidationError::REQUIRED;
+    shipping2_addr_err_impl.city = Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE;
+    shipping2_addr_err_impl.postal_code = Registry::MojeIDImplData::ValidationError::INVALID;
+    shipping2_addr_err_impl.country = Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE;
+
+    Registry::MojeIDImplData::ShippingAddressValidationError shipping3_addr_err_impl;
+    shipping3_addr_err_impl.street1 = Registry::MojeIDImplData::ValidationError::INVALID;
+    shipping3_addr_err_impl.city = Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE;
+    shipping3_addr_err_impl.postal_code = Registry::MojeIDImplData::ValidationError::REQUIRED;
+    shipping3_addr_err_impl.country = Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE;
+
+    Registry::MojeIDImplData::RegistrationValidationError reg_val_err_impl;
+
+    reg_val_err_impl.username = Registry::MojeIDImplData::ValidationError::INVALID;
+    reg_val_err_impl.first_name = Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE;
+    reg_val_err_impl.last_name = Registry::MojeIDImplData::ValidationError::REQUIRED;
+    reg_val_err_impl.birth_date = Registry::MojeIDImplData::ValidationError::INVALID;
+    reg_val_err_impl.email = Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE;
+    reg_val_err_impl.notify_email = Registry::MojeIDImplData::ValidationError::REQUIRED;
+    reg_val_err_impl.phone = Registry::MojeIDImplData::ValidationError::INVALID;
+    reg_val_err_impl.fax = Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE;
+
+    reg_val_err_impl.permanent = permanent_addr_err_impl;
+    reg_val_err_impl.mailing = mailing_addr_err_impl;
+    reg_val_err_impl.billing = billing_addr_err_impl;
+
+    reg_val_err_impl.shipping = shipping_addr_err_impl;
+    reg_val_err_impl.shipping2 = shipping2_addr_err_impl;
+    reg_val_err_impl.shipping3 = shipping3_addr_err_impl;
+
+    Registry::MojeID::Server::REGISTRATION_VALIDATION_ERROR res;
+    CorbaConversion::wrap(reg_val_err_impl,res);
+
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.username.in()).get_value() == Registry::MojeIDImplData::ValidationError::INVALID);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.first_name.in()).get_value() == Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.last_name.in()).get_value() == Registry::MojeIDImplData::ValidationError::REQUIRED);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.birth_date.in()).get_value() == Registry::MojeIDImplData::ValidationError::INVALID);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.email.in()).get_value() == Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.notify_email.in()).get_value() == Registry::MojeIDImplData::ValidationError::REQUIRED);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.phone.in()).get_value() == Registry::MojeIDImplData::ValidationError::INVALID);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.fax.in()).get_value() == Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE);
+
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.permanent->street1()).get_value() == Registry::MojeIDImplData::ValidationError::INVALID);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.permanent->city()).get_value() == Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.permanent->postal_code()).get_value() == Registry::MojeIDImplData::ValidationError::REQUIRED);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.permanent->country()).get_value() == Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE);
+
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.mailing->street1()).get_value() == Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.mailing->city()).get_value() == Registry::MojeIDImplData::ValidationError::REQUIRED);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.mailing->postal_code()).get_value() == Registry::MojeIDImplData::ValidationError::INVALID);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.mailing->country()).get_value() == Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE);
+
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.billing->street1()).get_value() == Registry::MojeIDImplData::ValidationError::REQUIRED);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.billing->city()).get_value() == Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.billing->postal_code()).get_value() == Registry::MojeIDImplData::ValidationError::INVALID);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.billing->country()).get_value() == Registry::MojeIDImplData::ValidationError::REQUIRED);
+
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.shipping->street1()).get_value() == Registry::MojeIDImplData::ValidationError::INVALID);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.shipping->city()).get_value() == Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.shipping->postal_code()).get_value() == Registry::MojeIDImplData::ValidationError::REQUIRED);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.shipping->country()).get_value() == Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE);
+
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.shipping2->street1()).get_value() == Registry::MojeIDImplData::ValidationError::REQUIRED);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.shipping2->city()).get_value() == Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.shipping2->postal_code()).get_value() == Registry::MojeIDImplData::ValidationError::INVALID);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.shipping2->country()).get_value() == Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE);
+
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.shipping3->street1()).get_value() == Registry::MojeIDImplData::ValidationError::INVALID);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.shipping3->city()).get_value() == Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.shipping3->postal_code()).get_value() == Registry::MojeIDImplData::ValidationError::REQUIRED);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.shipping3->country()).get_value() == Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE);
+}
+
+BOOST_AUTO_TEST_CASE(test_mojeid_update_contact_prepare_validation_error)
+{
+    Registry::MojeIDImplData::UpdateContactPrepareValidationError ex;
+    ex.first_name = Nullable<Registry::MojeIDImplData::ValidationError::EnumType>(
+        static_cast<Registry::MojeIDImplData::ValidationError::EnumType>(10));
+    BOOST_CHECK_THROW(CorbaConversion::wrap_into<
+        Registry::MojeID::Server::UPDATE_CONTACT_PREPARE_VALIDATION_ERROR>(ex),
+        Registry::MojeID::Server::INTERNAL_SERVER_ERROR);
+
+    Registry::MojeIDImplData::AddressValidationError permanent_addr_err_impl;
+    permanent_addr_err_impl.street1 = Registry::MojeIDImplData::ValidationError::INVALID;
+    permanent_addr_err_impl.city = Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE;
+    permanent_addr_err_impl.postal_code = Registry::MojeIDImplData::ValidationError::REQUIRED;
+    permanent_addr_err_impl.country = Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE;
+
+    Registry::MojeIDImplData::AddressValidationError mailing_addr_err_impl;
+    mailing_addr_err_impl.street1 = Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE;
+    mailing_addr_err_impl.city = Registry::MojeIDImplData::ValidationError::REQUIRED;
+    mailing_addr_err_impl.postal_code = Registry::MojeIDImplData::ValidationError::INVALID;
+    mailing_addr_err_impl.country = Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE;
+
+    Registry::MojeIDImplData::AddressValidationError billing_addr_err_impl;
+    billing_addr_err_impl.street1 = Registry::MojeIDImplData::ValidationError::REQUIRED;
+    billing_addr_err_impl.city = Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE;
+    billing_addr_err_impl.postal_code = Registry::MojeIDImplData::ValidationError::INVALID;
+    billing_addr_err_impl.country = Registry::MojeIDImplData::ValidationError::REQUIRED;
+
+    Registry::MojeIDImplData::ShippingAddressValidationError shipping_addr_err_impl;
+    shipping_addr_err_impl.street1 = Registry::MojeIDImplData::ValidationError::INVALID;
+    shipping_addr_err_impl.city = Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE;
+    shipping_addr_err_impl.postal_code = Registry::MojeIDImplData::ValidationError::REQUIRED;
+    shipping_addr_err_impl.country = Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE;
+
+    Registry::MojeIDImplData::ShippingAddressValidationError shipping2_addr_err_impl;
+    shipping2_addr_err_impl.street1 = Registry::MojeIDImplData::ValidationError::REQUIRED;
+    shipping2_addr_err_impl.city = Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE;
+    shipping2_addr_err_impl.postal_code = Registry::MojeIDImplData::ValidationError::INVALID;
+    shipping2_addr_err_impl.country = Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE;
+
+    Registry::MojeIDImplData::ShippingAddressValidationError shipping3_addr_err_impl;
+    shipping3_addr_err_impl.street1 = Registry::MojeIDImplData::ValidationError::INVALID;
+    shipping3_addr_err_impl.city = Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE;
+    shipping3_addr_err_impl.postal_code = Registry::MojeIDImplData::ValidationError::REQUIRED;
+    shipping3_addr_err_impl.country = Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE;
+
+    Registry::MojeIDImplData::UpdateContactPrepareValidationError upd_val_err_impl;
+
+    upd_val_err_impl.first_name = Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE;
+    upd_val_err_impl.last_name = Registry::MojeIDImplData::ValidationError::REQUIRED;
+    upd_val_err_impl.birth_date = Registry::MojeIDImplData::ValidationError::INVALID;
+    upd_val_err_impl.email = Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE;
+    upd_val_err_impl.notify_email = Registry::MojeIDImplData::ValidationError::REQUIRED;
+    upd_val_err_impl.phone = Registry::MojeIDImplData::ValidationError::INVALID;
+    upd_val_err_impl.fax = Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE;
+
+    upd_val_err_impl.permanent = permanent_addr_err_impl;
+    upd_val_err_impl.mailing = mailing_addr_err_impl;
+    upd_val_err_impl.billing = billing_addr_err_impl;
+
+    upd_val_err_impl.shipping = shipping_addr_err_impl;
+    upd_val_err_impl.shipping2 = shipping2_addr_err_impl;
+    upd_val_err_impl.shipping3 = shipping3_addr_err_impl;
+
+    Registry::MojeID::Server::UPDATE_CONTACT_PREPARE_VALIDATION_ERROR res;
+    CorbaConversion::wrap(upd_val_err_impl,res);
+
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.first_name.in()).get_value() == Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.last_name.in()).get_value() == Registry::MojeIDImplData::ValidationError::REQUIRED);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.birth_date.in()).get_value() == Registry::MojeIDImplData::ValidationError::INVALID);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.email.in()).get_value() == Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.notify_email.in()).get_value() == Registry::MojeIDImplData::ValidationError::REQUIRED);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.phone.in()).get_value() == Registry::MojeIDImplData::ValidationError::INVALID);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.fax.in()).get_value() == Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE);
+
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.permanent->street1()).get_value() == Registry::MojeIDImplData::ValidationError::INVALID);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.permanent->city()).get_value() == Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.permanent->postal_code()).get_value() == Registry::MojeIDImplData::ValidationError::REQUIRED);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.permanent->country()).get_value() == Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE);
+
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.mailing->street1()).get_value() == Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.mailing->city()).get_value() == Registry::MojeIDImplData::ValidationError::REQUIRED);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.mailing->postal_code()).get_value() == Registry::MojeIDImplData::ValidationError::INVALID);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.mailing->country()).get_value() == Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE);
+
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.billing->street1()).get_value() == Registry::MojeIDImplData::ValidationError::REQUIRED);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.billing->city()).get_value() == Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.billing->postal_code()).get_value() == Registry::MojeIDImplData::ValidationError::INVALID);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.billing->country()).get_value() == Registry::MojeIDImplData::ValidationError::REQUIRED);
+
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.shipping->street1()).get_value() == Registry::MojeIDImplData::ValidationError::INVALID);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.shipping->city()).get_value() == Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.shipping->postal_code()).get_value() == Registry::MojeIDImplData::ValidationError::REQUIRED);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.shipping->country()).get_value() == Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE);
+
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.shipping2->street1()).get_value() == Registry::MojeIDImplData::ValidationError::REQUIRED);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.shipping2->city()).get_value() == Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.shipping2->postal_code()).get_value() == Registry::MojeIDImplData::ValidationError::INVALID);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.shipping2->country()).get_value() == Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE);
+
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.shipping3->street1()).get_value() == Registry::MojeIDImplData::ValidationError::INVALID);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.shipping3->city()).get_value() == Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.shipping3->postal_code()).get_value() == Registry::MojeIDImplData::ValidationError::REQUIRED);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.shipping3->country()).get_value() == Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE);
+
+}
+
+BOOST_AUTO_TEST_CASE(test_mojeid_create_validation_request_validation_error)
+{
+    Registry::MojeIDImplData::CreateValidationRequestValidationError ex;
+    ex.first_name = Nullable<Registry::MojeIDImplData::ValidationError::EnumType>(
+        static_cast<Registry::MojeIDImplData::ValidationError::EnumType>(10));
+    BOOST_CHECK_THROW(CorbaConversion::wrap_into<
+        Registry::MojeID::Server::CREATE_VALIDATION_REQUEST_VALIDATION_ERROR>(ex),
+        Registry::MojeID::Server::INTERNAL_SERVER_ERROR);
+
+    Registry::MojeIDImplData::MandatoryAddressValidationError mandatory_addr_err_impl;
+    mandatory_addr_err_impl.address_presence = Registry::MojeIDImplData::ValidationError::REQUIRED;
+    mandatory_addr_err_impl.street1 = Registry::MojeIDImplData::ValidationError::INVALID;
+    mandatory_addr_err_impl.city = Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE;
+    mandatory_addr_err_impl.postal_code = Registry::MojeIDImplData::ValidationError::REQUIRED;
+    mandatory_addr_err_impl.country = Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE;
+
+    Registry::MojeIDImplData::CreateValidationRequestValidationError crr_val_err_impl;
+
+    crr_val_err_impl.first_name = Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE;
+    crr_val_err_impl.last_name = Registry::MojeIDImplData::ValidationError::REQUIRED;
+    crr_val_err_impl.email = Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE;
+    crr_val_err_impl.notify_email = Registry::MojeIDImplData::ValidationError::REQUIRED;
+    crr_val_err_impl.phone = Registry::MojeIDImplData::ValidationError::INVALID;
+    crr_val_err_impl.fax = Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE;
+    crr_val_err_impl.ssn = Registry::MojeIDImplData::ValidationError::INVALID;
+
+    crr_val_err_impl.permanent = mandatory_addr_err_impl;
+
+    Registry::MojeID::Server::CREATE_VALIDATION_REQUEST_VALIDATION_ERROR res;
+    CorbaConversion::wrap(crr_val_err_impl,res);
+
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.first_name.in()).get_value() == Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.last_name.in()).get_value() == Registry::MojeIDImplData::ValidationError::REQUIRED);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.email.in()).get_value() == Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.notify_email.in()).get_value() == Registry::MojeIDImplData::ValidationError::REQUIRED);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.phone.in()).get_value() == Registry::MojeIDImplData::ValidationError::INVALID);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.fax.in()).get_value() == Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.ssn.in()).get_value() == Registry::MojeIDImplData::ValidationError::INVALID);
+
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.permanent->address_presence()).get_value() == Registry::MojeIDImplData::ValidationError::REQUIRED);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.permanent->street1()).get_value() == Registry::MojeIDImplData::ValidationError::INVALID);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.permanent->city()).get_value() == Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.permanent->postal_code()).get_value() == Registry::MojeIDImplData::ValidationError::REQUIRED);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.permanent->country()).get_value() == Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE);
+}
+
+BOOST_AUTO_TEST_CASE(test_mojeid_process_registration_request_validation_error)
+{
+    Registry::MojeIDImplData::ProcessRegistrationValidationError ex;
+    ex.email = Nullable<Registry::MojeIDImplData::ValidationError::EnumType>(
+        static_cast<Registry::MojeIDImplData::ValidationError::EnumType>(10));
+    BOOST_CHECK_THROW(CorbaConversion::wrap_into<
+        Registry::MojeID::Server::PROCESS_REGISTRATION_VALIDATION_ERROR>(ex),
+        Registry::MojeID::Server::INTERNAL_SERVER_ERROR);
+
+    Registry::MojeIDImplData::ProcessRegistrationValidationError prr_val_err_impl;
+
+    prr_val_err_impl.email = Registry::MojeIDImplData::ValidationError::INVALID;
+    prr_val_err_impl.phone = Registry::MojeIDImplData::ValidationError::REQUIRED;
+
+    Registry::MojeID::Server::PROCESS_REGISTRATION_VALIDATION_ERROR res;
+    CorbaConversion::wrap(prr_val_err_impl,res);
+
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.email.in()).get_value() == Registry::MojeIDImplData::ValidationError::INVALID);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        res.phone.in()).get_value() == Registry::MojeIDImplData::ValidationError::REQUIRED);
+}
 
 BOOST_AUTO_TEST_SUITE_END();
