@@ -266,8 +266,6 @@ bool validated_data_changed(const Fred::InfoContactData &_c1, const Fred::InfoCo
     return false;
 }
 
-}//Registry::MojeID::{anonymous}
-
 class MessageType
 {
 public:
@@ -340,6 +338,7 @@ struct PubReqType
     }
 };
 
+}//Registry::MojeID::{anonymous}
 }//Registry::MojeID
 }//Registry
 
@@ -592,7 +591,7 @@ MojeID2Impl::ContactId MojeID2Impl::create_contact_prepare(
         Fred::OperationContextTwoPhaseCommitCreator ctx(_trans_id);
 
         {
-              const CheckCreateContactPrepare check_contact_data(
+            const CheckCreateContactPrepare check_contact_data(
                 Fred::make_args(_contact),
                 Fred::make_args(_contact, ctx));
 
