@@ -406,6 +406,14 @@ into_from< Registry::MojeID::Server::REGISTRATION_VALIDATION_ERROR, Registry::Mo
     if (!src.Fred::MojeID::check_contact_username_availability::success()) {
         into(dst.username).from(Registry::MojeID::NOT_AVAILABLE);
     }
+    else if (!src.Fred::MojeID::check_contact_username::success()) {
+        if (src.Fred::MojeID::check_contact_username::absent) {
+            into(dst.username).from(Registry::MojeID::REQUIRED);
+        }
+        else if (src.Fred::MojeID::check_contact_username::invalid) {
+            into(dst.username).from(Registry::MojeID::INVALID);
+        }
+    }
 
     if (!src.Fred::check_contact_name::success()) {
         if (src.Fred::check_contact_name::first_name_absent) {
@@ -427,7 +435,7 @@ into_from< Registry::MojeID::Server::REGISTRATION_VALIDATION_ERROR, Registry::Mo
         into(dst.email).from(Registry::MojeID::INVALID);
     }
     else if (!src.Fred::check_contact_email_availability::success()) {
-            into(dst.email).from(Registry::MojeID::NOT_AVAILABLE);
+        into(dst.email).from(Registry::MojeID::NOT_AVAILABLE);
     }
 
     if (!src.Fred::check_contact_notifyemail_validity::success()) {
@@ -472,7 +480,6 @@ into_from< Registry::MojeID::Server::REGISTRATION_VALIDATION_ERROR, Registry::Mo
         into(dst.shipping3).from(static_cast< const IMPL_CONTACT_ADDRESS_ERROR& >(
                                  static_cast< const Fred::check_contact_addresses_shipping3& >(src)));
     }
-
     return dst;
 }
 
