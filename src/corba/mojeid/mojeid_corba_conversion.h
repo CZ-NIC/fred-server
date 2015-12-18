@@ -536,6 +536,60 @@ namespace CorbaConversion
         typedef Wrapper_Nullable_Registry_MojeIDImplData_AddressValidationError_into_Registry_MojeID_NullableAddressValidationError_var type;
     };
 
+    //Registry::MojeID::MandatoryAddressValidationError
+    struct Unwrapper_Registry_MojeID_MandatoryAddressValidationError_into_Registry_MojeIDImplData_MandatoryAddressValidationError
+    {
+        typedef Registry::MojeID::MandatoryAddressValidationError CORBA_TYPE;
+        typedef Registry::MojeIDImplData::MandatoryAddressValidationError NON_CORBA_TYPE;
+        static void unwrap( const CORBA_TYPE& ct_in, NON_CORBA_TYPE& nct_out);
+    };
+    template <> struct DEFAULT_UNWRAPPER<
+    Unwrapper_Registry_MojeID_MandatoryAddressValidationError_into_Registry_MojeIDImplData_MandatoryAddressValidationError::CORBA_TYPE,
+    Unwrapper_Registry_MojeID_MandatoryAddressValidationError_into_Registry_MojeIDImplData_MandatoryAddressValidationError::NON_CORBA_TYPE>
+    {
+        typedef Unwrapper_Registry_MojeID_MandatoryAddressValidationError_into_Registry_MojeIDImplData_MandatoryAddressValidationError type;
+    };
+
+    struct Wrapper_Registry_MojeIDImplData_MandatoryAddressValidationError_into_Registry_MojeID_MandatoryAddressValidationError_var
+    {
+        typedef Registry::MojeID::MandatoryAddressValidationError_var CORBA_TYPE;
+        typedef Registry::MojeIDImplData::MandatoryAddressValidationError NON_CORBA_TYPE;
+        static void wrap( const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out );
+    };
+    template <> struct DEFAULT_WRAPPER<
+    Wrapper_Registry_MojeIDImplData_MandatoryAddressValidationError_into_Registry_MojeID_MandatoryAddressValidationError_var::NON_CORBA_TYPE,
+    Wrapper_Registry_MojeIDImplData_MandatoryAddressValidationError_into_Registry_MojeID_MandatoryAddressValidationError_var::CORBA_TYPE>
+    {
+        typedef Wrapper_Registry_MojeIDImplData_MandatoryAddressValidationError_into_Registry_MojeID_MandatoryAddressValidationError_var type;
+    };
+
+    //Registry::MojeID::NullableMandatoryAddressValidationError
+    struct Unwrapper_Registry_MojeID_NullableMandatoryAddressValidationError_ptr_into_Nullable_Registry_MojeIDImplData_MandatoryAddressValidationError
+    {
+        typedef Registry::MojeID::NullableMandatoryAddressValidationError* CORBA_TYPE;
+        typedef Nullable<Registry::MojeIDImplData::MandatoryAddressValidationError> NON_CORBA_TYPE;
+        static void unwrap(CORBA_TYPE ct_in, NON_CORBA_TYPE& nct_out);
+    };
+    template <> struct DEFAULT_UNWRAPPER<
+    Unwrapper_Registry_MojeID_NullableMandatoryAddressValidationError_ptr_into_Nullable_Registry_MojeIDImplData_MandatoryAddressValidationError::CORBA_TYPE,
+    Unwrapper_Registry_MojeID_NullableMandatoryAddressValidationError_ptr_into_Nullable_Registry_MojeIDImplData_MandatoryAddressValidationError::NON_CORBA_TYPE>
+    {
+        typedef Unwrapper_Registry_MojeID_NullableMandatoryAddressValidationError_ptr_into_Nullable_Registry_MojeIDImplData_MandatoryAddressValidationError type;
+    };
+
+    struct Wrapper_Nullable_Registry_MojeIDImplData_MandatoryAddressValidationError_into_Registry_MojeID_NullableMandatoryAddressValidationError_var
+    {
+        typedef Registry::MojeID::NullableMandatoryAddressValidationError_var CORBA_TYPE;
+        typedef Nullable<Registry::MojeIDImplData::MandatoryAddressValidationError> NON_CORBA_TYPE;
+        static void wrap( const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out );
+    };
+    template <> struct DEFAULT_WRAPPER<
+    Wrapper_Nullable_Registry_MojeIDImplData_MandatoryAddressValidationError_into_Registry_MojeID_NullableMandatoryAddressValidationError_var::NON_CORBA_TYPE,
+    Wrapper_Nullable_Registry_MojeIDImplData_MandatoryAddressValidationError_into_Registry_MojeID_NullableMandatoryAddressValidationError_var::CORBA_TYPE>
+    {
+        typedef Wrapper_Nullable_Registry_MojeIDImplData_MandatoryAddressValidationError_into_Registry_MojeID_NullableMandatoryAddressValidationError_var type;
+    };
+
 }
 
 

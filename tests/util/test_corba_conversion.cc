@@ -679,4 +679,84 @@ BOOST_AUTO_TEST_CASE(test_mojeid_nullableaddressvalidationerror)
     BOOST_CHECK(addr_err_impl_res.get_value().country.get_value() == Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE);
 }
 
+BOOST_AUTO_TEST_CASE(test_mojeid_mandatoryaddressvalidationerror)
+{
+    Registry::MojeIDImplData::MandatoryAddressValidationError addr_err_impl;
+    addr_err_impl.address_presence = Nullable<Registry::MojeIDImplData::ValidationError::EnumType>(
+            Registry::MojeIDImplData::ValidationError::REQUIRED);
+    addr_err_impl.street1 = Nullable<Registry::MojeIDImplData::ValidationError::EnumType>(
+        Registry::MojeIDImplData::ValidationError::INVALID);
+    addr_err_impl.city = Nullable<Registry::MojeIDImplData::ValidationError::EnumType>(
+        Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE);
+    addr_err_impl.postal_code = Nullable<Registry::MojeIDImplData::ValidationError::EnumType>(
+        Registry::MojeIDImplData::ValidationError::REQUIRED);
+    addr_err_impl.country = Nullable<Registry::MojeIDImplData::ValidationError::EnumType>(
+        Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE);
+
+    Registry::MojeID::MandatoryAddressValidationError_var addr_err = CorbaConversion::wrap_into<
+        Registry::MojeID::MandatoryAddressValidationError_var>(addr_err_impl);
+
+    BOOST_REQUIRE(addr_err.operator ->() != NULL);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+            addr_err->address_presence.in()).get_value() ==  Registry::MojeIDImplData::ValidationError::REQUIRED);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        addr_err->street1.in()).get_value() ==  Registry::MojeIDImplData::ValidationError::INVALID);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        addr_err->city.in()).get_value() ==  Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        addr_err->postal_code.in()).get_value() ==  Registry::MojeIDImplData::ValidationError::REQUIRED);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        addr_err->country.in()).get_value() ==  Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE);
+
+    Registry::MojeIDImplData::MandatoryAddressValidationError addr_err_impl_res = CorbaConversion::unwrap_into<
+        Registry::MojeIDImplData::MandatoryAddressValidationError>(addr_err.in());
+
+    BOOST_CHECK(addr_err_impl_res.address_presence.get_value() == Registry::MojeIDImplData::ValidationError::REQUIRED);
+    BOOST_CHECK(addr_err_impl_res.street1.get_value() == Registry::MojeIDImplData::ValidationError::INVALID);
+    BOOST_CHECK(addr_err_impl_res.city.get_value() == Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE);
+    BOOST_CHECK(addr_err_impl_res.postal_code.get_value() == Registry::MojeIDImplData::ValidationError::REQUIRED);
+    BOOST_CHECK(addr_err_impl_res.country.get_value() == Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE);
+}
+
+BOOST_AUTO_TEST_CASE(test_mojeid_nullablemandatoryaddressvalidationerror)
+{
+    Registry::MojeIDImplData::MandatoryAddressValidationError addr_err_impl;
+    addr_err_impl.address_presence = Nullable<Registry::MojeIDImplData::ValidationError::EnumType>(
+        Registry::MojeIDImplData::ValidationError::REQUIRED);
+    addr_err_impl.street1 = Nullable<Registry::MojeIDImplData::ValidationError::EnumType>(
+        Registry::MojeIDImplData::ValidationError::INVALID);
+    addr_err_impl.city = Nullable<Registry::MojeIDImplData::ValidationError::EnumType>(
+        Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE);
+    addr_err_impl.postal_code = Nullable<Registry::MojeIDImplData::ValidationError::EnumType>(
+        Registry::MojeIDImplData::ValidationError::REQUIRED);
+    addr_err_impl.country = Nullable<Registry::MojeIDImplData::ValidationError::EnumType>(
+        Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE);
+
+    Registry::MojeID::NullableMandatoryAddressValidationError_var addr_err = CorbaConversion::wrap_into<
+        Registry::MojeID::NullableMandatoryAddressValidationError_var>(
+            Nullable<Registry::MojeIDImplData::MandatoryAddressValidationError>(addr_err_impl));
+
+    BOOST_REQUIRE(addr_err.operator ->() != NULL);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        addr_err->address_presence()).get_value() ==  Registry::MojeIDImplData::ValidationError::REQUIRED);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        addr_err->street1()).get_value() ==  Registry::MojeIDImplData::ValidationError::INVALID);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        addr_err->city()).get_value() ==  Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        addr_err->postal_code()).get_value() ==  Registry::MojeIDImplData::ValidationError::REQUIRED);
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(
+        addr_err->country()).get_value() ==  Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE);
+
+    Nullable<Registry::MojeIDImplData::MandatoryAddressValidationError> addr_err_impl_res = CorbaConversion::unwrap_into<
+                    Nullable<Registry::MojeIDImplData::MandatoryAddressValidationError> >(addr_err.in());
+
+    BOOST_CHECK(addr_err_impl_res.get_value().address_presence.get_value() == Registry::MojeIDImplData::ValidationError::REQUIRED);
+    BOOST_CHECK(addr_err_impl_res.get_value().street1.get_value() == Registry::MojeIDImplData::ValidationError::INVALID);
+    BOOST_CHECK(addr_err_impl_res.get_value().city.get_value() == Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE);
+    BOOST_CHECK(addr_err_impl_res.get_value().postal_code.get_value() == Registry::MojeIDImplData::ValidationError::REQUIRED);
+    BOOST_CHECK(addr_err_impl_res.get_value().country.get_value() == Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE);
+}
+
+
 BOOST_AUTO_TEST_SUITE_END();
