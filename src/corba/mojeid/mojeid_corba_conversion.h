@@ -590,6 +590,60 @@ namespace CorbaConversion
         typedef Wrapper_Nullable_Registry_MojeIDImplData_MandatoryAddressValidationError_into_Registry_MojeID_NullableMandatoryAddressValidationError_var type;
     };
 
+    //Registry::MojeID::ShippingAddressValidationError
+    struct Unwrapper_Registry_MojeID_ShippingAddressValidationError_into_Registry_MojeIDImplData_ShippingAddressValidationError
+    {
+        typedef Registry::MojeID::ShippingAddressValidationError CORBA_TYPE;
+        typedef Registry::MojeIDImplData::ShippingAddressValidationError NON_CORBA_TYPE;
+        static void unwrap( const CORBA_TYPE& ct_in, NON_CORBA_TYPE& nct_out);
+    };
+    template <> struct DEFAULT_UNWRAPPER<
+    Unwrapper_Registry_MojeID_ShippingAddressValidationError_into_Registry_MojeIDImplData_ShippingAddressValidationError::CORBA_TYPE,
+    Unwrapper_Registry_MojeID_ShippingAddressValidationError_into_Registry_MojeIDImplData_ShippingAddressValidationError::NON_CORBA_TYPE>
+    {
+        typedef Unwrapper_Registry_MojeID_ShippingAddressValidationError_into_Registry_MojeIDImplData_ShippingAddressValidationError type;
+    };
+
+    struct Wrapper_Registry_MojeIDImplData_ShippingAddressValidationError_into_Registry_MojeID_ShippingAddressValidationError_var
+    {
+        typedef Registry::MojeID::ShippingAddressValidationError_var CORBA_TYPE;
+        typedef Registry::MojeIDImplData::ShippingAddressValidationError NON_CORBA_TYPE;
+        static void wrap( const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out );
+    };
+    template <> struct DEFAULT_WRAPPER<
+    Wrapper_Registry_MojeIDImplData_ShippingAddressValidationError_into_Registry_MojeID_ShippingAddressValidationError_var::NON_CORBA_TYPE,
+    Wrapper_Registry_MojeIDImplData_ShippingAddressValidationError_into_Registry_MojeID_ShippingAddressValidationError_var::CORBA_TYPE>
+    {
+        typedef Wrapper_Registry_MojeIDImplData_ShippingAddressValidationError_into_Registry_MojeID_ShippingAddressValidationError_var type;
+    };
+
+    //Registry::MojeID::NullableShippingAddressValidationError
+    struct Unwrapper_Registry_MojeID_NullableShippingAddressValidationError_ptr_into_Nullable_Registry_MojeIDImplData_ShippingAddressValidationError
+    {
+        typedef Registry::MojeID::NullableShippingAddressValidationError* CORBA_TYPE;
+        typedef Nullable<Registry::MojeIDImplData::ShippingAddressValidationError> NON_CORBA_TYPE;
+        static void unwrap(CORBA_TYPE ct_in, NON_CORBA_TYPE& nct_out);
+    };
+    template <> struct DEFAULT_UNWRAPPER<
+    Unwrapper_Registry_MojeID_NullableShippingAddressValidationError_ptr_into_Nullable_Registry_MojeIDImplData_ShippingAddressValidationError::CORBA_TYPE,
+    Unwrapper_Registry_MojeID_NullableShippingAddressValidationError_ptr_into_Nullable_Registry_MojeIDImplData_ShippingAddressValidationError::NON_CORBA_TYPE>
+    {
+        typedef Unwrapper_Registry_MojeID_NullableShippingAddressValidationError_ptr_into_Nullable_Registry_MojeIDImplData_ShippingAddressValidationError type;
+    };
+
+    struct Wrapper_Nullable_Registry_MojeIDImplData_ShippingAddressValidationError_into_Registry_MojeID_NullableShippingAddressValidationError_var
+    {
+        typedef Registry::MojeID::NullableShippingAddressValidationError_var CORBA_TYPE;
+        typedef Nullable<Registry::MojeIDImplData::ShippingAddressValidationError> NON_CORBA_TYPE;
+        static void wrap( const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out );
+    };
+    template <> struct DEFAULT_WRAPPER<
+    Wrapper_Nullable_Registry_MojeIDImplData_ShippingAddressValidationError_into_Registry_MojeID_NullableShippingAddressValidationError_var::NON_CORBA_TYPE,
+    Wrapper_Nullable_Registry_MojeIDImplData_ShippingAddressValidationError_into_Registry_MojeID_NullableShippingAddressValidationError_var::CORBA_TYPE>
+    {
+        typedef Wrapper_Nullable_Registry_MojeIDImplData_ShippingAddressValidationError_into_Registry_MojeID_NullableShippingAddressValidationError_var type;
+    };
+
 }
 
 
