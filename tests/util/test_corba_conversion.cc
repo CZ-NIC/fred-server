@@ -827,5 +827,19 @@ BOOST_AUTO_TEST_CASE(test_mojeid_nullableshippingaddressvalidationerror)
     BOOST_CHECK(addr_err_impl_res.get_value().country.get_value() == Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE);
 }
 
+BOOST_AUTO_TEST_CASE(test_mojeid_message_limit_exceeded)
+{
+    Registry::MojeIDImplData::MessageLimitExceeded msg;
+    msg.limit_expire_date = boost::gregorian::date(2015,12,10);
+    msg.limit_count = 11;
+    msg.limit_days = 12;
+
+    Registry::MojeID::Server::MESSAGE_LIMIT_EXCEEDED res = CorbaConversion::wrap_into<Registry::MojeID::Server::MESSAGE_LIMIT_EXCEEDED>(msg);
+
+    BOOST_CHECK(CorbaConversion::unwrap_into<boost::gregorian::date>(res.limit_expire_date) == msg.limit_expire_date);
+    BOOST_CHECK(res.limit_count == msg.limit_count);
+    BOOST_CHECK(res.limit_days == msg.limit_days);
+}
+
 
 BOOST_AUTO_TEST_SUITE_END();
