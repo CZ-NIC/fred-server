@@ -317,7 +317,6 @@ namespace CorbaConversion
     };
 }
 
-
 namespace Registry
 {
     namespace MojeIDImplData
@@ -739,11 +738,55 @@ namespace CorbaConversion
     {
         typedef Wrapper_Registry_MojeIDImplData_ProcessRegistrationValidationError_into_Registry_MojeID_Server_PROCESS_REGISTRATION_VALIDATION_ERROR type;
     };
-
-
-
 }
 
+namespace Registry
+{
+    namespace MojeIDImplData
+    {
+        struct CreateContact
+        {
+            std::string username;
+            std::string first_name;
+            std::string last_name;
+            Nullable<std::string> organization;
+            Nullable<std::string> vat_reg_num;
+            Nullable<boost::gregorian::date> birth_date;
+            Nullable<std::string> id_card_num;
+            Nullable<std::string> passport_num;
+            Nullable<std::string> ssn_id_num;
+            Nullable<std::string> vat_id_num;
+            Address permanent;
+            Nullable<Address> mailing;
+            Nullable<Address> billing;
+            Nullable<ShippingAddress> shipping;
+            Nullable<ShippingAddress> shipping2;
+            Nullable<ShippingAddress> shipping3;
+            std::string email;
+            Nullable<std::string> notify_email;
+            std::string telephone;
+            Nullable<std::string> fax;
+        };
+    }
+}
+
+namespace CorbaConversion
+{
+    //Registry::MojeID::CreateContact
+    struct Unwrapper_Registry_MojeID_CreateContact_into_Registry_MojeIDImplData_CreateContact
+    {
+        typedef Registry::MojeID::CreateContact CORBA_TYPE;
+        typedef Registry::MojeIDImplData::CreateContact NON_CORBA_TYPE;
+        static void unwrap( const CORBA_TYPE& ct_in, NON_CORBA_TYPE& nct_out);
+    };
+    template <> struct DEFAULT_UNWRAPPER<
+        Unwrapper_Registry_MojeID_CreateContact_into_Registry_MojeIDImplData_CreateContact::CORBA_TYPE,
+        Unwrapper_Registry_MojeID_CreateContact_into_Registry_MojeIDImplData_CreateContact::NON_CORBA_TYPE>
+    {
+        typedef Unwrapper_Registry_MojeID_CreateContact_into_Registry_MojeIDImplData_CreateContact type;
+    };
+
+}
 
 #endif
 
