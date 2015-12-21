@@ -31,6 +31,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/mpl/assert.hpp>
 #include <boost/type_traits.hpp>
+#include <boost/numeric/conversion/converter.hpp>
 
 #include "util/db/nullable.h"
 /**
@@ -239,6 +240,51 @@ namespace CorbaConversion
             }
         }
     };
+
+    /**
+     * Converted value is out of range
+     */
+    class NumericConversionOutOfRange : public std::invalid_argument
+    {
+    public:
+        NumericConversionOutOfRange() : std::invalid_argument("Converted value is out of range") {}
+        virtual ~NumericConversionOutOfRange() throw() {}
+    };
+
+    /**
+     * Converted value precision loss
+     */
+    class NumericConversionPrecisionLoss : public std::invalid_argument
+    {
+    public:
+        NumericConversionPrecisionLoss() : std::invalid_argument("Conversion would cause loss of precision") {}
+        virtual ~NumericConversionPrecisionLoss() throw() {}
+    };
+
+
+    /**
+     * Basic numeric types conversion using boost numeric converter
+     */
+    template <typename SOURCE_NUMERIC_TYPE, typename TARGET_NUMERIC_TYPE>
+    void boostNumericTypeConvertor( SOURCE_NUMERIC_TYPE in, TARGET_NUMERIC_TYPE& out)
+    {
+        typedef boost::numeric::converter<TARGET_NUMERIC_TYPE, SOURCE_NUMERIC_TYPE> Convertor;
+        typedef boost::numeric::converter<SOURCE_NUMERIC_TYPE, TARGET_NUMERIC_TYPE> ConvertBack;
+
+        if(Convertor::out_of_range(in) != boost::numeric::cInRange)
+        {
+            throw NumericConversionOutOfRange();
+        }
+
+        if(ConvertBack::convert(Convertor::convert(in)) != in)
+        {
+            throw NumericConversionPrecisionLoss();
+        }
+
+        out = Convertor::convert(in);
+    }
+
+
 }
 #endif
 

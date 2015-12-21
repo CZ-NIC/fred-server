@@ -16,6 +16,7 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <limits>
 #include <fstream>
 #include <ios>
 #include <iterator>
@@ -24,6 +25,7 @@
 #include <utility>
 #include <boost/filesystem.hpp>
 #include <boost/format.hpp>
+#include <boost/numeric/conversion/converter.hpp>
 #include "config.h"
 #include "src/fredlib/opcontext.h"
 #include "src/cli_admin/read_config_file.h"
@@ -1404,6 +1406,21 @@ BOOST_AUTO_TEST_CASE(test_mojeid_create_contact)
     BOOST_CHECK(std::string(cc->fax.in()->_value()) == "fax");
 }
 
+BOOST_AUTO_TEST_CASE(test_basic_numeric_conversion)
+{
+    unsigned long long a = 1;
+    short b = -1;
+
+    CorbaConversion::boostNumericTypeConvertor(a, b);
+    BOOST_CHECK( a == 1);
+    BOOST_CHECK( b == 1);
+
+    CorbaConversion::boostNumericTypeConvertor(1.00, b);
+    BOOST_CHECK( b == 1);
+
+    BOOST_CHECK_THROW((CorbaConversion::boostNumericTypeConvertor(-1, a)), CorbaConversion::NumericConversionOutOfRange);
+    BOOST_CHECK_THROW(CorbaConversion::boostNumericTypeConvertor(0.1, b), CorbaConversion::NumericConversionPrecisionLoss);
+}
 
 
 BOOST_AUTO_TEST_SUITE_END();

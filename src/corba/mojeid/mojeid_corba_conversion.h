@@ -767,12 +767,35 @@ namespace Registry
             std::string telephone;
             Nullable<std::string> fax;
         };
+
+        struct UpdateContact
+        {
+            unsigned long long id;
+            std::string first_name;
+            std::string last_name;
+            Nullable<std::string> organization;
+            Nullable<std::string> vat_reg_num;
+            Nullable<boost::gregorian::date> birth_date;
+            Nullable<std::string> id_card_num;
+            Nullable<std::string> passport_num;
+            Nullable<std::string> ssn_id_num;
+            Nullable<std::string> vat_id_num;
+            Address permanent;
+            Nullable<Address> mailing;
+            Nullable<Address> billing;
+            Nullable<ShippingAddress> shipping;
+            Nullable<ShippingAddress> shipping2;
+            Nullable<ShippingAddress> shipping3;
+            std::string email;
+            Nullable<std::string> notify_email;
+            Nullable<std::string> telephone;
+            Nullable<std::string> fax;
+        };
     }
 }
 
 namespace CorbaConversion
 {
-    //Registry::MojeID::CreateContact
     struct Unwrapper_Registry_MojeID_CreateContact_into_Registry_MojeIDImplData_CreateContact
     {
         typedef Registry::MojeID::CreateContact CORBA_TYPE;
@@ -786,6 +809,18 @@ namespace CorbaConversion
         typedef Unwrapper_Registry_MojeID_CreateContact_into_Registry_MojeIDImplData_CreateContact type;
     };
 
+    struct Unwrapper_Registry_MojeID_UpdateContact_into_Registry_MojeIDImplData_UpdateContact
+    {
+        typedef Registry::MojeID::UpdateContact CORBA_TYPE;
+        typedef Registry::MojeIDImplData::UpdateContact NON_CORBA_TYPE;
+        static void unwrap( const CORBA_TYPE& ct_in, NON_CORBA_TYPE& nct_out);
+    };
+    template <> struct DEFAULT_UNWRAPPER<
+        Unwrapper_Registry_MojeID_UpdateContact_into_Registry_MojeIDImplData_UpdateContact::CORBA_TYPE,
+        Unwrapper_Registry_MojeID_UpdateContact_into_Registry_MojeIDImplData_UpdateContact::NON_CORBA_TYPE>
+    {
+        typedef Unwrapper_Registry_MojeID_UpdateContact_into_Registry_MojeIDImplData_UpdateContact type;
+    };
 }
 
 #endif
