@@ -590,7 +590,7 @@ namespace CorbaConversion
     {
         Registry::MojeIDImplData::UpdateContact res;
 
-        res.id = ct_in.id;
+        CorbaConversion::unwrap(ct_in.id, res.id);
         CorbaConversion::unwrap(ct_in.first_name.in(), res.first_name);
         CorbaConversion::unwrap(ct_in.last_name.in(), res.last_name );
         CorbaConversion::unwrap(ct_in.vat_reg_num.in(), res.vat_reg_num);

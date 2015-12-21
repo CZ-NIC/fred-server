@@ -284,6 +284,47 @@ namespace CorbaConversion
         out = Convertor::convert(in);
     }
 
+    template <typename CORBA_NUMERIC_TYPE, typename NON_CORBA_NUMERIC_TYPE>
+    struct Unwrapper_CORBA_numeric_type_into_non_CORBA_numeric_type
+    {
+        typedef CORBA_NUMERIC_TYPE CORBA_TYPE;
+        typedef NON_CORBA_NUMERIC_TYPE NON_CORBA_TYPE;
+        static void unwrap( CORBA_TYPE ct_in, NON_CORBA_TYPE& nct_out)
+        {
+            boostNumericTypeConvertor<CORBA_NUMERIC_TYPE, NON_CORBA_NUMERIC_TYPE>(ct_in, nct_out);
+        }
+    };
+
+    template <typename CORBA_NUMERIC_TYPE, typename NON_CORBA_NUMERIC_TYPE>
+    struct Wrapper_CORBA_numeric_type_into_non_CORBA_numeric_type
+    {
+        typedef CORBA_NUMERIC_TYPE CORBA_TYPE;
+        typedef NON_CORBA_NUMERIC_TYPE NON_CORBA_TYPE;
+        static void wrap(NON_CORBA_TYPE nct_in, CORBA_TYPE& ct_out )
+        {
+            boostNumericTypeConvertor<NON_CORBA_NUMERIC_TYPE, CORBA_NUMERIC_TYPE>(nct_in, ct_out);
+        }
+    };
+
+    //CORBA::ULongLong
+    //unsigned long long
+    struct Unwrapper_CORBA_ULongLong_into_unsigned_long_long
+        : Unwrapper_CORBA_numeric_type_into_non_CORBA_numeric_type<
+          CORBA::ULongLong, unsigned long long> {};
+    template <> struct DEFAULT_UNWRAPPER<CORBA::ULongLong, unsigned long long>
+    {
+        typedef Unwrapper_CORBA_ULongLong_into_unsigned_long_long type;
+    };
+
+    struct Wrapper_unsigned_long_long_into_CORBA_ULongLong
+        : Wrapper_CORBA_numeric_type_into_non_CORBA_numeric_type<
+          CORBA::ULongLong, unsigned long long> {};
+    template <> struct DEFAULT_WRAPPER< unsigned long long, CORBA::ULongLong>
+    {
+        typedef Wrapper_unsigned_long_long_into_CORBA_ULongLong type;
+    };
+
+
 
 }
 #endif
