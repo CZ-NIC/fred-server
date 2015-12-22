@@ -566,6 +566,7 @@ namespace CorbaConversion
         CorbaConversion::unwrap(ct_in.username.in(), res.username);
         CorbaConversion::unwrap(ct_in.first_name.in(), res.first_name);
         CorbaConversion::unwrap(ct_in.last_name.in(), res.last_name );
+        CorbaConversion::unwrap(ct_in.organization.in(), res.organization );
         CorbaConversion::unwrap(ct_in.vat_reg_num.in(), res.vat_reg_num);
         CorbaConversion::unwrap(ct_in.birth_date.in(), res.birth_date);
         CorbaConversion::unwrap(ct_in.id_card_num.in(), res.id_card_num);
@@ -593,6 +594,7 @@ namespace CorbaConversion
         CorbaConversion::unwrap(ct_in.id, res.id);
         CorbaConversion::unwrap(ct_in.first_name.in(), res.first_name);
         CorbaConversion::unwrap(ct_in.last_name.in(), res.last_name );
+        CorbaConversion::unwrap(ct_in.organization.in(), res.organization );
         CorbaConversion::unwrap(ct_in.vat_reg_num.in(), res.vat_reg_num);
         CorbaConversion::unwrap(ct_in.birth_date.in(), res.birth_date);
         CorbaConversion::unwrap(ct_in.id_card_num.in(), res.id_card_num);
@@ -605,6 +607,24 @@ namespace CorbaConversion
         CorbaConversion::unwrap(ct_in.shipping.in(), res.shipping);
         CorbaConversion::unwrap(ct_in.shipping2.in(), res.shipping2);
         CorbaConversion::unwrap(ct_in.shipping3.in(), res.shipping3);
+        CorbaConversion::unwrap(ct_in.email.in(), res.email);
+        CorbaConversion::unwrap(ct_in.notify_email.in(), res.notify_email);
+        CorbaConversion::unwrap(ct_in.telephone.in(), res.telephone);
+        CorbaConversion::unwrap(ct_in.fax.in(), res.fax);
+
+        nct_out = res;
+    }
+
+    void Unwrapper_Registry_MojeID_SetContact_into_Registry_MojeIDImplData_SetContact::unwrap( const CORBA_TYPE& ct_in, NON_CORBA_TYPE& nct_out)
+    {
+        Registry::MojeIDImplData::SetContact res;
+
+        CorbaConversion::unwrap(ct_in.organization.in(), res.organization);
+        CorbaConversion::unwrap(ct_in.vat_reg_num.in(), res.vat_reg_num);
+        CorbaConversion::unwrap(ct_in.birth_date.in(), res.birth_date);
+        CorbaConversion::unwrap(ct_in.vat_id_num.in(), res.vat_id_num);
+        CorbaConversion::unwrap(ct_in.permanent, res.permanent);
+        CorbaConversion::unwrap(ct_in.mailing.in(), res.mailing);
         CorbaConversion::unwrap(ct_in.email.in(), res.email);
         CorbaConversion::unwrap(ct_in.notify_email.in(), res.notify_email);
         CorbaConversion::unwrap(ct_in.telephone.in(), res.telephone);

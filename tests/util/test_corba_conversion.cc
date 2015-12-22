@@ -1309,101 +1309,66 @@ BOOST_AUTO_TEST_CASE(test_mojeid_create_contact)
     Registry::MojeIDImplData::CreateContact cc_impl = CorbaConversion::unwrap_into<
         Registry::MojeIDImplData::CreateContact>(cc.in());
 
-    BOOST_CHECK(CorbaConversion::unwrap_into<std::string>(
-        cc->username.in()) == std::string("username"));
-    BOOST_CHECK(CorbaConversion::unwrap_into<std::string>(
-        cc->first_name.in()) == std::string("first_name"));
-    BOOST_CHECK(CorbaConversion::unwrap_into<std::string>(
-        cc->last_name.in()) == std::string("last_name"));
-    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<std::string> >(
-        cc->organization.in()) == Nullable<std::string>("org"));
-    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<std::string> >(
-        cc->vat_reg_num.in()) == Nullable<std::string>("vat_reg_num"));
-    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<boost::gregorian::date> >(
-        cc->birth_date.in()).get_value() == boost::gregorian::date(2015,12,10));
-    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<std::string> >(
-        cc->id_card_num.in()) == Nullable<std::string>("id_card_num"));
-    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<std::string> >(
-        cc->passport_num.in()) == Nullable<std::string>("passport_num"));
-    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<std::string> >(
-        cc->ssn_id_num.in()) == Nullable<std::string>("ssn_id_num"));
-    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<std::string> >(
-        cc->vat_id_num.in()) == Nullable<std::string>("vat_id_num"));
+    BOOST_CHECK(cc_impl.username == "username");
+    BOOST_CHECK(cc_impl.first_name == "first_name");
+    BOOST_CHECK(cc_impl.last_name == "last_name");
+    BOOST_CHECK(cc_impl.organization.get_value() == "org");
+    BOOST_CHECK(cc_impl.vat_reg_num.get_value() == "vat_reg_num");
+    BOOST_CHECK(cc_impl.birth_date.get_value() == boost::gregorian::date(2015,12,10));
+    BOOST_CHECK(cc_impl.id_card_num.get_value() == "id_card_num");
+    BOOST_CHECK(cc_impl.passport_num.get_value() == "passport_num");
+    BOOST_CHECK(cc_impl.ssn_id_num.get_value() == "ssn_id_num");
+    BOOST_CHECK(cc_impl.vat_id_num.get_value() == "vat_id_num");
 
-    BOOST_REQUIRE(cc.operator ->() != NULL);
-    BOOST_CHECK(std::string(cc->permanent.street1.in()) == "st1");
-    BOOST_CHECK(std::string(cc->permanent.street2.in()->_value()) == "st2");
-    BOOST_CHECK(std::string(cc->permanent.street3.in()->_value()) == "st3");
-    BOOST_CHECK(std::string(cc->permanent.city.in()) == "Praha");
-    BOOST_CHECK(std::string(cc->permanent.state.in()->_value()) == "state");
-    BOOST_CHECK(std::string(cc->permanent.country.in()) == "Czech Republic");
+    BOOST_CHECK(cc_impl.permanent.street1 == "st1");
+    BOOST_CHECK(cc_impl.permanent.street2.get_value() == "st2");
+    BOOST_CHECK(cc_impl.permanent.street3.get_value() == "st3");
+    BOOST_CHECK(cc_impl.permanent.city == "Praha");
+    BOOST_CHECK(cc_impl.permanent.state.get_value() == "state");
+    BOOST_CHECK(cc_impl.permanent.country == "Czech Republic");
 
-    Registry::MojeIDImplData::Address permanent_addr_res = CorbaConversion::unwrap_into<
-                    Registry::MojeIDImplData::Address>(cc->permanent);
-    BOOST_CHECK(permanent_addr_res.street1 == "st1");
-    BOOST_CHECK(permanent_addr_res.street2.get_value() == "st2");
-    BOOST_CHECK(permanent_addr_res.street3.get_value() == "st3");
-    BOOST_CHECK(permanent_addr_res.city == "Praha");
-    BOOST_CHECK(permanent_addr_res.state.get_value() == "state");
-    BOOST_CHECK(permanent_addr_res.country == "Czech Republic");
+    BOOST_CHECK(cc_impl.mailing.get_value().street1 == "m_st1");
+    BOOST_CHECK(cc_impl.mailing.get_value().street2.get_value() == "m_st2");
+    BOOST_CHECK(cc_impl.mailing.get_value().street3.get_value() == "m_st3");
+    BOOST_CHECK(cc_impl.mailing.get_value().city == "m_Praha");
+    BOOST_CHECK(cc_impl.mailing.get_value().state.get_value() == "m_state");
+    BOOST_CHECK(cc_impl.mailing.get_value().country == "m_Czech Republic");
 
-    Nullable<Registry::MojeIDImplData::Address> mailing_addr_res = CorbaConversion::unwrap_into<
-        Nullable<Registry::MojeIDImplData::Address> >(cc->mailing.in());
+    BOOST_CHECK(cc_impl.billing.get_value().street1 == "b_st1");
+    BOOST_CHECK(cc_impl.billing.get_value().street2.get_value() == "b_st2");
+    BOOST_CHECK(cc_impl.billing.get_value().street3.get_value() == "b_st3");
+    BOOST_CHECK(cc_impl.billing.get_value().city == "b_Praha");
+    BOOST_CHECK(cc_impl.billing.get_value().state.get_value() == "b_state");
+    BOOST_CHECK(cc_impl.billing.get_value().country == "b_Czech Republic");
 
-    BOOST_CHECK(mailing_addr_res.get_value().street1 == "m_st1");
-    BOOST_CHECK(mailing_addr_res.get_value().street2.get_value() == "m_st2");
-    BOOST_CHECK(mailing_addr_res.get_value().street3.get_value() == "m_st3");
-    BOOST_CHECK(mailing_addr_res.get_value().city == "m_Praha");
-    BOOST_CHECK(mailing_addr_res.get_value().state.get_value() == "m_state");
-    BOOST_CHECK(mailing_addr_res.get_value().country == "m_Czech Republic");
+    BOOST_CHECK(cc_impl.shipping.get_value().company_name.get_value() == "s_company");
+    BOOST_CHECK(cc_impl.shipping.get_value().street1 == "s_st1");
+    BOOST_CHECK(cc_impl.shipping.get_value().street2.get_value() == "s_st2");
+    BOOST_CHECK(cc_impl.shipping.get_value().street3.get_value() == "s_st3");
+    BOOST_CHECK(cc_impl.shipping.get_value().city == "s_Praha");
+    BOOST_CHECK(cc_impl.shipping.get_value().state.get_value() == "s_state");
+    BOOST_CHECK(cc_impl.shipping.get_value().country == "s_Czech Republic");
 
-    Nullable<Registry::MojeIDImplData::Address> billing_addr_res = CorbaConversion::unwrap_into<
-        Nullable<Registry::MojeIDImplData::Address> >(cc->billing.in());
+    BOOST_CHECK(cc_impl.shipping2.get_value().company_name.get_value() == "s2_company");
+    BOOST_CHECK(cc_impl.shipping2.get_value().street1 == "s2_st1");
+    BOOST_CHECK(cc_impl.shipping2.get_value().street2.get_value() == "s2_st2");
+    BOOST_CHECK(cc_impl.shipping2.get_value().street3.get_value() == "s2_st3");
+    BOOST_CHECK(cc_impl.shipping2.get_value().city == "s2_Praha");
+    BOOST_CHECK(cc_impl.shipping2.get_value().state.get_value() == "s2_state");
+    BOOST_CHECK(cc_impl.shipping2.get_value().country == "s2_Czech Republic");
 
-    BOOST_CHECK(billing_addr_res.get_value().street1 == "b_st1");
-    BOOST_CHECK(billing_addr_res.get_value().street2.get_value() == "b_st2");
-    BOOST_CHECK(billing_addr_res.get_value().street3.get_value() == "b_st3");
-    BOOST_CHECK(billing_addr_res.get_value().city == "b_Praha");
-    BOOST_CHECK(billing_addr_res.get_value().state.get_value() == "b_state");
-    BOOST_CHECK(billing_addr_res.get_value().country == "b_Czech Republic");
+    BOOST_CHECK(cc_impl.shipping3.get_value().company_name.get_value() == "s3_company");
+    BOOST_CHECK(cc_impl.shipping3.get_value().street1 == "s3_st1");
+    BOOST_CHECK(cc_impl.shipping3.get_value().street2.get_value() == "s3_st2");
+    BOOST_CHECK(cc_impl.shipping3.get_value().street3.get_value() == "s3_st3");
+    BOOST_CHECK(cc_impl.shipping3.get_value().city == "s3_Praha");
+    BOOST_CHECK(cc_impl.shipping3.get_value().state.get_value() == "s3_state");
+    BOOST_CHECK(cc_impl.shipping3.get_value().country == "s3_Czech Republic");
 
-    Nullable<Registry::MojeIDImplData::ShippingAddress> shipping_addr_res = CorbaConversion::unwrap_into<
-        Nullable<Registry::MojeIDImplData::ShippingAddress> >(cc->shipping.in());
-
-    BOOST_CHECK(shipping_addr_res.get_value().company_name.get_value() == "s_company");
-    BOOST_CHECK(shipping_addr_res.get_value().street1 == "s_st1");
-    BOOST_CHECK(shipping_addr_res.get_value().street2.get_value() == "s_st2");
-    BOOST_CHECK(shipping_addr_res.get_value().street3.get_value() == "s_st3");
-    BOOST_CHECK(shipping_addr_res.get_value().city == "s_Praha");
-    BOOST_CHECK(shipping_addr_res.get_value().state.get_value() == "s_state");
-    BOOST_CHECK(shipping_addr_res.get_value().country == "s_Czech Republic");
-
-    Nullable<Registry::MojeIDImplData::ShippingAddress> shipping2_addr_res = CorbaConversion::unwrap_into<
-        Nullable<Registry::MojeIDImplData::ShippingAddress> >(cc->shipping2.in());
-
-    BOOST_CHECK(shipping2_addr_res.get_value().company_name.get_value() == "s2_company");
-    BOOST_CHECK(shipping2_addr_res.get_value().street1 == "s2_st1");
-    BOOST_CHECK(shipping2_addr_res.get_value().street2.get_value() == "s2_st2");
-    BOOST_CHECK(shipping2_addr_res.get_value().street3.get_value() == "s2_st3");
-    BOOST_CHECK(shipping2_addr_res.get_value().city == "s2_Praha");
-    BOOST_CHECK(shipping2_addr_res.get_value().state.get_value() == "s2_state");
-    BOOST_CHECK(shipping2_addr_res.get_value().country == "s2_Czech Republic");
-
-    Nullable<Registry::MojeIDImplData::ShippingAddress> shipping3_addr_res = CorbaConversion::unwrap_into<
-        Nullable<Registry::MojeIDImplData::ShippingAddress> >(cc->shipping3.in());
-
-    BOOST_CHECK(shipping3_addr_res.get_value().company_name.get_value() == "s3_company");
-    BOOST_CHECK(shipping3_addr_res.get_value().street1 == "s3_st1");
-    BOOST_CHECK(shipping3_addr_res.get_value().street2.get_value() == "s3_st2");
-    BOOST_CHECK(shipping3_addr_res.get_value().street3.get_value() == "s3_st3");
-    BOOST_CHECK(shipping3_addr_res.get_value().city == "s3_Praha");
-    BOOST_CHECK(shipping3_addr_res.get_value().state.get_value() == "s3_state");
-    BOOST_CHECK(shipping3_addr_res.get_value().country == "s3_Czech Republic");
-
-    BOOST_CHECK(std::string(cc->email.in()) == "email");
-    BOOST_CHECK(std::string(cc->notify_email.in()->_value()) == "notify_email");
-    BOOST_CHECK(std::string(cc->telephone.in()) == "telephone");
-    BOOST_CHECK(std::string(cc->fax.in()->_value()) == "fax");
+    BOOST_CHECK(cc_impl.email == "email");
+    BOOST_CHECK(cc_impl.notify_email.get_value() == "notify_email");
+    BOOST_CHECK(cc_impl.telephone == "telephone");
+    BOOST_CHECK(cc_impl.fax.get_value() == "fax");
 }
 
 BOOST_AUTO_TEST_CASE(test_basic_integral_conversion)
@@ -1523,105 +1488,140 @@ BOOST_AUTO_TEST_CASE(test_mojeid_update_contact)
     uc->fax = CorbaConversion::wrap_into<Registry::MojeID::NullableString_var>(
         Nullable<std::string>("fax"));
 
-    Registry::MojeIDImplData::UpdateContact cc_impl = CorbaConversion::unwrap_into<
+    Registry::MojeIDImplData::UpdateContact uc_impl = CorbaConversion::unwrap_into<
         Registry::MojeIDImplData::UpdateContact>(uc.in());
 
-    BOOST_CHECK(CorbaConversion::unwrap_into<unsigned long long>(
-        uc->id) == 5);
-    BOOST_CHECK(CorbaConversion::unwrap_into<std::string>(
-        uc->first_name.in()) == std::string("first_name"));
-    BOOST_CHECK(CorbaConversion::unwrap_into<std::string>(
-        uc->last_name.in()) == std::string("last_name"));
-    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<std::string> >(
-        uc->organization.in()) == Nullable<std::string>("org"));
-    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<std::string> >(
-        uc->vat_reg_num.in()) == Nullable<std::string>("vat_reg_num"));
-    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<boost::gregorian::date> >(
-        uc->birth_date.in()).get_value() == boost::gregorian::date(2015,12,10));
-    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<std::string> >(
-        uc->id_card_num.in()) == Nullable<std::string>("id_card_num"));
-    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<std::string> >(
-        uc->passport_num.in()) == Nullable<std::string>("passport_num"));
-    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<std::string> >(
-        uc->ssn_id_num.in()) == Nullable<std::string>("ssn_id_num"));
-    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<std::string> >(
-        uc->vat_id_num.in()) == Nullable<std::string>("vat_id_num"));
+    BOOST_CHECK(uc_impl.id == 5);
+    BOOST_CHECK(uc_impl.first_name == std::string("first_name"));
+    BOOST_CHECK(uc_impl.last_name == std::string("last_name"));
+    BOOST_CHECK(uc_impl.organization.get_value() == "org");
+    BOOST_CHECK(uc_impl.vat_reg_num.get_value() == "vat_reg_num");
+    BOOST_CHECK(uc_impl.birth_date.get_value() == boost::gregorian::date(2015,12,10));
+    BOOST_CHECK(uc_impl.id_card_num.get_value() == "id_card_num");
+    BOOST_CHECK(uc_impl.passport_num.get_value() == "passport_num");
+    BOOST_CHECK(uc_impl.ssn_id_num.get_value() == "ssn_id_num");
+    BOOST_CHECK(uc_impl.vat_id_num.get_value() == "vat_id_num");
 
-    BOOST_REQUIRE(uc.operator ->() != NULL);
-    BOOST_CHECK(std::string(uc->permanent.street1.in()) == "st1");
-    BOOST_CHECK(std::string(uc->permanent.street2.in()->_value()) == "st2");
-    BOOST_CHECK(std::string(uc->permanent.street3.in()->_value()) == "st3");
-    BOOST_CHECK(std::string(uc->permanent.city.in()) == "Praha");
-    BOOST_CHECK(std::string(uc->permanent.state.in()->_value()) == "state");
-    BOOST_CHECK(std::string(uc->permanent.country.in()) == "Czech Republic");
 
-    Registry::MojeIDImplData::Address permanent_addr_res = CorbaConversion::unwrap_into<
-                    Registry::MojeIDImplData::Address>(uc->permanent);
-    BOOST_CHECK(permanent_addr_res.street1 == "st1");
-    BOOST_CHECK(permanent_addr_res.street2.get_value() == "st2");
-    BOOST_CHECK(permanent_addr_res.street3.get_value() == "st3");
-    BOOST_CHECK(permanent_addr_res.city == "Praha");
-    BOOST_CHECK(permanent_addr_res.state.get_value() == "state");
-    BOOST_CHECK(permanent_addr_res.country == "Czech Republic");
+    BOOST_CHECK(uc_impl.permanent.street1 == "st1");
+    BOOST_CHECK(uc_impl.permanent.street2.get_value() == "st2");
+    BOOST_CHECK(uc_impl.permanent.street3.get_value() == "st3");
+    BOOST_CHECK(uc_impl.permanent.city == "Praha");
+    BOOST_CHECK(uc_impl.permanent.state.get_value() == "state");
+    BOOST_CHECK(uc_impl.permanent.country == "Czech Republic");
 
-    Nullable<Registry::MojeIDImplData::Address> mailing_addr_res = CorbaConversion::unwrap_into<
-        Nullable<Registry::MojeIDImplData::Address> >(uc->mailing.in());
+    BOOST_CHECK(uc_impl.mailing.get_value().street1 == "m_st1");
+    BOOST_CHECK(uc_impl.mailing.get_value().street2.get_value() == "m_st2");
+    BOOST_CHECK(uc_impl.mailing.get_value().street3.get_value() == "m_st3");
+    BOOST_CHECK(uc_impl.mailing.get_value().city == "m_Praha");
+    BOOST_CHECK(uc_impl.mailing.get_value().state.get_value() == "m_state");
+    BOOST_CHECK(uc_impl.mailing.get_value().country == "m_Czech Republic");
 
-    BOOST_CHECK(mailing_addr_res.get_value().street1 == "m_st1");
-    BOOST_CHECK(mailing_addr_res.get_value().street2.get_value() == "m_st2");
-    BOOST_CHECK(mailing_addr_res.get_value().street3.get_value() == "m_st3");
-    BOOST_CHECK(mailing_addr_res.get_value().city == "m_Praha");
-    BOOST_CHECK(mailing_addr_res.get_value().state.get_value() == "m_state");
-    BOOST_CHECK(mailing_addr_res.get_value().country == "m_Czech Republic");
+    BOOST_CHECK(uc_impl.billing.get_value().street1 == "b_st1");
+    BOOST_CHECK(uc_impl.billing.get_value().street2.get_value() == "b_st2");
+    BOOST_CHECK(uc_impl.billing.get_value().street3.get_value() == "b_st3");
+    BOOST_CHECK(uc_impl.billing.get_value().city == "b_Praha");
+    BOOST_CHECK(uc_impl.billing.get_value().state.get_value() == "b_state");
+    BOOST_CHECK(uc_impl.billing.get_value().country == "b_Czech Republic");
 
-    Nullable<Registry::MojeIDImplData::Address> billing_addr_res = CorbaConversion::unwrap_into<
-        Nullable<Registry::MojeIDImplData::Address> >(uc->billing.in());
+    BOOST_CHECK(uc_impl.shipping.get_value().company_name.get_value() == "s_company");
+    BOOST_CHECK(uc_impl.shipping.get_value().street1 == "s_st1");
+    BOOST_CHECK(uc_impl.shipping.get_value().street2.get_value() == "s_st2");
+    BOOST_CHECK(uc_impl.shipping.get_value().street3.get_value() == "s_st3");
+    BOOST_CHECK(uc_impl.shipping.get_value().city == "s_Praha");
+    BOOST_CHECK(uc_impl.shipping.get_value().state.get_value() == "s_state");
+    BOOST_CHECK(uc_impl.shipping.get_value().country == "s_Czech Republic");
 
-    BOOST_CHECK(billing_addr_res.get_value().street1 == "b_st1");
-    BOOST_CHECK(billing_addr_res.get_value().street2.get_value() == "b_st2");
-    BOOST_CHECK(billing_addr_res.get_value().street3.get_value() == "b_st3");
-    BOOST_CHECK(billing_addr_res.get_value().city == "b_Praha");
-    BOOST_CHECK(billing_addr_res.get_value().state.get_value() == "b_state");
-    BOOST_CHECK(billing_addr_res.get_value().country == "b_Czech Republic");
+    BOOST_CHECK(uc_impl.shipping2.get_value().company_name.get_value() == "s2_company");
+    BOOST_CHECK(uc_impl.shipping2.get_value().street1 == "s2_st1");
+    BOOST_CHECK(uc_impl.shipping2.get_value().street2.get_value() == "s2_st2");
+    BOOST_CHECK(uc_impl.shipping2.get_value().street3.get_value() == "s2_st3");
+    BOOST_CHECK(uc_impl.shipping2.get_value().city == "s2_Praha");
+    BOOST_CHECK(uc_impl.shipping2.get_value().state.get_value() == "s2_state");
+    BOOST_CHECK(uc_impl.shipping2.get_value().country == "s2_Czech Republic");
 
-    Nullable<Registry::MojeIDImplData::ShippingAddress> shipping_addr_res = CorbaConversion::unwrap_into<
-        Nullable<Registry::MojeIDImplData::ShippingAddress> >(uc->shipping.in());
+    BOOST_CHECK(uc_impl.shipping3.get_value().company_name.get_value() == "s3_company");
+    BOOST_CHECK(uc_impl.shipping3.get_value().street1 == "s3_st1");
+    BOOST_CHECK(uc_impl.shipping3.get_value().street2.get_value() == "s3_st2");
+    BOOST_CHECK(uc_impl.shipping3.get_value().street3.get_value() == "s3_st3");
+    BOOST_CHECK(uc_impl.shipping3.get_value().city == "s3_Praha");
+    BOOST_CHECK(uc_impl.shipping3.get_value().state.get_value() == "s3_state");
+    BOOST_CHECK(uc_impl.shipping3.get_value().country == "s3_Czech Republic");
 
-    BOOST_CHECK(shipping_addr_res.get_value().company_name.get_value() == "s_company");
-    BOOST_CHECK(shipping_addr_res.get_value().street1 == "s_st1");
-    BOOST_CHECK(shipping_addr_res.get_value().street2.get_value() == "s_st2");
-    BOOST_CHECK(shipping_addr_res.get_value().street3.get_value() == "s_st3");
-    BOOST_CHECK(shipping_addr_res.get_value().city == "s_Praha");
-    BOOST_CHECK(shipping_addr_res.get_value().state.get_value() == "s_state");
-    BOOST_CHECK(shipping_addr_res.get_value().country == "s_Czech Republic");
-
-    Nullable<Registry::MojeIDImplData::ShippingAddress> shipping2_addr_res = CorbaConversion::unwrap_into<
-        Nullable<Registry::MojeIDImplData::ShippingAddress> >(uc->shipping2.in());
-
-    BOOST_CHECK(shipping2_addr_res.get_value().company_name.get_value() == "s2_company");
-    BOOST_CHECK(shipping2_addr_res.get_value().street1 == "s2_st1");
-    BOOST_CHECK(shipping2_addr_res.get_value().street2.get_value() == "s2_st2");
-    BOOST_CHECK(shipping2_addr_res.get_value().street3.get_value() == "s2_st3");
-    BOOST_CHECK(shipping2_addr_res.get_value().city == "s2_Praha");
-    BOOST_CHECK(shipping2_addr_res.get_value().state.get_value() == "s2_state");
-    BOOST_CHECK(shipping2_addr_res.get_value().country == "s2_Czech Republic");
-
-    Nullable<Registry::MojeIDImplData::ShippingAddress> shipping3_addr_res = CorbaConversion::unwrap_into<
-        Nullable<Registry::MojeIDImplData::ShippingAddress> >(uc->shipping3.in());
-
-    BOOST_CHECK(shipping3_addr_res.get_value().company_name.get_value() == "s3_company");
-    BOOST_CHECK(shipping3_addr_res.get_value().street1 == "s3_st1");
-    BOOST_CHECK(shipping3_addr_res.get_value().street2.get_value() == "s3_st2");
-    BOOST_CHECK(shipping3_addr_res.get_value().street3.get_value() == "s3_st3");
-    BOOST_CHECK(shipping3_addr_res.get_value().city == "s3_Praha");
-    BOOST_CHECK(shipping3_addr_res.get_value().state.get_value() == "s3_state");
-    BOOST_CHECK(shipping3_addr_res.get_value().country == "s3_Czech Republic");
-
-    BOOST_CHECK(std::string(uc->email.in()) == "email");
-    BOOST_CHECK(std::string(uc->notify_email.in()->_value()) == "notify_email");
-    BOOST_CHECK(std::string(uc->telephone.in()->_value()) == "telephone");
-    BOOST_CHECK(std::string(uc->fax.in()->_value()) == "fax");
+    BOOST_CHECK(uc_impl.email == "email");
+    BOOST_CHECK(uc_impl.notify_email.get_value() == "notify_email");
+    BOOST_CHECK(uc_impl.telephone.get_value() == "telephone");
+    BOOST_CHECK(uc_impl.fax.get_value() == "fax");
 }
 
+BOOST_AUTO_TEST_CASE(test_mojeid_set_contact)
+{
+    Registry::MojeID::SetContact_var sc = new Registry::MojeID::SetContact;
+
+    sc->organization = CorbaConversion::wrap_into<Registry::MojeID::NullableString_var>(
+        Nullable<std::string>("org"));
+    sc->vat_reg_num = CorbaConversion::wrap_into<Registry::MojeID::NullableString_var>(
+        Nullable<std::string>("vat_reg_num"));
+    sc->birth_date = CorbaConversion::wrap_into<Registry::MojeID::NullableDate_var>(
+        Nullable<boost::gregorian::date>(boost::gregorian::date(2015,12,10)));
+    sc->vat_id_num = CorbaConversion::wrap_into<Registry::MojeID::NullableString_var>(
+        Nullable<std::string>("vat_id_num"));
+    {
+        Registry::MojeIDImplData::Address addr_impl;
+        addr_impl.street1 = "st1";
+        addr_impl.street2 = "st2";
+        addr_impl.street3 = "st3";
+        addr_impl.city = "Praha";
+        addr_impl.state = "state";
+        addr_impl.country = "Czech Republic";
+        sc->permanent = CorbaConversion::wrap_into<Registry::MojeID::Address_var>(addr_impl);
+    }
+    {
+        Registry::MojeIDImplData::Address addr_impl;
+        addr_impl.street1 = "m_st1";
+        addr_impl.street2 = "m_st2";
+        addr_impl.street3 = "m_st3";
+        addr_impl.city = "m_Praha";
+        addr_impl.state = "m_state";
+        addr_impl.country = "m_Czech Republic";
+
+        sc->mailing = CorbaConversion::wrap_into<Registry::MojeID::NullableAddress_var>(
+            Nullable<Registry::MojeIDImplData::Address>(addr_impl));
+    }
+
+    sc->email = CorbaConversion::wrap_into<CORBA::String_var>(std::string("email"));
+    sc->notify_email = CorbaConversion::wrap_into<Registry::MojeID::NullableString_var>(
+        Nullable<std::string>("notify_email"));
+    sc->telephone = CorbaConversion::wrap_into<CORBA::String_var>(std::string("telephone"));
+    sc->fax = CorbaConversion::wrap_into<Registry::MojeID::NullableString_var>(
+        Nullable<std::string>("fax"));
+
+    Registry::MojeIDImplData::SetContact sc_impl = CorbaConversion::unwrap_into<
+        Registry::MojeIDImplData::SetContact>(sc.in());
+
+    BOOST_CHECK(sc_impl.organization.get_value() == "org");
+    BOOST_CHECK(sc_impl.vat_reg_num.get_value() == "vat_reg_num");
+    BOOST_CHECK(sc_impl.birth_date.get_value() == boost::gregorian::date(2015,12,10));
+    BOOST_CHECK(sc_impl.vat_id_num.get_value() == "vat_id_num");
+
+    BOOST_CHECK(sc_impl.permanent.street1 == "st1");
+    BOOST_CHECK(sc_impl.permanent.street2.get_value() == "st2");
+    BOOST_CHECK(sc_impl.permanent.street3.get_value() == "st3");
+    BOOST_CHECK(sc_impl.permanent.city == "Praha");
+    BOOST_CHECK(sc_impl.permanent.state.get_value() == "state");
+    BOOST_CHECK(sc_impl.permanent.country == "Czech Republic");
+
+    BOOST_CHECK(sc_impl.mailing.get_value().street1 == "m_st1");
+    BOOST_CHECK(sc_impl.mailing.get_value().street2.get_value() == "m_st2");
+    BOOST_CHECK(sc_impl.mailing.get_value().street3.get_value() == "m_st3");
+    BOOST_CHECK(sc_impl.mailing.get_value().city == "m_Praha");
+    BOOST_CHECK(sc_impl.mailing.get_value().state.get_value() == "m_state");
+    BOOST_CHECK(sc_impl.mailing.get_value().country == "m_Czech Republic");
+
+    BOOST_CHECK(sc_impl.email == "email");
+    BOOST_CHECK(sc_impl.notify_email.get_value() == "notify_email");
+    BOOST_CHECK(sc_impl.telephone == "telephone");
+    BOOST_CHECK(sc_impl.fax.get_value() == "fax");
+}
 
 BOOST_AUTO_TEST_SUITE_END();

@@ -791,6 +791,20 @@ namespace Registry
             Nullable<std::string> telephone;
             Nullable<std::string> fax;
         };
+
+        struct SetContact
+        {
+            Nullable<std::string> organization;
+            Nullable<std::string> vat_reg_num;
+            Nullable<boost::gregorian::date> birth_date;
+            Nullable<std::string> vat_id_num;
+            Address permanent;
+            Nullable<Address> mailing;
+            std::string email;
+            Nullable<std::string> notify_email;
+            std::string telephone;
+            Nullable<std::string> fax;
+        };
     }
 }
 
@@ -820,6 +834,19 @@ namespace CorbaConversion
         Unwrapper_Registry_MojeID_UpdateContact_into_Registry_MojeIDImplData_UpdateContact::NON_CORBA_TYPE>
     {
         typedef Unwrapper_Registry_MojeID_UpdateContact_into_Registry_MojeIDImplData_UpdateContact type;
+    };
+
+    struct Unwrapper_Registry_MojeID_SetContact_into_Registry_MojeIDImplData_SetContact
+    {
+        typedef Registry::MojeID::SetContact CORBA_TYPE;
+        typedef Registry::MojeIDImplData::SetContact NON_CORBA_TYPE;
+        static void unwrap( const CORBA_TYPE& ct_in, NON_CORBA_TYPE& nct_out);
+    };
+    template <> struct DEFAULT_UNWRAPPER<
+        Unwrapper_Registry_MojeID_SetContact_into_Registry_MojeIDImplData_SetContact::CORBA_TYPE,
+        Unwrapper_Registry_MojeID_SetContact_into_Registry_MojeIDImplData_SetContact::NON_CORBA_TYPE>
+    {
+        typedef Unwrapper_Registry_MojeID_SetContact_into_Registry_MojeIDImplData_SetContact type;
     };
 }
 
