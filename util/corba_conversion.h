@@ -274,25 +274,25 @@ namespace CorbaConversion
         out = Convertor::convert(in);
     }
 
-    template <typename CORBA_NUMERIC_TYPE, typename NON_CORBA_NUMERIC_TYPE>
+    template <typename CORBA_INTEGRAL_TYPE, typename NON_CORBA_INTEGRAL_TYPE>
     struct Unwrapper_CORBA_integral_type_into_non_CORBA_integral_type
     {
-        typedef CORBA_NUMERIC_TYPE CORBA_TYPE;
-        typedef NON_CORBA_NUMERIC_TYPE NON_CORBA_TYPE;
+        typedef CORBA_INTEGRAL_TYPE CORBA_TYPE;
+        typedef NON_CORBA_INTEGRAL_TYPE NON_CORBA_TYPE;
         static void unwrap( CORBA_TYPE ct_in, NON_CORBA_TYPE& nct_out)
         {
-            integralTypeConvertor<CORBA_NUMERIC_TYPE, NON_CORBA_NUMERIC_TYPE>(ct_in, nct_out);
+            integralTypeConvertor<CORBA_INTEGRAL_TYPE, NON_CORBA_INTEGRAL_TYPE>(ct_in, nct_out);
         }
     };
 
-    template <typename CORBA_NUMERIC_TYPE, typename NON_CORBA_NUMERIC_TYPE>
+    template <typename CORBA_INTEGRAL_TYPE, typename NON_CORBA_INTEGRAL_TYPE>
     struct Wrapper_CORBA_integral_type_into_non_CORBA_integral_type
     {
-        typedef CORBA_NUMERIC_TYPE CORBA_TYPE;
-        typedef NON_CORBA_NUMERIC_TYPE NON_CORBA_TYPE;
+        typedef CORBA_INTEGRAL_TYPE CORBA_TYPE;
+        typedef NON_CORBA_INTEGRAL_TYPE NON_CORBA_TYPE;
         static void wrap(NON_CORBA_TYPE nct_in, CORBA_TYPE& ct_out )
         {
-            integralTypeConvertor<NON_CORBA_NUMERIC_TYPE, CORBA_NUMERIC_TYPE>(nct_in, ct_out);
+            integralTypeConvertor<NON_CORBA_INTEGRAL_TYPE, CORBA_INTEGRAL_TYPE>(nct_in, ct_out);
         }
     };
 
