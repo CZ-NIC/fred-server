@@ -792,6 +792,8 @@ namespace Registry
             Nullable<std::string> fax;
         };
 
+        typedef UpdateContact InfoContact; ///< XXX
+
         struct SetContact
         {
             Nullable<std::string> organization;
@@ -848,6 +850,20 @@ namespace CorbaConversion
     {
         typedef Unwrapper_Registry_MojeID_SetContact_into_Registry_MojeIDImplData_SetContact type;
     };
+
+    struct Wrapper_Registry_MojeIDImplData_InfoContact_into_Registry_MojeID_InfoContact_var
+    {
+        typedef Registry::MojeID::InfoContact_var CORBA_TYPE;
+        typedef Registry::MojeIDImplData::InfoContact NON_CORBA_TYPE;
+        static void wrap( const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out );
+    };
+    template <> struct DEFAULT_WRAPPER<
+        Wrapper_Registry_MojeIDImplData_InfoContact_into_Registry_MojeID_InfoContact_var::NON_CORBA_TYPE,
+        Wrapper_Registry_MojeIDImplData_InfoContact_into_Registry_MojeID_InfoContact_var::CORBA_TYPE>
+    {
+        typedef Wrapper_Registry_MojeIDImplData_InfoContact_into_Registry_MojeID_InfoContact_var type;
+    };
+
 }
 
 

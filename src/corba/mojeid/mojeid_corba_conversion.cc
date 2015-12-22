@@ -632,4 +632,46 @@ namespace CorbaConversion
 
         nct_out = res;
     }
+
+    void Wrapper_Registry_MojeIDImplData_InfoContact_into_Registry_MojeID_InfoContact_var::wrap( const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out )
+    {
+        Registry::MojeID::InfoContact_var info = new Registry::MojeID::InfoContact;
+
+        info->id = CorbaConversion::wrap_into<CORBA::ULongLong>(nct_in.id);
+        info->first_name = CorbaConversion::wrap_into<CORBA::String_var>(nct_in.first_name);
+        info->last_name = CorbaConversion::wrap_into<CORBA::String_var>(nct_in.last_name);
+        info->organization = CorbaConversion::wrap_into<Registry::MojeID::NullableString_var>(
+            nct_in.organization);
+        info->vat_reg_num = CorbaConversion::wrap_into<Registry::MojeID::NullableString_var>(
+            nct_in.vat_reg_num);
+        info->birth_date = CorbaConversion::wrap_into<Registry::MojeID::NullableDate_var>(
+            nct_in.birth_date);
+        info->id_card_num = CorbaConversion::wrap_into<Registry::MojeID::NullableString_var>(
+            nct_in.id_card_num);
+        info->passport_num = CorbaConversion::wrap_into<Registry::MojeID::NullableString_var>(
+            nct_in.passport_num);
+        info->ssn_id_num = CorbaConversion::wrap_into<Registry::MojeID::NullableString_var>(
+            nct_in.ssn_id_num);
+        info->vat_id_num = CorbaConversion::wrap_into<Registry::MojeID::NullableString_var>(
+            nct_in.vat_id_num);
+        info->permanent = CorbaConversion::wrap_into<Registry::MojeID::Address_var>(nct_in.permanent);
+        info->mailing = CorbaConversion::wrap_into<Registry::MojeID::NullableAddress_var>(
+            nct_in.mailing);
+        info->billing = CorbaConversion::wrap_into<Registry::MojeID::NullableAddress_var>(
+            nct_in.billing);
+        info->shipping = CorbaConversion::wrap_into<Registry::MojeID::NullableShippingAddress_var>(
+            nct_in.shipping);
+        info->shipping2 = CorbaConversion::wrap_into<Registry::MojeID::NullableShippingAddress_var>(
+            nct_in.shipping2);
+        info->shipping3 = CorbaConversion::wrap_into<Registry::MojeID::NullableShippingAddress_var>(
+            nct_in.shipping3);
+        info->email = CorbaConversion::wrap_into<CORBA::String_var>(nct_in.email);
+        info->notify_email = CorbaConversion::wrap_into<Registry::MojeID::NullableString_var>(
+            nct_in.notify_email);
+        info->telephone = CorbaConversion::wrap_into<Registry::MojeID::NullableString_var>(
+            nct_in.telephone);
+        info->fax = CorbaConversion::wrap_into<Registry::MojeID::NullableString_var>(nct_in.fax);
+
+        ct_out = info._retn();
+    }
 }
