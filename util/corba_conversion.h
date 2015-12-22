@@ -287,28 +287,28 @@ namespace CorbaConversion
     };
 
     //tmpl seq var
-    template <class ELEMENT_CONVERSION, typename CORBA_SEQ, class NON_CORBA_CONTAINER, typename CORBA_SEQ_VAR>
+    template <class CORBA_SEQ_WRAPPER , typename CORBA_SEQ_VAR>
     struct Wrapper_std_vector_into_Seq_var
     {
         typedef CORBA_SEQ_VAR CORBA_TYPE;
-        typedef NON_CORBA_CONTAINER NON_CORBA_TYPE;
+        typedef typename CORBA_SEQ_WRAPPER::NON_CORBA_TYPE NON_CORBA_TYPE;
 
         static void wrap( const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out )
         {
-            ct_out = new CORBA_SEQ;
-            Wrapper_std_vector_into_Seq<ELEMENT_CONVERSION, NON_CORBA_CONTAINER, CORBA_SEQ>::wrap(nct_in, ct_out.inout());
+            ct_out = new typename CORBA_SEQ_WRAPPER::CORBA_TYPE;
+            CORBA_SEQ_WRAPPER::wrap(nct_in, ct_out.inout());
         }
     };
 
-    template <class ELEMENT_CONVERSION, typename CORBA_SEQ, typename CORBA_SEQ_VAR, class NON_CORBA_CONTAINER>
+    template <class CORBA_SEQ_UNWRAPPER, typename CORBA_SEQ_VAR>
     struct Unwrapper_Seq_var_into_std_vector
     {
         typedef CORBA_SEQ_VAR CORBA_TYPE;
-        typedef NON_CORBA_CONTAINER NON_CORBA_TYPE;
+        typedef typename CORBA_SEQ_UNWRAPPER::NON_CORBA_TYPE NON_CORBA_TYPE;
 
         static void unwrap( const CORBA_TYPE& ct_in, NON_CORBA_TYPE& nct_out )
         {
-            Unwrapper_Seq_into_std_vector<ELEMENT_CONVERSION, CORBA_SEQ, NON_CORBA_CONTAINER>::unwrap(ct_in.in(), nct_out);
+            CORBA_SEQ_UNWRAPPER::unwrap(ct_in.in(), nct_out);
         }
     };
 
