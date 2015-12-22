@@ -807,6 +807,16 @@ namespace Registry
             std::string telephone;
             Nullable<std::string> fax;
         };
+
+        struct ContactStateInfo
+        {
+            unsigned long long contact_id;
+            boost::posix_time::ptime mojeid_activation_datetime;
+            boost::gregorian::date conditionally_identification_date;
+            Nullable<boost::gregorian::date> identification_date;
+            Nullable<boost::gregorian::date> validation_date;
+            Nullable<boost::gregorian::date> linked_date;
+        };
     }
 }
 
@@ -862,6 +872,19 @@ namespace CorbaConversion
         Wrapper_Registry_MojeIDImplData_InfoContact_into_Registry_MojeID_InfoContact_var::CORBA_TYPE>
     {
         typedef Wrapper_Registry_MojeIDImplData_InfoContact_into_Registry_MojeID_InfoContact_var type;
+    };
+
+    struct Wrapper_Registry_MojeIDImplData_ContactStateInfo_into_Registry_MojeID_ContactStateInfo_var
+    {
+        typedef Registry::MojeID::ContactStateInfo_var CORBA_TYPE;
+        typedef Registry::MojeIDImplData::ContactStateInfo NON_CORBA_TYPE;
+        static void wrap( const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out );
+    };
+    template <> struct DEFAULT_WRAPPER<
+        Wrapper_Registry_MojeIDImplData_ContactStateInfo_into_Registry_MojeID_ContactStateInfo_var::NON_CORBA_TYPE,
+        Wrapper_Registry_MojeIDImplData_ContactStateInfo_into_Registry_MojeID_ContactStateInfo_var::CORBA_TYPE>
+    {
+        typedef Wrapper_Registry_MojeIDImplData_ContactStateInfo_into_Registry_MojeID_ContactStateInfo_var type;
     };
 
 }

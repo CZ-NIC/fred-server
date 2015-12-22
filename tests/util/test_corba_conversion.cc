@@ -1818,4 +1818,32 @@ BOOST_AUTO_TEST_CASE(test_mojeid_info_contact)
 
 }
 
+BOOST_AUTO_TEST_CASE(test_mojeid_contact_state_info)
+{
+
+    Registry::MojeIDImplData::ContactStateInfo info_impl;
+
+    info_impl.contact_id = 6;
+    info_impl.mojeid_activation_datetime = boost::posix_time::ptime(boost::gregorian::date(2015,12,10));
+    info_impl.conditionally_identification_date = boost::gregorian::date(2015,12,11);
+    info_impl.identification_date = Nullable<boost::gregorian::date>(boost::gregorian::date(2015,12,12));
+    info_impl.validation_date = Nullable<boost::gregorian::date>(boost::gregorian::date(2015,12,13));
+    info_impl.linked_date = Nullable<boost::gregorian::date>(boost::gregorian::date(2015,12,14));
+
+    Registry::MojeID::ContactStateInfo_var info = CorbaConversion::wrap_into<Registry::MojeID::ContactStateInfo_var>(info_impl);
+
+    BOOST_CHECK(info->contact_id == 6);
+    BOOST_CHECK(CorbaConversion::unwrap_into<boost::posix_time::ptime>(
+        info->mojeid_activation_datetime) == boost::posix_time::ptime(boost::gregorian::date(2015,12,10)));
+    BOOST_CHECK(CorbaConversion::unwrap_into<boost::gregorian::date>(
+        info->conditionally_identification_date) == boost::gregorian::date(2015,12,11));
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<boost::gregorian::date> >(
+        info->identification_date.in()).get_value() == boost::gregorian::date(2015,12,12));
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<boost::gregorian::date> >(
+        info->validation_date.in()).get_value() == boost::gregorian::date(2015,12,13));
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<boost::gregorian::date> >(
+        info->linked_date.in()).get_value() == boost::gregorian::date(2015,12,14));
+}
+
+
 BOOST_AUTO_TEST_SUITE_END();

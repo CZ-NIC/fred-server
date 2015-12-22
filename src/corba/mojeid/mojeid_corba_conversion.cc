@@ -674,4 +674,24 @@ namespace CorbaConversion
 
         ct_out = info._retn();
     }
+
+    void Wrapper_Registry_MojeIDImplData_ContactStateInfo_into_Registry_MojeID_ContactStateInfo_var::wrap( const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out )
+    {
+        Registry::MojeID::ContactStateInfo_var info = new Registry::MojeID::ContactStateInfo;
+
+        info->contact_id = CorbaConversion::wrap_into<CORBA::ULongLong>(nct_in.contact_id);
+        info->mojeid_activation_datetime = CorbaConversion::wrap_into<
+            Registry::MojeID::DateTime_var>(nct_in.mojeid_activation_datetime);
+        info->conditionally_identification_date = CorbaConversion::wrap_into<
+            Registry::MojeID::Date_var>(nct_in.conditionally_identification_date);
+        info->identification_date = CorbaConversion::wrap_into<
+            Registry::MojeID::NullableDate_var>(nct_in.identification_date);
+        info->validation_date = CorbaConversion::wrap_into<
+            Registry::MojeID::NullableDate_var>(nct_in.validation_date);
+        info->linked_date = CorbaConversion::wrap_into<
+            Registry::MojeID::NullableDate_var>(nct_in.linked_date);
+
+        ct_out = info._retn();
+    }
+
 }
