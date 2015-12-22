@@ -1406,20 +1406,19 @@ BOOST_AUTO_TEST_CASE(test_mojeid_create_contact)
     BOOST_CHECK(std::string(cc->fax.in()->_value()) == "fax");
 }
 
-BOOST_AUTO_TEST_CASE(test_basic_numeric_conversion)
+BOOST_AUTO_TEST_CASE(test_basic_integral_conversion)
 {
     unsigned long long a = 1;
     short b = -1;
 
-    CorbaConversion::boostNumericTypeConvertor(a, b);
+    CorbaConversion::integralTypeConvertor(a, b);
     BOOST_CHECK( a == 1);
     BOOST_CHECK( b == 1);
 
-    CorbaConversion::boostNumericTypeConvertor(1.00, b);
+    CorbaConversion::integralTypeConvertor(1, b);
     BOOST_CHECK( b == 1);
 
-    BOOST_CHECK_THROW((CorbaConversion::boostNumericTypeConvertor(-1, a)), CorbaConversion::NumericConversionOutOfRange);
-    BOOST_CHECK_THROW(CorbaConversion::boostNumericTypeConvertor(0.1, b), CorbaConversion::NumericConversionPrecisionLoss);
+    BOOST_CHECK_THROW((CorbaConversion::integralTypeConvertor(-1, a)), CorbaConversion::IntegralConversionOutOfRange);
 }
 
 BOOST_AUTO_TEST_CASE(test_mojeid_update_contact)

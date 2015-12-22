@@ -32,6 +32,7 @@
 #include <boost/mpl/assert.hpp>
 #include <boost/type_traits.hpp>
 #include <boost/numeric/conversion/converter.hpp>
+#include <boost/integer_traits.hpp>
 
 #include "util/db/nullable.h"
 /**
@@ -244,72 +245,61 @@ namespace CorbaConversion
     /**
      * Converted value is out of range
      */
-    class NumericConversionOutOfRange : public std::invalid_argument
+    class IntegralConversionOutOfRange : public std::invalid_argument
     {
     public:
-        NumericConversionOutOfRange() : std::invalid_argument("Converted value is out of range") {}
-        virtual ~NumericConversionOutOfRange() throw() {}
+        IntegralConversionOutOfRange() : std::invalid_argument("Converted value is out of range") {}
+        virtual ~IntegralConversionOutOfRange() throw() {}
     };
 
     /**
-     * Converted value precision loss
+     * Basic integral types conversion using boost numeric converter
      */
-    class NumericConversionPrecisionLoss : public std::invalid_argument
+    template <typename SOURCE_INTEGRAL_TYPE, typename TARGET_INTEGRAL_TYPE>
+    void integralTypeConvertor( SOURCE_INTEGRAL_TYPE in, TARGET_INTEGRAL_TYPE& out)
     {
-    public:
-        NumericConversionPrecisionLoss() : std::invalid_argument("Conversion would cause loss of precision") {}
-        virtual ~NumericConversionPrecisionLoss() throw() {}
-    };
+        typedef boost::integer_traits<SOURCE_INTEGRAL_TYPE> source_integral_type_traits;
+        typedef boost::integer_traits<TARGET_INTEGRAL_TYPE> target_integral_type_traits;
 
+        BOOST_MPL_ASSERT_MSG( source_integral_type_traits::is_integral, source_type_have_to_be_integral, (SOURCE_INTEGRAL_TYPE));
+        BOOST_MPL_ASSERT_MSG( target_integral_type_traits::is_integral, target_type_have_to_be_integral, (TARGET_INTEGRAL_TYPE));
 
-    /**
-     * Basic numeric types conversion using boost numeric converter
-     */
-    template <typename SOURCE_NUMERIC_TYPE, typename TARGET_NUMERIC_TYPE>
-    void boostNumericTypeConvertor( SOURCE_NUMERIC_TYPE in, TARGET_NUMERIC_TYPE& out)
-    {
-        typedef boost::numeric::converter<TARGET_NUMERIC_TYPE, SOURCE_NUMERIC_TYPE> Convertor;
-        typedef boost::numeric::converter<SOURCE_NUMERIC_TYPE, TARGET_NUMERIC_TYPE> ConvertBack;
+        typedef boost::numeric::converter<TARGET_INTEGRAL_TYPE, SOURCE_INTEGRAL_TYPE> Convertor;
 
         if(Convertor::out_of_range(in) != boost::numeric::cInRange)
         {
-            throw NumericConversionOutOfRange();
-        }
-
-        if(ConvertBack::convert(Convertor::convert(in)) != in)
-        {
-            throw NumericConversionPrecisionLoss();
+            throw IntegralConversionOutOfRange();
         }
 
         out = Convertor::convert(in);
     }
 
     template <typename CORBA_NUMERIC_TYPE, typename NON_CORBA_NUMERIC_TYPE>
-    struct Unwrapper_CORBA_numeric_type_into_non_CORBA_numeric_type
+    struct Unwrapper_CORBA_integral_type_into_non_CORBA_integral_type
     {
         typedef CORBA_NUMERIC_TYPE CORBA_TYPE;
         typedef NON_CORBA_NUMERIC_TYPE NON_CORBA_TYPE;
         static void unwrap( CORBA_TYPE ct_in, NON_CORBA_TYPE& nct_out)
         {
-            boostNumericTypeConvertor<CORBA_NUMERIC_TYPE, NON_CORBA_NUMERIC_TYPE>(ct_in, nct_out);
+            integralTypeConvertor<CORBA_NUMERIC_TYPE, NON_CORBA_NUMERIC_TYPE>(ct_in, nct_out);
         }
     };
 
     template <typename CORBA_NUMERIC_TYPE, typename NON_CORBA_NUMERIC_TYPE>
-    struct Wrapper_CORBA_numeric_type_into_non_CORBA_numeric_type
+    struct Wrapper_CORBA_integral_type_into_non_CORBA_integral_type
     {
         typedef CORBA_NUMERIC_TYPE CORBA_TYPE;
         typedef NON_CORBA_NUMERIC_TYPE NON_CORBA_TYPE;
         static void wrap(NON_CORBA_TYPE nct_in, CORBA_TYPE& ct_out )
         {
-            boostNumericTypeConvertor<NON_CORBA_NUMERIC_TYPE, CORBA_NUMERIC_TYPE>(nct_in, ct_out);
+            integralTypeConvertor<NON_CORBA_NUMERIC_TYPE, CORBA_NUMERIC_TYPE>(nct_in, ct_out);
         }
     };
 
     //CORBA::ULongLong
     //unsigned long long
     struct Unwrapper_CORBA_ULongLong_into_unsigned_long_long
-        : Unwrapper_CORBA_numeric_type_into_non_CORBA_numeric_type<
+        : Unwrapper_CORBA_integral_type_into_non_CORBA_integral_type<
           CORBA::ULongLong, unsigned long long> {};
     template <> struct DEFAULT_UNWRAPPER<CORBA::ULongLong, unsigned long long>
     {
@@ -317,14 +307,12 @@ namespace CorbaConversion
     };
 
     struct Wrapper_unsigned_long_long_into_CORBA_ULongLong
-        : Wrapper_CORBA_numeric_type_into_non_CORBA_numeric_type<
+        : Wrapper_CORBA_integral_type_into_non_CORBA_integral_type<
           CORBA::ULongLong, unsigned long long> {};
     template <> struct DEFAULT_WRAPPER< unsigned long long, CORBA::ULongLong>
     {
         typedef Wrapper_unsigned_long_long_into_CORBA_ULongLong type;
     };
-
-
 
 }
 #endif
