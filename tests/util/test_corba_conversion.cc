@@ -1767,69 +1767,69 @@ BOOST_AUTO_TEST_CASE(test_mojeid_contact_state_info)
         info->linked_date.in()).get_value() == boost::gregorian::date(2015,12,14));
 }
 
-BOOST_AUTO_TEST_CASE(test_mojeid_octet_seq)
+
+BOOST_AUTO_TEST_CASE(test_string_octet_seq_tmpl)
 {
-    //std::string
-    {
-        Registry::MojeID::Buffer_var out_seq_var;
-        CorbaConversion::Wrapper_container_into_OctetSeq_var<
-            Registry::MojeID::Buffer, Registry::MojeID::Buffer_var, std::string>
-                ::wrap(std::string("test"), out_seq_var);
-        BOOST_REQUIRE(out_seq_var.operator ->() != NULL);
-        BOOST_CHECK(std::string(reinterpret_cast<const char *>(out_seq_var->get_buffer()),
-            out_seq_var->length()) == "test");
+    Registry::MojeID::Buffer_var out_seq_var;
+    CorbaConversion::Wrapper_container_into_OctetSeq_var<
+        Registry::MojeID::Buffer, Registry::MojeID::Buffer_var, std::string>
+            ::wrap(std::string("test"), out_seq_var);
+    BOOST_REQUIRE(out_seq_var.operator ->() != NULL);
+    BOOST_CHECK(std::string(reinterpret_cast<const char *>(out_seq_var->get_buffer()),
+        out_seq_var->length()) == "test");
 
-        std::string out_str;
-        CorbaConversion::Unwrapper_OctetSeq_into_container<
-            std::string, Registry::MojeID::Buffer>
-                ::unwrap(out_seq_var.in(), out_str);
-        BOOST_CHECK(out_str == "test");
-    }
-
-    //empty
-    {
-        Registry::MojeID::Buffer_var out_seq_var;
-        CorbaConversion::Wrapper_container_into_OctetSeq_var<
-            Registry::MojeID::Buffer, Registry::MojeID::Buffer_var, std::string>
-                ::wrap(std::string(), out_seq_var);
-        BOOST_REQUIRE(out_seq_var.operator ->() != NULL);
-        BOOST_CHECK(out_seq_var->length() == 0);
-
-        std::string out_str;
-        CorbaConversion::Unwrapper_OctetSeq_into_container<
-            std::string, Registry::MojeID::Buffer>
-                ::unwrap(out_seq_var.in(), out_str);
-        BOOST_CHECK(out_str.empty());
-
-        std::vector<unsigned char> out_data;
-        CorbaConversion::Unwrapper_OctetSeq_into_container<
-            std::vector<unsigned char>, Registry::MojeID::Buffer>
-                ::unwrap(out_seq_var.in(), out_data);
-        BOOST_CHECK(out_data.empty());
-    }
-
-    //std::vector<unsigned char>
-    {
-        const char* data = "test";
-        Registry::MojeID::Buffer_var out_seq_var;
-        CorbaConversion::Wrapper_container_into_OctetSeq_var<
-            Registry::MojeID::Buffer, Registry::MojeID::Buffer_var, std::vector<unsigned char> >
-                ::wrap(std::vector<unsigned char>(data, data + 4), out_seq_var);
-        BOOST_REQUIRE(out_seq_var.operator ->() != NULL);
-        BOOST_CHECK(std::string(reinterpret_cast<const char *>(out_seq_var->get_buffer()),
-            out_seq_var->length()) == "test");
-
-        BOOST_CHECK(std::vector<unsigned char>(
-            reinterpret_cast<const char *>(out_seq_var->get_buffer()),
-            reinterpret_cast<const char *>(out_seq_var->get_buffer()) + out_seq_var->length()).size()
-            == out_seq_var->length());
-
-        std::vector<unsigned char> out_data;
-        CorbaConversion::Unwrapper_OctetSeq_into_container<std::vector<unsigned char>,
-            Registry::MojeID::Buffer>::unwrap(out_seq_var.in(), out_data);
-        BOOST_CHECK(std::string(out_data.begin(), out_data.end()) == "test");
-    }
-
+    std::string out_str;
+    CorbaConversion::Unwrapper_OctetSeq_into_container<
+        std::string, Registry::MojeID::Buffer>
+            ::unwrap(out_seq_var.in(), out_str);
+    BOOST_CHECK(out_str == "test");
 }
+
+
+BOOST_AUTO_TEST_CASE(test_empty_octet_seq_tmpl)
+{
+    Registry::MojeID::Buffer_var out_seq_var;
+    CorbaConversion::Wrapper_container_into_OctetSeq_var<
+        Registry::MojeID::Buffer, Registry::MojeID::Buffer_var, std::string>
+            ::wrap(std::string(), out_seq_var);
+    BOOST_REQUIRE(out_seq_var.operator ->() != NULL);
+    BOOST_CHECK(out_seq_var->length() == 0);
+
+    std::string out_str;
+    CorbaConversion::Unwrapper_OctetSeq_into_container<
+        std::string, Registry::MojeID::Buffer>
+            ::unwrap(out_seq_var.in(), out_str);
+    BOOST_CHECK(out_str.empty());
+
+    std::vector<unsigned char> out_data;
+    CorbaConversion::Unwrapper_OctetSeq_into_container<
+        std::vector<unsigned char>, Registry::MojeID::Buffer>
+            ::unwrap(out_seq_var.in(), out_data);
+    BOOST_CHECK(out_data.empty());
+}
+
+BOOST_AUTO_TEST_CASE(test_vector_octet_seq_tmpl)
+{
+    const char* data = "test";
+    Registry::MojeID::Buffer_var out_seq_var;
+    CorbaConversion::Wrapper_container_into_OctetSeq_var<
+        Registry::MojeID::Buffer, Registry::MojeID::Buffer_var, std::vector<unsigned char> >
+            ::wrap(std::vector<unsigned char>(data, data + 4), out_seq_var);
+    BOOST_REQUIRE(out_seq_var.operator ->() != NULL);
+    BOOST_CHECK(std::string(reinterpret_cast<const char *>(out_seq_var->get_buffer()),
+        out_seq_var->length()) == "test");
+
+    BOOST_CHECK(std::vector<unsigned char>(
+        reinterpret_cast<const char *>(out_seq_var->get_buffer()),
+        reinterpret_cast<const char *>(out_seq_var->get_buffer()) + out_seq_var->length()).size()
+        == out_seq_var->length());
+
+    std::vector<unsigned char> out_data;
+    CorbaConversion::Unwrapper_OctetSeq_into_container<std::vector<unsigned char>,
+        Registry::MojeID::Buffer>::unwrap(out_seq_var.in(), out_data);
+    BOOST_CHECK(std::string(out_data.begin(), out_data.end()) == "test");
+}
+
+
 
 BOOST_AUTO_TEST_SUITE_END();
