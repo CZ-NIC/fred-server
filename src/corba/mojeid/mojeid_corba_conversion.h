@@ -908,6 +908,17 @@ namespace CorbaConversion
     {
         typedef Wrapper_std_string_into_Registry_MojeID_Buffer_var type;
     };
+
+    struct Wrapper_std_vector_std_string_into_Registry_MojeID_ContactHandleList_var
+    : Wrapper_std_vector_into_Seq_var<
+      Wrapper_std_vector_into_Seq<Wrapper_std_string_into_String_var,
+          std::vector<std::string>, Registry::MojeID::ContactHandleList> , Registry::MojeID::ContactHandleList_var>
+    {};
+    template <> struct DEFAULT_WRAPPER<std::vector<std::string>, Registry::MojeID::ContactHandleList_var>
+    {
+        typedef Wrapper_std_vector_std_string_into_Registry_MojeID_ContactHandleList_var type;
+    };
+
 }
 
 

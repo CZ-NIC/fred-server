@@ -1898,4 +1898,16 @@ BOOST_AUTO_TEST_CASE(test_mojeid_buffer)
 
 }
 
+BOOST_AUTO_TEST_CASE(test_mojeid_constact_handle_list)
+{
+    Registry::MojeID::ContactHandleList_var ssv1 = CorbaConversion::wrap_into<Registry::MojeID::ContactHandleList_var>(
+        std::vector<std::string>(Util::vector_of<std::string>("test1")("test2")("test3")));
+    BOOST_REQUIRE(ssv1.operator ->() != NULL);
+    BOOST_REQUIRE(ssv1->length() == 3);
+    BOOST_CHECK(std::string(ssv1[0]) == "test1");
+    BOOST_CHECK(std::string(ssv1[1]) == "test2");
+    BOOST_CHECK(std::string(ssv1[2]) == "test3");
+
+}
+
 BOOST_AUTO_TEST_SUITE_END();
