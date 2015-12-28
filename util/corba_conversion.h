@@ -313,6 +313,15 @@ namespace CorbaConversion
     };
 
 
+    /**
+     * Exception if allocbuf is unable to alocate memory
+     */
+    class AllocbufFailed : public std::invalid_argument
+    {
+    public:
+        AllocbufFailed() : std::invalid_argument("cannot allocate the requested memory") {}
+        virtual ~AllocbufFailed() throw() {}
+    };
 
     /**
      * Convert from std::vector<unsigned char>, std::string or compatible into sequence<octet> based CORBA _var types
@@ -332,6 +341,12 @@ namespace CorbaConversion
             else
             {
                 CORBA::Octet *b = CORBA_OCTET_SEQ::allocbuf(nct_in.size());
+
+                if(b == NULL)
+                {
+                    throw AllocbufFailed();
+                }
+
                 memcpy(b,&nct_in[0],nct_in.size());
                 ct_out = new CORBA_OCTET_SEQ(nct_in.size(), nct_in.size(), b, true);
             }
