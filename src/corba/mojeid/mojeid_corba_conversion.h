@@ -887,6 +887,18 @@ namespace CorbaConversion
         typedef Wrapper_Registry_MojeIDImplData_ContactStateInfo_into_Registry_MojeID_ContactStateInfo_var type;
     };
 
+    struct Wrapper_std_vector_Registry_MojeIDImplData_ContactStateInfo_into_Registry_MojeID_ContactStateInfoList_var
+    : Wrapper_std_vector_into_Seq_var<
+          Wrapper_std_vector_into_Seq<Wrapper_Registry_MojeIDImplData_ContactStateInfo_into_Registry_MojeID_ContactStateInfo_var,
+              std::vector<Registry::MojeIDImplData::ContactStateInfo>, Registry::MojeID::ContactStateInfoList>,
+          Registry::MojeID::ContactStateInfoList_var>
+    {};
+
+    template <> struct DEFAULT_WRAPPER<std::vector<Registry::MojeIDImplData::ContactStateInfo>, Registry::MojeID::ContactStateInfoList_var>
+    {
+        typedef Wrapper_std_vector_Registry_MojeIDImplData_ContactStateInfo_into_Registry_MojeID_ContactStateInfoList_var type;
+    };
+
 }
 
 

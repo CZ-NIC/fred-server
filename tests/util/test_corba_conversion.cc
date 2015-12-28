@@ -1830,6 +1830,64 @@ BOOST_AUTO_TEST_CASE(test_vector_octet_seq_tmpl)
     BOOST_CHECK(std::string(out_data.begin(), out_data.end()) == "test");
 }
 
+BOOST_AUTO_TEST_CASE(test_mojeid_contact_state_info_list)
+{
+    std::vector<Registry::MojeIDImplData::ContactStateInfo> data;
+    Registry::MojeID::ContactStateInfoList_var res;
+
+    res = CorbaConversion::wrap_into<Registry::MojeID::ContactStateInfoList_var>(data);
+    BOOST_REQUIRE(res.operator ->() != NULL);
+    BOOST_CHECK(res->length() == 0);
+
+    {
+        Registry::MojeIDImplData::ContactStateInfo info_impl;
+        info_impl.contact_id = 5;
+        info_impl.mojeid_activation_datetime = boost::posix_time::ptime(boost::gregorian::date(2015,12,10));
+        info_impl.conditionally_identification_date = boost::gregorian::date(2015,12,11);
+        info_impl.identification_date = Nullable<boost::gregorian::date>(boost::gregorian::date(2015,12,12));
+        info_impl.validation_date = Nullable<boost::gregorian::date>(boost::gregorian::date(2015,12,13));
+        info_impl.linked_date = Nullable<boost::gregorian::date>(boost::gregorian::date(2015,12,14));
+        data.push_back(info_impl);
+    }
+    {
+        Registry::MojeIDImplData::ContactStateInfo info_impl;
+        info_impl.contact_id = 6;
+        info_impl.mojeid_activation_datetime = boost::posix_time::ptime(boost::gregorian::date(2016,12,10));
+        info_impl.conditionally_identification_date = boost::gregorian::date(2016,12,11);
+        info_impl.identification_date = Nullable<boost::gregorian::date>(boost::gregorian::date(2016,12,12));
+        info_impl.validation_date = Nullable<boost::gregorian::date>(boost::gregorian::date(2016,12,13));
+        info_impl.linked_date = Nullable<boost::gregorian::date>(boost::gregorian::date(2016,12,14));
+        data.push_back(info_impl);
+    }
+
+    res = CorbaConversion::wrap_into<Registry::MojeID::ContactStateInfoList_var>(data);
+    BOOST_REQUIRE(res.operator ->() != NULL);
+    BOOST_REQUIRE(res->length() == 2);
+
+    BOOST_CHECK(res[0].contact_id == 5);
+    BOOST_CHECK(CorbaConversion::unwrap_into<boost::posix_time::ptime>(
+        res[0].mojeid_activation_datetime) == boost::posix_time::ptime(boost::gregorian::date(2015,12,10)));
+    BOOST_CHECK(CorbaConversion::unwrap_into<boost::gregorian::date>(
+        res[0].conditionally_identification_date) == boost::gregorian::date(2015,12,11));
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<boost::gregorian::date> >(
+        res[0].identification_date.in()).get_value() == boost::gregorian::date(2015,12,12));
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<boost::gregorian::date> >(
+        res[0].validation_date.in()).get_value() == boost::gregorian::date(2015,12,13));
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<boost::gregorian::date> >(
+        res[0].linked_date.in()).get_value() == boost::gregorian::date(2015,12,14));
+
+    BOOST_CHECK(res[1].contact_id == 6);
+    BOOST_CHECK(CorbaConversion::unwrap_into<boost::posix_time::ptime>(
+        res[1].mojeid_activation_datetime) == boost::posix_time::ptime(boost::gregorian::date(2016,12,10)));
+    BOOST_CHECK(CorbaConversion::unwrap_into<boost::gregorian::date>(
+        res[1].conditionally_identification_date) == boost::gregorian::date(2016,12,11));
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<boost::gregorian::date> >(
+        res[1].identification_date.in()).get_value() == boost::gregorian::date(2016,12,12));
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<boost::gregorian::date> >(
+        res[1].validation_date.in()).get_value() == boost::gregorian::date(2016,12,13));
+    BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<boost::gregorian::date> >(
+        res[1].linked_date.in()).get_value() == boost::gregorian::date(2016,12,14));
+}
 
 
 BOOST_AUTO_TEST_SUITE_END();
