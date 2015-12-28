@@ -313,6 +313,52 @@ namespace CorbaConversion
     };
 
 
+
+    /**
+     * Convert from std::vector<unsigned char>, std::string or compatible into sequence<octet> based CORBA _var types
+     */
+    template <typename CORBA_OCTET_SEQ, typename CORBA_OCTET_SEQ_VAR, typename NON_CORBA_CONTAINER>
+    struct Wrapper_container_into_OctetSeq_var
+    {
+        typedef CORBA_OCTET_SEQ_VAR CORBA_TYPE;
+        typedef NON_CORBA_CONTAINER NON_CORBA_TYPE;
+
+        static void wrap( const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out )
+        {
+            if(nct_in.size() == 0)
+            {
+                ct_out = new CORBA_OCTET_SEQ;
+            }
+            else
+            {
+                CORBA::Octet *b = CORBA_OCTET_SEQ::allocbuf(nct_in.size());
+                memcpy(b,&nct_in[0],nct_in.size());
+                ct_out = new CORBA_OCTET_SEQ(nct_in.size(), nct_in.size(), b, true);
+            }
+        }
+    };
+
+    /**
+     * Convert from sequence<octet> based CORBA types into std::vector<unsigned char>, std::string or compatible
+     */
+    template <typename NON_CORBA_CONTAINER, typename CORBA_OCTET_SEQ>
+    struct Unwrapper_OctetSeq_into_container
+    {
+        typedef CORBA_OCTET_SEQ CORBA_TYPE;
+        typedef NON_CORBA_CONTAINER NON_CORBA_TYPE;
+
+        static void unwrap( const CORBA_TYPE& ct_in, NON_CORBA_TYPE& nct_out )
+        {
+            nct_out = NON_CORBA_TYPE(
+                reinterpret_cast<typename NON_CORBA_TYPE::value_type const *>(ct_in.get_buffer()),
+                (reinterpret_cast<typename NON_CORBA_TYPE::value_type const *>(ct_in.get_buffer()) + ct_in.length())
+            );
+        }
+    };
+
+
+
+
     /**
      * Converted value is out of range
      */
