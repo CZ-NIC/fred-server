@@ -1889,5 +1889,13 @@ BOOST_AUTO_TEST_CASE(test_mojeid_contact_state_info_list)
         res[1].linked_date.in()).get_value() == boost::gregorian::date(2016,12,14));
 }
 
+BOOST_AUTO_TEST_CASE(test_mojeid_buffer)
+{
+    Registry::MojeID::Buffer_var out_seq_var = CorbaConversion::wrap_into<Registry::MojeID::Buffer_var>(std::string("test"));
+    BOOST_REQUIRE(out_seq_var.operator ->() != NULL);
+    BOOST_CHECK(std::string(reinterpret_cast<const char *>(out_seq_var->get_buffer()),
+        out_seq_var->length()) == "test");
+
+}
 
 BOOST_AUTO_TEST_SUITE_END();

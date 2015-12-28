@@ -899,6 +899,15 @@ namespace CorbaConversion
         typedef Wrapper_std_vector_Registry_MojeIDImplData_ContactStateInfo_into_Registry_MojeID_ContactStateInfoList_var type;
     };
 
+    struct Wrapper_std_string_into_Registry_MojeID_Buffer_var
+    : Wrapper_container_into_OctetSeq_var<
+      Registry::MojeID::Buffer, Registry::MojeID::Buffer_var, std::string>
+    {};
+
+    template <> struct DEFAULT_WRAPPER<std::string, Registry::MojeID::Buffer_var>
+    {
+        typedef Wrapper_std_string_into_Registry_MojeID_Buffer_var type;
+    };
 }
 
 
