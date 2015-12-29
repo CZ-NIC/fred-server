@@ -67,6 +67,7 @@ namespace Whois {
    {
         Registrar temp;
         temp.handle = Corba::wrap_string_to_corba_string(in.handle);
+        temp.name = Corba::wrap_string_to_corba_string(in.name.get_value_or_default());
         temp.organization = Corba::wrap_string_to_corba_string(in.organization.get_value_or_default());
         temp.url = Corba::wrap_string_to_corba_string(in.url.get_value_or_default());
         temp.phone = Corba::wrap_string_to_corba_string(in.telephone.get_value_or_default());
