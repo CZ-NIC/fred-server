@@ -144,32 +144,32 @@ struct from_into< Registry::MojeID::SetContact, Fred::InfoContactData >
     dst_value_ref operator()(src_value src, dst_value_ref dst)const;
 };
 
-typedef Registry::MojeID::AddressValidationError IDL_ADDRESS_VALIDATION_ERROR;
+typedef Registry::MojeID::AddressValidationResult IDL_ADDRESS_VALIDATION_RESULT;
 typedef Fred::GeneralCheck::contact_optional_address IMPL_CONTACT_ADDRESS_ERROR;
 
 template < >
-struct into_from< IDL_ADDRESS_VALIDATION_ERROR, IMPL_CONTACT_ADDRESS_ERROR >
-: into_from_base< IDL_ADDRESS_VALIDATION_ERROR, IMPL_CONTACT_ADDRESS_ERROR >
+struct into_from< IDL_ADDRESS_VALIDATION_RESULT, IMPL_CONTACT_ADDRESS_ERROR >
+: into_from_base< IDL_ADDRESS_VALIDATION_RESULT, IMPL_CONTACT_ADDRESS_ERROR >
 {
     dst_value_ref operator()(dst_value_ref dst, src_value src)const;
 };
 
-typedef Registry::MojeID::MandatoryAddressValidationError IDL_MANDATORY_ADDRESS_VALIDATION_ERROR;
+typedef Registry::MojeID::MandatoryAddressValidationResult IDL_MANDATORY_ADDRESS_VALIDATION_RESULT;
 typedef Fred::check_contact_place_address_mandatory IMPL_MANDATORY_CONTACT_ADDRESS_ERROR;
 
 template < >
-struct into_from< IDL_MANDATORY_ADDRESS_VALIDATION_ERROR, IMPL_MANDATORY_CONTACT_ADDRESS_ERROR >
-: into_from_base< IDL_MANDATORY_ADDRESS_VALIDATION_ERROR, IMPL_MANDATORY_CONTACT_ADDRESS_ERROR >
+struct into_from< IDL_MANDATORY_ADDRESS_VALIDATION_RESULT, IMPL_MANDATORY_CONTACT_ADDRESS_ERROR >
+: into_from_base< IDL_MANDATORY_ADDRESS_VALIDATION_RESULT, IMPL_MANDATORY_CONTACT_ADDRESS_ERROR >
 {
     dst_value_ref operator()(dst_value_ref dst, src_value src)const;
 };
 
-typedef Registry::MojeID::ShippingAddressValidationError IDL_SHIPPING_ADDRESS_VALIDATION_ERROR;
+typedef Registry::MojeID::ShippingAddressValidationResult IDL_SHIPPING_ADDRESS_VALIDATION_RESULT;
 typedef Fred::GeneralCheck::contact_optional_address     IMPL_CONTACT_ADDRESS_ERROR;
 
 template < >
-struct into_from< IDL_SHIPPING_ADDRESS_VALIDATION_ERROR, IMPL_CONTACT_ADDRESS_ERROR >
-: into_from_base< IDL_SHIPPING_ADDRESS_VALIDATION_ERROR, IMPL_CONTACT_ADDRESS_ERROR >
+struct into_from< IDL_SHIPPING_ADDRESS_VALIDATION_RESULT, IMPL_CONTACT_ADDRESS_ERROR >
+: into_from_base< IDL_SHIPPING_ADDRESS_VALIDATION_RESULT, IMPL_CONTACT_ADDRESS_ERROR >
 {
     dst_value_ref operator()(dst_value_ref dst, src_value src)const;
 };
