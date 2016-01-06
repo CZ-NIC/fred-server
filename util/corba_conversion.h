@@ -31,7 +31,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/mpl/assert.hpp>
 #include <boost/type_traits.hpp>
-#include <boost/numeric/conversion/converter.hpp>
+#include <boost/numeric/conversion/cast.hpp>
 #include <boost/integer_traits.hpp>
 
 #include "util/db/nullable.h"
@@ -381,14 +381,15 @@ namespace CorbaConversion
     {
     public:
         IntegralConversionOutOfRange() : std::invalid_argument("Converted value is out of range") {}
+        explicit IntegralConversionOutOfRange(const std::string &msg) : std::invalid_argument(msg) {}
         virtual ~IntegralConversionOutOfRange() throw() {}
     };
 
     /**
-     * Basic integral types conversion using boost numeric converter
+     * Basic integral types conversion using boost numeric_cast
      */
     template <typename SOURCE_INTEGRAL_TYPE, typename TARGET_INTEGRAL_TYPE>
-    void integralTypeConvertor( SOURCE_INTEGRAL_TYPE in, TARGET_INTEGRAL_TYPE& out)
+    void integral_type_converter(SOURCE_INTEGRAL_TYPE src, TARGET_INTEGRAL_TYPE &dst)
     {
         typedef boost::integer_traits<SOURCE_INTEGRAL_TYPE> source_integral_type_traits;
         typedef boost::integer_traits<TARGET_INTEGRAL_TYPE> target_integral_type_traits;
@@ -396,56 +397,88 @@ namespace CorbaConversion
         BOOST_MPL_ASSERT_MSG( source_integral_type_traits::is_integral, source_type_have_to_be_integral, (SOURCE_INTEGRAL_TYPE));
         BOOST_MPL_ASSERT_MSG( target_integral_type_traits::is_integral, target_type_have_to_be_integral, (TARGET_INTEGRAL_TYPE));
 
-        typedef boost::numeric::converter<TARGET_INTEGRAL_TYPE, SOURCE_INTEGRAL_TYPE> Convertor;
-
-        if(Convertor::out_of_range(in) != boost::numeric::cInRange)
-        {
-            throw IntegralConversionOutOfRange();
+        try {
+            dst = boost::numeric_cast< TARGET_INTEGRAL_TYPE >(src);
         }
-
-        out = Convertor::convert(in);
+        catch (const boost::numeric::negative_overflow &e) {
+            throw IntegralConversionOutOfRange(e.what());
+        }
+        catch (const boost::numeric::positive_overflow &e) {
+            throw IntegralConversionOutOfRange(e.what());
+        }
     }
 
-    template <typename CORBA_INTEGRAL_TYPE, typename NON_CORBA_INTEGRAL_TYPE>
-    struct Unwrapper_CORBA_integral_type_into_non_CORBA_integral_type
+    //common default convertors of integral types
+    template < class CORBA_INTEGRAL_TYPE, class NON_CORBA_INTEGRAL_TYPE >
+    struct Default_unwrapper_of_integral_types
     {
-        typedef CORBA_INTEGRAL_TYPE CORBA_TYPE;
-        typedef NON_CORBA_INTEGRAL_TYPE NON_CORBA_TYPE;
-        static void unwrap( CORBA_TYPE ct_in, NON_CORBA_TYPE& nct_out)
+        struct type
         {
-            integralTypeConvertor<CORBA_INTEGRAL_TYPE, NON_CORBA_INTEGRAL_TYPE>(ct_in, nct_out);
-        }
+            typedef CORBA_INTEGRAL_TYPE     CORBA_TYPE;
+            typedef NON_CORBA_INTEGRAL_TYPE NON_CORBA_TYPE;
+            static void unwrap(CORBA_TYPE src, NON_CORBA_TYPE &dst)
+            {
+                integral_type_converter(src, dst);
+            }
+        };
     };
 
-    template <typename CORBA_INTEGRAL_TYPE, typename NON_CORBA_INTEGRAL_TYPE>
-    struct Wrapper_CORBA_integral_type_into_non_CORBA_integral_type
+    template < class CORBA_INTEGRAL_TYPE, class NON_CORBA_INTEGRAL_TYPE >
+    struct Default_wrapper_of_integral_types
     {
-        typedef CORBA_INTEGRAL_TYPE CORBA_TYPE;
-        typedef NON_CORBA_INTEGRAL_TYPE NON_CORBA_TYPE;
-        static void wrap(NON_CORBA_TYPE nct_in, CORBA_TYPE& ct_out )
+        struct type
         {
-            integralTypeConvertor<NON_CORBA_INTEGRAL_TYPE, CORBA_INTEGRAL_TYPE>(nct_in, ct_out);
-        }
+            typedef CORBA_INTEGRAL_TYPE     CORBA_TYPE;
+            typedef NON_CORBA_INTEGRAL_TYPE NON_CORBA_TYPE;
+            static void wrap(NON_CORBA_TYPE src, CORBA_TYPE &dst)
+            {
+                integral_type_converter(src, dst);
+            }
+        };
     };
 
-    //CORBA::ULongLong
-    //unsigned long long
-    struct Unwrapper_CORBA_ULongLong_into_unsigned_long_long
-        : Unwrapper_CORBA_integral_type_into_non_CORBA_integral_type<
-          CORBA::ULongLong, unsigned long long> {};
-    template <> struct DEFAULT_UNWRAPPER<CORBA::ULongLong, unsigned long long>
-    {
-        typedef Unwrapper_CORBA_ULongLong_into_unsigned_long_long type;
-    };
+//DEFAULT_WRAPPER< SRC_TYPE, DST_TYPE >
+#define DEFAULT_SRC_INTEGER_TYPE_TO_DST_INTEGER_TYPE_WRAPPER(SRC_TYPE, DST_TYPE) \
+    template < > struct DEFAULT_WRAPPER< SRC_TYPE, DST_TYPE > \
+    : Default_wrapper_of_integral_types< SRC_TYPE, DST_TYPE > { }
 
-    struct Wrapper_unsigned_long_long_into_CORBA_ULongLong
-        : Wrapper_CORBA_integral_type_into_non_CORBA_integral_type<
-          CORBA::ULongLong, unsigned long long> {};
-    template <> struct DEFAULT_WRAPPER< unsigned long long, CORBA::ULongLong>
-    {
-        typedef Wrapper_unsigned_long_long_into_CORBA_ULongLong type;
-    };
+//DEFAULT_UNWRAPPER< SRC_TYPE, DST_TYPE >
+#define DEFAULT_SRC_INTEGER_TYPE_TO_DST_INTEGER_TYPE_UNWRAPPER(SRC_TYPE, DST_TYPE) \
+    template < > struct DEFAULT_UNWRAPPER< SRC_TYPE, DST_TYPE > \
+    : Default_unwrapper_of_integral_types< SRC_TYPE, DST_TYPE > { }
+
+//DEFAULT_(UN)WRAPPER< SRC_TYPE, DST_TYPE >
+#define DEFAULT_SRC_INTEGER_TYPE_TO_DST_INTEGER_TYPE_CONVERTERS(SRC_TYPE, DST_TYPE) \
+    DEFAULT_SRC_INTEGER_TYPE_TO_DST_INTEGER_TYPE_WRAPPER(SRC_TYPE, DST_TYPE); \
+    DEFAULT_SRC_INTEGER_TYPE_TO_DST_INTEGER_TYPE_UNWRAPPER(SRC_TYPE, DST_TYPE)
+
+//DEFAULT_(UN)WRAPPER< SRC_TYPE, any integer type >
+#define DEFAULT_SRC_INTEGER_TYPE_TO_ANY_INTEGER_TYPE_CONVERTERS(SRC_TYPE) \
+    DEFAULT_SRC_INTEGER_TYPE_TO_DST_INTEGER_TYPE_CONVERTERS(SRC_TYPE, bool);\
+    DEFAULT_SRC_INTEGER_TYPE_TO_DST_INTEGER_TYPE_CONVERTERS(SRC_TYPE, char);\
+    DEFAULT_SRC_INTEGER_TYPE_TO_DST_INTEGER_TYPE_CONVERTERS(SRC_TYPE, unsigned char);\
+    DEFAULT_SRC_INTEGER_TYPE_TO_DST_INTEGER_TYPE_CONVERTERS(SRC_TYPE, short);\
+    DEFAULT_SRC_INTEGER_TYPE_TO_DST_INTEGER_TYPE_CONVERTERS(SRC_TYPE, unsigned short);\
+    DEFAULT_SRC_INTEGER_TYPE_TO_DST_INTEGER_TYPE_CONVERTERS(SRC_TYPE, int);\
+    DEFAULT_SRC_INTEGER_TYPE_TO_DST_INTEGER_TYPE_CONVERTERS(SRC_TYPE, unsigned int);\
+    DEFAULT_SRC_INTEGER_TYPE_TO_DST_INTEGER_TYPE_CONVERTERS(SRC_TYPE, long);\
+    DEFAULT_SRC_INTEGER_TYPE_TO_DST_INTEGER_TYPE_CONVERTERS(SRC_TYPE, unsigned long);\
+    DEFAULT_SRC_INTEGER_TYPE_TO_DST_INTEGER_TYPE_CONVERTERS(SRC_TYPE, long long);\
+    DEFAULT_SRC_INTEGER_TYPE_TO_DST_INTEGER_TYPE_CONVERTERS(SRC_TYPE, unsigned long long)
+
+//DEFAULT_(UN)WRAPPER< any integer type, any integer type >
+    DEFAULT_SRC_INTEGER_TYPE_TO_ANY_INTEGER_TYPE_CONVERTERS(bool);
+    DEFAULT_SRC_INTEGER_TYPE_TO_ANY_INTEGER_TYPE_CONVERTERS(char);
+    DEFAULT_SRC_INTEGER_TYPE_TO_ANY_INTEGER_TYPE_CONVERTERS(unsigned char);
+    DEFAULT_SRC_INTEGER_TYPE_TO_ANY_INTEGER_TYPE_CONVERTERS(short);
+    DEFAULT_SRC_INTEGER_TYPE_TO_ANY_INTEGER_TYPE_CONVERTERS(unsigned short);
+    DEFAULT_SRC_INTEGER_TYPE_TO_ANY_INTEGER_TYPE_CONVERTERS(int);
+    DEFAULT_SRC_INTEGER_TYPE_TO_ANY_INTEGER_TYPE_CONVERTERS(unsigned int);
+    DEFAULT_SRC_INTEGER_TYPE_TO_ANY_INTEGER_TYPE_CONVERTERS(long);
+    DEFAULT_SRC_INTEGER_TYPE_TO_ANY_INTEGER_TYPE_CONVERTERS(unsigned long);
+    DEFAULT_SRC_INTEGER_TYPE_TO_ANY_INTEGER_TYPE_CONVERTERS(long long);
+    DEFAULT_SRC_INTEGER_TYPE_TO_ANY_INTEGER_TYPE_CONVERTERS(unsigned long long);
 
 }
-#endif
 
+#endif//CORBA_CONVERSION_H_4402374c71c24ba88a4dfc1886eeebb5
