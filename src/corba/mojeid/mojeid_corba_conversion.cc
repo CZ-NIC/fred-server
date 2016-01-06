@@ -233,386 +233,185 @@ namespace CorbaConversion
         }
     }
 
-    void Unwrapper_Registry_MojeID_ValidationError_into_Registry_MojeIDImplData_ValidationError_EnumType::unwrap(CORBA_TYPE ct_in, NON_CORBA_TYPE& nct_out)
+    void Wrapper_Registry_MojeIDImplData_ValidationResult_into_Registry_MojeID_ValidationResult::wrap(const NON_CORBA_TYPE &src, CORBA_TYPE &dst)
     {
-        switch (ct_in)
-        {
+        switch (src) {
+            case Registry::MojeID::OK:
             case Registry::MojeID::NOT_AVAILABLE:
-                nct_out = Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE;
-                break;
             case Registry::MojeID::INVALID:
-                nct_out = Registry::MojeIDImplData::ValidationError::INVALID;
-                break;
             case Registry::MojeID::REQUIRED:
-                nct_out = Registry::MojeIDImplData::ValidationError::REQUIRED;
-                break;
-            default:
-                throw NotEnumValidationErrorValue();
+                dst = src;
+                return;
         }
+        throw NotEnumValidationResultValue();
     }
 
-    void Wrapper_Registry_MojeIDImplData_ValidationError_EnumType_into_Registry_MojeID_ValidationError::wrap( const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out )
+    void Wrapper_Registry_MojeIDImplData_AddressValidationResult_into_Registry_MojeID_AddressValidationResult_var::wrap(const NON_CORBA_TYPE &src, CORBA_TYPE &dst)
     {
-        switch (nct_in)
-        {
-            case Registry::MojeIDImplData::ValidationError::NOT_AVAILABLE:
-                ct_out = Registry::MojeID::NOT_AVAILABLE;
-                break;
-            case Registry::MojeIDImplData::ValidationError::INVALID:
-                ct_out = Registry::MojeID::INVALID;
-                break;
-            case Registry::MojeIDImplData::ValidationError::REQUIRED:
-                ct_out = Registry::MojeID::REQUIRED;
-                break;
-            default:
-                throw NotEnumValidationErrorValue();
-        }
+        dst = new Registry::MojeID::AddressValidationResult;
+        dst->street1     = wrap_into< Registry::MojeID::ValidationResult >(src.street1);
+        dst->city        = wrap_into< Registry::MojeID::ValidationResult >(src.city);
+        dst->postal_code = wrap_into< Registry::MojeID::ValidationResult >(src.postal_code);
+        dst->country     = wrap_into< Registry::MojeID::ValidationResult >(src.country);
     }
 
-    void Unwrapper_Registry_MojeID_NullableValidationError_ptr_into_Registry_MojeIDImplData_Nullable_ValidationError_EnumType::unwrap(CORBA_TYPE ct_in, NON_CORBA_TYPE& nct_out)
+    void Wrapper_Registry_MojeIDImplData_MandatoryAddressValidationResult_into_Registry_MojeID_MandatoryAddressValidationResult_var::wrap(const NON_CORBA_TYPE &src, CORBA_TYPE &dst)
     {
-        if(ct_in == NULL)
-        {
-            nct_out = Nullable<Registry::MojeIDImplData::ValidationError::EnumType>();
-        }
-        else
-        {
-            nct_out = Nullable<Registry::MojeIDImplData::ValidationError::EnumType>(
-                unwrap_into<Registry::MojeIDImplData::ValidationError::EnumType>(ct_in->_value()));
-        }
+        dst = new Registry::MojeID::MandatoryAddressValidationResult;
+        dst->address_presence = wrap_into< Registry::MojeID::ValidationResult >(src.address_presence);
+        dst->street1          = wrap_into< Registry::MojeID::ValidationResult >(src.street1);
+        dst->city             = wrap_into< Registry::MojeID::ValidationResult >(src.city);
+        dst->postal_code      = wrap_into< Registry::MojeID::ValidationResult >(src.postal_code);
+        dst->country          = wrap_into< Registry::MojeID::ValidationResult >(src.country);
     }
 
-    void Wrapper_Registry_MojeIDImplData_Nullable_ValidationError_EnumType_into_Registry_MojeID_NullableValidationError_var::wrap( const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out )
+    void Wrapper_Registry_MojeIDImplData_ShippingAddressValidationResult_into_Registry_MojeID_ShippingAddressValidationResult_var::wrap(const NON_CORBA_TYPE &src, CORBA_TYPE &dst)
     {
-        if(nct_in.isnull())
-        {
-            ct_out = NULL;
-        }
-        else
-        {
-            Registry::MojeID::NullableValidationError_var valuetype_val_err = new Registry::MojeID::NullableValidationError;
-            valuetype_val_err->_value(wrap_into<Registry::MojeID::ValidationError>(nct_in.get_value()));
-            ct_out = valuetype_val_err._retn();
-        }
+        dst = new Registry::MojeID::ShippingAddressValidationResult;
+        dst->street1     = wrap_into< Registry::MojeID::ValidationResult >(src.street1);
+        dst->city        = wrap_into< Registry::MojeID::ValidationResult >(src.city);
+        dst->postal_code = wrap_into< Registry::MojeID::ValidationResult >(src.postal_code);
+        dst->country     = wrap_into< Registry::MojeID::ValidationResult >(src.country);
     }
 
-    void Unwrapper_Registry_MojeID_AddressValidationError_into_Registry_MojeIDImplData_AddressValidationError::unwrap( const CORBA_TYPE& ct_in, NON_CORBA_TYPE& nct_out)
+    void Wrapper_Registry_MojeIDImplData_MessageLimitExceeded_into_Registry_MojeID_Server_MESSAGE_LIMIT_EXCEEDED::wrap(const NON_CORBA_TYPE &src, CORBA_TYPE &dst)
     {
-        Registry::MojeIDImplData::AddressValidationError res;
-        res.street1 = unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(ct_in.street1.in());
-        res.city = unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(ct_in.city.in());
-        res.postal_code = unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(ct_in.postal_code.in());
-        res.country = unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(ct_in.country.in());
-        nct_out = res;
-    }
-
-    void Wrapper_Registry_MojeIDImplData_AddressValidationError_into_Registry_MojeID_AddressValidationError_var::wrap( const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out )
-    {
-        Registry::MojeID::AddressValidationError_var addr = new Registry::MojeID::AddressValidationError;
-        addr->street1 = wrap_into<Registry::MojeID::NullableValidationError_var>(nct_in.street1);
-        addr->city = wrap_into<Registry::MojeID::NullableValidationError_var>(nct_in.city);
-        addr->postal_code = wrap_into<Registry::MojeID::NullableValidationError_var>(nct_in.postal_code);
-        addr->country = wrap_into<Registry::MojeID::NullableValidationError_var>(nct_in.country);
-        ct_out = addr._retn();
-    }
-
-    void Unwrapper_Registry_MojeID_NullableAddressValidationError_ptr_into_Nullable_Registry_MojeIDImplData_AddressValidationError::unwrap(CORBA_TYPE ct_in, NON_CORBA_TYPE& nct_out)
-    {
-        if(ct_in == NULL)
-        {
-            nct_out = Nullable<Registry::MojeIDImplData::AddressValidationError>();
+        try {
+            dst.limit_expire_date = wrap_into< Registry::MojeID::Date_var >(src.limit_expire_date);
+            CorbaConversion::wrap(src.limit_count, dst.limit_count);
+            CorbaConversion::wrap(src.limit_days,  dst.limit_days);
         }
-        else
-        {
-            Registry::MojeIDImplData::AddressValidationError addr = CorbaConversion::unwrap_into<Registry::MojeIDImplData::AddressValidationError>(ct_in->_value());
-            nct_out = Nullable<Registry::MojeIDImplData::AddressValidationError>(addr);
-        }
-    }
-
-    void Wrapper_Nullable_Registry_MojeIDImplData_AddressValidationError_into_Registry_MojeID_NullableAddressValidationError_var::wrap( const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out )
-    {
-        if(nct_in.isnull())
-        {
-            ct_out = NULL;
-        }
-        else
-        {
-            Registry::MojeID::NullableAddressValidationError_var valuetype_addr = new Registry::MojeID::NullableAddressValidationError;
-            const Registry::MojeID::AddressValidationError_var addr_var = CorbaConversion::wrap_into<Registry::MojeID::AddressValidationError_var>(nct_in.get_value());
-            valuetype_addr->_value(addr_var.in());
-            ct_out = valuetype_addr._retn();
-        }
-    }
-
-    void Unwrapper_Registry_MojeID_MandatoryAddressValidationError_into_Registry_MojeIDImplData_MandatoryAddressValidationError::unwrap( const CORBA_TYPE& ct_in, NON_CORBA_TYPE& nct_out)
-    {
-        Registry::MojeIDImplData::MandatoryAddressValidationError res;
-        res.address_presence = unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(ct_in.address_presence.in());
-        res.street1 = unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(ct_in.street1.in());
-        res.city = unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(ct_in.city.in());
-        res.postal_code = unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(ct_in.postal_code.in());
-        res.country = unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(ct_in.country.in());
-        nct_out = res;
-    }
-
-    void Wrapper_Registry_MojeIDImplData_MandatoryAddressValidationError_into_Registry_MojeID_MandatoryAddressValidationError_var::wrap( const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out )
-    {
-        Registry::MojeID::MandatoryAddressValidationError_var addr = new Registry::MojeID::MandatoryAddressValidationError;
-        addr->address_presence = wrap_into<Registry::MojeID::NullableValidationError_var>(nct_in.address_presence);
-        addr->street1 = wrap_into<Registry::MojeID::NullableValidationError_var>(nct_in.street1);
-        addr->city = wrap_into<Registry::MojeID::NullableValidationError_var>(nct_in.city);
-        addr->postal_code = wrap_into<Registry::MojeID::NullableValidationError_var>(nct_in.postal_code);
-        addr->country = wrap_into<Registry::MojeID::NullableValidationError_var>(nct_in.country);
-        ct_out = addr._retn();
-    }
-
-    void Unwrapper_Registry_MojeID_NullableMandatoryAddressValidationError_ptr_into_Nullable_Registry_MojeIDImplData_MandatoryAddressValidationError::unwrap(CORBA_TYPE ct_in, NON_CORBA_TYPE& nct_out)
-    {
-        if(ct_in == NULL)
-        {
-            nct_out = Nullable<Registry::MojeIDImplData::MandatoryAddressValidationError>();
-        }
-        else
-        {
-            Registry::MojeIDImplData::MandatoryAddressValidationError addr = CorbaConversion::unwrap_into<Registry::MojeIDImplData::MandatoryAddressValidationError>(ct_in->_value());
-            nct_out = Nullable<Registry::MojeIDImplData::MandatoryAddressValidationError>(addr);
-        }
-    }
-
-    void Wrapper_Nullable_Registry_MojeIDImplData_MandatoryAddressValidationError_into_Registry_MojeID_NullableMandatoryAddressValidationError_var::wrap( const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out )
-    {
-        if(nct_in.isnull())
-        {
-            ct_out = NULL;
-        }
-        else
-        {
-            Registry::MojeID::NullableMandatoryAddressValidationError_var valuetype_addr = new Registry::MojeID::NullableMandatoryAddressValidationError;
-            const Registry::MojeID::MandatoryAddressValidationError_var addr_var = CorbaConversion::wrap_into<Registry::MojeID::MandatoryAddressValidationError_var>(nct_in.get_value());
-            valuetype_addr->_value(addr_var.in());
-            ct_out = valuetype_addr._retn();
-        }
-    }
-
-    void Unwrapper_Registry_MojeID_ShippingAddressValidationError_into_Registry_MojeIDImplData_ShippingAddressValidationError::unwrap( const CORBA_TYPE& ct_in, NON_CORBA_TYPE& nct_out)
-    {
-        Registry::MojeIDImplData::ShippingAddressValidationError res;
-        res.street1 = unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(ct_in.street1.in());
-        res.city = unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(ct_in.city.in());
-        res.postal_code = unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(ct_in.postal_code.in());
-        res.country = unwrap_into<Nullable<Registry::MojeIDImplData::ValidationError::EnumType> >(ct_in.country.in());
-        nct_out = res;
-    }
-
-    void Wrapper_Registry_MojeIDImplData_ShippingAddressValidationError_into_Registry_MojeID_ShippingAddressValidationError_var::wrap( const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out )
-    {
-        Registry::MojeID::ShippingAddressValidationError_var addr = new Registry::MojeID::ShippingAddressValidationError;
-        addr->street1 = wrap_into<Registry::MojeID::NullableValidationError_var>(nct_in.street1);
-        addr->city = wrap_into<Registry::MojeID::NullableValidationError_var>(nct_in.city);
-        addr->postal_code = wrap_into<Registry::MojeID::NullableValidationError_var>(nct_in.postal_code);
-        addr->country = wrap_into<Registry::MojeID::NullableValidationError_var>(nct_in.country);
-        ct_out = addr._retn();
-    }
-
-    void Unwrapper_Registry_MojeID_NullableShippingAddressValidationError_ptr_into_Nullable_Registry_MojeIDImplData_ShippingAddressValidationError::unwrap(CORBA_TYPE ct_in, NON_CORBA_TYPE& nct_out)
-    {
-        if(ct_in == NULL)
-        {
-            nct_out = Nullable<Registry::MojeIDImplData::ShippingAddressValidationError>();
-        }
-        else
-        {
-            Registry::MojeIDImplData::ShippingAddressValidationError addr = CorbaConversion::unwrap_into<Registry::MojeIDImplData::ShippingAddressValidationError>(ct_in->_value());
-            nct_out = Nullable<Registry::MojeIDImplData::ShippingAddressValidationError>(addr);
-        }
-    }
-
-    void Wrapper_Nullable_Registry_MojeIDImplData_ShippingAddressValidationError_into_Registry_MojeID_NullableShippingAddressValidationError_var::wrap( const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out )
-    {
-        if(nct_in.isnull())
-        {
-            ct_out = NULL;
-        }
-        else
-        {
-            Registry::MojeID::NullableShippingAddressValidationError_var valuetype_addr = new Registry::MojeID::NullableShippingAddressValidationError;
-            const Registry::MojeID::ShippingAddressValidationError_var addr_var = CorbaConversion::wrap_into<Registry::MojeID::ShippingAddressValidationError_var>(nct_in.get_value());
-            valuetype_addr->_value(addr_var.in());
-            ct_out = valuetype_addr._retn();
-        }
-    }
-
-    void Wrapper_Registry_MojeIDImplData_MessageLimitExceeded_into_Registry_MojeID_Server_MESSAGE_LIMIT_EXCEEDED::wrap(const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out)
-    {
-        try
-        {
-            Registry::MojeID::Server::MESSAGE_LIMIT_EXCEEDED res;
-            res.limit_expire_date = wrap_into<Registry::MojeID::Date_var>(nct_in.limit_expire_date);
-            res.limit_count = nct_in.limit_count;
-            res.limit_days = nct_in.limit_days;
-            ct_out = res;
-        }
-        catch(...)
-        {
+        catch(...) {
             throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR();
         }
     }
 
-    void Wrapper_Registry_MojeIDImplData_RegistrationValidationError_into_Registry_MojeID_Server_REGISTRATION_VALIDATION_ERROR::wrap(const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out)
+    void Wrapper_Registry_MojeIDImplData_RegistrationValidationResult_into_Registry_MojeID_Server_REGISTRATION_VALIDATION_ERROR::wrap(const NON_CORBA_TYPE &src, CORBA_TYPE &dst)
     {
-        try
-        {
-            Registry::MojeID::Server::REGISTRATION_VALIDATION_ERROR res;
+        try {
+            dst.username     = wrap_into< Registry::MojeID::ValidationResult >(src.username);
+            dst.first_name   = wrap_into< Registry::MojeID::ValidationResult >(src.first_name);
+            dst.last_name    = wrap_into< Registry::MojeID::ValidationResult >(src.last_name);
+            dst.birth_date   = wrap_into< Registry::MojeID::ValidationResult >(src.birth_date);
+            dst.email        = wrap_into< Registry::MojeID::ValidationResult >(src.email);
+            dst.notify_email = wrap_into< Registry::MojeID::ValidationResult >(src.notify_email);
+            dst.phone        = wrap_into< Registry::MojeID::ValidationResult >(src.phone);
+            dst.fax          = wrap_into< Registry::MojeID::ValidationResult >(src.fax);
 
-            res.username = wrap_into<Registry::MojeID::NullableValidationError_var>(nct_in.username);
-            res.first_name = wrap_into<Registry::MojeID::NullableValidationError_var>(nct_in.first_name);
-            res.last_name = wrap_into<Registry::MojeID::NullableValidationError_var>(nct_in.last_name);
-            res.birth_date = wrap_into<Registry::MojeID::NullableValidationError_var>(nct_in.birth_date);
-            res.email = wrap_into<Registry::MojeID::NullableValidationError_var>(nct_in.email);
-            res.notify_email = wrap_into<Registry::MojeID::NullableValidationError_var>(nct_in.notify_email);
-            res.phone = wrap_into<Registry::MojeID::NullableValidationError_var>(nct_in.phone);
-            res.fax = wrap_into<Registry::MojeID::NullableValidationError_var>(nct_in.fax);
+            dst.permanent    = wrap_into< Registry::MojeID::AddressValidationResult_var >(src.permanent);
+            dst.mailing      = wrap_into< Registry::MojeID::AddressValidationResult_var >(src.mailing);
+            dst.billing      = wrap_into< Registry::MojeID::AddressValidationResult_var >(src.billing);
 
-            res.permanent = wrap_into<Registry::MojeID::NullableAddressValidationError_var>(nct_in.permanent);
-            res.mailing = wrap_into<Registry::MojeID::NullableAddressValidationError_var>(nct_in.mailing);
-            res.billing = wrap_into<Registry::MojeID::NullableAddressValidationError_var>(nct_in.billing);
-
-            res.shipping = wrap_into<Registry::MojeID::NullableShippingAddressValidationError_var>(nct_in.shipping);
-            res.shipping2 = wrap_into<Registry::MojeID::NullableShippingAddressValidationError_var>(nct_in.shipping2);
-            res.shipping3 = wrap_into<Registry::MojeID::NullableShippingAddressValidationError_var>(nct_in.shipping3);
-
-            ct_out = res;
+            dst.shipping     = wrap_into< Registry::MojeID::ShippingAddressValidationResult_var >(src.shipping);
+            dst.shipping2    = wrap_into< Registry::MojeID::ShippingAddressValidationResult_var >(src.shipping2);
+            dst.shipping3    = wrap_into< Registry::MojeID::ShippingAddressValidationResult_var >(src.shipping3);
         }
-        catch(...)
-        {
+        catch(...) {
             throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR();
         }
     }
 
-    void Wrapper_Registry_MojeIDImplData_UpdateContactPrepareValidationError_into_Registry_MojeID_Server_UPDATE_CONTACT_PREPARE_VALIDATION_ERROR::wrap(const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out)
+    void Wrapper_Registry_MojeIDImplData_UpdateContactPrepareValidationResult_into_Registry_MojeID_Server_UPDATE_CONTACT_PREPARE_VALIDATION_ERROR::wrap(const NON_CORBA_TYPE &src, CORBA_TYPE &dst)
     {
-        try
-        {
-            Registry::MojeID::Server::UPDATE_CONTACT_PREPARE_VALIDATION_ERROR res;
+        try {
+            dst.first_name   = wrap_into< Registry::MojeID::ValidationResult >(src.first_name);
+            dst.last_name    = wrap_into< Registry::MojeID::ValidationResult >(src.last_name);
+            dst.birth_date   = wrap_into< Registry::MojeID::ValidationResult >(src.birth_date);
+            dst.email        = wrap_into< Registry::MojeID::ValidationResult >(src.email);
+            dst.notify_email = wrap_into< Registry::MojeID::ValidationResult >(src.notify_email);
+            dst.phone        = wrap_into< Registry::MojeID::ValidationResult >(src.phone);
+            dst.fax          = wrap_into< Registry::MojeID::ValidationResult >(src.fax);
 
-            res.first_name = wrap_into<Registry::MojeID::NullableValidationError_var>(nct_in.first_name);
-            res.last_name = wrap_into<Registry::MojeID::NullableValidationError_var>(nct_in.last_name);
-            res.birth_date = wrap_into<Registry::MojeID::NullableValidationError_var>(nct_in.birth_date);
-            res.email = wrap_into<Registry::MojeID::NullableValidationError_var>(nct_in.email);
-            res.notify_email = wrap_into<Registry::MojeID::NullableValidationError_var>(nct_in.notify_email);
-            res.phone = wrap_into<Registry::MojeID::NullableValidationError_var>(nct_in.phone);
-            res.fax = wrap_into<Registry::MojeID::NullableValidationError_var>(nct_in.fax);
+            dst.permanent    = wrap_into< Registry::MojeID::AddressValidationResult_var >(src.permanent);
+            dst.mailing      = wrap_into< Registry::MojeID::AddressValidationResult_var >(src.mailing);
+            dst.billing      = wrap_into< Registry::MojeID::AddressValidationResult_var >(src.billing);
 
-            res.permanent = wrap_into<Registry::MojeID::NullableAddressValidationError_var>(nct_in.permanent);
-            res.mailing = wrap_into<Registry::MojeID::NullableAddressValidationError_var>(nct_in.mailing);
-            res.billing = wrap_into<Registry::MojeID::NullableAddressValidationError_var>(nct_in.billing);
+            dst.shipping     = wrap_into< Registry::MojeID::ShippingAddressValidationResult_var >(src.shipping);
+            dst.shipping2    = wrap_into< Registry::MojeID::ShippingAddressValidationResult_var >(src.shipping2);
+            dst.shipping3    = wrap_into< Registry::MojeID::ShippingAddressValidationResult_var >(src.shipping3);
 
-            res.shipping = wrap_into<Registry::MojeID::NullableShippingAddressValidationError_var>(nct_in.shipping);
-            res.shipping2 = wrap_into<Registry::MojeID::NullableShippingAddressValidationError_var>(nct_in.shipping2);
-            res.shipping3 = wrap_into<Registry::MojeID::NullableShippingAddressValidationError_var>(nct_in.shipping3);
-
-            ct_out = res;
         }
-        catch(...)
-        {
+        catch(...) {
             throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR();
         }
     }
 
-    void Wrapper_Registry_MojeIDImplData_CreateValidationRequestValidationError_into_Registry_MojeID_Server_CREATE_VALIDATION_REQUEST_VALIDATION_ERROR::wrap(const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out)
+    void Wrapper_Registry_MojeIDImplData_CreateValidationRequestValidationResult_into_Registry_MojeID_Server_CREATE_VALIDATION_REQUEST_VALIDATION_ERROR::wrap(const NON_CORBA_TYPE &src, CORBA_TYPE &dst)
     {
-        try
-        {
-            Registry::MojeID::Server::CREATE_VALIDATION_REQUEST_VALIDATION_ERROR res;
+        try {
+            dst.first_name   = wrap_into< Registry::MojeID::ValidationResult >(src.first_name);
+            dst.last_name    = wrap_into< Registry::MojeID::ValidationResult >(src.last_name);
 
-            res.first_name = wrap_into<Registry::MojeID::NullableValidationError_var>(nct_in.first_name);
-            res.last_name = wrap_into<Registry::MojeID::NullableValidationError_var>(nct_in.last_name);
+            dst.permanent    = wrap_into< Registry::MojeID::MandatoryAddressValidationResult_var >(src.permanent);
 
-            res.permanent = wrap_into<Registry::MojeID::NullableMandatoryAddressValidationError_var>(nct_in.permanent);
-
-            res.email = wrap_into<Registry::MojeID::NullableValidationError_var>(nct_in.email);
-            res.phone = wrap_into<Registry::MojeID::NullableValidationError_var>(nct_in.phone);
-            res.notify_email = wrap_into<Registry::MojeID::NullableValidationError_var>(nct_in.notify_email);
-            res.fax = wrap_into<Registry::MojeID::NullableValidationError_var>(nct_in.fax);
-            res.ssn = wrap_into<Registry::MojeID::NullableValidationError_var>(nct_in.ssn);
-
-            ct_out = res;
+            dst.email        = wrap_into< Registry::MojeID::ValidationResult >(src.email);
+            dst.phone        = wrap_into< Registry::MojeID::ValidationResult >(src.phone);
+            dst.notify_email = wrap_into< Registry::MojeID::ValidationResult >(src.notify_email);
+            dst.fax          = wrap_into< Registry::MojeID::ValidationResult >(src.fax);
+            dst.ssn          = wrap_into< Registry::MojeID::ValidationResult >(src.ssn);
         }
-        catch(...)
-        {
+        catch(...) {
             throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR();
         }
     }
 
-    void Wrapper_Registry_MojeIDImplData_ProcessRegistrationValidationError_into_Registry_MojeID_Server_PROCESS_REGISTRATION_VALIDATION_ERROR::wrap(const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out)
+    void Wrapper_Registry_MojeIDImplData_ProcessRegistrationValidationResult_into_Registry_MojeID_Server_PROCESS_REGISTRATION_VALIDATION_ERROR::wrap(const NON_CORBA_TYPE &src, CORBA_TYPE &dst)
     {
-        try
-        {
-            Registry::MojeID::Server::PROCESS_REGISTRATION_VALIDATION_ERROR res;
-            res.email = wrap_into<Registry::MojeID::NullableValidationError_var>(nct_in.email);
-            res.phone = wrap_into<Registry::MojeID::NullableValidationError_var>(nct_in.phone);
-            ct_out = res;
+        try {
+            dst.email = wrap_into< Registry::MojeID::ValidationResult >(src.email);
+            dst.phone = wrap_into< Registry::MojeID::ValidationResult >(src.phone);
         }
-        catch(...)
-        {
+        catch (...) {
             throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR();
         }
     }
 
-    void Unwrapper_Registry_MojeID_CreateContact_into_Registry_MojeIDImplData_CreateContact::unwrap( const CORBA_TYPE& ct_in, NON_CORBA_TYPE& nct_out)
+    void Unwrapper_Registry_MojeID_CreateContact_into_Registry_MojeIDImplData_CreateContact::unwrap(const CORBA_TYPE &src, NON_CORBA_TYPE &dst)
     {
-        Registry::MojeIDImplData::CreateContact res;
-
-        CorbaConversion::unwrap(ct_in.username.in(), res.username);
-        CorbaConversion::unwrap(ct_in.first_name.in(), res.first_name);
-        CorbaConversion::unwrap(ct_in.last_name.in(), res.last_name );
-        CorbaConversion::unwrap(ct_in.organization.in(), res.organization );
-        CorbaConversion::unwrap(ct_in.vat_reg_num.in(), res.vat_reg_num);
-        CorbaConversion::unwrap(ct_in.birth_date.in(), res.birth_date);
-        CorbaConversion::unwrap(ct_in.id_card_num.in(), res.id_card_num);
-        CorbaConversion::unwrap(ct_in.passport_num.in(), res.passport_num);
-        CorbaConversion::unwrap(ct_in.ssn_id_num.in(), res.ssn_id_num);
-        CorbaConversion::unwrap(ct_in.vat_id_num.in(), res.vat_id_num);
-        CorbaConversion::unwrap(ct_in.permanent, res.permanent);
-        CorbaConversion::unwrap(ct_in.mailing.in(), res.mailing);
-        CorbaConversion::unwrap(ct_in.billing.in(), res.billing);
-        CorbaConversion::unwrap(ct_in.shipping.in(), res.shipping);
-        CorbaConversion::unwrap(ct_in.shipping2.in(), res.shipping2);
-        CorbaConversion::unwrap(ct_in.shipping3.in(), res.shipping3);
-        CorbaConversion::unwrap(ct_in.email.in(), res.email);
-        CorbaConversion::unwrap(ct_in.notify_email.in(), res.notify_email);
-        CorbaConversion::unwrap(ct_in.telephone.in(), res.telephone);
-        CorbaConversion::unwrap(ct_in.fax.in(), res.fax);
-
-        nct_out = res;
+        CorbaConversion::unwrap(src.username.in(),     dst.username);
+        CorbaConversion::unwrap(src.first_name.in(),   dst.first_name);
+        CorbaConversion::unwrap(src.last_name.in(),    dst.last_name );
+        CorbaConversion::unwrap(src.organization.in(), dst.organization );
+        CorbaConversion::unwrap(src.vat_reg_num.in(),  dst.vat_reg_num);
+        CorbaConversion::unwrap(src.birth_date.in(),   dst.birth_date);
+        CorbaConversion::unwrap(src.id_card_num.in(),  dst.id_card_num);
+        CorbaConversion::unwrap(src.passport_num.in(), dst.passport_num);
+        CorbaConversion::unwrap(src.ssn_id_num.in(),   dst.ssn_id_num);
+        CorbaConversion::unwrap(src.vat_id_num.in(),   dst.vat_id_num);
+        CorbaConversion::unwrap(src.permanent,         dst.permanent);
+        CorbaConversion::unwrap(src.mailing.in(),      dst.mailing);
+        CorbaConversion::unwrap(src.billing.in(),      dst.billing);
+        CorbaConversion::unwrap(src.shipping.in(),     dst.shipping);
+        CorbaConversion::unwrap(src.shipping2.in(),    dst.shipping2);
+        CorbaConversion::unwrap(src.shipping3.in(),    dst.shipping3);
+        CorbaConversion::unwrap(src.email.in(),        dst.email);
+        CorbaConversion::unwrap(src.notify_email.in(), dst.notify_email);
+        CorbaConversion::unwrap(src.telephone.in(),    dst.telephone);
+        CorbaConversion::unwrap(src.fax.in(),          dst.fax);
     }
 
-    void Unwrapper_Registry_MojeID_UpdateContact_into_Registry_MojeIDImplData_UpdateContact::unwrap( const CORBA_TYPE& ct_in, NON_CORBA_TYPE& nct_out)
+    void Unwrapper_Registry_MojeID_UpdateContact_into_Registry_MojeIDImplData_UpdateContact::unwrap(const CORBA_TYPE &src, NON_CORBA_TYPE &dst)
     {
-        Registry::MojeIDImplData::UpdateContact res;
-
-        CorbaConversion::unwrap(ct_in.id, res.id);
-        CorbaConversion::unwrap(ct_in.first_name.in(), res.first_name);
-        CorbaConversion::unwrap(ct_in.last_name.in(), res.last_name );
-        CorbaConversion::unwrap(ct_in.organization.in(), res.organization );
-        CorbaConversion::unwrap(ct_in.vat_reg_num.in(), res.vat_reg_num);
-        CorbaConversion::unwrap(ct_in.birth_date.in(), res.birth_date);
-        CorbaConversion::unwrap(ct_in.id_card_num.in(), res.id_card_num);
-        CorbaConversion::unwrap(ct_in.passport_num.in(), res.passport_num);
-        CorbaConversion::unwrap(ct_in.ssn_id_num.in(), res.ssn_id_num);
-        CorbaConversion::unwrap(ct_in.vat_id_num.in(), res.vat_id_num);
-        CorbaConversion::unwrap(ct_in.permanent, res.permanent);
-        CorbaConversion::unwrap(ct_in.mailing.in(), res.mailing);
-        CorbaConversion::unwrap(ct_in.billing.in(), res.billing);
-        CorbaConversion::unwrap(ct_in.shipping.in(), res.shipping);
-        CorbaConversion::unwrap(ct_in.shipping2.in(), res.shipping2);
-        CorbaConversion::unwrap(ct_in.shipping3.in(), res.shipping3);
-        CorbaConversion::unwrap(ct_in.email.in(), res.email);
-        CorbaConversion::unwrap(ct_in.notify_email.in(), res.notify_email);
-        CorbaConversion::unwrap(ct_in.telephone.in(), res.telephone);
-        CorbaConversion::unwrap(ct_in.fax.in(), res.fax);
-
-        nct_out = res;
+        CorbaConversion::unwrap(src.id,                dst.id);
+        CorbaConversion::unwrap(src.first_name.in(),   dst.first_name);
+        CorbaConversion::unwrap(src.last_name.in(),    dst.last_name );
+        CorbaConversion::unwrap(src.organization.in(), dst.organization );
+        CorbaConversion::unwrap(src.vat_reg_num.in(),  dst.vat_reg_num);
+        CorbaConversion::unwrap(src.birth_date.in(),   dst.birth_date);
+        CorbaConversion::unwrap(src.id_card_num.in(),  dst.id_card_num);
+        CorbaConversion::unwrap(src.passport_num.in(), dst.passport_num);
+        CorbaConversion::unwrap(src.ssn_id_num.in(),   dst.ssn_id_num);
+        CorbaConversion::unwrap(src.vat_id_num.in(),   dst.vat_id_num);
+        CorbaConversion::unwrap(src.permanent,         dst.permanent);
+        CorbaConversion::unwrap(src.mailing.in(),      dst.mailing);
+        CorbaConversion::unwrap(src.billing.in(),      dst.billing);
+        CorbaConversion::unwrap(src.shipping.in(),     dst.shipping);
+        CorbaConversion::unwrap(src.shipping2.in(),    dst.shipping2);
+        CorbaConversion::unwrap(src.shipping3.in(),    dst.shipping3);
+        CorbaConversion::unwrap(src.email.in(),        dst.email);
+        CorbaConversion::unwrap(src.notify_email.in(), dst.notify_email);
+        CorbaConversion::unwrap(src.telephone.in(),    dst.telephone);
+        CorbaConversion::unwrap(src.fax.in(),          dst.fax);
     }
 
     void Unwrapper_Registry_MojeID_SetContact_into_Registry_MojeIDImplData_SetContact::unwrap( const CORBA_TYPE& ct_in, NON_CORBA_TYPE& nct_out)

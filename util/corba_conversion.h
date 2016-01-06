@@ -423,7 +423,7 @@ namespace CorbaConversion
         };
     };
 
-    template < class CORBA_INTEGRAL_TYPE, class NON_CORBA_INTEGRAL_TYPE >
+    template < class NON_CORBA_INTEGRAL_TYPE, class CORBA_INTEGRAL_TYPE >
     struct Default_wrapper_of_integral_types
     {
         struct type
