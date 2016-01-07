@@ -69,75 +69,41 @@ namespace CorbaConversion
     };
      */
 
-    template <> struct DEFAULT_UNWRAPPER<Test::NullableString*, Nullable<std::string> >
-    {
-        typedef Unwrapper_NullableString_ptr_into_Nullable_std_string<Test::NullableString*> type;
-    };
+    template < >
+    struct DEFAULT_UNWRAPPER< Test::NullableString*, Nullable< std::string > >
+    :   Unwrapper_NullableString_ptr_into_Nullable_std_string< Test::NullableString* > { };
 
-    template <> struct DEFAULT_WRAPPER<Nullable<std::string>, Test::NullableString_var >
-    {
-        typedef Wrapper_Nullable_std_string_into_NullableString_var<Test::NullableString, Test::NullableString_var> type;
-    };
+    template < >
+    struct DEFAULT_WRAPPER< Nullable< std::string >, Test::NullableString_var >
+    :   Wrapper_Nullable_std_string_into_NullableString_var< Test::NullableString, Test::NullableString_var > { };
 
-    template <> struct DEFAULT_WRAPPER<std::vector<std::string>, CORBA::StringSeq_var>
-    {
-        typedef Wrapper_std_vector_into_Seq_var<
-            Wrapper_std_vector_into_Seq<Wrapper_std_string_into_String_var,
-                std::vector<std::string>, CORBA::StringSeq> , CORBA::StringSeq_var> type;
-    };
+    template < >
+    struct DEFAULT_WRAPPER< std::vector< std::string >, CORBA::StringSeq_var >
+    :   Wrapper_std_vector_into_Seq_var<
+            Wrapper_std_vector_into_Seq< Wrapper_std_string_into_String_var,
+                                         std::vector< std::string >,
+                                         CORBA::StringSeq >,
+            CORBA::StringSeq_var > { };
 
-    template <> struct DEFAULT_WRAPPER<std::vector<std::string>, Test::StringSeq_var>
-    {
-        typedef Wrapper_std_vector_into_Seq_var<
-            Wrapper_std_vector_into_Seq<Wrapper_std_string_into_String_var,
-                std::vector<std::string>, Test::StringSeq> , Test::StringSeq_var> type;
-    };
+    template < >
+    struct DEFAULT_WRAPPER< std::vector< std::string >, Test::StringSeq_var >
+    :   Wrapper_std_vector_into_Seq_var<
+            Wrapper_std_vector_into_Seq< Wrapper_std_string_into_String_var,
+                                         std::vector< std::string >,
+                                         Test::StringSeq > ,
+            Test::StringSeq_var > { };
 
-    template <> struct DEFAULT_UNWRAPPER<CORBA::StringSeq_var, std::vector<std::string> >
-    {
-        typedef Unwrapper_Seq_var_into_std_vector<
-            Unwrapper_Seq_into_std_vector<Unwrapper_const_char_ptr_into_std_string,
-                CORBA::StringSeq, std::vector<std::string> > , CORBA::StringSeq_var> type;
-    };
+    template < >
+    struct DEFAULT_UNWRAPPER< CORBA::StringSeq, std::vector< std::string > >
+    :   Unwrapper_Seq_into_std_vector< Unwrapper_const_char_ptr_into_std_string,
+                                       CORBA::StringSeq,
+                                       std::vector< std::string > > { };
 
-    template <> struct DEFAULT_UNWRAPPER<Test::StringSeq_var, std::vector<std::string> >
-    {
-        typedef Unwrapper_Seq_var_into_std_vector<
-            Unwrapper_Seq_into_std_vector<Unwrapper_const_char_ptr_into_std_string,
-                Test::StringSeq, std::vector<std::string> > , Test::StringSeq_var> type;
-    };
-
-    struct Wrapper_short_into_Short
-    {
-        typedef CORBA::Short CORBA_TYPE;
-        typedef short        NON_CORBA_TYPE;
-
-        static void wrap(NON_CORBA_TYPE in_nc, CORBA_TYPE &out_c)
-        {
-            out_c = in_nc;
-        }
-    };
-/*    template <> struct DEFAULT_WRAPPER<short, CORBA::Short >
-    {
-        typedef Wrapper_short_into_Short type;
-    };*/
-
-    struct Unwrapper_Short_into_short
-    {
-        typedef CORBA::Short CORBA_TYPE;
-        typedef short        NON_CORBA_TYPE;
-
-        static void unwrap( const CORBA_TYPE& ct_in, NON_CORBA_TYPE& nct_out )
-        {
-            nct_out = ct_in;
-        }
-    };
-/*    template <> struct DEFAULT_UNWRAPPER<CORBA::Short, short>
-    {
-        typedef Unwrapper_Short_into_short type;
-    };*/
-
-
+    template < >
+    struct DEFAULT_UNWRAPPER< Test::StringSeq, std::vector< std::string > >
+    :   Unwrapper_Seq_into_std_vector< Unwrapper_const_char_ptr_into_std_string,
+                                       Test::StringSeq,
+                                       std::vector< std::string > > { };
 }
 
 BOOST_AUTO_TEST_SUITE(TestCorbaConversion)
@@ -147,9 +113,9 @@ const std::string server_name = "test-corba-conversion";
 
 BOOST_AUTO_TEST_CASE(test_string_wrap_by_unwrap_by)
 {
-    CORBA::String_var sv1 = CorbaConversion::wrap_by<CorbaConversion::Wrapper_std_string_into_String_var>("test");
+    CORBA::String_var sv1 = CorbaConversion::wrap_into_by< CorbaConversion::Wrapper_std_string_into_String_var >("test");
     BOOST_CHECK(std::string(sv1.in()) == std::string("test"));
-    std::string ss1 = CorbaConversion::unwrap_by<CorbaConversion::Unwrapper_const_char_ptr_into_std_string>(sv1);
+    std::string ss1 = CorbaConversion::unwrap_into_by< CorbaConversion::Unwrapper_const_char_ptr_into_std_string >(sv1);
     BOOST_CHECK(ss1 == std::string("test"));
 }
 
@@ -186,10 +152,12 @@ BOOST_AUTO_TEST_CASE(test_impl_string_wrap_unwrap)
 BOOST_AUTO_TEST_CASE(test_string_seq_ref)
 {
     CORBA::StringSeq_var ssv1 = new CORBA::StringSeq;
-    std::vector<std::string> vs1 = Util::vector_of<std::string>("test1")("test2")("test3");
+    std::vector< std::string > vs1 = Util::vector_of<std::string>("test1")("test2")("test3");
 
-    CorbaConversion::Wrapper_std_vector_into_Seq<CorbaConversion::Wrapper_std_string_into_String_var,
-        std::vector<std::string>,CORBA::StringSeq>::wrap(vs1, ssv1.inout());
+    CorbaConversion::Wrapper_std_vector_into_Seq<
+        CorbaConversion::Wrapper_std_string_into_String_var,
+        std::vector< std::string >,
+        CORBA::StringSeq >::wrap(vs1, ssv1.inout());
 
     BOOST_CHECK(ssv1->length() == vs1.size());
 
@@ -234,25 +202,13 @@ BOOST_AUTO_TEST_CASE(test_string_seq)
 
     bool string_seq_element_check = (CorbaConversion::unwrap_into<std::string, const char *>(ssv1[2]) == vs1[2]);
     BOOST_CHECK(string_seq_element_check);
-
-    std::vector<std::string> vs2;
-
-    CorbaConversion::Unwrapper_Seq_var_into_std_vector<
-        CorbaConversion::Unwrapper_Seq_into_std_vector<CorbaConversion::Unwrapper_const_char_ptr_into_std_string,
-            CORBA::StringSeq, std::vector<std::string> > , CORBA::StringSeq_var>::unwrap(ssv1, vs2);
-
-
-    BOOST_CHECK(vs2.size() == vs1.size());
-    BOOST_CHECK(vs2[0] == vs1[0]);
-    BOOST_CHECK(vs2[1] == vs1[1]);
-    BOOST_CHECK(vs2[2] == vs1[2]);
 }
 
 BOOST_AUTO_TEST_CASE(test_string_seq_wrap_into_corba)
 {
-    CORBA::StringSeq_var ssv1 = CorbaConversion::wrap_into<CORBA::StringSeq_var>(
-        std::vector<std::string>(Util::vector_of<std::string>("test1")("test2")("test3")));
-    std::vector<std::string> vs1 = CorbaConversion::unwrap_into<std::vector<std::string> > (ssv1);
+    CORBA::StringSeq_var ssv1 = CorbaConversion::wrap_into< CORBA::StringSeq_var >(
+        std::vector< std::string >(Util::vector_of< std::string >("test1")("test2")("test3")));
+    std::vector< std::string > vs1 = CorbaConversion::unwrap_into< std::vector< std::string > >(ssv1.in());
 
     BOOST_CHECK(vs1.size() == 3);
     BOOST_CHECK(vs1[0] == "test1");
@@ -264,7 +220,7 @@ BOOST_AUTO_TEST_CASE(test_string_seq_wrap_into_test)
 {
     Test::StringSeq_var ssv1 = CorbaConversion::wrap_into<Test::StringSeq_var>(
         std::vector<std::string>(Util::vector_of<std::string>("test1")("test2")("test3")));
-    std::vector<std::string> vs1 = CorbaConversion::unwrap_into<std::vector<std::string> > (ssv1);
+    std::vector<std::string> vs1 = CorbaConversion::unwrap_into<std::vector<std::string> >(ssv1.in());
 
     BOOST_CHECK(vs1.size() == 3);
     BOOST_CHECK(vs1[0] == "test1");
