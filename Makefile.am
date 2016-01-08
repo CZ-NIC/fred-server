@@ -2533,6 +2533,9 @@ tests_test_fredlib_LDADD = \
 		src/corba/libmailer.a \
 		src/corba/libcorbadatatypes.a \
 		src/fredlib/public_request/libpublic_request.a \
+		src/corba/libcorba.a \
+		src/corba/libmailer.a \
+		src/corba/libcorbadatatypes.a \
 		$(LIBIDN_LIBS) \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(BOOST_DATE_TIME_LIB) \
