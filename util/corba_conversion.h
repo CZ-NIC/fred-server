@@ -149,8 +149,8 @@ namespace CorbaConversion
     /**
      * Default conversion from CORBA type into non-CORBA type as specified in default
      * conversion template specialization for given pair of types.
-     * @tparam SRC_TYPE is conversion non-CORBA source type
-     * @tparam DST_TYPE is conversion CORBA destination type
+     * @tparam SRC_TYPE is conversion CORBA source type
+     * @tparam DST_TYPE is conversion non-CORBA destination type
      * @param src is source CORBA type instance
      * @param dst is destination non-CORBA type instance
      */
@@ -167,8 +167,8 @@ namespace CorbaConversion
     /**
      * Default conversion from CORBA type into non-CORBA type as specified in default
      * conversion template specialization for given pair of types.
-     * @tparam SRC_TYPE is conversion non-CORBA source type
-     * @tparam DST_TYPE is conversion CORBA destination type
+     * @tparam SRC_TYPE is conversion CORBA source type
+     * @tparam DST_TYPE is conversion non-CORBA destination type
      * @param src is source CORBA type instance
      * @return non-CORBA type instance
      */
@@ -201,44 +201,16 @@ namespace CorbaConversion
     struct DEFAULT_UNWRAPPER< const char*, std::string >
     :   Unwrapper_const_char_ptr_into_std_string { };
 
-    struct Wrapper_std_string_into_String_var
-    {
-        typedef CORBA::String_var CORBA_TYPE;
-        typedef std::string       NON_CORBA_TYPE;
-        static void wrap(const NON_CORBA_TYPE &src, CORBA_TYPE &dst);
-    };
-    template < >
-    struct DEFAULT_WRAPPER< std::string, CORBA::String_var >
-    :   Wrapper_std_string_into_String_var { };
-
     //valuetype string
-    template< typename CORBA_VALUETYPE_STRING_PTR_TYPE >
-    struct Unwrapper_NullableString_ptr_into_Nullable_std_string
+    template < class CORBA_VALUETYPE_STRING_TYPE >
+    struct Wrapper_std_string_into_NullableString
     {
-        typedef CORBA_VALUETYPE_STRING_PTR_TYPE CORBA_TYPE;
-        typedef Nullable< std::string >         NON_CORBA_TYPE;
-
-        static void unwrap(CORBA_TYPE src_ptr, NON_CORBA_TYPE &dst)
-        {
-            if (src_ptr == NULL) {
-                dst = Nullable< std::string >();
-            }
-            else {
-                dst = unwrap_into< std::string >(src_ptr->_value());
-            }
-        }
-    };
-
-    template < class CORBA_VALUETYPE_STRING_TYPE, class CORBA_VALUETYPE_STRING_VAR_TYPE >
-    struct Wrapper_Nullable_std_string_into_NullableString_var
-    {
-        typedef CORBA_VALUETYPE_STRING_VAR_TYPE CORBA_TYPE;
-        typedef Nullable< std::string >         NON_CORBA_TYPE;
+        typedef std::string                 NON_CORBA_TYPE;
+        typedef CORBA_VALUETYPE_STRING_TYPE CORBA_TYPE;
 
         static void wrap(const NON_CORBA_TYPE &src, CORBA_TYPE &dst)
         {
-            dst = src.isnull() ? NULL
-                               : new CORBA_VALUETYPE_STRING_TYPE(src.get_value().c_str());
+            dst = src.c_str();
         }
     };
 
@@ -285,17 +257,41 @@ namespace CorbaConversion
         }
     };
 
-    //tmpl seq var
-    template < typename CORBA_SEQ_WRAPPER, class CORBA_SEQ_VAR >
-    struct Wrapper_std_vector_into_Seq_var
+    template < class CORBA_SEQ, class NON_CORBA_CONTAINER,
+               class NON_CORBA_CONTAINER_VALUE_TYPE = typename NON_CORBA_CONTAINER::value_type >
+    struct Unwrapper_Seq_of_holders_into_std_vector
     {
-        typedef CORBA_SEQ_VAR                              CORBA_TYPE;
-        typedef typename CORBA_SEQ_WRAPPER::NON_CORBA_TYPE NON_CORBA_TYPE;
+        typedef CORBA_SEQ           CORBA_TYPE;
+        typedef NON_CORBA_CONTAINER NON_CORBA_TYPE;
 
-        static void wrap(const NON_CORBA_TYPE &src, CORBA_TYPE &dst)
+        static void unwrap(const CORBA_TYPE &src, NON_CORBA_TYPE &dst)
         {
-            dst = new typename CORBA_SEQ_WRAPPER::CORBA_TYPE;
-            wrap_by< CORBA_SEQ_WRAPPER >(src, dst.inout());
+            dst.clear();
+            dst.reserve(src.length());
+            for (::size_t src_idx = 0 ; src_idx < src.length(); ++src_idx) {
+                NON_CORBA_CONTAINER_VALUE_TYPE element;
+                CorbaConversion::unwrap(src[src_idx].in(), element);
+                dst.push_back(element);
+            }
+        }
+    };
+
+    template < class CORBA_SEQ, class NON_CORBA_CONTAINER,
+               class NON_CORBA_CONTAINER_VALUE_TYPE = typename NON_CORBA_CONTAINER::value_type >
+    struct Unwrapper_Seq_of_refs_into_std_vector
+    {
+        typedef CORBA_SEQ           CORBA_TYPE;
+        typedef NON_CORBA_CONTAINER NON_CORBA_TYPE;
+
+        static void unwrap(const CORBA_TYPE &src, NON_CORBA_TYPE &dst)
+        {
+            dst.clear();
+            dst.reserve(src.length());
+            for (::size_t src_idx = 0 ; src_idx < src.length(); ++src_idx) {
+                NON_CORBA_CONTAINER_VALUE_TYPE element;
+                CorbaConversion::unwrap(src[src_idx], element);
+                dst.push_back(element);
+            }
         }
     };
 
@@ -310,25 +306,24 @@ namespace CorbaConversion
     };
 
     /**
-     * Convert from std::vector<unsigned char>, std::string or compatible into sequence<octet> based CORBA _var types
+     * Convert from std::vector<unsigned char>, std::string or compatible into sequence<octet> based CORBA types
      */
-    template < class CORBA_OCTET_SEQ, class CORBA_OCTET_SEQ_VAR, class NON_CORBA_CONTAINER >
-    struct Wrapper_container_into_OctetSeq_var
+    template < class CORBA_OCTET_SEQ, class NON_CORBA_CONTAINER >
+    struct Wrapper_container_into_OctetSeq
     {
-        typedef CORBA_OCTET_SEQ_VAR CORBA_TYPE;
+        typedef CORBA_OCTET_SEQ     CORBA_TYPE;
         typedef NON_CORBA_CONTAINER NON_CORBA_TYPE;
 
         static void wrap(const NON_CORBA_TYPE &src, CORBA_TYPE &dst)
         {
-            dst = new CORBA_OCTET_SEQ;
-            if (!src.empty()) {
-                try {
-                    dst->length(src.size());
-                    std::memcpy(dst->get_buffer(), &(src[0]), src.size());
+            try {
+                dst.length(src.size());
+                if (!src.empty()) {
+                    std::memcpy(dst.get_buffer(), &(src[0]), src.size());
                 }
-                catch (...) {
-                    throw AllocbufFailed();
-                }
+            }
+            catch (...) {
+                throw AllocbufFailed();
             }
         }
     };

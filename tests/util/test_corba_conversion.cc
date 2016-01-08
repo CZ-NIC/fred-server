@@ -70,40 +70,30 @@ namespace CorbaConversion
      */
 
     template < >
+    struct DEFAULT_WRAPPER< std::string, Test::NullableString >
+    :   Wrapper_std_string_into_NullableString< Test::NullableString > { };
+
+    template < >
     struct DEFAULT_UNWRAPPER< Test::NullableString*, Nullable< std::string > >
-    :   Unwrapper_NullableString_ptr_into_Nullable_std_string< Test::NullableString* > { };
+    :   Unwrapper_ptr_into_Nullable< Test::NullableString, std::string > { };
 
     template < >
-    struct DEFAULT_WRAPPER< Nullable< std::string >, Test::NullableString_var >
-    :   Wrapper_Nullable_std_string_into_NullableString_var< Test::NullableString, Test::NullableString_var > { };
+    struct DEFAULT_WRAPPER< std::vector< std::string >, CORBA::StringSeq >
+    :   Wrapper_std_vector_into_Seq_of_holders< std::vector< std::string >, CORBA::StringSeq > { };
 
     template < >
-    struct DEFAULT_WRAPPER< std::vector< std::string >, CORBA::StringSeq_var >
-    :   Wrapper_std_vector_into_Seq_var<
-            Wrapper_std_vector_into_Seq< Wrapper_std_string_into_String_var,
-                                         std::vector< std::string >,
-                                         CORBA::StringSeq >,
-            CORBA::StringSeq_var > { };
-
-    template < >
-    struct DEFAULT_WRAPPER< std::vector< std::string >, Test::StringSeq_var >
-    :   Wrapper_std_vector_into_Seq_var<
-            Wrapper_std_vector_into_Seq< Wrapper_std_string_into_String_var,
-                                         std::vector< std::string >,
-                                         Test::StringSeq > ,
-            Test::StringSeq_var > { };
+    struct DEFAULT_WRAPPER< std::vector< std::string >, Test::StringSeq >
+    :   Wrapper_std_vector_into_Seq_of_holders< std::vector< std::string >, Test::StringSeq > { };
 
     template < >
     struct DEFAULT_UNWRAPPER< CORBA::StringSeq, std::vector< std::string > >
-    :   Unwrapper_Seq_into_std_vector< Unwrapper_const_char_ptr_into_std_string,
-                                       CORBA::StringSeq,
-                                       std::vector< std::string > > { };
+    :   Unwrapper_Seq_of_holders_into_std_vector< CORBA::StringSeq,
+                                                  std::vector< std::string > > { };
 
     template < >
     struct DEFAULT_UNWRAPPER< Test::StringSeq, std::vector< std::string > >
-    :   Unwrapper_Seq_into_std_vector< Unwrapper_const_char_ptr_into_std_string,
-                                       Test::StringSeq,
-                                       std::vector< std::string > > { };
+    :   Unwrapper_Seq_of_holders_into_std_vector< Test::StringSeq,
+                                                  std::vector< std::string > > { };
 }
 
 BOOST_AUTO_TEST_SUITE(TestCorbaConversion)
@@ -113,8 +103,9 @@ const std::string server_name = "test-corba-conversion";
 
 BOOST_AUTO_TEST_CASE(test_string_wrap_by_unwrap_by)
 {
-    CORBA::String_var sv1 = CorbaConversion::wrap_into_by< CorbaConversion::Wrapper_std_string_into_String_var >("test");
-    BOOST_CHECK(std::string(sv1.in()) == std::string("test"));
+    CORBA::String_var sv1;
+    CorbaConversion::wrap_into_holder(std::string("test"), sv1);
+    BOOST_CHECK(sv1.in() == std::string("test"));
     std::string ss1 = CorbaConversion::unwrap_into_by< CorbaConversion::Unwrapper_const_char_ptr_into_std_string >(sv1);
     BOOST_CHECK(ss1 == std::string("test"));
 }
@@ -123,7 +114,7 @@ BOOST_AUTO_TEST_CASE(test_string_wrap_unwrap)
 {
     CORBA::String_var sv1;
     std::string ss1("test");
-    CorbaConversion::wrap(ss1, sv1);
+    CorbaConversion::wrap_into_holder(ss1, sv1);
     BOOST_CHECK(std::string(sv1.in()) == ss1);
     std::string ss2;
     CorbaConversion::unwrap(sv1.in(), ss2);
@@ -132,7 +123,8 @@ BOOST_AUTO_TEST_CASE(test_string_wrap_unwrap)
 
 BOOST_AUTO_TEST_CASE(test_string_wrap_into_unwrap_into)
 {
-    CORBA::String_var sv1 = CorbaConversion::wrap_into<CORBA::String_var>(std::string("test"));
+    CORBA::String_var sv1;
+    CorbaConversion::wrap_into_holder(std::string("test"), sv1);
     BOOST_CHECK(std::string(sv1.in()) == std::string("test"));
     std::string ss1 = CorbaConversion::unwrap_into<std::string>(sv1.in());
     BOOST_CHECK(ss1 == std::string("test"));
@@ -142,7 +134,7 @@ BOOST_AUTO_TEST_CASE(test_impl_string_wrap_unwrap)
 {
     CORBA::String_var sv1;
     std::string ss1("test");
-    CorbaConversion::Wrapper_std_string_into_String_var::wrap(ss1, sv1);
+    CorbaConversion::wrap_into_holder(ss1, sv1);
     BOOST_CHECK(std::string(sv1.in()) == ss1);
     std::string ss2;
     CorbaConversion::Unwrapper_const_char_ptr_into_std_string::unwrap(sv1, ss2);
@@ -154,10 +146,8 @@ BOOST_AUTO_TEST_CASE(test_string_seq_ref)
     CORBA::StringSeq_var ssv1 = new CORBA::StringSeq;
     std::vector< std::string > vs1 = Util::vector_of<std::string>("test1")("test2")("test3");
 
-    CorbaConversion::Wrapper_std_vector_into_Seq<
-        CorbaConversion::Wrapper_std_string_into_String_var,
-        std::vector< std::string >,
-        CORBA::StringSeq >::wrap(vs1, ssv1.inout());
+    CorbaConversion::Wrapper_std_vector_into_Seq_of_holders< std::vector< std::string >, CORBA::StringSeq >
+        ::wrap(vs1, ssv1.inout());
 
     BOOST_CHECK(ssv1->length() == vs1.size());
 
@@ -173,8 +163,8 @@ BOOST_AUTO_TEST_CASE(test_string_seq_ref)
 
     std::vector<std::string> vs2;
 
-    CorbaConversion::Unwrapper_Seq_into_std_vector<CorbaConversion::Unwrapper_const_char_ptr_into_std_string,
-        CORBA::StringSeq, std::vector<std::string> >::unwrap(ssv1.in(), vs2);
+    CorbaConversion::Unwrapper_Seq_of_holders_into_std_vector< CORBA::StringSeq, std::vector< std::string > >
+        ::unwrap(ssv1.in(), vs2);
 
     BOOST_CHECK(vs2.size() == vs1.size());
     BOOST_CHECK(vs2[0] == vs1[0]);
@@ -184,12 +174,10 @@ BOOST_AUTO_TEST_CASE(test_string_seq_ref)
 
 BOOST_AUTO_TEST_CASE(test_string_seq)
 {
-    CORBA::StringSeq_var ssv1;
+    CORBA::StringSeq_var ssv1 = new CORBA::StringSeq;
     std::vector<std::string> vs1 = Util::vector_of<std::string>("test1")("test2")("test3");
-
-    CorbaConversion::Wrapper_std_vector_into_Seq_var<
-        CorbaConversion::Wrapper_std_vector_into_Seq<CorbaConversion::Wrapper_std_string_into_String_var,
-            std::vector<std::string>, CORBA::StringSeq> , CORBA::StringSeq_var>::wrap(vs1, ssv1);
+    CorbaConversion::Wrapper_std_vector_into_Seq_of_holders< std::vector< std::string >,
+                                                             CORBA::StringSeq >::wrap(vs1, ssv1);
 
     BOOST_CHECK(ssv1->length() == vs1.size());
 
@@ -206,9 +194,11 @@ BOOST_AUTO_TEST_CASE(test_string_seq)
 
 BOOST_AUTO_TEST_CASE(test_string_seq_wrap_into_corba)
 {
-    CORBA::StringSeq_var ssv1 = CorbaConversion::wrap_into< CORBA::StringSeq_var >(
-        std::vector< std::string >(Util::vector_of< std::string >("test1")("test2")("test3")));
-    std::vector< std::string > vs1 = CorbaConversion::unwrap_into< std::vector< std::string > >(ssv1.in());
+    CORBA::StringSeq_var ssv1;
+    CorbaConversion::wrap_into_holder(
+        std::vector< std::string >(Util::vector_of< std::string >("test1")("test2")("test3")), ssv1);
+    std::vector< std::string > vs1;
+    CorbaConversion::unwrap_holder(ssv1, vs1);
 
     BOOST_CHECK(vs1.size() == 3);
     BOOST_CHECK(vs1[0] == "test1");
@@ -218,9 +208,11 @@ BOOST_AUTO_TEST_CASE(test_string_seq_wrap_into_corba)
 
 BOOST_AUTO_TEST_CASE(test_string_seq_wrap_into_test)
 {
-    Test::StringSeq_var ssv1 = CorbaConversion::wrap_into<Test::StringSeq_var>(
-        std::vector<std::string>(Util::vector_of<std::string>("test1")("test2")("test3")));
-    std::vector<std::string> vs1 = CorbaConversion::unwrap_into<std::vector<std::string> >(ssv1.in());
+    Test::StringSeq_var ssv1;
+    CorbaConversion::wrap_into_holder(
+        std::vector< std::string >(Util::vector_of< std::string >("test1")("test2")("test3")), ssv1);
+    std::vector< std::string > vs1;
+    CorbaConversion::unwrap_holder(ssv1, vs1);
 
     BOOST_CHECK(vs1.size() == 3);
     BOOST_CHECK(vs1[0] == "test1");
@@ -243,18 +235,21 @@ BOOST_AUTO_TEST_CASE(test_short)
 
 BOOST_AUTO_TEST_CASE(test_valuetype_string)
 {
-    Nullable<std::string> ns1 ("test1");
-    Test::NullableString_var tnsv1 = CorbaConversion::wrap_into<Test::NullableString_var>(ns1);
+    const Nullable< std::string > ns1("test1");
+    Test::NullableString_var tnsv1;
+    CorbaConversion::wrap_nullable_into_holder(ns1, tnsv1);
     BOOST_CHECK(std::string(tnsv1->_value()) == ns1.get_value());
 
-    Nullable<std::string> ns2 = CorbaConversion::unwrap_into<Nullable<std::string> >(tnsv1.in());
+    Nullable< std::string > ns2;
+    CorbaConversion::unwrap_holder(tnsv1, ns2);
     BOOST_CHECK(std::string(tnsv1->_value()) == ns2.get_value());
 }
 
 BOOST_AUTO_TEST_CASE(test_mojeid_valuetype_string)
 {
     Nullable<std::string> ns1 ("test1");
-    Registry::MojeID::NullableString_var tnsv1 = CorbaConversion::wrap_into<Registry::MojeID::NullableString_var>(ns1);
+    Registry::MojeID::NullableString_var tnsv1;
+    CorbaConversion::wrap_nullable_into_holder(ns1, tnsv1);
     BOOST_CHECK(std::string(tnsv1->_value()) == ns1.get_value());
 
     Nullable<std::string> ns2 = CorbaConversion::unwrap_into<Nullable<std::string> >(tnsv1.in());
@@ -263,54 +258,43 @@ BOOST_AUTO_TEST_CASE(test_mojeid_valuetype_string)
 
 BOOST_AUTO_TEST_CASE(test_mojeid_date)
 {
-    Registry::MojeID::Date_var mojeid_date = CorbaConversion::wrap_into<Registry::MojeID::Date_var>(boost::gregorian::date(2015,12,10));
-    mojeid_date->value;
-    BOOST_CHECK(CorbaConversion::unwrap_into<std::string>(mojeid_date->value.in()) == "2015-12-10");
+    Registry::MojeID::Date mojeid_date;
+    CorbaConversion::wrap(boost::gregorian::date(2015,12,10), mojeid_date);
+    BOOST_CHECK(CorbaConversion::unwrap_into< std::string >(mojeid_date.value.in()) == "2015-12-10");
 
-    BOOST_CHECK(CorbaConversion::unwrap_into<boost::gregorian::date>(mojeid_date.in()) == boost::gregorian::date(2015,12,10));
+    BOOST_CHECK(CorbaConversion::unwrap_into< boost::gregorian::date >(mojeid_date) == boost::gregorian::date(2015,12,10));
 
-    BOOST_CHECK_THROW(CorbaConversion::wrap_into<Registry::MojeID::Date_var>(boost::gregorian::date()), CorbaConversion::ArgumentIsSpecial);
-    BOOST_CHECK_THROW(CorbaConversion::unwrap_into<boost::gregorian::date>(
-        CorbaConversion::wrap_into<Registry::MojeID::Date_var>(boost::gregorian::date()).in()), CorbaConversion::ArgumentIsSpecial);
+    BOOST_CHECK_THROW(CorbaConversion::wrap_into< Registry::MojeID::Date >(boost::gregorian::date()), CorbaConversion::ArgumentIsSpecial);
+    BOOST_CHECK_THROW(CorbaConversion::unwrap_into< boost::gregorian::date >(
+        CorbaConversion::wrap_into< Registry::MojeID::Date >(boost::gregorian::date())), CorbaConversion::ArgumentIsSpecial);
 }
 
 BOOST_AUTO_TEST_CASE(test_mojeid_datetime)
 {
-    Registry::MojeID::DateTime_var mojeid_datetime = CorbaConversion::wrap_into<Registry::MojeID::DateTime_var>(boost::posix_time::ptime(boost::gregorian::date(2015,12,10)));
+    Registry::MojeID::DateTime_var mojeid_datetime;
+    CorbaConversion::wrap_into_holder(boost::posix_time::ptime(boost::gregorian::date(2015,12,10)), mojeid_datetime);
     BOOST_CHECK(CorbaConversion::unwrap_into<std::string>(mojeid_datetime->value.in()) == "2015-12-10T00:00:00");
     BOOST_CHECK(CorbaConversion::unwrap_into<boost::posix_time::ptime>(mojeid_datetime.in()) == boost::posix_time::ptime(boost::gregorian::date(2015,12,10)));
 
-    BOOST_CHECK_THROW(CorbaConversion::wrap_into<Registry::MojeID::DateTime_var>(boost::posix_time::ptime()), CorbaConversion::ArgumentIsSpecial);
-    BOOST_CHECK_THROW(CorbaConversion::unwrap_into<boost::posix_time::ptime>(
-        CorbaConversion::wrap_into<Registry::MojeID::DateTime_var>(boost::posix_time::ptime()).in()), CorbaConversion::ArgumentIsSpecial);
+    BOOST_CHECK_THROW(CorbaConversion::wrap_into< Registry::MojeID::DateTime >(boost::posix_time::ptime()), CorbaConversion::ArgumentIsSpecial);
+    BOOST_CHECK_THROW(CorbaConversion::unwrap_into< boost::posix_time::ptime >(
+        CorbaConversion::wrap_into< Registry::MojeID::DateTime >(boost::posix_time::ptime())), CorbaConversion::ArgumentIsSpecial);
 }
 
 BOOST_AUTO_TEST_CASE(test_mojeid_nullabledate)
 {
-    Registry::MojeID::NullableDate_var nd1 = CorbaConversion::wrap_into<Registry::MojeID::NullableDate_var>(Nullable<boost::gregorian::date>(boost::gregorian::date(2015,12,10)));
+    static const Nullable< boost::gregorian::date > d(boost::gregorian::date(2015,12,10));
+    Registry::MojeID::NullableDate_var nd1;
+    CorbaConversion::wrap_nullable_into_holder(d, nd1);
     BOOST_CHECK(std::string(nd1->value()) == "2015-12-10");
-    Registry::MojeID::NullableDate_var nd2 = CorbaConversion::wrap_into<Registry::MojeID::NullableDate_var>(Nullable<boost::gregorian::date>());
+    Registry::MojeID::NullableDate_var nd2;
+    CorbaConversion::wrap_nullable_into_holder(Nullable< boost::gregorian::date >(), nd2);
     BOOST_CHECK(nd2.in() == NULL);
 
     Nullable<boost::gregorian::date> res1 = CorbaConversion::unwrap_into<Nullable<boost::gregorian::date> >(nd1.operator->());
     BOOST_CHECK(!res1.isnull());
     BOOST_CHECK(res1.get_value() == boost::gregorian::date(2015,12,10));
     Nullable<boost::gregorian::date> res2 = CorbaConversion::unwrap_into<Nullable<boost::gregorian::date> >(nd2.operator->());
-    BOOST_CHECK(res2.isnull());
-}
-
-BOOST_AUTO_TEST_CASE(test_mojeid_nullableboolean)
-{
-    Registry::MojeID::NullableBoolean_var nb1 = CorbaConversion::wrap_into<Registry::MojeID::NullableBoolean_var>(Nullable<bool>(true));
-    BOOST_REQUIRE(nb1.in() != NULL);
-    BOOST_CHECK(nb1->_value() == true);
-    Registry::MojeID::NullableBoolean_var nb2 = CorbaConversion::wrap_into<Registry::MojeID::NullableBoolean_var>(Nullable<bool>());
-    BOOST_CHECK(nb2.in() == NULL);
-
-    Nullable<bool> res1 = CorbaConversion::unwrap_into<Nullable<bool> >(nb1.in());
-    BOOST_CHECK(!res1.isnull());
-    BOOST_CHECK(res1.get_value() == true);
-    Nullable<bool> res2 = CorbaConversion::unwrap_into<Nullable<bool> >(nb2.in());
     BOOST_CHECK(res2.isnull());
 }
 
@@ -324,7 +308,8 @@ BOOST_AUTO_TEST_CASE(test_mojeid_address)
     addr_impl.state = "state";
     addr_impl.country = "Czech Republic";
 
-    Registry::MojeID::Address_var addr = CorbaConversion::wrap_into<Registry::MojeID::Address_var>(addr_impl);
+    Registry::MojeID::Address_var addr;
+    CorbaConversion::wrap_into_holder(addr_impl, addr);
     BOOST_CHECK(std::string(addr->street1.in()) == "st1");
     BOOST_CHECK(std::string(addr->street2.in()->_value()) == "st2");
     BOOST_CHECK(std::string(addr->street3.in()->_value()) == "st3");
@@ -344,7 +329,9 @@ BOOST_AUTO_TEST_CASE(test_mojeid_address)
 
 BOOST_AUTO_TEST_CASE(test_nullable_mojeid_address)
 {
-    BOOST_CHECK(CorbaConversion::wrap_into<Registry::MojeID::NullableAddress_var>(Nullable<Registry::MojeIDImplData::Address>()).in() == NULL);
+    Registry::MojeID::NullableAddress_var nullable_addr_holder;
+    CorbaConversion::wrap_nullable_into_holder(Nullable< Registry::MojeIDImplData::Address >(), nullable_addr_holder);
+    BOOST_CHECK(nullable_addr_holder.in() == NULL);
     BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::Address> >(static_cast<Registry::MojeID::NullableAddress*>(NULL)).isnull());
 
     Registry::MojeIDImplData::Address addr_impl;
@@ -358,7 +345,8 @@ BOOST_AUTO_TEST_CASE(test_nullable_mojeid_address)
     Nullable<Registry::MojeIDImplData::Address> nullable_addr(addr_impl);
     BOOST_CHECK(!nullable_addr.isnull());
 
-    Registry::MojeID::NullableAddress_var addr = CorbaConversion::wrap_into<Registry::MojeID::NullableAddress_var>(nullable_addr);
+    Registry::MojeID::NullableAddress_var addr;
+    CorbaConversion::wrap_nullable_into_holder(nullable_addr, addr);
     BOOST_REQUIRE(addr.in() != NULL);
     BOOST_CHECK(std::string(addr->_value().street1.in()) == "st1");
     BOOST_CHECK(std::string(addr->_value().street2.in()->_value()) == "st2");
@@ -388,7 +376,8 @@ BOOST_AUTO_TEST_CASE(test_mojeid_shippingaddress)
     addr_impl.state = "state";
     addr_impl.country = "Czech Republic";
 
-    Registry::MojeID::ShippingAddress_var addr = CorbaConversion::wrap_into<Registry::MojeID::ShippingAddress_var>(addr_impl);
+    Registry::MojeID::ShippingAddress_var addr;
+    CorbaConversion::wrap_into_holder(addr_impl, addr);
     BOOST_CHECK(std::string(addr->company_name.in()->_value()) == "company");
     BOOST_CHECK(std::string(addr->street1.in()) == "st1");
     BOOST_CHECK(std::string(addr->street2.in()->_value()) == "st2");
@@ -409,7 +398,9 @@ BOOST_AUTO_TEST_CASE(test_mojeid_shippingaddress)
 
 BOOST_AUTO_TEST_CASE(test_nullable_mojeid_shippingaddress)
 {
-    BOOST_CHECK(CorbaConversion::wrap_into<Registry::MojeID::NullableShippingAddress_var>(Nullable<Registry::MojeIDImplData::ShippingAddress>()).in() == NULL);
+    Registry::MojeID::NullableShippingAddress_var nullable_value_holder;
+    CorbaConversion::wrap_nullable_into_holder(Nullable< Registry::MojeIDImplData::ShippingAddress >(), nullable_value_holder);
+    BOOST_CHECK(nullable_value_holder.in() == NULL);
     BOOST_CHECK(CorbaConversion::unwrap_into<Nullable<Registry::MojeIDImplData::ShippingAddress> >(static_cast<Registry::MojeID::NullableShippingAddress*>(NULL)).isnull());
 
     Registry::MojeIDImplData::ShippingAddress addr_impl;
@@ -424,7 +415,8 @@ BOOST_AUTO_TEST_CASE(test_nullable_mojeid_shippingaddress)
     Nullable<Registry::MojeIDImplData::ShippingAddress> nullable_addr(addr_impl);
     BOOST_CHECK(!nullable_addr.isnull());
 
-    Registry::MojeID::NullableShippingAddress_var addr = CorbaConversion::wrap_into<Registry::MojeID::NullableShippingAddress_var>(nullable_addr);
+    Registry::MojeID::NullableShippingAddress_var addr;
+    CorbaConversion::wrap_nullable_into_holder(nullable_addr, addr);
     BOOST_REQUIRE(addr.in() != NULL);
     BOOST_CHECK(std::string(addr->_value().company_name.in()->_value()) == "company");
     BOOST_CHECK(std::string(addr->_value().street1.in()) == "st1");
@@ -474,14 +466,13 @@ BOOST_AUTO_TEST_CASE(test_mojeid_addressvalidationresult)
     addr_err_impl.postal_code = Registry::MojeID::REQUIRED;
     addr_err_impl.country     = Registry::MojeID::NOT_AVAILABLE;
 
-    Registry::MojeID::AddressValidationResult_var addr_err = CorbaConversion::wrap_into<
-        Registry::MojeID::AddressValidationResult_var>(addr_err_impl);
+    Registry::MojeID::AddressValidationResult addr_err;
+    CorbaConversion::wrap(addr_err_impl, addr_err);
 
-    BOOST_REQUIRE(addr_err.operator ->() != NULL);
-    BOOST_CHECK(addr_err->street1     == Registry::MojeID::INVALID);
-    BOOST_CHECK(addr_err->city        == Registry::MojeID::NOT_AVAILABLE);
-    BOOST_CHECK(addr_err->postal_code == Registry::MojeID::REQUIRED);
-    BOOST_CHECK(addr_err->country     == Registry::MojeID::NOT_AVAILABLE);
+    BOOST_CHECK(addr_err.street1     == Registry::MojeID::INVALID);
+    BOOST_CHECK(addr_err.city        == Registry::MojeID::NOT_AVAILABLE);
+    BOOST_CHECK(addr_err.postal_code == Registry::MojeID::REQUIRED);
+    BOOST_CHECK(addr_err.country     == Registry::MojeID::NOT_AVAILABLE);
 }
 
 BOOST_AUTO_TEST_CASE(test_mojeid_mandatoryaddressvalidationresult)
@@ -493,15 +484,14 @@ BOOST_AUTO_TEST_CASE(test_mojeid_mandatoryaddressvalidationresult)
     addr_err_impl.postal_code      = Registry::MojeID::REQUIRED;
     addr_err_impl.country          = Registry::MojeID::NOT_AVAILABLE;
 
-    Registry::MojeID::MandatoryAddressValidationResult_var addr_err = CorbaConversion::wrap_into<
-        Registry::MojeID::MandatoryAddressValidationResult_var>(addr_err_impl);
+    Registry::MojeID::MandatoryAddressValidationResult addr_err;
+    CorbaConversion::wrap(addr_err_impl, addr_err);
 
-    BOOST_REQUIRE(addr_err.operator ->() != NULL);
-    BOOST_CHECK(addr_err->address_presence == Registry::MojeID::REQUIRED);
-    BOOST_CHECK(addr_err->street1          == Registry::MojeID::INVALID);
-    BOOST_CHECK(addr_err->city             == Registry::MojeID::NOT_AVAILABLE);
-    BOOST_CHECK(addr_err->postal_code      == Registry::MojeID::REQUIRED);
-    BOOST_CHECK(addr_err->country          == Registry::MojeID::NOT_AVAILABLE);
+    BOOST_CHECK(addr_err.address_presence == Registry::MojeID::REQUIRED);
+    BOOST_CHECK(addr_err.street1          == Registry::MojeID::INVALID);
+    BOOST_CHECK(addr_err.city             == Registry::MojeID::NOT_AVAILABLE);
+    BOOST_CHECK(addr_err.postal_code      == Registry::MojeID::REQUIRED);
+    BOOST_CHECK(addr_err.country          == Registry::MojeID::NOT_AVAILABLE);
 }
 
 BOOST_AUTO_TEST_CASE(test_mojeid_shippingaddressvalidationresult)
@@ -512,14 +502,13 @@ BOOST_AUTO_TEST_CASE(test_mojeid_shippingaddressvalidationresult)
     addr_err_impl.postal_code = Registry::MojeID::REQUIRED;
     addr_err_impl.country     = Registry::MojeID::NOT_AVAILABLE;
 
-    Registry::MojeID::ShippingAddressValidationResult_var addr_err = CorbaConversion::wrap_into<
-        Registry::MojeID::ShippingAddressValidationResult_var>(addr_err_impl);
+    Registry::MojeID::ShippingAddressValidationResult addr_err;
+    CorbaConversion::wrap(addr_err_impl, addr_err);
 
-    BOOST_REQUIRE(addr_err.operator ->() != NULL);
-    BOOST_CHECK(addr_err->street1     == Registry::MojeID::INVALID);
-    BOOST_CHECK(addr_err->city        == Registry::MojeID::NOT_AVAILABLE);
-    BOOST_CHECK(addr_err->postal_code == Registry::MojeID::REQUIRED);
-    BOOST_CHECK(addr_err->country     == Registry::MojeID::NOT_AVAILABLE);
+    BOOST_CHECK(addr_err.street1     == Registry::MojeID::INVALID);
+    BOOST_CHECK(addr_err.city        == Registry::MojeID::NOT_AVAILABLE);
+    BOOST_CHECK(addr_err.postal_code == Registry::MojeID::REQUIRED);
+    BOOST_CHECK(addr_err.country     == Registry::MojeID::NOT_AVAILABLE);
 }
 
 BOOST_AUTO_TEST_CASE(test_mojeid_message_limit_exceeded)
@@ -820,23 +809,17 @@ BOOST_AUTO_TEST_CASE(test_mojeid_create_contact)
 {
     Registry::MojeID::CreateContact_var cc = new Registry::MojeID::CreateContact;
 
-    cc->username = CorbaConversion::wrap_into<CORBA::String_var>(std::string("username"));
-    cc->first_name = CorbaConversion::wrap_into<CORBA::String_var>(std::string("first_name"));
-    cc->last_name = CorbaConversion::wrap_into<CORBA::String_var>(std::string("last_name"));
-    cc->organization = CorbaConversion::wrap_into<Registry::MojeID::NullableString_var>(
-        Nullable<std::string>("org"));
-    cc->vat_reg_num = CorbaConversion::wrap_into<Registry::MojeID::NullableString_var>(
-        Nullable<std::string>("vat_reg_num"));
-    cc->birth_date = CorbaConversion::wrap_into<Registry::MojeID::NullableDate_var>(
-        Nullable<boost::gregorian::date>(boost::gregorian::date(2015,12,10)));
-    cc->id_card_num = CorbaConversion::wrap_into<Registry::MojeID::NullableString_var>(
-        Nullable<std::string>("id_card_num"));
-    cc->passport_num = CorbaConversion::wrap_into<Registry::MojeID::NullableString_var>(
-        Nullable<std::string>("passport_num"));
-    cc->ssn_id_num = CorbaConversion::wrap_into<Registry::MojeID::NullableString_var>(
-        Nullable<std::string>("ssn_id_num"));
-    cc->vat_id_num = CorbaConversion::wrap_into<Registry::MojeID::NullableString_var>(
-        Nullable<std::string>("vat_id_num"));
+    CorbaConversion::wrap_into_holder(std::string("username"), cc->username);
+    CorbaConversion::wrap_into_holder(std::string("first_name"), cc->first_name);
+    CorbaConversion::wrap_into_holder(std::string("last_name"), cc->last_name);
+    CorbaConversion::wrap_nullable_into_holder(Nullable< std::string >("org"), cc->organization);
+    CorbaConversion::wrap_nullable_into_holder(Nullable< std::string >("vat_reg_num"), cc->vat_reg_num);
+    CorbaConversion::wrap_nullable_into_holder(Nullable< boost::gregorian::date >(boost::gregorian::date(2015,12,10)),
+                                               cc->birth_date);
+    CorbaConversion::wrap_nullable_into_holder(Nullable< std::string >("id_card_num"), cc->id_card_num);
+    CorbaConversion::wrap_nullable_into_holder(Nullable< std::string >("passport_num"), cc->passport_num);
+    CorbaConversion::wrap_nullable_into_holder(Nullable< std::string >("ssn_id_num"), cc->ssn_id_num);
+    CorbaConversion::wrap_nullable_into_holder(Nullable< std::string >("vat_id_num"), cc->vat_id_num);
     {
         Registry::MojeIDImplData::Address addr_impl;
         addr_impl.street1 = "st1";
@@ -845,7 +828,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_create_contact)
         addr_impl.city = "Praha";
         addr_impl.state = "state";
         addr_impl.country = "Czech Republic";
-        cc->permanent = CorbaConversion::wrap_into<Registry::MojeID::Address_var>(addr_impl);
+        CorbaConversion::wrap(addr_impl, cc->permanent);
     }
     {
         Registry::MojeIDImplData::Address addr_impl;
@@ -856,8 +839,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_create_contact)
         addr_impl.state = "m_state";
         addr_impl.country = "m_Czech Republic";
 
-        cc->mailing = CorbaConversion::wrap_into<Registry::MojeID::NullableAddress_var>(
-            Nullable<Registry::MojeIDImplData::Address>(addr_impl));
+        CorbaConversion::wrap_into_holder(addr_impl, cc->mailing);
     }
     {
         Registry::MojeIDImplData::Address addr_impl;
@@ -868,8 +850,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_create_contact)
         addr_impl.state = "b_state";
         addr_impl.country = "b_Czech Republic";
 
-        cc->billing = CorbaConversion::wrap_into<Registry::MojeID::NullableAddress_var>(
-            Nullable<Registry::MojeIDImplData::Address>(addr_impl));
+        CorbaConversion::wrap_into_holder(addr_impl, cc->billing);
     }
     {
         Registry::MojeIDImplData::ShippingAddress addr_impl;
@@ -881,8 +862,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_create_contact)
         addr_impl.state = "s_state";
         addr_impl.country = "s_Czech Republic";
 
-        cc->shipping = CorbaConversion::wrap_into<Registry::MojeID::NullableShippingAddress_var>(
-            Nullable<Registry::MojeIDImplData::ShippingAddress>(addr_impl));
+        CorbaConversion::wrap_into_holder(addr_impl, cc->shipping);
     }
     {
         Registry::MojeIDImplData::ShippingAddress addr_impl;
@@ -894,8 +874,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_create_contact)
         addr_impl.state = "s2_state";
         addr_impl.country = "s2_Czech Republic";
 
-        cc->shipping2 = CorbaConversion::wrap_into<Registry::MojeID::NullableShippingAddress_var>(
-            Nullable<Registry::MojeIDImplData::ShippingAddress>(addr_impl));
+        CorbaConversion::wrap_into_holder(addr_impl, cc->shipping2);
     }
     {
         Registry::MojeIDImplData::ShippingAddress addr_impl;
@@ -907,15 +886,12 @@ BOOST_AUTO_TEST_CASE(test_mojeid_create_contact)
         addr_impl.state = "s3_state";
         addr_impl.country = "s3_Czech Republic";
 
-        cc->shipping3 = CorbaConversion::wrap_into<Registry::MojeID::NullableShippingAddress_var>(
-            Nullable<Registry::MojeIDImplData::ShippingAddress>(addr_impl));
+        CorbaConversion::wrap_into_holder(addr_impl, cc->shipping3);
     }
-    cc->email = CorbaConversion::wrap_into<CORBA::String_var>(std::string("email"));
-    cc->notify_email = CorbaConversion::wrap_into<Registry::MojeID::NullableString_var>(
-        Nullable<std::string>("notify_email"));
-    cc->telephone = CorbaConversion::wrap_into<CORBA::String_var>(std::string("telephone"));
-    cc->fax = CorbaConversion::wrap_into<Registry::MojeID::NullableString_var>(
-        Nullable<std::string>("fax"));
+    CorbaConversion::wrap_into_holder(std::string("email"), cc->email);
+    CorbaConversion::wrap_nullable_into_holder(Nullable< std::string >("notify_email"), cc->notify_email);
+    CorbaConversion::wrap_into_holder(std::string("telephone"), cc->telephone);
+    CorbaConversion::wrap_nullable_into_holder(Nullable< std::string >("fax"), cc->fax);
 
     Registry::MojeIDImplData::CreateContact cc_impl = CorbaConversion::unwrap_into<
         Registry::MojeIDImplData::CreateContact>(cc.in());
@@ -1001,23 +977,17 @@ BOOST_AUTO_TEST_CASE(test_mojeid_update_contact)
 {
     Registry::MojeID::UpdateContact_var uc = new Registry::MojeID::UpdateContact;
 
-    uc->id = CorbaConversion::wrap_into<CORBA::ULongLong>(5ull);
-    uc->first_name = CorbaConversion::wrap_into<CORBA::String_var>(std::string("first_name"));
-    uc->last_name = CorbaConversion::wrap_into<CORBA::String_var>(std::string("last_name"));
-    uc->organization = CorbaConversion::wrap_into<Registry::MojeID::NullableString_var>(
-        Nullable<std::string>("org"));
-    uc->vat_reg_num = CorbaConversion::wrap_into<Registry::MojeID::NullableString_var>(
-        Nullable<std::string>("vat_reg_num"));
-    uc->birth_date = CorbaConversion::wrap_into<Registry::MojeID::NullableDate_var>(
-        Nullable<boost::gregorian::date>(boost::gregorian::date(2015,12,10)));
-    uc->id_card_num = CorbaConversion::wrap_into<Registry::MojeID::NullableString_var>(
-        Nullable<std::string>("id_card_num"));
-    uc->passport_num = CorbaConversion::wrap_into<Registry::MojeID::NullableString_var>(
-        Nullable<std::string>("passport_num"));
-    uc->ssn_id_num = CorbaConversion::wrap_into<Registry::MojeID::NullableString_var>(
-        Nullable<std::string>("ssn_id_num"));
-    uc->vat_id_num = CorbaConversion::wrap_into<Registry::MojeID::NullableString_var>(
-        Nullable<std::string>("vat_id_num"));
+    CorbaConversion::wrap(5ull, uc->id);
+    CorbaConversion::wrap_into_holder(std::string("first_name"), uc->first_name);
+    CorbaConversion::wrap_into_holder(std::string("last_name"), uc->last_name);
+    CorbaConversion::wrap_nullable_into_holder(Nullable< std::string >("org"), uc->organization);
+    CorbaConversion::wrap_nullable_into_holder(Nullable< std::string >("vat_reg_num"), uc->vat_reg_num);
+    CorbaConversion::wrap_nullable_into_holder(Nullable< boost::gregorian::date >(boost::gregorian::date(2015,12,10)),
+                                               uc->birth_date);
+    CorbaConversion::wrap_nullable_into_holder(Nullable< std::string >("id_card_num"), uc->id_card_num);
+    CorbaConversion::wrap_nullable_into_holder(Nullable< std::string >("passport_num"), uc->passport_num);
+    CorbaConversion::wrap_nullable_into_holder(Nullable< std::string >("ssn_id_num"), uc->ssn_id_num);
+    CorbaConversion::wrap_nullable_into_holder(Nullable< std::string >("vat_id_num"), uc->vat_id_num);
     {
         Registry::MojeIDImplData::Address addr_impl;
         addr_impl.street1 = "st1";
@@ -1026,7 +996,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_update_contact)
         addr_impl.city = "Praha";
         addr_impl.state = "state";
         addr_impl.country = "Czech Republic";
-        uc->permanent = CorbaConversion::wrap_into<Registry::MojeID::Address_var>(addr_impl);
+        CorbaConversion::wrap(addr_impl, uc->permanent);
     }
     {
         Registry::MojeIDImplData::Address addr_impl;
@@ -1037,8 +1007,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_update_contact)
         addr_impl.state = "m_state";
         addr_impl.country = "m_Czech Republic";
 
-        uc->mailing = CorbaConversion::wrap_into<Registry::MojeID::NullableAddress_var>(
-            Nullable<Registry::MojeIDImplData::Address>(addr_impl));
+        CorbaConversion::wrap_into_holder(addr_impl, uc->mailing);
     }
     {
         Registry::MojeIDImplData::Address addr_impl;
@@ -1049,8 +1018,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_update_contact)
         addr_impl.state = "b_state";
         addr_impl.country = "b_Czech Republic";
 
-        uc->billing = CorbaConversion::wrap_into<Registry::MojeID::NullableAddress_var>(
-            Nullable<Registry::MojeIDImplData::Address>(addr_impl));
+        CorbaConversion::wrap_into_holder(addr_impl, uc->billing);
     }
     {
         Registry::MojeIDImplData::ShippingAddress addr_impl;
@@ -1062,8 +1030,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_update_contact)
         addr_impl.state = "s_state";
         addr_impl.country = "s_Czech Republic";
 
-        uc->shipping = CorbaConversion::wrap_into<Registry::MojeID::NullableShippingAddress_var>(
-            Nullable<Registry::MojeIDImplData::ShippingAddress>(addr_impl));
+        CorbaConversion::wrap_into_holder(addr_impl, uc->shipping);
     }
     {
         Registry::MojeIDImplData::ShippingAddress addr_impl;
@@ -1075,8 +1042,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_update_contact)
         addr_impl.state = "s2_state";
         addr_impl.country = "s2_Czech Republic";
 
-        uc->shipping2 = CorbaConversion::wrap_into<Registry::MojeID::NullableShippingAddress_var>(
-            Nullable<Registry::MojeIDImplData::ShippingAddress>(addr_impl));
+        CorbaConversion::wrap_into_holder(addr_impl, uc->shipping2);
     }
     {
         Registry::MojeIDImplData::ShippingAddress addr_impl;
@@ -1088,16 +1054,12 @@ BOOST_AUTO_TEST_CASE(test_mojeid_update_contact)
         addr_impl.state = "s3_state";
         addr_impl.country = "s3_Czech Republic";
 
-        uc->shipping3 = CorbaConversion::wrap_into<Registry::MojeID::NullableShippingAddress_var>(
-            Nullable<Registry::MojeIDImplData::ShippingAddress>(addr_impl));
+        CorbaConversion::wrap_into_holder(addr_impl, uc->shipping3);
     }
-    uc->email = CorbaConversion::wrap_into<CORBA::String_var>(std::string("email"));
-    uc->notify_email = CorbaConversion::wrap_into<Registry::MojeID::NullableString_var>(
-        Nullable<std::string>("notify_email"));
-    uc->telephone = CorbaConversion::wrap_into<Registry::MojeID::NullableString_var>(
-        Nullable<std::string>("telephone"));
-    uc->fax = CorbaConversion::wrap_into<Registry::MojeID::NullableString_var>(
-        Nullable<std::string>("fax"));
+    CorbaConversion::wrap_into_holder(std::string("email"), uc->email);
+    CorbaConversion::wrap_nullable_into_holder(Nullable< std::string >("notify_email"), uc->notify_email);
+    CorbaConversion::wrap_nullable_into_holder(Nullable< std::string >("telephone"), uc->telephone);
+    CorbaConversion::wrap_nullable_into_holder(Nullable< std::string >("fax"), uc->fax);
 
     Registry::MojeIDImplData::UpdateContact uc_impl = CorbaConversion::unwrap_into<
         Registry::MojeIDImplData::UpdateContact>(uc.in());
@@ -1169,14 +1131,11 @@ BOOST_AUTO_TEST_CASE(test_mojeid_set_contact)
 {
     Registry::MojeID::SetContact_var sc = new Registry::MojeID::SetContact;
 
-    sc->organization = CorbaConversion::wrap_into<Registry::MojeID::NullableString_var>(
-        Nullable<std::string>("org"));
-    sc->vat_reg_num = CorbaConversion::wrap_into<Registry::MojeID::NullableString_var>(
-        Nullable<std::string>("vat_reg_num"));
-    sc->birth_date = CorbaConversion::wrap_into<Registry::MojeID::NullableDate_var>(
-        Nullable<boost::gregorian::date>(boost::gregorian::date(2015,12,10)));
-    sc->vat_id_num = CorbaConversion::wrap_into<Registry::MojeID::NullableString_var>(
-        Nullable<std::string>("vat_id_num"));
+    CorbaConversion::wrap_nullable_into_holder(Nullable< std::string >("org"), sc->organization);
+    CorbaConversion::wrap_nullable_into_holder(Nullable< std::string >("vat_reg_num"), sc->vat_reg_num);
+    CorbaConversion::wrap_nullable_into_holder(Nullable< boost::gregorian::date >(boost::gregorian::date(2015,12,10)),
+                                               sc->birth_date);
+    CorbaConversion::wrap_nullable_into_holder(Nullable< std::string >("vat_id_num"), sc->vat_id_num);
     {
         Registry::MojeIDImplData::Address addr_impl;
         addr_impl.street1 = "st1";
@@ -1185,7 +1144,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_set_contact)
         addr_impl.city = "Praha";
         addr_impl.state = "state";
         addr_impl.country = "Czech Republic";
-        sc->permanent = CorbaConversion::wrap_into<Registry::MojeID::Address_var>(addr_impl);
+        CorbaConversion::wrap(addr_impl, sc->permanent);
     }
     {
         Registry::MojeIDImplData::Address addr_impl;
@@ -1196,16 +1155,13 @@ BOOST_AUTO_TEST_CASE(test_mojeid_set_contact)
         addr_impl.state = "m_state";
         addr_impl.country = "m_Czech Republic";
 
-        sc->mailing = CorbaConversion::wrap_into<Registry::MojeID::NullableAddress_var>(
-            Nullable<Registry::MojeIDImplData::Address>(addr_impl));
+        CorbaConversion::wrap_into_holder(addr_impl, sc->mailing);
     }
 
-    sc->email = CorbaConversion::wrap_into<CORBA::String_var>(std::string("email"));
-    sc->notify_email = CorbaConversion::wrap_into<Registry::MojeID::NullableString_var>(
-        Nullable<std::string>("notify_email"));
-    sc->telephone = CorbaConversion::wrap_into<CORBA::String_var>(std::string("telephone"));
-    sc->fax = CorbaConversion::wrap_into<Registry::MojeID::NullableString_var>(
-        Nullable<std::string>("fax"));
+    CorbaConversion::wrap_into_holder(std::string("email"), sc->email);
+    CorbaConversion::wrap_nullable_into_holder(Nullable< std::string >("notify_email"), sc->notify_email);
+    CorbaConversion::wrap_into_holder(std::string("telephone"), sc->telephone);
+    CorbaConversion::wrap_nullable_into_holder(Nullable< std::string >("fax"), sc->fax);
 
     Registry::MojeIDImplData::SetContact sc_impl = CorbaConversion::unwrap_into<
         Registry::MojeIDImplData::SetContact>(sc.in());
@@ -1328,7 +1284,8 @@ BOOST_AUTO_TEST_CASE(test_mojeid_info_contact)
     info_contact_impl.fax = "fax";
 
 
-    Registry::MojeID::InfoContact_var info_contact = CorbaConversion::wrap_into<Registry::MojeID::InfoContact_var>(info_contact_impl);
+    Registry::MojeID::InfoContact_var info_contact;
+    CorbaConversion::wrap_into_holder(info_contact_impl, info_contact);
 
     BOOST_REQUIRE(info_contact.operator->() != NULL);
     BOOST_CHECK(info_contact->id == 5);
@@ -1441,7 +1398,8 @@ BOOST_AUTO_TEST_CASE(test_mojeid_contact_state_info)
     info_impl.validation_date = Nullable<boost::gregorian::date>(boost::gregorian::date(2015,12,13));
     info_impl.linked_date = Nullable<boost::gregorian::date>(boost::gregorian::date(2015,12,14));
 
-    Registry::MojeID::ContactStateInfo_var info = CorbaConversion::wrap_into<Registry::MojeID::ContactStateInfo_var>(info_impl);
+    Registry::MojeID::ContactStateInfo_var info;
+    CorbaConversion::wrap_into_holder(info_impl, info);
 
     BOOST_CHECK(info->contact_id == 6);
     BOOST_CHECK(CorbaConversion::unwrap_into<boost::posix_time::ptime>(
@@ -1459,10 +1417,9 @@ BOOST_AUTO_TEST_CASE(test_mojeid_contact_state_info)
 
 BOOST_AUTO_TEST_CASE(test_string_octet_seq_tmpl)
 {
-    Registry::MojeID::Buffer_var out_seq_var;
-    CorbaConversion::Wrapper_container_into_OctetSeq_var<
-        Registry::MojeID::Buffer, Registry::MojeID::Buffer_var, std::string>
-            ::wrap(std::string("test"), out_seq_var);
+    Registry::MojeID::Buffer_var out_seq_var = new Registry::MojeID::Buffer;
+    CorbaConversion::Wrapper_container_into_OctetSeq< Registry::MojeID::Buffer, std::string >
+        ::wrap(std::string("test"), out_seq_var.inout());
     BOOST_REQUIRE(out_seq_var.operator ->() != NULL);
     BOOST_CHECK(std::string(reinterpret_cast<const char *>(out_seq_var->get_buffer()),
         out_seq_var->length()) == "test");
@@ -1477,10 +1434,9 @@ BOOST_AUTO_TEST_CASE(test_string_octet_seq_tmpl)
 
 BOOST_AUTO_TEST_CASE(test_empty_octet_seq_tmpl)
 {
-    Registry::MojeID::Buffer_var out_seq_var;
-    CorbaConversion::Wrapper_container_into_OctetSeq_var<
-        Registry::MojeID::Buffer, Registry::MojeID::Buffer_var, std::string>
-            ::wrap(std::string(), out_seq_var);
+    Registry::MojeID::Buffer_var out_seq_var = new Registry::MojeID::Buffer;
+    CorbaConversion::Wrapper_container_into_OctetSeq< Registry::MojeID::Buffer, std::string >
+        ::wrap(std::string(), out_seq_var.inout());
     BOOST_REQUIRE(out_seq_var.operator ->() != NULL);
     BOOST_CHECK(out_seq_var->length() == 0);
 
@@ -1500,10 +1456,9 @@ BOOST_AUTO_TEST_CASE(test_empty_octet_seq_tmpl)
 BOOST_AUTO_TEST_CASE(test_vector_octet_seq_tmpl)
 {
     const char* data = "test";
-    Registry::MojeID::Buffer_var out_seq_var;
-    CorbaConversion::Wrapper_container_into_OctetSeq_var<
-        Registry::MojeID::Buffer, Registry::MojeID::Buffer_var, std::vector<unsigned char> >
-            ::wrap(std::vector<unsigned char>(data, data + 4), out_seq_var);
+    Registry::MojeID::Buffer_var out_seq_var = new Registry::MojeID::Buffer;
+    CorbaConversion::Wrapper_container_into_OctetSeq< Registry::MojeID::Buffer, std::vector< unsigned char > >
+        ::wrap(std::vector< unsigned char >(data, data + 4), out_seq_var.inout());
     BOOST_REQUIRE(out_seq_var.operator ->() != NULL);
     BOOST_CHECK(std::string(reinterpret_cast<const char *>(out_seq_var->get_buffer()),
         out_seq_var->length()) == "test");
@@ -1524,7 +1479,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_contact_state_info_list)
     std::vector<Registry::MojeIDImplData::ContactStateInfo> data;
     Registry::MojeID::ContactStateInfoList_var res;
 
-    res = CorbaConversion::wrap_into<Registry::MojeID::ContactStateInfoList_var>(data);
+    CorbaConversion::wrap_into_holder(data, res);
     BOOST_REQUIRE(res.operator ->() != NULL);
     BOOST_CHECK(res->length() == 0);
 
@@ -1549,7 +1504,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_contact_state_info_list)
         data.push_back(info_impl);
     }
 
-    res = CorbaConversion::wrap_into<Registry::MojeID::ContactStateInfoList_var>(data);
+    CorbaConversion::wrap_into_holder(data, res);
     BOOST_REQUIRE(res.operator ->() != NULL);
     BOOST_REQUIRE(res->length() == 2);
 
@@ -1580,7 +1535,8 @@ BOOST_AUTO_TEST_CASE(test_mojeid_contact_state_info_list)
 
 BOOST_AUTO_TEST_CASE(test_mojeid_buffer)
 {
-    Registry::MojeID::Buffer_var out_seq_var = CorbaConversion::wrap_into<Registry::MojeID::Buffer_var>(std::string("test"));
+    Registry::MojeID::Buffer_var out_seq_var;
+    CorbaConversion::wrap_into_holder(std::string("test"), out_seq_var);
     BOOST_REQUIRE(out_seq_var.operator ->() != NULL);
     BOOST_CHECK(std::string(reinterpret_cast<const char *>(out_seq_var->get_buffer()),
         out_seq_var->length()) == "test");
@@ -1589,8 +1545,9 @@ BOOST_AUTO_TEST_CASE(test_mojeid_buffer)
 
 BOOST_AUTO_TEST_CASE(test_mojeid_constact_handle_list)
 {
-    Registry::MojeID::ContactHandleList_var ssv1 = CorbaConversion::wrap_into<Registry::MojeID::ContactHandleList_var>(
-        std::vector<std::string>(Util::vector_of<std::string>("test1")("test2")("test3")));
+    Registry::MojeID::ContactHandleList_var ssv1;
+    CorbaConversion::wrap_into_holder(std::vector< std::string >(Util::vector_of< std::string >("test1")("test2")("test3")),
+                                      ssv1);
     BOOST_REQUIRE(ssv1.operator ->() != NULL);
     BOOST_REQUIRE(ssv1->length() == 3);
     BOOST_CHECK(std::string(ssv1[0]) == "test1");

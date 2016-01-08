@@ -35,9 +35,4 @@ namespace CorbaConversion
         nct_out = std::string(ct_in);
     }
 
-    void Wrapper_std_string_into_String_var::wrap( const NON_CORBA_TYPE& nct_in, CORBA_TYPE& ct_out )
-    {
-        ct_out = CORBA::String_var(CORBA::string_dup(nct_in.c_str()));
-    }
-
 }
