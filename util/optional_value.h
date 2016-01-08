@@ -190,6 +190,14 @@ public:
     }
 
     /**
+     * @returns either value of object or falls back to provided value in case object is not set
+     */
+    T get_value_or(const T& _default) const
+    {
+        return isset_ ? value_ : _default;
+    }
+
+    /**
      * overloaded printing to ostream
      */
     friend std::ostream& operator<<(std::ostream& os, const Optional<T>& ov)

@@ -204,6 +204,19 @@ BOOST_AUTO_TEST_CASE( test_all_values )
     }
 }
 
+BOOST_AUTO_TEST_CASE( test_get_value_or )
+{
+    BOOST_CHECK_EQUAL( Optional<int>().get_value_or(0), 0);
+    BOOST_CHECK_EQUAL( Optional<int>().get_value_or(42), 42);
+    BOOST_CHECK_EQUAL( Optional<std::string>().get_value_or(""), "");
+    BOOST_CHECK_EQUAL( Optional<std::string>().get_value_or("aBc"), "aBc");
+
+    BOOST_CHECK_EQUAL( Optional<int>(13).get_value_or(0), 13);
+    BOOST_CHECK_EQUAL( Optional<int>(144).get_value_or(42), 144);
+    BOOST_CHECK_EQUAL( Optional<std::string>("Prague").get_value_or(""), "Prague");
+    BOOST_CHECK_EQUAL( Optional<std::string>("CZ.NIC").get_value_or("aBc"), "CZ.NIC");
+}
+
 #if 0
 void unable_to_compile()
 {
