@@ -30,6 +30,8 @@
 
 #include <boost/date_time/posix_time/ptime.hpp>
 #include <map>
+#include <set>
+#include <boost/assign/list_of.hpp>
 #include <iosfwd>
 
 namespace Fred
@@ -47,6 +49,19 @@ namespace Fred
             SHIPPING_2,
             SHIPPING_3
         };
+
+        /**
+         * @returns all possible values of Value
+         */
+        static std::set<Value> get_all() {
+            return boost::assign::list_of
+                (MAILING)
+                (BILLING)
+                (SHIPPING)
+                (SHIPPING_2)
+                (SHIPPING_3);
+        }
+
         /**
          * Init constructor.
          * @param _value initializes @ref value
