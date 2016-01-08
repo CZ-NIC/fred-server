@@ -927,7 +927,15 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/object_state/clear_object_state_request_id.h \
 		src/fredlib/object_state/typedefs.h \
 		src/fredlib/object/object_id_handle_pair.h \
-		src/fredlib/object/object_id_handle_pair.cc
+		src/fredlib/object/object_id_handle_pair.cc \
+		src/fredlib/notifier2/enqueue_notification.cc \
+		src/fredlib/notifier2/gather_email_data/gather_email_addresses.cc \
+		src/fredlib/notifier2/gather_email_data/gather_email_content.cc \
+		src/fredlib/notifier2/gather_email_data/objecttype_specific_impl/contact.cc \
+		src/fredlib/notifier2/gather_email_data/objecttype_specific_impl/domain.cc \
+		src/fredlib/notifier2/gather_email_data/objecttype_specific_impl/keyset.cc \
+		src/fredlib/notifier2/gather_email_data/objecttype_specific_impl/nsset.cc \
+		src/fredlib/notifier2/process_one_notification_request.cc
 #
 # src/fredlib/libfred.a
 
@@ -2455,6 +2463,43 @@ tests_test_fredlib_SOURCES = \
 		tests/fredlib/object_state/test_create_admin_object_state_restore_request_id.cc \
 		tests/fredlib/object_state/test_cancel_object_state_request_id.cc \
 		tests/fredlib/object/test_registry_object_type.cc \
+		tests/fredlib/notifier2/test_enqueue_notification.cc \
+		tests/fredlib/notifier2/test_event_on_object_enum.cc \
+		tests/fredlib/notifier2/test_gather_email_addresses_contact_create.cc \
+		tests/fredlib/notifier2/test_gather_email_addresses_contact_transfer.cc \
+		tests/fredlib/notifier2/test_gather_email_addresses_contact_delete.cc \
+		tests/fredlib/notifier2/test_gather_email_addresses_contact_update.cc \
+		tests/fredlib/notifier2/test_gather_email_addresses_domain_create.cc \
+		tests/fredlib/notifier2/test_gather_email_addresses_domain_update.cc \
+		tests/fredlib/notifier2/test_gather_email_addresses_domain_transfer.cc \
+		tests/fredlib/notifier2/test_gather_email_addresses_domain_delete.cc \
+		tests/fredlib/notifier2/test_gather_email_addresses_domain_renew.cc \
+		tests/fredlib/notifier2/test_gather_email_addresses_keyset_create.cc \
+		tests/fredlib/notifier2/test_gather_email_addresses_keyset_update.cc \
+		tests/fredlib/notifier2/test_gather_email_addresses_keyset_transfer.cc \
+		tests/fredlib/notifier2/test_gather_email_addresses_keyset_delete.cc \
+		tests/fredlib/notifier2/test_gather_email_addresses_nsset_create.cc \
+		tests/fredlib/notifier2/test_gather_email_addresses_nsset_update.cc \
+		tests/fredlib/notifier2/test_gather_email_addresses_nsset_transfer.cc \
+		tests/fredlib/notifier2/test_gather_email_addresses_nsset_delete.cc \
+		tests/fredlib/notifier2/test_gather_email_content_contact_create.cc \
+		tests/fredlib/notifier2/test_gather_email_content_contact_delete.cc \
+		tests/fredlib/notifier2/test_gather_email_content_contact_transfer.cc \
+		tests/fredlib/notifier2/test_gather_email_content_contact_update.cc \
+		tests/fredlib/notifier2/test_gather_email_content_domain_create.cc \
+		tests/fredlib/notifier2/test_gather_email_content_domain_delete.cc \
+		tests/fredlib/notifier2/test_gather_email_content_domain_renew.cc \
+		tests/fredlib/notifier2/test_gather_email_content_domain_transfer.cc \
+		tests/fredlib/notifier2/test_gather_email_content_domain_update.cc \
+		tests/fredlib/notifier2/test_gather_email_content_keyset_create.cc \
+		tests/fredlib/notifier2/test_gather_email_content_keyset_delete.cc \
+		tests/fredlib/notifier2/test_gather_email_content_keyset_transfer.cc \
+		tests/fredlib/notifier2/test_gather_email_content_keyset_update.cc \
+		tests/fredlib/notifier2/test_gather_email_content_nsset_create.cc \
+		tests/fredlib/notifier2/test_gather_email_content_nsset_delete.cc \
+		tests/fredlib/notifier2/test_gather_email_content_nsset_transfer.cc \
+		tests/fredlib/notifier2/test_gather_email_content_nsset_update.cc \
+		tests/fredlib/notifier2/test_process_one_notification_request.cc \
 		tests/fredlib/test_opexception.cc \
 		tests/fredlib/test_check_handle.cc \
 		tests/util/test_param_query.cc \
@@ -2475,6 +2520,9 @@ tests_test_fredlib_LDADD = \
 		util/log/liblog.a \
 		util/db/libdb.a \
 		-lmpdec -lm -lrt \
+		src/corba/libcorba.a \
+		src/corba/libmailer.a \
+		src/corba/libcorbadatatypes.a \
 		$(LIBIDN_LIBS) \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(BOOST_DATE_TIME_LIB) \
