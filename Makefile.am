@@ -198,7 +198,25 @@ noinst_HEADERS = \
 		src/fredlib/contact/verification/exceptions.h \
 		src/admin/contact/verification/test_impl/test_interface.h \
 		src/admin/contact/verification/exceptions.h \
-		src/fredlib/object/registry_object_type.h
+		src/fredlib/object/registry_object_type.h \
+		src/fredlib/notifier2/enqueue_notification.h \
+		src/fredlib/notifier2/event_on_object_enum.h \
+		src/fredlib/notifier2/exception.h \
+		src/fredlib/notifier2/process_one_notification_request.h \
+		src/fredlib/notifier2/gather_email_data/gather_email_addresses.h \
+		src/fredlib/notifier2/gather_email_data/gather_email_content.h \
+		src/fredlib/notifier2/gather_email_data/notification_request.h \
+		src/fredlib/notifier2/gather_email_data/objecttype_specific_impl/contact.h \
+		src/fredlib/notifier2/gather_email_data/objecttype_specific_impl/domain.h \
+		src/fredlib/notifier2/gather_email_data/objecttype_specific_impl/keyset.h \
+		src/fredlib/notifier2/gather_email_data/objecttype_specific_impl/nsset.h \
+		src/fredlib/notifier2/util/add_old_new_suffix_pair.h \
+		src/fredlib/notifier2/util/bool_to_string.h \
+		src/fredlib/notifier2/util/boost_date_to_cz_string.h \
+		src/fredlib/notifier2/util/get_previous_object_historyid.h \
+		src/fredlib/notifier2/util/string_list_utils.h \
+		tests/fredlib/notifier2/fixture_data.h \
+		tests/fredlib/notifier2/util.h
 
 
 
