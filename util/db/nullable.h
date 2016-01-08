@@ -308,6 +308,17 @@ bool operator!=(const T &_a, const Nullable< T > &_b)
 }
 
 /**
+ * @throws exception of type TException when _input isnull()
+ */
+template<typename TException, typename T>T null_filter(const Nullable<T>& _input) {
+    if( _input.isnull() ) {
+        throw TException();
+    }
+
+    return _input.get_value();
+};
+
+/**
  * assurance that Nullable< T* > is never used
  *
  * \warning Never use Nullable< T* > because isnull() method would be ambiguous.

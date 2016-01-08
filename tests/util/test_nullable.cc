@@ -216,6 +216,21 @@ BOOST_AUTO_TEST_CASE( test_get_value_or )
     BOOST_CHECK_EQUAL( Nullable<std::string>("CZ.NIC").get_value_or("aBc"), "CZ.NIC");
 }
 
+struct MyDummyException {};
+
+BOOST_AUTO_TEST_CASE( test_null_filter )
+{
+    BOOST_CHECK_THROW( null_filter<MyDummyException>( Nullable<int>() ), MyDummyException);
+    BOOST_CHECK_THROW( null_filter<int>( Nullable<int>() ), int);
+    BOOST_CHECK_THROW( null_filter<MyDummyException>( Nullable<std::string>() ), MyDummyException);
+    BOOST_CHECK_THROW( null_filter<std::string>( Nullable<int>() ), std::string);
+
+    BOOST_CHECK_EQUAL( null_filter<int>( Nullable<int>(13) ), 13);
+    BOOST_CHECK_EQUAL( null_filter<bool>( Nullable<int>(144) ), 144);
+    BOOST_CHECK_EQUAL( null_filter<std::string>( Nullable<std::string>("Prague") ), "Prague");
+    BOOST_CHECK_EQUAL( null_filter<MyDummyException>( Nullable<std::string>("CZ.NIC") ), "CZ.NIC");
+}
+
 #if 0
 void unable_to_compile()
 {
