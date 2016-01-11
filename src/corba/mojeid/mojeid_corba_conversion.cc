@@ -25,6 +25,18 @@
 
 namespace CorbaConversion
 {
+    namespace Internal
+    {
+        void into_safe_storage< std::string, char >::wrap(const std::string &src, char *&safe_dst)
+        {
+            //some string holders are initialized to the special value
+            if (safe_dst != _CORBA_String_helper::empty_string) {
+                check_empty_storage(safe_dst);
+            }
+            safe_dst = CORBA::string_dup(src.c_str());
+        }
+    }
+
     void DEFAULT_UNWRAPPER< Registry::MojeID::Date,
                             boost::gregorian::date >::unwrap(const CORBA_TYPE &src,
                                                              NON_CORBA_TYPE &dst)

@@ -60,11 +60,7 @@ namespace CorbaConversion
         template < >
         struct into_safe_storage< std::string, char >
         {
-            static void wrap(const std::string &src, char *&safe_dst)
-            {
-                check_empty_storage(safe_dst);
-                safe_dst = CORBA::string_dup(src.c_str());
-            }
+            static void wrap(const std::string &src, char *&safe_dst);
         };
 
         template < class SRC_TYPE, class DST_TYPE >
@@ -104,7 +100,7 @@ namespace CorbaConversion
         typedef DST_NULLABLE_TYPE CORBA_TYPE;
         static void wrap(const NON_CORBA_TYPE &src, CORBA_TYPE &dst)
         {
-            CorbaConversion::wrap(src, dst._value());
+            CorbaConversion::wrap(src, dst._boxed_inout());
         }
     };
 
@@ -125,7 +121,7 @@ namespace CorbaConversion
                 dst = NON_CORBA_TYPE();
             }
             else {
-                dst = unwrap_into< DST_TYPE >(src_ptr->_value());
+                dst = unwrap_into< DST_TYPE >(src_ptr->_boxed_in());
             }
         }
     };
