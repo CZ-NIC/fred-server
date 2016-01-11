@@ -34,7 +34,6 @@
 #include <boost/numeric/conversion/cast.hpp>
 #include <boost/integer_traits.hpp>
 
-#include "util/db/nullable.h"
 /**
  * CORBA conversions
  */
@@ -308,7 +307,7 @@ namespace CorbaConversion
     /**
      * Convert from std::vector<unsigned char>, std::string or compatible into sequence<octet> based CORBA types
      */
-    template < class CORBA_OCTET_SEQ, class NON_CORBA_CONTAINER >
+    template < class NON_CORBA_CONTAINER, class CORBA_OCTET_SEQ >
     struct Wrapper_container_into_OctetSeq
     {
         typedef CORBA_OCTET_SEQ     CORBA_TYPE;
@@ -331,7 +330,7 @@ namespace CorbaConversion
     /**
      * Convert from sequence<octet> based CORBA types into std::vector<unsigned char>, std::string or compatible
      */
-    template < class NON_CORBA_CONTAINER, class CORBA_OCTET_SEQ >
+    template < class CORBA_OCTET_SEQ, class NON_CORBA_CONTAINER >
     struct Unwrapper_OctetSeq_into_container
     {
         typedef CORBA_OCTET_SEQ     CORBA_TYPE;

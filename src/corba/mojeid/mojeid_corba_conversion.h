@@ -25,6 +25,7 @@
 #define MOJEID_CORBA_CONVERSION_H_e5b26622ca884604abf9cf49892b20d7
 
 #include "util/corba_conversion.h"
+#include "util/db/nullable.h"
 #include "src/corba/MojeID2.hh"
 
 namespace CorbaConversion
@@ -672,7 +673,7 @@ namespace CorbaConversion
 
     template < >
     struct DEFAULT_WRAPPER< std::string, Registry::MojeID::Buffer >
-    :   Wrapper_container_into_OctetSeq< Registry::MojeID::Buffer, std::string > { };
+    :   Wrapper_container_into_OctetSeq< std::string, Registry::MojeID::Buffer > { };
 
     template < >
     struct DEFAULT_WRAPPER< std::string, char* >
