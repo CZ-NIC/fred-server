@@ -165,6 +165,18 @@ public:
     }
 
     /**
+     * @returns "normal" value of the object
+     * @throws _exception when _input isnull(), _input default value is defaul-constructed TException object
+     */
+    template<typename TException>T get_value_or_throw( const TException& _exception = TException() ) const {
+        if( isnull() ) {
+            throw _exception;
+        }
+
+        return value_;
+    };
+
+    /**
      * @returns "normal" value of object and in case it is null it returns default value of type T (defined by it's default constructor)
      */
     T get_value_or_default() const
@@ -306,17 +318,6 @@ bool operator!=(const T &_a, const Nullable< T > &_b)
 {
     return !(_a == _b);
 }
-
-/**
- * @throws exception of type TException when _input isnull()
- */
-template<typename TException, typename T>T null_filter(const Nullable<T>& _input) {
-    if( _input.isnull() ) {
-        throw TException();
-    }
-
-    return _input.get_value();
-};
 
 /**
  * assurance that Nullable< T* > is never used

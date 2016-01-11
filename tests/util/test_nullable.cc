@@ -218,17 +218,42 @@ BOOST_AUTO_TEST_CASE( test_get_value_or )
 
 struct MyDummyException {};
 
-BOOST_AUTO_TEST_CASE( test_null_filter )
+BOOST_AUTO_TEST_CASE( test_get_value_or_throw )
 {
-    BOOST_CHECK_THROW( null_filter<MyDummyException>( Nullable<int>() ), MyDummyException);
-    BOOST_CHECK_THROW( null_filter<int>( Nullable<int>() ), int);
-    BOOST_CHECK_THROW( null_filter<MyDummyException>( Nullable<std::string>() ), MyDummyException);
-    BOOST_CHECK_THROW( null_filter<std::string>( Nullable<int>() ), std::string);
+    BOOST_CHECK_THROW( Nullable<int>().get_value_or_throw<MyDummyException>( ), MyDummyException);
+    BOOST_CHECK_THROW( Nullable<int>().get_value_or_throw( MyDummyException() ), MyDummyException);
+    BOOST_CHECK_THROW( Nullable<int>().get_value_or_throw<MyDummyException>( MyDummyException() ), MyDummyException);
 
-    BOOST_CHECK_EQUAL( null_filter<int>( Nullable<int>(13) ), 13);
-    BOOST_CHECK_EQUAL( null_filter<bool>( Nullable<int>(144) ), 144);
-    BOOST_CHECK_EQUAL( null_filter<std::string>( Nullable<std::string>("Prague") ), "Prague");
-    BOOST_CHECK_EQUAL( null_filter<MyDummyException>( Nullable<std::string>("CZ.NIC") ), "CZ.NIC");
+    /* For lack of other types I am throwing int, std::string, etc. (But I am safely catching as well! No type was harmed during testing.) */
+    BOOST_CHECK_THROW( Nullable<int>().get_value_or_throw<int>(  ), int);
+    BOOST_CHECK_THROW( Nullable<int>().get_value_or_throw( static_cast<int>(0) ), int);
+    BOOST_CHECK_THROW( Nullable<int>().get_value_or_throw<int>( static_cast<int>(0) ), int);
+
+    BOOST_CHECK_THROW( Nullable<std::string>().get_value_or_throw<MyDummyException>( ), MyDummyException);
+    BOOST_CHECK_THROW( Nullable<std::string>().get_value_or_throw( MyDummyException() ), MyDummyException);
+    BOOST_CHECK_THROW( Nullable<std::string>().get_value_or_throw<MyDummyException>( MyDummyException() ), MyDummyException);
+
+    BOOST_CHECK_THROW( Nullable<int>().get_value_or_throw<std::string>( ), std::string);
+    BOOST_CHECK_THROW( Nullable<int>().get_value_or_throw( std::string() ), std::string);
+    BOOST_CHECK_THROW( Nullable<int>().get_value_or_throw<std::string>( std::string() ), std::string);
+
+
+
+    BOOST_CHECK_EQUAL( Nullable<bool>(true).get_value_or_throw<int>(13), true);
+    BOOST_CHECK_EQUAL( Nullable<bool>(true).get_value_or_throw( static_cast<int>(13) ), true);
+    BOOST_CHECK_EQUAL( Nullable<bool>(true).get_value_or_throw<int>( static_cast<int>(13) ), true);
+
+    BOOST_CHECK_EQUAL( Nullable<bool>(false).get_value_or_throw<int>(13), false);
+    BOOST_CHECK_EQUAL( Nullable<bool>(false).get_value_or_throw( static_cast<int>(13) ), false);
+    BOOST_CHECK_EQUAL( Nullable<bool>(false).get_value_or_throw<int>( static_cast<int>(13) ), false);
+
+    BOOST_CHECK_EQUAL( Nullable<int>(13).get_value_or_throw<int>(42), 13);
+    BOOST_CHECK_EQUAL( Nullable<int>(13).get_value_or_throw( static_cast<int>(42) ), 13);
+    BOOST_CHECK_EQUAL( Nullable<int>(13).get_value_or_throw<int>( static_cast<int>(42) ), 13);
+
+    BOOST_CHECK_EQUAL( Nullable<int>(144).get_value_or_throw<bool>( ), 144);
+    BOOST_CHECK_EQUAL( Nullable<std::string>("Prague").get_value_or_throw<std::string>( ), "Prague");
+    BOOST_CHECK_EQUAL( Nullable<std::string>("CZ.NIC").get_value_or_throw<MyDummyException>( ), "CZ.NIC");
 }
 
 #if 0
