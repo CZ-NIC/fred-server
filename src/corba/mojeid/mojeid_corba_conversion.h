@@ -333,6 +333,11 @@ namespace Registry
 
         struct AddressValidationResult
         {
+            AddressValidationResult()
+            :   street1    (Registry::MojeID::OK),
+                city       (Registry::MojeID::OK),
+                postal_code(Registry::MojeID::OK),
+                country    (Registry::MojeID::OK) { }
             ValidationResult street1;
             ValidationResult city;
             ValidationResult postal_code;
@@ -341,6 +346,12 @@ namespace Registry
 
         struct MandatoryAddressValidationResult
         {
+            MandatoryAddressValidationResult()
+            :   address_presence(Registry::MojeID::OK),
+                street1         (Registry::MojeID::OK),
+                city            (Registry::MojeID::OK),
+                postal_code     (Registry::MojeID::OK),
+                country         (Registry::MojeID::OK) { }
             ValidationResult address_presence;
             ValidationResult street1;
             ValidationResult city;
@@ -350,6 +361,11 @@ namespace Registry
 
         struct ShippingAddressValidationResult
         {
+            ShippingAddressValidationResult()
+            :   street1    (Registry::MojeID::OK),
+                city       (Registry::MojeID::OK),
+                postal_code(Registry::MojeID::OK),
+                country    (Registry::MojeID::OK) { }
             ValidationResult street1;
             ValidationResult city;
             ValidationResult postal_code;
@@ -365,6 +381,15 @@ namespace Registry
 
         struct RegistrationValidationResult
         {
+            RegistrationValidationResult()
+            :   username    (Registry::MojeID::OK),
+                first_name  (Registry::MojeID::OK),
+                last_name   (Registry::MojeID::OK),
+                birth_date  (Registry::MojeID::OK),
+                email       (Registry::MojeID::OK),
+                notify_email(Registry::MojeID::OK),
+                phone       (Registry::MojeID::OK),
+                fax         (Registry::MojeID::OK) { }
             ValidationResult                username;
             ValidationResult                first_name;
             ValidationResult                last_name;
@@ -383,6 +408,14 @@ namespace Registry
 
         struct UpdateContactPrepareValidationResult
         {
+            UpdateContactPrepareValidationResult()
+            :   first_name  (Registry::MojeID::OK),
+                last_name   (Registry::MojeID::OK),
+                birth_date  (Registry::MojeID::OK),
+                email       (Registry::MojeID::OK),
+                notify_email(Registry::MojeID::OK),
+                phone       (Registry::MojeID::OK),
+                fax         (Registry::MojeID::OK) { }
             ValidationResult                first_name;
             ValidationResult                last_name;
             ValidationResult                birth_date;
@@ -400,6 +433,14 @@ namespace Registry
 
         struct CreateValidationRequestValidationResult
         {
+            CreateValidationRequestValidationResult()
+            :   first_name  (Registry::MojeID::OK),
+                last_name   (Registry::MojeID::OK),
+                email       (Registry::MojeID::OK),
+                phone       (Registry::MojeID::OK),
+                notify_email(Registry::MojeID::OK),
+                fax         (Registry::MojeID::OK),
+                ssn         (Registry::MojeID::OK) { }
             ValidationResult                 first_name;
             ValidationResult                 last_name;
             MandatoryAddressValidationResult permanent;
@@ -412,6 +453,9 @@ namespace Registry
 
         struct ProcessRegistrationValidationResult
         {
+            ProcessRegistrationValidationResult()
+            :   email(Registry::MojeID::OK),
+                phone(Registry::MojeID::OK) { }
             ValidationResult email;
             ValidationResult phone;
         };
