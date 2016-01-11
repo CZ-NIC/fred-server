@@ -26,10 +26,22 @@ namespace Fixture {
         conn->exec_params("UPDATE pg_database SET datallowconn = false WHERE datname = $1::text"
             , Database::query_param_list (database_name_disable_connection));
 
-        while(conn->exec_params("SELECT procpid, pg_terminate_backend(procpid) FROM pg_stat_activity "
-            "WHERE usename='fred' OR (datname = $1::text AND procpid <> pg_backend_pid())"
-            , Database::query_param_list (database_name_disable_connection)).size() != 0)
-        {}
+        std::string pid_column_name;
+        {
+            Database::Result dbres = conn->exec("SELECT column_name "
+                                                "FROM information_schema.columns "
+                                                "WHERE table_name = 'pg_stat_activity' AND "
+                                                      "column_name IN ('procpid', 'pid')");
+            if (dbres.size() <= 0) {
+                std::runtime_error("table 'pg_stat_activity' contains neither procpid nor pid column");
+            }
+            pid_column_name = static_cast< std::string >(dbres[0][0]);
+        }
+        const std::string query = "SELECT " + pid_column_name + ", pg_terminate_backend(" + pid_column_name + ") "
+                                  "FROM pg_stat_activity "
+                                  "WHERE usename = 'fred' OR (datname = $1::text AND "
+                                                              + pid_column_name + " != pg_backend_pid())";
+        while (conn->exec_params(query, Database::query_param_list(database_name_disable_connection)).size() != 0) {}
     }
 
     static void enable_connections(const std::auto_ptr<Database::StandaloneConnection>& conn, const std::string& database_name)
