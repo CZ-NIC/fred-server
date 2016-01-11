@@ -197,7 +197,8 @@ noinst_HEADERS = \
 		src/fredlib/contact/verification/enum_test_status.h \
 		src/fredlib/contact/verification/exceptions.h \
 		src/admin/contact/verification/test_impl/test_interface.h \
-		src/admin/contact/verification/exceptions.h
+		src/admin/contact/verification/exceptions.h \
+		src/fredlib/object/registry_object_type.h
 
 
 
