@@ -200,19 +200,6 @@ namespace CorbaConversion
     struct DEFAULT_UNWRAPPER< const char*, std::string >
     :   Unwrapper_const_char_ptr_into_std_string { };
 
-    //valuetype string
-    template < class CORBA_VALUETYPE_STRING_TYPE >
-    struct Wrapper_std_string_into_NullableString
-    {
-        typedef std::string                 NON_CORBA_TYPE;
-        typedef CORBA_VALUETYPE_STRING_TYPE CORBA_TYPE;
-
-        static void wrap(const NON_CORBA_TYPE &src, CORBA_TYPE &dst)
-        {
-            dst = src.c_str();
-        }
-    };
-
     //tmpl seq
     /**
      * generic implementation of setting CORBA sequence, previous content of @param cs will be discarded

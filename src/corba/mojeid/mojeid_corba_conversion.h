@@ -168,7 +168,7 @@ namespace CorbaConversion
 
     template < >
     struct DEFAULT_WRAPPER< std::string, Registry::MojeID::NullableString >
-    :   Wrapper_std_string_into_NullableString< Registry::MojeID::NullableString > { };
+    :   Wrapper_value_into_Nullable< std::string, Registry::MojeID::NullableString > { };
 
     /**
      * Exception if argument is special
