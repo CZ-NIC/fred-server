@@ -106,9 +106,8 @@ std::map<std::string, std::string> gather_keyset_data_change(
 
         return gather_keyset_update_data_change(
             Fred::InfoKeysetHistoryByHistoryid(
-                null_filter<ExceptionInvalidUpdateEvent>(
-                    Fred::get_previous_object_historyid(_ctx, _history_id_post_change)
-                )
+                Fred::get_previous_object_historyid(_ctx, _history_id_post_change)
+                    .get_value_or_throw<ExceptionInvalidUpdateEvent>()
             ).exec(_ctx).info_keyset_data,
             Fred::InfoKeysetHistoryByHistoryid(_history_id_post_change).exec(_ctx).info_keyset_data
         );
@@ -147,9 +146,8 @@ std::set<unsigned long long> gather_contact_ids_to_notify_keyset_event(
     if( _event == updated ) {
         const std::set<unsigned long long> keysets_accepting_notifications_before_change = get_ids_of_keysets_accepting_notifications(
             Fred::InfoKeysetHistoryByHistoryid(
-                null_filter<ExceptionInvalidUpdateEvent>(
-                    Fred::get_previous_object_historyid(_ctx, _history_id_after_change)
-                )
+                Fred::get_previous_object_historyid(_ctx, _history_id_after_change)
+                    .get_value_or_throw<ExceptionInvalidUpdateEvent>()
             ).exec(_ctx).info_keyset_data
         );
 

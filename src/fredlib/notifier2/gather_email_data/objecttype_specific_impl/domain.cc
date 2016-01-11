@@ -109,9 +109,8 @@ std::map<std::string, std::string> gather_domain_data_change(
 
         return gather_domain_update_data_change(
             Fred::InfoDomainHistoryByHistoryid(
-                null_filter<ExceptionInvalidUpdateEvent>(
-                    Fred::get_previous_object_historyid(_ctx, _history_id_post_change)
-                )
+                Fred::get_previous_object_historyid(_ctx, _history_id_post_change)
+                    .get_value_or_throw<ExceptionInvalidUpdateEvent>()
             ).exec(_ctx).info_domain_data,
             Fred::InfoDomainHistoryByHistoryid(_history_id_post_change).exec(_ctx).info_domain_data
         );
@@ -149,9 +148,9 @@ std::set<unsigned long long> gather_contact_ids_to_notify_domain_event(
 
     // if there were possibly other old values notify those as well
     if( _event == updated ) {
-        const unsigned long long history_id_before_change = null_filter<ExceptionInvalidUpdateEvent>(
+        const unsigned long long history_id_before_change =
             Fred::get_previous_object_historyid(_ctx, _history_id_after_change)
-        );
+                .get_value_or_throw<ExceptionInvalidUpdateEvent>();
         const std::set<unsigned long long> contacts_accepting_notifications_before_change = get_ids_of_contacts_accepting_notifications(
             Fred::InfoDomainHistoryByHistoryid( history_id_before_change).exec(_ctx).info_domain_data
         );

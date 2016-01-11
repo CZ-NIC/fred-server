@@ -120,9 +120,8 @@ std::map<std::string, std::string> gather_nsset_data_change(
 
         return gather_nsset_update_data_change(
             Fred::InfoNssetHistoryByHistoryid(
-                null_filter<ExceptionInvalidUpdateEvent>(
-                    Fred::get_previous_object_historyid(_ctx, _history_id_post_change)
-                )
+                Fred::get_previous_object_historyid(_ctx, _history_id_post_change)
+                    .get_value_or_throw<ExceptionInvalidUpdateEvent>()
             ).exec(_ctx).info_nsset_data,
             Fred::InfoNssetHistoryByHistoryid(_history_id_post_change).exec(_ctx).info_nsset_data
         );
@@ -160,9 +159,8 @@ std::set<unsigned long long> gather_contact_ids_to_notify_nsset_event(
     if( _event == updated ) {
         const std::set<unsigned long long> nssets_accepting_notifications_before_change = get_ids_of_nssets_accepting_notifications(
             Fred::InfoNssetHistoryByHistoryid(
-                null_filter<ExceptionInvalidUpdateEvent>(
-                    Fred::get_previous_object_historyid(_ctx, _history_id_after_change)
-                )
+                Fred::get_previous_object_historyid(_ctx, _history_id_after_change)
+                    .get_value_or_throw<ExceptionInvalidUpdateEvent>()
             ).exec(_ctx).info_nsset_data
         );
 

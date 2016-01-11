@@ -288,9 +288,8 @@ std::map<std::string, std::string> gather_contact_data_change(
 
         return gather_contact_update_data_change(
             Fred::InfoContactHistoryByHistoryid(
-                null_filter<ExceptionInvalidUpdateEvent>(
-                    Fred::get_previous_object_historyid(_ctx, _history_id_post_change)
-                )
+                Fred::get_previous_object_historyid(_ctx, _history_id_post_change)
+                    .get_value_or_throw<ExceptionInvalidUpdateEvent>()
             ).exec(_ctx).info_contact_data,
             Fred::InfoContactHistoryByHistoryid(_history_id_post_change).exec(_ctx).info_contact_data
         );
@@ -319,9 +318,8 @@ std::set<std::string> get_emails_to_notify_contact_event(
 
         Nullable<std::string> notify_email =
             Fred::InfoContactHistoryByHistoryid(
-                null_filter<ExceptionInvalidUpdateEvent>(
-                    Fred::get_previous_object_historyid(_ctx, _history_id_after_change)
-                )
+                Fred::get_previous_object_historyid(_ctx, _history_id_after_change)
+                    .get_value_or_throw<ExceptionInvalidUpdateEvent>()
             )
             .exec(_ctx)
             .info_contact_data.notifyemail;
