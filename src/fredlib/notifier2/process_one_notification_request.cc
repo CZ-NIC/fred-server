@@ -65,6 +65,8 @@ static void send_email(boost::shared_ptr<Fred::Mailer::Manager> _mailer, const e
 
 bool process_one_notification_request(Fred::OperationContext& _ctx, boost::shared_ptr<Fred::Mailer::Manager> _mailer) {
 
+    std::string log_prefix = "process_one_notification_request() ";
+
     try {
 
         /* There is no hard guarantee that records in notification_queue are unique. It is no problem though. */
@@ -102,6 +104,7 @@ bool process_one_notification_request(Fred::OperationContext& _ctx, boost::share
         );
 
         if(notification_to_send_res.size() < 1) {
+            _ctx.get_log().info(log_prefix + "no record found in notification_queue");
             return false;
         }
 
@@ -114,6 +117,13 @@ bool process_one_notification_request(Fred::OperationContext& _ctx, boost::share
             static_cast<unsigned long long>( notification_to_send_res[0]["historyid_post_change"] ),
             static_cast<std::string>( notification_to_send_res[0]["svtrid"] )
         );
+
+        log_prefix +=
+            "event=\"" + to_db_handle( request.event.get_event() ) + "\" "
+            "object_type=\"" + to_db_handle( request.event.get_type() ) + "\" "
+            "done_by_registrar=\"" + boost::lexical_cast<std::string>( request.done_by_registrar ) + "\" "
+            "history_id_post_change=\"" + boost::lexical_cast<std::string>( request.history_id_post_change ) + "\" "
+            "svtrid=\"" + request.svtrid + "\" ";
 
         const email_data data(
             gather_email_addresses( _ctx, request.event, request.history_id_post_change ),
@@ -132,11 +142,24 @@ bool process_one_notification_request(Fred::OperationContext& _ctx, boost::share
             }
         }
 
+        _ctx.get_log().info( log_prefix + "completed - transaction not yet comitted" );
+
         send_email(_mailer, data);
+
         return true;
 
-    } catch (...) {
-        return false;
+    } catch(const ExceptionInterface& e) {
+        _ctx.get_log().error( log_prefix + "exception :" + std::string(e.what()) );
+        throw;
+
+    } catch(const std::exception& e) {
+        _ctx.get_log().error( log_prefix + "exception :" + std::string(e.what()) );
+        throw;
+
+    } catch(...) {
+        _ctx.get_log().error( log_prefix + "unknown exception" );
+        throw;
+
     }
 }
 
