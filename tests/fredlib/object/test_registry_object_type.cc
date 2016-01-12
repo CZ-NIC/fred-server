@@ -22,6 +22,8 @@
 
 #include "src/fredlib/opcontext.h"
 
+#include "tests/setup/fixtures.h"
+
 BOOST_AUTO_TEST_SUITE(TestRegistryObjectType)
 
 BOOST_FIXTURE_TEST_CASE(all_definitions_from_db_are_supported, Test::Fixture::instantiate_db_template)
