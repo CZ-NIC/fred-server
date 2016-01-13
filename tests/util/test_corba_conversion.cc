@@ -512,7 +512,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_shippingaddressvalidationresult)
 
 BOOST_AUTO_TEST_CASE(test_mojeid_message_limit_exceeded)
 {
-    BOOST_CHECK_THROW(CorbaConversion::wrap_into<Registry::MojeID::Server::MESSAGE_LIMIT_EXCEEDED>(
+    BOOST_CHECK_THROW(CorbaConversion::raise< Registry::MojeID::Server::MESSAGE_LIMIT_EXCEEDED >(
         Registry::MojeIDImplData::MessageLimitExceeded()), Registry::MojeID::Server::INTERNAL_SERVER_ERROR);
 
     Registry::MojeIDImplData::MessageLimitExceeded msg;
@@ -533,8 +533,8 @@ BOOST_AUTO_TEST_CASE(test_mojeid_registration_validation_error)
 {
     Registry::MojeIDImplData::RegistrationValidationResult ex;
     ex.first_name = Registry::MojeIDImplData::ValidationResult(10);
-    BOOST_CHECK_THROW(CorbaConversion::wrap_into<
-        Registry::MojeID::Server::REGISTRATION_VALIDATION_ERROR>(ex),
+    BOOST_CHECK_THROW(CorbaConversion::raise<
+        Registry::MojeID::Server::REGISTRATION_VALIDATION_ERROR >(ex),
         Registry::MojeID::Server::INTERNAL_SERVER_ERROR);
 
     Registry::MojeIDImplData::AddressValidationResult permanent_addr_err_impl;
@@ -639,8 +639,8 @@ BOOST_AUTO_TEST_CASE(test_mojeid_update_contact_prepare_validation_error)
 {
     Registry::MojeIDImplData::UpdateContactPrepareValidationResult ex;
     ex.first_name = Registry::MojeIDImplData::ValidationResult(10);
-    BOOST_CHECK_THROW(CorbaConversion::wrap_into<
-        Registry::MojeID::Server::UPDATE_CONTACT_PREPARE_VALIDATION_ERROR>(ex),
+    BOOST_CHECK_THROW(CorbaConversion::raise<
+        Registry::MojeID::Server::UPDATE_CONTACT_PREPARE_VALIDATION_ERROR >(ex),
         Registry::MojeID::Server::INTERNAL_SERVER_ERROR);
 
     Registry::MojeIDImplData::AddressValidationResult permanent_addr_err_impl;
@@ -743,8 +743,8 @@ BOOST_AUTO_TEST_CASE(test_mojeid_create_validation_request_validation_error)
 {
     Registry::MojeIDImplData::CreateValidationRequestValidationResult ex;
     ex.first_name = Registry::MojeIDImplData::ValidationResult(10);
-    BOOST_CHECK_THROW(CorbaConversion::wrap_into<
-        Registry::MojeID::Server::CREATE_VALIDATION_REQUEST_VALIDATION_ERROR>(ex),
+    BOOST_CHECK_THROW(CorbaConversion::raise<
+        Registry::MojeID::Server::CREATE_VALIDATION_REQUEST_VALIDATION_ERROR >(ex),
         Registry::MojeID::Server::INTERNAL_SERVER_ERROR);
 
     Registry::MojeIDImplData::MandatoryAddressValidationResult mandatory_addr_err_impl;
@@ -788,8 +788,8 @@ BOOST_AUTO_TEST_CASE(test_mojeid_process_registration_request_validation_error)
 {
     Registry::MojeIDImplData::ProcessRegistrationValidationResult ex;
     ex.email = Registry::MojeIDImplData::ValidationResult(10);
-    BOOST_CHECK_THROW(CorbaConversion::wrap_into<
-        Registry::MojeID::Server::PROCESS_REGISTRATION_VALIDATION_ERROR>(ex),
+    BOOST_CHECK_THROW(CorbaConversion::raise<
+        Registry::MojeID::Server::PROCESS_REGISTRATION_VALIDATION_ERROR >(ex),
         Registry::MojeID::Server::INTERNAL_SERVER_ERROR);
 
     Registry::MojeIDImplData::ProcessRegistrationValidationResult prr_val_err_impl;
@@ -1295,16 +1295,6 @@ void integer_conversion_test(::size_t &sum_cnt, ::size_t &sum_fit_cnt)
     for (::size_t idx = 0; idx < traits::number_of_out_of_range_values; ++idx) {
         const src_type src_value = traits::out_of_range_value[idx];
         dst_type dst_value;
-        try {
-            CorbaConversion::wrap(src_value, dst_value);
-            std::cout << __PRETTY_FUNCTION__ << ": wrap of out_of_range_value[" << idx << "] is possible" << std::endl;
-        }
-        catch (...) { }
-        try {
-            CorbaConversion::unwrap(src_value, dst_value);
-            std::cout << __PRETTY_FUNCTION__ << ": unwrap of out_of_range_value[" << idx << "] is possible" << std::endl;
-        }
-        catch (...) { }
         BOOST_CHECK_THROW((CorbaConversion::wrap(src_value, dst_value)),
                           CorbaConversion::IntegralConversionOutOfRange);
         BOOST_CHECK_THROW((CorbaConversion::unwrap(src_value, dst_value)),

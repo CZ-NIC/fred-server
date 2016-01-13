@@ -512,6 +512,27 @@ namespace CorbaConversion
         static void wrap(const NON_CORBA_TYPE &src, CORBA_TYPE &dst);
     };
 
+    template < class EXCEPTION_CLASS, class SRC_TYPE >
+    struct DEFAULT_WRAPPER_FAILURE;
+
+    /**
+     * Wraps @param src into EXCEPTION_CLASS instance and throws it.
+     * @throw EXCEPTION_CLASS if conversion is successful
+     * @throw DEFAULT_WRAPPER_FAILURE< EXCEPTION_CLASS, SRC_TYPE >::exception if conversion failed
+     */
+    template < class EXCEPTION_CLASS, class SRC_TYPE >
+    void raise(const SRC_TYPE &src)
+    {
+        EXCEPTION_CLASS e;
+        try {
+            CorbaConversion::wrap(src, e);
+        }
+        catch (...) {
+            throw typename DEFAULT_WRAPPER_FAILURE< EXCEPTION_CLASS, SRC_TYPE >::exception();
+        }
+        throw e;
+    };
+
     //Registry::MojeID::Server::MESSAGE_LIMIT_EXCEEDED
     template < >
     struct DEFAULT_WRAPPER< Registry::MojeIDImplData::MessageLimitExceeded,
@@ -519,10 +540,6 @@ namespace CorbaConversion
     {
         typedef Registry::MojeIDImplData::MessageLimitExceeded   NON_CORBA_TYPE;
         typedef Registry::MojeID::Server::MESSAGE_LIMIT_EXCEEDED CORBA_TYPE;
-        /**
-         * All exceptions gets translated to Registry::MojeID::Server::INTERNAL_SERVER_ERROR.
-         * @throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR
-         */
         static void wrap(const NON_CORBA_TYPE &src, CORBA_TYPE &dst);
     };
 
@@ -533,10 +550,6 @@ namespace CorbaConversion
     {
         typedef Registry::MojeIDImplData::RegistrationValidationResult  NON_CORBA_TYPE;
         typedef Registry::MojeID::Server::REGISTRATION_VALIDATION_ERROR CORBA_TYPE;
-        /**
-         * All exceptions gets translated to Registry::MojeID::Server::INTERNAL_SERVER_ERROR.
-         * @throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR
-         */
         static void wrap(const NON_CORBA_TYPE &src, CORBA_TYPE &dst);
     };
 
@@ -547,10 +560,6 @@ namespace CorbaConversion
     {
         typedef Registry::MojeIDImplData::UpdateContactPrepareValidationResult    NON_CORBA_TYPE;
         typedef Registry::MojeID::Server::UPDATE_CONTACT_PREPARE_VALIDATION_ERROR CORBA_TYPE;
-        /**
-         * All exceptions gets translated to Registry::MojeID::Server::INTERNAL_SERVER_ERROR.
-         * @throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR
-         */
         static void wrap(const NON_CORBA_TYPE &src, CORBA_TYPE &dst);
     };
 
@@ -561,10 +570,6 @@ namespace CorbaConversion
     {
         typedef Registry::MojeIDImplData::CreateValidationRequestValidationResult    NON_CORBA_TYPE;
         typedef Registry::MojeID::Server::CREATE_VALIDATION_REQUEST_VALIDATION_ERROR CORBA_TYPE;
-        /**
-         * All exceptions gets translated to Registry::MojeID::Server::INTERNAL_SERVER_ERROR.
-         * @throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR
-         */
         static void wrap(const NON_CORBA_TYPE &src, CORBA_TYPE &dst);
     };
 
@@ -575,11 +580,13 @@ namespace CorbaConversion
     {
         typedef Registry::MojeIDImplData::ProcessRegistrationValidationResult NON_CORBA_TYPE;
         typedef Registry::MojeID::Server::PROCESS_REGISTRATION_VALIDATION_ERROR CORBA_TYPE;
-        /**
-         * All exceptions gets translated to Registry::MojeID::Server::INTERNAL_SERVER_ERROR.
-         * @throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR
-         */
         static void wrap(const NON_CORBA_TYPE &src, CORBA_TYPE &dst);
+    };
+
+    template < class EXCEPTION_CLASS, class SRC_TYPE >
+    struct DEFAULT_WRAPPER_FAILURE
+    {
+        typedef Registry::MojeID::Server::INTERNAL_SERVER_ERROR exception;
     };
 }
 

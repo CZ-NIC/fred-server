@@ -188,101 +188,76 @@ namespace CorbaConversion
                           Registry::MojeID::Server::MESSAGE_LIMIT_EXCEEDED >::wrap(const NON_CORBA_TYPE &src,
                                                                                    CORBA_TYPE &dst)
     {
-        try {
-            CorbaConversion::wrap(src.limit_expire_date, dst.limit_expire_date);
-            CorbaConversion::wrap(src.limit_count,       dst.limit_count);
-            CorbaConversion::wrap(src.limit_days,        dst.limit_days);
-        }
-        catch(...) {
-            throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR();
-        }
+        CorbaConversion::wrap(src.limit_expire_date, dst.limit_expire_date);
+        CorbaConversion::wrap(src.limit_count,       dst.limit_count);
+        CorbaConversion::wrap(src.limit_days,        dst.limit_days);
     }
 
     void DEFAULT_WRAPPER< Registry::MojeIDImplData::RegistrationValidationResult,
                           Registry::MojeID::Server::REGISTRATION_VALIDATION_ERROR >::wrap(const NON_CORBA_TYPE &src,
                                                                                           CORBA_TYPE &dst)
     {
-        try {
-            CorbaConversion::wrap(src.username,     dst.username);
-            CorbaConversion::wrap(src.first_name,   dst.first_name);
-            CorbaConversion::wrap(src.last_name,    dst.last_name);
-            CorbaConversion::wrap(src.birth_date,   dst.birth_date);
-            CorbaConversion::wrap(src.email,        dst.email);
-            CorbaConversion::wrap(src.notify_email, dst.notify_email);
-            CorbaConversion::wrap(src.phone,        dst.phone);
-            CorbaConversion::wrap(src.fax,          dst.fax);
+        CorbaConversion::wrap(src.username,     dst.username);
+        CorbaConversion::wrap(src.first_name,   dst.first_name);
+        CorbaConversion::wrap(src.last_name,    dst.last_name);
+        CorbaConversion::wrap(src.birth_date,   dst.birth_date);
+        CorbaConversion::wrap(src.email,        dst.email);
+        CorbaConversion::wrap(src.notify_email, dst.notify_email);
+        CorbaConversion::wrap(src.phone,        dst.phone);
+        CorbaConversion::wrap(src.fax,          dst.fax);
 
-            CorbaConversion::wrap(src.permanent,    dst.permanent);
-            CorbaConversion::wrap(src.mailing,      dst.mailing);
-            CorbaConversion::wrap(src.billing,      dst.billing);
+        CorbaConversion::wrap(src.permanent,    dst.permanent);
+        CorbaConversion::wrap(src.mailing,      dst.mailing);
+        CorbaConversion::wrap(src.billing,      dst.billing);
 
-            CorbaConversion::wrap(src.shipping,     dst.shipping);
-            CorbaConversion::wrap(src.shipping2,    dst.shipping2);
-            CorbaConversion::wrap(src.shipping3,    dst.shipping3);
-        }
-        catch(...) {
-            throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR();
-        }
+        CorbaConversion::wrap(src.shipping,     dst.shipping);
+        CorbaConversion::wrap(src.shipping2,    dst.shipping2);
+        CorbaConversion::wrap(src.shipping3,    dst.shipping3);
     }
 
     void DEFAULT_WRAPPER< Registry::MojeIDImplData::UpdateContactPrepareValidationResult,
                           Registry::MojeID::Server::UPDATE_CONTACT_PREPARE_VALIDATION_ERROR >::wrap(const NON_CORBA_TYPE &src,
                                                                                                     CORBA_TYPE &dst)
     {
-        try {
-            CorbaConversion::wrap(src.first_name,   dst.first_name);
-            CorbaConversion::wrap(src.last_name,    dst.last_name);
-            CorbaConversion::wrap(src.birth_date,   dst.birth_date);
-            CorbaConversion::wrap(src.email,        dst.email);
-            CorbaConversion::wrap(src.notify_email, dst.notify_email);
-            CorbaConversion::wrap(src.phone,        dst.phone);
-            CorbaConversion::wrap(src.fax,          dst.fax);
+        CorbaConversion::wrap(src.first_name,   dst.first_name);
+        CorbaConversion::wrap(src.last_name,    dst.last_name);
+        CorbaConversion::wrap(src.birth_date,   dst.birth_date);
+        CorbaConversion::wrap(src.email,        dst.email);
+        CorbaConversion::wrap(src.notify_email, dst.notify_email);
+        CorbaConversion::wrap(src.phone,        dst.phone);
+        CorbaConversion::wrap(src.fax,          dst.fax);
 
-            CorbaConversion::wrap(src.permanent,    dst.permanent);
-            CorbaConversion::wrap(src.mailing,      dst.mailing);
-            CorbaConversion::wrap(src.billing,      dst.billing);
+        CorbaConversion::wrap(src.permanent,    dst.permanent);
+        CorbaConversion::wrap(src.mailing,      dst.mailing);
+        CorbaConversion::wrap(src.billing,      dst.billing);
 
-            CorbaConversion::wrap(src.shipping,     dst.shipping);
-            CorbaConversion::wrap(src.shipping2,    dst.shipping2);
-            CorbaConversion::wrap(src.shipping3,    dst.shipping3);
-        }
-        catch(...) {
-            throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR();
-        }
+        CorbaConversion::wrap(src.shipping,     dst.shipping);
+        CorbaConversion::wrap(src.shipping2,    dst.shipping2);
+        CorbaConversion::wrap(src.shipping3,    dst.shipping3);
     }
 
     void DEFAULT_WRAPPER< Registry::MojeIDImplData::CreateValidationRequestValidationResult,
                           Registry::MojeID::Server::CREATE_VALIDATION_REQUEST_VALIDATION_ERROR >::wrap(const NON_CORBA_TYPE &src,
                                                                                                        CORBA_TYPE &dst)
     {
-        try {
-            CorbaConversion::wrap(src.first_name,   dst.first_name);
-            CorbaConversion::wrap(src.last_name,    dst.last_name);
+        CorbaConversion::wrap(src.first_name,   dst.first_name);
+        CorbaConversion::wrap(src.last_name,    dst.last_name);
 
-            CorbaConversion::wrap(src.permanent,    dst.permanent);
+        CorbaConversion::wrap(src.permanent,    dst.permanent);
 
-            CorbaConversion::wrap(src.email,        dst.email);
-            CorbaConversion::wrap(src.phone,        dst.phone);
-            CorbaConversion::wrap(src.notify_email, dst.notify_email);
-            CorbaConversion::wrap(src.fax,          dst.fax);
-            CorbaConversion::wrap(src.ssn,          dst.ssn);
-        }
-        catch(...) {
-            throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR();
-        }
+        CorbaConversion::wrap(src.email,        dst.email);
+        CorbaConversion::wrap(src.phone,        dst.phone);
+        CorbaConversion::wrap(src.notify_email, dst.notify_email);
+        CorbaConversion::wrap(src.fax,          dst.fax);
+        CorbaConversion::wrap(src.ssn,          dst.ssn);
     }
 
     void DEFAULT_WRAPPER< Registry::MojeIDImplData::ProcessRegistrationValidationResult,
                           Registry::MojeID::Server::PROCESS_REGISTRATION_VALIDATION_ERROR >::wrap(const NON_CORBA_TYPE &src,
                                                                                                   CORBA_TYPE &dst)
     {
-        try {
-            CorbaConversion::wrap(src.email, dst.email);
-            CorbaConversion::wrap(src.phone, dst.phone);
-        }
-        catch (...) {
-            throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR();
-        }
+        CorbaConversion::wrap(src.email, dst.email);
+        CorbaConversion::wrap(src.phone, dst.phone);
     }
 
     void DEFAULT_UNWRAPPER< Registry::MojeID::CreateContact,
