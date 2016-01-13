@@ -27,6 +27,7 @@
 #include "util/corba_conversion.h"
 #include "util/db/nullable.h"
 #include "src/corba/MojeID2.hh"
+#include "src/mojeid/mojeid_impl_data.h"
 
 namespace CorbaConversion
 {
@@ -103,6 +104,34 @@ namespace CorbaConversion
             CorbaConversion::wrap(src, dst._boxed_inout());
         }
     };
+
+    template < class EXCEPTION_CLASS, class SRC_TYPE >
+    struct DEFAULT_WRAPPER_FAILURE;
+
+    /**
+     * Wraps @param src into EXCEPTION_CLASS instance and throws it.
+     * @throw EXCEPTION_CLASS if conversion is successful
+     * @throw DEFAULT_WRAPPER_FAILURE< EXCEPTION_CLASS, SRC_TYPE >::exception if conversion failed
+     */
+    template < class EXCEPTION_CLASS, class SRC_TYPE >
+    void raise(const SRC_TYPE &src)
+    {
+        EXCEPTION_CLASS e;
+        try {
+            CorbaConversion::wrap(src, e);
+        }
+        catch (...) {
+            throw typename DEFAULT_WRAPPER_FAILURE< EXCEPTION_CLASS, SRC_TYPE >::exception();
+        }
+        throw e;
+    };
+
+    template < class EXCEPTION_CLASS, class SRC_TYPE >
+    struct DEFAULT_WRAPPER_FAILURE
+    {
+        typedef Registry::MojeID::Server::INTERNAL_SERVER_ERROR exception;
+    };
+
 
     template < class SRC_HOLDER_TYPE, class DST_TYPE >
     void unwrap_holder(const SRC_HOLDER_TYPE &src, DST_TYPE &dst)
@@ -197,6 +226,16 @@ namespace CorbaConversion
         static void wrap(const NON_CORBA_TYPE &src, CORBA_TYPE &dst);
     };
 
+    //Registry::MojeID::NullableDate
+    template < >
+    struct DEFAULT_UNWRAPPER< Registry::MojeID::NullableDate*, Nullable< boost::gregorian::date > >
+    :   Unwrapper_ptr_into_Nullable< Registry::MojeID::NullableDate, boost::gregorian::date > { };
+
+    template < >
+    struct DEFAULT_WRAPPER< boost::gregorian::date, Registry::MojeID::NullableDate >
+    :   Wrapper_value_into_Nullable< boost::gregorian::date, Registry::MojeID::NullableDate > { };
+
+
     //Registry::MojeID::DateTime
     template < >
     struct DEFAULT_UNWRAPPER< Registry::MojeID::DateTime, boost::posix_time::ptime >
@@ -214,35 +253,7 @@ namespace CorbaConversion
         static void wrap(const NON_CORBA_TYPE &src, CORBA_TYPE &dst);
     };
 
-    //Registry::MojeID::NullableDate
-    template < >
-    struct DEFAULT_UNWRAPPER< Registry::MojeID::NullableDate*, Nullable< boost::gregorian::date > >
-    :   Unwrapper_ptr_into_Nullable< Registry::MojeID::NullableDate, boost::gregorian::date > { };
 
-    template < >
-    struct DEFAULT_WRAPPER< boost::gregorian::date, Registry::MojeID::NullableDate >
-    :   Wrapper_value_into_Nullable< boost::gregorian::date, Registry::MojeID::NullableDate > { };
-}
-
-namespace Registry
-{
-    namespace MojeIDImplData
-    {
-        struct Address
-        {
-            std::string             street1;
-            Nullable< std::string > street2;
-            Nullable< std::string > street3;
-            std::string             city;
-            Nullable< std::string > state;
-            std::string             postal_code;
-            std::string             country;
-        };
-    }
-}
-
-namespace CorbaConversion
-{
     //Registry::MojeID::Address
     template < >
     struct DEFAULT_UNWRAPPER< Registry::MojeID::Address, Registry::MojeIDImplData::Address >
@@ -260,7 +271,6 @@ namespace CorbaConversion
         static void wrap(const NON_CORBA_TYPE &src, CORBA_TYPE &dst);
     };
 
-
     //Registry::MojeID::NullableAddress
     template < >
     struct DEFAULT_UNWRAPPER< Registry::MojeID::NullableAddress*, Nullable< Registry::MojeIDImplData::Address > >
@@ -269,28 +279,8 @@ namespace CorbaConversion
     template < >
     struct DEFAULT_WRAPPER< Registry::MojeIDImplData::Address, Registry::MojeID::NullableAddress >
     :   Wrapper_value_into_Nullable< Registry::MojeIDImplData::Address, Registry::MojeID::NullableAddress > { };
-}
 
-namespace Registry
-{
-    namespace MojeIDImplData
-    {
-        struct ShippingAddress
-        {
-            Nullable< std::string > company_name;
-            std::string             street1;
-            Nullable< std::string > street2;
-            Nullable< std::string > street3;
-            std::string             city;
-            Nullable< std::string > state;
-            std::string             postal_code;
-            std::string             country;
-        };
-    }
-}
 
-namespace CorbaConversion
-{
     //Registry::MojeID::ShippingAddress
     template < >
     struct DEFAULT_UNWRAPPER< Registry::MojeID::ShippingAddress, Registry::MojeIDImplData::ShippingAddress >
@@ -308,7 +298,6 @@ namespace CorbaConversion
         static void wrap(const NON_CORBA_TYPE &src, CORBA_TYPE &dst);
     };
 
-
     //Registry::MojeID::NullableShippingAddress
     template < >
     struct DEFAULT_UNWRAPPER< Registry::MojeID::NullableShippingAddress*,
@@ -319,147 +308,7 @@ namespace CorbaConversion
     template < >
     struct DEFAULT_WRAPPER< Registry::MojeIDImplData::ShippingAddress, Registry::MojeID::NullableShippingAddress >
     :   Wrapper_value_into_Nullable< Registry::MojeIDImplData::ShippingAddress, Registry::MojeID::NullableShippingAddress > { };
-}
 
-namespace Registry
-{
-    namespace MojeIDImplData
-    {
-        typedef Registry::MojeID::ValidationResult ValidationResult;
-
-        struct AddressValidationResult
-        {
-            AddressValidationResult()
-            :   street1    (Registry::MojeID::OK),
-                city       (Registry::MojeID::OK),
-                postal_code(Registry::MojeID::OK),
-                country    (Registry::MojeID::OK) { }
-            ValidationResult street1;
-            ValidationResult city;
-            ValidationResult postal_code;
-            ValidationResult country;
-        };
-
-        struct MandatoryAddressValidationResult
-        {
-            MandatoryAddressValidationResult()
-            :   address_presence(Registry::MojeID::OK),
-                street1         (Registry::MojeID::OK),
-                city            (Registry::MojeID::OK),
-                postal_code     (Registry::MojeID::OK),
-                country         (Registry::MojeID::OK) { }
-            ValidationResult address_presence;
-            ValidationResult street1;
-            ValidationResult city;
-            ValidationResult postal_code;
-            ValidationResult country;
-        };
-
-        struct ShippingAddressValidationResult
-        {
-            ShippingAddressValidationResult()
-            :   street1    (Registry::MojeID::OK),
-                city       (Registry::MojeID::OK),
-                postal_code(Registry::MojeID::OK),
-                country    (Registry::MojeID::OK) { }
-            ValidationResult street1;
-            ValidationResult city;
-            ValidationResult postal_code;
-            ValidationResult country;
-        };
-
-        struct MessageLimitExceeded
-        {
-            boost::gregorian::date limit_expire_date;
-            unsigned short         limit_count;
-            unsigned short         limit_days;
-        };
-
-        struct RegistrationValidationResult
-        {
-            RegistrationValidationResult()
-            :   username    (Registry::MojeID::OK),
-                first_name  (Registry::MojeID::OK),
-                last_name   (Registry::MojeID::OK),
-                birth_date  (Registry::MojeID::OK),
-                email       (Registry::MojeID::OK),
-                notify_email(Registry::MojeID::OK),
-                phone       (Registry::MojeID::OK),
-                fax         (Registry::MojeID::OK) { }
-            ValidationResult                username;
-            ValidationResult                first_name;
-            ValidationResult                last_name;
-            ValidationResult                birth_date;
-            ValidationResult                email;
-            ValidationResult                notify_email;
-            ValidationResult                phone;
-            ValidationResult                fax;
-            AddressValidationResult         permanent;
-            AddressValidationResult         mailing;
-            AddressValidationResult         billing;
-            ShippingAddressValidationResult shipping;
-            ShippingAddressValidationResult shipping2;
-            ShippingAddressValidationResult shipping3;
-        };
-
-        struct UpdateContactPrepareValidationResult
-        {
-            UpdateContactPrepareValidationResult()
-            :   first_name  (Registry::MojeID::OK),
-                last_name   (Registry::MojeID::OK),
-                birth_date  (Registry::MojeID::OK),
-                email       (Registry::MojeID::OK),
-                notify_email(Registry::MojeID::OK),
-                phone       (Registry::MojeID::OK),
-                fax         (Registry::MojeID::OK) { }
-            ValidationResult                first_name;
-            ValidationResult                last_name;
-            ValidationResult                birth_date;
-            ValidationResult                email;
-            ValidationResult                notify_email;
-            ValidationResult                phone;
-            ValidationResult                fax;
-            AddressValidationResult         permanent;
-            AddressValidationResult         mailing;
-            AddressValidationResult         billing;
-            ShippingAddressValidationResult shipping;
-            ShippingAddressValidationResult shipping2;
-            ShippingAddressValidationResult shipping3;
-        };
-
-        struct CreateValidationRequestValidationResult
-        {
-            CreateValidationRequestValidationResult()
-            :   first_name  (Registry::MojeID::OK),
-                last_name   (Registry::MojeID::OK),
-                email       (Registry::MojeID::OK),
-                phone       (Registry::MojeID::OK),
-                notify_email(Registry::MojeID::OK),
-                fax         (Registry::MojeID::OK),
-                ssn         (Registry::MojeID::OK) { }
-            ValidationResult                 first_name;
-            ValidationResult                 last_name;
-            MandatoryAddressValidationResult permanent;
-            ValidationResult                 email;
-            ValidationResult                 phone;
-            ValidationResult                 notify_email;
-            ValidationResult                 fax;
-            ValidationResult                 ssn;
-        };
-
-        struct ProcessRegistrationValidationResult
-        {
-            ProcessRegistrationValidationResult()
-            :   email(Registry::MojeID::OK),
-                phone(Registry::MojeID::OK) { }
-            ValidationResult email;
-            ValidationResult phone;
-        };
-    }
-}
-
-namespace CorbaConversion
-{
 
     /**
      * Exception if argument value is not enum ValidationResult value
@@ -480,7 +329,6 @@ namespace CorbaConversion
         typedef Registry::MojeID::ValidationResult         CORBA_TYPE;
         static void wrap(const NON_CORBA_TYPE &src, CORBA_TYPE &dst);
     };
-
 
     //Registry::MojeID::AddressValidationResult
     template < >
@@ -512,26 +360,6 @@ namespace CorbaConversion
         static void wrap(const NON_CORBA_TYPE &src, CORBA_TYPE &dst);
     };
 
-    template < class EXCEPTION_CLASS, class SRC_TYPE >
-    struct DEFAULT_WRAPPER_FAILURE;
-
-    /**
-     * Wraps @param src into EXCEPTION_CLASS instance and throws it.
-     * @throw EXCEPTION_CLASS if conversion is successful
-     * @throw DEFAULT_WRAPPER_FAILURE< EXCEPTION_CLASS, SRC_TYPE >::exception if conversion failed
-     */
-    template < class EXCEPTION_CLASS, class SRC_TYPE >
-    void raise(const SRC_TYPE &src)
-    {
-        EXCEPTION_CLASS e;
-        try {
-            CorbaConversion::wrap(src, e);
-        }
-        catch (...) {
-            throw typename DEFAULT_WRAPPER_FAILURE< EXCEPTION_CLASS, SRC_TYPE >::exception();
-        }
-        throw e;
-    };
 
     //Registry::MojeID::Server::MESSAGE_LIMIT_EXCEEDED
     template < >
@@ -583,95 +411,7 @@ namespace CorbaConversion
         static void wrap(const NON_CORBA_TYPE &src, CORBA_TYPE &dst);
     };
 
-    template < class EXCEPTION_CLASS, class SRC_TYPE >
-    struct DEFAULT_WRAPPER_FAILURE
-    {
-        typedef Registry::MojeID::Server::INTERNAL_SERVER_ERROR exception;
-    };
-}
 
-namespace Registry
-{
-    namespace MojeIDImplData
-    {
-        struct CreateContact
-        {
-            std::string                        username;
-            std::string                        first_name;
-            std::string                        last_name;
-            Nullable< std::string >            organization;
-            Nullable< std::string >            vat_reg_num;
-            Nullable< boost::gregorian::date > birth_date;
-            Nullable< std::string >            id_card_num;
-            Nullable< std::string >            passport_num;
-            Nullable< std::string >            ssn_id_num;
-            Nullable< std::string >            vat_id_num;
-            Address                            permanent;
-            Nullable< Address >                mailing;
-            Nullable< Address >                billing;
-            Nullable< ShippingAddress >        shipping;
-            Nullable< ShippingAddress >        shipping2;
-            Nullable< ShippingAddress >        shipping3;
-            std::string                        email;
-            Nullable< std::string >            notify_email;
-            std::string                        telephone;
-            Nullable< std::string >            fax;
-        };
-
-        struct UpdateContact
-        {
-            unsigned long long                 id;
-            std::string                        first_name;
-            std::string                        last_name;
-            Nullable< std::string >            organization;
-            Nullable< std::string >            vat_reg_num;
-            Nullable< boost::gregorian::date > birth_date;
-            Nullable< std::string >            id_card_num;
-            Nullable< std::string >            passport_num;
-            Nullable< std::string >            ssn_id_num;
-            Nullable< std::string >            vat_id_num;
-            Address                            permanent;
-            Nullable< Address >                mailing;
-            Nullable< Address >                billing;
-            Nullable< ShippingAddress >        shipping;
-            Nullable< ShippingAddress >        shipping2;
-            Nullable< ShippingAddress >        shipping3;
-            std::string                        email;
-            Nullable< std::string >            notify_email;
-            Nullable< std::string >            telephone;
-            Nullable< std::string >            fax;
-        };
-
-        typedef UpdateContact InfoContact; ///< XXX
-
-        struct SetContact
-        {
-            Nullable< std::string >            organization;
-            Nullable< std::string >            vat_reg_num;
-            Nullable< boost::gregorian::date > birth_date;
-            Nullable< std::string >            vat_id_num;
-            Address                            permanent;
-            Nullable< Address >                mailing;
-            std::string                        email;
-            Nullable< std::string >            notify_email;
-            std::string                        telephone;
-            Nullable< std::string >            fax;
-        };
-
-        struct ContactStateInfo
-        {
-            unsigned long long                 contact_id;
-            boost::posix_time::ptime           mojeid_activation_datetime;
-            boost::gregorian::date             conditionally_identification_date;
-            Nullable< boost::gregorian::date > identification_date;
-            Nullable< boost::gregorian::date > validation_date;
-            Nullable< boost::gregorian::date > linked_date;
-        };
-    }
-}
-
-namespace CorbaConversion
-{
     template < >
     struct DEFAULT_UNWRAPPER< Registry::MojeID::CreateContact, Registry::MojeIDImplData::CreateContact >
     {
@@ -713,9 +453,9 @@ namespace CorbaConversion
     };
 
     template < >
-    struct DEFAULT_WRAPPER< std::vector< Registry::MojeIDImplData::ContactStateInfo >,
+    struct DEFAULT_WRAPPER< Registry::MojeIDImplData::ContactStateInfoList,
                             Registry::MojeID::ContactStateInfoList >
-    :   Wrapper_std_vector_into_Seq_of_refs< std::vector< Registry::MojeIDImplData::ContactStateInfo >,
+    :   Wrapper_std_vector_into_Seq_of_refs< Registry::MojeIDImplData::ContactStateInfoList,
                                              Registry::MojeID::ContactStateInfoList > { };
 
     template < >
