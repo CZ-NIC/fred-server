@@ -584,5 +584,18 @@ BOOST_FIXTURE_TEST_CASE(test_process_update_domain, has_domain_big_update)
     }
 }
 
+BOOST_FIXTURE_TEST_CASE(test_process_empty_queue, has_autocomitting_ctx)
+{
+    boost::shared_ptr<Fred::Mailer::Manager> mocked_mailer(new MockMailerManager);
+    MockMailerManager& mocked_mailer_data_access = *reinterpret_cast<MockMailerManager*>( mocked_mailer.get() );
+
+    BOOST_CHECK_EQUAL(
+        Notification::process_one_notification_request(ctx, mocked_mailer),
+        false
+    );
+
+    BOOST_CHECK_EQUAL(mocked_mailer_data_access.accumulated_data.size(), 0);
+}
+
 BOOST_AUTO_TEST_SUITE_END();
 BOOST_AUTO_TEST_SUITE_END();
