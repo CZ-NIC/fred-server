@@ -1770,6 +1770,7 @@ src_corba_messages_fred_msgd_LDADD = \
 #
 src_corba_mojeid_fred_mifd_SOURCES = \
 		src/mojeid/mojeid2.cc \
+		src/mojeid/mojeid_impl_data_conversion.cc \
 		src/mojeid/mojeid_public_request.cc \
 		src/mojeid/messages/generate.cc \
 		src/corba/nameservice.cc \

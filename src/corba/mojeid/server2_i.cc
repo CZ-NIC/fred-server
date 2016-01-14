@@ -102,7 +102,7 @@ Registry::MojeID::InfoContact* Server_i::transfer_contact_prepare(
         _identification = ::CORBA::String_out(identification);
         return result_as< Registry::MojeID::InfoContact >(contact);
     }
-    catch (const MojeID2Impl::CheckMojeIDRegistration &e) {
+/*    catch (const MojeID2Impl::CheckMojeIDRegistration &e) {
         if (e.Fred::MojeID::Check::states_before_transfer_into_mojeid::mojeid_contact_present) {
             throw IDL::ALREADY_MOJEID_CONTACT();
         }
@@ -113,7 +113,7 @@ Registry::MojeID::InfoContact* Server_i::transfer_contact_prepare(
             throw IDL::OBJECT_USER_BLOCKED();
         }
         throw IDL::INTERNAL_SERVER_ERROR();
-    }
+    }*/
     catch (const MojeIDImplData::RegistrationValidationResult &e) {
         CorbaConversion::raise< IDL::REGISTRATION_VALIDATION_ERROR >(e);
     }
@@ -139,7 +139,7 @@ void Server_i::update_contact_prepare(
     catch (const MojeIDImplData::MessageLimitExceeded &e) {
         CorbaConversion::raise< IDL::MESSAGE_LIMIT_EXCEEDED >(e);
     }
-    catch (const MojeID2Impl::ObjectDoesntExist&) {
+    catch (const MojeIDImplData::ObjectDoesntExist&) {
         throw IDL::OBJECT_NOT_EXISTS();
     }
     catch (...) {
@@ -160,13 +160,13 @@ Registry::MojeID::InfoContact* Server_i::update_transfer_contact_prepare(
         impl_ptr_->update_transfer_contact_prepare(_username, contact_data, _trans_id, _log_request_id);
         return result_as< Registry::MojeID::InfoContact >(info_contact);
     }
-    catch (const MojeID2Impl::ObjectDoesntExist &e) {
+    catch (const MojeIDImplData::ObjectDoesntExist &e) {
         throw IDL::OBJECT_NOT_EXISTS();
     }
-    catch (const MojeID2Impl::ObjectAdminBlocked &e) {
+    catch (const MojeIDImplData::ObjectAdminBlocked &e) {
         throw IDL::OBJECT_ADMIN_BLOCKED();
     }
-    catch (const MojeID2Impl::ObjectUserBlocked &e) {
+    catch (const MojeIDImplData::ObjectUserBlocked &e) {
         throw IDL::OBJECT_USER_BLOCKED();
     }
     catch (const MojeIDImplData::RegistrationValidationResult &e) {
@@ -198,28 +198,28 @@ ContactId Server_i::process_registration_request(
     try {
         return impl_ptr_->process_registration_request(ident_request_id, password, log_request_id);
     }
-    catch (const MojeID2Impl::PublicRequestDoesntExist&) {
+    catch (const MojeIDImplData::PublicRequestDoesntExist&) {
         throw IDL::IDENTIFICATION_REQUEST_NOT_EXISTS();
     }
-    catch (const MojeID2Impl::IdentificationFailed&) {
+    catch (const MojeIDImplData::IdentificationFailed&) {
         throw IDL::IDENTIFICATION_FAILED();
     }
-    catch (const MojeID2Impl::IdentificationAlreadyProcessed&) {
+    catch (const MojeIDImplData::IdentificationAlreadyProcessed&) {
         throw IDL::IDENTIFICATION_ALREADY_PROCESSED();
     }
-    catch (const MojeID2Impl::IdentificationAlreadyInvalidated&) {
+    catch (const MojeIDImplData::IdentificationAlreadyInvalidated&) {
         throw IDL::IDENTIFICATION_ALREADY_INVALIDATED();
     }
-    catch (const MojeID2Impl::ContactChanged&) {
+    catch (const MojeIDImplData::ContactChanged&) {
         throw IDL::OBJECT_CHANGED();
     }
-    catch (const MojeID2Impl::AlreadyMojeidContact&) {
+    catch (const MojeIDImplData::AlreadyMojeidContact&) {
         throw IDL::ALREADY_MOJEID_CONTACT();
     }
-    catch (const MojeID2Impl::ObjectAdminBlocked&) {
+    catch (const MojeIDImplData::ObjectAdminBlocked&) {
         throw IDL::OBJECT_ADMIN_BLOCKED();
     }
-    catch (const MojeID2Impl::ObjectUserBlocked&) {
+    catch (const MojeIDImplData::ObjectUserBlocked&) {
         throw IDL::OBJECT_USER_BLOCKED();
     }
     catch (...) {
@@ -235,13 +235,13 @@ void Server_i::process_identification_request(
     try {
         impl_ptr_->process_identification_request(contact_id, password, log_request_id);
     }
-    catch (const MojeID2Impl::PublicRequestDoesntExist&) {
+    catch (const MojeIDImplData::PublicRequestDoesntExist&) {
         throw IDL::IDENTIFICATION_REQUEST_NOT_EXISTS();
     }
-    catch (const MojeID2Impl::IdentificationFailed&) {
+    catch (const MojeIDImplData::IdentificationFailed&) {
         throw IDL::IDENTIFICATION_FAILED();
     }
-    catch (const MojeID2Impl::IdentificationAlreadyProcessed&) {
+    catch (const MojeIDImplData::IdentificationAlreadyProcessed&) {
         throw IDL::IDENTIFICATION_ALREADY_PROCESSED();
     }
     catch (const MojeIDImplData::UpdateContactPrepareValidationResult &e) {
@@ -281,7 +281,7 @@ Buffer* Server_i::get_validation_pdf(
         const std::string pdf_content = impl_ptr_->get_validation_pdf(_contact_id);
         return result_as< Buffer >(pdf_content);
     }
-    catch (const MojeID2Impl::ObjectDoesntExist&) {
+    catch (const MojeIDImplData::ObjectDoesntExist&) {
         throw IDL::OBJECT_NOT_EXISTS();
     }
     catch (...) {
@@ -296,18 +296,18 @@ void Server_i::create_validation_request(
     try {
         impl_ptr_->create_validation_request(_contact_id, _log_request_id);
     }
-    catch (const MojeID2Impl::ObjectDoesntExist&) {
+    catch (const MojeIDImplData::ObjectDoesntExist&) {
         throw IDL::OBJECT_NOT_EXISTS();
     }
-    catch (const MojeID2Impl::ValidationRequestExists&) {
+    catch (const MojeIDImplData::ValidationRequestExists&) {
         throw IDL::OBJECT_EXISTS();
     }
-    catch (const MojeID2Impl::ValidationAlreadyProcessed&) {
+    catch (const MojeIDImplData::ValidationAlreadyProcessed&) {
         throw IDL::VALIDATION_ALREADY_PROCESSED();
     }
-    catch (const MojeIDImplData::CreateValidationRequestValidationResult &e) {
+/*    catch (const MojeIDImplData::CreateValidationRequestValidationResult &e) {
         CorbaConversion::raise< IDL::CREATE_VALIDATION_REQUEST_VALIDATION_ERROR >(e);
-    }
+    }*/
     catch (...) {
         throw IDL::INTERNAL_SERVER_ERROR();
     }
@@ -334,7 +334,7 @@ ContactStateInfo* Server_i::get_contact_state(
         impl_ptr_->get_contact_state(_contact_id, data);
         return result_as< ContactStateInfo >(data);
     }
-    catch (const MojeID2Impl::ObjectDoesntExist&) {
+    catch (const MojeIDImplData::ObjectDoesntExist&) {
         throw IDL::OBJECT_NOT_EXISTS();
     }
     catch (...) {
@@ -351,7 +351,7 @@ void Server_i::cancel_account_prepare(
         const std::string trans_id = CorbaConversion::unwrap_into< std::string >(_trans_id);
         impl_ptr_->cancel_account_prepare(_contact_id, trans_id, _log_request_id);
     }
-    catch (const MojeID2Impl::ObjectDoesntExist&) {
+    catch (const MojeIDImplData::ObjectDoesntExist&) {
         throw IDL::OBJECT_NOT_EXISTS();
     }
     catch (...) {
@@ -362,7 +362,7 @@ void Server_i::cancel_account_prepare(
 ContactHandleList* Server_i::get_unregistrable_handles()
 {
     try {
-        HandleList unregistrable_handles;
+        MojeIDImplData::ContactHandleList unregistrable_handles;
         impl_ptr_->get_unregistrable_contact_handles(unregistrable_handles);
         return result_as< ContactHandleList >(unregistrable_handles);
     }
@@ -381,10 +381,10 @@ void Server_i::send_new_pin3(
     catch (const MojeIDImplData::MessageLimitExceeded &e) {
         CorbaConversion::raise< IDL::MESSAGE_LIMIT_EXCEEDED >(e);
     }
-    catch (const MojeID2Impl::PublicRequestDoesntExist&) {
+    catch (const MojeIDImplData::PublicRequestDoesntExist&) {
         throw IDL::IDENTIFICATION_REQUEST_NOT_EXISTS();
     }
-    catch (const MojeID2Impl::ObjectDoesntExist&) {
+    catch (const MojeIDImplData::ObjectDoesntExist&) {
         throw IDL::OBJECT_NOT_EXISTS();
     }
     catch (...) {
@@ -402,10 +402,10 @@ void Server_i::send_mojeid_card(
     catch (const MojeIDImplData::MessageLimitExceeded &e) {
         CorbaConversion::raise< IDL::MESSAGE_LIMIT_EXCEEDED >(e);
     }
-    catch (const MojeID2Impl::PublicRequestDoesntExist&) {
+    catch (const MojeIDImplData::PublicRequestDoesntExist&) {
         throw IDL::IDENTIFICATION_REQUEST_NOT_EXISTS();
     }
-    catch (const MojeID2Impl::ObjectDoesntExist&) {
+    catch (const MojeIDImplData::ObjectDoesntExist&) {
         throw IDL::OBJECT_NOT_EXISTS();
     }
     catch (...) {
