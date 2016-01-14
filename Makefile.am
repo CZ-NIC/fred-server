@@ -1774,8 +1774,8 @@ src_corba_mojeid_fred_mifd_SOURCES = \
 		src/mojeid/messages/generate.cc \
 		src/corba/nameservice.cc \
 		src/corba/mojeid/server2_i.cc \
-		src/corba/mojeid/corba_common_conversion2.cc \
-		src/corba/mojeid/corba_conversion2.cc \
+		util/corba_conversion.cc \
+		src/corba/mojeid/mojeid_corba_conversion.cc \
 		src/corba/mojeid/fred-mifd2.cc
 
 nodist_src_corba_mojeid_fred_mifd_SOURCES = \
@@ -2570,6 +2570,7 @@ tests_test_optys_LDADD = \
 		src/fredlib/libfred.a \
 		util/libutil.a \
 		util/log/liblog.a \
+		util/types/libtypes.a \
 		-lmpdec -lm -lrt \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(BOOST_DATE_TIME_LIB) \

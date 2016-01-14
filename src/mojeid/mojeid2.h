@@ -25,6 +25,7 @@
 #define MOJEID2_H_06D795C17DD0FF3D98B375032F99493A
 
 #include "src/mojeid/mojeid2_checkers.h"
+#include "src/mojeid/mojeid_impl_data.h"
 #include "src/fredlib/object/object_state.h"
 #include "src/fredlib/messages/messages_impl.h"
 
@@ -100,32 +101,32 @@ public:
         HandleList &_result)const;
 
     ContactId create_contact_prepare(
-        const Fred::InfoContactData &_contact,
+        const MojeIDImplData::CreateContact &_contact,
         const std::string &_trans_id,
         LogRequestId _log_request_id,
         std::string &_ident)const;
 
-    Fred::InfoContactData& transfer_contact_prepare(
+    void transfer_contact_prepare(
         const std::string &_handle,
         const std::string &_trans_id,
         LogRequestId _log_request_id,
-        Fred::InfoContactData &_contact,
+        MojeIDImplData::InfoContact &_contact,
         std::string &_ident)const;
 
     void update_contact_prepare(
-        const Fred::InfoContactData &_new_data,
+        const MojeIDImplData::InfoContact &_new_data,
         const std::string &_trans_id,
         LogRequestId _log_request_id)const;
 
-    void update_transfer_contact_prepare(
+    MojeIDImplData::InfoContact update_transfer_contact_prepare(
         const std::string &_username,
-        Fred::InfoContactData &_new_data,
+        const MojeIDImplData::SetContact &_new_data,
         const std::string &_trans_id,
         LogRequestId _log_request_id)const;
 
-    Fred::InfoContactData& info_contact(
+    void info_contact(
         const std::string &_username,
-        Fred::InfoContactData &_result)const;
+        MojeIDImplData::InfoContact &_result)const;
 
     void commit_prepared_transaction(const std::string &_trans_id)const;
 
@@ -351,13 +352,13 @@ public:
         const std::string &_password,
         LogRequestId _log_request_id)const;
 
-    ContactStateDataList& get_contacts_state_changes(
+    void get_contacts_state_changes(
         unsigned long _last_hours,
-        ContactStateDataList &_result)const;
+        MojeIDImplData::ContactStateInfoList &_result)const;
 
-    ContactStateData& get_contact_state(
+    void get_contact_state(
         ContactId _contact_id,
-        ContactStateData &_result)const;
+        MojeIDImplData::ContactStateInfo &_result)const;
 
     void cancel_account_prepare(
         ContactId _contact_id,

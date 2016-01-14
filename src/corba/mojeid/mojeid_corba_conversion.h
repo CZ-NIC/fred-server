@@ -80,7 +80,7 @@ namespace CorbaConversion
                 check_empty_storage(safe_dst);
             }
         }
-    }
+    }//namespace CorbaConversion::Internal
 
     template < class SRC_TYPE, class DST_HOLDER_TYPE >
     void wrap_into_holder(const SRC_TYPE &src, DST_HOLDER_TYPE &dst)
@@ -113,6 +113,9 @@ namespace CorbaConversion
      * @throw EXCEPTION_CLASS if conversion is successful
      * @throw DEFAULT_WRAPPER_FAILURE< EXCEPTION_CLASS, SRC_TYPE >::exception if conversion failed
      */
+    template < class EXCEPTION_CLASS, class SRC_TYPE >
+    void raise(const SRC_TYPE &src) __attribute__ ((__noreturn__));
+
     template < class EXCEPTION_CLASS, class SRC_TYPE >
     void raise(const SRC_TYPE &src)
     {
@@ -477,6 +480,6 @@ namespace CorbaConversion
     struct DEFAULT_WRAPPER< std::vector< std::string >, Registry::MojeID::ContactHandleList >
     :   Wrapper_std_vector_into_Seq_of_holders< std::vector< std::string >,
                                                 Registry::MojeID::ContactHandleList > { };
-}
+}//namespace CorbaConversion
 
 #endif//MOJEID_CORBA_CONVERSION_H_e5b26622ca884604abf9cf49892b20d7

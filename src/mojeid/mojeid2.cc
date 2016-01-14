@@ -25,6 +25,7 @@
 #include "src/mojeid/safe_data_storage.h"
 #include "src/mojeid/mojeid_public_request.h"
 #include "src/mojeid/messages/generate.h"
+#include "src/corba/mojeid/mojeid_corba_conversion.h"
 #include "src/fredlib/contact/create_contact.h"
 #include "src/fredlib/contact/update_contact.h"
 #include "src/fredlib/contact/delete_contact.h"
@@ -43,7 +44,6 @@
 #include "src/fredlib/object_state/create_object_state_request_id.h"
 #include "src/fredlib/object_state/cancel_object_state_request_id.h"
 #include "src/fredlib/messages/messages_impl.h"
-#include "src/corba/mojeid/corba_conversion2.h"
 #include "util/random.h"
 #include "util/xmlgen.h"
 #include "util/log/context.h"
@@ -108,43 +108,89 @@ std::string get_mojeid_registrar_handle()
     throw std::runtime_error("missing configuration for dedicated registrar");
 }
 
+namespace {
+
+class set_ssn
+{
+public:
+    template < typename T >
+    set_ssn(const Nullable< T > &_ssn, Fred::SSNType::Value _ssn_type, Fred::CreateContact &_out)
+    :   out_ptr(&_out)
+    {
+        this->operator()(_ssn, _ssn_type);
+    }
+    set_ssn& operator()(const Nullable< std::string > &_ssn, Fred::SSNType::Value _ssn_type)
+    {
+        if ((out_ptr != NULL) && !_ssn.isnull()) {
+            out_ptr->set_ssntype(Conversion::Enums::into< std::string >(_ssn_type));
+            out_ptr->set_ssn(_ssn.get_value());
+            out_ptr = NULL;
+        }
+        return *this;
+    }
+    typedef boost::gregorian::date Date;
+    set_ssn& operator()(const Nullable< Date > &_ssn, Fred::SSNType::Value _ssn_type)
+    {
+        if ((out_ptr != NULL) && !_ssn.isnull()) {
+            out_ptr->set_ssntype(Conversion::Enums::into< std::string >(_ssn_type));
+            out_ptr->set_ssn(boost::gregorian::to_iso_extended_string(_ssn.get_value()));
+            out_ptr = NULL;
+        }
+        return *this;
+    }
+private:
+    Fred::CreateContact *out_ptr;
+};
+
+}//namespace Registry::MojeID::{anonymous}
+
 void set_create_contact_arguments(
-    const Fred::InfoContactData &_contact,
+    const MojeIDImplData::CreateContact &_contact,
     Fred::CreateContact &_arguments)
 {
-    if (!_contact.name.isnull()) {
-        _arguments.set_name(_contact.name.get_value());
-    }
-    if (!_contact.place.isnull()) {
-        _arguments.set_place(_contact.place.get_value());
-    }
-    if (!_contact.email.isnull()) {
-        _arguments.set_email(_contact.email.get_value());
-    }
-    if (!_contact.telephone.isnull()) {
-        _arguments.set_telephone(_contact.telephone.get_value());
-    }
+    _arguments.set_name(_contact.first_name + " " + _contact.last_name);
+    Fred::Contact::PlaceAddress permanent;
+    from_into(_contact.permanent, permanent);
+    _arguments.set_place(permanent);
+    _arguments.set_email(_contact.email);
+    _arguments.set_telephone(_contact.telephone);
     if (!_contact.organization.isnull()) {
         _arguments.set_organization(_contact.organization.get_value());
     }
-    if (!_contact.notifyemail.isnull()) {
-        _arguments.set_notifyemail(_contact.notifyemail.get_value());
+    if (!_contact.notify_email.isnull()) {
+        _arguments.set_notifyemail(_contact.notify_email.get_value());
     }
     if (!_contact.fax.isnull()) {
         _arguments.set_fax(_contact.fax.get_value());
     }
-    if (!_contact.addresses.empty()) {
-        _arguments.set_addresses(_contact.addresses);
+    {
+        Fred::ContactAddressList addresses;
+        if (!_contact.mailing.isnull()) {
+            from_into(_contact.mailing.get_value(), addresses[Fred::ContactAddressType::MAILING]);
+        }
+        if (!_contact.billing.isnull()) {
+            from_into(_contact.billing.get_value(), addresses[Fred::ContactAddressType::BILLING]);
+        }
+        if (!_contact.shipping.isnull()) {
+            from_into(_contact.shipping.get_value(), addresses[Fred::ContactAddressType::SHIPPING]);
+        }
+        if (!_contact.shipping2.isnull()) {
+            from_into(_contact.shipping2.get_value(), addresses[Fred::ContactAddressType::SHIPPING_2]);
+        }
+        if (!_contact.shipping3.isnull()) {
+            from_into(_contact.shipping3.get_value(), addresses[Fred::ContactAddressType::SHIPPING_3]);
+        }
+        if (!addresses.empty()) {
+            _arguments.set_addresses(addresses);
+        }
     }
-    if (!_contact.vat.isnull()) {
-        _arguments.set_vat(_contact.vat.get_value());
-    }
-    if (!_contact.ssntype.isnull()) {
-        _arguments.set_ssntype(_contact.ssntype.get_value());
-    }
-    if (!_contact.ssn.isnull()) {
-        _arguments.set_ssn(_contact.ssn.get_value());
-    }
+
+    (_contact.organization.isnull()
+     ? set_ssn(_contact.birth_date,   Fred::SSNType::BIRTHDAY, _arguments) //person
+     : set_ssn(_contact.vat_id_num,   Fred::SSNType::ICO,      _arguments))//company
+              (_contact.id_card_num,  Fred::SSNType::OP)
+              (_contact.passport_num, Fred::SSNType::PASS)
+              (_contact.ssn_id_num,   Fred::SSNType::MPSV);
 }
 
 void check_sent_letters_limit(Fred::OperationContext &_ctx,
@@ -226,6 +272,14 @@ bool differs(const T &a, const T &b)
     return a != b;
 }
 
+Nullable< boost::gregorian::date > convert_as_birthdate(const Nullable< std::string > &_birth_date)
+{
+    if (!_birth_date.isnull()) {
+        return Nullable< boost::gregorian::date >(birthdate_from_string_to_date(_birth_date.get_value()));
+    }
+    return Nullable< boost::gregorian::date >();
+}
+
 bool validated_data_changed(const Fred::InfoContactData &_c1, const Fred::InfoContactData &_c2)
 {
     if (differs(_c1.name, _c2.name)) {
@@ -253,11 +307,11 @@ bool validated_data_changed(const Fred::InfoContactData &_c1, const Fred::InfoCo
     }
 
     if (differs(_c1.ssn, _c2.ssn)) {
-        if (_c1.ssntype.get_value_or_default() != "BIRTHDAY") {
+        if (_c1.ssntype.get_value_or_default() != Conversion::Enums::into< std::string >(Fred::SSNType::BIRTHDAY)) {
             return true;
         }
-        const Nullable< boost::gregorian::date > bd1 = Corba::Conversion::convert_as_birthdate(_c1.ssn);
-        const Nullable< boost::gregorian::date > bd2 = Corba::Conversion::convert_as_birthdate(_c2.ssn);
+        const Nullable< boost::gregorian::date > bd1 = convert_as_birthdate(_c1.ssn);
+        const Nullable< boost::gregorian::date > bd2 = convert_as_birthdate(_c2.ssn);
         if (differs(bd1, bd2)) {
             return true;
         }
@@ -476,11 +530,11 @@ bool identified_data_changed(const Fred::InfoContactData &_c1, const Fred::InfoC
     }
 
     if (differs(_c1.ssn, _c2.ssn)) {
-        if (_c1.ssntype.get_value_or_default() != "BIRTHDAY") {
+        if (_c1.ssntype.get_value_or_default() != Conversion::Enums::into< std::string >(Fred::SSNType::BIRTHDAY)) {
             return true;
         }
-        const Nullable< boost::gregorian::date > bd1 = Corba::Conversion::convert_as_birthdate(_c1.ssn);
-        const Nullable< boost::gregorian::date > bd2 = Corba::Conversion::convert_as_birthdate(_c2.ssn);
+        const Nullable< boost::gregorian::date > bd1 = convert_as_birthdate(_c1.ssn);
+        const Nullable< boost::gregorian::date > bd2 = convert_as_birthdate(_c2.ssn);
         if (differs(bd1, bd2)) {
             return true;
         }
@@ -580,7 +634,7 @@ HandleList& MojeID2Impl::get_unregistrable_contact_handles(
 }
 
 MojeID2Impl::ContactId MojeID2Impl::create_contact_prepare(
-        const Fred::InfoContactData &_contact,
+        const MojeIDImplData::CreateContact &_contact,
         const std::string &_trans_id,
         LogRequestId _log_request_id,
         std::string &_ident)const
@@ -590,17 +644,19 @@ MojeID2Impl::ContactId MojeID2Impl::create_contact_prepare(
     try {
         Fred::OperationContextTwoPhaseCommitCreator ctx(_trans_id);
 
+        Fred::InfoContactData info_contact_data;
+        from_into(_contact, info_contact_data);
         {
             const CheckCreateContactPrepare check_contact_data(
-                Fred::make_args(_contact),
-                Fred::make_args(_contact, ctx));
+                Fred::make_args(info_contact_data),
+                Fred::make_args(info_contact_data, ctx));
 
             if (!check_contact_data.success()) {
                 throw check_contact_data;
             }
         }
 
-        Fred::CreateContact op_create_contact(_contact.handle, mojeid_registrar_handle_);
+        Fred::CreateContact op_create_contact(_contact.username, mojeid_registrar_handle_);
         set_create_contact_arguments(_contact, op_create_contact);
         const Fred::CreateContact::Result new_contact = op_create_contact.exec(ctx);
         Fred::CreatePublicRequestAuth op_create_pub_req(
@@ -651,22 +707,22 @@ std::string action_transfer_contact_prepare(
 
 }
 
-Fred::InfoContactData& MojeID2Impl::transfer_contact_prepare(
+void MojeID2Impl::transfer_contact_prepare(
         const std::string &_handle,
         const std::string &_trans_id,
         LogRequestId _log_request_id,
-        Fred::InfoContactData &_contact,
+        MojeIDImplData::InfoContact &_contact,
         std::string &_ident)const
 {
     LOGGING_CONTEXT(log_ctx, *this);
 
     try {
         Fred::OperationContextTwoPhaseCommitCreator ctx(_trans_id);
-        _contact = Fred::InfoContactByHandle(_handle).exec(ctx).info_contact_data;
-        const Fred::PublicRequestObjectLockGuardByObjectId locked_contact(ctx, _contact.id);
-        const Fred::Object::StatesInfo states(Fred::GetObjectStates(_contact.id).exec(ctx));
+        const Fred::InfoContactData contact = Fred::InfoContactByHandle(_handle).exec(ctx).info_contact_data;
+        const Fred::PublicRequestObjectLockGuardByObjectId locked_contact(ctx, contact.id);
+        const Fred::Object::StatesInfo states(Fred::GetObjectStates(contact.id).exec(ctx));
         const MojeID2Impl::CheckMojeIDRegistration check_result(
-            Fred::make_args(_contact), Fred::make_args(_contact, ctx), Fred::make_args(states));
+            Fred::make_args(contact), Fred::make_args(contact, ctx), Fred::make_args(states));
         if (!check_result.success()) {
             throw check_result;
         }
@@ -678,7 +734,7 @@ Fred::InfoContactData& MojeID2Impl::transfer_contact_prepare(
         {
             _ident = action_transfer_contact_prepare(
                 Fred::MojeID::PublicRequest::ContactConditionalIdentification::iface(),
-                _trans_id, _contact, locked_contact, mojeid_registrar_handle_, ctx);
+                _trans_id, contact, locked_contact, mojeid_registrar_handle_, ctx);
         }
         else if (states.presents(Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT) &&
                  states.absents(Fred::Object::State::IDENTIFIED_CONTACT) &&
@@ -687,7 +743,7 @@ Fred::InfoContactData& MojeID2Impl::transfer_contact_prepare(
         {
             _ident = action_transfer_contact_prepare(
                 Fred::MojeID::PublicRequest::ConditionallyIdentifiedContactTransfer::iface(),
-                _trans_id, _contact, locked_contact, mojeid_registrar_handle_, ctx);
+                _trans_id, contact, locked_contact, mojeid_registrar_handle_, ctx);
         }
         else if (states.presents(Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT) &&
                  states.presents(Fred::Object::State::IDENTIFIED_CONTACT) &&
@@ -696,10 +752,12 @@ Fred::InfoContactData& MojeID2Impl::transfer_contact_prepare(
         {
             _ident = action_transfer_contact_prepare(
                 Fred::MojeID::PublicRequest::IdentifiedContactTransfer::iface(),
-                _trans_id, _contact, locked_contact, mojeid_registrar_handle_, ctx);
+                _trans_id, contact, locked_contact, mojeid_registrar_handle_, ctx);
         }
+
+        from_into(contact, _contact);
         ctx.commit_transaction();
-        return _contact;
+        return;
     }
     catch (const CheckMojeIDRegistration&) {
         LOGGER(PACKAGE).error("request failed (incorrect input data)");
@@ -795,20 +853,22 @@ void set_update_contact_op(const Fred::InfoContactDiff &_data_changes,
 }
 
 void MojeID2Impl::update_contact_prepare(
-        const Fred::InfoContactData &_new_data,
+        const MojeIDImplData::InfoContact &_new_data,
         const std::string &_trans_id,
         LogRequestId _log_request_id)const
 {
     LOGGING_CONTEXT(log_ctx, *this);
 
     try {
+        Fred::InfoContactData new_data;
+        from_into(_new_data, new_data);
         Fred::OperationContextTwoPhaseCommitCreator ctx(_trans_id);
-        const Fred::Object::StatesInfo states(Fred::GetObjectStates(_new_data.id).exec(ctx));
+        const Fred::Object::StatesInfo states(Fred::GetObjectStates(new_data.id).exec(ctx));
         if (states.absents(Fred::Object::State::MOJEID_CONTACT)) {
 //            throw GetContact::object_doesnt_exist();
         }
-        const Fred::InfoContactData current_data = Fred::InfoContactById(_new_data.id).exec(ctx).info_contact_data;
-        const Fred::InfoContactDiff data_changes = Fred::diff_contact_data(current_data, _new_data);
+        const Fred::InfoContactData current_data = Fred::InfoContactById(new_data.id).exec(ctx).info_contact_data;
+        const Fred::InfoContactDiff data_changes = Fred::diff_contact_data(current_data, new_data);
         if (!(data_changes.name.isset()         ||
               data_changes.organization.isset() ||
               data_changes.ssntype.isset()      ||
@@ -821,18 +881,18 @@ void MojeID2Impl::update_contact_prepare(
               data_changes.fax.isset())) {
             return;
         }
-        const Fred::PublicRequestObjectLockGuardByObjectId locked_contact(ctx, _new_data.id);
+        const Fred::PublicRequestObjectLockGuardByObjectId locked_contact(ctx, new_data.id);
         Fred::StatusList to_cancel;
         bool drop_validation = false;
         if (states.presents(Fred::Object::State::VALIDATED_CONTACT)) {
-            drop_validation = validated_data_changed(current_data, _new_data);
+            drop_validation = validated_data_changed(current_data, new_data);
             if (drop_validation) {
                 to_cancel.insert(Conversion::Enums::into< std::string >(Fred::Object::State::VALIDATED_CONTACT));
             }
         }
-        const bool drop_identification = identified_data_changed(current_data, _new_data);
-        if (drop_identification || differs(current_data.email, _new_data.email)) {
-            cancel_message_sending< MessageType::MOJEID_CARD, CommType::LETTER >(ctx, _new_data.id);
+        const bool drop_identification = identified_data_changed(current_data, new_data);
+        if (drop_identification || differs(current_data.email, new_data.email)) {
+            cancel_message_sending< MessageType::MOJEID_CARD, CommType::LETTER >(ctx, new_data.id);
         }
         if (drop_identification) {
             const bool reidentification_needed = states.presents(Fred::Object::State::IDENTIFIED_CONTACT);
@@ -842,7 +902,7 @@ void MojeID2Impl::update_contact_prepare(
             const HandleMojeIDArgs *const server_conf_ptr = CfgArgs::instance()->
                                                                 get_handler_ptr_by_type< HandleMojeIDArgs >();
             check_sent_letters_limit(ctx,
-                                     _new_data.id,
+                                     new_data.id,
                                      server_conf_ptr->letter_limit_count,
                                      server_conf_ptr->letter_limit_interval);
             Fred::CreatePublicRequestAuth create_public_request_op(
@@ -853,7 +913,7 @@ void MojeID2Impl::update_contact_prepare(
             create_public_request_op.exec(ctx, locked_contact, _log_request_id);
         }
         {
-            const CheckUpdateContactPrepare check_contact_data(_new_data);
+            const CheckUpdateContactPrepare check_contact_data(new_data);
             if (!check_contact_data.success()) {
                 throw check_contact_data;
             }
@@ -880,14 +940,14 @@ void MojeID2Impl::update_contact_prepare(
             }
         }
         if (!to_cancel.empty()) {
-            Fred::CancelObjectStateRequestId(_new_data.id, to_cancel).exec(ctx);
+            Fred::CancelObjectStateRequestId(new_data.id, to_cancel).exec(ctx);
         }
-        Fred::UpdateContactById update_contact_op(_new_data.id, mojeid_registrar_handle_);
+        Fred::UpdateContactById update_contact_op(new_data.id, mojeid_registrar_handle_);
         set_update_contact_op(data_changes, update_contact_op);
         const bool is_identified = states.presents(Fred::Object::State::IDENTIFIED_CONTACT) && !drop_identification;
         const bool is_validated  = states.presents(Fred::Object::State::VALIDATED_CONTACT) && !drop_validation;
         const bool addr_can_be_hidden = (is_identified || is_validated) &&
-                                        _new_data.organization.get_value_or_default().empty();
+                                        new_data.organization.get_value_or_default().empty();
         if (!addr_can_be_hidden) {
             update_contact_op.set_discloseaddress(true);
         }
@@ -917,21 +977,23 @@ void MojeID2Impl::update_contact_prepare(
     }
 }
 
-void MojeID2Impl::update_transfer_contact_prepare(
+MojeIDImplData::InfoContact MojeID2Impl::update_transfer_contact_prepare(
         const std::string &_username,
-        Fred::InfoContactData &_new_data,
+        const MojeIDImplData::SetContact &_new_data,
         const std::string &_trans_id,
         LogRequestId _log_request_id)const
 {
     LOGGING_CONTEXT(log_ctx, *this);
 
     try {
+        Fred::InfoContactData new_data;
+        from_into(_new_data, new_data);
         Fred::OperationContextTwoPhaseCommitCreator ctx(_trans_id);
         //check contact is registered
         const Fred::InfoContactData current_data = Fred::InfoContactByHandle(_username).exec(ctx).info_contact_data;
-        _new_data.id     = current_data.id;
-        _new_data.handle = current_data.handle;
-        const Fred::Object::StatesInfo states(Fred::GetObjectStates(_new_data.id).exec(ctx));
+        new_data.id     = current_data.id;
+        new_data.handle = current_data.handle;
+        const Fred::Object::StatesInfo states(Fred::GetObjectStates(new_data.id).exec(ctx));
         //check contact is 'mojeidContact', if true throw ALREADY_MOJEID_CONTACT
         if (states.presents(Fred::Object::State::MOJEID_CONTACT)) {
             throw AlreadyMojeidContact("unable to transfer mojeID contact into mojeID");
@@ -954,13 +1016,13 @@ void MojeID2Impl::update_transfer_contact_prepare(
             op_update_contact.exec(ctx);
         }
         check_limits::sent_letters()(ctx, current_data.id);
-        const Fred::PublicRequestObjectLockGuardByObjectId locked_contact(ctx, _new_data.id);
+        const Fred::PublicRequestObjectLockGuardByObjectId locked_contact(ctx, new_data.id);
         bool drop_identification      = false;
         bool drop_cond_identification = false;
         {
             if (states.presents(Fred::Object::State::IDENTIFIED_CONTACT)) {
                 const Fred::InfoContactData &c1 = current_data;
-                const Fred::InfoContactData &c2 = _new_data;
+                const Fred::InfoContactData &c2 = new_data;
                 drop_identification = c1.name.get_value_or_default() != c2.name.get_value_or_default();
                 if (!drop_identification) {
                     const Fred::InfoContactData::Address a1 = c1.get_address< Fred::ContactAddressType::MAILING >();
@@ -982,7 +1044,7 @@ void MojeID2Impl::update_transfer_contact_prepare(
                 (!drop_identification && states.presents(Fred::Object::State::IDENTIFIED_CONTACT)))
             {
                 const Fred::InfoContactData &c1 = current_data;
-                const Fred::InfoContactData &c2 = _new_data;
+                const Fred::InfoContactData &c2 = new_data;
                 drop_cond_identification =
                     (c1.telephone.get_value_or_default() != c2.telephone.get_value_or_default()) ||
                     (c1.email.get_value_or_default()     != c2.email.get_value_or_default());
@@ -1002,16 +1064,16 @@ void MojeID2Impl::update_transfer_contact_prepare(
             }
 
             const CheckMojeIDRegistration check_contact_data(
-                Fred::make_args(_new_data),
-                Fred::make_args(_new_data, ctx),
+                Fred::make_args(new_data),
+                Fred::make_args(new_data, ctx),
                 Fred::make_args(states));
 
             if (!check_contact_data.success()) {
                 throw check_contact_data;
             }
             //perform changes
-            Fred::UpdateContactById update_contact_op(_new_data.id, mojeid_registrar_handle_);
-            set_update_contact_op(Fred::diff_contact_data(current_data, _new_data), update_contact_op);
+            Fred::UpdateContactById update_contact_op(new_data.id, mojeid_registrar_handle_);
+            set_update_contact_op(Fred::diff_contact_data(current_data, new_data), update_contact_op);
             update_contact_op.exec(ctx);
         }
         const bool is_identified      = states.presents(Fred::Object::State::IDENTIFIED_CONTACT) &&
@@ -1034,9 +1096,10 @@ void MojeID2Impl::update_transfer_contact_prepare(
         //second phase commit will change contact states
         prepare_transaction_storage()->store(_trans_id, current_data.id);
 
-        _new_data = Fred::InfoContactById(current_data.id).exec(ctx).info_contact_data;
+        MojeIDImplData::InfoContact changed_data;
+        from_into(Fred::InfoContactById(current_data.id).exec(ctx).info_contact_data, changed_data);
         ctx.commit_transaction();
-        return;
+        return changed_data;
     }
     catch (const Fred::InfoContactByHandle::Exception &e) {
         //check contact is registered, throw OBJECT_NOT_EXISTS if isn't
@@ -1119,17 +1182,17 @@ Fred::UpdatePublicRequest::Result invalidate(
 
 }//namespace Registry::MojeID::{anonymous}
 
-Fred::InfoContactData& MojeID2Impl::info_contact(
+void MojeID2Impl::info_contact(
         const std::string &_username,
-        Fred::InfoContactData &_result)const
+        MojeIDImplData::InfoContact &_result)const
 {
     LOGGING_CONTEXT(log_ctx, *this);
 
     try {
         Fred::OperationContextCreator ctx;
-        _result = Fred::InfoContactByHandle(_username).exec(ctx).info_contact_data;
+        from_into(Fred::InfoContactByHandle(_username).exec(ctx).info_contact_data, _result);
         ctx.commit_transaction();
-        return _result;
+        return;
     }
     catch (const Fred::InfoContactByHandle::Exception &e) {
         if (e.is_set_unknown_contact_handle()) {
@@ -1578,22 +1641,42 @@ namespace {
 
 typedef bool IsNotNull;
 
-IsNotNull add_state(const Database::Value &_valid_from, ContactStateData::State _state,
-                    ContactStateData &_data)
+IsNotNull add_state(const Database::Value &_valid_from, Fred::Object::State::Value _state,
+                    Registry::MojeIDImplData::ContactStateInfo &_data)
 {
     if (_valid_from.isnull()) {
         return false;
     }
     const std::string db_timestamp = static_cast< std::string >(_valid_from);//2014-12-11 09:28:45.741828
-    _data.set_validity(_state, boost::posix_time::time_from_string(db_timestamp));
+    boost::posix_time::ptime valid_from = boost::posix_time::time_from_string(db_timestamp);
+    switch (_state) {
+        case Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT:
+            _data.conditionally_identification_date = boost::gregorian::date_from_tm(
+                                                          boost::posix_time::to_tm(valid_from));
+            break;
+        case Fred::Object::State::IDENTIFIED_CONTACT:
+            _data.identification_date = boost::gregorian::date_from_tm(boost::posix_time::to_tm(valid_from));
+            break;
+        case Fred::Object::State::VALIDATED_CONTACT:
+            _data.validation_date = boost::gregorian::date_from_tm(boost::posix_time::to_tm(valid_from));
+            break;
+        case Fred::Object::State::MOJEID_CONTACT:
+            _data.mojeid_activation_datetime = valid_from;
+            break;
+        case Fred::Object::State::LINKED:
+            _data.linked_date = boost::gregorian::date_from_tm(boost::posix_time::to_tm(valid_from));
+            break;
+        default:
+            break;
+    }
     return true;
 }
 
 }
 
-ContactStateDataList& MojeID2Impl::get_contacts_state_changes(
+void MojeID2Impl::get_contacts_state_changes(
     unsigned long _last_hours,
-    ContactStateDataList &_result)const
+    MojeIDImplData::ContactStateInfoList &_result)const
 {
     LOGGING_CONTEXT(log_ctx, *this);
 
@@ -1640,10 +1723,11 @@ ContactStateDataList& MojeID2Impl::get_contacts_state_changes(
         _result.clear();
         _result.reserve(rcontacts.size());
         for (::size_t idx = 0; idx < rcontacts.size(); ++idx) {
-            ContactStateData data(static_cast< ContactId >(rcontacts[idx][0]));
+            Registry::MojeIDImplData::ContactStateInfo data;
+            data.contact_id = static_cast< ContactId >(rcontacts[idx][0]);
             if (!add_state(rcontacts[idx][1], Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT, data)) {
                 std::ostringstream msg;
-                msg << "contact " << data.get_contact_id() << " hasn't "
+                msg << "contact " << data.contact_id << " hasn't "
                     << Conversion::Enums::into< std::string >(Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT) << " state";
                 LOGGER(PACKAGE).error(msg.str());
                 continue;
@@ -1652,14 +1736,13 @@ ContactStateDataList& MojeID2Impl::get_contacts_state_changes(
             add_state(rcontacts[idx][3], Fred::Object::State::VALIDATED_CONTACT, data);
             if (!add_state(rcontacts[idx][4], Fred::Object::State::MOJEID_CONTACT, data)) {
                 std::ostringstream msg;
-                msg << "contact " << data.get_contact_id() << " hasn't "
+                msg << "contact " << data.contact_id << " doesn't have "
                     << Conversion::Enums::into< std::string >(Fred::Object::State::MOJEID_CONTACT) << " state";
                 throw std::runtime_error(msg.str());
             }
             add_state(rcontacts[idx][5], Fred::Object::State::LINKED, data);
             _result.push_back(data);
         }
-        return _result;
     }
     catch (const std::exception &e) {
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
@@ -1669,12 +1752,11 @@ ContactStateDataList& MojeID2Impl::get_contacts_state_changes(
         LOGGER(PACKAGE).error("request failed (unknown error)");
         throw;
     }
-    return _result;
 }
 
-ContactStateData& MojeID2Impl::get_contact_state(
+void MojeID2Impl::get_contact_state(
     ContactId _contact_id,
-    ContactStateData &_result)const
+    MojeIDImplData::ContactStateInfo &_result)const
 {
     LOGGING_CONTEXT(log_ctx, *this);
 
@@ -1723,21 +1805,19 @@ ContactStateData& MojeID2Impl::get_contact_state(
             throw ObjectDoesntExist();
         }
 
-        _result.clear();
-        _result.set_contact_id(_contact_id);
+        _result.contact_id = _contact_id;
         if (!add_state(rcontact[0][1], Fred::Object::State::MOJEID_CONTACT, _result)) {
             throw ObjectDoesntExist();
         }
         if (!add_state(rcontact[0][2], Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT, _result)) {
             std::ostringstream msg;
-            msg << "contact " << _contact_id << " hasn't "
+            msg << "contact " << _contact_id << " doesn't have "
                 << Conversion::Enums::into< std::string >(Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT) << " state";
             throw std::runtime_error(msg.str());
         }
         add_state(rcontact[0][3], Fred::Object::State::IDENTIFIED_CONTACT, _result);
         add_state(rcontact[0][4], Fred::Object::State::VALIDATED_CONTACT, _result);
         add_state(rcontact[0][5], Fred::Object::State::LINKED, _result);
-        return _result;
     }//try
     catch (const ObjectDoesntExist &e) {
         LOGGER(PACKAGE).warning(e.what());
@@ -1977,7 +2057,6 @@ void MojeID2Impl::send_mojeid_card(
             Optional< boost::posix_time::ptime >(),
             states.presents(Fred::Object::State::VALIDATED_CONTACT));
         ctx.commit_transaction();
-        return;
     }
     catch(const ObjectDoesntExist &e) {
         LOGGER(PACKAGE).info(e.what());
@@ -2283,7 +2362,7 @@ void transitions::action::process_contact_conditional_identification::operator()
     const event::process_registration_request::StatesPresence &_states)const
 {
     try {
-        const Fred::InfoContactData contact = Fred::InfoContactById(_event.get_object_id())
+        const MojeIDImplData::InfoContact contact = Fred::InfoContactById(_event.get_object_id())
                                                   .exec(_event.get_operation_context()).info_contact_data;
         {
             const MojeID2Impl::CheckProcessRegistrationRequest check_contact_data(
@@ -2347,7 +2426,7 @@ void transitions::action::process_conditionally_identified_contact_transfer::ope
     const event::process_registration_request::StatesPresence &_states)const
 {
     try {
-        const Fred::InfoContactData contact = Fred::InfoContactById(_event.get_object_id())
+        const MojeIDImplData::InfoContact contact = Fred::InfoContactById(_event.get_object_id())
                                                   .exec(_event.get_operation_context()).info_contact_data;
     }
     catch (const MojeID2Impl::IdentificationAlreadyProcessed &e) {
@@ -2375,7 +2454,7 @@ void transitions::action::process_identified_contact_transfer::operator()(
     const event::process_registration_request::StatesPresence &_states)const
 {
     try {
-        const Fred::InfoContactData contact = Fred::InfoContactById(_event.get_object_id())
+        const MojeIDImplData::InfoContact contact = Fred::InfoContactById(_event.get_object_id())
                                                   .exec(_event.get_operation_context()).info_contact_data;
     }
     catch (const MojeID2Impl::IdentificationAlreadyProcessed &e) {

@@ -20,8 +20,8 @@
  *  @file
  *  implementation for MojeID CORBA conversion
  */
+#include "src/corba/mojeid/mojeid_corba_conversion.h"
 #include <string>
-#include "mojeid_corba_conversion.h"
 
 namespace CorbaConversion
 {
@@ -365,4 +365,5 @@ namespace CorbaConversion
         wrap_nullable_into_holder(src.validation_date,                   dst.validation_date);
         wrap_nullable_into_holder(src.linked_date,                       dst.linked_date);
     }
+
 }
