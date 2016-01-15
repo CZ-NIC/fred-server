@@ -102,18 +102,15 @@ Registry::MojeID::InfoContact* Server_i::transfer_contact_prepare(
         _identification = ::CORBA::String_out(identification);
         return result_as< Registry::MojeID::InfoContact >(contact);
     }
-/*    catch (const MojeID2Impl::CheckMojeIDRegistration &e) {
-        if (e.Fred::MojeID::Check::states_before_transfer_into_mojeid::mojeid_contact_present) {
-            throw IDL::ALREADY_MOJEID_CONTACT();
-        }
-        if (e.Fred::MojeID::Check::states_before_transfer_into_mojeid::server_admin_blocked) {
-            throw IDL::OBJECT_ADMIN_BLOCKED();
-        }
-        if (e.Fred::MojeID::Check::states_before_transfer_into_mojeid::server_user_blocked) {
-            throw IDL::OBJECT_USER_BLOCKED();
-        }
-        throw IDL::INTERNAL_SERVER_ERROR();
-    }*/
+    catch (const MojeIDImplData::AlreadyMojeidContact&) {
+        throw IDL::ALREADY_MOJEID_CONTACT();
+    }
+    catch (const MojeIDImplData::ObjectAdminBlocked&) {
+        throw IDL::OBJECT_ADMIN_BLOCKED();
+    }
+    catch (const MojeIDImplData::ObjectUserBlocked&) {
+        throw IDL::OBJECT_USER_BLOCKED();
+    }
     catch (const MojeIDImplData::RegistrationValidationResult &e) {
         CorbaConversion::raise< IDL::REGISTRATION_VALIDATION_ERROR >(e);
     }

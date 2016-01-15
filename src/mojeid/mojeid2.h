@@ -140,7 +140,6 @@ public:
         const Optional< boost::posix_time::ptime > &_letter_time = Optional< boost::posix_time::ptime >(),
         const Optional< bool > &_validated_contact = Optional< bool >());
 private:
-    struct Internal;
     const std::string server_name_;
     const std::string mojeid_registrar_handle_;
 };//class MojeID2Impl

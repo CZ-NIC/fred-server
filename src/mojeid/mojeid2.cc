@@ -21,6 +21,7 @@
  *  mojeid2 implementation
  */
 
+#include "src/mojeid/mojeid2.h"
 #include "src/mojeid/mojeid_impl_internal.h"
 #include "src/mojeid/safe_data_storage.h"
 #include "src/mojeid/mojeid_public_request.h"
@@ -647,7 +648,7 @@ MojeID2Impl::ContactId MojeID2Impl::create_contact_prepare(
         Fred::InfoContactData info_contact_data;
         from_into(_contact, info_contact_data);
         {
-            const Internal::CheckCreateContactPrepare check_contact_data(
+            const MojeIDImplInternal::CheckCreateContactPrepare check_contact_data(
                 Fred::make_args(info_contact_data),
                 Fred::make_args(info_contact_data, ctx));
 
@@ -670,7 +671,7 @@ MojeID2Impl::ContactId MojeID2Impl::create_contact_prepare(
         ctx.commit_transaction();
         return new_contact.object_id;
     }
-    catch (const Internal::CheckCreateContactPrepare &e_in) {
+    catch (const MojeIDImplInternal::CheckCreateContactPrepare &e_in) {
         LOGGER(PACKAGE).error("request failed (incorrect input data)");
         MojeIDImplData::RegistrationValidationResult e_out;
         throw e_out;
@@ -722,10 +723,10 @@ void MojeID2Impl::transfer_contact_prepare(
         const Fred::InfoContactData contact = Fred::InfoContactByHandle(_handle).exec(ctx).info_contact_data;
         const Fred::PublicRequestObjectLockGuardByObjectId locked_contact(ctx, contact.id);
         const Fred::Object::StatesInfo states(Fred::GetObjectStates(contact.id).exec(ctx));
-        const Internal::CheckMojeIDRegistration check_result(
+        const MojeIDImplInternal::CheckMojeIDRegistration check_result(
             Fred::make_args(contact), Fred::make_args(contact, ctx), Fred::make_args(states));
         if (!check_result.success()) {
-            throw check_result;
+            MojeIDImplInternal::raise(check_result);
         }
 
         if (states.absents(Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT) &&
@@ -760,8 +761,16 @@ void MojeID2Impl::transfer_contact_prepare(
         ctx.commit_transaction();
         return;
     }
-    catch (const Internal::CheckMojeIDRegistration&) {
-        LOGGER(PACKAGE).error("request failed (incorrect input data)");
+    catch (const MojeIDImplData::AlreadyMojeidContact&) {
+        LOGGER(PACKAGE).error("request failed (incorrect input data - AlreadyMojeidContact)");
+        throw;
+    }
+    catch (const MojeIDImplData::ObjectAdminBlocked&) {
+        LOGGER(PACKAGE).error("request failed (incorrect input data - ObjectAdminBlocked)");
+        throw;
+    }
+    catch (const MojeIDImplData::ObjectUserBlocked&) {
+        LOGGER(PACKAGE).error("request failed (incorrect input data - ObjectUserBlocked)");
         throw;
     }
     catch (const Fred::InfoContactByHandle::Exception &e) {
@@ -914,7 +923,7 @@ void MojeID2Impl::update_contact_prepare(
             create_public_request_op.exec(ctx, locked_contact, _log_request_id);
         }
         {
-            const Internal::CheckUpdateContactPrepare check_contact_data(new_data);
+            const MojeIDImplInternal::CheckUpdateContactPrepare check_contact_data(new_data);
             if (!check_contact_data.success()) {
                 throw check_contact_data;
             }
@@ -964,7 +973,7 @@ void MojeID2Impl::update_contact_prepare(
         LOGGER(PACKAGE).info(e.as_string());
         throw;
     }
-    catch(const Internal::UpdateContactPrepareError &e) {
+    catch(const MojeIDImplInternal::UpdateContactPrepareError &e) {
         LOGGER(PACKAGE).error("request failed (incorrect input data)");
         throw;
     }
@@ -1064,13 +1073,13 @@ MojeIDImplData::InfoContact MojeID2Impl::update_transfer_contact_prepare(
                 Fred::CreateObjectStateRequestId(current_data.id, to_cancel).exec(ctx);
             }
 
-            const Internal::CheckMojeIDRegistration check_contact_data(
+            const MojeIDImplInternal::CheckMojeIDRegistration check_contact_data(
                 Fred::make_args(new_data),
                 Fred::make_args(new_data, ctx),
                 Fred::make_args(states));
 
             if (!check_contact_data.success()) {
-                throw check_contact_data;
+                MojeIDImplInternal::raise(check_contact_data);
             }
             //perform changes
             Fred::UpdateContactById update_contact_op(new_data.id, mojeid_registrar_handle_);
@@ -1121,10 +1130,6 @@ MojeIDImplData::InfoContact MojeID2Impl::update_transfer_contact_prepare(
     }
     catch (const MojeIDImplData::ObjectUserBlocked&) {
         LOGGER(PACKAGE).info("request failed (ObjectUserBlocked)");
-        throw;
-    }
-    catch (const Internal::CheckMojeIDRegistration &e) {
-        LOGGER(PACKAGE).info("request failed (UpdateTransferError)");
         throw;
     }
     catch(const MojeIDImplData::MessageLimitExceeded &e) {
@@ -1363,7 +1368,7 @@ void MojeID2Impl::process_identification_request(
 
         const Fred::InfoContactData current_data = Fred::InfoContactById(_contact_id).exec(ctx).info_contact_data;
         {
-            const Internal::CheckProcessIdentificationRequest check_contact_data(current_data);
+            const MojeIDImplInternal::CheckProcessIdentificationRequest check_contact_data(current_data);
             if (!check_contact_data.success()) {
                 throw check_contact_data;
             }
@@ -1594,7 +1599,7 @@ void MojeID2Impl::create_validation_request(
         }
         const Fred::InfoContactData contact_data = Fred::InfoContactById(_contact_id).exec(ctx).info_contact_data;
         {
-            const Internal::CheckCreateValidationRequest check_create_validation_request(contact_data);
+            const MojeIDImplInternal::CheckCreateValidationRequest check_create_validation_request(contact_data);
             if (!check_create_validation_request.success()) {
                 throw check_create_validation_request;
             }
@@ -1624,7 +1629,7 @@ void MojeID2Impl::create_validation_request(
         LOGGER(PACKAGE).warning("unable to create new request (ValidationRequestExists)");
         throw;
     }
-    catch (const Internal::CreateValidationRequestError &e) {
+    catch (const MojeIDImplInternal::CreateValidationRequestError &e) {
         LOGGER(PACKAGE).warning("request failed (invalid contact data)");
         throw;
     }
