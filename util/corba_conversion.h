@@ -52,24 +52,30 @@ namespace CorbaConversion
     /**
      * Conversion given in template argument from non-CORBA type into CORBA type.
      * @tparam WRAPPER is a type with the same interface as specialization of DEFAULT_WRAPPER
+     * @tparam SRC_TYPE is conversion non-CORBA source type
+     * @tparam DST_TYPE is conversion CORBA destination type
      * @param src is source non-CORBA type instance
      * @return dst is destination CORBA type instance
      */
-    template < typename WRAPPER >
-    void wrap_by(const typename WRAPPER::NON_CORBA_TYPE &src, typename WRAPPER::CORBA_TYPE &dst)
+    template < typename WRAPPER, class SRC_TYPE, class DST_TYPE >
+    void wrap_by(const SRC_TYPE &src, DST_TYPE &dst)
     {
+        BOOST_MPL_ASSERT((boost::is_same< SRC_TYPE, typename WRAPPER::NON_CORBA_TYPE >));
+        BOOST_MPL_ASSERT((boost::is_same< DST_TYPE, typename WRAPPER::CORBA_TYPE >));
         WRAPPER::wrap(src, dst);
     }
 
     /**
      * Conversion given in template argument from non-CORBA type into CORBA type.
      * @tparam WRAPPER is a type with the same interface as specialization of DEFAULT_WRAPPER
+     * @tparam SRC_TYPE is conversion non-CORBA source type
      * @param src is source non-CORBA type instance
      * @return CORBA type instance
      */
-    template < typename WRAPPER >
-    typename WRAPPER::CORBA_TYPE wrap_into_by(const typename WRAPPER::NON_CORBA_TYPE &src)
+    template < typename WRAPPER, class SRC_TYPE >
+    typename WRAPPER::CORBA_TYPE wrap_into_by(const SRC_TYPE &src)
     {
+        BOOST_MPL_ASSERT((boost::is_same< SRC_TYPE, typename WRAPPER::NON_CORBA_TYPE >));
         typename WRAPPER::CORBA_TYPE dst;
         wrap_by< WRAPPER >(src, dst);
         return dst;
@@ -122,24 +128,30 @@ namespace CorbaConversion
     /**
      * Conversion given in template argument from CORBA type into non-CORBA type.
      * @tparam UNWRAPPER is a type with the same interface as specialization of DEFAULT_UNWRAPPER
+     * @tparam SRC_TYPE is conversion CORBA source type
+     * @tparam DST_TYPE is conversion non-CORBA destination type
      * @param src is source CORBA type instance
      * @return dst is destination non-CORBA type instance
      */
-    template < typename UNWRAPPER >
-    void unwrap_by(const typename UNWRAPPER::CORBA_TYPE &src, typename UNWRAPPER::NON_CORBA_TYPE &dst)
+    template < typename UNWRAPPER, class SRC_TYPE, class DST_TYPE >
+    void unwrap_by(const SRC_TYPE &src, DST_TYPE &dst)
     {
+        BOOST_MPL_ASSERT((boost::is_same< SRC_TYPE, typename UNWRAPPER::CORBA_TYPE >));
+        BOOST_MPL_ASSERT((boost::is_same< DST_TYPE, typename UNWRAPPER::NON_CORBA_TYPE >));
         UNWRAPPER::unwrap(src, dst);
     }
 
     /**
      * Conversion given in template argument from CORBA type into non-CORBA type.
      * @tparam UNWRAPPER is a type with the same interface as specialization of DEFAULT_UNWRAPPER
+     * @tparam SRC_TYPE is conversion CORBA source type
      * @param src is source CORBA type instance
      * @return non-CORBA type instance
      */
-    template < typename UNWRAPPER >
-    typename UNWRAPPER::NON_CORBA_TYPE unwrap_into_by(const typename UNWRAPPER::CORBA_TYPE &src)
+    template < typename UNWRAPPER, class SRC_TYPE >
+    typename UNWRAPPER::NON_CORBA_TYPE unwrap_into_by(const SRC_TYPE &src)
     {
+        BOOST_MPL_ASSERT((boost::is_same< SRC_TYPE, typename UNWRAPPER::CORBA_TYPE >));
         typename UNWRAPPER::NON_CORBA_TYPE dst;
         unwrap_by< UNWRAPPER >(src, dst);
         return dst;

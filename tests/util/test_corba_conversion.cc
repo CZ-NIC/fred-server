@@ -105,7 +105,7 @@ BOOST_AUTO_TEST_CASE(test_string_wrap_by_unwrap_by)
     CORBA::String_var sv1;
     CorbaConversion::wrap_into_holder(std::string("test"), sv1);
     BOOST_CHECK(sv1.in() == std::string("test"));
-    std::string ss1 = CorbaConversion::unwrap_into_by< CorbaConversion::Unwrapper_const_char_ptr_into_std_string >(sv1);
+    std::string ss1 = CorbaConversion::unwrap_into_by< CorbaConversion::Unwrapper_const_char_ptr_into_std_string >(static_cast< const char* >(sv1));
     BOOST_CHECK(ss1 == std::string("test"));
 }
 
