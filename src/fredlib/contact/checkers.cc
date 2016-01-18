@@ -17,6 +17,7 @@
  */
 
 #include "src/fredlib/contact/checkers.h"
+#include "src/fredlib/contact/ssntype.h"
 #include "src/fredlib/contact_verification/django_email_format.h"
 #include "util/idn_utils.h"
 #include "util/types/birthdate.h"
@@ -232,14 +233,12 @@ contact_username_availability::contact_username_availability(
 
 namespace {
 
-const char *const ssntype_birthday = "BIRTHDAY";
-const char *const ssntype_vat_id = "ICO";
-
 bool ssntype_present(
     const Nullable< std::string > &_ssntype_current,
-    const char *_ssntype_required)
+    SSNType::Value _ssntype_required)
 {
-    return !_ssntype_current.isnull() && (_ssntype_current.get_value() == _ssntype_required);
+    return !_ssntype_current.isnull() &&
+           (_ssntype_current.get_value() == Conversion::Enums::into< std::string >(_ssntype_required));
 }
 
 }//Fred::GeneralCheck::MojeID::{anonymous}
@@ -247,7 +246,7 @@ bool ssntype_present(
 contact_birthday::contact_birthday(
     const Nullable< std::string > &_ssntype,
     const Nullable< std::string > &_ssn)
-:   absent(!ssntype_present(_ssntype, ssntype_birthday)),
+:   absent(!ssntype_present(_ssntype, SSNType::BIRTHDAY)),
     invalid(!contact_birthday_validity(_ssntype, _ssn).success())
 {
 }
@@ -255,7 +254,7 @@ contact_birthday::contact_birthday(
 contact_birthday_validity::contact_birthday_validity(
     const Nullable< std::string > &_ssntype,
     const Nullable< std::string > &_ssn)
-try:invalid(ssntype_present(_ssntype, ssntype_birthday) &&
+try:invalid(ssntype_present(_ssntype, SSNType::BIRTHDAY) &&
             birthdate_from_string_to_date(_ssn.get_value()).is_special())
 {
 }
@@ -266,7 +265,7 @@ catch (...) {
 contact_vat_id_presence::contact_vat_id_presence(
     const Nullable< std::string > &_ssntype,
     const Nullable< std::string > &_ssn)
-:   absent(!ssntype_present(_ssntype, ssntype_vat_id) || absent_or_empty(_ssn))
+:   absent(!ssntype_present(_ssntype, SSNType::ICO) || absent_or_empty(_ssn))
 {
 }
 

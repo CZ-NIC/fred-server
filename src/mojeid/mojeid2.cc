@@ -1549,11 +1549,12 @@ std::string MojeID2Impl::get_validation_pdf(ContactId _contact_id)const
         const std::string name         = static_cast< std::string >(res[0][1]);
         const std::string organization = static_cast< std::string >(res[0][2]);
         const std::string ssn_value    = static_cast< std::string >(res[0][3]);
-        const std::string ssn_type     = static_cast< std::string >(res[0][4]);
+        const Fred::SSNType::Value ssn_type
+                   = Fred::SSNType::from(static_cast< std::string >(res[0][4]));
         const std::string address      = static_cast< std::string >(res[0][5]);
         const std::string handle       = static_cast< std::string >(res[0][6]);
-        const bool is_ssn_ico =      ssn_type == "ICO";
-        const std::string birthday = ssn_type == "BIRTHDAY"
+        const bool is_ssn_ico =      ssn_type == Fred::SSNType::ICO;
+        const std::string birthday = ssn_type == Fred::SSNType::BIRTHDAY
             ? birthdate_into_czech_date(ssn_value)
             : "";
         std::string letter_xml("<?xml version='1.0' encoding='utf-8'?>");
