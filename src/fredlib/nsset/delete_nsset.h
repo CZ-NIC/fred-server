@@ -37,7 +37,6 @@ namespace Fred
     * Delete of nsset.
     * Nsset handle to delete is set via constructor.
     * Delete is executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
-    * When exception is thrown, changes to database are considered incosistent and should be rolled back by the caller.
     * In case of wrong input data or other predictable and superable failure, an instance of @ref DeleteNssetByHandle::Exception is thrown with appropriate attributes set.
     * In case of other insuperable failures and inconsistencies, an instance of @ref InternalError or other exception is thrown.
     */
@@ -76,7 +75,6 @@ namespace Fred
     * Delete of nsset.
     * Id of Nsset to delete is set via constructor.
     * Delete is executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
-    * When exception is thrown, changes to database are considered incosistent and should be rolled back by the caller.
     * In case of wrong input data or other predictable and superable failure, an instance of @ref DeleteNssetById::Exception is thrown with appropriate attributes set.
     * In case of other insuperable failures and inconsistencies, an instance of @ref InternalError or other exception is thrown.
     */

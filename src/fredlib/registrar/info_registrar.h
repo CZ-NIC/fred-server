@@ -25,6 +25,7 @@
 #define INFO_REGISTRAR_H_
 
 #include <string>
+#include <vector>
 
 #include "src/fredlib/opexception.h"
 #include "src/fredlib/opcontext.h"
@@ -37,7 +38,6 @@ namespace Fred
     * Registrar info by handle.
     * Registrar handle to get info about the registrar is set via constructor.
     * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
-    * When exception is thrown, changes to database are considered inconsistent and should be rolled back by the caller.
     * In case of wrong input data or other predictable and superable failure, the instance of @ref InfoRegistrarByHandle::Exception is thrown with appropriate attributes set.
     * In case of other unsuperable failures and inconstistencies, the instance of @ref InternalError or other exception is thrown.
     */
@@ -72,7 +72,7 @@ namespace Fred
         * @param local_timestamp_pg_time_zone_name is postgresql time zone name of the returned data
         * @return info data about the registrar
         */
-        InfoRegistrarOutput exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
+        InfoRegistrarOutput exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");
 
         /**
         * Dumps state of the instance into the string
@@ -80,13 +80,12 @@ namespace Fred
         */
         std::string to_string() const;
 
-    };//class InfoRegistrarByHandle
+    };
 
     /**
     * Registrar info by id.
     * Registrar id to get info about the registrar is set via constructor.
     * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
-    * When exception is thrown, changes to database are considered inconsistent and should be rolled back by the caller.
     * In case of wrong input data or other predictable and superable failure, the instance of @ref InfoRegistrarById::Exception is thrown with appropriate attributes set.
     * In case of other unsuperable failures and inconstistencies, the instance of @ref InternalError or other exception is thrown.
     */
@@ -121,7 +120,7 @@ namespace Fred
         * @param local_timestamp_pg_time_zone_name is postgresql time zone name of the returned data
         * @return info data about the registrar
         */
-        InfoRegistrarOutput exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
+        InfoRegistrarOutput exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");
 
         /**
         * Dumps state of the instance into the string
@@ -129,7 +128,46 @@ namespace Fred
         */
         std::string to_string() const;
 
-    };//class InfoRegistrarById
+    };
+
+    /**
+    * All registrars info, except system registrars.
+    * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
+    * In case of other unsuperable failures and inconstistencies, the instance of @ref InternalError or other exception is thrown.
+    */
+    class InfoRegistrarAllExceptSystem : public Util::Printable
+    {
+        bool lock_;/**< lock object_registry row for registrar */
+
+    public:
+
+        /**
+        * Info registrar constructor.
+        */
+        InfoRegistrarAllExceptSystem();
+
+        /**
+        * Sets registrar lock flag.
+        * @param lock sets lock registrar flag into @ref lock_ attribute
+        * @return operation instance reference to allow method chaining
+        */
+        InfoRegistrarAllExceptSystem& set_lock(bool lock = true);
+
+        /**
+        * Executes getting info about the registrar.
+        * @param ctx contains reference to database and logging interface
+        * @param local_timestamp_pg_time_zone_name is postgresql time zone name of the returned data
+        * @return registrars info data list
+        */
+        std::vector<InfoRegistrarOutput> exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");
+
+        /**
+        * Dumps state of the instance into the string
+        * @return string with description of the instance state
+        */
+        std::string to_string() const;
+
+    };
 
 }//namespace Fred
 

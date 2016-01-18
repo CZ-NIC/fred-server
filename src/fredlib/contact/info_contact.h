@@ -76,9 +76,8 @@ namespace Fred
         * @return info data about the contact
         * @throws Exception in case of wrong input data or other predictable and superable failure.
         * @throws InternalError otherwise
-        * When exception is thrown changes to database are considered inconsistent and should be rolled back by the caller.
         */
-        InfoContactOutput exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
+        InfoContactOutput exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");
 
         /**
         * Dumps state of the instance into the string
@@ -126,9 +125,8 @@ namespace Fred
         * @return info data about the contact
         * @throws Exception in case of wrong input data or other predictable and superable failure.
         * @throws InternalError otherwise
-        * When exception is thrown changes to database are considered inconsistent and should be rolled back by the caller.
         */
-        InfoContactOutput exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
+        InfoContactOutput exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");
 
         /**
         * Dumps state of the instance into the string
@@ -144,10 +142,9 @@ namespace Fred
     * Contact registry object identifier to get history info about the contact is set via constructor.
     * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
     */
-    class InfoContactHistory  : public Util::Printable
+    class InfoContactHistoryByRoid  : public Util::Printable
     {
         const std::string roid_;/**< registry object identifier of the contact */
-        Optional<boost::posix_time::ptime> history_timestamp_;/**< timestamp of history state we want to get (in time zone set in @ref local_timestamp_pg_time_zone_name parameter) */
         bool lock_;/**< if set to true lock object_registry row for update, if set to false lock for share */
 
     public:
@@ -161,21 +158,7 @@ namespace Fred
         * Info contact history constructor with mandatory parameter.
         * @param roid sets registry object identifier of the contact into @ref roid_ attribute
         */
-        InfoContactHistory(const std::string& roid);
-
-        /**
-        * Info contact history constructor with all parameters.
-        * @param roid sets registry object identifier of the contact into @ref roid_ attribute
-        * @param history_timestamp sets timestamp of history state we want to get @ref history_timestamp_ attribute
-        */
-        InfoContactHistory(const std::string& roid, const Optional<boost::posix_time::ptime>& history_timestamp);
-
-        /**
-        * Sets timestamp of history state we want to get.
-        * @param history_timestamp sets timestamp of history state we want to get @ref history_timestamp_ attribute
-        * @return operation instance reference to allow method chaining
-        */
-        InfoContactHistory& set_history_timestamp(boost::posix_time::ptime history_timestamp);
+        InfoContactHistoryByRoid(const std::string& roid);
 
         /**
         * Sets lock for update.
@@ -183,7 +166,7 @@ namespace Fred
         * Sets true to lock flag in @ref lock_ attribute
         * @return operation instance reference to allow method chaining
         */
-        InfoContactHistory& set_lock();
+        InfoContactHistoryByRoid& set_lock();
 
         /**
         * Executes getting history info about the contact.
@@ -192,9 +175,8 @@ namespace Fred
         * @return history info data about the contact in descending order by historyid
         * @throws Exception in case of wrong input data or other predictable and superable failure.
         * @throws InternalError otherwise
-        * When exception is thrown changes to database are considered inconsistent and should be rolled back by the caller.
         */
-        std::vector<InfoContactOutput> exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
+        std::vector<InfoContactOutput> exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");
 
         /**
         * Dumps state of the instance into the string
@@ -212,7 +194,7 @@ namespace Fred
     */
     class InfoContactHistoryById : public Util::Printable
     {
-        unsigned long long id_;/**< object id of the contact */
+        const unsigned long long id_;/**< object id of the contact */
         bool lock_;/**< if set to true lock object_registry row for update, if set to false lock for share */
 
     public:
@@ -243,9 +225,8 @@ namespace Fred
         * @return history info data about the contact in descending order by historyid
         * @throws Exception in case of wrong input data or other predictable and superable failure.
         * @throws InternalError otherwise
-        * When exception is thrown changes to database are considered inconsistent and should be rolled back by the caller.
         */
-        std::vector<InfoContactOutput> exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
+        std::vector<InfoContactOutput> exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");
 
         /**
         * Dumps state of the instance into the string
@@ -262,7 +243,7 @@ namespace Fred
     */
     class InfoContactHistoryByHistoryid : public Util::Printable
     {
-        unsigned long long historyid_;/**< history id of the contact */
+        const unsigned long long historyid_;/**< history id of the contact */
         bool lock_;/**< if set to true lock object_registry row for update, if set to false lock for share */
 
     public:
@@ -293,9 +274,8 @@ namespace Fred
         * @return history info data about the contact
         * @throws Exception in case of wrong input data or other predictable and superable failure.
         * @throws InternalError otherwise
-        * When exception is thrown changes to database are considered inconsistent and should be rolled back by the caller.
         */
-        InfoContactOutput exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");//return data
+        InfoContactOutput exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name = "Europe/Prague");
 
         /**
         * Dumps state of the instance into the string

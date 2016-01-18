@@ -101,7 +101,7 @@ void FileManagerClient::download(const unsigned long long _id
         _resolve();
         ccReg::FileInfo_var info = fmanager_->info(_id);//get info
         _out_buffer.clear();
-        _out_buffer.reserve(info->size);//allocate buffer
+        _out_buffer.reserve(info->size);
         ccReg::FileDownload_var downloader = fmanager_->load(_id);
         ccReg::BinaryData_var file_data(new ccReg::BinaryData);
         file_data = downloader->download(info->size);

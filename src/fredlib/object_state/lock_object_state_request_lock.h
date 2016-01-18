@@ -35,7 +35,6 @@ namespace Fred
     * Locks object state using object_state_request_lock table.
     * Database id of the object is set via constructors.
     * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
-    * When exception is thrown, changes to database are considered inconsistent and should be rolled back by the caller.
     * In case of insuperable failures and inconsistencies, the instance of @ref InternalError or other exception is thrown.
     */
     class LockObjectStateRequestLock

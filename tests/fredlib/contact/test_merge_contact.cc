@@ -1500,7 +1500,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_nsset_keyset_domain_via_admin_domain_via_own
         std::map<std::string, Fred::InfoContactDiff> changed_contacts = diff_contacts();
 
         //accumulated changed contacts 2,4,8,...
-        BOOST_CHECK(changed_contacts.size() == (2+2*(loq_ci - linked_object_quantities.begin()))); //deleted src contact, updated dst contact authinfo
+        BOOST_CHECK(changed_contacts.size() == static_cast<std::size_t>(2+2*(loq_ci - linked_object_quantities.begin()))); //deleted src contact, updated dst contact authinfo
 
         BOOST_MESSAGE(std::string("changed src contact fields: (\"")
             + Util::format_container(map_at(changed_contacts,contact_handle_src).changed_fields(), "\")(\"") + "\")");

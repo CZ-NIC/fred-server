@@ -51,7 +51,7 @@ namespace Fred
         try
         {
             registrar_res = InfoRegistrar()
-                    .set_handle(handle_)
+                .set_inline_view_filter(Database::ParamQuery(InfoRegistrar::GetAlias::handle())(" = UPPER(").param_text(handle_)(")"))
                     .set_lock(lock_)
                     .exec(ctx,local_timestamp_pg_time_zone_name);
 
@@ -102,7 +102,7 @@ namespace Fred
         try
         {
             registrar_res = InfoRegistrar()
-                    .set_id(id_)
+                .set_inline_view_filter(Database::ParamQuery(InfoRegistrar::GetAlias::id())(" = ").param_bigint(id_))
                     .set_lock(lock_)
                     .exec(ctx,local_timestamp_pg_time_zone_name);
 
@@ -133,6 +133,36 @@ namespace Fred
         (std::make_pair("lock",lock_ ? "true":"false"))
         );
     }
+
+    InfoRegistrarAllExceptSystem::InfoRegistrarAllExceptSystem()
+        : lock_(false)
+    {}
+
+    InfoRegistrarAllExceptSystem& InfoRegistrarAllExceptSystem::set_lock(bool lock)
+    {
+        lock_ = lock;
+        return *this;
+    }
+
+    std::vector<InfoRegistrarOutput> InfoRegistrarAllExceptSystem::exec(OperationContext& ctx,
+        const std::string& local_timestamp_pg_time_zone_name)
+    {
+            return InfoRegistrar()
+                    .set_inline_view_filter(Database::ParamQuery(InfoRegistrar::GetAlias::system())(" = FALSE"))
+                    .set_lock(lock_)
+                    .exec(ctx,local_timestamp_pg_time_zone_name);
+    }
+
+    std::string InfoRegistrarAllExceptSystem::to_string() const
+    {
+        return Util::format_operation_state("InfoRegistrarAllExceptSystem",
+        Util::vector_of<std::pair<std::string,std::string> >
+        (std::make_pair("lock",lock_ ? "true":"false"))
+        );
+    }
+
+
+
 
 }//namespace Fred
 

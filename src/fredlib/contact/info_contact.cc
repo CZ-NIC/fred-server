@@ -52,9 +52,14 @@ namespace Fred
         try
         {
             InfoContact ic;
-            ic.set_handle(handle_)
+            ic.set_inline_view_filter(Database::ParamQuery(InfoContact::GetAlias::handle())(" = UPPER(").param_text(handle_)(")"))
             .set_history_query(false);
-            if(lock_) ic.set_lock();
+
+            if(lock_)
+            {
+                ic.set_lock();
+            }
+
             contact_res = ic.exec(ctx,local_timestamp_pg_time_zone_name);
 
             if (contact_res.empty())
@@ -103,9 +108,14 @@ namespace Fred
         try
         {
             InfoContact ic;
-            ic.set_id(id_)
+            ic.set_inline_view_filter(Database::ParamQuery(InfoContact::GetAlias::id())(" = ").param_bigint(id_))
             .set_history_query(false);
-            if(lock_) ic.set_lock();
+
+            if(lock_)
+            {
+                ic.set_lock();
+            }
+
             contact_res = ic.exec(ctx,local_timestamp_pg_time_zone_name);
 
             if (contact_res.empty())
@@ -136,40 +146,32 @@ namespace Fred
         );
     }
 
-    InfoContactHistory::InfoContactHistory(const std::string& roid
-            , const Optional<boost::posix_time::ptime>& history_timestamp)
+    InfoContactHistoryByRoid::InfoContactHistoryByRoid(const std::string& roid)
         : roid_(roid)
-        , history_timestamp_(history_timestamp)
         , lock_(false)
     {}
 
-    InfoContactHistory::InfoContactHistory(const std::string& roid)
-    : roid_(roid)
-    , lock_(false)
-    {}
-
-    InfoContactHistory& InfoContactHistory::set_history_timestamp(boost::posix_time::ptime history_timestamp)//set history timestamp
-    {
-        history_timestamp_ = history_timestamp;
-        return *this;
-    }
-
-    InfoContactHistory& InfoContactHistory::set_lock()
+    InfoContactHistoryByRoid& InfoContactHistoryByRoid::set_lock()
     {
         lock_ = true;
         return *this;
     }
 
-    std::vector<InfoContactOutput> InfoContactHistory::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
+    std::vector<InfoContactOutput> InfoContactHistoryByRoid::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
     {
         std::vector<InfoContactOutput> contact_history_res;
 
         try
         {
             InfoContact ic;
-            ic.set_roid(roid_)
+            ic.set_inline_view_filter(Database::ParamQuery(InfoContact::GetAlias::roid())(" = ").param_text(roid_))
             .set_history_query(true);
-            if(lock_) ic.set_lock();
+
+            if(lock_)
+            {
+                ic.set_lock();
+            }
+
             contact_history_res = ic.exec(ctx,local_timestamp_pg_time_zone_name);
 
             if (contact_history_res.empty())
@@ -185,12 +187,11 @@ namespace Fred
         return contact_history_res;
     }
 
-    std::string InfoContactHistory::to_string() const
+    std::string InfoContactHistoryByRoid::to_string() const
     {
-        return Util::format_operation_state("InfoContactHistory",
+        return Util::format_operation_state("InfoContactHistoryByRoid",
         Util::vector_of<std::pair<std::string,std::string> >
         (std::make_pair("roid",roid_))
-        (std::make_pair("history_timestamp",history_timestamp_.print_quoted()))
         (std::make_pair("lock",lock_ ? "true":"false"))
         );
     }
@@ -213,9 +214,14 @@ namespace Fred
         try
         {
             InfoContact ic;
-            ic.set_id(id_)
+            ic.set_inline_view_filter(Database::ParamQuery(InfoContact::GetAlias::id())(" = ").param_bigint(id_))
             .set_history_query(true);
-            if(lock_) ic.set_lock();
+
+            if(lock_)
+            {
+                ic.set_lock();
+            }
+
             contact_history_res = ic.exec(ctx,local_timestamp_pg_time_zone_name);
 
             if (contact_history_res.empty())
@@ -259,9 +265,14 @@ namespace Fred
         try
         {
             InfoContact ic;
-            ic.set_historyid(historyid_)
+            ic.set_inline_view_filter(Database::ParamQuery(InfoContact::GetAlias::historyid())(" = ").param_bigint(historyid_))
             .set_history_query(true);
-            if(lock_) ic.set_lock();
+
+            if(lock_)
+            {
+                ic.set_lock();
+            }
+
             contact_history_res = ic.exec(ctx,local_timestamp_pg_time_zone_name);
 
             if (contact_history_res.empty())

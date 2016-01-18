@@ -12,8 +12,8 @@
 
 
 namespace Corba {
-    CORBA::String_member wrap_string(const std::string& in);
-    std::string unwrap_string(const CORBA::String_member& in);
+    CORBA::String_var wrap_string(const std::string& in);
+    std::string unwrap_string(const char* in);
 
     /**
      * Make std::string from servant in string and check for illegal NULL pointer

@@ -367,7 +367,7 @@ struct Locking_object_state_request_fixture
 
         BOOST_CHECK(info_contact_id);//expecting existing object
         info_contact = Fred::InfoContactByHandle(contact_handle).exec(ctx);
-        info_contact_history = Fred::InfoContactHistory(info_contact.info_contact_data.roid).exec(ctx);
+        info_contact_history = Fred::InfoContactHistoryByRoid(info_contact.info_contact_data.roid).exec(ctx);
         ctx.commit_transaction();
     }
 
@@ -583,7 +583,7 @@ struct Locking_public_request_fixture
 
         BOOST_CHECK(contact_id);//expecting existing object
         info_contact = Fred::InfoContactByHandle(contact_handle).exec(ctx);
-        info_contact_history = Fred::InfoContactHistory(info_contact.info_contact_data.roid).exec(ctx);
+        info_contact_history = Fred::InfoContactHistoryByRoid(info_contact.info_contact_data.roid).exec(ctx);
 
         ctx.commit_transaction();
 

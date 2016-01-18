@@ -67,8 +67,6 @@ namespace Fred
         (std::make_pair("authinfopw",authinfopw))
         (std::make_pair("admin_contacts",Util::format_container(admin_contacts)))
         (std::make_pair("enum_domain_validation",enum_domain_validation.print_quoted()))
-        (std::make_pair("outzone_time",boost::lexical_cast<std::string>(outzone_time)))
-        (std::make_pair("cancel_time",boost::lexical_cast<std::string>(cancel_time)))
         (std::make_pair("delete_time",delete_time.print_quoted()))
         (std::make_pair("crhistoryid",boost::lexical_cast<std::string>(crhistoryid)))
         (std::make_pair("historyid",boost::lexical_cast<std::string>(historyid)))

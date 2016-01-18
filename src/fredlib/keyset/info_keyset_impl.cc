@@ -31,6 +31,7 @@
 
 #include "info_keyset_impl.h"
 #include "src/fredlib/opcontext.h"
+#include "util/db/param_query_composition.h"
 #include "util/util.h"
 
 
@@ -42,35 +43,6 @@ namespace Fred
     : history_query_(false)
     , lock_(false)
     {}
-
-    InfoKeyset& InfoKeyset::set_handle(const std::string& handle)
-    {
-        handle_ = handle;
-        return *this;
-    }
-
-    InfoKeyset& InfoKeyset::set_roid(const std::string& keyset_roid)
-    {
-        keyset_roid_ = keyset_roid;
-        return *this;
-    }
-    InfoKeyset& InfoKeyset::set_id(unsigned long long keyset_id)
-    {
-        keyset_id_ = keyset_id;
-        return *this;
-    }
-
-    InfoKeyset& InfoKeyset::set_historyid(unsigned long long keyset_historyid)
-    {
-        keyset_historyid_ = keyset_historyid;
-        return *this;
-    }
-
-    InfoKeyset& InfoKeyset::set_history_timestamp(boost::posix_time::ptime history_timestamp)
-    {
-        history_timestamp_ = history_timestamp;
-        return *this;
-    }
 
     InfoKeyset& InfoKeyset::set_history_query(bool history_query)
     {
@@ -84,241 +56,219 @@ namespace Fred
         return *this;
     }
 
-    std::pair<std::string, Database::QueryParams> InfoKeyset::make_keyset_query(const std::string& local_timestamp_pg_time_zone_name)
+    InfoKeyset& InfoKeyset::set_inline_view_filter(const Database::ParamQuery& filter_expr)
     {
-        //query params
-        Database::QueryParams params;
-        std::ostringstream sql;
+        info_keyset_inline_view_filter_expr_ = filter_expr;
+        return *this;
+    }
 
-        params.push_back(local_timestamp_pg_time_zone_name);//refered as $1
+    InfoKeyset& InfoKeyset::set_cte_id_filter(const Database::ParamQuery& cte_id_filter_query)
+    {
+        info_keyset_id_filter_cte_ = cte_id_filter_query;
+        return *this;
+    }
 
-        sql << "SELECT kobr.id, kobr.roid, kobr.name " //keyset 0-2
-        " , (kobr.erdate AT TIME ZONE 'UTC' ) AT TIME ZONE $1::text " //keyset 3
-        " , obj.id, h.id , h.next, (h.valid_from AT TIME ZONE 'UTC') AT TIME ZONE $1::text "
-        " , (h.valid_to AT TIME ZONE 'UTC') AT TIME ZONE $1::text " //historyid 4-8
-        " , obj.clid, clr.handle "//sponsoring registrar 9-10
-        " , kobr.crid, crr.handle "//creating registrar 11-12
-        " , obj.upid, upr.handle "//last updated by registrar 13-14
-        " , (kobr.crdate AT TIME ZONE 'UTC') AT TIME ZONE $1::text "//registration dates 15
-        " , (obj.trdate AT TIME ZONE 'UTC') AT TIME ZONE $1::text "//registration dates 16
-        " , (obj.update AT TIME ZONE 'UTC') AT TIME ZONE $1::text "//registration dates 17
-        " , obj.authinfopw "//transfer passwd 18
-        " , kobr.crhistoryid " //first historyid 19
-        " , h.request_id " //logd request_id 20
-        " , (CURRENT_TIMESTAMP AT TIME ZONE 'UTC')::timestamp AS utc_timestamp "// utc timestamp 21
-        " , (CURRENT_TIMESTAMP AT TIME ZONE 'UTC' AT TIME ZONE $1::text)::timestamp AS local_timestamp  "// local zone timestamp 22
-        " FROM object_registry kobr ";
+    Database::ParamQuery InfoKeyset::make_info_keyset_projection_query(const std::string& local_timestamp_pg_time_zone_name)
+    {
+        const Database::ReusableParameter p_local_zone(local_timestamp_pg_time_zone_name, "text");
+        Database::ParamQuery info_keyset_query;
+
+        if(info_keyset_id_filter_cte_.isset())
+        {
+            info_keyset_query("WITH id_filter(id) as (")(info_keyset_id_filter_cte_.get_value())(") ");
+        }
+
+        info_keyset_query(
+        "SELECT * FROM ("
+        "SELECT kobr.id AS ")(GetAlias::id())(
+        " , kobr.roid AS ")(GetAlias::roid())(
+        " , kobr.name AS ")(GetAlias::handle())(
+        " , (kobr.erdate AT TIME ZONE 'UTC' ) AT TIME ZONE ").param(p_local_zone)(" AS ")(GetAlias::delete_time())(
+        " , h.id AS ")(GetAlias::historyid())(
+        " , h.next AS ")(GetAlias::next_historyid())(
+        " , (h.valid_from AT TIME ZONE 'UTC') AT TIME ZONE ").param(p_local_zone)(" AS ")(GetAlias::history_valid_from())(
+        " , (h.valid_to AT TIME ZONE 'UTC') AT TIME ZONE ").param(p_local_zone)(" AS ")(GetAlias::history_valid_to())(
+        " , obj.clid AS ")(GetAlias::sponsoring_registrar_id())(
+        " , clr.handle AS ")(GetAlias::sponsoring_registrar_handle())(
+        " , kobr.crid AS ")(GetAlias::creating_registrar_id())(
+        " , crr.handle AS ")(GetAlias::creating_registrar_handle())(
+        " , obj.upid AS ")(GetAlias::last_updated_by_registrar_id())(
+        " , upr.handle AS ")(GetAlias::last_updated_by_registrar_handle())(
+        " , (kobr.crdate AT TIME ZONE 'UTC') AT TIME ZONE ").param(p_local_zone)(" AS ")(GetAlias::creation_time())(
+        " , (obj.trdate AT TIME ZONE 'UTC') AT TIME ZONE ").param(p_local_zone)(" AS ")(GetAlias::transfer_time())(
+        " , (obj.update AT TIME ZONE 'UTC') AT TIME ZONE ").param(p_local_zone)(" AS ")(GetAlias::update_time())(
+        " , obj.authinfopw AS ")(GetAlias::authinfopw())(
+        " , kobr.crhistoryid AS ")(GetAlias::first_historyid())(
+        " , h.request_id AS ")(GetAlias::logd_request_id())(
+        " , (CURRENT_TIMESTAMP AT TIME ZONE 'UTC')::timestamp AS ")(GetAlias::utc_timestamp())(
+        " , (CURRENT_TIMESTAMP AT TIME ZONE 'UTC' AT TIME ZONE ").param(p_local_zone)(")::timestamp AS ")(GetAlias::local_timestamp())(
+        " FROM object_registry kobr ");
         if(history_query_)
         {
-            sql << " JOIN object_history obj ON obj.id = kobr.id "
+            info_keyset_query(
+            " JOIN object_history obj ON obj.id = kobr.id "
             " JOIN keyset_history kt ON kt.historyid = obj.historyid "
-            " JOIN history h ON h.id = kt.historyid ";
+            " JOIN history h ON h.id = kt.historyid ");
         }
         else
         {
-            sql << " JOIN object obj ON obj.id = kobr.id "
+            info_keyset_query(
+            " JOIN object obj ON obj.id = kobr.id "
             " JOIN keyset kt ON kt.id = obj.id "
-            " JOIN history h ON h.id = kobr.historyid ";
+            " JOIN history h ON h.id = kobr.historyid ");
         }
-
-        sql << " JOIN registrar clr ON clr.id = obj.clid "
+        info_keyset_query(
+        " JOIN registrar clr ON clr.id = obj.clid "
         " JOIN registrar crr ON crr.id = kobr.crid "
         " LEFT JOIN registrar upr ON upr.id = obj.upid "
         " WHERE "
-        " kobr.type = (SELECT id FROM enum_object_type eot WHERE eot.name='keyset'::text) ";
+        " kobr.type = (SELECT id FROM enum_object_type eot WHERE eot.name='keyset'::text) ");
+
+        if(info_keyset_id_filter_cte_.isset())
+        {
+            info_keyset_query(" AND kobr.id IN (SELECT id FROM id_filter) ");
+        }
 
         if(!history_query_)
         {
-            sql << " AND kobr.erdate IS NULL ";
+            info_keyset_query(
+            " AND kobr.erdate IS NULL ");
         }
-
-        if(handle_.isset())
-        {
-            params.push_back(handle_);
-            sql << " AND kobr.name = UPPER($"<< params.size() <<"::text) ";
-        }
-
-
-        if(keyset_roid_.isset())
-        {
-            params.push_back(keyset_roid_);
-            sql << " AND kobr.roid = $"<< params.size() <<"::text ";
-        }
-
-        if(keyset_id_.isset())
-        {
-            params.push_back(keyset_id_);
-            sql << " AND kobr.id = $"<< params.size() <<"::bigint ";
-        }
-
-        if(keyset_historyid_.isset())
-        {
-            params.push_back(keyset_historyid_);
-            sql << " AND h.id = $"<< params.size() <<"::bigint ";
-        }
-
-        if(history_timestamp_.isset())
-        {
-            params.push_back(history_timestamp_);
-            sql << " AND h.valid_from <= ($"<< params.size() <<"::timestamp AT TIME ZONE $1::text) AT TIME ZONE 'UTC' "
-            " AND (($"<< params.size() <<"::timestamp AT TIME ZONE $1::text) AT TIME ZONE 'UTC' < h.valid_to OR h.valid_to IS NULL)";
-        }
-
-        sql << " ORDER BY h.id DESC ";
 
         if(lock_)
         {
-            sql << " FOR UPDATE of kobr ";
+            info_keyset_query(
+            " FOR UPDATE of kobr ");
         }
         else
         {
-            sql << " FOR SHARE of kobr ";
+            info_keyset_query(" FOR SHARE of kobr ");
+        }
+        info_keyset_query(") as tmp");
+
+        if(info_keyset_inline_view_filter_expr_.isset())
+        {
+            info_keyset_query(" WHERE ")(info_keyset_inline_view_filter_expr_.get_value());
         }
 
-        return std::make_pair(sql.str(), params);
+        info_keyset_query(
+            " ORDER BY ")(GetAlias::historyid())(" DESC ");
 
+        return info_keyset_query;
     }
 
-    std::pair<std::string, Database::QueryParams> InfoKeyset::make_tech_contact_query(
+
+    Database::ParamQuery InfoKeyset::make_tech_contact_query(
             unsigned long long id, unsigned long long historyid)
     {
         //technical contacts
-        Database::QueryParams params;
-        std::ostringstream sql;
+        Database::ParamQuery query;
 
-        sql << "SELECT cobr.id, cobr.name ";
+        query("SELECT cobr.id AS tech_contact_id, cobr.name AS tech_contact_handle");
         if(history_query_)
         {
-            params.push_back(id);
-            sql << " FROM keyset_contact_map_history kcm "
-                    " JOIN object_registry cobr ON kcm.contactid = cobr.id "
-                    " JOIN enum_object_type ceot ON ceot.id = cobr.type AND ceot.name='contact'::text "
-                    " WHERE kcm.keysetid = $"<< params.size() <<"::bigint ";
-            params.push_back(historyid);
-            sql << " AND kcm.historyid = $"<< params.size() <<"::bigint ";
+            query(" FROM keyset_contact_map_history kcm "
+                " JOIN object_registry cobr ON kcm.contactid = cobr.id "
+                " JOIN enum_object_type ceot ON ceot.id = cobr.type AND ceot.name='contact'::text "
+                " WHERE kcm.keysetid = ").param_bigint(id)
+                (" AND kcm.historyid = ").param_bigint(historyid);
         }
         else
         {
-            params.push_back(id);
-            sql << " FROM keyset_contact_map kcm "
-            " JOIN object_registry cobr ON kcm.contactid = cobr.id AND cobr.erdate IS NULL "
-            " JOIN enum_object_type ceot ON ceot.id = cobr.type AND ceot.name='contact'::text "
-            " WHERE kcm.keysetid = $"<< params.size() <<"::bigint ";
+            query(" FROM keyset_contact_map kcm "
+                " JOIN object_registry cobr ON kcm.contactid = cobr.id AND cobr.erdate IS NULL "
+                " JOIN enum_object_type ceot ON ceot.id = cobr.type AND ceot.name='contact'::text "
+                " WHERE kcm.keysetid = ").param_bigint(id);
         }
-        sql << " ORDER BY cobr.name ";
+        query(" ORDER BY cobr.name ");
 
-        return std::make_pair(sql.str(), params);
+        return query;
     }
 
-    std::pair<std::string, Database::QueryParams> InfoKeyset::make_dns_keys_query(
+    Database::ParamQuery InfoKeyset::make_dns_keys_query(
             unsigned long long id, unsigned long long historyid)
     {
-        Database::QueryParams params;
-        std::ostringstream sql;
+        Database::ParamQuery query;
 
-        sql << "SELECT d.id, d.flags, d.protocol, d.alg, d.key ";
+        query("SELECT d.id, d.flags AS flags, d.protocol AS protocol, d.alg AS alg, d.key AS key");
         if(history_query_)
         {
-            params.push_back(id);
-            sql << " FROM dnskey_history d "
-                    " WHERE d.keysetid = $"<< params.size() <<"::bigint ";
-            params.push_back(historyid);
-            sql << " AND d.historyid = $"<< params.size() <<"::bigint ";
+            query(" FROM dnskey_history d "
+                " WHERE d.keysetid = ").param_bigint(id)
+                (" AND d.historyid = ").param_bigint(historyid);
         }
         else
         {
-            params.push_back(id);
-            sql << " FROM dnskey d "
-            " WHERE d.keysetid = $"<< params.size() <<"::bigint ";
+            query(" FROM dnskey d "
+                " WHERE d.keysetid = ").param_bigint(id);
         }
-        sql << " ORDER BY d.id ";
+        query(" ORDER BY d.id ");
 
-        return std::make_pair(sql.str(), params);
+        return query;
     }
 
-    std::vector<InfoKeysetOutput> InfoKeyset::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)//return data
+    std::vector<InfoKeysetOutput> InfoKeyset::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
     {
         std::vector<InfoKeysetOutput> result;
 
-        std::pair<std::string, Database::QueryParams> keyset_query = make_keyset_query(local_timestamp_pg_time_zone_name);
-        Database::Result query_result = ctx.get_conn().exec_params(keyset_query.first,keyset_query.second);
+        Database::Result query_result = ctx.get_conn().exec_params(make_info_keyset_projection_query(local_timestamp_pg_time_zone_name));
 
-        result.reserve(query_result.size());//alloc
+        result.reserve(query_result.size());
 
         for(Database::Result::size_type i = 0; i < query_result.size(); ++i)
         {
             InfoKeysetOutput info_keyset_output;
-
-            info_keyset_output.info_keyset_data.id = static_cast<unsigned long long>(query_result[i][0]);//kobr.id
-
-            info_keyset_output.info_keyset_data.roid = static_cast<std::string>(query_result[i][1]);//kobr.roid
-
-            info_keyset_output.info_keyset_data.handle = static_cast<std::string>(query_result[i][2]);//kobr.name
-
-            info_keyset_output.info_keyset_data.delete_time = query_result[i][3].isnull() ? Nullable<boost::posix_time::ptime>()
-            : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(query_result[i][3])));//kobr.erdate
-
-            info_keyset_output.info_keyset_data.historyid = static_cast<unsigned long long>(query_result[i][5]);//h.id
-
-            info_keyset_output.next_historyid = query_result[i][6].isnull() ? Nullable<unsigned long long>()
-            : Nullable<unsigned long long>(static_cast<unsigned long long>(query_result[i][6]));//h.next
-
-            info_keyset_output.history_valid_from = boost::posix_time::time_from_string(static_cast<std::string>(query_result[i][7]));//h.valid_from
-
-            info_keyset_output.history_valid_to = query_result[i][8].isnull() ? Nullable<boost::posix_time::ptime>()
-            : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(query_result[i][8])));//h.valid_to
-
-            info_keyset_output.info_keyset_data.sponsoring_registrar_handle = static_cast<std::string>(query_result[i][10]);//clr.handle
-
-            info_keyset_output.info_keyset_data.create_registrar_handle = static_cast<std::string>(query_result[i][12]);//crr.handle
-
-            info_keyset_output.info_keyset_data.update_registrar_handle = query_result[i][14].isnull() ? Nullable<std::string>()
-            : Nullable<std::string> (static_cast<std::string>(query_result[i][14]));//upr.handle
-
-            info_keyset_output.info_keyset_data.creation_time = boost::posix_time::time_from_string(static_cast<std::string>(query_result[i][15]));//kobr.crdate
-
-            info_keyset_output.info_keyset_data.transfer_time = query_result[i][16].isnull() ? Nullable<boost::posix_time::ptime>()
-            : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(query_result[i][16])));//oh.trdate
-
-            info_keyset_output.info_keyset_data.update_time = query_result[i][17].isnull() ? Nullable<boost::posix_time::ptime>()
-            : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(query_result[i][17])));//oh.update
-
-            info_keyset_output.info_keyset_data.authinfopw = static_cast<std::string>(query_result[i][18]);//oh.authinfopw
-
-            info_keyset_output.info_keyset_data.crhistoryid = static_cast<unsigned long long>(query_result[i][19]);//kobr.crhistoryid
-
-            info_keyset_output.logd_request_id = query_result[i][20].isnull() ? Nullable<unsigned long long>()
-                : Nullable<unsigned long long>(static_cast<unsigned long long>(query_result[i][20]));
-
-            info_keyset_output.utc_timestamp = query_result[i][21].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
-            : boost::posix_time::time_from_string(static_cast<std::string>(query_result[i][21]));// utc timestamp
-            info_keyset_output.local_timestamp = query_result[i][22].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
-            : boost::posix_time::time_from_string(static_cast<std::string>(query_result[i][22]));//local zone timestamp
+            info_keyset_output.info_keyset_data.id = static_cast<unsigned long long>(query_result[i][GetAlias::id()]);
+            info_keyset_output.info_keyset_data.roid = static_cast<std::string>(query_result[i][GetAlias::roid()]);
+            info_keyset_output.info_keyset_data.handle = static_cast<std::string>(query_result[i][GetAlias::handle()]);
+            info_keyset_output.info_keyset_data.delete_time = query_result[i][GetAlias::delete_time()].isnull() ? Nullable<boost::posix_time::ptime>()
+                : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(query_result[i][GetAlias::delete_time()])));
+            info_keyset_output.info_keyset_data.historyid = static_cast<unsigned long long>(query_result[i][GetAlias::historyid()]);
+            info_keyset_output.next_historyid = query_result[i][GetAlias::next_historyid()].isnull() ? Nullable<unsigned long long>()
+                : Nullable<unsigned long long>(static_cast<unsigned long long>(query_result[i][GetAlias::next_historyid()]));
+            info_keyset_output.history_valid_from = boost::posix_time::time_from_string(static_cast<std::string>(query_result[i][GetAlias::history_valid_from()]));
+            info_keyset_output.history_valid_to = query_result[i][GetAlias::history_valid_to()].isnull() ? Nullable<boost::posix_time::ptime>()
+                : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(query_result[i][GetAlias::history_valid_to()])));
+            info_keyset_output.info_keyset_data.sponsoring_registrar_handle = static_cast<std::string>(query_result[i][GetAlias::sponsoring_registrar_handle()]);
+            info_keyset_output.info_keyset_data.create_registrar_handle = static_cast<std::string>(query_result[i][GetAlias::creating_registrar_handle()]);
+            info_keyset_output.info_keyset_data.update_registrar_handle = query_result[i][GetAlias::last_updated_by_registrar_handle()].isnull() ? Nullable<std::string>()
+                : Nullable<std::string> (static_cast<std::string>(query_result[i][GetAlias::last_updated_by_registrar_handle()]));
+            info_keyset_output.info_keyset_data.creation_time = boost::posix_time::time_from_string(static_cast<std::string>(query_result[i][GetAlias::creation_time()]));
+            info_keyset_output.info_keyset_data.transfer_time = query_result[i][GetAlias::transfer_time()].isnull() ? Nullable<boost::posix_time::ptime>()
+                : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(query_result[i][GetAlias::transfer_time()])));
+            info_keyset_output.info_keyset_data.update_time = query_result[i][GetAlias::update_time()].isnull() ? Nullable<boost::posix_time::ptime>()
+                : Nullable<boost::posix_time::ptime>(boost::posix_time::time_from_string(static_cast<std::string>(query_result[i][GetAlias::update_time()])));
+            info_keyset_output.info_keyset_data.authinfopw = static_cast<std::string>(query_result[i][GetAlias::authinfopw()]);
+            info_keyset_output.info_keyset_data.crhistoryid = static_cast<unsigned long long>(query_result[i][GetAlias::first_historyid()]);
+            info_keyset_output.logd_request_id = query_result[i][GetAlias::logd_request_id()].isnull() ? Nullable<unsigned long long>()
+                : Nullable<unsigned long long>(static_cast<unsigned long long>(query_result[i][GetAlias::logd_request_id()]));
+            info_keyset_output.utc_timestamp = query_result[i][GetAlias::utc_timestamp()].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
+                : boost::posix_time::time_from_string(static_cast<std::string>(query_result[i][GetAlias::utc_timestamp()]));
+            info_keyset_output.local_timestamp = query_result[i][GetAlias::local_timestamp()].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
+                : boost::posix_time::time_from_string(static_cast<std::string>(query_result[i][GetAlias::local_timestamp()]));
 
             //tech contacts
-            std::pair<std::string, Database::QueryParams> tech_contact_query = make_tech_contact_query(
-                    info_keyset_output.info_keyset_data.id, info_keyset_output.info_keyset_data.historyid);
-            Database::Result tech_contact_res = ctx.get_conn().exec_params(tech_contact_query.first, tech_contact_query.second);
+            Database::Result tech_contact_res = ctx.get_conn().exec_params(make_tech_contact_query(
+                info_keyset_output.info_keyset_data.id, info_keyset_output.info_keyset_data.historyid));
             info_keyset_output.info_keyset_data.tech_contacts.reserve(tech_contact_res.size());
             for(Database::Result::size_type j = 0; j < tech_contact_res.size(); ++j)
             {
                 info_keyset_output.info_keyset_data.tech_contacts.push_back(Fred::ObjectIdHandlePair(
-                    static_cast<unsigned long long>(tech_contact_res[j][0]),
-                    static_cast<std::string>(tech_contact_res[j][1])
+                    static_cast<unsigned long long>(tech_contact_res[j]["tech_contact_id"]),
+                    static_cast<std::string>(tech_contact_res[j]["tech_contact_handle"])
                 ));
             }
 
             //DNS keys
-            std::pair<std::string, Database::QueryParams> dns_keys_query = make_dns_keys_query(
-                    info_keyset_output.info_keyset_data.id, info_keyset_output.info_keyset_data.historyid);
-            Database::Result dns_keys_res = ctx.get_conn().exec_params(dns_keys_query.first, dns_keys_query.second);
+            Database::Result dns_keys_res = ctx.get_conn().exec_params(make_dns_keys_query(
+                info_keyset_output.info_keyset_data.id, info_keyset_output.info_keyset_data.historyid));
             info_keyset_output.info_keyset_data.tech_contacts.reserve(dns_keys_res.size());
             for(Database::Result::size_type j = 0; j < dns_keys_res.size(); ++j)
             {
-                unsigned short flags = static_cast<unsigned int>(dns_keys_res[j][1]);//d.flags
-                unsigned short protocol = static_cast<unsigned int>(dns_keys_res[j][2]);//d.protocol
-                unsigned short alg = static_cast<unsigned int>(dns_keys_res[j][3]);//d.alg
-                std::string key = static_cast<std::string>(dns_keys_res[j][4]);//d.key
+                unsigned short flags = static_cast<unsigned int>(dns_keys_res[j]["flags"]);
+                unsigned short protocol = static_cast<unsigned int>(dns_keys_res[j]["protocol"]);
+                unsigned short alg = static_cast<unsigned int>(dns_keys_res[j]["alg"]);
+                std::string key = static_cast<std::string>(dns_keys_res[j]["key"]);
                 info_keyset_output.info_keyset_data.dns_keys.push_back(DnsKey(flags, protocol, alg, key));
             }
 
@@ -327,49 +277,6 @@ namespace Fred
 
         return result;
     }
-
-    std::string InfoKeyset::explain_analyze(OperationContext& ctx, std::vector<InfoKeysetOutput>& result
-            , const std::string& local_timestamp_pg_time_zone_name)
-    {
-        result = exec(ctx,local_timestamp_pg_time_zone_name);
-        std::pair<std::string, Database::QueryParams> keyset_query = make_keyset_query(local_timestamp_pg_time_zone_name);
-        std::string query_plan("\nKeyset query: EXPLAIN ANALYZE ");
-        query_plan += keyset_query.first;
-        query_plan += "\n\nParams: ";
-        query_plan += Util::format_container(keyset_query.second);
-        query_plan += "\n\nPlan:\n";
-        Database::Result keyset_query_result = ctx.get_conn().exec_params(
-            std::string("EXPLAIN ANALYZE ") + keyset_query.first,keyset_query.second);
-        for(Database::Result::size_type i = 0; i < keyset_query_result.size(); ++i)
-            query_plan += std::string(keyset_query_result[i][0])+"\n";
-
-        std::pair<std::string, Database::QueryParams> tech_contact_query = make_tech_contact_query(
-                result.at(0).info_keyset_data.id, result.at(0).info_keyset_data.historyid);
-        query_plan += "\nTech contact query: EXPLAIN ANALYZE ";
-        query_plan += tech_contact_query.first;
-        query_plan += "\n\nParams: ";
-        query_plan += Util::format_container(tech_contact_query.second);
-        query_plan += "\n\nPlan:\n";
-        Database::Result tech_contact_result = ctx.get_conn().exec_params(
-                std::string("EXPLAIN ANALYZE ") + tech_contact_query.first,tech_contact_query.second);
-        for(Database::Result::size_type i = 0; i < tech_contact_result.size(); ++i)
-                query_plan += std::string(tech_contact_result[i][0])+"\n";
-
-        std::pair<std::string, Database::QueryParams> dns_keys_query = make_dns_keys_query(
-                result.at(0).info_keyset_data.id, result.at(0).info_keyset_data.historyid);
-        query_plan += "\nDNS keys query: EXPLAIN ANALYZE ";
-        query_plan += dns_keys_query.first;
-        query_plan += "\n\nParams: ";
-        query_plan += Util::format_container(dns_keys_query.second);
-        query_plan += "\n\nPlan:\n";
-        Database::Result dns_keys_query_result = ctx.get_conn().exec_params(
-                std::string("EXPLAIN ANALYZE ") + dns_keys_query.first,dns_keys_query.second);
-        for(Database::Result::size_type i = 0; i < dns_keys_query_result.size(); ++i)
-                query_plan += std::string(dns_keys_query_result[i][0])+"\n";
-
-        return query_plan;
-    }
-
 
 }//namespace Fred
 

@@ -391,6 +391,8 @@ util_db_libdb_a_SOURCES = \
 		util/db/transaction.h \
 		util/db/connection.h \
 		util/db/query_param.h \
+		util/db/param_query_composition.h \
+		util/db/param_query_composition.cc \
 		util/db/result.h \
 		util/db/row.h \
 		util/db/value.h \
@@ -879,6 +881,8 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/registrar/info_registrar_output.h \
 		src/fredlib/registrar/get_registrar_handles.cc \
 		src/fredlib/registrar/get_registrar_handles.h \
+		src/fredlib/registrar/check_registrar.h \
+		src/fredlib/registrar/check_registrar.cc \
 		src/fredlib/object/object_id_handle_pair.h \
 		src/fredlib/object/object_id_handle_pair.cc \
 		src/fredlib/object_state/object_state_name.h \
@@ -1375,7 +1379,14 @@ src_corba_whois_libwhois2_impl_a_SOURCES = \
 		src/whois/nameserver_exists.h \
 		src/whois/nameserver_exists.cc \
 		src/whois/is_domain_delete_pending.h \
-		src/whois/is_domain_delete_pending.cc
+		src/whois/is_domain_delete_pending.cc \
+		src/whois/registrar_group.h \
+		src/whois/registrar_group.cc \
+		src/whois/registrar_certification.h \
+		src/whois/registrar_certification.cc \
+		src/whois/zone_list.h \
+		src/whois/zone_list.cc
+
 #
 # src/corba/whois/libwhois2_impl.a
 
@@ -2068,6 +2079,7 @@ tests_interfaces_test_admin_contact_verification_LDADD = \
 		src/admin/contact/verification/libadmin_contact_verification.a \
 		src/fredlib/libfred.a \
 		util/log/liblog.a \
+		util/db/libdb.a \
 		util/libutil.a \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(BOOST_DATE_TIME_LIB) \
@@ -2425,6 +2437,7 @@ tests_test_fredlib_SOURCES = \
 		tests/fredlib/object_state/test_cancel_object_state_request_id.cc \
 		tests/fredlib/test_opexception.cc \
 		tests/fredlib/test_check_handle.cc \
+		tests/util/test_param_query.cc \
 		tests/setup/fixtures_utils.h \
 		tests/setup/fixtures_utils.cc \
 		tests/setup/fixtures.h \
@@ -2440,6 +2453,7 @@ tests_test_fredlib_LDADD = \
 		src/fredlib/libfred.a \
 		util/libutil.a \
 		util/log/liblog.a \
+		util/db/libdb.a \
 		-lmpdec -lm -lrt \
 		$(LIBIDN_LIBS) \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \

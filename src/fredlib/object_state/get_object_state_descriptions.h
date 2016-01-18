@@ -24,13 +24,32 @@
 #ifndef GET_OBJECT_STATE_DESCRIPTIONS_H_
 #define GET_OBJECT_STATE_DESCRIPTIONS_H_
 
-#include <map>
+#include <vector>
 #include <string>
 
 #include "src/fredlib/opexception.h"
 
 namespace Fred
 {
+    /**
+     * descriptions of object state
+     */
+
+    struct ObjectStateDescription
+    {
+       unsigned long long id;
+       std::string handle;
+       std::string description;
+
+       ObjectStateDescription(unsigned long long _id,
+           const std::string& _handle,
+           const std::string& _description)
+       : id (_id)
+       , handle(_handle)
+       , description(_description)
+       {}
+    };
+
     /**
      * Gets descriptions of object states.
      * Language of state descriptions is set via constructor.
@@ -41,6 +60,7 @@ namespace Fred
     {
         const std::string description_language_;/**< requested language of object state descriptions like 'EN' or 'CS'*/
         bool external_states;
+        std::string object_type_;
     public:
         /**
          * Get descriptions of object states in given language.
@@ -52,11 +72,15 @@ namespace Fred
          */
         GetObjectStateDescriptions& set_external();
         /**
+         * Sets object type of states to get descriptions of
+         */
+        GetObjectStateDescriptions& set_object_type(const std::string& object_type);
+        /**
          * Executes getting descriptions of object states.
          * @param ctx contains reference to database and logging interface
-         * @return map of object id and state description pair
+         * @return list of ObjectStateDescription
          */
-        std::map<unsigned long long, std::string> exec(OperationContext& ctx);
+        std::vector<ObjectStateDescription> exec(OperationContext& ctx);
     };
 }//namespace Fred
 

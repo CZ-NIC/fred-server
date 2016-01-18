@@ -10,12 +10,6 @@
 namespace Registry {
 namespace Whois {
 
-    NullableRegistrar*  wrap_registrar( const Fred::InfoRegistrarData& in);
-    NullableContact*    wrap_contact(   const Fred::InfoContactData& in);
-    NullableDomain*     wrap_domain(    const Fred::InfoDomainData& in);
-    NullableKeySet*     wrap_keyset(    const Fred::InfoKeysetData& in);
-    NullableNSSet*      wrap_nsset(     const Fred::InfoNssetData& in);
-
     class Server_impl :
         public POA_Registry::Whois::WhoisIntf
     {
@@ -24,29 +18,65 @@ namespace Whois {
         public:
             virtual ~Server_impl() {};
 
-            virtual NullableRegistrar* get_registrar_by_handle(const char* handle);
+            Registrar* get_registrar_by_handle(const char* handle);
 
-            virtual NullableContact* get_contact_by_handle(const char* handle);
+            RegistrarSeq* get_registrars();
 
-            virtual NullableNSSet* get_nsset_by_handle(const char* handle);
-            virtual NSSetSeq* get_nssets_by_ns(const char* handle);
-            virtual NSSetSeq* get_nssets_by_tech_c(const char* handle);
+            RegistrarGroupList* get_registrar_groups();
 
-            virtual NullableNameServer* get_nameserver_by_fqdn(const char* handle);
+            RegistrarCertificationList* get_registrar_certification_list();
 
-            virtual NullableKeySet* get_keyset_by_handle(const char* handle);
-            virtual KeySetSeq* get_keysets_by_tech_c(const char* handle);
+            ZoneFqdnList* get_managed_zone_list();
 
-            virtual NullableDomain* get_domain_by_handle(const char* handle);
-            virtual DomainSeq* get_domains_by_registrant(const char* handle);
-            virtual DomainSeq* get_domains_by_admin_contact(const char* handle);
-            virtual DomainSeq* get_domains_by_nsset(const char* handle);
-            virtual DomainSeq* get_domains_by_keyset(const char* handle);
+            Contact* get_contact_by_handle(const char* handle);
 
-            virtual ObjectStatusDescSeq* get_domain_status_descriptions(const char* lang);
-            virtual ObjectStatusDescSeq* get_contact_status_descriptions(const char* lang);
-            virtual ObjectStatusDescSeq* get_nsset_status_descriptions(const char* lang);
-            virtual ObjectStatusDescSeq* get_keyset_status_descriptions(const char* lang);
+            NSSet* get_nsset_by_handle(const char* handle);
+
+            NSSetSeq* get_nssets_by_ns(
+                const char* handle,
+                ::CORBA::ULong limit,
+                ::CORBA::Boolean& limit_exceeded);
+
+            NSSetSeq* get_nssets_by_tech_c(
+                const char* handle,
+                ::CORBA::ULong limit,
+                ::CORBA::Boolean& limit_exceeded);
+
+            NameServer* get_nameserver_by_fqdn(const char* handle);
+
+            KeySet* get_keyset_by_handle(const char* handle);
+
+            KeySetSeq* get_keysets_by_tech_c(
+                const char* handle,
+                ::CORBA::ULong limit,
+                ::CORBA::Boolean& limit_exceeded);
+
+            Domain* get_domain_by_handle(const char* handle);
+
+            DomainSeq* get_domains_by_registrant(
+                const char* handle,
+                ::CORBA::ULong limit,
+                ::CORBA::Boolean& limit_exceeded);
+
+            DomainSeq* get_domains_by_admin_contact(
+                const char* handle,
+                ::CORBA::ULong limit,
+                ::CORBA::Boolean& limit_exceeded);
+
+            DomainSeq* get_domains_by_nsset(
+                const char* handle,
+                ::CORBA::ULong limit,
+                ::CORBA::Boolean& limit_exceeded);
+
+            DomainSeq* get_domains_by_keyset(
+                const char* handle,
+                ::CORBA::ULong limit,
+                ::CORBA::Boolean& limit_exceeded);
+
+            ObjectStatusDescSeq* get_domain_status_descriptions(const char* lang);
+            ObjectStatusDescSeq* get_contact_status_descriptions(const char* lang);
+            ObjectStatusDescSeq* get_nsset_status_descriptions(const char* lang);
+            ObjectStatusDescSeq* get_keyset_status_descriptions(const char* lang);
     };
 
 }

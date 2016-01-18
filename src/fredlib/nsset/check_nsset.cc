@@ -37,7 +37,7 @@ namespace Fred
     CheckNsset::CheckNsset(const std::string& handle)
     : handle_(handle)
     {}
-    bool CheckNsset::is_invalid_handle()
+    bool CheckNsset::is_invalid_handle() const
     {
         try
         {
@@ -51,7 +51,7 @@ namespace Fred
         return false;//meaning handle syntax is ok
     }
 
-    bool CheckNsset::is_registered(OperationContext& ctx, std::string& conflicting_handle_out)
+    bool CheckNsset::is_registered(OperationContext& ctx, std::string& conflicting_handle_out) const
     {
         try
         {
@@ -65,14 +65,14 @@ namespace Fred
         return false;//meaning not protected
     }
 
-    bool CheckNsset::is_registered(OperationContext& ctx)
+    bool CheckNsset::is_registered(OperationContext& ctx) const
     {
         std::string conflicting_handle_out;
         return is_registered(ctx, conflicting_handle_out);
     }
 
 
-    bool CheckNsset::is_protected(OperationContext& ctx)
+    bool CheckNsset::is_protected(OperationContext& ctx) const
     {
         try
         {
@@ -86,7 +86,7 @@ namespace Fred
         return false;//meaning not protected
     }
 
-    bool CheckNsset::is_free(OperationContext& ctx)
+    bool CheckNsset::is_free(OperationContext& ctx) const
     {
         try
         {

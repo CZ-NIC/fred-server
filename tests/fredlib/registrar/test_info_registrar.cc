@@ -20,6 +20,7 @@
 #include <utility>
 
 #include <boost/lexical_cast.hpp>
+#include <boost/bind.hpp>
 
 #include "src/fredlib/registrar/create_registrar.h"
 #include "src/fredlib/registrar/info_registrar.h"
@@ -40,24 +41,117 @@
 
 #include "tests/setup/fixtures.h"
 
-const std::string server_name = "test-info-registrar";
 
 struct test_info_registrar_fixture : virtual public Test::Fixture::instantiate_db_template
 {
     std::string xmark;
-    std::string test_registrar_handle;
+    Fred::InfoRegistrarData test_registrar_data_1;
+    Fred::InfoRegistrarData test_registrar_data_2;
 
     test_info_registrar_fixture()
     :xmark(RandomDataGenerator().xnumstring(6))
-    , test_registrar_handle(std::string("TEST-REGISTRAR-HANDLE")+xmark)
     {
+        test_registrar_data_1.handle = std::string("TEST-REGISTRAR1-HANDLE")+xmark;
+        test_registrar_data_1.name = std::string("TEST-REGISTRAR NAME1")+xmark;
+        test_registrar_data_1.organization = std::string("TEST-REGISTRAR ORG1")+xmark;
+        test_registrar_data_1.street1 = std::string("STR11")+xmark;
+        test_registrar_data_1.street2 = std::string("STR21")+xmark;
+        test_registrar_data_1.street3 = std::string("STR31")+xmark;
+        test_registrar_data_1.city = "Praha 1";
+        test_registrar_data_1.stateorprovince = "State1";
+        test_registrar_data_1.postalcode = "11150";
+        test_registrar_data_1.country = "CZ";
+        test_registrar_data_1.telephone = "+420.728123456";
+        test_registrar_data_1.fax = "+420.728123457";
+        test_registrar_data_1.email = "test1@nic.cz";
+        test_registrar_data_1.url = "www.test1.com";
+        test_registrar_data_1.system = false;
+        test_registrar_data_1.ico = "1023456789";
+        test_registrar_data_1.dic = "1123456789";
+        test_registrar_data_1.variable_symbol = "123456789";
+        test_registrar_data_1.payment_memo_regex = "test-registrar1*";
+        test_registrar_data_1.vat_payer = true;
+
+        test_registrar_data_2.handle = std::string("TEST-REGISTRAR2-HANDLE")+xmark;
+        test_registrar_data_2.name = std::string("TEST-REGISTRAR NAME2")+xmark;
+        test_registrar_data_2.organization = std::string("TEST-REGISTRAR ORG2")+xmark;
+        test_registrar_data_2.street1 = std::string("STR12")+xmark;
+        test_registrar_data_2.street2 = std::string("STR22")+xmark;
+        test_registrar_data_2.street3 = std::string("STR32")+xmark;
+        test_registrar_data_2.city = "Praha 2";
+        test_registrar_data_2.stateorprovince = "State2";
+        test_registrar_data_2.postalcode = "21150";
+        test_registrar_data_2.country = "SK";
+        test_registrar_data_2.telephone = "+420.728123458";
+        test_registrar_data_2.fax = "+420.728123459";
+        test_registrar_data_2.email = "test2@nic.cz";
+        test_registrar_data_2.url = "www.test2.com";
+        test_registrar_data_2.system = true;
+        test_registrar_data_2.ico = "2023456789";
+        test_registrar_data_2.dic = "2123456789";
+        test_registrar_data_2.variable_symbol = "223456789";
+        test_registrar_data_2.payment_memo_regex = "test-registrar2*";
+        test_registrar_data_2.vat_payer = false;
+
+
         Fred::OperationContext ctx;
 
-        Fred::CreateRegistrar(test_registrar_handle).set_name(std::string("TEST-REGISTRAR NAME")+xmark)
-            .set_name(std::string("TEST-REGISTRAR NAME")+xmark)
-            .set_street1(std::string("STR1")+xmark)
-            .set_city("Praha").set_postalcode("11150").set_country("CZ")
+        ctx.get_conn().exec("TRUNCATE TABLE registrar CASCADE;");
+
+        Fred::CreateRegistrar(test_registrar_data_1.handle)
+            .set_name(test_registrar_data_1.name.get_value())
+            .set_organization(test_registrar_data_1.organization.get_value())
+            .set_street1(test_registrar_data_1.street1.get_value())
+            .set_street2(test_registrar_data_1.street2.get_value())
+            .set_street3(test_registrar_data_1.street3.get_value())
+            .set_city(test_registrar_data_1.city.get_value())
+            .set_stateorprovince(test_registrar_data_1.stateorprovince.get_value())
+            .set_postalcode(test_registrar_data_1.postalcode.get_value())
+            .set_country(test_registrar_data_1.country.get_value())
+            .set_telephone(test_registrar_data_1.telephone.get_value())
+            .set_fax(test_registrar_data_1.fax.get_value())
+            .set_email(test_registrar_data_1.email.get_value())
+            .set_url(test_registrar_data_1.url.get_value())
+            .set_system(test_registrar_data_1.system.get_value())
+            .set_ico(test_registrar_data_1.ico.get_value())
+            .set_dic(test_registrar_data_1.dic.get_value())
+            .set_variable_symbol(test_registrar_data_1.variable_symbol.get_value())
+            .set_payment_memo_regex(test_registrar_data_1.payment_memo_regex.get_value())
+            .set_vat_payer(test_registrar_data_1.vat_payer)
             .exec(ctx);
+
+        test_registrar_data_1.id = static_cast<unsigned long long>(
+            ctx.get_conn().exec_params(Database::ParamQuery(
+                "SELECT id FROM registrar WHERE handle = ")
+                    .param_text(test_registrar_data_1.handle))[0]["id"]);
+
+        Fred::CreateRegistrar(test_registrar_data_2.handle)
+            .set_name(test_registrar_data_2.name.get_value())
+            .set_organization(test_registrar_data_2.organization.get_value())
+            .set_street1(test_registrar_data_2.street1.get_value())
+            .set_street2(test_registrar_data_2.street2.get_value())
+            .set_street3(test_registrar_data_2.street3.get_value())
+            .set_city(test_registrar_data_2.city.get_value())
+            .set_stateorprovince(test_registrar_data_2.stateorprovince.get_value())
+            .set_postalcode(test_registrar_data_2.postalcode.get_value())
+            .set_country(test_registrar_data_2.country.get_value())
+            .set_telephone(test_registrar_data_2.telephone.get_value())
+            .set_fax(test_registrar_data_2.fax.get_value())
+            .set_email(test_registrar_data_2.email.get_value())
+            .set_url(test_registrar_data_2.url.get_value())
+            .set_system(test_registrar_data_2.system.get_value())
+            .set_ico(test_registrar_data_2.ico.get_value())
+            .set_dic(test_registrar_data_2.dic.get_value())
+            .set_variable_symbol(test_registrar_data_2.variable_symbol.get_value())
+            .set_payment_memo_regex(test_registrar_data_2.payment_memo_regex.get_value())
+            .set_vat_payer(test_registrar_data_2.vat_payer)
+            .exec(ctx);
+
+        test_registrar_data_2.id = static_cast<unsigned long long>(
+            ctx.get_conn().exec_params(Database::ParamQuery(
+                "SELECT id FROM registrar WHERE handle = ")
+                    .param_text(test_registrar_data_2.handle))[0]["id"]);
+
 
         ctx.commit_transaction();//commit fixture
     }
@@ -73,38 +167,23 @@ BOOST_FIXTURE_TEST_SUITE(TestInfoRegistrar, test_info_registrar_fixture)
 BOOST_AUTO_TEST_CASE(info_registrar)
 {
     Fred::OperationContext ctx;
-    Fred::InfoRegistrarOutput registrar_info1 = Fred::InfoRegistrarByHandle(test_registrar_handle).exec(ctx);
-    Fred::InfoRegistrarOutput registrar_info2 = Fred::InfoRegistrarByHandle(test_registrar_handle).set_lock().exec(ctx);
 
-    BOOST_CHECK(registrar_info1 == registrar_info2);
+    Fred::InfoRegistrarOutput registrar_info1 = Fred::InfoRegistrarByHandle(test_registrar_data_1.handle).exec(ctx);
+    BOOST_CHECK(registrar_info1.info_registrar_data == test_registrar_data_1);
 
-    BOOST_MESSAGE(std::string("test registrar id: ") + boost::lexical_cast<std::string>(registrar_info1.info_registrar_data.id));
+    Fred::InfoRegistrarOutput registrar_info2 = Fred::InfoRegistrarByHandle(test_registrar_data_1.handle).set_lock().exec(ctx);
+    BOOST_CHECK(registrar_info2.info_registrar_data == test_registrar_data_1);
 
-    Fred::InfoRegistrarOutput registrar_info3 = Fred::InfoRegistrarById(registrar_info1.info_registrar_data.id).exec(ctx);
+    BOOST_MESSAGE(std::string("test registrar id: ") + boost::lexical_cast<std::string>(test_registrar_data_1.id));
 
-    BOOST_CHECK(registrar_info1 == registrar_info3);
+    Fred::InfoRegistrarOutput registrar_info3 = Fred::InfoRegistrarById(test_registrar_data_1.id).exec(ctx);
+    BOOST_CHECK(registrar_info3.info_registrar_data == test_registrar_data_1);
 
-    //impl
-    for( int j = 0; j < (1 << 3); ++j)
-    {
-        Fred::InfoRegistrar i;
-        if(j & (1 << 0)) i.set_handle(registrar_info1.info_registrar_data.handle);
-        if(j & (1 << 1)) i.set_id(registrar_info1.info_registrar_data.id);
-        if(j & (1 << 2)) i.set_lock(true);
+    std::vector<Fred::InfoRegistrarOutput> nosystem_registrar_infos = Fred::InfoRegistrarAllExceptSystem().exec(ctx);
 
-        std::vector<Fred::InfoRegistrarOutput> output;
-        BOOST_MESSAGE(i.explain_analyze(ctx,output));
-        if((j & (1 << 0)) || (j & (1 << 1)))//check if selective
-        {
-            if((registrar_info1 != output.at(0)))
-            {
-                BOOST_MESSAGE(Fred::diff_registrar_data(registrar_info1.info_registrar_data
-                        , output.at(0).info_registrar_data).to_string());
-            }
-            BOOST_CHECK(output.at(0) == registrar_info1);
-        }
-    }
+    BOOST_CHECK(nosystem_registrar_infos.size() == 1 );
 
+    BOOST_CHECK(nosystem_registrar_infos.at(0).info_registrar_data == test_registrar_data_1);
 }
 
 /**
@@ -158,41 +237,41 @@ BOOST_AUTO_TEST_CASE(info_registrar_wrong_id)
 BOOST_AUTO_TEST_CASE(info_registrar_diff)
 {
     Fred::OperationContext ctx;
-    Fred::InfoRegistrarOutput registrar_info1 = Fred::InfoRegistrarByHandle(test_registrar_handle).exec(ctx);
-    Fred::InfoRegistrarOutput registrar_info2 = Fred::InfoRegistrarByHandle(test_registrar_handle).set_lock().exec(ctx);
+    Fred::InfoRegistrarOutput registrar_info1 = Fred::InfoRegistrarByHandle(test_registrar_data_1.handle).exec(ctx);
+    Fred::InfoRegistrarOutput registrar_info2 = Fred::InfoRegistrarByHandle(test_registrar_data_2.handle).set_lock().exec(ctx);
 
     Fred::InfoRegistrarDiff test_diff, test_empty_diff;
 
     //differing data
-    test_diff.id = std::make_pair(1ull,2ull);
-    test_diff.handle = std::make_pair(std::string("testhandle1"),std::string("testhandle2"));
-    test_diff.name = std::make_pair(Nullable<std::string>(),Nullable<std::string>("testname2"));
-    test_diff.organization = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
-    test_diff.street1 = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
-    test_diff.street2 = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
-    test_diff.street3 = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
-    test_diff.city = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
-    test_diff.stateorprovince = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
-    test_diff.postalcode = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
-    test_diff.country = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
-    test_diff.telephone = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
-    test_diff.fax = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
-    test_diff.email = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
-    test_diff.url = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
-    test_diff.system= std::make_pair(Nullable<bool>(),Nullable<bool>(false));
-    test_diff.ico = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
-    test_diff.dic = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
-    test_diff.variable_symbol = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
-    test_diff.payment_memo_regex = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
-    test_diff.vat_payer= std::make_pair(false,true);
-
-    BOOST_MESSAGE(test_diff.to_string());
-    BOOST_MESSAGE(test_empty_diff.to_string());
+    test_diff.id = std::make_pair(test_registrar_data_1.id,test_registrar_data_2.id);
+    test_diff.handle = std::make_pair(test_registrar_data_1.handle,test_registrar_data_2.handle);
+    test_diff.name = std::make_pair(test_registrar_data_1.name,test_registrar_data_2.name);
+    test_diff.organization = std::make_pair(test_registrar_data_1.organization,test_registrar_data_2.organization);
+    test_diff.street1 = std::make_pair(test_registrar_data_1.street1,test_registrar_data_2.street1);
+    test_diff.street2 = std::make_pair(test_registrar_data_1.street2,test_registrar_data_2.street2);
+    test_diff.street3 = std::make_pair(test_registrar_data_1.street3,test_registrar_data_2.street3);
+    test_diff.city = std::make_pair(test_registrar_data_1.city,test_registrar_data_2.city);
+    test_diff.stateorprovince = std::make_pair(test_registrar_data_1.stateorprovince,test_registrar_data_2.stateorprovince);
+    test_diff.postalcode = std::make_pair(test_registrar_data_1.postalcode,test_registrar_data_2.postalcode);
+    test_diff.country = std::make_pair(test_registrar_data_1.country,test_registrar_data_2.country);
+    test_diff.telephone = std::make_pair(test_registrar_data_1.telephone,test_registrar_data_2.telephone);
+    test_diff.fax = std::make_pair(test_registrar_data_1.fax,test_registrar_data_2.fax);
+    test_diff.email = std::make_pair(test_registrar_data_1.email,test_registrar_data_2.email);
+    test_diff.url = std::make_pair(test_registrar_data_1.url,test_registrar_data_2.url);
+    test_diff.system= std::make_pair(test_registrar_data_1.system,test_registrar_data_2.system);
+    test_diff.ico = std::make_pair(test_registrar_data_1.ico,test_registrar_data_2.ico);
+    test_diff.dic = std::make_pair(test_registrar_data_1.dic,test_registrar_data_2.dic);
+    test_diff.variable_symbol = std::make_pair(test_registrar_data_1.variable_symbol,test_registrar_data_2.variable_symbol);
+    test_diff.payment_memo_regex = std::make_pair(test_registrar_data_1.payment_memo_regex,test_registrar_data_2.payment_memo_regex);
+    test_diff.vat_payer= std::make_pair(test_registrar_data_1.vat_payer,test_registrar_data_2.vat_payer);
 
     BOOST_CHECK(!test_diff.is_empty());
     BOOST_CHECK(test_empty_diff.is_empty());
 
     BOOST_MESSAGE(Fred::diff_registrar_data(registrar_info1.info_registrar_data,registrar_info2.info_registrar_data).to_string());
+    BOOST_MESSAGE(test_diff.to_string());
+
+    BOOST_CHECK(Fred::diff_registrar_data(registrar_info1.info_registrar_data,registrar_info2.info_registrar_data).to_string() == test_diff.to_string());
 }
 
 BOOST_AUTO_TEST_SUITE_END();//TestInfoRegistrar

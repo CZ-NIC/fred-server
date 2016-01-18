@@ -57,8 +57,6 @@ namespace Fred
         std::string authinfopw;/**< password for domain transfer */
         std::vector<ObjectIdHandlePair> admin_contacts;/**< list of administrating contact handles */
         Nullable<ENUMValidationExtension > enum_domain_validation;/**< ENUM domain validation extension info */
-        boost::posix_time::ptime outzone_time; /**< domain outzone time in regular_day_procedure_zone from table enum_parameters */
-        boost::posix_time::ptime cancel_time; /**< domain cancel time in regular_day_procedure_zone from table enum_parameters */
         Nullable<boost::posix_time::ptime> delete_time;/**< domain delete time in set local zone*/
         unsigned long long historyid;/**< last historyid of domain history*/
         unsigned long long crhistoryid;/**< first historyid of domain history*/

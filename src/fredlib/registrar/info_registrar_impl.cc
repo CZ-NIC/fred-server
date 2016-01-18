@@ -37,17 +37,6 @@ namespace Fred
         : lock_(false)
         {}
 
-    InfoRegistrar& InfoRegistrar::set_handle(const std::string& registrar_handle)
-    {
-        registrar_handle_ = registrar_handle;
-        return *this;
-    }
-
-    InfoRegistrar& InfoRegistrar::set_id(unsigned long long registrar_id)
-    {
-        registrar_id_ = registrar_id;
-        return *this;
-    }
 
     InfoRegistrar& InfoRegistrar::set_lock(bool lock)
     {
@@ -55,43 +44,79 @@ namespace Fred
         return *this;
     }
 
-    std::pair<std::string, Database::QueryParams> InfoRegistrar::make_registrar_query(const std::string& local_timestamp_pg_time_zone_name)
+    InfoRegistrar& InfoRegistrar::set_inline_view_filter(const Database::ParamQuery& filter_expr)
     {
-        Database::QueryParams params;
-        std::ostringstream sql;
-        Util::HeadSeparator where_and_separator(" WHERE "," AND ");
+        info_registrar_inline_view_filter_expr_ = filter_expr;
+        return *this;
+    }
 
-        params.push_back(local_timestamp_pg_time_zone_name);//refered as $1
+    InfoRegistrar& InfoRegistrar::set_cte_id_filter(const Database::ParamQuery& cte_id_filter_query)
+    {
+        info_registrar_id_filter_cte_ = cte_id_filter_query;
+        return *this;
+    }
 
-        //query to get info and lock registrar row for update if set
-        sql <<"SELECT r.id, r.ico, r.dic, r.varsymb, r.vat AS vat_ " //0-4
-            ", r.handle, r.name, r.organization "//5-7
-            ", r.street1, r.street2, r.street3, r.city, r.stateorprovince, r.postalcode, r.country " //8-14
-            ", r.telephone, r.fax, r.email, r.url, r.system, r.regex "//15-20
-            " , (CURRENT_TIMESTAMP AT TIME ZONE 'UTC')::timestamp AS utc_timestamp "// utc timestamp 21
-            " , (CURRENT_TIMESTAMP AT TIME ZONE 'UTC' AT TIME ZONE $1::text)::timestamp AS local_timestamp "// local zone timestamp 22
-            " FROM registrar r ";
 
-        if(registrar_handle_.isset())
+    Database::ParamQuery InfoRegistrar::make_registrar_query(const std::string& local_timestamp_pg_time_zone_name)
+    {
+        Database::ParamQuery info_registrar_query;
+
+        if(info_registrar_id_filter_cte_.isset())
         {
-            params.push_back(registrar_handle_);
-            sql << where_and_separator.get() << " r.handle = UPPER($"<< params.size() <<"::text) ";
+            info_registrar_query("WITH id_filter(id) as (")(info_registrar_id_filter_cte_.get_value())(") ");
         }
 
-        if(registrar_id_.isset())
-        {
-            params.push_back(registrar_id_);
-            sql << where_and_separator.get() << " r.id = $"<< params.size() <<"::bigint ";
-        }
+        info_registrar_query(
+        "SELECT * FROM ("
+        "SELECT r.id AS ")(GetAlias::id())(
+        " , r.ico AS ")(GetAlias::ico())(
+        " , r.dic AS ")(GetAlias::dic())(
+        " , btrim(r.varsymb) AS ")(GetAlias::variable_symbol())(
+        " , r.vat AS ")(GetAlias::vat_payer())(
+        " , r.handle AS ")(GetAlias::handle())(
+        " , r.name AS ")(GetAlias::name())(
+        " , r.organization AS ")(GetAlias::organization())(
+        " , r.street1 AS ")(GetAlias::street1())(
+        " , r.street2 AS ")(GetAlias::street2())(
+        " , r.street3 AS ")(GetAlias::street3())(
+        " , r.city AS ")(GetAlias::city())(
+        " , r.stateorprovince AS ")(GetAlias::stateorprovince())(
+        " , r.postalcode AS ")(GetAlias::postalcode())(
+        " , r.country AS ")(GetAlias::country())(
+        " , r.telephone AS ")(GetAlias::telephone())(
+        " , r.fax AS ")(GetAlias::fax())(
+        " , r.email AS ")(GetAlias::email())(
+        " , r.url AS ")(GetAlias::url())(
+        " , r.system AS ")(GetAlias::system())(
+        " , r.regex AS ")(GetAlias::memo_regex())(
+        " , (CURRENT_TIMESTAMP AT TIME ZONE 'UTC')::timestamp AS ")(GetAlias::utc_timestamp())(
+        " , (CURRENT_TIMESTAMP AT TIME ZONE 'UTC' AT TIME ZONE ").param_text(local_timestamp_pg_time_zone_name)(")::timestamp AS ")(GetAlias::local_timestamp())(
+        " FROM registrar r ");
 
-        sql << " ORDER BY r.id ";
+        if(info_registrar_id_filter_cte_.isset())
+        {
+            info_registrar_query(" WHERE r.id IN (SELECT id FROM id_filter) ");
+        }
 
         if(lock_)
         {
-            sql << " FOR UPDATE of r ";
+            info_registrar_query(" FOR UPDATE of r ");
         }
 
-        return std::make_pair(sql.str(), params);
+        info_registrar_query(") as tmp");
+
+        //inline view sub-select locking example at:
+        //http://www.postgresql.org/docs/9.1/static/sql-select.html#SQL-FOR-UPDATE-SHARE
+        if(info_registrar_inline_view_filter_expr_.isset())
+        {
+            info_registrar_query(" WHERE ")(info_registrar_inline_view_filter_expr_.get_value());
+        }
+
+        info_registrar_query(
+            " ORDER BY ")(GetAlias::id());
+
+        return info_registrar_query;
+
     }
 
     std::vector<InfoRegistrarOutput> InfoRegistrar::exec(OperationContext& ctx
@@ -100,78 +125,59 @@ namespace Fred
     {
         std::vector<InfoRegistrarOutput> result;
 
-        std::pair<std::string, Database::QueryParams> registrar_query = make_registrar_query(local_timestamp_pg_time_zone_name);
-
-        Database::Result registrar_query_result = ctx.get_conn().exec_params(registrar_query.first,registrar_query.second);
-        result.reserve(registrar_query_result.size());//alloc
+        Database::Result registrar_query_result = ctx.get_conn().exec_params(make_registrar_query(local_timestamp_pg_time_zone_name));
+        result.reserve(registrar_query_result.size());
         for(Database::Result::size_type i = 0; i < registrar_query_result.size(); ++i)
         {
             InfoRegistrarOutput info_registrar_output;
-            info_registrar_output.info_registrar_data.id = static_cast<unsigned long long>(registrar_query_result[i][0]);//r.id
-            info_registrar_output.info_registrar_data.ico = registrar_query_result[i][1].isnull() ? Nullable<std::string>()
-                : Nullable<std::string>(static_cast<std::string>(registrar_query_result[i][1]));//r.ico
-            info_registrar_output.info_registrar_data.dic = registrar_query_result[i][2].isnull() ? Nullable<std::string>()
-                : Nullable<std::string>(static_cast<std::string>(registrar_query_result[i][2]));//r.dic
-            info_registrar_output.info_registrar_data.variable_symbol = registrar_query_result[i][3].isnull() ? Nullable<std::string>()
-                : Nullable<std::string>(static_cast<std::string>(registrar_query_result[i][3]));//r.varsymb
-            info_registrar_output.info_registrar_data.vat_payer = static_cast<bool>(registrar_query_result[i]["vat_"]);
-            info_registrar_output.info_registrar_data.handle = static_cast<std::string>(registrar_query_result[i][5]);//r.handle
-            info_registrar_output.info_registrar_data.name = registrar_query_result[i][6].isnull() ? Nullable<std::string>()
-                : Nullable<std::string> (static_cast<std::string>(registrar_query_result[i][6]));
-            info_registrar_output.info_registrar_data.organization = registrar_query_result[i][7].isnull() ? Nullable<std::string>()
-                : Nullable<std::string> (static_cast<std::string>(registrar_query_result[i][7]));
-            info_registrar_output.info_registrar_data.street1 = registrar_query_result[i][8].isnull() ? Nullable<std::string>()
-                : Nullable<std::string> (static_cast<std::string>(registrar_query_result[i][8]));
-            info_registrar_output.info_registrar_data.street2 = registrar_query_result[i][9].isnull() ? Nullable<std::string>()
-                : Nullable<std::string> (static_cast<std::string>(registrar_query_result[i][9]));
-            info_registrar_output.info_registrar_data.street3 = registrar_query_result[i][10].isnull() ? Nullable<std::string>()
-                : Nullable<std::string> (static_cast<std::string>(registrar_query_result[i][10]));
-            info_registrar_output.info_registrar_data.city = registrar_query_result[i][11].isnull() ? Nullable<std::string>()
-                : Nullable<std::string> (static_cast<std::string>(registrar_query_result[i][11]));
-            info_registrar_output.info_registrar_data.stateorprovince = registrar_query_result[i][12].isnull() ? Nullable<std::string>()
-                : Nullable<std::string> (static_cast<std::string>(registrar_query_result[i][12]));
-            info_registrar_output.info_registrar_data.postalcode = registrar_query_result[i][13].isnull() ? Nullable<std::string>()
-                : Nullable<std::string> (static_cast<std::string>(registrar_query_result[i][13]));
-            info_registrar_output.info_registrar_data.country = registrar_query_result[i][14].isnull() ? Nullable<std::string>()
-                : Nullable<std::string> (static_cast<std::string>(registrar_query_result[i][14]));
-            info_registrar_output.info_registrar_data.telephone = registrar_query_result[i][15].isnull() ? Nullable<std::string>()
-                : Nullable<std::string> (static_cast<std::string>(registrar_query_result[i][15]));
-            info_registrar_output.info_registrar_data.fax = registrar_query_result[i][16].isnull() ? Nullable<std::string>()
-                : Nullable<std::string> (static_cast<std::string>(registrar_query_result[i][16]));
-            info_registrar_output.info_registrar_data.email = registrar_query_result[i][17].isnull() ? Nullable<std::string>()
-                : Nullable<std::string> (static_cast<std::string>(registrar_query_result[i][17]));
-            info_registrar_output.info_registrar_data.url = registrar_query_result[i][18].isnull() ? Nullable<std::string>()
-                : Nullable<std::string> (static_cast<std::string>(registrar_query_result[i][18]));
-            info_registrar_output.info_registrar_data.system = registrar_query_result[i][19].isnull() ? Nullable<bool>()
-                : Nullable<bool> (static_cast<bool>(registrar_query_result[i][19]));
-            info_registrar_output.info_registrar_data.payment_memo_regex = registrar_query_result[i][20].isnull() ? Nullable<std::string>()
-                : Nullable<std::string> (static_cast<std::string>(registrar_query_result[i][20]));
-            info_registrar_output.utc_timestamp = registrar_query_result[i][21].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
-                : boost::posix_time::time_from_string(static_cast<std::string>(registrar_query_result[i][21]));// utc timestamp
-            info_registrar_output.local_timestamp = registrar_query_result[i][22].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
-                : boost::posix_time::time_from_string(static_cast<std::string>(registrar_query_result[i][22]));//local zone timestamp
+            info_registrar_output.info_registrar_data.id = static_cast<unsigned long long>(registrar_query_result[i][GetAlias::id()]);
+            info_registrar_output.info_registrar_data.ico = registrar_query_result[i][GetAlias::ico()].isnull() ? Nullable<std::string>()
+                : Nullable<std::string>(static_cast<std::string>(registrar_query_result[i][GetAlias::ico()]));
+            info_registrar_output.info_registrar_data.dic = registrar_query_result[i][GetAlias::dic()].isnull() ? Nullable<std::string>()
+                : Nullable<std::string>(static_cast<std::string>(registrar_query_result[i][GetAlias::dic()]));
+            info_registrar_output.info_registrar_data.variable_symbol = registrar_query_result[i][GetAlias::variable_symbol()].isnull() ? Nullable<std::string>()
+                : Nullable<std::string>(static_cast<std::string>(registrar_query_result[i][GetAlias::variable_symbol()]));
+            info_registrar_output.info_registrar_data.vat_payer = static_cast<bool>(registrar_query_result[i][GetAlias::vat_payer()]);
+            info_registrar_output.info_registrar_data.handle = static_cast<std::string>(registrar_query_result[i][GetAlias::handle()]);
+            info_registrar_output.info_registrar_data.name = registrar_query_result[i][GetAlias::name()].isnull() ? Nullable<std::string>()
+                : Nullable<std::string> (static_cast<std::string>(registrar_query_result[i][GetAlias::name()]));
+            info_registrar_output.info_registrar_data.organization = registrar_query_result[i][GetAlias::organization()].isnull() ? Nullable<std::string>()
+                : Nullable<std::string> (static_cast<std::string>(registrar_query_result[i][GetAlias::organization()]));
+            info_registrar_output.info_registrar_data.street1 = registrar_query_result[i][GetAlias::street1()].isnull() ? Nullable<std::string>()
+                : Nullable<std::string> (static_cast<std::string>(registrar_query_result[i][GetAlias::street1()]));
+            info_registrar_output.info_registrar_data.street2 = registrar_query_result[i][GetAlias::street2()].isnull() ? Nullable<std::string>()
+                : Nullable<std::string> (static_cast<std::string>(registrar_query_result[i][GetAlias::street2()]));
+            info_registrar_output.info_registrar_data.street3 = registrar_query_result[i][GetAlias::street3()].isnull() ? Nullable<std::string>()
+                : Nullable<std::string> (static_cast<std::string>(registrar_query_result[i][GetAlias::street3()]));
+            info_registrar_output.info_registrar_data.city = registrar_query_result[i][GetAlias::city()].isnull() ? Nullable<std::string>()
+                : Nullable<std::string> (static_cast<std::string>(registrar_query_result[i][GetAlias::city()]));
+            info_registrar_output.info_registrar_data.stateorprovince = registrar_query_result[i][GetAlias::stateorprovince()].isnull() ? Nullable<std::string>()
+                : Nullable<std::string> (static_cast<std::string>(registrar_query_result[i][GetAlias::stateorprovince()]));
+            info_registrar_output.info_registrar_data.postalcode = registrar_query_result[i][GetAlias::postalcode()].isnull() ? Nullable<std::string>()
+                : Nullable<std::string> (static_cast<std::string>(registrar_query_result[i][GetAlias::postalcode()]));
+            info_registrar_output.info_registrar_data.country = registrar_query_result[i][GetAlias::country()].isnull() ? Nullable<std::string>()
+                : Nullable<std::string> (static_cast<std::string>(registrar_query_result[i][GetAlias::country()]));
+            info_registrar_output.info_registrar_data.telephone = registrar_query_result[i][GetAlias::telephone()].isnull() ? Nullable<std::string>()
+                : Nullable<std::string> (static_cast<std::string>(registrar_query_result[i][GetAlias::telephone()]));
+            info_registrar_output.info_registrar_data.fax = registrar_query_result[i][GetAlias::fax()].isnull() ? Nullable<std::string>()
+                : Nullable<std::string> (static_cast<std::string>(registrar_query_result[i][GetAlias::fax()]));
+            info_registrar_output.info_registrar_data.email = registrar_query_result[i][GetAlias::email()].isnull() ? Nullable<std::string>()
+                : Nullable<std::string> (static_cast<std::string>(registrar_query_result[i][GetAlias::email()]));
+            info_registrar_output.info_registrar_data.url = registrar_query_result[i][GetAlias::url()].isnull() ? Nullable<std::string>()
+                : Nullable<std::string> (static_cast<std::string>(registrar_query_result[i][GetAlias::url()]));
+            info_registrar_output.info_registrar_data.system = registrar_query_result[i][GetAlias::system()].isnull() ? Nullable<bool>()
+                : Nullable<bool> (static_cast<bool>(registrar_query_result[i][GetAlias::system()]));
+            info_registrar_output.info_registrar_data.payment_memo_regex = registrar_query_result[i][GetAlias::memo_regex()].isnull() ? Nullable<std::string>()
+                : Nullable<std::string> (static_cast<std::string>(registrar_query_result[i][GetAlias::memo_regex()]));
+            info_registrar_output.utc_timestamp = registrar_query_result[i][GetAlias::utc_timestamp()].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
+                : boost::posix_time::time_from_string(static_cast<std::string>(registrar_query_result[i][GetAlias::utc_timestamp()]));// utc timestamp
+            info_registrar_output.local_timestamp = registrar_query_result[i][GetAlias::local_timestamp()].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
+                : boost::posix_time::time_from_string(static_cast<std::string>(registrar_query_result[i][GetAlias::local_timestamp()]));//local zone timestamp
 
             result.push_back(info_registrar_output);
         }//for res
 
         return result;
-    }
-
-    std::string InfoRegistrar::explain_analyze(OperationContext& ctx, std::vector<InfoRegistrarOutput>& result
-            , const std::string& local_timestamp_pg_time_zone_name)
-    {
-        result = exec(ctx,local_timestamp_pg_time_zone_name);
-        std::pair<std::string, Database::QueryParams> query = make_registrar_query(local_timestamp_pg_time_zone_name);
-        std::string query_plan("\nRegistrar query: EXPLAIN ANALYZE ");
-        query_plan += query.first;
-        query_plan += "\n\nParams: ";
-        query_plan += Util::format_container(query.second);
-        query_plan += "\n\nPlan:\n";
-
-        Database::Result query_result = ctx.get_conn().exec_params(std::string("EXPLAIN ANALYZE ") + query.first,query.second);
-        for(Database::Result::size_type i = 0; i < query_result.size(); ++i) query_plan += std::string(query_result[i][0])+"\n";
-
-        return query_plan;
     }
 
 }//namespace Fred

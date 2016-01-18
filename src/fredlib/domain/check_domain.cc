@@ -37,7 +37,18 @@ namespace Fred
     CheckDomain::CheckDomain(const std::string& fqdn)
     : fqdn_(fqdn)
     {}
-    bool CheckDomain::is_invalid_handle(OperationContext& ctx)
+
+    bool CheckDomain::is_invalid_syntax() const
+    {
+        if(Domain::general_domain_name_syntax_check(fqdn_))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    bool CheckDomain::is_invalid_handle(OperationContext& ctx) const
     {
         try
         {
@@ -84,7 +95,7 @@ namespace Fred
         return false;//meaning ok
     }
 
-    bool CheckDomain::is_bad_zone(OperationContext& ctx)
+    bool CheckDomain::is_bad_zone(OperationContext& ctx) const
     {
         try
         {
@@ -117,7 +128,7 @@ namespace Fred
         return false;//meaning ok
     }
 
-    bool CheckDomain::is_bad_length(OperationContext& ctx)
+    bool CheckDomain::is_bad_length(OperationContext& ctx) const
     {
         try
         {
@@ -156,7 +167,7 @@ namespace Fred
         return false;//meaning ok
     }
 
-    bool CheckDomain::is_blacklisted(OperationContext& ctx)
+    bool CheckDomain::is_blacklisted(OperationContext& ctx) const
     {
         try
         {
@@ -182,7 +193,7 @@ namespace Fred
         return false;//meaning ok
     }
 
-    bool CheckDomain::is_registered(OperationContext& ctx, std::string& conflicting_fqdn_out)
+    bool CheckDomain::is_registered(OperationContext& ctx, std::string& conflicting_fqdn_out) const
     {
         try
         {
@@ -241,14 +252,14 @@ namespace Fred
         return false;//meaning ok
     }
 
-    bool CheckDomain::is_registered(OperationContext& ctx)
+    bool CheckDomain::is_registered(OperationContext& ctx) const
     {
         std::string conflicting_fqdn_out;
         return is_registered(ctx, conflicting_fqdn_out);
     }
 
 
-    bool CheckDomain::is_available(OperationContext& ctx)
+    bool CheckDomain::is_available(OperationContext& ctx) const
     {
         try
         {
