@@ -49,7 +49,7 @@ public:
         LogRequestId log_request_id,
         ::CORBA::String_out ident);
 
-    Registry::MojeID::InfoContact* transfer_contact_prepare(
+    InfoContact* transfer_contact_prepare(
         const char *handle,
         const char *trans_id,
         LogRequestId log_request_id,
@@ -60,13 +60,13 @@ public:
         const char *trans_id,
         LogRequestId log_request_id);
 
-    Registry::MojeID::InfoContact* update_transfer_contact_prepare(
+    InfoContact* update_transfer_contact_prepare(
         const char *username,
         const SetContact& contact_data,
         const char *trans_id,
         LogRequestId request_id);
 
-    Registry::MojeID::InfoContact* info_contact(
+    InfoContact* info_contact(
         const char *username);
 
     ContactId process_registration_request(

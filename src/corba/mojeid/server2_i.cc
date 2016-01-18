@@ -82,7 +82,7 @@ ContactId Server_i::create_contact_prepare(
     }
 }//create_contact_prepare
 
-Registry::MojeID::InfoContact* Server_i::transfer_contact_prepare(
+InfoContact* Server_i::transfer_contact_prepare(
         const char *_handle,
         const char *_trans_id,
         LogRequestId _log_request_id,
@@ -111,6 +111,9 @@ Registry::MojeID::InfoContact* Server_i::transfer_contact_prepare(
     catch (const MojeIDImplData::ObjectUserBlocked&) {
         throw IDL::OBJECT_USER_BLOCKED();
     }
+    catch (const MojeIDImplData::ObjectDoesntExist&) {
+        throw IDL::OBJECT_NOT_EXISTS();
+    }
     catch (const MojeIDImplData::RegistrationValidationResult &e) {
         CorbaConversion::raise< IDL::REGISTRATION_VALIDATION_ERROR >(e);
     }
@@ -130,7 +133,7 @@ void Server_i::update_contact_prepare(
         impl_ptr_->update_contact_prepare(new_data, _trans_id, _log_request_id);
         return;
     }
-    catch (const Registry::MojeIDImplData::UpdateContactPrepareValidationResult &e) {
+    catch (const MojeIDImplData::UpdateContactPrepareValidationResult &e) {
         CorbaConversion::raise< IDL::UPDATE_CONTACT_PREPARE_VALIDATION_ERROR >(e);
     }
     catch (const MojeIDImplData::MessageLimitExceeded &e) {
@@ -144,7 +147,7 @@ void Server_i::update_contact_prepare(
     }
 }//update_contact_prepared
 
-Registry::MojeID::InfoContact* Server_i::update_transfer_contact_prepare(
+InfoContact* Server_i::update_transfer_contact_prepare(
         const char *_username,
         const SetContact& _contact_data,
         const char *_trans_id,
@@ -174,13 +177,16 @@ Registry::MojeID::InfoContact* Server_i::update_transfer_contact_prepare(
     }
 }
 
-Registry::MojeID::InfoContact* Server_i::info_contact(
+InfoContact* Server_i::info_contact(
         const char *username)
 {
     try {
         MojeIDImplData::InfoContact contact;
         impl_ptr_->info_contact(username, contact);
         return result_as< Registry::MojeID::InfoContact >(contact);
+    }
+    catch (const MojeIDImplData::ObjectDoesntExist &e) {
+        throw IDL::OBJECT_NOT_EXISTS();
     }
     catch (...) {
         throw IDL::INTERNAL_SERVER_ERROR();
@@ -302,9 +308,9 @@ void Server_i::create_validation_request(
     catch (const MojeIDImplData::ValidationAlreadyProcessed&) {
         throw IDL::VALIDATION_ALREADY_PROCESSED();
     }
-/*    catch (const MojeIDImplData::CreateValidationRequestValidationResult &e) {
+    catch (const MojeIDImplData::CreateValidationRequestValidationResult &e) {
         CorbaConversion::raise< IDL::CREATE_VALIDATION_REQUEST_VALIDATION_ERROR >(e);
-    }*/
+    }
     catch (...) {
         throw IDL::INTERNAL_SERVER_ERROR();
     }

@@ -772,9 +772,14 @@ void MojeID2Impl::transfer_contact_prepare(
         LOGGER(PACKAGE).error("request failed (incorrect input data - ObjectUserBlocked)");
         throw;
     }
+    catch (const MojeIDImplData::RegistrationValidationResult&) {
+        LOGGER(PACKAGE).error("request failed (incorrect input data - RegistrationValidationResult)");
+        throw;
+    }
     catch (const Fred::InfoContactByHandle::Exception &e) {
         if (e.is_set_unknown_contact_handle()) {
             LOGGER(PACKAGE).error("request failed (incorrect input data)");
+            throw MojeIDImplData::ObjectDoesntExist();
         }
         throw;
     }
@@ -874,7 +879,7 @@ void MojeID2Impl::update_contact_prepare(
         Fred::OperationContextTwoPhaseCommitCreator ctx(_trans_id);
         const Fred::Object::StatesInfo states(Fred::GetObjectStates(new_data.id).exec(ctx));
         if (states.absents(Fred::Object::State::MOJEID_CONTACT)) {
-//            throw GetContact::object_doesnt_exist();
+            throw MojeIDImplData::ObjectDoesntExist();
         }
         const Fred::InfoContactData current_data = Fred::InfoContactById(new_data.id).exec(ctx).info_contact_data;
         const Fred::InfoContactDiff data_changes = Fred::diff_contact_data(current_data, new_data);
@@ -964,16 +969,24 @@ void MojeID2Impl::update_contact_prepare(
         ctx.commit_transaction();
         return;
     }
-//    catch (const GetContact::object_doesnt_exist &e) {
-//        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
-//        throw;
-//    }
+    catch (const Fred::InfoContactById::Exception &e) {
+        if (e.is_set_unknown_object_id()) {
+            LOGGER(PACKAGE).info("request failed (InfoContactById::Exception - unknown_object_id)");
+            throw MojeIDImplData::ObjectDoesntExist();
+        }
+        LOGGER(PACKAGE).info("request failed (InfoContactById::Exception)");
+        throw;
+    }
+    catch (const MojeIDImplData::ObjectDoesntExist &e) {
+        LOGGER(PACKAGE).info("request failed (ObjectDoesntExist)");
+        throw;
+    }
     catch(const MojeIDImplData::MessageLimitExceeded &e) {
         LOGGER(PACKAGE).info(e.as_string());
         throw;
     }
     catch(const MojeIDImplInternal::CheckUpdateContactPrepare &e) {
-        LOGGER(PACKAGE).error("request failed (incorrect input data)");
+        LOGGER(PACKAGE).info("request failed (CheckUpdateContactPrepare)");
         MojeIDImplInternal::raise(e);
     }
     catch (const std::exception &e) {
@@ -1113,10 +1126,14 @@ MojeIDImplData::InfoContact MojeID2Impl::update_transfer_contact_prepare(
     catch (const Fred::InfoContactByHandle::Exception &e) {
         //check contact is registered, throw OBJECT_NOT_EXISTS if isn't
         if (e.is_set_unknown_contact_handle()) {
-            LOGGER(PACKAGE).info(boost::format("request failed (%1%)") % e.what());
+            LOGGER(PACKAGE).info("request failed (InfoContactByHandle::Exception) - unknown_contact_handle");
             throw MojeIDImplData::ObjectDoesntExist();
         }
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
+        throw;
+    }
+    catch (const MojeIDImplData::RegistrationValidationResult &e) {
+        LOGGER(PACKAGE).info("request failed (RegistrationValidationResult)");
         throw;
     }
     catch (const MojeIDImplData::AlreadyMojeidContact&) {
@@ -1289,6 +1306,12 @@ MojeID2Impl::ContactId MojeID2Impl::process_registration_request(
             throw;
         }
     }
+    catch (const MojeIDImplData::IdentificationFailed&) {
+        throw;
+    }
+    catch (const MojeIDImplData::ContactChanged&) {
+        throw;
+    }
     catch (const Fred::PublicRequestLockGuardByIdentification::Exception &e) {
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
         if (e.is_set_public_request_doesnt_exist()) {
@@ -1347,7 +1370,7 @@ void MojeID2Impl::process_identification_request(
         }
         const Fred::Object::StatesInfo states(Fred::GetObjectStates(_contact_id).exec(ctx));
         if (states.absents(Fred::Object::State::MOJEID_CONTACT)) {
-//            throw GetContact::object_doesnt_exist();
+            throw MojeIDImplData::ObjectDoesntExist();
         }
         if (states.absents(Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT)) {
             throw std::runtime_error("state conditionallyIdentifiedContact missing");
@@ -1383,10 +1406,10 @@ void MojeID2Impl::process_identification_request(
         answer(ctx, locked_request, "successfully processed", _log_request_id);
         ctx.commit_transaction();
     }
-//    catch (const GetContact::object_doesnt_exist &e) {
-//        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
-//        throw;
-//    }
+    catch (const MojeIDImplData::ObjectDoesntExist &e) {
+        LOGGER(PACKAGE).info("request failed (ObjectDoesntExist)");
+        throw;
+    }
     catch (const MojeIDImplData::IdentificationAlreadyProcessed&) {
         LOGGER(PACKAGE).error("request failed (IdentificationAlreadyProcessed)");
         throw;
@@ -1600,7 +1623,7 @@ void MojeID2Impl::create_validation_request(
         {
             const MojeIDImplInternal::CheckCreateValidationRequest check_create_validation_request(contact_data);
             if (!check_create_validation_request.success()) {
-                throw check_create_validation_request;
+                MojeIDImplInternal::raise(check_create_validation_request);
             }
         }
         Fred::CreatePublicRequest create_public_request_op(Fred::MojeID::PublicRequest::ContactValidation::iface());
@@ -1616,10 +1639,6 @@ void MojeID2Impl::create_validation_request(
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
         throw;
     }
-//    catch (const GetContact::object_doesnt_exist &e) {
-//        LOGGER(PACKAGE).warning(boost::format("contact doesn't exist (%1%)") % e.what());
-//        throw ObjectDoesntExist(e.what());
-//    }
     catch (const MojeIDImplData::ObjectDoesntExist&) {
         LOGGER(PACKAGE).warning("contact doesn't exist (ObjectDoesntExist)");
         throw;
@@ -1628,9 +1647,9 @@ void MojeID2Impl::create_validation_request(
         LOGGER(PACKAGE).warning("unable to create new request (ValidationRequestExists)");
         throw;
     }
-    catch (const MojeIDImplInternal::CheckCreateValidationRequest &e) {
-        LOGGER(PACKAGE).warning("request failed (invalid contact data)");
-        MojeIDImplInternal::raise(e);
+    catch (const MojeIDImplData::CreateValidationRequestValidationResult&) {
+        LOGGER(PACKAGE).warning("request failed (CreateValidationRequestValidationResult)");
+        throw;
     }
     catch (const std::exception &e) {
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
@@ -1903,10 +1922,6 @@ void MojeID2Impl::cancel_account_prepare(
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
         throw;
     }
-//    catch (const GetContact::object_doesnt_exist &e) {
-//        LOGGER(PACKAGE).warning(boost::format("contact doesn't exist (%1%)") % e.what());
-//        throw ObjectDoesntExist(e.what());
-//    }
     catch (const MojeIDImplData::ObjectDoesntExist&) {
         LOGGER(PACKAGE).warning("contact doesn't exist (ObjectDoesntExist)");
         throw;
