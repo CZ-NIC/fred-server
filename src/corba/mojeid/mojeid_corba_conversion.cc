@@ -33,7 +33,7 @@ namespace CorbaConversion
             if (safe_dst != _CORBA_String_helper::empty_string) {
                 check_empty_storage(safe_dst);
             }
-            safe_dst = CORBA::string_dup(src.c_str());
+            CorbaConversion::wrap(src, safe_dst);
         }
     }
 

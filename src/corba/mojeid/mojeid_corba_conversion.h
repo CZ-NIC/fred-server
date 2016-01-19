@@ -472,7 +472,7 @@ namespace CorbaConversion
         typedef char*       CORBA_TYPE;
         static void wrap(const NON_CORBA_TYPE &src, CORBA_TYPE &dst)
         {
-            Internal::into_safe_storage< std::string, char >::wrap(src, dst);
+            dst = CORBA::string_dup(src.c_str());
         }
     };
 
