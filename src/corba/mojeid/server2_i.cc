@@ -34,12 +34,32 @@ typedef Server IDL;
 namespace
 {
 
-template < class DST_TYPE, class SRC_TYPE >
-DST_TYPE* result_as(const SRC_TYPE &src)
+template < class SRC_TYPE, class DST_TYPE >
+struct Wrapper_into_result
 {
-    std::auto_ptr< DST_TYPE > dst(new DST_TYPE);
-    CorbaConversion::wrap(src, *dst);
-    return dst.release();
+    typedef DST_TYPE* result_type;
+    static DST_TYPE* from(const SRC_TYPE &src)
+    {
+        std::auto_ptr< DST_TYPE > dst(new DST_TYPE);
+        CorbaConversion::wrap(src, *dst);
+        return dst.release();
+    }
+};
+
+template < >
+struct Wrapper_into_result< std::string, char* >
+{
+    typedef char* result_type;
+    static char* from(const std::string &src)
+    {
+        return CorbaConversion::wrap_into< char* >(src);
+    }
+};
+
+template < class DST_TYPE, class SRC_TYPE >
+typename Wrapper_into_result< SRC_TYPE, DST_TYPE >::result_type result_as(const SRC_TYPE &src)
+{
+    return Wrapper_into_result< SRC_TYPE, DST_TYPE >::from(src);
 }
 
 }
@@ -69,9 +89,7 @@ ContactId Server_i::create_contact_prepare(
             _trans_id,
             _log_request_id,
             ident);
-        ::CORBA::String_var identification;
-        CorbaConversion::wrap_into_holder(ident, identification);
-        _identification = ::CORBA::String_out(identification);
+        _identification = result_as< char* >(ident);
         return contact_id;
     }
     catch (const MojeIDImplData::RegistrationValidationResult &e) {
