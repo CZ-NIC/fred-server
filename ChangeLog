@@ -1,3 +1,14 @@
+2016-01-20 (2.23.0)
+
+  * whois backend refactoring (new methods for webwhois client)
+
+  * fredlib
+    * contact address structure fixes
+    * missing includes
+
+  * database setup fixture for tests fix (postgresql version - pid vs procpid
+    in pg_stat_activity)
+
 2015-05-19 Jiri Sadek, Jan Korous, Jan Zima, Michal Strnad (2.22.0)
 
   * build warnings and distribution fixes
