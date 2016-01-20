@@ -54,14 +54,14 @@ template < class DST_ADDR_TYPE >
 void common_conversion_from_fred(const Fred::Contact::PlaceAddress &src, DST_ADDR_TYPE &dst)
 {
     dst.street1 = src.street1;
-    if (!src.street2.isset()) {
+    if (src.street2.isset()) {
         dst.street2 = src.street2.get_value();
     }
-    if (!src.street3.isset()) {
+    if (src.street3.isset()) {
         dst.street3 = src.street3.get_value();
     }
     dst.city = src.city;
-    if (!src.stateorprovince.isset()) {
+    if (src.stateorprovince.isset()) {
         dst.state = src.stateorprovince.get_value();
     }
     dst.postal_code = src.postalcode;
@@ -251,7 +251,7 @@ void from_into(const Fred::Contact::PlaceAddress &src, Address &dst)
 void from_into(const Fred::ContactAddress &src, ShippingAddress &dst)
 {
     common_conversion_from_fred(src, dst);
-    if (!src.company_name.isset()) {
+    if (src.company_name.isset()) {
         dst.company_name = src.company_name.get_value();
     }
 }
