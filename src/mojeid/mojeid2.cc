@@ -1293,8 +1293,24 @@ MojeID2Impl::ContactId MojeID2Impl::process_registration_request(
             if (!pub_req_info.check_password(_password)) {
                 throw MojeIDImplData::IdentificationFailed();
             }
+
+            Fred::StatusList to_set;
+            to_set.insert(Conversion::Enums::into< std::string >(Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT));
+            to_set.insert(Conversion::Enums::into< std::string >(Fred::Object::State::SERVER_DELETE_PROHIBITED));
+            to_set.insert(Conversion::Enums::into< std::string >(Fred::Object::State::SERVER_TRANSFER_PROHIBITED));
+            to_set.insert(Conversion::Enums::into< std::string >(Fred::Object::State::SERVER_UPDATE_PROHIBITED));
+            to_set.insert(Conversion::Enums::into< std::string >(Fred::Object::State::MOJEID_CONTACT));
+            Fred::CreateObjectStateRequestId(contact_id, to_set).exec(ctx);
             Fred::PerformObjectStateRequest(contact_id).exec(ctx);
+
+            answer(ctx, locked_request, "successfully processed", _log_request_id);
+
+            Fred::CreatePublicRequestAuth op_create_pub_req(Fred::MojeID::PublicRequest::ContactIdentification::iface());
+            Fred::PublicRequestObjectLockGuardByObjectId locked_contact(ctx, contact_id);
+            const Fred::CreatePublicRequestAuth::Result result = op_create_pub_req.exec(ctx, locked_contact);
+
             ctx.commit_transaction();
+
             return contact_id;
         }
         catch (const MojeIDImplData::IdentificationFailed&) {
