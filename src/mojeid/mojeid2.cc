@@ -2288,7 +2288,8 @@ MojeID2Impl::MessageId MojeID2Impl::send_mojeid_card(
     pa.country = addr.country;
 
     Database::query_param_list params(pa.country);
-    std::string sql = "SELECT (SELECT country_cs FROM enum_country WHERE country=$1::TEXT)";
+    std::string sql = "SELECT (SELECT country_cs FROM enum_country WHERE id=$1::TEXT OR country=$1::TEXT),"
+                             "(SELECT country FROM enum_country WHERE id=$1::TEXT)";
     if (!_validated_contact.isset()) {
         params(_data.id)
               (Conversion::Enums::into< std::string >(Fred::Object::State::VALIDATED_CONTACT));
@@ -2301,12 +2302,15 @@ MojeID2Impl::MessageId MojeID2Impl::send_mojeid_card(
     const std::string addr_country = dbres[0][0].isnull()
                                      ? pa.country
                                      : static_cast< std::string >(dbres[0][0]);
+    if (!dbres[0][1].isnull()) {
+        pa.country = static_cast< std::string >(dbres[0][1]);
+    }
     const std::string contact_handle = _data.handle;
     const boost::gregorian::date letter_date = _letter_time.isset()
                                                ? _letter_time.get_value().date()
                                                : boost::gregorian::day_clock::local_day();
     const std::string contact_state = (_validated_contact.isset() && _validated_contact.get_value()) ||
-                                      (!_validated_contact.isset() && static_cast< bool >(dbres[0][1]))
+                                      (!_validated_contact.isset() && static_cast< bool >(dbres[0][2]))
                                       ? "validated"
                                       : "";
 
