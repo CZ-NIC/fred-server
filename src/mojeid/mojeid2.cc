@@ -1408,7 +1408,7 @@ void MojeID2Impl::process_identification_request(
         {
             const MojeIDImplInternal::CheckUpdateContactPrepare check_contact_data(current_data);
             if (!check_contact_data.success()) {
-                throw check_contact_data;
+                MojeIDImplInternal::raise(check_contact_data);
             }
         }
         Fred::PublicRequestLockGuardById locked_request(ctx, public_request_id);
@@ -1422,7 +1422,11 @@ void MojeID2Impl::process_identification_request(
         answer(ctx, locked_request, "successfully processed", _log_request_id);
         ctx.commit_transaction();
     }
-    catch (const MojeIDImplData::ObjectDoesntExist &e) {
+    catch (const MojeIDImplData::UpdateContactPrepareValidationResult&) {
+        LOGGER(PACKAGE).info("request failed (UpdateContactPrepareValidationResult)");
+        throw;
+    }
+    catch (const MojeIDImplData::ObjectDoesntExist&) {
         LOGGER(PACKAGE).info("request failed (ObjectDoesntExist)");
         throw;
     }
