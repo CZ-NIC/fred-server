@@ -1508,9 +1508,9 @@ std::string birthdate_into_czech_date(const std::string &_birthdate)
     std::ostringstream out;
     if (!d.is_special()) {
         const boost::gregorian::date::ymd_type ymd = d.year_month_day();
-        out << std::setw(2) << std::setfill('0') << std::right << ymd.day << "."   //dd.
-            << std::setw(2) << std::setfill('0') << std::right << ymd.month << "." //dd.mm.
-            << std::setw(0)                                    << ymd.year;        //dd.mm.yyyy
+        out << std::setw(2) << std::setfill('0') << std::right << ymd.day.as_number() << "."   //dd.
+            << std::setw(2) << std::setfill('0') << std::right << ymd.month.as_number() << "." //dd.mm.
+            << std::setw(0)                                    << ymd.year;                    //dd.mm.yyyy
     }
     return out.str();
 }
@@ -1530,9 +1530,10 @@ std::string MojeID2Impl::get_validation_pdf(ContactId _contact_id)const
             "SELECT pr.id,c.name,c.organization,c.ssn,"
                    "(SELECT type FROM enum_ssntype WHERE id=c.ssntype),"
                    "CONCAT_WS(', ',"
-                       "NULLIF(BTRIM(c.street1),''),NULLIF(BTRIM(c.street2),''),"
-                       "NULLIF(BTRIM(c.street3),''),NULLIF(BTRIM(c.postalcode),''),"
-                       "NULLIF(BTRIM(c.city),''),c.country),"
+                       "NULLIF(BTRIM(c.street1),''),NULLIF(BTRIM(c.street2),''),NULLIF(BTRIM(c.street3),''),"
+                       "BTRIM(NULLIF(BTRIM(c.postalcode),'')||E'\\u2007'||NULLIF(BTRIM(c.city),'')),"
+                       "CASE WHEN c.country='CZ' THEN NULL "
+                            "ELSE (SELECT country_cs FROM enum_country WHERE id=c.country) END),"
                    "(SELECT name FROM object_registry WHERE id=c.id) "
             "FROM public_request pr,"
                  "contact c "
