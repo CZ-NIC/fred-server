@@ -953,7 +953,8 @@ void MojeID2Impl::update_contact_prepare(
                 }
             }
         }
-        if (!to_cancel.empty()) {
+        const bool object_states_changed = !to_cancel.empty();
+        if (object_states_changed) {
             Fred::CancelObjectStateRequestId(new_data.id, to_cancel).exec(ctx);
         }
         Fred::UpdateContactById update_contact_op(new_data.id, mojeid_registrar_handle_);
@@ -966,6 +967,11 @@ void MojeID2Impl::update_contact_prepare(
             update_contact_op.set_discloseaddress(true);
         }
         update_contact_op.exec(ctx);
+
+        if (object_states_changed) {
+            prepare_transaction_storage()->store(_trans_id, new_data.id);
+        }
+
         ctx.commit_transaction();
         return;
     }
