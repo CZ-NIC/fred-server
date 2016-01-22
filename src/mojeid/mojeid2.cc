@@ -1906,14 +1906,17 @@ void MojeID2Impl::cancel_account_prepare(
 
         Fred::StatusList to_cancel;
         to_cancel.insert(Conversion::Enums::into< std::string >(Fred::Object::State::MOJEID_CONTACT));
+        if (states.presents(Fred::Object::State::SERVER_UPDATE_PROHIBITED)) {
+            to_cancel.insert(Conversion::Enums::into< std::string >(Fred::Object::State::SERVER_UPDATE_PROHIBITED));
+        }
+        if (states.presents(Fred::Object::State::SERVER_TRANSFER_PROHIBITED)) {
+            to_cancel.insert(Conversion::Enums::into< std::string >(Fred::Object::State::SERVER_TRANSFER_PROHIBITED));
+        }
+        if (states.presents(Fred::Object::State::SERVER_DELETE_PROHIBITED)) {
+            to_cancel.insert(Conversion::Enums::into< std::string >(Fred::Object::State::SERVER_DELETE_PROHIBITED));
+        }
         if (states.presents(Fred::Object::State::VALIDATED_CONTACT)) {
             to_cancel.insert(Conversion::Enums::into< std::string >(Fred::Object::State::VALIDATED_CONTACT));
-        }
-        if (states.presents(Fred::Object::State::IDENTIFIED_CONTACT)) {
-            to_cancel.insert(Conversion::Enums::into< std::string >(Fred::Object::State::IDENTIFIED_CONTACT));
-        }
-        if (states.presents(Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT)) {
-            to_cancel.insert(Conversion::Enums::into< std::string >(Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT));
         }
         Fred::CancelObjectStateRequestId(_contact_id, to_cancel).exec(ctx);
 
@@ -1933,6 +1936,7 @@ void MojeID2Impl::cancel_account_prepare(
                                          locked_contact,
                                          Fred::MojeID::PublicRequest::ContactValidation::iface(),
                                          _log_request_id);
+        prepare_transaction_storage()->store(_trans_id, _contact_id);
         ctx.commit_transaction();
         return;
     }
