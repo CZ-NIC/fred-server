@@ -1261,8 +1261,11 @@ MojeID2Impl::ContactId MojeID2Impl::process_registration_request(
                 throw MojeIDImplData::IdentificationAlreadyInvalidated();
             }
 
+            Fred::StatusList to_set;
             switch (pub_req_type) {
             case PubReqType::CONTACT_CONDITIONAL_IDENTIFICATION:
+                to_set.insert(Conversion::Enums::into< std::string >(Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT));
+                break;
             case PubReqType::CONDITIONALLY_IDENTIFIED_CONTACT_TRANSFER:
             case PubReqType::IDENTIFIED_CONTACT_TRANSFER:
                 break;
@@ -1294,8 +1297,6 @@ MojeID2Impl::ContactId MojeID2Impl::process_registration_request(
                 throw MojeIDImplData::IdentificationFailed();
             }
 
-            Fred::StatusList to_set;
-            to_set.insert(Conversion::Enums::into< std::string >(Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT));
             to_set.insert(Conversion::Enums::into< std::string >(Fred::Object::State::SERVER_DELETE_PROHIBITED));
             to_set.insert(Conversion::Enums::into< std::string >(Fred::Object::State::SERVER_TRANSFER_PROHIBITED));
             to_set.insert(Conversion::Enums::into< std::string >(Fred::Object::State::SERVER_UPDATE_PROHIBITED));
@@ -1305,9 +1306,11 @@ MojeID2Impl::ContactId MojeID2Impl::process_registration_request(
 
             answer(ctx, locked_request, "successfully processed", _log_request_id);
 
-            Fred::CreatePublicRequestAuth op_create_pub_req(Fred::MojeID::PublicRequest::ContactIdentification::iface());
-            Fred::PublicRequestObjectLockGuardByObjectId locked_contact(ctx, contact_id);
-            const Fred::CreatePublicRequestAuth::Result result = op_create_pub_req.exec(ctx, locked_contact);
+            if (pub_req_type != PubReqType::IDENTIFIED_CONTACT_TRANSFER) {
+                Fred::CreatePublicRequestAuth op_create_pub_req(Fred::MojeID::PublicRequest::ContactIdentification::iface());
+                Fred::PublicRequestObjectLockGuardByObjectId locked_contact(ctx, contact_id);
+                const Fred::CreatePublicRequestAuth::Result result = op_create_pub_req.exec(ctx, locked_contact);
+            }
 
             ctx.commit_transaction();
 
