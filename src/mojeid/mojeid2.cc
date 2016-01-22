@@ -548,39 +548,6 @@ bool identified_data_changed(const Fred::InfoContactData &_c1, const Fred::InfoC
 typedef data_storage< std::string, MojeID2Impl::ContactId >::safe prepare_transaction_storage;
 typedef prepare_transaction_storage::object_type::data_not_found prepare_transaction_data_not_found;
 
-#if 0
-    typedef boost::mpl::set<
-        a_row< civm,  event::transfer_contact_prepare,
-                     action::transfer_contact_prepare_civm,
-                      guard::transfer_contact_prepare,
-               civm >,
-        a_row< civm,  event::process_registration_request,
-                     action::process_contact_conditional_identification,
-                      guard::process_contact_conditional_identification,
-               CivM >,
-        a_row< Civm,  event::transfer_contact_prepare,
-                     action::transfer_contact_prepare_Civm,
-                      guard::transfer_contact_prepare,
-               Civm >,
-        a_row< Civm,  event::process_registration_request,
-                     action::process_conditionally_identified_contact_transfer,
-                      guard::process_conditionally_identified_contact_transfer,
-               CivM >,
-        a_row< CIvm,  event::transfer_contact_prepare,
-                     action::transfer_contact_prepare_CIvm,
-                      guard::transfer_contact_prepare,
-               CIvm >,
-        a_row< CIvm,  event::process_registration_request,
-                     action::process_identified_contact_transfer,
-                      guard::process_identified_contact_transfer,
-               CIvM >,
-        a_row< CivM,  event::send_new_pin3,
-                     action::send_new_pin3,
-                      guard::send_new_pin3,
-               CivM >
-    >                                      transition_table;
-#endif
-
 }//Registry::MojeID::{anonymous}
 
 MojeID2Impl::MojeID2Impl(const std::string &_server_name)
@@ -828,7 +795,7 @@ template < typename UPDATE_CONTACT >
 void set_update_contact_op(const Fred::InfoContactDiff &_data_changes,
                            Fred::UpdateContact< UPDATE_CONTACT > &_update_op)
 {
-    if (_data_changes.name.isset()) {
+    if (_data_changes.name.isset() && !_data_changes.name.get_value().second.isnull()) {
         _update_op.set_name(_data_changes.name.get_value().second.get_value());
     }
     if (_data_changes.organization.isset()) {
@@ -840,7 +807,7 @@ void set_update_contact_op(const Fred::InfoContactDiff &_data_changes,
     if (_data_changes.ssn.isset()) {
         _update_op.set_ssn(_data_changes.ssn.get_value().second.get_value_or_default());
     }
-    if (_data_changes.place.isset()) {
+    if (_data_changes.place.isset() && !_data_changes.place.get_value().second.isnull()) {
         _update_op.set_place(_data_changes.place.get_value().second.get_value());
     }
     if (_data_changes.addresses.isset()) {
@@ -850,7 +817,7 @@ void set_update_contact_op(const Fred::InfoContactDiff &_data_changes,
         update_address< Fred::ContactAddressType::SHIPPING_2 >(_data_changes, _update_op);
         update_address< Fred::ContactAddressType::SHIPPING_3 >(_data_changes, _update_op);
     }
-    if (_data_changes.email.isset()) {
+    if (_data_changes.email.isset() && !_data_changes.email.get_value().second.isnull()) {
         _update_op.set_email(_data_changes.email.get_value().second.get_value());
     }
     if (_data_changes.notifyemail.isset()) {
@@ -1021,6 +988,7 @@ MojeIDImplData::InfoContact MojeID2Impl::update_transfer_contact_prepare(
         const Fred::InfoContactData current_data = Fred::InfoContactByHandle(_username).exec(ctx).info_contact_data;
         new_data.id     = current_data.id;
         new_data.handle = current_data.handle;
+        new_data.name   = current_data.name;
         const Fred::Object::StatesInfo states(Fred::GetObjectStates(new_data.id).exec(ctx));
         //check contact is 'mojeidContact', if true throw ALREADY_MOJEID_CONTACT
         if (states.presents(Fred::Object::State::MOJEID_CONTACT)) {
@@ -1088,10 +1056,10 @@ MojeIDImplData::InfoContact MojeID2Impl::update_transfer_contact_prepare(
                 if (drop_identification) {
                     to_cancel.insert(Conversion::Enums::into< std::string >(Fred::Object::State::IDENTIFIED_CONTACT));
                 }
-                Fred::CreateObjectStateRequestId(current_data.id, to_cancel).exec(ctx);
+                Fred::CancelObjectStateRequestId(current_data.id, to_cancel).exec(ctx);
             }
 
-            const MojeIDImplInternal::CheckMojeIDRegistration check_contact_data(
+            const MojeIDImplInternal::CheckUpdateTransferContactPrepare check_contact_data(
                 Fred::make_args(new_data),
                 Fred::make_args(new_data, ctx),
                 Fred::make_args(states));
@@ -1138,7 +1106,7 @@ MojeIDImplData::InfoContact MojeID2Impl::update_transfer_contact_prepare(
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
         throw;
     }
-    catch (const MojeIDImplData::RegistrationValidationResult &e) {
+    catch (const MojeIDImplData::RegistrationValidationResult&) {
         LOGGER(PACKAGE).info("request failed (RegistrationValidationResult)");
         throw;
     }
@@ -2384,167 +2352,6 @@ MojeID2Impl::MessageId MojeID2Impl::send_mojeid_card(
             true);
     return message_id;
 }
-
-#if 0
-void transitions::guard::process_contact_conditional_identification::operator()(
-    const event::process_registration_request &_event,
-    const event::process_registration_request::StatesPresence &_states)const
-{
-    if (_event.get_pub_req_type() != PubReqType::CONTACT_CONDITIONAL_IDENTIFICATION) {
-        throw std::runtime_error("unexpected public request type " + _event.get_pub_req_info().get_type());
-    }
-    process_registration_request()(_event, _states);
-}
-
-void transitions::guard::process_conditionally_identified_contact_transfer::operator()(
-    const event::process_registration_request &_event,
-    const event::process_registration_request::StatesPresence &_states)const
-{
-    if (_event.get_pub_req_type() != PubReqType::CONDITIONALLY_IDENTIFIED_CONTACT_TRANSFER) {
-        throw std::runtime_error("unexpected public request type " + _event.get_pub_req_info().get_type());
-    }
-    process_registration_request()(_event, _states);
-}
-
-void transitions::guard::process_identified_contact_transfer::operator()(
-    const event::process_registration_request &_event,
-    const event::process_registration_request::StatesPresence &_states)const
-{
-    if (_event.get_pub_req_type() != PubReqType::IDENTIFIED_CONTACT_TRANSFER) {
-        throw std::runtime_error("unexpected public request type " + _event.get_pub_req_info().get_type());
-    }
-    process_registration_request()(_event, _states);
-}
-
-void transitions::action::process_contact_conditional_identification::operator()(
-    const event::process_registration_request &_event,
-    const event::process_registration_request::StatesPresence &_states)const
-{
-    try {
-        const MojeIDImplData::InfoContact contact = Fred::InfoContactById(_event.get_object_id())
-                                                        .exec(_event.get_operation_context()).info_contact_data;
-        {
-            const MojeIDImplInternal::CheckProcessRegistrationRequest check_contact_data(
-                Fred::make_args(contact),
-                Fred::make_args(contact, _event.get_operation_context()));
-
-            if (!check_contact_data.success()) {
-                throw check_contact_data;
-            }
-        }
-
-        if (_states.get< Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT >()) {
-            throw MojeID2Impl::IdentificationAlreadyProcessed("contact already conditionally identified");
-        }
-
-        if (_states.get< Fred::Object::State::MOJEID_CONTACT >()) {
-            throw MojeID2Impl::AlreadyMojeidContact("contact mustn't be in mojeidContact state");
-        }
-
-        if (_states.get< Fred::Object::State::SERVER_BLOCKED >()) {
-            throw MojeID2Impl::ObjectAdminBlocked("contact administratively protected against changes");
-        }
-
-        if (_states.get< Fred::Object::State::SERVER_TRANSFER_PROHIBITED >() ||
-            _states.get< Fred::Object::State::SERVER_UPDATE_PROHIBITED >() ||
-            _states.get< Fred::Object::State::SERVER_DELETE_PROHIBITED >()) {
-            throw MojeID2Impl::ObjectUserBlocked("contact protected against changes");
-        }
-
-        if (contact.sponsoring_registrar_handle != _event.get_registrar_handle()) {
-            Fred::UpdateContactById op_update_contact(contact.id, _event.get_registrar_handle());
-            op_update_contact.set_sponsoring_registrar(_event.get_registrar_handle());
-            if (_event.get_log_request_id() != INVALID_LOG_REQUEST_ID) {
-                op_update_contact.set_logd_request_id(_event.get_log_request_id());
-            }
-            op_update_contact.exec(_event.get_operation_context());
-        }
-    }
-    catch (const MojeID2Impl::CheckProcessRegistrationRequest &e) {
-        MojeIDImplInternal::raise(e);
-    }
-    catch (const MojeID2Impl::IdentificationAlreadyProcessed &e) {
-        invalidate(_event.get_operation_context(), _event.get_locked_request(), e.what(), _event.get_log_request_id());
-        throw;
-    }
-    catch (const MojeID2Impl::AlreadyMojeidContact &e) {
-        invalidate(_event.get_operation_context(), _event.get_locked_request(), e.what(), _event.get_log_request_id());
-        throw;
-    }
-    catch (const MojeID2Impl::ObjectAdminBlocked &e) {
-        invalidate(_event.get_operation_context(), _event.get_locked_request(), e.what(), _event.get_log_request_id());
-        throw;
-    }
-    catch (const MojeID2Impl::ObjectUserBlocked &e) {
-        invalidate(_event.get_operation_context(), _event.get_locked_request(), e.what(), _event.get_log_request_id());
-        throw;
-    }
-    answer(_event.get_operation_context(), _event.get_locked_request(), "process_registration_request call",
-           _event.get_log_request_id());
-}
-
-void transitions::action::process_conditionally_identified_contact_transfer::operator()(
-    const event::process_registration_request &_event,
-    const event::process_registration_request::StatesPresence &_states)const
-{
-    try {
-        const MojeIDImplData::InfoContact contact = Fred::InfoContactById(_event.get_object_id())
-                                                  .exec(_event.get_operation_context()).info_contact_data;
-    }
-    catch (const MojeID2Impl::IdentificationAlreadyProcessed &e) {
-        invalidate(_event.get_operation_context(), _event.get_locked_request(), e.what(), _event.get_log_request_id());
-        throw;
-    }
-    catch (const MojeID2Impl::AlreadyMojeidContact &e) {
-        invalidate(_event.get_operation_context(), _event.get_locked_request(), e.what(), _event.get_log_request_id());
-        throw;
-    }
-    catch (const MojeID2Impl::ObjectAdminBlocked &e) {
-        invalidate(_event.get_operation_context(), _event.get_locked_request(), e.what(), _event.get_log_request_id());
-        throw;
-    }
-    catch (const MojeID2Impl::ObjectUserBlocked &e) {
-        invalidate(_event.get_operation_context(), _event.get_locked_request(), e.what(), _event.get_log_request_id());
-        throw;
-    }
-    answer(_event.get_operation_context(), _event.get_locked_request(), "process_registration_request call",
-           _event.get_log_request_id());
-}
-
-void transitions::action::process_identified_contact_transfer::operator()(
-    const event::process_registration_request &_event,
-    const event::process_registration_request::StatesPresence &_states)const
-{
-    try {
-        const MojeIDImplData::InfoContact contact = Fred::InfoContactById(_event.get_object_id())
-                                                  .exec(_event.get_operation_context()).info_contact_data;
-    }
-    catch (const MojeID2Impl::IdentificationAlreadyProcessed &e) {
-        invalidate(_event.get_operation_context(), _event.get_locked_request(), e.what(), _event.get_log_request_id());
-        throw;
-    }
-    catch (const MojeID2Impl::AlreadyMojeidContact &e) {
-        invalidate(_event.get_operation_context(), _event.get_locked_request(), e.what(), _event.get_log_request_id());
-        throw;
-    }
-    catch (const MojeID2Impl::ObjectAdminBlocked &e) {
-        invalidate(_event.get_operation_context(), _event.get_locked_request(), e.what(), _event.get_log_request_id());
-        throw;
-    }
-    catch (const MojeID2Impl::ObjectUserBlocked &e) {
-        invalidate(_event.get_operation_context(), _event.get_locked_request(), e.what(), _event.get_log_request_id());
-        throw;
-    }
-    answer(_event.get_operation_context(), _event.get_locked_request(), "process_registration_request call",
-           _event.get_log_request_id());
-}
-
-void transitions::action::send_new_pin3::operator()(
-    const event::send_new_pin3 &_event,
-    const event::send_new_pin3::StatesPresence &_states)const
-{
-}
-#endif
 
 }//namespace Registry::MojeID
 }//namespace Registry

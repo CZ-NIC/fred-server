@@ -118,6 +118,20 @@ void set_presence_validity_result(
     }
 }
 
+template < class VALIDITY_ANCESTRAL_CLASS,
+           class AVAILABILITY_ANCESTRAL_CLASS, class CHECK_CLASS >
+void set_validity_availability_result(
+    const CHECK_CLASS &check,
+    MojeIDImplData::ValidationResult &result)
+{
+    if (!check.VALIDITY_ANCESTRAL_CLASS::success()) {
+        result = MojeID::INVALID;
+    }
+    else if (!check.AVAILABILITY_ANCESTRAL_CLASS::success()) {
+        result = MojeID::NOT_AVAILABLE;
+    }
+}
+
 template < class CHECK_CLASS, class EXCEPTION_CLASS >
 void set_contact_name_result(const CHECK_CLASS &result, EXCEPTION_CLASS &e)
 {
@@ -224,13 +238,6 @@ void raise(const CheckCreateContactPrepare &result)
     throw e;
 }
 
-#if 0
-void raise(const CheckProcessRegistrationRequest &result)
-{
-    
-}
-#endif
-
 void raise(const CheckUpdateContactPrepare &result)
 {
     MojeIDImplData::UpdateContactPrepareValidationResult e;
@@ -281,6 +288,32 @@ void raise(const CheckCreateValidationRequest &result)
     else if (result.Fred::MojeID::check_contact_ssn::invalid) {
         e.ssn = MojeID::INVALID;
     }
+
+    throw e;
+}
+
+void raise(const CheckUpdateTransferContactPrepare &result)
+{
+    MojeIDImplData::RegistrationValidationResult e;
+
+    set_validity_result(!result.Fred::MojeID::check_contact_username::invalid, e.username);
+
+    set_validity_result(result.Fred::MojeID::check_contact_birthday::success(), e.birth_date);
+
+    set_validity_availability_result<
+        Fred::check_contact_email_validity,
+        Fred::check_contact_email_availability >(result, e.email);
+
+    set_validity_result(result.Fred::check_contact_notifyemail_validity::success(), e.notify_email);
+
+    set_validity_availability_result<
+        Fred::check_contact_phone_validity,
+        Fred::check_contact_phone_availability >(result, e.phone);
+
+    set_validity_result(result.Fred::check_contact_fax_validity::success(), e.fax);
+
+    set_permanent_address_validation_result(result, e);
+    set_optional_addresses_validation_result(result, e);
 
     throw e;
 }

@@ -99,28 +99,6 @@ typedef Fred::Check< boost::mpl::list< check_mojeid_create_contact,
 void raise(const CheckCreateContactPrepare &result) __attribute__ ((__noreturn__));
 
 
-#if 0
-typedef boost::mpl::list< Fred::check_contact_name,
-                          Fred::check_contact_place_address_mandatory,
-                          check_contact_optional_addresses,
-                          Fred::check_contact_email_presence,
-                          Fred::check_contact_email_validity,
-                          Fred::check_contact_phone_presence,
-                          Fred::check_contact_phone_validity > check_create_contact_prepare;
-
-typedef boost::mpl::list< Fred::MojeID::check_contact_username_availability,
-                          Fred::check_contact_email_availability,
-                          Fred::check_contact_phone_availability > check_create_contact_prepare_ctx;
-
-typedef boost::mpl::list< Fred::check_contact_email_availability,
-                          Fred::check_contact_phone_availability > check_process_registration_request_ctx;
-
-typedef Fred::Check< boost::mpl::list< check_create_contact_prepare,
-                check_process_registration_request_ctx > > CheckProcessRegistrationRequest;
-
-void raise(const CheckProcessRegistrationRequest &result) __attribute__ ((__noreturn__));
-#endif
-
 typedef boost::mpl::list< Fred::check_contact_name,
                           Fred::MojeID::check_contact_birthday_validity,
                           Fred::check_contact_email_presence,
@@ -137,20 +115,6 @@ typedef Fred::Check< check_update_contact_prepare > CheckUpdateContactPrepare;
 void raise(const CheckUpdateContactPrepare &result) __attribute__ ((__noreturn__));
 
 
-#if 0
-typedef boost::mpl::list< Fred::check_contact_name,
-                          Fred::check_contact_place_address,
-                          Fred::check_contact_addresses_mailing,
-                          Fred::check_contact_email_presence,
-                          Fred::check_contact_email_validity,
-                          Fred::check_contact_phone_validity,
-                          Fred::check_contact_notifyemail_validity,
-                          Fred::check_contact_fax_validity > check_update_transfer;
-
-typedef Fred::Check< check_update_transfer > CheckUpdateTransfer;
-#endif
-
-
 typedef boost::mpl::list< Fred::check_contact_name,
                           Fred::check_contact_place_address_mandatory,
                           Fred::check_contact_email_presence,
@@ -163,6 +127,25 @@ typedef boost::mpl::list< Fred::check_contact_name,
 typedef Fred::Check< check_create_validation_request > CheckCreateValidationRequest;
 
 void raise(const CheckCreateValidationRequest &result) __attribute__ ((__noreturn__));
+
+
+typedef boost::mpl::list< Fred::MojeID::check_contact_username,
+                          Fred::MojeID::check_contact_birthday,
+                          Fred::check_contact_email_validity,
+                          Fred::check_contact_notifyemail_validity,
+                          Fred::check_contact_phone_validity,
+                          Fred::check_contact_fax_validity,
+                          Fred::check_contact_place_address,
+                          check_contact_optional_addresses > check_update_transfer_contact_prepare;
+
+typedef boost::mpl::list< Fred::check_contact_email_availability,
+                          Fred::check_contact_phone_availability > check_update_transfer_contact_prepare_ctx;
+
+typedef Fred::Check< boost::mpl::list< check_update_transfer_contact_prepare,
+                                       check_update_transfer_contact_prepare_ctx,
+                                       check_transfer_contact_prepare_presence > > CheckUpdateTransferContactPrepare;
+
+void raise(const CheckUpdateTransferContactPrepare &result) __attribute__ ((__noreturn__));
 
 }//namespace Registry::MojeIDImplInternal
 }//namespace Registry
