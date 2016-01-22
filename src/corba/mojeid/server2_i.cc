@@ -115,9 +115,7 @@ InfoContact* Server_i::transfer_contact_prepare(
             _log_request_id,
             contact,
             ident);
-        ::CORBA::String_var identification;
-        CorbaConversion::wrap_into_holder(ident, identification);
-        _identification = ::CORBA::String_out(identification);
+        _identification = result_as< char* >(ident);
         return result_as< Registry::MojeID::InfoContact >(contact);
     }
     catch (const MojeIDImplData::AlreadyMojeidContact&) {
