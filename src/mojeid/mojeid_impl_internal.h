@@ -53,7 +53,8 @@ struct check_contact_optional_addresses
     }
 };
 
-typedef boost::mpl::list< Fred::check_contact_name,
+typedef boost::mpl::list< Fred::MojeID::check_contact_username,
+                          Fred::check_contact_name,
                           Fred::MojeID::check_contact_birthday,
                           Fred::check_contact_email_presence,
                           Fred::check_contact_email_validity,
@@ -64,8 +65,7 @@ typedef boost::mpl::list< Fred::check_contact_name,
                           Fred::check_contact_place_address,
                           check_contact_optional_addresses > check_mojeid_registration;
 
-typedef boost::mpl::list< Fred::MojeID::check_contact_username_availability,
-                          Fred::check_contact_email_availability,
+typedef boost::mpl::list< Fred::check_contact_email_availability,
                           Fred::check_contact_phone_availability > check_mojeid_registration_ctx;
 
 typedef boost::mpl::list< Fred::MojeID::Check::states_before_transfer_into_mojeid > check_transfer_contact_prepare_presence;
@@ -89,9 +89,12 @@ typedef boost::mpl::list< Fred::MojeID::check_contact_username,
                           Fred::check_contact_place_address,
                           check_contact_optional_addresses > check_mojeid_create_contact;
 
+typedef boost::mpl::list< Fred::MojeID::check_contact_username_availability,
+                          Fred::check_contact_email_availability,
+                          Fred::check_contact_phone_availability > check_mojeid_create_contact_ctx;
 
 typedef Fred::Check< boost::mpl::list< check_mojeid_create_contact,
-                                       check_mojeid_registration_ctx > > CheckCreateContactPrepare;
+                                       check_mojeid_create_contact_ctx > > CheckCreateContactPrepare;
 
 void raise(const CheckCreateContactPrepare &result) __attribute__ ((__noreturn__));
 

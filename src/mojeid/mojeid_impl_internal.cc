@@ -160,7 +160,7 @@ void raise(const CheckMojeIDRegistration &result)
 
     MojeIDImplData::RegistrationValidationResult e;
 
-    set_availability_result(result.Fred::MojeID::check_contact_username_availability::success(), e.username);
+    set_validity_result(!result.Fred::MojeID::check_contact_username::invalid, e.username);
 
     set_contact_name_result(result, e);
 
