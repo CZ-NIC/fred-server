@@ -100,8 +100,7 @@ int main(int argc, char *argv[])
 
                 Fred::UpdateContactById cu(contact_id, registrar_handle);
                 cu.set_logd_request_id(logd_request_id);
-                cu.set_ssntype("BIRTHDAY");
-                cu.set_ssn(ssn_birth_date);
+                cu.set_ssn_value(Fred::SSN_BIRTHDAY(ssn_birth_date));
                 cu.exec(ctx);
             }
         }

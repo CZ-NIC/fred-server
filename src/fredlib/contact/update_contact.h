@@ -149,6 +149,56 @@ namespace Fred
         ToRemove to_remove_;
     };
 
+    class SSN_value
+    {
+    public:
+        const std::string& get_type()const { return type_; }
+        const std::string& get_ssn()const { return ssn_; }
+    protected:
+        SSN_value(const std::string &_type, const std::string &_ssn)
+        :   type_(_type), ssn_(_ssn) { }
+    private:
+        SSN_value() { }
+        std::string type_;
+        std::string ssn_;
+        friend class Nullable< SSN_value >;
+    };
+
+    class SSN_RC:public SSN_value
+    {
+    public:
+        SSN_RC(const std::string &_ssn):SSN_value("RC", _ssn) { }
+    };
+
+    class SSN_OP:public SSN_value
+    {
+    public:
+        SSN_OP(const std::string &_ssn):SSN_value("OP", _ssn) { }
+    };
+
+    class SSN_PASS:public SSN_value
+    {
+    public:
+        SSN_PASS(const std::string &_ssn):SSN_value("PASS", _ssn) { }
+    };
+
+    class SSN_ICO:public SSN_value
+    {
+    public:
+        SSN_ICO(const std::string &_ssn):SSN_value("ICO", _ssn) { }
+    };
+
+    class SSN_MPSV:public SSN_value
+    {
+    public:
+        SSN_MPSV(const std::string &_ssn):SSN_value("MPSV", _ssn) { }
+    };
+
+    class SSN_BIRTHDAY:public SSN_value
+    {
+    public:
+        SSN_BIRTHDAY(const std::string &_ssn):SSN_value("BIRTHDAY", _ssn) { }
+    };
     /**
     * Update of contact, implementation template.
     * Created instance is modifiable by chainable methods i.e. methods returning instance reference.
@@ -162,36 +212,6 @@ namespace Fred
         : public virtual Util::Printable
         , public ExceptionTraits<UpdateContactET>
     {
-        const std::string registrar_;/**< handle of registrar performing the update */
-        Optional<std::string> sponsoring_registrar_;/**< handle of registrar administering the object */
-        Optional<std::string> authinfo_;/**< transfer password */
-        Optional<std::string> name_ ;/**< name of contact person */
-        Optional<std::string> organization_;/**< full trade name of organization */
-        Optional< Fred::Contact::PlaceAddress > place_;/**< place address of contact */
-        Optional<std::string> telephone_;/**<  telephone number */
-        Optional<std::string> fax_;/**< fax number */
-        Optional<std::string> email_;/**< e-mail address */
-        Optional<std::string> notifyemail_;/**< to this e-mail address will be send message in case of any change in domain or nsset affecting contact */
-        Optional<std::string> vat_;/**< taxpayer identification number */
-        Optional<std::string> ssntype_;/**< type of identification from enum_ssntype table */
-        Optional<std::string> ssn_;/**< unambiguous identification number e.g. social security number, identity card number, date of birth */
-        ContactAddressToUpdate addresses_;/**< contact addresses to update or remove */
-        Optional<bool> disclosename_;/**< whether to reveal contact name */
-        Optional<bool> discloseorganization_;/**< whether to reveal organization */
-        Optional<bool> discloseaddress_;/**< whether to reveal address */
-        Optional<bool> disclosetelephone_;/**< whether to reveal phone number */
-        Optional<bool> disclosefax_;/**< whether to reveal fax number */
-        Optional<bool> discloseemail_;/**< whether to reveal email address */
-        Optional<bool> disclosevat_;/**< whether to reveal taxpayer identification number */
-        Optional<bool> discloseident_;/**< whether to reveal unambiguous identification number */
-        Optional<bool> disclosenotifyemail_;/**< whether to reveal notify email */
-        Optional<Nullable<bool> > domain_expiration_letter_flag_;/**< user preference whether to send domain expiration letters for domains linked to this contact, if TRUE then send domain expiration letters, if FALSE don't send domain expiration letters, if is NULL no user preference set */
-        Nullable<unsigned long long> logd_request_id_; /**< id of the new entry in log_entry database table, id is used in other calls to logging within current request */
-    protected:
-        /**
-         * Empty destructor meant to be called by derived class.
-         */
-        ~UpdateContact(){}
     public:
         /**
         * Update contact constructor with mandatory parameter.
@@ -214,8 +234,7 @@ namespace Fred
         * @param email sets e-mail address into @ref email_ attribute
         * @param notifyemail sets e-mail address for notifications into @ref notifyemail_ attribute
         * @param vat sets taxpayer identification number into @ref vat_ attribute
-        * @param ssntype sets type of identification into @ref ssntype_ attribute
-        * @param ssn sets unambiguous identification number into @ref ssn_ attribute
+        * @param ssn_value sets type and identification value into @ref ssn_value_ attribute
         * @param addresses sets contact addresses into @ref addresses_ attribute
         * @param disclosename sets whether to reveal contact name into @ref disclosename_ attribute
         * @param discloseorganization sets whether to reveal organization name into @ref discloseorganization_ attribute
@@ -240,8 +259,7 @@ namespace Fred
             , const Optional<std::string>& email
             , const Optional<std::string>& notifyemail
             , const Optional<std::string>& vat
-            , const Optional<std::string>& ssntype
-            , const Optional<std::string>& ssn
+            , const Optional< Nullable< SSN_value > > &ssn_value
             , const ContactAddressToUpdate &addresses
             , const Optional<bool>& disclosename
             , const Optional<bool>& discloseorganization
@@ -255,7 +273,13 @@ namespace Fred
             , const Optional<Nullable<bool> >& domain_expiration_letter_flag
             , const Optional<unsigned long long>& logd_request_id
             );
+    protected:
+        /**
+         * Empty destructor meant to be called by derived class.
+         */
+        ~UpdateContact(){}
 
+    public:
         /**
         * Sets contact sponsoring registrar.
         * @param sponsoring_registrar sets sponsoring registrar handle into @ref sponsoring_registrar_ attribute
@@ -367,24 +391,13 @@ namespace Fred
         }
 
         /**
-        * Sets contact type of identification.
-        * @param ssntype sets type of identification into @ref ssntype_ attribute
+        * Sets contact unique identification type and value.
+        * @param ssn_value sets type and value of identification into @ref ssn_value_ attribute
         * @return operation instance reference to allow method chaining
         */
-        DERIVED& set_ssntype(const std::string& ssntype)
+        DERIVED& set_ssn_value(const Nullable< SSN_value > &ssn_value)
         {
-            ssntype_ = ssntype;
-            return static_cast<DERIVED&>(*this);
-        }
-
-        /**
-        * Sets contact type of identification.
-        * @param ssn sets unambiguous identification number into @ref ssn_ attribute
-        * @return operation instance reference to allow method chaining
-        */
-        DERIVED& set_ssn(const std::string& ssn)
-        {
-            ssn_ = ssn;
+            ssn_value_ = ssn_value;
             return static_cast<DERIVED&>(*this);
         }
 
@@ -559,6 +572,31 @@ namespace Fred
         */
         std::string to_string() const;
 
+    private:
+        const std::string registrar_;/**< handle of registrar performing the update */
+        Optional<std::string> sponsoring_registrar_;/**< handle of registrar administering the object */
+        Optional<std::string> authinfo_;/**< transfer password */
+        Optional<std::string> name_ ;/**< name of contact person */
+        Optional<std::string> organization_;/**< full trade name of organization */
+        Optional< Fred::Contact::PlaceAddress > place_;/**< place address of contact */
+        Optional<std::string> telephone_;/**<  telephone number */
+        Optional<std::string> fax_;/**< fax number */
+        Optional<std::string> email_;/**< e-mail address */
+        Optional<std::string> notifyemail_;/**< to this e-mail address will be send message in case of any change in domain or nsset affecting contact */
+        Optional<std::string> vat_;/**< taxpayer identification number */
+        Optional< Nullable< SSN_value > > ssn_value_;/**< unambiguous identification number e.g. social security number, identity card number, date of birth */
+        ContactAddressToUpdate addresses_;/**< contact addresses to update or remove */
+        Optional<bool> disclosename_;/**< whether to reveal contact name */
+        Optional<bool> discloseorganization_;/**< whether to reveal organization */
+        Optional<bool> discloseaddress_;/**< whether to reveal address */
+        Optional<bool> disclosetelephone_;/**< whether to reveal phone number */
+        Optional<bool> disclosefax_;/**< whether to reveal fax number */
+        Optional<bool> discloseemail_;/**< whether to reveal email address */
+        Optional<bool> disclosevat_;/**< whether to reveal taxpayer identification number */
+        Optional<bool> discloseident_;/**< whether to reveal unambiguous identification number */
+        Optional<bool> disclosenotifyemail_;/**< whether to reveal notify email */
+        Optional<Nullable<bool> > domain_expiration_letter_flag_;/**< user preference whether to send domain expiration letters for domains linked to this contact, if TRUE then send domain expiration letters, if FALSE don't send domain expiration letters, if is NULL no user preference set */
+        Nullable<unsigned long long> logd_request_id_; /**< id of the new entry in log_entry database table, id is used in other calls to logging within current request */
     };//UpdateContact
 
     /**
@@ -619,8 +657,7 @@ namespace Fred
         * @param email sets e-mail address into UpdateContact base
         * @param notifyemail sets e-mail address for notifications into UpdateContact base
         * @param vat sets taxpayer identification number into UpdateContact base
-        * @param ssntype sets type of identification into UpdateContact base
-        * @param ssn sets unambiguous identification number into UpdateContact base
+        * @param ssn_value sets type and value of identification into UpdateContact base
         * @param addresses sets contact addresses into UpdateContact base
         * @param disclosename sets whether to reveal contact name into UpdateContact base
         * @param discloseorganization sets whether to reveal organization name into UpdateContact base
@@ -646,8 +683,7 @@ namespace Fred
                 , const Optional<std::string>& email
                 , const Optional<std::string>& notifyemail
                 , const Optional<std::string>& vat
-                , const Optional<std::string>& ssntype
-                , const Optional<std::string>& ssn
+                , const Optional< Nullable< SSN_value > > &ssn_value
                 , const ContactAddressToUpdate &addresses
                 , const Optional<bool>& disclosename
                 , const Optional<bool>& discloseorganization
@@ -737,8 +773,7 @@ namespace Fred
         * @param email sets e-mail address into UpdateContact base
         * @param notifyemail sets e-mail address for notifications into UpdateContact base
         * @param vat sets taxpayer identification number into UpdateContact base
-        * @param ssntype sets type of identification into UpdateContact base
-        * @param ssn sets unambiguous identification number into UpdateContact base
+        * @param ssn_value sets type and value of identification into UpdateContact base
         * @param addresses sets contact addresses into UpdateContact base
         * @param disclosename sets whether to reveal contact name into UpdateContact base
         * @param discloseorganization sets whether to reveal organization name into UpdateContact base
@@ -764,8 +799,7 @@ namespace Fred
                 , const Optional<std::string>& email
                 , const Optional<std::string>& notifyemail
                 , const Optional<std::string>& vat
-                , const Optional<std::string>& ssntype
-                , const Optional<std::string>& ssn
+                , const Optional< Nullable< SSN_value > > &ssn_value
                 , const ContactAddressToUpdate &addresses
                 , const Optional<bool>& disclosename
                 , const Optional<bool>& discloseorganization
@@ -799,5 +833,12 @@ namespace Fred
 
 
 }//namespace Fred
+
+inline std::ostream& operator<<(std::ostream &out, const Fred::SSN_value &ssn_value)
+{
+    std::ostringstream o;
+    o << ssn_value.get_type() << ": " << ssn_value.get_ssn();
+    return out << o.str();
+}
 
 #endif//UPDATE_CONTACT_H_

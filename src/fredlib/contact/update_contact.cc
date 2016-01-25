@@ -135,8 +135,7 @@ namespace Fred
         , const Optional<std::string>& email
         , const Optional<std::string>& notifyemail
         , const Optional<std::string>& vat
-        , const Optional<std::string>& ssntype
-        , const Optional<std::string>& ssn
+        , const Optional< Nullable< SSN_value > > &ssn_value
         , const ContactAddressToUpdate &addresses
         , const Optional<bool>& disclosename
         , const Optional<bool>& discloseorganization
@@ -161,8 +160,7 @@ namespace Fred
     ,   email_(email)
     ,   notifyemail_(notifyemail)
     ,   vat_(vat)
-    ,   ssntype_(ssntype)
-    ,   ssn_(ssn)
+    ,   ssn_value_(ssn_value)
     ,   addresses_(addresses)
     ,   disclosename_(disclosename)
     ,   discloseorganization_(discloseorganization)
@@ -214,9 +212,9 @@ namespace Fred
 
         //update contact
         {
-            Database::QueryParams params;//query params
+            Database::query_param_list params;//query params
             std::ostringstream sql;
-            Util::HeadSeparator set_separator("SET ",", ");
+            Util::HeadSeparator set_separator("SET ",",");
             sql << "UPDATE contact ";
 
             if (name_.isset()) {
@@ -284,14 +282,20 @@ namespace Fred
                 sql << set_separator.get() << "vat = $" << params.size() << "::text ";
             }
 
-            if (ssntype_.isset()) {
-                params.push_back(Contact::get_ssntype_id(ssntype_,ctx, &update_contact_exception, &Exception::set_unknown_ssntype));
-                sql << set_separator.get() << "ssntype = $" << params.size() << "::integer ";
-            }
-
-            if (ssn_.isset()) {
-                params.push_back(ssn_.get_value());
-                sql << set_separator.get() << "ssn = $" << params.size() << "::text ";
+            if (ssn_value_.isset()) {
+                const Nullable< SSN_value > nullable_ssn_value = ssn_value_.get_value();
+                if (nullable_ssn_value.isnull()) {
+                    sql << set_separator.get() << "ssntype=NULL::text,"
+                                                  "ssn=NULL::text ";
+                }
+                else {
+                    const SSN_value ssn_value = nullable_ssn_value.get_value();
+                    const ::size_t ssn_type_id(
+                        Contact::get_ssntype_id(ssn_value.get_type(),
+                                                ctx, &update_contact_exception, &Exception::set_unknown_ssntype));
+                    sql << set_separator.get() << "ssntype=$" << params.add(ssn_type_id) << "::integer,"
+                                                  "ssn=$" << params.add(ssn_value.get_ssn()) << "::text ";
+                }
             }
 
             if (disclosename_.isset()) {
@@ -367,35 +371,32 @@ namespace Fred
                 if (update_contact_res.size() != 1) {
                     BOOST_THROW_EXCEPTION(InternalError("failed to update contact"));
                 }
-                else {
-                    const Fred::Contact::PlaceAddress place = place_.get_value_or_default();
-                    Admin::AdminContactVerificationObjectStates::conditionally_cancel_final_states(
-                        ctx,
-                        contact.info_contact_data.id,
-                        name_,
-                        organization_,
-                        place.street1,
-                        place.street2,
-                        place.street3,
-                        place.city,
-                        place.stateorprovince,
-                        place.postalcode,
-                        place.country,
-                        telephone_,
-                        fax_,
-                        email_,
-                        notifyemail_,
-                        vat_,
-                        ssntype_,
-                        ssn_
-                    );
-                }
+                const Fred::Contact::PlaceAddress place = place_.get_value_or_default();
+                Admin::AdminContactVerificationObjectStates::conditionally_cancel_final_states(
+                    ctx,
+                    contact.info_contact_data.id,
+                    name_.isset(),
+                    organization_.isset(),
+                    place_.isset(),
+                    place_.isset() && place.street2.isset(),
+                    place_.isset() && place.street3.isset(),
+                    place_.isset(),
+                    place_.isset() && place.stateorprovince.isset(),
+                    place_.isset(),
+                    place_.isset(),
+                    telephone_.isset(),
+                    fax_.isset(),
+                    email_.isset(),
+                    notifyemail_.isset(),
+                    vat_.isset(),
+                    ssn_value_.isset(),
+                    ssn_value_.isset());
             }
 
             //UPDATE or INSERT contact_address
             if (!addresses_.to_update().empty()) {
                 const ContactAddressToUpdate::ToUpdate &to_update = addresses_.to_update();
-                params = Database::QueryParams();
+                params.clear();
                 params.push_back(contact.info_contact_data.id);
                 Database::Result address_types_res = ctx.get_conn().exec_params(
                     "SELECT type FROM contact_address WHERE contactid=$1::bigint", params);
@@ -413,7 +414,7 @@ namespace Fred
                     if (updatable.find(addr_ptr->first) != updatable.end()) { //UPDATE
                         sql.str("");
                         sql << "UPDATE contact_address SET ";
-                        params = Database::QueryParams();
+                        params.clear();
                         params.push_back(contact.info_contact_data.id);//$1 = contactid
                         params.push_back(type); //$2 = type
                         //company_name optional
@@ -554,7 +555,7 @@ namespace Fred
             //DELETE contact_address
             if (!addresses_.to_remove().empty()) {
                 const ContactAddressToUpdate::ToRemove &to_remove = addresses_.to_remove();
-                params = Database::QueryParams();
+                params.clear();
                 params.push_back(contact.info_contact_data.id);//$1 = contactid
                 sql.str("");
                 sql << "DELETE FROM contact_address WHERE contactid=$1::bigint AND "
@@ -621,8 +622,7 @@ namespace Fred
         (std::make_pair("email",email_.print_quoted()))
         (std::make_pair("notifyemail_",notifyemail_.print_quoted()))
         (std::make_pair("vat",vat_.print_quoted()))
-        (std::make_pair("ssntype",ssntype_.print_quoted()))
-        (std::make_pair("ssn",ssn_.print_quoted()))
+        (std::make_pair("ssn_value",ssn_value_.print_quoted()))
         (std::make_pair("addresses",addresses_.to_string()))
         (std::make_pair("disclosename",disclosename_.print_quoted()))
         (std::make_pair("discloseorganization",discloseorganization_.print_quoted()))
@@ -656,8 +656,7 @@ namespace Fred
             , const Optional<std::string>& email
             , const Optional<std::string>& notifyemail
             , const Optional<std::string>& vat
-            , const Optional<std::string>& ssntype
-            , const Optional<std::string>& ssn
+            , const Optional< Nullable< SSN_value > >& ssn_value
             , const ContactAddressToUpdate &addresses
             , const Optional<bool>& disclosename
             , const Optional<bool>& discloseorganization
@@ -682,8 +681,7 @@ namespace Fred
               , email
               , notifyemail
               , vat
-              , ssntype
-              , ssn
+              , ssn_value
               , addresses
               , disclosename
               , discloseorganization
@@ -817,8 +815,7 @@ namespace Fred
             , const Optional<std::string>& email
             , const Optional<std::string>& notifyemail
             , const Optional<std::string>& vat
-            , const Optional<std::string>& ssntype
-            , const Optional<std::string>& ssn
+            , const Optional< Nullable< SSN_value > >& ssn_value
             , const ContactAddressToUpdate &addresses
             , const Optional<bool>& disclosename
             , const Optional<bool>& discloseorganization
@@ -843,8 +840,7 @@ namespace Fred
             , email
             , notifyemail
             , vat
-            , ssntype
-            , ssn
+            , ssn_value
             , addresses
             , disclosename
             , discloseorganization
