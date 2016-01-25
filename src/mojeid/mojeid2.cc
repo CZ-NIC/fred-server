@@ -110,8 +110,6 @@ std::string get_mojeid_registrar_handle()
     throw std::runtime_error("missing configuration for dedicated registrar");
 }
 
-namespace {
-
 class set_ssn
 {
 public:
@@ -143,8 +141,6 @@ public:
 private:
     Fred::CreateContact *out_ptr;
 };
-
-}//namespace Registry::MojeID::{anonymous}
 
 void set_create_contact_arguments(
     const MojeIDImplData::CreateContact &_contact,
@@ -320,6 +316,12 @@ bool validated_data_changed(const Fred::InfoContactData &_c1, const Fred::InfoCo
     }
 
     return false;
+}
+
+bool notification_enabled()
+{
+    static const bool value = CfgArgs::instance()->get_handler_ptr_by_type< HandleMojeIDArgs >()->notify_commands;
+    return value;
 }
 
 class MessageType
@@ -798,14 +800,14 @@ void set_update_contact_op(const Fred::InfoContactDiff &_data_changes,
     if (_data_changes.name.isset() && !_data_changes.name.get_value().second.isnull()) {
         _update_op.set_name(_data_changes.name.get_value().second.get_value());
     }
-    if (_data_changes.organization.isset()) {
-        _update_op.set_organization(_data_changes.organization.get_value().second.get_value_or_default());
+    if (_data_changes.organization.isset() && !_data_changes.organization.get_value().second.isnull()) {
+        _update_op.set_organization(_data_changes.organization.get_value().second.get_value());
     }
-    if (_data_changes.ssntype.isset()) {
-        _update_op.set_ssntype(_data_changes.ssntype.get_value().second.get_value_or_default());
+    if (_data_changes.ssntype.isset() && !_data_changes.ssntype.get_value().second.isnull()) {
+        _update_op.set_ssntype(_data_changes.ssntype.get_value().second.get_value());
     }
-    if (_data_changes.ssn.isset()) {
-        _update_op.set_ssn(_data_changes.ssn.get_value().second.get_value_or_default());
+    if (_data_changes.ssn.isset() && !_data_changes.ssn.get_value().second.isnull()) {
+        _update_op.set_ssn(_data_changes.ssn.get_value().second.get_value());
     }
     if (_data_changes.place.isset() && !_data_changes.place.get_value().second.isnull()) {
         _update_op.set_place(_data_changes.place.get_value().second.get_value());
@@ -820,14 +822,14 @@ void set_update_contact_op(const Fred::InfoContactDiff &_data_changes,
     if (_data_changes.email.isset() && !_data_changes.email.get_value().second.isnull()) {
         _update_op.set_email(_data_changes.email.get_value().second.get_value());
     }
-    if (_data_changes.notifyemail.isset()) {
-        _update_op.set_notifyemail(_data_changes.notifyemail.get_value().second.get_value_or_default());
+    if (_data_changes.notifyemail.isset() && !_data_changes.notifyemail.get_value().second.isnull()) {
+        _update_op.set_notifyemail(_data_changes.notifyemail.get_value().second.get_value());
     }
-    if (_data_changes.telephone.isset()) {
-        _update_op.set_telephone(_data_changes.telephone.get_value().second.get_value_or_default());
+    if (_data_changes.telephone.isset() && !_data_changes.telephone.get_value().second.isnull()) {
+        _update_op.set_telephone(_data_changes.telephone.get_value().second.get_value());
     }
-    if (_data_changes.fax.isset()) {
-        _update_op.set_fax(_data_changes.fax.get_value().second.get_value_or_default());
+    if (_data_changes.fax.isset() && !_data_changes.fax.get_value().second.isnull()) {
+        _update_op.set_fax(_data_changes.fax.get_value().second.get_value());
     }
 }
 
