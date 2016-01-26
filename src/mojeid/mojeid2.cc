@@ -804,7 +804,7 @@ void set_update_contact_op(const Fred::InfoContactDiff &_data_changes,
         _update_op.set_organization(_data_changes.organization.get_value().second.get_value());
     }
     if (_data_changes.ssn_value.isset()) {
-        _update_op.set_ssn_value(_data_changes.ssn_value.get_value().second);
+        _update_op.set_personal_id(_data_changes.ssn_value.get_value().second);
     }
     if (_data_changes.place.isset() && !_data_changes.place.get_value().second.isnull()) {
         _update_op.set_place(_data_changes.place.get_value().second.get_value());

@@ -153,8 +153,8 @@ namespace Fred
     class PersonalIdUnion
     {
     public:
-        SSN_value(const InfoContactDiff::SSN_value &_src)
-        :   type_(_src.type), ssn_(_src.ssn) { }
+        PersonalIdUnion(const InfoContactDiff::SSN_value &_src)
+        :   type_(_src.type), id_(_src.ssn) { }
         const std::string& get_type()const { return type_; }
         const std::string& get()const { return id_; }
     protected:
