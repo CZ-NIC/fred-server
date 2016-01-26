@@ -135,7 +135,7 @@ namespace Fred
         , const Optional< Nullable< std::string > > &email
         , const Optional< Nullable< std::string > > &notifyemail
         , const Optional< Nullable< std::string > > &vat
-        , const Optional< Nullable< SSN_value > > &ssn_value
+        , const Optional< Nullable< PersonalIdUnion > > &personal_id
         , const ContactAddressToUpdate &addresses
         , const Optional<bool>& disclosename
         , const Optional<bool>& discloseorganization
@@ -159,7 +159,7 @@ namespace Fred
     ,   email_(email)
     ,   notifyemail_(notifyemail)
     ,   vat_(vat)
-    ,   ssn_value_(ssn_value)
+    ,   personal_id_(personal_id)
     ,   addresses_(addresses)
     ,   disclosename_(disclosename)
     ,   discloseorganization_(discloseorganization)
@@ -310,19 +310,19 @@ namespace Fred
             sql << update_value(notifyemail_, "notifyemail", set_separator, params);
             sql << update_value(vat_,         "vat",         set_separator, params);
 
-            if (ssn_value_.isset()) {
-                const Nullable< SSN_value > nullable_ssn_value = ssn_value_.get_value();
-                if (nullable_ssn_value.isnull()) {
+            if (personal_id_.isset()) {
+                const Nullable< PersonalIdUnion > nullable_personal_id = personal_id_.get_value();
+                if (nullable_personal_id.isnull()) {
                     sql << set_separator.get() << "ssntype=NULL::text,"
                                                   "ssn=NULL::text";
                 }
                 else {
-                    const SSN_value ssn_value = nullable_ssn_value.get_value();
+                    const PersonalIdUnion personal_id = nullable_personal_id.get_value();
                     const ::size_t ssn_type_id(
-                        Contact::get_ssntype_id(ssn_value.get_type(),
+                        Contact::get_ssntype_id(personal_id.get_type(),
                                                 ctx, &update_contact_exception, &Exception::set_unknown_ssntype));
                     sql << set_separator.get() << "ssntype=$" << params.add(ssn_type_id) << "::integer,"
-                                                  "ssn=$" << params.add(ssn_value.get_ssn()) << "::text";
+                                                  "ssn=$" << params.add(personal_id.get()) << "::text";
                 }
             }
 
@@ -379,8 +379,8 @@ namespace Fred
                     email_.isset(),
                     notifyemail_.isset(),
                     vat_.isset(),
-                    ssn_value_.isset(),
-                    ssn_value_.isset());
+                    personal_id_.isset(),
+                    personal_id_.isset());
             }
 
             //UPDATE or INSERT contact_address
@@ -612,7 +612,7 @@ namespace Fred
         (std::make_pair("email",email_.print_quoted()))
         (std::make_pair("notifyemail_",notifyemail_.print_quoted()))
         (std::make_pair("vat",vat_.print_quoted()))
-        (std::make_pair("ssn_value",ssn_value_.print_quoted()))
+        (std::make_pair("personal_id",personal_id_.print_quoted()))
         (std::make_pair("addresses",addresses_.to_string()))
         (std::make_pair("disclosename",disclosename_.print_quoted()))
         (std::make_pair("discloseorganization",discloseorganization_.print_quoted()))
@@ -646,7 +646,7 @@ namespace Fred
             , const Optional< Nullable< std::string > > &email
             , const Optional< Nullable< std::string > > &notifyemail
             , const Optional< Nullable< std::string > > &vat
-            , const Optional< Nullable< SSN_value > > &ssn_value
+            , const Optional< Nullable< PersonalIdUnion > > &personal_id
             , const ContactAddressToUpdate &addresses
             , const Optional<bool>& disclosename
             , const Optional<bool>& discloseorganization
@@ -670,7 +670,7 @@ namespace Fred
               , email
               , notifyemail
               , vat
-              , ssn_value
+              , personal_id
               , addresses
               , disclosename
               , discloseorganization
@@ -804,7 +804,7 @@ namespace Fred
             , const Optional< Nullable< std::string > > &email
             , const Optional< Nullable< std::string > > &notifyemail
             , const Optional< Nullable< std::string > > &vat
-            , const Optional< Nullable< SSN_value > > &ssn_value
+            , const Optional< Nullable< PersonalIdUnion > > &personal_id
             , const ContactAddressToUpdate &addresses
             , const Optional<bool>& disclosename
             , const Optional<bool>& discloseorganization
@@ -828,7 +828,7 @@ namespace Fred
             , email
             , notifyemail
             , vat
-            , ssn_value
+            , personal_id
             , addresses
             , disclosename
             , discloseorganization

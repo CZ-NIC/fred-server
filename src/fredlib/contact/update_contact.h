@@ -150,57 +150,57 @@ namespace Fred
         ToRemove to_remove_;
     };
 
-    class SSN_value
+    class PersonalIdUnion
     {
     public:
         SSN_value(const InfoContactDiff::SSN_value &_src)
         :   type_(_src.type), ssn_(_src.ssn) { }
         const std::string& get_type()const { return type_; }
-        const std::string& get_ssn()const { return ssn_; }
+        const std::string& get()const { return id_; }
     protected:
-        SSN_value(const std::string &_type, const std::string &_ssn)
-        :   type_(_type), ssn_(_ssn) { }
+        PersonalIdUnion(const std::string &_type, const std::string &_id)
+        :   type_(_type), id_(_id) { }
     private:
-        SSN_value() { }
+        PersonalIdUnion() { }
         std::string type_;
-        std::string ssn_;
-        friend class Nullable< SSN_value >;
+        std::string id_;
+        friend class Nullable< PersonalIdUnion >;
     };
 
-    class SSN_RC:public SSN_value
+    class PersonalId_RC:public PersonalIdUnion
     {
     public:
-        SSN_RC(const std::string &_ssn):SSN_value("RC", _ssn) { }
+        PersonalId_RC(const std::string &_rc):PersonalIdUnion("RC", _rc) { }
     };
 
-    class SSN_OP:public SSN_value
+    class PersonalId_OP:public PersonalIdUnion
     {
     public:
-        SSN_OP(const std::string &_ssn):SSN_value("OP", _ssn) { }
+        PersonalId_OP(const std::string &_op):PersonalIdUnion("OP", _op) { }
     };
 
-    class SSN_PASS:public SSN_value
+    class PersonalId_PASS:public PersonalIdUnion
     {
     public:
-        SSN_PASS(const std::string &_ssn):SSN_value("PASS", _ssn) { }
+        PersonalId_PASS(const std::string &_pass):PersonalIdUnion("PASS", _pass) { }
     };
 
-    class SSN_ICO:public SSN_value
+    class PersonalId_ICO:public PersonalIdUnion
     {
     public:
-        SSN_ICO(const std::string &_ssn):SSN_value("ICO", _ssn) { }
+        PersonalId_ICO(const std::string &_ico):PersonalIdUnion("ICO", _ico) { }
     };
 
-    class SSN_MPSV:public SSN_value
+    class PersonalId_MPSV:public PersonalIdUnion
     {
     public:
-        SSN_MPSV(const std::string &_ssn):SSN_value("MPSV", _ssn) { }
+        PersonalId_MPSV(const std::string &_mpsv):PersonalIdUnion("MPSV", _mpsv) { }
     };
 
-    class SSN_BIRTHDAY:public SSN_value
+    class PersonalId_BIRTHDAY:public PersonalIdUnion
     {
     public:
-        SSN_BIRTHDAY(const std::string &_ssn):SSN_value("BIRTHDAY", _ssn) { }
+        PersonalId_BIRTHDAY(const std::string &_birthday):PersonalIdUnion("BIRTHDAY", _birthday) { }
     };
     /**
     * Update of contact, implementation template.
@@ -237,7 +237,7 @@ namespace Fred
         * @param email sets e-mail address into @ref email_ attribute
         * @param notifyemail sets e-mail address for notifications into @ref notifyemail_ attribute
         * @param vat sets taxpayer identification number into @ref vat_ attribute
-        * @param ssn_value sets type and identification value into @ref ssn_value_ attribute
+        * @param personal_id sets type and identification value into @ref personal_id_ attribute
         * @param addresses sets contact addresses into @ref addresses_ attribute
         * @param disclosename sets whether to reveal contact name into @ref disclosename_ attribute
         * @param discloseorganization sets whether to reveal organization name into @ref discloseorganization_ attribute
@@ -262,7 +262,7 @@ namespace Fred
             , const Optional< Nullable< std::string > > &email
             , const Optional< Nullable< std::string > > &notifyemail
             , const Optional< Nullable< std::string > > &vat
-            , const Optional< Nullable< SSN_value > > &ssn_value
+            , const Optional< Nullable< PersonalIdUnion > > &personal_id
             , const ContactAddressToUpdate &addresses
             , const Optional<bool>& disclosename
             , const Optional<bool>& discloseorganization
@@ -394,12 +394,12 @@ namespace Fred
 
         /**
         * Sets contact unique identification type and value.
-        * @param ssn_value sets type and value of identification into @ref ssn_value_ attribute
+        * @param personal_id sets type and value of identification into @ref personal_id_ attribute
         * @return operation instance reference to allow method chaining
         */
-        DERIVED& set_ssn_value(const Nullable< SSN_value > &ssn_value)
+        DERIVED& set_personal_id(const Nullable< PersonalIdUnion > &personal_id)
         {
-            ssn_value_ = ssn_value;
+            personal_id_ = personal_id;
             return static_cast<DERIVED&>(*this);
         }
 
@@ -585,7 +585,7 @@ namespace Fred
         Optional< Nullable< std::string > > email_;/**< e-mail address */
         Optional< Nullable< std::string > > notifyemail_;/**< to this e-mail address will be send message in case of any change in domain or nsset affecting contact */
         Optional< Nullable< std::string > > vat_;/**< taxpayer identification number */
-        Optional< Nullable< SSN_value > > ssn_value_;/**< unambiguous identification number e.g. social security number, identity card number, date of birth */
+        Optional< Nullable< PersonalIdUnion > > personal_id_;/**< unambiguous identification number e.g. social security number, identity card number, date of birth */
         ContactAddressToUpdate addresses_;/**< contact addresses to update or remove */
         Optional<bool> disclosename_;/**< whether to reveal contact name */
         Optional<bool> discloseorganization_;/**< whether to reveal organization */
@@ -658,7 +658,7 @@ namespace Fred
         * @param email sets e-mail address into UpdateContact base
         * @param notifyemail sets e-mail address for notifications into UpdateContact base
         * @param vat sets taxpayer identification number into UpdateContact base
-        * @param ssn_value sets type and value of identification into UpdateContact base
+        * @param personal_id sets type and value of identification into UpdateContact base
         * @param addresses sets contact addresses into UpdateContact base
         * @param disclosename sets whether to reveal contact name into UpdateContact base
         * @param discloseorganization sets whether to reveal organization name into UpdateContact base
@@ -684,7 +684,7 @@ namespace Fred
                 , const Optional< Nullable< std::string > > &email
                 , const Optional< Nullable< std::string > > &notifyemail
                 , const Optional< Nullable< std::string > > &vat
-                , const Optional< Nullable< SSN_value > > &ssn_value
+                , const Optional< Nullable< PersonalIdUnion > > &personal_id
                 , const ContactAddressToUpdate &addresses
                 , const Optional<bool>& disclosename
                 , const Optional<bool>& discloseorganization
@@ -773,7 +773,7 @@ namespace Fred
         * @param email sets e-mail address into UpdateContact base
         * @param notifyemail sets e-mail address for notifications into UpdateContact base
         * @param vat sets taxpayer identification number into UpdateContact base
-        * @param ssn_value sets type and value of identification into UpdateContact base
+        * @param personal_id sets type and value of identification into UpdateContact base
         * @param addresses sets contact addresses into UpdateContact base
         * @param disclosename sets whether to reveal contact name into UpdateContact base
         * @param discloseorganization sets whether to reveal organization name into UpdateContact base
@@ -799,7 +799,7 @@ namespace Fred
                 , const Optional< Nullable< std::string > > &email
                 , const Optional< Nullable< std::string > > &notifyemail
                 , const Optional< Nullable< std::string > > &vat
-                , const Optional< Nullable< SSN_value > > &ssn_value
+                , const Optional< Nullable< PersonalIdUnion > > &personal_id
                 , const ContactAddressToUpdate &addresses
                 , const Optional<bool>& disclosename
                 , const Optional<bool>& discloseorganization
@@ -833,10 +833,10 @@ namespace Fred
 
 }//namespace Fred
 
-inline std::ostream& operator<<(std::ostream &out, const Fred::SSN_value &ssn_value)
+inline std::ostream& operator<<(std::ostream &out, const Fred::PersonalIdUnion &personal_id)
 {
     std::ostringstream o;
-    o << ssn_value.get_type() << ": " << ssn_value.get_ssn();
+    o << personal_id.get_type() << ": " << personal_id.get();
     return out << o.str();
 }
 

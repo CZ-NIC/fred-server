@@ -150,7 +150,7 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle)
             , Optional< Nullable< std::string > >()//email
             , Optional< Nullable< std::string > >()//notifyemail
             , Optional< Nullable< std::string > >()//vat
-            , Optional< Nullable< Fred::SSN_value > >()//ssn_value
+            , Optional< Nullable< Fred::PersonalIdUnion > >()//personal_id
             , Fred::ContactAddressToUpdate()//addresses
             , Optional<bool>()//disclosename
             , Optional<bool>()//discloseorganization
@@ -222,7 +222,7 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle)
                 , Optional< Nullable< std::string > >("test@nic.cz")//email
                 , Optional< Nullable< std::string > >("notif-test@nic.cz")//notifyemail
                 , Optional< Nullable< std::string > >("7805962556")//vat is TID
-                , Optional< Nullable< Fred::SSN_value > >(Fred::SSN_ICO("7805962556"))//ssn
+                , Optional< Nullable< Fred::PersonalIdUnion > >(Fred::PersonalId_ICO("7805962556"))//ssn
                 , addresses_to_update//addresses MAILING change, BILLING don't touch, SHIPPING remove, SHIPPING_2 remove
                 , Optional<bool>(true)//disclosename
                 , Optional<bool>(true)//discloseorganization
@@ -322,7 +322,7 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle)
     .set_email("test@nic.cz")
     .set_notifyemail("notif-test@nic.cz")
     .set_vat("7805962556")
-    .set_ssn_value(Fred::SSN_ICO("7805962556"))
+    .set_personal_id(Fred::PersonalId_ICO("7805962556"))
     .set_address< Fred::ContactAddressType::MAILING >(new_address)
     .set_address< Fred::ContactAddressType::SHIPPING >(new_address)
     .set_address< Fred::ContactAddressType::SHIPPING_2 >(new_address)
@@ -528,9 +528,9 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle_wrong_sponsoring_registrar)
 
 
 namespace {
-struct SSN_BAD:Fred::SSN_value
+struct PersonalId_BAD:Fred::PersonalIdUnion
 {
-    SSN_BAD():Fred::SSN_value("bad-ssntype", "bad-ssnvalue") { }
+    PersonalId_BAD():Fred::PersonalIdUnion("bad-ssntype", "bad-ssnvalue") { }
 };
 }
 /**
@@ -548,7 +548,7 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle_wrong_ssntype)
     {
         Fred::OperationContextCreator ctx;//new connection to rollback on error
         Fred::UpdateContactByHandle(test_contact_handle, registrar_handle)
-        .set_ssn_value(SSN_BAD())
+        .set_personal_id(PersonalId_BAD())
         .exec(ctx);
         ctx.commit_transaction();
         BOOST_ERROR("no exception thrown");
