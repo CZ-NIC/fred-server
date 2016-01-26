@@ -141,15 +141,15 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle)
     Fred::UpdateContactByHandle(test_contact_handle//handle
             , registrar_handle//registrar
             , Optional<std::string>()//sponsoring registrar
-            , Optional<std::string>()//authinfo
-            , Optional<std::string>()//name
-            , Optional<std::string>()//organization
-            , Optional< Fred::Contact::PlaceAddress >()//place
-            , Optional<std::string>()//telephone
-            , Optional<std::string>()//fax
-            , Optional<std::string>()//email
-            , Optional<std::string>()//notifyemail
-            , Optional<std::string>()//vat
+            , Optional< std::string >()//authinfo
+            , Optional< Nullable< std::string > >()//name
+            , Optional< Nullable< std::string > >()//organization
+            , Optional< Nullable< Fred::Contact::PlaceAddress > >()//place
+            , Optional< Nullable< std::string > >()//telephone
+            , Optional< Nullable< std::string > >()//fax
+            , Optional< Nullable< std::string > >()//email
+            , Optional< Nullable< std::string > >()//notifyemail
+            , Optional< Nullable< std::string > >()//vat
             , Optional< Nullable< Fred::SSN_value > >()//ssn_value
             , Fred::ContactAddressToUpdate()//addresses
             , Optional<bool>()//disclosename
@@ -161,7 +161,7 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle)
             , Optional<bool>()//disclosevat
             , Optional<bool>()//discloseident
             , Optional<bool>()//disclosenotifyemail
-            , Optional<Nullable<bool> >()//domain_expiration_letter_flag
+            , Optional< Nullable< bool > >()//domain_expiration_letter_flag
             , Optional<unsigned long long>() //logd_request_id
             ).exec(ctx);
 
@@ -214,14 +214,14 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle)
             , registrar_handle//registrar
                 , Optional<std::string>(registrar_handle)//sponsoring registrar
                 , Optional<std::string>("passwd")//authinfo
-                , Optional<std::string>("Test Name")//name
-                , Optional<std::string>("Test o.r.g.")//organization
+                , Optional< Nullable< std::string > >("Test Name")//name
+                , Optional< Nullable< std::string > >("Test o.r.g.")//organization
                 , place//place
-                , Optional<std::string>("+420.123456789")//telephone
-                , Optional<std::string>()//fax
-                , Optional<std::string>("test@nic.cz")//email
-                , Optional<std::string>("notif-test@nic.cz")//notifyemail
-                , Optional<std::string>("7805962556")//vat is TID
+                , Optional< Nullable< std::string > >("+420.123456789")//telephone
+                , Optional< Nullable< std::string > >()//fax
+                , Optional< Nullable< std::string > >("test@nic.cz")//email
+                , Optional< Nullable< std::string > >("notif-test@nic.cz")//notifyemail
+                , Optional< Nullable< std::string > >("7805962556")//vat is TID
                 , Optional< Nullable< Fred::SSN_value > >(Fred::SSN_ICO("7805962556"))//ssn
                 , addresses_to_update//addresses MAILING change, BILLING don't touch, SHIPPING remove, SHIPPING_2 remove
                 , Optional<bool>(true)//disclosename
