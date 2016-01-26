@@ -9,6 +9,7 @@
 #include "src/fredlib/registrar/check_registrar.h"
 #include "src/fredlib/registrar/get_registrar_handles.h"
 #include "src/fredlib/domain/check_domain.h"
+#include "src/fredlib/zone/zone.h"
 
 #include "src/whois/nameserver_exists.h"
 #include "src/whois/is_domain_delete_pending.h"
@@ -601,14 +602,20 @@ namespace Whois {
     {
         try
         {
+            const std::string fqdn = Fred::Zone::rem_trailing_dot(
+                Corba::unwrap_string_from_const_char_ptr(handle)
+            );
+
             Fred::OperationContext ctx;
             NSSetSeq_var nss_seq = new NSSetSeq;
-            std::vector<Fred::InfoNssetOutput> nss_info = Fred::InfoNssetByDNSFqdn(
-                Corba::unwrap_string_from_const_char_ptr(handle)).set_limit(limit + 1).exec(ctx, output_timezone);
+
+            std::vector<Fred::InfoNssetOutput> nss_info = Fred::InfoNssetByDNSFqdn(fqdn)
+                .set_limit(limit + 1)
+                .exec(ctx, output_timezone);
 
             if(nss_info.empty())
             {
-                if(Fred::CheckDomain(Corba::unwrap_string_from_const_char_ptr(handle)).is_invalid_syntax())
+                if(Fred::CheckDomain(fqdn).is_invalid_syntax())
                 {
                     throw INVALID_HANDLE();
                 }
@@ -686,11 +693,13 @@ namespace Whois {
     {
         try
         {
-            std::string ns_fqdn = Corba::unwrap_string_from_const_char_ptr(fqdn);
+            const std::string ns_fqdn = Fred::Zone::rem_trailing_dot(
+                Corba::unwrap_string_from_const_char_ptr(fqdn)
+            );
 
             Fred::OperationContext ctx;
 
-            if(::Whois::nameserver_exists(ns_fqdn,ctx))
+            if(::Whois::nameserver_exists(ns_fqdn, ctx))
             {
                 NameServer temp;
                 temp.fqdn = Corba::wrap_string_to_corba_string(ns_fqdn);
@@ -803,12 +812,13 @@ namespace Whois {
     {
         try
         {
-            std::string fqdn;
+            const std::string fqdn = Fred::Zone::rem_trailing_dot(
+                Corba::unwrap_string_from_const_char_ptr(handle)
+            );
+
             Fred::OperationContext ctx;
             try
             {
-                fqdn = Corba::unwrap_string_from_const_char_ptr(handle);
-
                 //check general name rules
                 if(Fred::CheckDomain(fqdn).is_invalid_syntax())
                 {
@@ -826,16 +836,12 @@ namespace Whois {
                 }
 
                 Domain tmp_domain(wrap_domain(
-                            Fred::InfoDomainByHandle(
-                                Corba::unwrap_string_from_const_char_ptr(handle)
-                            ).exec(ctx, output_timezone)//this will throw if object not found
-                            .info_domain_data
-                        ));
+                    Fred::InfoDomainByHandle(fqdn).exec(ctx, output_timezone).info_domain_data
+                ));
 
-                if(::Whois::is_domain_delete_pending(Corba::unwrap_string_from_const_char_ptr(handle), ctx, "Europe/Prague"))
+                if(::Whois::is_domain_delete_pending(fqdn, ctx, "Europe/Prague"))
                 {
-                    return new Domain(generate_obfuscate_domain_delete_candidate(
-                            Corba::unwrap_string_from_const_char_ptr(handle)));
+                    return new Domain(generate_obfuscate_domain_delete_candidate(fqdn));
                 }
 
                 return new Domain(tmp_domain);
