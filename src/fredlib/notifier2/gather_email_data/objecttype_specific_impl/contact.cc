@@ -150,42 +150,42 @@ static std::map<std::string, std::string> gather_contact_update_data_change(
     }
 
     /* Yes we are using database "enum" values as e-mail template parameters. It's flexible. And it works! A vubec! */
-    struct translate_ssntypes {
-        static std::string exec(const Nullable<std::string>& _input) {
-            if( _input.isnull() ) { return "EMPTY"; }
-            if( _input.get_value().empty() ) { return "EMPTY"; }
+    struct translate_ssntypes
+    {
+        static std::string exec(const Nullable< Fred::InfoContactDiff::SSN_value > &_nullable_ssn_value)
+        {
+            if (_nullable_ssn_value.isnull() ||
+                _nullable_ssn_value.get_value().type.empty()) { return "EMPTY"; }
 
-            if( _input.get_value() == "PASS") {
-                return "PASSPORT";
-            }
+            const std::string type = _nullable_ssn_value.get_value().type;
 
-            if(
-                _input.get_value() != "RC"      &&
-                _input.get_value() != "OP"      &&
-                _input.get_value() != "ICO"     &&
-                _input.get_value() != "MPSV"    &&
-                _input.get_value() != "BIRTHDAY"
-            ) {
-                return "UNKNOWN";
-            }
+            if (type == "PASS") { return "PASSPORT"; }
 
-            return _input.get_value();
+            if (type == "RC"   ||
+                type == "OP"   ||
+                type == "ICO"  ||
+                type == "MPSV" ||
+                type == "BIRTHDAY") { return type; }
+
+            return "UNKNOWN";
         }
     };
 
-    if(diff.ssntype.isset()) {
-        add_old_new_changes_pair_if_different(
+    if (diff.ssn_value.isset()) {
+        const Nullable< Fred::InfoContactDiff::SSN_value > nullable_ssn_value_a = diff.ssn_value.get_value().first;
+        const Nullable< Fred::InfoContactDiff::SSN_value > nullable_ssn_value_b = diff.ssn_value.get_value().second;
+        add_old_new_suffix_pair_if_different(
             result, "contact.ident_type",
-            translate_ssntypes::exec( diff.ssntype.get_value().first ),
-            translate_ssntypes::exec( diff.ssntype.get_value().second )
+            translate_ssntypes::exec(nullable_ssn_value_a),
+            translate_ssntypes::exec(nullable_ssn_value_b)
         );
     }
 
     if(diff.ssn.isset()) {
         add_old_new_changes_pair_if_different(
             result, "contact.ident",
-            diff.ssn.get_value().first.get_value_or(""),
-            diff.ssn.get_value().second.get_value_or("")
+            nullable_ssn_value_a.get_value_or_default().ssn,
+            nullable_ssn_value_b.get_value_or_default().ssn
         );
     }
 

@@ -803,11 +803,8 @@ void set_update_contact_op(const Fred::InfoContactDiff &_data_changes,
     if (_data_changes.organization.isset() && !_data_changes.organization.get_value().second.isnull()) {
         _update_op.set_organization(_data_changes.organization.get_value().second.get_value());
     }
-    if (_data_changes.ssntype.isset() && !_data_changes.ssntype.get_value().second.isnull()) {
-        _update_op.set_ssntype(_data_changes.ssntype.get_value().second.get_value());
-    }
-    if (_data_changes.ssn.isset() && !_data_changes.ssn.get_value().second.isnull()) {
-        _update_op.set_ssn(_data_changes.ssn.get_value().second.get_value());
+    if (_data_changes.ssn_value.isset()) {
+        _update_op.set_ssn_value(_data_changes.ssn_value.get_value().second);
     }
     if (_data_changes.place.isset() && !_data_changes.place.get_value().second.isnull()) {
         _update_op.set_place(_data_changes.place.get_value().second.get_value());
@@ -854,8 +851,7 @@ void MojeID2Impl::update_contact_prepare(
         const Fred::InfoContactDiff data_changes = Fred::diff_contact_data(current_data, new_data);
         if (!(data_changes.name.isset()         ||
               data_changes.organization.isset() ||
-              data_changes.ssntype.isset()      ||
-              data_changes.ssn.isset()          ||
+              data_changes.ssn_value.isset()    ||
               data_changes.place.isset()        ||
               data_changes.addresses.isset()    ||
               data_changes.email.isset()        ||
@@ -906,8 +902,7 @@ void MojeID2Impl::update_contact_prepare(
         if (manual_verification_done) {
             const bool cancel_manual_verification = data_changes.name.isset()         ||
                                                     data_changes.organization.isset() ||
-                                                    data_changes.ssntype.isset()      ||
-                                                    data_changes.ssn.isset()          ||
+                                                    data_changes.ssn_value.isset()    ||
                                                     data_changes.place.isset()        ||
                                                     data_changes.email.isset()        ||
                                                     data_changes.notifyemail.isset()  ||

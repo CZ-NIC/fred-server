@@ -31,6 +31,7 @@
 #include "util/printable.h"
 
 #include "src/fredlib/contact/info_contact.h"
+#include "src/fredlib/contact/info_contact_diff.h"
 #include "src/fredlib/contact/contact_enum.h"
 #include "src/fredlib/object/object.h"
 #include "src/fredlib/contact/place_address.h"
@@ -152,6 +153,8 @@ namespace Fred
     class SSN_value
     {
     public:
+        SSN_value(const InfoContactDiff::SSN_value &_src)
+        :   type_(_src.type), ssn_(_src.ssn) { }
         const std::string& get_type()const { return type_; }
         const std::string& get_ssn()const { return ssn_; }
     protected:
