@@ -46,6 +46,7 @@
 #include "src/fredlib/object_state/create_object_state_request_id.h"
 #include "src/fredlib/object_state/cancel_object_state_request_id.h"
 #include "src/fredlib/messages/messages_impl.h"
+#include "src/fredlib/notifier2/enqueue_notification.h"
 #include "util/random.h"
 #include "util/xmlgen.h"
 #include "util/log/context.h"
@@ -108,6 +109,22 @@ std::string get_mojeid_registrar_handle()
     catch (...) {
     }
     throw std::runtime_error("missing configuration for dedicated registrar");
+}
+
+::size_t get_mojeid_registrar_id(const std::string &registrar_handle)
+{
+    try {
+        Fred::OperationContextCreator ctx;
+        Database::Result dbres = ctx.get_conn().exec_params(
+            "SELECT id FROM registrar WHERE handle=$1::TEXT", Database::query_param_list(registrar_handle));
+        if (0 < dbres.size()) {
+            ctx.commit_transaction();
+            return static_cast< ::size_t >(dbres[0][0]);
+        }
+    }
+    catch (...) {
+    }
+    throw std::runtime_error("missing dedicated registrar");
 }
 
 class set_ssn
@@ -554,7 +571,8 @@ typedef prepare_transaction_storage::object_type::data_not_found prepare_transac
 
 MojeID2Impl::MojeID2Impl(const std::string &_server_name)
 :   server_name_(_server_name),
-    mojeid_registrar_handle_(get_mojeid_registrar_handle())
+    mojeid_registrar_handle_(get_mojeid_registrar_handle()),
+    mojeid_registrar_id_(get_mojeid_registrar_id(mojeid_registrar_handle_))
 {
     LogContext log_ctx(*this, "init");
 }//MojeID2Impl::MojeID2Impl
@@ -635,6 +653,11 @@ MojeID2Impl::ContactId MojeID2Impl::create_contact_prepare(
         {
             const Fred::CreatePublicRequestAuth::Result result = op_create_pub_req.exec(ctx, locked_contact);
             _ident = result.identification;
+            if (notification_enabled()) {
+                Notification::enqueue_notification(ctx, Notification::created, mojeid_registrar_id_,
+                                                   new_contact.history_id,
+                                                   Util::make_svtrid(result.public_request_id));
+            }
         }
         prepare_transaction_storage()->store(_trans_id, new_contact.object_id);
         ctx.commit_transaction();

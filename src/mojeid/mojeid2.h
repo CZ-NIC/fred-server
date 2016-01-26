@@ -142,6 +142,7 @@ public:
 private:
     const std::string server_name_;
     const std::string mojeid_registrar_handle_;
+    const ::size_t mojeid_registrar_id_;
 };//class MojeID2Impl
 
 }//namespace Registry::MojeID
