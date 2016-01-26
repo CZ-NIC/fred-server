@@ -194,9 +194,9 @@ BOOST_FIXTURE_TEST_CASE(info_contact_diff, test_contact_fixture_6da88b63b0bc46e2
     test_diff.email = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
     test_diff.notifyemail = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
     test_diff.vat = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
-    test_diff.ssn_value = std::make_pair(Nullable< Fred::InfoContactDiff::SSN_value >(),
-                                         Nullable< Fred::InfoContactDiff::SSN_value >(
-                                            Fred::InfoContactDiff::SSN_value("test2", "test2")));
+    test_diff.personal_id = std::make_pair(Nullable< Fred::InfoContactDiff::PersonalId >(),
+                                           Nullable< Fred::InfoContactDiff::PersonalId >(
+                                               Fred::InfoContactDiff::PersonalId("test2", "test2")));
     test_diff.disclosename= std::make_pair(false, true);
     test_diff.discloseorganization= std::make_pair(true, false);
     test_diff.discloseaddress= std::make_pair(false, true);

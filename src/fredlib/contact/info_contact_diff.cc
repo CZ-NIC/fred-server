@@ -58,7 +58,7 @@ namespace Fred
         if(email.isset()) fields.insert("email");
         if(notifyemail.isset()) fields.insert("notifyemail");
         if(vat.isset()) fields.insert("vat");
-        if(ssn_value.isset()) fields.insert("ssn_value");
+        if(personal_id.isset()) fields.insert("personal_id");
         if(disclosename.isset()) fields.insert("disclosename");
         if(discloseorganization.isset()) fields.insert("discloseorganization");
         if(discloseaddress.isset()) fields.insert("discloseaddress");
@@ -99,7 +99,7 @@ namespace Fred
         (std::make_pair("email", email.print_quoted()))
         (std::make_pair("notifyemail", notifyemail.print_quoted()))
         (std::make_pair("vat", vat.print_quoted()))
-        (std::make_pair("ssn_value", ssn_value.print_quoted()))
+        (std::make_pair("personal_id", personal_id.print_quoted()))
         (std::make_pair("disclosename", disclosename.print_quoted()))
         (std::make_pair("discloseorganization", discloseorganization.print_quoted()))
         (std::make_pair("discloseaddress", discloseaddress.print_quoted()))
@@ -138,7 +138,7 @@ namespace Fred
             || email.isset()
             || notifyemail.isset()
             || vat.isset()
-            || ssn_value.isset()
+            || personal_id.isset()
             || disclosename.isset()
             || discloseorganization.isset()
             || discloseaddress.isset()
@@ -276,15 +276,15 @@ namespace Fred
         if (!Util::is_equal(first.ssntype, second.ssntype) ||
             !Util::is_equal(first.ssn,     second.ssn))
         {
-            const Nullable< InfoContactDiff::SSN_value > a = first.ssntype.isnull() || first.ssn.isnull()
-                ? Nullable< InfoContactDiff::SSN_value >()
-                : Nullable< InfoContactDiff::SSN_value >(
-                      InfoContactDiff::SSN_value(first.ssntype.get_value(), first.ssn.get_value()));
-            const Nullable< InfoContactDiff::SSN_value > b = second.ssntype.isnull() || second.ssn.isnull()
-                ? Nullable< InfoContactDiff::SSN_value >()
-                : Nullable< InfoContactDiff::SSN_value >(
-                      InfoContactDiff::SSN_value(second.ssntype.get_value(), second.ssn.get_value()));
-            diff.ssn_value = std::make_pair(a, b);
+            const Nullable< InfoContactDiff::PersonalId > a = first.ssntype.isnull() || first.ssn.isnull()
+                ? Nullable< InfoContactDiff::PersonalId >()
+                : Nullable< InfoContactDiff::PersonalId >(
+                      InfoContactDiff::PersonalId(first.ssntype.get_value(), first.ssn.get_value()));
+            const Nullable< InfoContactDiff::PersonalId > b = second.ssntype.isnull() || second.ssn.isnull()
+                ? Nullable< InfoContactDiff::PersonalId >()
+                : Nullable< InfoContactDiff::PersonalId >(
+                      InfoContactDiff::PersonalId(second.ssntype.get_value(), second.ssn.get_value()));
+            diff.personal_id = std::make_pair(a, b);
         }
 
         if(first.disclosename != second.disclosename)

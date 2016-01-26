@@ -152,12 +152,12 @@ static std::map<std::string, std::string> gather_contact_update_data_change(
     /* Yes we are using database "enum" values as e-mail template parameters. It's flexible. And it works! A vubec! */
     struct translate_ssntypes
     {
-        static std::string exec(const Nullable< Fred::InfoContactDiff::SSN_value > &_nullable_ssn_value)
+        static std::string exec(const Nullable< Fred::InfoContactDiff::PersonalId > &_nullable_personal_id)
         {
-            if (_nullable_ssn_value.isnull() ||
-                _nullable_ssn_value.get_value().type.empty()) { return "EMPTY"; }
+            if (_nullable_personal_id.isnull() ||
+                _nullable_personal_id.get_value().type.empty()) { return "EMPTY"; }
 
-            const std::string type = _nullable_ssn_value.get_value().type;
+            const std::string type = _nullable_personal_id.get_value().type;
 
             if (type == "PASS") { return "PASSPORT"; }
 
@@ -171,22 +171,17 @@ static std::map<std::string, std::string> gather_contact_update_data_change(
         }
     };
 
-    if (diff.ssn_value.isset()) {
-        const Nullable< Fred::InfoContactDiff::SSN_value > nullable_ssn_value_a = diff.ssn_value.get_value().first;
-        const Nullable< Fred::InfoContactDiff::SSN_value > nullable_ssn_value_b = diff.ssn_value.get_value().second;
+    if (diff.personal_id.isset()) {
+        const Nullable< Fred::InfoContactDiff::PersonalId > nullable_personal_id_a = diff.personal_id.get_value().first;
+        const Nullable< Fred::InfoContactDiff::PersonalId > nullable_personal_id_b = diff.personal_id.get_value().second;
         add_old_new_suffix_pair_if_different(
             result, "contact.ident_type",
-            translate_ssntypes::exec(nullable_ssn_value_a),
-            translate_ssntypes::exec(nullable_ssn_value_b)
-        );
-    }
-
-    if(diff.ssn.isset()) {
-        add_old_new_changes_pair_if_different(
+            translate_ssntypes::exec(nullable_personal_id_a),
+            translate_ssntypes::exec(nullable_personal_id_b));
+        add_old_new_suffix_pair_if_different(
             result, "contact.ident",
-            nullable_ssn_value_a.get_value_or_default().ssn,
-            nullable_ssn_value_b.get_value_or_default().ssn
-        );
+            nullable_personal_id_a.get_value_or_default().value,
+            nullable_personal_id_b.get_value_or_default().value);
     }
 
     if(diff.vat.isset()) {

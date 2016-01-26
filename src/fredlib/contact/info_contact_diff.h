@@ -44,12 +44,13 @@ namespace Fred
     struct InfoContactDiff : public Util::Printable
     {
         template <class T> struct DiffMemeber { typedef Optional<std::pair<T,T> > Type;};
-        struct SSN_value
+
+        struct PersonalId
         {
-            SSN_value() { }
-            SSN_value(const std::string &type, const std::string &ssn):type(type), ssn(ssn) { }
+            PersonalId() { }
+            PersonalId(const std::string &type, const std::string &value):type(type), value(value) { }
             std::string type;
-            std::string ssn;
+            std::string value;
         };
 
         DiffMemeber<unsigned long long>::Type crhistoryid;/**< first historyid of contact history*/
@@ -72,7 +73,7 @@ namespace Fred
         DiffMemeber<Nullable<std::string> >::Type email;/**< e-mail address */
         DiffMemeber<Nullable<std::string> >::Type notifyemail;/**< to this e-mail address will be send message in case of any change in domain or nsset affecting contact */
         DiffMemeber<Nullable<std::string> >::Type vat;/**< taxpayer identification number */
-        DiffMemeber< Nullable< SSN_value > >::Type ssn_value;/**< type and value of identification number e.g. social security number, identity card number, date of birth */
+        DiffMemeber< Nullable< PersonalId > >::Type personal_id;/**< type and value of identification number e.g. social security number, identity card number, date of birth */
         DiffMemeber<bool>::Type disclosename;/**< whether to reveal contact name */
         DiffMemeber<bool>::Type discloseorganization;/**< whether to reveal organization */
         DiffMemeber<bool>::Type discloseaddress;/**< whether to reveal address */
@@ -120,10 +121,10 @@ namespace Fred
 
 }//namespace Fred
 
-inline std::ostream& operator<<(std::ostream &out, const Fred::InfoContactDiff::SSN_value &ssn_value)
+inline std::ostream& operator<<(std::ostream &out, const Fred::InfoContactDiff::PersonalId &personal_id)
 {
     std::ostringstream o;
-    o << ssn_value.type << ": " << ssn_value.ssn;
+    o << personal_id.type << ": " << personal_id.value;
     return out << o.str();
 }
 
