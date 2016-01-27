@@ -341,6 +341,21 @@ bool notification_enabled()
     return value;
 }
 
+static const Fred::PublicRequestId _unused_request_id = 0;
+
+void notify(Fred::OperationContext&        _ctx,
+        const Notification::notified_event _event,
+        unsigned long long                 _done_by_registrar,
+        unsigned long long                 _object_historyid_post_change,
+        Fred::PublicRequestId              _request_id = _unused_request_id)
+{
+    if (notification_enabled()) {
+        Notification::enqueue_notification(_ctx, _event, _done_by_registrar, _object_historyid_post_change,
+            _request_id == _unused_request_id ? std::string()
+                                              : Util::make_svtrid(_request_id));
+    }
+}
+
 class MessageType
 {
 public:
@@ -653,11 +668,8 @@ MojeID2Impl::ContactId MojeID2Impl::create_contact_prepare(
         {
             const Fred::CreatePublicRequestAuth::Result result = op_create_pub_req.exec(ctx, locked_contact);
             _ident = result.identification;
-            if (notification_enabled()) {
-                Notification::enqueue_notification(ctx, Notification::created, mojeid_registrar_id_,
-                                                   new_contact.history_id,
-                                                   Util::make_svtrid(result.public_request_id));
-            }
+            notify(ctx, Notification::created,
+                   mojeid_registrar_id_, new_contact.history_id, result.public_request_id);
         }
         prepare_transaction_storage()->store(_trans_id, new_contact.object_id);
         ctx.commit_transaction();
@@ -679,7 +691,7 @@ MojeID2Impl::ContactId MojeID2Impl::create_contact_prepare(
 
 namespace {
 
-std::string action_transfer_contact_prepare(
+Fred::CreatePublicRequestAuth::Result action_transfer_contact_prepare(
     const Fred::PublicRequestAuthTypeIface &_iface,
     const std::string &_trans_id,
     const Fred::InfoContactData &_contact,
@@ -695,7 +707,7 @@ std::string action_transfer_contact_prepare(
     const Fred::CreatePublicRequestAuth::Result result =
         op_create_pub_req.exec(_ctx, _locked_contact);
     prepare_transaction_storage()->store(_trans_id, _contact.id);
-    return result.identification;
+    return result;
 }
 
 }
@@ -720,12 +732,13 @@ void MojeID2Impl::transfer_contact_prepare(
             MojeIDImplInternal::raise(check_result);
         }
 
+        Fred::CreatePublicRequestAuth::Result pub_req_result;
         if (states.absents(Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT) &&
             states.absents(Fred::Object::State::IDENTIFIED_CONTACT) &&
             states.absents(Fred::Object::State::VALIDATED_CONTACT) &&
             states.absents(Fred::Object::State::MOJEID_CONTACT))
         {
-            _ident = action_transfer_contact_prepare(
+            pub_req_result = action_transfer_contact_prepare(
                 Fred::MojeID::PublicRequest::ContactConditionalIdentification::iface(),
                 _trans_id, contact, locked_contact, mojeid_registrar_handle_, ctx);
         }
@@ -734,7 +747,7 @@ void MojeID2Impl::transfer_contact_prepare(
                  states.absents(Fred::Object::State::VALIDATED_CONTACT) &&
                  states.absents(Fred::Object::State::MOJEID_CONTACT))
         {
-            _ident = action_transfer_contact_prepare(
+            pub_req_result = action_transfer_contact_prepare(
                 Fred::MojeID::PublicRequest::ConditionallyIdentifiedContactTransfer::iface(),
                 _trans_id, contact, locked_contact, mojeid_registrar_handle_, ctx);
         }
@@ -743,13 +756,23 @@ void MojeID2Impl::transfer_contact_prepare(
                  states.absents(Fred::Object::State::VALIDATED_CONTACT) &&
                  states.absents(Fred::Object::State::MOJEID_CONTACT))
         {
-            _ident = action_transfer_contact_prepare(
+            pub_req_result = action_transfer_contact_prepare(
                 Fred::MojeID::PublicRequest::IdentifiedContactTransfer::iface(),
                 _trans_id, contact, locked_contact, mojeid_registrar_handle_, ctx);
         }
 
+        if (contact.sponsoring_registrar_handle != mojeid_registrar_handle_) {
+            Fred::UpdateContactById update_contact_op(contact.id, mojeid_registrar_handle_);
+            update_contact_op.set_logd_request_id(_log_request_id);
+            //transfer contact to 'REG-MOJEID' sponsoring registrar
+            update_contact_op.set_sponsoring_registrar(mojeid_registrar_handle_);
+            const unsigned long long history_id = update_contact_op.exec(ctx);
+            notify(ctx, Notification::transferred,
+                   mojeid_registrar_id_, history_id, pub_req_result.public_request_id);
+        }
         from_into(contact, _contact);
         ctx.commit_transaction();
+        _ident = pub_req_result.identification;
         return;
     }
     catch (const MojeIDImplData::AlreadyMojeidContact&) {
@@ -896,6 +919,7 @@ void MojeID2Impl::update_contact_prepare(
         if (drop_identification || differs(current_data.email, new_data.email)) {
             cancel_message_sending< MessageType::MOJEID_CARD, CommType::LETTER >(ctx, new_data.id);
         }
+        Fred::PublicRequestId request_id = _unused_request_id;
         if (drop_identification) {
             const bool reidentification_needed = states.presents(Fred::Object::State::IDENTIFIED_CONTACT);
             if (reidentification_needed) {
@@ -912,7 +936,7 @@ void MojeID2Impl::update_contact_prepare(
                                         : Fred::MojeID::PublicRequest::ContactIdentification::iface());
             create_public_request_op.set_reason("data changed");
             create_public_request_op.set_registrar_id(ctx, mojeid_registrar_handle_);
-            create_public_request_op.exec(ctx, locked_contact, _log_request_id);
+            request_id = create_public_request_op.exec(ctx, locked_contact, _log_request_id).public_request_id;
         }
         {
             const MojeIDImplInternal::CheckUpdateContactPrepare check_contact_data(new_data);
@@ -953,7 +977,9 @@ void MojeID2Impl::update_contact_prepare(
         if (!addr_can_be_hidden) {
             update_contact_op.set_discloseaddress(true);
         }
-        update_contact_op.exec(ctx);
+        const unsigned long long history_id = update_contact_op.exec(ctx);
+
+        notify(ctx, Notification::updated, mojeid_registrar_id_, history_id, request_id);
 
         if (object_states_changed) {
             prepare_transaction_storage()->store(_trans_id, new_data.id);
@@ -1024,17 +1050,12 @@ MojeIDImplData::InfoContact MojeID2Impl::update_transfer_contact_prepare(
             states.presents(Fred::Object::State::SERVER_DELETE_PROHIBITED)) {
             throw MojeIDImplData::ObjectUserBlocked();
         }
-        //transfer contact to 'REG-MOJEID' sponsoring registrar
-        if (current_data.sponsoring_registrar_handle != mojeid_registrar_handle_) {
-            Fred::UpdateContactById op_update_contact(current_data.id, mojeid_registrar_handle_);
-            op_update_contact.set_sponsoring_registrar(mojeid_registrar_handle_);
-            op_update_contact.set_logd_request_id(_log_request_id);
-            op_update_contact.exec(ctx);
-        }
         check_limits::sent_letters()(ctx, current_data.id);
         const Fred::PublicRequestObjectLockGuardByObjectId locked_contact(ctx, new_data.id);
         bool drop_identification      = false;
         bool drop_cond_identification = false;
+        unsigned long long history_id;
+        bool do_transfer = false;
         {
             if (states.presents(Fred::Object::State::IDENTIFIED_CONTACT)) {
                 const Fred::InfoContactData &c1 = current_data;
@@ -1090,7 +1111,13 @@ MojeIDImplData::InfoContact MojeID2Impl::update_transfer_contact_prepare(
             //perform changes
             Fred::UpdateContactById update_contact_op(new_data.id, mojeid_registrar_handle_);
             set_update_contact_op(Fred::diff_contact_data(current_data, new_data), update_contact_op);
-            update_contact_op.exec(ctx);
+            update_contact_op.set_logd_request_id(_log_request_id);
+            do_transfer = current_data.sponsoring_registrar_handle != mojeid_registrar_handle_;
+            if (do_transfer) {
+                //transfer contact to 'REG-MOJEID' sponsoring registrar
+                update_contact_op.set_sponsoring_registrar(mojeid_registrar_handle_);
+            }
+            history_id = update_contact_op.exec(ctx);
         }
         const bool is_identified      = states.presents(Fred::Object::State::IDENTIFIED_CONTACT) &&
                                         !drop_identification;
@@ -1109,6 +1136,11 @@ MojeIDImplData::InfoContact MojeID2Impl::update_transfer_contact_prepare(
         op_create_pub_req.set_registrar_id(ctx, mojeid_registrar_handle_);
         const Fred::CreatePublicRequestAuth::Result result =
             op_create_pub_req.exec(ctx, locked_contact, _log_request_id);
+
+        notify(ctx, Notification::updated, mojeid_registrar_id_, history_id, result.public_request_id);
+        if (do_transfer) {
+            notify(ctx, Notification::transferred, mojeid_registrar_id_, history_id, result.public_request_id);
+        }
         //second phase commit will change contact states
         prepare_transaction_storage()->store(_trans_id, current_data.id);
 
