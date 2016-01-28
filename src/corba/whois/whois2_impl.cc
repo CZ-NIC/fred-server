@@ -1,3 +1,5 @@
+#include "util/random.h"
+
 #include "src/corba/whois/whois2_impl.h"
 #include "src/corba/util/corba_conversions_string.h"
 #include "src/corba/util/corba_conversions_datetime.h"
@@ -24,6 +26,40 @@
 
 namespace Registry {
 namespace Whois {
+
+
+    std::string create_ctx_invocation_id()
+    {
+        return str(boost::format("fred-pifd-<%1%>") % Random::integer(0, 10000));
+    }
+
+    std::string create_ctx_function_name(const char *fnc)
+    {
+        if (fnc == NULL)
+        {
+            return std::string();
+        }
+        std::string name(fnc);
+        std::replace(name.begin(), name.end(), '_', '-');
+        return name;
+    }
+
+    class LogContext
+    {
+    public:
+        LogContext(const std::string &_op_name)
+        :   ctx_server_(create_ctx_invocation_id()),
+            ctx_operation_(_op_name)
+        {
+        }
+    private:
+        Logging::Context ctx_server_;
+        Logging::Context ctx_operation_;
+    };
+
+    #define LOGGING_CONTEXT(CTX_VAR) LogContext CTX_VAR(create_ctx_function_name(__FUNCTION__))
+
+
 
     const std::string Server_impl::output_timezone("UTC");
 
@@ -408,6 +444,7 @@ namespace Whois {
     {
         try
         {
+            LOGGING_CONTEXT(log_ctx);
             try
             {
                 Fred::OperationContext ctx;
@@ -445,6 +482,8 @@ namespace Whois {
     {
         try
         {
+            LOGGING_CONTEXT(log_ctx);
+
             RegistrarSeq_var registrar_seq = new RegistrarSeq;
             std::vector<Fred::InfoRegistrarData> registrar_data_list;
             Fred::OperationContext ctx;
@@ -470,6 +509,8 @@ namespace Whois {
     {
         try
         {
+            LOGGING_CONTEXT(log_ctx);
+
             RegistrarGroupList_var reg_grp_seq = new RegistrarGroupList;
             Fred::OperationContext ctx;
 
@@ -489,6 +530,8 @@ namespace Whois {
     {
         try
         {
+            LOGGING_CONTEXT(log_ctx);
+
             RegistrarCertificationList_var reg_cert_seq = new RegistrarCertificationList;
             Fred::OperationContext ctx;
             set_corba_seq<RegistrarCertificationList, RegistrarCertification>
@@ -506,6 +549,8 @@ namespace Whois {
     {
         try
         {
+            LOGGING_CONTEXT(log_ctx);
+
             ZoneFqdnList_var zone_seq = new ZoneFqdnList;
             Fred::OperationContext ctx;
             set_corba_seq<ZoneFqdnList, CORBA::String_var>
@@ -524,6 +569,7 @@ namespace Whois {
     {
         try
         {
+            LOGGING_CONTEXT(log_ctx);
             try
             {
                 Fred::OperationContext ctx;
@@ -564,6 +610,7 @@ namespace Whois {
     {
         try
         {
+            LOGGING_CONTEXT(log_ctx);
             try
             {
                 Fred::OperationContext ctx;
@@ -602,6 +649,8 @@ namespace Whois {
     {
         try
         {
+            LOGGING_CONTEXT(log_ctx);
+
             const std::string fqdn = Fred::Zone::rem_trailing_dot(
                 Corba::unwrap_string_from_const_char_ptr(handle)
             );
@@ -650,6 +699,8 @@ namespace Whois {
     {
         try
         {
+            LOGGING_CONTEXT(log_ctx);
+
             Fred::OperationContext ctx;
             NSSetSeq_var nss_seq = new NSSetSeq;
 
@@ -693,6 +744,8 @@ namespace Whois {
     {
         try
         {
+            LOGGING_CONTEXT(log_ctx);
+
             const std::string ns_fqdn = Fred::Zone::rem_trailing_dot(
                 Corba::unwrap_string_from_const_char_ptr(fqdn)
             );
@@ -730,6 +783,7 @@ namespace Whois {
     {
         try
         {
+            LOGGING_CONTEXT(log_ctx);
             try
             {
                 Fred::OperationContext ctx;
@@ -769,8 +823,9 @@ namespace Whois {
     {
         try
         {
-            Fred::OperationContext ctx;
+            LOGGING_CONTEXT(log_ctx);
 
+            Fred::OperationContext ctx;
             KeySetSeq_var ks_seq = new KeySetSeq;
 
             std::vector<Fred::InfoKeysetOutput> ks_info = Fred::InfoKeysetByTechContactHandle(
@@ -812,6 +867,8 @@ namespace Whois {
     {
         try
         {
+            LOGGING_CONTEXT(log_ctx);
+
             const std::string fqdn = Fred::Zone::rem_trailing_dot(
                 Corba::unwrap_string_from_const_char_ptr(handle)
             );
@@ -895,8 +952,9 @@ namespace Whois {
     {
         try
         {
-            Fred::OperationContext ctx;
+            LOGGING_CONTEXT(log_ctx);
 
+            Fred::OperationContext ctx;
             DomainSeq_var domain_seq = new DomainSeq;
 
             std::vector<Fred::InfoDomainOutput> domain_info = Fred::InfoDomainByRegistrantHandle(
@@ -941,8 +999,9 @@ namespace Whois {
     {
         try
         {
-            Fred::OperationContext ctx;
+            LOGGING_CONTEXT(log_ctx);
 
+            Fred::OperationContext ctx;
             DomainSeq_var domain_seq = new DomainSeq;
 
             std::vector<Fred::InfoDomainOutput> domain_info = Fred::InfoDomainByAdminContactHandle(
@@ -986,8 +1045,9 @@ namespace Whois {
     {
         try
         {
-            Fred::OperationContext ctx;
+            LOGGING_CONTEXT(log_ctx);
 
+            Fred::OperationContext ctx;
             DomainSeq_var domain_seq = new DomainSeq;
 
             std::vector<Fred::InfoDomainOutput> domain_info = Fred::InfoDomainByNssetHandle(
@@ -1032,8 +1092,9 @@ namespace Whois {
     {
         try
         {
-            Fred::OperationContext ctx;
+            LOGGING_CONTEXT(log_ctx);
 
+            Fred::OperationContext ctx;
             DomainSeq_var domain_seq = new DomainSeq;
 
             std::vector<Fred::InfoDomainOutput> domain_info = Fred::InfoDomainByKeysetHandle(
@@ -1101,6 +1162,8 @@ namespace Whois {
     {
         try
         {
+            LOGGING_CONTEXT(log_ctx);
+
             ObjectStatusDescSeq_var state_seq = new ObjectStatusDescSeq;
             Fred::OperationContext ctx;
             set_corba_seq<ObjectStatusDescSeq, ObjectStatusDesc>
@@ -1122,6 +1185,8 @@ namespace Whois {
     {
         try
         {
+            LOGGING_CONTEXT(log_ctx);
+
             ObjectStatusDescSeq_var state_seq = new ObjectStatusDescSeq;
             Fred::OperationContext ctx;
             set_corba_seq<ObjectStatusDescSeq, ObjectStatusDesc>
@@ -1142,6 +1207,8 @@ namespace Whois {
     {
         try
         {
+            LOGGING_CONTEXT(log_ctx);
+
             ObjectStatusDescSeq_var state_seq = new ObjectStatusDescSeq;
             Fred::OperationContext ctx;
             set_corba_seq<ObjectStatusDescSeq, ObjectStatusDesc>
@@ -1162,6 +1229,8 @@ namespace Whois {
     {
         try
         {
+            LOGGING_CONTEXT(log_ctx);
+
             ObjectStatusDescSeq_var state_seq = new ObjectStatusDescSeq;
             Fred::OperationContext ctx;
             set_corba_seq<ObjectStatusDescSeq, ObjectStatusDesc>
