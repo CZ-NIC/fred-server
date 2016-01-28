@@ -291,6 +291,7 @@ sbin_PROGRAMS = \
 		src/corba/fred-logd \
 		src/corba/messages/fred-msgd \
 		src/corba/mojeid/fred-mifd \
+		src/corba/mojeid/messages/fred-mojeid-msggen \
 		src/corba/domain_browser/fred-dbifd \
 		src/cli_admin/fred-admin \
 		tools/logd_migration/migrate_log \
@@ -1815,6 +1816,22 @@ src_corba_mojeid_fred_mifd_LDADD = \
 		$(BOOST_SYSTEM_LIB)
 #
 # src/corba/mojeid/fred-mifd2
+
+# src/corba/mojeid/messages/fred-mojeid-msggen
+#
+src_corba_mojeid_messages_fred_mojeid_msggen_SOURCES = \
+		src/corba/mojeid/messages/client.cc
+
+nodist_src_corba_mojeid_messages_fred_mojeid_msggen_SOURCES = \
+		src/corba/MojeID2SK.cc
+
+src_corba_mojeid_messages_fred_mojeid_msggen_LDFLAGS = \
+		$(AM_LDFLAGS)
+
+src_corba_mojeid_messages_fred_mojeid_msggen_LDADD = \
+		$(OMNIORB4_LIBS)
+#
+# src/corba/mojeid/messages/fred-mojeid-msggen
 
 #
 # src/corba/domain_browser/fred-dbifd
