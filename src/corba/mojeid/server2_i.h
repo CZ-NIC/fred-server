@@ -25,6 +25,7 @@
 #define SERVER2_I_H_4A7A4BDA1B4C87979D8B1FBE04FD1583
 
 #include "src/corba/MojeID2.hh"
+#include "src/corba/mojeid/service_name.h"
 #include <memory>
 #include <string>
 #include <boost/utility.hpp>

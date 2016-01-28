@@ -1779,6 +1779,7 @@ src_corba_mojeid_fred_mifd_SOURCES = \
 		src/corba/mojeid/server2_i.cc \
 		util/corba_conversion.cc \
 		src/corba/mojeid/mojeid_corba_conversion.cc \
+		src/corba/mojeid/service_name.cc \
 		src/corba/mojeid/fred-mifd2.cc
 
 nodist_src_corba_mojeid_fred_mifd_SOURCES = \
@@ -1820,6 +1821,7 @@ src_corba_mojeid_fred_mifd_LDADD = \
 # src/corba/mojeid/messages/fred-mojeid-msggen
 #
 src_corba_mojeid_messages_fred_mojeid_msggen_SOURCES = \
+		src/corba/mojeid/service_name.cc \
 		src/corba/mojeid/messages/client.cc
 
 nodist_src_corba_mojeid_messages_fred_mojeid_msggen_SOURCES = \
@@ -1829,6 +1831,7 @@ src_corba_mojeid_messages_fred_mojeid_msggen_LDFLAGS = \
 		$(AM_LDFLAGS)
 
 src_corba_mojeid_messages_fred_mojeid_msggen_LDADD = \
+		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(OMNIORB4_LIBS)
 #
 # src/corba/mojeid/messages/fred-mojeid-msggen
