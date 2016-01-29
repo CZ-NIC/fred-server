@@ -48,7 +48,7 @@
 #include "util/random.h"
 #include "src/corba/connection_releaser.h"
 #include "src/corba/epp_corba_client_impl.h"
-#include "src/mojeid/public_request_verification_impl.h"
+#include "src/mojeid/mojeid_public_request.h"
 #include "src/contact_verification/public_request_contact_verification_impl.h"
 
 class Registry_RegistrarCertification_i;
@@ -991,6 +991,17 @@ ccReg::TID ccReg_Admin_i::resendPin3Letter(ccReg::TID publicRequestId)
     }
 }
 
+namespace
+{
+
+template < class PUB_REQ_CLASS >
+std::string get_type_of()
+{
+    return PUB_REQ_CLASS::iface().get_public_request_type();
+}
+
+}
+
 ccReg::TID ccReg_Admin_i::resendPin2SMS(ccReg::TID publicRequestId)
 {
     Logging::Context ctx(server_name_);
@@ -1026,7 +1037,7 @@ ccReg::TID ccReg_Admin_i::resendPin2SMS(ccReg::TID publicRequestId)
             throw ccReg::Admin::ObjectNotFound();
         }
         const std::string typeOfRequest = static_cast< std::string >(res[0][0]);
-        if ((typeOfRequest != Fred::PublicRequest::PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION) &&
+        if ((typeOfRequest != get_type_of< Fred::MojeID::PublicRequest::ContactConditionalIdentification >()) &&
             (typeOfRequest != Fred::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION)) {
             LOGGER(PACKAGE).error(boost::format("publicRequestId: %1% of %2% type is not PIN2 request")
                 % publicRequestId

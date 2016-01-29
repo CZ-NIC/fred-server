@@ -1507,17 +1507,12 @@ src_corba_fred_rifd_LDADD = \
 # src/corba/fred-adifd
 #
 src_corba_fred_adifd_SOURCES = \
-		src/mojeid/mojeid_validators.cc \
-		src/mojeid/mojeid_validators.h \
-		src/mojeid/mojeid_checkers.cc \
-		src/mojeid/mojeid_checkers.h \
-		src/mojeid/mojeid_contact_transfer_request_impl.cc \
-		src/mojeid/public_request_verification_impl.cc \
 		src/corba/admin_contact_verification/server_i.h \
 		src/corba/admin_contact_verification/server_i.cc \
 		src/fredlib/contact/util.h \
 		src/fredlib/contact/util.cc \
 		src/corba/fred-adifd.cc \
+		src/mojeid/mojeid_public_request.cc \
 		src/admin_block/administrativeblocking.cc \
 		src/admin_block/administrativeblocking.h \
 		src/fredlib/domain/create_domain_name_blacklist_id.cc \
@@ -1630,14 +1625,9 @@ src_corba_fred_adifd_LDADD = \
 # src/corba/fred-pifd
 #
 src_corba_fred_pifd_SOURCES = \
-		src/mojeid/mojeid_validators.cc \
-		src/mojeid/mojeid_validators.h \
-		src/mojeid/mojeid_checkers.cc \
-		src/mojeid/mojeid_checkers.h \
-		src/mojeid/mojeid_contact_transfer_request_impl.cc \
-		src/mojeid/public_request_verification_impl.cc \
 		src/corba/contact_verification/contact_verification_i.cc \
 		src/corba/contact_verification/contact_verification_i.h \
+		src/mojeid/mojeid_public_request.cc \
 		src/contact_verification/contact_verification_impl.cc \
 		src/contact_verification/contact_verification_impl.h \
 		src/contact_verification/public_request_contact_verification_wrapper.h \
@@ -2234,7 +2224,6 @@ tests_test_server_SOURCES = \
 		tests/util/test_shellcmd.cc \
 		tests/deprecated/test_contact_verification.cc \
 		tests/deprecated/test_locking_trigger.cc \
-		tests/deprecated/test_mojeid.cc \
 		tests/util/test_nullable.cc \
 		tests/util/test_optional.cc \
 		src/corba/epp_corba_client_impl.cc \
@@ -2244,21 +2233,6 @@ tests_test_server_SOURCES = \
 		src/fredlib/contact_verification/cancel_contact_verification.cc \
 		src/fredlib/contact_verification/cancel_contact_verification.h \
 		src/fredlib/contact_verification/contact_verification_state.cc \
-		src/mojeid/mojeid_validators.cc \
-		src/mojeid/mojeid_validators.h \
-		src/mojeid/mojeid_checkers.cc \
-		src/mojeid/mojeid_checkers.h \
-		src/mojeid/request.h \
-		src/mojeid/mojeid_contact_transfer_request_impl.h \
-		src/mojeid/mojeid_contact_transfer_request_impl.cc \
-		src/mojeid/public_request_verification_impl.cc \
-		src/mojeid/public_request_verification_impl.h \
-		src/mojeid/mojeid_disclose_policy.h \
-		src/mojeid/mojeid_disclose_policy.cc \
-		src/mojeid/mojeid.cc \
-		src/mojeid/mojeid.h \
-		src/mojeid/mojeid_notifier.cc \
-		src/mojeid/mojeid_notifier.h \
 		tests/deprecated/checks.h \
 		tests/util/test_printable.cc \
 		tests/util/test_csv_parser.cc \
@@ -2358,21 +2332,6 @@ tests_test_blocking_SOURCES = \
 		src/fredlib/contact_verification/cancel_contact_verification.cc \
 		src/fredlib/contact_verification/cancel_contact_verification.h \
 		src/fredlib/contact_verification/contact_verification_state.cc \
-		src/mojeid/mojeid_validators.cc \
-		src/mojeid/mojeid_validators.h \
-		src/mojeid/mojeid_checkers.cc \
-		src/mojeid/mojeid_checkers.h \
-		src/mojeid/request.h \
-		src/mojeid/mojeid_contact_transfer_request_impl.h \
-		src/mojeid/mojeid_contact_transfer_request_impl.cc \
-		src/mojeid/public_request_verification_impl.cc \
-		src/mojeid/public_request_verification_impl.h \
-		src/mojeid/mojeid_disclose_policy.h \
-		src/mojeid/mojeid_disclose_policy.cc \
-		src/mojeid/mojeid.cc \
-		src/mojeid/mojeid.h \
-		src/mojeid/mojeid_notifier.cc \
-		src/mojeid/mojeid_notifier.h \
 		src/fredlib/object_state/clear_admin_object_state_request_id.cc \
 		src/fredlib/object_state/clear_object_state_request_id.cc \
 		src/fredlib/object_state/create_object_state_request_id.cc \
