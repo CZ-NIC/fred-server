@@ -237,7 +237,6 @@ noinst_LIBRARIES = \
 		src/fredlib/banking/libbanking.a \
 		src/corba/libcorba.a \
 		src/corba/libcorbamessages.a \
-		src/corba/libcorbamojeid.a \
 		src/corba/libcorbamojeid2.a \
 		src/corba/libcorbazone.a \
 		src/corba/libfilemanager.a \
@@ -2274,7 +2273,6 @@ tests_test_server_LDADD = \
 		util/libutil.a \
 		src/corba/libcorbamessages.a \
 		src/corba/libcorbamessages.a \
-		src/corba/libcorbamojeid.a \
 		src/corba/libcorbazone.a \
 		src/corba/libfilemanager.a \
 		src/corba/libmailer.a \
@@ -2357,7 +2355,6 @@ tests_test_blocking_LDADD = \
 		util/libutil.a \
 		src/corba/libcorbamessages.a \
 		src/corba/libcorbamessages.a \
-		src/corba/libcorbamojeid.a \
 		src/corba/libcorbazone.a \
 		src/corba/libfilemanager.a \
 		src/corba/libmailer.a \
